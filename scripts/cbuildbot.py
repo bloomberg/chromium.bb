@@ -480,6 +480,18 @@ def _ConfirmBuildRoot(buildroot):
   repository.CreateTrybotMarker(buildroot)
 
 
+def _ConfirmRemoteBuildbotRun():
+  """Confirm user wants to run with --buildbot --remote."""
+  warning = ('You are about to launch a PRODUCTION job!  This is *NOT* a '
+             'trybot run! Are you sure?')
+  response = cros_lib.YesNoPrompt(default=cros_lib.NO, warning=warning,
+                                  full=True)
+
+  if response == cros_lib.NO:
+    print('Please specify --pass-through="--debug".')
+    sys.exit(0)
+
+
 def _DetermineDefaultBuildRoot(internal_build):
   """Default buildroot to be under the directory that contains current checkout.
 
@@ -651,32 +663,69 @@ def _CheckChromeRevOption(_option, _opt_str, value, parser):
 
 
 def _CreateParser():
+  class CustomParser(optparse.OptionParser):
+    def add_remote_option(self, *args, **kwargs):
+      """For arguments that are passed-through to remote trybot."""
+      return optparse.OptionParser.add_option(self, *args,
+                                              remote_pass_through=True,
+                                              **kwargs)
+
+  class CustomGroup(optparse.OptionGroup):
+    def add_remote_option(self, *args, **kwargs):
+      """For arguments that are passed-through to remote trybot."""
+      return optparse.OptionGroup.add_option(self, *args,
+                                             remote_pass_through=True,
+                                             **kwargs)
+
+  class CustomOption(optparse.Option):
+    """Subclass Option class to implement pass-through."""
+    def __init__(self, *args, **kwargs):
+      # The remote_pass_through argument specifies whether we should directly
+      # pass the argument (with its value) onto the remote trybot.
+      self.pass_through = kwargs.pop('remote_pass_through', False)
+      optparse.Option.__init__(self, *args, **kwargs)
+
+    def take_action(self, action, dest, opt, value, values, parser):
+      optparse.Option.take_action(self, action, dest, opt, value, values,
+                                  parser)
+      if self.pass_through:
+        parser.values.pass_through_args.append(opt)
+        if self.nargs and self.nargs > 1:
+          # value is a tuple if nargs > 1
+          string_list = [str(val) for val in list(value)]
+          parser.values.pass_through_args.extend(string_list)
+        elif value:
+          parser.values.pass_through_args.append(str(value))
+
   """Generate and return the parser with all the options."""
   # Parse options
   usage = "usage: %prog [options] buildbot_config"
-  parser = optparse.OptionParser(usage=usage)
+  parser = CustomParser(usage=usage, option_class=CustomOption)
 
   # Main options
+  # The remote_pass_through parameter to add_option is implemented by the
+  # CustomOption class.  See CustomOption for more information.
   parser.add_option('-a', '--all', action='store_true', dest='print_all',
                     default=False,
                     help=('List all of the buildbot configs available. Use '
                           'with the --list option'))
   parser.add_option('-r', '--buildroot', action='callback', dest='buildroot',
                     type='string', callback=_CheckBuildRootOption,
-                    help=('Root directory where source is checked out to, and '
-                          'where the build occurs. For external build configs, '
-                          "defaults to 'trybot' directory at top level of your "
-                          'repo-managed checkout.'))
-  parser.add_option('--chrome_rev', default=None, type='string',
-                    action='callback', dest='chrome_rev',
-                    callback=_CheckChromeRevOption,
-                    help=('Revision of Chrome to use, of type '
-                          '[%s]' % '|'.join(constants.VALID_CHROME_REVISIONS)))
-  parser.add_option('-g', '--gerrit-patches', action='append', default=[],
-                    type='string', metavar="'Id1 *int_Id2...IdN'",
-                    help=("Space-separated list of short-form Gerrit "
-                          "Change-Id's or change numbers to patch.  Please "
-                          "prepend '*' to internal Change-Id's"))
+                    help='Root directory where source is checked out to, and '
+                         'where the build occurs. For external build configs, '
+                         "defaults to 'trybot' directory at top level of your "
+                         'repo-managed checkout.')
+  parser.add_remote_option('--chrome_rev', default=None, type='string',
+                           action='callback', dest='chrome_rev',
+                           callback=_CheckChromeRevOption,
+                           help=('Revision of Chrome to use, of type [%s]'
+                                 % '|'.join(constants.VALID_CHROME_REVISIONS)))
+  parser.add_remote_option('-g', '--gerrit-patches', action='append',
+                           default=[], type='string',
+                           metavar="'Id1 *int_Id2...IdN'",
+                           help=("Space-separated list of short-form Gerrit "
+                                 "Change-Id's or change numbers to patch. "
+                                 "Please prepend '*' to internal Change-Id's"))
   parser.add_option('-l', '--list', action='store_true', dest='list',
                     default=False,
                     help=('List the suggested trybot configs to use.  Use '
@@ -689,101 +738,105 @@ def _CreateParser():
                           'patches to apply.  Projects are specified by name. '
                           'If no branch is specified the current branch of the '
                           'project will be used.'))
-  parser.add_option('--profile', default=None, type='string', action='store',
-                    dest='profile',
-                    help=('Name of profile to sub-specify board variant.'))
+  parser.add_remote_option('--profile', default=None, type='string',
+                           action='store', dest='profile',
+                           help='Name of profile to sub-specify board variant.')
   parser.add_option('--remote', default=False, action='store_true',
                     help=('Specifies that this tryjob should be run remotely.'))
 
   # Advanced options
-  group = optparse.OptionGroup(
+  group = CustomGroup(
       parser,
       'Advanced Options',
       'Caution: use these options at your own risk.')
 
-  group.add_option('--buildbot', dest='buildbot', action='store_true',
-                    default=False, help='This is running on a buildbot')
-  group.add_option('--buildnumber',
-                   help='build number', type='int', default=0)
+  group.add_remote_option('--buildbot', dest='buildbot', action='store_true',
+                          default=False, help='This is running on a buildbot')
+  group.add_remote_option('--buildnumber', help='build number', type='int',
+                          default=0)
   group.add_option('--chrome_root', default=None, type='string',
-                    action='callback', dest='chrome_root',
-                    callback=_CheckChromeRootOption,
-                    help='Local checkout of Chrome to use.')
-  group.add_option('--chrome_version', default=None, type='string',
-                   action='callback', dest='chrome_version',
-                   callback=_CheckChromeVersionOption,
-                   help='Used with SPEC logic to force a particular SVN '
-                        'revision of chrome rather than the latest.')
-  group.add_option('--clobber', action='store_true', dest='clobber',
-                    default=False,
-                    help='Clears an old checkout before syncing')
-  group.add_option('--lkgm', action='store_true', dest='lkgm', default=False,
-                    help='Sync to last known good manifest blessed by PFQ')
+                   action='callback', dest='chrome_root',
+                   callback=_CheckChromeRootOption,
+                   help='Local checkout of Chrome to use.')
+  group.add_remote_option('--chrome_version', default=None, type='string',
+                          action='callback', dest='chrome_version',
+                          callback=_CheckChromeVersionOption,
+                          help='Used with SPEC logic to force a particular SVN '
+                               'revision of chrome rather than the latest.')
+  group.add_remote_option('--clobber', action='store_true', dest='clobber',
+                          default=False,
+                          help='Clears an old checkout before syncing')
+  group.add_remote_option('--lkgm', action='store_true', dest='lkgm',
+                          default=False,
+                          help='Sync to last known good manifest blessed by '
+                               'PFQ')
   parser.add_option('--log_dir', action='callback', dest='log_dir',
                     type='string', callback=_CheckLogDirOption,
                     help=('Directory where logs are stored.'))
-  group.add_option('--maxarchives', dest='max_archive_builds',
-                    default=3, type='int',
-                    help="Change the local saved build count limit.")
-  group.add_option('--noarchive', action='store_false', dest='archive',
-                    default=True,
-                    help="Don't run archive stage.")
-  group.add_option('--nobuild', action='store_false', dest='build',
-                    default=True,
-                    help="Don't actually build (for cbuildbot dev)")
-  group.add_option('--noclean', action='store_false', dest='clean',
-                    default=True,
-                    help="Don't clean the buildroot")
-  group.add_option('--noprebuilts', action='store_false', dest='prebuilts',
-                    default=True,
-                    help="Don't upload prebuilts.")
-  group.add_option('--nosync', action='store_false', dest='sync',
-                    default=True,
-                    help="Don't sync before building.")
-  group.add_option('--nocgroups', action='store_false', dest='cgroups',
-                    default=True,
-                    help='Disable cbuildbots usage of cgroups.')
-  group.add_option('--notests', action='store_false', dest='tests',
-                    default=True,
-                    help='Override values from buildconfig and run no tests.')
-  group.add_option('--nouprev', action='store_false', dest='uprev',
-                    default=True,
-                    help='Override values from buildconfig and never uprev.')
+  group.add_remote_option('--maxarchives', dest='max_archive_builds',
+                          default=3, type='int',
+                          help="Change the local saved build count limit.")
+  group.add_remote_option('--noarchive', action='store_false', dest='archive',
+                          default=True, help="Don't run archive stage.")
+  group.add_remote_option('--nobuild', action='store_false', dest='build',
+                          default=True,
+                          help="Don't actually build (for cbuildbot dev)")
+  group.add_remote_option('--noclean', action='store_false', dest='clean',
+                          default=True, help="Don't clean the buildroot")
+  group.add_remote_option('--noprebuilts', action='store_false',
+                          dest='prebuilts', default=True,
+                          help="Don't upload prebuilts.")
+  group.add_remote_option('--nosync', action='store_false', dest='sync',
+                          default=True, help="Don't sync before building.")
+  group.add_remote_option('--nocgroups', action='store_false', dest='cgroups',
+                          default=True,
+                          help='Disable cbuildbots usage of cgroups.')
+  group.add_remote_option('--notests', action='store_false', dest='tests',
+                          default=True,
+                          help='Override values from buildconfig and run no '
+                               'tests.')
+  group.add_remote_option('--nouprev', action='store_false', dest='uprev',
+                          default=True,
+                          help='Override values from buildconfig and never '
+                               'uprev.')
+  group.add_option('--pass-through', dest='pass_through_args', action='append',
+                   type='string', default=[], help=optparse.SUPPRESS_HELP)
   group.add_option('--reference-repo', action='store', default=None,
-                    dest='reference_repo',
-                    help='Reuse git data stored in an existing repo '
-                         'checkout. This can drastically reduce the network '
-                         'time spent setting up the trybot checkout.  By '
-                         "default, if this option isn't given but cbuildbot "
-                         'is invoked from a repo checkout, cbuildbot will '
-                         'use the repo root.')
-  # Indicates this is running on a remote trybot machine.  '
+                   dest='reference_repo',
+                   help='Reuse git data stored in an existing repo '
+                        'checkout. This can drastically reduce the network '
+                        'time spent setting up the trybot checkout.  By '
+                        "default, if this option isn't given but cbuildbot "
+                        'is invoked from a repo checkout, cbuildbot will '
+                        'use the repo root.')
+  # Indicates this is running on a remote trybot machine.
   group.add_option('--remote-trybot', dest='remote_trybot', action='store_true',
-                    default=False, help=optparse.SUPPRESS_HELP)
+                   default=False, help=optparse.SUPPRESS_HELP)
   # Patches uploaded by trybot client when run using the -p option.
-  group.add_option('--remote-patches', action='append', default=[],
-                   help=optparse.SUPPRESS_HELP)
+  group.add_remote_option('--remote-patches', action='append', default=[],
+                          help=optparse.SUPPRESS_HELP)
   group.add_option('--resume', action='store_true', default=False,
-                    help='Skip stages already successfully completed.')
-  group.add_option('--timeout', action='store', type='int', default=0,
-                    help="Specify the maximum amount of time this job can run "
-                         "for, at which point the build will be aborted.  If "
-                         "set to zero, then there is no timeout")
+                   help='Skip stages already successfully completed.')
+  group.add_remote_option('--timeout', action='store', type='int', default=0,
+                          help='Specify the maximum amount of time this job '
+                               'can run for, at which point the build will be '
+                               'aborted.  If set to zero, then there is no '
+                               'timeout.')
   group.add_option('--test-tryjob', action='store_true',
                    default=False,
                    help='Submit a tryjob to the test repository.  Will not '
                         'show up on the production trybot waterfall.')
-  group.add_option('--validation_pool', default=None,
-                   help='Path to a pickled validation pool. Intended for use '
-                   'only with the commit queue.')
-  group.add_option('--version', dest='force_version', default=None,
-                   help='Used with manifest logic.  Forces use of this version '
-                        'rather than create or get latest.')
+  group.add_remote_option('--validation_pool', default=None,
+                          help='Path to a pickled validation pool. Intended '
+                               'for use only with the commit queue.')
+  group.add_remote_option('--version', dest='force_version', default=None,
+                          help='Used with manifest logic.  Forces use of this '
+                               'version rather than create or get latest.')
 
   parser.add_option_group(group)
 
   # Debug options
-  group = optparse.OptionGroup(parser, "Debug Options")
+  group = CustomGroup(parser, "Debug Options")
 
   group.add_option('--debug', action='store_true', default=None,
                     help='Override some options to run as a developer.')
@@ -825,20 +878,33 @@ def _FinishParsing(options, args):
       cros_lib.Die('Chrome rev must not be %s if chrome_version is not set.' %
                    constants.CHROME_REV_SPEC)
 
-  if options.local and options.remote:
-    cros_lib.Die('Cannot specify both --remote and --local')
+  patches = bool(options.gerrit_patches or options.local_patches)
+  if options.remote:
+    if options.local:
+      cros_lib.Die('Cannot specify both --remote and --local')
 
-  if options.remote and not (options.gerrit_patches or options.local_patches):
-    cros_lib.Die('Must provide patches when running with --remote.')
+    if not options.buildbot and not patches:
+      cros_lib.Die('Must provide patches when running with --remote.')
 
-  if len(args) > 1 and not options.remote:
-    cros_lib.Die('Multiple configs not supported if not running with --remote.')
+    # --debug needs to be explicitly passed through for remote invocations.
+    release_mode_with_patches = (options.buildbot and patches and
+                                 '--debug' not in options.pass_through_args)
+  else:
+    if len(args) > 1:
+      cros_lib.Die('Multiple configs not supported if not running with '
+                   '--remote.')
+
+    release_mode_with_patches = (options.buildbot and patches and
+                                 not options.debug)
+
+  # When running in release mode, make sure we are running with checked-in code.
+  # We want checked-in cbuildbot/scripts to prevent errors, and we want to build
+  # a release image with checked-in code for CrOS packages.
+  if release_mode_with_patches:
+    cros_lib.Die('Cannot provide patches when running with --buildbot!')
 
   if options.buildbot and options.remote_trybot:
     cros_lib.Die('--buildbot and --remote-trybot cannot be used together.')
-
-  if options.buildbot and (options.remote or options.local):
-    cros_lib.Die('--remote and --local do not apply when using --buildbot.')
 
   # Record whether --debug was set explicitly vs. it was inferred.
   options.debug_forced = False
@@ -945,6 +1011,10 @@ def main(argv):
     print 'Verifying patches...'
     _, local_patches = _PreProcessPatches(options.gerrit_patches,
                                           options.local_patches)
+    # --debug need to be explicitly passed through for remote invocations.
+    if options.buildbot and '--debug' not in options.pass_through_args:
+      _ConfirmRemoteBuildbotRun()
+
     print 'Submitting tryjob...'
     tryjob = remote_try.RemoteTryJob(options, args, local_patches)
     tryjob.Submit(testjob=options.test_tryjob, dryrun=options.debug)

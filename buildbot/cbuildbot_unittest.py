@@ -204,6 +204,22 @@ class InterfaceTest(mox.MoxTestBase):
     self.assertEquals(options.debug, True)
     self.assertEquals(options.buildbot, True)
 
+  def testBuildBotWithPatches(self):
+    """Test that --buildbot errors out with patches."""
+    args = ['-r', self._BUILD_ROOT, '--buildbot', '-g', '1234',
+            self._X86_PREFLIGHT]
+    cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
+    self.mox.ReplayAll()
+    self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
+
+  def testRemoteBuildBotWithPatches(self):
+    """Test that --buildbot and --remote errors out with patches."""
+    args = ['-r', self._BUILD_ROOT, '--buildbot', '--remote', '-g', '1234',
+            self._X86_PREFLIGHT]
+    cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
+    self.mox.ReplayAll()
+    self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
+
   def testBuildBotWithoutProfileOption(self):
     """Test that no --profile option gets defaulted."""
     args = ['--buildbot', self._X86_PREFLIGHT]
@@ -317,6 +333,12 @@ class InterfaceTest(mox.MoxTestBase):
     self.mox.VerifyAll()
     self.assertEquals(options.chrome_rev, constants.CHROME_REV_LOCAL)
     self.assertNotEquals(options.chrome_root, None)
+
+  def testPassThroughOptions(self):
+    """Test we are building up pass-through list properly."""
+    args = ['--remote', '--lkgm', '-g', '1234', self._X86_PREFLIGHT]
+    (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
+    self.assertEquals(options.pass_through_args, ['--lkgm', '-g', '1234'])
 
 
 class FullInterfaceTest(unittest.TestCase):

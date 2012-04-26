@@ -27,7 +27,9 @@ class RemoteTryJob(object):
   INT_SSH_URL = os.path.join(constants.GERRIT_INT_SSH_URL,
                              'chromeos/tryjobs')
 
-  TRYJOB_DESCRIPTION_VERSION = 1
+  # In version 2, the tryjob submission code handles adding the
+  # --remote-trybot flag.
+  TRYJOB_FORMAT_VERSION = 2
   TRYSERVER_URL = 'http://chromegw/p/tryserver.chromiumos'
 
   def __init__(self, options, bots, local_patches):
@@ -49,10 +51,10 @@ class RemoteTryJob(object):
     self.description = ('name: %s\n patches: %s\nbots: %s' %
                         (self.name, patch_list, self.bots))
     self.buildroot = options.buildroot
-    self.extra_args = []
-    if options.gerrit_patches:
-      self.extra_args.append('--gerrit-patches=%s'
-                             % ' '.join(options.gerrit_patches))
+    self.extra_args = options.pass_through_args
+    if '--buildbot' not in self.extra_args:
+      self.extra_args.append('--remote-trybot')
+
     self.tryjob_repo = None
     self.local_patches = local_patches
     self.ssh_url = self.EXT_SSH_URL
@@ -68,7 +70,7 @@ class RemoteTryJob(object):
         'name' : self.name,
         'bot' : self.bots,
         'extra_args' : self.extra_args,
-        'version' : self.TRYJOB_DESCRIPTION_VERSION,}
+        'version' : self.TRYJOB_FORMAT_VERSION,}
 
   def _Submit(self, testjob, dryrun):
     """Internal submission function.  See Submit() for arg description."""
