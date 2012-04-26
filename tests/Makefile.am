@@ -1,4 +1,4 @@
-my_check_programs =				\
+TESTS =						\
 	sanity-test				\
 	array-test				\
 	map-test				\
@@ -8,10 +8,8 @@ my_check_programs =				\
 	client-test				\
 	os-wrappers-test
 
-TESTS = $(my_check_programs)
-
 check_PROGRAMS =				\
-	$(my_check_programs)			\
+	$(TESTS)				\
 	exec-fd-leak-checker
 
 test_runner_src = test-runner.c test-runner.h test-helpers.c
