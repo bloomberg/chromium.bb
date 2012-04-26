@@ -71,16 +71,16 @@ P2PPortAllocator::~P2PPortAllocator() {
 }
 
 cricket::PortAllocatorSession* P2PPortAllocator::CreateSession(
-    const std::string& name,
-    const std::string& session_type) {
-  return new P2PPortAllocatorSession(this, name, session_type);
+    const std::string& channel_name,
+    int component) {
+  return new P2PPortAllocatorSession(this, channel_name, component);
 }
 
 P2PPortAllocatorSession::P2PPortAllocatorSession(
     P2PPortAllocator* allocator,
-    const std::string& name,
-    const std::string& session_type)
-    : cricket::BasicPortAllocatorSession(allocator, name, session_type),
+    const std::string& channel_name,
+    int component)
+    : cricket::BasicPortAllocatorSession(allocator, channel_name, component),
       allocator_(allocator),
       relay_session_attempts_(0),
       relay_udp_port_(0),
@@ -125,8 +125,7 @@ void P2PPortAllocatorSession::didFail(WebKit::WebURLLoader* loader,
 void P2PPortAllocatorSession::GetPortConfigurations() {
   // Add an empty configuration synchronously, so a local connection
   // can be started immediately.
-  ConfigReady(new cricket::PortConfiguration(
-      talk_base::SocketAddress(), username(), password(), ""));
+  ConfigReady(new cricket::PortConfiguration(talk_base::SocketAddress()));
 
   ResolveStunServerAddress();
   AllocateRelaySession();
@@ -221,10 +220,8 @@ void P2PPortAllocatorSession::AllocateRelaySession() {
   request.addHTTPHeaderField(
       WebString::fromUTF8("X-Google-Relay-Auth"),
       WebString::fromUTF8(allocator_->config_.relay_password));
-  request.addHTTPHeaderField(WebString::fromUTF8("X-Session-Type"),
-                             WebString::fromUTF8(session_type()));
   request.addHTTPHeaderField(WebString::fromUTF8("X-Stream-Type"),
-                             WebString::fromUTF8(name()));
+                             WebString::fromUTF8(channel_name()));
 
   relay_session_request_->loadAsynchronously(request, this);
 }
@@ -285,8 +282,7 @@ void P2PPortAllocatorSession::ParseRelayResponse() {
 
 void P2PPortAllocatorSession::AddConfig() {
   cricket::PortConfiguration* config =
-      new cricket::PortConfiguration(stun_server_address_,
-                                     username(), password(), "");
+      new cricket::PortConfiguration(stun_server_address_);
 
   if (relay_ip_.ip() != 0) {
     cricket::PortConfiguration::PortList ports;

@@ -75,7 +75,7 @@ bool P2PTransportImpl::Init(WebKit::WebFrame* web_frame,
 
   DCHECK(!channel_.get());
   channel_.reset(new cricket::P2PTransportChannel(
-      name, "", NULL, allocator_.get()));
+      name, 0, NULL, allocator_.get()));
   channel_->SignalRequestSignaling.connect(
       this, &P2PTransportImpl::OnRequestSignaling);
   channel_->SignalCandidateReady.connect(

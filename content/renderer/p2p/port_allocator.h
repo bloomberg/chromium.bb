@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_P2P_PORT_ALLOCATOR_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/net_util.h"
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
@@ -34,8 +35,8 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
   virtual ~P2PPortAllocator();
 
   virtual cricket::PortAllocatorSession* CreateSession(
-      const std::string& name,
-      const std::string& session_type) OVERRIDE;
+      const std::string& channel_name,
+      int component) OVERRIDE;
 
  private:
   friend class P2PPortAllocatorSession;
@@ -52,8 +53,8 @@ class P2PPortAllocatorSession : public cricket::BasicPortAllocatorSession,
  public:
   P2PPortAllocatorSession(
       P2PPortAllocator* allocator,
-      const std::string& name,
-      const std::string& session_type);
+      const std::string& channel_name,
+      int candidate);
   virtual ~P2PPortAllocatorSession();
 
   // WebKit::WebURLLoaderClient overrides.

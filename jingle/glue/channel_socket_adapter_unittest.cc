@@ -30,12 +30,12 @@ const int kTestError = -32123;
 class MockTransportChannel : public cricket::TransportChannel {
  public:
   MockTransportChannel()
-      : cricket::TransportChannel("", "") {
+      : cricket::TransportChannel("", 0) {
     set_writable(true);
     set_readable(true);
   }
 
-  MOCK_METHOD2(SendPacket, int(const char *data, size_t len));
+  MOCK_METHOD3(SendPacket, int(const char* data, size_t len, int flags));
   MOCK_METHOD2(SetOption, int(talk_base::Socket::Option opt, int value));
   MOCK_METHOD0(GetError, int());
 };
@@ -72,7 +72,7 @@ TEST_F(TransportChannelSocketAdapterTest, Read) {
   int result = target_->Read(buffer, kBufferSize, callback_);
   ASSERT_EQ(net::ERR_IO_PENDING, result);
 
-  channel_.SignalReadPacket(&channel_, kTestData, kTestDataSize);
+  channel_.SignalReadPacket(&channel_, kTestData, kTestDataSize, 0);
   EXPECT_EQ(kTestDataSize, callback_result_);
 }
 
@@ -94,7 +94,7 @@ TEST_F(TransportChannelSocketAdapterTest, ReadClose) {
 TEST_F(TransportChannelSocketAdapterTest, Write) {
   scoped_refptr<IOBuffer> buffer(new IOBuffer(kTestDataSize));
 
-  EXPECT_CALL(channel_, SendPacket(buffer->data(), kTestDataSize))
+  EXPECT_CALL(channel_, SendPacket(buffer->data(), kTestDataSize, 0))
       .WillOnce(Return(kTestDataSize));
 
   int result = target_->Write(buffer, kTestDataSize, callback_);
@@ -106,7 +106,7 @@ TEST_F(TransportChannelSocketAdapterTest, Write) {
 TEST_F(TransportChannelSocketAdapterTest, WritePending) {
   scoped_refptr<IOBuffer> buffer(new IOBuffer(kTestDataSize));
 
-  EXPECT_CALL(channel_, SendPacket(buffer->data(), kTestDataSize))
+  EXPECT_CALL(channel_, SendPacket(buffer->data(), kTestDataSize, 0))
       .Times(1)
       .WillOnce(Return(SOCKET_ERROR));
 

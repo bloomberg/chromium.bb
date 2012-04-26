@@ -50,7 +50,9 @@ class TransportChannelSocketAdapter : public net::Socket,
 
  private:
   void OnNewPacket(cricket::TransportChannel* channel,
-                   const char* data, size_t data_size);
+                   const char* data,
+                   size_t data_size,
+                   int flags);
   void OnWritableState(cricket::TransportChannel* channel);
   void OnChannelDestroyed(cricket::TransportChannel* channel);
 

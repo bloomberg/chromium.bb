@@ -136,7 +136,10 @@ void TransportChannelSocketAdapter::Close(int error_code) {
 }
 
 void TransportChannelSocketAdapter::OnNewPacket(
-    cricket::TransportChannel* channel, const char* data, size_t data_size) {
+    cricket::TransportChannel* channel,
+    const char* data,
+    size_t data_size,
+    int flags) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK_EQ(channel, channel_);
   if (!read_callback_.is_null()) {

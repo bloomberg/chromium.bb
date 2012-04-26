@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_P2P_IPC_SOCKET_FACTORY_H_
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/base/packetsocketfactory.h"
 

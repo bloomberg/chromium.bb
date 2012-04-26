@@ -5,6 +5,7 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_PACKET_SOCKET_FACTORY_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_PACKET_SOCKET_FACTORY_H_
 
+#include "base/compiler_specific.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "third_party/libjingle/source/talk/base/packetsocketfactory.h"
 

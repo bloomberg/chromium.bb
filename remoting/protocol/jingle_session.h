@@ -147,7 +147,7 @@ class JingleSession : public Session,
   ChannelsMap channels_;
 
   base::OneShotTimer<JingleSession> transport_infos_timer_;
-  std::list<cricket::Candidate> pending_candidates_;
+  std::list<JingleMessage::NamedCandidate> pending_candidates_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleSession);
 };

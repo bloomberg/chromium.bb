@@ -133,6 +133,14 @@ class MockSessionDescription : public SessionDescriptionInterface {
     NOTIMPLEMENTED();
     return NULL;
   }
+  virtual std::string session_id() const OVERRIDE {
+    NOTIMPLEMENTED();
+    return "";
+  }
+  virtual std::string session_version() const OVERRIDE {
+    NOTIMPLEMENTED();
+    return "";
+  }
   virtual bool AddCandidate(const IceCandidateInterface* candidate) OVERRIDE {
     NOTIMPLEMENTED();
     return false;

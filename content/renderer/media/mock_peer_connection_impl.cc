@@ -84,6 +84,13 @@ void MockPeerConnectionImpl::RemoveStream(LocalMediaStreamInterface* stream) {
   stream_label_.clear();
 }
 
+bool MockPeerConnectionImpl::RemoveStream(const std::string& label) {
+  if (stream_label_ != label)
+    return false;
+  stream_label_.clear();
+  return true;
+}
+
 void MockPeerConnectionImpl::CommitStreamChanges() {
   stream_changes_committed_ = true;
 }

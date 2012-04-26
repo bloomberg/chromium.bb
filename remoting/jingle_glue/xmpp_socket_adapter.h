@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "third_party/libjingle/source/talk/base/asyncsocket.h"
 #include "third_party/libjingle/source/talk/xmpp/asyncsocket.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclientsettings.h"

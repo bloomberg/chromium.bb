@@ -11,7 +11,7 @@
 #include "base/values.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
-#include "third_party/libjingle/overrides/talk/base/byteorder.h"
+#include "third_party/libjingle/source/talk/base/byteorder.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
 #include "third_party/libjingle/source/talk/p2p/base/candidate.h"
 
@@ -42,7 +42,6 @@ bool SocketAddressToIPEndPoint(const talk_base::SocketAddress& address_lj,
 std::string SerializeP2PCandidate(const cricket::Candidate& candidate) {
   // TODO(sergeyu): Use SDP to format candidates?
   DictionaryValue value;
-  value.SetString("name", candidate.name());
   value.SetString("ip", candidate.address().IPAsString());
   value.SetInteger("port", candidate.address().port());
   value.SetString("type", candidate.type());
@@ -67,7 +66,6 @@ bool DeserializeP2PCandidate(const std::string& candidate_str,
 
   DictionaryValue* dic_value = static_cast<DictionaryValue*>(value.get());
 
-  std::string name;
   std::string ip;
   int port;
   std::string type;
@@ -77,8 +75,7 @@ bool DeserializeP2PCandidate(const std::string& candidate_str,
   double preference;
   int generation;
 
-  if (!dic_value->GetString("name", &name) ||
-      !dic_value->GetString("ip", &ip) ||
+  if (!dic_value->GetString("ip", &ip) ||
       !dic_value->GetInteger("port", &port) ||
       !dic_value->GetString("type", &type) ||
       !dic_value->GetString("protocol", &protocol) ||
@@ -89,7 +86,6 @@ bool DeserializeP2PCandidate(const std::string& candidate_str,
     return false;
   }
 
-  candidate->set_name(name);
   candidate->set_address(talk_base::SocketAddress(ip, port));
   candidate->set_type(type);
   candidate->set_protocol(protocol);

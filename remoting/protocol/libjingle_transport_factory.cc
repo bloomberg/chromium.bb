@@ -155,10 +155,12 @@ void LibjingleStreamTransport::Connect(
 
   port_allocator_->SetPortRange(config_.min_port, config_.max_port);
 
-  // Create P2PTransportChannel, attach signal handlers and connect it.
   DCHECK(!channel_.get());
+
+  // Create P2PTransportChannel, attach signal handlers and connect it.
+  // TODO(sergeyu): Specify correct component ID for the channel.
   channel_.reset(new cricket::P2PTransportChannel(
-      name_, "", NULL, port_allocator_.get()));
+      name_, 0, NULL, port_allocator_.get()));
   channel_->SignalRequestSignaling.connect(
       this, &LibjingleStreamTransport::OnRequestSignaling);
   channel_->SignalCandidateReady.connect(
@@ -247,10 +249,9 @@ void LibjingleStreamTransport::OnRouteChange(
     LOG(FATAL) << "Failed to convert peer IP address.";
   }
 
-  DCHECK(channel->GetP2PChannel());
-  DCHECK(channel->GetP2PChannel()->best_connection());
+  DCHECK(channel_->best_connection());
   const cricket::Candidate& local_candidate =
-      channel->GetP2PChannel()->best_connection()->local_candidate();
+      channel_->best_connection()->local_candidate();
   if (!jingle_glue::SocketAddressToIPEndPoint(
           local_candidate.address(), &route.local_address)) {
     LOG(FATAL) << "Failed to convert local IP address.";

@@ -8,18 +8,18 @@
   ],
   'target_defaults': {
     'defines': [
-      'FEATURE_ENABLE_SSL',
-      'FEATURE_ENABLE_VOICEMAIL',  # TODO(ncarter): Do we really need this?
-      '_USE_32BIT_TIME_T',
-      'LOGGING_INSIDE_LIBJINGLE',
       'EXPAT_RELATIVE_PATH',
-      'JSONCPP_RELATIVE_PATH',
-      'WEBRTC_RELATIVE_PATH',
+      'FEATURE_ENABLE_SSL',
+      'GTEST_RELATIVE_PATH',
+      'HAVE_SRTP',
       'HAVE_WEBRTC_VIDEO',
       'HAVE_WEBRTC_VOICE',
+      'JSONCPP_RELATIVE_PATH',
+      'LOGGING_INSIDE_LIBJINGLE',
       'NO_SOUND_SYSTEM',
-      'HAVE_SRTP',
       'SRTP_RELATIVE_PATH',
+      'WEBRTC_RELATIVE_PATH',
+      '_USE_32BIT_TIME_T',
     ],
     'configurations': {
       'Debug': {
@@ -33,6 +33,7 @@
     'include_dirs': [
       './overrides',
       './source',
+      '../../testing/gtest/include',
       '../../third_party/libyuv/include',
     ],
     'dependencies': [
@@ -47,11 +48,13 @@
       'include_dirs': [
         './overrides',
         './source',
+        '../../testing/gtest/include',
       ],
       'defines': [
         'FEATURE_ENABLE_SSL',
         'FEATURE_ENABLE_VOICEMAIL',
         'EXPAT_RELATIVE_PATH',
+        'GTEST_RELATIVE_PATH',
         'JSONCPP_RELATIVE_PATH',
         'WEBRTC_RELATIVE_PATH',
         'NO_SOUND_SYSTEM',
@@ -173,8 +176,6 @@
         'overrides/talk/base/logging.cc',
         'overrides/talk/base/logging.h',
 
-        'overrides/talk/base/scoped_ptr.h',
-        
         # TODO(ronghuawu): Remove below overrides once below bug is fixed:
         # http://crbug.com/115702
         'overrides/talk/base/messagequeue.cc',
@@ -261,6 +262,7 @@
         'source/talk/base/ratelimiter.h',
         'source/talk/base/ratetracker.cc',
         'source/talk/base/ratetracker.h',
+        'source/talk/base/scoped_ptr.h',
         'source/talk/base/sec_buffer.h',
         'source/talk/base/sha1.c',
         'source/talk/base/sha1.h',

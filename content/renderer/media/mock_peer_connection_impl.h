@@ -30,6 +30,7 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
       remote_streams() OVERRIDE;
   virtual void AddStream(LocalMediaStreamInterface* stream) OVERRIDE;
   virtual void RemoveStream(LocalMediaStreamInterface* stream) OVERRIDE;
+  virtual bool RemoveStream(const std::string& label) OVERRIDE;
   virtual void CommitStreamChanges() OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual ReadyState ready_state() OVERRIDE;
