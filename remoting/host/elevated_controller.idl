@@ -14,8 +14,10 @@ import "ocidl.idl";
   pointer_default(unique)
 ]
 interface IDaemonControl: IDispatch {
-  [ id(1), helpstring("Returns a filtered copy of the daemon's configuration "
-                      "stripped of all security-sensitive information.") ]
+  [ id(1), helpstring("Returns a filtered copy of the daemon's configuration. "
+                      "Only 'host_id' and 'xmpp_login' values are returned, "
+                      "because any other values may contain security-sensitive "
+                      "information.") ]
   HRESULT GetConfig([out, retval] BSTR* config_out);
 
   [ id(2), helpstring("Replaces the existing daemon's configuration with "
@@ -29,10 +31,9 @@ interface IDaemonControl: IDispatch {
   HRESULT StopDaemon();
 
   [ id(5), helpstring("Modifies the existing daemon's configuration by "
-                      "merging it with the specified settings. A subset of "
-                      "items is allowed to be modified using this method. "
-                      "Any read-only settings such as 'host_id' (and some "
-                      "others) are not modified.") ]
+                      "merging it with the specified settings. The 'host_id' "
+                      "and 'xmpp_login' values cannot be modified, and must "
+                      "not be passed to this method.") ]
   HRESULT UpdateConfig([in] BSTR config);
 };
 
