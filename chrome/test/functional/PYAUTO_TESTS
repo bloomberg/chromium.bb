@@ -361,6 +361,10 @@
       '-extensions.ExtensionsTest.testDisableEnableExtension',
       # Need internal data dirs in autotest package. crosbug.com/6855
       '-find_in_page.FindMatchTests.testSearchInPDF',
+      # crbug.com/125112
+      '-fullscreen_mouselock.FullscreenMouselockTest.testFullScreenMouseLockHooks',
+      '-fullscreen_mouselock.FullscreenMouselockTest.testNoMouseLockRequest',
+      '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForAllowMouseLock',
       # crosbug.com/24496
       '-infobars.InfobarTest.testPluginCrashForMultiTabs',
       # crbug.com/109035
