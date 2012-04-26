@@ -312,5 +312,20 @@ TEST_F(SystemModalContainerLayoutManagerTest, ChangeCapture) {
   EXPECT_TRUE(view->got_capture_lost());
 }
 
+// Verifies that the window gets moved into the visible screen area upon screen
+// resize.
+TEST_F(SystemModalContainerLayoutManagerTest, KeepVisible) {
+  GetModalContainer()->SetBounds(gfx::Rect(0, 0, 1024, 768));
+  scoped_ptr<aura::Window> main(TestWindow::OpenTestWindow(GetModalContainer(),
+                                true));
+  main->SetBounds(gfx::Rect(924, 668, 100, 100));
+  // We set now the bounds of the root window to something new which will
+  // Then trigger the repos operation.
+  GetModalContainer()->SetBounds(gfx::Rect(0, 0, 800, 600));
+
+  gfx::Rect bounds = main->bounds();
+  EXPECT_EQ(bounds, gfx::Rect(700, 500, 100, 100));
+}
+
 }  // namespace test
 }  // namespace ash

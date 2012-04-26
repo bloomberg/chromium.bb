@@ -71,8 +71,14 @@ SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {
 
 void SystemModalContainerLayoutManager::OnWindowResized() {
   if (modal_screen_) {
-    modal_screen_->SetBounds(gfx::Rect(0, 0, container_->bounds().width(),
-                                       container_->bounds().height()));
+    // Note: we have to set the entire bounds with the screen offset.
+    modal_screen_->SetBounds(container_->bounds());
+  }
+  if (!modal_windows_.empty()) {
+    aura::Window::Windows::iterator it = modal_windows_.begin();
+    for (it = modal_windows_.begin(); it != modal_windows_.end(); ++it) {
+      (*it)->SetBounds((*it)->bounds().AdjustToFit(container_->bounds()));
+    }
   }
 }
 
