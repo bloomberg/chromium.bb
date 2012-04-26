@@ -30,12 +30,6 @@
  * same skeleton.
  */
 
-#ifdef TEST_COMMON
-#define EXTERN_OR_COMMON
-#else
-#define EXTERN_OR_COMMON extern
-#endif
-
 #ifdef TEST_TLS
 #define TLS_OR_NOT __thread
 #else

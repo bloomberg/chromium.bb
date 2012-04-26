@@ -12,13 +12,13 @@
 #include "native_client/tests/pnacl_shared_lib_test/useful_constants.h"
 #include "native_client/tests/pnacl_shared_lib_test/utils.h"
 
-EXTERN_OR_COMMON TLS_OR_NOT const char lib_2_string[kSTRING_2_LEN]
+extern TLS_OR_NOT const char lib_2_string[kSTRING_2_LEN]
 __attribute__((aligned(32)));
-EXTERN_OR_COMMON TLS_OR_NOT double lib_2_double;
-EXTERN_OR_COMMON TLS_OR_NOT int64_t lib_2_int64;
-EXTERN_OR_COMMON TLS_OR_NOT int32_t lib_2_int32;
-EXTERN_OR_COMMON TLS_OR_NOT int16_t lib_2_int16;
-EXTERN_OR_COMMON TLS_OR_NOT int8_t lib_2_int8;
+extern TLS_OR_NOT double lib_2_double;
+extern TLS_OR_NOT int64_t lib_2_int64;
+extern TLS_OR_NOT int32_t lib_2_int32;
+extern TLS_OR_NOT int16_t lib_2_int16;
+extern TLS_OR_NOT int8_t lib_2_int8;
 
 extern int foo2(void);
 

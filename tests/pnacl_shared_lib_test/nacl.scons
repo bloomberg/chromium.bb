@@ -40,40 +40,19 @@ if env.Bit('pnacl_generate_pexe'):
 
 #### Test different linkage types for exported data.
 
-# NOTE: for PNaCl, we currently do not introduce copy relocations
-# for common data, because the main executable isn't built without -fPIC:
-# http://code.google.com/p/nativeclient/issues/detail?id=2351
-# Instead it uses the GOT.  We need to test with that hack toggled off too.
-
-
 # Linkage attributes: "normal", common, tls, and weak.
-# TODO(jvoung): test weak also.  Note that weak cannot be combined with TLS
-# and probably doesn't make sense to try common/not-common vs weak/not-weak
-# either, so we would probably break apart this loop.
-for (is_common, is_tls) in [
-    (False, False),
-    (False, True),
-    (True, False),
-    # Don't test TLS + common linkage.  Otherwise, at least for nacl-gcc,
-    # we get initial values of 0 for TLS variables.
-    # (True, True),
-    ]:
+# *) We do not intend to support common, so do not test that.
+#    It's not required by ISO C and it's not supported in C++ either.
+# *) TODO(jvoung): test weak also.  Note that weak cannot be combined with TLS.
+for is_tls in [False, True]:
   new_env = env.Clone()
   test_name = 'shared_lib_data'
   lib_basename = 'data'
-  if is_common:
-    new_env.Append(CPPDEFINES=['TEST_COMMON'])
-    test_name += '_common'
-    lib_basename += '_common'
   if is_tls:
     new_env.Append(CPPDEFINES=['TEST_TLS'])
     test_name += '_tls'
     lib_basename += '_tls'
   env_shared = new_env.Clone(COMPONENT_STATIC=False)
-
-  # We need to fix the metadata + linking first.
-  # http://code.google.com/p/nativeclient/issues/detail?id=2713
-  not_yet_working = new_env.Bit('bitcode') and (is_common or is_tls)
 
   # We may want to rename this / tweak it though later, because
   # NaClSharedLibrary currently forces a ".so" as the suffix, even
@@ -104,9 +83,7 @@ for (is_common, is_tls) in [
       )
   new_env.AddNodeToTestSuite(node,
                              ['small_tests', 'toolchain_tests'],
-                             'run_%s_test' % test_name,
-                             is_broken=not_yet_working,
-                             )
+                             'run_%s_test' % test_name)
 
 
 # TODO(jvoung): Test PLT generation for calls through function pointers,
