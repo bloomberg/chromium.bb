@@ -32,8 +32,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
 #include "net/url_request/url_request_status.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
 #include "webkit/glue/resource_type.h"
 #include "webkit/glue/webkit_glue_export.h"
 

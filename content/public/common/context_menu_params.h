@@ -13,9 +13,9 @@
 #include "googleurl/src/gurl.h"
 #include "content/common/content_export.h"
 #include "content/public/common/ssl_status.h"
-#include "webkit/glue/webmenuitem.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
+#include "webkit/glue/webmenuitem.h"
 
 namespace content {
 
