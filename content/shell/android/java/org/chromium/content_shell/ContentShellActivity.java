@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 
 import org.chromium.content.browser.ContentView;
@@ -18,6 +19,7 @@ import org.chromium.content.browser.ContentView;
 public class ContentShellActivity extends Activity {
 
     private static final String COMMAND_LINE_FILE = "/data/local/content-shell-command-line";
+    private static final String TAG = "ContentShellActivity";
 
     private ShellManager mShellManager;
 
@@ -32,7 +34,11 @@ public class ContentShellActivity extends Activity {
             // TODO(tedchoc): Append URL to command line.
         }
 
-        // TODO(tedchoc): Load the native library.
+        // TODO(jrg,tedchoc): upstream the async library loader, then
+        // make this call look like this:
+        // LibraryLoader.loadAndInitSync();
+        loadNativeLibrary();
+
         initializeContentViewResources();
 
         setContentView(R.layout.content_shell_activity);
@@ -86,5 +92,19 @@ public class ContentShellActivity extends Activity {
     private void initializeContentViewResources() {
         ContentView.registerPopupOverlayCornerRadius(0);
         ContentView.registerPopupOverlayResourceId(R.drawable.popup_zoomer_overlay);
+    }
+
+
+    private static final String NATIVE_LIBRARY = "content_shell_content_view";
+
+    private void loadNativeLibrary() throws UnsatisfiedLinkError {
+        Log.i(TAG, "loading: " + NATIVE_LIBRARY);
+        try {
+            System.loadLibrary(NATIVE_LIBRARY);
+        } catch (UnsatisfiedLinkError e) {
+            Log.e(TAG, "Unable to load lib" + NATIVE_LIBRARY + ".so: " + e);
+            throw e;
+        }
+        Log.i(TAG, "loaded: " + NATIVE_LIBRARY);
     }
 }

@@ -534,6 +534,12 @@
               'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
             },
             {
+              'action_name': 'copy_content_shell_content_view',
+              'inputs': ['<(SHARED_LIB_DIR)/libcontent_shell_content_view.so'],
+              'outputs': ['<(PRODUCT_DIR)/content_shell/libs/armeabi/libcontent_shell_content_view.so'],
+              'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
+            },
+            {
               'action_name': 'content_shell_apk',
               'inputs': [
                 '<(DEPTH)/content/shell/android/content_shell_apk.xml',
@@ -542,8 +548,7 @@
                 '<!@(find shell/android/res -name "*")',
                 '<(PRODUCT_DIR)/content_shell/java/libs/chromium_base.jar',
                 '<(PRODUCT_DIR)/content_shell/java/libs/chromium_content.jar',
-                # TODO(tedchoc): Move the .so file so it can be consumed by the apk.
-                '<(SHARED_LIB_DIR)/libcontent_shell_content_view.so',
+                '<(PRODUCT_DIR)/content_shell/libs/armeabi/libcontent_shell_content_view.so',
               ],
               'outputs': [
                 # Awkwardly, we build a Debug APK even when gyp is in

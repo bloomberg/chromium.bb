@@ -35,6 +35,7 @@
   <property name="resource.absolute.dir" value="res"/>
   <property name="gen.absolute.dir" value="${out.dir}/gen"/>
   <property name="jar.libs.dir" value="${out.dir}/java/libs"/>
+  <property name="native.libs.absolute.dir" location="${out.dir}/libs" />
 
   <import file="${sdk.dir}/tools/ant/build.xml" />
 
