@@ -787,8 +787,7 @@ void MetricsLog::RecordProfilerData(
     content::ProcessType process_type) {
   DCHECK(!locked());
 
-  if (tracked_objects::GetTimeSourceType() !=
-          tracked_objects::TIME_SOURCE_TYPE_WALL_TIME) {
+  if (tracked_objects::GetAlternateTimeSource()) {
     // We currently only support the default time source, wall clock time.
     return;
   }
