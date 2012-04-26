@@ -144,6 +144,12 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_CALENDAR_CLEAR;
     case WebLocalizedString::CalendarToday:
       return IDS_FORM_CALENDAR_TODAY;
+    case WebLocalizedString::DateFormatDayInMonthLabel:
+      return IDS_FORM_DATE_FORMAT_DAY_IN_MONTH;
+    case WebLocalizedString::DateFormatMonthLabel:
+      return IDS_FORM_DATE_FORMAT_MONTH;
+    case WebLocalizedString::DateFormatYearLabel:
+      return IDS_FORM_DATE_FORMAT_YEAR;
     case WebLocalizedString::DetailsLabel:
       return IDS_DETAILS_WITHOUT_SUMMARY_LABEL;
     case WebLocalizedString::FileButtonChooseFileLabel:

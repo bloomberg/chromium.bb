@@ -225,6 +225,15 @@ below:
       <message name="IDS_FORM_CALENDAR_TODAY" desc="Label for a button which sets today to a date input field.">
         Today
       </message>
+      <message name="IDS_FORM_DATE_FORMAT_DAY_IN_MONTH" desc="Short word to indicate which is the day-in-month part in a date format. e.g. 'Day' in 'Month/Day/Year'">
+        Day
+      </message>
+      <message name="IDS_FORM_DATE_FORMAT_MONTH" desc="Short word to indicate which is the month part in a date format. e.g. 'Month' in 'Month/Day/Year'">
+        Month
+      </message>
+      <message name="IDS_FORM_DATE_FORMAT_YEAR" desc="Short word to indicate which is the year part in a date format. e.g. 'Year' in 'Month/Day/Year'">
+        Year
+      </message>
       <message name="IDS_FORM_SUBMIT_LABEL" desc="Default label for Submit buttons in forms on webpages.">
         Submit
       </message>
