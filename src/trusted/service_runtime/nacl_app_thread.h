@@ -40,13 +40,6 @@ enum NaClSuspendState {
   NACL_APP_THREAD_SUSPENDING = 4
 };
 
-enum NaClThreadState {
-  NACL_APP_THREAD_ALIVE,
-  /* NACL_APP_THREAD_INTERRUPTIBLE_MUTEX, etc */
-  NACL_APP_THREAD_SUICIDE_PENDING,
-  NACL_APP_THREAD_DEAD
-};
-
 /*
  * Generally, only the thread itself will need to manipulate this
  * structure, but occasionally we may need to blow away a thread for
@@ -87,17 +80,6 @@ struct NaClAppThread {
 #if NACL_WINDOWS
   enum NaClSuspendState     suspend_state;
 #endif
-
-  /*
-   * a thread cannot free up its own mutex lock and commit suicide,
-   * since another thread may be trying to summarily kill it and is
-   * waiting on the lock in order to ask it to commit suicide!
-   * instead, the suiciding thread just marks itself as dead, and a
-   * periodic thread grabs a global thread table lock to do thread
-   * deletion (which the thread requesting summary execution must also
-   * grab).
-   */
-  enum NaClThreadState      state;
 
   struct NaClThreadContext  user;
   struct NaClThreadContext  sys;

@@ -121,7 +121,6 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
   NaClXMutexLock(&nap->threads_mu);
   NaClLog(3, " getting thread lock\n");
   NaClXMutexLock(&natp->mu);
-  natp->state = NACL_APP_THREAD_DEAD;
   /*
    * Remove ourselves from the ldt-indexed global tables.  The ldt
    * entry is released as part of NaClAppThreadDtor (via
@@ -210,8 +209,6 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
 #if NACL_WINDOWS
   natp->suspend_state = NACL_APP_THREAD_TRUSTED;
 #endif
-
-  natp->state = NACL_APP_THREAD_ALIVE;
 
   natp->thread_num = -1;  /* illegal index */
   natp->sys_tls = sys_tls;

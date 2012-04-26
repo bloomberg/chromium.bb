@@ -90,21 +90,7 @@ void NaClSysCommonThreadSyscallEnter(struct NaClAppThread *natp) {
 }
 
 void NaClSysCommonThreadSyscallLeave(struct NaClAppThread *natp) {
-  NaClXMutexLock(&natp->mu);
-  switch (natp->state) {
-    case NACL_APP_THREAD_ALIVE:
-      break;
-    case NACL_APP_THREAD_SUICIDE_PENDING:
-      NaClXMutexUnlock(&natp->mu);
-      NaClAppThreadTeardown(natp);
-      /* NOTREACHED */
-      break;
-    case NACL_APP_THREAD_DEAD:
-      NaClLog(LOG_FATAL, "Dead thread at NaClSysCommonThreadSyscallLeave\n");
-      /* NOTREACHED */
-      break;
-  }
-  NaClXMutexUnlock(&natp->mu);
+  UNREFERENCED_PARAMETER(natp);
 }
 
 int32_t NaClSysNotImplementedDecoder(struct NaClAppThread *natp) {
