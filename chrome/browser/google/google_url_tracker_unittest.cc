@@ -571,6 +571,11 @@ TEST_F(GoogleURLTrackerTest, InfobarShownAgainOnSearchAfterCommittedSearch) {
   ASSERT_FALSE(infobar == NULL);
   EXPECT_TRUE(infobar->showing());
 
+  // In real usage, the upcoming pending navigation for "test2" would close
+  // |infobar|.  Since we're not actually doing navigations, we need to clean it
+  // up manually to prevent leaks.
+  delete infobar;
+
   SetSearchPending(GURL("http://www.google.co.uk/search?q=test2"), 1);
   TestInfoBarDelegate* infobar2 = GetInfoBar(1);
   ASSERT_FALSE(infobar2 == NULL);

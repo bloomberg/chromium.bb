@@ -5807,15 +5807,6 @@
    fun:_ZN6webkit5npapi10PluginList10LoadPluginERK8FilePathP12ScopedVectorINS0_11PluginGroupEEPNS_13WebPluginInfoE
    fun:_ZN17UtilityThreadImpl13OnLoadPluginsERKSt6vectorI8FilePathSaIS1_EE
 }
-{
-   bug_124766
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN16GoogleURLTracker19OnNavigationPendingERKN7content18NotificationSourceES3_P16InfoBarTabHelperRK4GURL
-   fun:_ZN20GoogleURLTrackerTest16SetSearchPendingERK4GURLi
-   fun:_ZN71GoogleURLTrackerTest_InfobarShownAgainOnSearchAfterCommittedSearch_Test8TestBodyEv
-}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

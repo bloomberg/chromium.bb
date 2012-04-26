@@ -1809,19 +1809,3 @@
    fun:crypto::RSAPrivateKey::FindFromPublicKeyInfo
    fun:crypto::RSAPrivateKeyNSSTest_*_Test::TestBody
 }
-{
-   bug_124766_a
-   Heapcheck:Leak
-   fun:::CreateTestInfobar
-   fun:GoogleURLTracker::OnNavigationPending
-   fun:GoogleURLTrackerTest::SetSearchPending
-   fun:GoogleURLTrackerTest_InfobarShownAgainOnSearchAfterCommittedSearch_Test::TestBody
-}
-{
-   bug_124766_b
-   Heapcheck:Leak
-   ...
-   fun:GURL::GURL
-   ...
-   fun:GoogleURLTrackerTest_InfobarShownAgainOnSearchAfterCommittedSearch_Test::TestBody
-}
