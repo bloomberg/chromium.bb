@@ -30,6 +30,7 @@ YES_NO_LITERALS = ['yes', 'no']
 VALID_BUNDLES_KEYS = frozenset([
     ARCHIVES_KEY, NAME_KEY, VERSION_KEY, REVISION_KEY,
     'description', 'desc_url', 'stability', 'recommended', 'repath',
+    'sdk_revision'
     ])
 
 VALID_MANIFEST_KEYS = frozenset(['manifest_version', BUNDLES_KEY])
@@ -264,7 +265,7 @@ class Bundle(dict):
     Return:
       An Archive instance or None if it doesn't exist."""
     for archive in self[ARCHIVES_KEY]:
-      if archive.host_os == host_os_name:
+      if archive.host_os == host_os_name or archive.host_os == 'all':
         return archive
     return None
 
@@ -379,7 +380,7 @@ class SDKManifest(object):
            (local_bundle[VERSION_KEY], local_bundle[REVISION_KEY]) <
            (bundle[VERSION_KEY], bundle[REVISION_KEY]))
 
-  def MergeBundle(self, bundle):
+  def MergeBundle(self, bundle, allow_existing = True):
     """Merge a Bundle into this manifest.
 
     The new bundle is added if not present, or merged into the existing bundle.
@@ -393,7 +394,19 @@ class SDKManifest(object):
     if not local_bundle:
       self.SetBundle(bundle)
     else:
+      if not allow_existing:
+        raise Error('cannot merge manifest bundle \'%s\', it already exists'
+                    % bundle.name)
       self.SetBundle(local_bundle.MergeWithBundle(bundle))
+
+  def MergeManifest(self, manifest):
+    '''Merge another manifest into this manifest, disallowing overiding.
+
+    Args
+      manifest: The manifest to merge.
+    '''
+    for bundle in manifest.GetBundles():
+      self.MergeBundle(bundle, allow_existing = False)
 
   def FilterBundles(self, predicate):
     """Filter the list of bundles by |predicate|.
@@ -407,7 +420,7 @@ class SDKManifest(object):
     """
     self._manifest_data[BUNDLES_KEY] = filter(predicate, self.GetBundles())
 
-  def LoadManifestString(self, json_string):
+  def LoadDataFromString(self, json_string):
     """Load a JSON manifest string. Raises an exception if json_string
        is not well-formed JSON.
 
@@ -429,6 +442,6 @@ class SDKManifest(object):
         self._manifest_data[key] = value
     self.Validate()
 
-  def GetManifestString(self):
+  def GetDataAsString(self):
     """Returns the current JSON manifest object, pretty-printed"""
     return DictToJSON(self._manifest_data)

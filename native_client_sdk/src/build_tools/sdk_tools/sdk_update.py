@@ -41,13 +41,16 @@ Commands:
   help [command] - Get either general or command-specific help
   list - Lists the available bundles
   update/install - Updates/installs bundles in the SDK
+  sources - Manage external package sources
 
 Example Usage:
   naclsdk list
   naclsdk update --force pepper_17
   naclsdk install recommended
-  naclsdk help update'''
+  naclsdk help update
+  naclsdk sources --list'''
 
+CONFIG_FILENAME='naclsdk_config.json'
 MANIFEST_FILENAME='naclsdk_manifest2.json'
 SDK_TOOLS='sdk_tools'  # the name for this tools directory
 USER_DATA_DIR='sdk_cache'
@@ -262,34 +265,41 @@ def DownloadArchiveToFile(archive, dest_path):
   return sha1, size
 
 
-def LoadManifestFromFile(path):
+def LoadFromFile(path, obj):
   '''Returns a manifest loaded from the JSON file at |path|.
 
-  If the path does not exist or is invalid, returns an empty manifest.'''
+  If the path does not exist or is invalid, returns unmodified object.'''
+  methodlist = [m for m in dir(obj) if callable(getattr(obj, m))]
+  if 'LoadDataFromString' not in methodlist:
+    return obj
   if not os.path.exists(path):
-    return manifest_util.SDKManifest()
+    return obj
 
   with open(path, 'r') as f:
     json_string = f.read()
   if not json_string:
-    return manifest_util.SDKManifest()
+    return obj
 
+  obj.LoadDataFromString(json_string)
+  return obj
+
+
+def LoadManifestFromURLs(urls):
+  '''Returns a manifest loaded from |urls|, merged into one manifest.'''
   manifest = manifest_util.SDKManifest()
-  manifest.LoadManifestString(json_string)
-  return manifest
+  for url in urls:
+    try:
+      url_stream = UrlOpen(url)
+    except urllib2.URLError as e:
+      raise Error('Unable to open %s. [%s]' % (url, e))
 
+    manifest_stream = cStringIO.StringIO()
+    sha1, size = manifest_util.DownloadAndComputeHash(url_stream,
+                                                      manifest_stream)
+    temp_manifest = manifest_util.SDKManifest()
+    temp_manifest.LoadDataFromString(manifest_stream.getvalue())
 
-def LoadManifestFromURL(url):
-  '''Returns a manifest loaded from |url|.'''
-  try:
-    url_stream = UrlOpen(url)
-  except urllib2.URLError as e:
-    raise Error('Unable to open %s. [%s]' % (url, e))
-
-  manifest_stream = cStringIO.StringIO()
-  sha1, size = manifest_util.DownloadAndComputeHash(url_stream, manifest_stream)
-  manifest = manifest_util.SDKManifest()
-  manifest.LoadManifestString(manifest_stream.getvalue())
+    manifest.MergeManifest(temp_manifest)
 
   def BundleFilter(bundle):
     # Only add this bundle if it's supported on this platform.
@@ -299,9 +309,12 @@ def LoadManifestFromURL(url):
   return manifest
 
 
-def WriteManifestToFile(manifest, path):
+def WriteToFile(path, obj):
   '''Write |manifest| to a JSON file at |path|.'''
-  json_string = manifest.GetManifestString()
+  methodlist = [m for m in dir(obj) if callable(getattr(obj, m))]
+  if 'GetDataAsString' not in methodlist:
+    raise Error('Unable to write object to file')
+  json_string = obj.GetDataAsString()
 
   # Write the JSON data to a temp file.
   temp_file_name = None
@@ -316,11 +329,99 @@ def WriteManifestToFile(manifest, path):
   shutil.move(temp_file_name, path)
 
 
+class SDKConfig(object):
+  '''This class contains utilities for manipulating an SDK config
+  '''
+
+  def __init__(self):
+    '''Create a new SDKConfig object with default contents'''
+    self._data = {
+        'sources': [],
+        }
+
+  def AddSource(self, string):
+    '''Add a source file to load packages from.
+
+    Args:
+      string: a URL to an external package manifest file.'''
+    # For now whitelist only the following location for external sources:
+    # https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk
+    (scheme, host, path, _, _, _) = urlparse.urlparse(string)
+    if (host != 'commondatastorage.googleapis.com' or
+        scheme != 'https' or
+        not path.startswith('/nativeclient-mirror/nacl/nacl_sdk')):
+      WarningPrint('Only whitelisted sources from '
+                   '\'https://commondatastorage.googleapis.com/nativeclient-'
+                   'mirror/nacl/nacl_sdk\' are currently allowed.')
+      return
+    if string in self._data['sources']:
+      WarningPrint('source \''+string+'\' already exists in config.')
+      return
+    try:
+      url_stream = UrlOpen(string)
+    except urllib2.URLError:
+      WarningPrint('Unable to fetch manifest URL \'%s\'. Exiting...' % string)
+      return
+
+    self._data['sources'].append(string)
+    InfoPrint('source \''+string+'\' added to config.')
+
+  def RemoveSource(self, string):
+    '''Remove a source file to load packages from.
+
+    Args:
+      string: a URL to an external SDK manifest file.'''
+    if string not in self._data['sources']:
+      WarningPrint('source \''+string+'\' doesn\'t exist in config.')
+    else:
+      self._data['sources'].remove(string)
+      InfoPrint('source \''+string+'\' removed from config.')
+
+  def RemoveAllSources(self):
+    if len(self.GetSources()) == 0:
+      InfoPrint('There are no external sources to remove.')
+    # Copy the list because RemoveSource modifies the underlying list
+    sources = list(self.GetSources())
+    for source in sources:
+      self.RemoveSource(source)
+
+
+  def ListSources(self):
+    '''List all external sources in config.'''
+    if len(self._data['sources']):
+      InfoPrint('Installed sources:')
+      for s in self._data['sources']:
+        InfoPrint('  '+s)
+    else:
+      InfoPrint('No external sources installed')
+
+  def GetSources(self):
+    '''Return a list of external sources'''
+    return self._data['sources']
+
+  def LoadDataFromString(self, string):
+    ''' Load a JSON config string. Raises an exception if string
+        is not well-formed JSON.
+
+    Args:
+      string: a JSON-formatted string containing the previous config'''
+    self._data = json.loads(string)
+
+
+  def GetDataAsString(self):
+    '''Returns the current JSON manifest object, pretty-printed'''
+    pretty_string = json.dumps(self._data, sort_keys=False, indent=2)
+    # json.dumps sometimes returns trailing whitespace and does not put
+    # a newline at the end.  This code fixes these problems.
+    pretty_lines = pretty_string.split('\n')
+    return '\n'.join([line.rstrip() for line in pretty_lines]) + '\n'
+
+
 #------------------------------------------------------------------------------
 # Commands
 
 
-def List(options, argv):
+def List(options, argv, config):
   '''Usage: %prog [options] list
 
   Lists the available SDK bundles that are available for download.'''
@@ -335,17 +436,17 @@ def List(options, argv):
 
   parser = optparse.OptionParser(usage=List.__doc__)
   (list_options, args) = parser.parse_args(argv)
-  manifest = LoadManifestFromURL(options.manifest_url)
+  manifest = LoadManifestFromURLs([options.manifest_url] + config.GetSources())
   InfoPrint('Available bundles:')
   PrintBundles(manifest.GetBundles())
   # Print the local information.
   manifest_path = os.path.join(options.user_data_dir, options.manifest_filename)
-  local_manifest = LoadManifestFromFile(manifest_path)
+  local_manifest = LoadFromFile(manifest_path, manifest_util.SDKManifest())
   InfoPrint('\nCurrently installed bundles:')
   PrintBundles(local_manifest.GetBundles())
 
 
-def Update(options, argv):
+def Update(options, argv, config):
   '''Usage: %prog [options] update [target]
 
   Updates the Native Client SDK to a specified version.  By default, this
@@ -382,11 +483,12 @@ def Update(options, argv):
   (update_options, args) = parser.parse_args(argv)
   if len(args) == 0:
     args = [RECOMMENDED]
-  manifest = LoadManifestFromURL(options.manifest_url)
+  manifest = LoadManifestFromURLs([options.manifest_url] + config.GetSources())
   bundles = manifest.GetBundles()
   local_manifest_path = os.path.join(options.user_data_dir,
                                      options.manifest_filename)
-  local_manifest = LoadManifestFromFile(local_manifest_path)
+  local_manifest = LoadFromFile(local_manifest_path,
+                                manifest_util.SDKManifest())
 
   # Validate the arg list against the available bundle names.  Raises an
   # error if any invalid bundle names or args are detected.
@@ -429,7 +531,7 @@ def Update(options, argv):
           RemoveDir(bundle_update_path)
       os.remove(dest_filename)
       local_manifest.MergeBundle(bundle)
-      WriteManifestToFile(local_manifest, local_manifest_path)
+      WriteToFile(local_manifest_path, local_manifest)
     # Test revision numbers, update the bundle accordingly.
     # TODO(dspringer): The local file should be refreshed from disk each
     # iteration thought this loop so that multiple sdk_updates can run at the
@@ -447,6 +549,47 @@ def Update(options, argv):
     else:
       InfoPrint('%s is already up-to-date.' % bundle.name)
 
+def Sources(options, argv, config):
+  '''Usage: %prog [options] sources [--list,--add URL,--remove URL]
+
+  Manage additional package sources.  URL should point to a valid package
+  manifest file for download.
+  '''
+  DebugPrint("Running Sources command with: %s, %s" % (options, argv))
+
+  parser = optparse.OptionParser(usage=Sources.__doc__)
+  parser.add_option(
+      '-a', '--add', dest='url_to_add',
+      default=None,
+      help='Add additional package source')
+  parser.add_option(
+      '-r', '--remove', dest='url_to_remove',
+      default=None,
+      help='Remove package source (use \'all\' for all additional sources)')
+  parser.add_option(
+      '-l', '--list', dest='do_list',
+      default=False, action='store_true',
+      help='List additional package sources')
+  (source_options, args) = parser.parse_args(argv)
+
+  write_config = False
+  if source_options.url_to_add:
+    config.AddSource(source_options.url_to_add)
+    write_config = True
+  elif source_options.url_to_remove:
+    if source_options.url_to_remove == 'all':
+      config.RemoveAllSources()
+    else:
+      config.RemoveSource(source_options.url_to_remove)
+    write_config = True
+  elif source_options.do_list:
+    config.ListSources()
+  else:
+    parser.print_help()
+
+  if write_config:
+    WriteToFile(os.path.join(options.user_data_dir, options.config_filename),
+                config)
 
 #------------------------------------------------------------------------------
 # Command-line interface
@@ -489,11 +632,17 @@ def main(argv):
       '-m', '--manifest', dest='manifest_filename',
       default=MANIFEST_FILENAME,
       help="name of local manifest file relative to user-data-dir")
+  parser.add_option(
+      '-c', '--config', dest='config_filename',
+      default=CONFIG_FILENAME,
+      help="name of the local config file relative to user-data-dir")
+
 
   COMMANDS = {
       'list': List,
       'update': Update,
       'install': Update,
+      'sources': Sources,
       }
 
   # Separate global options from command-specific options
@@ -530,7 +679,11 @@ def main(argv):
 
   def InvokeCommand(args):
     command = COMMANDS.get(args[0], DefaultHandler)
-    command(options, args[1:])
+    # Load the config file before running commands
+    config = LoadFromFile(os.path.join(options.user_data_dir,
+                                       options.config_filename),
+                          SDKConfig())
+    command(options, args[1:], config)
 
   if args[0] == 'help':
     if len(args) == 1:

@@ -652,7 +652,7 @@ def main(args):
       manifest_name = 'naclsdk_manifest2.json'
       with open(os.path.join(SERVER_DIR, manifest_name), 'wb') as \
           manifest_stream:
-        manifest_stream.write(manifest.GetManifestString())
+        manifest_stream.write(manifest.GetDataAsString())
 
       # use newly built sdk updater to pull this bundle
       buildbot_common.BuildStep('Update from local server')
