@@ -27,6 +27,8 @@ class CapturerGdi : public Capturer {
   virtual ~CapturerGdi();
 
   // Capturer interface.
+  virtual void Start() OVERRIDE;
+  virtual void Stop() OVERRIDE;
   virtual void ScreenConfigurationChanged() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void ClearInvalidRegion() OVERRIDE;
@@ -189,6 +191,12 @@ void CapturerGdi::ReleaseBuffers() {
     DeleteDC(memory_dc_);
     memory_dc_ = NULL;
   }
+}
+
+void CapturerGdi::Start() {
+}
+
+void CapturerGdi::Stop() {
 }
 
 void CapturerGdi::ScreenConfigurationChanged() {

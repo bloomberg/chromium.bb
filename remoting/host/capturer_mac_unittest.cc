@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -29,7 +28,6 @@ class CapturerMacTest : public testing::Test {
 
   scoped_ptr<Capturer> capturer_;
   SkRegion region_;
-  MessageLoop message_loop_;
 };
 
 // CapturerCallback1 verifies that the whole screen is initially dirty.
@@ -89,6 +87,7 @@ void CapturerCallback2::CaptureDoneCallback(
 
 TEST_F(CapturerMacTest, Capture) {
   SCOPED_TRACE("");
+  capturer_->Start();
   // Check that we get an initial full-screen updated.
   CapturerCallback1 callback1;
   capturer_->CaptureInvalidRegion(base::Bind(
@@ -99,7 +98,7 @@ TEST_F(CapturerMacTest, Capture) {
   capturer_->InvalidateRegion(region_);
   capturer_->CaptureInvalidRegion(base::Bind(
       &CapturerCallback2::CaptureDoneCallback, base::Unretained(&callback2)));
-  message_loop_.RunAllPending();
+  capturer_->Stop();
 }
 
 }  // namespace remoting

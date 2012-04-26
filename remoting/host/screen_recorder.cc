@@ -68,6 +68,7 @@ void ScreenRecorder::Stop(const base::Closure& done_task) {
 
   DCHECK(!done_task.is_null());
 
+  capturer()->Stop();
   capture_timer_.reset();
 
   network_loop_->PostTask(FROM_HERE, base::Bind(
@@ -141,6 +142,7 @@ void ScreenRecorder::DoStart() {
     return;
   }
 
+  capturer()->Start();
   capture_timer_.reset(new base::OneShotTimer<ScreenRecorder>());
 
   // Capture first frame immedately.

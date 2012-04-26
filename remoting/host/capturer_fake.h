@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,8 @@ class CapturerFake : public Capturer {
   virtual ~CapturerFake();
 
   // Capturer interface.
+  virtual void Start() OVERRIDE;
+  virtual void Stop() OVERRIDE;
   virtual void ScreenConfigurationChanged() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void ClearInvalidRegion() OVERRIDE;

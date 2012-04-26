@@ -24,6 +24,7 @@ using ::testing::AtLeast;
 using ::testing::AnyNumber;
 using ::testing::DeleteArg;
 using ::testing::DoAll;
+using ::testing::Expectation;
 using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
@@ -126,12 +127,15 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
     planes.strides[i] = kWidth * 4;
   }
 
+  Expectation capturer_start = EXPECT_CALL(capturer_, Start());
+
   SkISize size(SkISize::Make(kWidth, kHeight));
   scoped_refptr<CaptureData> data(new CaptureData(planes, size, kFormat));
   EXPECT_CALL(capturer_, InvalidateFullScreen());
 
   // First the capturer is called.
-  EXPECT_CALL(capturer_, CaptureInvalidRegion(_))
+  Expectation capturer_capture = EXPECT_CALL(capturer_, CaptureInvalidRegion(_))
+      .After(capturer_start)
       .WillRepeatedly(RunCallback(update_region, data));
 
   // Expect the encoder be called.
@@ -154,6 +158,9 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
           StopScreenRecorder(record_,
                              base::Bind(&QuitMessageLoop, &message_loop_))))
       .RetiresOnSaturation();
+
+  EXPECT_CALL(capturer_, Stop())
+      .After(capturer_capture);
 
   // Add the mock client connection to the session.
   record_->AddConnection(connection_.get());

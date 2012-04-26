@@ -17,7 +17,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
-#include "base/timer.h"
 #include "remoting/base/util.h"
 #include "remoting/host/capturer_helper.h"
 
@@ -25,8 +24,6 @@
 namespace remoting {
 
 namespace {
-
-const int64 kPowerAssertionTimeoutMs = 5 * 1000; // 5 seconds
 
 SkIRect CGRectToSkIRect(const CGRect& rect) {
   SkIRect sk_rect = {
@@ -161,6 +158,8 @@ class CapturerMac : public Capturer {
   bool Init();
 
   // Capturer interface.
+  virtual void Start() OVERRIDE;
+  virtual void Stop() OVERRIDE;
   virtual void ScreenConfigurationChanged() OVERRIDE;
   virtual media::VideoFrame::Format pixel_format() const OVERRIDE;
   virtual void ClearInvalidRegion() OVERRIDE;
@@ -197,8 +196,6 @@ class CapturerMac : public Capturer {
                                            void *user_parameter);
 
   void ReleaseBuffers();
-  void RefreshPowerAssertion();
-  void ReleasePowerAssertion();
 
   CGLContextObj cgl_context_;
   static const int kNumBuffers = 2;
@@ -232,9 +229,6 @@ class CapturerMac : public Capturer {
   // Power management assertion to prevent the screen from sleeping.
   IOPMAssertionID power_assertion_id_;
 
-  // Timer to remove the power management assertion on inactivity
-  base::OneShotTimer<CapturerMac> power_assertion_timer_;
-
   DISALLOW_COPY_AND_ASSIGN(CapturerMac);
 };
 
@@ -257,7 +251,6 @@ CapturerMac::~CapturerMac() {
   if (err != kCGErrorSuccess) {
     LOG(ERROR) << "CGDisplayRemoveReconfigurationCallback " << err;
   }
-  ReleasePowerAssertion();
 }
 
 bool CapturerMac::Init() {
@@ -306,6 +299,21 @@ void CapturerMac::ReleaseBuffers() {
   // the capturer, they will be recreated if necessary.
   for (int i = 0; i < kNumBuffers; ++i) {
     buffers_[i].set_needs_update();
+  }
+}
+
+void CapturerMac::Start() {
+  // Create a power management assertion that wakes the display and prevents it
+  // from going to sleep on user idle.
+  IOPMAssertionCreate(kIOPMAssertionTypeNoDisplaySleep,
+                      kIOPMAssertionLevelOn,
+                      &power_assertion_id_);
+}
+
+void CapturerMac::Stop() {
+  if (power_assertion_id_ != kIOPMNullAssertionID) {
+    IOPMAssertionRelease(power_assertion_id_);
+    power_assertion_id_ = kIOPMNullAssertionID;
   }
 }
 
@@ -375,8 +383,6 @@ void CapturerMac::CaptureInvalidRegion(
     const CaptureCompletedCallback& callback) {
   // Only allow captures when the display configuration is not occurring.
   scoped_refptr<CaptureData> data;
-
-  RefreshPowerAssertion();
 
   // Critical section shared with DisplaysReconfigured(...).
   CHECK(display_configuration_capture_event_.TimedWait(
@@ -642,36 +648,6 @@ void CapturerMac::DisplaysReconfiguredCallback(
     void *user_parameter) {
   CapturerMac *capturer = reinterpret_cast<CapturerMac *>(user_parameter);
   capturer->DisplaysReconfigured(display, flags);
-}
-
-// Creates or refreshes a power management assertion to prevent the display from
-// going to sleep.
-void CapturerMac::RefreshPowerAssertion() {
-  if (power_assertion_timer_.IsRunning()) {
-    DCHECK(power_assertion_id_ != kIOPMNullAssertionID);
-    power_assertion_timer_.Reset();
-    return;
-  }
-
-  IOReturn result = IOPMAssertionCreate(kIOPMAssertionTypeNoDisplaySleep,
-                                        kIOPMAssertionLevelOn,
-                                        &power_assertion_id_);
-
-  if (result == kIOReturnSuccess) {
-    power_assertion_timer_.Start(FROM_HERE,
-                                 base::TimeDelta::FromMilliseconds(
-                                     kPowerAssertionTimeoutMs),
-                                 this,
-                                 &CapturerMac::ReleasePowerAssertion);
-  }
-}
-
-void CapturerMac::ReleasePowerAssertion() {
-  if (power_assertion_id_ != kIOPMNullAssertionID) {
-    IOPMAssertionRelease(power_assertion_id_);
-    power_assertion_id_ = kIOPMNullAssertionID;
-    power_assertion_timer_.Stop();
-  }
 }
 
 }  // namespace
