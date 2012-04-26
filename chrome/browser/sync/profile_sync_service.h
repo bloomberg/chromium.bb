@@ -274,10 +274,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       setup_in_progress_ = setup_in_progress;
   }
 
-  // This method handles clicks on "sync error" UI, showing the appropriate
-  // dialog for the error condition (relogin / enter passphrase).
-  virtual void ShowErrorUI();
-
   // Returns true if the SyncBackendHost has told us it's ready to accept
   // changes.
   // [REMARK] - it is safe to call this function only from the ui thread.

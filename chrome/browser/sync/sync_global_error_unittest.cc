@@ -11,6 +11,8 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
@@ -33,6 +35,16 @@ class BrowserMock: public Browser {
   MOCK_METHOD2(ExecuteCommandWithDisposition,
                void(int command_id, WindowOpenDisposition));
 };
+
+class LoginUIServiceMock: public LoginUIService {
+ public:
+  explicit LoginUIServiceMock(Profile* profile) : LoginUIService(profile) {}
+  MOCK_METHOD1(ShowLoginUI, void(bool));
+};
+
+ProfileKeyedService* BuildMockLoginUIService(Profile* profile) {
+  return new LoginUIServiceMock(profile);
+}
 
 // Same as BrowserWithTestWindowTest, but uses MockBrowser to test calls to
 // ExecuteCommand method.
@@ -57,6 +69,7 @@ class SyncGlobalErrorTest : public BrowserWithTestWindowTest {
 // Utility function to test that SyncGlobalError behaves correct for the given
 // error condition.
 void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
+                                 LoginUIServiceMock* login_ui_service,
                                  Browser* browser,
                                  SyncGlobalError* error,
                                  GoogleServiceAuthError::State error_state,
@@ -97,9 +110,9 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
 #else
   // Test message handler.
   if (is_error) {
-    EXPECT_CALL(*service, ShowErrorUI());
+    EXPECT_CALL(*login_ui_service, ShowLoginUI(false));
     error->ExecuteMenuItem(browser);
-    EXPECT_CALL(*service, ShowErrorUI());
+    EXPECT_CALL(*login_ui_service, ShowLoginUI(false));
     error->BubbleViewAcceptButtonPressed(browser);
     error->BubbleViewDidClose(browser);
   }
@@ -114,6 +127,9 @@ TEST_F(SyncGlobalErrorTest, PassphraseGlobalError) {
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
   NiceMock<ProfileSyncServiceMock> service(profile.get());
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile.get());
+  LoginUIServiceMock* login_ui_service = static_cast<LoginUIServiceMock*>(
+      LoginUIServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile.get(), BuildMockLoginUIService));
   SyncGlobalError error(&service, signin);
 
   EXPECT_CALL(service, IsPassphraseRequired())
@@ -121,7 +137,8 @@ TEST_F(SyncGlobalErrorTest, PassphraseGlobalError) {
   EXPECT_CALL(service, IsPassphraseRequiredForDecryption())
               .WillRepeatedly(Return(true));
   VerifySyncGlobalErrorResult(
-      &service, browser(), &error, GoogleServiceAuthError::NONE, true, true);
+      &service, login_ui_service, browser(), &error,
+      GoogleServiceAuthError::NONE, true, true);
 }
 
 // Test that SyncGlobalError shows an error for conditions that can be resolved
@@ -132,6 +149,9 @@ TEST_F(SyncGlobalErrorTest, AuthStateGlobalError) {
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
   NiceMock<ProfileSyncServiceMock> service(profile.get());
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile.get());
+  LoginUIServiceMock* login_ui_service = static_cast<LoginUIServiceMock*>(
+      LoginUIServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile.get(), BuildMockLoginUIService));
   SyncGlobalError error(&service, signin);
 
   browser_sync::SyncBackendHost::Status status;
@@ -156,9 +176,9 @@ TEST_F(SyncGlobalErrorTest, AuthStateGlobalError) {
   };
 
   for (size_t i = 0; i < sizeof(table)/sizeof(*table); ++i) {
-    VerifySyncGlobalErrorResult(&service, browser(), &error,
+    VerifySyncGlobalErrorResult(&service, login_ui_service, browser(), &error,
                                 table[i].error_state, true, table[i].is_error);
-    VerifySyncGlobalErrorResult(&service, browser(), &error,
+    VerifySyncGlobalErrorResult(&service, login_ui_service, browser(), &error,
                                 table[i].error_state, false, false);
   }
 }

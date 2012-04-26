@@ -47,8 +47,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -953,16 +951,6 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       NOTREACHED();
   }
   NotifyObservers();
-}
-
-void ProfileSyncService::ShowErrorUI() {
-  // TODO(atwilson): Remove this.
-#if defined(OS_ANDROID)
-  // Android uses native UI for sync setup.
-  NOTREACHED();
-#else
-  LoginUIServiceFactory::GetForProfile(profile_)->ShowLoginUI(false);
-#endif
 }
 
 std::string ProfileSyncService::QuerySyncStatusSummary() {

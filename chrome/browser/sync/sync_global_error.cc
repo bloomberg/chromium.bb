@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -61,7 +63,7 @@ void SyncGlobalError::ExecuteMenuItem(Browser* browser) {
     return;
   }
 #endif
-  service_->ShowErrorUI();
+  LoginUIServiceFactory::GetForProfile(service_->profile())->ShowLoginUI(false);
 }
 
 bool SyncGlobalError::HasBubbleView() {

@@ -45,10 +45,10 @@ class LoginUIService : public ProfileKeyedService {
   // Displays the login dialog if the user is not yet logged in, otherwise
   // displays the sync setup dialog. If |force_login| is true, then the login
   // UI is displayed even if the user is already logged in (useful if we need
-  // to gather GAIA credentials for oauth tokens).
+  // to gather GAIA credentials for oauth tokens). Virtual for mocking purposes.
   // TODO(atwilson): Refactor this API to make the behavior more clear and use
   // an enum instead of a boolean (http://crbug.com/118795).
-  void ShowLoginUI(bool force_login);
+  virtual void ShowLoginUI(bool force_login);
 
  private:
   // Weak pointer to the currently active login UI, or null if none.

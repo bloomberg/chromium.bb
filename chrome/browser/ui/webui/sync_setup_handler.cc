@@ -756,7 +756,7 @@ void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
   }
 #endif
 
-  service->ShowErrorUI();
+  LoginUIServiceFactory::GetForProfile(GetProfile())->ShowLoginUI(false);
 }
 
 void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
