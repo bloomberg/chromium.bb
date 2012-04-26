@@ -68,6 +68,9 @@ int TCPSocket::Bind(const std::string& address, int port) {
 }
 
 int TCPSocket::Read(scoped_refptr<net::IOBuffer> io_buffer, int io_buffer_len) {
+  if (!socket_.get() || !socket_->IsConnected())
+    return net::ERR_SOCKET_NOT_CONNECTED;
+
   return socket_->Read(
       io_buffer.get(),
       io_buffer_len,
@@ -76,6 +79,9 @@ int TCPSocket::Read(scoped_refptr<net::IOBuffer> io_buffer, int io_buffer_len) {
 }
 
 int TCPSocket::Write(scoped_refptr<net::IOBuffer> io_buffer, int byte_count) {
+  if (!socket_.get() || !socket_->IsConnected())
+    return net::ERR_SOCKET_NOT_CONNECTED;
+
   return socket_->Write(
       io_buffer.get(), byte_count,
       base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));

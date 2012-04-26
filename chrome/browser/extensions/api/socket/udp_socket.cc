@@ -15,10 +15,10 @@ namespace extensions {
 
 UDPSocket::UDPSocket(APIResourceEventNotifier* event_notifier)
     : Socket(event_notifier),
-      socket_(new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
-                                 net::RandIntCallback(),
-                                 NULL,
-                                 net::NetLog::Source())) {
+      socket_(net::DatagramSocket::DEFAULT_BIND,
+              net::RandIntCallback(),
+              NULL,
+              net::NetLog::Source()) {
 }
 
 UDPSocket::~UDPSocket() {
@@ -35,7 +35,7 @@ int UDPSocket::Connect(const std::string& address, int port) {
   if (!StringAndPortToIPEndPoint(address, port, &ip_end_point))
     return net::ERR_INVALID_ARGUMENT;
 
-  int result = socket_->Connect(ip_end_point);
+  int result = socket_.Connect(ip_end_point);
   is_connected_ = (result == net::OK);
   return result;
 }
@@ -45,16 +45,19 @@ int UDPSocket::Bind(const std::string& address, int port) {
   if (!StringAndPortToIPEndPoint(address, port, &ip_end_point))
     return net::ERR_INVALID_ARGUMENT;
 
-  return socket_->Bind(ip_end_point);
+  return socket_.Bind(ip_end_point);
 }
 
 void UDPSocket::Disconnect() {
   is_connected_ = false;
-  socket_->Close();
+  socket_.Close();
 }
 
 int UDPSocket::Read(scoped_refptr<net::IOBuffer> io_buffer, int io_buffer_len) {
-  return socket_->Read(
+  if (!socket_.is_connected())
+    return net::ERR_SOCKET_NOT_CONNECTED;
+
+  return socket_.Read(
       io_buffer.get(),
       io_buffer_len,
       base::Bind(&Socket::OnDataRead, base::Unretained(this), io_buffer,
@@ -62,7 +65,10 @@ int UDPSocket::Read(scoped_refptr<net::IOBuffer> io_buffer, int io_buffer_len) {
 }
 
 int UDPSocket::Write(scoped_refptr<net::IOBuffer> io_buffer, int byte_count) {
-  return socket_->Write(
+  if (!socket_.is_connected())
+    return net::ERR_SOCKET_NOT_CONNECTED;
+
+  return socket_.Write(
       io_buffer.get(), byte_count,
       base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));
 }
@@ -70,7 +76,10 @@ int UDPSocket::Write(scoped_refptr<net::IOBuffer> io_buffer, int byte_count) {
 int UDPSocket::RecvFrom(scoped_refptr<net::IOBuffer> io_buffer,
                         int io_buffer_len,
                         net::IPEndPoint* address) {
-  return socket_->RecvFrom(
+  if (!socket_.is_connected())
+    return net::ERR_SOCKET_NOT_CONNECTED;
+
+  return socket_.RecvFrom(
       io_buffer.get(),
       io_buffer_len,
       address,
@@ -85,7 +94,11 @@ int UDPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
   net::IPEndPoint ip_end_point;
   if (!StringAndPortToIPEndPoint(address, port, &ip_end_point))
     return net::ERR_INVALID_ARGUMENT;
-  return socket_->SendTo(
+
+  if (!socket_.is_connected())
+    return net::ERR_SOCKET_NOT_CONNECTED;
+
+  return socket_.SendTo(
       io_buffer.get(),
       byte_count,
       ip_end_point,

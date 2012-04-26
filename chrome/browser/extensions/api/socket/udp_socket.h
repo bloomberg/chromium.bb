@@ -11,10 +11,6 @@
 #include "chrome/browser/extensions/api/socket/socket.h"
 #include "net/udp/udp_socket.h"
 
-namespace net {
-class Socket;
-}
-
 namespace extensions {
 
 class APIResourceEventNotifier;
@@ -40,7 +36,7 @@ class UDPSocket : public Socket {
                      int port) OVERRIDE;
 
  private:
-  scoped_ptr<net::UDPSocket> socket_;
+  net::UDPSocket socket_;
 };
 
 }  //  namespace extensions

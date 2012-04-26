@@ -31,6 +31,10 @@ class MockTCPSocket : public net::TCPClientSocket {
                          const net::CompletionCallback& callback));
   MOCK_METHOD3(Write, int(net::IOBuffer* buf, int buf_len,
                           const net::CompletionCallback& callback));
+  virtual bool IsConnected() const OVERRIDE {
+    return true;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTCPSocket);
 };
