@@ -65,8 +65,7 @@ class AudioConfig : public Resource {
   /// resulting resource will be is_null(). You can pass the result of
   /// RecommendSampleFrameCount() as the sample frame count.
   ///
-  /// @param[in] instance The instance with which this resource will be
-  /// associated.
+  /// @param[in] instance The instance associated with this resource.
   ///
   /// @param[in] sample_rate A <code>PP_AudioSampleRate</code> which is either
   /// <code>PP_AUDIOSAMPLERATE_44100</code> or
@@ -81,6 +80,8 @@ class AudioConfig : public Resource {
   /// RecommendSampleRate() returns the native sample rate used by the
   /// audio system.  Applications that use the recommended sample rate might
   /// obtain lower latency and higher fidelity output.
+  ///
+  /// @param[in] instance The instance associated with this resource.
   static PP_AudioSampleRate RecommendSampleRate(
       const InstanceHandle& instance);
 
@@ -96,6 +97,7 @@ class AudioConfig : public Resource {
   /// will return a supported count closest to the requested value for use in
   /// the constructor.
   ///
+  /// @param[in] instance The instance associated with this resource.
   /// @param[in] sample_rate A <code>PP_AudioSampleRate</code> which is either
   /// <code>PP_AUDIOSAMPLERATE_44100</code> or
   /// <code>PP_AUDIOSAMPLERATE_48000</code>.
