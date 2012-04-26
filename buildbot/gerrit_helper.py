@@ -390,15 +390,16 @@ def GetGerritPatchInfo(patches):
     PatchException if a patch can't be found.
   """
   parsed_patches = {}
-  internal_patches = [x for x in patches if x.startswith('*')]
-  external_patches = [x for x in patches if not x.startswith('*')]
 
   def _FixupFormatting(item):
     if not item.isdigit():
       item = cros_patch.FormatChangeId(item)
     return item
-  internal_patches = map(_FixupFormatting, internal_patches)
-  external_patches = map(_FixupFormatting, external_patches)
+
+  internal_patches = ['*%s' % _FixupFormatting(x[1:]) for x in patches
+                      if x.startswith('*')]
+  external_patches = [_FixupFormatting(x) for x in patches
+                      if not x.startswith('*')]
 
   if internal_patches:
     # feed it id's w/ * stripped off, but bind them back
