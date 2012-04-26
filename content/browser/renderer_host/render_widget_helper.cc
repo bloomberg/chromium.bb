@@ -9,6 +9,7 @@
 #include "base/eintr_wrapper.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -145,8 +146,8 @@ void RenderWidgetHelper::SimulateSwapOutACK(
 
 bool RenderWidgetHelper::WaitForBackingStoreMsg(
     int render_widget_id,
-    const base::TimeDelta& max_delay,
-    IPC::Message* msg) {
+                                          const base::TimeDelta& max_delay,
+                                          IPC::Message* msg) {
   base::TimeTicks time_start = base::TimeTicks::Now();
 
   for (;;) {
@@ -183,6 +184,7 @@ bool RenderWidgetHelper::WaitForBackingStoreMsg(
     if (max_sleep_time <= base::TimeDelta::FromMilliseconds(0))
       break;
 
+    base::ThreadRestrictions::ScopedAllowWait allow_wait;
     event_.TimedWait(max_sleep_time);
   }
 

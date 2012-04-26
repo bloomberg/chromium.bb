@@ -17,7 +17,6 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
@@ -374,10 +373,6 @@ net::URLRequestContextGetter* IOThread::system_url_request_context_getter() {
 }
 
 void IOThread::Init() {
-  // Though this thread is called the "IO" thread, it actually just routes
-  // messages around; it shouldn't be allowed to perform any blocking disk I/O.
-  base::ThreadRestrictions::SetIOAllowed(false);
-
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
 #if defined(USE_NSS)

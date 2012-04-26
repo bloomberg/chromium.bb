@@ -152,6 +152,7 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -810,7 +811,7 @@ void MetricsService::ReceivedProfilerData(
 
 void MetricsService::FinishedReceivingProfilerData() {
   DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
-  state_ = INIT_TASK_DONE;
+    state_ = INIT_TASK_DONE;
 }
 
 std::string MetricsService::GenerateClientID() {
@@ -1461,6 +1462,8 @@ void MetricsService::LogCleanShutdown() {
   base::WaitableEvent done_writing(false, false);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(Signal, &done_writing));
+  // http://crbug.com/124954
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   done_writing.TimedWait(base::TimeDelta::FromHours(1));
 
   // Redundant setting to assure that we always reset this value at shutdown

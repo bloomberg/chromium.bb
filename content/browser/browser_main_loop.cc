@@ -427,6 +427,7 @@ void BrowserMainLoop::CreateThreads() {
   // If the UI thread blocks, the whole UI is unresponsive.
   // Do not allow disk IO from the UI thread.
   base::ThreadRestrictions::SetIOAllowed(false);
+  base::ThreadRestrictions::DisallowWaiting();
 
   // When running the GPU thread in-process, avoid optimistically starting it
   // since creating the GPU thread races against creation of the one-and-only

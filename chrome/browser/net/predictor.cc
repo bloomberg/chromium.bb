@@ -18,6 +18,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/io_thread.h"
@@ -768,8 +769,11 @@ void Predictor::SaveStateForNextStartupAndTrim(PrefService* prefs) {
     // TODO(jar): Synchronous waiting for the IO thread is a potential source
     // to deadlocks and should be investigated. See http://crbug.com/78451.
     DCHECK(posted);
-    if (posted)
+    if (posted) {
+      // http://crbug.com/124954
+      base::ThreadRestrictions::ScopedAllowWait allow_wait;
       completion.Wait();
+    }
   }
 }
 

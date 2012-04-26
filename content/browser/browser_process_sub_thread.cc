@@ -9,6 +9,7 @@
 #endif
 
 #include "base/debug/leak_tracker.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
@@ -36,6 +37,14 @@ void BrowserProcessSubThread::Init() {
   notification_service_ = new NotificationServiceImpl;
 
   BrowserThreadImpl::Init();
+
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    // Though this thread is called the "IO" thread, it actually just routes
+    // messages around; it shouldn't be allowed to perform any blocking disk
+    // I/O.
+    base::ThreadRestrictions::SetIOAllowed(false);
+    base::ThreadRestrictions::DisallowWaiting();
+  }
 }
 
 void BrowserProcessSubThread::CleanUp() {

@@ -325,6 +325,7 @@ void TestingAutomationProvider::Observe(
 
 bool TestingAutomationProvider::OnMessageReceived(
     const IPC::Message& message) {
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   bool handled = true;
   bool deserialize_success = true;
   IPC_BEGIN_MESSAGE_MAP_EX(TestingAutomationProvider,

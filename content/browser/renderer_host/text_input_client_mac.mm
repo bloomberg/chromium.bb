@@ -6,6 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/text_input_client_messages.h"
@@ -41,6 +42,8 @@ NSUInteger TextInputClientMac::GetCharacterIndexAtPoint(RenderWidgetHost* rwh,
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
   rwhi->Send(new TextInputClientMsg_CharacterIndexForPoint(rwhi->GetRoutingID(),
                                                           point));
+  // http://crbug.com/121917
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   condition_.TimedWait(base::TimeDelta::FromMilliseconds(kWaitTimeout));
   AfterRequest();
 
@@ -60,6 +63,8 @@ NSRect TextInputClientMac::GetFirstRectForRange(RenderWidgetHost* rwh,
   rwhi->Send(
       new TextInputClientMsg_FirstRectForCharacterRange(rwhi->GetRoutingID(),
                                                         ui::Range(range)));
+  // http://crbug.com/121917
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   condition_.TimedWait(base::TimeDelta::FromMilliseconds(kWaitTimeout));
   AfterRequest();
 
@@ -79,6 +84,8 @@ NSAttributedString* TextInputClientMac::GetAttributedSubstringFromRange(
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
   rwhi->Send(new TextInputClientMsg_StringForRange(rwhi->GetRoutingID(),
                                                    ui::Range(range)));
+  // http://crbug.com/121917
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   condition_.TimedWait(base::TimeDelta::FromMilliseconds(kWaitTimeout));
   AfterRequest();
 
