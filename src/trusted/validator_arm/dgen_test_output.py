@@ -78,26 +78,17 @@ parsed table representations.
 #        : NamedClassDecoder(decoder_, "InstClass")
 #    {}
 #  virtual ~NamedInstClass() {}
-# protected:
-#   explicit inline NamedInstClass(const char* name)
-#       : NamedClassDecoder(decoder_, name) {}
+#
 # private:
 #  Binary3RegisterShiftedTest decoder_;
+#  NACL_DISALLOW_COPY_AND_ASSIGN(NamedInstClass);
 #};
 #
 # This makes sure that each decoder class can be identified using a
-# separate class decoder. The public constructor is for table rows
-# that don't have rule names. The protected constructor is for table
-# rows that have a rule name, and will be a subclass of this class.
-# The class defined for rows with a Rule name is:
-#
-# class NamedRuleInstClass : public NamedInstClass {
-#  public:
-#   inline NamedRuleInstClass()
-#    : NamedInstClass("RuleInstClass")
-#   {}
-#  virtual ~NamedRuleInstClass() {}
-#};
+# separate class decoder. For rows without rules, the corresponding
+# named class 'NamedInstClass' will be used. If a row also has
+# a rule, the 'NamedInstClass' is converted to 'NamedRuleInstClass' where
+# 'Rule' is the name of the rule.
 #
 # The base class for NamedClassDecoder is specified in
 # "named_class_decoder.h".  This file defines a class that takes a
@@ -172,15 +163,13 @@ import dgen_opt
 import dgen_output
 
 # Defines the header for decoder_named_classes.h
-NAMED_CLASSES_H_HEADER="""
-%(FILE_HEADER)s
+NAMED_CLASSES_H_HEADER="""%(FILE_HEADER)s
 %(NOT_TCB_MESSAGE)s
 
 #ifndef %(IFDEF_NAME)s
 #define %(IFDEF_NAME)s
 
 #include "native_client/src/trusted/validator_arm/named_class_decoder.h"
-
 """
 
 RULE_CLASSES_HEADER="""
@@ -188,10 +177,10 @@ RULE_CLASSES_HEADER="""
  * Define rule decoder classes.
  */
 namespace nacl_arm_dec {
+
 """
 
-RULE_CLASS="""
-class %(rule)s%(decoder)s
+RULE_CLASS="""class %(rule)s%(decoder)s
    : public %(decoder)s {
  public:
   virtual ~%(rule)s%(decoder)s() {}
@@ -199,15 +188,12 @@ class %(rule)s%(decoder)s
 
 """
 
-RULE_CLASSES_FOOTER="""
-}  // nacl_arm_dec
-"""
-
-NAMED_H_NAMESPACE="""
-namespace nacl_arm_test {
+RULE_CLASSES_FOOTER="""}  // nacl_arm_dec
 """
 
 NAMED_DECODERS_HEADER="""
+namespace nacl_arm_test {
+
 /*
  * Define named class decoders for each class decoder.
  * The main purpose of these classes is to introduce
@@ -221,30 +207,17 @@ NAMED_DECODERS_HEADER="""
 
 """
 
-NAMED_DECODER_DECLARE="""
-class Named%(decoder)s : public NamedClassDecoder {
- public:
-  inline Named%(decoder)s()
-    : NamedClassDecoder(decoder_, "%(decoder)s")
-  {}
-  virtual ~Named%(decoder)s() {}
- protected:
-  explicit inline Named%(decoder)s(const char* name)
-    : NamedClassDecoder(decoder_, name) {}
- private:
-  nacl_arm_dec::%(decoder)s decoder_;
-};
-
-"""
-
-NAMED_RULE_DECLARE="""
-class Named%(rule)s%(decoder)s
-    : public Named%(decoder)s {
+NAMED_DECODER_DECLARE="""class Named%(rule)s%(decoder)s
+    : public NamedClassDecoder {
  public:
   inline Named%(rule)s%(decoder)s()
-    : Named%(decoder)s("%(rule)s%(decoder)s")
+    : NamedClassDecoder(decoder_, "%(rule)s%(decoder)s")
   {}
   virtual ~Named%(rule)s%(decoder)s() {}
+
+ private:
+  nacl_arm_dec::%(rule)s%(decoder)s decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(Named%(rule)s%(decoder)s);
 };
 
 """
@@ -273,7 +246,6 @@ def generate_named_classes_h(decoder, decoder_name, filename, out):
       }
   out.write(NAMED_CLASSES_H_HEADER % values)
   _generate_rule_classes(decoder, values, out)
-  out.write(NAMED_H_NAMESPACE)
   _generate_named_decoder_classes(decoder, values, out)
   out.write(NAMED_CLASSES_H_FOOTER % values)
 
@@ -288,7 +260,7 @@ def _generate_named_decoder_classes(decoder, values, out):
   for d in decoder.action_filter(['name', 'rule']).rules():
     values['decoder'] = d.name
     values['rule'] = d.rule
-    out.write(NAMED_RULE_DECLARE % values)
+    out.write(NAMED_DECODER_DECLARE % values)
 
 def _generate_rule_classes(decoder, values, out):
   # Note: we generate these classes in nacl_arm_dec, so that
@@ -301,8 +273,7 @@ def _generate_rule_classes(decoder, values, out):
     out.write(RULE_CLASS % values)
   out.write(RULE_CLASSES_FOOTER)
 
-NAMED_DECODER_H_HEADER="""
-%(FILE_HEADER)s
+NAMED_DECODER_H_HEADER="""%(FILE_HEADER)s
 %(NOT_TCB_MESSAGE)s
 
 #ifndef %(IFDEF_NAME)s
@@ -339,12 +310,10 @@ DECODER_STATE_FIELD_COMMENTS="""
   // are created once as instance fields, and then returned
   // by the table methods above. This speeds up the code since
   // the class decoders need to only be bulit once (and reused
-  // for each call to "decode_named").
-"""
+  // for each call to "decode_named")."""
 
 DECODER_STATE_FIELD="""
-  const Named%(rule)s%(decoder)s %(rule)s%(decoder)s_instance_;
-"""
+  const Named%(rule)s%(decoder)s %(rule)s%(decoder)s_instance_;"""
 
 DECODER_STATE_PRIVATE="""
  private:
@@ -357,13 +326,11 @@ DECODER_STATE_DECODER_COMMENTS="""
   // either call other methods in this list (corresponding to another
   // decoder table), or they return the instance field that implements
   // the class decoder that should be used to decode the particular
-  // instruction.
-"""
+  // instruction."""
 
 DECODER_STATE_DECODER="""
   inline const NamedClassDecoder& decode_%(table)s(
-      const nacl_arm_dec::Instruction insn) const;
-"""
+      const nacl_arm_dec::Instruction insn) const;"""
 
 DECODER_STATE_FOOTER="""
 };
@@ -418,8 +385,7 @@ def _generate_decoder_state_class(decoder, values, out):
   out.write(DECODER_STATE_FOOTER % values)
 
 # Defines the source for DECODER_named.cc
-NAMED_CC_HEADER="""
-%(FILE_HEADER)s
+NAMED_CC_HEADER="""%(FILE_HEADER)s
 %(NOT_TCB_MESSAGE)s
 #include "%(FILENAME_BASE)s_decoder.h"
 
@@ -433,12 +399,10 @@ namespace nacl_arm_test {
 
 PARSE_CONSTRUCT_HEADER="""
 Named%(decoder_name)s::Named%(decoder_name)s()
-  : nacl_arm_dec::DecoderState()
-"""
+  : nacl_arm_dec::DecoderState()"""
 
 PARSE_CONSTRUCT_FIELDS="""
-  , %(rule)s%(decoder)s_instance_()
-"""
+  , %(rule)s%(decoder)s_instance_()"""
 
 PARSE_CONSTRUCT_FOOTER="""
 {}
@@ -569,15 +533,13 @@ def _generate_decoder_method_bodies(decoder, values, out):
     out.write(PARSE_TABLE_METHOD_FOOTER % values)
 
 # Define the source for DECODER_tests.cc
-TEST_CC_HEADER="""
-%(FILE_HEADER)s
+TEST_CC_HEADER="""%(FILE_HEADER)s
 %(NOT_TCB_MESSAGE)s
 
 #include "gtest/gtest.h"
 #include "native_client/src/trusted/validator_arm/inst_classes_testers.h"
 
 namespace nacl_arm_test {
-
 """
 
 TESTER_CLASS="""

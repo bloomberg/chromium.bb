@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright 2012 The Native Client Authors.  All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
@@ -17,95 +15,50 @@ namespace nacl_arm_dec {
 
 
 Arm32DecoderState::Arm32DecoderState() : DecoderState()
-
   , Binary2RegisterImmedShiftedTest_instance_()
-
   , Binary3RegisterImmedShiftedOp_instance_()
-
   , Binary3RegisterOp_instance_()
-
   , Binary3RegisterShiftedTest_instance_()
-
   , Binary4RegisterShiftedOp_instance_()
-
   , Branch_instance_()
-
   , Breakpoint_instance_()
-
   , BxBlx_instance_()
-
   , CoprocessorOp_instance_()
-
   , DataProc_instance_()
-
   , Deprecated_instance_()
-
   , EffectiveNoOp_instance_()
-
   , Forbidden_instance_()
-
   , ImmediateBic_instance_()
-
   , LoadCoprocessor_instance_()
-
   , LoadDoubleExclusive_instance_()
-
   , LoadDoubleI_instance_()
-
   , LoadDoubleR_instance_()
-
   , LoadExclusive_instance_()
-
   , LoadImmediate_instance_()
-
   , LoadMultiple_instance_()
-
   , LoadRegister_instance_()
-
   , LongMultiply_instance_()
-
   , MoveDoubleFromCoprocessor_instance_()
-
   , MoveFromCoprocessor_instance_()
-
   , MoveToStatusRegister_instance_()
-
   , Multiply_instance_()
-
   , PackSatRev_instance_()
-
   , Roadblock_instance_()
-
   , SatAddSub_instance_()
-
   , StoreCoprocessor_instance_()
-
   , StoreExclusive_instance_()
-
   , StoreImmediate_instance_()
-
   , StoreRegister_instance_()
-
   , Test_instance_()
-
   , TestImmediate_instance_()
-
   , Unary1RegisterImmediateOp_instance_()
-
   , Unary2RegisterImmedShiftedOp_instance_()
-
   , Unary2RegisterOp_instance_()
-
   , Unary3RegisterShiftedOp_instance_()
-
   , Undefined_instance_()
-
   , Unpredictable_instance_()
-
   , VectorLoad_instance_()
-
   , VectorStore_instance_()
-
 {}
 
 Arm32DecoderState::~Arm32DecoderState() {}

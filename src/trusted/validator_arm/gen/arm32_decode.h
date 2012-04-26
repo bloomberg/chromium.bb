@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright 2012 The Native Client Authors.  All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
@@ -135,95 +133,50 @@ class Arm32DecoderState : DecoderState {
   // by the table methods above. This speeds up the code since
   // the class decoders need to only be built once (and reused
   // for each call to "decode").
-
   const Binary2RegisterImmedShiftedTest Binary2RegisterImmedShiftedTest_instance_;
-
   const Binary3RegisterImmedShiftedOp Binary3RegisterImmedShiftedOp_instance_;
-
   const Binary3RegisterOp Binary3RegisterOp_instance_;
-
   const Binary3RegisterShiftedTest Binary3RegisterShiftedTest_instance_;
-
   const Binary4RegisterShiftedOp Binary4RegisterShiftedOp_instance_;
-
   const Branch Branch_instance_;
-
   const Breakpoint Breakpoint_instance_;
-
   const BxBlx BxBlx_instance_;
-
   const CoprocessorOp CoprocessorOp_instance_;
-
   const DataProc DataProc_instance_;
-
   const Deprecated Deprecated_instance_;
-
   const EffectiveNoOp EffectiveNoOp_instance_;
-
   const Forbidden Forbidden_instance_;
-
   const ImmediateBic ImmediateBic_instance_;
-
   const LoadCoprocessor LoadCoprocessor_instance_;
-
   const LoadDoubleExclusive LoadDoubleExclusive_instance_;
-
   const LoadDoubleI LoadDoubleI_instance_;
-
   const LoadDoubleR LoadDoubleR_instance_;
-
   const LoadExclusive LoadExclusive_instance_;
-
   const LoadImmediate LoadImmediate_instance_;
-
   const LoadMultiple LoadMultiple_instance_;
-
   const LoadRegister LoadRegister_instance_;
-
   const LongMultiply LongMultiply_instance_;
-
   const MoveDoubleFromCoprocessor MoveDoubleFromCoprocessor_instance_;
-
   const MoveFromCoprocessor MoveFromCoprocessor_instance_;
-
   const MoveToStatusRegister MoveToStatusRegister_instance_;
-
   const Multiply Multiply_instance_;
-
   const PackSatRev PackSatRev_instance_;
-
   const Roadblock Roadblock_instance_;
-
   const SatAddSub SatAddSub_instance_;
-
   const StoreCoprocessor StoreCoprocessor_instance_;
-
   const StoreExclusive StoreExclusive_instance_;
-
   const StoreImmediate StoreImmediate_instance_;
-
   const StoreRegister StoreRegister_instance_;
-
   const Test Test_instance_;
-
   const TestImmediate TestImmediate_instance_;
-
   const Unary1RegisterImmediateOp Unary1RegisterImmediateOp_instance_;
-
   const Unary2RegisterImmedShiftedOp Unary2RegisterImmedShiftedOp_instance_;
-
   const Unary2RegisterOp Unary2RegisterOp_instance_;
-
   const Unary3RegisterShiftedOp Unary3RegisterShiftedOp_instance_;
-
   const Undefined Undefined_instance_;
-
   const Unpredictable Unpredictable_instance_;
-
   const VectorLoad VectorLoad_instance_;
-
   const VectorStore VectorStore_instance_;
-
 };
 
 }  // namespace nacl_arm_dec

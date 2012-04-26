@@ -22,7 +22,7 @@ namespace nacl_arm_test {
 
 // Unary1RegisterImmediateOpTester
 Unary1RegisterImmediateOpTester::Unary1RegisterImmediateOpTester(
-    const NamedUnary1RegisterImmediateOp& decoder)
+    const NamedClassDecoder& decoder)
     : Arm32DecoderTester(decoder) {}
 
 void Unary1RegisterImmediateOpTester::
@@ -65,7 +65,7 @@ ApplySanityChecks(Instruction inst,
 // Unary1RegisterImmediateOpTesterRegsNotPc
 Unary1RegisterImmediateOpTesterRegsNotPc::
 Unary1RegisterImmediateOpTesterRegsNotPc(
-    const NamedUnary1RegisterImmediateOp& decoder)
+    const NamedClassDecoder& decoder)
     : Unary1RegisterImmediateOpTester(decoder) {}
 
 void Unary1RegisterImmediateOpTesterRegsNotPc::
@@ -81,7 +81,7 @@ ApplySanityChecks(Instruction inst,
 
 // Unary2RegisterOpTester
 Unary2RegisterOpTester::Unary2RegisterOpTester(
-    const NamedUnary2RegisterOp& decoder)
+    const NamedClassDecoder& decoder)
     : Arm32DecoderTester(decoder) {}
 
 void Unary2RegisterOpTester::
@@ -117,7 +117,7 @@ ApplySanityChecks(Instruction inst,
 
 // Unary2RegisterOpTesterNotRdIsPcAndS
 Unary2RegisterOpTesterNotRdIsPcAndS::Unary2RegisterOpTesterNotRdIsPcAndS(
-    const NamedUnary2RegisterOp& decoder)
+    const NamedClassDecoder& decoder)
     : Unary2RegisterOpTester(decoder) {}
 
 
@@ -136,7 +136,7 @@ ApplySanityChecks(Instruction inst,
 
 // Binary3RegisterOpTester
 Binary3RegisterOpTester::Binary3RegisterOpTester(
-    const NamedBinary3RegisterOp& decoder)
+    const NamedClassDecoder& decoder)
     : Arm32DecoderTester(decoder) {}
 
 void Binary3RegisterOpTester::
@@ -173,7 +173,7 @@ ApplySanityChecks(Instruction inst,
 
 // Binary3RegisterOpTesterRegsNotPc
 Binary3RegisterOpTesterRegsNotPc::Binary3RegisterOpTesterRegsNotPc(
-    const NamedBinary3RegisterOp& decoder)
+    const NamedClassDecoder& decoder)
     : Binary3RegisterOpTester(decoder) {}
 
 void Binary3RegisterOpTesterRegsNotPc::
@@ -193,7 +193,7 @@ ApplySanityChecks(Instruction inst,
 
 // Unary2RegisterImmedShiftedOpTester
 Unary2RegisterImmedShiftedOpTester::Unary2RegisterImmedShiftedOpTester(
-    const NamedUnary2RegisterImmedShiftedOp& decoder)
+    const NamedClassDecoder& decoder)
     : Arm32DecoderTester(decoder) {}
 
 void Unary2RegisterImmedShiftedOpTester::
@@ -234,7 +234,7 @@ ApplySanityChecks(Instruction inst,
 // Unary2RegisterImmedShiftedOpTesterImm5NotZero
 Unary2RegisterImmedShiftedOpTesterImm5NotZero::
 Unary2RegisterImmedShiftedOpTesterImm5NotZero(
-    const NamedUnary2RegisterImmedShiftedOp& decoder)
+    const NamedClassDecoder& decoder)
     : Unary2RegisterImmedShiftedOpTester(decoder) {}
 
 void Unary2RegisterImmedShiftedOpTesterImm5NotZero::
@@ -252,7 +252,7 @@ ApplySanityChecks(Instruction inst,
 // Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS
 Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS::
 Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS(
-    const NamedUnary2RegisterImmedShiftedOp& decoder)
+    const NamedClassDecoder& decoder)
     : Unary2RegisterImmedShiftedOpTester(decoder) {}
 
 void Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS::
@@ -270,7 +270,7 @@ ApplySanityChecks(Instruction inst,
 
 // Unary3RegisterShiftedOpTester
 Unary3RegisterShiftedOpTester::Unary3RegisterShiftedOpTester(
-    const NamedUnary3RegisterShiftedOp& decoder)
+    const NamedClassDecoder& decoder)
     : Arm32DecoderTester(decoder) {}
 
 void Unary3RegisterShiftedOpTester::
@@ -310,7 +310,7 @@ ApplySanityChecks(Instruction inst,
 
 // Unary3RegisterShiftedOpTesterRegsNotPc
 Unary3RegisterShiftedOpTesterRegsNotPc::Unary3RegisterShiftedOpTesterRegsNotPc(
-    const NamedUnary3RegisterShiftedOp& decoder)
+    const NamedClassDecoder& decoder)
     : Unary3RegisterShiftedOpTester(decoder) {}
 
 void Unary3RegisterShiftedOpTesterRegsNotPc::
@@ -331,7 +331,7 @@ ApplySanityChecks(Instruction inst,
 
 // Binary3RegisterImmedShiftedOpTester
 Binary3RegisterImmedShiftedOpTester::Binary3RegisterImmedShiftedOpTester(
-    const NamedBinary3RegisterImmedShiftedOp& decoder)
+    const NamedClassDecoder& decoder)
     : Arm32DecoderTester(decoder) {}
 
 void Binary3RegisterImmedShiftedOpTester::
@@ -373,7 +373,7 @@ ApplySanityChecks(Instruction inst,
 // Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS
 Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS::
 Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS(
-    const NamedBinary3RegisterImmedShiftedOp& decoder)
+    const NamedClassDecoder& decoder)
     : Binary3RegisterImmedShiftedOpTester(decoder) {}
 
 void Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS::
@@ -392,7 +392,7 @@ ApplySanityChecks(Instruction inst,
 // Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndSOrRnIsSp
 Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndSOrRnIsSp::
 Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndSOrRnIsSp(
-    const NamedBinary3RegisterImmedShiftedOp& decoder)
+    const NamedClassDecoder& decoder)
     : Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS(decoder) {}
 
 void Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndSOrRnIsSp::
@@ -410,7 +410,7 @@ ApplySanityChecks(Instruction inst,
 
 // Binary4RegisterShiftedOpTester
 Binary4RegisterShiftedOpTester::Binary4RegisterShiftedOpTester(
-    const NamedBinary4RegisterShiftedOp& decoder)
+    const NamedClassDecoder& decoder)
       : Arm32DecoderTester(decoder) {}
 
 void Binary4RegisterShiftedOpTester::
@@ -449,7 +449,7 @@ ApplySanityChecks(Instruction inst,
 // Binary4RegisterShiftedOpTesterRegsNotPc
 Binary4RegisterShiftedOpTesterRegsNotPc::
 Binary4RegisterShiftedOpTesterRegsNotPc(
-    const NamedBinary4RegisterShiftedOp& decoder)
+    const NamedClassDecoder& decoder)
       : Binary4RegisterShiftedOpTester(decoder) {}
 
 void Binary4RegisterShiftedOpTesterRegsNotPc::
@@ -471,7 +471,7 @@ ApplySanityChecks(Instruction inst,
 
 // Binary2RegisterImmedShiftedTestTester
 Binary2RegisterImmedShiftedTestTester::Binary2RegisterImmedShiftedTestTester(
-    const NamedBinary2RegisterImmedShiftedTest& decoder)
+    const NamedClassDecoder& decoder)
     : Arm32DecoderTester(decoder) {}
 
 void Binary2RegisterImmedShiftedTestTester::
@@ -507,7 +507,7 @@ ApplySanityChecks(Instruction inst,
 
 // Binary3RegisterShiftedTestTester
 Binary3RegisterShiftedTestTester::Binary3RegisterShiftedTestTester(
-    const NamedBinary3RegisterShiftedTest& decoder)
+    const NamedClassDecoder& decoder)
     : Arm32DecoderTester(decoder) {}
 
 void Binary3RegisterShiftedTestTester::
@@ -542,7 +542,7 @@ ApplySanityChecks(Instruction inst,
 // Binary3RegisterShiftedTestTesterRegsNotPc
 Binary3RegisterShiftedTestTesterRegsNotPc::
 Binary3RegisterShiftedTestTesterRegsNotPc(
-    const NamedBinary3RegisterShiftedTest& decoder)
+    const NamedClassDecoder& decoder)
     : Binary3RegisterShiftedTestTester(decoder) {}
 
 void Binary3RegisterShiftedTestTesterRegsNotPc::

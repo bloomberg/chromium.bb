@@ -31,9 +31,12 @@ namespace nacl_arm_test {
 class Unary1RegisterImmediateOpTester : public Arm32DecoderTester {
  public:
   explicit Unary1RegisterImmediateOpTester(
-      const NamedUnary1RegisterImmediateOp& decoder);
+      const NamedClassDecoder& decoder);
   virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
                                  const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOpTester);
 };
 
 // Implements a decoder tester for decoder Unary1RegisterImmediateOp
@@ -42,10 +45,13 @@ class Unary1RegisterImmediateOpTesterRegsNotPc
     : public Unary1RegisterImmediateOpTester {
  public:
   explicit Unary1RegisterImmediateOpTesterRegsNotPc(
-      const NamedUnary1RegisterImmediateOp& decoder);
+      const NamedClassDecoder& decoder);
   virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOpTesterRegsNotPc);
 };
 
 // Implements a decoder tester for decoder Unary2RegisterOp.
@@ -61,9 +67,14 @@ class Unary1RegisterImmediateOpTesterRegsNotPc
 //    Rm - The source register.
 class Unary2RegisterOpTester : public Arm32DecoderTester {
  public:
-  explicit Unary2RegisterOpTester(const NamedUnary2RegisterOp& decoder);
-  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
+  explicit Unary2RegisterOpTester(
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOpTester);
 };
 
 // Implements a decoder tester for decoder Unary2RegisterOp, and
@@ -71,9 +82,13 @@ class Unary2RegisterOpTester : public Arm32DecoderTester {
 class Unary2RegisterOpTesterNotRdIsPcAndS : public Unary2RegisterOpTester {
  public:
   explicit Unary2RegisterOpTesterNotRdIsPcAndS(
-      const NamedUnary2RegisterOp& decoder);
-  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOpTesterNotRdIsPcAndS);
 };
 
 // Implements a decoder tester for decoder Binary3RegisterOp.
@@ -90,9 +105,14 @@ class Unary2RegisterOpTesterNotRdIsPcAndS : public Unary2RegisterOpTester {
 //    S - Defines if the flags regsiter is updated.
 class Binary3RegisterOpTester : public Arm32DecoderTester {
  public:
-  explicit Binary3RegisterOpTester(const NamedBinary3RegisterOp& decoder);
-  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
+  explicit Binary3RegisterOpTester(
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpTester);
 };
 
 // Implements a decoder tester for Binary3RegisterOp with a constraint
@@ -101,10 +121,13 @@ class Binary3RegisterOpTesterRegsNotPc
     : public Binary3RegisterOpTester {
  public:
   explicit Binary3RegisterOpTesterRegsNotPc(
-      const NamedBinary3RegisterOp& decoder);
+      const NamedClassDecoder& decoder);
   virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpTesterRegsNotPc);
 };
 
 // Implements a decoder tester for decoder Unary2RegisterImmedShiftedOp.
@@ -121,9 +144,13 @@ class Binary3RegisterOpTesterRegsNotPc
 class Unary2RegisterImmedShiftedOpTester : public Arm32DecoderTester {
  public:
   explicit Unary2RegisterImmedShiftedOpTester(
-      const NamedUnary2RegisterImmedShiftedOp& decoder);
-  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterImmedShiftedOpTester);
 };
 
 // Implements a decoder tester for decoder Unary2RegisterImmedShiftedOp, and
@@ -132,9 +159,10 @@ class Unary2RegisterImmedShiftedOpTesterImm5NotZero
     : public Unary2RegisterImmedShiftedOpTester {
  public:
   explicit Unary2RegisterImmedShiftedOpTesterImm5NotZero(
-      const NamedUnary2RegisterImmedShiftedOp& decoder);
-  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterImmedShiftedOpTesterImm5NotZero);
@@ -146,9 +174,14 @@ class Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS
     : public Unary2RegisterImmedShiftedOpTester {
  public:
   explicit Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS(
-      const NamedUnary2RegisterImmedShiftedOp& decoder);
-  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS);
 };
 
 // Implements a decoder tester for decoder Unary3RegisterShiftedOp.
@@ -167,9 +200,13 @@ class Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS
 class Unary3RegisterShiftedOpTester : public Arm32DecoderTester {
  public:
   explicit Unary3RegisterShiftedOpTester(
-      const NamedUnary3RegisterShiftedOp& decoder);
-  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary3RegisterShiftedOpTester);
 };
 
 // Implements a decoder tester for decoder Unary3RegisterShiftedOp with
@@ -178,10 +215,13 @@ class Unary3RegisterShiftedOpTesterRegsNotPc
     : public Unary3RegisterShiftedOpTester {
  public:
   explicit Unary3RegisterShiftedOpTesterRegsNotPc(
-      const NamedUnary3RegisterShiftedOp& decoder);
+      const NamedClassDecoder& decoder);
   virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary3RegisterShiftedOpTesterRegsNotPc);
 };
 
 // Implements a decoder tester for decoder Binary3RegisterImmedShiftedOp.
@@ -199,9 +239,13 @@ class Unary3RegisterShiftedOpTesterRegsNotPc
 class Binary3RegisterImmedShiftedOpTester : public Arm32DecoderTester {
  public:
   explicit Binary3RegisterImmedShiftedOpTester(
-      const NamedBinary3RegisterImmedShiftedOp& decoder);
-  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterImmedShiftedOpTester);
 };
 
 // Implements a decoder tester for decoder Binary3RegisterImmedShiftedOp, and
@@ -210,9 +254,14 @@ class Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS
     : public Binary3RegisterImmedShiftedOpTester {
  public:
   explicit Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS(
-      const NamedBinary3RegisterImmedShiftedOp& decoder);
-  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS);
 };
 
 // Implements a decoder tester for decoder Binary3RegisterImmedShiftedOp, and
@@ -221,9 +270,14 @@ class Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndSOrRnIsSp
     : public Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS {
  public:
   explicit Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndSOrRnIsSp(
-      const NamedBinary3RegisterImmedShiftedOp& decoder);
-  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndSOrRnIsSp);
 };
 
 // Implements a decoder tester for decoder Binary4RegisterShiftedOp.
@@ -243,10 +297,13 @@ class Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndSOrRnIsSp
 class Binary4RegisterShiftedOpTester : public Arm32DecoderTester {
  public:
   explicit Binary4RegisterShiftedOpTester(
-      const NamedBinary4RegisterShiftedOp &decoder);
+      const NamedClassDecoder &decoder);
   virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterShiftedOpTester);
 };
 
 // Implements a decoder tester for decoder Binary4RegisterShiftedOp
@@ -256,10 +313,13 @@ class Binary4RegisterShiftedOpTesterRegsNotPc
     : public Binary4RegisterShiftedOpTester {
  public:
   explicit Binary4RegisterShiftedOpTesterRegsNotPc(
-      const NamedBinary4RegisterShiftedOp &decoder);
+      const NamedClassDecoder &decoder);
   virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterShiftedOpTesterRegsNotPc);
 };
 
 // Implements a decoder tester for decoder Binary2RegisterImmedShiftedTest.
@@ -276,9 +336,13 @@ class Binary4RegisterShiftedOpTesterRegsNotPc
 class Binary2RegisterImmedShiftedTestTester : public Arm32DecoderTester {
  public:
   explicit Binary2RegisterImmedShiftedTestTester(
-      const NamedBinary2RegisterImmedShiftedTest& decoder);
-  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterImmedShiftedTestTester);
 };
 
 // Implements a decoder tester for decoder Binary3RegisterShiftedTest.
@@ -297,9 +361,13 @@ class Binary2RegisterImmedShiftedTestTester : public Arm32DecoderTester {
 class Binary3RegisterShiftedTestTester : public Arm32DecoderTester {
  public:
   explicit Binary3RegisterShiftedTestTester(
-      const NamedBinary3RegisterShiftedTest& decoder);
-  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterShiftedTestTester);
 };
 
 // Implements a decoder tester for decoder Binary3RegisterShiftedTest, and
@@ -308,9 +376,13 @@ class Binary3RegisterShiftedTestTesterRegsNotPc
     : public Binary3RegisterShiftedTestTester {
  public:
   explicit Binary3RegisterShiftedTestTesterRegsNotPc(
-      const NamedBinary3RegisterShiftedTest& decoder);
-  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const NamedClassDecoder& decoder);
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterShiftedTestTesterRegsNotPc);
 };
 
 }  // namespace

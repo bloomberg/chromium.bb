@@ -35,8 +35,7 @@ import dgen_output
 # the "action_filter" methods.
 
 # Defines the header for decoder.h
-H_HEADER="""
-%(FILE_HEADER)s
+H_HEADER="""%(FILE_HEADER)s
 
 #ifndef %(IFDEF_NAME)s
 #define %(IFDEF_NAME)s
@@ -81,12 +80,10 @@ DECODER_DECLARE_FIELD_COMMENTS="""
   // are created once as instance fields, and then returned
   // by the table methods above. This speeds up the code since
   // the class decoders need to only be built once (and reused
-  // for each call to "decode").
-"""
+  // for each call to "decode")."""
 
 DECODER_DECLARE_FIELD="""
-  const %(decoder)s %(decoder)s_instance_;
-"""
+  const %(decoder)s %(decoder)s_instance_;"""
 
 DECODER_DECLARE_FOOTER="""
 };
@@ -131,8 +128,7 @@ def generate_h(decoder, decoder_name, filename, out):
     out.write(H_FOOTER % values)
 
 # Defines the header for DECODER.h
-CC_HEADER="""
-%(FILE_HEADER)s
+CC_HEADER="""%(FILE_HEADER)s
 
 #include "%(header_filename)s"
 
@@ -143,12 +139,10 @@ namespace nacl_arm_dec {
 """
 
 CONSTRUCTOR_HEADER="""
-%(decoder_name)s::%(decoder_name)s() : DecoderState()
-"""
+%(decoder_name)s::%(decoder_name)s() : DecoderState()"""
 
 CONSTRUCTOR_FIELD_INIT="""
-  , %(decoder)s_instance_()
-"""
+  , %(decoder)s_instance_()"""
 
 CONSTRUCTOR_FOOTER="""
 {}

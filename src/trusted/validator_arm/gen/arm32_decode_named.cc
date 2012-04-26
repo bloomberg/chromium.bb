@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright 2012 The Native Client Authors.  All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
@@ -8,11 +6,9 @@
 
 // DO NOT EDIT: GENERATED CODE
 
-
 #ifndef NACL_TRUSTED_BUT_NOT_TCB
 #error This file is not meant for use in the TCB
 #endif
-
 
 #include "native_client/src/trusted/validator_arm/gen/arm32_decode_named_decoder.h"
 
@@ -25,177 +21,91 @@ namespace nacl_arm_test {
 
 NamedArm32DecoderState::NamedArm32DecoderState()
   : nacl_arm_dec::DecoderState()
-
   , Binary2RegisterImmedShiftedTest_instance_()
-
   , Binary3RegisterImmedShiftedOp_instance_()
-
   , Binary3RegisterOp_instance_()
-
   , Binary3RegisterShiftedTest_instance_()
-
   , Binary4RegisterShiftedOp_instance_()
-
   , Branch_instance_()
-
   , Breakpoint_instance_()
-
   , BxBlx_instance_()
-
   , CoprocessorOp_instance_()
-
   , DataProc_instance_()
-
   , Deprecated_instance_()
-
   , EffectiveNoOp_instance_()
-
   , Forbidden_instance_()
-
   , ImmediateBic_instance_()
-
   , LoadCoprocessor_instance_()
-
   , LoadDoubleExclusive_instance_()
-
   , LoadDoubleI_instance_()
-
   , LoadDoubleR_instance_()
-
   , LoadExclusive_instance_()
-
   , LoadImmediate_instance_()
-
   , LoadMultiple_instance_()
-
   , LoadRegister_instance_()
-
   , LongMultiply_instance_()
-
   , MoveDoubleFromCoprocessor_instance_()
-
   , MoveFromCoprocessor_instance_()
-
   , MoveToStatusRegister_instance_()
-
   , Multiply_instance_()
-
   , PackSatRev_instance_()
-
   , Roadblock_instance_()
-
   , SatAddSub_instance_()
-
   , StoreCoprocessor_instance_()
-
   , StoreExclusive_instance_()
-
   , StoreImmediate_instance_()
-
   , StoreRegister_instance_()
-
   , Test_instance_()
-
   , TestImmediate_instance_()
-
   , Unary1RegisterImmediateOp_instance_()
-
   , Unary2RegisterImmedShiftedOp_instance_()
-
   , Unary2RegisterOp_instance_()
-
   , Unary3RegisterShiftedOp_instance_()
-
   , Undefined_instance_()
-
   , Unpredictable_instance_()
-
   , VectorLoad_instance_()
-
   , VectorStore_instance_()
-
   , Cmn_Rule_33_A1_P76Binary2RegisterImmedShiftedTest_instance_()
-
   , Cmp_Rule_36_A1_P82Binary2RegisterImmedShiftedTest_instance_()
-
   , Teq_Rule_228_A1_P450Binary2RegisterImmedShiftedTest_instance_()
-
   , Tst_Rule_231_A1_P456Binary2RegisterImmedShiftedTest_instance_()
-
   , Adc_Rule_2_A1_P16Binary3RegisterImmedShiftedOp_instance_()
-
   , Add_Rule_6_A1_P24Binary3RegisterImmedShiftedOp_instance_()
-
   , And_Rule_7_A1_P36Binary3RegisterImmedShiftedOp_instance_()
-
   , Bic_Rule_20_A1_P52Binary3RegisterImmedShiftedOp_instance_()
-
   , Eor_Rule_45_A1_P96Binary3RegisterImmedShiftedOp_instance_()
-
   , Orr_Rule_114_A1_P230Binary3RegisterImmedShiftedOp_instance_()
-
   , Rsb_Rule_143_P286Binary3RegisterImmedShiftedOp_instance_()
-
   , Rsc_Rule_146_A1_P292Binary3RegisterImmedShiftedOp_instance_()
-
   , Sbc_Rule_152_A1_P304Binary3RegisterImmedShiftedOp_instance_()
-
   , SubRule_213_A1_P422Binary3RegisterImmedShiftedOp_instance_()
-
   , Asr_Rule_15_A1_P42Binary3RegisterOp_instance_()
-
   , Lsl_Rule_89_A1_P180Binary3RegisterOp_instance_()
-
   , Lsr_Rule_91_A1_P184Binary3RegisterOp_instance_()
-
   , Ror_Rule_140_A1_P280Binary3RegisterOp_instance_()
-
   , Cmn_Rule_34_A1_P78Binary3RegisterShiftedTest_instance_()
-
   , Cmp_Rule_37_A1_P84Binary3RegisterShiftedTest_instance_()
-
   , Teq_Rule_229_A1_P452Binary3RegisterShiftedTest_instance_()
-
   , Tst_Rule_232_A1_P458Binary3RegisterShiftedTest_instance_()
-
   , Adc_Rule_3_A1_P18Binary4RegisterShiftedOp_instance_()
-
   , Add_Rule_7_A1_P26Binary4RegisterShiftedOp_instance_()
-
   , And_Rule_13_A1_P38Binary4RegisterShiftedOp_instance_()
-
   , Bic_Rule_21_A1_P54Binary4RegisterShiftedOp_instance_()
-
   , Eor_Rule_46_A1_P98Binary4RegisterShiftedOp_instance_()
-
   , Orr_Rule_115_A1_P212Binary4RegisterShiftedOp_instance_()
-
   , Rsb_Rule_144_A1_P288Binary4RegisterShiftedOp_instance_()
-
   , Rsc_Rule_147_A1_P294Binary4RegisterShiftedOp_instance_()
-
   , Sbc_Rule_153_A1_P306Binary4RegisterShiftedOp_instance_()
-
   , Sub_Rule_214_A1_P424Binary4RegisterShiftedOp_instance_()
-
   , Mov_Rule_96_A2_P_194Unary1RegisterImmediateOp_instance_()
-
   , Asr_Rule_14_A1_P40Unary2RegisterImmedShiftedOp_instance_()
-
   , Lsl_Rule_88_A1_P178Unary2RegisterImmedShiftedOp_instance_()
-
   , Lsr_Rule_90_A1_P182Unary2RegisterImmedShiftedOp_instance_()
-
   , Mvn_Rule_107_A1_P216Unary2RegisterImmedShiftedOp_instance_()
-
   , Ror_Rule_139_A1_P278Unary2RegisterImmedShiftedOp_instance_()
-
   , Mov_Rule_97_A1_P196Unary2RegisterOp_instance_()
-
   , Rrx_Rule_141_A1_P282Unary2RegisterOp_instance_()
-
   , Mvn_Rule_108_A1_P218Unary3RegisterShiftedOp_instance_()
-
 {}
 
 NamedArm32DecoderState::~NamedArm32DecoderState() {}

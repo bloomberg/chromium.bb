@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright 2012 The Native Client Authors.  All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
@@ -8,18 +6,15 @@
 
 // DO NOT EDIT: GENERATED CODE
 
-
 #ifndef NACL_TRUSTED_BUT_NOT_TCB
 #error This file is not meant for use in the TCB
 #endif
-
 
 
 #include "gtest/gtest.h"
 #include "native_client/src/trusted/validator_arm/inst_classes_testers.h"
 
 namespace nacl_arm_test {
-
 
 class Cmn_Rule_33_A1_P76Binary2RegisterImmedShiftedTestTester
     : public Binary2RegisterImmedShiftedTestTester {
