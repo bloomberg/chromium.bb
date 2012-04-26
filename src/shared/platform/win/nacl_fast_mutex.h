@@ -18,6 +18,7 @@
 
 struct NaClFastMutex {
   CRITICAL_SECTION mu;
+  int is_held;
 };
 
 #endif  /* NATIVE_CLIENT_SRC_SHARED_PLATFORM_POSIX_NACL_FAST_MUTEX_H_ */
