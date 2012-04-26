@@ -71,10 +71,16 @@ FileManager.prototype = {
       'answer.py?hl=en&answer=1061547';
 
   /**
-   * Location of the FAQ about Google Docs.
+   * Location of the FAQ about Google Drive.
    */
   var GOOGLE_DRIVE_FAQ_URL =
       'https://support.google.com/chromeos/?hl=en&p=filemanager_drive';
+
+  /**
+   * Location of the help page about connecting to Google Drive.
+   */
+  var GOOGLE_DRIVE_ERROR_HELP_URL =
+      'https://support.google.com/chromeos/?p=filemanager_driveerror';
 
   /**
   * Location of the FAQ about the file actions.
@@ -746,7 +752,7 @@ FileManager.prototype = {
     learnMore.className = 'gdata learn-more plain-link';
     learnMore.textContent = str('GDATA_LEARN_MORE');
     learnMore.addEventListener('click', function() {
-       chrome.tabs.create({url: GOOGLE_DRIVE_FAQ_URL});
+       chrome.tabs.create({url: GOOGLE_DRIVE_ERROR_HELP_URL});
     });
     this.unmountedPanel_.appendChild(learnMore);
   };
@@ -2497,11 +2503,16 @@ FileManager.prototype = {
         if (props.filter(function(p) {return !p.availableOffline}).length) {
           this.alert.showHtml(
               str('OFFLINE_HEADER'),
-              strf(
-                  urls.length == 1 ?
-                      'OFFLINE_MESSAGE' :
-                      'OFFLINE_MESSAGE_PLURAL',
-                  str('OFFLINE_COLUMN_LABEL')));
+              props[0].hosted ?
+                strf(
+                    urls.length == 1 ?
+                        'HOSTED_OFFLINE_MESSAGE' :
+                        'HOSTED_OFFLINE_MESSAGE_PLURAL') :
+                strf(
+                    urls.length == 1 ?
+                        'OFFLINE_MESSAGE' :
+                        'OFFLINE_MESSAGE_PLURAL',
+                    str('OFFLINE_COLUMN_LABEL')));
           return;
         }
         callback(urls);
@@ -3086,9 +3097,9 @@ FileManager.prototype = {
     // TODO(dgozman): revisit this method when gdata properties updated event
     // will be available.
     var self = this;
+    var pin = checkbox.checked;
     function callback(props) {
-      if (props.errorCode) {
-        // TODO(serya): Do not show the message if unpin failed.
+      if (props.errorCode && pin) {
         self.metadataCache_.get(entry, 'filesystem', function(filesystem) {
           self.alert.showHtml(str('GDATA_OUT_OF_SPACE_HEADER'),
               strf('GDATA_OUT_OF_SPACE_MESSAGE',
@@ -3099,18 +3110,7 @@ FileManager.prototype = {
       self.metadataCache_.clear(entry, 'gdata');
       checkbox.checked = props[0].isPinned;
     }
-    var pin = checkbox.checked;
-    this.metadataCache_.get(entry, 'gdata', function(gdata) {
-      if (util.isOffline() && pin && !gdata.present) {
-        // If we are offline, we cannot pin a file that is not already present.
-        checkbox.checked = false;  // Revert the default action.
-        self.alert.showHtml(
-            str('OFFLINE_HEADER'),
-            strf('OFFLINE_MESSAGE', str('OFFLINE_COLUMN_LABEL')));
-        return;
-      }
-      chrome.fileBrowserPrivate.pinGDataFile([entry.toURL()], pin, callback);
-    });
+    chrome.fileBrowserPrivate.pinGDataFile([entry.toURL()], pin, callback);
     event.preventDefault();
   };
 
@@ -3347,7 +3347,9 @@ FileManager.prototype = {
     this.checkFreeSpace_(this.getCurrentDirectory());
 
     // TODO(dgozman): title may be better than this.
-    this.document_.title = this.getCurrentDirectory().substr(1);
+    this.document_.title = this.getCurrentDirectory().substr(1).replace(
+        new RegExp('^' + DirectoryModel.GDATA_DIRECTORY),
+        str('GDATA_PRODUCT_NAME'));
 
     if (this.filesystemObserverId_)
       this.metadataCache_.removeObserver(this.filesystemObserverId_);
