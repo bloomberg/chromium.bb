@@ -41,7 +41,8 @@ H_HEADER="""%(FILE_HEADER)s
 #define %(IFDEF_NAME)s
 
 #include "native_client/src/trusted/validator_arm/decode.h"
-#include "native_client/src/trusted/validator_arm/inst_classes.h"
+#include "native_client/src/trusted/validator_arm/actual_classes.h"
+#include "native_client/src/trusted/validator_arm/baseline_classes.h"
 
 namespace nacl_arm_dec {
 """
@@ -107,7 +108,7 @@ def generate_h(decoder, decoder_name, filename, out):
     if not decoder.primary: raise Exception('No tables provided.')
 
     # Before starting, remove all testing information from the parsed tables.
-    decoder = decoder.action_filter(['name'])
+    decoder = decoder.action_filter(['actual'])
 
     values = {
         'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
@@ -122,7 +123,7 @@ def generate_h(decoder, decoder_name, filename, out):
       out.write(DECODER_DECLARE_METHOD % values)
     out.write(DECODER_DECLARE_FIELD_COMMENTS)
     for action in decoder.decoders():
-      values['decoder'] = action.name;
+      values['decoder'] = action.actual;
       out.write(DECODER_DECLARE_FIELD % values)
     out.write(DECODER_DECLARE_FOOTER % values)
     out.write(H_FOOTER % values)
@@ -202,7 +203,7 @@ def generate_cc(decoder, decoder_name, filename, out):
     assert filename.endswith('.cc')
 
     # Before starting, remove all testing information from the parsed tables.
-    decoder = decoder.action_filter(['name'])
+    decoder = decoder.action_filter(['actual'])
     values = {
         'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
         'header_filename': filename[:-2] + 'h',
@@ -218,7 +219,7 @@ def generate_cc(decoder, decoder_name, filename, out):
 def _generate_constructors(decoder, values, out):
   out.write(CONSTRUCTOR_HEADER % values)
   for decoder in decoder.decoders():
-    values['decoder'] = decoder.name
+    values['decoder'] = decoder.actual
     out.write(CONSTRUCTOR_FIELD_INIT % values)
   out.write(CONSTRUCTOR_FOOTER % values)
 
@@ -257,7 +258,7 @@ def _generate_methods(decoder, values, out):
                                      for p in row.patterns])
       out.write(METHOD_DISPATCH % values)
       if row.action.__class__.__name__ == 'DecoderAction':
-        values['decoder'] = row.action.name
+        values['decoder'] = row.action.actual
         out.write(METHOD_DISPATCH_CLASS_DECODER % values)
       elif row.action.__class__.__name__ == 'DecoderMethod':
         values['subtable_name'] = row.action.name

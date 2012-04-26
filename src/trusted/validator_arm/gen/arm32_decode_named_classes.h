@@ -14,6 +14,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_GEN_ARM32_DECODE_NAMED_CLASSES_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_GEN_ARM32_DECODE_NAMED_CLASSES_H_
 
+#include "native_client/src/trusted/validator_arm/actual_classes.h"
+#include "native_client/src/trusted/validator_arm/baseline_classes.h"
 #include "native_client/src/trusted/validator_arm/named_class_decoder.h"
 
 /*
@@ -852,6 +854,19 @@ class NamedVectorStore
  private:
   nacl_arm_dec::VectorStore decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorStore);
+};
+
+class NamedDefs12To15RdRnRsRmNotPc
+    : public NamedClassDecoder {
+ public:
+  inline NamedDefs12To15RdRnRsRmNotPc()
+    : NamedClassDecoder(decoder_, "Defs12To15RdRnRsRmNotPc")
+  {}
+  virtual ~NamedDefs12To15RdRnRsRmNotPc() {}
+
+ private:
+  nacl_arm_dec::Defs12To15RdRnRsRmNotPc decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15RdRnRsRmNotPc);
 };
 
 class NamedCmn_Rule_33_A1_P76Binary2RegisterImmedShiftedTest

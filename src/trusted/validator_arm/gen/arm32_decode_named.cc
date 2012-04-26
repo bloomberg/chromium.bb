@@ -333,6 +333,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg(
    return Mvn_Rule_107_A1_P216Unary2RegisterImmedShiftedOp_instance_;
   }
 
+  if (((insn & 0x01E00000) == 0x01A00000) && ((insn & 0x00000F80) == 0x00000000) && ((insn & 0x00000060) == 0x00000060)) {
+   return Rrx_Rule_141_A1_P282Unary2RegisterOp_instance_;
+  }
+
   if (((insn & 0x01E00000) == 0x00C00000) && (true) && (true)) {
    return Sbc_Rule_152_A1_P304Binary3RegisterImmedShiftedOp_instance_;
   }
@@ -341,12 +345,8 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg(
    return Lsl_Rule_88_A1_P178Unary2RegisterImmedShiftedOp_instance_;
   }
 
-  if (((insn & 0x01E00000) == 0x01C00000) && (true) && (true)) {
-   return Bic_Rule_20_A1_P52Binary3RegisterImmedShiftedOp_instance_;
-  }
-
-  if (((insn & 0x01E00000) == 0x00400000) && (true) && (true)) {
-   return SubRule_213_A1_P422Binary3RegisterImmedShiftedOp_instance_;
+  if (((insn & 0x01E00000) == 0x00800000) && (true) && (true)) {
+   return Add_Rule_6_A1_P24Binary3RegisterImmedShiftedOp_instance_;
   }
 
   if (((insn & 0x01E00000) == 0x00A00000) && (true) && (true)) {
@@ -357,8 +357,12 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg(
    return Asr_Rule_14_A1_P40Unary2RegisterImmedShiftedOp_instance_;
   }
 
-  if (((insn & 0x01E00000) == 0x00800000) && (true) && (true)) {
-   return Add_Rule_6_A1_P24Binary3RegisterImmedShiftedOp_instance_;
+  if (((insn & 0x01E00000) == 0x01C00000) && (true) && (true)) {
+   return Bic_Rule_20_A1_P52Binary3RegisterImmedShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x00400000) && (true) && (true)) {
+   return SubRule_213_A1_P422Binary3RegisterImmedShiftedOp_instance_;
   }
 
   if (((insn & 0x01F00000) == 0x01500000) && (true) && (true)) {
@@ -367,10 +371,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg(
 
   if (((insn & 0x01F00000) == 0x01700000) && (true) && (true)) {
    return Cmn_Rule_33_A1_P76Binary2RegisterImmedShiftedTest_instance_;
-  }
-
-  if (((insn & 0x01E00000) == 0x01A00000) && ((insn & 0x00000F80) == 0x00000000) && ((insn & 0x00000060) == 0x00000060)) {
-   return Rrx_Rule_141_A1_P282Unary2RegisterOp_instance_;
   }
 
   if (((insn & 0x01E00000) == 0x01A00000) && (true) && ((insn & 0x00000060) == 0x00000020)) {
@@ -403,6 +403,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg(
 const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg_shifted(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
+  if (((insn & 0x01E00000) == 0x01E00000) && (true)) {
+   return Mvn_Rule_108_A1_P218Unary3RegisterShiftedOp_instance_;
+  }
+
   if (((insn & 0x01E00000) == 0x00A00000) && (true)) {
    return Adc_Rule_3_A1_P18Binary4RegisterShiftedOp_instance_;
   }
@@ -443,20 +447,12 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg_shifted(
    return Cmn_Rule_34_A1_P78Binary3RegisterShiftedTest_instance_;
   }
 
-  if (((insn & 0x01E00000) == 0x01C00000) && (true)) {
-   return Bic_Rule_21_A1_P54Binary4RegisterShiftedOp_instance_;
-  }
-
   if (((insn & 0x01E00000) == 0x00C00000) && (true)) {
    return Sbc_Rule_153_A1_P306Binary4RegisterShiftedOp_instance_;
   }
 
   if (((insn & 0x01E00000) == 0x01800000) && (true)) {
    return Orr_Rule_115_A1_P212Binary4RegisterShiftedOp_instance_;
-  }
-
-  if (((insn & 0x01E00000) == 0x01E00000) && (true)) {
-   return Mvn_Rule_108_A1_P218Unary3RegisterShiftedOp_instance_;
   }
 
   if (((insn & 0x01F00000) == 0x01500000) && (true)) {
@@ -477,6 +473,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg_shifted(
 
   if (((insn & 0x01E00000) == 0x00E00000) && (true)) {
    return Rsc_Rule_147_A1_P294Binary4RegisterShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x01C00000) && (true)) {
+   return Bic_Rule_21_A1_P54Binary4RegisterShiftedOp_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -505,8 +505,12 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extra_load_store(
    return LoadRegister_instance_;
   }
 
-  if (((insn & 0x00000060) == 0x00000040) && ((insn & 0x00500000) == 0x00000000)) {
-   return LoadDoubleR_instance_;
+  if (((insn & 0x00000060) == 0x00000040) && ((insn & 0x00500000) == 0x00500000)) {
+   return LoadImmediate_instance_;
+  }
+
+  if (((insn & 0x00000020) == 0x00000020) && ((insn & 0x00500000) == 0x00500000)) {
+   return LoadImmediate_instance_;
   }
 
   if (((insn & 0x00000020) == 0x00000020) && ((insn & 0x00500000) == 0x00400000)) {
@@ -517,12 +521,8 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extra_load_store(
    return StoreRegister_instance_;
   }
 
-  if (((insn & 0x00000060) == 0x00000040) && ((insn & 0x00500000) == 0x00500000)) {
-   return LoadImmediate_instance_;
-  }
-
-  if (((insn & 0x00000020) == 0x00000020) && ((insn & 0x00500000) == 0x00500000)) {
-   return LoadImmediate_instance_;
+  if (((insn & 0x00000060) == 0x00000040) && ((insn & 0x00500000) == 0x00000000)) {
+   return LoadDoubleR_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -801,6 +801,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_misc_hints_simd(
 const NamedClassDecoder& NamedArm32DecoderState::decode_msr_and_hints(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
+  if (((insn & 0x00400000) == 0x00000000) && ((insn & 0x000F0000) == 0x00000000) && ((insn & 0x000000F0) == 0x000000F0)) {
+   return EffectiveNoOp_instance_;
+  }
+
   if (((insn & 0x00400000) == 0x00000000) && ((insn & 0x000F0000) == 0x00000000) && ((insn & 0x000000FF) == 0x00000002)) {
    return EffectiveNoOp_instance_;
   }
@@ -831,10 +835,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_msr_and_hints(
 
   if ((true) && (true) && (true)) {
    return Forbidden_instance_;
-  }
-
-  if (((insn & 0x00400000) == 0x00000000) && ((insn & 0x000F0000) == 0x00000000) && ((insn & 0x000000F0) == 0x000000F0)) {
-   return EffectiveNoOp_instance_;
   }
 
   if (((insn & 0x00400000) == 0x00000000) && ((insn & 0x000F0000) == 0x00040000) && (true)) {

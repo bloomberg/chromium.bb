@@ -48,7 +48,6 @@ class DecoderTester {
   DecoderTester();
   virtual ~DecoderTester() {}
 
- protected:
   // Once an instruction is decoded, this method is called to apply
   // sanity checks on the matched decoder. The default checks that the
   // expected class name matches the name of the decoder, and that
@@ -60,6 +59,14 @@ class DecoderTester {
   // Returns the expected decoder.
   virtual const NamedClassDecoder& ExpectedDecoder() const = 0;
 
+  // Defines what should be done once a test pattern has been generated.
+  virtual void ProcessMatch() = 0;
+
+  // Allows the injection of an instruction. Used one to inject the instruction
+  // that the subsequent call ProcessMatch will use.
+  virtual void InjectInstruction(nacl_arm_dec::Instruction inst) = 0;
+
+ protected:
   // Returns a printable version of the contents of the tested instruction.
   // Used to print out useful test failures.
   // Note: This function may not be thread safe, and the result may
@@ -69,9 +76,6 @@ class DecoderTester {
   // Returns the character at the given index in the pattern that
   // should be tested.
   virtual char Pattern(int index) const = 0;
-
-  // Defines what should be done once a test pattern has been generated.
-  virtual void ProcessMatch() = 0;
 
   // Conceptually sets the corresponding bit in the instruction.
   virtual void SetBit(int index, bool value) = 0;
@@ -121,12 +125,13 @@ class Arm32DecoderTester : public DecoderTester {
       const NamedClassDecoder& expected_decoder);
   virtual ~Arm32DecoderTester();
   void Test(const char* pattern);
+  virtual const NamedClassDecoder& ExpectedDecoder() const;
+  virtual void ProcessMatch();
+  virtual void InjectInstruction(nacl_arm_dec::Instruction inst);
 
  protected:
-  virtual const NamedClassDecoder& ExpectedDecoder() const;
   virtual const char* InstContents() const;
   virtual char Pattern(int index) const;
-  virtual void ProcessMatch();
   virtual void SetBit(int index, bool value);
   virtual void SetBitRange(int index, int length, uint32_t value);
 
@@ -163,11 +168,13 @@ class ThumbWord1DecoderTester : public DecoderTester {
   // Test all possible patterns for word 1.
   void Test();
 
- protected:
   virtual const NamedClassDecoder& ExpectedDecoder() const;
+  virtual void ProcessMatch();
+  virtual void InjectInstruction(nacl_arm_dec::Instruction inst);
+
+ protected:
   virtual const char* InstContents() const;
   virtual char Pattern(int index) const;
-  virtual void ProcessMatch();
   virtual void SetBit(int index, bool value);
   virtual void SetBitRange(int index, int length, uint32_t value);
 
@@ -199,11 +206,13 @@ class ThumbWord2DecoderTester : public DecoderTester {
   // Tests all patterns for word 2.
   void Test();
 
- protected:
   virtual const NamedClassDecoder& ExpectedDecoder() const;
+  virtual void ProcessMatch();
+  virtual void InjectInstruction(nacl_arm_dec::Instruction inst);
+
+ protected:
   virtual const char* InstContents() const;
   virtual char Pattern(int index) const;
-  virtual void ProcessMatch();
   virtual void SetBit(int index, bool value);
   virtual void SetBitRange(int index, int length, uint32_t value);
 
@@ -213,7 +222,9 @@ class ThumbWord2DecoderTester : public DecoderTester {
   // The pattern for the second word of the thumb instruction.
   const char* pattern_;
 
+ private:
   friend class ThumbDecoderTester;
+  NACL_DISALLOW_COPY_AND_ASSIGN(ThumbWord2DecoderTester);
 };
 
 // Defines a decoder tester that enumerates a thumb instruction pattern,
@@ -225,20 +236,18 @@ class ThumbWord2DecoderTester : public DecoderTester {
 // Two word thumb instructions must be of length 32 (with a '|'
 // separating each 16 character word pattern).
 class ThumbDecoderTester : public DecoderTester {
-  // TODO(karl): Make this use the thumb decoder rather than Arm32.
-  friend class ThumbWord1DecoderTester;
-  friend class ThumbWord2DecoderTester;
  public:
   explicit ThumbDecoderTester(
       const NamedClassDecoder& expected_decoder);
   virtual ~ThumbDecoderTester();
   void Test(const char* pattern);
+  virtual const NamedClassDecoder& ExpectedDecoder() const;
+  virtual void ProcessMatch();
+  virtual void InjectInstruction(nacl_arm_dec::Instruction inst);
 
  protected:
-  virtual const NamedClassDecoder& ExpectedDecoder() const;
   virtual const char* InstContents() const;
   virtual char Pattern(int index) const;
-  virtual void ProcessMatch();
   virtual void SetBit(int index, bool value);
   virtual void SetBitRange(int index, int length, uint32_t value);
 
@@ -260,6 +269,11 @@ class ThumbDecoderTester : public DecoderTester {
 
   // Decoeder tester for the second word of the thumb instruction.
   ThumbWord2DecoderTester word2_tester_;
+
+ private:
+  friend class ThumbWord1DecoderTester;
+  friend class ThumbWord2DecoderTester;
+  NACL_DISALLOW_COPY_AND_ASSIGN(ThumbDecoderTester);
 };
 
 }  // namespace

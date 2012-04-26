@@ -182,6 +182,10 @@ char Arm32DecoderTester::Pattern(int index) const {
   return pattern_[kArm32InstSize - (index + 1)];
 }
 
+void Arm32DecoderTester::InjectInstruction(nacl_arm_dec::Instruction inst) {
+  inst_ = inst;
+}
+
 void Arm32DecoderTester::ProcessMatch() {
   // Completed pattern, decode and test resulting state.
   const NamedClassDecoder& decoder = state_.decode_named(inst_);
@@ -242,6 +246,11 @@ void ThumbWord1DecoderTester::ProcessMatch() {
   thumb_tester_->word2_tester_.Test();
 }
 
+void ThumbWord1DecoderTester::InjectInstruction(
+    nacl_arm_dec::Instruction inst) {
+  thumb_tester_->InjectInstruction(inst);
+}
+
 void ThumbWord1DecoderTester::SetBit(int index, bool value) {
   ASSERT_LT(index, kThumbWordSize) << "ThumbWord1DecoderTester::SetBit("
                                    << index << ", " << ")";
@@ -296,6 +305,11 @@ void ThumbWord2DecoderTester::ProcessMatch() {
   // Expand word two (or if only a single word pattern, all possible
   // patterns that could follow it in word 2).
   thumb_tester_->ProcessMatch();
+}
+
+void ThumbWord2DecoderTester::InjectInstruction(
+    nacl_arm_dec::Instruction inst) {
+  thumb_tester_->InjectInstruction(inst);
 }
 
 void ThumbWord2DecoderTester::SetBit(int index, bool value) {
@@ -377,6 +391,10 @@ void ThumbDecoderTester::ProcessMatch() {
   const NamedClassDecoder& decoder = state_.decode_named(inst_);
   if (MAY_BE_SAFE == decoder.safety(inst_)) ApplySanityChecks(inst_, decoder);
   return;
+}
+
+void ThumbDecoderTester::InjectInstruction(nacl_arm_dec::Instruction inst) {
+  inst_ = inst;
 }
 
 void ThumbDecoderTester::SetBit(int index, bool value) {

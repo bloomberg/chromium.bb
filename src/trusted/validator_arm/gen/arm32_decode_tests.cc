@@ -12,6 +12,7 @@
 
 
 #include "gtest/gtest.h"
+#include "native_client/src/trusted/validator_arm/actual_vs_baseline.h"
 #include "native_client/src/trusted/validator_arm/inst_classes_testers.h"
 
 namespace nacl_arm_test {
@@ -530,12 +531,6 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Add_Rule_7_A1_P26Binary4RegisterShiftedOpRegsNotPc_cccc0000100snnnnddddssss0tt1mmmm_Test) {
-  Add_Rule_7_A1_P26Binary4RegisterShiftedOpTesterRegsNotPc tester;
-  tester.Test("cccc0000100snnnnddddssss0tt1mmmm");
-}
-
-TEST_F(Arm32DecoderStateTests,
        And_Rule_13_A1_P38Binary4RegisterShiftedOpRegsNotPc_cccc0000000unnnnddddssss0tt1mmmm_Test) {
   And_Rule_13_A1_P38Binary4RegisterShiftedOpTesterRegsNotPc tester;
   tester.Test("cccc0000000unnnnddddssss0tt1mmmm");
@@ -560,12 +555,6 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Rsb_Rule_144_A1_P288Binary4RegisterShiftedOpRegsNotPc_cccc0000011snnnnddddssss0tt1mmmm_Test) {
-  Rsb_Rule_144_A1_P288Binary4RegisterShiftedOpTesterRegsNotPc tester;
-  tester.Test("cccc0000011snnnnddddssss0tt1mmmm");
-}
-
-TEST_F(Arm32DecoderStateTests,
        Rsc_Rule_147_A1_P294Binary4RegisterShiftedOp_cccc0000111unnnnddddssss0tt1mmmm_Test) {
   Rsc_Rule_147_A1_P294Binary4RegisterShiftedOpTester tester;
   tester.Test("cccc0000111unnnnddddssss0tt1mmmm");
@@ -581,6 +570,22 @@ TEST_F(Arm32DecoderStateTests,
        Sub_Rule_214_A1_P424Binary4RegisterShiftedOpRegsNotPc_cccc0000010unnnnddddssss0tt1mmmm_Test) {
   Sub_Rule_214_A1_P424Binary4RegisterShiftedOpTesterRegsNotPc tester;
   tester.Test("cccc0000010unnnnddddssss0tt1mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       Add_Rule_7_A1_P26Binary4RegisterShiftedOpRegsNotPc_cccc0000100snnnnddddssss0tt1mmmm_Test) {
+  Add_Rule_7_A1_P26Binary4RegisterShiftedOpTesterRegsNotPc baseline_tester;
+  NamedDefs12To15RdRnRsRmNotPc actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0000100snnnnddddssss0tt1mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       Rsb_Rule_144_A1_P288Binary4RegisterShiftedOpRegsNotPc_cccc0000011snnnnddddssss0tt1mmmm_Test) {
+  Rsb_Rule_144_A1_P288Binary4RegisterShiftedOpTesterRegsNotPc baseline_tester;
+  NamedDefs12To15RdRnRsRmNotPc actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc0000011snnnnddddssss0tt1mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,

@@ -75,8 +75,11 @@ for f in GEN_LIST:
 
 env.ComponentLibrary('arm_validator_core',
                      ['address_set.cc',
+                      'actual_classes.cc',
+                      'actual_classes_statics.cc',
+                      'baseline_classes.cc',
+                      'baseline_classes_statics.cc',
                       'inst_classes.cc',
-                      'inst_classes_statics.cc',
                       'validator.cc',
                       'gen/arm32_decode.cc'])
 
@@ -138,6 +141,7 @@ for test, exit_status in validator_tests.iteritems():
 gtest_env.ComponentLibrary('decoder_test_tools',
                            ['decoder_tester.cc',
                             'inst_classes_testers.cc',
+                            'actual_vs_baseline.cc',
                             'gen/arm32_decode_named.cc']);
 
 # Do NOT name this program 'validator_tests' because this is the same name as

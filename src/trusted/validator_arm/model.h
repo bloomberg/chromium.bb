@@ -133,6 +133,11 @@ class RegisterList {
   // Allow the addition operator access to our bitwise representation.
   friend const RegisterList operator+(const RegisterList, const RegisterList);
 
+  // Returns the bits defined in the register list.
+  inline uint32_t number() const {
+    return bits_;
+  }
+
  private:
   uint32_t bits_;
 };

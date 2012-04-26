@@ -41,6 +41,10 @@
       'type': 'static_library',
       'sources': [
         'address_set.cc',
+        'actual_classes.cc',
+        'actual_classes_statics.cc',
+        'baseline_classes.cc',
+        'baseline_classes_statics.cc',
         'inst_classes.cc',
         'validator.cc',
         'gen/arm32_decode.cc'

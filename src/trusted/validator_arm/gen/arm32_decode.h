@@ -11,7 +11,8 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_GEN_ARM32_DECODE_H_
 
 #include "native_client/src/trusted/validator_arm/decode.h"
-#include "native_client/src/trusted/validator_arm/inst_classes.h"
+#include "native_client/src/trusted/validator_arm/actual_classes.h"
+#include "native_client/src/trusted/validator_arm/baseline_classes.h"
 
 namespace nacl_arm_dec {
 
@@ -143,6 +144,7 @@ class Arm32DecoderState : DecoderState {
   const BxBlx BxBlx_instance_;
   const CoprocessorOp CoprocessorOp_instance_;
   const DataProc DataProc_instance_;
+  const Defs12To15RdRnRsRmNotPc Defs12To15RdRnRsRmNotPc_instance_;
   const Deprecated Deprecated_instance_;
   const EffectiveNoOp EffectiveNoOp_instance_;
   const Forbidden Forbidden_instance_;

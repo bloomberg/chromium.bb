@@ -185,10 +185,14 @@
                            cccc0000001unnnnddddssss0tt1mmmm RegsNotPc
 | 0010x      -        = Binary4RegisterShiftedOp Sub_Rule_214_A1_P424
                            cccc0000010unnnnddddssss0tt1mmmm RegsNotPc
-| 0011x      -        = Binary4RegisterShiftedOp Rsb_Rule_144_A1_P288
-                           cccc0000011snnnnddddssss0tt1mmmm RegsNotPc
-| 0100x      -        = Binary4RegisterShiftedOp Add_Rule_7_A1_P26 
-                           cccc0000100snnnnddddssss0tt1mmmm RegsNotPc
+| 0011x      -        = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc
+                           Rsb_Rule_144_A1_P288
+                           cccc0000011snnnnddddssss0tt1mmmm
+                           RegsNotPc
+| 0100x      -        = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc
+                           Add_Rule_7_A1_P26 
+                           cccc0000100snnnnddddssss0tt1mmmm
+                           RegsNotPc
 | 0101x      -        = Binary4RegisterShiftedOp Adc_Rule_3_A1_P18
                            cccc0000101unnnnddddssss0tt1mmmm RegsNotPc      
 | 0110x      -        = Binary4RegisterShiftedOp Sbc_Rule_153_A1_P306

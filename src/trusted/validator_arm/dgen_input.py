@@ -16,7 +16,8 @@ table_file ::= table+ eof ;
 action         ::= decoder_action arch | decoder_method | '"'
 arch           ::= '(' word+ ')'
 citation       ::= '(' word+ ')'
-decoder_action ::= id (id (word (id)?)?)?
+decoder        ::= id ('=>' id)?
+decoder_action ::= '=' decoder (id (word (id)?)?)?
 decoder_method ::= '->' id
 footer         ::= '+' '-' '-'
 header         ::= "|" (id '(' int (':' int)? ')')+
@@ -76,7 +77,7 @@ class Parser(object):
     # Punctuation allowed. Must be ordered such that if
     # p1 != p2 are in the list, and p1.startswith(p2), then
     # p1 must appear before p2.
-    self._punctuation = ['->', '-', '+', '(', ')', '=', ':', '"', '|']
+    self._punctuation = ['=>', '->', '-', '+', '(', ')', '=', ':', '"', '|']
 
   def _action(self, last_action, last_arch):
     """ action ::= decoder_action arch | decoder_method | '"' """
@@ -94,9 +95,6 @@ class Parser(object):
     else:
       self._unexpected("Row doesn't define an action")
 
-  def _pattern(self, col_no, last_patterns, last_action, last_arch):
-    pass
-
   def _arch(self):
     """ arch ::= '(' word+ ')' """
     return ' '.join(self._parenthesized_exp())
@@ -108,17 +106,26 @@ class Parser(object):
   def _read_id_or_none(self, read_id):
     if self._next_token().kind in ['|', '+', '(']:
       return None
-    id = self._id() if read_id else self._read_token('word').value
-    return None if id and id == 'None' else id
+    name = self._id() if read_id else self._read_token('word').value
+    return None if name and name == 'None' else name
+
+  def _decoder(self):
+    """ decoder        ::= id ('=>' id)? """
+    baseline = self._id()
+    actual = baseline
+    if self._next_token().kind == '=>':
+      self._read_token('=>')
+      actual = self._id()
+    return (baseline, actual)
 
   def _decoder_action(self):
-    """ decoder_action ::= id (id (word (id)?)?)? """
+    """ decoder_action ::= '=' decoder (id (word (id)?)?)? """
     self._read_token('=')
-    name = self._read_id_or_none(True)
+    (baseline, actual) = self._decoder()
     rule = self._read_id_or_none(True)
     pattern = self._read_id_or_none(False)
     constraints = self._read_id_or_none(True)
-    return dgen_core.DecoderAction(name, rule, pattern, constraints)
+    return dgen_core.DecoderAction(baseline, actual, rule, pattern, constraints)
 
   def _decoder_method(self):
     """ decoder_method ::= '->' id """

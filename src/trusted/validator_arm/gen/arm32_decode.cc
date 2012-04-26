@@ -25,6 +25,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , BxBlx_instance_()
   , CoprocessorOp_instance_()
   , DataProc_instance_()
+  , Defs12To15RdRnRsRmNotPc_instance_()
   , Deprecated_instance_()
   , EffectiveNoOp_instance_()
   , Forbidden_instance_()
@@ -301,6 +302,14 @@ const ClassDecoder& Arm32DecoderState::decode_dp_reg_shifted(
      const Instruction insn) const
 {
   UNREFERENCED_PARAMETER(insn);
+  if (((insn & 0x01E00000) == 0x00600000))
+
+    return Defs12To15RdRnRsRmNotPc_instance_;
+
+  if (((insn & 0x01E00000) == 0x00800000))
+
+    return Defs12To15RdRnRsRmNotPc_instance_;
+
   if (((insn & 0x01E00000) == 0x01A00000))
 
     return Binary3RegisterOp_instance_;
@@ -309,15 +318,23 @@ const ClassDecoder& Arm32DecoderState::decode_dp_reg_shifted(
 
     return Unary3RegisterShiftedOp_instance_;
 
+  if (((insn & 0x01600000) == 0x00400000))
+
+    return Binary4RegisterShiftedOp_instance_;
+
   if (((insn & 0x01900000) == 0x01100000))
 
     return Binary3RegisterShiftedTest_instance_;
+
+  if (((insn & 0x01A00000) == 0x00A00000))
+
+    return Binary4RegisterShiftedOp_instance_;
 
   if (((insn & 0x01A00000) == 0x01800000))
 
     return Binary4RegisterShiftedOp_instance_;
 
-  if (((insn & 0x01000000) == 0x00000000))
+  if (((insn & 0x01C00000) == 0x00000000))
 
     return Binary4RegisterShiftedOp_instance_;
 

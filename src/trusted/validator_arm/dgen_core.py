@@ -251,29 +251,35 @@ class DecoderAction:
       decoder_action ::= id (id (word (id)?)?)?
 
   Fields are:
-      name - Name of class decoder selected.
+      baseline - Name of class decoder used in the baseline.
+      actual - Name of the class decoder to use in the validator.
       rule - Name of the rule in ARM manual that defines
              the decoder action.
       pattern - The placement of 0/1's within any instruction
              that is matched by the corresponding rule.
       constraints - Additional constraints that apply to the rule.
   """
-  def __init__(self, name, rule, pattern, constraints):
-    self.name = name
+  def __init__(self, baseline, actual, rule, pattern, constraints):
+    self.baseline = baseline
+    self.actual = actual
     self.rule = rule
     self.pattern = pattern
     self.constraints = constraints
 
   def action_filter(self, names):
     return DecoderAction(
-        self.name if 'name' in names else None,
+        self.baseline if 'baseline' in names else None,
+        self.actual if ('actual' in names or
+                        ('actual-not-baseline' in names and
+                         self.actual != self.baseline)) else None,
         self.rule if 'rule' in names else None,
         self.pattern if 'pattern' in names else None,
         self.constraints if 'constraints' in names else None)
 
   def __eq__(self, other):
     return (other.__class__.__name__ == 'DecoderAction'
-            and self.name == other.name
+            and self.baseline == other.baseline
+            and self.actual == other.actual
             and self.rule == other.rule
             and self.pattern == other.pattern
             and self.constraints == other.constraints)
@@ -282,7 +288,9 @@ class DecoderAction:
     # Order lexicographically on type/fields.
     value = cmp(other.__class__.__name__, 'DecoderAction')
     if value != 0: return value
-    value = cmp(self.name, other.name)
+    value = cmp(self.baseline, other.baseline)
+    if value != 0: return value
+    value = cmp(self.actual, other.actual)
     if value != 0: return value
     value = cmp(self.rule, other.rule)
     if value != 0: return value
@@ -291,12 +299,17 @@ class DecoderAction:
     return cmp(self.constraints, other.constraints)
 
   def __hash__(self):
-    return (hash('DecoderAction') + hash(self.name) + hash(self.rule) +
+    return (hash('DecoderAction') + hash(self.baseline) +
+            hash(self.actual) + hash(self.rule) +
             hash(self.pattern) + hash(self.constraints))
 
   def __repr__(self):
-    return '=%s %s %s %s' % (self.name, self.rule,
-                             self.pattern, self.constraints)
+    if self.actual:
+      return '= %s => %s %s %s %s' % (self.baseline, self.actual, self.rule,
+                                      self.pattern, self.constraints)
+    else:
+      return '= %s %s %s %s' % (self.baseline, self.rule,
+                               self.pattern, self.constraints)
 
 class DecoderMethod(object):
   """An action defining a parse method to call.
