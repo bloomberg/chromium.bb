@@ -798,7 +798,9 @@ void MenuGtk::OnSubMenuHiddenCallback(GtkWidget* submenu) {
       g_object_get_data(G_OBJECT(submenu), "menu-item"));
   ui::MenuModel* submenu_model = static_cast<ui::MenuModel*>(
       g_object_get_data(G_OBJECT(menu_item), "submenu-model"));
-  submenu_model->MenuClosed();
+  // TODO(mdm): Figure out why this can sometimes be NULL. See bug 124110.
+  if (submenu_model)
+    submenu_model->MenuClosed();
 
   // Remove the reference we grabbed in OnSubMenuHidden() above.
   g_object_unref(G_OBJECT(submenu));
