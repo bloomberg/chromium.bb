@@ -2691,9 +2691,16 @@ FileManager.prototype = {
     return undefined;
   };
 
-  FileManager.prototype.openFilePopup_ = function(popup) {
+  /**
+   * Show a modal-like file viewer/editor on top of the File Manager UI.
+   *
+   * @param {HTMLElement} popup Popup element.
+   * @param {function} closeCallback Function to call after the popup is closed.
+   */
+  FileManager.prototype.openFilePopup_ = function(popup, closeCallback) {
     this.closeFilePopup_();
     this.filePopup_ = popup;
+    this.filePopupCloseCallback_ = closeCallback;
     this.dialogDom_.appendChild(this.filePopup_);
     this.filePopup_.focus();
   };
@@ -2702,6 +2709,10 @@ FileManager.prototype = {
     if (this.filePopup_) {
       this.dialogDom_.removeChild(this.filePopup_);
       this.filePopup_ = null;
+      if (this.filePopupCloseCallback_) {
+        this.filePopupCloseCallback_();
+        this.filePopupCloseCallback_ = null;
+      }
       this.refocus();
     }
   };
@@ -2798,7 +2809,7 @@ FileManager.prototype = {
     };
 
     galleryFrame.src = 'gallery.html';
-    this.openFilePopup_(galleryFrame);
+    this.openFilePopup_(galleryFrame, this.updateTitle_.bind(this));
   };
 
   /**
@@ -3327,6 +3338,15 @@ FileManager.prototype = {
   },
 
   /**
+   * Update the tab title.
+   */
+  FileManager.prototype.updateTitle_ = function() {
+    this.document_.title = this.getCurrentDirectory().substr(1).replace(
+        new RegExp('^' + DirectoryModel.GDATA_DIRECTORY),
+        str('GDATA_PRODUCT_NAME'));
+  },
+
+  /**
    * Update the UI when the current directory changes.
    *
    * @param {cr.Event} event The directory-changed event.
@@ -3345,10 +3365,7 @@ FileManager.prototype = {
 
     this.checkFreeSpace_(this.getCurrentDirectory());
 
-    // TODO(dgozman): title may be better than this.
-    this.document_.title = this.getCurrentDirectory().substr(1).replace(
-        new RegExp('^' + DirectoryModel.GDATA_DIRECTORY),
-        str('GDATA_PRODUCT_NAME'));
+    this.updateTitle_();
 
     if (this.filesystemObserverId_)
       this.metadataCache_.removeObserver(this.filesystemObserverId_);
