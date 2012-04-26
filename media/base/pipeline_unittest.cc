@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/message_loop.h"
@@ -739,8 +739,8 @@ TEST_F(PipelineTest, ErrorDuringSeek) {
   EXPECT_CALL(*mocks_->demuxer(), Seek(seek_time, _))
       .WillOnce(Invoke(&SendReadErrorToCB));
 
-  pipeline_->Seek(seek_time,base::Bind(&CallbackHelper::OnSeek,
-                                       base::Unretained(&callbacks_)));
+  pipeline_->Seek(seek_time, base::Bind(&CallbackHelper::OnSeek,
+                                        base::Unretained(&callbacks_)));
   EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ));
   message_loop_.RunAllPending();
 }
@@ -787,8 +787,8 @@ TEST_F(PipelineTest, NoMessageDuringTearDownFromError) {
   EXPECT_CALL(*mocks_->demuxer(), Seek(seek_time, _))
       .WillOnce(Invoke(&SendReadErrorToCB));
 
-  pipeline_->Seek(seek_time,base::Bind(&CallbackHelper::OnSeek,
-                                       base::Unretained(&callbacks_)));
+  pipeline_->Seek(seek_time, base::Bind(&CallbackHelper::OnSeek,
+                                        base::Unretained(&callbacks_)));
   EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ));
   message_loop_.RunAllPending();
 }
@@ -849,7 +849,7 @@ TEST_F(PipelineTest, DemuxerProperties) {
   InitializePipeline(PIPELINE_OK);
 
   EXPECT_EQ(kLocalSource, pipeline_->IsLocalSource());
-  EXPECT_EQ(!kSeekable, pipeline_->IsStreaming());
+  EXPECT_NE(kSeekable, pipeline_->IsStreaming());
 }
 
 class FlexibleCallbackRunner : public base::DelegateSimpleThread::Delegate {
