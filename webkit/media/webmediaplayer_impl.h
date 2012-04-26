@@ -222,6 +222,7 @@ class WebMediaPlayerImpl
   void OnPipelineError(media::PipelineStatus error);
   void OnNetworkEvent(media::NetworkEvent type);
   void OnDemuxerOpened();
+  void OnKeyNeeded(scoped_array<uint8> init_data, int init_data_size);
   void SetOpaque(bool);
 
  private:

@@ -182,6 +182,13 @@ void WebMediaPlayerProxy::DemuxerClosed() {
       &WebMediaPlayerProxy::DemuxerClosedTask, this));
 }
 
+void WebMediaPlayerProxy::KeyNeeded(scoped_array<uint8> init_data,
+                                    int init_data_size) {
+  render_loop_->PostTask(FROM_HERE, base::Bind(
+      &WebMediaPlayerProxy::KeyNeededTask, this,
+      base::Passed(&init_data), init_data_size));
+}
+
 void WebMediaPlayerProxy::DemuxerFlush() {
   if (chunk_demuxer_.get())
     chunk_demuxer_->FlushData();
@@ -222,6 +229,13 @@ void WebMediaPlayerProxy::DemuxerOpenedTask(
 
 void WebMediaPlayerProxy::DemuxerClosedTask() {
   chunk_demuxer_ = NULL;
+}
+
+void WebMediaPlayerProxy::KeyNeededTask(scoped_array<uint8> init_data,
+                                        int init_data_size) {
+  DCHECK(render_loop_->BelongsToCurrentThread());
+  if (webmediaplayer_)
+    webmediaplayer_->OnKeyNeeded(init_data.Pass(), init_data_size);
 }
 
 }  // namespace webkit_media

@@ -1,9 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef MEDIA_FILTERS_CHUNK_DEMUXER_CLIENT_H_
 #define MEDIA_FILTERS_CHUNK_DEMUXER_CLIENT_H_
+
+#include "base/memory/scoped_ptr.h"
 
 namespace media {
 
@@ -19,6 +21,11 @@ class ChunkDemuxerClient {
   // The ChunkDemuxer passed via last DemuxerOpened() call is now
   // closed. Any further calls on the demuxer will result in an error.
   virtual void DemuxerClosed() = 0;
+
+  // A decryption key associated with |init_data| may be needed to decrypt the
+  // media being demuxed before decoding. Note that the demuxing itself does not
+  // need decryption.
+  virtual void KeyNeeded(scoped_array<uint8> init_data, int init_data_size) = 0;
 };
 
 }  // namespace media

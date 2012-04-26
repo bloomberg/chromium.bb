@@ -936,6 +936,13 @@ void WebMediaPlayerImpl::OnDemuxerOpened() {
   GetClient()->sourceOpened();
 }
 
+void WebMediaPlayerImpl::OnKeyNeeded(scoped_array<uint8> init_data,
+                                     int init_data_size) {
+  DCHECK_EQ(main_loop_, MessageLoop::current());
+
+  GetClient()->keyNeeded("", "", init_data.get(), init_data_size);
+}
+
 void WebMediaPlayerImpl::SetOpaque(bool opaque) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 

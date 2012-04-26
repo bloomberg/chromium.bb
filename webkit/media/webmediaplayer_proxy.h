@@ -86,6 +86,8 @@ class WebMediaPlayerProxy
   // ChunkDemuxerClient implementation.
   virtual void DemuxerOpened(media::ChunkDemuxer* demuxer) OVERRIDE;
   virtual void DemuxerClosed() OVERRIDE;
+  virtual void KeyNeeded(scoped_array<uint8> init_data,
+                         int init_data_size) OVERRIDE;
 
   // Methods for Demuxer communication.
   void DemuxerFlush();
@@ -98,6 +100,7 @@ class WebMediaPlayerProxy
 
   void DemuxerOpenedTask(const scoped_refptr<media::ChunkDemuxer>& demuxer);
   void DemuxerClosedTask();
+  void KeyNeededTask(scoped_array<uint8> init_data, int init_data_size);
 
  private:
   friend class base::RefCountedThreadSafe<WebMediaPlayerProxy>;
