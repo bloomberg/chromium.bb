@@ -1288,7 +1288,12 @@ class ArchiveStage(BoardSpecificBuilderStage):
       # Zip up everything in the image directory.
       upload_queue.put([commands.BuildImageZip(archive_path, image_dir)])
 
-      if config['chromeos_official']:
+      # TODO(petermayo): This logic needs to be exported from the BuildTargets
+      # stage rather than copied/re-evaluated here.
+      autotest_built = ( config['build_tests'] and self._options.tests and (
+          config['upload_hw_test_artifacts'] or config['archive_build_debug']))
+
+      if config['chromeos_official'] and autotest_built:
         # Build hwqual image and upload to Google Storage.
         version = self.GetVersion()
         hwqual_name = 'chromeos-hwqual-%s-%s' % (board, version)
@@ -1305,7 +1310,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       # loop devices, we try to only run one instance of build_image at a
       # time. TODO(davidjames): Move the image generation out of the archive
       # stage.
-      if config['chromeos_official']:
+      if config['chromeos_official'] and 'base' in config['images']:
         commands.BuildRecoveryImage(buildroot, board, image_dir, extra_env)
 
       background.RunParallelSteps([BuildAndArchiveFactoryImages,
