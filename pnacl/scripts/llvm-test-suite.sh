@@ -55,6 +55,7 @@ testsuite-run() {
     ENABLE_PARALLEL_REPORT=true \
     DISABLE_CBE=true \
     DISABLE_JIT=true \
+    RUNTIMELIMIT=700 \
     TEST=pnacl \
     report.csv
   mv report.pnacl.csv report.pnacl.${arch}.csv

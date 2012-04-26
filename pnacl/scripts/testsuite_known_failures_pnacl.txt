@@ -19,9 +19,7 @@ dt
 # crash on ARM/qemu
 lua arm
 almabench arm
-exception_spec_test arm
 spirit arm
-AMGmk arm
 flops arm
 CrystalMk arm
 # has stderr ordering problem, but also extraneous "<<" in output
