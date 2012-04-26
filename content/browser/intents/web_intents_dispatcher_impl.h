@@ -35,6 +35,7 @@ class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
   virtual const webkit_glue::WebIntentData& GetIntent() OVERRIDE;
   virtual void DispatchIntent(
       content::WebContents* destination_contents) OVERRIDE;
+  virtual void ResetDispatch() OVERRIDE;
   virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
                                 const string16& data) OVERRIDE;
   virtual void RegisterReplyNotification(

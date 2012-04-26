@@ -166,6 +166,9 @@ class IntentsDispatcherMock : public content::WebIntentsDispatcher {
     dispatched_ = true;
   }
 
+  virtual void ResetDispatch() OVERRIDE {
+  }
+
   virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
                                 const string16& data) OVERRIDE {
   }

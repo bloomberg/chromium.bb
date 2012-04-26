@@ -23,7 +23,8 @@ using content::WebContents;
 
 IntentInjector::IntentInjector(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      intents_dispatcher_(NULL) {
+      intents_dispatcher_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(web_contents);
 }
 
@@ -48,9 +49,15 @@ void IntentInjector::SetIntent(
     const webkit_glue::WebIntentData& intent) {
   intents_dispatcher_ = intents_dispatcher;
   intents_dispatcher_->RegisterReplyNotification(
-      base::Bind(&IntentInjector::OnSendReturnMessage, base::Unretained(this)));
+      base::Bind(&IntentInjector::OnSendReturnMessage,
+                 weak_factory_.GetWeakPtr()));
   source_intent_.reset(new webkit_glue::WebIntentData(intent));
   initial_url_ = web_contents()->GetPendingSiteInstance()->GetSite();
+}
+
+void IntentInjector::Abandon() {
+  intents_dispatcher_ = NULL;
+  delete this;
 }
 
 void IntentInjector::OnSendReturnMessage(

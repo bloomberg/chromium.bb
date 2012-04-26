@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/intents/intent_injector.h"
 #include "content/browser/intents/internal_web_intents_dispatcher.h"
@@ -87,4 +88,20 @@ TEST_F(IntentInjectorTest, TestDispatchLimitedToSameOrigin) {
   // initial page, so no intent data is sent to this new renderer.
   EXPECT_TRUE(NULL == process()->sink().GetFirstMessageMatching(
       IntentsMsg_SetWebIntentData::ID));
+}
+
+TEST_F(IntentInjectorTest, AbandonDeletes) {
+  IntentInjector* injector = new IntentInjector(web_contents());
+
+  base::WeakPtr<IntentInjector> weak_injector =
+      injector->weak_factory_.GetWeakPtr();
+  EXPECT_FALSE(weak_injector.get() == NULL);
+  weak_injector->Abandon();
+  EXPECT_TRUE(weak_injector.get() == NULL);
+
+  // Sending a message will both auto-delete |dispatcher_| to clean up and
+  // verify that messages don't get sent to the (now deleted) |injector|.
+  dispatcher_->SendReplyMessage(
+      webkit_glue::WEB_INTENT_SERVICE_CONTENTS_CLOSED, string16());
+
 }

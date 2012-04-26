@@ -36,6 +36,13 @@ void InternalWebIntentsDispatcher::DispatchIntent(
   intent_injector_->SetIntent(this, intent_);
 }
 
+void InternalWebIntentsDispatcher::ResetDispatch() {
+  if (intent_injector_) {
+    intent_injector_->Abandon();
+    intent_injector_ = NULL;
+  }
+}
+
 void InternalWebIntentsDispatcher::SendReplyMessage(
     webkit_glue::WebIntentReplyType reply_type,
     const string16& data) {

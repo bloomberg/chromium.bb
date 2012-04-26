@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "webkit/glue/web_intent_data.h"
 
@@ -43,12 +44,15 @@ class CONTENT_EXPORT InternalWebIntentsDispatcher
   virtual const webkit_glue::WebIntentData& GetIntent() OVERRIDE;
   virtual void DispatchIntent(
       content::WebContents* destination_contents) OVERRIDE;
+  virtual void ResetDispatch() OVERRIDE;
   virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
                                 const string16& data) OVERRIDE;
   virtual void RegisterReplyNotification(
       const content::WebIntentsDispatcher::ReplyNotification& closure) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(InternalWebIntentsDispatcherTest,
+                           CancelAbandonsInjector);
   // The intent data to be delivered.
   webkit_glue::WebIntentData intent_;
 

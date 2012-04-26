@@ -54,6 +54,9 @@ class CONTENT_EXPORT WebIntentsDispatcher {
   // |web_contents| must not be NULL.
   virtual void DispatchIntent(WebContents* web_contents) = 0;
 
+  // Abandon current attempt to dispatch, allow new call to DispatchIntent.
+  virtual void ResetDispatch() = 0;
+
   // Return a success or failure message to the source context which invoked
   // the intent. Deletes the object; it should not be used after this call
   // returns. Calls the reply notifications, if any are registered.

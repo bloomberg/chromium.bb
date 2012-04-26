@@ -7,7 +7,9 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/common/content_export.h"
@@ -36,7 +38,6 @@ class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
  public:
   // |web_contents| must not be NULL.
   explicit IntentInjector(content::WebContents* web_contents);
-  virtual ~IntentInjector();
 
   // content::WebContentsObserver implementation.
   virtual void RenderViewCreated(
@@ -55,7 +56,17 @@ class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
   void SetIntent(content::WebIntentsDispatcher* intents_dispatcher,
                  const webkit_glue::WebIntentData& intent);
 
+  // Abandon this injector. Used when re-delivering an intent to a different
+  // service provider, i.e. when abandoning an inline disposition and picking
+  // a new provider. Self-deletes.
+  void Abandon();
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(IntentInjectorTest, AbandonDeletes);
+
+  // Private, since the class is self-deleting.
+  virtual ~IntentInjector();
+
   // Handles receiving a reply from the intent delivery page.
   void OnReply(webkit_glue::WebIntentReplyType reply_type,
                const string16& data);
@@ -71,6 +82,10 @@ class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
 
   // Remember the initial delivery url for origin restriction.
   GURL initial_url_;
+
+  // The injector may be Abandon()ed and deleted before the dispatcher. Use weak
+  // pointers to ensure the notification callback remains valid.
+  base::WeakPtrFactory<IntentInjector> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IntentInjector);
 };
