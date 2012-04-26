@@ -881,11 +881,11 @@ ifeq ($(INST_GLIBC_PROGRAM), none)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-pregcc-standalone
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-glibc32
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-glibc64
-	cp -f SRC/glibc/sysdeps/nacl/{irt_syscalls,nacl_stat}.h \
-	  "$(DESTDIR)$(PREFIX)/$(CROSSARCH)"/include
 else
 	$(INST_GLIBC_PROGRAM) "$(DESTDIR)$(PREFIX)"
 endif
+	cp -f SRC/glibc/sysdeps/nacl/{irt_syscalls,nacl_stat}.h \
+	  "$(DESTDIR)$(PREFIX)/$(CROSSARCH)"/include
 	$(MAKE) -f $(THISMAKEFILE) export-headers
 	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-full-gcc
