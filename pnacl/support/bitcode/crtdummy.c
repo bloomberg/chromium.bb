@@ -3,7 +3,7 @@
  */
 
 void __do_global_dtors_aux(void);
-void *__dso_handle;
+extern void *__dso_handle;
 
 /* This function is never actually invoked */
 void __crtbegin_dummy() __attribute__((used));
