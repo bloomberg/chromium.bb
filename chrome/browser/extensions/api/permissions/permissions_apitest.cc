@@ -60,7 +60,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FaviconPermission) {
 
 // Test functions and APIs that are always allowed (even if you ask for no
 // permissions).
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlwaysAllowed) {
+// Disabled: http://crbug.com/125193
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_AlwaysAllowed) {
   ASSERT_TRUE(RunExtensionTest("permissions/always_allowed")) << message_;
 }
 
