@@ -151,7 +151,6 @@ INITIAL_ENV = {
                     '${USE_BOOTSTRAP ? --r_debug=0xXXXXXXXXXXXXXXXXX} ' +
                     '-a -B ${IRT_BLOB} --',
 
-  'LD_SB'         : '${SB_PREFIX} ${TRANSLATOR_BIN_NONSRPC}/ld.nexe',
   'LLC_SB'        : '${SB_PREFIX} ${RUNNABLE_LD} ' +
                     '${TRANSLATOR_BIN_NONSRPC}/llc.nexe',
   'SB_DYNAMIC'    : '0',
@@ -161,7 +160,10 @@ INITIAL_ENV = {
                     '--library-path ${NNACL_LIBDIR}}',
 
   'LLC_SRPC'      : '${TRANSLATOR_BIN}/llc.nexe',
-  'LD_SRPC'       : '${TRANSLATOR_BIN}/ld.nexe',
+  # sandboxed linker (bfd based)
+  'LD_SB_BFD'       : '${TRANSLATOR_BIN}/ld.nexe',
+  # sandboxed linker (gold based)
+  'LD_SB_ALT'       : '${TRANSLATOR_BIN}/ld-gold.nexe',
 
   # Bitcode LLVM tools
   'CLANG'         : '${BASE_LLVM_BIN}/clang${EXEC_EXT}',

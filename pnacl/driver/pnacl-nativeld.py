@@ -66,8 +66,9 @@ EXTRA_ENV = {
 
    # Intermediate variable LDMODE is used for delaying evaluation.
    # LD_SB is the non-srpc sandboxed tool.
-  'LDMODE'      : '${SANDBOXED ? SB : ${USE_GOLD ? ALT : BFD}}',
+  'LDMODE'      : '${USE_GOLD ? ALT : BFD}',
   'LD'          : '${LD_%LDMODE%}',
+  'LD_SB'       : '${LD_SB_%LDMODE%}',
   # --eh-frame-hdr asks the linker to generate an .eh_frame_hdr section,
   # which is a presorted list of registered frames. This section is
   # used by libgcc_eh/libgcc_s to avoid doing the sort during runtime.
@@ -213,9 +214,7 @@ def main(argv):
   # this hack is necessary because arg parsing is influenced by
   # whether we are using gold or not. It can go away once
   # we have switched over completely.
-  if (('-static' in argv or env.getbool('STATIC')) and
-      '--pnacl-sb' not in argv and
-      not env.getbool('SANDBOXED')):
+  if '-static' in argv or env.getbool('STATIC'):
     env.set('USE_GOLD', '1')
 
   ParseArgs(argv, LDPatterns)
@@ -247,7 +246,7 @@ def main(argv):
 
   # Eventually we want to switch to gold for everything:
   # http://code.google.com/p/nativeclient/issues/detail?id=2707
-  if not env.getbool('SANDBOXED') and env.getbool('STATIC'):
+  if env.getbool('STATIC'):
     env.set('USE_GOLD', '1')
   if env.getbool('USE_GOLD'):
     # We need to disable the linker script more elegantly for Gold.
@@ -286,7 +285,7 @@ def RunLDSRPC():
 
   retcode, stdout, stderr = RunWithLog(
       '${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
-      '${SEL_UNIVERSAL_FLAGS} -- ${LD_SRPC}',
+      '${SEL_UNIVERSAL_FLAGS} -- ${LD_SB}',
       stdin=script, echo_stdout=False, echo_stderr=False,
       return_stdout=True, return_stderr=True, errexit=False)
   if retcode:
