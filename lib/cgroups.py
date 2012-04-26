@@ -498,10 +498,11 @@ class Cgroup(object):
       pool_name = str(os.getpid())
     node = self.AddGroup(pool_name, autoclean=True)
     try:
-      with self.TemporarilySwitchToGroup(node):
-        yield
+      node.TransferCurrentPid()
+      yield
     finally:
-      with signals.DeferSignals(signal.SIGINT, signal.SIGTERM):
+      with signals.DeferSignals():
+        self.TransferCurrentPid()
         node.KillProcesses(remove=True)
 
   def KillProcesses(self, poll_interval=0.05, remove=False):
