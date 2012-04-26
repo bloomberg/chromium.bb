@@ -1995,7 +1995,8 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_MediaLogEvent,
 
 // Requests to lock the mouse. Will result in a ViewMsg_LockMouse_ACK message
 // being sent back.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_LockMouse)
+IPC_MESSAGE_ROUTED1(ViewHostMsg_LockMouse,
+                    bool /* user_gesture */)
 
 // Requests to unlock the mouse. A ViewMsg_MouseLockLost message will be sent
 // whenever the mouse is unlocked (which may or may not be caused by

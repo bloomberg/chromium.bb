@@ -1062,7 +1062,8 @@ class Browser : public TabHandlerDelegate,
                          int active_match_ordinal,
                          bool final_update) OVERRIDE;
 
-  virtual void RequestToLockMouse(content::WebContents* tab) OVERRIDE;
+  virtual void RequestToLockMouse(content::WebContents* tab,
+                                  bool user_gesture) OVERRIDE;
   virtual void LostMouseLock() OVERRIDE;
 
   // Overridden from CoreTabHelperDelegate:

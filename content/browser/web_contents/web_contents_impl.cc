@@ -1005,9 +1005,9 @@ bool WebContentsImpl::IsFullscreenForCurrentTab() const {
   return delegate_ ? delegate_->IsFullscreenForTabOrPending(this) : false;
 }
 
-void WebContentsImpl::RequestToLockMouse() {
+void WebContentsImpl::RequestToLockMouse(bool user_gesture) {
   if (delegate_) {
-    delegate_->RequestToLockMouse(this);
+    delegate_->RequestToLockMouse(this, user_gesture);
   } else {
     GotResponseToLockMouseRequest(false);
   }

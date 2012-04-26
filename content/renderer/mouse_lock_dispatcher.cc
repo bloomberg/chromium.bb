@@ -6,6 +6,7 @@
 
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 
@@ -28,7 +29,12 @@ bool MouseLockDispatcher::LockMouse(LockTarget* target) {
   pending_lock_request_ = true;
   target_ = target;
 
-  Send(new ViewHostMsg_LockMouse(routing_id()));
+  bool user_gesture =
+      render_view_impl_->webview() &&
+      render_view_impl_->webview()->mainFrame() &&
+      render_view_impl_->webview()->mainFrame()->isProcessingUserGesture();
+
+  Send(new ViewHostMsg_LockMouse(routing_id(), user_gesture));
   return true;
 }
 

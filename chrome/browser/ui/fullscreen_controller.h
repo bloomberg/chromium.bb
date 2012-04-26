@@ -55,7 +55,7 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   bool IsMouseLockedOrPending() const;
 
   // Requests.
-  void RequestToLockMouse(content::WebContents* tab);
+  void RequestToLockMouse(content::WebContents* tab, bool user_gesture);
   void ToggleFullscreenModeForTab(content::WebContents* tab,
                                   bool enter_fullscreen);
 #if defined(OS_MACOSX)

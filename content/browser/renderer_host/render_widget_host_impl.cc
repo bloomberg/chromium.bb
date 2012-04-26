@@ -1069,7 +1069,7 @@ gfx::Rect RenderWidgetHostImpl::GetRootWindowResizerRect() const {
   return gfx::Rect();
 }
 
-void RenderWidgetHostImpl::RequestToLockMouse() {
+void RenderWidgetHostImpl::RequestToLockMouse(bool /* user_gesture */) {
   // Directly reject to lock the mouse. Subclass can override this method to
   // decide whether to allow mouse lock or not.
   GotResponseToLockMouseRequest(false);
@@ -1512,7 +1512,7 @@ void RenderWidgetHostImpl::OnMsgDidActivateAcceleratedCompositing(
     view_->OnAcceleratedCompositingStateChange();
 }
 
-void RenderWidgetHostImpl::OnMsgLockMouse() {
+void RenderWidgetHostImpl::OnMsgLockMouse(bool user_gesture) {
   if (pending_mouse_lock_request_) {
     Send(new ViewMsg_LockMouse_ACK(routing_id_, false));
     return;
@@ -1522,7 +1522,7 @@ void RenderWidgetHostImpl::OnMsgLockMouse() {
   }
 
   pending_mouse_lock_request_ = true;
-  RequestToLockMouse();
+  RequestToLockMouse(user_gesture);
 }
 
 void RenderWidgetHostImpl::OnMsgUnlockMouse() {

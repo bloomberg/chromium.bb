@@ -59,7 +59,11 @@ bool FullscreenController::IsMouseLockedOrPending() const {
   return mouse_lock_state_ != MOUSELOCK_NOT_REQUESTED;
 }
 
-void FullscreenController::RequestToLockMouse(WebContents* tab) {
+void FullscreenController::RequestToLockMouse(WebContents* tab,
+                                              bool /* user_gesture */) {
+  // TODO(scheib) user_gesture required for Mouse Lock in Windowed Mode.
+  // See http://crbug.com/107013, which will land in multiple patches.
+
   // Mouse Lock is only permitted when browser is in tab fullscreen.
   if (!IsFullscreenForTabOrPending(tab)) {
     tab->GotResponseToLockMouseRequest(false);

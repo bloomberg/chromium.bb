@@ -334,7 +334,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool IsFullscreenForCurrentTab() const OVERRIDE;
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
   virtual void ResizeDueToAutoResize(const gfx::Size& new_size) OVERRIDE;
-  virtual void RequestToLockMouse() OVERRIDE;
+  virtual void RequestToLockMouse(bool user_gesture) OVERRIDE;
   virtual void LostMouseLock() OVERRIDE;
 
   // RenderViewHostManager::Delegate -------------------------------------------

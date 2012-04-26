@@ -419,7 +419,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // to allow mouse lock.
   // Once the request is approved or rejected, GotResponseToLockMouseRequest()
   // will be called.
-  virtual void RequestToLockMouse();
+  virtual void RequestToLockMouse(bool user_gesture);
 
   void RejectMouseLockOrUnlockIfNecessary();
   bool IsMouseLocked() const;
@@ -495,7 +495,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   void OnMsgDidActivateAcceleratedCompositing(bool activated);
 
-  void OnMsgLockMouse();
+  void OnMsgLockMouse(bool user_gesture);
   void OnMsgUnlockMouse();
 
 #if defined(OS_POSIX) || defined(USE_AURA)
