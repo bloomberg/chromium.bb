@@ -2146,6 +2146,25 @@
    fun:_ZNK17TDescriptorSource35CopyFontDescriptorPerPostscriptNameEPK10__CFStringm
 }
 {
+   bug_105527_e
+   Memcheck:Leak
+   fun:calloc
+   fun:CGFontFinderCreate
+   fun:cg_font_library_link_symbol
+   fun:load_vtable
+   fun:pthread_once
+   fun:CGFontGetVTable
+   fun:CGFontCreateFontsWithPath
+   fun:CGFontCreateFontsWithURL
+   fun:_Z18CreateFontsFromURLPK7__CFURL
+   fun:_ZNK21TLocalFontRegistryImp12RegisterFontEPK7__CFURLPK14__CFDictionaryjj
+   fun:_ZNK21TLocalFontRegistryImp13RegisterFontsEPK9__CFArrayPK14__CFDictionaryjjPS2_
+   fun:_ZNK18TLocalFontRegistry13RegisterFontsEPK9__CFArrayPK14__CFDictionaryjjPS2_
+   fun:XTRegisterFonts
+   fun:XTRegisterFont
+   fun:SendActivateFontsMessage
+}
+{
    bug_105580
    Memcheck:Leak
    fun:malloc_zone_malloc
