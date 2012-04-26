@@ -36,7 +36,7 @@ TEST_F('NTP4WebUITest', 'FLAKY_NTPHasThumbnails', function() {
   assertEquals(8, mostVisited.length, 'There should be 8 most visited tiles.');
 
   var apps = document.querySelectorAll('.app');
-  if (window.templateData.showApps)
+  if (loadTimeData.getBoolean('showApps'))
     assertGE(apps.length, 1, 'There should be at least one app.');
   else
     assertEquals(0, apps.length, 'There should be no apps.');
@@ -44,7 +44,7 @@ TEST_F('NTP4WebUITest', 'FLAKY_NTPHasThumbnails', function() {
 
 TEST_F('NTP4WebUITest', 'NTPHasNavDots', function() {
   var navDots = document.querySelectorAll('.dot');
-  if (window.templateData.showApps)
+  if (loadTimeData.getBoolean('showApps'))
     assertGE(navDots.length, 2, 'There should be at least two navdots.');
   else
     assertEquals(1, navDots.length, 'There should be exactly one navdot.');

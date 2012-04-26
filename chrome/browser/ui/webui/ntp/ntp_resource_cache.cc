@@ -286,8 +286,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
           ASCIIToUTF16(chrome::kChromeUIExtensionsURL)));
   bool bookmark_bar_attached = profile_->GetPrefs()->GetBoolean(
       prefs::kShowBookmarkBar);
-  localized_strings.SetString("bookmarkbarattached",
-      bookmark_bar_attached ? "true" : "false");
+  localized_strings.SetBoolean("bookmarkbarattached", bookmark_bar_attached);
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
 
@@ -307,154 +306,132 @@ void NTPResourceCache::CreateNewTabHTML() {
   // Show the profile name in the title and most visited labels if the current
   // profile is not the default.
   PrefService* prefs = profile_->GetPrefs();
-  DictionaryValue localized_strings;
-  localized_strings.SetString("bookmarkbarattached",
-      prefs->GetBoolean(prefs::kShowBookmarkBar) ? "true" : "false");
-  localized_strings.SetString("hasattribution",
+  DictionaryValue load_time_data;
+  load_time_data.SetBoolean("bookmarkbarattached",
+      prefs->GetBoolean(prefs::kShowBookmarkBar));
+  load_time_data.SetBoolean("hasattribution",
       ThemeServiceFactory::GetForProfile(profile_)->HasCustomImage(
-          IDR_THEME_NTP_ATTRIBUTION) ?
-      "true" : "false");
-  localized_strings.SetString("title",
+          IDR_THEME_NTP_ATTRIBUTION));
+  load_time_data.SetString("title",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
-  localized_strings.SetString("mostvisited",
+  load_time_data.SetString("mostvisited",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED));
-  localized_strings.SetString("suggestions",
+  load_time_data.SetString("suggestions",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_SUGGESTIONS));
-  localized_strings.SetString("restoreThumbnailsShort",
+  load_time_data.SetString("restoreThumbnailsShort",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RESTORE_THUMBNAILS_SHORT_LINK));
-  localized_strings.SetString("recentlyclosed",
+  load_time_data.SetString("recentlyclosed",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED));
-  localized_strings.SetString("webStoreTitle",
+  load_time_data.SetString("webStoreTitle",
       l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
-  localized_strings.SetString("webStoreTitleShort",
+  load_time_data.SetString("webStoreTitleShort",
       l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE_SHORT));
-  localized_strings.SetString("closedwindowsingle",
+  load_time_data.SetString("closedwindowsingle",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE));
-  localized_strings.SetString("closedwindowmultiple",
+  load_time_data.SetString("closedwindowmultiple",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE));
-  localized_strings.SetString("attributionintro",
+  load_time_data.SetString("attributionintro",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_ATTRIBUTION_INTRO));
-  localized_strings.SetString("thumbnailremovednotification",
+  load_time_data.SetString("thumbnailremovednotification",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION));
-  localized_strings.SetString("undothumbnailremove",
+  load_time_data.SetString("undothumbnailremove",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE));
-  localized_strings.SetString("removethumbnailtooltip",
+  load_time_data.SetString("removethumbnailtooltip",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_REMOVE_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString("appuninstall",
+  load_time_data.SetString("appuninstall",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
-  localized_strings.SetString("appoptions",
+  load_time_data.SetString("appoptions",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_OPTIONS));
-  localized_strings.SetString("appdisablenotifications",
+  load_time_data.SetString("appdisablenotifications",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_DISABLE_NOTIFICATIONS));
-  localized_strings.SetString("appcreateshortcut",
+  load_time_data.SetString("appcreateshortcut",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_CREATE_SHORTCUT));
-  localized_strings.SetString("appDefaultPageName",
+  load_time_data.SetString("appDefaultPageName",
       l10n_util::GetStringUTF16(IDS_APP_DEFAULT_PAGE_NAME));
-  localized_strings.SetString("applaunchtypepinned",
+  load_time_data.SetString("applaunchtypepinned",
       l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_PINNED));
-  localized_strings.SetString("applaunchtyperegular",
+  load_time_data.SetString("applaunchtyperegular",
       l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_REGULAR));
-  localized_strings.SetString("applaunchtypewindow",
+  load_time_data.SetString("applaunchtypewindow",
       l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_WINDOW));
-  localized_strings.SetString("applaunchtypefullscreen",
+  load_time_data.SetString("applaunchtypefullscreen",
       l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN));
-  localized_strings.SetString("syncpromotext",
+  load_time_data.SetString("syncpromotext",
       l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL));
-  localized_strings.SetString("syncLinkText",
+  load_time_data.SetString("syncLinkText",
       l10n_util::GetStringUTF16(IDS_SYNC_ADVANCED_OPTIONS));
-  localized_strings.SetString("otherSessions",
+  load_time_data.SetString("otherSessions",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_LABEL));
-  localized_strings.SetString("otherSessionsEmpty",
+  load_time_data.SetString("otherSessionsEmpty",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_EMPTY));
-  localized_strings.SetString("otherSessionsLearnMoreUrl",
+  load_time_data.SetString("otherSessionsLearnMoreUrl",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_LEARN_MORE_URL));
-  localized_strings.SetString("learnMore",
+  load_time_data.SetString("learnMore",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  localized_strings.SetString("webStoreLink",
+  load_time_data.SetString("webStoreLink",
       GetUrlWithLang(GURL(extension_urls::GetWebstoreLaunchURL())));
-  localized_strings.SetBoolean("isWebStoreExperimentEnabled",
+  load_time_data.SetBoolean("isWebStoreExperimentEnabled",
       NewTabUI::ShouldShowWebStoreFooterLink());
-  localized_strings.SetBoolean("appInstallHintEnabled",
+  load_time_data.SetBoolean("appInstallHintEnabled",
       NewTabUI::ShouldShowAppInstallHint());
-  localized_strings.SetString("appInstallHintText",
+  load_time_data.SetString("appInstallHintText",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_INSTALL_HINT_LABEL));
-  localized_strings.SetBoolean("isSuggestionsPageEnabled",
+  load_time_data.SetBoolean("isSuggestionsPageEnabled",
       NewTabUI::IsSuggestionsPageEnabled());
-  localized_strings.SetBoolean("showApps", NewTabUI::ShouldShowApps());
-  localized_strings.SetString("hideSessionMenuItemText",
+  load_time_data.SetBoolean("showApps", NewTabUI::ShouldShowApps());
+  load_time_data.SetString("hideSessionMenuItemText",
       l10n_util::GetStringUTF16(IDS_POLICY_HIDE));
+  load_time_data.SetString("learn_more",
+      l10n_util::GetStringUTF16(IDS_LEARN_MORE));
 
   // On Mac OS X 10.7+, horizontal scrolling can be treated as a back or
   // forward gesture. Pass through a flag that indicates whether or not that
   // feature is enabled.
-  localized_strings.SetBoolean("isSwipeTrackingFromScrollEventsEnabled",
-                               is_swipe_tracking_from_scroll_events_enabled_);
+  load_time_data.SetBoolean("isSwipeTrackingFromScrollEventsEnabled",
+                            is_swipe_tracking_from_scroll_events_enabled_);
 
 #if defined(OS_CHROMEOS)
-  localized_strings.SetString("expandMenu",
+  load_time_data.SetString("expandMenu",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_CLOSE_MENU_EXPAND));
 #endif
 
-  NewTabPageHandler::GetLocalizedValues(profile_, &localized_strings);
-  NTPLoginHandler::GetLocalizedValues(profile_, &localized_strings);
+  NewTabPageHandler::GetLocalizedValues(profile_, &load_time_data);
+  NTPLoginHandler::GetLocalizedValues(profile_, &load_time_data);
 
-  // Don't initiate the sync related message passing with the page if the sync
-  // code is not present.
-  if (ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_))
-    localized_strings.SetString("syncispresent", "true");
-  else
-    localized_strings.SetString("syncispresent", "false");
-
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
+  ChromeURLDataManager::DataSource::SetFontAndTextDirection(&load_time_data);
 
   // Control fade and resize animations.
-  std::string anim =
-      ui::Animation::ShouldRenderRichAnimation() ? "true" : "false";
-  localized_strings.SetString("anim", anim);
+  load_time_data.SetBoolean("anim", ui::Animation::ShouldRenderRichAnimation());
 
   int alignment;
   ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
   tp->GetDisplayProperty(ThemeService::NTP_BACKGROUND_ALIGNMENT, &alignment);
-  localized_strings.SetString("themegravity",
+  load_time_data.SetString("themegravity",
       (alignment & ThemeService::ALIGN_RIGHT) ? "right" : "");
 
 #if defined(ENABLE_PROMO_RESOURCE_SERVICE)
   // If the user has preferences for a start and end time for a promo from
   // the server, and this promo string exists, set the localized string.
   if (PromoResourceService::CanShowNotificationPromo(profile_)) {
-    localized_strings.SetString("serverpromo",
+    load_time_data.SetString("serverpromo",
         prefs->GetString(prefs::kNtpPromoLine));
   }
-
-  // If the user has preferences for a start and end time for a custom logo,
-  // and the time now is between these two times, show the custom logo.
-  if (prefs->FindPreference(prefs::kNtpCustomLogoStart) &&
-      prefs->FindPreference(prefs::kNtpCustomLogoEnd)) {
-    localized_strings.SetString("customlogo",
-        InDateRange(prefs->GetDouble(prefs::kNtpCustomLogoStart),
-                    prefs->GetDouble(prefs::kNtpCustomLogoEnd)) ?
-        "true" : "false");
-  } else {
-    localized_strings.SetString("customlogo", "false");
-  }
-#else
-  localized_strings.SetString("customlogo", "false");
 #endif
 
   // Determine whether to show the menu for accessing tabs on other devices.
   bool show_other_sessions_menu = !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableNTPOtherSessionsMenu);
-  localized_strings.SetBoolean("showOtherSessionsMenu",
-                               show_other_sessions_menu);
-  localized_strings.SetBoolean("isUserSignedIn",
+  load_time_data.SetBoolean("showOtherSessionsMenu",
+                            show_other_sessions_menu);
+  load_time_data.SetBoolean("isUserSignedIn",
       !prefs->GetString(prefs::kGoogleServicesUsername).empty());
 
   // Load the new tab page appropriate for this build
-  std::string full_html;
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
       GetRawDataResource(IDR_NEW_TAB_4_HTML));
-  full_html = jstemplate_builder::GetI18nTemplateHtml(new_tab_html,
-                                                      &localized_strings);
+  jstemplate_builder::UseVersion2 version2;
+  std::string full_html =
+      jstemplate_builder::GetI18nTemplateHtml(new_tab_html, &load_time_data);
   new_tab_html_ = base::RefCountedString::TakeString(&full_html);
 }
 

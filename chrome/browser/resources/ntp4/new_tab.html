@@ -2,7 +2,6 @@
 <html i18n-values="
     dir:textdirection;
     hasattribution:hasattribution;
-    customlogo:customlogo;
     themegravity:themegravity;
     bookmarkbarattached:bookmarkbarattached;"
   class="starting-up">
@@ -36,7 +35,7 @@
 <link id="themecss" rel="stylesheet">
 
 <script src="../shared/js/event_tracker.js"></script>
-<script src="../shared/js/local_strings.js"></script>
+<script src="../shared/js/load_time_data.js"></script>
 <script src="../shared/js/parse_html_subset.js"></script>
 <script src="../shared/js/util.js"></script>
 
@@ -101,7 +100,7 @@
   <div id="footer">
     <div id="footer-border"></div>
     <div id="footer-content">
-      <img id="logo-img">
+      <img id="logo-img" src="chrome://theme/IDR_PRODUCT_LOGO">
 
       <ul id="dot-list">
       </ul>
@@ -141,7 +140,7 @@
 
 <!-- NTP4 intro bubble -->
 <div id="ntp4-intro-bubble-contents">
-  <div i18n-content="ntp4_intro_message"></div>
+  <div></div>
   <a i18n-content="learn_more" target="_blank"></a>
 </div>
 
@@ -149,8 +148,8 @@
 <div id="login-status-bubble-contents">
   <div id="login-status-message-container">
     <span i18n-content="login_status_message"></span>
-    <a id="login-status-learn-more" i18n-content="login_status_learn_more"
-        target="_blank"></a>
+    <a id="login-status-learn-more" i18n-content="learn_more"
+        i18n-values="href:login_status_url" target="_blank"></a>
   </div>
   <div class="login-status-row">
     <div id="login-status-advanced-container">

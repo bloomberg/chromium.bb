@@ -24,6 +24,20 @@ class DictionaryValue;
 
 namespace jstemplate_builder {
 
+// While an object of this class is in scope, the template builder will output
+// version 2 html. Version 2 uses load_time_data.js and i18n_template2.js, and
+// should soon become the default.
+class UseVersion2 {
+ public:
+  UseVersion2();
+  ~UseVersion2();
+
+ private:
+  bool previous_value_;
+
+  DISALLOW_COPY_AND_ASSIGN(UseVersion2);
+};
+
 // A helper function that generates a string of HTML to be loaded.  The
 // string includes the HTML and the javascript code necessary to generate the
 // full page with support for JsTemplates.
@@ -54,9 +68,6 @@ void AppendJsonHtml(const base::DictionaryValue* json, std::string* output);
 // Same as AppendJsonHtml(), except does not include the <script></script>
 // tag wrappers.
 void AppendJsonJS(const base::DictionaryValue* json, std::string* output);
-// Same as above, but uses a slightly different format which should some day
-// become the default.
-void AppendJsonJS2(const base::DictionaryValue* json, std::string* output);
 
 // Appends the source for JsTemplates in a script tag.
 void AppendJsTemplateSourceHtml(std::string* output);

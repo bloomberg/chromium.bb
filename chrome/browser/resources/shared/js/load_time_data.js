@@ -29,6 +29,13 @@ var loadTimeData;
     },
 
     /**
+     * @return {boolean} True if |id| is a key in the dictionary.
+     */
+    valueExists: function(id) {
+      return id in this.data_;
+    },
+
+    /**
      * Fetches a value, asserting that it exists.
      * @param {string} id The key that identifies the desired value.
      * @return {*} The corresponding value.
@@ -47,8 +54,30 @@ var loadTimeData;
      */
     getString: function(id) {
       var value = this.getValue(id);
-      assert(typeof value == 'string', '[' + value + '] (' + id +
-                                       ') is not a string');
+      assertIsType(id, value, 'string');
+      return value;
+    },
+
+    /**
+     * As above, but also makes sure that the value is a boolean.
+     * @param {string} id The key that identifies the desired boolean.
+     * @return {boolean} The corresponding boolean value.
+     */
+    getBoolean: function(id) {
+      var value = this.getValue(id);
+      assertIsType(id, value, 'boolean');
+      return value;
+    },
+
+    /**
+     * As above, but also makes sure that the value is an integer.
+     * @param {string} id The key that identifies the desired number.
+     * @return {number} The corresponding number value.
+     */
+    getInteger: function(id) {
+      var value = this.getValue(id);
+      assertIsType(id, value, 'number');
+      assert(value == Math.floor(value), 'Number isn\'t integer: ' + value);
       return value;
     },
   };
@@ -59,9 +88,19 @@ var loadTimeData;
    * @param {string} message The message to display if the check fails.
    */
   function assert(condition, message) {
-    if (!condition) {
+    if (!condition)
       console.error(message);
-    }
+  }
+
+  /**
+   * Asserts that the given value has the given type.
+   * @param {string} id The id of the value (only used for error message).
+   * @param {*} value The value to check the type on.
+   * @param {string} type The type we expect |value| to be.
+   */
+  function assertIsType(id, value, type) {
+    assert(typeof value == type, '[' + value + '] (' + id +
+                                 ') is not a ' + type);
   }
 
   assert(!loadTimeData, 'should only include this file once');

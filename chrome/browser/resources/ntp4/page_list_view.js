@@ -14,12 +14,6 @@ cr.define('ntp', function() {
   'use strict';
 
   /**
-   * Object for accessing localized strings.
-   * @type {!LocalStrings}
-   */
-  var localStrings = new LocalStrings;
-
-  /**
    * Creates a PageListView object.
    * @constructor
    * @extends {Object}
@@ -150,18 +144,18 @@ cr.define('ntp', function() {
       if (this.pageSwitcherEnd)
         ntp.initializePageSwitcher(this.pageSwitcherEnd);
 
-      this.shownPage = templateData.shown_page_type;
-      this.shownPageIndex = templateData.shown_page_index;
+      this.shownPage = loadTimeData.getInteger('shown_page_type');
+      this.shownPageIndex = loadTimeData.getInteger('shown_page_index');
 
-      if (templateData.showApps) {
+      if (loadTimeData.getBoolean('showApps')) {
         // Request data on the apps so we can fill them in.
         // Note that this is kicked off asynchronously.  'getAppsCallback' will
         // be invoked at some point after this function returns.
         chrome.send('getApps');
       } else {
         // No apps page.
-        if (this.shownPage == templateData['apps_page_id']) {
-          this.shownPage = templateData['most_visited_page_id'];
+        if (this.shownPage == loadTimeData.getInteger('apps_page_id')) {
+          this.shownPage = loadTimeData.getInteger('most_visited_page_id');
           this.shownPageIndex = 0;
         }
 
@@ -195,7 +189,7 @@ cr.define('ntp', function() {
       });
 
       this.cardSlider.initialize(
-          templateData.isSwipeTrackingFromScrollEventsEnabled);
+          loadTimeData.getBoolean('isSwipeTrackingFromScrollEventsEnabled'));
 
       // Handle events from the card slider.
       this.pageList.addEventListener('cardSlider:card_changed',
@@ -268,7 +262,7 @@ cr.define('ntp', function() {
      *     position indices.
      */
     appMoved: function(appData) {
-      assert(templateData.showApps);
+      assert(loadTimeData.getBoolean('showApps'));
 
       var app = $(appData.id);
       assert(app, 'trying to move an app that doesn\'t exist');
@@ -287,7 +281,7 @@ cr.define('ntp', function() {
      * @param {boolean} fromPage True if the removal was from the current page.
      */
     appRemoved: function(appData, isUninstall, fromPage) {
-      assert(templateData.showApps);
+      assert(loadTimeData.getBoolean('showApps'));
 
       var app = $(appData.id);
       assert(app, 'trying to remove an app that doesn\'t exist');
@@ -323,7 +317,7 @@ cr.define('ntp', function() {
      *        applications.
      */
     getAppsCallback: function(data) {
-      assert(templateData.showApps);
+      assert(loadTimeData.getBoolean('showApps'));
 
       var startTime = Date.now();
 
@@ -380,7 +374,7 @@ cr.define('ntp', function() {
         var app = apps[i];
         var pageIndex = app.page_index || 0;
         while (pageIndex >= this.appsPages.length) {
-          var pageName = localStrings.getString('appDefaultPageName');
+          var pageName = loadTimeData.getString('appDefaultPageName');
           if (this.appsPages.length < pageNames.length)
             pageName = pageNames[this.appsPages.length];
 
@@ -425,7 +419,7 @@ cr.define('ntp', function() {
      *     the app.
      */
     appAdded: function(appData, opt_highlight) {
-      assert(templateData.showApps);
+      assert(loadTimeData.getBoolean('showApps'));
 
       if (appData.id == this.highlightAppId) {
         opt_highlight = true;
@@ -437,7 +431,7 @@ cr.define('ntp', function() {
       if (pageIndex >= this.appsPages.length) {
         while (pageIndex >= this.appsPages.length) {
           this.appendTilePage(new ntp.AppsPage(),
-                              localStrings.getString('appDefaultPageName'),
+                              loadTimeData.getString('appDefaultPageName'),
                               true);
         }
         this.updateSliderCards();
@@ -457,7 +451,7 @@ cr.define('ntp', function() {
      *     applications.
      */
     appsPrefChangedCallback: function(data) {
-      assert(templateData.showApps);
+      assert(loadTimeData.getBoolean('showApps'));
 
       for (var i = 0; i < data.apps.length; ++i) {
         $(data.apps[i].id).appData = data.apps[i];
@@ -481,16 +475,16 @@ cr.define('ntp', function() {
       this.cardSlider.setCards(Array.prototype.slice.call(this.tilePages),
                                pageNo);
       switch (this.shownPage) {
-        case templateData['apps_page_id']:
+        case loadTimeData.getInteger('apps_page_id'):
           this.cardSlider.selectCardByValue(
               this.appsPages[Math.min(this.shownPageIndex,
                                       this.appsPages.length - 1)]);
           break;
-        case templateData['most_visited_page_id']:
+        case loadTimeData.getInteger('most_visited_page_id'):
           if (this.mostVisitedPage)
             this.cardSlider.selectCardByValue(this.mostVisitedPage);
           break;
-        case templateData['suggestions_page_id']:
+        case loadTimeData.getInteger('suggestions_page_id'):
           if (this.suggestionsPage)
             this.cardSlider.selectCardByValue(this.suggestionsPage);
           break;
@@ -502,10 +496,10 @@ cr.define('ntp', function() {
      * of a moving or insert tile.
      */
     enterRearrangeMode: function() {
-      if (templateData.showApps) {
+      if (loadTimeData.getBoolean('showApps')) {
         var tempPage = new ntp.AppsPage();
         tempPage.classList.add('temporary');
-        var pageName = localStrings.getString('appDefaultPageName');
+        var pageName = loadTimeData.getString('appDefaultPageName');
         this.appendTilePage(tempPage, pageName, true);
       }
 
@@ -528,7 +522,7 @@ cr.define('ntp', function() {
         } else {
           tempPage.classList.remove('temporary');
           this.saveAppPageName(tempPage,
-                               localStrings.getString('appDefaultPageName'));
+                               loadTimeData.getString('appDefaultPageName'));
         }
       }
 
@@ -608,13 +602,13 @@ cr.define('ntp', function() {
       // reflect user actions).
       if (!this.isStartingUp_()) {
         if (page.classList.contains('apps-page')) {
-          this.shownPage = templateData.apps_page_id;
+          this.shownPage = loadTimeData.getInteger('apps_page_id');
           this.shownPageIndex = this.getAppsPageIndex(page);
         } else if (page.classList.contains('most-visited-page')) {
-          this.shownPage = templateData.most_visited_page_id;
+          this.shownPage = loadTimeData.getInteger('most_visited_page_id');
           this.shownPageIndex = 0;
         } else if (page.classList.contains('suggestions-page')) {
-          this.shownPage = templateData.suggestions_page_id;
+          this.shownPage = loadTimeData.getInteger('suggestions_page_id');
           this.shownPageIndex = 0;
         } else {
           console.error('unknown page selected');

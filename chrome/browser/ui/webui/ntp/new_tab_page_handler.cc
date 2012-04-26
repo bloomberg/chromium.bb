@@ -186,8 +186,6 @@ void NewTabPageHandler::GetLocalizedValues(Profile* profile,
     values->SetString("ntp4_intro_message",
                       l10n_util::GetStringUTF16(IDS_NTP4_INTRO_MESSAGE));
     values->SetString("ntp4_intro_url", kNtp4IntroURL);
-    values->SetString("learn_more",
-                      l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   }
 #endif
 }

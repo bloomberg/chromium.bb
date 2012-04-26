@@ -9,8 +9,6 @@
 cr.define('ntp', function() {
   'use strict';
 
-  var localStrings = new LocalStrings();
-
   /**
    * Returns the text used for a recently closed window.
    * @param {number} numTabs Number of tabs in the window.
@@ -18,8 +16,8 @@ cr.define('ntp', function() {
    */
   function formatTabsText(numTabs) {
     if (numTabs == 1)
-      return localStrings.getString('closedwindowsingle');
-    return localStrings.getStringF('closedwindowmultiple', numTabs);
+      return loadTimeData.getString('closedwindowsingle');
+    return loadTimeData.getStringF('closedwindowmultiple', numTabs);
   }
 
   var Menu = cr.ui.Menu;

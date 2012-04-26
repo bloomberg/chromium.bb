@@ -257,19 +257,19 @@ bool NTPLoginHandler::ShouldShow(Profile* profile) {
 void NTPLoginHandler::GetLocalizedValues(Profile* profile,
                                          DictionaryValue* values) {
   PrefService* prefs = profile->GetPrefs();
-  if (prefs->GetString(prefs::kGoogleServicesUsername).empty() ||
-      !prefs->GetBoolean(prefs::kSyncPromoShowNTPBubble)) {
-    return;
-  }
+  bool hide_sync = prefs->GetString(prefs::kGoogleServicesUsername).empty() ||
+      !prefs->GetBoolean(prefs::kSyncPromoShowNTPBubble);
 
   values->SetString("login_status_message",
+      hide_sync ? string16() :
       l10n_util::GetStringFUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE,
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
-  values->SetString("login_status_url", chrome::kSyncLearnMoreURL);
-  values->SetString("login_status_learn_more",
-      l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  values->SetString("login_status_url",
+      hide_sync ? std::string() : chrome::kSyncLearnMoreURL);
   values->SetString("login_status_advanced",
+      hide_sync ? string16() :
       l10n_util::GetStringUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED));
   values->SetString("login_status_dismiss",
+      hide_sync ? string16() :
       l10n_util::GetStringUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_OK));
 }

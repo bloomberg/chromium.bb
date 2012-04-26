@@ -75,10 +75,12 @@ void ChromeWebUIDataSource::StartDataRequest(const std::string& path,
 void ChromeWebUIDataSource::SendLocalizedStringsAsJSON(int request_id) {
   std::string template_data;
   SetFontAndTextDirection(&localized_strings_);
+
+  scoped_ptr<jstemplate_builder::UseVersion2> version2;
   if (json_js_format_v2_)
-    jstemplate_builder::AppendJsonJS2(&localized_strings_, &template_data);
-  else
-    jstemplate_builder::AppendJsonJS(&localized_strings_, &template_data);
+    version2.reset(new jstemplate_builder::UseVersion2);
+
+  jstemplate_builder::AppendJsonJS(&localized_strings_, &template_data);
   SendResponse(request_id, base::RefCountedString::TakeString(&template_data));
 }
 

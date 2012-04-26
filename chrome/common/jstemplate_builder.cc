@@ -14,7 +14,22 @@
 #include "grit/common_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
+namespace {
+
+// True when building version 2 templates. See UseVersion2 class.
+bool g_version2 = false;
+
+}  // namespace
+
 namespace jstemplate_builder {
+
+UseVersion2::UseVersion2() : previous_value_(g_version2) {
+  g_version2 = true;
+}
+
+UseVersion2::~UseVersion2() {
+  g_version2 = previous_value_;
+}
 
 std::string GetTemplateHtml(const base::StringPiece& html_template,
                             const DictionaryValue* json,
@@ -49,7 +64,7 @@ std::string GetTemplatesHtml(const base::StringPiece& html_template,
 
 void AppendJsonHtml(const DictionaryValue* json, std::string* output) {
   std::string javascript_string;
-  AppendJsonJS(json, &javascript_string);
+  jstemplate_builder::AppendJsonJS(json, &javascript_string);
 
   // </ confuses the HTML parser because it could be a </script> tag.  So we
   // replace </ with <\/.  The extra \ will be ignored by the JS engine.
@@ -67,19 +82,7 @@ void AppendJsonJS(const DictionaryValue* json, std::string* output) {
   std::string jstext;
   JSONStringValueSerializer serializer(&jstext);
   serializer.Serialize(*json);
-  output->append("var templateData = ");
-  output->append(jstext);
-  output->append(";");
-}
-
-void AppendJsonJS2(const DictionaryValue* json, std::string* output) {
-  // Convert the template data to a json string.
-  DCHECK(json) << "must include json data structure";
-
-  std::string jstext;
-  JSONStringValueSerializer serializer(&jstext);
-  serializer.Serialize(*json);
-  output->append("loadTimeData.data = ");
+  output->append(g_version2 ? "loadTimeData.data = " : "var templateData = ");
   output->append(jstext);
   output->append(";");
 }
@@ -114,7 +117,7 @@ void AppendI18nTemplateSourceHtml(std::string* output) {
   // fetch and cache the pointer of the jstemplate resource source text.
   static const base::StringPiece i18n_template_src(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_I18N_TEMPLATE_JS));
+          g_version2 ? IDR_I18N_TEMPLATE2_JS : IDR_I18N_TEMPLATE_JS));
 
   if (i18n_template_src.empty()) {
     NOTREACHED() << "Unable to get i18n template src";
@@ -127,6 +130,9 @@ void AppendI18nTemplateSourceHtml(std::string* output) {
 }
 
 void AppendI18nTemplateProcessHtml(std::string* output) {
+  if (g_version2)
+    return;
+
   static const base::StringPiece i18n_process_src(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_I18N_PROCESS_JS));

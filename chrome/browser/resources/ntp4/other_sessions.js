@@ -9,7 +9,6 @@
 cr.define('ntp', function() {
   'use strict';
 
-  var localStrings = new LocalStrings();
   var Menu = cr.ui.Menu;
   var MenuItem = cr.ui.MenuItem;
   var MenuButton = cr.ui.MenuButton;
@@ -255,7 +254,7 @@ cr.define('ntp', function() {
       var button = cr.doc.createElement('button');
       this.menu.appendChild(button);
       cr.ui.decorate(button, cr.ui.MenuItem);
-      button.textContent = localStrings.getString(textId);
+      button.textContent = loadTimeData.getString(textId);
       return button;
     },
 

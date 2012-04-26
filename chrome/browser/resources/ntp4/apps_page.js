@@ -5,8 +5,6 @@
 cr.define('ntp', function() {
   'use strict';
 
-  var localStrings = new LocalStrings;
-
   var APP_LAUNCH = {
     // The histogram buckets (keep in sync with extension_constants.h).
     NTP_APPS_MAXIMIZED: 0,
@@ -97,7 +95,7 @@ cr.define('ntp', function() {
       this.menu.appendChild(button);
       cr.ui.decorate(button, cr.ui.MenuItem);
       if (textId)
-        button.textContent = localStrings.getString(textId);
+        button.textContent = loadTimeData.getString(textId);
       return button;
     },
 
@@ -650,7 +648,7 @@ cr.define('ntp', function() {
     initialize: function() {
       this.classList.add('apps-page');
 
-      if (templateData.appInstallHintEnabled) {
+      if (loadTimeData.getBoolean('appInstallHintEnabled')) {
         this.appInstallHint_ = $('app-install-hint-template').cloneNode(true);
         this.appInstallHint_.addEventListener('click', function(e) {
           chrome.send('recordAppLaunchByURL',

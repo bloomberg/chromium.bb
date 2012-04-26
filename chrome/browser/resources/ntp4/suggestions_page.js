@@ -73,7 +73,7 @@ cr.define('ntp', function() {
           '<span class="title"></span>';
 
       this.querySelector('.close-button').title =
-          templateData.removethumbnailtooltip;
+          loadTimeData.getString('removethumbnailtooltip');
 
       this.tabIndex = -1;
       this.data_ = null;
@@ -184,18 +184,19 @@ cr.define('ntp', function() {
 
       var undo = {
         action: doUndo,
-        text: templateData.undothumbnailremove,
+        text: loadTimeData.getString('undothumbnailremove'),
       };
 
       var undoAll = {
         action: function() {
           chrome.send('clearSuggestionsURLsBlacklist');
         },
-        text: templateData.restoreThumbnailsShort,
+        text: loadTimeData.getString('restoreThumbnailsShort'),
       };
 
-      ntp.showNotification(templateData.thumbnailremovednotification,
-                           [undo, undoAll]);
+      ntp.showNotification(
+          loadTimeData.getString('thumbnailremovednotification'),
+          [undo, undoAll]);
     },
 
     /**
