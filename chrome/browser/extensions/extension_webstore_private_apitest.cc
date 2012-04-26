@@ -99,14 +99,25 @@ class ExtensionNoConfirmWebstorePrivateApiTest : public ExtensionApiTest {
     host_resolver()->AddRule("www.example.com", "127.0.0.1");
     ASSERT_TRUE(test_server()->Start());
     ExtensionInstallUI::DisableFailureUIForTests();
+
+    ASSERT_TRUE(tmp_.CreateUniqueTempDirUnderPath(test_data_dir_));
+    ASSERT_TRUE(file_util::CreateDirectory(tmp_.path()));
+    ASSERT_TRUE(file_util::CopyDirectory(
+        test_data_dir_.AppendASCII("webstore_private"),
+        tmp_.path(),
+        true));
   }
 
  protected:
   // Returns a test server URL, but with host 'www.example.com' so it matches
   // the web store app's extent that we set up via command line flags.
-  GURL GetTestServerURL(const std::string& path) {
+  virtual GURL GetTestServerURL(const std::string& path) {
+    std::string basename = tmp_.path().BaseName().MaybeAsASCII();
     GURL url = test_server()->GetURL(
-        std::string("files/extensions/api_test/webstore_private/") + path);
+        std::string("files/extensions/api_test/") +
+        basename +
+        "/webstore_private/" +
+        path);
 
     // Replace the host with 'www.example.com' so it matches the web store
     // app's extent.
@@ -131,6 +142,8 @@ class ExtensionNoConfirmWebstorePrivateApiTest : public ExtensionApiTest {
   ExtensionService* service() {
     return browser()->profile()->GetExtensionService();
   }
+
+  ScopedTempDir tmp_;
 };
 
 class ExtensionWebstorePrivateApiTest :
@@ -164,7 +177,7 @@ class ExtensionWebstorePrivateBundleTest
 
  protected:
   void PackCRX(const std::string& id) {
-    FilePath dir_path = test_data_dir_
+    FilePath dir_path = tmp_.path()
         .AppendASCII("webstore_private/bundle")
         .AppendASCII(id);
 
@@ -190,7 +203,7 @@ class ExtensionWebstorePrivateBundleTest
 
   // Packs the extension at |ext_path| using |id|'s PEM key.
   void PackCRX(const std::string& id, const FilePath& ext_path) {
-    FilePath data_path = test_data_dir_.AppendASCII("webstore_private/bundle");
+    FilePath data_path = tmp_.path().AppendASCII("webstore_private/bundle");
     FilePath pem_path = data_path.AppendASCII(id + ".pem");
     FilePath crx_path = data_path.AppendASCII(id + ".crx");
     FilePath destination = PackExtensionWithOptions(
@@ -342,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionNoConfirmWebstorePrivateApiTest,
                        InstallTheme) {
   WebstoreInstallListener listener;
   WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
-  ASSERT_TRUE(RunInstallTest("theme.html", "../../theme.crx"));
+  ASSERT_TRUE(RunInstallTest("theme.html", "../../../theme.crx"));
   listener.Wait();
   ASSERT_TRUE(listener.received_success());
   ASSERT_EQ("iamefpfkojoapidjnbafmgkgncegbkad", listener.id());
