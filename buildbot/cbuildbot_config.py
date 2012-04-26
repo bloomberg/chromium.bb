@@ -549,8 +549,7 @@ chrome_pfq = internal_chromium_pfq.derive(
   chrome_tests=False, # TODO(build-team): Use chrome tests
   overlays=constants.BOTH_OVERLAYS,
   prebuilts=False,
-  # Currently pgo is generated for all Chrome pfqs. Happenstance.
-  useflags=official['useflags'] + ['pgo_generate'],
+  useflags=official['useflags'],
 )
 
 chrome_pfq.add_config('alex-chrome-pfq',
