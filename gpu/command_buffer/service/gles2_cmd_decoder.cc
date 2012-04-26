@@ -8463,6 +8463,7 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
   GLenum internal_format,
   GLsizei width,
   GLsizei height) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoTexStorage2DEXT");
   if (!texture_manager()->ValidForTarget(target, 0, width, height, 1) ||
       TextureManager::ComputeMipMapCount(width, height, 1) < levels) {
     SetGLError(GL_INVALID_VALUE, "glTexStorage2DEXT: dimensions out of range");
