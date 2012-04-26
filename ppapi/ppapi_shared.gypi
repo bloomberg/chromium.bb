@@ -184,7 +184,6 @@
         'thunk/ppb_file_system_thunk.cc',
         'thunk/ppb_find_thunk.cc',
         'thunk/ppb_flash_api.h',
-        'thunk/ppb_flash_clipboard_api.h',
         'thunk/ppb_flash_clipboard_thunk.cc',
         'thunk/ppb_flash_fullscreen_thunk.cc',
         'thunk/ppb_flash_menu_api.h',
