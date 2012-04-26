@@ -223,13 +223,38 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
     } else if (!sync_node.GetEntry()->good()) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Could not InitByIdLookup on BookmarkNodeChanged, good() failed");
-    } else if (sync_node.GetEntry()->Get(::syncable::IS_DEL)) {
+    } else if (sync_node.GetEntry()->Get(syncable::IS_DEL)) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Could not InitByIdLookup on BookmarkNodeChanged, is_del true");
     } else {
-      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-          "Could not InitByIdLookup on BookmarkNodeChanged, "
-          " DecryptIfNecessary failed");
+      Cryptographer* crypto = trans.GetCryptographer();
+      syncable::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
+      const sync_pb::EntitySpecifics& specifics =
+          sync_node.GetEntry()->Get(syncable::SPECIFICS);
+      CHECK(specifics.has_encrypted());
+      const bool can_decrypt = crypto->CanDecrypt(specifics.encrypted());
+      const bool agreement = encrypted_types.Has(syncable::BOOKMARKS);
+      if (!agreement && !can_decrypt) {
+        error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+            "Could not InitByIdLookup on BookmarkNodeChanged, "
+            " Cryptographer thinks bookmarks not encrypted, and CanDecrypt"
+            " failed.");
+      } else if (agreement && can_decrypt) {
+        error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+            "Could not InitByIdLookup on BookmarkNodeChanged, "
+            " Cryptographer thinks bookmarks are encrypted, and CanDecrypt"
+            " succeeded (?!), but DecryptIfNecessary failed.");
+      } else if (agreement) {
+        error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+            "Could not InitByIdLookup on BookmarkNodeChanged, "
+            " Cryptographer thinks bookmarks are encrypted, but CanDecrypt"
+            " failed.");
+      } else {
+        error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+            "Could not InitByIdLookup on BookmarkNodeChanged, "
+            " Cryptographer thinks bookmarks not encrypted, but CanDecrypt"
+            " succeeded (super weird, btw)");
+      }
     }
     return;
   }

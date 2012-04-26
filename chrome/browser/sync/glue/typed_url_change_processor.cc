@@ -19,6 +19,7 @@
 #include "sync/internal_api/write_node.h"
 #include "sync/internal_api/write_transaction.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
+#include "sync/syncable/syncable.h"  // TODO(tim): Investigating bug 121587.
 
 using content::BrowserThread;
 
@@ -124,9 +125,40 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
   DCHECK(!visit_vector.empty());
 
   sync_api::WriteNode update_node(trans);
-  if (update_node.InitByClientTagLookup(syncable::TYPED_URLS, tag) ==
-          sync_api::BaseNode::INIT_OK) {
+  sync_api::BaseNode::InitByLookupResult result =
+      update_node.InitByClientTagLookup(syncable::TYPED_URLS, tag);
+  if (result == sync_api::BaseNode::INIT_OK) {
     model_associator_->WriteToSyncNode(url, visit_vector, &update_node);
+  } else if (result == sync_api::BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY) {
+    // TODO(tim): Investigating bug 121587.
+    Cryptographer* crypto = trans->GetCryptographer();
+    syncable::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
+    const sync_pb::EntitySpecifics& specifics =
+        update_node.GetEntry()->Get(syncable::SPECIFICS);
+    CHECK(specifics.has_encrypted());
+    const bool can_decrypt = crypto->CanDecrypt(specifics.encrypted());
+    const bool agreement = encrypted_types.Has(syncable::TYPED_URLS);
+    if (!agreement && !can_decrypt) {
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "Could not InitByIdLookup in CreateOrUpdateSyncNode, "
+          " Cryptographer thinks typed urls not encrypted, and CanDecrypt"
+          " failed.");
+    } else if (agreement && can_decrypt) {
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "Could not InitByIdLookup on CreateOrUpdateSyncNode, "
+          " Cryptographer thinks typed urls are encrypted, and CanDecrypt"
+          " succeeded (?!), but DecryptIfNecessary failed.");
+    } else if (agreement) {
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "Could not InitByIdLookup on CreateOrUpdateSyncNode, "
+          " Cryptographer thinks typed urls are encrypted, but CanDecrypt"
+          " failed.");
+    } else {
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "Could not InitByIdLookup on CreateOrUpdateSyncNode, "
+          " Cryptographer thinks typed urls not encrypted, but CanDecrypt"
+          " succeeded (super weird, btw)");
+    }
   } else {
     sync_api::WriteNode create_node(trans);
     if (!create_node.InitUniqueByCreation(syncable::TYPED_URLS,
