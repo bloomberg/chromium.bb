@@ -6,9 +6,10 @@
 
 #include "base/json/json_writer.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/extension_action/extension_page_actions_api_constants.h"
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/extensions/api/extension_action/extension_page_actions_api_constants.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_window_controller.h"
@@ -636,8 +637,7 @@ void ExtensionBrowserEventRouter::BrowserActionExecuted(
   int tab_id = 0;
   if (!ExtensionTabUtil::GetDefaultTab(browser, &tab_contents, &tab_id))
     return;
-  DispatchEventWithTab(profile, extension_id, "browserAction.onClicked",
-                       tab_contents->web_contents(), true);
+  ExtensionActionExecuted(profile, extension_id, tab_contents);
 }
 
 void ExtensionBrowserEventRouter::PageActionExecuted(
@@ -654,8 +654,7 @@ void ExtensionBrowserEventRouter::PageActionExecuted(
                                     NULL, NULL, &tab_contents, NULL)) {
     return;
   }
-  DispatchEventWithTab(profile, extension_id, "pageAction.onClicked",
-                       tab_contents->web_contents(), true);
+  ExtensionActionExecuted(profile, extension_id, tab_contents);
 }
 
 void ExtensionBrowserEventRouter::CommandExecuted(
@@ -671,4 +670,34 @@ void ExtensionBrowserEventRouter::CommandExecuted(
                            extension_id,
                            "experimental.keybinding.onCommand",
                            json_args);
+}
+
+void ExtensionBrowserEventRouter::ExtensionActionExecuted(
+    Profile* profile,
+    const std::string& extension_id,
+    TabContentsWrapper* tab_contents) {
+  const Extension* extension =
+      profile->GetExtensionService()->GetExtensionById(extension_id, false);
+  if (!extension)
+    return;
+
+  const char* event_name = NULL;
+  switch (extension->extension_action_api_type()) {
+    case ExtensionAction::TYPE_NONE:
+      break;
+    case ExtensionAction::TYPE_BROWSER:
+      event_name = "browserAction.onClicked";
+      break;
+    case ExtensionAction::TYPE_PAGE:
+      event_name = "pageAction.onClicked";
+      break;
+  }
+
+  if (event_name) {
+    DispatchEventWithTab(profile,
+                         extension_id,
+                         event_name,
+                         tab_contents->web_contents(),
+                         true);
+  }
 }

@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_permission_set.h"
@@ -30,7 +31,6 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/size.h"
 
-class ExtensionAction;
 class ExtensionResource;
 class FileBrowserHandler;
 class SkBitmap;
@@ -577,6 +577,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const UserScriptList& content_scripts() const { return content_scripts_; }
   ExtensionAction* page_action() const { return page_action_.get(); }
   ExtensionAction* browser_action() const { return browser_action_.get(); }
+  ExtensionAction::Type extension_action_api_type() const {
+    return extension_action_api_type_;
+  }
   const FileBrowserHandlerList* file_browser_handlers() const {
     return file_browser_handlers_.get();
   }
@@ -830,7 +833,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Helper method to load an ExtensionAction from the page_action or
   // browser_action entries in the manifest.
-  ExtensionAction* LoadExtensionActionHelper(
+  scoped_ptr<ExtensionAction> LoadExtensionActionHelper(
       const base::DictionaryValue* extension_action, string16* error);
 
   // Helper method that loads the OAuth2 info from the 'oauth2' manifest key.
@@ -928,6 +931,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The extension's browser action, if any.
   scoped_ptr<ExtensionAction> browser_action_;
+
+  // The "API type" of whichever extension action (|page_action_| or
+  // |browser_action_|) refers to. This flag is needed by code which must deal
+  // with browser actions that were automatically converted from page actions,
+  // since the extensions will still call the pageAction APIs.
+  ExtensionAction::Type extension_action_api_type_;
 
   // The extension's file browser actions, if any.
   scoped_ptr<FileBrowserHandlerList> file_browser_handlers_;

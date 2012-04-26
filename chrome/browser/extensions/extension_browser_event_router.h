@@ -214,6 +214,12 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   // found, NULL if not.
   TabEntry* GetTabEntry(const content::WebContents* contents);
 
+  // Called when either a browser or page action is executed. Figures out which
+  // event to send based on what the extension wants.
+  void ExtensionActionExecuted(Profile* profile,
+                               const std::string& extension_id,
+                               TabContentsWrapper* tab_contents);
+
   std::map<int, TabEntry> tab_entries_;
 
   // The main profile that owns this event router.
