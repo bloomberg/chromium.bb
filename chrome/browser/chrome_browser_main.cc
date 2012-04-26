@@ -22,6 +22,7 @@
 #include "base/string_piece.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
@@ -1058,6 +1059,37 @@ void ChromeBrowserMainParts::DomainBoundCertsFieldTrial() {
   }
 }
 
+void ChromeBrowserMainParts::SetupUniformityFieldTrials() {
+  // One field trial will be created for each entry in this array. The i'th
+  // field trial will have |trial_sizes[i]| groups in it, including the default
+  // group. Each group will have a probability of 1/|trial_sizes[i]|.
+  const int trial_sizes[] = { 100, 20, 10, 5, 2 };
+
+  // Probability per group remains constant for all uniformity trials, what
+  // changes is the probability divisor.
+  static const base::FieldTrial::Probability kProbabilityPerGroup = 1;
+  for (size_t i = 0; i < arraysize(trial_sizes); ++i) {
+    const base::FieldTrial::Probability divisor = trial_sizes[i];
+
+    const int group_percent = 100 / trial_sizes[i];
+    const std::string trial_name =
+        StringPrintf("UMA-Uniformity-Trial-%d-Percent", group_percent);
+
+    VLOG(1) << "Trial name = " << trial_name;
+
+    scoped_refptr<base::FieldTrial> trial(
+        base::FieldTrialList::FactoryGetFieldTrial(
+            trial_name, divisor, "default", 2015, 1, 1, NULL));
+    // Loop starts with group 1 because the field trial automatically creates a
+    // default group, which would be group 0.
+    for (int group_number = 1; group_number < trial_sizes[i]; ++group_number) {
+      const std::string group_name = StringPrintf("group_%02d", group_number);
+      VLOG(1) << "    Group name = " << group_name;
+      trial->AppendGroup(group_name, kProbabilityPerGroup);
+    }
+  }
+}
+
 // ChromeBrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------
 
 void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
@@ -1079,6 +1111,7 @@ void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   DefaultAppsFieldTrial();
   AutoLaunchChromeFieldTrial();
   DomainBoundCertsFieldTrial();
+  SetupUniformityFieldTrials();
   AutocompleteFieldTrial::Activate();
   NewTabUI::SetupFieldTrials();
 }
