@@ -24,8 +24,9 @@
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/gfx/native_theme_win.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/menu/menu_2.h"
-#include "ui/views/controls/menu/menu_win.h"
+#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/textfield/native_textfield_views.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -527,7 +528,13 @@ void NativeTextfieldWin::OnContextMenu(HWND window, const POINT& point) {
     MapWindowPoints(HWND_DESKTOP, &p, 1);
   }
   BuildContextMenu();
-  context_menu_->RunContextMenuAt(gfx::Point(p));
+
+  MenuModelAdapter adapter(context_menu_contents_.get());
+  context_menu_runner_.reset(new MenuRunner(adapter.CreateMenu()));
+
+  ignore_result(context_menu_runner_->RunMenuAt(textfield_->GetWidget(), NULL,
+      gfx::Rect(gfx::Point(p), gfx::Size()), MenuItemView::TOPLEFT,
+      MenuRunner::HAS_MNEMONICS));
 }
 
 void NativeTextfieldWin::OnCopy() {
@@ -1155,7 +1162,6 @@ void NativeTextfieldWin::BuildContextMenu() {
   context_menu_contents_->AddSeparator();
   context_menu_contents_->AddItemWithStringId(IDS_APP_SELECT_ALL,
                                               IDS_APP_SELECT_ALL);
-  context_menu_.reset(new Menu2(context_menu_contents_.get()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

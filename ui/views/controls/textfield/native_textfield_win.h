@@ -27,7 +27,7 @@ class SelectionModel;
 
 namespace views {
 
-class Menu2;
+class MenuRunner;
 class NativeViewHost;
 class Textfield;
 
@@ -265,7 +265,7 @@ class NativeTextfieldWin
 
   // The contents of the context menu for the edit.
   scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;
-  scoped_ptr<Menu2> context_menu_;
+  scoped_ptr<MenuRunner> context_menu_runner_;
 
   // Border insets.
   gfx::Insets content_insets_;
