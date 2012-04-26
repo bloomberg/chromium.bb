@@ -29,11 +29,7 @@ void WebViewExample::CreateExampleView(View* container) {
   container->SetLayoutManager(new FillLayout);
   container->AddChildView(webview_);
 
-  webview_->web_contents()->GetController().LoadURL(
-      GURL("http://www.google.com/"),
-      content::Referrer(),
-      content::PAGE_TRANSITION_TYPED,
-      std::string());
+  webview_->LoadInitialURL(GURL("http://www.google.com/"));
   webview_->web_contents()->Focus();
 }
 
