@@ -61,6 +61,8 @@ cr.define('options', function() {
                                       page.title,
                                       '/' + url);
           uber.invokeMethodOnParent('setPath', {path: url});
+          uber.invokeMethodOnParent('setTitle',
+              {title: templateData[hash + 'TabTitle']});
         };
       }
 

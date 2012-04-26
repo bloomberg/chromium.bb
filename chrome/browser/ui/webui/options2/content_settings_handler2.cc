@@ -280,6 +280,28 @@ void ContentSettingsHandler::GetLocalizedValues(
   RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "contentSettingsPage",
                 IDS_CONTENT_SETTINGS_TITLE);
+
+  // Register titles for each of the individual settings whose exception
+  // dialogs will be processed by |ContentSettingsHandler|.
+  RegisterTitle(localized_strings, "cookies",
+                IDS_COOKIES_TAB_LABEL);
+  RegisterTitle(localized_strings, "images",
+                IDS_IMAGES_TAB_LABEL);
+  RegisterTitle(localized_strings, "javascript",
+                IDS_JAVASCRIPT_TAB_LABEL);
+  RegisterTitle(localized_strings, "plugins",
+                IDS_PLUGIN_TAB_LABEL);
+  RegisterTitle(localized_strings, "popups",
+                IDS_POPUP_TAB_LABEL);
+  RegisterTitle(localized_strings, "location",
+                IDS_GEOLOCATION_TAB_LABEL);
+  RegisterTitle(localized_strings, "notifications",
+                IDS_NOTIFICATIONS_TAB_LABEL);
+  RegisterTitle(localized_strings, "fullscreen",
+                IDS_FULLSCREEN_TAB_LABEL);
+  RegisterTitle(localized_strings, "mouselock",
+                IDS_MOUSE_LOCK_TAB_LABEL);
+
   localized_strings->SetBoolean("enable_web_intents",
                                 web_intents::IsWebIntentsEnabled());
   // TODO(marja): clean up the options UI after the decision on the session
