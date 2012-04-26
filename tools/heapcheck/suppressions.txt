@@ -1809,3 +1809,22 @@
    fun:crypto::RSAPrivateKey::FindFromPublicKeyInfo
    fun:crypto::RSAPrivateKeyNSSTest_*_Test::TestBody
 }
+{
+   bug_125129_a
+   Heapcheck:Leak
+   ...
+   fun:RenderProcessHostImpl::RenderProcessHostImpl
+   fun:SiteInstanceImpl::GetProcess
+   fun:*RenderViewHostImpl
+   fun:*TestRenderViewHost
+   fun:::TestInterstitialPage::CreateRenderViewHost
+}
+{
+   bug_125129_b
+   Heapcheck:Leak
+   ...
+   fun:RenderProcessHostImpl::RenderProcessHostImpl
+   fun:SiteInstanceImpl::GetProcess
+   ...
+   fun:*_*_Test::TestBody
+}

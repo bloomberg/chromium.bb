@@ -5807,6 +5807,16 @@
    fun:_ZN6webkit5npapi10PluginList10LoadPluginERK8FilePathP12ScopedVectorINS0_11PluginGroupEEPNS_13WebPluginInfoE
    fun:_ZN17UtilityThreadImpl13OnLoadPluginsERKSt6vectorI8FilePathSaIS1_EE
 }
+{
+   bug_125129
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN21RenderProcessHostImplC1EPN7content14BrowserContextE
+   fun:_ZN16SiteInstanceImpl10GetProcessEv
+   ...
+   fun:_ZN*_*_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
