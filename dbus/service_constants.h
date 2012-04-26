@@ -195,11 +195,15 @@ const char kPowerStateChangedSignal[] = "PowerStateChanged";
 const char kPowerSupplyPollSignal[] = "PowerSupplyPoll";
 const char kButtonEventSignal[] = "ButtonEvent";
 const char kStateOverrideCancel[] = "StateOverrideCancel";
+const char kSoftwareScreenDimmingRequestedSignal[] =
+    "SoftwareScreenDimmingRequested";
 // Values
 const char kPowerButtonName[] = "power";
 const char kLockButtonName[] = "lock";
 const int  kBrightnessTransitionGradual = 1;
 const int  kBrightnessTransitionInstant = 2;
+const int  kSoftwareScreenDimmingNone = 1;
+const int  kSoftwareScreenDimmingIdle = 2;
 // DEPRECATED
 const char kRequestLockScreenSignal[] = "RequestLockScreen";
 const char kRequestRestartSignal[] = "RequestRestart";
