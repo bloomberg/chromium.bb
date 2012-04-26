@@ -260,7 +260,7 @@ FileCopyManager.prototype.maybeCancel_ = function() {
 /**
  * Convert string in clipboard to entries and kick off pasting.
  */
-FileCopyManager.prototype.paste = function(clipboard, targetEntry,
+FileCopyManager.prototype.paste = function(clipboard, targetPath,
                                            targetOnGData) {
   var self = this;
   var results = {
@@ -276,13 +276,18 @@ FileCopyManager.prototype.paste = function(clipboard, targetEntry,
   }
 
   function onSourceEntryFound(dirEntry) {
-    function onComplete() {
+    function onTargetEntryFound(targetEntry) {
       self.queueCopy(results.sourceDirEntry,
             targetEntry,
             results.entries,
             results.isCut,
             results.isOnGData,
             targetOnGData);
+    }
+
+    function onComplete() {
+      self.root_.getDirectory(targetPath, {},
+                              onTargetEntryFound, onPathError);
     }
 
     function onEntryFound(entry) {

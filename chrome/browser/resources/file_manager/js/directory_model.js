@@ -205,6 +205,13 @@ DirectoryModel.prototype.getCurrentDirEntry = function() {
 };
 
 /**
+ * @return {string} Path for the current directory.
+ */
+DirectoryModel.prototype.getCurrentDirPath = function() {
+  return this.currentDirEntry_.fullPath;
+};
+
+/**
  * @private
  * @return {Array.<string>} Names of selected files.
  */

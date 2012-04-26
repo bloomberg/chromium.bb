@@ -45,7 +45,6 @@ FileTransferController.prototype = {
     list.style.webkitUserDrag = 'element';
     list.addEventListener('dragstart', this.onDragStart_.bind(this, list));
     list.addEventListener('dragend', this.onDragEnd_.bind(this, list));
-    list.addEventListener('drag', this.onDrag_.bind(this, list));
   },
 
   /**
@@ -56,11 +55,20 @@ FileTransferController.prototype = {
    *     accetps files (putting it into the current directory).
    */
   attachDropTarget: function(list, opt_onlyIntoDirectories) {
-    list.addEventListener('dragover', this.onDragOver_.bind(this, list));
-    list.addEventListener('dragenter', this.onDragEnter_.bind(this, list));
-    list.addEventListener('dragleave', this.onDragLeave_.bind(this, list));
-    list.addEventListener('drop', this.onDrop_.bind(this, list,
+    list.addEventListener('dragover', this.onDragOver_.bind(this,
                           !!opt_onlyIntoDirectories));
+    list.addEventListener('dragenter', this.onDragEnterList_.bind(this, list));
+    list.addEventListener('dragleave', this.onDragLeave_.bind(this));
+    list.addEventListener('drop', this.onDrop_.bind(this,
+                          !!opt_onlyIntoDirectories));
+  },
+
+  attachBreadcrumbsDropTarget: function(breadcrumbs) {
+    breadcrumbs.addEventListener('dragover', this.onDragOver_.bind(this, true));
+    breadcrumbs.addEventListener('dragenter',
+        this.onDragEnterBreadcrumbs_.bind(this, breadcrumbs));
+    breadcrumbs.addEventListener('dragleave', this.onDragLeave_.bind(this));
+    breadcrumbs.addEventListener('drop', this.onDrop_.bind(this, true));
   },
 
   /**
@@ -112,10 +120,11 @@ FileTransferController.prototype = {
   /**
    * Queue up a file copy operation based on the current system clipboard.
    * @param {DataTransfer} dataTransfer System data transfer object.
-   * @param {DirectoryEntry=} opt_destination Paste destination.
+   * @param {string=} opt_destinationPath Paste destination.
    */
-  paste: function(dataTransfer, opt_destination) {
-    var destination = opt_destination || this.currentDirectory;
+  paste: function(dataTransfer, opt_destinationPath) {
+    var destinationPath = opt_destinationPath ||
+                          this.directoryModel_.getCurrentDirPath();
     // effectAllowed set in copy/pase handlers stay uninitialized. DnD handlers
     // work fine.
     var effectAllowed = dataTransfer.effectAllowed != 'uninitialized' ?
@@ -132,9 +141,9 @@ FileTransferController.prototype = {
       files: dataTransfer.getData('fs/files')
     };
 
-    if (!toMove || operationInfo.sourceDir != destination.fullPath) {
+    if (!toMove || operationInfo.sourceDir != destinationPath) {
       this.copyManager_.paste(operationInfo,
-                              destination,
+                              destinationPath,
                               this.isOnGData);
     } else {
       console.log('Ignore move into the same folder');
@@ -173,23 +182,55 @@ FileTransferController.prototype = {
     this.setDropTarget_(null);
   },
 
-  onDrag_: function(vent) {
+  onDragOver_: function(onlyIntoDirectories, event) {
     event.preventDefault();
-    event.dataTransfer.dropEffect = 'copy';
+    var effect;
+    if (!this.destinationPath_ && onlyIntoDirectories) {
+      effect = 'none';
+    } else if (this.destinationPath_ &&
+               this.directoryModel_.isPathReadOnly(this.destinationPath_)) {
+      effect = 'none';
+    } else if (!this.destinationPath_ &&
+                   this.directoryModel_.isReadOnly()) {
+      effect = 'none';
+    } else {
+      effect = 'move';
+    }
+    event.preventDefault();
+    event.dataTransfer.dropEffect = effect;
   },
 
-  onDragOver_: function(list, event) {
-    if (this.canPasteOrDrop_(event.dataTransfer)) {
-      event.preventDefault();
+  onDragEnterList_: function(list, event) {
+    this.dragEnterCount_++;
+    var item = list.getListItemAncestor(event.target);
+    item = item && list.isItem(item) ? item : null;
+    if (item == this.dropTarget_)
+      return;
+
+    var entry = item && list.dataModel.item(item.listIndex);
+    if (entry) {
+      this.setDropTarget_(item, entry.isDirectory, event.dataTransfer,
+          entry.fullPath);
+    } else {
+      this.setDropTarget_(null);
     }
   },
 
-  onDragEnter_: function(list, event) {
-    var item = list.getListItemAncestor(event.target);
+  onDragEnterBreadcrumbs_: function(breadcrumbs, event) {
+    if (!event.target.classList.contains('breadcrumb-path'))
+      return;
     this.dragEnterCount_++;
 
-    this.setDropTarget_(item && list.isItem(item) ? item : null,
-                        event.dataTransfer);
+    var items = breadcrumbs.querySelectorAll('.breadcrumb-path');
+    var path = this.directoryModel_.getCurrentRootPath();
+
+    if (event.target != items[0]) {
+      for (var i = 1; items[i - 1] != event.target; i++) {
+        path += '/' + items[i].textContent;
+      }
+    }
+
+    this.setDropTarget_(event.target, true, event.dataTransfer, path);
   },
 
   onDragLeave_: function(event) {
@@ -197,36 +238,28 @@ FileTransferController.prototype = {
       this.setDropTarget_(null);
   },
 
-  onDrop_: function(list, onlyIntoDirectories, event) {
-    console.log('drop: ', event.dataTransfer.dropEffect);
-    var item = list.getListItemAncestor(event.target);
-    var dropTarget = item && list.isItem(item) ?
-        list.dataModel.item(item.listIndex) : null;
-    if (dropTarget && !dropTarget.isDirectory)
-      dropTarget = null;
-    if (onlyIntoDirectories && !dropTarget)
+  onDrop_: function(onlyIntoDirectories, event) {
+    if (onlyIntoDirectories && !this.dropTarget_)
       return;
-    if (!this.canPasteOrDrop_(event.dataTransfer, dropTarget))
+    if (!this.canPasteOrDrop_(event.dataTransfer, this.destinationPath_))
       return;
     event.preventDefault();
-    this.paste(event.dataTransfer, dropTarget);
-    if (this.dropTarget_) {
-      var target = this.dropTarget_;
-      this.setDropTarget_(null);
-    }
+    this.paste(event.dataTransfer, this.destinationPath_);
+    this.setDropTarget_(null);
   },
 
-  setDropTarget_: function(listItem, opt_dataTransfer) {
-    if (this.dropTarget_ == listItem)
+  setDropTarget_: function(domElement, isDirectory, opt_dataTransfer,
+                           opt_destinationPath) {
+    if (this.dropTarget_ == domElement)
       return;
 
-    if (listItem) {
-      var list = listItem.parentElement;
-      var entry = list.dataModel.item(listItem.listIndex);
-      if (entry.isDirectory &&
-          (!opt_dataTransfer ||
-           this.canPasteOrDrop_(opt_dataTransfer, entry))) {
-        listItem.classList.add('accepts');
+    /** @type {string?} */
+    this.destinationPath_ = null;
+    if (domElement) {
+      if (isDirectory &&
+          this.canPasteOrDrop_(opt_dataTransfer, opt_destinationPath)) {
+        domElement.classList.add('accepts');
+        this.destinationPath_ = opt_destinationPath;
       }
     } else {
       this.dragEnterCount_ = 0;
@@ -239,7 +272,7 @@ FileTransferController.prototype = {
           oldDropTarget.classList.remove('accepts');
       }, 0);
     }
-    this.dropTarget_ = listItem;
+    this.dropTarget_ = domElement;
   },
 
   isDocumentWideEvent_: function(event) {
@@ -317,11 +350,12 @@ FileTransferController.prototype = {
     event.returnValue = !this.canPasteOrDrop_(event.clipboardData);
   },
 
-  canPasteOrDrop_: function(dataTransfer, opt_entry) {
-    if (!opt_entry && this.readonly)
-      return false;  // assure destination entry is in the current directory.
-    if (opt_entry && this.directoryModel_.isPathReadOnly(opt_entry.fullPath))
+  canPasteOrDrop_: function(dataTransfer, opt_destinationPath) {
+    var destinationPath = opt_destinationPath ||
+                          this.directoryModel_.getCurrentDirPath();
+    if (this.directoryModel_.isPathReadOnly(destinationPath)) {
       return false;
+    }
 
     if (!dataTransfer.types || dataTransfer.types.indexOf('fs/tag') == -1)
       return false;  // Unsupported type of content.
@@ -334,8 +368,6 @@ FileTransferController.prototype = {
     var directories = dataTransfer.getData('fs/directories').split('\n').
                       filter(function(d) { return d != ''; });
 
-    var destinationPath = (opt_entry || this.currentDirectory).
-                          fullPath;
     for (var i = 0; i < directories.length; i++) {
       if (destinationPath.substr(0, directories[i].length) == directories[i])
         return false;  // recursive paste.
