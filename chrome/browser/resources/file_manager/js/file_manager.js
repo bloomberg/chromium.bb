@@ -624,9 +624,6 @@ FileManager.prototype = {
     this.directoryModel_.getFileListSelection().addEventListener(
         'change', this.onSelectionChanged_.bind(this));
 
-    this.directoryModel_.setAutoSelectIndex(
-        this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE ? -1 : 0);
-
     this.initTable_();
     this.initGrid_();
     this.initRootsList_();
