@@ -1097,11 +1097,45 @@
           ],
         }],
         ['OS=="mac"', {
+          'sources': [
+            'host/remoting_me2me_host-Info.plist',
+          ],
+          'conditions': [
+            ['branding == "Chrome"', {
+              'variables': {
+                 'host_bundle_id': 'com.google.chrome_remote_desktop.remoting_me2me_host',
+              },
+            }, { # else branding!="Chrome"
+              'variables': {
+                'host_bundle_id': 'org.chromium.chromoting.remoting_me2me_host',
+              },
+            }],
+          ],
           'xcode_settings': {
             'OTHER_LDFLAGS': [
-              '-Wl,-sectcreate,__TEXT,__info_plist,host/remoting_me2me_host-Info.plist'
+              '-Wl,-sectcreate,__TEXT,__info_plist,<(INTERMEDIATE_DIR)/remoting_me2me_host-Info.plist'
             ],
           },
+          'rules': [
+            {
+              'rule_name': 'brand_mac',
+              'extension': 'plist',
+              'inputs': [ ],
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/remoting_me2me_host-Info.plist',
+              ],
+              'action': [
+                'python', '<(version_py_path)',
+                '-i', 'host/remoting_me2me_host-Info.plist',
+                '-o', '<(INTERMEDIATE_DIR)/remoting_me2me_host-Info.plist',
+                '-e', 'VERSION_FULL="<(version_full)"',
+                '-e', 'VERSION_SHORT="<(version_short)"',
+                '-e', 'BUNDLE_ID="<(host_bundle_id)"',
+              ],
+              'process_outputs_as_sources': 1,
+              'message': 'Branding and versioning remoting_me2me_host.',
+            },
+          ],
         }],
         ['OS=="win"', {
           'dependencies': [

@@ -3,14 +3,16 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>English</string>
     <key>CFBundleIdentifier</key>
-    <string>org.chromium.chromoting.remoting_me2me_host</string>
+    <string>@BUNDLE_ID@</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
     <string>remoting_me2me_host</string>
-  	<key>CFBundlePackageType</key>
-  	<string>APPL</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
     <key>CFBundleVersion</key>
-    <string>0.1</string>
+    <string>@VERSION_FULL@</string>
+    <key>CFBundleShortVersionString</key>
+    <string>@VERSION_SHORT@</string>
 </dict>
 </plist>
