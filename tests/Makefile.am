@@ -1,4 +1,4 @@
-TESTS = surface-test.la
+TESTS = surface-test.la client-test.la
 
 TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tests/weston-test
 
@@ -9,13 +9,17 @@ AM_CPPFLAGS = -I$(top_srcdir)/src -DUNIT_TEST $(COMPOSITOR_CFLAGS)
 
 
 check_LTLIBRARIES = $(TESTS)
+check_PROGRAMS = test-client
 
 AM_LDFLAGS = -module -avoid-version -rpath $(libdir)
 
 test_runner_src = test-runner.c test-runner.h
 
 surface_test_la_SOURCES = surface-test.c $(test_runner_src)
+client_test_la_SOURCES = client-test.c $(test_runner_src)
 
+test_client_SOURCES = test-client.c
+test_client_LDADD = $(SIMPLE_CLIENT_LIBS)
 
 noinst_PROGRAMS = setbacklight matrix-test
 
