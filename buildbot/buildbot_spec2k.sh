@@ -23,6 +23,7 @@ readonly BUILDBOT_PNACL="buildbot/buildbot_pnacl.sh"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 
 SPEC_BASE="tests/spec2k"
+readonly ARCHIVE_NAME=$(${SPEC_BASE}/run_all.sh GetTestArchiveName)
 
 RETCODE=0
 
@@ -79,10 +80,10 @@ build-tests() {
   local count=$(testcount "${tests}")
 
   pushd ${SPEC_BASE}
+  ./run_all.sh CleanBenchmarks
+  ./run_all.sh PopulateFromSpecHarness "${SPEC_HARNESS}"
   for setup in ${setups}; do
     echo "@@@BUILD_STEP spec2k build [${setup}] [${count} tests]@@@"
-    ./run_all.sh CleanBenchmarks
-    ./run_all.sh PopulateFromSpecHarness "${SPEC_HARNESS}"
     MAKEOPTS=-j8 \
     SPEC_COMPILE_REPETITIONS=${compile_repetitions} \
       ./run_all.sh BuildBenchmarks ${timed} ${setup} train ${tests} || \
@@ -113,7 +114,7 @@ run-tests() {
   popd
 }
 
-upload-tests() {
+upload-test-binaries() {
   local tests="$1"
   local try="$2" # set to "try" if this is a try run
 
@@ -123,24 +124,24 @@ upload-tests() {
   popd
   if [[ ${try} == "try" ]]; then
     ${UP_DOWN_LOAD} UploadArmBinariesForHWBotsTry $(NAME_ARM_TRY_UPLOAD) \
-      $(${SPEC_BASE}/run_all.sh GetTestArchiveName)
+      ${ARCHIVE_NAME}
   else
     # TODO(dschuff) condition the build name on ${try} once we move
     # NAME_ARM_UPLOAD/NAME_ARM_TRY_UPLOAD/etc to the right place
     # Likewise for download below
     ${UP_DOWN_LOAD} UploadArmBinariesForHWBots $(NAME_ARM_TRY_UPLOAD) \
-      $(${SPEC_BASE}/run_all.sh GetTestArchiveName)
+      ${ARCHIVE_NAME}
   fi
 }
 
-download-tests() {
+download-test-binaries() {
   local try="$1"
   if [[ ${try} == "try" ]]; then
     ${UP_DOWN_LOAD} DownloadArmBinariesForHWBotsTry $(NAME_ARM_TRY_DOWNLOAD) \
-      $(${SPEC_BASE}/run_all.sh GetTestArchiveName)
+      ${ARCHIVE_NAME}
   else
     ${UP_DOWN_LOAD} DownloadArmBinariesForHWBots $(NAME_ARM_TRY_DOWNLOAD) \
-      $(${SPEC_BASE}/run_all.sh GetTestArchiveName)
+      ${ARCHIVE_NAME}
   fi
   pushd ${SPEC_BASE}
   ./run_all.sh UnpackArmBinaries
@@ -162,13 +163,13 @@ pnacl-trybot-arm-buildonly() {
   build-prerequsites "arm" "bitcode"
   ${BUILDBOT_PNACL} archive-for-hw-bots "$(NAME_ARM_TRY_UPLOAD)" try
   build-tests SetupPnaclArmOpt "${TRYBOT_TESTS}" 0 1
-  upload-tests "${TRYBOT_TESTS}" try
+  upload-test-binaries "${TRYBOT_TESTS}" try
 }
 
 pnacl-trybot-arm-hw() {
   clobber
   ${BUILDBOT_PNACL} unarchive-for-hw-bots "$(NAME_ARM_TRY_DOWNLOAD)" try
-  download-tests try
+  download-test-binaries try
   run-tests SetupPnaclArmOptHW "${TRYBOT_TESTS}" 0 1
 }
 
