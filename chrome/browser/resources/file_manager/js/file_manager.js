@@ -358,6 +358,7 @@ FileManager.prototype = {
     var path = this.getPathFromUrlOrParams_();
     var invokeHandler = !this.params_.selectOnly;
     if (path &&
+        FileManager.isGDataEnabled() &&
         DirectoryModel.getRootType(path) == DirectoryModel.RootType.GDATA) {
       // We are opening on a GData path. Mount GData and show
       // "Loading Google Docs" message until the directory content loads.
@@ -599,10 +600,11 @@ FileManager.prototype = {
     this.directoryModel_ = new DirectoryModel(
         this.filesystem_.root,
         sigleSelection,
-        str('ENABLE_GDATA') == '1',
+        FileManager.isGDataEnabled(),
         this.metadataCache_);
 
-    this.initGDataWelcomeBanners_();
+    if (FileManager.isGDataEnabled())
+      this.initGDataWelcomeBanners_();
 
     var dataModel = this.directoryModel_.getFileList();
     var collator = this.collator_;
@@ -2307,6 +2309,9 @@ FileManager.prototype = {
     }
   };
 
+  FileManager.isGDataEnabled = function() {
+    return str('ENABLE_GDATA') == '1';
+  };
 
   FileManager.prototype.isOnGData = function() {
     return this.directoryModel_ &&
