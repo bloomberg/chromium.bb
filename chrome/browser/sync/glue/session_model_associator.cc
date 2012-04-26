@@ -418,7 +418,11 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(TabLink* tab_link,
         tab_node.GetSessionSpecifics();
     tab_s->set_favicon(old_specifics.tab().favicon());
     tab_s->set_favicon_source(old_specifics.tab().favicon_source());
+    tab_s->set_favicon_type(old_specifics.tab().favicon_type());
   }
+
+  // Note: we don't need to preserve unknown fields since we're the only ones
+  // who can write to this node (other clients can only delete).
 
   // Write into the actual sync model.
   tab_node.SetSessionSpecifics(session_s);
