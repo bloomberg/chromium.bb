@@ -206,7 +206,9 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
     SafeBrowsingService::SafeBrowsingCheck* check = it->second;
     std::vector<SBFullHashResult> full_hashes;
     bool can_cache = false;
-    if (source->GetResponseCode() == 200 || source->GetResponseCode() == 204) {
+    if (source->GetStatus().is_success() &&
+        (source->GetResponseCode() == 200 ||
+         source->GetResponseCode() == 204)) {
       // For tracking our GetHash false positive (204) rate, compared to real
       // (200) responses.
       if (source->GetResponseCode() == 200)
@@ -261,7 +263,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       update_timer_.Stop();
     }
 
-    if (source->GetResponseCode() == 200) {
+    if (source->GetStatus().is_success() && source->GetResponseCode() == 200) {
       // We have data from the SafeBrowsing service.
       std::string data;
       source->GetResponseAsString(&data);
