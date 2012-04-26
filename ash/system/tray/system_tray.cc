@@ -494,9 +494,9 @@ void SystemTray::CreateItems() {
   AddTrayItem(tray_volume);
   AddTrayItem(tray_brightness);
   AddTrayItem(tray_update);
-  AddTrayItem(new internal::TraySettings());
   AddTrayItem(tray_accessibility);
   AddTrayItem(tray_caps_lock);
+  AddTrayItem(new internal::TraySettings());
   AddTrayItem(tray_date);
   SetVisible(ash::Shell::GetInstance()->tray_delegate()->
       GetTrayVisibilityOnStartup());

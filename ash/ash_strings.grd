@@ -288,6 +288,26 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_IME_SETTINGS" desc="The label used for IME settings entry.">
         Customize languages and input...
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED" desc="The label used for the tray item to indicate caps lock is on and to toggle caps lock by the click.">
+        CAPS LOCK is on
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_DISABLED" desc="The label used for the tray item to indicate caps lock is on and to toggle caps lock by the click.">
+        CAPS LOCK is off
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SEARCH" desc="The shortcut text used for the caps lock tray item.">
+        Search
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SHIFT_SEARCH" desc="The shortcut text used for the caps lock tray item.">
+        Shift+Search
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED_PRESS_SHIFT_AND_SEARCH_KEYS" desc="The tooltip for the caps lock indicator button.">
+CAPS LOCK is on.
+Press Shift + Search key to cancel.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED_PRESS_SEARCH" desc="The tooltip for the caps lock indicator button.">
+CAPS LOCK is on.
+Press Search key to cancel.
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_FULL" desc="The label in the tray dialog to indicate that the battery is full.">
         Battery full
       </message>

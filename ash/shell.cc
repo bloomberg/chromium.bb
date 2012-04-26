@@ -250,7 +250,8 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
         wifi_enabled_(true),
         cellular_enabled_(true),
         bluetooth_enabled_(true),
-        volume_(0.5) {
+        volume_(0.5),
+        caps_lock_enabled_(false) {
   }
 
   virtual ~DummySystemTrayDelegate() {}
@@ -330,7 +331,11 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   }
 
   virtual bool IsCapsLockOn() const OVERRIDE {
-    return false;
+    return caps_lock_enabled_;
+  }
+
+  virtual void SetCapsLockEnabled(bool enabled) OVERRIDE {
+    caps_lock_enabled_ = enabled;
   }
 
   virtual bool IsInAccessibilityMode() const OVERRIDE {
@@ -476,6 +481,7 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   bool cellular_enabled_;
   bool bluetooth_enabled_;
   float volume_;
+  bool caps_lock_enabled_;
   SkBitmap null_image_;
 
   DISALLOW_COPY_AND_ASSIGN(DummySystemTrayDelegate);

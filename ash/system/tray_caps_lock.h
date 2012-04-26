@@ -20,10 +20,12 @@ class ASH_EXPORT CapsLockObserver {
   virtual ~CapsLockObserver() {}
 
   virtual void OnCapsLockChanged(bool enabled,
-                                 int string_id) = 0;
+                                 bool search_mapped_to_caps_lock) = 0;
 };
 
 namespace internal {
+
+class CapsLockDefaultView;
 
 class TrayCapsLock : public TrayImageItem,
                      public CapsLockObserver {
@@ -34,15 +36,20 @@ class TrayCapsLock : public TrayImageItem,
  private:
   // Overridden from TrayImageItem.
   virtual bool GetInitialVisibility() OVERRIDE;
+  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
   virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
+  virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
 
   // Overridden from CapsLockObserver.
   virtual void OnCapsLockChanged(bool enabled,
-                                 int string_id) OVERRIDE;
+                                 bool search_mapped_to_caps_lock) OVERRIDE;
 
+  scoped_ptr<CapsLockDefaultView> default_;
   scoped_ptr<views::View> detailed_;
-  int string_id_;  // String ID for the string to show in the popup.
+
+  bool search_mapped_to_caps_lock_;
+  bool caps_lock_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayCapsLock);
 };

@@ -302,6 +302,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return ime_manager->GetXKeyboard()->CapsLockIsEnabled();
   }
 
+  virtual void SetCapsLockEnabled(bool enabled) OVERRIDE {
+    input_method::InputMethodManager* ime_manager =
+        input_method::InputMethodManager::GetInstance();
+    return ime_manager->GetXKeyboard()->SetCapsLockEnabled(enabled);
+  }
+
   virtual bool IsInAccessibilityMode() const OVERRIDE {
     return accessibility_enabled_.GetValue();
   }
@@ -905,14 +911,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   // Overridden from SystemKeyEventListener::CapsLockObserver.
   virtual void OnCapsLockChange(bool enabled) OVERRIDE {
-    int id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SHIFT_AND_SEARCH_KEYS;
+    bool search_mapped_to_caps_lock = false;
     if (!base::chromeos::IsRunningOnChromeOS() ||
         search_key_mapped_to_ == input_method::kCapsLockKey)
-      id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SEARCH;
+      search_mapped_to_caps_lock = true;
 
     ash::CapsLockObserver* observer = tray_->caps_lock_observer();
     if (observer)
-      observer->OnCapsLockChanged(enabled, id);
+      observer->OnCapsLockChanged(enabled, search_mapped_to_caps_lock);
   }
 
   // Overridden from MessageBubbleLinkListener

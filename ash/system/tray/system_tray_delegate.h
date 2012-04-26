@@ -127,6 +127,9 @@ class SystemTrayDelegate {
   // Gets whether the caps lock is on.
   virtual bool IsCapsLockOn() const = 0;
 
+  // Sets the caps lock status to |enabled|.
+  virtual void SetCapsLockEnabled(bool enabled) = 0;
+
   // Gets whether accessibility mode is turned on.
   virtual bool IsInAccessibilityMode() const = 0;
 
