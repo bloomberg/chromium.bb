@@ -716,6 +716,7 @@
         # less flakier.
         'browser/process_singleton_linux_uitest.cc',
         'browser/ui/tests/browser_uitest.cc',
+        'browser/ui/webui/bookmarks_ui_uitest.cc',
         'browser/ui/webui/ntp/new_tab_ui_uitest.cc',
         'browser/ui/webui/options2/chromeos/guest_mode_options_ui2_uitest.cc',
         'browser/ui/webui/options2/options_ui2_uitest.cc',
@@ -2948,7 +2949,6 @@
         'browser/ui/webui/test_chrome_web_ui_controller_factory_browsertest.cc',
         'browser/ui/webui/bidi_checker_web_ui_test.cc',
         'browser/ui/webui/bidi_checker_web_ui_test.h',
-        'browser/ui/webui/bookmarks_ui_browsertest.cc',
         'browser/ui/webui/extensions/extension_settings_browsertest.js',
         'browser/ui/webui/net_internals/net_internals_ui_browsertest.cc',
         'browser/ui/webui/net_internals/net_internals_ui_browsertest.h',
