@@ -51,7 +51,7 @@ def FormatChangeId(text):
   if not text:
     raise ValueError("FormatChangeId invoked w/ an empty value: %r" % (text,))
   elif not text[0] in 'iI':
-    raise ValueError("FormatChangeId invoked w/ a malformed Change-Id: %r"
+    raise ValueError("FormatChangeId invoked w/ a malformed Change-Id: %r" %
                      (text,))
   return 'I%s' % text[1:].lower()
 
