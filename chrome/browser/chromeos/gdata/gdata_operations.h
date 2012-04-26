@@ -141,7 +141,6 @@ class UrlFetchOperationBase : public GDataOperationInterface,
 
   Profile* profile_;
   ReAuthenticateCallback re_authenticate_callback_;
-  scoped_refptr<base::MessageLoopProxy> relay_proxy_;
   int re_authenticate_count_;
   bool save_temp_file_;
   FilePath output_file_path_;

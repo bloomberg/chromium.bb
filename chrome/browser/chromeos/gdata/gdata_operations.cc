@@ -199,8 +199,6 @@ UrlFetchOperationBase::UrlFetchOperationBase(GDataOperationRegistry* registry,
                                              Profile* profile)
     : GDataOperationRegistry::Operation(registry),
       profile_(profile),
-      // MessageLoopProxy is used to run |callback| on the origin thread.
-      relay_proxy_(base::MessageLoopProxy::current()),
       re_authenticate_count_(0),
       save_temp_file_(false),
       started_(false) {
@@ -213,7 +211,6 @@ UrlFetchOperationBase::UrlFetchOperationBase(
     Profile* profile)
     : GDataOperationRegistry::Operation(registry, type, path),
       profile_(profile),
-      relay_proxy_(base::MessageLoopProxy::current()),
       re_authenticate_count_(0),
       save_temp_file_(false) {
 }
@@ -375,17 +372,14 @@ bool EntryActionOperation::ProcessURLFetchResults(const URLFetcher* source) {
   if (!callback_.is_null()) {
     GDataErrorCode code =
         static_cast<GDataErrorCode>(source->GetResponseCode());
-    relay_proxy_->PostTask(FROM_HERE,
-                           base::Bind(callback_, code, document_url_));
+    callback_.Run(code, document_url_);
   }
   return true;
 }
 
 void EntryActionOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
-  if (!callback_.is_null()) {
-    relay_proxy_->PostTask(FROM_HERE,
-                           base::Bind(callback_, code, document_url_));
-  }
+  if (!callback_.is_null())
+    callback_.Run(code, document_url_);
 }
 
 //============================== GetDataOperation ==============================
@@ -417,20 +411,15 @@ bool GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
       break;
   }
 
-  if (!callback_.is_null()) {
-    relay_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(callback_, code, base::Passed(&root_value)));
-  }
+  if (!callback_.is_null())
+    callback_.Run(code, root_value.Pass());
   return root_value.get() != NULL;
 }
 
 void GetDataOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
   if (!callback_.is_null()) {
     scoped_ptr<base::Value> root_value;
-    relay_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(callback_, code, base::Passed(&root_value)));
+    callback_.Run(code, root_value.Pass());
   }
 }
 
@@ -544,20 +533,14 @@ bool DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
     code = GDATA_FILE_ERROR;
   }
 
-  if (!callback_.is_null()) {
-    relay_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(callback_, code, document_url_, temp_file));
-  }
+  if (!callback_.is_null())
+    callback_.Run(code, document_url_, temp_file);
   return code == HTTP_SUCCESS;
 }
 
 void DownloadFileOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
-  if (!callback_.is_null()) {
-    relay_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(callback_, code, document_url_, FilePath()));
-  }
+  if (!callback_.is_null())
+    callback_.Run(code, document_url_, FilePath());
 }
 
 //=========================== DeleteDocumentOperation ==========================
@@ -841,10 +824,8 @@ bool InitiateUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
           << "]: code=" << code
           << ", location=[" << upload_location << "]";
 
-  if (!callback_.is_null()) {
-    relay_proxy_->PostTask(FROM_HERE,
-                           base::Bind(callback_, code, GURL(upload_location)));
-  }
+  if (!callback_.is_null())
+    callback_.Run(code, GURL(upload_location));
   return code == HTTP_SUCCESS;
 }
 
@@ -854,10 +835,8 @@ void InitiateUploadOperation::NotifySuccessToOperationRegistry() {
 
 void InitiateUploadOperation::RunCallbackOnPrematureFailure(
     GDataErrorCode code) {
-  if (!callback_.is_null()) {
-    relay_proxy_->PostTask(FROM_HERE,
-                           base::Bind(callback_, code, GURL()));
-  }
+  if (!callback_.is_null())
+    callback_.Run(code, GURL());
 }
 
 URLFetcher::RequestType InitiateUploadOperation::GetRequestType() const {
@@ -963,13 +942,10 @@ bool ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   }
 
   if (!callback_.is_null()) {
-    relay_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(callback_,
-                   ResumeUploadResponse(code,
-                                        start_range_received,
-                                        end_range_received),
-                   base::Passed(&entry)));
+    callback_.Run(ResumeUploadResponse(code,
+                                       start_range_received,
+                                       end_range_received),
+                  entry.Pass());
   }
 
   if (code == HTTP_CREATED)
@@ -991,12 +967,8 @@ void ResumeUploadOperation::NotifySuccessToOperationRegistry() {
 
 void ResumeUploadOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
   scoped_ptr<DocumentEntry> entry;
-  if (!callback_.is_null()) {
-    relay_proxy_->PostTask(FROM_HERE,
-                           base::Bind(callback_,
-                                      ResumeUploadResponse(code, 0, 0),
-                                      base::Passed(&entry)));
-  }
+  if (!callback_.is_null())
+    callback_.Run(ResumeUploadResponse(code, 0, 0), entry.Pass());
 }
 
 URLFetcher::RequestType ResumeUploadOperation::GetRequestType() const {
