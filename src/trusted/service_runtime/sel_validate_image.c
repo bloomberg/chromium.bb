@@ -34,7 +34,8 @@ typedef NaClValidationStatus (*ValidateFunc) (
 static ValidateFunc NaClSelectValidator(struct NaClApp *nap) {
   ValidateFunc ret = NACL_SUBARCH_NAME(ApplyValidator,
                                        NACL_TARGET_ARCH, NACL_TARGET_SUBARCH);
-#ifdef __arm__
+  /* Avoid linking two validators into Chromium to keep download size small. */
+#if defined(__arm__) || !defined(NACL_STANDALONE)
   UNREFERENCED_PARAMETER(nap);
 #else
   if (nap->enable_dfa_validator) {
