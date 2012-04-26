@@ -41,26 +41,12 @@ void InstantFieldTrial::Activate() {
   g_hidden  = trial->AppendGroup("Hidden",  960);  // 96%
   g_silent  = trial->AppendGroup("Silent",   10);  //  1%
   g_control = trial->AppendGroup("Control",  10);  //  1%
-
-  int group = 0;
-  if (trial->group() == g_instant)
-    group = 1;
-  else if (trial->group() == g_suggest)
-    group = 2;
-  else if (trial->group() == g_hidden)
-    group = 3;
-  else if (trial->group() == g_silent)
-    group = 4;
-  else if (trial->group() == g_control)
-    group = 5;
-  UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Size", group, 6);
 }
 
 // static
 InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kInstantFieldTrial)) {
-    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 1, 10);
     std::string switch_value =
         command_line->GetSwitchValueASCII(switches::kInstantFieldTrial);
     if (switch_value == switches::kInstantFieldTrialInstant)
@@ -77,54 +63,40 @@ InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
   }
 
   const int group = base::FieldTrialList::FindValue("Instant");
-  if (group == base::FieldTrial::kNotFinalized || group == g_inactive) {
-    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 2, 10);
+  if (group == base::FieldTrial::kNotFinalized || group == g_inactive)
     return INACTIVE;
-  }
 
+  // CONTROL and SILENT are unconstrained.
+  if (group == g_control)
+    return CONTROL;
+  if (group == g_silent)
+    return SILENT;
+
+  // HIDDEN, SUGGEST and INSTANT need non-incognito, suggest-enabled profiles.
   const PrefService* prefs = profile ? profile->GetPrefs() : NULL;
-  if (!prefs) {
-    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 3, 10);
+  if (!prefs || profile->IsOffTheRecord() ||
+      !prefs->GetBoolean(prefs::kSearchSuggestEnabled)) {
     return INACTIVE;
   }
 
-  if (profile->IsOffTheRecord()) {
-    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 4, 10);
+  if (group == g_hidden)
+    return HIDDEN;
+
+  // SUGGEST and INSTANT require UMA opt-in.
+  if (!MetricsServiceHelper::IsMetricsReportingEnabled())
+    return INACTIVE;
+
+  if (group == g_suggest)
+    return SUGGEST;
+
+  // Disable INSTANT for group policy overrides and explicit opt-out.
+  if (prefs->IsManagedPreference(prefs::kInstantEnabled) ||
+      prefs->GetBoolean(prefs::kInstantEnabledOnce)) {
     return INACTIVE;
   }
-
-  if (prefs->GetBoolean(prefs::kInstantEnabledOnce)) {
-    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 5, 10);
-    return INACTIVE;
-  }
-
-  if (!prefs->GetBoolean(prefs::kSearchSuggestEnabled)) {
-    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 6, 10);
-    return INACTIVE;
-  }
-
-  if (prefs->IsManagedPreference(prefs::kInstantEnabled)) {
-    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 7, 10);
-    return INACTIVE;
-  }
-
-  if (!MetricsServiceHelper::IsMetricsReportingEnabled()) {
-    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 8, 10);
-    return INACTIVE;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 0, 10);
 
   if (group == g_instant)
     return INSTANT;
-  if (group == g_suggest)
-    return SUGGEST;
-  if (group == g_hidden)
-    return HIDDEN;
-  if (group == g_silent)
-    return SILENT;
-  if (group == g_control)
-    return CONTROL;
 
   NOTREACHED();
   return INACTIVE;
