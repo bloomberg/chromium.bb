@@ -247,7 +247,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 
     const SkBitmap* ref_bmp;
     bool save_gen = false;
-    bool save_diff = false;
+    bool save_diff = true;
     bool rt = true;
 
     if ((ref_img_revision_ <= 0 && !use_checked_in_ref_imgs_) ||

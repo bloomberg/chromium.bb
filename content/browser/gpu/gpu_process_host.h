@@ -117,6 +117,10 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   void OnCommandBufferCreated(const int32 route_id);
   void OnDestroyCommandBuffer(int32 surface_id);
 
+#if defined(OS_MACOSX)
+  void OnAcceleratedSurfaceBuffersSwapped(
+      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
+#endif
 #if defined(OS_WIN) && !defined(USE_AURA)
   void OnAcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);

@@ -100,10 +100,12 @@ void CompositingIOSurfaceMac::SetIOSurface(uint64 io_surface_handle) {
 }
 
 void CompositingIOSurfaceMac::DrawIOSurface(NSView* view) {
-  TRACE_EVENT0("browser", "CompositingIOSurfaceMac::DrawIOSurface");
   CGLSetCurrentContext(cglContext_);
 
   bool has_io_surface = MapIOSurfaceToTexture(io_surface_handle_);
+
+  TRACE_EVENT1("browser", "CompositingIOSurfaceMac::DrawIOSurface",
+               "has_io_surface", has_io_surface);
 
   [glContext_ setView:view];
   NSSize window_size = [view frame].size;
@@ -291,6 +293,11 @@ void CompositingIOSurfaceMac::UnrefIOSurfaceWithContextCurrent() {
   }
 
   io_surface_.reset();
+
+  // Forget the ID, because even if it is still around when we want to use it
+  // again, OSX may have reused the same ID for a new tab and we don't want to
+  // blit random tab contents.
+  io_surface_handle_ = 0;
 }
 
 void CompositingIOSurfaceMac::GlobalFrameDidChange() {

@@ -108,6 +108,7 @@ class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
       const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
       int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
+  virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
   virtual void ProcessTouchAck(WebKit::WebInputEvent::Type type,

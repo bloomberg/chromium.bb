@@ -1011,6 +1011,13 @@ void RenderWidgetHostViewGtk::AcceleratedSurfacePostSubBuffer(
 void RenderWidgetHostViewGtk::AcceleratedSurfaceSuspend() {
 }
 
+bool RenderWidgetHostViewGtk::HasAcceleratedSurface(
+      const gfx::Size& desired_size) {
+  // TODO(jbates) Implement this so this view can use GetBackingStore for both
+  // software and GPU frames. Defaulting to false just makes GetBackingStore
+  // only useable for software frames.
+  return false;
+}
 
 void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
   content::RenderWidgetHostViewBase::SetBackground(background);

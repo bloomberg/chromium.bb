@@ -79,9 +79,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Message::Sender,
   // Called to wait for the next UpdateRect message for the specified render
   // widget.  Returns true if successful, and the msg out-param will contain a
   // copy of the received UpdateRect message.
-  virtual bool WaitForUpdateMsg(int render_widget_id,
-                                const base::TimeDelta& max_delay,
-                                IPC::Message* msg) = 0;
+  virtual bool WaitForBackingStoreMsg(int render_widget_id,
+                                      const base::TimeDelta& max_delay,
+                                      IPC::Message* msg) = 0;
 
   // Called when a received message cannot be decoded.
   virtual void ReceivedBadMessage() = 0;

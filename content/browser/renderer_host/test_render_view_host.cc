@@ -123,6 +123,11 @@ void TestRenderWidgetHostView::AcceleratedSurfacePostSubBuffer(
 void TestRenderWidgetHostView::AcceleratedSurfaceSuspend() {
 }
 
+bool TestRenderWidgetHostView::HasAcceleratedSurface(
+      const gfx::Size& desired_size) {
+  return false;
+}
+
 #if defined(OS_MACOSX)
 
 gfx::Rect TestRenderWidgetHostView::GetViewCocoaBounds() const {

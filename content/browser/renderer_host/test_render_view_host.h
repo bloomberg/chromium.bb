@@ -112,6 +112,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
       const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
       int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
+  virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
 #if defined(OS_MACOSX)
   virtual gfx::Rect GetViewCocoaBounds() const OVERRIDE;
   virtual void PluginFocusChanged(bool focused, int plugin_id) OVERRIDE;

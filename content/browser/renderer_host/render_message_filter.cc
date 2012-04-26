@@ -361,7 +361,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToPpapiBroker,
                         OnOpenChannelToPpapiBroker)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
-        render_widget_helper_->DidReceiveUpdateMsg(message))
+        render_widget_helper_->DidReceiveBackingStoreMsg(message))
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateIsDelayed, OnUpdateIsDelayed)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_CheckPermission,
                         OnCheckNotificationPermission)
@@ -948,5 +948,5 @@ void RenderMessageFilter::OnUpdateIsDelayed(const IPC::Message& msg) {
   // the renderer sent us this message, so that we can unblock the UI thread.
   // We will simply re-use the UpdateRect unblock mechanism, just with a
   // different message.
-  render_widget_helper_->DidReceiveUpdateMsg(msg);
+  render_widget_helper_->DidReceiveBackingStoreMsg(msg);
 }

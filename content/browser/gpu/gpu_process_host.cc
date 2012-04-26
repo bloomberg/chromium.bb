@@ -18,9 +18,11 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
+#include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/view_messages.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
 #include "content/public/browser/browser_thread.h"
@@ -410,6 +412,10 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
     IPC_MESSAGE_HANDLER(GpuHostMsg_CommandBufferCreated, OnCommandBufferCreated)
     IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyCommandBuffer, OnDestroyCommandBuffer)
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
+                        OnAcceleratedSurfaceBuffersSwapped)
+#endif
 #if defined(OS_WIN) && !defined(USE_AURA)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
@@ -534,6 +540,51 @@ void GpuProcessHost::OnDestroyCommandBuffer(int32 surface_id) {
     surface_refs_.erase(it);
 #endif  // defined(TOOLKIT_GTK)
 }
+
+#if defined(OS_MACOSX)
+void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
+    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
+  TRACE_EVENT0("renderer",
+      "GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped");
+
+  gfx::PluginWindowHandle handle =
+      GpuSurfaceTracker::Get()->GetSurfaceWindowHandle(params.surface_id);
+  // Compositor window is always gfx::kNullPluginWindow.
+  // TODO(jbates) http://crbug.com/105344 This will be removed when there are no
+  // plugin windows.
+  if (handle != gfx::kNullPluginWindow) {
+    RouteOnUIThread(GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
+    return;
+  }
+
+  base::ScopedClosureRunner scoped_completion_runner(
+      base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
+                 host_id_, params.route_id, true));
+
+  int render_process_id = 0;
+  int render_widget_id = 0;
+  if (!GpuSurfaceTracker::Get()->GetRenderWidgetIDForSurface(
+      params.surface_id, &render_process_id, &render_widget_id)) {
+    return;
+  }
+  RenderWidgetHelper* helper =
+      RenderWidgetHelper::FromProcessHostID(render_process_id);
+  if (!helper)
+    return;
+
+  // Pass the SwapBuffers on to the RenderWidgetHelper to wake up the UI thread
+  // if the browser is waiting for a new frame. Otherwise the RenderWidgetHelper
+  // will forward to the RenderWidgetHostView via RenderProcessHostImpl and
+  // RenderWidgetHostImpl.
+  scoped_completion_runner.Release();
+  helper->DidReceiveBackingStoreMsg(ViewHostMsg_CompositorSurfaceBuffersSwapped(
+      render_widget_id,
+      params.surface_id,
+      params.surface_handle,
+      params.route_id,
+      host_id_));
+}
+#endif  // OS_MACOSX
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 

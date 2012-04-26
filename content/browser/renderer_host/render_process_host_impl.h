@@ -63,9 +63,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual void CancelResourceRequests(int render_widget_id) OVERRIDE;
   virtual void SimulateSwapOutACK(
       const ViewMsg_SwapOut_Params& params) OVERRIDE;
-  virtual bool WaitForUpdateMsg(int render_widget_id,
-                                const base::TimeDelta& max_delay,
-                                IPC::Message* msg) OVERRIDE;
+  virtual bool WaitForBackingStoreMsg(int render_widget_id,
+                                      const base::TimeDelta& max_delay,
+                                      IPC::Message* msg) OVERRIDE;
   virtual void ReceivedBadMessage() OVERRIDE;
   virtual void WidgetRestored() OVERRIDE;
   virtual void WidgetHidden() OVERRIDE;
@@ -161,6 +161,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void OnUserMetricsRecordAction(const std::string& action);
   void OnRevealFolderInOS(const FilePath& path);
   void OnSavedPageAsMHTML(int job_id, int64 mhtml_file_size);
+
+  // CompositorSurfaceBuffersSwapped handler when there's no RWH.
+  void OnCompositorSurfaceBuffersSwappedNoHost(int32 surface_id,
+                                               uint64 surface_handle,
+                                               int32 route_id,
+                                               int32 gpu_process_host_id);
 
   // Generates a command line to be used to spawn a renderer and appends the
   // results to |*command_line|.

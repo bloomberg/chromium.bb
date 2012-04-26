@@ -493,7 +493,8 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   // The size of the RenderView when this message was generated.  This is
   // included so the host knows how large the view is from the perspective of
   // the renderer process.  This is necessary in case a resize operation is in
-  // progress.
+  // progress. If auto-resize is enabled, this should update the corresponding
+  // view size.
   IPC_STRUCT_MEMBER(gfx::Size, view_size)
 
   // New window locations for plugin child windows.
@@ -1905,6 +1906,15 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
                     gfx::PluginWindowHandle /* window */,
                     uint64 /* surface_handle */)
 #endif
+
+// This message is synthesized by GpuProcessHost to pass through a swap message
+// to the RenderWidgetHelper. This allows GetBackingStore to block for either a
+// software or GPU frame.
+IPC_MESSAGE_ROUTED4(ViewHostMsg_CompositorSurfaceBuffersSwapped,
+                    int32 /* surface id */,
+                    uint64 /* surface_handle */,
+                    int32 /* route_id */,
+                    int32 /* gpu_process_host_id */)
 
 // Opens a file asynchronously. The response returns a file descriptor
 // and an error code from base/platform_file.h.

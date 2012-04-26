@@ -37,6 +37,7 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
+  virtual void SetBufferAllocation(BufferAllocationState state) OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation
@@ -49,6 +50,11 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
 
  private:
   virtual ~IOSurfaceImageTransportSurface() OVERRIDE;
+
+  void UnrefIOSurface();
+  void CreateIOSurface();
+
+  BufferAllocationState buffer_allocation_state_;
 
   uint32 fbo_id_;
   GLuint texture_id_;
@@ -91,6 +97,7 @@ IOSurfaceImageTransportSurface::IOSurfaceImageTransportSurface(
     GpuCommandBufferStub* stub,
     gfx::PluginWindowHandle handle)
     : gfx::NoOpGLSurfaceCGL(gfx::Size(1, 1)),
+      buffer_allocation_state_(BUFFER_ALLOCATION_FRONT_AND_BACK),
       fbo_id_(0),
       texture_id_(0),
       io_surface_handle_(0),
@@ -141,15 +148,7 @@ bool IOSurfaceImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
   if (made_current_)
     return true;
 
-  glGenFramebuffersEXT(1, &fbo_id_);
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id_);
   OnResize(gfx::Size(1, 1));
-
-  GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-  if (status != GL_FRAMEBUFFER_COMPLETE) {
-    DLOG(ERROR) << "Framebuffer incomplete.";
-    return false;
-  }
 
   made_current_ = true;
   return true;
@@ -157,6 +156,30 @@ bool IOSurfaceImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
 
 unsigned int IOSurfaceImageTransportSurface::GetBackingFrameBufferObject() {
   return fbo_id_;
+}
+
+void IOSurfaceImageTransportSurface::SetBufferAllocation(
+    BufferAllocationState state) {
+  if (buffer_allocation_state_ == state)
+    return;
+  buffer_allocation_state_ = state;
+
+  switch (state) {
+    case BUFFER_ALLOCATION_FRONT_AND_BACK:
+      CreateIOSurface();
+      break;
+
+    case BUFFER_ALLOCATION_FRONT_ONLY:
+      break;
+
+    case BUFFER_ALLOCATION_NONE:
+      UnrefIOSurface();
+      helper_->Suspend();
+      break;
+
+    default:
+      NOTREACHED();
+  }
 }
 
 bool IOSurfaceImageTransportSurface::SwapBuffers() {
@@ -217,22 +240,43 @@ void IOSurfaceImageTransportSurface::OnResizeViewACK() {
 }
 
 void IOSurfaceImageTransportSurface::OnResize(gfx::Size size) {
-  IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
-
   // Caching |context_| from OnMakeCurrent. It should still be current.
   DCHECK(context_->IsCurrent(this));
 
   size_ = size;
+
+  CreateIOSurface();
+}
+
+void IOSurfaceImageTransportSurface::UnrefIOSurface() {
+  DCHECK(context_->IsCurrent(this));
+
+  if (fbo_id_) {
+    glDeleteFramebuffersEXT(1, &fbo_id_);
+    fbo_id_ = 0;
+  }
 
   if (texture_id_) {
     glDeleteTextures(1, &texture_id_);
     texture_id_ = 0;
   }
 
-  glGenTextures(1, &texture_id_);
+  io_surface_.reset();
+  io_surface_handle_ = 0;
+}
 
+void IOSurfaceImageTransportSurface::CreateIOSurface() {
   GLint previous_texture_id = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_RECTANGLE_ARB, &previous_texture_id);
+
+  UnrefIOSurface();
+
+  glGenFramebuffersEXT(1, &fbo_id_);
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id_);
+
+  IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
+
+  glGenTextures(1, &texture_id_);
 
   // GL_TEXTURE_RECTANGLE_ARB is the best supported render target on
   // Mac OS X and is required for IOSurface interoperability.
@@ -242,11 +286,6 @@ void IOSurfaceImageTransportSurface::OnResize(gfx::Size size) {
   glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  GLint previous_fbo_id = 0;
-  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previous_fbo_id);
-
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id_);
 
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
                             GL_COLOR_ATTACHMENT0_EXT,
@@ -278,22 +317,28 @@ void IOSurfaceImageTransportSurface::OnResize(gfx::Size size) {
 
   // Don't think we need to identify a plane.
   GLuint plane = 0;
-  io_surface_support->CGLTexImageIOSurface2D(
-      static_cast<CGLContextObj>(context_->GetHandle()),
-      target,
-      GL_RGBA,
-      size_.width(),
-      size_.height(),
-      GL_BGRA,
-      GL_UNSIGNED_INT_8_8_8_8_REV,
-      io_surface_.get(),
-      plane);
+  CGLError cglerror =
+      io_surface_support->CGLTexImageIOSurface2D(
+          static_cast<CGLContextObj>(context_->GetHandle()),
+          target,
+          GL_RGBA,
+          size_.width(),
+          size_.height(),
+          GL_BGRA,
+          GL_UNSIGNED_INT_8_8_8_8_REV,
+          io_surface_.get(),
+          plane);
+  if (cglerror != kCGLNoError) {
+    DLOG(ERROR) << "CGLTexImageIOSurface2D: " << cglerror;
+    UnrefIOSurface();
+    return;
+  }
 
   io_surface_handle_ = io_surface_support->IOSurfaceGetID(io_surface_);
   glFlush();
 
   glBindTexture(target, previous_texture_id);
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, previous_fbo_id);
+  // The FBO remains bound for this GL context.
 }
 
 }  // namespace

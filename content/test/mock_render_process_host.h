@@ -39,9 +39,9 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual void CancelResourceRequests(int render_widget_id) OVERRIDE;
   virtual void SimulateSwapOutACK(
       const ViewMsg_SwapOut_Params& params) OVERRIDE;
-  virtual bool WaitForUpdateMsg(int render_widget_id,
-                                const base::TimeDelta& max_delay,
-                                IPC::Message* msg) OVERRIDE;
+  virtual bool WaitForBackingStoreMsg(int render_widget_id,
+                                      const base::TimeDelta& max_delay,
+                                      IPC::Message* msg) OVERRIDE;
   virtual void ReceivedBadMessage() OVERRIDE;
   virtual void WidgetRestored() OVERRIDE;
   virtual void WidgetHidden() OVERRIDE;

@@ -285,6 +285,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
       const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
       int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
+  virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
@@ -321,15 +322,8 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   const std::string& selected_text() const { return selected_text_; }
 
   // Call setNeedsDisplay on the cocoa_view_. The IOSurface will be drawn during
-  // the next drawRect. The route_id and gpu_host_id are added to a list to be
-  // acked when the SwapBuffers occurs in drawRect.
-  void CompositorSwapBuffers(uint64 surface_handle,
-                             int32 route_id,
-                             int32 gpu_host_id);
-  // Ack pending SwapBuffers requests (queued up by CompositorSwapBuffers), if
-  // any, to unblock the GPU process. Has no effect if there are no pending
-  // requests.
-  void AckPendingCompositorSwapBuffers();
+  // the next drawRect.
+  void CompositorSwapBuffers(uint64 surface_handle);
 
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
@@ -398,6 +392,11 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   // invoke it from the message loop.
   void ShutdownHost();
 
+  // Called when a GPU SwapBuffers is received.
+  void GotAcceleratedFrame();
+  // Called when a software DIB is received.
+  void GotSoftwareFrame();
+
   // The associated view. This is weak and is inserted into the view hierarchy
   // to own this RenderWidgetHostViewMac object.
   RenderWidgetHostViewCocoa* cocoa_view_;
@@ -419,12 +418,6 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
 
   // selected text on the renderer.
   std::string selected_text_;
-
-  gfx::PluginWindowHandle compositing_surface_;
-
-  // List of pending swaps for deferred acking:
-  //   pairs of (route_id, gpu_host_id).
-  std::list<std::pair<int32, int32> > pending_swap_buffers_acks_;
 
   // The fullscreen window used for pepper flash.
   scoped_nsobject<NSWindow> pepper_fullscreen_window_;

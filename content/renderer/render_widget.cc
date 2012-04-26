@@ -1081,6 +1081,7 @@ void RenderWidget::didAutoResize(const WebSize& new_size) {
 void RenderWidget::didActivateCompositor(int input_handler_identifier) {
   TRACE_EVENT0("gpu", "RenderWidget::didActivateCompositor");
 
+#if !defined(OS_MACOSX)
   if (!is_accelerated_compositing_active_) {
     // When not in accelerated compositing mode, in certain cases (e.g. waiting
     // for a resize or if no backing store) the RenderWidgetHost is blocking the
@@ -1089,9 +1090,11 @@ void RenderWidget::didActivateCompositor(int input_handler_identifier) {
     // round-trips to the browser's UI thread before finishing the frame,
     // causing deadlocks if we delay the UpdateRect until we receive the
     // OnSwapBuffersComplete.  So send a dummy message that will unblock the
-    // browser's UI thread.
+    // browser's UI thread. This is not necessary on Mac, because SwapBuffers
+    // now unblocks GetBackingStore on Mac.
     Send(new ViewHostMsg_UpdateIsDelayed(routing_id_));
   }
+#endif
 
   is_accelerated_compositing_active_ = true;
   Send(new ViewHostMsg_DidActivateAcceleratedCompositing(

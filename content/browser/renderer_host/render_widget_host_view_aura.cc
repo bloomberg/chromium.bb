@@ -637,6 +637,14 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
 void RenderWidgetHostViewAura::AcceleratedSurfaceSuspend() {
 }
 
+bool RenderWidgetHostViewAura::HasAcceleratedSurface(
+      const gfx::Size& desired_size) {
+  // Aura doesn't use GetBackingStore for accelerated pages, so it doesn't
+  // matter what is returned here as GetBackingStore is the only caller of this
+  // method. TODO(jbates) implement this if other Aura code needs it.
+  return false;
+}
+
 void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
       int32 width,
       int32 height,

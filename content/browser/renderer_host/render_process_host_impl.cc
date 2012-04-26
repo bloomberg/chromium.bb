@@ -24,6 +24,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -557,7 +558,7 @@ void RenderProcessHostImpl::SimulateSwapOutACK(
   widget_helper_->SimulateSwapOutACK(params);
 }
 
-bool RenderProcessHostImpl::WaitForUpdateMsg(
+bool RenderProcessHostImpl::WaitForBackingStoreMsg(
     int render_widget_id,
     const base::TimeDelta& max_delay,
     IPC::Message* msg) {
@@ -566,7 +567,8 @@ bool RenderProcessHostImpl::WaitForUpdateMsg(
   if (child_process_launcher_.get() && child_process_launcher_->IsStarting())
     return false;
 
-  return widget_helper_->WaitForUpdateMsg(render_widget_id, max_delay, msg);
+  return widget_helper_->WaitForBackingStoreMsg(render_widget_id,
+                                                max_delay, msg);
 }
 
 void RenderProcessHostImpl::ReceivedBadMessage() {
@@ -923,6 +925,14 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
       reply->set_reply_error();
       Send(reply);
     }
+
+    // If this is a SwapBuffers, we need to ack it if we're not going to handle
+    // it so that the GPU process doesn't get stuck in unscheduled state.
+    bool msg_is_ok = true;
+    IPC_BEGIN_MESSAGE_MAP_EX(RenderProcessHostImpl, msg, msg_is_ok)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_CompositorSurfaceBuffersSwapped,
+                          OnCompositorSurfaceBuffersSwappedNoHost)
+    IPC_END_MESSAGE_MAP_EX()
     return true;
   }
   return RenderWidgetHostImpl::From(rwh)->OnMessageReceived(msg);
@@ -1340,4 +1350,15 @@ void RenderProcessHostImpl::OnRevealFolderInOS(const FilePath& path) {
 
 void RenderProcessHostImpl::OnSavedPageAsMHTML(int job_id, int64 data_size) {
   MHTMLGenerationManager::GetInstance()->MHTMLGenerated(job_id, data_size);
+}
+
+void RenderProcessHostImpl::OnCompositorSurfaceBuffersSwappedNoHost(
+      int32 surface_id,
+      uint64 surface_handle,
+      int32 route_id,
+      int32 gpu_process_host_id) {
+  TRACE_EVENT0("renderer_host",
+               "RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwappedNoHost");
+  RenderWidgetHostImpl::AcknowledgeSwapBuffers(route_id,
+                                               gpu_process_host_id);
 }

@@ -7,24 +7,40 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/eintr_wrapper.h"
+#include "base/lazy_instance.h"
 #include "base/threading/thread.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/common/view_messages.h"
-#include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
 using content::RenderViewHostImpl;
 using content::ResourceDispatcherHostImpl;
 
-// A helper used with DidReceiveUpdateMsg that we hold a pointer to in
+namespace {
+
+typedef std::map<int, RenderWidgetHelper*> WidgetHelperMap;
+base::LazyInstance<WidgetHelperMap> g_widget_helpers =
+    LAZY_INSTANCE_INITIALIZER;
+
+void AddWidgetHelper(int render_process_id,
+                     const scoped_refptr<RenderWidgetHelper>& widget_helper) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // We don't care if RenderWidgetHelpers overwrite an existing process_id. Just
+  // want this to be up to date.
+  g_widget_helpers.Get()[render_process_id] = widget_helper.get();
+}
+
+}  // namespace
+
+// A helper used with DidReceiveBackingStoreMsg that we hold a pointer to in
 // pending_paints_.
-class RenderWidgetHelper::UpdateMsgProxy {
+class RenderWidgetHelper::BackingStoreMsgProxy {
  public:
-  UpdateMsgProxy(RenderWidgetHelper* h, const IPC::Message& m);
-  ~UpdateMsgProxy();
+  BackingStoreMsgProxy(RenderWidgetHelper* h, const IPC::Message& m);
+  ~BackingStoreMsgProxy();
   void Run();
   void Cancel() { cancelled_ = true; }
 
@@ -35,26 +51,26 @@ class RenderWidgetHelper::UpdateMsgProxy {
   IPC::Message message_;
   bool cancelled_;  // If true, then the message will not be dispatched.
 
-  DISALLOW_COPY_AND_ASSIGN(UpdateMsgProxy);
+  DISALLOW_COPY_AND_ASSIGN(BackingStoreMsgProxy);
 };
 
-RenderWidgetHelper::UpdateMsgProxy::UpdateMsgProxy(
+RenderWidgetHelper::BackingStoreMsgProxy::BackingStoreMsgProxy(
     RenderWidgetHelper* h, const IPC::Message& m)
     : helper_(h),
       message_(m),
       cancelled_(false) {
 }
 
-RenderWidgetHelper::UpdateMsgProxy::~UpdateMsgProxy() {
+RenderWidgetHelper::BackingStoreMsgProxy::~BackingStoreMsgProxy() {
   // If the paint message was never dispatched, then we need to let the
   // helper know that we are going away.
   if (!cancelled_ && helper_)
-    helper_->OnDiscardUpdateMsg(this);
+    helper_->OnDiscardBackingStoreMsg(this);
 }
 
-void RenderWidgetHelper::UpdateMsgProxy::Run() {
+void RenderWidgetHelper::BackingStoreMsgProxy::Run() {
   if (!cancelled_) {
-    helper_->OnDispatchUpdateMsg(this);
+    helper_->OnDispatchBackingStoreMsg(this);
     helper_ = NULL;
   }
 }
@@ -70,6 +86,9 @@ RenderWidgetHelper::RenderWidgetHelper()
 }
 
 RenderWidgetHelper::~RenderWidgetHelper() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  g_widget_helpers.Get().erase(render_process_id_);
+
   // The elements of pending_paints_ each hold an owning reference back to this
   // object, so we should not be destroyed unless pending_paints_ is empty!
   DCHECK(pending_paints_.empty());
@@ -84,10 +103,24 @@ void RenderWidgetHelper::Init(
     ResourceDispatcherHostImpl* resource_dispatcher_host) {
   render_process_id_ = render_process_id;
   resource_dispatcher_host_ = resource_dispatcher_host;
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&AddWidgetHelper,
+                 render_process_id_, make_scoped_refptr(this)));
 }
 
 int RenderWidgetHelper::GetNextRoutingID() {
   return next_routing_id_.GetNext() + 1;
+}
+
+// static
+RenderWidgetHelper* RenderWidgetHelper::FromProcessHostID(
+    int render_process_host_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  WidgetHelperMap::const_iterator ci = g_widget_helpers.Get().find(
+      render_process_host_id);
+  return (ci == g_widget_helpers.Get().end())? NULL : ci->second;
 }
 
 void RenderWidgetHelper::CancelResourceRequests(int render_widget_id) {
@@ -110,19 +143,21 @@ void RenderWidgetHelper::SimulateSwapOutACK(
                  params));
 }
 
-bool RenderWidgetHelper::WaitForUpdateMsg(int render_widget_id,
-                                          const base::TimeDelta& max_delay,
-                                          IPC::Message* msg) {
+bool RenderWidgetHelper::WaitForBackingStoreMsg(
+    int render_widget_id,
+    const base::TimeDelta& max_delay,
+    IPC::Message* msg) {
   base::TimeTicks time_start = base::TimeTicks::Now();
 
   for (;;) {
-    UpdateMsgProxy* proxy = NULL;
+    BackingStoreMsgProxy* proxy = NULL;
     {
       base::AutoLock lock(pending_paints_lock_);
 
-      UpdateMsgProxyMap::iterator it = pending_paints_.find(render_widget_id);
+      BackingStoreMsgProxyMap::iterator it =
+          pending_paints_.find(render_widget_id);
       if (it != pending_paints_.end()) {
-        UpdateMsgProxyQueue &queue = it->second;
+        BackingStoreMsgProxyQueue &queue = it->second;
         DCHECK(!queue.empty());
         proxy = queue.front();
 
@@ -154,10 +189,10 @@ bool RenderWidgetHelper::WaitForUpdateMsg(int render_widget_id,
   return false;
 }
 
-void RenderWidgetHelper::DidReceiveUpdateMsg(const IPC::Message& msg) {
+void RenderWidgetHelper::DidReceiveBackingStoreMsg(const IPC::Message& msg) {
   int render_widget_id = msg.routing_id();
 
-  UpdateMsgProxy* proxy = new UpdateMsgProxy(this, msg);
+  BackingStoreMsgProxy* proxy = new BackingStoreMsgProxy(this, msg);
   {
     base::AutoLock lock(pending_paints_lock_);
 
@@ -170,19 +205,20 @@ void RenderWidgetHelper::DidReceiveUpdateMsg(const IPC::Message& msg) {
   event_.Signal();
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&UpdateMsgProxy::Run, base::Owned(proxy)));
+      base::Bind(&BackingStoreMsgProxy::Run, base::Owned(proxy)));
 }
 
-void RenderWidgetHelper::OnDiscardUpdateMsg(UpdateMsgProxy* proxy) {
+void RenderWidgetHelper::OnDiscardBackingStoreMsg(BackingStoreMsgProxy* proxy) {
   const IPC::Message& msg = proxy->message();
 
   // Remove the proxy from the map now that we are going to handle it normally.
   {
     base::AutoLock lock(pending_paints_lock_);
 
-    UpdateMsgProxyMap::iterator it = pending_paints_.find(msg.routing_id());
+    BackingStoreMsgProxyMap::iterator it =
+        pending_paints_.find(msg.routing_id());
     DCHECK(it != pending_paints_.end());
-    UpdateMsgProxyQueue &queue = it->second;
+    BackingStoreMsgProxyQueue &queue = it->second;
     DCHECK(queue.front() == proxy);
 
     queue.pop_front();
@@ -191,8 +227,9 @@ void RenderWidgetHelper::OnDiscardUpdateMsg(UpdateMsgProxy* proxy) {
   }
 }
 
-void RenderWidgetHelper::OnDispatchUpdateMsg(UpdateMsgProxy* proxy) {
-  OnDiscardUpdateMsg(proxy);
+void RenderWidgetHelper::OnDispatchBackingStoreMsg(
+    BackingStoreMsgProxy* proxy) {
+  OnDiscardBackingStoreMsg(proxy);
 
   // It is reasonable for the host to no longer exist.
   content::RenderProcessHost* host =

@@ -66,14 +66,14 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
   virtual bool HasConnection() const { return true; }
 
  protected:
-  virtual bool WaitForUpdateMsg(int render_widget_id,
-                                const base::TimeDelta& max_delay,
-                                IPC::Message* msg);
+  virtual bool WaitForBackingStoreMsg(int render_widget_id,
+                                      const base::TimeDelta& max_delay,
+                                      IPC::Message* msg);
 
   TransportDIB* current_update_buf_;
 
-  // Set to true when WaitForUpdateMsg should return a successful update message
-  // reply. False implies timeout.
+  // Set to true when WaitForBackingStoreMsg should return a successful update
+  // message reply. False implies timeout.
   bool update_msg_should_reply_;
 
   // Indicates the flags that should be sent with a the repaint request. This
@@ -101,9 +101,10 @@ void RenderWidgetHostProcess::InitUpdateRectParams(
   params->needs_ack = true;
 }
 
-bool RenderWidgetHostProcess::WaitForUpdateMsg(int render_widget_id,
-                                               const base::TimeDelta& max_delay,
-                                               IPC::Message* msg) {
+bool RenderWidgetHostProcess::WaitForBackingStoreMsg(
+    int render_widget_id,
+    const base::TimeDelta& max_delay,
+    IPC::Message* msg) {
   if (!update_msg_should_reply_)
     return false;
 
@@ -508,6 +509,11 @@ TEST_F(RenderWidgetHostTest, Background) {
 // Tests getting the backing store with the renderer not setting repaint ack
 // flags.
 TEST_F(RenderWidgetHostTest, GetBackingStore_NoRepaintAck) {
+  // First set the view size to match what the renderer is rendering.
+  ViewHostMsg_UpdateRect_Params params;
+  process_->InitUpdateRectParams(&params);
+  view_->set_bounds(gfx::Rect(params.view_size));
+
   // We don't currently have a backing store, and if the renderer doesn't send
   // one in time, we should get nothing.
   process_->set_update_msg_should_reply(false);
@@ -534,6 +540,11 @@ TEST_F(RenderWidgetHostTest, GetBackingStore_NoRepaintAck) {
 
 // Tests getting the backing store with the renderer sending a repaint ack.
 TEST_F(RenderWidgetHostTest, GetBackingStore_RepaintAck) {
+  // First set the view size to match what the renderer is rendering.
+  ViewHostMsg_UpdateRect_Params params;
+  process_->InitUpdateRectParams(&params);
+  view_->set_bounds(gfx::Rect(params.view_size));
+
   // Doing a request request with the update message allowed should work and
   // the repaint ack should work.
   process_->set_update_msg_should_reply(true);

@@ -109,6 +109,7 @@ class RenderWidgetHostViewAura
       const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
       int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
+  virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
   virtual void AcceleratedSurfaceNew(
       int32 width,
       int32 height,

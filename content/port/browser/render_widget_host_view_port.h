@@ -175,6 +175,11 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // next swap buffers or post sub buffer.
   virtual void AcceleratedSurfaceSuspend() = 0;
 
+  // Return true if the view has an accelerated surface that contains the last
+  // presented frame for the view. If |desired_size| is non-empty, true is
+  // returned only if the accelerated surface size matches.
+  virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) = 0;
+
 #if defined(OS_MACOSX)
   // Retrieve the bounds of the view, in cocoa view coordinates.
   // If the UI scale factor is 2, |GetViewBounds()| will return a size of e.g.

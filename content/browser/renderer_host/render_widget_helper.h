@@ -15,6 +15,7 @@
 #include "base/process.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
@@ -47,44 +48,51 @@ struct ViewMsg_SwapOut_Params;
 //
 //   RenderWidgetHelper is used to implement optimized resize.  When the
 //   RenderWidgetHost is resized, it sends a Resize message to its RenderWidget
-//   counterpart in the renderer process.  The RenderWidget generates a
-//   UpdateRect message in response to the Resize message, and it sets the
-//   IS_RESIZE_ACK flag in the UpdateRect message to true.
+//   counterpart in the renderer process.  In response to the Resize message,
+//   the RenderWidget generates a new BackingStore and sends an UpdateRect
+//   message (or BuffersSwapped via the GPU process in the case of accelerated
+//   compositing), and it sets the IS_RESIZE_ACK flag in the UpdateRect message
+//   to true.  In the accelerated case, an UpdateRect is still sent from the
+//   renderer to the browser with acks and plugin moves even though the GPU
+//   BackingStore was sent earlier in the BuffersSwapped message. "BackingStore
+//   message" is used throughout this code and documentation to mean either a
+//   software UpdateRect or GPU BuffersSwapped message.
 //
 //   Back in the browser process, when the RenderProcessHost's MessageFilter
-//   sees a UpdateRect message, it directs it to the RenderWidgetHelper by
-//   calling the DidReceiveUpdateMsg method.  That method stores the data for
-//   the UpdateRect message in a map, where it can be directly accessed by the
-//   RenderWidgetHost on the UI thread during a call to RenderWidgetHost's
-//   GetBackingStore method.
+//   sees an UpdateRect message (or when the GpuProcessHost sees a
+//   BuffersSwapped message), it directs it to the RenderWidgetHelper by calling
+//   the DidReceiveBackingStoreMsg method. That method stores the data for the
+//   message in a map, where it can be directly accessed by the RenderWidgetHost
+//   on the UI thread during a call to RenderWidgetHost's GetBackingStore
+//   method.
 //
 //   When the RenderWidgetHost's GetBackingStore method is called, it first
 //   checks to see if it is waiting for a resize ack.  If it is, then it calls
-//   the RenderWidgetHelper's WaitForUpdateMsg to check if there is already a
-//   resulting UpdateRect message (or to wait a short amount of time for one to
-//   arrive).  The main goal of this mechanism is to short-cut the usual way in
-//   which IPC messages are proxied over to the UI thread via InvokeLater.
-//   This approach is necessary since window resize is followed up immediately
-//   by a request to repaint the window.
+//   the RenderWidgetHelper's WaitForBackingStoreMsg to check if there is
+//   already a resulting BackingStore message (or to wait a short amount of time
+//   for one to arrive).  The main goal of this mechanism is to short-cut the
+//   usual way in which IPC messages are proxied over to the UI thread via
+//   InvokeLater. This approach is necessary since window resize is followed up
+//   immediately by a request to repaint the window.
 //
 //
 // OPTIMIZED TAB SWITCHING
 //
 //   When a RenderWidgetHost is in a background tab, it is flagged as hidden.
-//   This causes the corresponding RenderWidget to stop sending UpdateRect
+//   This causes the corresponding RenderWidget to stop sending BackingStore
 //   messages. The RenderWidgetHost also discards its backingstore when it is
 //   hidden, which helps free up memory.  As a result, when a RenderWidgetHost
-//   is restored, it can be momentarily without a backingstore.  (Restoring a
+//   is restored, it can be momentarily be without a backingstore.  (Restoring a
 //   RenderWidgetHost results in a WasRestored message being sent to the
-//   RenderWidget, which triggers a full UpdateRect message.)  This can lead to
-//   an observed rendering glitch as the WebContentsImpl will just have to fill
-//   white overtop the RenderWidgetHost until the RenderWidgetHost receives a
-//   UpdateRect message to refresh its backingstore.
+//   RenderWidget, which triggers a full BackingStore message.)  This can lead
+//   to an observed rendering glitch as the WebContentsImpl will just have to
+//   fill white overtop the RenderWidgetHost until the RenderWidgetHost receives
+//   a BackingStore message to refresh its backingstore.
 //
 //   To avoid this 'white flash', the RenderWidgetHost again makes use of the
-//   RenderWidgetHelper's WaitForUpdateMsg method.  When the RenderWidgetHost's
-//   GetBackingStore method is called, it will call WaitForUpdateMsg if it has
-//   no backingstore.
+//   RenderWidgetHelper's WaitForBackingStoreMsg method.  When the
+//   RenderWidgetHost's GetBackingStore method is called, it will call
+//   WaitForBackingStoreMsg if it has no backingstore.
 //
 // TRANSPORT DIB CREATION
 //
@@ -96,7 +104,8 @@ struct ViewMsg_SwapOut_Params;
 //   renderers can refer to.
 //
 class RenderWidgetHelper
-    : public base::RefCountedThreadSafe<RenderWidgetHelper> {
+    : public base::RefCountedThreadSafe<
+          RenderWidgetHelper, content::BrowserThread::DeleteOnIOThread> {
  public:
   RenderWidgetHelper();
 
@@ -106,6 +115,12 @@ class RenderWidgetHelper
   // Gets the next available routing id.  This is thread safe.
   int GetNextRoutingID();
 
+  // IO THREAD ONLY -----------------------------------------------------------
+
+  // Lookup the RenderWidgetHelper from the render_process_host_id. Returns NULL
+  // if not found. NOTE: The raw pointer is for temporary use only. To retain,
+  // store in a scoped_refptr.
+  static RenderWidgetHelper* FromProcessHostID(int render_process_host_id);
 
   // UI THREAD ONLY -----------------------------------------------------------
 
@@ -114,9 +129,9 @@ class RenderWidgetHelper
   // for documentation.
   void CancelResourceRequests(int render_widget_id);
   void SimulateSwapOutACK(const ViewMsg_SwapOut_Params& params);
-  bool WaitForUpdateMsg(int render_widget_id,
-                        const base::TimeDelta& max_delay,
-                        IPC::Message* msg);
+  bool WaitForBackingStoreMsg(int render_widget_id,
+                              const base::TimeDelta& max_delay,
+                              IPC::Message* msg);
 
 #if defined(OS_MACOSX)
   // Given the id of a transport DIB, return a mapping to it or NULL on error.
@@ -125,8 +140,8 @@ class RenderWidgetHelper
 
   // IO THREAD ONLY -----------------------------------------------------------
 
-  // Called on the IO thread when a UpdateRect message is received.
-  void DidReceiveUpdateMsg(const IPC::Message& msg);
+  // Called on the IO thread when a BackingStore message is received.
+  void DidReceiveBackingStoreMsg(const IPC::Message& msg);
 
   void CreateNewWindow(const ViewHostMsg_CreateWindow_Params& params,
                        bool no_javascript_access,
@@ -156,21 +171,25 @@ class RenderWidgetHelper
  private:
   // A class used to proxy a paint message.  PaintMsgProxy objects are created
   // on the IO thread and destroyed on the UI thread.
-  class UpdateMsgProxy;
-  friend class UpdateMsgProxy;
+  class BackingStoreMsgProxy;
+  friend class BackingStoreMsgProxy;
   friend class base::RefCountedThreadSafe<RenderWidgetHelper>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::IO>;
+  friend class base::DeleteHelper<RenderWidgetHelper>;
 
-  typedef std::deque<UpdateMsgProxy*> UpdateMsgProxyQueue;
+  typedef std::deque<BackingStoreMsgProxy*> BackingStoreMsgProxyQueue;
   // Map from render_widget_id to a queue of live PaintMsgProxy instances.
-  typedef base::hash_map<int, UpdateMsgProxyQueue > UpdateMsgProxyMap;
+  typedef base::hash_map<int, BackingStoreMsgProxyQueue >
+      BackingStoreMsgProxyMap;
 
   ~RenderWidgetHelper();
 
   // Called on the UI thread to discard a paint message.
-  void OnDiscardUpdateMsg(UpdateMsgProxy* proxy);
+  void OnDiscardBackingStoreMsg(BackingStoreMsgProxy* proxy);
 
   // Called on the UI thread to dispatch a paint message if necessary.
-  void OnDispatchUpdateMsg(UpdateMsgProxy* proxy);
+  void OnDispatchBackingStoreMsg(BackingStoreMsgProxy* proxy);
 
   // Called on the UI thread to finish creating a window.
   void OnCreateWindowOnUI(const ViewHostMsg_CreateWindow_Params& params,
@@ -205,14 +224,15 @@ class RenderWidgetHelper
 #endif
 
   // A map of live paint messages.  Must hold pending_paints_lock_ to access.
-  // The UpdateMsgProxy objects are not owned by this map.  (See UpdateMsgProxy
-  // for details about how the lifetime of instances are managed.)
-  UpdateMsgProxyMap pending_paints_;
+  // The BackingStoreMsgProxy objects are not owned by this map. (See
+  // BackingStoreMsgProxy for details about how the lifetime of instances are
+  // managed.)
+  BackingStoreMsgProxyMap pending_paints_;
   base::Lock pending_paints_lock_;
 
   int render_process_id_;
 
-  // Event used to implement WaitForUpdateMsg.
+  // Event used to implement WaitForBackingStoreMsg.
   base::WaitableEvent event_;
 
   // The next routing id to use.

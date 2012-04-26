@@ -181,12 +181,21 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Indicates if the page has finished loading.
   void SetIsLoading(bool is_loading);
 
-  // Get access to the widget's backing store.  If a resize is in progress,
-  // then the current size of the backing store may be less than the size of
-  // the widget's view.  If you pass |force_create| as true, then the backing
-  // store will be created if it doesn't exist. Otherwise, NULL will be returned
-  // if the backing store doesn't already exist. It will also return NULL if the
+  // Check for the existance of a BackingStore of the given |desired_size| and
+  // return it if it exists. If the BackingStore is GPU, true is returned and
+  // |*backing_store| is set to NULL.
+  bool TryGetBackingStore(const gfx::Size& desired_size,
+                          BackingStore** backing_store);
+
+  // Get access to the widget's backing store matching the size of the widget's
+  // view. If you pass |force_create| as true, then GetBackingStore may block
+  // for the renderer to send a new frame. Otherwise, NULL will be returned if
+  // the backing store doesn't already exist. It will also return NULL if the
   // backing store could not be created.
+  //
+  // Mac only: NULL may also be returned if the last frame was GPU accelerated.
+  // Call GetView()->HasAcceleratedSurface to determine if the last frame was
+  // accelerated.
   BackingStore* GetBackingStore(bool force_create);
 
   // Allocate a new backing store of the given size. Returns NULL on failure
@@ -466,6 +475,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnMsgSetTooltipText(const string16& tooltip_text,
                            WebKit::WebTextDirection text_direction_hint);
   void OnMsgPaintAtSizeAck(int tag, const gfx::Size& size);
+  void OnCompositorSurfaceBuffersSwapped(int32 surface_id,
+                                         uint64 surface_handle,
+                                         int32 route_id,
+                                         int32 gpu_process_host_id);
   void OnMsgUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnMsgUpdateIsDelayed();
   void OnMsgInputEventAck(WebKit::WebInputEvent::Type event_type,
@@ -652,6 +665,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   // Flag to detect recursive calls to GetBackingStore().
   bool in_get_backing_store_;
+
+  // Flag to trigger the GetBackingStore method to abort early.
+  bool abort_get_backing_store_;
 
   // Set when we call DidPaintRect/DidScrollRect on the view.
   bool view_being_painted_;
