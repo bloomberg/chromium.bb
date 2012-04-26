@@ -279,6 +279,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // should be considered for fling. If it returns 0, there should be no fling.
   size_t ScrollEventsForFlingCount() const;
 
+  // Returns a ScrollEvent that contains velocity estimates for x and y based
+  // on an N-point linear regression.
+  void RegressScrollVelocity(int count, ScrollEvent* out) const;
+
   // Returns a ScrollEvent that can be turned directly into a fling.
   void ComputeFling(ScrollEvent* out) const;
 

@@ -1432,8 +1432,63 @@ size_t ImmediateInterpreter::ScrollEventsForFlingCount() const {
       direction = event.dy > 0 ? kDown : kUp;
     if (i > 0 && direction != prev_direction)
       break;
+    prev_direction = direction;
   }
   return i;
+}
+
+void ImmediateInterpreter::RegressScrollVelocity(int count, ScrollEvent* out)
+    const {
+  struct RegressionSums {
+    float tt_;  // Cumulative sum of t^2.
+    float t_;   // Cumulative sum of t.
+    float tx_;  // Cumulative sum of t * x.
+    float ty_;  // Cumulative sum of t * y.
+    float x_;   // Cumulative sum of x.
+    float y_;   // Cumulative sum of y.
+  };
+
+  out->dt = 1;
+  if (count <= 1) {
+    out->dx = 0;
+    out->dy = 0;
+    return;
+  }
+
+  RegressionSums sums = {0, 0, 0, 0, 0, 0};
+
+  float time = 0;
+  float x_coord = 0;
+  float y_coord = 0;
+
+  for (int i = count - 1; i >= 0; --i) {
+    const ScrollEvent& event = scroll_buffer_.Get(i);
+
+    time += event.dt;
+    x_coord += event.dx;
+    y_coord += event.dy;
+
+    sums.tt_ += time * time;
+    sums.t_ += time;
+    sums.tx_ += time * x_coord;
+    sums.ty_ += time * y_coord;
+    sums.x_ += x_coord;
+    sums.y_ += y_coord;
+  }
+
+  // Note the regression determinant only depends on the values of t, and should
+  // never be zero so long as (1) count > 1, and (2) dt values are all non-zero.
+  float det = count * sums.tt_ - sums.t_ * sums.t_;
+
+  if (det) {
+    float det_inv = 1.0 / det;
+
+    out->dx = (count * sums.tx_ - sums.t_ * sums.x_) * det_inv;
+    out->dy = (count * sums.ty_ - sums.t_ * sums.y_) * det_inv;
+  } else {
+    out->dx = 0;
+    out->dy = 0;
+  }
 }
 
 void ImmediateInterpreter::ComputeFling(ScrollEvent* out) const {
@@ -1446,36 +1501,16 @@ void ImmediateInterpreter::ComputeFling(ScrollEvent* out) const {
     return;
   }
 
-  if (count > 3) {
-    Err("Unable to handle this many scroll events.");
-    *out = zero;
-    return;
-  }
-
-  if (count < 3) {
+  if (count < 2) {
     if (count == 0)
       *out = zero;
     else if (count == 1)
       *out = scroll_buffer_.Get(0);
-    else
-      *out = ScrollEvent::Add(scroll_buffer_.Get(0), scroll_buffer_.Get(1));
     return;
   }
 
   // If we get here, count == 3 && scroll_buffer_.Size() >= 3
-  float speed_sq[count];
-
-  for (size_t i = 0; i < count; i++)
-    speed_sq[i] = scroll_buffer_.Get(i).dx * scroll_buffer_.Get(i).dx +
-        scroll_buffer_.Get(i).dy * scroll_buffer_.Get(i).dy;
-
-  // Always increasing or decreasing? If so, use mose recent
-  if ((speed_sq[0] - speed_sq[1]) * (speed_sq[1] - speed_sq[2]) > 0)
-    *out = scroll_buffer_.Get(0);
-  else  // Add them all together (effectively averaging them)
-    *out = ScrollEvent::Add(ScrollEvent::Add(scroll_buffer_.Get(0),
-                                             scroll_buffer_.Get(1)),
-                            scroll_buffer_.Get(2));
+  RegressScrollVelocity(count, out);
 }
 
 void ImmediateInterpreter::FillResultGesture(

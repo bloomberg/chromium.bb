@@ -394,11 +394,11 @@ TEST(ImmediateInterpreterTest, FlingTest) {
     { 1.03, 0, 2, 2, &finger_states[6] },
     { 1.04, 0, 0, 0, NULL },
 
-    { 3.00, 0, 2, 2, &finger_states[0] },
-    { 4.00, 0, 2, 2, &finger_states[0] },
-    { 4.01, 0, 2, 2, &finger_states[2] },
-    { 4.02, 0, 2, 2, &finger_states[4] },
-    { 4.03, 0, 2, 2, &finger_states[6] },
+    { 3.00, 0, 2, 2, &finger_states[8] },
+    { 4.00, 0, 2, 2, &finger_states[8] },
+    { 4.01, 0, 2, 2, &finger_states[10] },
+    { 4.02, 0, 2, 2, &finger_states[12] },
+    { 4.03, 0, 2, 2, &finger_states[14] },
     { 4.04, 0, 0, 0, NULL },
   };
 
@@ -444,7 +444,7 @@ TEST(ImmediateInterpreterTest, FlingTest) {
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeFling, gs->type);
   EXPECT_FLOAT_EQ(0, gs->details.fling.vx);
-  EXPECT_GE(gs->details.fling.vy, 10 / 0.01);
+  EXPECT_FLOAT_EQ(1250, gs->details.fling.vy);
 }
 
 // Tests that fingers that have been present a while, but are stationary,
