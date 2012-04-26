@@ -60,6 +60,10 @@ namespace webkit_glue {
 
 namespace {
 
+const char kThrottledErrorDescription[] =
+    "Request throttled. Visit http://dev.chromium.org/throttling for more "
+    "information.";
+
 class HeaderFlattener : public WebHTTPHeaderVisitor {
  public:
   explicit HeaderFlattener(int load_flags)
@@ -644,8 +648,12 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
         error_code = status.error();
       }
       WebURLError error;
-      if (error_code == net::ERR_ABORTED)
+      if (error_code == net::ERR_ABORTED) {
         error.isCancellation = true;
+      } else if (error_code == net::ERR_TEMPORARILY_THROTTLED) {
+        error.localizedDescription = WebString::fromUTF8(
+            kThrottledErrorDescription);
+      }
       error.domain = WebString::fromUTF8(net::kErrorDomain);
       error.reason = error_code;
       error.unreachableURL = request_.url();
