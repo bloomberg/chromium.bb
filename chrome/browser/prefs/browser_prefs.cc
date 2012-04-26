@@ -232,7 +232,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 
 #if defined(OS_CHROMEOS)
   chromeos::Preferences::RegisterUserPrefs(user_prefs);
-  chromeos::Preferences::SetDefaultOSSettings();
   chromeos::ProxyConfigServiceImpl::RegisterPrefs(user_prefs);
 #endif
 
