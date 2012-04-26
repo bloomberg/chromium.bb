@@ -364,11 +364,13 @@ TEST_F(TouchTabStripLayoutTest, SetActiveIndex) {
   }
 }
 
-TEST_F(TouchTabStripLayoutTest, Foo) {
+// Makes sure don't crash when resized and only one tab.
+TEST_F(TouchTabStripLayoutTest, EmptyTest) {
   TouchTabStripLayout layout(gfx::Size(160, 10), -27, 6, 4, &view_model_);
-  ASSERT_NO_FATAL_FAILURE(SetBoundsFromString("0 6 12 18 126 259 392 525"));
-  Reset(&layout, 0, 685, 0, 5);
-  ASSERT_NO_FATAL_FAILURE(SetBoundsFromString("0 6 12 18 126 259 392 525"));
-  layout.DragActiveTab(11);
-  layout.DragActiveTab(1);
+  PrepareChildViews(1);
+  layout.AddTab(0, TouchTabStripLayout::kAddTypeActive, 0);
+  layout.SetWidth(100);
+  layout.SetWidth(50);
+  layout.SetWidth(0);
+  layout.SetWidth(500);
 }

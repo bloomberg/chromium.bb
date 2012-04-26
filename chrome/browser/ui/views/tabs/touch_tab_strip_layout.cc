@@ -275,7 +275,7 @@ void TouchTabStripLayout::ExpandTabsAfter(int index, int delta) {
 }
 
 void TouchTabStripLayout::AdjustStackedTabs() {
-  if (!requires_stacking() || mini_tab_count_ == tab_count())
+  if (!requires_stacking() || tab_count() <= mini_tab_count_ + 1)
     return;
 
   AdjustLeadingStackedTabs();
