@@ -368,6 +368,9 @@ void Bus::ShutdownOnDBusThreadAndBlock() {
       &Bus::ShutdownOnDBusThreadAndBlockInternal,
       this));
 
+  // http://crbug.com/125222
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+
   // Wait until the shutdown is complete on the D-Bus thread.
   // The shutdown should not hang, but set timeout just in case.
   const int kTimeoutSecs = 3;

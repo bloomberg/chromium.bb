@@ -932,14 +932,18 @@ GDataFileSystem::~GDataFileSystem() {
   // ui_weak_ptr_factory_ must be deleted on UI thread.
   ui_weak_ptr_factory_.reset();
 
-  // We should wait if there is any pending tasks posted to the worker
-  // thread pool. on_io_completed_ won't be signaled iff |num_pending_tasks_|
-  // is greater that 0.
-  // We don't have to lock with |num_pending_tasks_lock_| here, since number of
-  // pending tasks can only decrease at this point (Number of pending class can
-  // be increased only on UI and IO thread. We are on UI thread, and there will
-  // be no more tasks run on IO thread.
-  on_io_completed_->Wait();
+  {
+    // http://crbug.com/125220
+    base::ThreadRestrictions::ScopedAllowWait allow_wait;
+    // We should wait if there is any pending tasks posted to the worker
+    // thread pool. on_io_completed_ won't be signaled iff |num_pending_tasks_|
+    // is greater that 0.
+    // We don't have to lock with |num_pending_tasks_lock_| here, since number
+    // of pending tasks can only decrease at this point (Number of pending class
+    // can be increased only on UI and IO thread. We are on UI thread, and there
+    // will be no more tasks run on IO thread.
+    on_io_completed_->Wait();
+  }
 
   // Now that we are sure that there are no more pending tasks bound to this on
   // other threads, we are safe to destroy the data members.
