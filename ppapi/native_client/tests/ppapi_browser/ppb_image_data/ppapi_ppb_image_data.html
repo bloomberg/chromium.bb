@@ -41,8 +41,14 @@ function setupTests(tester, plugin) {
   tester.addAsyncTest('PPB_ImageData::MapUnmap', function(test) {
     testAndAssertStatus(test, 'TestMapUnmap', 'PASSED');
   });
-  tester.addAsyncTest('PPB_ImageData::Stress', function(test) {
-    testAndAssertStatus(test, 'TestStress', 'PASSED');
+  tester.addAsyncTest('PPB_ImageData::StressPartA', function(test) {
+    testAndAssertStatus(test, 'TestStressPartA', 'PASSED');
+  });
+  tester.addAsyncTest('PPB_ImageData::StressPartB', function(test) {
+    testAndAssertStatus(test, 'TestStressPartB', 'PASSED');
+  });
+  tester.addAsyncTest('PPB_ImageData::StressPartC', function(test) {
+    testAndAssertStatus(test, 'TestStressPartC', 'PASSED');
   });
 }
 //]]>

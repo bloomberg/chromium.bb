@@ -47,11 +47,16 @@ const PP_Size kInvalidImageSize[] = {
     PP_MakeSize(100, 0)
 };
 const int kNumInvalidImages = sizeof(kInvalidImageSize) / sizeof(PP_Size);
+const int kManyResources = 100;
+const int kManyLargeResources = 1000;
 
 union BogusFormat {
   int bogus;
   PP_ImageDataFormat format;
 };
+
+// Collection of small images.
+PP_Resource image_data[kManyResources];
 
 bool IsEqualSize(PP_Size size1, PP_Size size2) {
   return (size1.width == size2.width && size1.height == size2.height);
@@ -272,14 +277,12 @@ void TestMapUnmap() {
   TEST_PASSED;
 }
 
-// Stress testing of a large number of resources.
-void TestStress() {
-  const int kManyResources = 100;
-  const int kManyLargeResources = 1000;
-  PP_Resource image_data[kManyResources];
-  PP_Resource large_image_data;
+// Stress testing creation of a large number of small images.
+void TestStressPartA() {
   PP_ImageDataFormat format = PPBImageData()->GetNativeImageDataFormat();
-
+  for (int i = 0; i < kManyResources; ++i) {
+    image_data[i] = kInvalidResource;
+  }
   // Create a large number of co-existing memory mapped small images.
   for (int i = 0; i < kManyResources; ++i) {
     image_data[i] = PPBImageData()->Create(pp_instance(), format,
@@ -298,7 +301,13 @@ void TestStress() {
     // Attempt to write first pixel.
     pixel_ptr[0] = 0;
   }
+  TEST_PASSED;
+}
 
+// Stress testing many create / release of large images.
+void TestStressPartB() {
+  PP_Resource large_image_data;
+  PP_ImageDataFormat format = PPBImageData()->GetNativeImageDataFormat();
   // A large number of create-map-unmap-release large images.
   // Only one large image exists at a time; make sure memory space isn't
   // exhausted.  See issue:
@@ -320,15 +329,20 @@ void TestStress() {
     PPBCore()->ReleaseResource(large_image_data);
     EXPECT(PP_FALSE == PPBImageData()->IsImageData(large_image_data));
   }
+  TEST_PASSED;
+}
 
+// Release the collection of small images created in part A.
+void TestStressPartC() {
   // Go back and unmap the smaller images.
   for (int i = 0; i < kManyResources; i++) {
-    PPBImageData()->Unmap(image_data[i]);
-    EXPECT(PP_TRUE == PPBImageData()->IsImageData(image_data[i]));
-    PPBCore()->ReleaseResource(image_data[i]);
-    EXPECT(PP_FALSE == PPBImageData()->IsImageData(image_data[i]));
+    if (image_data[i] != kInvalidResource) {
+      PPBImageData()->Unmap(image_data[i]);
+      EXPECT(PP_TRUE == PPBImageData()->IsImageData(image_data[i]));
+      PPBCore()->ReleaseResource(image_data[i]);
+      EXPECT(PP_FALSE == PPBImageData()->IsImageData(image_data[i]));
+    }
   }
-
   TEST_PASSED;
 }
 }  // namespace
@@ -341,7 +355,9 @@ void SetupTests() {
   RegisterTest("TestIsImageData", TestIsImageData);
   RegisterTest("TestDescribe", TestDescribe);
   RegisterTest("TestMapUnmap", TestMapUnmap);
-  RegisterTest("TestStress", TestStress);
+  RegisterTest("TestStressPartA", TestStressPartA);
+  RegisterTest("TestStressPartB", TestStressPartB);
+  RegisterTest("TestStressPartC", TestStressPartC);
 }
 
 void SetupPluginInterfaces() {
