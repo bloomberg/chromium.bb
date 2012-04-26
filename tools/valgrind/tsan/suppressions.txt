@@ -600,6 +600,17 @@
   fun:tracked_objects::ThreadData::SnapshotMaps
 }
 {
+  bug_102327_e
+  ThreadSanitizer:Race
+  fun:tracked_objects::Births::birth_count
+  fun:tracked_objects::ThreadData::SnapshotExecutedTasks
+}
+{
+  bug_102327_f
+  ThreadSanitizer:Race
+  fun:tracked_objects::DeathData::RecordDeath
+}
+{
   bug_103711a
   ThreadSanitizer:Race
   fun:webrtc::Trace::SetLevelFilter
