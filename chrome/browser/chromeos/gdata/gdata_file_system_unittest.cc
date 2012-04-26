@@ -128,7 +128,6 @@ class GDataFileSystemTest : public testing::Test {
  protected:
   GDataFileSystemTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        file_thread_(content::BrowserThread::FILE),
         io_thread_(content::BrowserThread::IO),
         file_system_(NULL),
         mock_doc_service_(NULL),
@@ -141,7 +140,6 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    file_thread_.StartIOThread();
     io_thread_.StartIOThread();
 
     profile_.reset(new TestingProfile);
@@ -832,8 +830,7 @@ class GDataFileSystemTest : public testing::Test {
     // We should first flush tasks on UI thread, as it can require some
     // tasks to be run before IO tasks start.
     message_loop_.RunAllPending();
-    file_thread_.Stop();
-    file_thread_.StartIOThread();
+    BrowserThread::GetBlockingPool()->FlushForTesting();
     // Once IO tasks are done, flush UI thread again so the results from IO
     // tasks are processed.
     message_loop_.RunAllPending();
@@ -993,7 +990,6 @@ class GDataFileSystemTest : public testing::Test {
   // The order of the test threads is important, do not change the order.
   // See also content/browser/browser_thread_imple.cc.
   content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<CallbackHelper> callback_helper_;

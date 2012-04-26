@@ -19,6 +19,7 @@
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/gdata/find_entry_delegate.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
@@ -1170,17 +1171,13 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Wrapper around BrowserThread::PostTask to post
   // RunTaskOnIOThreadPool task to the blocking thread pool.
-  // TODO(satorux): As of now, it's posting to FILE thread.
   void PostBlockingPoolSequencedTask(
-      const std::string& sequence_token_name,
       const tracked_objects::Location& from_here,
       const base::Closure& task);
 
   // Similar to PostBlockingPoolSequencedTask() but this one takes a reply
   // callback that runs on the calling thread.
-  // TODO(satorux): As of now, it's posting to FILE thread.
   void PostBlockingPoolSequencedTaskAndReply(
-    const std::string& sequence_token_name,
     const tracked_objects::Location& from_here,
     const base::Closure& request_task,
     const base::Closure& reply_task);
@@ -1274,6 +1271,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
   base::WeakPtr<GDataFileSystem> ui_weak_ptr_;
 
   ObserverList<Observer> observers_;
+
+  // The token is used to post tasks to the blocking pool in sequence.
+  const base::SequencedWorkerPool::SequenceToken sequence_token_;
 };
 
 // The minimum free space to keep. GDataFileSystem::GetFileByPath() returns

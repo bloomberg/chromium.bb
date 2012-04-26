@@ -71,7 +71,6 @@ const FilePath::CharType kGDataCacheTmpDownloadsDir[] =
     FILE_PATH_LITERAL("tmp/downloads");
 const FilePath::CharType kGDataCacheTmpDocumentsDir[] =
     FILE_PATH_LITERAL("tmp/documents");
-const char kGDataFileSystemToken[] = "GDataFileSystemToken";
 const FilePath::CharType kAccountMetadataFile[] =
     FILE_PATH_LITERAL("account_metadata.json");
 const FilePath::CharType kFilesystemProtoFile[] =
@@ -883,7 +882,8 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
       hide_hosted_docs_(false),
       ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(
           new base::WeakPtrFactory<GDataFileSystem>(this))),
-      ui_weak_ptr_(ui_weak_ptr_factory_->GetWeakPtr()) {
+      ui_weak_ptr_(ui_weak_ptr_factory_->GetWeakPtr()),
+      sequence_token_(BrowserThread::GetBlockingPool()->GetSequenceToken()) {
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -1193,7 +1193,6 @@ void GDataFileSystem::TransferFile(const FilePath& local_file_path,
 
   std::string* resource_id = new std::string;
   PostBlockingPoolSequencedTaskAndReply(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&GetDocumentResourceIdOnIOThreadPool,
                  local_file_path,
@@ -1241,7 +1240,6 @@ void GDataFileSystem::TransferRegularFile(
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   UploadFileInfo* upload_file_info = new UploadFileInfo;
   PostBlockingPoolSequencedTaskAndReply(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&CreateUploadFileInfoOnIOThreadPool,
                  local_file_path,
@@ -1844,7 +1842,6 @@ void GDataFileSystem::GetFileByPathOnUIThread(
     std::string* mime_type = new std::string;
     GDataFileType* file_type = new GDataFileType(REGULAR_FILE);
     PostBlockingPoolSequencedTaskAndReply(
-        kGDataFileSystemToken,
         FROM_HERE,
         base::Bind(&CreateDocumentJsonFileOnIOThreadPool,
                    GetCacheDirectoryPath(
@@ -1974,7 +1971,6 @@ void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
 
   bool* has_enough_space = new bool(false);
   PostBlockingPoolSequencedTaskAndReply(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&GDataFileSystem::FreeDiskSpaceIfNeededFor,
                  base::Unretained(this),
@@ -2159,7 +2155,6 @@ void GDataFileSystem::GetCacheStateOnUIThread(
   // GetCacheStateOnIOThreadPool won't do file IO, but post it to the thread
   // pool, as it must be performed after the cache is initialized.
   PostBlockingPoolSequencedTaskAndReply(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&GDataFileSystem::GetCacheStateOnIOThreadPool,
                  base::Unretained(this),
@@ -2296,7 +2291,6 @@ void GDataFileSystem::SetMountedStateOnUIThread(
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   FilePath* cache_file_path = new FilePath;
   PostBlockingPoolSequencedTaskAndReply(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&GDataFileSystem::SetMountedStateOnIOThreadPool,
                  base::Unretained(this),
@@ -2627,7 +2621,8 @@ void GDataFileSystem::SaveFileSystemAsProto() {
   root_->SerializeToString(serialized_proto.get());
   root_->set_last_serialized(base::Time::Now());
   root_->set_serialized_size(serialized_proto->size());
-  PostBlockingPoolSequencedTask(kGDataFileSystemToken, FROM_HERE,
+  PostBlockingPoolSequencedTask(
+      FROM_HERE,
       base::Bind(&SaveProtoOnIOThreadPool, path,
                  base::Passed(serialized_proto.Pass())));
 }
@@ -2743,7 +2738,6 @@ void GDataFileSystem::SaveFeed(scoped_ptr<base::Value> feed,
   InitializeCacheIfNecessary();
 
   PostBlockingPoolSequencedTask(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&SaveFeedOnIOThreadPool,
                  GetCacheDirectoryPath(
@@ -2783,7 +2777,6 @@ void GDataFileSystem::OnFileDownloaded(
   // and try to free up space, even if the file was downloaded successfully.
   bool* has_enough_space = new bool(false);
   PostBlockingPoolSequencedTaskAndReply(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&GDataFileSystem::FreeDiskSpaceIfNeeded,
                  base::Unretained(this),
@@ -2822,7 +2815,6 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
       // If we don't have enough space, remove the downloaded file, and
       // report "no space" error.
       PostBlockingPoolSequencedTask(
-          kGDataFileSystemToken,
           FROM_HERE,
           base::Bind(base::IgnoreResult(&file_util::Delete),
                      downloaded_file_path,
@@ -3500,7 +3492,6 @@ void GDataFileSystem::StoreToCache(const std::string& resource_id,
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   PostBlockingPoolSequencedTaskAndReply(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&GDataFileSystem::StoreToCacheOnIOThreadPool,
                  base::Unretained(this),
@@ -3526,7 +3517,6 @@ void GDataFileSystem::Pin(const std::string& resource_id,
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   PostBlockingPoolSequencedTaskAndReply(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&GDataFileSystem::PinOnIOThreadPool,
                  base::Unretained(this),
@@ -3552,7 +3542,6 @@ void GDataFileSystem::Unpin(const std::string& resource_id,
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   PostBlockingPoolSequencedTaskAndReply(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&GDataFileSystem::UnpinOnIOThreadPool,
                  base::Unretained(this),
@@ -3578,7 +3567,6 @@ void GDataFileSystem::MarkDirtyInCache(
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   FilePath* cache_file_path = new FilePath;
   PostBlockingPoolSequencedTaskAndReply(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&GDataFileSystem::MarkDirtyInCacheOnIOThreadPool,
                  base::Unretained(this),
@@ -3604,7 +3592,6 @@ void GDataFileSystem::CommitDirtyInCache(
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   PostBlockingPoolSequencedTaskAndReply(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&GDataFileSystem::CommitDirtyInCacheOnIOThreadPool,
                  base::Unretained(this),
@@ -3628,7 +3615,6 @@ void GDataFileSystem::ClearDirtyInCache(
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   PostBlockingPoolSequencedTaskAndReply(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&GDataFileSystem::ClearDirtyInCacheOnIOThreadPool,
                  base::Unretained(this),
@@ -3651,7 +3637,6 @@ void GDataFileSystem::RemoveFromCache(const std::string& resource_id,
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
 
   PostBlockingPoolSequencedTaskAndReply(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&GDataFileSystem::RemoveFromCacheOnIOThreadPool,
                  base::Unretained(this),
@@ -4397,7 +4382,6 @@ void GDataFileSystem::OnFileUnpinned(base::PlatformFileError* error,
   // It's a chance to free up space if needed.
   bool* has_enough_space = new bool(false);
   PostBlockingPoolSequencedTask(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&GDataFileSystem::FreeDiskSpaceIfNeeded,
                  base::Unretained(this),
@@ -4419,7 +4403,6 @@ void GDataFileSystem::UnsafeInitializeCacheIfNecessary() {
   cache_initialization_started_ = true;
 
   PostBlockingPoolSequencedTask(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&GDataFileSystem::InitializeCacheOnIOThreadPool,
                  base::Unretained(this)));
@@ -4501,7 +4484,6 @@ void GDataFileSystem::GetFileFromCacheByResourceIdAndMd5(
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   FilePath* cache_file_path = new FilePath;
   PostBlockingPoolSequencedTaskAndReply(
-      kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&GDataFileSystem::GetFileFromCacheOnIOThreadPool,
                  base::Unretained(this),
@@ -4530,18 +4512,15 @@ void GDataFileSystem::RunTaskOnIOThreadPool(const base::Closure& task) {
 }
 
 void GDataFileSystem::PostBlockingPoolSequencedTask(
-    const std::string& sequence_token_name,
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
   PostBlockingPoolSequencedTaskAndReply(
-      sequence_token_name,
       from_here,
       task,
       base::Bind(&base::DoNothing));
 }
 
 void GDataFileSystem::PostBlockingPoolSequencedTaskAndReply(
-    const std::string& sequence_token_name,
     const tracked_objects::Location& from_here,
     const base::Closure& request_task,
     const base::Closure& reply_task) {
@@ -4563,13 +4542,14 @@ void GDataFileSystem::PostBlockingPoolSequencedTaskAndReply(
 
     ++num_pending_tasks_;
   }
-  const bool posted = BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE,
-      from_here,
-      base::Bind(&GDataFileSystem::RunTaskOnIOThreadPool,
-                 base::Unretained(this),
-                 request_task),
-      reply_task);
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  const bool posted = pool->GetSequencedTaskRunner(sequence_token_)->
+      PostTaskAndReply(
+          from_here,
+          base::Bind(&GDataFileSystem::RunTaskOnIOThreadPool,
+                     base::Unretained(this),
+                     request_task),
+          reply_task);
   DCHECK(posted);
 }
 
