@@ -542,13 +542,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebKit::WebRuntimeFeatures::enableEncryptedMedia(
       command_line.HasSwitch(switches::kEnableEncryptedMedia));
 
-#if defined(OS_CHROMEOS)
-  // TODO(crogers): enable once Web Audio has been tested and optimized.
-  WebRuntimeFeatures::enableWebAudio(false);
-#else
   WebRuntimeFeatures::enableWebAudio(
       !command_line.HasSwitch(switches::kDisableWebAudio));
-#endif
 
   WebRuntimeFeatures::enablePushState(true);
 
