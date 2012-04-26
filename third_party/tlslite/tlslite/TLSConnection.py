@@ -932,7 +932,7 @@ class TLSConnection(TLSRecordLayer):
     def handshakeServer(self, sharedKeyDB=None, verifierDB=None,
                         certChain=None, privateKey=None, reqCert=False,
                         sessionCache=None, settings=None, checker=None,
-                        reqCAs=None):
+                        reqCAs=None, tlsIntolerant=False):
         """Perform a handshake in the role of server.
 
         This function performs an SSL or TLS handshake.  Depending on
@@ -1012,14 +1012,14 @@ class TLSConnection(TLSRecordLayer):
         """
         for result in self.handshakeServerAsync(sharedKeyDB, verifierDB,
                 certChain, privateKey, reqCert, sessionCache, settings,
-                checker, reqCAs):
+                checker, reqCAs, tlsIntolerant):
             pass
 
 
     def handshakeServerAsync(self, sharedKeyDB=None, verifierDB=None,
                              certChain=None, privateKey=None, reqCert=False,
                              sessionCache=None, settings=None, checker=None,
-                             reqCAs=None):
+                             reqCAs=None, tlsIntolerant=False):
         """Start a server handshake operation on the TLS connection.
 
         This function returns a generator which behaves similarly to
@@ -1036,14 +1036,15 @@ class TLSConnection(TLSRecordLayer):
             verifierDB=verifierDB, certChain=certChain,
             privateKey=privateKey, reqCert=reqCert,
             sessionCache=sessionCache, settings=settings,
-            reqCAs=reqCAs)
+            reqCAs=reqCAs,
+            tlsIntolerant=tlsIntolerant)
         for result in self._handshakeWrapperAsync(handshaker, checker):
             yield result
 
 
     def _handshakeServerAsyncHelper(self, sharedKeyDB, verifierDB,
                              certChain, privateKey, reqCert, sessionCache,
-                             settings, reqCAs):
+                             settings, reqCAs, tlsIntolerant):
 
         self._handshakeStart(client=False)
 
@@ -1109,6 +1110,11 @@ class TLSConnection(TLSRecordLayer):
             for result in self._sendError(\
                   AlertDescription.protocol_version,
                   "Too old version: %s" % str(clientHello.client_version)):
+                yield result
+
+        if tlsIntolerant and clientHello.client_version > (3, 0):
+            for result in self._sendError(\
+                    AlertDescription.handshake_failure):
                 yield result
 
         #If client's version is too high, propose my highest version
