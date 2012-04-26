@@ -3415,6 +3415,7 @@ driver-install() {
   fi
 }
 
+#@ driver-install-translator - Install driver scripts for translator component
 driver-install-translator() {
   local destdir="${INSTALL_TRANSLATOR}/bin"
 
