@@ -5,19 +5,22 @@
 #include <string>
 
 #include "base/values.h"
+#include "chrome/browser/extensions/api/extension_action/extension_actions_api.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/browser/extensions/api/extension_action/extension_browser_actions_api.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 void RunPassTest(const std::string& css_string, SkColor expected_result) {
   SkColor color = 0;
-  EXPECT_TRUE(BrowserActionFunction::ParseCSSColorString(css_string, &color));
+  EXPECT_TRUE(
+      ExtensionActionFunction::ParseCSSColorString(css_string, &color));
   EXPECT_EQ(color, expected_result);
 }
 
 void RunFailTest(const std::string& css_string) {
   SkColor color = 0;
-  EXPECT_FALSE(BrowserActionFunction::ParseCSSColorString(css_string, &color));
+  EXPECT_FALSE(
+      ExtensionActionFunction::ParseCSSColorString(css_string, &color));
 }
 
 TEST(ExtensionBrowserActionsApiTest, ChangeBadgeBackgroundNormalCSS) {

@@ -40,39 +40,6 @@ PageActionsFunction::PageActionsFunction() {
 PageActionsFunction::~PageActionsFunction() {
 }
 
-bool PageActionFunction::RunImpl() {
-  ExtensionActionFunction::RunImpl();
-
-  // If the first argument is an integer, it is the tabId.
-  base::Value* arg = NULL;
-  args_->Get(0, &arg);
-  if (arg->IsType(base::Value::TYPE_INTEGER))
-    arg->GetAsInteger(&tab_id_);
-
-  extension_action_ = GetExtension()->page_action();
-  if (!extension_action_) {
-    error_ = kNoPageActionError;
-    return false;
-  }
-
-  // Find the TabContentsWrapper that contains this tab id.
-  contents_ = NULL;
-  TabContentsWrapper* wrapper = NULL;
-  bool result = ExtensionTabUtil::GetTabById(
-      tab_id_, profile(), include_incognito(), NULL, NULL, &wrapper, NULL);
-  if (!result || !wrapper) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
-        kNoTabError, base::IntToString(tab_id_));
-    return false;
-  }
-  contents_ = wrapper;
-
-  if (!RunExtensionAction())
-    return false;
-
-  return true;
-}
-
 bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   std::string extension_action_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_action_id));
@@ -135,118 +102,10 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   return true;
 }
 
-bool PageActionFunction::SetVisible(bool visible) {
-  extension_action_->SetIsVisible(tab_id_, visible);
-  contents_->extension_tab_helper()->PageActionStateChanged();
-  return true;
-}
-
 bool EnablePageActionsFunction::RunImpl() {
   return SetPageActionEnabled(true);
 }
 
 bool DisablePageActionsFunction::RunImpl() {
   return SetPageActionEnabled(false);
-}
-
-bool PageActionShowFunction::RunExtensionAction() {
-  return SetVisible(true);
-}
-
-bool PageActionHideFunction::RunExtensionAction() {
-  return SetVisible(false);
-}
-
-bool PageActionSetIconFunction::RunExtensionAction() {
-  // setIcon can take a variant argument: either a canvas ImageData, or an
-  // icon index.
-  base::BinaryValue* binary = NULL;
-  int icon_index;
-  if (details_->GetBinary("imageData", &binary)) {
-    SetIcon();
-  } else if (details_->GetInteger("iconIndex", &icon_index)) {
-    if (icon_index < 0 || static_cast<size_t>(icon_index) >=
-                              extension_action_->icon_paths()->size()) {
-      error_ = kIconIndexOutOfBounds;
-      return false;
-    }
-    extension_action_->SetIcon(tab_id_, SkBitmap());
-    extension_action_->SetIconIndex(tab_id_, icon_index);
-  } else {
-    EXTENSION_FUNCTION_VALIDATE(false);
-  }
-  contents_->extension_tab_helper()->PageActionStateChanged();
-  return true;
-}
-
-bool PageActionSetTitleFunction::RunExtensionAction() {
-  if (!SetTitle())
-    return false;
-  contents_->extension_tab_helper()->PageActionStateChanged();
-  return true;
-}
-
-bool PageActionSetPopupFunction::RunExtensionAction() {
-  // TODO(skerner): Consider allowing null and undefined to mean the popup
-  // should be removed.
-  if (!SetPopup())
-    return false;
-  contents_->extension_tab_helper()->PageActionStateChanged();
-  return true;
-}
-
-// Not currently exposed to extensions. To re-enable, add mapping in
-// extension_function_dispatcher.
-bool PageActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
-  if (!SetBadgeBackgroundColor())
-    return false;
-  contents_->extension_tab_helper()->PageActionStateChanged();
-  return true;
-}
-
-// Not currently exposed to extensions. To re-enable, add mapping in
-// extension_function_dispatcher.
-bool PageActionSetBadgeTextColorFunction::RunExtensionAction() {
-  ListValue* color_value = NULL;
-  EXTENSION_FUNCTION_VALIDATE(details_->GetList("color", &color_value));
-  EXTENSION_FUNCTION_VALIDATE(color_value->GetSize() == 4);
-
-  int color_array[4] = {0};
-  for (size_t i = 0; i < arraysize(color_array); ++i)
-    EXTENSION_FUNCTION_VALIDATE(color_value->GetInteger(i, &color_array[i]));
-
-  SkColor color = SkColorSetARGB(color_array[3], color_array[0], color_array[1],
-                                 color_array[2]);
-  extension_action_->SetBadgeTextColor(tab_id_, color);
-  contents_->extension_tab_helper()->PageActionStateChanged();
-  return true;
-}
-
-// Not currently exposed to extensions. To re-enable, add mapping in
-// extension_function_dispatcher.
-bool PageActionSetBadgeTextFunction::RunExtensionAction() {
-  if (!SetBadgeText())
-    return false;
-  contents_->extension_tab_helper()->PageActionStateChanged();
-  return true;
-}
-
-bool PageActionGetTitleFunction::RunExtensionAction() {
-  return GetTitle();
-}
-
-bool PageActionGetPopupFunction::RunExtensionAction() {
-  return GetPopup();
-}
-
-// Not currently exposed to extensions. To re-enable, add mapping in
-// extension_function_dispatcher.
-bool PageActionGetBadgeBackgroundColorFunction::RunExtensionAction() {
-  return GetBadgeBackgroundColor();
-}
-
-// Not currently exposed to extensions. To re-enable, add mapping in
-// extension_function_dispatcher.
-bool PageActionGetBadgeTextFunction::RunExtensionAction() {
-  return GetBadgeText();
 }

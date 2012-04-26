@@ -10,76 +10,56 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/extension_action.h"
 
-// Base class for chrome.browserAction.* APIs.
-class BrowserActionFunction : public ExtensionActionFunction {
- protected:
-  virtual ~BrowserActionFunction() {}
-  virtual bool RunImpl() OVERRIDE;
-  void FireUpdateNotification();
-};
+//
+// browserAction.* aliases for supported browserActions APIs.
+//
 
-// Implement chrome.browserAction.setIcon().
-class BrowserActionSetIconFunction : public BrowserActionFunction {
+class BrowserActionSetIconFunction : public ExtensionActionSetIconFunction {
   virtual ~BrowserActionSetIconFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setIcon")
 };
 
-// Implement chrome.browserAction.setTitle().
-class BrowserActionSetTitleFunction : public BrowserActionFunction {
+class BrowserActionSetTitleFunction : public ExtensionActionSetTitleFunction {
   virtual ~BrowserActionSetTitleFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setTitle")
 };
 
-// Implement chrome.browserAction.setPopup().
-class BrowserActionSetPopupFunction : public BrowserActionFunction {
+class BrowserActionSetPopupFunction : public ExtensionActionSetPopupFunction {
   virtual ~BrowserActionSetPopupFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setPopup")
 };
 
-// Implement chrome.browserAction.setBadgeText().
-class BrowserActionSetBadgeTextFunction : public BrowserActionFunction {
-  virtual ~BrowserActionSetBadgeTextFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeText")
-};
-
-// Implement chrome.browserAction.setBadgeBackgroundColor().
-class BrowserActionSetBadgeBackgroundColorFunction
-    : public BrowserActionFunction {
-  virtual ~BrowserActionSetBadgeBackgroundColorFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeBackgroundColor")
-};
-
-// Implement chrome.browserAction.getTitle().
-class BrowserActionGetTitleFunction : public BrowserActionFunction {
+class BrowserActionGetTitleFunction : public ExtensionActionGetTitleFunction {
   virtual ~BrowserActionGetTitleFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.getTitle")
 };
 
-// Implement chrome.browserAction.getPopup().
-class BrowserActionGetPopupFunction : public BrowserActionFunction {
+class BrowserActionGetPopupFunction : public ExtensionActionGetPopupFunction {
   virtual ~BrowserActionGetPopupFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.getPopup")
 };
 
-// Implement chrome.browserAction.getBadgeText().
-class BrowserActionGetBadgeTextFunction : public BrowserActionFunction {
+class BrowserActionSetBadgeTextFunction
+    : public ExtensionActionSetBadgeTextFunction {
+  virtual ~BrowserActionSetBadgeTextFunction() {}
+  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeText")
+};
+
+class BrowserActionSetBadgeBackgroundColorFunction
+    : public ExtensionActionSetBadgeBackgroundColorFunction {
+  virtual ~BrowserActionSetBadgeBackgroundColorFunction() {}
+  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeBackgroundColor")
+};
+
+class BrowserActionGetBadgeTextFunction
+    : public ExtensionActionGetBadgeTextFunction {
   virtual ~BrowserActionGetBadgeTextFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.getBadgeText")
 };
 
-// Implement chrome.browserAction.getBadgeBackgroundColor().
 class BrowserActionGetBadgeBackgroundColorFunction
-    : public BrowserActionFunction {
+    : public ExtensionActionGetBadgeBackgroundColorFunction {
   virtual ~BrowserActionGetBadgeBackgroundColorFunction() {}
-  virtual bool RunExtensionAction() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.getBadgeBackgroundColor")
 };
 

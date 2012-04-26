@@ -109,7 +109,6 @@
         'browser/extensions/api/dns/dns_api.h',
         'browser/extensions/api/extension_action/extension_actions_api.cc',
         'browser/extensions/api/extension_action/extension_actions_api.h',
-        'browser/extensions/api/extension_action/extension_browser_actions_api.cc',
         'browser/extensions/api/extension_action/extension_browser_actions_api.h',
         'browser/extensions/api/extension_action/extension_page_actions_api.cc',
         'browser/extensions/api/extension_action/extension_page_actions_api.h',
