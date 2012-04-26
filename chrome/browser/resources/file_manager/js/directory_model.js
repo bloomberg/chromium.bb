@@ -52,7 +52,10 @@ function DirectoryModel(root, singleSelection, showGData, metadataCache) {
   this.filters_ = {};
   this.setFilterHidden(true);
 
-  /** @type {Object.<string, boolean>} */
+  /**
+   * @private
+   * @type {Object.<string, boolean>}
+   */
   this.volumeReadOnlyStatus_ = {};
 }
 
@@ -998,9 +1001,7 @@ DirectoryModel.prototype.updateRoots = function(opt_callback,
  */
 DirectoryModel.prototype.changeRoot = function(rootPath) {
   if (this.currentDirByRoot_[rootPath]) {
-    var onFail = function() {
-      this.changeDirectory(rootPath);
-    };
+    var onFail = this.changeDirectory.bind(this, rootPath);
     this.changeDirectory(this.currentDirByRoot_[rootPath], onFail);
   } else {
     this.changeDirectory(rootPath);
