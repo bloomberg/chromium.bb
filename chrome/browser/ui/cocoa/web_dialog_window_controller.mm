@@ -13,7 +13,6 @@
 #import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
-#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/web_dialog_controller.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
@@ -100,8 +99,7 @@ namespace browser {
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 Profile* profile,
                                 Browser* browser,
-                                WebDialogDelegate* delegate,
-                                DialogStyle style) {
+                                WebDialogDelegate* delegate) {
   return [WebDialogWindowController showWebDialog:delegate
                                           profile:profile
                                           browser:browser];

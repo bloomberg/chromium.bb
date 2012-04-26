@@ -5,7 +5,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/sync/one_click_signin_dialog.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

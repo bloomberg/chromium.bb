@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
-#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/select_file_dialog.h"
@@ -491,14 +490,9 @@ class Browser : public TabHandlerDelegate,
   // URL and JSON string input to use during initialization). |parent_window|
   // is the window that should be parent of the dialog, or NULL for the default.
   // |style| customizes this HTML dialog decoration and layout (X button,
-  // throbber, default content padding). Except ChromeOS, other platforms
-  // only have STYLE_GENERIC now.
-  // TODO(bshe): Implementing styles not related to window decoration in other
-  // platforms for consistency if necessary.
-  gfx::NativeWindow BrowserShowWebDialog(
-      WebDialogDelegate* delegate,
-      gfx::NativeWindow parent_window,
-      DialogStyle style);
+  // throbber, default content padding).
+  gfx::NativeWindow BrowserShowWebDialog(WebDialogDelegate* delegate,
+                                         gfx::NativeWindow parent_window);
 
   // Called when a popup select is about to be displayed.
   void BrowserRenderWidgetShowing();

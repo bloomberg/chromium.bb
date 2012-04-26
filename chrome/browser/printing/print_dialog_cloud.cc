@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -690,10 +689,7 @@ void CreateDialogImpl(const FilePath& path_to_file,
           file_type, modal, delete_on_close, close_after_signin,
           callback);
   browser::ShowWebDialog(modal ? browser->window()->GetNativeHandle() : NULL,
-                         profile,
-                         browser,
-                         dialog_delegate,
-                         STYLE_GENERIC);
+      profile, browser, dialog_delegate);
 }
 
 void CreateDialogSigninImpl(const base::Closure& callback) {

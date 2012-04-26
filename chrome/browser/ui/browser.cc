@@ -48,10 +48,10 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_started_animation.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/extensions/api/app/app_api.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
-#include "chrome/browser/extensions/api/app/app_api.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -1462,16 +1462,11 @@ void Browser::CloseTabContents(WebContents* contents) {
 
 gfx::NativeWindow Browser::BrowserShowWebDialog(
     WebDialogDelegate* delegate,
-    gfx::NativeWindow parent_window,
-    DialogStyle style) {
+    gfx::NativeWindow parent_window) {
   if (!parent_window)
     parent_window = window_->GetNativeHandle();
 
-  return browser::ShowWebDialog(parent_window,
-                                profile_,
-                                this,
-                                delegate,
-                                style);
+  return browser::ShowWebDialog(parent_window, profile_, this, delegate);
 }
 
 void Browser::BrowserRenderWidgetShowing() {

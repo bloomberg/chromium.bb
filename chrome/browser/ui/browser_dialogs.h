@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 #pragma once
 
-#include "chrome/browser/ui/dialog_style.h"
 #include "ipc/ipc_message.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -45,8 +44,7 @@ void ShowAboutIPCDialog();
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 Profile* profile,
                                 Browser* browser,
-                                WebDialogDelegate* delegate,
-                                DialogStyle style);
+                                WebDialogDelegate* delegate);
 
 // Closes the given dialog.
 void CloseHtmlDialog(gfx::NativeWindow window);

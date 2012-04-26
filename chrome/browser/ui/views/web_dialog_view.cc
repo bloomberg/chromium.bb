@@ -37,11 +37,9 @@ namespace browser {
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 Profile* profile,
                                 Browser* browser,
-                                WebDialogDelegate* delegate,
-                                DialogStyle style) {
+                                WebDialogDelegate* delegate) {
   views::Widget* widget = views::Widget::CreateWindowWithParent(
-      new WebDialogView(profile, browser, delegate),
-      parent);
+      new WebDialogView(profile, browser, delegate), parent);
   widget->Show();
   return widget->GetNativeWindow();
 }

@@ -2779,7 +2779,6 @@
         'browser/ui/crypto_module_password_dialog.h',
         'browser/ui/crypto_module_password_dialog_nss.cc',
         'browser/ui/crypto_module_password_dialog_openssl.cc',
-        'browser/ui/dialog_style.h',
         'browser/ui/extensions/shell_window.cc',
         'browser/ui/extensions/shell_window.h',
         'browser/ui/find_bar/find_bar.h',

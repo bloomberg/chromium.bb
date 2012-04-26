@@ -33,7 +33,7 @@ class TestDialogClosedDelegate : public test::TestWebDialogDelegate {
 
  private:
   bool dialog_closed_;
-  
+
   DISALLOW_COPY_AND_ASSIGN(TestDialogClosedDelegate);
 };
 
@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogControllerBrowserTest, IncognitoBrowser) {
 
   // Create the dialog and make sure the initial "closed" state is what we
   // expect.
-  browser->BrowserShowWebDialog(delegate.get(), NULL, STYLE_GENERIC);
+  browser->BrowserShowWebDialog(delegate.get(), NULL);
   ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_FALSE(delegate->dialog_closed());
 

@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/web_contents.h"
 
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -28,11 +29,9 @@ namespace browser {
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 Profile* profile,
                                 Browser* browser,
-                                WebDialogDelegate* delegate,
-                                DialogStyle style) {
+                                WebDialogDelegate* delegate) {
   // Ignore style for now. The style parameter only used in the implementation
   // in web_dialog_view.cc file.
-  // TODO (bshe): Add style parameter to WebDialogGtk.
   WebDialogGtk* web_dialog =
       new WebDialogGtk(profile, browser, delegate, parent);
   return web_dialog->InitDialog();

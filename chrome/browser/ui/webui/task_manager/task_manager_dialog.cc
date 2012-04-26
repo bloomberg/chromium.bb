@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -195,15 +194,10 @@ void TaskManagerDialogImpl::OnCloseDialog() {
 void TaskManagerDialogImpl::OpenWebDialog() {
   Browser* browser = BrowserList::GetLastActive();
   DCHECK(browser);
-  window_ = browser::ShowWebDialog(NULL,
-                                   browser->profile()->GetOriginalProfile(),
-                                   NULL,
-                                   this,
-                                   STYLE_GENERIC);
+  window_ = browser::ShowWebDialog(
+      NULL, browser->profile()->GetOriginalProfile(), NULL, this);
 }
 
-// ****************************************************
-//
 // static
 void TaskManagerDialog::Show() {
   BrowserThread::PostTask(
