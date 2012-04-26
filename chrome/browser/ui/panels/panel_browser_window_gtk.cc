@@ -319,23 +319,13 @@ void PanelBrowserWindowGtk::SetBoundsInternal(const gfx::Rect& bounds,
   if (bounds == bounds_)
     return;
 
-  if (!bounds_.width() || !bounds_.height()) {
-    // If the old bounds are 0 in either dimension, we need to show the
-    // window as it would now be hidden.
-    gtk_widget_show(GTK_WIDGET(window()));
-    gdk_window_move(gtk_widget_get_window(GTK_WIDGET(window())), bounds_.x(),
-                    bounds_.y());
-  }
-
   if (!animate) {
     // If no animation is in progress, apply bounds change instantly. Otherwise,
     // continue the animation with new target bounds.
-    if (!IsAnimatingBounds()) {
-      if (bounds_.origin() != bounds.origin())
-        gtk_window_move(window(), bounds.x(), bounds.y());
-      if (bounds_.size() != bounds.size())
-        ResizeWindow(bounds.width(), bounds.height());
-    }
+    if (!IsAnimatingBounds())
+      gdk_window_move_resize(gtk_widget_get_window(GTK_WIDGET(window())),
+                             bounds_.x(), bounds.y(),
+                             bounds.width(), bounds.height());
   } else if (!frame_size_.IsEmpty()) {
     StartBoundsAnimation(bounds_, bounds);
   } else {
@@ -344,11 +334,6 @@ void PanelBrowserWindowGtk::SetBoundsInternal(const gfx::Rect& bounds,
   }
 
   bounds_ = bounds;
-}
-
-void PanelBrowserWindowGtk::ResizeWindow(int width, int height) {
-  // Gtk does not allow window size to be set to 0, so make it 1 if it's 0.
-  gtk_window_resize(window(), std::max(width, 1), std::max(height, 1));
 }
 
 void PanelBrowserWindowGtk::ClosePanel() {
@@ -521,12 +506,6 @@ bool PanelBrowserWindowGtk::IsAnimatingBounds() const {
 
 void PanelBrowserWindowGtk::AnimationEnded(const ui::Animation* animation) {
   titlebar()->SendEnterNotifyToCloseButtonIfUnderMouse();
-
-  // If the final size is 0 in either dimension, hide the window as gtk does
-  // not allow the window size to be 0.
-  if (!bounds_.width() || !bounds_.height())
-    gtk_widget_hide(GTK_WIDGET(window()));
-
   panel_->manager()->OnPanelAnimationEnded(panel_.get());
 }
 
@@ -539,8 +518,7 @@ void PanelBrowserWindowGtk::AnimationProgressed(
 
   gdk_window_move_resize(gtk_widget_get_window(GTK_WIDGET(window())),
                          new_bounds.x(), new_bounds.y(),
-                         std::max(new_bounds.width(), 1),  // 0 not allowed
-                         std::max(new_bounds.height(), 1));  // 0 not allowed
+                         new_bounds.width(), new_bounds.height());
 
   last_animation_progressed_bounds_ = new_bounds;
 }

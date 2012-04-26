@@ -117,7 +117,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   void EnsureDragHelperCreated();
 
   void SetBoundsInternal(const gfx::Rect& bounds, bool animate);
-  void ResizeWindow(int width, int height);
 
   void DrawAttentionFrame(cairo_t* cr, GtkWidget* widget,
                           GdkEventExpose* event);
