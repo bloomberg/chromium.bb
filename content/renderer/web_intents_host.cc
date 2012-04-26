@@ -58,10 +58,10 @@ class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
           static_cast<int>(intent.unserialized_data.length()));
     } else {
       DCHECK(intent.data_type == webkit_glue::WebIntentData::BLOB);
-      WebBlob web_blob = WebBlob::createFromFile(
+      web_blob_ = WebBlob::createFromFile(
           WebString::fromUTF8(intent.blob_file.AsUTF8Unsafe()),
           intent.blob_length);
-      data_obj = v8::Local<v8::Value>::New(web_blob.toV8Value());
+      data_obj = v8::Local<v8::Value>::New(web_blob_.toV8Value());
     }
 
     data_val_.reset(new CppVariant);
@@ -159,6 +159,7 @@ class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
   WebCString action_;
   WebCString type_;
   std::map<string16, string16> extra_data_;
+  WebBlob web_blob_;
   scoped_ptr<CppVariant> data_val_;
 
   // The dispatcher object, for forwarding postResult/postFailure calls.
@@ -231,8 +232,9 @@ void WebIntentsHost::OnFailure(const WebKit::WebString& data) {
 void WebIntentsHost::DidClearWindowObject(WebFrame* frame) {
   if (intent_.get() == NULL || frame->top() != frame)
     return;
-
-  delivered_intent_.reset(
-      new BoundDeliveredIntent(*(intent_.get()), this, frame));
+  if (!delivered_intent_.get()) {
+    delivered_intent_.reset(
+        new BoundDeliveredIntent(*(intent_.get()), this, frame));
+  }
   delivered_intent_->BindToJavascript(frame, "webkitIntent");
 }

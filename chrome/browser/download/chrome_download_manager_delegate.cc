@@ -260,6 +260,9 @@ bool ChromeDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
 
 bool ChromeDownloadManagerDelegate::ShouldOpenWithWebIntents(
     const DownloadItem* item) {
+  if (!item->GetWebContents() || !item->GetWebContents()->GetDelegate())
+    return false;
+
   std::string mime_type = item->GetMimeType();
   if (mime_type == "application/rss+xml" ||
       mime_type == "application/atom+xml") {
