@@ -806,12 +806,12 @@ dbus_bool_t Bus::OnAddWatchThunk(DBusWatch* raw_watch, void* data) {
 
 void Bus::OnRemoveWatchThunk(DBusWatch* raw_watch, void* data) {
   Bus* self = static_cast<Bus*>(data);
-  return self->OnRemoveWatch(raw_watch);
+  self->OnRemoveWatch(raw_watch);
 }
 
 void Bus::OnToggleWatchThunk(DBusWatch* raw_watch, void* data) {
   Bus* self = static_cast<Bus*>(data);
-  return self->OnToggleWatch(raw_watch);
+  self->OnToggleWatch(raw_watch);
 }
 
 dbus_bool_t Bus::OnAddTimeoutThunk(DBusTimeout* raw_timeout, void* data) {
@@ -821,19 +821,19 @@ dbus_bool_t Bus::OnAddTimeoutThunk(DBusTimeout* raw_timeout, void* data) {
 
 void Bus::OnRemoveTimeoutThunk(DBusTimeout* raw_timeout, void* data) {
   Bus* self = static_cast<Bus*>(data);
-  return self->OnRemoveTimeout(raw_timeout);
+  self->OnRemoveTimeout(raw_timeout);
 }
 
 void Bus::OnToggleTimeoutThunk(DBusTimeout* raw_timeout, void* data) {
   Bus* self = static_cast<Bus*>(data);
-  return self->OnToggleTimeout(raw_timeout);
+  self->OnToggleTimeout(raw_timeout);
 }
 
 void Bus::OnDispatchStatusChangedThunk(DBusConnection* connection,
                                        DBusDispatchStatus status,
                                        void* data) {
   Bus* self = static_cast<Bus*>(data);
-  return self->OnDispatchStatusChanged(connection, status);
+  self->OnDispatchStatusChanged(connection, status);
 }
 
 }  // namespace dbus
