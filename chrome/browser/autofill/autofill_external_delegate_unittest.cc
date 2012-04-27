@@ -55,13 +55,15 @@ class MockAutofillManager : public AutofillManager {
  public:
   explicit MockAutofillManager(TabContentsWrapper* tab_contents)
       : AutofillManager(tab_contents) {}
-  ~MockAutofillManager() {}
 
   MOCK_METHOD4(OnFillAutofillFormData,
                void(int query_id,
                     const webkit::forms::FormData& form,
                     const webkit::forms::FormField& field,
                     int unique_id));
+
+ protected:
+  virtual ~MockAutofillManager() {}
 };
 
 }  // namespace

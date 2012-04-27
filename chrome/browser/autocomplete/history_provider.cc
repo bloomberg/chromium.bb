@@ -23,6 +23,8 @@ HistoryProvider::HistoryProvider(ACProviderListener* listener,
       always_prevent_inline_autocomplete_(false) {
 }
 
+HistoryProvider::~HistoryProvider() {}
+
 void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(done_);
   DCHECK(profile_);

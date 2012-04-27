@@ -24,8 +24,6 @@ class HistoryQuickProvider : public HistoryProvider {
  public:
   HistoryQuickProvider(ACProviderListener* listener, Profile* profile);
 
-  virtual ~HistoryQuickProvider();
-
   // AutocompleteProvider. |minimal_changes| is ignored since there
   // is no asynch completion performed.
   virtual void Start(const AutocompleteInput& input,
@@ -44,6 +42,8 @@ class HistoryQuickProvider : public HistoryProvider {
   friend class HistoryQuickProviderTest;
   FRIEND_TEST_ALL_PREFIXES(HistoryQuickProviderTest, Spans);
   FRIEND_TEST_ALL_PREFIXES(HistoryQuickProviderTest, Relevance);
+
+  virtual ~HistoryQuickProvider();
 
   // Performs the autocomplete matching and scoring.
   void DoAutocomplete();

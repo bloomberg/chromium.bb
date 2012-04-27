@@ -109,11 +109,7 @@ bool RequestQuotaInfoBarDelegate::Cancel() {
 
 }  // anonymous namespace
 
-ChromeQuotaPermissionContext::ChromeQuotaPermissionContext() {
-}
-
-ChromeQuotaPermissionContext::~ChromeQuotaPermissionContext() {
-}
+ChromeQuotaPermissionContext::ChromeQuotaPermissionContext() {}
 
 void ChromeQuotaPermissionContext::RequestQuotaPermission(
     const GURL& origin_url,
@@ -172,3 +168,5 @@ void ChromeQuotaPermissionContext::DispatchCallbackOnIOThread(
 
   callback.Run(response);
 }
+
+ChromeQuotaPermissionContext::~ChromeQuotaPermissionContext() {}

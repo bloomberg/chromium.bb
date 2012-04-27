@@ -26,7 +26,6 @@ class ShortcutsProvider
       public history::ShortcutsBackend::ShortcutsBackendObserver {
  public:
   ShortcutsProvider(ACProviderListener* listener, Profile* profile);
-  virtual ~ShortcutsProvider();
 
   // Performs the autocompletion synchronously. Since no asynch completion is
   // performed |minimal_changes| is ignored.
@@ -40,6 +39,8 @@ class ShortcutsProvider
   FRIEND_TEST_ALL_PREFIXES(ShortcutsProviderTest, ClassifyAllMatchesInString);
   FRIEND_TEST_ALL_PREFIXES(ShortcutsProviderTest, CalculateScore);
   FRIEND_TEST_ALL_PREFIXES(ShortcutsProviderTest, DeleteMatch);
+
+  virtual ~ShortcutsProvider();
 
   // ShortcutsBackendObserver:
   virtual void OnShortcutsLoaded() OVERRIDE;

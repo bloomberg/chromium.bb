@@ -276,10 +276,15 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
   }
 
  protected:
-  struct WorkerData : public base::RefCountedThreadSafe<WorkerData> {
+  class WorkerData : public base::RefCountedThreadSafe<WorkerData> {
+   public:
     WorkerData() : worker_process_id(0), worker_route_id(0) {}
     int worker_process_id;
     int worker_route_id;
+
+   private:
+    friend class base::RefCountedThreadSafe<WorkerData>;
+    ~WorkerData() {}
   };
 
   class WorkerCreationObserver : public WorkerServiceObserver {

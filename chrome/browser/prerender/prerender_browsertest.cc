@@ -386,8 +386,6 @@ class FakeSafeBrowsingService :  public SafeBrowsingService {
   FakeSafeBrowsingService() :
       result_(SAFE) {}
 
-  virtual ~FakeSafeBrowsingService() {}
-
   // Called on the IO thread to check if the given url is safe or not.  If we
   // can synchronously determine that the url is safe, CheckUrl returns true.
   // Otherwise it returns false, and "client" is called asynchronously with the
@@ -414,6 +412,8 @@ class FakeSafeBrowsingService :  public SafeBrowsingService {
   }
 
  private:
+  virtual ~FakeSafeBrowsingService() {}
+
   void OnCheckBrowseURLDone(const GURL& gurl, Client* client) {
     SafeBrowsingService::SafeBrowsingCheck check;
     check.urls.push_back(gurl);

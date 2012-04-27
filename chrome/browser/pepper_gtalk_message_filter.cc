@@ -17,10 +17,7 @@
 #include "ui/aura/window.h"
 #endif
 
-PepperGtalkMessageFilter::PepperGtalkMessageFilter() {
-}
-
-PepperGtalkMessageFilter::~PepperGtalkMessageFilter() {}
+PepperGtalkMessageFilter::PepperGtalkMessageFilter() {}
 
 void PepperGtalkMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
@@ -39,6 +36,8 @@ bool PepperGtalkMessageFilter::OnMessageReceived(const IPC::Message& msg,
   IPC_END_MESSAGE_MAP_EX()
   return handled;
 }
+
+PepperGtalkMessageFilter::~PepperGtalkMessageFilter() {}
 
 void PepperGtalkMessageFilter::OnTalkGetPermission(uint32 plugin_dispatcher_id,
                                                    PP_Resource resource) {

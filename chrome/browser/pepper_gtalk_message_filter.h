@@ -13,7 +13,6 @@
 class PepperGtalkMessageFilter : public content::BrowserMessageFilter {
  public:
   PepperGtalkMessageFilter();
-  virtual ~PepperGtalkMessageFilter();
 
   // content::BrowserMessageFilter methods.
   virtual void OverrideThreadForMessage(
@@ -23,6 +22,8 @@ class PepperGtalkMessageFilter : public content::BrowserMessageFilter {
                                  bool* message_was_ok) OVERRIDE;
 
  private:
+  virtual ~PepperGtalkMessageFilter();
+
   void OnTalkGetPermission(uint32 plugin_dispatcher_id,
                            PP_Resource resource);
 

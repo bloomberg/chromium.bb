@@ -57,8 +57,6 @@ PluginInfoMessageFilter::PluginInfoMessageFilter(
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
-PluginInfoMessageFilter::~PluginInfoMessageFilter() {}
-
 bool PluginInfoMessageFilter::OnMessageReceived(const IPC::Message& message,
                                                 bool* message_was_ok) {
   IPC_BEGIN_MESSAGE_MAP_EX(PluginInfoMessageFilter, message, *message_was_ok)
@@ -78,6 +76,8 @@ void PluginInfoMessageFilter::OnDestruct() const {
   // Destroy on the UI thread because we contain a |PrefMember|.
   content::BrowserThread::DeleteOnUIThread::Destruct(this);
 }
+
+PluginInfoMessageFilter::~PluginInfoMessageFilter() {}
 
 struct PluginInfoMessageFilter::GetPluginInfo_Params {
   int render_view_id;

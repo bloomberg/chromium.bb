@@ -102,8 +102,6 @@ HistoryQuickProvider::HistoryQuickProvider(ACProviderListener* listener,
       inlining_option, NUM_OPTIONS);
 }
 
-HistoryQuickProvider::~HistoryQuickProvider() {}
-
 void HistoryQuickProvider::Start(const AutocompleteInput& input,
                                  bool minimal_changes) {
   matches_.clear();
@@ -141,6 +139,8 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
 
 // TODO(mrossetti): Implement this function. (Will happen in next CL.)
 void HistoryQuickProvider::DeleteMatch(const AutocompleteMatch& match) {}
+
+HistoryQuickProvider::~HistoryQuickProvider() {}
 
 void HistoryQuickProvider::DoAutocomplete() {
   // Get the matching URLs from the DB.

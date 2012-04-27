@@ -30,11 +30,6 @@ SearchProviderInstallStateMessageFilter::
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-SearchProviderInstallStateMessageFilter::
-~SearchProviderInstallStateMessageFilter() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-}
-
 bool SearchProviderInstallStateMessageFilter::OnMessageReceived(
     const IPC::Message& message,
     bool* message_was_ok) {
@@ -48,6 +43,11 @@ bool SearchProviderInstallStateMessageFilter::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+SearchProviderInstallStateMessageFilter::
+~SearchProviderInstallStateMessageFilter() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 search_provider::InstallState

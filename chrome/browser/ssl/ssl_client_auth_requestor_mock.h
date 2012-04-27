@@ -22,13 +22,15 @@ class SSLClientAuthRequestorMock
   SSLClientAuthRequestorMock(
       net::URLRequest* request,
       net::SSLCertRequestInfo* cert_request_info);
-  // NOTE: we need a vtable or else gmock blows up.
-  virtual ~SSLClientAuthRequestorMock();
 
   MOCK_METHOD1(CertificateSelected, void(net::X509Certificate* cert));
 
   net::SSLCertRequestInfo* cert_request_info_;
   net::HttpNetworkSession* http_network_session_;
+
+ protected:
+  friend class base::RefCountedThreadSafe<SSLClientAuthRequestorMock>;
+  virtual ~SSLClientAuthRequestorMock();
 };
 
 #endif  // CHROME_BROWSER_SSL_SSL_CLIENT_AUTH_REQUESTOR_MOCK_H_

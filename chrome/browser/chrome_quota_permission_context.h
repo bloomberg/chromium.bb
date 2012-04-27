@@ -11,7 +11,6 @@
 class ChromeQuotaPermissionContext : public content::QuotaPermissionContext {
  public:
   ChromeQuotaPermissionContext();
-  virtual ~ChromeQuotaPermissionContext();
 
   // The callback will be dispatched on the IO thread.
   virtual void RequestQuotaPermission(
@@ -25,6 +24,9 @@ class ChromeQuotaPermissionContext : public content::QuotaPermissionContext {
   void DispatchCallbackOnIOThread(
       const PermissionCallback& callback,
       QuotaPermissionResponse response);
+
+ private:
+  virtual ~ChromeQuotaPermissionContext();
 };
 
 #endif  // CHROME_BROWSER_CHROME_QUOTA_PERMISSION_CONTEXT_H_

@@ -117,6 +117,8 @@ class FakeProtocolClientWorker
         force_failure_(force_failure) {}
 
  private:
+  virtual ~FakeProtocolClientWorker() {}
+
   virtual ShellIntegration::DefaultWebClientState CheckIsDefault() {
     if (force_failure_) {
       return ShellIntegration::NOT_DEFAULT_WEB_CLIENT;

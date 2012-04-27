@@ -19,6 +19,7 @@ class HistoryProvider : public AutocompleteProvider {
   HistoryProvider(ACProviderListener* listener,
                   Profile* profile,
                   const char* name);
+  virtual ~HistoryProvider();
 
   // Fixes up user URL input to make it more possible to match against.  Among
   // many other things, this takes care of the following:

@@ -79,6 +79,9 @@ class URLRequestContextWithUserAgent : public net::URLRequestContext {
       const GURL& url) const OVERRIDE {
     return content::GetUserAgent(url);
   }
+
+ protected:
+  virtual ~URLRequestContextWithUserAgent() {}
 };
 
 // Used for the "system" URLRequestContext. If this grows more complicated, then

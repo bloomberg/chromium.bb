@@ -61,9 +61,6 @@ class CrashNotificationDelegate : public NotificationDelegate {
         extension_id_(extension->id()) {
   }
 
-  ~CrashNotificationDelegate() {
-  }
-
   void Display() {}
 
   void Error() {}
@@ -93,6 +90,8 @@ class CrashNotificationDelegate : public NotificationDelegate {
   }
 
  private:
+  virtual ~CrashNotificationDelegate() {}
+
   Profile* profile_;
   bool is_hosted_app_;
   std::string extension_id_;

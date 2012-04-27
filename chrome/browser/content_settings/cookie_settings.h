@@ -37,8 +37,6 @@ class CookieSettings
       HostContentSettingsMap* host_content_settings_map,
       PrefService* prefs);
 
-  virtual ~CookieSettings();
-
   // Returns the default content setting (CONTENT_SETTING_ALLOW,
   // CONTENT_SETTING_BLOCK, or CONTENT_SETTING_SESSION_ONLY) for cookies. If
   // |provider_id| is not NULL, the id of the provider which provided the
@@ -136,6 +134,8 @@ class CookieSettings
   };
 
  private:
+  virtual ~CookieSettings();
+
   // Returns true if the "block third party cookies" preference is set.
   //
   // This method may be called on any thread.

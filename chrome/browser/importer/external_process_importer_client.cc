@@ -38,29 +38,6 @@ ExternalProcessImporterClient::ExternalProcessImporterClient(
   process_importer_host_->NotifyImportStarted();
 }
 
-ExternalProcessImporterClient::~ExternalProcessImporterClient() {
-}
-
-void ExternalProcessImporterClient::CancelImportProcessOnIOThread() {
-  if (utility_process_host_)
-    utility_process_host_->Send(new ProfileImportProcessMsg_CancelImport());
-}
-
-void ExternalProcessImporterClient::NotifyItemFinishedOnIOThread(
-    importer::ImportItem import_item) {
-  utility_process_host_->Send(
-      new ProfileImportProcessMsg_ReportImportItemFinished(import_item));
-}
-
-void ExternalProcessImporterClient::Cleanup() {
-  if (cancelled_)
-    return;
-
-  if (process_importer_host_)
-    process_importer_host_->NotifyImportEnded();
-  Release();
-}
-
 void ExternalProcessImporterClient::Start() {
   AddRef();  // balanced in Cleanup.
   BrowserThread::ID thread_id;
@@ -70,46 +47,6 @@ void ExternalProcessImporterClient::Start() {
       base::Bind(&ExternalProcessImporterClient::StartProcessOnIOThread,
                  this,
                  thread_id));
-}
-
-void ExternalProcessImporterClient::StartProcessOnIOThread(
-    BrowserThread::ID thread_id) {
-  utility_process_host_ =
-      UtilityProcessHost::Create(this, thread_id)->AsWeakPtr();
-  utility_process_host_->DisableSandbox();
-
-#if defined(OS_MACOSX)
-  base::EnvironmentVector env;
-  std::string dylib_path = GetFirefoxDylibPath().value();
-  if (!dylib_path.empty())
-    env.push_back(std::make_pair("DYLD_FALLBACK_LIBRARY_PATH", dylib_path));
-  utility_process_host_->SetEnv(env);
-#endif
-
-  // Dictionary of all localized strings that could be needed by the importer
-  // in the external process.
-  DictionaryValue localized_strings;
-  localized_strings.SetString(
-      base::IntToString(IDS_BOOKMARK_GROUP_FROM_FIREFOX),
-      l10n_util::GetStringUTF8(IDS_BOOKMARK_GROUP_FROM_FIREFOX));
-  localized_strings.SetString(
-      base::IntToString(IDS_BOOKMARK_GROUP_FROM_SAFARI),
-      l10n_util::GetStringUTF8(IDS_BOOKMARK_GROUP_FROM_SAFARI));
-  localized_strings.SetString(
-      base::IntToString(IDS_IMPORT_FROM_FIREFOX),
-      l10n_util::GetStringUTF8(IDS_IMPORT_FROM_FIREFOX));
-  localized_strings.SetString(
-      base::IntToString(IDS_IMPORT_FROM_GOOGLE_TOOLBAR),
-      l10n_util::GetStringUTF8(IDS_IMPORT_FROM_GOOGLE_TOOLBAR));
-  localized_strings.SetString(
-      base::IntToString(IDS_IMPORT_FROM_SAFARI),
-      l10n_util::GetStringUTF8(IDS_IMPORT_FROM_SAFARI));
-  localized_strings.SetString(
-      base::IntToString(IDS_BOOKMARK_BAR_FOLDER_NAME),
-      l10n_util::GetStringUTF8(IDS_BOOKMARK_BAR_FOLDER_NAME));
-
-  utility_process_host_->Send(new ProfileImportProcessMsg_StartImport(
-      source_profile_, items_, localized_strings));
 }
 
 void ExternalProcessImporterClient::Cancel() {
@@ -297,4 +234,66 @@ void ExternalProcessImporterClient::OnKeywordsImportReady(
 
   bridge_->SetKeywords(template_urls, unique_on_host_and_path);
   // The pointers in |template_urls| have now been deleted.
+}
+
+ExternalProcessImporterClient::~ExternalProcessImporterClient() {}
+
+void ExternalProcessImporterClient::Cleanup() {
+  if (cancelled_)
+    return;
+
+  if (process_importer_host_)
+    process_importer_host_->NotifyImportEnded();
+  Release();
+}
+
+void ExternalProcessImporterClient::CancelImportProcessOnIOThread() {
+  if (utility_process_host_)
+    utility_process_host_->Send(new ProfileImportProcessMsg_CancelImport());
+}
+
+void ExternalProcessImporterClient::NotifyItemFinishedOnIOThread(
+    importer::ImportItem import_item) {
+  utility_process_host_->Send(
+      new ProfileImportProcessMsg_ReportImportItemFinished(import_item));
+}
+
+void ExternalProcessImporterClient::StartProcessOnIOThread(
+    BrowserThread::ID thread_id) {
+  utility_process_host_ =
+      UtilityProcessHost::Create(this, thread_id)->AsWeakPtr();
+  utility_process_host_->DisableSandbox();
+
+#if defined(OS_MACOSX)
+  base::EnvironmentVector env;
+  std::string dylib_path = GetFirefoxDylibPath().value();
+  if (!dylib_path.empty())
+    env.push_back(std::make_pair("DYLD_FALLBACK_LIBRARY_PATH", dylib_path));
+  utility_process_host_->SetEnv(env);
+#endif
+
+  // Dictionary of all localized strings that could be needed by the importer
+  // in the external process.
+  DictionaryValue localized_strings;
+  localized_strings.SetString(
+      base::IntToString(IDS_BOOKMARK_GROUP_FROM_FIREFOX),
+      l10n_util::GetStringUTF8(IDS_BOOKMARK_GROUP_FROM_FIREFOX));
+  localized_strings.SetString(
+      base::IntToString(IDS_BOOKMARK_GROUP_FROM_SAFARI),
+      l10n_util::GetStringUTF8(IDS_BOOKMARK_GROUP_FROM_SAFARI));
+  localized_strings.SetString(
+      base::IntToString(IDS_IMPORT_FROM_FIREFOX),
+      l10n_util::GetStringUTF8(IDS_IMPORT_FROM_FIREFOX));
+  localized_strings.SetString(
+      base::IntToString(IDS_IMPORT_FROM_GOOGLE_TOOLBAR),
+      l10n_util::GetStringUTF8(IDS_IMPORT_FROM_GOOGLE_TOOLBAR));
+  localized_strings.SetString(
+      base::IntToString(IDS_IMPORT_FROM_SAFARI),
+      l10n_util::GetStringUTF8(IDS_IMPORT_FROM_SAFARI));
+  localized_strings.SetString(
+      base::IntToString(IDS_BOOKMARK_BAR_FOLDER_NAME),
+      l10n_util::GetStringUTF8(IDS_BOOKMARK_BAR_FOLDER_NAME));
+
+  utility_process_host_->Send(new ProfileImportProcessMsg_StartImport(
+      source_profile_, items_, localized_strings));
 }

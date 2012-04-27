@@ -15,23 +15,38 @@
 #include "rlz/lib/lib_values.h"
 
 class RlzRecordProductEventFunction : public SyncExtensionFunction {
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.rlz.recordProductEvent")
+
+ protected:
+  virtual ~RlzRecordProductEventFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class RlzGetAccessPointRlzFunction : public SyncExtensionFunction {
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.rlz.getAccessPointRlz")
+
+ protected:
+  virtual ~RlzGetAccessPointRlzFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class RlzSendFinancialPingFunction : public AsyncExtensionFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.rlz.sendFinancialPing")
+
   RlzSendFinancialPingFunction();
+
+ protected:
+  friend class MockRlzSendFinancialPingFunction;
   virtual ~RlzSendFinancialPingFunction();
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.rlz.sendFinancialPing")
- // Making this function protected so that it can be overridden in tests.
- protected:
+  // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
  private:
@@ -48,8 +63,14 @@ class RlzSendFinancialPingFunction : public AsyncExtensionFunction {
 };
 
 class RlzClearProductStateFunction : public SyncExtensionFunction {
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.rlz.clearProductState")
+
+ protected:
+  virtual ~RlzClearProductStateFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)

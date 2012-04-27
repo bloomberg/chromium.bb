@@ -47,7 +47,6 @@ const char kUserStyleSheetFile[] = "Custom.css";
 class UserStyleSheetLoader : public FilePathWatcher::Delegate {
  public:
   UserStyleSheetLoader();
-  virtual ~UserStyleSheetLoader() {}
 
   GURL user_style_sheet() const {
     return user_style_sheet_;
@@ -64,6 +63,8 @@ class UserStyleSheetLoader : public FilePathWatcher::Delegate {
   virtual void OnFilePathChanged(const FilePath& path);
 
  private:
+  virtual ~UserStyleSheetLoader() {}
+
   // Called on the UI thread after the stylesheet has loaded.
   void SetStyleSheet(const GURL& url);
 

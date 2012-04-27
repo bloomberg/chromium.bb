@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -22,13 +22,14 @@
 class BuiltinProvider : public AutocompleteProvider {
  public:
   BuiltinProvider(ACProviderListener* listener, Profile* profile);
-  virtual ~BuiltinProvider();
 
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
 
  private:
+  virtual ~BuiltinProvider();
+
   typedef std::vector<string16> Builtins;
 
   static const int kRelevance;

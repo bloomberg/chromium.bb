@@ -32,7 +32,6 @@ class DummyNotificationDelegate : public NotificationDelegate {
  public:
   explicit DummyNotificationDelegate(const std::string& id)
       : id_(kNotificationPrefix + id) {}
-  virtual ~DummyNotificationDelegate() {}
 
   virtual void Display() OVERRIDE {
     MessageLoop::current()->PostDelayedTask(
@@ -46,6 +45,8 @@ class DummyNotificationDelegate : public NotificationDelegate {
   virtual std::string id() const OVERRIDE { return id_; }
 
  private:
+  virtual ~DummyNotificationDelegate() {}
+
   std::string id_;
 };
 

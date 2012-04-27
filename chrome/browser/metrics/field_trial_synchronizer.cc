@@ -15,17 +15,22 @@
 
 using content::BrowserThread;
 
+namespace {
+
+// This singleton instance should be constructed during the single threaded
+// portion of main(). It initializes globals to provide support for all future
+// calls. This object is created on the UI thread, and it is destroyed after
+// all the other threads have gone away.
+FieldTrialSynchronizer* g_field_trial_synchronizer = NULL;
+
+}  // namespace
+
 FieldTrialSynchronizer::FieldTrialSynchronizer() {
-  DCHECK(field_trial_synchronizer_ == NULL);
-  field_trial_synchronizer_ = this;
+  DCHECK(g_field_trial_synchronizer == NULL);
+  g_field_trial_synchronizer = this;
   base::FieldTrialList::AddObserver(this);
 
   experiments_helper::SetChildProcessLoggingExperimentList();
-}
-
-FieldTrialSynchronizer::~FieldTrialSynchronizer() {
-  base::FieldTrialList::RemoveObserver(this);
-  field_trial_synchronizer_ = NULL;
 }
 
 void FieldTrialSynchronizer::NotifyAllRenderers(
@@ -55,6 +60,7 @@ void FieldTrialSynchronizer::OnFieldTrialGroupFinalized(
   experiments_helper::SetChildProcessLoggingExperimentList();
 }
 
-// static
-FieldTrialSynchronizer*
-    FieldTrialSynchronizer::field_trial_synchronizer_ = NULL;
+FieldTrialSynchronizer::~FieldTrialSynchronizer() {
+  base::FieldTrialList::RemoveObserver(this);
+  g_field_trial_synchronizer = NULL;
+}

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,6 @@
 class MockNotificationDelegate : public NotificationDelegate {
  public:
   explicit MockNotificationDelegate(const std::string& id);
-  virtual ~MockNotificationDelegate();
 
   // NotificationDelegate interface.
   virtual void Display() OVERRIDE {}
@@ -27,6 +26,8 @@ class MockNotificationDelegate : public NotificationDelegate {
   virtual std::string id() const OVERRIDE;
 
  private:
+  virtual ~MockNotificationDelegate();
+
   std::string id_;
 
   DISALLOW_COPY_AND_ASSIGN(MockNotificationDelegate);

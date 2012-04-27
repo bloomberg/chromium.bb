@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/content_settings.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -74,7 +75,6 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
   };
 
   PluginInfoMessageFilter(int render_process_id, Profile* profile);
-  virtual ~PluginInfoMessageFilter();
 
   // content::BrowserMessageFilter methods:
   virtual bool OnMessageReceived(const IPC::Message& message,
@@ -82,6 +82,12 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
   virtual void OnDestruct() const OVERRIDE;
 
  private:
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<PluginInfoMessageFilter>;
+
+  virtual ~PluginInfoMessageFilter();
+
   void OnGetPluginInfo(int render_view_id,
                        const GURL& url,
                        const GURL& top_origin_url,

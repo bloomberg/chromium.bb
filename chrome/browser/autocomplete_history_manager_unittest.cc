@@ -29,6 +29,9 @@ class MockWebDataService : public WebDataService {
  public:
   MOCK_METHOD1(AddFormFields,
                void(const std::vector<webkit::forms::FormField>&));  // NOLINT
+
+ protected:
+  virtual ~MockWebDataService() {}
 };
 
 class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {

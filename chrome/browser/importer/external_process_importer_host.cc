@@ -23,6 +23,8 @@ void ExternalProcessImporterHost::Cancel() {
   NotifyImportEnded();  // Tells the observer that we're done, and releases us.
 }
 
+ExternalProcessImporterHost::~ExternalProcessImporterHost() {}
+
 void ExternalProcessImporterHost::StartImportSettings(
     const importer::SourceProfile& source_profile,
     Profile* target_profile,

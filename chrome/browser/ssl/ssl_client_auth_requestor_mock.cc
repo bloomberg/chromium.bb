@@ -16,5 +16,4 @@ SSLClientAuthRequestorMock::SSLClientAuthRequestorMock(
           request->context()->http_transaction_factory()->GetSession()) {
 }
 
-SSLClientAuthRequestorMock::~SSLClientAuthRequestorMock() {
-}
+SSLClientAuthRequestorMock::~SSLClientAuthRequestorMock() {}

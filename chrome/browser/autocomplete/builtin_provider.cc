@@ -46,8 +46,6 @@ BuiltinProvider::BuiltinProvider(ACProviderListener* listener,
     builtins_.push_back(settings + ASCIIToUTF16(kChromeSettingsSubPages[i]));
 }
 
-BuiltinProvider::~BuiltinProvider() {}
-
 void BuiltinProvider::Start(const AutocompleteInput& input,
                             bool minimal_changes) {
   matches_.clear();
@@ -107,6 +105,8 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
   for (size_t i = 0; i < matches_.size(); ++i)
     matches_[i].relevance = kRelevance + matches_.size() - (i + 1);
 }
+
+BuiltinProvider::~BuiltinProvider() {}
 
 void BuiltinProvider::AddMatch(const string16& match_string,
                                const ACMatchClassifications& styles) {

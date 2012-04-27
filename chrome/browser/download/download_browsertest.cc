@@ -93,6 +93,9 @@ class PickSuggestedFileDelegate : public ChromeDownloadManagerDelegate {
     if (download_manager_)
       download_manager_->FileSelected(suggested_path, download_id);
   }
+
+ protected:
+  virtual ~PickSuggestedFileDelegate() {}
 };
 
 // Get History Information.

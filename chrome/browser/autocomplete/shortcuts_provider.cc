@@ -61,11 +61,6 @@ ShortcutsProvider::ShortcutsProvider(ACProviderListener* listener,
   }
 }
 
-ShortcutsProvider::~ShortcutsProvider() {
-  if (shortcuts_backend_.get())
-    shortcuts_backend_->RemoveObserver(this);
-}
-
 void ShortcutsProvider::Start(const AutocompleteInput& input,
                               bool minimal_changes) {
   matches_.clear();
@@ -109,6 +104,11 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
 
   DCHECK(history_service && match.destination_url.is_valid());
   history_service->DeleteURL(match.destination_url);
+}
+
+ShortcutsProvider::~ShortcutsProvider() {
+  if (shortcuts_backend_.get())
+    shortcuts_backend_->RemoveObserver(this);
 }
 
 void ShortcutsProvider::OnShortcutsLoaded() {

@@ -46,9 +46,13 @@ class PurgeMemoryIOHelper
   void PurgeMemoryOnIOThread();
 
  private:
-  typedef scoped_refptr<net::URLRequestContextGetter> RequestContextGetter;
+  friend class base::RefCountedThreadSafe<PurgeMemoryIOHelper>;
 
+  virtual ~PurgeMemoryIOHelper() {}
+
+  typedef scoped_refptr<net::URLRequestContextGetter> RequestContextGetter;
   std::vector<RequestContextGetter> request_context_getters_;
+
   scoped_refptr<SafeBrowsingService> safe_browsing_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PurgeMemoryIOHelper);

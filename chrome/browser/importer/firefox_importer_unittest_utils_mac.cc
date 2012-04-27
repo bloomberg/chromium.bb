@@ -166,6 +166,10 @@ class CancellableQuitMsgLoop : public base::RefCounted<CancellableQuitMsgLoop> {
       MessageLoop::current()->Quit();
   }
   bool cancelled_;
+
+ private:
+  friend class base::RefCounted<CancellableQuitMsgLoop>;
+  ~CancellableQuitMsgLoop() {}
 };
 
 // Spin until either a client response arrives or a timeout occurs.

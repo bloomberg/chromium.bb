@@ -43,6 +43,10 @@ class TokenLoadingJob : public base::RefCountedThreadSafe<TokenLoadingJob> {
   }
 
  private:
+  friend class base::RefCountedThreadSafe<TokenLoadingJob>;
+
+  ~TokenLoadingJob() {}
+
   void PerformWorkOnUIThread() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DictionaryPrefUpdate update(g_browser_process->local_state(),
@@ -87,11 +91,7 @@ void ChromeAccessTokenStore::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kGeolocationAccessToken);
 }
 
-ChromeAccessTokenStore::ChromeAccessTokenStore() {
-}
-
-ChromeAccessTokenStore::~ChromeAccessTokenStore() {
-}
+ChromeAccessTokenStore::ChromeAccessTokenStore() {}
 
 void ChromeAccessTokenStore::LoadAccessTokens(
     const LoadAccessTokensCallbackType& callback) {
@@ -99,7 +99,10 @@ void ChromeAccessTokenStore::LoadAccessTokens(
   job->Run();
 }
 
-void SetAccessTokenOnUIThread(const GURL& server_url, const string16& token) {
+ChromeAccessTokenStore::~ChromeAccessTokenStore() {}
+
+static void SetAccessTokenOnUIThread(const GURL& server_url,
+                                     const string16& token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DictionaryPrefUpdate update(g_browser_process->local_state(),
                               prefs::kGeolocationAccessToken);

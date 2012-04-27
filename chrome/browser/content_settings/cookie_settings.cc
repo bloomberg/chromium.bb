@@ -98,9 +98,6 @@ CookieSettings::CookieSettings(
   pref_change_registrar_.Add(prefs::kBlockThirdPartyCookies, this);
 }
 
-CookieSettings::~CookieSettings() {
-}
-
 ContentSetting
 CookieSettings::GetDefaultCookieSetting(std::string* provider_id) const {
   return host_content_settings_map_->GetDefaultContentSetting(
@@ -226,6 +223,8 @@ ContentSetting CookieSettings::GetCookieSetting(
   DCHECK(value.get());
   return content_settings::ValueToContentSetting(value.get());
 }
+
+CookieSettings::~CookieSettings() {}
 
 bool CookieSettings::ShouldBlockThirdPartyCookies() const {
   base::AutoLock auto_lock(lock_);

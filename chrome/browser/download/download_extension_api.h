@@ -83,12 +83,14 @@ class DownloadsFunctionInterface {
 
 class SyncDownloadsFunction : public SyncExtensionFunction,
                               public DownloadsFunctionInterface {
- public:
-  virtual bool RunImpl() OVERRIDE;
-
  protected:
   explicit SyncDownloadsFunction(DownloadsFunctionName function);
   virtual ~SyncDownloadsFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
+  // DownloadsFunctionInterface:
   virtual DownloadsFunctionName function() const OVERRIDE;
 
  private:
@@ -99,12 +101,14 @@ class SyncDownloadsFunction : public SyncExtensionFunction,
 
 class AsyncDownloadsFunction : public AsyncExtensionFunction,
                                public DownloadsFunctionInterface {
- public:
-  virtual bool RunImpl() OVERRIDE;
-
  protected:
   explicit AsyncDownloadsFunction(DownloadsFunctionName function);
   virtual ~AsyncDownloadsFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
+  // DownloadsFunctionInterface:
   virtual DownloadsFunctionName function() const OVERRIDE;
 
  private:
@@ -115,11 +119,14 @@ class AsyncDownloadsFunction : public AsyncExtensionFunction,
 
 class DownloadsDownloadFunction : public AsyncDownloadsFunction {
  public:
-  DownloadsDownloadFunction();
-  virtual ~DownloadsDownloadFunction();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.download");
 
+  DownloadsDownloadFunction();
+
  protected:
+  virtual ~DownloadsDownloadFunction();
+
+  // DownloadsFunctionInterface:
   virtual bool ParseArgs() OVERRIDE;
   virtual bool RunInternal() OVERRIDE;
 
@@ -140,6 +147,7 @@ class DownloadsDownloadFunction : public AsyncDownloadsFunction {
     int render_process_host_id;
     int render_view_host_routing_id;
   };
+
   void BeginDownloadOnIOThread();
   void OnStarted(content::DownloadId dl_id, net::Error error);
 
@@ -150,11 +158,14 @@ class DownloadsDownloadFunction : public AsyncDownloadsFunction {
 
 class DownloadsSearchFunction : public SyncDownloadsFunction {
  public:
-  DownloadsSearchFunction();
-  virtual ~DownloadsSearchFunction();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.search");
 
+  DownloadsSearchFunction();
+
  protected:
+  virtual ~DownloadsSearchFunction();
+
+  // DownloadsFunctionInterface:
   virtual bool ParseArgs() OVERRIDE;
   virtual bool RunInternal() OVERRIDE;
 
@@ -170,11 +181,14 @@ class DownloadsSearchFunction : public SyncDownloadsFunction {
 
 class DownloadsPauseFunction : public SyncDownloadsFunction {
  public:
-  DownloadsPauseFunction();
-  virtual ~DownloadsPauseFunction();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.pause");
 
+  DownloadsPauseFunction();
+
  protected:
+  virtual ~DownloadsPauseFunction();
+
+  // DownloadsFunctionInterface:
   virtual bool ParseArgs() OVERRIDE;
   virtual bool RunInternal() OVERRIDE;
 
@@ -185,11 +199,14 @@ class DownloadsPauseFunction : public SyncDownloadsFunction {
 
 class DownloadsResumeFunction : public SyncDownloadsFunction {
  public:
-  DownloadsResumeFunction();
-  virtual ~DownloadsResumeFunction();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.resume");
 
+  DownloadsResumeFunction();
+
  protected:
+  virtual ~DownloadsResumeFunction();
+
+  // DownloadsFunctionInterface:
   virtual bool ParseArgs() OVERRIDE;
   virtual bool RunInternal() OVERRIDE;
 
@@ -200,11 +217,14 @@ class DownloadsResumeFunction : public SyncDownloadsFunction {
 
 class DownloadsCancelFunction : public SyncDownloadsFunction {
  public:
-  DownloadsCancelFunction();
-  virtual ~DownloadsCancelFunction();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.cancel");
 
+  DownloadsCancelFunction();
+
  protected:
+  virtual ~DownloadsCancelFunction();
+
+  // DownloadsFunctionInterface:
   virtual bool ParseArgs() OVERRIDE;
   virtual bool RunInternal() OVERRIDE;
 
@@ -215,11 +235,14 @@ class DownloadsCancelFunction : public SyncDownloadsFunction {
 
 class DownloadsEraseFunction : public AsyncDownloadsFunction {
  public:
-  DownloadsEraseFunction();
-  virtual ~DownloadsEraseFunction();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.erase");
 
+  DownloadsEraseFunction();
+
  protected:
+  virtual ~DownloadsEraseFunction();
+
+  // DownloadsFunctionInterface:
   virtual bool ParseArgs() OVERRIDE;
   virtual bool RunInternal() OVERRIDE;
 
@@ -229,11 +252,14 @@ class DownloadsEraseFunction : public AsyncDownloadsFunction {
 
 class DownloadsSetDestinationFunction : public AsyncDownloadsFunction {
  public:
-  DownloadsSetDestinationFunction();
-  virtual ~DownloadsSetDestinationFunction();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.setDestination");
 
+  DownloadsSetDestinationFunction();
+
  protected:
+  virtual ~DownloadsSetDestinationFunction();
+
+  // DownloadsFunctionInterface:
   virtual bool ParseArgs() OVERRIDE;
   virtual bool RunInternal() OVERRIDE;
 
@@ -243,11 +269,14 @@ class DownloadsSetDestinationFunction : public AsyncDownloadsFunction {
 
 class DownloadsAcceptDangerFunction : public AsyncDownloadsFunction {
  public:
-  DownloadsAcceptDangerFunction();
-  virtual ~DownloadsAcceptDangerFunction();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.acceptDanger");
 
+  DownloadsAcceptDangerFunction();
+
  protected:
+  virtual ~DownloadsAcceptDangerFunction();
+
+  // DownloadsFunctionInterface:
   virtual bool ParseArgs() OVERRIDE;
   virtual bool RunInternal() OVERRIDE;
 
@@ -257,11 +286,14 @@ class DownloadsAcceptDangerFunction : public AsyncDownloadsFunction {
 
 class DownloadsShowFunction : public AsyncDownloadsFunction {
  public:
-  DownloadsShowFunction();
-  virtual ~DownloadsShowFunction();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.show");
 
+  DownloadsShowFunction();
+
  protected:
+  virtual ~DownloadsShowFunction();
+
+  // DownloadsFunctionInterface:
   virtual bool ParseArgs() OVERRIDE;
   virtual bool RunInternal() OVERRIDE;
 
@@ -271,11 +303,14 @@ class DownloadsShowFunction : public AsyncDownloadsFunction {
 
 class DownloadsDragFunction : public AsyncDownloadsFunction {
  public:
-  DownloadsDragFunction();
-  virtual ~DownloadsDragFunction();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.drag");
 
+  DownloadsDragFunction();
+
  protected:
+  virtual ~DownloadsDragFunction();
+
+  // DownloadsFunctionInterface:
   virtual bool ParseArgs() OVERRIDE;
   virtual bool RunInternal() OVERRIDE;
 
@@ -285,12 +320,15 @@ class DownloadsDragFunction : public AsyncDownloadsFunction {
 
 class DownloadsGetFileIconFunction : public AsyncDownloadsFunction {
  public:
-  DownloadsGetFileIconFunction();
-  virtual ~DownloadsGetFileIconFunction();
-  void SetIconExtractorForTesting(DownloadFileIconExtractor* extractor);
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.downloads.getFileIcon");
 
+  DownloadsGetFileIconFunction();
+  void SetIconExtractorForTesting(DownloadFileIconExtractor* extractor);
+
  protected:
+  virtual ~DownloadsGetFileIconFunction();
+
+  // DownloadsFunctionInterface:
   virtual bool ParseArgs() OVERRIDE;
   virtual bool RunInternal() OVERRIDE;
 

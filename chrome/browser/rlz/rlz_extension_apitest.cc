@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,14 +19,19 @@
 #endif
 
 class MockRlzSendFinancialPingFunction : public RlzSendFinancialPingFunction {
-  virtual bool RunImpl();
-
-  static int expected_count_;
-
  public:
   static int expected_count() {
     return expected_count_;
   }
+
+ protected:
+  virtual ~MockRlzSendFinancialPingFunction() {}
+
+  // ExtensionFunction
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  static int expected_count_;
 };
 
 int MockRlzSendFinancialPingFunction::expected_count_ = 0;
