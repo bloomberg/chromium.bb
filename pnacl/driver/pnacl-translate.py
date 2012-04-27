@@ -173,13 +173,6 @@ def main(argv):
 
   if env.getbool('LIBMODE_NEWLIB'):
     env.set('STATIC', '1')
-  # we currently force PIC for dynamic images in llc but would like
-  # to change this. Below we are "reforcing" PIC, so we can take it out
-  # of llc without breaking anything.
-  # This should be removed once we not longer build dynamic images with PIC.
-  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2351
-  if not env.getbool('STATIC') and env.getbool('LIBMODE_GLIBC'):
-    env.set('PIC', '1')
 
   if env.getbool('SHARED') and env.getbool('STATIC'):
     Log.Fatal('Cannot mix -static and -shared')
@@ -248,12 +241,10 @@ def main(argv):
       assert env.getbool('PIC')
       assert env.get('ARCH') != 'arm' and "no glibc support for arm yet"
     elif bctype == 'pexe':
+      assert not env.getbool('PIC')
       if env.getbool('LIBMODE_GLIBC'):   # this is our proxy for dynamic images
         assert not env.getbool('STATIC')
         assert not env.getbool('SHARED')
-        # NOTE: we would like to assert non-PIC in the not too
-        # distant future here c.f. comment at the beginning of main()
-        assert env.getbool('PIC')
         assert env.get('ARCH') != 'arm' and "no glibc support for arm yet"
       else:
         assert env.getbool('LIBMODE_NEWLIB')
