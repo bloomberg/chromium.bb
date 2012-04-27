@@ -9,7 +9,6 @@
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
-#include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -67,8 +66,6 @@ void UIModelWorker::Stop() {
     if (!pending_work_.is_null())
       pending_work_.Run();  // OnTaskCompleted will set reset |pending_work_|.
 
-    // http://crbug.com/19757
-    base::ThreadRestrictions::ScopedAllowWait allow_wait;
     // Wait for either a new task or SyncerThread termination.
     syncapi_event_.Wait();
   }

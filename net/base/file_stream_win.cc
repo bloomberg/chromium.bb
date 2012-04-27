@@ -727,7 +727,6 @@ void FileStreamWin::ResetOnIOComplete() {
 }
 
 void FileStreamWin::WaitForIOCompletion() {
-  // http://crbug.com/115067
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   if (on_io_complete_.get()) {
     on_io_complete_->Wait();

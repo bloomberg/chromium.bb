@@ -644,7 +644,6 @@ void FileStreamPosix::OnClosed(const CompletionCallback& callback) {
 }
 
 void FileStreamPosix::WaitForIOCompletion() {
-  // http://crbug.com/115067
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   if (on_io_complete_.get()) {
     on_io_complete_->Wait();

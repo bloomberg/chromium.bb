@@ -856,8 +856,6 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base_unittests',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_net_tests',
             '../content/content.gyp:content_browsertests',
             '../content/content.gyp:content_shell',
             '../content/content.gyp:content_unittests',
