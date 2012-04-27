@@ -39,7 +39,7 @@ GURL GetURLToOpen(Profile* profile) {
     DCHECK(initial_metro_url);
     const wchar_t* initial_url = initial_metro_url();
     if (initial_url)
-      return GURL(initial_metro_url());
+      return GURL(initial_url);
   } else if (launch_type == base::win::SEARCH) {
     GetInitialSearchString initial_search_string =
         reinterpret_cast<GetInitialSearchString>(
