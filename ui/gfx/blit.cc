@@ -126,7 +126,7 @@ void BlitCanvasToCanvas(SkCanvas *dst_canvas,
   skia::EndPlatformPaint(dst_canvas);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 
 void ScrollCanvas(SkCanvas* canvas,
                   const gfx::Rect& clip,
@@ -141,7 +141,7 @@ void ScrollCanvas(SkCanvas* canvas,
   ScrollDC(hdc, amount.x(), amount.y(), NULL, &r, NULL, &damaged_rect);
 }
 
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(USE_AURA)
 // Cairo has no nice scroll function so we do our own. On Mac it's possible to
 // use platform scroll code, but it's complex so we just use the same path
 // here. Either way it will be software-only, so it shouldn't matter much.

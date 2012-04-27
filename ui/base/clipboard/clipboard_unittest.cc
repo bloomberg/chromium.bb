@@ -387,7 +387,7 @@ TEST_F(ClipboardTest, SharedBitmapTest) {
 // The following test somehow fails on GTK. The image when read back from the
 // clipboard has the alpha channel set to 0xFF for some reason. The other
 // channels stay intact. So I am turning this on only for aura.
-#if defined(USE_AURA)
+#if defined(USE_AURA) && !defined(OS_WIN)
 TEST_F(ClipboardTest, MultipleBitmapReadWriteTest) {
   Clipboard clipboard;
 
