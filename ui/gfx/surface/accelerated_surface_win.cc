@@ -21,6 +21,7 @@
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
 #include "base/win/wrapped_window_proc.h"
 #include "ui/base/win/hwnd_util.h"
@@ -320,6 +321,8 @@ bool AcceleratedPresenter::Present() {
       base::Bind(&AcceleratedPresenter::DoPresent,
                  this,
                  &result));
+  // http://crbug.com/125391
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   event_.Wait();
   return result;
 }
