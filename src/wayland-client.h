@@ -45,6 +45,7 @@ int wl_proxy_add_listener(struct wl_proxy *proxy,
 			  void (**implementation)(void), void *data);
 void wl_proxy_set_user_data(struct wl_proxy *proxy, void *user_data);
 void *wl_proxy_get_user_data(struct wl_proxy *proxy);
+uint32_t wl_proxy_get_id(struct wl_proxy *proxy);
 
 void *wl_display_bind(struct wl_display *display,
 		      uint32_t name, const struct wl_interface *interface);

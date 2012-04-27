@@ -583,3 +583,9 @@ wl_proxy_get_user_data(struct wl_proxy *proxy)
 {
 	return proxy->user_data;
 }
+
+WL_EXPORT uint32_t
+wl_proxy_get_id(struct wl_proxy *proxy)
+{
+	return proxy->object.id;
+}
