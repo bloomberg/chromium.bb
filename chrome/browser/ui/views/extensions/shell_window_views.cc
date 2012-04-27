@@ -10,6 +10,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/scoped_sk_region.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -19,6 +20,10 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "ui/base/win/shell.h"
+#endif
+
+#if defined(USE_ASH)
+#include "ash/wm/custom_frame_view_ash.h"
 #endif
 
 // Number of pixels around the edge of the window that can be dragged to
@@ -109,6 +114,10 @@ ShellWindowViews::ShellWindowViews(ExtensionHost* host)
       host_->profile()->GetPath()),
       GetWidget()->GetTopLevelWidget()->GetNativeWindow());
 #endif
+  AddChildView(host_->view());
+  SetLayoutManager(new views::FillLayout);
+  Layout();
+
   window_->Show();
 }
 
@@ -208,12 +217,20 @@ bool ShellWindowViews::CanMaximize() const {
 }
 
 views::View* ShellWindowViews::GetContentsView() {
-  return host_->view();
+  return this;
 }
 
 views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView(
     views::Widget* widget) {
+#if defined(USE_ASH)
+  // TODO(jeremya): make this an option when we have HTTRANSPARENT handling in
+  // aura.
+  ash::CustomFrameViewAsh* frame = new ash::CustomFrameViewAsh();
+  frame->Init(widget);
+  return frame;
+#else
   return new ShellWindowFrameView();
+#endif
 }
 
 string16 ShellWindowViews::GetWindowTitle() const {

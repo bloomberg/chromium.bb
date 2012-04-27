@@ -16,7 +16,7 @@ class ExtensionHost;
 
 class ShellWindowViews : public ShellWindow,
                          public ExtensionView::Container,
-                         public views::WidgetDelegate {
+                         public views::WidgetDelegateView {
  public:
   explicit ShellWindowViews(ExtensionHost* host);
 
