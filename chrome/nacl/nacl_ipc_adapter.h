@@ -59,8 +59,6 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
   // purposes. This function will take ownership of the given channel.
   NaClIPCAdapter(scoped_ptr<IPC::Channel> channel, base::TaskRunner* runner);
 
-  virtual ~NaClIPCAdapter();
-
   // Implementation of sendmsg. Returns the number of bytes written or -1 on
   // failure.
   int Send(const char* input_data, size_t input_data_len);
@@ -79,6 +77,8 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
   virtual void OnChannelError() OVERRIDE;
 
  private:
+  friend class base::RefCountedThreadSafe<NaClIPCAdapter>;
+
   class RewrittenMessage;
 
   // This is the data that must only be accessed inside the lock. This struct
@@ -111,6 +111,8 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
 
     scoped_ptr<IPC::Channel> channel_;
   };
+
+  virtual ~NaClIPCAdapter();
 
   // Reads up to the given amount of data. Returns 0 if nothing is waiting.
   int LockedReceive(char* output_buffer, int output_buffer_size);

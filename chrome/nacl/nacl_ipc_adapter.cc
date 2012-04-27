@@ -57,6 +57,9 @@ class NaClIPCAdapter::RewrittenMessage
   int Read(char* dest_buffer, int dest_buffer_size);
 
  private:
+  friend class base::RefCounted<RewrittenMessage>;
+  ~RewrittenMessage() {}
+
   scoped_array<char> data_;
   int data_len_;
 
@@ -124,9 +127,6 @@ NaClIPCAdapter::NaClIPCAdapter(scoped_ptr<IPC::Channel> channel,
       task_runner_(runner),
       locked_data_() {
   io_thread_data_.channel_ = channel.Pass();
-}
-
-NaClIPCAdapter::~NaClIPCAdapter() {
 }
 
 // Note that this message is controlled by the untrusted code. So we should be
@@ -255,6 +255,9 @@ void NaClIPCAdapter::OnChannelError() {
   CloseChannel();
 }
 
+NaClIPCAdapter::~NaClIPCAdapter() {
+}
+
 int NaClIPCAdapter::LockedReceive(char* output_buffer, int output_buffer_size) {
   lock_.AssertAcquired();
 
@@ -316,18 +319,18 @@ bool NaClIPCAdapter::SendCompleteMessage(const char* buffer,
   return true;
 }
 
-void NaClIPCAdapter::CloseChannelOnIOThread() {
-  io_thread_data_.channel_->Close();
-}
-
-void NaClIPCAdapter::SendMessageOnIOThread(scoped_ptr<IPC::Message> message) {
-  io_thread_data_.channel_->Send(message.release());
-}
-
 void NaClIPCAdapter::ClearToBeSent() {
   lock_.AssertAcquired();
 
   // Don't let the string keep its buffer behind our back.
   std::string empty;
   locked_data_.to_be_sent_.swap(empty);
+}
+
+void NaClIPCAdapter::CloseChannelOnIOThread() {
+  io_thread_data_.channel_->Close();
+}
+
+void NaClIPCAdapter::SendMessageOnIOThread(scoped_ptr<IPC::Message> message) {
+  io_thread_data_.channel_->Send(message.release());
 }
