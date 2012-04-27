@@ -14,6 +14,7 @@
 #include "base/auto_reset.h"
 #include "base/i18n/rtl.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/dip_util.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
@@ -34,6 +35,11 @@ const int kAutoHideDelayMS = 200;
 
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
+}
+
+void SetLayerBounds(views::Widget* widget, const gfx::Rect& bounds) {
+  aura::Window* window = widget->GetNativeView();
+  window->layer()->SetBounds(aura::ConvertRectToPixel(window, bounds));
 }
 
 }  // namespace
@@ -328,7 +334,7 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
     launcher_animation_setter.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(130));
     launcher_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
-    GetLayer(launcher_widget())->SetBounds(target_bounds.launcher_bounds);
+    SetLayerBounds(launcher_widget(), target_bounds.launcher_bounds);
     GetLayer(launcher_widget())->SetOpacity(target_bounds.opacity);
   }
   ui::ScopedLayerAnimationSettings status_animation_setter(
@@ -336,7 +342,7 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
   status_animation_setter.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(130));
   status_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
-  GetLayer(status_)->SetBounds(target_bounds.status_bounds);
+  SetLayerBounds(status_, target_bounds.status_bounds);
   GetLayer(status_)->SetOpacity(target_bounds.opacity);
   Shell::GetInstance()->SetMonitorWorkAreaInsets(
       Shell::GetRootWindow(),

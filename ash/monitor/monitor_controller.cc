@@ -54,13 +54,13 @@ MonitorController::~MonitorController() {
 }
 
 void MonitorController::OnMonitorBoundsChanged(const gfx::Monitor& monitor) {
-  root_windows_[monitor.id()]->SetHostBounds(monitor.bounds());
+  root_windows_[monitor.id()]->SetHostBounds(monitor.bounds_in_pixel());
 }
 
 void MonitorController::OnMonitorAdded(const gfx::Monitor& monitor) {
   if (root_windows_.empty()) {
     root_windows_[monitor.id()] = Shell::GetRootWindow();
-    Shell::GetRootWindow()->SetHostBounds(monitor.bounds());
+    Shell::GetRootWindow()->SetHostBounds(monitor.bounds_in_pixel());
     return;
   }
   aura::RootWindow* root = aura::Env::GetInstance()->monitor_manager()->
@@ -90,7 +90,7 @@ void MonitorController::Init() {
     if (i == 0) {
       // Primary monitor
       root_windows_[monitor.id()] = Shell::GetRootWindow();
-      Shell::GetRootWindow()->SetHostBounds(monitor.bounds());
+      Shell::GetRootWindow()->SetHostBounds(monitor.bounds_in_pixel());
     } else {
       aura::RootWindow* root =
           monitor_manager->CreateRootWindowForMonitor(monitor);

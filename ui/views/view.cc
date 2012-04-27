@@ -38,6 +38,11 @@
 #include "ui/views/accessibility/native_view_accessibility_win.h"
 #endif
 
+#if defined(ENABLE_DIP)
+#include "ui/gfx/monitor.h"
+#include "ui/gfx/screen.h"
+#endif
+
 namespace {
 
 // Whether to use accelerated compositing when necessary (e.g. when a view has a
@@ -78,6 +83,23 @@ const views::View* GetHierarchyRoot(const views::View* view) {
   while (root && root->parent())
     root = root->parent();
   return root;
+}
+
+// Converts the rect in DIP coordinates in DIP to pixel coordinates.
+gfx::Rect ConvertRectToPixel(const views::View* view,
+                             const gfx::Rect& rect_in_dip) {
+#if defined(ENABLE_DIP)
+  // If we don't know in which monitor the window is in, just assume
+  // it's in normal density for now.
+  // TODO(oshima): Re-compute layer_'s bounds when the window is
+  // attached to root window.
+  if (view->GetWidget() && view->GetWidget()->GetNativeView()) {
+    gfx::Monitor monitor = gfx::Screen::GetMonitorNearestWindow(
+        view->GetWidget()->GetNativeView());
+    return gfx::Rect(rect_in_dip.Scale(monitor.device_scale_factor()));
+  }
+#endif
+  return rect_in_dip;
 }
 
 }  // namespace
@@ -314,6 +336,11 @@ gfx::Rect View::GetContentsBounds() const {
 gfx::Rect View::GetLocalBounds() const {
   return gfx::Rect(size());
 }
+
+gfx::Rect View::GetLayerBoundsInPixel() const {
+  return layer()->GetTargetBounds();
+}
+
 
 gfx::Insets View::GetInsets() const {
   gfx::Insets insets;
@@ -683,16 +710,16 @@ void View::SchedulePaint() {
   SchedulePaintInRect(GetLocalBounds());
 }
 
-void View::SchedulePaintInRect(const gfx::Rect& rect) {
+void View::SchedulePaintInRect(const gfx::Rect& rect_in_dip) {
   if (!visible_ || !painting_enabled_)
     return;
 
   if (layer()) {
-    layer()->SchedulePaint(rect);
+    layer()->SchedulePaint(ConvertRectToPixel(this, rect_in_dip));
   } else if (parent_) {
     // Translate the requested paint rect to the parent's coordinate system
     // then pass this notification up to the parent.
-    parent_->SchedulePaintInRect(ConvertRectToParent(rect));
+    parent_->SchedulePaintInRect(ConvertRectToParent(rect_in_dip));
   }
 }
 
@@ -1190,8 +1217,8 @@ void View::MoveLayerToParent(ui::Layer* parent_layer,
     local_point.Offset(GetMirroredX(), y());
   if (layer() && parent_layer != layer()) {
     parent_layer->Add(layer());
-    layer()->SetBounds(gfx::Rect(local_point.x(), local_point.y(),
-                                 width(), height()));
+    SetLayerBounds(gfx::Rect(local_point.x(), local_point.y(),
+                             width(), height()));
   } else {
     for (int i = 0, count = child_count(); i < count; ++i)
       child_at(i)->MoveLayerToParent(parent_layer, local_point);
@@ -1219,7 +1246,7 @@ void View::UpdateChildLayerVisibility(bool ancestor_visible) {
 
 void View::UpdateChildLayerBounds(const gfx::Point& offset) {
   if (layer()) {
-    layer()->SetBounds(gfx::Rect(offset.x(), offset.y(), width(), height()));
+    SetLayerBounds(gfx::Rect(offset.x(), offset.y(), width(), height()));
   } else {
     for (int i = 0, count = child_count(); i < count; ++i) {
       gfx::Point new_offset(offset.x() + child_at(i)->GetMirroredX(),
@@ -1230,6 +1257,17 @@ void View::UpdateChildLayerBounds(const gfx::Point& offset) {
 }
 
 void View::OnPaintLayer(gfx::Canvas* canvas) {
+#if defined(ENABLE_DIP)
+  scoped_ptr<ScopedCanvas> scoped_canvas;
+  if (layer() && GetWidget() && GetWidget()->GetNativeView()) {
+    scoped_canvas.reset(new ScopedCanvas(canvas));
+    float scale =
+        gfx::Screen::GetMonitorNearestWindow(GetWidget()->GetNativeView()).
+        device_scale_factor();
+    canvas->sk_canvas()->scale(SkFloatToScalar(scale), SkFloatToScalar(scale));
+  }
+#endif
+
   if (!layer() || !layer()->fills_bounds_opaquely())
     canvas->DrawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
   PaintCommon(canvas);
@@ -1638,9 +1676,9 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
         gfx::Point offset;
         parent_->CalculateOffsetToAncestorWithLayer(&offset, NULL);
         offset.Offset(GetMirroredX(), y());
-        layer()->SetBounds(gfx::Rect(offset, size()));
+        SetLayerBounds(gfx::Rect(offset, size()));
       } else {
-        layer()->SetBounds(bounds_);
+        SetLayerBounds(bounds_);
       }
       // TODO(beng): this seems redundant with the SchedulePaint at the top of
       //             this function. explore collapsing.
@@ -1728,6 +1766,10 @@ void View::RemoveDescendantToNotify(View* view) {
   descendants_to_notify_->erase(i);
   if (descendants_to_notify_->empty())
     descendants_to_notify_.reset();
+}
+
+void View::SetLayerBounds(const gfx::Rect& bounds_in_dip) {
+  layer()->SetBounds(ConvertRectToPixel(this, bounds_in_dip));
 }
 
 // Transformations -------------------------------------------------------------

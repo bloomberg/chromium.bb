@@ -6,8 +6,10 @@
 
 #include <algorithm>
 
+#include "ui/aura/dip_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkXfermode.h"
@@ -25,8 +27,9 @@ gfx::Rect ImageGrid::TestAPI::GetTransformedLayerBounds(
   return bounds;
 }
 
-ImageGrid::ImageGrid()
-    : layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)),
+ImageGrid::ImageGrid(aura::Window* window)
+    : window_(window),
+      layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)),
       top_image_height_(0),
       bottom_image_height_(0),
       left_image_width_(0),
@@ -203,16 +206,21 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   }
 }
 
-void ImageGrid::SetContentBounds(const gfx::Rect& content_bounds) {
-  SetSize(
-      gfx::Size(
-          content_bounds.width() + left_image_width_ + right_image_width_,
-          content_bounds.height() + top_image_height_ + bottom_image_height_));
-  layer_->SetBounds(
-      gfx::Rect(content_bounds.x() - left_image_width_,
-                content_bounds.y() - top_image_height_,
-                layer_->bounds().width(),
-                layer_->bounds().height()));
+void ImageGrid::SetContentBounds(const gfx::Rect& content_bounds_in_dip) {
+#if defined(ENABLE_DIP)
+  // TODO(oshma): Scale the size of the shadow.
+  const gfx::Rect content_bounds =
+      aura::ConvertRectToPixel(window_, content_bounds_in_dip);
+#else
+  const gfx::Rect& content_bounds = content_bounds_in_dip;
+#endif
+  SetSize(gfx::Size(
+      content_bounds.width() + left_image_width_ + right_image_width_,
+      content_bounds.height() + top_image_height_ + bottom_image_height_));
+  layer_->SetBounds(gfx::Rect(content_bounds.x() - left_image_width_,
+                              content_bounds.y() - top_image_height_,
+                              layer_->bounds().width(),
+                              layer_->bounds().height()));
 }
 
 void ImageGrid::ImagePainter::SetClipRect(const gfx::Rect& clip_rect,
@@ -259,7 +267,13 @@ void ImageGrid::SetImage(const gfx::Image* image,
   // Set up the new layer and painter.
   layer_ptr->reset(new ui::Layer(ui::LAYER_TEXTURED));
 
+#if defined(ENABLE_DIP)
+  const gfx::Size size =
+      aura::ConvertSizeToPixel(window_, GetImageSize(image));
+#else
   const gfx::Size size = GetImageSize(image);
+#endif
+
   layer_ptr->get()->SetBounds(gfx::Rect(0, 0, size.width(), size.height()));
 
   painter_ptr->reset(new ImagePainter(image));

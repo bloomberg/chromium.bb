@@ -15,6 +15,10 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
+namespace aura {
+class Window;
+}  // namespace aura
+
 namespace gfx {
 class Image;
 }  // namespace gfx
@@ -87,7 +91,7 @@ class ASH_EXPORT ImageGrid {
     DISALLOW_COPY_AND_ASSIGN(TestAPI);
   };
 
-  ImageGrid();
+  explicit ImageGrid(aura::Window* window);
   ~ImageGrid();
 
   ui::Layer* layer() { return layer_.get(); }
@@ -123,8 +127,8 @@ class ASH_EXPORT ImageGrid {
   void SetSize(const gfx::Size& size);
 
   // Sets the grid to a position and size such that the inner edges of the top,
-  // bottom, left and right images will be flush with |content_bounds|.
-  void SetContentBounds(const gfx::Rect& content_bounds);
+  // bottom, left and right images will be flush with |content_bounds_in_dip|.
+  void SetContentBounds(const gfx::Rect& content_bounds_in_dip);
 
  private:
   // Delegate responsible for painting a specific image on a layer.
@@ -162,6 +166,11 @@ class ASH_EXPORT ImageGrid {
   void SetImage(const gfx::Image* image,
                 scoped_ptr<ui::Layer>* layer_ptr,
                 scoped_ptr<ImagePainter>* painter_ptr);
+
+  // A possibly-arbitrary window that is drawn at the same DPI
+  // (i.e. on the same monitor) as this grid.
+  // TODO(oshima): move scale factor to gfx/compositor and remove this.
+  aura::Window* window_;
 
   // Layer that contains all of the image layers.
   scoped_ptr<ui::Layer> layer_;

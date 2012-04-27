@@ -28,6 +28,12 @@ const SkColor kBackgroundColor = SkColorSetARGB(0x33, 0, 0, 0);
 
 const float kModelViewAnimationScaleFactor = 0.9f;
 
+ui::Transform GetScaleTransform(AppListModelView* model_view) {
+  gfx::Rect pixel_bounds = model_view->GetLayerBoundsInPixel();
+  gfx::Point center(pixel_bounds.width() / 2, pixel_bounds.height() / 2);
+  return ui::GetScaleTransform(center, kModelViewAnimationScaleFactor);
+}
+
 }  // namespace
 
 AppListView::AppListView(
@@ -60,10 +66,7 @@ void AppListView::AnimateHide(int duration_ms) {
   animation.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(duration_ms));
   animation.SetTweenType(ui::Tween::EASE_IN);
-  model_view_->SetTransform(
-      ui::GetScaleTransform(gfx::Point(model_view_->width() / 2,
-                                       model_view_->height() / 2),
-                            kModelViewAnimationScaleFactor));
+  model_view_->SetTransform(GetScaleTransform(model_view_));
 }
 
 void AppListView::Close() {
@@ -94,11 +97,7 @@ void AppListView::Init(const gfx::Rect& bounds) {
   widget->SetVisibilityChangedAnimationsEnabled(false);
 
   // Sets initial transform. AnimateShow changes it back to identity transform.
-  model_view_->SetTransform(
-      ui::GetScaleTransform(gfx::Point(model_view_->width() / 2,
-                                       model_view_->height() / 2),
-                            kModelViewAnimationScaleFactor));
-
+  model_view_->SetTransform(GetScaleTransform(model_view_));
   UpdateModel();
 }
 

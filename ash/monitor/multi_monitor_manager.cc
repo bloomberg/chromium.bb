@@ -72,8 +72,9 @@ void MultiMonitorManager::OnNativeMonitorsChanged(
   for (size_t i = 0; i < min; ++i) {
     Monitor& current_monitor = monitors_[i];
     const Monitor& new_monitor = new_monitors[i];
-    if (current_monitor.bounds() != new_monitor.bounds()) {
-      current_monitor.SetBoundsAndUpdateWorkArea(new_monitor.bounds());
+    if (current_monitor.bounds_in_pixel() != new_monitor.bounds_in_pixel()) {
+      current_monitor.SetScaleAndBounds(new_monitor.device_scale_factor(),
+                                        new_monitor.bounds_in_pixel());
       NotifyBoundsChanged(current_monitor);
     }
   }
@@ -81,10 +82,11 @@ void MultiMonitorManager::OnNativeMonitorsChanged(
   if (monitors_.size() < new_monitors.size()) {
     // New monitors added
     for (size_t i = min; i < new_monitors.size(); ++i) {
-      //
-      monitors_.push_back(Monitor(i));
+      const gfx::Monitor& new_monitor = new_monitors[i];
+      monitors_.push_back(Monitor(new_monitor.id()));
       gfx::Monitor& monitor = monitors_.back();
-      monitor.SetBoundsAndUpdateWorkArea(new_monitors[i].bounds());
+      monitor.SetScaleAndBounds(new_monitor.device_scale_factor(),
+                                new_monitor.bounds_in_pixel());
       NotifyMonitorAdded(monitor);
     }
   } else {
@@ -101,11 +103,12 @@ void MultiMonitorManager::OnNativeMonitorsChanged(
 
 RootWindow* MultiMonitorManager::CreateRootWindowForMonitor(
     const Monitor& monitor) {
-  RootWindow* root_window = new RootWindow(monitor.bounds());
+  RootWindow* root_window = new RootWindow(monitor.bounds_in_pixel());
   // No need to remove RootWindowObserver because
   // the MonitorManager object outlives RootWindow objects.
   root_window->AddRootWindowObserver(this);
   root_window->SetProperty(kMonitorIdKey, monitor.id());
+  root_window->Init();
   return root_window;
 }
 
@@ -143,7 +146,7 @@ void MultiMonitorManager::OnRootWindowResized(const aura::RootWindow* root,
   if (!use_fullscreen_host_window()) {
     int monitor_id = root->GetProperty(kMonitorIdKey);
     Monitor& monitor = FindMonitorById(monitor_id);
-    monitor.SetSizeAndUpdateWorkArea(root->GetHostSize());
+    monitor.SetSize(root->GetHostSize());
     NotifyBoundsChanged(monitor);
   }
 }
@@ -154,7 +157,7 @@ bool MultiMonitorManager::UpdateWorkAreaOfMonitorNearestWindow(
   const RootWindow* root = window->GetRootWindow();
   Monitor& monitor = FindMonitorById(root->GetProperty(kMonitorIdKey));
   gfx::Rect old_work_area = monitor.work_area();
-  monitor.UpdateWorkAreaWithInsets(insets);
+  monitor.UpdateWorkAreaFromInsets(insets);
   return old_work_area != monitor.work_area();
 }
 

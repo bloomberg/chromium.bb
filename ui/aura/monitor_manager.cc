@@ -41,8 +41,8 @@ gfx::Monitor MonitorManager::CreateMonitorFromSpec(const std::string& spec) {
   } else if (use_fullscreen_host_window_) {
     bounds = gfx::Rect(aura::RootWindowHost::GetNativeScreenSize());
   }
-  gfx::Monitor monitor(synthesized_monitor_id++, bounds);
-  monitor.set_device_scale_factor(scale);
+  gfx::Monitor monitor(synthesized_monitor_id++);
+  monitor.SetScaleAndBounds(scale, bounds);
   DVLOG(1) << "Monitor bounds=" << bounds.ToString() << ", scale=" << scale;
   return monitor;
 }

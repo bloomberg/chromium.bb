@@ -340,6 +340,7 @@
         'accelerators/accelerator_filter_unittest.cc',
         'accelerators/nested_dispatcher_controller_unittest.cc',
         'app_list/app_list_unittest.cc',
+        'dip_unittest.cc',
         'drag_drop/drag_drop_controller_unittest.cc',
         'focus_cycler_unittest.cc',
         'ime/input_method_event_filter_unittest.cc',

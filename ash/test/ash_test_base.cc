@@ -4,10 +4,16 @@
 
 #include "ash/test/ash_test_base.h"
 
+#include <vector>
+
 #include "ash/shell.h"
 #include "ash/test/test_shell_delegate.h"
+#include "ui/aura/env.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/monitor.h"
+#include "ui/gfx/screen.h"
 
 namespace ash {
 namespace test {
@@ -38,6 +44,16 @@ void AshTestBase::TearDown() {
 
   // Tear down the shell.
   Shell::DeleteInstance();
+}
+
+void AshTestBase::ChangeMonitorConfig(float scale,
+                                      const gfx::Rect& bounds_in_pixel) {
+  gfx::Monitor monitor = gfx::Monitor(gfx::Screen::GetPrimaryMonitor().id());
+  monitor.SetScaleAndBounds(scale, bounds_in_pixel);
+  std::vector<gfx::Monitor> monitors;
+  monitors.push_back(monitor);
+  aura::Env::GetInstance()->monitor_manager()->OnNativeMonitorsChanged(
+      monitors);
 }
 
 void AshTestBase::RunAllPendingInMessageLoop() {

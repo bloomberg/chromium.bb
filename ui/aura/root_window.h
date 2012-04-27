@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "ui/aura/aura_export.h"
+#include "ui/aura/dip_util.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
@@ -96,6 +97,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   Window* capture_window() { return capture_window_; }
   Window* focused_window() { return focused_window_; }
+
+  // Initializes the root window.
+  void Init();
 
   // Shows the root window host.
   void ShowRootWindow();
@@ -319,9 +323,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
                                 const aura::Event* event) OVERRIDE;
   virtual Window* GetFocusedWindow() OVERRIDE;
   virtual bool IsFocusedWindow(const Window* window) const OVERRIDE;
-
-  // Initializes the root window.
-  void Init();
 
   // We hold and aggregate mouse drags as a way of throttling resizes when
   // HoldMouseMoves() is called. The following methods are used to dispatch held

@@ -204,6 +204,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // 0, 0).
   gfx::Rect GetLocalBounds() const;
 
+  // Returns the bounds of the layer in its own pixel coordinates.
+  gfx::Rect GetLayerBoundsInPixel() const;
+
   // Returns the insets of the current border. If there is no border an empty
   // insets is returned.
   virtual gfx::Insets GetInsets() const;
@@ -1202,6 +1205,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // this views location and possibly size are changed.
   void AddDescendantToNotify(View* view);
   void RemoveDescendantToNotify(View* view);
+
+  // Sets the layer's bounds given in DIP coordinates.
+  void SetLayerBounds(const gfx::Rect& bounds_in_dip);
 
   // Transformations -----------------------------------------------------------
 

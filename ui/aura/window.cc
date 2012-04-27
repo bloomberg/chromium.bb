@@ -12,6 +12,7 @@
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/visibility_client.h"
+#include "ui/aura/dip_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
@@ -210,6 +211,10 @@ gfx::Rect Window::GetBoundsInRootWindow() const {
   return gfx::Rect(origin, bounds().size());
 }
 
+const gfx::Rect& Window::GetBoundsInPixel() const {
+  return layer_->bounds();
+}
+
 void Window::SetTransform(const ui::Transform& transform) {
   RootWindow* root_window = GetRootWindow();
   bool contained_mouse = IsVisible() && root_window &&
@@ -241,23 +246,28 @@ void Window::SetBounds(const gfx::Rect& new_bounds) {
 }
 
 gfx::Rect Window::GetTargetBounds() const {
-  return layer_->GetTargetBounds();
+  return ConvertRectToDIP(this, layer_->GetTargetBounds());
 }
 
-const gfx::Rect& Window::bounds() const {
+gfx::Rect Window::bounds() const {
+#if defined(ENABLE_DIP)
+  return ConvertRectToDIP(this, layer_->bounds());
+#else
   return layer_->bounds();
+#endif
 }
 
-void Window::SchedulePaintInRect(const gfx::Rect& rect) {
+void Window::SchedulePaintInRect(const gfx::Rect& rect_in_dip) {
+  gfx::Rect rect = ConvertRectToPixel(this, rect_in_dip);
   if (layer_->SchedulePaint(rect)) {
     FOR_EACH_OBSERVER(
-        WindowObserver, observers_, OnWindowPaintScheduled(this, rect));
+        WindowObserver, observers_, OnWindowPaintScheduled(this, rect_in_dip));
   }
 }
 
 void Window::SetExternalTexture(ui::Texture* texture) {
   layer_->SetExternalTexture(texture);
-  gfx::Rect region(gfx::Point(), bounds().size());
+  gfx::Rect region(bounds().size());
   FOR_EACH_OBSERVER(
       WindowObserver, observers_, OnWindowPaintScheduled(this, region));
 }
@@ -373,7 +383,14 @@ void Window::ConvertPointToWindow(const Window* source,
                                   gfx::Point* point) {
   if (!source)
     return;
+  // TODO(oshima): We probably need to handle source's root != target's root
+  // case under multi monitor environment.
+  *point = ConvertPointToPixel(source, *point);
   ui::Layer::ConvertPointToLayer(source->layer(), target->layer(), point);
+  if (target)
+    *point = ConvertPointToDIP(target, *point);
+  else
+    *point = ConvertPointToDIP(source, *point);
 }
 
 gfx::NativeCursor Window::GetCursor(const gfx::Point& point) const {
@@ -525,6 +542,9 @@ void* Window::GetNativeWindowProperty(const char* key) const {
   return reinterpret_cast<void*>(GetPropertyInternal(key, 0));
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Window, private:
+
 intptr_t Window::SetPropertyInternal(const void* key,
                                      const char* name,
                                      PropertyDeallocator deallocator,
@@ -553,9 +573,6 @@ intptr_t Window::GetPropertyInternal(const void* key,
   return iter->second.value;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Window, private:
-
 void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
   gfx::Rect actual_new_bounds(new_bounds);
 
@@ -573,11 +590,11 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
       IsVisible() &&
       root_window && ContainsPointInRoot(root_window->last_mouse_location());
 
-  const gfx::Rect old_bounds = layer_->GetTargetBounds();
+  const gfx::Rect old_bounds = GetTargetBounds();
 
   // Always need to set the layer's bounds -- even if it is to the same thing.
   // This may cause important side effects such as stopping animation.
-  layer_->SetBounds(actual_new_bounds);
+  layer_->SetBounds(ConvertRectToPixel(this, actual_new_bounds));
 
   // If we're not changing the effective bounds, then we can bail early and skip
   // notifying our listeners.
@@ -791,8 +808,16 @@ void Window::NotifyAddedToRootWindow() {
 }
 
 void Window::OnPaintLayer(gfx::Canvas* canvas) {
-  if (delegate_)
+  if (delegate_) {
+#if defined(ENABLE_DIP)
+    float scale = GetMonitorScaleFactor(this);
+    canvas->sk_canvas()->scale(SkFloatToScalar(scale), SkFloatToScalar(scale));
+#endif
     delegate_->OnPaint(canvas);
+#if defined(ENABLE_DIP)
+    canvas->Restore();
+#endif
+  }
 }
 
 void Window::UpdateLayerName(const std::string& name) {

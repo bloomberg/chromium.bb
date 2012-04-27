@@ -51,28 +51,16 @@ int ScreenAsh::GetNumMonitors() {
   return GetMonitorManager()->GetNumMonitors();
 }
 
-
 gfx::Monitor ScreenAsh::GetMonitorNearestWindow(gfx::NativeView window) const {
-  gfx::Monitor monitor = GetMonitorManager()->GetMonitorNearestWindow(window);
-  // TODO(oshima): For m19, work area/monitor bounds that chrome/webapps sees
-  // has (0, 0) origin because it's simpler and enough. Fix this when
-  // real multi monitor support is implemented.
-  monitor.SetBoundsAndUpdateWorkArea(gfx::Rect(monitor.size()));
-  return monitor;
+  return GetMonitorManager()->GetMonitorNearestWindow(window);
 }
 
 gfx::Monitor ScreenAsh::GetMonitorNearestPoint(const gfx::Point& point) const {
-  gfx::Monitor monitor = GetMonitorManager()->GetMonitorNearestPoint(point);
-  // See comment above.
-  monitor.SetBoundsAndUpdateWorkArea(gfx::Rect(monitor.size()));
-  return monitor;
+  return GetMonitorManager()->GetMonitorNearestPoint(point);
 }
 
 gfx::Monitor ScreenAsh::GetPrimaryMonitor() const {
-  gfx::Monitor monitor = GetMonitorManager()->GetMonitorAt(0);
-  // See comment above.
-  monitor.SetBoundsAndUpdateWorkArea(gfx::Rect(monitor.size()));
-  return monitor;
+  return GetMonitorManager()->GetMonitorAt(0);
 }
 
 }  // namespace ash

@@ -14,12 +14,10 @@
 namespace gfx {
 
 // Note: The screen and monitor currently uses pixel coordinate
-// system.  ENABLE_DIP macro (which is enabled with enable_dip=1 gyp
-// flag) will make this inconsistent with views' coordinate system
-// because views will use DIP coordinate system, which uses
-// (1.0/device_scale_factor) scale of the pixel coordinate system.
-// TODO(oshima): Change aura/screen to DIP coordinate system and
-// update this comment.
+// system. With ENABLE_DIP macro (which is enabled with enable_dip=1
+// gyp flag), |bounds()| and |work_area| will return values in DIP
+// coordinate system, not in backing pixels.
+// TODO(oshima): Update the comment when ENABLE_DIP macro is removed.
 class UI_EXPORT Monitor {
  public:
   // Creates a monitor with invalid id(-1) as default.
@@ -53,21 +51,38 @@ class UI_EXPORT Monitor {
   const Size& size() const { return bounds_.size(); }
   const Size& work_area_size() const { return work_area_.size(); }
 
-  // Sets the monitor bounds and updates the work are using the same insets
-  // between old bounds and work area.
-  void SetBoundsAndUpdateWorkArea(const gfx::Rect& bounds);
+  // Sets the device scale factor and monitor bounds in pixel. This
+  // updates the work are using the same insets between old bounds and
+  // work area.
+  void SetScaleAndBounds(float device_scale_factor,
+                         const gfx::Rect& bounds_in_pixel);
 
-  // Sets the monitor size and updates the work are using the same insets
+  // Sets the monitor's size. This updates the work area using the same insets
   // between old bounds and work area.
-  void SetSizeAndUpdateWorkArea(const gfx::Size& size);
+  void SetSize(const gfx::Size& size_in_pixel);
 
-  // Computes and updates the monitor's work are using insets and the bounds.
-  void UpdateWorkAreaWithInsets(const gfx::Insets& work_area_insets);
+  // Computes and updates the monitor's work are using
+  // |work_area_insets| and the bounds.
+  void UpdateWorkAreaFromInsets(const gfx::Insets& work_area_insets);
+
+#if defined(USE_ASH)
+  // TODO(oshima): |bounds()| on ash is not screen's coordinate and
+  // this is an workaround for this. This will be removed when ash
+  // has true multi monitor support. crbug.com/119268.
+  // Returns the monitor's bounds in pixel coordinates.
+  const Rect& bounds_in_pixel() const { return bounds_in_pixel_; }
+#endif
+
+  // Returns a string representation of the monitor;
+  std::string ToString() const;
 
  private:
   int id_;
   Rect bounds_;
   Rect work_area_;
+#if defined(USE_ASH)
+  Rect bounds_in_pixel_;
+#endif
   float device_scale_factor_;
 };
 

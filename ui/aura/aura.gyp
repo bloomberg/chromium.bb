@@ -63,6 +63,8 @@
         'desktop/desktop_screen_x11.cc',
         'desktop/desktop_stacking_client.cc',
         'desktop/desktop_stacking_client.h',
+        'dip_util.cc',
+        'dip_util.h',
         'dispatcher_linux.cc',
         'dispatcher_linux.h',
         'dispatcher_win.cc',

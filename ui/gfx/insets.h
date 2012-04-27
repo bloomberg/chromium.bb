@@ -53,6 +53,17 @@ class UI_EXPORT Insets {
   // top and bottom insets.
   int height() const { return top_ + bottom_; }
 
+  Insets Scale(float scale) const {
+    return Scale(scale, scale);
+  }
+
+  Insets Scale(float x_scale, float y_scale) const {
+    return Insets(static_cast<int>(top_ * y_scale),
+                  static_cast<int>(left_ * x_scale),
+                  static_cast<int>(bottom_ * y_scale),
+                  static_cast<int>(right_ * x_scale));
+  }
+
   // Returns true if the insets are empty.
   bool empty() const { return width() == 0 && height() == 0; }
 

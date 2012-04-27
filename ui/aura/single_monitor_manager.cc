@@ -39,7 +39,7 @@ void SingleMonitorManager::OnNativeMonitorsChanged(
     const std::vector<gfx::Monitor>& monitors) {
   DCHECK(monitors.size() > 0);
   if (use_fullscreen_host_window()) {
-    monitor_.SetSizeAndUpdateWorkArea(monitors[0].bounds().size());
+    monitor_.SetSize(monitors[0].bounds().size());
     NotifyBoundsChanged(monitor_);
   }
 }
@@ -50,6 +50,7 @@ RootWindow* SingleMonitorManager::CreateRootWindowForMonitor(
   DCHECK_EQ(monitor_.id(), monitor.id());
   root_window_ = new RootWindow(monitor.bounds());
   root_window_->AddObserver(this);
+  root_window_->Init();
   return root_window_;
 }
 
@@ -91,7 +92,7 @@ void SingleMonitorManager::Init() {
 }
 
 void SingleMonitorManager::Update(const gfx::Size size) {
-  monitor_.SetSizeAndUpdateWorkArea(size);
+  monitor_.SetSize(size);
 }
 
 }  // namespace aura

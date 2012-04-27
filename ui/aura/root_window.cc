@@ -107,8 +107,6 @@ RootWindow::RootWindow(const gfx::Rect& initial_bounds)
       draw_on_compositor_unlock_(false),
       draw_trace_count_(0) {
   SetName("RootWindow");
-  last_mouse_location_ = host_->QueryMouseLocation();
-
   should_hold_mouse_moves_ = !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAuraDisableHoldMouseMoves);
 
@@ -116,7 +114,6 @@ RootWindow::RootWindow(const gfx::Rect& initial_bounds)
       host_->GetBounds().size()));
   DCHECK(compositor_.get());
   compositor_->AddObserver(this);
-  Init();
 }
 
 RootWindow::~RootWindow() {
@@ -138,6 +135,15 @@ RootWindow::~RootWindow() {
   layer()->GetAnimator()->RemoveObserver(this);
 }
 
+void RootWindow::Init() {
+  Window::Init(ui::LAYER_NOT_DRAWN);
+  last_mouse_location_ = ConvertPointToDIP(this, host_->QueryMouseLocation());
+  SetBounds(ConvertRectToDIP(this, gfx::Rect(host_->GetBounds().size())));
+  Show();
+  compositor()->SetRootLayer(layer());
+  host_->SetRootWindow(this);
+}
+
 void RootWindow::ShowRootWindow() {
   host_->Show();
 }
@@ -148,7 +154,7 @@ void RootWindow::SetHostSize(const gfx::Size& size) {
   bounds.set_size(size);
   host_->SetBounds(bounds);
   // Requery the location to constrain it within the new root window size.
-  last_mouse_location_ = host_->QueryMouseLocation();
+  last_mouse_location_ = ConvertPointToDIP(this, host_->QueryMouseLocation());
   synthesize_mouse_move_ = false;
 }
 
@@ -160,7 +166,7 @@ void RootWindow::SetHostBounds(const gfx::Rect& bounds) {
   DispatchHeldMouseMove();
   host_->SetBounds(bounds);
   // Requery the location to constrain it within the new root window size.
-  last_mouse_location_ = host_->QueryMouseLocation();
+  last_mouse_location_ = ConvertPointToDIP(this, host_->QueryMouseLocation());
   synthesize_mouse_move_ = false;
 }
 
@@ -180,8 +186,8 @@ void RootWindow::ShowCursor(bool show) {
   host_->ShowCursor(show);
 }
 
-void RootWindow::MoveCursorTo(const gfx::Point& location) {
-  host_->MoveCursorTo(location);
+void RootWindow::MoveCursorTo(const gfx::Point& location_in_dip) {
+  host_->MoveCursorTo(ConvertPointToPixel(this, location_in_dip));
 }
 
 bool RootWindow::ConfineCursorToWindow() {
@@ -243,7 +249,15 @@ bool RootWindow::DispatchKeyEvent(KeyEvent* event) {
 
 bool RootWindow::DispatchScrollEvent(ScrollEvent* event) {
   DispatchHeldMouseMove();
+#if defined(ENABLE_DIP)
+  float scale = GetMonitorScaleFactor(this);
+  ui::Transform transform;
+  transform.SetScale(scale, scale);
+  transform.ConcatTransform(layer()->transform());
+  event->UpdateForRootTransform(transform);
+#else
   event->UpdateForRootTransform(layer()->transform());
+#endif
 
   last_mouse_location_ = event->location();
   synthesize_mouse_move_ = false;
@@ -267,7 +281,15 @@ bool RootWindow::DispatchScrollEvent(ScrollEvent* event) {
 
 bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
   DispatchHeldMouseMove();
+#if defined(ENABLE_DIP)
+  float scale = GetMonitorScaleFactor(this);
+  ui::Transform transform;
+  transform.SetScale(scale, scale);
+  transform.ConcatTransform(layer()->transform());
+  event->UpdateForRootTransform(transform);
+#else
   event->UpdateForRootTransform(layer()->transform());
+#endif
   bool handled = false;
 
   GestureConsumer* consumer = gesture_recognizer_->GetTouchLockedTarget(event);
@@ -342,10 +364,10 @@ void RootWindow::OnHostResized(const gfx::Size& size) {
   DispatchHeldMouseMove();
   // The compositor should have the same size as the native root window host.
   compositor_->WidgetSizeChanged(size);
-  gfx::Size old = bounds().size();
+  gfx::Size old(ConvertSizeToDIP(this, bounds().size()));
   // The layer, and all the observers should be notified of the
   // transformed size of the root window.
-  gfx::Rect bounds(size);
+  gfx::Rect bounds(ConvertSizeToDIP(this, size));
   layer()->transform().TransformRect(&bounds);
   SetBounds(gfx::Rect(bounds.size()));
   FOR_EACH_OBSERVER(RootWindowObserver, observers_,
@@ -867,21 +889,20 @@ bool RootWindow::IsFocusedWindow(const Window* window) const {
   return focused_window_ == window;
 }
 
-void RootWindow::Init() {
-  Window::Init(ui::LAYER_NOT_DRAWN);
-  SetBounds(gfx::Rect(host_->GetBounds().size()));
-  Show();
-  compositor()->SetRootLayer(layer());
-  host_->SetRootWindow(this);
-}
-
 bool RootWindow::DispatchMouseEventImpl(MouseEvent* event) {
   static const int kMouseButtonFlagMask =
       ui::EF_LEFT_MOUSE_BUTTON |
       ui::EF_MIDDLE_MOUSE_BUTTON |
       ui::EF_RIGHT_MOUSE_BUTTON;
-
+#if defined(ENABLE_DIP)
+  float scale = GetMonitorScaleFactor(this);
+  ui::Transform transform;
+  transform.SetScale(scale, scale);
+  transform.ConcatTransform(layer()->transform());
+  event->UpdateForRootTransform(transform);
+#else
   event->UpdateForRootTransform(layer()->transform());
+#endif
 
   last_mouse_location_ = event->location();
   synthesize_mouse_move_ = false;
@@ -948,7 +969,9 @@ void RootWindow::SynthesizeMouseMoveEvent() {
 #if !defined(OS_WIN)
   // Temporarily disabled for windows. See crbug.com/112222.
   gfx::Point orig_mouse_location = last_mouse_location_;
+  orig_mouse_location = ConvertPointToPixel(this, orig_mouse_location);
   layer()->transform().TransformPoint(orig_mouse_location);
+  orig_mouse_location = ConvertPointToDIP(this,orig_mouse_location);
 
   // TODO(derat|oshima): Don't use mouse_button_flags_ as it's
   // currently broken. See/ crbug.com/107931.

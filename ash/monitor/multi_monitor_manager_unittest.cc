@@ -124,7 +124,8 @@ TEST_F(MultiMonitorManagerTest, NativeMonitorTest) {
   EXPECT_EQ(monitor_manager()->GetMonitorAt(0).id(), changed()[0].id());
   EXPECT_EQ(monitor_manager()->GetMonitorAt(1).id(), added()[0].id());
   EXPECT_EQ("0,0 500x500", changed()[0].bounds().ToString());
-  EXPECT_EQ("0,501 400x400", added()[0].bounds().ToString());
+  EXPECT_EQ("0,0 400x400", added()[0].bounds().ToString());
+  EXPECT_EQ("0,501 400x400", added()[0].bounds_in_pixel().ToString());
   reset();
 
   // Delete secondary.
@@ -144,7 +145,8 @@ TEST_F(MultiMonitorManagerTest, NativeMonitorTest) {
   EXPECT_EQ(2U, monitor_manager()->GetNumMonitors());
   EXPECT_EQ("0 1 0", GetCountSummary());
   EXPECT_EQ(monitor_manager()->GetMonitorAt(1).id(), added()[0].id());
-  EXPECT_EQ("1001,0 600x400", added()[0].bounds().ToString());
+  EXPECT_EQ("0,0 600x400", added()[0].bounds().ToString());
+  EXPECT_EQ("1001,0 600x400", added()[0].bounds_in_pixel().ToString());
   reset();
 
   // Secondary removed, primary changed.
@@ -171,7 +173,8 @@ TEST_F(MultiMonitorManagerTest, NativeMonitorTest) {
   EXPECT_EQ(1U, monitor_manager()->GetNumMonitors());
   EXPECT_EQ("1 0 0", GetCountSummary());
   EXPECT_FALSE(root_window_destroyed());
-  EXPECT_EQ("100,100 500x400", changed()[0].bounds().ToString());
+  EXPECT_EQ("0,0 500x400", changed()[0].bounds().ToString());
+  EXPECT_EQ("100,100 500x400", changed()[0].bounds_in_pixel().ToString());
   reset();
 
   // Go back to zero and wake up with multiple monitors.
@@ -185,8 +188,10 @@ TEST_F(MultiMonitorManagerTest, NativeMonitorTest) {
   EXPECT_EQ(2U, monitor_manager()->GetNumMonitors());
   EXPECT_EQ("0,0 1000x600",
             monitor_manager()->GetMonitorAt(0).bounds().ToString());
-  EXPECT_EQ("1000,0 600x400",
+  EXPECT_EQ("0,0 600x400",
             monitor_manager()->GetMonitorAt(1).bounds().ToString());
+  EXPECT_EQ("1000,0 600x400",
+            monitor_manager()->GetMonitorAt(1).bounds_in_pixel().ToString());
   reset();
 
   aura::MonitorManager::set_use_fullscreen_host_window(false);
