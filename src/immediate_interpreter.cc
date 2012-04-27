@@ -570,76 +570,99 @@ set<short, kMaxGesturingFingers> ImmediateInterpreter::GetGesturingFingers(
 void ImmediateInterpreter::UpdateCurrentGestureType(
     const HardwareState& hwstate,
     const set<short, kMaxGesturingFingers>& gs_fingers) {
-  // If a scrolling finger just left, do fling
-  if (!prev_scroll_fingers_.empty()) {
-    for (set<short, kMaxGesturingFingers>::const_iterator
-             it = prev_scroll_fingers_.begin(), e = prev_scroll_fingers_.end();
-         it != e; ++it) {
-      if (!hwstate.GetFingerState(*it)) {
-        current_gesture_type_ = kGestureTypeFling;
-        return;
-      }
-    }
-  }
-  // When a finger leaves, we hold the gesture processing for
-  // change_timeout_ time.
-  if (hwstate.timestamp < finger_leave_time_ + change_timeout_.val_) {
-    current_gesture_type_ = kGestureTypeNull;
-    return;
-  }
+
+  size_t num_gesturing = gs_fingers.size();
+
+  // Physical button or tap overrides current gesture state
   if (sent_button_down_ || tap_to_click_state_ == kTtcDrag) {
     current_gesture_type_ = kGestureTypeMove;
     return;
   }
-  if ((hw_props_.supports_t5r2 || hw_props_.support_semi_mt) &&
-      (hwstate.touch_cnt > 2)) {
-    current_gesture_type_ = kGestureTypeScroll;
-    return;
-  }
-  int num_gesturing = gs_fingers.size();
-  if (num_gesturing == 0) {
-    current_gesture_type_ = kGestureTypeNull;
-  } else if (num_gesturing == 1) {
-    current_gesture_type_ = kGestureTypeMove;
-  } else {
-    if (changed_time_ > started_moving_time_ ||
-        hwstate.timestamp - started_moving_time_ < evaluation_timeout_.val_ ||
-        current_gesture_type_ == kGestureTypeNull) {
-      if (num_gesturing == 2) {
-        const FingerState* fingers[] = {
-          hwstate.GetFingerState(*gs_fingers.begin()),
-          hwstate.GetFingerState(*(gs_fingers.begin() + 1))
-        };
-        if (!fingers[0] || !fingers[1]) {
-          Err("Unable to find gesturing fingers!");
-          return;
-        }
-        // See if two pointers are close together
-        bool potential_two_finger_gesture =
-            TwoFingersGesturing(*fingers[0], *fingers[1]);
-        if (!potential_two_finger_gesture) {
-          current_gesture_type_ = kGestureTypeMove;
-        } else {
-          current_gesture_type_ =
-              GetTwoFingerGestureType(*fingers[0], *fingers[1]);
-        }
-      } else if (num_gesturing == 3) {
-        const FingerState* fingers[] = {
-          hwstate.GetFingerState(*gs_fingers.begin()),
-          hwstate.GetFingerState(*(gs_fingers.begin() + 1)),
-          hwstate.GetFingerState(*(gs_fingers.begin() + 2))
-        };
-        if (!fingers[0] || !fingers[1] || !fingers[2]) {
-          Err("Unable to find gesturing fingers!");
-          return;
-        }
-        current_gesture_type_ = GetThreeFingerGestureType(fingers);
-        if (current_gesture_type_ == kGestureTypeSwipe)
-          last_swipe_timestamp_ = hwstate.timestamp;
-      } else {
-        Log("TODO(adlr): support > 3 finger gestures.");
+
+  // current gesture state machine
+  switch(current_gesture_type_) {
+
+    case kGestureTypeContactInitiated:
+    case kGestureTypeButtonsChange:
+      break;
+
+    case kGestureTypeSwipe:
+    case kGestureTypeFling:
+    case kGestureTypeMove:
+    case kGestureTypeNull:
+      // When a finger leaves, we hold the gesture processing for
+      // change_timeout_ time.
+      if (hwstate.timestamp < finger_leave_time_ + change_timeout_.val_) {
+        current_gesture_type_ = kGestureTypeNull;
+        return;
       }
-    }
+
+      // Scrolling detection for T5R2 devices
+      if ((hw_props_.supports_t5r2 || hw_props_.support_semi_mt) &&
+          (hwstate.touch_cnt > 2)) {
+        current_gesture_type_ = kGestureTypeScroll;
+        return;
+      }
+
+      // Finger gesture decision process
+      if (num_gesturing == 0) {
+        current_gesture_type_ = kGestureTypeNull;
+      } else if (num_gesturing == 1) {
+        current_gesture_type_ = kGestureTypeMove;
+      } else {
+        if (changed_time_ > started_moving_time_ ||
+            hwstate.timestamp - started_moving_time_ <
+            evaluation_timeout_.val_ ||
+            current_gesture_type_ == kGestureTypeNull) {
+          if (num_gesturing == 2) {
+            const FingerState* fingers[] = {
+              hwstate.GetFingerState(*gs_fingers.begin()),
+              hwstate.GetFingerState(*(gs_fingers.begin() + 1))
+            };
+            if (!fingers[0] || !fingers[1]) {
+              Err("Unable to find gesturing fingers!");
+              return;
+            }
+            // See if two pointers are close together
+            bool potential_two_finger_gesture =
+                TwoFingersGesturing(*fingers[0], *fingers[1]);
+            if (!potential_two_finger_gesture) {
+              current_gesture_type_ = kGestureTypeMove;
+            } else {
+              current_gesture_type_ =
+                  GetTwoFingerGestureType(*fingers[0], *fingers[1]);
+            }
+          } else if (num_gesturing == 3) {
+            const FingerState* fingers[] = {
+              hwstate.GetFingerState(*gs_fingers.begin()),
+              hwstate.GetFingerState(*(gs_fingers.begin() + 1)),
+              hwstate.GetFingerState(*(gs_fingers.begin() + 2))
+            };
+            if (!fingers[0] || !fingers[1] || !fingers[2]) {
+              Err("Unable to find gesturing fingers!");
+              return;
+            }
+            current_gesture_type_ = GetThreeFingerGestureType(fingers);
+            if (current_gesture_type_ == kGestureTypeSwipe)
+              last_swipe_timestamp_ = hwstate.timestamp;
+          } else {
+            Log("TODO(adlr): support > 3 finger gestures.");
+          }
+        }
+      }
+      break;
+
+    case kGestureTypeScroll:
+      // If a scrolling finger just left, do fling
+      for (set<short, kMaxGesturingFingers>::const_iterator
+           it = prev_scroll_fingers_.begin(), e = prev_scroll_fingers_.end();
+           it != e; ++it) {
+        if (!hwstate.GetFingerState(*it)) {
+          current_gesture_type_ = kGestureTypeFling;
+          return;
+        }
+      }
+      break;
   }
 }
 
