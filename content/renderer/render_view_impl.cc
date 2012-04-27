@@ -178,7 +178,9 @@
 #include "webkit/plugins/npapi/webplugin_impl.h"
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 
-#if defined(OS_WIN)
+#if defined(OS_ANDROID)
+#include "webkit/media/android/webmediaplayer_android.h"
+#elif defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:
 //   * theming
 #include "ui/gfx/native_theme_win.h"
@@ -2165,6 +2167,11 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, WillCreateMediaPlayer(frame, client));
 
+#if defined(OS_ANDROID)
+  return new webkit_media::WebMediaPlayerAndroid(
+      client, cookieJar(frame));
+#endif
+
   media::MessageLoopFactory* message_loop_factory =
       new media::MessageLoopFactory();
   media::FilterCollection* collection = new media::FilterCollection();
@@ -2217,16 +2224,11 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
       content::GetContentClient()->renderer()->OverrideCreateWebMediaPlayer(
           this, frame, client, AsWeakPtr(), collection, audio_source_provider,
           message_loop_factory, media_stream_impl_, render_media_log);
-#if defined(OS_ANDROID)
-  // TODO(qinmin): Implement for android.
-  // http://crbug.com/113218
-#else
   if (!media_player) {
     media_player = new webkit_media::WebMediaPlayerImpl(
         frame, client, AsWeakPtr(), collection, audio_source_provider,
         message_loop_factory, media_stream_impl_, render_media_log);
   }
-#endif
   return media_player;
 }
 
