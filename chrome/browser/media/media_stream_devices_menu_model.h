@@ -30,12 +30,6 @@ class MediaStreamDevicesMenuModel : public ui::SimpleMenuModel,
       content::MediaStreamDeviceType type,
       std::string* device_id) const;
 
- private:
-  typedef std::map<int, content::MediaStreamDevice> CommandMap;
-
-  // Internal method to add the |devices| to the current menu.
-  void AddDevices(const content::MediaStreamDevices& devices);
-
   // ui::SimpleMenuModel::Delegate implementation:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
@@ -43,6 +37,12 @@ class MediaStreamDevicesMenuModel : public ui::SimpleMenuModel,
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
   virtual void ExecuteCommand(int command_id) OVERRIDE;
+
+ private:
+  typedef std::map<int, content::MediaStreamDevice> CommandMap;
+
+  // Internal method to add the |devices| to the current menu.
+  void AddDevices(const content::MediaStreamDevices& devices);
 
   // Map of command IDs to devices.
   CommandMap commands_;

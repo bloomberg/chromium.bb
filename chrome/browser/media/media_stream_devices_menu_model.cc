@@ -36,20 +36,6 @@ MediaStreamDevicesMenuModel::MediaStreamDevicesMenuModel(
 MediaStreamDevicesMenuModel::~MediaStreamDevicesMenuModel() {
 }
 
-void MediaStreamDevicesMenuModel::AddDevices(
-    const content::MediaStreamDevices& devices) {
-  for (size_t i = 0; i < devices.size(); ++i) {
-    int command_id = commands_.size();
-    commands_.insert(std::make_pair(command_id, devices[i]));
-    int message_id = (devices[i].type ==
-        content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE) ?
-        IDS_MEDIA_CAPTURE_MIC : IDS_MEDIA_CAPTURE_VIDEO;
-    AddCheckItem(command_id,
-                 l10n_util::GetStringFUTF16(message_id,
-                                            UTF8ToUTF16(devices[i].name)));
-  }
-}
-
 bool MediaStreamDevicesMenuModel::GetSelectedDeviceId(
     content::MediaStreamDeviceType type,
     std::string* device_id) const {
@@ -84,4 +70,18 @@ void MediaStreamDevicesMenuModel::ExecuteCommand(int command_id) {
     selected_command_id_audio_ = command_id;
   else
     selected_command_id_video_ = command_id;
+}
+
+void MediaStreamDevicesMenuModel::AddDevices(
+    const content::MediaStreamDevices& devices) {
+  for (size_t i = 0; i < devices.size(); ++i) {
+    int command_id = commands_.size();
+    commands_.insert(std::make_pair(command_id, devices[i]));
+    int message_id = (devices[i].type ==
+        content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE) ?
+        IDS_MEDIA_CAPTURE_MIC : IDS_MEDIA_CAPTURE_VIDEO;
+    AddCheckItem(command_id,
+                 l10n_util::GetStringFUTF16(message_id,
+                                            UTF8ToUTF16(devices[i].name)));
+  }
 }
