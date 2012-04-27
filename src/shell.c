@@ -447,7 +447,7 @@ ping_handler(struct weston_surface *surface, uint32_t serial)
 		return;
 
 	if (!shsurf->ping_timer) {
-		shsurf->ping_timer = malloc(sizeof shsurf->ping_timer);
+		shsurf->ping_timer = malloc(sizeof *shsurf->ping_timer);
 		if (!shsurf->ping_timer)
 			return;
 
