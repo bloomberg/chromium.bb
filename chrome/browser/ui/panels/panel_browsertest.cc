@@ -601,6 +601,53 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreThreePanels) {
   PanelManager::GetInstance()->CloseAll();
 }
 
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreButtonClick) {
+  // Test with three panels.
+  Panel* panel1 = CreatePanel("PanelTest1");
+  Panel* panel2 = CreatePanel("PanelTest2");
+  Panel* panel3 = CreatePanel("PanelTest3");
+  EXPECT_FALSE(panel1->IsMinimized());
+  EXPECT_FALSE(panel2->IsMinimized());
+  EXPECT_FALSE(panel3->IsMinimized());
+
+  // Click restore button on an expanded panel. Expect no change.
+  panel1->OnRestoreButtonClicked(panel::NO_MODIFIER);
+  EXPECT_FALSE(panel1->IsMinimized());
+  EXPECT_FALSE(panel2->IsMinimized());
+  EXPECT_FALSE(panel3->IsMinimized());
+
+  // Click minimize button on an expanded panel. Only that panel will minimize.
+  panel1->OnMinimizeButtonClicked(panel::NO_MODIFIER);
+  EXPECT_TRUE(panel1->IsMinimized());
+  EXPECT_FALSE(panel2->IsMinimized());
+  EXPECT_FALSE(panel3->IsMinimized());
+
+  // Click minimize button on a minimized panel. Expect no change.
+  panel1->OnMinimizeButtonClicked(panel::NO_MODIFIER);
+  EXPECT_TRUE(panel1->IsMinimized());
+  EXPECT_FALSE(panel2->IsMinimized());
+  EXPECT_FALSE(panel3->IsMinimized());
+
+  // Minimize all panels by clicking minimize button on an expanded panel
+  // with the apply-all modifier.
+  panel2->OnMinimizeButtonClicked(panel::APPLY_TO_ALL);
+  EXPECT_TRUE(panel1->IsMinimized());
+  EXPECT_TRUE(panel2->IsMinimized());
+  EXPECT_TRUE(panel3->IsMinimized());
+
+  // Click restore button on a minimized panel. Only that panel will restore.
+  panel2->OnRestoreButtonClicked(panel::NO_MODIFIER);
+  EXPECT_TRUE(panel1->IsMinimized());
+  EXPECT_FALSE(panel2->IsMinimized());
+  EXPECT_TRUE(panel3->IsMinimized());
+
+  // Restore all panels by clicking restore button on a minimized panel.
+  panel3->OnRestoreButtonClicked(panel::APPLY_TO_ALL);
+  EXPECT_FALSE(panel1->IsMinimized());
+  EXPECT_FALSE(panel2->IsMinimized());
+  EXPECT_FALSE(panel3->IsMinimized());
+}
+
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoreAllWithTitlebarClick) {
   // We'll simulate mouse movements for test.
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();

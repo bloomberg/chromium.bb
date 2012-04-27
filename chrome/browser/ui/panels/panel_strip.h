@@ -90,9 +90,13 @@ class PanelStrip {
   // Updates the display to show |panel| as active.
   virtual void ActivatePanel(Panel* panel) = 0;
 
-  // Updates the display to show |panel| as  minimized/restored.
+  // Updates the display to show |panel| as minimized/restored.
   virtual void MinimizePanel(Panel* panel) = 0;
   virtual void RestorePanel(Panel* panel) = 0;
+
+  // Updates the display to show all panels in the strip as minimized/restored.
+  virtual void MinimizeAll() = 0;
+  virtual void RestoreAll() = 0;
 
   virtual bool CanMinimizePanel(const Panel* panel) const = 0;
   virtual bool IsPanelMinimized(const Panel* panel) const = 0;

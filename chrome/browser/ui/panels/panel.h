@@ -219,9 +219,11 @@ class Panel : public BrowserWindow,
                                         const gfx::Rect& bounds);
 
   // Invoked when the native panel has detected a mouse click on the
-  // panel's titlebar. Behavior of the click may be modified as
-  // indicated by |modifier|.
+  // panel's titlebar, minimize or restore buttons. Behavior of the
+  // click may be modified as indicated by |modifier|.
   void OnTitlebarClicked(panel::ClickModifier modifier);
+  void OnMinimizeButtonClicked(panel::ClickModifier modifier);
+  void OnRestoreButtonClicked(panel::ClickModifier modifier);
 
   // Used on platforms where the panel cannot determine its window size
   // until the window has been created. (e.g. GTK)

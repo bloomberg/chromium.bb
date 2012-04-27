@@ -84,8 +84,8 @@ class PanelBrowserWindowCocoa;
 
 // Minimize/Restore the panel or all panels, depending on the modifier.
 // Invoked when the minimize/restore button is clicked.
-- (void)minimizePanel:(int)modifierFlags;
-- (void)restorePanel:(int)modifierFlags;
+- (void)minimizeButtonClicked:(int)modifierFlags;
+- (void)restoreButtonClicked:(int)modifierFlags;
 
 // Uses nonblocking animation for moving the Panels. It's especially
 // important in case of dragging a Panel when other Panels should 'slide out',

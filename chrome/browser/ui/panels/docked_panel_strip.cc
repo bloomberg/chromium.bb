@@ -477,7 +477,7 @@ void DockedPanelStrip::OnPanelTitlebarClicked(Panel* panel,
     return;
 
   if (modifier == panel::APPLY_TO_ALL)
-    ToggleMinimizeAll(panel);
+    RestoreAll();
   else
     RestorePanel(panel);
 }
@@ -508,6 +508,36 @@ void DockedPanelStrip::RestorePanel(Panel* panel) {
   panel->SetExpansionState(Panel::EXPANDED);
 }
 
+void DockedPanelStrip::MinimizeAll() {
+  // Set minimizing_all_ to prevent deactivation of each panel when it
+  // is minimized. See comments in OnPanelExpansionStateChanged.
+  AutoReset<bool> pin(&minimizing_all_, true);
+  Panel* minimized_active_panel = NULL;
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); ++iter) {
+    if ((*iter)->IsActive())
+      minimized_active_panel = *iter;
+    MinimizePanel(*iter);
+  }
+
+  // When a single panel is minimized, it is deactivated to ensure that
+  // a minimized panel does not have focus. However, when minimizing all,
+  // the deactivation is only done once after all panels are minimized,
+  // rather than per minimized panel, both for efficiency and to avoid
+  // temporary activations of random not-yet-minimized panels.
+  if (minimized_active_panel) {
+    minimized_active_panel->Deactivate();
+    // Layout will be refreshed in response to (de)activation notification.
+  }
+}
+
+void DockedPanelStrip::RestoreAll() {
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); ++iter) {
+    RestorePanel(*iter);
+  }
+}
+
 bool DockedPanelStrip::CanMinimizePanel(const Panel* panel) const {
   DCHECK_EQ(this, panel->panel_strip());
   // Docked panels can be minimized.
@@ -533,32 +563,6 @@ void DockedPanelStrip::UpdateMinimizedPanelCount() {
     panel_manager_->mouse_watcher()->RemoveObserver(this);
 
   DCHECK_LE(minimized_panel_count_, num_panels());
-}
-
-void DockedPanelStrip::ToggleMinimizeAll(Panel* panel) {
-  DCHECK_EQ(this, panel->panel_strip());
-  AutoReset<bool> pin(&minimizing_all_, IsPanelMinimized(panel) ? false : true);
-  Panel* minimized_active_panel = NULL;
-  for (Panels::const_iterator iter = panels_.begin();
-       iter != panels_.end(); ++iter) {
-    if (minimizing_all_) {
-      if ((*iter)->IsActive())
-        minimized_active_panel = *iter;
-      MinimizePanel(*iter);
-    } else {
-      RestorePanel(*iter);
-    }
-  }
-
-  // When a single panel is minimized, it is deactivated to ensure that
-  // a minimized panel does not have focus. However, when minimizing all,
-  // the deactivation is only done once after all panels are minimized,
-  // rather than per minimized panel, both for efficiency and to avoid
-  // temporary activations of random not-yet-minimized panels.
-  if (minimized_active_panel) {
-    minimized_active_panel->Deactivate();
-    // Layout will be refreshed in response to (de)activation notification.
-  }
 }
 
 void DockedPanelStrip::ResizePanelWindow(

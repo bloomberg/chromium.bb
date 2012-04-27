@@ -60,6 +60,8 @@ class DockedPanelStrip : public PanelStrip,
   virtual void ActivatePanel(Panel* panel) OVERRIDE;
   virtual void MinimizePanel(Panel* panel) OVERRIDE;
   virtual void RestorePanel(Panel* panel) OVERRIDE;
+  virtual void MinimizeAll() OVERRIDE;
+  virtual void RestoreAll() OVERRIDE;
   virtual bool CanMinimizePanel(const Panel* panel) const OVERRIDE;
   virtual bool IsPanelMinimized(const Panel* panel) const OVERRIDE;
   virtual void SavePanelPlacement(Panel* panel) OVERRIDE;
@@ -155,10 +157,6 @@ class DockedPanelStrip : public PanelStrip,
   // coordinate.
   void AdjustPanelBoundsPerExpansionState(Panel* panel,
       gfx::Rect* panel_bounds);
-
-  // Minimizes/Restores all panels in the strip depending on the current
-  // state of |panel|.
-  void ToggleMinimizeAll(Panel* panel);
 
   // Help functions to drag the given panel.
   void DragLeft(Panel* dragging_panel);

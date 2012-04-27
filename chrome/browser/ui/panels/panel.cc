@@ -747,6 +747,26 @@ void Panel::OnTitlebarClicked(panel::ClickModifier modifier) {
   FlashFrame(false);
 }
 
+void Panel::OnMinimizeButtonClicked(panel::ClickModifier modifier) {
+  if (!panel_strip_)
+    return;
+
+  if (modifier == panel::APPLY_TO_ALL)
+    panel_strip_->MinimizeAll();
+  else
+    Minimize();
+}
+
+void Panel::OnRestoreButtonClicked(panel::ClickModifier modifier) {
+  if (!panel_strip_)
+    return;
+
+  if (modifier == panel::APPLY_TO_ALL)
+    panel_strip_->RestoreAll();
+  else
+    Restore();
+}
+
 void Panel::DestroyBrowser() {
   native_panel_->DestroyPanelBrowser();
 }

@@ -110,6 +110,16 @@ void DetachedPanelStrip::RestorePanel(Panel* panel) {
   // regardless of which strip the panel is in. So we just quietly return.
 }
 
+void DetachedPanelStrip::MinimizeAll() {
+  // Detached panels do not minimize.
+  NOTREACHED();
+}
+
+void DetachedPanelStrip::RestoreAll() {
+  // Detached panels do not minimize.
+  NOTREACHED();
+}
+
 bool DetachedPanelStrip::CanMinimizePanel(const Panel* panel) const {
   DCHECK_EQ(this, panel->panel_strip());
   // Detached panels do not minimize.

@@ -129,11 +129,11 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 }
 
 - (void)onMinimizeButtonClick:(id)sender {
-  [controller_ minimizePanel:[[NSApp currentEvent] modifierFlags]];
+  [controller_ minimizeButtonClicked:[[NSApp currentEvent] modifierFlags]];
 }
 
 - (void)onRestoreButtonClick:(id)sender {
-  [controller_ restorePanel:[[NSApp currentEvent] modifierFlags]];
+  [controller_ restoreButtonClicked:[[NSApp currentEvent] modifierFlags]];
 }
 
 - (void)drawRect:(NSRect)rect {

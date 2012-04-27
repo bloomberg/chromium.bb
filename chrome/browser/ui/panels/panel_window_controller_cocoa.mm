@@ -691,15 +691,17 @@ enum {
 }
 
 // Handler for the custom Minimize button.
-- (void)minimizePanel:(int)modifierFlags {
+- (void)minimizeButtonClicked:(int)modifierFlags {
   Panel* panel = windowShim_->panel();
-  panel->Minimize();
+  panel->OnMinimizeButtonClicked((modifierFlags & NSShiftKeyMask) ?
+                                 panel::APPLY_TO_ALL : panel::NO_MODIFIER);
 }
 
 // Handler for the custom Restore button.
-- (void)restorePanel:(int)modifierFlags {
+- (void)restoreButtonClicked:(int)modifierFlags {
   Panel* panel = windowShim_->panel();
-  panel->Restore();
+  panel->OnRestoreButtonClicked((modifierFlags & NSShiftKeyMask) ?
+                                panel::APPLY_TO_ALL : panel::NO_MODIFIER);
 }
 
 // Called when the user wants to close the panel or from the shutdown process.
