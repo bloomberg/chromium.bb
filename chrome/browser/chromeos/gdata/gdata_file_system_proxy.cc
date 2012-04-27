@@ -210,7 +210,8 @@ void GDataFileSystemProxy::CreateSnapshotFile(
   file_system_->GetFileByPath(file_path,
                               base::Bind(&CallSnapshotFileCallback,
                                          callback,
-                                         file_properties.file_info));
+                                         file_properties.file_info),
+                              GetDownloadDataCallback());
 }
 
 // static.

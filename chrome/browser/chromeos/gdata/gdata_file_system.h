@@ -283,17 +283,22 @@ class GDataFileSystemInterface {
   // system in order to be retrieved. If the file is not cached, the file
   // will be downloaded through gdata api.
   //
-  // Can be called from UI/IO thread. |callback| is run on the calling thread.
-  virtual void GetFileByPath(const FilePath& file_path,
-                             const GetFileCallback& callback) = 0;
+  // Can be called from UI/IO thread. |get_file_callback| and
+  // |get_download_data| are run on the calling thread.
+  virtual void GetFileByPath(
+      const FilePath& file_path,
+      const GetFileCallback& get_file_callback,
+      const GetDownloadDataCallback& get_download_data_callback) = 0;
 
   // Gets a file by the given |resource_id| from the gdata server. Used for
   // fetching pinned-but-not-fetched files.
   //
-  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // Can be called from UI/IO thread. |get_file_callback| and
+  // |get_download_data_callback| are run on the calling thread.
   virtual void GetFileByResourceId(
       const std::string& resource_id,
-      const GetFileCallback& callback) = 0;
+      const GetFileCallback& get_file_callback,
+      const GetDownloadDataCallback& get_download_data_callback) = 0;
 
   // Gets the operation registry that manages all operations performed through
   // the GDataFileSystem object.
@@ -390,11 +395,14 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                bool is_exclusive,
                                bool is_recursive,
                                const FileOperationCallback& callback) OVERRIDE;
-  virtual void GetFileByPath(const FilePath& file_path,
-                             const GetFileCallback& callback) OVERRIDE;
+  virtual void GetFileByPath(
+      const FilePath& file_path,
+      const GetFileCallback& get_file_callback,
+      const GetDownloadDataCallback& get_download_data_callback) OVERRIDE;
   virtual void GetFileByResourceId(
       const std::string& resource_id,
-      const GetFileCallback& callback) OVERRIDE;
+      const GetFileCallback& get_file_callback,
+      const GetDownloadDataCallback& get_download_data_callback) OVERRIDE;
   virtual GDataOperationRegistry* GetOperationRegistry() OVERRIDE;
   virtual void GetCacheState(const std::string& resource_id,
                              const std::string& md5,
@@ -487,7 +495,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
         const std::string& resource_id,
         const std::string& md5,
         const std::string& mime_type,
-        const GetFileCallback& callback);
+        const GetFileCallback& get_file_callback,
+        const GetDownloadDataCallback& get_download_data_callback);
     ~GetFileFromCacheParams();
 
     FilePath virtual_file_path;
@@ -496,7 +505,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
     std::string resource_id;
     std::string md5;
     std::string mime_type;
-    const GetFileCallback callback;
+    const GetFileCallback get_file_callback;
+    const GetDownloadDataCallback get_download_data_callback;
   };
 
   // Defines set of parameters sent to callback OnGetDocuments().
@@ -1215,11 +1225,14 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                  bool is_exclusive,
                                  bool is_recursive,
                                  const FileOperationCallback& callback);
-  void GetFileByPathOnUIThread(const FilePath& file_path,
-                               const GetFileCallback& callback);
+  void GetFileByPathOnUIThread(
+      const FilePath& file_path,
+      const GetFileCallback& get_file_callback,
+      const GetDownloadDataCallback& get_download_data_callback);
   void GetFileByResourceIdOnUIThread(
       const std::string& resource_id,
-      const GetFileCallback& callback);
+      const GetFileCallback& get_file_callback,
+      const GetDownloadDataCallback& get_download_data_callback);
   void GetCacheStateOnUIThread(const std::string& resource_id,
                                const std::string& md5,
                                const GetCacheStateCallback& callback);

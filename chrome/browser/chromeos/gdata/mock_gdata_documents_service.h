@@ -61,10 +61,12 @@ class MockDocumentsService : public DocumentsServiceInterface {
                void(const GURL& parent_content_url,
                     const FilePath::StringType& directory_name,
                     const GetDataCallback& callback));
-  MOCK_METHOD4(DownloadFile, void(const FilePath& virtual_path,
-                                  const FilePath& local_cache_path,
-                                  const GURL& content_url,
-                                  const DownloadActionCallback& callback));
+  MOCK_METHOD5(DownloadFile,
+               void(const FilePath& virtual_path,
+                    const FilePath& local_cache_path,
+                    const GURL& content_url,
+                    const DownloadActionCallback& donwload_action_callback,
+                    const GetDownloadDataCallback& get_download_data_callback));
   MOCK_METHOD2(InitiateUpload,
                void(const InitiateUploadParams& upload_file_info,
                     const InitiateUploadCallback& callback));
@@ -130,10 +132,12 @@ class MockDocumentsService : public DocumentsServiceInterface {
 
   // Will call |callback| with HTTP_SUCCESS, the given URL, and the host+path
   // portion of the URL as the temporary file path.
-  void DownloadFileStub(const FilePath& virtual_path,
-                        const FilePath& local_tmp_path,
-                        const GURL& content_url,
-                        const DownloadActionCallback& callback);
+  void DownloadFileStub(
+      const FilePath& virtual_path,
+      const FilePath& local_tmp_path,
+      const GURL& content_url,
+      const DownloadActionCallback& download_action_callback,
+      const GetDownloadDataCallback& get_download_data_callback);
 
   void set_account_metadata(base::Value* account_metadata) {
     feed_data_.reset(account_metadata);

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -138,18 +139,23 @@ void DocumentsService::DownloadDocument(
       chrome_browser_net::AppendQueryParameter(document_url,
                                                "exportFormat",
                                                GetExportFormatParam(format)),
-      callback);
+      callback,
+      GetDownloadDataCallback());
 }
 
-void DocumentsService::DownloadFile(const FilePath& virtual_path,
-                                    const FilePath& local_cache_path,
-                                    const GURL& document_url,
-                                    const DownloadActionCallback& callback) {
+void DocumentsService::DownloadFile(
+      const FilePath& virtual_path,
+      const FilePath& local_cache_path,
+      const GURL& document_url,
+      const DownloadActionCallback& download_action_callback,
+      const GetDownloadDataCallback& get_download_data_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   StartOperationWithRetry(
-      new DownloadFileOperation(operation_registry_.get(), profile_, callback,
-                                document_url, virtual_path, local_cache_path));
+      new DownloadFileOperation(operation_registry_.get(), profile_,
+                                download_action_callback,
+                                get_download_data_callback, document_url,
+                                virtual_path, local_cache_path));
 }
 
 void DocumentsService::DeleteDocument(const GURL& document_url,

@@ -96,6 +96,12 @@ typedef base::Callback<void(GDataErrorCode error,
                             const GURL& content_url,
                             const FilePath& temp_file)> DownloadActionCallback;
 
+// Callback type for getting download data from DownloadFile
+// DocumentServiceInterface calls.
+typedef base::Callback<void(
+    GDataErrorCode error,
+    scoped_ptr<std::string> download_data)> GetDownloadDataCallback;
+
 // Callback type for DocumentServiceInterface::InitiateUpload.
 typedef base::Callback<void(GDataErrorCode error,
                             const GURL& upload_url)> InitiateUploadCallback;

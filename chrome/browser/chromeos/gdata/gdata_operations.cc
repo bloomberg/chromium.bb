@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/common/libxml_utils.h"
@@ -492,7 +493,8 @@ GURL GetAccountMetadataOperation::GetURL() const {
 DownloadFileOperation::DownloadFileOperation(
     GDataOperationRegistry* registry,
     Profile* profile,
-    const DownloadActionCallback& callback,
+    const DownloadActionCallback& download_action_callback,
+    const GetDownloadDataCallback& get_download_data_callback,
     const GURL& document_url,
     const FilePath& virtual_path,
     const FilePath& output_file_path)
@@ -500,7 +502,8 @@ DownloadFileOperation::DownloadFileOperation(
                             GDataOperationRegistry::OPERATION_DOWNLOAD,
                             virtual_path,
                             profile),
-      callback_(callback),
+      download_action_callback_(download_action_callback),
+      get_download_data_callback_(get_download_data_callback),
       document_url_(document_url) {
   // Make sure we download the content into a temp file.
   if (output_file_path.empty())
@@ -522,6 +525,17 @@ void DownloadFileOperation::OnURLFetchDownloadProgress(const URLFetcher* source,
   NotifyProgress(current, total);
 }
 
+bool DownloadFileOperation::ShouldSendDownloadData() {
+  return !get_download_data_callback_.is_null();
+}
+
+void DownloadFileOperation::OnURLFetchDownloadData(
+    const URLFetcher* source,
+    scoped_ptr<std::string> download_data) {
+  if (!get_download_data_callback_.is_null())
+    get_download_data_callback_.Run(HTTP_SUCCESS, download_data.Pass());
+}
+
 bool DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
   GDataErrorCode code = static_cast<GDataErrorCode>(source->GetResponseCode());
 
@@ -533,14 +547,14 @@ bool DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
     code = GDATA_FILE_ERROR;
   }
 
-  if (!callback_.is_null())
-    callback_.Run(code, document_url_, temp_file);
+  if (!download_action_callback_.is_null())
+    download_action_callback_.Run(code, document_url_, temp_file);
   return code == HTTP_SUCCESS;
 }
 
 void DownloadFileOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
-  if (!callback_.is_null())
-    callback_.Run(code, document_url_, FilePath());
+  if (!download_action_callback_.is_null())
+    download_action_callback_.Run(code, document_url_, FilePath());
 }
 
 //=========================== DeleteDocumentOperation ==========================

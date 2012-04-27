@@ -139,7 +139,8 @@ void GDataSyncClient::DoFetchLoop() {
       resource_id,
       base::Bind(&GDataSyncClient::OnFetchFileComplete,
                  weak_ptr_factory_.GetWeakPtr(),
-                 resource_id));
+                 resource_id),
+      GetDownloadDataCallback());
 }
 
 bool GDataSyncClient::ShouldStopFetchLoop() {

@@ -279,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, RemoteMountPoint) {
   // mount point. This time, DownloadFile should not be called because local
   // copy is already present in the cache.
   EXPECT_CALL(*mock_documents_service_,
-              DownloadFile(_, _, _, _))
+              DownloadFile(_, _, _, _, _))
       .WillOnce(MockDownloadFileCallback(gdata::HTTP_SUCCESS));
 
   // On exit, all operations in progress should be cancelled.

@@ -1789,7 +1789,8 @@ void GetGDataFilesFunction::GetFileOrSendResponse() {
   FilePath gdata_path = remaining_gdata_paths_.front();
   system_service->file_system()->GetFileByPath(
       gdata_path,
-      base::Bind(&GetGDataFilesFunction::OnFileReady, this));
+      base::Bind(&GetGDataFilesFunction::OnFileReady, this),
+      gdata::GetDownloadDataCallback());
 }
 
 

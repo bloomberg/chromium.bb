@@ -65,7 +65,7 @@ MockDocumentsService::MockDocumentsService() {
           Invoke(this, &MockDocumentsService::RemoveResourceFromDirectoryStub));
   ON_CALL(*this, CreateDirectory(_, _, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::CreateDirectoryStub));
-  ON_CALL(*this, DownloadFile(_, _, _, _))
+  ON_CALL(*this, DownloadFile(_, _, _, _, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::DownloadFileStub));
 
   // Fill in the default values for mock feeds.
@@ -168,10 +168,12 @@ void MockDocumentsService::DownloadFileStub(
     const FilePath& virtual_path,
     const FilePath& local_tmp_path,
     const GURL& content_url,
-    const DownloadActionCallback& callback) {
+    const DownloadActionCallback& download_action_callback,
+    const GetDownloadDataCallback& get_download_data_callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, content_url, local_tmp_path));
+      base::Bind(download_action_callback, HTTP_SUCCESS, content_url,
+                 local_tmp_path));
 }
 
 }  // namespace gdata

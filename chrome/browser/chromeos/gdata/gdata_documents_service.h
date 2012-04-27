@@ -142,11 +142,16 @@ class DocumentsServiceInterface {
 
   // Downloads a file identified by its |content_url|. The downloaded file will
   // be stored at |local_cache_path| location. Upon completion, invokes
-  // |callback| with results on the calling thread.
-  virtual void DownloadFile(const FilePath& virtual_path,
-                            const FilePath& local_cache_path,
-                            const GURL& content_url,
-                            const DownloadActionCallback& callback) = 0;
+  // |download_action_callback| with results on the calling thread.
+  // If |get_download_data_callback| is not empty,
+  // URLFetcherDelegate::OnURLFetchDownloadData will be called, which will in
+  // turn invoke |get_download_data_callback| on the calling thread.
+  virtual void DownloadFile(
+      const FilePath& virtual_path,
+      const FilePath& local_cache_path,
+      const GURL& content_url,
+      const DownloadActionCallback& download_action_callback,
+      const GetDownloadDataCallback& get_download_data_callback) = 0;
 
   // Initiates uploading of a document/file.
   virtual void InitiateUpload(const InitiateUploadParams& params,
@@ -183,10 +188,12 @@ class DocumentsService
       const GURL& content_url,
       DocumentExportFormat format,
       const DownloadActionCallback& callback) OVERRIDE;
-  virtual void DownloadFile(const FilePath& virtual_path,
-                            const FilePath& local_cache_path,
-                            const GURL& content_url,
-                            const DownloadActionCallback& callback) OVERRIDE;
+  virtual void DownloadFile(
+      const FilePath& virtual_path,
+      const FilePath& local_cache_path,
+      const GURL& content_url,
+      const DownloadActionCallback& download_action_callback,
+      const GetDownloadDataCallback& get_download_data_callback) OVERRIDE;
   virtual void CopyDocument(const std::string& resource_id,
                             const FilePath::StringType& new_name,
                             const GetDataCallback& callback) OVERRIDE;

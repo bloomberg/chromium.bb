@@ -183,21 +183,21 @@ TEST_F(GDataSyncClientTest, StartFetchLoop) {
   // The three files will be fetched by GetFileByResourceId(), once
   // StartFetchLoop() starts.
   EXPECT_CALL(*mock_file_system_,
-              GetFileByResourceId("resource_id_not_fetched_foo", _))
+              GetFileByResourceId("resource_id_not_fetched_foo", _, _))
       .WillOnce(MockGetFileByResourceId(
           base::PLATFORM_FILE_OK,
           FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
           std::string("mime_type_does_not_matter"),
           REGULAR_FILE));
   EXPECT_CALL(*mock_file_system_,
-              GetFileByResourceId("resource_id_not_fetched_bar", _))
+              GetFileByResourceId("resource_id_not_fetched_bar", _, _))
       .WillOnce(MockGetFileByResourceId(
           base::PLATFORM_FILE_OK,
           FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
           std::string("mime_type_does_not_matter"),
           REGULAR_FILE));
   EXPECT_CALL(*mock_file_system_,
-              GetFileByResourceId("resource_id_not_fetched_baz", _))
+              GetFileByResourceId("resource_id_not_fetched_baz", _, _))
       .WillOnce(MockGetFileByResourceId(
           base::PLATFORM_FILE_OK,
           FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
@@ -217,7 +217,7 @@ TEST_F(GDataSyncClientTest, StartFetchLoop_Offline) {
 
   // The three files will not be fetched by GetFileByResourceId(), as
   // network is not connected.
-  EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _)).Times(0);
+  EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _)).Times(0);
 
   sync_client_->StartFetchLoop();
 }
@@ -232,7 +232,7 @@ TEST_F(GDataSyncClientTest, StartFetchLoop_CelluarDisabled) {
 
   // The three files will not be fetched by GetFileByResourceId(), as
   // fetching over cellular network is disabled by default.
-  EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _)).Times(0);
+  EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _)).Times(0);
 
   sync_client_->StartFetchLoop();
 }
@@ -250,21 +250,21 @@ TEST_F(GDataSyncClientTest, StartFetchLoop_CelluarEnabled) {
   // The three files will be fetched by GetFileByResourceId(), as fetching
   // over cellular network is explicitly enabled.
   EXPECT_CALL(*mock_file_system_,
-              GetFileByResourceId("resource_id_not_fetched_foo", _))
+              GetFileByResourceId("resource_id_not_fetched_foo", _, _))
       .WillOnce(MockGetFileByResourceId(
           base::PLATFORM_FILE_OK,
           FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
           std::string("mime_type_does_not_matter"),
           REGULAR_FILE));
   EXPECT_CALL(*mock_file_system_,
-              GetFileByResourceId("resource_id_not_fetched_bar", _))
+              GetFileByResourceId("resource_id_not_fetched_bar", _, _))
       .WillOnce(MockGetFileByResourceId(
           base::PLATFORM_FILE_OK,
           FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
           std::string("mime_type_does_not_matter"),
           REGULAR_FILE));
   EXPECT_CALL(*mock_file_system_,
-              GetFileByResourceId("resource_id_not_fetched_baz", _))
+              GetFileByResourceId("resource_id_not_fetched_baz", _, _))
       .WillOnce(MockGetFileByResourceId(
           base::PLATFORM_FILE_OK,
           FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
@@ -287,7 +287,7 @@ TEST_F(GDataSyncClientTest, StartFetchLoop_GDataDisabled) {
 
   // The three files will not be fetched by GetFileByResourceId(), as the
   // GData feature is disabled.
-  EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _)).Times(0);
+  EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _)).Times(0);
 
   sync_client_->StartFetchLoop();
 }
@@ -299,7 +299,7 @@ TEST_F(GDataSyncClientTest, OnFilePinned) {
   // This file will be fetched by GetFileByResourceId() as OnFilePinned()
   // will kick off the fetch loop.
   EXPECT_CALL(*mock_file_system_,
-              GetFileByResourceId("resource_id_not_fetched_foo", _))
+              GetFileByResourceId("resource_id_not_fetched_foo", _, _))
       .WillOnce(MockGetFileByResourceId(
           base::PLATFORM_FILE_OK,
           FilePath::FromUTF8Unsafe("local_path_does_not_matter"),

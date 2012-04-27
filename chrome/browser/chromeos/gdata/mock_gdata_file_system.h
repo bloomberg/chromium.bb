@@ -46,11 +46,16 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
                     bool is_exclusive,
                     bool is_recursive,
                     const FileOperationCallback& callback));
-  MOCK_METHOD2(GetFileByPath, void(const FilePath& file_path,
-                                   const GetFileCallback& callback));
-  MOCK_METHOD2(GetFileByResourceId,
-               void(const std::string& resource_id,
-                    const GetFileCallback& callback));
+  MOCK_METHOD3(GetFileByPath,
+               void(
+                   const FilePath& file_path,
+                   const GetFileCallback& get_file_callback,
+                   const GetDownloadDataCallback& get_download_data_callback));
+  MOCK_METHOD3(GetFileByResourceId,
+               void(
+                   const std::string& resource_id,
+                   const GetFileCallback& get_file_callback,
+                   const GetDownloadDataCallback& get_download_data_callback));
   MOCK_METHOD0(GetOperationRegistry, GDataOperationRegistry*());
   MOCK_METHOD3(GetCacheState, void(const std::string& resource_id,
                                    const std::string& md5,

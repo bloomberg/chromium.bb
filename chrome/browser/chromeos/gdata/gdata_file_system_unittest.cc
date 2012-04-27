@@ -2683,10 +2683,11 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
               DownloadFile(file_in_root,
                            downloaded_file,
                            GURL("https://file_content_url/"),
-                           _))
+                           _, _))
       .Times(1);
 
-  file_system_->GetFileByPath(file_in_root, callback);
+  file_system_->GetFileByPath(file_in_root, callback,
+                              GetDownloadDataCallback());
   RunAllPendingForIO();  // Try to get from the cache.
   RunAllPendingForIO();  // Check if we have space before downloading.
   RunAllPendingForIO();  // Check if we have space after downloading.
@@ -2721,10 +2722,11 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
               DownloadFile(file_in_root,
                            downloaded_file,
                            GURL("https://file_content_url/"),
-                           _))
+                           _, _))
       .Times(0);
 
-  file_system_->GetFileByPath(file_in_root, callback);
+  file_system_->GetFileByPath(file_in_root, callback,
+                              GetDownloadDataCallback());
   RunAllPendingForIO();  // Try to get from the cache.
   RunAllPendingForIO();  // Check if we have space before downloading.
 
@@ -2771,10 +2773,11 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
               DownloadFile(file_in_root,
                            downloaded_file,
                            GURL("https://file_content_url/"),
-                           _))
+                           _, _))
       .Times(1);
 
-  file_system_->GetFileByPath(file_in_root, callback);
+  file_system_->GetFileByPath(file_in_root, callback,
+                              GetDownloadDataCallback());
   RunAllPendingForIO();  // Try to get from the cache.
   RunAllPendingForIO();  // Check if we have space before downloading.
   RunAllPendingForIO();  // Check if we have space after downloading
@@ -2819,10 +2822,11 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
               DownloadFile(file_in_root,
                            downloaded_file,
                            GURL("https://file_content_url/"),
-                           _))
+                           _, _))
       .Times(1);
 
-  file_system_->GetFileByPath(file_in_root, callback);
+  file_system_->GetFileByPath(file_in_root, callback,
+                              GetDownloadDataCallback());
   RunAllPendingForIO();  // Try to get from the cache.
   RunAllPendingForIO();  // Check if we have space before downloading.
   RunAllPendingForIO();  // Check if we have space after downloading.
@@ -2858,10 +2862,11 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
               DownloadFile(file_in_root,
                            downloaded_file,
                            GURL("https://file_content_url/"),
-                           _))
+                           _, _))
       .Times(0);
 
-  file_system_->GetFileByPath(file_in_root, callback);
+  file_system_->GetFileByPath(file_in_root, callback,
+                              GetDownloadDataCallback());
   RunAllPendingForIO();
 
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
@@ -2882,7 +2887,8 @@ TEST_F(GDataFileSystemTest, GetFileByPath_HostedDocument) {
   GDataEntry* entry = NULL;
   EXPECT_TRUE((entry = FindEntry(file_in_root)) != NULL);
 
-  file_system_->GetFileByPath(file_in_root, callback);
+  file_system_->GetFileByPath(file_in_root, callback,
+                              GetDownloadDataCallback());
   RunAllPendingForIO();
 
   EXPECT_EQ(HOSTED_DOCUMENT, callback_helper_->file_type_);
@@ -2927,11 +2933,11 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId) {
               DownloadFile(file_in_root,
                            downloaded_file,
                            GURL("https://file_content_url/"),
-                           _))
+                           _, _))
       .Times(1);
 
-  file_system_->GetFileByResourceId(file->resource_id(),
-                                     callback);
+  file_system_->GetFileByResourceId(file->resource_id(), callback,
+                                    GetDownloadDataCallback());
   RunAllPendingForIO();  // Try to get from the cache.
   RunAllPendingForIO();  // Check if we have space before downloading.
   RunAllPendingForIO();  // Check if we have space after downloading.
@@ -2965,11 +2971,11 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
 
   // The file is obtained from the cache.
   // Make sure we don't call downloads at all.
-  EXPECT_CALL(*mock_doc_service_, DownloadFile(_, _, _, _))
+  EXPECT_CALL(*mock_doc_service_, DownloadFile(_, _, _, _, _))
       .Times(0);
 
-  file_system_->GetFileByResourceId(file->resource_id(),
-                                    callback);
+  file_system_->GetFileByResourceId(file->resource_id(), callback,
+                                    GetDownloadDataCallback());
   RunAllPendingForIO();
 
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);

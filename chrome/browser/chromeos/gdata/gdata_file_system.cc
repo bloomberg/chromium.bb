@@ -768,6 +768,17 @@ void RelayGetFileCallback(
       base::Bind(callback, error, file_path, mime_type, file_type));
 }
 
+// Ditto for GetDownloadDataCallback.
+void RelayGetDownloadDataCallback(
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
+    const GetDownloadDataCallback& callback,
+    GDataErrorCode error,
+    scoped_ptr<std::string> download_data) {
+  relay_proxy->PostTask(
+      FROM_HERE,
+      base::Bind(callback, error, base::Passed(&download_data)));
+}
+
 // Ditto for GetCacheStateCallback.
 void RelayGetCacheStateCallback(
     scoped_refptr<base::MessageLoopProxy> relay_proxy,
@@ -856,14 +867,16 @@ GDataFileSystem::GetFileFromCacheParams::GetFileFromCacheParams(
     const std::string& resource_id,
     const std::string& md5,
     const std::string& mime_type,
-    const GetFileCallback& callback)
+    const GetFileCallback& get_file_callback,
+    const GetDownloadDataCallback& get_download_data_callback)
     : virtual_file_path(virtual_file_path),
       local_tmp_path(local_tmp_path),
       content_url(content_url),
       resource_id(resource_id),
       md5(md5),
       mime_type(mime_type),
-      callback(callback) {
+      get_file_callback(get_file_callback),
+      get_download_data_callback(get_download_data_callback) {
 }
 
 GDataFileSystem::GetFileFromCacheParams::~GetFileFromCacheParams() {
@@ -1382,10 +1395,11 @@ void GDataFileSystem::CopyOnUIThread(const FilePath& src_file_path,
   // TODO(benchan): Reimplement this once the server API supports
   // copying of regular files directly on the server side.
   GetFileByPath(src_file_path,
-          base::Bind(&GDataFileSystem::OnGetFileCompleteForCopy,
-                     ui_weak_ptr_,
-                     dest_file_path,
-                     callback));
+                base::Bind(&GDataFileSystem::OnGetFileCompleteForCopy,
+                           ui_weak_ptr_,
+                           dest_file_path,
+                           callback),
+                GetDownloadDataCallback());
 }
 
 void GDataFileSystem::OnGetFileCompleteForCopy(
@@ -1790,8 +1804,10 @@ void GDataFileSystem::CreateDirectoryOnUIThread(
                      callback)));
 }
 
-void GDataFileSystem::GetFileByPath(const FilePath& file_path,
-                                    const GetFileCallback& callback) {
+void GDataFileSystem::GetFileByPath(
+    const FilePath& file_path,
+    const GetFileCallback& get_file_callback,
+    const GetDownloadDataCallback& get_download_data_callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     const bool posted = BrowserThread::PostTask(
@@ -1802,25 +1818,30 @@ void GDataFileSystem::GetFileByPath(const FilePath& file_path,
                    file_path,
                    base::Bind(&RelayGetFileCallback,
                               base::MessageLoopProxy::current(),
-                              callback)));
+                              get_file_callback),
+                   base::Bind(&RelayGetDownloadDataCallback,
+                              base::MessageLoopProxy::current(),
+                              get_download_data_callback)));
     DCHECK(posted);
     return;
   }
 
-  GetFileByPathOnUIThread(file_path, callback);
+  GetFileByPathOnUIThread(file_path, get_file_callback,
+                          get_download_data_callback);
 }
 
 void GDataFileSystem::GetFileByPathOnUIThread(
     const FilePath& file_path,
-    const GetFileCallback& callback) {
+    const GetFileCallback& get_file_callback,
+    const GetDownloadDataCallback& get_download_data_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   GDataFileProperties file_properties;
   if (!GetFileInfoByPath(file_path, &file_properties)) {
-    if (!callback.is_null()) {
+    if (!get_file_callback.is_null()) {
       MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(callback,
+          base::Bind(get_file_callback,
                      base::PLATFORM_FILE_ERROR_NOT_FOUND,
                      FilePath(),
                      std::string(),
@@ -1853,7 +1874,7 @@ void GDataFileSystem::GetFileByPathOnUIThread(
                    mime_type,
                    file_type),
         base::Bind(&RunGetFileCallbackHelper,
-                   callback,
+                   get_file_callback,
                    base::Owned(error),
                    base::Owned(temp_file_path),
                    base::Owned(mime_type),
@@ -1878,12 +1899,14 @@ void GDataFileSystem::GetFileByPathOnUIThread(
                                  file_properties.resource_id,
                                  file_properties.file_md5,
                                  file_properties.mime_type,
-                                 callback)));
+                                 get_file_callback,
+                                 get_download_data_callback)));
 }
 
 void GDataFileSystem::GetFileByResourceId(
     const std::string& resource_id,
-    const GetFileCallback& callback) {
+    const GetFileCallback& get_file_callback,
+    const GetDownloadDataCallback& get_download_data_callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     const bool posted = BrowserThread::PostTask(
@@ -1894,17 +1917,22 @@ void GDataFileSystem::GetFileByResourceId(
                    resource_id,
                    base::Bind(&RelayGetFileCallback,
                               base::MessageLoopProxy::current(),
-                              callback)));
+                              get_file_callback),
+                   base::Bind(&RelayGetDownloadDataCallback,
+                              base::MessageLoopProxy::current(),
+                              get_download_data_callback)));
     DCHECK(posted);
     return;
   }
 
-  GetFileByResourceIdOnUIThread(resource_id, callback);
+  GetFileByResourceIdOnUIThread(resource_id, get_file_callback,
+                                get_download_data_callback);
 }
 
 void GDataFileSystem::GetFileByResourceIdOnUIThread(
     const std::string& resource_id,
-    const GetFileCallback& callback) {
+    const GetFileCallback& get_file_callback,
+    const GetDownloadDataCallback& get_download_data_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   FilePath file_path;
@@ -1921,10 +1949,10 @@ void GDataFileSystem::GetFileByResourceIdOnUIThread(
   // Report an error immediately if the file for the resource ID is not
   // found.
   if (file_path.empty()) {
-    if (!callback.is_null()) {
+    if (!get_file_callback.is_null()) {
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
-          base::Bind(callback,
+          base::Bind(get_file_callback,
                      base::PLATFORM_FILE_ERROR_NOT_FOUND,
                      FilePath(),
                      std::string(),
@@ -1933,7 +1961,7 @@ void GDataFileSystem::GetFileByResourceIdOnUIThread(
     return;
   }
 
-  GetFileByPath(file_path, callback);
+  GetFileByPath(file_path, get_file_callback, get_download_data_callback);
 }
 
 void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
@@ -1945,11 +1973,11 @@ void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
 
   // Have we found the file in cache? If so, return it back to the caller.
   if (error == base::PLATFORM_FILE_OK) {
-    if (!params.callback.is_null()) {
-      params.callback.Run(error,
-                          cache_file_path,
-                          params.mime_type,
-                          REGULAR_FILE);
+    if (!params.get_file_callback.is_null()) {
+      params.get_file_callback.Run(error,
+                                   cache_file_path,
+                                   params.mime_type,
+                                   REGULAR_FILE);
     }
     return;
   }
@@ -2014,11 +2042,11 @@ void GDataFileSystem::StartDownloadFileIfEnoughSpace(
 
   if (!*has_enough_space) {
     // If no enough space, return PLATFORM_FILE_ERROR_NO_SPACE.
-    if (!params.callback.is_null()) {
-      params.callback.Run(base::PLATFORM_FILE_ERROR_NO_SPACE,
-                          cache_file_path,
-                          params.mime_type,
-                          REGULAR_FILE);
+    if (!params.get_file_callback.is_null()) {
+      params.get_file_callback.Run(base::PLATFORM_FILE_ERROR_NO_SPACE,
+                                   cache_file_path,
+                                   params.mime_type,
+                                   REGULAR_FILE);
     }
     return;
   }
@@ -2030,7 +2058,8 @@ void GDataFileSystem::StartDownloadFileIfEnoughSpace(
       params.content_url,
       base::Bind(&GDataFileSystem::OnFileDownloaded,
                  ui_weak_ptr_,
-                 params));
+                 params),
+      params.get_download_data_callback);
 }
 
 void GDataFileSystem::SetCachePaths(const FilePath& root_path) {
@@ -2823,11 +2852,11 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
     }
   }
 
-  if (!params.callback.is_null()) {
-    params.callback.Run(error,
-                        downloaded_file_path,
-                        params.mime_type,
-                        REGULAR_FILE);
+  if (!params.get_file_callback.is_null()) {
+    params.get_file_callback.Run(error,
+                                 downloaded_file_path,
+                                 params.mime_type,
+                                 REGULAR_FILE);
   }
 }
 
