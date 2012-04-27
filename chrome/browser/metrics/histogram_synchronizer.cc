@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -61,6 +62,7 @@ void HistogramSynchronizer::FetchRendererHistogramsSynchronously(
     base::AutoLock auto_lock(lock_);
     while (synchronous_renderers_pending_ > 0 && TimeTicks::Now() < end_time) {
       wait_time = end_time - TimeTicks::Now();
+      base::ThreadRestrictions::ScopedAllowWait allow_wait;
       received_all_renderer_histograms_.TimedWait(wait_time);
     }
     unresponsive_renderer_count = synchronous_renderers_pending_;
