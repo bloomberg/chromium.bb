@@ -108,6 +108,11 @@ class TokenService : public GaiaAuthConsumer,
   void UpdateCredentials(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
 
+  // Update credentials in the token service with oauth2 tokens.
+  // Afterwards you can StartFetchingTokens.
+  void UpdateCredentialsWithOAuth2(
+      const GaiaAuthConsumer::ClientOAuthResult& credentials);
+
   // Terminate any running requests and reset the TokenService to a clean
   // slate. Resets in memory structures. Does not modify the DB.
   // When this is done, no tokens will be left in memory and no
@@ -158,11 +163,9 @@ class TokenService : public GaiaAuthConsumer,
   virtual void OnIssueAuthTokenFailure(
       const std::string& service,
       const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnOAuthLoginTokenSuccess(const std::string& refresh_token,
-                                        const std::string& access_token,
-                                        int expires_in_secs) OVERRIDE;
-  virtual void OnOAuthLoginTokenFailure(const GoogleServiceAuthError& error)
-      OVERRIDE;
+  virtual void OnClientOAuthSuccess(const ClientOAuthResult& result) OVERRIDE;
+  virtual void OnClientOAuthFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
 
   // WebDataServiceConsumer implementation.
   virtual void OnWebDataServiceRequestDone(

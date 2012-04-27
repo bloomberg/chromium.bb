@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,4 +28,21 @@ bool GaiaAuthConsumer::ClientLoginResult::operator==(
       token == b.token &&
       data == b.data &&
       two_factor == b.two_factor;
+}
+
+GaiaAuthConsumer::ClientOAuthResult::ClientOAuthResult(
+    const std::string& new_refresh_token,
+    const std::string& new_access_token,
+    int new_expires_in_secs)
+    : refresh_token(new_refresh_token),
+      access_token(new_access_token),
+      expires_in_secs(new_expires_in_secs) {}
+
+GaiaAuthConsumer::ClientOAuthResult::~ClientOAuthResult() {}
+
+bool GaiaAuthConsumer::ClientOAuthResult::operator==(
+    const ClientOAuthResult &b) const {
+  return refresh_token == b.refresh_token &&
+      access_token == b.access_token &&
+      expires_in_secs == b.expires_in_secs;
 }

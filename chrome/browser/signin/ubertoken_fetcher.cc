@@ -90,7 +90,7 @@ void UbertokenFetcher::OnRefreshTokenResponse(const std::string& access_token,
   gaia_auth_fetcher_.reset(new GaiaAuthFetcher(this,
                                                GaiaConstants::kChromeSource,
                                                profile_->GetRequestContext()));
-  gaia_auth_fetcher_->StartUberAuthTokenFetch(access_token);
+  gaia_auth_fetcher_->StartTokenFetchForUberAuthExchange(access_token);
 }
 
 void UbertokenFetcher::OnOAuthError() {

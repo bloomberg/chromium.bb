@@ -163,7 +163,8 @@ TEST_F(TokenServiceTest, NotificationSuccess) {
 TEST_F(TokenServiceTest, NotificationOAuthLoginTokenSuccess) {
   EXPECT_EQ(0U, success_tracker_.size());
   EXPECT_EQ(0U, failure_tracker_.size());
-  service_->OnOAuthLoginTokenSuccess("rt1", "at1", 3600);
+  service_->OnClientOAuthSuccess(
+      GaiaAuthConsumer::ClientOAuthResult("rt1", "at1", 3600));
   EXPECT_EQ(1U, success_tracker_.size());
   EXPECT_EQ(0U, failure_tracker_.size());
 
@@ -192,7 +193,7 @@ TEST_F(TokenServiceTest, NotificationOAuthLoginTokenFailed) {
   EXPECT_EQ(0U, success_tracker_.size());
   EXPECT_EQ(0U, failure_tracker_.size());
   GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
-  service_->OnOAuthLoginTokenFailure(error);
+  service_->OnClientOAuthFailure(error);
   EXPECT_EQ(0U, success_tracker_.size());
   EXPECT_EQ(1U, failure_tracker_.size());
 
@@ -221,15 +222,18 @@ TEST_F(TokenServiceTest, OnTokenSuccessUpdate) {
 
 TEST_F(TokenServiceTest, OnOAuth2LoginTokenSuccessUpdate) {
   std::string service = GaiaConstants::kGaiaOAuth2LoginRefreshToken;
-  service_->OnOAuthLoginTokenSuccess("rt1", "at1", 3600);
+  service_->OnClientOAuthSuccess(
+      GaiaAuthConsumer::ClientOAuthResult("rt1", "at1", 3600));
   EXPECT_TRUE(service_->HasOAuthLoginToken());
   EXPECT_EQ(service_->GetOAuth2LoginRefreshToken(), "rt1");
 
-  service_->OnOAuthLoginTokenSuccess("rt2", "at2", 3600);
+  service_->OnClientOAuthSuccess(
+      GaiaAuthConsumer::ClientOAuthResult("rt2", "at2", 3600));
   EXPECT_TRUE(service_->HasOAuthLoginToken());
   EXPECT_EQ(service_->GetOAuth2LoginRefreshToken(), "rt2");
 
-  service_->OnOAuthLoginTokenSuccess("rt3", "at3", 3600);
+  service_->OnClientOAuthSuccess(
+      GaiaAuthConsumer::ClientOAuthResult("rt3", "at3", 3600));
   EXPECT_TRUE(service_->HasOAuthLoginToken());
   EXPECT_EQ(service_->GetOAuth2LoginRefreshToken(), "rt3");
 }

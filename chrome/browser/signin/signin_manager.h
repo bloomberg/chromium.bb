@@ -110,10 +110,8 @@ class SigninManager : public GaiaAuthConsumer,
   virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
   virtual void OnClientLoginFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnOAuthLoginTokenSuccess(const std::string& refresh_token,
-                                        const std::string& access_token,
-                                        int expires_in_secs) OVERRIDE;
-  virtual void OnOAuthLoginTokenFailure(
+  virtual void OnClientOAuthSuccess(const ClientOAuthResult& result) OVERRIDE;
+  virtual void OnClientOAuthFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnGetUserInfoSuccess(const UserInfoMap& data) OVERRIDE;
   virtual void OnGetUserInfoFailure(

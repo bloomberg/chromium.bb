@@ -198,7 +198,7 @@ void SigninManager::StartSignInWithCredentials(const std::string& session_index,
   //
   // The resulting SID/LSID can then be used just as if
   // client_login_->StartClientLogin() had completed successfully.
-  client_login_->StartOAuthLoginTokenFetchWithCookies(session_index);
+  client_login_->StartCookieForOAuthLoginTokenExchange(session_index);
 }
 
 void SigninManager::ClearTransientSigninData() {
@@ -284,17 +284,15 @@ void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
   ClearTransientSigninData();
 }
 
-void SigninManager::OnOAuthLoginTokenSuccess(const std::string& refresh_token,
-                                             const std::string& access_token,
-                                             int expires_in_secs) {
-  DVLOG(1) << "SigninManager::OnOAuthLoginTokenSuccess access_token="
-           << access_token;
-  client_login_->StartUberAuthTokenFetch(access_token);
+void SigninManager::OnClientOAuthSuccess(const ClientOAuthResult& result) {
+  DVLOG(1) << "SigninManager::OnClientOAuthSuccess access_token="
+           << result.access_token;
+  client_login_->StartTokenFetchForUberAuthExchange(result.access_token);
 }
 
-void SigninManager::OnOAuthLoginTokenFailure(
+void SigninManager::OnClientOAuthFailure(
     const GoogleServiceAuthError& error) {
-  LOG(WARNING) << "SigninManager::OnOAuthLoginTokenFailure";
+  LOG(WARNING) << "SigninManager::OnClientOAuthFailure";
   HandleAuthError(error);
 }
 
