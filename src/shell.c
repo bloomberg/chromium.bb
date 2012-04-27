@@ -118,6 +118,7 @@ struct shell_surface {
 	enum shell_surface_type type;
 	int32_t saved_x, saved_y;
 	bool saved_position_valid;
+	bool saved_rotation_valid;
 	int unresponsive;
 
 	struct {
@@ -663,6 +664,11 @@ shell_unset_fullscreen(struct shell_surface *shsurf)
 	shsurf->force_configure = 1;
 	weston_surface_set_position(shsurf->surface,
 				    shsurf->saved_x, shsurf->saved_y);
+	if (shsurf->saved_rotation_valid) {
+		wl_list_insert(&shsurf->surface->geometry.transformation_list,
+        	               &shsurf->rotation.transform.link);
+		shsurf->saved_rotation_valid = false;
+	}
 }
 
 static int
@@ -950,6 +956,13 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	if (weston_surface_is_mapped(es))
 		shsurf->force_configure = 1;
 
+	if (!wl_list_empty(&shsurf->rotation.transform.link)) {
+		wl_list_remove(&shsurf->rotation.transform.link);
+		wl_list_init(&shsurf->rotation.transform.link);
+		shsurf->surface->geometry.dirty = 1;
+		shsurf->saved_rotation_valid = true;
+	}
+
 	wl_shell_surface_send_configure(&shsurf->resource, 0,
 					shsurf->output->current->width,
 					shsurf->output->current->height);
@@ -1176,6 +1189,7 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 	shsurf->unresponsive_animation.fading_in = 0;
 	shsurf->unresponsive_animation.current.frame = unresponsive_fade_frame;
 	shsurf->saved_position_valid = false;
+	shsurf->saved_rotation_valid = false;
 	shsurf->surface = surface;
 	shsurf->fullscreen.type = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
 	shsurf->fullscreen.framerate = 0;
