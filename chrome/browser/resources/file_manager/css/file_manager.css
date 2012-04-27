@@ -1166,3 +1166,16 @@ body:not([type='saveas-file']):not([type='full-page'])
     [visibleif='saveas-file full-page'] {
   display: none;
 }
+
+#gdata-settings {
+  text-align: left;
+}
+
+#gdata-settings img {
+  margin-left: 12px;
+}
+
+#gdata-settings span.disclosureindicator {
+  float: none;
+  margin-left: 1px;
+}

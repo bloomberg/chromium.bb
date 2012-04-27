@@ -133,10 +133,21 @@
         <div class=dialog-header>
           <div class=breadcrumbs></div>
           <input id="search-box" type="text" tabindex="4">
-          <div class=detail-view role=button tabindex="5" disabled></div>
-          <div class=thumbnail-view role=button tabindex="6"></div>
-          <div visibleif='full-page'><button
-            menu="#docs-settings" class="settings" tabindex="7"></button></div>
+
+          <div class="right buttonbar">
+            <button class="left small" id="detail-view">
+              <img src="images/view_list_black_12x12.png">
+            </button>
+            <button class="right small" id="thumbnail-view">
+              <img src="images/view_thumbs_black_12x12.png">
+            </button>
+            <button class="menubutton" id="gdata-settings"
+                    menu="#docs-settings">
+              <img src="images/settings.svg" alt="Settings">
+              <span class="disclosureindicator"></span>
+            </button>
+          </div>
+
         </div>
         <div class="gdrive-welcome header"></div>
         <div class=dialog-body>
@@ -153,16 +164,16 @@
             </div>
           </div>
           <div class=preview-panel visibility=hidden>
-            <div><div class=preview-thumbnails></div></div>
+            <div>
+              <div class=preview-thumbnails></div>
+            </div>
             <div class=preview-summary></div>
-            <div class=spacer></div>
-            <div class=tasks></div>
-            <div class='delete-button cr-button task-item' command='#delete'
-                    role="button" tabindex=0
-                    visibleif='full-page'
-                ><img src='images/button-icon-delete.png'
-                ><div i18n-content=DELETE_BUTTON_LABEL></div
-            ></div>
+            <div class="right buttonbar">
+              <button id="tasks" class="combobutton"></button>
+              <button id="delete-button" command="#delete"
+                      i18n-content="DELETE_BUTTON_LABEL">
+              </button>
+            </div>
           </div>
           <div class='unmounted-panel'></div>
         </div>

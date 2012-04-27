@@ -9,8 +9,8 @@
 cr.define('cr.ui', function() {
   /**
    * Sets minWidth for the target, so it's visually as large as source.
-   * @param {HTMLElement} target
-   * @param {HTMLElement} source
+   * @param {HTMLElement} target Element which min-width to tune.
+   * @param {HTMLElement} source Element, which width to use.
    */
   function enlarge(target, source) {
     var cs = target.ownerDocument.defaultView.getComputedStyle(target);
@@ -36,9 +36,12 @@ cr.define('cr.ui', function() {
     items_: null,
 
     clear: function() {
+      if (this.items_.length > 0)
+        // Remove default combobox item if we have added it at addItem.
+        this.removeChild(this.firstChild);
+
       this.items_ = [];
       this.popup_.textContent = '';
-      this.buttonContainer_.textContent = '';
       this.multiple = false;
       this.popup_.style.minWidth = '';
     },
@@ -46,7 +49,10 @@ cr.define('cr.ui', function() {
     addItem: function(item) {
       this.items_.push(item);
       if (this.items_.length == 1) {
-        this.buttonContainer_.appendChild(item);
+        // Set first added item as default on combobox.
+        // First item should be the first element to prepend drop-down arrow and
+        // popup layer.
+        this.insertBefore(item, this.firstChild);
       } else {
         this.multiple = true;
         if (this.popup_.hasChildNodes())
@@ -69,51 +75,47 @@ cr.define('cr.ui', function() {
     decorate: function() {
       this.items_ = [];
 
-      this.classList.add('cr-combobutton');
+      this.classList.add('combobutton');
 
-      this.container_ = this.ownerDocument.createElement('div');
-      this.container_.className = 'cr-cb-container';
-      this.buttonContainer_ = this.ownerDocument.createElement('div');
-      this.buttonContainer_.className = 'cr-button cr-cb-button-container';
+      var triggerIcon = this.ownerDocument.createElement('span');
+      triggerIcon.className = 'disclosureindicator';
       this.trigger_ = this.ownerDocument.createElement('div');
-      this.trigger_.className = 'cr-button cr-cb-trigger';
-      this.trigger_.appendChild(this.ownerDocument.createElement('img'));
-      this.container_.appendChild(this.buttonContainer_);
-      this.container_.appendChild(this.trigger_);
+      this.trigger_.appendChild(triggerIcon);
 
       this.popup_ = this.ownerDocument.createElement('div');
-      this.popup_.className = 'cr-cb-popup';
+      this.popup_.className = 'popup';
 
-      this.textContent = '';
-      this.appendChild(this.container_);
+      this.appendChild(this.trigger_);
       this.appendChild(this.popup_);
 
-      this.buttonContainer_.addEventListener('click',
+      this.addEventListener('click',
           this.handleButtonClick_.bind(this));
       this.popup_.addEventListener('click',
           this.handlePopupClick_.bind(this));
       this.trigger_.addEventListener('click',
           this.handleTriggerClicked_.bind(this));
       this.addEventListener('mouseout', this.handleMouseOut_.bind(this));
-      this.popup_.addEventListener('mouseout',
-          this.handleMouseOut_.bind(this));
 
       this.visible = true;
     },
 
     handleTriggerClicked_: function(event) {
       this.open = !this.open;
+      event.stopPropagation();
     },
 
     handleMouseOut_: function(event) {
       var x = event.x;
       var y = event.y;
-      var r = this.popup_.getBoundingClientRect();
-      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom)
-        return;
-      r = this.container_.getBoundingClientRect();
-      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom)
-        return;
+
+      var children = this.childNodes;
+      for (var i = 0; i < children.length; i++)
+      {
+        var r = this.children[i].getBoundingClientRect();
+        if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom)
+          return;
+      }
+
       this.open = false;
     },
 
@@ -130,6 +132,7 @@ cr.define('cr.ui', function() {
 
       this.open = false;
       this.dispatchSelectEvent(item);
+      event.stopPropagation();
     },
 
     dispatchSelectEvent: function(item) {
@@ -157,5 +160,5 @@ cr.define('cr.ui', function() {
 
   return {
     ComboButton: ComboButton
-  }
+  };
 });

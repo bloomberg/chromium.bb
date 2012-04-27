@@ -487,10 +487,10 @@ FileManager.prototype = {
     this.previewPanel_ = this.dialogDom_.querySelector('.preview-panel');
     this.previewSummary_ = this.dialogDom_.querySelector('.preview-summary');
     this.filenameInput_ = this.dialogDom_.querySelector('.filename-input');
-    this.taskItems_ = this.dialogDom_.querySelector('.tasks');
+    this.taskItems_ = this.dialogDom_.querySelector('#tasks');
     this.okButton_ = this.dialogDom_.querySelector('.ok');
     this.cancelButton_ = this.dialogDom_.querySelector('.cancel');
-    this.deleteButton_ = this.dialogDom_.querySelector('.delete-button');
+    this.deleteButton_ = this.dialogDom_.querySelector('#delete-button');
     this.table_ = this.dialogDom_.querySelector('.detail-table');
     this.grid_ = this.dialogDom_.querySelector('.thumbnail-grid');
     this.spinner_ = this.dialogDom_.querySelector('.spinner');
@@ -498,7 +498,7 @@ FileManager.prototype = {
     this.butter_ = this.dialogDom_.querySelector('.butter-bar');
     this.unmountedPanel_ = this.dialogDom_.querySelector('.unmounted-panel');
 
-    cr.ui.decorate('button[menu]', cr.ui.MenuButton);
+    cr.ui.decorate('#gdata-settings', cr.ui.MenuButton);
     cr.ui.Table.decorate(this.table_);
     cr.ui.Grid.decorate(this.grid_);
 
@@ -541,9 +541,9 @@ FileManager.prototype = {
         this.dialogDom_.querySelector('div.sidebar-splitter'));
 
     this.dialogContainer_ = this.dialogDom_.querySelector('.dialog-container');
-    this.dialogDom_.querySelector('div.detail-view').addEventListener(
+    this.dialogDom_.querySelector('#detail-view').addEventListener(
         'click', this.onDetailViewButtonClick_.bind(this));
-    this.dialogDom_.querySelector('div.thumbnail-view').addEventListener(
+    this.dialogDom_.querySelector('#thumbnail-view').addEventListener(
         'click', this.onThumbnailViewButtonClick_.bind(this));
 
     this.syncButton = this.dialogDom_.querySelector('#gdata-sync-settings');
@@ -1046,10 +1046,8 @@ FileManager.prototype = {
       this.table_.style.display = '';
       /** @type {cr.ui.List} */
       this.currentList_ = this.table_.list;
-      this.dialogDom_.querySelector('div.detail-view')
-          .setAttribute('disabled', 'disabled');
-      this.dialogDom_.querySelector('div.thumbnail-view')
-          .removeAttribute('disabled');
+      this.dialogDom_.querySelector('#detail-view').disabled = true;
+      this.dialogDom_.querySelector('#thumbnail-view').disabled = false;
     } else if (type == FileManager.ListType.THUMBNAIL) {
       this.grid_.dataModel = this.directoryModel_.getFileList();
       this.grid_.selectionModel = this.directoryModel_.getFileListSelection();
@@ -1060,10 +1058,8 @@ FileManager.prototype = {
       this.grid_.style.display = '';
       /** @type {cr.ui.List} */
       this.currentList_ = this.grid_;
-      this.dialogDom_.querySelector('div.thumbnail-view')
-          .setAttribute('disabled', 'disabled');
-      this.dialogDom_.querySelector('div.detail-view')
-          .removeAttribute('disabled');
+      this.dialogDom_.querySelector('#thumbnail-view').disabled = true;
+      this.dialogDom_.querySelector('#detail-view').disabled = false;
     } else {
       throw new Error('Unknown list type: ' + type);
     }
@@ -2385,7 +2381,7 @@ FileManager.prototype = {
           task.title = str('INSTALL_CRX');
         }
       }
-      this.renderTaskItem_(task);
+      this.taskItems_.addItem(this.renderTaskItem_(task));
       tasksCount++;
       if (defaultTask == null) defaultTask = task;
     }
@@ -2393,7 +2389,7 @@ FileManager.prototype = {
     this.taskItems_.hidden = tasksCount == 0;
     if (tasksCount > 1) {
       // Duplicate default task in drop-down list.
-      this.renderTaskItem_(defaultTask);
+      this.taskItems_.addItem(this.renderTaskItem_(defaultTask));
     }
 
     selection.tasksList = tasksList;
@@ -2417,7 +2413,7 @@ FileManager.prototype = {
     label.appendChild(this.document_.createTextNode(task.title));
     item.appendChild(label);
 
-    this.taskItems_.addItem(item);
+    return item;
   };
 
   FileManager.prototype.getExtensionId_ = function() {

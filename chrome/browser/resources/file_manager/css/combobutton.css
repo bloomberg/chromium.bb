@@ -2,94 +2,36 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.cr-button {
-  -webkit-appearance: none;
-  -webkit-user-select: none;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  color: #444;
-  cursor: default;
-  font: -webkit-small-control;
-  margin: 0 1px 0 0;
-  text-shadow: 0 1px 0 rgb(240, 240, 240);
+.buttonbar button.combobutton {
+  display: -webkit-box;
+  padding-left: 0;
+  padding-right: 0;
 }
 
-.cr-button:hover {
-  border-color: #bbb;
-  color: black;
+.buttonbar .combobutton .task-item div {
+  padding-left: 7px;
+  padding-right: 0;
 }
 
-.cr-button:active {
-  background-color: #f1f1f1;
-  border-color: #bbb;
-  box-shadow: none;
-  text-shadow: none;
-}
-
-.cr-button:disabled {
-  border-color: rgba(0, 0, 0, 0.2);
-  color: #999;
-}
-
-.cr-button:focus {
-  -webkit-transition: border-color 200ms;
-  border-color: rgb(77, 144, 254);
-  outline: none;
-}
-
-
-.cr-combobutton {
-  cursor: default;
+.buttonbar .combobutton > div:nth-child(2) {
+  border-left: solid 1px #dcdcdc;
   display: none;
-  font: -webkit-small-control;
-  position: relative;
+  width: 22px;
 }
 
-.cr-combobutton[visible] {
-  -webkit-box-align: stretch;
-  -webkit-box-orient: vertical;
-  display: -webkit-box;
-}
-
-.cr-cb-container {
-  -webkit-box-flex: 1;
-  display: -webkit-box;
-}
-
-.cr-cb-button-container {
-  -webkit-box-align: stretch;
-  -webkit-box-flex: 1;
-  -webkit-box-orient: vertical;
-  border-bottom-right-radius: 0;
-  border-top-right-radius: 0;
-  display: -webkit-box;
-}
-
-.cr-cb-button-container > * {
-  background-color: rgba(0, 0, 0, 0);
-}
-
-.cr-cb-trigger {
-  -webkit-box-flex: 0;
-  -webkit-margin-start: -1px;
-  border-bottom-left-radius: 0;
-  border-top-left-radius: 0;
-  display: none;
-  margin-left: -2px;
-  width: 20px;
-}
-
-.cr-cb-trigger > img {
-  content: url('../images/disclosure_arrow_dk_grey_down.png');
-  margin-left: 6px;
-  margin-top: 13px;
-}
-
-.cr-combobutton[multiple] .cr-cb-trigger {
+.buttonbar .combobutton[multiple] > div:nth-child(2) {
   display: block;
 }
 
-.cr-cb-popup {
+.buttonbar .combobutton > div:nth-child(2) > span.disclosureindicator {
+  -webkit-transform: rotate(90deg);
+}
+
+.buttonbar .combobutton div.task-item {
+  line-height: normal;
+}
+
+.buttonbar .combobutton .popup {
   -webkit-box-align: stretch;
   -webkit-box-orient: vertical;
   -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, .50);
@@ -101,23 +43,23 @@
   cursor: default;
   display: -webkit-box;
   opacity: 0;
-  padding:  8px 0;
+  padding: 8px 0;
   pointer-events: none;
   position: absolute;
   right: 1px;
   white-space: nowrap;
 }
 
-.cr-cb-popup:active {
+.buttonbar .combobutton .popup:active {
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.cr-combobutton[open] .cr-cb-popup {
+.buttonbar .combobutton[open] .popup {
   opacity: 1;
   pointer-events: auto;
 }
 
-.cr-cb-popup > * {
+.buttonbar .combobutton .popup > * {
   background: transparent;
   border: 0;
   font: inherit;
@@ -125,11 +67,15 @@
   text-overflow: ellipsis;
 }
 
-.cr-cb-popup > *:hover {
+.buttonbar .combobutton .popup > *:hover {
   background-color: rgb(220, 229, 250);
 }
 
-.cr-cb-popup > *:active {
+.buttonbar .combobutton .popup > *:active {
   background-color: rgb(66, 109, 201);
   color: #fff;
+}
+
+.buttonbar .combobutton[hidden] {
+  display: none;
 }
