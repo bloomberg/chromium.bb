@@ -500,7 +500,14 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseTest, DownloadsCloseCheck_0) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserCloseTest, DownloadsCloseCheck_1) {
+// Crashing on Linux. http://crbug.com/100566
+#if defined(OS_LINUX)
+#define MAYBE_DownloadsCloseCheck_1 DISABLED_DownloadsCloseCheck_1
+#else
+#define MAYBE_DownloadsCloseCheck_1 DownloadsCloseCheck_1
+#endif
+
+IN_PROC_BROWSER_TEST_F(BrowserCloseTest, MAYBE_DownloadsCloseCheck_1) {
   ASSERT_TRUE(SetupForDownloadCloseCheck());
   for (size_t i = arraysize(download_close_check_cases) / 6;
        i < 2 * arraysize(download_close_check_cases) / 6; ++i) {
