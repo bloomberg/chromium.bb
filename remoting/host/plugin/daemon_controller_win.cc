@@ -108,6 +108,10 @@ class DaemonControllerWin : public remoting::DaemonController {
   // Opens the Chromoting service returning its handle in |service_out|.
   DWORD OpenService(ScopedScHandle* service_out);
 
+  // Converts a config dictionary to a scoped BSTR.
+  static void ConfigToString(const base::DictionaryValue& config,
+                             ScopedBstr* out);
+
   // The functions that actually do the work. They should be called in
   // the context of |worker_thread_|;
   void DoGetConfig(const GetConfigCallback& callback);
@@ -342,6 +346,14 @@ DWORD DaemonControllerWin::OpenService(ScopedScHandle* service_out) {
   return ERROR_SUCCESS;
 }
 
+void DaemonControllerWin::ConfigToString(const base::DictionaryValue& config,
+                                         ScopedBstr* out) {
+  std::string config_str;
+  base::JSONWriter::Write(&config, &config_str);
+  ScopedBstr config_scoped_bstr(UTF8ToUTF16(config_str).c_str());
+  out->Swap(config_scoped_bstr);
+}
+
 void DaemonControllerWin::DoGetConfig(const GetConfigCallback& callback) {
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
@@ -443,17 +455,15 @@ void DaemonControllerWin::DoSetConfigAndStart(
     return;
   }
 
-  // Store the configuration.
-  std::string file_content;
-  base::JSONWriter::Write(config.get(), &file_content);
-
-  ScopedBstr host_config(UTF8ToUTF16(file_content).c_str());
-  if (host_config == NULL) {
+  // Set the configuration.
+  ScopedBstr config_str(NULL);
+  ConfigToString(*config, &config_str);
+  if (config_str == NULL) {
     done_callback.Run(HResultToAsyncResult(E_OUTOFMEMORY));
     return;
   }
 
-  hr = control->SetConfig(host_config);
+  hr = control->SetConfig(config_str);
   if (FAILED(hr)) {
     done_callback.Run(HResultToAsyncResult(hr));
     return;
@@ -467,8 +477,6 @@ void DaemonControllerWin::DoSetConfigAndStart(
 void DaemonControllerWin::DoUpdateConfig(
     scoped_ptr<base::DictionaryValue> config,
     const CompletionCallback& done_callback) {
-  // TODO(simonmorris): Much of this code was copied from DoSetConfigAndStart().
-  // Refactor.
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   IDaemonControl* control = NULL;
@@ -479,17 +487,15 @@ void DaemonControllerWin::DoUpdateConfig(
     return;
   }
 
-  // Store the configuration.
-  std::string file_content;
-  base::JSONWriter::Write(config.get(), &file_content);
-
-  ScopedBstr host_config(UTF8ToUTF16(file_content).c_str());
-  if (host_config == NULL) {
+  // Update the configuration.
+  ScopedBstr config_str(NULL);
+  ConfigToString(*config, &config_str);
+  if (config_str == NULL) {
     done_callback.Run(HResultToAsyncResult(E_OUTOFMEMORY));
     return;
   }
 
-  hr = control->UpdateConfig(host_config);
+  hr = control->UpdateConfig(config_str);
   done_callback.Run(HResultToAsyncResult(hr));
 }
 
