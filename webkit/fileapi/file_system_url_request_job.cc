@@ -97,7 +97,7 @@ bool FileSystemURLRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size,
 
   const int rv = reader_->Read(dest, dest_size,
                                base::Bind(&FileSystemURLRequestJob::DidRead,
-                                          base::Unretained(this)));
+                                          weak_factory_.GetWeakPtr()));
   if (rv >= 0) {
     // Data is immediately available.
     *bytes_read = rv;

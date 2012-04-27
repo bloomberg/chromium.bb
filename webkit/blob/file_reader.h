@@ -21,6 +21,8 @@ namespace webkit_blob {
 // A generic interface for reading a file-like object.
 class BLOB_EXPORT FileReader {
  public:
+  // It is valid to delete the reader at any time.  If the stream is deleted
+  // while it has a pending read, its callback will not be called.
   virtual ~FileReader() {}
 
   // Reads from the current cursor position asynchronously.
@@ -33,6 +35,9 @@ class BLOB_EXPORT FileReader {
   // was called, when the read has completed.
   //
   // It is invalid to call Read while there is an in-flight Read operation.
+  //
+  // If the stream is deleted while it has an in-flight Read operation
+  // |callback| will not be called.
   virtual int Read(net::IOBuffer* buf, int buf_len,
                    const net::CompletionCallback& callback) = 0;
 };
