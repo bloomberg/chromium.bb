@@ -708,6 +708,10 @@ void Shell::Init() {
   // Force a layout.
   root_window->layout_manager()->OnWindowResized();
 
+  // It needs to be created after OnWindowResized has been called, otherwise the
+  // widget will not paint when restoring after a browser crash.
+  desktop_background_controller_->SetDesktopBackgroundImageMode();
+
   window_modality_controller_.reset(new internal::WindowModalityController);
   AddRootWindowEventFilter(window_modality_controller_.get());
 
@@ -896,9 +900,6 @@ void Shell::InitLayoutManagers() {
   always_on_top_container->SetLayoutManager(
       new internal::BaseLayoutManager(
           always_on_top_container->GetRootWindow()));
-
-  // Create desktop background widget.
-  desktop_background_controller_->SetDesktopBackgroundImageMode();
 
   // Create Panel layout manager
   if (CommandLine::ForCurrentProcess()->

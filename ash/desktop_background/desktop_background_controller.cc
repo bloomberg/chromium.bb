@@ -31,6 +31,10 @@ void DesktopBackgroundController::SetDesktopBackgroundImageMode() {
       Shell::GetInstance()->root_window_layout();
   int index = Shell::GetInstance()->user_wallpaper_delegate()->
       GetUserWallpaperIndex();
+  // We should not change background when index is invalid. For instance, at
+  // login screen.
+  if (index == ash::GetInvalidWallpaperIndex())
+    return;
   root_window_layout->SetBackgroundLayer(NULL);
   internal::CreateDesktopBackground(GetWallpaper(index),
                                     GetWallpaperInfo(index).layout);

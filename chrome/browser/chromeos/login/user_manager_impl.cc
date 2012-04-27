@@ -933,9 +933,10 @@ void UserManagerImpl::SetInitialUserImage(const std::string& username) {
 int UserManagerImpl::GetUserWallpaperIndex() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // If at login screen, use the default guest wallpaper.
+  // If at login screen, use an invalid index to prevent any wallpaper
+  // operation.
   if (!IsUserLoggedIn())
-    return ash::GetGuestWallpaperIndex();
+    return ash::GetInvalidWallpaperIndex();
   // If logged in as other ephemeral users (Demo/Stub/Normal user with
   // ephemeral policy enabled/Guest), use the index in memory.
   if (IsCurrentUserEphemeral())
