@@ -37,8 +37,7 @@ AutofillExternalDelegate::AutofillExternalDelegate(
 
 void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int unique_id,
                                                                int list_index) {
-  if (password_autofill_manager_.DidSelectAutofillSuggestion(
-          autofill_query_field_))
+  if (unique_id == WebAutofillClient::MenuItemIDPasswordEntry)
     return;
 
   if (list_index == suggestions_options_index_ ||
@@ -185,7 +184,8 @@ bool AutofillExternalDelegate::DidAcceptAutofillSuggestions(
     RenderViewHost* host =
         tab_contents_wrapper_->web_contents()->GetRenderViewHost();
     host->Send(new AutofillMsg_ClearForm(host->GetRoutingID()));
-  } else if (password_autofill_manager_.DidAcceptAutofillSuggestion(
+  } else if (unique_id == WebAutofillClient::MenuItemIDPasswordEntry &&
+             password_autofill_manager_.DidAcceptAutofillSuggestion(
                  autofill_query_field_, value)) {
     // DidAcceptAutofillSuggestion has already handled the work to fill in
     // the page as required.
@@ -206,10 +206,6 @@ bool AutofillExternalDelegate::DidAcceptAutofillSuggestions(
 }
 
 void AutofillExternalDelegate::ClearPreviewedForm() {
-  if (password_autofill_manager_.DidClearAutofillSelection(
-          autofill_query_field_))
-    return;
-
   RenderViewHost* host =
       tab_contents_wrapper_->web_contents()->GetRenderViewHost();
   host->Send(new AutofillMsg_ClearPreviewedForm(host->GetRoutingID()));

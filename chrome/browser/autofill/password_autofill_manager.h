@@ -32,15 +32,6 @@ class PasswordAutofillManager {
   bool DidAcceptAutofillSuggestion(const webkit::forms::FormField& field,
                                    const string16& value);
 
-  // A no-op.  No filling happens for selection.  But this method returns
-  // true when |node| is fillable by password Autofill.
-  bool DidSelectAutofillSuggestion(const webkit::forms::FormField& field);
-
-  // A no-op.  Password forms are not previewed, so they do not need to be
-  // cleared when the selection changes.  However, this method returns
-  // true when |node| is fillable by password Autofill.
-  bool DidClearAutofillSelection(const webkit::forms::FormField& field);
-
   // Invoked when a password mapping is added.
   void AddPasswordFormMapping(
       const webkit::forms::FormField& username_element,

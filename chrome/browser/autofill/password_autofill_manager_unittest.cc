@@ -72,23 +72,3 @@ TEST_F(PasswordAutofillManagerTest, DidAcceptAutofillSuggestion) {
   EXPECT_FALSE(password_autofill_manager()->DidAcceptAutofillSuggestion(
       username_field(), ASCIIToUTF16(kAliceUsername)));
 }
-
-TEST_F(PasswordAutofillManagerTest, DidSelectAutofillSuggestion) {
-  EXPECT_TRUE(password_autofill_manager()->DidSelectAutofillSuggestion(
-      username_field()));
-
-  password_autofill_manager()->Reset();
-
-  EXPECT_FALSE(password_autofill_manager()->DidSelectAutofillSuggestion(
-      username_field()));
-}
-
-TEST_F(PasswordAutofillManagerTest, DidClearAutofillSelection) {
-   EXPECT_TRUE(password_autofill_manager()->DidClearAutofillSelection(
-      username_field()));
-
-   password_autofill_manager()->Reset();
-
-  EXPECT_FALSE(password_autofill_manager()->DidClearAutofillSelection(
-      username_field()));
-}

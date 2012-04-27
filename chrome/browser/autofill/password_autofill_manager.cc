@@ -39,20 +39,6 @@ bool PasswordAutofillManager::DidAcceptAutofillSuggestion(
   return false;
 }
 
-bool PasswordAutofillManager::DidSelectAutofillSuggestion(
-    const webkit::forms::FormField& field) {
-  webkit::forms::FormField input;
-  webkit::forms::PasswordFormFillData password;
-  return FindLoginInfo(field, &password);
-}
-
-bool PasswordAutofillManager::DidClearAutofillSelection(
-    const webkit::forms::FormField& field) {
-  webkit::forms::FormField input;
-  webkit::forms::PasswordFormFillData password;
-  return FindLoginInfo(field, &password);
-}
-
 void PasswordAutofillManager::AddPasswordFormMapping(
     const webkit::forms::FormField& username_element,
     const webkit::forms::PasswordFormFillData& password) {
