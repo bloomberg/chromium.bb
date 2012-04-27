@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "content/renderer/media/capture_video_decoder.h"
@@ -31,11 +32,15 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
 namespace {
-
 const int kVideoCaptureWidth = 640;
 const int kVideoCaptureHeight = 480;
 const int kVideoCaptureFramePerSecond = 30;
 
+// Histogram names. Histograms can be viewed at chrome://histograms/WebRTC
+const char kHistogramGetUserMedia[] = "WebRTC.webkitGetUserMediaCount";
+const char kHistogramPeerConnection[] = "WebRTC.webkitPeerConnection00Count";
+const char kHistogramDeprecatedPeerConnection[] =
+    "WebRTC.webkitDeprecatedPeerConnectionCount";
 }  // namespace
 
 // The MediaStreamMananger label for a stream is globally unique. The track
@@ -113,6 +118,10 @@ MediaStreamImpl::~MediaStreamImpl() {
 
 WebKit::WebPeerConnectionHandler* MediaStreamImpl::CreatePeerConnectionHandler(
     WebKit::WebPeerConnectionHandlerClient* client) {
+  // Save histogram data so we can see how much PeerConnetion is used.
+  // The histogram counts the number of calls to the JS API
+  // webKitDeprecatedPeerConnection.
+  UMA_HISTOGRAM_COUNTS_100(kHistogramDeprecatedPeerConnection, 1);
   DCHECK(CalledOnValidThread());
   if (!EnsurePeerConnectionFactory())
     return NULL;
@@ -129,6 +138,10 @@ WebKit::WebPeerConnectionHandler* MediaStreamImpl::CreatePeerConnectionHandler(
 WebKit::WebPeerConnection00Handler*
 MediaStreamImpl::CreatePeerConnectionHandlerJsep(
     WebKit::WebPeerConnection00HandlerClient* client) {
+  // Save histogram data so we can see how much PeerConnetion is used.
+  // The histogram counts the number of calls to the JS API
+  // webKitPeerConnection.
+  UMA_HISTOGRAM_COUNTS_100(kHistogramPeerConnection, 1);
   DCHECK(CalledOnValidThread());
   if (!EnsurePeerConnectionFactory())
     return NULL;
@@ -162,9 +175,12 @@ void MediaStreamImpl::requestUserMedia(
     const WebKit::WebUserMediaRequest& user_media_request,
     const WebKit::WebVector<WebKit::WebMediaStreamSource>& audio_sources,
     const WebKit::WebVector<WebKit::WebMediaStreamSource>& video_sources) {
+  // Save histogram data so we can see how much GetUserMedia is used.
+  // The histogram counts the number of calls to the JS API
+  // webGetUserMedia.
+  UMA_HISTOGRAM_COUNTS_100(kHistogramGetUserMedia, 1);
   DCHECK(CalledOnValidThread());
   DCHECK(!user_media_request.isNull());
-
   int request_id = next_request_id_++;
 
   bool audio = user_media_request.audio();
@@ -231,7 +247,6 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::GetVideoDecoder(
   }
 
   // WebKit claim this is MediaStream url but there is no valid source.
-  NOTREACHED();
   return NULL;
 }
 
