@@ -43,6 +43,13 @@ void ClientControlDispatcher::InjectClipboardEvent(
   writer_->Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
+void ClientControlDispatcher::NotifyClientDimensions(
+    const ClientDimensions& dimensions) {
+  ControlMessage message;
+  message.mutable_client_dimensions()->CopyFrom(dimensions);
+  writer_->Write(SerializeAndFrameMessage(message), base::Closure());
+}
+
 void ClientControlDispatcher::OnMessageReceived(
     scoped_ptr<ControlMessage> message, const base::Closure& done_task) {
   DCHECK(client_stub_);

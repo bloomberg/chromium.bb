@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,13 +14,16 @@
 namespace remoting {
 namespace protocol {
 
+class ClientDimensions;
+
 class HostStub {
  public:
   HostStub() {}
   virtual ~HostStub() {}
 
-  // Currently we don't use the control channel for anything. Add new
-  // message handlers here when necessary.
+  // Notification of the available client display dimensions.
+  // This may be used to resize the host display to match the client area.
+  virtual void NotifyClientDimensions(const ClientDimensions& dimensions) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostStub);

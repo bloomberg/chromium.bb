@@ -103,6 +103,9 @@ class MockHostStub : public HostStub {
   MockHostStub();
   virtual ~MockHostStub();
 
+  MOCK_METHOD1(NotifyClientDimensions,
+               void(const ClientDimensions& dimensions));
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockHostStub);
 };

@@ -49,6 +49,8 @@ void HostControlDispatcher::OnMessageReceived(
 
   if (message->has_clipboard_event()) {
     clipboard_stub_->InjectClipboardEvent(message->clipboard_event());
+  } else if (message->has_client_dimensions()) {
+    host_stub_->NotifyClientDimensions(message->client_dimensions());
   } else {
     LOG(WARNING) << "Unknown control message received.";
   }

@@ -12,9 +12,6 @@
 
 namespace remoting {
 
-using protocol::KeyEvent;
-using protocol::MouseEvent;
-
 ClientSession::ClientSession(
     EventHandler* event_handler,
     scoped_ptr<protocol::ConnectionToClient> connection,
@@ -54,15 +51,15 @@ void ClientSession::InjectClipboardEvent(
   host_event_stub_->InjectClipboardEvent(event);
 }
 
-void ClientSession::InjectKeyEvent(const KeyEvent& event) {
+void ClientSession::InjectKeyEvent(const protocol::KeyEvent& event) {
   DCHECK(CalledOnValidThread());
   auth_input_filter_.InjectKeyEvent(event);
 }
 
-void ClientSession::InjectMouseEvent(const MouseEvent& event) {
+void ClientSession::InjectMouseEvent(const protocol::MouseEvent& event) {
   DCHECK(CalledOnValidThread());
 
-  MouseEvent event_to_inject = event;
+  protocol::MouseEvent event_to_inject = event;
   if (event.has_x() && event.has_y()) {
     // In case the client sends events with off-screen coordinates, modify
     // the event to lie within the current screen area.  This is better than
@@ -76,6 +73,11 @@ void ClientSession::InjectMouseEvent(const MouseEvent& event) {
     event_to_inject.set_y(pos.y());
   }
   auth_input_filter_.InjectMouseEvent(event_to_inject);
+}
+
+void ClientSession::NotifyClientDimensions(
+    const protocol::ClientDimensions& dimensions) {
+  // TODO(wez): Use the dimensions, e.g. to resize the host desktop to match.
 }
 
 void ClientSession::OnConnectionAuthenticated(

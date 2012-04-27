@@ -76,6 +76,10 @@ class ClientSession : public protocol::HostEventStub,
   virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
 
+  // protocol::HostStub interface.
+  virtual void NotifyClientDimensions(
+      const protocol::ClientDimensions& dimensions) OVERRIDE;
+
   // protocol::ConnectionToClient::EventHandler interface.
   virtual void OnConnectionAuthenticated(
       protocol::ConnectionToClient* connection) OVERRIDE;
