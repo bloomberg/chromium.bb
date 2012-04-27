@@ -83,36 +83,17 @@ OmniboxViewViews* AsViews(OmniboxView* view) {
 }
 
 // Height of the location bar's round corner region.
-// TODO(jamescook): Update all Chrome platforms to use the new art and metrics
-// from Ash, crbug.com/118228
-#if defined(USE_ASH)
 const int kBorderRoundCornerHeight = 5;
-#else
-const int kBorderRoundCornerHeight = 6;
-#endif
-
 // Width of location bar's round corner region.
-#if defined(USE_ASH)
 const int kBorderRoundCornerWidth = 4;
-#else
-const int kBorderRoundCornerWidth = 5;
-#endif
-
 // Radius of the round corners inside the location bar.
-#if defined(USE_ASH)
 const int kBorderCornerRadius = 2;
-#endif
 
 }  // namespace
 
 // static
-#if defined(USE_ASH)
 const int LocationBarView::kNormalHorizontalEdgeThickness = 2;
 const int LocationBarView::kVerticalEdgeThickness = 3;
-#else
-const int LocationBarView::kNormalHorizontalEdgeThickness = 1;
-const int LocationBarView::kVerticalEdgeThickness = 2;
-#endif  // defined(USE_ASH)
 const int LocationBarView::kItemPadding = 3;
 const int LocationBarView::kIconInternalPadding = 2;
 const int LocationBarView::kEdgeItemPadding = kItemPadding;
@@ -778,15 +759,9 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
     paint.setColor(color);
     paint.setStyle(SkPaint::kFill_Style);
     paint.setAntiAlias(true);
-#if defined(USE_ASH)
-    // On Ash the omnibox uses smaller corners.
+    // TODO(jamescook): Make the corners of the dropdown match the corners of
+    // the omnibox.
     const SkScalar radius(SkIntToScalar(kBorderCornerRadius));
-#else
-    // The round corners of the omnibox match the round corners of the dropdown
-    // below, and all our other bubbles.
-    const SkScalar radius(SkIntToScalar(
-        views::BubbleBorder::GetCornerRadius()));
-#endif
     bounds.Inset(kNormalHorizontalEdgeThickness, 0);
     canvas->sk_canvas()->drawRoundRect(gfx::RectToSkRect(bounds), radius,
                                        radius, paint);
@@ -796,6 +771,7 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
 
   if (show_focus_rect_ && HasFocus()) {
     gfx::Rect r = location_entry_view_->bounds();
+    // TODO(jamescook): Is this still needed?
 #if defined(OS_WIN)
     r.Inset(-1,  -1);
 #else

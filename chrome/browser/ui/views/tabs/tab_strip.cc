@@ -91,13 +91,14 @@ const int GetNewTabButtonHOffset() {
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
       case ui::LAYOUT_ASH:
+      case ui::LAYOUT_DESKTOP:
         value = -11;
         break;
       case ui::LAYOUT_TOUCH:
         value = -6;
         break;
       default:
-        value = -5;
+        NOTREACHED();
     }
   }
   return value;
@@ -110,13 +111,14 @@ const int GetNewTabButtonVOffset() {
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
       case ui::LAYOUT_ASH:
+      case ui::LAYOUT_DESKTOP:
         value = 7;
         break;
       case ui::LAYOUT_TOUCH:
         value = 10;
         break;
       default:
-        value = 5;
+        NOTREACHED();
     }
   }
   return value;
@@ -129,13 +131,14 @@ const int GetTabHOffset() {
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
       case ui::LAYOUT_ASH:
-        value = -27;
+      case ui::LAYOUT_DESKTOP:
+        value = -29;
         break;
       case ui::LAYOUT_TOUCH:
         value = -16;
         break;
       default:
-        value = -16;
+        NOTREACHED();
     }
   }
   return value;

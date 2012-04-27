@@ -36,9 +36,9 @@ HICON GlassBrowserFrameView::throbber_icons_[
 namespace {
 // There are 3 px of client edge drawn inside the outer frame borders.
 const int kNonClientBorderThickness = 3;
-// Besides the frame border, there's another 11 px of empty space atop the
+// Besides the frame border, there's another 9 px of empty space atop the
 // window in restored mode, to use to drag the window around.
-const int kNonClientRestoredExtraThickness = 11;
+const int kNonClientRestoredExtraThickness = 9;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of the top and bottom edges triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;
@@ -51,9 +51,9 @@ const int kAvatarBottomSpacing = 2;
 const int kAvatarSideSpacing = 2;
 // The content left/right images have a shadow built into them.
 const int kContentEdgeShadowThickness = 2;
-// The top 1 px of the tabstrip is shadow; in maximized mode we push this off
+// The top 3 px of the tabstrip is shadow; in maximized mode we push this off
 // the top of the screen so the tabs appear flush against the screen edge.
-const int kTabstripTopShadowThickness = 1;
+const int kTabstripTopShadowThickness = 3;
 // In restored mode, the New Tab button isn't at the same height as the caption
 // buttons, but the space will look cluttered if it actually slides under them,
 // so we stop it when the gap between the two is down to 5 px.
@@ -62,6 +62,9 @@ const int kNewTabCaptionRestoredSpacing = 5;
 // similar vertical coordinates, we need to reserve a larger, 16 px gap to avoid
 // looking too cluttered.
 const int kNewTabCaptionMaximizedSpacing = 16;
+// How far to indent the tabstrip from the left side of the screen when there
+// is no avatar icon.
+const int kTabStripIndent = -4;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -94,7 +97,7 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
       std::min(frame()->GetMinimizeButtonOffset(), width());
   int tabstrip_x = browser_view()->ShouldShowAvatar() ?
       (avatar_bounds_.right() + kAvatarSideSpacing) :
-      NonClientBorderThickness();
+      NonClientBorderThickness() + kTabStripIndent;
   // In RTL languages, we have moved an avatar icon left by the size of window
   // controls to prevent it from being rendered over them. So, we use its x
   // position to move this tab strip left when maximized. Also, we can render

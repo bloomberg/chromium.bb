@@ -39,13 +39,14 @@ const int GetLeftPadding() {
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
       case ui::LAYOUT_ASH:
-        value = 21;
+      case ui::LAYOUT_DESKTOP:
+        value = 22;
         break;
       case ui::LAYOUT_TOUCH:
         value = 20;
         break;
       default:
-        value = 16;
+        NOTREACHED();
     }
   }
   return value;
@@ -56,13 +57,14 @@ const int GetTopPadding() {
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
       case ui::LAYOUT_ASH:
+      case ui::LAYOUT_DESKTOP:
         value = 8;
         break;
       case ui::LAYOUT_TOUCH:
         value = 12;
         break;
       default:
-        value = 6;
+        NOTREACHED();
     }
   }
   return value;
@@ -73,13 +75,12 @@ const int GetRightPadding() {
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
       case ui::LAYOUT_ASH:
-        value = 20;
-        break;
+      case ui::LAYOUT_DESKTOP:
       case ui::LAYOUT_TOUCH:
         value = 21;
         break;
       default:
-        value = 15;
+        NOTREACHED();
     }
   }
   return value;
@@ -89,46 +90,44 @@ const int GetBottomPadding() {
   static int value = -1;
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
+      case ui::LAYOUT_ASH:
+      case ui::LAYOUT_DESKTOP:
+        value = 5;
+        break;
       case ui::LAYOUT_TOUCH:
         value = 7;
         break;
-      case ui::LAYOUT_ASH:
       default:
-        value = 5;
+        NOTREACHED();
     }
   }
   return value;
 }
 
 // Height of the shadow at the top of the tab image assets.
-#if defined(USE_ASH)
 static const int kDropShadowHeight = 4;
-#else
-static const int kDropShadowHeight = 2;
-#endif
 static const int kToolbarOverlap = 1;
 static const int kFaviconTitleSpacing = 4;
-// Additional vertical offset for title text relative to top of tab.
 #if defined(USE_ASH)
+// Additional vertical offset for title text relative to top of tab.
+// Ash text rendering may be different than Windows.
+// TODO(jamescook): Make this Chrome OS or Linux only?
 static const int kTitleTextOffsetY = 1;
 #else
 static const int kTitleTextOffsetY = 0;
 #endif
 static const int kTitleCloseButtonSpacing = 3;
 static const int kStandardTitleWidth = 175;
-// Additional vertical offset for close button relative to top of tab.
 #if defined(USE_ASH)
+// Additional vertical offset for close button relative to top of tab.
+// Ash needs this to match the text vertical position.
 static const int kCloseButtonVertFuzz = 1;
 #else
 static const int kCloseButtonVertFuzz = 0;
 #endif
 static const int kTabIconSize = gfx::kFaviconSize;
 // Additional horizontal offset for close button relative to title text.
-#if defined(USE_ASH)
 static const int kCloseButtonHorzFuzz = 7;
-#else
-static const int kCloseButtonHorzFuzz = 5;
-#endif
 
 // When a non-mini-tab becomes a mini-tab the width of the tab animates. If
 // the width of a mini-tab is >= kMiniTabRendererAsNormalTabWidth then the tab

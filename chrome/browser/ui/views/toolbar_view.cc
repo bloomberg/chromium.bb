@@ -55,40 +55,24 @@ using content::WebContents;
 
 // static
 const char ToolbarView::kViewClassName[] = "browser/ui/views/ToolbarView";
-// The space between items is 4 px in general.
-// TODO(jamescook): Update all Chrome platforms to use the new art and metrics
-// from Ash, crbug.com/118228
-#if defined(USE_ASH)
+// The space between items is 3 px in general.
 const int ToolbarView::kStandardSpacing = 3;
-#else
-const int ToolbarView::kStandardSpacing = 4;
-#endif
-
-// The top of the toolbar has an edge we have to skip over in addition to the 4
-// px of spacing.
-const int ToolbarView::kVertSpacing = 5;
+// The top of the toolbar has an edge we have to skip over in addition to the
+// above spacing.
+const int ToolbarView::kVertSpacing = 4;
 // The edge graphics have some built-in spacing/shadowing, so we have to adjust
-// our spacing to make it still appear to be 4 px.
-#if defined(USE_ASH)
+// our spacing to make it match.
 static const int kLeftEdgeSpacing = 3;
 static const int kRightEdgeSpacing = 2;
-#else
-static const int kLeftEdgeSpacing = 3;
-static const int kRightEdgeSpacing = 3;
-#endif
 
 // The buttons to the left of the omnibox are close together.
-#if defined(USE_ASH)
 static const int kButtonSpacing = 0;
-#else
-static const int kButtonSpacing = 1;
-#endif
 
-// The content area line has a shadow that extends a couple of pixels above
-// the toolbar bounds.
 #if defined(USE_ASH)
+// Ash doesn't use a rounded content area and its top edge has an extra shadow.
 const int kContentShadowHeight = 2;
 #else
+// Windows uses a rounded content area with no shadow in the assets.
 const int kContentShadowHeight = 0;
 #endif
 
@@ -591,7 +575,7 @@ void ToolbarView::Layout() {
   int available_width = width() - kRightEdgeSpacing - app_menu_width -
       browser_actions_width - location_x;
   int location_y = child_y;
-  int location_bar_height = child_height;
+  int location_bar_height = location_bar_->GetPreferredSize().height();
 
   location_bar_->SetBounds(location_x, location_y, std::max(available_width, 0),
                            location_bar_height);

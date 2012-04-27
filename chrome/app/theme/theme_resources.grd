@@ -323,6 +323,7 @@
       <include name="IDR_THEME_FRAME_OVERLAY_INACTIVE" file="notused.png" type="BINDATA" />
       <include name="IDR_THEME_NTP_ATTRIBUTION" file="notused.png" type="BINDATA" />
       <include name="IDR_THEME_NTP_BACKGROUND" file="ntp_background.png" type="BINDATA" />
+      <!-- Ash has a special gray background. -->
       <if expr="pp_ifdef('use_ash')">
         <include name="IDR_THEME_TAB_BACKGROUND_INCOGNITO" file="ash/theme_tab_background_incognito.png" type="BINDATA" />
       </if>
