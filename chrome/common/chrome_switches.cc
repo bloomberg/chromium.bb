@@ -445,6 +445,9 @@ const char kDownloadsNewUI[]                = "downloads-new-ui";
 // scripts.
 const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
 
+// Enables the Action Box toolbar UI.
+const char kEnableActionBox[]               = "enable-action-box";
+
 // Enables AeroPeek for each tab. (This switch only works on Windows 7).
 const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
 
