@@ -31,7 +31,7 @@ using views::Textfield;
 namespace browser {
 
 void EditSearchEngine(gfx::NativeWindow parent,
-                      const TemplateURL* template_url,
+                      TemplateURL* template_url,
                       EditSearchEngineControllerDelegate* delegate,
                       Profile* profile) {
   EditSearchEngineDialog::Show(parent, template_url, delegate, profile);
@@ -40,7 +40,7 @@ void EditSearchEngine(gfx::NativeWindow parent,
 }  // namespace browser
 
 EditSearchEngineDialog::EditSearchEngineDialog(
-    const TemplateURL* template_url,
+    TemplateURL* template_url,
     EditSearchEngineControllerDelegate* delegate,
     Profile* profile)
     : controller_(new EditSearchEngineController(template_url,
@@ -54,7 +54,7 @@ EditSearchEngineDialog::~EditSearchEngineDialog() {
 
 // static
 void EditSearchEngineDialog::Show(gfx::NativeWindow parent,
-                                  const TemplateURL* template_url,
+                                  TemplateURL* template_url,
                                   EditSearchEngineControllerDelegate* delegate,
                                   Profile* profile) {
   EditSearchEngineDialog* contents =

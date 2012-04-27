@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ class EditSearchEngineControllerDelegate {
   // EditSearchEngineController's constructor, and may be NULL. A NULL value
   // indicates a new TemplateURL should be created rather than modifying an
   // existing TemplateURL.
-  virtual void OnEditedKeyword(const TemplateURL* template_url,
+  virtual void OnEditedKeyword(TemplateURL* template_url,
                                const string16& title,
                                const string16& keyword,
                                const std::string& url) = 0;
@@ -36,7 +36,7 @@ class EditSearchEngineController {
  public:
   // The |template_url| and/or |edit_keyword_delegate| may be NULL.
   EditSearchEngineController(
-      const TemplateURL* template_url,
+      TemplateURL* template_url,
       EditSearchEngineControllerDelegate* edit_keyword_delegate,
       Profile* profile);
   ~EditSearchEngineController() {}
@@ -76,7 +76,7 @@ class EditSearchEngineController {
   // The TemplateURL we're displaying information for. It may be NULL. If we
   // have a keyword_editor_view, we assume that this TemplateURL is already in
   // the TemplateURLService; if not, we assume it isn't.
-  const TemplateURL* template_url_;
+  TemplateURL* template_url_;
 
   // We may have been created by this, in which case we will call back to it on
   // success to add/modify the entry.  May be NULL.

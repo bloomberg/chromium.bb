@@ -97,7 +97,7 @@ class SearchProviderInstallData : public WebDataServiceConsumer,
   scoped_ptr<SearchHostToURLsMap> provider_map_;
 
   // The list of template urls that are owned by the class.
-  ScopedVector<const TemplateURL> template_urls_;
+  ScopedVector<TemplateURL> template_urls_;
 
   // The security origin for the default search provider.
   std::string default_search_origin_;

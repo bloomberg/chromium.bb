@@ -244,7 +244,7 @@ struct TemplateURLData {
 
   // The shortcut for this TemplateURL.  May be empty.
   void SetKeyword(const string16& keyword);
-  const string16& keyword(const TemplateURL* t_url) const;
+  const string16& keyword(TemplateURL* t_url) const;
   // TODO(pkasting): This should only be necessary until we eliminate keyword
   // autogeneration.
   const string16& raw_keyword() const { return keyword_; }
@@ -259,7 +259,7 @@ struct TemplateURLData {
   // Ensures that the keyword is generated.  Most consumers should not need this
   // because it is done automatically.  Use this method on the UI thread, so
   // the keyword may be accessed on another thread.
-  void EnsureKeyword(const TemplateURL* t_url) const;
+  void EnsureKeyword(TemplateURL* t_url) const;
 
   // The raw URL for the TemplateURL, which may not be valid as-is (e.g. because
   // it requires substitutions first).  This must be non-empty.
@@ -376,11 +376,18 @@ class TemplateURL {
   // displayed even if it is LTR and the UI is RTL.
   string16 AdjustedShortNameForLocaleDirection() const;
 
-  const string16& keyword() const { return data_.keyword(this); }
+  const string16& keyword() const {
+    // TODO(pkasting): See comment on EnsureKeyword() below.
+    return data_.keyword(const_cast<TemplateURL*>(this));
+  }
   bool autogenerate_keyword() const {
     return data_.autogenerate_keyword();
   }
-  void EnsureKeyword() const { data_.EnsureKeyword(this); }
+  void EnsureKeyword() const {
+    // TODO(pkasting): EnsureKeyword() will die soon so it's not worth jumping
+    // through hoops to fix this const_cast<>().
+    data_.EnsureKeyword(const_cast<TemplateURL*>(this));
+  }
 
   const std::string& url() const { return data_.url(); }
   const std::string& suggestions_url() const { return data_.suggestions_url; }

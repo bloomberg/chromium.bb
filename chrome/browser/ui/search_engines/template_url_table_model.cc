@@ -35,7 +35,7 @@ static SkBitmap* default_icon = NULL;
 
 class ModelEntry {
  public:
-  ModelEntry(TemplateURLTableModel* model, const TemplateURL* template_url)
+  ModelEntry(TemplateURLTableModel* model, TemplateURL* template_url)
       : template_url_(template_url),
         load_state_(NOT_LOADED),
         model_(model) {
@@ -45,7 +45,7 @@ class ModelEntry {
     }
   }
 
-  const TemplateURL* template_url() {
+  TemplateURL* template_url() {
     return template_url_;
   }
 
@@ -108,7 +108,7 @@ class ModelEntry {
     }
   }
 
-  const TemplateURL* template_url_;
+  TemplateURL* template_url_;
   SkBitmap favicon_;
   LoadState load_state_;
   TemplateURLTableModel* model_;
@@ -145,7 +145,7 @@ void TemplateURLTableModel::Reload() {
   // Keywords that can be made the default first.
   for (TemplateURLService::TemplateURLVector::iterator i = urls.begin();
        i != urls.end(); ++i) {
-    const TemplateURL* template_url = *i;
+    TemplateURL* template_url = *i;
     // NOTE: we don't use ShowInDefaultList here to avoid items bouncing around
     // the lists while editing.
     if (template_url->show_in_default_list())
@@ -157,7 +157,7 @@ void TemplateURLTableModel::Reload() {
   // Then the rest.
   for (TemplateURLService::TemplateURLVector::iterator i = urls.begin();
        i != urls.end(); ++i) {
-    const TemplateURL* template_url = *i;
+    TemplateURL* template_url = *i;
     // NOTE: we don't use ShowInDefaultList here to avoid things bouncing
     // the lists while editing.
     if (!template_url->show_in_default_list() &&
@@ -233,7 +233,7 @@ void TemplateURLTableModel::Remove(int index) {
   // Remove the observer while we modify the model, that way we don't need to
   // worry about the model calling us back when we mutate it.
   template_url_service_->RemoveObserver(this);
-  const TemplateURL* template_url = GetTemplateURL(index);
+  TemplateURL* template_url = GetTemplateURL(index);
 
   scoped_ptr<ModelEntry> entry(entries_[index]);
   entries_.erase(entries_.begin() + index);
@@ -274,7 +274,7 @@ void TemplateURLTableModel::ModifyTemplateURL(int index,
                                               const std::string& url) {
   DCHECK(index >= 0 && index <= RowCount());
   DCHECK(!url.empty());
-  const TemplateURL* template_url = GetTemplateURL(index);
+  TemplateURL* template_url = GetTemplateURL(index);
   // The default search provider should support replacement.
   DCHECK(template_url_service_->GetDefaultSearchProvider() != template_url ||
          template_url->SupportsReplacement());
@@ -292,7 +292,7 @@ void TemplateURLTableModel::ReloadIcon(int index) {
   NotifyChanged(index);
 }
 
-const TemplateURL* TemplateURLTableModel::GetTemplateURL(int index) {
+TemplateURL* TemplateURLTableModel::GetTemplateURL(int index) {
   return entries_[index]->template_url();
 }
 
@@ -329,7 +329,7 @@ int TemplateURLTableModel::MakeDefaultTemplateURL(int index) {
     return -1;
   }
 
-  const TemplateURL* keyword = GetTemplateURL(index);
+  TemplateURL* keyword = GetTemplateURL(index);
   const TemplateURL* current_default =
       template_url_service_->GetDefaultSearchProvider();
   if (current_default == keyword)

@@ -584,7 +584,7 @@ void TemplateURLData::SetKeyword(const string16& keyword) {
   autogenerate_keyword_ = false;
 }
 
-const string16& TemplateURLData::keyword(const TemplateURL* t_url) const {
+const string16& TemplateURLData::keyword(TemplateURL* t_url) const {
   EnsureKeyword(t_url);
   return keyword_;
 }
@@ -597,7 +597,7 @@ void TemplateURLData::SetAutogenerateKeyword(bool autogenerate_keyword) {
   }
 }
 
-void TemplateURLData::EnsureKeyword(const TemplateURL* t_url) const {
+void TemplateURLData::EnsureKeyword(TemplateURL* t_url) const {
   if (autogenerate_keyword_ && !keyword_generated_) {
     // Generate a keyword and cache it.
     keyword_ = base::i18n::ToLower(TemplateURLService::GenerateKeyword(

@@ -302,7 +302,7 @@ string16 AutocompleteMatch::GetSubstitutingExplicitlyInvokedKeyword() const {
   return (t_url && t_url->SupportsReplacement()) ? keyword : string16();
 }
 
-const TemplateURL* AutocompleteMatch::GetTemplateURL() const {
+TemplateURL* AutocompleteMatch::GetTemplateURL() const {
   return template_url;
 }
 

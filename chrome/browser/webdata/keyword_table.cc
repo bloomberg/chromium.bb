@@ -60,7 +60,9 @@ void BindURLToStatement(const TemplateURL& url,
   const TemplateURLData& data = url.data();
   s->BindInt64(id_column, data.id);
   s->BindString16(starting_column, data.short_name);
-  s->BindString16(starting_column + 1, data.keyword(&url));
+  // TODO(pkasting): See comment on TempalteURL::EnsureKeyword().
+  s->BindString16(starting_column + 1,
+                  data.keyword(const_cast<TemplateURL*>(&url)));
   s->BindString(starting_column + 2, data.favicon_url.is_valid() ?
       history::HistoryDatabase::GURLToDatabaseURL(data.favicon_url) :
       std::string());

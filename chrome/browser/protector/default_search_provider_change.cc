@@ -82,7 +82,7 @@ class DefaultSearchProviderChange : public BaseSettingChange,
                                     public TemplateURLServiceObserver,
                                     public content::NotificationObserver {
  public:
-  DefaultSearchProviderChange(const TemplateURL* new_search_provider,
+  DefaultSearchProviderChange(TemplateURL* new_search_provider,
                               TemplateURL* backup_search_provider);
 
   // BaseSettingChange overrides:
@@ -145,7 +145,7 @@ class DefaultSearchProviderChange : public BaseSettingChange,
   // The default search at the moment the change was detected. Will be used to
   // restore the new default search back if Apply is called. Will be set to
   // |NULL| if removed from the TemplateURLService.
-  const TemplateURL* new_search_provider_;
+  TemplateURL* new_search_provider_;
   // Default search provider set by Init for the period until user makes a
   // choice and either Apply or Discard is performed. Never is |NULL| during
   // that period since the change will dismiss itself if this provider gets
@@ -160,7 +160,7 @@ class DefaultSearchProviderChange : public BaseSettingChange,
 };
 
 DefaultSearchProviderChange::DefaultSearchProviderChange(
-    const TemplateURL* new_search_provider,
+    TemplateURL* new_search_provider,
     TemplateURL* backup_search_provider)
     : new_histogram_id_(GetSearchProviderHistogramID(new_search_provider)),
       is_fallback_(false),
@@ -387,7 +387,7 @@ const TemplateURL* DefaultSearchProviderChange::SetDefaultSearchProvider(
     scoped_ptr<TemplateURL>* search_provider) {
   TemplateURLService* url_service = GetTemplateURLService();
   TemplateURLService::TemplateURLVector urls = url_service->GetTemplateURLs();
-  const TemplateURL* new_default_provider = NULL;
+  TemplateURL* new_default_provider = NULL;
 
   // Check if this provider already exists and add it otherwise.
   TemplateURLService::TemplateURLVector::const_iterator i =
@@ -432,7 +432,7 @@ TemplateURLService* DefaultSearchProviderChange::GetTemplateURLService() {
   return url_service;
 }
 
-BaseSettingChange* CreateDefaultSearchProviderChange(const TemplateURL* actual,
+BaseSettingChange* CreateDefaultSearchProviderChange(TemplateURL* actual,
                                                      TemplateURL* backup) {
   return new DefaultSearchProviderChange(actual, backup);
 }

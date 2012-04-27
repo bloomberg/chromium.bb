@@ -83,7 +83,7 @@ class DefaultSearchProviderChangeTest : public InProcessBrowserTest {
     return new TemplateURL(browser()->profile(), data);
   }
 
-  const TemplateURL* FindTemplateURL(const std::string& search_url) {
+  TemplateURL* FindTemplateURL(const std::string& search_url) {
     TemplateURLService::TemplateURLVector urls =
         turl_service_->GetTemplateURLs();
     for (TemplateURLService::TemplateURLVector::const_iterator
@@ -377,8 +377,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
 
   AddAndSetDefault(current_url);
 
-  const TemplateURL* prepopulated_default =
-      FindTemplateURL(prepopulated_url_->url());
+  TemplateURL* prepopulated_default = FindTemplateURL(prepopulated_url_->url());
   // Prepopulated default search must exist, remove it.
   ASSERT_TRUE(prepopulated_default);
   turl_service_->Remove(prepopulated_default);
@@ -567,7 +566,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   // same as the current search provider.
   int prepopulated_histogram_id =
       protector::GetSearchProviderHistogramID(prepopulated_url_.get());
-  const TemplateURL* current_url = turl_service_->GetDefaultSearchProvider();
+  TemplateURL* current_url = turl_service_->GetDefaultSearchProvider();
 
   // Verify that current search provider is same as the prepopulated default.
   ASSERT_TRUE(current_url);

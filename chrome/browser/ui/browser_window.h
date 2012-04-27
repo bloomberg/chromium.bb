@@ -191,7 +191,7 @@ class BrowserWindow : public BaseWindow {
 
   // Shows a confirmation dialog box for adding a search engine described by
   // |template_url|. Takes ownership of |template_url|.
-  virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
+  virtual void ConfirmAddSearchProvider(TemplateURL* template_url,
                                         Profile* profile) = 0;
 
   // Shows or hides the bookmark bar depending on its current visibility.

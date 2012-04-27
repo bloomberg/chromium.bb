@@ -220,7 +220,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
       match.contents.assign(l10n_util::GetStringUTF16(IDS_EMPTY_KEYWORD_VALUE));
       match.contents_class.push_back(
           ACMatchClassification(0, ACMatchClassification::NONE));
-      match.template_url = &providers_.default_provider();
+      match.template_url = providers_.default_provider();
       matches_.push_back(match);
     }
     Stop();
@@ -249,12 +249,12 @@ void SearchProvider::Run() {
   if (providers_.valid_suggest_for_default_provider()) {
     suggest_results_pending_++;
     default_fetcher_.reset(CreateSuggestFetcher(kDefaultProviderURLFetcherID,
-        providers_.default_provider().suggestions_url_ref(), input_.text()));
+        providers_.default_provider()->suggestions_url_ref(), input_.text()));
   }
   if (providers_.valid_suggest_for_keyword_provider()) {
     suggest_results_pending_++;
     keyword_fetcher_.reset(CreateSuggestFetcher(kKeywordProviderURLFetcherID,
-        providers_.keyword_provider().suggestions_url_ref(),
+        providers_.keyword_provider()->suggestions_url_ref(),
         keyword_input_text_));
   }
   // We should only get here if we have a suggest url for the keyword or default
@@ -341,11 +341,11 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   // database.
   int num_matches = kMaxMatches * 5;
   if (providers_.valid_default_provider()) {
-    url_db->GetMostRecentKeywordSearchTerms(providers_.default_provider().id(),
+    url_db->GetMostRecentKeywordSearchTerms(providers_.default_provider()->id(),
         input_.text(), num_matches, &default_history_results_);
   }
   if (providers_.valid_keyword_provider()) {
-    url_db->GetMostRecentKeywordSearchTerms(providers_.keyword_provider().id(),
+    url_db->GetMostRecentKeywordSearchTerms(providers_.keyword_provider()->id(),
         keyword_input_text_, num_matches, &keyword_history_results_);
   }
 }
@@ -841,9 +841,9 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
                                    MatchMap* map) {
   AutocompleteMatch match(this, relevance, false, type);
   std::vector<size_t> content_param_offsets;
-  const TemplateURL& provider = is_keyword ?
+  TemplateURL* provider = is_keyword ?
       providers_.keyword_provider() : providers_.default_provider();
-  match.template_url = &provider;
+  match.template_url = provider;
   match.contents.assign(query_string);
   // We do intra-string highlighting for suggestions - the suggested segment
   // will be highlighted, e.g. for input_text = "you" the suggestion may be
@@ -893,7 +893,7 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
     ++search_start;
   }
   if (is_keyword) {
-    match.keyword = providers_.keyword_provider().keyword();
+    match.keyword = providers_.keyword_provider()->keyword();
     match.fill_into_edit.append(match.keyword + char16(' '));
     search_start += match.keyword.length() + 1;
   }
@@ -904,7 +904,7 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
                                    input_text))
     match.inline_autocomplete_offset = search_start + input_text.length();
 
-  const TemplateURLRef& search_url = provider.url_ref();
+  const TemplateURLRef& search_url = provider->url_ref();
   DCHECK(search_url.SupportsReplacement());
   match.destination_url = GURL(search_url.ReplaceSearchTerms(query_string,
       accepted_suggestion, input_text));

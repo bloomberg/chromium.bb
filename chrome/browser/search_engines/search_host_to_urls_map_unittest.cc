@@ -34,7 +34,7 @@ void SearchHostToURLsMapTest::SetUp() {
   t_urls_[0].reset(new TemplateURL(NULL, data));
   data.SetURL("http://" + host_ + "/path2");
   t_urls_[1].reset(new TemplateURL(NULL, data));
-  std::vector<const TemplateURL*> template_urls;
+  std::vector<TemplateURL*> template_urls;
   template_urls.push_back(t_urls_[0].get());
   template_urls.push_back(t_urls_[1].get());
 

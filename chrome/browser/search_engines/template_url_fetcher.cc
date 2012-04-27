@@ -182,7 +182,7 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
   DCHECK(model);
   DCHECK(model->loaded());
 
-  const TemplateURL* existing_url = NULL;
+  TemplateURL* existing_url = NULL;
   if (model->CanReplaceKeyword(keyword_, GURL(template_url_->url()),
                                &existing_url)) {
     if (existing_url)

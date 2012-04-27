@@ -157,7 +157,7 @@ void SearchEngineTabHelper::GenerateKeywordIfNecessary(
     return;
   }
 
-  const TemplateURL* current_url;
+  TemplateURL* current_url;
   GURL url = params.searchable_form_url;
   if (!url_service->CanReplaceKeyword(keyword, url, &current_url))
     return;

@@ -249,7 +249,7 @@ void SearchEngineManagerHandler::EditSearchEngine(const ListValue* args) {
 }
 
 void SearchEngineManagerHandler::OnEditedKeyword(
-    const TemplateURL* template_url,
+    TemplateURL* template_url,
     const string16& title,
     const string16& keyword,
     const std::string& url) {

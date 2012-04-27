@@ -370,7 +370,7 @@ TEST_F(TemplateURLServiceTest, AddUpdateRemove) {
   // Reload the model to verify it was actually saved to the database.
   test_util_.ResetModel(true);
   ASSERT_EQ(initial_count + 1, model()->GetTemplateURLs().size());
-  const TemplateURL* loaded_url =
+  TemplateURL* loaded_url =
       model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword"));
   ASSERT_TRUE(loaded_url != NULL);
   AssertEquals(*cloned_url, *loaded_url);
@@ -394,8 +394,7 @@ TEST_F(TemplateURLServiceTest, AddUpdateRemove) {
   ASSERT_TRUE(model()->CanReplaceKeyword(ASCIIToUTF16("keyword"), GURL(),
                                          NULL));
   ASSERT_FALSE(model()->CanReplaceKeyword(ASCIIToUTF16("b"), GURL(), NULL));
-  cloned_url.reset(new TemplateURL(
-      const_cast<TemplateURL*>(loaded_url)->profile(), loaded_url->data()));
+  cloned_url.reset(new TemplateURL(loaded_url->profile(), loaded_url->data()));
   test_util_.BlockTillServiceProcessesRequests();
   test_util_.ResetModel(true);
   ASSERT_EQ(initial_count + 1, model()->GetTemplateURLs().size());
@@ -1007,11 +1006,10 @@ TEST_F(TemplateURLServiceTest, LoadRetainsModifiedProvider) {
 TEST_F(TemplateURLServiceTest, LoadSavesPrepopulatedDefaultSearchProvider) {
   test_util_.VerifyLoad();
   // Verify that the default search provider is set to something.
-  const TemplateURL* default_search = model()->GetDefaultSearchProvider();
+  TemplateURL* default_search = model()->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search != NULL);
-  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(
-      const_cast<TemplateURL*>(default_search)->profile(),
-      default_search->data()));
+  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(default_search->profile(),
+                                                     default_search->data()));
 
   // Wait for any saves to finish.
   test_util_.BlockTillServiceProcessesRequests();
@@ -1086,7 +1084,7 @@ TEST_F(TemplateURLServiceTest, LoadUpdatesSearchURL) {
 TEST_F(TemplateURLServiceTest, LoadEnsuresDefaultSearchProviderExists) {
   // Force the model to load and make sure we have a default search provider.
   test_util_.VerifyLoad();
-  const TemplateURL* old_default = model()->GetDefaultSearchProvider();
+  TemplateURL* old_default = model()->GetDefaultSearchProvider();
   EXPECT_TRUE(old_default);
 
   // Now remove it.

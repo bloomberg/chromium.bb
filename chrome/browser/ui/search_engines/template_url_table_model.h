@@ -70,7 +70,7 @@ class TemplateURLTableModel : public ui::TableModel,
   void ReloadIcon(int index);
 
   // Returns the TemplateURL at the specified index.
-  const TemplateURL* GetTemplateURL(int index);
+  TemplateURL* GetTemplateURL(int index);
 
   // Returns the index of the TemplateURL, or -1 if it the TemplateURL is not
   // found.

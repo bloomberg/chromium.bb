@@ -32,7 +32,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 
 - (id)initWithProfile:(Profile*)profile
              delegate:(EditSearchEngineControllerDelegate*)delegate
-          templateURL:(const TemplateURL*)url {
+          templateURL:(TemplateURL*)url {
   DCHECK(profile);
   NSString* nibpath = [base::mac::FrameworkBundle()
                         pathForResource:@"EditSearchEngine"

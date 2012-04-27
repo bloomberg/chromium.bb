@@ -17,7 +17,6 @@
 #include "base/observer_list.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/api/syncable_service.h"
@@ -66,7 +65,7 @@ class TemplateURLService : public WebDataServiceConsumer,
                            public SyncableService {
  public:
   typedef std::map<std::string, std::string> QueryTerms;
-  typedef std::vector<const TemplateURL*> TemplateURLVector;
+  typedef std::vector<TemplateURL*> TemplateURLVector;
   // Type for a static function pointer that acts as a time source.
   typedef base::Time(TimeProvider)();
   typedef std::map<std::string, SyncData> SyncDataMap;
@@ -97,7 +96,9 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Returns the search url for t_url.  Returns an empty GURL if t_url has no
   // url().
-  static GURL GenerateSearchURL(const TemplateURL* t_url);
+  // NOTE: |t_url| is non-const in this version because of the need to access
+  // t_url->profile().
+  static GURL GenerateSearchURL(TemplateURL* t_url);
 
   // Just like GenerateSearchURL except that it takes SearchTermsData to supply
   // the data for some search terms. Most of the time GenerateSearchURL should
@@ -115,7 +116,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // a TemplateURL for an existing TemplateURL that shares the same host.
   bool CanReplaceKeyword(const string16& keyword,
                          const GURL& url,
-                         const TemplateURL** template_url_to_replace);
+                         TemplateURL** template_url_to_replace);
 
   // Returns (in |matches|) all keywords beginning with |prefix|, sorted
   // shortest-first. If support_replacement_only is true, only keywords that
@@ -128,16 +129,16 @@ class TemplateURLService : public WebDataServiceConsumer,
   // the keyword was not found.
   // The caller should not try to delete the returned pointer; the data store
   // retains ownership of it.
-  const TemplateURL* GetTemplateURLForKeyword(const string16& keyword) const;
+  TemplateURL* GetTemplateURLForKeyword(const string16& keyword);
 
   // Returns that TemplateURL with the specified GUID, or NULL if not found.
   // The caller should not try to delete the returned pointer; the data store
   // retains ownership of it.
-  const TemplateURL* GetTemplateURLForGUID(const std::string& sync_guid) const;
+  TemplateURL* GetTemplateURLForGUID(const std::string& sync_guid);
 
   // Returns the first TemplateURL found with a URL using the specified |host|,
   // or NULL if there are no such TemplateURLs
-  const TemplateURL* GetTemplateURLForHost(const std::string& host) const;
+  TemplateURL* GetTemplateURLForHost(const std::string& host);
 
   // Takes ownership of |template_url| and adds it to this model.
   void Add(TemplateURL* template_url);
@@ -145,14 +146,14 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Like Add(), but overwrites the |template_url|'s values with the provided
   // ones.
   void AddAndSetProfile(TemplateURL* template_url, Profile* profile);
-  void AddWithOverrides(const TemplateURL* template_url,
+  void AddWithOverrides(TemplateURL* template_url,
                         const string16& short_name,
                         const string16& keyword,
                         const std::string& url);
 
   // Removes the keyword from the model. This deletes the supplied TemplateURL.
   // This fails if the supplied template_url is the default search provider.
-  void Remove(const TemplateURL* template_url);
+  void Remove(TemplateURL* template_url);
 
   // Removes all auto-generated keywords that were created on or after the
   // date passed in.
@@ -182,20 +183,19 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Returns the TemplateURL associated with the keyword for this extension.
   // This works by checking the extension ID, not the keyword, so it will work
   // even if the user changed the keyword.
-  const TemplateURL* GetTemplateURLForExtension(
-      const Extension* extension) const;
+  TemplateURL* GetTemplateURLForExtension(const Extension* extension);
 
   // Returns the set of URLs describing the keywords. The elements are owned
   // by TemplateURLService and should not be deleted.
-  TemplateURLVector GetTemplateURLs() const;
+  TemplateURLVector GetTemplateURLs();
 
   // Increment the usage count of a keyword.
   // Called when a URL is loaded that was generated from a keyword.
-  void IncrementUsageCount(const TemplateURL* url);
+  void IncrementUsageCount(TemplateURL* url);
 
   // Resets the title, keyword and search url of the specified TemplateURL.
   // The TemplateURL is marked as not replaceable.
-  void ResetTemplateURL(const TemplateURL* url,
+  void ResetTemplateURL(TemplateURL* url,
                         const string16& title,
                         const string16& keyword,
                         const std::string& search_url);
@@ -206,13 +206,13 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Set the default search provider.  |url| may be null.
   // This will assert if the default search is managed; the UI should not be
   // invoking this method in that situation.
-  void SetDefaultSearchProvider(const TemplateURL* url);
+  void SetDefaultSearchProvider(TemplateURL* url);
 
   // Returns the default search provider. If the TemplateURLService hasn't been
   // loaded, the default search provider is pulled from preferences.
   //
   // NOTE: At least in unittest mode, this may return NULL.
-  const TemplateURL* GetDefaultSearchProvider();
+  TemplateURL* GetDefaultSearchProvider();
 
   // Returns true if the default search is managed through group policy.
   bool is_default_search_managed() const { return is_default_search_managed_; }
@@ -221,7 +221,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // exists.  If not, returns first URL in |template_urls_|, or NULL if that's
   // empty. The returned object is owned by TemplateURLService and can be
   // destroyed at any time so should be used right after the call.
-  const TemplateURL* FindNewDefaultSearchProvider();
+  TemplateURL* FindNewDefaultSearchProvider();
 
   // Observers used to listen for changes to the model.
   // TemplateURLService does NOT delete the observers when deleted.
@@ -310,7 +310,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // function returns NULL.
   static TemplateURL* CreateTemplateURLFromTemplateURLAndSyncData(
       Profile* profile,
-      const TemplateURL* existing_turl,
+      TemplateURL* existing_turl,
       const SyncData& sync_data,
       SyncChangeList* change_list);
 
@@ -357,8 +357,8 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   friend class TemplateURLServiceTestUtil;
 
-  typedef std::map<string16, const TemplateURL*> KeywordToTemplateMap;
-  typedef std::map<std::string, const TemplateURL*> GUIDToTemplateMap;
+  typedef std::map<string16, TemplateURL*> KeywordToTemplateMap;
+  typedef std::map<std::string, TemplateURL*> GUIDToTemplateMap;
   typedef std::list<std::string> PendingExtensionIDs;
 
   // Helper functor for FindMatchingKeywords(), for finding the range of
@@ -367,18 +367,18 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   void Init(const Initializer* initializers, int num_initializers);
 
-  void RemoveFromMaps(const TemplateURL* template_url);
+  void RemoveFromMaps(TemplateURL* template_url);
 
   // Removes the supplied template_url from the keyword maps. This searches
   // through all entries in the keyword map and does not generate the host or
   // keyword. This is used when the cached content of the TemplateURL changes.
-  void RemoveFromKeywordMapByPointer(const TemplateURL* template_url);
+  void RemoveFromKeywordMapByPointer(TemplateURL* template_url);
 
-  void AddToMaps(const TemplateURL* template_url);
+  void AddToMaps(TemplateURL* template_url);
 
   // Sets the keywords. This is used once the keywords have been loaded.
   // This does NOT notify the delegate or the database.
-  void SetTemplateURLs(const std::vector<TemplateURL*>& urls);
+  void SetTemplateURLs(const TemplateURLVector& urls);
 
   // Transitions to the loaded state.
   void ChangeToLoadedState();
@@ -405,7 +405,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // specified host, or the only TemplateURLs matching the specified host can
   // be replaced.
   bool CanReplaceKeywordForHost(const std::string& host,
-                                const TemplateURL** to_replace);
+                                TemplateURL** to_replace);
 
   // Returns true if the TemplateURL is replaceable. This doesn't look at the
   // uniqueness of the keyword or host and is intended to be called after those
@@ -418,7 +418,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Notifying observers is the responsibility of the caller.
   // NOTE: This should not be called with an extension keyword as there are no
   // updates needed in that case.
-  void UpdateNoNotify(const TemplateURL* existing_turl,
+  void UpdateNoNotify(TemplateURL* existing_turl,
                       const TemplateURL& new_values);
 
   // Returns the preferences we use.
@@ -452,7 +452,7 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Set the default search provider even if it is managed. |url| may be null.
   // Caller is responsible for notifying observers.
-  void SetDefaultSearchProviderNoNotify(const TemplateURL* url);
+  void SetDefaultSearchProviderNoNotify(TemplateURL* url);
 
   // Adds a new TemplateURL to this model. TemplateURLService will own the
   // reference, and delete it when the TemplateURL is removed.
@@ -465,7 +465,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Removes the keyword from the model. This deletes the supplied TemplateURL.
   // This fails if the supplied template_url is the default search provider.
   // Caller is responsible for notifying observers.
-  void RemoveNoNotify(const TemplateURL* template_url);
+  void RemoveNoNotify(TemplateURL* template_url);
 
   // Notify the observers that the model has changed.  This is done only if the
   // model is loaded.
@@ -476,20 +476,20 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Sets default_search_provider to NULL if it was one of them, unless it is
   // the same as the current default from preferences and it is managed.
   void RemoveProvidersCreatedByPolicy(
-      std::vector<TemplateURL*>* template_urls,
-      const TemplateURL** default_search_provider,
-      const TemplateURL* default_from_prefs);
+      TemplateURLVector* template_urls,
+      TemplateURL** default_search_provider,
+      TemplateURL* default_from_prefs);
 
   // Resets the sync GUID of the specified TemplateURL and persists the change
   // to the database. This does not notify observers.
-  void ResetTemplateURLGUID(const TemplateURL* url, const std::string& guid);
+  void ResetTemplateURLGUID(TemplateURL* url, const std::string& guid);
 
   // Attempts to generate a unique keyword for |turl| based on its original
   // keyword. If its keyword is already unique, that is returned. Otherwise, it
   // tries to return the autogenerated keyword if that is unique to the Service,
   // and finally it repeatedly appends special characters to the keyword until
   // it is unique to the Service.
-  string16 UniquifyKeyword(const TemplateURL& turl) const;
+  string16 UniquifyKeyword(const TemplateURL& turl);
 
   // Given a TemplateURL from Sync (cloud), resolves any keyword conflicts by
   // checking the local keywords and uniquifying either the cloud keyword or a
@@ -504,8 +504,7 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Returns a TemplateURL from the service that has the same keyword and search
   // URL as |sync_turl|, if it exists.
-  const TemplateURL* FindDuplicateOfSyncTemplateURL(
-      const TemplateURL& sync_turl);
+  TemplateURL* FindDuplicateOfSyncTemplateURL(const TemplateURL& sync_turl);
 
   // Given a TemplateURL from the cloud and a local matching duplicate found by
   // FindDuplcateOfSyncTemplateURL, merges the two. If |sync_url| is newer, this
@@ -524,12 +523,12 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Retrieve the pending default search provider according to Sync. Returns
   // NULL if there was no pending search provider from Sync.
-  const TemplateURL* GetPendingSyncedDefaultSearchProvider();
+  TemplateURL* GetPendingSyncedDefaultSearchProvider();
 
   // Goes through a vector of TemplateURLs and ensure that both the in-memory
   // and database copies have valid sync_guids. This is to fix crbug.com/102038,
   // where old entries were being pushed to Sync without a sync_guid.
-  void PatchMissingSyncGUIDs(std::vector<TemplateURL*>* template_urls);
+  void PatchMissingSyncGUIDs(TemplateURLVector* template_urls);
 
   content::NotificationRegistrar notification_registrar_;
   PrefChangeRegistrar pref_change_registrar_;
@@ -545,7 +544,9 @@ class TemplateURLService : public WebDataServiceConsumer,
   ObserverList<TemplateURLServiceObserver> model_observers_;
 
   // Maps from host to set of TemplateURLs whose search url host is host.
-  SearchHostToURLsMap provider_map_;
+  // NOTE: This is always non-NULL; we use a scoped_ptr<> to avoid circular
+  // header dependencies.
+  scoped_ptr<SearchHostToURLsMap> provider_map_;
 
   // Used to obtain the WebDataService.
   // When Load is invoked, if we haven't yet loaded, the WebDataService is
@@ -570,7 +571,7 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Once loaded, the default search provider.  This is a pointer to a
   // TemplateURL owned by template_urls_.
-  const TemplateURL* default_search_provider_;
+  TemplateURL* default_search_provider_;
 
   // The initial search provider extracted from preferences. This is only valid
   // if we haven't been loaded or loading failed.

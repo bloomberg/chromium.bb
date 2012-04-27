@@ -181,7 +181,7 @@ struct AutocompleteMatch {
   string16 GetSubstitutingExplicitlyInvokedKeyword() const;
 
   // Returns the TemplateURL associated with this match.
-  const TemplateURL* GetTemplateURL() const;
+  TemplateURL* GetTemplateURL() const;
 
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
@@ -256,7 +256,7 @@ struct AutocompleteMatch {
 
   // Indicates the TemplateURL the match originated from. This is set for
   // keywords as well as matches for the default search provider.
-  const TemplateURL* template_url;
+  TemplateURL* template_url;
 
   // True if the user has starred the destination URL.
   bool starred;

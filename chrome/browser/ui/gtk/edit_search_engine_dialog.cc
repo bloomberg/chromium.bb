@@ -67,7 +67,7 @@ void SetWidgetStyle(GtkWidget* entry, GtkStyle* label_style,
 
 EditSearchEngineDialog::EditSearchEngineDialog(
     GtkWindow* parent_window,
-    const TemplateURL* template_url,
+    TemplateURL* template_url,
     EditSearchEngineControllerDelegate* delegate,
     Profile* profile)
     : controller_(new EditSearchEngineController(template_url, delegate,

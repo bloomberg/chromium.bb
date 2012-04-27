@@ -136,7 +136,7 @@ class Panel : public BrowserWindow,
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual bool IsPanel() const OVERRIDE;
   virtual void DisableInactiveFrame() OVERRIDE;
-  virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
+  virtual void ConfirmAddSearchProvider(TemplateURL* template_url,
                                         Profile* profile) OVERRIDE;
   virtual void ToggleBookmarkBar() OVERRIDE;
   virtual void ShowAboutChromeDialog() OVERRIDE;

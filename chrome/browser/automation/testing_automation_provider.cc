@@ -3328,8 +3328,8 @@ void TestingAutomationProvider::AddOrEditSearchEngine(
   scoped_ptr<KeywordEditorController> controller(
       new KeywordEditorController(browser->profile()));
   if (args->GetString("keyword", &keyword)) {
-    const TemplateURL* template_url(
-        url_model->GetTemplateURLForKeyword(UTF8ToUTF16(keyword)));
+    TemplateURL* template_url =
+        url_model->GetTemplateURLForKeyword(UTF8ToUTF16(keyword));
     if (template_url == NULL) {
       AutomationJSONReply(this, reply_message).SendError(
           "No match for keyword: " + keyword);
@@ -3362,8 +3362,8 @@ void TestingAutomationProvider::PerformActionOnSearchEngine(
         "One or more inputs invalid");
     return;
   }
-  const TemplateURL* template_url(
-      url_model->GetTemplateURLForKeyword(UTF8ToUTF16(keyword)));
+  TemplateURL* template_url =
+      url_model->GetTemplateURLForKeyword(UTF8ToUTF16(keyword));
   if (template_url == NULL) {
     AutomationJSONReply(this, reply_message).SendError(
         "No match for keyword: " + keyword);

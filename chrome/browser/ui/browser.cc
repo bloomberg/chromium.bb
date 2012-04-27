@@ -4054,7 +4054,7 @@ void Browser::SwapTabContents(TabContentsWrapper* old_tab_contents,
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, SearchEngineTabHelperDelegate implementation:
 
-void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,
+void Browser::ConfirmAddSearchProvider(TemplateURL* template_url,
                                        Profile* profile) {
   window()->ConfirmAddSearchProvider(template_url, profile);
 }

@@ -34,7 +34,7 @@ class SearchEngineManagerHandler : public OptionsPageUIHandler,
   virtual void OnItemsRemoved(int start, int length) OVERRIDE;
 
   // EditSearchEngineControllerDelegate implementation.
-  virtual void OnEditedKeyword(const TemplateURL* template_url,
+  virtual void OnEditedKeyword(TemplateURL* template_url,
                                const string16& title,
                                const string16& keyword,
                                const std::string& url) OVERRIDE;

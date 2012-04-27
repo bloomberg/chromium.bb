@@ -37,7 +37,7 @@ void GetSearchProvidersUsingKeywordResult(
     WebDataService* service,
     Profile* profile,
     std::vector<TemplateURL*>* template_urls,
-    const TemplateURL** default_search_provider,
+    TemplateURL** default_search_provider,
     int* new_resource_keyword_version);
 
 // Returns true if the default search provider setting has been changed or

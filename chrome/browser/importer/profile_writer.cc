@@ -232,7 +232,7 @@ void ProfileWriter::AddFavicons(
       SetImportedFavicons(favicons);
 }
 
-typedef std::map<std::string, const TemplateURL*> HostPathMap;
+typedef std::map<std::string, TemplateURL*> HostPathMap;
 
 // Returns the key for the map built by BuildHostPathMap. If url_string is not
 // a valid URL, an empty string is returned, otherwise host+path is returned.

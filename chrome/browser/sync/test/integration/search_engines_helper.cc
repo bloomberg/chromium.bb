@@ -221,13 +221,13 @@ void EditSearchEngine(int profile_index,
                       const std::string& url) {
   DCHECK(!url.empty());
   TemplateURLService* service = GetServiceForProfile(profile_index);
-  const TemplateURL* turl = service->GetTemplateURLForKeyword(keyword);
+  TemplateURL* turl = service->GetTemplateURLForKeyword(keyword);
   EXPECT_TRUE(turl);
   ASSERT_FALSE(new_keyword.empty());
   service->ResetTemplateURL(turl, short_name, new_keyword, url);
   // Make sure we do the same on the verifier.
   if (test()->use_verifier()) {
-    const TemplateURL* verifier_turl =
+    TemplateURL* verifier_turl =
         GetVerifierService()->GetTemplateURLForKeyword(keyword);
     EXPECT_TRUE(verifier_turl);
     GetVerifierService()->ResetTemplateURL(verifier_turl, short_name,
@@ -238,12 +238,12 @@ void EditSearchEngine(int profile_index,
 void DeleteSearchEngineBySeed(int profile_index, int seed) {
   TemplateURLService* service = GetServiceForProfile(profile_index);
   string16 keyword(CreateKeyword(seed));
-  const TemplateURL* turl = service->GetTemplateURLForKeyword(keyword);
+  TemplateURL* turl = service->GetTemplateURLForKeyword(keyword);
   EXPECT_TRUE(turl);
   service->Remove(turl);
   // Make sure we do the same on the verifier.
   if (test()->use_verifier()) {
-    const TemplateURL* verifier_turl =
+    TemplateURL* verifier_turl =
         GetVerifierService()->GetTemplateURLForKeyword(keyword);
     EXPECT_TRUE(verifier_turl);
     GetVerifierService()->Remove(verifier_turl);
@@ -253,12 +253,11 @@ void DeleteSearchEngineBySeed(int profile_index, int seed) {
 void ChangeDefaultSearchProvider(int profile_index, int seed) {
   TemplateURLService* service = GetServiceForProfile(profile_index);
   ASSERT_TRUE(service);
-  const TemplateURL* turl =
-      service->GetTemplateURLForKeyword(CreateKeyword(seed));
+  TemplateURL* turl = service->GetTemplateURLForKeyword(CreateKeyword(seed));
   ASSERT_TRUE(turl);
   service->SetDefaultSearchProvider(turl);
   if (test()->use_verifier()) {
-    const TemplateURL* verifier_turl =
+    TemplateURL* verifier_turl =
         GetVerifierService()->GetTemplateURLForKeyword(CreateKeyword(seed));
     ASSERT_TRUE(verifier_turl);
     GetVerifierService()->SetDefaultSearchProvider(verifier_turl);

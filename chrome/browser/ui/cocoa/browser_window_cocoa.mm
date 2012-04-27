@@ -315,7 +315,7 @@ bool BrowserWindowCocoa::IsFullscreenBubbleVisible() const {
 }
 
 void BrowserWindowCocoa::ConfirmAddSearchProvider(
-    const TemplateURL* template_url,
+    TemplateURL* template_url,
     Profile* profile) {
   // The controller will release itself when the window closes.
   EditSearchEngineCocoaController* editor =

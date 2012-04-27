@@ -17,7 +17,7 @@
 using content::UserMetricsAction;
 
 EditSearchEngineController::EditSearchEngineController(
-    const TemplateURL* template_url,
+    TemplateURL* template_url,
     EditSearchEngineControllerDelegate* edit_keyword_delegate,
     Profile* profile)
     : template_url_(template_url),
@@ -82,7 +82,7 @@ void EditSearchEngineController::AcceptAddOrEdit(
 
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
-  const TemplateURL* existing =
+  TemplateURL* existing =
       template_url_service->GetTemplateURLForKeyword(keyword_input);
   if (existing && (!edit_keyword_delegate_ || existing != template_url_)) {
     // An entry may have been added with the same keyword string while the

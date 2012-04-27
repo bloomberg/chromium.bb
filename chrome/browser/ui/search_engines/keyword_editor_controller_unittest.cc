@@ -146,7 +146,7 @@ TEST_F(KeywordEditorControllerTest, Modify) {
   ClearChangeCount();
 
   // Modify the entry.
-  const TemplateURL* turl = model_->GetTemplateURLs()[0];
+  TemplateURL* turl = model_->GetTemplateURLs()[0];
   controller_->ModifyTemplateURL(turl, kA1, kB1, "http://c1");
 
   // Make sure it was updated appropriately.

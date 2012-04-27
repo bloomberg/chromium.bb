@@ -1043,7 +1043,7 @@ void BrowserView::DisableInactiveFrame() {
 #endif  // No tricks are needed to get the right behavior on Linux.
 }
 
-void BrowserView::ConfirmAddSearchProvider(const TemplateURL* template_url,
+void BrowserView::ConfirmAddSearchProvider(TemplateURL* template_url,
                                            Profile* profile) {
   browser::EditSearchEngine(GetWidget()->GetNativeWindow(), template_url, NULL,
                             profile);

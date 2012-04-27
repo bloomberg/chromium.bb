@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ class KeywordEditorController {
 
   // Invoked when the user modifies a TemplateURL. Updates the
   // TemplateURLService and table model appropriately.
-  void ModifyTemplateURL(const TemplateURL* template_url,
+  void ModifyTemplateURL(TemplateURL* template_url,
                          const string16& title,
                          const string16& keyword,
                          const std::string& url);
@@ -59,7 +59,7 @@ class KeywordEditorController {
   bool loaded() const;
 
   // Return the TemplateURL corresponding to the |index| in the model.
-  const TemplateURL* GetTemplateURL(int index) const;
+  TemplateURL* GetTemplateURL(int index);
 
   TemplateURLTableModel* table_model() {
     return table_model_.get();

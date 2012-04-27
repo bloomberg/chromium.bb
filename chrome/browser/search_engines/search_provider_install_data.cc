@@ -141,7 +141,7 @@ void GoogleURLObserver::Observe(int type,
 // |requested_origin| should only be a security origin (no path, etc.).
 // It is ok if |template_url| is NULL.
 static bool IsSameOrigin(const GURL& requested_origin,
-                         const TemplateURL* template_url,
+                         TemplateURL* template_url,
                          const SearchTermsData& search_terms_data) {
   DCHECK(requested_origin == requested_origin.GetOrigin());
   return requested_origin ==
@@ -237,7 +237,7 @@ void SearchProviderInstallData::OnWebDataServiceRequestDone(
     return;
   }
 
-  const TemplateURL* default_search_provider = NULL;
+  TemplateURL* default_search_provider = NULL;
   int new_resource_keyword_version = 0;
   std::vector<TemplateURL*> extracted_template_urls;
   GetSearchProvidersUsingKeywordResult(*result,

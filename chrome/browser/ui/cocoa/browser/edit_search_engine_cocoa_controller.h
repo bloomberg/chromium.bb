@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,13 +32,13 @@ class TemplateURL;
   IBOutlet NSBox* fieldAndImageContainer_;
 
   Profile* profile_;  // weak
-  const TemplateURL* templateURL_;  // weak
+  TemplateURL* templateURL_;  // weak
   scoped_ptr<EditSearchEngineController> controller_;
 }
 
 - (id)initWithProfile:(Profile*)profile
              delegate:(EditSearchEngineControllerDelegate*)delegate
-          templateURL:(const TemplateURL*)url;
+          templateURL:(TemplateURL*)url;
 
 - (IBAction)cancel:(id)sender;
 - (IBAction)save:(id)sender;

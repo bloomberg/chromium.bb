@@ -85,7 +85,7 @@ void ShowLoginWizard(const std::string& start_screen, const gfx::Size& size);
 // to be notified when the user is done editing, or NULL. If NULL, the dialog
 // will update the model with the user's edits directly.
 void EditSearchEngine(gfx::NativeWindow parent,
-                      const TemplateURL* template_url,
+                      TemplateURL* template_url,
                       EditSearchEngineControllerDelegate* delegate,
                       Profile* profile);
 

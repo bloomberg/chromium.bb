@@ -85,7 +85,7 @@ void MergeEnginesFromPrepopulateData(
     Profile* profile,
     WebDataService* service,
     std::vector<TemplateURL*>* template_urls,
-    const TemplateURL** default_search_provider) {
+    TemplateURL** default_search_provider) {
   DCHECK(service == NULL || BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(template_urls);
   DCHECK(default_search_provider);
@@ -176,7 +176,7 @@ void GetSearchProvidersUsingKeywordResult(
     WebDataService* service,
     Profile* profile,
     std::vector<TemplateURL*>* template_urls,
-    const TemplateURL** default_search_provider,
+    TemplateURL** default_search_provider,
     int* new_resource_keyword_version) {
   DCHECK(service == NULL || BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(template_urls);

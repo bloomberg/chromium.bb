@@ -410,7 +410,7 @@ TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataNoManagedEngines) {
   for (SyncDataList::const_iterator iter = all_sync_data.begin();
       iter != all_sync_data.end(); ++iter) {
     std::string guid = GetGUID(*iter);
-    const TemplateURL* service_turl = model()->GetTemplateURLForGUID(guid);
+    TemplateURL* service_turl = model()->GetTemplateURLForGUID(guid);
     scoped_ptr<TemplateURL> deserialized(Deserialize(*iter));
     ASSERT_FALSE(service_turl->created_by_policy());
     AssertEquals(*service_turl, *deserialized);
@@ -564,8 +564,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeSyncAndLocalURLDuplicates) {
   // The sync TemplateURL is newer. It should replace the original TemplateURL.
   // Note that MergeSyncAndLocalURLDuplicates takes ownership of sync_turl.
   model()->MergeSyncAndLocalURLDuplicates(sync_turl, original_turl, &changes);
-  const TemplateURL* result =
-      model()->GetTemplateURLForKeyword(ASCIIToUTF16("key1"));
+  TemplateURL* result = model()->GetTemplateURLForKeyword(ASCIIToUTF16("key1"));
   ASSERT_TRUE(result);
   EXPECT_EQ(9001, result->last_modified().ToTimeT());
   EXPECT_EQ(0U, changes.size());
@@ -984,7 +983,7 @@ TEST_F(TemplateURLServiceSyncTest, ProcessTemplateURLChange) {
   EXPECT_EQ("http://baidu.cn", GetURL(change.sync_data()));
 
   // Change a keyword.
-  const TemplateURL* existing_turl = model()->GetTemplateURLForGUID("key1");
+  TemplateURL* existing_turl = model()->GetTemplateURLForGUID("key1");
   model()->ResetTemplateURL(existing_turl, existing_turl->short_name(),
                             ASCIIToUTF16("k"), existing_turl->url());
   EXPECT_EQ(1U, processor()->change_list_size());
@@ -1133,10 +1132,10 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwiceWithSameSyncData) {
 
   // We should have updated the original TemplateURL with Sync's version.
   // Keep a copy of it so we can compare it after we re-merge.
-  const TemplateURL* key1_url = model()->GetTemplateURLForGUID("key1");
+  TemplateURL* key1_url = model()->GetTemplateURLForGUID("key1");
   ASSERT_TRUE(key1_url);
-  scoped_ptr<TemplateURL> updated_turl(new TemplateURL(
-      const_cast<TemplateURL*>(key1_url)->profile(), key1_url->data()));
+  scoped_ptr<TemplateURL> updated_turl(new TemplateURL(key1_url->profile(),
+                                                       key1_url->data()));
   EXPECT_EQ(Time::FromTimeT(90), updated_turl->last_modified());
 
   // Modify a single field of the initial data. This should not be updated in

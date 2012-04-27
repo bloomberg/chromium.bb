@@ -109,14 +109,14 @@ class SearchProvider : public AutocompleteProvider,
     void Set(const TemplateURL* default_provider,
              const TemplateURL* keyword_provider);
 
-    const TemplateURL& default_provider() const {
+    TemplateURL* default_provider() {
       DCHECK(valid_default_provider());
-      return cached_default_provider_;
+      return &cached_default_provider_;
     }
 
-    const TemplateURL& keyword_provider() const {
+    TemplateURL* keyword_provider() {
       DCHECK(valid_keyword_provider());
-      return cached_keyword_provider_;
+      return &cached_keyword_provider_;
     }
 
     // Returns true if the default provider is valid.

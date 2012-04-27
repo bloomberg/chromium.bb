@@ -28,14 +28,14 @@ class EditSearchEngineDialog : public views::TextfieldController,
                                public views::DialogDelegateView {
  public:
   // The |template_url| and/or |delegate| may be NULL.
-  EditSearchEngineDialog(const TemplateURL* template_url,
+  EditSearchEngineDialog(TemplateURL* template_url,
                          EditSearchEngineControllerDelegate* delegate,
                          Profile* profile);
   virtual ~EditSearchEngineDialog();
 
   // Shows the dialog to the user.
   static void Show(gfx::NativeWindow parent,
-                   const TemplateURL* template_url,
+                   TemplateURL* template_url,
                    EditSearchEngineControllerDelegate* delegate,
                    Profile* profile);
 

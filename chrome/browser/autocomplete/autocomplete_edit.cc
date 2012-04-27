@@ -541,7 +541,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
         content::Details<AutocompleteLog>(&log));
   }
 
-  const TemplateURL* template_url = match.GetTemplateURL();
+  TemplateURL* template_url = match.GetTemplateURL();
   if (template_url) {
     if (match.transition == content::PAGE_TRANSITION_KEYWORD) {
       // The user is using a non-substituting keyword or is explicitly in
