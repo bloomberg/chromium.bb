@@ -451,6 +451,7 @@ include_rules = [
   # Everybody can use some things.
   "+base",
   "+build",
+  "+googleurl",
   "+ipc",
 
   # For now, we allow ICU to be included by specifying "unicode/...", although

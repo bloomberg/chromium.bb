@@ -1,4 +1,5 @@
 include_rules = [
+  "+breakpad",
   "+chrome_frame",
   "+google_update",
   "+rlz",

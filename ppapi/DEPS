@@ -1,3 +1,8 @@
+include_rules = [
+  "+third_party/skia",
+  "+third_party/WebKit/Source/WebKit/chromium/public",
+]
+
 # checkdeps.py shouldn't check include paths for files in these dirs:
 skip_child_includes = [
   # TODO(bradnelson): fix these to comply, once migration is complete.

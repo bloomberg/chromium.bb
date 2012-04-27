@@ -10,8 +10,14 @@ include_rules = [
   "+bridge",
   "+grit",  # For generated headers
   "+skia",
+  "+third_party/angle",
+  "+third_party/leveldatabase",
+  "+third_party/skia",
   "+third_party/sqlite",
   "+third_party/tcmalloc",
+  "+third_party/WebKit/Source/Platform/chromium",
+  "+third_party/WebKit/Source/WebKit/chromium",
+  "+v8",
 
   # For databases/
   "+sql",

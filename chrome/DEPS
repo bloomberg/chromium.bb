@@ -2,6 +2,7 @@ include_rules = [
   "+ash",
   "+crypto",
   "+gpu",
+  "+native_client",
   "+net",
   "+printing",
   "+sql",
@@ -31,6 +32,7 @@ include_rules = [
   "-crypto/third_party",
 
   # Allow inclusion of WebKit API files.
+  "+third_party/WebKit/Source/Platform/chromium",
   "+third_party/WebKit/Source/WebKit/chromium",
   "+webkit/appcache",
   "+webkit/blob",
@@ -40,9 +42,11 @@ include_rules = [
   "+webkit/quota",
 
   # Allow inclusion of third-party code:
+  "+third_party/hunspell",
   "+third_party/icon_family", # IconFamily for Mac.
   "+third_party/mozilla",     # Mozilla interface headers.
   "+third_party/npapi",       # NPAPI interface headers.
+  "+third_party/skia",
   "+third_party/tcmalloc",    # tcmallo
   "+third_party/GTM",         # Google Toolbox for Mac.
 

@@ -36,13 +36,17 @@ include_rules = [
   "-tools",
 
   # Allow inclusion of third-party code:
+  "+third_party/angle",
+  "+third_party/flac",
   "+third_party/gpsd",
   "+third_party/mozilla",
   "+third_party/npapi/bindings",
+  "+third_party/skia",
   "+third_party/sqlite",
   "+third_party/tcmalloc",
   "+third_party/khronos",
-  # Allow inclusion of WebKit API files.
+  "+third_party/webrtc",
+  "+third_party/WebKit/Source/Platform/chromium",
   "+third_party/WebKit/Source/WebKit/chromium",
 
   # Aura is analogous to Win32 or a Gtk, so it is allowed.

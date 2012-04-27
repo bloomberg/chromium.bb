@@ -1,4 +1,5 @@
 include_rules = [
+  "+breakpad",
   "+chrome/app",
   "+chrome/app/locales",
   "+chrome/installer",
@@ -40,14 +41,15 @@ include_rules = [
   "-content/common",
 
   # Other libraries.
-  "+chrome/third_party/hunspell",
   "+chrome/third_party/mozilla_security_manager",
   "+libxml",  # For search engine definition parsing.
   "+third_party/apple_sample_code",  # Apple code ImageAndTextCell.
   "+third_party/cld",
   "+third_party/expat",
   "+third_party/iaccessible2",
+  "+third_party/icu",
   "+third_party/isimpledom",
+  "+third_party/leveldatabase",
   "+third_party/libevent",  # For the remote V8 debugging server
   "+third_party/libjingle",
   "+third_party/protobuf/src/google/protobuf",

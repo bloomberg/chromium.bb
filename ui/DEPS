@@ -5,4 +5,5 @@ include_rules = [
   "+net",
   "+skia",
   "+third_party/mozilla",
+  "+third_party/skia",
 ]

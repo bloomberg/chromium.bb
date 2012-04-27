@@ -59,9 +59,6 @@ import re
 import sys
 import copy
 
-# Variable name used in the DEPS file to specify module-level deps.
-DEPS_VAR_NAME = "deps"
-
 # Variable name used in the DEPS file to add or subtract include files from
 # the module-level deps.
 INCLUDE_RULES_VAR_NAME = "include_rules"
@@ -170,12 +167,11 @@ class Rules:
     return (False, "no rule applying")
 
 
-def ApplyRules(existing_rules, deps, includes, cur_dir):
-  """Applies the given deps and include rules, returning the new rules.
+def ApplyRules(existing_rules, includes, cur_dir):
+  """Applies the given include rules, returning the new rules.
 
   Args:
     existing_rules: A set of existing rules that will be combined.
-    deps: The list of imports from the "deps" section of the DEPS file.
     include: The list of rules from the "include_rules" section of DEPS.
     cur_dir: The current directory. We will create an implicit rule that
              allows inclusion from this directory.
@@ -198,13 +194,6 @@ def ApplyRules(existing_rules, deps, includes, cur_dir):
     raise Exception("Internal error: base directory is not at the beginning" +
                     " for\n  %s and base dir\n  %s" %
                     (cur_dir, BASE_DIRECTORY))
-
-  # Next apply the DEPS additions, these are all allowed. Note that DEPS start
-  # out with "src/" which we want to trim.
-  for (index, key) in enumerate(deps):
-    if key.startswith("src/"):
-      key = key[4:]
-    rules.AddRule("+" + key, relative_dir + "'s deps for " + key)
 
   # Last, apply the additional explicit rules.
   for (index, rule_str) in enumerate(includes):
@@ -275,12 +264,10 @@ def ApplyDirectoryRules(existing_rules, dir_name):
 
   # Even if a DEPS file does not exist we still invoke ApplyRules
   # to apply the implicit "allow" rule for the current directory
-  deps = local_scope.get(DEPS_VAR_NAME, {})
   include_rules = local_scope.get(INCLUDE_RULES_VAR_NAME, [])
   skip_subdirs = local_scope.get(SKIP_SUBDIRS_VAR_NAME, [])
 
-  return (ApplyRules(existing_rules, deps, include_rules, dir_name),
-          skip_subdirs)
+  return (ApplyRules(existing_rules, include_rules, dir_name), skip_subdirs)
 
 
 def ShouldCheckFile(file_name):

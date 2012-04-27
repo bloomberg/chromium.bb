@@ -20,5 +20,6 @@ include_rules = [
   "+webkit/plugins",
   "+third_party/cld/encodings/compact_lang_det/win",
   "+third_party/npapi/bindings",
+  "+third_party/smhasher",
   "+third_party/sqlite",
 ]

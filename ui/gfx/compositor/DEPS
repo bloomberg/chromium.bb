@@ -2,6 +2,8 @@
 # the compositor/ui. These lines will disappear once we can extract the Chromium
 # Compositor out of WebKit.
 include_rules = [
+  "+third_party/WebKit/Source/Platform/chromium/public",
+  "+third_party/WebKit/Source/WebKit/chromium",
   "+webkit/glue",
   "+webkit/gpu",
 ]

@@ -13,5 +13,7 @@ include_rules = [
   "+skia/ext",
   "+third_party/GTM",
   "+third_party/GTM/AppKit",
+  "+third_party/libjingle",
+  "+third_party/libvpx",
   "+third_party/skia/include/core",
 ]

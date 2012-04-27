@@ -3,6 +3,7 @@ include_rules = [
   "+content/public/renderer",
   "+jingle/glue",
   "+media",  # For audio input/output and audio/video decoding.
+  "+third_party/libjingle",
   "+third_party/mach_override",
   "+third_party/tcmalloc",
   "+v8/include",
