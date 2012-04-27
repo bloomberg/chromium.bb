@@ -237,12 +237,8 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
   if (!entry)
     return nil;
 
-  std::wstring title;
-  if (entry != NULL) {
-    title = UTF16ToWideHack(entry->GetTitle());
-  }
-
-  return base::SysWideToNSString(title);
+  string16 title = entry ? entry->GetTitle() : string16();
+  return base::SysUTF16ToNSString(title);
 }
 
 - (NSNumber*)loading {
