@@ -30,6 +30,10 @@ struct test_client {
 	int done;
 	int status;
 	int terminate;
+
+	char buf[256];
+	void (*handle)(struct test_client *client);
+	void *data;
 };
 
 struct test_client *test_client_launch(struct weston_compositor *compositor);

@@ -45,14 +45,36 @@ test_client_cleanup(struct weston_process *proc, int status)
 	client->status = status;
 	client->done = 1;
 
+	assert(client->status == 0);
+
 	if (client->terminate)
 		wl_display_terminate(client->compositor->wl_display);
+}
+
+static int
+test_client_data(int fd, uint32_t mask, void *data)
+{
+	struct test_client *client = data;
+	struct wl_event_loop *loop;
+	int len;
+
+	len = read(client->fd, client->buf, sizeof client->buf);
+	assert(len >= 0);
+	fprintf(stderr, "got %.*s from client\n", len - 1, client->buf);
+	assert(client->buf[len - 1] == '\n');
+	client->buf[len - 1] = '\0';
+
+	loop = wl_display_get_event_loop(client->compositor->wl_display);
+	wl_event_loop_add_idle(loop, (void *) client->handle, client);
+
+	return 1;
 }
 
 struct test_client *
 test_client_launch(struct weston_compositor *compositor)
 {
 	struct test_client *client;
+	struct wl_event_loop *loop;
 	int ret, sv[2], client_fd;
 	char buf[256];
 
@@ -76,6 +98,10 @@ test_client_launch(struct weston_compositor *compositor)
 	assert(client->client);
 	close(sv[0]);
 	client->fd = sv[1];
+
+	loop = wl_display_get_event_loop(compositor->wl_display);
+	wl_event_loop_add_fd(loop, client->fd, WL_EVENT_READABLE,
+			     test_client_data, client);
 
 	return client;
 }

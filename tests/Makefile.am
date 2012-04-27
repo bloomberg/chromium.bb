@@ -1,4 +1,4 @@
-TESTS = surface-test.la client-test.la
+TESTS = surface-test.la client-test.la event-test.la
 
 TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tests/weston-test
 
@@ -17,6 +17,7 @@ test_runner_src = test-runner.c test-runner.h
 
 surface_test_la_SOURCES = surface-test.c $(test_runner_src)
 client_test_la_SOURCES = client-test.c $(test_runner_src)
+event_test_la_SOURCES = event-test.c $(test_runner_src)
 
 test_client_SOURCES = test-client.c
 test_client_LDADD = $(SIMPLE_CLIENT_LIBS)
