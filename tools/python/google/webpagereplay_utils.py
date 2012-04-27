@@ -134,8 +134,8 @@ class ChromiumPaths(object):
       '.wpr_alt':   'src/tools/page_cycler/webpagereplay/tests/{TEST_NAME}.wpr',
       'start.html': 'src/tools/page_cycler/webpagereplay/start.html',
       'extension':  'src/tools/page_cycler/webpagereplay/extension',
+      'replay':     'src/third_party/webpagereplay',
       'logs':       'src/webpagereplay_logs/{TEST_EXE_NAME}',
-      'replay':     'tools/build/third_party/webpagereplay',
       }
 
   def __init__(self, **replacements):
