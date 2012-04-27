@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/installer/mac/uninstaller/remoting_uninstaller_delegate.h"
+#include "remoting/host/installer/mac/uninstaller/remoting_uninstaller.h"
 
 #import <Cocoa/Cocoa.h>
 

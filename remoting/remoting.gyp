@@ -258,7 +258,8 @@
             '<(DEPTH)/base/base.gyp:base',
           ],
           'sources': [
-            'host/installer/mac/uninstaller/remoting_uninstaller_delegate.mm',
+            'host/installer/mac/uninstaller/remoting_uninstaller.h',
+            'host/installer/mac/uninstaller/remoting_uninstaller.mm',
           ],
           'xcode_settings': {
             'INFOPLIST_FILE': 'host/installer/mac/uninstaller/remoting_uninstaller-Info.plist',
@@ -266,6 +267,7 @@
             'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_NAME="<(bundle_name)" BUNDLE_ID="<(bundle_id)" COPYRIGHT_BY="<(copyright_by)"',
           },
           'mac_bundle_resources': [
+            'host/installer/mac/uninstaller/remoting_uninstaller.icns',
             'host/installer/mac/uninstaller/remoting_uninstaller.xib',
             'host/installer/mac/uninstaller/remoting_uninstaller-Info.plist',
           ],
