@@ -7,6 +7,11 @@
 #include "base/basictypes.h"
 #include "build/build_config.h"
 
+#if defined(USE_ASH)
+#include "base/command_line.h"
+#include "ui/base/ui_base_switches.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/win/metro.h"
 #include <Windows.h>
@@ -19,6 +24,8 @@ namespace ui {
 // Windows.
 DisplayLayout GetDisplayLayout() {
 #if defined(USE_ASH)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTouchOptimizedUI))
+    return LAYOUT_TOUCH;
   return LAYOUT_ASH;
 #elif !defined(OS_WIN)
   return LAYOUT_DESKTOP;

@@ -55,5 +55,22 @@
       ],
       'includes': [ '../build/grit_target.gypi' ],
     },
+    {
+      'target_name': 'ui_resources_touch',
+      'type': 'none',
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_touch',
+      },
+      'actions': [
+        {
+          'action_name': 'ui_resources_touch',
+          'variables': {
+            'grit_grd_file': 'resources/ui_resources_touch.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+      ],
+      'includes': [ '../build/grit_target.gypi' ],
+    },
   ],
 }

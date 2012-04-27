@@ -20,6 +20,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -42,6 +43,9 @@ const int kTabstripLeftSpacing = 0;
 const int kTabstripRightSpacing = 10;
 // Space between top of window and top of tabstrip for restored windows.
 const int kTabstripTopSpacingRestored = 7;
+// Extra space between top of window and top of tabstrip for touch optimized
+// restored windows.
+const int kTabstripTopSpacingTouchOptimized = 17;
 // Space between top of window and top of tabstrip for maximized windows.
 // Place them flush to the top to make them clickable when the cursor is at
 // the screen edge.
@@ -299,6 +303,10 @@ SkBitmap BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
 
 int BrowserNonClientFrameViewAsh::NonClientTopBorderHeight(
     bool force_restored) const {
+  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
+    if (force_restored || browser_view()->IsTabStripVisible())
+      return kTabstripTopSpacingTouchOptimized;
+  }
   if (force_restored)
     return kTabstripTopSpacingRestored;
   if (frame()->IsFullscreen())

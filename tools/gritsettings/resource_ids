@@ -169,6 +169,9 @@
   "ui/resources/ui_resources_standard.grd": {
     "includes": [24000],
   },
+  "ui/resources/ui_resources_touch.grd": {
+    "includes": [24000],
+  },
   "ui/resources/ui_resources_2x.grd": {
     "includes": [24000],
   },

@@ -234,8 +234,19 @@
         'theme_resources_gen',
         '<(DEPTH)/ui/ui.gyp:ui_resources_2x',
         '<(DEPTH)/ui/ui.gyp:ui_resources_standard',
+        '<(DEPTH)/ui/ui.gyp:ui_resources_touch',
       ],
       'conditions': [
+        ['chromeos==1', {
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)',
+              'files': [
+                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_touch/ui_resources_touch.pak',
+              ],
+            },
+          ],
+        }],
         ['OS != "mac"', {
           # Copy pak files to the product directory. These files will be picked
           # up by the following installer scripts:

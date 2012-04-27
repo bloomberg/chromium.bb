@@ -7,9 +7,11 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/path_service.h"
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/gtk/scoped_gobject.h"
+#include "ui/base/ui_base_paths.h"
 #include "ui/gfx/image/image.h"
 
 #include <gtk/gtk.h>
@@ -49,7 +51,20 @@ GdkPixbuf* LoadPixbuf(base::RefCountedStaticMemory* data, bool rtl_enabled) {
   }
 }
 
+FilePath GetResourcesPakFilePath(const std::string& pak_name) {
+  FilePath path;
+  if (PathService::Get(base::DIR_MODULE, &path))
+    return path.AppendASCII(pak_name.c_str());
+  return FilePath();
+}
+
 }  // namespace
+
+void ResourceBundle::LoadCommonResources() {
+  AddDataPack(GetResourcesPakFilePath("chrome.pak"));
+  AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"));
+  AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"));
+}
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
   // Use the negative |resource_id| for the key for BIDI-aware images.
