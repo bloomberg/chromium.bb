@@ -62,7 +62,8 @@ void PanelLayoutManager::FinishDragging() {
 }
 
 void PanelLayoutManager::SetLauncher(ash::Launcher* launcher) {
-  launcher->AddIconObserver(this);
+  launcher_ = launcher;
+  launcher_->AddIconObserver(this);
 }
 
 void PanelLayoutManager::ToggleMinimize(aura::Window* panel) {
@@ -187,8 +188,6 @@ void PanelLayoutManager::Relayout() {
     return;
   AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
-  ash::Shell* shell = ash::Shell::GetInstance();
-
   aura::Window* active_panel = NULL;
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
@@ -197,7 +196,7 @@ void PanelLayoutManager::Relayout() {
       continue;
 
     gfx::Rect icon_bounds =
-        shell->launcher()->GetScreenBoundsOfItemIconForWindow(panel);
+        launcher_->GetScreenBoundsOfItemIconForWindow(panel);
 
     // An empty rect indicates that there is no icon for the panel in the
     // launcher. Just use the current bounds, as there's no icon to draw the
