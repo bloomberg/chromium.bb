@@ -11,9 +11,13 @@
 
 @implementation RemotingUninstallerAppDelegate
 
-NSString* const kServiceName = @"org.chromium.chromoting";
 NSString* const kLaunchAgentsDir = @"/Library/LaunchAgents";
 NSString* const kHelperToolsDir = @"/Library/PrivilegedHelperTools";
+NSString* const kApplicationDir = @"/Applications";
+
+NSString* const kServiceName = @"org.chromium.chromoting";
+NSString* const kUninstallerName =
+    @"Chrome Remote Desktop Host Uninstaller.app";
 
 // Keystone
 NSString* const kKeystoneAdmin = @"/Library/Google/GoogleSoftwareUpdate/"
@@ -52,9 +56,9 @@ NSString* const kKeystonePID = @"com.google.chrome_remote_desktop";
 - (void)sudoDelete:(const char*)filename
          usingAuth:(AuthorizationRef)authRef  {
 
-  NSLog(@"Executing (as Admin) rm -f %s", filename);
+  NSLog(@"Executing (as Admin) rm -rf %s", filename);
   const char* tool = "/bin/rm";
-  const char* args[] = {"-f", filename, NULL};
+  const char* args[] = {"-rf", filename, NULL};
   FILE* pipe = NULL;
   OSStatus status;
   status = AuthorizationExecuteWithPrivileges(authRef, tool,
@@ -155,6 +159,10 @@ NSString* const kKeystonePID = @"com.google.chrome_remote_desktop";
   NSString* auth = [NSString stringWithFormat:@"%@/%@.json",
                     kHelperToolsDir, kServiceName];
   [self sudoDelete:[auth UTF8String] usingAuth:authRef];
+
+  NSString* uninstaller = [NSString stringWithFormat:@"%@/%@",
+                           kApplicationDir, kUninstallerName];
+  [self sudoDelete:[uninstaller UTF8String] usingAuth:authRef];
 
   [self keystoneUnregister];
 }
