@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "googleurl/src/gurl.h"
@@ -165,8 +166,11 @@ bool GpuChannelHost::Send(IPC::Message* message) {
   // TODO: Can we just always use sync_filter_ since we setup the channel
   //       without a main listener?
   if (factory_->IsMainThread()) {
-    if (channel_.get())
+    if (channel_.get()) {
+      // http://crbug.com/125264
+      base::ThreadRestrictions::ScopedAllowWait allow_wait;
       return channel_->Send(message);
+    }
   } else if (MessageLoop::current()) {
     return sync_filter_->Send(message);
   }

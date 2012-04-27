@@ -5,6 +5,7 @@
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 
 #include "base/bind.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
@@ -122,7 +123,8 @@ int32 BrowserGpuChannelHostFactory::CreateViewCommandBuffer(
   // We're blocking the UI thread, which is generally undesirable.
   // In this case we need to wait for this before we can show any UI /anyway/,
   // so it won't cause additional jank.
-  // TODO(piman): Make this asynchronous.
+  // TODO(piman): Make this asynchronous (http://crbug.com/125248).
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   request.event.Wait();
   return request.route_id;
 }
