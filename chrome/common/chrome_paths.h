@@ -27,8 +27,7 @@ enum {
   DIR_APP_DICTIONARIES,         // Directory where the global dictionaries are.
   DIR_USER_DOCUMENTS,           // Directory for a user's "My Documents".
   DIR_DEFAULT_DOWNLOADS_SAFE,   // Directory for a user's
-                                // "My Documents/Downloads", (Windows) or
-                                // "Downloads". (Linux)
+                                // "My Documents/Downloads".
   DIR_DEFAULT_DOWNLOADS,        // Directory for a user's downloads.
   DIR_USER_DATA_TEMP,           // A temp directory within DIR_USER_DATA.  Use
                                 // this when a temporary file or directory will

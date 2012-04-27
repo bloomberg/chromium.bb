@@ -144,7 +144,7 @@ bool PathProvider(int key, FilePath* result) {
       create_dir = true;
       break;
     case chrome::DIR_DEFAULT_DOWNLOADS_SAFE:
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN)
       if (!GetUserDownloadsDirectorySafe(&cur))
         return false;
       break;
