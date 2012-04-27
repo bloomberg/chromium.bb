@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "base/auto_reset.h"
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -32,18 +33,20 @@ namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager public implementation:
-
 PanelLayoutManager::PanelLayoutManager(aura::Window* panel_container)
     : panel_container_(panel_container),
       in_layout_(false),
       dragged_panel_(NULL),
-      launcher_(NULL) {
+      launcher_(NULL),
+      last_active_panel_(NULL) {
   DCHECK(panel_container);
+  Shell::GetRootWindow()->AddObserver(this);
 }
 
 PanelLayoutManager::~PanelLayoutManager() {
   if (launcher_)
     launcher_->RemoveIconObserver(this);
+  Shell::GetRootWindow()->RemoveObserver(this);
 }
 
 void PanelLayoutManager::StartDragging(aura::Window* panel) {
@@ -92,7 +95,6 @@ void PanelLayoutManager::ToggleMinimize(aura::Window* panel) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager, aura::LayoutManager implementation:
-
 void PanelLayoutManager::OnWindowResized() {
   Relayout();
 }
@@ -110,6 +112,9 @@ void PanelLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
 
   if (dragged_panel_ == child)
     dragged_panel_ = NULL;
+
+  if (last_active_panel_ == child)
+    last_active_panel_ = NULL;
 
   Relayout();
 }
@@ -156,15 +161,27 @@ void PanelLayoutManager::SetChildBounds(aura::Window* child,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PanelLayoutManager, aura::LauncherIconObserver implementation:
-
+// PanelLayoutManager, ash::LauncherIconObserver implementation:
 void PanelLayoutManager::OnLauncherIconPositionsChanged() {
   Relayout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PanelLayoutManager private implementation:
+// PanelLayoutManager, aura::WindowObserver implementation:
+void PanelLayoutManager::OnWindowPropertyChanged(aura::Window* window,
+                                                 const void* key,
+                                                 intptr_t old) {
+  if (key == aura::client::kRootWindowActiveWindowKey) {
+    aura::Window* active = window->GetProperty(
+        aura::client::kRootWindowActiveWindowKey);
+    if (active && active->type() == aura::client::WINDOW_TYPE_PANEL)
+      UpdateStacking(active);
+  }
+}
 
+
+////////////////////////////////////////////////////////////////////////////////
+// PanelLayoutManager private implementation:
 void PanelLayoutManager::Relayout() {
   if (in_layout_)
     return;
@@ -172,31 +189,87 @@ void PanelLayoutManager::Relayout() {
 
   ash::Shell* shell = ash::Shell::GetInstance();
 
+  aura::Window* active_panel = NULL;
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
-    aura::Window* panel_win = *iter;
-    if (!panel_win->IsVisible() || panel_win == dragged_panel_)
+    aura::Window* panel = *iter;
+    if (!panel->IsVisible() || panel == dragged_panel_)
       continue;
 
     gfx::Rect icon_bounds =
-        shell->launcher()->GetScreenBoundsOfItemIconForWindow(panel_win);
+        shell->launcher()->GetScreenBoundsOfItemIconForWindow(panel);
 
     // An empty rect indicates that there is no icon for the panel in the
     // launcher. Just use the current bounds, as there's no icon to draw the
     // panel above.
+    // TODO(dcheng): Need to anchor to overflow icon.
     if (icon_bounds.IsEmpty())
       continue;
+
+    if (panel->HasFocus()) {
+      DCHECK(!active_panel);
+      active_panel = panel;
+    }
 
     gfx::Point icon_origin = icon_bounds.origin();
     aura::Window::ConvertPointToWindow(panel_container_->GetRootWindow(),
                                        panel_container_, &icon_origin);
 
-    gfx::Rect bounds = panel_win->bounds();
+    // TODO(dcheng): Need to clamp to screen edges.
+    gfx::Rect bounds = panel->bounds();
     bounds.set_x(
         icon_origin.x() + icon_bounds.width() / 2 - bounds.width() / 2);
     bounds.set_y(icon_origin.y() - bounds.height());
-    SetChildBoundsDirect(panel_win, bounds);
+    SetChildBoundsDirect(panel, bounds);
   }
+
+  UpdateStacking(active_panel);
+}
+
+void PanelLayoutManager::UpdateStacking(aura::Window* active_panel) {
+  if (!active_panel) {
+    if (!last_active_panel_)
+      return;
+    active_panel = last_active_panel_;
+  }
+
+  // We want to to stack the panels like a deck of cards:
+  // ,--,--,--,-------.--.--.
+  // |  |  |  |       |  |  |
+  // |  |  |  |       |  |  |
+  //
+  // We use the middle of each panel to figure out how to stack the panels. This
+  // allows us to update the stacking when a panel is being dragged around by
+  // the titlebar--even though it doesn't update the launcher icon positions, we
+  // still want the visual effect.
+  std::map<int, aura::Window*> window_ordering;
+  for (PanelList::const_iterator it = panel_windows_.begin();
+       it != panel_windows_.end(); ++it) {
+    gfx::Rect bounds = (*it)->bounds();
+    window_ordering.insert(std::make_pair(bounds.x() + bounds.width() / 2,
+                                          *it));
+  }
+
+  aura::Window* previous_panel = NULL;
+  for (std::map<int, aura::Window*>::const_iterator it =
+       window_ordering.begin();
+       it != window_ordering.end() && it->second != active_panel; ++it) {
+    if (previous_panel)
+      panel_container_->StackChildAbove(it->second, previous_panel);
+    previous_panel = it->second;
+  }
+
+  previous_panel = NULL;
+  for (std::map<int, aura::Window*>::const_reverse_iterator it =
+       window_ordering.rbegin();
+       it != window_ordering.rend() && it->second != active_panel; ++it) {
+    if (previous_panel)
+      panel_container_->StackChildAbove(it->second, previous_panel);
+    previous_panel = it->second;
+  }
+
+  panel_container_->StackChildAtTop(active_panel);
+  last_active_panel_ = active_panel;
 }
 
 }  // namespace internal

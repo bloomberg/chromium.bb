@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/window_observer.h"
 
 namespace aura {
 class Window;
@@ -37,7 +38,8 @@ namespace internal {
 // panel_container->SetLayoutManager(new PanelLayoutManager(panel_container));
 
 class ASH_EXPORT PanelLayoutManager : public aura::LayoutManager,
-                                      public ash::LauncherIconObserver {
+                                      public ash::LauncherIconObserver,
+                                      public aura::WindowObserver {
  public:
   explicit PanelLayoutManager(aura::Window* panel_container);
   virtual ~PanelLayoutManager();
@@ -59,8 +61,12 @@ class ASH_EXPORT PanelLayoutManager : public aura::LayoutManager,
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
 
-  // Overriden from ash::LauncherIconObserver
+  // Overridden from ash::LauncherIconObserver
   virtual void OnLauncherIconPositionsChanged() OVERRIDE;
+
+  // Overridden from aura::WindowObserver
+  virtual void OnWindowPropertyChanged(
+      aura::Window* window, const void* key, intptr_t old) OVERRIDE;
 
  private:
   typedef std::list<aura::Window*> PanelList;
@@ -68,16 +74,23 @@ class ASH_EXPORT PanelLayoutManager : public aura::LayoutManager,
   // Called whenever the panel layout might change.
   void Relayout();
 
+  // Called whenever the panel stacking order needs to be updated (e.g. focus
+  // changes or a panel is moved).
+  void UpdateStacking(aura::Window* active_panel);
+
   // Parent window associated with this layout manager.
   aura::Window* panel_container_;
   // Protect against recursive calls to Relayout().
   bool in_layout_;
   // Ordered list of unowned pointers to panel windows.
   PanelList panel_windows_;
-
+  // The panel being dragged.
   aura::Window* dragged_panel_;
-
+  // The launcher we are observing for launcher icon changes.
   Launcher* launcher_;
+  // The last active panel. Used to maintain stacking even if no panels are
+  // currently focused.
+  aura::Window* last_active_panel_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelLayoutManager);
 };
