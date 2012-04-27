@@ -98,9 +98,11 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
                                                    loader_handle_in_browser));
 }
 
-void NaClBrokerListener::OnLaunchDebugExceptionHandler(int32 pid) {
+void NaClBrokerListener::OnLaunchDebugExceptionHandler(
+    int32 pid, base::ProcessHandle process_handle) {
   base::Closure reply_sender(base::Bind(SendReply, channel_.get(), pid));
-  NaClStartDebugExceptionHandlerThread(pid, base::MessageLoopProxy::current(),
+  NaClStartDebugExceptionHandlerThread(process_handle,
+                                       base::MessageLoopProxy::current(),
                                        reply_sender);
 }
 

@@ -36,7 +36,8 @@ class NaClBrokerService {
   void OnLoaderDied();
 
   bool LaunchDebugExceptionHandler(base::WeakPtr<NaClProcessHost> client,
-                                   int32 pid);
+                                   int32 pid,
+                                   base::ProcessHandle process_handle);
 
   // Called by NaClBrokerHost to notify the service that a debug
   // exception handler was started.

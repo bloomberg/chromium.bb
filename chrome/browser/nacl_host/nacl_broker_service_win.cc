@@ -67,12 +67,13 @@ void NaClBrokerService::OnLoaderDied() {
 }
 
 bool NaClBrokerService::LaunchDebugExceptionHandler(
-    base::WeakPtr<NaClProcessHost> nacl_process_host, int32 pid) {
+    base::WeakPtr<NaClProcessHost> nacl_process_host, int32 pid,
+    base::ProcessHandle process_handle) {
   pending_debuggers_[pid] = nacl_process_host;
   NaClBrokerHost* broker_host = GetBrokerHost();
   if (!broker_host)
     return false;
-  return broker_host->LaunchDebugExceptionHandler(pid);
+  return broker_host->LaunchDebugExceptionHandler(pid, process_handle);
 }
 
 void NaClBrokerService::OnDebugExceptionHandlerLaunched(int32 pid) {

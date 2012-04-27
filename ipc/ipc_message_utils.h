@@ -706,15 +706,18 @@ struct ParamTraits<string16> {
 template <>
 struct ParamTraits<HANDLE> {
   typedef HANDLE param_type;
+  // Note that HWNDs/HANDLE/HCURSOR/HACCEL etc are always 32 bits, even on 64
+  // bit systems.
   static void Write(Message* m, const param_type& p) {
-    // Note that HWNDs/HANDLE/HCURSOR/HACCEL etc are always 32 bits, even on 64
-    // bit systems.
     m->WriteUInt32(reinterpret_cast<uint32>(p));
   }
   static bool Read(const Message* m, PickleIterator* iter,
                    param_type* r) {
-    DCHECK_EQ(sizeof(param_type), sizeof(uint32));
-    return m->ReadUInt32(iter, reinterpret_cast<uint32*>(r));
+    uint32 temp;
+    if (!m->ReadUInt32(iter, &temp))
+      return false;
+    *r = reinterpret_cast<HANDLE>(temp);
+    return true;
   }
   static void Log(const param_type& p, std::string* l) {
     l->append(StringPrintf("0x%X", p));

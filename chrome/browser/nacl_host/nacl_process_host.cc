@@ -49,6 +49,7 @@
 
 #include "base/threading/thread.h"
 #include "base/process_util.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/browser/nacl_host/nacl_broker_service_win.h"
 #include "content/public/common/sandbox_init.h"
 #include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
@@ -572,9 +573,33 @@ void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
   }
   debug_context_->SetNaClProcessHost(weak_factory_.GetWeakPtr());
   if (RunningOnWOW64()) {
-    if (!NaClBrokerService::GetInstance()->LaunchDebugExceptionHandler(
-             weak_factory_.GetWeakPtr(), peer_pid)) {
+    base::win::ScopedHandle process_handle;
+    // We cannot use process_->GetData().handle because it does not
+    // have the necessary access rights.  We open the new handle here
+    // rather than in the NaCl broker process in case the NaCl loader
+    // process dies before the NaCl broker process receives the
+    // message we send.  The debug exception handler uses
+    // DebugActiveProcess() to attach, but this takes a PID.  We need
+    // to prevent the NaCl loader's PID from being reused before
+    // DebugActiveProcess() is called, and holding a process handle
+    // open achieves this.
+    if (!base::OpenProcessHandleWithAccess(
+             peer_pid,
+             base::kProcessAccessQueryInformation |
+             base::kProcessAccessSuspendResume |
+             base::kProcessAccessTerminate |
+             base::kProcessAccessVMOperation |
+             base::kProcessAccessVMRead |
+             base::kProcessAccessVMWrite |
+             base::kProcessAccessWaitForTermination,
+             process_handle.Receive())) {
+      LOG(ERROR) << "Failed to get process handle";
       debug_context_->AllowAndSendStartMessage();
+    } else {
+      if (!NaClBrokerService::GetInstance()->LaunchDebugExceptionHandler(
+             weak_factory_.GetWeakPtr(), peer_pid, process_handle)) {
+        debug_context_->AllowAndSendStartMessage();
+      }
     }
   } else {
     // Start new thread for debug loop

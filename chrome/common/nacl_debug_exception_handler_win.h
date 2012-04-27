@@ -8,8 +8,9 @@
 
 #include "base/callback.h"
 #include "base/message_loop.h"
+#include "base/process.h"
 
-void NaClStartDebugExceptionHandlerThread(int32 nacl_process_id,
+void NaClStartDebugExceptionHandlerThread(base::ProcessHandle nacl_process,
                                           base::MessageLoopProxy* message_loop,
                                           const base::Closure& on_connected);
 
