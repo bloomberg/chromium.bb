@@ -8,9 +8,8 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
-#include "base/string16.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/installer/util/browser_distribution.h"
+#include "chrome/common/chrome_version_info.h"
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
@@ -75,16 +74,14 @@ bool IsPepperFlashEnabledByDefault() {
   if (base::win::GetMetroModule())
     return true;
 
-  // For other Windows users, enable only for Canary users in a field trial.
+  // For other Windows users, enable only for Canary and Dev users in a field
+  // trial.
   if (!IsInFieldTrialGroup())
     return false;
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!dist)
-    return false;
-  string16 channel;
-  if (!dist->GetChromeChannel(&channel))
-    return false;
-  return (channel == L"canary");
+
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  return channel == chrome::VersionInfo::CHANNEL_CANARY ||
+         channel == chrome::VersionInfo::CHANNEL_DEV;
 #elif defined(OS_LINUX)
   // For Linux, always try to use it (availability is checked elsewhere).
   return true;
