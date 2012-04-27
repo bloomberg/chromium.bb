@@ -17,6 +17,7 @@
 #include "base/tracked_objects.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/android/media_jni_registrar.h"
+#include "net/android/net_jni_registrar.h"
 
 jboolean LibraryLoaderEntryHook(JNIEnv* env, jclass clazz,
                                 jobjectArray init_command_line) {
@@ -50,7 +51,8 @@ jboolean LibraryLoaderEntryHook(JNIEnv* env, jclass clazz,
   if (!base::android::RegisterJni(env))
     return JNI_FALSE;
 
-  // TODO(yfriedman): Add net registration.
+  if (!net::android::RegisterJni(env))
+    return JNI_FALSE;
 
   if (!media::RegisterJni(env))
     return JNI_FALSE;
