@@ -2300,6 +2300,8 @@
         'browser/ui/browser_dialogs.h',
         'browser/ui/browser_init.cc',
         'browser/ui/browser_init.h',
+        'browser/ui/browser_init_win.cc',
+        'browser/ui/browser_init_win.h',
         'browser/ui/browser_list.cc',
         'browser/ui/browser_list.h',
         'browser/ui/browser_list_aura.cc',
