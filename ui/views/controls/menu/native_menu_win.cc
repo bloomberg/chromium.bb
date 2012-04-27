@@ -743,8 +743,8 @@ void NativeMenuWin::CreateHostWindow() {
 // MenuWrapper, public:
 
 // static
-MenuWrapper* MenuWrapper::CreateWrapper(Menu2* menu) {
-  return new NativeMenuWin(menu->model(), NULL);
+MenuWrapper* MenuWrapper::CreateWrapper(ui::MenuModel* model) {
+  return new NativeMenuWin(model, NULL);
 }
 
 }  // namespace views
