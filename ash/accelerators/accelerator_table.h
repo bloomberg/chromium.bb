@@ -42,6 +42,7 @@ enum AcceleratorAction {
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TAKE_PARTIAL_SCREENSHOT,
   TAKE_SCREENSHOT,
+  TOGGLE_APP_LIST,
   TOGGLE_CAPS_LOCK,
   VOLUME_DOWN,
   VOLUME_MUTE,

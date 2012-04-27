@@ -374,6 +374,9 @@ bool AcceleratorController::AcceleratorPressed(
     case SEARCH_KEY:
       ash::Shell::GetInstance()->delegate()->Search();
       break;
+    case TOGGLE_APP_LIST:
+      ash::Shell::GetInstance()->ToggleAppList();
+      break;
     case TOGGLE_CAPS_LOCK:
       if (caps_lock_delegate_.get())
         return caps_lock_delegate_->HandleToggleCapsLock();

@@ -47,6 +47,7 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_PRINT, false, false, false, TAKE_SCREENSHOT },
   // On Chrome OS, Search key is mapped to LWIN.
   { true, ui::VKEY_LWIN, false, false, false, SEARCH_KEY },
+  { true, ui::VKEY_LWIN, false, true, false, TOGGLE_APP_LIST },
   { true, ui::VKEY_LWIN, true, false, false, TOGGLE_CAPS_LOCK },
   { true, ui::VKEY_F6, false, false, false, BRIGHTNESS_DOWN },
   { true, ui::VKEY_F7, false, false, false, BRIGHTNESS_UP },

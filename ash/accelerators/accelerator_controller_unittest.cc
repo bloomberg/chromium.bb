@@ -443,6 +443,16 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_EQ(2, delegate->handle_take_screenshot_count());
     EXPECT_EQ(1, delegate->handle_take_partial_screenshot_count());
   }
+  // ToggleAppList
+  {
+    EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+    EXPECT_FALSE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_LWIN, false, true, false)));
+    EXPECT_TRUE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+    EXPECT_FALSE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_LWIN, false, true, false)));
+    EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+  }
   // ToggleCapsLock
   {
     EXPECT_FALSE(GetController()->Process(
