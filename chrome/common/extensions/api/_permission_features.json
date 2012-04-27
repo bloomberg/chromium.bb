@@ -220,10 +220,6 @@
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
-  "usb": {
-    "channel": "stable",
-    "extension_types": ["platform_app"]
-  },
   "webNavigation": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]

@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/api_resource_controller.h"
 #include "chrome/browser/extensions/api/serial/serial_connection.h"
 #include "chrome/browser/extensions/api/socket/socket.h"
-#include "chrome/browser/extensions/api/usb/usb_device_resource.h"
 
 namespace extensions {
 
@@ -78,12 +77,6 @@ SerialConnection* APIResourceController::GetSerialConnection(
     int api_resource_id) const {
   return static_cast<SerialConnection*>(
       GetAPIResource(APIResource::SerialConnectionResource, api_resource_id));
-}
-
-UsbDeviceResource* APIResourceController::GetUsbDeviceResource(
-    int api_resource_id) const {
-  return static_cast<UsbDeviceResource*>(GetAPIResource(
-      APIResource::UsbDeviceResource, api_resource_id));
 }
 
 }  // namespace extensions

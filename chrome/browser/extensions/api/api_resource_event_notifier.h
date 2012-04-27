@@ -25,8 +25,7 @@ namespace extensions {
 enum APIResourceEventType {
   API_RESOURCE_EVENT_CONNECT_COMPLETE,
   API_RESOURCE_EVENT_DATA_READ,
-  API_RESOURCE_EVENT_WRITE_COMPLETE,
-  API_RESOURCE_EVENT_TRANSFER_COMPLETE,
+  API_RESOURCE_EVENT_WRITE_COMPLETE
 };
 
 extern const char kSrcIdKey[];
@@ -60,8 +59,6 @@ class APIResourceEventNotifier
 
   virtual void OnWriteComplete(int result_code);
 
-  virtual void OnTransferComplete(int result_code, base::ListValue* data);
-
   static std::string APIResourceEventTypeToString(
       APIResourceEventType event_type);
 
@@ -71,13 +68,11 @@ class APIResourceEventNotifier
 
   virtual ~APIResourceEventNotifier();
 
-  void DispatchEvent(const std::string &extension, DictionaryValue* event);
-  void DispatchEventOnUIThread(const std::string& extension,
-                               DictionaryValue* event);
+  void DispatchEvent(DictionaryValue* event);
+  void DispatchEventOnUIThread(DictionaryValue* event);
   DictionaryValue* CreateAPIResourceEvent(APIResourceEventType event_type);
 
-  void SendEventWithResultCode(const std::string& extension,
-                               APIResourceEventType event_type,
+  void SendEventWithResultCode(APIResourceEventType event_type,
                                int result_code);
 
   ExtensionEventRouter* router_;

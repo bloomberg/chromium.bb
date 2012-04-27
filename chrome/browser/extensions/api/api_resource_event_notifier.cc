@@ -14,19 +14,17 @@
 using content::BrowserThread;
 
 namespace events {
-const char kExperimentalSocketOnEvent[] = "experimental.socket.onEvent";
-const char kExperimentalUsbOnEvent[] = "experimental.usb.onEvent";
+// TODO(miket): This should be generic, but at the moment only socket sends
+// onEvent events. We'll fix this when serial becomes nonblocking.
+const char kOnAPIResourceEvent[] = "experimental.socket.onEvent";
 };
 
 namespace extensions {
 
 const char kEventTypeKey[] = "type";
-
 const char kEventTypeConnectComplete[] = "connectComplete";
 const char kEventTypeDataRead[] = "dataRead";
 const char kEventTypeWriteComplete[] = "writeComplete";
-
-const char kEventTypeTransferComplete[] = "transferComplete";
 
 const char kSrcIdKey[] = "srcId";
 const char kIsFinalEventKey[] = "isFinalEvent";
@@ -50,8 +48,7 @@ APIResourceEventNotifier::APIResourceEventNotifier(
 }
 
 void APIResourceEventNotifier::OnConnectComplete(int result_code) {
-  SendEventWithResultCode(events::kExperimentalSocketOnEvent,
-                          API_RESOURCE_EVENT_CONNECT_COMPLETE, result_code);
+  SendEventWithResultCode(API_RESOURCE_EVENT_CONNECT_COMPLETE, result_code);
 }
 
 void APIResourceEventNotifier::OnDataRead(int result_code,
@@ -73,26 +70,11 @@ void APIResourceEventNotifier::OnDataRead(int result_code,
   event->Set(kDataKey, data);
   event->SetString(kAddressKey, address);
   event->SetInteger(kPortKey, port);
-  DispatchEvent(events::kExperimentalSocketOnEvent, event);
+  DispatchEvent(event);
 }
 
 void APIResourceEventNotifier::OnWriteComplete(int result_code) {
-  SendEventWithResultCode(events::kExperimentalSocketOnEvent,
-                          API_RESOURCE_EVENT_WRITE_COMPLETE, result_code);
-}
-
-void APIResourceEventNotifier::OnTransferComplete(int result_code,
-                                                  base::ListValue* data) {
-  if (src_id_ < 0) {
-    delete data;
-    return;
-  }
-
-  DictionaryValue* event = CreateAPIResourceEvent(
-      API_RESOURCE_EVENT_TRANSFER_COMPLETE);
-  event->SetInteger(kResultCodeKey, result_code);
-  event->Set(kDataKey, data);
-  DispatchEvent(events::kExperimentalUsbOnEvent, event);
+  SendEventWithResultCode(API_RESOURCE_EVENT_WRITE_COMPLETE, result_code);
 }
 
 // static
@@ -105,8 +87,6 @@ std::string APIResourceEventNotifier::APIResourceEventTypeToString(
       return kEventTypeDataRead;
     case API_RESOURCE_EVENT_WRITE_COMPLETE:
       return kEventTypeWriteComplete;
-    case API_RESOURCE_EVENT_TRANSFER_COMPLETE:
-      return kEventTypeTransferComplete;
   }
 
   NOTREACHED();
@@ -115,17 +95,15 @@ std::string APIResourceEventNotifier::APIResourceEventTypeToString(
 
 APIResourceEventNotifier::~APIResourceEventNotifier() {}
 
-void APIResourceEventNotifier::DispatchEvent(const std::string &extension,
-                                             DictionaryValue* event) {
+void APIResourceEventNotifier::DispatchEvent(DictionaryValue* event) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
-          &APIResourceEventNotifier::DispatchEventOnUIThread, this, extension,
-          event));
+          &APIResourceEventNotifier::DispatchEventOnUIThread, this, event));
 }
 
 void APIResourceEventNotifier::DispatchEventOnUIThread(
-    const std::string &extension, DictionaryValue* event) {
+    DictionaryValue* event) {
   ListValue args;
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -133,8 +111,9 @@ void APIResourceEventNotifier::DispatchEventOnUIThread(
   args.Set(0, event);
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
-  router_->DispatchEventToExtension(src_extension_id_, extension, json_args,
-                                    profile_, src_url_);
+  router_->DispatchEventToExtension(src_extension_id_,
+                                    events::kOnAPIResourceEvent,
+                                    json_args, profile_, src_url_);
 }
 
 DictionaryValue* APIResourceEventNotifier::CreateAPIResourceEvent(
@@ -153,7 +132,6 @@ DictionaryValue* APIResourceEventNotifier::CreateAPIResourceEvent(
 }
 
 void APIResourceEventNotifier::SendEventWithResultCode(
-    const std::string &extension,
     APIResourceEventType event_type,
     int result_code) {
   if (src_id_ < 0)
@@ -161,7 +139,7 @@ void APIResourceEventNotifier::SendEventWithResultCode(
 
   DictionaryValue* event = CreateAPIResourceEvent(event_type);
   event->SetInteger(kResultCodeKey, result_code);
-  DispatchEvent(extension, event);
+  DispatchEvent(event);
 }
 
 }  // namespace extensions

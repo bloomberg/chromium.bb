@@ -136,7 +136,6 @@ class ExtensionAPIPermission {
     kTts,
     kTtsEngine,
     kUnlimitedStorage,
-    kUsb,
     kWebNavigation,
     kWebRequest,
     kWebRequestBlocking,
