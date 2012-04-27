@@ -484,7 +484,7 @@ class NinjaWriter:
     # Actions cd into the base directory.
     env = self.GetXcodeEnv()
     if self.flavor == 'win':
-      env = self.msvs_settings.GetVSMacroEnv(self.base_to_build)
+      env = self.msvs_settings.GetVSMacroEnv('$!PRODUCT_DIR')
     all_outputs = []
     for action in actions:
       # First write out a rule for the action.
@@ -814,8 +814,7 @@ class NinjaWriter:
       self.WriteVariableList(
           'libflags', gyp.common.uniquer(map(self.ExpandSpecial, libflags)))
       ldflags = self.msvs_settings.GetLdflags(config_name,
-          self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
-          self.GypPathToNinja)
+          self.GypPathToNinja, self.ExpandSpecial)
     else:
       ldflags = config.get('ldflags', [])
     self.WriteVariableList('ldflags',
@@ -1015,9 +1014,10 @@ class NinjaWriter:
       type = spec['type']
 
     if self.flavor == 'win':
-      overridden_name = self.msvs_settings.GetOutputName(spec, self.config_name)
-      if overridden_name:
-        return self.ExpandSpecial(overridden_name, self.base_to_build)
+      override = self.msvs_settings.GetOutputName(self.config_name,
+                                                  self.ExpandSpecial)
+      if override:
+        return override
 
     if self.flavor == 'mac' and type in (
         'static_library', 'executable', 'shared_library', 'loadable_module'):
@@ -1278,7 +1278,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       command=('cmd /s /c "$cc /nologo /showIncludes '
                '@$out.rsp '
                '$cflags_pch_c /c $in /Fo$out /Fd$pdbname '
-               '| ninja-deplist-helper -q -f cl -o $out.dl"'),
+               '| ninja-deplist-helper -r . -q -f cl -o $out.dl"'),
       deplist='$out.dl',
       rspfile='$out.rsp',
       rspfile_content='$defines $includes $cflags $cflags_c')
@@ -1288,7 +1288,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       command=('cmd /s /c "$cxx /nologo /showIncludes '
                '@$out.rsp '
                '$cflags_pch_cc /c $in /Fo$out /Fd$pdbname '
-               '| ninja-deplist-helper -q -f cl -o $out.dl"'),
+               '| ninja-deplist-helper -r . -q -f cl -o $out.dl"'),
       deplist='$out.dl',
       rspfile='$out.rsp',
       rspfile_content='$defines $includes $cflags $cflags_cc')

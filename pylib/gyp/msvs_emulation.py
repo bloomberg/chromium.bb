@@ -220,15 +220,15 @@ class MsvsSettings(object):
         ('VCCLCompilerTool', 'PreprocessorDefinitions'), config, default=[]))
     return defines
 
-  def GetOutputName(self, spec, config):
+  def GetOutputName(self, config, expand_special):
     """Gets the explicitly overridden output name for a target or returns None
     if it's not overridden."""
-    type = spec['type']
+    type = self.spec['type']
     root = 'VCLibrarianTool' if type == 'static_library' else 'VCLinkerTool'
     # TODO(scottmg): Handle OutputDirectory without OutputFile.
     output_file = self._Setting((root, 'OutputFile'), config)
     if output_file:
-      output_file = os.path.normpath(self.ConvertVSMacros(output_file))
+      output_file = expand_special(self.ConvertVSMacros(output_file))
     return output_file
 
   def GetCflags(self, config):
@@ -297,7 +297,7 @@ class MsvsSettings(object):
       elif len(def_files) > 1:
         raise Exception("Multiple .def files")
 
-  def GetLdflags(self, config, product_dir, gyp_to_build_path):
+  def GetLdflags(self, config, gyp_to_build_path, expand_special):
     """Returns the flags that need to be added to link commands."""
     ldflags = []
     ld = self._GetWrapper(self, self.msvs_settings[config],
@@ -308,9 +308,9 @@ class MsvsSettings(object):
     ldflags.extend(self._GetAdditionalLibraryDirectories(
         'VCLinkerTool', config, gyp_to_build_path))
     ld('DelayLoadDLLs', prefix='/DELAYLOAD:')
-    out = self._Setting(('VCLinkerTool', 'OutputFile'), config, prefix='/OUT:')
+    out = self.GetOutputName(config, expand_special)
     if out:
-      ldflags.append(self.ConvertVSMacros(out))
+      ldflags.append('/OUT:' + out)
     ld('AdditionalOptions', prefix='')
     ld('SubSystem', map={'1': 'CONSOLE', '2': 'WINDOWS'}, prefix='/SUBSYSTEM:')
     ld('LinkIncremental', map={'1': ':NO', '2': ''}, prefix='/INCREMENTAL')
@@ -411,7 +411,7 @@ class MsvsSettings(object):
     proxy = midl('ProxyFileName', default='${root}_p.c')
     # Note that .tlb is not included in the outputs as it is not always
     # generated depending on the content of the input idl file.
-    outdir = midl('OutputDirectory')
+    outdir = midl('OutputDirectory', default='')
     output = [header, dlldata, iid, proxy]
     variables = [('tlb', tlb),
                  ('h', header),
