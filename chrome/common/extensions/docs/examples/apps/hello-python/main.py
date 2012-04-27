@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -36,6 +36,7 @@ IS_PRODUCTION = os.environ['SERVER_SOFTWARE'].startswith('Google App Engine')
 # Valid access levels that may be returned by the license server.
 VALID_ACCESS_LEVELS = ['FREE_TRIAL', 'FULL']
 
+
 def fetch_license_data(userid):
   """Fetches the license for a given user by making an OAuth signed request
   to the license server.
@@ -67,6 +68,7 @@ def fetch_license_data(userid):
   resp, content = client.request(url, 'GET')
   logging.debug('Got response code %s, content %s' % (resp, content))
   return content
+
 
 def parse_license_data(userid):
   """Returns the license for a given user as a structured object.
@@ -103,6 +105,7 @@ def parse_license_data(userid):
     license['access'] = json['accessLevel']
 
   return license
+
 
 class MainHandler(webapp.RequestHandler):
   """Request handler class."""
@@ -141,6 +144,7 @@ class MainHandler(webapp.RequestHandler):
     # Render a simple template
     path = os.path.join(os.path.dirname(__file__), 'templates', 'index.html')
     self.response.out.write(template.render(path, template_data))
+
 
 if __name__ == '__main__':
   application = webapp.WSGIApplication([

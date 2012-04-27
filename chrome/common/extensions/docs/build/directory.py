@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -11,8 +10,12 @@ import os.path
 import re
 import hashlib
 import zipfile
-import simplejson as json
 import sys
+
+try:
+  import json
+except ImportError:
+  import simplejson as json
 
 _script_path = os.path.realpath(__file__)
 sys.path.insert(0, os.path.normpath(_script_path +
