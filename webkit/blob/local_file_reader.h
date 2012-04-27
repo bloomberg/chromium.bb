@@ -25,6 +25,9 @@ namespace webkit_blob {
 // handling.
 class BLOB_EXPORT LocalFileReader : public FileReader {
  public:
+  typedef base::Callback<void(int error, scoped_ptr<net::FileStream> stream)>
+      OpenFileStreamCallback;
+
   // A convenient method to translate platform file error to net error code.
   static int PlatformFileErrorToNetError(base::PlatformFileError file_error);
 
@@ -53,28 +56,17 @@ class BLOB_EXPORT LocalFileReader : public FileReader {
   // file info *and* its last modification time equals to
   // expected_modification_time_ (rv >= 0 cases).
   // Otherwise, a negative error code is returned (rv < 0 cases).
-  // If the stream is deleted while it has an in-flight GetLength operation
-  // |callback| will not be called.
   int GetLength(const net::Int64CompletionCallback& callback);
 
  private:
-  int Open(const net::CompletionCallback& callback);
+  class OpenFileStreamHelper;
 
-  // Callbacks that are chained from Open for Read.
-  void DidVerifyForOpen(const net::CompletionCallback& callback,
-                        int64 get_length_result);
-  void DidOpenFileStream(const net::CompletionCallback& callback,
-                         int result);
-  void DidSeekFileStream(const net::CompletionCallback& callback,
-                         int64 seek_result);
-  void DidOpenForRead(net::IOBuffer* buf,
-                      int buf_len,
-                      const net::CompletionCallback& callback,
-                      int open_result);
-
-  void DidGetFileInfoForGetLength(const net::Int64CompletionCallback& callback,
-                                  base::PlatformFileError error,
-                                  const base::PlatformFileInfo& file_info);
+  int Open(const OpenFileStreamCallback& callback);
+  void DidOpen(net::IOBuffer* buf,
+               int buf_len,
+               const net::CompletionCallback& callback,
+               int open_error,
+               scoped_ptr<net::FileStream> stream);
 
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   scoped_ptr<net::FileStream> stream_impl_;
