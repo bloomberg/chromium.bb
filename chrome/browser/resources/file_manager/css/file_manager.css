@@ -574,12 +574,14 @@ div.img-container > img {
 }
 
 .list-container list > .accepts[selected],
+.list-container grid > .accepts[selected],
 .list-container list > [selected]:hover,
 .list-container grid > [selected]:hover {
   background-color: rgb(193, 211, 236);
 }
 
 .list-container list > .accepts,
+.list-container grid > .accepts,
 .list-container list > :hover,
 .list-container grid > :hover {
   background-color: rgb(242, 246, 250);

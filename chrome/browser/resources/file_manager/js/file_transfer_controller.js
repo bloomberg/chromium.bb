@@ -5,6 +5,14 @@
 var MAX_DRAG_THUMBAIL_COUNT = 4;
 
 /**
+ * Global (placed in the window object) variable name to hold internal
+ * file dragging information. Needed to show visual feedback while dragging
+ * since DataTransfer object is in protected state. Reachable from other
+ * file manager instances.
+ */
+var DRAG_AND_DROP_GLOBAL_DATA = '__drag_and_drop_global_data';
+
+/**
  * TODO(olege): Fix style warnings.
  */
 function FileTransferController(fileList,
@@ -89,7 +97,7 @@ FileTransferController.prototype = {
   /**
    * Write the current selection to system clipboard.
    *
-   * @param {Clipboard} clipboard Clipboard from the event.
+   * @param {DataTransfer} dataTransfer DataTransfer from the event.
    * @param {string} effectAllowed Value must be valid for the
    *     |dataTransfer.effectAllowed| property ('move', 'copy', 'copyMove').
    */
@@ -118,11 +126,39 @@ FileTransferController.prototype = {
   },
 
   /**
+   * Extracts source root from the |dataTransfer| object.
+   * @param {DataTransfer} dataTransfer DataTransfer object from the event.
+   * @return {string} Path or empty string (if unknown).
+   */
+  getSourceRoot_: function(dataTransfer) {
+    var sourceDir = dataTransfer.getData('fs/sourceDir');
+    if (sourceDir)
+      return DirectoryModel.getRootPath(sourceDir);
+
+    // |dataTransfer| in protected mode.
+    if (window[DRAG_AND_DROP_GLOBAL_DATA])
+      return window[DRAG_AND_DROP_GLOBAL_DATA].sourceRoot;
+
+    // Dragging from other tabs/windows.
+    var views = chrome && chrome.extension ? chrome.extension.getViews() : [];
+    for (var i = 0; i < views.length; i++) {
+      if (views[i][DRAG_AND_DROP_GLOBAL_DATA])
+        return views[i][DRAG_AND_DROP_GLOBAL_DATA].sourceRoot;
+    }
+
+    // Unknown source.
+    return '';
+  },
+
+  /**
    * Queue up a file copy operation based on the current system clipboard.
    * @param {DataTransfer} dataTransfer System data transfer object.
    * @param {string=} opt_destinationPath Paste destination.
+   * @param {string=} opt_effect Desired drop/paste effect. Could be
+   *     'move'|'copy' (default is copy). Ignored if conflicts with
+   *     |dataTransfer.effectAllowed|.
    */
-  paste: function(dataTransfer, opt_destinationPath) {
+  paste: function(dataTransfer, opt_destinationPath, opt_effect) {
     var destinationPath = opt_destinationPath ||
                           this.directoryModel_.getCurrentDirPath();
     // effectAllowed set in copy/pase handlers stay uninitialized. DnD handlers
@@ -131,7 +167,7 @@ FileTransferController.prototype = {
         dataTransfer.effectAllowed : dataTransfer.getData('fs/effectallowed');
 
     var toMove = effectAllowed == 'move' ||
-        (effectAllowed == 'copyMove' && dataTransfer.dropEffect != 'copy');
+        (effectAllowed == 'copyMove' && opt_effect == 'move');
 
     var operationInfo = {
       isCut: String(toMove),
@@ -173,6 +209,9 @@ FileTransferController.prototype = {
     } else {
       event.preventDefault();
     }
+    window[DRAG_AND_DROP_GLOBAL_DATA] = {
+      sourceRoot: this.directoryModel_.getCurrentRootPath()
+    };
   },
 
   onDragEnd_: function(list, event) {
@@ -180,24 +219,15 @@ FileTransferController.prototype = {
     var container = doc.querySelector('#drag-image-container');
     container.textContent = '';
     this.setDropTarget_(null);
+    delete window[DRAG_AND_DROP_GLOBAL_DATA];
   },
 
   onDragOver_: function(onlyIntoDirectories, event) {
     event.preventDefault();
-    var effect;
-    if (!this.destinationPath_ && onlyIntoDirectories) {
-      effect = 'none';
-    } else if (this.destinationPath_ &&
-               this.directoryModel_.isPathReadOnly(this.destinationPath_)) {
-      effect = 'none';
-    } else if (!this.destinationPath_ &&
-                   this.directoryModel_.isReadOnly()) {
-      effect = 'none';
-    } else {
-      effect = 'move';
-    }
+    var path = this.destinationPath_ ||
+        (!onlyIntoDirectories && this.directoryModel_.getCurrentDirPath());
+    event.dataTransfer.dropEffect = this.selectDropEffect_(event, path);
     event.preventDefault();
-    event.dataTransfer.dropEffect = effect;
   },
 
   onDragEnterList_: function(list, event) {
@@ -241,10 +271,13 @@ FileTransferController.prototype = {
   onDrop_: function(onlyIntoDirectories, event) {
     if (onlyIntoDirectories && !this.dropTarget_)
       return;
-    if (!this.canPasteOrDrop_(event.dataTransfer, this.destinationPath_))
+    var destinationPath = this.destinationPath_ ||
+                          this.directoryModel_.getCurrentDirPath();
+    if (!this.canPasteOrDrop_(event.dataTransfer, destinationPath))
       return;
     event.preventDefault();
-    this.paste(event.dataTransfer, this.destinationPath_);
+    this.paste(event.dataTransfer, destinationPath,
+               this.selectDropEffect_(event, destinationPath));
     this.setDropTarget_(null);
   },
 
@@ -415,7 +448,7 @@ FileTransferController.prototype = {
 
     for (var i = 0; i < entries.length; i++) {
       // File object must be prepeared in advance for clipboard operations
-      // (copy, paste and drag). Clipboard object closes for write after
+      // (copy, paste and drag). DataTransfer object closes for write after
       // returning control from that handlers so they may not have
       // asynchronous operations.
       if (!this.isOnGData && entries[i].isFile)
@@ -473,6 +506,23 @@ FileTransferController.prototype = {
     return this.fileListSelection_.selectedIndexes.map(function(index) {
       return list.item(index);
     });
+  },
+
+  selectDropEffect_: function(event, destinationPath) {
+    if (!destinationPath ||
+        this.directoryModel_.isPathReadOnly(destinationPath))
+      return 'none';
+    if (event.dataTransfer.effectAllowed == 'copyMove' &&
+        this.getSourceRoot_(event.dataTransfer) ==
+            DirectoryModel.getRootPath(destinationPath) &&
+        !event.ctrlKey) {
+      return 'move';
+    }
+    if (event.dataTransfer.effectAllowed == 'copyMove' &&
+        event.shiftKey) {
+      return 'move';
+    }
+    return 'copy';
   }
 };
 
