@@ -1070,7 +1070,7 @@ void ChromeBrowserMainParts::SetupUniformityFieldTrials() {
     const std::string trial_name =
         StringPrintf("UMA-Uniformity-Trial-%d-Percent", group_percent);
 
-    VLOG(1) << "Trial name = " << trial_name;
+    DVLOG(1) << "Trial name = " << trial_name;
 
     scoped_refptr<base::FieldTrial> trial(
         base::FieldTrialList::FactoryGetFieldTrial(
@@ -1079,7 +1079,7 @@ void ChromeBrowserMainParts::SetupUniformityFieldTrials() {
     // default group, which would be group 0.
     for (int group_number = 1; group_number < trial_sizes[i]; ++group_number) {
       const std::string group_name = StringPrintf("group_%02d", group_number);
-      VLOG(1) << "    Group name = " << group_name;
+      DVLOG(1) << "    Group name = " << group_name;
       trial->AppendGroup(group_name, kProbabilityPerGroup);
     }
   }
