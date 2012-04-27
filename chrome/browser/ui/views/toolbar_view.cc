@@ -59,7 +59,11 @@ const char ToolbarView::kViewClassName[] = "browser/ui/views/ToolbarView";
 const int ToolbarView::kStandardSpacing = 3;
 // The top of the toolbar has an edge we have to skip over in addition to the
 // above spacing.
-const int ToolbarView::kVertSpacing = 4;
+const int ToolbarView::kVertSpacing = 5;
+// The omnibox border has some additional shadow, so we use less vertical
+// spacing.
+static const int kLocationBarVertSpacing = 4;
+
 // The edge graphics have some built-in spacing/shadowing, so we have to adjust
 // our spacing to make it match.
 static const int kLeftEdgeSpacing = 3;
@@ -574,7 +578,7 @@ void ToolbarView::Layout() {
   int location_x = home_->x() + home_->width() + kStandardSpacing;
   int available_width = width() - kRightEdgeSpacing - app_menu_width -
       browser_actions_width - location_x;
-  int location_y = child_y;
+  int location_y = std::min(kLocationBarVertSpacing, height());
   int location_bar_height = location_bar_->GetPreferredSize().height();
 
   location_bar_->SetBounds(location_x, location_y, std::max(available_width, 0),
