@@ -5,6 +5,7 @@
 #include "chromeos/dbus/blocking_method_caller.h"
 
 #include "base/bind.h"
+#include "base/threading/thread_restrictions.h"
 #include "dbus/bus.h"
 #include "dbus/object_proxy.h"
 
@@ -60,6 +61,8 @@ dbus::Response* BlockingMethodCaller::CallMethodAndBlock(
                  base::Owned(signaler),
                  base::Unretained(proxy_),
                  method_call));
+  // http://crbug.com/125360
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   on_blocking_method_call_.Wait();
   return response;
 }
