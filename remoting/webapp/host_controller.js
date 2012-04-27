@@ -237,6 +237,25 @@ remoting.HostController.prototype.stop = function(callback) {
 };
 
 /**
+ * Parse a stringified host configuration and return it as a dictionary if it
+ * is well-formed and contains both host_id and xmpp_login keys.  null is
+ * returned if either key is missing, or if the configuration is corrupt.
+ * @param {string} configStr The host configuration, JSON encoded to a string.
+ * @return {Object.<string,string>|null} The host configuration.
+ */
+function parseHostConfig_(configStr) {
+  try {
+    var config = /** @type {Object.<string,string>} */ JSON.parse(configStr);
+    if (typeof config['host_id'] == 'string' &&
+        typeof config['xmpp_login'] == 'string') {
+      return config;
+    }
+  } catch (err) {
+  }
+  return null;
+}
+
+/**
  * @param {string} newPin The new PIN to set
  * @param {function(remoting.HostController.AsyncResult):void} callback
  *     Callback to be called when finished.
@@ -246,15 +265,14 @@ remoting.HostController.prototype.updatePin = function(newPin, callback) {
   /** @type {remoting.HostController} */
   var that = this;
 
-  /** @param {string} config */
-  function onConfig(config) {
-    var configParsed = /** @type {Object.<string,string>} */ JSON.parse(config);
-    if (!('host_id' in configParsed) ||
-        typeof configParsed['host_id'] != 'string') {
+  /** @param {string} configStr */
+  function onConfig(configStr) {
+    var config = parseHostConfig_(configStr);
+    if (!config) {
       callback(remoting.HostController.AsyncResult.FAILED);
       return;
     }
-    var hostId = configParsed['host_id'];
+    var hostId = config['host_id'];
     var newConfig = JSON.stringify({
         host_secret_hash: 'hmac:' + that.plugin_.getPinHash(hostId, newPin)
       });
@@ -318,8 +336,8 @@ remoting.HostController.prototype.onHostListRefresh =
   var that = this;
   /** @param {string} configStr */
   function onConfig(configStr) {
-    var config = /** @type {Object.<string,string>} */ JSON.parse(configStr);
-    if (typeof config['host_id'] == 'string') {
+    var config = parseHostConfig_(configStr);
+    if (config) {
       var hostId = config['host_id'];
       that.setHost(hostList.getHostForId(hostId));
     } else {
