@@ -22,6 +22,7 @@ class Image;
 class WebIntentPickerModel {
  public:
   // The intent service disposition.
+  // TODO(gbillock): use the webkit_glue::WebIntentServiceData::Disposition
   enum Disposition {
     DISPOSITION_WINDOW,  // Display the intent service in a new window.
     DISPOSITION_INLINE,  // Display the intent service in the picker.

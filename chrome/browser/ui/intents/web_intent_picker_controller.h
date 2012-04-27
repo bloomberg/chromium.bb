@@ -100,8 +100,16 @@ class WebIntentPickerController : public content::NotificationObserver,
     picker_model_->set_observer(observer);
   }
 
-  // Called when WebIntentServiceData is returned from the WebIntentsRegistry.
+  // Called by the WebIntentsRegistry, returning |services|, which is
+  // a list of WebIntentServiceData matching the query.
   void OnWebIntentServicesAvailable(
+      const std::vector<webkit_glue::WebIntentServiceData>& services);
+
+  // Called when WebIntentServiceData is ready for checking extensions
+  // when dispatching explicit intents. Gets |services|
+  // from the WebIntentsRegistry to check for known urls/extensions and find
+  // disposition data.
+  void WebIntentServicesForExplicitIntent(
       const std::vector<webkit_glue::WebIntentServiceData>& services);
 
   // Called when FaviconData is returned from the FaviconService.
@@ -140,6 +148,9 @@ class WebIntentPickerController : public content::NotificationObserver,
   // Decrements the |pending_async_count_| and notifies the picker if it
   // reaches zero.
   void AsyncOperationFinished();
+
+  // Helper to create picker dialog UI.
+  void CreatePicker();
 
   // Closes the currently active picker.
   void ClosePicker();

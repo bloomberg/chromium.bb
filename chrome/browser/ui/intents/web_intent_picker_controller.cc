@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_source.h"
@@ -152,6 +153,7 @@ WebIntentPickerController::WebIntentPickerController(
 WebIntentPickerController::~WebIntentPickerController() {
 }
 
+// TODO(gbillock): combine this with ShowDialog.
 void WebIntentPickerController::SetIntentsDispatcher(
     content::WebIntentsDispatcher* intents_dispatcher) {
   intents_dispatcher_ = intents_dispatcher;
@@ -164,27 +166,58 @@ void WebIntentPickerController::ShowDialog(Browser* browser,
                                            const string16& action,
                                            const string16& type) {
   // Only show a picker once.
-  if (picker_shown_)
+  // TODO(gbillock): There's a hole potentially admitting multiple
+  // in-flight dispatches since we don't create the picker
+  // in this method, but only after calling the registry.
+  if (picker_shown_) {
+    if (intents_dispatcher_) {
+      intents_dispatcher_->SendReplyMessage(
+          webkit_glue::WEB_INTENT_REPLY_FAILURE,
+          ASCIIToUTF16("Simultaneous intent invocation."));
+    }
     return;
+  }
 
   // TODO(binji): Figure out what to do when intents are invoked from incognito
   // mode.
-  if (wrapper_->profile()->IsOffTheRecord())
+  if (wrapper_->profile()->IsOffTheRecord()) {
+    if (intents_dispatcher_) {
+      intents_dispatcher_->SendReplyMessage(
+          webkit_glue::WEB_INTENT_REPLY_FAILURE, ASCIIToUTF16(""));
+    }
     return;
+  }
 
   picker_model_->Clear();
   picker_model_->set_action(action);
   picker_model_->set_mimetype(type);
 
-  // If picker is non-NULL, it was set by a test.
-  if (picker_ == NULL) {
-    picker_ = WebIntentPicker::Create(browser, wrapper_, this,
-                                      picker_model_.get());
+  // If the intent is explicit, skip showing the picker.
+  if (intents_dispatcher_) {
+    const GURL& service = intents_dispatcher_->GetIntent().service;
+    if (service.is_valid()) {
+      // TODO(gbillock): When we can parse pages for the intent tag,
+      // take out this requirement that explicit intents dispatch to
+      // extension urls.
+      if (!service.SchemeIs(chrome::kExtensionScheme)) {
+        intents_dispatcher_->SendReplyMessage(
+            webkit_glue::WEB_INTENT_REPLY_FAILURE, ASCIIToUTF16(
+                "Only extension urls are supported for explicit invocation"));
+        return;
+      }
+
+      // Get services from the registry to verify a registered extension
+      // page for this action/type if it is permitted to be dispatched. (Also
+      // required to find disposition set by service.)
+      pending_async_count_++;
+      GetWebIntentsRegistry(wrapper_)->GetIntentServices(
+          action, type, base::Bind(
+              &WebIntentPickerController::WebIntentServicesForExplicitIntent,
+              weak_ptr_factory_.GetWeakPtr()));
+      return;
+    }
   }
 
-  picker_->SetActionString(GetIntentActionString(UTF16ToUTF8(action)));
-
-  picker_shown_ = true;
   pending_async_count_+= 2;
   GetWebIntentsRegistry(wrapper_)->GetIntentServices(
       action, type,
@@ -216,11 +249,6 @@ void WebIntentPickerController::OnServiceChosen(const GURL& url,
       break;
 
     case WebIntentPickerModel::DISPOSITION_WINDOW: {
-      // TODO(gbillock): This really only handles the 'window' disposition in a
-      // quite prototype way. We need to flesh out what happens to the picker
-      // during the lifetime of the service url context, and that may mean we
-      // need to pass more information into the injector to find the picker
-      // again and close it.
       int index = TabStripModel::kNoTab;
       Browser* browser = Browser::GetBrowserForController(
           &wrapper_->web_contents()->GetController(), &index);
@@ -387,6 +415,35 @@ void WebIntentPickerController::OnWebIntentServicesAvailable(
   }
 
   AsyncOperationFinished();
+
+  CreatePicker();
+  picker_->SetActionString(GetIntentActionString(
+      UTF16ToUTF8(picker_model_->action())));
+}
+
+void WebIntentPickerController::WebIntentServicesForExplicitIntent(
+    const std::vector<webkit_glue::WebIntentServiceData>& services) {
+  DCHECK(intents_dispatcher_);
+  DCHECK(intents_dispatcher_->GetIntent().service.is_valid());
+  for (size_t i = 0; i < services.size(); ++i) {
+    if (services[i].service_url != intents_dispatcher_->GetIntent().service)
+      continue;
+
+    if (services[i].disposition ==
+        webkit_glue::WebIntentServiceData::DISPOSITION_INLINE)
+      CreatePicker();
+    OnServiceChosen(services[i].service_url,
+                    ConvertDisposition(services[i].disposition));
+    AsyncOperationFinished();
+    return;
+  }
+
+  // No acceptable extension. The intent cannot be dispatched.
+  intents_dispatcher_->SendReplyMessage(
+      webkit_glue::WEB_INTENT_REPLY_FAILURE,  ASCIIToUTF16(
+          "Explicit extension URL is not available."));
+
+  AsyncOperationFinished();
 }
 
 void WebIntentPickerController::OnFaviconDataAvailable(
@@ -547,6 +604,17 @@ void WebIntentPickerController::AsyncOperationFinished() {
     if (picker_)
       picker_->OnPendingAsyncCompleted();
   }
+}
+
+void WebIntentPickerController::CreatePicker() {
+  // If picker is non-NULL, it was set by a test.
+  Browser* browser =
+      BrowserList::FindBrowserWithWebContents(wrapper_->web_contents());
+  if (picker_ == NULL) {
+    picker_ = WebIntentPicker::Create(browser, wrapper_, this,
+                                      picker_model_.get());
+  }
+  picker_shown_ = true;
 }
 
 void WebIntentPickerController::ClosePicker() {

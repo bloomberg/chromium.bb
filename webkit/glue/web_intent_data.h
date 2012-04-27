@@ -9,6 +9,7 @@
 
 #include "base/file_path.h"
 #include "base/string16.h"
+#include "googleurl/src/gurl.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {
@@ -28,6 +29,10 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
   string16 data;
   // Any extra key-value pair metadata. (Not serialized.)
   std::map<string16, string16> extra_data;
+
+  // Set to the service page if this intent data is from an explicit intent
+  // invocation. |service.is_valid()| will be false otherwise.
+  GURL service;
 
   // String payload data.
   string16 unserialized_data;
