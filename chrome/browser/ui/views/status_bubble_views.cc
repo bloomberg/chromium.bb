@@ -660,9 +660,6 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::string& languages) {
       (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding - 1);
   url_text_ = ui::ElideUrl(url, view_->Label::font(), text_width, languages);
 
-  std::wstring original_url_text =
-      UTF16ToWideHack(net::FormatUrl(url, languages));
-
   // An URL is always treated as a left-to-right string. On right-to-left UIs
   // we need to explicitly mark the URL as LTR to make sure it is displayed
   // correctly.
@@ -675,14 +672,15 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::string& languages) {
 
     // If bubble is already in expanded state, shift to adjust to new text
     // size (shrinking or expanding). Otherwise delay.
-    if (is_expanded_ && !url.is_empty())
+    if (is_expanded_ && !url.is_empty()) {
       ExpandBubble();
-    else if (original_url_text.length() > url_text_.length())
+    } else if (net::FormatUrl(url, languages).length() > url_text_.length()) {
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&StatusBubbleViews::ExpandBubble,
                      expand_timer_factory_.GetWeakPtr()),
           kExpandHoverDelay);
+    }
   }
 }
 
