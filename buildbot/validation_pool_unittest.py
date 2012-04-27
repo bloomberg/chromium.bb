@@ -372,14 +372,14 @@ class TestValidationPool(mox.MoxTestBase):
     self.mox.StubOutWithMock(pool, 'SubmitChange')
     self.mox.StubOutWithMock(helper, 'RemoveCommitReady')
     pool.SubmitChange(patch1)
-    helper.IsChangeCommitted(patch1.id, False).AndReturn(False)
+    helper.IsChangeCommitted(str(patch1.gerrit_number), False).AndReturn(False)
     pool.HandleCouldNotSubmit(patch1)
     result = cros_build_lib.CommandResult(cmd='cmd', returncode=1)
     pool.SubmitChange(patch2).AndRaise(
         cros_build_lib.RunCommandError('Failed to submit', result))
     pool.HandleCouldNotSubmit(patch2)
     pool.SubmitChange(patch3)
-    helper.IsChangeCommitted(patch3.id, False).AndReturn(True)
+    helper.IsChangeCommitted(str(patch3.gerrit_number), False).AndReturn(True)
 
     self.mox.ReplayAll()
     self.assertRaises(validation_pool.FailedToSubmitAllChangesException,
@@ -403,9 +403,9 @@ class TestValidationPool(mox.MoxTestBase):
 
     self.mox.StubOutWithMock(pool, 'SubmitChange')
     pool.SubmitChange(patch1)
-    helper.IsChangeCommitted(patch1.id, False).AndReturn(True)
+    helper.IsChangeCommitted(str(patch1.gerrit_number), False).AndReturn(True)
     pool.SubmitChange(patch2)
-    helper.IsChangeCommitted(patch2.id, False).AndReturn(True)
+    helper.IsChangeCommitted(str(patch2.gerrit_number), False).AndReturn(True)
 
     self.mox.ReplayAll()
     pool.SubmitPool()
@@ -427,9 +427,9 @@ class TestValidationPool(mox.MoxTestBase):
 
     self.mox.StubOutWithMock(pool, 'SubmitChange')
     pool.SubmitChange(patch1)
-    helper.IsChangeCommitted(patch1.id, False).AndReturn(True)
+    helper.IsChangeCommitted(str(patch1.gerrit_number), False).AndReturn(True)
     pool.SubmitChange(patch2)
-    helper.IsChangeCommitted(patch2.id, False).AndReturn(True)
+    helper.IsChangeCommitted(str(patch2.gerrit_number), False).AndReturn(True)
 
     self.mox.ReplayAll()
     pool.SubmitNonManifestChanges()

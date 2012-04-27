@@ -92,11 +92,11 @@ class GerritHelper():
              % {'project': project, 'change': change, 'commit': commit})
     return self.QuerySingleRecord(query, must_match=must_match)
 
-  def IsChangeCommitted(self, changeid, dryrun=False, must_match=True):
+  def IsChangeCommitted(self, query, dryrun=False, must_match=True):
     """Checks to see whether a change is already committed.
 
     Args:
-      changeid: Change id to query for.
+      query: Either a Change-Id or a Change number to query for.
       dryrun: Whether to perform the operations or not.  If set, returns True.
       must_match: Defaults to True; if True, the given changeid *must*
         be found on the target gerrit server.  If False, a change not found
@@ -107,7 +107,7 @@ class GerritHelper():
         when a Change-ID was uploaded to multiple branches of a project
         unchanged.
     """
-    result = self.QuerySingleRecord('change:%s' % (changeid,),
+    result = self.QuerySingleRecord('change:%s' % (query,),
                                     must_match=must_match, dryrun=dryrun)
     if dryrun:
       return True

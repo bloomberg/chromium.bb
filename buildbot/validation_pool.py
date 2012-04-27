@@ -511,7 +511,7 @@ class ValidationPool(object):
         try:
           self.SubmitChange(change)
           was_change_submitted = self._HelperFor(
-              change).IsChangeCommitted(change.id, self.dryrun)
+              change).IsChangeCommitted(str(change.gerrit_number), self.dryrun)
         except cros_build_lib.RunCommandError:
           logging.error('gerrit review --submit failed for change.')
         finally:
