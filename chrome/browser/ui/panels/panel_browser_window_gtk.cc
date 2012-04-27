@@ -638,15 +638,14 @@ void NativePanelTestingGtk::DragTitlebar(const gfx::Point& mouse_location) {
 void NativePanelTestingGtk::CancelDragTitlebar() {
   if (!panel_browser_window_gtk_->drag_helper_.get())
     return;
-
-  panel_browser_window_gtk_->drag_helper_->EndDrag(true);
+  panel_browser_window_gtk_->drag_helper_->OnGrabBrokenEvent(NULL, NULL);
+  MessageLoopForUI::current()->RunAllPending();
 }
 
 void NativePanelTestingGtk::FinishDragTitlebar() {
   if (!panel_browser_window_gtk_->drag_helper_.get())
     return;
-
-  panel_browser_window_gtk_->drag_helper_->EndDrag(false);
+  ReleaseMouseButtonTitlebar(panel::NO_MODIFIER);
 }
 
 bool NativePanelTestingGtk::VerifyDrawingAttention() const {

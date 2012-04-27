@@ -133,6 +133,7 @@ PanelDragGtk::PanelDragGtk(Panel* panel)
 
 PanelDragGtk::~PanelDragGtk() {
   EndDrag(true);  // Clean up drag state.
+  ReleasePointerAndKeyboardGrab();
 }
 
 void PanelDragGtk::AssertCleanState() {
@@ -193,6 +194,17 @@ void PanelDragGtk::GrabPointerAndKeyboard(GdkEventButton* event,
   gtk_grab_add(drag_widget_);
 }
 
+void PanelDragGtk::ReleasePointerAndKeyboardGrab() {
+  if (drag_state_ == NOT_DRAGGING)
+    return;
+
+  DCHECK_EQ(DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE, drag_state_);
+  gdk_pointer_ungrab(GDK_CURRENT_TIME);
+  gdk_keyboard_ungrab(GDK_CURRENT_TIME);
+  gtk_grab_remove(drag_widget_);
+  drag_state_ = NOT_DRAGGING;  // Drag is truly over now.
+}
+
 void PanelDragGtk::EndDrag(bool canceled) {
   if (initial_mouse_down_) {
     gdk_event_free(initial_mouse_down_);
@@ -200,13 +212,9 @@ void PanelDragGtk::EndDrag(bool canceled) {
   }
 
   if (drag_delegate_) {
-    gdk_pointer_ungrab(GDK_CURRENT_TIME);
-    gdk_keyboard_ungrab(GDK_CURRENT_TIME);
-    gtk_grab_remove(drag_widget_);
-
     if (drag_state_ == DRAG_IN_PROGRESS) {
       drag_delegate_->DragEnded(canceled);
-      drag_state_ = NOT_DRAGGING;
+      drag_state_ = DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE;
     }
 
     delete drag_delegate_;
@@ -218,7 +226,9 @@ void PanelDragGtk::EndDrag(bool canceled) {
 
 gboolean PanelDragGtk::OnMouseMoveEvent(GtkWidget* widget,
                                         GdkEventMotion* event) {
-  DCHECK(drag_delegate_);
+  DCHECK(drag_delegate_ || drag_state_ == DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE);
+  if (!drag_delegate_)
+    return TRUE;
 
   gdouble new_x_double;
   gdouble new_y_double;
@@ -254,22 +264,26 @@ gboolean PanelDragGtk::OnMouseMoveEvent(GtkWidget* widget,
 
 gboolean PanelDragGtk::OnButtonPressEvent(GtkWidget* widget,
                                           GdkEventButton* event) {
-  DCHECK(drag_delegate_);
+  DCHECK(drag_delegate_ || drag_state_ == DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE);
   return TRUE;
 }
 
 gboolean PanelDragGtk::OnButtonReleaseEvent(GtkWidget* widget,
                                             GdkEventButton* event) {
-  DCHECK(drag_delegate_);
-
+  DCHECK(drag_delegate_ || drag_state_ == DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE);
   if (event->button == 1) {
-    // Treat release as a mouse click if drag was never started.
-    if (drag_state_ == NOT_DRAGGING && click_handler_) {
-      gtk_propagate_event(click_handler_,
-                          reinterpret_cast<GdkEvent*>(event));
+    // There will be no drag delegate if drag was canceled/ended using
+    // the keyboard before the mouse was released.
+    if (drag_delegate_) {
+      // Treat release as a mouse click if drag was never started.
+      if (drag_state_ == NOT_DRAGGING && click_handler_) {
+        gtk_propagate_event(click_handler_,
+                            reinterpret_cast<GdkEvent*>(event));
+      }
+      //  Cleanup state regardless.
+      EndDrag(false);
     }
-    // Cleanup state regardless.
-    EndDrag(false);
+    ReleasePointerAndKeyboardGrab();
   }
 
   return TRUE;
@@ -277,13 +291,15 @@ gboolean PanelDragGtk::OnButtonReleaseEvent(GtkWidget* widget,
 
 gboolean PanelDragGtk::OnKeyPressEvent(GtkWidget* widget,
                                        GdkEventKey* event) {
-  DCHECK(drag_delegate_);
+  DCHECK(drag_delegate_ || drag_state_ == DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE);
   return TRUE;
 }
 
 gboolean PanelDragGtk::OnKeyReleaseEvent(GtkWidget* widget,
                                          GdkEventKey* event) {
-  DCHECK(drag_delegate_);
+  DCHECK(drag_delegate_ || drag_state_ == DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE);
+  if (!drag_delegate_)
+    return TRUE;
 
   switch (event->keyval) {
   case GDK_Escape:
@@ -301,7 +317,8 @@ gboolean PanelDragGtk::OnKeyReleaseEvent(GtkWidget* widget,
 
 gboolean PanelDragGtk::OnGrabBrokenEvent(GtkWidget* widget,
                                          GdkEventGrabBroken* event) {
-  DCHECK(drag_delegate_);
+  DCHECK(drag_delegate_ || drag_state_ == DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE);
   EndDrag(true);  // Cancel drag.
+  ReleasePointerAndKeyboardGrab();
   return TRUE;
 }

@@ -48,7 +48,8 @@ class PanelDragGtk {
 
   enum DragState {
     NOT_DRAGGING,
-    DRAG_IN_PROGRESS
+    DRAG_IN_PROGRESS,
+    DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE
   };
 
   // Callbacks for GTK mouse and key events.
@@ -71,9 +72,13 @@ class PanelDragGtk {
 
   void GrabPointerAndKeyboard(GdkEventButton* event,
                               GdkCursor* cursor);
+  void ReleasePointerAndKeyboardGrab();
 
   // Ends any drag that is currently in progress (if any).
-  // Also resets all drag state.
+  // Resets all drag state except for pointer and keyboard grabs.
+  // The grabs are released when the mouse is released to prevent a
+  // mouse release *after* the drag has ended (e.g. via ESC key) from
+  // being treated as a mouse click.
   void EndDrag(bool canceled);
 
   // Weak pointer to the panel being dragged.
