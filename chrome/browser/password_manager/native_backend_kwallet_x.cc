@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -84,6 +85,9 @@ bool NativeBackendKWallet::InitWithBus(scoped_refptr<dbus::Bus> optional_bus) {
                           base::Bind(&NativeBackendKWallet::InitOnDBThread,
                                      base::Unretained(this),
                                      optional_bus, &event, &success));
+
+  // This ScopedAllowWait should not be here. http://crbug.com/125331
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   event.Wait();
   return success;
 }
