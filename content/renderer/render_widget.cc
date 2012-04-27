@@ -565,7 +565,7 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
       webwidget_->isInputThrottled() ||
       paint_aggregator_.HasPendingUpdate();
 
-  if (event_type_gets_rate_limited && is_input_throttled) {
+  if (event_type_gets_rate_limited && is_input_throttled && !is_hidden_) {
     // We want to rate limit the input events in this case, so we'll wait for
     // painting to finish before ACKing this message.
     if (pending_input_event_ack_.get()) {
