@@ -12,10 +12,15 @@
 
 class GetTopSitesFunction : public AsyncExtensionFunction {
  public:
-  GetTopSitesFunction();
-  virtual ~GetTopSitesFunction();
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("topSites.get")
+
+  GetTopSitesFunction();
+
+ protected:
+  virtual ~GetTopSitesFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 
  private:
   void OnMostVisitedURLsAvailable(

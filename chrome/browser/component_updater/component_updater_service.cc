@@ -260,6 +260,8 @@ class CrxUpdateService : public ComponentUpdateService {
     }
 
    private:
+    virtual ~ManifestParserBridge() {}
+
     // Omaha update response XML was successfully parsed.
     void OnParseUpdateManifestSucceeded(const UpdateManifest::Results& r) {
       service_->OnParseUpdateManifestSucceeded(r);

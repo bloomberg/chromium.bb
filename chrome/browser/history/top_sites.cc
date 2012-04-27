@@ -115,6 +115,8 @@ class LoadThumbnailsFromHistoryTask : public HistoryDBTask {
   }
 
  private:
+  virtual ~LoadThumbnailsFromHistoryTask() {}
+
   bool ShouldFetchThumbnailFor(const GURL& url) {
     return ignore_urls_.find(url.spec()) == ignore_urls_.end();
   }

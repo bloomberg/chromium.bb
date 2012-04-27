@@ -489,6 +489,8 @@ class CallbackCounter : public base::RefCountedThreadSafe<CallbackCounter> {
 
  private:
   friend class base::RefCountedThreadSafe<CallbackCounter>;
+  ~CallbackCounter() {}
+
   volatile int callback_count_;
 };
 

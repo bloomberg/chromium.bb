@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,9 +48,9 @@ class HistoryExtensionEventRouter : public content::NotificationObserver {
 
 // Base class for history function APIs.
 class HistoryFunction : public AsyncExtensionFunction {
- public:
+ protected:
+  virtual ~HistoryFunction() {}
   virtual void Run() OVERRIDE;
-  virtual bool RunImpl() = 0;
 
   bool GetUrlFromValue(base::Value* value, GURL* url);
   bool GetTimeFromValue(base::Value* value, base::Time* time);
@@ -61,7 +61,12 @@ class HistoryFunction : public AsyncExtensionFunction {
 class HistoryFunctionWithCallback : public HistoryFunction {
  public:
   HistoryFunctionWithCallback();
+
+ protected:
   virtual ~HistoryFunctionWithCallback();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 
   // Return true if the async call was completed, false otherwise.
   virtual bool RunAsyncImpl() = 0;
@@ -70,10 +75,6 @@ class HistoryFunctionWithCallback : public HistoryFunction {
   // This method calls Release().
   virtual void SendAsyncResponse();
 
-  // Override HistoryFunction::RunImpl.
-  virtual bool RunImpl() OVERRIDE;
-
- protected:
   // The consumer for the HistoryService callbacks.
   CancelableRequestConsumer cancelable_consumer_;
 
@@ -85,9 +86,13 @@ class HistoryFunctionWithCallback : public HistoryFunction {
 
 class GetVisitsHistoryFunction : public HistoryFunctionWithCallback {
  public:
-  // Override HistoryFunction.
-  virtual bool RunAsyncImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("history.getVisits");
+
+ protected:
+  virtual ~GetVisitsHistoryFunction() {}
+
+  // HistoryFunctionWithCallback:
+  virtual bool RunAsyncImpl() OVERRIDE;
 
   // Callback for the history function to provide results.
   void QueryComplete(HistoryService::Handle request_service,
@@ -98,8 +103,13 @@ class GetVisitsHistoryFunction : public HistoryFunctionWithCallback {
 
 class SearchHistoryFunction : public HistoryFunctionWithCallback {
  public:
-  virtual bool RunAsyncImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("history.search");
+
+ protected:
+  virtual ~SearchHistoryFunction() {}
+
+  // HistoryFunctionWithCallback:
+  virtual bool RunAsyncImpl() OVERRIDE;
 
   // Callback for the history function to provide results.
   void SearchComplete(HistoryService::Handle request_handle,
@@ -108,14 +118,24 @@ class SearchHistoryFunction : public HistoryFunctionWithCallback {
 
 class AddUrlHistoryFunction : public HistoryFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("history.addUrl");
+
+ protected:
+  virtual ~AddUrlHistoryFunction() {}
+
+  // HistoryFunctionWithCallback:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class DeleteAllHistoryFunction : public HistoryFunctionWithCallback {
  public:
-  virtual bool RunAsyncImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("history.deleteAll");
+
+ protected:
+  virtual ~DeleteAllHistoryFunction() {}
+
+  // HistoryFunctionWithCallback:
+  virtual bool RunAsyncImpl() OVERRIDE;
 
   // Callback for the history service to acknowledge deletion.
   void DeleteComplete();
@@ -124,14 +144,24 @@ class DeleteAllHistoryFunction : public HistoryFunctionWithCallback {
 
 class DeleteUrlHistoryFunction : public HistoryFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("history.deleteUrl");
+
+ protected:
+  virtual ~DeleteUrlHistoryFunction() {}
+
+  // HistoryFunctionWithCallback:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class DeleteRangeHistoryFunction : public HistoryFunctionWithCallback {
  public:
-  virtual bool RunAsyncImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("history.deleteRange");
+
+ protected:
+  virtual ~DeleteRangeHistoryFunction() {}
+
+  // HistoryFunctionWithCallback:
+  virtual bool RunAsyncImpl() OVERRIDE;
 
   // Callback for the history service to acknowledge deletion.
   void DeleteComplete();

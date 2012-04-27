@@ -21,9 +21,8 @@ class SQLiteServerBoundCertStore
     : public net::DefaultServerBoundCertStore::PersistentStore {
  public:
   explicit SQLiteServerBoundCertStore(const FilePath& path);
-  virtual ~SQLiteServerBoundCertStore();
 
-  // net::DefaultServerBoundCertStore::PersistentStore implementation.
+  // net::DefaultServerBoundCertStore::PersistentStore:
   virtual bool Load(
       std::vector<net::DefaultServerBoundCertStore::ServerBoundCert*>* certs)
           OVERRIDE;
@@ -33,6 +32,9 @@ class SQLiteServerBoundCertStore
       const net::DefaultServerBoundCertStore::ServerBoundCert& cert) OVERRIDE;
   virtual void SetClearLocalStateOnExit(bool clear_local_state) OVERRIDE;
   virtual void Flush(const base::Closure& completion_task) OVERRIDE;
+
+ protected:
+  virtual ~SQLiteServerBoundCertStore();
 
  private:
   class Backend;

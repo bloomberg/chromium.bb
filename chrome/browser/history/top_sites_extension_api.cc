@@ -10,11 +10,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 
-GetTopSitesFunction::GetTopSitesFunction() {
-}
+GetTopSitesFunction::GetTopSitesFunction() {}
 
-GetTopSitesFunction::~GetTopSitesFunction() {
-}
+GetTopSitesFunction::~GetTopSitesFunction() {}
 
 bool GetTopSitesFunction::RunImpl() {
   history::TopSites* ts = profile()->GetTopSites();

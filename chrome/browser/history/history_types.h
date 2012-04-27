@@ -682,13 +682,13 @@ class MostVisitedThumbnails
     : public base::RefCountedThreadSafe<MostVisitedThumbnails> {
  public:
   MostVisitedThumbnails();
-  virtual ~MostVisitedThumbnails();
 
   MostVisitedURLList most_visited;
   URLToImagesMap url_to_images_map;
 
  private:
   friend class base::RefCountedThreadSafe<MostVisitedThumbnails>;
+  virtual ~MostVisitedThumbnails();
 
   DISALLOW_COPY_AND_ASSIGN(MostVisitedThumbnails);
 };

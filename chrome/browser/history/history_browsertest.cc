@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,8 +35,7 @@ namespace {
 // Notifies the main thread after all history backend thread tasks have run.
 class WaitForHistoryTask : public HistoryDBTask {
  public:
-  WaitForHistoryTask() {
-  }
+  WaitForHistoryTask() {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
                              history::HistoryDatabase* db) {
@@ -48,6 +47,8 @@ class WaitForHistoryTask : public HistoryDBTask {
   }
 
  private:
+  virtual ~WaitForHistoryTask() {}
+
   DISALLOW_COPY_AND_ASSIGN(WaitForHistoryTask);
 };
 

@@ -72,7 +72,6 @@ std::vector<uint16> ParseCipherSuites(
 class SSLConfigServicePref : public net::SSLConfigService {
  public:
   SSLConfigServicePref() {}
-  virtual ~SSLConfigServicePref() {}
 
   // Store SSL config settings in |config|. Must only be called from IO thread.
   virtual void GetSSLConfig(net::SSLConfig* config);
@@ -80,6 +79,8 @@ class SSLConfigServicePref : public net::SSLConfigService {
  private:
   // Allow the pref watcher to update our internal state.
   friend class SSLConfigServiceManagerPref;
+
+  virtual ~SSLConfigServicePref() {}
 
   // This method is posted to the IO thread from the browser thread to carry the
   // new config information.

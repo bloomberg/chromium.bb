@@ -73,7 +73,6 @@ class ShortcutsBackend : public base::RefCountedThreadSafe<ShortcutsBackend>,
   // unit-tests. |db_folder_path| could be an empty path only in unit-tests as
   // well. It means there is no database created, all things are done in memory.
   ShortcutsBackend(const FilePath& db_folder_path, Profile* profile);
-  virtual ~ShortcutsBackend();
 
   // The interface is guaranteed to be called on the thread AddObserver()
   // was called.
@@ -83,6 +82,7 @@ class ShortcutsBackend : public base::RefCountedThreadSafe<ShortcutsBackend>,
     virtual void OnShortcutsLoaded() = 0;
     // Called when shortcuts changed (added/updated/removed) in the database.
     virtual void OnShortcutsChanged() {}
+
    protected:
     virtual ~ShortcutsBackendObserver() {}
   };
@@ -123,8 +123,12 @@ class ShortcutsBackend : public base::RefCountedThreadSafe<ShortcutsBackend>,
   }
 
  private:
+  friend class base::RefCountedThreadSafe<ShortcutsBackend>;
+
   typedef std::map<std::string, ShortcutMap::iterator>
       GuidToShortcutsIteratorMap;
+
+  virtual ~ShortcutsBackend();
 
   // Internal initialization of the back-end. Posted by Init() to the DB thread.
   // On completion posts InitCompleted() back to UI thread.

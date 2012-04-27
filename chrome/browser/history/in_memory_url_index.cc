@@ -65,9 +65,6 @@ InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
       succeeded_(false) {
 }
 
-InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
-    ~RebuildPrivateDataFromHistoryDBTask() {}
-
 bool InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::RunOnDBThread(
     HistoryBackend* backend,
     HistoryDatabase* db) {
@@ -82,6 +79,10 @@ bool InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::RunOnDBThread(
 void InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
     DoneRunOnMainThread() {
   index_->DoneRebuidingPrivateDataFromHistoryDB(succeeded_, data_);
+}
+
+InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
+    ~RebuildPrivateDataFromHistoryDBTask() {
 }
 
 // InMemoryURLIndex ------------------------------------------------------------

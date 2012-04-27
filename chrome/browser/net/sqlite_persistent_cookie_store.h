@@ -27,25 +27,22 @@ class SQLitePersistentCookieStore
  public:
   SQLitePersistentCookieStore(const FilePath& path,
                               bool restore_old_session_cookies);
-  virtual ~SQLitePersistentCookieStore();
 
+  // net::CookieMonster::PersistentCookieStore:
   virtual void Load(const LoadedCallback& loaded_callback) OVERRIDE;
-
   virtual void LoadCookiesForKey(const std::string& key,
       const LoadedCallback& callback) OVERRIDE;
-
   virtual void AddCookie(
       const net::CookieMonster::CanonicalCookie& cc) OVERRIDE;
-
   virtual void UpdateCookieAccessTime(
       const net::CookieMonster::CanonicalCookie& cc) OVERRIDE;
-
   virtual void DeleteCookie(
       const net::CookieMonster::CanonicalCookie& cc) OVERRIDE;
-
   virtual void SetClearLocalStateOnExit(bool clear_local_state) OVERRIDE;
-
   virtual void Flush(const base::Closure& callback) OVERRIDE;
+
+ protected:
+   virtual ~SQLitePersistentCookieStore();
 
  private:
   class Backend;

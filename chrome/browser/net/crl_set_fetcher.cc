@@ -20,11 +20,7 @@
 
 using content::BrowserThread;
 
-CRLSetFetcher::CRLSetFetcher() : cus_(NULL) {
-}
-
-CRLSetFetcher::~CRLSetFetcher() {
-}
+CRLSetFetcher::CRLSetFetcher() : cus_(NULL) {}
 
 bool CRLSetFetcher::GetCRLSetFilePath(FilePath* path) const {
   bool ok = PathService::Get(chrome::DIR_USER_DATA, path);
@@ -207,3 +203,5 @@ bool CRLSetFetcher::Install(base::DictionaryValue* manifest,
 
   return true;
 }
+
+CRLSetFetcher::~CRLSetFetcher() {}

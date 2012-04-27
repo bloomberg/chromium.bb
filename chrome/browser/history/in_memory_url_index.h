@@ -164,13 +164,14 @@ class InMemoryURLIndex : public content::NotificationObserver,
         InMemoryURLIndex* index,
         const std::string& languages,
         const std::set<std::string>& scheme_whitelist);
-    virtual ~RebuildPrivateDataFromHistoryDBTask();
 
     virtual bool RunOnDBThread(HistoryBackend* backend,
                                history::HistoryDatabase* db) OVERRIDE;
     virtual void DoneRunOnMainThread() OVERRIDE;
 
    private:
+    virtual ~RebuildPrivateDataFromHistoryDBTask();
+
     InMemoryURLIndex* index_;  // Call back to this index at completion.
     std::string languages_;  // Languages for word-breaking.
     std::set<std::string> scheme_whitelist_;  // Schemes to be indexed.

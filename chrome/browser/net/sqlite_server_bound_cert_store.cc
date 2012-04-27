@@ -479,15 +479,6 @@ SQLiteServerBoundCertStore::SQLiteServerBoundCertStore(const FilePath& path)
     : backend_(new Backend(path)) {
 }
 
-SQLiteServerBoundCertStore::~SQLiteServerBoundCertStore() {
-  if (backend_.get()) {
-    backend_->Close();
-    // Release our reference, it will probably still have a reference if the
-    // background thread has not run Close() yet.
-    backend_ = NULL;
-  }
-}
-
 bool SQLiteServerBoundCertStore::Load(
     std::vector<net::DefaultServerBoundCertStore::ServerBoundCert*>* certs) {
   return backend_->Load(certs);
@@ -516,4 +507,13 @@ void SQLiteServerBoundCertStore::Flush(const base::Closure& completion_task) {
     backend_->Flush(completion_task);
   else if (!completion_task.is_null())
     MessageLoop::current()->PostTask(FROM_HERE, completion_task);
+}
+
+SQLiteServerBoundCertStore::~SQLiteServerBoundCertStore() {
+  if (backend_.get()) {
+    backend_->Close();
+    // Release our reference, it will probably still have a reference if the
+    // background thread has not run Close() yet.
+    backend_ = NULL;
+  }
 }

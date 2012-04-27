@@ -95,8 +95,6 @@ ShortcutsBackend::ShortcutsBackend(const FilePath& db_folder_path,
   }
 }
 
-ShortcutsBackend::~ShortcutsBackend() {}
-
 bool ShortcutsBackend::Init() {
   if (current_state_ != NOT_INITIALIZED)
     return false;
@@ -189,6 +187,8 @@ bool ShortcutsBackend::DeleteAllShortcuts() {
       base::Bind(base::IgnoreResult(&ShortcutsDatabase::DeleteAllShortcuts),
                  db_.get()));
 }
+
+ShortcutsBackend::~ShortcutsBackend() {}
 
 void ShortcutsBackend::InitInternal() {
   DCHECK(current_state_ == INITIALIZING);

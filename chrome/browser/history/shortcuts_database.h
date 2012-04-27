@@ -43,7 +43,6 @@ class ShortcutsDatabase : public base::RefCountedThreadSafe<ShortcutsDatabase> {
   typedef std::map<std::string, ShortcutsBackend::Shortcut> GuidToShortcutMap;
 
   explicit ShortcutsDatabase(const FilePath& folder_path);
-  virtual ~ShortcutsDatabase();
 
   bool Init();
 
@@ -66,6 +65,10 @@ class ShortcutsDatabase : public base::RefCountedThreadSafe<ShortcutsDatabase> {
   bool LoadShortcuts(GuidToShortcutMap* shortcuts);
 
  private:
+  friend class base::RefCountedThreadSafe<ShortcutsDatabase>;
+
+  virtual ~ShortcutsDatabase();
+
   // Ensures that the table is present.
   bool EnsureTable();
 

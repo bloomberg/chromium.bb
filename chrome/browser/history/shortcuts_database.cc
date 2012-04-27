@@ -58,8 +58,6 @@ ShortcutsDatabase::ShortcutsDatabase(const FilePath& folder_path)
     : database_path_(folder_path.Append(FilePath(kShortcutsDatabaseName))) {
 }
 
-ShortcutsDatabase::~ShortcutsDatabase() {}
-
 bool ShortcutsDatabase::Init() {
   // Set the database page size to something a little larger to give us
   // better performance (we're typically seek rather than bandwidth limited).
@@ -157,6 +155,8 @@ bool ShortcutsDatabase::LoadShortcuts(GuidToShortcutMap* shortcuts) {
   }
   return true;
 }
+
+ShortcutsDatabase::~ShortcutsDatabase() {}
 
 bool ShortcutsDatabase::EnsureTable() {
   if (!db_.DoesTableExist(kShortcutsDBName)) {

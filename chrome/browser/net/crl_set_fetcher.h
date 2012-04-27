@@ -29,7 +29,6 @@ class CRLSetFetcher : public ComponentInstaller,
                       public base::RefCountedThreadSafe<CRLSetFetcher> {
  public:
   CRLSetFetcher();
-  virtual ~CRLSetFetcher();
 
   void StartInitialLoad(ComponentUpdateService* cus);
 
@@ -39,6 +38,10 @@ class CRLSetFetcher : public ComponentInstaller,
                        const FilePath& unpack_path) OVERRIDE;
 
  private:
+  friend class base::RefCountedThreadSafe<CRLSetFetcher>;
+
+  virtual ~CRLSetFetcher();
+
   // GetCRLSetFilePath gets the path of the CRL set file in the user data
   // dir.
   bool GetCRLSetFilePath(FilePath* path) const;

@@ -925,15 +925,6 @@ SQLitePersistentCookieStore::SQLitePersistentCookieStore(
     : backend_(new Backend(path, restore_old_session_cookies)) {
 }
 
-SQLitePersistentCookieStore::~SQLitePersistentCookieStore() {
-  if (backend_.get()) {
-    backend_->Close();
-    // Release our reference, it will probably still have a reference if the
-    // background thread has not run Close() yet.
-    backend_ = NULL;
-  }
-}
-
 void SQLitePersistentCookieStore::Load(const LoadedCallback& loaded_callback) {
   backend_->Load(loaded_callback);
 }
@@ -973,4 +964,13 @@ void SQLitePersistentCookieStore::Flush(const base::Closure& callback) {
     backend_->Flush(callback);
   else if (!callback.is_null())
     MessageLoop::current()->PostTask(FROM_HERE, callback);
+}
+
+SQLitePersistentCookieStore::~SQLitePersistentCookieStore() {
+  if (backend_.get()) {
+    backend_->Close();
+    // Release our reference, it will probably still have a reference if the
+    // background thread has not run Close() yet.
+    backend_ = NULL;
+  }
 }

@@ -58,6 +58,8 @@ class WaitForHistoryTask : public HistoryDBTask {
   }
 
  private:
+  virtual ~WaitForHistoryTask() {}
+
   DISALLOW_COPY_AND_ASSIGN(WaitForHistoryTask);
 };
 
