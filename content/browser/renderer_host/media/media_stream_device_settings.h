@@ -75,6 +75,17 @@ class CONTENT_EXPORT MediaStreamDeviceSettings
   typedef std::map< std::string, MediaStreamDeviceSettingsRequest* >
       SettingsRequests;
 
+  // Returns true if the UI is already processing a request for this render
+  // view.
+  bool IsUiBusy(int render_view_id, int render_process_id);
+
+  // Finds a request ready to be sent to UI for user approval.
+  std::string FindReadyRequestForView(int render_view_id,
+                                      int render_process_id);
+
+  // Posts a request to be approved/denied by UI.
+  void PostRequestToUi(const std::string& label);
+
   SettingsRequester* requester_;
   SettingsRequests requests_;
 

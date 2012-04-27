@@ -161,31 +161,13 @@ void MediaStreamDeviceSettings::AvailableDevices(
       if (request->posted_task) {
         return;
       }
-      request->posted_task = true;
-
-      // Create the simplified list of devices.
-      for (DeviceMap::iterator it = request->devices_full.begin();
-           it != request->devices_full.end(); ++it) {
-        request->devices[it->first].clear();
-        for (StreamDeviceInfoArray::iterator device = it->second.begin();
-             device != it->second.end(); ++device) {
-          request->devices[it->first].push_back(MediaStreamDevice(
-              it->first, device->device_id, device->name));
-        }
+      // Since the UI can only handle one request at the time, verify there
+      // is no unanswered request posted for this view. If there is, this
+      // new request will be handled once we get a response for the first one.
+      if (IsUiBusy(request->render_view_id, request->render_process_id)) {
+        return;
       }
-
-      // Send the permission request to the content client.
-      scoped_refptr<ResponseCallbackHelper> helper =
-          new ResponseCallbackHelper(AsWeakPtr());
-      content::MediaResponseCallback callback =
-          base::Bind(&ResponseCallbackHelper::PostResponse,
-              helper.get(), label);
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(
-              &content::ContentBrowserClient::RequestMediaAccessPermission,
-              base::Unretained(content::GetContentClient()->browser()),
-              request, callback));
+      PostRequestToUi(label);
     } else {
       // Used to fake UI, which is needed for server based testing.
       // Choose first non-opened device for each media type.
@@ -229,15 +211,25 @@ void MediaStreamDeviceSettings::PostResponse(
 
   SettingsRequests::iterator req = requests_.find(label);
   DCHECK(req != requests_.end()) << "Invalid request label.";
-
   DCHECK(requester_);
+  MediaStreamDeviceSettingsRequest* request = req->second;
+  requests_.erase(req);
+
+  // Look for queued requests for the same view. If there is a pending request,
+  // post it for user approval.
+  std::string new_label = FindReadyRequestForView(request->render_view_id,
+                                                  request->render_process_id);
+  if (!new_label.empty()) {
+    PostRequestToUi(new_label);
+  }
+
   if (devices.size() > 0) {
     // Build a list of "full" device objects for the accepted devices.
     StreamDeviceInfoArray deviceList;
     for (content::MediaStreamDevices::const_iterator dev = devices.begin();
          dev != devices.end(); ++dev) {
-      DeviceMap::iterator subList = req->second->devices_full.find(dev->type);
-      DCHECK(subList != req->second->devices_full.end());
+      DeviceMap::iterator subList = request->devices_full.find(dev->type);
+      DCHECK(subList != request->devices_full.end());
 
       deviceList.push_back(*std::find_if(subList->second.begin(),
           subList->second.end(), DeviceIdEquals(dev->device_id)));
@@ -246,14 +238,87 @@ void MediaStreamDeviceSettings::PostResponse(
   } else {
     requester_->SettingsError(label);
   }
-
-  delete req->second;
-  requests_.erase(req);
+  delete request;
 }
 
 void MediaStreamDeviceSettings::UseFakeUI() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   use_fake_ui_ = true;
+}
+
+bool MediaStreamDeviceSettings::IsUiBusy(int render_view_id,
+                                         int render_process_id) {
+  for (SettingsRequests::iterator it = requests_.begin();
+       it != requests_.end(); ++it) {
+    if (it->second->render_process_id == render_process_id &&
+        it->second->render_view_id == render_view_id &&
+        it->second->posted_task) {
+      return true;
+    }
+  }
+  return false;
+}
+
+std::string MediaStreamDeviceSettings::FindReadyRequestForView(
+    int render_view_id, int render_process_id) {
+  for (SettingsRequests::iterator it = requests_.begin(); it != requests_.end();
+       ++it) {
+    if (it->second->render_process_id == render_process_id &&
+        it->second->render_view_id == render_view_id) {
+      // This request belongs to the given render view.
+      MediaStreamDeviceSettingsRequest* request = it->second;
+      if (request->options.audio &&
+          request->devices_full[
+              content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE].empty()) {
+        // Audio requested, but no devices enumerated yet. Continue to next
+        // request.
+        continue;
+      }
+      if (request->options.video_option != StreamOptions::kNoCamera &&
+          request->devices_full[
+              content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE].empty()) {
+        // Video requested, but no devices enumerated yet. Continue to next
+        // request.
+        continue;
+      }
+      // This request belongs to the same view as the treated request and is
+      // ready to be requested. Return its label.
+      return it->first;
+    }
+  }
+  return std::string();
+}
+
+void MediaStreamDeviceSettings::PostRequestToUi(const std::string& label) {
+  MediaStreamDeviceSettingsRequest* request = requests_[label];
+  DCHECK(request != NULL);
+
+  request->posted_task = true;
+
+  // Create the simplified list of devices.
+  for (DeviceMap::iterator it = request->devices_full.begin();
+       it != request->devices_full.end(); ++it) {
+    request->devices[it->first].clear();
+    for (StreamDeviceInfoArray::iterator device = it->second.begin();
+        device != it->second.end(); ++device) {
+      request->devices[it->first].push_back(MediaStreamDevice(
+          it->first, device->device_id, device->name));
+    }
+  }
+
+  // Send the permission request to the content client.
+  scoped_refptr<ResponseCallbackHelper> helper =
+      new ResponseCallbackHelper(AsWeakPtr());
+  content::MediaResponseCallback callback =
+      base::Bind(&ResponseCallbackHelper::PostResponse,
+                 helper.get(), label);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &content::ContentBrowserClient::RequestMediaAccessPermission,
+          base::Unretained(content::GetContentClient()->browser()),
+          request, callback));
+
 }
 
 }  // namespace media_stream
