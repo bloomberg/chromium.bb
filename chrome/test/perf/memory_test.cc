@@ -10,6 +10,7 @@
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -242,6 +243,7 @@ class MemoryTest : public UIPerfTest {
   bool cleanup_temp_dir_on_exit_;
   FilePath temp_dir_;
   FilePath user_data_dir_;
+  base::ThreadRestrictions::ScopedAllowIO allow_io_;
 };
 
 class GeneralMixMemoryTest : public MemoryTest {
