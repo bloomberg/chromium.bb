@@ -1403,7 +1403,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'stamp',
       description='STAMP $out',
-      command='cmd /c copy /y nul $out>nul')
+      command='python gyp-win-tool stamp $out')
     master_ninja.rule(
       'copy',
       description='COPY $in $out',

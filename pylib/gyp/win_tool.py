@@ -38,6 +38,10 @@ class WinTool(object):
     """Transforms a tool name like recursive-mirror to RecursiveMirror."""
     return name_string.title().replace('-', '')
 
+  def ExecStamp(self, path):
+    """Simple stamp command."""
+    open(path, 'w').close()
+
   def ExecRecursiveMirror(self, source, dest):
     """Emulation of rm -rf out && cp -af in out."""
     if os.path.exists(dest):
