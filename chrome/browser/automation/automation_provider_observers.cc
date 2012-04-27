@@ -506,7 +506,7 @@ void TabCountChangeObserver::CheckTabCount() {
   delete this;
 }
 
-bool DidExtensionHostsStopLoading(ExtensionProcessManager* manager) {
+bool DidExtensionViewsStopLoading(ExtensionProcessManager* manager) {
   ExtensionProcessManager::ViewSet all_views = manager->GetAllViews();
   for (ExtensionProcessManager::ViewSet::const_iterator iter =
            all_views.begin();
@@ -588,7 +588,7 @@ ExtensionReadyNotificationObserver::~ExtensionReadyNotificationObserver() {
 }
 
 void ExtensionReadyNotificationObserver::Init() {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::NotificationService::AllSources());
@@ -609,10 +609,10 @@ void ExtensionReadyNotificationObserver::Observe(
   }
 
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
+    case content::NOTIFICATION_LOAD_STOP:
       // Only continue on with this method if our extension has been loaded
-      // and all the extension hosts have stopped loading.
-      if (!extension_ || !DidExtensionHostsStopLoading(manager_))
+      // and all the extension views have stopped loading.
+      if (!extension_ || !DidExtensionViewsStopLoading(manager_))
         return;
       break;
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
@@ -623,12 +623,12 @@ void ExtensionReadyNotificationObserver::Observe(
       if (location != Extension::INTERNAL && location != Extension::LOAD)
         return;
       extension_ = loaded_extension;
-      if (!DidExtensionHostsStopLoading(manager_))
+      if (!DidExtensionViewsStopLoading(manager_))
         return;
-      // For some reason, the background ExtensionHost is not yet
-      // created at this point so just checking whether all ExtensionHosts
+      // For some reason, the background extension view is not yet
+      // created at this point so just checking whether all extension views
       // are loaded is not sufficient. If background page is not ready,
-      // we wait for NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING.
+      // we wait for NOTIFICATION_LOAD_STOP.
       if (!service_->IsBackgroundPageReady(extension_))
         return;
       break;
@@ -677,7 +677,7 @@ ExtensionsUpdatedObserver::ExtensionsUpdatedObserver(
     IPC::Message* reply_message)
     : manager_(manager), automation_(automation->AsWeakPtr()),
       reply_message_(reply_message), updater_finished_(false) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
                  content::NotificationService::AllSources());
@@ -711,8 +711,8 @@ void ExtensionsUpdatedObserver::Observe(
   // asynchronously: either they will be updated and loaded, or else they will
   // not load due to (1) not being allowed; (2) having updating disabled; or
   // (3) encountering an error.  Finally, notifications are also sent whenever
-  // an extension host stops loading.  Updating is not considered complete if
-  // any extension hosts are still loading.
+  // a view stops loading.  Updating is not considered complete if any extension
+  // views are still loading.
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND:
       // Extension updater has identified an extension that needs to be updated.
@@ -744,8 +744,8 @@ void ExtensionsUpdatedObserver::Observe(
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
-      // Break out to the conditional check below to see if all extension hosts
+    case content::NOTIFICATION_LOAD_STOP:
+      // Break out to the conditional check below to see if all extension views
       // have stopped loading.
       break;
 
@@ -756,10 +756,10 @@ void ExtensionsUpdatedObserver::Observe(
 
   // Send the reply if (1) the extension updater has finished notifying all
   // extensions to update themselves; (2) all extensions that need to be updated
-  // have completed installation and are now loaded; and (3) all extension hosts
+  // have completed installation and are now loaded; and (3) all extension views
   // have stopped loading.
   if (updater_finished_ && in_progress_updates_.empty() &&
-      DidExtensionHostsStopLoading(manager_)) {
+      DidExtensionViewsStopLoading(manager_)) {
     AutomationJSONReply reply(automation_, reply_message_.release());
     reply.SendSuccess(NULL);
     delete this;
@@ -2531,7 +2531,7 @@ AllViewsStoppedLoadingObserver::AllViewsStoppedLoadingObserver(
                  chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
                  content::NotificationService::AllSources());
   registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                 content::NOTIFICATION_LOAD_STOP,
                  content::NotificationService::AllSources());
   for (BrowserList::const_iterator iter = BrowserList::begin();
        iter != BrowserList::end();
@@ -2581,7 +2581,7 @@ void AllViewsStoppedLoadingObserver::Observe(
     delete this;
     return;
   }
-  if (type == chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING) {
+  if (type == content::NOTIFICATION_LOAD_STOP) {
     CheckIfNoMorePendingLoads();
   } else if (type == chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN) {
     AutomationJSONReply(automation_,
@@ -2597,7 +2597,7 @@ void AllViewsStoppedLoadingObserver::CheckIfNoMorePendingLoads() {
   }
 
   if (pending_tabs_.empty() &&
-      DidExtensionHostsStopLoading(extension_process_manager_)) {
+      DidExtensionViewsStopLoading(extension_process_manager_)) {
     AutomationJSONReply(automation_,
                         reply_message_.release()).SendSuccess(NULL);
     delete this;
