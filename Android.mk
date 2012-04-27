@@ -1,5 +1,5 @@
 #
-# Copyright © 2011 Intel Corporation
+# Copyright © 2011-2012 Intel Corporation
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -26,13 +26,18 @@ include $(CLEAR_VARS)
 
 LIBDRM_TOP := $(LOCAL_PATH)
 
-# Import variables LIBDRM_FILES, LIBDRM_HEADERS
+# Import variables LIBDRM_FILES, LIBDRM_H_FILES
 include $(LOCAL_PATH)/Makefile.sources
+# Import variables LIBDRM_INCLUDE_H_FILES, LIBDRM_INCLUDE_VMWGFX_H_FILES
+include $(LOCAL_PATH)/include/drm/Makefile.sources
 
 LOCAL_MODULE := libdrm
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SRC_FILES := $(LIBDRM_FILES)
+LOCAL_EXPORT_C_INCLUDE_DIRS += \
+	$(LOCAL_PATH) \
+	$(LOCAL_PATH)/include/drm
 
 LOCAL_C_INCLUDES := \
 	$(LIBDRM_TOP)/include/drm
@@ -40,6 +45,12 @@ LOCAL_C_INCLUDES := \
 LOCAL_CFLAGS := \
 	-DHAVE_LIBDRM_ATOMIC_PRIMITIVES=1
 
+LOCAL_COPY_HEADERS := \
+	$(LIBDRM_H_FILES) \
+	$(addprefix include/drm/,$(LIBDRM_INCLUDE_H_FILES)) \
+	$(addprefix include/drm/,$(LIBDRM_INCLUDE_VMWGFX_H_FILES))
+
+LOCAL_COPY_HEADERS_TO := libdrm
 include $(BUILD_SHARED_LIBRARY)
 
 include $(LOCAL_PATH)/intel/Android.mk
