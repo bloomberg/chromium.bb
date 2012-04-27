@@ -303,17 +303,12 @@ cr.define('login', function() {
       return;
     }
     $('gaia-signin').onFrameError(error);
-    // Offline and simple captive portal cases are handled by the
-    // NetworkStateInformer, so only the case when browser is online is
-    // valuable.
-    if (window.navigator.onLine) {
-      // Check current network state if currentScreen is a managed one.
-      var currentScreen = Oobe.getInstance().currentScreen;
-      if (MANAGED_SCREENS.indexOf(currentScreen.id) != -1) {
-        chrome.send('loginRequestNetworkState',
-                    ['login.ErrorMessageScreen.maybeRetry',
-                     'frame error:' + error]);
-      }
+    // Check current network state if currentScreen is a managed one.
+    var currentScreen = Oobe.getInstance().currentScreen;
+    if (MANAGED_SCREENS.indexOf(currentScreen.id) != -1) {
+      chrome.send('loginRequestNetworkState',
+                  ['login.ErrorMessageScreen.maybeRetry',
+                   'frame error:' + error]);
     }
   };
 
