@@ -1,5 +1,39 @@
+diff --git a/libusb/libusb.h b/libusb/libusb.h
+index de2d050..beff229 100644
+--- a/libusb/libusb.h
++++ b/libusb/libusb.h
+@@ -833,6 +833,10 @@ typedef void (LIBUSB_CALL *libusb_transfer_cb_fn)(struct libusb_transfer *transf
+  * completed, the library populates the transfer with the results and passes
+  * it back to the user.
+  */
++#if defined(OS_WIN)
++#pragma warning(push)
++#pragma warning(disable:4200)
++#endif  // defined(OS_WIN)
+ struct libusb_transfer {
+ 	/** Handle of the device that this transfer will be submitted to */
+ 	libusb_device_handle *dev_handle;
+@@ -884,12 +888,15 @@ struct libusb_transfer {
+ 	/** Isochronous packet descriptors, for isochronous transfers only. */
+ 	struct libusb_iso_packet_descriptor iso_packet_desc
+ #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
+-	[] /* valid C99 code */
++       [] /* valid C99 code */
+ #else
+-	[0] /* non-standard, but usually working code */
++       [0] /* non-standard, but usually working code */
+ #endif
+-	;
++       ;
+ };
++#if defined(OS_WIN)
++#pragma warning(pop)
++#endif  // defined(OS_WIN)
+ 
+ /** \ingroup misc
+  * Capabilities supported by this instance of libusb. Test if the running
 diff --git a/libusb/os/poll_windows.h b/libusb/os/poll_windows.h
-index fee89f5..27986b8 100644
+index fee89f5..76bab0f 100644
 --- a/libusb/os/poll_windows.h
 +++ b/libusb/os/poll_windows.h
 @@ -19,6 +19,9 @@
@@ -12,10 +46,17 @@ index fee89f5..27986b8 100644
  #pragma once
  
  #if defined(_MSC_VER)
-@@ -57,12 +60,6 @@ extern enum windows_version windows_version;
- #define POLLHUP     0x0010    /* Hung up */
- #define POLLNVAL    0x0020    /* Invalid request: fd not open */
+@@ -50,19 +53,6 @@ extern enum windows_version windows_version;
  
+ #define MAX_FDS     256
+ 
+-#define POLLIN      0x0001    /* There is data to read */
+-#define POLLPRI     0x0002    /* There is urgent data to read */
+-#define POLLOUT     0x0004    /* Writing now will not block */
+-#define POLLERR     0x0008    /* Error condition */
+-#define POLLHUP     0x0010    /* Hung up */
+-#define POLLNVAL    0x0020    /* Invalid request: fd not open */
+-
 -struct pollfd {
 -    int fd;           /* file descriptor */
 -    short events;     /* requested events */
@@ -25,7 +66,7 @@ index fee89f5..27986b8 100644
  // access modes
  enum rw_type {
  	RW_NONE,
-@@ -118,3 +115,4 @@ do {                                                    \
+@@ -118,3 +108,4 @@ do {                                                    \
  } while (0)
  #endif
  

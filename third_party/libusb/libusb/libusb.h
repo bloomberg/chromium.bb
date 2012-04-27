@@ -833,6 +833,10 @@ typedef void (LIBUSB_CALL *libusb_transfer_cb_fn)(struct libusb_transfer *transf
  * completed, the library populates the transfer with the results and passes
  * it back to the user.
  */
+#if defined(OS_WIN)
+#pragma warning(push)
+#pragma warning(disable:4200)
+#endif  // defined(OS_WIN)
 struct libusb_transfer {
 	/** Handle of the device that this transfer will be submitted to */
 	libusb_device_handle *dev_handle;
@@ -884,12 +888,15 @@ struct libusb_transfer {
 	/** Isochronous packet descriptors, for isochronous transfers only. */
 	struct libusb_iso_packet_descriptor iso_packet_desc
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
-	[] /* valid C99 code */
+       [] /* valid C99 code */
 #else
-	[0] /* non-standard, but usually working code */
+       [0] /* non-standard, but usually working code */
 #endif
-	;
+       ;
 };
+#if defined(OS_WIN)
+#pragma warning(pop)
+#endif  // defined(OS_WIN)
 
 /** \ingroup misc
  * Capabilities supported by this instance of libusb. Test if the running
