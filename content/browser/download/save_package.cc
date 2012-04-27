@@ -1106,17 +1106,21 @@ FilePath SavePackage::GetSuggestedNameForSaveAs(
   // similarly).
   if (title_ == net::FormatUrl(page_url_, accept_langs)) {
     std::string url_path;
-    std::vector<std::string> url_parts;
-    base::SplitString(page_url_.path(), '/', &url_parts);
-    if (!url_parts.empty()) {
-      for (int i = static_cast<int>(url_parts.size()) - 1; i >= 0; --i) {
-        url_path = url_parts[i];
-        if (!url_path.empty())
-          break;
+    if (!page_url_.SchemeIs(chrome::kDataScheme)) {
+      std::vector<std::string> url_parts;
+      base::SplitString(page_url_.path(), '/', &url_parts);
+      if (!url_parts.empty()) {
+        for (int i = static_cast<int>(url_parts.size()) - 1; i >= 0; --i) {
+          url_path = url_parts[i];
+          if (!url_path.empty())
+            break;
+        }
       }
+      if (url_path.empty())
+        url_path = page_url_.host();
+    } else {
+      url_path = "dataurl";
     }
-    if (url_path.empty())
-      url_path = page_url_.host();
     name_with_proper_ext = FilePath::FromWStringHack(UTF8ToWide(url_path));
   }
 

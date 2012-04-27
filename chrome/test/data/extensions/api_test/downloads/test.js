@@ -702,11 +702,13 @@ chrome.test.getConfig(function(testConfig) {
           }));
     },
 
-    function downloadDontAllowDataURLs() {
-      // We block downloading from data URLs.
+    function downloadAllowDataURLs() {
+      var downloadId = getNextId();
       downloads.download(
           {'url': 'data:text/plain,hello'},
-          chrome.test.callbackFail("net::ERR_DISALLOWED_URL_SCHEME"));
+          chrome.test.callback(function(id) {
+              chrome.test.assertEq(downloadId, id);
+            }));
     },
 
     function downloadAllowFileURLs() {

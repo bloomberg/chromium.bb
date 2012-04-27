@@ -19,6 +19,7 @@ const char* kDefaultSavableSchemes[] = {
   chrome::kFtpScheme,
   chrome::kChromeDevToolsScheme,
   chrome::kChromeUIScheme,
+  chrome::kDataScheme,
   NULL
 };
 char** g_savable_schemes = const_cast<char**>(kDefaultSavableSchemes);
