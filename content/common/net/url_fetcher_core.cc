@@ -616,6 +616,7 @@ void URLFetcherCore::OnReadCompleted(net::URLRequest* request,
 
     current_response_bytes_ += bytes_read;
     InformDelegateDownloadProgress();
+    InformDelegateDownloadDataIfNecessary(bytes_read);
 
     if (!WriteBuffer(bytes_read)) {
       // If WriteBuffer() returns false, we have a pending write to
@@ -879,6 +880,26 @@ void URLFetcherCore::InformDelegateDownloadProgressInDelegateThread(
   DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
   if (delegate_)
     delegate_->OnURLFetchDownloadProgress(fetcher_, current, total);
+}
+
+void URLFetcherCore::InformDelegateDownloadDataIfNecessary(int bytes_read) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  if (delegate_ && delegate_->ShouldSendDownloadData()) {
+    scoped_ptr<std::string> download_data(
+        new std::string(buffer_->data(), bytes_read));
+    delegate_loop_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &URLFetcherCore::InformDelegateDownloadDataInDelegateThread,
+            this, base::Passed(&download_data)));
+  }
+}
+
+void URLFetcherCore::InformDelegateDownloadDataInDelegateThread(
+    scoped_ptr<std::string> download_data) {
+  DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
+  if (delegate_)
+    delegate_->OnURLFetchDownloadData(fetcher_, download_data.Pass());
 }
 
 void URLFetcherCore::InformDelegateFetchIsComplete() {

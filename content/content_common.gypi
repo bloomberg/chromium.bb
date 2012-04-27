@@ -86,6 +86,7 @@
     'public/common/url_constants.cc',
     'public/common/url_constants.h',
     'public/common/url_fetcher.h',
+    'public/common/url_fetcher_delegate.cc',
     'public/common/url_fetcher_delegate.h',
     'public/common/url_fetcher_factory.h',
     'public/common/view_type.h',

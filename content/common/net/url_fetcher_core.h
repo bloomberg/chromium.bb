@@ -293,6 +293,9 @@ class URLFetcherCore
   void InformDelegateDownloadProgress();
   void InformDelegateDownloadProgressInDelegateThread(int64 current,
                                                       int64 total);
+  void InformDelegateDownloadDataIfNecessary(int bytes_read);
+  void InformDelegateDownloadDataInDelegateThread(
+      scoped_ptr<std::string> download_data);
 
   URLFetcher* fetcher_;              // Corresponding fetcher object
   GURL original_url_;                // The URL we were asked to fetch
