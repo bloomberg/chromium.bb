@@ -21,44 +21,21 @@
  */
 
 #include <stdlib.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <assert.h>
+#include <unistd.h>
 
 #include "test-runner.h"
 
+
 struct context {
-	struct weston_process proc;
 	struct weston_compositor *compositor;
-	struct wl_listener client_destroy_listener;
+	struct test_client *client;
 	struct wl_listener compositor_destroy_listener;
 	int status;
-	int got_client_destroy;
 	int done;
 };
-
-static void
-cleanup(struct weston_process *proc, int status)
-{
-	struct context *context = container_of(proc, struct context, proc);
-
-	fprintf(stderr, "child exited, status %d\n", status);
-
-	wl_display_terminate(context->compositor->wl_display);
-	context->status = status;
-	context->done = 1;
-}
-
-static void
-client_destroy(struct wl_listener *listener, void *data)
-{
-	struct context *context =
-		container_of(listener, struct context,
-			     client_destroy_listener);
-
-	context->got_client_destroy = 1;
-
-	fprintf(stderr, "notify child destroy\n");
-}
 
 static void
 compositor_destroy(struct wl_listener *listener, void *data)
@@ -68,34 +45,27 @@ compositor_destroy(struct wl_listener *listener, void *data)
 			     compositor_destroy_listener);
 
 	fprintf(stderr, "notify compositor destroy, status %d, done %d\n",
-		context->status, context->done);
+		context->client->status, context->client->done);
 
-	assert(context->status == 0);
-	assert(context->got_client_destroy);
-	assert(context->done);
+	assert(context->client->status == 0);
+	assert(context->client->done);
 }
+
 
 TEST(client_test)
 {
 	struct context *context;
-	char path[256];
-	struct wl_client *client;
-
-	snprintf(path, sizeof path, "%s/test-client", getenv("abs_builddir"));
-	fprintf(stderr, "launching %s\n", path);
 
 	context = malloc(sizeof *context);
 	assert(context);
 	context->compositor = compositor;
 	context->done = 0;
-	context->got_client_destroy = 0;
-	client = weston_client_launch(compositor,
-				      &context->proc, path, cleanup);
-	context->client_destroy_listener.notify = client_destroy;
-	wl_client_add_destroy_listener(client,
-				       &context->client_destroy_listener);
+	context->client = test_client_launch(compositor);
+	context->client->terminate = 1;
 
 	context->compositor_destroy_listener.notify = compositor_destroy;
 	wl_signal_add(&compositor->destroy_signal,
 		      &context->compositor_destroy_listener);
+
+	test_client_send(context->client, "bye\n");
 }

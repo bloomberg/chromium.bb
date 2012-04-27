@@ -22,4 +22,17 @@ struct test {
 								\
 	static void name(struct weston_compositor *compositor)
 
+struct test_client {
+	struct weston_compositor *compositor;
+	struct wl_client *client;
+	struct weston_process proc;
+	int fd;
+	int done;
+	int status;
+	int terminate;
+};
+
+struct test_client *test_client_launch(struct weston_compositor *compositor);
+void test_client_send(struct test_client *client, const char *fmt, ...);
+
 #endif

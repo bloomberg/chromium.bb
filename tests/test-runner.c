@@ -25,12 +25,74 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string.h>
 #include <assert.h>
+#include <sys/socket.h>
 
 #include "test-runner.h"
+
+static void
+test_client_cleanup(struct weston_process *proc, int status)
+{
+	struct test_client *client =
+		container_of(proc, struct test_client, proc);
+
+	fprintf(stderr, "test client exited, status %d\n", status);
+
+	client->status = status;
+	client->done = 1;
+
+	if (client->terminate)
+		wl_display_terminate(client->compositor->wl_display);
+}
+
+struct test_client *
+test_client_launch(struct weston_compositor *compositor)
+{
+	struct test_client *client;
+	int ret, sv[2], client_fd;
+	char buf[256];
+
+	client = malloc(sizeof *client);
+	assert(client);
+	ret = socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv);
+	assert(ret == 0);
+
+	client_fd = dup(sv[0]);
+	assert(client_fd >= 0);
+	snprintf(buf, sizeof buf, "%d", client_fd);
+	setenv("TEST_SOCKET", buf, 1);
+	snprintf(buf, sizeof buf, "%s/test-client", getenv("abs_builddir"));
+	fprintf(stderr, "launching %s\n", buf);
+
+	client->terminate = 0;
+	client->compositor = compositor;
+	client->client = weston_client_launch(compositor,
+					      &client->proc, buf,
+					      test_client_cleanup);
+	assert(client->client);
+	close(sv[0]);
+	client->fd = sv[1];
+
+	return client;
+}
+
+void
+test_client_send(struct test_client *client, const char *fmt, ...)
+{
+	char buf[256];
+	va_list ap;
+	int len;
+
+	va_start(ap, fmt);
+	len = vsnprintf(buf, sizeof buf, fmt, ap);
+	va_end(ap);
+
+	assert(write(client->fd, buf, len) == len);
+}
 
 extern const struct test __start_test_section, __stop_test_section;
 

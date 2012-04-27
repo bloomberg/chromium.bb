@@ -21,6 +21,9 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <assert.h>
 #include <wayland-client.h>
 
@@ -33,6 +36,8 @@ handle_global(struct wl_display *display, uint32_t id,
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
+	char buf[256], *p;
+	int ret, fd;
 
 	display = wl_display_connect(NULL);
 	assert(display);
@@ -41,5 +46,27 @@ int main(int argc, char *argv[])
 	wl_display_iterate(display, WL_DISPLAY_READABLE);
 	wl_display_roundtrip(display);
 
-	return 0;
+	fd = 0;
+	p = getenv("TEST_SOCKET");
+	if (p)
+		fd = strtol(p, NULL, 0);
+
+	while (1) {
+		ret = read(fd, buf, sizeof buf);
+		if (ret == -1) {
+			fprintf(stderr, "read error: fd %d, %m\n", fd);
+			return -1;
+		}
+
+		fprintf(stderr, "test-client: got %.*s\n", ret - 1, buf, ret);
+
+		if (strncmp(buf, "bye\n", ret) == 0) {
+			return 0;
+		} else {
+			fprintf(stderr, "unknown command %.*s\n", ret, buf);
+			return -1;
+		}
+	}
+
+	assert(0);
 }
