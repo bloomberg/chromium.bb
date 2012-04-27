@@ -407,6 +407,7 @@
         '../../dom_storage/dom_storage_context_unittest.cc',
         '../../dom_storage/dom_storage_database_unittest.cc',
         '../../dom_storage/dom_storage_map_unittest.cc',
+        '../../dom_storage/session_storage_database_unittest.cc',
         '../../fileapi/file_system_database_test_helper.cc',
         '../../fileapi/file_system_database_test_helper.h',
         '../../fileapi/file_system_directory_database_unittest.cc',

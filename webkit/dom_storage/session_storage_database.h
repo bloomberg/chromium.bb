@@ -1,0 +1,202 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef WEBKIT_DOM_STORAGE_SESSION_STORAGE_DATABASE_H_
+#define WEBKIT_DOM_STORAGE_SESSION_STORAGE_DATABASE_H_
+#pragma once
+
+#include <map>
+#include <string>
+
+#include "base/file_path.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
+#include "third_party/leveldatabase/src/include/leveldb/status.h"
+#include "webkit/dom_storage/dom_storage_types.h"
+
+class GURL;
+
+namespace leveldb {
+class DB;
+class WriteBatch;
+}  // namespace leveldb
+
+namespace dom_storage {
+
+// SessionStorageDatabase holds the data from multiple namespaces and multiple
+// origins. All DomStorageAreas for session storage share the same
+// SessionStorageDatabase.
+class SessionStorageDatabase :
+      public base::RefCountedThreadSafe<SessionStorageDatabase> {
+ public:
+  explicit SessionStorageDatabase(const FilePath& file_path);
+
+  // Reads the (key, value) pairs for |namespace_id| and |origin|. |result| is
+  // assumed to be empty and any duplicate keys will be overwritten. If the
+  // database exists on disk then it will be opened. If it does not exist then
+  // it will not be created and |result| will be unmodified.
+  void ReadAreaValues(int64 namespace_id,
+                      const GURL& origin,
+                      ValuesMap* result);
+
+  // Updates the data for |namespace_id| and |origin|. Will remove all keys
+  // before updating the database if |clear_all_first| is set. Then all entries
+  // in |changes| will be examined - keys mapped to a null NullableString16 will
+  // be removed and all others will be inserted/updated as appropriate.
+  bool CommitAreaChanges(int64 namespace_id,
+                         const GURL& origin,
+                         bool clear_all_first,
+                         const ValuesMap& changes);
+
+  // Creates shallow copies of the areas for |namespace_id| and associates them
+  // with |new_namespace_id|.
+  bool CloneNamespace(int64 namespace_id, int64 new_namespace_id);
+
+  // Creates a deep copy of the area for |namespace_id| and |origin|.
+  bool DeepCopyArea(int64 namespace_id, const GURL& origin);
+
+  // Deletes the data for |namespace_id| and |origin|.
+  bool DeleteArea(int64 namespace_id, const GURL& origin);
+
+  // Deletes the data for |namespace_id|.
+  bool DeleteNamespace(int64 namespace_id);
+
+ private:
+  friend class base::RefCountedThreadSafe<SessionStorageDatabase>;
+  friend class SessionStorageDatabaseTest;
+
+  ~SessionStorageDatabase();
+
+  bool LazyOpen(bool create_if_needed);
+  leveldb::Status TryToOpen(const FilePath& file_path, leveldb::DB** db);
+  bool IsOpen() const;
+
+  // Helpers for checking caller erros, invariants and database errors. All
+  // these return |ok|, for chaining.
+  bool CallerErrorCheck(bool ok) const;
+  bool ConsistencyCheck(bool ok);
+  bool DatabaseErrorCheck(bool ok);
+
+  // Helper functions. All return true if the operation succeeded, and false if
+  // it failed (a database error or a consistency error). If the return type is
+  // void, the operation cannot fail. If they return false, ConsistencyCheck or
+  // DatabaseErrorCheck have already been called.
+
+  // Creates a namespace for |namespace_id| and updates the next namespace id if
+  // needed. If |ok_if_exists| is false, checks that the namespace didn't exist
+  // before.
+  bool CreateNamespace(int64 namespace_id,
+                       bool ok_if_exists,
+                       leveldb::WriteBatch* batch);
+  // Reads the next namespace id.
+  bool GetNextNamespaceId(int64* next_namespace_id);
+  bool UpdateNextNamespaceId(int64 namespace_id,
+                             leveldb::WriteBatch* batch);
+  // Reads the areas assoiated with |namespace_id| and puts the (origin, map_id)
+  // pairs into |areas|.
+  bool GetAreasInNamespace(int64 namespace_id,
+                           std::map<std::string, std::string>* areas);
+  bool GetAreasInNamespace(const std::string& namespace_id_str,
+                           std::map<std::string, std::string>* areas);
+
+  // Adds an association between |origin| and |map_id| into the namespace
+  // |namespace_id|.
+  void AddAreaToNamespace(int64 namespace_id,
+                          const std::string& origin,
+                          const std::string& map_id,
+                          leveldb::WriteBatch* batch);
+
+  // Helpers for deleting data for |namespace_id| and |origin|.
+  bool DeleteArea(int64 namespace_id,
+                  const std::string& origin,
+                  leveldb::WriteBatch* batch);
+  bool DeleteArea(const std::string& namespace_id_str,
+                  const std::string& origin,
+                  leveldb::WriteBatch* batch);
+
+  // Retrieves the map id for |namespace_id| and |origin|. It's not an error if
+  // the map doesn't exist.
+  bool GetMapForArea(int64 namespace_id,
+                     const GURL& origin,
+                     bool* exists,
+                     std::string* map_id);
+  bool GetMapForArea(const std::string& namespace_id_str,
+                     const std::string& origin,
+                     bool* exists,
+                     std::string* map_id);
+
+  // Creates a new map for |namespace_id| and |origin|. |map_id| will hold the
+  // id of the created map. If there is a map for |namespace_id| and |origin|,
+  // this just overwrites the map id. The caller is responsible for decreasing
+  // the ref count.
+  bool CreateMapForArea(int64 namespace_id,
+                        const GURL& origin,
+                        std::string* map_id,
+                        leveldb::WriteBatch* batch);
+  // Reads the contents of the map |map_id| into |result|. If |only_keys| is
+  // true, only keys are aread from the database and the values in |result| will
+  // be empty.
+  bool ReadMap(const std::string& map_id,
+               ValuesMap* result,
+               bool only_keys);
+  // Writes |values| into the map |map_id|.
+  void WriteValuesToMap(const std::string& map_id,
+                        const ValuesMap& values,
+                        leveldb::WriteBatch* batch);
+
+  bool GetMapRefCount(const std::string& map_id, int64* ref_count);
+  bool IncreaseMapRefCount(const std::string& map_id,
+                           leveldb::WriteBatch* batch);
+  // Decreases the ref count of a map by |decrease|. If the ref count goes to 0,
+  // deletes the map.
+  bool DecreaseMapRefCount(const std::string& map_id,
+                           int decrease,
+                           leveldb::WriteBatch* batch);
+
+  // Deletes all values in |map_id|.
+  bool ClearMap(const std::string& map_id, leveldb::WriteBatch* batch);
+
+  // Helper functions for creating the keys needed for the schema.
+  static std::string NamespaceStartKey(const std::string& namespace_id_str);
+  static std::string NamespaceStartKey(int64 namespace_id,
+                                       int64 namespace_offset);
+  static std::string NamespaceKey(const std::string& namespace_id_str,
+                                  const std::string& origin);
+  static std::string NamespaceKey(int64 namespace_id,
+                                  int64 namespace_offset,
+                                  const GURL& origin);
+  static std::string NamespaceIdStr(int64 namespace_id, int64 namespace_offset);
+  static const char* NamespacePrefix();
+  static std::string MapRefCountKey(const std::string& map_id);
+  static std::string MapKey(const std::string& map_id, const std::string& key);
+  static const char* MapPrefix();
+  static const char* NextNamespaceIdKey();
+  static const char* NextMapIdKey();
+
+  scoped_ptr<leveldb::DB> db_;
+  FilePath file_path_;
+
+  // For protecting the database opening code.
+  base::Lock db_lock_;
+
+  // True if a database error has occurred (e.g., cannot read data).
+  bool db_error_;
+  // True if the database is in an inconsistent state.
+  bool is_inconsistent_;
+
+  // On startup, we read the next ununsed namespace id from the database. It
+  // will be the offset for namespace ids. The actual id of a namespace in the
+  // database will be: id passed to the API function + namespace_offset_. The
+  // namespace ids which are handled as int64 (named namespace_id) don't contain
+  // the offset yet. The namespaces ids which are handled as strings (named
+  // namesapce_id_str) contain the offset.
+  int64 namespace_offset_;
+
+  DISALLOW_COPY_AND_ASSIGN(SessionStorageDatabase);
+};
+
+}  // namespace dom_storage
+
+#endif  // WEBKIT_DOM_STORAGE_SESSION_STORAGE_DATABASE_H_

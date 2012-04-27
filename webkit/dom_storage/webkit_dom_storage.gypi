@@ -11,6 +11,7 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/sql/sql.gyp:sql',
+        '<(DEPTH)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/webkit/support/webkit_support.gyp:quota',
       ],
@@ -32,6 +33,8 @@
         'dom_storage_task_runner.cc',
         'dom_storage_task_runner.h',
         'dom_storage_types.h',
+        'session_storage_database.cc',
+        'session_storage_database.h'
       ],
       'conditions': [
         ['inside_chromium_build==0', {
