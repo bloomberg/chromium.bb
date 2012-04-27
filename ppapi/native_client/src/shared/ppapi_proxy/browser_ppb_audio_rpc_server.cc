@@ -87,7 +87,7 @@ void StreamCreatedCallback(void* user_data, int32_t result) {
   if (kInvalidIntHandle == shared_memory_handle) {
     return;
   }
-  uint32_t total_shared_memory_size =
+  size_t total_shared_memory_size =
       ppapi_proxy::TotalAudioSharedMemorySizeInBytes(audio_buffer_size);
   nacl::DescWrapperFactory factory;
   NaClHandle nacl_shm_handle = NaClHandle(shared_memory_handle);
