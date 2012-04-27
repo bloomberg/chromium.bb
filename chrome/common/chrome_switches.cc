@@ -1236,8 +1236,8 @@ const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 // Disables gdata content provider.
 const char kDisableGData[]                  = "disable-gdata";
 
-// Disables Libcros.
-const char kDisableLibcros[]                = "disable-libcros";
+// Enables Libcros.
+const char kEnableLibcros[]                = "enable-libcros";
 
 // Skips OAuth part of ChromeOS login process.
 const char kSkipOAuthLogin[]                = "skip-oauth-login";

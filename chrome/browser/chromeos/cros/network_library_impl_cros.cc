@@ -37,9 +37,9 @@ const char kDefaultCheckPortalList[] = "ethernet,wifi,cellular";
 
 NetworkLibraryImplCros::NetworkLibraryImplCros()
     : NetworkLibraryImplBase() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableLibcros)) {
-    LOG(INFO) << "Using non Libcros network fucntions.";
-    SetLibcrosNetworkFunctionsEnabled(false);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableLibcros)) {
+    LOG(INFO) << "Using Libcros network fucntions.";
+    SetLibcrosNetworkFunctionsEnabled(true);
   }
 }
 

@@ -338,7 +338,7 @@ extern const char kWinHttpProxyResolver[];
 #if defined(OS_CHROMEOS)
 // Keep switches in alphabetical order.
 extern const char kDisableGData[];
-extern const char kDisableLibcros[];
+extern const char kEnableLibcros[];
 extern const char kSkipOAuthLogin[];
 extern const char kEnableDevicePolicy[];
 extern const char kEnableGView[];

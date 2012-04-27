@@ -488,7 +488,7 @@ bool ParseIPConfig(const std::string& device_path,
 }
 
 // A bool to remember whether we are using Libcros network functions or not.
-bool g_libcros_network_functions_enabled = true;
+bool g_libcros_network_functions_enabled = false;
 
 }  // namespace
 
