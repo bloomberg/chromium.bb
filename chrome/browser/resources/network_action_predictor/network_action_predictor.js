@@ -7,7 +7,7 @@
  */
 function requestNetworkActionPredictorDb() {
   console.debug('Requesting NAP DB');
-  chrome.send('requestNetworkActionPredictorDb', [])
+  chrome.send('requestNetworkActionPredictorDb');
 }
 
 
@@ -78,3 +78,5 @@ function updateDatabaseView(database) {
 }
 
 document.addEventListener('DOMContentLoaded', requestNetworkActionPredictorDb);
+
+
