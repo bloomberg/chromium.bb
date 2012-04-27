@@ -273,6 +273,15 @@ FileTransferController.prototype = {
       }, 0);
     }
     this.dropTarget_ = domElement;
+    if (this.navigateTimer_ !== undefined) {
+      clearTimeout(this.navigateTimer_);
+      this.navigateTimer_ = undefined;
+    }
+    if (domElement && isDirectory && opt_destinationPath) {
+      this.navigateTimer_ = setTimeout(function() {
+        this.directoryModel_.changeDirectoryOrRoot(opt_destinationPath);
+      }.bind(this), 2000);
+    }
   },
 
   isDocumentWideEvent_: function(event) {

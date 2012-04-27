@@ -1712,12 +1712,7 @@ FileManager.prototype = {
    * @param {Event} event The event.
    */
   FileManager.prototype.onRootClick_ = function(entry, event) {
-    var new_path = entry.fullPath;
-    if (entry.fullPath == this.directoryModel_.getCurrentRootPath()) {
-      this.directoryModel_.changeDirectory(entry.fullPath);
-    } else {
-      this.directoryModel_.changeRoot(entry.fullPath);
-    }
+    this.directoryModel_.changeDirectoryOrRoot(entry.fullPath);
   };
 
   FileManager.prototype.renderRoot_ = function(entry) {

@@ -659,11 +659,23 @@ DirectoryModel.prototype.createDirectory = function(name, successCallback,
  * Changes directory. Causes 'directory-change' event.
  *
  * @param {string} path New current directory path.
- * @param {function} opt_OnError Called if failed.
  */
-DirectoryModel.prototype.changeDirectory = function(path, opt_OnError) {
-  var onDirectoryResolved = this.changeDirectoryEntry_.bind(this, false);
+DirectoryModel.prototype.changeDirectory = function(path) {
+  this.resolveDirectory(path, function(directoryEntry) {
+    this.changeDirectoryEntry_(false, directoryEntry);
+  }.bind(this), function(error) {
+    console.error('Error changing directory to ' + path + ': ', error);
+  });
+}
 
+/**
+ * Resolves absolute directory path. Handles GData stub.
+ * @param {string} path Path to the directory.
+ * @param {function(DirectoryEntry} successCallback Success callback.
+ * @param {function(FileError} errorCallback Error callback.
+ */
+DirectoryModel.prototype.resolveDirectory = function(path, successCallback,
+                                                     errorCallback) {
   if (this.unmountedGDataEntry_ &&
       DirectoryModel.getRootType(path) == DirectoryModel.RootType.GDATA) {
     // TODO(kaznacheeev): Currently if path points to some GData subdirectory
@@ -672,21 +684,40 @@ DirectoryModel.prototype.changeDirectory = function(path, opt_OnError) {
     // changing to it once GDdata is mounted. This is only relevant for cases
     // when we open the File Manager with an URL pointing to GData (e.g. via
     // a bookmark).
-    onDirectoryResolved(this.unmountedGDataEntry_);
+    successCallback(this.unmountedGDataEntry_);
     return;
   }
 
   if (path == '/') {
-    onDirectoryResolved(this.root_);
+    successCallback(this.root_);
     return;
   }
 
-  var onError = opt_OnError || function(error) {
-    // TODO(serya): We should show an alert.
-    console.error('Error changing directory to: ' + path + ', ' + error);
-  };
+  this.root_.getDirectory(path, {create: false},
+                          successCallback, errorCallback);
+};
 
-  this.root_.getDirectory(path, {create: false}, onDirectoryResolved, onError);
+/**
+ * Changes directory. If path points to a root (except current one)
+ * then directory changed to the last used one for the root.
+ *
+ * @param {string} path New current directory path or new root.
+ */
+DirectoryModel.prototype.changeDirectoryOrRoot = function(path) {
+  if (DirectoryModel.getRootPath(path) == this.getCurrentRootPath()) {
+    this.changeDirectory(path);
+  } else if (this.currentDirByRoot_[path]) {
+    var self = this;
+    this.resolveDirectory(this.currentDirByRoot_[path],
+        function(directoryEntry) {
+          self.changeDirectoryEntry_(false, directoryEntry);
+        },
+        function(error) {
+          self.changeDrectory(path);
+        });
+  } else {
+    this.changeDirectory(path);
+  }
 };
 
 /**
