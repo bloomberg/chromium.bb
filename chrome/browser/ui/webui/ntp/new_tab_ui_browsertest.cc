@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -10,6 +12,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/test/test_navigation_observer.h"
 #include "googleurl/src/gurl.h"
 
 using content::OpenURLParams;
@@ -91,4 +94,59 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, LoadNTPInExistingProcess) {
   browser()->ActivateTabAt(1, true);
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   EXPECT_EQ(2, browser()->GetWebContentsAt(1)->GetMaxPageID());
+}
+
+// Loads chrome://hang/ into two NTP tabs, ensuring we don't crash.
+// See http://crbug.com/59859.
+// If this flakes, use http://crbug.com/87200.
+IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, ChromeHangInNTP) {
+  // Bring up a new tab page.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUINewTabURL), NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Navigate to chrome://hang/ to stall the process.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUIHangURL), CURRENT_TAB, 0);
+
+  // Visit chrome://hang/ again in another NTP. Don't bother waiting for the
+  // NTP to load, because it's hung.
+  browser()->NewTab();
+  browser()->OpenURL(OpenURLParams(
+      GURL(chrome::kChromeUIHangURL), Referrer(), CURRENT_TAB,
+      content::PAGE_TRANSITION_TYPED, false));
+}
+
+class NewTabUIProcessPerTabTest : public NewTabUIBrowserTest {
+ public:
+   NewTabUIProcessPerTabTest() {}
+
+   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+     command_line->AppendSwitch(switches::kProcessPerTab);
+   }
+};
+
+// Navigates away from NTP before it commits, in process-per-tab mode.
+// Ensures that we don't load the normal page in the NTP process (and thus
+// crash), as in http://crbug.com/69224.
+// If this flakes, use http://crbug.com/87200
+IN_PROC_BROWSER_TEST_F(NewTabUIProcessPerTabTest, NavBeforeNTPCommits) {
+  // Bring up a new tab page.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  // Navigate to chrome://hang/ to stall the process.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUIHangURL), CURRENT_TAB, 0);
+
+  // Visit a normal URL in another NTP that hasn't committed.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUINewTabURL), NEW_FOREGROUND_TAB, 0);
+
+  // We don't use ui_test_utils::NavigateToURLWithDisposition because that waits
+  // for current loading to stop.
+  TestNavigationObserver observer(content::NotificationService::AllSources());
+  browser()->OpenURL(OpenURLParams(
+      GURL("data:text/html,hello world"), Referrer(), CURRENT_TAB,
+      content::PAGE_TRANSITION_TYPED, false));
+  observer.Wait();
 }

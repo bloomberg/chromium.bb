@@ -716,7 +716,6 @@
         # less flakier.
         'browser/process_singleton_linux_uitest.cc',
         'browser/ui/tests/browser_uitest.cc',
-        'browser/ui/webui/ntp/new_tab_ui_uitest.cc',
         'browser/ui/webui/options2/chromeos/guest_mode_options_ui2_uitest.cc',
         'browser/ui/webui/options2/options_ui2_uitest.cc',
         'browser/ui/webui/options2/options_ui2_uitest.h',
