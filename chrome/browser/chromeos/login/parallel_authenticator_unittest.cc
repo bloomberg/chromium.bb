@@ -6,15 +6,12 @@
 
 #include <string>
 
-#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/test/thread_test_helper.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
@@ -25,7 +22,6 @@
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/test_attempt_state.h"
 #include "chrome/browser/chromeos/stub_cros_settings_provider.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/gaia/mock_url_fetcher_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
@@ -39,11 +35,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;
-using file_util::CloseFile;
-using file_util::CreateAndOpenTemporaryFile;
-using file_util::CreateAndOpenTemporaryFileInDir;
-using file_util::Delete;
-using file_util::WriteFile;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
 using ::testing::Invoke;
@@ -124,10 +115,10 @@ class ParallelAuthenticatorTest : public testing::Test {
 
   FilePath PopulateTempFile(const char* data, int data_len) {
     FilePath out;
-    FILE* tmp_file = CreateAndOpenTemporaryFile(&out);
+    FILE* tmp_file = file_util::CreateAndOpenTemporaryFile(&out);
     EXPECT_NE(tmp_file, static_cast<FILE*>(NULL));
-    EXPECT_EQ(WriteFile(out, data, data_len), data_len);
-    EXPECT_TRUE(CloseFile(tmp_file));
+    EXPECT_EQ(file_util::WriteFile(out, data, data_len), data_len);
+    EXPECT_TRUE(file_util::CloseFile(tmp_file));
     return out;
   }
 

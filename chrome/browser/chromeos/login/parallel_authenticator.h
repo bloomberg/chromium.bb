@@ -16,8 +16,8 @@
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state_resolver.h"
-#include "chrome/browser/chromeos/login/test_attempt_state.h"
 #include "chrome/browser/chromeos/login/online_attempt.h"
+#include "chrome/browser/chromeos/login/test_attempt_state.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 
 class LoginFailure;
@@ -147,6 +147,11 @@ class ParallelAuthenticator : public Authenticator,
 
  private:
   friend class ParallelAuthenticatorTest;
+  FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest,
+                           ResolveOwnerNeededDirectFailedMount);
+  FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest, ResolveOwnerNeededMount);
+  FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest,
+                           ResolveOwnerNeededFailedMount);
 
   // Returns the AuthState we're in, given the status info we have at
   // the time of call.
@@ -252,11 +257,6 @@ class ParallelAuthenticator : public Authenticator,
   // True if we use OAuth-based authentication flow.
   bool using_oauth_;
 
-  FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest,
-                           ResolveOwnerNeededDirectFailedMount);
-  FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest, ResolveOwnerNeededMount);
-  FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest,
-                           ResolveOwnerNeededFailedMount);
   DISALLOW_COPY_AND_ASSIGN(ParallelAuthenticator);
 };
 

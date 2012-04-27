@@ -9,7 +9,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -21,7 +20,6 @@
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -30,7 +28,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;
-using file_util::ReadFileToString;
 
 namespace chromeos {
 
