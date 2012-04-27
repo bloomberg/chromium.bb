@@ -8,6 +8,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/capture_tracking_view.h"
 #include "ash/wm/window_util.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/root_window.h"
@@ -63,29 +64,6 @@ class TestWindow : public views::WidgetDelegateView {
   bool modal_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindow);
-};
-
-class CaptureTrackingView : public views::View {
- public:
-  CaptureTrackingView() : got_press_(false), got_capture_lost_(false) {}
-
-  bool got_press() const { return got_press_; }
-  bool got_capture_lost() const { return got_capture_lost_; }
-
-  // Overridden from views::View
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
-    got_press_ = true;
-    return true;
-  }
-  virtual void OnMouseCaptureLost() OVERRIDE {
-    got_capture_lost_ = true;
-  }
-
- private:
-  bool got_press_;
-  bool got_capture_lost_;
-
-  DISALLOW_COPY_AND_ASSIGN(CaptureTrackingView);
 };
 
 class EventTestWindow : public TestWindow {

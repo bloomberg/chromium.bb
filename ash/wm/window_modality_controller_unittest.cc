@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/capture_tracking_view.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/event_generator.h"
@@ -13,6 +14,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace internal {
@@ -233,6 +235,50 @@ TEST_F(WindowModalityControllerTest, GetWindowModalTransient) {
   wt = wm::GetWindowModalTransient(w11.get());
   ASSERT_NE(static_cast<aura::Window*>(NULL), wt);
   EXPECT_EQ(-2, wt->id());
+}
+
+// Verifies we generate a capture lost when showing a modal window.
+TEST_F(WindowModalityControllerTest, ChangeCapture) {
+  views::Widget* widget = views::Widget::CreateWindow(NULL);
+  scoped_ptr<aura::Window> widget_window(widget->GetNativeView());
+  test::CaptureTrackingView* view = new test::CaptureTrackingView;
+  widget->client_view()->AddChildView(view);
+  widget->SetBounds(gfx::Rect(0, 0, 200, 200));
+  view->SetBoundsRect(widget->client_view()->GetLocalBounds());
+  widget->Show();
+
+  gfx::Point center(view->width() / 2, view->height() / 2);
+  views::View::ConvertPointToScreen(view, &center);
+  aura::test::EventGenerator generator(Shell::GetRootWindow(), center);
+  generator.PressLeftButton();
+  EXPECT_TRUE(view->got_press());
+
+  views::Widget* modal_widget =
+      views::Widget::CreateWindowWithParent(NULL, widget->GetNativeView());
+  scoped_ptr<aura::Window> modal_window(modal_widget->GetNativeView());
+  modal_window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
+  test::CaptureTrackingView* modal_view = new test::CaptureTrackingView;
+  modal_widget->client_view()->AddChildView(modal_view);
+  modal_widget->SetBounds(gfx::Rect(50, 50, 200, 200));
+  modal_view->SetBoundsRect(modal_widget->client_view()->GetLocalBounds());
+  modal_widget->Show();
+
+  EXPECT_TRUE(view->got_capture_lost());
+  generator.ReleaseLeftButton();
+
+  view->reset();
+
+  EXPECT_FALSE(modal_view->got_capture_lost());
+  EXPECT_FALSE(modal_view->got_press());
+
+  gfx::Point modal_center(modal_view->width() / 2, modal_view->height() / 2);
+  views::View::ConvertPointToScreen(modal_view, &modal_center);
+  generator.MoveMouseTo(modal_center, 1);
+  generator.PressLeftButton();
+  EXPECT_TRUE(modal_view->got_press());
+  EXPECT_FALSE(modal_view->got_capture_lost());
+  EXPECT_FALSE(view->got_capture_lost());
+  EXPECT_FALSE(view->got_press());
 }
 
 

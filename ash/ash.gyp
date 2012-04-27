@@ -352,6 +352,8 @@
         'test/ash_test_base.cc',
         'test/ash_test_base.h',
         'test/ash_unittests.cc',
+        'test/capture_tracking_view.cc',
+        'test/capture_tracking_view.h',
         'test/launcher_view_test_api.cc',
         'test/launcher_view_test_api.h',
         'test/test_activation_delegate.cc',

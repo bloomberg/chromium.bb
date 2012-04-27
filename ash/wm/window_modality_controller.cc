@@ -4,9 +4,13 @@
 
 #include "ash/wm/window_modality_controller.h"
 
+#include <algorithm>
+
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 
@@ -57,9 +61,13 @@ namespace internal {
 // WindowModalityController, public:
 
 WindowModalityController::WindowModalityController() {
+  aura::Env::GetInstance()->AddObserver(this);
 }
 
 WindowModalityController::~WindowModalityController() {
+  aura::Env::GetInstance()->RemoveObserver(this);
+  for (size_t i = 0; i < windows_.size(); ++i)
+    windows_[i]->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -90,6 +98,29 @@ ui::GestureStatus WindowModalityController::PreHandleGestureEvent(
     aura::GestureEvent* event) {
   // TODO: make gestures work with modals.
   return ui::GESTURE_STATUS_UNKNOWN;
+}
+
+void WindowModalityController::OnWindowInitialized(aura::Window* window) {
+  windows_.push_back(window);
+  window->AddObserver(this);
+}
+
+void WindowModalityController::OnWindowVisibilityChanged(
+    aura::Window* window,
+    bool visible) {
+  if (visible && window->GetProperty(aura::client::kModalKey) ==
+      ui::MODAL_TYPE_WINDOW) {
+    // Make sure no other window has capture, otherwise |window| won't get mouse
+    // events.
+    aura::RootWindow* root = window->GetRootWindow();
+    if (root->capture_window() && root->capture_window() != window)
+      root->capture_window()->ReleaseCapture();
+  }
+}
+
+void WindowModalityController::OnWindowDestroyed(aura::Window* window) {
+  windows_.erase(std::find(windows_.begin(), windows_.end(), window));
+  window->RemoveObserver(this);
 }
 
 }  // namespace internal
