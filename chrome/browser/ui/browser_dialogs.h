@@ -46,9 +46,6 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 Browser* browser,
                                 WebDialogDelegate* delegate);
 
-// Closes the given dialog.
-void CloseHtmlDialog(gfx::NativeWindow window);
-
 // Shows the collected cookies dialog box.
 void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
                                 TabContentsWrapper* tab_contents);
