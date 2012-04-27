@@ -216,7 +216,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       write_fd = pipe_reader_->GetWriteFD();
     }
 
-    DCHECK(callback.is_null());
     callback_ = callback;
 
     // Issue the dbus request to stop system tracing
