@@ -252,7 +252,7 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
           id, update_url, location))
     return false;
 
-  external_extension_url_added_ = true;
+  update_once_all_providers_are_ready_ = true;
   return true;
 }
 
@@ -1270,7 +1270,14 @@ void ExtensionService::CheckAdminBlacklist() {
 
 void ExtensionService::CheckForUpdatesSoon() {
   if (updater()) {
-    updater()->CheckSoon();
+    if (AreAllExternalProvidersReady()) {
+      updater()->CheckSoon();
+    } else {
+      // Sync can start updating before all the external providers are ready
+      // during startup. Start the update as soon as those providers are ready,
+      // but not before.
+      update_once_all_providers_are_ready_ = true;
+    }
   } else {
     LOG(WARNING) << "CheckForUpdatesSoon() called with auto-update turned off";
   }
@@ -1722,11 +1729,6 @@ void ExtensionService::CheckForExternalUpdates() {
   // trusted.  In general, if something has HKLM or filesystem access,
   // they could install an extension manually themselves anyway.
 
-  // If any external extension records give a URL, a provider will set
-  // this to true.  Used by OnExternalProviderReady() to see if we need
-  // to start an update check to fetch a new external extension.
-  external_extension_url_added_ = false;
-
   // Ask each external extension provider to give us a call back for each
   // extension they know about. See OnExternalExtension(File|UpdateUrl)Found.
   ProviderCollection::const_iterator i;
@@ -1750,23 +1752,28 @@ void ExtensionService::OnExternalProviderReady(
 
   // An external provider has finished loading.  We only take action
   // if all of them are finished. So we check them first.
+  if (AreAllExternalProvidersReady())
+    OnAllExternalProvidersReady();
+}
+
+bool ExtensionService::AreAllExternalProvidersReady() const {
   ProviderCollection::const_iterator i;
   for (i = external_extension_providers_.begin();
        i != external_extension_providers_.end(); ++i) {
-    ExternalExtensionProviderInterface* provider = i->get();
-    if (!provider->IsReady())
-      return;
+    if (!i->get()->IsReady())
+      return false;
   }
-
-  OnAllExternalProvidersReady();
+  return true;
 }
 
 void ExtensionService::OnAllExternalProvidersReady() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::TimeDelta elapsed = base::Time::Now() - profile_->GetStartTime();
+  UMA_HISTOGRAM_TIMES("Extension.ExternalProvidersReadyAfter", elapsed);
 
   // Install any pending extensions.
-  if (external_extension_url_added_ && updater()) {
-    external_extension_url_added_ = false;
+  if (update_once_all_providers_are_ready_ && updater()) {
+    update_once_all_providers_are_ready_ = false;
     updater()->CheckNow();
   }
 

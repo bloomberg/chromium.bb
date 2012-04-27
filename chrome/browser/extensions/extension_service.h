@@ -553,6 +553,9 @@ class ExtensionService
   virtual void OnExternalProviderReady(
       const ExternalExtensionProviderInterface* provider) OVERRIDE;
 
+  // Returns true when all the external extension providers are ready.
+  bool AreAllExternalProvidersReady() const;
+
   void OnAllExternalProvidersReady();
 
   // Once all external providers are done, generates any needed alerts about
@@ -820,9 +823,11 @@ class ExtensionService
   ProviderCollection external_extension_providers_;
 
   // Set to true by OnExternalExtensionUpdateUrlFound() when an external
-  // extension URL is found.  Used in CheckForExternalUpdates() to see
-  // if an update check is needed to install pending extensions.
-  bool external_extension_url_added_;
+  // extension URL is found, and by CheckForUpdatesSoon() when an update check
+  // has to wait for the external providers.  Used in
+  // OnAllExternalProvidersReady() to determine if an update check is needed to
+  // install pending extensions.
+  bool update_once_all_providers_are_ready_;
 
   NaClModuleInfoList nacl_module_list_;
 
