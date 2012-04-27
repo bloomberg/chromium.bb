@@ -62,6 +62,8 @@ namespace {
 const int kModernManifestVersion = 1;
 const int kPEMOutputColumns = 65;
 
+const char kOverrideExtentUrlPatternFormat[] = "chrome://%s/*";
+
 // KEY MARKERS
 const char kKeyBeginHeaderMarker[] = "-----BEGIN";
 const char kKeyBeginFooterMarker[] = "-----END";
@@ -2514,6 +2516,13 @@ bool Extension::LoadChromeURLOverrides(string16* error) {
     }
     // Replace the entry with a fully qualified chrome-extension:// URL.
     chrome_url_overrides_[page] = GetResourceURL(val);
+    // For component extensions, add override URL to extent patterns.
+    if (is_packaged_app() && location() == COMPONENT) {
+      URLPattern pattern(URLPattern::SCHEME_CHROMEUI);
+      pattern.Parse(base::StringPrintf(kOverrideExtentUrlPatternFormat,
+                                       page.c_str()));
+      extent_.AddPattern(pattern);
+    }
   }
 
   // An extension may override at most one page.
