@@ -2896,8 +2896,13 @@ void TestingAutomationProvider::GetBrowserInfo(
       // Don't add dead extension processes.
       if (!render_view_host->IsRenderViewLive())
         continue;
+      // Don't add views for which we can't obtain an extension.
+      // TODO(benwells): work out why this happens. It only happens for one
+      // test, and only on the bots.
       const Extension* extension =
           process_manager->GetExtensionForRenderViewHost(render_view_host);
+      if (!extension)
+        continue;
       DictionaryValue* item = new DictionaryValue;
       item->SetString("name", extension->name());
       item->SetString("extension_id", extension->id());
