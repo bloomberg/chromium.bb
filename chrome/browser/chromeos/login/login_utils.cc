@@ -1043,6 +1043,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
   static const char* kForwardSwitches[] = {
       switches::kCompressSystemFeedback,
       switches::kDeviceManagementUrl,
+      switches::kDefaultDeviceScaleFactor,
       switches::kDisableAccelerated2dCanvas,
       switches::kDisableAcceleratedPlugins,
       switches::kDisableLoginAnimations,
@@ -1055,6 +1056,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kEnableSmoothScrolling,
       switches::kEnableThreadedCompositing,
       switches::kEnableTouchEvents,
+      switches::kEnableViewport,
       switches::kDisableThreadedCompositing,
       switches::kForceCompositingMode,
       switches::kLoginProfile,
@@ -1067,6 +1069,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kFlingTapSuppressMaxDown,
       switches::kFlingTapSuppressMaxGap,
       switches::kTouchDevices,
+      switches::kTouchOptimizedUI,
       ash::switches::kAuraLegacyPowerButton,
       ash::switches::kAuraNoShadows,
       ash::switches::kAuraPanelManager,
