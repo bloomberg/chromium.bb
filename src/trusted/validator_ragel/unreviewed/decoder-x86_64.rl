@@ -25,18 +25,18 @@
   main := (one_instruction
     >{
         begin = p;
-        disp_type = DISPNONE;
-        imm_operand = IMMNONE;
-        imm2_operand = IMMNONE;
-        rex_prefix = FALSE;
-        data16_prefix = FALSE;
-        lock_prefix = FALSE;
-        repnz_prefix = FALSE;
-        repz_prefix = FALSE;
-        branch_not_taken = FALSE;
-        branch_taken = FALSE;
-        vex_prefix2 = 0xe0;
-        vex_prefix3 = 0x00;
+        SET_DISP_TYPE(DISPNONE);
+        SET_IMM_TYPE(IMMNONE);
+        SET_IMM2_TYPE(IMMNONE);
+        SET_REX_PREFIX(FALSE);
+        SET_DATA16_PREFIX(FALSE);
+        SET_LOCK_PREFIX(FALSE);
+        SET_REPNZ_PREFIX(FALSE);
+        SET_REPZ_PREFIX(FALSE);
+        SET_BRANCH_NOT_TAKEN(FALSE);
+        SET_BRANCH_TAKEN(FALSE);
+        SET_VEX_PREFIX2(0xe0);
+        SET_VEX_PREFIX3(0x00);
     }
     @{
         switch (disp_type) {
@@ -96,28 +96,32 @@
 
 %% write data;
 
-#define base instruction.rm.base
-#define index instruction.rm.index
-#define scale instruction.rm.scale
-#define rex_prefix instruction.prefix.rex
-#define data16_prefix instruction.prefix.data16
-#define lock_prefix instruction.prefix.lock
-#define repz_prefix instruction.prefix.repz
-#define repnz_prefix instruction.prefix.repnz
-#define branch_not_taken instruction.prefix.branch_not_taken
-#define branch_taken instruction.prefix.branch_taken
-#define operand0_type instruction.operands[0].type
-#define operand1_type instruction.operands[1].type
-#define operand2_type instruction.operands[2].type
-#define operand3_type instruction.operands[3].type
-#define operand4_type instruction.operands[4].type
-#define operand0 instruction.operands[0].name
-#define operand1 instruction.operands[1].name
-#define operand2 instruction.operands[2].name
-#define operand3 instruction.operands[3].name
-#define operand4 instruction.operands[4].name
-#define operands_count instruction.operands_count
-#define instruction_name instruction.name
+#define GET_REX_PREFIX() instruction.prefix.rex
+#define SET_REX_PREFIX(P) instruction.prefix.rex = (P)
+#define GET_VEX_PREFIX2() vex_prefix2
+#define SET_VEX_PREFIX2(P) vex_prefix2 = (P)
+#define GET_VEX_PREFIX3() vex_prefix3
+#define SET_VEX_PREFIX3(P) vex_prefix3 = (P)
+#define SET_DATA16_PREFIX(S) instruction.prefix.data16 = (S)
+#define SET_LOCK_PREFIX(S) instruction.prefix.lock = (S)
+#define SET_REPZ_PREFIX(S) instruction.prefix.repz = (S)
+#define SET_REPNZ_PREFIX(S) instruction.prefix.repnz = (S)
+#define SET_BRANCH_TAKEN(S) instruction.prefix.branch_taken = (S)
+#define SET_BRANCH_NOT_TAKEN(S) instruction.prefix.branch_not_taken = (S)
+#define SET_INSTRUCTION_NAME(N) instruction.name = (N)
+#define GET_OPERAND_NAME(N) instruction.operands[(N)].name
+#define SET_OPERAND_NAME(N, S) instruction.operands[(N)].name = (S)
+#define SET_OPERAND_TYPE(N, S) instruction.operands[(N)].type = (S)
+#define SET_OPERANDS_COUNT(N) instruction.operands_count = (N)
+#define SET_MODRM_BASE(N) instruction.rm.base = (N)
+#define SET_MODRM_INDEX(N) instruction.rm.index = (N)
+#define SET_MODRM_SCALE(S) instruction.rm.scale = (S)
+#define SET_DISP_TYPE(T) disp_type = (T)
+#define SET_DISP_PTR(P) disp = (P)
+#define SET_IMM_TYPE(T) imm_operand = (T)
+#define SET_IMM_PTR(P) imm = (P)
+#define SET_IMM2_TYPE(T) imm2_operand = (T)
+#define SET_IMM2_PTR(P) imm2 = (P)
 
 enum {
   REX_B = 1,

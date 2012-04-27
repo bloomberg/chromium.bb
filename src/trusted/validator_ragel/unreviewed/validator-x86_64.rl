@@ -29,9 +29,9 @@
         BitmapSetBit(jump_dests, jump_dest + 1); \
       } \
     } \
-    operand0 = JMP_TO; \
-    base = REG_RIP; \
-    index = NO_REG;
+    SET_OPERAND_NAME(0, JMP_TO); \
+    SET_MODRM_BASE(REG_RIP); \
+    SET_MODRM_INDEX(NO_REG);
 
 static void PrintError(const char* msg, uintptr_t ptr) {
   printf("offset 0x%"NACL_PRIxS": %s", ptr, msg);
@@ -330,9 +330,9 @@ static void PrintError(const char* msg, uintptr_t ptr) {
   main := ((normal_instruction | special_instruction) >{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
-        rex_prefix = FALSE;
-        vex_prefix2 = 0xe0;
-        vex_prefix3 = 0x00;
+        SET_REX_PREFIX(FALSE);
+        SET_VEX_PREFIX2(0xe0);
+        SET_VEX_PREFIX3(0x00);
      })*
      @{
        /* On successful match the instruction start must point to the next byte
@@ -350,64 +350,48 @@ static void PrintError(const char* msg, uintptr_t ptr) {
 
 %% write data;
 
+#define GET_REX_PREFIX() rex_prefix
+#define SET_REX_PREFIX(P) rex_prefix = (P)
+#define GET_VEX_PREFIX2() vex_prefix2
+#define SET_VEX_PREFIX2(P) vex_prefix2 = (P)
+#define GET_VEX_PREFIX3() vex_prefix3
+#define SET_VEX_PREFIX3(P) vex_prefix3 = (P)
+
 /* Ignore this information for now.  */
-#define data16_prefix if (0) result
-#define lock_prefix if (0) result
-#define repz_prefix if (0) result
-#define repnz_prefix if (0) result
-#define branch_not_taken if (0) result
-#define branch_taken if (0) result
-#define imm if (0) begin
-#define imm_operand if (0) result
-#define imm2 if (0) begin
-#define imm2_operand if (0) result
-#define scale if (0) result
-#define disp if (0) begin
-#define disp_type if (0) result
-#define operand0 operands[0].name
-#define operand1 operands[1].name
-#define operand2 operands[2].name
-#define operand3 operands[3].name
-#define operand4 operands[4].name
-#define operand0_type operands[0].type
-#define operand1_type operands[1].type
-#define operand2_type operands[2].type
-#define operand3_type operands[3].type
-#define operand4_type operands[4].type
-/* It's not important for us.  */
-#define operand0_read if (0) result
-#define operand1_read if (0) result
-#define operand2_read if (0) result
-#define operand3_read if (0) result
-#define operand4_read if (0) result
-#define operand0_write operands[0].write
-#define operand1_write operands[1].write
-#define operand2_write operands[2].write
-#define operand3_write operands[3].write
-#define operand4_write operands[4].write
+#define SET_DATA16_PREFIX(S)
+#define SET_LOCK_PREFIX(S)
+#define SET_REPZ_PREFIX(S)
+#define SET_REPNZ_PREFIX(S)
+#define SET_BRANCH_TAKEN(S)
+#define SET_BRANCH_NOT_TAKEN(S)
+
+#define GET_OPERAND_NAME(N) operands[(N)].name
+#define SET_OPERAND_NAME(N, S) operands[(N)].name = (S)
+#define SET_OPERAND_TYPE(N, S) operands[(N)].type = (S)
+#define SET_OPERANDS_COUNT(N) operands_count = (N)
+#define SET_MODRM_BASE(N) base = (N)
+#define SET_MODRM_INDEX(N) index = (N)
+
+/* Ignore this information for now.  */
+#define SET_MODRM_SCALE(S)
+#define SET_DISP_TYPE(T)
+#define SET_DISP_PTR(P)
+#define SET_IMM_TYPE(T)
+#define SET_IMM_PTR(P)
+#define SET_IMM2_TYPE(T)
+#define SET_IMM2_PTR(P)
+
+/* This one is not important for us, too.  */
+#define SET_OPERAND_READ(N, S)
+
+/* This is important.  */
+#define SET_OPERAND_WRITE(N, S) operands[(N)].write = (S)
 
 enum {
   REX_B = 1,
   REX_X = 2,
   REX_R = 4,
   REX_W = 8
-};
-
-enum disp_mode {
-  DISPNONE,
-  DISP8,
-  DISP16,
-  DISP32,
-  DISP64,
-};
-
-enum imm_mode {
-  IMMNONE,
-  IMM2,
-  IMM8,
-  IMM16,
-  IMM32,
-  IMM64
 };
 
 static const int kBitsPerByte = 8;

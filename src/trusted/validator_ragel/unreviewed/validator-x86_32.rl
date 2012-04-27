@@ -98,22 +98,16 @@
 %% write data;
 
 /* Ignore this information for now.  */
-#define data16_prefix if (0) result
-#define lock_prefix if (0) result
-#define repz_prefix if (0) result
-#define repnz_prefix if (0) result
-#define branch_not_taken if (0) result
-#define branch_taken if (0) result
-#define vex_prefix3 if (0) result
-#define disp if (0) p
-#define disp_type if (0) result
-
-enum disp_mode {
-  DISPNONE,
-  DISP8,
-  DISP16,
-  DISP32
-};
+#define GET_VEX_PREFIX3 0
+#define SET_VEX_PREFIX3(P)
+#define SET_DATA16_PREFIX(S)
+#define SET_LOCK_PREFIX(S)
+#define SET_REPZ_PREFIX(S)
+#define SET_REPNZ_PREFIX(S)
+#define SET_BRANCH_TAKEN(S)
+#define SET_BRANCH_NOT_TAKEN(S)
+#define SET_DISP_TYPE(T)
+#define SET_DISP_PTR(P)
 
 static const int kBitsPerByte = 8;
 

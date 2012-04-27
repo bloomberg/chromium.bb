@@ -46,22 +46,16 @@ static const int x86_64_decoder_en_main = 241;
 #line 99 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 
 /* Ignore this information for now.  */
-#define data16_prefix if (0) result
-#define lock_prefix if (0) result
-#define repz_prefix if (0) result
-#define repnz_prefix if (0) result
-#define branch_not_taken if (0) result
-#define branch_taken if (0) result
-#define vex_prefix3 if (0) result
-#define disp if (0) p
-#define disp_type if (0) result
-
-enum disp_mode {
-  DISPNONE,
-  DISP8,
-  DISP16,
-  DISP32
-};
+#define GET_VEX_PREFIX3 0
+#define SET_VEX_PREFIX3(P)
+#define SET_DATA16_PREFIX(S)
+#define SET_LOCK_PREFIX(S)
+#define SET_REPZ_PREFIX(S)
+#define SET_REPNZ_PREFIX(S)
+#define SET_BRANCH_TAKEN(S)
+#define SET_BRANCH_NOT_TAKEN(S)
+#define SET_DISP_TYPE(T)
+#define SET_DISP_PTR(P)
 
 static const int kBitsPerByte = 8;
 
@@ -121,14 +115,14 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
     int cs;
 
     
-#line 125 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 119 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	{
 	cs = x86_64_decoder_start;
 	}
 
-#line 176 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 170 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
     
-#line 132 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 126 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -146,8 +140,8 @@ tr0:
 tr9:
 #line 46 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    disp_type = DISP32;
-    disp = p - 3;
+    SET_DISP_TYPE(DISP32);
+    SET_DISP_PTR(p - 3);
   }
 #line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
@@ -160,8 +154,8 @@ tr9:
 tr10:
 #line 42 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    disp_type = DISP8;
-    disp = p;
+    SET_DISP_TYPE(DISP8);
+    SET_DISP_PTR(p);
   }
 #line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
@@ -238,7 +232,7 @@ tr83:
 tr109:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 #line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
@@ -262,7 +256,7 @@ tr229:
 tr268:
 #line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    repz_prefix = FALSE;
+    SET_REPZ_PREFIX(FALSE);
   }
 #line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
@@ -303,7 +297,7 @@ st241:
 	if ( ++p == pe )
 		goto _test_eof241;
 case 241:
-#line 307 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 301 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr281;
 		case 5u: goto tr282;
@@ -449,19 +443,19 @@ case 241:
 tr86:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 	goto st1;
 tr135:
 #line 36 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    repnz_prefix = FALSE;
+    SET_REPNZ_PREFIX(FALSE);
   }
 	goto st1;
 tr137:
 #line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    repz_prefix = FALSE;
+    SET_REPZ_PREFIX(FALSE);
   }
 	goto st1;
 tr280:
@@ -475,7 +469,7 @@ st1:
 	if ( ++p == pe )
 		goto _test_eof1;
 case 1:
-#line 479 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 473 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -519,14 +513,14 @@ case 1:
 tr124:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 	goto st2;
 st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 530 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 524 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 5u: goto st3;
 		case 13u: goto st3;
@@ -565,7 +559,7 @@ case 2:
 tr125:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 	goto st3;
 tr296:
@@ -579,7 +573,7 @@ st3:
 	if ( ++p == pe )
 		goto _test_eof3;
 case 3:
-#line 583 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 577 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st4;
 st4:
 	if ( ++p == pe )
@@ -599,57 +593,57 @@ case 6:
 tr126:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 	goto st7;
 st7:
 	if ( ++p == pe )
 		goto _test_eof7;
 case 7:
-#line 610 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 604 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto tr10;
 tr127:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 	goto st8;
 st8:
 	if ( ++p == pe )
 		goto _test_eof8;
 case 8:
-#line 622 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 616 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st7;
 tr128:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 	goto st9;
 st9:
 	if ( ++p == pe )
 		goto _test_eof9;
 case 9:
-#line 634 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 628 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st3;
 tr53:
 #line 46 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    disp_type = DISP32;
-    disp = p - 3;
+    SET_DISP_TYPE(DISP32);
+    SET_DISP_PTR(p - 3);
   }
 	goto st10;
 tr54:
 #line 42 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    disp_type = DISP8;
-    disp = p;
+    SET_DISP_TYPE(DISP8);
+    SET_DISP_PTR(p);
   }
 	goto st10;
 tr96:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 	goto st10;
 tr253:
@@ -671,20 +665,20 @@ st10:
 	if ( ++p == pe )
 		goto _test_eof10;
 case 10:
-#line 675 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 669 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto tr11;
 tr147:
 #line 46 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    disp_type = DISP32;
-    disp = p - 3;
+    SET_DISP_TYPE(DISP32);
+    SET_DISP_PTR(p - 3);
   }
 	goto st11;
 tr148:
 #line 42 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    disp_type = DISP8;
-    disp = p;
+    SET_DISP_TYPE(DISP8);
+    SET_DISP_PTR(p);
   }
 	goto st11;
 tr282:
@@ -698,7 +692,7 @@ st11:
 	if ( ++p == pe )
 		goto _test_eof11;
 case 11:
-#line 702 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 696 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st12;
 st12:
 	if ( ++p == pe )
@@ -723,7 +717,7 @@ tr19:
         goto error_detected;
     }
 	goto st0;
-#line 727 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 721 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 st0:
 cs = 0;
 	goto _out;
@@ -738,7 +732,7 @@ st15:
 	if ( ++p == pe )
 		goto _test_eof15;
 case 15:
-#line 742 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 736 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 0u: goto st16;
 		case 1u: goto st17;
@@ -977,22 +971,22 @@ case 19:
 tr42:
 #line 46 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    disp_type = DISP32;
-    disp = p - 3;
+    SET_DISP_TYPE(DISP32);
+    SET_DISP_PTR(p - 3);
   }
 	goto st20;
 tr43:
 #line 42 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    disp_type = DISP8;
-    disp = p;
+    SET_DISP_TYPE(DISP8);
+    SET_DISP_PTR(p);
   }
 	goto st20;
 st20:
 	if ( ++p == pe )
 		goto _test_eof20;
 case 20:
-#line 996 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 990 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 138u: goto tr0;
 		case 142u: goto tr0;
@@ -1101,19 +1095,19 @@ case 28:
 tr87:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 	goto st29;
 tr259:
 #line 36 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    repnz_prefix = FALSE;
+    SET_REPNZ_PREFIX(FALSE);
   }
 	goto st29;
 tr269:
 #line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    repz_prefix = FALSE;
+    SET_REPZ_PREFIX(FALSE);
   }
 	goto st29;
 tr294:
@@ -1127,24 +1121,16 @@ st29:
 	if ( ++p == pe )
 		goto _test_eof29;
 case 29:
-#line 1131 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1125 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
-		case 5u: goto st3;
 		case 12u: goto st2;
-		case 13u: goto st3;
 		case 20u: goto st2;
-		case 21u: goto st3;
 		case 28u: goto st2;
-		case 29u: goto st3;
 		case 36u: goto st2;
-		case 37u: goto st3;
 		case 44u: goto st2;
-		case 45u: goto st3;
 		case 52u: goto st2;
-		case 53u: goto st3;
 		case 60u: goto st2;
-		case 61u: goto st3;
 		case 68u: goto st8;
 		case 76u: goto st8;
 		case 84u: goto st8;
@@ -1162,15 +1148,39 @@ case 29:
 		case 180u: goto st9;
 		case 188u: goto st9;
 	}
-	if ( (*p) < 64u ) {
-		if ( (*p) <= 63u )
+	if ( (*p) < 38u ) {
+		if ( (*p) < 14u ) {
+			if ( (*p) > 3u ) {
+				if ( 6u <= (*p) && (*p) <= 11u )
+					goto tr0;
+			} else
+				goto tr0;
+		} else if ( (*p) > 19u ) {
+			if ( (*p) > 27u ) {
+				if ( 30u <= (*p) && (*p) <= 35u )
+					goto tr0;
+			} else if ( (*p) >= 22u )
+				goto tr0;
+		} else
 			goto tr0;
-	} else if ( (*p) > 127u ) {
-		if ( 128u <= (*p) && (*p) <= 191u )
-			goto st3;
+	} else if ( (*p) > 43u ) {
+		if ( (*p) < 62u ) {
+			if ( (*p) > 51u ) {
+				if ( 54u <= (*p) && (*p) <= 59u )
+					goto tr0;
+			} else if ( (*p) >= 46u )
+				goto tr0;
+		} else if ( (*p) > 63u ) {
+			if ( (*p) > 127u ) {
+				if ( 192u <= (*p) )
+					goto tr19;
+			} else if ( (*p) >= 64u )
+				goto st7;
+		} else
+			goto tr0;
 	} else
-		goto st7;
-	goto tr19;
+		goto tr0;
+	goto st3;
 st30:
 	if ( ++p == pe )
 		goto _test_eof30;
@@ -1227,45 +1237,45 @@ case 31:
 tr90:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 	goto st32;
 tr263:
 #line 36 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    repnz_prefix = FALSE;
+    SET_REPNZ_PREFIX(FALSE);
   }
 	goto st32;
 tr271:
 #line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    repz_prefix = FALSE;
+    SET_REPZ_PREFIX(FALSE);
   }
 	goto st32;
 st32:
 	if ( ++p == pe )
 		goto _test_eof32;
 case 32:
-#line 1250 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1260 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( 192u <= (*p) )
 		goto tr0;
 	goto tr19;
 tr91:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 	goto st33;
 tr261:
 #line 36 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    repnz_prefix = FALSE;
+    SET_REPNZ_PREFIX(FALSE);
   }
 	goto st33;
 tr270:
 #line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    repz_prefix = FALSE;
+    SET_REPZ_PREFIX(FALSE);
   }
 	goto st33;
 tr290:
@@ -1279,7 +1289,7 @@ st33:
 	if ( ++p == pe )
 		goto _test_eof33;
 case 33:
-#line 1283 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1293 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st34;
 		case 5u: goto st35;
@@ -1323,14 +1333,14 @@ case 33:
 tr97:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 	goto st34;
 st34:
 	if ( ++p == pe )
 		goto _test_eof34;
 case 34:
-#line 1334 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1344 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 5u: goto st35;
 		case 13u: goto st35;
@@ -1369,14 +1379,14 @@ case 34:
 tr98:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 	goto st35;
 st35:
 	if ( ++p == pe )
 		goto _test_eof35;
 case 35:
-#line 1380 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1390 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st36;
 st36:
 	if ( ++p == pe )
@@ -1396,38 +1406,38 @@ case 38:
 tr99:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 	goto st39;
 st39:
 	if ( ++p == pe )
 		goto _test_eof39;
 case 39:
-#line 1407 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1417 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto tr54;
 tr100:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 	goto st40;
 st40:
 	if ( ++p == pe )
 		goto _test_eof40;
 case 40:
-#line 1419 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1429 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st39;
 tr101:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 	goto st41;
 st41:
 	if ( ++p == pe )
 		goto _test_eof41;
 case 41:
-#line 1431 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1441 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st35;
 st42:
 	if ( ++p == pe )
@@ -1463,7 +1473,7 @@ st44:
 	if ( ++p == pe )
 		goto _test_eof44;
 case 44:
-#line 1467 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1477 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st45;
 st45:
 	if ( ++p == pe )
@@ -1525,14 +1535,14 @@ case 48:
 tr95:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = FALSE;
+    SET_DATA16_PREFIX(FALSE);
   }
 	goto st49;
 st49:
 	if ( ++p == pe )
 		goto _test_eof49;
 case 49:
-#line 1536 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1546 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( 192u <= (*p) )
 		goto st10;
 	goto tr19;
@@ -1563,7 +1573,7 @@ tr284:
      }
 #line 4 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    branch_not_taken = TRUE;
+    SET_BRANCH_NOT_TAKEN(TRUE);
   }
 	goto st51;
 tr285:
@@ -1574,14 +1584,14 @@ tr285:
      }
 #line 7 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    branch_taken = TRUE;
+    SET_BRANCH_TAKEN(TRUE);
   }
 	goto st51;
 st51:
 	if ( ++p == pe )
 		goto _test_eof51;
 case 51:
-#line 1585 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1595 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) == 15u )
 		goto st52;
 	if ( 112u <= (*p) && (*p) <= 127u )
@@ -1605,7 +1615,7 @@ st53:
 	if ( ++p == pe )
 		goto _test_eof53;
 case 53:
-#line 1609 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1619 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto tr61;
 tr287:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
@@ -1618,7 +1628,7 @@ st54:
 	if ( ++p == pe )
 		goto _test_eof54;
 case 54:
-#line 1622 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1632 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 139u: goto st55;
 		case 161u: goto st56;
@@ -1675,14 +1685,14 @@ tr288:
      }
 #line 10 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = TRUE;
+    SET_DATA16_PREFIX(TRUE);
   }
 	goto st60;
 st60:
 	if ( ++p == pe )
 		goto _test_eof60;
 case 60:
-#line 1686 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1696 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 1u: goto st1;
 		case 3u: goto st1;
@@ -1756,15 +1766,15 @@ case 60:
 tr122:
 #line 46 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    disp_type = DISP32;
-    disp = p - 3;
+    SET_DISP_TYPE(DISP32);
+    SET_DISP_PTR(p - 3);
   }
 	goto st61;
 tr123:
 #line 42 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    disp_type = DISP8;
-    disp = p;
+    SET_DISP_TYPE(DISP8);
+    SET_DISP_PTR(p);
   }
 	goto st61;
 tr303:
@@ -1778,7 +1788,7 @@ st61:
 	if ( ++p == pe )
 		goto _test_eof61;
 case 61:
-#line 1782 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1792 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st62;
 st62:
 	if ( ++p == pe )
@@ -2259,7 +2269,7 @@ st95:
 	if ( ++p == pe )
 		goto _test_eof95;
 case 95:
-#line 2263 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2273 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st34;
 		case 5u: goto st35;
@@ -2347,7 +2357,7 @@ st97:
 	if ( ++p == pe )
 		goto _test_eof97;
 case 97:
-#line 2351 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2361 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -2405,20 +2415,20 @@ case 97:
 tr77:
 #line 13 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    lock_prefix = TRUE;
+    SET_LOCK_PREFIX(TRUE);
   }
 	goto st98;
 tr255:
 #line 10 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = TRUE;
+    SET_DATA16_PREFIX(TRUE);
   }
 	goto st98;
 st98:
 	if ( ++p == pe )
 		goto _test_eof98;
 case 98:
-#line 2422 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2432 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 1u: goto st29;
 		case 3u: goto st29;
@@ -2563,20 +2573,20 @@ case 102:
 tr78:
 #line 22 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    repnz_prefix = TRUE;
+    SET_REPNZ_PREFIX(TRUE);
   }
 	goto st103;
 tr258:
 #line 10 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = TRUE;
+    SET_DATA16_PREFIX(TRUE);
   }
 	goto st103;
 st103:
 	if ( ++p == pe )
 		goto _test_eof103;
 case 103:
-#line 2580 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2590 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 15u: goto st104;
 		case 167u: goto tr0;
@@ -2600,24 +2610,24 @@ case 105:
 tr79:
 #line 19 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    repz_prefix = TRUE;
+    SET_REPZ_PREFIX(TRUE);
   }
 #line 16 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    repz_prefix = TRUE;
+    SET_REPZ_PREFIX(TRUE);
   }
 	goto st106;
 tr267:
 #line 10 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    data16_prefix = TRUE;
+    SET_DATA16_PREFIX(TRUE);
   }
 	goto st106;
 st106:
 	if ( ++p == pe )
 		goto _test_eof106;
 case 106:
-#line 2621 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2631 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 15u: goto st107;
 		case 165u: goto tr0;
@@ -2753,7 +2763,7 @@ st110:
 	if ( ++p == pe )
 		goto _test_eof110;
 case 110:
-#line 2757 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2767 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st111;
 		case 5u: goto st112;
@@ -2879,7 +2889,7 @@ st119:
 	if ( ++p == pe )
 		goto _test_eof119;
 case 119:
-#line 2883 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2893 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st34;
 		case 5u: goto st35;
@@ -2950,7 +2960,7 @@ st242:
 	if ( ++p == pe )
 		goto _test_eof242;
 case 242:
-#line 2954 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2964 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr281;
 		case 5u: goto tr282;
@@ -3104,7 +3114,7 @@ st121:
 	if ( ++p == pe )
 		goto _test_eof121;
 case 121:
-#line 3108 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3118 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -3160,7 +3170,7 @@ st122:
 	if ( ++p == pe )
 		goto _test_eof122;
 case 122:
-#line 3164 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3174 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -3224,14 +3234,14 @@ case 123:
 tr161:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st124;
 st124:
 	if ( ++p == pe )
 		goto _test_eof124;
 case 124:
-#line 3235 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3245 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 166u: goto st125;
 		case 182u: goto st125;
@@ -3304,22 +3314,22 @@ case 125:
 tr175:
 #line 46 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    disp_type = DISP32;
-    disp = p - 3;
+    SET_DISP_TYPE(DISP32);
+    SET_DISP_PTR(p - 3);
   }
 	goto st126;
 tr176:
 #line 42 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    disp_type = DISP8;
-    disp = p;
+    SET_DISP_TYPE(DISP8);
+    SET_DISP_PTR(p);
   }
 	goto st126;
 st126:
 	if ( ++p == pe )
 		goto _test_eof126;
 case 126:
-#line 3323 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3333 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 0u: goto tr0;
 		case 16u: goto tr0;
@@ -3408,28 +3418,28 @@ case 134:
 tr162:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st135;
 st135:
 	if ( ++p == pe )
 		goto _test_eof135;
 case 135:
-#line 3419 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3429 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) == 162u )
 		goto st125;
 	goto tr19;
 tr163:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st136;
 st136:
 	if ( ++p == pe )
 		goto _test_eof136;
 case 136:
-#line 3433 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3443 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 166u: goto st125;
 		case 182u: goto st125;
@@ -3461,14 +3471,14 @@ case 136:
 tr164:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st137;
 st137:
 	if ( ++p == pe )
 		goto _test_eof137;
 case 137:
-#line 3472 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3482 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( 162u <= (*p) && (*p) <= 163u )
 		goto st125;
 	goto tr19;
@@ -3499,14 +3509,14 @@ case 138:
 tr177:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st139;
 st139:
 	if ( ++p == pe )
 		goto _test_eof139;
 case 139:
-#line 3510 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3520 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 1u: goto st140;
 		case 2u: goto st141;
@@ -3607,14 +3617,14 @@ case 141:
 tr178:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st142;
 st142:
 	if ( ++p == pe )
 		goto _test_eof142;
 case 142:
-#line 3618 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3628 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 1u: goto st140;
 		case 2u: goto st141;
@@ -3653,28 +3663,28 @@ case 143:
 tr179:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st144;
 st144:
 	if ( ++p == pe )
 		goto _test_eof144;
 case 144:
-#line 3664 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3674 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( 128u <= (*p) && (*p) <= 129u )
 		goto st1;
 	goto tr19;
 tr180:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st145;
 st145:
 	if ( ++p == pe )
 		goto _test_eof145;
 case 145:
-#line 3678 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3688 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( 144u <= (*p) && (*p) <= 155u )
 		goto st1;
 	goto tr19;
@@ -3696,14 +3706,14 @@ case 146:
 tr184:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st147;
 st147:
 	if ( ++p == pe )
 		goto _test_eof147;
 case 147:
-#line 3707 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3717 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) == 18u )
 		goto st148;
 	goto tr19;
@@ -3736,14 +3746,14 @@ case 148:
 tr185:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st149;
 st149:
 	if ( ++p == pe )
 		goto _test_eof149;
 case 149:
-#line 3747 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3757 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 16u: goto st110;
 		case 18u: goto st148;
@@ -3760,7 +3770,7 @@ st150:
 	if ( ++p == pe )
 		goto _test_eof150;
 case 150:
-#line 3764 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3774 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 225u: goto st151;
 		case 226u: goto st169;
@@ -3836,21 +3846,21 @@ case 151:
 tr191:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st152;
 tr236:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
-    vex_prefix3 = p[0] & 0x7f;
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st152;
 st152:
 	if ( ++p == pe )
 		goto _test_eof152;
 case 152:
-#line 3854 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3864 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto st1;
 		case 23u: goto st29;
@@ -3873,21 +3883,21 @@ case 152:
 tr192:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st153;
 tr237:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
-    vex_prefix3 = p[0] & 0x7f;
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st153;
 st153:
 	if ( ++p == pe )
 		goto _test_eof153;
 case 153:
-#line 3891 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3901 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto st29;
 		case 81u: goto st1;
@@ -3947,14 +3957,14 @@ case 154:
 tr193:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st155;
 st155:
 	if ( ++p == pe )
 		goto _test_eof155;
 case 155:
-#line 3958 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3968 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 42u: goto st1;
 		case 81u: goto st1;
@@ -3970,14 +3980,14 @@ case 155:
 tr194:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st156;
 st156:
 	if ( ++p == pe )
 		goto _test_eof156;
 case 156:
-#line 3981 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3991 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 42u: goto st1;
 		case 81u: goto st1;
@@ -3996,21 +4006,21 @@ case 156:
 tr195:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st157;
 tr240:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
-    vex_prefix3 = p[0] & 0x7f;
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st157;
 st157:
 	if ( ++p == pe )
 		goto _test_eof157;
 case 157:
-#line 4014 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4024 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 81u: goto st1;
 		case 194u: goto st33;
@@ -4028,21 +4038,21 @@ case 157:
 tr196:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st158;
 tr241:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
-    vex_prefix3 = p[0] & 0x7f;
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st158;
 st158:
 	if ( ++p == pe )
 		goto _test_eof158;
 case 158:
-#line 4046 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4056 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 81u: goto st1;
 		case 194u: goto st33;
@@ -4064,42 +4074,42 @@ case 158:
 tr197:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st159;
 tr242:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
-    vex_prefix3 = p[0] & 0x7f;
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st159;
 st159:
 	if ( ++p == pe )
 		goto _test_eof159;
 case 159:
-#line 4082 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4092 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( 16u <= (*p) && (*p) <= 17u )
 		goto st32;
 	goto tr19;
 tr198:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st160;
 tr243:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
-    vex_prefix3 = p[0] & 0x7f;
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st160;
 st160:
 	if ( ++p == pe )
 		goto _test_eof160;
 case 160:
-#line 4103 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4113 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) == 208u )
 		goto st1;
 	if ( (*p) > 17u ) {
@@ -4111,21 +4121,21 @@ case 160:
 tr199:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st161;
 tr244:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
-    vex_prefix3 = p[0] & 0x7f;
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st161;
 st161:
 	if ( ++p == pe )
 		goto _test_eof161;
 case 161:
-#line 4129 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4139 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 19u: goto st29;
 		case 23u: goto st29;
@@ -4151,21 +4161,21 @@ case 161:
 tr200:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st162;
 tr245:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
-    vex_prefix3 = p[0] & 0x7f;
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st162;
 st162:
 	if ( ++p == pe )
 		goto _test_eof162;
 case 162:
-#line 4169 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4179 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 43u: goto st29;
 		case 80u: goto st32;
@@ -4224,14 +4234,14 @@ case 162:
 tr201:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st163;
 st163:
 	if ( ++p == pe )
 		goto _test_eof163;
 case 163:
-#line 4235 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4245 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto st1;
 		case 22u: goto st1;
@@ -4259,14 +4269,14 @@ case 163:
 tr202:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st164;
 st164:
 	if ( ++p == pe )
 		goto _test_eof164;
 case 164:
-#line 4270 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4280 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto st1;
 		case 42u: goto st1;
@@ -4295,21 +4305,21 @@ case 164:
 tr203:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st165;
 tr248:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
-    vex_prefix3 = p[0] & 0x7f;
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st165;
 st165:
 	if ( ++p == pe )
 		goto _test_eof165;
 case 165:
-#line 4313 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4323 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 43u: goto st29;
 		case 80u: goto st32;
@@ -4332,21 +4342,21 @@ case 165:
 tr204:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st166;
 tr249:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
-    vex_prefix3 = p[0] & 0x7f;
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st166;
 st166:
 	if ( ++p == pe )
 		goto _test_eof166;
 case 166:
-#line 4350 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4360 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 43u: goto st29;
 		case 80u: goto st32;
@@ -4376,21 +4386,21 @@ case 166:
 tr205:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st167;
 tr250:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
-    vex_prefix3 = p[0] & 0x7f;
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st167;
 st167:
 	if ( ++p == pe )
 		goto _test_eof167;
 case 167:
-#line 4394 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4404 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto st1;
 		case 22u: goto st1;
@@ -4404,21 +4414,21 @@ case 167:
 tr206:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st168;
 tr251:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
-    vex_prefix3 = p[0] & 0x7f;
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st168;
 st168:
 	if ( ++p == pe )
 		goto _test_eof168;
 case 168:
-#line 4422 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4432 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto st1;
 		case 208u: goto st1;
@@ -4481,14 +4491,14 @@ case 169:
 tr208:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st170;
 st170:
 	if ( ++p == pe )
 		goto _test_eof170;
 case 170:
-#line 4492 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4502 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 242u: goto st1;
 		case 243u: goto st171;
@@ -4528,14 +4538,14 @@ case 171:
 tr209:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st172;
 st172:
 	if ( ++p == pe )
 		goto _test_eof172;
 case 172:
-#line 4539 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4549 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) == 43u )
 		goto st1;
 	if ( (*p) < 55u ) {
@@ -4565,14 +4575,14 @@ case 172:
 tr210:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st173;
 st173:
 	if ( ++p == pe )
 		goto _test_eof173;
 case 173:
-#line 4576 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4586 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 154u: goto st1;
 		case 156u: goto st1;
@@ -4602,14 +4612,14 @@ case 173:
 tr211:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st174;
 st174:
 	if ( ++p == pe )
 		goto _test_eof174;
 case 174:
-#line 4613 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4623 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 19u: goto st1;
 		case 23u: goto st1;
@@ -4652,14 +4662,14 @@ case 174:
 tr212:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st175;
 st175:
 	if ( ++p == pe )
 		goto _test_eof175;
 case 175:
-#line 4663 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4673 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 19u: goto st1;
 		case 23u: goto st1;
@@ -4694,14 +4704,14 @@ case 175:
 tr213:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st176;
 st176:
 	if ( ++p == pe )
 		goto _test_eof176;
 case 176:
-#line 4705 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4715 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) < 166u ) {
 		if ( 150u <= (*p) && (*p) <= 159u )
 			goto st1;
@@ -4714,14 +4724,14 @@ case 176:
 tr214:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st177;
 st177:
 	if ( ++p == pe )
 		goto _test_eof177;
 case 177:
-#line 4725 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4735 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 154u: goto st1;
 		case 156u: goto st1;
@@ -4784,14 +4794,14 @@ case 178:
 tr216:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st179;
 st179:
 	if ( ++p == pe )
 		goto _test_eof179;
 case 179:
-#line 4795 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4805 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 33u: goto st33;
 		case 68u: goto st33;
@@ -4865,22 +4875,22 @@ case 180:
 tr233:
 #line 46 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    disp_type = DISP32;
-    disp = p - 3;
+    SET_DISP_TYPE(DISP32);
+    SET_DISP_PTR(p - 3);
   }
 	goto st181;
 tr234:
 #line 42 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    disp_type = DISP8;
-    disp = p;
+    SET_DISP_TYPE(DISP8);
+    SET_DISP_PTR(p);
   }
 	goto st181;
 st181:
 	if ( ++p == pe )
 		goto _test_eof181;
 case 181:
-#line 4884 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4894 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) < 48u ) {
 		if ( (*p) < 16u ) {
 			if ( (*p) <= 3u )
@@ -4982,14 +4992,14 @@ case 189:
 tr217:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st190;
 st190:
 	if ( ++p == pe )
 		goto _test_eof190;
 case 190:
-#line 4993 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5003 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 6u: goto st33;
 		case 64u: goto st33;
@@ -5024,14 +5034,14 @@ case 190:
 tr218:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st191;
 st191:
 	if ( ++p == pe )
 		goto _test_eof191;
 case 191:
-#line 5035 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5045 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 23u: goto st192;
 		case 29u: goto st33;
@@ -5137,14 +5147,14 @@ case 192:
 tr219:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st193;
 st193:
 	if ( ++p == pe )
 		goto _test_eof193;
 case 193:
-#line 5148 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5158 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 29u: goto st33;
 		case 64u: goto st33;
@@ -5185,14 +5195,14 @@ case 193:
 tr220:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st194;
 st194:
 	if ( ++p == pe )
 		goto _test_eof194;
 case 194:
-#line 5196 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5206 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) < 92u ) {
 		if ( 72u <= (*p) && (*p) <= 73u )
 			goto st180;
@@ -5208,14 +5218,14 @@ case 194:
 tr221:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    vex_prefix3 = *p;
+    SET_VEX_PREFIX3(*p);
   }
 	goto st195;
 st195:
 	if ( ++p == pe )
 		goto _test_eof195;
 case 195:
-#line 5219 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5229 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) < 104u ) {
 		if ( (*p) > 73u ) {
 			if ( 92u <= (*p) && (*p) <= 95u )
@@ -5245,7 +5255,7 @@ st196:
 	if ( ++p == pe )
 		goto _test_eof196;
 case 196:
-#line 5249 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5259 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 193u: goto tr237;
 		case 194u: goto tr238;
@@ -5312,14 +5322,14 @@ tr238:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
-    vex_prefix3 = p[0] & 0x7f;
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st197;
 st197:
 	if ( ++p == pe )
 		goto _test_eof197;
 case 197:
-#line 5323 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5333 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 81u: goto st1;
 		case 83u: goto st1;
@@ -5335,14 +5345,14 @@ tr239:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
-    vex_prefix3 = p[0] & 0x7f;
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st198;
 st198:
 	if ( ++p == pe )
 		goto _test_eof198;
 case 198:
-#line 5346 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5356 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 81u: goto st1;
 		case 194u: goto st33;
@@ -5361,14 +5371,14 @@ tr246:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
-    vex_prefix3 = p[0] & 0x7f;
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st199;
 st199:
 	if ( ++p == pe )
 		goto _test_eof199;
 case 199:
-#line 5372 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5382 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto st1;
 		case 22u: goto st1;
@@ -5393,14 +5403,14 @@ tr247:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
-    vex_prefix3 = p[0] & 0x7f;
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st200;
 st200:
 	if ( ++p == pe )
 		goto _test_eof200;
 case 200:
-#line 5404 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5414 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto st1;
 		case 81u: goto st1;
@@ -5433,7 +5443,7 @@ st201:
 	if ( ++p == pe )
 		goto _test_eof201;
 case 201:
-#line 5437 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5447 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st34;
 		case 5u: goto st35;
@@ -5463,7 +5473,7 @@ st202:
 	if ( ++p == pe )
 		goto _test_eof202;
 case 202:
-#line 5467 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5477 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st111;
 		case 5u: goto st112;
@@ -5493,7 +5503,7 @@ st203:
 	if ( ++p == pe )
 		goto _test_eof203;
 case 203:
-#line 5497 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5507 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st204;
 st204:
 	if ( ++p == pe )
@@ -5511,7 +5521,7 @@ st205:
 	if ( ++p == pe )
 		goto _test_eof205;
 case 205:
-#line 5515 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5525 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -5584,7 +5594,7 @@ st206:
 	if ( ++p == pe )
 		goto _test_eof206;
 case 206:
-#line 5588 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5598 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -5642,7 +5652,7 @@ st207:
 	if ( ++p == pe )
 		goto _test_eof207;
 case 207:
-#line 5646 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5656 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -5725,7 +5735,7 @@ st208:
 	if ( ++p == pe )
 		goto _test_eof208;
 case 208:
-#line 5729 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5739 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -5780,7 +5790,7 @@ st209:
 	if ( ++p == pe )
 		goto _test_eof209;
 case 209:
-#line 5784 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5794 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -5849,7 +5859,7 @@ st210:
 	if ( ++p == pe )
 		goto _test_eof210;
 case 210:
-#line 5853 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5863 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -5907,7 +5917,7 @@ st211:
 	if ( ++p == pe )
 		goto _test_eof211;
 case 211:
-#line 5911 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5921 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -5965,14 +5975,14 @@ tr313:
      }
 #line 13 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    lock_prefix = TRUE;
+    SET_LOCK_PREFIX(TRUE);
   }
 	goto st212;
 st212:
 	if ( ++p == pe )
 		goto _test_eof212;
 case 212:
-#line 5976 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5986 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 15u: goto st213;
 		case 102u: goto tr255;
@@ -6073,14 +6083,14 @@ tr314:
      }
 #line 22 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    repnz_prefix = TRUE;
+    SET_REPNZ_PREFIX(TRUE);
   }
 	goto st215;
 st215:
 	if ( ++p == pe )
 		goto _test_eof215;
 case 215:
-#line 6084 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6094 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 15u: goto st216;
 		case 102u: goto tr258;
@@ -6133,14 +6143,14 @@ case 217:
 tr262:
 #line 36 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    repnz_prefix = FALSE;
+    SET_REPNZ_PREFIX(FALSE);
   }
 	goto st218;
 st218:
 	if ( ++p == pe )
 		goto _test_eof218;
 case 218:
-#line 6144 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6154 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( 192u <= (*p) )
 		goto st219;
 	goto tr19;
@@ -6157,18 +6167,18 @@ tr315:
      }
 #line 19 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    repz_prefix = TRUE;
+    SET_REPZ_PREFIX(TRUE);
   }
 #line 16 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    repz_prefix = TRUE;
+    SET_REPZ_PREFIX(TRUE);
   }
 	goto st220;
 st220:
 	if ( ++p == pe )
 		goto _test_eof220;
 case 220:
-#line 6172 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6182 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 15u: goto st221;
 		case 102u: goto tr267;
@@ -6223,7 +6233,7 @@ st222:
 	if ( ++p == pe )
 		goto _test_eof222;
 case 222:
-#line 6227 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6237 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st34;
 		case 5u: goto st35;
@@ -6295,7 +6305,7 @@ st223:
 	if ( ++p == pe )
 		goto _test_eof223;
 case 223:
-#line 6299 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6309 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st111;
 		case 5u: goto st112;
@@ -6367,7 +6377,7 @@ st224:
 	if ( ++p == pe )
 		goto _test_eof224;
 case 224:
-#line 6371 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6381 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -6401,7 +6411,7 @@ st225:
 	if ( ++p == pe )
 		goto _test_eof225;
 case 225:
-#line 6405 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6415 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -6464,7 +6474,7 @@ st243:
 	if ( ++p == pe )
 		goto _test_eof243;
 case 243:
-#line 6468 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6478 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr281;
 		case 5u: goto tr282;
@@ -6618,7 +6628,7 @@ st227:
 	if ( ++p == pe )
 		goto _test_eof227;
 case 227:
-#line 6622 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6632 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -6681,7 +6691,7 @@ st244:
 	if ( ++p == pe )
 		goto _test_eof244;
 case 244:
-#line 6685 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6695 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr281;
 		case 5u: goto tr282;
@@ -6835,7 +6845,7 @@ st229:
 	if ( ++p == pe )
 		goto _test_eof229;
 case 229:
-#line 6839 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6849 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -6898,7 +6908,7 @@ st245:
 	if ( ++p == pe )
 		goto _test_eof245;
 case 245:
-#line 6902 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6912 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr281;
 		case 5u: goto tr282;
@@ -7052,7 +7062,7 @@ st231:
 	if ( ++p == pe )
 		goto _test_eof231;
 case 231:
-#line 7056 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7066 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -7115,7 +7125,7 @@ st246:
 	if ( ++p == pe )
 		goto _test_eof246;
 case 246:
-#line 7119 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7129 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr281;
 		case 5u: goto tr282;
@@ -7269,7 +7279,7 @@ st233:
 	if ( ++p == pe )
 		goto _test_eof233;
 case 233:
-#line 7273 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7283 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -7332,7 +7342,7 @@ st247:
 	if ( ++p == pe )
 		goto _test_eof247;
 case 247:
-#line 7336 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7346 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr281;
 		case 5u: goto tr282;
@@ -7486,7 +7496,7 @@ st235:
 	if ( ++p == pe )
 		goto _test_eof235;
 case 235:
-#line 7490 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7500 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -7549,7 +7559,7 @@ st248:
 	if ( ++p == pe )
 		goto _test_eof248;
 case 248:
-#line 7553 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7563 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr281;
 		case 5u: goto tr282;
@@ -7703,7 +7713,7 @@ st237:
 	if ( ++p == pe )
 		goto _test_eof237;
 case 237:
-#line 7707 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7717 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -7766,7 +7776,7 @@ st249:
 	if ( ++p == pe )
 		goto _test_eof249;
 case 249:
-#line 7770 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7780 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr281;
 		case 5u: goto tr282;
@@ -7920,7 +7930,7 @@ st239:
 	if ( ++p == pe )
 		goto _test_eof239;
 case 239:
-#line 7924 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7934 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -7972,7 +7982,7 @@ st240:
 	if ( ++p == pe )
 		goto _test_eof240;
 case 240:
-#line 7976 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7986 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -8513,14 +8523,14 @@ case 240:
         goto error_detected;
     }
 	break;
-#line 8517 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 8527 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 177 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 171 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
   }
 
   if (CheckJumpTargets(valid_targets, jump_dests, size)) {
