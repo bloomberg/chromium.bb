@@ -47,6 +47,14 @@ Hooks
       { "pattern": "\\.(gif|jpe?g|pr0n|png)$",
         "action":  ["python", "image_indexer.py", "--all"]},
     ]
+
+Specifying a target OS
+  An optional key named "target_os" may be added to a gclient file to specify
+  one or more additional operating systems that should be considered when
+  processing the deps_os dict of a DEPS file.
+
+  Example:
+    target_os = [ "android" ]
 """
 
 __version__ = "0.6.4"
@@ -842,6 +850,10 @@ solutions = [
       exec(content, config_dict)
     except SyntaxError, e:
       gclient_utils.SyntaxErrorToError('.gclient', e)
+
+    # Append any target OS that is not already being enforced to the tuple.
+    target_os = config_dict.get('target_os', [])
+    self._enforced_os = tuple(set(self._enforced_os).union(target_os))
 
     deps_to_add = []
     for s in config_dict.get('solutions', []):

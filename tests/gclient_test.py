@@ -275,6 +275,38 @@ class GclientTest(trial_dir.TestCase):
     work_queue.flush({}, None, [], options=options)
     self.assertEqual(client.GetHooks(options), [x['action'] for x in hooks])
 
+  def testTargetOS(self):
+    """Verifies that specifying a target_os pulls in all relevant dependencies.
+
+    The target_os variable allows specifying the name of an additional OS which
+    should be considered when selecting dependencies from a DEPS' deps_os. The
+    value will be appended to the _enforced_os tuple.
+    """
+
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo",\n'
+        '    "url": "svn://example.com/foo",\n'
+        '  }]\n'
+        'target_os = ["baz"]')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'deps = {\n'
+        '  "foo/dir1": "/dir1",'
+        '}\n'
+        'deps_os = {\n'
+        '  "unix": { "foo/dir2": "/dir2", },\n'
+        '  "baz": { "foo/dir3": "/dir3", },\n'
+        '}')
+
+    parser = gclient.Parser()
+    options, _ = parser.parse_args(['--jobs', '1'])
+    options.deps_os = "unix"
+
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    self.assertEqual(['baz', 'unix'], sorted(obj.enforced_os))
+    
 
 if __name__ == '__main__':
   sys.stdout = gclient_utils.MakeFileAutoFlush(sys.stdout)
