@@ -133,6 +133,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Adds first-time login URLs.
   void InitializeStartUrls() const;
 
+  // Returns Getting Started Guide URL with parameters.
+  std::string GetGettingStartedGuideURL() const;
+
   // Show error message. |error_id| error message ID in resources.
   // If |details| string is not empty, it specify additional error text
   // provided by authenticator, it is not localized.

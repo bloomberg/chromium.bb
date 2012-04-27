@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -59,21 +60,28 @@ namespace {
 // Url for setting up sync authentication.
 const char kSettingsSyncLoginURL[] = "chrome://settings/personal";
 
-// URL that will be opened when user logs in first time on the device.
+// Getting started guide URL, will be opened as in app window for each new
+// user who logs on the device.
+// TODO(nkostylev): Remove this when new URL is live.
+#if defined(NEW_GSG_URL)
+const char kGetStartedURLPattern[] =
+    "http://gweb-gettingstartedguide.appspot.com/";
+#else
 const char kGetStartedURLPattern[] =
     "http://www.gstatic.com/chromebook/gettingstarted/index-%s.html";
-
-// Divider that starts parameters in URL.
-const char kGetStartedParamsStartMark[] = "#";
+#endif
 
 // Parameter to be added to GetStarted URL that contains board.
-const char kGetStartedBoardParam[] = "board=%s";
+const char kGetStartedBoardParam[] = "board";
 
 // Parameter to be added to GetStarted URL
-// when first user signs in for the first time.
-// TODO(nkostylev): Uncomment once server side supports new param format.
-// const char kGetStartedOwnerParam[] = "/first";
-const char kGetStartedOwnerParam[] = "first";
+// when first user signs in for the first time (OOBE case).
+#if defined(NEW_GSG_URL)
+const char kGetStartedOwnerParam[] = "owner";
+const char kGetStartedOwnerParamValue[] = "true";
+#else
+const char kGetStartedOwnerParam[] = "#first";
+#endif
 
 // URL for account creation.
 const char kCreateAccountURL[] =
@@ -680,10 +688,10 @@ gfx::NativeWindow ExistingUserController::GetNativeWindow() const {
 
 void ExistingUserController::InitializeStartUrls() const {
   std::vector<std::string> start_urls;
+  // Guide URL is not added to start URLs as it should be passed as an app.
+  std::string guide_url;
+
   PrefService* prefs = g_browser_process->local_state();
-  const std::string current_locale =
-      StringToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
-  std::string start_url;
   const base::ListValue *urls;
   if (UserManager::Get()->IsLoggedInAsDemoUser() &&
       CrosSettings::Get()->GetList(kStartUpUrls, &urls)) {
@@ -698,48 +706,69 @@ void ExistingUserController::InitializeStartUrls() const {
   } else {
     if (prefs->GetBoolean(prefs::kSpokenFeedbackEnabled)) {
       const char* url = kChromeVoxTutorialURLPattern;
-      start_url = base::StringPrintf(url, current_locale.c_str());
+      const std::string current_locale =
+          StringToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
+      std::string vox_url = base::StringPrintf(url, current_locale.c_str());
+      start_urls.push_back(vox_url);
     } else {
-      const char* url = kGetStartedURLPattern;
-      start_url = base::StringPrintf(url, current_locale.c_str());
-      std::string params_str;
-#if 0
-      const char kMachineInfoBoard[] = "CHROMEOS_RELEASE_BOARD";
-      std::string board;
-      system::StatisticsProvider* provider =
-          system::StatisticsProvider::GetInstance();
-      if (!provider->GetMachineStatistic(kMachineInfoBoard, &board))
-        LOG(ERROR) << "Failed to get board information";
-      if (!board.empty()) {
-        params_str.append(base::StringPrintf(kGetStartedBoardParam,
-                                             board.c_str()));
-      }
-#endif
-      if (is_owner_login_)
-        params_str.append(kGetStartedOwnerParam);
-      if (!params_str.empty()) {
-        params_str.insert(0, kGetStartedParamsStartMark);
-        start_url.append(params_str);
-      }
+      guide_url = GetGettingStartedGuideURL();
     }
-    start_urls.push_back(start_url);
   }
 
   ServicesCustomizationDocument* customization =
       ServicesCustomizationDocument::GetInstance();
   if (!ServicesCustomizationDocument::WasApplied() &&
       customization->IsReady()) {
-    std::string locale = g_browser_process->GetApplicationLocale();
-    std::string initial_start_page =
-        customization->GetInitialStartPage(locale);
-    if (!initial_start_page.empty())
-      start_urls.push_back(initial_start_page);
+    // Since we don't use OEM start URL anymore, just mark as applied.
     customization->ApplyCustomization();
   }
 
-  for (size_t i = 0; i < start_urls.size(); ++i)
-    CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
+  if (!guide_url.empty()) {
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kApp,
+                                                        guide_url);
+  } else {
+    // We should not be adding any start URLs if guide
+    // is defined as it launches as a standalone app window.
+    for (size_t i = 0; i < start_urls.size(); ++i)
+      CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
+  }
 }
+
+#if defined(NEW_GSG_URL)
+std::string ExistingUserController::GetGettingStartedGuideURL() const {
+  GURL guide_url(kGetStartedURLPattern);
+  std::string board;
+  const char kMachineInfoBoard[] = "CHROMEOS_RELEASE_BOARD";
+  system::StatisticsProvider* provider =
+      system::StatisticsProvider::GetInstance();
+  if (!provider->GetMachineStatistic(kMachineInfoBoard, &board))
+    LOG(ERROR) << "Failed to get board information";
+  if (!board.empty()) {
+    guide_url = chrome_browser_net::AppendQueryParameter(guide_url,
+                                                         kGetStartedBoardParam,
+                                                         board);
+  }
+  if (is_owner_login_) {
+    guide_url = chrome_browser_net::AppendQueryParameter(
+        guide_url,
+        kGetStartedOwnerParam,
+        kGetStartedOwnerParamValue);
+  }
+  guide_url = google_util::AppendGoogleLocaleParam(guide_url);
+  return guide_url.spec();
+}
+#else
+std::string ExistingUserController::GetGettingStartedGuideURL() const {
+  const char* url = kGetStartedURLPattern;
+  PrefService* prefs = g_browser_process->local_state();
+  const std::string current_locale =
+      StringToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
+  std::string guide_url = base::StringPrintf(url, current_locale.c_str());
+  if (is_owner_login_)
+    guide_url.append(kGetStartedOwnerParam);
+  return guide_url;
+}
+#endif
 
 void ExistingUserController::ShowError(int error_id,
                                        const std::string& details) {
