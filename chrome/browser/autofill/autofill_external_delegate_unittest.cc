@@ -14,6 +14,7 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "ui/gfx/rect.h"
 #include "webkit/forms/form_data.h"
 #include "webkit/forms/form_field.h"
@@ -22,6 +23,7 @@ using content::BrowserThread;
 using testing::_;
 using webkit::forms::FormData;
 using webkit::forms::FormField;
+using WebKit::WebAutofillClient;
 
 namespace {
 
@@ -44,6 +46,8 @@ class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
                     const webkit::forms::FormData& form,
                     const webkit::forms::FormField& field,
                     const gfx::Rect& bounds));
+
+  MOCK_METHOD0(ClearPreviewedForm, void());
 
   MOCK_METHOD0(HideAutofillPopup, void());
 
@@ -123,6 +127,9 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
 
   EXPECT_CALL(*external_delegate_, HideAutofillPopup());
 
+  // Called by DidAutofillSuggestions, add expectation to remove warning.
+  EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _));
+
   // This should trigger a call to hide the popup since
   // we've selected an option.
   external_delegate_->DidAcceptAutofillSuggestions(autofill_item[0],
@@ -139,4 +146,22 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {
   // Ensure it doesn't try to fill the form in with the negative id.
   EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _)).Times(0);
   external_delegate_->DidAcceptAutofillSuggestions(string16(), -1, 0);
+}
+
+// Test that the ClearPreview IPC is only sent the form was being previewed
+// (i.e. it isn't autofilling a password).
+TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
+  // Called by SelectAutofillSuggestionAtIndex, add expectation to remove
+  // warning.
+  EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _));
+
+  // Ensure selecting a new password entries or Autofill entries will
+  // cause any previews to get cleared.
+  EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
+  external_delegate_->SelectAutofillSuggestionAtIndex(
+      WebAutofillClient::MenuItemIDPasswordEntry,
+      0);
+
+  EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
+  external_delegate_->SelectAutofillSuggestionAtIndex(1, 0);
 }

@@ -440,8 +440,6 @@ void AutofillAgent::OnFormDataFilled(int query_id,
                                                        base::TimeTicks::Now()));
       break;
     case AUTOFILL_PREVIEW:
-      didClearAutofillSelection(element_);
-
       PreviewForm(form, element_);
       Send(new AutofillHostMsg_DidPreviewAutofillFormData(routing_id()));
       break;

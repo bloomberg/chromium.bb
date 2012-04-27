@@ -37,12 +37,14 @@ AutofillExternalDelegate::AutofillExternalDelegate(
 
 void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int unique_id,
                                                                int list_index) {
-  if (unique_id == WebAutofillClient::MenuItemIDPasswordEntry)
-    return;
-
   if (list_index == suggestions_options_index_ ||
       list_index == suggestions_clear_index_ ||
       unique_id == WebAutofillClient::MenuItemIDWarningMessage)
+    return;
+
+  ClearPreviewedForm();
+
+  if (unique_id == WebAutofillClient::MenuItemIDPasswordEntry)
     return;
 
   FillAutofillFormData(unique_id, true);

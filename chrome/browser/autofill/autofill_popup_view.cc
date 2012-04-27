@@ -76,7 +76,7 @@ void AutofillPopupView::SetSelectedLine(int selected_line) {
   if (selected_line_ != kNoSelection) {
     external_delegate_->SelectAutofillSuggestionAtIndex(
         autofill_unique_ids_[selected_line_],
-        selected_line);
+        selected_line_);
   }
 }
 
