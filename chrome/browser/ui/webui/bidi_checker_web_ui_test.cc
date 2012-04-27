@@ -618,8 +618,15 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
+// Fails on chromeos. http://crbug.com/125367
+#if defined(OS_CHROMEOS)
+#define MAYBE_TestSettingsFrameHandler DISABLED_TestSettingsFrameHandler
+#else
+#define MAYBE_TestSettingsFrameHandler TestSettingsFrameHandler
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       TestSettingsFrameHandler) {
+                       MAYBE_TestSettingsFrameHandler) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += chrome::kHandlerSettingsSubPage;
   RunBidiCheckerOnPage(url);
