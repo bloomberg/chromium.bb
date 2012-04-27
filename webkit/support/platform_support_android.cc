@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
+#include "base/test/test_stub_android.h"
 #include "googleurl/src/gurl.h"
 #include "grit/webkit_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -19,7 +20,10 @@
 namespace webkit_support {
 
 void BeforeInitialize(bool unit_test_mode) {
-  NOTIMPLEMENTED(); // TODO(zhenghao): Implement this function.
+  InitAndroidOSPathStub();
+  // Set XML_CATALOG_FILES environment variable to blank to prevent libxml from
+  // loading and complaining the non-exsistent /etc/xml/catalog file.
+  setenv("XML_CATALOG_FILES", "", 0);
 }
 
 void AfterInitialize(bool unit_test_mode) {
@@ -49,7 +53,6 @@ void BeforeShutdown() {
 }
 
 void AfterShutdown() {
-  NOTIMPLEMENTED(); // TODO(zhenghao): Implement this function.
 }
 
 }  // namespace webkit_support

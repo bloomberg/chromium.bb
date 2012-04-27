@@ -157,6 +157,13 @@ base::MessagePump* CreateMessagePumpForUIStub() {
 
 }  // namespace
 
+void InitAndroidOSPathStub() {
+  PathService::Override(base::DIR_MODULE, FilePath(kAndroidTestTempDirectory));
+  PathService::Override(base::DIR_CACHE, FilePath(kAndroidTestTempDirectory));
+  PathService::Override(base::DIR_ANDROID_APP_DATA,
+                        FilePath(kAndroidTestTempDirectory));
+}
+
 void InitAndroidTestStub() {
   logging::InitLogging(NULL,
                        logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
