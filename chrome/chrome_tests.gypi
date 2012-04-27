@@ -716,7 +716,6 @@
         # less flakier.
         'browser/process_singleton_linux_uitest.cc',
         'browser/ui/tests/browser_uitest.cc',
-        'browser/ui/webui/print_preview/print_preview_ui_uitest.cc',
         'test/automation/automation_proxy_uitest.cc',
         'test/automation/automation_proxy_uitest.h',
         'test/base/chrome_process_util_uitest.cc',
@@ -2959,6 +2958,7 @@
         'browser/ui/webui/options2/options_ui2_browsertest.h',
         'browser/ui/webui/options2/password_manager2_browsertest.js',
         'browser/ui/webui/options2/search_engine_manager2_browsertest.js',
+        'browser/ui/webui/print_preview/print_preview_ui_browsertest.cc',
         'browser/ui/webui/sync_setup_browsertest.js',
         'browser/ui/webui/test_web_dialog_delegate.cc',
         'browser/ui/webui/test_web_dialog_delegate.h',
