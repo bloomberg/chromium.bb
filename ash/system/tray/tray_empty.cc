@@ -5,7 +5,24 @@
 #include "ash/system/tray/tray_empty.h"
 
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/background.h"
 #include "ui/views/view.h"
+
+namespace {
+
+class EmptyBackground : public views::Background {
+ public:
+  EmptyBackground() {}
+  virtual ~EmptyBackground() {}
+
+ private:
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(EmptyBackground);
+};
+
+}
 
 namespace ash {
 namespace internal {
@@ -23,11 +40,12 @@ views::View* TrayEmpty::CreateDefaultView(user::LoginStatus status) {
     return NULL;
 
   views::View* view = new views::View;
-  view->set_background(views::Background::CreateSolidBackground(
-        SkColorSetARGB(0, 0, 0, 0)));
+  view->set_background(new EmptyBackground());
   view->set_border(views::Border::CreateEmptyBorder(10, 0, 0, 0));
   view->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
         0, 0, 0));
+  view->SetPaintToLayer(true);
+  view->SetFillsBoundsOpaquely(false);
   return view;
 }
 

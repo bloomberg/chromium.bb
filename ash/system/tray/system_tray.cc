@@ -40,11 +40,13 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/events.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
@@ -70,16 +72,41 @@ const int kArrowHeight = 10;
 const int kArrowWidth = 20;
 const int kArrowPaddingFromRight = 20;
 
-const int kShadowOffset = 3;
-const int kShadowHeight = 3;
+const int kShadowThickness = 4;
 
 const int kLeftPadding = 4;
 const int kBottomLineHeight = 1;
 
-const SkColor kShadowColor = SkColorSetARGB(25, 0, 0, 0);
+const SkColor kShadowColor = SkColorSetARGB(0xff, 0, 0, 0);
 
 const SkColor kTrayBackgroundAlpha = 100;
 const SkColor kTrayBackgroundHoverAlpha = 150;
+
+void DrawBlurredShadowAroundView(gfx::Canvas* canvas,
+                                 int top,
+                                 int bottom,
+                                 int width,
+                                 const gfx::Insets& inset) {
+  SkPath path;
+  path.incReserve(4);
+  path.moveTo(SkIntToScalar(inset.left() + kShadowThickness),
+              SkIntToScalar(top + kShadowThickness + 1));
+  path.lineTo(SkIntToScalar(inset.left() + kShadowThickness),
+              SkIntToScalar(bottom));
+  path.lineTo(SkIntToScalar(width),
+              SkIntToScalar(bottom));
+  path.lineTo(SkIntToScalar(width),
+              SkIntToScalar(top + kShadowThickness + 1));
+
+  SkPaint paint;
+  paint.setColor(kShadowColor);
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  paint.setStrokeWidth(SkIntToScalar(3));
+  paint.setImageFilter(new SkBlurImageFilter(
+      SkIntToScalar(3), SkIntToScalar(3)))->unref();
+  canvas->sk_canvas()->drawPath(path, paint);
+}
 
 // A view with some special behaviour for tray items in the popup:
 // - changes background color on hover.
@@ -90,6 +117,9 @@ class TrayPopupItemContainer : public views::View {
     set_border(view->border() ? views::Border::CreateEmptyBorder(0, 0, 0, 0) :
                                 NULL);
     SetLayoutManager(new views::FillLayout);
+    SetPaintToLayer(view->layer() != NULL);
+    if (view->layer())
+      SetFillsBoundsOpaquely(view->layer()->fills_bounds_opaquely());
     AddChildView(view);
     SetVisible(view->visible());
   }
@@ -123,10 +153,6 @@ class TrayPopupItemContainer : public views::View {
     if (!view->background()) {
       canvas->FillRect(gfx::Rect(size()),
           hover_ ? kHoverBackgroundColor : kBackgroundColor);
-    } else {
-      canvas->FillRect(gfx::Rect(view->x() + kShadowOffset, view->y(),
-                                 view->width() - kShadowOffset, kShadowHeight),
-                       kShadowColor);
     }
   }
 
@@ -191,41 +217,62 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
   // Overridden from views::Border.
   virtual void Paint(const views::View& view,
                      gfx::Canvas* canvas) const OVERRIDE {
-    // Draw a line first.
+    views::View* first = NULL, *last = NULL;
+    gfx::Insets inset;
+    GetInsets(&inset);
+    for (int i = 0; i < owner_->child_count(); i++) {
+      views::View* v = owner_->child_at(i);
+      if (v->border()) {
+        if (first) {
+          DrawBlurredShadowAroundView(canvas, first->y(),
+              last->y() + last->height(), owner_->width(), inset);
+          first = NULL;
+          last = NULL;
+        }
+        continue;
+      }
+
+      if (!first)
+        first = v;
+      last = v;
+    }
+    if (first) {
+      DrawBlurredShadowAroundView(canvas, first->y(),
+          last->y() + last->height(), owner_->width(), inset);
+    }
+
+    // Draw the bottom line.
     int y = owner_->height() + 1;
     canvas->FillRect(gfx::Rect(kLeftPadding, y, owner_->width(),
                                kBottomLineHeight), kBorderDarkColor);
 
-    // Now, draw a shadow.
-    canvas->FillRect(gfx::Rect(kLeftPadding + kShadowOffset, y,
-                               owner_->width() - kShadowOffset, kShadowHeight),
-                     kShadowColor);
+    if (!Shell::GetInstance()->shelf()->IsVisible())
+      return;
 
-    if (Shell::GetInstance()->shelf()->IsVisible()) {
-      // Draw the arrow.
-      int left_base_x = base::i18n::IsRTL() ? kArrowWidth :
-          owner_->width() - kArrowPaddingFromRight - kArrowWidth;
-      int left_base_y = y;
-      int tip_x = left_base_x + kArrowWidth / 2;
-      int tip_y = left_base_y + kArrowHeight;
-      SkPath path;
-      path.incReserve(4);
-      path.moveTo(SkIntToScalar(left_base_x), SkIntToScalar(left_base_y));
-      path.lineTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
-      path.lineTo(SkIntToScalar(left_base_x + kArrowWidth),
-                  SkIntToScalar(left_base_y));
+    // Draw the arrow.
+    int left_base_x = base::i18n::IsRTL() ? kArrowWidth :
+      owner_->width() - kArrowPaddingFromRight - kArrowWidth;
+    int left_base_y = y;
+    int tip_x = left_base_x + kArrowWidth / 2;
+    int tip_y = left_base_y + kArrowHeight;
+    SkPath path;
+    path.incReserve(4);
+    path.moveTo(SkIntToScalar(left_base_x), SkIntToScalar(left_base_y));
+    path.lineTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
+    path.lineTo(SkIntToScalar(left_base_x + kArrowWidth),
+                SkIntToScalar(left_base_y));
 
-      SkPaint paint;
-      paint.setStyle(SkPaint::kFill_Style);
-      paint.setColor(kBackgroundColor);
-      canvas->DrawPath(path, paint);
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setColor(kBackgroundColor);
+    canvas->DrawPath(path, paint);
 
-      // Now the draw the outline.
-      paint.setStyle(SkPaint::kStroke_Style);
-      paint.setColor(kBorderDarkColor);
-      canvas->DrawPath(path, paint);
-    }
+    // Now draw the arrow border.
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setColor(kBorderDarkColor);
+    canvas->DrawPath(path, paint);
   }
+
   views::View* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubbleBorder);
