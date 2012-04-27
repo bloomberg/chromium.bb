@@ -2517,21 +2517,21 @@ STDMETHODIMP BrowserAccessibilityWin::QueryService(
   if (!instance_active_)
     return E_FAIL;
 
-  if (riid == IID_IAccessible ||
-      riid == IID_IAccessible2 ||
-      riid == IID_IAccessibleAction ||
-      riid == IID_IAccessibleHyperlink ||
-      riid == IID_IAccessibleHypertext ||
-      riid == IID_IAccessibleImage ||
-      riid == IID_IAccessibleTable ||
-      riid == IID_IAccessibleTable2 ||
-      riid == IID_IAccessibleTableCell ||
-      riid == IID_IAccessibleText ||
-      riid == IID_IAccessibleValue ||
-      riid == IID_ISimpleDOMDocument ||
-      riid == IID_ISimpleDOMNode ||
-      riid == IID_ISimpleDOMText ||
-      riid == GUID_ISimpleDOM) {
+  if (guidService == IID_IAccessible ||
+      guidService == IID_IAccessible2 ||
+      guidService == IID_IAccessibleAction ||
+      guidService == IID_IAccessibleHyperlink ||
+      guidService == IID_IAccessibleHypertext ||
+      guidService == IID_IAccessibleImage ||
+      guidService == IID_IAccessibleTable ||
+      guidService == IID_IAccessibleTable2 ||
+      guidService == IID_IAccessibleTableCell ||
+      guidService == IID_IAccessibleText ||
+      guidService == IID_IAccessibleValue ||
+      guidService == IID_ISimpleDOMDocument ||
+      guidService == IID_ISimpleDOMNode ||
+      guidService == IID_ISimpleDOMText ||
+      guidService == GUID_ISimpleDOM) {
     return QueryInterface(riid, object);
   }
 

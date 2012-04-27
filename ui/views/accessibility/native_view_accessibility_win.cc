@@ -787,9 +787,9 @@ STDMETHODIMP NativeViewAccessibilityWin::QueryService(
   if (!view_)
     return E_FAIL;
 
-  if (riid == IID_IAccessible ||
-      riid == IID_IAccessible2 ||
-      riid == IID_IAccessibleText)  {
+  if (guidService == IID_IAccessible ||
+      guidService == IID_IAccessible2 ||
+      guidService == IID_IAccessibleText)  {
     return QueryInterface(riid, object);
   }
 
