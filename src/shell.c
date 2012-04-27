@@ -154,8 +154,6 @@ struct shell_surface {
 	struct weston_output *fullscreen_output;
 	struct weston_output *output;
 	struct wl_list link;
-
-	int force_configure;
 };
 
 struct shell_grab {
@@ -661,7 +659,6 @@ shell_unset_fullscreen(struct shell_surface *shsurf)
 		weston_surface_destroy(shsurf->fullscreen.black_surface);
 	shsurf->fullscreen.black_surface = NULL;
 	shsurf->fullscreen_output = NULL;
-	shsurf->force_configure = 1;
 	weston_surface_set_position(shsurf->surface,
 				    shsurf->saved_x, shsurf->saved_y);
 	if (shsurf->saved_rotation_valid) {
@@ -1007,9 +1004,6 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	shsurf->fullscreen.type = method;
 	shsurf->fullscreen.framerate = framerate;
 	shsurf->next_type = SHELL_SURFACE_FULLSCREEN;
-
-	if (weston_surface_is_mapped(es))
-		shsurf->force_configure = 1;
 
 	wl_shell_surface_send_configure(&shsurf->resource, 0,
 					shsurf->output->current->width,
@@ -2132,14 +2126,17 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 {
 	struct shell_surface *shsurf = get_shell_surface(es);
 	struct desktop_shell *shell = shsurf->shell;
+	int type_changed;
 
 	if (shsurf->next_type != SHELL_SURFACE_NONE &&
-	    shsurf->type != shsurf->next_type)
+	    shsurf->type != shsurf->next_type) {
 		set_surface_type(shsurf);
+		type_changed = 1;
+	}
 
 	if (!weston_surface_is_mapped(es)) {
 		map(shell, es, es->buffer->width, es->buffer->height, sx, sy);
-	} else if (shsurf->force_configure || sx != 0 || sy != 0 ||
+	} else if (type_changed || sx != 0 || sy != 0 ||
 		   es->geometry.width != es->buffer->width ||
 		   es->geometry.height != es->buffer->height) {
 		GLfloat from_x, from_y;
@@ -2151,7 +2148,6 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 			  es->geometry.x + to_x - from_x,
 			  es->geometry.y + to_y - from_y,
 			  es->buffer->width, es->buffer->height);
-		shsurf->force_configure = 0;
 	}
 }
 
