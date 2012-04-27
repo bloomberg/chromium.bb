@@ -480,6 +480,12 @@ remoting.connectMe2Me = function(hostId, retryIfOffline) {
     remoting.connectMe2MeWithPin();
   } else {
     var host = remoting.hostList.getHostForId(remoting.hostId);
+    // If we're re-loading a tab for a host that has since been unregistered
+    // then the hostId may no longer resolve.
+    if (!host) {
+      showConnectError_(remoting.Error.HOST_IS_OFFLINE);
+      return;
+    }
     var message = document.getElementById('pin-message');
     l10n.localizeElement(message, host.hostName);
     remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
@@ -497,8 +503,10 @@ remoting.connectMe2MeWithPin = function() {
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
 
   var host = remoting.hostList.getHostForId(remoting.hostId);
-  // There will be no JID or public key if the user connects to a new host
-  // without first reloading the web-app.
+  // If the user clicked on a cached host that has since been removed then we
+  // won't find the hostId. If the user clicked on the entry for the local host
+  // immediately after having enabled it then we won't know it's JID or public
+  // key until the host heartbeats and we pull a fresh host list.
   if (!host || !host.jabberId || !host.publicKey) {
     retryConnectOrReportOffline_();
     return;
