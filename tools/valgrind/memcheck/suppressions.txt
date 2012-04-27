@@ -5461,60 +5461,6 @@
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
 {
-   bug_122249a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore23v8StringToWebCoreStringEN2v86HandleINS0_6StringEEE
-   fun:_ZN7WebCore22v8ValueToWebCoreStringEN2v86HandleINS0_5ValueEEE
-   fun:_ZN7WebCoreL21createIDBKeyFromValueEN2v86HandleINS0_5ValueEEERN3WTF6VectorINS1_INS0_5ArrayEEELm0EEE
-   fun:_ZN7WebCore21createIDBKeyFromValueEN2v86HandleINS0_5ValueEEE
-}
-{
-   bug_122249b
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF10RefCountedIN7WebCore14IDBObjectStoreEEnwEm
-   fun:_ZN7WebCore14IDBObjectStore6createEN3WTF10PassRefPtrINS_30IDBObjectStoreBackendInterfaceEEEPNS_14IDBTransactionE
-   fun:_ZN7WebCore11IDBDatabase17createObjectStoreERKN3WTF6StringERKNS_10DictionaryERi
-}
-{
-   bug_122249c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN6WebKit13WebIDBFactory6createEv
-   fun:_ZN25TestWebKitPlatformSupport10idbFactoryEv
-   fun:_ZN6WebKit22IDBFactoryBackendProxyC1Ev
-   fun:_ZN6WebKit22IDBFactoryBackendProxy6createEv
-   fun:_ZN7WebCore15PlatformSupport10idbFactoryEv
-   fun:_ZN7WebCore26IDBFactoryBackendInterface6createEv
-}
-{
-   bug_122249d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF12AtomicStringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore29v8StringToAtomicWebCoreStringEN2v86HandleINS0_6StringEEE
-   fun:_ZN7WebCore28v8ValueToAtomicWebCoreStringEN2v86HandleINS0_5ValueEEE
-   ...
-   fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-}
-{
-   bug_122249e
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF24ThreadSafeRefCountedBasenwEm
-   fun:_ZN7WebCore25IDBTransactionBackendImpl6createEPNS_13DOMStringListEtPNS_22IDBDatabaseBackendImplE
-   fun:_ZN7WebCore22IDBDatabaseBackendImpl10setVersionERKN3WTF6StringENS1_10PassRefPtrINS_12IDBCallbacksEEENS5_INS_20IDBDatabaseCallbacksEEERi
-   fun:_ZN6WebKit18WebIDBDatabaseImpl10setVersionERKNS_9WebStringEPNS_15WebIDBCallbacksERi
-   fun:_ZN6WebKit23IDBDatabaseBackendProxy10setVersionERKN3WTF6StringENS1_10PassRefPtrIN7WebCore12IDBCallbacksEEENS5_INS6_20IDBDatabaseCallbacksEEERi
-   fun:_ZN7WebCore11IDBDatabase10setVersionEPNS_22ScriptExecutionContextERKN3WTF6StringERi
-   fun:_ZN7WebCore19IDBDatabaseInternalL18setVersionCallbackERKN2v89ArgumentsE
-}
-{
    bug_122429
    Memcheck:Leak
    fun:_Znw*
