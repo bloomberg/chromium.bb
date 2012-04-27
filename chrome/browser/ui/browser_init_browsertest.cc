@@ -148,14 +148,11 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
 // background application.
 IN_PROC_BROWSER_TEST_F(BrowserInitTest,
                        StartupURLsOnNewWindowWithNoTabbedBrowsers) {
-  // Use a couple arbitrary URLs.
+  // Use a couple same-site HTTP URLs.
+  ASSERT_TRUE(test_server()->Start());
   std::vector<GURL> urls;
-  urls.push_back(ui_test_utils::GetTestUrl(
-      FilePath(FilePath::kCurrentDirectory),
-      FilePath(FILE_PATH_LITERAL("title1.html"))));
-  urls.push_back(ui_test_utils::GetTestUrl(
-      FilePath(FilePath::kCurrentDirectory),
-      FilePath(FILE_PATH_LITERAL("title2.html"))));
+  urls.push_back(test_server()->GetURL("files/title1.html"));
+  urls.push_back(test_server()->GetURL("files/title2.html"));
 
   // Set the startup preference to open these URLs.
   SessionStartupPref pref(SessionStartupPref::URLS);
@@ -182,6 +179,11 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest,
   for (size_t i=0; i < urls.size(); i++) {
     EXPECT_EQ(urls[i], new_browser->GetWebContentsAt(i)->GetURL());
   }
+
+  // The two tabs, despite having the same site, should be in different
+  // SiteInstances.
+  EXPECT_NE(new_browser->GetWebContentsAt(0)->GetSiteInstance(),
+            new_browser->GetWebContentsAt(1)->GetSiteInstance());
 }
 
 // Verify that startup URLs aren't used when the process already exists

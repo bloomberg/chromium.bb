@@ -1408,7 +1408,7 @@ WebContents* Browser::AddRestoredTab(
   GURL restore_url = navigations.at(selected_navigation).virtual_url();
   TabContentsWrapper* wrapper = TabContentsFactory(
       profile(),
-      tab_util::GetSiteInstanceForNewTab(NULL, profile_, restore_url),
+      tab_util::GetSiteInstanceForNewTab(profile_, restore_url),
       MSG_ROUTING_NONE,
       GetSelectedWebContents(),
       session_storage_namespace);
@@ -1487,7 +1487,7 @@ void Browser::ReplaceRestoredTab(
   GURL restore_url = navigations.at(selected_navigation).virtual_url();
   TabContentsWrapper* wrapper = TabContentsFactory(
       profile(),
-      tab_util::GetSiteInstanceForNewTab(NULL, profile_, restore_url),
+      tab_util::GetSiteInstanceForNewTab(profile_, restore_url),
       MSG_ROUTING_NONE,
       GetSelectedWebContents(),
       session_storage_namespace);

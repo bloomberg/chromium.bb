@@ -520,7 +520,7 @@ void Navigate(NavigateParams* params) {
           Browser::TabContentsFactory(
               params->browser->profile(),
               tab_util::GetSiteInstanceForNewTab(
-                  source_contents, params->browser->profile(), url),
+                  params->browser->profile(), url),
               MSG_ROUTING_NONE,
               source_contents,
               NULL);

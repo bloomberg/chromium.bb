@@ -228,7 +228,7 @@ void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model,
                                              const GURL& url) {
   content::WebContents* web_contents = content::WebContents::Create(
       browser_->profile(),
-      tab_util::GetSiteInstanceForNewTab(NULL, browser_->profile(), url),
+      tab_util::GetSiteInstanceForNewTab(browser_->profile(), url),
       MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
   inline_disposition_delegate_.reset(

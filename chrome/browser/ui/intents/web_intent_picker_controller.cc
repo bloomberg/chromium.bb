@@ -227,7 +227,7 @@ void WebIntentPickerController::OnServiceChosen(const GURL& url,
       TabContentsWrapper* contents = Browser::TabContentsFactory(
           browser->profile(),
           tab_util::GetSiteInstanceForNewTab(
-              NULL, browser->profile(), url),
+              browser->profile(), url),
           MSG_ROUTING_NONE, NULL, NULL);
 
       intents_dispatcher_->DispatchIntent(contents->web_contents());

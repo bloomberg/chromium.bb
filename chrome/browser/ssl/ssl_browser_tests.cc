@@ -88,9 +88,12 @@ class SSLUITest : public InProcessBrowserTest {
     EnableDOMAutomation();
   }
 
-  // Browser will both run and display insecure content.
   virtual void SetUpCommandLine(CommandLine* command_line) {
+    // Browser will both run and display insecure content.
     command_line->AppendSwitch(switches::kAllowRunningInsecureContent);
+    // Use process-per-site so that navigating to a same-site page in a
+    // new tab will use the same process.
+    command_line->AppendSwitch(switches::kProcessPerSite);
   }
 
   void CheckAuthenticatedState(WebContents* tab,
@@ -796,7 +799,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
       test_server()->host_port_pair(),
       &replacement_path));
 
-  // Create a new tab.
+  // Create a new tab in the same process.
   GURL url = https_server_.GetURL(replacement_path);
   browser::NavigateParams params(
       browser(), url, content::PAGE_TRANSITION_TYPED);

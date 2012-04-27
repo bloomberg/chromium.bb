@@ -968,7 +968,7 @@ void WebIntentPickerViews::OnInlineDisposition(
     WebIntentPickerModel* model, const GURL& url) {
   inline_web_contents_.reset(WebContents::Create(
       browser_->profile(),
-      tab_util::GetSiteInstanceForNewTab(NULL, browser_->profile(), url),
+      tab_util::GetSiteInstanceForNewTab(browser_->profile(), url),
       MSG_ROUTING_NONE, NULL, NULL));
   // Does not take ownership, so we keep a scoped_ptr
   // for the WebContents locally.
