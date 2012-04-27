@@ -11,7 +11,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_writer.h"  // for debug output only.
 #include "base/string_number_conversions.h"
-#include "base/string_tokenizer.h"
 #include "base/utf_string_conversion_utils.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/certificate_pattern.h"
@@ -483,16 +482,15 @@ void Network::InitIPAddress() {
     return;
   // If connected, get ip config.
   if (connected() && !device_path_.empty()) {
-    IPConfigStatus* ipconfig_status = CrosListIPConfigs(device_path_);
-    if (ipconfig_status) {
-      for (int i = 0; i < ipconfig_status->size; ++i) {
-        IPConfig ipconfig = ipconfig_status->ips[i];
-        if (strlen(ipconfig.address) > 0) {
+    NetworkIPConfigVector ipconfigs;
+    if (CrosListIPConfigs(device_path_, &ipconfigs, NULL, NULL)) {
+      for (size_t i = 0; i < ipconfigs.size(); ++i) {
+        const NetworkIPConfig& ipconfig = ipconfigs[i];
+        if (ipconfig.address.size() > 0) {
           ip_address_ = ipconfig.address;
           break;
         }
       }
-      CrosFreeIPConfigStatus(ipconfig_status);
     }
   }
 }
@@ -753,68 +751,6 @@ CellTower::CellTower() {}
 // WifiAccessPoint
 
 WifiAccessPoint::WifiAccessPoint() {}
-
-////////////////////////////////////////////////////////////////////////////////
-// NetworkIPConfig
-
-NetworkIPConfig::NetworkIPConfig(
-    const std::string& device_path, IPConfigType type,
-    const std::string& address, const std::string& netmask,
-    const std::string& gateway, const std::string& name_servers)
-    : device_path(device_path),
-      type(type),
-      address(address),
-      netmask(netmask),
-      gateway(gateway),
-      name_servers(name_servers) {
-}
-
-NetworkIPConfig::~NetworkIPConfig() {}
-
-int32 NetworkIPConfig::GetPrefixLength() const {
-  int count = 0;
-  int prefixlen = 0;
-  StringTokenizer t(netmask, ".");
-  while (t.GetNext()) {
-    // If there are more than 4 numbers, then it's invalid.
-    if (count == 4) {
-      return -1;
-    }
-    std::string token = t.token();
-    // If we already found the last mask and the current one is not
-    // "0" then the netmask is invalid. For example, 255.224.255.0
-    if (prefixlen / 8 != count) {
-      if (token != "0") {
-        return -1;
-      }
-    } else if (token == "255") {
-      prefixlen += 8;
-    } else if (token == "254") {
-      prefixlen += 7;
-    } else if (token == "252") {
-      prefixlen += 6;
-    } else if (token == "248") {
-      prefixlen += 5;
-    } else if (token == "240") {
-      prefixlen += 4;
-    } else if (token == "224") {
-      prefixlen += 3;
-    } else if (token == "192") {
-      prefixlen += 2;
-    } else if (token == "128") {
-      prefixlen += 1;
-    } else if (token == "0") {
-      prefixlen += 0;
-    } else {
-      // mask is not a valid number.
-      return -1;
-    }
-    count++;
-  }
-  if (count < 4)
-    return -1;
-  return prefixlen;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // CellularApn

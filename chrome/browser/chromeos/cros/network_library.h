@@ -1153,27 +1153,6 @@ struct CellTower {
 
 typedef std::vector<CellTower> CellTowerVector;
 
-// IP Configuration.
-struct NetworkIPConfig {
-  NetworkIPConfig(const std::string& device_path, IPConfigType type,
-                  const std::string& address, const std::string& netmask,
-                  const std::string& gateway, const std::string& name_servers);
-  ~NetworkIPConfig();
-
-  // Gets the PrefixLength for an IPv4 netmask.
-  // For example, "255.255.255.0" => 24
-  // If the netmask is invalid, this will return -1;
-  // TODO(chocobo): Add support for IPv6.
-  int32 GetPrefixLength() const;
-  std::string device_path;  // This looks like "/device/0011aa22bb33"
-  IPConfigType type;
-  std::string address;
-  std::string netmask;
-  std::string gateway;
-  std::string name_servers;
-};
-typedef std::vector<NetworkIPConfig> NetworkIPConfigVector;
-
 // This class handles the interaction with the ChromeOS network library APIs.
 // Classes can add themselves as observers. Users can get an instance of the
 // library like this: chromeos::CrosLibrary::Get()->GetNetworkLibrary()

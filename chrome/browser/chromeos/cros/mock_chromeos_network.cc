@@ -264,6 +264,11 @@ bool CallMockSetOfflineMode(bool offline) {
   return g_mock_chromeos_network->SetOfflineMode(offline);
 }
 
+// Calls mock ListIPConfigs.
+IPConfigStatus* CallMockListIPConfigs(const char* device_path) {
+  return g_mock_chromeos_network->ListIPConfigs(device_path);
+}
+
 // Calls mock AddIPConfig.
 bool CallMockAddIPConfig(const char* device_path, IPConfigType type) {
   return g_mock_chromeos_network->AddIPConfig(device_path, type);
@@ -272,6 +277,11 @@ bool CallMockAddIPConfig(const char* device_path, IPConfigType type) {
 // Calls mock RemoveIPConfig.
 bool CallMockRemoveIPConfig(IPConfig* config) {
   return g_mock_chromeos_network->RemoveIPConfig(config);
+}
+
+// Calls mock FreeIPConfigStatus.
+void CallMockFreeIPConfigStatus(IPConfigStatus* status) {
+  g_mock_chromeos_network->FreeIPConfigStatus(status);
 }
 
 // Calls mock GetDeviceNetworkList.
@@ -363,8 +373,10 @@ void MockChromeOSNetwork::Initialize() {
     chromeos::ProposeScan = &CallMockProposeScan;
     chromeos::RequestCellularRegister = &CallMockRequestCellularRegister;
     chromeos::SetOfflineMode = &CallMockSetOfflineMode;
+    chromeos::ListIPConfigs = &CallMockListIPConfigs;
     chromeos::AddIPConfig = &CallMockAddIPConfig;
     chromeos::RemoveIPConfig = &CallMockRemoveIPConfig;
+    chromeos::FreeIPConfigStatus = &CallMockFreeIPConfigStatus;
     chromeos::GetDeviceNetworkList = &CallMockGetDeviceNetworkList;
     chromeos::FreeDeviceNetworkList = &CallMockFreeDeviceNetworkList;
     chromeos::ConfigureService = &CallMockConfigureService;
@@ -410,8 +422,10 @@ void MockChromeOSNetwork::Shutdown() {
     chromeos::ProposeScan = NULL;
     chromeos::RequestCellularRegister = NULL;
     chromeos::SetOfflineMode = NULL;
+    chromeos::ListIPConfigs = NULL;
     chromeos::AddIPConfig = NULL;
     chromeos::RemoveIPConfig = NULL;
+    chromeos::FreeIPConfigStatus = NULL;
     chromeos::GetDeviceNetworkList = NULL;
     chromeos::FreeDeviceNetworkList = NULL;
     chromeos::ConfigureService = NULL;

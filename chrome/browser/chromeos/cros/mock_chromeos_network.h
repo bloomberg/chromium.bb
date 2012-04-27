@@ -129,8 +129,10 @@ class MockChromeOSNetwork {
                                              NetworkActionCallback callback,
                                              void* object));
   MOCK_METHOD1(SetOfflineMode, bool(bool offline));
+  MOCK_METHOD1(ListIPConfigs, IPConfigStatus*(const char* device_path));
   MOCK_METHOD2(AddIPConfig, bool(const char* device_path, IPConfigType type));
   MOCK_METHOD1(RemoveIPConfig, bool(IPConfig* config));
+  MOCK_METHOD1(FreeIPConfigStatus, void(IPConfigStatus* status));
   MOCK_METHOD0(GetDeviceNetworkList, DeviceNetworkList*());
   MOCK_METHOD1(FreeDeviceNetworkList, void(DeviceNetworkList* network_list));
   MOCK_METHOD4(ConfigureService,

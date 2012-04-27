@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/cellular_data_plan.h"
+#include "chrome/browser/chromeos/cros/network_ip_config.h"
 #include "third_party/cros/chromeos_network.h"
 
 namespace base {
@@ -243,17 +244,20 @@ void CrosRequestCellularRegister(const std::string& device_path,
 // Returns false on failure and true on success.
 bool CrosSetOfflineMode(bool offline);
 
-// Gets a list of all the IPConfigs using a given device path
-IPConfigStatus* CrosListIPConfigs(const std::string& device_path);
+// Gets a list of all the NetworkIPConfigs using a given device path.
+// Optionally, you can get ipconfig-paths and the hardware address.
+// Pass NULL as |ipconfig_paths| and |hardware_address| if you are not
+// interested in these values.
+bool CrosListIPConfigs(const std::string& device_path,
+                       NetworkIPConfigVector* ipconfig_vector,
+                       std::vector<std::string>* ipconfig_paths,
+                       std::string* hardware_address);
 
 // Adds a IPConfig of the given type to the device
 bool CrosAddIPConfig(const std::string& device_path, IPConfigType type);
 
 // Removes an existing IP Config
-bool CrosRemoveIPConfig(IPConfig* config);
-
-// Frees out a full status
-void CrosFreeIPConfigStatus(IPConfigStatus* status);
+bool CrosRemoveIPConfig(const std::string& ipconfig_path);
 
 // Reads out the results of the last wifi scan. These results are not
 // pre-cached in the library, so the call may block whilst the results are

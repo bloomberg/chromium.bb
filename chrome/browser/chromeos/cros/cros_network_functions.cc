@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/gvalue_util.h"
 #include "chrome/browser/chromeos/cros/sms_watcher.h"
@@ -386,6 +387,104 @@ void OnNetworkActionError(const std::string& path,
 // for string values from libcros.
 std::string SafeString(const char* s) {
   return s ? std::string(s) : std::string();
+}
+
+IPConfigType ParseIPConfigType(const std::string& type) {
+  if (type == flimflam::kTypeIPv4)
+    return IPCONFIG_TYPE_IPV4;
+  if (type == flimflam::kTypeIPv6)
+    return IPCONFIG_TYPE_IPV6;
+  if (type == flimflam::kTypeDHCP)
+    return IPCONFIG_TYPE_DHCP;
+  if (type == flimflam::kTypeBOOTP)
+    return IPCONFIG_TYPE_BOOTP;
+  if (type == flimflam::kTypeZeroConf)
+    return IPCONFIG_TYPE_ZEROCONF;
+  if (type == flimflam::kTypeDHCP6)
+    return IPCONFIG_TYPE_DHCP6;
+  if (type == flimflam::kTypePPP)
+    return IPCONFIG_TYPE_PPP;
+  return IPCONFIG_TYPE_UNKNOWN;
+}
+
+// Converts a prefix length to a netmask. (for ipv4)
+// e.g. a netmask of 255.255.255.0 has a prefixlen of 24
+std::string PrefixlenToNetmask(int32 prefixlen) {
+  std::string netmask;
+  for (int i = 0; i < 4; i++) {
+    int len = 8;
+    if (prefixlen >= 8) {
+      prefixlen -= 8;
+    } else {
+      len = prefixlen;
+      prefixlen = 0;
+    }
+    if (i > 0)
+      netmask += ".";
+    int num = len == 0 ? 0 : ((2L << (len - 1)) - 1) << (8 - len);
+    netmask += StringPrintf("%d", num);
+  }
+  return netmask;
+}
+
+// Converts a list of name servers to a string.
+std::string ConvertNameSerersListToString(const base::ListValue& name_servers) {
+  std::string result;
+  for (size_t i = 0; i != name_servers.GetSize(); ++i) {
+    std::string name_server;
+    if (!name_servers.GetString(i, &name_server)) {
+      LOG(ERROR) << "name_servers[" << i << "] is not a string.";
+      continue;
+    }
+    if (!result.empty())
+      result += ",";
+    result += name_server;
+  }
+  return result;
+}
+
+// Gets NetworkIPConfigVector populated with data from a
+// given DBus object path.
+//
+// returns true on success.
+bool ParseIPConfig(const std::string& device_path,
+                   const std::string& ipconfig_path,
+                   NetworkIPConfigVector* ipconfig_vector) {
+  FlimflamIPConfigClient* ipconfig_client =
+      DBusThreadManager::Get()->GetFlimflamIPConfigClient();
+  // TODO(hashimoto): Remove this blocking D-Bus method call. crosbug.com/29902
+  scoped_ptr<base::DictionaryValue> properties(
+      ipconfig_client->CallGetPropertiesAndBlock(
+          dbus::ObjectPath(ipconfig_path)));
+  if (!properties.get())
+    return false;
+
+  std::string type_string;
+  properties->GetStringWithoutPathExpansion(flimflam::kMethodProperty,
+                                            &type_string);
+  std::string address;
+  properties->GetStringWithoutPathExpansion(flimflam::kAddressProperty,
+                                            &address);
+  int32 prefix_len = 0;
+  properties->GetIntegerWithoutPathExpansion(flimflam::kPrefixlenProperty,
+                                             &prefix_len);
+  std::string gateway;
+  properties->GetStringWithoutPathExpansion(flimflam::kGatewayProperty,
+                                            &gateway);
+  base::ListValue* name_servers = NULL;
+  std::string name_servers_string;
+  // store nameservers as a comma delimited list
+  if (properties->GetListWithoutPathExpansion(flimflam::kNameServersProperty,
+                                              &name_servers)) {
+    name_servers_string = ConvertNameSerersListToString(*name_servers);
+  } else {
+    LOG(ERROR) << "Cannot get name servers.";
+  }
+  ipconfig_vector->push_back(
+      NetworkIPConfig(device_path, ParseIPConfigType(type_string), address,
+                      PrefixlenToNetmask(prefix_len), gateway,
+                      name_servers_string));
+  return true;
 }
 
 // A bool to remember whether we are using Libcros network functions or not.
@@ -856,8 +955,64 @@ bool CrosSetOfflineMode(bool offline) {
   }
 }
 
-IPConfigStatus* CrosListIPConfigs(const std::string& device_path) {
-  return chromeos::ListIPConfigs(device_path.c_str());
+bool CrosListIPConfigs(const std::string& device_path,
+                       NetworkIPConfigVector* ipconfig_vector,
+                       std::vector<std::string>* ipconfig_paths,
+                       std::string* hardware_address) {
+  if (hardware_address)
+    hardware_address->clear();
+  if (g_libcros_network_functions_enabled) {
+    if (device_path.empty())
+      return false;
+    IPConfigStatus* ipconfig_status =
+        chromeos::ListIPConfigs(device_path.c_str());
+    if (!ipconfig_status)
+      return false;
+    for (int i = 0; i < ipconfig_status->size; ++i) {
+      const IPConfig& ipconfig = ipconfig_status->ips[i];
+      ipconfig_vector->push_back(
+          NetworkIPConfig(device_path, ipconfig.type,
+                          ipconfig.address, ipconfig.netmask,
+                          ipconfig.gateway, ipconfig.name_servers));
+      if (ipconfig_paths)
+        ipconfig_paths->push_back(ipconfig.path);
+    }
+    if (hardware_address)
+      *hardware_address = ipconfig_status->hardware_address;
+    chromeos::FreeIPConfigStatus(ipconfig_status);
+    return true;
+  } else {
+    const dbus::ObjectPath device_object_path(device_path);
+    FlimflamDeviceClient* device_client =
+        DBusThreadManager::Get()->GetFlimflamDeviceClient();
+    // TODO(hashimoto): Remove this blocking D-Bus method call.
+    // crosbug.com/29902
+    scoped_ptr<base::DictionaryValue> properties(
+        device_client->CallGetPropertiesAndBlock(device_object_path));
+    if (!properties.get())
+      return false;
+
+    ListValue* ips = NULL;
+    if (!properties->GetListWithoutPathExpansion(
+            flimflam::kIPConfigsProperty, &ips))
+      return false;
+
+    for (size_t i = 0; i < ips->GetSize(); i++) {
+      std::string ipconfig_path;
+      if (!ips->GetString(i, &ipconfig_path)) {
+        LOG(WARNING) << "Found NULL ip for device " << device_path;
+        continue;
+      }
+      ParseIPConfig(device_path, ipconfig_path, ipconfig_vector);
+      if (ipconfig_paths)
+        ipconfig_paths->push_back(ipconfig_path);
+    }
+    // Store the hardware address as well.
+    if (hardware_address)
+      properties->GetStringWithoutPathExpansion(flimflam::kAddressProperty,
+                                                hardware_address);
+    return true;
+  }
 }
 
 bool CrosAddIPConfig(const std::string& device_path, IPConfigType type) {
@@ -901,17 +1056,15 @@ bool CrosAddIPConfig(const std::string& device_path, IPConfigType type) {
   }
 }
 
-bool CrosRemoveIPConfig(IPConfig* config) {
+bool CrosRemoveIPConfig(const std::string& ipconfig_path) {
   if (g_libcros_network_functions_enabled) {
-    return chromeos::RemoveIPConfig(config);
+    IPConfig dummy_config = {};
+    dummy_config.path = ipconfig_path.c_str();
+    return chromeos::RemoveIPConfig(&dummy_config);
   } else {
     return DBusThreadManager::Get()->GetFlimflamIPConfigClient()->
-        CallRemoveAndBlock(dbus::ObjectPath(config->path));
+        CallRemoveAndBlock(dbus::ObjectPath(ipconfig_path));
   }
-}
-
-void CrosFreeIPConfigStatus(IPConfigStatus* status) {
-  chromeos::FreeIPConfigStatus(status);
 }
 
 bool CrosGetWifiAccessPoints(WifiAccessPointVector* result) {

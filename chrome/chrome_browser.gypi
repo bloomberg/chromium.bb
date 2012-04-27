@@ -451,6 +451,8 @@
         'browser/chromeos/cros/native_network_parser.cc',
         'browser/chromeos/cros/native_network_parser.h',
         'browser/chromeos/cros/network_constants.h',
+        'browser/chromeos/cros/network_ip_config.cc',
+        'browser/chromeos/cros/network_ip_config.h',
         'browser/chromeos/cros/network_library.cc',
         'browser/chromeos/cros/network_library.h',
         'browser/chromeos/cros/network_library_impl_base.cc',

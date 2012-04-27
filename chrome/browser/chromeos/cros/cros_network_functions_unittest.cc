@@ -40,6 +40,9 @@ MATCHER_P(IsSMSEqualTo, sms, "") {
       sms.msgclass == arg.msgclass;
 }
 
+// Matcher to match IPConfig::path
+MATCHER_P(IsIPConfigPathEqualTo, str, "") { return str == arg.path; }
+
 namespace chromeos {
 
 namespace {
@@ -772,6 +775,58 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosSetOfflineMode) {
   CrosSetOfflineMode(kOffline);
 }
 
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosListIPConfigs) {
+  const std::string device_path = "/device/path";
+  const std::string ipconfig_path = "/ipconfig/path";
+  const IPConfigType kType = IPCONFIG_TYPE_DHCP;
+  const std::string address = "address";
+  const int kMtu = 123;
+  const std::string netmask = "netmask";
+  const std::string broadcast = "broadcast";
+  const std::string peer_address = "peer address";
+  const std::string gateway = "gateway";
+  const std::string domainname = "domainname";
+  const std::string name_servers = "name servers";
+  const std::string hardware_address = "hardware address";
+  IPConfig ipconfig = {};
+  ipconfig.path = ipconfig_path.c_str();
+  ipconfig.type = kType;
+  ipconfig.address = address.c_str();
+  ipconfig.mtu = kMtu;
+  ipconfig.netmask = netmask.c_str();
+  ipconfig.broadcast = broadcast.c_str();
+  ipconfig.peer_address = peer_address.c_str();
+  ipconfig.gateway = gateway.c_str();
+  ipconfig.domainname = domainname.c_str();
+  ipconfig.name_servers = name_servers.c_str();
+  IPConfigStatus ipconfig_status = {};
+  ipconfig_status.ips = &ipconfig;
+  ipconfig_status.hardware_address = hardware_address.c_str();
+  ipconfig_status.size = 1;
+
+  EXPECT_CALL(*MockChromeOSNetwork::Get(), ListIPConfigs(StrEq(device_path)))
+      .WillOnce(Return(&ipconfig_status));
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              FreeIPConfigStatus(&ipconfig_status)).Times(1);
+
+  NetworkIPConfigVector ipconfigs;
+  std::vector<std::string> ipconfig_paths;
+  std::string result_hardware_address;
+  EXPECT_TRUE(CrosListIPConfigs(device_path, &ipconfigs, &ipconfig_paths,
+                                &result_hardware_address));
+
+  EXPECT_EQ(hardware_address, result_hardware_address);
+  EXPECT_EQ(ipconfig_status.size, static_cast<int>(ipconfigs.size()));
+  EXPECT_EQ(device_path, ipconfigs[0].device_path);
+  EXPECT_EQ(kType, ipconfigs[0].type);
+  EXPECT_EQ(address, ipconfigs[0].address);
+  EXPECT_EQ(netmask, ipconfigs[0].netmask);
+  EXPECT_EQ(gateway, ipconfigs[0].gateway);
+  EXPECT_EQ(name_servers, ipconfigs[0].name_servers);
+  EXPECT_EQ(ipconfig_status.size, static_cast<int>(ipconfig_paths.size()));
+  EXPECT_EQ(ipconfig_path, ipconfig_paths[0]);
+}
+
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosAddIPConfig) {
   const std::string device_path = "/device/path";
   EXPECT_CALL(*MockChromeOSNetwork::Get(),
@@ -780,11 +835,11 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosAddIPConfig) {
 }
 
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRemoveIPConfig) {
-  IPConfig config = {};
-  config.path = "/path";
+  const std::string path = "/path";
   EXPECT_CALL(*MockChromeOSNetwork::Get(),
-              RemoveIPConfig(&config)).Times(1);
-  CrosRemoveIPConfig(&config);
+              RemoveIPConfig(Pointee(IsIPConfigPathEqualTo(path))))
+      .WillOnce(Return(true));
+  EXPECT_TRUE(CrosRemoveIPConfig(path));
 }
 
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosGetWifiAccessPoints) {
@@ -1599,6 +1654,90 @@ TEST_F(CrosNetworkFunctionsTest, CrosSetOfflineMode) {
   CrosSetOfflineMode(kOffline);
 }
 
+TEST_F(CrosNetworkFunctionsTest, CrosListIPConfigs) {
+  const std::string device_path = "/device/path";
+  std::string ipconfig_path = "/ipconfig/path";
+
+  const IPConfigType kType = IPCONFIG_TYPE_DHCP;
+  const std::string address = "address";
+  const int kMtu = 123;
+  const int kPrefixlen = 24;
+  const std::string netmask = "255.255.255.0";
+  const std::string broadcast = "broadcast";
+  const std::string peer_address = "peer address";
+  const std::string gateway = "gateway";
+  const std::string domainname = "domainname";
+  const std::string name_server1 = "nameserver1";
+  const std::string name_server2 = "nameserver2";
+  const std::string name_servers = name_server1 + "," + name_server2;
+  const std::string hardware_address = "hardware address";
+
+  base::ListValue* ipconfigs = new base::ListValue;
+  ipconfigs->Append(base::Value::CreateStringValue(ipconfig_path));
+  base::DictionaryValue* device_properties = new base::DictionaryValue;
+  device_properties->SetWithoutPathExpansion(
+      flimflam::kIPConfigsProperty, ipconfigs);
+  device_properties->SetWithoutPathExpansion(
+      flimflam::kAddressProperty,
+      base::Value::CreateStringValue(hardware_address));
+
+  base::ListValue* name_servers_list = new base::ListValue;
+  name_servers_list->Append(base::Value::CreateStringValue(name_server1));
+  name_servers_list->Append(base::Value::CreateStringValue(name_server2));
+  base::DictionaryValue* ipconfig_properties = new base::DictionaryValue;
+  ipconfig_properties->SetWithoutPathExpansion(
+      flimflam::kMethodProperty,
+      base::Value::CreateStringValue(flimflam::kTypeDHCP));
+  ipconfig_properties->SetWithoutPathExpansion(
+      flimflam::kAddressProperty,
+      base::Value::CreateStringValue(address));
+  ipconfig_properties->SetWithoutPathExpansion(
+      flimflam::kMtuProperty,
+      base::Value::CreateIntegerValue(kMtu));
+  ipconfig_properties->SetWithoutPathExpansion(
+      flimflam::kPrefixlenProperty,
+      base::Value::CreateIntegerValue(kPrefixlen));
+  ipconfig_properties->SetWithoutPathExpansion(
+      flimflam::kBroadcastProperty,
+      base::Value::CreateStringValue(broadcast));
+  ipconfig_properties->SetWithoutPathExpansion(
+      flimflam::kPeerAddressProperty,
+      base::Value::CreateStringValue(peer_address));
+  ipconfig_properties->SetWithoutPathExpansion(
+      flimflam::kGatewayProperty,
+      base::Value::CreateStringValue(gateway));
+  ipconfig_properties->SetWithoutPathExpansion(
+      flimflam::kDomainNameProperty,
+      base::Value::CreateStringValue(domainname));
+  ipconfig_properties->SetWithoutPathExpansion(
+      flimflam::kNameServersProperty, name_servers_list);
+
+  EXPECT_CALL(*mock_device_client_,
+              CallGetPropertiesAndBlock(dbus::ObjectPath(device_path)))
+      .WillOnce(Return(device_properties));
+  EXPECT_CALL(*mock_ipconfig_client_,
+              CallGetPropertiesAndBlock(dbus::ObjectPath(ipconfig_path)))
+      .WillOnce(Return(ipconfig_properties));
+
+  NetworkIPConfigVector result_ipconfigs;
+  std::vector<std::string> result_ipconfig_paths;
+  std::string result_hardware_address;
+  EXPECT_TRUE(
+      CrosListIPConfigs(device_path, &result_ipconfigs, &result_ipconfig_paths,
+                        &result_hardware_address));
+
+  EXPECT_EQ(hardware_address, result_hardware_address);
+  ASSERT_EQ(1U, result_ipconfigs.size());
+  EXPECT_EQ(device_path, result_ipconfigs[0].device_path);
+  EXPECT_EQ(kType, result_ipconfigs[0].type);
+  EXPECT_EQ(address, result_ipconfigs[0].address);
+  EXPECT_EQ(netmask, result_ipconfigs[0].netmask);
+  EXPECT_EQ(gateway, result_ipconfigs[0].gateway);
+  EXPECT_EQ(name_servers, result_ipconfigs[0].name_servers);
+  ASSERT_EQ(1U, result_ipconfig_paths.size());
+  EXPECT_EQ(ipconfig_path, result_ipconfig_paths[0]);
+}
+
 TEST_F(CrosNetworkFunctionsTest, CrosAddIPConfig) {
   const std::string device_path = "/device/path";
   const dbus::ObjectPath result_path("/result/path");
@@ -1610,11 +1749,10 @@ TEST_F(CrosNetworkFunctionsTest, CrosAddIPConfig) {
 }
 
 TEST_F(CrosNetworkFunctionsTest, CrosRemoveIPConfig) {
-  IPConfig config = {};
-  config.path = "/path";
+  const std::string path = "/path";
   EXPECT_CALL(*mock_ipconfig_client_,
-              CallRemoveAndBlock(dbus::ObjectPath(config.path))).Times(1);
-  CrosRemoveIPConfig(&config);
+              CallRemoveAndBlock(dbus::ObjectPath(path))).Times(1);
+  CrosRemoveIPConfig(path);
 }
 
 TEST_F(CrosNetworkFunctionsTest, CrosGetWifiAccessPoints) {

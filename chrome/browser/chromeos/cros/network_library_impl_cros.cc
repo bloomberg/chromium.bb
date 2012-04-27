@@ -515,23 +515,8 @@ NetworkIPConfigVector NetworkLibraryImplCros::GetIPConfigs(
     const std::string& device_path,
     std::string* hardware_address,
     HardwareAddressFormat format) {
-  DCHECK(hardware_address);
-  hardware_address->clear();
   NetworkIPConfigVector ipconfig_vector;
-  if (!device_path.empty()) {
-    IPConfigStatus* ipconfig_status = CrosListIPConfigs(device_path);
-    if (ipconfig_status) {
-      for (int i = 0; i < ipconfig_status->size; ++i) {
-        IPConfig ipconfig = ipconfig_status->ips[i];
-        ipconfig_vector.push_back(
-            NetworkIPConfig(device_path, ipconfig.type, ipconfig.address,
-                            ipconfig.netmask, ipconfig.gateway,
-                            ipconfig.name_servers));
-      }
-      *hardware_address = ipconfig_status->hardware_address;
-      CrosFreeIPConfigStatus(ipconfig_status);
-    }
-  }
+  CrosListIPConfigs(device_path, &ipconfig_vector, NULL, hardware_address);
 
   for (size_t i = 0; i < hardware_address->size(); ++i)
     (*hardware_address)[i] = toupper((*hardware_address)[i]);
@@ -555,39 +540,45 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
   if (ipconfig.device_path.empty())
     return;
 
-  IPConfig* ipconfig_dhcp = NULL;
-  IPConfig* ipconfig_static = NULL;
+  NetworkIPConfig* ipconfig_dhcp = NULL;
+  std::string ipconfig_dhcp_path;
+  NetworkIPConfig* ipconfig_static = NULL;
+  std::string ipconfig_static_path;
 
-  IPConfigStatus* ipconfig_status =
-      CrosListIPConfigs(ipconfig.device_path);
-  if (ipconfig_status) {
-    for (int i = 0; i < ipconfig_status->size; ++i) {
-      if (ipconfig_status->ips[i].type == chromeos::IPCONFIG_TYPE_DHCP)
-        ipconfig_dhcp = &ipconfig_status->ips[i];
-      else if (ipconfig_status->ips[i].type == chromeos::IPCONFIG_TYPE_IPV4)
-        ipconfig_static = &ipconfig_status->ips[i];
+  NetworkIPConfigVector ipconfigs;
+  std::vector<std::string> ipconfig_paths;
+  CrosListIPConfigs(ipconfig.device_path, &ipconfigs, &ipconfig_paths, NULL);
+  for (size_t i = 0; i < ipconfigs.size(); ++i) {
+    if (ipconfigs[i].type == chromeos::IPCONFIG_TYPE_DHCP) {
+      ipconfig_dhcp = &ipconfigs[i];
+      ipconfig_dhcp_path = ipconfig_paths[i];
+    } else if (ipconfigs[i].type == chromeos::IPCONFIG_TYPE_IPV4) {
+      ipconfig_static = &ipconfigs[i];
+      ipconfig_static_path = ipconfig_paths[i];
     }
   }
 
-  IPConfigStatus* ipconfig_status2 = NULL;
+  NetworkIPConfigVector ipconfigs2;
+  std::vector<std::string> ipconfig_paths2;
   if (ipconfig.type == chromeos::IPCONFIG_TYPE_DHCP) {
     // If switching from static to dhcp, create new dhcp ip config.
     if (!ipconfig_dhcp)
       CrosAddIPConfig(ipconfig.device_path, chromeos::IPCONFIG_TYPE_DHCP);
     // User wants DHCP now. So delete the static ip config.
     if (ipconfig_static)
-      CrosRemoveIPConfig(ipconfig_static);
+      CrosRemoveIPConfig(ipconfig_static_path);
   } else if (ipconfig.type == chromeos::IPCONFIG_TYPE_IPV4) {
     // If switching from dhcp to static, create new static ip config.
     if (!ipconfig_static) {
       CrosAddIPConfig(ipconfig.device_path, chromeos::IPCONFIG_TYPE_IPV4);
       // Now find the newly created IP config.
-      ipconfig_status2 =
-          CrosListIPConfigs(ipconfig.device_path);
-      if (ipconfig_status2) {
-        for (int i = 0; i < ipconfig_status2->size; ++i) {
-          if (ipconfig_status2->ips[i].type == chromeos::IPCONFIG_TYPE_IPV4)
-            ipconfig_static = &ipconfig_status2->ips[i];
+      if (CrosListIPConfigs(ipconfig.device_path, &ipconfigs2,
+                            &ipconfig_paths2, NULL)) {
+        for (size_t i = 0; i < ipconfigs2.size(); ++i) {
+          if (ipconfigs2[i].type == chromeos::IPCONFIG_TYPE_IPV4) {
+            ipconfig_static = &ipconfigs2[i];
+            ipconfig_static_path = ipconfig_paths2[i];
+          }
         }
       }
     }
@@ -595,7 +586,7 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
       // Save any changed details.
       if (ipconfig.address != ipconfig_static->address) {
         base::StringValue value(ipconfig.address);
-        CrosSetNetworkIPConfigProperty(ipconfig_static->path,
+        CrosSetNetworkIPConfigProperty(ipconfig_static->device_path,
                                        flimflam::kAddressProperty, value);
       }
       if (ipconfig.netmask != ipconfig_static->netmask) {
@@ -605,30 +596,25 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
                   << ipconfig.netmask;
         } else {
           base::FundamentalValue value(prefixlen);
-          CrosSetNetworkIPConfigProperty(ipconfig_static->path,
+          CrosSetNetworkIPConfigProperty(ipconfig_static->device_path,
                                          flimflam::kPrefixlenProperty, value);
         }
       }
       if (ipconfig.gateway != ipconfig_static->gateway) {
         base::StringValue value(ipconfig.gateway);
-        CrosSetNetworkIPConfigProperty(ipconfig_static->path,
+        CrosSetNetworkIPConfigProperty(ipconfig_static->device_path,
                                        flimflam::kGatewayProperty, value);
       }
       if (ipconfig.name_servers != ipconfig_static->name_servers) {
         base::StringValue value(ipconfig.name_servers);
-        CrosSetNetworkIPConfigProperty(ipconfig_static->path,
+        CrosSetNetworkIPConfigProperty(ipconfig_static->device_path,
                                        flimflam::kNameServersProperty, value);
       }
       // Remove dhcp ip config if there is one.
       if (ipconfig_dhcp)
-        CrosRemoveIPConfig(ipconfig_dhcp);
+        CrosRemoveIPConfig(ipconfig_dhcp_path);
     }
   }
-
-  if (ipconfig_status)
-    CrosFreeIPConfigStatus(ipconfig_status);
-  if (ipconfig_status2)
-    CrosFreeIPConfigStatus(ipconfig_status2);
 }
 
 /////////////////////////////////////////////////////////////////////////////
