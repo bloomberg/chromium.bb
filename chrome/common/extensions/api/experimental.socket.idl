@@ -35,9 +35,6 @@
 
   // The socket options.
   dictionary CreateOptions {
-    // Our code generator can't handle a dictionary containing only a callback.
-    long? dummyValue;
-
     // This function is called with events that occur during the lifetime of
     // the socket.
     OnEventCallback? onEvent;

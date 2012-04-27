@@ -181,23 +181,25 @@ class CCGenerator(object):
               '(const Value& value, %(name)s* out) {')
         .Append('if (!value.IsType(Value::TYPE_DICTIONARY))')
         .Append('  return false;')
-        .Append('const DictionaryValue* dict = '
+    )
+    if type_.properties:
+      (c.Append('const DictionaryValue* dict = '
                 'static_cast<const DictionaryValue*>(&value);')
         .Append()
-    )
-    for prop in type_.properties.values():
-      c.Concat(self._InitializePropertyToDefault(prop, 'out'))
-    for prop in type_.properties.values():
-      if prop.type_ == PropertyType.ADDITIONAL_PROPERTIES:
-        c.Append('out->additional_properties.MergeDictionary(dict);')
-        # remove all keys that are actual properties
-        for cur_prop in type_.properties.values():
-          if prop != cur_prop:
-            c.Append('out->additional_properties'
-                '.RemoveWithoutPathExpansion("%s", NULL);' % cur_prop.name)
-        c.Append()
-      else:
-        c.Concat(self._GenerateTypePopulateProperty(prop, 'dict', 'out'))
+      )
+      for prop in type_.properties.values():
+        c.Concat(self._InitializePropertyToDefault(prop, 'out'))
+      for prop in type_.properties.values():
+        if prop.type_ == PropertyType.ADDITIONAL_PROPERTIES:
+          c.Append('out->additional_properties.MergeDictionary(dict);')
+          # remove all keys that are actual properties
+          for cur_prop in type_.properties.values():
+            if prop != cur_prop:
+              c.Append('out->additional_properties'
+                  '.RemoveWithoutPathExpansion("%s", NULL);' % cur_prop.name)
+          c.Append()
+        else:
+          c.Concat(self._GenerateTypePopulateProperty(prop, 'dict', 'out'))
     (c.Append('return true;')
       .Eblock('}')
     )
