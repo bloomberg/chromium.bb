@@ -113,16 +113,19 @@ def expand_directories(indir, infiles, blacklist):
 def replace_variable(part, variables):
   m = re.match(r'<\(([A-Z_]+)\)', part)
   if m:
+    assert m.group(1) in variables, (
+        '%s was not found in %s' % (m.group(1), variables))
     return variables[m.group(1)]
   return part
 
 
 def eval_variables(item, variables):
+  """Replaces the gyp variables in a string item."""
   return ''.join(
       replace_variable(p, variables) for p in re.split(r'(<\([A-Z_]+\))', item))
 
 
-def load_isolate(content, variables, error):
+def load_isolate(content, error):
   """Loads the .isolate file. Returns the command, dependencies and read_only
   flag.
   """
@@ -133,16 +136,9 @@ def load_isolate(content, variables, error):
   config = configs.per_os.get(flavor) or configs.per_os.get(None)
   if not config:
     error('Failed to load configuration for \'%s\'' % flavor)
-
-  # Convert the variables and merge tracked and untracked dependencies.
-  # isolate.py doesn't care about the trackability of the dependencies.
-  infiles = [
-    eval_variables(f, variables) for f in config.tracked
-  ] + [
-    eval_variables(f, variables) for f in config.untracked
-  ]
-  command = [eval_variables(i, variables) for i in config.command]
-  return command, infiles, config.read_only
+  # Merge tracked and untracked dependencies, isolate.py doesn't care about the
+  # trackability of the dependencies, only the build tool does.
+  return config.command, config.tracked + config.untracked, config.read_only
 
 
 def process_inputs(prevdict, indir, infiles, level, read_only):
@@ -236,8 +232,10 @@ def load_results(resultfile):
     resultfile = os.path.abspath(resultfile)
     with open(resultfile, 'r') as f:
       data = json.load(f)
+      logging.debug('Loaded %s' % resultfile)
   else:
     resultfile = os.path.abspath(resultfile)
+    logging.debug('%s was not found' % resultfile)
 
   # Works with native os.path.sep but stores as '/'.
   if 'files' in data and os.path.sep != '/':
@@ -401,7 +399,7 @@ def MODEtrace(_outdir, indir, data):
     print 'No command to run'
     return 1
   return trace_inputs.trace_inputs(
-      data['resultfile'],
+      data['resultfile'] + '.log',
       data['command'],
       indir,
       data['relative_cwd'],
@@ -415,79 +413,101 @@ def get_valid_modes():
       i[4:] for i in dir(sys.modules[__name__]) if i.startswith('MODE'))
 
 
-def process_options(variables, resultfile, input_file, error):
-  """Processes the options and loads the input file. Returns the processed
-  values.
+def determine_root_dir(relative_root, infiles):
+  """For a list of infiles, determines the deepest root directory that is
+  referenced indirectly.
+
+  All the paths are processed as posix-style but are eventually returned as
+  os.path.sep.
   """
-  input_file = os.path.abspath(input_file)
-  isolate_dir = os.path.dirname(input_file)
-  resultfile = os.path.abspath(resultfile)
+  # The trick used to determine the root directory is to look at "how far" back
+  # up it is looking up.
+  relative_root = relative_root.replace(os.path.sep, '/')
+  deepest_root = relative_root
+  for i in infiles:
+    x = relative_root
+    i = i.replace(os.path.sep, '/')
+    while i.startswith('../'):
+      i = i[3:]
+      assert not i.startswith('/')
+      x = posixpath.dirname(x)
+    if deepest_root.startswith(x):
+      deepest_root = x
+  deepest_root = deepest_root.replace('/', os.path.sep)
+  logging.debug(
+      'determine_root_dir(%s, %s) -> %s' % (
+          relative_root, infiles, deepest_root))
+  return deepest_root.replace('/', os.path.sep)
+
+
+def process_options(variables, resultfile, input_file, error):
+  """Processes the options and loads the input and result files.
+
+  Returns a tuple of:
+  - The deepest root directory used as a relative path, to be used to determine
+    'indir'.
+  - The list of dependency files.
+  - The 'data' dictionary. It contains all the processed data from the result
+    file if it existed, augmented with current data. This permits keeping the
+    state of data['variables'] across runs, simplifying the command line on
+    repeated run, e.g. the variables are kept between runs.
+    Warning: data['files'] is stale at that point and it only use as a cache for
+    the previous hash if the file wasn't touched between two runs, to speed it
+    up. 'infiles' must be used as the valid list of dependencies.
+  """
+  # Constants
+  input_file = os.path.abspath(input_file).replace('/', os.path.sep)
+  relative_base_dir = os.path.dirname(input_file)
+  resultfile = os.path.abspath(resultfile).replace('/', os.path.sep)
   logging.info(
       'process_options(%s, %s, %s, ...)' % (variables, resultfile, input_file))
 
   # Process path variables as a special case. First normalize it, verifies it
   # exists, convert it to an absolute path, then set it as relative to
-  # isolate_dir.
+  # relative_base_dir.
   for i in ('DEPTH', 'PRODUCT_DIR'):
     if i not in variables:
       continue
     variable = os.path.normpath(variables[i])
     if not os.path.isdir(variable):
       error('%s=%s is not a directory' % (i, variable))
-    variable = os.path.abspath(variable)
+    variable = os.path.abspath(variable).replace('/', os.path.sep)
     # All variables are relative to the input file.
-    variables[i] = os.path.relpath(variable, isolate_dir)
+    variables[i] = os.path.relpath(variable, relative_base_dir)
 
+  # At that point, variables are not replaced yet in command and infiles.
   command, infiles, read_only = load_isolate(
-      open(input_file, 'r').read(), variables, error)
+      open(input_file, 'r').read(), error)
 
-  # The trick used to determine the root directory is to look at "how far" back
-  # up it is looking up.
-  # TODO(maruel): Stop the msbuild generator from generating a mix of / and \\.
-  isolate_dir_replaced = isolate_dir.replace(os.path.sep, '/')
-  root_dir = isolate_dir_replaced
-  logging.debug('root_dir before searching: %s' % root_dir)
-  for i in infiles:
-    i = i.replace(os.path.sep, '/')
-    x = isolate_dir.replace(os.path.sep, '/')
-    while i.startswith('../'):
-      i = i[3:]
-      assert not i.startswith('/')
-      x = posixpath.dirname(x)
-    if root_dir.startswith(x):
-      root_dir = x
-  root_dir = root_dir.replace('/', os.path.sep)
-  logging.debug('root_dir after searching: %s' % root_dir)
-
-  # The relative directory is automatically determined by the relative path
-  # between root_dir and the directory containing the .isolate file.
-  relative_dir = os.path.relpath(isolate_dir, root_dir).replace(
-      os.path.sep, '/')
-  logging.debug('relative_dir: %s' % relative_dir)
-
-  logging.debug(
-      'variables: %s' % ', '.join(
-        '%s=%s' % (k, v) for k, v in variables.iteritems()))
-
+  # Load the result file and set the values already known about.
   data = load_results(resultfile)
-
-  command, infiles, read_only = load_isolate(
-      open(input_file, 'r').read(), variables, error)
-
-  # Update data with the up to date information:
-  data['command'] = command
   data['read_only'] = read_only
-  data['relative_cwd'] = relative_dir
   data['resultfile'] = resultfile
   data['resultdir'] = os.path.dirname(resultfile)
-
-  # Keep the old variables.
+  # Keep the old variables but override them with the new ones.
   data.setdefault('variables', {}).update(variables)
 
-  logging.debug('command: %s' % command)
-  logging.debug('infiles: %s' % infiles)
-  logging.debug('read_only: %s' % read_only)
-  infiles = [normpath(os.path.join(relative_dir, f)) for f in infiles]
+  # Convert the variables.
+  data['command'] = [eval_variables(i, data['variables']) for i in command]
+  infiles = [eval_variables(f, data['variables']) for f in infiles]
+  root_dir = determine_root_dir(relative_base_dir, infiles)
+
+  # The relative directory is automatically determined by the relative path
+  # between root_dir and the directory containing the .isolate file,
+  # isolate_base_dir. Keep relative_cwd posix-style.
+  data['relative_cwd'] = os.path.relpath(relative_base_dir, root_dir).replace(
+      os.path.sep, '/')
+
+  logging.debug('relative_cwd: %s' % data['relative_cwd'])
+  logging.debug(
+      'variables: %s' % ', '.join(
+        '%s=%s' % (k, data['variables'][k]) for k in sorted(data['variables'])))
+  logging.debug('command: %s' % data['command'])
+  logging.debug('read_only: %s' % data['read_only'])
+
+  # Normalize the infiles paths in case some absolute paths got in.
+  logging.debug('infiles before normalization: %s' % infiles)
+  infiles = [normpath(os.path.join(data['relative_cwd'], f)) for f in infiles]
   logging.debug('processed infiles: %s' % infiles)
   return root_dir, infiles, data
 

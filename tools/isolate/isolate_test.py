@@ -54,9 +54,8 @@ class Isolate(unittest.TestCase):
 
   def test_load_empty(self):
     content = "{}"
-    variables = {}
     command, infiles, read_only = isolate.load_isolate(
-        content, variables, self.fail)
+        content, self.fail)
     self.assertEquals([], command)
     self.assertEquals([], infiles)
     self.assertEquals(None, read_only)
@@ -77,6 +76,8 @@ class Isolate(unittest.TestCase):
       'resultfile': [],
       'variables': {
         'unexpected': 'seriously',
+        # This value is updated.
+        'expected': 'stale',
       },
     }
 

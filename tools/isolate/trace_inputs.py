@@ -246,6 +246,7 @@ class Strace(object):
       self.non_existent = set()
       # Key is a tuple(pid, function name)
       self._pending_calls = {}
+      self._line_number = 0
 
     @classmethod
     def traces(cls):
@@ -253,6 +254,7 @@ class Strace(object):
       return [i[len(prefix):] for i in dir(cls) if i.startswith(prefix)]
 
     def on_line(self, line):
+      self._line_number += 1
       line = line.strip()
       if self.RE_SIGNAL.match(line):
         # Ignore signals.
@@ -266,7 +268,7 @@ class Strace(object):
       if line.endswith(self.UNFINISHED):
         line = line[:-len(self.UNFINISHED)]
         m = self.RE_UNFINISHED.match(line)
-        assert m, line
+        assert m, '%d: %s' % (self._line_number, line)
         self._pending_calls[(m.group(1), m.group(2))] = line
         return
 
@@ -285,7 +287,7 @@ class Strace(object):
         line = pending + m.group(3)
 
       m = self.RE_HEADER.match(line)
-      assert m, line
+      assert m, '%d: %s' % (self._line_number, line)
       return getattr(self, 'handle_%s' % m.group(2))(
           int(m.group(1)),
           m.group(2),
