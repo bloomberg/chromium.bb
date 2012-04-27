@@ -1104,6 +1104,7 @@ class AutomationProviderSearchEngineObserver
  public:
   AutomationProviderSearchEngineObserver(
       AutomationProvider* provider,
+      Profile* profile,
       IPC::Message* reply_message);
   virtual ~AutomationProviderSearchEngineObserver();
 
@@ -1111,6 +1112,7 @@ class AutomationProviderSearchEngineObserver
 
  private:
   base::WeakPtr<AutomationProvider> provider_;
+  Profile* profile_;
   scoped_ptr<IPC::Message> reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderSearchEngineObserver);

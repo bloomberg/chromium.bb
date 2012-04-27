@@ -3262,7 +3262,7 @@ void TestingAutomationProvider::LoadSearchEngineInfo(
     return;
   }
   url_model->AddObserver(new AutomationProviderSearchEngineObserver(
-      this, reply_message));
+      this, browser->profile(), reply_message));
   url_model->Load();
 }
 
@@ -3331,12 +3331,12 @@ void TestingAutomationProvider::AddOrEditSearchEngine(
       return;
     }
     url_model->AddObserver(new AutomationProviderSearchEngineObserver(
-        this, reply_message));
+        this, browser->profile(), reply_message));
     controller->ModifyTemplateURL(template_url, new_title, new_keyword,
                                   new_ref_url);
   } else {
     url_model->AddObserver(new AutomationProviderSearchEngineObserver(
-        this, reply_message));
+        this, browser->profile(), reply_message));
     controller->AddTemplateURL(new_title, new_keyword, new_ref_url);
   }
 }
@@ -3366,11 +3366,11 @@ void TestingAutomationProvider::PerformActionOnSearchEngine(
   }
   if (action == "delete") {
     url_model->AddObserver(new AutomationProviderSearchEngineObserver(
-      this, reply_message));
+      this, browser->profile(), reply_message));
     url_model->Remove(template_url);
   } else if (action == "default") {
     url_model->AddObserver(new AutomationProviderSearchEngineObserver(
-      this, reply_message));
+      this, browser->profile(), reply_message));
     url_model->SetDefaultSearchProvider(template_url);
   } else {
     AutomationJSONReply(this, reply_message).SendError(

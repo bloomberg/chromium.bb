@@ -1202,8 +1202,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = {'command': 'GetInstantInfo'}
     return self._GetResultFromJSONRequest(cmd_dict)['instant']
 
-  def GetSearchEngineInfo(self):
+  def GetSearchEngineInfo(self, windex=0):
     """Return info about search engines.
+
+    Args:
+      windex: The window index, default is 0.
 
     Returns:
       An ordered list of dictionaries describing info about each search engine.
@@ -1231,11 +1234,13 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
             u'url': u'http://search.yahoo.com/search?p={searchTerms}'},
     """
     # Ensure that the search engine profile is loaded into data model.
-    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'})
+    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'},
+                                   windex=windex)
     cmd_dict = {'command': 'GetSearchEngineInfo'}
-    return self._GetResultFromJSONRequest(cmd_dict)['search_engines']
+    return self._GetResultFromJSONRequest(
+        cmd_dict, windex=windex)['search_engines']
 
-  def AddSearchEngine(self, title, keyword, url):
+  def AddSearchEngine(self, title, keyword, url, windex=0):
     """Add a search engine, as done through the search engines UI.
 
     Args:
@@ -1243,16 +1248,19 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       keyword: keyword, used to initiate a custom search from omnibox.
       url: url template for this search engine's query.
            '%s' is replaced by search query string when used to search.
+      windex: The window index, default is 0.
     """
     # Ensure that the search engine profile is loaded into data model.
-    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'})
+    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'},
+                                   windex=windex)
     cmd_dict = {'command': 'AddOrEditSearchEngine',
                 'new_title': title,
                 'new_keyword': keyword,
                 'new_url': url}
-    self._GetResultFromJSONRequest(cmd_dict)
+    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
-  def EditSearchEngine(self, keyword, new_title, new_keyword, new_url):
+  def EditSearchEngine(self, keyword, new_title, new_keyword, new_url,
+                       windex=0):
     """Edit info for existing search engine.
 
     Args:
@@ -1260,39 +1268,45 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       new_title: new name for this search engine.
       new_keyword: new keyword for this search engine.
       new_url: new url for this search engine.
+      windex: The window index, default is 0.
     """
     # Ensure that the search engine profile is loaded into data model.
-    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'})
+    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'},
+                                   windex=windex)
     cmd_dict = {'command': 'AddOrEditSearchEngine',
                 'keyword': keyword,
                 'new_title': new_title,
                 'new_keyword': new_keyword,
                 'new_url': new_url}
-    self._GetResultFromJSONRequest(cmd_dict)
+    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
-  def DeleteSearchEngine(self, keyword):
+  def DeleteSearchEngine(self, keyword, windex=0):
     """Delete search engine with given keyword.
 
     Args:
       keyword: the keyword string of the search engine to delete.
+      windex: The window index, default is 0.
     """
     # Ensure that the search engine profile is loaded into data model.
-    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'})
+    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'},
+                                   windex=windex)
     cmd_dict = {'command': 'PerformActionOnSearchEngine', 'keyword': keyword,
                 'action': 'delete'}
-    self._GetResultFromJSONRequest(cmd_dict)
+    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
-  def MakeSearchEngineDefault(self, keyword):
+  def MakeSearchEngineDefault(self, keyword, windex=0):
     """Make search engine with given keyword the default search.
 
     Args:
       keyword: the keyword string of the search engine to make default.
+      windex: The window index, default is 0.
     """
     # Ensure that the search engine profile is loaded into data model.
-    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'})
+    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'},
+                                   windex=windex)
     cmd_dict = {'command': 'PerformActionOnSearchEngine', 'keyword': keyword,
                 'action': 'default'}
-    self._GetResultFromJSONRequest(cmd_dict)
+    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
   def _EnsureProtectorCheck(self):
     """Ensure that Protector check for changed settings has been performed in

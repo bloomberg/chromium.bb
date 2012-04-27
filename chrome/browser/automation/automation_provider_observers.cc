@@ -1529,8 +1529,10 @@ void AllDownloadsCompleteObserver::ReplyIfNecessary() {
 
 AutomationProviderSearchEngineObserver::AutomationProviderSearchEngineObserver(
     AutomationProvider* provider,
+    Profile* profile,
     IPC::Message* reply_message)
     : provider_(provider->AsWeakPtr()),
+      profile_(profile),
       reply_message_(reply_message) {
 }
 
@@ -1540,7 +1542,7 @@ AutomationProviderSearchEngineObserver::
 void AutomationProviderSearchEngineObserver::OnTemplateURLServiceChanged() {
   if (provider_) {
     TemplateURLService* url_service =
-        TemplateURLServiceFactory::GetForProfile(provider_->profile());
+        TemplateURLServiceFactory::GetForProfile(profile_);
     url_service->RemoveObserver(this);
     AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(NULL);
   }
