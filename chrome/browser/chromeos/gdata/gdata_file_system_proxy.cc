@@ -86,15 +86,14 @@ GDataFileSystemProxy::~GDataFileSystemProxy() {
 
 void GDataFileSystemProxy::GetFileInfo(const GURL& file_url,
     const FileSystemOperationInterface::GetMetadataCallback& callback) {
-  scoped_refptr<base::MessageLoopProxy> proxy =
-      base::MessageLoopProxy::current();
   FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
-    proxy->PostTask(FROM_HERE,
-                    base::Bind(callback,
-                               base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                               base::PlatformFileInfo(),
-                               FilePath()));
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                   base::PlatformFileInfo(),
+                   FilePath()));
     return;
   }
 
@@ -103,7 +102,6 @@ void GDataFileSystemProxy::GetFileInfo(const GURL& file_url,
       base::Bind(&GDataFileSystemProxy::OnGetMetadata,
                  this,
                  file_path,
-                 proxy,
                  callback));
 }
 
@@ -142,15 +140,14 @@ void DoNothing(base::PlatformFileError /*error*/,
 
 void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
     const FileSystemOperationInterface::ReadDirectoryCallback& callback) {
-  scoped_refptr<base::MessageLoopProxy> proxy =
-      base::MessageLoopProxy::current();
   FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
-    proxy->PostTask(FROM_HERE,
-                    base::Bind(callback,
-                               base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                               std::vector<base::FileUtilProxy::Entry>(),
-                               false));
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                   std::vector<base::FileUtilProxy::Entry>(),
+                   false));
     return;
   }
 
@@ -159,7 +156,6 @@ void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
       base::Bind(&GDataFileSystemProxy::OnReadDirectory,
                  this,
                  file_system_->hide_hosted_documents(),
-                 proxy,
                  callback));
 }
 
@@ -228,31 +224,22 @@ bool GDataFileSystemProxy::ValidateUrl(const GURL& url, FilePath* file_path) {
 
 void GDataFileSystemProxy::OnGetMetadata(
     const FilePath& file_path,
-    scoped_refptr<base::MessageLoopProxy> proxy,
     const FileSystemOperationInterface::GetMetadataCallback& callback,
     base::PlatformFileError error,
     const FilePath& directory_path,
     GDataEntry* entry) {
   if (error != base::PLATFORM_FILE_OK) {
-    proxy->PostTask(FROM_HERE,
-                    base::Bind(callback,
-                               error,
-                               base::PlatformFileInfo(),
-                               FilePath()));
+    callback.Run(error, base::PlatformFileInfo(), FilePath());
     return;
   }
 
-  proxy->PostTask(FROM_HERE,
-                  base::Bind(callback,
-                             base::PLATFORM_FILE_OK,
-                             entry->file_info(),
-                             file_path));
+  callback.Run(base::PLATFORM_FILE_OK, entry->file_info(), file_path);
 }
 
 void GDataFileSystemProxy::OnReadDirectory(
     bool hide_hosted_documents,
-    scoped_refptr<base::MessageLoopProxy> proxy,
-    const FileSystemOperationInterface::ReadDirectoryCallback& callback,
+    const FileSystemOperationInterface::ReadDirectoryCallback&
+    callback,
     base::PlatformFileError error,
     const FilePath& directory_path,
     GDataEntry* entry) {
@@ -263,11 +250,7 @@ void GDataFileSystemProxy::OnReadDirectory(
     error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
 
   if (error != base::PLATFORM_FILE_OK) {
-    proxy->PostTask(FROM_HERE,
-                    base::Bind(callback,
-                               error,
-                               std::vector<base::FileUtilProxy::Entry>(),
-                               false));
+    callback.Run(error, std::vector<base::FileUtilProxy::Entry>(), false);
     return;
   }
   std::vector<base::FileUtilProxy::Entry> entries;
@@ -284,11 +267,7 @@ void GDataFileSystemProxy::OnReadDirectory(
     entries.push_back(GDataEntryToFileUtilProxyEntry(*(iter->second)));
   }
 
-  proxy->PostTask(FROM_HERE,
-                  base::Bind(callback,
-                             base::PLATFORM_FILE_OK,
-                             entries,
-                             false));
+  callback.Run(base::PLATFORM_FILE_OK, entries, false);
 }
 
 }  // namespace gdata

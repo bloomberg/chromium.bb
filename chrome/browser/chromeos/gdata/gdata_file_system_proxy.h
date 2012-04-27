@@ -63,7 +63,6 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // be used outside of this method.
   void OnGetMetadata(
       const FilePath& file_path,
-      scoped_refptr<base::MessageLoopProxy> proxy,
       const fileapi::FileSystemOperationInterface::GetMetadataCallback&
           callback,
       base::PlatformFileError error,
@@ -76,7 +75,6 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // be used outside of this method.
   void OnReadDirectory(
       bool hide_hosted_documents,
-      scoped_refptr<base::MessageLoopProxy> proxy,
       const fileapi::FileSystemOperationInterface::ReadDirectoryCallback&
           callback,
       base::PlatformFileError error,
