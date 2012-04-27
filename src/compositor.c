@@ -2608,14 +2608,15 @@ load_module(const char *name, const char *entrypoint, void **handle)
 	module = dlopen(path, RTLD_LAZY);
 	if (!module) {
 		fprintf(stderr,
-			"failed to load module: %s\n", dlerror());
+			"failed to load module '%s': %s\n", path, dlerror());
 		return NULL;
 	}
 
 	init = dlsym(module, entrypoint);
 	if (!init) {
 		fprintf(stderr,
-			"failed to lookup init function: %s\n", dlerror());
+			"failed to lookup init function in '%s': %s\n",
+			path, dlerror());
 		return NULL;
 	}
 
@@ -2639,7 +2640,7 @@ int main(int argc, char *argv[])
 	char *shell = NULL;
 	char *module = NULL;
 	int32_t idle_time = 300;
-	int32_t xserver;
+	int32_t xserver = 0;
 	char *socket_name = NULL;
 	char *config_file;
 
