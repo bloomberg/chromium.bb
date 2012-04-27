@@ -22,7 +22,6 @@
 #include "webkit/plugins/plugin_switches.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_text_input_impl.h"
 #include "webkit/plugins/ppapi/resource_creation_impl.h"
 
 using ppapi::CheckIdType;
@@ -141,9 +140,6 @@ HostGlobals::~HostGlobals() {
     return proxy.get();
 
   switch (id) {
-    case ::ppapi::API_ID_PPB_TEXT_INPUT:
-      proxy.reset(new PPB_TextInput_Impl(instance));
-      break;
     case ::ppapi::API_ID_RESOURCE_CREATION:
       proxy.reset(new ResourceCreationImpl(instance));
       break;

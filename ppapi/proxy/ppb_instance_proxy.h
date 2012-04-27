@@ -91,6 +91,17 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual int32_t LockMouse(PP_Instance instance,
                             PP_CompletionCallback callback) OVERRIDE;
   virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
+  virtual void SetTextInputType(PP_Instance instance,
+                                PP_TextInput_Type type) OVERRIDE;
+  virtual void UpdateCaretPosition(PP_Instance instance,
+                                   const PP_Rect& caret,
+                                   const PP_Rect& bounding_box) OVERRIDE;
+  virtual void CancelCompositionText(PP_Instance instance) OVERRIDE;
+  virtual void SelectionChanged(PP_Instance instance) OVERRIDE;
+  virtual void UpdateSurroundingText(PP_Instance instance,
+                                     const char* text,
+                                     uint32_t caret,
+                                     uint32_t anchor) OVERRIDE;
 
 #if !defined(OS_NACL)
   virtual PP_Var ResolveRelativeToDocument(
@@ -150,6 +161,16 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                           int32_t type,
                           const ppapi::HostResource& custom_image,
                           const PP_Point& hot_spot);
+  void OnHostMsgSetTextInputType(PP_Instance instance, PP_TextInput_Type type);
+  void OnHostMsgUpdateCaretPosition(PP_Instance instance,
+                                    const PP_Rect& caret,
+                                    const PP_Rect& bounding_box);
+  void OnHostMsgCancelCompositionText(PP_Instance instance);
+  void OnHostMsgUpdateSurroundingText(
+      PP_Instance instance,
+      const std::string& text,
+      uint32_t caret,
+      uint32_t anchor);
 #if !defined(OS_NACL)
   void OnHostMsgResolveRelativeToDocument(PP_Instance instance,
                                           SerializedVarReceiveInput relative,

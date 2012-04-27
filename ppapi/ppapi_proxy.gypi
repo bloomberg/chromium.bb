@@ -120,8 +120,6 @@
         'proxy/ppb_tcp_socket_private_proxy.h',
         'proxy/ppb_testing_proxy.cc',
         'proxy/ppb_testing_proxy.h',
-        'proxy/ppb_text_input_proxy.cc',
-        'proxy/ppb_text_input_proxy.h',
         'proxy/ppb_udp_socket_private_proxy.cc',
         'proxy/ppb_udp_socket_private_proxy.h',
         'proxy/ppb_url_loader_proxy.cc',

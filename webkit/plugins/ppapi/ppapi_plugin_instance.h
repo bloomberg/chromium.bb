@@ -180,14 +180,6 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   bool HandleCompositionEnd(const string16& text);
   bool HandleTextInput(const string16& text);
 
-  // Implementation of composition API.
-  void UpdateCaretPosition(const gfx::Rect& caret,
-                           const gfx::Rect& bounding_box);
-  void SetTextInputType(ui::TextInputType type);
-  void SelectionChanged();
-  void UpdateSurroundingText(const std::string& text,
-                             size_t caret, size_t anchor);
-
   // Gets the current text input status.
   ui::TextInputType text_input_type() const { return text_input_type_; }
   gfx::Rect GetCaretBounds() const;
@@ -382,6 +374,17 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   virtual int32_t LockMouse(PP_Instance instance,
                             PP_CompletionCallback callback) OVERRIDE;
   virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
+  virtual void SetTextInputType(PP_Instance instance,
+                                PP_TextInput_Type type) OVERRIDE;
+  virtual void UpdateCaretPosition(PP_Instance instance,
+                                   const PP_Rect& caret,
+                                   const PP_Rect& bounding_box) OVERRIDE;
+  virtual void CancelCompositionText(PP_Instance instance) OVERRIDE;
+  virtual void SelectionChanged(PP_Instance instance) OVERRIDE;
+  virtual void UpdateSurroundingText(PP_Instance instance,
+                                     const char* text,
+                                     uint32_t caret,
+                                     uint32_t anchor) OVERRIDE;
   virtual PP_Var ResolveRelativeToDocument(
       PP_Instance instance,
       PP_Var relative,

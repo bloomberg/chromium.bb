@@ -899,18 +899,16 @@ IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_SetCursor,
                     int32_t /* type */,
                     ppapi::HostResource /* custom_image */,
                     PP_Point /* hot_spot */)
-
-// PPB_TextInput.
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBTextInput_SetTextInputType,
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_SetTextInputType,
                     PP_Instance /* instance */,
                     PP_TextInput_Type /* type */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBTextInput_UpdateCaretPosition,
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_UpdateCaretPosition,
                     PP_Instance /* instance */,
                     PP_Rect /* caret */,
                     PP_Rect /* bounding_box */)
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBTextInput_CancelCompositionText,
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBInstance_CancelCompositionText,
                     PP_Instance /* instance */)
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBTextInput_UpdateSurroundingText,
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_UpdateSurroundingText,
                     PP_Instance /* instance */,
                     std::string /* text */,
                     uint32_t /* caret */,

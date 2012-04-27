@@ -6,6 +6,7 @@
 #define PPAPI_THUNK_INSTANCE_API_H_
 
 #include "ppapi/c/dev/ppb_console_dev.h"
+#include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -109,6 +110,19 @@ class PPB_Instance_FunctionAPI {
   virtual int32_t LockMouse(PP_Instance instance,
                             PP_CompletionCallback callback) = 0;
   virtual void UnlockMouse(PP_Instance instance) = 0;
+
+  // TextInput.
+  virtual void SetTextInputType(PP_Instance instance,
+                                PP_TextInput_Type type) = 0;
+  virtual void UpdateCaretPosition(PP_Instance instance,
+                                   const PP_Rect& caret,
+                                   const PP_Rect& bounding_box) = 0;
+  virtual void CancelCompositionText(PP_Instance instance) = 0;
+  virtual void SelectionChanged(PP_Instance instance) = 0;
+  virtual void UpdateSurroundingText(PP_Instance instance,
+                                     const char* text,
+                                     uint32_t caret,
+                                     uint32_t anchor) = 0;
 
   // Zoom.
   virtual void ZoomChanged(PP_Instance instance, double factor) = 0;

@@ -30,7 +30,7 @@
 #undef PostMessage
 #endif
 
-using ppapi::thunk::EnterFunctionNoLock;
+using ppapi::thunk::EnterInstanceNoLock;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Instance_FunctionAPI;
 
@@ -39,10 +39,23 @@ namespace proxy {
 
 namespace {
 
-typedef EnterFunctionNoLock<PPB_Instance_FunctionAPI> EnterInstanceNoLock;
-
 InterfaceProxy* CreateInstanceProxy(Dispatcher* dispatcher) {
   return new PPB_Instance_Proxy(dispatcher);
+}
+
+void RequestSurroundingText(PP_Instance instance) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (!dispatcher)
+    return;  // Instance has gone away while message was pending.
+
+  // Just fake out a RequestSurroundingText message to the proxy for the PPP
+  // interface.
+  InterfaceProxy* proxy = dispatcher->GetInterfaceProxy(API_ID_PPB_TEXT_INPUT);
+  if (!proxy)
+    return;
+  proxy->OnMessageReceived(PpapiMsg_PPPTextInput_RequestSurroundingText(
+      API_ID_PPP_TEXT_INPUT, instance,
+      PPB_Instance_Shared::kExtraCharsForTextInput));
 }
 
 }  // namespace
@@ -113,6 +126,14 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgUnlockMouse)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SetCursor,
                         OnHostMsgSetCursor)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SetTextInputType,
+                        OnHostMsgSetTextInputType)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_UpdateCaretPosition,
+                        OnHostMsgUpdateCaretPosition)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_CancelCompositionText,
+                        OnHostMsgCancelCompositionText)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_UpdateSurroundingText,
+                        OnHostMsgUpdateSurroundingText)
 #if !defined(OS_NACL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_ResolveRelativeToDocument,
                         OnHostMsgResolveRelativeToDocument)
@@ -441,10 +462,52 @@ void PPB_Instance_Proxy::UnlockMouse(PP_Instance instance) {
       API_ID_PPB_INSTANCE, instance));
 }
 
+void PPB_Instance_Proxy::SetTextInputType(PP_Instance instance,
+                                          PP_TextInput_Type type) {
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_SetTextInputType(
+      API_ID_PPB_INSTANCE, instance, type));
+}
+
+void PPB_Instance_Proxy::UpdateCaretPosition(PP_Instance instance,
+                                             const PP_Rect& caret,
+                                             const PP_Rect& bounding_box) {
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_UpdateCaretPosition(
+      API_ID_PPB_INSTANCE, instance, caret, bounding_box));
+}
+
+void PPB_Instance_Proxy::CancelCompositionText(PP_Instance instance) {
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_CancelCompositionText(
+      API_ID_PPB_INSTANCE, instance));
+}
+
+void PPB_Instance_Proxy::SelectionChanged(PP_Instance instance) {
+  // The "right" way to do this is to send the message to the host. However,
+  // all it will do it call RequestSurroundingText with a hardcoded number of
+  // characters in response, which is an entire IPC round-trip.
+  //
+  // We can avoid this round-trip by just implementing the
+  // RequestSurroundingText logic in the plugin process. If the logic in the
+  // host becomes more complex (like a more adaptive number of characters),
+  // we'll need to reevanuate whether we want to do the round trip instead.
+  //
+  // Be careful to post a task to avoid reentering the plugin.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&RequestSurroundingText, instance));
+}
+
+void PPB_Instance_Proxy::UpdateSurroundingText(PP_Instance instance,
+                                               const char* text,
+                                               uint32_t caret,
+                                               uint32_t anchor) {
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_UpdateSurroundingText(
+      API_ID_PPB_INSTANCE, instance, text, caret, anchor));
+}
+
 void PPB_Instance_Proxy::OnHostMsgGetWindowObject(
     PP_Instance instance,
     SerializedVarReturnValue result) {
-  EnterInstanceNoLock enter(instance, false);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     result.Return(dispatcher(), enter.functions()->GetWindowObject(instance));
 }
@@ -452,7 +515,7 @@ void PPB_Instance_Proxy::OnHostMsgGetWindowObject(
 void PPB_Instance_Proxy::OnHostMsgGetOwnerElementObject(
     PP_Instance instance,
     SerializedVarReturnValue result) {
-  EnterInstanceNoLock enter(instance, false);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     result.Return(dispatcher(),
                   enter.functions()->GetOwnerElementObject(instance));
@@ -462,7 +525,7 @@ void PPB_Instance_Proxy::OnHostMsgGetOwnerElementObject(
 void PPB_Instance_Proxy::OnHostMsgBindGraphics(PP_Instance instance,
                                                const HostResource& device,
                                                PP_Bool* result) {
-  EnterInstanceNoLock enter(instance, false);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     *result = enter.functions()->BindGraphics(instance,
                                               device.host_resource());
@@ -471,21 +534,21 @@ void PPB_Instance_Proxy::OnHostMsgBindGraphics(PP_Instance instance,
 
 void PPB_Instance_Proxy::OnHostMsgGetAudioHardwareOutputSampleRate(
     PP_Instance instance, uint32_t* result) {
-  EnterInstanceNoLock enter(instance, false);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     *result = enter.functions()->GetAudioHardwareOutputSampleRate(instance);
 }
 
 void PPB_Instance_Proxy::OnHostMsgGetAudioHardwareOutputBufferSize(
     PP_Instance instance, uint32_t* result) {
-  EnterInstanceNoLock enter(instance, false);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     *result = enter.functions()->GetAudioHardwareOutputBufferSize(instance);
 }
 
 void PPB_Instance_Proxy::OnHostMsgIsFullFrame(PP_Instance instance,
                                               PP_Bool* result) {
-  EnterInstanceNoLock enter(instance, false);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     *result = enter.functions()->IsFullFrame(instance);
 }
@@ -495,7 +558,7 @@ void PPB_Instance_Proxy::OnHostMsgExecuteScript(
     SerializedVarReceiveInput script,
     SerializedVarOutParam out_exception,
     SerializedVarReturnValue result) {
-  EnterInstanceNoLock enter(instance, false);
+  EnterInstanceNoLock enter(instance);
   if (enter.failed())
     return;
 
@@ -513,7 +576,7 @@ void PPB_Instance_Proxy::OnHostMsgExecuteScript(
 void PPB_Instance_Proxy::OnHostMsgGetDefaultCharSet(
     PP_Instance instance,
     SerializedVarReturnValue result) {
-  EnterInstanceNoLock enter(instance, false);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     result.Return(dispatcher(), enter.functions()->GetDefaultCharSet(instance));
 }
@@ -521,7 +584,7 @@ void PPB_Instance_Proxy::OnHostMsgGetDefaultCharSet(
 void PPB_Instance_Proxy::OnHostMsgSetFullscreen(PP_Instance instance,
                                                 PP_Bool fullscreen,
                                                 PP_Bool* result) {
-  EnterInstanceNoLock enter(instance, false);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     *result = enter.functions()->SetFullscreen(instance, fullscreen);
 }
@@ -530,7 +593,7 @@ void PPB_Instance_Proxy::OnHostMsgSetFullscreen(PP_Instance instance,
 void PPB_Instance_Proxy::OnHostMsgGetScreenSize(PP_Instance instance,
                                                 PP_Bool* result,
                                                 PP_Size* size) {
-  EnterInstanceNoLock enter(instance, false);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     *result = enter.functions()->GetScreenSize(instance, size);
 }
@@ -538,7 +601,7 @@ void PPB_Instance_Proxy::OnHostMsgGetScreenSize(PP_Instance instance,
 void PPB_Instance_Proxy::OnHostMsgRequestInputEvents(PP_Instance instance,
                                                      bool is_filtering,
                                                      uint32_t event_classes) {
-  EnterInstanceNoLock enter(instance, false);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     if (is_filtering)
       enter.functions()->RequestFilteringInputEvents(instance, event_classes);
@@ -549,14 +612,14 @@ void PPB_Instance_Proxy::OnHostMsgRequestInputEvents(PP_Instance instance,
 
 void PPB_Instance_Proxy::OnHostMsgClearInputEvents(PP_Instance instance,
                                                    uint32_t event_classes) {
-  EnterInstanceNoLock enter(instance, false);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     enter.functions()->ClearInputEventRequest(instance, event_classes);
 }
 
 void PPB_Instance_Proxy::OnMsgHandleInputEventAck(PP_Instance instance,
                                                   PP_TimeTicks timestamp) {
-  EnterInstanceNoLock enter(instance, false);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     enter.functions()->ClosePendingUserGesture(instance, timestamp);
 }
@@ -564,7 +627,7 @@ void PPB_Instance_Proxy::OnMsgHandleInputEventAck(PP_Instance instance,
 void PPB_Instance_Proxy::OnHostMsgPostMessage(
     PP_Instance instance,
     SerializedVarReceiveInput message) {
-  EnterInstanceNoLock enter(instance, false);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     enter.functions()->PostMessage(instance, message.Get(dispatcher()));
 }
@@ -580,7 +643,7 @@ void PPB_Instance_Proxy::OnHostMsgLockMouse(PP_Instance instance) {
 }
 
 void PPB_Instance_Proxy::OnHostMsgUnlockMouse(PP_Instance instance) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     enter.functions()->UnlockMouse(instance);
 }
@@ -590,7 +653,7 @@ void PPB_Instance_Proxy::OnHostMsgResolveRelativeToDocument(
     PP_Instance instance,
     SerializedVarReceiveInput relative,
     SerializedVarReturnValue result) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     result.Return(dispatcher(),
                   enter.functions()->ResolveRelativeToDocument(
@@ -602,7 +665,7 @@ void PPB_Instance_Proxy::OnHostMsgDocumentCanRequest(
     PP_Instance instance,
     SerializedVarReceiveInput url,
     PP_Bool* result) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     *result = enter.functions()->DocumentCanRequest(instance,
                                                     url.Get(dispatcher()));
@@ -612,14 +675,14 @@ void PPB_Instance_Proxy::OnHostMsgDocumentCanRequest(
 void PPB_Instance_Proxy::OnHostMsgDocumentCanAccessDocument(PP_Instance active,
                                                             PP_Instance target,
                                                             PP_Bool* result) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(active, true);
+  EnterInstanceNoLock enter(active);
   if (enter.succeeded())
     *result = enter.functions()->DocumentCanAccessDocument(active, target);
 }
 
 void PPB_Instance_Proxy::OnHostMsgGetDocumentURL(PP_Instance instance,
                                                  SerializedVarReturnValue result) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     result.Return(dispatcher(),
                   enter.functions()->GetDocumentURL(instance, NULL));
@@ -629,7 +692,7 @@ void PPB_Instance_Proxy::OnHostMsgGetDocumentURL(PP_Instance instance,
 void PPB_Instance_Proxy::OnHostMsgGetPluginInstanceURL(
     PP_Instance instance,
     SerializedVarReturnValue result) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     result.Return(dispatcher(),
                   enter.functions()->GetPluginInstanceURL(instance, NULL));
@@ -642,11 +705,45 @@ void  PPB_Instance_Proxy::OnHostMsgSetCursor(
     int32_t type,
     const ppapi::HostResource& custom_image,
     const PP_Point& hot_spot) {
-  EnterInstanceNoLock enter(instance, true);
+  EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     enter.functions()->SetCursor(
         instance, static_cast<PP_MouseCursor_Type>(type),
         custom_image.host_resource(), &hot_spot);
+  }
+}
+
+void PPB_Instance_Proxy::OnHostMsgSetTextInputType(PP_Instance instance,
+                                                   PP_TextInput_Type type) {
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded())
+    enter.functions()->SetTextInputType(instance, type);
+}
+
+void PPB_Instance_Proxy::OnHostMsgUpdateCaretPosition(
+    PP_Instance instance,
+    const PP_Rect& caret,
+    const PP_Rect& bounding_box) {
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded())
+    enter.functions()->UpdateCaretPosition(instance, caret, bounding_box);
+}
+
+void PPB_Instance_Proxy::OnHostMsgCancelCompositionText(PP_Instance instance) {
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded())
+    enter.functions()->CancelCompositionText(instance);
+}
+
+void PPB_Instance_Proxy::OnHostMsgUpdateSurroundingText(
+    PP_Instance instance,
+    const std::string& text,
+    uint32_t caret,
+    uint32_t anchor) {
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded()) {
+    enter.functions()->UpdateSurroundingText(instance, text.c_str(), caret,
+                                             anchor);
   }
 }
 

@@ -151,6 +151,24 @@ void DrawEmptyRectangle(HDC dc) {
 
 namespace {
 
+// Check PP_TextInput_Type and ui::TextInputType are kept in sync.
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_NONE) == \
+    int(PP_TEXTINPUT_TYPE_NONE), mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_TEXT) == \
+    int(PP_TEXTINPUT_TYPE_TEXT), mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_PASSWORD) == \
+    int(PP_TEXTINPUT_TYPE_PASSWORD), mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_SEARCH) == \
+    int(PP_TEXTINPUT_TYPE_SEARCH), mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_EMAIL) == \
+    int(PP_TEXTINPUT_TYPE_EMAIL), mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_NUMBER) == \
+    int(PP_TEXTINPUT_TYPE_NUMBER), mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_TELEPHONE) == \
+    int(PP_TEXTINPUT_TYPE_TELEPHONE), mismatching_enums);
+COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_URL) == \
+    int(PP_TEXTINPUT_TYPE_URL), mismatching_enums);
+
 // The default text input type is to regard the plugin always accept text input.
 // This is for allowing users to use input methods even on completely-IME-
 // unaware plugins (e.g., PPAPI Flash or PDF plugin for M16).
@@ -589,42 +607,6 @@ bool PluginInstance::HandleCompositionEnd(const string16& text) {
 bool PluginInstance::HandleTextInput(const string16& text) {
   return SendCompositionEventToPlugin(PP_INPUTEVENT_TYPE_IME_TEXT,
                                       text);
-}
-
-void PluginInstance::UpdateCaretPosition(const gfx::Rect& caret,
-                                         const gfx::Rect& bounding_box) {
-  text_input_caret_ = caret;
-  text_input_caret_bounds_ = bounding_box;
-  text_input_caret_set_ = true;
-  delegate()->PluginCaretPositionChanged(this);
-}
-
-void PluginInstance::SetTextInputType(ui::TextInputType type) {
-  text_input_type_ = type;
-  delegate()->PluginTextInputTypeChanged(this);
-}
-
-void PluginInstance::SelectionChanged() {
-  // TODO(kinaba): currently the browser always calls RequestSurroundingText.
-  // It can be optimized so that it won't call it back until the information
-  // is really needed.
-
-  // Avoid calling in nested context or else this will reenter the plugin. This
-  // uses a weak pointer rather than exploiting the fact that this class is
-  // refcounted because we don't actually want this operation to affect the
-  // lifetime of the instance.
-  MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&PluginInstance::RequestSurroundingText,
-                 AsWeakPtr(),
-                 static_cast<size_t>(kExtraCharsForTextInput)));
-}
-
-void PluginInstance::UpdateSurroundingText(const std::string& text,
-                                           size_t caret, size_t anchor) {
-  surrounding_text_ = text;
-  selection_caret_ = caret;
-  selection_anchor_ = anchor;
-  delegate()->PluginSelectionChanged(this);
 }
 
 void PluginInstance::GetSurroundingText(string16* text,
@@ -1910,6 +1892,53 @@ int32_t PluginInstance::LockMouse(PP_Instance instance,
 
 void PluginInstance::UnlockMouse(PP_Instance instance) {
   delegate()->UnlockMouse(this);
+}
+
+void PluginInstance::SetTextInputType(PP_Instance instance,
+                                      PP_TextInput_Type type) {
+  int itype = type;
+  if (itype < 0 || itype > ui::TEXT_INPUT_TYPE_URL)
+    itype = ui::TEXT_INPUT_TYPE_NONE;
+  text_input_type_ = static_cast<ui::TextInputType>(itype);
+  delegate()->PluginTextInputTypeChanged(this);
+}
+
+void PluginInstance::UpdateCaretPosition(PP_Instance instance,
+                                         const PP_Rect& caret,
+                                         const PP_Rect& bounding_box) {
+  text_input_caret_ = PP_ToGfxRect(caret);
+  text_input_caret_bounds_ = PP_ToGfxRect(bounding_box);
+  text_input_caret_set_ = true;
+  delegate()->PluginCaretPositionChanged(this);
+}
+
+void PluginInstance::CancelCompositionText(PP_Instance instance) {
+  delegate()->PluginRequestedCancelComposition(this);
+}
+
+void PluginInstance::SelectionChanged(PP_Instance instance) {
+  // TODO(kinaba): currently the browser always calls RequestSurroundingText.
+  // It can be optimized so that it won't call it back until the information
+  // is really needed.
+
+  // Avoid calling in nested context or else this will reenter the plugin. This
+  // uses a weak pointer rather than exploiting the fact that this class is
+  // refcounted because we don't actually want this operation to affect the
+  // lifetime of the instance.
+  MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&PluginInstance::RequestSurroundingText,
+                 AsWeakPtr(),
+                 static_cast<size_t>(kExtraCharsForTextInput)));
+}
+
+void PluginInstance::UpdateSurroundingText(PP_Instance instance,
+                                           const char* text,
+                                           uint32_t caret,
+                                           uint32_t anchor) {
+  surrounding_text_ = text;
+  selection_caret_ = caret;
+  selection_anchor_ = anchor;
+  delegate()->PluginSelectionChanged(this);
 }
 
 PP_Var PluginInstance::ResolveRelativeToDocument(
