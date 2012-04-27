@@ -107,6 +107,8 @@ WebAccessibility::Role ConvertRole(WebKit::WebAccessibilityRole role) {
       return WebAccessibility::ROLE_DRAWER;
     case WebKit::WebAccessibilityRoleEditableText:
       return WebAccessibility::ROLE_EDITABLE_TEXT;
+    case WebKit::WebAccessibilityRoleFooter:
+      return WebAccessibility::ROLE_FOOTER;
     case WebKit::WebAccessibilityRoleGrid:
       return WebAccessibility::ROLE_GRID;
     case WebKit::WebAccessibilityRoleGroup:

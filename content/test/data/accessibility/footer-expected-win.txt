@@ -1,0 +1,3 @@
+ROLE_SYSTEM_DOCUMENT name='' state=FOCUSED,READONLY,FOCUSABLE
+    IA2_ROLE_FOOTER name='' state=READONLY
+        ROLE_SYSTEM_TEXT name='Footer element' state=READONLY

@@ -3109,6 +3109,10 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia2_state_ |= IA2_STATE_SINGLE_LINE;
       ia2_state_ |= IA2_STATE_EDITABLE;
       break;
+    case WebAccessibility::ROLE_FOOTER:
+      ia_role_ = IA2_ROLE_FOOTER;
+      ia_state_|= STATE_SYSTEM_READONLY;
+      break;
     case WebAccessibility::ROLE_GRID:
       ia_role_ = ROLE_SYSTEM_TABLE;
       ia_state_|= STATE_SYSTEM_READONLY;

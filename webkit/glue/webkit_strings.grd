@@ -288,6 +288,9 @@ below:
       <message name="IDS_AX_ROLE_HEADING" desc="accessibility role description for headings">
         heading
       </message>
+      <message name="IDS_AX_ROLE_FOOTER" desc="accessibility role description for footers">
+        footer
+      </message>
 
       <message name="IDS_AX_BUTTON_ACTION_VERB" desc="Verb stating the action that will occur when a button is pressed, as used by accessibility.">
         press

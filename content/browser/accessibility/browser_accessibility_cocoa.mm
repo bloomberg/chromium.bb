@@ -118,6 +118,7 @@ RoleMap BuildRoleMap() {
     { WebAccessibility::ROLE_DOCUMENT, NSAccessibilityGroupRole },
     { WebAccessibility::ROLE_DRAWER, NSAccessibilityDrawerRole },
     { WebAccessibility::ROLE_EDITABLE_TEXT, NSAccessibilityTextFieldRole },
+    { WebAccessibility::ROLE_FOOTER, NSAccessibilityGroupRole },
     { WebAccessibility::ROLE_GRID, NSAccessibilityGridRole },
     { WebAccessibility::ROLE_GROUP, NSAccessibilityGroupRole },
     { WebAccessibility::ROLE_GROW_AREA, NSAccessibilityGrowAreaRole },
@@ -222,6 +223,7 @@ RoleMap BuildSubroleMap() {
     { WebAccessibility::ROLE_DEFINITION_LIST_TERM, @"AXTerm" },
     { WebAccessibility::ROLE_DIALOG, @"AXApplicationDialog" },
     { WebAccessibility::ROLE_DOCUMENT, @"AXDocument" },
+    { WebAccessibility::ROLE_FOOTER, @"AXLandmarkContentInfo" },
     { WebAccessibility::ROLE_LANDMARK_APPLICATION, @"AXLandmarkApplication" },
     { WebAccessibility::ROLE_LANDMARK_BANNER, @"AXLandmarkBanner" },
     { WebAccessibility::ROLE_LANDMARK_COMPLEMENTARY,
@@ -551,6 +553,12 @@ NSDictionary* attributeToMethodNameMap = nil;
         }
       }
     }
+  }
+
+  if (static_cast<WebAccessibility::Role>( browserAccessibility_->role()) ==
+      WebAccessibility::ROLE_FOOTER) {
+      return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+          IDS_AX_ROLE_FOOTER));
   }
 
   return NSAccessibilityRoleDescription(role, nil);
