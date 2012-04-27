@@ -4,20 +4,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__)))))
+
+import contextlib
 import errno
+import mox
 import shutil
 import signal
 import subprocess
 import tempfile
 import time
 import unittest
-import cros_build_lib
-import cros_test_lib
-import mox
-
 import __builtin__
+
+
+from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
+from chromite.lib import signals as cros_signals
 
 # pylint: disable=W0212,R0904
 
@@ -44,8 +50,10 @@ class TestRunCommand(unittest.TestCase):
     self._old_sigint = signal.getsignal(signal.SIGINT)
 
     self.mox = mox.Mox()
-    self.mox.StubOutWithMock(subprocess, 'Popen', use_mock_anything=True)
+    self.mox.StubOutWithMock(cros_build_lib, '_Popen', use_mock_anything=True)
     self.mox.StubOutWithMock(signal, 'signal')
+    self.mox.StubOutWithMock(signal, 'getsignal')
+    self.mox.StubOutWithMock(cros_signals, 'SignalModuleUsable')
     self.proc_mock = self.mox.CreateMockAnything()
     self.error = 'test error'
     self.output = 'test output'
@@ -53,6 +61,45 @@ class TestRunCommand(unittest.TestCase):
   def tearDown(self):
     # Unset anything that we set with mox.
     self.mox.UnsetStubs()
+
+  @contextlib.contextmanager
+  def _SetupPopen(self, cmd, **kwds):
+    cros_signals.SignalModuleUsable().AndReturn(True)
+    ignore_sigint = kwds.pop('ignore_sigint', False)
+
+    for val in ('cwd', 'env', 'stdin', 'stdout', 'stderr'):
+      kwds.setdefault(val, None)
+    kwds.setdefault('shell', False)
+    kwds['close_fds'] = True
+
+    # Make some arbitrary functors we can pretend are signal handlers.
+    # Note that these are intentionally defined on the fly via lambda-
+    # this is to ensure that they're unique to each run.
+    sigint_suppress = lambda signum, frame:None
+    sigint_suppress.__name__ = 'sig_ign_sigint'
+    normal_sigint = lambda signum, frame:None
+    normal_sigint.__name__ = 'sigint'
+    normal_sigterm = lambda signum, frame:None
+    normal_sigterm.__name__ = 'sigterm'
+
+    # If requested, RunCommand will ignore sigints; record that.
+    if ignore_sigint:
+      signal.signal(signal.SIGINT, signal.SIG_IGN).AndReturn(sigint_suppress)
+    else:
+      signal.getsignal(signal.SIGINT).AndReturn(normal_sigint)
+      signal.signal(signal.SIGINT, mox.IgnoreArg()).AndReturn(normal_sigint)
+    signal.getsignal(signal.SIGTERM).AndReturn(normal_sigterm)
+    signal.signal(signal.SIGTERM, mox.IgnoreArg()).AndReturn(normal_sigterm)
+
+    cros_build_lib._Popen(cmd, **kwds).AndReturn(self.proc_mock)
+    yield self.proc_mock
+
+    # If it ignored them, RunCommand will restore sigints; record that.
+    if ignore_sigint:
+      signal.signal(signal.SIGINT, sigint_suppress).AndReturn(signal.SIG_IGN)
+    else:
+      signal.signal(signal.SIGINT, normal_sigint).AndReturn(None)
+    signal.signal(signal.SIGTERM, normal_sigterm).AndReturn(None)
 
   def _AssertCrEqual(self, expected, actual):
     """Helper method to compare two CommandResult objects.
@@ -97,16 +144,10 @@ class TestRunCommand(unittest.TestCase):
         else:
           arg_dict[attr] = None
 
-    # If requested, RunCommand will ignore sigints; record that.
-    if rc_kv.get('ignore_sigint'):
-      signal.signal(signal.SIGINT, signal.SIG_IGN).AndReturn(self._old_sigint)
-
-    subprocess.Popen(real_cmd, **arg_dict).AndReturn(self.proc_mock)
-    self.proc_mock.communicate(None).AndReturn((self.output, self.error))
-
-    # If it ignored them, RunCommand will restore sigints; record that.
-    if rc_kv.get('ignore_sigint'):
-      signal.signal(signal.SIGINT, self._old_sigint).AndReturn(signal.SIG_IGN)
+    with self._SetupPopen(real_cmd,
+                          ignore_sigint=rc_kv.get('ignore_sigint'),
+                          **sp_kv) as proc:
+      proc.communicate(None).AndReturn((self.output, self.error))
 
     self.mox.ReplayAll()
     actual_result = cros_build_lib.RunCommand(cmd, **rc_kv)
@@ -153,18 +194,10 @@ class TestRunCommand(unittest.TestCase):
     """
     cmd = 'test cmd'
 
-    # If requested, RunCommand will ignore sigints; record that.
-    if ignore_sigint:
-      signal.signal(signal.SIGINT, signal.SIG_IGN).AndReturn(self._old_sigint)
 
-    subprocess.Popen(['/bin/bash', '-c', cmd ], cwd=None, env=None,
-                     stdin=None, stdout=None, stderr=None,
-                     shell=False, close_fds=True).AndReturn(self.proc_mock)
-    self.proc_mock.communicate(None).AndReturn((self.output, self.error))
-
-    # If it ignored them, RunCommand will restore sigints; record that.
-    if ignore_sigint:
-      signal.signal(signal.SIGINT, self._old_sigint).AndReturn(signal.SIG_IGN)
+    with self._SetupPopen(['/bin/bash', '-c', cmd],
+                          ignore_sigint=ignore_sigint) as proc:
+      proc.communicate(None).AndReturn((self.output, self.error))
 
     self.mox.ReplayAll()
     self.assertRaises(cros_build_lib.RunCommandError,
@@ -183,18 +216,8 @@ class TestRunCommand(unittest.TestCase):
     """
     cmd = ['test', 'cmd']
 
-    # If requested, RunCommand will ignore sigints; record that.
-    if ignore_sigint:
-      signal.signal(signal.SIGINT, signal.SIG_IGN).AndReturn(self._old_sigint)
-
-    subprocess.Popen(cmd, cwd=None, env=None,
-                     stdin=None, stdout=None, stderr=None,
-                     shell=False, close_fds=True).AndReturn(self.proc_mock)
-    self.proc_mock.communicate(None).AndRaise(ValueError)
-
-    # If it ignored them, RunCommand will restore sigints; record that.
-    if ignore_sigint:
-      signal.signal(signal.SIGINT, self._old_sigint).AndReturn(signal.SIG_IGN)
+    with self._SetupPopen(cmd, ignore_sigint=ignore_sigint) as proc:
+      proc.communicate(None).AndRaise(ValueError)
 
     self.mox.ReplayAll()
     self.assertRaises(ValueError, cros_build_lib.RunCommand, cmd,
@@ -212,10 +235,8 @@ class TestRunCommand(unittest.TestCase):
     expected_result = cros_build_lib.CommandResult()
     expected_result.cmd = real_cmd
 
-    subprocess.Popen(real_cmd, cwd=None, env=None,
-                     stdin=None, stdout=None, stderr=None,
-                     shell=False, close_fds=True).AndReturn(self.proc_mock)
-    self.proc_mock.communicate(None).AndRaise(ValueError)
+    with self._SetupPopen(real_cmd) as proc:
+      proc.communicate(None).AndRaise(ValueError)
 
     self.mox.ReplayAll()
     actual_result = cros_build_lib.RunCommand(cmd, error_ok=True,
@@ -223,7 +244,6 @@ class TestRunCommand(unittest.TestCase):
     self.mox.VerifyAll()
 
     self._AssertCrEqual(expected_result, actual_result)
-
 
   def testEnvWorks(self):
     """Test RunCommand(..., env=xyz) works."""
