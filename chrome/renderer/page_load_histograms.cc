@@ -247,8 +247,11 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   }
   PLT_HISTOGRAM("PLT.CommitToFinish", finish_all_loads - commit);
   if (!first_paint.is_null()) {
-    DCHECK(begin <= first_paint);
-    PLT_HISTOGRAM("PLT.BeginToFirstPaint", first_paint - begin);
+    // 'first_paint' can be before 'begin' for an unknown reason.
+    // See bug http://crbug.com/125273 for details.
+    if (begin <= first_paint) {
+      PLT_HISTOGRAM("PLT.BeginToFirstPaint", first_paint - begin);
+    }
     DCHECK(commit <= first_paint);
     PLT_HISTOGRAM("PLT.CommitToFirstPaint", first_paint - commit);
   }
