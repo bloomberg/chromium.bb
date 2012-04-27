@@ -637,6 +637,10 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   if (swap_delay.ToInternalValue())
     base::PlatformThread::Sleep(swap_delay);
 
+  scoped_completion_runner.Release();
+  if (!completion_task.is_null())
+    completion_task.Run(true);
+
   {
     TRACE_EVENT0("surface", "Present");
     hr = swap_chain_->Present(&rect, &rect, window_, NULL, 0);
