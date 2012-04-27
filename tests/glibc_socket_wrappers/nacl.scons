@@ -1,0 +1,20 @@
+# -*- python -*-
+# Copyright 2012 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+# There is no sock64 in newlib
+if not env.Bit('nacl_glibc'):
+  Return()
+
+test_sock_nexe = env.ComponentProgram('test_sock', 'test_sock.c')
+
+test_sock = env.CommandSelLdrTestNacl(
+    'test_sock.out',
+     test_sock_nexe,
+     args=[env.File('test_sock_data')])
+
+env.AddNodeToTestSuite(test_sock, ['small_tests'], 'run_sock_test')
+

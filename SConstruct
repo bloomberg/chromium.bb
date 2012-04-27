@@ -3241,6 +3241,7 @@ irt_variant_tests = [
     'tests/glibc_file64_test/nacl.scons',
     'tests/glibc_static_test/nacl.scons',
     'tests/glibc_syscall_wrappers/nacl.scons',
+    'tests/glibc_socket_wrappers/nacl.scons',
     'tests/hello_world/nacl.scons',
     'tests/infoleak/nacl.scons',
     'tests/libc_free_hello_world/nacl.scons',
