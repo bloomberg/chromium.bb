@@ -74,14 +74,12 @@ bool IsPepperFlashEnabledByDefault() {
   if (base::win::GetMetroModule())
     return true;
 
-  // For other Windows users, enable only for Canary and Dev users in a field
-  // trial.
-  if (!IsInFieldTrialGroup())
-    return false;
-
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  return channel == chrome::VersionInfo::CHANNEL_CANARY ||
-         channel == chrome::VersionInfo::CHANNEL_DEV;
+  if (channel == chrome::VersionInfo::CHANNEL_CANARY)
+    return true;
+
+  // For other Windows users, enable only for Dev users in a field trial.
+  return channel == chrome::VersionInfo::CHANNEL_DEV && IsInFieldTrialGroup();
 #elif defined(OS_LINUX)
   // For Linux, always try to use it (availability is checked elsewhere).
   return true;
