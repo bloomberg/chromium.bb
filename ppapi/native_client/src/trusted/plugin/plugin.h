@@ -420,8 +420,6 @@ class Plugin : public pp::InstancePrivate {
   // Shuts down the proxy for PPAPI nexes.
   void ShutdownProxy();  // Nexe shutdown + proxy deletion.
 
-  void GenerateCrashReportWithoutCrashing();
-
   ScriptablePlugin* scriptable_plugin_;
 
   int argc_;

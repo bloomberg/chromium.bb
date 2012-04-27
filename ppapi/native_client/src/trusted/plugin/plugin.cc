@@ -1678,14 +1678,8 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
 
   // UMA
   HistogramEnumerateLoadStatus(error_info.error_code());
-
-  // Temporary in-the-field debugging.
-  // TODO(ncbray) remove.
-  // http://code.google.com/p/chromium/issues/detail?id=122057
-  if (error_info.error_code() == ERROR_START_PROXY_CRASH) {
-    GenerateCrashReportWithoutCrashing();
-  }
 }
+
 
 void Plugin::ReportLoadAbort() {
   PLUGIN_PRINTF(("Plugin::ReportLoadAbort\n"));
@@ -1914,17 +1908,6 @@ void Plugin::AddToConsole(const nacl::string& text) {
   console_interface->LogWithSource(pp_instance(), PP_LOGLEVEL_LOG, prefix, str);
   var_interface->Release(prefix);
   var_interface->Release(str);
-}
-
-void Plugin::GenerateCrashReportWithoutCrashing() {
-#if NACL_WINDOWS && !defined(NACL_STANDALONE)
-  typedef void (__cdecl *DumpProcessFunction)();
-  // Find the dump function inside chrome.exe and call it.
-  DumpProcessFunction request_dump = reinterpret_cast<DumpProcessFunction>(
-      ::GetProcAddress(::GetModuleHandle(NULL), "DumpProcessWithoutCrash"));
-  if (request_dump)
-    request_dump();
-#endif
 }
 
 }  // namespace plugin
