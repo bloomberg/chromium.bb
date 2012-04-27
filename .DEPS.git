@@ -212,6 +212,7 @@ deps_os = {
 include_rules = [
     '+base',
     '+build',
+    '+googleurl',
     '+ipc',
     '+unicode',
     '+testing'
