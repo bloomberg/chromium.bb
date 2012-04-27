@@ -258,7 +258,7 @@ class GDataFileSystemTest : public testing::Test {
 
   GDataEntry* FindEntry(const FilePath& file_path) {
     ReadOnlyFindEntryDelegate search_delegate;
-    file_system_->FindEntryByPathSync(file_path, &search_delegate);
+    file_system_->root_->FindEntryByPath(file_path, &search_delegate);
     return search_delegate.entry();
   }
 
@@ -1008,21 +1008,6 @@ class GDataFileSystemTest : public testing::Test {
   int root_feed_changestamp_;
 };
 
-// Delegate used to find a directory element for file system updates.
-class MockFindEntryDelegate : public gdata::FindEntryDelegate {
- public:
-  MockFindEntryDelegate() {
-  }
-
-  virtual ~MockFindEntryDelegate() {
-  }
-
-  // gdata::FindEntryDelegate overrides.
-  MOCK_METHOD3(OnDone, void(base::PlatformFileError,
-                            const FilePath&,
-                            GDataEntry*));
-};
-
 void AsyncInitializationCallback(int* counter,
                                  int expected_counter,
                                  const FilePath& expected_file_path,
@@ -1061,57 +1046,23 @@ TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
 }
 
 TEST_F(GDataFileSystemTest, SearchRootDirectory) {
-  MockFindEntryDelegate mock_find_file_delegate;
-  EXPECT_CALL(mock_find_file_delegate,
-              OnDone(Eq(base::PLATFORM_FILE_OK),
-                     Eq(FilePath(FILE_PATH_LITERAL("gdata"))),
-                     NotNull()))
-      .Times(1);
-
-  file_system_->FindEntryByPathSync(FilePath(FILE_PATH_LITERAL("gdata")),
-                                   &mock_find_file_delegate);
+  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL("gdata"))));
 }
 
 TEST_F(GDataFileSystemTest, SearchExistingFile) {
   LoadRootFeedDocument("root_feed.json");
-  MockFindEntryDelegate mock_find_file_delegate;
-  EXPECT_CALL(mock_find_file_delegate,
-              OnDone(Eq(base::PLATFORM_FILE_OK),
-                     Eq(FilePath(FILE_PATH_LITERAL("gdata"))),
-                     NotNull()))
-      .Times(1);
-
-  file_system_->FindEntryByPathSync(
-      FilePath(FILE_PATH_LITERAL("gdata/File 1.txt")),
-      &mock_find_file_delegate);
+  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL("gdata/File 1.txt"))));
 }
 
 TEST_F(GDataFileSystemTest, SearchExistingDocument) {
   LoadRootFeedDocument("root_feed.json");
-  MockFindEntryDelegate mock_find_file_delegate;
-  EXPECT_CALL(mock_find_file_delegate,
-              OnDone(Eq(base::PLATFORM_FILE_OK),
-                     Eq(FilePath(FILE_PATH_LITERAL("gdata"))),
-                     NotNull()))
-      .Times(1);
-
-  file_system_->FindEntryByPathSync(
-      FilePath(FILE_PATH_LITERAL("gdata/Document 1.gdoc")),
-      &mock_find_file_delegate);
+  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL("gdata/Document 1.gdoc"))));
 }
 
 TEST_F(GDataFileSystemTest, SearchNonExistingFile) {
   LoadRootFeedDocument("root_feed.json");
-  MockFindEntryDelegate mock_find_file_delegate;
-  EXPECT_CALL(mock_find_file_delegate,
-              OnDone(Eq(base::PLATFORM_FILE_ERROR_NOT_FOUND),
-                     Eq(FilePath()),
-                     IsNull()))
-      .Times(1);
-
-  file_system_->FindEntryByPathSync(
-      FilePath(FILE_PATH_LITERAL("gdata/nonexisting.file")),
-      &mock_find_file_delegate);
+  EXPECT_FALSE(
+      FindEntry(FilePath(FILE_PATH_LITERAL("gdata/nonexisting.file"))));
 }
 
 TEST_F(GDataFileSystemTest, SearchEncodedFileNames) {
@@ -1142,73 +1093,30 @@ TEST_F(GDataFileSystemTest, SearchEncodedFileNamesLoadingRoot) {
 
 TEST_F(GDataFileSystemTest, SearchDuplicateNames) {
   LoadRootFeedDocument("root_feed.json");
-  MockFindEntryDelegate mock_find_file_delegate;
-  EXPECT_CALL(mock_find_file_delegate,
-              OnDone(Eq(base::PLATFORM_FILE_OK),
-                     Eq(FilePath(FILE_PATH_LITERAL("gdata"))),
-                     NotNull()))
-      .Times(1);
-
-  file_system_->FindEntryByPathSync(
-      FilePath(FILE_PATH_LITERAL("gdata/Duplicate Name.txt")),
-      &mock_find_file_delegate);
-
-  MockFindEntryDelegate mock_find_file_delegate2;
-  EXPECT_CALL(mock_find_file_delegate2,
-              OnDone(Eq(base::PLATFORM_FILE_OK),
-                     Eq(FilePath(FILE_PATH_LITERAL("gdata"))),
-                     NotNull()))
-      .Times(1);
-
-  file_system_->FindEntryByPathSync(
-      FilePath(FILE_PATH_LITERAL("gdata/Duplicate Name (2).txt")),
-      &mock_find_file_delegate2);
+  EXPECT_TRUE(FindEntry(FilePath(
+      FILE_PATH_LITERAL("gdata/Duplicate Name.txt"))));
+  EXPECT_TRUE(FindEntry(FilePath(
+      FILE_PATH_LITERAL("gdata/Duplicate Name (2).txt"))));
 }
 
 TEST_F(GDataFileSystemTest, SearchExistingDirectory) {
   LoadRootFeedDocument("root_feed.json");
-  MockFindEntryDelegate mock_find_file_delegate;
-  EXPECT_CALL(mock_find_file_delegate,
-              OnDone(Eq(base::PLATFORM_FILE_OK),
-                     Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))),
-                     NotNull()))
-      .Times(1);
-
-  file_system_->FindEntryByPathSync(
-      FilePath(FILE_PATH_LITERAL("gdata/Directory 1")),
-      &mock_find_file_delegate);
+  EXPECT_TRUE(FindEntry(FilePath(
+      FILE_PATH_LITERAL("gdata/Directory 1"))));
 }
 
 TEST_F(GDataFileSystemTest, SearchInSubdir) {
   LoadRootFeedDocument("root_feed.json");
-  MockFindEntryDelegate mock_find_file_delegate;
-  EXPECT_CALL(mock_find_file_delegate,
-              OnDone(Eq(base::PLATFORM_FILE_OK),
-                     Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))),
-                     NotNull()))
-      .Times(1);
-
-  file_system_->FindEntryByPathSync(
-      FilePath(FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt")),
-      &mock_find_file_delegate);
+  EXPECT_TRUE(FindEntry(FilePath(
+      FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt"))));
 }
 
 // Check the reconstruction of the directory structure from only the root feed.
 TEST_F(GDataFileSystemTest, SearchInSubSubdir) {
   LoadRootFeedDocument("root_feed.json");
-  MockFindEntryDelegate mock_find_file_delegate;
-  EXPECT_CALL(mock_find_file_delegate,
-        OnDone(Eq(base::PLATFORM_FILE_OK),
-               Eq(FilePath(
-                  FILE_PATH_LITERAL("gdata/Directory 1/Sub Directory Folder/"
-                                    "Sub Sub Directory Folder"))),
-               NotNull()))
-      .Times(1);
-
-  file_system_->FindEntryByPathSync(
-      FilePath(FILE_PATH_LITERAL("gdata/Directory 1/Sub Directory Folder/"
-                                 "Sub Sub Directory Folder")),
-      &mock_find_file_delegate);
+  EXPECT_TRUE(FindEntry(FilePath(
+      FILE_PATH_LITERAL("gdata/Directory 1/Sub Directory Folder/"
+                        "Sub Sub Directory Folder"))));
 }
 
 TEST_F(GDataFileSystemTest, FilePathTests) {

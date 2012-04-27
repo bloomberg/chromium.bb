@@ -183,15 +183,6 @@ class GDataFileSystemInterface {
   virtual void FindEntryByPathAsync(const FilePath& file_path,
                                     const FindEntryCallback& callback) = 0;
 
-  // Finds file info by using virtual |file_path|. This call does not initiate
-  // content refreshing and will invoke one of |delegate| methods directly as
-  // it executes.
-  //
-  // Can be called from UI/IO thread. |delegate| is run on the calling thread
-  // synchronously.
-  virtual void FindEntryByPathSync(const FilePath& file_path,
-                                   FindEntryDelegate* delegate) = 0;
-
   // Finds file info by using |resource_id|. This call does not initiate
   // content refreshing and will invoke one of |delegate| methods directly as
   // it executes.
@@ -375,8 +366,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
   virtual void FindEntryByPathAsync(const FilePath& file_path,
                                     const FindEntryCallback& callback) OVERRIDE;
-  virtual void FindEntryByPathSync(const FilePath& file_path,
-                                   FindEntryDelegate* delegate) OVERRIDE;
   virtual void FindEntryByResourceIdSync(const std::string& resource_id,
                                          FindEntryDelegate* delegate) OVERRIDE;
   virtual void TransferFile(const FilePath& local_file_path,

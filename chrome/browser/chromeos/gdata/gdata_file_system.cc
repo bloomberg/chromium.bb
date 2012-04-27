@@ -988,13 +988,6 @@ void GDataFileSystem::Authenticate(const AuthStatusCallback& callback) {
   documents_service_->Authenticate(callback);
 }
 
-void GDataFileSystem::FindEntryByPathSync(
-    const FilePath& search_file_path,
-    FindEntryDelegate* delegate) {
-  base::AutoLock lock(lock_);
-  root_->FindEntryByPath(search_file_path, delegate);
-}
-
 void GDataFileSystem::FindEntryByResourceIdSync(
     const std::string& resource_id,
     FindEntryDelegate* delegate) {
@@ -1085,7 +1078,7 @@ void GDataFileSystem::FindEntryByPathOnCallingThread(
     const FilePath& search_file_path,
     const FindEntryCallback& callback) {
   FindEntryCallbackRelayDelegate delegate(callback);
-  FindEntryByPathSync(search_file_path, &delegate);
+  root_->FindEntryByPath(search_file_path, &delegate);
 }
 
 void GDataFileSystem::ReloadFeedFromServerIfNeeded(
