@@ -48,8 +48,7 @@ BubbleFrameView::BubbleFrameView(BubbleBorder::ArrowLocation arrow_location,
     arrow_location = BubbleBorder::horizontal_mirror(arrow_location);
   // TODO(alicet): Expose the shadow option in BorderContentsView when we make
   // the fullscreen exit bubble use the new bubble code.
-  bubble_border_ = new BubbleBorder(arrow_location, BubbleBorder::NO_SHADOW);
-  set_border(bubble_border_);
+  SetBubbleBorder(new BubbleBorder(arrow_location, BubbleBorder::NO_SHADOW));
   set_background(new BubbleBackground(bubble_border_));
   bubble_border()->set_background_color(color);
 }
@@ -94,6 +93,11 @@ gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
 
   // Calculate the bounds with the arrow in its updated location.
   return bubble_border_->GetBounds(anchor_rect, client_size);
+}
+
+void BubbleFrameView::SetBubbleBorder(BubbleBorder* border) {
+  bubble_border_ = border;
+  set_border(bubble_border_);
 }
 
 gfx::Rect BubbleFrameView::GetMonitorBounds(const gfx::Rect& rect) {

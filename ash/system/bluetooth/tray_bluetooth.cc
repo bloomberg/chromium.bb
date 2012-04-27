@@ -41,10 +41,15 @@ class BluetoothDefaultView : public TrayItemMore {
   void UpdateLabel() {
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    SetLabel(rb.GetLocalizedString(delegate->GetBluetoothEnabled() ?
-        IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTED :
-        IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED));
+    if (delegate->GetBluetoothAvailable()) {
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+      SetLabel(rb.GetLocalizedString(delegate->GetBluetoothEnabled() ?
+          IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTED :
+          IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED));
+      SetVisible(true);
+    } else {
+      SetVisible(false);
+    }
   }
 
  private:
@@ -226,8 +231,6 @@ views::View* TrayBluetooth::CreateTrayView(user::LoginStatus status) {
 }
 
 views::View* TrayBluetooth::CreateDefaultView(user::LoginStatus status) {
-  if (!Shell::GetInstance()->tray_delegate()->GetBluetoothAvailable())
-    return NULL;
   default_.reset(new tray::BluetoothDefaultView(this));
   return default_.get();
 }
@@ -258,7 +261,7 @@ void TrayBluetooth::OnBluetoothRefresh() {
   Shell::GetInstance()->tray_delegate()->GetAvailableBluetoothDevices(&list);
   if (default_.get())
     default_->UpdateLabel();
-  if (detailed_.get())
+  else if (detailed_.get())
     detailed_->Update(list);
 }
 

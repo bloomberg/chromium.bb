@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,6 +48,8 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView {
   gfx::Rect GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
                                    gfx::Size client_size,
                                    bool try_mirroring_arrow);
+
+  void SetBubbleBorder(BubbleBorder* border);
 
  protected:
   // Returns the bounds for the monitor showing the specified |rect|.

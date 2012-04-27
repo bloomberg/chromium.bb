@@ -125,7 +125,7 @@ class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
   }
 
  private:
-  void ShowItems(std::vector<SystemTrayItem*>& items,
+  void ShowItems(const std::vector<SystemTrayItem*>& items,
                  bool details,
                  bool activate);
 

@@ -118,13 +118,14 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
   // How many pixels the bubble border is from the edge of the images.
   int border_thickness() const;
 
+ protected:
+  virtual ~BubbleBorder();
+
  private:
   struct BorderImages;
 
   // Loads images if necessary.
   static BorderImages* GetBorderImages(Shadow shadow);
-
-  virtual ~BubbleBorder();
 
   // Overridden from views::Border:
   virtual void Paint(const views::View& view,

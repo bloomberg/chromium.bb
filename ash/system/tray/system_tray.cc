@@ -48,7 +48,9 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/box_layout.h"
@@ -89,12 +91,20 @@ class TrayPopupItemContainer : public views::View {
                                 NULL);
     SetLayoutManager(new views::FillLayout);
     AddChildView(view);
+    SetVisible(view->visible());
   }
 
   virtual ~TrayPopupItemContainer() {}
 
  private:
   // Overridden from views::View.
+  virtual void ChildVisibilityChanged(View* child) OVERRIDE {
+    if (visible() == child->visible())
+      return;
+    SetVisible(child->visible());
+    PreferredSizeChanged();
+  }
+
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
     hover_ = true;
     SchedulePaint();
@@ -166,10 +176,13 @@ class SystemTrayBubbleBackground : public views::Background {
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubbleBackground);
 };
 
-class SystemTrayBubbleBorder : public views::Border {
+class SystemTrayBubbleBorder : public views::BubbleBorder {
  public:
   explicit SystemTrayBubbleBorder(views::View* owner)
-      : owner_(owner) {
+      : views::BubbleBorder(views::BubbleBorder::BOTTOM_RIGHT,
+                            views::BubbleBorder::NO_SHADOW),
+        owner_(owner) {
+    set_alignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   }
 
   virtual ~SystemTrayBubbleBorder() {}
@@ -213,11 +226,6 @@ class SystemTrayBubbleBorder : public views::Border {
       canvas->DrawPath(path, paint);
     }
   }
-
-  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
-    insets->Set(0, 0, kArrowHeight, 0);
-  }
-
   views::View* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubbleBorder);
@@ -257,7 +265,7 @@ class SystemTrayBubble : public views::BubbleDelegateView {
  public:
   SystemTrayBubble(ash::SystemTray* tray,
                    views::View* anchor,
-                   std::vector<ash::SystemTrayItem*>& items,
+                   const std::vector<ash::SystemTrayItem*>& items,
                    bool detailed)
       : views::BubbleDelegateView(anchor, views::BubbleBorder::BOTTOM_RIGHT),
         tray_(tray),
@@ -284,6 +292,10 @@ class SystemTrayBubble : public views::BubbleDelegateView {
 
   bool detailed() const { return detailed_; }
   void set_can_activate(bool activate) { can_activate_ = activate; }
+
+  void SetBubbleBorder(views::BubbleBorder* border) {
+    GetBubbleFrameView()->SetBubbleBorder(border);
+  }
 
   void StartAutoCloseTimer(int seconds) {
     autoclose_.Stop();
@@ -337,6 +349,10 @@ class SystemTrayBubble : public views::BubbleDelegateView {
   }
 
   // Overridden from views::View.
+  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE {
+    SizeToContents();
+  }
+
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
     if (can_activate_) {
       state->role = ui::AccessibilityTypes::ROLE_WINDOW;
@@ -592,7 +608,7 @@ void SystemTray::SetPaintsBackground(
   hide_background_animator_.SetPaintsBackground(value, change_type);
 }
 
-void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items,
+void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                            bool detailed,
                            bool activate) {
   CHECK(!popup_);
@@ -606,8 +622,7 @@ void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items,
     should_show_launcher_ = true;
   bubble_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   popup_->non_client_view()->frame_view()->set_background(NULL);
-  popup_->non_client_view()->frame_view()->set_border(
-      new SystemTrayBubbleBorder(bubble_));
+  bubble_->SetBubbleBorder(new SystemTrayBubbleBorder(bubble_));
   MessageLoopForUI::current()->AddObserver(this);
   popup_->AddObserver(this);
 
