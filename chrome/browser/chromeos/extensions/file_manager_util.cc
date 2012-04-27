@@ -215,31 +215,44 @@ DictionaryValue* ProgessStatusToDictionaryValue(
   return result.release();
 }
 
-class GetFilePropertiesDelegate : public gdata::FindEntryDelegate {
- public:
-  explicit GetFilePropertiesDelegate() {}
-  virtual ~GetFilePropertiesDelegate() {}
+// Shows a warning message box saying that the file could not be opened.
+void ShowWarningMessageBox(Profile* profile, const FilePath& path) {
+  Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
+  browser::ShowWarningMessageBox(
+      browser->window()->GetNativeHandle(),
+      l10n_util::GetStringFUTF16(
+          IDS_FILE_BROWSER_ERROR_VIEWING_FILE_TITLE,
+          UTF8ToUTF16(path.BaseName().value())),
+      l10n_util::GetStringUTF16(IDS_FILE_BROWSER_ERROR_VIEWING_FILE));
+}
 
-  const std::string& resource_id() const { return resource_id_; }
-  const std::string& file_name() const { return file_name_; }
-  const GURL& edit_url() const { return edit_url_; }
+// Called when a file on GData was found. Opens the file found at |file_path|
+// in a new tab with a URL computed based on the |file_type|
+void OnGDataFileFound(Profile* profile,
+                      const FilePath& file_path,
+                      gdata::GDataFileType file_type,
+                      base::PlatformFileError error,
+                      const FilePath& /* directory_path */,
+                      gdata::GDataEntry* entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
- private:
-  // GDataFileSystem::FindEntryDelegate overrides.
-  virtual void OnDone(base::PlatformFileError error,
-                      const FilePath& directory_path,
-                      gdata::GDataEntry* entry) OVERRIDE {
-    if (error == base::PLATFORM_FILE_OK && entry && entry->AsGDataFile()) {
-      resource_id_ = entry->AsGDataFile()->resource_id();
-      file_name_ = entry->AsGDataFile()->file_name();
-      edit_url_ = entry->AsGDataFile()->alternate_url();
+  if (error == base::PLATFORM_FILE_OK && entry && entry->AsGDataFile()) {
+    gdata::GDataFile* file = entry->AsGDataFile();
+    GURL page_url;
+    if (file_type == gdata::REGULAR_FILE) {
+      page_url = gdata::util::GetFileResourceUrl(file->resource_id(),
+                                                 file->file_name());
+    } else if (file_type == gdata::HOSTED_DOCUMENT) {
+      page_url = file->alternate_url();
+    } else {
+      NOTREACHED();
     }
+    Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
+    browser->AddSelectedTabWithURL(page_url, content::PAGE_TRANSITION_LINK);
+  } else {
+    ShowWarningMessageBox(profile, file_path);
   }
-
-  std::string resource_id_;
-  std::string file_name_;
-  GURL edit_url_;
-};
+}
 
 }  // namespace
 
@@ -533,13 +546,7 @@ void ViewFile(const FilePath& path) {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
   if (!TryOpeningFileBrowser(profile, path) &&
       !TryViewingFile(profile, path)) {
-    Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
-    browser::ShowWarningMessageBox(
-        browser->window()->GetNativeHandle(),
-        l10n_util::GetStringFUTF16(
-            IDS_FILE_BROWSER_ERROR_VIEWING_FILE_TITLE,
-            UTF8ToUTF16(path.BaseName().value())),
-        l10n_util::GetStringUTF16(IDS_FILE_BROWSER_ERROR_VIEWING_FILE));
+    ShowWarningMessageBox(profile, path);
   }
 }
 
@@ -613,13 +620,11 @@ bool TryViewingFile(Profile* profile, const FilePath& path) {
       if (!system_service)
         return false;
 
-      GetFilePropertiesDelegate delegate;
-      system_service->file_system()->FindEntryByPathSync(
-          gdata::util::ExtractGDataPath(path), &delegate);
-      if (delegate.resource_id().empty())
-        return false;
-      page_url = gdata::util::GetFileResourceUrl(delegate.resource_id(),
-                                                 delegate.file_name());
+      // Open the file once the file is found.
+      system_service->file_system()->FindEntryByPathAsync(
+          gdata::util::ExtractGDataPath(path),
+          base::Bind(&OnGDataFileFound, profile, path, gdata::REGULAR_FILE));
+      return true;
     }
 #endif
     browser->AddSelectedTabWithURL(page_url,
@@ -635,14 +640,10 @@ bool TryViewingFile(Profile* profile, const FilePath& path) {
       if (!system_service)
         return false;
 
-      GetFilePropertiesDelegate delegate;
-      system_service->file_system()->FindEntryByPathSync(
-          gdata::util::ExtractGDataPath(path), &delegate);
-      if (delegate.edit_url().spec().empty())
-        return false;
-
-      browser->AddSelectedTabWithURL(delegate.edit_url(),
-                                     content::PAGE_TRANSITION_LINK);
+      system_service->file_system()->FindEntryByPathAsync(
+          gdata::util::ExtractGDataPath(path),
+          base::Bind(&OnGDataFileFound, profile, path,
+                     gdata::HOSTED_DOCUMENT));
     } else {
       // The file is local (downloaded from an attachment or otherwise copied).
       // Parse the file to extract the Docs url and open this url.
