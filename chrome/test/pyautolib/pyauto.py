@@ -3428,7 +3428,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict)['success']
 
-  def HeapProfilerDump(self, reason):
+  def HeapProfilerDump(self, process_type, reason, tab_index=0, windex=0):
     """Dumps a heap profile.  It works only on Linux and ChromeOS.
 
        We need an environment variable "HEAPPROFILE" set to a directory and a
@@ -3438,19 +3438,28 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
        function is called without the env.
 
     Args:
+      process_type: A string which is one of 'browser' or 'renderer'.
       reason: A string which describes the reason for dumping a heap profile.
               The reason will be included in the logged message.
               Examples:
                 'To check memory leaking'
                 'For PyAuto tests'
+      tab_index: tab index to work on if 'process_type' == 'renderer'.
+          Defaults to 0 (first tab).
+      windex: window index to work on if 'process_type' == 'renderer'.
+          Defaults to 0 (first window).
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
+    assert process_type in ('browser', 'renderer')
     if self.IsLinux():  # IsLinux() also implies IsChromeOS().
       cmd_dict = {
         'command': 'HeapProfilerDump',
+        'process_type': process_type,
         'reason': reason,
+        'windex': windex,
+        'tab_index': tab_index,
       }
       self._GetResultFromJSONRequest(cmd_dict)
     else:

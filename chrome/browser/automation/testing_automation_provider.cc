@@ -4841,15 +4841,20 @@ void TestingAutomationProvider::UpdateExtensionsNow(
 }
 
 #if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
-// Refer to HeapProfilerDump() in chrome/test/pyautolib/pyauto.py for
-// sample json input.
+// Sample json input: { "command": "HeapProfilerDump",
+//                      "process_type": "renderer",
+//                      "reason": "Perf bot",
+//                      "tab_index": 0,
+//                      "windex": 0 }
+// "auto_id" is acceptable instead of "tab_index" and "windex".
 void TestingAutomationProvider::HeapProfilerDump(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
 
-  if (!::IsHeapProfilerRunning()) {
-    reply.SendError("The heap profiler is not running");
+  std::string process_type_string;
+  if (!args->GetString("process_type", &process_type_string)) {
+    reply.SendError("No process type is specified");
     return;
   }
 
@@ -4859,9 +4864,37 @@ void TestingAutomationProvider::HeapProfilerDump(
   else
     reason_string = "By PyAuto testing";
 
-  ::HeapProfilerDump(reason_string.c_str());
+  if (process_type_string == "browser") {
+    if (!::IsHeapProfilerRunning()) {
+      reply.SendError("The heap profiler is not running");
+      return;
+    }
+    ::HeapProfilerDump(reason_string.c_str());
+    reply.SendSuccess(NULL);
+    return;
+  } else if (process_type_string == "renderer") {
+    WebContents* web_contents;
+    std::string error;
 
-  reply.SendSuccess(NULL);
+    if (!GetTabFromJSONArgs(args, &web_contents, &error)) {
+      reply.SendError(error);
+      return;
+    }
+
+    RenderViewHost* render_view = web_contents->GetRenderViewHost();
+    if (!render_view) {
+      reply.SendError("Tab has no associated RenderViewHost");
+      return;
+    }
+
+    TabContentsWrapper* tab_contents =
+        TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
+    tab_contents->automation_tab_helper()->HeapProfilerDump(reason_string);
+    reply.SendSuccess(NULL);
+    return;
+  }
+
+  reply.SendError("Process type is not supported");
 }
 #endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
 

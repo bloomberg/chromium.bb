@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,9 @@ class AutomationRendererHelper : public content::RenderViewObserver {
 
  private:
   void OnSnapshotEntirePage();
+#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+  void OnHeapProfilerDump(const std::string& reason);
+#endif
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);

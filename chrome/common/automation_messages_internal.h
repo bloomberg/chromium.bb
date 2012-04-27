@@ -1516,6 +1516,12 @@ IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_GetMachPortCount,
 // Requests a snapshot.
 IPC_MESSAGE_ROUTED0(AutomationMsg_SnapshotEntirePage)
 
+#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+// Requests to dump a heap profile.
+IPC_MESSAGE_ROUTED1(AutomationMsg_HeapProfilerDump,
+                    std::string /* reason */)
+#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+
 // Renderer -> browser messages.
 
 // Sent as a response to |AutomationMsg_Snapshot|.

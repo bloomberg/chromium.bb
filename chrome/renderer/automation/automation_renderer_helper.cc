@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,10 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webkit_glue.h"
+
+#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
+#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
 
 using WebKit::WebFrame;
 using WebKit::WebSize;
@@ -102,12 +106,24 @@ void AutomationRendererHelper::OnSnapshotEntirePage() {
       routing_id(), success, png_data, error_msg));
 }
 
+#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+void AutomationRendererHelper::OnHeapProfilerDump(const std::string& reason) {
+  if (!::IsHeapProfilerRunning()) {
+    return;
+  }
+  ::HeapProfilerDump(reason.c_str());
+}
+#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+
 bool AutomationRendererHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   bool deserialize_success = true;
   IPC_BEGIN_MESSAGE_MAP_EX(AutomationRendererHelper, message,
                            deserialize_success)
     IPC_MESSAGE_HANDLER(AutomationMsg_SnapshotEntirePage, OnSnapshotEntirePage)
+#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+    IPC_MESSAGE_HANDLER(AutomationMsg_HeapProfilerDump, OnHeapProfilerDump)
+#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   if (!deserialize_success) {

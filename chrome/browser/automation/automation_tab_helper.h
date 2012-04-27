@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,6 +87,11 @@ class AutomationTabHelper
 
   // Snapshots the entire page without resizing.
   void SnapshotEntirePage();
+
+#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+  // Dumps a heap profile.
+  void HeapProfilerDump(const std::string& reason);
+#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
 
   // Returns true if the tab is loading or the tab is scheduled to load
   // immediately. Note that scheduled loads may be canceled.
