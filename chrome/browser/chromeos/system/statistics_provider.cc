@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/system/name_value_pairs_parser.h"
@@ -106,6 +107,8 @@ bool StatisticsProviderImpl::GetMachineStatistic(
   if (!on_statistics_loaded_.IsSignaled()) {
     LOG(WARNING) << "Waiting to load statistics. Requested statistic: "
                  << name;
+    // http://crbug.com/125385
+    base::ThreadRestrictions::ScopedAllowWait allow_wait;
     on_statistics_loaded_.TimedWait(base::TimeDelta::FromSeconds(kTimeoutSecs));
 
     if (!on_statistics_loaded_.IsSignaled()) {
