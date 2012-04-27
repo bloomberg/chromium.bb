@@ -234,6 +234,17 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
   proxy_->data_source()->Initialize(url, base::Bind(
       &WebMediaPlayerImpl::DataSourceInitialized,
       base::Unretained(this), gurl));
+
+  // TODO(scherkus): this is leftover from removing DemuxerFactory -- instead
+  // our DataSource should report this information. See http://crbug.com/120426
+  bool local_source = !gurl.SchemeIs("http") && !gurl.SchemeIs("https");
+
+  BuildDefaultCollection(proxy_->data_source(),
+                         local_source,
+                         message_loop_factory_.get(),
+                         filter_collection_.get(),
+                         &video_decoder);
+  proxy_->set_video_decoder(video_decoder);
 }
 
 void WebMediaPlayerImpl::cancelLoad() {
@@ -695,7 +706,7 @@ WebMediaPlayerImpl::generateKeyRequest(const WebString& key_system,
   // create their own IDs and since CDMs supporting multiple renderer processes
   // need globally unique IDs.
   // Everything from here until the return should probably be handled by
-  // the decrypter - see http://crbug.com/123260.
+  // the decryptor - see http://crbug.com/123260.
   static uint32_t next_available_session_id = 1;
   uint32_t session_id = next_available_session_id++;
 
@@ -706,7 +717,7 @@ WebMediaPlayerImpl::generateKeyRequest(const WebString& key_system,
                           static_cast<size_t>(init_data_length))
            << " [" << session_id_string.utf8().data() << "]";
 
-  // TODO(ddorwin): Generate a key request in the decrypter and fire
+  // TODO(ddorwin): Generate a key request in the decryptor and fire
   // keyMessage when it completes.
   // For now, just fire the event with the init_data as the request.
   const unsigned char* message = init_data;
@@ -745,7 +756,7 @@ WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
            << " [" << session_id.utf8().data() << "]";
 
   // TODO(ddorwin): Everything from here until the return should probably be
-  // handled by the decrypter - see http://crbug.com/123260.
+  // handled by the decryptor - see http://crbug.com/123260.
   // Temporarily, fire an error for invalid key length so we can test the error
   // event and fire the keyAdded event in all other cases.
   const unsigned kSupportedKeyLength = 16;  // 128-bit key.
@@ -759,13 +770,14 @@ WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
         WebKit::WebMediaPlayerClient::MediaKeyErrorCodeUnknown,
         0));
   } else {
-    // TODO(ddorwin): Fix the decrypter to accept no |init_data|. See
+    // TODO(ddorwin): Fix the decryptor to accept no |init_data|. See
     // http://crbug.com/123265. Until then, ensure a non-empty value is passed.
     static const unsigned char kDummyInitData[1] = {0};
     if (!init_data) {
       init_data = kDummyInitData;
       init_data_length = arraysize(kDummyInitData);
     }
+
     proxy_->video_decoder()->decryptor()->AddKey(init_data, init_data_length,
                                                  key, key_length);
 
@@ -785,7 +797,7 @@ WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::cancelKeyRequest(
   if (!IsSupportedKeySystem(key_system))
     return WebKit::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
-  // TODO(ddorwin): Cancel the key request in the decrypter.
+  // TODO(ddorwin): Cancel the key request in the decryptor.
 
   return WebKit::WebMediaPlayer::MediaKeyExceptionNoError;
 }
@@ -961,17 +973,6 @@ void WebMediaPlayerImpl::DataSourceInitialized(
     return;
   }
 
-  // TODO(scherkus): this is leftover from removing DemuxerFactory -- instead
-  // our DataSource should report this information. See http://crbug.com/120426
-  bool local_source = !gurl.SchemeIs("http") && !gurl.SchemeIs("https");
-
-  scoped_refptr<media::FFmpegVideoDecoder> video_decoder;
-  BuildDefaultCollection(proxy_->data_source(),
-                         local_source,
-                         message_loop_factory_.get(),
-                         filter_collection_.get(),
-                         &video_decoder);
-  proxy_->set_video_decoder(video_decoder);
   StartPipeline();
 }
 
