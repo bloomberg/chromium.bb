@@ -17,6 +17,7 @@
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
 #include "sync/syncable/model_type.h"
+#include "sync/util/experiments.h"
 #include "sync/util/test_unrecoverable_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,7 +47,8 @@ class MockSyncFrontend : public SyncFrontend {
                void(syncable::ModelTypeSet, bool));
   MOCK_METHOD0(OnEncryptionComplete, void());
   MOCK_METHOD1(OnMigrationNeededForTypes, void(syncable::ModelTypeSet));
-  MOCK_METHOD1(OnDataTypesChanged, void(syncable::ModelTypeSet));
+  MOCK_METHOD1(OnExperimentsChanged,
+      void(const browser_sync::Experiments&));
   MOCK_METHOD1(OnActionableError,
       void(const browser_sync::SyncProtocolError& sync_error));
   MOCK_METHOD0(OnSyncConfigureRetry, void());

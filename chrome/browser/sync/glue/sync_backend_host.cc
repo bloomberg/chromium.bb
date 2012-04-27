@@ -45,6 +45,7 @@
 #include "sync/notifier/sync_notifier.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/util/experiments.h"
 #include "sync/util/nigori.h"
 
 static const int kSaveChangesIntervalSeconds = 10;
@@ -1212,9 +1213,9 @@ void SyncBackendHost::Core::SaveChanges() {
 
 void SyncBackendHost::AddExperimentalTypes() {
   CHECK(initialized());
-  syncable::ModelTypeSet to_add;
-  if (core_->sync_manager()->ReceivedExperimentalTypes(&to_add))
-    frontend_->OnDataTypesChanged(to_add);
+  Experiments experiments;
+  if (core_->sync_manager()->ReceivedExperiment(&experiments))
+    frontend_->OnExperimentsChanged(experiments);
 }
 
 void SyncBackendHost::OnNigoriDownloadRetry() {

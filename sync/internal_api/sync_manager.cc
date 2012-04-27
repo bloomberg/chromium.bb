@@ -52,6 +52,7 @@
 #include "sync/syncable/model_type_payload_map.h"
 #include "sync/syncable/syncable.h"
 #include "sync/util/cryptographer.h"
+#include "sync/util/experiments.h"
 #include "sync/util/get_session_name.h"
 #include "sync/util/time.h"
 
@@ -2478,7 +2479,7 @@ syncable::ModelTypeSet SyncManager::GetEncryptedDataTypesForTest() const {
   return GetEncryptedTypes(&trans);
 }
 
-bool SyncManager::ReceivedExperimentalTypes(syncable::ModelTypeSet* to_add)
+bool SyncManager::ReceivedExperiment(browser_sync::Experiments* experiments)
     const {
   ReadTransaction trans(FROM_HERE, GetUserShare());
   ReadNode node(&trans);
@@ -2486,11 +2487,16 @@ bool SyncManager::ReceivedExperimentalTypes(syncable::ModelTypeSet* to_add)
     DVLOG(1) << "Couldn't find Nigori node.";
     return false;
   }
+  bool found_experiment = false;
   if (node.GetNigoriSpecifics().sync_tabs()) {
-    to_add->Put(syncable::SESSIONS);
-    return true;
+    experiments->sync_tabs = true;
+    found_experiment = true;
   }
-  return false;
+  if (node.GetNigoriSpecifics().sync_tab_favicons()) {
+    experiments->sync_tab_favicons = true;
+    found_experiment = true;
+  }
+  return found_experiment;
 }
 
 bool SyncManager::HasUnsyncedItems() const {

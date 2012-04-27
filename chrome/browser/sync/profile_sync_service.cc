@@ -61,6 +61,7 @@
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
 #include "sync/util/cryptographer.h"
+#include "sync/util/experiments.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using browser_sync::ChangeProcessor;
@@ -707,9 +708,11 @@ void ProfileSyncService::OnSyncCycleCompleted() {
   NotifyObservers();
 }
 
-// TODO(sync): eventually support removing datatypes too.
-void ProfileSyncService::OnDataTypesChanged(
-    syncable::ModelTypeSet to_add) {
+void ProfileSyncService::OnExperimentsChanged(
+    const browser_sync::Experiments& experiments) {
+  if (current_experiments.Matches(experiments))
+    return;
+
   // If this is a first time sync for a client, this will be called before
   // OnBackendInitialized() to ensure the new datatypes are available at sync
   // setup. As a result, the migrator won't exist yet. This is fine because for
@@ -717,18 +720,18 @@ void ProfileSyncService::OnDataTypesChanged(
   // available.
   if (migrator_.get() &&
       migrator_->state() != browser_sync::BackendMigrator::IDLE) {
-    DVLOG(1) << "Dropping OnDataTypesChanged due to migrator busy.";
+    DVLOG(1) << "Dropping OnExperimentsChanged due to migrator busy.";
     return;
   }
 
-  DVLOG(2) << "OnDataTypesChanged called with types: "
-           << syncable::ModelTypeSetToString(to_add);
-
   const syncable::ModelTypeSet registered_types = GetRegisteredDataTypes();
-
+  syncable::ModelTypeSet to_add;
+  if (experiments.sync_tabs)
+    to_add.Put(syncable::SESSIONS);
   const syncable::ModelTypeSet to_register =
       Difference(to_add, registered_types);
-
+  DVLOG(2) << "OnExperimentsChanged called with types: "
+           << syncable::ModelTypeSetToString(to_add);
   DVLOG(2) << "Enabling types: " << syncable::ModelTypeSetToString(to_register);
 
   for (syncable::ModelTypeSet::Iterator it = to_register.First();
@@ -768,6 +771,16 @@ void ProfileSyncService::OnDataTypesChanged(
       OnMigrationNeededForTypes(to_register);
     }
   }
+
+  // Now enable any non-datatype features.
+  if (experiments.sync_tab_favicons) {
+    DVLOG(1) << "Enabling syncing of tab favicons.";
+    about_flags::SetExperimentEnabled(g_browser_process->local_state(),
+                                      "sync-tab-favicons",
+                                      true);
+  }
+
+  current_experiments = experiments;
 }
 
 void ProfileSyncService::UpdateAuthErrorState(

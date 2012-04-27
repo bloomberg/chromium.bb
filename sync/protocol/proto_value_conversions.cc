@@ -310,6 +310,7 @@ DictionaryValue* NigoriSpecificsToValue(
   SET_BOOL(sync_tabs);
   SET_BOOL(encrypt_everything);
   SET_REP(device_information, DeviceInformationToValue);
+  SET_BOOL(sync_tab_favicons);
   return value;
 }
 

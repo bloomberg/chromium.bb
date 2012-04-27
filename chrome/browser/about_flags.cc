@@ -351,6 +351,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableSyncTabs)
   },
   {
+    "sync-tab-favicons",
+    IDS_FLAGS_SYNC_TAB_FAVICONS_NAME,
+    IDS_FLAGS_SYNC_TAB_FAVICONS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kSyncTabFavicons)
+  },
+  {
     "sync-app-notifications",
     IDS_FLAGS_SYNC_APP_NOTIFICATIONS_NAME,
     IDS_FLAGS_SYNC_APP_NOTIFICATIONS_DESCRIPTION,

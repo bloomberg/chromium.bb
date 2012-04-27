@@ -157,6 +157,7 @@
         'util/data_type_histogram.h',
         'util/encryptor.h',
         'util/enum_set.h',
+        'util/experiments.h',
         'util/extensions_activity_monitor.cc',
         'util/extensions_activity_monitor.h',
         'util/get_session_name.cc',

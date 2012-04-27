@@ -35,6 +35,7 @@
 #include "sync/engine/model_safe_worker.h"
 #include "sync/js/sync_js_controller.h"
 #include "sync/syncable/model_type.h"
+#include "sync/util/experiments.h"
 #include "sync/util/unrecoverable_error_handler.h"
 
 class Profile;
@@ -235,8 +236,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnMigrationNeededForTypes(
       syncable::ModelTypeSet types) OVERRIDE;
-  virtual void OnDataTypesChanged(
-      syncable::ModelTypeSet to_add) OVERRIDE;
+  virtual void OnExperimentsChanged(
+      const browser_sync::Experiments& experiments) OVERRIDE;
   virtual void OnActionableError(
       const browser_sync::SyncProtocolError& error) OVERRIDE;
 
@@ -740,6 +741,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // If |true|, there is setup UI visible so we should not start downloading
   // data types.
   bool setup_in_progress_;
+
+  // The set of currently enabled sync experiments.
+  browser_sync::Experiments current_experiments;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

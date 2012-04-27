@@ -90,5 +90,8 @@ message NigoriSpecifics {
   // User device information. Contains information about each device that has a
   // sync-enabled Chrome browser connected to the user account.
   repeated DeviceInformation device_information = 28;
+  
+  // Enable syncing favicons as part of tab sync.
+  optional bool sync_tab_favicons = 29;
 }
 

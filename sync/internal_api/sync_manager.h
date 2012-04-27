@@ -25,6 +25,7 @@
 
 namespace browser_sync {
 class Encryptor;
+struct Experiments;
 class ExtensionsActivityMonitor;
 class JsBackend;
 class JsEventHandler;
@@ -591,10 +592,10 @@ class SyncManager {
   // Note: opens a transaction.  May be called from any thread.
   syncable::ModelTypeSet GetEncryptedDataTypesForTest() const;
 
-  // Reads the nigori node to determine if any experimental types should be
-  // enabled.
+  // Reads the nigori node to determine if any experimental features should
+  // be enabled.
   // Note: opens a transaction.  May be called on any thread.
-  bool ReceivedExperimentalTypes(syncable::ModelTypeSet* to_add) const;
+  bool ReceivedExperiment(browser_sync::Experiments* experiments) const;
 
   // Uses a read-only transaction to determine if the directory being synced has
   // any remaining unsynced items.  May be called on any thread.

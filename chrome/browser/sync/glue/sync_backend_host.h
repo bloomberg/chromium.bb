@@ -38,6 +38,7 @@ class Profile;
 namespace browser_sync {
 
 class ChangeProcessor;
+struct Experiments;
 class JsBackend;
 class JsEventHandler;
 class SyncBackendRegistrar;
@@ -121,7 +122,8 @@ class SyncFrontend {
       syncable::ModelTypeSet types) = 0;
 
   // Inform the Frontend that new datatypes are available for registration.
-  virtual void OnDataTypesChanged(syncable::ModelTypeSet to_add) = 0;
+  virtual void OnExperimentsChanged(
+      const browser_sync::Experiments& experiments) = 0;
 
   // Called when the sync cycle returns there is an user actionable error.
   virtual void OnActionableError(
