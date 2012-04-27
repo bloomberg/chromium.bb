@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/change_processor.h"
@@ -67,12 +68,16 @@ void NonFrontendDataTypeController::Start(const StartCallback& start_callback) {
   }
 }
 
-// TODO(sync): Blocking the UI thread at shutdown is bad. The new API avoids
-// this. Once all non-frontend datatypes use the new API, we can get rid of this
-// locking (see implementation in AutofillProfileDataTypeController).
 void NonFrontendDataTypeController::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_NE(state_, NOT_RUNNING);
+
+  // TODO(sync): Blocking the UI thread at shutdown is bad. The new API avoids
+  // this. Once all non-frontend datatypes use the new API, we can get rid of this
+  // locking (see implementation in AutofillProfileDataTypeController).
+  // http://crbug.com/19757
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+
   // If Stop() is called while Start() is waiting for association to
   // complete, we need to abort the association and wait for the DB
   // thread to finish the StartImpl() task.
