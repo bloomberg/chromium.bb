@@ -24,7 +24,7 @@ var loadTimeData;
      * @param {Object} value The de-serialized page data.
      */
     set data(value) {
-      assert(!this.data_, 'Re-setting data.');
+      expect(!this.data_, 'Re-setting data.');
       this.data_ = value;
     },
 
@@ -36,14 +36,14 @@ var loadTimeData;
     },
 
     /**
-     * Fetches a value, asserting that it exists.
+     * Fetches a value, expecting that it exists.
      * @param {string} id The key that identifies the desired value.
      * @return {*} The corresponding value.
      */
     getValue: function(id) {
-      assert(this.data_, 'No data. Did you remember to include strings.js?');
+      expect(this.data_, 'No data. Did you remember to include strings.js?');
       var value = this.data_[id];
-      assert(typeof value != 'undefined', 'Could not find value for ' + id);
+      expect(typeof value != 'undefined', 'Could not find value for ' + id);
       return value;
     },
 
@@ -54,8 +54,26 @@ var loadTimeData;
      */
     getString: function(id) {
       var value = this.getValue(id);
-      assertIsType(id, value, 'string');
+      expectIsType(id, value, 'string');
       return value;
+    },
+
+    /**
+     * Returns a formatted localized string where $1 to $9 are replaced by the
+     * second to the tenth argument.
+     * @param {string} id The ID of the string we want.
+     * @param {...string} The extra values to include in the formatted output.
+     * @return {string} The formatted string.
+     */
+    getStringF: function(id) {
+      var value = this.getString(id);
+      if (!value)
+        return;
+
+      var varArgs = arguments;
+      return value.replace(/\$[$1-9]/g, function(m) {
+        return m == '$$' ? '$' : varArgs[m[1]];
+      });
     },
 
     /**
@@ -65,7 +83,7 @@ var loadTimeData;
      */
     getBoolean: function(id) {
       var value = this.getValue(id);
-      assertIsType(id, value, 'boolean');
+      expectIsType(id, value, 'boolean');
       return value;
     },
 
@@ -76,33 +94,33 @@ var loadTimeData;
      */
     getInteger: function(id) {
       var value = this.getValue(id);
-      assertIsType(id, value, 'number');
-      assert(value == Math.floor(value), 'Number isn\'t integer: ' + value);
+      expectIsType(id, value, 'number');
+      expect(value == Math.floor(value), 'Number isn\'t integer: ' + value);
       return value;
     },
   };
 
   /**
-   * Asserts, displays error message if assert fails.
+   * Checks condition, displays error message if expectation fails.
    * @param {*} condition The condition to check for truthiness.
    * @param {string} message The message to display if the check fails.
    */
-  function assert(condition, message) {
+  function expect(condition, message) {
     if (!condition)
       console.error(message);
   }
 
   /**
-   * Asserts that the given value has the given type.
+   * Checks that the given value has the given type.
    * @param {string} id The id of the value (only used for error message).
    * @param {*} value The value to check the type on.
    * @param {string} type The type we expect |value| to be.
    */
-  function assertIsType(id, value, type) {
-    assert(typeof value == type, '[' + value + '] (' + id +
+  function expectIsType(id, value, type) {
+    expect(typeof value == type, '[' + value + '] (' + id +
                                  ') is not a ' + type);
   }
 
-  assert(!loadTimeData, 'should only include this file once');
+  expect(!loadTimeData, 'should only include this file once');
   loadTimeData = new LoadTimeData;
 })();
