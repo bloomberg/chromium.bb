@@ -4,6 +4,8 @@
 
 // Tests for the Experiment Helpers.
 
+#include <set>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/field_trial.h"
@@ -17,9 +19,8 @@ namespace {
 // Convenience helper to retrieve the GoogleExperimentID for a FieldTrial. Note
 // that this will do the group assignment in |trial| if not already done.
 experiments_helper::GoogleExperimentID GetIDForTrial(base::FieldTrial* trial) {
-  return experiments_helper::GetGoogleExperimentID(
-      base::FieldTrial::MakeNameGroupId(trial->name(),
-                                        trial->group_name()));
+  return experiments_helper::GetGoogleExperimentID(trial->name(),
+                                                   trial->group_name());
 }
 
 }  // namespace
@@ -49,6 +50,68 @@ class ExperimentsHelperTest : public ::testing::Test {
   scoped_ptr<content::TestBrowserThread> ui_thread_;
 };
 
+TEST_F(ExperimentsHelperTest, HashName) {
+  // Make sure hashing is stable on all platforms.
+  struct {
+    const char* name;
+    uint32 hash_value;
+  } known_hashes[] = {
+    {"a", 937752454u},
+    {"1", 723085877u},
+    {"Trial Name", 2713117220u},
+    {"Group Name", 3201815843u},
+    {"My Favorite Experiment", 3722155194u},
+    {"My Awesome Group Name", 4109503236u},
+    {"abcdefghijklmonpqrstuvwxyz", 787728696u},
+    {"0123456789ABCDEF", 348858318U}
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(known_hashes); ++i) {
+    EXPECT_EQ(known_hashes[i].hash_value,
+              testing::TestHashName(known_hashes[i].name));
+  }
+}
+
+TEST_F(ExperimentsHelperTest, GetFieldTrialSelectedGroups) {
+  typedef std::set<experiments_helper::SelectedGroupId,
+      experiments_helper::SelectedGroupIdCompare> SelectedGroupIdSet;
+  std::string trial_one("trial one");
+  std::string group_one("group one");
+  std::string trial_two("trial two");
+  std::string group_two("group two");
+
+  base::FieldTrial::SelectedGroups selected_groups;
+  base::FieldTrial::SelectedGroup selected_group;
+  selected_group.trial = trial_one;
+  selected_group.group = group_one;
+  selected_groups.push_back(selected_group);
+
+  selected_group.trial = trial_two;
+  selected_group.group = group_two;
+  selected_groups.push_back(selected_group);
+
+  // Create our expected groups of IDs.
+  SelectedGroupIdSet expected_groups;
+  experiments_helper::SelectedGroupId name_group_id;
+  name_group_id.name = testing::TestHashName(trial_one);
+  name_group_id.group = testing::TestHashName(group_one);
+  expected_groups.insert(name_group_id);
+  name_group_id.name = testing::TestHashName(trial_two);
+  name_group_id.group = testing::TestHashName(group_two);
+  expected_groups.insert(name_group_id);
+
+  std::vector<experiments_helper::SelectedGroupId> selected_group_ids;
+  testing::TestGetFieldTrialSelectedGroupIdsForSelectedGroups(
+      selected_groups, &selected_group_ids);
+  EXPECT_EQ(2U, selected_group_ids.size());
+  for (size_t i = 0; i < selected_group_ids.size(); ++i) {
+    SelectedGroupIdSet::iterator expected_group =
+        expected_groups.find(selected_group_ids[i]);
+    EXPECT_FALSE(expected_group == expected_groups.end());
+    expected_groups.erase(expected_group);
+  }
+  EXPECT_EQ(0U, expected_groups.size());
+}
+
 // Test that if the trial is immediately disabled, GetGoogleExperimentID just
 // returns the empty ID.
 TEST_F(ExperimentsHelperTest, DisableImmediately) {
@@ -76,9 +139,9 @@ TEST_F(ExperimentsHelperTest, DisableAfterInitialization) {
                                                  next_year_, 12, 12, NULL));
   trial->AppendGroup(non_default_name, 100);
   experiments_helper::AssociateGoogleExperimentID(
-      base::FieldTrial::MakeNameGroupId(trial->name(), default_name), 123);
+      trial->name(), default_name, 123);
   experiments_helper::AssociateGoogleExperimentID(
-      base::FieldTrial::MakeNameGroupId(trial->name(), non_default_name), 456);
+      trial->name(), non_default_name, 456);
   ASSERT_EQ(non_default_name, trial->group_name());
   ASSERT_EQ(456U, GetIDForTrial(trial.get()));
   trial->Disable();
@@ -97,11 +160,9 @@ TEST_F(ExperimentsHelperTest, AssociateGoogleExperimentID) {
 
   // Set GoogleExperimentIDs so we can verify that they were chosen correctly.
   experiments_helper::AssociateGoogleExperimentID(
-      base::FieldTrial::MakeNameGroupId(trial_true->name(), default_name1),
-      123);
+      trial_true->name(), default_name1, 123);
   experiments_helper::AssociateGoogleExperimentID(
-      base::FieldTrial::MakeNameGroupId(trial_true->name(), winner),
-      456);
+      trial_true->name(), winner, 456);
 
   EXPECT_EQ(winner_group, trial_true->group());
   EXPECT_EQ(winner, trial_true->group_name());
@@ -115,11 +176,9 @@ TEST_F(ExperimentsHelperTest, AssociateGoogleExperimentID) {
   int loser_group = trial_false->AppendGroup(loser, 0);
 
   experiments_helper::AssociateGoogleExperimentID(
-      base::FieldTrial::MakeNameGroupId(trial_false->name(), default_name2),
-      123);
+      trial_false->name(), default_name2, 123);
   experiments_helper::AssociateGoogleExperimentID(
-      base::FieldTrial::MakeNameGroupId(trial_false->name(), loser),
-      456);
+      trial_false->name(), loser, 456);
 
   EXPECT_NE(loser_group, trial_false->group());
   EXPECT_EQ(123U, GetIDForTrial(trial_false.get()));

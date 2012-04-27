@@ -28,6 +28,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/common/metrics/experiments_helper.h"
 #include "chrome/common/metrics/proto/omnibox_event.pb.h"
 #include "chrome/common/metrics/proto/profiler_event.pb.h"
 #include "chrome/common/metrics/proto/system_profile.pb.h"
@@ -52,7 +53,7 @@ using metrics::OmniboxEventProto;
 using metrics::ProfilerEventProto;
 using metrics::SystemProfileProto;
 using tracked_objects::ProcessDataSnapshot;
-typedef base::FieldTrial::NameGroupId NameGroupId;
+typedef experiments_helper::SelectedGroupId SelectedGroupId;
 
 namespace {
 
@@ -210,10 +211,10 @@ void SetPluginInfo(const webkit::WebPluginInfo& plugin_info,
     plugin->set_is_disabled(!plugin_prefs->IsPluginEnabled(plugin_info));
 }
 
-void WriteFieldTrials(const std::vector<NameGroupId>& field_trial_ids,
+void WriteFieldTrials(const std::vector<SelectedGroupId>& field_trial_ids,
                       SystemProfileProto* system_profile) {
-  for (std::vector<NameGroupId>::const_iterator it = field_trial_ids.begin();
-       it != field_trial_ids.end(); ++it) {
+  for (std::vector<SelectedGroupId>::const_iterator it =
+       field_trial_ids.begin(); it != field_trial_ids.end(); ++it) {
     SystemProfileProto::FieldTrial* field_trial =
         system_profile->add_field_trial();
     field_trial->set_name_id(it->name);
@@ -351,8 +352,8 @@ int MetricsLog::GetScreenCount() const {
 
 
 void MetricsLog::GetFieldTrialIds(
-    std::vector<NameGroupId>* field_trial_ids) const {
-  base::FieldTrialList::GetFieldTrialNameGroupIds(field_trial_ids);
+    std::vector<SelectedGroupId>* field_trial_ids) const {
+  experiments_helper::GetFieldTrialSelectedGroupIds(field_trial_ids);
 }
 
 void MetricsLog::WriteStabilityElement(
@@ -777,7 +778,7 @@ void MetricsLog::RecordEnvironmentProto(
   bool write_as_xml = false;
   WritePluginList(plugin_list, write_as_xml);
 
-  std::vector<NameGroupId> field_trial_ids;
+  std::vector<SelectedGroupId> field_trial_ids;
   GetFieldTrialIds(&field_trial_ids);
   WriteFieldTrials(field_trial_ids, system_profile);
 }

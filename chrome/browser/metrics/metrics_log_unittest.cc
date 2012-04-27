@@ -13,6 +13,7 @@
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/metrics/experiments_helper.h"
 #include "chrome/common/metrics/proto/profiler_event.pb.h"
 #include "chrome/common/metrics/proto/system_profile.pb.h"
 #include "chrome/common/pref_names.h"
@@ -34,7 +35,7 @@ const int kSessionId = 127;
 const int kScreenWidth = 1024;
 const int kScreenHeight = 768;
 const int kScreenCount = 3;
-const base::FieldTrial::NameGroupId kFieldTrialIds[] = {
+const experiments_helper::SelectedGroupId kFieldTrialIds[] = {
   {37, 43},
   {13, 47},
   {23, 17}
@@ -73,7 +74,7 @@ class TestMetricsLog : public MetricsLog {
   }
 
   virtual void GetFieldTrialIds(
-      std::vector<base::FieldTrial::NameGroupId>* field_trial_ids) const
+      std::vector<experiments_helper::SelectedGroupId>* field_trial_ids) const
       OVERRIDE {
     ASSERT_TRUE(field_trial_ids->empty());
 

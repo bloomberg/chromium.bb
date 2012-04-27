@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/metrics/field_trial.h"
 #include "chrome/common/metrics/metrics_log_base.h"
 #include "content/public/common/process_type.h"
 #include "ui/gfx/size.h"
@@ -27,6 +26,10 @@ class DictionaryValue;
 
 namespace tracked_objects {
 struct ProcessDataSnapshot;
+}
+
+namespace experiments_helper {
+struct SelectedGroupId;
 }
 
 namespace webkit {
@@ -107,7 +110,7 @@ class MetricsLog : public MetricsLogBase {
   // Fills |field_trial_ids| with the list of initialized field trials name and
   // group ids.
   virtual void GetFieldTrialIds(
-    std::vector<base::FieldTrial::NameGroupId>* field_trial_ids) const;
+    std::vector<experiments_helper::SelectedGroupId>* field_trial_ids) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MetricsLogTest, ChromeOSStabilityData);

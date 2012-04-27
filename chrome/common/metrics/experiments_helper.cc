@@ -7,25 +7,14 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
+#include "base/sha1.h"
 #include "base/string16.h"
 #include "base/stringprintf.h"
+#include "base/sys_byteorder.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/child_process_logging.h"
 
 namespace {
-
-// We need to pass a Compare class to the std::map template since NameGroupId
-// is a user-defined type.
-struct NameGroupIdCompare {
-  bool operator() (const base::FieldTrial::NameGroupId& lhs,
-                   const base::FieldTrial::NameGroupId& rhs) const {
-    // The group and name fields are just SHA-1 Hashes, so we just need to treat
-    // them as IDs and do a less-than comparison. We test group first, since
-    // name is more likely to collide.
-    return lhs.group == rhs.group ? lhs.name < rhs.name :
-        lhs.group < rhs.group;
-  }
-};
 
 // The internal singleton accessor for the map, used to keep it thread-safe.
 class GroupMapAccessor {
@@ -38,7 +27,7 @@ class GroupMapAccessor {
   GroupMapAccessor() {}
   ~GroupMapAccessor() {}
 
-  void AssociateID(const base::FieldTrial::NameGroupId& group_identifier,
+  void AssociateID(const experiments_helper::SelectedGroupId& group_identifier,
                    experiments_helper::GoogleExperimentID id) {
     base::AutoLock scoped_lock(lock_);
     DCHECK(group_to_id_map_.find(group_identifier) == group_to_id_map_.end()) <<
@@ -47,7 +36,7 @@ class GroupMapAccessor {
   }
 
   experiments_helper::GoogleExperimentID GetID(
-      const base::FieldTrial::NameGroupId& group_identifier) {
+      const experiments_helper::SelectedGroupId& group_identifier) {
     base::AutoLock scoped_lock(lock_);
     GroupToIDMap::const_iterator it = group_to_id_map_.find(group_identifier);
     if (it == group_to_id_map_.end())
@@ -56,12 +45,50 @@ class GroupMapAccessor {
   }
 
  private:
-  typedef std::map<base::FieldTrial::NameGroupId,
-      experiments_helper::GoogleExperimentID, NameGroupIdCompare> GroupToIDMap;
+  typedef std::map<experiments_helper::SelectedGroupId,
+      experiments_helper::GoogleExperimentID,
+      experiments_helper::SelectedGroupIdCompare> GroupToIDMap;
 
   base::Lock lock_;
   GroupToIDMap group_to_id_map_;
 };
+
+// Creates unique identifier for the trial by hashing a name string, whether
+// it's for the field trial or the group name.
+uint32 HashName(const std::string& name) {
+  // SHA-1 is designed to produce a uniformly random spread in its output space,
+  // even for nearly-identical inputs.
+  unsigned char sha1_hash[base::kSHA1Length];
+  base::SHA1HashBytes(reinterpret_cast<const unsigned char*>(name.c_str()),
+                      name.size(),
+                      sha1_hash);
+
+  COMPILE_ASSERT(sizeof(uint32) < sizeof(sha1_hash), need_more_data);
+  uint32 bits;
+  memcpy(&bits, sha1_hash, sizeof(bits));
+
+  return base::ByteSwapToLE32(bits);
+}
+
+experiments_helper::SelectedGroupId MakeSelectedGroupId(
+    const std::string& trial_name,
+    const std::string& group_name) {
+  experiments_helper::SelectedGroupId id;
+  id.name = HashName(trial_name);
+  id.group = HashName(group_name);
+  return id;
+}
+
+// Populates |name_group_ids| based on |selected_groups|.
+void GetFieldTrialSelectedGroupIdsForSelectedGroups(
+    const base::FieldTrial::SelectedGroups& selected_groups,
+    std::vector<experiments_helper::SelectedGroupId>* name_group_ids) {
+  DCHECK(name_group_ids->empty());
+  for (base::FieldTrial::SelectedGroups::const_iterator it =
+       selected_groups.begin(); it != selected_groups.end(); ++it) {
+    name_group_ids->push_back(MakeSelectedGroupId(it->trial, it->group));
+  }
+}
 
 }  // namespace
 
@@ -69,20 +96,34 @@ namespace experiments_helper {
 
 const GoogleExperimentID kEmptyGoogleExperimentID = 0;
 
-void AssociateGoogleExperimentID(
-    const base::FieldTrial::NameGroupId& group_identifier,
-    GoogleExperimentID id) {
-  GroupMapAccessor::GetInstance()->AssociateID(group_identifier, id);
+void GetFieldTrialSelectedGroupIds(
+    std::vector<SelectedGroupId>* name_group_ids) {
+  DCHECK(name_group_ids->empty());
+  // A note on thread safety: Since GetFieldTrialSelectedGroups is thread
+  // safe, and we operate on a separate list of that data, this function is
+  // technically thread safe as well, with respect to the FieldTriaList data.
+  base::FieldTrial::SelectedGroups selected_groups;
+  base::FieldTrialList::GetFieldTrialSelectedGroups(&selected_groups);
+  GetFieldTrialSelectedGroupIdsForSelectedGroups(selected_groups,
+                                                 name_group_ids);
 }
 
-GoogleExperimentID GetGoogleExperimentID(
-    const base::FieldTrial::NameGroupId& group_identifier) {
-  return GroupMapAccessor::GetInstance()->GetID(group_identifier);
+void AssociateGoogleExperimentID(const std::string& trial_name,
+                                 const std::string& group_name,
+                                 GoogleExperimentID id) {
+  GroupMapAccessor::GetInstance()->AssociateID(
+      MakeSelectedGroupId(trial_name, group_name), id);
+}
+
+GoogleExperimentID GetGoogleExperimentID(const std::string& trial_name,
+                                         const std::string& group_name) {
+  return GroupMapAccessor::GetInstance()->GetID(
+      MakeSelectedGroupId(trial_name, group_name));
 }
 
 void SetChildProcessLoggingExperimentList() {
-  std::vector<base::FieldTrial::NameGroupId> name_group_ids;
-  base::FieldTrialList::GetFieldTrialNameGroupIds(&name_group_ids);
+  std::vector<SelectedGroupId> name_group_ids;
+  GetFieldTrialSelectedGroupIds(&name_group_ids);
   std::vector<string16> experiment_strings(name_group_ids.size());
   for (size_t i = 0; i < name_group_ids.size(); ++i) {
     // Wish there was a StringPrintf for string16... :-(
@@ -93,3 +134,20 @@ void SetChildProcessLoggingExperimentList() {
 }
 
 }  // namespace experiments_helper
+
+// Functions below are exposed for testing explicitly behind this namespace.
+// They simply wrap existing functions in this file.
+namespace testing {
+
+void TestGetFieldTrialSelectedGroupIdsForSelectedGroups(
+    const base::FieldTrial::SelectedGroups& selected_groups,
+    std::vector<experiments_helper::SelectedGroupId>* name_group_ids) {
+  ::GetFieldTrialSelectedGroupIdsForSelectedGroups(selected_groups,
+                                                   name_group_ids);
+}
+
+uint32 TestHashName(const std::string& name) {
+  return ::HashName(name);
+}
+
+}  // namespace testing

@@ -6,6 +6,9 @@
 #define CHROME_COMMON_METRICS_EXPERIMENTS_HELPER_H_
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "base/metrics/field_trial.h"
 
 // This namespace provides various helpers that extend the functionality around
@@ -28,17 +31,14 @@
 // const int kLowMemGroup = trial->AppendGroup("LowMem", 20);
 // // All groups are now created. We want to associate GoogleExperimentIDs with
 // // them, so do that now.
-// AssociateGoogleExperimentID(
-//     FieldTrial::MakeNameGroupId("trial", "default"), 123);
-// AssociateGoogleExperimentID(
-//     FieldTrial::MakeNameGroupId("trial", "HighMem"), 456);
-// AssociateGoogleExperimentID(
-//     FieldTrial::MakeNameGroupId("trial", "LowMem"), 789);
+// AssociateGoogleExperimentID("trial", "default", 123);
+// AssociateGoogleExperimentID("trial", "HighMem", 456);
+// AssociateGoogleExperimentID("trial", "LowMem", 789);
 //
 // // Elsewhere, we are interested in retrieving the GoogleExperimentID
 // // assocaited with |trial|.
-// GoogleExperimentID id = GetGoogleExperimentID(
-//     FieldTrial::MakeNameGroupId(trial->name(), trial->group_name()));
+// GoogleExperimentID id = GetGoogleExperimentID(trial->name(),
+//                                               trial->group_name());
 // // Do stuff with |id|...
 //
 // The AssociateGoogleExperimentID and GetGoogleExperimentID API methods are
@@ -48,32 +48,72 @@ namespace experiments_helper {
 // An ID used by Google servers to identify a local browser experiment.
 typedef uint32 GoogleExperimentID;
 
+// The Unique ID of a trial and its selected group, where the name and group
+// identifiers are hashes of the trial and group name strings.
+struct SelectedGroupId {
+  uint32 name;
+  uint32 group;
+};
+
+// We need to supply a Compare class for templates since SelectedGroupId is a
+// user-defined type.
+struct SelectedGroupIdCompare {
+  bool operator() (const SelectedGroupId& lhs,
+                   const SelectedGroupId& rhs) const {
+    // The group and name fields are just SHA-1 Hashes, so we just need to treat
+    // them as IDs and do a less-than comparison. We test group first, since
+    // name is more likely to collide.
+    if (lhs.group != rhs.group)
+      return lhs.group < rhs.group;
+    return lhs.name < rhs.name;
+  }
+};
+
 // Used to represent no associated Google experiment ID. Calls to the
 // GetGoogleExperimentID API below will return this empty value for FieldTrial
 // groups uninterested in associating themselves with Google experiments, or
 // those that have not yet been seen yet.
 extern const GoogleExperimentID kEmptyGoogleExperimentID;
 
-// Set the GoogleExperimentID associated with a FieldTrial group. The group is
-// denoted by |group_identifier|, which can be created by passing the
-// FieldTrial's trial and group names to base::FieldTrial::MakeNameGroupId.
-// This does not need to be called for FieldTrials uninterested in Google
-// experiments.
-void AssociateGoogleExperimentID(
-    const base::FieldTrial::NameGroupId& group_identifier,
-    GoogleExperimentID id);
+// Fills the supplied vector |name_group_ids| (which must be empty when called)
+// with unique SelectedGroupIds for each Field Trial that has a chosen group.
+// Field Trials for which a group has not been chosen yet are NOT returned in
+// this list.
+void GetFieldTrialSelectedGroupIds(
+    std::vector<SelectedGroupId>* name_group_ids);
+
+// Associate a GoogleExperimentID value with a FieldTrial group. The group is
+// denoted by |trial_name| and |group_name|. This must be called whenever you
+// prepare a FieldTrial (create the trial and append groups) that needs to have
+// a GoogleExperimentID associated with it so Google servers can recognize the
+// FieldTrial.
+void AssociateGoogleExperimentID(const std::string& trial_name,
+                                 const std::string& group_name,
+                                 GoogleExperimentID id);
 
 // Retrieve the GoogleExperimentID associated with a FieldTrial group. The group
-// is denoted by |group_identifier| (see comment above). This can be nicely
-// combined with FieldTrial::GetFieldTrialNameGroupIds to enumerate the
+// is denoted by |trial_name| and |group_name|. This can be nicely combined with
+// FieldTrial::GetFieldTrialSelectedGroupIds to enumerate the
 // GoogleExperimentIDs for all active FieldTrial groups.
-GoogleExperimentID GetGoogleExperimentID(
-    const base::FieldTrial::NameGroupId& group_identifier);
+GoogleExperimentID GetGoogleExperimentID(const std::string& trial_name,
+                                         const std::string& group_name);
 
 // Get the current set of chosen FieldTrial groups (aka experiments) and send
 // them to the child process logging module so it can save it for crash dumps.
 void SetChildProcessLoggingExperimentList();
 
 }  // namespace experiments_helper
+
+// Expose some functions for testing. These functions just wrap functionality
+// that is implemented above.
+namespace testing {
+
+void TestGetFieldTrialSelectedGroupIdsForSelectedGroups(
+    const base::FieldTrial::SelectedGroups& selected_groups,
+    std::vector<experiments_helper::SelectedGroupId>* name_group_ids);
+
+uint32 TestHashName(const std::string& name);
+
+}
 
 #endif  // CHROME_COMMON_METRICS_EXPERIMENTS_HELPER_H_
