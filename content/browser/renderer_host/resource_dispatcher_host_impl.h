@@ -14,6 +14,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -510,6 +511,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // to the respective request.
   typedef std::map<GlobalRequestID, net::URLRequest*> TransferredNavigations;
   TransferredNavigations transferred_navigations_;
+
+  // http://crbug.com/90971 - Assists in tracking down use-after-frees on
+  // shutdown.
+  std::set<const ResourceContext*> canceled_resource_contexts_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };

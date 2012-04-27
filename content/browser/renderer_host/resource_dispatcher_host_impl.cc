@@ -376,6 +376,8 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(context);
 
+  canceled_resource_contexts_.insert(context);
+
   // Note that request cancellation has side effects. Therefore, we gather all
   // the requests to cancel first, and then we start cancelling. We assert at
   // the end that there are no more to cancel since the context is about to go
@@ -446,7 +448,8 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
        i != pending_requests_.end(); ++i) {
     ResourceRequestInfoImpl* info =
         ResourceRequestInfoImpl::ForRequest(i->second);
-    DCHECK_NE(info->GetContext(), context);
+    // http://crbug.com/90971
+    CHECK_NE(info->GetContext(), context);
   }
 
   for (BlockedRequestMap::const_iterator i = blocked_requests_map_.begin();
@@ -455,7 +458,8 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
     if (!requests->empty()) {
       ResourceRequestInfoImpl* info =
           ResourceRequestInfoImpl::ForRequest(requests->front());
-      DCHECK_NE(info->GetContext(), context);
+      // http://crbug.com/90971
+      CHECK_NE(info->GetContext(), context);
     }
   }
 }
@@ -472,6 +476,13 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
     return CallbackAndReturn(started_callback, net::ERR_INSUFFICIENT_RESOURCES);
 
   const GURL& url = request->original_url();
+
+  // http://crbug.com/90971
+  char url_buf[128];
+  base::strlcpy(url_buf, url.spec().c_str(), arraysize(url_buf));
+  base::debug::Alias(url_buf);
+  CHECK(!ContainsKey(canceled_resource_contexts_, context));
+
   const net::URLRequestContext* request_context = context->GetRequestContext();
   request->set_referrer(MaybeStripReferrer(GURL(request->referrer())).spec());
   request->set_context(request_context);
@@ -742,6 +753,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
   }
 
   ResourceContext* resource_context = filter_->resource_context();
+  // http://crbug.com/90971
+  CHECK(!ContainsKey(canceled_resource_contexts_, resource_context));
 
   // Might need to resolve the blob references in the upload data.
   if (request_data.upload_data) {
@@ -1142,6 +1155,12 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
     ResourceContext* context) {
   if (is_shutdown_)
     return;
+
+  // http://crbug.com/90971
+  char url_buf[128];
+  base::strlcpy(url_buf, url.spec().c_str(), arraysize(url_buf));
+  base::debug::Alias(url_buf);
+  CHECK(!ContainsKey(canceled_resource_contexts_, context));
 
   scoped_refptr<ResourceHandler> handler(
       new SaveFileResourceHandler(child_id,
