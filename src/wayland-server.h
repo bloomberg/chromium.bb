@@ -118,6 +118,8 @@ struct wl_resource *
 wl_client_new_object(struct wl_client *client,
 		     const struct wl_interface *interface,
 		     const void *implementation, void *data);
+struct wl_resource *
+wl_client_get_object(struct wl_client *client, uint32_t id);
 
 struct wl_listener {
 	struct wl_list link;

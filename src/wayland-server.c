@@ -374,6 +374,12 @@ wl_client_add_resource(struct wl_client *client,
 	wl_signal_init(&resource->destroy_signal);
 }
 
+WL_EXPORT struct wl_resource *
+wl_client_get_object(struct wl_client *client, uint32_t id)
+{
+	return wl_map_lookup(&client->objects, id);
+}
+
 WL_EXPORT void
 wl_resource_post_no_memory(struct wl_resource *resource)
 {
