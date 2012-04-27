@@ -624,7 +624,7 @@ void RendererAccessibility::BuildAccessibilityTree(
   // If it's not an editable text node, it must be the root, because
   // BuildAccessibilityTree will never be called on a non-root node
   // that isn't already in the browser's tree.
-  CHECK_EQ(src.axID(), GetMainDocument().accessibilityObject().axID());
+  DCHECK_EQ(src.axID(), GetMainDocument().accessibilityObject().axID());
 
   // Initialize the main document node, but don't add any children.
   dst->Init(src, false);
