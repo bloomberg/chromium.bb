@@ -1552,12 +1552,24 @@ bool ChromeContentBrowserClient::AllowSocketAPI(
   if (allowed_socket_origins_.count(host))
     return true;
 
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  const Extension* extension = NULL;
+  if (profile && profile->GetExtensionService()) {
+    extension = profile->GetExtensionService()->extensions()->
+        GetExtensionOrAppByURL(ExtensionURLInfo(url));
+  }
+
   // Need to check this now and not on construction because otherwise it won't
   // work with browser_tests.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string allowed_list =
       command_line.GetSwitchValueASCII(switches::kAllowNaClSocketAPI);
-  if (!allowed_list.empty()) {
+  if (allowed_list == "*") {
+    // The wildcard allows socket API only for packaged and platform apps.
+    return extension &&
+        (extension->GetType() == Extension::TYPE_PACKAGED_APP ||
+         extension->GetType() == Extension::TYPE_PLATFORM_APP);
+  } else if (!allowed_list.empty()) {
     StringTokenizer t(allowed_list, ",");
     while (t.GetNext()) {
       if (t.token() == host)
@@ -1565,12 +1577,6 @@ bool ChromeContentBrowserClient::AllowSocketAPI(
     }
   }
 
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  if (!profile || !profile->GetExtensionService())
-    return false;
-
-  const Extension* extension = profile->GetExtensionService()->extensions()->
-      GetExtensionOrAppByURL(ExtensionURLInfo(url));
   if (!extension)
     return false;
 

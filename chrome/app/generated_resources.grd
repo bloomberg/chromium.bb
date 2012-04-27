@@ -5578,6 +5578,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Turns off tab discarding, a feature that discards infrequently used tabs under low memory conditions.
       </message>
 
+      <message name="IDS_FLAGS_ALLOW_NACL_SOCKET_API_NAME" desc="Name for the NaCl Socket API feature.">
+        NaCl Socket API.
+      </message>
+      <message name="IDS_FLAGS_ALLOW_NACL_SOCKET_API_DESCRIPTION" desc="Description for the NaCl Socket API feature.">
+        Allows applications to use NaCl Socket API. Use only to test NaCl plugins.
+      </message>
+
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
         Crashes
