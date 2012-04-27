@@ -107,7 +107,16 @@ namespace {
 "  rel_operand_action  generate rel_operand action references, but not\n"
 "                        actions themselves\n"
 "\n"
-"  nacl-forbidden      don't generate instructions forbidden for nacl\n";
+"  nacl-forbidden      generate instructions forbidden for nacl\n"
+"\n"
+"  parse_nonwrite_registers  parse register operands which are only read\n"
+"                              or not touched at all\n"
+"  parse_immediate_operands  parse immediate operands\n"
+"  parse_relative_operands   parse immediate operands (jumps, calls, etc)\n"
+"  parse_x87_operands        parse x87 operands\n"
+"  parse_mmx_operands        parse MMX operands\n"
+"  parse_xmm_operands        parse XMM operands\n"
+"  parse_ymm_operands        parse YMM operands\n";
 
   const char* const kVersionHelp = "%1$s %2$s\n"
 "Copyright (c) 2012 The Native Client Authors. All rights reserved.\n"
@@ -121,6 +130,13 @@ namespace {
     kOpcode,
     kParseOperands,
     kParseOperandsStates,
+    kParseNonWriteRegisters,
+    kParseImmediateOperands,
+    kParseRelativeOperands,
+    kParseX87Operands,
+    kParseMMXOperands,
+    kParseXMMOperands,
+    kParseYMMOperands,
     kMarkDataFields,
     kCheckAccess,
     kImmOperandAction,
@@ -134,6 +150,13 @@ namespace {
     "opcode",
     "parse_operands",
     "parse_operands_states",
+    "parse_nonwrite_registers",
+    "parse_immediate_operands",
+    "parse_relative_operands",
+    "parse_x87_operands",
+    "parse_mmx_operands",
+    "parse_xmm_operands",
+    "parse_ymm_operands",
     "mark_data_fields",
     "check_access",
     "imm_operand_action",
@@ -232,6 +255,7 @@ namespace {
     struct Operand {
       char source;
       std::string size;
+      bool enabled;
       bool read;
       bool write;
       bool implicit;
@@ -341,26 +365,26 @@ namespace {
       Instruction::Operand operand;
       switch (str[0]) {
         case '\'':
-          operand = {str[1], str.substr(2), false, false, false};
+          operand = {str[1], str.substr(2), true, false, false, false};
           break;
         case '=':
-          operand = {str[1], str.substr(2), true, false, false};
+          operand = {str[1], str.substr(2), true, true, false, false};
           break;
         case '!':
-          operand = {str[1], str.substr(2), false, true, false};
+          operand = {str[1], str.substr(2), true, false, true, false};
           break;
         case '&':
-          operand = {str[1], str.substr(2), true, true, false};
+          operand = {str[1], str.substr(2), true, true, true, false};
           break;
         default:
           if (&str == &*operation.rbegin()) {
             if (operation.size() <= 3) {
-              operand = {str[0], str.substr(1), true, true, false};
+              operand = {str[0], str.substr(1), true, true, true, false};
             } else {
-              operand = {str[0], str.substr(1), false, true, false};
+              operand = {str[0], str.substr(1), true, false, true, false};
             }
           } else {
-            operand = {str[0], str.substr(1), true, false, false};
+            operand = {str[0], str.substr(1), true, true, false, false};
           }
       }
       if (*(operand.size.rbegin()) == '*') {
@@ -1667,7 +1691,8 @@ namespace {
             { 'W', "rm"        }
           };
           auto it = operand_type.find(operand.source);
-          if (it != operand_type.end()) {
+          if (it != operand_type.end() &&
+              (operand.enabled || !strcmp(it->second, "rm"))) {
             fprintf(out_file, " @operand%zd_from_modrm_%s",
                     &operand - &*operands.begin(), it->second);
           }
@@ -1734,7 +1759,8 @@ namespace {
               { 'W', "rm"                     }
             };
             auto it = operand_type.find(operand.source);
-            if (it != operand_type.end()) {
+            if (it != operand_type.end() &&
+                (operand.enabled || !strcmp(it->second, "rm"))) {
               fprintf(out_file, " @operand%zd_%s",
                       &operand - &*operands.begin(), it->second);
             }
@@ -2191,8 +2217,40 @@ namespace {
                     operand.size.c_str());
             exit(1);
           } else {
-            fprintf(out_file, " @operand%zd_%s", &operand - &*operands.begin(),
-                    it->second);
+            if (!enabled(Actions::kParseImmediateOperands)) {
+              if (operand.source == 'I' || operand.source == 'i') {
+                operand.enabled = false;
+              }
+            }
+            if (!enabled(Actions::kParseRelativeOperands)) {
+              if (operand.source == 'J' || operand.source == 'O') {
+                operand.enabled = false;
+              }
+            }
+            if (!enabled(Actions::kParseX87Operands) &&
+                (!strncmp(it->second, "x87", 3) ||
+                 !strncmp(it->second, "float", 5))) {
+              operand.enabled = false;
+            }
+            if (!enabled(Actions::kParseMMXOperands) &&
+                !strcmp(it->second, "mmx")) {
+              operand.enabled = false;
+            }
+            if (!enabled(Actions::kParseXMMOperands) &&
+                !strcmp(it->second, "xmm")) {
+              operand.enabled = false;
+            }
+            if (!enabled(Actions::kParseYMMOperands) &&
+                !strcmp(it->second, "ymm")) {
+              operand.enabled = false;
+            }
+            if (!operand.write && ! enabled(Actions::kParseNonWriteRegisters)) {
+              operand.enabled = false;
+            }
+            if (operand.enabled) {
+              fprintf(out_file, " @operand%zd_%s",
+                      &operand - &*operands.begin(), it->second);
+            }
           }
           static std::map<char, const char*> operand_type {
             { '1', "one"                },
@@ -2212,8 +2270,10 @@ namespace {
           };
           auto it2 = operand_type.find(operand.source);
           if (it2 != operand_type.end()) {
-            fprintf(out_file, " @operand%zd_%s", &operand - &*operands.begin(),
-                    it2->second);
+            if (operand.enabled) {
+              fprintf(out_file, " @operand%zd_%s",
+                      &operand - &*operands.begin(), it2->second);
+            }
           }
         }
       }
@@ -2221,21 +2281,23 @@ namespace {
         for (auto operand_it = operands.begin();
              operand_it != operands.end(); ++operand_it) {
           auto &operand = *operand_it;
-          if (operand.read) {
+          if (operand.enabled) {
             if (operand.write) {
-              fprintf(out_file, " @operand%zd_readwrite",
-                      &operand - &*operands.begin());
+              if (operand.read) {
+                fprintf(out_file, " @operand%zd_readwrite",
+                        &operand - &*operands.begin());
+              } else {
+                fprintf(out_file, " @operand%zd_write",
+                        &operand - &*operands.begin());
+              }
             } else {
-              fprintf(out_file, " @operand%zd_read",
-                      &operand - &*operands.begin());
-            }
-          } else {
-            if (operand.write) {
-              fprintf(out_file, " @operand%zd_write",
-                      &operand - &*operands.begin());
-            } else {
-              fprintf(out_file, " @operand%zd_unused",
-                      &operand - &*operands.begin());
+              if (operand.read) {
+                fprintf(out_file, " @operand%zd_read",
+                        &operand - &*operands.begin());
+              } else {
+                fprintf(out_file, " @operand%zd_unused",
+                        &operand - &*operands.begin());
+              }
             }
           }
         }

@@ -109,7 +109,9 @@ if generate:
                'imm_operand_action,rel_operand_action'),
              'validator64':
               ('opcode,instruction_name,mark_data_fields,rel_operand_action,'
-               'nacl-forbidden')}[automata+bits])]
+               'nacl-forbidden,parse_nonwrite_registers,parse_x87_operands,'
+               'parse_mmx_operands,parse_xmm_operands,parse_ymm_operands')
+            }[automata+bits])]
       )
       automatas.append(rl_file)
       c_file = '%s/%s-x86_%s.c' % (val_src_dir, automata, bits)

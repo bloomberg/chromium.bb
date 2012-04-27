@@ -333,6 +333,21 @@ static void PrintError(const char* msg, uintptr_t ptr) {
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
         SET_VEX_PREFIX3(0x00);
+        operands[0].name = 0;
+        operands[0].type = 0;
+        operands[0].write = 0;
+        operands[1].name = 0;
+        operands[1].type = 0;
+        operands[1].write = 0;
+        operands[2].name = 0;
+        operands[2].type = 0;
+        operands[2].write = 0;
+        operands[3].name = 0;
+        operands[3].type = 0;
+        operands[3].write = 0;
+        operands[4].name = 0;
+        operands[4].type = 0;
+        operands[4].write = 0;
      })*
      @{
        /* On successful match the instruction start must point to the next byte
