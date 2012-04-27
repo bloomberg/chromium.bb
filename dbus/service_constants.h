@@ -5,6 +5,13 @@
 #ifndef DBUS_SERVICE_CONSTANTS_H_
 #define DBUS_SERVICE_CONSTANTS_H_
 
+namespace dbus {
+const char kDBusPropertiesInterface[] = "org.freedesktop.DBus.Properties";
+// Methods
+const char kDBusPropertiesGetAll[] = "GetAll";
+} // namespace dbus
+
+
 namespace cryptohome {
 const char kCryptohomeInterface[] = "org.chromium.CryptohomeInterface";
 const char kCryptohomeServicePath[] = "/org/chromium/Cryptohome";
@@ -661,6 +668,16 @@ const char kSMSListFunction[] = "List";
 
 // ModemManager monitored signals
 const char kSMSReceivedSignal[] = "SmsReceived";
+
+// ModemManager1 interfaces and signals
+// The canonical source for these is /usr/include/mm/ModemManager-names.h
+const char kModemManager1[] = "org.freedesktop.ModemManager1";
+const char kModemManager1ServicePath[] = "/org/freedesktop/ModemManager1";
+const char kModemManager1MessagingInterface[] =
+    "org.freedesktop.ModemManager1.Modem.Messaging";
+const char kModemManager1SmsInterface[] =
+    "org.freedesktop.ModemManager1.Sms";
+const char kSMSAddedSignal[] = "Added";
 }  // namespace modemmanager
 
 namespace bluetooth_common {
