@@ -117,6 +117,24 @@ void RequestPermissionsFunction::SetIgnoreUserGestureForTests(
 }
 
 RequestPermissionsFunction::RequestPermissionsFunction() {}
+
+void RequestPermissionsFunction::InstallUIProceed() {
+  PermissionsUpdater perms_updater(profile());
+  perms_updater.AddPermissions(GetExtension(), requested_permissions_.get());
+
+  result_.reset(Request::Result::Create(true));
+  SendResponse(true);
+
+  Release();  // Balanced in RunImpl().
+}
+
+void RequestPermissionsFunction::InstallUIAbort(bool user_initiated) {
+  result_.reset(Request::Result::Create(false));
+  SendResponse(true);
+
+  Release();  // Balanced in RunImpl().
+}
+
 RequestPermissionsFunction::~RequestPermissionsFunction() {}
 
 bool RequestPermissionsFunction::RunImpl() {
@@ -191,21 +209,4 @@ bool RequestPermissionsFunction::RunImpl() {
   }
 
   return true;
-}
-
-void RequestPermissionsFunction::InstallUIProceed() {
-  PermissionsUpdater perms_updater(profile());
-  perms_updater.AddPermissions(GetExtension(), requested_permissions_.get());
-
-  result_.reset(Request::Result::Create(true));
-  SendResponse(true);
-
-  Release();  // Balanced in RunImpl().
-}
-
-void RequestPermissionsFunction::InstallUIAbort(bool user_initiated) {
-  result_.reset(Request::Result::Create(false));
-  SendResponse(true);
-
-  Release();  // Balanced in RunImpl().
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,8 +23,8 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
  public:
   explicit ExtensionSpecialStoragePolicy(CookieSettings* cookie_settings);
 
-  // SpecialStoragePolicy methods used by storage subsystems and the browsing
-  // data remover. These methods are safe to call on any thread.
+  // quota::SpecialStoragePolicy methods used by storage subsystems and the
+  // browsing data remover. These methods are safe to call on any thread.
   virtual bool IsStorageProtected(const GURL& origin) OVERRIDE;
   virtual bool IsStorageUnlimited(const GURL& origin) OVERRIDE;
   virtual bool IsStorageSessionOnly(const GURL& origin) OVERRIDE;

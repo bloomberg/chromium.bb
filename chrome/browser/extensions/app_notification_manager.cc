@@ -74,14 +74,6 @@ AppNotificationManager::AppNotificationManager(Profile* profile)
                  content::Source<Profile>(profile_));
 }
 
-AppNotificationManager::~AppNotificationManager() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Post a task to delete our storage on the file thread.
-  BrowserThread::DeleteSoon(BrowserThread::FILE,
-                            FROM_HERE,
-                            storage_.release());
-}
-
 void AppNotificationManager::Init() {
   FilePath storage_path = profile_->GetPath().AppendASCII("App Notifications");
   load_timer_.reset(new PerfTimer());
@@ -142,17 +134,6 @@ const AppNotificationList* AppNotificationManager::GetAll(
   return NULL;
 }
 
-AppNotificationList& AppNotificationManager::GetAllInternal(
-    const std::string& extension_id) {
-  NotificationMap::iterator found = notifications_->find(extension_id);
-  if (found == notifications_->end()) {
-    (*notifications_)[extension_id] = AppNotificationList();
-    found = notifications_->find(extension_id);
-  }
-  CHECK(found != notifications_->end());
-  return found->second;
-}
-
 const AppNotification* AppNotificationManager::GetLast(
     const std::string& extension_id) {
   if (!loaded())
@@ -195,86 +176,6 @@ void AppNotificationManager::Observe(
     const content::NotificationDetails& details) {
   CHECK(type == chrome::NOTIFICATION_EXTENSION_UNINSTALLED);
   ClearAll(*content::Details<const std::string>(details).ptr());
-}
-
-void AppNotificationManager::LoadOnFileThread(const FilePath& storage_path) {
-  PerfTimer timer;
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(!loaded());
-
-  storage_.reset(AppNotificationStorage::Create(storage_path));
-  if (!storage_.get())
-    return;
-  scoped_ptr<NotificationMap> result(new NotificationMap());
-  std::set<std::string> ids;
-  if (!storage_->GetExtensionIds(&ids))
-    return;
-  std::set<std::string>::const_iterator i;
-  for (i = ids.begin(); i != ids.end(); ++i) {
-    const std::string& id = *i;
-    AppNotificationList& list = (*result)[id];
-    if (!storage_->Get(id, &list))
-      result->erase(id);
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&AppNotificationManager::HandleLoadResults,
-          this, result.release()));
-
-  UMA_HISTOGRAM_LONG_TIMES("AppNotification.MgrFileThreadLoadTime",
-                           timer.Elapsed());
-}
-
-void AppNotificationManager::HandleLoadResults(NotificationMap* map) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(map);
-  DCHECK(!loaded());
-  notifications_.reset(map);
-  UMA_HISTOGRAM_LONG_TIMES("AppNotification.MgrLoadDelay",
-                           load_timer_->Elapsed());
-  load_timer_.reset();
-
-  // Generate STATE_CHANGED notifications for extensions that have at
-  // least one notification loaded.
-  int app_count = 0;
-  int notification_count = 0;
-  NotificationMap::const_iterator i;
-  for (i = map->begin(); i != map->end(); ++i) {
-    const std::string& id = i->first;
-    if (i->second.empty())
-      continue;
-    app_count++;
-    notification_count += i->second.size();
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
-        content::Source<Profile>(profile_),
-        content::Details<const std::string>(&id));
-  }
-  UMA_HISTOGRAM_COUNTS("AppNotification.MgrLoadAppCount", app_count);
-  UMA_HISTOGRAM_COUNTS("AppNotification.MgrLoadTotalCount",
-                       notification_count);
-
-  // Generate MANAGER_LOADED notification.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_APP_NOTIFICATION_MANAGER_LOADED,
-      content::Source<AppNotificationManager>(this),
-      content::NotificationService::NoDetails());
-}
-
-void AppNotificationManager::SaveOnFileThread(const std::string& extension_id,
-                                              AppNotificationList* list) {
-  // Own the |list|.
-  scoped_ptr<AppNotificationList> scoped_list(list);
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  storage_->Set(extension_id, *scoped_list);
-}
-
-void AppNotificationManager::DeleteOnFileThread(
-    const std::string& extension_id) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  storage_->Delete(extension_id);
 }
 
 SyncDataList AppNotificationManager::GetAllSyncData(
@@ -453,6 +354,132 @@ void AppNotificationManager::StopSyncing(syncable::ModelType type) {
   sync_error_factory_.reset();
 }
 
+AppNotificationManager::~AppNotificationManager() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Post a task to delete our storage on the file thread.
+  BrowserThread::DeleteSoon(BrowserThread::FILE,
+                            FROM_HERE,
+                            storage_.release());
+}
+
+void AppNotificationManager::LoadOnFileThread(const FilePath& storage_path) {
+  PerfTimer timer;
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(!loaded());
+
+  storage_.reset(AppNotificationStorage::Create(storage_path));
+  if (!storage_.get())
+    return;
+  scoped_ptr<NotificationMap> result(new NotificationMap());
+  std::set<std::string> ids;
+  if (!storage_->GetExtensionIds(&ids))
+    return;
+  std::set<std::string>::const_iterator i;
+  for (i = ids.begin(); i != ids.end(); ++i) {
+    const std::string& id = *i;
+    AppNotificationList& list = (*result)[id];
+    if (!storage_->Get(id, &list))
+      result->erase(id);
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&AppNotificationManager::HandleLoadResults,
+          this, result.release()));
+
+  UMA_HISTOGRAM_LONG_TIMES("AppNotification.MgrFileThreadLoadTime",
+                           timer.Elapsed());
+}
+
+void AppNotificationManager::HandleLoadResults(NotificationMap* map) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(map);
+  DCHECK(!loaded());
+  notifications_.reset(map);
+  UMA_HISTOGRAM_LONG_TIMES("AppNotification.MgrLoadDelay",
+                           load_timer_->Elapsed());
+  load_timer_.reset();
+
+  // Generate STATE_CHANGED notifications for extensions that have at
+  // least one notification loaded.
+  int app_count = 0;
+  int notification_count = 0;
+  NotificationMap::const_iterator i;
+  for (i = map->begin(); i != map->end(); ++i) {
+    const std::string& id = i->first;
+    if (i->second.empty())
+      continue;
+    app_count++;
+    notification_count += i->second.size();
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
+        content::Source<Profile>(profile_),
+        content::Details<const std::string>(&id));
+  }
+  UMA_HISTOGRAM_COUNTS("AppNotification.MgrLoadAppCount", app_count);
+  UMA_HISTOGRAM_COUNTS("AppNotification.MgrLoadTotalCount",
+                       notification_count);
+
+  // Generate MANAGER_LOADED notification.
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_APP_NOTIFICATION_MANAGER_LOADED,
+      content::Source<AppNotificationManager>(this),
+      content::NotificationService::NoDetails());
+}
+
+void AppNotificationManager::SaveOnFileThread(const std::string& extension_id,
+                                              AppNotificationList* list) {
+  // Own the |list|.
+  scoped_ptr<AppNotificationList> scoped_list(list);
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  storage_->Set(extension_id, *scoped_list);
+}
+
+void AppNotificationManager::DeleteOnFileThread(
+    const std::string& extension_id) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  storage_->Delete(extension_id);
+}
+
+AppNotificationList& AppNotificationManager::GetAllInternal(
+    const std::string& extension_id) {
+  NotificationMap::iterator found = notifications_->find(extension_id);
+  if (found == notifications_->end()) {
+    (*notifications_)[extension_id] = AppNotificationList();
+    found = notifications_->find(extension_id);
+  }
+  CHECK(found != notifications_->end());
+  return found->second;
+}
+
+void AppNotificationManager::Remove(const std::string& extension_id,
+                                    const std::string& guid) {
+  DCHECK(loaded());
+  AppNotificationList& list = GetAllInternal(extension_id);
+  RemoveByGuid(&list, guid);
+
+  if (storage_.get()) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&AppNotificationManager::SaveOnFileThread,
+            this, extension_id, CopyAppNotificationList(list)));
+  }
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
+      content::Source<Profile>(profile_),
+      content::Details<const std::string>(&extension_id));
+}
+
+const AppNotification* AppNotificationManager::GetNotification(
+    const std::string& extension_id, const std::string& guid) {
+  DCHECK(loaded());
+  const AppNotificationList& list = GetAllInternal(extension_id);
+  return FindByGuid(list, guid);
+}
+
 void AppNotificationManager::SyncAddChange(const AppNotification& notif) {
   // Skip if either:
   // - Notification is marked as local.
@@ -503,33 +530,6 @@ void AppNotificationManager::SyncClearAllChange(
         CreateSyncDataFromNotification(notif)));
   }
   sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
-}
-
-const AppNotification* AppNotificationManager::GetNotification(
-    const std::string& extension_id, const std::string& guid) {
-  DCHECK(loaded());
-  const AppNotificationList& list = GetAllInternal(extension_id);
-  return FindByGuid(list, guid);
-}
-
-void AppNotificationManager::Remove(const std::string& extension_id,
-                                    const std::string& guid) {
-  DCHECK(loaded());
-  AppNotificationList& list = GetAllInternal(extension_id);
-  RemoveByGuid(&list, guid);
-
-  if (storage_.get()) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&AppNotificationManager::SaveOnFileThread,
-            this, extension_id, CopyAppNotificationList(list)));
-  }
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
-      content::Source<Profile>(profile_),
-      content::Details<const std::string>(&extension_id));
 }
 
 // static

@@ -77,7 +77,6 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
   typedef std::vector<Item> ItemList;
 
   BundleInstaller(Profile* profile, const ItemList& items);
-  virtual ~BundleInstaller();
 
   // Returns true if the user has approved the bundle's permissions.
   bool approved() const { return approved_; }
@@ -115,6 +114,8 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
 
   typedef std::map<std::string, Item> ItemMap;
   typedef std::map<std::string, linked_ptr<base::DictionaryValue> > ManifestMap;
+
+  virtual ~BundleInstaller();
 
   // Displays the install bubble for |bundle| on |browser|.
   // Note: this is a platform specific implementation.

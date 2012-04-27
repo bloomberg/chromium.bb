@@ -15,8 +15,11 @@
 class TerminalPrivateFunction : public AsyncExtensionFunction {
  public:
   TerminalPrivateFunction();
+
+ protected:
   virtual ~TerminalPrivateFunction();
 
+  // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
   // Override with actual extension function implementation.
@@ -27,9 +30,14 @@ class TerminalPrivateFunction : public AsyncExtensionFunction {
 // Opens new terminal process. Returns the new process id.
 class OpenTerminalProcessFunction : public TerminalPrivateFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.openTerminalProcess")
+
   OpenTerminalProcessFunction();
+
+ protected:
   virtual ~OpenTerminalProcessFunction();
 
+  // TerminalPrivateFunction:
   virtual bool RunTerminalFunction() OVERRIDE;
 
  private:
@@ -37,44 +45,46 @@ class OpenTerminalProcessFunction : public TerminalPrivateFunction {
   void RespondOnUIThread(pid_t pid);
 
   const char* command_;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.openTerminalProcess")
 };
 
 // Send input to the terminal process specified by the pid sent as an argument.
 class SendInputToTerminalProcessFunction : public TerminalPrivateFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.sendInput")
+
+ protected:
+  // TerminalPrivateFunction:
   virtual bool RunTerminalFunction() OVERRIDE;
 
  private:
   void SendInputOnFileThread(pid_t pid, const std::string& input);
   void RespondOnUIThread(bool success);
-
-  DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.sendInput")
 };
 
 // Closes terminal process with given pid.
 class CloseTerminalProcessFunction : public TerminalPrivateFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.closeTerminalProcess")
+
+ protected:
   virtual bool RunTerminalFunction() OVERRIDE;
 
  private:
   void CloseOnFileThread(pid_t pid);
   void RespondOnUIThread(bool success);
-
-  DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.closeTerminalProcess")
 };
 
 // Called by extension when terminal size changes.
 class OnTerminalResizeFunction : public TerminalPrivateFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.onTerminalResize")
+
+ protected:
   virtual bool RunTerminalFunction() OVERRIDE;
 
  private:
   void OnResizeOnFileThread(pid_t pid, int width, int height);
   void RespondOnUIThread(bool success);
-
-  DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.onTerminalResize")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_TERMINAL_TERMINAL_PRIVATE_API_H_

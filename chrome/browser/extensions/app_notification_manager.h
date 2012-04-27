@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/extensions/app_notification.h"
 #include "chrome/browser/extensions/app_notification_storage.h"
@@ -36,7 +37,6 @@ class AppNotificationManager
  public:
   static const unsigned int kMaxNotificationPerApp;
   explicit AppNotificationManager(Profile* profile);
-  virtual ~AppNotificationManager();
 
   // Starts up the process of reading from persistent storage.
   void Init();
@@ -80,6 +80,9 @@ class AppNotificationManager
 
  private:
   friend class AppNotificationManagerSyncTest;
+  friend class base::DeleteHelper<AppNotificationManager>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
   FRIEND_TEST_ALL_PREFIXES(AppNotificationManagerSyncTest,
                            NotificationToSyncDataToNotification);
   FRIEND_TEST_ALL_PREFIXES(AppNotificationManagerSyncTest,
@@ -105,10 +108,10 @@ class AppNotificationManager
   FRIEND_TEST_ALL_PREFIXES(AppNotificationManagerSyncTest,
                            ClearAllGetsSynced);
 
-  friend class base::RefCountedThreadSafe<AppNotificationManager>;
-
   // Maps extension id to a list of notifications for that extension.
   typedef std::map<std::string, AppNotificationList> NotificationMap;
+
+  virtual ~AppNotificationManager();
 
   // Starts loading storage_ using |storage_path|.
   void LoadOnFileThread(const FilePath& storage_path);

@@ -14,17 +14,25 @@ namespace extensions {
 
 class GetIncognitoModeAvailabilityFunction : public SyncExtensionFunction {
  public:
-  virtual ~GetIncognitoModeAvailabilityFunction() {}
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("systemPrivate.getIncognitoModeAvailability")
+
+ protected:
+  virtual ~GetIncognitoModeAvailabilityFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 // API function which returns the status of system update.
 class GetUpdateStatusFunction : public SyncExtensionFunction {
  public:
-  virtual ~GetUpdateStatusFunction() {}
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("systemPrivate.getUpdateStatus")
+
+ protected:
+  virtual ~GetUpdateStatusFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 void DispatchBrightnessChangedEvent(int brightness, bool user_initiated);

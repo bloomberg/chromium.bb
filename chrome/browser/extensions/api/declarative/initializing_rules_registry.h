@@ -23,7 +23,6 @@ class InitializingRulesRegistry : public RulesRegistry {
   enum Defaults { DEFAULT_PRIORITY = 100 };
 
   explicit InitializingRulesRegistry(scoped_refptr<RulesRegistry> delegate);
-  virtual ~InitializingRulesRegistry();
 
   // Implementation for RulesRegistry:
   virtual std::string AddRules(
@@ -45,6 +44,8 @@ class InitializingRulesRegistry : public RulesRegistry {
   virtual content::BrowserThread::ID GetOwnerThread() const OVERRIDE;
 
  private:
+  virtual ~InitializingRulesRegistry();
+
   // Returns whether any existing rule is registered with identifier |rule_id|
   // for extension |extension_id|.
   bool IsUniqueId(const std::string& extension_id,

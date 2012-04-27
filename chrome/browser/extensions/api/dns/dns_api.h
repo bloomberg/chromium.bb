@@ -21,20 +21,26 @@ namespace extensions {
 
 class DnsResolveFunction : public AsyncExtensionFunction {
  public:
-  DnsResolveFunction();
-  virtual ~DnsResolveFunction();
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.dns.resolve")
 
-  virtual bool RunImpl() OVERRIDE;
+  DnsResolveFunction();
 
   // See below. Caller retains ownership.
   static void set_host_resolver_for_testing(
       net::HostResolver* host_resolver_for_testing);
 
  protected:
+  virtual ~DnsResolveFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
   void WorkOnIOThread();
   void RespondOnUIThread();
 
  private:
+  void OnLookupFinished(int result);
+
   std::string hostname_;
 
   bool response_;  // The value sent in SendResponse().
@@ -44,18 +50,9 @@ class DnsResolveFunction : public AsyncExtensionFunction {
   // plain pointer to it here as we move from thread to thread.
   IOThread* io_thread_;
 
-  // If null, then we'll use io_thread_ to obtain the real HostResolver. We use
-  // a plain pointer for to be consistent with the ownership model of the real
-  // one.
-  static net::HostResolver* host_resolver_for_testing;
-
   scoped_ptr<net::CapturingBoundNetLog> capturing_bound_net_log_;
   scoped_ptr<net::HostResolver::RequestHandle> request_handle_;
   scoped_ptr<net::AddressList> addresses_;
-
-  void OnLookupFinished(int result);
-
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.dns.resolve")
 };
 
 }  // namespace extensions

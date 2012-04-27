@@ -119,16 +119,18 @@ void GetDownloadFilePath(
 
 }  // namespace
 
+WebstoreInstaller::Approval::Approval()
+    : profile(NULL),
+      use_app_installed_bubble(false),
+      skip_post_install_ui(false) {
+}
+
+WebstoreInstaller::Approval::~Approval() {}
+
 const WebstoreInstaller::Approval* WebstoreInstaller::GetAssociatedApproval(
     const DownloadItem& download) {
   return static_cast<const Approval*>(download.GetExternalData(kApprovalKey));
 }
-
-WebstoreInstaller::Approval::Approval()
-    : profile(NULL),
-      use_app_installed_bubble(false),
-      skip_post_install_ui(false) {}
-WebstoreInstaller::Approval::~Approval() {}
 
 WebstoreInstaller::WebstoreInstaller(Profile* profile,
                                      Delegate* delegate,
@@ -152,13 +154,6 @@ WebstoreInstaller::WebstoreInstaller(Profile* profile,
                  content::Source<Profile>(profile->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
                  content::Source<CrxInstaller>(NULL));
-}
-
-WebstoreInstaller::~WebstoreInstaller() {
-  if (download_item_) {
-    download_item_->RemoveObserver(this);
-    download_item_ = NULL;
-  }
 }
 
 void WebstoreInstaller::Start() {
@@ -227,6 +222,13 @@ void WebstoreInstaller::Observe(int type,
 
 void WebstoreInstaller::SetDownloadDirectoryForTests(FilePath* directory) {
   g_download_directory_for_tests = directory;
+}
+
+WebstoreInstaller::~WebstoreInstaller() {
+  if (download_item_) {
+    download_item_->RemoveObserver(this);
+    download_item_ = NULL;
+  }
 }
 
 void WebstoreInstaller::OnDownloadStarted(DownloadId id, net::Error error) {

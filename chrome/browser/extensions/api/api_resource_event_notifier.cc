@@ -44,9 +44,8 @@ APIResourceEventNotifier::APIResourceEventNotifier(
       profile_(profile),
       src_extension_id_(src_extension_id),
       src_id_(src_id),
-      src_url_(src_url) {}
-
-APIResourceEventNotifier::~APIResourceEventNotifier() {}
+      src_url_(src_url) {
+}
 
 void APIResourceEventNotifier::OnConnectComplete(int result_code) {
   SendEventWithResultCode(API_RESOURCE_EVENT_CONNECT_COMPLETE, result_code);
@@ -78,16 +77,23 @@ void APIResourceEventNotifier::OnWriteComplete(int result_code) {
   SendEventWithResultCode(API_RESOURCE_EVENT_WRITE_COMPLETE, result_code);
 }
 
-void APIResourceEventNotifier::SendEventWithResultCode(
-    APIResourceEventType event_type,
-    int result_code) {
-  if (src_id_ < 0)
-    return;
+// static
+std::string APIResourceEventNotifier::APIResourceEventTypeToString(
+    APIResourceEventType event_type) {
+  switch (event_type) {
+    case API_RESOURCE_EVENT_CONNECT_COMPLETE:
+      return kEventTypeConnectComplete;
+    case API_RESOURCE_EVENT_DATA_READ:
+      return kEventTypeDataRead;
+    case API_RESOURCE_EVENT_WRITE_COMPLETE:
+      return kEventTypeWriteComplete;
+  }
 
-  DictionaryValue* event = CreateAPIResourceEvent(event_type);
-  event->SetInteger(kResultCodeKey, result_code);
-  DispatchEvent(event);
+  NOTREACHED();
+  return std::string();
 }
+
+APIResourceEventNotifier::~APIResourceEventNotifier() {}
 
 void APIResourceEventNotifier::DispatchEvent(DictionaryValue* event) {
   BrowserThread::PostTask(
@@ -125,20 +131,15 @@ DictionaryValue* APIResourceEventNotifier::CreateAPIResourceEvent(
   return event;
 }
 
-// static
-std::string APIResourceEventNotifier::APIResourceEventTypeToString(
-    APIResourceEventType event_type) {
-  switch (event_type) {
-    case API_RESOURCE_EVENT_CONNECT_COMPLETE:
-      return kEventTypeConnectComplete;
-    case API_RESOURCE_EVENT_DATA_READ:
-      return kEventTypeDataRead;
-    case API_RESOURCE_EVENT_WRITE_COMPLETE:
-      return kEventTypeWriteComplete;
-  }
+void APIResourceEventNotifier::SendEventWithResultCode(
+    APIResourceEventType event_type,
+    int result_code) {
+  if (src_id_ < 0)
+    return;
 
-  NOTREACHED();
-  return std::string();
+  DictionaryValue* event = CreateAPIResourceEvent(event_type);
+  event->SetInteger(kResultCodeKey, result_code);
+  DispatchEvent(event);
 }
 
 }  // namespace extensions

@@ -27,8 +27,11 @@ const char kUDPOption[] = "udp";
 const char kSocketNotFoundError[] = "Socket not found";
 
 SocketCreateFunction::SocketCreateFunction()
-    : src_id_(-1), event_notifier_(NULL) {
+    : src_id_(-1),
+      event_notifier_(NULL) {
 }
+
+SocketCreateFunction::~SocketCreateFunction() {}
 
 bool SocketCreateFunction::Prepare() {
   std::string socket_type_string;
@@ -182,8 +185,7 @@ SocketWriteFunction::SocketWriteFunction()
       io_buffer_(NULL) {
 }
 
-SocketWriteFunction::~SocketWriteFunction() {
-}
+SocketWriteFunction::~SocketWriteFunction() {}
 
 bool SocketWriteFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
@@ -223,6 +225,8 @@ void SocketWriteFunction::Work() {
 bool SocketWriteFunction::Respond() {
   return true;
 }
+
+SocketRecvFromFunction::~SocketRecvFromFunction() {}
 
 bool SocketRecvFromFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
@@ -273,8 +277,7 @@ SocketSendToFunction::SocketSendToFunction()
       io_buffer_(NULL) {
 }
 
-SocketSendToFunction::~SocketSendToFunction() {
-}
+SocketSendToFunction::~SocketSendToFunction() {}
 
 bool SocketSendToFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));

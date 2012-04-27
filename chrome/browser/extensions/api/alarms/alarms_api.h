@@ -11,33 +11,58 @@
 namespace extensions {
 
 class AlarmsCreateFunction : public SyncExtensionFunction {
- protected:
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.alarms.create");
+
+ protected:
+  virtual ~AlarmsCreateFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class AlarmsGetFunction : public SyncExtensionFunction {
- protected:
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.alarms.get");
+
+ protected:
+  virtual ~AlarmsGetFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class AlarmsGetAllFunction : public SyncExtensionFunction {
- protected:
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.alarms.getAll");
+
+ protected:
+  virtual ~AlarmsGetAllFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class AlarmsClearFunction : public SyncExtensionFunction {
- protected:
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.alarms.clear");
+
+ protected:
+  virtual ~AlarmsClearFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class AlarmsClearAllFunction : public SyncExtensionFunction {
- protected:
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.alarms.clearAll");
+
+ protected:
+  virtual ~AlarmsClearAllFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 } //  namespace extensions

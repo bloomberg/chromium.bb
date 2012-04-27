@@ -15,52 +15,79 @@
 //
 
 class BrowserActionSetIconFunction : public ExtensionActionSetIconFunction {
-  virtual ~BrowserActionSetIconFunction() {}
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setIcon")
+
+ protected:
+  virtual ~BrowserActionSetIconFunction() {}
 };
 
 class BrowserActionSetTitleFunction : public ExtensionActionSetTitleFunction {
-  virtual ~BrowserActionSetTitleFunction() {}
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setTitle")
+
+ protected:
+  virtual ~BrowserActionSetTitleFunction() {}
 };
 
 class BrowserActionSetPopupFunction : public ExtensionActionSetPopupFunction {
-  virtual ~BrowserActionSetPopupFunction() {}
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setPopup")
+
+ protected:
+  virtual ~BrowserActionSetPopupFunction() {}
 };
 
 class BrowserActionGetTitleFunction : public ExtensionActionGetTitleFunction {
-  virtual ~BrowserActionGetTitleFunction() {}
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.getTitle")
+
+ protected:
+  virtual ~BrowserActionGetTitleFunction() {}
 };
 
 class BrowserActionGetPopupFunction : public ExtensionActionGetPopupFunction {
-  virtual ~BrowserActionGetPopupFunction() {}
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.getPopup")
+
+ protected:
+  virtual ~BrowserActionGetPopupFunction() {}
 };
 
 class BrowserActionSetBadgeTextFunction
     : public ExtensionActionSetBadgeTextFunction {
-  virtual ~BrowserActionSetBadgeTextFunction() {}
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeText")
+
+ protected:
+  virtual ~BrowserActionSetBadgeTextFunction() {}
 };
 
 class BrowserActionSetBadgeBackgroundColorFunction
     : public ExtensionActionSetBadgeBackgroundColorFunction {
-  virtual ~BrowserActionSetBadgeBackgroundColorFunction() {}
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeBackgroundColor")
+
+ protected:
+  virtual ~BrowserActionSetBadgeBackgroundColorFunction() {}
 };
 
 class BrowserActionGetBadgeTextFunction
     : public ExtensionActionGetBadgeTextFunction {
-  virtual ~BrowserActionGetBadgeTextFunction() {}
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.getBadgeText")
+
+ protected:
+  virtual ~BrowserActionGetBadgeTextFunction() {}
 };
 
 class BrowserActionGetBadgeBackgroundColorFunction
     : public ExtensionActionGetBadgeBackgroundColorFunction {
-  virtual ~BrowserActionGetBadgeBackgroundColorFunction() {}
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.getBadgeBackgroundColor")
+
+ protected:
+  virtual ~BrowserActionGetBadgeBackgroundColorFunction() {}
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_BROWSER_ACTIONS_API_H_

@@ -12,8 +12,6 @@ namespace extensions {
 
 WebRequestRulesRegistry::WebRequestRulesRegistry() {}
 
-WebRequestRulesRegistry::~WebRequestRulesRegistry() {}
-
 std::set<WebRequestRule::GlobalRuleId>
 WebRequestRulesRegistry::GetMatches(net::URLRequest* request,
                                     RequestStages request_stage) {
@@ -174,5 +172,7 @@ bool WebRequestRulesRegistry::IsEmpty() const {
   return rule_triggers_.empty() && webrequest_rules_.empty() &&
       url_matcher_.IsEmpty();
 }
+
+WebRequestRulesRegistry::~WebRequestRulesRegistry() {}
 
 }  // namespace extensions

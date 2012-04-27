@@ -25,7 +25,6 @@ class Extension;
 class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
  public:
   ExtensionInfoMap();
-  ~ExtensionInfoMap();
 
   const ExtensionSet& extensions() const { return extensions_; }
   const ExtensionSet& disabled_extensions() const {
@@ -74,10 +73,14 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   ExtensionsQuotaService* GetQuotaService();
 
  private:
+  friend class base::RefCountedThreadSafe<ExtensionInfoMap>;
+
   // Extra dynamic data related to an extension.
   struct ExtraData;
   // Map of extension_id to ExtraData.
   typedef std::map<std::string, ExtraData> ExtraDataMap;
+
+  ~ExtensionInfoMap();
 
   ExtensionSet extensions_;
   ExtensionSet disabled_extensions_;

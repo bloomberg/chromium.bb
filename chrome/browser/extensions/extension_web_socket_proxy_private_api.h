@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,9 +23,10 @@ class WebSocketProxyPrivate
     : public AsyncExtensionFunction, public content::NotificationObserver {
  public:
   WebSocketProxyPrivate();
-  virtual ~WebSocketProxyPrivate();
 
  protected:
+  virtual ~WebSocketProxyPrivate();
+
   // Custom finalization.
   virtual void CustomFinalize() = 0;
 
@@ -77,31 +78,33 @@ class WebSocketProxyPrivate
 class WebSocketProxyPrivateGetURLForTCPFunction
     : public WebSocketProxyPrivate {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("webSocketProxyPrivate.getURLForTCP")
+
   WebSocketProxyPrivateGetURLForTCPFunction();
+
+ protected:
   virtual ~WebSocketProxyPrivateGetURLForTCPFunction();
 
- private:
   // ExtensionFunction implementation.
   virtual bool RunImpl() OVERRIDE;
 
   // WebSocketProxyPrivate implementation:
   virtual void CustomFinalize() OVERRIDE;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("webSocketProxyPrivate.getURLForTCP")
 };
 
 // Legacy API function for web socket proxy, to be eliminated.
 class WebSocketProxyPrivateGetPassportForTCPFunction
     : public WebSocketProxyPrivate {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("webSocketProxyPrivate.getPassportForTCP")
+
   WebSocketProxyPrivateGetPassportForTCPFunction();
+
+ protected:
   virtual ~WebSocketProxyPrivateGetPassportForTCPFunction();
 
- private:
   // WebSocketProxyPrivate implementation:
   virtual void CustomFinalize() OVERRIDE;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("webSocketProxyPrivate.getPassportForTCP")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_SOCKET_PROXY_PRIVATE_API_H_

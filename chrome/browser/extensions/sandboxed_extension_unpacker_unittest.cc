@@ -41,8 +41,6 @@ void OnUnpackSuccess(const FilePath& temp_dir,
 class MockSandboxedExtensionUnpackerClient
     : public SandboxedExtensionUnpackerClient {
  public:
-  virtual ~MockSandboxedExtensionUnpackerClient() {}
-
   MOCK_METHOD4(OnUnpackSuccess,
                void(const FilePath& temp_dir,
                     const FilePath& extension_root,
@@ -56,6 +54,9 @@ class MockSandboxedExtensionUnpackerClient
     ON_CALL(*this, OnUnpackSuccess(_, _, _, _))
         .WillByDefault(Invoke(::OnUnpackSuccess));
   }
+
+ protected:
+  virtual ~MockSandboxedExtensionUnpackerClient() {}
 };
 
 class SandboxedExtensionUnpackerTest : public testing::Test {

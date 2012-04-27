@@ -1655,12 +1655,6 @@ bool WebRequestEventHandled::RunImpl() {
   return true;
 }
 
-bool WebRequestHandlerBehaviorChanged::RunImpl() {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&ClearCacheOnNavigationOnUI));
-  return true;
-}
-
 void WebRequestHandlerBehaviorChanged::GetQuotaLimitHeuristics(
     QuotaLimitHeuristics* heuristics) const {
   QuotaLimitHeuristic::Config config = {
@@ -1688,6 +1682,12 @@ void WebRequestHandlerBehaviorChanged::OnQuotaExceeded() {
 
   // Continue gracefully.
   Run();
+}
+
+bool WebRequestHandlerBehaviorChanged::RunImpl() {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&ClearCacheOnNavigationOnUI));
+  return true;
 }
 
 void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host) {

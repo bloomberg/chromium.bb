@@ -78,13 +78,15 @@ class NetLogExtensionIdParameter : public net::NetLog::EventParameters {
  public:
   explicit NetLogExtensionIdParameter(const std::string& extension_id)
       : extension_id_(extension_id) {}
-  virtual ~NetLogExtensionIdParameter() {}
 
   virtual base::Value* ToValue() const OVERRIDE {
     DictionaryValue* dict = new DictionaryValue();
     dict->SetString("extension_id", extension_id_);
     return dict;
   }
+
+ protected:
+  virtual ~NetLogExtensionIdParameter() {}
 
  private:
   const std::string extension_id_;
@@ -98,7 +100,6 @@ class NetLogModificationParameter : public NetLogExtensionIdParameter {
  public:
   explicit NetLogModificationParameter(const std::string& extension_id)
       : NetLogExtensionIdParameter(extension_id) {}
-  virtual ~NetLogModificationParameter() {}
 
   virtual base::Value* ToValue() const OVERRIDE {
     Value* parent = NetLogExtensionIdParameter::ToValue();
@@ -118,6 +119,8 @@ class NetLogModificationParameter : public NetLogExtensionIdParameter {
   }
 
  private:
+  virtual ~NetLogModificationParameter() {}
+
   ListValue modified_headers_;
   ListValue deleted_headers_;
 

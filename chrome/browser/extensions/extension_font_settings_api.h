@@ -58,26 +58,46 @@ class ExtensionFontSettingsEventRouter : public content::NotificationObserver {
 
 class ClearFontFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.clearFont")
+
+ protected:
+  virtual ~ClearFontFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class GetFontFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.getFont")
+
+ protected:
+  virtual ~GetFontFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class SetFontFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.setFont")
+
+ protected:
+  virtual ~SetFontFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class GetFontListFunction : public AsyncExtensionFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.getFontList")
+
+ protected:
+  virtual ~GetFontListFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 
  private:
   void FontListHasLoaded(scoped_ptr<base::ListValue> list);
@@ -87,6 +107,9 @@ class GetFontListFunction : public AsyncExtensionFunction {
 // Base class for functions that clear a font pref.
 class ClearFontPrefExtensionFunction : public SyncExtensionFunction {
  protected:
+  virtual ~ClearFontPrefExtensionFunction() {}
+
+  // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
   // Implementations should return the name of the preference to clear, like
@@ -97,6 +120,9 @@ class ClearFontPrefExtensionFunction : public SyncExtensionFunction {
 // Base class for functions that get a font pref.
 class GetFontPrefExtensionFunction : public SyncExtensionFunction {
  protected:
+  virtual ~GetFontPrefExtensionFunction() {}
+
+  // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
   // Implementations should return the name of the preference to get, like
@@ -111,6 +137,9 @@ class GetFontPrefExtensionFunction : public SyncExtensionFunction {
 // Base class for functions that set a font pref.
 class SetFontPrefExtensionFunction : public SyncExtensionFunction {
  protected:
+  virtual ~SetFontPrefExtensionFunction() {}
+
+  // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
   // Implementations should return the name of the preference to set, like
@@ -128,6 +157,9 @@ class ClearDefaultFontSizeFunction : public ClearFontPrefExtensionFunction {
       "experimental.fontSettings.clearDefaultFontSize")
 
  protected:
+  virtual ~ClearDefaultFontSizeFunction() {}
+
+  // ClearFontPrefExtensionFunction:
   virtual const char* GetPrefName() OVERRIDE;
 };
 
@@ -137,6 +169,9 @@ class GetDefaultFontSizeFunction : public GetFontPrefExtensionFunction {
       "experimental.fontSettings.getDefaultFontSize")
 
  protected:
+  virtual ~GetDefaultFontSizeFunction() {}
+
+  // GetFontPrefExtensionFunction:
   virtual const char* GetPrefName() OVERRIDE;
   virtual const char* GetKey() OVERRIDE;
 };
@@ -147,6 +182,9 @@ class SetDefaultFontSizeFunction : public SetFontPrefExtensionFunction {
       "experimental.fontSettings.setDefaultFontSize")
 
  protected:
+  virtual ~SetDefaultFontSizeFunction() {}
+
+  // SetFontPrefExtensionFunction:
   virtual const char* GetPrefName() OVERRIDE;
   virtual const char* GetKey() OVERRIDE;
 };
@@ -158,6 +196,9 @@ class ClearDefaultFixedFontSizeFunction
       "experimental.fontSettings.clearDefaultFixedFontSize")
 
  protected:
+  virtual ~ClearDefaultFixedFontSizeFunction() {}
+
+  // ClearFontPrefExtensionFunction:
   virtual const char* GetPrefName() OVERRIDE;
 };
 
@@ -167,6 +208,9 @@ class GetDefaultFixedFontSizeFunction : public GetFontPrefExtensionFunction {
       "experimental.fontSettings.getDefaultFixedFontSize")
 
  protected:
+  virtual ~GetDefaultFixedFontSizeFunction() {}
+
+  // GetFontPrefExtensionFunction:
   virtual const char* GetPrefName() OVERRIDE;
   virtual const char* GetKey() OVERRIDE;
 };
@@ -177,6 +221,9 @@ class SetDefaultFixedFontSizeFunction : public SetFontPrefExtensionFunction {
       "experimental.fontSettings.setDefaultFixedFontSize")
 
  protected:
+  virtual ~SetDefaultFixedFontSizeFunction() {}
+
+  // SetFontPrefExtensionFunction:
   virtual const char* GetPrefName() OVERRIDE;
   virtual const char* GetKey() OVERRIDE;
 };
@@ -187,6 +234,9 @@ class ClearMinimumFontSizeFunction : public ClearFontPrefExtensionFunction {
       "experimental.fontSettings.clearMinimumFontSize")
 
  protected:
+  virtual ~ClearMinimumFontSizeFunction() {}
+
+  // ClearFontPrefExtensionFunction:
   virtual const char* GetPrefName() OVERRIDE;
 };
 
@@ -196,6 +246,9 @@ class GetMinimumFontSizeFunction : public GetFontPrefExtensionFunction {
       "experimental.fontSettings.getMinimumFontSize")
 
  protected:
+  virtual ~GetMinimumFontSizeFunction() {}
+
+  // GetFontPrefExtensionFunction:
   virtual const char* GetPrefName() OVERRIDE;
   virtual const char* GetKey() OVERRIDE;
 };
@@ -206,6 +259,9 @@ class SetMinimumFontSizeFunction : public SetFontPrefExtensionFunction {
       "experimental.fontSettings.setMinimumFontSize")
 
  protected:
+  virtual ~SetMinimumFontSizeFunction() {}
+
+  // SetFontPrefExtensionFunction:
   virtual const char* GetPrefName() OVERRIDE;
   virtual const char* GetKey() OVERRIDE;
 };
@@ -216,6 +272,9 @@ class ClearDefaultCharacterSetFunction : public ClearFontPrefExtensionFunction {
       "experimental.fontSettings.clearDefaultCharacterSet")
 
  protected:
+  virtual ~ClearDefaultCharacterSetFunction() {}
+
+  // ClearFontPrefExtensionFunction:
   virtual const char* GetPrefName() OVERRIDE;
 };
 
@@ -225,6 +284,9 @@ class GetDefaultCharacterSetFunction : public GetFontPrefExtensionFunction {
       "experimental.fontSettings.getDefaultCharacterSet")
 
  protected:
+  virtual ~GetDefaultCharacterSetFunction() {}
+
+  // GetFontPrefExtensionFunction:
   virtual const char* GetPrefName() OVERRIDE;
   virtual const char* GetKey() OVERRIDE;
 };
@@ -235,6 +297,9 @@ class SetDefaultCharacterSetFunction : public SetFontPrefExtensionFunction {
       "experimental.fontSettings.setDefaultCharacterSet")
 
  protected:
+  virtual ~SetDefaultCharacterSetFunction() {}
+
+  // SetFontPrefExtensionFunction:
   virtual const char* GetPrefName() OVERRIDE;
   virtual const char* GetKey() OVERRIDE;
 };

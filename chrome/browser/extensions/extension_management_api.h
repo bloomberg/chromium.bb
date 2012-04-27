@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,58 +16,91 @@ class ExtensionService;
 
 class ExtensionManagementFunction : public SyncExtensionFunction {
  protected:
+  virtual ~ExtensionManagementFunction() {}
+
   ExtensionService* service();
 };
 
 class AsyncExtensionManagementFunction : public AsyncExtensionFunction {
  protected:
+  virtual ~AsyncExtensionManagementFunction() {}
+
   ExtensionService* service();
 };
 
 class GetAllExtensionsFunction : public ExtensionManagementFunction {
-  virtual ~GetAllExtensionsFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("management.getAll");
+
+ protected:
+  virtual ~GetAllExtensionsFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class GetExtensionByIdFunction : public ExtensionManagementFunction {
-  virtual ~GetExtensionByIdFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("management.get");
+
+ protected:
+  virtual ~GetExtensionByIdFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class GetPermissionWarningsByIdFunction : public ExtensionManagementFunction {
-  virtual ~GetPermissionWarningsByIdFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("management.getPermissionWarningsById");
+
+ protected:
+  virtual ~GetPermissionWarningsByIdFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class GetPermissionWarningsByManifestFunction : public AsyncExtensionFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "management.getPermissionWarningsByManifest");
+
   // Called when utility process finishes.
   void OnParseSuccess(base::DictionaryValue* parsed_manifest);
   void OnParseFailure(const std::string& error);
+
  protected:
   virtual ~GetPermissionWarningsByManifestFunction() {}
+
+  // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "management.getPermissionWarningsByManifest");
 };
 
 class LaunchAppFunction : public ExtensionManagementFunction {
-  virtual ~LaunchAppFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("management.launchApp");
+
+ protected:
+  virtual ~LaunchAppFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class SetEnabledFunction : public AsyncExtensionManagementFunction,
                            public ExtensionInstallUI::Delegate {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("management.setEnabled");
+
   SetEnabledFunction();
-  virtual ~SetEnabledFunction();
-  virtual bool RunImpl() OVERRIDE;
 
  protected:
+  virtual ~SetEnabledFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
   // ExtensionInstalUI::Delegate.
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
@@ -77,14 +110,17 @@ class SetEnabledFunction : public AsyncExtensionManagementFunction,
 
   // Used for prompting to re-enable items with permissions escalation updates.
   scoped_ptr<ExtensionInstallUI> install_ui_;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("management.setEnabled");
 };
 
 class UninstallFunction : public ExtensionManagementFunction {
-  virtual ~UninstallFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("management.uninstall");
+
+ protected:
+  virtual ~UninstallFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class ExtensionManagementEventRouter : public content::NotificationObserver {

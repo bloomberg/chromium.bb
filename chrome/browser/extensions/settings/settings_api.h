@@ -22,11 +22,11 @@ namespace extensions {
 // TODO(kalman): Rename these functions, and all files under
 // chrome/browser/extensions/settings.
 class SettingsFunction : public AsyncExtensionFunction {
- public:
+ protected:
   SettingsFunction();
   virtual ~SettingsFunction();
 
- protected:
+  // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
   // Extension settings function implementations should do their work here.
@@ -63,6 +63,9 @@ class GetSettingsFunction : public SettingsFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("storage.get");
 
  protected:
+  virtual ~GetSettingsFunction() {}
+
+  // SettingsFunction:
   virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
 };
 
@@ -71,8 +74,12 @@ class SetSettingsFunction : public SettingsFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("storage.set");
 
  protected:
+  virtual ~SetSettingsFunction() {}
+
+  // SettingsFunction:
   virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
 
+  // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
 };
@@ -82,8 +89,12 @@ class RemoveSettingsFunction : public SettingsFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("storage.remove");
 
  protected:
+  virtual ~RemoveSettingsFunction() {}
+
+  // SettingsFunction:
   virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
 
+  // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
 };
@@ -93,8 +104,12 @@ class ClearSettingsFunction : public SettingsFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("storage.clear");
 
  protected:
+  virtual ~ClearSettingsFunction() {}
+
+  // SettingsFunction:
   virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
 
+  // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
 };
@@ -104,6 +119,9 @@ class GetBytesInUseSettingsFunction : public SettingsFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("storage.getBytesInUse");
 
  protected:
+  virtual ~GetBytesInUseSettingsFunction() {}
+
+  // SettingsFunction:
   virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
 };
 

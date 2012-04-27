@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,6 @@
 
 MockExtensionSpecialStoragePolicy::MockExtensionSpecialStoragePolicy()
     : ExtensionSpecialStoragePolicy(NULL) {}
-
-MockExtensionSpecialStoragePolicy::~MockExtensionSpecialStoragePolicy() {}
 
 bool MockExtensionSpecialStoragePolicy::IsStorageProtected(const GURL& origin) {
   return protected_.find(origin) != protected_.end();
@@ -30,3 +28,5 @@ bool MockExtensionSpecialStoragePolicy::IsFileHandler(
 bool MockExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
   return !session_only_.empty();
 }
+
+MockExtensionSpecialStoragePolicy::~MockExtensionSpecialStoragePolicy() {}

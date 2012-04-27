@@ -36,8 +36,7 @@ ExecuteCodeInTabFunction::ExecuteCodeInTabFunction()
       run_at_(UserScript::DOCUMENT_IDLE) {
 }
 
-ExecuteCodeInTabFunction::~ExecuteCodeInTabFunction() {
-}
+ExecuteCodeInTabFunction::~ExecuteCodeInTabFunction() {}
 
 bool ExecuteCodeInTabFunction::RunImpl() {
   DictionaryValue* script_info;
@@ -140,6 +139,41 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   file_reader->Start();
 
   return true;
+}
+
+bool ExecuteCodeInTabFunction::OnMessageReceived(const IPC::Message& message) {
+  if (message.type() != ExtensionHostMsg_ExecuteCodeFinished::ID)
+    return false;
+
+  int message_request_id;
+  PickleIterator iter(message);
+  if (!message.ReadInt(&iter, &message_request_id)) {
+    NOTREACHED() << "malformed extension message";
+    return true;
+  }
+
+  if (message_request_id != request_id())
+    return false;
+
+  IPC_BEGIN_MESSAGE_MAP(ExecuteCodeInTabFunction, message)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ExecuteCodeFinished,
+                        OnExecuteCodeFinished)
+  IPC_END_MESSAGE_MAP()
+  return true;
+}
+
+void ExecuteCodeInTabFunction::OnExecuteCodeFinished(int request_id,
+                                                     bool success,
+                                                     const std::string& error) {
+  if (!error.empty()) {
+    CHECK(!success);
+    error_ = error;
+  }
+
+  SendResponse(success);
+
+  Observe(NULL);
+  Release();  // balanced in Execute()
 }
 
 void ExecuteCodeInTabFunction::DidLoadFile(bool success,
@@ -249,39 +283,4 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
   Observe(contents->web_contents());
   AddRef();  // balanced in OnExecuteCodeFinished()
   return true;
-}
-
-bool ExecuteCodeInTabFunction::OnMessageReceived(const IPC::Message& message) {
-  if (message.type() != ExtensionHostMsg_ExecuteCodeFinished::ID)
-    return false;
-
-  int message_request_id;
-  PickleIterator iter(message);
-  if (!message.ReadInt(&iter, &message_request_id)) {
-    NOTREACHED() << "malformed extension message";
-    return true;
-  }
-
-  if (message_request_id != request_id())
-    return false;
-
-  IPC_BEGIN_MESSAGE_MAP(ExecuteCodeInTabFunction, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ExecuteCodeFinished,
-                        OnExecuteCodeFinished)
-  IPC_END_MESSAGE_MAP()
-  return true;
-}
-
-void ExecuteCodeInTabFunction::OnExecuteCodeFinished(int request_id,
-                                                     bool success,
-                                                     const std::string& error) {
-  if (!error.empty()) {
-    CHECK(!success);
-    error_ = error;
-  }
-
-  SendResponse(success);
-
-  Observe(NULL);
-  Release();  // balanced in Execute()
 }

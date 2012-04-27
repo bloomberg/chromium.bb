@@ -133,21 +133,19 @@ int CheckThresholdBounds(int timeout) {
   if (timeout > kMaxThreshold) return kMaxThreshold;
   return timeout;
 }
+
 };  // namespace
 
-void ExtensionIdleQueryStateFunction::IdleStateCallback(int threshold,
-                                                        IdleState state) {
-  // If our state is not active, make sure we're running a polling task to check
-  // for active state and report it when it changes to active.
-  if (state != IDLE_STATE_ACTIVE) {
-    ExtensionIdlePollingTask::CreateNewPollTask(threshold, state, profile_);
-  }
+void ExtensionIdleEventRouter::OnIdleStateChange(Profile* profile,
+                                                 IdleState state) {
+  // Prepare the single argument of the current state.
+  ListValue args;
+  args.Append(CreateIdleValue(state));
+  std::string json_args;
+  base::JSONWriter::Write(&args, &json_args);
 
-  result_.reset(CreateIdleValue(state));
-
-  ExtensionIdleCache::UpdateCache(threshold, state);
-
-  SendResponse(true);
+  profile->GetExtensionEventRouter()->DispatchEventToRenderers(
+      keys::kOnStateChanged, json_args, profile, GURL());
 }
 
 bool ExtensionIdleQueryStateFunction::RunImpl() {
@@ -169,16 +167,19 @@ bool ExtensionIdleQueryStateFunction::RunImpl() {
   return true;
 }
 
-void ExtensionIdleEventRouter::OnIdleStateChange(Profile* profile,
-                                                 IdleState state) {
-  // Prepare the single argument of the current state.
-  ListValue args;
-  args.Append(CreateIdleValue(state));
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
+void ExtensionIdleQueryStateFunction::IdleStateCallback(int threshold,
+                                                        IdleState state) {
+  // If our state is not active, make sure we're running a polling task to check
+  // for active state and report it when it changes to active.
+  if (state != IDLE_STATE_ACTIVE) {
+    ExtensionIdlePollingTask::CreateNewPollTask(threshold, state, profile_);
+  }
 
-  profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-      keys::kOnStateChanged, json_args, profile, GURL());
+  result_.reset(CreateIdleValue(state));
+
+  ExtensionIdleCache::UpdateCache(threshold, state);
+
+  SendResponse(true);
 }
 
 ExtensionIdleCache::CacheData ExtensionIdleCache::cached_data =
@@ -186,6 +187,10 @@ ExtensionIdleCache::CacheData ExtensionIdleCache::cached_data =
 
 IdleState ExtensionIdleCache::CalculateIdleState(int threshold) {
   return CalculateState(threshold, base::Time::Now().ToDoubleT());
+}
+
+void ExtensionIdleCache::UpdateCache(int threshold, IdleState state) {
+  Update(threshold, state, base::Time::Now().ToDoubleT());
 }
 
 IdleState ExtensionIdleCache::CalculateState(int threshold, double now) {
@@ -219,10 +224,6 @@ IdleState ExtensionIdleCache::CalculateState(int threshold, double now) {
     return IDLE_STATE_IDLE;
 
   return IDLE_STATE_UNKNOWN;
-}
-
-void ExtensionIdleCache::UpdateCache(int threshold, IdleState state) {
-  Update(threshold, state, base::Time::Now().ToDoubleT());
 }
 
 void ExtensionIdleCache::Update(int threshold, IdleState state, double now) {

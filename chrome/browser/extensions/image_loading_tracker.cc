@@ -47,8 +47,7 @@ ImageLoadingTracker::PendingLoadInfo::PendingLoadInfo()
     pending_count(0) {
 }
 
-ImageLoadingTracker::PendingLoadInfo::~PendingLoadInfo() {
-}
+ImageLoadingTracker::PendingLoadInfo::~PendingLoadInfo() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ImageLoadingTracker::ImageLoader
@@ -161,6 +160,9 @@ class ImageLoadingTracker::ImageLoader
   }
 
  private:
+  friend class base::RefCountedThreadSafe<ImageLoader>;
+  ~ImageLoader() {}
+
   // The tracker we are loading the image for. If NULL, it means the tracker is
   // no longer interested in the reply.
   ImageLoadingTracker* tracker_;

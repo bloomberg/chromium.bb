@@ -48,7 +48,6 @@ class APIResourceEventNotifier
                            Profile* profile,
                            const std::string& src_extension_id, int src_id,
                            const GURL& src_url);
-  virtual ~APIResourceEventNotifier();
 
   virtual void OnConnectComplete(int result_code);
 
@@ -64,6 +63,11 @@ class APIResourceEventNotifier
       APIResourceEventType event_type);
 
  private:
+  friend class base::RefCountedThreadSafe<APIResourceEventNotifier>;
+  friend class MockAPIResourceEventNotifier;
+
+  virtual ~APIResourceEventNotifier();
+
   void DispatchEvent(DictionaryValue* event);
   void DispatchEventOnUIThread(DictionaryValue* event);
   DictionaryValue* CreateAPIResourceEvent(APIResourceEventType event_type);

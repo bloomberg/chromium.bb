@@ -48,6 +48,9 @@ class MockAPIResourceEventNotifier : public APIResourceEventNotifier {
   MOCK_METHOD2(OnReadComplete, void(int result_code,
                                     const std::string& message));
   MOCK_METHOD1(OnWriteComplete, void(int result_code));
+
+ protected:
+  virtual ~MockAPIResourceEventNotifier() {}
 };
 
 TEST(SocketTest, TestTCPSocketRead) {

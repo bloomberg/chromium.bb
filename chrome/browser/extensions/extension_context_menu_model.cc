@@ -47,27 +47,6 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
   InitCommonCommands();
 }
 
-ExtensionContextMenuModel::~ExtensionContextMenuModel() {
-}
-
-void ExtensionContextMenuModel::InitCommonCommands() {
-  const Extension* extension = GetExtension();
-
-  // The extension pointer should only be null if the extension was uninstalled,
-  // and since the menu just opened, it should still be installed.
-  DCHECK(extension);
-
-  AddItem(NAME, UTF8ToUTF16(extension->name()));
-  AddSeparator();
-  AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);
-  AddItemWithStringId(DISABLE, IDS_EXTENSIONS_DISABLE);
-  AddItem(UNINSTALL, l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
-  if (extension->browser_action())
-    AddItemWithStringId(HIDE, IDS_EXTENSIONS_HIDE_BUTTON);
-  AddSeparator();
-  AddItemWithStringId(MANAGE, IDS_MANAGE_EXTENSIONS);
-}
-
 bool ExtensionContextMenuModel::IsCommandIdChecked(int command_id) const {
   return false;
 }
@@ -151,6 +130,26 @@ void ExtensionContextMenuModel::ExtensionUninstallAccepted() {
 
 void ExtensionContextMenuModel::ExtensionUninstallCanceled() {
   Release();
+}
+
+ExtensionContextMenuModel::~ExtensionContextMenuModel() {}
+
+void ExtensionContextMenuModel::InitCommonCommands() {
+  const Extension* extension = GetExtension();
+
+  // The extension pointer should only be null if the extension was uninstalled,
+  // and since the menu just opened, it should still be installed.
+  DCHECK(extension);
+
+  AddItem(NAME, UTF8ToUTF16(extension->name()));
+  AddSeparator();
+  AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);
+  AddItemWithStringId(DISABLE, IDS_EXTENSIONS_DISABLE);
+  AddItem(UNINSTALL, l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
+  if (extension->browser_action())
+    AddItemWithStringId(HIDE, IDS_EXTENSIONS_HIDE_BUTTON);
+  AddSeparator();
+  AddItemWithStringId(MANAGE, IDS_MANAGE_EXTENSIONS);
 }
 
 const Extension* ExtensionContextMenuModel::GetExtension() const {

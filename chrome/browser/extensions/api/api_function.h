@@ -20,6 +20,8 @@ class APIResourceEventNotifier;
 // need to do essentially all their work on the IO thread.
 class AsyncIOAPIFunction : public AsyncExtensionFunction {
  protected:
+  virtual ~AsyncIOAPIFunction() {}
+
   // Set up for work (e.g., validate arguments). Guaranteed to happen on UI
   // thread.
   virtual bool Prepare() = 0;
@@ -40,6 +42,7 @@ class AsyncIOAPIFunction : public AsyncExtensionFunction {
   // Access to the controller singleton.
   APIResourceController* controller();
 
+  // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
  private:

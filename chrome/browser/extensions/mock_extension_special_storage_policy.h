@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,8 +18,8 @@
 class MockExtensionSpecialStoragePolicy : public ExtensionSpecialStoragePolicy {
  public:
   MockExtensionSpecialStoragePolicy();
-  virtual ~MockExtensionSpecialStoragePolicy();
 
+  // quota::SpecialStoragePolicy:
   virtual bool IsStorageProtected(const GURL& origin) OVERRIDE;
   virtual bool IsStorageUnlimited(const GURL& origin) OVERRIDE;
   virtual bool IsStorageSessionOnly(const GURL& origin) OVERRIDE;
@@ -50,6 +50,8 @@ class MockExtensionSpecialStoragePolicy : public ExtensionSpecialStoragePolicy {
   }
 
  private:
+  virtual ~MockExtensionSpecialStoragePolicy();
+
   std::set<GURL> protected_;
   std::set<GURL> unlimited_;
   std::set<GURL> session_only_;

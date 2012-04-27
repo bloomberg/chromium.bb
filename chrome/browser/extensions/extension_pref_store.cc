@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,11 +13,6 @@ ExtensionPrefStore::ExtensionPrefStore(
     : extension_pref_value_map_(extension_pref_value_map),
       incognito_pref_store_(incognito_pref_store) {
   extension_pref_value_map_->AddObserver(this);
-}
-
-ExtensionPrefStore::~ExtensionPrefStore() {
-  if (extension_pref_value_map_)
-    extension_pref_value_map_->RemoveObserver(this);
 }
 
 void ExtensionPrefStore::OnInitializationCompleted() {
@@ -40,4 +35,9 @@ void ExtensionPrefStore::OnExtensionPrefValueMapDestruction() {
   CHECK(extension_pref_value_map_);
   extension_pref_value_map_->RemoveObserver(this);
   extension_pref_value_map_ = NULL;
+}
+
+ExtensionPrefStore::~ExtensionPrefStore() {
+  if (extension_pref_value_map_)
+    extension_pref_value_map_->RemoveObserver(this);
 }

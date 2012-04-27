@@ -67,21 +67,17 @@ void NotifyProcessOutput(Profile* profile,
 
 }  // namespace
 
-TerminalPrivateFunction::TerminalPrivateFunction() {
-}
+TerminalPrivateFunction::TerminalPrivateFunction() {}
 
-TerminalPrivateFunction::~TerminalPrivateFunction() {
-}
+TerminalPrivateFunction::~TerminalPrivateFunction() {}
 
 bool TerminalPrivateFunction::RunImpl() {
   return RunTerminalFunction();
 }
 
-OpenTerminalProcessFunction::OpenTerminalProcessFunction() : command_(NULL) {
-}
+OpenTerminalProcessFunction::OpenTerminalProcessFunction() : command_(NULL) {}
 
-OpenTerminalProcessFunction::~OpenTerminalProcessFunction() {
-}
+OpenTerminalProcessFunction::~OpenTerminalProcessFunction() {}
 
 bool OpenTerminalProcessFunction::RunTerminalFunction() {
   if (args_->GetSize() != 1)

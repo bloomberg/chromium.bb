@@ -18,11 +18,14 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
                                  public content::WebContentsObserver {
  public:
   ExecuteCodeInTabFunction();
+
+ protected:
   virtual ~ExecuteCodeInTabFunction();
 
- private:
+  // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
+ private:
   // content::WebContentsObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
@@ -65,10 +68,16 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
 };
 
 class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {
+ private:
+  virtual ~TabsExecuteScriptFunction() {}
+
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.executeScript")
 };
 
 class TabsInsertCSSFunction : public ExecuteCodeInTabFunction {
+ private:
+  virtual ~TabsInsertCSSFunction() {}
+
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.insertCSS")
 };
 

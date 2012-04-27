@@ -20,7 +20,6 @@ namespace extensions {
 class RulesRegistryWithCache : public RulesRegistry {
  public:
   RulesRegistryWithCache();
-  virtual ~RulesRegistryWithCache();
 
   // RulesRegistry implementation:
   virtual std::string AddRules(
@@ -42,6 +41,8 @@ class RulesRegistryWithCache : public RulesRegistry {
   virtual content::BrowserThread::ID GetOwnerThread() const = 0;
 
  protected:
+  virtual ~RulesRegistryWithCache();
+
   // These functions need to provide the same functionality as their
   // RulesRegistry counterparts. They need to be atomic.
   virtual std::string AddRulesImpl(

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,14 +21,16 @@ class ExtensionPrefStore : public ValueMapPrefStore,
   // Constructs an ExtensionPrefStore for a regular or an incognito profile.
   ExtensionPrefStore(ExtensionPrefValueMap* extension_pref_value_map,
                      bool incognito_pref_store);
-  virtual ~ExtensionPrefStore();
 
- private:
   // Overrides for ExtensionPrefValueMap::Observer:
   virtual void OnInitializationCompleted() OVERRIDE;
   virtual void OnPrefValueChanged(const std::string& key) OVERRIDE;
   virtual void OnExtensionPrefValueMapDestruction() OVERRIDE;
 
+ protected:
+  virtual ~ExtensionPrefStore();
+
+ private:
   ExtensionPrefValueMap* extension_pref_value_map_;  // Weak pointer.
   bool incognito_pref_store_;
 

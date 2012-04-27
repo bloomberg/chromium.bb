@@ -18,8 +18,6 @@ namespace extensions {
 
 RulesRegistryWithCache::RulesRegistryWithCache() {}
 
-RulesRegistryWithCache::~RulesRegistryWithCache() {}
-
 std::string RulesRegistryWithCache::AddRules(
     const std::string& extension_id,
     const std::vector<linked_ptr<Rule> >& rules) {
@@ -125,5 +123,7 @@ void RulesRegistryWithCache::OnExtensionUnloaded(
   if (!error.empty())
     LOG(ERROR) << error;
 }
+
+RulesRegistryWithCache::~RulesRegistryWithCache() {}
 
 }  // namespace extensions

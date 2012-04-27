@@ -21,8 +21,14 @@ namespace Resolve = extensions::api::experimental_dns::Resolve;
 
 namespace extensions {
 
-// static
-net::HostResolver* DnsResolveFunction::host_resolver_for_testing;
+namespace {
+
+// If null, then we'll use io_thread_ to obtain the real HostResolver. We use
+// a plain pointer for to be consistent with the ownership model of the real
+// one.
+net::HostResolver* g_host_resolver_for_testing = NULL;
+
+}  // namespace
 
 DnsResolveFunction::DnsResolveFunction()
     : response_(false),
@@ -33,14 +39,13 @@ DnsResolveFunction::DnsResolveFunction()
       addresses_(new net::AddressList) {
 }
 
-DnsResolveFunction::~DnsResolveFunction() {
-}
-
 // static
 void DnsResolveFunction::set_host_resolver_for_testing(
     net::HostResolver* host_resolver_for_testing_param) {
-  host_resolver_for_testing = host_resolver_for_testing_param;
+  g_host_resolver_for_testing = host_resolver_for_testing_param;
 }
+
+DnsResolveFunction::~DnsResolveFunction() {}
 
 bool DnsResolveFunction::RunImpl() {
   scoped_ptr<Resolve::Params> params(Resolve::Params::Create(*args_));
@@ -58,8 +63,8 @@ bool DnsResolveFunction::RunImpl() {
 void DnsResolveFunction::WorkOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  net::HostResolver* host_resolver = host_resolver_for_testing ?
-      host_resolver_for_testing : io_thread_->globals()->host_resolver.get();
+  net::HostResolver* host_resolver = g_host_resolver_for_testing ?
+      g_host_resolver_for_testing : io_thread_->globals()->host_resolver.get();
   DCHECK(host_resolver);
 
   // Yes, we are passing zero as the port. There are some interesting but not
@@ -81,8 +86,12 @@ void DnsResolveFunction::WorkOnIOThread() {
     OnLookupFinished(resolve_result);
 }
 
-void DnsResolveFunction::OnLookupFinished(int resolve_result) {
+void DnsResolveFunction::RespondOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  SendResponse(response_);
+}
 
+void DnsResolveFunction::OnLookupFinished(int resolve_result) {
   scoped_ptr<ResolveCallbackResolveInfo> resolve_info(
       new ResolveCallbackResolveInfo());
   resolve_info->result_code = resolve_result;
@@ -101,11 +110,6 @@ void DnsResolveFunction::OnLookupFinished(int resolve_result) {
   DCHECK(post_task_result);
 
   Release();  // Added in WorkOnIOThread().
-}
-
-void DnsResolveFunction::RespondOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SendResponse(response_);
 }
 
 }  // namespace extensions

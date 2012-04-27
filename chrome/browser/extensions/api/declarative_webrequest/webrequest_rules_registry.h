@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_WEBREQUEST_WEBREQUEST_RULES_REGISTRY_H_
 #pragma once
 
-#include <vector>
 #include <list>
+#include <map>
+#include <set>
+#include <vector>
 
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
@@ -59,7 +61,6 @@ class WebRequestRule;
 class WebRequestRulesRegistry : public RulesRegistryWithCache {
  public:
   WebRequestRulesRegistry();
-  virtual ~WebRequestRulesRegistry();
 
   // TODO(battre): This will become an implementation detail, because we need
   // a way to also execute the actions of the rules.
@@ -87,13 +88,16 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
   bool IsEmpty() const;
 
  private:
-  // Map that tells us which WebRequestRule may match under the condition that
-  // the URLMatcherConditionSet::ID was returned by the |url_matcher_|.
   typedef std::map<URLMatcherConditionSet::ID, WebRequestRule*> RuleTriggers;
-  RuleTriggers rule_triggers_;
-
   typedef std::map<WebRequestRule::GlobalRuleId, linked_ptr<WebRequestRule> >
       RulesMap;
+
+  virtual ~WebRequestRulesRegistry();
+
+  // Map that tells us which WebRequestRule may match under the condition that
+  // the URLMatcherConditionSet::ID was returned by the |url_matcher_|.
+  RuleTriggers rule_triggers_;
+
   RulesMap webrequest_rules_;
 
   URLMatcher url_matcher_;

@@ -56,6 +56,7 @@ class MockMapper : public QuotaLimitHeuristic::BucketMapper {
 class MockFunction : public ExtensionFunction {
  public:
   explicit MockFunction(const std::string& name) { set_name(name); }
+
   virtual void SetArgs(const ListValue* args) OVERRIDE {}
   virtual const std::string GetError() OVERRIDE { return std::string(); }
   virtual void SetError(const std::string& error) OVERRIDE {}
@@ -63,6 +64,9 @@ class MockFunction : public ExtensionFunction {
   virtual void Destruct() const OVERRIDE { delete this; }
   virtual bool RunImpl() OVERRIDE { return true; }
   virtual void SendResponse(bool) OVERRIDE { }
+
+ protected:
+  virtual ~MockFunction() {}
 };
 
 class TimedLimitMockFunction : public MockFunction {
@@ -73,6 +77,9 @@ class TimedLimitMockFunction : public MockFunction {
       QuotaLimitHeuristics* heuristics) const {
     heuristics->push_back(new TimedLimit(k2PerMinute, new Mapper()));
   }
+
+ private:
+  virtual ~TimedLimitMockFunction() {}
 };
 
 class ChainedLimitsMockFunction : public MockFunction {
@@ -87,6 +94,9 @@ class ChainedLimitsMockFunction : public MockFunction {
     // No more than 20 per hour.
     heuristics->push_back(new TimedLimit(k20PerHour, new Mapper()));
   }
+
+ private:
+  virtual ~ChainedLimitsMockFunction() {}
 };
 
 class FrozenMockFunction : public MockFunction {
@@ -96,6 +106,9 @@ class FrozenMockFunction : public MockFunction {
       QuotaLimitHeuristics* heuristics) const {
     heuristics->push_back(new TimedLimit(kFrozenConfig, new Mapper()));
   }
+
+ private:
+  virtual ~FrozenMockFunction() {}
 };
 }  // namespace
 

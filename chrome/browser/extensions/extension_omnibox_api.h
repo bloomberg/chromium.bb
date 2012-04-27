@@ -50,14 +50,24 @@ class ExtensionOmniboxEventRouter {
 
 class OmniboxSendSuggestionsFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("omnibox.sendSuggestions");
+
+ protected:
+  virtual ~OmniboxSendSuggestionsFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class OmniboxSetDefaultSuggestionFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("omnibox.setDefaultSuggestion");
+
+ protected:
+  virtual ~OmniboxSetDefaultSuggestionFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 struct ExtensionOmniboxSuggestion {

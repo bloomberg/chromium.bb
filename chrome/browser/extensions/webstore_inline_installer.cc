@@ -157,9 +157,7 @@ WebstoreInlineInstaller::WebstoreInlineInstaller(WebContents* web_contents,
       requestor_url_(requestor_url),
       delegate_(delegate),
       average_rating_(0.0),
-      rating_count_(0) {}
-
-WebstoreInlineInstaller::~WebstoreInlineInstaller() {
+      rating_count_(0) {
 }
 
 void WebstoreInlineInstaller::BeginInstall() {
@@ -187,6 +185,8 @@ void WebstoreInlineInstaller::BeginInstall() {
                                            net::LOAD_DISABLE_CACHE);
   webstore_data_url_fetcher_->Start();
 }
+
+WebstoreInlineInstaller::~WebstoreInlineInstaller() {}
 
 void WebstoreInlineInstaller::OnURLFetchComplete(
     const content::URLFetcher* source) {
@@ -322,31 +322,6 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
   helper->Start();
 }
 
-// static
-bool WebstoreInlineInstaller::IsRequestorURLInVerifiedSite(
-    const GURL& requestor_url,
-    const std::string& verified_site) {
-  // Turn the verified site (which may be a bare domain, or have a port and/or a
-  // path) into a URL that can be parsed by URLPattern.
-  std::string verified_site_url =
-      StringPrintf("http://*.%s%s",
-          verified_site.c_str(),
-          verified_site.find('/') == std::string::npos ? "/*" : "*");
-
-  URLPattern verified_site_pattern(
-      URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS);
-  URLPattern::ParseResult parse_result =
-      verified_site_pattern.Parse(verified_site_url);
-  if (parse_result != URLPattern::PARSE_SUCCESS) {
-    DLOG(WARNING) << "Could not parse " << verified_site_url <<
-        " as URL pattern " << parse_result;
-    return false;
-  }
-  verified_site_pattern.SetScheme("*");
-
-  return verified_site_pattern.MatchesURL(requestor_url);
-}
-
 void WebstoreInlineInstaller::OnWebstoreResponseParseFailure(
     const std::string& error) {
   CompleteInstall(error);
@@ -452,4 +427,29 @@ void WebstoreInlineInstaller::CompleteInstall(const std::string& error) {
   }
 
   Release(); // Matches the AddRef in BeginInstall.
+}
+
+// static
+bool WebstoreInlineInstaller::IsRequestorURLInVerifiedSite(
+    const GURL& requestor_url,
+    const std::string& verified_site) {
+  // Turn the verified site (which may be a bare domain, or have a port and/or a
+  // path) into a URL that can be parsed by URLPattern.
+  std::string verified_site_url =
+      StringPrintf("http://*.%s%s",
+          verified_site.c_str(),
+          verified_site.find('/') == std::string::npos ? "/*" : "*");
+
+  URLPattern verified_site_pattern(
+      URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS);
+  URLPattern::ParseResult parse_result =
+      verified_site_pattern.Parse(verified_site_url);
+  if (parse_result != URLPattern::PARSE_SUCCESS) {
+    DLOG(WARNING) << "Could not parse " << verified_site_url <<
+        " as URL pattern " << parse_result;
+    return false;
+  }
+  verified_site_pattern.SetScheme("*");
+
+  return verified_site_pattern.MatchesURL(requestor_url);
 }

@@ -22,8 +22,6 @@ InitializingRulesRegistry::InitializingRulesRegistry(
       last_generated_rule_identifier_id_(0) {
 }
 
-InitializingRulesRegistry::~InitializingRulesRegistry() {}
-
 std::string InitializingRulesRegistry::AddRules(
     const std::string& extension_id,
     const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) {
@@ -75,6 +73,8 @@ content::BrowserThread::ID InitializingRulesRegistry::GetOwnerThread() const {
   return delegate_->GetOwnerThread();
 }
 
+InitializingRulesRegistry::~InitializingRulesRegistry() {}
+
 bool InitializingRulesRegistry::IsUniqueId(
     const std::string& extension_id,
     const std::string& rule_id) const {
@@ -90,19 +90,6 @@ std::string InitializingRulesRegistry::GenerateUniqueId(
   while (!IsUniqueId(extension_id, ToId(last_generated_rule_identifier_id_)))
     ++last_generated_rule_identifier_id_;
   return ToId(last_generated_rule_identifier_id_);
-}
-
-void InitializingRulesRegistry::RemoveUsedRuleIdentifiers(
-    const std::string& extension_id,
-    const std::vector<std::string>& identifiers) {
-  std::vector<std::string>::const_iterator i;
-  for (i = identifiers.begin(); i != identifiers.end(); ++i)
-    used_rule_identifiers_[extension_id].erase(*i);
-}
-
-void InitializingRulesRegistry::RemoveAllUsedRuleIdentifiers(
-    const std::string& extension_id) {
-  used_rule_identifiers_.erase(extension_id);
 }
 
 std::string InitializingRulesRegistry::CheckAndFillInOptionalRules(
@@ -145,6 +132,19 @@ void InitializingRulesRegistry::FillInOptionalPriorities(
     if (!(*i)->priority.get())
       (*i)->priority.reset(new int(DEFAULT_PRIORITY));
   }
+}
+
+void InitializingRulesRegistry::RemoveUsedRuleIdentifiers(
+    const std::string& extension_id,
+    const std::vector<std::string>& identifiers) {
+  std::vector<std::string>::const_iterator i;
+  for (i = identifiers.begin(); i != identifiers.end(); ++i)
+    used_rule_identifiers_[extension_id].erase(*i);
+}
+
+void InitializingRulesRegistry::RemoveAllUsedRuleIdentifiers(
+    const std::string& extension_id) {
+  used_rule_identifiers_.erase(extension_id);
 }
 
 }  // namespace extensions

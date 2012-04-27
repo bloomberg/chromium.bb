@@ -36,44 +36,68 @@ class WebContents;
 // Creates an offscreen tab.
 class CreateOffscreenTabFunction : public SyncExtensionFunction {
  public:
-  CreateOffscreenTabFunction();
- private:
-  virtual ~CreateOffscreenTabFunction();
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.offscreenTabs.create")
+
+  CreateOffscreenTabFunction();
+
+ protected:
+  virtual ~CreateOffscreenTabFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(CreateOffscreenTabFunction);
 };
 
 // Gets info about an offscreen tab.
 class GetOffscreenTabFunction : public SyncExtensionFunction {
  public:
-  GetOffscreenTabFunction();
- private:
-  virtual ~GetOffscreenTabFunction();
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.offscreenTabs.get")
+
+  GetOffscreenTabFunction();
+
+ protected:
+  virtual ~GetOffscreenTabFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(GetOffscreenTabFunction);
 };
 
 // Gets all offscreen tabs created by the tab that invoked this function.
 class GetAllOffscreenTabFunction : public SyncExtensionFunction {
  public:
-  GetAllOffscreenTabFunction();
- private:
-  virtual ~GetAllOffscreenTabFunction();
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.offscreenTabs.getAll")
+
+  GetAllOffscreenTabFunction();
+
+ protected:
+  virtual ~GetAllOffscreenTabFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(GetAllOffscreenTabFunction);
 };
 
 // Removes an offscreen tab.
 class RemoveOffscreenTabFunction : public SyncExtensionFunction {
  public:
-  RemoveOffscreenTabFunction();
- private:
-  virtual ~RemoveOffscreenTabFunction();
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.offscreenTabs.remove")
+
+  RemoveOffscreenTabFunction();
+
+ protected:
+  virtual ~RemoveOffscreenTabFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(RemoveOffscreenTabFunction);
 };
 
@@ -81,12 +105,18 @@ class RemoveOffscreenTabFunction : public SyncExtensionFunction {
 // TODO(jstritar): This would be useful on the chrome.tabs API.
 class SendKeyboardEventOffscreenTabFunction : public SyncExtensionFunction {
  public:
-  SendKeyboardEventOffscreenTabFunction();
- private:
-  virtual ~SendKeyboardEventOffscreenTabFunction();
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME(
     "experimental.offscreenTabs.sendKeyboardEvent")
+
+  SendKeyboardEventOffscreenTabFunction();
+
+ protected:
+  virtual ~SendKeyboardEventOffscreenTabFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(SendKeyboardEventOffscreenTabFunction);
 };
 
@@ -96,36 +126,56 @@ class SendKeyboardEventOffscreenTabFunction : public SyncExtensionFunction {
 // TODO(jstritar): This would be useful on the chrome.tabs API.
 class SendMouseEventOffscreenTabFunction : public SyncExtensionFunction {
  public:
-  SendMouseEventOffscreenTabFunction();
- private:
-  virtual ~SendMouseEventOffscreenTabFunction();
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.offscreenTabs.sendMouseEvent")
+
+  SendMouseEventOffscreenTabFunction();
+
+ protected:
+  virtual ~SendMouseEventOffscreenTabFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(SendMouseEventOffscreenTabFunction);
 };
 
 // Gets a snapshot of the offscreen tab and returns it as a data URL.
 class ToDataUrlOffscreenTabFunction : public CaptureVisibleTabFunction {
  public:
-  ToDataUrlOffscreenTabFunction();
- private:
-  virtual ~ToDataUrlOffscreenTabFunction();
-  virtual bool GetTabToCapture(content::WebContents** web_contents,
-                               TabContentsWrapper** wrapper) OVERRIDE;
   // TODO(jstritar): Rename to toDataUrl.
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.offscreenTabs.toDataUrl")
+
+  ToDataUrlOffscreenTabFunction();
+
+ protected:
+  virtual ~ToDataUrlOffscreenTabFunction();
+
+  // CaptureVisibleTabFunction:
+  virtual bool GetTabToCapture(content::WebContents** web_contents,
+                               TabContentsWrapper** wrapper) OVERRIDE;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(ToDataUrlOffscreenTabFunction);
 };
 
 // Updates an offscreen tab.
 class UpdateOffscreenTabFunction : public UpdateTabFunction {
  public:
-  UpdateOffscreenTabFunction();
- private:
-  virtual ~UpdateOffscreenTabFunction();
-  virtual bool RunImpl() OVERRIDE;
-  virtual void PopulateResult() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.offscreenTabs.update")
+
+  UpdateOffscreenTabFunction();
+
+ protected:
+  virtual ~UpdateOffscreenTabFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
+  // UpdateTabFunction:
+  virtual void PopulateResult() OVERRIDE;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(UpdateOffscreenTabFunction);
 };
 

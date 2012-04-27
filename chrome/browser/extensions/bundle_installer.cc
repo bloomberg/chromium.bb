@@ -113,10 +113,6 @@ BundleInstaller::BundleInstaller(Profile* profile,
   }
 }
 
-BundleInstaller::~BundleInstaller() {
-  BrowserList::RemoveObserver(this);
-}
-
 BundleInstaller::ItemList BundleInstaller::GetItemsWithState(
     Item::State state) const {
   ItemList list;
@@ -203,6 +199,10 @@ string16 BundleInstaller::GetHeadingTextFor(Item::State state) const {
     return string16();
 
   return l10n_util::GetStringUTF16(msg_id);
+}
+
+BundleInstaller::~BundleInstaller() {
+  BrowserList::RemoveObserver(this);
 }
 
 void BundleInstaller::ParseManifests() {
@@ -331,15 +331,13 @@ void BundleInstaller::OnExtensionInstallFailure(const std::string& id,
   ShowInstalledBubbleIfDone();
 }
 
-void BundleInstaller::OnBrowserAdded(const Browser* browser) {
-}
+void BundleInstaller::OnBrowserAdded(const Browser* browser) {}
 
 void BundleInstaller::OnBrowserRemoved(const Browser* browser) {
   if (browser_ == browser)
     browser_ = NULL;
 }
 
-void BundleInstaller::OnBrowserSetLastActive(const Browser* browser) {
-}
+void BundleInstaller::OnBrowserSetLastActive(const Browser* browser) {}
 
 }  // namespace extensions

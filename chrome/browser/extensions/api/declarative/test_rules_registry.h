@@ -14,12 +14,10 @@ namespace extensions {
 class TestRulesRegistry : public RulesRegistryWithCache {
  public:
   TestRulesRegistry();
-  virtual ~TestRulesRegistry();
 
   void SetOwnerThread(content::BrowserThread::ID owner_thread);
 
   // RulesRegistryWithCache implementation:
-  virtual content::BrowserThread::ID GetOwnerThread() const OVERRIDE;
   virtual std::string AddRulesImpl(
       const std::string& extension_id,
       const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) OVERRIDE;
@@ -28,10 +26,14 @@ class TestRulesRegistry : public RulesRegistryWithCache {
       const std::vector<std::string>& rule_identifiers) OVERRIDE;
   virtual std::string RemoveAllRulesImpl(
       const std::string& extension_id) OVERRIDE;
+  virtual content::BrowserThread::ID GetOwnerThread() const OVERRIDE;
 
   // Sets the result message that will be returned by the next call of
   // AddRulesImpl, RemoveRulesImpl and RemoveAllRulesImpl.
   void SetResult(const std::string& result);
+
+ protected:
+  virtual ~TestRulesRegistry();
 
  private:
   // The string that gets returned by the implementation functions of

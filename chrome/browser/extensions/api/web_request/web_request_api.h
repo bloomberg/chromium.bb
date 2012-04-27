@@ -74,11 +74,6 @@ class ExtensionWebRequestEventRouter {
   // Internal representation of the webRequest.RequestFilter type, used to
   // filter what network events an extension cares about.
   struct RequestFilter {
-    URLPatternSet urls;
-    std::vector<ResourceType::Type> types;
-    int tab_id;
-    int window_id;
-
     RequestFilter();
     ~RequestFilter();
 
@@ -86,6 +81,11 @@ class ExtensionWebRequestEventRouter {
     // an error message is provided, otherwise the error is internal (and
     // unexpected).
     bool InitFromValue(const base::DictionaryValue& value, std::string* error);
+
+    URLPatternSet urls;
+    std::vector<ResourceType::Type> types;
+    int tab_id;
+    int window_id;
   };
 
   // Internal representation of the extraInfoSpec parameter on webRequest
@@ -105,6 +105,10 @@ class ExtensionWebRequestEventRouter {
 
   // Contains an extension's response to a blocking event.
   struct EventResponse {
+    EventResponse(const std::string& extension_id,
+                  const base::Time& extension_install_time);
+    ~EventResponse();
+
     // ID of the extension that sent this response.
     std::string extension_id;
 
@@ -121,10 +125,6 @@ class ExtensionWebRequestEventRouter {
         response_headers;
 
     scoped_ptr<net::AuthCredentials> auth_credentials;
-
-    EventResponse(const std::string& extension_id,
-                  const base::Time& extension_install_time);
-    ~EventResponse();
 
     DISALLOW_COPY_AND_ASSIGN(EventResponse);
   };
@@ -258,6 +258,7 @@ class ExtensionWebRequestEventRouter {
 
  private:
   friend struct DefaultSingletonTraits<ExtensionWebRequestEventRouter>;
+
   struct EventListener;
   typedef std::map<std::string, std::set<EventListener> > ListenerMapForProfile;
   typedef std::map<void*, ListenerMapForProfile> ListenerMap;
@@ -376,28 +377,40 @@ class ExtensionWebRequestEventRouter {
 
 class WebRequestAddEventListener : public SyncIOThreadExtensionFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("webRequest.addEventListener");
+
+ protected:
+  virtual ~WebRequestAddEventListener() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class WebRequestEventHandled : public SyncIOThreadExtensionFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("webRequest.eventHandled");
+
+ protected:
+  virtual ~WebRequestEventHandled() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class WebRequestHandlerBehaviorChanged : public SyncIOThreadExtensionFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "webRequest.handlerBehaviorChanged");
+  DECLARE_EXTENSION_FUNCTION_NAME("webRequest.handlerBehaviorChanged");
 
- private:
+ protected:
+  virtual ~WebRequestHandlerBehaviorChanged() {}
+
+  // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
   // Handle quota exceeded gracefully: Only warn the user but still execute the
   // function.
   virtual void OnQuotaExceeded() OVERRIDE;
+  virtual bool RunImpl() OVERRIDE;
 };
 
 // Send updates to |host| with information about what webRequest-related

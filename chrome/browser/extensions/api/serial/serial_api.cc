@@ -17,9 +17,7 @@ const char kDataKey[] = "data";
 const char kBytesReadKey[] = "bytesRead";
 const char kBytesWrittenKey[] = "bytesWritten";
 
-SerialOpenFunction::SerialOpenFunction()
-    : src_id_(-1) {
-}
+SerialOpenFunction::SerialOpenFunction() : src_id_(-1) {}
 
 bool SerialOpenFunction::Prepare() {
   size_t argument_position = 0;
@@ -105,8 +103,7 @@ SerialWriteFunction::SerialWriteFunction()
     : connection_id_(-1), io_buffer_(NULL) {
 }
 
-SerialWriteFunction::~SerialWriteFunction() {
-}
+SerialWriteFunction::~SerialWriteFunction() {}
 
 bool SerialWriteFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &connection_id_));

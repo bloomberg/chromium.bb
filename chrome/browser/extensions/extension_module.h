@@ -11,24 +11,39 @@
 class ExtensionPrefs;
 
 class SetUpdateUrlDataFunction : public SyncExtensionFunction {
- protected:
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("extension.setUpdateUrlData");
+
+ protected:
+  virtual ~SetUpdateUrlDataFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 
  private:
   ExtensionPrefs* extension_prefs();
 };
 
 class IsAllowedIncognitoAccessFunction : public SyncExtensionFunction {
- protected:
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("extension.isAllowedIncognitoAccess");
+
+ protected:
+  virtual ~IsAllowedIncognitoAccessFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class IsAllowedFileSchemeAccessFunction : public SyncExtensionFunction {
- protected:
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("extension.isAllowedFileSchemeAccess");
+
+ protected:
+  virtual ~IsAllowedFileSchemeAccessFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_MODULE_H__

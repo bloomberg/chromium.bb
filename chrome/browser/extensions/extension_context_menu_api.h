@@ -17,10 +17,9 @@ class DictionaryValue;
 }
 
 class ExtensionContextMenuFunction : public SyncExtensionFunction {
- public:
+ protected:
   virtual ~ExtensionContextMenuFunction() {}
 
- protected:
   // Helper function to read and parse a list of menu item contexts.
   bool ParseContexts(const base::DictionaryValue& properties,
                      const char* key,
@@ -63,27 +62,47 @@ class ExtensionContextMenuFunction : public SyncExtensionFunction {
 };
 
 class CreateContextMenuFunction : public ExtensionContextMenuFunction {
-  virtual ~CreateContextMenuFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.create")
+
+ protected:
+  virtual ~CreateContextMenuFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class UpdateContextMenuFunction : public ExtensionContextMenuFunction {
-  virtual ~UpdateContextMenuFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.update")
+
+ protected:
+  virtual ~UpdateContextMenuFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class RemoveContextMenuFunction : public ExtensionContextMenuFunction {
-  virtual ~RemoveContextMenuFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.remove")
+
+ protected:
+  virtual ~RemoveContextMenuFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class RemoveAllContextMenusFunction : public ExtensionContextMenuFunction {
-  virtual ~RemoveAllContextMenusFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.removeAll")
+
+ protected:
+  virtual ~RemoveAllContextMenusFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTEXT_MENU_API_H__

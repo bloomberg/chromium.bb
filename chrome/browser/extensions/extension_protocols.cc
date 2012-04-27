@@ -143,6 +143,8 @@ class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
   }
 
  private:
+  virtual ~GeneratedBackgroundPageJob() {}
+
   scoped_refptr<const Extension> extension_;
   net::HttpResponseInfo response_info_;
 };
@@ -161,6 +163,9 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
   virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE {
     *info = response_info_;
   }
+
+ private:
+  virtual ~URLRequestExtensionJob() {}
 
   net::HttpResponseInfo response_info_;
 };

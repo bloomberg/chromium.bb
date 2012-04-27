@@ -28,11 +28,6 @@ SafeManifestParser::SafeManifestParser(const std::string& xml,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-SafeManifestParser::~SafeManifestParser() {
-  // If we're using UtilityProcessHost, we may not be destroyed on
-  // the UI or IO thread.
-}
-
 void SafeManifestParser::Start() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!BrowserThread::PostTask(
@@ -40,6 +35,11 @@ void SafeManifestParser::Start() {
           base::Bind(&SafeManifestParser::ParseInSandbox, this))) {
     NOTREACHED();
   }
+}
+
+SafeManifestParser::~SafeManifestParser() {
+  // If we're using UtilityProcessHost, we may not be destroyed on
+  // the UI or IO thread.
 }
 
 void SafeManifestParser::ParseInSandbox() {

@@ -20,10 +20,14 @@ namespace extensions {
 class GetAuthTokenFunction : public AsyncExtensionFunction,
                              public OAuth2MintTokenFlow::Delegate {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.identity.getAuthToken");
+
   GetAuthTokenFunction();
 
  private:
   virtual ~GetAuthTokenFunction();
+
+  // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
   // OAuth2MintTokenFlow::Delegate implementation:
@@ -31,8 +35,6 @@ class GetAuthTokenFunction : public AsyncExtensionFunction,
   virtual void OnMintTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
   scoped_ptr<OAuth2MintTokenFlow> flow_;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.identity.getAuthToken");
 };
 
 }  // namespace extensions

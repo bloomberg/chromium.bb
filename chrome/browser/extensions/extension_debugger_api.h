@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,30 +41,44 @@ class DebuggerFunction : public AsyncExtensionFunction {
 // Implements the debugger.attach() extension function.
 class AttachDebuggerFunction : public DebuggerFunction {
  public:
-  AttachDebuggerFunction();
-  virtual ~AttachDebuggerFunction();
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("debugger.attach")
+
+  AttachDebuggerFunction();
+
+ protected:
+  virtual ~AttachDebuggerFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 // Implements the debugger.detach() extension function.
 class DetachDebuggerFunction : public DebuggerFunction {
  public:
-  DetachDebuggerFunction();
-  virtual ~DetachDebuggerFunction();
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("debugger.detach")
+
+  DetachDebuggerFunction();
+
+ protected:
+  virtual ~DetachDebuggerFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 // Implements the debugger.sendCommand() extension function.
 class SendCommandDebuggerFunction : public DebuggerFunction {
  public:
-  SendCommandDebuggerFunction();
-  virtual ~SendCommandDebuggerFunction();
-  virtual bool RunImpl() OVERRIDE;
-
-  void SendResponseBody(base::DictionaryValue* dictionary);
   DECLARE_EXTENSION_FUNCTION_NAME("debugger.sendCommand")
+
+  SendCommandDebuggerFunction();
+  void SendResponseBody(base::DictionaryValue* dictionary);
+
+ protected:
+  virtual ~SendCommandDebuggerFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_DEBUGGER_API_H_

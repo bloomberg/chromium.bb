@@ -18,9 +18,14 @@ extern const char kConnectionIdKey[];
 
 class SerialOpenFunction : public AsyncIOAPIFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.open")
+
   SerialOpenFunction();
 
  protected:
+  virtual ~SerialOpenFunction() {}
+
+  // AsyncIOAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
@@ -28,40 +33,50 @@ class SerialOpenFunction : public AsyncIOAPIFunction {
  private:
   int src_id_;
   std::string port_;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.open")
 };
 
 class SerialCloseFunction : public AsyncIOAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.close")
+
  protected:
+  virtual ~SerialCloseFunction() {}
+
+  // AsyncIOAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
 
  private:
   int connection_id_;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.close")
 };
 
 class SerialReadFunction : public AsyncIOAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.read")
+
  protected:
+  virtual ~SerialReadFunction() {}
+
+  // AsyncIOAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
 
  private:
   int connection_id_;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.read")
 };
 
 class SerialWriteFunction : public AsyncIOAPIFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.write")
+
   SerialWriteFunction();
-  virtual ~SerialWriteFunction();
 
  protected:
+  virtual ~SerialWriteFunction();
+
+  // AsyncIOAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
@@ -69,8 +84,6 @@ class SerialWriteFunction : public AsyncIOAPIFunction {
  private:
   int connection_id_;
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.write")
 };
 
 }  // namespace extensions

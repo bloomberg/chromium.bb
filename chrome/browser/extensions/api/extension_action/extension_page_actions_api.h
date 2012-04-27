@@ -19,16 +19,26 @@ class PageActionsFunction : public SyncExtensionFunction {
 
 // Implement chrome.pageActions.enableForTab().
 class EnablePageActionsFunction : public PageActionsFunction {
-  virtual ~EnablePageActionsFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("pageActions.enableForTab")
+
+ protected:
+  virtual ~EnablePageActionsFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 // Implement chrome.pageActions.disableForTab().
 class DisablePageActionsFunction : public PageActionsFunction {
-  virtual ~DisablePageActionsFunction() {}
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("pageActions.disableForTab")
+
+ protected:
+  virtual ~DisablePageActionsFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 //
@@ -36,38 +46,59 @@ class DisablePageActionsFunction : public PageActionsFunction {
 //
 
 class PageActionShowFunction : public ExtensionActionShowFunction {
-  virtual ~PageActionShowFunction() {}
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("pageAction.show")
+
+ protected:
+  virtual ~PageActionShowFunction() {}
 };
 
 class PageActionHideFunction : public ExtensionActionHideFunction {
-  virtual ~PageActionHideFunction() {}
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("pageAction.hide")
+
+ protected:
+  virtual ~PageActionHideFunction() {}
 };
 
 class PageActionSetIconFunction : public ExtensionActionSetIconFunction {
-  virtual ~PageActionSetIconFunction() {}
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setIcon")
+
+ protected:
+  virtual ~PageActionSetIconFunction() {}
 };
 
 class PageActionSetTitleFunction : public ExtensionActionSetTitleFunction {
-  virtual ~PageActionSetTitleFunction() {}
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setTitle")
+
+ protected:
+  virtual ~PageActionSetTitleFunction() {}
 };
 
 class PageActionSetPopupFunction : public ExtensionActionSetPopupFunction {
-  virtual ~PageActionSetPopupFunction() {}
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setPopup")
+
+ protected:
+  virtual ~PageActionSetPopupFunction() {}
 };
 
 class PageActionGetTitleFunction : public ExtensionActionGetTitleFunction {
-  virtual ~PageActionGetTitleFunction() {}
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("pageAction.getTitle")
+
+ protected:
+  virtual ~PageActionGetTitleFunction() {}
 };
 
 class PageActionGetPopupFunction : public ExtensionActionGetPopupFunction {
-  virtual ~PageActionGetPopupFunction() {}
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("pageAction.getPopup")
+
+ protected:
+  virtual ~PageActionGetPopupFunction() {}
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_PAGE_ACTIONS_API_H_

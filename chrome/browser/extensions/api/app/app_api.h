@@ -14,15 +14,21 @@ class Profile;
 namespace extensions {
 
 class AppNotifyFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.app.notify");
+
+ protected:
   virtual ~AppNotifyFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.app.notify");
 };
 
 class AppClearAllNotificationsFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.app.clearAllNotifications");
+
+ protected:
   virtual ~AppClearAllNotificationsFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.app.clearAllNotifications");
 };
 
 class AppEventRouter {

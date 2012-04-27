@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,6 +72,8 @@ class ExtensionCookiesEventRouter : public content::NotificationObserver {
 // See chrome/browser/extensions/extension_function.h for more information.
 class CookiesFunction : public AsyncExtensionFunction {
  protected:
+  virtual ~CookiesFunction() {}
+
   // Looks for a 'url' value in the given details dictionary and constructs a
   // GURL from it. Returns false and assigns the internal error_ value if the
   // URL is invalid or isn't found in the dictionary. If check_host_permissions
@@ -95,10 +97,15 @@ class CookiesFunction : public AsyncExtensionFunction {
 // Implements the cookies.get() extension function.
 class GetCookieFunction : public CookiesFunction {
  public:
-  GetCookieFunction();
-  virtual ~GetCookieFunction();
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.get")
+
+  GetCookieFunction();
+
+ protected:
+  virtual ~GetCookieFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 
  private:
   void GetCookieOnIOThread();
@@ -114,10 +121,15 @@ class GetCookieFunction : public CookiesFunction {
 // Implements the cookies.getAll() extension function.
 class GetAllCookiesFunction : public CookiesFunction {
  public:
-  GetAllCookiesFunction();
-  virtual ~GetAllCookiesFunction();
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.getAll")
+
+  GetAllCookiesFunction();
+
+ protected:
+  virtual ~GetAllCookiesFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 
  private:
   void GetAllCookiesOnIOThread();
@@ -133,10 +145,13 @@ class GetAllCookiesFunction : public CookiesFunction {
 // Implements the cookies.set() extension function.
 class SetCookieFunction : public CookiesFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("cookies.set")
+
   SetCookieFunction();
+
+ protected:
   virtual ~SetCookieFunction();
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("cookies.set")
 
  private:
   void SetCookieOnIOThread();
@@ -160,10 +175,15 @@ class SetCookieFunction : public CookiesFunction {
 // Implements the cookies.remove() extension function.
 class RemoveCookieFunction : public CookiesFunction {
  public:
-  RemoveCookieFunction();
-  virtual ~RemoveCookieFunction();
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.remove")
+
+  RemoveCookieFunction();
+
+ protected:
+  virtual ~RemoveCookieFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 
  private:
   void RemoveCookieOnIOThread();
@@ -180,10 +200,15 @@ class RemoveCookieFunction : public CookiesFunction {
 // Implements the cookies.getAllCookieStores() extension function.
 class GetAllCookieStoresFunction : public CookiesFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("cookies.getAllCookieStores")
+
+ protected:
+  virtual ~GetAllCookieStoresFunction() {}
+
+  // ExtensionFunction:
   // GetAllCookieStoresFunction is sync.
   virtual void Run() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("cookies.getAllCookieStores")
+  virtual bool RunImpl() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIES_API_H_

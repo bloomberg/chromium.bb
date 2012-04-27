@@ -89,7 +89,6 @@ class WebstoreInstaller : public content::NotificationObserver,
                     const std::string& id,
                     scoped_ptr<Approval> approval,
                     int flags);
-  virtual ~WebstoreInstaller();
 
   // Starts downloading and installing the extension.
   void Start();
@@ -104,6 +103,9 @@ class WebstoreInstaller : public content::NotificationObserver,
   static void SetDownloadDirectoryForTests(FilePath* directory);
 
  private:
+  friend class base::RefCounted<WebstoreInstaller>;
+  virtual ~WebstoreInstaller();
+
   // DownloadManager::DownloadUrl callback.
   void OnDownloadStarted(content::DownloadId id, net::Error error);
 
