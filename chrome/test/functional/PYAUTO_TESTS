@@ -496,6 +496,10 @@
       'nacl_sdk',
       'translate',
 
+      # Re-enable when r124240 reaches builds on QA bots.
+      # crbug.com/125386
+      '-gtalk.test_basic.BasicTest.testBasicFunctionality',
+
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
