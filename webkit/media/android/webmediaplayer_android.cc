@@ -62,8 +62,8 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       buffered_bytes_(0),
       cookie_jar_(cookie_jar),
       pending_play_event_(false),
-      network_state_(WebMediaPlayer::Empty),
-      ready_state_(WebMediaPlayer::HaveNothing) {
+      network_state_(WebMediaPlayer::NetworkStateEmpty),
+      ready_state_(WebMediaPlayer::ReadyStateHaveNothing) {
   video_frame_.reset(new WebVideoFrameImpl(VideoFrame::CreateEmptyFrame()));
 }
 
@@ -80,8 +80,8 @@ void WebMediaPlayerAndroid::InitIncognito(bool incognito_mode) {
 void WebMediaPlayerAndroid::load(const WebURL& url) {
   url_ = url;
 
-  UpdateNetworkState(WebMediaPlayer::Loading);
-  UpdateReadyState(WebMediaPlayer::HaveNothing);
+  UpdateNetworkState(WebMediaPlayer::NetworkStateLoading);
+  UpdateReadyState(WebMediaPlayer::ReadyStateHaveNothing);
 
   // Calling InitializeMediaPlayer() will cause android mediaplayer to start
   // buffering and decoding the data. On mobile devices, this costs a lot of
@@ -102,8 +102,8 @@ void WebMediaPlayerAndroid::load(const WebURL& url) {
 
   // Pretend everything has been loaded so that webkit can
   // still call play() and seek().
-  UpdateReadyState(WebMediaPlayer::HaveMetadata);
-  UpdateReadyState(WebMediaPlayer::HaveEnoughData);
+  UpdateReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
+  UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
 }
 
 void WebMediaPlayerAndroid::cancelLoad() {
@@ -292,7 +292,7 @@ WebMediaPlayer::MovieLoadType
     WebMediaPlayerAndroid::movieLoadType() const {
   // Deprecated.
   // TODO(qinmin): Remove this from WebKit::WebMediaPlayer as it is never used.
-  return WebMediaPlayer::Unknown;
+  return WebMediaPlayer::MovieLoadTypeUnknown;
 }
 
 float WebMediaPlayerAndroid::mediaTimeForTimeValue(float timeValue) const {
@@ -331,15 +331,15 @@ void WebMediaPlayerAndroid::OnMediaPrepared() {
   duration_ = media_player_->GetDuration().InSecondsF();
 
   if (url_.SchemeIs("file"))
-    UpdateNetworkState(WebMediaPlayer::Loaded);
+    UpdateNetworkState(WebMediaPlayer::NetworkStateLoaded);
 
-  if (ready_state_ != WebMediaPlayer::HaveEnoughData) {
-    UpdateReadyState(WebMediaPlayer::HaveMetadata);
-    UpdateReadyState(WebMediaPlayer::HaveEnoughData);
+  if (ready_state_ != WebMediaPlayer::ReadyStateHaveEnoughData) {
+    UpdateReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
+    UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
   } else {
-    // If the status is already set to HaveEnoughData, set it again to make sure
-    // that Videolayerchromium will get created.
-    UpdateReadyState(WebMediaPlayer::HaveEnoughData);
+    // If the status is already set to ReadyStateHaveEnoughData, set it again
+    // to make sure that Videolayerchromium will get created.
+    UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
   }
 
   if (!url_.SchemeIs("file")) {
@@ -381,7 +381,7 @@ void WebMediaPlayerAndroid::OnBufferingUpdate(int percentage) {
 void WebMediaPlayerAndroid::OnSeekComplete() {
   seeking_ = false;
 
-  UpdateReadyState(WebMediaPlayer::HaveEnoughData);
+  UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
 
   client_->timeChanged();
 }
@@ -391,16 +391,16 @@ void WebMediaPlayerAndroid::OnMediaError(int error_type) {
     case MediaPlayerBridge::MEDIA_ERROR_UNKNOWN:
       // When playing an bogus URL or bad file we fire a MEDIA_ERROR_UNKNOWN.
       // As WebKit uses FormatError to indicate an error for bogus URL or bad
-      // file we default a MEDIA_ERROR_UNKNOWN to FormatError.
-      UpdateNetworkState(WebMediaPlayer::FormatError);
+      // file we default a MEDIA_ERROR_UNKNOWN to NetworkStateFormatError.
+      UpdateNetworkState(WebMediaPlayer::NetworkStateFormatError);
       break;
     case MediaPlayerBridge::MEDIA_ERROR_SERVER_DIED:
       // TODO(zhenghao): Media server died. In this case, the application must
       // release the MediaPlayer object and instantiate a new one.
-      UpdateNetworkState(WebMediaPlayer::DecodeError);
+      UpdateNetworkState(WebMediaPlayer::NetworkStateDecodeError);
       break;
     case MediaPlayerBridge::MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK:
-      UpdateNetworkState(WebMediaPlayer::FormatError);
+      UpdateNetworkState(WebMediaPlayer::NetworkStateFormatError);
       break;
     case MediaPlayerBridge::MEDIA_ERROR_INVALID_CODE:
       break;
