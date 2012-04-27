@@ -103,6 +103,7 @@ struct display {
 };
 
 enum {
+	TYPE_NONE,
 	TYPE_TOPLEVEL,
 	TYPE_FULLSCREEN,
 	TYPE_MAXIMIZED,
@@ -602,6 +603,12 @@ window_attach_surface(struct window *window)
 	struct egl_window_surface_data *data;
 #endif
 	int32_t x, y;
+
+	if (window->type == TYPE_NONE) {
+		window->type = TYPE_TOPLEVEL;
+		if (display->shell)
+			wl_shell_surface_set_toplevel(window->shell_surface);
+	}
 
 	switch (window->buffer_type) {
 #ifdef HAVE_CAIRO_EGL
@@ -2218,7 +2225,7 @@ window_create_internal(struct display *display, struct window *parent)
 	window->allocation.height = 0;
 	window->saved_allocation = window->allocation;
 	window->transparent = 1;
-	window->type = TYPE_TOPLEVEL;
+	window->type = TYPE_NONE;
 	window->input_region = NULL;
 	window->opaque_region = NULL;
 
@@ -2252,10 +2259,6 @@ window_create(struct display *display)
 	window = window_create_internal(display, NULL);
 	if (!window)
 		return NULL;
-
-	window->type = TYPE_TOPLEVEL;
-	if (display->shell)
-		wl_shell_surface_set_toplevel(window->shell_surface);
 
 	return window;
 }
