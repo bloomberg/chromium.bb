@@ -29,17 +29,11 @@ size_t ceil64k(size_t n) {
   return (n + 0xFFFF) & (~0xFFFF);
 }
 
-// The following two functions (TotalSharedMemorySizeInBytes,
-// SetActualDataSizeInBytes) are copied & similar to audio_util.cc.
-
-uint32_t TotalSharedMemorySizeInBytes(size_t packet_size) {
-  // Need to reserve extra 4 bytes for size of data.
-  return ceil64k(packet_size + sizeof(uint32_t));
-}
-
-void SetActualDataSizeInBytes(void* audio_buffer,
-                              uint32_t buffer_size_in_bytes,
-                              uint32_t actual_size_in_bytes) {
+// The following function SetAudioActualDataSizeInBytes, is copied & similar
+// to the one in audio_util.cc.
+void SetAudioActualDataSizeInBytes(void* audio_buffer,
+                                   uint32_t buffer_size_in_bytes,
+                                   uint32_t actual_size_in_bytes) {
   char* end = static_cast<char*>(audio_buffer) + buffer_size_in_bytes;
   DCHECK(0 == (reinterpret_cast<size_t>(end) & 3));
   volatile uint32_t* end32 = reinterpret_cast<volatile uint32_t*>(end);
@@ -71,7 +65,7 @@ PluginAudio::~PluginAudio() {
     GetInterface()->StopPlayback(resource_);
   // Unmap the shared memory buffer, if present.
   if (shm_buffer_) {
-    munmap(shm_buffer_, TotalSharedMemorySizeInBytes(shm_size_));
+    munmap(shm_buffer_, ceil64k(TotalAudioSharedMemorySizeInBytes(shm_size_)));
     shm_buffer_ = NULL;
     shm_size_ = 0;
   }
@@ -109,9 +103,9 @@ void PluginAudio::AudioThread(void* self) {
                           audio->user_data_);
     // Signal audio backend by writing buffer length at end of buffer.
     // (Note: NaCl applications will always write the entire buffer.)
-    SetActualDataSizeInBytes(audio->shm_buffer_,
-                             audio->shm_size_,
-                             audio->shm_size_);
+    SetAudioActualDataSizeInBytes(audio->shm_buffer_,
+                                  audio->shm_size_,
+                                  audio->shm_size_);
   }
 }
 
@@ -123,7 +117,7 @@ void PluginAudio::StreamCreated(NaClSrpcImcDescType socket,
   shm_ = shm;
   shm_size_ = shm_size;
   shm_buffer_ = mmap(NULL,
-                     TotalSharedMemorySizeInBytes(shm_size),
+                     ceil64k(TotalAudioSharedMemorySizeInBytes(shm_size)),
                      PROT_READ | PROT_WRITE,
                      MAP_SHARED,
                      shm,

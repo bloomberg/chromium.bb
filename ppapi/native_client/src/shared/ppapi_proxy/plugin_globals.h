@@ -81,6 +81,14 @@ const struct PP_ThreadFunctions* GetThreadCreator();
 // PPAPI constants used in the proxy.
 extern const PP_Resource kInvalidResourceId;
 
+// The following function TotalSharedMemorySizeInBytes, is copied & similar
+// to the one in audio_util.cc.  This function includes optional fields
+// stored at the end of the audio buffer.
+inline size_t TotalAudioSharedMemorySizeInBytes(size_t audio_buffer_size) {
+  // Include optional field that communicates the number of bytes written.
+  return audio_buffer_size + sizeof(uint32_t);
+}
+
 }  // namespace ppapi_proxy
 
 #endif  // NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_GLOBALS_H_
