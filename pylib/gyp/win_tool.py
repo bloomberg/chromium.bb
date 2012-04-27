@@ -98,7 +98,8 @@ class WinTool(object):
     out, _ = popen.communicate()
     for line in out.splitlines():
       if (not line.startswith('Microsoft (R) Windows (R) Resource Compiler') and
-          not line.startswith('Copyright (C) Microsoft Corporation')):
+          not line.startswith('Copyright (C) Microsoft Corporation') and
+          line):
         print line
     return popen.returncode
 
