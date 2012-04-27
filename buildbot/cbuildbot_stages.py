@@ -1291,8 +1291,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
       # TODO(petermayo): This logic needs to be exported from the BuildTargets
       # stage rather than copied/re-evaluated here.
-      autotest_built = (config['build_tests'] and self._options.tests and (
-          config['upload_hw_test_artifacts'] or config['archive_build_debug']))
+      autotest_built = config['build_tests'] and self._options.tests and (
+          config['upload_hw_test_artifacts'] or config['archive_build_debug'])
 
       if config['chromeos_official'] and autotest_built:
         # Build hwqual image and upload to Google Storage.
