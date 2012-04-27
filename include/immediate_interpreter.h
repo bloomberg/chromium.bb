@@ -52,6 +52,8 @@ class TapRecord {
   void NoteRelease(short the_id);  // Adds to released_
   void Remove(short the_id);  // Removes from touched_ and released_
 
+  float CotapMinPressure() const;
+
   map<short, FingerState, kMaxTapFingers> touched_;
   set<short, kMaxTapFingers> released_;
   // At least one finger must meet the minimum pressure requirement during a
@@ -105,6 +107,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, TapRecordTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickEnableTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickKeyboardTest);
+  FRIEND_TEST(ImmediateInterpreterTest, TapToClickLowPressureBeginOrEndTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickStateMachineTest);
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest);
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainTest);

@@ -72,6 +72,10 @@ void TapRecord::Remove(short the_id) {
   released_.erase(the_id);
 }
 
+float TapRecord::CotapMinPressure() const {
+  return immediate_interpreter_->tap_min_pressure() * 0.5;
+}
+
 void TapRecord::Update(const HardwareState& hwstate,
                        const HardwareState& prev_hwstate,
                        const set<short, kMaxTapFingers>& added,
@@ -110,8 +114,7 @@ void TapRecord::Update(const HardwareState& hwstate,
   for_each(removed.begin(), removed.end(),
            bind1st(mem_fun(&TapRecord::NoteRelease), this));
   // Check if min tap/cotap pressure met yet
-  const float cotap_min_pressure =
-      immediate_interpreter_->tap_min_pressure() * 0.5;
+  const float cotap_min_pressure = CotapMinPressure();
   for (map<short, FingerState, kMaxTapFingers>::iterator it =
            touched_.begin(), e = touched_.end();
        it != e; ++it) {
@@ -119,8 +122,14 @@ void TapRecord::Update(const HardwareState& hwstate,
     if (fs) {
       if (fs->pressure >= immediate_interpreter_->tap_min_pressure())
         min_tap_pressure_met_.insert(fs->tracking_id);
-      if (fs->pressure >= cotap_min_pressure)
+      if (fs->pressure >= cotap_min_pressure) {
         min_cotap_pressure_met_.insert(fs->tracking_id);
+        if ((*it).second.pressure < cotap_min_pressure) {
+          // Update existing record, since the old one hadn't met the cotap
+          // pressure
+          (*it).second = *fs;
+        }
+      }
     }
   }
   Log("Done Updating TapRecord.");
@@ -138,10 +147,16 @@ void TapRecord::Clear() {
 
 bool TapRecord::Moving(const HardwareState& hwstate,
                        const float dist_max) const {
+  const float cotap_min_pressure = CotapMinPressure();
   for (map<short, FingerState, kMaxTapFingers>::const_iterator it =
            touched_.begin(), e = touched_.end(); it != e; ++it) {
     const FingerState* fs = hwstate.GetFingerState((*it).first);
     if (!fs)
+      continue;
+    // Only look for moving when current frame meets cotap pressure and
+    // our history contains a contact that's met cotap pressure.
+    if (fs->pressure < cotap_min_pressure ||
+        (*it).second.pressure < cotap_min_pressure)
       continue;
     // Compute distance moved
     float dist_x = fs->position_x - (*it).second.position_x;

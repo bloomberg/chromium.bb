@@ -1894,6 +1894,101 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
   }
 }
 
+namespace {
+
+struct TapToClickLowPressureBeginOrEndInputs {
+  stime_t now;
+  float x0, y0, p0, id0, x1, y1, p1, id1;  // (x, y), pressure, tracking id
+};
+
+}  // namespace {}
+
+// Test that if a tap contact has some frames before and after that tap, with
+// a finger that's located far from the tap spot, but has low pressure at that
+// location, it's still a tap. We see this happen on some hardware particularly
+// for right clicks. This is based on two logs from Ken Moore.
+TEST(ImmediateInterpreterTest, TapToClickLowPressureBeginOrEndTest) {
+  scoped_ptr<ImmediateInterpreter> ii;
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    106.666672,  // right edge
+    68.000000,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    25.4,  // screen DPI x
+    25.4,  // screen DPI y
+    15,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    true  // is button pad
+  };
+
+  TapToClickLowPressureBeginOrEndInputs inputs[] = {
+    // Two runs
+    { 32.4901, 55.5, 24.8,  7.0,  1,  0.0,  0.0,  0.0, -1 },
+    { 32.5010, 57.7, 25.0, 43.0,  1, 42.0, 27.5, 36.0,  2 },
+    { 32.5118, 58.0, 25.0, 44.0,  1, 42.0, 27.5, 43.0,  2 },
+    { 32.5227, 58.0, 25.0, 44.0,  1, 42.0, 27.6, 44.0,  2 },
+    { 32.5335, 58.0, 25.0, 45.0,  1, 42.0, 27.6, 45.0,  2 },
+    { 32.5443, 58.0, 25.0, 44.0,  1, 42.0, 27.6, 45.0,  2 },
+    { 32.5552, 58.0, 25.0, 44.0,  1, 42.0, 27.6, 44.0,  2 },
+    { 32.5661, 58.0, 25.0, 42.0,  1, 42.0, 27.6, 42.0,  2 },
+    { 32.5769, 58.0, 25.0, 35.0,  1, 42.0, 27.6, 35.0,  2 },
+    { 32.5878, 58.0, 25.0, 15.0,  1, 41.9, 27.6, 18.0,  2 },
+    { 32.5965, 45.9, 27.5,  7.0,  2,  0.0,  0.0,  0.0, -1 },
+    { 32.6042,  0.0,  0.0,  0.0, -1,  0.0,  0.0,  0.0, -1 },
+
+    { 90.6057, 64.0, 37.0, 18.0,  1,  0.0,  0.0,  0.0, -1 },
+    { 90.6144, 63.6, 37.0, 43.0,  1,  0.0,  0.0,  0.0, -1 },
+    { 90.6254, 63.6, 37.0, 43.0,  1, 46.5, 40.2, 47.0,  2 },
+    { 90.6361, 63.6, 37.0, 44.0,  1, 46.5, 40.2, 44.0,  2 },
+    { 90.6470, 63.6, 37.0, 45.0,  1, 46.5, 40.2, 46.0,  2 },
+    { 90.6579, 63.6, 37.0, 45.0,  1, 46.5, 40.2, 46.0,  2 },
+    { 90.6686, 63.6, 37.0, 45.0,  1, 46.5, 40.2, 47.0,  2 },
+    { 90.6795, 63.6, 37.0, 46.0,  1, 46.5, 40.2, 47.0,  2 },
+    { 90.6903, 63.6, 37.0, 45.0,  1, 46.5, 40.2, 46.0,  2 },
+    { 90.7012, 63.6, 37.0, 44.0,  1, 46.3, 40.2, 44.0,  2 },
+    { 90.7121, 63.6, 37.2, 38.0,  1, 46.4, 40.2, 31.0,  2 },
+    { 90.7229, 63.6, 37.4, 22.0,  1, 46.4, 40.2, 12.0,  2 },
+    { 90.7317, 61.1, 38.0,  8.0,  1,  0.0,  0.0,  0.0, -1 },
+    { 90.7391,  0.0,  0.0,  0.0, -1,  0.0,  0.0,  0.0, -1 },
+  };
+
+  bool reset_next_time = true;
+  for (size_t i = 0; i < arraysize(inputs); i++) {
+    const TapToClickLowPressureBeginOrEndInputs& input = inputs[i];
+    if (reset_next_time) {
+      ii.reset(new ImmediateInterpreter(NULL));
+      ii->SetHardwareProperties(hwprops);
+      ii->tap_enable_.val_ = 1;
+      reset_next_time = false;
+    }
+    // Prep inputs
+    FingerState fs[] = {
+      { 0, 0, 0, 0, input.p0, 0, input.x0, input.y0, input.id0, 0 },
+      { 0, 0, 0, 0, input.p1, 0, input.x1, input.y1, input.id1, 0 },
+    };
+    short finger_cnt = fs[0].tracking_id == -1 ? 0 :
+        (fs[1].tracking_id == -1 ? 1 : 2);
+    HardwareState hs = { input.now, 0, finger_cnt, finger_cnt, fs };
+    stime_t timeout = -1;
+    Gesture* gs = ii->SyncInterpret(&hs, &timeout);
+    if (finger_cnt > 0) {
+      // Expect no timeout
+      EXPECT_LT(timeout, 0);
+    } else {
+      // No timeout b/c it's right click. Expect the right click gesture
+      ASSERT_NE(static_cast<Gesture*>(NULL), gs) << "timeout:" << timeout;
+      EXPECT_EQ(kGestureTypeButtonsChange, gs->type);
+      EXPECT_EQ(GESTURES_BUTTON_RIGHT, gs->details.buttons.down);
+      EXPECT_EQ(GESTURES_BUTTON_RIGHT, gs->details.buttons.up);
+      reset_next_time = true;  // All done w/ this run.
+    }
+  }
+}
+
 // Does two tap gestures, one with keyboard interference.
 TEST(ImmediateInterpreterTest, TapToClickKeyboardTest) {
   scoped_ptr<ImmediateInterpreter> ii;
