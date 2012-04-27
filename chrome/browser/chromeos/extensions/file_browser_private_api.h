@@ -415,6 +415,7 @@ class GetGDataFilePropertiesFunction : public FileBrowserFunction {
 
  private:
   void OnFileProperties(base::DictionaryValue* property_dict,
+                        const FilePath& file_path,
                         base::PlatformFileError error,
                         const FilePath& directory_path,
                         gdata::GDataEntry* entry);
