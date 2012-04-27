@@ -716,9 +716,6 @@
         # less flakier.
         'browser/process_singleton_linux_uitest.cc',
         'browser/ui/tests/browser_uitest.cc',
-        'browser/ui/webui/options2/chromeos/guest_mode_options_ui2_uitest.cc',
-        'browser/ui/webui/options2/options_ui2_uitest.cc',
-        'browser/ui/webui/options2/options_ui2_uitest.h',
         'browser/ui/webui/print_preview/print_preview_ui_uitest.cc',
         'test/automation/automation_proxy_uitest.cc',
         'test/automation/automation_proxy_uitest.h',
@@ -788,12 +785,6 @@
                 '../base/allocator/allocator.gyp:allocator',
               ],
             }],
-          ],
-        }],
-        ['chromeos==0', {
-          'sources/': [
-            ['exclude', '^browser/ui/webui/options/chromeos/'],
-            ['exclude', '^browser/ui/webui/options2/chromeos/'],
           ],
         }],
       ],
@@ -2957,12 +2948,15 @@
         'browser/ui/webui/options2/autofill_options2_browsertest.js',
         'browser/ui/webui/options2/browser_options2_browsertest.js',
         'browser/ui/webui/options2/certificate_manager2_browsertest.js',
+        'browser/ui/webui/options2/chromeos/guest_mode_options_ui2_browsertest.cc',
         'browser/ui/webui/options2/content_options2_browsertest.js',
         'browser/ui/webui/options2/content_settings_exception_area2_browsertest.js',
         'browser/ui/webui/options2/cookies_view2_browsertest.js',
         'browser/ui/webui/options2/font_settings2_browsertest.js',
         'browser/ui/webui/options2/language_options2_browsertest.js',
         'browser/ui/webui/options2/options2_browsertest.js',
+        'browser/ui/webui/options2/options_ui2_browsertest.cc',
+        'browser/ui/webui/options2/options_ui2_browsertest.h',
         'browser/ui/webui/options2/password_manager2_browsertest.js',
         'browser/ui/webui/options2/search_engine_manager2_browsertest.js',
         'browser/ui/webui/sync_setup_browsertest.js',
@@ -3128,6 +3122,7 @@
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
+            ['exclude', '^browser/ui/webui/options2/chromeos/'],
           ],
           'sources!': [
             'browser/extensions/api/terminal/terminal_private_apitest.cc',
