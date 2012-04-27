@@ -19,6 +19,7 @@
       "Type": "WiFi",
       "Name": "My WiFi Network2",
       "WiFi": {
+        "Passphrase": "12345678",
         "SSID": "ssid-wpa",
         "Security": "WPA-PSK"
       }
