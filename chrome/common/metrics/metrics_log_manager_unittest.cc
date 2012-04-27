@@ -116,6 +116,30 @@ TEST(MetricsLogManagerTest, InterjectedLog) {
   EXPECT_FALSE(log_manager.has_unsent_logs());
 }
 
+TEST(MetricsLogManagerTest, InterjectedLogPreservesType) {
+  MetricsLogManager log_manager;
+
+  MetricsLogBase* ongoing_log = new MetricsLogBase("id", 0, "version");
+  MetricsLogBase* temp_log = new MetricsLogBase("id", 0, "version");
+
+  log_manager.BeginLoggingWithLog(ongoing_log, MetricsLogManager::ONGOING_LOG);
+  log_manager.PauseCurrentLog();
+  log_manager.BeginLoggingWithLog(temp_log, MetricsLogManager::INITIAL_LOG);
+  log_manager.FinishCurrentLog();
+  log_manager.ResumePausedLog();
+  log_manager.StageNextLogForUpload();
+  log_manager.DiscardStagedLog();
+
+  // Verify that the remaining log (which is the original ongoing log) still
+  // has the right type.
+  DummyLogSerializer* serializer = new DummyLogSerializer;
+  log_manager.set_log_serializer(serializer);
+  log_manager.FinishCurrentLog();
+  log_manager.PersistUnsentLogs();
+  EXPECT_EQ(0U, serializer->TypeCount(MetricsLogManager::INITIAL_LOG));
+  EXPECT_EQ(1U, serializer->TypeCount(MetricsLogManager::ONGOING_LOG));
+}
+
 TEST(MetricsLogManagerTest, StoreAndLoad) {
   std::vector<SerializedLog> initial_logs;
   std::vector<SerializedLog> ongoing_logs;

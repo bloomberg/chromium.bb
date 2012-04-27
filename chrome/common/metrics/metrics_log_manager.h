@@ -37,6 +37,7 @@ class MetricsLogManager {
   enum LogType {
     INITIAL_LOG,  // The first log of a session.
     ONGOING_LOG,  // Subsequent logs in a session.
+    NO_LOG,       // Placeholder value for when there is no log.
   };
 
   // Takes ownership of |log|, which has type |log_type|, and makes it the
@@ -156,6 +157,7 @@ class MetricsLogManager {
 
   // A paused, previously-current log.
   scoped_ptr<MetricsLogBase> paused_log_;
+  LogType paused_log_type_;
 
   // Helper class to handle serialization/deserialization of logs for persistent
   // storage. May be NULL.

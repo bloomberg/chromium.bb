@@ -22,8 +22,9 @@ const char kDiscardedLog[] = "Log discarded";
 
 }  // anonymous namespace
 
-MetricsLogManager::MetricsLogManager() : current_log_type_(INITIAL_LOG),
-                                         staged_log_type_(INITIAL_LOG),
+MetricsLogManager::MetricsLogManager() : current_log_type_(NO_LOG),
+                                         paused_log_type_(NO_LOG),
+                                         staged_log_type_(NO_LOG),
                                          max_ongoing_log_store_size_(0) {}
 
 MetricsLogManager::~MetricsLogManager() {}
@@ -40,6 +41,7 @@ void MetricsLogManager::SerializedLog::swap(SerializedLog& log) {
 
 void MetricsLogManager::BeginLoggingWithLog(MetricsLogBase* log,
                                             LogType log_type) {
+  DCHECK(log_type != NO_LOG);
   DCHECK(!current_log_.get());
   current_log_.reset(log);
   current_log_type_ = log_type;
@@ -47,12 +49,14 @@ void MetricsLogManager::BeginLoggingWithLog(MetricsLogBase* log,
 
 void MetricsLogManager::FinishCurrentLog() {
   DCHECK(current_log_.get());
+  DCHECK(current_log_type_ != NO_LOG);
   current_log_->CloseLog();
   SerializedLog compressed_log;
   CompressCurrentLog(&compressed_log);
   if (!compressed_log.empty())
     StoreLog(&compressed_log, current_log_type_);
   current_log_.reset();
+  current_log_type_ = NO_LOG;
 }
 
 void MetricsLogManager::StageNextLogForUpload() {
@@ -64,6 +68,7 @@ void MetricsLogManager::StageNextLogForUpload() {
                                                                : INITIAL_LOG;
   DCHECK(!source_list->empty());
   DCHECK(staged_log_text_.empty());
+  DCHECK(staged_log_type_ == NO_LOG);
   staged_log_text_.swap(source_list->back());
   staged_log_type_ = source_type;
   source_list->pop_back();
@@ -80,6 +85,7 @@ bool MetricsLogManager::has_staged_log_proto() const {
 void MetricsLogManager::DiscardStagedLog() {
   staged_log_text_.xml.clear();
   staged_log_text_.proto.clear();
+  staged_log_type_ = NO_LOG;
 }
 
 void MetricsLogManager::DiscardStagedLogProto() {
@@ -89,16 +95,23 @@ void MetricsLogManager::DiscardStagedLogProto() {
 void MetricsLogManager::DiscardCurrentLog() {
   current_log_->CloseLog();
   current_log_.reset();
+  current_log_type_ = NO_LOG;
 }
 
 void MetricsLogManager::PauseCurrentLog() {
   DCHECK(!paused_log_.get());
+  DCHECK(paused_log_type_ == NO_LOG);
   paused_log_.reset(current_log_.release());
+  paused_log_type_ = current_log_type_;
+  current_log_type_ = NO_LOG;
 }
 
 void MetricsLogManager::ResumePausedLog() {
   DCHECK(!current_log_.get());
+  DCHECK(current_log_type_ == NO_LOG);
   current_log_.reset(paused_log_.release());
+  current_log_type_ = paused_log_type_;
+  paused_log_type_ = NO_LOG;
 }
 
 void MetricsLogManager::StoreStagedLogAsUnsent() {
@@ -113,6 +126,7 @@ void MetricsLogManager::StoreStagedLogAsUnsent() {
 }
 
 void MetricsLogManager::StoreLog(SerializedLog* log_text, LogType log_type) {
+  DCHECK(log_type != NO_LOG);
   std::vector<SerializedLog>* destination_list =
       (log_type == INITIAL_LOG) ? &unsent_initial_logs_
                                 : &unsent_ongoing_logs_;
