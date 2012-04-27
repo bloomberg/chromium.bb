@@ -303,10 +303,13 @@ void ServiceButtonsView::Update() {
     return;
 
   views::ColumnSet* cs = grid_layout->AddColumnSet(0);
-  cs->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
-  cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::USE_PREF,
-                0, 0);
-  cs->AddPaddingColumn(1, 0);
+  cs->AddPaddingColumn(0, views::kPanelHorizIndentation);
+  cs->AddColumn(GridLayout::FILL, GridLayout::CENTER,
+                1, GridLayout::USE_PREF, 0, 0);
+  cs->AddPaddingColumn(0, views::kPanelHorizIndentation);
+
+  // Spacing between header and service buttons.
+  grid_layout->AddPaddingRow(0, views::kLabelToControlVerticalSpacing);
 
   for (size_t i = 0; i < model_->GetInstalledServiceCount(); ++i) {
     const WebIntentPickerModel::InstalledService& service =
@@ -325,7 +328,7 @@ void ServiceButtonsView::Update() {
   }
 
   // Additional space to separate the buttons from the suggestions.
-  grid_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  grid_layout->AddPaddingRow(0, views::kPanelVerticalSpacing);
 }
 
 void ServiceButtonsView::StartThrobber(const GURL& url) {
@@ -1016,9 +1019,11 @@ void WebIntentPickerViews::OnExtensionLinkClicked(
 }
 
 void WebIntentPickerViews::InitContents() {
-  const int kHeaderRowColumnSet = 0;
-  const int kFullWidthColumnSet = 1;
-  const int kIndentedFullWidthColumnSet = 2;
+  enum {
+    kHeaderRowColumnSet,  // Column set for header layout.
+    kFullWidthColumnSet,  // Column set with a single full-width column.
+    kIndentedFullWidthColumnSet,  // Single full-width column, indented.
+  };
 
   contents_ = new views::View();
   views::GridLayout* grid_layout = new views::GridLayout(contents_);
@@ -1068,7 +1073,7 @@ void WebIntentPickerViews::InitContents() {
   grid_layout->AddView(service_buttons_);
 
   // Row with app suggestions label.
-  grid_layout->StartRow(0, kFullWidthColumnSet);
+  grid_layout->StartRow(0, kIndentedFullWidthColumnSet);
   suggestions_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_INTENT_PICKER_GET_MORE_SERVICES));
   suggestions_label_->SetMultiLine(true);
