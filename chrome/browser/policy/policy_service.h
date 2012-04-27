@@ -90,7 +90,7 @@ class PolicyChangeRegistrar : public PolicyService::Observer {
   // outlive |this|.
   PolicyChangeRegistrar(PolicyService* policy_service,
                         PolicyDomain domain,
-                        const std::string component_id);
+                        const std::string& component_id);
 
   virtual ~PolicyChangeRegistrar();
 

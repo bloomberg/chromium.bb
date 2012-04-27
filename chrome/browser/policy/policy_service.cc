@@ -10,7 +10,7 @@ namespace policy {
 
 PolicyChangeRegistrar::PolicyChangeRegistrar(PolicyService* policy_service,
                                              PolicyDomain domain,
-                                             const std::string component_id)
+                                             const std::string& component_id)
     : policy_service_(policy_service),
       domain_(domain),
       component_id_(component_id) {}
