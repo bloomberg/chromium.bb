@@ -16,6 +16,8 @@ namespace bluetooth_utils {
 // Converts a bluetooth address in the format "B0:D0:9C:0F:3A:2D" into a
 // bdaddr_t struct.  Returns true on success, false on failure.  The contents
 // of |out_address| are zeroed on failure.
+// Note that the order is reversed upon conversion.  For example,
+// "B0:D0:9C:0F:3A:2D" -> {"0x2d", "0x3a", "0x0f", "0x9c", "0xd0", "0xb0"}
 bool str2ba(const std::string& in_address, bdaddr_t* out_address);
 
 }  // namespace bluetooth_utils

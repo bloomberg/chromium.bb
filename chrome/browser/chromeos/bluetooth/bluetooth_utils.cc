@@ -32,7 +32,7 @@ bool str2ba(const std::string& in_address, bdaddr_t* out_address) {
   if (base::HexStringToBytes(numbers_only, &address_bytes)) {
     if (address_bytes.size() == 6) {
       for (int i = 0; i < 6; ++i) {
-        out_address->b[i] = address_bytes[i];
+        out_address->b[5 - i] = address_bytes[i];
       }
       return true;
     }
