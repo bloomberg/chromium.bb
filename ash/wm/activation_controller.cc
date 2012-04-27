@@ -116,7 +116,8 @@ void StackTransientParentsBelowModalWindow(aura::Window* window) {
 // ActivationController, public:
 
 ActivationController::ActivationController()
-    : updating_activation_(false) {
+    : updating_activation_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
   aura::client::SetActivationClient(Shell::GetRootWindow(), this);
   aura::Env::GetInstance()->AddObserver(this);
   Shell::GetRootWindow()->AddRootWindowObserver(this);
@@ -199,14 +200,14 @@ void ActivationController::OnWindowDestroying(aura::Window* window) {
         aura::client::kRootWindowActiveWindowKey);
     ActivateWindow(GetTopmostWindowToActivate(window));
   }
-  window->RemoveObserver(this);
+  observer_manager_.Remove(window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // ActivationController, aura::EnvObserver implementation:
 
 void ActivationController::OnWindowInitialized(aura::Window* window) {
-  window->AddObserver(this);
+  observer_manager_.Add(window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

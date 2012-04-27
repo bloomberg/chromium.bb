@@ -8,12 +8,13 @@
 
 #include <map>
 
+#include "ash/ash_export.h"
+#include "ash/wm/scoped_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
-#include "ash/ash_export.h"
 
 namespace aura {
 class Window;
@@ -83,6 +84,8 @@ class ASH_EXPORT ShadowController : public aura::EnvObserver,
   void CreateShadowForWindow(aura::Window* window);
 
   WindowShadowMap window_shadows_;
+
+  ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ShadowController);
 };

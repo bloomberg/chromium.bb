@@ -43,7 +43,7 @@ class VideoDetectorTest : public AshTestBase {
   VideoDetectorTest() {}
   virtual ~VideoDetectorTest() {}
 
-  void SetUp() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
     observer_.reset(new TestVideoDetectorObserver);
     detector_ = Shell::GetInstance()->video_detector();

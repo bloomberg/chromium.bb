@@ -68,23 +68,20 @@ Shadow::Style GetShadowStyleForWindowLosingActive(
 
 }  // namespace
 
-ShadowController::ShadowController() {
+ShadowController::ShadowController()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
   aura::Env::GetInstance()->AddObserver(this);
   // Watch for window activation changes.
   Shell::GetRootWindow()->AddObserver(this);
 }
 
 ShadowController::~ShadowController() {
-  for (WindowShadowMap::const_iterator it = window_shadows_.begin();
-       it != window_shadows_.end(); ++it) {
-    it->first->RemoveObserver(this);
-  }
   Shell::GetRootWindow()->RemoveObserver(this);
   aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 void ShadowController::OnWindowInitialized(aura::Window* window) {
-  window->AddObserver(this);
+  observer_manager_.Add(window);
   SetShadowType(window, GetShadowTypeFromWindow(window));
   HandlePossibleShadowVisibilityChange(window);
 }
@@ -113,6 +110,7 @@ void ShadowController::OnWindowBoundsChanged(aura::Window* window,
 
 void ShadowController::OnWindowDestroyed(aura::Window* window) {
   window_shadows_.erase(window);
+  observer_manager_.Remove(window);
 }
 
 bool ShadowController::ShouldShowShadowForWindow(aura::Window* window) const {

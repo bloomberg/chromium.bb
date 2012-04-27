@@ -317,4 +317,28 @@ TEST_F(ShellTest, FullscreenWindowHidesShelf) {
   widget->Close();
 }
 
+// This verifies WindowObservers are removed when a window is destroyed after
+// the Shell is destroyed. This scenario (aura::Windows being deleted after the
+// Shell) occurs if someone is holding a reference to an unparented Window, as
+// is the case with a RenderWidgetHostViewAura that isn't on screen. As long as
+// everything is ok, we won't crash. If there is a bug, window's destructor will
+// notify some deleted object (say VideoDetector or ActivationController) and
+// this will crash.
+class ShellTest2 : public test::AshTestBase {
+ public:
+  ShellTest2() {}
+  virtual ~ShellTest2() {}
+
+ protected:
+  scoped_ptr<aura::Window> window_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ShellTest2);
+};
+
+TEST_F(ShellTest2, DontCrashWhenWindowDeleted) {
+  window_.reset(new aura::Window(NULL));
+  window_->Init(ui::LAYER_NOT_DRAWN);
+}
+
 }  // namespace ash

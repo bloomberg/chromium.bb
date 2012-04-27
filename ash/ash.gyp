@@ -230,6 +230,7 @@
         'wm/root_window_event_filter.h',
         'wm/root_window_layout_manager.cc',
         'wm/root_window_layout_manager.h',
+        'wm/scoped_observer.h',
         'wm/shadow.cc',
         'wm/shadow.h',
         'wm/shadow_controller.cc',
