@@ -5,6 +5,7 @@
 #include "chrome/browser/profiles/off_the_record_profile_io_data.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -157,6 +159,7 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
 
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   ApplyProfileParamsToContext(main_context);
   ApplyProfileParamsToContext(extensions_context);
@@ -205,6 +208,13 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
 
   net::HttpCache::BackendFactory* main_backend =
       net::HttpCache::DefaultBackend::InMemory(0);
+
+  std::string trusted_spdy_proxy;
+  if (command_line.HasSwitch(switches::kTrustedSpdyProxy)) {
+    trusted_spdy_proxy = command_line.GetSwitchValueASCII(
+        switches::kTrustedSpdyProxy);
+  }
+
   net::HttpCache* cache =
       new net::HttpCache(main_context->host_resolver(),
                          main_context->cert_verifier(),
@@ -217,7 +227,8 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
                          main_context->network_delegate(),
                          main_context->http_server_properties(),
                          main_context->net_log(),
-                         main_backend);
+                         main_backend,
+                         trusted_spdy_proxy);
 
   main_http_factory_.reset(cache);
   main_context->set_http_transaction_factory(cache);

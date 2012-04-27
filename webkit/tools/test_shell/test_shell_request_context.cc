@@ -96,15 +96,16 @@ void TestShellRequestContext::Init(
       new net::HttpCache(host_resolver(),
                          cert_verifier(),
                          server_bound_cert_service(),
-                         NULL, // transport_security_state
+                         NULL, /* transport_security_state */
                          proxy_service(),
-                         "",  // ssl_session_cache_shard
+                         "",  /* ssl_session_cache_shard */
                          ssl_config_service(),
                          http_auth_handler_factory(),
-                         NULL,  // network_delegate
+                         NULL,  /* network_delegate */
                          http_server_properties(),
-                         NULL,  // netlog
-                         backend);
+                         NULL,  /* netlog */
+                         backend,
+                         "" /* trusted_spdy_proxy */ );
 
   cache->set_mode(cache_mode);
   storage_.set_http_transaction_factory(cache);

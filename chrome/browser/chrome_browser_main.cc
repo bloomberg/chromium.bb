@@ -245,11 +245,6 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
   if (parsed_command_line.HasSwitch(switches::kDisableIPPooling))
     net::SpdySessionPool::enable_ip_pooling(false);
 
-  if (parsed_command_line.HasSwitch(switches::kAllowSpdyProxyPushAcrossOrigins))
-    net::SpdySession::set_allow_spdy_proxy_push_across_origins(
-        parsed_command_line.GetSwitchValueASCII(
-            switches::kAllowSpdyProxyPushAcrossOrigins).data());
-
   if (parsed_command_line.HasSwitch(switches::kMaxSpdySessionsPerDomain)) {
     int value;
     base::StringToInt(

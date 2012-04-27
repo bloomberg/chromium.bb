@@ -372,6 +372,11 @@ void ProfileImplIOData::LazyInitializeInternal(
   media_request_context_->set_server_bound_cert_service(
       server_bound_cert_service);
 
+  std::string trusted_spdy_proxy;
+  if (command_line.HasSwitch(switches::kTrustedSpdyProxy)) {
+    trusted_spdy_proxy = command_line.GetSwitchValueASCII(
+        switches::kTrustedSpdyProxy);
+  }
   net::HttpCache::DefaultBackend* main_backend =
       new net::HttpCache::DefaultBackend(
           net::DISK_CACHE,
@@ -390,7 +395,8 @@ void ProfileImplIOData::LazyInitializeInternal(
       main_context->network_delegate(),
       main_context->http_server_properties(),
       main_context->net_log(),
-      main_backend);
+      main_backend,
+      trusted_spdy_proxy);
 
   net::HttpCache::DefaultBackend* media_backend =
       new net::HttpCache::DefaultBackend(
