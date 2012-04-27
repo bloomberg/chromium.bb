@@ -312,10 +312,7 @@ void IndexedDBDispatcher::RequestIDBIndexOpenObjectCursor(
   IndexedDBHostMsg_IndexOpenCursor_Params params;
   params.thread_id = CurrentWorkerId();
   params.response_id = pending_callbacks_.Add(callbacks.release());
-  params.lower_key.Set(idb_key_range.lower());
-  params.upper_key.Set(idb_key_range.upper());
-  params.lower_open = idb_key_range.lowerOpen();
-  params.upper_open = idb_key_range.upperOpen();
+  params.key_range = IndexedDBKeyRange(idb_key_range);
   params.direction = direction;
   params.idb_index_id = idb_index_id;
   params.transaction_id = TransactionId(transaction);
@@ -336,12 +333,7 @@ void IndexedDBDispatcher::RequestIDBIndexOpenKeyCursor(
   IndexedDBHostMsg_IndexOpenCursor_Params params;
   params.thread_id = CurrentWorkerId();
   params.response_id = pending_callbacks_.Add(callbacks.release());
-  // TODO(jorlow): We really should just create a Chromium abstraction for
-  //               KeyRange rather than doing it ad-hoc like this.
-  params.lower_key.Set(idb_key_range.lower());
-  params.upper_key.Set(idb_key_range.upper());
-  params.lower_open = idb_key_range.lowerOpen();
-  params.upper_open = idb_key_range.upperOpen();
+  params.key_range = IndexedDBKeyRange(idb_key_range);
   params.direction = direction;
   params.idb_index_id = idb_index_id;
   params.transaction_id = TransactionId(transaction);
@@ -361,10 +353,7 @@ void IndexedDBDispatcher::RequestIDBIndexCount(
   IndexedDBHostMsg_IndexCount_Params params;
   params.thread_id = CurrentWorkerId();
   params.response_id = pending_callbacks_.Add(callbacks.release());
-  params.lower_key.Set(idb_key_range.lower());
-  params.upper_key.Set(idb_key_range.upper());
-  params.lower_open = idb_key_range.lowerOpen();
-  params.upper_open = idb_key_range.upperOpen();
+  params.key_range = IndexedDBKeyRange(idb_key_range);
   params.idb_index_id = idb_index_id;
   params.transaction_id = TransactionId(transaction);
   Send(new IndexedDBHostMsg_IndexCount(params, ec));
@@ -512,10 +501,7 @@ void IndexedDBDispatcher::RequestIDBObjectStoreOpenCursor(
   IndexedDBHostMsg_ObjectStoreOpenCursor_Params params;
   params.thread_id = CurrentWorkerId();
   params.response_id = pending_callbacks_.Add(callbacks.release());
-  params.lower_key.Set(idb_key_range.lower());
-  params.upper_key.Set(idb_key_range.upper());
-  params.lower_open = idb_key_range.lowerOpen();
-  params.upper_open = idb_key_range.upperOpen();
+  params.key_range = IndexedDBKeyRange(idb_key_range);
   params.direction = direction;
   params.idb_object_store_id = idb_object_store_id;
   params.transaction_id = TransactionId(transaction);
@@ -535,10 +521,7 @@ void IndexedDBDispatcher::RequestIDBObjectStoreCount(
   IndexedDBHostMsg_ObjectStoreCount_Params params;
   params.thread_id = CurrentWorkerId();
   params.response_id = pending_callbacks_.Add(callbacks.release());
-  params.lower_key.Set(idb_key_range.lower());
-  params.upper_key.Set(idb_key_range.upper());
-  params.lower_open = idb_key_range.lowerOpen();
-  params.upper_open = idb_key_range.upperOpen();
+  params.key_range = IndexedDBKeyRange(idb_key_range);
   params.idb_object_store_id = idb_object_store_id;
   params.transaction_id = TransactionId(transaction);
   Send(new IndexedDBHostMsg_ObjectStoreCount(params, ec));

@@ -71,14 +71,8 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_IndexOpenCursor_Params)
   // The response should have these ids.
   IPC_STRUCT_MEMBER(int32, thread_id)
   IPC_STRUCT_MEMBER(int32, response_id)
-  // The serialized lower key.
-  IPC_STRUCT_MEMBER(IndexedDBKey, lower_key)
-  // The serialized upper key.
-  IPC_STRUCT_MEMBER(IndexedDBKey, upper_key)
-  // Is the lower bound open?
-  IPC_STRUCT_MEMBER(bool, lower_open)
-  // Is the upper bound open?
-  IPC_STRUCT_MEMBER(bool, upper_open)
+  // The serialized key range.
+  IPC_STRUCT_MEMBER(IndexedDBKeyRange, key_range)
   // The direction of this cursor.
   IPC_STRUCT_MEMBER(int32, direction)
   // The index the index belongs to.
@@ -92,14 +86,8 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_IndexCount_Params)
   // The response should have these ids.
   IPC_STRUCT_MEMBER(int32, thread_id)
   IPC_STRUCT_MEMBER(int32, response_id)
-  // The serialized lower key.
-  IPC_STRUCT_MEMBER(IndexedDBKey, lower_key)
-  // The serialized upper key.
-  IPC_STRUCT_MEMBER(IndexedDBKey, upper_key)
-  // Is the lower bound open?
-  IPC_STRUCT_MEMBER(bool, lower_open)
-  // Is the upper bound open?
-  IPC_STRUCT_MEMBER(bool, upper_open)
+  // The serialized key range.
+  IPC_STRUCT_MEMBER(IndexedDBKeyRange, key_range)
   // The index the index belongs to.
   IPC_STRUCT_MEMBER(int32, idb_index_id)
   // The transaction this request belongs to.
@@ -144,14 +132,8 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStoreOpenCursor_Params)
   // The response should have these ids.
   IPC_STRUCT_MEMBER(int32, thread_id)
   IPC_STRUCT_MEMBER(int32, response_id)
-  // The serialized lower key.
-  IPC_STRUCT_MEMBER(IndexedDBKey, lower_key)
-  // The serialized upper key.
-  IPC_STRUCT_MEMBER(IndexedDBKey, upper_key)
-  // Is the lower bound open?
-  IPC_STRUCT_MEMBER(bool, lower_open)
-  // Is the upper bound open?
-  IPC_STRUCT_MEMBER(bool, upper_open)
+  // The serialized key range.
+  IPC_STRUCT_MEMBER(IndexedDBKeyRange, key_range)
   // The direction of this cursor.
   IPC_STRUCT_MEMBER(int32, direction)
   // The object store the cursor belongs to.
@@ -193,14 +175,8 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStoreCount_Params)
   // The response should have these ids.
   IPC_STRUCT_MEMBER(int32, thread_id)
   IPC_STRUCT_MEMBER(int32, response_id)
-  // The serialized lower key.
-  IPC_STRUCT_MEMBER(IndexedDBKey, lower_key)
-  // The serialized upper key.
-  IPC_STRUCT_MEMBER(IndexedDBKey, upper_key)
-  // Is the lower bound open?
-  IPC_STRUCT_MEMBER(bool, lower_open)
-  // Is the upper bound open?
-  IPC_STRUCT_MEMBER(bool, upper_open)
+  // The serialized key range.
+  IPC_STRUCT_MEMBER(IndexedDBKeyRange, key_range)
   // The object store the cursor belongs to.
   IPC_STRUCT_MEMBER(int32, idb_object_store_id)
   // The transaction this request belongs to.

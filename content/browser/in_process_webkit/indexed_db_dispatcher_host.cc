@@ -562,9 +562,8 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnOpenObjectCursor(
       new IndexedDBCallbacks<WebIDBCursor>(parent_, params.thread_id,
                                            params.response_id, -1));
   idb_index->openObjectCursor(
-      WebIDBKeyRange(params.lower_key, params.upper_key, params.lower_open,
-                     params.upper_open),
-      params.direction, callbacks.release(), *idb_transaction, *ec);
+      params.key_range, params.direction, callbacks.release(),
+      *idb_transaction, *ec);
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnOpenKeyCursor(
@@ -583,9 +582,8 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnOpenKeyCursor(
       new IndexedDBCallbacks<WebIDBCursor>(parent_, params.thread_id,
                                            params.response_id, -1));
   idb_index->openKeyCursor(
-      WebIDBKeyRange(params.lower_key, params.upper_key, params.lower_open,
-                     params.upper_open),
-      params.direction, callbacks.release(), *idb_transaction, *ec);
+      params.key_range, params.direction, callbacks.release(),
+      *idb_transaction, *ec);
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnCount(
@@ -605,9 +603,7 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnCount(
                                                        params.thread_id,
                                                        params.response_id));
   idb_index->count(
-      WebIDBKeyRange(params.lower_key, params.upper_key, params.lower_open,
-                     params.upper_open),
-      callbacks.release(), *idb_transaction, *ec);
+      params.key_range, callbacks.release(), *idb_transaction, *ec);
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnGetObject(
@@ -913,9 +909,8 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnOpenCursor(
       new IndexedDBCallbacks<WebIDBCursor>(parent_, params.thread_id,
                                            params.response_id, -1));
   idb_object_store->openCursor(
-      WebIDBKeyRange(params.lower_key, params.upper_key, params.lower_open,
-                     params.upper_open),
-      params.direction, callbacks.release(), *idb_transaction, *ec);
+      params.key_range, params.direction, callbacks.release(),
+      *idb_transaction, *ec);
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnCount(
@@ -936,9 +931,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnCount(
                                                        params.thread_id,
                                                        params.response_id));
   idb_object_store->count(
-      WebIDBKeyRange(params.lower_key, params.upper_key, params.lower_open,
-                     params.upper_open),
-      callbacks.release(), *idb_transaction, *ec);
+      params.key_range, callbacks.release(), *idb_transaction, *ec);
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnDestroyed(
