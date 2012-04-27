@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/tabs/native_view_photobooth.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/touch_tab_strip_layout.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -320,8 +321,7 @@ DefaultTabDragController::DefaultTabDragController()
       active_(true),
       source_tab_index_(std::numeric_limits<size_t>::max()),
       initial_move_(true),
-      // TODO: remove.
-      stacking_(false) {
+      move_only_(false) {
   instance_ = this;
 }
 
@@ -348,13 +348,21 @@ void DefaultTabDragController::Init(
     const std::vector<BaseTab*>& tabs,
     const gfx::Point& mouse_offset,
     int source_tab_offset,
-    const TabStripSelectionModel& initial_selection_model) {
+    const TabStripSelectionModel& initial_selection_model,
+    bool move_only) {
   DCHECK(!tabs.empty());
   DCHECK(std::find(tabs.begin(), tabs.end(), source_tab) != tabs.end());
   source_tabstrip_ = source_tabstrip;
   source_tab_offset_ = source_tab_offset;
   start_screen_point_ = GetCursorScreenPoint();
   mouse_offset_ = mouse_offset;
+  move_only_ = move_only;
+
+  if (move_only_) {
+    last_move_screen_loc_ =
+        MajorAxisValue(start_screen_point_, attached_tabstrip_);
+    initial_tab_positions_ = source_tabstrip->GetTabXCoordinates();
+  }
 
   drag_data_.resize(tabs.size());
   for (size_t i = 0; i < tabs.size(); ++i)
@@ -645,19 +653,14 @@ void DefaultTabDragController::ContinueDragging() {
   // guaranteed to be correct regardless of monitor config.
   gfx::Point screen_point = GetCursorScreenPoint();
 
+  // TODO(sky): this file shouldn't be built on chromeos.
 #if defined(OS_WIN) && !defined(USE_AURA)
-  // Currently only allowed on windows (and not aura).
-  // Determine whether or not we have dragged over a compatible TabStrip in
-  // another browser window. If we have, we should attach to it and start
-  // dragging within it.
-  // TODO(scottmg): Determine design for when tabs should actually detach when
-  // in stacking mode.
-  TabStrip* target_tabstrip = stacking_ ?
-      source_tabstrip_ :
-      GetTabStripForPoint(screen_point);
+  TabStrip* target_tabstrip = move_only_ ?
+      source_tabstrip_ : GetTabStripForPoint(screen_point);
 #else
   TabStrip* target_tabstrip = source_tabstrip_;
 #endif
+
   if (target_tabstrip != attached_tabstrip_) {
     // Make sure we're fully detached from whatever TabStrip we're attached to
     // (if any).
@@ -674,10 +677,24 @@ void DefaultTabDragController::ContinueDragging() {
 
   UpdateDockInfo(screen_point);
 
-  if (attached_tabstrip_)
-    MoveAttached(screen_point);
-  else
+  if (attached_tabstrip_) {
+    if (move_only_)
+      MoveAttachedStacked(screen_point);
+    else
+      MoveAttached(screen_point);
+  } else {
     MoveDetached(screen_point);
+  }
+}
+
+void DefaultTabDragController::MoveAttachedStacked(
+    const gfx::Point& screen_point) {
+  if (attached_tabstrip_->tab_count() !=
+      static_cast<int>(initial_tab_positions_.size()))
+    return;  // TODO: should cancel drag if this happens.
+
+  int delta = screen_point.x() - start_screen_point_.x();
+  attached_tabstrip_->DragActiveTab(initial_tab_positions_, delta);
 }
 
 void DefaultTabDragController::MoveAttached(const gfx::Point& screen_point) {
@@ -704,7 +721,7 @@ void DefaultTabDragController::MoveAttached(const gfx::Point& screen_point) {
   // Update the model, moving the WebContents from one index to another. Do this
   // only if we have moved a minimum distance since the last reorder (to prevent
   // jitter) or if this the first move and the tabs are not consecutive.
-  if (!stacking_ && (abs(MajorAxisValue(screen_point, attached_tabstrip_) -
+  if ((abs(MajorAxisValue(screen_point, attached_tabstrip_) -
           last_move_screen_loc_) > threshold ||
         (initial_move_ && !AreTabsConsecutive()))) {
     TabStripModel* attached_model = GetModel(attached_tabstrip_);
@@ -1032,11 +1049,6 @@ gfx::Point DefaultTabDragController::GetAttachedDragPoint(
   int x =
       attached_tabstrip_->GetMirroredXInView(tab_loc.x()) - mouse_offset_.x();
   int y = tab_loc.y() - mouse_offset_.y();
-
-  // Don't limit the edge of tab strip when stacking so tabs can be pulled past
-  // the edge to stack.
-  if (stacking_)
-    return gfx::Point(x, 0);
 
   // TODO: consider caching this.
   std::vector<BaseTab*> attached_tabs;
@@ -1447,10 +1459,12 @@ TabDragController* TabDragController::Create(
       const std::vector<BaseTab*>& tabs,
       const gfx::Point& mouse_offset,
       int source_tab_offset,
-      const TabStripSelectionModel& initial_selection_model) {
+      const TabStripSelectionModel& initial_selection_model,
+      bool move_only) {
 #if defined(USE_AURA) || defined(OS_WIN)
   if (ShouldCreateTabDragController2()) {
     TabDragController2* controller = new TabDragController2;
+    // TODO: get TabDragController2 working with move_only.
     controller->Init(source_tabstrip, source_tab, tabs, mouse_offset,
                      source_tab_offset, initial_selection_model);
     return controller;
@@ -1458,7 +1472,7 @@ TabDragController* TabDragController::Create(
 #endif
   DefaultTabDragController* controller = new DefaultTabDragController;
   controller->Init(source_tabstrip, source_tab, tabs, mouse_offset,
-                   source_tab_offset, initial_selection_model);
+                   source_tab_offset, initial_selection_model, move_only);
   return controller;
 }
 

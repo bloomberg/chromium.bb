@@ -35,17 +35,18 @@ class TabDragController {
   // the drag (the one the user pressed the moused down on) and is contained in
   // |tabs|.  |mouse_offset| is the distance of the mouse pointer from the
   // origin of the first tab in |tabs| and |source_tab_offset| the offset from
-  // |source_tab|. |source_tab_offset| is the horizontal distant for a
-  // horizontal tab strip, and the vertical distance for a vertical tab
-  // strip. |initial_selection_model| is the selection model before the drag
-  // started and is only non-empty if |source_tab| was not initially selected.
+  // |source_tab| (along the horizontal axis). |initial_selection_model| is the
+  // selection model before the drag started and is only non-empty if
+  // |source_tab| was not initially selected. |move_only| is true if the drag
+  // is the result of a touch event.
   static TabDragController* Create(
       TabStrip* source_tabstrip,
       BaseTab* source_tab,
       const std::vector<BaseTab*>& tabs,
       const gfx::Point& mouse_offset,
       int source_tab_offset,
-      const TabStripSelectionModel& initial_selection_model);
+      const TabStripSelectionModel& initial_selection_model,
+      bool move_only);
 
   // Returns true if there is a drag underway and the drag is attached to
   // |tab_strip|.

@@ -18,6 +18,16 @@ void ViewModelUtils::SetViewBoundsToIdealBounds(const ViewModel& model) {
 }
 
 // static
+bool ViewModelUtils::IsAtIdealBounds(const ViewModel& model) {
+  for (int i = 0; i < model.view_size(); ++i) {
+    View* view = model.view_at(i);
+    if (view->bounds() != model.ideal_bounds(i))
+      return false;
+  }
+  return true;
+}
+
+// static
 int ViewModelUtils::DetermineMoveIndex(const ViewModel& model,
                                        View* view,
                                        int x) {

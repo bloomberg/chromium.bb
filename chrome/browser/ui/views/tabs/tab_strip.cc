@@ -590,8 +590,12 @@ void TabStrip::SetSelection(const TabStripSelectionModel& old_selection,
                             const TabStripSelectionModel& new_selection) {
   if (touch_layout_.get()) {
     touch_layout_->SetActiveIndex(new_selection.active());
+    // Only start an animation if we need to. Otherwise clicking on an
+    // unselected tab and dragging won't work because dragging is only allowed
+    // if not animating.
+    if (!views::ViewModelUtils::IsAtIdealBounds(tabs_))
+      AnimateToIdealBounds();
     SchedulePaint();
-    AnimateToIdealBounds();
   } else {
     // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
     // a different size to the selected ones.
@@ -749,7 +753,7 @@ bool TabStrip::IsTabCloseable(const BaseTab* tab) const {
 
 void TabStrip::MaybeStartDrag(
     BaseTab* tab,
-    const views::MouseEvent& event,
+    const views::LocatedEvent& event,
     const TabStripSelectionModel& original_selection) {
   // Don't accidentally start any drag operations during animations if the
   // mouse is down... during an animation tabs are being resized automatically,
@@ -791,7 +795,10 @@ void TabStrip::MaybeStartDrag(
   drag_controller_.reset();
   drag_controller_.reset(TabDragController::Create(
       this, tab, tabs, gfx::Point(x, y), tab->GetMirroredXInView(event.x()),
-      selection_model));
+      selection_model, touch_layout_.get() != NULL));
+  // TODO: Instead of touch layout need to look at event type, eg
+  // event.type() == ui::ET_TOUCH_PRESSED)), and need to plumb through long
+  // press and touch stuff.
 }
 
 void TabStrip::ContinueDrag(const views::MouseEvent& event) {
@@ -1288,6 +1295,19 @@ void TabStrip::DoLayout() {
                                       views::ImageButton::ALIGN_TOP);
   }
   newtab_button_->SetBoundsRect(newtab_button_bounds_);
+}
+
+void TabStrip::DragActiveTab(const std::vector<int>& initial_positions,
+                             int delta) {
+  DCHECK(touch_layout_.get());
+  DCHECK_EQ(tab_count(), static_cast<int>(initial_positions.size()));
+  for (int i = 0; i < tab_count(); ++i) {
+    gfx::Rect bounds(ideal_bounds(i));
+    bounds.set_x(initial_positions[i]);
+    set_ideal_bounds(i, bounds);
+  }
+  touch_layout_->DragActiveTab(delta);
+  DoLayout();
 }
 
 void TabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
@@ -1916,4 +1936,11 @@ Tab* TabStrip::FindTabForEvent(const gfx::Point& point, int start, int delta) {
       return tab_at(i);
   }
   return NULL;
+}
+
+std::vector<int> TabStrip::GetTabXCoordinates() {
+  std::vector<int> results;
+  for (int i = 0; i < tab_count(); ++i)
+    results.push_back(ideal_bounds(i).x());
+  return results;
 }

@@ -48,12 +48,14 @@ class DefaultTabDragController : public TabDragController,
   // for a horizontal tab strip, and the vertical distance for a vertical tab
   // strip. |initial_selection_model| is the selection model before the drag
   // started and is only non-empty if |source_tab| was not initially selected.
+  // TODO(sky): clean up move_only.
   void Init(TabStrip* source_tabstrip,
             BaseTab* source_tab,
             const std::vector<BaseTab*>& tabs,
             const gfx::Point& mouse_offset,
             int source_tab_offset,
-            const TabStripSelectionModel& initial_selection_model);
+            const TabStripSelectionModel& initial_selection_model,
+            bool move_only);
 
   // See description above fields for details on these.
   bool active() const { return active_; }
@@ -166,6 +168,10 @@ class DefaultTabDragController : public TabDragController,
   // Move the DraggedTabView according to the current mouse screen position,
   // potentially updating the source and other TabStrips.
   void ContinueDragging();
+
+  // Handles dragging for a touch tabstrip when the tabs are stacked. Doesn't
+  // actually reorder the tabs in anyway, just changes what's visible.
+  void MoveAttachedStacked(const gfx::Point& screen_point);
 
   // Handles dragging tabs while the tabs are attached.
   void MoveAttached(const gfx::Point& screen_point);
@@ -361,8 +367,12 @@ class DefaultTabDragController : public TabDragController,
   // The selection model of |attached_tabstrip_| before the tabs were attached.
   TabStripSelectionModel selection_model_before_attach_;
 
-  // Are we operating with tabs stacking/scrolling?
-  bool stacking_;
+  // Initial x-coordinates of the tabs when the drag started. Only used for
+  // touch mode.
+  std::vector<int> initial_tab_positions_;
+
+  // TODO(sky): clean up.
+  bool move_only_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultTabDragController);
 };

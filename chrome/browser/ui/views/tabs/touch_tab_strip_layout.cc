@@ -60,7 +60,7 @@ void TouchTabStripLayout::SetActiveIndex(int index) {
 }
 
 void TouchTabStripLayout::DragActiveTab(int delta) {
-  if (delta == 0 && !requires_stacking())
+  if (delta == 0 || !requires_stacking())
     return;
   int initial_x = ideal_x(active_index());
   // If we're at a particular edge and start dragging, reset to ideal state.

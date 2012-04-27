@@ -147,7 +147,7 @@ class TabStrip : public AbstractTabStripView,
   virtual bool IsTabCloseable(const BaseTab* tab) const OVERRIDE;
   virtual void MaybeStartDrag(
       BaseTab* tab,
-      const views::MouseEvent& event,
+      const views::LocatedEvent& event,
       const TabStripSelectionModel& original_selection) OVERRIDE;
   virtual void ContinueDrag(const views::MouseEvent& event) OVERRIDE;
   virtual bool EndDrag(bool canceled) OVERRIDE;
@@ -270,6 +270,10 @@ class TabStrip : public AbstractTabStripView,
 
   // Invoked from Layout if the size changes or layout is really needed.
   void DoLayout();
+
+  // Drags the active tab by |delta|. |initial_positions| is the x-coordinates
+  // of the tabs when the drag started.
+  void DragActiveTab(const std::vector<int>& initial_positions, int delta);
 
   // Invoked during drag to layout the tabs being dragged in |tabs| at
   // |location|. If |initial_drag| is true, this is the initial layout after the
@@ -417,6 +421,9 @@ class TabStrip : public AbstractTabStripView,
   // Returns the tab to use for event handling starting at index |start| and
   // iterating by |delta|.
   Tab* FindTabForEvent(const gfx::Point& point, int start, int delta);
+
+  // Returns the x-coordinates of the tabs.
+  std::vector<int> GetTabXCoordinates();
 
   // -- Member Variables ------------------------------------------------------
 
