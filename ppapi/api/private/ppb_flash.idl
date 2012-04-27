@@ -117,7 +117,7 @@ interface PPB_Flash {
       [in] PP_Rect rect);
 
   /**
-   * Invokes printing for the given instance.
+   * Does nothing, deprecated. See PPB_Flash_Print.
    */
   [version=12.1]
   int32_t InvokePrinting(

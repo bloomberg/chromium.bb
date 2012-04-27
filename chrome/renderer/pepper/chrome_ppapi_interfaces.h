@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_CHROME_PPAPI_INTERFACES_H_
-#define CHROME_RENDERER_CHROME_PPAPI_INTERFACES_H_
+#ifndef CHROME_RENDERER_PEPPER_CHROME_PPAPI_INTERFACES_H_
+#define CHROME_RENDERER_PEPPER_CHROME_PPAPI_INTERFACES_H_
 #pragma once
 
 #include <string>
@@ -14,5 +14,5 @@ const void* ChromePPAPIInterfaceFactory(const std::string& interface_name);
 
 }  // chrome
 
-#endif  // CHROME_RENDERER_CHROME_PPAPI_INTERFACES_H_
+#endif  // CHROME_RENDERER_PEPPER_CHROME_PPAPI_INTERFACES_H_
 

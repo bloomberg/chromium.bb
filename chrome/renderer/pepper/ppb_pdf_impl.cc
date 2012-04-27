@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/chrome_ppb_pdf_impl.h"
+#include "chrome/renderer/pepper/ppb_pdf_impl.h"
 
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
@@ -21,13 +21,11 @@
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/var.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "unicode/usearch.h"
@@ -43,7 +41,7 @@ using WebKit::WebElement;
 using WebKit::WebView;
 using content::RenderThread;
 
-namespace chrome {
+namespace {
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
 class PrivateFontFile : public ppapi::Resource {
@@ -290,7 +288,8 @@ void SearchString(PP_Instance instance,
 }
 
 void DidStartLoading(PP_Instance instance_id) {
-  PluginInstance* instance = content::GetHostGlobals()->GetInstance(instance_id);
+  PluginInstance* instance =
+      content::GetHostGlobals()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->DidStartLoading();
@@ -347,21 +346,6 @@ void SaveAs(PP_Instance instance_id) {
   instance->delegate()->SaveURLAs(instance->plugin_url());
 }
 
-void Print(PP_Instance instance_id) {
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
-  if (!instance)
-    return;
-
-  WebElement element = instance->container()->element();
-  WebView* view = element.document().frame()->view();
-  content::RenderView* render_view = content::RenderView::FromWebView(view);
-
-  PrintWebViewHelper* print_view_helper = PrintWebViewHelper::Get(render_view);
-  if (print_view_helper) {
-    print_view_helper->PrintNode(element);
-  }
-}
-
 const PPB_PDF ppb_pdf = {
   &GetLocalizedString,
   &GetResourceImage,
@@ -375,12 +359,27 @@ const PPB_PDF ppb_pdf = {
   &UserMetricsRecordAction,
   &HasUnsupportedFeature,
   &SaveAs,
-  &Print
+  &PPB_PDF_Impl::InvokePrintingForInstance
 };
+
+}  // namespace
 
 // static
 const PPB_PDF* PPB_PDF_Impl::GetInterface() {
   return &ppb_pdf;
 }
 
-}  // namespace chrome
+// static
+void PPB_PDF_Impl::InvokePrintingForInstance(PP_Instance instance_id) {
+  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
+  if (!instance)
+    return;
+
+  WebKit::WebElement element = instance->container()->element();
+  WebKit::WebView* view = element.document().frame()->view();
+  content::RenderView* render_view = content::RenderView::FromWebView(view);
+
+  PrintWebViewHelper* print_view_helper = PrintWebViewHelper::Get(render_view);
+  if (print_view_helper)
+    print_view_helper->PrintNode(element);
+}

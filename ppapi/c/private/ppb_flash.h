@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash.idl modified Tue Apr 10 15:38:45 2012. */
+/* From private/ppb_flash.idl modified Tue Apr 24 16:54:09 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_H_
@@ -115,7 +115,7 @@ struct PPB_Flash_12_2 {
    */
   PP_Bool (*IsRectTopmost)(PP_Instance instance, const struct PP_Rect* rect);
   /**
-   * Invokes printing for the given instance.
+   * Does nothing, deprecated. See PPB_Flash_Print.
    */
   int32_t (*InvokePrinting)(PP_Instance instance);
   /**
