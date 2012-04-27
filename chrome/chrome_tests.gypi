@@ -859,6 +859,8 @@
         'test/webdriver/commands/file_upload_command.h',
         'test/webdriver/commands/find_element_commands.cc',
         'test/webdriver/commands/find_element_commands.h',
+        'test/webdriver/commands/html5_location_commands.cc',
+        'test/webdriver/commands/html5_location_commands.h',
         'test/webdriver/commands/html5_storage_commands.cc',
         'test/webdriver/commands/html5_storage_commands.h',
         'test/webdriver/commands/keys_command.cc',

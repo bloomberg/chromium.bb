@@ -41,6 +41,7 @@
 #include "chrome/test/webdriver/commands/execute_command.h"
 #include "chrome/test/webdriver/commands/file_upload_command.h"
 #include "chrome/test/webdriver/commands/find_element_commands.h"
+#include "chrome/test/webdriver/commands/html5_location_commands.h"
 #include "chrome/test/webdriver/commands/html5_storage_commands.h"
 #include "chrome/test/webdriver/commands/keys_command.h"
 #include "chrome/test/webdriver/commands/log_command.h"
@@ -164,6 +165,7 @@ void InitCallbacks(Dispatcher* dispatcher,
   dispatcher->Add<ViewsCommand>("/session/*/chrome/views");
 
   // HTML5 functions.
+  dispatcher->Add<HTML5LocationCommand>("/session/*/location");
   dispatcher->Add<LocalStorageCommand>("/session/*/local_storage");
   dispatcher->Add<LocalStorageSizeCommand>("/session/*/local_storage/size");
   dispatcher->Add<LocalStorageKeyCommand>("/session/*/local_storage/key*");

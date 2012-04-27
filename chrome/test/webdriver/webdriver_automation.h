@@ -237,6 +237,14 @@ class Automation {
                      base::Value* value,
                      Error** error);
 
+  // Gets the current geolocation.
+  void GetGeolocation(scoped_ptr<base::DictionaryValue>* geolocation,
+                      Error** error);
+
+  // Overrides the current geolocation.
+  void OverrideGeolocation(base::DictionaryValue* geolocation,
+                           Error** error);
+
  private:
   AutomationProxy* automation() const;
   Error* ConvertViewIdToLocator(const WebViewId& view_id,
@@ -247,11 +255,13 @@ class Automation {
   Error* CheckAlertsSupported();
   Error* CheckAdvancedInteractionsSupported();
   Error* CheckNewExtensionInterfaceSupported();
+  Error* CheckGeolocationSupported();
   Error* IsNewMouseApiSupported(bool* supports_new_api);
 
   const Logger& logger_;
   scoped_ptr<ProxyLauncher> launcher_;
   int build_no_;
+  scoped_ptr<base::DictionaryValue> geolocation_;
 
   DISALLOW_COPY_AND_ASSIGN(Automation);
 };

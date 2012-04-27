@@ -367,6 +367,12 @@ class Session {
   // no errors, the function sets |value| and the caller takes ownership.
   Error* GetStorageKeys(StorageType type, base::ListValue** keys);
 
+  // Gets the current geolocation.
+  Error* GetGeolocation(scoped_ptr<base::DictionaryValue>* geolocation);
+
+  // Overrides the current geolocation.
+  Error* OverrideGeolocation(base::DictionaryValue* geolocation);
+
   const std::string& id() const;
 
   const FrameId& current_target() const;

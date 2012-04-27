@@ -1363,6 +1363,26 @@ Error* Session::RemoveStorageItem(StorageType type,
       CreateDirectValueParser(value));
 }
 
+Error* Session::GetGeolocation(scoped_ptr<base::DictionaryValue>* geolocation) {
+  Error* error = NULL;
+  RunSessionTask(base::Bind(
+      &Automation::GetGeolocation,
+      base::Unretained(automation_.get()),
+      geolocation,
+      &error));
+  return error;
+}
+
+Error* Session::OverrideGeolocation(base::DictionaryValue* geolocation) {
+  Error* error = NULL;
+  RunSessionTask(base::Bind(
+      &Automation::OverrideGeolocation,
+      base::Unretained(automation_.get()),
+      geolocation,
+      &error));
+  return error;
+}
+
 const std::string& Session::id() const {
   return id_;
 }

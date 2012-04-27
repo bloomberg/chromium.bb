@@ -1037,6 +1037,38 @@ class WindowTest(ChromeDriverTest):
     self.assertRaises(NoSuchWindowException, getPosition, invalid_handle)
 
 
+class GeolocationTest(ChromeDriverTest):
+  """Tests for WebDriver geolocation commands."""
+
+  def testGeolocation(self):
+    """Tests the get and set geolocation commands."""
+    driver = self.GetNewDriver()
+
+    # TODO(kkania): Update the python bindings and get rid of these.
+    driver.command_executor._commands.update({
+        'getLoc': ('GET', '/session/$sessionId/location'),
+        'setLoc': ('POST', '/session/$sessionId/location')
+    })
+    def getLocation():
+      return driver.execute('getLoc')['value']
+    def setLocation(location):
+      driver.execute('setLoc', location)
+    expected_location = {'latitude': 50, 'longitude': 50, 'altitude': 300}
+    setLocation(expected_location)
+    location = getLocation()
+    self.assertEquals(expected_location, location)
+
+    driver.set_script_timeout(10)
+    result = driver.execute_async_script("""
+       var callback = arguments[0];
+       window.navigator.geolocation.getCurrentPosition(
+           function success(result) { callback(result.coords); },
+           function fail(error) { callback(error.message); });""")
+    self.assertEquals(expected_location['latitude'], result['latitude'])
+    self.assertEquals(expected_location['longitude'], result['longitude'])
+    self.assertEquals(expected_location['altitude'], result['altitude'])
+
+
 class ExtensionTest(ChromeDriverTest):
 
   INFOBAR_BROWSER_ACTION_EXTENSION = test_paths.TEST_DATA_PATH + \

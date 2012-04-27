@@ -901,3 +901,13 @@ bool SendSetPreferenceJSONRequest(
   DictionaryValue reply_dict;
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
 }
+
+bool SendOverrideGeolocationJSONRequest(
+    AutomationMessageSender* sender,
+    base::DictionaryValue* geolocation,
+    Error* error) {
+  scoped_ptr<DictionaryValue> dict(geolocation->DeepCopy());
+  dict->SetString("command", "OverrideGeoposition");
+  DictionaryValue reply_dict;
+  return SendAutomationJSONRequest(sender, *dict.get(), &reply_dict, error);
+}
