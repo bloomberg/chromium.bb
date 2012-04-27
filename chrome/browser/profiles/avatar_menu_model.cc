@@ -51,7 +51,6 @@ AvatarMenuModel::AvatarMenuModel(ProfileInfoInterface* profile_cache,
       observer_(observer),
       browser_(browser) {
   DCHECK(profile_info_);
-  DCHECK(observer_);
   // Don't DCHECK(browser_) so that unit tests can reuse this ctor.
 
   // Register this as an observer of the info cache.
@@ -76,6 +75,8 @@ AvatarMenuModel::Item::~Item() {
 }
 
 void AvatarMenuModel::SwitchToProfile(size_t index, bool always_create) {
+  DCHECK(ProfileManager::IsMultipleProfilesEnabled() ||
+         index == GetActiveProfileIndex());
   const Item& item = GetItemAt(index);
   FilePath path = profile_info_->GetPathOfProfileAtIndex(item.model_index);
   g_browser_process->profile_manager()->CreateProfileAsync(
@@ -135,7 +136,8 @@ void AvatarMenuModel::Observe(int type,
                               const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED, type);
   RebuildMenu();
-  observer_->OnAvatarMenuModelChanged(this);
+  if (observer_)
+    observer_->OnAvatarMenuModelChanged(this);
 }
 
 // static

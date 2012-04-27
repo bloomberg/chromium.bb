@@ -9,7 +9,6 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
-#include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/ui/browser.h"
@@ -37,26 +36,6 @@
 - (void)highlightItem:(AvatarMenuItemController*)newItem;
 @end
 
-namespace AvatarMenuInternal {
-
-class Bridge : public AvatarMenuModelObserver {
- public:
-  Bridge(AvatarMenuBubbleController* controller) : controller_(controller) {}
-
-  // AvatarMenuModelObserver:
-  void OnAvatarMenuModelChanged(AvatarMenuModel* model) {
-    // Do nothing. Rebuilding while the bubble is open will cause it to be
-    // positioned incorrectly. Since the bubble will be dismissed on losing key
-    // status, it's impossible for the user to edit the information in a
-    // meaningful way such that it would need to be redrawn.
-  }
-
- private:
-  AvatarMenuBubbleController* controller_;
-};
-
-}  // namespace AvatarMenuInternal
-
 namespace {
 
 // Constants taken from the Windows/Views implementation at:
@@ -76,13 +55,15 @@ const CGFloat kLabelInset = 49.0;
 - (id)initWithBrowser:(Browser*)parentBrowser
            anchoredAt:(NSPoint)point {
 
-  AvatarMenuInternal::Bridge* bridge = new AvatarMenuInternal::Bridge(self);
+  // Pass in a NULL observer. Rebuilding while the bubble is open will cause it
+  // to be positioned incorrectly. Since the bubble will be dismissed on losing
+  // key status, it's impossible for the user to edit the information in a
+  // meaningful way such that it would need to be redrawn.
   AvatarMenuModel* model = new AvatarMenuModel(
-        &g_browser_process->profile_manager()->GetProfileInfoCache(),
-        bridge, parentBrowser);
+      &g_browser_process->profile_manager()->GetProfileInfoCache(),
+      NULL, parentBrowser);
 
   if ((self = [self initWithModel:model
-                           bridge:bridge
                      parentWindow:parentBrowser->window()->GetNativeHandle()
                        anchoredAt:point])) {
   }
@@ -107,7 +88,6 @@ const CGFloat kLabelInset = 49.0;
 // Private /////////////////////////////////////////////////////////////////////
 
 - (id)initWithModel:(AvatarMenuModel*)model
-             bridge:(AvatarMenuModelObserver*)bridge
        parentWindow:(NSWindow*)parent
          anchoredAt:(NSPoint)point {
   // Use an arbitrary height because it will reflect the size of the content.
@@ -121,7 +101,6 @@ const CGFloat kLabelInset = 49.0;
   if ((self = [super initWithWindow:window
                        parentWindow:parent
                          anchoredAt:point])) {
-    bridge_.reset(bridge);
     model_.reset(model);
 
     [window accessibilitySetOverrideValue:

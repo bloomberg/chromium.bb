@@ -24,6 +24,7 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/native_window_notification_source.h"
 #include "chrome/browser/ntp_background_util.h"
+#include "chrome/browser/managed_mode.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
@@ -467,6 +468,8 @@ bool BrowserView::ShouldShowAvatar() const {
     return false;
   if (IsOffTheRecord())
     return true;
+  if (ManagedMode::IsInManagedMode())
+    return true;
 
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -549,28 +552,10 @@ TabContentsWrapper* BrowserView::GetSelectedTabContentsWrapper() const {
 }
 
 SkBitmap BrowserView::GetOTRAvatarIcon() const {
-  static SkBitmap* otr_avatar_ = new SkBitmap();
-
-  if (otr_avatar_->isNull()) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    *otr_avatar_ = *rb.GetBitmapNamed(IDR_OTR_ICON);
-  }
-  return *otr_avatar_;
-}
-
-SkBitmap BrowserView::GetGuestAvatarIcon() const {
-#if defined(OS_CHROMEOS)
-  static SkBitmap* guest_avatar_ = new SkBitmap();
-
-  if (guest_avatar_->isNull()) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    *guest_avatar_ = *rb.GetBitmapNamed(IDR_GUEST_ICON);
-  }
-  return *guest_avatar_;
-#else
-  NOTREACHED();
-  return SkBitmap();
-#endif
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const SkBitmap* otr_avatar =
+      rb.GetNativeImageNamed(IDR_OTR_ICON).ToSkBitmap();
+  return *otr_avatar;
 }
 
 // static

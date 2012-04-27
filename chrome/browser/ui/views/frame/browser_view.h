@@ -182,9 +182,6 @@ class BrowserView : public BrowserWindow,
   // Retrieves the icon to use in the frame to indicate an OTR window.
   SkBitmap GetOTRAvatarIcon() const;
 
-  // Retrieves the icon to use in the frame to indicate guest session.
-  SkBitmap GetGuestAvatarIcon() const;
-
   // Returns true if the Browser object associated with this BrowserView is a
   // tabbed-type window (i.e. a browser window, not an app or popup).
   bool IsBrowserTypeNormal() const {

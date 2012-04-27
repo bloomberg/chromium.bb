@@ -4,12 +4,20 @@
 
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/command_updater.h"
+#include "chrome/browser/managed_mode.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_service.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
 
@@ -36,10 +44,7 @@ void DrawTaskBarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
 #if defined(OS_WIN) && !defined(USE_AURA)
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
-  // Don't badge the task bar in the single profile case to match the behavior
-  // of the title bar.
-  if (!AvatarMenuModel::ShouldShowAvatarMenu())
-    return;
+
   // SetOverlayIcon does nothing if the window is not visible so testing
   // here avoids all the wasted effort of the image resizing.
   if (!::IsWindowVisible(window))
@@ -83,10 +88,10 @@ void DrawTaskBarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
 #endif
 }
 
-AvatarMenuButton::AvatarMenuButton(Browser* browser, bool has_menu)
+AvatarMenuButton::AvatarMenuButton(Browser* browser, bool incognito)
     : MenuButton(NULL, string16(), this, false),
       browser_(browser),
-      has_menu_(has_menu),
+      incognito_(incognito),
       is_gaia_picture_(false),
       old_height_(0) {
   // In RTL mode, the avatar icon should be looking the opposite direction.
@@ -128,7 +133,7 @@ void AvatarMenuButton::OnPaint(gfx::Canvas* canvas) {
 }
 
 bool AvatarMenuButton::HitTest(const gfx::Point& point) const {
-  if (!has_menu_)
+  if (incognito_)
     return false;
   return views::MenuButton::HitTest(point);
 }
@@ -144,12 +149,17 @@ void AvatarMenuButton::SetAvatarIcon(const gfx::Image& icon,
 // views::MenuButtonListener implementation
 void AvatarMenuButton::OnMenuButtonClicked(views::View* source,
                                            const gfx::Point& point) {
-  ShowAvatarBubble();
+  if (incognito_)
+    return;
+
+  if (ManagedMode::IsInManagedMode())
+    ManagedMode::LeaveManagedMode();
+  else
+    ShowAvatarBubble();
 }
 
 void AvatarMenuButton::ShowAvatarBubble() {
-  if (!has_menu_)
-    return;
+  DCHECK(browser_->command_updater()->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
 
   gfx::Point origin;
   views::View::ConvertPointToScreen(this, &origin);

@@ -11,7 +11,9 @@
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/managed_mode.h"
 #include "chrome/browser/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -137,7 +139,9 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
       RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
     }
 #endif
-  } else if (args->GetSize() == 4) {
+  } else if (args->GetSize() == 4 &&
+             browser->command_updater()->IsCommandEnabled(
+                IDC_SHOW_AVATAR_MENU)) {
     // The user is signed in, show the profiles menu.
     double x = 0;
     double y = 0;

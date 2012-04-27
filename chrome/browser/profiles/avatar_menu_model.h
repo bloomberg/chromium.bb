@@ -49,8 +49,8 @@ class AvatarMenuModel : public content::NotificationObserver {
     size_t model_index;
   };
 
-  // Constructor. No parameters can be NULL in practice. |browser| can be NULL
-  // and a new one will be created if an action requires it.
+  // Constructor. |observer| can be NULL. |browser| can be NULL and a new one
+  // will be created if an action requires it.
   AvatarMenuModel(ProfileInfoInterface* profile_cache,
                   AvatarMenuModelObserver* observer,
                   Browser* browser);

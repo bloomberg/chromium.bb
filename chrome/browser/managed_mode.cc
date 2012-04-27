@@ -41,6 +41,9 @@ bool ManagedMode::IsInManagedModeImpl() {
   // |g_browser_process| can be NULL during startup.
   if (!g_browser_process)
     return false;
+  // Local State can be NULL during unit tests.
+  if (!g_browser_process->local_state())
+    return false;
   return g_browser_process->local_state()->GetBoolean(prefs::kInManagedMode);
 }
 

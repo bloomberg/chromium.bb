@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,11 +17,6 @@
 #include "testing/gtest_mac.h"
 #include "ui/base/test/cocoa_test_event_utils.h"
 
-class FakeBridge : public AvatarMenuModelObserver {
- public:
-  void OnAvatarMenuModelChanged(AvatarMenuModel* model) OVERRIDE {}
-};
-
 class AvatarMenuBubbleControllerTest : public CocoaTest {
  public:
   AvatarMenuBubbleControllerTest()
@@ -35,14 +30,12 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
     manager_.CreateTestingProfile("test1", ASCIIToUTF16("Test 1"), 1);
     manager_.CreateTestingProfile("test2", ASCIIToUTF16("Test 2"), 0);
 
-    bridge_ = new FakeBridge;
-    model_ = new AvatarMenuModel(manager_.profile_info_cache(), bridge(), NULL);
+    model_ = new AvatarMenuModel(manager_.profile_info_cache(), NULL, NULL);
 
     NSRect frame = [test_window() frame];
     NSPoint point = NSMakePoint(NSMidX(frame), NSMidY(frame));
     controller_ =
         [[AvatarMenuBubbleController alloc] initWithModel:model()
-                                                   bridge:bridge()
                                              parentWindow:test_window()
                                                anchoredAt:point];
   }
@@ -50,7 +43,6 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
   TestingProfileManager* manager() { return &manager_; }
   AvatarMenuBubbleController* controller() { return controller_; }
   AvatarMenuModel* model() { return model_; }
-  FakeBridge* bridge() { return bridge_; }
 
   AvatarMenuItemController* GetHighlightedItem() {
     for (AvatarMenuItemController* item in [controller() items]) {
@@ -68,7 +60,6 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
 
   // Weak; owned by |controller_|.
   AvatarMenuModel* model_;
-  FakeBridge* bridge_;
 };
 
 TEST_F(AvatarMenuBubbleControllerTest, InitialLayout) {

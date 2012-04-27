@@ -425,6 +425,7 @@ Browser::Browser(Type type, Profile* profile)
     local_pref_registrar_.Add(prefs::kPrintingEnabled, this);
     local_pref_registrar_.Add(prefs::kAllowFileSelectionDialogs, this);
     local_pref_registrar_.Add(prefs::kMetricsReportingEnabled, this);
+    local_pref_registrar_.Add(prefs::kInManagedMode, this);
   }
 
   profile_pref_registrar_.Init(profile_->GetPrefs());
@@ -4266,6 +4267,8 @@ void Browser::Observe(int type,
       } else if (pref_name == prefs::kAllowFileSelectionDialogs) {
         UpdateSaveAsState(GetContentRestrictionsForSelectedTab());
         UpdateOpenFileState();
+      } else if (pref_name == prefs::kInManagedMode) {
+        UpdateCommandsForMultipleProfiles();
       } else {
         NOTREACHED();
       }
@@ -4688,13 +4691,20 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_APP_MENU, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU,
-      show_main_ui && !profile()->IsOffTheRecord());
 #if defined (ENABLE_PROFILING) && !defined(NO_TCMALLOC)
   command_updater_.UpdateCommandEnabled(IDC_PROFILING_ENABLED, show_main_ui);
 #endif
 
   UpdateCommandsForBookmarkBar();
+  UpdateCommandsForMultipleProfiles();
+}
+
+void Browser::UpdateCommandsForMultipleProfiles() {
+  bool show_main_ui = IsShowingMainUI(window_ && window_->IsFullscreen());
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU,
+      show_main_ui &&
+      !profile()->IsOffTheRecord() &&
+      ProfileManager::IsMultipleProfilesEnabled());
 }
 
 void Browser::UpdatePrintingState(int content_restrictions) {

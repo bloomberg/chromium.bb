@@ -18,7 +18,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/managed_mode.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -112,16 +114,6 @@ gboolean OnMouseMoveEvent(GtkWidget* widget, GdkEventMotion* event,
   return TRUE;
 }
 
-GdkPixbuf* GetOTRAvatar() {
-  static GdkPixbuf* otr_avatar = NULL;
-  if (!otr_avatar) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    otr_avatar = rb.GetNativeImageNamed(
-        IDR_OTR_ICON, ui::ResourceBundle::RTL_ENABLED).ToGdkPixbuf();
-  }
-  return otr_avatar;
-}
-
 // Converts a GdkColor to a color_utils::HSL.
 color_utils::HSL GdkColorToHSL(const GdkColor* color) {
   color_utils::HSL hsl;
@@ -148,15 +140,6 @@ GdkColor PickLuminosityContrastingColor(const GdkColor* base,
     return *two;
   else
     return *one;
-}
-
-// Returns true if there are multiple profiles created. This is used to
-// determine whether to display the avatar image.
-bool HasMultipleProfiles() {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  return ProfileManager::IsMultipleProfilesEnabled() &&
-      cache.GetNumberOfProfiles() > 1;
 }
 
 }  // namespace
@@ -803,11 +786,14 @@ void BrowserTitlebar::UpdateAvatar() {
 
   if (!avatar_) {
     if (IsOffTheRecord()) {
-      avatar_ = gtk_image_new_from_pixbuf(GetOTRAvatar());
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+      gfx::Image avatar_image =
+          rb.GetNativeImageNamed(IDR_OTR_ICON, ui::ResourceBundle::RTL_ENABLED);
+      avatar_ = gtk_image_new_from_pixbuf(avatar_image.ToGdkPixbuf());
       gtk_misc_set_alignment(GTK_MISC(avatar_), 0.0, 1.0);
       gtk_widget_set_size_request(avatar_, -1, 0);
     } else {
-      // Is using multi-profile avatar.
+      // Use a clickable avatar.
       avatar_ = avatar_button_->widget();
     }
   }
@@ -827,23 +813,32 @@ void BrowserTitlebar::UpdateAvatar() {
   if (IsOffTheRecord())
     return;
 
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  Profile* profile = browser_window_->browser()->profile();
-  size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-  if (index != std::string::npos) {
-    bool is_gaia_picture =
+  bool is_gaia_picture = false;
+  gfx::Image avatar;
+  if (ManagedMode::IsInManagedMode()) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    avatar = rb.GetNativeImageNamed(IDR_MANAGED_MODE_AVATAR,
+                                    ui::ResourceBundle::RTL_ENABLED);
+  } else {
+    ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    Profile* profile = browser_window_->browser()->profile();
+    size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+    if (index == std::string::npos)
+      return;
+
+    is_gaia_picture =
         cache.IsUsingGAIAPictureOfProfileAtIndex(index) &&
         cache.GetGAIAPictureOfProfileAtIndex(index);
-    avatar_button_->SetIcon(
-        cache.GetAvatarIconOfProfileAtIndex(index), is_gaia_picture);
-
-    BubbleGtk::ArrowLocationGtk arrow_location =
-        display_avatar_on_left_ ^ base::i18n::IsRTL() ?
-            BubbleGtk::ARROW_LOCATION_TOP_LEFT :
-            BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
-    avatar_button_->set_menu_arrow_location(arrow_location);
+    avatar = cache.GetAvatarIconOfProfileAtIndex(index);
   }
+  avatar_button_->SetIcon(avatar, is_gaia_picture);
+
+  BubbleGtk::ArrowLocationGtk arrow_location =
+      display_avatar_on_left_ ^ base::i18n::IsRTL() ?
+          BubbleGtk::ARROW_LOCATION_TOP_LEFT :
+          BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
+  avatar_button_->set_menu_arrow_location(arrow_location);
 }
 
 void BrowserTitlebar::ShowFaviconMenu(GdkEventButton* event) {
@@ -1093,8 +1088,13 @@ void BrowserTitlebar::ActiveWindowChanged(GdkWindow* active_window) {
 }
 
 bool BrowserTitlebar::ShouldDisplayAvatar() {
-  return (IsOffTheRecord() || HasMultipleProfiles()) &&
-      browser_window_->browser()->is_type_tabbed();
+  if (IsOffTheRecord() || ManagedMode::IsInManagedMode())
+    return true;
+
+  if (!browser_window_->browser()->is_type_tabbed())
+    return false;
+
+  return AvatarMenuModel::ShouldShowAvatarMenu();
 }
 
 bool BrowserTitlebar::IsOffTheRecord() {

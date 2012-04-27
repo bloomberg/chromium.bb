@@ -1146,6 +1146,10 @@ class Browser : public TabHandlerDelegate,
   // mode.
   void UpdateCommandsForFullscreenMode(bool is_fullscreen);
 
+  // Update commands whose state depends on whether multiple profiles are
+  // allowed.
+  void UpdateCommandsForMultipleProfiles();
+
   // Updates the printing command state.
   void UpdatePrintingState(int content_restrictions);
 

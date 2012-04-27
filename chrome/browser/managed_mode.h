@@ -22,6 +22,10 @@ struct DefaultSingletonTraits;
 class PrefService;
 class Profile;
 
+// Managed mode allows one person to manage the Chrome experience for another
+// person by pre-configuring and then locking a managed User profile.
+// The ManagedMode class provides methods to check whether the browser is in
+// managed mode, and to attempt to enter or leave managed mode.
 class ManagedMode : public BrowserList::Observer,
                     public content::NotificationObserver {
  public:

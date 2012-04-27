@@ -1,11 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
 
 #include "base/sys_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/command_updater.h"
+#include "chrome/browser/managed_mode.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_util.h"
@@ -28,7 +31,7 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 @interface AvatarButtonController (Private)
-- (void)setOpenMenuOnClick:(BOOL)flag;
+- (void)setButtonEnabled:(BOOL)flag;
 - (IBAction)buttonClicked:(id)sender;
 - (void)bubbleWillClose:(NSNotification*)notif;
 - (NSImage*)compositeImageWithShadow:(NSImage*)image;
@@ -46,9 +49,9 @@ class Observer : public content::NotificationObserver {
   }
 
   // NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) OVERRIDE {
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
         [button_ updateAvatar];
@@ -125,10 +128,10 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
     if (browser_->profile()->IsOffTheRecord()) {
       [self setImage:[self compositeImageWithShadow:
           gfx::GetCachedImageWithName(@"otr_icon.pdf")]];
-      [self setOpenMenuOnClick:NO];
+      [self setButtonEnabled:NO];
     } else {
+      [self setButtonEnabled:YES];
       observer_.reset(new AvatarButtonControllerInternal::Observer(self));
-      [self setOpenMenuOnClick:YES];
       [self updateAvatar];
     }
   }
@@ -154,6 +157,8 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
 - (void)showAvatarBubble {
   if (menuController_)
     return;
+
+  DCHECK(browser_->command_updater()->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
 
   NSWindowController* wc =
       [browser_->window()->GetNativeHandle() windowController];
@@ -183,13 +188,17 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
 
 // Private /////////////////////////////////////////////////////////////////////
 
-- (void)setOpenMenuOnClick:(BOOL)flag {
+- (void)setButtonEnabled:(BOOL)flag {
   [self.buttonView setEnabled:flag];
 }
 
 - (IBAction)buttonClicked:(id)sender {
   DCHECK_EQ(self.buttonView, sender);
-  [self showAvatarBubble];
+  if (ManagedMode::IsInManagedMode()) {
+    ManagedMode::LeaveManagedMode();
+  } else {
+    [self showAvatarBubble];
+  }
 }
 
 - (void)bubbleWillClose:(NSNotification*)notif {
@@ -234,26 +243,33 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
 
 // Updates the avatar information from the profile cache.
 - (void)updateAvatar {
+  if (ManagedMode::IsInManagedMode()) {
+    gfx::Image icon =
+        ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+            IDR_MANAGED_MODE_AVATAR);
+    [self setImage:icon.ToNSImage()];
+    return;
+  }
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t index =
       cache.GetIndexOfProfileWithPath(browser_->profile()->GetPath());
-  if (index != std::string::npos) {
-    BOOL is_gaia_picture =
-        cache.IsUsingGAIAPictureOfProfileAtIndex(index) &&
-        cache.GetGAIAPictureOfProfileAtIndex(index);
-    gfx::Image icon = profiles::GetAvatarIconForTitleBar(
-        cache.GetAvatarIconOfProfileAtIndex(index), is_gaia_picture,
-        profiles::kAvatarIconWidth, profiles::kAvatarIconHeight);
-    [self setImage:icon.ToNSImage()];
+  if (index == std::string::npos)
+    return;
+  BOOL is_gaia_picture =
+      cache.IsUsingGAIAPictureOfProfileAtIndex(index) &&
+      cache.GetGAIAPictureOfProfileAtIndex(index);
+  gfx::Image icon = profiles::GetAvatarIconForTitleBar(
+      cache.GetAvatarIconOfProfileAtIndex(index), is_gaia_picture,
+      profiles::kAvatarIconWidth, profiles::kAvatarIconHeight);
+  [self setImage:icon.ToNSImage()];
 
-    const string16& name = cache.GetNameOfProfileAtIndex(index);
-    NSString* nsName = base::SysUTF16ToNSString(name);
-    [self.view setToolTip:nsName];
-    [[self.buttonView cell]
-        accessibilitySetOverrideValue:nsName
-                         forAttribute:NSAccessibilityValueAttribute];
-  }
+  const string16& name = cache.GetNameOfProfileAtIndex(index);
+  NSString* nsName = base::SysUTF16ToNSString(name);
+  [self.view setToolTip:nsName];
+  [[self.buttonView cell]
+      accessibilitySetOverrideValue:nsName
+                       forAttribute:NSAccessibilityValueAttribute];
 }
 
 // If the second-to-last profile was removed or a second profile was added,
