@@ -3415,8 +3415,8 @@ bool Browser::IsFullscreenForTabOrPending() const {
   return fullscreen_controller_->IsFullscreenForTabOrPending();
 }
 
-bool Browser::IsMouseLockedOrPending() const {
-  return fullscreen_controller_->IsMouseLockedOrPending();
+bool Browser::IsMouseLocked() const {
+  return fullscreen_controller_->IsMouseLocked();
 }
 
 void Browser::OnWindowDidShow() {

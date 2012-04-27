@@ -55,8 +55,12 @@ bool FullscreenController::IsFullscreenForTabOrPending(
   return true;
 }
 
-bool FullscreenController::IsMouseLockedOrPending() const {
-  return mouse_lock_state_ != MOUSELOCK_NOT_REQUESTED;
+bool FullscreenController::IsMouseLockRequested() const {
+  return mouse_lock_state_ == MOUSELOCK_REQUESTED;
+}
+
+bool FullscreenController::IsMouseLocked() const {
+  return mouse_lock_state_ == MOUSELOCK_ACCEPTED;
 }
 
 void FullscreenController::RequestToLockMouse(WebContents* tab,
@@ -64,28 +68,24 @@ void FullscreenController::RequestToLockMouse(WebContents* tab,
   // TODO(scheib) user_gesture required for Mouse Lock in Windowed Mode.
   // See http://crbug.com/107013, which will land in multiple patches.
 
+  DCHECK(!IsMouseLocked());
+
   // Mouse Lock is only permitted when browser is in tab fullscreen.
   if (!IsFullscreenForTabOrPending(tab)) {
     tab->GotResponseToLockMouseRequest(false);
     return;
   }
 
-  if (mouse_lock_state_ == MOUSELOCK_ACCEPTED) {
-    tab->GotResponseToLockMouseRequest(true);
-    return;
-  }
-
   switch (GetMouseLockSetting(tab->GetURL())) {
     case CONTENT_SETTING_ALLOW:
       if (tab_fullscreen_accepted_) {
-        mouse_lock_state_ = MOUSELOCK_ACCEPTED;
-        tab->GotResponseToLockMouseRequest(true);
+        if (tab->GotResponseToLockMouseRequest(true))
+          mouse_lock_state_ = MOUSELOCK_ACCEPTED;
       } else {
         mouse_lock_state_ = MOUSELOCK_REQUESTED;
       }
       break;
     case CONTENT_SETTING_BLOCK:
-      mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
       tab->GotResponseToLockMouseRequest(false);
       break;
     case CONTENT_SETTING_ASK:
@@ -202,7 +202,7 @@ void FullscreenController::OnAcceptFullscreenPermission(
   HostContentSettingsMap* settings_map = profile_->GetHostContentSettingsMap();
   ContentSettingsPattern pattern = ContentSettingsPattern::FromURL(url);
   if (mouse_lock) {
-    DCHECK_EQ(mouse_lock_state_, MOUSELOCK_REQUESTED);
+    DCHECK(IsMouseLockRequested());
     // TODO(markusheintz): We should allow patterns for all possible URLs here.
     if (pattern.IsValid()) {
       settings_map->SetContentSetting(
@@ -236,7 +236,7 @@ void FullscreenController::OnDenyFullscreenPermission(
   DCHECK_NE(tab_fullscreen_accepted_, fullscreen);
 
   if (mouse_lock) {
-    DCHECK_EQ(mouse_lock_state_, MOUSELOCK_REQUESTED);
+    DCHECK(IsMouseLockRequested());
     mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
     fullscreened_tab_->web_contents()->GotResponseToLockMouseRequest(false);
     if (!fullscreen)

@@ -877,8 +877,8 @@ class Browser : public TabHandlerDelegate,
   // See FullscreenController::IsFullscreenForTabOrPending.
   bool IsFullscreenForTabOrPending() const;
 
-  // True when the mouse cursor is locked or pending lock.
-  bool IsMouseLockedOrPending() const;
+  // True when the mouse cursor is locked.
+  bool IsMouseLocked() const;
 
   // Called each time the browser window is shown.
   void OnWindowDidShow();

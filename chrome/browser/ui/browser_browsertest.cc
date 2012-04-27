@@ -263,8 +263,8 @@ class BrowserTest : public ExtensionBrowserTest {
     return browser()->IsFullscreenForTabOrPending();
   }
 
-  bool IsMouseLockedOrPending() {
-    return browser()->IsMouseLockedOrPending();
+  bool IsMouseLocked() {
+    return browser()->IsMouseLocked();
   }
 
   bool IsMouseLockPermissionRequested() {
@@ -1081,10 +1081,9 @@ void BrowserTest::TestFullscreenMouseLockContentSettings() {
 
   // Validate that mouse lock defaults to asking permision.
   ASSERT_FALSE(IsMouseLockPermissionRequested());
-  ASSERT_FALSE(IsMouseLockedOrPending());
+  ASSERT_FALSE(IsMouseLocked());
   RequestToLockMouse(tab, true);
   ASSERT_TRUE(IsMouseLockPermissionRequested());
-  ASSERT_TRUE(IsMouseLockedOrPending());
   LostMouseLock();
 
   // Add content setting to ALLOW mouse lock.
@@ -1094,10 +1093,8 @@ void BrowserTest::TestFullscreenMouseLockContentSettings() {
       CONTENT_SETTING_ALLOW);
 
   // Now, mouse lock should not prompt for permission.
-  ASSERT_FALSE(IsMouseLockedOrPending());
   ASSERT_FALSE(IsMouseLockPermissionRequested());
   RequestToLockMouse(tab, true);
-  ASSERT_TRUE(IsMouseLockedOrPending());
   ASSERT_FALSE(IsMouseLockPermissionRequested());
   LostMouseLock();
 
@@ -1110,10 +1107,8 @@ void BrowserTest::TestFullscreenMouseLockContentSettings() {
       CONTENT_SETTING_BLOCK);
 
   // Now, mouse lock should not be pending.
-  ASSERT_FALSE(IsMouseLockedOrPending());
   ASSERT_FALSE(IsMouseLockPermissionRequested());
   RequestToLockMouse(tab, true);
-  ASSERT_FALSE(IsMouseLockedOrPending());
   ASSERT_FALSE(IsMouseLockPermissionRequested());
 }
 

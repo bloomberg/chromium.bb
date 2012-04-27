@@ -50,9 +50,8 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   bool IsFullscreenForTabOrPending() const;
   bool IsFullscreenForTabOrPending(const content::WebContents* tab) const;
 
-  // Returns true if the mouse has been locked or a lock request is pending
-  // user confirmation.
-  bool IsMouseLockedOrPending() const;
+  bool IsMouseLockRequested() const;
+  bool IsMouseLocked() const;
 
   // Requests.
   void RequestToLockMouse(content::WebContents* tab, bool user_gesture);
