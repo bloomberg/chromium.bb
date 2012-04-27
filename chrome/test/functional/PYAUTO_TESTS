@@ -331,6 +331,7 @@
       '-infobars.OneClickInfobarTest',
       # Multi-profile doesn't apply to chromeos yet.
       '-multiprofile',
+      '-ntp.NTPTest.testDifferentProfileNotAppearInMostVisited',
       # These require a custom setup on ChromeOS and have their own suite for
       # this platform.
       '-policy',
