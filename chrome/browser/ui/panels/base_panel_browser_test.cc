@@ -287,17 +287,6 @@ void BasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
   EXPECT_TRUE(!panel_testing->IsAnimatingBounds());
 }
 
-void BasePanelBrowserTest::WaitForLayoutModeChanged(
-    Panel* panel, PanelStrip::Type layout_type) {
-  ui_test_utils::WindowedNotificationObserver signal(
-      chrome::NOTIFICATION_PANEL_CHANGED_LAYOUT_MODE,
-      content::Source<Panel>(panel));
-  if (panel->panel_strip()->type() == layout_type)
-    return;
-  signal.Wait();
-  EXPECT_EQ(layout_type, panel->panel_strip()->type());
-}
-
 void BasePanelBrowserTest::WaitForExpansionStateChanged(
     Panel* panel, Panel::ExpansionState expansion_state) {
   ui_test_utils::WindowedNotificationObserver signal(

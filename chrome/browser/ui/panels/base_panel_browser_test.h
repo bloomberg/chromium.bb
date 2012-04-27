@@ -86,7 +86,6 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   void WaitForPanelActiveState(Panel* panel, ActiveState state);
   void WaitForWindowSizeAvailable(Panel* panel);
   void WaitForBoundsAnimationFinished(Panel* panel);
-  void WaitForLayoutModeChanged(Panel* panel, PanelStrip::Type layout_type);
   void WaitForExpansionStateChanged(Panel* panel,
                                     Panel::ExpansionState expansion_state);
 

@@ -1024,12 +1024,6 @@ enum NotificationType {
   // Used only in unit testing.
   NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
 
-  // Sent when panel is switched between different layout modes, such
-  // as docked vs overflow, etc.
-  // The source is the Panel, no details.
-  // Used only in unit testing.
-  NOTIFICATION_PANEL_CHANGED_LAYOUT_MODE,
-
   // Sent when panel is minimized/restored/shows title only etc.
   // The source is the Panel, no details.
   NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,

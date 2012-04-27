@@ -240,11 +240,6 @@ void PanelManager::MovePanelToStrip(
 
   target_strip->AddPanel(panel, positioning_mask);
   target_strip->UpdatePanelOnStripChange(panel);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_CHANGED_LAYOUT_MODE,
-      content::Source<Panel>(panel),
-      content::NotificationService::NoDetails());
 }
 
 bool PanelManager::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {

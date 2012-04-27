@@ -505,6 +505,7 @@
         'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
         'browser/ui/omnibox/omnibox_view_browsertest.cc',
         'browser/ui/panels/detached_panel_browsertest.cc',
+        'browser/ui/panels/docked_panel_browsertest.cc',
         'browser/ui/panels/panel_browsertest.cc',
         'browser/ui/panels/panel_drag_browsertest.cc',
         'browser/ui/panels/panel_resize_browsertest.cc',
@@ -599,6 +600,7 @@
           ],
           'sources!': [
             'browser/ui/panels/detached_panel_browsertest.cc',
+            'browser/ui/panels/docked_panel_browsertest.cc',
             'browser/ui/panels/panel_browsertest.cc',
             'browser/ui/panels/panel_drag_browsertest.cc',
             'browser/ui/panels/panel_resize_browsertest.cc',
