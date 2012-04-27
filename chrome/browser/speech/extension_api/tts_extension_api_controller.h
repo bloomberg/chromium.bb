@@ -191,7 +191,7 @@ class ExtensionTtsController {
   static ExtensionTtsController* GetInstance();
 
   // Returns true if we're currently speaking an utterance.
-  bool IsSpeaking() const;
+  bool IsSpeaking();
 
   // Speak the given utterance. If the utterance's can_enqueue flag is true
   // and another utterance is in progress, adds it to the end of the queue.

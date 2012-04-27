@@ -47,6 +47,8 @@ class ExtensionTtsPlatformImplChromeOs
 
   virtual bool StopSpeaking();
 
+  virtual bool IsSpeaking();
+
   virtual bool SendsEvent(TtsEventType event_type);
 
   // Get the single instance of this class.
@@ -160,6 +162,11 @@ bool ExtensionTtsPlatformImplChromeOs::StopSpeaking() {
 
   chromeos::DBusThreadManager::Get()->GetSpeechSynthesizerClient()->
       StopSpeaking();
+  return true;
+}
+
+bool ExtensionTtsPlatformImplChromeOs::IsSpeaking() {
+  // Defers to controller's utterance based detection of is speaking.
   return true;
 }
 

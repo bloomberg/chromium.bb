@@ -26,6 +26,7 @@ class DummyExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
       const UtteranceContinuousParameters& params) {
     return true;
   }
+  virtual bool IsSpeaking() { return false; }
   virtual bool StopSpeaking() { return true; }
   virtual bool SendsEvent(TtsEventType event_type) { return false; }
   virtual std::string gender() { return std::string(); }

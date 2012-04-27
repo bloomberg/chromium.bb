@@ -49,6 +49,8 @@ class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
                     const UtteranceContinuousParameters& params));
   MOCK_METHOD0(StopSpeaking, bool(void));
 
+  MOCK_METHOD0(IsSpeaking, bool(void));
+
   void SetErrorToEpicFail() {
     set_error("epic fail");
   }
@@ -132,6 +134,8 @@ class TtsApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakOptionalArgs) {
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking());
+
   InSequence s;
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
       .WillOnce(Return(true));
@@ -158,6 +162,7 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakOptionalArgs) {
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakFinishesImmediately) {
   InSequence s;
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking());
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
       .WillOnce(Return(true));
   EXPECT_CALL(mock_platform_impl_, Speak(_, _, _, _))
@@ -169,6 +174,8 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakFinishesImmediately) {
 }
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakInterrupt) {
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking());
+
   // One utterance starts speaking, and then a second interrupts.
   InSequence s;
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
@@ -187,6 +194,8 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakInterrupt) {
 }
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakQueueInterrupt) {
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking());
+
   // In this test, two utterances are queued, and then a third
   // interrupts. Speak() never gets called on the second utterance.
   InSequence s;
@@ -208,6 +217,8 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakQueueInterrupt) {
 }
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakEnqueue) {
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking());
+
   InSequence s;
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
       .WillOnce(Return(true));
@@ -225,6 +236,9 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakEnqueue) {
 }
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakError) {
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking())
+      .Times(AnyNumber());
+
   InSequence s;
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
       .WillOnce(Return(true));
@@ -245,6 +259,8 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakError) {
 }
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformWordCallbacks) {
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking());
+
   InSequence s;
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
       .WillOnce(Return(true));
@@ -259,6 +275,8 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformWordCallbacks) {
 }
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, RegisterEngine) {
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking())
+      .Times(AnyNumber());
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
       .WillRepeatedly(Return(true));
 
@@ -285,6 +303,7 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, RegisterEngine) {
 }
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, EngineError) {
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking());
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
       .WillRepeatedly(Return(true));
 
@@ -292,6 +311,7 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, EngineError) {
 }
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, EngineWordCallbacks) {
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking());
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
       .WillRepeatedly(Return(true));
 

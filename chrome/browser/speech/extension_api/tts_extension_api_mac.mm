@@ -129,8 +129,7 @@ bool ExtensionTtsPlatformImplMac::StopSpeaking() {
 }
 
 bool ExtensionTtsPlatformImplMac::IsSpeaking() {
-  // Note: this is OK even if speech_synthesizer_ is nil, it will return false.
-  return [speech_synthesizer_ isSpeaking];
+  return [NSSpeechSynthesizer isAnyApplicationSpeaking];
 }
 
 bool ExtensionTtsPlatformImplMac::SendsEvent(TtsEventType event_type) {

@@ -183,7 +183,7 @@
       {
         "name": "isSpeaking",
         "type": "function",
-        "description": "Checks if the engine is currently speaking.",
+        "description": "Checks whether the engine is currently speaking. On Mac OS X, the result is true whenever the system speech engine is speaking, even if the speech wasn't initiated by Chrome.",
         "parameters": [
           {
             "type": "function",

@@ -34,6 +34,9 @@ class ExtensionTtsPlatformImpl {
   // Stop speaking immediately and return true on success.
   virtual bool StopSpeaking() = 0;
 
+  // Returns whether any speech is on going.
+  virtual bool IsSpeaking() = 0;
+
   // Return true if this platform implementation will fire the given event.
   // All platform implementations must fire the TTS_EVENT_END event at a
   // minimum.
