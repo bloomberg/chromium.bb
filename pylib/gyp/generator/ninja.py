@@ -1090,6 +1090,7 @@ class NinjaWriter:
       else:
         # If there's no command, fake one to match the dangling |&&| above.
         command = gyp.msvs_emulation.EncodeRspFileList(args) or 'cmd /c'
+      command += '"' # Close quote opened in |cd|.
     else:
       command = gyp.common.EncodePOSIXShellList(args)
     if env:
