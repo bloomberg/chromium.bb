@@ -73,10 +73,6 @@ class MockOrientationFactory : public base::RefCounted<MockOrientationFactory> {
     instance_ = this;
   }
 
-  ~MockOrientationFactory() {
-    instance_ = NULL;
-  }
-
   static DataFetcher* CreateDataFetcher() {
     EXPECT_TRUE(instance_);
     return new MockDataFetcher(instance_);
@@ -88,6 +84,12 @@ class MockOrientationFactory : public base::RefCounted<MockOrientationFactory> {
   }
 
  private:
+  friend class base::RefCounted<MockOrientationFactory>;
+
+  ~MockOrientationFactory() {
+    instance_ = NULL;
+  }
+
   // Owned by ProviderImpl. Holds a reference back to MockOrientationFactory.
   class MockDataFetcher : public DataFetcher {
    public:

@@ -49,11 +49,6 @@ class MockAudioRendererHost : public AudioRendererHost {
         shared_memory_length_(0) {
   }
 
-  virtual ~MockAudioRendererHost() {
-    // Make sure all audio streams have been deleted.
-    EXPECT_EQ(0u, audio_entries_.size());
-  }
-
   // A list of mock methods.
   MOCK_METHOD2(OnStreamCreated,
                void(int stream_id, int length));
@@ -68,6 +63,11 @@ class MockAudioRendererHost : public AudioRendererHost {
   base::SyncSocket* sync_socket() { return sync_socket_.get(); }
 
  private:
+  virtual ~MockAudioRendererHost() {
+    // Make sure all audio streams have been deleted.
+    EXPECT_TRUE(audio_entries_.empty());
+  }
+
   // This method is used to dispatch IPC messages to the renderer. We intercept
   // these messages here and dispatch to our mock methods to verify the
   // conversation between this object and the renderer.

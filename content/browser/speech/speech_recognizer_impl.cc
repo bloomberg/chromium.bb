@@ -130,10 +130,6 @@ SpeechRecognizerImpl::SpeechRecognizerImpl(
   recognition_engine_->set_delegate(this);
 }
 
-SpeechRecognizerImpl::~SpeechRecognizerImpl() {
-  endpointer_.EndSession();
-}
-
 // -------  Methods that trigger Finite State Machine (FSM) events ------------
 
 // NOTE:all the external events and requests should be enqueued (PostTask), even
@@ -173,6 +169,15 @@ bool SpeechRecognizerImpl::IsCapturingAudio() const {
   DCHECK((is_capturing_audio && (audio_controller_.get() != NULL)) ||
          (!is_capturing_audio && audio_controller_.get() == NULL));
   return is_capturing_audio;
+}
+
+const SpeechRecognitionEngine&
+SpeechRecognizerImpl::recognition_engine() const {
+  return *(recognition_engine_.get());
+}
+
+SpeechRecognizerImpl::~SpeechRecognizerImpl() {
+  endpointer_.EndSession();
 }
 
 // Invoked in the audio thread.
@@ -620,11 +625,6 @@ void SpeechRecognizerImpl::UpdateSignalAndNoiseLevels(const float& rms,
 
   listener_->OnAudioLevelsChange(
       session_id_, clip_detected ? 1.0f : audio_level_, noise_level);
-}
-
-const SpeechRecognitionEngine&
-    SpeechRecognizerImpl::recognition_engine() const {
-  return *(recognition_engine_.get());
 }
 
 void SpeechRecognizerImpl::SetAudioManagerForTesting(

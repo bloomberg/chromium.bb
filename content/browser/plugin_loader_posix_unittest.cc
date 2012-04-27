@@ -53,6 +53,9 @@ class MockPluginLoaderPosix : public PluginLoaderPosix {
   void TestOnPluginLoadFailed(uint32 index, const FilePath& path) {
     OnPluginLoadFailed(index, path);
   }
+
+ protected:
+  virtual ~MockPluginLoaderPosix() {}
 };
 
 void VerifyCallback(int* run_count, const std::vector<webkit::WebPluginInfo>&) {

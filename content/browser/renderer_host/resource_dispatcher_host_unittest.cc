@@ -178,6 +178,9 @@ class ForwardingFilter : public ResourceMessageFilter {
     return dest_->Send(msg);
   }
 
+ protected:
+  virtual ~ForwardingFilter() {}
+
  private:
   IPC::Message::Sender* dest_;
 
@@ -706,15 +709,19 @@ class TestFilter : public ForwardingFilter {
   }
 
   // ForwardingFilter override
-  virtual bool Send(IPC::Message* msg) {
+  virtual bool Send(IPC::Message* msg) OVERRIDE {
     // no messages should be received when the process has been canceled
     if (has_canceled_)
       received_after_canceled_++;
     delete msg;
     return true;
   }
+
   bool has_canceled_;
   int received_after_canceled_;
+
+ private:
+  virtual ~TestFilter() {}
 };
 
 // Tests CancelRequestsForProcess

@@ -96,6 +96,9 @@ class PluginDirWatcherDelegate : public FilePathWatcher::Delegate {
     // stopping the watcher would be enough. Or possibly restart it.
     NOTREACHED();
   }
+
+ protected:
+  virtual ~PluginDirWatcherDelegate() {}
 };
 #endif
 

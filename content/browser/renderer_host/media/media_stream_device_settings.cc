@@ -52,6 +52,9 @@ class ResponseCallbackHelper
   }
 
  private:
+  friend class base::RefCountedThreadSafe<ResponseCallbackHelper>;
+  ~ResponseCallbackHelper() {}
+
   base::WeakPtr<media_stream::MediaStreamDeviceSettings> settings_;
 
   DISALLOW_COPY_AND_ASSIGN(ResponseCallbackHelper);

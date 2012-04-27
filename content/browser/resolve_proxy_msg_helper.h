@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,15 +37,16 @@ class CONTENT_EXPORT ResolveProxyMsgHelper
   // Constructor used by unittests.
   explicit ResolveProxyMsgHelper(net::ProxyService* proxy_service);
 
-  // Destruction cancels the current outstanding request, and clears the
-  // pending queue.
-  virtual ~ResolveProxyMsgHelper();
-
   // content::BrowserMessageFilter implementation
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
+
+ protected:
+  // Destruction cancels the current outstanding request, and clears the
+  // pending queue.
+  virtual ~ResolveProxyMsgHelper();
 
  private:
   // Callback for the ProxyService (bound to |callback_|).

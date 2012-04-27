@@ -15,6 +15,8 @@ using webkit_blob::BlobStorageController;
 
 static const char* kBlobStorageContextKeyName = "content_blob_storage_context";
 
+ChromeBlobStorageContext::ChromeBlobStorageContext() {}
+
 ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
     BrowserContext* context) {
   if (!context->GetUserData(kBlobStorageContextKeyName)) {
@@ -34,16 +36,12 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
       context, kBlobStorageContextKeyName);
 }
 
-ChromeBlobStorageContext::ChromeBlobStorageContext() {
-}
-
 void ChromeBlobStorageContext::InitializeOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   controller_.reset(new BlobStorageController());
 }
 
-ChromeBlobStorageContext::~ChromeBlobStorageContext() {
-}
+ChromeBlobStorageContext::~ChromeBlobStorageContext() {}
 
 void ChromeBlobStorageContext::DeleteOnCorrectThread() const {
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO) &&

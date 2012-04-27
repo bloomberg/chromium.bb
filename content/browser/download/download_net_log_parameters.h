@@ -31,8 +31,10 @@ class ItemActivatedParameters : public net::NetLog::EventParameters {
                           content::DownloadDangerType danger_type,
                           content::DownloadItem::SafetyState safety_state,
                           int64 start_offset);
-  virtual ~ItemActivatedParameters();
   virtual base::Value* ToValue() const OVERRIDE;
+
+ protected:
+  virtual ~ItemActivatedParameters();
 
  private:
   const DownloadType type_;
@@ -54,6 +56,9 @@ class ItemCheckedParameters : public net::NetLog::EventParameters {
                         content::DownloadItem::SafetyState safety_state);
   virtual base::Value* ToValue() const OVERRIDE;
 
+ protected:
+  virtual ~ItemCheckedParameters();
+
  private:
   const content::DownloadDangerType danger_type_;
   const content::DownloadItem::SafetyState safety_state_;
@@ -67,6 +72,9 @@ class ItemInHistoryParameters : public net::NetLog::EventParameters {
   ItemInHistoryParameters(int64 handle);
   virtual base::Value* ToValue() const OVERRIDE;
 
+ protected:
+  virtual ~ItemInHistoryParameters();
+
  private:
   const int64 db_handle_;
 
@@ -78,6 +86,9 @@ class ItemUpdatedParameters : public net::NetLog::EventParameters {
  public:
   ItemUpdatedParameters(int64 bytes_so_far);
   virtual base::Value* ToValue() const OVERRIDE;
+
+ protected:
+  virtual ~ItemUpdatedParameters();
 
  private:
   const int64 bytes_so_far_;
@@ -91,6 +102,9 @@ class ItemRenamedParameters : public net::NetLog::EventParameters {
   ItemRenamedParameters(
       const std::string& old_filename, const std::string& new_filename);
   virtual base::Value* ToValue() const OVERRIDE;
+
+ protected:
+  virtual ~ItemRenamedParameters();
 
  private:
   const std::string old_filename_;
@@ -107,6 +121,9 @@ class ItemInterruptedParameters : public net::NetLog::EventParameters {
                             const std::string& hash_state);
   virtual base::Value* ToValue() const OVERRIDE;
 
+ protected:
+  virtual ~ItemInterruptedParameters();
+
  private:
   const content::DownloadInterruptReason reason_;
   const int64 bytes_so_far_;
@@ -121,6 +138,9 @@ class ItemFinishedParameters : public net::NetLog::EventParameters {
   ItemFinishedParameters(int64 bytes_so_far, const std::string& final_hash);
   virtual base::Value* ToValue() const OVERRIDE;
 
+ protected:
+  virtual ~ItemFinishedParameters();
+
  private:
   const int64 bytes_so_far_;
   const std::string final_hash_;
@@ -133,6 +153,9 @@ class ItemCanceledParameters : public net::NetLog::EventParameters {
  public:
   ItemCanceledParameters(int64 bytes_so_far, const std::string& hash_state);
   virtual base::Value* ToValue() const OVERRIDE;
+
+ protected:
+  virtual ~ItemCanceledParameters();
 
  private:
   const int64 bytes_so_far_;
@@ -148,6 +171,9 @@ class FileOpenedParameters : public net::NetLog::EventParameters {
                        int64 start_offset);
   virtual base::Value* ToValue() const OVERRIDE;
 
+ protected:
+  virtual ~FileOpenedParameters();
+
  private:
   const std::string file_name_;
   const int64 start_offset_;
@@ -162,6 +188,9 @@ class FileRenamedParameters : public net::NetLog::EventParameters {
       const std::string& old_filename, const std::string& new_filename);
   virtual base::Value* ToValue() const OVERRIDE;
 
+ protected:
+  virtual ~FileRenamedParameters();
+
  private:
   const std::string old_filename_;
   const std::string new_filename_;
@@ -174,6 +203,9 @@ class FileErrorParameters : public net::NetLog::EventParameters {
  public:
   FileErrorParameters(const std::string& operation, net::Error net_error);
   virtual base::Value* ToValue() const OVERRIDE;
+
+ protected:
+  virtual ~FileErrorParameters();
 
  private:
   const std::string operation_;

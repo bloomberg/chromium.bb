@@ -20,10 +20,6 @@ class TraceSubscriberStdioImpl
       : path_(path),
         file_(0) {}
 
-  ~TraceSubscriberStdioImpl() {
-    CloseFile();
-  }
-
   void OnStart() {
     DCHECK(!file_);
     file_ = file_util::OpenFile(path_, "w+");
@@ -47,6 +43,12 @@ class TraceSubscriberStdioImpl
   }
 
  private:
+  friend class base::RefCountedThreadSafe<TraceSubscriberStdioImpl>;
+
+  ~TraceSubscriberStdioImpl() {
+    CloseFile();
+  }
+
   bool IsValid() {
     return file_ && (0 == ferror(file_));
   }

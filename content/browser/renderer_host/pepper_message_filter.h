@@ -67,10 +67,7 @@ class PepperMessageFilter
 
   // Constructor when used in the context of a PPAPI process (the argument is
   // provided for sanity checking).
-  explicit PepperMessageFilter(ProcessType type,
-                               net::HostResolver* host_resolver);
-
-  virtual ~PepperMessageFilter();
+  PepperMessageFilter(ProcessType type, net::HostResolver* host_resolver);
 
   // content::BrowserMessageFilter methods.
   virtual void OverrideThreadForMessage(
@@ -98,6 +95,9 @@ class PepperMessageFilter
   void RemoveTCPServerSocket(uint32 socket_id);
 
   const net::SSLConfig& ssl_config() { return ssl_config_; }
+
+ protected:
+  virtual ~PepperMessageFilter();
 
  private:
   struct OnConnectTcpBoundInfo {

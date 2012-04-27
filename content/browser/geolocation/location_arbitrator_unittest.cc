@@ -70,12 +70,15 @@ class MockDependencyFactory : public GeolocationArbitratorDependencyFactory {
         gps_(NULL),
         access_token_store_(access_token_store) {
   }
+
   virtual GeolocationArbitrator::GetTimeNow GetTimeFunction() {
     return GetTimeNowForTest;
   }
+
   virtual AccessTokenStore* NewAccessTokenStore() {
     return access_token_store_.get();
   }
+
   virtual LocationProviderBase* NewNetworkLocationProvider(
       AccessTokenStore* access_token_store,
       net::URLRequestContextGetter* context,
@@ -83,6 +86,7 @@ class MockDependencyFactory : public GeolocationArbitratorDependencyFactory {
       const string16& access_token) {
     return new MockLocationProvider(&cell_);
   }
+
   virtual LocationProviderBase* NewSystemLocationProvider() {
     return new MockLocationProvider(&gps_);
   }
@@ -95,6 +99,9 @@ class MockDependencyFactory : public GeolocationArbitratorDependencyFactory {
   MockLocationProvider* gps_;
 
   scoped_refptr<AccessTokenStore> access_token_store_;
+
+ private:
+  virtual ~MockDependencyFactory() {}
 };
 
 class GeolocationLocationArbitratorTest : public testing::Test {

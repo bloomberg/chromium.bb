@@ -20,7 +20,6 @@ namespace content {
 class ProfilerMessageFilter : public BrowserMessageFilter {
  public:
   explicit ProfilerMessageFilter(ProcessType process_type);
-  virtual ~ProfilerMessageFilter();
 
   // content::BrowserMessageFilter implementation.
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
@@ -28,6 +27,9 @@ class ProfilerMessageFilter : public BrowserMessageFilter {
   // content::BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
+
+ protected:
+  virtual ~ProfilerMessageFilter();
 
  private:
   // Message handlers.

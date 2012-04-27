@@ -24,11 +24,13 @@ class CONTENT_EXPORT TextInputClientMessageFilter
     : public content::BrowserMessageFilter {
  public:
   explicit TextInputClientMessageFilter(int child_id);
-  virtual ~TextInputClientMessageFilter();
 
   // content::BrowserMessageFilter override:
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
+
+ protected:
+  virtual ~TextInputClientMessageFilter();
 
  private:
   // IPC Message handlers:

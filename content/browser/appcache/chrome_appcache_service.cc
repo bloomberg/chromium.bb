@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,18 +39,6 @@ void ChromeAppCacheService::InitializeOnIOThread(
   set_special_storage_policy(special_storage_policy);
 }
 
-ChromeAppCacheService::~ChromeAppCacheService() {
-}
-
-void ChromeAppCacheService::DeleteOnCorrectThread() const {
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO) &&
-      !BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
-    return;
-  }
-  delete this;
-}
-
 bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url,
                                             const GURL& first_party) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -64,4 +52,15 @@ bool ChromeAppCacheService::CanCreateAppCache(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return content::GetContentClient()->browser()->AllowAppCache(
       manifest_url, first_party, resource_context_);
+}
+
+ChromeAppCacheService::~ChromeAppCacheService() {}
+
+void ChromeAppCacheService::DeleteOnCorrectThread() const {
+  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO) &&
+      !BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
+    return;
+  }
+  delete this;
 }

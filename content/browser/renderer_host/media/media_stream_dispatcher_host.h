@@ -31,7 +31,6 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   MediaStreamDispatcherHost(content::ResourceContext* resource_context,
                             int render_process_id,
                             media::AudioManager* audio_manager);
-  virtual ~MediaStreamDispatcherHost();
 
   // MediaStreamRequester implementation.
   virtual void StreamGenerated(
@@ -52,6 +51,9 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
+
+ protected:
+  virtual ~MediaStreamDispatcherHost();
 
  private:
   friend class MockMediaStreamDispatcherHost;

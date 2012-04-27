@@ -22,9 +22,6 @@ TextInputClientMessageFilter::TextInputClientMessageFilter(int child_id)
       child_process_id_(child_id) {
 }
 
-TextInputClientMessageFilter::~TextInputClientMessageFilter() {
-}
-
 bool TextInputClientMessageFilter::OnMessageReceived(
     const IPC::Message& message,
     bool* message_was_ok) {
@@ -41,6 +38,8 @@ bool TextInputClientMessageFilter::OnMessageReceived(
   IPC_END_MESSAGE_MAP_EX()
   return handled;
 }
+
+TextInputClientMessageFilter::~TextInputClientMessageFilter() {}
 
 void TextInputClientMessageFilter::OnGotCharacterIndexForPoint(size_t index) {
   TextInputClientMac* service = TextInputClientMac::GetInstance();

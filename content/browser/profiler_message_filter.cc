@@ -16,9 +16,6 @@ ProfilerMessageFilter::ProfilerMessageFilter(ProcessType process_type)
     : process_type_(process_type) {
 }
 
-ProfilerMessageFilter::~ProfilerMessageFilter() {
-}
-
 void ProfilerMessageFilter::OnChannelConnected(int32 peer_pid) {
   BrowserMessageFilter::OnChannelConnected(peer_pid);
 
@@ -40,6 +37,8 @@ bool ProfilerMessageFilter::OnMessageReceived(const IPC::Message& message,
   IPC_END_MESSAGE_MAP_EX()
   return handled;
 }
+
+ProfilerMessageFilter::~ProfilerMessageFilter() {}
 
 void ProfilerMessageFilter::OnChildProfilerData(
     int sequence_number,

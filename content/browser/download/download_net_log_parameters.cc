@@ -64,9 +64,6 @@ ItemActivatedParameters::ItemActivatedParameters(
           start_offset_(start_offset) {
 }
 
-ItemActivatedParameters::~ItemActivatedParameters() {
-}
-
 Value* ItemActivatedParameters::ToValue() const {
   DictionaryValue* dict = new DictionaryValue();
 
@@ -81,6 +78,8 @@ Value* ItemActivatedParameters::ToValue() const {
 
   return dict;
 }
+
+ItemActivatedParameters::~ItemActivatedParameters() {}
 
 ItemCheckedParameters::ItemCheckedParameters(
     content::DownloadDangerType danger_type,
@@ -97,6 +96,8 @@ Value* ItemCheckedParameters::ToValue() const {
   return dict;
 }
 
+ItemCheckedParameters::~ItemCheckedParameters() {}
+
 ItemInHistoryParameters::ItemInHistoryParameters(int64 handle)
     : db_handle_(handle) {
 }
@@ -109,6 +110,8 @@ Value* ItemInHistoryParameters::ToValue() const {
   return dict;
 }
 
+ItemInHistoryParameters::~ItemInHistoryParameters() {}
+
 ItemUpdatedParameters::ItemUpdatedParameters(int64 bytes_so_far)
     : bytes_so_far_(bytes_so_far) {
 }
@@ -120,6 +123,8 @@ Value* ItemUpdatedParameters::ToValue() const {
 
   return dict;
 }
+
+ItemUpdatedParameters::~ItemUpdatedParameters() {}
 
 ItemRenamedParameters::ItemRenamedParameters(
     const std::string& old_filename, const std::string& new_filename)
@@ -134,6 +139,8 @@ Value* ItemRenamedParameters::ToValue() const {
 
   return dict;
 }
+
+ItemRenamedParameters::~ItemRenamedParameters() {}
 
 ItemInterruptedParameters::ItemInterruptedParameters(
     content::DownloadInterruptReason reason,
@@ -155,6 +162,8 @@ Value* ItemInterruptedParameters::ToValue() const {
   return dict;
 }
 
+ItemInterruptedParameters::~ItemInterruptedParameters() {}
+
 ItemFinishedParameters::ItemFinishedParameters(
     int64 bytes_so_far,
     const std::string& final_hash)
@@ -171,6 +180,8 @@ Value* ItemFinishedParameters::ToValue() const {
 
   return dict;
 }
+
+ItemFinishedParameters::~ItemFinishedParameters() {}
 
 ItemCanceledParameters::ItemCanceledParameters(
     int64 bytes_so_far,
@@ -189,6 +200,8 @@ Value* ItemCanceledParameters::ToValue() const {
   return dict;
 }
 
+ItemCanceledParameters::~ItemCanceledParameters() {}
+
 FileOpenedParameters::FileOpenedParameters(const std::string& file_name,
                                            int64 start_offset)
     : file_name_(file_name), start_offset_(start_offset) {
@@ -202,6 +215,8 @@ Value* FileOpenedParameters::ToValue() const {
 
   return dict;
 }
+
+FileOpenedParameters::~FileOpenedParameters() {}
 
 FileRenamedParameters::FileRenamedParameters(
     const std::string& old_filename, const std::string& new_filename)
@@ -217,6 +232,8 @@ Value* FileRenamedParameters::ToValue() const {
   return dict;
 }
 
+FileRenamedParameters::~FileRenamedParameters() {}
+
 FileErrorParameters::FileErrorParameters(const std::string& operation,
                                          net::Error net_error)
     : operation_(operation), net_error_(net_error) {
@@ -230,5 +247,7 @@ Value* FileErrorParameters::ToValue() const {
 
   return dict;
 }
+
+FileErrorParameters::~FileErrorParameters() {}
 
 }  // namespace download_net_logs

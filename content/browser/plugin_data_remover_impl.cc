@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
@@ -73,9 +74,6 @@ class PluginDataRemoverImpl::Context
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
-  virtual ~Context() {
-  }
-
   void Init(const std::string& mime_type) {
     BrowserThread::PostTask(
         BrowserThread::IO,
@@ -139,14 +137,11 @@ class PluginDataRemoverImpl::Context
     return resource_context_;
   }
 
-  virtual void SetPluginInfo(const webkit::WebPluginInfo& info) OVERRIDE {
-  }
+  virtual void SetPluginInfo(const webkit::WebPluginInfo& info) OVERRIDE {}
 
-  virtual void OnFoundPluginProcessHost(PluginProcessHost* host) OVERRIDE {
-  }
+  virtual void OnFoundPluginProcessHost(PluginProcessHost* host) OVERRIDE {}
 
-  virtual void OnSentPluginChannelRequest() OVERRIDE {
-  }
+  virtual void OnSentPluginChannelRequest() OVERRIDE {}
 
   virtual void OnChannelOpened(const IPC::ChannelHandle& handle) OVERRIDE {
     ConnectToChannel(handle, false);
@@ -201,6 +196,10 @@ class PluginDataRemoverImpl::Context
   base::WaitableEvent* event() { return event_.get(); }
 
  private:
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
+  friend class base::DeleteHelper<Context>;
+  virtual ~Context() {}
+
   // Connects the client side of a newly opened plug-in channel.
   void ConnectToChannel(const IPC::ChannelHandle& handle, bool is_ppapi) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

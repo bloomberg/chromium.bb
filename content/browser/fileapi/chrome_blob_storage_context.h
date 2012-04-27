@@ -30,14 +30,13 @@ struct ChromeBlobStorageContextDeleter;
 // All methods, except the ctor, are expected to be called on
 // the IO thread (unless specifically called out in doc comments).
 class CONTENT_EXPORT ChromeBlobStorageContext
-    : public base::RefCountedThreadSafe<
-          ChromeBlobStorageContext, ChromeBlobStorageContextDeleter> {
+    : public base::RefCountedThreadSafe<ChromeBlobStorageContext,
+                                        ChromeBlobStorageContextDeleter> {
  public:
+  ChromeBlobStorageContext();
+
   static ChromeBlobStorageContext* GetFor(
       content::BrowserContext* browser_context);
-
-  ChromeBlobStorageContext();
-  virtual ~ChromeBlobStorageContext();
 
   void InitializeOnIOThread();
 
@@ -45,7 +44,13 @@ class CONTENT_EXPORT ChromeBlobStorageContext
     return controller_.get();
   }
 
+ protected:
+  virtual ~ChromeBlobStorageContext();
+
  private:
+  friend class base::DeleteHelper<ChromeBlobStorageContext>;
+  friend class base::RefCountedThreadSafe<ChromeBlobStorageContext,
+                                          ChromeBlobStorageContextDeleter>;
   friend struct ChromeBlobStorageContextDeleter;
 
   void DeleteOnCorrectThread() const;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,8 +20,6 @@ AppCacheDispatcherHost::AppCacheDispatcherHost(
       ALLOW_THIS_IN_INITIALIZER_LIST(frontend_proxy_(this)),
       process_id_(process_id) {
 }
-
-AppCacheDispatcherHost::~AppCacheDispatcherHost() {}
 
 void AppCacheDispatcherHost::OnChannelConnected(int32 peer_pid) {
   BrowserMessageFilter::OnChannelConnected(peer_pid);
@@ -63,6 +61,8 @@ bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message,
 
   return handled;
 }
+
+AppCacheDispatcherHost::~AppCacheDispatcherHost() {}
 
 void AppCacheDispatcherHost::BadMessageReceived() {
   content::RecordAction(UserMetricsAction("BadMessageTerminate_ACDH"));

@@ -29,9 +29,13 @@ class MockProvider : public Provider {
   virtual void RemoveObserver(Observer* observer) {
     removed_observer_ = true;
   }
+
   Orientation orientation_;
   bool added_observer_;
   bool removed_observer_;
+
+ private:
+  virtual ~MockProvider() {}
 };
 
 class DeviceOrientationBrowserTest : public InProcessBrowserTest {

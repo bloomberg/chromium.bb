@@ -238,6 +238,8 @@ class IDBKeyPathHelper : public UtilityProcessHostClient {
 
 
  private:
+  virtual ~IDBKeyPathHelper() {}
+
   int expected_id_;
   std::vector<IndexedDBKey> expected_keys_;
   base::WeakPtr<UtilityProcessHost> utility_process_host_;

@@ -98,13 +98,6 @@ PromiseFileFinalizer::PromiseFileFinalizer(
     : drag_file_downloader_(drag_file_downloader) {
 }
 
-PromiseFileFinalizer::~PromiseFileFinalizer() {}
-
-void PromiseFileFinalizer::Cleanup() {
-  if (drag_file_downloader_.get())
-    drag_file_downloader_ = NULL;
-}
-
 void PromiseFileFinalizer::OnDownloadCompleted(const FilePath& file_path) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -115,6 +108,13 @@ void PromiseFileFinalizer::OnDownloadAborted() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PromiseFileFinalizer::Cleanup, this));
+}
+
+PromiseFileFinalizer::~PromiseFileFinalizer() {}
+
+void PromiseFileFinalizer::Cleanup() {
+  if (drag_file_downloader_.get())
+    drag_file_downloader_ = NULL;
 }
 
 }  // namespace drag_download_util

@@ -138,6 +138,8 @@ class MockDependencyFactory : public GeolocationArbitratorDependencyFactory {
   }
 
  private:
+  virtual ~MockDependencyFactory() {}
+
   MessageLoop* test_loop_;
   scoped_refptr<AccessTokenStore> access_token_store_;
 };

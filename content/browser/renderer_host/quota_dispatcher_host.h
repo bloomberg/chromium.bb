@@ -29,9 +29,13 @@ class QuotaDispatcherHost : public content::BrowserMessageFilter {
   QuotaDispatcherHost(int process_id,
                       quota::QuotaManager* quota_manager,
                       content::QuotaPermissionContext* permission_context);
-  virtual ~QuotaDispatcherHost();
+
+  // content::BrowserMessageFilter:
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
+
+ protected:
+  virtual ~QuotaDispatcherHost();
 
  private:
   class RequestDispatcher;

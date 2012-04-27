@@ -32,6 +32,9 @@ class IndexedDBQuotaClient::HelperTask : public quota::QuotaThreadTask {
 
   IndexedDBQuotaClient* client_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
+
+ protected:
+  virtual ~HelperTask() {}
 };
 
 class IndexedDBQuotaClient::DeleteOriginTask : public HelperTask {
@@ -43,17 +46,23 @@ class IndexedDBQuotaClient::DeleteOriginTask : public HelperTask {
       : HelperTask(client, webkit_thread_message_loop),
         origin_url_(origin_url), callback_(callback) {
   }
+
  private:
+  virtual ~DeleteOriginTask() {}
+
   virtual void RunOnTargetThread() OVERRIDE {
     indexed_db_context_->DeleteForOrigin(origin_url_);
   }
+
   virtual void Aborted() OVERRIDE {
     callback_.Reset();
   }
+
   virtual void Completed() OVERRIDE {
     callback_.Run(quota::kQuotaStatusOk);
     callback_.Reset();
   }
+
   GURL origin_url_;
   DeletionCallback callback_;
 };
@@ -69,13 +78,17 @@ class IndexedDBQuotaClient::GetOriginUsageTask : public HelperTask {
   }
 
  private:
+  virtual ~GetOriginUsageTask() {}
+
   virtual void RunOnTargetThread() OVERRIDE {
     usage_ = indexed_db_context_->GetOriginDiskUsage(origin_url_);
   }
+
   virtual void Completed() OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     client_->DidGetOriginUsage(origin_url_, usage_);
   }
+
   GURL origin_url_;
   int64 usage_;
 };
@@ -100,6 +113,9 @@ class IndexedDBQuotaClient::GetOriginsTaskBase : public HelperTask {
   }
 
   std::set<GURL> origins_;
+
+ protected:
+  virtual ~GetOriginsTaskBase() {}
 };
 
 class IndexedDBQuotaClient::GetAllOriginsTask : public GetOriginsTaskBase {
@@ -113,9 +129,12 @@ class IndexedDBQuotaClient::GetAllOriginsTask : public GetOriginsTaskBase {
   }
 
  protected:
+  virtual ~GetAllOriginsTask() {}
+
   virtual bool ShouldAddOrigin(const GURL& origin) OVERRIDE {
     return true;
   }
+
   virtual void Completed() OVERRIDE {
     client_->DidGetAllOrigins(origins_, type_);
   }
@@ -137,12 +156,16 @@ class IndexedDBQuotaClient::GetOriginsForHostTask : public GetOriginsTaskBase {
   }
 
  private:
+  virtual ~GetOriginsForHostTask() {}
+
   virtual bool ShouldAddOrigin(const GURL& origin) OVERRIDE {
     return host_ == net::GetHostOrSpecFromURL(origin);
   }
+
   virtual void Completed() OVERRIDE {
     client_->DidGetOriginsForHost(host_, origins_, type_);
   }
+
   std::string host_;
   quota::StorageType type_;
 };

@@ -76,10 +76,6 @@ class MockVideoCaptureHost : public VideoCaptureHost {
       : VideoCaptureHost(resource_context, audio_manager),
         return_buffers_(false),
         dump_video_(false) {}
-  virtual ~MockVideoCaptureHost() {
-    STLDeleteContainerPairSecondPointers(filled_dib_.begin(),
-                                         filled_dib_.end());
-  }
 
   // A list of mock methods.
   MOCK_METHOD4(OnNewBufferCreated,
@@ -95,6 +91,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   void SetDumpVideo(bool enable) {
     dump_video_ = enable;
   }
+
   void SetReturnReceviedDibs(bool enable) {
     return_buffers_ = enable;
   }
@@ -107,6 +104,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
       handle = GetReceivedDib();
     }
   }
+
   int GetReceivedDib() {
     if (filled_dib_.empty())
       return 0;
@@ -119,6 +117,11 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   }
 
  private:
+  virtual ~MockVideoCaptureHost() {
+    STLDeleteContainerPairSecondPointers(filled_dib_.begin(),
+                                         filled_dib_.end());
+  }
+
   // This method is used to dispatch IPC messages to the renderer. We intercept
   // these messages here and dispatch to our mock methods to verify the
   // conversation between this object and the renderer.

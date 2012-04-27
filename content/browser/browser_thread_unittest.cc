@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,12 +47,15 @@ class BrowserThreadTest : public testing::Test {
     explicit DeletedOnFile(MessageLoop* message_loop)
         : message_loop_(message_loop) { }
 
+   private:
+    friend struct BrowserThread::DeleteOnThread<BrowserThread::FILE>;
+    friend class base::DeleteHelper<DeletedOnFile>;
+
     ~DeletedOnFile() {
       CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
       message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     }
 
-   private:
     MessageLoop* message_loop_;
   };
 
@@ -59,6 +63,12 @@ class BrowserThreadTest : public testing::Test {
       : public base::RefCountedThreadSafe<
             NeverDeleted, BrowserThread::DeleteOnWebKitThread> {
    public:
+
+   private:
+    friend struct BrowserThread::DeleteOnThread<
+        BrowserThread::WEBKIT_DEPRECATED>;
+    friend class base::DeleteHelper<NeverDeleted>;
+
     ~NeverDeleted() {
       CHECK(false);
     }

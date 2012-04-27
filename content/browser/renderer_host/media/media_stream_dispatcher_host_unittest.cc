@@ -40,7 +40,6 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost {
                                 media::AudioManager* audio_manager)
       : MediaStreamDispatcherHost(resource_context, kProcessId, audio_manager),
         message_loop_(message_loop) {}
-  virtual ~MockMediaStreamDispatcherHost() {}
 
   // A list of mock methods.
   MOCK_METHOD4(OnStreamGenerated,
@@ -71,6 +70,8 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost {
   StreamDeviceInfoArray video_devices_;
 
  private:
+  virtual ~MockMediaStreamDispatcherHost() {}
+
   // This method is used to dispatch IPC messages to the renderer. We intercept
   // these messages here and dispatch to our mock methods to verify the
   // conversation between this object and the renderer.

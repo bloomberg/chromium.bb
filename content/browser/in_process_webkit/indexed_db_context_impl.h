@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,8 +42,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
                        quota::QuotaManagerProxy* quota_manager_proxy,
                        base::MessageLoopProxy* webkit_thread_loop);
 
-  virtual ~IndexedDBContextImpl();
-
   WebKit::WebIDBFactory* GetIDBFactory();
 
   // The indexed db directory.
@@ -84,6 +82,9 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void set_data_path_for_testing(const FilePath& data_path) {
     data_path_ = data_path;
   }
+
+ protected:
+  virtual ~IndexedDBContextImpl();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, ClearLocalState);

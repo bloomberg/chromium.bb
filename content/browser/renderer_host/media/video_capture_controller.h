@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,6 @@ class VideoCaptureController
  public:
   VideoCaptureController(
       media_stream::VideoCaptureManager* video_capture_manager);
-  virtual ~VideoCaptureController();
 
   // Start video capturing and try to use the resolution specified in
   // |params|.
@@ -74,7 +73,12 @@ class VideoCaptureController
   virtual void OnFrameInfo(
       const media::VideoCaptureDevice::Capability& info) OVERRIDE;
 
+ protected:
+  virtual ~VideoCaptureController();
+
  private:
+  friend class base::RefCountedThreadSafe<VideoCaptureController>;
+
   struct ControllerClient;
   typedef std::list<ControllerClient*> ControllerClients;
 
@@ -85,7 +89,6 @@ class VideoCaptureController
   void DoIncomingCapturedFrameOnIOThread(int buffer_id, base::Time timestamp);
   void DoFrameInfoOnIOThread(const media::VideoCaptureDevice::Capability info);
   void DoErrorOnIOThread();
-  void DoDeviceStateOnIOThread(bool in_use);
   void DoDeviceStoppedOnIOThread();
 
   // Send frame info and init buffers to |client|.

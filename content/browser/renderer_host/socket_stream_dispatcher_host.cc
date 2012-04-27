@@ -28,18 +28,6 @@ SocketStreamDispatcherHost::SocketStreamDispatcherHost(
   net::WebSocketJob::EnsureInit();
 }
 
-SocketStreamDispatcherHost::~SocketStreamDispatcherHost() {
-  // TODO(ukai): Implement IDMap::RemoveAll().
-  for (IDMap<SocketStreamHost>::const_iterator iter(&hosts_);
-       !iter.IsAtEnd();
-       iter.Advance()) {
-    int socket_id = iter.GetCurrentKey();
-    const SocketStreamHost* socket_stream_host = iter.GetCurrentValue();
-    delete socket_stream_host;
-    hosts_.Remove(socket_id);
-  }
-}
-
 bool SocketStreamDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                                    bool* message_was_ok) {
   bool handled = true;
@@ -166,6 +154,18 @@ void SocketStreamDispatcherHost::ContinueSSLRequest(
   SocketStreamHost* socket_stream_host = hosts_.Lookup(socket_id);
   DCHECK(socket_stream_host);
   socket_stream_host->ContinueDespiteError();
+}
+
+SocketStreamDispatcherHost::~SocketStreamDispatcherHost() {
+  // TODO(ukai): Implement IDMap::RemoveAll().
+  for (IDMap<SocketStreamHost>::const_iterator iter(&hosts_);
+       !iter.IsAtEnd();
+       iter.Advance()) {
+    int socket_id = iter.GetCurrentKey();
+    const SocketStreamHost* socket_stream_host = iter.GetCurrentValue();
+    delete socket_stream_host;
+    hosts_.Remove(socket_id);
+  }
 }
 
 // Message handlers called by OnMessageReceived.

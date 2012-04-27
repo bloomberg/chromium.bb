@@ -81,11 +81,6 @@ PepperMessageFilter::PepperMessageFilter(ProcessType type,
   DCHECK(host_resolver);
 }
 
-PepperMessageFilter::~PepperMessageFilter() {
-  if (!network_monitor_ids_.empty())
-    net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
-}
-
 void PepperMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {
@@ -202,6 +197,11 @@ void PepperMessageFilter::RemoveTCPServerSocket(uint32 socket_id) {
   // callback. From this point on, there won't be any messages associated with
   // this socket sent to the plugin side.
   tcp_server_sockets_.erase(iter);
+}
+
+PepperMessageFilter::~PepperMessageFilter() {
+  if (!network_monitor_ids_.empty())
+    net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
 void PepperMessageFilter::OnGetLocalTimeZoneOffset(base::Time t,

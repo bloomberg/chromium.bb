@@ -62,6 +62,8 @@ class KeyUtilityClientImpl
     void OnInjectIDBKeyFinished(const content::SerializedScriptValue& value);
 
    private:
+    virtual ~Client() {}
+
     KeyUtilityClientImpl* parent_;
 
     DISALLOW_COPY_AND_ASSIGN(Client);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,6 @@ class GeolocationArbitratorDependencyFactoryWithLocationProvider
 
   GeolocationArbitratorDependencyFactoryWithLocationProvider(
       LocationProviderFactoryFunction factory_function);
-  virtual ~GeolocationArbitratorDependencyFactoryWithLocationProvider();
 
   virtual LocationProviderBase* NewNetworkLocationProvider(
       content::AccessTokenStore* access_token_store,
@@ -26,6 +25,8 @@ class GeolocationArbitratorDependencyFactoryWithLocationProvider
   virtual LocationProviderBase* NewSystemLocationProvider() OVERRIDE;
 
  protected:
+  virtual ~GeolocationArbitratorDependencyFactoryWithLocationProvider();
+
   LocationProviderFactoryFunction factory_function_;
 };
 

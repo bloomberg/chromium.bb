@@ -97,9 +97,6 @@ FileAPIMessageFilter::FileAPIMessageFilter(
   DCHECK(blob_storage_context);
 }
 
-FileAPIMessageFilter::~FileAPIMessageFilter() {
-}
-
 void FileAPIMessageFilter::OnChannelConnected(int32 peer_pid) {
   BrowserMessageFilter::OnChannelConnected(peer_pid);
 
@@ -164,6 +161,14 @@ bool FileAPIMessageFilter::OnMessageReceived(
   IPC_END_MESSAGE_MAP_EX()
   return handled;
 }
+
+void FileAPIMessageFilter::UnregisterOperation(int request_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(operations_.Lookup(request_id));
+  operations_.Remove(request_id);
+}
+
+FileAPIMessageFilter::~FileAPIMessageFilter() {}
 
 void FileAPIMessageFilter::OnOpen(
     int request_id, const GURL& origin_url, fileapi::FileSystemType type,
@@ -671,10 +676,4 @@ FileSystemOperationInterface* FileAPIMessageFilter::GetNewOperation(
   DCHECK(operation);
   operations_.AddWithID(operation, request_id);
   return operation;
-}
-
-void FileAPIMessageFilter::UnregisterOperation(int request_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(operations_.Lookup(request_id));
-  operations_.Remove(request_id);
 }

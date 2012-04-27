@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,36 +106,6 @@ IndexedDBContextImpl::IndexedDBContextImpl(
   }
 }
 
-IndexedDBContextImpl::~IndexedDBContextImpl() {
-  WebKit::WebIDBFactory* factory = idb_factory_.release();
-  if (factory) {
-    if (!BrowserThread::DeleteSoon(BrowserThread::WEBKIT_DEPRECATED,
-                                   FROM_HERE, factory))
-      delete factory;
-  }
-
-  if (data_path_.empty())
-    return;
-
-  if (save_session_state_)
-    return;
-
-  bool has_session_only_databases =
-      special_storage_policy_.get() &&
-      special_storage_policy_->HasSessionOnlyOrigins();
-
-  // Clearning only session-only databases, and there are none.
-  if (!clear_local_state_on_exit_ && !has_session_only_databases)
-    return;
-
-  // No WEBKIT thread here means we are running in a unit test where no clean
-  // up is needed.
-  BrowserThread::PostTask(
-      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
-      base::Bind(&ClearLocalState, data_path_, clear_local_state_on_exit_,
-                 special_storage_policy_));
-}
-
 WebIDBFactory* IndexedDBContextImpl::GetIDBFactory() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   if (!idb_factory_.get()) {
@@ -145,31 +115,6 @@ WebIDBFactory* IndexedDBContextImpl::GetIDBFactory() {
     idb_factory_.reset(WebIDBFactory::create());
   }
   return idb_factory_.get();
-}
-
-void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  if (data_path_.empty() || !IsInOriginSet(origin_url))
-    return;
-  // TODO(michaeln): When asked to delete an origin with open connections,
-  // forcibly close those connections then delete.
-  if (connection_count_.find(origin_url) == connection_count_.end()) {
-    string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url);
-    FilePath idb_directory = GetIndexedDBFilePath(origin_id);
-    EnsureDiskUsageCacheInitialized(origin_url);
-    bool deleted = file_util::Delete(idb_directory, true /*recursive*/);
-    QueryDiskAndUpdateQuotaUsage(origin_url);
-    if (deleted) {
-      RemoveFromOriginSet(origin_url);
-      origin_size_map_.erase(origin_url);
-      space_available_map_.erase(origin_url);
-    }
-  }
-}
-
-FilePath IndexedDBContextImpl::GetFilePathForTesting(
-  const string16& origin_id) const {
-  return GetIndexedDBFilePath(origin_id);
 }
 
 std::vector<GURL> IndexedDBContextImpl::GetAllOrigins() {
@@ -199,6 +144,31 @@ base::Time IndexedDBContextImpl::GetOriginLastModified(const GURL& origin_url) {
   if (!file_util::GetFileInfo(idb_directory, &file_info))
     return base::Time();
   return file_info.last_modified;
+}
+
+void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  if (data_path_.empty() || !IsInOriginSet(origin_url))
+    return;
+  // TODO(michaeln): When asked to delete an origin with open connections,
+  // forcibly close those connections then delete.
+  if (connection_count_.find(origin_url) == connection_count_.end()) {
+    string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url);
+    FilePath idb_directory = GetIndexedDBFilePath(origin_id);
+    EnsureDiskUsageCacheInitialized(origin_url);
+    bool deleted = file_util::Delete(idb_directory, true /*recursive*/);
+    QueryDiskAndUpdateQuotaUsage(origin_url);
+    if (deleted) {
+      RemoveFromOriginSet(origin_url);
+      origin_size_map_.erase(origin_url);
+      space_available_map_.erase(origin_url);
+    }
+  }
+}
+
+FilePath IndexedDBContextImpl::GetFilePathForTesting(
+  const string16& origin_id) const {
+  return GetIndexedDBFilePath(origin_id);
 }
 
 void IndexedDBContextImpl::ConnectionOpened(const GURL& origin_url) {
@@ -237,15 +207,6 @@ void IndexedDBContextImpl::TransactionComplete(const GURL& origin_url) {
   QueryAvailableQuota(origin_url);
 }
 
-FilePath IndexedDBContextImpl::GetIndexedDBFilePath(
-    const string16& origin_id) const {
-  DCHECK(!data_path_.empty());
-  FilePath::StringType id =
-      webkit_glue::WebStringToFilePathString(origin_id).append(
-          FILE_PATH_LITERAL(".indexeddb"));
-  return data_path_.Append(id.append(kIndexedDBExtension));
-}
-
 bool IndexedDBContextImpl::WouldBeOverQuota(const GURL& origin_url,
                                             int64 additional_bytes) {
   if (space_available_map_.find(origin_url) == space_available_map_.end()) {
@@ -263,6 +224,45 @@ bool IndexedDBContextImpl::IsOverQuota(const GURL& origin_url) {
 
 quota::QuotaManagerProxy* IndexedDBContextImpl::quota_manager_proxy() {
   return quota_manager_proxy_;
+}
+
+IndexedDBContextImpl::~IndexedDBContextImpl() {
+  WebKit::WebIDBFactory* factory = idb_factory_.release();
+  if (factory) {
+    if (!BrowserThread::DeleteSoon(BrowserThread::WEBKIT_DEPRECATED,
+                                   FROM_HERE, factory))
+      delete factory;
+  }
+
+  if (data_path_.empty())
+    return;
+
+  if (save_session_state_)
+    return;
+
+  bool has_session_only_databases =
+      special_storage_policy_.get() &&
+      special_storage_policy_->HasSessionOnlyOrigins();
+
+  // Clearning only session-only databases, and there are none.
+  if (!clear_local_state_on_exit_ && !has_session_only_databases)
+    return;
+
+  // No WEBKIT thread here means we are running in a unit test where no clean
+  // up is needed.
+  BrowserThread::PostTask(
+      BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
+      base::Bind(&ClearLocalState, data_path_, clear_local_state_on_exit_,
+                 special_storage_policy_));
+}
+
+FilePath IndexedDBContextImpl::GetIndexedDBFilePath(
+    const string16& origin_id) const {
+  DCHECK(!data_path_.empty());
+  FilePath::StringType id =
+      webkit_glue::WebStringToFilePathString(origin_id).append(
+          FILE_PATH_LITERAL(".indexeddb"));
+  return data_path_.Append(id.append(kIndexedDBExtension));
 }
 
 int64 IndexedDBContextImpl::ReadUsageFromDisk(const GURL& origin_url) const {

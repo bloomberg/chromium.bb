@@ -17,9 +17,6 @@ TraceMessageFilter::TraceMessageFilter() :
     is_awaiting_bpf_ack_(false) {
 }
 
-TraceMessageFilter::~TraceMessageFilter() {
-}
-
 void TraceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   // Always on IO thread (BrowserMessageFilter guarantee).
   BrowserMessageFilter::OnFilterAdded(channel);
@@ -80,6 +77,8 @@ void TraceMessageFilter::SendGetTraceBufferPercentFull() {
   is_awaiting_bpf_ack_ = true;
   Send(new ChildProcessMsg_GetTraceBufferPercentFull);
 }
+
+TraceMessageFilter::~TraceMessageFilter() {}
 
 void TraceMessageFilter::OnChildSupportsTracing() {
   has_child_ = true;

@@ -53,7 +53,6 @@ class FileAPIMessageFilter : public content::BrowserMessageFilter {
       net::URLRequestContext* request_context,
       fileapi::FileSystemContext* file_system_context,
       ChromeBlobStorageContext* blob_storage_context);
-  virtual ~FileAPIMessageFilter();
 
   // content::BrowserMessageFilter implementation.
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
@@ -65,6 +64,9 @@ class FileAPIMessageFilter : public content::BrowserMessageFilter {
                                  bool* message_was_ok) OVERRIDE;
 
   void UnregisterOperation(int request_id);
+
+ protected:
+  virtual ~FileAPIMessageFilter();
 
  private:
   void OnOpen(int request_id,

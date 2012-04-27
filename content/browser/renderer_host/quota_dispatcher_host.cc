@@ -206,9 +206,6 @@ QuotaDispatcherHost::QuotaDispatcherHost(
       permission_context_(permission_context) {
 }
 
-QuotaDispatcherHost::~QuotaDispatcherHost() {
-}
-
 bool QuotaDispatcherHost::OnMessageReceived(
     const IPC::Message& message, bool* message_was_ok) {
   *message_was_ok = true;
@@ -222,6 +219,8 @@ bool QuotaDispatcherHost::OnMessageReceived(
   IPC_END_MESSAGE_MAP_EX()
   return handled;
 }
+
+QuotaDispatcherHost::~QuotaDispatcherHost() {}
 
 void QuotaDispatcherHost::OnQueryStorageUsageAndQuota(
     int request_id,

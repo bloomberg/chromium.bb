@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 #include "content/common/p2p_sockets.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_change_notifier.h"
 
@@ -22,7 +23,6 @@ class P2PSocketDispatcherHost
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   P2PSocketDispatcherHost(content::ResourceContext* resource_context);
-  virtual ~P2PSocketDispatcherHost();
 
   // content::BrowserMessageFilter overrides.
   virtual void OnChannelClosing() OVERRIDE;
@@ -33,7 +33,13 @@ class P2PSocketDispatcherHost
   // net::NetworkChangeNotifier::IPAddressObserver interface.
   virtual void OnIPAddressChanged() OVERRIDE;
 
+ protected:
+  virtual ~P2PSocketDispatcherHost();
+
  private:
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
+  friend class base::DeleteHelper<P2PSocketDispatcherHost>;
+
   typedef std::pair<int32, int> ExtendedSocketId;
   typedef std::map<ExtendedSocketId, P2PSocketHost*> SocketsMap;
 

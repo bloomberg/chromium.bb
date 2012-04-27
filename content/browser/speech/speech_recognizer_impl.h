@@ -48,7 +48,6 @@ class CONTENT_EXPORT SpeechRecognizerImpl
       content::SpeechRecognitionEventListener* listener,
       int session_id,
       SpeechRecognitionEngine* engine);
-  virtual ~SpeechRecognizerImpl();
 
   // content::SpeechRecognizer methods.
   virtual void StartRecognition() OVERRIDE;
@@ -57,6 +56,9 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   virtual bool IsActive() const OVERRIDE;
   virtual bool IsCapturingAudio() const OVERRIDE;
   const SpeechRecognitionEngine& recognition_engine() const;
+
+ protected:
+  virtual ~SpeechRecognizerImpl();
 
  private:
   friend class SpeechRecognizerImplTest;
