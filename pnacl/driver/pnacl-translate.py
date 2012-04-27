@@ -241,11 +241,13 @@ def main(argv):
       assert env.getbool('PIC')
       assert env.get('ARCH') != 'arm' and "no glibc support for arm yet"
     elif bctype == 'pexe':
-      assert not env.getbool('PIC')
       if env.getbool('LIBMODE_GLIBC'):   # this is our proxy for dynamic images
         assert not env.getbool('STATIC')
         assert not env.getbool('SHARED')
         assert env.get('ARCH') != 'arm' and "no glibc support for arm yet"
+        # for the dynamic case we require non-pic because we do not
+        # have the necessary tls rewrites in gold
+        assert not env.getbool('PIC')
       else:
         assert env.getbool('LIBMODE_NEWLIB')
         assert env.getbool('STATIC')
