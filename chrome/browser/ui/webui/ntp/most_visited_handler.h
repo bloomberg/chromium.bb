@@ -52,6 +52,12 @@ class MostVisitedHandler : public content::WebUIMessageHandler,
   // Callback for the "clearMostVisitedURLsBlacklist" message.
   void HandleClearBlacklist(const base::ListValue* args);
 
+  // Callback for the "mostVisitedAction" message.
+  void HandleMostVisitedAction(const base::ListValue* args);
+
+  // Callback for the "mostVisitedSelected" message.
+  void HandleMostVisitedSelected(const base::ListValue* args);
+
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -100,6 +106,12 @@ class MostVisitedHandler : public content::WebUIMessageHandler,
 
   // Keep the results of the db query here.
   scoped_ptr<base::ListValue> pages_value_;
+
+  // Whether the user has viewed the 'most visited' pane.
+  bool most_visited_viewed_;
+
+  // Whether the user has performed a "tracked" action to leave the page or not.
+  bool user_action_logged_;
 
   DISALLOW_COPY_AND_ASSIGN(MostVisitedHandler);
 };

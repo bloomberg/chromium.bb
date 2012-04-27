@@ -12,6 +12,7 @@
 #include "base/md5.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
@@ -25,13 +26,17 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/ui/webui/ntp/ntp_stats.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
@@ -42,10 +47,25 @@
 using content::UserMetricsAction;
 
 MostVisitedHandler::MostVisitedHandler()
-    : got_first_most_visited_request_(false) {
+    : got_first_most_visited_request_(false),
+      most_visited_viewed_(false),
+      user_action_logged_(false) {
 }
 
 MostVisitedHandler::~MostVisitedHandler() {
+  if (!user_action_logged_ && most_visited_viewed_) {
+    const GURL ntp_url = GURL(chrome::kChromeUINewTabURL);
+    int action_id = NTP_FOLLOW_ACTION_OTHER;
+    content::NavigationEntry* entry =
+        web_ui()->GetWebContents()->GetController().GetActiveEntry();
+    if (entry && (entry->GetURL() != ntp_url)) {
+      action_id =
+          content::PageTransitionStripQualifier(entry->GetTransitionType());
+    }
+
+    UMA_HISTOGRAM_ENUMERATION("NewTabPage.MostVisitedAction", action_id,
+                              NUM_NTP_FOLLOW_ACTIONS);
+  }
 }
 
 void MostVisitedHandler::RegisterMessages() {
@@ -87,6 +107,12 @@ void MostVisitedHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("clearMostVisitedURLsBlacklist",
       base::Bind(&MostVisitedHandler::HandleClearBlacklist,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("mostVisitedAction",
+      base::Bind(&MostVisitedHandler::HandleMostVisitedAction,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("mostVisitedSelected",
+      base::Bind(&MostVisitedHandler::HandleMostVisitedSelected,
                  base::Unretained(this)));
 }
 
@@ -156,6 +182,25 @@ void MostVisitedHandler::HandleClearBlacklist(const ListValue* args) {
   history::TopSites* ts = Profile::FromWebUI(web_ui())->GetTopSites();
   if (ts)
     ts->ClearBlacklistedURLs();
+}
+
+void MostVisitedHandler::HandleMostVisitedAction(const base::ListValue* args) {
+  DCHECK(args);
+
+  double action_id;
+  if (!args->GetDouble(0, &action_id))
+    NOTREACHED();
+
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.MostVisitedAction",
+                            static_cast<int>(action_id),
+                            NUM_NTP_FOLLOW_ACTIONS);
+  most_visited_viewed_ = true;
+  user_action_logged_ = true;
+}
+
+void MostVisitedHandler::HandleMostVisitedSelected(
+    const base::ListValue* args) {
+  most_visited_viewed_ = true;
 }
 
 void MostVisitedHandler::SetPagesValueFromTopSites(

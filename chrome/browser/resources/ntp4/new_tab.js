@@ -62,6 +62,16 @@ cr.define('ntp', function() {
   var DEFAULT_TRANSITION_TIME = 500;
 
   /**
+   * See description for these values in ntp_stats.h.
+   * @enum {number}
+   */
+  var NtpFollowAction = {
+    CLICKED_TILE: 11,
+    CLICKED_OTHER_NTP_PANE: 12,
+    OTHER: 13
+  };
+
+  /**
    * Creates a NewTabView object. NewTabView extends PageListView with
    * new tab UI specific logics.
    * @constructor
@@ -226,6 +236,7 @@ cr.define('ntp', function() {
         chrome.send('notificationPromoViewed');
       }
 
+      cr.dispatchSimpleEvent(document, 'ntpLoaded', true, true);
       document.documentElement.classList.remove('starting-up');
     });
   }
@@ -591,6 +602,7 @@ cr.define('ntp', function() {
     getCardSlider: getCardSlider,
     onLoad: onLoad,
     leaveRearrangeMode: leaveRearrangeMode,
+    NtpFollowAction: NtpFollowAction,
     saveAppPageName: saveAppPageName,
     setAppToBeHighlighted: setAppToBeHighlighted,
     setBookmarkBarAttached: setBookmarkBarAttached,

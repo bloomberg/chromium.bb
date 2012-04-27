@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/ui/webui/ntp/ntp_stats.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
@@ -39,27 +40,6 @@
 
 using content::UserMetricsAction;
 
-namespace {
-
-// Those values are defined in histograms.xml. These represent the action that
-// the user has taken to leave the Suggested pane, given that they have viewed
-// that pane on the NTP.
-enum SuggestedSitesActions {
-  // Values 0 to 10 are the core values from PageTransition (see
-  // page_transition_types.h).
-
-  // The user has clicked on a Suggested tile.
-  SUGGESTED_SITES_ACTION_CLICKED_SUGGESTED_TILE = 11,
-  // The user has moved to another pane within the NTP.
-  SUGGESTED_SITES_ACTION_CLICKED_OTHER_NTP_PANE,
-  // Any action other than what is listed here (e.g. closing the tab, etc.).
-  SUGGESTED_SITES_ACTION_OTHER,
-  // The number of suggested sites actions that we log.
-  NUM_SUGGESTED_SITES_ACTIONS
-};
-
-}  // namespace
-
 SuggestionsHandler::SuggestionsHandler()
     : got_first_suggestions_request_(false),
       suggestions_viewed_(false),
@@ -67,13 +47,9 @@ SuggestionsHandler::SuggestionsHandler()
 }
 
 SuggestionsHandler::~SuggestionsHandler() {
-  // TODO(macourteau): ensure that |suggestions_viewed_| gets set correctly,
-  // once the Suggestions pane gets statically included into the NTP (e.g.,
-  // if the Suggestions pane is the one shown by default, the
-  // |suggestions_viewed_| flag might not get set).
   if (!user_action_logged_ && suggestions_viewed_) {
     const GURL ntp_url = GURL(chrome::kChromeUINewTabURL);
-    int action_id = SUGGESTED_SITES_ACTION_OTHER;
+    int action_id = NTP_FOLLOW_ACTION_OTHER;
     content::NavigationEntry* entry =
         web_ui()->GetWebContents()->GetController().GetActiveEntry();
     if (entry && (entry->GetURL() != ntp_url)) {
@@ -82,7 +58,7 @@ SuggestionsHandler::~SuggestionsHandler() {
     }
 
     UMA_HISTOGRAM_ENUMERATION("NewTabPage.SuggestedSitesAction", action_id,
-                              NUM_SUGGESTED_SITES_ACTIONS);
+                              NUM_NTP_FOLLOW_ACTIONS);
   }
 }
 
@@ -195,7 +171,7 @@ void SuggestionsHandler::HandleSuggestedSitesAction(
 
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.SuggestedSitesAction",
                             static_cast<int>(action_id),
-                            NUM_SUGGESTED_SITES_ACTIONS);
+                            NUM_NTP_FOLLOW_ACTIONS);
   suggestions_viewed_ = true;
   user_action_logged_ = true;
 }

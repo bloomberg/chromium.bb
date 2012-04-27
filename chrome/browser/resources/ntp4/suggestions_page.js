@@ -8,16 +8,6 @@ cr.define('ntp', function() {
   var TilePage = ntp.TilePage;
 
   /**
-   * See description for these values in suggestions_page_handler.h.
-   * @enum {number}
-   */
-  var SuggestedSitesAction = {
-    CLICKED_SUGGESTED_TILE: 11,
-    CLICKED_OTHER_NTP_PANE: 12,
-    OTHER: 13
-  };
-
-  /**
    * A counter for generating unique tile IDs.
    */
   var tileID = 0;
@@ -145,7 +135,7 @@ cr.define('ntp', function() {
         chrome.send('metricsHandler:recordInHistogram',
                     ['NewTabPage.SuggestedSite', this.index, 8]);
         chrome.send('suggestedSitesAction',
-                    [SuggestedSitesAction.CLICKED_SUGGESTED_TILE]);
+                    [ntp.NtpFollowAction.CLICKED_TILE]);
       }
     },
 
@@ -335,8 +325,10 @@ cr.define('ntp', function() {
      * @param {Event} e The CardChanged event.
      */
     handleCardDeselected_: function(e) {
-      chrome.send('suggestedSitesAction',
-                  [SuggestedSitesAction.CLICKED_OTHER_NTP_PANE]);
+      if (!document.documentElement.classList.contains('starting-up')) {
+        chrome.send('suggestedSitesAction',
+                    [ntp.NtpFollowAction.CLICKED_OTHER_NTP_PANE]);
+      }
     },
 
     /**
@@ -345,7 +337,8 @@ cr.define('ntp', function() {
      * @param {Event} e The CardChanged event.
      */
     handleCardSelected_: function(e) {
-      chrome.send('suggestedSitesSelected');
+      if (!document.documentElement.classList.contains('starting-up'))
+        chrome.send('suggestedSitesSelected');
     },
 
     /**
@@ -378,6 +371,20 @@ cr.define('ntp', function() {
     /** @inheritDoc */
     heightForWidth: heightForWidth,
   };
+
+  /**
+   * Executed once the NTP has loaded. Checks if the Suggested pane is
+   * shown or not. If it is shown, the 'suggestedSitesSelected' message is sent
+   * to the C++ code, to record the fact that the user has seen this pane.
+   */
+  SuggestionsPage.onLoaded = function() {
+    if (ntp.getCardSlider() &&
+        ntp.getCardSlider().currentCardValue &&
+        ntp.getCardSlider().currentCardValue.classList
+        .contains('suggestions-page')) {
+      chrome.send('suggestedSitesSelected');
+    }
+  }
 
   /**
    * We've gotten additional data for Suggestions page. Update our old data with
@@ -456,3 +463,5 @@ cr.define('ntp', function() {
     refreshData: refreshData,
   };
 });
+
+document.addEventListener('ntpLoaded', ntp.SuggestionsPage.onLoaded);
