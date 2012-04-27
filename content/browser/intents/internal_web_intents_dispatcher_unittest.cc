@@ -69,4 +69,7 @@ TEST_F(InternalWebIntentsDispatcherTest, CancelAbandonsInjector) {
   EXPECT_FALSE(dispatcher->intent_injector_ == NULL);
   dispatcher->ResetDispatch();
   EXPECT_TRUE(dispatcher->intent_injector_ == NULL);
+
+  dispatcher->SendReplyMessage(webkit_glue::WEB_INTENT_REPLY_SUCCESS,
+                              ASCIIToUTF16("success"));
 }

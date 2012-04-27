@@ -5775,12 +5775,6 @@
    ...
    fun:_ZN*_*_Test8TestBodyEv
 }
-{
-   bug_125135
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN60InternalWebIntentsDispatcherTest_CancelAbandonsInjector_Test8TestBodyEv
-}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

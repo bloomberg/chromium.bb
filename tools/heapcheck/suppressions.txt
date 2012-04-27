@@ -1828,10 +1828,4 @@
    ...
    fun:*_*_Test::TestBody
 }
-{
-   bug_125135
-   Heapcheck:Leak
-   ...
-   fun:InternalWebIntentsDispatcherTest_CancelAbandonsInjector_Test::TestBody
-}
 
