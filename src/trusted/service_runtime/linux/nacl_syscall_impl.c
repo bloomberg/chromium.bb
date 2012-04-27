@@ -60,13 +60,11 @@
 
 int32_t NaClSysGetpid(struct NaClAppThread *natp) {
   int32_t pid;
-
-  NaClSysCommonThreadSyscallEnter(natp);
+  UNREFERENCED_PARAMETER(natp);
 
   pid = getpid();  /* TODO(bsy): obfuscate? */
   NaClLog(4, "NaClSysGetpid: returning %d\n", pid);
 
-  NaClSysCommonThreadSyscallLeave(natp);
   return pid;
 }
 
@@ -82,7 +80,6 @@ int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
           ("Entered NaClSysGetTimeOfDay(%08"NACL_PRIxPTR
            ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR")\n"),
           (uintptr_t) natp, (uintptr_t) tv, (uintptr_t) tz);
-  NaClSysCommonThreadSyscallEnter(natp);
 
   /*
    * tz is not supported in linux, nor is it supported by glibc, since
@@ -111,7 +108,6 @@ int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
   }
   retval = 0;
 cleanup:
-  NaClSysCommonThreadSyscallLeave(natp);
   return retval;
 }
 
@@ -127,9 +123,7 @@ int32_t NaClSysClock(struct NaClAppThread *natp) {
           ("Entered NaClSysClock(%08"NACL_PRIxPTR")\n"),
           (uintptr_t) natp);
 
-  NaClSysCommonThreadSyscallEnter(natp);
   retval = clock();
-  NaClSysCommonThreadSyscallLeave(natp);
   return retval;
 }
 
@@ -150,8 +144,6 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
           ("Entered NaClSysSysconf(%08"NACL_PRIxPTR
            "x, %d, 0x%08"NACL_PRIxPTR")\n"),
           (uintptr_t) natp, name, (uintptr_t) result);
-
-  NaClSysCommonThreadSyscallEnter(natp);
 
   switch (name) {
 #ifdef _SC_NPROCESSORS_ONLN
@@ -190,6 +182,5 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
   }
   retval = 0;
 cleanup:
-  NaClSysCommonThreadSyscallLeave(natp);
   return retval;
 }

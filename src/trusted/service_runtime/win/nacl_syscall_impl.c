@@ -59,6 +59,8 @@
 
 
 int32_t NaClSysGetpid(struct NaClAppThread  *natp) {
+  UNREFERENCED_PARAMETER(natp);
+
   return _getpid();  /* TODO(bsy): obfuscate? */
 }
 
@@ -74,7 +76,6 @@ int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
           ("Entered NaClSysGetTimeOfDay(%08"NACL_PRIxPTR
            ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR")\n"),
           (uintptr_t) natp, (uintptr_t) tv, (uintptr_t) tz);
-  NaClSysCommonThreadSyscallEnter(natp);
 
   /*
    * tz is not supported in linux, nor is it supported by glibc, since
@@ -92,7 +93,6 @@ int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
       retval = -NACL_ABI_EFAULT;
     }
   }
-  NaClSysCommonThreadSyscallLeave(natp);
   return retval;
 }
 
@@ -109,7 +109,6 @@ int32_t NaClSysClock(struct NaClAppThread *natp) {
           ("Entered NaClSysClock(%08"NACL_PRIxPTR")\n"),
           (uintptr_t) natp);
 
-  NaClSysCommonThreadSyscallEnter(natp);
   retval = 1000 * clock();
   /*
    * Windows CLOCKS_PER_SEC is 1000, but XSI requires it to be
@@ -128,7 +127,6 @@ int32_t NaClSysClock(struct NaClAppThread *natp) {
    * so when $\Delta n$ is small, the time difference is going to be a
    * small multiple of $1000$, regardless of wraparound.
    */
-  NaClSysCommonThreadSyscallLeave(natp);
   return retval;
 }
 
@@ -148,8 +146,6 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
           ("Entered NaClSysSysconf(%08"NACL_PRIxPTR
            "x, %d, 0x%08"NACL_PRIxPTR")\n"),
           (uintptr_t) natp, name, (uintptr_t) result);
-
-  NaClSysCommonThreadSyscallEnter(natp);
 
   switch (name) {
     case NACL_ABI__SC_NPROCESSORS_ONLN: {
@@ -183,6 +179,5 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
   }
   retval = 0;
 cleanup:
-  NaClSysCommonThreadSyscallLeave(natp);
   return retval;
 }

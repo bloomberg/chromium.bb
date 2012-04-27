@@ -36,31 +36,6 @@ int32_t NaClSysNull(struct NaClAppThread *natp);
 int32_t NaClSetBreak(struct NaClAppThread *natp,
                      uintptr_t            new_break);
 
-/*
- * Entering kernel mode from user mode.  Makes thread unkillable
- * because while switched to kernel mode, we may be holding kernel
- * locks and in the middle of mutating protected objects, and killing
- * the thread will leave the service runtime in an inconsistent state.
- * Must invoke the correspondng Leave function, except if the thread
- * is exiting anyway.
- *
- * Not all syscalls need to invoke the Enter function -- e.g., those
- * that we know definitely does not grab any locks (even implicitly,
- * in libc routines such as malloc).
- */
-void NaClSysCommonThreadSyscallEnter(struct NaClAppThread *natp);
-
-/*
- * Thread is leaving kernel mode and returning to user mode.  Checks
- * if a kill request was made, and if so commit suicide.  Must be
- * invoked if there was a corresponding Enter; not harmful if called
- * without a corresponding Enter.
- *
- * This is likely to also be used in the future to implement thread
- * suspension for user-space garbage collection.
- */
-void NaClSysCommonThreadSyscallLeave(struct NaClAppThread *natp);
-
 int NaClHighResolutionTimerEnabled(void);
 
 int32_t NaClOpenAclCheck(struct NaClApp *nap,
