@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_messaging.idl modified Mon Feb 27 13:31:21 2012. */
+/* From ppb_messaging.idl modified Thu Apr 26 13:16:11 2012. */
 
 #ifndef PPAPI_C_PPB_MESSAGING_H_
 #define PPAPI_C_PPB_MESSAGING_H_
@@ -67,7 +67,7 @@ struct PPB_Messaging_1_0 {
    *           type="application/x-ppapi-postMessage-example"/>
    *   <script type="text/javascript">
    *     var plugin = document.getElementById('plugin');
-   *     plugin.AddEventListener("message",
+   *     plugin.addEventListener("message",
    *                             function(message) { alert(message.data); },
    *                             false);
    *   </script>

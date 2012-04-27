@@ -419,7 +419,7 @@ class Instance {
   ///           type="application/x-ppapi-postMessage-example"/>
   ///   <script type="text/javascript">
   ///     var plugin = document.getElementById('plugin');
-  ///     plugin.AddEventListener("message",
+  ///     plugin.addEventListener("message",
   ///                             function(message) { alert(message.data); },
   ///                             false);
   ///   </script>
