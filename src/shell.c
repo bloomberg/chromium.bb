@@ -115,7 +115,7 @@ struct shell_surface {
 	struct shell_surface *parent;
 	struct desktop_shell *shell;
 
-	enum shell_surface_type type;
+	enum shell_surface_type type, next_type;
 	int32_t saved_x, saved_y;
 	bool saved_position_valid;
 	bool saved_rotation_valid;
@@ -707,18 +707,94 @@ reset_shell_surface_type(struct shell_surface *surface)
 }
 
 static void
+set_surface_type(struct shell_surface *shsurf)
+{
+	struct weston_surface *surface = shsurf->surface;
+	struct shell_surface *pshsurf = shsurf->parent;
+	struct weston_surface *pes;
+	struct shell_surface *priv;
+	struct desktop_shell *shell = shsurf->shell;
+
+	reset_shell_surface_type(shsurf);
+
+	shsurf->type = shsurf->next_type;
+	shsurf->next_type = SHELL_SURFACE_NONE;
+
+	switch (shsurf->type) {
+	case SHELL_SURFACE_TOPLEVEL:
+		break;
+	case SHELL_SURFACE_TRANSIENT:
+		pes = pshsurf->surface;
+		weston_surface_set_position(surface,
+					    pes->geometry.x + shsurf->popup.x,
+					    pes->geometry.y + shsurf->popup.y);
+		break;
+
+	case SHELL_SURFACE_MAXIMIZED:
+		shsurf->saved_x = surface->geometry.x;
+		shsurf->saved_y = surface->geometry.y;
+		shsurf->saved_position_valid = true;
+		break;
+
+	case SHELL_SURFACE_FULLSCREEN:
+		shsurf->saved_x = surface->geometry.x;
+		shsurf->saved_y = surface->geometry.y;
+		shsurf->saved_position_valid = true;
+
+		if (!wl_list_empty(&shsurf->rotation.transform.link)) {
+			wl_list_remove(&shsurf->rotation.transform.link);
+			wl_list_init(&shsurf->rotation.transform.link);
+			shsurf->surface->geometry.dirty = 1;
+			shsurf->saved_rotation_valid = true;
+		}
+		break;
+
+	case SHELL_SURFACE_BACKGROUND:
+		wl_list_for_each(priv, &shell->backgrounds, link) {
+			if (priv->output == shsurf->output) {
+				priv->surface->output = NULL;
+				wl_list_remove(&priv->surface->layer_link);
+				wl_list_remove(&priv->link);
+				break;
+			}
+		}
+
+		wl_list_insert(&shell->backgrounds, &shsurf->link);
+
+		weston_surface_set_position(surface, shsurf->output->x,
+					    shsurf->output->y);
+		break;
+
+	case SHELL_SURFACE_PANEL:
+		wl_list_for_each(priv, &shell->panels, link) {
+			if (priv->output == shsurf->output) {
+				priv->surface->output = NULL;
+				wl_list_remove(&priv->surface->layer_link);
+				wl_list_remove(&priv->link);
+				break;
+			}
+		}
+
+		wl_list_insert(&shell->panels, &shsurf->link);
+
+		weston_surface_set_position(surface, shsurf->output->x,
+					    shsurf->output->y);
+		break;
+
+	default:
+		break;
+	}
+}
+
+static void
 set_toplevel(struct shell_surface *shsurf)
 {
-       if (reset_shell_surface_type(shsurf))
-               return;
-
-       shsurf->type = SHELL_SURFACE_TOPLEVEL;
+       shsurf->next_type = SHELL_SURFACE_TOPLEVEL;
 }
 
 static void
 shell_surface_set_toplevel(struct wl_client *client,
 			   struct wl_resource *resource)
-
 {
 	struct shell_surface *surface = resource->data;
 
@@ -732,19 +808,12 @@ shell_surface_set_transient(struct wl_client *client,
 			    int x, int y, uint32_t flags)
 {
 	struct shell_surface *shsurf = resource->data;
-	struct weston_surface *es = shsurf->surface;
-	struct shell_surface *pshsurf = parent_resource->data;
-	struct weston_surface *pes = pshsurf->surface;
-
-	if (reset_shell_surface_type(shsurf))
-		return;
 
 	/* assign to parents output */
-	shsurf->output = pes->output;
- 	weston_surface_set_position(es, pes->geometry.x + x,
-					pes->geometry.y + y);
-
-	shsurf->type = SHELL_SURFACE_TRANSIENT;
+	shsurf->parent = parent_resource->data;
+	shsurf->popup.x = x;
+	shsurf->popup.y = y;
+	shsurf->next_type = SHELL_SURFACE_TRANSIENT;
 }
 
 static struct desktop_shell *
@@ -789,13 +858,6 @@ shell_surface_set_maximized(struct wl_client *client,
 	else
 		shsurf->output = get_default_output(es->compositor);
 
-	if (reset_shell_surface_type(shsurf))
-		return;
-
-	shsurf->saved_x = es->geometry.x;
-	shsurf->saved_y = es->geometry.y;
-	shsurf->saved_position_valid = true;
-
 	shell = shell_surface_get_shell(shsurf);
 	panel_height = get_output_panel_height(shell, es->output);
 	edges = WL_SHELL_SURFACE_RESIZE_TOP|WL_SHELL_SURFACE_RESIZE_LEFT;
@@ -804,7 +866,7 @@ shell_surface_set_maximized(struct wl_client *client,
 					es->output->current->width,
 					es->output->current->height - panel_height);
 
-	shsurf->type = SHELL_SURFACE_MAXIMIZED;
+	shsurf->next_type = SHELL_SURFACE_MAXIMIZED;
 }
 
 static void
@@ -941,27 +1003,13 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	else
 		shsurf->output = get_default_output(es->compositor);
 
-	if (reset_shell_surface_type(shsurf))
-		return;
-
 	shsurf->fullscreen_output = shsurf->output;
 	shsurf->fullscreen.type = method;
 	shsurf->fullscreen.framerate = framerate;
-	shsurf->type = SHELL_SURFACE_FULLSCREEN;
-
-	shsurf->saved_x = es->geometry.x;
-	shsurf->saved_y = es->geometry.y;
-	shsurf->saved_position_valid = true;
+	shsurf->next_type = SHELL_SURFACE_FULLSCREEN;
 
 	if (weston_surface_is_mapped(es))
 		shsurf->force_configure = 1;
-
-	if (!wl_list_empty(&shsurf->rotation.transform.link)) {
-		wl_list_remove(&shsurf->rotation.transform.link);
-		wl_list_init(&shsurf->rotation.transform.link);
-		shsurf->surface->geometry.dirty = 1;
-		shsurf->saved_rotation_valid = true;
-	}
 
 	wl_shell_surface_send_configure(&shsurf->resource, 0,
 					shsurf->output->current->width,
@@ -1210,6 +1258,7 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 	weston_matrix_init(&shsurf->rotation.rotation);
 
 	shsurf->type = SHELL_SURFACE_NONE;
+	shsurf->next_type = SHELL_SURFACE_NONE;
 
 	*ret = shsurf;
 }
@@ -1318,30 +1367,10 @@ desktop_shell_set_background(struct wl_client *client,
 			     struct wl_resource *output_resource,
 			     struct wl_resource *surface_resource)
 {
-	struct desktop_shell *shell = resource->data;
 	struct shell_surface *shsurf = surface_resource->data;
-	struct weston_surface *surface = shsurf->surface;
-	struct shell_surface *priv;
 
-	if (reset_shell_surface_type(shsurf))
-		return;
-
-	wl_list_for_each(priv, &shell->backgrounds, link) {
-		if (priv->output == output_resource->data) {
-			priv->surface->output = NULL;
-			wl_list_remove(&priv->surface->layer_link);
-			wl_list_remove(&priv->link);
-			break;
-		}
-	}
-
-	shsurf->type = SHELL_SURFACE_BACKGROUND;
+	shsurf->next_type = SHELL_SURFACE_BACKGROUND;
 	shsurf->output = output_resource->data;
-
-	wl_list_insert(&shell->backgrounds, &shsurf->link);
-
-	weston_surface_set_position(surface, shsurf->output->x,
-				    shsurf->output->y);
 
 	desktop_shell_send_configure(resource, 0,
 				     surface_resource,
@@ -1355,30 +1384,10 @@ desktop_shell_set_panel(struct wl_client *client,
 			struct wl_resource *output_resource,
 			struct wl_resource *surface_resource)
 {
-	struct desktop_shell *shell = resource->data;
 	struct shell_surface *shsurf = surface_resource->data;
-	struct weston_surface *surface = shsurf->surface;
-	struct shell_surface *priv;
 
-	if (reset_shell_surface_type(shsurf))
-		return;
-
-	wl_list_for_each(priv, &shell->panels, link) {
-		if (priv->output == output_resource->data) {
-			priv->surface->output = NULL;
-			wl_list_remove(&priv->surface->layer_link);
-			wl_list_remove(&priv->link);
-			break;
-		}
-	}
-
-	shsurf->type = SHELL_SURFACE_PANEL;
+	shsurf->next_type = SHELL_SURFACE_PANEL;
 	shsurf->output = output_resource->data;
-
-	wl_list_insert(&shell->panels, &shsurf->link);
-
-	weston_surface_set_position(surface, shsurf->output->x,
-				    shsurf->output->y);
 
 	desktop_shell_send_configure(resource, 0,
 				     surface_resource,
@@ -1404,9 +1413,6 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 	struct desktop_shell *shell = resource->data;
 	struct shell_surface *surface = surface_resource->data;
 
-	if (reset_shell_surface_type(surface))
-		return;
-
 	shell->prepare_event_sent = false;
 
 	if (!shell->locked)
@@ -1418,7 +1424,7 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 	wl_signal_add(&surface_resource->destroy_signal,
 		      &shell->lock_surface_listener);
 
-	shell->lock_surface->type = SHELL_SURFACE_LOCK;
+	shell->lock_surface->next_type = SHELL_SURFACE_LOCK;
 }
 
 static void
@@ -2127,6 +2133,10 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 	struct shell_surface *shsurf = get_shell_surface(es);
 	struct desktop_shell *shell = shsurf->shell;
 
+	if (shsurf->next_type != SHELL_SURFACE_NONE &&
+	    shsurf->type != shsurf->next_type)
+		set_surface_type(shsurf);
+
 	if (!weston_surface_is_mapped(es)) {
 		map(shell, es, es->buffer->width, es->buffer->height, sx, sy);
 	} else if (shsurf->force_configure || sx != 0 || sy != 0 ||
@@ -2243,10 +2253,7 @@ screensaver_set_surface(struct wl_client *client,
 	struct shell_surface *surface = shell_surface_resource->data;
 	struct weston_output *output = output_resource->data;
 
-	if (reset_shell_surface_type(surface))
-		return;
-
-	surface->type = SHELL_SURFACE_SCREENSAVER;
+	surface->next_type = SHELL_SURFACE_SCREENSAVER;
 
 	surface->fullscreen_output = output;
 	surface->output = output;
