@@ -23,7 +23,8 @@ class APIResource {
  protected:
   enum APIResourceType {
     SocketResource,
-    SerialConnectionResource
+    SerialConnectionResource,
+    UsbDeviceResource,
   };
   APIResource(APIResourceType api_resource_type,
               APIResourceEventNotifier* event_notifier);
