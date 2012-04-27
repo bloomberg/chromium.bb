@@ -3243,6 +3243,7 @@ irt_variant_tests = [
     'tests/glibc_syscall_wrappers/nacl.scons',
     'tests/glibc_socket_wrappers/nacl.scons',
     'tests/hello_world/nacl.scons',
+    'tests/imc_shm_mmap/nacl.scons',
     'tests/infoleak/nacl.scons',
     'tests/libc_free_hello_world/nacl.scons',
     'tests/longjmp/nacl.scons',
@@ -3286,11 +3287,13 @@ irt_variant_tests = [
     'tests/toolchain/nacl.scons',
     'tests/unittests/shared/platform/nacl.scons',
     'tests/untrusted_check/nacl.scons',
-    # NOTE: This test is really an irt-only test, but is in this category so
-    # that it can combine: a shared library, an irt-only sel_ldr test,
-    # and a browser_tester test.
-    'tests/untrusted_crash_dump/nacl.scons',
     #### ALPHABETICALLY SORTED ####
+    # NOTE: The following tests are really IRT-only tests, but they
+    # are in this category so that they can generate libraries (which
+    # works in nacl_env but not in nacl_irt_test_env) while also
+    # adding tests to nacl_irt_test_env.
+    'tests/inbrowser_test_runner/nacl.scons',
+    'tests/untrusted_crash_dump/nacl.scons',
     ]
 
 # These are tests that are NOT worthwhile to run in an IRT variant.
@@ -3303,10 +3306,8 @@ nonvariant_tests = ExtendFileList([
     'tests/chrome_extension/nacl.scons',
     'tests/custom_desc/nacl.scons',
     'tests/exit_status/nacl.scons',
-    'tests/imc_shm_mmap/nacl.scons',
     'tests/imc_sockets/nacl.scons',
     'tests/inbrowser_crash_test/nacl.scons',
-    'tests/inbrowser_test_runner/nacl.scons',
     'tests/minnacl/nacl.scons',
     'tests/multiple_sandboxes/nacl.scons',
     'tests/nacl.scons',
@@ -3569,10 +3570,17 @@ def IrtTestDummyLibrary(*args, **kwargs):
 nacl_irt_test_env.AddMethod(IrtTestDummyLibrary, 'ComponentLibrary')
 
 def IrtTestAddNodeToTestSuite(env, node, suite_name, node_name=None,
-                              is_broken=False, is_flaky=False):
-  if node_name is not None:
-    node_name += '_irt'
-  suite_name = [name + '_irt' for name in suite_name]
+                              is_broken=False, is_flaky=False,
+                              disable_irt_suffix=False):
+  # The disable_irt_suffix argument is there for allowing tests
+  # defined in nacl_irt_test_env to be part of chrome_browser_tests
+  # (rather than part of chrome_browser_tests_irt).
+  # TODO(mseaborn): But really, all of chrome_browser_tests should be
+  # placed in nacl_irt_test_env rather than in nacl_env.
+  if not disable_irt_suffix:
+    if node_name is not None:
+      node_name += '_irt'
+    suite_name = [name + '_irt' for name in suite_name]
   return AddNodeToTestSuite(env, node, suite_name, node_name,
                             is_broken, is_flaky)
 nacl_irt_test_env.AddMethod(IrtTestAddNodeToTestSuite, 'AddNodeToTestSuite')

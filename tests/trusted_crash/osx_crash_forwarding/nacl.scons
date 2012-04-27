@@ -24,7 +24,8 @@ runner = trusted_env.ComponentProgram(
     'mach_crash_forwarding_test', ['mach_crash_forwarding_test.c'],
     EXTRA_LIBS=['sel', 'sel_debug_dummy'])
 
-untrusted_caught_nexe = env.File('${STAGING_DIR}/exception_test${PROGSUFFIX}')
+untrusted_caught_nexe = env.File(
+    '${STAGING_DIR}/exception_test_${TARGET_FULLARCH}${PROGSUFFIX}')
 untrusted_crash_nexe = env.File('${STAGING_DIR}/crash_test${PROGSUFFIX}')
 trusted_crash_nexe = env.File('${STAGING_DIR}/crash_in_syscall${PROGSUFFIX}')
 is_broken = not env.Bit('nacl_static_link')

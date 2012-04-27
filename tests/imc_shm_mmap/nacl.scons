@@ -6,22 +6,18 @@
 Import('env')
 
 
-test_libs = ['testrunner', 'imc_syscalls', 'platform', 'gio']
-browser_test_libs = ['testrunner_browser', '${PPAPI_LIBS}', 'imc_syscalls']
+if env.Bit('tests_use_irt'):
+  testrunner_libs = ['testrunner_browser', '${PPAPI_LIBS}']
+else:
+  testrunner_libs = ['testrunner']
 
 
-objs = env.ComponentObject('imc_shm_mmap_test', 'imc_shm_mmap_test.c')
-
-imc_shm_mmap_test_nexe_name = env.ProgramNameForNmf('imc_shm_mmap_test')
-imc_shm_mmap_test_nexe = env.ComponentProgram(imc_shm_mmap_test_nexe_name,
-                                              objs,
-                                              EXTRA_LIBS=browser_test_libs)
-
-imc_shm_mmap_test_nonbrowser = env.ComponentProgram(
-    'imc_shm_mmap_test_nonbrowser',
-    objs,
-    EXTRA_LIBS=test_libs + ['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
+imc_shm_mmap_test = env.ComponentProgram(
+    env.ProgramNameForNmf('imc_shm_mmap_test'),
+    'imc_shm_mmap_test.c',
+    EXTRA_LIBS=['${NONIRT_LIBS}', 'imc_syscalls'] + testrunner_libs)
 
 node = env.CommandSelLdrTestNacl('imc_shm_mmap_test.out',
-                                 imc_shm_mmap_test_nonbrowser)
+                                 imc_shm_mmap_test,
+                                 sel_ldr_flags=['-E', 'OUTSIDE_BROWSER=1'])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_imc_shm_mmap_test')

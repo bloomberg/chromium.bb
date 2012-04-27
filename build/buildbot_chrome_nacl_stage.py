@@ -202,7 +202,12 @@ def BuildAndTest(options):
     env['VS80COMNTOOLS'] = 'c:\\Program Files\\Microsoft Visual Studio 8.0\\Common7\\Tools\\'
 
   # Run nacl/chrome integration tests.
+  # Note that we have to add nacl_irt_test to --mode in order to get
+  # inbrowser_test_runner to run.
+  # TODO(mseaborn): Change it so that inbrowser_test_runner is not a
+  # special case.
   cmd = scons + ['--verbose', '-k', 'platform=x86-%d' % bits,
+      '--mode=opt-host,nacl,nacl_irt_test',
       'disable_dynamic_plugin_loading=1',
       'chrome_browser_path=%s' % chrome_filename,
   ]

@@ -41,8 +41,12 @@ const static PPB_Var *g_browser_var;
 int RunTests(int (*test_func)(void)) {
   /* Turn off stdout buffering to aid debugging in case of a crash. */
   setvbuf(stdout, NULL, _IONBF, 0);
-  g_test_func = test_func;
-  return PpapiPluginMain();
+  if (getenv("OUTSIDE_BROWSER") != NULL) {
+    return test_func();
+  } else {
+    g_test_func = test_func;
+    return PpapiPluginMain();
+  }
 }
 
 int TestRunningInBrowser() {

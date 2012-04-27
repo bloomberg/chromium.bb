@@ -301,7 +301,12 @@ def BuildScript(status, context):
 
   if do_integration_tests:
     with Step('chrome_browser_tests', status, halt_on_fail=False):
+      # Note that we have to add nacl_irt_test to --mode in order to
+      # get inbrowser_test_runner to run.
+      # TODO(mseaborn): Change it so that inbrowser_test_runner is not
+      # a special case.
       SCons(context, browser_test=True,
+            mode=context['default_scons_mode'] + ['nacl_irt_test'],
             args=['SILENT=1', 'chrome_browser_tests'])
 
     # TODO(mcgrathr): Clean up how we organize tests and do this differently.

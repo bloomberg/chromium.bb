@@ -44,56 +44,25 @@ def GetTemplate(env):
   else:
     return 'templates_x86.S'
 
-
-nonbrowser_libs = ['testrunner',
-                   '${DYNCODE_LIBS}',
-                   'imc_syscalls',
-                   'platform',
-                   'gio',
-                   '${PTHREAD_LIBS}',
-                   '${NONIRT_LIBS}']
-browser_libs = ['testrunner_browser',
-                '${PPAPI_LIBS}',
-                'nacl_dyncode',
-                'nacl',
-                'pthread']
+if env.Bit('tests_use_irt'):
+  testrunner_libs = ['testrunner_browser', '${PPAPI_LIBS}']
+else:
+  testrunner_libs = ['testrunner']
 
 template_obj = asm_env.ComponentObject(GetTemplate(env))
 
-dynamic_load_test_object = env.ComponentObject(['dynamic_load_test.c',
-                                                'dynamic_load_test_threaded.c'])
-
-dynamic_load_nonbrowser_test_nexe_name = env.ProgramNameForNmf(
-    'dynamic_load_test')
 dynamic_load_test_nexe = env.ComponentProgram(
-    dynamic_load_nonbrowser_test_nexe_name,
-    [dynamic_load_test_object, template_obj],
-    EXTRA_LIBS=nonbrowser_libs)
+    env.ProgramNameForNmf('dynamic_load_test'),
+    ['dynamic_load_test.c',
+     'dynamic_load_test_threaded.c',
+     template_obj],
+    EXTRA_LIBS=['${NONIRT_LIBS}', '${DYNCODE_LIBS}',
+                '${PTHREAD_LIBS}'] + testrunner_libs)
 
-if env.Bit('irt'):
-  dynamic_load_browser_test_nexe_name = env.ProgramNameForNmf(
-      'dynamic_load_browser_test')
-  dynamic_load_browser_test_nexe = env.ComponentProgram(
-      dynamic_load_browser_test_nexe_name,
-      [dynamic_load_test_object, template_obj],
-      EXTRA_LIBS=browser_libs)
-
-dynamic_modify_test_object = env.ComponentObject(['dynamic_modify_test.c'])
-
-dynamic_modify_test_nexe_name = env.ProgramNameForNmf(
-    'dynamic_modify_test')
 dynamic_modify_test_nexe = env.ComponentProgram(
-    dynamic_modify_test_nexe_name,
-    [dynamic_modify_test_object, template_obj],
-    EXTRA_LIBS=nonbrowser_libs)
-
-if env.Bit('irt'):
-  dynamic_modify_browser_test_nexe_name = env.ProgramNameForNmf(
-      'dynamic_modify_browser_test')
-  dynamic_modify_browser_test_nexe = env.ComponentProgram(
-      dynamic_modify_browser_test_nexe_name,
-      [dynamic_modify_test_object, template_obj],
-      EXTRA_LIBS=browser_libs)
+    env.ProgramNameForNmf('dynamic_modify_test'),
+    ['dynamic_modify_test.c', template_obj],
+    EXTRA_LIBS=['${NONIRT_LIBS}', '${DYNCODE_LIBS}'] + testrunner_libs)
 
 write_to_dyncode_nexe = env.ComponentProgram(
     'write_to_dyncode',
@@ -119,7 +88,7 @@ dyncode_demand_alloc_test_nexe = env.ComponentProgram(
 test_suites = ['small_tests', 'sel_ldr_tests', 'dynamic_load_tests',
                'nonpexe_tests']
 
-sel_ldr_flags = []
+sel_ldr_flags = ['-E', 'OUTSIDE_BROWSER=1']
 if env.Bit('target_arm') and env.UsingEmulator():
   sel_ldr_flags.extend(['-E', 'UNDER_QEMU_ARM=1'])
 if env.IsRunningUnderValgrind():
@@ -162,7 +131,8 @@ if not env.Bit('tests_use_irt'):
 
 if not env.Bit('target_arm'):
   node = env.CommandSelLdrTestNacl('dynamic_modify_test.out',
-                                   dynamic_modify_test_nexe)
+                                   dynamic_modify_test_nexe,
+                                   sel_ldr_flags=['-E', 'OUTSIDE_BROWSER=1'])
   # This test fails under Valgrind presumably because Valgrind cannot
   # handle dynamic code modifications that occur via our doubly-mapped
   # shared memory segment.  It does not know to flush its code
