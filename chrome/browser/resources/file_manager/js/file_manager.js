@@ -4350,8 +4350,6 @@ FileManager.prototype = {
     function closeBanner() {
       self.directoryModel_.removeEventListener('scan-completed',
           maybeShowBanner);
-      self.directoryModel_.removeEventListener('rescan-completed',
-          maybeShowBanner);
 
       self.dialogContainer_.removeAttribute('gdrive-welcome');
       // Stop showing the welcome banner.
@@ -4359,7 +4357,6 @@ FileManager.prototype = {
     }
 
     this.directoryModel_.addEventListener('scan-completed', maybeShowBanner);
-    this.directoryModel_.addEventListener('rescan-completed', maybeShowBanner);
 
     var style = this.document_.createElement('link');
     style.rel = 'stylesheet';
