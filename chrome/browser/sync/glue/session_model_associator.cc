@@ -467,7 +467,8 @@ void SessionModelAssociator::AssociateTabContents(
   }
 
   sync_tab->mutable_navigation()->Clear();
-  std::vector<SyncedTabNavigation>::const_iterator prev_nav_iter;
+  std::vector<SyncedTabNavigation>::const_iterator prev_nav_iter =
+      prev_tab->synced_tab_navigations.begin();
   for (int i = min_index; i < max_index; ++i) {
     const NavigationEntry* entry = (i == pending_index) ?
        new_tab.GetPendingEntry() : new_tab.GetEntryAtIndex(i);
@@ -476,8 +477,7 @@ void SessionModelAssociator::AssociateTabContents(
       // Find the location of the first navigation within the previous list of
       // navigations. We only need to do this once, as all subsequent
       // navigations are either contiguous or completely new.
-      for (prev_nav_iter = prev_tab->synced_tab_navigations.begin();
-           prev_nav_iter != prev_tab->synced_tab_navigations.end();
+      for (;prev_nav_iter != prev_tab->synced_tab_navigations.end();
            ++prev_nav_iter) {
         if (prev_nav_iter->unique_id() == entry->GetUniqueID())
           break;
