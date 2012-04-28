@@ -45,6 +45,7 @@ enum operand_type {
 };
 
 enum register_name {
+  /* First 16 registers are compatible with encoding of registers in x86 ABI. */
   REG_RAX,
   REG_RCX,
   REG_RDX,
@@ -61,6 +62,7 @@ enum register_name {
   REG_R13,
   REG_R14,
   REG_R15,
+  /* These are pseudo-registers used in special cases.                        */
   REG_RM,       /* Address in memory via rm field.                            */
   REG_RIP,      /* RIP - used as base in x86-64 mode.                         */
   REG_RIZ,      /* EIZ/RIZ - used as "always zero index" register.            */
@@ -114,15 +116,16 @@ typedef void (*process_instruction_func) (const uint8_t *begin,
                                           struct instruction *instruction,
                                           void *userdata);
 
-typedef void (*process_error_func) (const uint8_t *ptr, void *userdata);
+typedef void (*process_decoding_error_func) (const uint8_t *ptr,
+                                             void *userdata);
 
 int DecodeChunkAMD64(const uint8_t *data, size_t size,
                      process_instruction_func process_instruction,
-                     process_error_func process_error, void *userdata);
+                     process_decoding_error_func process_error, void *userdata);
 
 int DecodeChunkIA32(const uint8_t *data, size_t size,
                     process_instruction_func process_instruction,
-                    process_error_func process_error, void *userdata);
+                    process_decoding_error_func process_error, void *userdata);
 
 #ifdef __cplusplus
 }

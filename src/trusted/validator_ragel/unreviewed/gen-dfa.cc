@@ -116,7 +116,9 @@ namespace {
 "  parse_x87_operands        parse x87 operands\n"
 "  parse_mmx_operands        parse MMX operands\n"
 "  parse_xmm_operands        parse XMM operands\n"
-"  parse_ymm_operands        parse YMM operands\n";
+"  parse_ymm_operands        parse YMM operands\n"
+"  parse_operand_positions   produce corrent numbers of operands (required\n"
+"                              for decoding, not important for validation)\n";
 
   const char* const kVersionHelp = "%1$s %2$s\n"
 "Copyright (c) 2012 The Native Client Authors. All rights reserved.\n"
@@ -137,6 +139,7 @@ namespace {
     kParseMMXOperands,
     kParseXMMOperands,
     kParseYMMOperands,
+    kParseOperandPositions,
     kMarkDataFields,
     kCheckAccess,
     kImmOperandAction,
@@ -157,6 +160,7 @@ namespace {
     "parse_mmx_operands",
     "parse_xmm_operands",
     "parse_ymm_operands",
+    "parse_operand_positions",
     "mark_data_fields",
     "check_access",
     "imm_operand_action",
@@ -1649,9 +1653,9 @@ namespace {
       print_opcode_nomodrm();
       if (opcode_in_imm) {
         print_immediate_opcode();
-        print_opcode_recognition();
+        print_opcode_recognition(false);
       } else {
-        print_opcode_recognition();
+        print_opcode_recognition(false);
         print_immediate_arguments();
       }
     }
@@ -1668,10 +1672,11 @@ namespace {
       print_rex_prefix();
       print_opcode_nomodrm();
       if (!opcode_in_imm) {
-        print_opcode_recognition();
+        print_opcode_recognition(false);
       }
       fprintf(out_file, " modrm_registers");
       if (enabled(Actions::kParseOperands)) {
+        auto operand_index = 0;
         for (auto operand_it = operands.begin();
              operand_it != operands.end(); ++operand_it) {
           auto &operand = *operand_it;
@@ -1690,11 +1695,15 @@ namespace {
             { 'V', "reg"       },
             { 'W', "rm"        }
           };
-          auto it = operand_type.find(operand.source);
-          if (it != operand_type.end() &&
-              (operand.enabled || !strcmp(it->second, "rm"))) {
-            fprintf(out_file, " @operand%zd_from_modrm_%s",
-                    &operand - &*operands.begin(), it->second);
+          if (operand.enabled) {
+            auto it = operand_type.find(operand.source);
+            if (it != operand_type.end()) {
+              fprintf(out_file, " @operand%zd_from_modrm_%s", operand_index,
+                      it->second);
+            }
+          }
+          if (operand.enabled || enabled(Actions::kParseOperandPositions)) {
+            ++operand_index;
           }
         }
       }
@@ -1703,7 +1712,7 @@ namespace {
       }
       if (opcode_in_imm) {
         print_immediate_opcode();
-        print_opcode_recognition();
+        print_opcode_recognition(false);
       } else {
         print_immediate_arguments();
       }
@@ -1732,7 +1741,7 @@ namespace {
         print_rex_prefix();
         print_opcode_nomodrm();
         if (!opcode_in_imm) {
-          print_opcode_recognition();
+          print_opcode_recognition(true);
         }
         if (opcode_in_modrm) {
           fprintf(out_file, " any");
@@ -1740,6 +1749,7 @@ namespace {
           fprintf(out_file, " (any");
         }
         if (enabled(Actions::kParseOperands)) {
+          auto operand_index = 0;
           for (auto operand_it = operands.begin();
                operand_it != operands.end(); ++operand_it) {
             auto &operand = *operand_it;
@@ -1758,11 +1768,16 @@ namespace {
               { 'V', "from_modrm_reg"         },
               { 'W', "rm"                     }
             };
-            auto it = operand_type.find(operand.source);
-            if (it != operand_type.end() &&
-                (operand.enabled || !strcmp(it->second, "rm"))) {
-              fprintf(out_file, " @operand%zd_%s",
-                      &operand - &*operands.begin(), it->second);
+            if (operand.enabled) {
+              auto it = operand_type.find(operand.source);
+              if (it != operand_type.end() &&
+                  (strcmp(it->second, "rm") ||
+                   enabled(Actions::kParseOperandPositions))) {
+                fprintf(out_file, " @operand%zd_%s", operand_index, it->second);
+              }
+            }
+            if (operand.enabled || enabled(Actions::kParseOperandPositions)) {
+              ++operand_index;
             }
           }
         }
@@ -1773,7 +1788,7 @@ namespace {
         fprintf(out_file, ")");
         if (opcode_in_imm) {
           print_immediate_opcode();
-          print_opcode_recognition();
+          print_opcode_recognition(true);
         } else {
           print_immediate_arguments();
         }
@@ -2059,18 +2074,23 @@ namespace {
         fprintf(out_file, " >begin_opcode");
       }
       if (enabled(Actions::kParseOperands)) {
+        auto operand_index = 0;
         for (auto operand_it = operands.begin();
              operand_it != operands.end(); ++operand_it) {
           auto &operand = *operand_it;
-          if (operand.source == 'r') {
-            fprintf(out_file, " @operand%zd_from_opcode",
-                    &operand - &*operands.begin());
+          if (operand.enabled && operand.source == 'r') {
+            if (enabled(Actions::kParseX87Operands) || (operand.size != "7")) {
+              fprintf(out_file, " @operand%zd_from_opcode", operand_index);
+            }
+          }
+          if (operand.enabled || enabled(Actions::kParseOperandPositions)) {
+            ++operand_index;
           }
         }
       }
     }
 
-    void print_opcode_recognition(void) {
+    void print_opcode_recognition(bool memory_access) {
       if (opcode_in_modrm) {
         fprintf(out_file, " (");
         for (auto opcode = opcodes.rbegin(); opcode != opcodes.rend();
@@ -2111,7 +2131,10 @@ namespace {
         fprintf(out_file, " @instruction_%s", c_identifier(name).c_str());
       }
       if (enabled(Actions::kParseOperands)) {
-        fprintf(out_file, " @operands_count_is_%zd", operands.size());
+        if (enabled(Actions::kParseOperandPositions)) {
+          fprintf(out_file, " @operands_count_is_%zd", operands.size());
+        }
+        int operand_index = 0;
         for (auto operand_it = operands.begin();
              operand_it != operands.end(); ++operand_it) {
           auto &operand = *operand_it;
@@ -2237,19 +2260,26 @@ namespace {
               operand.enabled = false;
             }
             if (!enabled(Actions::kParseXMMOperands) &&
-                !strcmp(it->second, "xmm")) {
+                (!strcmp(it->second, "xmm") ||
+                 !strcmp(it->second, "128bit"))) {
               operand.enabled = false;
             }
             if (!enabled(Actions::kParseYMMOperands) &&
-                !strcmp(it->second, "ymm")) {
+                (!strcmp(it->second, "ymm") ||
+                 !strcmp(it->second, "256bit"))) {
               operand.enabled = false;
             }
-            if (!operand.write && ! enabled(Actions::kParseNonWriteRegisters)) {
+            if (!operand.write && !enabled(Actions::kParseNonWriteRegisters)) {
               operand.enabled = false;
             }
             if (operand.enabled) {
-              fprintf(out_file, " @operand%zd_%s",
-                      &operand - &*operands.begin(), it->second);
+              if (enabled(Actions::kParseOperandPositions) ||
+                  (((operand.source != 'E') && (operand.source != 'M') &&
+                    (operand.source != 'N') && (operand.source != 'Q') &&
+                    (operand.source != 'R') && (operand.source != 'U') &&
+                    (operand.source != 'W')) || !memory_access)) {
+                fprintf(out_file, " @operand%zd_%s", operand_index, it->second);
+              }
             }
           }
           static std::map<char, const char*> operand_type {
@@ -2271,34 +2301,36 @@ namespace {
           auto it2 = operand_type.find(operand.source);
           if (it2 != operand_type.end()) {
             if (operand.enabled) {
-              fprintf(out_file, " @operand%zd_%s",
-                      &operand - &*operands.begin(), it2->second);
+              fprintf(out_file, " @operand%zd_%s", operand_index, it2->second);
             }
+          }
+          if (operand.enabled || enabled(Actions::kParseOperandPositions)) {
+            ++operand_index;
           }
         }
       }
       if (enabled(Actions::kParseOperandsStates)) {
+        auto operand_index = 0;
         for (auto operand_it = operands.begin();
              operand_it != operands.end(); ++operand_it) {
           auto &operand = *operand_it;
           if (operand.enabled) {
             if (operand.write) {
               if (operand.read) {
-                fprintf(out_file, " @operand%zd_readwrite",
-                        &operand - &*operands.begin());
+                fprintf(out_file, " @operand%zd_readwrite", operand_index);
               } else {
-                fprintf(out_file, " @operand%zd_write",
-                        &operand - &*operands.begin());
+                fprintf(out_file, " @operand%zd_write", operand_index);
               }
             } else {
               if (operand.read) {
-                fprintf(out_file, " @operand%zd_read",
-                        &operand - &*operands.begin());
+                fprintf(out_file, " @operand%zd_read", operand_index);
               } else {
-                fprintf(out_file, " @operand%zd_unused",
-                        &operand - &*operands.begin());
+                fprintf(out_file, " @operand%zd_unused", operand_index);
               }
             }
+          }
+          if (operand.enabled || enabled(Actions::kParseOperandPositions)) {
+            ++operand_index;
           }
         }
       }
@@ -2308,6 +2340,12 @@ namespace {
     }
 
     void print_immediate_arguments(void) {
+      auto operand_index = 0;
+      for (auto it = operands.begin(); it != operands.end(); ++it) {
+        if (it->enabled || enabled(Actions::kParseOperandPositions)) {
+          ++operand_index;
+        }
+      }
       for (auto operand = operands.rbegin(); operand != operands.rend();
                                                                     ++operand) {
         static const std::map<std::pair<InstructionClass, std::string>,
@@ -2379,9 +2417,8 @@ namespace {
               fprintf(out_file, " %s", chartest((c & 0x0f) == 0x00));
             }
           }
-          if (enabled(Actions::kParseOperands)) {
-            fprintf(out_file, " @operand%zd_from_is4",
-                                                 operands.rend() - operand - 1);
+          if (operand->enabled && enabled(Actions::kParseOperands)) {
+            fprintf(out_file, " @operand%zd_from_is4", operand_index - 1);
           }
         }
         if (operand->source == 'O') {
@@ -2390,6 +2427,9 @@ namespace {
           } else {
             fprintf(out_file, " disp64");
           }
+        }
+        if (operand->enabled || enabled(Actions::kParseOperandPositions)) {
+          --operand_index;
         }
       }
       for (auto prefix_it = required_prefixes.begin();

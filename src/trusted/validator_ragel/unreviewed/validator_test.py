@@ -211,6 +211,27 @@ rep movsb %ds:(%rsi), %es:(%rdi)
 // %rsi should not be regarded as zero-extended here.
 mov (%r15, %rsi), %ebx
 """)
+TestCase(accept=False, asm="""
+mov %esi, %esi
+lea (%r15, %rsi), %rsi
+xchg %esi, %edi
+lea (%r15, %rdi), %rdi
+rep movsb %ds:(%rsi), %es:(%rdi)
+""")
+TestCase(accept=False, asm="""
+mov %esi, %esi
+lea (%r15, %rsi), %rsi
+xchg %edi, %esi
+lea (%r15, %rdi), %rdi
+rep movsb %ds:(%rsi), %es:(%rdi)
+""")
+TestCase(accept=True, asm="""
+mov %esi, %esi
+lea (%r15, %rsi), %rsi
+xchg %edi, %edi
+lea (%r15, %rdi), %rdi
+rep movsb %ds:(%rsi), %es:(%rdi)
+""")
 
 # Non-%r15-based memory accesses.
 TestCase(accept=True, asm='mov 0x1234(%rip), %eax')
@@ -245,6 +266,9 @@ TestCase(accept=False, asm='add %r15, %r15')
 # Sandboxing is not required on prefetch instructions.
 TestCase(accept=True, asm='prefetchnta (%rax)')
 
+# Segment registers manipulations are forbidden
+TestCase(accept=False, asm='mov %rax, %es');
+TestCase(accept=False, asm='mov %es, %rax');
 
 def Main():
   for test_case in test_cases:

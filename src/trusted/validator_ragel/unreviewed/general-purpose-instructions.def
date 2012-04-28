@@ -489,9 +489,9 @@ mfence, 0x0f 0xae 0xf0, Fn0000_0001_EDX_SSE2
 ######## MOV ###################################################################
 mov G E, 0x88
 mov E G, 0x8a
-mov Sw Mw, 0x8c /s
-mov Sw Rv, 0x8c /s
-mov Ew Sw, 0x8e /s
+mov Sw Mw, 0x8c /s, nacl-forbidden
+mov Sw Rv, 0x8c /s, nacl-forbidden
+mov Ew Sw, 0x8e /s, nacl-forbidden
 mov Ib rb, 0xb0
 mov Iv rv, 0xb8
 mov I E, 0xc6 /0
@@ -734,8 +734,8 @@ tzmsk Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /4, Fn8000_0001_ECX_TBM
 ######## XADD ##################################################################
 xadd G E, 0x0f 0xc0, lock
 ######## XCHG ##################################################################
-xchg av rv, 0x90
-xchg G E, 0x86, lock
+xchg &av rv, 0x90
+xchg &G E, 0x86, lock
 ######## XLAT ##################################################################
 xlat bb, 0xd7, nacl-forbidden
 ######## XOR ###################################################################

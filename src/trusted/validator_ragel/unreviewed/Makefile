@@ -86,7 +86,8 @@ $(OBJD)/validator-x86_64-instruction-consts.c \
 	  -d opcode,instruction_name,mark_data_fields,rel_operand_action \
 	  -d nacl-forbidden,parse_nonwrite_registers,parse_x87_operands \
 	  -d parse_mmx_operands,parse_xmm_operands,parse_ymm_operands \
-	  nops.def -m amd64
+	  -d parse_relative_operands,parse_immediate_operands \
+	  -d parse_operands_states,parse_operand_positions nops.def -m amd64
 
 # Facilities for testing:
 #   one-instruction.dot: the description of the DFA that accepts all instruction

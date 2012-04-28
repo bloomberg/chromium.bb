@@ -147,7 +147,8 @@ static int CheckJumpTargets(uint8_t *valid_targets, uint8_t *jump_dests,
 }
 
 int ValidateChunkIA32(const uint8_t *data, size_t size,
-                      process_error_func process_error, void *userdata) {
+                      process_validation_error_func process_error,
+                      void *userdata) {
   const size_t bundle_size = 32;
   const size_t bundle_mask = bundle_size - 1;
 

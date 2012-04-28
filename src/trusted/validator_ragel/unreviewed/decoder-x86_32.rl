@@ -125,18 +125,18 @@ enum imm_mode {
 
 int DecodeChunkIA32(const uint8_t *data, size_t size,
                     process_instruction_func process_instruction,
-                    process_error_func process_error, void *userdata) {
+                    process_decoding_error_func process_error, void *userdata) {
   const uint8_t *p = data;
   const uint8_t *pe = data + size;
   const uint8_t *eof = pe;
   const uint8_t *disp = NULL;
   const uint8_t *imm = NULL;
   const uint8_t *imm2 = NULL;
-  const uint8_t *begin;
-  uint8_t vex_prefix3;
-  enum disp_mode disp_type;
-  enum imm_mode imm_operand;
-  enum imm_mode imm2_operand;
+  const uint8_t *begin = p;
+  uint8_t vex_prefix3 = 0x00;
+  enum disp_mode disp_type = DISPNONE;
+  enum imm_mode imm_operand = IMMNONE;
+  enum imm_mode imm2_operand = IMMNONE;
   struct instruction instruction;
   int result = 0;
 
@@ -146,7 +146,16 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
   instruction.prefix.rex = 0;
 
   %% write init;
+  /* Ragel-generated code stores a difference between pointers into an "int"
+     variable. This produces C4244 warning on Windows x64.  */
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4244) // possible loss of data
+#endif
   %% write exec;
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 error_detected:
   return result;

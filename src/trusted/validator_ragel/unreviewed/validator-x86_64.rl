@@ -104,55 +104,54 @@ static void PrintError(const char* msg, uintptr_t ptr) {
     }
     /* If Sandboxed Rsi is destroyed then we must note that.  */
     if (restricted_register == kSandboxedRsi) {
-      for (i = 0; i < operands_count; ++i) {
-        if ((operands[i].write == TRUE) &&
-            (operands[i].name == REG_RSI) &&
-            ((operands[i].type == OperandSandboxRestricted) ||
-             (operands[i].type == OperandSandboxUnrestricted))) {
-          restricted_register = kNoRestrictedReg;
-          break;
-        }
+      if (CHECK_OPERAND(0, REG_RSI, OperandSandboxRestricted) ||
+          CHECK_OPERAND(0, REG_RSI, OperandSandboxUnrestricted) ||
+          CHECK_OPERAND(1, REG_RSI, OperandSandboxRestricted) ||
+          CHECK_OPERAND(1, REG_RSI, OperandSandboxUnrestricted)) {
+        restricted_register = kNoRestrictedReg;
       }
     }
     if (restricted_register == kSandboxedRsi) {
-      for (i = 0; i < operands_count; ++i) {
-        if ((operands[i].write == TRUE) &&
-            (operands[i].name == REG_RDI) &&
-            (operands[i].type == OperandSandboxRestricted)) {
-          sandboxed_rsi_restricted_rdi = begin;
-          restricted_register = kSandboxedRsiRestrictedRdi;
-        }
+      if (CHECK_OPERAND(0, REG_RDI, OperandSandboxRestricted) ||
+          CHECK_OPERAND(1, REG_RDI, OperandSandboxRestricted)) {
+        sandboxed_rsi_restricted_rdi = begin;
+        restricted_register = kSandboxedRsiRestrictedRdi;
       }
     }
     if (restricted_register != kSandboxedRsiRestrictedRdi) {
       restricted_register = kNoRestrictedReg;
-      for (i = 0; i < operands_count; ++i) {
-        if (operands[i].write && operands[i].name <= REG_R15) {
-          if (operands[i].type == OperandSandboxRestricted) {
-            if (operands[i].name == REG_R15) {
-              PrintError("Incorrectly modified register %%r15\n", begin - data);
-              result = 1;
-              goto error_detected;
-            } else {
-              restricted_register = operands[i].name;
-            }
-          } else if (operands[i].type == OperandSandboxUnrestricted ||
-                     (operands[i].type == OperandSize8bit && rex_prefix)) {
-            if (operands[i].name == REG_RBP) {
-              PrintError("Incorrectly modified register %%rbp\n", begin - data);
-              result = 1;
-              goto error_detected;
-            } else if (operands[i].name == REG_RSP) {
-              PrintError("Incorrectly modified register %%rsp\n", begin - data);
-              result = 1;
-              goto error_detected;
-            } else if (operands[i].name == REG_R15) {
-              PrintError("Incorrectly modified register %%r15\n", begin - data);
-              result = 1;
-              goto error_detected;
-            }
-          }
-        }
+      if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
+          CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
+          CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted) ||
+          CHECK_OPERAND(1, REG_R15, OperandSandbox8bit) ||
+          CHECK_OPERAND(1, REG_R15, OperandSandboxRestricted) ||
+          CHECK_OPERAND(1, REG_R15, OperandSandboxUnrestricted)) {
+        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        result = 1;
+        goto error_detected;
+      } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
+                  GET_REX_PREFIX()) ||
+                 CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted) ||
+                 (CHECK_OPERAND(1, REG_RBP, OperandSandbox8bit) &&
+                  GET_REX_PREFIX()) ||
+                 CHECK_OPERAND(1, REG_RBP, OperandSandboxUnrestricted)) {
+        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        result = 1;
+        goto error_detected;
+      } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
+                  GET_REX_PREFIX()) ||
+                 CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted) ||
+                 (CHECK_OPERAND(1, REG_RSP, OperandSandbox8bit) &&
+                  GET_REX_PREFIX()) ||
+                 CHECK_OPERAND(1, REG_RSP, OperandSandboxUnrestricted)) {
+        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        result = 1;
+        goto error_detected;
+      } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
+        restricted_register = operand_states & 0x0f;
+      } else if ((operand_states & 0x7000) ==
+                                        (OperandSandboxRestricted << (5 + 8))) {
+        restricted_register = (operand_states & 0x0f00) >> 8;
       }
     }
   }
@@ -242,9 +241,9 @@ static void PrintError(const char* msg, uintptr_t ptr) {
     } |
     (0x41 0x83 0xe0 0xe0 0x4d 0x01 0xf8 0x41 0xff (0xd0|0xe0) | # naclcall/jmp
      0x41 0x83 0xe1 0xe0 0x4d 0x01 0xf9 0x41 0xff (0xd1|0xe1) | #    %r8d, %r15
-     0x41 0x83 0xe2 0xe0 0x4d 0x01 0xfa 0x41 0xff (0xd2|0xe2) | # ⋮
-     0x41 0x83 0xe3 0xe0 0x4d 0x01 0xfb 0x41 0xff (0xd3|0xe3) | # ⋮
-     0x41 0x83 0xe4 0xe0 0x4d 0x01 0xfc 0x41 0xff (0xd4|0xe4) | # ⋮
+     0x41 0x83 0xe2 0xe0 0x4d 0x01 0xfa 0x41 0xff (0xd2|0xe2) | #
+     0x41 0x83 0xe3 0xe0 0x4d 0x01 0xfb 0x41 0xff (0xd3|0xe3) | # ...
+     0x41 0x83 0xe4 0xe0 0x4d 0x01 0xfc 0x41 0xff (0xd4|0xe4) | #
      0x41 0x83 0xe5 0xe0 0x4d 0x01 0xfd 0x41 0xff (0xd5|0xe5) | # naclcall/jmp
      0x41 0x83 0xe6 0xe0 0x4d 0x01 0xfe 0x41 0xff (0xd6|0xe6))  #   %r14d, %r15
     @{ if (restricted_register == REG_RSP) {
@@ -333,21 +332,7 @@ static void PrintError(const char* msg, uintptr_t ptr) {
         SET_REX_PREFIX(FALSE);
         SET_VEX_PREFIX2(0xe0);
         SET_VEX_PREFIX3(0x00);
-        operands[0].name = 0;
-        operands[0].type = 0;
-        operands[0].write = 0;
-        operands[1].name = 0;
-        operands[1].type = 0;
-        operands[1].write = 0;
-        operands[2].name = 0;
-        operands[2].type = 0;
-        operands[2].write = 0;
-        operands[3].name = 0;
-        operands[3].type = 0;
-        operands[3].write = 0;
-        operands[4].name = 0;
-        operands[4].type = 0;
-        operands[4].write = 0;
+        operand_states = 0;
      })*
      @{
        /* On successful match the instruction start must point to the next byte
@@ -380,10 +365,39 @@ static void PrintError(const char* msg, uintptr_t ptr) {
 #define SET_BRANCH_TAKEN(S)
 #define SET_BRANCH_NOT_TAKEN(S)
 
-#define GET_OPERAND_NAME(N) operands[(N)].name
-#define SET_OPERAND_NAME(N, S) operands[(N)].name = (S)
-#define SET_OPERAND_TYPE(N, S) operands[(N)].type = (S)
-#define SET_OPERANDS_COUNT(N) operands_count = (N)
+enum operand_kind {
+  OperandSandboxIrrelevant = 0,
+  /*
+   * Currently we do not distinguish 8bit and 16bit modifications from
+   * OperandSandboxUnrestricted to match the behavior of the old validator.
+   *
+   * 8bit operands must be distinguished from other types because the REX prefix
+   * regulates the choice between %ah and %spl, as well as %ch and %bpl.
+   */
+  OperandSandbox8bit,
+  OperandSandboxRestricted,
+  OperandSandboxUnrestricted
+};
+
+/* Define SET_OPERAND_NAME as SET_OPERAND_NAME_0, SET_OPERAND_NAME_1 to detect
+ * cases where more than two general purpose registers are affected.  This will
+ * produce a compile-time error if an operand with unexpected number is
+ * encountered. */
+#define SET_OPERAND_NAME(N, S) SET_OPERAND_NAME_ ## N(S)
+#define SET_OPERAND_NAME_0(S) operand_states |= (S)
+#define SET_OPERAND_NAME_1(S) operand_states |= ((S) << 8)
+#define SET_OPERAND_TYPE(N, T) SET_OPERAND_TYPE_ ## T(N)
+#define SET_OPERAND_TYPE_OperandSize8bit(N) \
+  operand_states |= OperandSandbox8bit << (5 + ((N) << 3))
+#define SET_OPERAND_TYPE_OperandSize16bit(N) \
+  operand_states |= OperandSandboxUnrestricted << (5 + ((N) << 3))
+#define SET_OPERAND_TYPE_OperandSize32bit(N) \
+  operand_states |= OperandSandboxRestricted << (5 + ((N) << 3))
+#define SET_OPERAND_TYPE_OperandSize64bit(N) \
+  operand_states |= OperandSandboxUnrestricted << (5 + ((N) << 3))
+#define CHECK_OPERAND(N, S, T) \
+  ((operand_states & (0xff << ((N) << 3))) == ((S | (T << 5)) << ((N) << 3)))
+#define SET_OPERANDS_COUNT(N)
 #define SET_MODRM_BASE(N) base = (N)
 #define SET_MODRM_INDEX(N) index = (N)
 
@@ -395,12 +409,6 @@ static void PrintError(const char* msg, uintptr_t ptr) {
 #define SET_IMM_PTR(P)
 #define SET_IMM2_TYPE(T)
 #define SET_IMM2_PTR(P)
-
-/* This one is not important for us, too.  */
-#define SET_OPERAND_READ(N, S)
-
-/* This is important.  */
-#define SET_OPERAND_WRITE(N, S) operands[(N)].write = (S)
 
 enum {
   REX_B = 1,
@@ -447,7 +455,8 @@ static int CheckJumpTargets(uint8_t *valid_targets, uint8_t *jump_dests,
 }
 
 int ValidateChunkAMD64(const uint8_t *data, size_t size,
-                       process_error_func process_error, void *userdata) {
+                       process_validation_error_func process_error,
+                       void *userdata) {
   const size_t bundle_size = 32;
   const size_t bundle_mask = bundle_size - 1;
 
@@ -457,25 +466,15 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
   const uint8_t *p = data;
   const uint8_t *begin = p;  /* Start of the instruction being processed.  */
 
-  uint8_t rex_prefix = 0;
+  uint8_t rex_prefix = FALSE;
   uint8_t vex_prefix2 = 0xe0;
   uint8_t vex_prefix3 = 0x00;
-  struct Operand {
-    unsigned int name   :5;
-    unsigned int type   :2;
-#ifdef _MSC_VER
-    /* We can not use Bool on Windows because it is a signed type there.
-     * TODO(khim): investigate performance impact, perhaps we can use plain
-     * ints instead of bit fields.  */
-    unsigned int write  :1;
-#else
-    _Bool        write  :1;
-#endif
-  } operands[5];
+  /* Keeps one byte of information per operand in the current instruction:
+   *  2 bits for register kinds,
+   *  5 bits for register numbers (16 regs plus RIZ). */
+  int operand_states = 0;
   enum register_name base = NO_REG;
   enum register_name index = NO_REG;
-  uint8_t operands_count = 0;
-  uint8_t i;
   int result = 0;
   /*
    * These are borders of the appropriate instructions.  Initialize them to make

@@ -79,18 +79,18 @@ enum imm_mode {
 
 int DecodeChunkIA32(const uint8_t *data, size_t size,
                     process_instruction_func process_instruction,
-                    process_error_func process_error, void *userdata) {
+                    process_decoding_error_func process_error, void *userdata) {
   const uint8_t *p = data;
   const uint8_t *pe = data + size;
   const uint8_t *eof = pe;
   const uint8_t *disp = NULL;
   const uint8_t *imm = NULL;
   const uint8_t *imm2 = NULL;
-  const uint8_t *begin;
-  uint8_t vex_prefix3;
-  enum disp_mode disp_type;
-  enum imm_mode imm_operand;
-  enum imm_mode imm2_operand;
+  const uint8_t *begin = p;
+  uint8_t vex_prefix3 = 0x00;
+  enum disp_mode disp_type = DISPNONE;
+  enum imm_mode imm_operand = IMMNONE;
+  enum imm_mode imm2_operand = IMMNONE;
   struct instruction instruction;
   int result = 0;
 
@@ -106,8 +106,14 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
 	}
 
 #line 149 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
+  /* Ragel-generated code stores a difference between pointers into an "int"
+     variable. This produces C4244 warning on Windows x64.  */
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4244) // possible loss of data
+#endif
   
-#line 111 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 117 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -30344,7 +30350,7 @@ st343:
 	if ( ++p == pe )
 		goto _test_eof343;
 case 343:
-#line 30348 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 30354 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 0u: goto tr3933;
 		case 1u: goto tr3934;
@@ -32118,7 +32124,7 @@ st1:
 	if ( ++p == pe )
 		goto _test_eof1;
 case 1:
-#line 32122 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 32128 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr1;
 		case 5u: goto tr2;
@@ -35642,7 +35648,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 35646 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 35652 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 5u: goto tr9;
 		case 13u: goto tr9;
@@ -45222,7 +45228,7 @@ st3:
 	if ( ++p == pe )
 		goto _test_eof3;
 case 3:
-#line 45226 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 45232 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto st4;
 st4:
 	if ( ++p == pe )
@@ -49904,7 +49910,7 @@ st7:
 	if ( ++p == pe )
 		goto _test_eof7;
 case 7:
-#line 49908 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 49914 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr14;
 tr4:
 #line 430 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -53386,7 +53392,7 @@ st8:
 	if ( ++p == pe )
 		goto _test_eof8;
 case 8:
-#line 53390 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 53396 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr15;
 tr6:
 #line 430 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -56868,7 +56874,7 @@ st9:
 	if ( ++p == pe )
 		goto _test_eof9;
 case 9:
-#line 56872 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 56878 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr16;
 tr32:
 #line 1265 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -65118,7 +65124,7 @@ st10:
 	if ( ++p == pe )
 		goto _test_eof10;
 case 10:
-#line 65122 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 65128 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr18;
 		case 5u: goto tr19;
@@ -70452,7 +70458,7 @@ st11:
 	if ( ++p == pe )
 		goto _test_eof11;
 case 11:
-#line 70456 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 70462 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr25;
 tr1555:
 #line 136 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -71610,7 +71616,7 @@ st12:
 	if ( ++p == pe )
 		goto _test_eof12;
 case 12:
-#line 71614 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 71620 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto st13;
 st13:
 	if ( ++p == pe )
@@ -71634,7 +71640,7 @@ tr34:
         goto error_detected;
     }
 	goto st0;
-#line 71638 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 71644 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 st0:
 cs = 0;
 	goto _out;
@@ -71658,7 +71664,7 @@ st16:
 	if ( ++p == pe )
 		goto _test_eof16;
 case 16:
-#line 71662 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 71668 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 0u: goto st17;
 		case 1u: goto st18;
@@ -72196,7 +72202,7 @@ st21:
 	if ( ++p == pe )
 		goto _test_eof21;
 case 21:
-#line 72200 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 72206 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 12u: goto tr359;
 		case 13u: goto tr360;
@@ -72238,7 +72244,7 @@ st22:
 	if ( ++p == pe )
 		goto _test_eof22;
 case 22:
-#line 72242 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 72248 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 5u: goto tr384;
 		case 13u: goto tr384;
@@ -72328,7 +72334,7 @@ st23:
 	if ( ++p == pe )
 		goto _test_eof23;
 case 23:
-#line 72332 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 72338 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto st24;
 st24:
 	if ( ++p == pe )
@@ -72374,7 +72380,7 @@ st27:
 	if ( ++p == pe )
 		goto _test_eof27;
 case 27:
-#line 72378 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 72384 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr389;
 tr355:
 #line 394 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -72390,7 +72396,7 @@ st28:
 	if ( ++p == pe )
 		goto _test_eof28;
 case 28:
-#line 72394 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 72400 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr390;
 tr357:
 #line 394 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -72406,7 +72412,7 @@ st29:
 	if ( ++p == pe )
 		goto _test_eof29;
 case 29:
-#line 72410 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 72416 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr391;
 st30:
 	if ( ++p == pe )
@@ -73315,7 +73321,7 @@ st31:
 	if ( ++p == pe )
 		goto _test_eof31;
 case 31:
-#line 73319 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 73325 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr1;
 		case 5u: goto tr2;
@@ -73522,7 +73528,7 @@ st35:
 	if ( ++p == pe )
 		goto _test_eof35;
 case 35:
-#line 73526 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 73532 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	if ( 192u <= (*p) )
 		goto tr7;
 	goto tr34;
@@ -73846,7 +73852,7 @@ st36:
 	if ( ++p == pe )
 		goto _test_eof36;
 case 36:
-#line 73850 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 73856 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	if ( 192u <= (*p) )
 		goto tr24;
 	goto tr34;
@@ -75228,7 +75234,7 @@ st37:
 	if ( ++p == pe )
 		goto _test_eof37;
 case 37:
-#line 75232 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 75238 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr445;
 		case 5u: goto tr446;
@@ -76950,7 +76956,7 @@ st38:
 	if ( ++p == pe )
 		goto _test_eof38;
 case 38:
-#line 76954 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 76960 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 5u: goto tr453;
 		case 13u: goto tr453;
@@ -81160,7 +81166,7 @@ st39:
 	if ( ++p == pe )
 		goto _test_eof39;
 case 39:
-#line 81164 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 81170 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto st40;
 st40:
 	if ( ++p == pe )
@@ -83266,7 +83272,7 @@ st43:
 	if ( ++p == pe )
 		goto _test_eof43;
 case 43:
-#line 83270 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 83276 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr458;
 tr485:
 #line 430 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -84946,7 +84952,7 @@ st44:
 	if ( ++p == pe )
 		goto _test_eof44;
 case 44:
-#line 84950 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 84956 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr459;
 tr487:
 #line 430 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -86626,7 +86632,7 @@ st45:
 	if ( ++p == pe )
 		goto _test_eof45;
 case 45:
-#line 86630 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 86636 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr460;
 st46:
 	if ( ++p == pe )
@@ -86912,7 +86918,7 @@ st49:
 	if ( ++p == pe )
 		goto _test_eof49;
 case 49:
-#line 86916 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 86922 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto st50;
 st50:
 	if ( ++p == pe )
@@ -87125,7 +87131,7 @@ st53:
 	if ( ++p == pe )
 		goto _test_eof53;
 case 53:
-#line 87129 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 87135 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr474;
 		case 5u: goto tr475;
@@ -87393,7 +87399,7 @@ st54:
 	if ( ++p == pe )
 		goto _test_eof54;
 case 54:
-#line 87397 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 87403 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr482;
 		case 5u: goto tr483;
@@ -88256,7 +88262,7 @@ st56:
 	if ( ++p == pe )
 		goto _test_eof56;
 case 56:
-#line 88260 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 88266 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr18;
 		case 5u: goto tr19;
@@ -88450,7 +88456,7 @@ st58:
 	if ( ++p == pe )
 		goto _test_eof58;
 case 58:
-#line 88454 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 88460 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	if ( 192u <= (*p) )
 		goto tr451;
 	goto tr34;
@@ -88517,7 +88523,7 @@ st60:
 	if ( ++p == pe )
 		goto _test_eof60;
 case 60:
-#line 88521 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 88527 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 15u: goto st61;
 		case 102u: goto tr588;
@@ -88578,7 +88584,7 @@ st62:
 	if ( ++p == pe )
 		goto _test_eof62;
 case 62:
-#line 88582 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 88588 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	if ( (*p) == 15u )
 		goto st63;
 	goto tr34;
@@ -88825,7 +88831,7 @@ st64:
 	if ( ++p == pe )
 		goto _test_eof64;
 case 64:
-#line 88829 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 88835 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto st65;
 st65:
 	if ( ++p == pe )
@@ -89574,7 +89580,7 @@ st66:
 	if ( ++p == pe )
 		goto _test_eof66;
 case 66:
-#line 89578 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 89584 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr624;
 tr3988:
 #line 25 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -89600,7 +89606,7 @@ st67:
 	if ( ++p == pe )
 		goto _test_eof67;
 case 67:
-#line 89604 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 89610 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 1u: goto tr625;
 		case 3u: goto tr626;
@@ -90604,7 +90610,7 @@ st68:
 	if ( ++p == pe )
 		goto _test_eof68;
 case 68:
-#line 90608 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 90614 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto st69;
 st69:
 	if ( ++p == pe )
@@ -91200,7 +91206,7 @@ st84:
 	if ( ++p == pe )
 		goto _test_eof84;
 case 84:
-#line 91204 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 91210 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr980;
 st85:
 	if ( ++p == pe )
@@ -91329,7 +91335,7 @@ st87:
 	if ( ++p == pe )
 		goto _test_eof87;
 case 87:
-#line 91333 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 91339 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	if ( (*p) == 15u )
 		goto st88;
 	goto tr34;
@@ -91750,7 +91756,7 @@ st140:
 	if ( ++p == pe )
 		goto _test_eof140;
 case 140:
-#line 91754 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 91760 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr1079;
 		case 5u: goto tr1080;
@@ -92048,7 +92054,7 @@ st141:
 	if ( ++p == pe )
 		goto _test_eof141;
 case 141:
-#line 92052 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 92058 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 5u: goto tr1087;
 		case 13u: goto tr1087;
@@ -92738,7 +92744,7 @@ st142:
 	if ( ++p == pe )
 		goto _test_eof142;
 case 142:
-#line 92742 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 92748 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto st143;
 st143:
 	if ( ++p == pe )
@@ -93084,7 +93090,7 @@ st146:
 	if ( ++p == pe )
 		goto _test_eof146;
 case 146:
-#line 93088 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 93094 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr1092;
 tr1082:
 #line 394 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -93340,7 +93346,7 @@ st147:
 	if ( ++p == pe )
 		goto _test_eof147;
 case 147:
-#line 93344 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 93350 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr1093;
 tr1084:
 #line 394 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -93596,7 +93602,7 @@ st148:
 	if ( ++p == pe )
 		goto _test_eof148;
 case 148:
-#line 93600 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 93606 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr1094;
 st149:
 	if ( ++p == pe )
@@ -94281,7 +94287,7 @@ st157:
 	if ( ++p == pe )
 		goto _test_eof157;
 case 157:
-#line 94285 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 94291 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 1u: goto tr1408;
 		case 3u: goto tr1409;
@@ -94588,7 +94594,7 @@ st163:
 	if ( ++p == pe )
 		goto _test_eof163;
 case 163:
-#line 94592 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 94598 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 15u: goto st164;
 		case 167u: goto tr677;
@@ -94629,7 +94635,7 @@ st166:
 	if ( ++p == pe )
 		goto _test_eof166;
 case 166:
-#line 94633 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 94639 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 15u: goto st167;
 		case 109u: goto tr658;
@@ -94947,7 +94953,7 @@ st170:
 	if ( ++p == pe )
 		goto _test_eof170;
 case 170:
-#line 94951 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 94957 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr1548;
 		case 5u: goto tr1549;
@@ -95309,7 +95315,7 @@ st171:
 	if ( ++p == pe )
 		goto _test_eof171;
 case 171:
-#line 95313 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 95319 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 5u: goto tr1556;
 		case 13u: goto tr1556;
@@ -96151,7 +96157,7 @@ st172:
 	if ( ++p == pe )
 		goto _test_eof172;
 case 172:
-#line 96155 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 96161 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto st173;
 st173:
 	if ( ++p == pe )
@@ -96573,7 +96579,7 @@ st176:
 	if ( ++p == pe )
 		goto _test_eof176;
 case 176:
-#line 96577 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 96583 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr1561;
 tr1551:
 #line 394 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -96893,7 +96899,7 @@ st177:
 	if ( ++p == pe )
 		goto _test_eof177;
 case 177:
-#line 96897 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 96903 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr1562;
 tr1553:
 #line 394 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -97213,7 +97219,7 @@ st178:
 	if ( ++p == pe )
 		goto _test_eof178;
 case 178:
-#line 97217 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 97223 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr1563;
 tr4013:
 #line 25 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -97235,7 +97241,7 @@ st179:
 	if ( ++p == pe )
 		goto _test_eof179;
 case 179:
-#line 97239 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 97245 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr1565;
 		case 5u: goto tr1566;
@@ -97383,7 +97389,7 @@ st180:
 	if ( ++p == pe )
 		goto _test_eof180;
 case 180:
-#line 97387 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 97393 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr1629;
 		case 5u: goto tr1630;
@@ -97531,7 +97537,7 @@ st181:
 	if ( ++p == pe )
 		goto _test_eof181;
 case 181:
-#line 97535 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 97541 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr1693;
 		case 5u: goto tr1694;
@@ -97679,7 +97685,7 @@ st182:
 	if ( ++p == pe )
 		goto _test_eof182;
 case 182:
-#line 97683 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 97689 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr1757;
 		case 5u: goto tr1758;
@@ -97738,7 +97744,7 @@ st183:
 	if ( ++p == pe )
 		goto _test_eof183;
 case 183:
-#line 97742 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 97748 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr1765;
 		case 5u: goto tr1766;
@@ -97797,7 +97803,7 @@ st184:
 	if ( ++p == pe )
 		goto _test_eof184;
 case 184:
-#line 97801 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 97807 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr1773;
 		case 5u: goto tr1774;
@@ -97868,7 +97874,7 @@ st186:
 	if ( ++p == pe )
 		goto _test_eof186;
 case 186:
-#line 97872 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 97878 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 133u: goto tr1788;
 		case 134u: goto tr1789;
@@ -99354,7 +99360,7 @@ st187:
 	if ( ++p == pe )
 		goto _test_eof187;
 case 187:
-#line 99358 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 99364 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr1811;
 		case 5u: goto tr1812;
@@ -99452,7 +99458,7 @@ st188:
 	if ( ++p == pe )
 		goto _test_eof188;
 case 188:
-#line 99456 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 99462 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 0u: goto tr1818;
 		case 16u: goto tr1818;
@@ -99478,7 +99484,7 @@ st189:
 	if ( ++p == pe )
 		goto _test_eof189;
 case 189:
-#line 99482 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 99488 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 5u: goto tr1820;
 		case 13u: goto tr1820;
@@ -99568,7 +99574,7 @@ st190:
 	if ( ++p == pe )
 		goto _test_eof190;
 case 190:
-#line 99572 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 99578 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto st191;
 st191:
 	if ( ++p == pe )
@@ -99614,7 +99620,7 @@ st194:
 	if ( ++p == pe )
 		goto _test_eof194;
 case 194:
-#line 99618 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 99624 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr1825;
 tr1814:
 #line 394 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -99630,7 +99636,7 @@ st195:
 	if ( ++p == pe )
 		goto _test_eof195;
 case 195:
-#line 99634 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 99640 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr1826;
 tr1816:
 #line 394 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -99646,7 +99652,7 @@ st196:
 	if ( ++p == pe )
 		goto _test_eof196;
 case 196:
-#line 99650 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 99656 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr1827;
 tr1802:
 #line 1858 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -100776,7 +100782,7 @@ st197:
 	if ( ++p == pe )
 		goto _test_eof197;
 case 197:
-#line 100780 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 100786 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr1829;
 		case 5u: goto tr1830;
@@ -100830,7 +100836,7 @@ st198:
 	if ( ++p == pe )
 		goto _test_eof198;
 case 198:
-#line 100834 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 100840 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	if ( (*p) == 162u )
 		goto tr1836;
 	goto tr34;
@@ -100844,7 +100850,7 @@ st199:
 	if ( ++p == pe )
 		goto _test_eof199;
 case 199:
-#line 100848 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 100854 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 133u: goto tr1788;
 		case 134u: goto tr1789;
@@ -100884,7 +100890,7 @@ st200:
 	if ( ++p == pe )
 		goto _test_eof200;
 case 200:
-#line 100888 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 100894 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 162u: goto tr1841;
 		case 163u: goto tr1842;
@@ -101874,7 +101880,7 @@ st201:
 	if ( ++p == pe )
 		goto _test_eof201;
 case 201:
-#line 101878 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 101884 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr1844;
 		case 5u: goto tr1845;
@@ -101972,7 +101978,7 @@ st202:
 	if ( ++p == pe )
 		goto _test_eof202;
 case 202:
-#line 101976 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 101982 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 0u: goto tr1851;
 		case 16u: goto tr1851;
@@ -101998,7 +102004,7 @@ st203:
 	if ( ++p == pe )
 		goto _test_eof203;
 case 203:
-#line 102002 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 102008 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 5u: goto tr1853;
 		case 13u: goto tr1853;
@@ -102088,7 +102094,7 @@ st204:
 	if ( ++p == pe )
 		goto _test_eof204;
 case 204:
-#line 102092 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 102098 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto st205;
 st205:
 	if ( ++p == pe )
@@ -102134,7 +102140,7 @@ st208:
 	if ( ++p == pe )
 		goto _test_eof208;
 case 208:
-#line 102138 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 102144 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr1858;
 tr1847:
 #line 394 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -102150,7 +102156,7 @@ st209:
 	if ( ++p == pe )
 		goto _test_eof209;
 case 209:
-#line 102154 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 102160 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr1859;
 tr1849:
 #line 394 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -102166,7 +102172,7 @@ st210:
 	if ( ++p == pe )
 		goto _test_eof210;
 case 210:
-#line 102170 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 102176 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr1860;
 tr1787:
 #line 249 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -102178,7 +102184,7 @@ st211:
 	if ( ++p == pe )
 		goto _test_eof211;
 case 211:
-#line 102182 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 102188 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	if ( (*p) == 162u )
 		goto tr1861;
 	goto tr34;
@@ -102216,7 +102222,7 @@ st213:
 	if ( ++p == pe )
 		goto _test_eof213;
 case 213:
-#line 102220 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 102226 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 1u: goto st214;
 		case 2u: goto st215;
@@ -102400,7 +102406,7 @@ st216:
 	if ( ++p == pe )
 		goto _test_eof216;
 case 216:
-#line 102404 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 102410 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 1u: goto st214;
 		case 2u: goto st215;
@@ -102458,7 +102464,7 @@ st218:
 	if ( ++p == pe )
 		goto _test_eof218;
 case 218:
-#line 102462 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 102468 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 128u: goto tr1974;
 		case 129u: goto tr1975;
@@ -102474,7 +102480,7 @@ st219:
 	if ( ++p == pe )
 		goto _test_eof219;
 case 219:
-#line 102478 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 102484 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 144u: goto tr1976;
 		case 145u: goto tr1977;
@@ -109190,7 +109196,7 @@ st220:
 	if ( ++p == pe )
 		goto _test_eof220;
 case 220:
-#line 109194 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 109200 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr1989;
 		case 5u: goto tr1990;
@@ -109259,7 +109265,7 @@ st222:
 	if ( ++p == pe )
 		goto _test_eof222;
 case 222:
-#line 109263 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 109269 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	if ( (*p) == 18u )
 		goto st223;
 	goto tr34;
@@ -109311,7 +109317,7 @@ st224:
 	if ( ++p == pe )
 		goto _test_eof224;
 case 224:
-#line 109315 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 109321 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 16u: goto tr2015;
 		case 18u: goto st223;
@@ -109378,7 +109384,7 @@ st344:
 	if ( ++p == pe )
 		goto _test_eof344;
 case 344:
-#line 109382 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 109388 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 0u: goto tr3933;
 		case 1u: goto tr3934;
@@ -109596,7 +109602,7 @@ st225:
 	if ( ++p == pe )
 		goto _test_eof225;
 case 225:
-#line 109600 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 109606 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr2017;
 		case 5u: goto tr2018;
@@ -109731,7 +109737,7 @@ st226:
 	if ( ++p == pe )
 		goto _test_eof226;
 case 226:
-#line 109735 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 109741 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr2073;
 		case 5u: goto tr2074;
@@ -109866,7 +109872,7 @@ st227:
 	if ( ++p == pe )
 		goto _test_eof227;
 case 227:
-#line 109870 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 109876 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 225u: goto st228;
 		case 226u: goto st256;
@@ -109956,7 +109962,7 @@ st229:
 	if ( ++p == pe )
 		goto _test_eof229;
 case 229:
-#line 109960 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 109966 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto st230;
 		case 20u: goto tr2148;
@@ -110091,7 +110097,7 @@ st232:
 	if ( ++p == pe )
 		goto _test_eof232;
 case 232:
-#line 110095 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 110101 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto tr2183;
 		case 20u: goto tr2184;
@@ -110326,7 +110332,7 @@ st233:
 	if ( ++p == pe )
 		goto _test_eof233;
 case 233:
-#line 110330 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 110336 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr1989;
 		case 5u: goto tr1990;
@@ -110422,7 +110428,7 @@ st237:
 	if ( ++p == pe )
 		goto _test_eof237;
 case 237:
-#line 110426 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 110432 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 42u: goto tr2276;
 		case 81u: goto tr2277;
@@ -110447,7 +110453,7 @@ st238:
 	if ( ++p == pe )
 		goto _test_eof238;
 case 238:
-#line 110451 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 110457 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 42u: goto tr2287;
 		case 81u: goto tr2288;
@@ -110481,7 +110487,7 @@ st239:
 	if ( ++p == pe )
 		goto _test_eof239;
 case 239:
-#line 110485 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 110491 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 20u: goto tr2300;
 		case 21u: goto tr2301;
@@ -110517,7 +110523,7 @@ st240:
 	if ( ++p == pe )
 		goto _test_eof240;
 case 240:
-#line 110521 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 110527 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 20u: goto tr2315;
 		case 21u: goto tr2316;
@@ -110556,7 +110562,7 @@ st241:
 	if ( ++p == pe )
 		goto _test_eof241;
 case 241:
-#line 110560 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 110566 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 16u: goto tr2333;
 		case 17u: goto tr2334;
@@ -110614,7 +110620,7 @@ st242:
 	if ( ++p == pe )
 		goto _test_eof242;
 case 242:
-#line 110618 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 110624 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	if ( 192u <= (*p) )
 		goto tr1995;
 	goto tr34;
@@ -110670,7 +110676,7 @@ st243:
 	if ( ++p == pe )
 		goto _test_eof243;
 case 243:
-#line 110674 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 110680 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	if ( 192u <= (*p) )
 		goto tr2335;
 	goto tr34;
@@ -110691,7 +110697,7 @@ st244:
 	if ( ++p == pe )
 		goto _test_eof244;
 case 244:
-#line 110695 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 110701 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 16u: goto tr2336;
 		case 17u: goto tr2337;
@@ -110717,7 +110723,7 @@ st245:
 	if ( ++p == pe )
 		goto _test_eof245;
 case 245:
-#line 110721 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 110727 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 16u: goto tr2341;
 		case 17u: goto tr2342;
@@ -110803,7 +110809,7 @@ st247:
 	if ( ++p == pe )
 		goto _test_eof247;
 case 247:
-#line 110807 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 110813 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 16u: goto tr2368;
 		case 17u: goto tr2369;
@@ -110966,7 +110972,7 @@ st249:
 	if ( ++p == pe )
 		goto _test_eof249;
 case 249:
-#line 110970 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 110976 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 16u: goto tr2395;
 		case 17u: goto tr2396;
@@ -111004,7 +111010,7 @@ st250:
 	if ( ++p == pe )
 		goto _test_eof250;
 case 250:
-#line 111008 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 111014 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 16u: goto tr2408;
 		case 17u: goto tr2409;
@@ -111046,7 +111052,7 @@ st251:
 	if ( ++p == pe )
 		goto _test_eof251;
 case 251:
-#line 111050 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 111056 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 16u: goto tr2416;
 		case 17u: goto tr2417;
@@ -111093,7 +111099,7 @@ st252:
 	if ( ++p == pe )
 		goto _test_eof252;
 case 252:
-#line 111097 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 111103 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 16u: goto tr2427;
 		case 17u: goto tr2428;
@@ -111164,7 +111170,7 @@ st253:
 	if ( ++p == pe )
 		goto _test_eof253;
 case 253:
-#line 111168 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 111174 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr2441;
 		case 5u: goto tr2442;
@@ -111225,7 +111231,7 @@ st254:
 	if ( ++p == pe )
 		goto _test_eof254;
 case 254:
-#line 111229 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 111235 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 16u: goto tr2333;
 		case 17u: goto tr2334;
@@ -111253,7 +111259,7 @@ st255:
 	if ( ++p == pe )
 		goto _test_eof255;
 case 255:
-#line 111257 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 111263 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 16u: goto tr2336;
 		case 17u: goto tr2337;
@@ -111322,7 +111328,7 @@ st257:
 	if ( ++p == pe )
 		goto _test_eof257;
 case 257:
-#line 111326 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 111332 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 242u: goto tr2463;
 		case 243u: goto st258;
@@ -111393,7 +111399,7 @@ st259:
 	if ( ++p == pe )
 		goto _test_eof259;
 case 259:
-#line 111397 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 111403 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 0u: goto tr2490;
 		case 1u: goto tr2491;
@@ -111563,7 +111569,7 @@ st260:
 	if ( ++p == pe )
 		goto _test_eof260;
 case 260:
-#line 111567 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 111573 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr2557;
 		case 5u: goto tr2558;
@@ -111617,7 +111623,7 @@ st261:
 	if ( ++p == pe )
 		goto _test_eof261;
 case 261:
-#line 111621 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 111627 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 12u: goto tr2563;
 		case 13u: goto tr2564;
@@ -111655,7 +111661,7 @@ st262:
 	if ( ++p == pe )
 		goto _test_eof262;
 case 262:
-#line 111659 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 111665 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 0u: goto tr2490;
 		case 1u: goto tr2491;
@@ -111757,7 +111763,7 @@ st263:
 	if ( ++p == pe )
 		goto _test_eof263;
 case 263:
-#line 111761 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 111767 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 12u: goto tr2563;
 		case 13u: goto tr2564;
@@ -111802,7 +111808,7 @@ st264:
 	if ( ++p == pe )
 		goto _test_eof264;
 case 264:
-#line 111806 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 111812 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 150u: goto tr2616;
 		case 151u: goto tr2617;
@@ -111846,7 +111852,7 @@ st265:
 	if ( ++p == pe )
 		goto _test_eof265;
 case 265:
-#line 111850 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 111856 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 150u: goto tr2646;
 		case 151u: goto tr2647;
@@ -111917,7 +111923,7 @@ st267:
 	if ( ++p == pe )
 		goto _test_eof267;
 case 267:
-#line 111921 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 111927 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 8u: goto tr2670;
 		case 9u: goto tr2671;
@@ -112108,7 +112114,7 @@ st268:
 	if ( ++p == pe )
 		goto _test_eof268;
 case 268:
-#line 112112 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 112118 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr2710;
 		case 5u: goto tr2711;
@@ -112206,7 +112212,7 @@ st269:
 	if ( ++p == pe )
 		goto _test_eof269;
 case 269:
-#line 112210 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 112216 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	if ( (*p) < 48u ) {
 		if ( (*p) < 16u ) {
 			if ( (*p) <= 3u )
@@ -112245,7 +112251,7 @@ st270:
 	if ( ++p == pe )
 		goto _test_eof270;
 case 270:
-#line 112249 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 112255 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 5u: goto tr2719;
 		case 13u: goto tr2719;
@@ -112335,7 +112341,7 @@ st271:
 	if ( ++p == pe )
 		goto _test_eof271;
 case 271:
-#line 112339 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 112345 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto st272;
 st272:
 	if ( ++p == pe )
@@ -112381,7 +112387,7 @@ st275:
 	if ( ++p == pe )
 		goto _test_eof275;
 case 275:
-#line 112385 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 112391 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr2724;
 tr2713:
 #line 394 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -112397,7 +112403,7 @@ st276:
 	if ( ++p == pe )
 		goto _test_eof276;
 case 276:
-#line 112401 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 112407 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr2725;
 tr2715:
 #line 394 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -112413,7 +112419,7 @@ st277:
 	if ( ++p == pe )
 		goto _test_eof277;
 case 277:
-#line 112417 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 112423 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr2726;
 tr2665:
 #line 249 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -112425,7 +112431,7 @@ st278:
 	if ( ++p == pe )
 		goto _test_eof278;
 case 278:
-#line 112429 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 112435 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 6u: goto tr2727;
 		case 8u: goto tr2728;
@@ -112461,7 +112467,7 @@ st279:
 	if ( ++p == pe )
 		goto _test_eof279;
 case 279:
-#line 112465 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 112471 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr2749;
 		case 5u: goto tr2750;
@@ -112639,7 +112645,7 @@ st282:
 	if ( ++p == pe )
 		goto _test_eof282;
 case 282:
-#line 112643 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 112649 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr482;
 		case 5u: goto tr483;
@@ -112740,7 +112746,7 @@ st284:
 	if ( ++p == pe )
 		goto _test_eof284;
 case 284:
-#line 112744 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 112750 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr2786;
 		case 5u: goto tr2787;
@@ -112781,7 +112787,7 @@ st285:
 	if ( ++p == pe )
 		goto _test_eof285;
 case 285:
-#line 112785 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 112791 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 72u: goto tr2791;
 		case 73u: goto tr2792;
@@ -112955,7 +112961,7 @@ st286:
 	if ( ++p == pe )
 		goto _test_eof286;
 case 286:
-#line 112959 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 112965 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr2814;
 		case 5u: goto tr2815;
@@ -113053,7 +113059,7 @@ st287:
 	if ( ++p == pe )
 		goto _test_eof287;
 case 287:
-#line 113057 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113063 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	if ( (*p) < 48u ) {
 		if ( (*p) < 16u ) {
 			if ( (*p) <= 3u )
@@ -113092,7 +113098,7 @@ st288:
 	if ( ++p == pe )
 		goto _test_eof288;
 case 288:
-#line 113096 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113102 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 5u: goto tr2823;
 		case 13u: goto tr2823;
@@ -113182,7 +113188,7 @@ st289:
 	if ( ++p == pe )
 		goto _test_eof289;
 case 289:
-#line 113186 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113192 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto st290;
 st290:
 	if ( ++p == pe )
@@ -113228,7 +113234,7 @@ st293:
 	if ( ++p == pe )
 		goto _test_eof293;
 case 293:
-#line 113232 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113238 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr2828;
 tr2817:
 #line 394 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -113244,7 +113250,7 @@ st294:
 	if ( ++p == pe )
 		goto _test_eof294;
 case 294:
-#line 113248 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113254 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr2829;
 tr2819:
 #line 394 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -113260,7 +113266,7 @@ st295:
 	if ( ++p == pe )
 		goto _test_eof295;
 case 295:
-#line 113264 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113270 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto tr2830;
 tr2669:
 #line 249 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -113272,7 +113278,7 @@ st296:
 	if ( ++p == pe )
 		goto _test_eof296;
 case 296:
-#line 113276 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113282 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 72u: goto tr2831;
 		case 73u: goto tr2832;
@@ -113310,7 +113316,7 @@ st297:
 	if ( ++p == pe )
 		goto _test_eof297;
 case 297:
-#line 113314 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113320 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 193u: goto tr2846;
 		case 194u: goto tr2847;
@@ -113384,7 +113390,7 @@ st298:
 	if ( ++p == pe )
 		goto _test_eof298;
 case 298:
-#line 113388 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113394 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 81u: goto tr2277;
 		case 83u: goto tr2278;
@@ -113409,7 +113415,7 @@ st299:
 	if ( ++p == pe )
 		goto _test_eof299;
 case 299:
-#line 113413 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113419 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 81u: goto tr2288;
 		case 88u: goto tr2289;
@@ -113436,7 +113442,7 @@ st300:
 	if ( ++p == pe )
 		goto _test_eof300;
 case 300:
-#line 113440 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113446 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 16u: goto tr2395;
 		case 17u: goto tr2396;
@@ -113472,7 +113478,7 @@ st301:
 	if ( ++p == pe )
 		goto _test_eof301;
 case 301:
-#line 113476 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113482 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 16u: goto tr2408;
 		case 17u: goto tr2409;
@@ -113514,7 +113520,7 @@ st302:
 	if ( ++p == pe )
 		goto _test_eof302;
 case 302:
-#line 113518 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113524 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr2862;
 		case 5u: goto tr2863;
@@ -113553,7 +113559,7 @@ st303:
 	if ( ++p == pe )
 		goto _test_eof303;
 case 303:
-#line 113557 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113563 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr2870;
 		case 5u: goto tr2871;
@@ -113614,7 +113620,7 @@ st304:
 	if ( ++p == pe )
 		goto _test_eof304;
 case 304:
-#line 113618 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113624 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	goto st305;
 st305:
 	if ( ++p == pe )
@@ -113641,7 +113647,7 @@ st306:
 	if ( ++p == pe )
 		goto _test_eof306;
 case 306:
-#line 113645 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113651 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr2880;
 		case 5u: goto tr2881;
@@ -113776,7 +113782,7 @@ st307:
 	if ( ++p == pe )
 		goto _test_eof307;
 case 307:
-#line 113780 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113786 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr2936;
 		case 5u: goto tr2937;
@@ -113911,7 +113917,7 @@ st308:
 	if ( ++p == pe )
 		goto _test_eof308;
 case 308:
-#line 113915 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 113921 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr2992;
 		case 5u: goto tr2993;
@@ -114046,7 +114052,7 @@ st309:
 	if ( ++p == pe )
 		goto _test_eof309;
 case 309:
-#line 114050 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 114056 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3048;
 		case 5u: goto tr3049;
@@ -114181,7 +114187,7 @@ st310:
 	if ( ++p == pe )
 		goto _test_eof310;
 case 310:
-#line 114185 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 114191 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3104;
 		case 5u: goto tr3105;
@@ -114329,7 +114335,7 @@ st311:
 	if ( ++p == pe )
 		goto _test_eof311;
 case 311:
-#line 114333 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 114339 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3168;
 		case 5u: goto tr3169;
@@ -114477,7 +114483,7 @@ st312:
 	if ( ++p == pe )
 		goto _test_eof312;
 case 312:
-#line 114481 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 114487 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3247;
 		case 5u: goto tr3248;
@@ -114617,7 +114623,7 @@ st313:
 	if ( ++p == pe )
 		goto _test_eof313;
 case 313:
-#line 114621 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 114627 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3308;
 		case 5u: goto tr3309;
@@ -114738,7 +114744,7 @@ st314:
 	if ( ++p == pe )
 		goto _test_eof314;
 case 314:
-#line 114742 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 114748 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3358;
 		case 5u: goto tr3359;
@@ -114883,7 +114889,7 @@ st315:
 	if ( ++p == pe )
 		goto _test_eof315;
 case 315:
-#line 114887 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 114893 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3420;
 		case 5u: goto tr3421;
@@ -115012,7 +115018,7 @@ st316:
 	if ( ++p == pe )
 		goto _test_eof316;
 case 316:
-#line 115016 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 115022 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3474;
 		case 5u: goto tr3475;
@@ -115158,7 +115164,7 @@ st317:
 	if ( ++p == pe )
 		goto _test_eof317;
 case 317:
-#line 115162 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 115168 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3537;
 		case 5u: goto tr3538;
@@ -115296,7 +115302,7 @@ st318:
 	if ( ++p == pe )
 		goto _test_eof318;
 case 318:
-#line 115300 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 115306 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 0u: goto tr3595;
 		case 1u: goto tr3596;
@@ -115373,7 +115379,7 @@ st320:
 	if ( ++p == pe )
 		goto _test_eof320;
 case 320:
-#line 115377 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 115383 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	if ( 192u <= (*p) )
 		goto tr3640;
 	goto tr34;
@@ -115397,7 +115403,7 @@ st321:
 	if ( ++p == pe )
 		goto _test_eof321;
 case 321:
-#line 115401 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 115407 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	if ( 192u <= (*p) )
 		goto tr3641;
 	goto tr34;
@@ -115844,7 +115850,7 @@ st329:
 	if ( ++p == pe )
 		goto _test_eof329;
 case 329:
-#line 115848 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 115854 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 15u: goto st330;
 		case 102u: goto tr3699;
@@ -115936,7 +115942,7 @@ st332:
 	if ( ++p == pe )
 		goto _test_eof332;
 case 332:
-#line 115940 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 115946 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	if ( 192u <= (*p) )
 		goto tr3732;
 	goto tr34;
@@ -115968,7 +115974,7 @@ st333:
 	if ( ++p == pe )
 		goto _test_eof333;
 case 333:
-#line 115972 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 115978 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 15u: goto st334;
 		case 102u: goto tr3734;
@@ -116046,7 +116052,7 @@ st335:
 	if ( ++p == pe )
 		goto _test_eof335;
 case 335:
-#line 116050 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 116056 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3777;
 		case 5u: goto tr3778;
@@ -116181,7 +116187,7 @@ st336:
 	if ( ++p == pe )
 		goto _test_eof336;
 case 336:
-#line 116185 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 116191 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3819;
 		case 5u: goto tr3820;
@@ -116316,7 +116322,7 @@ st337:
 	if ( ++p == pe )
 		goto _test_eof337;
 case 337:
-#line 116320 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 116326 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3671;
 		case 5u: goto tr3672;
@@ -116371,7 +116377,7 @@ st338:
 	if ( ++p == pe )
 		goto _test_eof338;
 case 338:
-#line 116375 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 116381 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3685;
 		case 5u: goto tr3686;
@@ -116500,7 +116506,7 @@ st339:
 	if ( ++p == pe )
 		goto _test_eof339;
 case 339:
-#line 116504 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 116510 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3168;
 		case 5u: goto tr3169;
@@ -116648,7 +116654,7 @@ st340:
 	if ( ++p == pe )
 		goto _test_eof340;
 case 340:
-#line 116652 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 116658 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3308;
 		case 5u: goto tr3309;
@@ -116769,7 +116775,7 @@ st341:
 	if ( ++p == pe )
 		goto _test_eof341;
 case 341:
-#line 116773 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 116779 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3420;
 		case 5u: goto tr3421;
@@ -116898,7 +116904,7 @@ st342:
 	if ( ++p == pe )
 		goto _test_eof342;
 case 342:
-#line 116902 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 116908 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr3537;
 		case 5u: goto tr3538;
@@ -117710,14 +117716,17 @@ case 342:
         goto error_detected;
     }
 	break;
-#line 117714 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
+#line 117720 "src/trusted/validator_ragel/gen/decoder-x86_32.c"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 150 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
+#line 156 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 error_detected:
   return result;
