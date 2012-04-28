@@ -312,6 +312,10 @@ cr.define('tracing', function() {
 
       // Shift all the slice times based on the sync record.
       var sync = this.clockSyncRecords_[0];
+      // NB: parentTS of zero denotes no times-shift; this is
+      // used when user and kernel event clocks are identical.
+      if (sync.parentTS == 0 || sync.parentTS == sync.perfTS)
+        return true;
       var timeShift = sync.parentTS - sync.perfTS;
       for (var cpuNumber in this.cpuStates_) {
         var cpuState = this.cpuStates_[cpuNumber];

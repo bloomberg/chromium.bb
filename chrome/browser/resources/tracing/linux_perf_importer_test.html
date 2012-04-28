@@ -192,7 +192,7 @@ function testClockSync() {
                   'prev_state=S ==> next_comm=swapper next_pid=0 ' +
                   'next_prio=120',
     '     kworker/u:2-2844  [001]  4467.843000: 0: ' +
-                  'trace_event_clock_sync: parent_ts=0.0'
+                  'trace_event_clock_sync: parent_ts=0.1'
   ];
   var m = new tracing.TimelineModel(lines.join('\n'), false);
   assertEquals(0, m.importErrors.length);
@@ -200,7 +200,7 @@ function testClockSync() {
   var c = m.cpus[1];
   assertEquals(2, c.slices.length);
 
-  assertAlmostEquals((467.843475 - 467.843) * 1000, c.slices[0].start);
+  assertAlmostEquals((467.843475 - (467.843 - 0.1)) * 1000, c.slices[0].start);
 }
 
 function testClockSyncMarkWrite() {
@@ -216,7 +216,7 @@ function testClockSyncMarkWrite() {
               'prev_pid=4404 prev_prio=120 prev_state=S ==> ' +
               'next_comm=dbus-daemon next_pid=510 next_prio=120',
     'systrace.sh-8182  [000] 15186.203900: tracing_mark_write: ' +
-              'trace_event_clock_sync: parent_ts=0.0'
+              'trace_event_clock_sync: parent_ts=0'
   ];
   var m = new tracing.TimelineModel(lines.join('\n'), false);
   assertEquals(0, m.importErrors.length);
@@ -224,7 +224,7 @@ function testClockSyncMarkWrite() {
   var c = m.cpus[1];
   assertEquals(2, c.slices.length);
 
-  assertAlmostEquals((5180.978813 - 5186.2039) * 1000, c.slices[0].start);
+  assertAlmostEquals((15180.978813 - 0) * 1000, c.slices[0].start);
 }
 
 
