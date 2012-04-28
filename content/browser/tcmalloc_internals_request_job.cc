@@ -4,15 +4,12 @@
 
 #include "content/browser/tcmalloc_internals_request_job.h"
 
+#include "base/allocator/allocator_extension.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/process_type.h"
-
-#if defined(USE_TCMALLOC)
-#include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
-#endif
 
 namespace content {
 
@@ -88,7 +85,7 @@ void AboutTcmalloc(std::string* data) {
   // Populate the collector with stats from the local browser process
   // and send off requests to all the renderer processes.
   char buffer[1024 * 32];
-  MallocExtension::instance()->GetStats(buffer, sizeof(buffer));
+  base::allocator::GetStats(buffer, sizeof(buffer));
   std::string browser("Browser");
   AboutTcmallocOutputs::GetInstance()->SetOutput(browser, buffer);
 

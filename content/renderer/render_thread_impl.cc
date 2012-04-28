@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 
+#include "base/allocator/allocator_extension.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
@@ -64,7 +65,6 @@
 #include "media/base/media.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebColorName.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
@@ -633,9 +633,8 @@ void RenderThreadImpl::IdleHandler() {
     IdleHandlerInForegroundTab();
     return;
   }
-#if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
-  MallocExtension::instance()->ReleaseFreeMemory();
-#endif
+
+  base::allocator::ReleaseFreeMemory();
 
   v8::V8::IdleNotification();
 
@@ -673,9 +672,7 @@ void RenderThreadImpl::IdleHandlerInForegroundTab() {
     // idle pause. We set it proportional to the idle timer delay.
     int idle_hint = static_cast<int>(new_delay_ms / 10);
     if (cpu_usage < kIdleCPUUsageThresholdInPercents) {
-#if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
-      MallocExtension::instance()->ReleaseFreeMemory();
-#endif
+      base::allocator::ReleaseFreeMemory();
       if (v8::V8::IdleNotification(idle_hint)) {
         // V8 finished collecting garbage.
         new_delay_ms = kLongIdleHandlerDelayMs;

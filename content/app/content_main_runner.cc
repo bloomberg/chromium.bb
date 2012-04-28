@@ -4,6 +4,7 @@
 
 #include "content/public/app/content_main_runner.h"
 
+#include "base/allocator/allocator_extension.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
@@ -36,6 +37,10 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/win/dpi.h"
 #include "webkit/glue/webkit_glue.h"
+
+#if defined(USE_TCMALLOC)
+#include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
+#endif
 
 #if defined(OS_WIN)
 #include <atlbase.h>
@@ -314,6 +319,17 @@ class ContentMainRunnerImpl : public content::ContentMainRunner {
       Shutdown();
   }
 
+#if defined(USE_TCMALLOC)
+static void GetStatsThunk(char* buffer, int buffer_length) {
+  MallocExtension::instance()->GetStats(buffer, buffer_length);
+}
+
+static void ReleaseFreeMemoryThunk() {
+  MallocExtension::instance()->ReleaseFreeMemory();
+}
+#endif
+
+
 #if defined(OS_WIN)
   virtual int Initialize(HINSTANCE instance,
                          sandbox::SandboxInterfaceInfo* sandbox_info,
@@ -343,6 +359,10 @@ class ContentMainRunnerImpl : public content::ContentMainRunner {
 #if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
     // For tcmalloc, we need to tell it to behave like new.
     tc_set_new_mode(1);
+
+    // On windows, we've already set these thunks up in _heap_init()
+    base::allocator::SetGetStatsFunction(GetStatsThunk);
+    base::allocator::SetReleaseFreeMemoryFunction(ReleaseFreeMemoryThunk);
 #endif
 
 #if !defined(OS_ANDROID)

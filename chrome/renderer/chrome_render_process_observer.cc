@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/chrome_render_process_observer.h"
 
+#include "base/allocator/allocator_extension.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -35,7 +36,6 @@
 #include "net/base/net_module.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
-#include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCrossOriginPreflightResultCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -329,10 +329,8 @@ void ChromeRenderProcessObserver::OnPurgeMemory() {
 
   v8::V8::LowMemoryNotification();
 
-#if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
-  // Tell tcmalloc to release any free pages it's still holding.
-  MallocExtension::instance()->ReleaseFreeMemory();
-#endif
+  // Tell our allocator to release any free pages it's still holding.
+  base::allocator::ReleaseFreeMemory();
 
   if (client_)
     client_->OnPurgeMemory();

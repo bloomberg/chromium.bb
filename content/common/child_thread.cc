@@ -4,6 +4,7 @@
 
 #include "content/common/child_thread.h"
 
+#include "base/allocator/allocator_extension.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/process.h"
@@ -25,10 +26,6 @@
 
 #if defined(OS_WIN)
 #include "content/common/handle_enumerator_win.h"
-#endif
-
-#if defined(USE_TCMALLOC)
-#include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
 #endif
 
 using tracked_objects::ThreadData;
@@ -257,7 +254,7 @@ void ChildThread::OnDumpHandles() {
 void ChildThread::OnGetTcmallocStats() {
   std::string result;
   char buffer[1024 * 32];
-  MallocExtension::instance()->GetStats(buffer, sizeof(buffer));
+  base::allocator::GetStats(buffer, sizeof(buffer));
   result.append(buffer);
   Send(new ChildProcessHostMsg_TcmallocStats(result));
 }
