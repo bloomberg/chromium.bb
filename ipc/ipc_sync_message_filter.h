@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,6 @@ class IPC_EXPORT SyncMessageFilter : public ChannelProxy::MessageFilter,
                                      public Message::Sender {
  public:
   explicit SyncMessageFilter(base::WaitableEvent* shutdown_event);
-  virtual ~SyncMessageFilter();
 
   // Message::Sender implementation.
   virtual bool Send(Message* message) OVERRIDE;
@@ -40,6 +39,9 @@ class IPC_EXPORT SyncMessageFilter : public ChannelProxy::MessageFilter,
   virtual void OnChannelError() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const Message& message) OVERRIDE;
+
+ protected:
+  virtual ~SyncMessageFilter();
 
  private:
   void SendOnIOThread(Message* message);

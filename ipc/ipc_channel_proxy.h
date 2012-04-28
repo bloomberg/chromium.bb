@@ -58,7 +58,6 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
       : public base::RefCountedThreadSafe<MessageFilter, MessageFilterTraits> {
    public:
     MessageFilter();
-    virtual ~MessageFilter();
 
     // Called on the background thread to provide the filter with access to the
     // channel.  Called when the IPC channel is initialized or when AddFilter
@@ -90,6 +89,13 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
     // derived classes the option of controlling which thread they're deleted
     // on etc.
     virtual void OnDestruct() const;
+
+   protected:
+    virtual ~MessageFilter();
+
+   private:
+    friend class base::RefCountedThreadSafe<MessageFilter,
+                                            MessageFilterTraits>;
   };
 
   struct MessageFilterTraits {
@@ -97,6 +103,7 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
       filter->OnDestruct();
     }
   };
+
 
   // Interface for a filter to be imposed on outgoing messages which can
   // re-write the message.  Used mainly for testing.
@@ -233,7 +240,7 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
                        const Channel::Mode& mode);
 
     // Methods called on the IO thread.
-    void OnSendMessage(Message* message_ptr);
+    void OnSendMessage(scoped_ptr<Message> message_ptr);
     void OnAddFilter();
     void OnRemoveFilter(MessageFilter* filter);
 

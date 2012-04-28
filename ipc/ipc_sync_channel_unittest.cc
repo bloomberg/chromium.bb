@@ -1110,6 +1110,9 @@ class TestSyncMessageFilter : public SyncMessageFilter {
     worker_->Done();
   }
 
+ private:
+  virtual ~TestSyncMessageFilter() {}
+
   Worker* worker_;
   base::Thread thread_;
 };

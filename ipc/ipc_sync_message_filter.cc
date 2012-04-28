@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,9 +19,6 @@ SyncMessageFilter::SyncMessageFilter(base::WaitableEvent* shutdown_event)
     : channel_(NULL),
       listener_loop_(MessageLoopProxy::current()),
       shutdown_event_(shutdown_event) {
-}
-
-SyncMessageFilter::~SyncMessageFilter() {
 }
 
 bool SyncMessageFilter::Send(Message* message) {
@@ -69,29 +66,6 @@ bool SyncMessageFilter::Send(Message* message) {
   return pending_message.send_result;
 }
 
-void SyncMessageFilter::SendOnIOThread(Message* message) {
-  if (channel_) {
-    channel_->Send(message);
-    return;
-  }
-
-  if (message->is_sync()) {
-    // We don't know which thread sent it, but it doesn't matter, just signal
-    // them all.
-    SignalAllEvents();
-  }
-
-  delete message;
-}
-
-void SyncMessageFilter::SignalAllEvents() {
-  base::AutoLock auto_lock(lock_);
-  for (PendingSyncMessages::iterator iter = pending_sync_messages_.begin();
-       iter != pending_sync_messages_.end(); ++iter) {
-    (*iter)->done_event->Signal();
-  }
-}
-
 void SyncMessageFilter::OnFilterAdded(Channel* channel) {
   channel_ = channel;
   base::AutoLock auto_lock(lock_);
@@ -123,6 +97,32 @@ bool SyncMessageFilter::OnMessageReceived(const Message& message) {
   }
 
   return false;
+}
+
+SyncMessageFilter::~SyncMessageFilter() {
+}
+
+void SyncMessageFilter::SendOnIOThread(Message* message) {
+  if (channel_) {
+    channel_->Send(message);
+    return;
+  }
+
+  if (message->is_sync()) {
+    // We don't know which thread sent it, but it doesn't matter, just signal
+    // them all.
+    SignalAllEvents();
+  }
+
+  delete message;
+}
+
+void SyncMessageFilter::SignalAllEvents() {
+  base::AutoLock auto_lock(lock_);
+  for (PendingSyncMessages::iterator iter = pending_sync_messages_.begin();
+       iter != pending_sync_messages_.end(); ++iter) {
+    (*iter)->done_event->Signal();
+  }
 }
 
 }  // namespace IPC

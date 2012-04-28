@@ -14,32 +14,9 @@
 
 namespace IPC {
 
-// This helper ensures the message is deleted if the task is deleted without
-// having been run.
-class SendCallbackHelper
-    : public base::RefCountedThreadSafe<SendCallbackHelper> {
- public:
-  SendCallbackHelper(ChannelProxy::Context* context, Message* message)
-      : context_(context),
-        message_(message) {
-  }
-
-  void Send() {
-    context_->OnSendMessage(message_.release());
-  }
-
- private:
-  scoped_refptr<ChannelProxy::Context> context_;
-  scoped_ptr<Message> message_;
-
-  DISALLOW_COPY_AND_ASSIGN(SendCallbackHelper);
-};
-
 //------------------------------------------------------------------------------
 
 ChannelProxy::MessageFilter::MessageFilter() {}
-
-ChannelProxy::MessageFilter::~MessageFilter() {}
 
 void ChannelProxy::MessageFilter::OnFilterAdded(Channel* channel) {}
 
@@ -58,6 +35,8 @@ bool ChannelProxy::MessageFilter::OnMessageReceived(const Message& message) {
 void ChannelProxy::MessageFilter::OnDestruct() const {
   delete this;
 }
+
+ChannelProxy::MessageFilter::~MessageFilter() {}
 
 //------------------------------------------------------------------------------
 
@@ -186,13 +165,12 @@ void ChannelProxy::Context::OnChannelClosed() {
 }
 
 // Called on the IPC::Channel thread
-void ChannelProxy::Context::OnSendMessage(Message* message) {
+void ChannelProxy::Context::OnSendMessage(scoped_ptr<Message> message) {
   if (!channel_.get()) {
-    delete message;
     OnChannelClosed();
     return;
   }
-  if (!channel_->Send(message))
+  if (!channel_->Send(message.release()))
     OnChannelError();
 }
 
@@ -368,8 +346,8 @@ bool ChannelProxy::Send(Message* message) {
 
   context_->ipc_message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&SendCallbackHelper::Send,
-                 new SendCallbackHelper(context_.get(), message)));
+      base::Bind(&ChannelProxy::Context::OnSendMessage,
+                 context_, base::Passed(scoped_ptr<Message>(message))));
   return true;
 }
 
