@@ -201,7 +201,6 @@ class CONTENT_EXPORT MediaStreamImpl
   talk_base::Thread* worker_thread_;
   base::Thread chrome_worker_thread_;
 
-  static int next_request_id_;
   typedef std::map<int, WebKit::WebUserMediaRequest> MediaRequestMap;
   MediaRequestMap user_media_requests_;
 

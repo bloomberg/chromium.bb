@@ -52,22 +52,16 @@ AudioInputDevice::AudioInputDevice(const media::AudioParameters& params,
   filter_ = RenderThreadImpl::current()->audio_input_message_filter();
 }
 
-AudioInputDevice::~AudioInputDevice() {
-  // TODO(henrika): The current design requires that the user calls
-  // Stop before deleting this class.
-  CHECK_EQ(0, stream_id_);
+void AudioInputDevice::SetDevice(int session_id) {
+  DVLOG(1) << "SetDevice (session_id=" << session_id << ")";
+  message_loop()->PostTask(FROM_HERE,
+      base::Bind(&AudioInputDevice::SetSessionIdOnIOThread, this, session_id));
 }
 
 void AudioInputDevice::Start() {
   DVLOG(1) << "Start()";
   message_loop()->PostTask(FROM_HERE,
       base::Bind(&AudioInputDevice::InitializeOnIOThread, this));
-}
-
-void AudioInputDevice::SetDevice(int session_id) {
-  DVLOG(1) << "SetDevice (session_id=" << session_id << ")";
-  message_loop()->PostTask(FROM_HERE,
-      base::Bind(&AudioInputDevice::SetSessionIdOnIOThread, this, session_id));
 }
 
 void AudioInputDevice::Stop() {
@@ -102,83 +96,6 @@ void AudioInputDevice::SetAutomaticGainControl(bool enabled) {
   message_loop()->PostTask(FROM_HERE,
       base::Bind(&AudioInputDevice::SetAutomaticGainControlOnIOThread,
           this, enabled));
-}
-
-void AudioInputDevice::InitializeOnIOThread() {
-  DCHECK(message_loop()->BelongsToCurrentThread());
-  // Make sure we don't call Start() more than once.
-  DCHECK_EQ(0, stream_id_);
-  if (stream_id_)
-    return;
-
-  stream_id_ = filter_->AddDelegate(this);
-  // If |session_id_| is not specified, it will directly create the stream;
-  // otherwise it will send a AudioInputHostMsg_StartDevice msg to the browser
-  // and create the stream when getting a OnDeviceReady() callback.
-  if (!session_id_) {
-    Send(new AudioInputHostMsg_CreateStream(
-        stream_id_, audio_parameters_,
-        media::AudioManagerBase::kDefaultDeviceId,
-        agc_is_enabled_));
-  } else {
-    Send(new AudioInputHostMsg_StartDevice(stream_id_, session_id_));
-    pending_device_ready_ = true;
-  }
-}
-
-void AudioInputDevice::SetSessionIdOnIOThread(int session_id) {
-  DCHECK(message_loop()->BelongsToCurrentThread());
-  session_id_ = session_id;
-}
-
-void AudioInputDevice::StartOnIOThread() {
-  DCHECK(message_loop()->BelongsToCurrentThread());
-  if (stream_id_)
-    Send(new AudioInputHostMsg_RecordStream(stream_id_));
-}
-
-void AudioInputDevice::ShutDownOnIOThread() {
-  DCHECK(message_loop()->BelongsToCurrentThread());
-  // NOTE: |completion| may be NULL.
-  // Make sure we don't call shutdown more than once.
-  if (stream_id_) {
-    filter_->RemoveDelegate(stream_id_);
-    Send(new AudioInputHostMsg_CloseStream(stream_id_));
-
-    stream_id_ = 0;
-    session_id_ = 0;
-    pending_device_ready_ = false;
-    agc_is_enabled_ = false;
-  }
-
-  // We can run into an issue where ShutDownOnIOThread is called right after
-  // OnStreamCreated is called in cases where Start/Stop are called before we
-  // get the OnStreamCreated callback.  To handle that corner case, we call
-  // Stop(). In most cases, the thread will already be stopped.
-  // Another situation is when the IO thread goes away before Stop() is called
-  // in which case, we cannot use the message loop to close the thread handle
-  // and can't not rely on the main thread existing either.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  audio_thread_.Stop(NULL);
-  audio_callback_.reset();
-}
-
-void AudioInputDevice::SetVolumeOnIOThread(double volume) {
-  DCHECK(message_loop()->BelongsToCurrentThread());
-  if (stream_id_)
-    Send(new AudioInputHostMsg_SetVolume(stream_id_, volume));
-}
-
-void AudioInputDevice::SetAutomaticGainControlOnIOThread(bool enabled) {
-  DCHECK(message_loop()->BelongsToCurrentThread());
-  DCHECK_EQ(0, stream_id_) <<
-      "The AGC state can not be modified while capturing is active.";
-  if (stream_id_)
-    return;
-
-  // We simply store the new AGC setting here. This value will be used when
-  // a new stream is initialized and by GetAutomaticGainControl().
-  agc_is_enabled_ = enabled;
 }
 
 void AudioInputDevice::OnStreamCreated(
@@ -285,6 +202,89 @@ void AudioInputDevice::OnDeviceReady(const std::string& device_id) {
   // Notify the client that the device has been started.
   if (event_handler_)
     event_handler_->OnDeviceStarted(device_id);
+}
+
+AudioInputDevice::~AudioInputDevice() {
+  // TODO(henrika): The current design requires that the user calls
+  // Stop before deleting this class.
+  CHECK_EQ(0, stream_id_);
+}
+
+void AudioInputDevice::InitializeOnIOThread() {
+  DCHECK(message_loop()->BelongsToCurrentThread());
+  // Make sure we don't call Start() more than once.
+  DCHECK_EQ(0, stream_id_);
+  if (stream_id_)
+    return;
+
+  stream_id_ = filter_->AddDelegate(this);
+  // If |session_id_| is not specified, it will directly create the stream;
+  // otherwise it will send a AudioInputHostMsg_StartDevice msg to the browser
+  // and create the stream when getting a OnDeviceReady() callback.
+  if (!session_id_) {
+    Send(new AudioInputHostMsg_CreateStream(
+        stream_id_, audio_parameters_,
+        media::AudioManagerBase::kDefaultDeviceId,
+        agc_is_enabled_));
+  } else {
+    Send(new AudioInputHostMsg_StartDevice(stream_id_, session_id_));
+    pending_device_ready_ = true;
+  }
+}
+
+void AudioInputDevice::SetSessionIdOnIOThread(int session_id) {
+  DCHECK(message_loop()->BelongsToCurrentThread());
+  session_id_ = session_id;
+}
+
+void AudioInputDevice::StartOnIOThread() {
+  DCHECK(message_loop()->BelongsToCurrentThread());
+  if (stream_id_)
+    Send(new AudioInputHostMsg_RecordStream(stream_id_));
+}
+
+void AudioInputDevice::ShutDownOnIOThread() {
+  DCHECK(message_loop()->BelongsToCurrentThread());
+  // NOTE: |completion| may be NULL.
+  // Make sure we don't call shutdown more than once.
+  if (stream_id_) {
+    filter_->RemoveDelegate(stream_id_);
+    Send(new AudioInputHostMsg_CloseStream(stream_id_));
+
+    stream_id_ = 0;
+    session_id_ = 0;
+    pending_device_ready_ = false;
+    agc_is_enabled_ = false;
+  }
+
+  // We can run into an issue where ShutDownOnIOThread is called right after
+  // OnStreamCreated is called in cases where Start/Stop are called before we
+  // get the OnStreamCreated callback.  To handle that corner case, we call
+  // Stop(). In most cases, the thread will already be stopped.
+  // Another situation is when the IO thread goes away before Stop() is called
+  // in which case, we cannot use the message loop to close the thread handle
+  // and can't not rely on the main thread existing either.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  audio_thread_.Stop(NULL);
+  audio_callback_.reset();
+}
+
+void AudioInputDevice::SetVolumeOnIOThread(double volume) {
+  DCHECK(message_loop()->BelongsToCurrentThread());
+  if (stream_id_)
+    Send(new AudioInputHostMsg_SetVolume(stream_id_, volume));
+}
+
+void AudioInputDevice::SetAutomaticGainControlOnIOThread(bool enabled) {
+  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK_EQ(0, stream_id_) <<
+      "The AGC state can not be modified while capturing is active.";
+  if (stream_id_)
+    return;
+
+  // We simply store the new AGC setting here. This value will be used when
+  // a new stream is initialized and by GetAutomaticGainControl().
+  agc_is_enabled_ = enabled;
 }
 
 void AudioInputDevice::Send(IPC::Message* message) {

@@ -16,8 +16,12 @@ AudioMessageFilter::AudioMessageFilter()
   VLOG(1) << "AudioMessageFilter::AudioMessageFilter()";
 }
 
-AudioMessageFilter::~AudioMessageFilter() {
-  VLOG(1) << "AudioMessageFilter::~AudioMessageFilter()";
+int32 AudioMessageFilter::AddDelegate(Delegate* delegate) {
+  return delegates_.Add(delegate);
+}
+
+void AudioMessageFilter::RemoveDelegate(int32 id) {
+  delegates_.Remove(id);
 }
 
 bool AudioMessageFilter::Send(IPC::Message* message) {
@@ -63,6 +67,10 @@ void AudioMessageFilter::OnChannelClosing() {
   channel_ = NULL;
 }
 
+AudioMessageFilter::~AudioMessageFilter() {
+  VLOG(1) << "AudioMessageFilter::~AudioMessageFilter()";
+}
+
 void AudioMessageFilter::OnStreamCreated(
     int stream_id,
     base::SharedMemoryHandle handle,
@@ -95,12 +103,4 @@ void AudioMessageFilter::OnStreamStateChanged(
     return;
   }
   delegate->OnStateChanged(state);
-}
-
-int32 AudioMessageFilter::AddDelegate(Delegate* delegate) {
-  return delegates_.Add(delegate);
-}
-
-void AudioMessageFilter::RemoveDelegate(int32 id) {
-  delegates_.Remove(id);
 }

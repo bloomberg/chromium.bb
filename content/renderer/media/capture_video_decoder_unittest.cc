@@ -52,7 +52,6 @@ class MockVideoCaptureImpl : public VideoCaptureImpl {
                        VideoCaptureMessageFilter* filter)
       : VideoCaptureImpl(id, ml_proxy, filter) {
   }
-  virtual ~MockVideoCaptureImpl() {}
 
   MOCK_METHOD2(StartCapture,
                void(media::VideoCapture::EventHandler* handler,
@@ -67,7 +66,6 @@ class MockVideoCaptureImpl : public VideoCaptureImpl {
 class MockVideoCaptureImplManager : public VideoCaptureImplManager {
  public:
   MockVideoCaptureImplManager() {}
-  virtual ~MockVideoCaptureImplManager() {}
 
   MOCK_METHOD2(AddDevice,
                media::VideoCapture*(media::VideoCaptureSessionId id,
@@ -75,6 +73,9 @@ class MockVideoCaptureImplManager : public VideoCaptureImplManager {
   MOCK_METHOD2(RemoveDevice,
                void(media::VideoCaptureSessionId id,
                    media::VideoCapture::EventHandler* handler));
+
+ protected:
+  virtual ~MockVideoCaptureImplManager() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureImplManager);

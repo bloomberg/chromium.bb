@@ -38,7 +38,6 @@ class RenderAudioSourceProvider
       public media::AudioRendererSink {
  public:
   RenderAudioSourceProvider();
-  virtual ~RenderAudioSourceProvider();
 
   // WebKit::WebAudioSourceProvider implementation.
 
@@ -60,8 +59,11 @@ class RenderAudioSourceProvider
   virtual void SetPlaybackRate(float rate) OVERRIDE;
   virtual bool SetVolume(double volume) OVERRIDE;
   virtual void GetVolume(double* volume) OVERRIDE;
-  virtual void Initialize(
-      const media::AudioParameters& params, RenderCallback* renderer) OVERRIDE;
+  virtual void Initialize(const media::AudioParameters& params,
+                          RenderCallback* renderer) OVERRIDE;
+
+ protected:
+  virtual ~RenderAudioSourceProvider();
 
  private:
   // Set to true when Initialize() is called.

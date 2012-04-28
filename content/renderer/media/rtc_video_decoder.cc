@@ -36,27 +36,6 @@ RTCVideoDecoder::RTCVideoDecoder(MessageLoop* message_loop,
       got_first_frame_(false) {
 }
 
-RTCVideoDecoder::~RTCVideoDecoder() {}
-
-void RTCVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
-                                 const PipelineStatusCB& status_cb,
-                                 const StatisticsCB& statistics_cb) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&RTCVideoDecoder::Initialize, this,
-                   make_scoped_refptr(demuxer_stream),
-                   status_cb, statistics_cb));
-    return;
-  }
-
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
-  state_ = kNormal;
-  status_cb.Run(PIPELINE_OK);
-
-  // TODO(acolwell): Implement stats.
-}
-
 void RTCVideoDecoder::Play(const base::Closure& callback) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(FROM_HERE,
@@ -67,6 +46,19 @@ void RTCVideoDecoder::Play(const base::Closure& callback) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
 
   callback.Run();
+}
+
+void RTCVideoDecoder::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
+  if (MessageLoop::current() != message_loop_) {
+     message_loop_->PostTask(FROM_HERE,
+                             base::Bind(&RTCVideoDecoder::Seek, this,
+                                        time, cb));
+     return;
+  }
+
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  state_ = kNormal;
+  cb.Run(PIPELINE_OK);
 }
 
 void RTCVideoDecoder::Pause(const base::Closure& callback) {
@@ -127,17 +119,23 @@ void RTCVideoDecoder::Stop(const base::Closure& callback) {
   VideoDecoder::Stop(callback);
 }
 
-void RTCVideoDecoder::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
+void RTCVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
+                                 const PipelineStatusCB& status_cb,
+                                 const StatisticsCB& statistics_cb) {
   if (MessageLoop::current() != message_loop_) {
-     message_loop_->PostTask(FROM_HERE,
-                             base::Bind(&RTCVideoDecoder::Seek, this,
-                                        time, cb));
-     return;
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&RTCVideoDecoder::Initialize, this,
+                   make_scoped_refptr(demuxer_stream),
+                   status_cb, statistics_cb));
+    return;
   }
 
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   state_ = kNormal;
-  cb.Run(PIPELINE_OK);
+  status_cb.Run(PIPELINE_OK);
+
+  // TODO(acolwell): Implement stats.
 }
 
 void RTCVideoDecoder::Read(const ReadCB& callback) {
@@ -219,3 +217,5 @@ bool RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
   read_cb.Run(kOk, video_frame);
   return true;
 }
+
+RTCVideoDecoder::~RTCVideoDecoder() {}

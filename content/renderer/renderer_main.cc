@@ -74,7 +74,9 @@ void InstallFrameworkHacks() {
 #if defined(OS_POSIX)
 
 class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
-  void OnChannelError() {
+ public:
+  // IPC::ChannelProxy::MessageFilter
+  virtual void OnChannelError() OVERRIDE {
     // On POSIX, at least, one can install an unload handler which loops
     // forever and leave behind a renderer process which eats 100% CPU forever.
     //
@@ -101,6 +103,9 @@ class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
 #endif
       _exit(0);
   }
+
+ protected:
+  virtual ~SuicideOnChannelErrorFilter() {}
 };
 
 #endif  // OS(POSIX)

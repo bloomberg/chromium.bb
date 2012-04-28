@@ -45,7 +45,6 @@ class GpuChannel : public IPC::Channel::Listener,
              gfx::GLShareGroup* share_group,
              int client_id,
              bool software);
-  virtual ~GpuChannel();
 
   bool Init(base::MessageLoopProxy* io_message_loop,
             base::WaitableEvent* shutdown_event);
@@ -106,7 +105,12 @@ class GpuChannel : public IPC::Channel::Listener,
   // discrete GPU even if they would otherwise use the integrated GPU.
   bool ShouldPreferDiscreteGpu() const;
 
+ protected:
+  virtual ~GpuChannel();
+
  private:
+  friend class base::RefCountedThreadSafe<GpuChannel>;
+
   void OnDestroy();
 
   bool OnControlMessageReceived(const IPC::Message& msg);

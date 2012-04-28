@@ -86,7 +86,6 @@ class GpuChannelHost : public IPC::Message::Sender,
   GpuChannelHost(GpuChannelHostFactory* factory,
                  int gpu_host_id,
                  int client_id);
-  virtual ~GpuChannelHost();
 
   // Connect to GPU process channel.
   void Connect(const IPC::ChannelHandle& channel_handle);
@@ -157,12 +156,14 @@ class GpuChannelHost : public IPC::Message::Sender,
   int client_id() const { return client_id_; }
 
  private:
+  friend class base::RefCountedThreadSafe<GpuChannelHost>;
+  virtual ~GpuChannelHost();
+
   // A filter used internally to route incoming messages from the IO thread
   // to the correct message loop.
   class MessageFilter : public IPC::ChannelProxy::MessageFilter {
    public:
     explicit MessageFilter(GpuChannelHost* parent);
-    virtual ~MessageFilter();
 
     void AddRoute(int route_id,
                   base::WeakPtr<IPC::Channel::Listener> listener,
@@ -174,6 +175,8 @@ class GpuChannelHost : public IPC::Message::Sender,
     virtual void OnChannelError() OVERRIDE;
 
    private:
+    virtual ~MessageFilter();
+
     GpuChannelHost* parent_;
 
     typedef base::hash_map<int, GpuListenerInfo> ListenerMap;

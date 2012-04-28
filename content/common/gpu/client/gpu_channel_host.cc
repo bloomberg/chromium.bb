@@ -16,82 +16,9 @@
 using base::AutoLock;
 using base::MessageLoopProxy;
 
-GpuListenerInfo::GpuListenerInfo() {
-}
+GpuListenerInfo::GpuListenerInfo() {}
 
-GpuListenerInfo::~GpuListenerInfo() {
-}
-
-GpuChannelHost::MessageFilter::MessageFilter(GpuChannelHost* parent)
-    : parent_(parent) {
-}
-
-GpuChannelHost::MessageFilter::~MessageFilter() {
-
-}
-
-void GpuChannelHost::MessageFilter::AddRoute(
-    int route_id,
-    base::WeakPtr<IPC::Channel::Listener> listener,
-    scoped_refptr<MessageLoopProxy> loop) {
-  DCHECK(parent_->factory_->IsIOThread());
-  DCHECK(listeners_.find(route_id) == listeners_.end());
-  GpuListenerInfo info;
-  info.listener = listener;
-  info.loop = loop;
-  listeners_[route_id] = info;
-}
-
-void GpuChannelHost::MessageFilter::RemoveRoute(int route_id) {
-  DCHECK(parent_->factory_->IsIOThread());
-  ListenerMap::iterator it = listeners_.find(route_id);
-  if (it != listeners_.end())
-    listeners_.erase(it);
-}
-
-bool GpuChannelHost::MessageFilter::OnMessageReceived(
-    const IPC::Message& message) {
-  DCHECK(parent_->factory_->IsIOThread());
-  // Never handle sync message replies or we will deadlock here.
-  if (message.is_reply())
-    return false;
-
-  DCHECK(message.routing_id() != MSG_ROUTING_CONTROL);
-
-  ListenerMap::iterator it = listeners_.find(message.routing_id());
-
-  if (it != listeners_.end()) {
-    const GpuListenerInfo& info = it->second;
-    info.loop->PostTask(
-        FROM_HERE,
-        base::Bind(
-            base::IgnoreResult(&IPC::Channel::Listener::OnMessageReceived),
-            info.listener,
-            message));
-  }
-
-  return true;
-}
-
-void GpuChannelHost::MessageFilter::OnChannelError() {
-  DCHECK(parent_->factory_->IsIOThread());
-  // Inform all the proxies that an error has occurred. This will be reported
-  // via OpenGL as a lost context.
-  for (ListenerMap::iterator it = listeners_.begin();
-       it != listeners_.end();
-       it++) {
-    const GpuListenerInfo& info = it->second;
-    info.loop->PostTask(
-        FROM_HERE,
-        base::Bind(&IPC::Channel::Listener::OnChannelError, info.listener));
-  }
-
-  listeners_.clear();
-
-  MessageLoop* main_loop = parent_->factory_->GetMainLoop();
-  main_loop->PostTask(FROM_HERE,
-                      base::Bind(&GpuChannelHost::OnChannelError, parent_));
-}
+GpuListenerInfo::~GpuListenerInfo() {}
 
 GpuChannelHost::GpuChannelHost(
     GpuChannelHostFactory* factory, int gpu_host_id, int client_id)
@@ -99,9 +26,6 @@ GpuChannelHost::GpuChannelHost(
       client_id_(client_id),
       gpu_host_id_(gpu_host_id),
       state_(kUnconnected) {
-}
-
-GpuChannelHost::~GpuChannelHost() {
 }
 
 void GpuChannelHost::Connect(
@@ -136,12 +60,12 @@ void GpuChannelHost::set_gpu_info(const content::GPUInfo& gpu_info) {
   gpu_info_ = gpu_info;
 }
 
-const content::GPUInfo& GpuChannelHost::gpu_info() const {
-  return gpu_info_;
-}
-
 void GpuChannelHost::SetStateLost() {
   state_ = kLost;
+}
+
+const content::GPUInfo& GpuChannelHost::gpu_info() const {
+  return gpu_info_;
 }
 
 void GpuChannelHost::OnChannelError() {
@@ -215,17 +139,6 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
 #endif
 }
 
-GpuVideoDecodeAcceleratorHost* GpuChannelHost::CreateVideoDecoder(
-    int command_buffer_route_id,
-    media::VideoCodecProfile profile,
-    media::VideoDecodeAccelerator::Client* client) {
-  AutoLock lock(context_lock_);
-  ProxyMap::iterator it = proxies_.find(command_buffer_route_id);
-  DCHECK(it != proxies_.end());
-  CommandBufferProxyImpl* proxy = it->second;
-  return proxy->CreateVideoDecoder(profile, client);
-}
-
 CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
     const gfx::Size& size,
     CommandBufferProxy* share_group,
@@ -264,6 +177,17 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
 #else
   return NULL;
 #endif
+}
+
+GpuVideoDecodeAcceleratorHost* GpuChannelHost::CreateVideoDecoder(
+    int command_buffer_route_id,
+    media::VideoCodecProfile profile,
+    media::VideoDecodeAccelerator::Client* client) {
+  AutoLock lock(context_lock_);
+  ProxyMap::iterator it = proxies_.find(command_buffer_route_id);
+  DCHECK(it != proxies_.end());
+  CommandBufferProxyImpl* proxy = it->second;
+  return proxy->CreateVideoDecoder(profile, client);
 }
 
 void GpuChannelHost::DestroyCommandBuffer(
@@ -313,3 +237,77 @@ void GpuChannelHost::ForciblyCloseChannel() {
   Send(new GpuChannelMsg_CloseChannel());
   SetStateLost();
 }
+
+GpuChannelHost::~GpuChannelHost() {}
+
+
+GpuChannelHost::MessageFilter::MessageFilter(GpuChannelHost* parent)
+    : parent_(parent) {
+}
+
+GpuChannelHost::MessageFilter::~MessageFilter() {}
+
+void GpuChannelHost::MessageFilter::AddRoute(
+    int route_id,
+    base::WeakPtr<IPC::Channel::Listener> listener,
+    scoped_refptr<MessageLoopProxy> loop) {
+  DCHECK(parent_->factory_->IsIOThread());
+  DCHECK(listeners_.find(route_id) == listeners_.end());
+  GpuListenerInfo info;
+  info.listener = listener;
+  info.loop = loop;
+  listeners_[route_id] = info;
+}
+
+void GpuChannelHost::MessageFilter::RemoveRoute(int route_id) {
+  DCHECK(parent_->factory_->IsIOThread());
+  ListenerMap::iterator it = listeners_.find(route_id);
+  if (it != listeners_.end())
+    listeners_.erase(it);
+}
+
+bool GpuChannelHost::MessageFilter::OnMessageReceived(
+    const IPC::Message& message) {
+  DCHECK(parent_->factory_->IsIOThread());
+  // Never handle sync message replies or we will deadlock here.
+  if (message.is_reply())
+    return false;
+
+  DCHECK(message.routing_id() != MSG_ROUTING_CONTROL);
+
+  ListenerMap::iterator it = listeners_.find(message.routing_id());
+
+  if (it != listeners_.end()) {
+    const GpuListenerInfo& info = it->second;
+    info.loop->PostTask(
+        FROM_HERE,
+        base::Bind(
+            base::IgnoreResult(&IPC::Channel::Listener::OnMessageReceived),
+            info.listener,
+            message));
+  }
+
+  return true;
+}
+
+void GpuChannelHost::MessageFilter::OnChannelError() {
+  DCHECK(parent_->factory_->IsIOThread());
+  // Inform all the proxies that an error has occurred. This will be reported
+  // via OpenGL as a lost context.
+  for (ListenerMap::iterator it = listeners_.begin();
+       it != listeners_.end();
+       it++) {
+    const GpuListenerInfo& info = it->second;
+    info.loop->PostTask(
+        FROM_HERE,
+        base::Bind(&IPC::Channel::Listener::OnChannelError, info.listener));
+  }
+
+  listeners_.clear();
+
+  MessageLoop* main_loop = parent_->factory_->GetMainLoop();
+  main_loop->PostTask(FROM_HERE,
+                      base::Bind(&GpuChannelHost::OnChannelError, parent_));
+}
+
+

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,6 @@ class CONTENT_EXPORT VideoCaptureImplManager
     : public base::RefCountedThreadSafe<VideoCaptureImplManager> {
  public:
   VideoCaptureImplManager();
-  virtual ~VideoCaptureImplManager();
 
   // Called by video capture client |handler| to add device referenced
   // by |id| to VideoCaptureImplManager's list of opened device list.
@@ -45,7 +44,12 @@ class CONTENT_EXPORT VideoCaptureImplManager
     return filter_;
   }
 
+ protected:
+  virtual ~VideoCaptureImplManager();
+
  private:
+  friend class base::RefCountedThreadSafe<VideoCaptureImplManager>;
+
   struct Device {
     Device(VideoCaptureImpl* device,
            media::VideoCapture::EventHandler* handler);

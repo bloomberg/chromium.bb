@@ -13,10 +13,12 @@ class IndexedDBDispatcher;
 class IndexedDBMessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:
   IndexedDBMessageFilter();
-  virtual ~IndexedDBMessageFilter();
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+
+ protected:
+  virtual ~IndexedDBMessageFilter();
 
  private:
   void DispatchMessage(const IPC::Message& msg);

@@ -11,11 +11,7 @@
 #include "content/common/child_process_messages.h"
 
 
-ChildTraceMessageFilter::ChildTraceMessageFilter() : channel_(NULL) {
-}
-
-ChildTraceMessageFilter::~ChildTraceMessageFilter() {
-}
+ChildTraceMessageFilter::ChildTraceMessageFilter() : channel_(NULL) {}
 
 void ChildTraceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   channel_ = channel;
@@ -44,6 +40,8 @@ bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
   return handled;
 }
+
+ChildTraceMessageFilter::~ChildTraceMessageFilter() {}
 
 void ChildTraceMessageFilter::OnBeginTracing(
     const std::vector<std::string>& included_categories,

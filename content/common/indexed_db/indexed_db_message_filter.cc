@@ -16,9 +16,6 @@ IndexedDBMessageFilter::IndexedDBMessageFilter() :
     main_thread_loop_proxy_(base::MessageLoopProxy::current()) {
 }
 
-IndexedDBMessageFilter::~IndexedDBMessageFilter() {
-}
-
 bool IndexedDBMessageFilter::OnMessageReceived(const IPC::Message& msg) {
   if (IPC_MESSAGE_CLASS(msg) != IndexedDBMsgStart)
     return false;
@@ -31,6 +28,8 @@ bool IndexedDBMessageFilter::OnMessageReceived(const IPC::Message& msg) {
     main_thread_loop_proxy_->PostTask(FROM_HERE, closure);
   return true;
 }
+
+IndexedDBMessageFilter::~IndexedDBMessageFilter() {}
 
 void IndexedDBMessageFilter::DispatchMessage(const IPC::Message& msg) {
   IndexedDBDispatcher::ThreadSpecificInstance()->OnMessageReceived(msg);

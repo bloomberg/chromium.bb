@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,9 @@ class IsListeningFilter : public IPC::ChannelProxy::MessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   static bool is_listening_;
+
+ protected:
+  virtual ~IsListeningFilter() {}
 
  private:
   IPC::Channel* channel_;

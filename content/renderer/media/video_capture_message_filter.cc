@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,35 @@ VideoCaptureMessageFilter::VideoCaptureMessageFilter()
       channel_(NULL) {
 }
 
-VideoCaptureMessageFilter::~VideoCaptureMessageFilter() {
+void VideoCaptureMessageFilter::AddDelegate(Delegate* delegate) {
+  if (++last_device_id_ <= 0)
+    last_device_id_ = 1;
+  while (delegates_.find(last_device_id_) != delegates_.end())
+    last_device_id_++;
+
+  if (channel_) {
+    delegates_[last_device_id_] = delegate;
+    delegate->OnDelegateAdded(last_device_id_);
+  } else {
+    pending_delegates_[last_device_id_] = delegate;
+  }
+}
+
+void VideoCaptureMessageFilter::RemoveDelegate(Delegate* delegate) {
+  for (Delegates::iterator it = delegates_.begin();
+       it != delegates_.end(); it++) {
+    if (it->second == delegate) {
+      delegates_.erase(it);
+      break;
+    }
+  }
+  for (Delegates::iterator it = pending_delegates_.begin();
+       it != pending_delegates_.end(); it++) {
+    if (it->second == delegate) {
+      pending_delegates_.erase(it);
+      break;
+    }
+  }
 }
 
 bool VideoCaptureMessageFilter::Send(IPC::Message* message) {
@@ -57,6 +85,8 @@ void VideoCaptureMessageFilter::OnFilterRemoved() {
 void VideoCaptureMessageFilter::OnChannelClosing() {
   channel_ = NULL;
 }
+
+VideoCaptureMessageFilter::~VideoCaptureMessageFilter() {}
 
 void VideoCaptureMessageFilter::OnBufferCreated(
     int device_id,
@@ -128,35 +158,4 @@ void VideoCaptureMessageFilter::OnDeviceInfoReceived(
     return;
   }
   delegate->OnDeviceInfoReceived(params);
-}
-
-void VideoCaptureMessageFilter::AddDelegate(Delegate* delegate) {
-  if (++last_device_id_ <= 0)
-    last_device_id_ = 1;
-  while (delegates_.find(last_device_id_) != delegates_.end())
-    last_device_id_++;
-
-  if (channel_) {
-    delegates_[last_device_id_] = delegate;
-    delegate->OnDelegateAdded(last_device_id_);
-  } else {
-    pending_delegates_[last_device_id_] = delegate;
-  }
-}
-
-void VideoCaptureMessageFilter::RemoveDelegate(Delegate* delegate) {
-  for (Delegates::iterator it = delegates_.begin();
-       it != delegates_.end(); it++) {
-    if (it->second == delegate) {
-      delegates_.erase(it);
-      break;
-    }
-  }
-  for (Delegates::iterator it = pending_delegates_.begin();
-       it != pending_delegates_.end(); it++) {
-    if (it->second == delegate) {
-      pending_delegates_.erase(it);
-      break;
-    }
-  }
 }

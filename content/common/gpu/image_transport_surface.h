@@ -158,7 +158,6 @@ class PassThroughImageTransportSurface
                                    GpuCommandBufferStub* stub,
                                    gfx::GLSurface* surface,
                                    bool transport);
-  virtual ~PassThroughImageTransportSurface();
 
   // GLSurface implementation.
   virtual bool Initialize() OVERRIDE;
@@ -174,6 +173,9 @@ class PassThroughImageTransportSurface
   virtual void OnPostSubBufferACK() OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
+
+ protected:
+  virtual ~PassThroughImageTransportSurface();
 
  private:
   scoped_ptr<ImageTransportHelper> helper_;

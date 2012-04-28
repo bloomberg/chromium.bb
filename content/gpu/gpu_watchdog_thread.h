@@ -20,7 +20,6 @@ class GpuWatchdogThread : public base::Thread,
                           public base::RefCountedThreadSafe<GpuWatchdogThread> {
  public:
   explicit GpuWatchdogThread(int timeout);
-  virtual ~GpuWatchdogThread();
 
   // Accessible on watched thread but only modified by watchdog thread.
   bool armed() const { return armed_; }
@@ -34,6 +33,7 @@ class GpuWatchdogThread : public base::Thread,
   virtual void CleanUp() OVERRIDE;
 
  private:
+  friend class base::RefCountedThreadSafe<GpuWatchdogThread>;
 
   // An object of this type intercepts the reception and completion of all tasks
   // on the watched thread and checks whether the watchdog is armed.
@@ -50,12 +50,15 @@ class GpuWatchdogThread : public base::Thread,
     GpuWatchdogThread* watchdog_;
   };
 
+  virtual ~GpuWatchdogThread();
+
   void OnAcknowledge();
   void OnCheck();
   void DeliberatelyTerminateToRecoverFromHang();
-  void Disable();
 
+#if defined(OS_WIN)
   base::TimeDelta GetWatchedThreadTime();
+#endif
 
   MessageLoop* watched_message_loop_;
   base::TimeDelta timeout_;

@@ -42,17 +42,6 @@ PepperPlatformVideoCaptureImpl::PepperPlatformVideoCaptureImpl(
   }
 }
 
-PepperPlatformVideoCaptureImpl::~PepperPlatformVideoCaptureImpl() {
-  if (video_capture_) {
-    VideoCaptureImplManager* manager =
-        RenderThreadImpl::current()->video_capture_impl_manager();
-    manager->RemoveDevice(session_id_, handler_proxy_.get());
-  }
-
-  if (plugin_delegate_ && !label_.empty())
-    plugin_delegate_->CloseDevice(label_);
-}
-
 void PepperPlatformVideoCaptureImpl::StartCapture(
     media::VideoCapture::EventHandler* handler,
     const media::VideoCaptureCapability& capability) {
@@ -153,6 +142,17 @@ void PepperPlatformVideoCaptureImpl::OnDeviceInfoReceived(
     const media::VideoCaptureParams& device_info) {
   if (handler_)
     handler_->OnDeviceInfoReceived(capture, device_info);
+}
+
+PepperPlatformVideoCaptureImpl::~PepperPlatformVideoCaptureImpl() {
+  if (video_capture_) {
+    VideoCaptureImplManager* manager =
+        RenderThreadImpl::current()->video_capture_impl_manager();
+    manager->RemoveDevice(session_id_, handler_proxy_.get());
+  }
+
+  if (plugin_delegate_ && !label_.empty())
+    plugin_delegate_->CloseDevice(label_);
 }
 
 void PepperPlatformVideoCaptureImpl::Initialize() {

@@ -38,7 +38,6 @@ class CONTENT_EXPORT AudioMessageFilter
   };
 
   AudioMessageFilter();
-  virtual ~AudioMessageFilter();
 
   // Add a delegate to the map and return id of the entry.
   int32 AddDelegate(Delegate* delegate);
@@ -49,15 +48,18 @@ class CONTENT_EXPORT AudioMessageFilter
   // Sends an IPC message using |channel_|.
   bool Send(IPC::Message* message);
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(AudioMessageFilterTest, Basic);
-  FRIEND_TEST_ALL_PREFIXES(AudioMessageFilterTest, Delegates);
-
   // IPC::ChannelProxy::MessageFilter override. Called on IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
+
+ protected:
+  virtual ~AudioMessageFilter();
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(AudioMessageFilterTest, Basic);
+  FRIEND_TEST_ALL_PREFIXES(AudioMessageFilterTest, Delegates);
 
   // Received when browser process has created an audio output stream.
   void OnStreamCreated(int stream_id, base::SharedMemoryHandle handle,
@@ -72,9 +74,6 @@ class CONTENT_EXPORT AudioMessageFilter
   // Received when internal state of browser process' audio output device has
   // changed.
   void OnStreamStateChanged(int stream_id, AudioStreamState state);
-
-  // Notification of volume property of an audio output stream.
-  void OnStreamVolume(int stream_id, double volume);
 
   // A map of stream ids to delegates.
   IDMap<Delegate> delegates_;

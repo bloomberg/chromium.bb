@@ -25,8 +25,6 @@ class PepperPlatformAudioOutputImpl
       public AudioMessageFilter::Delegate,
       public base::RefCountedThreadSafe<PepperPlatformAudioOutputImpl> {
  public:
-  virtual ~PepperPlatformAudioOutputImpl();
-
   // Factory function, returns NULL on failure. StreamCreated() will be called
   // when the stream is created.
   static PepperPlatformAudioOutputImpl* Create(
@@ -39,7 +37,18 @@ class PepperPlatformAudioOutputImpl
   virtual bool StopPlayback() OVERRIDE;
   virtual void ShutDown() OVERRIDE;
 
+  // AudioMessageFilter::Delegate.
+  virtual void OnStateChanged(AudioStreamState state) OVERRIDE;
+  virtual void OnStreamCreated(base::SharedMemoryHandle handle,
+                               base::SyncSocket::Handle socket_handle,
+                               uint32 length) OVERRIDE;
+
+ protected:
+  virtual ~PepperPlatformAudioOutputImpl();
+
  private:
+  friend class base::RefCountedThreadSafe<PepperPlatformAudioOutputImpl>;
+
   PepperPlatformAudioOutputImpl();
 
   bool Initialize(
@@ -52,12 +61,6 @@ class PepperPlatformAudioOutputImpl
   void StartPlaybackOnIOThread();
   void StopPlaybackOnIOThread();
   void ShutDownOnIOThread();
-
-  // AudioMessageFilter::Delegate.
-  virtual void OnStateChanged(AudioStreamState state) OVERRIDE;
-  virtual void OnStreamCreated(base::SharedMemoryHandle handle,
-                               base::SyncSocket::Handle socket_handle,
-                               uint32 length) OVERRIDE;
 
   // The client to notify when the stream is created. THIS MUST ONLY BE
   // ACCESSED ON THE MAIN THREAD.

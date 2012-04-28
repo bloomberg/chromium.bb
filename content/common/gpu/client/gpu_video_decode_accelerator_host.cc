@@ -30,8 +30,6 @@ GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
   DCHECK(client_);
 }
 
-GpuVideoDecodeAcceleratorHost::~GpuVideoDecodeAcceleratorHost() {}
-
 void GpuVideoDecodeAcceleratorHost::OnChannelError() {
   DLOG(ERROR) << "GpuVideoDecodeAcceleratorHost::OnChannelError()";
   OnErrorNotification(PLATFORM_FAILURE);
@@ -125,6 +123,8 @@ void GpuVideoDecodeAcceleratorHost::Destroy() {
   client_ = NULL;
   Send(new AcceleratedVideoDecoderMsg_Destroy(decoder_route_id_));
 }
+
+GpuVideoDecodeAcceleratorHost::~GpuVideoDecodeAcceleratorHost() {}
 
 void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {
   // After OnChannelError is called, the client should no longer send

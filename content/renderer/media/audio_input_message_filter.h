@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -20,7 +20,7 @@
 #include "media/audio/audio_buffers_state.h"
 
 class CONTENT_EXPORT AudioInputMessageFilter
-  : public IPC::ChannelProxy::MessageFilter {
+    : public IPC::ChannelProxy::MessageFilter {
  public:
   class CONTENT_EXPORT Delegate {
    public:
@@ -46,7 +46,6 @@ class CONTENT_EXPORT AudioInputMessageFilter
   };
 
   AudioInputMessageFilter();
-  virtual ~AudioInputMessageFilter();
 
   // Add a delegate to the map and return id of the entry.
   int32 AddDelegate(Delegate* delegate);
@@ -58,6 +57,8 @@ class CONTENT_EXPORT AudioInputMessageFilter
   bool Send(IPC::Message* message);
 
  private:
+  virtual ~AudioInputMessageFilter();
+
   // IPC::ChannelProxy::MessageFilter override. Called on IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;

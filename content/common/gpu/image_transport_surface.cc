@@ -17,11 +17,9 @@
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ui/gfx/gl/gl_switches.h"
 
-ImageTransportSurface::ImageTransportSurface() {
-}
+ImageTransportSurface::ImageTransportSurface() {}
 
-ImageTransportSurface::~ImageTransportSurface() {
-}
+ImageTransportSurface::~ImageTransportSurface() {}
 
 void ImageTransportSurface::GetRegionsToCopy(
     const gfx::Rect& previous_damage_rect,
@@ -87,8 +85,7 @@ bool ImageTransportHelper::Initialize() {
   return true;
 }
 
-void ImageTransportHelper::Destroy() {
-}
+void ImageTransportHelper::Destroy() {}
 
 bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
@@ -103,13 +100,6 @@ bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void ImageTransportHelper::SendAcceleratedSurfaceRelease(
-    GpuHostMsg_AcceleratedSurfaceRelease_Params params) {
-  params.surface_id = stub_->surface_id();
-  params.route_id = route_id_;
-  manager_->Send(new GpuHostMsg_AcceleratedSurfaceRelease(params));
 }
 
 void ImageTransportHelper::SendAcceleratedSurfaceNew(
@@ -142,6 +132,13 @@ void ImageTransportHelper::SendAcceleratedSurfacePostSubBuffer(
   manager_->Send(new GpuHostMsg_AcceleratedSurfacePostSubBuffer(params));
 }
 
+void ImageTransportHelper::SendAcceleratedSurfaceRelease(
+    GpuHostMsg_AcceleratedSurfaceRelease_Params params) {
+  params.surface_id = stub_->surface_id();
+  params.route_id = route_id_;
+  manager_->Send(new GpuHostMsg_AcceleratedSurfaceRelease(params));
+}
+
 void ImageTransportHelper::SendResizeView(const gfx::Size& size) {
   manager_->Send(new GpuHostMsg_ResizeView(stub_->surface_id(),
                                            route_id_,
@@ -168,18 +165,48 @@ void ImageTransportHelper::DeferToFence(base::Closure task) {
   scheduler->DeferToFence(task);
 }
 
-void ImageTransportHelper::OnBuffersSwappedACK() {
-  surface_->OnBuffersSwappedACK();
+bool ImageTransportHelper::MakeCurrent() {
+  gpu::gles2::GLES2Decoder* decoder = Decoder();
+  if (!decoder)
+    return false;
+  return decoder->MakeCurrent();
 }
 
-void ImageTransportHelper::OnPostSubBufferACK() {
-  surface_->OnPostSubBufferACK();
+void ImageTransportHelper::SetSwapInterval() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
+    Decoder()->GetGLContext()->SetSwapInterval(0);
+  else
+    Decoder()->GetGLContext()->SetSwapInterval(1);
+}
+
+void ImageTransportHelper::Suspend() {
+  manager_->Send(new GpuHostMsg_AcceleratedSurfaceSuspend(stub_->surface_id()));
+}
+
+gpu::GpuScheduler* ImageTransportHelper::Scheduler() {
+  if (!stub_.get())
+    return NULL;
+  return stub_->scheduler();
+}
+
+gpu::gles2::GLES2Decoder* ImageTransportHelper::Decoder() {
+  if (!stub_.get())
+    return NULL;
+  return stub_->decoder();
 }
 
 void ImageTransportHelper::OnNewSurfaceACK(
     uint64 surface_handle,
     TransportDIB::Handle shm_handle) {
   surface_->OnNewSurfaceACK(surface_handle, shm_handle);
+}
+
+void ImageTransportHelper::OnBuffersSwappedACK() {
+  surface_->OnBuffersSwappedACK();
+}
+
+void ImageTransportHelper::OnPostSubBufferACK() {
+  surface_->OnPostSubBufferACK();
 }
 
 void ImageTransportHelper::OnResizeViewACK() {
@@ -203,36 +230,6 @@ void ImageTransportHelper::Resize(gfx::Size size) {
 #endif
 }
 
-void ImageTransportHelper::SetSwapInterval() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
-    Decoder()->GetGLContext()->SetSwapInterval(0);
-  else
-    Decoder()->GetGLContext()->SetSwapInterval(1);
-}
-
-bool ImageTransportHelper::MakeCurrent() {
-  gpu::gles2::GLES2Decoder* decoder = Decoder();
-  if (!decoder)
-    return false;
-  return decoder->MakeCurrent();
-}
-
-void ImageTransportHelper::Suspend() {
-  manager_->Send(new GpuHostMsg_AcceleratedSurfaceSuspend(stub_->surface_id()));
-}
-
-gpu::GpuScheduler* ImageTransportHelper::Scheduler() {
-  if (!stub_.get())
-    return NULL;
-  return stub_->scheduler();
-}
-
-gpu::gles2::GLES2Decoder* ImageTransportHelper::Decoder() {
-  if (!stub_.get())
-    return NULL;
-  return stub_->decoder();
-}
-
 PassThroughImageTransportSurface::PassThroughImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
@@ -247,9 +244,6 @@ PassThroughImageTransportSurface::PassThroughImageTransportSurface(
                                          gfx::kNullPluginWindow));
 }
 
-PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {
-}
-
 bool PassThroughImageTransportSurface::Initialize() {
   // The surface is assumed to have already been initialized.
   return helper_->Initialize();
@@ -258,10 +252,6 @@ bool PassThroughImageTransportSurface::Initialize() {
 void PassThroughImageTransportSurface::Destroy() {
   helper_->Destroy();
   GLSurfaceAdapter::Destroy();
-}
-
-void PassThroughImageTransportSurface::OnNewSurfaceACK(
-    uint64 surface_handle, TransportDIB::Handle shm_handle) {
 }
 
 bool PassThroughImageTransportSurface::SwapBuffers() {
@@ -310,6 +300,11 @@ bool PassThroughImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
   return true;
 }
 
+void PassThroughImageTransportSurface::OnNewSurfaceACK(
+    uint64 surface_handle,
+    TransportDIB::Handle shm_handle) {
+}
+
 void PassThroughImageTransportSurface::OnBuffersSwappedACK() {
   DCHECK(transport_);
   helper_->SetScheduled(true);
@@ -337,5 +332,7 @@ void PassThroughImageTransportSurface::OnResize(gfx::Size size) {
     Resize(new_size_);
   }
 }
+
+PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {}
 
 #endif  // defined(ENABLE_GPU)

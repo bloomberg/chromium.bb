@@ -30,7 +30,6 @@ class CONTENT_EXPORT CaptureVideoDecoder
       media::VideoCaptureSessionId video_stream_id,
       VideoCaptureImplManager* vc_manager,
       const media::VideoCaptureCapability& capability);
-  virtual ~CaptureVideoDecoder();
 
   // Filter implementation.
   virtual void Play(const base::Closure& callback) OVERRIDE;
@@ -60,6 +59,9 @@ class CONTENT_EXPORT CaptureVideoDecoder
   virtual void OnDeviceInfoReceived(
       media::VideoCapture* capture,
       const media::VideoCaptureParams& device_info) OVERRIDE;
+
+ protected:
+  virtual ~CaptureVideoDecoder();
 
  private:
   friend class CaptureVideoDecoderTest;

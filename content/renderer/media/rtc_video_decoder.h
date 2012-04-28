@@ -28,7 +28,6 @@ class CONTENT_EXPORT RTCVideoDecoder
       NON_EXPORTED_BASE(public cricket::VideoRenderer) {
  public:
   RTCVideoDecoder(MessageLoop* message_loop, const std::string& url);
-  virtual ~RTCVideoDecoder();
 
   // Filter implementation.
   virtual void Play(const base::Closure& callback) OVERRIDE;
@@ -49,6 +48,9 @@ class CONTENT_EXPORT RTCVideoDecoder
   // cricket::VideoRenderer implementation
   virtual bool SetSize(int width, int height, int reserved) OVERRIDE;
   virtual bool RenderFrame(const cricket::VideoFrame* frame) OVERRIDE;
+
+ protected:
+  virtual ~RTCVideoDecoder();
 
  private:
   friend class RTCVideoDecoderTest;

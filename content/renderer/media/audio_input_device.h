@@ -121,7 +121,6 @@ class CONTENT_EXPORT AudioInputDevice
   AudioInputDevice(const media::AudioParameters& params,
                    CaptureCallback* callback,
                    CaptureEventHandler* event_handler);
-  virtual ~AudioInputDevice();
 
   // Specify the |session_id| to query which device to use. This method is
   // asynchronous/non-blocking.
@@ -166,7 +165,12 @@ class CONTENT_EXPORT AudioInputDevice
   virtual void OnStateChanged(AudioStreamState state) OVERRIDE;
   virtual void OnDeviceReady(const std::string& device_id) OVERRIDE;
 
+ protected:
+  virtual ~AudioInputDevice();
+
  private:
+  friend class base::RefCountedThreadSafe<AudioInputDevice>;
+
   // Methods called on IO thread ----------------------------------------------
   // The following methods are tasks posted on the IO thread that needs to
   // be executed on that thread. They interact with AudioInputMessageFilter and

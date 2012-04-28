@@ -75,8 +75,7 @@ static std::string ExtractManagerStreamLabel(
   return manager_label;
 }
 
-
-int MediaStreamImpl::next_request_id_ = 0;
+static int g_next_request_id = 0;
 
 MediaStreamImpl::MediaStreamImpl(
     content::RenderView* render_view,
@@ -181,7 +180,7 @@ void MediaStreamImpl::requestUserMedia(
   UMA_HISTOGRAM_COUNTS_100(kHistogramGetUserMedia, 1);
   DCHECK(CalledOnValidThread());
   DCHECK(!user_media_request.isNull());
-  int request_id = next_request_id_++;
+  int request_id = g_next_request_id++;
 
   bool audio = user_media_request.audio();
   media_stream::StreamOptions::VideoOption video_option =

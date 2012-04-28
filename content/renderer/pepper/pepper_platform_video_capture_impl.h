@@ -32,7 +32,6 @@ class PepperPlatformVideoCaptureImpl
       const base::WeakPtr<PepperPluginDelegateImpl>& plugin_delegate,
       const std::string& device_id,
       webkit::ppapi::PluginDelegate::PlatformVideoCaptureEventHandler* handler);
-  virtual ~PepperPlatformVideoCaptureImpl();
 
   // webkit::ppapi::PluginDelegate::PlatformVideoCapture implementation.
   virtual void StartCapture(
@@ -57,6 +56,9 @@ class PepperPlatformVideoCaptureImpl
   virtual void OnDeviceInfoReceived(
       VideoCapture* capture,
       const media::VideoCaptureParams& device_info) OVERRIDE;
+
+ protected:
+  virtual ~PepperPlatformVideoCaptureImpl();
 
  private:
   void Initialize();

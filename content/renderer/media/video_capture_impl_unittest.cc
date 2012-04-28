@@ -20,10 +20,12 @@ using ::testing::Return;
 class MockVideoCaptureMessageFilter : public VideoCaptureMessageFilter {
  public:
   MockVideoCaptureMessageFilter() : VideoCaptureMessageFilter() {}
-  virtual ~MockVideoCaptureMessageFilter() {}
 
   // Filter implementation.
   MOCK_METHOD1(Send, bool(IPC::Message* message));
+
+ protected:
+  virtual ~MockVideoCaptureMessageFilter() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureMessageFilter);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,6 @@ VideoCaptureImplManager::VideoCaptureImplManager()
   thread_.Start();
   message_loop_proxy_ = thread_.message_loop_proxy();
   filter_ = new VideoCaptureMessageFilter();
-}
-
-VideoCaptureImplManager::~VideoCaptureImplManager() {
-  STLDeleteContainerPairSecondPointers(devices_.begin(), devices_.end());
-  thread_.Stop();
 }
 
 media::VideoCapture* VideoCaptureImplManager::AddDevice(
@@ -64,6 +59,11 @@ void VideoCaptureImplManager::RemoveDevice(
 
 void VideoCaptureImplManager::FreeDevice(VideoCaptureImpl* vc) {
   delete vc;
+}
+
+VideoCaptureImplManager::~VideoCaptureImplManager() {
+  STLDeleteContainerPairSecondPointers(devices_.begin(), devices_.end());
+  thread_.Stop();
 }
 
 VideoCaptureImplManager::Device::Device(

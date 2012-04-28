@@ -34,6 +34,9 @@ class P2PSocketDispatcher::AsyncMessageSender
   }
 
  private:
+  friend class base::RefCountedThreadSafe<AsyncMessageSender>;
+  ~AsyncMessageSender() {}
+
   void DoSend(IPC::Message* msg) {
     DCHECK(message_loop_->BelongsToCurrentThread());
     if (message_sender_)

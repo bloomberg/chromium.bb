@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -49,7 +49,6 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
   };
 
   VideoCaptureMessageFilter();
-  virtual ~VideoCaptureMessageFilter();
 
   // Add a delegate to the map.
   void AddDelegate(Delegate* delegate);
@@ -60,17 +59,20 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
   // Send a message asynchronously.
   virtual bool Send(IPC::Message* message);
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(VideoCaptureMessageFilterTest, Basic);
-  FRIEND_TEST_ALL_PREFIXES(VideoCaptureMessageFilterTest, Delegates);
-
-  typedef std::map<int32, Delegate*> Delegates;
-
   // IPC::ChannelProxy::MessageFilter override. Called on IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
+
+ protected:
+  virtual ~VideoCaptureMessageFilter();
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(VideoCaptureMessageFilterTest, Basic);
+  FRIEND_TEST_ALL_PREFIXES(VideoCaptureMessageFilterTest, Delegates);
+
+  typedef std::map<int32, Delegate*> Delegates;
 
   // Receive a newly created buffer from browser process.
   void OnBufferCreated(int device_id,
