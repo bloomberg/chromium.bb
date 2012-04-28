@@ -215,6 +215,16 @@ DictionaryValue* ProgessStatusToDictionaryValue(
   return result.release();
 }
 
+void OpenNewTab(const GURL& url, Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  Browser* browser = Browser::GetOrCreateTabbedBrowser(
+      profile ? profile : ProfileManager::GetDefaultProfileOrOffTheRecord());
+  browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_LINK);
+  // If the current browser is not tabbed then the new tab will be created
+  // in a different browser. Make sure it is visible.
+  browser->window()->Show();
+}
+
 // Shows a warning message box saying that the file could not be opened.
 void ShowWarningMessageBox(Profile* profile, const FilePath& path) {
   Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
@@ -247,8 +257,7 @@ void OnGDataFileFound(Profile* profile,
     } else {
       NOTREACHED();
     }
-    Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
-    browser->AddSelectedTabWithURL(page_url, content::PAGE_TRANSITION_LINK);
+    OpenNewTab(page_url, profile);
   } else {
     ShowWarningMessageBox(profile, file_path);
   }
@@ -567,13 +576,6 @@ bool ReadSmallFileToString(const FilePath& path, std::string* contents) {
   return len < sizeof(buf);
 }
 
-void OpenUrlOnUIThread(const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Browser* browser = Browser::GetOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
-  browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_LINK);
-}
-
 // Reads JSON from a Google Docs file, extracts a document url and opens it
 // in a tab.
 void ReadUrlFromGDocOnFileThread(const FilePath& file_path) {
@@ -597,13 +599,11 @@ void ReadUrlFromGDocOnFileThread(const FilePath& file_path) {
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(OpenUrlOnUIThread, GURL(edit_url_string)));
+      base::Bind(OpenNewTab, GURL(edit_url_string), (Profile*)NULL));
 }
 
 bool TryViewingFile(Profile* profile, const FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
 
   std::string file_extension = path.Extension();
   // For things supported natively by the browser, we should open it
@@ -627,8 +627,7 @@ bool TryViewingFile(Profile* profile, const FilePath& path) {
       return true;
     }
 #endif
-    browser->AddSelectedTabWithURL(page_url,
-                                   content::PAGE_TRANSITION_LINK);
+    OpenNewTab(page_url, (Profile*)NULL);
     return true;
   }
 
