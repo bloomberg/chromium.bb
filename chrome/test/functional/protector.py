@@ -173,6 +173,7 @@ class BaseProtectorTest(pyauto.PyUITest):
       prefs['session']['urls_to_restore_on_startup'] = startup_urls
     if homepage is not None:
       prefs['homepage'] = homepage
+      prefs['homepage_is_newtabpage'] = False
     if delete_migrated_pref:
       del prefs['session']['restore_on_startup_migrated']
     self._WritePreferences(prefs)
