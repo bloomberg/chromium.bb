@@ -284,6 +284,7 @@ void FilterDisabledTests() {
     "HTTPSRequestTest.ResumeTest",
     "HTTPSRequestTest.SSLSessionCacheShardTest",
     "HTTPSRequestTest.SSLSessionCacheShardTest",
+    "HTTPSRequestTest.SSLv3Fallback",
     "HTTPSRequestTest.HTTPSErrorsNoClobberTSSTest",
     "HTTPSOCSPTest.*",
     "HTTPSEVCRLSetTest.*",
