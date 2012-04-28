@@ -69,12 +69,12 @@ class SuggestionsHandler : public content::WebUIMessageHandler,
   void StartQueryForSuggestions();
 
   // Sets pages_value_ from a format produced by TopSites.
-  void SetPagesValueFromTopSites(const history::MostVisitedURLList& data);
+  void SetPagesValueFromTopSites(const history::FilteredURLList& data);
 
   // Callback for History.
   void OnSuggestionsURLsAvailable(
       CancelableRequestProvider::Handle handle,
-      history::MostVisitedURLList data);
+      const history::FilteredURLList& data);
 
   // Puts the passed URL in the blacklist (so it does not show as a thumbnail).
   void BlacklistURL(const GURL& url);

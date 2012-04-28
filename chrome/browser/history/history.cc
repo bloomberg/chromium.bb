@@ -665,11 +665,11 @@ HistoryService::Handle HistoryService::QueryFilteredURLs(
     int result_count,
     const history::VisitFilter& filter,
     CancelableRequestConsumerBase* consumer,
-    const QueryMostVisitedURLsCallback& callback) {
+    const QueryFilteredURLsCallback& callback) {
   return Schedule(PRIORITY_NORMAL,
                   &HistoryBackend::QueryFilteredURLs,
                   consumer,
-                  new history::QueryMostVisitedURLsRequest(callback),
+                  new history::QueryFilteredURLsRequest(callback),
                   result_count, filter);
 }
 

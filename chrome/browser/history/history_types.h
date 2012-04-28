@@ -24,6 +24,8 @@
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
+class PageUsageData;
+
 namespace history {
 
 // Forward declaration for friend statements.
@@ -591,6 +593,19 @@ struct MostVisitedURL {
   }
 };
 
+// FilteredURL -----------------------------------------------------------------
+
+// Holds the per-URL information of the filterd url query.
+struct FilteredURL {
+  FilteredURL();
+  explicit FilteredURL(const PageUsageData& data);
+  ~FilteredURL();
+
+  GURL url;
+  string16 title;
+  double score;
+};
+
 // Navigation -----------------------------------------------------------------
 
 // Marshalling structure for AddPage.
@@ -634,6 +649,7 @@ class HistoryAddPageArgs
 // TopSites -------------------------------------------------------------------
 
 typedef std::vector<MostVisitedURL> MostVisitedURLList;
+typedef std::vector<FilteredURL> FilteredURLList;
 
 // Used by TopSites to store the thumbnails.
 struct Images {

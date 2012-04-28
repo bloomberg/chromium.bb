@@ -59,11 +59,9 @@ html[dir='rtl'] .suggestions .favicon {
 .suggestions .color-stripe {
   border-bottom-left-radius: 3px 3px;
   border-bottom-right-radius: 3px 3px;
-  /* Matches height of title.  */
-  bottom: 23px;
+  /* Matches height of title plus height of score.  */
+  bottom: 36px;
   height: 3px;
-  /* Matches padding-top of the title. */
-  margin-bottom: 8px;
   position: absolute;
   width: 100%;
   z-index: 10;
@@ -71,12 +69,18 @@ html[dir='rtl'] .suggestions .favicon {
 
 .suggestions .title {
   display: block;
-  height: 23px;
+  height: 18px;
   overflow: hidden;
-  padding-top: 8px;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.suggestions .score {
+  display: block;
+  height: 18px;
+  overflow: hidden;
+  text-align: center;
 }
 
 .suggestions:focus .thumbnail,

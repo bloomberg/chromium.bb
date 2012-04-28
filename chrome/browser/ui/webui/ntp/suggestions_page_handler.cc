@@ -182,10 +182,10 @@ void SuggestionsHandler::HandleSuggestedSitesSelected(
 }
 
 void SuggestionsHandler::SetPagesValueFromTopSites(
-    const history::MostVisitedURLList& data) {
+    const history::FilteredURLList& data) {
   pages_value_.reset(new ListValue());
   for (size_t i = 0; i < data.size(); i++) {
-    const history::MostVisitedURL& suggested_url = data[i];
+    const history::FilteredURL& suggested_url = data[i];
     if (suggested_url.url.is_empty())
       continue;
 
@@ -193,13 +193,14 @@ void SuggestionsHandler::SetPagesValueFromTopSites(
     NewTabUI::SetURLTitleAndDirection(page_value,
                                       suggested_url.title,
                                       suggested_url.url);
+    page_value->SetDouble("score", suggested_url.score);
     pages_value_->Append(page_value);
   }
 }
 
 void SuggestionsHandler::OnSuggestionsURLsAvailable(
     CancelableRequestProvider::Handle handle,
-    history::MostVisitedURLList data) {
+    const history::FilteredURLList& data) {
   SetPagesValueFromTopSites(data);
   if (got_first_suggestions_request_)
     SendPagesValue();

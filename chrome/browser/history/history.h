@@ -370,6 +370,9 @@ class HistoryService : public CancelableRequestProvider,
   typedef base::Callback<void(Handle, history::MostVisitedURLList)>
       QueryMostVisitedURLsCallback;
 
+  typedef base::Callback<void(Handle, const history::FilteredURLList&)>
+      QueryFilteredURLsCallback;
+
   // Request the |result_count| most visited URLs and the chain of
   // redirects leading to each of these URLs. |days_back| is the
   // number of days of history to use. Used by TopSites.
@@ -382,7 +385,7 @@ class HistoryService : public CancelableRequestProvider,
       int result_count,
       const history::VisitFilter& filter,
       CancelableRequestConsumerBase* consumer,
-      const QueryMostVisitedURLsCallback& callback);
+      const QueryFilteredURLsCallback& callback);
 
   // Thumbnails ----------------------------------------------------------------
 

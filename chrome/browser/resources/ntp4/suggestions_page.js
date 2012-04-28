@@ -60,7 +60,8 @@ cr.define('ntp', function() {
             '<span class="favicon"></span>' +
           '</span>' +
           '<div class="color-stripe"></div>' +
-          '<span class="title"></span>';
+          '<span class="title"></span>' +
+          '<span class="score"></span>';
 
       this.querySelector('.close-button').title =
           loadTimeData.getString('removethumbnailtooltip');
@@ -101,6 +102,9 @@ cr.define('ntp', function() {
       var title = this.querySelector('.title');
       title.textContent = data.title;
       title.dir = data.direction;
+
+      var score = this.querySelector('.score');
+      score.textContent = data.score;
 
       // Sets the tooltip.
       this.title = data.title;
@@ -263,8 +267,8 @@ cr.define('ntp', function() {
    * @return {number} The height.
    */
   function heightForWidth(width) {
-    // The 2s are for borders, the 31 is for the title.
-    return (width - 2) * 132 / 212 + 2 + 31;
+    // The 2s are for borders, the 36 is for the title and score.
+    return (width - 2) * 132 / 212 + 2 + 36;
   }
 
   var THUMBNAIL_COUNT = 8;

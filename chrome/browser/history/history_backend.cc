@@ -1431,7 +1431,7 @@ void HistoryBackend::QueryMostVisitedURLs(
 }
 
 void HistoryBackend::QueryFilteredURLs(
-      scoped_refptr<QueryMostVisitedURLsRequest> request,
+      scoped_refptr<QueryFilteredURLsRequest> request,
       int result_count,
       const history::VisitFilter& filter)  {
   if (request->canceled())
@@ -1441,7 +1441,7 @@ void HistoryBackend::QueryFilteredURLs(
 
   if (!db_.get()) {
     // No History Database - return an empty list.
-    request->ForwardResult(request->handle(), MostVisitedURLList());
+    request->ForwardResult(request->handle(),FilteredURLList());
     return;
   }
 
@@ -1531,12 +1531,10 @@ void HistoryBackend::QueryFilteredURLs(
     }
   }
 
-  MostVisitedURLList& result = request->value;
+  FilteredURLList& result = request->value;
   for (size_t i = 0; i < data.size(); ++i) {
     PageUsageData* current_data = data[i];
-    RedirectList redirects;
-    GetMostRecentRedirectsFrom(current_data->GetURL(), &redirects);
-    MostVisitedURL url = MakeMostVisitedURL(*current_data, redirects);
+    FilteredURL url(*current_data);
     result.push_back(url);
   }
 
