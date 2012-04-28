@@ -134,7 +134,10 @@ if sys.platform == 'win32':
       """Converts a native NT path to DOS path."""
       m = re.match(r'(^\\Device\\[a-zA-Z0-9]+)(\\.*)?$', path)
       assert m, path
-      assert m.group(1) in self._MAPPING, (path, self._MAPPING)
+      if not m.group(1) in self._MAPPING:
+        # Unmapped partitions may be accessed by windows for the
+        # fun of it while the test is running. Discard these.
+        return None
       drive = self._MAPPING[m.group(1)]
       if not drive or not m.group(2):
         return drive
@@ -959,7 +962,8 @@ class LogmanTrace(object):
 
       Interestingly enough, the file is always with an absolute path.
       """
-      if (self.blacklist(filename) or
+      if (not filename or
+          self.blacklist(filename) or
           os.path.isdir(filename) or
           filename in self.files or
           filename in self.non_existent):
