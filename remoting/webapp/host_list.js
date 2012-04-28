@@ -49,13 +49,14 @@ remoting.HostList = function(table, errorDiv) {
   this.lastError_ = '';
 
   // Load the cache of the last host-list, if present.
-  var cached = /** @type {string} */
+  var cachedStr = /** @type {string} */
       (window.localStorage.getItem(remoting.HostList.HOSTS_KEY));
-  if (cached) {
-    try {
-      this.hosts_ = /** @type {Array} */ JSON.parse(cached);
-    } catch (err) {
-      console.error('Invalid host list cache:', /** @type {*} */(err));
+  if (cachedStr) {
+    var cached = jsonParseSafe(cachedStr);
+    if (cached) {
+      this.hosts_ = /** @type {Array} */ cached;
+    } else {
+      console.error('Invalid value for ' + remoting.HostList.HOSTS_KEY);
     }
   }
 };
@@ -121,10 +122,10 @@ remoting.HostList.prototype.parseHostListResponse_ = function(xhr, onDone) {
   this.lastError_ = '';
   try {
     if (xhr.status == 200) {
-      var parsed_response =
-          /** @type {{data: {items: Array}}} */ JSON.parse(xhr.responseText);
-      if (parsed_response.data && parsed_response.data.items) {
-        this.hosts_ = parsed_response.data.items;
+      var response =
+          /** @type {{data: {items: Array}}} */ jsonParseSafe(xhr.responseText);
+      if (response && response.data && response.data.items) {
+        this.hosts_ = response.data.items;
         /**
          * @param {remoting.Host} a
          * @param {remoting.Host} b
@@ -138,6 +139,8 @@ remoting.HostList.prototype.parseHostListResponse_ = function(xhr, onDone) {
           return 0;
         };
         this.hosts_ = /** @type {Array} */ this.hosts_.sort(cmp);
+      } else {
+        console.error('Invalid "hosts" response from server.');
       }
     } else {
       // Some other error.

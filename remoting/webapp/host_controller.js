@@ -244,13 +244,13 @@ remoting.HostController.prototype.stop = function(callback) {
  * @return {Object.<string,string>|null} The host configuration.
  */
 function parseHostConfig_(configStr) {
-  try {
-    var config = /** @type {Object.<string,string>} */ JSON.parse(configStr);
-    if (typeof config['host_id'] == 'string' &&
-        typeof config['xmpp_login'] == 'string') {
-      return config;
-    }
-  } catch (err) {
+  var config = /** @type {Object.<string,string>} */ jsonParseSafe(configStr);
+  if (config &&
+      typeof config['host_id'] == 'string' &&
+      typeof config['xmpp_login'] == 'string') {
+    return config;
+  } else {
+    console.error('Invalid getDaemonConfig response.');
   }
   return null;
 }

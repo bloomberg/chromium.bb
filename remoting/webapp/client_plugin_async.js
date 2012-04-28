@@ -87,11 +87,11 @@ remoting.ClientPluginAsync.prototype.API_MIN_VERSION_ = 5;
 /**
  * @param {string} message_str Message from the plugin.
  */
-remoting.ClientPluginAsync.prototype.handleMessage_ = function(message_str) {
+remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
   var message = /** @type {{method:string, data:Object.<string,string>}} */
-      JSON.parse(message_str);
+      jsonParseSafe(messageStr);
 
-  if (!('method' in message) || !('data' in message)) {
+  if (!message || !('method' in message) || !('data' in message)) {
     console.error('Received invalid message from the plugin: ' + message_str);
     return;
   }

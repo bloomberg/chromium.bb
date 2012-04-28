@@ -127,9 +127,13 @@ remoting.logExtensionInfoAsync_ = function() {
   xhr.onload = function(e) {
     var manifest =
         /** @type {{name: string, version: string, default_locale: string}} */
-        JSON.parse(xhr.responseText);
-    var name = chrome.i18n.getMessage('PRODUCT_NAME');
-    console.log(name + ' version: ' + manifest.version);
+        jsonParseSafe(xhr.responseText);
+    if (manifest) {
+      var name = chrome.i18n.getMessage('PRODUCT_NAME');
+      console.log(name + ' version: ' + manifest.version);
+    } else {
+      console.error('Failed to get product version. Corrupt manifest?');
+    }
   }
   xhr.send(null);
 };
@@ -275,4 +279,16 @@ function getUrlParameters_() {
     result[pair[0]] = decodeURIComponent(pair[1]);
   }
   return result;
+}
+
+/**
+ * @param {string} jsonString A JSON-encoded string.
+ * @return {*} The decoded object, or undefined if the string cannot be parsed.
+ */
+function jsonParseSafe(jsonString) {
+  try {
+    return JSON.parse(jsonString);
+  } catch (err) {
+    return undefined;
+  }
 }

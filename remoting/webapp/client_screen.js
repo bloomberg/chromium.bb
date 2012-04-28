@@ -375,14 +375,16 @@ function parseServerResponse_(xhr) {
   console.log('parseServerResponse: xhr = ' + xhr);
   if (xhr.status == 200) {
     var host = /** @type {{data: {jabberId: string, publicKey: string}}} */
-        JSON.parse(xhr.responseText);
-    if (host.data && host.data.jabberId && host.data.publicKey) {
+        jsonParseSafe(xhr.responseText);
+    if (host && host.data && host.data.jabberId && host.data.publicKey) {
       remoting.hostJid = host.data.jabberId;
       remoting.hostPublicKey = host.data.publicKey;
       var split = remoting.hostJid.split('/');
       document.getElementById('connected-to').innerText = split[0];
       startSession_();
       return;
+    } else {
+      console.error('Invalid "support-hosts" response from server.');
     }
   }
   var errorMsg = remoting.Error.GENERIC;
