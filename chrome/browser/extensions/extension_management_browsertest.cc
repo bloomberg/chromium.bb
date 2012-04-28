@@ -222,6 +222,7 @@ class NotificationListener : public content::NotificationObserver {
 // Fails consistently on Windows XP, see: http://crbug.com/120640.
 #define MAYBE_AutoUpdate DISABLED_AutoUpdate
 #else
+// See http://crbug.com/103371 and http://crbug.com/120640.
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_AutoUpdate DISABLED_AutoUpdate
 #else
@@ -300,7 +301,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
 // Fails consistently on Windows XP, see: http://crbug.com/120640.
 #define MAYBE_AutoUpdateDisabledExtensions DISABLED_AutoUpdateDisabledExtensions
 #else
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_AutoUpdateDisabledExtensions DISABLED_AutoUpdateDisabledExtensions
+#else
 #define MAYBE_AutoUpdateDisabledExtensions AutoUpdateDisabledExtensions
+#endif
 #endif
 
 // Tests extension autoupdate.
@@ -511,7 +516,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   EXPECT_FALSE(service->GetExtensionById(kExtensionId, true));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, PolicyOverridesUserInstall) {
+// See http://crbug.com/103371 and http://crbug.com/120640.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_PolicyOverridesUserInstall DISABLED_PolicyOverridesUserInstall
+#else
+#define MAYBE_PolicyOverridesUserInstall PolicyOverridesUserInstall
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
+                       MAYBE_PolicyOverridesUserInstall) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
   service->updater()->set_blacklist_checks_enabled(false);
