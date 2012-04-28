@@ -34,16 +34,16 @@ class GDataDBTest : public testing::Test {
   void TestGetFound(const GDataEntry& source);
 
   // Initialize the database with the following entries:
-  // dir1
-  // dir2
-  // dir1/dir3
-  // dir1/file4
-  // dir1/file5
-  // dir2/file6
-  // dir2/file7
-  // dir2/file8
-  // dir1/dir3/file9
-  // dir1/dir3/file10
+  // gdata/dir1
+  // gdata/dir2
+  // gdata/dir1/dir3
+  // gdata/dir1/file4
+  // gdata/dir1/file5
+  // gdata/dir2/file6
+  // gdata/dir2/file7
+  // gdata/dir2/file8
+  // gdata/dir1/dir3/file9
+  // gdata/dir1/dir3/file10
   void InitDB();
 
   // Helper functions to add a directory/file, incrementing index.
@@ -86,7 +86,7 @@ void GDataDBTest::TestGetFound(const GDataEntry& source) {
   GDataDB::Status status = gdata_db_->GetByPath(source.GetFilePath(), &entry);
   EXPECT_EQ(GDataDB::DB_OK, status);
   ASSERT_TRUE(entry.get());
-  EXPECT_EQ(source.file_name(), entry->file_name());
+  EXPECT_EQ(source.title(), entry->title());
   EXPECT_EQ(source.resource_id(), entry->resource_id());
   EXPECT_EQ(source.content_url(), entry->content_url());
   entry.reset();
@@ -94,7 +94,7 @@ void GDataDBTest::TestGetFound(const GDataEntry& source) {
   status = gdata_db_->GetByResourceId(source.resource_id(), &entry);
   EXPECT_EQ(GDataDB::DB_OK, status);
   ASSERT_TRUE(entry.get());
-  EXPECT_EQ(source.file_name(), entry->file_name());
+  EXPECT_EQ(source.title(), entry->title());
   EXPECT_EQ(source.resource_id(), entry->resource_id());
   EXPECT_EQ(source.content_url(), entry->content_url());
 }
@@ -126,6 +126,7 @@ GDataDirectory* GDataDBTest::AddDirectory(GDataDirectory* parent,
   const std::string dir_name = "dir" + base::IntToString(sequence_id);
   const std::string resource_id = std::string("dir_resource_id:") +
                                   dir_name;
+  dir->set_title(dir_name);
   dir->set_file_name(dir_name);
   dir->set_resource_id(resource_id);
   GDataDB::Status status = gdata_db_->Put(*dir);
@@ -140,10 +141,11 @@ GDataFile* GDataDBTest::AddFile(GDataDirectory* parent,
                                 GDataRootDirectory* root,
                                 int sequence_id) {
   GDataFile* file = new GDataFile(parent, root);
-  const std::string file_name = "file" + base::IntToString(sequence_id);
+  const std::string title = "file" + base::IntToString(sequence_id);
   const std::string resource_id = std::string("file_resource_id:") +
-                                  file_name;
-  file->set_file_name(file_name);
+                                  title;
+  file->set_title(title);
+  file->set_file_name(title);
   file->set_resource_id(resource_id);
   GDataDB::Status status = gdata_db_->Put(*file);
   EXPECT_EQ(GDataDB::DB_OK, status);
@@ -178,6 +180,7 @@ void GDataDBTest::TestIter(const std::string& parent,
 TEST_F(GDataDBTest, PutTest) {
   GDataRootDirectory root;
   GDataDirectory dir(&root, &root);
+  dir.set_title("dir");
   dir.set_file_name("dir");
   dir.set_resource_id("dir_resource_id");
   dir.set_content_url(GURL("http://content/dir"));
@@ -201,6 +204,7 @@ TEST_F(GDataDBTest, PutTest) {
   TestGetNotFound(dir);
 
   GDataFile file(&dir, &root);
+  file.set_title("file");
   file.set_file_name("file");
   file.set_resource_id("file_resource_id");
   file.set_content_url(GURL("http://content/dir/file"));
@@ -227,46 +231,46 @@ TEST_F(GDataDBTest, IterTest) {
   InitDB();
 
   const char* dir1_children[] = {
-    "dir1",
-    "dir1/dir3",
-    "dir1/dir3/file10",
-    "dir1/dir3/file9",
-    "dir1/file4",
-    "dir1/file5",
+    "gdata/dir1",
+    "gdata/dir1/dir3",
+    "gdata/dir1/dir3/file10",
+    "gdata/dir1/dir3/file9",
+    "gdata/dir1/file4",
+    "gdata/dir1/file5",
   };
-  TestIter("dir1", dir1_children, arraysize(dir1_children));
+  TestIter("gdata/dir1", dir1_children, arraysize(dir1_children));
 
   const char* dir2_children[] = {
-    "dir2",
-    "dir2/file6",
-    "dir2/file7",
-    "dir2/file8",
+    "gdata/dir2",
+    "gdata/dir2/file6",
+    "gdata/dir2/file7",
+    "gdata/dir2/file8",
   };
-  TestIter("dir2", dir2_children, arraysize(dir2_children));
+  TestIter("gdata/dir2", dir2_children, arraysize(dir2_children));
 
   const char* dir3_children[] = {
-    "dir1/dir3",
-    "dir1/dir3/file10",
-    "dir1/dir3/file9",
+    "gdata/dir1/dir3",
+    "gdata/dir1/dir3/file10",
+    "gdata/dir1/dir3/file9",
   };
-  TestIter("dir1/dir3", dir3_children, arraysize(dir3_children));
+  TestIter("gdata/dir1/dir3", dir3_children, arraysize(dir3_children));
 
   const char* file10[] = {
-    "dir1/dir3/file10",
+    "gdata/dir1/dir3/file10",
   };
   TestIter(file10[0], file10, arraysize(file10));
 
   const char* all_entries[] = {
-    "dir1",
-    "dir1/dir3",
-    "dir1/dir3/file10",
-    "dir1/dir3/file9",
-    "dir1/file4",
-    "dir1/file5",
-    "dir2",
-    "dir2/file6",
-    "dir2/file7",
-    "dir2/file8",
+    "gdata/dir1",
+    "gdata/dir1/dir3",
+    "gdata/dir1/dir3/file10",
+    "gdata/dir1/dir3/file9",
+    "gdata/dir1/file4",
+    "gdata/dir1/file5",
+    "gdata/dir2",
+    "gdata/dir2/file6",
+    "gdata/dir2/file7",
+    "gdata/dir2/file8",
   };
   TestIter("", all_entries, arraysize(all_entries));
 

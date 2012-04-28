@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
 
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
@@ -255,15 +256,19 @@ void GDataFileSystemProxy::OnReadDirectory(
   }
   std::vector<base::FileUtilProxy::Entry> entries;
   // Convert gdata files to something File API stack can understand.
+  for (GDataDirectoryCollection::const_iterator iter =
+            directory->child_directories().begin();
+       iter != directory->child_directories().end(); ++iter) {
+    entries.push_back(GDataEntryToFileUtilProxyEntry(*(iter->second)));
+  }
   for (GDataFileCollection::const_iterator iter =
-            directory->children().begin();
-       iter != directory->children().end(); ++iter) {
+            directory->child_files().begin();
+       iter != directory->child_files().end(); ++iter) {
     if (hide_hosted_documents) {
-      GDataFile* file = iter->second->AsGDataFile();
-      if (file && file->is_hosted_document())
+      GDataFile* file = iter->second;
+      if (file->is_hosted_document())
         continue;
     }
-
     entries.push_back(GDataEntryToFileUtilProxyEntry(*(iter->second)));
   }
 

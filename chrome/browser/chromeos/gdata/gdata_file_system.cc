@@ -54,7 +54,6 @@ namespace {
 const char kMimeTypeJson[] = "application/json";
 const char kMimeTypeOctetStream[] = "application/octet-stream";
 
-const FilePath::CharType kGDataRootDirectory[] = FILE_PATH_LITERAL("gdata");
 const char kWildCard[] = "*";
 const char kLocallyModifiedFileExtension[] = "local";
 const char kMountedArchiveFileExtension[] = "mounted";
@@ -415,13 +414,12 @@ void GetChildDirectoryPaths(GDataEntry* entry,
   if (!dir)
     return;
 
-  for (GDataFileCollection::const_iterator it = dir->children().begin();
-       it != dir->children().end(); ++it) {
-    GDataDirectory* child_dir = it->second->AsGDataDirectory();
-    if (child_dir) {
-      changed_dirs->insert(child_dir->GetFilePath());
-      GetChildDirectoryPaths(child_dir, changed_dirs);
-    }
+  for (GDataDirectoryCollection::const_iterator it =
+       dir->child_directories().begin();
+       it != dir->child_directories().end(); ++it) {
+    GDataDirectory* child_dir = it->second;
+    changed_dirs->insert(child_dir->GetFilePath());
+    GetChildDirectoryPaths(child_dir, changed_dirs);
   }
 }
 
@@ -918,7 +916,6 @@ void GDataFileSystem::Initialize() {
   documents_service_->Initialize(profile_);
 
   root_.reset(new GDataRootDirectory);
-  root_->set_file_name(kGDataRootDirectory);
 
   PrefService* pref_service = profile_->GetPrefs();
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableGDataHostedFiles);
@@ -2875,6 +2872,10 @@ base::PlatformFileError GDataFileSystem::RenameFileOnFilesystem(
   // After changing the title of the entry, call TakeFile() to remove the
   // entry from its parent directory and then add it back in order to go
   // through the file name de-duplication.
+  // TODO(achuith/satorux/zel): This code is fragile. The title has been
+  // changed, but not the file_name. TakeEntry removes the child based on the
+  // old file_name, and then re-adds the child by first assigning the new title
+  // to file_name. http://crbug.com/30157
   if (!entry->parent()->TakeEntry(entry))
     return base::PLATFORM_FILE_ERROR_FAILED;
 

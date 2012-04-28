@@ -891,14 +891,14 @@ class GDataFileSystemTest : public testing::Test {
     GDataDirectoryProto* root_dir = root.mutable_gdata_directory();
     GDataEntryProto* file_base = root_dir->mutable_gdata_entry();
     PlatformFileInfoProto* platform_info = file_base->mutable_file_info();
-    file_base->set_file_name("gdata");
+    file_base->set_title("gdata");
     platform_info->set_is_directory(true);
 
     // gdata/File1
     GDataFileProto* file = root_dir->add_child_files();
     file_base = file->mutable_gdata_entry();
     platform_info = file_base->mutable_file_info();
-    file_base->set_file_name("File1");
+    file_base->set_title("File1");
     platform_info->set_is_directory(false);
     platform_info->set_size(1048576);
 
@@ -906,14 +906,14 @@ class GDataFileSystemTest : public testing::Test {
     GDataDirectoryProto* dir1 = root_dir->add_child_directories();
     file_base = dir1->mutable_gdata_entry();
     platform_info = file_base->mutable_file_info();
-    file_base->set_file_name("Dir1");
+    file_base->set_title("Dir1");
     platform_info->set_is_directory(true);
 
     // gdata/Dir1/File2
     file = dir1->add_child_files();
     file_base = file->mutable_gdata_entry();
     platform_info = file_base->mutable_file_info();
-    file_base->set_file_name("File2");
+    file_base->set_title("File2");
     platform_info->set_is_directory(false);
     platform_info->set_size(555);
 
@@ -921,14 +921,14 @@ class GDataFileSystemTest : public testing::Test {
     GDataDirectoryProto* dir2 = dir1->add_child_directories();
     file_base = dir2->mutable_gdata_entry();
     platform_info = file_base->mutable_file_info();
-    file_base->set_file_name("SubDir2");
+    file_base->set_title("SubDir2");
     platform_info->set_is_directory(true);
 
     // gdata/Dir1/SubDir2/File3
     file = dir2->add_child_files();
     file_base = file->mutable_gdata_entry();
     platform_info = file_base->mutable_file_info();
-    file_base->set_file_name("File3");
+    file_base->set_title("File3");
     platform_info->set_is_directory(false);
     platform_info->set_size(12345);
 
@@ -1383,15 +1383,16 @@ TEST_F(GDataFileSystemTest, CopyFileToInvalidPath) {
 }
 
 TEST_F(GDataFileSystemTest, RenameFile) {
-  FilePath src_file_path(
+  const FilePath src_file_path(
       FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt"));
-  FilePath src_parent_path(FILE_PATH_LITERAL("gdata/Directory 1"));
-  FilePath dest_file_path(FILE_PATH_LITERAL("gdata/Directory 1/Test.log"));
+  const FilePath src_parent_path(FILE_PATH_LITERAL("gdata/Directory 1"));
+  const FilePath dest_file_path(
+      FILE_PATH_LITERAL("gdata/Directory 1/Test.log"));
 
   LoadRootFeedDocument("root_feed.json");
 
-  GDataEntry* src_file = NULL;
-  EXPECT_TRUE((src_file = FindEntry(src_file_path)) != NULL);
+  GDataEntry* src_file = FindEntry(src_file_path);
+  EXPECT_TRUE(src_file != NULL);
   EXPECT_TRUE(src_file->AsGDataFile() != NULL);
   std::string src_file_resource = src_file->AsGDataFile()->resource_id();
   EXPECT_EQ(src_file, FindEntryByResourceId(src_file_resource));
@@ -1413,8 +1414,8 @@ TEST_F(GDataFileSystemTest, RenameFile) {
 
   EXPECT_TRUE(FindEntry(src_file_path) == NULL);
 
-  GDataEntry* dest_file = NULL;
-  EXPECT_TRUE((dest_file = FindEntry(dest_file_path)) != NULL);
+  GDataEntry* dest_file = FindEntry(dest_file_path);
+  EXPECT_TRUE(dest_file != NULL);
   EXPECT_EQ(dest_file, FindEntryByResourceId(src_file_resource));
   EXPECT_EQ(src_file, dest_file);
 }

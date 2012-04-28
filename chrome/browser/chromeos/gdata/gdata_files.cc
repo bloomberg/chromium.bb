@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "net/base/escape.h"
 
+namespace gdata {
 namespace {
 
 // Content refresh time.
@@ -26,20 +27,21 @@ const int kRefreshTimeInSec = 5*60;
 
 const char kSlash[] = "/";
 const char kEscapedSlash[] = "\xE2\x88\x95";
+const FilePath::CharType kGDataRootDirectory[] = FILE_PATH_LITERAL("gdata");
 
 std::string CacheSubDirectoryTypeToString(
-    gdata::GDataRootDirectory::CacheSubDirectoryType subdir) {
+    GDataRootDirectory::CacheSubDirectoryType subdir) {
   switch (subdir) {
-    case gdata::GDataRootDirectory::CACHE_TYPE_META: return "meta";
-    case gdata::GDataRootDirectory::CACHE_TYPE_PINNED: return "pinned";
-    case gdata::GDataRootDirectory::CACHE_TYPE_OUTGOING: return "outgoing";
-    case gdata::GDataRootDirectory::CACHE_TYPE_PERSISTENT: return "persistent";
-    case gdata::GDataRootDirectory::CACHE_TYPE_TMP: return "tmp";
-    case gdata::GDataRootDirectory::CACHE_TYPE_TMP_DOWNLOADS:
+    case GDataRootDirectory::CACHE_TYPE_META: return "meta";
+    case GDataRootDirectory::CACHE_TYPE_PINNED: return "pinned";
+    case GDataRootDirectory::CACHE_TYPE_OUTGOING: return "outgoing";
+    case GDataRootDirectory::CACHE_TYPE_PERSISTENT: return "persistent";
+    case GDataRootDirectory::CACHE_TYPE_TMP: return "tmp";
+    case GDataRootDirectory::CACHE_TYPE_TMP_DOWNLOADS:
       return "tmp_downloads";
-    case gdata::GDataRootDirectory::CACHE_TYPE_TMP_DOCUMENTS:
+    case GDataRootDirectory::CACHE_TYPE_TMP_DOCUMENTS:
       return "tmp_documents";
-    case gdata::GDataRootDirectory::NUM_CACHE_TYPES:
+    case GDataRootDirectory::NUM_CACHE_TYPES:
       NOTREACHED();
   }
   NOTREACHED();
@@ -54,14 +56,12 @@ std::string ExtractResourceId(const GURL& url) {
 
 }  // namespace
 
-namespace gdata {
-
 // GDataEntry class.
 
 GDataEntry::GDataEntry(GDataDirectory* parent, GDataRootDirectory* root)
-    : parent_(parent),
-      root_(root),
+    : root_(root),
       deleted_(false) {
+  SetParent(parent);
 }
 
 GDataEntry::~GDataEntry() {
@@ -91,18 +91,15 @@ const GDataDirectory* GDataEntry::AsGDataDirectoryConst() const {
 
 FilePath GDataEntry::GetFilePath() const {
   FilePath path;
-  std::vector<FilePath::StringType> parts;
-  for (const GDataEntry* entry = this; entry != NULL; entry = entry->parent_)
-    parts.push_back(entry->file_name());
-
-  // Paste paths parts back together in reverse order from upward tree
-  // traversal.
-  for (std::vector<FilePath::StringType>::reverse_iterator iter =
-           parts.rbegin();
-       iter != parts.rend(); ++iter) {
-    path = path.Append(*iter);
-  }
+  if (parent())
+    path = parent()->GetFilePath();
+  path = path.Append(file_name());
   return path;
+}
+
+void GDataEntry::SetParent(GDataDirectory* parent) {
+  parent_ = parent;
+  parent_resource_id_ = parent ? parent->resource_id() : "";
 }
 
 void GDataEntry::SetFileNameFromTitle() {
@@ -111,8 +108,8 @@ void GDataEntry::SetFileNameFromTitle() {
 
 // static.
 GDataEntry* GDataEntry::FromDocumentEntry(GDataDirectory* parent,
-                                                DocumentEntry* doc,
-                                                GDataRootDirectory* root) {
+                                          DocumentEntry* doc,
+                                          GDataRootDirectory* root) {
   DCHECK(doc);
   if (doc->is_folder())
     return GDataDirectory::FromDocumentEntry(parent, doc, root);
@@ -142,7 +139,7 @@ std::string GDataEntry::UnescapeUtf8FileName(const std::string& input) {
 
 GDataFile::GDataFile(GDataDirectory* parent, GDataRootDirectory* root)
     : GDataEntry(parent, root),
-      kind_(gdata::DocumentEntry::UNKNOWN),
+      kind_(DocumentEntry::UNKNOWN),
       is_hosted_document_(false) {
   file_info_.is_directory = false;
 }
@@ -164,8 +161,8 @@ void GDataFile::SetFileNameFromTitle() {
 
 // static.
 GDataEntry* GDataFile::FromDocumentEntry(GDataDirectory* parent,
-                                            DocumentEntry* doc,
-                                            GDataRootDirectory* root) {
+                                         DocumentEntry* doc,
+                                         GDataRootDirectory* root) {
   DCHECK(doc->is_hosted_document() || doc->is_file());
   GDataFile* file = new GDataFile(parent, root);
 
@@ -241,8 +238,8 @@ GDataDirectory* GDataDirectory::AsGDataDirectory() {
 
 // static
 GDataEntry* GDataDirectory::FromDocumentEntry(GDataDirectory* parent,
-                                                 DocumentEntry* doc,
-                                                 GDataRootDirectory* root) {
+                                              DocumentEntry* doc,
+                                              GDataRootDirectory* root) {
   DCHECK(doc->is_folder());
   GDataDirectory* dir = new GDataDirectory(parent, root);
   dir->title_ = UTF16ToUTF8(doc->title());
@@ -273,15 +270,6 @@ GDataEntry* GDataDirectory::FromDocumentEntry(GDataDirectory* parent,
   return dir;
 }
 
-void GDataDirectory::RemoveChildren() {
-  // Remove children from resource map first.
-  root_->RemoveEntriesFromResourceMap(children_);
-
-  // Then delete and remove the children from tree.
-  STLDeleteValues(&children_);
-  children_.clear();
-}
-
 bool GDataDirectory::NeedsRefresh() const {
   // Already refreshing by someone else.
   if (origin_ == REFRESHING)
@@ -298,13 +286,18 @@ bool GDataDirectory::NeedsRefresh() const {
 }
 
 void GDataDirectory::AddEntry(GDataEntry* entry) {
+  // The entry name may have been changed due to prior name de-duplication.
+  // We need to first restore the file name based on the title before going
+  // through name de-duplication again when it is added to another directory.
+  entry->SetFileNameFromTitle();
+
   // Do file name de-duplication - find files with the same name and
   // append a name modifier to the name.
   int max_modifier = 1;
   FilePath full_file_name(entry->file_name());
-  std::string extension = full_file_name.Extension();
-  std::string file_name = full_file_name.RemoveExtension().value();
-  while (children_.find(full_file_name.value()) !=  children_.end()) {
+  const std::string extension = full_file_name.Extension();
+  const std::string file_name = full_file_name.RemoveExtension().value();
+  while (FindChild(full_file_name.value())) {
     if (!extension.empty()) {
       full_file_name = FilePath(base::StringPrintf("%s (%d)%s",
                                                    file_name.c_str(),
@@ -316,74 +309,121 @@ void GDataDirectory::AddEntry(GDataEntry* entry) {
                                                    ++max_modifier));
     }
   }
-  if (full_file_name.value() != entry->file_name())
-    entry->set_file_name(full_file_name.value());
-  children_.insert(std::make_pair(entry->file_name(), entry));
-  DVLOG(1) << "Adding: "
-           << this->GetFilePath().value()
-           << "/" + entry->file_name()
-           << ", resource " << entry->parent_resource_id()
-           << "/" + entry->resource_id();
+  entry->set_file_name(full_file_name.value());
+
+  DVLOG(1) << "AddEntry: dir = " << GetFilePath().value()
+           << ", file = " + entry->file_name()
+           << ", parent resource = " << entry->parent_resource_id()
+           << ", resource = " + entry->resource_id();
+
 
   // Add entry to resource map.
   root_->AddEntryToResourceMap(entry);
-
-  entry->set_parent(this);
+  // Setup child and parent links.
+  AddChild(entry);
+  entry->SetParent(this);
 }
 
 bool GDataDirectory::TakeEntry(GDataEntry* entry) {
   DCHECK(entry);
   DCHECK(entry->parent());
 
-  entry->parent()->RemoveEntryFromChildrenList(entry);
-
-  // The entry name may have been changed due to prior name de-duplication.
-  // We need to first restore the file name based on the title before going
-  // through name de-duplication again when it is added to another directory.
-  entry->SetFileNameFromTitle();
+  entry->parent()->RemoveChild(entry);
   AddEntry(entry);
 
   return true;
 }
 
 bool GDataDirectory::TakeOverEntries(GDataDirectory* dir) {
-  for (GDataFileCollection::iterator iter = dir->children_.begin();
-       iter != dir->children_.end(); ++iter) {
-    GDataEntry* entry = iter->second;
-    entry->SetFileNameFromTitle();
-    AddEntry(entry);
+  for (GDataFileCollection::iterator iter = dir->child_files_.begin();
+       iter != dir->child_files_.end(); ++iter) {
+    AddEntry(iter->second);
   }
-  dir->children_.clear();
+  dir->child_files_.clear();
+
+  for (GDataDirectoryCollection::iterator iter =
+      dir->child_directories_.begin();
+       iter != dir->child_directories_.end(); ++iter) {
+    AddEntry(iter->second);
+  }
+  dir->child_directories_.clear();
   return true;
 }
 
 bool GDataDirectory::RemoveEntry(GDataEntry* entry) {
   DCHECK(entry);
 
-  if (!RemoveEntryFromChildrenList(entry))
+  if (!RemoveChild(entry))
     return false;
 
   delete entry;
   return true;
 }
 
-bool GDataDirectory::RemoveEntryFromChildrenList(GDataEntry* entry) {
+GDataEntry* GDataDirectory::FindChild(
+    const FilePath::StringType& file_name) const {
+  GDataFileCollection::const_iterator it = child_files_.find(file_name);
+  if (it != child_files_.end())
+    return it->second;
+
+  GDataDirectoryCollection::const_iterator itd =
+      child_directories_.find(file_name);
+  if (itd != child_directories_.end())
+    return itd->second;
+
+  return NULL;
+}
+
+void GDataDirectory::AddChild(GDataEntry* entry) {
   DCHECK(entry);
 
-  GDataFileCollection::iterator iter = children_.find(entry->file_name());
-  if (iter == children_.end())
+  GDataFile* file = entry->AsGDataFile();
+  if (file)
+    child_files_.insert(std::make_pair(entry->file_name(), file));
+
+  GDataDirectory* directory = entry->AsGDataDirectory();
+  if (directory)
+    child_directories_.insert(std::make_pair(entry->file_name(), directory));
+}
+
+bool GDataDirectory::RemoveChild(GDataEntry* entry) {
+  DCHECK(entry);
+
+  const std::string file_name(entry->file_name());
+  GDataEntry* found_entry = FindChild(file_name);
+  if (!found_entry)
     return false;
 
-  DCHECK(iter->second);
-  DCHECK_EQ(entry, iter->second);
+  DCHECK_EQ(entry, found_entry);
 
   // Remove entry from resource map first.
   root_->RemoveEntryFromResourceMap(entry);
 
   // Then delete it from tree.
-  children_.erase(iter);
+  child_files_.erase(file_name);
+  child_directories_.erase(file_name);
 
   return true;
+}
+
+void GDataDirectory::RemoveChildren() {
+  // Remove child files first.
+  for (GDataFileCollection::const_iterator iter = child_files_.begin();
+       iter != child_files_.end(); ++iter) {
+    root_->RemoveEntryFromResourceMap(iter->second);
+  }
+  STLDeleteValues(&child_files_);
+  child_files_.clear();
+
+  for (GDataDirectoryCollection::iterator iter = child_directories_.begin();
+       iter != child_directories_.end(); ++iter) {
+    GDataDirectory* dir = iter->second;
+    // Remove directories recursively.
+    dir->RemoveChildren();
+    root_->RemoveEntryFromResourceMap(dir);
+  }
+  STLDeleteValues(&child_directories_);
+  child_directories_.clear();
 }
 
 // GDataRootDirectory::CacheEntry struct  implementation.
@@ -408,6 +448,8 @@ std::string GDataRootDirectory::CacheEntry::ToString() const {
 GDataRootDirectory::GDataRootDirectory()
     : ALLOW_THIS_IN_INITIALIZER_LIST(GDataDirectory(NULL, this)),
       largest_changestamp_(0), serialized_size_(0) {
+  title_ = kGDataRootDirectory;
+  SetFileNameFromTitle();
 }
 
 GDataRootDirectory::~GDataRootDirectory() {
@@ -423,28 +465,13 @@ GDataRootDirectory* GDataRootDirectory::AsGDataRootDirectory() {
 
 void GDataRootDirectory::AddEntryToResourceMap(GDataEntry* entry) {
   // GDataFileSystem has already locked.
+  DVLOG(1) << "AddEntryToResourceMap " << entry->resource_id();
   resource_map_.insert(std::make_pair(entry->resource_id(), entry));
 }
 
 void GDataRootDirectory::RemoveEntryFromResourceMap(GDataEntry* entry) {
   // GDataFileSystem has already locked.
   resource_map_.erase(entry->resource_id());
-}
-
-void GDataRootDirectory::RemoveEntriesFromResourceMap(
-    const GDataFileCollection& children) {
-  // GDataFileSystem has already locked.
-  for (GDataFileCollection::const_iterator iter = children.begin();
-       iter != children.end(); ++iter) {
-    // Recursively call RemoveEntrysFromResourceMap for each directory.
-    if (iter->second->AsGDataDirectory()) {
-      RemoveEntriesFromResourceMap(
-          iter->second->AsGDataDirectory()->children());
-      continue;
-    }
-
-    resource_map_.erase(iter->second->resource_id());
-  }
 }
 
 void GDataRootDirectory::FindEntryByPath(
@@ -472,22 +499,21 @@ void GDataRootDirectory::FindEntryByPath(
     }
 
     // Not the last part of the path, search for the next segment.
-    GDataFileCollection::const_iterator file_iter =
-        current_dir->children().find(components[i + 1]);
-    if (file_iter == current_dir->children().end()) {
+    GDataEntry* entry = current_dir->FindChild(components[i + 1]);
+    if (!entry) {
       delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
       return;
     }
 
     // Found file, must be the last segment.
-    if (file_iter->second->file_info().is_directory) {
+    if (entry->file_info().is_directory) {
       // Found directory, continue traversal.
-      current_dir = file_iter->second->AsGDataDirectory();
+      current_dir = entry->AsGDataDirectory();
     } else {
       if ((i + 1) == (components.size() - 1)) {
         delegate->OnDone(base::PLATFORM_FILE_OK,
                          directory_path,
-                         file_iter->second);
+                         entry);
       } else {
         delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
       }
@@ -617,11 +643,12 @@ void GDataEntry::FromProto(const GDataEntryProto& proto) {
   file_info_.creation_time = base::Time::FromInternalValue(
       proto.file_info().creation_time());
 
-  file_name_ = proto.file_name();
   title_ = proto.title();
   resource_id_ = proto.resource_id();
+  parent_resource_id_ = proto.parent_resource_id();
   edit_url_ = GURL(proto.edit_url());
   content_url_ = GURL(proto.content_url());
+  SetFileNameFromTitle();
 }
 
 void GDataEntry::ToProto(GDataEntryProto* proto) const {
@@ -636,9 +663,9 @@ void GDataEntry::ToProto(GDataEntryProto* proto) const {
   proto_file_info->set_creation_time(
       file_info_.creation_time.ToInternalValue());
 
-  proto->set_file_name(file_name_);
   proto->set_title(title_);
   proto->set_resource_id(resource_id_);
+  proto->set_parent_resource_id(parent_resource_id_);
   proto->set_edit_url(edit_url_.spec());
   proto->set_content_url(content_url_.spec());
 }
@@ -699,14 +726,16 @@ void GDataDirectory::ToProto(GDataDirectoryProto* proto) const {
   proto->set_next_feed_url(next_feed_url_.spec());
   proto->set_upload_url(upload_url_.spec());
   proto->set_origin(origin_);
-  for (GDataFileCollection::const_iterator iter = children_.begin();
-       iter != children_.end(); ++iter) {
-    GDataFile* file = iter->second->AsGDataFile();
-    GDataDirectory* dir = iter->second->AsGDataDirectory();
-    if (file)
-      file->ToProto(proto->add_child_files());
-    if (dir)
-      dir->ToProto(proto->add_child_directories());
+  for (GDataFileCollection::const_iterator iter = child_files_.begin();
+       iter != child_files_.end(); ++iter) {
+    GDataFile* file = iter->second;
+    file->ToProto(proto->add_child_files());
+  }
+  for (GDataDirectoryCollection::const_iterator iter =
+       child_directories_.begin();
+       iter != child_directories_.end(); ++iter) {
+    GDataDirectory* dir = iter->second;
+    dir->ToProto(proto->add_child_directories());
   }
 }
 
