@@ -1063,6 +1063,8 @@
         'browser/gpu_blacklist.h',
         'browser/gpu_util.cc',
         'browser/gpu_util.h',
+        'browser/hang_monitor/hang_crash_dump_win.cc',
+        'browser/hang_monitor/hang_crash_dump_win.h',
         'browser/hang_monitor/hung_plugin_action.cc',
         'browser/hang_monitor/hung_plugin_action.h',
         'browser/hang_monitor/hung_window_detector.cc',

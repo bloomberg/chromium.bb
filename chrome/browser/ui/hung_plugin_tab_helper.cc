@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/process_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -20,6 +21,10 @@
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/hang_monitor/hang_crash_dump_win.h"
+#endif
 
 namespace {
 
@@ -40,10 +45,11 @@ void KillPluginOnIOThread(int child_id) {
   while (!iter.Done()) {
     const content::ChildProcessData& data = iter.GetData();
     if (data.id == child_id) {
-      // TODO(brettw) bug 123021: it might be nice to do some stuff to capture
-      // a stack. The NPAPI Windows hang monitor does some cool stuff in
-      // hung_window_detector.cc.
+#if defined(OS_WIN)
+      CrashDumpAndTerminateHungChildProcess(data.handle);
+#else
       base::KillProcess(data.handle, content::RESULT_CODE_HUNG, false);
+#endif
       break;
     }
     ++iter;
