@@ -127,8 +127,6 @@
       '-policy.PolicyTest.testExtensionInstallFromForceList',
       # crbug.com/47935
       '-popups.PopupsTest.testBlockedPopupNotShowInHistory',
-      # crbug.com/82629 - real bug.
-      '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
       # crbug.com/83827
       '-popups.PopupsTest.testUnblockedPopupAddedToOmnibox',
       # crbug.com/85600
@@ -201,12 +199,6 @@
       '-browsing_data.BrowsingDataTest.testClearAutofillData',
       # codesign tests should run *after* signing. crbug.com/50481
       '-codesign',
-      # crbug.com/69464
-      '-crash_reporter.CrashReporterTest.testRendererCrash',
-      # crbug.com/75724
-      '-downloads.DownloadsTest.testDeclineDangerousDownload',
-      # crbug.com/75724
-      '-downloads.DownloadsTest.testSaveDangerousFile',
       # crbug.com/124922
       '-fullscreen_mouselock.FullscreenMouselockTest.testMouseLockExitWhenBrowserLoseFocus',
       # Fails on chrome-mac-10_7-qa only: crbug.com/124886
