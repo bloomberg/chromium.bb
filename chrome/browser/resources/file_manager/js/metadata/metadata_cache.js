@@ -614,6 +614,20 @@ GDataProvider.prototype.callApi_ = function() {
 };
 
 /**
+ * Pattern for Docs urls that are available in the offline mode.
+ */
+GDataProvider.OFFLINE_DOCS_REGEXP = /\/(document|spreadsheet)\//;
+
+/**
+ * @param {GDataFileProperties} data GData file properties.
+ * @return {boolean} True if the file is available offline.
+ */
+GDataProvider.isAvailableOffline = function(data) {
+  return data.isPresent ||
+      (data.isHosted && GDataProvider.OFFLINE_DOCS_REGEXP.test(data.editUrl));
+};
+
+/**
  * Converts API metadata to internal format.
  * @param {Object} data Metadata from API call.
  * @return {Object} Metadata in internal format.
@@ -626,7 +640,7 @@ GDataProvider.prototype.convert_ = function(data) {
     pinned: data.isPinned,
     hosted: data.isHosted,
     dirty: data.isDirty,
-    availableOffline: data.isPresent && !data.isHosted,
+    availableOffline: GDataProvider.isAvailableOffline(data),
     contentUrl: (data.contentUrl || '').replace(/\?.*$/gi, ''),
     editUrl: data.editUrl || ''
   };
