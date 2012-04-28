@@ -68,7 +68,7 @@ LinkInfoBarDelegate* InfoBarDelegate::AsLinkInfoBarDelegate() {
   return NULL;
 }
 
-MediaStreamInfoBarDelegate* InfoBarDelegate::AsMediaStreamInfobarDelegate() {
+MediaStreamInfoBarDelegate* InfoBarDelegate::AsMediaStreamInfoBarDelegate() {
   return NULL;
 }
 

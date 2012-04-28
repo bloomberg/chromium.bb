@@ -28,8 +28,7 @@ class MediaStreamInfoBarGtk : public InfoBarGtk {
   CHROMEGTK_CALLBACK_0(MediaStreamInfoBarGtk, void, OnDenyButton);
   CHROMEGTK_CALLBACK_0(MediaStreamInfoBarGtk, void, OnDevicesClicked);
 
-  // Convenience to retrieve the MediaStreamInfobarDelegate for this infobar.
-  MediaStreamInfoBarDelegate* delegate_;
+  MediaStreamInfoBarDelegate* GetDelegate();
 
   MediaStreamDevicesMenuModel* devices_menu_model_;
 

@@ -62,7 +62,7 @@ class MediaStreamInfoBarDelegate : public InfoBarDelegate {
   virtual void InfoBarDismissed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
-  virtual MediaStreamInfoBarDelegate* AsMediaStreamInfobarDelegate() OVERRIDE;
+  virtual MediaStreamInfoBarDelegate* AsMediaStreamInfoBarDelegate() OVERRIDE;
 
   // The original request for access to devices.
   const content::MediaStreamRequest* request_;

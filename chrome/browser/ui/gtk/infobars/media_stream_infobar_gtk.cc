@@ -23,8 +23,7 @@ InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
 MediaStreamInfoBarGtk::MediaStreamInfoBarGtk(
     InfoBarTabHelper* owner,
     MediaStreamInfoBarDelegate* delegate)
-    : InfoBarGtk(owner, delegate),
-      delegate_(delegate) {
+    : InfoBarGtk(owner, delegate) {
   devices_menu_model_ = new MediaStreamDevicesMenuModel(delegate);
   Init();
 }
@@ -38,13 +37,13 @@ void MediaStreamInfoBarGtk::Init() {
   size_t offset = 0;
 
   int message_id = IDS_MEDIA_CAPTURE_MIC_AND_VIDEO;
-  DCHECK(delegate_->has_audio() || delegate_->has_video());
-  if (!delegate_->has_audio())
+  DCHECK(GetDelegate()->has_audio() || GetDelegate()->has_video());
+  if (!GetDelegate()->has_audio())
     message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
-  else if (!delegate_->has_video())
+  else if (!GetDelegate()->has_video())
     message_id = IDS_MEDIA_CAPTURE_MIC_ONLY;
 
-  string16 security_origin = UTF8ToUTF16(delegate_->GetSecurityOrigin());
+  string16 security_origin = UTF8ToUTF16(GetDelegate()->GetSecurityOrigin());
   string16 text(l10n_util::GetStringFUTF16(message_id,
                                            security_origin, &offset));
 
@@ -82,11 +81,15 @@ void MediaStreamInfoBarGtk::OnAllowButton(GtkWidget* widget) {
       content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE, &audio_id);
   devices_menu_model_->GetSelectedDeviceId(
       content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, &video_id);
-  delegate_->Accept(audio_id, video_id);
+  GetDelegate()->Accept(audio_id, video_id);
   RemoveSelf();
 }
 
 void MediaStreamInfoBarGtk::OnDenyButton(GtkWidget* widget) {
-  delegate_->Deny();
+  GetDelegate()->Deny();
   RemoveSelf();
+}
+
+MediaStreamInfoBarDelegate* MediaStreamInfoBarGtk::GetDelegate() {
+  return delegate()->AsMediaStreamInfoBarDelegate();
 }

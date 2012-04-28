@@ -44,7 +44,7 @@ class MediaStreamInfoBar : public InfoBarView,
   virtual void OnMenuButtonClicked(views::View* source,
                                    const gfx::Point& point) OVERRIDE;
 
-  MediaStreamInfoBarDelegate* delegate_;
+  MediaStreamInfoBarDelegate* GetDelegate();
 
   views::Label* label_;
   views::TextButton* allow_button_;

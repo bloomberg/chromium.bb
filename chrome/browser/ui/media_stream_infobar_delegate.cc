@@ -135,6 +135,6 @@ InfoBarDelegate::Type MediaStreamInfoBarDelegate::GetInfoBarType() const {
 }
 
 MediaStreamInfoBarDelegate*
-    MediaStreamInfoBarDelegate::AsMediaStreamInfobarDelegate() {
+    MediaStreamInfoBarDelegate::AsMediaStreamInfoBarDelegate() {
   return this;
 }

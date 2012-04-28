@@ -1129,7 +1129,7 @@ void ChromeContentBrowserClient::RequestMediaAccessPermission(
   InfoBarDelegate* old_infobar = NULL;
   for (size_t i = 0; i < infobar_helper->infobar_count() && !old_infobar; ++i) {
     old_infobar =
-        infobar_helper->GetInfoBarDelegateAt(i)->AsMediaStreamInfobarDelegate();
+        infobar_helper->GetInfoBarDelegateAt(i)->AsMediaStreamInfoBarDelegate();
   }
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_LINUX)

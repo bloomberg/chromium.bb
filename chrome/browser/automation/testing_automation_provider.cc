@@ -2700,7 +2700,7 @@ void TestingAutomationProvider::PerformActionOnInfobar(
   }
   if ("allow" == action || "deny" == action) {
     MediaStreamInfoBarDelegate* media_stream_infobar;
-    if (!(media_stream_infobar = infobar->AsMediaStreamInfobarDelegate())) {
+    if (!(media_stream_infobar = infobar->AsMediaStreamInfoBarDelegate())) {
       reply.SendError("Not a media stream infobar.");
       return;
     }

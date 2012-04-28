@@ -23,7 +23,6 @@ MediaStreamInfoBar::MediaStreamInfoBar(
     InfoBarTabHelper* owner,
     MediaStreamInfoBarDelegate* delegate)
     : InfoBarView(owner, delegate),
-      delegate_(delegate),
       label_(NULL),
       allow_button_(NULL),
       deny_button_(NULL),
@@ -64,14 +63,14 @@ void MediaStreamInfoBar::ViewHierarchyChanged(bool is_add,
                                               views::View* child) {
   if (is_add && child == this && (label_ == NULL)) {
     int message_id = IDS_MEDIA_CAPTURE_MIC_AND_VIDEO;
-    DCHECK(delegate_->has_audio() || delegate_->has_video());
-    if (!delegate_->has_audio())
+    DCHECK(GetDelegate()->has_audio() || GetDelegate()->has_video());
+    if (!GetDelegate()->has_audio())
       message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
-    else if (!delegate_->has_video())
+    else if (!GetDelegate()->has_video())
       message_id = IDS_MEDIA_CAPTURE_MIC_ONLY;
 
     label_ = CreateLabel(l10n_util::GetStringFUTF16(message_id,
-        UTF8ToUTF16(delegate_->GetSecurityOrigin())));
+        UTF8ToUTF16(GetDelegate()->GetSecurityOrigin())));
     AddChildView(label_);
 
     allow_button_ = CreateTextButton(this,
@@ -102,10 +101,10 @@ void MediaStreamInfoBar::ButtonPressed(views::Button* sender,
         content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE, &audio_id);
     devices_menu_model_.GetSelectedDeviceId(
         content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, &video_id);
-    delegate_->Accept(audio_id, video_id);
+    GetDelegate()->Accept(audio_id, video_id);
     RemoveSelf();
   } else if (sender == deny_button_) {
-    delegate_->Deny();
+    GetDelegate()->Deny();
     RemoveSelf();
   } else {
     InfoBarView::ButtonPressed(sender, event);
@@ -127,4 +126,8 @@ void MediaStreamInfoBar::OnMenuButtonClicked(views::View* source,
   DCHECK_EQ(devices_menu_button_, source);
   RunMenuAt(&devices_menu_model_, devices_menu_button_,
             views::MenuItemView::TOPRIGHT);
+}
+
+MediaStreamInfoBarDelegate* MediaStreamInfoBar::GetDelegate() {
+  return delegate()->AsMediaStreamInfoBarDelegate();
 }
