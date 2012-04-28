@@ -397,8 +397,7 @@ InspectUI::InspectUI(content::WebUI* web_ui)
 }
 
 InspectUI::~InspectUI() {
-  observer_->InspectUIDestroyed();
-  observer_ = NULL;
+  StopListeningNotifications();
 }
 
 void InspectUI::RefreshUI() {
@@ -408,5 +407,19 @@ void InspectUI::RefreshUI() {
 void InspectUI::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  if (source == content::Source<WebContents>(web_ui()->GetWebContents())) {
+    if (type == content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED)
+        StopListeningNotifications();
+    return;
+  }
   RefreshUI();
+}
+
+void InspectUI::StopListeningNotifications()
+{
+  if (!observer_)
+    return;
+  observer_->InspectUIDestroyed();
+  observer_ = NULL;
+  registrar_.RemoveAll();
 }

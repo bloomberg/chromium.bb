@@ -27,6 +27,8 @@ class InspectUI : public content::WebUIController,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  void StopListeningNotifications();
+
   scoped_refptr<WorkerCreationDestructionListener> observer_;
 
   // A scoped container for notification registries.
