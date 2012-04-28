@@ -3103,7 +3103,8 @@ FileManager.prototype = {
     var self = this;
     var pin = checkbox.checked;
     function callback(props) {
-      if (props.errorCode && pin) {
+      var fileProps = props[0];
+      if (fileProps.errorCode && pin) {
         self.metadataCache_.get(entry, 'filesystem', function(filesystem) {
           self.alert.showHtml(str('GDATA_OUT_OF_SPACE_HEADER'),
               strf('GDATA_OUT_OF_SPACE_MESSAGE',
@@ -3112,7 +3113,7 @@ FileManager.prototype = {
       }
       // We don't have update events yet, so clear the cached data.
       self.metadataCache_.clear(entry, 'gdata');
-      checkbox.checked = props[0].isPinned;
+      checkbox.checked = fileProps.isPinned;
     }
     chrome.fileBrowserPrivate.pinGDataFile([entry.toURL()], pin, callback);
     event.preventDefault();
