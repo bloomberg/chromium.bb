@@ -262,6 +262,9 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       ExtensionPermissionMessage::kTtsEngine,
       kFlagCannotBeOptional);
   info->RegisterPermission(
+      kUsb, "usb", IDS_EXTENSION_PROMPT_WARNING_USB,
+      ExtensionPermissionMessage::kNone, kFlagNone);
+  info->RegisterPermission(
       kWebNavigation, "webNavigation",
       IDS_EXTENSION_PROMPT_WARNING_TABS, ExtensionPermissionMessage::kTabs,
       kFlagNone);

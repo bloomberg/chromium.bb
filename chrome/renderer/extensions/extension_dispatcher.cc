@@ -24,6 +24,7 @@
 #include "chrome/renderer/extensions/context_menus_custom_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/experimental.socket_custom_bindings.h"
+#include "chrome/renderer/extensions/experimental.usb_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "chrome/renderer/extensions/extension_helper.h"
@@ -70,6 +71,7 @@ using content::RenderThread;
 using extensions::ApiDefinitionsNatives;
 using extensions::ContextMenusCustomBindings;
 using extensions::ExperimentalSocketCustomBindings;
+using extensions::ExperimentalUsbCustomBindings;
 using extensions::ExtensionAPI;
 using extensions::ExtensionCustomBindings;
 using extensions::Feature;
@@ -471,6 +473,8 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
           new ExtensionCustomBindings(this)));
   module_system->RegisterNativeHandler("experimental_socket",
       scoped_ptr<NativeHandler>(new ExperimentalSocketCustomBindings()));
+  module_system->RegisterNativeHandler("experimental_usb",
+      scoped_ptr<NativeHandler>(new ExperimentalUsbCustomBindings()));
   module_system->RegisterNativeHandler("file_browser_handler",
       scoped_ptr<NativeHandler>(new FileBrowserHandlerCustomBindings()));
   module_system->RegisterNativeHandler("file_browser_private",
@@ -522,6 +526,8 @@ void ExtensionDispatcher::PopulateSourceMap() {
                              IDR_EXPERIMENTAL_RUNTIME_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.socket",
                              IDR_EXPERIMENTAL_SOCKET_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("experimental.usb",
+                             IDR_EXPERIMENTAL_USB_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.webRequest",
                              IDR_EXPERIMENTAL_WEBREQUEST_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("extension", IDR_EXTENSION_CUSTOM_BINDINGS_JS);

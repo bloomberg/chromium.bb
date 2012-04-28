@@ -31,10 +31,18 @@
           'experimental.dns.idl',
           'experimental.serial.idl',
           'experimental.socket.idl',
+          'experimental.usb.idl',
         ],
         'cc_dir': 'chrome/common/extensions/api',
         'root_namespace': 'extensions::api',
       },
+      'conditions': [
+        ['OS=="android"', {
+          'idl_schema_files!': [
+            'experimental.usb.idl',
+          ],
+        }],
+      ],
     },
   ],
 }

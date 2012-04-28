@@ -1,0 +1,146 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// TODO(gdk): The string-style enumerations are temporary, and will be removed
+// once full enumeration support is added. Also, the array-of-longs are
+// temporary and will be removed once there is full ArrayBuffer support.
+
+[nodoc] namespace experimental.usb {
+
+  // A Device encapsulates everything that is needed to communicate with a USB
+  // device. They are returned by findDevice calls and have all of their
+  // fields populated before being returned.
+  dictionary Device {
+    long handle;
+    long vendorId;
+    long productId;
+  };
+
+  // ControlTransferInfo represents that parameters to a single USB control
+  // transfer.
+  dictionary ControlTransferInfo {
+    // The direction of this transfer. Must be one of either in or out.
+    DOMString direction;
+
+    // The intended recipient for this transfer. Must be one of device,
+    // interface, endpoint, or other.
+    DOMString recipient;
+
+    // The type of this request. Must be one of standard, class, vendor,
+    // or reserved.
+    DOMString requestType;
+
+    long request;
+    long value;
+    long index;
+
+    // If this transfer is an input transfer, then this field must be set to
+    // indicate the expected data length. If this is an output transfer, then
+    // this field is ignored.
+    long? length;
+
+    // The data payload carried by this transfer. If this is an output tranfer
+    // then this field must be set.
+    long[]? data;
+  };
+
+  // GenericTransferInfo is used by both bulk and interrupt transfers to
+  // specify the parameters of the transfer.
+  dictionary GenericTransferInfo {
+    // The direction of this transfer. Must be one of in or out.
+    DOMString direction;
+
+    long endpoint;
+
+    // If this is an input transfer then this field indicates the size of the
+    // input buffer. If this is an output transfer then this field is ignored.
+    long? length;
+
+    // If this is an output transfer then this field must be populated.
+    // Otherwise, it will be ignored.
+    long[]? data;
+  };
+
+  // When a USB event occurs the event handler specified by the DeviceOptions
+  // provided to findDevice will have a UsbEvent delivered to it which will
+  // contain the result of a transfer, including returned data.
+  dictionary UsbEvent {
+    // A string indicating the type of the event. Currently will only contain
+    // the value 'transferResult'.
+    DOMString type;
+
+    // A value of 0 indicates that the transfer was a success. Other values
+    // indicate failure.
+    long? resultCode;
+
+    // If the transfer was an input transfer then this field will contain all
+    // of the input data requested.
+    long[]? data;
+
+    // The following fields are used for internal event routing and can be
+    // ignored.
+    [nodoc] boolean isFinalEvent;
+    [nodoc] long srcId;
+  };
+
+  callback OnEventCallback = void (UsbEvent event);
+
+  dictionary DeviceOptions {
+    // The schema generator does not support dictionaries with only events.
+    // Ignore this field.
+    [nodoc] long? dummyValue;
+
+    // Invoked by the extension API whenever an event occurs for the device(s)
+    // that this DeviceOptions is associated with.
+    OnEventCallback? onEvent;
+  };
+
+  callback FindDeviceCallback = void (optional Device device);
+  callback TransferCallback = void ();
+
+  interface Functions {
+    // Finds the first instance of the USB device specified by the vendorId/
+    // productId pair and, if permissions allow, opens it for use.
+    // Upon successfully opening a device the callback is invoked with a
+    // populated Device object. On failure, the callback is invoked with null.
+    // |vendorId|: The vendor ID of the USB device to find.
+    // |productId|: The product ID of the USB device to find.
+    // |callback|: Invoked with the opened Device on success.
+    static void findDevice(long vendorId, long productId,
+        DeviceOptions options, FindDeviceCallback callback);
+
+    // Closes an open device instance. Invoking operations on a device after it
+    // has been closed is a safe operation, but causes no action to be taken.
+    // |device|: The device to close.
+    static void closeDevice(Device device);
+
+    // Performs a control transfer on the specified device. See the
+    // ControlTransferInfo structure for the parameters required to make a
+    // transfer.
+    // |device|: An open device to make the transfer on.
+    // |transferInfo|: The parameters to the transfer. See ControlTransferInfo.
+    // |callback|: Invoked once the transfer has completed.
+    static void controlTransfer(Device device,
+        ControlTransferInfo transferInfo, optional TransferCallback callback);
+
+    // Performs a bulk transfer on the specified device.
+    // |device|: An open device to make the transfer on.
+    // |transferInfo|: The paramters to the transfer. See GenericTransferInfo.
+    // |callback|: Invoked once the transfer has completed.
+    static void bulkTransfer(Device device, GenericTransferInfo transferInfo,
+        optional TransferCallback callback);
+
+    // Performs an interrupt transfer on the specified device.
+    // |device|: An open device to make the transfer on.
+    // |transferInfo|: The paramters to the transfer. See GenericTransferInfo.
+    // |callback|: Invoked once the transfer has completed.
+    static void interruptTransfer(Device device,
+        GenericTransferInfo transferInfo, optional TransferCallback callback);
+  };
+
+  interface Events {
+    static void onEvent(UsbEvent event);
+  };
+
+};

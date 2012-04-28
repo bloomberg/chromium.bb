@@ -16,6 +16,7 @@ namespace extensions {
 
 class SerialConnection;
 class Socket;
+class UsbDeviceResource;
 
 // kSrcIdKey, or "srcId," binds an APIResource to the onEvent closure that was
 // optionally passed to the APIResource's create() method. We generated it in
@@ -42,6 +43,7 @@ class APIResourceController {
   // codebase.
   Socket* GetSocket(int api_resource_id) const;
   SerialConnection* GetSerialConnection(int api_resource_id) const;
+  UsbDeviceResource* GetUsbDeviceResource(int api_resource_id) const;
 
  private:
   int next_api_resource_id_;
