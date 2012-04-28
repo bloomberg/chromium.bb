@@ -666,9 +666,7 @@ void TextfieldViewsModel::ReplaceTextInternal(const string16& text,
 }
 
 void TextfieldViewsModel::ClearEditHistory() {
-  STLDeleteContainerPointers(edit_history_.begin(),
-                             edit_history_.end());
-  edit_history_.clear();
+  STLDeleteElements(&edit_history_);
   current_edit_ = edit_history_.end();
 }
 
