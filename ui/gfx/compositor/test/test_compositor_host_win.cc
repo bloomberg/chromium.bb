@@ -24,13 +24,6 @@ class TestCompositorHostWin : public TestCompositorHost,
     DestroyWindow(hwnd());
   }
 
-  // Overridden from MessageLoop::Dispatcher:
-  virtual bool Dispatch(const base::NativeEvent& msg) {
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
-    return true;
-  }
-
   // Overridden from TestCompositorHost:
   virtual void Show() OVERRIDE {
     ShowWindow(hwnd(), SW_SHOWNORMAL);

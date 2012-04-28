@@ -10,16 +10,11 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/rect.h"
 
 #include <X11/Xlib.h>
-
-#if defined(USE_AURA)
-#include "base/message_pump_x.h"
-#endif
 
 namespace ui {
 
@@ -36,9 +31,6 @@ class TestCompositorHostLinux : public TestCompositorHost,
 
   // Overridden from CompositorDelegate:
   virtual void ScheduleDraw() OVERRIDE;
-
-  // Overridden from MessagePumpDispatcher:
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   void Draw();
 
@@ -97,10 +89,6 @@ void TestCompositorHostLinux::ScheduleDraw() {
         base::Bind(&TestCompositorHostLinux::Draw,
                    method_factory_.GetWeakPtr()));
   }
-}
-
-bool TestCompositorHostLinux::Dispatch(const base::NativeEvent& event) {
-  return true;
 }
 
 void TestCompositorHostLinux::Draw() {
