@@ -90,7 +90,7 @@ class BasePerfTest(pyauto.PyUITest):
     # TODO(dennisjeffrey): Implement wait for idle CPU on Windows/Mac.
     if self.IsLinux():  # IsLinux() also implies IsChromeOS().
       os.system('sync')
-      self._WaitForIdleCPU(60.0, 0.03)
+      self._WaitForIdleCPU(60.0, 0.05)
 
   def _WaitForIdleCPU(self, timeout, utilization):
     """Waits for the CPU to become idle (< utilization).
@@ -1763,6 +1763,298 @@ class PageCyclerTest(BasePerfTest):
 
   def testMoz2File(self):
     self._RunPageCyclerTest('moz2', self._num_iterations, 'Moz2File')
+
+
+class MemoryTest(BasePerfTest):
+  """Tests to measure memory consumption under different usage scenarios."""
+
+  def setUp(self):
+    pyauto.PyUITest.setUp(self)
+
+    # Log in to get a fresh Chrome instance with a clean memory state (if
+    # already logged in, log out first).
+    if self.GetLoginInfo()['is_logged_in']:
+      self.Logout()
+      self.assertFalse(self.GetLoginInfo()['is_logged_in'],
+                      msg='Failed to log out.')
+
+    credentials = self.GetPrivateInfo()['test_google_account']
+    self.Login(credentials['username'], credentials['password'])
+    self.assertTrue(self.GetLoginInfo()['is_logged_in'],
+                    msg='Failed to log in.')
+
+  def ExtraChromeFlags(self):
+    """Launches Chrome with custom flags.
+
+    Returns:
+      A list of extra flags to pass to Chrome when it is launched.
+    """
+    # Ensure Chrome assigns one renderer process to each tab.
+    return super(MemoryTest, self).ExtraChromeFlags() + ['--process-per-tab']
+
+  def _GetMemoryStats(self, duration):
+    """Identifies and returns different kinds of current memory usage stats.
+
+    This function samples values each second for |duration| seconds, then
+    outputs the min, max, and ending values for each measurement type.
+
+    Args:
+      duration: The number of seconds to sample data before outputting the
+          minimum, maximum, and ending values for each measurement type.
+
+    Returns:
+      A dictionary containing memory usage information.  Each measurement type
+      is associated with the min, max, and ending values from among all
+      sampled values.  Values are specified in KB.
+      {
+        'gem_obj': {  # GPU memory usage.
+          'min': ...,
+          'max': ...,
+          'end': ...,
+        },
+        'gtt': { ... },  # GPU memory usage (graphics translation table).
+        'mem_free': { ... },  # CPU free memory.
+        'mem_available': { ... },  # CPU available memory.
+        'mem_shared': { ... },  # CPU shared memory.
+        'mem_cached': { ... },  # CPU cached memory.
+        'mem_anon': { ... },  # CPU anon memory (active + inactive).
+        'mem_file': { ... },  # CPU file memory (active + inactive).
+        'mem_slab': { ... },  # CPU slab memory.
+        'browser_priv': { ... },  # Chrome browser private memory.
+        'browser_shared': { ... },  # Chrome browser shared memory.
+        'gpu_priv': { ... },  # Chrome GPU private memory.
+        'gpu_shared': { ... },  # Chrome GPU shared memory.
+        'renderer_priv': { ... },  # Total private memory of all renderers.
+        'renderer_shared': { ... },  # Total shared memory of all renderers.
+      }
+    """
+    logging.debug('Sampling memory information for %d seconds...' % duration)
+    stats = {}
+
+    for _ in xrange(duration):
+      # GPU memory.
+      gem_obj_path = '/sys/kernel/debug/dri/0/i915_gem_objects'
+      if os.path.exists(gem_obj_path):
+        p = subprocess.Popen('grep bytes %s' % gem_obj_path,
+                             stdout=subprocess.PIPE, shell=True)
+        stdout = p.communicate()[0]
+
+        gem_obj = re.search(
+            '\d+ objects, (\d+) bytes\n', stdout).group(1)
+        if 'gem_obj' not in stats:
+          stats['gem_obj'] = []
+        stats['gem_obj'].append(int(gem_obj) / 1024.0)
+
+      gtt_path = '/sys/kernel/debug/dri/0/i915_gem_gtt'
+      if os.path.exists(gtt_path):
+        p = subprocess.Popen('grep bytes %s' % gtt_path,
+                             stdout=subprocess.PIPE, shell=True)
+        stdout = p.communicate()[0]
+
+        gtt = re.search(
+            'Total [\d]+ objects, ([\d]+) bytes', stdout).group(1)
+        if 'gtt' not in stats:
+          stats['gtt'] = []
+        stats['gtt'].append(int(gtt) / 1024.0)
+
+      # CPU memory.
+      stdout = ''
+      with open('/proc/meminfo') as f:
+        stdout = f.read()
+      mem_free = re.search('MemFree:\s*([\d]+) kB', stdout).group(1)
+
+      if 'mem_free' not in stats:
+        stats['mem_free'] = []
+      stats['mem_free'].append(int(mem_free))
+
+      mem_dirty = re.search('Dirty:\s*([\d]+) kB', stdout).group(1)
+      mem_active_file = re.search(
+          'Active\(file\):\s*([\d]+) kB', stdout).group(1)
+      mem_inactive_file = re.search(
+          'Inactive\(file\):\s*([\d]+) kB', stdout).group(1)
+
+      with open('/proc/sys/vm/min_filelist_kbytes') as f:
+        mem_min_file = f.read()
+
+      # Available memory =
+      #     MemFree + ActiveFile + InactiveFile - DirtyMem - MinFileMem
+      if 'mem_available' not in stats:
+        stats['mem_available'] = []
+      stats['mem_available'].append(
+          int(mem_free) + int(mem_active_file) + int(mem_inactive_file) -
+          int(mem_dirty) - int(mem_min_file))
+
+      mem_shared = re.search('Shmem:\s*([\d]+) kB', stdout).group(1)
+      if 'mem_shared' not in stats:
+        stats['mem_shared'] = []
+      stats['mem_shared'].append(int(mem_shared))
+
+      mem_cached = re.search('Cached:\s*([\d]+) kB', stdout).group(1)
+      if 'mem_cached' not in stats:
+        stats['mem_cached'] = []
+      stats['mem_cached'].append(int(mem_cached))
+
+      mem_anon_active = re.search('Active\(anon\):\s*([\d]+) kB',
+                                  stdout).group(1)
+      mem_anon_inactive = re.search('Inactive\(anon\):\s*([\d]+) kB',
+                                    stdout).group(1)
+      if 'mem_anon' not in stats:
+        stats['mem_anon'] = []
+      stats['mem_anon'].append(int(mem_anon_active) + int(mem_anon_inactive))
+
+      mem_file_active = re.search('Active\(file\):\s*([\d]+) kB',
+                                  stdout).group(1)
+      mem_file_inactive = re.search('Inactive\(file\):\s*([\d]+) kB',
+                                    stdout).group(1)
+      if 'mem_file' not in stats:
+        stats['mem_file'] = []
+      stats['mem_file'].append(int(mem_file_active) + int(mem_file_inactive))
+
+      mem_slab = re.search('Slab:\s*([\d]+) kB', stdout).group(1)
+      if 'mem_slab' not in stats:
+        stats['mem_slab'] = []
+      stats['mem_slab'].append(int(mem_slab))
+
+      # Chrome process memory.
+      pinfo = self.GetProcessInfo()['browsers'][0]['processes']
+      total_renderer_priv = 0
+      total_renderer_shared = 0
+      for process in pinfo:
+        mem_priv = process['working_set_mem']['priv']
+        mem_shared = process['working_set_mem']['shared']
+        if process['child_process_type'] == 'Browser':
+          if 'browser_priv' not in stats:
+            stats['browser_priv'] = []
+            stats['browser_priv'].append(int(mem_priv))
+          if 'browser_shared' not in stats:
+            stats['browser_shared'] = []
+            stats['browser_shared'].append(int(mem_shared))
+        elif process['child_process_type'] == 'GPU':
+          if 'gpu_priv' not in stats:
+            stats['gpu_priv'] = []
+            stats['gpu_priv'].append(int(mem_priv))
+          if 'gpu_shared' not in stats:
+            stats['gpu_shared'] = []
+            stats['gpu_shared'].append(int(mem_shared))
+        elif process['child_process_type'] == 'Tab':
+          # Sum the memory of all renderer processes.
+          total_renderer_priv += int(mem_priv)
+          total_renderer_shared += int(mem_shared)
+      if 'renderer_priv' not in stats:
+        stats['renderer_priv'] = []
+        stats['renderer_priv'].append(int(total_renderer_priv))
+      if 'renderer_shared' not in stats:
+        stats['renderer_shared'] = []
+        stats['renderer_shared'].append(int(total_renderer_shared))
+
+      time.sleep(1)
+
+    # Compute min, max, and ending values to return.
+    result = {}
+    for measurement_type in stats:
+      values = stats[measurement_type]
+      result[measurement_type] = {
+        'min': min(values),
+        'max': max(values),
+        'end': values[-1],
+      }
+
+    return result
+
+  def _RecordMemoryStats(self, description, when, duration):
+    """Outputs memory statistics to be graphed.
+
+    Args:
+      description: A string description for the test.  Should not contain
+          spaces.  For example, 'MemCtrl'.
+      when: A string description of when the memory stats are being recorded
+          during test execution (since memory stats may be recorded multiple
+          times during a test execution at certain "interesting" times).  Should
+          not contain spaces.
+      duration: The number of seconds to sample data before outputting the
+          memory statistics.
+    """
+    mem = self._GetMemoryStats(duration)
+    measurement_types = [
+      ('gem_obj', 'GemObj'),
+      ('gtt', 'GTT'),
+      ('mem_free', 'MemFree'),
+      ('mem_available', 'MemAvail'),
+      ('mem_shared', 'MemShare'),
+      ('mem_cached', 'MemCache'),
+      ('mem_anon', 'MemAnon'),
+      ('mem_file', 'MemFile'),
+      ('mem_slab', 'MemSlab'),
+      ('browser_priv', 'BrowPriv'),
+      ('browser_shared', 'BrowShar'),
+      ('gpu_priv', 'GpuPriv'),
+      ('gpu_shared', 'GpuShar'),
+      ('renderer_priv', 'RendPriv'),
+      ('renderer_shared', 'RendShar'),
+    ]
+    for type_key, type_string in measurement_types:
+      if type_key not in mem:
+        continue
+      self._OutputPerfGraphValue(
+          '%s-Min%s-%s' % (description, type_string, when),
+          mem[type_key]['min'], 'KB', '%s-%s' % (description, type_string))
+      self._OutputPerfGraphValue(
+          '%s-Max%s-%s' % (description, type_string, when),
+          mem[type_key]['max'], 'KB', '%s-%s' % (description, type_string))
+      self._OutputPerfGraphValue(
+          '%s-End%s-%s' % (description, type_string, when),
+          mem[type_key]['end'], 'KB', '%s-%s' % (description, type_string))
+
+  def _RunTest(self, tabs, description, duration):
+    """Runs a general memory test.
+
+    Args:
+      tabs: A list of strings representing the URLs of the websites to open
+          during this test.
+      description: A string description for the test.  Should not contain
+          spaces.  For example, 'MemCtrl'.
+      duration: The number of seconds to sample data before outputting memory
+          statistics.
+    """
+    self._RecordMemoryStats(description, '0Tabs0', duration)
+
+    for iteration_num in xrange(2):
+      for site in tabs:
+        self.AppendTab(pyauto.GURL(site))
+
+      self._RecordMemoryStats(description,
+                              '%dTabs%d' % (len(tabs), iteration_num + 1),
+                              duration)
+
+      for _ in xrange(len(tabs)):
+        self.GetBrowserWindow(0).GetTab(1).Close(True)
+
+      self._RecordMemoryStats(description, '0Tabs%d' % (iteration_num + 1),
+                              duration)
+
+  def testOpenCloseTabsControl(self):
+    """Measures memory usage when opening/closing tabs to about:blank."""
+    tabs = ['about:blank'] * 10
+    self._RunTest(tabs, 'MemCtrl', 15)
+
+  def testOpenCloseTabsLiveSites(self):
+    """Measures memory usage when opening/closing tabs to live sites."""
+    tabs = [
+      'http://www.google.com/gmail',
+      'http://www.google.com/calendar',
+      'http://www.google.com/plus',
+      'http://www.google.com/youtube',
+      'http://www.nytimes.com',
+      'http://www.cnn.com',
+      'http://www.facebook.com',
+      'http://www.techcrunch.com',
+      'http://www.theverge.com',
+      'http://www.yahoo.com',
+    ]
+    # Log in to a test Google account to make connections to the above Google
+    # websites more interesting.
+    self._LoginToGoogleAccount()
+    self._RunTest(tabs, 'MemLive', 20)
 
 
 class PerfTestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
