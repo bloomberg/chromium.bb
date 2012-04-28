@@ -142,12 +142,16 @@ void InstalledLoader::LoadAllExtensions() {
               GetCreationFlags(info),
               &error));
 
-      if (extension.get()) {
-        extensions_info->at(i)->extension_manifest.reset(
-            static_cast<DictionaryValue*>(
-                extension->manifest()->value()->DeepCopy()));
-        should_write_prefs = true;
+      if (!extension.get()) {
+        extension_service_->
+            ReportExtensionLoadError(info->extension_path, error, false);
+        continue;
       }
+
+      extensions_info->at(i)->extension_manifest.reset(
+          static_cast<DictionaryValue*>(
+              extension->manifest()->value()->DeepCopy()));
+      should_write_prefs = true;
     }
   }
 
