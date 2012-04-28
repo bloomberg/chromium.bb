@@ -12,6 +12,8 @@
 #include "ash/launcher/launcher_icon_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
 
@@ -21,6 +23,10 @@ class Window;
 
 namespace gfx {
 class Rect;
+}
+
+namespace views {
+class Widget;
 }
 
 namespace ash {
@@ -69,6 +75,8 @@ class ASH_EXPORT PanelLayoutManager : public aura::LayoutManager,
       aura::Window* window, const void* key, intptr_t old) OVERRIDE;
 
  private:
+  friend class PanelLayoutManagerTest;
+
   typedef std::list<aura::Window*> PanelList;
 
   // Called whenever the panel layout might change.
@@ -77,6 +85,21 @@ class ASH_EXPORT PanelLayoutManager : public aura::LayoutManager,
   // Called whenever the panel stacking order needs to be updated (e.g. focus
   // changes or a panel is moved).
   void UpdateStacking(aura::Window* active_panel);
+
+  // Trigger a delayed task to update the callout. We use this because
+  // otherwise, ShadowController::OnWindowPropertyChanged may be invoked after
+  // we've already updated the callout, causing the drop shadow to be stacked on
+  // top of the callout rather than the other way around.
+  // TODO(dcheng): Possibly a bug in the shadow controller. If a window is
+  // focused but not stacked at the top, I don't think its shadow should be
+  // drawn on top of "higher" windows.
+  void UpdateCallout(aura::Window* active_window);
+
+  // Don't call this directly. Only UpdateCallout() should call this method.
+  void ShowCalloutHelper(aura::Window* active_panel);
+
+  // For testing.
+  views::Widget* callout_widget() const { return callout_widget_.get(); }
 
   // Parent window associated with this layout manager.
   aura::Window* panel_container_;
@@ -91,6 +114,9 @@ class ASH_EXPORT PanelLayoutManager : public aura::LayoutManager,
   // The last active panel. Used to maintain stacking even if no panels are
   // currently focused.
   aura::Window* last_active_panel_;
+  // Manage the callout for the focused panel, if any.
+  scoped_ptr<views::Widget> callout_widget_;
+  base::WeakPtrFactory<PanelLayoutManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelLayoutManager);
 };
