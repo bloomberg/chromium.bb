@@ -462,15 +462,15 @@ void CollectPipeliningCapabilityStatsOnIOThread(
   if (trial) {
     return;
   }
-  // After April 21, 2012, the trial will disable itself.
+  // After May 4, 2012, the trial will disable itself.
   trial = base::FieldTrialList::FactoryGetFieldTrial(
-      kTrialName, kDivisor, "disable_test", 2012, 4, 21, NULL);
+      kTrialName, kDivisor, "disable_test", 2012, 5, 4, NULL);
 
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
     probability_to_run_test = 100;
   } else if (channel == chrome::VersionInfo::CHANNEL_DEV) {
-    probability_to_run_test = 10;
+    probability_to_run_test = 100;
   }
 
   int collect_stats_group = trial->AppendGroup("enable_test",
