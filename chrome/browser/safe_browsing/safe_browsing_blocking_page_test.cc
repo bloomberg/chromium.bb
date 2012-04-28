@@ -569,13 +569,9 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
       browser()->GetSelectedTabContentsWrapper()->web_contents()->GetURL());
 }
 
-#if defined(OS_WIN)
+// Crashy, http://crbug.com/99159.
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
                        DISABLED_MalwareIframeReportDetails) {
-#else
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
-                       MalwareIframeReportDetails) {
-#endif
   GURL url = test_server()->GetURL(kMalwarePage);
   GURL iframe_url = test_server()->GetURL(kMalwareIframe);
   AddURLResult(iframe_url, SafeBrowsingService::URL_MALWARE);
