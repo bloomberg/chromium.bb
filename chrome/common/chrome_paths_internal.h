@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,7 @@ void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result);
 // Get the path to the user's documents directory.
 bool GetUserDocumentsDirectory(FilePath* result);
 
-#if defined (OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // Gets the path to a safe default download directory for a user.
 bool GetUserDownloadsDirectorySafe(FilePath* result);
 #endif
