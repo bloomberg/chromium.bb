@@ -567,8 +567,6 @@
       '-extensions.ExtensionsTest.testAllowIncognitoExtension',
       # crbug.com/115646
       '-translate.TranslateTest.testSeveralLanguages',
-      # crbug.com/125062
-      '-about_plugins_ui.ChromeAboutPluginsUITest.testEnableAndDisableFlashPlugin',
     ],
 
     'mac': [

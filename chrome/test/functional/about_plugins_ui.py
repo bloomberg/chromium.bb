@@ -130,7 +130,7 @@ class ChromeAboutPluginsUITest(pyauto.PyUITest):
 
       # Verify internal flash is disabled.
       pyauto_utils.WaitForDomElement(self, internal_flash_elem,
-          './/ancestor::*[@class="plugin-file-disabled"]')
+          './/ancestor::*[@class="plugin-disabled"]')
       self.assertTrue(self.WaitUntil(lambda: not
           self._IsEnabled('Shockwave Flash')))
 
@@ -140,7 +140,7 @@ class ChromeAboutPluginsUITest(pyauto.PyUITest):
       internal_flash_enable_link.click()
       self.assertTrue(self.WaitUntil(lambda: len(
           internal_flash_elem.find_elements_by_xpath(
-          './/ancestor::*[@class="plugin-file-enabled"]')) == 1),
+          './/ancestor::*[@class="plugin-enabled"]')) > 0),
           msg='Failed to enable internal Flash plugin')
       self.assertTrue(self.WaitUntil(lambda:
           self._IsEnabled('Shockwave Flash')))
