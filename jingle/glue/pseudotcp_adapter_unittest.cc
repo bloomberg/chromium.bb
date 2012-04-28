@@ -181,8 +181,6 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
         read_errors_(0) {
   }
 
-  virtual ~TCPChannelTester() { }
-
   void Start() {
     message_loop_->PostTask(
         FROM_HERE, base::Bind(&TCPChannelTester::DoStart, this));
@@ -202,6 +200,8 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
   }
 
  protected:
+  virtual ~TCPChannelTester() {}
+
   void Done() {
     done_ = true;
     message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
@@ -286,6 +286,8 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
   }
 
  private:
+  friend class base::RefCountedThreadSafe<TCPChannelTester>;
+
   MessageLoop* message_loop_;
   net::Socket* host_socket_;
   net::Socket* client_socket_;

@@ -26,7 +26,6 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
                                public base::RefCounted<Core> {
  public:
   Core(net::Socket* socket);
-  virtual ~Core();
 
   // Functions used to implement net::StreamSocket.
   int Read(net::IOBuffer* buffer, int buffer_size,
@@ -57,6 +56,9 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
   void DeleteSocket();
 
  private:
+  friend class base::RefCounted<Core>;
+  virtual ~Core();
+
   // These are invoked by the underlying Socket, and may trigger callbacks.
   // They hold a reference to |this| while running, to protect from deletion.
   void OnRead(int result);
