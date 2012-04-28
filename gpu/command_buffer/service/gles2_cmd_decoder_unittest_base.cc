@@ -1255,6 +1255,86 @@ void GLES2DecoderTestBase::SetupShader(
   link_cmd.Init(program_client_id);
 
   EXPECT_EQ(error::kNoError, ExecuteCmd(link_cmd));
+
+  // Assume the next command will be UseProgram.
+  SetupExpectationsForClearingUniforms(uniforms, num_uniforms);
+}
+
+void GLES2DecoderTestBase::SetupExpectationsForClearingUniforms(
+    UniformInfo* uniforms, size_t num_uniforms) {
+  for (size_t ii = 0; ii < num_uniforms; ++ii) {
+    const UniformInfo& info = uniforms[ii];
+    switch (info.type) {
+    case GL_FLOAT:
+      EXPECT_CALL(*gl_, Uniform1fv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_FLOAT_VEC2:
+      EXPECT_CALL(*gl_, Uniform2fv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_FLOAT_VEC3:
+      EXPECT_CALL(*gl_, Uniform3fv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_FLOAT_VEC4:
+      EXPECT_CALL(*gl_, Uniform4fv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_INT:
+    case GL_BOOL:
+    case GL_SAMPLER_2D:
+    case GL_SAMPLER_CUBE:
+    case GL_SAMPLER_EXTERNAL_OES:
+      EXPECT_CALL(*gl_, Uniform1iv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_INT_VEC2:
+    case GL_BOOL_VEC2:
+      EXPECT_CALL(*gl_, Uniform2iv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_INT_VEC3:
+    case GL_BOOL_VEC3:
+      EXPECT_CALL(*gl_, Uniform3iv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_INT_VEC4:
+    case GL_BOOL_VEC4:
+      EXPECT_CALL(*gl_, Uniform4iv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_FLOAT_MAT2:
+      EXPECT_CALL(*gl_, UniformMatrix2fv(
+          info.real_location, info.size, false, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_FLOAT_MAT3:
+      EXPECT_CALL(*gl_, UniformMatrix3fv(
+          info.real_location, info.size, false, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_FLOAT_MAT4:
+      EXPECT_CALL(*gl_, UniformMatrix4fv(
+          info.real_location, info.size, false, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    default:
+      NOTREACHED();
+      break;
+    }
+  }
 }
 
 void GLES2DecoderTestBase::DoEnableVertexAttribArray(GLint index) {

@@ -144,7 +144,7 @@ class GPU_EXPORT ProgramManager {
     bool CanLink() const;
 
     // Performs glLinkProgram and related activities.
-    void Link();
+    bool Link();
 
     // Performs glValidateProgram and related activities.
     void Validate();
@@ -211,6 +211,9 @@ class GPU_EXPORT ProgramManager {
     // Updates the program log info from GL
     void UpdateLogInfo();
 
+    // Clears all the uniforms.
+    void ClearUniforms(std::vector<uint8>* zero_buffer);
+
     // If long attribate names are mapped during shader translation, call
     // glBindAttribLocation() again with the mapped names.
     // This is called right before the glLink() call, but after shaders are
@@ -272,6 +275,9 @@ class GPU_EXPORT ProgramManager {
     // This is true if glLinkProgram was successful last time it was called.
     bool link_status_;
 
+    // True if the uniforms have been cleared.
+    bool uniforms_cleared_;
+
     // Log info
     scoped_ptr<std::string> log_info_;
 
@@ -303,6 +309,9 @@ class GPU_EXPORT ProgramManager {
   // Makes a program as unused. If deleted the program info will be removed.
   void UnuseProgram(ShaderManager* shader_manager, ProgramInfo* info);
 
+  // Clears the uniforms for this program.
+  void ClearUniforms(ProgramInfo* info);
+
   // Returns true if prefix is invalid for gl.
   static bool IsInvalidPrefix(const char* name, size_t length);
 
@@ -328,6 +337,9 @@ class GPU_EXPORT ProgramManager {
   unsigned int program_info_count_;
 
   bool have_context_;
+
+  // Used to clear uniforms.
+  std::vector<uint8> zero_;
 
   void RemoveProgramInfoIfUnused(
       ShaderManager* shader_manager, ProgramInfo* info);

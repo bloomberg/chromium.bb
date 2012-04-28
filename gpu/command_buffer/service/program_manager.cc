@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
 namespace gpu {
@@ -58,7 +59,8 @@ ProgramManager::ProgramInfo::ProgramInfo(
       service_id_(service_id),
       deleted_(false),
       valid_(false),
-      link_status_(false) {
+      link_status_(false),
+      uniforms_cleared_(false) {
   manager_->StartTracking(this);
 }
 
@@ -88,10 +90,80 @@ void ProgramManager::ProgramInfo::UpdateLogInfo() {
   set_log_info(std::string(temp.get(), len).c_str());
 }
 
+void ProgramManager::ProgramInfo::ClearUniforms(
+    std::vector<uint8>* zero_buffer) {
+  DCHECK(zero_buffer);
+  if (uniforms_cleared_) {
+    return;
+  }
+  uniforms_cleared_ = true;
+  for (size_t ii = 0; ii < uniform_infos_.size(); ++ii) {
+    const UniformInfo& uniform_info = uniform_infos_[ii];
+    GLint location = uniform_info.element_locations[0];
+    GLsizei size = uniform_info.size;
+    uint32 unit_size =  GLES2Util::GetGLDataTypeSizeForUniforms(
+        uniform_info.type);
+    uint32 size_needed = size * unit_size;
+    if (size_needed > zero_buffer->size()) {
+      zero_buffer->resize(size_needed, 0u);
+    }
+    const void* zero = &(*zero_buffer)[0];
+    switch (uniform_info.type) {
+    case GL_FLOAT:
+      glUniform1fv(location, size, reinterpret_cast<const GLfloat*>(zero));
+      break;
+    case GL_FLOAT_VEC2:
+      glUniform2fv(location, size, reinterpret_cast<const GLfloat*>(zero));
+      break;
+    case GL_FLOAT_VEC3:
+      glUniform3fv(location, size, reinterpret_cast<const GLfloat*>(zero));
+      break;
+    case GL_FLOAT_VEC4:
+      glUniform4fv(location, size, reinterpret_cast<const GLfloat*>(zero));
+      break;
+    case GL_INT:
+    case GL_BOOL:
+    case GL_SAMPLER_2D:
+    case GL_SAMPLER_CUBE:
+    case GL_SAMPLER_EXTERNAL_OES:
+      glUniform1iv(location, size, reinterpret_cast<const GLint*>(zero));
+      break;
+    case GL_INT_VEC2:
+    case GL_BOOL_VEC2:
+      glUniform2iv(location, size, reinterpret_cast<const GLint*>(zero));
+      break;
+    case GL_INT_VEC3:
+    case GL_BOOL_VEC3:
+      glUniform3iv(location, size, reinterpret_cast<const GLint*>(zero));
+      break;
+    case GL_INT_VEC4:
+    case GL_BOOL_VEC4:
+      glUniform4iv(location, size, reinterpret_cast<const GLint*>(zero));
+      break;
+    case GL_FLOAT_MAT2:
+      glUniformMatrix2fv(
+          location, size, false, reinterpret_cast<const GLfloat*>(zero));
+      break;
+    case GL_FLOAT_MAT3:
+      glUniformMatrix3fv(
+          location, size, false, reinterpret_cast<const GLfloat*>(zero));
+      break;
+    case GL_FLOAT_MAT4:
+      glUniformMatrix4fv(
+          location, size, false, reinterpret_cast<const GLfloat*>(zero));
+      break;
+    default:
+      NOTREACHED();
+      break;
+    }
+  }
+}
+
 void ProgramManager::ProgramInfo::Update() {
   Reset();
   UpdateLogInfo();
   link_status_ = true;
+  uniforms_cleared_ = false;
   GLint num_attribs = 0;
   GLint max_len = 0;
   GLint max_location = -1;
@@ -177,25 +249,26 @@ void ProgramManager::ProgramInfo::ExecuteBindAttribLocationCalls() {
   }
 }
 
-void ProgramManager::ProgramInfo::Link() {
+bool ProgramManager::ProgramInfo::Link() {
   ClearLinkStatus();
   if (!CanLink()) {
     set_log_info("missing shaders");
-    return;
+    return false;
   }
   if (DetectAttribLocationBindingConflicts()) {
     set_log_info("glBindAttribLocation() conflicts");
-    return;
+    return false;
   }
   ExecuteBindAttribLocationCalls();
   glLinkProgram(service_id());
   GLint success = 0;
   glGetProgramiv(service_id(), GL_LINK_STATUS, &success);
-  if (success) {
+  if (success == GL_TRUE) {
     Update();
   } else {
     UpdateLogInfo();
   }
+  return success == GL_TRUE;
 }
 
 void ProgramManager::ProgramInfo::Validate() {
@@ -692,6 +765,7 @@ void ProgramManager::UseProgram(ProgramManager::ProgramInfo* info) {
   DCHECK(info);
   DCHECK(IsOwned(info));
   info->IncUseCount();
+  ClearUniforms(info);
 }
 
 void ProgramManager::UnuseProgram(
@@ -702,6 +776,11 @@ void ProgramManager::UnuseProgram(
   DCHECK(IsOwned(info));
   info->DecUseCount();
   RemoveProgramInfoIfUnused(shader_manager, info);
+}
+
+void ProgramManager::ClearUniforms(ProgramManager::ProgramInfo* info) {
+  DCHECK(info);
+  info->ClearUniforms(&zero_);
 }
 
 // Swizzles the locations to prevent developers from assuming they

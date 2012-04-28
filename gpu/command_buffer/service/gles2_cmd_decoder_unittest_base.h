@@ -176,6 +176,9 @@ class GLES2DecoderTestBase : public testing::Test {
       GLuint vertex_shader_client_id, GLuint vertex_shader_service_id,
       GLuint fragment_shader_client_id, GLuint fragment_shader_service_id);
 
+  void SetupExpectationsForClearingUniforms(
+      UniformInfo* uniforms, size_t num_uniforms);
+
   // Setups up a shader for testing glUniform.
   void SetupShaderForUniform();
   void SetupDefaultProgram();

@@ -4462,7 +4462,11 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
     return;
   }
 
-  info->Link();
+  if (info->Link()) {
+    if (info == current_program_.get()) {
+      program_manager()->ClearUniforms(info);
+    }
+  }
 };
 
 void GLES2DecoderImpl::DoTexParameterf(
@@ -4776,10 +4780,10 @@ void GLES2DecoderImpl::DoUseProgram(GLuint program) {
     program_manager()->UnuseProgram(shader_manager(), current_program_);
   }
   current_program_ = info;
+  glUseProgram(service_id);
   if (current_program_) {
     program_manager()->UseProgram(current_program_);
   }
-  glUseProgram(service_id);
 }
 
 GLenum GLES2DecoderImpl::GetGLError() {
