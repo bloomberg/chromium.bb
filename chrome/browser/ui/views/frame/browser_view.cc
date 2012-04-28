@@ -1309,6 +1309,9 @@ WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
       GetWidget()->GetNativeView()).size();
   return browser::DispositionForPopupBounds(
       bounds, window_size.width(), window_size.height());
+#elif defined(OS_WIN)
+  // If we are in windows metro-mode, we can't allow popup windows.
+  return (base::win::GetMetroModule() == NULL) ? NEW_POPUP : NEW_BACKGROUND_TAB;
 #else
   return NEW_POPUP;
 #endif
