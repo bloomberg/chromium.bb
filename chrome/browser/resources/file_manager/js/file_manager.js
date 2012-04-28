@@ -2539,8 +2539,6 @@ FileManager.prototype = {
    * Event handler called when some volume was mounted or unmouted.
    */
   FileManager.prototype.onMountCompleted_ = function(event) {
-    var self = this;
-
     var changeDirectoryTo = null;
 
     if (event && event.mountType == 'gdata') {
@@ -2579,21 +2577,21 @@ FileManager.prototype = {
     }
 
     chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
-      self.setMountPoints_(mountPoints);
+      this.setMountPoints_(mountPoints);
 
       if (event.eventType == 'mount') {
         // Mount request finished - remove it.
         // Currently we only request mounts for archive files.
-        var index = self.mountRequests_.indexOf(event.sourceUrl);
+        var index = this.mountRequests_.indexOf(event.sourceUrl);
         if (index != -1) {
-          self.mountRequests_.splice(index, 1);
+          this.mountRequests_.splice(index, 1);
           if (event.status == 'success') {
             // Successful mount requested from this tab, go to the drive root.
             changeDirectoryTo = event.mountPath;
           } else {
             // Request initiated from this tab failed, report the error.
             var fileName = event.sourceUrl.split('/').pop();
-            self.alert.show(
+            this.alert.show(
                 strf('ARCHIVE_MOUNT_FAILED', fileName, event.status));
           }
         }
@@ -2601,16 +2599,16 @@ FileManager.prototype = {
 
       if (event.eventType == 'unmount') {
         // Unmount request finished - remove it.
-        var index = self.unmountRequests_.indexOf(event.mountPath);
+        var index = this.unmountRequests_.indexOf(event.mountPath);
         if (index != -1) {
-          self.unmountRequests_.splice(index, 1);
+          this.unmountRequests_.splice(index, 1);
           if (event.status != 'success')
-            self.alert.show(strf('UNMOUNT_FAILED', event.status));
+            this.alert.show(strf('UNMOUNT_FAILED', event.status));
         }
 
         if (event.status == 'success' &&
-            event.mountPath == self.directoryModel_.getCurrentRootPath()) {
-          if (self.params_.mountTriggered && index == -1) {
+            event.mountPath == this.directoryModel_.getCurrentRootPath()) {
+          if (this.params_.mountTriggered && index == -1) {
             // This device mount was the reason this File Manager instance was
             // created. Now the device is unmounted from another instance
             // or the user removed the device manually. Close this instance.
@@ -2628,12 +2626,12 @@ FileManager.prototype = {
       // Even if something failed root list should be rescanned.
       // Failed mounts can "give" us new devices which might be formatted,
       // so we have to refresh root list then.
-      self.directoryModel_.updateRoots(function() {
+      this.directoryModel_.updateRoots(function() {
         if (changeDirectoryTo) {
-          self.directoryModel_.changeDirectory(changeDirectoryTo);
+          this.directoryModel_.changeDirectory(changeDirectoryTo);
         }
-      }, self.gdataMounted_);
-    });
+      }.bind(this), this.gdataMounted_);
+    }.bind(this));
   };
 
   /**
