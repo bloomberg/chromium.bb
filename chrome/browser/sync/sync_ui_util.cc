@@ -636,16 +636,16 @@ void ConstructAboutInformation(ProfileSyncService* service,
                                    full_status.nonempty_get_updates);
     sync_ui_util::AddIntSyncDetail(counters,
                                    "Cycles Without Commits",
-                                   full_status.sync_cycles_with_commits);
-    sync_ui_util::AddIntSyncDetail(counters,
-                                   "Cycles With Commits",
                                    full_status.sync_cycles_without_commits);
     sync_ui_util::AddIntSyncDetail(counters,
+                                   "Cycles With Commits",
+                                   full_status.sync_cycles_with_commits);
+    sync_ui_util::AddIntSyncDetail(counters,
                                    "Cycles Without Commits or Updates",
-                                   full_status.useful_sync_cycles);
+                                   full_status.useless_sync_cycles);
     sync_ui_util::AddIntSyncDetail(counters,
                                    "Cycles With Commit or Update",
-                                   full_status.useless_sync_cycles);
+                                   full_status.useful_sync_cycles);
 
     sync_ui_util::AddIntSyncDetail(counters,
                                    "Updates Downloaded",
