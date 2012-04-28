@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "media/base/demuxer.h"
-#include "media/base/filter_host.h"
 #include "media/base/filters.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
@@ -107,7 +106,7 @@ void RTCVideoDecoder::Flush(const base::Closure& callback) {
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::CreateBlackFrame(visible_size_.width(),
                                             visible_size_.height());
-    read_cb.Run(video_frame);
+    read_cb.Run(kOk, video_frame);
   }
 
   VideoDecoder::Flush(callback);
@@ -161,13 +160,6 @@ const gfx::Size& RTCVideoDecoder::natural_size() {
 
 bool RTCVideoDecoder::SetSize(int width, int height, int reserved) {
   visible_size_.SetSize(width, height);
-
-  // TODO(vrk): Provide natural size when aspect ratio support is implemented.
-
-  // TODO(xhwang) host() can be NULL after r128289.  Remove this check when
-  // it is no longer needed.
-  if (host())
-    host()->SetNaturalVideoSize(visible_size_);
   return true;
 }
 
@@ -224,6 +216,6 @@ bool RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
   CopyUPlane(frame->GetUPlane(), frame->GetUPitch(), uv_rows, video_frame);
   CopyVPlane(frame->GetVPlane(), frame->GetVPitch(), uv_rows, video_frame);
 
-  read_cb.Run(video_frame);
+  read_cb.Run(kOk, video_frame);
   return true;
 }

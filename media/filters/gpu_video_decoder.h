@@ -208,6 +208,9 @@ class MEDIA_EXPORT GpuVideoDecoder
   // this class not require the render thread's loop to be processing.
   bool shutting_down_;
 
+  // Indicates decoding error occurred.
+  bool error_occured_;
+
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecoder);
 };
 

@@ -53,7 +53,8 @@ GpuVideoDecoder::GpuVideoDecoder(
       decoder_texture_target_(0),
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0),
-      shutting_down_(false) {
+      shutting_down_(false),
+      error_occured_(false) {
   DCHECK(gvd_loop_proxy_ && factories_);
 }
 
@@ -192,8 +193,13 @@ void GpuVideoDecoder::Read(const ReadCB& read_cb) {
     return;
   }
 
+  if (error_occured_) {
+    read_cb.Run(kDecodeError, NULL);
+    return;
+  }
+
   if (!vda_) {
-    read_cb.Run(VideoFrame::CreateEmptyFrame());
+    read_cb.Run(kOk, VideoFrame::CreateEmptyFrame());
     return;
   }
 
@@ -233,7 +239,7 @@ void GpuVideoDecoder::RequestBufferDecode(const scoped_refptr<Buffer>& buffer) {
       return;
 
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        pending_read_cb_, scoped_refptr<VideoFrame>()));
+        pending_read_cb_, kOk, scoped_refptr<VideoFrame>()));
     pending_read_cb_.Reset();
     return;
   }
@@ -415,7 +421,7 @@ void GpuVideoDecoder::EnqueueFrameAndTriggerFrameDelivery(
     return;
 
   gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-      pending_read_cb_, ready_video_frames_.front()));
+      pending_read_cb_, kOk, ready_video_frames_.front()));
   pending_read_cb_.Reset();
   ready_video_frames_.pop_front();
 }
@@ -536,8 +542,13 @@ void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
     return;
   vda_ = NULL;
   DLOG(ERROR) << "VDA Error: " << error;
-  if (host())
-    host()->SetError(PIPELINE_ERROR_DECODE);
+
+  error_occured_ = true;
+
+  if (!pending_read_cb_.is_null()) {
+    base::ResetAndReturn(&pending_read_cb_).Run(kDecodeError, NULL);
+    return;
+  }
 }
 
 }  // namespace media

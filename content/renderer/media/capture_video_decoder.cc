@@ -279,7 +279,5 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
 void CaptureVideoDecoder::DeliverFrame(
     const scoped_refptr<media::VideoFrame>& video_frame) {
   // Reset the callback before running to protect against reentrancy.
-  ReadCB read_cb = read_cb_;
-  read_cb_.Reset();
-  read_cb.Run(video_frame);
+  base::ResetAndReturn(&read_cb_).Run(kOk, video_frame);
 }

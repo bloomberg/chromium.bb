@@ -109,6 +109,13 @@ class MEDIA_EXPORT Filter : public base::RefCountedThreadSafe<Filter> {
 
 class MEDIA_EXPORT VideoDecoder : public Filter {
  public:
+  // Status codes for read operations on VideoDecoder.
+  enum DecoderStatus {
+    kOk,  // Everything went as planned.
+    kDecodeError,  // Decoding error happened.
+    kDecryptError  // Decrypting error happened.
+  };
+
   // Initialize a VideoDecoder with the given DemuxerStream, executing the
   // callback upon completion.
   // statistics_cb is used to update global pipeline statistics.
@@ -116,16 +123,21 @@ class MEDIA_EXPORT VideoDecoder : public Filter {
                           const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb) = 0;
 
-  // Request a frame to be decoded and returned via the provided callback.
-  // Only one read may be in flight at any given time.
+  // Requests a frame to be decoded. The status of the decoder and decoded frame
+  // are returned via the provided callback. Only one read may be in flight at
+  // any given time.
   //
   // Implementations guarantee that the callback will not be called from within
   // this method.
   //
-  // Non-NULL frames contain decoded video data or may indicate the  end of
-  // the stream. NULL video frames indicate an aborted read. This can happen if
-  // the DemuxerStream gets flushed and doesn't have any more data to return.
-  typedef base::Callback<void(scoped_refptr<VideoFrame>)> ReadCB;
+  // If the returned status is not kOk, some error has occurred in the video
+  // decoder. In this case, the returned frame should always be NULL.
+  //
+  // Otherwise, the video decoder is in good shape. In this case, Non-NULL
+  // frames contain decoded video data or may indicate the end of the stream.
+  // NULL video frames indicate an aborted read. This can happen if the
+  // DemuxerStream gets flushed and doesn't have any more data to return.
+  typedef base::Callback<void(DecoderStatus, scoped_refptr<VideoFrame>)> ReadCB;
   virtual void Read(const ReadCB& read_cb) = 0;
 
   // Returns the natural width and height of decoded video in pixels.
@@ -158,11 +170,12 @@ class MEDIA_EXPORT VideoDecoder : public Filter {
   // These functions will be removed later. Declare here to make sure they are
   // not called from VideoDecoder interface anymore.
   // TODO(xhwang): Remove them when VideoDecoder is not a Filter any more.
-  // See bug: crbug.com/108340
+  // See bug: http://crbug.com/108340
   virtual void Play(const base::Closure& callback) OVERRIDE;
   virtual void Pause(const base::Closure& callback) OVERRIDE;
   virtual void Seek(base::TimeDelta time,
                     const PipelineStatusCB& callback) OVERRIDE;
+  virtual FilterHost* host() OVERRIDE;
 };
 
 class MEDIA_EXPORT VideoRenderer : public Filter {

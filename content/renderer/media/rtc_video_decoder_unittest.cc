@@ -14,7 +14,6 @@
 #include "media/base/filters.h"
 #include "media/base/limits.h"
 #include "media/base/mock_callback.h"
-#include "media/base/mock_filter_host.h"
 #include "media/base/mock_filters.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +31,6 @@ using ::testing::WithArg;
 using ::testing::Invoke;
 using media::MockStatisticsCB;
 using media::MockVideoRenderer;
-using media::MockFilterHost;
 using media::NewExpectedClosure;
 using media::NewExpectedStatusCB;
 using media::PipelineStatistics;
@@ -43,8 +41,8 @@ namespace {
 
 class NullVideoFrame : public cricket::VideoFrame {
  public:
-  NullVideoFrame() {};
-  virtual ~NullVideoFrame() {};
+  NullVideoFrame() {}
+  virtual ~NullVideoFrame() {}
 
   virtual bool Reset(uint32 fourcc, int w, int h, int dw, int dh,
                      uint8 *sample, size_t sample_size,
@@ -135,9 +133,6 @@ class RTCVideoDecoderTest : public testing::Test {
 
     DCHECK(decoder_);
 
-    // Inject mocks and prepare a demuxer stream.
-    decoder_->set_host(&host_);
-
     EXPECT_CALL(stats_callback_object_, OnStatistics(_))
         .Times(AnyNumber());
   }
@@ -159,13 +154,13 @@ class RTCVideoDecoderTest : public testing::Test {
                       base::Unretained(&stats_callback_object_));
   }
 
-  MOCK_METHOD1(FrameReady, void(scoped_refptr<media::VideoFrame>));
+  MOCK_METHOD2(FrameReady, void(media::VideoDecoder::DecoderStatus status,
+                                scoped_refptr<media::VideoFrame>));
 
   // Fixture members.
   scoped_refptr<RTCVideoDecoder> decoder_;
   scoped_refptr<MockVideoRenderer> renderer_;
   MockStatisticsCB stats_callback_object_;
-  StrictMock<MockFilterHost> host_;
   MessageLoop message_loop_;
   media::VideoDecoder::ReadCB read_cb_;
 
@@ -204,7 +199,7 @@ TEST_F(RTCVideoDecoderTest, DoFlush) {
 
   InitializeDecoderSuccessfully();
 
-  EXPECT_CALL(*this, FrameReady(_));
+  EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk, _));
   decoder_->Read(read_cb_);
   decoder_->Pause(media::NewExpectedClosure());
   decoder_->Flush(media::NewExpectedClosure());
@@ -215,7 +210,6 @@ TEST_F(RTCVideoDecoderTest, DoFlush) {
 
 TEST_F(RTCVideoDecoderTest, DoRenderFrame) {
   const base::TimeDelta kZero;
-  EXPECT_CALL(host_, GetTime()).WillRepeatedly(Return(base::TimeDelta()));
 
   InitializeDecoderSuccessfully();
 
@@ -236,9 +230,6 @@ TEST_F(RTCVideoDecoderTest, DoSetSize) {
   int new_height = kHeight * 2;
   gfx::Size new_natural_size(new_width, new_height);
   int new_reserved = 0;
-
-  EXPECT_CALL(host_,
-              SetNaturalVideoSize(new_natural_size)).WillRepeatedly(Return());
 
   decoder_->SetSize(new_width, new_height, new_reserved);
 

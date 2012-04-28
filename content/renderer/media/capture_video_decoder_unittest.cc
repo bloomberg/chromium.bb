@@ -9,7 +9,6 @@
 #include "media/base/filters.h"
 #include "media/base/limits.h"
 #include "media/base/mock_callback.h"
-#include "media/base/mock_filter_host.h"
 #include "media/base/mock_filters.h"
 #include "media/base/pipeline_status.h"
 #include "media/video/capture/video_capture_types.h"
@@ -98,7 +97,6 @@ class CaptureVideoDecoderTest : public ::testing::Test {
 
     decoder_ = new CaptureVideoDecoder(message_loop_proxy_,
                                        kVideoStreamId, vc_manager_, capability);
-    decoder_->set_host(&host_);
     EXPECT_CALL(statistics_cb_object_, OnStatistics(_))
         .Times(AnyNumber());
 
@@ -120,7 +118,7 @@ class CaptureVideoDecoderTest : public ::testing::Test {
 
   void Initialize() {
     // Issue a read.
-    EXPECT_CALL(*this, FrameReady(_));
+    EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk, _));
     decoder_->Read(read_cb_);
 
     EXPECT_CALL(*vc_manager_, AddDevice(_, _))
@@ -148,7 +146,7 @@ class CaptureVideoDecoderTest : public ::testing::Test {
 
   void Flush() {
     // Issue a read.
-    EXPECT_CALL(*this, FrameReady(_));
+    EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk, _));
     decoder_->Read(read_cb_);
 
     decoder_->Pause(media::NewExpectedClosure());
@@ -170,14 +168,14 @@ class CaptureVideoDecoderTest : public ::testing::Test {
     return static_cast<media::VideoCapture::EventHandler*>(decoder_);
   }
 
-  MOCK_METHOD1(FrameReady, void(scoped_refptr<media::VideoFrame>));
+  MOCK_METHOD2(FrameReady, void(media::VideoDecoder::DecoderStatus status,
+                                scoped_refptr<media::VideoFrame>));
 
   // Fixture members.
   scoped_refptr<CaptureVideoDecoder> decoder_;
   scoped_refptr<MockVideoCaptureImplManager> vc_manager_;
   scoped_ptr<MockVideoCaptureImpl> vc_impl_;
   media::MockStatisticsCB statistics_cb_object_;
-  StrictMock<media::MockFilterHost> host_;
   scoped_ptr<MessageLoop> message_loop_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   media::VideoDecoder::ReadCB read_cb_;
