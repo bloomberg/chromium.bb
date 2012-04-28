@@ -571,7 +571,8 @@ bool PanelBrowserFrameView::OnMouseDragged(const views::MouseEvent& event) {
 }
 
 void PanelBrowserFrameView::OnMouseReleased(const views::MouseEvent& event) {
-  if (panel_browser_view_->OnTitlebarMouseReleased())
+  if (panel_browser_view_->OnTitlebarMouseReleased(
+          event.IsControlDown() ? panel::APPLY_TO_ALL : panel::NO_MODIFIER))
     return;
   BrowserNonClientFrameView::OnMouseReleased(event);
 }
@@ -584,12 +585,16 @@ void PanelBrowserFrameView::OnMouseCaptureLost() {
 
 void PanelBrowserFrameView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
-  if (sender == close_button_)
+  if (sender == close_button_) {
     frame()->Close();
-  else if (sender == minimize_button_)
-    panel_browser_view_->panel()->Minimize();
-  else if (sender == restore_button_)
-    panel_browser_view_->panel()->Restore();
+  } else {
+    panel::ClickModifier modifier =
+        event.IsControlDown() ? panel::APPLY_TO_ALL : panel::NO_MODIFIER;
+    if (sender == minimize_button_)
+      panel_browser_view_->panel()->OnMinimizeButtonClicked(modifier);
+    else if (sender == restore_button_)
+      panel_browser_view_->panel()->OnRestoreButtonClicked(modifier);
+  }
 }
 
 bool PanelBrowserFrameView::ShouldTabIconViewAnimate() const {

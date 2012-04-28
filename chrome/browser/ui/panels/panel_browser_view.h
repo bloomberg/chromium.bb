@@ -40,7 +40,7 @@ class PanelBrowserView : public BrowserView,
   // |mouse_location| is in screen coordinates.
   bool OnTitlebarMousePressed(const gfx::Point& mouse_location);
   bool OnTitlebarMouseDragged(const gfx::Point& mouse_location);
-  bool OnTitlebarMouseReleased();
+  bool OnTitlebarMouseReleased(panel::ClickModifier modifier);
   bool OnTitlebarMouseCaptureLost();
 
  private:

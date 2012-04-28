@@ -23,10 +23,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-#include "base/win/win_util.h"  // for IsCtrlPressed()
-#endif
-
 using content::WebContents;
 
 NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel,
@@ -475,7 +471,7 @@ bool PanelBrowserView::OnTitlebarMouseDragged(
   return true;
 }
 
-bool PanelBrowserView::OnTitlebarMouseReleased() {
+bool PanelBrowserView::OnTitlebarMouseReleased(panel::ClickModifier modifier) {
   if (mouse_dragging_state_ != NO_DRAGGING) {
     // Ensure dragging a minimized panel does not leave it activated.
     // Windows activates a panel on mouse-down, regardless of our attempts
@@ -500,16 +496,7 @@ bool PanelBrowserView::OnTitlebarMouseReleased() {
       return true;
   }
 
-  panel::ClickModifier click_modifier = panel::NO_MODIFIER;
-#if defined(OS_WIN) && !defined(USE_AURA)
-  if (base::win::IsCtrlPressed()) {
-    click_modifier = panel::APPLY_TO_ALL;
-  }
-#else
-  // Proceed without modifier.
-#endif
-
-  panel_->OnTitlebarClicked(click_modifier);
+  panel_->OnTitlebarClicked(modifier);
   return true;
 }
 
@@ -615,44 +602,12 @@ NativePanelTestingWin::NativePanelTestingWin(
 
 void NativePanelTestingWin::PressLeftMouseButtonTitlebar(
     const gfx::Point& mouse_location, panel::ClickModifier modifier) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  if (modifier == panel::APPLY_TO_ALL) {
-    BYTE keyState[256];
-    ::GetKeyboardState(keyState);
-    BYTE newKeyState[256];
-    memcpy(newKeyState, keyState, sizeof(keyState));
-    newKeyState[VK_CONTROL] = 0x80;
-    ::SetKeyboardState(newKeyState);
-    panel_browser_view_->OnTitlebarMousePressed(mouse_location);
-    ::SetKeyboardState(keyState);  // restore to original
-    return;
-  }
-#else
-  // Cannot test with modifier. Proceed without it.
-#endif
-
   panel_browser_view_->OnTitlebarMousePressed(mouse_location);
 }
 
 void NativePanelTestingWin::ReleaseMouseButtonTitlebar(
     panel::ClickModifier modifier) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  if (modifier == panel::APPLY_TO_ALL) {
-    BYTE keyState[256];
-    ::GetKeyboardState(keyState);
-    BYTE newKeyState[256];
-    memcpy(newKeyState, keyState, sizeof(keyState));
-    newKeyState[VK_CONTROL] = 0x80;
-    ::SetKeyboardState(newKeyState);
-    panel_browser_view_->OnTitlebarMouseReleased();
-    ::SetKeyboardState(keyState);  // restore to original
-    return;
-  }
-#else
-  // Cannot test with modifier. Proceed without it.
-#endif
-
-  panel_browser_view_->OnTitlebarMouseReleased();
+  panel_browser_view_->OnTitlebarMouseReleased(modifier);
 }
 
 void NativePanelTestingWin::DragTitlebar(const gfx::Point& mouse_location) {
@@ -664,7 +619,7 @@ void NativePanelTestingWin::CancelDragTitlebar() {
 }
 
 void NativePanelTestingWin::FinishDragTitlebar() {
-  panel_browser_view_->OnTitlebarMouseReleased();
+  panel_browser_view_->OnTitlebarMouseReleased(panel::NO_MODIFIER);
 }
 
 bool NativePanelTestingWin::VerifyDrawingAttention() const {

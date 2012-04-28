@@ -243,7 +243,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
     EXPECT_TRUE(panel_manager->ShouldBringUpTitlebars(
         0, 0));
-    browser_view1->OnTitlebarMouseReleased();
+    browser_view1->OnTitlebarMouseReleased(panel::NO_MODIFIER);
 
     ClosePanelAndWaitForNotification(panel1);
     ClosePanelAndWaitForNotification(panel2);
