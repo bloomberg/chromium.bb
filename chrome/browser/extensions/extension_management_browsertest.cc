@@ -222,7 +222,11 @@ class NotificationListener : public content::NotificationObserver {
 // Fails consistently on Windows XP, see: http://crbug.com/120640.
 #define MAYBE_AutoUpdate DISABLED_AutoUpdate
 #else
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_AutoUpdate DISABLED_AutoUpdate
+#else
 #define MAYBE_AutoUpdate AutoUpdate
+#endif
 #endif
 
 // Tests extension autoupdate.
