@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -9,8 +9,9 @@
 #include <string.h>
 
 #include "native_client/src/untrusted/irt/irt.h"
+#include "native_client/tests/inbrowser_test_runner/test_runner.h"
 
-int main(void) {
+int TestMain(void) {
   struct nacl_irt_random random_interface;
 
   if (nacl_interface_query(
@@ -83,4 +84,8 @@ int main(void) {
   }
 
   return result;
+}
+
+int main(void) {
+  return RunTests(TestMain);
 }

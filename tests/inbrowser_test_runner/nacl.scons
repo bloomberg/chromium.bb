@@ -14,10 +14,11 @@ env.ComponentLibrary('testrunner_browser', ['test_runner_ppapi.c'])
 dest_copy = env.Replicate('$STAGING_DIR', 'test_runner.html')
 env.Replicate('$STAGING_DIR',
               '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js')
-exe_list = []
 
-
-exe_list.append('imc_shm_mmap_test')
+exe_list = [
+    'imc_shm_mmap_test',
+    'random_test',
+    ]
 
 # These conditionals mirror conditionals in
 # dynamic_code_loading/nacl.scons.  The dyncode tests don't work with
