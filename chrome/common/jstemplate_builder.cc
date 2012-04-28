@@ -117,15 +117,20 @@ void AppendI18nTemplateSourceHtml(std::string* output) {
   // fetch and cache the pointer of the jstemplate resource source text.
   static const base::StringPiece i18n_template_src(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          g_version2 ? IDR_I18N_TEMPLATE2_JS : IDR_I18N_TEMPLATE_JS));
+          IDR_I18N_TEMPLATE_JS));
+  static const base::StringPiece i18n_template2_src(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_I18N_TEMPLATE2_JS));
+  const base::StringPiece* template_src = g_version2 ?
+      &i18n_template2_src : &i18n_template_src;
 
-  if (i18n_template_src.empty()) {
+  if (template_src->empty()) {
     NOTREACHED() << "Unable to get i18n template src";
     return;
   }
 
   output->append("<script>");
-  output->append(i18n_template_src.data(), i18n_template_src.size());
+  output->append(template_src->data(), template_src->size());
   output->append("</script>");
 }
 
