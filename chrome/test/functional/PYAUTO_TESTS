@@ -503,32 +503,13 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # This test fails due to crbug.com/35485
-      '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
-      # This test fails due to crbug.com/50706
-      '-translate.TranslateTest.testToggleTranslateOption',
-      # crbug.com/85601
-      '-translate.TranslateTest.testAlwaysTranslateInIncognito',
-      # This test fails due to crbug.com/85633
-      '-translate.TranslateTest.testSessionRestore',
       # The source is behind.  Waiting for dev to automate the update.
       '-nacl_sdk.NaClSDKTest.testVerifyNaClSDKChecksum',
       # crbug.com/98681
       '-nacl_sdk.NaClSDKTest.testNaClSDK',
       '-nacl_sdk.NaClSDKTest.testVerifyPrereleaseGallery',
-      # crbug.com/109148
-      '-extensions.ExtensionsTest.testTriggerBrowserAction',
-      '-extensions.ExtensionsTest.testTriggerPageAction',
-      '-extensions.ExtensionsTest.testTriggerPageActionWithPopup',
       # crbug.com/109160
       '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
-      # crbug.com/119605
-      '-protector.ProtectorPreferencesTest.testPreferencesBackupInvalid',
-      '-protector.ProtectorPreferencesTest.testPreferencesBackupInvalidChangeDismissedOnEdit',
-      # crbug.com/123899
-      '-protector.ProtectorHomepageTest.testDetectHomepageChangeAndApply',
-      '-protector.ProtectorHomepageTest.testDetectHomepageChangeAndDiscard',
-      '-protector.ProtectorHomepageTest.testDetectHomepageChangeWhenButtonNotShown',
     ],
 
     'win': [
@@ -565,8 +546,6 @@
       # ===========================
       # Consistently failing on Mac QA bots only: crbug.com/97810
       '-process_count',
-      # crbug.com/115646
-      '-translate.TranslateTest.testSeveralLanguages',
     ],
 
     'linux': [
