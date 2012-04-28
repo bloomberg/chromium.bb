@@ -530,8 +530,8 @@ class PolicyTest(policy_base.PolicyTestBase):
                                     False))
     self.SetOmniboxText('deli')
     self.WaitUntilOmniboxQueryDone()
-    self.OmniboxAcceptInput()
-    self.assertFalse('search.my.company' in self.GetActiveTabURL().spec())
+    self.assertRaises(pyauto.JSONInterfaceError,
+                      lambda: self.OmniboxAcceptInput())
 
   # Needed for extension tests
   _GOOD_CRX_ID = 'ldnnhddmnhbkjipkidpdiheffobcpfmf'
