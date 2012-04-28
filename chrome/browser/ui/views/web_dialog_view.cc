@@ -44,10 +44,6 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
   return widget->GetNativeWindow();
 }
 
-void CloseWebDialog(gfx::NativeWindow window) {
-  views::Widget::GetWidgetForNativeWindow(window)->Close();
-}
-
 }  // namespace browser
 
 ////////////////////////////////////////////////////////////////////////////////

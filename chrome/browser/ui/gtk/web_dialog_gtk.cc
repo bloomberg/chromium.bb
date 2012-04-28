@@ -30,15 +30,9 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 Profile* profile,
                                 Browser* browser,
                                 WebDialogDelegate* delegate) {
-  // Ignore style for now. The style parameter only used in the implementation
-  // in web_dialog_view.cc file.
   WebDialogGtk* web_dialog =
       new WebDialogGtk(profile, browser, delegate, parent);
   return web_dialog->InitDialog();
-}
-
-void CloseWebDialog(gfx::NativeWindow window) {
-  gtk_dialog_response(GTK_DIALOG(window), GTK_RESPONSE_CLOSE);
 }
 
 } // namespace browser
