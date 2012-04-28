@@ -15,15 +15,6 @@
 
 namespace {
 
-// These are predefined values (in bytes) for
-// GpuMemoryAllocation::gpuResourceSizeInBytes.  Currently, the value is only
-// used to check if it is 0 or non-0.  In the future, these values will not
-// come from constants, but rather will be distributed dynamically.
-enum {
-  kResourceSizeNonHibernatedTab = 1,
-  kResourceSizeHibernatedTab = 0
-};
-
 bool IsInSameContextShareGroupAsAnyOf(
     const GpuCommandBufferStubBase* stub,
     const std::vector<GpuCommandBufferStubBase*>& stubs) {
@@ -33,6 +24,14 @@ bool IsInSameContextShareGroupAsAnyOf(
       return true;
   }
   return false;
+}
+
+void AssignMemoryAllocations(std::vector<GpuCommandBufferStubBase*>& stubs,
+    GpuMemoryAllocation allocation) {
+  for (std::vector<GpuCommandBufferStubBase*>::iterator it = stubs.begin();
+      it != stubs.end(); ++it) {
+    (*it)->SetMemoryAllocation(allocation);
+  }
 }
 
 }
@@ -100,14 +99,6 @@ void GpuMemoryManager::ScheduleManage() {
 //  1. Find the most visible context-with-a-surface within each
 //     context-without-a-surface's share group, and inherit its visibilty.
 void GpuMemoryManager::Manage() {
-  // Set up three allocation values for the three possible stub states
-  const GpuMemoryAllocation all_buffers_allocation(
-      kResourceSizeNonHibernatedTab, true, true);
-  const GpuMemoryAllocation front_buffers_allocation(
-      kResourceSizeNonHibernatedTab, false, true);
-  const GpuMemoryAllocation no_buffers_allocation(
-      kResourceSizeHibernatedTab, false, false);
-
   manage_scheduled_ = false;
 
   // Create stub lists by separating out the two types received from client
@@ -120,6 +111,8 @@ void GpuMemoryManager::Manage() {
     for (std::vector<GpuCommandBufferStubBase*>::iterator it = stubs.begin();
         it != stubs.end(); ++it) {
       GpuCommandBufferStubBase* stub = *it;
+      if (!stub->client_has_memory_allocation_changed_callback())
+        continue;
       if (stub->has_surface_state())
         stubs_with_surface.push_back(stub);
       else
@@ -136,37 +129,73 @@ void GpuMemoryManager::Manage() {
          stubs_with_surface.end());
 
   // Separate stubs into memory allocation sets.
-  std::vector<GpuCommandBufferStubBase*> all_buffers, front_buffers, no_buffers;
+  std::vector<GpuCommandBufferStubBase*> stubs_with_surface_foreground,
+                                         stubs_with_surface_background,
+                                         stubs_with_surface_hibernated,
+                                         stubs_without_surface_foreground,
+                                         stubs_without_surface_background,
+                                         stubs_without_surface_hibernated;
 
   for (size_t i = 0; i < stubs_with_surface.size(); ++i) {
     GpuCommandBufferStubBase* stub = stubs_with_surface[i];
     DCHECK(stub->has_surface_state());
-    if (stub->surface_state().visible) {
-      all_buffers.push_back(stub);
-      stub->SetMemoryAllocation(all_buffers_allocation);
-    } else if (i < max_surfaces_with_frontbuffer_soft_limit_) {
-      front_buffers.push_back(stub);
-      stub->SetMemoryAllocation(front_buffers_allocation);
-    } else {
-      no_buffers.push_back(stub);
-      stub->SetMemoryAllocation(no_buffers_allocation);
-    }
+    if (stub->surface_state().visible)
+      stubs_with_surface_foreground.push_back(stub);
+    else if (i < max_surfaces_with_frontbuffer_soft_limit_)
+      stubs_with_surface_background.push_back(stub);
+    else
+      stubs_with_surface_hibernated.push_back(stub);
   }
-
-  // Now, go through the stubs without surfaces and deduce visibility using the
-  // visibility of stubs which are in the same context share group.
   for (std::vector<GpuCommandBufferStubBase*>::const_iterator it =
       stubs_without_surface.begin(); it != stubs_without_surface.end(); ++it) {
     GpuCommandBufferStubBase* stub = *it;
     DCHECK(!stub->has_surface_state());
-    if (IsInSameContextShareGroupAsAnyOf(stub, all_buffers)) {
-      stub->SetMemoryAllocation(all_buffers_allocation);
-    } else if (IsInSameContextShareGroupAsAnyOf(stub, front_buffers)) {
-      stub->SetMemoryAllocation(front_buffers_allocation);
-    } else {
-      stub->SetMemoryAllocation(no_buffers_allocation);
-    }
+
+    // Stubs without surfaces have deduced allocation state using the state
+    // of surface stubs which are in the same context share group.
+    if (IsInSameContextShareGroupAsAnyOf(stub, stubs_with_surface_foreground))
+      stubs_without_surface_foreground.push_back(stub);
+    else if (IsInSameContextShareGroupAsAnyOf(
+        stub, stubs_with_surface_background))
+      stubs_without_surface_background.push_back(stub);
+    else
+      stubs_without_surface_hibernated.push_back(stub);
   }
+
+  // Calculate memory allocation size in bytes given to each stub, by sharing
+  // global limit equally among those that need it.
+  size_t num_stubs_need_mem = stubs_with_surface_foreground.size() +
+                              stubs_without_surface_foreground.size() +
+                              stubs_without_surface_background.size();
+  size_t base_allocation_size = kMinimumAllocationForTab * num_stubs_need_mem;
+  size_t bonus_allocation = 0;
+  if (base_allocation_size < kMaximumAllocationForTabs &&
+      !stubs_with_surface_foreground.empty())
+    bonus_allocation = (kMaximumAllocationForTabs - base_allocation_size) /
+                           stubs_with_surface_foreground.size();
+
+  // Now give out allocations to everyone.
+  AssignMemoryAllocations(stubs_with_surface_foreground,
+      GpuMemoryAllocation(kMinimumAllocationForTab + bonus_allocation,
+          GpuMemoryAllocation::kHasFrontbuffer |
+          GpuMemoryAllocation::kHasBackbuffer));
+
+  AssignMemoryAllocations(stubs_with_surface_background,
+      GpuMemoryAllocation(0, GpuMemoryAllocation::kHasFrontbuffer));
+
+  AssignMemoryAllocations(stubs_with_surface_hibernated,
+      GpuMemoryAllocation(0, GpuMemoryAllocation::kHasNoBuffers));
+
+  AssignMemoryAllocations(stubs_without_surface_foreground,
+      GpuMemoryAllocation(kMinimumAllocationForTab,
+          GpuMemoryAllocation::kHasNoBuffers));
+
+  AssignMemoryAllocations(stubs_without_surface_background,
+      GpuMemoryAllocation(kMinimumAllocationForTab,
+          GpuMemoryAllocation::kHasNoBuffers));
+
+  AssignMemoryAllocations(stubs_without_surface_hibernated,
+      GpuMemoryAllocation(0, GpuMemoryAllocation::kHasNoBuffers));
 }
 
 #endif

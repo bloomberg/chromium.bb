@@ -57,6 +57,7 @@ class CONTENT_EXPORT GpuCommandBufferStubBase {
   virtual ~GpuCommandBufferStubBase() {}
 
   // Will not have surface state if this is an offscreen commandbuffer.
+  virtual bool client_has_memory_allocation_changed_callback() const = 0;
   virtual bool has_surface_state() const = 0;
   virtual const SurfaceState& surface_state() const = 0;
 
@@ -107,6 +108,7 @@ class GpuCommandBufferStub
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // GpuCommandBufferStubBase implementation:
+  virtual bool client_has_memory_allocation_changed_callback() const OVERRIDE;
   virtual bool has_surface_state() const OVERRIDE;
   virtual const GpuCommandBufferStubBase::SurfaceState& surface_state() const
       OVERRIDE;
@@ -198,6 +200,8 @@ class GpuCommandBufferStub
   void OnDiscardBackbuffer();
   void OnEnsureBackbuffer();
 
+  void OnSetClientHasMemoryAllocationChangedCallback(bool);
+
   void OnReschedule();
 
   void OnCommandProcessed();
@@ -221,6 +225,7 @@ class GpuCommandBufferStub
   gfx::GpuPreference gpu_preference_;
   int32 route_id_;
   bool software_;
+  bool client_has_memory_allocation_changed_callback_;
   uint32 last_flush_count_;
   scoped_ptr<GpuCommandBufferStubBase::SurfaceState> surface_state_;
   GpuMemoryAllocation allocation_;
