@@ -109,6 +109,9 @@ void MenuHost::OnNativeWidgetDestroyed() {
 }
 
 void MenuHost::OnOwnerClosing() {
+  if (destroying_)
+    return;
+
   MenuController* menu_controller =
       submenu_->GetMenuItem()->GetMenuController();
   if (menu_controller && !menu_controller->drag_in_progress())
