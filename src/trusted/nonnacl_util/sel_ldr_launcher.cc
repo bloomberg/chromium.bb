@@ -29,30 +29,24 @@ using std::vector;
 
 namespace nacl {
 
-SelLdrLauncher::SelLdrLauncher()
-  :
-#if defined(NACL_STANDALONE)
-    child_process_(kInvalidHandle),
-#endif
-    channel_(kInvalidHandle),
+SelLdrLauncherBase::SelLdrLauncherBase()
+  : channel_(kInvalidHandle),
     bootstrap_socket_(NULL),
-    socket_addr_(NULL),
+    socket_addr_(NULL) {
+}
+
+SelLdrLauncherBase::~SelLdrLauncherBase() {
+  if (kInvalidHandle != channel_) {
+    Close(channel_);
+  }
+}
+
+SelLdrLauncherStandalone::SelLdrLauncherStandalone()
+  : child_process_(kInvalidHandle),
     sel_ldr_locator_(new PluginSelLdrLocator()) {
 }
 
-SelLdrLauncher::SelLdrLauncher(SelLdrLocator* sel_ldr_locator)
-  :
-#if defined(NACL_STANDALONE)
-    child_process_(kInvalidHandle),
-#endif
-    channel_(kInvalidHandle),
-    bootstrap_socket_(NULL),
-    socket_addr_(NULL),
-    sel_ldr_locator_(sel_ldr_locator) {
-  CHECK(sel_ldr_locator != NULL);
-}
-
-void SelLdrLauncher::GetPluginDirectory(char* buffer, size_t len) {
+void SelLdrLauncherStandalone::GetPluginDirectory(char* buffer, size_t len) {
   sel_ldr_locator_->GetDirectory(buffer, len);
 }
 
@@ -86,8 +80,8 @@ static DescWrapper* GetSockAddr(DescWrapper* desc) {
   return descs[0];
 }
 
-bool SelLdrLauncher::SetupCommandAndLoad(NaClSrpcChannel* command,
-                                         DescWrapper* nexe) {
+bool SelLdrLauncherBase::SetupCommandAndLoad(NaClSrpcChannel* command,
+                                             DescWrapper* nexe) {
   // Get the bootstrap socket.
   CHECK(factory_ == NULL);
   factory_.reset(new DescWrapperFactory);
@@ -141,8 +135,9 @@ bool SelLdrLauncher::SetupCommandAndLoad(NaClSrpcChannel* command,
 }
 
 bool
-SelLdrLauncher::StartModuleAndSetupAppChannel(NaClSrpcChannel* command,
-                                              NaClSrpcChannel* out_app_chan) {
+SelLdrLauncherBase::StartModuleAndSetupAppChannel(
+    NaClSrpcChannel* command,
+    NaClSrpcChannel* out_app_chan) {
   // Start untrusted code module.
   int start_result;
   NaClSrpcResultCodes rpc_result = NaClSrpcInvokeBySignature(command,
@@ -189,7 +184,7 @@ static char **GetEnviron() {
 }
 #endif
 
-void SelLdrLauncher::BuildCommandLine(vector<nacl::string>* command) {
+void SelLdrLauncherStandalone::BuildCommandLine(vector<nacl::string>* command) {
   assert(sel_ldr_ != NACL_NO_FILE_PATH);  // Set by InitCommandLine().
   if (!command_prefix_.empty())
     command->insert(command->end(),
@@ -232,9 +227,10 @@ void SelLdrLauncher::BuildCommandLine(vector<nacl::string>* command) {
   }
 }
 
-void SelLdrLauncher::InitCommandLine(const vector<nacl::string>& prefix,
-                                     const vector<nacl::string>& sel_ldr_argv,
-                                     const vector<nacl::string>& app_argv) {
+void SelLdrLauncherStandalone::InitCommandLine(
+    const vector<nacl::string>& prefix,
+    const vector<nacl::string>& sel_ldr_argv,
+    const vector<nacl::string>& app_argv) {
   assert(sel_ldr_ == NACL_NO_FILE_PATH);  // Make sure we don't call this twice.
 
   char* var = getenv("NACL_SEL_LDR");
@@ -274,25 +270,24 @@ void SelLdrLauncher::InitCommandLine(const vector<nacl::string>& prefix,
   sel_ldr_argv_.push_back(nacl::string("5:") + dest_fd);
 }
 
-void SelLdrLauncher::CloseHandlesAfterLaunch() {
+void SelLdrLauncherStandalone::CloseHandlesAfterLaunch() {
   for (size_t i = 0; i < close_after_launch_.size(); i++) {
     Close(close_after_launch_[i]);
   }
   close_after_launch_.clear();
 }
 
-DescWrapper* SelLdrLauncher::Wrap(NaClDesc* raw_desc) {
+DescWrapper* SelLdrLauncherBase::Wrap(NaClDesc* raw_desc) {
   CHECK(factory_ != NULL);
   return factory_->MakeGeneric(raw_desc);
 }
 
-DescWrapper* SelLdrLauncher::WrapCleanup(NaClDesc* raw_desc) {
+DescWrapper* SelLdrLauncherBase::WrapCleanup(NaClDesc* raw_desc) {
   CHECK(factory_ != NULL);
   return factory_->MakeGenericCleanup(raw_desc);
 }
 
-#if defined(NACL_STANDALONE)
-bool SelLdrLauncher::Start(const char* url) {
+bool SelLdrLauncherStandalone::Start(const char* url) {
   UNREFERENCED_PARAMETER(url);
   vector<nacl::string> prefix;
   vector<nacl::string> args_for_sel_ldr;
@@ -307,14 +302,5 @@ bool SelLdrLauncher::Start(const char* url) {
   }
   return true;
 }
-
-bool SelLdrLauncher::Start(int socket_count,
-                           Handle* result_sockets,
-                           const char* url) {
-  UNREFERENCED_PARAMETER(socket_count);
-  UNREFERENCED_PARAMETER(result_sockets);
-  return Start(url);
-}
-#endif  // defined(NACL_STANDALONE)
 
 }  // namespace nacl

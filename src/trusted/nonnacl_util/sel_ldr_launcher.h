@@ -66,12 +66,56 @@ class PluginSelLdrLocator : public SelLdrLocator {
  * The sel_ldr process can be forked directly using a command line of args
  * or by sending a message to the (Chrome) browser process.
  */
-struct SelLdrLauncher {
+class SelLdrLauncherBase {
  public:
-  SelLdrLauncher();
+  SelLdrLauncherBase();
+  virtual ~SelLdrLauncherBase();
 
-  explicit SelLdrLauncher(SelLdrLocator* sel_ldr_locator);
-  ~SelLdrLauncher();
+  /////////////////////////////////////////////////////////////////////////////
+  // Browser start-up: (used by the plugin inside or outside of Chrome build.)
+  /////////////////////////////////////////////////////////////////////////////
+
+  virtual bool Start(const char* url) = 0;
+
+  /////////////////////////////////////////////////////////////////////////////
+  // After starting the sel_ldr process.
+  /////////////////////////////////////////////////////////////////////////////
+
+  // Sets up the command channel |command| and sends the SRPC to load |nexe|.
+  bool SetupCommandAndLoad(NaClSrpcChannel* command, DescWrapper* nexe);
+
+  // Sends the SRPC to start the nexe over |command| and sets up the application
+  // SRPC chanel |out_app_chan|.
+  bool StartModuleAndSetupAppChannel(NaClSrpcChannel* command,
+                                     NaClSrpcChannel* out_app_chan);
+
+  // Returns the socket address used to connect to the sel_ldr.
+  DescWrapper* socket_addr() const { return socket_addr_.get(); }
+
+  // Wraps a raw NaClDesc descriptor.  If NULL is returned, caller retains
+  // ownership of the reference.
+  DescWrapper* Wrap(NaClDesc* raw_desc);
+
+  // As above, but raw_desc is Unref'd on failure.
+  DescWrapper* WrapCleanup(NaClDesc* raw_desc);
+
+ protected:
+  Handle channel_;
+
+ private:
+  // lifetime of bootstrap_socket_ must be at least that of factory_
+  scoped_ptr<DescWrapperFactory> factory_;
+  scoped_ptr<DescWrapper> bootstrap_socket_;
+  // The socket address returned from sel_ldr for connects.
+  scoped_ptr<DescWrapper> socket_addr_;
+};
+
+class SelLdrLauncherStandalone : public SelLdrLauncherBase {
+ public:
+  SelLdrLauncherStandalone();
+  ~SelLdrLauncherStandalone();
+
+  virtual bool Start(const char* url);
 
   /////////////////////////////////////////////////////////////////////////////
   // Command line start-up: (Only used by sel_universal.)
@@ -90,41 +134,6 @@ struct SelLdrLauncher {
   bool StartViaCommandLine(const std::vector<nacl::string>& prefix,
                            const std::vector<nacl::string>& sel_ldr_argv,
                            const std::vector<nacl::string>& application_argv);
-
-  /////////////////////////////////////////////////////////////////////////////
-  // Browser start-up: (used by the plugin inside or outside of Chrome build.)
-  /////////////////////////////////////////////////////////////////////////////
-
-  bool Start(const char* url);
-  // TODO(sehr): remove this obsolete interface.  The parameters are useless.
-  bool Start(int socket_count, Handle* result_sockets, const char* url);
-
-
-  /////////////////////////////////////////////////////////////////////////////
-  // After starting the sel_ldr process.
-  /////////////////////////////////////////////////////////////////////////////
-
-  // Sets up the command channel |command| and sends the SRPC to load |nexe|.
-  bool SetupCommandAndLoad(NaClSrpcChannel* command, DescWrapper* nexe);
-
-  // Sends the SRPC to start the nexe over |command| and sets up the application
-  // SRPC chanel |out_app_chan|.
-  bool StartModuleAndSetupAppChannel(NaClSrpcChannel* command,
-                                     NaClSrpcChannel* out_app_chan);
-
-  // Kill the child process.  The channel() remains valid, but nobody
-  // is talking on the other end.  Returns true if successful.
-  bool KillChildProcess();
-
-  // Returns the socket address used to connect to the sel_ldr.
-  DescWrapper* socket_addr() const { return socket_addr_.get(); }
-
-  // Wraps a raw NaClDesc descriptor.  If NULL is returned, caller retains
-  // ownership of the reference.
-  DescWrapper* Wrap(NaClDesc* raw_desc);
-
-  // As above, but raw_desc is Unref'd on failure.
-  DescWrapper* WrapCleanup(NaClDesc* raw_desc);
 
  private:
   // Builds a command line out of the prepopulated args.
@@ -148,14 +157,13 @@ struct SelLdrLauncher {
   nacl::string GetSelLdrBootstrapPathName();
   void CloseHandlesAfterLaunch();
 
-  // On Windows, child_process_ is a handle for the process.  On Unix,
-  // child_process_ is a process ID.  Inside Chromium, we don't get a
-  // handle or a process ID for the process.
-#if defined(NACL_STANDALONE)
-  Handle child_process_;
-#endif
+  // Kill the child process.  The channel() remains valid, but nobody
+  // is talking on the other end.  Returns true if successful.
+  bool KillChildProcess();
 
-  Handle channel_;
+  // On Windows, child_process_ is a handle for the process.  On Unix,
+  // child_process_ is a process ID.
+  Handle child_process_;
 
   // The following members are used to initialize and build the command line.
   // The detailed magic is in BuildCommandLine() but roughly we run
@@ -173,13 +181,26 @@ struct SelLdrLauncher {
 
   std::vector<Handle> close_after_launch_;
 
-  // lifetime of bootstrap_socket_ must be at least that of factory_
-  scoped_ptr<DescWrapperFactory> factory_;
-  scoped_ptr<DescWrapper> bootstrap_socket_;
-  // The socket address returned from sel_ldr for connects.
-  scoped_ptr<DescWrapper> socket_addr_;
   scoped_ptr<SelLdrLocator> sel_ldr_locator_;
 };
+
+// TODO(mseaborn): Move this class (and sel_ldr_launcher_chrome.cc)
+// into the Chromium repo.  There will be two copies present during
+// this process, but there should not be a naming conflict because
+// this copy is in the "nacl" namespace.
+class SelLdrLauncherChrome : public SelLdrLauncherBase {
+ public:
+  virtual bool Start(const char* url);
+};
+
+// TODO(mseaborn): Remove this typedef.  This typedef is currently
+// provided because the NaCl plugin in the Chromium repo refers to
+// SelLdrLauncher.
+#if defined(NACL_STANDALONE)
+typedef SelLdrLauncherStandalone SelLdrLauncher;
+#else
+typedef SelLdrLauncherChrome SelLdrLauncher;
+#endif
 
 }  // namespace nacl
 

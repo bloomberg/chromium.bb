@@ -12,9 +12,8 @@
 
 LaunchNaClProcessFunc launch_nacl_process = NULL;
 
-#if !defined(NACL_STANDALONE)
 namespace nacl {
-bool SelLdrLauncher::Start(const char* url) {
+bool SelLdrLauncherChrome::Start(const char* url) {
   // send a synchronous message to the browser process
   // TODO(mseaborn): Remove the nacl_proc_handle and nacl_proc_id
   // arguments.  Chromium is being changed not to give the renderer
@@ -32,7 +31,6 @@ bool SelLdrLauncher::Start(const char* url) {
     return false;
   }
 
-  CloseHandlesAfterLaunch();
 #if NACL_WINDOWS
   if (nacl_proc_handle != kInvalidHandle &&
       nacl_proc_handle != NULL) {
@@ -42,12 +40,4 @@ bool SelLdrLauncher::Start(const char* url) {
   return true;
 }
 
-bool SelLdrLauncher::Start(int socket_count,
-                           Handle* result_sockets,
-                           const char* url) {
-  UNREFERENCED_PARAMETER(socket_count);
-  UNREFERENCED_PARAMETER(result_sockets);
-  return Start(url);
-}
 }  // namespace
-#endif  // !defined(NACL_STANDALONE)

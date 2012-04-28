@@ -192,7 +192,7 @@ int raii_main(int argc, char* argv[]) {
     sel_ldr_argv.push_back(ss_stderr.str());
   }
   // Start sel_ldr with the given application and arguments.
-  nacl::SelLdrLauncher launcher;
+  nacl::SelLdrLauncherStandalone launcher;
   nacl::DescWrapperFactory factory;  // DescWrapper "namespace"
 
   if (!launcher.StartViaCommandLine(command_prefix, sel_ldr_argv, app_argv)) {

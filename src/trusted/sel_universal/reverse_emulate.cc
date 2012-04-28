@@ -72,7 +72,7 @@ nacl::scoped_ptr_refcount<nacl::ReverseService> g_reverse_service;
 
 
 bool ReverseEmulateInit(NaClSrpcChannel* command_channel,
-                        nacl::SelLdrLauncher* launcher) {
+                        nacl::SelLdrLauncherStandalone* launcher) {
   // Do the SRPC to the command channel to set up the reverse channel.
   // This returns a NaClDesc* containing a socket address.
   NaClLog(1, "ReverseEmulateInit: launching reverse RPC service\n");
