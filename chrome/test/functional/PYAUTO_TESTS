@@ -525,16 +525,6 @@
       # crbug.com/119605
       '-protector.ProtectorPreferencesTest.testPreferencesBackupInvalid',
       '-protector.ProtectorPreferencesTest.testPreferencesBackupInvalidChangeDismissedOnEdit',
-      # crbug.com/121594
-      '-browsing_data.BrowsingDataTest.testClearDownloads',
-      '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
-      '-browsing_data.BrowsingDataTest.testClearingAccuracy',
-      '-downloads.DownloadsTest',
-      '-find_in_page.FindMatchTests.testSearchWithinSpecialURL',
-      '-history.HistoryTest.testDownloadNoHistory',
-      '-infobars.InfobarTest.testMultipleDownloadsInfobar',
-      '-prefs.PrefsTest.testDownloadDirPref',
-      '-translate.TranslateTest.testDownloadsNotTranslated',
       # crbug.com/123899
       '-protector.ProtectorHomepageTest.testDetectHomepageChangeAndApply',
       '-protector.ProtectorHomepageTest.testDetectHomepageChangeAndDiscard',
