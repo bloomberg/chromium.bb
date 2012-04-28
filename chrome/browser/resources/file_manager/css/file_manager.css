@@ -1155,7 +1155,7 @@ div.unmounted-panel > div {
 
 .plain-link {
   color: rgb(17, 85, 204);
-  cursor: default;
+  cursor: pointer;
 }
 
 body[ash] .dialog-title,
