@@ -13,8 +13,8 @@
 
       #screen {
         position: relative;
-        width: 800px;
-        height: 620px;
+        width: 1034px;
+        height: 680px;
 
         background-image: -webkit-linear-gradient(top, #c6c6c6, #888);
       }
@@ -23,9 +23,8 @@
         position: absolute;
         left: 40px;
         top: 20px;
-        width: 720px;
-        height: 580px;
-        border-radius: 4px;
+        width: 954px;
+        height: 640px;
         border: none;
         -webkit-box-shadow: 0px 0px 20px rgba(0, 0, 0, 1);
         background-color: white;
@@ -59,9 +58,9 @@
       <iframe id=dialog></iframe>
     </div>
     <div>
-      <button onclick='harness.onClearClick(event)'>Reset Filesystem</button>
-      | Add Files:
+      Add Files:
       <input type='file' multiple onchange='harness.onFilesChange(event)'>
+      <button onclick='harness.onClearClick(event)'>Reset Filesystem</button>
     </div>
 
     <script>harness.init()</script>

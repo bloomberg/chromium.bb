@@ -752,9 +752,8 @@ FileManager.prototype = {
     var learnMore = this.document_.createElement('div');
     learnMore.className = 'gdata learn-more plain-link';
     learnMore.textContent = str('GDATA_LEARN_MORE');
-    learnMore.addEventListener('click', function() {
-       chrome.tabs.create({url: GOOGLE_DRIVE_ERROR_HELP_URL});
-    });
+    learnMore.addEventListener('click',
+        this.onExternalLinkClick_.bind(this, GOOGLE_DRIVE_ERROR_HELP_URL));
     this.unmountedPanel_.appendChild(learnMore);
   };
 
@@ -2420,8 +2419,8 @@ FileManager.prototype = {
     return chrome.extension.getURL('').split('/')[2];
   };
 
-  FileManager.prototype.onDownloadsWarningClick_ = function(event) {
-    chrome.tabs.create({url: DOWNLOADS_FAQ_URL});
+  FileManager.prototype.onExternalLinkClick_ = function(url) {
+    chrome.tabs.create({url: url});
     if (this.dialogType_ != FileManager.DialogType.FULL_PAGE) {
       this.onCancel_();
     }
@@ -3305,7 +3304,8 @@ FileManager.prototype = {
       var html = util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
       box.lastElementChild.innerHTML = html;
       var link = box.querySelector('a');
-      link.addEventListener('click', this.onDownloadsWarningClick_.bind(this));
+      link.addEventListener('click',
+          this.onExternalLinkClick_.bind(this, DOWNLOADS_FAQ_URL));
     } else {
       box.lastElementChild.innerHTML = '';
     }
@@ -3410,8 +3410,11 @@ FileManager.prototype = {
 
     if (event.newDirEntry.unmounted)
       this.dialogContainer_.setAttribute('unmounted', true);
-    else
+    else {
       this.dialogContainer_.removeAttribute('unmounted');
+      // Need to resize explicitly because the list container had display:none.
+      this.onResize_();
+    }
 
     if (this.isOnGData()) {
       this.dialogContainer_.setAttribute('gdata', true);
@@ -4319,9 +4322,8 @@ FileManager.prototype = {
 
       var more = createDiv('gdrive-welcome-more plain-link', links);
       more.textContent = str('GDATA_LEARN_MORE');
-      more.addEventListener('click', function() {
-        chrome.tabs.create({url: GOOGLE_DRIVE_FAQ_URL});
-      });
+      more.addEventListener('click',
+          self.onExternalLinkClick_.bind(self, GOOGLE_DRIVE_FAQ_URL));
 
       var dismiss = createDiv('gdrive-welcome-dismiss plain-link', links);
       dismiss.textContent = str('GDATA_WELCOME_DISMISS');

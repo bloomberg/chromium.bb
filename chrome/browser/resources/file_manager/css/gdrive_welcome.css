@@ -122,3 +122,20 @@
 .gdrive-welcome.page .gdrive-welcome-dismiss {
   margin-left: 20px;
 }
+
+body:not([type='full-page']) .gdrive-welcome.page .gdrive-welcome-title {
+  text-align: center;
+}
+
+body:not([type='full-page']) .gdrive-welcome.page .gdrive-welcome-wrapper {
+  background-position: 0 0;
+}
+
+body:not([type='full-page']) .gdrive-welcome.page .gdrive-welcome-icon {
+  height: 200px;
+}
+
+body:not([type='full-page']) .gdrive-welcome.page .gdrive-welcome-message {
+  padding-left: 10%;
+  padding-right: 10%;
+}

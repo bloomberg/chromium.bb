@@ -237,14 +237,16 @@ chrome.fileBrowserPrivate = {
             mountPath: path,
             type: type
           });
-          chrome.fileBrowserPrivate.onMountCompleted.notify({
-            eventType: 'mount',
-            status: 'success',
-            mountType: type,
-            authToken: 'dummy',
-            mountPath: path,
-            sourceUrl: source
-          });
+          setTimeout(function() {
+            chrome.fileBrowserPrivate.onMountCompleted.notify({
+              eventType: 'mount',
+              status: 'success',
+              mountType: type,
+              authToken: 'dummy',
+              mountPath: path,
+              sourceUrl: source
+            });
+          }, 1000);
           console.log('Created a mock mount at ' + path);
         },
         util.flog('Error creating a mock mount at ' + path));
