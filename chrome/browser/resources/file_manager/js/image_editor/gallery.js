@@ -544,7 +544,7 @@ Gallery.prototype.renameItem_ = function(item, name) {
     if (self.imageChanges_ > 0) {
       // Use this name in the next save operation.
       item.setNameForSaving(newName);
-      this.filenameSpacer_.removeAttribute('overwrite');
+      self.filenameSpacer_.removeAttribute('overwrite');
       self.updateFilename_();
     } else {
       // Rename file in place.
