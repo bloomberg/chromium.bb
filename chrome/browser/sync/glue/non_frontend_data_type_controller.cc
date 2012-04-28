@@ -33,7 +33,8 @@ NonFrontendDataTypeController::NonFrontendDataTypeController(
       state_(NOT_RUNNING),
       abort_association_(false),
       abort_association_complete_(false, false),
-      datatype_stopped_(false, false) {
+      datatype_stopped_(false, false),
+      start_association_called_(true, false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_sync_factory_);
   DCHECK(profile_);
@@ -68,6 +69,27 @@ void NonFrontendDataTypeController::Start(const StartCallback& start_callback) {
   }
 }
 
+void NonFrontendDataTypeController::StopWhileAssociating() {
+  state_ = STOPPING;
+  {
+    base::AutoLock lock(abort_association_lock_);
+    abort_association_ = true;
+    if (model_associator_.get())
+      model_associator_->AbortAssociation();
+  }
+
+  // Wait for the model association to abort.
+  if (start_association_called_.IsSignaled()) {
+    LOG(INFO) << "Stopping after |StartAssocation| is called.";
+    abort_association_complete_.Wait();
+  } else {
+    LOG(INFO) << "Stopping before |StartAssocation| is called.";
+    abort_association_complete_.Wait();
+  }
+
+  StartDoneImpl(ABORTED, STOPPING, SyncError());
+}
+
 void NonFrontendDataTypeController::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_NE(state_, NOT_RUNNING);
@@ -83,16 +105,15 @@ void NonFrontendDataTypeController::Stop() {
   // thread to finish the StartImpl() task.
   switch (state_) {
     case ASSOCIATING:
-      state_ = STOPPING;
-      {
-        base::AutoLock lock(abort_association_lock_);
-        abort_association_ = true;
-        if (model_associator_.get())
-          model_associator_->AbortAssociation();
+      if (type() == syncable::PASSWORDS) {
+        LOG(INFO) << " Type is Passwords";
+        StopWhileAssociating();
+      } else if (type() == syncable::TYPED_URLS) {
+        LOG(INFO) << " Type is TypedUrl";
+        StopWhileAssociating();
+      } else {
+        StopWhileAssociating();
       }
-      // Wait for the model association to abort.
-      abort_association_complete_.Wait();
-      StartDoneImpl(ABORTED, STOPPING, SyncError());
       break;
     case MODEL_STARTING:
       state_ = STOPPING;
@@ -167,7 +188,8 @@ NonFrontendDataTypeController::NonFrontendDataTypeController()
       state_(NOT_RUNNING),
       abort_association_(false),
       abort_association_complete_(false, false),
-      datatype_stopped_(false, false) {
+      datatype_stopped_(false, false),
+      start_association_called_(true, false) {
 }
 
 NonFrontendDataTypeController::~NonFrontendDataTypeController() {

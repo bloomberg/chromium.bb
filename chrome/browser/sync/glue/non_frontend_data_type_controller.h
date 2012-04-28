@@ -149,6 +149,9 @@ class NonFrontendDataTypeController : public DataTypeController {
   // Note: this is performed on the datatype's thread.
   void StartAssociation();
 
+  // Helper method to stop associating.
+  void StopWhileAssociating();
+
   // Post the StopAssociation task to the thread the datatype lives on.
   // Note: this is performed on the frontend (UI) thread.
   // Return value: True if task posted successfully, False otherwise.
@@ -176,6 +179,10 @@ class NonFrontendDataTypeController : public DataTypeController {
   // Barrier to ensure that the datatype has been stopped on the DB thread
   // from the UI thread.
   base::WaitableEvent datatype_stopped_;
+
+  // This is added for debugging purpose.
+  // TODO(lipalani): Remove this after debugging.
+  base::WaitableEvent start_association_called_;
 
   DISALLOW_COPY_AND_ASSIGN(NonFrontendDataTypeController);
 };
