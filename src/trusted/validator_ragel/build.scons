@@ -15,13 +15,14 @@ if not env.Bit('target_x86'):
 
 # General adjustments to the environment for builds.
 
+# Create environment for building x86-64 validator.
+x86_64_validator_env = env.Clone();
+
 # TODO(khim): eliminate flag modification based on OS.
 # See http://code.google.com/p/nativeclient/issues/detail?id=2718 for details.
-if env.Bit('windows'):
-  env.FilterOut(CCFLAGS=['/O1'])
 # XCode 4.2 takes too long to compile with -Os, LLVM for MacOS times out.
-if env.Bit('mac'):
-  env.FilterOut(CCFLAGS=['-Os'])
+if x86_64_validator_env.Bit('mac'):
+  x86_64_validator_env.FilterOut(CCFLAGS=['-Os'])
 
 # ASAN takes too long with optimizations enabled and is killed on buildbot.
 # We don't really need to build with optimizations under ASAN (although it's
@@ -29,8 +30,8 @@ if env.Bit('mac'):
 # TODO(khim): Remove this when/if the following bug is fixed.
 #   http://code.google.com/p/address-sanitizer/issues/detail?id=61
 # NOTE: ASAN bot uses -O2 under Linux and -Os under mac.
-if env.Bit('asan'):
-  env.FilterOut(CCFLAGS=['-Os', '-O2'])
+if x86_64_validator_env.Bit('asan'):
+  x86_64_validator_env.FilterOut(CCFLAGS=['-Os', '-O2'])
 
 # Defines the source directory where validator generated files should be added.
 rl_src_dir = '$OBJ_ROOT/src/trusted/validator_ragel'
@@ -117,10 +118,15 @@ if generate:
       )
       automatas.append(rl_file)
       c_file = '%s/%s-x86_%s.c' % (val_src_dir, automata, bits)
+      if automata == "decoder":
+        ragel_flags = '-T0'
+      else:
+        ragel_flags = '-G2'
       env.Command(
           target=c_file,
           source=['unreviewed/%s-x86_%s.rl' % (automata, bits), rl_file],
-          action=['ragel -G2 -I%s ${SOURCES[0]} -o ${TARGET}' % (rl_src_dir)]
+          action=['ragel %s -I%s ${SOURCES[0]} -o ${TARGET}' % (
+              ragel_flags, rl_src_dir)]
       )
       automatas.append(c_file)
 
@@ -131,11 +137,14 @@ if generate:
 # Generate 32 and 64 bit versions of decoders and validators.  Both libraries
 # are used for command-line decoder and validator those detect specific
 # architecture of the ELF file provided.
-for bits in ['32', '64']:
-  env.ComponentLibrary('dfa_validate_x86_%s' % bits,
-                       ['gen/validator-x86_%s.c' % bits])
-  env.ComponentLibrary('dfa_decode_x86_%s' % bits,
-                       ['gen/decoder-x86_%s.c' % bits])
+env.ComponentLibrary('dfa_validate_x86_32',
+                     ['gen/validator-x86_32.c'])
+x86_64_validator_env.ComponentLibrary('dfa_validate_x86_64',
+                                      ['gen/validator-x86_64.c'])
+env.ComponentLibrary('dfa_decode_x86_32',
+                     ['gen/decoder-x86_32.c'])
+env.ComponentLibrary('dfa_decode_x86_64',
+                     ['gen/decoder-x86_64.c'])
 
 # Glue library called from service runtime. The source file depends on the
 # target architecture.
