@@ -70,7 +70,8 @@ cr.define('options', function() {
       this.languageCodeToLanguageInfo_ = {};
       var languageList = templateData.languageList;
       for (var i = 0; i < languageList.length; i++) {
-        this.languageCodeToLanguageInfo_[languageCode] = languageList[i];
+        var languageInfo = languageList[i];
+        this.languageCodeToLanguageInfo_[languageInfo.code] = languageInfo;
       }
     }
 
