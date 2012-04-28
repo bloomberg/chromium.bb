@@ -65,12 +65,10 @@ class DaemonController {
     // them in the webapp.
   };
 
-  // The callback for GetConfig(). |config| is set to NULL in case of
-  // an error. Otherwise it is a dictionary that contains only the
-  // following values: host_id and xmpp_login, which may be empty if
-  // the host is not initialized yet. All other values are filtered out of the
-  // config before this callback is invoked: they may contain security
-  // sensitive information, such as authentication tokens and private keys.
+  // Callback type for GetConfig(). If the host is configured then a dictionary
+  // is returned containing host_id and xmpp_login, with security-sensitive
+  // fields filtered out. An empty dictionary is returned if the host is not
+  // configured, and NULL if the configuration is corrupt or cannot be read.
   typedef base::Callback<void (scoped_ptr<base::DictionaryValue> config)>
       GetConfigCallback;
 

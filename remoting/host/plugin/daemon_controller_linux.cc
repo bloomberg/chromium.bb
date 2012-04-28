@@ -192,17 +192,23 @@ FilePath DaemonControllerLinux::GetConfigPath() {
 }
 
 void DaemonControllerLinux::DoGetConfig(const GetConfigCallback& callback) {
-  JsonHostConfig config(GetConfigPath());
-  scoped_ptr<base::DictionaryValue> result;
-  if (config.Read()) {
-    result.reset(new base::DictionaryValue());
+  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
 
-    std::string value;
-    if (config.GetString(kHostIdConfigPath, &value))
-      result->SetString(kHostIdConfigPath, value);
-    if (config.GetString(kXmppLoginConfigPath, &value))
-      result->SetString(kXmppLoginConfigPath, value);
+  if (GetState() != remoting::DaemonController::STATE_NOT_IMPLEMENTED) {
+    JsonHostConfig config(GetConfigPath());
+    if (config.Read()) {
+      std::string value;
+      if (config.GetString(kHostIdConfigPath, &value)) {
+        result->SetString(kHostIdConfigPath, value);
+      }
+      if (config.GetString(kXmppLoginConfigPath, &value)) {
+        result->SetString(kXmppLoginConfigPath, value);
+      }
+    } else {
+      result.reset(); // Return NULL in case of error.
+    }
   }
+
   callback.Run(result.Pass());
 }
 
