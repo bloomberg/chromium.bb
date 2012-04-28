@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,8 +24,7 @@ ResourceLoadTimingInfo::ResourceLoadTimingInfo()
       receive_headers_end(0) {
 }
 
-ResourceLoadTimingInfo::~ResourceLoadTimingInfo() {
-}
+ResourceLoadTimingInfo::~ResourceLoadTimingInfo() {}
 
 ResourceDevToolsInfo::ResourceDevToolsInfo()
     : http_status_code(0) {
@@ -45,8 +44,7 @@ ResourceResponseInfo::ResourceResponseInfo()
       was_fetched_via_proxy(false) {
 }
 
-ResourceResponseInfo::~ResourceResponseInfo() {
-}
+ResourceResponseInfo::~ResourceResponseInfo() {}
 
 ResourceLoaderBridge::RequestInfo::RequestInfo()
     : referrer_policy(WebKit::WebReferrerPolicyDefault),
@@ -61,19 +59,14 @@ ResourceLoaderBridge::RequestInfo::RequestInfo()
       extra_data(NULL) {
 }
 
-ResourceLoaderBridge::RequestInfo::~RequestInfo() {
-}
+ResourceLoaderBridge::RequestInfo::~RequestInfo() {}
 
-ResourceLoaderBridge::SyncLoadResponse::SyncLoadResponse() {
-}
+ResourceLoaderBridge::SyncLoadResponse::SyncLoadResponse() {}
 
-ResourceLoaderBridge::SyncLoadResponse::~SyncLoadResponse() {
-}
+ResourceLoaderBridge::SyncLoadResponse::~SyncLoadResponse() {}
 
-ResourceLoaderBridge::ResourceLoaderBridge() {
-}
+ResourceLoaderBridge::ResourceLoaderBridge() {}
 
-ResourceLoaderBridge::~ResourceLoaderBridge() {
-}
+ResourceLoaderBridge::~ResourceLoaderBridge() {}
 
 }  // namespace webkit_glue

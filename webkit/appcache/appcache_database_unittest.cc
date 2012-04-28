@@ -20,11 +20,14 @@ const base::Time kZeroTime;
 
 class TestErrorDelegate : public sql::ErrorDelegate {
  public:
-  virtual ~TestErrorDelegate() { }
-  virtual int OnError(
-      int error, sql::Connection* connection, sql::Statement* stmt) {
+  virtual int OnError(int error,
+                      sql::Connection* connection,
+                      sql::Statement* stmt) OVERRIDE {
     return error;
   }
+
+ private:
+  virtual ~TestErrorDelegate() {}
 };
 
 }  // namespace

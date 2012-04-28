@@ -43,7 +43,8 @@ class FileSystemOperationContext;
 // SandboxMountPointProvider [and the task it uses to drop the reference] and
 // SandboxMountPointProvider::GetFileSystemRootPathTask.  Without that last one,
 // we wouldn't need ref counting.
-class ObfuscatedFileUtil : public FileSystemFileUtil,
+class ObfuscatedFileUtil :
+    public FileSystemFileUtil,
     public base::RefCountedThreadSafe<ObfuscatedFileUtil> {
  public:
   // Origin enumerator interface.
@@ -65,7 +66,6 @@ class ObfuscatedFileUtil : public FileSystemFileUtil,
   //     new ObfuscatedFileUtil(new NativeFileUtil());
   ObfuscatedFileUtil(const FilePath& file_system_directory,
                      FileSystemFileUtil* underlying_file_util);
-  virtual ~ObfuscatedFileUtil();
 
   virtual base::PlatformFileError CreateOrOpen(
       FileSystemOperationContext* context,
@@ -187,8 +187,12 @@ class ObfuscatedFileUtil : public FileSystemFileUtil,
   static int64 ComputeFilePathCost(const FilePath& path);
 
  private:
+  friend class base::RefCountedThreadSafe<ObfuscatedFileUtil>;
+
   typedef FileSystemDirectoryDatabase::FileId FileId;
   typedef FileSystemDirectoryDatabase::FileInfo FileInfo;
+
+  virtual ~ObfuscatedFileUtil();
 
   base::PlatformFileError GetFileInfoInternal(
       FileSystemDirectoryDatabase* db,

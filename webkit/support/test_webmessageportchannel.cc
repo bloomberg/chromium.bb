@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,9 +41,6 @@ TestWebMessagePortChannel::TestWebMessagePortChannel()
   AddRef();
 }
 
-TestWebMessagePortChannel::~TestWebMessagePortChannel() {
-}
-
 void TestWebMessagePortChannel::setClient(WebMessagePortChannelClient* client) {
   client_ = client;
 }
@@ -81,6 +78,8 @@ bool TestWebMessagePortChannel::tryGetMessage(WebString* data,
     ports.swap(*message_ports);
   return true;
 }
+
+TestWebMessagePortChannel::~TestWebMessagePortChannel() {}
 
 void TestWebMessagePortChannel::queueMessage(Message* message) {
   bool was_empty = message_queue_.empty();

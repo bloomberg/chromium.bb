@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,6 @@ class TestWebMessagePortChannel
       public base::RefCounted<TestWebMessagePortChannel> {
  public:
   TestWebMessagePortChannel();
-  virtual ~TestWebMessagePortChannel();
 
   // WebMessagePortChannel implementation.
   virtual void setClient(WebKit::WebMessagePortChannelClient*) OVERRIDE;
@@ -33,8 +32,14 @@ class TestWebMessagePortChannel
   virtual bool tryGetMessage(WebKit::WebString*,
                              WebKit::WebMessagePortChannelArray&) OVERRIDE;
 
+ protected:
+  virtual ~TestWebMessagePortChannel();
+
  private:
+  friend class base::RefCounted<TestWebMessagePortChannel>;
+
   class Message;
+
   void queueMessage(Message*);
 
   WebKit::WebMessagePortChannelClient* client_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,11 +24,12 @@ class AppCacheStorageTest : public testing::Test {
         : QuotaManagerProxy(NULL, NULL),
           notify_storage_accessed_count_(0),
           notify_storage_modified_count_(0),
-          last_delta_(0) {}
+          last_delta_(0) {
+    }
 
     virtual void NotifyStorageAccessed(quota::QuotaClient::ID client_id,
                                        const GURL& origin,
-                                       quota::StorageType type) {
+                                       quota::StorageType type) OVERRIDE {
       EXPECT_EQ(quota::QuotaClient::kAppcache, client_id);
       EXPECT_EQ(quota::kStorageTypeTemporary, type);
       ++notify_storage_accessed_count_;
@@ -38,7 +39,7 @@ class AppCacheStorageTest : public testing::Test {
     virtual void NotifyStorageModified(quota::QuotaClient::ID client_id,
                                        const GURL& origin,
                                        quota::StorageType type,
-                                       int64 delta) {
+                                       int64 delta) OVERRIDE {
       EXPECT_EQ(quota::QuotaClient::kAppcache, client_id);
       EXPECT_EQ(quota::kStorageTypeTemporary, type);
       ++notify_storage_modified_count_;
@@ -47,14 +48,17 @@ class AppCacheStorageTest : public testing::Test {
     }
 
     // Not needed for our tests.
-    virtual void RegisterClient(quota::QuotaClient* client) {}
-    virtual void NotifyOriginInUse(const GURL& origin) {}
-    virtual void NotifyOriginNoLongerInUse(const GURL& origin) {}
+    virtual void RegisterClient(quota::QuotaClient* client) OVERRIDE {}
+    virtual void NotifyOriginInUse(const GURL& origin) OVERRIDE {}
+    virtual void NotifyOriginNoLongerInUse(const GURL& origin) OVERRIDE {}
 
     int notify_storage_accessed_count_;
     int notify_storage_modified_count_;
     GURL last_origin_;
     int last_delta_;
+
+   protected:
+    virtual ~MockQuotaManagerProxy() {}
   };
 };
 

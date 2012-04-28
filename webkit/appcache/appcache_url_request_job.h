@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,6 @@ class APPCACHE_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
                                               public AppCacheStorage::Delegate {
  public:
   AppCacheURLRequestJob(net::URLRequest* request, AppCacheStorage* storage);
-  virtual ~AppCacheURLRequestJob();
 
   // Informs the job of what response it should deliver. Only one of these
   // methods should be called, and only once per job. A job will sit idle and
@@ -76,6 +75,9 @@ class APPCACHE_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
   bool cache_entry_not_found() const {
     return cache_entry_not_found_;
   }
+
+ protected:
+  virtual ~AppCacheURLRequestJob();
 
  private:
   friend class AppCacheRequestHandlerTest;

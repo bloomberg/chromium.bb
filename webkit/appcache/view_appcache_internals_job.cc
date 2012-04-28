@@ -312,6 +312,7 @@ class BaseInternalsJob : public net::URLRequestSimpleJob {
  protected:
   BaseInternalsJob(net::URLRequest* request, AppCacheService* service)
       : URLRequestSimpleJob(request), appcache_service_(service) {}
+  virtual ~BaseInternalsJob() {}
 
   AppCacheService* appcache_service_;
 };
@@ -394,6 +395,9 @@ class RedirectToMainPageJob : public BaseInternalsJob {
     *http_status_code = 307;
     return true;
   }
+
+ protected:
+  virtual ~RedirectToMainPageJob() {}
 };
 
 // Job that removes an appcache and then redirects back to the main page.

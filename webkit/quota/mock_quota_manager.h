@@ -47,8 +47,6 @@ class MockQuotaManager : public QuotaManager {
                    base::MessageLoopProxy* db_thread,
                    SpecialStoragePolicy* special_storage_policy);
 
-  virtual ~MockQuotaManager();
-
   // Adds an origin to the canned list that will be searched through via
   // GetOriginsModifiedSince. The caller must provide |quota_client_mask|
   // which specifies the types of QuotaClients this canned origin contains
@@ -83,6 +81,9 @@ class MockQuotaManager : public QuotaManager {
                                 StorageType type,
                                 int quota_client_mask,
                                 const StatusCallback& callback) OVERRIDE;
+
+ protected:
+  virtual ~MockQuotaManager();
 
  private:
   class GetModifiedSinceTask;

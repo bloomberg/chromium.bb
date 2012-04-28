@@ -148,8 +148,6 @@ class AppCacheStorageImpl::DatabaseTask
     DCHECK(io_thread_);
   }
 
-  virtual ~DatabaseTask() {}
-
   void AddDelegate(DelegateReference* delegate_reference) {
     delegates_.push_back(make_scoped_refptr(delegate_reference));
   }
@@ -175,6 +173,9 @@ class AppCacheStorageImpl::DatabaseTask
   virtual void CancelCompletion();
 
  protected:
+  friend class base::RefCountedThreadSafe<DatabaseTask>;
+  virtual ~DatabaseTask() {}
+
   AppCacheStorageImpl* storage_;
   AppCacheDatabase* database_;
   DelegateReferenceVector delegates_;
@@ -258,9 +259,14 @@ class AppCacheStorageImpl::InitTask : public DatabaseTask {
         last_cache_id_(0), last_response_id_(0),
         last_deletable_response_rowid_(0) {}
 
-  virtual void Run();
-  virtual void RunCompleted();
+  // DatabaseTask:
+  virtual void Run() OVERRIDE;
+  virtual void RunCompleted() OVERRIDE;
 
+ protected:
+  virtual ~InitTask() {}
+
+ private:
   int64 last_group_id_;
   int64 last_cache_id_;
   int64 last_response_id_;
@@ -302,7 +308,11 @@ class AppCacheStorageImpl::CloseConnectionTask : public DatabaseTask {
   explicit CloseConnectionTask(AppCacheStorageImpl* storage)
       : DatabaseTask(storage) {}
 
-  virtual void Run() { database_->CloseConnection(); }
+  // DatabaseTask:
+  virtual void Run() OVERRIDE { database_->CloseConnection(); }
+
+ protected:
+  virtual ~CloseConnectionTask() {}
 };
 
 // DisableDatabaseTask -------
@@ -312,7 +322,11 @@ class AppCacheStorageImpl::DisableDatabaseTask : public DatabaseTask {
   explicit DisableDatabaseTask(AppCacheStorageImpl* storage)
       : DatabaseTask(storage) {}
 
-  virtual void Run() { database_->Disable(); }
+  // DatabaseTask:
+  virtual void Run() OVERRIDE { database_->Disable(); }
+
+ protected:
+  virtual ~DisableDatabaseTask() {}
 };
 
 // GetAllInfoTask -------
@@ -324,9 +338,14 @@ class AppCacheStorageImpl::GetAllInfoTask : public DatabaseTask {
         info_collection_(new AppCacheInfoCollection()) {
   }
 
-  virtual void Run();
-  virtual void RunCompleted();
+  // DatabaseTask:
+  virtual void Run() OVERRIDE;
+  virtual void RunCompleted() OVERRIDE;
 
+ protected:
+  virtual ~GetAllInfoTask() {}
+
+ private:
   scoped_refptr<AppCacheInfoCollection> info_collection_;
 };
 
@@ -369,6 +388,7 @@ class AppCacheStorageImpl::StoreOrLoadTask : public DatabaseTask {
  protected:
   explicit StoreOrLoadTask(AppCacheStorageImpl* storage)
       : DatabaseTask(storage) {}
+  virtual ~StoreOrLoadTask() {}
 
   bool FindRelatedCacheRecords(int64 cache_id);
   void CreateCacheAndGroupFromRecords(
@@ -453,9 +473,14 @@ class AppCacheStorageImpl::CacheLoadTask : public StoreOrLoadTask {
       : StoreOrLoadTask(storage), cache_id_(cache_id),
         success_(false) {}
 
-  virtual void Run();
-  virtual void RunCompleted();
+  // DatabaseTask:
+  virtual void Run() OVERRIDE;
+  virtual void RunCompleted() OVERRIDE;
 
+ protected:
+  virtual ~CacheLoadTask() {}
+
+ private:
   int64 cache_id_;
   bool success_;
 };
@@ -490,9 +515,14 @@ class AppCacheStorageImpl::GroupLoadTask : public StoreOrLoadTask {
       : StoreOrLoadTask(storage), manifest_url_(manifest_url),
         success_(false) {}
 
-  virtual void Run();
-  virtual void RunCompleted();
+  // DatabaseTask:
+  virtual void Run() OVERRIDE;
+  virtual void RunCompleted() OVERRIDE;
 
+ protected:
+  virtual ~GroupLoadTask() {}
+
+ private:
   GURL manifest_url_;
   bool success_;
 };
@@ -538,10 +568,15 @@ class AppCacheStorageImpl::StoreGroupAndCacheTask : public StoreOrLoadTask {
   void OnQuotaCallback(
       quota::QuotaStatusCode status, int64 usage, int64 quota);
 
-  virtual void Run();
-  virtual void RunCompleted();
-  virtual void CancelCompletion();
+  // DatabaseTask:
+  virtual void Run() OVERRIDE;
+  virtual void RunCompleted() OVERRIDE;
+  virtual void CancelCompletion() OVERRIDE;
 
+ protected:
+  virtual ~StoreGroupAndCacheTask() {}
+
+ private:
   scoped_refptr<AppCacheGroup> group_;
   scoped_refptr<AppCache> cache_;
   bool success_;
@@ -832,12 +867,17 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
     }
   }
 
-  virtual void Run();
-  virtual void RunCompleted();
+  // DatabaseTask:
+  virtual void Run() OVERRIDE;
+  virtual void RunCompleted() OVERRIDE;
+
+ protected:
+  virtual ~FindMainResponseTask() {}
 
  private:
   typedef std::vector<AppCacheDatabase::NamespaceRecord*>
       NamespaceRecordPtrVector;
+
   bool FindExactMatch(int64 preferred_id);
   bool FindNamespaceMatch(int64 preferred_id);
   bool FindNamespaceHelper(
@@ -1030,9 +1070,14 @@ class AppCacheStorageImpl::MarkEntryAsForeignTask : public DatabaseTask {
       AppCacheStorageImpl* storage, const GURL& url, int64 cache_id)
       : DatabaseTask(storage), cache_id_(cache_id), entry_url_(url) {}
 
-  virtual void Run();
-  virtual void RunCompleted();
+  // DatabaseTask:
+  virtual void Run() OVERRIDE;
+  virtual void RunCompleted() OVERRIDE;
 
+ protected:
+  virtual ~MarkEntryAsForeignTask() {}
+
+ private:
   int64 cache_id_;
   GURL entry_url_;
 };
@@ -1053,10 +1098,15 @@ class AppCacheStorageImpl::MakeGroupObsoleteTask : public DatabaseTask {
  public:
   MakeGroupObsoleteTask(AppCacheStorageImpl* storage, AppCacheGroup* group);
 
-  virtual void Run();
-  virtual void RunCompleted();
-  virtual void CancelCompletion();
+  // DatabaseTask:
+  virtual void Run() OVERRIDE;
+  virtual void RunCompleted() OVERRIDE;
+  virtual void CancelCompletion() OVERRIDE;
 
+ protected:
+  virtual ~MakeGroupObsoleteTask() {}
+
+ private:
   scoped_refptr<AppCacheGroup> group_;
   int64 group_id_;
   GURL origin_;
@@ -1130,9 +1180,14 @@ class AppCacheStorageImpl::GetDeletableResponseIdsTask : public DatabaseTask {
   GetDeletableResponseIdsTask(AppCacheStorageImpl* storage, int64 max_rowid)
       : DatabaseTask(storage), max_rowid_(max_rowid) {}
 
-  virtual void Run();
-  virtual void RunCompleted();
+  // DatabaseTask:
+  virtual void Run() OVERRIDE;
+  virtual void RunCompleted() OVERRIDE;
 
+ protected:
+  virtual ~GetDeletableResponseIdsTask() {}
+
+ private:
   int64 max_rowid_;
   std::vector<int64> response_ids_;
 };
@@ -1155,8 +1210,14 @@ class AppCacheStorageImpl::InsertDeletableResponseIdsTask
  public:
   explicit InsertDeletableResponseIdsTask(AppCacheStorageImpl* storage)
       : DatabaseTask(storage) {}
-  virtual void Run();
+
+  // DatabaseTask:
+  virtual void Run() OVERRIDE;
+
   std::vector<int64> response_ids_;
+
+ protected:
+  virtual ~InsertDeletableResponseIdsTask() {}
 };
 
 void AppCacheStorageImpl::InsertDeletableResponseIdsTask::Run() {
@@ -1171,8 +1232,14 @@ class AppCacheStorageImpl::DeleteDeletableResponseIdsTask
  public:
   explicit DeleteDeletableResponseIdsTask(AppCacheStorageImpl* storage)
       : DatabaseTask(storage) {}
-  virtual void Run();
+
+  // DatabaseTask:
+  virtual void Run() OVERRIDE;
+
   std::vector<int64> response_ids_;
+
+ protected:
+  virtual ~DeleteDeletableResponseIdsTask() {}
 };
 
 void AppCacheStorageImpl::DeleteDeletableResponseIdsTask::Run() {
@@ -1191,8 +1258,13 @@ class AppCacheStorageImpl::UpdateGroupLastAccessTimeTask
     storage->NotifyStorageAccessed(group->manifest_url().GetOrigin());
   }
 
-  virtual void Run();
+  // DatabaseTask:
+  virtual void Run() OVERRIDE;
 
+ protected:
+  virtual ~UpdateGroupLastAccessTimeTask() {}
+
+ private:
   int64 group_id_;
   base::Time last_access_time_;
 };

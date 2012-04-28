@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/quota/special_storage_policy.h"
 
@@ -56,7 +57,6 @@ class FileSystemContext
       quota::QuotaManagerProxy* quota_manager_proxy,
       const FilePath& profile_path,
       const FileSystemOptions& options);
-  ~FileSystemContext();
 
   // This method can be called on any thread.
   bool DeleteDataForOriginOnFileThread(const GURL& origin_url);
@@ -131,6 +131,9 @@ class FileSystemContext
 
  private:
   friend struct DefaultContextDeleter;
+  friend class base::DeleteHelper<FileSystemContext>;
+  ~FileSystemContext();
+
   void DeleteOnCorrectThread() const;
 
   scoped_refptr<base::MessageLoopProxy> file_message_loop_;

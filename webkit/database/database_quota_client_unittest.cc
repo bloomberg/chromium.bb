@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,8 +30,6 @@ class MockDatabaseTracker : public DatabaseTracker {
       : DatabaseTracker(FilePath(), false, NULL, NULL, NULL),
         delete_called_count_(0),
         async_delete_(false) {}
-
-  virtual ~MockDatabaseTracker() {}
 
   virtual bool GetOriginInfo(
       const string16& origin_identifier,
@@ -94,6 +92,9 @@ class MockDatabaseTracker : public DatabaseTracker {
   int delete_called_count() { return delete_called_count_; }
   bool async_delete() { return async_delete_; }
   void set_async_delete(bool async) { async_delete_ = async; }
+
+ protected:
+  virtual ~MockDatabaseTracker() {}
 
  private:
   class MockOriginInfo : public OriginInfo {

@@ -64,10 +64,6 @@ BlobURLRequestJob::BlobURLRequestJob(
   DCHECK(file_thread_proxy_);
 }
 
-BlobURLRequestJob::~BlobURLRequestJob() {
-  STLDeleteValues(&index_to_reader_);
-}
-
 void BlobURLRequestJob::Start() {
   // Continue asynchronously.
   MessageLoop::current()->PostTask(
@@ -149,6 +145,10 @@ void BlobURLRequestJob::SetExtraRequestHeaders(
       }
     }
   }
+}
+
+BlobURLRequestJob::~BlobURLRequestJob() {
+  STLDeleteValues(&index_to_reader_);
 }
 
 void BlobURLRequestJob::DidStart() {

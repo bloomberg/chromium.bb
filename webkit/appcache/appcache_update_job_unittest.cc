@@ -500,6 +500,9 @@ class HttpHeadersRequestTestJob : public net::URLRequestTestJob {
     return MockHttpServer::JobFactory(request);
   }
 
+ protected:
+  virtual ~HttpHeadersRequestTestJob() {}
+
  private:
   static std::string expect_if_modified_since_;
   static bool saw_if_modified_since_;

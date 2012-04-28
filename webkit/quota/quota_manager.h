@@ -21,6 +21,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "webkit/quota/quota_database.h"
 #include "webkit/quota/quota_client.h"
 #include "webkit/quota/quota_task.h"
@@ -108,8 +109,6 @@ class QuotaManager : public QuotaTaskObserver,
                base::MessageLoopProxy* io_thread,
                base::MessageLoopProxy* db_thread,
                SpecialStoragePolicy* special_storage_policy);
-
-  virtual ~QuotaManager();
 
   // Returns a proxy object that can be used on any thread.
   QuotaManagerProxy* proxy() { return proxy_.get(); }
@@ -204,7 +203,19 @@ class QuotaManager : public QuotaTaskObserver,
 
   static const int kEvictionIntervalInMilliSeconds;
 
+ protected:
+  virtual ~QuotaManager();
+
  private:
+  friend class base::DeleteHelper<QuotaManager>;
+  friend class MockQuotaManager;
+  friend class MockStorageClient;
+  friend class quota_internals::QuotaInternalsProxy;
+  friend class QuotaManagerProxy;
+  friend class QuotaManagerTest;
+  friend class QuotaTemporaryStorageEvictor;
+  friend struct QuotaManagerDeleter;
+
   class DatabaseTaskBase;
   class InitializeTask;
   class UpdateTemporaryQuotaOverrideTask;
@@ -255,14 +266,6 @@ class QuotaManager : public QuotaTaskObserver,
 
   typedef QuotaEvictionHandler::GetUsageAndQuotaForEvictionCallback
       UsageAndQuotaDispatcherCallback;
-
-  friend class quota_internals::QuotaInternalsProxy;
-  friend struct QuotaManagerDeleter;
-  friend class MockStorageClient;
-  friend class QuotaManagerProxy;
-  friend class QuotaManagerTest;
-  friend class QuotaTemporaryStorageEvictor;
-  friend class MockQuotaManager;
 
   // This initialization method is lazily called on the IO thread
   // when the first quota manager API is called.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,28 +72,34 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
   class MockURLRequestJob : public net::URLRequestJob {
    public:
-    MockURLRequestJob(
-        net::URLRequest* request, int response_code)
+    MockURLRequestJob(net::URLRequest* request,
+                      int response_code)
         : net::URLRequestJob(request),
           response_code_(response_code),
           has_response_info_(false) {}
-    MockURLRequestJob(
-        net::URLRequest* request, const net::HttpResponseInfo& info)
+    MockURLRequestJob(net::URLRequest* request,
+                      const net::HttpResponseInfo& info)
         : net::URLRequestJob(request),
           response_code_(info.headers->response_code()),
           has_response_info_(true),
           response_info_(info) {}
-    virtual void Start() {
+
+  protected:
+    virtual ~MockURLRequestJob() {}
+    virtual void Start() OVERRIDE {
       NotifyHeadersComplete();
     }
-    virtual int GetResponseCode() const {
+    virtual int GetResponseCode() const OVERRIDE {
       return response_code_;
     }
-    virtual void GetResponseInfo(net::HttpResponseInfo* info) {
+    virtual void GetResponseInfo(
+        net::HttpResponseInfo* info) OVERRIDE {
       if (!has_response_info_)
         return;
       *info = response_info_;
     }
+
+  private:
     int response_code_;
     bool has_response_info_;
     net::HttpResponseInfo response_info_;

@@ -109,7 +109,6 @@ struct ResourceDevToolsInfo : base::RefCounted<ResourceDevToolsInfo> {
       HeadersVector;
 
   WEBKIT_GLUE_EXPORT ResourceDevToolsInfo();
-  WEBKIT_GLUE_EXPORT ~ResourceDevToolsInfo();
 
   int32 http_status_code;
   std::string http_status_text;
@@ -117,6 +116,10 @@ struct ResourceDevToolsInfo : base::RefCounted<ResourceDevToolsInfo> {
   HeadersVector response_headers;
   std::string request_headers_text;
   std::string response_headers_text;
+
+ private:
+  friend class base::RefCounted<ResourceDevToolsInfo>;
+  WEBKIT_GLUE_EXPORT ~ResourceDevToolsInfo();
 };
 
 struct ResourceResponseInfo {

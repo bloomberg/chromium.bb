@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,12 +24,6 @@ PluginStreamUrl::PluginStreamUrl(
       id_(resource_id) {
 }
 
-PluginStreamUrl::~PluginStreamUrl() {
-  if (instance() && instance()->webplugin()) {
-    instance()->webplugin()->ResourceClientDeleted(AsResourceClient());
-  }
-}
-
 bool PluginStreamUrl::Close(NPReason reason) {
   // Protect the stream against it being destroyed or the whole plugin instance
   // being destroyed within the destroy stream handler.
@@ -42,6 +36,15 @@ bool PluginStreamUrl::Close(NPReason reason) {
 
 WebPluginResourceClient* PluginStreamUrl::AsResourceClient() {
   return static_cast<WebPluginResourceClient*>(this);
+}
+
+void PluginStreamUrl::CancelRequest() {
+  if (id_ > 0) {
+    if (instance()->webplugin()) {
+      instance()->webplugin()->CancelResource(id_);
+    }
+    id_ = 0;
+  }
 }
 
 void PluginStreamUrl::WillSendRequest(const GURL& url, int http_status_code) {
@@ -119,12 +122,9 @@ int PluginStreamUrl::ResourceId() {
   return id_;
 }
 
-void PluginStreamUrl::CancelRequest() {
-  if (id_ > 0) {
-    if (instance()->webplugin()) {
-      instance()->webplugin()->CancelResource(id_);
-    }
-    id_ = 0;
+PluginStreamUrl::~PluginStreamUrl() {
+  if (instance() && instance()->webplugin()) {
+    instance()->webplugin()->ResourceClientDeleted(AsResourceClient());
   }
 }
 

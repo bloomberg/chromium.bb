@@ -27,9 +27,13 @@ class MockQuotaManager::GetModifiedSinceTask : public QuotaThreadTask {
       : QuotaThreadTask(manager, manager->io_thread_),
         origins_(origins),
         type_(type),
-        callback_(callback) {}
+        callback_(callback) {
+  }
 
  protected:
+  virtual ~GetModifiedSinceTask() {}
+
+  // QuotaThreadTask:
   virtual void RunOnTargetThread() OVERRIDE {}
 
   virtual void Completed() OVERRIDE {
@@ -53,9 +57,13 @@ class MockQuotaManager::DeleteOriginDataTask : public QuotaThreadTask {
   DeleteOriginDataTask(MockQuotaManager* manager,
                        const StatusCallback& callback)
       : QuotaThreadTask(manager, manager->io_thread_),
-        callback_(callback) {}
+        callback_(callback) {
+  }
 
  protected:
+  virtual ~DeleteOriginDataTask() {}
+
+  // QuotaThreadTask:
   virtual void RunOnTargetThread() OVERRIDE {}
 
   virtual void Completed() OVERRIDE {
@@ -94,8 +102,6 @@ MockQuotaManager::MockQuotaManager(
     : QuotaManager(is_incognito, profile_path, io_thread, db_thread,
         special_storage_policy) {
 }
-
-MockQuotaManager::~MockQuotaManager() {}
 
 bool MockQuotaManager::AddOrigin(
     const GURL& origin,
@@ -154,5 +160,7 @@ void MockQuotaManager::DeleteOriginData(
   }
   make_scoped_refptr(new DeleteOriginDataTask(this, callback))->Start();
 }
+
+MockQuotaManager::~MockQuotaManager() {}
 
 }  // namespace quota

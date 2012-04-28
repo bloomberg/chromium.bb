@@ -52,6 +52,7 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
 
  private:
   friend class base::RefCountedThreadSafe<InitializeTask>;
+  ~InitializeTask() {}
 
   void RunCallback() {
     callback_.Run(error_code_, file_info_);

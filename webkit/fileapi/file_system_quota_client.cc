@@ -41,9 +41,10 @@ class FileSystemQuotaClient::GetOriginUsageTask : public QuotaThreadTask {
     file_system_context_ = quota_client_->file_system_context_;
   }
 
+ protected:
   virtual ~GetOriginUsageTask() {}
 
- protected:
+  // QuotaThreadTask:
   virtual void RunOnTargetThread() OVERRIDE {
     FileSystemQuotaUtil* quota_util = file_system_context_->GetQuotaUtil(type_);
     if (quota_util)
@@ -73,9 +74,11 @@ class FileSystemQuotaClient::GetOriginsForTypeTask : public QuotaThreadTask {
     DCHECK(quota_client_);
     file_system_context_ = quota_client_->file_system_context_;
   }
-  virtual ~GetOriginsForTypeTask() {}
 
  protected:
+  virtual ~GetOriginsForTypeTask() {}
+
+  // QuotaThreadTask:
   virtual void RunOnTargetThread() OVERRIDE {
     FileSystemQuotaUtil* quota_util = file_system_context_->GetQuotaUtil(type_);
     if (quota_util)
@@ -107,9 +110,11 @@ class FileSystemQuotaClient::GetOriginsForHostTask : public QuotaThreadTask {
     DCHECK(quota_client_);
     file_system_context_ = quota_client_->file_system_context_;
   }
-  virtual ~GetOriginsForHostTask() {}
 
  protected:
+  virtual ~GetOriginsForHostTask() {}
+
+  // QuotaThreadTask:
   virtual void RunOnTargetThread() OVERRIDE {
     FileSystemQuotaUtil* quota_util = file_system_context_->GetQuotaUtil(type_);
     if (quota_util)
@@ -145,8 +150,10 @@ class FileSystemQuotaClient::DeleteOriginTask
         callback_(callback) {
   }
 
+ protected:
   virtual ~DeleteOriginTask() {}
 
+  // QuotaThreadTask:
   virtual void RunOnTargetThread() OVERRIDE {
     if (file_system_context_->DeleteDataForOriginAndTypeOnFileThread(
             origin_, type_))
@@ -158,6 +165,7 @@ class FileSystemQuotaClient::DeleteOriginTask
   virtual void Completed() OVERRIDE {
     callback_.Run(status_);
   }
+
  private:
   FileSystemContext* file_system_context_;
   GURL origin_;
@@ -176,8 +184,7 @@ FileSystemQuotaClient::FileSystemQuotaClient(
   DCHECK(file_message_loop);
 }
 
-FileSystemQuotaClient::~FileSystemQuotaClient() {
-}
+FileSystemQuotaClient::~FileSystemQuotaClient() {}
 
 quota::QuotaClient::ID FileSystemQuotaClient::id() const {
   return quota::QuotaClient::kFileSystem;

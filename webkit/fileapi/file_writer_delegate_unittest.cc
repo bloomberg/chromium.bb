@@ -158,8 +158,9 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
         base::Bind(&FileWriterDelegateTestJob::NotifyHeadersComplete, this));
   }
 
-  virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int *bytes_read)
-      OVERRIDE {
+  virtual bool ReadRawData(net::IOBuffer* buf,
+                           int buf_size,
+                           int *bytes_read) OVERRIDE {
     if (remaining_bytes_ < buf_size)
       buf_size = static_cast<int>(remaining_bytes_);
 
@@ -175,6 +176,9 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
   virtual int GetResponseCode() const OVERRIDE {
     return 200;
   }
+
+ protected:
+  virtual ~FileWriterDelegateTestJob() {}
 
  private:
   std::string content_;

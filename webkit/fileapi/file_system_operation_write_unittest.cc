@@ -57,12 +57,15 @@ class MockQuotaManager : public QuotaManager {
   void set_usage(int64 usage) { usage_ = usage; }
   void set_quota(int64 quota) { quota_ = quota; }
 
+ protected:
+  virtual ~MockQuotaManager() {}
+
  private:
   int64 usage_;
   int64 quota_;
 };
 
-}  // namespace (anonymous)
+}  // namespace
 
 class FileSystemOperationWriteTest
     : public testing::Test,
@@ -151,11 +154,12 @@ class TestURLRequestContext : public net::URLRequestContext {
   TestURLRequestContext()
       : blob_storage_controller_(new webkit_blob::BlobStorageController) {}
 
-  virtual ~TestURLRequestContext() {}
-
   webkit_blob::BlobStorageController* blob_storage_controller() const {
     return blob_storage_controller_.get();
   }
+
+ protected:
+  virtual ~TestURLRequestContext() {}
 
  private:
   scoped_ptr<webkit_blob::BlobStorageController> blob_storage_controller_;

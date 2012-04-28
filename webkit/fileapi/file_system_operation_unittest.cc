@@ -62,8 +62,12 @@ class MockQuotaManager : public QuotaManager {
     callback.Run(quota::kQuotaStatusOk, usage_, quota_);
   }
 
+ protected:
+  virtual ~MockQuotaManager() {}
+
  private:
   friend class MockQuotaManagerProxy;
+
   void SetQuota(const GURL& origin, StorageType type, int64 quota) {
     EXPECT_EQ(origin_, origin);
     EXPECT_EQ(type_, type);
@@ -95,10 +99,6 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
       : QuotaManagerProxy(quota_manager,
                           base::MessageLoopProxy::current()),
         registered_client_(NULL) {
-  }
-
-  virtual ~MockQuotaManagerProxy() {
-    EXPECT_FALSE(registered_client_);
   }
 
   virtual void RegisterClient(QuotaClient* client) OVERRIDE {
@@ -140,10 +140,16 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
     mock_manager()->SetQuota(origin, type, quota);
   }
 
+ protected:
+  virtual ~MockQuotaManagerProxy() {
+    EXPECT_FALSE(registered_client_);
+  }
+
  private:
   MockQuotaManager* mock_manager() const {
     return static_cast<MockQuotaManager*>(quota_manager());
   }
+
   QuotaClient* registered_client_;
 };
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,20 +27,15 @@ class PluginStreamUrl : public PluginStream,
                   PluginInstance *instance,
                   bool notify_needed,
                   void *notify_data);
-  virtual ~PluginStreamUrl();
 
   // Stop sending the stream to the client.
   // Overrides the base Close so we can cancel our fetching the URL if
   // it is still loading.
   virtual bool Close(NPReason reason) OVERRIDE;
-
   virtual WebPluginResourceClient* AsResourceClient() OVERRIDE;
-
   virtual void CancelRequest() OVERRIDE;
 
-  //
   // WebPluginResourceClient methods
-  //
   virtual void WillSendRequest(const GURL& url, int http_status_code) OVERRIDE;
   virtual void DidReceiveResponse(const std::string& mime_type,
                                   const std::string& headers,
@@ -54,6 +49,9 @@ class PluginStreamUrl : public PluginStream,
   virtual void DidFail() OVERRIDE;
   virtual bool IsMultiByteResponseExpected() OVERRIDE;
   virtual int ResourceId() OVERRIDE;
+
+ protected:
+  virtual ~PluginStreamUrl();
 
  private:
   GURL url_;

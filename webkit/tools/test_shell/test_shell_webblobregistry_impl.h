@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,9 @@ class TestShellWebBlobRegistryImpl
   virtual void registerBlobURL(const WebKit::WebURL& url,
                                const WebKit::WebURL& src_url);
   virtual void unregisterBlobURL(const WebKit::WebURL& url);
+
+ protected:
+  virtual ~TestShellWebBlobRegistryImpl() {}
 
  private:
   friend class base::RefCountedThreadSafe<TestShellWebBlobRegistryImpl>;

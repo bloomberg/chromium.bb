@@ -70,9 +70,6 @@ FileSystemContext::FileSystemContext(
 #endif
 }
 
-FileSystemContext::~FileSystemContext() {
-}
-
 bool FileSystemContext::DeleteDataForOriginOnFileThread(
     const GURL& origin_url) {
   DCHECK(file_message_loop_->BelongsToCurrentThread());
@@ -144,14 +141,6 @@ FileSystemContext::external_provider() const {
   return external_provider_.get();
 }
 
-void FileSystemContext::DeleteOnCorrectThread() const {
-  if (!io_message_loop_->BelongsToCurrentThread() &&
-      io_message_loop_->DeleteSoon(FROM_HERE, this)) {
-    return;
-  }
-  delete this;
-}
-
 void FileSystemContext::OpenFileSystem(
     const GURL& origin_url,
     FileSystemType type,
@@ -204,6 +193,16 @@ webkit_blob::FileReader* FileSystemContext::CreateFileReader(
   if (!mount_point_provider)
     return NULL;
   return mount_point_provider->CreateFileReader(url, offset, file_proxy, this);
+}
+
+FileSystemContext::~FileSystemContext() {}
+
+void FileSystemContext::DeleteOnCorrectThread() const {
+  if (!io_message_loop_->BelongsToCurrentThread() &&
+      io_message_loop_->DeleteSoon(FROM_HERE, this)) {
+    return;
+  }
+  delete this;
 }
 
 }  // namespace fileapi

@@ -35,8 +35,6 @@ class BufferedDataSource : public media::DataSource {
                      WebKit::WebFrame* frame,
                      media::MediaLog* media_log);
 
-  virtual ~BufferedDataSource();
-
   // Initialize this object using |url|. This object calls |status_cb| when
   // initialization has completed.
   //
@@ -73,6 +71,8 @@ class BufferedDataSource : public media::DataSource {
   virtual void SetBitrate(int bitrate) OVERRIDE;
 
  protected:
+  virtual ~BufferedDataSource();
+
   // A factory method to create a BufferedResourceLoader based on the read
   // parameters. We can override this file to object a mock
   // BufferedResourceLoader for testing.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,9 +43,12 @@ class AppCachePolicy;
 struct APPCACHE_EXPORT AppCacheInfoCollection
     : public base::RefCountedThreadSafe<AppCacheInfoCollection> {
   AppCacheInfoCollection();
-  virtual ~AppCacheInfoCollection();
 
   std::map<GURL, AppCacheInfoVector> infos_by_origin;
+
+ private:
+  friend class base::RefCountedThreadSafe<AppCacheInfoCollection>;
+  virtual ~AppCacheInfoCollection();
 };
 
 // Class that manages the application cache service. Sends notifications

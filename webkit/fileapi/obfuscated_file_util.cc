@@ -271,10 +271,6 @@ ObfuscatedFileUtil::ObfuscatedFileUtil(
       file_system_directory_(file_system_directory) {
 }
 
-ObfuscatedFileUtil::~ObfuscatedFileUtil() {
-  DropDatabases();
-}
-
 PlatformFileError ObfuscatedFileUtil::CreateOrOpen(
     FileSystemOperationContext* context,
     const FileSystemPath& virtual_path, int file_flags,
@@ -1004,6 +1000,10 @@ bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
 // static
 int64 ObfuscatedFileUtil::ComputeFilePathCost(const FilePath& path) {
   return UsageForPath(VirtualPath::BaseName(path).value().size());
+}
+
+ObfuscatedFileUtil::~ObfuscatedFileUtil() {
+  DropDatabases();
 }
 
 PlatformFileError ObfuscatedFileUtil::GetFileInfoInternal(

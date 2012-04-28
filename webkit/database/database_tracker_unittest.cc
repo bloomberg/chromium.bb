@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,10 +94,6 @@ class TestQuotaManagerProxy : public quota::QuotaManagerProxy {
         registered_client_(NULL) {
   }
 
-  virtual ~TestQuotaManagerProxy() {
-    EXPECT_FALSE(registered_client_);
-  }
-
   virtual void RegisterClient(quota::QuotaClient* client) {
     EXPECT_FALSE(registered_client_);
     registered_client_ = client;
@@ -153,6 +149,11 @@ class TestQuotaManagerProxy : public quota::QuotaManagerProxy {
 
   // Map from origin to <count, sum of deltas>
   std::map<GURL, std::pair<int, int64> > modifications_;
+
+ protected:
+  virtual ~TestQuotaManagerProxy() {
+    EXPECT_FALSE(registered_client_);
+  }
 };
 
 

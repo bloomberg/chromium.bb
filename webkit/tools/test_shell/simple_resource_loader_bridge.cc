@@ -109,7 +109,7 @@ class TestShellNetworkDelegate : public net::NetworkDelegate {
  public:
   virtual ~TestShellNetworkDelegate() {}
 
- private:
+ protected:
   // net::NetworkDelegate implementation.
   virtual int OnBeforeURLRequest(net::URLRequest* request,
                                  const net::CompletionCallback& callback,
@@ -195,14 +195,13 @@ FileOverHTTPParams* g_file_over_http_params = NULL;
 
 class IOThread : public base::Thread {
  public:
-  IOThread() : base::Thread("IOThread") {
-  }
+  IOThread() : base::Thread("IOThread") {}
 
   ~IOThread() {
     Stop();
   }
 
-  virtual void Init() {
+  virtual void Init() OVERRIDE {
     if (g_request_context_params) {
       g_request_context = new TestShellRequestContext(
           g_request_context_params->cache_path,
@@ -228,7 +227,7 @@ class IOThread : public base::Thread {
         g_request_context->blob_storage_controller());
   }
 
-  virtual void CleanUp() {
+  virtual void CleanUp() OVERRIDE {
     // In reverse order of initialization.
     TestShellWebBlobRegistryImpl::Cleanup();
     SimpleFileSystem::CleanupOnIOThread();
@@ -779,12 +778,12 @@ class SyncRequestProxy : public RequestProxy {
   }
 
   // --------------------------------------------------------------------------
-  // Event hooks that run on the IO thread:
+  // RequestProxy event hooks that run on the IO thread:
 
   virtual void OnReceivedRedirect(
       const GURL& new_url,
       const ResourceResponseInfo& info,
-      bool* defer_redirect) {
+      bool* defer_redirect) OVERRIDE {
     // TODO(darin): It would be much better if this could live in WebCore, but
     // doing so requires API changes at all levels.  Similar code exists in
     // WebCore/platform/network/cf/ResourceHandleCFNet.cpp :-(
@@ -796,11 +795,11 @@ class SyncRequestProxy : public RequestProxy {
     result_->url = new_url;
   }
 
-  virtual void OnReceivedResponse(const ResourceResponseInfo& info) {
+  virtual void OnReceivedResponse(const ResourceResponseInfo& info) OVERRIDE {
     *static_cast<ResourceResponseInfo*>(result_) = info;
   }
 
-  virtual void OnReceivedData(int bytes_read) {
+  virtual void OnReceivedData(int bytes_read) OVERRIDE {
     if (download_to_file_)
       file_stream_.WriteSync(buf_->data(), bytes_read);
     else
@@ -808,14 +807,18 @@ class SyncRequestProxy : public RequestProxy {
     AsyncReadData();  // read more (may recurse)
   }
 
-  virtual void OnCompletedRequest(const net::URLRequestStatus& status,
-                                  const std::string& security_info,
-                                  const base::TimeTicks& complete_time) {
+  virtual void OnCompletedRequest(
+      const net::URLRequestStatus& status,
+      const std::string& security_info,
+      const base::TimeTicks& complete_time) OVERRIDE {
     if (download_to_file_)
       file_stream_.CloseSync();
     result_->status = status;
     event_.Signal();
   }
+
+ protected:
+  virtual ~SyncRequestProxy() {}
 
  private:
   ResourceLoaderBridge::SyncLoadResponse* result_;
@@ -949,7 +952,6 @@ class CookieSetter : public base::RefCountedThreadSafe<CookieSetter> {
 
  private:
   friend class base::RefCountedThreadSafe<CookieSetter>;
-
   ~CookieSetter() {}
 };
 
@@ -970,13 +972,13 @@ class CookieGetter : public base::RefCountedThreadSafe<CookieGetter> {
   }
 
  private:
+  friend class base::RefCountedThreadSafe<CookieGetter>;
+  ~CookieGetter() {}
+
   void OnGetCookies(const std::string& cookie_line) {
     result_ = cookie_line;
     event_.Signal();
   }
-  friend class base::RefCountedThreadSafe<CookieGetter>;
-
-  ~CookieGetter() {}
 
   base::WaitableEvent event_;
   std::string result_;

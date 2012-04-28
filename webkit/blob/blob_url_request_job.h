@@ -34,7 +34,6 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   BlobURLRequestJob(net::URLRequest* request,
                     BlobData* blob_data,
                     base::MessageLoopProxy* resolving_message_loop_proxy);
-  virtual ~BlobURLRequestJob();
 
   // net::URLRequestJob methods.
   virtual void Start() OVERRIDE;
@@ -47,6 +46,9 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   virtual int GetResponseCode() const OVERRIDE;
   virtual void SetExtraRequestHeaders(
       const net::HttpRequestHeaders& headers) OVERRIDE;
+
+ protected:
+  virtual ~BlobURLRequestJob();
 
  private:
   typedef std::map<size_t, LocalFileReader*> IndexToReaderMap;

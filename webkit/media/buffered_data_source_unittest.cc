@@ -66,6 +66,8 @@ class MockBufferedDataSource : public BufferedDataSource {
   void set_loading(bool loading) { loading_ = loading; }
 
  private:
+  virtual ~MockBufferedDataSource() {}
+
   // Whether the resource load has starting loading but yet to been cancelled.
   bool loading_;
 

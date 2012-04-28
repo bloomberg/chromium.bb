@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,9 +17,11 @@ namespace npapi {
 // variable, we can get a crash if no plugin libs were marked as always loaded.
 class PluginLibTest : public PluginLib {
  public:
-  PluginLibTest() : PluginLib(WebPluginInfo(), NULL) {
-  }
+  PluginLibTest() : PluginLib(WebPluginInfo(), NULL) {}
   using PluginLib::Unload;
+
+ protected:
+  virtual ~PluginLibTest() {}
 };
 
 TEST(PluginLibLoading, UnloadAllPlugins) {

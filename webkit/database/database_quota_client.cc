@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,8 @@ class DatabaseQuotaClient::HelperTask : public quota::QuotaThreadTask {
         client_(client), db_tracker_(client->db_tracker_) {
   }
 
+  virtual ~HelperTask() {}
+
   DatabaseQuotaClient* client_;
   scoped_refptr<DatabaseTracker> db_tracker_;
 };
@@ -46,7 +48,9 @@ class DatabaseQuotaClient::GetOriginUsageTask : public HelperTask {
         origin_url_(origin_url), usage_(0) {
   }
 
- private:
+ protected:
+  virtual ~GetOriginUsageTask() {}
+
   virtual void RunOnTargetThread() OVERRIDE {
     OriginInfo info;
     if (db_tracker_->GetOriginInfo(
@@ -55,9 +59,12 @@ class DatabaseQuotaClient::GetOriginUsageTask : public HelperTask {
       usage_ = info.TotalSize();
     }
   }
+
   virtual void Completed() OVERRIDE {
     client_->DidGetOriginUsage(origin_url_, usage_);
   }
+
+ private:
   GURL origin_url_;
   int64 usage_;
 };
@@ -69,6 +76,8 @@ class DatabaseQuotaClient::GetOriginsTaskBase : public HelperTask {
       base::MessageLoopProxy* db_tracker_thread)
       : HelperTask(client, db_tracker_thread) {
   }
+
+  virtual ~GetOriginsTaskBase() {}
 
   virtual bool ShouldAddOrigin(const GURL& origin) = 0;
 
@@ -99,6 +108,8 @@ class DatabaseQuotaClient::GetAllOriginsTask : public GetOriginsTaskBase {
   }
 
  protected:
+  virtual ~GetAllOriginsTask() {}
+
   virtual bool ShouldAddOrigin(const GURL& origin) OVERRIDE {
     return true;
   }
@@ -122,13 +133,18 @@ class DatabaseQuotaClient::GetOriginsForHostTask : public GetOriginsTaskBase {
         type_(type) {
   }
 
- private:
+ protected:
+  virtual ~GetOriginsForHostTask() {}
+
   virtual bool ShouldAddOrigin(const GURL& origin) OVERRIDE {
     return host_ == net::GetHostOrSpecFromURL(origin);
   }
+
   virtual void Completed() OVERRIDE {
     client_->DidGetOriginsForHost(host_, origins_, type_);
   }
+
+ private:
   std::string host_;
   quota::StorageType type_;
 };
@@ -146,7 +162,9 @@ class DatabaseQuotaClient::DeleteOriginTask : public HelperTask {
         caller_callback_(caller_callback) {
   }
 
- private:
+ protected:
+  virtual ~DeleteOriginTask() {}
+
   virtual void Completed() OVERRIDE {
     if (caller_callback_.is_null())
       return;
@@ -170,6 +188,7 @@ class DatabaseQuotaClient::DeleteOriginTask : public HelperTask {
     return false;
   }
 
+ private:
   void OnCompletionCallback(int rv) {
     if (rv == net::OK)
       result_ = quota::kQuotaStatusOk;

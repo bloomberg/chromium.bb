@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,11 +32,6 @@ AppCacheURLRequestJob::AppCacheURLRequestJob(
       cache_entry_not_found_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(storage_);
-}
-
-AppCacheURLRequestJob::~AppCacheURLRequestJob() {
-  if (storage_)
-    storage_->CancelDelegateCallbacks(this);
 }
 
 void AppCacheURLRequestJob::DeliverAppCachedResponse(
@@ -114,6 +109,11 @@ void AppCacheURLRequestJob::BeginDelivery() {
       NOTREACHED();
       break;
   }
+}
+
+AppCacheURLRequestJob::~AppCacheURLRequestJob() {
+  if (storage_)
+    storage_->CancelDelegateCallbacks(this);
 }
 
 void AppCacheURLRequestJob::OnResponseInfoLoaded(

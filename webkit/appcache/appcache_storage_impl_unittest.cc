@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,6 +157,9 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     bool async_;
+
+   protected:
+    virtual ~MockQuotaManager() {}
   };
 
   class MockQuotaManagerProxy : public quota::QuotaManagerProxy {
@@ -200,6 +203,9 @@ class AppCacheStorageImplTest : public testing::Test {
     GURL last_origin_;
     int last_delta_;
     scoped_refptr<MockQuotaManager> mock_manager_;
+
+   protected:
+    virtual ~MockQuotaManagerProxy() {}
   };
 
   template <class Method>

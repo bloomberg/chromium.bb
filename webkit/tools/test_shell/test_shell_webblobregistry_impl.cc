@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,9 +36,6 @@ void TestShellWebBlobRegistryImpl::Cleanup() {
   g_blob_storage_controller = NULL;
 }
 
-TestShellWebBlobRegistryImpl::TestShellWebBlobRegistryImpl() {
-}
-
 void TestShellWebBlobRegistryImpl::registerBlobURL(
     const WebURL& url, WebBlobData& data) {
   DCHECK(g_io_thread);
@@ -65,6 +62,8 @@ void TestShellWebBlobRegistryImpl::unregisterBlobURL(const WebURL& url) {
       &TestShellWebBlobRegistryImpl::RemoveBlob, this,
       thread_safe_url));
 }
+
+TestShellWebBlobRegistryImpl::TestShellWebBlobRegistryImpl() {}
 
 void TestShellWebBlobRegistryImpl::AddFinishedBlob(
     const GURL& url, BlobData* blob_data) {
