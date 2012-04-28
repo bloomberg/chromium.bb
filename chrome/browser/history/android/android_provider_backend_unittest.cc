@@ -75,6 +75,8 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
   }
   virtual void DBLoaded(int backend_id) OVERRIDE {}
   virtual void StartTopSitesMigration(int backend_id) OVERRIDE {}
+  virtual void NotifyVisitDBObserversOnAddVisit(
+      const history::BriefVisitInfo& info) OVERRIDE {}
 
   URLsDeletedDetails* deleted_details() const {
     return deleted_details_.get();
@@ -1644,7 +1646,7 @@ TEST_F(AndroidProviderBackendTest, TestAndroidCTSComplianceForZeroVisitCount) {
                                              &history_db_));
   scoped_ptr<AndroidProviderBackend> backend(
       new AndroidProviderBackend(android_cache_db_name_, &history_db_,
-                                 &thumbnail_db_, &bookmark_model_, &delegate_));
+                                 &thumbnail_db_, bookmark_model_, &delegate_));
   URLRow url_row(GURL("http://www.google.com"));
   url_row.set_last_visit(Time::Now());
   url_row.set_visit_count(0);
