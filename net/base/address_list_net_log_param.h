@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,9 @@ class AddressListNetLogParam : public NetLog::EventParameters {
   explicit AddressListNetLogParam(const AddressList& address_list);
 
   virtual base::Value* ToValue() const OVERRIDE;
+
+ protected:
+  virtual ~AddressListNetLogParam() {}
 
  private:
   AddressList address_list_;

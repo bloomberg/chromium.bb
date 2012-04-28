@@ -27,8 +27,6 @@ class NET_EXPORT ListenSocket
   // should be split up similarly.
   class ListenSocketDelegate {
    public:
-    virtual ~ListenSocketDelegate() {}
-
     // server is the original listening Socket, connection is the new
     // Socket that was created.  Ownership of connection is transferred
     // to the delegate with this call.
@@ -38,6 +36,9 @@ class NET_EXPORT ListenSocket
                          const char* data,
                          int len) = 0;
     virtual void DidClose(ListenSocket *sock) = 0;
+
+   protected:
+    virtual ~ListenSocketDelegate() {}
   };
 
   // Send data to the socket.

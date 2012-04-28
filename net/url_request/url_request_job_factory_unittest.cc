@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ class MockURLRequestJob : public URLRequestJob {
         status_(status),
         ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
-  virtual void Start() {
+  virtual void Start() OVERRIDE {
     // Start reading asynchronously so that all error reporting and data
     // callbacks happen as they would for network requests.
     MessageLoop::current()->PostTask(
@@ -29,6 +29,9 @@ class MockURLRequestJob : public URLRequestJob {
         base::Bind(&MockURLRequestJob::StartAsync,
                    weak_factory_.GetWeakPtr()));
   }
+
+ protected:
+  virtual ~MockURLRequestJob() {}
 
  private:
   void StartAsync() {
@@ -42,7 +45,7 @@ class MockURLRequestJob : public URLRequestJob {
 
 class DummyProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
  public:
-  virtual URLRequestJob* MaybeCreateJob(URLRequest* request) const {
+  virtual URLRequestJob* MaybeCreateJob(URLRequest* request) const OVERRIDE {
     return new MockURLRequestJob(
         request, URLRequestStatus(URLRequestStatus::SUCCESS, OK));
   }
@@ -52,9 +55,10 @@ class DummyInterceptor : public URLRequestJobFactory::Interceptor {
  public:
   DummyInterceptor()
       : did_intercept_(false),
-        handle_all_protocols_(false) { }
+        handle_all_protocols_(false) {
+  }
 
-  virtual URLRequestJob* MaybeIntercept(URLRequest* request) const {
+  virtual URLRequestJob* MaybeIntercept(URLRequest* request) const OVERRIDE {
     did_intercept_ = true;
     return new MockURLRequestJob(
         request,
@@ -63,17 +67,17 @@ class DummyInterceptor : public URLRequestJobFactory::Interceptor {
 
   virtual URLRequestJob* MaybeInterceptRedirect(
       const GURL& /* location */,
-      URLRequest* /* request */) const {
+      URLRequest* /* request */) const OVERRIDE {
     return NULL;
   }
 
   virtual URLRequestJob* MaybeInterceptResponse(
-      URLRequest* /* request */) const {
+      URLRequest* /* request */) const OVERRIDE {
     return NULL;
   }
 
   virtual bool WillHandleProtocol(
-      const std::string& /* protocol */) const {
+      const std::string& /* protocol */) const OVERRIDE {
     return handle_all_protocols_;
   }
 

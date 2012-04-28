@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,9 +20,6 @@ UDPDataTransferNetLogParam::UDPDataTransferNetLogParam(
     address_.reset(new IPEndPoint(*address));
 }
 
-UDPDataTransferNetLogParam::~UDPDataTransferNetLogParam() {
-}
-
 Value* UDPDataTransferNetLogParam::ToValue() const {
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger("byte_count", byte_count_);
@@ -32,5 +29,7 @@ Value* UDPDataTransferNetLogParam::ToValue() const {
     dict->SetString("address", address_->ToString());
   return dict;
 }
+
+UDPDataTransferNetLogParam::~UDPDataTransferNetLogParam() {}
 
 }  // namespace net

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,11 +23,15 @@ class UDPDataTransferNetLogParam : public NetLog::EventParameters {
  public:
   // |bytes| are only logged when |log_bytes| is non-NULL.
   // |address| may be NULL.
-  UDPDataTransferNetLogParam(int byte_count, const char* bytes, bool log_bytes,
+  UDPDataTransferNetLogParam(int byte_count,
+                             const char* bytes,
+                             bool log_bytes,
                              const IPEndPoint* address);
-  virtual ~UDPDataTransferNetLogParam();
 
   virtual base::Value* ToValue() const OVERRIDE;
+
+ protected:
+  virtual ~UDPDataTransferNetLogParam();
 
  private:
   const int byte_count_;
