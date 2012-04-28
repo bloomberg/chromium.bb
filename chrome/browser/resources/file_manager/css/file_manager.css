@@ -210,43 +210,41 @@ div.sidebar-splitter {
 }
 
 /* Roots list at the left. */
-list.roots-list {
-  border-right: 1px solid #d2d2d2;
+#roots-list {
+  border-right: 1px solid rgb(170, 170, 170);
 }
 
-list.roots-list > * {
+#roots-list > * {
   background-color: #e6e6e6;
+  background-image: none;
   border: none;
-  border-radius: 0;
   height: 39px;
   margin: 0;
   padding: 0 5px;
 }
 
-list.roots-list > .accepts,
-list.roots-list > [lead][selected],
-list.roots-list > [lead],
-list.roots-list > [selected],
-list.roots-list > [anchor] {
-  background-color: rgb(204, 219, 243);
-  background-image: none;
-  border-bottom: 1px solid rgb(195, 210, 233);
-  border-top: 1px solid rgb(195, 210, 233);
-  height: 37px;
+#roots-list > :hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.05);
 }
 
-list.roots-list > .accepts:hover,
-list.roots-list > [lead]:hover,
-list.roots-list > [lead][selected]:hover,
-list.roots-list > [selected]:hover,
-list.roots-list > [anchor]:hover {
-  background-color: rgb(193, 211, 236) !important;
-  border-bottom: 1px solid transparent !important;
-  border-top: 1px solid transparent !important;
-  height: 37px !important;
+#roots-list > .accepts,
+#roots-list > [lead][selected],
+#roots-list > [lead],
+#roots-list > [selected],
+#roots-list > [anchor] {
+  background-color: rgb(204, 204, 204);
 }
 
-list.roots-list li.root-item {
+#roots-list > .accepts:hover,
+#roots-list > [lead]:hover,
+#roots-list > [lead][selected]:hover,
+#roots-list > [selected]:hover,
+#roots-list > [anchor]:hover {
+  background-color: rgb(192, 192, 192);
+}
+
+#roots-list li.root-item {
   -webkit-box-align: center;
   display: -webkit-box;
   padding-left: 11px;
@@ -477,7 +475,7 @@ button.settings {
   display: -webkit-box;
 }
 
-.list-container {
+#list-container {
   -webkit-box-flex: 1;
   display: -webkit-box;
   position: relative;
@@ -560,36 +558,38 @@ div.img-container > img {
   position: absolute;
 }
 
-.list-container list > *,
-.list-container grid > * {
+#list-container list > *,
+#list-container grid > * {
   background-image: none;
   border-radius: 0;
   line-height: 30px;
 }
 
-.list-container list > [selected],
-.list-container grid > [selected] {
+#list-container list > [selected],
+#list-container grid > [selected] {
   background-color: rgb(203, 219, 241);
-  border-color: rgb(224, 233, 247);
 }
 
-.list-container list > .accepts[selected],
-.list-container grid > .accepts[selected],
-.list-container list > [selected]:hover,
-.list-container grid > [selected]:hover {
+#list-container list > li.table-row[selected] {
+  border-top: 1px solid rgb(224, 233, 247);
+}
+
+#list-container list > .accepts[selected],
+#list-container grid > .accepts[selected],
+#list-container list > [selected]:hover,
+#list-container grid > [selected]:hover {
   background-color: rgb(193, 211, 236);
 }
 
-.list-container list > .accepts,
-.list-container grid > .accepts,
-.list-container list > :hover,
-.list-container grid > :hover {
-  background-color: rgb(242, 246, 250);
-  border-color: rgb(242, 246, 250);
+#list-container list > .accepts,
+#list-container grid > .accepts,
+#list-container list > :hover,
+#list-container grid > :hover {
+  background-color: #f1f1f1;
 }
 
-.list-container.nohover list > :not([selected]):hover,
-.list-container.nohover grid > :not([selected]):hover {
+#list-container.nohover list > :not([selected]):hover,
+#list-container.nohover grid > :not([selected]):hover {
   background-color: transparent;
   border-color: transparent;
 }
@@ -807,29 +807,31 @@ input.rename {
   top: 1px;
 }
 
-li.thumbnail-item .file-checkbox {
+#list-container li.thumbnail-item .file-checkbox {
   -webkit-margin-start: 7px;
   margin-top: 6px;
   opacity: 0;
 }
 
-li.table-row:hover .file-checkbox,
-li.table-row:hover .pin,
-li.thumbnail-item:hover .file-checkbox {
+#list-container li.table-row:hover .file-checkbox,
+#list-container li.table-row:hover .pin,
+#list-container li.thumbnail-item:hover .file-checkbox {
   opacity: 0.5;
 }
 
 .file-checkbox:hover,
 .pin:hover,
-li.table-row[selected] .file-checkbox,
-li.table-row[selected] .pin,
-li.table-row .pin:checked,
-li.thumbnail-item[selected] .file-checkbox {
+#list-container li.table-row[selected] .file-checkbox,
+#list-container li.table-row[selected] .pin,
+#list-container li.table-row .pin:checked,
+#list-container li.thumbnail-item[selected] .file-checkbox {
   opacity: 1 !important;
 }
 
-li.table-row {
-  line-height: 38px;
+#list-container li.table-row {
+  border: none;
+  border-top: 1px solid transparent;
+  line-height: 39px;
   padding-bottom: 1px;
   padding-top: 1px;
 }

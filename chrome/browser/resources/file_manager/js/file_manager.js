@@ -520,7 +520,7 @@ FileManager.prototype = {
     this.filenameInput_.addEventListener(
         'focus', this.onFilenameInputFocus_.bind(this));
 
-    this.listContainer_ = this.dialogDom_.querySelector('.list-container');
+    this.listContainer_ = this.dialogDom_.querySelector('#list-container');
     this.listContainer_.addEventListener(
         'keydown', this.onListKeyDown_.bind(this));
     this.listContainer_.addEventListener(
@@ -642,7 +642,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.initRootsList_ = function() {
-    this.rootsList_ = this.dialogDom_.querySelector('.roots-list');
+    this.rootsList_ = this.dialogDom_.querySelector('#roots-list');
     cr.ui.List.decorate(this.rootsList_);
     this.rootsList_.startBatchUpdates();
 
@@ -3718,7 +3718,7 @@ FileManager.prototype = {
   };
 
   /**
-   * KeyDown event handler for the div.list-container element.
+   * KeyDown event handler for the div#list-container element.
    */
   FileManager.prototype.onListKeyDown_ = function(event) {
     if (event.srcElement.tagName == 'INPUT') {
@@ -3805,7 +3805,7 @@ FileManager.prototype = {
   };
 
   /**
-   * KeyPress event handler for the div.list-container element.
+   * KeyPress event handler for the div#list-container element.
    */
   FileManager.prototype.onListKeyPress_ = function(event) {
     if (event.srcElement.tagName == 'INPUT') {
@@ -3826,7 +3826,7 @@ FileManager.prototype = {
   };
 
   /**
-   * Mousemove event handler for the div.list-container element.
+   * Mousemove event handler for the div#list-container element.
    */
   FileManager.prototype.onListMouseMove_ = function(event) {
     // The user grabbed the mouse, restore the hover highlighting.
