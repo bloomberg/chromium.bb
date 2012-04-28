@@ -152,7 +152,7 @@ void VideoCaptureModuleImpl::StartCaptureInternal(
   cap.width = capability.width;
   cap.height = capability.height;
   cap.frame_rate = capability.maxFPS;
-  cap.color = media::VideoFrame::I420;
+  cap.color = media::VideoCaptureCapability::kI420;
   capture_engine_->StartCapture(this, cap);
 }
 

@@ -93,7 +93,7 @@ class CaptureVideoDecoderTest : public ::testing::Test {
     capability.height = kHeight;
     capability.frame_rate = kFPS;
     capability.expected_capture_delay = 0;
-    capability.color = media::VideoFrame::I420;
+    capability.color = media::VideoCaptureCapability::kI420;
     capability.interlaced = false;
 
     decoder_ = new CaptureVideoDecoder(message_loop_proxy_,

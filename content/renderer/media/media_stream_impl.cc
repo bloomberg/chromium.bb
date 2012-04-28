@@ -483,8 +483,8 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateLocalVideoDecoder(
   capability.width = kVideoCaptureWidth;
   capability.height = kVideoCaptureHeight;
   capability.frame_rate = kVideoCaptureFramePerSecond;
+  capability.color = media::VideoCaptureCapability::kI420;
   capability.expected_capture_delay = 0;
-  capability.color = media::VideoFrame::I420;
   capability.interlaced = false;
   return new CaptureVideoDecoder(
       message_loop_factory->GetMessageLoopProxy("CaptureVideoDecoderThread"),

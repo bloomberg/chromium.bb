@@ -278,13 +278,13 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
 
   // Do color conversion from the camera format to I420.
   switch (frame_info_.color) {
-    case media::VideoCaptureDevice::kColorUnknown:  // Color format not set.
+    case media::VideoCaptureCapability::kColorUnknown:  // Color format not set.
       break;
-    case media::VideoCaptureDevice::kI420: {
+    case media::VideoCaptureCapability::kI420: {
       memcpy(target, data, (frame_info_.width * frame_info_.height * 3) / 2);
       break;
     }
-    case media::VideoCaptureDevice::kYV12: {
+    case media::VideoCaptureCapability::kYV12: {
       const uint8* ptr = data;
       memcpy(yplane, ptr, (frame_info_.width * frame_info_.height));
       ptr += frame_info_.width * frame_info_.height;
@@ -293,17 +293,17 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
       memcpy(uplane, ptr, (frame_info_.width * frame_info_.height) >> 2);
       break;
     }
-    case media::VideoCaptureDevice::kNV21: {
+    case media::VideoCaptureCapability::kNV21: {
       media::ConvertNV21ToYUV(data, yplane, uplane, vplane, frame_info_.width,
                               frame_info_.height);
       break;
     }
-    case media::VideoCaptureDevice::kYUY2: {
+    case media::VideoCaptureCapability::kYUY2: {
       media::ConvertYUY2ToYUV(data, yplane, uplane, vplane, frame_info_.width,
                               frame_info_.height);
       break;
     }
-    case media::VideoCaptureDevice::kRGB24: {
+    case media::VideoCaptureCapability::kRGB24: {
       int ystride = frame_info_.width;
       int uvstride = frame_info_.width / 2;
 #if defined(OS_WIN)  // RGB on Windows start at the bottom line.
@@ -319,7 +319,7 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
                                rgb_stride, ystride, uvstride);
       break;
     }
-    case media::VideoCaptureDevice::kARGB: {
+    case media::VideoCaptureCapability::kARGB: {
       media::ConvertRGB32ToYUV(data, yplane, uplane, vplane, frame_info_.width,
                                frame_info_.height, frame_info_.width * 4,
                                frame_info_.width, frame_info_.width / 2);
@@ -343,7 +343,7 @@ void VideoCaptureController::OnError() {
 }
 
 void VideoCaptureController::OnFrameInfo(
-    const media::VideoCaptureDevice::Capability& info) {
+    const media::VideoCaptureCapability& info) {
   frame_info_= info;
   BrowserThread::PostTask(BrowserThread::IO,
       FROM_HERE,
@@ -392,7 +392,7 @@ void VideoCaptureController::DoIncomingCapturedFrameOnIOThread(
 }
 
 void VideoCaptureController::DoFrameInfoOnIOThread(
-    const media::VideoCaptureDevice::Capability info) {
+    const media::VideoCaptureCapability info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(owned_dibs_.empty())
       << "Device is restarted without releasing shared memory.";

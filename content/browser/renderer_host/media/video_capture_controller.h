@@ -71,7 +71,7 @@ class VideoCaptureController
                                        base::Time timestamp) OVERRIDE;
   virtual void OnError() OVERRIDE;
   virtual void OnFrameInfo(
-      const media::VideoCaptureDevice::Capability& info) OVERRIDE;
+      const media::VideoCaptureCapability& info) OVERRIDE;
 
  protected:
   virtual ~VideoCaptureController();
@@ -87,7 +87,7 @@ class VideoCaptureController
 
   // Worker functions on IO thread.
   void DoIncomingCapturedFrameOnIOThread(int buffer_id, base::Time timestamp);
-  void DoFrameInfoOnIOThread(const media::VideoCaptureDevice::Capability info);
+  void DoFrameInfoOnIOThread(const media::VideoCaptureCapability info);
   void DoErrorOnIOThread();
   void DoDeviceStoppedOnIOThread();
 
@@ -126,7 +126,7 @@ class VideoCaptureController
 
   // It's modified on caller thread, assuming there is only one OnFrameInfo()
   // call per StartCapture().
-  media::VideoCaptureDevice::Capability frame_info_;
+  media::VideoCaptureCapability frame_info_;
 
   // It's accessed only on IO thread.
   bool frame_info_available_;

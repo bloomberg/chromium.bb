@@ -98,7 +98,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   ClientInfo clients_pending_on_filter_;
   ClientInfo clients_pending_on_restart_;
 
-  media::VideoFrame::Format video_type_;
+  media::VideoCaptureCapability::Format video_type_;
 
   // The parameter is being used in current capture session. A capture session
   // starts with StartCapture and ends with StopCapture.

@@ -51,7 +51,7 @@ VideoCaptureImpl::VideoCaptureImpl(
       message_filter_(filter),
       capture_message_loop_proxy_(capture_message_loop_proxy),
       device_id_(0),
-      video_type_(media::VideoFrame::I420),
+      video_type_(media::VideoCaptureCapability::kI420),
       device_info_available_(false),
       state_(video_capture::kStopped) {
   DCHECK(filter);
@@ -95,7 +95,7 @@ void VideoCaptureImpl::DoDeInit(base::Closure task) {
 void VideoCaptureImpl::StartCapture(
     media::VideoCapture::EventHandler* handler,
     const media::VideoCaptureCapability& capability) {
-  DCHECK_EQ(capability.color, media::VideoFrame::I420);
+  DCHECK_EQ(capability.color, media::VideoCaptureCapability::kI420);
 
   capture_message_loop_proxy_->PostTask(FROM_HERE,
       base::Bind(&VideoCaptureImpl::DoStartCapture,

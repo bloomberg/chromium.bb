@@ -65,7 +65,7 @@ namespace {
 class MockFrameObserver: public media::VideoCaptureDevice::EventHandler {
  public:
   virtual void OnError() {}
-  void OnFrameInfo(const media::VideoCaptureDevice::Capability& info) {}
+  void OnFrameInfo(const media::VideoCaptureCapability& info) {}
   virtual void OnIncomingCapturedFrame(const uint8* data, int length,
                                        base::Time timestamp) {}
 };

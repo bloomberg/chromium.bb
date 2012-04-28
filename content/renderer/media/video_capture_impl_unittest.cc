@@ -12,10 +12,10 @@ using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Return;
 
-#define CAPABILITY_SMALL {176, 144, 30, media::VideoFrame::I420, 0, \
-    false }
-#define CAPABILITY_LARGE {320, 240, 30, media::VideoFrame::I420, 0, \
-    false }
+#define CAPABILITY_SMALL {176, 144, 30, media::VideoCaptureCapability::kI420, \
+    0, false }
+#define CAPABILITY_LARGE {320, 240, 30, media::VideoCaptureCapability::kI420, \
+    0, false }
 
 class MockVideoCaptureMessageFilter : public VideoCaptureMessageFilter {
  public:

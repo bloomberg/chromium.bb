@@ -261,7 +261,7 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
 
   // Assume YV12 format. Note that camera gives YUV and media pipeline video
   // renderer asks for YVU. The following code did the conversion.
-  DCHECK_EQ(capability_.color, media::VideoFrame::I420);
+  DCHECK_EQ(capability_.color, media::VideoCaptureCapability::kI420);
   int y_width = buf->width;
   int y_height = buf->height;
   int uv_width = buf->width / 2;
