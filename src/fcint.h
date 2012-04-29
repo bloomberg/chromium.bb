@@ -567,9 +567,6 @@ FcCacheFini (void);
 FcPrivate void
 FcDirCacheReference (FcCache *cache, int nref);
 
-FcPrivate int
-FcStat (const FcChar8 *file, struct stat *statb);
-
 /* fccfg.c */
 
 FcPrivate FcChar8 *
@@ -1019,6 +1016,11 @@ extern FcPrivate const FcMatrix    FcIdentityMatrix;
 
 FcPrivate void
 FcMatrixFree (FcMatrix *mat);
+
+/* fcstat.c */
+
+FcPrivate int
+FcStat (const FcChar8 *file, struct stat *statb);
 
 /* fcstr.c */
 FcPrivate void
