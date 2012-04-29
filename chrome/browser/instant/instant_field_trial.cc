@@ -66,6 +66,11 @@ InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
   if (group == base::FieldTrial::kNotFinalized || group == g_inactive)
     return INACTIVE;
 
+  // If Instant is already enabled explicitly, then it's not a field trial.
+  const PrefService* prefs = profile ? profile->GetPrefs() : NULL;
+  if (prefs && prefs->GetBoolean(prefs::kInstantEnabled))
+    return INACTIVE;
+
   // CONTROL and SILENT are unconstrained.
   if (group == g_control)
     return CONTROL;
@@ -73,7 +78,6 @@ InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
     return SILENT;
 
   // HIDDEN, SUGGEST and INSTANT need non-incognito, suggest-enabled profiles.
-  const PrefService* prefs = profile ? profile->GetPrefs() : NULL;
   if (!prefs || profile->IsOffTheRecord() ||
       !prefs->GetBoolean(prefs::kSearchSuggestEnabled)) {
     return INACTIVE;
