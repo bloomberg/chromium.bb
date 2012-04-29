@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,30 +16,6 @@
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #include "chrome/common/translate_errors.h"
-
-#pragma mark TranslateInfoBarUtilities helper functions.
-namespace TranslateInfoBarUtilities {
-
-// Move the |toMove| view |spacing| pixels before/after the |anchor| view.
-// |after| signifies the side of |anchor| on which to place |toMove|.
-void MoveControl(NSView* anchor, NSView* toMove, int spacing, bool after);
-
-// Vertically center |toMove| in its container.
-void VerticallyCenterView(NSView *toMove);
-// Check that the control |before| is ordered visually before the |after|
-// control.
-// Also, check that there is space between them.
-bool VerifyControlOrderAndSpacing(id before, id after);
-
-// Creates a label control in the style we need for the translate infobar's
-// labels within |bounds|.
-NSTextField* CreateLabel(NSRect bounds);
-
-// Adds an item with the specified properties to |menu|.
-void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
-    int tag, bool enabled, bool checked);
-
-}  // namespace
 
 // The base class for the three translate infobars.  This class does all of the
 // heavy UI lifting, while deferring to the subclass to tell it what views

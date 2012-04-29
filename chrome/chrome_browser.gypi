@@ -2586,6 +2586,8 @@
         'browser/ui/cocoa/infobars/infobar_controller.mm',
         'browser/ui/cocoa/infobars/infobar_gradient_view.h',
         'browser/ui/cocoa/infobars/infobar_gradient_view.mm',
+        'browser/ui/cocoa/infobars/infobar_utilities.h',
+        'browser/ui/cocoa/infobars/infobar_utilities.mm',
         'browser/ui/cocoa/infobars/infobar.h',
         'browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.cc',
         'browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.h',
