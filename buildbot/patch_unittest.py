@@ -256,25 +256,20 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
 
 class ApplyLocalPatchesTests(mox.MoxTestBase):
 
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-
-    self.patch = cros_patch.GitRepoPatch('/path/to/my/project.git',
-                                         'my/project', 'mybranch',
-                                         'master')
-    self.buildroot = '/b'
-    self.mox.StubOutWithMock(cros_lib, 'GetProjectDir')
-    self.mox.StubOutWithMock(cros_patch, '_GetProjectManifestBranch')
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-
   def testWrongTrackingBranch(self):
     """When the original patch branch does not track buildroot's branch."""
-    cros_patch._GetProjectManifestBranch(self.buildroot,
-                                   'my/project').AndReturn('different_branch')
+
+    patch = cros_patch.GitRepoPatch('/path/to/my/project.git',
+                                    'my/project', 'mybranch',
+                                    'master')
+    buildroot = '/b'
+    self.mox.StubOutWithMock(patch, '_GetUpstreamBranch')
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+
+    patch._GetUpstreamBranch(buildroot).AndReturn('different_branch')
     self.mox.ReplayAll()
 
-    self.assertRaises(cros_patch.PatchException, self.patch.Apply,
-                      self.buildroot)
+    self.assertRaises(cros_patch.PatchException, patch.Apply, buildroot)
 
     self.mox.VerifyAll()
 

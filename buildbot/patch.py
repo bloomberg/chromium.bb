@@ -162,7 +162,7 @@ class GitRepoPatch(object):
       ApplyPatchException: If the patch failed to apply.
     """
 
-    upstream = _GetProjectManifestBranch(buildroot, self.project)
+    upstream = self._GetUpstreamBranch(buildroot)
 
     try:
       self._RebaseOnto(constants.PATCH_BRANCH, upstream, project_dir, rev,
@@ -191,6 +191,12 @@ class GitRepoPatch(object):
       cros_lib.RunCommand(['git', 'checkout', constants.PATCH_BRANCH],
                           cwd=project_dir, print_cmd=False)
 
+  def _GetUpstreamBranch(self, buildroot):
+    """Get the branch specified in the manifest for this patch."""
+    remote, ref = cros_lib.GetProjectManifestBranch(
+        buildroot, self.project)
+    return '%s/%s' % (remote, cros_lib.StripLeadingRefsHeads(ref))
+
   def Apply(self, buildroot, trivial=False):
     """Applies the patch to specified buildroot.
 
@@ -201,7 +207,7 @@ class GitRepoPatch(object):
       ApplyPatchException: If the patch failed to apply.
     """
     logging.info('Attempting to apply change %s', self)
-    manifest_branch = _GetProjectManifestBranch(buildroot, self.project)
+    manifest_branch = self._GetUpstreamBranch(buildroot)
     manifest_branch_base = os.path.basename(manifest_branch)
     if self.tracking_branch != manifest_branch_base:
       raise PatchException('branch %s for project %s is not tracking %s'
@@ -213,9 +219,8 @@ class GitRepoPatch(object):
     rev = self.Fetch(project_dir)
 
     if not cros_lib.DoesLocalBranchExist(project_dir, constants.PATCH_BRANCH):
-      upstream = cros_lib.GetManifestDefaultBranch(buildroot)
       cros_lib.RunCommand(['git', 'checkout', '-b', constants.PATCH_BRANCH,
-                           '-t', 'm/' + upstream], cwd=project_dir,
+                           '-t', manifest_branch], cwd=project_dir,
                           print_cmd=False)
     self._RebasePatch(buildroot, project_dir, rev, trivial)
 
@@ -395,7 +400,7 @@ class GerritPatch(GitRepoPatch):
 
     rev = self.Fetch(project_dir)
 
-    manifest_branch = _GetProjectManifestBranch(buildroot, self.project)
+    manifest_branch = self._GetUpstreamBranch(buildroot)
     return_obj = cros_lib.RunCommand(
         ['git', 'log', '--format=%B%x00', '%s..%s^' % (manifest_branch, rev)],
         cwd=project_dir, redirect_stdout=True, print_cmd=False)
@@ -489,13 +494,6 @@ def _GetRemoteTrackingBranch(project_dir, branch):
     cros_lib.NoTrackingBranchException if branch does not track anything.
   """
   (remote, ref) = cros_lib.GetTrackingBranch(branch, project_dir)
-  return '%s/%s' % (remote, cros_lib.StripLeadingRefsHeads(ref))
-
-
-def _GetProjectManifestBranch(buildroot, project):
-  """Get the branch specified in the manifest for the project."""
-  (remote, ref) = cros_lib.GetProjectManifestBranch(buildroot,
-                                                    project)
   return '%s/%s' % (remote, cros_lib.StripLeadingRefsHeads(ref))
 
 
