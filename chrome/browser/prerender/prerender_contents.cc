@@ -322,10 +322,10 @@ void PrerenderContents::StartPrerendering(
 
   // Register as an observer of the RenderViewHost so we get messages.
   render_view_host_observer_.reset(
-      new PrerenderRenderViewHostObserver(this, render_view_host_mutable()));
+      new PrerenderRenderViewHostObserver(this, GetRenderViewHostMutable()));
 
-  child_id_ = render_view_host()->GetProcess()->GetID();
-  route_id_ = render_view_host()->GetRoutingID();
+  child_id_ = GetRenderViewHost()->GetProcess()->GetID();
+  route_id_ = GetRenderViewHost()->GetRoutingID();
 
   // Register this with the ResourceDispatcherHost as a prerender
   // RenderViewHost. This must be done before the Navigate message to catch all
@@ -634,9 +634,9 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
 base::ProcessMetrics* PrerenderContents::MaybeGetProcessMetrics() {
   if (process_metrics_.get() == NULL) {
     // If a PrenderContents hasn't started prerending, don't be fully formed.
-    if (!render_view_host() || !render_view_host()->GetProcess())
+    if (!GetRenderViewHost() || !GetRenderViewHost()->GetProcess())
       return NULL;
-    base::ProcessHandle handle = render_view_host()->GetProcess()->GetHandle();
+    base::ProcessHandle handle = GetRenderViewHost()->GetProcess()->GetHandle();
     if (handle == base::kNullProcessHandle)
       return NULL;
 #if !defined(OS_MACOSX)
@@ -676,11 +676,11 @@ WebContents* PrerenderContents::GetWebContents() {
   return prerender_contents_->web_contents();
 }
 
-RenderViewHost* PrerenderContents::render_view_host_mutable() {
-  return const_cast<RenderViewHost*>(render_view_host());
+RenderViewHost* PrerenderContents::GetRenderViewHostMutable() {
+  return const_cast<RenderViewHost*>(GetRenderViewHost());
 }
 
-const RenderViewHost* PrerenderContents::render_view_host() const {
+const RenderViewHost* PrerenderContents::GetRenderViewHost() const {
   if (!prerender_contents_.get())
     return NULL;
   return prerender_contents_->web_contents()->GetRenderViewHost();

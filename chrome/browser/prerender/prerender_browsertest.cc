@@ -298,7 +298,7 @@ class TestPrerenderContents : public PrerenderContents {
       } else if (is_visible && was_hidden_) {
         // Once hidden, a prerendered RenderViewHost should only be shown after
         // being removed from the PrerenderContents for display.
-        EXPECT_FALSE(render_view_host());
+        EXPECT_FALSE(GetRenderViewHost());
         was_shown_ = true;
       }
       return;
@@ -853,7 +853,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         // Check if page behaves as expected while in prerendered state.
         bool prerender_test_result = false;
         ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-            prerender_contents->render_view_host_mutable(), L"",
+            prerender_contents->GetRenderViewHostMutable(), L"",
             L"window.domAutomationController.send(DidPrerenderPass())",
             &prerender_test_result));
         EXPECT_TRUE(prerender_test_result);

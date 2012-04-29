@@ -110,8 +110,9 @@ class PrerenderContents : public content::NotificationObserver,
   // it if not.
   void DestroyWhenUsingTooManyResources();
 
-  content::RenderViewHost* render_view_host_mutable();
-  const content::RenderViewHost* render_view_host() const;
+  content::RenderViewHost* GetRenderViewHostMutable();
+  const content::RenderViewHost* GetRenderViewHost() const;
+
   string16 title() const { return title_; }
   int32 page_id() const { return page_id_; }
   GURL icon_url() const { return icon_url_; }
