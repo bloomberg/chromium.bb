@@ -272,14 +272,14 @@ bswap ry, 0x0f 0xc8
 bt Gv Ev, 0x0f 0xa3, nacl-forbidden
 bt Ib Ev, 0x0f 0xba /4, nacl-ia32-forbidden
 ######## BTC ###################################################################
-btc Gv Ev, 0x0f 0xbb, nacl-forbidden
-btc Ib Ev, 0x0f 0xba /7, nacl-ia32-forbidden
+btc Gv Ev, 0x0f 0xbb, lock nacl-forbidden
+btc Ib Ev, 0x0f 0xba /7, lock nacl-ia32-forbidden
 ######## BTR ###################################################################
-btr Gv Ev, 0x0f 0xb3, nacl-forbidden
-btr Ib Ev, 0x0f 0xba /6, nacl-ia32-forbidden
+btr Gv Ev, 0x0f 0xb3, lock nacl-forbidden
+btr Ib Ev, 0x0f 0xba /6, lock nacl-ia32-forbidden
 ######## BTS ###################################################################
-bts Gv Ev, 0x0f 0xab, nacl-forbidden
-bts Ib Ev, 0x0f 0xba /5, nacl-ia32-forbidden
+bts Gv Ev, 0x0f 0xab, lock nacl-forbidden
+bts Ib Ev, 0x0f 0xba /5, lock nacl-ia32-forbidden
 ######## CALL (Near) ###########################################################
 call Jw, data16 0xe8, nacl-forbidden
 call Jd, 0xe8
@@ -350,7 +350,7 @@ cpuid, 0x0f 0xa2
 crc32 E Gy, 0xf2 0x0f 0x38 0xf0, Fn0000_0001_ECX_SSE42
 ######## DEC ###################################################################
 dec E, 0xfe /1, lock
-dec rz, 0x48, ia32 lock
+dec rz, 0x48, ia32
 ######## DIV ###################################################################
 div E, 0xf6 /6
 ######## ENTER #################################################################
@@ -369,7 +369,7 @@ in ob ab, 0xec, nacl-forbidden
 in oz az, 0xed, nacl-forbidden
 ######## INC ###################################################################
 inc E, 0xfe /0, lock
-inc rz, 0x40, ia32 lock
+inc rz, 0x40, ia32
 ######## INS/INSB/INSW/INSD ####################################################
 ins ob Yb, 0x6c, rep nacl-forbidden
 ins oz Yz, 0x6d, rep nacl-forbidden
