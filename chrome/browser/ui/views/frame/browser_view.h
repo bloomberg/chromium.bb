@@ -32,7 +32,6 @@
 #if defined(OS_WIN)
 #include "chrome/browser/hang_monitor/hung_plugin_action.h"
 #include "chrome/browser/hang_monitor/hung_window_detector.h"
-#include "ui/views/controls/menu/native_menu_win.h"
 #endif
 
 // NOTE: For more information about the objects and files in this directory,
@@ -63,7 +62,6 @@ class LauncherUpdater;
 namespace views {
 class AccessiblePaneView;
 class ExternalFocusTracker;
-class Menu;
 class WebView;
 }
 
