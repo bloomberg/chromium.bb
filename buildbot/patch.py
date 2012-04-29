@@ -260,7 +260,8 @@ class LocalGitRepoPatch(GitRepoPatch):
                        ('GIT_AUTHOR_EMAIL', '%ae'),
                        ('GIT_AUTHOR_DATE', '%ad'),
                        ('GIT_COMMITTER_NAME', '%cn'),
-                       ('GIT_COMMITTER_EMAIL', '%ce')]
+                       ('GIT_COMMITTER_EMAIL', '%ce'),
+                       ('GIT_COMMITER_DATE', '%ct')]
     fields = hash_fields + transfer_fields
 
     format_string = '%n'.join([code for _, code in fields] + ['%B'])
@@ -278,6 +279,14 @@ class LocalGitRepoPatch(GitRepoPatch):
 
     extra_env = dict([(field, field_value[field]) for field, _ in
                       transfer_fields])
+
+    # Reset the commit date to a value that can't conflict; if we
+    # leave this to git, it's possible for a fast moving set of commit/uploads
+    # to all occur within the same second (thus the same commit date),
+    # resulting in the same sha1.
+    extra_env['GIT_COMMITTER_DATE'] = str(
+        int(extra_env["GIT_COMMITER_DATE"]) - 1)
+
     result = cros_lib.RunCommand(['git', 'commit-tree',
                                   field_value['tree_hash'], '-p',
                                   field_value['parent_hash']], cwd=project_dir,
@@ -291,20 +300,23 @@ class LocalGitRepoPatch(GitRepoPatch):
 
     return new_sha1
 
-  def Upload(self, remote_ref, dryrun=False):
+  def Upload(self, remote_ref, dryrun=False, push_url=None):
     """Upload the patch to a remote git branch.
 
     Arguments:
       remote_ref: The ref on the remote host to push to.
       dryrun: Do the git push with --dry-run
+      push_url: Which url to push to.  If unspecified, defaults to deciding
+        between external gerrit or internal gerrit.
     """
-    push_url = constants.GERRIT_SSH_URL
-    if cros_lib.IsProjectInternal(constants.SOURCE_ROOT, self.project):
-      push_url = constants.GERRIT_INT_SSH_URL
+    if push_url is None:
+      push_url = constants.GERRIT_SSH_URL
+      if cros_lib.IsProjectInternal(constants.SOURCE_ROOT, self.project):
+        push_url = constants.GERRIT_INT_SSH_URL
+      push_url = os.path.join(push_url, self.project)
 
     carbon_copy = self._GetCarbonCopy()
-    cmd = ['git', 'push', os.path.join(push_url, self.project),
-           '%s:%s' % (carbon_copy, remote_ref)]
+    cmd = ['git', 'push', push_url, '%s:%s' % (carbon_copy, remote_ref)]
     if dryrun:
       cmd.append('--dry-run')
 
@@ -331,6 +343,7 @@ class GerritPatch(GitRepoPatch):
       patch_dict: A dictionary containing the parsed JSON gerrit query results.
       internal: Whether the CL is an internal CL.
     """
+    self.patch_dict = patch_dict
     super(GerritPatch, self).__init__(
         self._GetProjectUrl(patch_dict['project'], internal),
         patch_dict['project'],
@@ -338,7 +351,6 @@ class GerritPatch(GitRepoPatch):
         patch_dict['branch'],
         sha1=patch_dict['currentPatchSet']['revision'])
 
-    self.patch_dict = patch_dict
     self.internal = internal
     # id - The CL's ChangeId
     self.id = FormatChangeId(patch_dict['id'])
@@ -464,7 +476,8 @@ class GerritPatch(GitRepoPatch):
           if not self._VALID_CHANGE_ID_RE.match(chunk):
             raise BrokenCQDepends(self, match, chunk)
           chunk = FormatChangeId(chunk)
-        dependencies.append(chunk)
+        if chunk not in dependencies:
+          dependencies.append(chunk)
 
     if dependencies:
       logging.info('Found %s Paladin dependencies for change %s', dependencies,
