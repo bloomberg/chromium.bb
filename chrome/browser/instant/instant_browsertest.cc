@@ -725,7 +725,13 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(DontPersistSearchbox)) {
 }
 
 // Tests that instant search is preloaded whenever the omnibox gets focus.
+// PreloadsInstant fails on linux_chromeos trybots all the time, possibly
+// because of http://crbug.com/80118.
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_PreloadsInstant) {
+#else
 IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(PreloadsInstant)) {
+#endif
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kPreloadInstantSearch);
   ASSERT_TRUE(test_server()->Start());
