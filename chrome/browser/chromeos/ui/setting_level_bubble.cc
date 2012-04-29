@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -188,7 +189,9 @@ void SettingLevelBubble::OnWidgetClosing(views::Widget* widget) {
 
 SettingLevelBubbleView* SettingLevelBubble::CreateView() {
   SettingLevelBubbleDelegateView* delegate = new SettingLevelBubbleDelegateView;
-  views::Widget* widget = browser::CreateViewsBubbleAboveLockScreen(delegate);
+  delegate->set_parent_window(ash::Shell::GetInstance()->GetContainer(
+      ash::internal::kShellWindowId_SettingBubbleContainer));
+  views::Widget* widget = views::BubbleDelegateView::CreateBubble(delegate);
   widget->AddObserver(this);
   // Hold on to the content view.
   return delegate->view();

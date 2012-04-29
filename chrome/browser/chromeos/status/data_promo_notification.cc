@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -206,7 +208,10 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
         message,
         links);
     mobile_data_bubble_->set_link_listener(listener);
-    browser::CreateViewsBubbleAboveLockScreen(mobile_data_bubble_);
+    mobile_data_bubble_->set_parent_window(
+        ash::Shell::GetInstance()->GetContainer(
+            ash::internal::kShellWindowId_SettingBubbleContainer));
+    views::BubbleDelegateView::CreateBubble(mobile_data_bubble_);
     mobile_data_bubble_->Show();
     mobile_data_bubble_->GetWidget()->AddObserver(this);
 

@@ -7,13 +7,6 @@
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA)
-#include "ash/shell.h"
-#include "ash/shell_window_ids.h"
-#include "ui/aura/root_window.h"
-#include "ui/aura/window.h"
-#endif
-
 // Note: This file should be removed after the old ChromeOS frontend is removed.
 //       It is not needed for Aura.
 //       The visual style implemented by BubbleFrameView/BubbleWindow for
@@ -38,18 +31,6 @@ views::Widget* CreateFramelessViewsWindow(gfx::NativeWindow parent,
   // No frame so does not need params.transparent = true
   widget->Init(params);
   return widget;
-}
-
-views::Widget* CreateViewsBubbleAboveLockScreen(
-    views::BubbleDelegateView* delegate) {
-#if defined(USE_AURA)
-  delegate->set_parent_window(
-      ash::Shell::GetInstance()->GetContainer(
-          ash::internal::kShellWindowId_SettingBubbleContainer));
-#endif
-  views::Widget* bubble_widget =
-      views::BubbleDelegateView::CreateBubble(delegate);
-  return bubble_widget;
 }
 
 }  // namespace browser

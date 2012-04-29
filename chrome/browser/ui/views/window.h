@@ -9,7 +9,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace views {
-class BubbleDelegateView;
 class Widget;
 class WidgetDelegate;
 }
@@ -19,13 +18,6 @@ namespace browser {
 // Create a frameless window for given |delegate|.
 views::Widget* CreateFramelessViewsWindow(gfx::NativeWindow parent,
                                           views::WidgetDelegate* delegate);
-
-// Create a bubble that will show even when chromeos screen is locked,
-// for a given |delegate|. Takes care of chromeos specific window
-// type setting. For bubbles that do not need to be shown when screen
-// is locked, use CreateViewsBubble instead.
-views::Widget* CreateViewsBubbleAboveLockScreen(
-    views::BubbleDelegateView* delegate);
 
 }  // namespace browser
 
