@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
+#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
@@ -242,18 +243,17 @@ void OnGDataFileFound(Profile* profile,
                       const FilePath& file_path,
                       gdata::GDataFileType file_type,
                       base::PlatformFileError error,
-                      const FilePath& /* directory_path */,
-                      gdata::GDataEntry* entry) {
+                      scoped_ptr<gdata::GDataFileProto> file_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error == base::PLATFORM_FILE_OK && entry && entry->AsGDataFile()) {
-    gdata::GDataFile* file = entry->AsGDataFile();
+  if (error == base::PLATFORM_FILE_OK) {
     GURL page_url;
     if (file_type == gdata::REGULAR_FILE) {
-      page_url = gdata::util::GetFileResourceUrl(file->resource_id(),
-                                                 file->file_name());
+      page_url = gdata::util::GetFileResourceUrl(
+          file_proto->gdata_entry().resource_id(),
+          file_proto->gdata_entry().file_name());
     } else if (file_type == gdata::HOSTED_DOCUMENT) {
-      page_url = file->alternate_url();
+      page_url = GURL(file_proto->alternate_url());
     } else {
       NOTREACHED();
     }
@@ -621,7 +621,7 @@ bool TryViewingFile(Profile* profile, const FilePath& path) {
         return false;
 
       // Open the file once the file is found.
-      system_service->file_system()->FindEntryByPathAsync(
+      system_service->file_system()->GetFileInfoByPathAsync(
           gdata::util::ExtractGDataPath(path),
           base::Bind(&OnGDataFileFound, profile, path, gdata::REGULAR_FILE));
       return true;
@@ -639,7 +639,7 @@ bool TryViewingFile(Profile* profile, const FilePath& path) {
       if (!system_service)
         return false;
 
-      system_service->file_system()->FindEntryByPathAsync(
+      system_service->file_system()->GetFileInfoByPathAsync(
           gdata::util::ExtractGDataPath(path),
           base::Bind(&OnGDataFileFound, profile, path,
                      gdata::HOSTED_DOCUMENT));

@@ -643,6 +643,8 @@ void GDataEntry::FromProto(const GDataEntryProto& proto) {
   file_info_.creation_time = base::Time::FromInternalValue(
       proto.file_info().creation_time());
 
+  // Don't copy from proto.file_name() as file_name_ is computed in
+  // SetFileNameFromTitle().
   title_ = proto.title();
   resource_id_ = proto.resource_id();
   parent_resource_id_ = proto.parent_resource_id();
@@ -663,6 +665,9 @@ void GDataEntry::ToProto(GDataEntryProto* proto) const {
   proto_file_info->set_creation_time(
       file_info_.creation_time.ToInternalValue());
 
+  // The file_name field is used in GetFileInfoByPathAsync(). As shown in
+  // FromProto(), the value is discarded when deserializing from proto.
+  proto->set_file_name(file_name_);
   proto->set_title(title_);
   proto->set_resource_id(resource_id_);
   proto->set_parent_resource_id(parent_resource_id_);
