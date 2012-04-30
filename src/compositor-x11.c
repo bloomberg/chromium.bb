@@ -174,8 +174,8 @@ x11_compositor_init_egl(struct x11_compositor *c)
 		return -1;
 	}
 
-	if (!eglMakeCurrent(c->base.display, EGL_NO_SURFACE,
-			    EGL_NO_SURFACE, c->base.context)) {
+	if (!eglMakeCurrent(c->base.display, c->dummy_pbuffer,
+			    c->dummy_pbuffer, c->base.context)) {
 		fprintf(stderr, "failed to make context current\n");
 		return -1;
 	}
