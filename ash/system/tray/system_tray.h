@@ -12,10 +12,9 @@
 #include "ash/system/user/login_status.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/message_pump_observer.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
 
 #include <vector>
 
@@ -42,9 +41,7 @@ class SystemTrayBubble;
 
 class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
                                   public internal::ActionableView),
-                              public views::Widget::Observer,
-                              public internal::BackgroundAnimatorDelegate,
-                              public base::MessagePumpObserver {
+                              public internal::BackgroundAnimatorDelegate {
  public:
   SystemTray();
   virtual ~SystemTray();
@@ -77,8 +74,6 @@ class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
   // Updates the items when the login status of the system changes.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
 
-  const ScopedVector<SystemTrayItem>& items() const { return items_; }
-
   // Sets whether the tray paints a background. Default is true, but is set to
   // false if a window overlaps the shelf.
   void SetPaintsBackground(
@@ -86,7 +81,9 @@ class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
       internal::BackgroundAnimator::ChangeType change_type);
 
   // Returns true if the launcher should show.
-  bool should_show_launcher() const { return popup_ && should_show_launcher_; }
+  bool should_show_launcher() const {
+    return bubble_.get() && should_show_launcher_;
+  }
 
   views::Widget* widget() const { return widget_; }
 
@@ -125,6 +122,15 @@ class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
   }
 
  private:
+  friend class internal::SystemTrayBubble;
+
+  // Called when the widget associated with |bubble| closes. |bubble| should
+  // always == |bubble_|. This triggers destroying |bubble_| and hiding the
+  // launcher if necessary.
+  void RemoveBubble(internal::SystemTrayBubble* bubble);
+
+  const ScopedVector<SystemTrayItem>& items() const { return items_; }
+
   void ShowItems(const std::vector<SystemTrayItem*>& items,
                  bool details,
                  bool activate);
@@ -139,18 +145,8 @@ class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
-  // Overridden from views::Widget::Observer.
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
-  virtual void OnWidgetVisibilityChanged(views::Widget* widget,
-                                         bool visible) OVERRIDE;
-
   // Overridden from internal::BackgroundAnimatorDelegate.
   virtual void UpdateBackground(int alpha) OVERRIDE;
-
-  // Overidden from base::MessagePumpObserver
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
   ScopedVector<SystemTrayItem> items_;
 
@@ -174,8 +170,7 @@ class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
   views::Widget* widget_;
 
   // The popup widget and the delegate.
-  internal::SystemTrayBubble* bubble_;
-  views::Widget* popup_;
+  scoped_ptr<internal::SystemTrayBubble> bubble_;
 
   // Owned by the view it's installed on.
   internal::SystemTrayBackground* background_;
