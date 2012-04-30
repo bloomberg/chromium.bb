@@ -209,12 +209,21 @@ LDPatterns = [
   ( '(.*)',                "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
+def MustUseOldLd(argv):
+  # non-static + sandboxed is last use case for old ld
+  if '-static' in argv or env.getbool('STATIC'): return False;
+  if '--pnacl-sb' in argv: return True
+  if env.getbool('SANDBOXED'): return True
+  return False
+
 def main(argv):
   env.update(EXTRA_ENV)
   # this hack is necessary because arg parsing is influenced by
   # whether we are using gold or not. It can go away once
   # we have switched over completely.
-  if '-static' in argv or env.getbool('STATIC'):
+  # Note that main be called from anthor python module
+  # which may have changed the "env"
+  if not MustUseOldLd(argv):
     env.set('USE_GOLD', '1')
 
   ParseArgs(argv, LDPatterns)
@@ -246,8 +255,9 @@ def main(argv):
 
   # Eventually we want to switch to gold for everything:
   # http://code.google.com/p/nativeclient/issues/detail?id=2707
-  if env.getbool('STATIC'):
+  if not MustUseOldLd([]):
     env.set('USE_GOLD', '1')
+
   if env.getbool('USE_GOLD'):
     # We need to disable the linker script more elegantly for Gold.
     env.set('LD_SCRIPT', '')
