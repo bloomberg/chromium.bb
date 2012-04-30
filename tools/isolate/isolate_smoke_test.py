@@ -223,7 +223,8 @@ class Isolate(unittest.TestCase):
     out = out[:out.index('')]
     modes = [re.match(r'^  (\w+) .+', l) for l in out]
     modes = tuple(m.group(1) for m in modes if m)
-    self.assertEquals(EXPECTED_MODES, modes)
+    # noop doesn't do anything so no point in testing it.
+    self.assertEquals(sorted(EXPECTED_MODES + ('noop',)), sorted(modes))
 
   def test_modes(self):
     # This is a bit redundant but make sure all combinations are tested.

@@ -8,6 +8,7 @@
             --result and exits.
   hashtable Puts a manifest file and hard links each of the inputs into the
             output directory.
+  noop      Do nothing, used for transition purposes.
   remap     Stores all the inputs files in a directory without running the
             executable.
   run       Recreates a tree with all the inputs files and run the executable
@@ -518,7 +519,7 @@ def main():
     default_variables.append(('EXECUTABLE_SUFFIX', '.exe'))
   else:
     default_variables.append(('EXECUTABLE_SUFFIX', ''))
-  valid_modes = get_valid_modes()
+  valid_modes = get_valid_modes() + ['noop']
   parser = optparse.OptionParser(
       usage='%prog [options] [.isolate file]',
       description=sys.modules[__name__].__doc__)
@@ -562,6 +563,11 @@ def main():
   if len(args) != 1:
     logging.debug('%s' % sys.argv)
     parser.error('Use only one argument which should be a .isolate file')
+
+  if options.mode == 'noop':
+    # This undocumented mode is to help transition since some builders do not
+    # have all the test data files checked out. Exit silently.
+    return 0
 
   root_dir, infiles, data = process_options(
       dict(options.variables), options.result, args[0], parser.error)
