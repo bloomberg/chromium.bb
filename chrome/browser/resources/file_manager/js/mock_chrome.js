@@ -226,12 +226,13 @@ chrome.fileBrowserPrivate = {
   },
 
 
-  addMount: function(source, type, options) {
+  addMount: function(source, type, options, callback) {
     chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
       var path =
           (type == 'gdata') ?
           '/gdata' :
           ('/archive/archive' + (++chrome.fileBrowserPrivate.archiveCount_));
+      callback(source);
       util.getOrCreateDirectory(filesystem.root, path, function() {
           chrome.fileBrowserPrivate.mountPoints_.push({
             mountPath: path,
@@ -244,7 +245,7 @@ chrome.fileBrowserPrivate = {
               mountType: type,
               authToken: 'dummy',
               mountPath: path,
-              sourceUrl: source
+              sourcePath: source
             });
           }, 1000);
           console.log('Created a mock mount at ' + path);
@@ -266,7 +267,7 @@ chrome.fileBrowserPrivate = {
         eventType: 'unmount',
         status: status,
         mountPath: mountPath,
-        sourceUrl: sourceUrl
+        sourcePath: sourcePath
       });
     }
 

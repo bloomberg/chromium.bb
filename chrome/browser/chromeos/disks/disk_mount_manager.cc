@@ -59,6 +59,7 @@ class DiskMountManagerImpl : public DiskMountManager {
   // DiskMountManager override.
   virtual void MountPath(const std::string& source_path,
                          const std::string& source_format,
+                         const std::string& mount_label,
                          MountType type) OVERRIDE {
     // Hidden and non-existent devices should not be mounted.
     if (type == MOUNT_TYPE_DEVICE) {
@@ -72,6 +73,7 @@ class DiskMountManagerImpl : public DiskMountManager {
     cros_disks_client_->Mount(
         source_path,
         source_format,
+        mount_label,
         type,
         // When succeeds, OnMountCompleted will be called by
         // "MountCompleted" signal instead.

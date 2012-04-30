@@ -368,24 +368,8 @@ void FileBrowserEventRouter::DispatchMountCompletedEvent(
       "mountType",
       DiskMountManager::MountTypeToString(mount_info.mount_type));
 
-  if (mount_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE ||
-      mount_info.mount_type == chromeos::MOUNT_TYPE_GDATA) {
-    GURL source_url;
-    if (file_manager_util::ConvertFileToFileSystemUrl(profile_,
-            FilePath(mount_info.source_path),
-            file_manager_util::GetFileBrowserExtensionUrl().GetOrigin(),
-            &source_url)) {
-      mount_info_value->SetString("sourceUrl", source_url.spec());
-    } else {
-      // If mounting of gdata moutn point failed, we may not be able to convert
-      // source path to source url, so let just send empty string.
-      DCHECK(mount_info.mount_type == chromeos::MOUNT_TYPE_GDATA &&
-             error_code != chromeos::MOUNT_ERROR_NONE);
-      mount_info_value->SetString("sourceUrl", "");
-    }
-  } else {
-    mount_info_value->SetString("sourceUrl", mount_info.source_path);
-  }
+  // Add sourcePath to the event.
+  mount_info_value->SetString("sourcePath", mount_info.source_path);
 
   FilePath relative_mount_path;
   bool relative_mount_path_set = false;
@@ -430,9 +414,11 @@ void FileBrowserEventRouter::OnDiskAdded(
   // If disk is not mounted yet and it has media, give it a try.
   if (disk->mount_path().empty() && disk->has_media()) {
     // Initiate disk mount operation. MountPath auto-detects the filesystem
-    // format if the second argument is empty.
+    // format if the second argument is empty. The third argument (mount label)
+    // is not used in a disk mount operation.
     DiskMountManager::GetInstance()->MountPath(
-        disk->device_path(), std::string(), chromeos::MOUNT_TYPE_DEVICE);
+        disk->device_path(), std::string(), std::string(),
+        chromeos::MOUNT_TYPE_DEVICE);
   } else {
     // Either the disk was mounted or it has no media. In both cases we don't
     // want the Scanning notification to persist.
@@ -499,7 +485,9 @@ void FileBrowserEventRouter::OnFormattingFinished(
     notifications_->HideNotificationDelayed(
         FileBrowserNotifications::FORMAT_SUCCESS, device_path, 4000);
     // MountPath auto-detects filesystem format if second argument is empty.
+    // The third argument (mount label) is not used in a disk mount operation.
     DiskMountManager::GetInstance()->MountPath(device_path, std::string(),
+                                               std::string(),
                                                chromeos::MOUNT_TYPE_DEVICE);
   } else {
     notifications_->HideNotification(FileBrowserNotifications::FORMAT_START,

@@ -49,62 +49,37 @@ var expectedVolume3 = {
 };
 
 // List of expected mount points.
-// We have to treat archives specially because their sourceUrl is set to
-// filesystem url. To make it easier to define expectation for archives,
-// instead of sourceUrl, we set sourcePath that will be converted to filesystem
-// url when received mountPoint is verified.
 // NOTE: this has to be synced with values in file_browser_private_apitest.cc
 //       and values sorted by mountPath.
 var expectedMountPoints = [
   {
-    sourcePath: 'removable/archive_path',
+    sourcePath: '/media/removable/archive_path',
     mountPath: 'archive/archive_mount_path',
     mountType: 'file',
     mountCondition: ''
   },
   {
-    sourceUrl: 'device_path1',
+    sourcePath: 'device_path1',
     mountPath: 'removable/mount_path1',
     mountType: 'device',
     mountCondition: ''
   },
   {
-    sourceUrl: 'device_path2',
+    sourcePath: 'device_path2',
     mountPath: 'removable/mount_path2',
     mountType: 'device',
     mountCondition: ''
   },
   {
-    sourceUrl: 'device_path3',
+    sourcePath: 'device_path3',
     mountPath: 'removable/mount_path3',
     mountType: 'device',
     mountCondition: ''
   }
 ];
 
-function treatMountPointException(received, expected, key) {
-  if (key != 'sourcePath')
-    return { wasValidated: false, success: false };
-  var expectedSourceUrl = createFileUrl(expected[key]);
-  var success = (expectedSourceUrl == received['sourceUrl']);
-  if (!success)
-    console.warn("Expected mount point's sourceUrl to be '" +
-                 expectedSourceUrl + "' but got '" + received['sourceUrl'] +
-                 "' instead.");
-  return { wasValidated: true, success: success };
-}
-
-function validateObject(received, expected, name, treatException) {
+function validateObject(received, expected, name) {
   for (var key in expected) {
-    var validated = treatException &&
-                    treatException(received, expected, key);
-    if (validated && validated.wasValidated) {
-      if (validated.success) {
-        continue;
-      } else {
-        return false;
-      }
-    }
     if (received[key] != expected[key]) {
       console.warn('Expected "' + key + '" ' + name + ' property to be: "' +
                   expected[key] + '"' + ', but got: "' + received[key] +
@@ -198,8 +173,7 @@ chrome.test.runTests([
               'getMountPoints returned wrong number of mount points.');
           for (var i = 0; i < expectedMountPoints.length; i++) {
             chrome.test.assertTrue(
-                validateObject(result[i], expectedMountPoints[i], 'mountPoint',
-                               treatMountPointException),
+                validateObject(result[i], expectedMountPoints[i], 'mountPoint'),
                 'getMountPoints result[' + i + '] not as expected');
           }
     }));

@@ -694,7 +694,8 @@ FileManager.prototype = {
       return;
 
     metrics.startInterval('Load.GData');
-    chrome.fileBrowserPrivate.addMount('', 'gdata', {});
+    chrome.fileBrowserPrivate.addMount('', 'gdata', {},
+                                       function(sourcePath) {});
 
     // This timer could fire before the mount succeeds. We will silently
     // replace the error message with the correct directory contents.
@@ -2547,7 +2548,7 @@ FileManager.prototype = {
         this.gdataMounted_ = true;
         this.gdataMountInfo_ = {
           'mountPath': event.mountPath,
-          'sourceUrl': event.sourceUrl,
+          'sourcePath': event.sourcePath,
           'mountType': event.mountType,
           'mountCondition': event.status
         };
@@ -2581,7 +2582,7 @@ FileManager.prototype = {
       if (event.eventType == 'mount') {
         // Mount request finished - remove it.
         // Currently we only request mounts for archive files.
-        var index = this.mountRequests_.indexOf(event.sourceUrl);
+        var index = this.mountRequests_.indexOf(event.sourcePath);
         if (index != -1) {
           this.mountRequests_.splice(index, 1);
           if (event.status == 'success') {
@@ -2589,7 +2590,7 @@ FileManager.prototype = {
             changeDirectoryTo = event.mountPath;
           } else {
             // Request initiated from this tab failed, report the error.
-            var fileName = event.sourceUrl.split('/').pop();
+            var fileName = event.sourcePath.split('/').pop();
             this.alert.show(
                 strf('ARCHIVE_MOUNT_FAILED', fileName, event.status));
           }
@@ -2618,7 +2619,7 @@ FileManager.prototype = {
             return;
           }
           // Current directory just unmounted. Move to the 'Downloads'.
-          changeDirectoryTo = self.directoryModel_.getDefaultDirectory();
+          changeDirectoryTo = this.directoryModel_.getDefaultDirectory();
         }
       }
 
@@ -2654,8 +2655,10 @@ FileManager.prototype = {
           // Url in MountCompleted event won't be escaped, so let's make sure
           // we don't use escaped one in mountRequests_.
           var unescapedUrl = unescape(urls[index]);
-          self.mountRequests_.push(unescapedUrl);
-          chrome.fileBrowserPrivate.addMount(unescapedUrl, 'file', {});
+          chrome.fileBrowserPrivate.addMount(unescapedUrl, 'file', {},
+            function(sourcePath) {
+              self.mountRequests_.push(sourcePath);
+          });
         }
       });
     } else if (id == 'format-device') {

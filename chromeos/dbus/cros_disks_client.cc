@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "base/stringprintf.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -26,6 +27,8 @@ const char* kDefaultMountOptions[] = {
 const char* kDefaultUnmountOptions[] = {
   "force",
 };
+
+const char kMountLabelOption[] = "mountlabel";
 
 // Checks if retrieved media type is in boundaries of DeviceMediaType.
 bool IsValidMediaType(uint32 type) {
@@ -114,6 +117,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // CrosDisksClient override.
   virtual void Mount(const std::string& source_path,
                      const std::string& source_format,
+                     const std::string& mount_label,
                      MountType type,
                      const MountCallback& callback,
                      const ErrorCallback& error_callback) OVERRIDE {
@@ -125,6 +129,12 @@ class CrosDisksClientImpl : public CrosDisksClient {
     std::vector<std::string> mount_options(kDefaultMountOptions,
                                            kDefaultMountOptions +
                                            arraysize(kDefaultMountOptions));
+    if (!mount_label.empty()) {
+      std::string mount_label_option = base::StringPrintf("%s=%s",
+                                                          kMountLabelOption,
+                                                          mount_label.c_str());
+      mount_options.push_back(mount_label_option);
+    }
     writer.AppendArrayOfStrings(mount_options);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CrosDisksClientImpl::OnMount,
@@ -377,6 +387,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
 
   virtual void Mount(const std::string& source_path,
                      const std::string& source_format,
+                     const std::string& mount_label,
                      MountType type,
                      const MountCallback& callback,
                      const ErrorCallback& error_callback) OVERRIDE {}

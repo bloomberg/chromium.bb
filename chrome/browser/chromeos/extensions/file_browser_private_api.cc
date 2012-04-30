@@ -147,18 +147,7 @@ base::DictionaryValue* CreateValueFromMountPoint(Profile* profile,
   mount_info->SetString("mountType",
                         DiskMountManager::MountTypeToString(
                             mount_point_info.mount_type));
-
-  if (mount_point_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
-    GURL source_url;
-    if (file_manager_util::ConvertFileToFileSystemUrl(profile,
-            FilePath(mount_point_info.source_path),
-            extension_source_url.GetOrigin(),
-            &source_url)) {
-      mount_info->SetString("sourceUrl", source_url.spec());
-     }
-  } else {
-    mount_info->SetString("sourceUrl", mount_point_info.source_path);
-  }
+  mount_info->SetString("sourcePath", mount_point_info.source_path);
 
   FilePath relative_mount_path;
   // Convert mount point path to relative path with the external file system
@@ -920,6 +909,9 @@ bool AddMountFunction::RunImpl() {
     return false;
   }
 
+  // Set default return source path to the empty string.
+  result_.reset(Value::CreateStringValue(""));
+
 #if defined(OS_CHROMEOS)
   chromeos::MountType mount_type =
       DiskMountManager::MountTypeFromString(mount_type_str);
@@ -964,10 +956,12 @@ void AddMountFunction::RaiseGDataMountEvent(gdata::GDataErrorCode error) {
   } else {
     error_code = chromeos::MOUNT_ERROR_NOT_AUTHENTICATED;
   }
-
+  // Pass back the gdata mount point path as source path.
+  const std::string& gdata_path = gdata::util::GetGDataMountPointPathAsString();
+  result_.reset(Value::CreateStringValue(gdata_path));
   DiskMountManager::MountPointInfo mount_info(
-      gdata::util::GetGDataMountPointPathAsString(),
-      gdata::util::GetGDataMountPointPathAsString(),
+      gdata_path,
+      gdata_path,
       chromeos::MOUNT_TYPE_GDATA,
       chromeos::disks::MOUNT_CONDITION_NONE);
   // Raise mount event
@@ -1021,12 +1015,14 @@ void AddMountFunction::OnMountedStateSet(const std::string& mount_type,
 #if defined(OS_CHROMEOS)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
+  // Pass back the actual source path of the mount point.
+  result_.reset(Value::CreateStringValue(file_path.value()));
+  SendResponse(true);
   // MountPath() takes a std::string.
   disk_mount_manager->MountPath(file_path.AsUTF8Unsafe(),
-                                FilePath(file_name).Extension(),
+                                FilePath(file_name).Extension(), file_name,
                                 DiskMountManager::MountTypeFromString(
                                     mount_type));
-  SendResponse(true);
 #endif  // defined(OS_CHROMEOS)
 }
 

@@ -178,11 +178,16 @@ class CHROMEOS_EXPORT CrosDisksClient {
 
   // Calls Mount method.  |callback| is called after the method call succeeds,
   // otherwise, |error_callback| is called.
-  // When mounting an archive, the |source_format| argument passes the file
-  // extension (with the leading dot, for example ".zip"). If |source_format| is
-  // empty then the source format is auto-detected.
+  // When mounting an archive, caller may set two optional arguments:
+  // - The |source_format| argument passes the file extension (with the leading
+  //   dot, for example ".zip"). If |source_format| is empty then the source
+  //   format is auto-detected.
+  // - The |mount_label| argument passes an optional mount label to be used as
+  //   the directory name of the mount point. If |mount_label| is empty, the
+  //   mount label will be based on the |source_path|.
   virtual void Mount(const std::string& source_path,
                      const std::string& source_format,
+                     const std::string& mount_label,
                      MountType type,
                      const MountCallback& callback,
                      const ErrorCallback& error_callback) = 0;

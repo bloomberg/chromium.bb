@@ -121,9 +121,9 @@
             "optional": true,
             "description": "Disk volume mount point path. The value corresponds to its Entry.fullPath in File API."
           },
-          "sourceUrl": {
+          "sourcePath": {
             "type": "string",
-            "description": "The path to the mounted devicem, url of the mounted archive file or network resource."
+            "description": "The path to the mounted device, archive file or network resource."
           },
           "mountType": {
             "type": "string",
@@ -242,7 +242,7 @@
                      "error_path_unmounted"],
             "description": "Event type that tells listeners if mount was successful or an error occurred. It also specifies the error."
           },
-          "sourceUrl": {
+          "sourcePath": {
             "type": "string",
             "description": "Path that has been mounted."
           },
@@ -663,8 +663,18 @@
           {
             "name": "options",
             "type": "object",
-            "description": "Name/value pairs for source specific options",
-            "optional": true
+            "description": "Name/value pairs for source specific options"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "sourcePath",
+                "type": "string",
+                "description": "Source path of the mount."
+              }
+            ]
           }
         ]
       },

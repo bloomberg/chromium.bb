@@ -18,7 +18,8 @@ class MockCrosDisksClient : public CrosDisksClient {
   MockCrosDisksClient();
   virtual ~MockCrosDisksClient();
 
-  MOCK_METHOD5(Mount, void(const std::string&,
+  MOCK_METHOD6(Mount, void(const std::string&,
+                           const std::string&,
                            const std::string&,
                            MountType,
                            const MountCallback&,
