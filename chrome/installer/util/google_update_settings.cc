@@ -129,6 +129,10 @@ bool GetChromeChannelInternal(bool system_install,
     return true;
   }
 
+  // The registry functions below will end up going to disk.  Do this on another
+  // thread to avoid slowing the IO thread.  http://crbug.com/62121
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   string16 reg_path = dist->GetStateKey();
   RegKey key(root_key, reg_path.c_str(), KEY_READ);
