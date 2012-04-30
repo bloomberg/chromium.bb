@@ -105,7 +105,24 @@ const int GetBottomPadding() {
 }
 
 // Height of the shadow at the top of the tab image assets.
-static const int kDropShadowHeight = 4;
+const int GetDropShadowHeight() {
+  static int value = -1;
+  if (value == -1) {
+    switch (ui::GetDisplayLayout()) {
+      case ui::LAYOUT_ASH:
+      case ui::LAYOUT_DESKTOP:
+        value = 4;
+        break;
+      case ui::LAYOUT_TOUCH:
+        value = 2;
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+  return value;
+}
+
 static const int kToolbarOverlap = 1;
 static const int kFaviconTitleSpacing = 4;
 #if defined(USE_ASH)
@@ -554,15 +571,15 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
       theme_r.height() - kToolbarOverlap, false);
 
   // Draw center.  Instead of masking out the top portion we simply skip over
-  // it by incrementing by kDropShadowHeight, since it's a simple rectangle.
-  // And again, don't draw over the toolbar.
+  // it by incrementing by GetDropShadowHeight(), since it's a simple
+  // rectangle. And again, don't draw over the toolbar.
   background_canvas.TileImageInt(*tab_bg,
      offset + tab_image->l_width,
-     bg_offset_y + kDropShadowHeight + tab_image->y_offset,
+     bg_offset_y + GetDropShadowHeight() + tab_image->y_offset,
      tab_image->l_width,
-     kDropShadowHeight + tab_image->y_offset,
+     GetDropShadowHeight() + tab_image->y_offset,
      width() - tab_image->l_width - tab_image->r_width,
-     height() - kDropShadowHeight - kToolbarOverlap - tab_image->y_offset);
+     height() - GetDropShadowHeight() - kToolbarOverlap - tab_image->y_offset);
 
   canvas->DrawBitmapInt(background_canvas.ExtractBitmap(), 0, 0);
 
@@ -607,14 +624,14 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(theme_r, width() - tab_image->r_width, 0);
 
   // Draw center.  Instead of masking out the top portion we simply skip over it
-  // by incrementing by kDropShadowHeight, since it's a simple rectangle.
+  // by incrementing by GetDropShadowHeight(), since it's a simple rectangle.
   canvas->TileImageInt(*tab_bg,
      offset + tab_image->l_width,
-     kDropShadowHeight + tab_image->y_offset,
+     GetDropShadowHeight() + tab_image->y_offset,
      tab_image->l_width,
-     kDropShadowHeight + tab_image->y_offset,
+     GetDropShadowHeight() + tab_image->y_offset,
      width() - tab_image->l_width - tab_image->r_width,
-     height() - kDropShadowHeight - tab_image->y_offset);
+     height() - GetDropShadowHeight() - tab_image->y_offset);
 
   // Now draw the highlights/shadows around the tab edge.
   canvas->DrawBitmapInt(*tab_image->image_l, 0, 0);
