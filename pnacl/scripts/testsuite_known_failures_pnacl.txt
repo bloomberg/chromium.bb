@@ -1,14 +1,12 @@
 # Failures which are probably or potentially real bugs
 
 # library or compiler errors
-# pnacl-clang does not recognize -w flag
-SPASS
+
 # newlib does not have ffsl function?
 2005-05-11-Popcount-ffs-fls
 # newlib math.h defines infinity as a function, the test source defines
 # a double called infinity
 sphereflake
-ray
 
 # runtime errors
 
@@ -30,9 +28,6 @@ voronoi
 # binary's output... so maybe this is a bug in gcc, or ???
 # Workaround may be to set USE_REFERENCE_OUTPUT = 1 in burg's Makefile.
 burg
-# Would pick up the "#ifdef LITTLE_ENDIAN" for pnacl if we modified the
-# test to #include <endian.h>.
-security-sha
 # rand() inconsistency http://llvm.org/bugs/show_bug.cgi?id=11629
 puzzle
 automotive-bitcount
