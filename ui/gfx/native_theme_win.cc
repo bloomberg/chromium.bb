@@ -22,6 +22,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
 
@@ -45,6 +46,10 @@ const SkColor kTextButtonHoverColor = kTextButtonEnabledColor;
 const SkColor kEnabledMenuItemForegroundColor = kTextButtonEnabledColor;
 const SkColor kDisabledMenuItemForegroundColor = kTextButtonDisabledColor;
 const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(246, 249, 253);
+// Label:
+const SkColor kLabelEnabledColor = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
+const SkColor kLabelDisabledColor = color_utils::GetSysSkColor(COLOR_GRAYTEXT);
+const SkColor kLabelBackgroundColor = color_utils::GetSysSkColor(COLOR_WINDOW);
 // Textfield:
 const SkColor kTextfieldDefaultColor = SK_ColorBLACK;
 const SkColor kTextfieldDefaultBackground = SK_ColorWHITE;
@@ -398,6 +403,14 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       return kDisabledMenuItemForegroundColor;
     case kColorId_FocusedMenuItemBackgroundColor:
       return kFocusedMenuItemBackgroundColor;
+
+    // Label
+    case kColorId_LabelEnabledColor:
+      return kLabelEnabledColor;
+    case kColorId_LabelDisabledColor:
+      return kLabelDisabledColor;
+    case kColorId_LabelBackgroundColor:
+      return kLabelBackgroundColor;
 
     // Textfield
     case kColorId_TextfieldDefaultColor:

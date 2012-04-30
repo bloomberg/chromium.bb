@@ -21,6 +21,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/native_theme.h"
 #include "ui/views/background.h"
 
 namespace views {
@@ -355,31 +356,15 @@ gfx::Font Label::GetDefaultFont() {
 }
 
 void Label::Init(const string16& text, const gfx::Font& font) {
-  static bool initialized = false;
-  static SkColor kDefaultEnabledColor;
-  static SkColor kDefaultDisabledColor;
-  static SkColor kDefaultBackgroundColor;
-  if (!initialized) {
-#if defined(OS_WIN)
-    kDefaultEnabledColor = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
-    kDefaultDisabledColor = color_utils::GetSysSkColor(COLOR_GRAYTEXT);
-    kDefaultBackgroundColor = color_utils::GetSysSkColor(COLOR_WINDOW);
-#else
-    // TODO(beng): source from theme provider.
-    kDefaultEnabledColor = SK_ColorBLACK;
-    kDefaultDisabledColor = SK_ColorGRAY;
-    kDefaultBackgroundColor = SK_ColorWHITE;
-#endif
-
-    initialized = true;
-  }
-
   contains_mouse_ = false;
   font_ = font;
   text_size_valid_ = false;
-  requested_enabled_color_ = kDefaultEnabledColor;
-  requested_disabled_color_ = kDefaultDisabledColor;
-  background_color_ = kDefaultBackgroundColor;
+  requested_enabled_color_ = gfx::NativeTheme::instance()->GetSystemColor(
+      gfx::NativeTheme::kColorId_LabelEnabledColor);
+  requested_disabled_color_ = gfx::NativeTheme::instance()->GetSystemColor(
+      gfx::NativeTheme::kColorId_LabelDisabledColor);
+  background_color_ = gfx::NativeTheme::instance()->GetSystemColor(
+      gfx::NativeTheme::kColorId_LabelBackgroundColor);
   auto_color_readability_ = true;
   RecalculateColors();
   horiz_alignment_ = ALIGN_CENTER;

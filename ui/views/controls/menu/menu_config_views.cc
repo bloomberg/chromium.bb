@@ -8,12 +8,15 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/native_theme_aura.h"
 
 namespace views {
 
 // static
 MenuConfig* MenuConfig::Create() {
   MenuConfig* config = new MenuConfig();
+  config->text_color = gfx::NativeTheme::instance()->GetSystemColor(
+      gfx::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   config->font = rb.GetFont(ResourceBundle::BaseFont);
   config->arrow_width = rb.GetImageNamed(IDR_MENU_ARROW).ToSkBitmap()->width();
