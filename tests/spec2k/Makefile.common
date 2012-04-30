@@ -288,13 +288,22 @@ $(IT).pnacl_translator.opt.arm: $(IT).opt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB_EMU) $(PNACL_FLAGS) $^ -o $@ -arch arm
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
-$(IT).pnacl_translator.hw.arm: $(IT).unopt.stripped.pexe
-	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch arm
+# For arm translator testing, the pexes are built on x86 and copied to the
+# arm boards, but the intermediate .bc files are removed to keep the transfer
+# small. To keep make from trying to rebuild the pexe, use a phony target
+# with no dependencies
+$(IT).pnacl_translator.hw.arm:
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $(IT).unopt.stripped.pexe \
+	 -o $@ -arch arm
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
-$(IT).pnacl_translator.opt.hw.arm: $(IT).opt.stripped.pexe
-	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch arm
+$(IT).pnacl_translator.opt.hw.arm:
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $(IT).opt.stripped.pexe \
+	 -o $@ -arch arm
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
+
+.PHONY: $(IT).pnacl_translator.hw.arm
+.PHONY: $(IT).pnacl_translator.opt.hw.arm
 
 ######################################################################
 # BITCODE - BACKEND - X8632 (sandboxed and non-sandboxed translators)

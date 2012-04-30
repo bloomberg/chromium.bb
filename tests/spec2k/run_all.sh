@@ -103,6 +103,16 @@ gnu_size() {
 #@ Available Setups:
 #@ ------------------------------------------------------------
 
+# Setups for building (but not running) Pexes only. Used for arm-hw translator
+# testing where pexes are build on x86 and translated on arm
+SetupPnaclPexeOpt() {
+  SUFFIX=opt.stripped.pexe
+}
+
+SetupPnaclPexe() {
+  SUFFIX=unopt.stripped.pexe
+}
+
 #@
 #@ SetupGccX8632
 #@   use system compiler for x86-32
