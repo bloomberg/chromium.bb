@@ -858,8 +858,6 @@ USP10.dll!ScriptPositionSingleGlyph
 LEAK
 name=http://code.google.com/p/drmemory/issues/detail?id=778 a
 KERNELBASE.dll!TlsSetValue
-RSAENH.dll!*
-RSAENH.dll!*
 
 # Originally filed as: http://crbug.com/109281
 LEAK
@@ -874,12 +872,6 @@ name=http://code.google.com/p/drmemory/issues/detail?id=778 c
 *!PR_Calloc
 *!_PR_AttachThread
 *!_PRI_AttachThread
-
-LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=778 d
-KERNELBASE.dll!TlsSetValue
-MSWSOCK.dll!*
-KERNEL32.dll!BaseThreadInitThunk
 
 # Bit-level fps in rich edit layer.
 UNINITIALIZED READ
