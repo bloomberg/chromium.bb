@@ -166,7 +166,7 @@ class ValidationPool(object):
     If a caller is not interested in this feature they should set |max_timeout|
     to 0.
     """
-    state_field = 'general_state'
+
     # Limit sleep interval to the set of 1-30
     sleep_timeout = min(max(max_timeout / 5, 1), 30)
 
@@ -175,7 +175,7 @@ class ValidationPool(object):
       time.sleep(current_sleep)
       return current_sleep * 2
 
-    def _GetTreeStatus(status_url):
+    def _CanSubmit(status_url):
       """Returns the JSON dictionary response from the status url."""
       max_attempts = 5
       current_sleep = 1
@@ -184,7 +184,8 @@ class ValidationPool(object):
           # Check for successful response code.
           response = urllib.urlopen(status_url)
           if response.getcode() == 200:
-            return json.load(response)
+            data = json.load(response)
+            return data['general_state'] in ('open', 'throttled')
 
         # We remain robust against IOError's and retry.
         except IOError:
@@ -194,24 +195,19 @@ class ValidationPool(object):
       else:
         # We go ahead and say the tree is open if we can't get the status.
         logging.warn('Could not get a status from %s', status_url)
-        return {state_field: 'open'}
-
-    def _CanSubmit(json_dict):
-      """Checks the json dict to determine whether the tree is open."""
-      return json_dict[state_field] in ['open', 'throttled']
+        return True
 
     # Check before looping with timeout.
     status_url = 'https://chromiumos-status.appspot.com/current?format=json'
     start_time = time.time()
-    if _CanSubmit(_GetTreeStatus(status_url)):
-      return True
 
+    if _CanSubmit(status_url):
+      return True
     # Loop until either we run out of time or the tree is open.
-    while (time.time() - start_time) < max_timeout:
-      if _CanSubmit(_GetTreeStatus(status_url)):
+    while time.time() - start_time < max_timeout:
+      if _CanSubmit(status_url):
         return True
-      else:
-        time.sleep(sleep_timeout)
+      time.sleep(sleep_timeout)
 
     return False
 

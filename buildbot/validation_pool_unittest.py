@@ -9,6 +9,7 @@
 import logging
 import mox
 import sys
+import time
 import unittest
 import urllib
 import copy
@@ -32,6 +33,8 @@ class TestValidationPool(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     self.mox.StubOutWithMock(validation_pool, '_RunCommand')
+    self.mox.StubOutWithMock(time, 'sleep')
+    self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
 
   @property
   def test_json(self):
@@ -62,56 +65,6 @@ class TestValidationPool(mox.MoxTestBase):
   def SetPoolsContentMergingProjects(pool, *projects):
     pool.gerrit_helpers[0].FindContentMergingProjects().AndReturn(
         frozenset(projects))
-
-  def _TreeStatusFile(self, message, general_state):
-    """Returns a file-like object with the status message writtin in it."""
-    my_response = self.mox.CreateMockAnything()
-    my_response.json = '{"message": "%s", "general_state": "%s"}' % (
-        message, general_state)
-    return my_response
-
-  def _TreeStatusTestHelper(self, tree_status, general_state, expected_return,
-                            retries_500=0, max_timeout=0):
-    """Tests whether we return the correct value based on tree_status."""
-    return_status = self._TreeStatusFile(tree_status, general_state)
-    self.mox.StubOutWithMock(urllib, 'urlopen')
-    status_url = 'https://chromiumos-status.appspot.com/current?format=json'
-    for _ in range(retries_500):
-      urllib.urlopen(status_url).AndReturn(return_status)
-      return_status.getcode().AndReturn(500)
-
-    urllib.urlopen(status_url).MultipleTimes().AndReturn(return_status)
-    return_status.getcode().MultipleTimes().AndReturn(200)
-    return_status.read().MultipleTimes().AndReturn(return_status.json)
-    self.mox.ReplayAll()
-    self.assertEqual(validation_pool.ValidationPool._IsTreeOpen(max_timeout),
-                     expected_return)
-    self.mox.VerifyAll()
-
-  def testTreeIsOpen(self):
-    """Tests that we return True is the tree is open."""
-    self._TreeStatusTestHelper('Tree is open (flaky bug on flaky builder)',
-                               'open', True)
-
-  def testTreeIsClosed(self):
-    """Tests that we return false is the tree is closed."""
-    self._TreeStatusTestHelper('Tree is closed (working on a patch)', 'closed',
-                               False, max_timeout=5)
-
-  def testTreeIsOpenWithTimeout(self):
-    """Tests that we return True even if we get some failures."""
-    self._TreeStatusTestHelper('Tree is open (flaky test)', 'open',
-                               True, retries_500=2, max_timeout=10)
-
-  def testTreeIsThrottled(self):
-    """Tests that we return false is the tree is throttled."""
-    self._TreeStatusTestHelper('Tree is throttled (waiting to cycle)',
-                               'throttled', True)
-
-  def testTreeStatusWithNetworkFailures(self):
-    """Checks for non-500 errors.."""
-    self._TreeStatusTestHelper('Tree is open (flaky bug on flaky builder)',
-                               'open', True, retries_500=2)
 
   def testSimpleDepApplyPoolIntoRepo(self):
     """Test that we can apply changes correctly and respect deps.
@@ -354,7 +307,6 @@ class TestValidationPool(mox.MoxTestBase):
     to submit correctly (one with submit failure and the other not showing up
     as submitted in Gerrit.
     """
-    self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
     patch1 = self.MockPatch(1)
     patch2 = self.MockPatch(2)
     patch3 = self.MockPatch(3)
@@ -388,7 +340,6 @@ class TestValidationPool(mox.MoxTestBase):
 
   def testSimpleSubmitPool(self):
     """Tests the ability to submit a list of changes."""
-    self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
     helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
 
     patch1 = self.MockPatch(1)
@@ -413,7 +364,6 @@ class TestValidationPool(mox.MoxTestBase):
 
   def testSubmitNonManifestChanges(self):
     """Simple test to make sure we can submit non-manifest changes."""
-    self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
     patch1 = self.MockPatch(1)
     patch2 = self.MockPatch(2)
     helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
@@ -500,6 +450,80 @@ class TestValidationPool(mox.MoxTestBase):
     pool.HandleCouldNotVerify(my_patch)
     self.mox.VerifyAll()
 
+
+# pylint: disable=W0212,R0904
+class TestTreeStatus(mox.MoxTestBase):
+  """Tests methods in validation_pool.ValidationPool."""
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    self.mox.StubOutWithMock(validation_pool, '_RunCommand')
+    self.mox.StubOutWithMock(time, 'sleep')
+
+  def _TreeStatusFile(self, message, general_state):
+    """Returns a file-like object with the status message writtin in it."""
+    my_response = self.mox.CreateMockAnything()
+    my_response.json = '{"message": "%s", "general_state": "%s"}' % (
+        message, general_state)
+    return my_response
+
+  def _TreeStatusTestHelper(self, tree_status, general_state, expected_return,
+                            retries_500=0, max_timeout=0):
+    """Tests whether we return the correct value based on tree_status."""
+    return_status = self._TreeStatusFile(tree_status, general_state)
+    self.mox.StubOutWithMock(urllib, 'urlopen')
+    status_url = 'https://chromiumos-status.appspot.com/current?format=json'
+    backoff = 1
+    for attempt in range(retries_500):
+      urllib.urlopen(status_url).AndReturn(return_status)
+      return_status.getcode().AndReturn(500)
+      time.sleep(backoff)
+      backoff *= 2
+
+    urllib.urlopen(status_url).MultipleTimes().AndReturn(return_status)
+    if expected_return == False:
+      self.mox.StubOutWithMock(time, 'time')
+      time.time().AndReturn(1)
+      time.time().AndReturn(1)
+      sleep_timeout = min(max(max_timeout / 5, 1), 30)
+      x = 0
+      while x < max_timeout:
+        time.time().AndReturn(x + 1)
+        x += sleep_timeout
+      time.time().AndReturn(max_timeout + 1)
+      time.sleep(mox.IgnoreArg()).MultipleTimes()
+
+    return_status.getcode().MultipleTimes().AndReturn(200)
+    return_status.read().MultipleTimes().AndReturn(return_status.json)
+    self.mox.ReplayAll()
+    self.assertEqual(validation_pool.ValidationPool._IsTreeOpen(max_timeout),
+                     expected_return)
+    self.mox.VerifyAll()
+
+  def testTreeIsOpen(self):
+    """Tests that we return True is the tree is open."""
+    self._TreeStatusTestHelper('Tree is open (flaky bug on flaky builder)',
+                               'open', True)
+
+  def testTreeIsClosed(self):
+    """Tests that we return false is the tree is closed."""
+    self._TreeStatusTestHelper('Tree is closed (working on a patch)', 'closed',
+                               False, max_timeout=5)
+
+  def testTreeIsOpenWithTimeout(self):
+    """Tests that we return True even if we get some failures."""
+    self._TreeStatusTestHelper('Tree is open (flaky test)', 'open',
+                               True, retries_500=2)
+
+  def testTreeIsThrottled(self):
+    """Tests that we return false is the tree is throttled."""
+    self._TreeStatusTestHelper('Tree is throttled (waiting to cycle)',
+                               'throttled', True)
+
+  def testTreeStatusWithNetworkFailures(self):
+    """Checks for non-500 errors.."""
+    self._TreeStatusTestHelper('Tree is open (flaky bug on flaky builder)',
+                               'open', True, retries_500=2)
 
 
 if __name__ == '__main__':
