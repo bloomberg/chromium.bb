@@ -57,7 +57,7 @@ class TabRenderWatcherTest : public InProcessBrowserTest,
   bool main_frame_rendered_;
 };
 
-// Migrated from HtmlDialogBrowserTest.TestStateTransition, which times out
+// Migrated from WebDialogBrowserTest.TestStateTransition, which times out
 // about 5~10% of runs. See crbug.com/86059.
 IN_PROC_BROWSER_TEST_F(TabRenderWatcherTest, DISABLED_TestStateTransition) {
   views::WebView* webview = new views::WebView(browser()->profile());

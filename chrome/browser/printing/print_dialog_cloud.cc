@@ -75,14 +75,14 @@
 // show an HTML dialog using that class as the delegate. That class
 // hands in the kChromeUICloudPrintResourcesURL as the URL to visit.  That is
 // recognized by the GetWebUIFactoryFunction as a signal to create an
-// ExternalHtmlDialogUI.
+// ExternalWebDialogUI.
 
 // CloudPrintWebDialogDelegate also temporarily owns a
 // CloudPrintFlowHandler, a class which is responsible for the actual
 // interactions with the dialog contents, including handing in the
 // print data and getting any page setup parameters that the dialog
 // contents provides.  As part of bringing up the dialog,
-// HtmlDialogUI::RenderViewCreated is called (an override of
+// WebDialogUI::RenderViewCreated is called (an override of
 // WebUI::RenderViewCreated).  That routine, in turn, calls the
 // delegate's GetWebUIMessageHandlers routine, at which point the
 // ownership of the CloudPrintFlowHandler is handed over.  A pointer
