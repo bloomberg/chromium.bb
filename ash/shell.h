@@ -77,6 +77,7 @@ class PartialScreenshotEventFilter;
 class ResizeShadowController;
 class RootWindowEventFilter;
 class RootWindowLayoutManager;
+class ScreenDimmer;
 class ShadowController;
 class ShelfLayoutManager;
 class ShellContextMenu;
@@ -236,6 +237,9 @@ class ASH_EXPORT Shell {
   internal::MagnificationController* magnification_controller() {
     return magnification_controller_.get();
   }
+  internal::ScreenDimmer* screen_dimmer() {
+    return screen_dimmer_.get();
+  }
 
   Launcher* launcher() { return launcher_.get(); }
 
@@ -339,6 +343,7 @@ class ASH_EXPORT Shell {
   scoped_ptr<internal::EventClientImpl> event_client_;
   scoped_ptr<internal::MonitorController> monitor_controller_;
   scoped_ptr<internal::MagnificationController> magnification_controller_;
+  scoped_ptr<internal::ScreenDimmer> screen_dimmer_;
 
   // An event filter that rewrites or drops a key event.
   scoped_ptr<internal::KeyRewriterEventFilter> key_rewriter_filter_;

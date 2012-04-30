@@ -41,6 +41,7 @@
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/root_window_layout_manager.h"
+#include "ash/wm/screen_dimmer.h"
 #include "ash/wm/shadow_controller.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/stacking_controller.h"
@@ -575,6 +576,7 @@ Shell::~Shell() {
   drag_drop_controller_.reset();
   magnification_controller_.reset();
   resize_shadow_controller_.reset();
+  screen_dimmer_.reset();
   shadow_controller_.reset();
   window_cycle_controller_.reset();
   event_client_.reset();
@@ -727,6 +729,7 @@ void Shell::Init() {
   video_detector_.reset(new VideoDetector);
   window_cycle_controller_.reset(new WindowCycleController);
   monitor_controller_.reset(new internal::MonitorController);
+  screen_dimmer_.reset(new internal::ScreenDimmer);
 }
 
 aura::Window* Shell::GetContainer(int container_id) {

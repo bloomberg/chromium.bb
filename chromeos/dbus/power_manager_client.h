@@ -39,6 +39,11 @@ class CHROMEOS_EXPORT PowerManagerClient {
   // Interface for observing changes from the power manager.
   class Observer {
    public:
+    enum ScreenDimmingState {
+      SCREEN_DIMMING_NONE = 0,
+      SCREEN_DIMMING_IDLE,
+    };
+
     virtual ~Observer() {}
 
     // Called when the brightness is changed.
@@ -75,6 +80,10 @@ class CHROMEOS_EXPORT PowerManagerClient {
 
     // Called when we go from idle to active.
     virtual void ActiveNotify() {}
+
+    // Called when a request is received to dim or undim the screen in software
+    // (as opposed to the more-common method of adjusting the backlight).
+    virtual void ScreenDimmingRequested(ScreenDimmingState state) {}
   };
 
   enum UpdateRequestType {

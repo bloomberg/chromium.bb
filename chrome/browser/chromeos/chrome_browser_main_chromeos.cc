@@ -40,6 +40,7 @@
 #include "chrome/browser/chromeos/power/power_button_observer.h"
 #include "chrome/browser/chromeos/power/power_state_override.h"
 #include "chrome/browser/chromeos/power/resume_observer.h"
+#include "chrome/browser/chromeos/power/screen_dimming_observer.h"
 #include "chrome/browser/chromeos/power/screen_lock_observer.h"
 #include "chrome/browser/chromeos/power/video_property_writer.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
@@ -69,8 +70,6 @@
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
-
-
 
 class MessageLoopObserver : public MessageLoopForUI::Observer {
   virtual base::EventStatus WillProcessEvent(
@@ -439,6 +438,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // initialized.
   power_button_observer_.reset(new chromeos::PowerButtonObserver);
   video_property_writer_.reset(new chromeos::VideoPropertyWriter);
+  screen_dimming_observer_.reset(new chromeos::ScreenDimmingObserver);
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
@@ -488,9 +488,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Let VideoPropertyWriter unregister itself as an observer of the ash::Shell
   // singleton before the shell is destroyed.
   video_property_writer_.reset();
-  // Remove PowerButtonObserver attached to a D-Bus client before
-  // DBusThreadManager is shut down.
+
+  // Detach D-Bus clients before DBusThreadManager is shut down.
   power_button_observer_.reset();
+  screen_dimming_observer_.reset();
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 }
