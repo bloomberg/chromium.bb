@@ -695,16 +695,16 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
   bool UrlIsInPrerenderManager(const std::string& html_file) {
     GURL dest_url = test_server()->GetURL(html_file);
-    return (prerender_manager()->FindEntry(dest_url) != NULL);
+    return (GetPrerenderManager()->FindEntry(dest_url) != NULL);
   }
 
   bool UrlIsInPrerenderManager(const GURL& url) {
-    return (prerender_manager()->FindEntry(url) != NULL);
+    return (GetPrerenderManager()->FindEntry(url) != NULL);
   }
 
   bool UrlIsPendingInPrerenderManager(const std::string& html_file) {
     GURL dest_url = test_server()->GetURL(html_file);
-    return prerender_manager()->IsPendingEntry(dest_url);
+    return GetPrerenderManager()->IsPendingEntry(dest_url);
   }
 
   void set_use_https_src(bool use_https_src_server) {
@@ -715,11 +715,11 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     call_javascript_ = false;
   }
 
-  TaskManagerModel* model() const {
+  TaskManagerModel* GetModel() const {
     return TaskManager::GetInstance()->model();
   }
 
-  PrerenderManager* prerender_manager() const {
+  PrerenderManager* GetPrerenderManager() const {
     Profile* profile =
         current_browser()->GetSelectedTabContentsWrapper()->profile();
     PrerenderManager* prerender_manager =
@@ -730,7 +730,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   // Returns length of |prerender_manager_|'s history, or -1 on failure.
   int GetHistoryLength() const {
     scoped_ptr<DictionaryValue> prerender_dict(
-        static_cast<DictionaryValue*>(prerender_manager()->GetAsValue()));
+        static_cast<DictionaryValue*>(GetPrerenderManager()->GetAsValue()));
     if (!prerender_dict.get())
       return -1;
     ListValue* history_list;
@@ -747,7 +747,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
   TestPrerenderContents* GetPrerenderContents() const {
     return static_cast<TestPrerenderContents*>(
-        prerender_manager()->FindEntry(dest_url_));
+        GetPrerenderManager()->FindEntry(dest_url_));
   }
 
   void set_loader_path(const std::string& path) {
@@ -781,7 +781,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // Debug build bots occasionally run against the default limit, and tests
     // were failing because the prerender was canceled due to memory exhaustion.
     // http://crbug.com/93076
-    prerender_manager()->mutable_config().max_bytes = 1000 * 1024 * 1024;
+    GetPrerenderManager()->mutable_config().max_bytes = 1000 * 1024 * 1024;
   }
 
  private:
@@ -816,16 +816,17 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     }
     GURL src_url = src_server->GetURL(replacement_path);
 
-    ASSERT_TRUE(prerender_manager());
-    prerender_manager()->mutable_config().rate_limit_enabled = false;
-    prerender_manager()->mutable_config().https_allowed = true;
+    PrerenderManager* prerender_manager = GetPrerenderManager();
+    ASSERT_TRUE(prerender_manager);
+    prerender_manager->mutable_config().rate_limit_enabled = false;
+    prerender_manager->mutable_config().https_allowed = true;
     ASSERT_TRUE(prerender_contents_factory_ == NULL);
     prerender_contents_factory_ =
         new WaitForLoadPrerenderContentsFactory(
             expected_number_of_loads,
             expected_final_status_queue,
             prerender_should_wait_for_ready_title);
-    prerender_manager()->SetPrerenderContentsFactory(
+    prerender_manager->SetPrerenderContentsFactory(
         prerender_contents_factory_);
     FinalStatus expected_final_status = expected_final_status_queue.front();
 
@@ -869,7 +870,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
   void NavigateToURLImpl(const GURL& dest_url,
                          WindowOpenDisposition disposition) const {
-    ASSERT_TRUE(prerender_manager() != NULL);
+    ASSERT_TRUE(GetPrerenderManager() != NULL);
     // Make sure in navigating we have a URL to use in the PrerenderManager.
     ASSERT_TRUE(GetPrerenderContents() != NULL);
 
@@ -1332,8 +1333,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPopup) {
 
 // Checks that renderers using excessive memory will be terminated.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExcessiveMemory) {
-  ASSERT_TRUE(prerender_manager());
-  prerender_manager()->mutable_config().max_bytes = 30 * 1024 * 1024;
+  ASSERT_TRUE(GetPrerenderManager());
+  GetPrerenderManager()->mutable_config().max_bytes = 30 * 1024 * 1024;
   PrerenderTestURL("files/prerender/prerender_excessive_memory.html",
                    FINAL_STATUS_MEMORY_LIMIT_EXCEEDED,
                    1);
@@ -1428,9 +1429,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTaskManager) {
   string16 prerender_title;
   int num_prerender_tabs = 0;
 
-  for (int i = 0; i < model()->ResourceCount(); ++i) {
-    if (model()->GetResourceTabContents(i)) {
-      prerender_title = model()->GetResourceTitle(i);
+  const TaskManagerModel* model = GetModel();
+  for (int i = 0; i < model->ResourceCount(); ++i) {
+    if (model->GetResourceTabContents(i)) {
+      prerender_title = model->GetResourceTitle(i);
       if (StartsWith(prerender_title, prefix, true))
         ++num_prerender_tabs;
     }
@@ -1445,9 +1447,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTaskManager) {
       l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX, string16());
   num_prerender_tabs = 0;
   int num_tabs_with_prerender_page_title = 0;
-  for (int i = 0; i < model()->ResourceCount(); ++i) {
-    if (model()->GetResourceTabContents(i)) {
-      string16 tab_title = model()->GetResourceTitle(i);
+  for (int i = 0; i < model->ResourceCount(); ++i) {
+    if (model->GetResourceTabContents(i)) {
+      string16 tab_title = model->GetResourceTitle(i);
       if (StartsWith(tab_title, prefix, true)) {
         ++num_prerender_tabs;
       } else {
@@ -1999,7 +2001,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelAll) {
   // Post a task to cancel all the prerenders.
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&CancelAllPrerenders, prerender_manager()));
+      base::Bind(&CancelAllPrerenders, GetPrerenderManager()));
   ui_test_utils::RunMessageLoop();
   EXPECT_TRUE(GetPrerenderContents() == NULL);
 }
