@@ -85,14 +85,14 @@ remoting.ClientPluginAsync.prototype.API_VERSION_ = 6;
 remoting.ClientPluginAsync.prototype.API_MIN_VERSION_ = 5;
 
 /**
- * @param {string} message_str Message from the plugin.
+ * @param {string} messageStr Message from the plugin.
  */
 remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
   var message = /** @type {{method:string, data:Object.<string,string>}} */
       jsonParseSafe(messageStr);
 
   if (!message || !('method' in message) || !('data' in message)) {
-    console.error('Received invalid message from the plugin: ' + message_str);
+    console.error('Received invalid message from the plugin: ' + messageStr);
     return;
   }
 
@@ -102,13 +102,13 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
     this.plugin.height = 0;
     if (typeof message.data['apiVersion'] != 'number' ||
         typeof message.data['apiMinVersion'] != 'number') {
-      console.error('Received invalid hello message: ' + message_str);
+      console.error('Received invalid hello message: ' + messageStr);
       return;
     }
     this.pluginApiVersion_ = /** @type {number} */ message.data['apiVersion'];
     if (this.pluginApiVersion_ >= 7) {
       if (typeof message.data['apiFeatures'] != 'string') {
-        console.error('Received invalid hello message: ' + message_str);
+        console.error('Received invalid hello message: ' + messageStr);
         return;
       }
       this.pluginApiFeatures_ =
@@ -127,13 +127,13 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
     }
   } else if (message.method == 'sendOutgoingIq') {
     if (typeof message.data['iq'] != 'string') {
-      console.error('Received invalid sendOutgoingIq message: ' + message_str);
+      console.error('Received invalid sendOutgoingIq message: ' + messageStr);
       return;
     }
     this.onOutgoingIqHandler(message.data['iq']);
   } else if (message.method == 'logDebugMessage') {
     if (typeof message.data['message'] != 'string') {
-      console.error('Received invalid logDebugMessage message: ' + message_str);
+      console.error('Received invalid logDebugMessage message: ' + messageStr);
       return;
     }
     this.onDebugMessageHandler(message.data['message']);
@@ -142,7 +142,7 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
         !(message.data['state'] in remoting.ClientSession.State) ||
         typeof message.data['error'] != 'string') {
       console.error('Received invalid onConnectionState message: ' +
-                    message_str);
+                    messageStr);
       return;
     }
 
@@ -160,7 +160,7 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
   } else if (message.method == 'onDesktopSize') {
     if (typeof message.data['width'] != 'number' ||
         typeof message.data['height'] != 'number') {
-      console.error('Received invalid onDesktopSize message: ' + message_str);
+      console.error('Received invalid onDesktopSize message: ' + messageStr);
       return;
     }
     this.desktopWidth = /** @type {number} */ message.data['width'];
@@ -174,7 +174,7 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
         typeof message.data['decodeLatency'] != 'number' ||
         typeof message.data['renderLatency'] != 'number' ||
         typeof message.data['roundtripLatency'] != 'number') {
-      console.error('Received incorrect onPerfStats message: ' + message_str);
+      console.error('Received incorrect onPerfStats message: ' + messageStr);
       return;
     }
     this.perfStats_ =
