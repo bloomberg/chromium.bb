@@ -27,6 +27,7 @@ struct PPB_URLRequestInfo_Data;
 namespace proxy {
 
 struct PPBFlash_DrawGlyphs_Params;
+struct SerializedDirEntry;
 class SerializedVarReturnValue;
 
 class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
@@ -77,6 +78,32 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
                                      uint32_t data_item_count,
                                      const PP_Flash_Clipboard_Format formats[],
                                      const PP_Var data_items[]) OVERRIDE;
+  virtual bool CreateThreadAdapterForInstance(PP_Instance instance) OVERRIDE;
+  virtual void ClearThreadAdapterForInstance(PP_Instance instance) OVERRIDE;
+  virtual int32_t OpenFile(PP_Instance instance,
+                           const char* path,
+                           int32_t mode,
+                           PP_FileHandle* file) OVERRIDE;
+  virtual int32_t RenameFile(PP_Instance instance,
+                             const char* path_from,
+                             const char* path_to) OVERRIDE;
+  virtual int32_t DeleteFileOrDir(PP_Instance instance,
+                                  const char* path,
+                                  PP_Bool recursive) OVERRIDE;
+  virtual int32_t CreateDir(PP_Instance instance, const char* path) OVERRIDE;
+  virtual int32_t QueryFile(PP_Instance instance,
+                            const char* path,
+                            PP_FileInfo* info) OVERRIDE;
+  virtual int32_t GetDirContents(PP_Instance instance,
+                                 const char* path,
+                                 PP_DirContents_Dev** contents) OVERRIDE;
+  virtual int32_t OpenFileRef(PP_Instance instance,
+                              PP_Resource file_ref,
+                              int32_t mode,
+                              PP_FileHandle* file) OVERRIDE;
+  virtual int32_t QueryFileRef(PP_Instance instance,
+                               PP_Resource file_ref,
+                               PP_FileInfo* info) OVERRIDE;
   virtual PP_Bool FlashIsFullscreen(PP_Instance instance) OVERRIDE;
   virtual PP_Bool FlashSetFullscreen(PP_Instance instance,
                                      PP_Bool fullscreen) OVERRIDE;
@@ -125,6 +152,39 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
                                    int clipboard_type,
                                    const std::vector<int>& formats,
                                    SerializedVarVectorReceiveInput data_items);
+  void OnHostMsgOpenFile(PP_Instance instance,
+                         const std::string& path,
+                         int32_t mode,
+                         IPC::PlatformFileForTransit* file_handle,
+                         int32_t* result);
+  void OnHostMsgRenameFile(PP_Instance instance,
+                           const std::string& path_from,
+                           const std::string& path_to,
+                           int32_t* result);
+  void OnHostMsgDeleteFileOrDir(PP_Instance instance,
+                                const std::string& path,
+                                PP_Bool recursive,
+                                int32_t* result);
+  void OnHostMsgCreateDir(PP_Instance instance,
+                          const std::string& path,
+                          int32_t* result);
+  void OnHostMsgQueryFile(PP_Instance instance,
+                          const std::string& path,
+                          PP_FileInfo* info,
+                          int32_t* result);
+  void OnHostMsgGetDirContents(PP_Instance instance,
+                               const std::string& path,
+                               std::vector<SerializedDirEntry>* entries,
+                               int32_t* result);
+  void OnHostMsgOpenFileRef(PP_Instance instance,
+                            const ppapi::HostResource& host_resource,
+                            int32_t mode,
+                            IPC::PlatformFileForTransit* file_handle,
+                            int32_t* result);
+  void OnHostMsgQueryFileRef(PP_Instance instance,
+                             const ppapi::HostResource& host_resource,
+                             PP_FileInfo* info,
+                             int32_t* result);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Flash_Proxy);
 };

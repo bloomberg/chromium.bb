@@ -12,6 +12,14 @@ PPB_Flash_Shared::PPB_Flash_Shared() {
 PPB_Flash_Shared::~PPB_Flash_Shared() {
 }
 
+void PPB_Flash_Shared::FreeDirContents(PP_Instance instance,
+                                       PP_DirContents_Dev* contents) {
+  for (int32_t i = 0; i < contents->count; ++i)
+    delete[] contents->entries[i].name;
+  delete[] contents->entries;
+  delete contents;
+}
+
 // static
 bool PPB_Flash_Shared::IsValidClipboardType(
     PP_Flash_Clipboard_Type clipboard_type) {

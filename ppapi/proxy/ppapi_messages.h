@@ -1192,51 +1192,49 @@ IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFlash_WriteClipboardData,
                     int /* clipboard_type */,
                     std::vector<int> /* formats */,
                     std::vector<ppapi::proxy::SerializedVar> /* data */)
-
-// PPB_Flash_File_FileRef.
-IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlashFile_FileRef_OpenFile,
-                           ppapi::HostResource /* file_ref */,
-                           int32_t /* mode */,
-                           IPC::PlatformFileForTransit /* file_handle */,
-                           int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBFlashFile_FileRef_QueryFile,
-                           ppapi::HostResource /* file_ref */,
-                           PP_FileInfo /* info */,
-                           int32_t /* result */)
-
-// PPB_Flash_File_ModuleLocal.
-IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBFlashFile_ModuleLocal_OpenFile,
+IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBFlash_OpenFile,
                            PP_Instance /* instance */,
                            std::string /* path */,
                            int32_t /* mode */,
                            IPC::PlatformFileForTransit /* file_handle */,
                            int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlashFile_ModuleLocal_RenameFile,
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_RenameFile,
                            PP_Instance /* instance */,
                            std::string /* path_from */,
                            std::string /* path_to */,
                            int32_t /* result */)
 IPC_SYNC_MESSAGE_ROUTED3_1(
-    PpapiHostMsg_PPBFlashFile_ModuleLocal_DeleteFileOrDir,
+    PpapiHostMsg_PPBFlash_DeleteFileOrDir,
     PP_Instance /* instance */,
     std::string /* path */,
     PP_Bool /* recursive */,
     int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlashFile_ModuleLocal_CreateDir,
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_CreateDir,
                            PP_Instance /* instance */,
                            std::string /* path */,
                            int32_t /* result */)
-IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlashFile_ModuleLocal_QueryFile,
+IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlash_QueryFile,
                            PP_Instance /* instance */,
                            std::string /* path */,
                            PP_FileInfo /* info */,
                            int32_t /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_2(
-    PpapiHostMsg_PPBFlashFile_ModuleLocal_GetDirContents,
+    PpapiHostMsg_PPBFlash_GetDirContents,
     PP_Instance /* instance */,
     std::string /* path */,
     std::vector<ppapi::proxy::SerializedDirEntry> /* entries */,
     int32_t /* result */)
+IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBFlash_OpenFileRef,
+                           PP_Instance /* instance */,
+                           ppapi::HostResource /* file_ref */,
+                           int32_t /* mode */,
+                           IPC::PlatformFileForTransit /* file_handle */,
+                           int32_t /* result */)
+IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlash_QueryFileRef,
+                           PP_Instance /* instance */,
+                           ppapi::HostResource /* file_ref */,
+                           PP_FileInfo /* info */,
+                           int32_t /* result */)
 
 // PPB_Flash_Menu
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlashMenu_Create,

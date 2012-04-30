@@ -31,6 +31,8 @@ class PPB_Flash_Menu_Proxy : public InterfaceProxy {
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
+  static const ApiID kApiID = API_ID_PPB_FLASH_MENU;
+
  private:
   struct ShowRequest;
 

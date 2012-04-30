@@ -79,7 +79,6 @@
 #include "ppapi/proxy/ppb_file_io_proxy.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/ppb_file_system_proxy.h"
-#include "ppapi/proxy/ppb_flash_file_proxy.h"
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
 #include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
 #include "ppapi/proxy/ppb_flash_proxy.h"
@@ -215,8 +214,6 @@ InterfaceList::InterfaceList() {
          PPB_Var_Shared::GetVarInterface1_0());
 
 #if !defined(OS_NACL)
-  AddFlashInterfaces();
-
   // PPB (browser) interfaces.
   // Do not add more stuff here, they should be added to interface_list*.h
   // TODO(brettw) remove these.
@@ -300,34 +297,6 @@ const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
     return NULL;
   return found->second.iface;
 }
-
-#if !defined(OS_NACL)
-void InterfaceList::AddFlashInterfaces() {
-  AddProxy(API_ID_PPB_FLASH_FILE_FILEREF,
-           &ProxyFactory<PPB_Flash_File_FileRef_Proxy>);
-  AddPPB(PPB_FLASH_FILE_FILEREF_INTERFACE, API_ID_PPB_FLASH_FILE_FILEREF,
-         PPB_Flash_File_FileRef_Proxy::GetInterface());
-
-  AddProxy(API_ID_PPB_FLASH_FILE_MODULELOCAL,
-           &ProxyFactory<PPB_Flash_File_ModuleLocal_Proxy>);
-  AddPPB(PPB_FLASH_FILE_MODULELOCAL_INTERFACE,
-         API_ID_PPB_FLASH_FILE_MODULELOCAL,
-         PPB_Flash_File_ModuleLocal_Proxy::GetInterface());
-
-  AddProxy(API_ID_PPB_FLASH_MENU, &ProxyFactory<PPB_Flash_Menu_Proxy>);
-  AddPPB(PPB_FLASH_MENU_INTERFACE_0_2, API_ID_PPB_FLASH_MENU,
-         thunk::GetPPB_Flash_Menu_0_2_Thunk());
-
-  AddProxy(API_ID_PPB_FLASH_MESSAGELOOP,
-           &ProxyFactory<PPB_Flash_MessageLoop_Proxy>);
-  AddPPB(PPB_FLASH_MESSAGELOOP_INTERFACE_0_1, API_ID_PPB_FLASH_MESSAGELOOP,
-         thunk::GetPPB_Flash_MessageLoop_0_1_Thunk());
-
-  // Only add the interface; PPB_TCPSocket_Private provides the API ID's proxy.
-  AddPPB(PPB_FLASH_TCPSOCKET_INTERFACE_0_2, API_ID_PPB_TCPSOCKET_PRIVATE,
-         thunk::GetPPB_TCPSocket_Private_0_3_Thunk());
-}
-#endif  // !defined(OS_NACL)
 
 void InterfaceList::AddProxy(ApiID id,
                              InterfaceProxy::Factory factory) {

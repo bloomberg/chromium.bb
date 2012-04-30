@@ -60,13 +60,6 @@ PPAPI_THUNK_EXPORT const PPB_BufferTrusted_0_1*
     GetPPB_BufferTrusted_0_1_Thunk();
 PPAPI_THUNK_EXPORT const PPB_FileChooserTrusted_0_5*
     GetPPB_FileChooser_Trusted_0_5_Thunk();
-PPAPI_THUNK_EXPORT const PPB_Flash_Clipboard_4_0*
-    GetPPB_Flash_Clipboard_4_0_Thunk();
-PPAPI_THUNK_EXPORT const PPB_Flash_Clipboard_3_0*
-    GetPPB_Flash_Clipboard_3_0_Thunk();
-PPAPI_THUNK_EXPORT const PPB_Flash_Menu_0_2* GetPPB_Flash_Menu_0_2_Thunk();
-PPAPI_THUNK_EXPORT const PPB_Flash_MessageLoop_0_1*
-    GetPPB_Flash_MessageLoop_0_1_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Graphics3DTrusted_1_0*
     GetPPB_Graphics3DTrusted_1_0_Thunk();
 PPAPI_THUNK_EXPORT const PPB_HostResolver_Private_0_1*

@@ -35,6 +35,8 @@ class PPB_Flash_MessageLoop_Proxy
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
+  static const ApiID kApiID = API_ID_PPB_FLASH_MESSAGELOOP;
+
  private:
   void OnMsgCreate(PP_Instance instance, ppapi::HostResource* resource);
   void OnMsgRun(const ppapi::HostResource& flash_message_loop,
