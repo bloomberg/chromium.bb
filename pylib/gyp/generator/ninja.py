@@ -12,6 +12,7 @@ import gyp.xcode_emulation
 import os.path
 import re
 import subprocess
+import string
 import sys
 
 import gyp.ninja_syntax as ninja_syntax
@@ -1069,7 +1070,7 @@ class NinjaWriter:
     if self.toolset == 'target':
       rule_name += '.' + self.toolset
     rule_name += '.' + name
-    rule_name = rule_name.replace(' ', '_')
+    rule_name = rule_name.translate(string.maketrans(' ()', '___'))
 
     args = args[:]
 
