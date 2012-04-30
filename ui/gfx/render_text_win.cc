@@ -13,9 +13,10 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "base/win/windows_version.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_smoothing_win.h"
-#include "ui/gfx/platform_font.h"
+#include "ui/gfx/platform_font_win.h"
 
 namespace {
 
@@ -116,13 +117,26 @@ void QueryLinkedFontsFromRegistry(const gfx::Font& font,
   key.Close();
 }
 
-// Changes |font| to have the specified |font_size| and |font_style| if it does
-// not already. Only considers bold and italic styles, since the underlined
-// style has no effect on glyph shaping.
-void DeriveFontIfNecessary(int font_size, int font_style, gfx::Font* font) {
+// Changes |font| to have the specified |font_size| (or |font_height| on Windows
+// XP) and |font_style| if it is not the case already. Only considers bold and
+// italic styles, since the underlined style has no effect on glyph shaping.
+void DeriveFontIfNecessary(int font_size,
+                           int font_height,
+                           int font_style,
+                           gfx::Font* font) {
   const int kStyleMask = (gfx::Font::BOLD | gfx::Font::ITALIC);
-  const int current_style = (font->GetStyle() & kStyleMask);
   const int target_style = (font_style & kStyleMask);
+
+  // On Windows XP, the font must be resized using |font_height| instead of
+  // |font_size| to match GDI behavior.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+    gfx::PlatformFontWin* platform_font =
+        static_cast<gfx::PlatformFontWin*>(font->platform_font());
+    *font = platform_font->DeriveFontWithHeight(font_height, target_style);
+    return;
+  }
+
+  const int current_style = (font->GetStyle() & kStyleMask);
   const int current_size = font->GetFontSize();
   if (current_style != target_style || current_size != font_size)
     *font = font->DeriveFont(font_size - current_size, font_style);
@@ -562,7 +576,8 @@ void RenderTextWin::ItemizeLogicalText() {
     run->range.set_start(run_break);
     run->font = GetFont();
     run->font_style = style->font_style;
-    DeriveFontIfNecessary(run->font.GetFontSize(), run->font_style, &run->font);
+    DeriveFontIfNecessary(run->font.GetFontSize(), run->font.GetHeight(),
+                          run->font_style, &run->font);
     run->foreground = style->foreground;
     run->strike = style->strike;
     run->diagonal_strike = style->diagonal_strike;
@@ -746,8 +761,9 @@ void RenderTextWin::LayoutVisualText() {
 void RenderTextWin::ApplySubstituteFont(internal::TextRun* run,
                                         const Font& font) {
   const int font_size = run->font.GetFontSize();
+  const int font_height = run->font.GetHeight();
   run->font = font;
-  DeriveFontIfNecessary(font_size, run->font_style, &run->font);
+  DeriveFontIfNecessary(font_size, font_height, run->font_style, &run->font);
   ScriptFreeCache(&run->script_cache);
   SelectObject(cached_hdc_, run->font.GetNativeFont());
 }

@@ -109,10 +109,10 @@
         ['OS == "win"', {
           'sources': [
             'base/dragdrop/os_exchange_data_win_unittest.cc',
-            # TODO(brettw) re-enable this when the dependencies on WindowImpl are fixed!
+            'base/win/hwnd_subclass_unittest.cc',
             'gfx/icon_util_unittest.cc',
             'gfx/native_theme_win_unittest.cc',
-            'base/win/hwnd_subclass_unittest.cc',
+            'gfx/platform_font_win_unittest.cc',
           ],
           'include_dirs': [
             '../..',

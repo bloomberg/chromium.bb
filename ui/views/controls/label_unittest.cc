@@ -16,18 +16,19 @@ namespace views {
 // All text sizing measurements (width and height) should be greater than this.
 const int kMinTextDimension = 4;
 
-#if defined(OS_WIN)
-// Courier is failing on linux because it's non scalable.
 TEST(LabelTest, FontPropertyCourier) {
   Label label;
   std::string font_name("courier");
-  gfx::Font font(font_name, 30);
+  // Note: This test is size dependent since Courier does not support all sizes.
+  gfx::Font font(font_name, 26);
   label.SetFont(font);
   gfx::Font font_used = label.font();
+#if defined(OS_WIN)
+  // On Linux, this results in "Sans" instead of "courier".
   EXPECT_EQ(font_name, font_used.GetFontName());
-  EXPECT_EQ(30, font_used.GetFontSize());
-}
 #endif
+  EXPECT_EQ(26, font_used.GetFontSize());
+}
 
 TEST(LabelTest, FontPropertyArial) {
   Label label;

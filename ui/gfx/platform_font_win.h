@@ -47,6 +47,13 @@ class UI_EXPORT PlatformFontWin : public PlatformFont {
   // name could not be retrieved, returns GetFontName().
   std::string GetLocalizedFontName() const;
 
+  // Returns a derived Font with the specified |style| and with height at most
+  // |height|. If the height and style of the receiver already match, it is
+  // returned. Otherwise, the returned Font will have the largest size such that
+  // its height is less than or equal to |height| (since there may not exist a
+  // size that matches the exact |height| specified).
+  Font DeriveFontWithHeight(int height, int style);
+
   // Overridden from PlatformFont:
   virtual Font DeriveFont(int size_delta, int style) const OVERRIDE;
   virtual int GetHeight() const OVERRIDE;
@@ -75,6 +82,7 @@ class UI_EXPORT PlatformFontWin : public PlatformFont {
     // This constructor takes control of the HFONT, and will delete it when
     // the HFontRef is deleted.
     HFontRef(HFONT hfont,
+             int font_size,
              int height,
              int baseline,
              int ave_char_width,
@@ -88,6 +96,7 @@ class UI_EXPORT PlatformFontWin : public PlatformFont {
     int style() const { return style_; }
     const std::string& font_name() const { return font_name_; }
     int font_size() const { return font_size_; }
+    int requested_font_size() const { return requested_font_size_; }
 
     // Returns the average character width in dialog units.
     int GetDluBaseX();
@@ -98,6 +107,7 @@ class UI_EXPORT PlatformFontWin : public PlatformFont {
     ~HFontRef();
 
     const HFONT hfont_;
+    const int font_size_;
     const int height_;
     const int baseline_;
     const int ave_char_width_;
@@ -106,7 +116,12 @@ class UI_EXPORT PlatformFontWin : public PlatformFont {
     // system, with an initial value of -1 meaning it hasn't yet been queried.
     int dlu_base_x_;
     std::string font_name_;
-    int font_size_;
+
+    // If the requested font size is not possible for the font, |font_size_|
+    // will be different than |requested_font_size_|. This is stored separately
+    // so that code that increases the font size in a loop will not cause the
+    // loop to get stuck on the same size.
+    int requested_font_size_;
 
     DISALLOW_COPY_AND_ASSIGN(HFontRef);
   };
