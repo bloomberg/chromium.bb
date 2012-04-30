@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -924,6 +924,18 @@ def ParseOptions():
   return options, args
 
 
+def EnsureDirExists(dir):
+  """Creates a directory. Does not use the more obvious 'if not exists: create'
+  to avoid race with other invocations of the same code, which will error out
+  on makedirs if another invocation has succeeded in creating the directory
+  since the existence check."""
+  try:
+    os.makedirs(dir)
+  except:
+    if not os.path.isdir(dir):
+      raise
+
+
 def CreateOutputDirectories(options):
   """Creates the intermediate and final output directories.
 
@@ -942,10 +954,8 @@ def CreateOutputDirectories(options):
   if intermediate_dir is None:
     intermediate_dir = out_dir
 
-  if not os.path.exists(out_dir):
-    os.makedirs(out_dir)
-  if not os.path.exists(intermediate_dir):
-    os.makedirs(intermediate_dir)
+  EnsureDirExists(out_dir)
+  EnsureDirExists(intermediate_dir)
 
   return out_dir, intermediate_dir
 
