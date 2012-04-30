@@ -716,7 +716,11 @@ class NinjaWriter:
       obj_ext = self.obj_ext
       if ext in ('cc', 'cpp', 'cxx'):
         command = 'cxx'
-      elif ext in ('c', 's', 'S'):
+      elif ext == 'c' or (ext in ('s', 'S') and self.flavor != 'win'):
+        # TODO(scottmg): .s files won't be handled by the Windows compiler.
+        # We could add support for .asm, though that's only supported on
+        # x86. Currently not used in Chromium in favor of other third-party
+        # assemblers.
         command = 'cc'
       elif self.flavor == 'mac' and ext == 'm':
         command = 'objc'
