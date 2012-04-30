@@ -54,9 +54,18 @@ class ActualVsBaselineTester : public Arm32DecoderTester {
   void CheckClearsBits();
   void CheckSetsZIfBitsClear();
 
+  // Holds the arguments to use in comparisons.
   const NamedClassDecoder& actual_;
   const NamedClassDecoder& baseline_;
   DecoderTester& baseline_tester_;
+
+  // These are added to cut down virtual redirection and
+  // speed up tests by about 33%.
+  const nacl_arm_dec::ClassDecoder& actual_decoder_;
+  const nacl_arm_dec::ClassDecoder& baseline_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(ActualVsBaselineTester);
 };
 
 }  // namespace

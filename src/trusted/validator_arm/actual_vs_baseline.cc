@@ -20,7 +20,9 @@ ActualVsBaselineTester::ActualVsBaselineTester(
     : Arm32DecoderTester(baseline_tester.ExpectedDecoder()),
       actual_(actual),
       baseline_(baseline_tester.ExpectedDecoder()),
-      baseline_tester_(baseline_tester) {}
+      baseline_tester_(baseline_tester),
+      actual_decoder_(actual_.named_decoder()),
+      baseline_decoder_(baseline_.named_decoder()) {}
 
 void ActualVsBaselineTester::ProcessMatch() {
   // First make sure the baseline is happy.
@@ -59,66 +61,56 @@ void ActualVsBaselineTester::CheckSafety() {
   // about is that the validator (in sel_ldr) accepts/rejects the same
   // way in terms of safety. We don't worry if the reasons for safety
   // failing is the same.
-  Pattern(3);
-  if (actual_.safety(inst_) == nacl_arm_dec::MAY_BE_SAFE) {
-    EXPECT_EQ(baseline_.safety(inst_), nacl_arm_dec::MAY_BE_SAFE) <<
-        "Baseline = " << baseline_.name() << ", actual = " << actual_.name();
+  if (actual_decoder_.safety(inst_) == nacl_arm_dec::MAY_BE_SAFE) {
+    EXPECT_EQ(baseline_decoder_.safety(inst_), nacl_arm_dec::MAY_BE_SAFE);
   } else {
-    EXPECT_NE(baseline_.safety(inst_), nacl_arm_dec::MAY_BE_SAFE) <<
-        "Baseline = " << baseline_.name() << ", actual = " << actual_.name();
+    EXPECT_NE(baseline_decoder_.safety(inst_), nacl_arm_dec::MAY_BE_SAFE);
   }
 }
 
 void ActualVsBaselineTester::CheckDefs() {
-  EXPECT_EQ(baseline_.defs(inst_).number(), actual_.defs(inst_).number()) <<
-        "Baseline = " << baseline_.name() << ", actual = " << actual_.name();
+  EXPECT_EQ(baseline_decoder_.defs(inst_).number(),
+            actual_decoder_.defs(inst_).number());
 }
 
 void ActualVsBaselineTester::CheckImmediateAddressingDefs() {
-  EXPECT_EQ(baseline_.immediate_addressing_defs(inst_).number(),
-            actual_.immediate_addressing_defs(inst_).number()) <<
-      "Baseline = " << baseline_.name() << ", actual = " << actual_.name();
+  EXPECT_EQ(baseline_decoder_.immediate_addressing_defs(inst_).number(),
+            actual_decoder_.immediate_addressing_defs(inst_).number());
 }
 
 void ActualVsBaselineTester::CheckWritesMemory() {
-  EXPECT_EQ(baseline_.writes_memory(inst_), actual_.writes_memory(inst_)) <<
-      "Baseline = " << baseline_.name() << ", actual = " << actual_.name();
+  EXPECT_EQ(baseline_decoder_.writes_memory(inst_),
+            actual_decoder_.writes_memory(inst_));
 }
 
 void ActualVsBaselineTester::CheckBaseAddressRegister() {
-  EXPECT_EQ(baseline_.base_address_register(inst_).number(),
-            actual_.base_address_register(inst_).number()) <<
-      "Baseline = " << baseline_.name() << ", actual = " << actual_.name();
+  EXPECT_EQ(baseline_decoder_.base_address_register(inst_).number(),
+            actual_decoder_.base_address_register(inst_).number());
 }
 
 void ActualVsBaselineTester::CheckOffsetIsImmediate() {
-  EXPECT_EQ(baseline_.offset_is_immediate(inst_),
-            actual_.offset_is_immediate(inst_)) <<
-      "Baseline = " << baseline_.name() << ", actual = " << actual_.name();
+  EXPECT_EQ(baseline_decoder_.offset_is_immediate(inst_),
+            actual_decoder_.offset_is_immediate(inst_));
 }
 
 void ActualVsBaselineTester::CheckBranchTargetRegister() {
-  EXPECT_EQ(baseline_.branch_target_register(inst_).number(),
-            actual_.branch_target_register(inst_).number()) <<
-      "Baseline = " << baseline_.name() << ", actual = " << actual_.name();
+  EXPECT_EQ(baseline_decoder_.branch_target_register(inst_).number(),
+            actual_decoder_.branch_target_register(inst_).number());
 }
 
 void ActualVsBaselineTester::CheckIsRelativeBranch() {
-  EXPECT_EQ(baseline_.is_relative_branch(inst_),
-            actual_.is_relative_branch(inst_)) <<
-      "Baseline = " << baseline_.name() << ", actual = " << actual_.name();
+  EXPECT_EQ(baseline_decoder_.is_relative_branch(inst_),
+            actual_decoder_.is_relative_branch(inst_));
 }
 
 void ActualVsBaselineTester::CheckBranchTargetOffset() {
-  EXPECT_EQ(baseline_.branch_target_offset(inst_),
-            actual_.branch_target_offset(inst_)) <<
-      "Baseline = " << baseline_.name() << ", actual = " << actual_.name();
+  EXPECT_EQ(baseline_decoder_.branch_target_offset(inst_),
+            actual_decoder_.branch_target_offset(inst_));
 }
 
 void ActualVsBaselineTester::CheckIsLiteralPoolHead() {
-  EXPECT_EQ(baseline_.is_literal_pool_head(inst_),
-            actual_.is_literal_pool_head(inst_)) <<
-      "Baseline = " << baseline_.name() << ", actual = " << actual_.name();
+  EXPECT_EQ(baseline_decoder_.is_literal_pool_head(inst_),
+            actual_decoder_.is_literal_pool_head(inst_));
 }
 
 // Mask to use if code bundle size is 16.
@@ -134,18 +126,16 @@ void ActualVsBaselineTester::CheckClearsBits() {
   // Note: We don't actually test all combinations. We just try a few.
 
   // Assuming code bundle size is 16, see if we are the same.
-  EXPECT_EQ(baseline_.clears_bits(inst_, code_mask),
-            actual_.clears_bits(inst_, code_mask)) <<
-      "Baseline = " << baseline_.name() << ", actual = " << actual_.name();
+  EXPECT_EQ(baseline_decoder_.clears_bits(inst_, code_mask),
+            actual_decoder_.clears_bits(inst_, code_mask));
+
   // Assume data division size is 16 bytes.
-  EXPECT_EQ(baseline_.clears_bits(inst_, data16_mask),
-            actual_.clears_bits(inst_, data16_mask)) <<
-      "Baseline = " << baseline_.name() << ", actual = " << actual_.name();
+  EXPECT_EQ(baseline_decoder_.clears_bits(inst_, data16_mask),
+            actual_decoder_.clears_bits(inst_, data16_mask));
 
   // Assume data division size is 24 bytes.
-  EXPECT_EQ(baseline_.clears_bits(inst_, data24_mask),
-            actual_.clears_bits(inst_, data24_mask)) <<
-      "Baseline = " << baseline_.name() << ", actual = " << actual_.name();
+  EXPECT_EQ(baseline_decoder_.clears_bits(inst_, data24_mask),
+            actual_decoder_.clears_bits(inst_, data24_mask));
 }
 
 void ActualVsBaselineTester::CheckSetsZIfBitsClear() {
@@ -153,9 +143,8 @@ void ActualVsBaselineTester::CheckSetsZIfBitsClear() {
   // try a few.
   for (uint32_t i = 0; i < 15; ++i) {
     nacl_arm_dec::Register r(i);
-    EXPECT_EQ(baseline_.sets_Z_if_bits_clear(inst_, r, data24_mask),
-              actual_.sets_Z_if_bits_clear(inst_, r, data24_mask)) <<
-        "Baseline = " << baseline_.name() << ", actual = " << actual_.name();
+    EXPECT_EQ(baseline_decoder_.sets_Z_if_bits_clear(inst_, r, data24_mask),
+              actual_decoder_.sets_Z_if_bits_clear(inst_, r, data24_mask));
   }
 }
 
