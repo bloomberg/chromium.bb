@@ -185,6 +185,14 @@
           "MAX_ITEMS": {
             "value": 512,
             "description": "The maximum number of items that can be stored in sync storage."
+          },
+          "MAX_WRITE_OPERATIONS_PER_HOUR": {
+            "value": 1000,
+            "description": "The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each hour."
+          },
+          "MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE": {
+            "value": 10,
+            "description": "The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each minute, sustained over 10 minutes."
           }
         }
       },
