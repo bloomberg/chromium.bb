@@ -32,10 +32,10 @@
 #include "webkit/quota/quota_types.h"
 
 class GURL;
-struct PP_HostResolver_Private_Hint;
-struct PP_NetAddress_Private;
 class SkBitmap;
 class TransportDIB;
+struct PP_HostResolver_Private_Hint;
+struct PP_NetAddress_Private;
 
 namespace base {
 class MessageLoopProxy;
@@ -69,6 +69,7 @@ class PlatformCanvas;
 namespace WebKit {
 class WebFileChooserCompletion;
 class WebGamepads;
+class WebPlugin;
 struct WebCursorInfo;
 struct WebFileChooserParams;
 }
@@ -332,6 +333,11 @@ class PluginDelegate {
   // Returns a pointer (ownership not transferred) to the bitmap to paint the
   // sad plugin screen with. Returns NULL on failure.
   virtual SkBitmap* GetSadPluginBitmap() = 0;
+
+  // Creates a replacement plug-in that is shown when the plug-in at |file_path|
+  // couldn't be loaded.
+  virtual WebKit::WebPlugin* CreatePluginReplacement(
+      const FilePath& file_path) = 0;
 
   // The caller will own the pointer returned from this.
   virtual PlatformImage2D* CreateImage2D(int width, int height) = 0;

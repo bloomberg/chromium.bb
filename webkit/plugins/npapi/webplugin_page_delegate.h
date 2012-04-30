@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@ class FilePath;
 
 namespace WebKit {
 class WebCookieJar;
+class WebPlugin;
 }
 
 namespace webkit {
@@ -30,6 +31,10 @@ class WebPluginPageDelegate {
   virtual WebPluginDelegate* CreatePluginDelegate(
       const FilePath& file_path,
       const std::string& mime_type) = 0;
+
+  // Caled to create a replacement plug-in when loading a plug-in failed.
+  virtual WebKit::WebPlugin* CreatePluginReplacement(
+      const FilePath& file_path) = 0;
 
   // Called when a windowed plugin is created.
   // Lets the view delegate create anything it is using to wrap the plugin.

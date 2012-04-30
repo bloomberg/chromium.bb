@@ -944,6 +944,11 @@ void TestWebViewDelegate::openFileSystem(
 
 // WebPluginPageDelegate -----------------------------------------------------
 
+WebKit::WebPlugin* TestWebViewDelegate::CreatePluginReplacement(
+    const FilePath& file_path) {
+  return NULL;
+}
+
 WebCookieJar* TestWebViewDelegate::GetCookieJar() {
   return WebKit::webKitPlatformSupport()->cookieJar();
 }

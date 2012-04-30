@@ -21,6 +21,7 @@
 #include "content/public/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
+#include "grit/webkit_strings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
@@ -39,6 +40,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/plugin_group.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webview_plugin.h"
 
 using content::RenderThread;
@@ -95,6 +97,28 @@ PluginPlaceholder* PluginPlaceholder::CreateMissingPlugin(
   missing_plugin->OnDidNotFindMissingPlugin();
 #endif
   return missing_plugin;
+}
+
+PluginPlaceholder* PluginPlaceholder::CreateErrorPlugin(
+    RenderView* render_view,
+    const FilePath& file_path) {
+  DictionaryValue values;
+  values.SetString("message",
+                   l10n_util::GetStringUTF8(IDS_PLUGIN_INITIALIZATION_ERROR));
+
+  const base::StringPiece template_html(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_BLOCKED_PLUGIN_HTML));
+  std::string html_data =
+      jstemplate_builder::GetI18nTemplateHtml(template_html, &values);
+
+  WebPluginParams params;
+  // |missing_plugin| will destroy itself when its WebViewPlugin is going away.
+  PluginPlaceholder* plugin = new PluginPlaceholder(
+      render_view, NULL, params, html_data, params.mimeType);
+  plugin->set_allow_loading(true);
+
+  return plugin;
 }
 
 // static

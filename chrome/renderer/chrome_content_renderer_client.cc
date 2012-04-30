@@ -295,6 +295,14 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
   return true;
 }
 
+WebPlugin* ChromeContentRendererClient::CreatePluginReplacement(
+    content::RenderView* render_view,
+    const FilePath& plugin_path) {
+  PluginPlaceholder* placeholder =
+      PluginPlaceholder::CreateErrorPlugin(render_view, plugin_path);
+  return placeholder->plugin();
+}
+
 webkit_media::WebMediaPlayerImpl*
 ChromeContentRendererClient::OverrideCreateWebMediaPlayer(
     content::RenderView* render_view,
