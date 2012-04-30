@@ -44,15 +44,18 @@ enum WindowVisibilityAnimationTransition {
   ANIMATE_NONE = 0x4,
 };
 
-void ASH_EXPORT SetWindowVisibilityAnimationType(
+ASH_EXPORT void SetWindowVisibilityAnimationType(
     aura::Window* window,
     WindowVisibilityAnimationType type);
 
-void ASH_EXPORT SetWindowVisibilityAnimationTransition(
+ASH_EXPORT WindowVisibilityAnimationType GetWindowVisibilityAnimationType(
+    aura::Window* window);
+
+ASH_EXPORT void SetWindowVisibilityAnimationTransition(
     aura::Window* window,
     WindowVisibilityAnimationTransition transition);
 
-void ASH_EXPORT SetWindowVisibilityAnimationDuration(
+ASH_EXPORT void SetWindowVisibilityAnimationDuration(
     aura::Window* window,
     const base::TimeDelta& duration);
 
@@ -66,7 +69,7 @@ ASH_EXPORT ui::ImplicitAnimationObserver* CreateHidingWindowAnimationObserver(
 namespace internal {
 
 // Returns false if the |window| didn't animate.
-bool ASH_EXPORT AnimateOnChildWindowVisibilityChanged(
+ASH_EXPORT bool AnimateOnChildWindowVisibilityChanged(
     aura::Window* window, bool visible);
 
 }  // namespace internal

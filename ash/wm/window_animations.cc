@@ -48,6 +48,11 @@ void SetWindowVisibilityAnimationType(aura::Window* window,
   window->SetProperty(internal::kWindowVisibilityAnimationTypeKey, type);
 }
 
+WindowVisibilityAnimationType GetWindowVisibilityAnimationType(
+    aura::Window* window) {
+  return window->GetProperty(internal::kWindowVisibilityAnimationTypeKey);
+}
+
 void SetWindowVisibilityAnimationTransition(
     aura::Window* window,
     WindowVisibilityAnimationTransition transition) {

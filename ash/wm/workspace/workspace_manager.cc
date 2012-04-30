@@ -220,6 +220,10 @@ void WorkspaceManager::SetWindowLayerVisibility(
     ui::Layer* layer = windows[i]->layer();
     // Only show the layer for windows that want to be visible.
     if (layer && (!value || windows[i]->TargetVisibility())) {
+      bool animation_disabled =
+          windows[i]->GetProperty(aura::client::kAnimationsDisabledKey);
+      WindowVisibilityAnimationType animation_type =
+          GetWindowVisibilityAnimationType(windows[i]);
       windows[i]->SetProperty(aura::client::kAnimationsDisabledKey,
                               change_type == DONT_ANIMATE);
       bool update_layer = true;
@@ -236,8 +240,9 @@ void WorkspaceManager::SetWindowLayerVisibility(
         layer->SetVisible(value);
       // Reset the animation type so it isn't used in a future hide/show.
       ash::SetWindowVisibilityAnimationType(
-          windows[i], ash::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
-      windows[i]->ClearProperty(aura::client::kAnimationsDisabledKey);
+          windows[i], animation_type);
+      windows[i]->SetProperty(aura::client::kAnimationsDisabledKey,
+                              animation_disabled);
     }
   }
 }

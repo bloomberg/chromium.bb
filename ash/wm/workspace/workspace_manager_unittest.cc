@@ -617,5 +617,19 @@ TEST_F(WorkspaceManagerTest, GetWindowStateWithUnmanagedFullscreenWindow) {
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
 }
 
+// Makes sure that if animations are disabled on a window they don't get reset
+// when switching workspaces.
+TEST_F(WorkspaceManagerTest, DontResetAnimation) {
+  scoped_ptr<Window> w1(CreateTestWindow());
+  scoped_ptr<Window> w2(CreateTestWindow());
+
+  w1->Show();
+  w1->SetProperty(aura::client::kAnimationsDisabledKey, true);
+
+  w2->Show();
+  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  EXPECT_TRUE(w1->GetProperty(aura::client::kAnimationsDisabledKey));
+}
+
 }  // namespace internal
 }  // namespace ash
