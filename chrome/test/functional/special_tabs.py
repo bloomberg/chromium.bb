@@ -137,7 +137,7 @@ class SpecialTabsTest(pyauto.PyUITest):
 
   linux_special_url_tabs = {
     'chrome://linux-proxy-config': { 'title': 'Proxy Configuration Help' },
-    'chrome://tcmalloc': { 'title': 'About tcmalloc' },
+    'chrome://tcmalloc': { 'title': 'tcmalloc stats' },
     'chrome://sandbox': { 'title': 'Sandbox Status' },
   }
   broken_linux_special_url_tabs = {}
@@ -272,7 +272,8 @@ class SpecialTabsTest(pyauto.PyUITest):
       self.NavigateToURL(url)
       expected_title = 'title' in properties and properties['title'] or url
       actual_title = self.GetActiveTabTitle()
-      self.assertEqual(expected_title, actual_title)
+      self.assertTrue(self.WaitUntil(
+            lambda: self.GetActiveTabTitle(), expect_retval=expected_title))
       include_list = []
       exclude_list = []
       no_csp = 'CSP' in properties and not properties['CSP']
@@ -301,6 +302,9 @@ class SpecialTabsTest(pyauto.PyUITest):
                          msg='Got %s for %s' % (result, url))
       else:
         self.assertEqual(result, 'blocked');
+
+      # Restart browser so that every URL gets a fresh instance.
+      self.RestartBrowser(clear_profile=False)
 
   def testAboutAppCacheTab(self):
     """Test App Cache tab to confirm about page populates caches."""

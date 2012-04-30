@@ -141,8 +141,6 @@
       '-special_tabs.SpecialTabsTest.testAboutAppCacheTab',
       # Flaky: crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
-      # crbug.com/88574
-      '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
       # crbug.com/88593
       '-sync.SyncTest.testPersonalStuffSyncSection',
       # crbug.com/95140
