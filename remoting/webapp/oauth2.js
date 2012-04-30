@@ -206,8 +206,11 @@ remoting.OAuth2.prototype.clearAccessToken = function() {
  */
 remoting.OAuth2.prototype.processTokenResponse_ = function(xhr) {
   if (xhr.status == 200) {
-    var tokens = jsonParseSafe(xhr.responseText);
-    if (tokens) {
+    try {
+      // Don't use jsonParseSafe here unless you move the definition out of
+      // remoting.js, otherwise this won't work from the OAuth trampoline.
+      // TODO(jamiewalch): Fix this once we're no longer using the trampoline.
+      var tokens = JSON.parse(xhr.responseText);
       if ('refresh_token' in tokens) {
         this.setRefreshToken(tokens['refresh_token']);
       }
@@ -221,8 +224,9 @@ remoting.OAuth2.prototype.processTokenResponse_ = function(xhr) {
       // Offset by a further 30 seconds to account for RTT issues.
       this.setAccessToken(tokens['access_token'],
           (tokens['expires_in'] - (120 + 30)) * 1000 + Date.now());
-    } else {
-      console.error('Invalid "token" response from server.');
+    } catch (err) {
+      console.error('Invalid "token" response from server:',
+                    /** @type {*} */ err);
     }
   } else {
     console.error('Failed to get tokens. Status: ' + xhr.status +
