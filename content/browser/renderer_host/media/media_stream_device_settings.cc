@@ -153,7 +153,7 @@ void MediaStreamDeviceSettings::AvailableDevices(
   if (request->options.audio) {
     num_media_requests++;
   }
-  if (request->options.video_option != StreamOptions::kNoCamera) {
+  if (request->options.video) {
     num_media_requests++;
   }
 
@@ -277,7 +277,7 @@ std::string MediaStreamDeviceSettings::FindReadyRequestForView(
         // request.
         continue;
       }
-      if (request->options.video_option != StreamOptions::kNoCamera &&
+      if (request->options.video &&
           request->devices_full[
               content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE].empty()) {
         // Video requested, but no devices enumerated yet. Continue to next

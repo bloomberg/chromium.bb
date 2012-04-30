@@ -183,10 +183,7 @@ void MediaStreamImpl::requestUserMedia(
   int request_id = g_next_request_id++;
 
   bool audio = user_media_request.audio();
-  media_stream::StreamOptions::VideoOption video_option =
-      media_stream::StreamOptions::kNoCamera;
-  if (user_media_request.video())
-    video_option = media_stream::StreamOptions::kFacingBoth;
+  bool video = user_media_request.video();
 
   std::string security_origin = UTF16ToUTF8(
       user_media_request.securityOrigin().toString());
@@ -203,7 +200,7 @@ void MediaStreamImpl::requestUserMedia(
   media_stream_dispatcher_->GenerateStream(
       request_id,
       AsWeakPtr(),
-      media_stream::StreamOptions(audio, video_option),
+      media_stream::StreamOptions(audio, video),
       security_origin);
 }
 

@@ -207,7 +207,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 };
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStream) {
-  StreamOptions options(false, StreamOptions::kFacingUser);
+  StreamOptions options(false, true);
 
   EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId, 0, 1));
   host_->OnGenerateStream(kPageRequestId, options);
@@ -228,7 +228,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateThreeStreams) {
   // This test opens three video capture devices. Two fake devices exists and it
   // is expected the last call to |Open()| will open the first device again, but
   // with a different label.
-  StreamOptions options(false, StreamOptions::kFacingUser);
+  StreamOptions options(false, true);
 
   // Generate first stream.
   EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId, 0, 1));
@@ -288,7 +288,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateThreeStreams) {
 }
 
 TEST_F(MediaStreamDispatcherHostTest, FailDevice) {
-  StreamOptions options(false, StreamOptions::kFacingUser);
+  StreamOptions options(false, true);
 
   EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId, 0, 1));
   host_->OnGenerateStream(kPageRequestId, options);

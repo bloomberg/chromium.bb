@@ -195,12 +195,7 @@ void MediaStreamDispatcherHost::OnGenerateStream(
            << render_view_id << ", "
            << page_request_id << ", [ "
            << (components.audio ? "audio " : "")
-           << ((components.video_option &
-               StreamOptions::kFacingUser) ?
-               "video_facing_user " : "")
-           << ((components.video_option &
-                StreamOptions::kFacingEnvironment) ?
-               "video_facing_environment " : "")
+           << (components.video ? "video " : "")
            << "], "
            << security_origin << ")";
 

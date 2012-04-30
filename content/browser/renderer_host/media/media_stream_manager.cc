@@ -45,10 +45,10 @@ static std::string RandomLabel() {
 static bool Requested(const StreamOptions& options,
                       MediaStreamType stream_type) {
   if (stream_type == content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE &&
-      (options.video_option != StreamOptions::kNoCamera)) {
+      options.video) {
     return true;
   } else if (stream_type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE &&
-             options.audio == true) {
+             options.audio) {
     return true;
   }
   return false;
@@ -75,7 +75,7 @@ struct MediaStreamManager::DeviceRequest {
         state(content::NUM_MEDIA_STREAM_DEVICE_TYPES, kNotRequested),
         type(kGenerateStream) {
     options.audio = false;
-    options.video_option = StreamOptions::kNoCamera;
+    options.video = false;
   }
 
   DeviceRequest(MediaStreamRequester* requester,
@@ -228,7 +228,7 @@ void MediaStreamManager::EnumerateDevices(
   if (type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE)
     options.audio = true;
   else
-    options.video_option = StreamOptions::kFacingUser;
+    options.video = true;
 
   DeviceRequest new_request = DeviceRequest(requester, options);
   new_request.type = DeviceRequest::kEnumerateDevices;
@@ -252,7 +252,7 @@ void MediaStreamManager::OpenDevice(
   if (type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE)
     options.audio = true;
   else
-    options.video_option = StreamOptions::kFacingUser;
+    options.video = true;
 
   DeviceRequest new_request = DeviceRequest(requester, options);
   new_request.type = DeviceRequest::kOpenDevice;

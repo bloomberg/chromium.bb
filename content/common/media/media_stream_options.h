@@ -14,25 +14,18 @@
 namespace media_stream {
 
 // StreamOptions is a Chromium representation of WebKit's
-// WebGenerateStreamOptionFlags. It describes the components in a request for a
-// new media stream.
+// WebUserMediaRequest Options. It describes the components
+// in a request for a new media stream.
 struct CONTENT_EXPORT StreamOptions {
-  enum VideoOption {
-    kNoCamera = 0,
-    kFacingUser,
-    kFacingEnvironment,
-    kFacingBoth
-  };
-
-  StreamOptions() : audio(false), video_option(kNoCamera) {}
-  StreamOptions(bool audio, VideoOption option)
-      : audio(audio), video_option(option) {}
+  StreamOptions() : audio(false), video(false) {}
+  StreamOptions(bool audio, bool video)
+      : audio(audio), video(video) {}
 
   // True if the stream shall contain an audio input stream.
   bool audio;
 
-  // Describes if a / which type of video capture device is requested.
-  VideoOption video_option;
+  // True if the stream shall contain a video input stream.
+  bool video;
 };
 
 typedef content::MediaStreamDeviceType MediaStreamType;

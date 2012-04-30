@@ -22,7 +22,7 @@ void MockMediaStreamDispatcher::GenerateStream(
   event_handler_ = event_handler;
   delete components_;
   components_ = new media_stream::StreamOptions(components.audio,
-                                                components.video_option);
+                                                components.video);
   security_origin_ = security_origin;
 }
 

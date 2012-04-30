@@ -16,11 +16,10 @@
 #define IPC_MESSAGE_START MediaStreamMsgStart
 
 IPC_ENUM_TRAITS(media_stream::MediaStreamType)
-IPC_ENUM_TRAITS(media_stream::StreamOptions::VideoOption)
 
 IPC_STRUCT_TRAITS_BEGIN(media_stream::StreamOptions)
   IPC_STRUCT_TRAITS_MEMBER(audio)
-  IPC_STRUCT_TRAITS_MEMBER(video_option)
+  IPC_STRUCT_TRAITS_MEMBER(video)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media_stream::StreamDeviceInfo)
