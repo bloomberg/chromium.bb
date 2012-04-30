@@ -795,13 +795,15 @@ void ChromeBrowserMainParts::SpdyFieldTrial() {
   if (use_field_trial) {
     const base::FieldTrial::Probability kSpdyDivisor = 100;
     base::FieldTrial::Probability npnhttp_probability = 5;
-    base::FieldTrial::Probability spdy3_probability = 50;
+    base::FieldTrial::Probability spdy3_probability = 0;
 
     chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
     if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
         channel == chrome::VersionInfo::CHANNEL_UNKNOWN) {
       // 5% is for HTTP (no SPDY) and 5% for default SPDY (SPDY/2).
       spdy3_probability = 90;
+    } else if (channel == chrome::VersionInfo::CHANNEL_DEV) {
+      spdy3_probability = 50;
     }
 
 #if defined(OS_CHROMEOS)
