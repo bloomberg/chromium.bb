@@ -213,7 +213,22 @@ static void Usage() {
             kAvailableDecoders[i]->_usage_message);
   }
   fprintf(stderr, "\n");
-  fprintf(stderr, "Options are:\n");
+  fprintf(stderr, "One or more filters are required:\n");
+  fprintf(stderr, "    --illegal=XX: Filter instructions to only consider "
+          "those instructions\n");
+  fprintf(stderr, "         that are illegal instructions, as defined by "
+          "decoder XX\n");
+  fprintf(stderr, "    --legal=XX: Filter instructions to only consider "
+          "those instructions\n");
+  fprintf(stderr, "         that are legal instructions, as defined by "
+          "decoder XX\n");
+  fprintf(stderr, "    --print=XX: Prints out set of enumerated "
+          "instructions,\n");
+  fprintf(stderr, "                for the specified decoder XX (may be "
+          "repeated).\n");
+  fprintf(stderr, "                Also registers decoder XX if needed.\n");
+
+  fprintf(stderr, "\nAdditional options:\n");
   fprintf(stderr, "    --bindings: Prints out current (command-line) "
           "bindings\n");
   fprintf(stderr, "    --checkmnemonics: enables opcode mnemonic "
@@ -225,18 +240,11 @@ static void Usage() {
           "repeated)\n");
   fprintf(stderr, "    --ignored=<file>: ignore instruction sequences "
           "in file (may be repeated)\n");
-  fprintf(stderr, "    --illegal=XX: Filter instructions to only consider "
-          "those instructions\n");
-  fprintf(stderr, "         that are illegal instructions, as defined by "
-          "decoder XX\n");
-  fprintf(stderr, "    --legal=XX: Filter instructions to only consider "
-          "those instructions\n");
-  fprintf(stderr, "         that are legal instructions, as defined by "
-          "decoder XX\n");
-  fprintf(stderr, "    --nacllegal: only compare NaCl legal instructions\n");
-  fprintf(stderr, "        that are legal for nacl decoder(s).\n");
+  fprintf(stderr, "    --nacllegal: use validator checks/instruction type)\n");
+  fprintf(stderr, "        in addition to decoder errors with nacl\n");
+  fprintf(stderr, "        instruction filters.\n");
 #ifdef NACL_REVISION
-  fprintf(stderr, "    --nacl_revision: print the nacl revision used to build\n"
+  fprintf(stderr, "    --nacl_revision: print nacl revision used to build\n"
           "        the nacl decoder\n");
 #endif
   fprintf(stderr, "    --opcode=XX: only process given opcode XX for "
@@ -244,14 +252,9 @@ static void Usage() {
   fprintf(stderr, "    --opcode_bytes=XX: Prints out opcode bytes for set of\n"
           "        enumerated instructions. To be used by decoder --in\n");
   fprintf(stderr,
-          "    --opcode_bytes_plus_desc=XX: Prints out opcode bytes for set of"
-          "        enumerated instruction, plus a print description (as a\n"
+          "    --opcode_bytes_plus_desc=XX: Prints out opcode bytes for set\n"
+          "        of enumerated instruction, plus a print description (as a\n"
           "        comment). To be used by decoder --n\n");
-  fprintf(stderr, "    --print=XX: Prints out set of enumerated "
-          "instructions,\n");
-  fprintf(stderr, "                for the specified decoder XX (may be "
-          "repeated).\n");
-  fprintf(stderr, "                Also registers decoder XX if needed.\n");
 #ifdef NACL_XED_DECODER
   fprintf(stderr, "    --pin_version: Prints out pin version used for xed "
           "decoder\n");
@@ -858,6 +861,7 @@ static void TestAllInstructions(ComparedInstruction *cinst) {
    * an integer. For example, for integer prefix 0x3a0f, 0f will
    * go in instruction byte 0, and 3a in byte 1.
    */
+  /* TODO(bradchen): extend enuminsts-64 to iterate over 64-bit prefixes. */
   TestAllWithPrefix(cinst, 0, 0);
   TestAllWithPrefix(cinst, 0x0f, 1);
   TestAllWithPrefix(cinst, 0x0ff2, 2);
@@ -1229,6 +1233,7 @@ static void NaClPreregisterEnumeratorDecoder(ComparedInstruction* cinst,
 /* Define decoders that can be registered. */
 extern NaClEnumeratorDecoder* RegisterXedDecoder();
 extern NaClEnumeratorDecoder* RegisterNaClDecoder();
+extern NaClEnumeratorDecoder* RegisterRagelDecoder();
 
 /* Initialize the set of available decoders. */
 static void NaClInitializeAvailableDecoders() {
