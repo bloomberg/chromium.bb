@@ -988,7 +988,9 @@ TEST_F(ContextMenuTest, FLAKY_CFTxtFieldRedo) {
   LaunchIEAndNavigate(context_menu_page_url);
 }
 
-TEST_F(ContextMenuTest, FLAKY_CFBackForward) {
+// Disabled because it seems to hang, causing the test process to timeout and
+// be killed; see http://crbug.com/121097.
+TEST_F(ContextMenuTest, DISABLED_CFBackForward) {
   std::wstring page1 = GetLinkPageUrl();
   std::wstring title1 = GetLinkPageTitle();
   std::wstring page2 = GetSimplePageUrl();
