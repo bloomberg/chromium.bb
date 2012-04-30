@@ -20,9 +20,10 @@
     'target_conditions': [
       ['target_base=="sel_ldr_launcher"', {
         'sources': [
-          'sel_ldr_launcher.cc',
           'sel_ldr_launcher.h',
+          'sel_ldr_launcher_base.cc',
           'sel_ldr_launcher_chrome.cc',
+          'sel_ldr_launcher_standalone.cc',
         ],
         'cflags!': [
           '-Wextra',
