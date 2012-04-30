@@ -1316,3 +1316,12 @@ ole32.dll!CoTaskMemAlloc
 urlmon.dll!...
 urlmon.dll!CreateUri
 IEFRAME.dll!*
+
+# RenderWidgetHelper leak in DelayProfileDestruction test.
+LEAK
+name=http://crbug.com/125565
+*!generic_cpp_alloc
+*!operator new
+*!RenderProcessHostImpl::RenderProcessHostImpl
+*!SiteInstanceImpl::GetProcess
+*!BrowserTestOffTheRecord_DelayProfileDestruction_Test::TestBody
