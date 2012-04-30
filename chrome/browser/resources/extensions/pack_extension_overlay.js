@@ -97,9 +97,9 @@ cr.define('extensions', function() {
    */
   PackExtensionOverlay.showSuccessMessage = function(message) {
     alertOverlay.setValues(
-        localStrings.getString('packExtensionOverlay'),
+        loadTimeData.getString('packExtensionOverlay'),
         message,
-        localStrings.getString('ok'),
+        loadTimeData.getString('ok'),
         '',
         function() {
           ExtensionSettings.showOverlay(null);
@@ -114,9 +114,9 @@ cr.define('extensions', function() {
    */
   PackExtensionOverlay.showError = function(message) {
     alertOverlay.setValues(
-        localStrings.getString('packExtensionErrorTitle'),
+        loadTimeData.getString('packExtensionErrorTitle'),
         message,
-        localStrings.getString('ok'),
+        loadTimeData.getString('ok'),
         '',
         function() {
           ExtensionSettings.showOverlay($('packExtensionOverlay'));
