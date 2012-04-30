@@ -62,7 +62,6 @@ HMODULE g_hModule = NULL;
 
 using remoting::protocol::CandidateSessionConfig;
 using remoting::protocol::ChannelConfig;
-using remoting::protocol::NetworkSettings;
 
 namespace {
 
@@ -353,8 +352,8 @@ int main(int argc, char** argv) {
 
   simple_host.network_settings()->nat_traversal_mode =
       cmd_line->HasSwitch(kDisableNatTraversalSwitchName) ?
-      remoting::protocol::TransportConfig::NAT_TRAVERSAL_DISABLED :
-      remoting::protocol::TransportConfig::NAT_TRAVERSAL_ENABLED;
+      remoting::NetworkSettings::NAT_TRAVERSAL_DISABLED :
+      remoting::NetworkSettings::NAT_TRAVERSAL_ENABLED;
 
   if (cmd_line->HasSwitch(kMinPortSwitchName)) {
     std::string min_port_str =

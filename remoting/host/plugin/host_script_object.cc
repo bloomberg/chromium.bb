@@ -551,7 +551,7 @@ void HostNPScriptObject::FinishConnectNetworkThread(
   LOG(INFO) << "NAT state: " << nat_traversal_enabled_;
   host_ = new ChromotingHost(
       host_context_.get(), signal_strategy_.get(), desktop_environment_.get(),
-      protocol::NetworkSettings(nat_traversal_enabled_));
+      NetworkSettings(nat_traversal_enabled_));
   host_->AddStatusObserver(this);
   log_to_server_.reset(
       new LogToServer(host_, ServerLogEntry::IT2ME, signal_strategy_.get()));

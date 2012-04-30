@@ -139,9 +139,9 @@ class JingleSessionTest : public testing::Test {
     EXPECT_CALL(host_server_listener_, OnSessionManagerReady())
         .Times(1);
     host_server_.reset(new JingleSessionManager(
-        scoped_ptr<TransportFactory>(new LibjingleTransportFactory())));
-    host_server_->Init(host_signal_strategy_.get(), &host_server_listener_,
-                       NetworkSettings(false));
+        scoped_ptr<TransportFactory>(new LibjingleTransportFactory()),
+        false));
+    host_server_->Init(host_signal_strategy_.get(), &host_server_listener_);
 
     scoped_ptr<AuthenticatorFactory> factory(
         new FakeHostAuthenticatorFactory(auth_round_trips, auth_action, true));
@@ -150,10 +150,9 @@ class JingleSessionTest : public testing::Test {
     EXPECT_CALL(client_server_listener_, OnSessionManagerReady())
         .Times(1);
     client_server_.reset(new JingleSessionManager(
-        scoped_ptr<TransportFactory>(new LibjingleTransportFactory())));
+        scoped_ptr<TransportFactory>(new LibjingleTransportFactory()), false));
     client_server_->Init(client_signal_strategy_.get(),
-                         &client_server_listener_, NetworkSettings(
-                             TransportConfig::NAT_TRAVERSAL_OUTGOING));
+                         &client_server_listener_);
   }
 
   void CloseSessionManager() {

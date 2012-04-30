@@ -346,7 +346,7 @@ class HostProcess
           DesktopEnvironment::CreateForService(context_.get());
     }
 
-    protocol::NetworkSettings network_settings(allow_nat_traversal_);
+    NetworkSettings network_settings(allow_nat_traversal_);
     if (!allow_nat_traversal_) {
       network_settings.min_port = kMinPortNumber;
       network_settings.max_port = kMaxPortNumber;

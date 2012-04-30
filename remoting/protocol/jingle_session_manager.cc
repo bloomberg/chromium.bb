@@ -21,8 +21,10 @@ namespace remoting {
 namespace protocol {
 
 JingleSessionManager::JingleSessionManager(
-    scoped_ptr<TransportFactory> transport_factory)
+    scoped_ptr<TransportFactory> transport_factory,
+    bool fetch_stun_relay_config)
     : transport_factory_(transport_factory.Pass()),
+      fetch_stun_relay_config_(fetch_stun_relay_config),
       signal_strategy_(NULL),
       listener_(NULL),
       ready_(false) {
@@ -34,15 +36,10 @@ JingleSessionManager::~JingleSessionManager() {
 
 void JingleSessionManager::Init(
     SignalStrategy* signal_strategy,
-    SessionManager::Listener* listener,
-    const NetworkSettings& network_settings) {
+    SessionManager::Listener* listener) {
   listener_ = listener;
   signal_strategy_ = signal_strategy;
   iq_sender_.reset(new IqSender(signal_strategy_));
-
-  transport_config_.nat_traversal_mode = network_settings.nat_traversal_mode;
-  transport_config_.min_port = network_settings.min_port;
-  transport_config_.max_port = network_settings.max_port;
 
   signal_strategy_->AddListener(this);
 
@@ -105,10 +102,9 @@ void JingleSessionManager::set_authenticator_factory(
 
 void JingleSessionManager::OnSignalStrategyStateChange(
     SignalStrategy::State state) {
-  // If NAT traversal is enabled then we need to request STUN/Relay info.
   if (state == SignalStrategy::CONNECTED) {
-    if (transport_config_.nat_traversal_mode ==
-        TransportConfig::NAT_TRAVERSAL_ENABLED) {
+    // Request STUN/Relay info if necessary.
+    if (fetch_stun_relay_config_) {
       jingle_info_request_.reset(new JingleInfoRequest(signal_strategy_));
       jingle_info_request_->Send(base::Bind(&JingleSessionManager::OnJingleInfo,
                                             base::Unretained(this)));

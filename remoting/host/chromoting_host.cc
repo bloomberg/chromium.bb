@@ -25,6 +25,9 @@
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
 #include "remoting/protocol/session_config.h"
+#include "third_party/libjingle/source/talk/base/basicpacketsocketfactory.h"
+#include "third_party/libjingle/source/talk/base/network.h"
+#include "third_party/libjingle/source/talk/p2p/client/httpportallocator.h"
 
 using remoting::protocol::ConnectionToClient;
 using remoting::protocol::InputStub;
@@ -65,7 +68,7 @@ ChromotingHost::ChromotingHost(
     ChromotingHostContext* context,
     SignalStrategy* signal_strategy,
     DesktopEnvironment* environment,
-    const protocol::NetworkSettings& network_settings)
+    const NetworkSettings& network_settings)
     : context_(context),
       desktop_environment_(environment),
       network_settings_(network_settings),
@@ -97,12 +100,48 @@ void ChromotingHost::Start() {
     return;
   state_ = kStarted;
 
-  // Create and start session manager.
+  // Create port allocator.
+  // TODO(sergeyu): Replace the code below with HostPortAllocator when
+  // it is implemented.
+  scoped_ptr<talk_base::NetworkManager> network_manager(
+      new talk_base::BasicNetworkManager());
+  scoped_ptr<talk_base::PacketSocketFactory> socket_factory(
+      new talk_base::BasicPacketSocketFactory());
+  scoped_ptr<cricket::PortAllocator> port_allocator;
+
+  // We always use PseudoTcp to provide a reliable channel. It
+  // provides poor performance when combined with TCP-based transport,
+  // so we have to disable TCP ports.
+  int port_allocator_flags = cricket::PORTALLOCATOR_DISABLE_TCP;
+  if (network_settings_.nat_traversal_mode ==
+      NetworkSettings::NAT_TRAVERSAL_ENABLED) {
+      port_allocator.reset(new cricket::HttpPortAllocator(
+          network_manager.get(), socket_factory.get(), ""));
+  } else {
+    port_allocator_flags |= cricket::PORTALLOCATOR_DISABLE_STUN |
+        cricket::PORTALLOCATOR_DISABLE_RELAY;
+    port_allocator.reset(
+        new cricket::BasicPortAllocator(network_manager.get(),
+                                        socket_factory.get()));
+  }
+  port_allocator->set_flags(port_allocator_flags);
+  port_allocator->SetPortRange(network_settings_.min_port,
+                               network_settings_.max_port);
+
+  bool incoming_only = network_settings_.nat_traversal_mode ==
+      NetworkSettings::NAT_TRAVERSAL_DISABLED;
+
   scoped_ptr<protocol::TransportFactory> transport_factory(
-      new protocol::LibjingleTransportFactory());
-  session_manager_.reset(
-      new protocol::JingleSessionManager(transport_factory.Pass()));
-  session_manager_->Init(signal_strategy_, this, network_settings_);
+      new protocol::LibjingleTransportFactory(
+          network_manager.Pass(), socket_factory.Pass(),
+          port_allocator.Pass(), incoming_only));
+
+  // Create and start session manager.
+  bool fetch_stun_relay_info = network_settings_.nat_traversal_mode ==
+      NetworkSettings::NAT_TRAVERSAL_ENABLED;
+  session_manager_.reset(new protocol::JingleSessionManager(
+      transport_factory.Pass(), fetch_stun_relay_info));
+  session_manager_->Init(signal_strategy_, this);
 }
 
 // This method is called when we need to destroy the host process.

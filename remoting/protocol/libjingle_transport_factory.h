@@ -7,6 +7,10 @@
 
 #include "remoting/protocol/transport.h"
 
+namespace cricket {
+class PortAllocator;
+}  // namespace cricket
+
 namespace talk_base {
 class NetworkManager;
 class PacketSocketFactory;
@@ -17,7 +21,16 @@ namespace protocol {
 
 class LibjingleTransportFactory : public TransportFactory {
  public:
+  LibjingleTransportFactory(
+      scoped_ptr<talk_base::NetworkManager> network_manager,
+      scoped_ptr<talk_base::PacketSocketFactory> socket_factory,
+      scoped_ptr<cricket::PortAllocator> port_allocator,
+      bool incoming_only);
+
+  // Creates BasicNetworkManager, BasicPacketSocketFactory and
+  // BasicPortAllocator.
   LibjingleTransportFactory();
+
   virtual ~LibjingleTransportFactory();
 
   virtual scoped_ptr<StreamTransport> CreateStreamTransport() OVERRIDE;
@@ -26,6 +39,8 @@ class LibjingleTransportFactory : public TransportFactory {
  private:
   scoped_ptr<talk_base::NetworkManager> network_manager_;
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
+  scoped_ptr<cricket::PortAllocator> port_allocator_;
+  bool incoming_only_;
 
   DISALLOW_COPY_AND_ASSIGN(LibjingleTransportFactory);
 };

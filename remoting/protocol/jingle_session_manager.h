@@ -45,14 +45,20 @@ class JingleSession;
 class JingleSessionManager : public SessionManager,
                              public SignalStrategy::Listener {
  public:
+  // When |fetch_stun_relay_config| is set to true then
+  // JingleSessionManager will also try to query configuration of STUN
+  // and Relay servers from the signaling server.
+  //
+  // TODO(sergeyu): Move NAT-traversal config fetching to a separate
+  // class.
   explicit JingleSessionManager(
-      scoped_ptr<TransportFactory> transport_factory);
+      scoped_ptr<TransportFactory> transport_factory,
+      bool fetch_stun_relay_config);
   virtual ~JingleSessionManager();
 
   // SessionManager interface.
   virtual void Init(SignalStrategy* signal_strategy,
-                    SessionManager::Listener* listener,
-                    const NetworkSettings& network_settings) OVERRIDE;
+                    SessionManager::Listener* listener) OVERRIDE;
   virtual scoped_ptr<Session> Connect(
       const std::string& host_jid,
       scoped_ptr<Authenticator> authenticator,
@@ -86,6 +92,7 @@ class JingleSessionManager : public SessionManager,
   void SessionDestroyed(JingleSession* session);
 
   scoped_ptr<TransportFactory> transport_factory_;
+  bool fetch_stun_relay_config_;
 
   SignalStrategy* signal_strategy_;
   scoped_ptr<AuthenticatorFactory> authenticator_factory_;

@@ -70,36 +70,6 @@ namespace protocol {
 class Authenticator;
 class AuthenticatorFactory;
 
-// TODO(sergeyu): Remove this struct and use TransportConfig instead.
-struct NetworkSettings {
-  NetworkSettings()
-      : nat_traversal_mode(TransportConfig::NAT_TRAVERSAL_DISABLED),
-        min_port(0),
-        max_port(0) {
-  }
-
-  explicit NetworkSettings(bool allow_nat_traversal)
-      : nat_traversal_mode(allow_nat_traversal ?
-                           TransportConfig::NAT_TRAVERSAL_ENABLED :
-                           TransportConfig::NAT_TRAVERSAL_DISABLED),
-        min_port(0),
-        max_port(0) {
-  }
-
-  explicit NetworkSettings(TransportConfig::NatTraversalMode nat_traversal_mode)
-      : nat_traversal_mode(nat_traversal_mode),
-        min_port(0),
-        max_port(0) {
-  }
-
-  TransportConfig::NatTraversalMode nat_traversal_mode;
-
-  // |min_port| and |max_port| specify range (inclusive) of ports used by
-  // P2P sessions. Any port can be used when both values are set to 0.
-  int min_port;
-  int max_port;
-};
-
 // Generic interface for Chromoting session manager.
 //
 // TODO(sergeyu): Split this into two separate interfaces: one for the
@@ -150,8 +120,7 @@ class SessionManager : public base::NonThreadSafe {
   // Initializes the session client. Caller retains ownership of the
   // |signal_strategy| and |listener|.
   virtual void Init(SignalStrategy* signal_strategy,
-                    Listener* listener,
-                    const NetworkSettings& network_settings) = 0;
+                    Listener* listener) = 0;
 
   // Tries to create a session to the host |jid|. Must be called only
   // after initialization has finished successfully, i.e. after

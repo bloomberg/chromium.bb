@@ -149,36 +149,34 @@ void PepperStreamTransport::Connect(
     LOG(ERROR) << "Failed to set TCP ACK delay.";
   }
 
-  if (config_.nat_traversal_mode == TransportConfig::NAT_TRAVERSAL_ENABLED) {
-    if (transport->SetProperty(
-            PP_TRANSPORTPROPERTY_STUN_SERVER,
-            pp::Var(config_.stun_server)) != PP_OK) {
-      LOG(ERROR) << "Failed to set STUN server.";
-    }
+  if (transport->SetProperty(
+          PP_TRANSPORTPROPERTY_STUN_SERVER,
+          pp::Var(config_.stun_server)) != PP_OK) {
+    LOG(ERROR) << "Failed to set STUN server.";
+  }
 
-    if (transport->SetProperty(
-            PP_TRANSPORTPROPERTY_RELAY_SERVER,
-            pp::Var(config_.relay_server)) != PP_OK) {
-      LOG(ERROR) << "Failed to set relay server.";
-    }
+  if (transport->SetProperty(
+          PP_TRANSPORTPROPERTY_RELAY_SERVER,
+          pp::Var(config_.relay_server)) != PP_OK) {
+    LOG(ERROR) << "Failed to set relay server.";
+  }
 
-    if (transport->SetProperty(
-            PP_TRANSPORTPROPERTY_RELAY_USERNAME,
-            pp::Var("1")) != PP_OK) {
-      LOG(ERROR) << "Failed to set relay username.";
-    }
+  if (transport->SetProperty(
+          PP_TRANSPORTPROPERTY_RELAY_USERNAME,
+          pp::Var("1")) != PP_OK) {
+    LOG(ERROR) << "Failed to set relay username.";
+  }
 
-    if (transport->SetProperty(
-            PP_TRANSPORTPROPERTY_RELAY_PASSWORD,
-            pp::Var(config_.relay_token)) != PP_OK) {
-      LOG(ERROR) << "Failed to set relay token.";
-    }
+  if (transport->SetProperty(
+          PP_TRANSPORTPROPERTY_RELAY_PASSWORD,
+          pp::Var(config_.relay_token)) != PP_OK) {
+    LOG(ERROR) << "Failed to set relay token.";
+  }
 
-    if (transport->SetProperty(
-            PP_TRANSPORTPROPERTY_RELAY_MODE,
-            pp::Var(PP_TRANSPORTRELAYMODE_GOOGLE)) != PP_OK) {
-      LOG(ERROR) << "Failed to set relay mode.";
-    }
+  if (transport->SetProperty(
+          PP_TRANSPORTPROPERTY_RELAY_MODE,
+          pp::Var(PP_TRANSPORTRELAYMODE_GOOGLE)) != PP_OK) {
+    LOG(ERROR) << "Failed to set relay mode.";
   }
 
   if (transport->SetProperty(PP_TRANSPORTPROPERTY_DISABLE_TCP_TRANSPORT,

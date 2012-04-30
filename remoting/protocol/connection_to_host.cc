@@ -81,9 +81,9 @@ void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
 
   scoped_ptr<TransportFactory> transport_factory(
       new PepperTransportFactory(pp_instance_));
-  session_manager_.reset(new JingleSessionManager(transport_factory.Pass()));
-  session_manager_->Init(signal_strategy_.get(), this,
-                         NetworkSettings(allow_nat_traversal_));
+  session_manager_.reset(new JingleSessionManager(
+      transport_factory.Pass(), true));
+  session_manager_->Init(signal_strategy_.get(), this);
 }
 
 void ConnectionToHost::Disconnect(const base::Closure& shutdown_task) {
