@@ -1825,12 +1825,17 @@ TEST_F(ExtensionServiceTest, InstallTheme) {
   ValidateIntegerPref(theme2_crx, "state", Extension::ENABLED);
   ValidateIntegerPref(theme2_crx, "location", Extension::INTERNAL);
 
-  // A theme with extension elements. Themes cannot have extension elements so
-  // this test should fail.
+  // A theme with extension elements. Themes cannot have extension elements,
+  // so any such elements (like content scripts) should be ignored.
   set_extensions_enabled(true);
-  path = data_dir_.AppendASCII("theme_with_extension.crx");
-  InstallCRX(path, INSTALL_FAILED);
-  ValidatePrefKeyCount(pref_count);
+  {
+    path = data_dir_.AppendASCII("theme_with_extension.crx");
+    const Extension* extension = InstallCRX(path, INSTALL_NEW);
+    ValidatePrefKeyCount(++pref_count);
+    ASSERT_TRUE(extension);
+    EXPECT_TRUE(extension->is_theme());
+    EXPECT_EQ(0u, extension->content_scripts().size());
+  }
 
   // A theme with image resources missing (misspelt path).
   path = data_dir_.AppendASCII("theme_missing_image.crx");

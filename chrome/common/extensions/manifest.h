@@ -33,7 +33,7 @@ class Manifest {
 
   // Returns true if all keys in the manifest can be specified by
   // the extension type.
-  bool ValidateManifest(string16* error) const;
+  void ValidateManifest(std::vector<std::string>* warnings) const;
 
   // The version of this extension's manifest. We increase the manifest
   // version when making breaking changes to the extension system. If the

@@ -13,6 +13,13 @@
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
+  "background.persistent": {
+    "channel": "dev",
+    "extension_types": [
+      "extension", "packaged_app", "platform_app"
+    ],
+    "min_manifest_version": 2
+  },
   "background_page": {
     "channel": "stable",
     "extension_types": [

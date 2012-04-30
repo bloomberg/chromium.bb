@@ -170,7 +170,6 @@ namespace extension_manifest_errors {
   extern const char kDisabledByPolicy[];
   extern const char kExperimentalFlagRequired[];
   extern const char kExpectString[];
-  extern const char kFeatureNotAllowed[];
   extern const char kInvalidAllFrames[];
   extern const char kInvalidBackground[];
   extern const char kInvalidBackgroundAllowJsAccess[];

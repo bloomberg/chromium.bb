@@ -179,8 +179,6 @@ const char kExperimentalFlagRequired[] =
     "Loading extensions with 'experimental' permission is turned off by "
     "default. You can enable 'Experimental Extension APIs' "
     "by visiting chrome://flags.";
-const char kFeatureNotAllowed[] =
-    "Feature '*' is not accessible. *";
 const char kInvalidAllFrames[] =
     "Invalid value for 'content_scripts[*].all_frames'.";
 const char kInvalidBackground[] =

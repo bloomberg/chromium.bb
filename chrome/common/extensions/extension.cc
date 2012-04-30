@@ -475,13 +475,17 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
           location,
           scoped_ptr<DictionaryValue>(value.DeepCopy())));
 
-  if (!InitExtensionID(manifest.get(), path, explicit_id, flags, &error) ||
-      !manifest->ValidateManifest(&error)) {
+  if (!InitExtensionID(manifest.get(), path, explicit_id, flags, &error)) {
     *utf8_error = UTF16ToUTF8(error);
     return NULL;
   }
 
+  std::vector<std::string> install_warnings;
+  manifest->ValidateManifest(&install_warnings);
+
   scoped_refptr<Extension> extension = new Extension(path, manifest.Pass());
+  extension->install_warnings_.swap(install_warnings);
+
   if (!extension->InitFromValue(flags, &error)) {
     *utf8_error = UTF16ToUTF8(error);
     return NULL;
@@ -1878,12 +1882,10 @@ bool Extension::LoadBackgroundPersistent(
     const ExtensionAPIPermissionSet& api_permissions,
     string16* error) {
   Value* background_persistent = NULL;
-  if (!api_permissions.count(ExtensionAPIPermission::kExperimental) ||
-      !manifest_->Get(keys::kBackgroundPersistent, &background_persistent))
+  if (!manifest_->Get(keys::kBackgroundPersistent, &background_persistent))
     return true;
 
-  if (!background_persistent->IsType(Value::TYPE_BOOLEAN) ||
-      !background_persistent->GetAsBoolean(&background_page_is_persistent_)) {
+  if (!background_persistent->GetAsBoolean(&background_page_is_persistent_)) {
     *error = ASCIIToUTF16(errors::kInvalidBackgroundPersistent);
     return false;
   }

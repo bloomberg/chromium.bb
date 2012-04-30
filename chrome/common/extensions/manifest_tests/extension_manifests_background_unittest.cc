@@ -9,9 +9,12 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/simple_feature_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
+
+namespace extensions {
 
 TEST_F(ExtensionManifestTest, BackgroundPermission) {
   LoadAndExpectError("background_permission.json",
@@ -61,11 +64,13 @@ TEST_F(ExtensionManifestTest, BackgroundPage) {
   EXPECT_EQ("/foo.html", extension->GetBackgroundURL().path());
 
   manifest->SetInteger(keys::kManifestVersion, 2);
-  LoadAndExpectError(
-      Manifest(manifest.get(), ""),
-      ExtensionErrorUtils::FormatErrorMessage(
-          errors::kFeatureNotAllowed, "background_page"),
-      Extension::INTERNAL, Extension::STRICT_ERROR_CHECKS);
+  Feature* feature = SimpleFeatureProvider::GetManifestFeatures()->
+      GetFeature("background_page");
+  extension = LoadAndExpectSuccess(Manifest(manifest.get(), ""));
+  ASSERT_TRUE(extension);
+  ASSERT_EQ(1u, extension->install_warnings().size());
+  EXPECT_EQ(feature->GetErrorMessage(Feature::INVALID_MAX_MANIFEST_VERSION),
+            extension->install_warnings()[0]);
 }
 
 TEST_F(ExtensionManifestTest, BackgroundAllowNoJsAccess) {
@@ -78,3 +83,5 @@ TEST_F(ExtensionManifestTest, BackgroundAllowNoJsAccess) {
   ASSERT_TRUE(extension);
   EXPECT_FALSE(extension->allow_background_js_access());
 }
+
+}  // namespace extensions

@@ -28,10 +28,13 @@ TEST_F(ExtensionManifestTest, PlatformApps) {
   LoadAndExpectError(
       "init_invalid_platform_app_2.json",
       extension_manifest_errors::kBackgroundRequiredForPlatformApps);
-  LoadAndExpectError(
-      "init_invalid_platform_app_3.json",
-      "Feature 'platform_app' is not accessible. "
-          "'platform_app' requires manifest version of at least 2.");
+
+  scoped_refptr<Extension> extension =
+      LoadAndExpectSuccess("init_invalid_platform_app_3.json");
+  ASSERT_TRUE(extension);
+  ASSERT_EQ(1u, extension->install_warnings().size());
+  EXPECT_EQ("'platform_app' requires manifest version of at least 2.",
+            extension->install_warnings()[0]);
 }
 
 TEST_F(ExtensionManifestTest, CertainApisRequirePlatformApps) {

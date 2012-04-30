@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/string_split.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/simple_feature_provider.h"
@@ -25,32 +26,29 @@ Manifest::Manifest(Extension::Location location,
 Manifest::~Manifest() {
 }
 
-bool Manifest::ValidateManifest(string16* error) const {
-  for (DictionaryValue::key_iterator key = value_->begin_keys();
-       key != value_->end_keys(); ++key) {
-    Feature* feature =
-        SimpleFeatureProvider::GetManifestFeatures()->GetFeature(*key);
-    if (!feature) {
-      // When validating the extension manifests, we ignore keys that are not
-      // recognized for forward compatibility.
-      // TODO(aa): Consider having an error here in the case of strict error
-      // checking to let developers know when they screw up.
-      continue;
-    }
+void Manifest::ValidateManifest(std::vector<std::string>* warnings) const {
+  // Check every feature to see if its in the manifest. Note that this means
+  // we will ignore keys that are not features; we do this for forward
+  // compatibility.
+  // TODO(aa): Consider having an error here in the case of strict error
+  // checking to let developers know when they screw up.
 
+  std::set<std::string> feature_names =
+      SimpleFeatureProvider::GetManifestFeatures()->GetAllFeatureNames();
+  for (std::set<std::string>::iterator feature_name = feature_names.begin();
+       feature_name != feature_names.end(); ++feature_name) {
+    // Use Get instead of HasKey because the former uses path expansion.
+    if (!value_->Get(*feature_name, NULL))
+      continue;
+
+    Feature* feature =
+        SimpleFeatureProvider::GetManifestFeatures()->GetFeature(*feature_name);
     Feature::Availability result = feature->IsAvailableToManifest(
         extension_id_, GetType(), Feature::ConvertLocation(location_),
         GetManifestVersion());
-    if (result != Feature::IS_AVAILABLE) {
-      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-          errors::kFeatureNotAllowed,
-          *key,
-          feature->GetErrorMessage(result));
-      return false;
-    }
+    if (result != Feature::IS_AVAILABLE)
+      warnings->push_back(feature->GetErrorMessage(result));
   }
-
-  return true;
 }
 
 bool Manifest::HasKey(const std::string& key) const {
@@ -146,14 +144,21 @@ bool Manifest::IsHostedApp() const {
 bool Manifest::CanAccessPath(const std::string& path) const {
   std::vector<std::string> components;
   base::SplitString(path, '.', &components);
-  return CanAccessKey(components[0]);
+  std::string key;
+  for (size_t i = 0; i < components.size(); ++i) {
+    key += components[i];
+    if (!CanAccessKey(key))
+      return false;
+    key += '.';
+  }
+  return true;
 }
 
 bool Manifest::CanAccessKey(const std::string& key) const {
   Feature* feature =
       SimpleFeatureProvider::GetManifestFeatures()->GetFeature(key);
   if (!feature)
-    return false;
+    return true;
 
   return Feature::IS_AVAILABLE == feature->IsAvailableToManifest(
       extension_id_, GetType(), Feature::ConvertLocation(location_),
