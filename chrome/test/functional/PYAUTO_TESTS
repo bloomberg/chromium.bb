@@ -665,6 +665,9 @@
       # crbug.com/118123
       '-policy.PolicyTest.testExtensionInstallFromForceList',
       '-policy.PolicyTest.testSetDownloadDirectory',
+      # This tests the value "0" for the RestoreOnStartup policy, which is not
+      # supported on ChromeOS.
+      '-policy.PolicyTest.testStartupOptionsHomepage',
     ],
   },
 
