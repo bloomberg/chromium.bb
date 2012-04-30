@@ -11,9 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/message_loop.h"
-#include "remoting/host/capturer.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/message_decoder.h"
+#include "third_party/skia/include/core/SkPoint.h"
 
 namespace remoting {
 
@@ -31,7 +31,7 @@ using protocol::MouseEvent;
 // A class to generate events on Mac.
 class EventExecutorMac : public EventExecutor {
  public:
-  EventExecutorMac(MessageLoop* message_loop, Capturer* capturer);
+  EventExecutorMac(MessageLoop* message_loop);
   virtual ~EventExecutorMac() {}
 
   // ClipboardStub interface.
@@ -43,17 +43,15 @@ class EventExecutorMac : public EventExecutor {
 
  private:
   MessageLoop* message_loop_;
-  Capturer* capturer_;
-  int last_x_, last_y_;
-  int mouse_buttons_;
+  SkIPoint mouse_pos_;
+  uint32 mouse_button_state_;
 
   DISALLOW_COPY_AND_ASSIGN(EventExecutorMac);
 };
 
 EventExecutorMac::EventExecutorMac(
-    MessageLoop* message_loop, Capturer* capturer)
-    : message_loop_(message_loop),
-      capturer_(capturer), last_x_(0), last_y_(0), mouse_buttons_(0) {
+    MessageLoop* message_loop)
+    : message_loop_(message_loop), mouse_button_state_(0) {
 }
 
 // Hard-coded mapping from Virtual Key codes to Mac KeySyms.
@@ -274,20 +272,11 @@ void EventExecutorMac::InjectKeyEvent(const KeyEvent& event) {
 
 void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
   if (event.has_x() && event.has_y()) {
-    // TODO(wez): Checking the validity of the MouseEvent should be done in core
-    // cross-platform code, not here!
     // TODO(wez): This code assumes that MouseEvent(0,0) (top-left of client view)
     // corresponds to local (0,0) (top-left of primary monitor).  That won't in
     // general be true on multi-monitor systems, though.
-    SkISize size = capturer_->size_most_recent();
-    if (event.x() >= 0 || event.y() >= 0 ||
-        event.x() < size.width() || event.y() < size.height()) {
-      VLOG(3) << "Moving mouse to " << event.x() << "," << event.y();
-      last_x_ = event.x();
-      last_y_ = event.y();
-    } else {
-      VLOG(1) << "Invalid mouse position " << event.x() << "," << event.y();
-    }
+    VLOG(3) << "Moving mouse to " << event.x() << "," << event.y();
+    mouse_pos_ = SkIPoint::Make(event.x(), event.y());
   }
   if (event.has_button() && event.has_button_down()) {
     if (event.button() >= 1 && event.button() <= 3) {
@@ -295,9 +284,9 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
               << (event.button_down() ? " down" : " up");
       int button_change = 1 << (event.button() - 1);
       if (event.button_down())
-        mouse_buttons_ |= button_change;
+        mouse_button_state_ |= button_change;
       else
-        mouse_buttons_ &= ~button_change;
+        mouse_button_state_ &= ~button_change;
     } else {
       VLOG(1) << "Unknown mouse button: " << event.button();
     }
@@ -308,16 +297,16 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
   // in a way that is consistent with how they would be generated using a local
   // mouse, whereas the new APIs expect us to inject these higher-level events
   // directly.
-  CGPoint position = CGPointMake(last_x_, last_y_);
+  CGPoint position = CGPointMake(mouse_pos_.x(), mouse_pos_.y());
   enum {
     LeftBit = 1 << (MouseEvent::BUTTON_LEFT - 1),
     MiddleBit = 1 << (MouseEvent::BUTTON_MIDDLE - 1),
     RightBit = 1 << (MouseEvent::BUTTON_RIGHT - 1)
   };
   CGError error = CGPostMouseEvent(position, true, 3,
-                                   (mouse_buttons_ & LeftBit) != 0,
-                                   (mouse_buttons_ & RightBit) != 0,
-                                   (mouse_buttons_ & MiddleBit) != 0);
+                                   (mouse_button_state_ & LeftBit) != 0,
+                                   (mouse_button_state_ & RightBit) != 0,
+                                   (mouse_button_state_ & MiddleBit) != 0);
   if (error != kCGErrorSuccess) {
     LOG(WARNING) << "CGPostMouseEvent error " << error;
   }
@@ -338,7 +327,7 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
 scoped_ptr<protocol::HostEventStub> EventExecutor::Create(
     MessageLoop* message_loop, Capturer* capturer) {
   return scoped_ptr<protocol::HostEventStub>(
-      new EventExecutorMac(message_loop, capturer));
+      new EventExecutorMac(message_loop));
 }
 
 }  // namespace remoting

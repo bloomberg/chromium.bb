@@ -34,7 +34,7 @@ using protocol::MouseEvent;
 // A class to generate events on Linux.
 class EventExecutorLinux : public EventExecutor {
  public:
-  EventExecutorLinux(MessageLoop* message_loop, Capturer* capturer);
+  EventExecutorLinux(MessageLoop* message_loop);
   virtual ~EventExecutorLinux();
 
   bool Init();
@@ -61,8 +61,6 @@ class EventExecutorLinux : public EventExecutor {
   // X11 graphics context.
   Display* display_;
   Window root_window_;
-  int width_;
-  int height_;
 
   int test_event_base_;
   int test_error_base_;
@@ -264,13 +262,10 @@ int ChromotocolKeycodeToX11Keysym(int32_t keycode) {
   return kUsVkeyToKeysym[keycode];
 }
 
-EventExecutorLinux::EventExecutorLinux(MessageLoop* message_loop,
-                                       Capturer* capturer)
+EventExecutorLinux::EventExecutorLinux(MessageLoop* message_loop)
     : message_loop_(message_loop),
       display_(XOpenDisplay(NULL)),
-      root_window_(BadValue),
-      width_(0),
-      height_(0) {
+      root_window_(BadValue) {
 }
 
 EventExecutorLinux::~EventExecutorLinux() {
@@ -295,17 +290,6 @@ bool EventExecutorLinux::Init() {
     return false;
   }
 
-  // Grab the width and height so we can figure out if mouse moves are out of
-  // range.
-  XWindowAttributes root_attr;
-  // TODO(ajwong): Handle resolution changes.
-  if (!XGetWindowAttributes(display_, root_window_, &root_attr)) {
-    LOG(ERROR) << "Unable to get window attributes";
-    return false;
-  }
-
-  width_ = root_attr.width;
-  height_ = root_attr.height;
   return true;
 }
 
@@ -383,7 +367,6 @@ void EventExecutorLinux::InjectScrollWheelClicks(int button, int count) {
     XTestFakeButtonEvent(display_, button, true, CurrentTime);
     XTestFakeButtonEvent(display_, button, false, CurrentTime);
   }
-  XFlush(display_);
 }
 
 void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
@@ -396,20 +379,11 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
   }
 
   if (event.has_x() && event.has_y()) {
-    if (event.x() < 0 || event.y() < 0 ||
-        event.x() > width_ || event.y() > height_) {
-      // A misbehaving client may send these. Drop events that are out of range.
-      // TODO(ajwong): How can we log this sanely? We don't want to DOS the
-      // server with a misbehaving client by logging like crazy.
-      return;
-    }
-
     VLOG(3) << "Moving mouse to " << event.x()
             << "," << event.y();
     XTestFakeMotionEvent(display_, DefaultScreen(display_),
                          event.x(), event.y(),
                          CurrentTime);
-    XFlush(display_);
   }
 
   if (event.has_button() && event.has_button_down()) {
@@ -426,7 +400,6 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
             << button_number;
     XTestFakeButtonEvent(display_, button_number, event.button_down(),
                          CurrentTime);
-    XFlush(display_);
   }
 
   if (event.has_wheel_offset_y() && event.wheel_offset_y() != 0) {
@@ -438,6 +411,8 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
     InjectScrollWheelClicks(HorizontalScrollWheelToX11ButtonNumber(dx),
                             abs(dx));
   }
+
+  XFlush(display_);
 }
 
 }  // namespace
@@ -445,10 +420,9 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
 scoped_ptr<protocol::HostEventStub> EventExecutor::Create(
     MessageLoop* message_loop, Capturer* capturer) {
   scoped_ptr<EventExecutorLinux> executor(
-      new EventExecutorLinux(message_loop, capturer));
-  if (!executor->Init()) {
-    executor.reset(NULL);
-  }
+      new EventExecutorLinux(message_loop));
+  if (!executor->Init())
+    return scoped_ptr<protocol::HostEventStub>(NULL);
   return executor.PassAs<protocol::HostEventStub>();
 }
 

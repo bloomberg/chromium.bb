@@ -21,8 +21,9 @@ ClientSession::ClientSession(
       connection_(connection.Pass()),
       client_jid_(connection_->session()->jid()),
       host_event_stub_(host_event_stub),
-      input_tracker_(host_event_stub),
+      input_tracker_(host_event_stub_),
       remote_input_filter_(&input_tracker_),
+      mouse_input_filter_(&remote_input_filter_),
       capturer_(capturer) {
   connection_->SetEventHandler(this);
 
@@ -59,20 +60,11 @@ void ClientSession::InjectKeyEvent(const protocol::KeyEvent& event) {
 void ClientSession::InjectMouseEvent(const protocol::MouseEvent& event) {
   DCHECK(CalledOnValidThread());
 
-  protocol::MouseEvent event_to_inject = event;
-  if (event.has_x() && event.has_y()) {
-    // In case the client sends events with off-screen coordinates, modify
-    // the event to lie within the current screen area.  This is better than
-    // simply discarding the event, which might lose a button-up event at the
-    // end of a drag'n'drop (or cause other related problems).
-    SkIPoint pos(SkIPoint::Make(event.x(), event.y()));
-    const SkISize& screen = capturer_->size_most_recent();
-    pos.setX(std::max(0, std::min(screen.width() - 1, pos.x())));
-    pos.setY(std::max(0, std::min(screen.height() - 1, pos.y())));
-    event_to_inject.set_x(pos.x());
-    event_to_inject.set_y(pos.y());
-  }
-  auth_input_filter_.InjectMouseEvent(event_to_inject);
+  // Ensure that the MouseInputFilter is clamping to the current dimensions.
+  mouse_input_filter_.set_output_size(capturer_->size_most_recent());
+  mouse_input_filter_.set_input_size(capturer_->size_most_recent());
+
+  auth_input_filter_.InjectMouseEvent(event);
 }
 
 void ClientSession::NotifyClientDimensions(
@@ -149,7 +141,7 @@ void ClientSession::SetDisableInputs(bool disable_inputs) {
     disable_input_filter_.set_input_stub(NULL);
     input_tracker_.ReleaseAll();
   } else {
-    disable_input_filter_.set_input_stub(&remote_input_filter_);
+    disable_input_filter_.set_input_stub(&mouse_input_filter_);
   }
 }
 

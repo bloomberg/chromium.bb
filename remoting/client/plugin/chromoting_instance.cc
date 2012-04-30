@@ -30,7 +30,6 @@
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/frame_consumer_proxy.h"
-#include "remoting/client/mouse_input_filter.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_view.h"
@@ -39,6 +38,7 @@
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_event_tracker.h"
+#include "remoting/protocol/mouse_input_filter.h"
 
 // Windows defines 'PostMessage', so we have to undef it.
 #if defined(PostMessage)
@@ -387,7 +387,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
 
   // Construct the input pipeline
   mouse_input_filter_.reset(
-      new MouseInputFilter(host_connection_->input_stub()));
+      new protocol::MouseInputFilter(host_connection_->input_stub()));
   mouse_input_filter_->set_input_size(view_->get_view_size());
   input_tracker_.reset(
       new protocol::InputEventTracker(mouse_input_filter_.get()));

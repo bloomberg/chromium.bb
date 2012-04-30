@@ -1,15 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/mouse_input_filter.h"
+#include "remoting/protocol/mouse_input_filter.h"
 
 #include "remoting/proto/event.pb.h"
 
 namespace remoting {
+namespace protocol {
 
-MouseInputFilter::MouseInputFilter(protocol::InputStub* input_stub)
-    : input_stub_(input_stub) {
+MouseInputFilter::MouseInputFilter(InputStub* input_stub)
+    : InputFilter(input_stub) {
   input_max_.setEmpty();
   output_max_.setEmpty();
 }
@@ -17,11 +18,7 @@ MouseInputFilter::MouseInputFilter(protocol::InputStub* input_stub)
 MouseInputFilter::~MouseInputFilter() {
 }
 
-void MouseInputFilter::InjectKeyEvent(const protocol::KeyEvent& event) {
-  input_stub_->InjectKeyEvent(event);
-}
-
-void MouseInputFilter::InjectMouseEvent(const protocol::MouseEvent& event) {
+void MouseInputFilter::InjectMouseEvent(const MouseEvent& event) {
   if (input_max_.isEmpty() || output_max_.isEmpty())
     return;
 
@@ -29,7 +26,7 @@ void MouseInputFilter::InjectMouseEvent(const protocol::MouseEvent& event) {
   // input and output sizes, so that it's possible to reach the edge of the
   // output when up-scaling.  We also take care to round up or down correctly,
   // which is important when down-scaling.
-  protocol::MouseEvent out_event(event);
+  MouseEvent out_event(event);
   if (out_event.has_x()) {
     int x = out_event.x() * output_max_.width();
     x = (x + input_max_.width() / 2) / input_max_.width();
@@ -41,7 +38,7 @@ void MouseInputFilter::InjectMouseEvent(const protocol::MouseEvent& event) {
     out_event.set_y(std::max(0, std::min(output_max_.height(), y)));
   }
 
-  input_stub_->InjectMouseEvent(out_event);
+  InputFilter::InjectMouseEvent(out_event);
 }
 
 void MouseInputFilter::set_input_size(const SkISize& size) {
@@ -52,4 +49,5 @@ void MouseInputFilter::set_output_size(const SkISize& size) {
   output_max_ = SkISize::Make(size.width() - 1, size.height() - 1);
 }
 
+}  // namespace protocol
 }  // namespace remoting

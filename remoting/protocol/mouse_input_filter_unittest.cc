@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/mouse_input_filter.h"
+#include "remoting/protocol/mouse_input_filter.h"
 
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
@@ -14,21 +14,20 @@ using ::testing::_;
 using ::testing::InSequence;
 
 namespace remoting {
-
-using protocol::MockInputStub;
+namespace protocol {
 
 MATCHER_P2(EqualsMouseMoveEvent, x, y, "") {
   return arg.x() == x && arg.y() == y;
 }
 
-static protocol::MouseEvent MouseMoveEvent(int x, int y) {
-  protocol::MouseEvent event;
+static MouseEvent MouseMoveEvent(int x, int y) {
+  MouseEvent event;
   event.set_x(x);
   event.set_y(y);
   return event;
 }
 
-static void InjectTestSequence(protocol::InputStub* input_stub) {
+static void InjectTestSequence(InputStub* input_stub) {
   static const SkIPoint input_sequence[] = {
     {-5, 10}, {0, 10}, {-1, 10}, {15, 40}, {15, 45}, {15, 39}, {15, 25}
   };
@@ -162,4 +161,5 @@ TEST(MouseInputFilterTest, DownScalingAndClamping) {
   InjectTestSequence(&mouse_filter);
 }
 
+}  // namespace protocol
 }  // namespace remoting

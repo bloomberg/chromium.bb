@@ -47,6 +47,7 @@ namespace remoting {
 namespace protocol {
 class ConnectionToHost;
 class InputEventTracker;
+class MouseInputFilter;
 }  // namespace protocol
 
 class ChromotingClient;
@@ -54,7 +55,6 @@ class ChromotingScriptableObject;
 class ChromotingStats;
 class ClientContext;
 class FrameConsumerProxy;
-class MouseInputFilter;
 class PepperInputHandler;
 class PepperView;
 class PepperXmppProxy;
@@ -198,7 +198,7 @@ class ChromotingInstance :
   scoped_ptr<PepperView> view_;
 
   scoped_refptr<RectangleUpdateDecoder> rectangle_decoder_;
-  scoped_ptr<MouseInputFilter> mouse_input_filter_;
+  scoped_ptr<protocol::MouseInputFilter> mouse_input_filter_;
   scoped_ptr<protocol::InputEventTracker> input_tracker_;
   KeyEventMapper key_mapper_;
   scoped_ptr<PepperInputHandler> input_handler_;

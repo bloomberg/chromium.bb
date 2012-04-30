@@ -17,6 +17,7 @@
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/input_filter.h"
 #include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/mouse_input_filter.h"
 #include "third_party/skia/include/core/SkPoint.h"
 
 namespace remoting {
@@ -123,7 +124,8 @@ class ClientSession : public protocol::HostEventStub,
 
   std::string client_jid_;
 
-  // The host event stub to which this object delegates.
+  // The host event stub to which this object delegates. This is the final
+  // element in the input pipeline, whose components appear in order below.
   protocol::HostEventStub* host_event_stub_;
 
   // Tracker used to release pressed keys and buttons when disconnecting.
@@ -131,6 +133,9 @@ class ClientSession : public protocol::HostEventStub,
 
   // Filter used to disable remote inputs during local input activity.
   RemoteInputFilter remote_input_filter_;
+
+  // Filter used to clamp mouse events to the current display dimensions.
+  protocol::MouseInputFilter mouse_input_filter_;
 
   // Filter used to manage enabling & disabling of client input events.
   protocol::InputFilter disable_input_filter_;
