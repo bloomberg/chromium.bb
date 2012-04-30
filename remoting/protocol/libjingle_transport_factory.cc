@@ -16,6 +16,7 @@
 #include "third_party/libjingle/source/talk/base/network.h"
 #include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
+#include "third_party/libjingle/source/talk/p2p/client/httpportallocator.h"
 
 namespace remoting {
 namespace protocol {
@@ -41,7 +42,6 @@ class LibjingleStreamTransport : public StreamTransport,
   // StreamTransport interface.
   virtual void Initialize(
       const std::string& name,
-      const TransportConfig& config,
       Transport::EventHandler* event_handler,
       scoped_ptr<ChannelAuthenticator> authenticator) OVERRIDE;
   virtual void Connect(
@@ -70,7 +70,6 @@ class LibjingleStreamTransport : public StreamTransport,
   bool incoming_only_;
 
   std::string name_;
-  TransportConfig config_;
   EventHandler* event_handler_;
   StreamTransport::ConnectedCallback callback_;
   scoped_ptr<ChannelAuthenticator> authenticator_;
@@ -105,7 +104,6 @@ LibjingleStreamTransport::~LibjingleStreamTransport() {
 
 void LibjingleStreamTransport::Initialize(
     const std::string& name,
-    const TransportConfig& config,
     Transport::EventHandler* event_handler,
     scoped_ptr<ChannelAuthenticator> authenticator) {
   DCHECK(CalledOnValidThread());
@@ -117,7 +115,6 @@ void LibjingleStreamTransport::Initialize(
   DCHECK(name_.empty());
 
   name_ = name;
-  config_ = config;
   event_handler_ = event_handler;
   authenticator_ = authenticator.Pass();
 }
@@ -294,10 +291,11 @@ void LibjingleStreamTransport::NotifyConnectFailed() {
 LibjingleTransportFactory::LibjingleTransportFactory(
     scoped_ptr<talk_base::NetworkManager> network_manager,
     scoped_ptr<talk_base::PacketSocketFactory> socket_factory,
-    scoped_ptr<cricket::PortAllocator> port_allocator,
+    scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator,
     bool incoming_only)
     : network_manager_(network_manager.Pass()),
       socket_factory_(socket_factory.Pass()),
+      http_port_allocator_(port_allocator.get()),
       port_allocator_(port_allocator.Pass()),
       incoming_only_(incoming_only) {
 }
@@ -305,6 +303,7 @@ LibjingleTransportFactory::LibjingleTransportFactory(
 LibjingleTransportFactory::LibjingleTransportFactory()
     : network_manager_(new talk_base::BasicNetworkManager()),
       socket_factory_(new talk_base::BasicPacketSocketFactory()),
+      http_port_allocator_(NULL),
       port_allocator_(new cricket::BasicPortAllocator(
           network_manager_.get(), socket_factory_.get())),
       incoming_only_(false) {
@@ -319,6 +318,26 @@ LibjingleTransportFactory::~LibjingleTransportFactory() {
       FROM_HERE, socket_factory_.release());
   base::MessageLoopProxy::current()->DeleteSoon(
       FROM_HERE, network_manager_.release());
+}
+
+void LibjingleTransportFactory::SetTransportConfig(
+    const TransportConfig& config) {
+  if (http_port_allocator_) {
+    std::vector<talk_base::SocketAddress> stun_hosts;
+    talk_base::SocketAddress stun_address;
+    if (stun_address.FromString(config.stun_server)) {
+      stun_hosts.push_back(stun_address);
+      http_port_allocator_->SetStunHosts(stun_hosts);
+    } else {
+      LOG(ERROR) << "Failed to parse stun server address: "
+                 << config.stun_server;
+    }
+
+    std::vector<std::string> relay_hosts;
+    relay_hosts.push_back(config.relay_server);
+    http_port_allocator_->SetRelayHosts(relay_hosts);
+    http_port_allocator_->SetRelayToken(config.relay_token);
+  }
 }
 
 scoped_ptr<StreamTransport> LibjingleTransportFactory::CreateStreamTransport() {

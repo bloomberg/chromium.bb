@@ -14,8 +14,6 @@
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/session_manager.h"
-#include "remoting/protocol/transport.h"
-#include "remoting/protocol/transport_config.h"
 
 namespace pp {
 class Instance;
@@ -37,6 +35,7 @@ class JingleInfoRequest;
 namespace protocol {
 
 class JingleSession;
+class TransportFactory;
 
 // JingleSessionManager and JingleSession implement the subset of the
 // Jingle protocol used in Chromoting. JingleSessionManager provides
@@ -100,8 +99,6 @@ class JingleSessionManager : public SessionManager,
   SessionManager::Listener* listener_;
 
   bool ready_;
-
-  TransportConfig transport_config_;
 
   scoped_ptr<JingleInfoRequest> jingle_info_request_;
 

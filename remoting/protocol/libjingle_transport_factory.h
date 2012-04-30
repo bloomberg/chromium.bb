@@ -8,6 +8,7 @@
 #include "remoting/protocol/transport.h"
 
 namespace cricket {
+class HttpPortAllocatorBase;
 class PortAllocator;
 }  // namespace cricket
 
@@ -24,7 +25,7 @@ class LibjingleTransportFactory : public TransportFactory {
   LibjingleTransportFactory(
       scoped_ptr<talk_base::NetworkManager> network_manager,
       scoped_ptr<talk_base::PacketSocketFactory> socket_factory,
-      scoped_ptr<cricket::PortAllocator> port_allocator,
+      scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator,
       bool incoming_only);
 
   // Creates BasicNetworkManager, BasicPacketSocketFactory and
@@ -33,12 +34,17 @@ class LibjingleTransportFactory : public TransportFactory {
 
   virtual ~LibjingleTransportFactory();
 
+  // TransportFactory interface.
+  virtual void SetTransportConfig(const TransportConfig& config) OVERRIDE;
   virtual scoped_ptr<StreamTransport> CreateStreamTransport() OVERRIDE;
   virtual scoped_ptr<DatagramTransport> CreateDatagramTransport() OVERRIDE;
 
  private:
   scoped_ptr<talk_base::NetworkManager> network_manager_;
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
+  // Points to the same port allocator as |port_allocator_| or NULL if
+  // |port_allocator_| is not HttpPortAllocatorBase.
+  cricket::HttpPortAllocatorBase* http_port_allocator_;
   scoped_ptr<cricket::PortAllocator> port_allocator_;
   bool incoming_only_;
 

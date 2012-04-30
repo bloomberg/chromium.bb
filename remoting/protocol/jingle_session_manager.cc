@@ -12,6 +12,8 @@
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/jingle_session.h"
+#include "remoting/protocol/transport.h"
+#include "remoting/protocol/transport_config.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
@@ -54,12 +56,16 @@ void JingleSessionManager::OnJingleInfo(
 
   // TODO(sergeyu): Add support for multiple STUN/relay servers when
   // it's implemented in libjingle and P2P Transport API.
-  transport_config_.stun_server = stun_hosts[0].ToString();
-  transport_config_.relay_server = relay_hosts[0];
-  transport_config_.relay_token = relay_token;
-  VLOG(1) << "STUN server: " << transport_config_.stun_server
-          << " Relay server: " << transport_config_.relay_server
-          << " Relay token: " << transport_config_.relay_token;
+  TransportConfig config;
+  config.stun_server = stun_hosts[0].ToString();
+  config.relay_server = relay_hosts[0];
+  config.relay_token = relay_token;
+  transport_factory_->SetTransportConfig(config);
+
+  VLOG(1) << "STUN server: " << config.stun_server
+          << " Relay server: " << config.relay_server
+          << " Relay token: " << config.relay_token;
+
 
   if (!ready_) {
     ready_ = true;

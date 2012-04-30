@@ -187,8 +187,7 @@ void JingleSession::CreateStreamChannel(
       authenticator_->CreateChannelAuthenticator();
   scoped_ptr<StreamTransport> channel =
       session_manager_->transport_factory_->CreateStreamTransport();
-  channel->Initialize(name, session_manager_->transport_config_,
-                      this, channel_authenticator.Pass());
+  channel->Initialize(name, this, channel_authenticator.Pass());
   channel->Connect(callback);
   channels_[name] = channel.release();
 }
@@ -202,8 +201,7 @@ void JingleSession::CreateDatagramChannel(
       authenticator_->CreateChannelAuthenticator();
   scoped_ptr<DatagramTransport> channel =
       session_manager_->transport_factory_->CreateDatagramTransport();
-  channel->Initialize(name, session_manager_->transport_config_,
-                      this, channel_authenticator.Pass());
+  channel->Initialize(name, this, channel_authenticator.Pass());
   channel->Connect(callback);
   channels_[name] = channel.release();
 }

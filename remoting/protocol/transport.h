@@ -91,7 +91,6 @@ class Transport : public base::NonThreadSafe {
   // Intialize the transport with the specified parameters.
   // |authenticator| is used to secure and authenticate the connection.
   virtual void Initialize(const std::string& name,
-                          const TransportConfig& config,
                           Transport::EventHandler* event_handler,
                           scoped_ptr<ChannelAuthenticator> authenticator) = 0;
 
@@ -140,6 +139,9 @@ class TransportFactory {
  public:
   TransportFactory() { }
   virtual ~TransportFactory() { }
+
+  // Sets configuration for the transports created by this factory.
+  virtual void SetTransportConfig(const TransportConfig& config) = 0;
 
   virtual scoped_ptr<StreamTransport> CreateStreamTransport() = 0;
   virtual scoped_ptr<DatagramTransport> CreateDatagramTransport() = 0;

@@ -107,22 +107,19 @@ void ChromotingHost::Start() {
       new talk_base::BasicNetworkManager());
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory(
       new talk_base::BasicPacketSocketFactory());
-  scoped_ptr<cricket::PortAllocator> port_allocator;
+  scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator(
+      new cricket::HttpPortAllocator(
+          network_manager.get(), socket_factory.get(), ""));
+
 
   // We always use PseudoTcp to provide a reliable channel. It
   // provides poor performance when combined with TCP-based transport,
   // so we have to disable TCP ports.
   int port_allocator_flags = cricket::PORTALLOCATOR_DISABLE_TCP;
-  if (network_settings_.nat_traversal_mode ==
+  if (network_settings_.nat_traversal_mode !=
       NetworkSettings::NAT_TRAVERSAL_ENABLED) {
-      port_allocator.reset(new cricket::HttpPortAllocator(
-          network_manager.get(), socket_factory.get(), ""));
-  } else {
     port_allocator_flags |= cricket::PORTALLOCATOR_DISABLE_STUN |
         cricket::PORTALLOCATOR_DISABLE_RELAY;
-    port_allocator.reset(
-        new cricket::BasicPortAllocator(network_manager.get(),
-                                        socket_factory.get()));
   }
   port_allocator->set_flags(port_allocator_flags);
   port_allocator->SetPortRange(network_settings_.min_port,
