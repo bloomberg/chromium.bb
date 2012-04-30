@@ -132,7 +132,8 @@ void ChromeShellDelegate::Search() {
   }
 
   Browser* target_browser = Browser::GetOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
+      last_active ? last_active->profile() :
+                    ProfileManager::GetDefaultProfileOrOffTheRecord());
   const GURL& url = target_browser->GetSelectedWebContents()->GetURL();
   if (url.SchemeIs(chrome::kChromeUIScheme) &&
       url.host() == chrome::kChromeUINewTabHost) {
