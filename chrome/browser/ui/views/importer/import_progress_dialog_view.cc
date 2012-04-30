@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/importer/import_progress_dialog_view.h"
 
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_observer.h"
 #include "chrome/browser/importer/importer_progress_dialog.h"
@@ -44,12 +43,10 @@ ImportProgressDialogView::ImportProgressDialogView(
       importer_observer_(importer_observer),
       importing_(true),
       bookmarks_import_(bookmarks_import) {
-  std::wstring info_text = bookmarks_import ?
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORT_BOOKMARKS)) :
-      UTF16ToWide(l10n_util::GetStringFUTF16(
-          IDS_IMPORT_PROGRESS_INFO, importer_name));
+  const string16 info_text = bookmarks_import ?
+      l10n_util::GetStringUTF16(IDS_IMPORT_BOOKMARKS) :
+      l10n_util::GetStringFUTF16(IDS_IMPORT_PROGRESS_INFO, importer_name);
   label_info_ = new views::Label(info_text);
-  importer_host_->SetObserver(this);
   label_info_->SetMultiLine(true);
   label_info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   label_bookmarks_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -57,6 +54,8 @@ ImportProgressDialogView::ImportProgressDialogView(
   label_passwords_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   label_history_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   label_cookies_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+
+  importer_host_->SetObserver(this);
 
   // These are scoped pointers, so we don't need the parent to delete them.
   state_bookmarks_->set_parent_owned(false);
