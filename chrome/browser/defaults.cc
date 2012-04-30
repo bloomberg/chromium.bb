@@ -25,7 +25,6 @@ const int kAutocompleteEditFontPixelSize = 15;
 
 const int kAutocompleteEditFontPixelSizeInPopup = 10;
 
-const int kMiniTabWidth = 64;
 const bool kCanToggleSystemTitleBar = false;
 const bool kRestorePopups = false;
 const bool kShowImportOnBookmarkBar = false;
@@ -58,9 +57,15 @@ const bool kCanToggleSystemTitleBar = true;
 
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(TOOLKIT_VIEWS)
+// Windows and Chrome OS have bigger shadows in the tab art.
+const int kMiniTabWidth = 64;
+#else
+const int kMiniTabWidth = 56;
+#endif  // defined(TOOLKIT_VIEWS)
+
 #if !defined(OS_CHROMEOS)
 
-const int kMiniTabWidth = 56;
 const bool kRestorePopups = false;
 const bool kShowImportOnBookmarkBar = true;
 const bool kDownloadPageHasShowInFolder = true;

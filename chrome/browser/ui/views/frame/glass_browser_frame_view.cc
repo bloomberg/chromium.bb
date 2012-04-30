@@ -46,9 +46,10 @@ const int kResizeAreaCornerSize = 16;
 // way the tabstrip draws its bottom edge, will appear like a 1 px gap to the
 // user).
 const int kAvatarBottomSpacing = 2;
-// There are 2 px on each side of the avatar (between the frame border and
-// it on the left, and between it and the tabstrip on the right).
-const int kAvatarSideSpacing = 2;
+// Space between the frame border and the left edge of the avatar.
+const int kAvatarLeftSpacing = 2;
+// Space between the right edge of the avatar and the tabstrip.
+const int kAvatarRightSpacing = -2;
 // The content left/right images have a shadow built into them.
 const int kContentEdgeShadowThickness = 2;
 // The top 3 px of the tabstrip is shadow; in maximized mode we push this off
@@ -64,7 +65,7 @@ const int kNewTabCaptionRestoredSpacing = 5;
 const int kNewTabCaptionMaximizedSpacing = 16;
 // How far to indent the tabstrip from the left side of the screen when there
 // is no avatar icon.
-const int kTabStripIndent = -4;
+const int kTabStripIndent = -6;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -96,7 +97,7 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
   int minimize_button_offset =
       std::min(frame()->GetMinimizeButtonOffset(), width());
   int tabstrip_x = browser_view()->ShouldShowAvatar() ?
-      (avatar_bounds_.right() + kAvatarSideSpacing) :
+      (avatar_bounds_.right() + kAvatarRightSpacing) :
       NonClientBorderThickness() + kTabStripIndent;
   // In RTL languages, we have moved an avatar icon left by the size of window
   // controls to prevent it from being rendered over them. So, we use its x
@@ -386,7 +387,7 @@ void GlassBrowserFrameView::LayoutAvatar() {
   // can be customized so we can't depend on its size to perform layout.
   SkBitmap incognito_icon = browser_view()->GetOTRAvatarIcon();
 
-  int avatar_x = NonClientBorderThickness() + kAvatarSideSpacing;
+  int avatar_x = NonClientBorderThickness() + kAvatarLeftSpacing;
   // Move this avatar icon by the size of window controls to prevent it from
   // being rendered over them in RTL languages. This code also needs to adjust
   // the width of a tab strip to avoid decreasing this size twice. (See the
