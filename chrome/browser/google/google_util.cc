@@ -44,6 +44,13 @@ bool HasQueryParameter(const std::string& str) {
   return false;
 }
 
+// True if |url| is an HTTP[S] request with host "[www.]google.<TLD>" and no
+// explicit port.
+bool IsGoogleDomainUrl(const GURL& url) {
+  return url.is_valid() && (url.SchemeIs("http") || url.SchemeIs("https")) &&
+      url.port().empty() && google_util::IsGoogleHostname(url.host());
+}
+
 }  // anonymous namespace
 
 namespace google_util {
@@ -135,32 +142,21 @@ bool GetReactivationBrand(std::string* brand) {
 
 #endif
 
-bool IsGoogleDomainUrl(const std::string& url, SubdomainPermission permission) {
-  GURL original_url(url);
-  return original_url.is_valid() && original_url.port().empty() &&
-      (original_url.SchemeIs("http") || original_url.SchemeIs("https")) &&
-      google_util::IsGoogleHostname(original_url.host(), permission);
-}
-
-bool IsGoogleHostname(const std::string& host,
-                      SubdomainPermission permission) {
+bool IsGoogleHostname(const std::string& host) {
   size_t tld_length =
       net::RegistryControlledDomainService::GetRegistryLength(host, false);
   if ((tld_length == 0) || (tld_length == std::string::npos))
     return false;
   std::string host_minus_tld(host, 0, host.length() - tld_length);
-  if (LowerCaseEqualsASCII(host_minus_tld, "google."))
-    return true;
-  if (permission == ALLOW_SUBDOMAIN)
-    return EndsWith(host_minus_tld, ".google.", false);
-  return LowerCaseEqualsASCII(host_minus_tld, "www.google.");
+  return LowerCaseEqualsASCII(host_minus_tld, "www.google.") ||
+      LowerCaseEqualsASCII(host_minus_tld, "google.");
 }
 
 bool IsGoogleHomePageUrl(const std::string& url) {
   GURL original_url(url);
 
   // First check to see if this has a Google domain.
-  if (!IsGoogleDomainUrl(url, DISALLOW_SUBDOMAIN))
+  if (!IsGoogleDomainUrl(original_url))
     return false;
 
   // Make sure the path is a known home page path.
@@ -177,7 +173,7 @@ bool IsGoogleSearchUrl(const std::string& url) {
   GURL original_url(url);
 
   // First check to see if this has a Google domain.
-  if (!IsGoogleDomainUrl(url, DISALLOW_SUBDOMAIN))
+  if (!IsGoogleDomainUrl(original_url))
     return false;
 
   // Make sure the path is a known search path.

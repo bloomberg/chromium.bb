@@ -87,14 +87,6 @@ class ChromeResourceDispatcherHostDelegate
       ResourceType::Type resource_type,
       ScopedVector<content::ResourceThrottle>* throttles);
 
-  // Adds Chrome experiment and metrics state as custom headers to |request|.
-  // This is a best-effort attempt, and does not interrupt the request if the
-  // headers can not be appended.
-  void AppendChromeMetricsHeaders(
-      net::URLRequest* request,
-      content::ResourceContext* resource_context,
-      ResourceType::Type resource_type);
-
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
   scoped_refptr<SafeBrowsingService> safe_browsing_;
   scoped_refptr<UserScriptListener> user_script_listener_;

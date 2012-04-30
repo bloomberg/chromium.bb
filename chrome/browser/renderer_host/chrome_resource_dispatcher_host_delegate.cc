@@ -12,7 +12,6 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/instant/instant_loader.h"
 #include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -164,8 +163,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 #endif
   }
 
-  AppendChromeMetricsHeaders(request, resource_context, resource_type);
-
   AppendStandardResourceThrottles(request,
                                   resource_context,
                                   child_id,
@@ -294,28 +291,6 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
                                                     resource_type);
   if (throttle)
     throttles->push_back(throttle);
-}
-
-void ChromeResourceDispatcherHostDelegate::AppendChromeMetricsHeaders(
-    net::URLRequest* request,
-    content::ResourceContext* resource_context,
-    ResourceType::Type resource_type) {
-  // Note our criteria for attaching Chrome experiment headers:
-  // 1. We only transmit to *.google.<TLD> domains. NOTE that this use of
-  //    google_util helpers to check this does not guarantee that the URL is
-  //    Google-owned, only that it is of the form *.google.<TLD>. In the future
-  //    we may choose to reinforce this check.
-  // 2. We only transmit for non-Incognito profiles.
-  // 3. For the X-Chrome-UMA-Enabled bit, we only set it if UMA is in fact
-  //    enabled for this install of Chrome.
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  if (google_util::IsGoogleDomainUrl(request->url().spec(),
-                                     google_util::ALLOW_SUBDOMAIN) &&
-      !io_data->is_incognito() && io_data->enable_metrics()->GetValue()) {
-    request->SetExtraRequestHeaderByName("X-Chrome-UMA-Enabled",
-                                         "1",
-                                         false);
-  }
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(

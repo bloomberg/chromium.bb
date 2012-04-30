@@ -107,20 +107,12 @@ class ProfileIOData {
     return &safe_browsing_enabled_;
   }
 
-  BooleanPrefMember* enable_metrics() const {
-    return &enable_metrics_;
-  }
-
   net::TransportSecurityState* transport_security_state() const {
     return transport_security_state_.get();
   }
 
   chrome_browser_net::HttpServerPropertiesManager*
       http_server_properties_manager() const;
-
-  bool is_incognito() const {
-    return is_incognito_;
-  }
 
  protected:
   class AppRequestContext : public ChromeURLRequestContext {
@@ -144,6 +136,7 @@ class ProfileIOData {
     ~ProfileParams();
 
     FilePath path;
+    bool is_incognito;
     bool clear_local_state_on_exit;
     std::string accept_language;
     std::string accept_charset;
@@ -297,7 +290,6 @@ class ProfileIOData {
 
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember enable_referrers_;
-  mutable BooleanPrefMember enable_metrics_;
   mutable BooleanPrefMember clear_local_state_on_exit_;
   mutable BooleanPrefMember safe_browsing_enabled_;
   // TODO(marja): Remove session_startup_pref_ if no longer needed.
@@ -340,8 +332,6 @@ class ProfileIOData {
 
   // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
   bool initialized_on_UI_thread_;
-
-  bool is_incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileIOData);
 };
