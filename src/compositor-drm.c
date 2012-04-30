@@ -1578,6 +1578,12 @@ drm_destroy(struct weston_compositor *ec)
 
 	weston_compositor_shutdown(ec);
 
+	/* Work around crash in egl_dri2.c's dri2_make_current() */
+	eglMakeCurrent(ec->display, EGL_NO_SURFACE, EGL_NO_SURFACE,
+		       EGL_NO_CONTEXT);
+	eglTerminate(ec->display);
+	eglReleaseThread();
+
 	gbm_device_destroy(d->gbm);
 	destroy_sprites(d);
 	if (weston_launcher_drm_set_master(&d->base, d->drm.fd, 0) < 0)
