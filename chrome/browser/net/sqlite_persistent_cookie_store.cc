@@ -462,7 +462,7 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
   if (initialized_) {
     // Return false if we were previously initialized but the DB has since been
     // closed.
-    return db_.get() ? true : false;
+    return db_ != NULL;
   }
 
   base::Time start = base::Time::Now();
