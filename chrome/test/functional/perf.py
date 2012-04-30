@@ -1768,21 +1768,6 @@ class PageCyclerTest(BasePerfTest):
 class MemoryTest(BasePerfTest):
   """Tests to measure memory consumption under different usage scenarios."""
 
-  def setUp(self):
-    pyauto.PyUITest.setUp(self)
-
-    # Log in to get a fresh Chrome instance with a clean memory state (if
-    # already logged in, log out first).
-    if self.GetLoginInfo()['is_logged_in']:
-      self.Logout()
-      self.assertFalse(self.GetLoginInfo()['is_logged_in'],
-                      msg='Failed to log out.')
-
-    credentials = self.GetPrivateInfo()['test_google_account']
-    self.Login(credentials['username'], credentials['password'])
-    self.assertTrue(self.GetLoginInfo()['is_logged_in'],
-                    msg='Failed to log in.')
-
   def ExtraChromeFlags(self):
     """Launches Chrome with custom flags.
 
