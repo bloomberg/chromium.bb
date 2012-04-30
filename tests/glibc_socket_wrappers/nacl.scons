@@ -5,6 +5,10 @@
 
 Import('env')
 
+# http://code.google.com/p/nativeclient/issues/detail?id=2755
+if env.Bit('bitcode'):
+  Return()
+
 # There is no sock64 in newlib
 if not env.Bit('nacl_glibc'):
   Return()
