@@ -662,7 +662,6 @@
         '../third_party/skia/include/gpu/GrMatrix.h',
         '../third_party/skia/include/gpu/GrNoncopyable.h',
         '../third_party/skia/include/gpu/GrPaint.h',
-        '../third_party/skia/include/gpu/GrPath.h',
         '../third_party/skia/include/gpu/GrPoint.h',
         '../third_party/skia/include/gpu/GrRect.h',
         '../third_party/skia/include/gpu/GrRefCnt.h',
