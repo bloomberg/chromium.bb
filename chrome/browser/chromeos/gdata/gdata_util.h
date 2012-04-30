@@ -53,13 +53,6 @@ void InsertGDataCachePathsPermissions(
     const FilePath& gdata_path,
     std::vector<std::pair<FilePath, int> >* cache_paths);
 
-// Grants read-only file access permissions to the process whose id is |pid|
-// with ChildProcessSecurityPolicy for all possible cache paths that may be
-// given to the specified file.
-void SetPermissionsForGDataCacheFiles(Profile* profile,
-                                      int pid,
-                                      const FilePath& path);
-
 // Returns true if gdata is currently active with the specified profile.
 bool IsGDataAvailable(Profile* profile);
 

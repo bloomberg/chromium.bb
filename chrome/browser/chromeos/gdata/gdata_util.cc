@@ -235,17 +235,6 @@ void InsertGDataCachePathsPermissions(
 
 }
 
-void SetPermissionsForGDataCacheFiles(Profile* profile,
-                                      int pid,
-                                      const FilePath& path) {
-  std::vector<std::pair<FilePath, int> > cache_paths;
-  InsertGDataCachePathsPermissions(profile, path, &cache_paths);
-  for (size_t i = 0; i < cache_paths.size(); i++) {
-    content::ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-        pid, cache_paths[i].first, cache_paths[i].second);
-  }
-}
-
 bool IsGDataAvailable(Profile* profile) {
   // Do not allow GData for incognito windows / guest mode.
   if (profile->IsOffTheRecord())
