@@ -136,6 +136,8 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
 
         # TODO(phajdan.jr): Make licensecheck not print the comma after 3.1.
         'GPL (v3.1,)',
+
+        'GPL (v3 or later)',
     ],
     'net/disk_cache/hash.cc': [  # http://crbug.com/98100
         'UNKNOWN',
