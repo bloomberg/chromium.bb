@@ -2138,23 +2138,24 @@ GDataEntry* GDataFileSystem::GetGDataEntryByPath(
 void GDataFileSystem::GetCacheState(const std::string& resource_id,
                                     const std::string& md5,
                                     const GetCacheStateCallback& callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::GetCacheStateOnUIThread,
-                   ui_weak_ptr_,
-                   resource_id,
-                   md5,
-                   base::Bind(&RelayGetCacheStateCallback,
-                              base::MessageLoopProxy::current(),
-                              callback)));
-    DCHECK(posted);
-    return;
-  }
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  GetCacheStateOnUIThread(resource_id, md5, callback);
+  // Always post a task to the UI thread to call GetCacheStateOnUIThread even if
+  // GetCacheState is called on the UI thread. This ensures that, regardless of
+  // whether GDataFileSystem is locked or not, GDataFileSystem is unlocked when
+  // GetCacheStateOnUIThread is called.
+  const bool posted = BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&GDataFileSystem::GetCacheStateOnUIThread,
+                 ui_weak_ptr_,
+                 resource_id,
+                 md5,
+                 base::Bind(&RelayGetCacheStateCallback,
+                            base::MessageLoopProxy::current(),
+                            callback)));
+  DCHECK(posted);
 }
 
 void GDataFileSystem::GetCacheStateOnUIThread(
@@ -2163,9 +2164,7 @@ void GDataFileSystem::GetCacheStateOnUIThread(
     const GetCacheStateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // This method originates from GDataFile::GetCacheState, which already locks,
-  // so we shouldn't lock here.
-  UnsafeInitializeCacheIfNecessary();
+  InitializeCacheIfNecessary();
 
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
@@ -3673,9 +3672,19 @@ void GDataFileSystem::RemoveFromCache(const std::string& resource_id,
 }
 
 void GDataFileSystem::InitializeCacheIfNecessary() {
-  // Lock to access cache_initialization_started_;
+  // Lock to access cache_initialization_started_.
   base::AutoLock lock(lock_);
-  UnsafeInitializeCacheIfNecessary();
+
+  // Cache initialization is either in progress or has completed.
+  if (cache_initialization_started_)
+    return;
+
+  // Need to initialize cache.
+  cache_initialization_started_ = true;
+  PostBlockingPoolSequencedTask(
+      FROM_HERE,
+      base::Bind(&GDataFileSystem::InitializeCacheOnIOThreadPool,
+                 base::Unretained(this)));
 }
 
 //========= GDataFileSystem: Cache tasks that ran on io thread pool ============
@@ -4412,24 +4421,6 @@ void GDataFileSystem::OnFileUnpinned(base::PlatformFileError* error,
 }
 
 //============= GDataFileSystem: internal helper functions =====================
-
-void GDataFileSystem::UnsafeInitializeCacheIfNecessary() {
-  lock_.AssertAcquired();
-
-  if (cache_initialization_started_) {
-    // Cache initialization is either in progress or has completed.
-    return;
-  }
-
-  // Need to initialize cache.
-
-  cache_initialization_started_ = true;
-
-  PostBlockingPoolSequencedTask(
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::InitializeCacheOnIOThreadPool,
-                 base::Unretained(this)));
-}
 
 void GDataFileSystem::ScanCacheDirectory(
     GDataRootDirectory::CacheSubDirectoryType sub_dir_type,

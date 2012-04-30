@@ -529,13 +529,9 @@ class GDataFileSystemTest : public testing::Test {
     expected_error_ = expected_error;
     expected_cache_state_ = expected_cache_state;
 
-    {  // Lock to use GetCacheState, but release before flushing tasks because
-       // OnGetCacheState callback will attempt to lock.
-      base::AutoLock lock(file_system_->lock_);
-      file_system_->GetCacheState(resource_id, md5,
-          base::Bind(&GDataFileSystemTest::VerifyGetCacheState,
-                     base::Unretained(this)));
-    }
+    file_system_->GetCacheState(resource_id, md5,
+        base::Bind(&GDataFileSystemTest::VerifyGetCacheState,
+                   base::Unretained(this)));
 
     RunAllPendingForIO();
   }

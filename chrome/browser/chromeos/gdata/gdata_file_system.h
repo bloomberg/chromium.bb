@@ -1154,9 +1154,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Cache internal helper functions.
 
-  // Unsafe (unlocked) version of InitializeCacheIfnecessary method.
-  void UnsafeInitializeCacheIfNecessary();
-
   // Scans cache subdirectory |sub_dir_type| and build or update |cache_map|
   // with found file blobs or symlinks.
   void ScanCacheDirectory(
