@@ -201,6 +201,9 @@ extern const int kHighestRendererOomScore = 1000;
 // This is used by the PreRead experiment.
 const char kPreReadEnvironmentVariable[] = "CHROME_PRE_READ_EXPERIMENT";
 const wchar_t kMetroChromeUserDataSubDir[] = L"Metro";
+const wchar_t kMetroNavigationAndSearchMessage[] =
+    L"CHROME_METRO_NAV_SEARCH_REQUEST";
+
 #endif
 
 }  // namespace chrome

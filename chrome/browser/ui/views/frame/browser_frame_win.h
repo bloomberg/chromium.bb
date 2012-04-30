@@ -61,6 +61,11 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
   virtual void TabStripDisplayModeChanged() OVERRIDE;
 
+  // Overridden from WindowImpl:
+  virtual LRESULT OnWndProc(UINT message,
+                            WPARAM w_param,
+                            LPARAM l_param) OVERRIDE;
+
  private:
   // Updates the DWM with the frame bounds.
   void UpdateDWMFrame();
@@ -71,6 +76,9 @@ class BrowserFrameWin : public views::NativeWidgetWin,
 
   // Adds optional debug items for frame type toggling.
   void AddFrameToggleItems();
+
+  // Handles metro navigation search requests.
+  void HandleMetroRequest(WPARAM w_param, LPARAM l_param);
 
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;

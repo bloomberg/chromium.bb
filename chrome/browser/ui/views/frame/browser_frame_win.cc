@@ -10,14 +10,21 @@
 #include <set>
 
 #include "base/command_line.h"
+#include "base/win/metro.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/system_menu_model.h"
 #include "chrome/browser/ui/views/frame/system_menu_model_delegate.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "content/public/browser/page_navigator.h"
+#include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -28,6 +35,7 @@
 #include "ui/views/widget/native_widget_win.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
+#include "webkit/glue/window_open_disposition.h"
 
 #pragma comment(lib, "dwmapi.lib")
 
@@ -39,6 +47,9 @@ static const int kTabDragWindowAlpha = 200;
 static const int kDWMFrameTopOffset = 3;
 // If not -1, windows are shown with this state.
 static int explicit_show_state = -1;
+
+using content::OpenURLParams;
+using content::Referrer;
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameWin, public:
@@ -192,6 +203,17 @@ void BrowserFrameWin::TabStripDisplayModeChanged() {
   UpdateDWMFrame();
 }
 
+LRESULT BrowserFrameWin::OnWndProc(UINT message,
+                                   WPARAM w_param,
+                                   LPARAM l_param) {
+  static const UINT metro_navigation_search_message =
+      RegisterWindowMessage(chrome::kMetroNavigationAndSearchMessage);
+  if (message == metro_navigation_search_message)
+    HandleMetroRequest(w_param, l_param);
+
+  return views::NativeWidgetWin::OnWndProc(message, w_param, l_param);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameWin, private:
 
@@ -284,6 +306,46 @@ void BrowserFrameWin::AddFrameToggleItems() {
                                    L"Toggle Frame Type");
   }
 }
+
+void BrowserFrameWin::HandleMetroRequest(WPARAM w_param, LPARAM l_param) {
+  if (!base::win::GetMetroModule()) {
+    NOTREACHED() << "Received unexpected metro navigation request";
+    return;
+  }
+
+  if (!w_param && !l_param) {
+    NOTREACHED() << "Invalid metro request parameters";
+    return;
+  }
+
+  Browser* browser = browser_view()->browser();
+  DCHECK(browser);
+
+  GURL request_url;
+
+  if (w_param) {
+    const wchar_t* url = reinterpret_cast<const wchar_t*>(w_param);
+    request_url = GURL(url);
+  } else if (l_param) {
+    const wchar_t* search_string =
+        reinterpret_cast<const wchar_t*>(l_param);
+    const TemplateURL* default_provider =
+        TemplateURLServiceFactory::GetForProfile(browser->profile())->
+        GetDefaultSearchProvider();
+    if (default_provider) {
+      const TemplateURLRef& search_url = default_provider->url_ref();
+      DCHECK(search_url.SupportsReplacement());
+      request_url = GURL(search_url.ReplaceSearchTerms(search_string,
+                            TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
+                            string16()));
+    }
+  }
+  if (request_url.is_valid()) {
+    browser->OpenURL(OpenURLParams(request_url, Referrer(), NEW_FOREGROUND_TAB,
+                                   content::PAGE_TRANSITION_TYPED, false));
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, public:
