@@ -199,6 +199,7 @@ static void ApplyGPUPolicy(std::vector<struct sock_filter>* program) {
   EmitAllowSyscall(__NR_gettid, program);
 
   // Less hot syscalls.
+  EmitAllowSyscall(__NR_clock_gettime, program);
   EmitAllowSyscall(__NR_futex, program);
   EmitAllowSyscall(__NR_madvise, program);
   EmitAllowSyscall(__NR_sendmsg, program);
@@ -234,8 +235,12 @@ static void ApplyGPUPolicy(std::vector<struct sock_filter>* program) {
   EmitAllowSyscall(__NR_getppid, program);  // Seen in ATI binary driver.
   EmitAllowKillSelf(SIGTERM, program);  // GPU watchdog.
 
+  // Generally, filename-based syscalls will fail with ENOENT to behave
+  // similarly to a possible future setuid sandbox.
   EmitFailSyscall(__NR_open, ENOENT, program);
   EmitFailSyscall(__NR_access, ENOENT, program);
+  EmitFailSyscall(__NR_mkdir, ENOENT, program);  // Nvidia binary driver.
+  EmitFailSyscall(__NR_readlink, ENOENT, program);  // ATI binary driver.
 }
 
 static void ApplyFlashPolicy(std::vector<struct sock_filter>* program) {
@@ -247,6 +252,7 @@ static void ApplyFlashPolicy(std::vector<struct sock_filter>* program) {
   EmitAllowSyscall(__NR_times, program);
 
   // Less hot syscalls.
+  EmitAllowSyscall(__NR_gettimeofday, program);
   EmitAllowSyscall(__NR_clone, program);
   EmitAllowSyscall(__NR_set_robust_list, program);
   EmitAllowSyscall(__NR_getuid, program);
