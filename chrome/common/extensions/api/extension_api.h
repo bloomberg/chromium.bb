@@ -119,7 +119,7 @@ class ExtensionAPI : public FeatureProvider {
   friend struct DefaultSingletonTraits<ExtensionAPI>;
 
   // Loads a schema.
-  void LoadSchema(const base::StringPiece& schema);
+  void LoadSchema(const std::string& name, const base::StringPiece& schema);
 
   // Returns true if the function or event under |namespace_node| with
   // the specified |child_name| is privileged, or false otherwise. If the name

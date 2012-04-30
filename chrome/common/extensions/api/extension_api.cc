@@ -64,7 +64,8 @@ base::StringPiece ReadFromResource(int resource_id) {
   return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
 }
 
-scoped_ptr<ListValue> LoadSchemaList(const base::StringPiece& schema) {
+scoped_ptr<ListValue> LoadSchemaList(const std::string& name,
+                                     const base::StringPiece& schema) {
   std::string error_message;
   scoped_ptr<Value> result(
       base::JSONReader::ReadAndReturnError(
@@ -72,6 +73,14 @@ scoped_ptr<ListValue> LoadSchemaList(const base::StringPiece& schema) {
           base::JSON_PARSE_RFC,  // options
           NULL,  // error code
           &error_message));
+
+  // Tracking down http://crbug.com/121424
+  char buf[128];
+  base::snprintf(buf, arraysize(buf), "%s: (%d) '%s'",
+      name.c_str(),
+      result.get() ? result->GetType() : -1,
+      error_message.c_str());
+
   CHECK(result.get()) << error_message << " for schema " << schema;
   CHECK(result->IsType(Value::TYPE_LIST)) << " for schema " << schema;
   return scoped_ptr<ListValue>(static_cast<ListValue*>(result.release()));
@@ -146,8 +155,9 @@ void ExtensionAPI::SplitDependencyName(const std::string& full_name,
   *feature_name = full_name.substr(colon_index + 1);
 }
 
-void ExtensionAPI::LoadSchema(const base::StringPiece& schema) {
-  scoped_ptr<ListValue> schema_list(LoadSchemaList(schema));
+void ExtensionAPI::LoadSchema(const std::string& name,
+                              const base::StringPiece& schema) {
+  scoped_ptr<ListValue> schema_list(LoadSchemaList(name, schema));
   std::string schema_namespace;
 
   while (!schema_list->empty()) {
@@ -474,7 +484,7 @@ const DictionaryValue* ExtensionAPI::GetSchema(const std::string& full_name) {
     if (maybe_schema_resource == unloaded_schemas_.end())
       return NULL;
 
-    LoadSchema(maybe_schema_resource->second);
+    LoadSchema(maybe_schema_resource->first, maybe_schema_resource->second);
     maybe_schema = schemas_.find(api_name);
     CHECK(schemas_.end() != maybe_schema);
     result = maybe_schema->second.get();
@@ -716,7 +726,9 @@ void ExtensionAPI::GetAPIsMatchingURL(const GURL& url,
 
 void ExtensionAPI::LoadAllSchemas() {
   while (unloaded_schemas_.size()) {
-    LoadSchema(unloaded_schemas_.begin()->second);
+    std::map<std::string, base::StringPiece>::iterator it =
+        unloaded_schemas_.begin();
+    LoadSchema(it->first, it->second);
   }
 }
 
