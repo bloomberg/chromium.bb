@@ -13,7 +13,7 @@ namespace thunk {
 namespace {
 
 void ZoomChanged(PP_Instance instance, double factor) {
-  EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.succeeded())
     enter.functions()->ZoomChanged(instance, factor);
 }
@@ -21,7 +21,7 @@ void ZoomChanged(PP_Instance instance, double factor) {
 void ZoomLimitsChanged(PP_Instance instance,
                        double minimum_factor,
                        double maximum_factor) {
-  EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.succeeded()) {
     enter.functions()->ZoomLimitsChanged(instance,
                                          minimum_factor, maximum_factor);

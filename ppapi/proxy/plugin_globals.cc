@@ -48,10 +48,18 @@ CallbackTracker* PluginGlobals::GetCallbackTrackerForInstance(
   return callback_tracker_.get();
 }
 
-FunctionGroupBase* PluginGlobals::GetFunctionAPI(PP_Instance inst, ApiID id) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(inst);
+thunk::PPB_Instance_API* PluginGlobals::GetInstanceAPI(PP_Instance instance) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (dispatcher)
-    return dispatcher->GetFunctionAPI(id);
+    return dispatcher->GetInstanceAPI();
+  return NULL;
+}
+
+thunk::ResourceCreationAPI* PluginGlobals::GetResourceCreationAPI(
+    PP_Instance instance) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (dispatcher)
+    return dispatcher->GetResourceCreationAPI();
   return NULL;
 }
 

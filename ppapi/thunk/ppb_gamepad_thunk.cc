@@ -14,7 +14,7 @@ namespace thunk {
 namespace {
 
 void SampleGamepads(PP_Instance instance, PP_GamepadsSampleData* data) {
-  EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.failed())
     return;
   enter.functions()->SampleGamepads(instance, data);

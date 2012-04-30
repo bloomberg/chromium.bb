@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
 namespace webkit {
@@ -15,14 +14,10 @@ namespace ppapi {
 
 class PluginInstance;
 
-class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
-                             public ::ppapi::thunk::ResourceCreationAPI {
+class ResourceCreationImpl : public ::ppapi::thunk::ResourceCreationAPI {
  public:
   explicit ResourceCreationImpl(PluginInstance* instance);
   virtual ~ResourceCreationImpl();
-
-  // FunctionGroupBase implementation.
-  virtual ::ppapi::thunk::ResourceCreationAPI* AsResourceCreationAPI();
 
   // ResourceCreationAPI implementation.
   virtual PP_Resource CreateAudio(PP_Instance instance,

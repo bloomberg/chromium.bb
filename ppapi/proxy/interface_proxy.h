@@ -12,7 +12,6 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/api_id.h"
-#include "ppapi/shared_impl/function_group_base.h"
 
 namespace ppapi {
 namespace proxy {
@@ -20,8 +19,7 @@ namespace proxy {
 class Dispatcher;
 
 class InterfaceProxy : public IPC::Channel::Listener,
-                       public IPC::Message::Sender,
-                       public FunctionGroupBase {
+                       public IPC::Message::Sender {
  public:
   // Factory function type for interfaces. Ownership of the returned pointer
   // is transferred to the caller.

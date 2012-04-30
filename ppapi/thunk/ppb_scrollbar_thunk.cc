@@ -15,7 +15,7 @@ typedef EnterResource<PPB_Scrollbar_API> EnterScrollbar;
 namespace {
 
 PP_Resource Create(PP_Instance instance, PP_Bool vertical) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateScrollbar(instance, vertical);

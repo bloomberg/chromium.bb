@@ -20,7 +20,11 @@ namespace {
 typedef EnterResource<PPB_FileRef_API> EnterFileRef;
 
 PP_Resource Create(PP_Resource file_system, const char* path) {
-  EnterFunctionGivenResource<ResourceCreationAPI> enter(file_system, true);
+  Resource* object =
+      PpapiGlobals::Get()->GetResourceTracker()->GetResource(file_system);
+  if (!object)
+    return 0;
+  EnterResourceCreation enter(object->pp_instance());
   if (enter.failed())
     return 0;
   return enter.functions()->CreateFileRef(file_system, path);

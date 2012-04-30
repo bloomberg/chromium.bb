@@ -170,52 +170,6 @@ class EnterHostFromHostResourceForceCallback
   pp::CompletionCallback callback_;
 };
 
-// Like EnterHostFromHostResourceForceCallback but for Function APIs. It takes
-// an instance instead of a resource ID.
-template<typename FunctionT>
-class EnterHostFunctionForceCallback
-    : public thunk::EnterFunctionNoLock<FunctionT> {
- public:
-  EnterHostFunctionForceCallback(
-      PP_Instance instance,
-      const pp::CompletionCallback& callback)
-      : thunk::EnterFunctionNoLock<FunctionT>(instance, false),
-        needs_running_(true),
-        callback_(callback) {
-    if (this->failed())
-      RunCallback(PP_ERROR_BADARGUMENT);
-  }
-
-  ~EnterHostFunctionForceCallback() {
-    if (needs_running_) {
-      NOTREACHED() << "Should always call SetResult except in the "
-                      "initialization failed case.";
-      RunCallback(PP_ERROR_FAILED);
-    }
-  }
-
-  void SetResult(int32_t result) {
-    DCHECK(needs_running_) << "Don't call SetResult when there already is one.";
-    needs_running_ = false;
-    if (result != PP_OK_COMPLETIONPENDING)
-      callback_.Run(result);
-  }
-
-  PP_CompletionCallback callback() {
-    return callback_.pp_completion_callback();
-  }
-
- private:
-  void RunCallback(int32_t result) {
-    DCHECK(needs_running_);
-    needs_running_ = false;
-    callback_.Run(result);
-  }
-
-  bool needs_running_;
-  pp::CompletionCallback callback_;
-};
-
 }  // namespace proxy
 }  // namespace ppapi
 

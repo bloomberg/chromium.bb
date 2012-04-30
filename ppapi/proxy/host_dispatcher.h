@@ -15,7 +15,6 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/dispatcher.h"
-#include "ppapi/shared_impl/function_group_base.h"
 
 struct PPB_Proxy_Private;
 

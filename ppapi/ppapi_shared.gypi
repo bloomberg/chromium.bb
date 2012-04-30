@@ -58,8 +58,6 @@
         'shared_impl/callback_tracker.h',
         'shared_impl/file_type_conversion.cc',
         'shared_impl/file_type_conversion.h',
-        'shared_impl/function_group_base.cc',
-        'shared_impl/function_group_base.h',
         'shared_impl/host_resource.h',
         'shared_impl/id_assignment.cc',
         'shared_impl/id_assignment.h',

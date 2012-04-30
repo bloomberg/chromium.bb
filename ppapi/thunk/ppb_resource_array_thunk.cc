@@ -15,7 +15,7 @@ namespace {
 PP_Resource Create(PP_Instance instance,
                    const PP_Resource elements[],
                    uint32_t size) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateResourceArray(instance, elements, size);

@@ -23,7 +23,7 @@ PP_Graphics3DTrustedState GetErrorState() {
 PP_Resource CreateRaw(PP_Instance instance,
                       PP_Resource share_context,
                       const int32_t* attrib_list) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateGraphics3DRaw(

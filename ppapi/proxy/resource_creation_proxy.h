@@ -35,8 +35,6 @@ class ResourceCreationProxy : public InterfaceProxy,
   // constructor).
   static InterfaceProxy* Create(Dispatcher* dispatcher);
 
-  virtual thunk::ResourceCreationAPI* AsResourceCreationAPI() OVERRIDE;
-
   // ResourceCreationAPI (called in plugin).
   virtual PP_Resource CreateFileIO(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateFileRef(PP_Resource file_system,

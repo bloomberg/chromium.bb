@@ -13,7 +13,6 @@
 #include "ppapi/thunk/ppb_flash_menu_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
-using ppapi::thunk::EnterFunctionNoLock;
 using ppapi::thunk::PPB_Flash_Menu_API;
 using ppapi::thunk::ResourceCreationAPI;
 

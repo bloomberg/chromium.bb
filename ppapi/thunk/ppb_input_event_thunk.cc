@@ -14,13 +14,12 @@ namespace thunk {
 
 namespace {
 
-typedef EnterFunction<PPB_Instance_FunctionAPI> EnterInstance;
 typedef EnterResource<PPB_InputEvent_API> EnterInputEvent;
 
 // InputEvent ------------------------------------------------------------------
 
 int32_t RequestInputEvents(PP_Instance instance, uint32_t event_classes) {
-  EnterInstance enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.failed())
     return enter.retval();
   return enter.functions()->RequestInputEvents(instance, event_classes);
@@ -28,7 +27,7 @@ int32_t RequestInputEvents(PP_Instance instance, uint32_t event_classes) {
 
 int32_t RequestFilteringInputEvents(PP_Instance instance,
                                     uint32_t event_classes) {
-  EnterInstance enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.failed())
     return enter.retval();
   return enter.functions()->RequestFilteringInputEvents(instance,
@@ -37,7 +36,7 @@ int32_t RequestFilteringInputEvents(PP_Instance instance,
 
 void ClearInputEventRequest(PP_Instance instance,
                             uint32_t event_classes) {
-  EnterInstance enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.succeeded())
     enter.functions()->ClearInputEventRequest(instance, event_classes);
 }
@@ -87,7 +86,7 @@ PP_Resource CreateMouseInputEvent1_0(PP_Instance instance,
                                      PP_InputEvent_MouseButton mouse_button,
                                      const PP_Point* mouse_position,
                                      int32_t click_count) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
 
@@ -106,7 +105,7 @@ PP_Resource CreateMouseInputEvent1_1(PP_Instance instance,
                                      const PP_Point* mouse_position,
                                      int32_t click_count,
                                      const PP_Point* mouse_movement) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateMouseInputEvent(instance, type, time_stamp,
@@ -180,7 +179,7 @@ PP_Resource CreateWheelInputEvent(PP_Instance instance,
                                   const PP_FloatPoint* wheel_delta,
                                   const PP_FloatPoint* wheel_ticks,
                                   PP_Bool scroll_by_page) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateWheelInputEvent(instance, time_stamp,
@@ -232,7 +231,7 @@ PP_Resource CreateKeyboardInputEvent(PP_Instance instance,
                                      uint32_t modifiers,
                                      uint32_t key_code,
                                      struct PP_Var character_text) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateKeyboardInputEvent(instance, type, time_stamp,

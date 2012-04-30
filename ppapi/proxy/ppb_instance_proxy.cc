@@ -32,7 +32,7 @@
 
 using ppapi::thunk::EnterInstanceNoLock;
 using ppapi::thunk::EnterResourceNoLock;
-using ppapi::thunk::PPB_Instance_FunctionAPI;
+using ppapi::thunk::PPB_Instance_API;
 
 namespace ppapi {
 namespace proxy {
@@ -154,10 +154,6 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-PPB_Instance_FunctionAPI* PPB_Instance_Proxy::AsPPB_Instance_FunctionAPI() {
-  return this;
 }
 
 PP_Bool PPB_Instance_Proxy::BindGraphics(PP_Instance instance,
@@ -633,13 +629,19 @@ void PPB_Instance_Proxy::OnHostMsgPostMessage(
 }
 
 void PPB_Instance_Proxy::OnHostMsgLockMouse(PP_Instance instance) {
-  EnterHostFunctionForceCallback<PPB_Instance_FunctionAPI> enter(
-      instance,
-      callback_factory_.NewCallback(
-          &PPB_Instance_Proxy::MouseLockCompleteInHost,
-          instance));
-  if (enter.succeeded())
-    enter.SetResult(enter.functions()->LockMouse(instance, enter.callback()));
+  // Need to be careful to always issue the callback.
+  pp::CompletionCallback cb = callback_factory_.NewCallback(
+      &PPB_Instance_Proxy::MouseLockCompleteInHost, instance);
+
+  EnterInstanceNoLock enter(instance);
+  if (enter.failed()) {
+    cb.Run(PP_ERROR_BADARGUMENT);
+    return;
+  }
+  int32_t result = enter.functions()->LockMouse(instance,
+                                                cb.pp_completion_callback());
+  if (result != PP_OK_COMPLETIONPENDING)
+    cb.Run(result);
 }
 
 void PPB_Instance_Proxy::OnHostMsgUnlockMouse(PP_Instance instance) {

@@ -55,11 +55,6 @@ ResourceCreationImpl::ResourceCreationImpl(PluginInstance* instance) {
 ResourceCreationImpl::~ResourceCreationImpl() {
 }
 
-::ppapi::thunk::ResourceCreationAPI*
-ResourceCreationImpl::AsResourceCreationAPI() {
-  return this;
-}
-
 PP_Resource ResourceCreationImpl::CreateAudio(
     PP_Instance instance,
     PP_Resource config_id,

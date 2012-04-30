@@ -246,8 +246,14 @@ InstanceData* PluginDispatcher::GetInstanceData(PP_Instance instance) {
   return (it == instance_map_.end()) ? NULL : &it->second;
 }
 
-FunctionGroupBase* PluginDispatcher::GetFunctionAPI(ApiID id) {
-  return GetInterfaceProxy(id);
+thunk::PPB_Instance_API* PluginDispatcher::GetInstanceAPI() {
+  return static_cast<PPB_Instance_Proxy*>(
+      GetInterfaceProxy(API_ID_PPB_INSTANCE));
+}
+
+thunk::ResourceCreationAPI* PluginDispatcher::GetResourceCreationAPI() {
+  return static_cast<ResourceCreationProxy*>(
+      GetInterfaceProxy(API_ID_RESOURCE_CREATION));
 }
 
 void PluginDispatcher::ForceFreeAllInstances() {

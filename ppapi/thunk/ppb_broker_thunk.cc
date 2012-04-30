@@ -15,7 +15,7 @@ namespace thunk {
 namespace {
 
 PP_Resource CreateTrusted(PP_Instance instance) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateBroker(instance);

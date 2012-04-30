@@ -17,7 +17,7 @@ namespace {
 typedef EnterResource<PPB_AudioInput_API> EnterAudioInput;
 
 PP_Resource Create(PP_Instance instance_id) {
-  EnterFunction<ResourceCreationAPI> enter(instance_id, true);
+  EnterResourceCreation enter(instance_id);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateAudioInput(instance_id);

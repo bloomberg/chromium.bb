@@ -18,7 +18,7 @@ namespace {
 typedef EnterResource<PPB_VideoCapture_API> EnterVideoCapture;
 
 PP_Resource Create(PP_Instance instance) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateVideoCapture(instance);

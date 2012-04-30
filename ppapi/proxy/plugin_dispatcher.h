@@ -18,7 +18,6 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/dispatcher.h"
-#include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
 
@@ -26,6 +25,11 @@ namespace ppapi {
 
 struct Preferences;
 class Resource;
+
+namespace thunk {
+class PPB_Instance_API;
+class ResourceCreationAPI;
+}
 
 namespace proxy {
 
@@ -118,14 +122,13 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   // correspond to a known instance.
   InstanceData* GetInstanceData(PP_Instance instance);
 
+  // Returns the corresponding API. These are APIs not associated with a
+  // resource. Guaranteed non-NULL.
+  thunk::PPB_Instance_API* GetInstanceAPI();
+  thunk::ResourceCreationAPI* GetResourceCreationAPI();
+
   // Returns the Preferences.
   const Preferences& preferences() const { return preferences_; }
-
-  // Returns the "new-style" function API for the given interface ID, creating
-  // it if necessary.
-  // TODO(brettw) this is in progress. It should be merged with the target
-  // proxies so there is one list to consult.
-  FunctionGroupBase* GetFunctionAPI(ApiID id);
 
   uint32 plugin_dispatcher_id() const { return plugin_dispatcher_id_; }
 

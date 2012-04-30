@@ -22,9 +22,13 @@ class Lock;
 namespace ppapi {
 
 class CallbackTracker;
-class FunctionGroupBase;
 class ResourceTracker;
 class VarTracker;
+
+namespace thunk {
+class PPB_Instance_API;
+class ResourceCreationAPI;
+}
 
 // Abstract base class
 class PPAPI_SHARED_EXPORT PpapiGlobals {
@@ -87,9 +91,11 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
                                       const std::string& source,
                                       const std::string& value) = 0;
 
-  // Returns the function object corresponding to the given ID, or NULL if
-  // there isn't one.
-  virtual FunctionGroupBase* GetFunctionAPI(PP_Instance inst, ApiID id) = 0;
+  // Returns the given API object associated with the given instance, or NULL
+  // if the instance is invalid.
+  virtual thunk::PPB_Instance_API* GetInstanceAPI(PP_Instance instance) = 0;
+  virtual thunk::ResourceCreationAPI* GetResourceCreationAPI(
+      PP_Instance instance) = 0;
 
   // Returns the PP_Module associated with the given PP_Instance, or 0 on
   // failure.

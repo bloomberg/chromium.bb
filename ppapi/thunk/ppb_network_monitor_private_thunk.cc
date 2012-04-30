@@ -18,7 +18,7 @@ typedef EnterResource<PPB_NetworkMonitor_Private_API> EnterNetworkMonitor;
 PP_Resource Create(PP_Instance instance,
                    PPB_NetworkMonitor_Callback callback,
                    void* user_data) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateNetworkMonitor(instance, callback, user_data);

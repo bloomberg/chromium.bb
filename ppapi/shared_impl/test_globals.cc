@@ -32,7 +32,13 @@ CallbackTracker* TestGlobals::GetCallbackTrackerForInstance(
   return callback_tracker_.get();
 }
 
-FunctionGroupBase* TestGlobals::GetFunctionAPI(PP_Instance inst, ApiID id) {
+thunk::PPB_Instance_API* TestGlobals::GetInstanceAPI(
+    PP_Instance instance) {
+  return NULL;
+}
+
+thunk::ResourceCreationAPI* TestGlobals::GetResourceCreationAPI(
+    PP_Instance instance) {
   return NULL;
 }
 

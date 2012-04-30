@@ -13,7 +13,7 @@ namespace thunk {
 namespace {
 
 void PostMessage(PP_Instance instance, PP_Var message) {
-  EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.succeeded())
     enter.functions()->PostMessage(instance, message);
 }

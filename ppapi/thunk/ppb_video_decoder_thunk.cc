@@ -18,7 +18,7 @@ typedef EnterResource<PPB_VideoDecoder_API> EnterVideoDecoder;
 PP_Resource Create(PP_Instance instance,
                    PP_Resource graphics_3d,
                    PP_VideoDecoder_Profile profile) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateVideoDecoder(instance, graphics_3d, profile);

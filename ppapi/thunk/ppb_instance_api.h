@@ -32,9 +32,9 @@ namespace thunk {
 
 class PPB_Flash_API;
 
-class PPB_Instance_FunctionAPI {
+class PPB_Instance_API {
  public:
-  virtual ~PPB_Instance_FunctionAPI() {}
+  virtual ~PPB_Instance_API() {}
 
   virtual PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) = 0;
   virtual PP_Bool IsFullFrame(PP_Instance instance) = 0;

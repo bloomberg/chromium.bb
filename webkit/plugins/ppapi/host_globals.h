@@ -38,9 +38,10 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
   virtual ::ppapi::VarTracker* GetVarTracker() OVERRIDE;
   virtual ::ppapi::CallbackTracker* GetCallbackTrackerForInstance(
       PP_Instance instance) OVERRIDE;
-  virtual ::ppapi::FunctionGroupBase* GetFunctionAPI(
-      PP_Instance inst,
-      ::ppapi::ApiID id) OVERRIDE;
+  virtual ::ppapi::thunk::PPB_Instance_API* GetInstanceAPI(
+      PP_Instance instance) OVERRIDE;
+  virtual ::ppapi::thunk::ResourceCreationAPI* GetResourceCreationAPI(
+      PP_Instance instance) OVERRIDE;
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
   virtual std::string GetCmdLine() OVERRIDE;
   virtual void PreCacheFontForFlash(const void* logfontw) OVERRIDE;
@@ -93,16 +94,13 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
   // PpapiGlobals overrides.
   virtual bool IsHostGlobals() const OVERRIDE;
 
-  // Per-instance data we track.
-  struct InstanceData;
-
   WEBKIT_PLUGINS_EXPORT static HostGlobals* host_globals_;
 
   ::ppapi::ResourceTracker resource_tracker_;
   HostVarTracker host_var_tracker_;
 
-  // Tracks all live instances and their associated data.
-  typedef std::map<PP_Instance, linked_ptr<InstanceData> > InstanceMap;
+  // Tracks all live instances and their associated object.
+  typedef std::map<PP_Instance, PluginInstance*> InstanceMap;
   InstanceMap instance_map_;
 
   // Tracks all live modules. The pointers are non-owning, the PluginModule

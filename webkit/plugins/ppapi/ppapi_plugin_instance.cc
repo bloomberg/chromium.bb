@@ -109,7 +109,6 @@ using ppapi::thunk::PPB_Buffer_API;
 using ppapi::thunk::PPB_Graphics2D_API;
 using ppapi::thunk::PPB_Graphics3D_API;
 using ppapi::thunk::PPB_ImageData_API;
-using ppapi::thunk::PPB_Instance_FunctionAPI;
 using ppapi::Var;
 using ppapi::ViewData;
 using WebKit::WebBindings;
@@ -306,6 +305,7 @@ PluginInstance::PluginInstance(
       has_webkit_focus_(false),
       has_content_area_focus_(false),
       find_identifier_(-1),
+      resource_creation_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       plugin_find_interface_(NULL),
       plugin_messaging_interface_(NULL),
       plugin_mouse_lock_interface_(NULL),
@@ -1597,10 +1597,6 @@ void PluginInstance::ClosePendingUserGesture(PP_Instance instance,
   // there may be multiple input events with the same timestamp.
   if (timestamp > pending_user_gesture_)
     pending_user_gesture_ = 0.0;
-}
-
-PPB_Instance_FunctionAPI* PluginInstance::AsPPB_Instance_FunctionAPI() {
-  return this;
 }
 
 PP_Bool PluginInstance::BindGraphics(PP_Instance instance,

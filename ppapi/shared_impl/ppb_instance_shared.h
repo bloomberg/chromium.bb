@@ -13,7 +13,7 @@
 namespace ppapi {
 
 class PPAPI_SHARED_EXPORT PPB_Instance_Shared
-    : NON_EXPORTED_BASE(public thunk::PPB_Instance_FunctionAPI) {
+    : NON_EXPORTED_BASE(public thunk::PPB_Instance_API) {
  public:
   virtual ~PPB_Instance_Shared();
 

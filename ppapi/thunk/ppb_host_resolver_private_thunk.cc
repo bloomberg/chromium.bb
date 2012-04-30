@@ -17,7 +17,7 @@ namespace {
 typedef EnterResource<PPB_HostResolver_Private_API> EnterHostResolver;
 
 PP_Resource Create(PP_Instance instance) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateHostResolverPrivate(instance);

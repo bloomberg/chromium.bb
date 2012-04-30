@@ -18,7 +18,7 @@ typedef EnterResource<PPB_Transport_API> EnterTransport;
 
 PP_Resource Create(PP_Instance instance, const char* name,
                    PP_TransportType type) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateTransport(instance, name, type);

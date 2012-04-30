@@ -28,7 +28,7 @@ PP_Resource Create(PP_Instance instance,
                    PP_ImageDataFormat format,
                    const PP_Size* size,
                    PP_Bool init_to_zero) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateImageData(instance, format,

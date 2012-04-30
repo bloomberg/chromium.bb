@@ -11,7 +11,6 @@
 #include "base/rand_util.h"
 #include "base/utf_string_conversions.h"
 #include "ppapi/shared_impl/api_id.h"
-#include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/id_assignment.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
@@ -22,7 +21,6 @@
 #include "webkit/plugins/plugin_switches.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/resource_creation_impl.h"
 
 using ppapi::CheckIdType;
 using ppapi::MakeTypedId;
@@ -74,18 +72,6 @@ WebConsoleMessage MakeLogMessage(PP_LogLevel_Dev level,
 
 }  // namespace
 
-struct HostGlobals::InstanceData {
-  InstanceData() : instance(0) {}
-
-  // Non-owning pointer to the instance object. When a PluginInstance is
-  // destroyed, it will notify us and we'll delete all associated data.
-  PluginInstance* instance;
-
-  // Lazily allocated function proxies for the different interfaces.
-  scoped_ptr< ::ppapi::FunctionGroupBase >
-      function_proxies[::ppapi::API_ID_COUNT];
-};
-
 HostGlobals* HostGlobals::host_globals_ = NULL;
 
 HostGlobals::HostGlobals() : ::ppapi::PpapiGlobals() {
@@ -113,41 +99,24 @@ HostGlobals::~HostGlobals() {
 
 ::ppapi::CallbackTracker* HostGlobals::GetCallbackTrackerForInstance(
     PP_Instance instance) {
-  std::map<PP_Instance, linked_ptr<InstanceData> >::iterator found =
-      instance_map_.find(instance);
+  InstanceMap::iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
     return NULL;
-
-  return found->second->instance->module()->GetCallbackTracker();
+  return found->second->module()->GetCallbackTracker();
 }
 
-::ppapi::FunctionGroupBase* HostGlobals::GetFunctionAPI(PP_Instance pp_instance,
-                                                        ::ppapi::ApiID id) {
-  // Get the instance object. This also ensures that the instance data is in
-  // the map, since we need it below.
+::ppapi::thunk::PPB_Instance_API* HostGlobals::GetInstanceAPI(
+    PP_Instance instance) {
+  // The InstanceAPI is just implemented by the PluginInstance object.
+  return GetInstance(instance);
+}
+
+::ppapi::thunk::ResourceCreationAPI* HostGlobals::GetResourceCreationAPI(
+    PP_Instance pp_instance) {
   PluginInstance* instance = GetInstance(pp_instance);
   if (!instance)
     return NULL;
-
-  // The instance one is special, since it's just implemented by the instance
-  // object.
-  if (id == ::ppapi::API_ID_PPB_INSTANCE)
-    return instance;
-
-  scoped_ptr< ::ppapi::FunctionGroupBase >& proxy =
-      instance_map_[pp_instance]->function_proxies[id];
-  if (proxy.get())
-    return proxy.get();
-
-  switch (id) {
-    case ::ppapi::API_ID_RESOURCE_CREATION:
-      proxy.reset(new ResourceCreationImpl(instance));
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  return proxy.get();
+  return &instance->resource_creation();
 }
 
 PP_Module HostGlobals::GetModuleForInstance(PP_Instance instance) {
@@ -263,8 +232,7 @@ PP_Instance HostGlobals::AddInstance(PluginInstance* instance) {
            instance_map_.find(new_instance) != instance_map_.end() ||
            !instance->module()->ReserveInstanceID(new_instance));
 
-  instance_map_[new_instance] = linked_ptr<InstanceData>(new InstanceData);
-  instance_map_[new_instance]->instance = instance;
+  instance_map_[new_instance] = instance;
 
   resource_tracker_.DidCreateInstance(new_instance);
   return new_instance;
@@ -287,7 +255,7 @@ PluginInstance* HostGlobals::GetInstance(PP_Instance instance) {
   InstanceMap::iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
     return NULL;
-  return found->second->instance;
+  return found->second;
 }
 
 bool HostGlobals::IsHostGlobals() const {

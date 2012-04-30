@@ -11,7 +11,6 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"
-#include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/ppb_instance_shared.h"
 #include "ppapi/thunk/ppb_instance_api.h"
@@ -40,10 +39,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
-  // FunctionGroupBase overrides.
-  ppapi::thunk::PPB_Instance_FunctionAPI* AsPPB_Instance_FunctionAPI() OVERRIDE;
-
-  // PPB_Instance_FunctionAPI implementation.
+  // PPB_Instance_API implementation.
   virtual PP_Bool BindGraphics(PP_Instance instance,
                                PP_Resource device) OVERRIDE;
   virtual PP_Bool IsFullFrame(PP_Instance instance) OVERRIDE;

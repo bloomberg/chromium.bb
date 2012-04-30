@@ -16,7 +16,11 @@ namespace thunk {
 namespace {
 
 PP_Resource Create(PP_Resource directory_ref) {
-  EnterFunctionGivenResource<ResourceCreationAPI> enter(directory_ref, true);
+  Resource* object =
+      PpapiGlobals::Get()->GetResourceTracker()->GetResource(directory_ref);
+  if (!object)
+    return 0;
+  EnterResourceCreation enter(object->pp_instance());
   if (enter.failed())
     return 0;
   return enter.functions()->CreateDirectoryReader(directory_ref);

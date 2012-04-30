@@ -4,6 +4,7 @@
 
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_instance_api.h"
 
 namespace ppapi {
 

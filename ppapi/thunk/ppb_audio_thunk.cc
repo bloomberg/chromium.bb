@@ -18,7 +18,7 @@ PP_Resource Create(PP_Instance instance,
                    PP_Resource config_id,
                    PPB_Audio_Callback callback,
                    void* user_data) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateAudio(instance, config_id,

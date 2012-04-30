@@ -67,11 +67,6 @@ int32_t EnterBase::SetResult(int32_t result) {
   return retval_;
 }
 
-FunctionGroupBase* EnterBase::GetFunctions(PP_Instance instance,
-                                           ApiID id) const {
-  return PpapiGlobals::Get()->GetFunctionAPI(instance, id);
-}
-
 Resource* EnterBase::GetResource(PP_Resource resource) const {
   return PpapiGlobals::Get()->GetResourceTracker()->GetResource(resource);
 }
@@ -144,30 +139,47 @@ void EnterBase::SetStateForFunctionError(PP_Instance pp_instance,
 
 }  // namespace subtle
 
-EnterResourceCreation::EnterResourceCreation(PP_Instance instance)
-    : EnterFunction<ResourceCreationAPI>(instance, true) {
-}
-
-EnterResourceCreation::~EnterResourceCreation() {
-}
-
 EnterInstance::EnterInstance(PP_Instance instance)
-    : EnterFunction<PPB_Instance_FunctionAPI>(instance, true) {
+    : EnterBase(),
+      functions_(PpapiGlobals::Get()->GetInstanceAPI(instance)) {
+  SetStateForFunctionError(instance, functions_, true);
 }
 
 EnterInstance::EnterInstance(PP_Instance instance,
                              const PP_CompletionCallback& callback)
-    : EnterFunction<PPB_Instance_FunctionAPI>(instance, callback, true) {
+    : EnterBase(callback),
+      functions_(PpapiGlobals::Get()->GetInstanceAPI(instance)) {
+  SetStateForFunctionError(instance, functions_, true);
 }
 
 EnterInstance::~EnterInstance() {
 }
 
 EnterInstanceNoLock::EnterInstanceNoLock(PP_Instance instance)
-    : EnterFunctionNoLock<PPB_Instance_FunctionAPI>(instance, true) {
+    : EnterBase(),
+      functions_(PpapiGlobals::Get()->GetInstanceAPI(instance)) {
+  SetStateForFunctionError(instance, functions_, true);
 }
 
 EnterInstanceNoLock::~EnterInstanceNoLock() {
+}
+
+EnterResourceCreation::EnterResourceCreation(PP_Instance instance)
+    : EnterBase(),
+      functions_(PpapiGlobals::Get()->GetResourceCreationAPI(instance)) {
+  SetStateForFunctionError(instance, functions_, true);
+}
+
+EnterResourceCreation::~EnterResourceCreation() {
+}
+
+EnterResourceCreationNoLock::EnterResourceCreationNoLock(PP_Instance instance)
+    : EnterBase(),
+      functions_(PpapiGlobals::Get()->GetResourceCreationAPI(instance)) {
+  SetStateForFunctionError(instance, functions_, true);
+}
+
+EnterResourceCreationNoLock::~EnterResourceCreationNoLock() {
 }
 
 }  // namespace thunk

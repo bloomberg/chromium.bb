@@ -368,7 +368,7 @@ void PPB_Flash_Proxy::OnHostMsgNavigate(PP_Instance instance,
   host_dispatcher->set_allow_plugin_reentrancy();
 
   // Make a temporary request resource.
-  thunk::EnterFunctionNoLock<thunk::ResourceCreationAPI> enter(instance, true);
+  thunk::EnterResourceCreation enter(instance);
   if (enter.failed()) {
     *result = PP_ERROR_FAILED;
     return;

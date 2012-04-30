@@ -34,7 +34,6 @@
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/proxy/ppb_x509_certificate_private_proxy.h"
 #include "ppapi/shared_impl/api_id.h"
-#include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
@@ -60,10 +59,6 @@ ResourceCreationProxy::~ResourceCreationProxy() {
 // static
 InterfaceProxy* ResourceCreationProxy::Create(Dispatcher* dispatcher) {
   return new ResourceCreationProxy(dispatcher);
-}
-
-ResourceCreationAPI* ResourceCreationProxy::AsResourceCreationAPI() {
-  return this;
 }
 
 PP_Resource ResourceCreationProxy::CreateFileIO(PP_Instance instance) {

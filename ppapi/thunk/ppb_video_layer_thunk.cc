@@ -15,7 +15,7 @@ namespace {
 typedef EnterResource<PPB_VideoLayer_API> EnterVideoLayer;
 
 PP_Resource Create(PP_Instance instance, PP_VideoLayerMode_Dev mode) {
-  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateVideoLayer(instance, mode);

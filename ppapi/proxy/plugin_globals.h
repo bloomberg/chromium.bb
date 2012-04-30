@@ -39,8 +39,10 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   virtual VarTracker* GetVarTracker() OVERRIDE;
   virtual CallbackTracker* GetCallbackTrackerForInstance(
       PP_Instance instance) OVERRIDE;
-  virtual FunctionGroupBase* GetFunctionAPI(PP_Instance inst,
-                                            ApiID id) OVERRIDE;
+  virtual thunk::PPB_Instance_API* GetInstanceAPI(
+      PP_Instance instance) OVERRIDE;
+  virtual thunk::ResourceCreationAPI* GetResourceCreationAPI(
+      PP_Instance instance) OVERRIDE;
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
   virtual std::string GetCmdLine() OVERRIDE;
   virtual void PreCacheFontForFlash(const void* logfontw) OVERRIDE;

@@ -35,7 +35,6 @@
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp_mouse_lock.h"
 #include "ppapi/c/private/ppp_instance_private.h"
-#include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/ppb_instance_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -47,6 +46,7 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
 #include "webkit/plugins/ppapi/ppp_pdf.h"
+#include "webkit/plugins/ppapi/resource_creation_impl.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 struct PP_Point;
@@ -93,7 +93,6 @@ class PPB_URLRequestInfo_Impl;
 class WEBKIT_PLUGINS_EXPORT PluginInstance :
     public base::RefCounted<PluginInstance>,
     public base::SupportsWeakPtr<PluginInstance>,
-    public ::ppapi::FunctionGroupBase,
     public ::ppapi::PPB_Instance_Shared {
  public:
   // Create and return a PluginInstance object which supports the
@@ -119,6 +118,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // Returns the PP_Instance uniquely identifying this instance. Guaranteed
   // nonzero.
   PP_Instance pp_instance() const { return pp_instance_; }
+
+  ResourceCreationImpl& resource_creation() { return resource_creation_; }
 
   // Does some pre-destructor cleanup on the instance. This is necessary
   // because some cleanup depends on the plugin instance still existing (like
@@ -324,11 +325,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // which sends it back up to the plugin as if it came from the user.
   void SimulateInputEvent(const ::ppapi::InputEventData& input_event);
 
-  // FunctionGroupBase overrides.
-  virtual ::ppapi::thunk::PPB_Instance_FunctionAPI*
-      AsPPB_Instance_FunctionAPI() OVERRIDE;
-
-  // PPB_Instance_FunctionAPI implementation.
+  // PPB_Instance_API implementation.
   virtual PP_Bool BindGraphics(PP_Instance instance,
                                PP_Resource device) OVERRIDE;
   virtual PP_Bool IsFullFrame(PP_Instance instance) OVERRIDE;
@@ -524,6 +521,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   // The id of the current find operation, or -1 if none is in process.
   int find_identifier_;
+
+  // Helper object that creates resources.
+  ResourceCreationImpl resource_creation_;
 
   // The plugin-provided interfaces.
   const PPP_Find_Dev* plugin_find_interface_;

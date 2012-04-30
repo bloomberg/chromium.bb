@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/shared_impl/api_id.h"
-#include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
@@ -32,10 +31,6 @@ namespace thunk {
 // input values are correct (the normal case), this should be set to true. In
 // some case like |IsFoo(PP_Resource)| the caller is questioning whether their
 // handle is this type, and we don't want to report an error if it's not.
-//
-// Standalone functions: EnterFunction
-//   Automatically gets the implementation for the function API for the
-//   supplied PP_Instance.
 //
 // Resource member functions: EnterResource
 //   Automatically interprets the given PP_Resource as a resource ID and sets
@@ -84,11 +79,6 @@ class PPAPI_THUNK_EXPORT EnterBase {
   int32_t retval() const { return retval_; }
 
  protected:
-  // Helper function to return a function group from a PP_Instance. Having this
-  // code be in the non-templatized base keeps us from having to instantiate
-  // it in every template.
-  FunctionGroupBase* GetFunctions(PP_Instance instance, ApiID id) const;
-
   // Helper function to return a Resource from a PP_Resource. Having this
   // code be in the non-templatized base keeps us from having to instantiate
   // it in every template.
@@ -123,72 +113,6 @@ class PPAPI_THUNK_EXPORT EnterBase {
 };
 
 }  // namespace subtle
-
-// EnterFunction --------------------------------------------------------------
-
-template<typename FunctionsT, bool lock_on_entry = true>
-class EnterFunction : public subtle::EnterBase,
-                      public subtle::LockOnEntry<lock_on_entry> {
- public:
-  EnterFunction(PP_Instance instance, bool report_error)
-      : EnterBase() {
-    Init(instance, report_error);
-  }
-  EnterFunction(PP_Instance instance,
-                const PP_CompletionCallback& callback,
-                bool report_error)
-      : EnterBase(callback) {
-    Init(instance, report_error);
-  }
-
-  ~EnterFunction() {}
-
-  bool succeeded() const { return !!functions_; }
-  bool failed() const { return !functions_; }
-
-  FunctionsT* functions() { return functions_; }
-
- private:
-  void Init(PP_Instance instance, bool report_error) {
-    FunctionGroupBase* base = GetFunctions(instance, FunctionsT::kApiID);
-    if (base)
-      functions_ = base->GetAs<FunctionsT>();
-    else
-      functions_ = NULL;
-    SetStateForFunctionError(instance, functions_, report_error);
-  }
-
-  FunctionsT* functions_;
-
-  DISALLOW_COPY_AND_ASSIGN(EnterFunction);
-};
-
-// Like EnterFunction but assumes the lock is already held.
-template<typename FunctionsT>
-class EnterFunctionNoLock : public EnterFunction<FunctionsT, false> {
- public:
-  EnterFunctionNoLock(PP_Instance instance, bool report_error)
-      : EnterFunction<FunctionsT, false>(instance, report_error) {
-  }
-};
-
-// Used when a caller has a resource, and wants to do EnterFunction for the
-// instance corresponding to that resource.
-template<typename FunctionsT>
-class EnterFunctionGivenResource : public EnterFunction<FunctionsT> {
- public:
-  EnterFunctionGivenResource(PP_Resource resource, bool report_error)
-      : EnterFunction<FunctionsT>(GetInstanceForResource(resource),
-                                  report_error) {
-  }
-
- private:
-  static PP_Instance GetInstanceForResource(PP_Resource resource) {
-    Resource* object =
-        PpapiGlobals::Get()->GetResourceTracker()->GetResource(resource);
-    return object ? object->pp_instance() : 0;
-  }
-};
 
 // EnterResource ---------------------------------------------------------------
 
@@ -241,32 +165,76 @@ class EnterResourceNoLock : public EnterResource<ResourceT, false> {
   }
 };
 
-// Simpler wrapper to enter the resource creation API. This is used for every
-// class so we have this helper function to save template instantiations and
-// typing.
-class PPAPI_THUNK_EXPORT EnterResourceCreation
-    : public EnterFunction<ResourceCreationAPI> {
- public:
-  EnterResourceCreation(PP_Instance instance);
-  ~EnterResourceCreation();
-};
+// EnterInstance ---------------------------------------------------------------
 
-// Simpler wrapper to enter the instance API from proxy code. This is used for
-// many interfaces so we have this helper function to save template
-// instantiations and typing.
 class PPAPI_THUNK_EXPORT EnterInstance
-    : public EnterFunction<PPB_Instance_FunctionAPI> {
+    : public subtle::EnterBase,
+      public subtle::LockOnEntry<true> {
  public:
   EnterInstance(PP_Instance instance);
-  EnterInstance(PP_Instance instance, const PP_CompletionCallback& callback);
+  EnterInstance(PP_Instance instance,
+                const PP_CompletionCallback& callback);
   ~EnterInstance();
+
+  bool succeeded() const { return !!functions_; }
+  bool failed() const { return !functions_; }
+
+  PPB_Instance_API* functions() { return functions_; }
+
+ private:
+  PPB_Instance_API* functions_;
 };
 
 class PPAPI_THUNK_EXPORT EnterInstanceNoLock
-    : public EnterFunctionNoLock<PPB_Instance_FunctionAPI> {
+    : public subtle::EnterBase,
+      public subtle::LockOnEntry<false> {
  public:
   EnterInstanceNoLock(PP_Instance instance);
+  //EnterInstanceNoLock(PP_Instance instance,
+  //                    const PP_CompletionCallback& callback);
   ~EnterInstanceNoLock();
+
+  bool succeeded() const { return !!functions_; }
+  bool failed() const { return !functions_; }
+
+  PPB_Instance_API* functions() { return functions_; }
+
+ private:
+  PPB_Instance_API* functions_;
+};
+
+// EnterResourceCreation -------------------------------------------------------
+
+class PPAPI_THUNK_EXPORT EnterResourceCreation
+    : public subtle::EnterBase,
+      public subtle::LockOnEntry<true> {
+ public:
+  EnterResourceCreation(PP_Instance instance);
+  ~EnterResourceCreation();
+
+  bool succeeded() const { return !!functions_; }
+  bool failed() const { return !functions_; }
+
+  ResourceCreationAPI* functions() { return functions_; }
+
+ private:
+  ResourceCreationAPI* functions_;
+};
+
+class PPAPI_THUNK_EXPORT EnterResourceCreationNoLock
+    : public subtle::EnterBase,
+      public subtle::LockOnEntry<false> {
+ public:
+  EnterResourceCreationNoLock(PP_Instance instance);
+  ~EnterResourceCreationNoLock();
+
+  bool succeeded() const { return !!functions_; }
+  bool failed() const { return !functions_; }
+
+  ResourceCreationAPI* functions() { return functions_; }
+
+ private:
+  ResourceCreationAPI* functions_;
 };
 
 }  // namespace thunk
