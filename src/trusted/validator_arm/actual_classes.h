@@ -66,6 +66,32 @@ class Defs12To15RdRnRsRmNotPc : public Defs12To15 {
 //      O L D    C L A S S    D E C O D E R S
 // **************************************************************
 
+class OldClassDecoder : public ClassDecoder {
+ public:
+  inline OldClassDecoder() : ClassDecoder() {}
+  virtual ~OldClassDecoder() {}
+
+  // Many instructions define control bits in bits 20-24. The useful bits
+  // are defined here.
+
+  // True if U (updates flags register) flag is defined.
+  inline bool UpdatesFlagsRegister(const Instruction& i) const {
+    return i.bit(20);
+  }
+
+  // True if W (does write) flag is defined.
+  inline bool WritesFlag(const Instruction& i) const {
+    return i.bit(21);
+  }
+  // True if P (pre-indexing) flag is defined.
+  inline bool PreindexingFlag(const Instruction& i) const {
+    return i.bit(24);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(OldClassDecoder);
+};
+
 // An instruction that, for modeling purposes, is a no-op.  It has no
 // side effects that are significant to SFI, and has no operand combinations
 // that cause it to become unsafe.
@@ -103,7 +129,7 @@ class Defs12To15RdRnRsRmNotPc : public Defs12To15 {
 // VMVN(immediate), VBIC(immediate), VMVN(immediate), VBIC(immediate),
 // VMVN(immediate), VMOV(immediate)
 //
-class EffectiveNoOp : public ClassDecoder {
+class EffectiveNoOp : public OldClassDecoder {
  public:
   inline EffectiveNoOp() {}
   virtual ~EffectiveNoOp() {}
@@ -124,7 +150,7 @@ class EffectiveNoOp : public ClassDecoder {
 // Models all instructions that reliably trap, preventing execution from falling
 // through to the next instruction.  Note that roadblocks currently have no
 // special role in the SFI model, so Breakpoints are distinguished below.
-class Roadblock : public ClassDecoder {
+class Roadblock : public OldClassDecoder {
  public:
   inline Roadblock() {}
   virtual ~Roadblock() {}
@@ -172,9 +198,9 @@ class Breakpoint : public Roadblock {
 // MOV(immediate), MVN(immediate), MRS, CLZ, SBFX, BFC, BFI, UBFX, UADD16,
 // UASX, USAX, USUB16, UADD8, USUB8, UQADD16, UQASX, UQSAX, UQSUB16, UQADD8,
 // UQSUB8, UHADD16, UHASX, UHSAX, UHSUB16, UHADD8, UHSUB8
-class DataProc : public ClassDecoder {
+class DataProc : public OldClassDecoder {
  public:
-  inline DataProc() : ClassDecoder() {}
+  inline DataProc() : OldClassDecoder() {}
   virtual ~DataProc() {}
 
   virtual SafetyLevel safety(Instruction i) const;
@@ -259,7 +285,7 @@ class ImmediateBic : public DataProc {
 // SXTAH, SXTH, REV16, UXTAB16, UXTB16, USAT16, UXTAB, UXTB, RBIT,
 // UXTAH, UXTH, REVSH
 //
-class PackSatRev : public ClassDecoder {
+class PackSatRev : public OldClassDecoder {
  public:
   inline PackSatRev() {}
   virtual ~PackSatRev() {}
@@ -289,7 +315,7 @@ class PackSatRev : public ClassDecoder {
 // Includes:
 // MUL, MLA, MLS, SMLABB et al., SMLAWB et al., SMULWB et al., SMULBB et al.,
 // USAD8, USADA8, SMLAD, SMUAD, SMLSD, SMUSD, SMMLA, SMMUL, SMMLS
-class Multiply : public ClassDecoder {
+class Multiply : public OldClassDecoder {
  public:
   inline Multiply() {}
   virtual ~Multiply() {}
@@ -362,7 +388,7 @@ class SatAddSub : public DataProc {
 // Includes:
 // MSR(immediate), MSR(immediate), MSR(register)
 //
-class MoveToStatusRegister : public ClassDecoder {
+class MoveToStatusRegister : public OldClassDecoder {
  public:
   inline MoveToStatusRegister() {}
   virtual ~MoveToStatusRegister() {}
@@ -383,7 +409,7 @@ class MoveToStatusRegister : public ClassDecoder {
 // Includes:
 // STRH(immediate), STRD(immediate), STR(immediate), STRB(immediate),
 // STMDA / STMED, STM / STMIA / STMEA, STMDB / STMFD, STMIB / STMFA
-class StoreImmediate : public ClassDecoder {
+class StoreImmediate : public OldClassDecoder {
  public:
   inline StoreImmediate() {}
   virtual ~StoreImmediate() {}
@@ -411,7 +437,7 @@ class StoreImmediate : public ClassDecoder {
 //
 // Includes:
 // STRH(register), STRD(register), STR(register), STRB(register)
-class StoreRegister : public ClassDecoder {
+class StoreRegister : public OldClassDecoder {
  public:
   inline StoreRegister() {}
   virtual ~StoreRegister() {}
@@ -438,7 +464,7 @@ class StoreRegister : public ClassDecoder {
 //
 // Includes:
 // STREX, STREXD, STREXB, STREXH
-class StoreExclusive : public ClassDecoder {
+class StoreExclusive : public OldClassDecoder {
  public:
   inline StoreExclusive() {}
   virtual ~StoreExclusive() {}
@@ -467,7 +493,7 @@ class StoreExclusive : public ClassDecoder {
 // below.  These instructions have common characteristics:
 // - They aren't permitted to alter PC.
 // - They produce a result in reg(15:12).
-class AbstractLoad : public ClassDecoder {
+class AbstractLoad : public OldClassDecoder {
  public:
   inline AbstractLoad() {}
   virtual ~AbstractLoad() {}
@@ -625,7 +651,7 @@ class LoadDoubleExclusive : public LoadExclusive {
 //
 // Includes:
 // LDMDA / LDMFA, LDM / LDMIA / LDMFD, LDMDB / LDMEA, LDMIB / LDMED
-class LoadMultiple : public ClassDecoder {
+class LoadMultiple : public OldClassDecoder {
  public:
   inline LoadMultiple() {}
   virtual ~LoadMultiple() {}
@@ -651,7 +677,7 @@ class LoadMultiple : public ClassDecoder {
 // VLD1(single), VLD1(single, all lanes), VLD2(single),
 // VLD2(single, all lanes), VLD3(single), VLD3(single, all lanes),
 // VLD4(single), VLD4(single, all lanes)
-class VectorLoad : public ClassDecoder {
+class VectorLoad : public OldClassDecoder {
  public:
   inline VectorLoad() {}
   virtual ~VectorLoad() {}
@@ -678,7 +704,7 @@ class VectorLoad : public ClassDecoder {
 // Includes:
 // VST1(multiple), VST2(multiple), VST3(multiple), VST4(multiple),
 // VST1(single), VST2(single), VST3(single), VST4(single)
-class VectorStore : public ClassDecoder {
+class VectorStore : public OldClassDecoder {
  public:
   inline VectorStore() {}
   virtual ~VectorStore() {}
@@ -710,7 +736,7 @@ class VectorStore : public ClassDecoder {
 //
 // Includes:
 // MCRR, MCRR2, CDP, CDP2, MCR, MCR2, MCRR, MCRR2, CDP, CDP2, MCR, MCR2
-class CoprocessorOp : public ClassDecoder {
+class CoprocessorOp : public OldClassDecoder {
  public:
   inline CoprocessorOp() {}
   virtual ~CoprocessorOp() {}
@@ -826,7 +852,7 @@ class MoveDoubleFromCoprocessor : public CoprocessorOp {
 // This implementation makes assumptions about where the L bit is located, and
 // should not be used for other indirect branches (such as mov pc, rN).
 // Hence the cryptic name.
-class BxBlx : public ClassDecoder {
+class BxBlx : public OldClassDecoder {
  public:
   inline BxBlx() {}
   virtual ~BxBlx() {}
@@ -854,7 +880,7 @@ class BxBlx : public ClassDecoder {
 //
 // This implementation makes assumptions about where the L bit is located, but
 // the assumption holds for all non-illegal direct branches.
-class Branch : public ClassDecoder {
+class Branch : public OldClassDecoder {
  public:
   inline Branch() {}
   virtual ~Branch() {}

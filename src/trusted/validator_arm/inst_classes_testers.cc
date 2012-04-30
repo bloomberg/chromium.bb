@@ -262,7 +262,7 @@ ApplySanityChecks(Instruction inst,
 
   // Check that we don't parse when Rd=15 and S=1.
   if ((expected_decoder.d.reg(inst) == kRegisterPc) &&
-      expected_decoder.UpdatesFlagsRegister(inst) &&
+      expected_decoder.flags.is_updated(inst) &&
       (&ExpectedDecoder() != &decoder))
     return;
   Unary2RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder);

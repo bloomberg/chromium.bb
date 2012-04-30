@@ -63,12 +63,12 @@ enum SafetyLevel {
 class ShiftTypeBits5To6Interface {
  public:
   inline ShiftTypeBits5To6Interface() {}
-  inline uint32_t value(const Instruction& i) const {
+  static inline uint32_t value(const Instruction& i) {
     return i.bits(6, 5);
   }
   // Converts the given immediate value using the shift type specified
   // by this interface. Defined in A8.4.3, page A8-11.
-  inline uint32_t DecodeImmShift(Instruction insn, uint32_t imm5_value) const {
+  static inline uint32_t DecodeImmShift(Instruction insn, uint32_t imm5_value) {
     return ComputeDecodeImmShift(value(insn), imm5_value);
   }
  private:
@@ -81,13 +81,13 @@ class ShiftTypeBits5To6Interface {
 class ConditionBits28To31Interface {
  public:
   inline ConditionBits28To31Interface() {}
-  inline uint32_t value(const Instruction& i) const {
+  static inline uint32_t value(const Instruction& i) {
     return i.bits(31, 28);
   }
-  inline bool defined(const Instruction& i) const {
+  static inline bool defined(const Instruction& i) {
     return value(i) != 0xF;
   }
-  inline bool undefined(const Instruction& i) const {
+  static inline bool undefined(const Instruction& i)  {
     return !defined(i);
   }
 
@@ -99,10 +99,10 @@ class ConditionBits28To31Interface {
 class RegDBits12To15Interface {
  public:
   inline RegDBits12To15Interface() {}
-  inline uint32_t number(const Instruction& i) const {
+  static inline uint32_t number(const Instruction& i) {
     return i.bits(15, 12);
   }
-  inline Register reg(const Instruction& i) const {
+  static inline Register reg(const Instruction& i) {
     return Register(number(i));
   }
 
@@ -114,10 +114,10 @@ class RegDBits12To15Interface {
 class RegMBits0To3Interface {
  public:
   inline RegMBits0To3Interface() {}
-  inline uint32_t number(const Instruction& i) const {
+  static inline uint32_t number(const Instruction& i) {
     return i.bits(3, 0);
   }
-  inline Register reg(const Instruction& i) const {
+  static inline Register reg(const Instruction& i) {
     return Register(number(i));
   }
 
@@ -129,10 +129,10 @@ class RegMBits0To3Interface {
 class RegMBits8To11Interface {
  public:
   inline RegMBits8To11Interface() {}
-  inline uint32_t number(const Instruction& i) const {
+  static inline uint32_t number(const Instruction& i) {
     return i.bits(11, 8);
   }
-  inline Register reg(const Instruction& i) const {
+  static inline Register reg(const Instruction& i) {
     return Register(number(i));
   }
 
@@ -144,10 +144,10 @@ class RegMBits8To11Interface {
 class RegNBits0To3Interface {
  public:
   inline RegNBits0To3Interface() {}
-  inline uint32_t number(const Instruction& i) const {
+  static inline uint32_t number(const Instruction& i) {
     return i.bits(3, 0);
   }
-  inline Register reg(const Instruction& i) const {
+  static inline Register reg(const Instruction& i) {
     return Register(number(i));
   }
 
@@ -159,10 +159,10 @@ class RegNBits0To3Interface {
 class RegNBits16To19Interface {
  public:
   inline RegNBits16To19Interface() {}
-  inline uint32_t number(const Instruction& i) const {
+  static inline uint32_t number(const Instruction& i) {
     return i.bits(19, 16);
   }
-  inline Register reg(const Instruction& i) const {
+  static inline Register reg(const Instruction& i) {
     return Register(number(i));
   }
 
@@ -174,10 +174,10 @@ class RegNBits16To19Interface {
 class RegSBits8To11Interface {
  public:
   inline RegSBits8To11Interface() {}
-  inline uint32_t number(const Instruction& i) const {
+  static inline uint32_t number(const Instruction& i) {
     return i.bits(11, 8);
   }
-  inline Register reg(const Instruction& i) const {
+  static inline Register reg(const Instruction& i) {
     return Register(number(i));
   }
 
@@ -189,7 +189,7 @@ class RegSBits8To11Interface {
 class Imm12Bits0To11Interface {
  public:
   inline Imm12Bits0To11Interface() {}
-  inline uint32_t value(const Instruction& i) const {
+  static inline uint32_t value(const Instruction& i) {
     return i.bits(11, 0);
   }
   static uint32_t get_modified_immediate(Instruction i);
@@ -202,7 +202,7 @@ class Imm12Bits0To11Interface {
 class Imm5Bits7To11Interface {
  public:
   inline Imm5Bits7To11Interface() {}
-  inline uint32_t value(const Instruction& i) const {
+  static inline uint32_t value(const Instruction& i) {
     return i.bits(11, 7);
   }
 
@@ -214,7 +214,7 @@ class Imm5Bits7To11Interface {
 class Imm4Bits16To19Interface {
  public:
   inline Imm4Bits16To19Interface() {}
-  inline uint32_t value(const Instruction& i) const {
+  static inline uint32_t value(const Instruction& i) {
     return i.bits(19, 16);
   }
 
@@ -228,11 +228,11 @@ class UpdatesFlagsRegisterBit20Interface {
  public:
   inline UpdatesFlagsRegisterBit20Interface() {}
   // Returns true if bit is set that states that the flags register is updated.
-  inline bool is_updated(const Instruction i) const {
+  static inline bool is_updated(const Instruction i) {
     return i.bit(20);
   }
   // Returns the flags register if it is used.
-  inline Register reg_if_updated(const Instruction i) const {
+  static inline Register reg_if_updated(const Instruction i) {
     return is_updated(i) ? kRegisterFlags : kRegisterNone;
   }
 
@@ -395,23 +395,6 @@ class ClassDecoder {
     UNREFERENCED_PARAMETER(r);
     UNREFERENCED_PARAMETER(mask);
     return false;
-  }
-
-  // Many instructions define control bits in bits 20-24. The useful bits
-  // are defined here.
-
-  // True if U (updates flags register) flag is defined.
-  inline bool UpdatesFlagsRegister(const Instruction& i) const {
-    return i.bit(20);
-  }
-
-  // True if W (does write) flag is defined.
-  inline bool WritesFlag(const Instruction& i) const {
-    return i.bit(21);
-  }
-  // True if P (pre-indexing) flag is defined.
-  inline bool PreindexingFlag(const Instruction& i) const {
-    return i.bit(24);
   }
 
  protected:
