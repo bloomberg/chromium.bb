@@ -83,12 +83,26 @@ void PanelBrowserTitlebarGtk::UpdateMinimizeRestoreButtonVisibility() {
 }
 
 void PanelBrowserTitlebarGtk::HandleButtonClick(GtkWidget* button) {
-  if (close_button() && close_button()->widget() == button)
+  if (close_button() && close_button()->widget() == button) {
     browser_window_->panel()->Close();
-  else if (minimize_button() && minimize_button()->widget() == button)
-    browser_window_->panel()->Minimize();
-  else if (unminimize_button_.get() && unminimize_button_->widget() == button)
-    browser_window_->panel()->Restore();
+    return;
+  }
+
+  GdkEvent* event = gtk_get_current_event();
+  DCHECK(event && event->type == GDK_BUTTON_RELEASE);
+
+  if (minimize_button() && minimize_button()->widget() == button) {
+    browser_window_->panel()->OnMinimizeButtonClicked(
+        (event->button.state & GDK_CONTROL_MASK) ?
+            panel::APPLY_TO_ALL : panel::NO_MODIFIER);
+  } else if (unminimize_button_.get() &&
+             unminimize_button_->widget() == button) {
+    browser_window_->panel()->OnRestoreButtonClicked(
+        (event->button.state & GDK_CONTROL_MASK) ?
+            panel::APPLY_TO_ALL : panel::NO_MODIFIER);
+  }
+
+  gdk_event_free(event);
 }
 
 void PanelBrowserTitlebarGtk::ShowFaviconMenu(GdkEventButton* event) {
