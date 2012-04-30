@@ -203,6 +203,8 @@
     'common/hi_res_timer_manager.h',
     'common/indexed_db/indexed_db_key.cc',
     'common/indexed_db/indexed_db_key.h',
+    'common/indexed_db/indexed_db_key_path.cc',
+    'common/indexed_db/indexed_db_key_path.h',
     'common/indexed_db/indexed_db_key_range.cc',
     'common/indexed_db/indexed_db_key_range.h',
     'common/indexed_db/indexed_db_messages.h',

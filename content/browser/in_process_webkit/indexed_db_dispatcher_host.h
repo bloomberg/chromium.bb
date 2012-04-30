@@ -17,7 +17,6 @@ class GURL;
 class IndexedDBContextImpl;
 class IndexedDBKey;
 class IndexedDBKeyRange;
-class NullableString16;
 struct IndexedDBHostMsg_DatabaseCreateObjectStore_Params;
 struct IndexedDBHostMsg_FactoryDeleteDatabase_Params;
 struct IndexedDBHostMsg_FactoryGetDatabaseNames_Params;
@@ -39,6 +38,7 @@ class WebIDBTransaction;
 }
 
 namespace content {
+class IndexedDBKeyPath;
 class SerializedScriptValue;
 }
 
@@ -156,7 +156,7 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
 
     void OnName(int32 idb_index_id, string16* name);
     void OnStoreName(int32 idb_index_id, string16* store_name);
-    void OnKeyPath(int32 idb_index_id, NullableString16* key_path);
+    void OnKeyPath(int32 idb_index_id, content::IndexedDBKeyPath* key_path);
     void OnUnique(int32 idb_index_id, bool* unique);
     void OnMultiEntry(int32 idb_index_id, bool* multi_entry);
     void OnOpenObjectCursor(
@@ -193,7 +193,8 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     void Send(IPC::Message* message);
 
     void OnName(int32 idb_object_store_id, string16* name);
-    void OnKeyPath(int32 idb_object_store_id, NullableString16* keyPath);
+    void OnKeyPath(int32 idb_object_store_id,
+                   content::IndexedDBKeyPath* keyPath);
     void OnIndexNames(int32 idb_object_store_id,
                       std::vector<string16>* index_names);
     void OnGet(int idb_object_store_id,

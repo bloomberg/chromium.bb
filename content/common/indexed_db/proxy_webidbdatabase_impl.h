@@ -27,7 +27,7 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
   virtual WebKit::WebDOMStringList objectStoreNames() const;
   virtual WebKit::WebIDBObjectStore* createObjectStore(
       const WebKit::WebString& name,
-      const WebKit::WebString& key_path,
+      const WebKit::WebIDBKeyPath& key_path,
       bool auto_increment,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode& ec);

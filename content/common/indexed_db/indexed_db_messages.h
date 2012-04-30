@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "content/common/indexed_db/indexed_db_key.h"
+#include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "content/common/indexed_db/indexed_db_param_traits.h"
 #include "content/public/common/serialized_script_value.h"
@@ -57,7 +58,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateObjectStore_Params)
   // The name of the object store.
   IPC_STRUCT_MEMBER(string16, name)
   // The keyPath of the object store.
-  IPC_STRUCT_MEMBER(NullableString16, key_path)
+  IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, key_path)
   // Whether the object store created should have a key generator.
   IPC_STRUCT_MEMBER(bool, auto_increment)
   // The transaction this is associated with.
@@ -116,7 +117,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_ObjectStoreCreateIndex_Params)
   // The name of the index.
   IPC_STRUCT_MEMBER(string16, name)
   // The keyPath of the index.
-  IPC_STRUCT_MEMBER(NullableString16, key_path)
+  IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, key_path)
   // Whether the index created has unique keys.
   IPC_STRUCT_MEMBER(bool, unique)
   // Whether the index created produces keys for each array entry.
@@ -384,7 +385,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_IndexStoreName,
 // WebIDBIndex::keyPath() message.
 IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_IndexKeyPath,
                             int32, /* idb_index_id */
-                            NullableString16 /* key_path */)
+                            content::IndexedDBKeyPath /* key_path */)
 
 // WebIDBIndex::unique() message.
 IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_IndexUnique,
@@ -441,7 +442,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_ObjectStoreName,
 // WebIDBObjectStore::keyPath() message.
 IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_ObjectStoreKeyPath,
                             int32, /* idb_object_store_id */
-                            NullableString16 /* keyPath */)
+                            content::IndexedDBKeyPath /* keyPath */)
 
 // WebIDBObjectStore::indexNames() message.
 IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_ObjectStoreIndexNames,

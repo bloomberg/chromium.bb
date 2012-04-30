@@ -24,6 +24,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBIndex.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyRange.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBObjectStore.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
@@ -44,6 +45,7 @@ using WebKit::WebIDBDatabase;
 using WebKit::WebIDBDatabaseError;
 using WebKit::WebIDBIndex;
 using WebKit::WebIDBKey;
+using WebKit::WebIDBKeyPath;
 using WebKit::WebIDBKeyRange;
 using WebKit::WebIDBObjectStore;
 using WebKit::WebIDBTransaction;
@@ -530,9 +532,12 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnStoreName(
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnKeyPath(
-    int32 object_id, NullableString16* key_path) {
-  parent_->SyncGetter<NullableString16>(
-      &map_, object_id, key_path, &WebIDBIndex::keyPathString);
+    int32 object_id, content::IndexedDBKeyPath* key_path) {
+  WebIDBIndex* idb_index = parent_->GetOrTerminateProcess(&map_, object_id);
+  if (!idb_index)
+    return;
+
+  *key_path = content::IndexedDBKeyPath(idb_index->keyPath());
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnUnique(
@@ -704,9 +709,13 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnName(
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnKeyPath(
-    int32 object_id, NullableString16* keyPath) {
-  parent_->SyncGetter<NullableString16>(
-      &map_, object_id, keyPath, &WebIDBObjectStore::keyPathString);
+    int32 object_id, content::IndexedDBKeyPath* key_path) {
+  WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
+      &map_,object_id);
+  if (!idb_object_store)
+    return;
+
+  *key_path = content::IndexedDBKeyPath(idb_object_store->keyPath());
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnIndexNames(

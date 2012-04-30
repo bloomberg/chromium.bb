@@ -25,7 +25,7 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
 
   // WebKit::WebIDBObjectStore
   virtual WebKit::WebString name() const;
-  virtual WebKit::WebString keyPathString() const;
+  virtual WebKit::WebIDBKeyPath keyPath() const;
   virtual WebKit::WebDOMStringList indexNames() const;
 
   virtual void get(const WebKit::WebIDBKeyRange& key_range,
@@ -52,7 +52,7 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
 
   virtual WebKit::WebIDBIndex* createIndex(
       const WebKit::WebString& name,
-      const WebKit::WebString& key_path,
+      const WebKit::WebIDBKeyPath& key_path,
       bool unique,
       bool multi_entry,
       const WebKit::WebIDBTransaction& transaction,

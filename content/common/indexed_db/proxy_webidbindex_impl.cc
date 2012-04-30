@@ -8,11 +8,13 @@
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/common/indexed_db/proxy_webidbtransaction_impl.h"
 #include "content/common/child_thread.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
 using WebKit::WebExceptionCode;
 using WebKit::WebDOMStringList;
+using WebKit::WebIDBKeyPath;
 using WebKit::WebString;
 using WebKit::WebVector;
 
@@ -43,8 +45,8 @@ WebString RendererWebIDBIndexImpl::storeName() const {
   return result;
 }
 
-WebString RendererWebIDBIndexImpl::keyPathString() const {
-  NullableString16 result;
+WebIDBKeyPath RendererWebIDBIndexImpl::keyPath() const {
+  content::IndexedDBKeyPath result;
   IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_IndexKeyPath(idb_index_id_, &result));
   return result;

@@ -5,6 +5,7 @@
 #include "content/common/indexed_db/indexed_db_param_traits.h"
 
 #include "content/common/indexed_db/indexed_db_key.h"
+#include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "content/public/common/serialized_script_value.h"
 #include "ipc/ipc_message_utils.h"
@@ -139,6 +140,70 @@ void ParamTraits<IndexedDBKey>::Log(const param_type& p, std::string* l) {
   l->append(", ");
   LogParam(p.number(), l);
   l->append(")");
+}
+
+void ParamTraits<content::IndexedDBKeyPath>::Write(Message* m,
+                                                   const param_type& p) {
+  WriteParam(m, int(p.type()));
+  switch (p.type()) {
+    case WebKit::WebIDBKeyPath::ArrayType:
+      WriteParam(m, p.array());
+      return;
+    case WebKit::WebIDBKeyPath::StringType:
+      WriteParam(m, p.string());
+      return;
+    case WebKit::WebIDBKeyPath::NullType:
+      return;
+  }
+  NOTREACHED();
+}
+
+bool ParamTraits<content::IndexedDBKeyPath>::Read(const Message* m,
+                                                  PickleIterator* iter,
+                                                  param_type* r) {
+  int type;
+  if (!ReadParam(m, iter, &type))
+    return false;
+
+  switch (type) {
+    case WebKit::WebIDBKeyPath::ArrayType: {
+      std::vector<string16> array;
+      if (!ReadParam(m, iter, &array))
+        return false;
+      r->SetArray(array);
+      return true;
+    }
+    case WebKit::WebIDBKeyPath::StringType: {
+      string16 string;
+      if (!ReadParam(m, iter, &string))
+        return false;
+      r->SetString(string);
+      return true;
+    }
+    case WebKit::WebIDBKeyPath::NullType:
+      r->SetNull();
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+void ParamTraits<content::IndexedDBKeyPath>::Log(const param_type& p,
+                                                 std::string* l) {
+  l->append("<IndexedDBKeyPath>(");
+  LogParam(int(p.type()), l);
+  l->append(", ");
+  LogParam(p.string(), l);
+  l->append(", ");
+  l->append("[");
+  std::vector<string16>::const_iterator it = p.array().begin();
+  while (it != p.array().end()) {
+    LogParam(*it, l);
+    ++it;
+    if (it != p.array().end())
+      l->append(", ");
+  }
+  l->append("])");
 }
 
 void ParamTraits<IndexedDBKeyRange>::Write(Message* m, const param_type& p) {

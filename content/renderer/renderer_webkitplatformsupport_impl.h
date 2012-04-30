@@ -70,12 +70,12 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual WebKit::WebIDBFactory* idbFactory() OVERRIDE;
   virtual void createIDBKeysFromSerializedValuesAndKeyPath(
       const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
-      const WebKit::WebString& keyPath,
+      const WebKit::WebIDBKeyPath& keyPath,
       WebKit::WebVector<WebKit::WebIDBKey>& keys) OVERRIDE;
   virtual WebKit::WebSerializedScriptValue injectIDBKeyIntoSerializedValue(
       const WebKit::WebIDBKey& key,
       const WebKit::WebSerializedScriptValue& value,
-      const WebKit::WebString& keyPath) OVERRIDE;
+      const WebKit::WebIDBKeyPath& keyPath) OVERRIDE;
   virtual WebKit::WebFileSystem* fileSystem() OVERRIDE;
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository() OVERRIDE;
   virtual bool canAccelerate2dCanvas();

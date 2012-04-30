@@ -9,6 +9,7 @@
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
 #include "content/common/indexed_db/proxy_webidbobjectstore_impl.h"
 #include "content/common/indexed_db/proxy_webidbtransaction_impl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "webkit/glue/worker_task_runner.h"
@@ -18,6 +19,7 @@ using WebKit::WebExceptionCode;
 using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabaseCallbacks;
+using WebKit::WebIDBKeyPath;
 using WebKit::WebIDBTransaction;
 using WebKit::WebString;
 using WebKit::WebVector;
@@ -64,13 +66,13 @@ WebDOMStringList RendererWebIDBDatabaseImpl::objectStoreNames() const {
 
 WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
     const WebKit::WebString& name,
-    const WebKit::WebString& key_path,
+    const WebKit::WebIDBKeyPath& key_path,
     bool auto_increment,
     const WebKit::WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBHostMsg_DatabaseCreateObjectStore_Params params;
   params.name = name;
-  params.key_path = key_path;
+  params.key_path = content::IndexedDBKeyPath(key_path);
   params.auto_increment = auto_increment;
   params.transaction_id = IndexedDBDispatcher::TransactionId(transaction);
   params.idb_database_id = idb_database_id_;

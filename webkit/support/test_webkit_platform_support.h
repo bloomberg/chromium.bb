@@ -74,12 +74,12 @@ class TestWebKitPlatformSupport :
   virtual WebKit::WebIDBFactory* idbFactory() OVERRIDE;
   virtual void createIDBKeysFromSerializedValuesAndKeyPath(
       const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
-      const WebKit::WebString& keyPath,
+      const WebKit::WebIDBKeyPath& keyPath,
       WebKit::WebVector<WebKit::WebIDBKey>& keys_out) OVERRIDE;
   virtual WebKit::WebSerializedScriptValue injectIDBKeyIntoSerializedValue(
       const WebKit::WebIDBKey& key,
       const WebKit::WebSerializedScriptValue& value,
-      const WebKit::WebString& keyPath) OVERRIDE;
+      const WebKit::WebIDBKeyPath& keyPath) OVERRIDE;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   void SetThemeEngine(WebKit::WebThemeEngine* engine);

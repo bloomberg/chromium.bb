@@ -9,6 +9,7 @@
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
 #include "content/common/indexed_db/indexed_db_key.h"
+#include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/public/common/serialized_script_value.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
@@ -130,7 +131,7 @@ int BrowserWebKitPlatformSupportImpl::databaseDeleteFile(
 void
 BrowserWebKitPlatformSupportImpl::createIDBKeysFromSerializedValuesAndKeyPath(
     const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
-    const WebKit::WebString& keyPath,
+    const WebKit::WebIDBKeyPath& keyPath,
     WebKit::WebVector<WebKit::WebIDBKey>& keys) {
 
   std::vector<content::SerializedScriptValue> std_values;
@@ -141,8 +142,8 @@ BrowserWebKitPlatformSupportImpl::createIDBKeysFromSerializedValuesAndKeyPath(
 
   std::vector<IndexedDBKey> std_keys;
   IndexedDBKeyUtilityClient::
-      CreateIDBKeysFromSerializedValuesAndKeyPath(std_values, keyPath,
-                                                  &std_keys);
+      CreateIDBKeysFromSerializedValuesAndKeyPath(
+          std_values, content::IndexedDBKeyPath(keyPath), &std_keys);
 
   keys = std_keys;
 }
@@ -150,9 +151,10 @@ BrowserWebKitPlatformSupportImpl::createIDBKeysFromSerializedValuesAndKeyPath(
 WebKit::WebSerializedScriptValue
 BrowserWebKitPlatformSupportImpl::injectIDBKeyIntoSerializedValue(
     const WebKit::WebIDBKey& key, const WebKit::WebSerializedScriptValue& value,
-    const WebKit::WebString& keyPath) {
+    const WebKit::WebIDBKeyPath& keyPath) {
   return IndexedDBKeyUtilityClient::InjectIDBKeyIntoSerializedValue(
-      IndexedDBKey(key), content::SerializedScriptValue(value), keyPath);
+      IndexedDBKey(key), content::SerializedScriptValue(value),
+      content::IndexedDBKeyPath(keyPath));
 }
 
 GpuChannelHostFactory*

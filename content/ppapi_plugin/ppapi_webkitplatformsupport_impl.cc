@@ -241,7 +241,7 @@ int PpapiWebKitPlatformSupportImpl::databaseDeleteFile(
 
 void PpapiWebKitPlatformSupportImpl::createIDBKeysFromSerializedValuesAndKeyPath(
     const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
-    const WebKit::WebString& keyPath,
+    const WebKit::WebIDBKeyPath& keyPath,
     WebKit::WebVector<WebKit::WebIDBKey>& keys) {
   NOTREACHED();
 }
@@ -250,7 +250,7 @@ WebKit::WebSerializedScriptValue
 PpapiWebKitPlatformSupportImpl::injectIDBKeyIntoSerializedValue(
     const WebKit::WebIDBKey& key,
     const WebKit::WebSerializedScriptValue& value,
-    const WebKit::WebString& keyPath) {
+    const WebKit::WebIDBKeyPath& keyPath) {
   NOTREACHED();
   return WebKit::WebSerializedScriptValue();
 }

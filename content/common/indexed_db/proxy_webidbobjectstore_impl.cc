@@ -12,6 +12,7 @@
 #include "content/common/child_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMStringList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyRange.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
@@ -21,6 +22,7 @@ using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
 using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
+using WebKit::WebIDBKeyPath;
 using WebKit::WebIDBKeyRange;
 using WebKit::WebIDBIndex;
 using WebKit::WebIDBKey;
@@ -49,8 +51,8 @@ WebString RendererWebIDBObjectStoreImpl::name() const {
   return result;
 }
 
-WebString RendererWebIDBObjectStoreImpl::keyPathString() const {
-  NullableString16 result;
+WebIDBKeyPath RendererWebIDBObjectStoreImpl::keyPath() const {
+  content::IndexedDBKeyPath result;
   IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_ObjectStoreKeyPath(idb_object_store_id_, &result));
   return result;
@@ -130,14 +132,14 @@ void RendererWebIDBObjectStoreImpl::clear(
 
 WebIDBIndex* RendererWebIDBObjectStoreImpl::createIndex(
     const WebString& name,
-    const WebString& key_path,
+    const WebIDBKeyPath& key_path,
     bool unique,
     bool multi_entry,
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBHostMsg_ObjectStoreCreateIndex_Params params;
   params.name = name;
-  params.key_path = key_path;
+  params.key_path = content::IndexedDBKeyPath(key_path);
   params.unique = unique;
   params.multi_entry = multi_entry;
   params.transaction_id = IndexedDBDispatcher::TransactionId(transaction);

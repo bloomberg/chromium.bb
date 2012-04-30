@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,12 +50,12 @@ class PpapiWebKitPlatformSupportImpl :
                                  bool sync_dir);
   virtual void createIDBKeysFromSerializedValuesAndKeyPath(
       const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
-      const WebKit::WebString& keyPath,
+      const WebKit::WebIDBKeyPath& keyPath,
       WebKit::WebVector<WebKit::WebIDBKey>& keys);
   virtual WebKit::WebSerializedScriptValue injectIDBKeyIntoSerializedValue(
       const WebKit::WebIDBKey& key,
       const WebKit::WebSerializedScriptValue& value,
-      const WebKit::WebString& keyPath);
+      const WebKit::WebIDBKeyPath& keyPath);
 
  private:
   class SandboxSupport;

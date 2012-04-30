@@ -328,13 +328,13 @@ WebIDBFactory* RendererWebKitPlatformSupportImpl::idbFactory() {
 
 void RendererWebKitPlatformSupportImpl::createIDBKeysFromSerializedValuesAndKeyPath(
     const WebVector<WebSerializedScriptValue>& values,
-    const WebString& keyPath,
+    const WebIDBKeyPath& keyPath,
     WebVector<WebIDBKey>& keys_out) {
   DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
   WebVector<WebIDBKey> keys(values.size());
   for (size_t i = 0; i < values.size(); ++i) {
     keys[i] = WebIDBKey::createFromValueAndKeyPath(
-        values[i], WebIDBKeyPath::create(keyPath));
+        values[i], keyPath);
   }
   keys_out.swap(keys);
 }
@@ -343,10 +343,10 @@ WebSerializedScriptValue
 RendererWebKitPlatformSupportImpl::injectIDBKeyIntoSerializedValue(
     const WebIDBKey& key,
     const WebSerializedScriptValue& value,
-    const WebString& keyPath) {
+    const WebIDBKeyPath& keyPath) {
   DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
   return WebIDBKey::injectIDBKeyIntoSerializedValue(
-      key, value, WebIDBKeyPath::create(keyPath));
+      key, value, keyPath);
 }
 
 //------------------------------------------------------------------------------

@@ -12,6 +12,7 @@
 #include "content/common/child_process.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/indexed_db/indexed_db_key.h"
+#include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/utility_messages.h"
 #include "content/common/webkitplatformsupport_impl.h"
 #include "content/public/utility/content_utility_client.h"
@@ -94,16 +95,12 @@ bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 void UtilityThreadImpl::OnIDBKeysFromValuesAndKeyPath(
     int id,
     const std::vector<content::SerializedScriptValue>& serialized_script_values,
-    const string16& idb_key_path) {
+    const content::IndexedDBKeyPath& idb_key_path) {
   std::vector<WebKit::WebSerializedScriptValue> web_values;
   ConvertVector(serialized_script_values, &web_values);
   std::vector<WebKit::WebIDBKey> web_keys;
-  bool error = webkit_glue::IDBKeysFromValuesAndKeyPath(
+  webkit_glue::IDBKeysFromValuesAndKeyPath(
       web_values, idb_key_path, &web_keys);
-  if (error) {
-    Send(new UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Failed(id));
-    return;
-  }
   std::vector<IndexedDBKey> keys;
   ConvertVector(web_keys, &keys);
   Send(new UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Succeeded(id, keys));
@@ -113,7 +110,7 @@ void UtilityThreadImpl::OnIDBKeysFromValuesAndKeyPath(
 void UtilityThreadImpl::OnInjectIDBKey(
     const IndexedDBKey& key,
     const content::SerializedScriptValue& value,
-    const string16& key_path) {
+    const content::IndexedDBKeyPath& key_path) {
   content::SerializedScriptValue new_value(
       webkit_glue::InjectIDBKey(key, value, key_path));
   Send(new UtilityHostMsg_InjectIDBKey_Finished(new_value));
