@@ -18,7 +18,10 @@
 
 class BrowserMainTest : public testing::Test {
  public:
-  BrowserMainTest() : command_line_(CommandLine::NO_PROGRAM) {}
+  BrowserMainTest()
+      : command_line_(CommandLine::NO_PROGRAM) {
+    ChromeBrowserMainParts::disable_enforcing_cookie_policies_for_tests_ = true;
+  }
 
  protected:
   TestingPrefService pref_service_;

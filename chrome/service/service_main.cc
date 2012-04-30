@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "chrome/common/service_process_util.h"
 #include "chrome/service/service_process.h"
 #include "content/public/common/main_function_params.h"
+#include "net/url_request/url_request.h"
 
 #if defined(OS_WIN)
 #include "content/common/sandbox_policy.h"
@@ -18,6 +19,10 @@
 
 // Mainline routine for running as the service process.
 int ServiceProcessMain(const content::MainFunctionParams& parameters) {
+  // Chrome disallows cookies by default. All code paths that want to use
+  // cookies should go through the browser process.
+  net::URLRequest::SetDefaultCookiePolicyToBlock();
+
 #if defined(OS_MACOSX)
   chrome_service_application_mac::RegisterServiceApp();
 #endif
