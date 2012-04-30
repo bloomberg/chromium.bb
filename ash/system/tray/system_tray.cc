@@ -413,7 +413,7 @@ void SystemTrayBubbleView::Init() {
   set_background(new SystemTrayBubbleBackground(this));
 }
 
-gfx::Rect SystemTrayBubbleView::GetAnchorRect() OVERRIDE {
+gfx::Rect SystemTrayBubbleView::GetAnchorRect() {
   if (host_) {
     views::Widget* widget = host_->GetTrayWidget();
     if (widget->IsVisible()) {
