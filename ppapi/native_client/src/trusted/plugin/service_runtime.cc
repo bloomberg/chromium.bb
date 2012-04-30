@@ -45,6 +45,7 @@
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/pnacl_coordinator.h"
+#include "native_client/src/trusted/plugin/sel_ldr_launcher_chrome.h"
 #include "native_client/src/trusted/plugin/srpc_client.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
@@ -627,8 +628,12 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
   PLUGIN_PRINTF(("ServiceRuntime::Start (nacl_desc=%p)\n",
                  reinterpret_cast<void*>(nacl_desc)));
 
-  nacl::scoped_ptr<nacl::SelLdrLauncher>
-      tmp_subprocess(new nacl::SelLdrLauncher());
+  nacl::scoped_ptr<nacl::SelLdrLauncherBase> tmp_subprocess;
+#ifdef NACL_STANDALONE
+  tmp_subprocess.reset(new nacl::SelLdrLauncherStandalone());
+#else
+  tmp_subprocess.reset(new SelLdrLauncherChrome());
+#endif
   if (NULL == tmp_subprocess.get()) {
     PLUGIN_PRINTF(("ServiceRuntime::Start (subprocess create failed)\n"));
     error_info->SetReport(ERROR_SEL_LDR_CREATE_LAUNCHER,

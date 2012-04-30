@@ -15,6 +15,7 @@
       'pnacl_coordinator.cc',
       'pnacl_resources.cc',
       'scriptable_plugin.cc',
+      'sel_ldr_launcher_chrome.cc',
       'service_runtime.cc',
       'srpc_client.cc',
       'srpc_params.cc',

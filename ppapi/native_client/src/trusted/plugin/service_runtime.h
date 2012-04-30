@@ -247,7 +247,7 @@ class ServiceRuntime {
   Plugin* plugin_;
   bool should_report_uma_;
   nacl::ReverseService* reverse_service_;
-  nacl::scoped_ptr<nacl::SelLdrLauncher> subprocess_;
+  nacl::scoped_ptr<nacl::SelLdrLauncherBase> subprocess_;
 
   nacl::WeakRefAnchor* anchor_;
 
