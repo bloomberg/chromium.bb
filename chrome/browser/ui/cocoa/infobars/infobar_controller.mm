@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -294,7 +294,7 @@ const float kAnimateCloseDuration = 0.12;
 
   LinkInfoBarDelegate* delegate = delegate_->AsLinkInfoBarDelegate();
   DCHECK(delegate);
-  size_t offset = std::wstring::npos;
+  size_t offset = string16::npos;
   string16 message = delegate->GetMessageTextWithOffset(&offset);
   string16 link = delegate->GetLinkText();
   NSFont* font = [NSFont labelFontOfSize:
