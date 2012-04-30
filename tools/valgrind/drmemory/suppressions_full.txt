@@ -38,6 +38,30 @@ name=intentional WTF ThreadData leak
 ...
 *!WTF::wtfThreadData
 
+# Happens when winhttp returns ERROR_WINHTTP_UNABLE_TO_DOWNLOAD_SCRIPT.
+LEAK
+name=http://crbug.com/125558 a
+KERNELBASE.dll!LocalAlloc
+SECHOST.dll!...
+SECHOST.dll!NotifyServiceStatusChange
+WINHTTP.dll!...
+WINHTTP.dll!WinHttpDetectAutoProxyConfigUrl
+*!net::ProxyResolverWinHttp::GetProxyForURL
+
+# Tiny locale-related leaks in ntdll.  Probably system bug.
+LEAK
+name=http://crbug.com/125558 b
+ntdll.dll!...
+ntdll.dll!*
+KERNELBASE.dll!...
+KERNELBASE.dll!GetCPInfoExW
+webio.dll!*
+webio.dll!*
+webio.dll!*
+WINHTTP.dll!...
+WINHTTP.dll!WinHttpGetIEProxyConfigForCurrentUser
+*!net::ProxyConfigServiceWin::GetCurrentProxyConfig
+
 ###############################################################
 # Suppress some false reports due to bugs in Dr.Memory like wrong analysis
 # assumptions or unhandled syscalls
