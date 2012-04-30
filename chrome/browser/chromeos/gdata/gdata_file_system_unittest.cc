@@ -271,8 +271,28 @@ class GDataFileSystemTest : public testing::Test {
   GDataEntry* FindEntryByResourceId(const std::string& resource_id) {
     ReadOnlyFindEntryDelegate search_delegate;
     file_system_->FindEntryByResourceIdSync(resource_id,
-                                           &search_delegate);
+                                            &search_delegate);
     return search_delegate.entry();
+  }
+
+  // Gets the file info for |file_path| and compares the contents against
+  // |entry|. Returns true if the file info matches |entry|.
+  bool GetFileInfoAndCompare(const FilePath& file_path,
+                             GDataEntry* entry) {
+    file_system_->GetFileInfoByPathAsync(
+        file_path,
+        base::Bind(&CallbackHelper::GetFileInfoCallback,
+                   callback_helper_.get()));
+    message_loop_.RunAllPending();
+
+    if (entry == NULL) {
+      // File info is expected not to be found.
+      return callback_helper_->file_info_ == NULL;
+    }
+
+    scoped_ptr<GDataFileProto> file_info =
+        callback_helper_->file_info_.Pass();
+    return (entry->resource_id() == file_info->gdata_entry().resource_id());
   }
 
   FilePath GetCacheFilePath(
@@ -950,7 +970,8 @@ class GDataFileSystemTest : public testing::Test {
     CallbackHelper()
         : last_error_(base::PLATFORM_FILE_OK),
           quota_bytes_total_(0),
-          quota_bytes_used_(0) {}
+          quota_bytes_used_(0),
+          file_info_(NULL) {}
     virtual ~CallbackHelper() {}
     virtual void GetFileCallback(base::PlatformFileError error,
                                  const FilePath& file_path,
@@ -973,6 +994,12 @@ class GDataFileSystemTest : public testing::Test {
       quota_bytes_total_ = bytes_total;
       quota_bytes_used_ = bytes_used;
     }
+    virtual void GetFileInfoCallback(
+        base::PlatformFileError error,
+        scoped_ptr<GDataFileProto> file_info) {
+      last_error_ = error;
+      file_info_ = file_info.Pass();
+    }
 
     base::PlatformFileError last_error_;
     FilePath download_path_;
@@ -980,6 +1007,7 @@ class GDataFileSystemTest : public testing::Test {
     GDataFileType file_type_;
     int64 quota_bytes_total_;
     int64 quota_bytes_used_;
+    scoped_ptr<GDataFileProto> file_info_;
   };
 
   MessageLoopForUI message_loop_;
@@ -1042,77 +1070,139 @@ TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
 }
 
 TEST_F(GDataFileSystemTest, SearchRootDirectory) {
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL("gdata"))));
+  const FilePath kFilePath = FilePath(FILE_PATH_LITERAL("gdata"));
+  GDataEntry* entry = FindEntry(FilePath(FILE_PATH_LITERAL(kFilePath)));
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(kFilePath, entry->GetFilePath());
 }
 
 TEST_F(GDataFileSystemTest, SearchExistingFile) {
   LoadRootFeedDocument("root_feed.json");
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL("gdata/File 1.txt"))));
+
+  const FilePath kFilePath = FilePath(
+      FILE_PATH_LITERAL("gdata/File 1.txt"));
+  GDataEntry* entry = FindEntry(kFilePath);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(kFilePath, entry->GetFilePath());
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath, entry));
 }
 
 TEST_F(GDataFileSystemTest, SearchExistingDocument) {
   LoadRootFeedDocument("root_feed.json");
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL("gdata/Document 1.gdoc"))));
+
+  const FilePath kFilePath = FilePath(
+      FILE_PATH_LITERAL("gdata/Document 1.gdoc"));
+  GDataEntry* entry = FindEntry(kFilePath);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(kFilePath, entry->GetFilePath());
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath, entry));
 }
 
 TEST_F(GDataFileSystemTest, SearchNonExistingFile) {
   LoadRootFeedDocument("root_feed.json");
-  EXPECT_FALSE(
-      FindEntry(FilePath(FILE_PATH_LITERAL("gdata/nonexisting.file"))));
+
+  const FilePath kFilePath = FilePath(
+      FILE_PATH_LITERAL("gdata/nonexisting.file"));
+  GDataEntry* entry = FindEntry(kFilePath);
+  ASSERT_FALSE(entry);
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath, NULL));
 }
 
 TEST_F(GDataFileSystemTest, SearchEncodedFileNames) {
   LoadRootFeedDocument("root_feed.json");
 
-  EXPECT_FALSE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Slash / in file 1.txt"))));
+  const FilePath kFilePath1 = FilePath(
+      FILE_PATH_LITERAL("gdata/Slash / in file 1.txt"));
+  GDataEntry* entry = FindEntry(kFilePath1);
+  ASSERT_FALSE(entry);
 
-  EXPECT_TRUE(FindEntry(FilePath::FromUTF8Unsafe(
-      "gdata/Slash \xE2\x88\x95 in file 1.txt")));
+  const FilePath kFilePath2 = FilePath::FromUTF8Unsafe(
+      "gdata/Slash \xE2\x88\x95 in file 1.txt");
+  entry = FindEntry(kFilePath2);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(kFilePath2, entry->GetFilePath());
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath2, entry));
 
-  EXPECT_TRUE(FindEntry(FilePath::FromUTF8Unsafe(
-      "gdata/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt")));
+  const FilePath kFilePath3 = FilePath::FromUTF8Unsafe(
+      "gdata/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt");
+  entry = FindEntry(kFilePath3);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(kFilePath3, entry->GetFilePath());
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath3, entry));
 }
 
 TEST_F(GDataFileSystemTest, SearchEncodedFileNamesLoadingRoot) {
   LoadRootFeedDocument("root_feed.json");
 
-  EXPECT_FALSE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Slash / in file 1.txt"))));
+  const FilePath kFilePath1 = FilePath(
+      FILE_PATH_LITERAL("gdata/Slash / in file 1.txt"));
+  GDataEntry* entry = FindEntry(kFilePath1);
+  ASSERT_FALSE(entry);
 
-  EXPECT_TRUE(FindEntry(FilePath::FromUTF8Unsafe(
-      "gdata/Slash \xE2\x88\x95 in file 1.txt")));
+  const FilePath kFilePath2 = FilePath::FromUTF8Unsafe(
+      "gdata/Slash \xE2\x88\x95 in file 1.txt");
+  entry = FindEntry(kFilePath2);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(kFilePath2, entry->GetFilePath());
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath2, entry));
 
-  EXPECT_TRUE(FindEntry(FilePath::FromUTF8Unsafe(
-      "gdata/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt")));
+  const FilePath kFilePath3 = FilePath::FromUTF8Unsafe(
+      "gdata/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt");
+  entry = FindEntry(kFilePath3);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(kFilePath3, entry->GetFilePath());
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath3, entry));
 }
 
 TEST_F(GDataFileSystemTest, SearchDuplicateNames) {
   LoadRootFeedDocument("root_feed.json");
-  EXPECT_TRUE(FindEntry(FilePath(
-      FILE_PATH_LITERAL("gdata/Duplicate Name.txt"))));
-  EXPECT_TRUE(FindEntry(FilePath(
-      FILE_PATH_LITERAL("gdata/Duplicate Name (2).txt"))));
+
+  const FilePath kFilePath1 = FilePath(
+      FILE_PATH_LITERAL("gdata/Duplicate Name.txt"));
+  GDataEntry* entry = FindEntry(kFilePath1);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(kFilePath1, entry->GetFilePath());
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath1, entry));
+
+  const FilePath kFilePath2 = FilePath(
+      FILE_PATH_LITERAL("gdata/Duplicate Name (2).txt"));
+  entry = FindEntry(kFilePath2);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(kFilePath2, entry->GetFilePath());
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath2, entry));
 }
 
 TEST_F(GDataFileSystemTest, SearchExistingDirectory) {
   LoadRootFeedDocument("root_feed.json");
-  EXPECT_TRUE(FindEntry(FilePath(
-      FILE_PATH_LITERAL("gdata/Directory 1"))));
+
+  const FilePath kFilePath = FilePath(
+      FILE_PATH_LITERAL("gdata/Directory 1"));
+  GDataEntry* entry = FindEntry(kFilePath);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(kFilePath, entry->GetFilePath());
 }
 
 TEST_F(GDataFileSystemTest, SearchInSubdir) {
   LoadRootFeedDocument("root_feed.json");
-  EXPECT_TRUE(FindEntry(FilePath(
-      FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt"))));
+
+  const FilePath kFilePath = FilePath(
+      FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt"));
+  GDataEntry* entry = FindEntry(kFilePath);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(kFilePath, entry->GetFilePath());
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath, entry));
 }
 
 // Check the reconstruction of the directory structure from only the root feed.
 TEST_F(GDataFileSystemTest, SearchInSubSubdir) {
   LoadRootFeedDocument("root_feed.json");
-  EXPECT_TRUE(FindEntry(FilePath(
+
+  const FilePath kFilePath = FilePath(
       FILE_PATH_LITERAL("gdata/Directory 1/Sub Directory Folder/"
-                        "Sub Sub Directory Folder"))));
+                        "Sub Sub Directory Folder"));
+  GDataEntry* entry = FindEntry(kFilePath);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(kFilePath, entry->GetFilePath());
 }
 
 TEST_F(GDataFileSystemTest, FilePathTests) {

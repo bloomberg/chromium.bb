@@ -60,7 +60,10 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_METHOD3(GetCacheState, void(const std::string& resource_id,
                                    const std::string& md5,
                                    const GetCacheStateCallback& callback));
-  MOCK_METHOD2(GetFileInfoByPath, bool(const FilePath& gdata_file_path,
+  MOCK_METHOD2(GetFileInfoByPathAsync,
+               void(const FilePath& file_path,
+                    const GetFileInfoCallback& callback));
+  MOCK_METHOD2(GetFileInfoByPath, bool(const FilePath& file_path,
                                        GDataFileProperties* properties));
   MOCK_CONST_METHOD1(IsUnderGDataCacheDirectory, bool(const FilePath& path));
   MOCK_CONST_METHOD1(GetCacheDirectoryPath, FilePath(

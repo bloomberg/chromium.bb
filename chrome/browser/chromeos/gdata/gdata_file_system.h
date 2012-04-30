@@ -39,6 +39,7 @@ class WaitableEvent;
 namespace gdata {
 
 class DocumentsServiceInterface;
+class GDataFileProto;
 struct UploadFileInfo;
 
 namespace {
@@ -67,6 +68,12 @@ typedef base::Callback<void(base::PlatformFileError error,
                             const std::string& mime_type,
                             GDataFileType file_type)>
     GetFileCallback;
+
+// Used to get file info from the file system.
+// If |error| is not PLATFORM_FILE_OK, |file_info| is set to NULL.
+typedef base::Callback<void(base::PlatformFileError error,
+                            scoped_ptr<GDataFileProto> file_proto)>
+    GetFileInfoCallback;
 
 // Callback for SetMountedState.
 typedef base::Callback<void(base::PlatformFileError error,
@@ -99,6 +106,7 @@ typedef base::Callback<void(base::PlatformFileError error,
                             int cache_state)> GetCacheStateCallback;
 
 // Helper structure used for extracting key properties from GDataFile object.
+// TODO(satorux): Remove this as part of crosbug.com/30066
 struct GDataFileProperties {
   GDataFileProperties();
   ~GDataFileProperties();
@@ -307,7 +315,13 @@ class GDataFileSystemInterface {
 
   // Finds a file (not a directory) by |file_path| and returns its key
   // |properties|.  Returns true if file was found.
-  virtual bool GetFileInfoByPath(const FilePath& gdata_file_path,
+  virtual void GetFileInfoByPathAsync(const FilePath& file_path,
+                                      const GetFileInfoCallback& callback) = 0;
+
+  // Finds a file (not a directory) by |file_path| and returns its key
+  // |properties|.  Returns true if file was found.
+  // TODO(satorux): Remove this: crosbug.com/30066.
+  virtual bool GetFileInfoByPath(const FilePath& file_path,
                                  GDataFileProperties* properties) = 0;
 
   // Returns true if the given path is under gdata cache directory, i.e.
@@ -396,7 +410,10 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void GetCacheState(const std::string& resource_id,
                              const std::string& md5,
                              const GetCacheStateCallback& callback) OVERRIDE;
-  virtual bool GetFileInfoByPath(const FilePath& gdata_file_path,
+  virtual void GetFileInfoByPathAsync(
+      const FilePath& file_path,
+      const GetFileInfoCallback& callback) OVERRIDE;
+  virtual bool GetFileInfoByPath(const FilePath& file_path,
                                  GDataFileProperties* properties) OVERRIDE;
   virtual bool IsUnderGDataCacheDirectory(const FilePath& path) const OVERRIDE;
   virtual FilePath GetCacheDirectoryPath(
@@ -1194,6 +1211,12 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Initializes preference change observer.
   void InitializePreferenceObserver();
 
+  // Called when an entry is found for GetFileInfoByPath().
+  void OnEntryFound(const GetFileInfoCallback& callback,
+                    base::PlatformFileError error,
+                    const FilePath& directory_path,
+                    GDataEntry* entry);
+
   // The following functions are used to forward calls to asynchronous public
   // member functions to UI thread.
   void FindEntryByPathAsyncOnUIThread(const FilePath& search_file_path,
@@ -1219,6 +1242,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& resource_id,
       const GetFileCallback& get_file_callback,
       const GetDownloadDataCallback& get_download_data_callback);
+  void GetFileInfoByPathAsyncOnUIThread(
+      const FilePath& file_path,
+      const GetFileInfoCallback& callback);
   void GetCacheStateOnUIThread(const std::string& resource_id,
                                const std::string& md5,
                                const GetCacheStateCallback& callback);
