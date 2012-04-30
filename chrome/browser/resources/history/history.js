@@ -38,7 +38,6 @@ function findAncestorWithClass(node, className) {
 //     or just make the classes own more of the page.
 var historyModel;
 var historyView;
-var localStrings;
 var pageState;
 var deleteQueue = [];
 var selectionAnchor = -1;
@@ -124,7 +123,7 @@ Page.prototype.getResultDOM = function(searchResultFlag) {
 
   var dropDown = createElementWithClassName('button', 'drop-down');
   dropDown.value = 'Open action menu';
-  dropDown.title = localStrings.getString('actionMenuDescription');
+  dropDown.title = loadTimeData.getString('actionMenuDescription');
   dropDown.setAttribute('menu', '#action-menu');
   cr.ui.decorate(dropDown, MenuButton);
 
@@ -686,7 +685,7 @@ HistoryView.prototype.displayResults_ = function() {
     // Add a header for the search results, if there isn't already one.
     if (!this.resultDiv_.querySelector('h3')) {
       var header = document.createElement('h3');
-      header.textContent = localStrings.getStringF('searchresultsfor',
+      header.textContent = loadTimeData.getStringF('searchresultsfor',
                                                    searchText);
       this.resultDiv_.appendChild(header);
     }
@@ -716,7 +715,7 @@ HistoryView.prototype.displayResults_ = function() {
         day.appendChild(document.createTextNode(page.dateRelativeDay));
         if (i == 0 && page.continued) {
           day.appendChild(document.createTextNode(' ' +
-              localStrings.getString('cont')));
+              loadTimeData.getString('cont')));
         }
 
         // If there is an existing dayResults element, append it.
@@ -756,10 +755,10 @@ HistoryView.prototype.displayNavBar_ = function() {
 
   if (this.pageIndex_ > 0) {
     this.pageDiv_.appendChild(
-        this.createPageNav_(0, localStrings.getString('newest')));
+        this.createPageNav_(0, loadTimeData.getString('newest')));
     this.pageDiv_.appendChild(
         this.createPageNav_(this.pageIndex_ - 1,
-                            localStrings.getString('newer')));
+                            loadTimeData.getString('newer')));
   }
 
   // TODO(feldstein): this causes the navbar to not show up when your first
@@ -767,7 +766,7 @@ HistoryView.prototype.displayNavBar_ = function() {
   if (this.model_.getSize() > (this.pageIndex_ + 1) * RESULTS_PER_PAGE) {
     this.pageDiv_.appendChild(
         this.createPageNav_(this.pageIndex_ + 1,
-                            localStrings.getString('older')));
+                            loadTimeData.getString('older')));
   }
 };
 
@@ -927,7 +926,6 @@ function load() {
   var searchField = $('search-field');
   searchField.focus();
 
-  localStrings = new LocalStrings();
   historyModel = new HistoryModel();
   historyView = new HistoryView(historyModel);
   pageState = new PageState(historyModel, historyView);
@@ -950,7 +948,7 @@ function load() {
     activePage = null;
   });
 
-  var title = localStrings.getString('title');
+  var title = loadTimeData.getString('title');
   uber.invokeMethodOnParent('setTitle', {title: title});
 
   window.addEventListener('message', function(e) {
@@ -1051,7 +1049,7 @@ function removeItems() {
   if (urls.length > 0) {
     queue.push([date, urls]);
   }
-  if (checked.length > 0 && confirm(localStrings.getString('deletewarning'))) {
+  if (checked.length > 0 && confirm(loadTimeData.getString('deletewarning'))) {
     for (var i = 0; i < queue.length; i++) {
       // Reload the page when the final entry has been deleted.
       var callback = i == 0 ? reloadHistory : null;

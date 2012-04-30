@@ -470,11 +470,10 @@ void BrowsingHistoryHandler::Observe(
 HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new BrowsingHistoryHandler());
 
-  HistoryUIHTMLSource* html_source = new HistoryUIHTMLSource();
-
   // Set up the chrome://history-frame/ source.
-  Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, html_source);
+  HistoryUIHTMLSource* html_source = new HistoryUIHTMLSource();
+  html_source->set_use_json_js_format_v2();
+  ChromeURLDataManager::AddDataSource(Profile::FromWebUI(web_ui), html_source);
 }
 
 // static
