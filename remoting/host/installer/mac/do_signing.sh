@@ -15,7 +15,8 @@
 set -e -u
 
 # Binaries to sign.
-ME2ME_HOST=PrivilegedHelperTools/org.chromium.chromoting.me2me_host
+ME2ME_HOST='PrivilegedHelperTools/org.chromium.chromoting.me2me_host'
+UNINSTALLER='Applications/@@HOST_UNINSTALLER_NAME@@.app'
 
 # Iceberg creates this directory to write its output.
 PKG_DIR=build
@@ -29,13 +30,13 @@ PKGPROJ_HOST='ChromotingHost.packproj'
 PKGPROJ_HOST_SERVICE='ChromotingHostService.packproj'
 PKGPROJ_HOST_UNINSTALLER='ChromotingHostUninstaller.packproj'
 
-# Final mpkg name (for Official builds).
-PKG_FINAL='ChromeRemoteDesktopHost.mpkg'
+# Final (user-visible) mpkg name.
+PKG_FINAL='@@HOST_PKG@@.mpkg'
 
 DMG_TEMP=dmg_tmp
-DMG_NAME='Chrome Remote Desktop'
+DMG_NAME='@@DMG_NAME@@'
 DMG_DIR="${DMG_TEMP}/${DMG_NAME}"
-DMG_FILENAME='Chrome Remote Desktop.dmg'
+DMG_FILENAME='@@DMG_NAME@@.dmg'
 
 ME="$(basename "${0}")"
 readonly ME
@@ -72,9 +73,23 @@ verify_empty_dir() {
   shopt -u nullglob dotglob
 
   if [[ ${#dir_contents[@]} -ne 0 ]]; then
-    err "output directory must be empty"
+    err "Output directory must be empty"
     exit 1
   fi
+}
+
+sign() {
+  local name="${1}"
+  local keychain="${2}"
+  local id="${3}"
+
+  if [[ ! -e "${name}" ]]; then
+    err_exit "Input file doesn't exist: ${name}"
+  fi
+
+  echo Signing "${name}"
+  codesign -vv -s "${id}" --keychain "${keychain}" "${name}"
+  codesign -v "${name}"
 }
 
 sign_binaries() {
@@ -82,16 +97,8 @@ sign_binaries() {
   local keychain="${2}"
   local id="${3}"
 
-  me2me_host="${input_dir}/${ME2ME_HOST}"
-  if [[ ! -f "${me2me_host}" ]]; then
-    err_exit "Input file doesn't exist: ${me2me_host}"
-  fi
-
-  echo Signing "${me2me_host}"
-  codesign -vv -s "${id}" --keychain "${keychain}" "${me2me_host}"
-
-  # Verify signing.
-  codesign -v "${me2me_host}"
+  sign "${input_dir}/${ME2ME_HOST}" "${keychain}" "${id}"
+  sign "${input_dir}/${UNINSTALLER}" "${keychain}" "${id}"
 }
 
 build_package() {
@@ -117,6 +124,7 @@ build_dmg() {
   echo "Building .dmg..."
   mkdir -p "${input_dir}/${DMG_DIR}/${PKG_FINAL}"
   # Copy .mpkg installer.
+  echo "Copying ${input_dir}/${PKG_DIR}/${PKG_FINAL}"
   ditto "${input_dir}/${PKG_DIR}/${PKG_FINAL}" \
       "${input_dir}/${DMG_DIR}/${PKG_FINAL}"
   # Copy .keystone_install script to top level of .dmg.

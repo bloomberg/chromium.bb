@@ -1272,12 +1272,13 @@
                 'HOST_NAME=<(host_name)',
                 'HOST_SERVICE_NAME=<(host_service_name)',
                 'HOST_UNINSTALLER_NAME=<(host_uninstaller_name)',
-                'HOST_PKG=<!(echo <(host_name) | sed "s/ //g")',
+                'HOST_PKG=<(host_name)',
                 'HOST_SERVICE_PKG=<!(echo <(host_service_name) | sed "s/ //g")',
                 'HOST_UNINSTALLER_PKG=<!(echo <(host_uninstaller_name) | sed "s/ //g")',
                 'BUNDLE_ID_HOST=<(bundle_prefix).<(host_name)',
                 'BUNDLE_ID_HOST_SERVICE=<(bundle_prefix).<(host_service_name)',
                 'BUNDLE_ID_HOST_UNINSTALLER=<(bundle_prefix).<(host_uninstaller_name)',
+                'DMG_NAME=<(host_name)',
               ],
             }],  # OS=="mac"
             ['OS=="win"', {
