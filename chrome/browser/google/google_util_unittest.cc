@@ -6,6 +6,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using google_util::IsGoogleDomainUrl;
 using google_util::IsGoogleHomePageUrl;
 using google_util::IsGoogleSearchUrl;
 
@@ -240,4 +241,52 @@ TEST(GoogleUtilTest, BadSearches) {
       "http://www.google.com/SEARCH?q=something"));
   EXPECT_FALSE(IsGoogleSearchUrl(
       "http://www.google.com/WEBHP#q=something"));
+}
+
+TEST(GoogleUtilTest, GoogleDomains) {
+  // Test some good Google domains (valid TLDs).
+  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.com",
+                                google_util::ALLOW_SUBDOMAIN));
+  EXPECT_TRUE(IsGoogleDomainUrl("http://google.com",
+                                google_util::ALLOW_SUBDOMAIN));
+  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.ca",
+                                google_util::ALLOW_SUBDOMAIN));
+  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.biz.tj",
+                                google_util::ALLOW_SUBDOMAIN));
+  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.com/search?q=something",
+                                google_util::ALLOW_SUBDOMAIN));
+  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.com/webhp",
+                                google_util::ALLOW_SUBDOMAIN));
+
+  // Test some bad Google domains (invalid TLDs).
+  EXPECT_FALSE(IsGoogleDomainUrl("http://www.google.notrealtld",
+                                 google_util::ALLOW_SUBDOMAIN));
+  EXPECT_FALSE(IsGoogleDomainUrl("http://www.google.faketld/search?q=something",
+                                 google_util::ALLOW_SUBDOMAIN));
+  EXPECT_FALSE(IsGoogleDomainUrl("http://www.yahoo.com",
+                                 google_util::ALLOW_SUBDOMAIN));
+
+  // Test subdomain checks.
+  EXPECT_TRUE(IsGoogleDomainUrl("http://images.google.com",
+                                google_util::ALLOW_SUBDOMAIN));
+  EXPECT_FALSE(IsGoogleDomainUrl("http://images.google.com",
+                                 google_util::DISALLOW_SUBDOMAIN));
+  EXPECT_TRUE(IsGoogleDomainUrl("http://google.com",
+                                google_util::DISALLOW_SUBDOMAIN));
+  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.com",
+                                google_util::DISALLOW_SUBDOMAIN));
+
+  // Port and scheme checks.
+  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.com:80",
+                                google_util::DISALLOW_SUBDOMAIN));
+  EXPECT_FALSE(IsGoogleDomainUrl("http://www.google.com:123",
+                                 google_util::DISALLOW_SUBDOMAIN));
+  EXPECT_TRUE(IsGoogleDomainUrl("https://www.google.com:443",
+                                google_util::DISALLOW_SUBDOMAIN));
+  EXPECT_FALSE(IsGoogleDomainUrl("https://www.google.com:123",
+                                 google_util::DISALLOW_SUBDOMAIN));
+  EXPECT_FALSE(IsGoogleDomainUrl("file://www.google.com",
+                                 google_util::DISALLOW_SUBDOMAIN));
+  EXPECT_FALSE(IsGoogleDomainUrl("doesnotexist://www.google.com",
+                                 google_util::DISALLOW_SUBDOMAIN));
 }

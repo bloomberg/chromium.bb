@@ -160,7 +160,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   scoped_ptr<ProfileParams> params(new ProfileParams);
   params->path = profile->GetPath();
-  params->is_incognito = profile->IsOffTheRecord();
   params->clear_local_state_on_exit =
       pref_service->GetBoolean(prefs::kClearSiteDataOnExit);
 
@@ -247,8 +246,7 @@ void ProfileIOData::AppRequestContext::SetHttpTransactionFactory(
 ProfileIOData::AppRequestContext::~AppRequestContext() {}
 
 ProfileIOData::ProfileParams::ProfileParams()
-    : is_incognito(false),
-      clear_local_state_on_exit(false),
+    : clear_local_state_on_exit(false),
       io_thread(NULL),
 #if defined(ENABLE_NOTIFICATIONS)
       notification_service(NULL),
@@ -262,7 +260,8 @@ ProfileIOData::ProfileIOData(bool is_incognito)
     : initialized_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           resource_context_(new ResourceContext(this))),
-      initialized_on_UI_thread_(false) {
+      initialized_on_UI_thread_(false),
+      is_incognito_(is_incognito) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -465,7 +464,7 @@ void ProfileIOData::LazyInitialize() const {
   transport_security_persister_.reset(
       new TransportSecurityPersister(transport_security_state_.get(),
                                      profile_params_->path,
-                                     profile_params_->is_incognito));
+                                     is_incognito()));
 
   // NOTE(willchan): Keep these protocol handlers in sync with
   // ProfileIOData::IsHandledProtocol().
@@ -477,7 +476,7 @@ void ProfileIOData::LazyInitialize() const {
   }
   bool set_protocol = job_factory_->SetProtocolHandler(
       chrome::kExtensionScheme,
-      CreateExtensionProtocolHandler(profile_params_->is_incognito,
+      CreateExtensionProtocolHandler(is_incognito(),
                                      profile_params_->extension_info_map));
   DCHECK(set_protocol);
   set_protocol = job_factory_->SetProtocolHandler(
@@ -515,7 +514,7 @@ void ProfileIOData::LazyInitialize() const {
 
 void ProfileIOData::ApplyProfileParamsToContext(
     ChromeURLRequestContext* context) const {
-  context->set_is_incognito(profile_params_->is_incognito);
+  context->set_is_incognito(is_incognito());
   context->set_accept_language(profile_params_->accept_language);
   context->set_accept_charset(profile_params_->accept_charset);
   context->set_referrer_charset(profile_params_->referrer_charset);
@@ -525,6 +524,7 @@ void ProfileIOData::ApplyProfileParamsToContext(
 void ProfileIOData::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   enable_referrers_.Destroy();
+  enable_metrics_.Destroy();
   clear_local_state_on_exit_.Destroy();
   safe_browsing_enabled_.Destroy();
   session_startup_pref_.Destroy();
