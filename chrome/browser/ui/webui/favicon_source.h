@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,11 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
   // |type| is the type of icon this FaviconSource will provide.
   FaviconSource(Profile* profile, IconType type);
 
+  // Constructor allowing the source name to be specified.
+  FaviconSource(Profile* profile,
+                IconType type,
+                const std::string& source_name);
+
   // Called when the network layer has requested a resource underneath
   // the path we registered.
   virtual void StartDataRequest(const std::string& path,
@@ -41,7 +46,14 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
 
   virtual bool ShouldReplaceExistingSource() const OVERRIDE;
 
+ protected:
+  virtual ~FaviconSource();
+
+  Profile* profile_;
+
  private:
+  void Init(Profile* profile, IconType type);
+
   // Called when favicon data is available from the history backend.
   void OnFaviconDataAvailable(FaviconService::Handle request_handle,
                               history::FaviconData favicon);
@@ -49,9 +61,6 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
   // Sends the default favicon.
   void SendDefaultResponse(int request_id);
 
-  virtual ~FaviconSource();
-
-  Profile* profile_;
   CancelableRequestConsumerT<int, 0> cancelable_consumer_;
 
   // Map from request ID to size requested (in pixels). TODO(estade): Get rid of
@@ -66,7 +75,7 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
   scoped_refptr<RefCountedMemory> default_favicon_large_;
 
   // The history::IconTypes of icon that this FaviconSource handles.
-  const int icon_types_;
+  int icon_types_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconSource);
 };

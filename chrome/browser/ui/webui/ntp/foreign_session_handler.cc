@@ -18,6 +18,7 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/webui/session_favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -72,6 +73,10 @@ void ForeignSessionHandler::Init() {
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED,
                  content::Source<Profile>(profile));
+
+  // Add the data source for synced favicons.
+  ChromeURLDataManager::AddDataSource(profile,
+      new SessionFaviconSource(profile));
 }
 
 void ForeignSessionHandler::Observe(
@@ -249,10 +254,11 @@ bool ForeignSessionHandler::SessionTabToValue(
                static_cast<int>(tab.navigations.size() - 1)));
   const TabNavigation& current_navigation =
       tab.navigations.at(selected_index);
-  if (current_navigation.virtual_url() == GURL(chrome::kChromeUINewTabURL))
+  GURL tab_url = current_navigation.virtual_url();
+  if (tab_url == GURL(chrome::kChromeUINewTabURL))
     return false;
   NewTabUI::SetURLTitleAndDirection(dictionary, current_navigation.title(),
-                                    current_navigation.virtual_url());
+                                    tab_url);
   dictionary->SetString("type", "tab");
   dictionary->SetDouble("timestamp",
                         static_cast<double>(tab.timestamp.ToInternalValue()));

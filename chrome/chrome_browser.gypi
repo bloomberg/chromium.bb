@@ -3846,6 +3846,8 @@
         'browser/ui/webui/screenshot_source.h',
         'browser/ui/webui/sessions_ui.cc',
         'browser/ui/webui/sessions_ui.h',
+        'browser/ui/webui/session_favicon_source.cc',
+        'browser/ui/webui/session_favicon_source.h',
         'browser/ui/webui/shared_resources_data_source.cc',
         'browser/ui/webui/shared_resources_data_source.h',
         'browser/ui/webui/signin/login_ui_service.cc',

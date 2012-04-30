@@ -1,0 +1,36 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_WEBUI_SESSION_FAVICON_SOURCE_H_
+#define CHROME_BROWSER_UI_WEBUI_SESSION_FAVICON_SOURCE_H_
+#pragma once
+
+#include "chrome/browser/ui/webui/favicon_source.h"
+
+class Profile;
+
+namespace browser_sync {
+class SessionModelAssociator;
+}
+
+// Provides a way to fetch a favicon for a synced tab via a network request.
+class SessionFaviconSource : public FaviconSource {
+ public:
+  explicit SessionFaviconSource(Profile* profile);
+
+  // Called when the network layer has requested a resource underneath
+  // the path we registered.
+  virtual void StartDataRequest(const std::string& path,
+                                bool is_incognito,
+                                int request_id) OVERRIDE;
+
+  virtual std::string GetMimeType(const std::string&) const OVERRIDE;
+
+  virtual bool ShouldReplaceExistingSource() const OVERRIDE;
+
+ protected:
+  virtual ~SessionFaviconSource();
+};
+
+#endif  // CHROME_BROWSER_UI_WEBUI_SESSION_FAVICON_SOURCE_H_
