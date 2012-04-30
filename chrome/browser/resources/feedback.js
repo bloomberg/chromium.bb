@@ -20,6 +20,8 @@ var localStrings = new LocalStrings();
 
 /**
  * Selects an image thumbnail in the specified div.
+ * @param {string} divId The id of the div to search in.
+ * @param {string} thumbnailId The id of the thumbnail to search for.
  */
 function selectImage(divId, thumbnailId) {
   var thumbnailDivs = $(divId).children;
@@ -43,6 +45,8 @@ function selectImage(divId, thumbnailId) {
 
 /**
  * Adds an image thumbnail to the specified div.
+ * @param {string} divId The id of the div to add a screenshot to.
+ * @param {string} screenshot The URL of the screenshot being added.
  */
 function addScreenshot(divId, screenshot) {
   var thumbnailDiv = document.createElement('div');
@@ -86,9 +90,10 @@ function disableScreenshots() {
 }
 
 /**
- * Send's the report; after the report is sent, we need to be redirected to
+ * Sends the report; after the report is sent, we need to be redirected to
  * the landing page, but we shouldn't be able to navigate back, hence
  * we open the landing page in a new tab and sendReport closes this tab.
+ * @return {boolean} True if the report was sent.
  */
 function sendReport() {
   if ($('description-text').value.length == 0) {
@@ -123,9 +128,13 @@ function sendReport() {
   return true;
 }
 
-function cancel() {
+/**
+ * Click listener for the cancel button.
+ * @param {Event} e The click event being handled.
+ */
+function cancel(e) {
   chrome.send('cancel');
-  return true;
+  e.preventDefault();
 }
 
 /**
@@ -141,8 +150,6 @@ function currentSelected() {
   if (selectedThumbnailDivId != 'current-screenshots')
     selectImage('current-screenshots',
                 savedThumbnailIds['current-screenshots']);
-
-  return true;
 }
 
 /**
@@ -160,8 +167,6 @@ function savedSelected() {
     if (selectedThumbnailDivId != 'saved-screenshots')
       selectImage('saved-screenshots', savedThumbnailIds['saved-screenshots']);
   }
-
-  return true;
 }
 
 
