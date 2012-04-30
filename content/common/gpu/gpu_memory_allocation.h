@@ -12,6 +12,7 @@
 // and assigned to the browser and renderer context.
 // They will change over time, given memory availability, and browser state.
 
+
 // Memory Allocation which will be assigned to the renderer context.
 struct GpuMemoryAllocationForRenderer {
   enum {
@@ -67,24 +68,17 @@ struct GpuMemoryAllocationForBrowser {
 // GpuMemoryManager.
 struct GpuMemoryAllocation : public GpuMemoryAllocationForRenderer,
                              public GpuMemoryAllocationForBrowser {
-  // Bitmap
-  enum BufferAllocation {
-    kHasNoBuffers = 0,
-    kHasFrontbuffer = 1,
-    kHasBackbuffer = 2
-  };
-
   GpuMemoryAllocation()
       : GpuMemoryAllocationForRenderer(),
         GpuMemoryAllocationForBrowser() {
   }
 
   GpuMemoryAllocation(size_t gpu_resource_size_in_bytes,
-                      int allocationBitmap)
+                      bool suggest_have_backbuffer,
+                      bool suggest_have_frontbuffer)
       : GpuMemoryAllocationForRenderer(gpu_resource_size_in_bytes,
-            (allocationBitmap & kHasBackbuffer) == kHasBackbuffer),
-        GpuMemoryAllocationForBrowser(
-            (allocationBitmap & kHasFrontbuffer) == kHasFrontbuffer) {
+                                       suggest_have_backbuffer),
+        GpuMemoryAllocationForBrowser(suggest_have_frontbuffer) {
   }
 
   bool operator==(const GpuMemoryAllocation& other) const {
