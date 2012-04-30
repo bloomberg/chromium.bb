@@ -17,7 +17,7 @@
 
 namespace {
 
-const char* const kFieldTrialName = "PepperFlash";
+const char* const kFieldTrialName = "ApplyPepperFlash";
 const char* const kDisableGroupName = "DisableByDefault";
 const char* const kEnableGroupName = "EnableByDefault";
 int g_disabled_group_number = -1;
