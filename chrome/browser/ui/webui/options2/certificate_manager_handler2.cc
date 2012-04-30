@@ -328,6 +328,8 @@ void CertificateManagerHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_CONFIRM_PASSWORD_LABEL));
 
   // Edit CA Trust & Import CA overlay strings.
+  localized_strings->SetString("certificateEditCaTitle",
+      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EDIT_CA_TITLE));
   localized_strings->SetString("certificateEditTrustLabel",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EDIT_TRUST_LABEL));
   localized_strings->SetString("certificateEditCaTrustDescriptionFormat",

@@ -3641,7 +3641,7 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
 
       <!-- Certificate manager dialog strings.  These are only used on platforms that don't have a native certificate manager dialog, such as Linux. -->
       <message name="IDS_CERTIFICATE_MANAGER_TITLE" desc="String to be displayed in the title bar of the certificate manager dialog">
-        Certificate Manager
+        Certificate manager
       </message>
       <message name="IDS_CERT_MANAGER_PERSONAL_CERTS_TAB_LABEL" desc="Title of the notebook page displaying the user's own certificates">
         Your Certificates
@@ -3777,6 +3777,9 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       </message>
       <message name="IDS_CERT_MANAGER_DELETE_CERT_ERROR_TITLE" desc="The title in the error dialog for certificate delete errors.">
         Certificate Deletion Error
+      </message>
+      <message name="IDS_CERT_MANAGER_EDIT_CA_TITLE" desc="Title of the certificate manager edit trust dialog">
+        Certificate authority
       </message>
       <message name="IDS_CERT_MANAGER_EDIT_TRUST_LABEL" desc="Line displayed in certificate manager edit trust dialog before the checkboxes for setting certificate trust flags">
         Edit trust settings:
