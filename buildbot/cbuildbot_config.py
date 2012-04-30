@@ -899,6 +899,7 @@ _arm_release.add_config('arm-tegra2_seaboard-release',
 
 _arm_release.add_config('arm-tegra2_kaen-release',
   boards=['tegra2_kaen'],
+  hw_tests=['kaen_bvt'],
 )
 
 _arm_release.add_config('arm-daisy-release',
