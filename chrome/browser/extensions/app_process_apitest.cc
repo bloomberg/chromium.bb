@@ -45,9 +45,9 @@ static void WindowOpenHelper(Browser* browser,
   // a popup window instead of a new tab in current window.
   // Now the active tab in last active window should be the new tab.
   Browser* last_active_browser = BrowserList::GetLastActive();
-  EXPECT_TRUE(last_active_browser);
+  ASSERT_TRUE(last_active_browser);
   WebContents* newtab = last_active_browser->GetSelectedWebContents();
-  EXPECT_TRUE(newtab);
+  ASSERT_TRUE(newtab);
   observer.Wait();
   EXPECT_EQ(url, newtab->GetController().GetLastCommittedEntry()->GetURL());
   if (newtab_process_should_equal_opener)
