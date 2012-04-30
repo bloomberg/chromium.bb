@@ -386,6 +386,8 @@
         '../third_party/skia/src/gpu/GrPathRenderer.h',
         '../third_party/skia/src/gpu/GrPathRendererChain.cpp',
         '../third_party/skia/src/gpu/GrPathRendererChain.h',
+        '../third_party/skia/src/gpu/GrSoftwarePathRenderer.cpp',
+        '../third_party/skia/src/gpu/GrSoftwarePathRenderer.h',
         '../third_party/skia/src/gpu/GrPathUtils.cpp',
         '../third_party/skia/src/gpu/GrPlotMgr.h',
         '../third_party/skia/src/gpu/GrRandom.h',
