@@ -139,9 +139,6 @@ class PanelBrowserWindowCocoa;
 // Returns true if browser window requested activation of the window.
 - (BOOL)activationRequestedByBrowser;
 
-// Returns width of titlebar when shown in "icon only" mode.
-- (int)titlebarIconOnlyWidthInScreenCoordinates;
-
 - (void)ensureFullyVisible;
 
 - (void)updateWindowLevel;

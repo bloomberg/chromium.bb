@@ -13,28 +13,41 @@
 
 class Panel;
 class PanelBoundsAnimation;
+class PanelBrowserTitlebarGtk;
 class PanelDragGtk;
 class NativePanelTestingGtk;
+
+namespace gfx {
+class Image;
+}
 
 class PanelBrowserWindowGtk : public BrowserWindowGtk,
                               public NativePanel,
                               public ui::AnimationDelegate {
  public:
+  enum PaintState {
+    PAINT_AS_ACTIVE,
+    PAINT_AS_INACTIVE,
+    PAINT_FOR_ATTENTION
+  };
+
   PanelBrowserWindowGtk(Browser* browser, Panel* panel,
                         const gfx::Rect& bounds);
   virtual ~PanelBrowserWindowGtk();
 
   // BrowserWindowGtk override
   virtual void Init() OVERRIDE;
+  virtual bool ShouldDrawContentDropShadow() const OVERRIDE;
 
   // BrowserWindow overrides
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual TitleDecoration GetWindowTitle(std::string* title) const OVERRIDE;
 
   // Overrides BrowserWindowGtk::NotificationObserver::Observe
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  PaintState GetPaintState() const;
 
   Panel* panel() const { return panel_.get(); }
 
@@ -52,7 +65,8 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
       GdkEventButton* event) OVERRIDE;
   virtual void SaveWindowPosition() OVERRIDE;
   virtual void SetGeometryHints() OVERRIDE;
-  virtual bool UseCustomFrame() OVERRIDE;
+  virtual bool UseCustomFrame() const OVERRIDE;
+  virtual bool UsingCustomPopupFrame() const OVERRIDE;
   virtual void OnSizeChanged(int width, int height) OVERRIDE;
   virtual void DrawCustomFrame(cairo_t* cr, GtkWidget* widget,
                                GdkEventExpose* event) OVERRIDE;
@@ -96,7 +110,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual gfx::Size ContentSizeFromWindowSize(
       const gfx::Size& window_size) const OVERRIDE;
   virtual int TitleOnlyHeight() const OVERRIDE;
-  virtual gfx::Size IconOnlySize() const OVERRIDE;
   virtual void EnsurePanelFullyVisible() OVERRIDE;
   virtual void SetPanelAppIconVisibility(bool visible) OVERRIDE;
   virtual void SetPanelAlwaysOnTop(bool on_top) OVERRIDE;
@@ -118,9 +131,10 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   void SetBoundsInternal(const gfx::Rect& bounds, bool animate);
 
-  void DrawAttentionFrame(cairo_t* cr, GtkWidget* widget,
-                          GdkEventExpose* event);
-  GdkRectangle GetTitlebarRectForDrawAttention() const;
+  PanelBrowserTitlebarGtk* GetPanelTitlebar() const;
+
+  // Returns the theme image to paint the frame.
+  const gfx::Image* GetThemeFrameImage() const;
 
   CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean,
                        OnTitlebarButtonReleaseEvent, GdkEventButton*);

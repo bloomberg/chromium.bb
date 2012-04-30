@@ -126,9 +126,6 @@ enum PanelDragState {
 - (void)restartGlintAnimation:(NSTimer*)timer;
 - (void)stopGlintAnimation;
 
-// Returns width of titlebar when shown in "icon only" mode.
-- (int)iconOnlyWidthInScreenCoordinates;
-
 @end  // @interface PanelTitlebarView
 
 // Methods which are either only for testing, or only public for testing.

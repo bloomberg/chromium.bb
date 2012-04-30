@@ -419,10 +419,6 @@ void PanelBrowserView::DestroyPanelBrowser() {
   DestroyBrowser();
 }
 
-gfx::Size PanelBrowserView::IconOnlySize() const {
-  return GetFrameView()->IconOnlySize();
-}
-
 void PanelBrowserView::EnsurePanelFullyVisible() {
 #if defined(OS_WIN) && !defined(USE_AURA)
   ::SetWindowPos(GetNativeHandle(), HWND_TOP, 0, 0, 0, 0,

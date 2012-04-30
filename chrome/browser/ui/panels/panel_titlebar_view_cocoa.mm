@@ -646,14 +646,6 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   }
 }
 
-- (int)iconOnlyWidthInScreenCoordinates {
-  int width = kIconAndTextPadding * 2;
-  if (!icon_)
-    return width;
-
-  return width + NSWidth([self convertRect:[icon_ frame] toView:nil]);
-}
-
 // (Private/TestingAPI)
 - (PanelWindowControllerCocoa*)controller {
   return controller_;

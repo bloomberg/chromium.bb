@@ -44,6 +44,12 @@ class BrowserTitlebar : public content::NotificationObserver,
   BrowserTitlebar(BrowserWindowGtk* browser_window, GtkWindow* window);
   virtual ~BrowserTitlebar();
 
+  // Updates the theme supplied background color and image.
+  virtual void UpdateButtonBackground(CustomDrawButton* button);
+
+  // Updates the title and icon when in app or popup/panel mode (no tabstrip).
+  virtual void UpdateTitleAndIcon();
+
   GtkWidget* widget() {
     return container_;
   }
@@ -58,16 +64,10 @@ class BrowserTitlebar : public content::NotificationObserver,
   // Builds the buttons based on the metacity |button_string|.
   void BuildButtons(const std::string& button_string);
 
-  // Updates the theme supplied background color and image.
-  void UpdateButtonBackground(CustomDrawButton* button);
-
   // Update the appearance of the title bar based on whether we're showing a
   // custom frame or not.  If |use_custom_frame| is true, we show an extra
   // tall titlebar and the min/max/close buttons.
   void UpdateCustomFrame(bool use_custom_frame);
-
-  // Updates the title and icon when in app or popup mode (no tabstrip).
-  void UpdateTitleAndIcon();
 
   // Called by the browser asking us to update the loading throbber.
   // |web_contents| is the tab that is associated with the window throbber.
@@ -78,21 +78,6 @@ class BrowserTitlebar : public content::NotificationObserver,
   // menu.  There's no such thing on linux, so we just show the menu items we
   // add to the menu.
   void ShowContextMenu(GdkEventButton* event);
-
-  // When a panel appears in the same position as the one of the panel being
-  // closed and the cursor stays in the close button, the close button appears
-  // not to be clickable. This is because neither "enter-notify-event" nor
-  // "clicked" event for the new panel gets fired if the mouse does not move.
-  // This creates a bad experience when a user has multiple panels of the same
-  // size (which is typical) and tries closing them all by repeatedly clicking
-  // in the same place on the screen.
-  //
-  // Opened a gtk bug for this -
-  //   https://bugzilla.gnome.org/show_bug.cgi?id=667841
-  void SendEnterNotifyToCloseButtonIfUnderMouse();
-
-  // Returns the window width to display just the icon.
-  int IconOnlyWidth();
 
   AvatarMenuButtonGtk* avatar_button() { return avatar_button_.get(); }
 
@@ -121,6 +106,10 @@ class BrowserTitlebar : public content::NotificationObserver,
   // Show the menu that the user gets from left-clicking the favicon.
   virtual void ShowFaviconMenu(GdkEventButton* event);
 
+  // Updates the color of the title bar. Called whenever we have a state
+  // change in the window.
+  virtual void UpdateTextColor();
+
   // Constructs a CustomDraw button given button name and left or right side of
   // the titlebar where the button is placed.
   CustomDrawButton* CreateTitlebarButton(const std::string& button_name,
@@ -136,6 +125,9 @@ class BrowserTitlebar : public content::NotificationObserver,
   CustomDrawButton* maximize_button() const { return maximize_button_.get(); }
   CustomDrawButton* restore_button() const { return restore_button_.get(); }
   CustomDrawButton* close_button() const { return close_button_.get(); }
+  GtkWidget* app_mode_title() const { return app_mode_title_; }
+
+  ThemeServiceGtk* theme_service() const { return theme_service_; }
 
  private:
   // A helper class to keep track of which frame of the throbber animation
@@ -166,10 +158,6 @@ class BrowserTitlebar : public content::NotificationObserver,
 
   // Update the titlebar spacing based on the custom frame and maximized state.
   void UpdateTitlebarAlignment();
-
-  // Updates the color of the title bar. Called whenever we have a state
-  // change in the window.
-  void UpdateTextColor();
 
   // Updates the avatar image displayed, either a multi-profile avatar or the
   // incognito spy guy.

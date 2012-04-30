@@ -280,11 +280,6 @@ void PanelBrowserWindowCocoa::DestroyPanelBrowser() {
   [controller_ close];
 }
 
-gfx::Size PanelBrowserWindowCocoa::IconOnlySize() const {
-  return gfx::Size([controller_ titlebarIconOnlyWidthInScreenCoordinates],
-                   [controller_ titlebarHeightInScreenCoordinates]);
-}
-
 void PanelBrowserWindowCocoa::EnsurePanelFullyVisible() {
   [controller_ ensureFullyVisible];
 }

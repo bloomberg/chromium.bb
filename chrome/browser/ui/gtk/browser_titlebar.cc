@@ -49,7 +49,6 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
-#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -598,16 +597,8 @@ void BrowserTitlebar::UpdateTitleAndIcon() {
     return;
 
   // Get the page title and elide it to the available space.
-  std::string title;
-  BrowserWindowGtk::TitleDecoration title_decoration =
-      browser_window_->GetWindowTitle(&title);
-
-  if (title_decoration == BrowserWindowGtk::PANGO_MARKUP) {
-    gtk_label_set_markup(GTK_LABEL(app_mode_title_), title.c_str());
-  } else {
-    DCHECK_EQ(BrowserWindowGtk::PLAIN_TEXT, title_decoration);
-    gtk_label_set_text(GTK_LABEL(app_mode_title_), title.c_str());
-  }
+  string16 title = browser_window_->browser()->GetWindowTitleForCurrentTab();
+  gtk_label_set_text(GTK_LABEL(app_mode_title_), UTF16ToUTF8(title).c_str());
 
   if (browser_window_->browser()->is_app()) {
     switch (browser_window_->browser()->type()) {
@@ -631,6 +622,7 @@ void BrowserTitlebar::UpdateTitleAndIcon() {
         break;
       }
       case Browser::TYPE_PANEL: {
+        NOTREACHED();
         break;
       }
     }
@@ -951,50 +943,6 @@ void BrowserTitlebar::ShowContextMenu(GdkEventButton* event) {
 
   context_menu_->PopupAsContext(gfx::Point(event->x_root, event->y_root),
                                 event->time);
-}
-
-void BrowserTitlebar::SendEnterNotifyToCloseButtonIfUnderMouse() {
-  gint x;
-  gint y;
-  GtkAllocation widget_allocation = close_button_->WidgetAllocation();
-  gtk_widget_get_pointer(GTK_WIDGET(close_button_->widget()), &x, &y);
-
-  gfx::Rect button_rect(0, 0, widget_allocation.width,
-                        widget_allocation.height);
-  if (!button_rect.Contains(x, y)) {
-    // Mouse is not over the close button.
-    return;
-  }
-
-  // Create and emit an enter-notify-event on close button.
-  GValue return_value;
-  return_value.g_type = G_TYPE_BOOLEAN;
-  g_value_set_boolean(&return_value, false);
-
-  GdkEvent* event = gdk_event_new(GDK_ENTER_NOTIFY);
-  event->crossing.window =
-      gtk_button_get_event_window(GTK_BUTTON(close_button_->widget()));
-  event->crossing.send_event = FALSE;
-  event->crossing.subwindow = gtk_widget_get_window(close_button_->widget());
-  event->crossing.time = gtk_util::XTimeNow();
-  event->crossing.x = x;
-  event->crossing.y = y;
-  event->crossing.x_root = widget_allocation.x;
-  event->crossing.y_root = widget_allocation.y;
-  event->crossing.mode = GDK_CROSSING_NORMAL;
-  event->crossing.detail = GDK_NOTIFY_ANCESTOR;
-  event->crossing.focus = true;
-  event->crossing.state = 0;
-
-  g_signal_emit_by_name(GTK_OBJECT(close_button_->widget()),
-                        "enter-notify-event", event,
-                        &return_value);
-}
-
-int BrowserTitlebar::IconOnlyWidth() {
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(app_mode_favicon_, &allocation);
-  return 2 * kFrameBorderThickness + allocation.width;
 }
 
 bool BrowserTitlebar::IsCommandIdEnabled(int command_id) const {

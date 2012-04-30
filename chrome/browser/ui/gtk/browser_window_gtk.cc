@@ -909,7 +909,7 @@ void BrowserWindowGtk::Restore() {
     gtk_window_deiconify(window_);
 }
 
-bool BrowserWindowGtk::ShouldDrawContentDropShadow() {
+bool BrowserWindowGtk::ShouldDrawContentDropShadow() const {
   return !IsMaximized() && UseCustomFrame();
 }
 
@@ -2451,8 +2451,7 @@ bool BrowserWindowGtk::IsBookmarkBarSupported() const {
 bool BrowserWindowGtk::UsingCustomPopupFrame() const {
   ThemeServiceGtk* theme_provider = ThemeServiceGtk::GetFrom(
       browser()->profile());
-  return !theme_provider->UsingNativeTheme() &&
-         (browser()->is_type_popup() || browser()->is_type_panel());
+  return !theme_provider->UsingNativeTheme() && browser()->is_type_popup();
 }
 
 BrowserTitlebar* BrowserWindowGtk::CreateBrowserTitlebar() {
@@ -2516,7 +2515,7 @@ bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
   return false;
 }
 
-bool BrowserWindowGtk::UseCustomFrame() {
+bool BrowserWindowGtk::UseCustomFrame() const {
   // We don't use the custom frame for app mode windows or app window popups.
   return use_custom_frame_pref_.GetValue() && !browser_->is_app();
 }
@@ -2556,12 +2555,6 @@ void BrowserWindowGtk::PlaceBookmarkBar(bool is_floating) {
     gtk_box_pack_end(GTK_BOX(target_parent), bookmark_bar_->widget(),
                      FALSE, FALSE, 0);
   }
-}
-
-BrowserWindowGtk::TitleDecoration BrowserWindowGtk::GetWindowTitle(
-    std::string* title) const {
-  *title = UTF16ToUTF8(browser()->GetWindowTitleForCurrentTab());
-  return PLAIN_TEXT;
 }
 
 // static

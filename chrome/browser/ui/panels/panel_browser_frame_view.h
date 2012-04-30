@@ -44,10 +44,6 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   // the size of the client area.
   gfx::Size NonClientAreaSize() const;
 
-  // Returns the size of the non-client area upon which only the title icon
-  // is drawn.
-  gfx::Size IconOnlySize() const;
-
   // Returns true if the frame window is showing only the titlebar.
   bool IsShowingTitlebarOnly() const;
 

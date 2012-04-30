@@ -50,11 +50,6 @@ class BrowserWindowGtk : public BrowserWindow,
                          public ui::ActiveWindowWatcherXObserver,
                          public InfoBarContainer::Delegate {
  public:
-  enum TitleDecoration {
-    PANGO_MARKUP,
-    PLAIN_TEXT
-  };
-
   explicit BrowserWindowGtk(Browser* browser);
   virtual ~BrowserWindowGtk();
 
@@ -62,9 +57,10 @@ class BrowserWindowGtk : public BrowserWindow,
   // functions during initialization.
   virtual void Init();
 
-  // Allows for a derived class to decorate title text with pango markup.
-  // Returns the type of text used for title.
-  virtual TitleDecoration GetWindowTitle(std::string* title) const;
+  // Returns whether to draw the content drop shadow on the sides and bottom
+  // of the browser window. When false, we still draw a shadow on the top of
+  // the toolbar (under the tab strip), but do not round the top corners.
+  virtual bool ShouldDrawContentDropShadow() const;
 
   // Overridden from BrowserWindow:
   virtual void Show() OVERRIDE;
@@ -246,11 +242,6 @@ class BrowserWindowGtk : public BrowserWindow,
 
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Returns whether to draw the content drop shadow on the sides and bottom
-  // of the browser window. When false, we still draw a shadow on the top of
-  // the toolbar (under the tab strip), but do not round the top corners.
-  bool ShouldDrawContentDropShadow();
-
   // Tells GTK that the toolbar area is invalidated and needs redrawing. We
   // have this method as a hack because GTK doesn't queue the toolbar area for
   // redraw when it should.
@@ -288,7 +279,11 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void SetGeometryHints();
 
   // Returns |true| if we should use the custom frame.
-  virtual bool UseCustomFrame();
+  virtual bool UseCustomFrame() const;
+
+  // Whether we should draw the tab background instead of the theme_frame
+  // background because this window is a popup.
+  virtual bool UsingCustomPopupFrame() const;
 
   // Called when the window size changed.
   virtual void OnSizeChanged(int width, int height);
@@ -306,6 +301,9 @@ class BrowserWindowGtk : public BrowserWindow,
 
   // Returns the size of the window frame around the client content area.
   gfx::Size GetNonClientFrameSize() const;
+
+  // Invalidate window to force repaint.
+  void InvalidateWindow();
 
   // Top level window.
   GtkWindow* window_;
@@ -351,9 +349,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // Must be called once at startup.
   // Triggers relayout of the content.
   void UpdateCustomFrame();
-
-  // Invalidate window to force repaint.
-  void InvalidateWindow();
 
   // Set the bounds of the current window. If |exterior| is true, set the size
   // of the window itself, otherwise set the bounds of the web contents.
@@ -448,10 +443,6 @@ class BrowserWindowGtk : public BrowserWindow,
   bool IsTabStripSupported() const;
   bool IsToolbarSupported() const;
   bool IsBookmarkBarSupported() const;
-
-  // Whether we should draw the tab background instead of the theme_frame
-  // background because this window is a popup.
-  bool UsingCustomPopupFrame() const;
 
   // Returns |true| if the window bounds match the monitor size.
   bool BoundsMatchMonitorSize();

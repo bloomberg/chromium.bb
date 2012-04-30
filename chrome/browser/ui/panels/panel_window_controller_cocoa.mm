@@ -888,10 +888,6 @@ enum {
   return NSHeight([titlebar convertRect:[titlebar bounds] toView:nil]);
 }
 
-- (int)titlebarIconOnlyWidthInScreenCoordinates {
-  return [[self titlebarView] iconOnlyWidthInScreenCoordinates];
-}
-
 - (void)ensureFullyVisible {
   // Shows the window without making it key, on top of its layer, even if
   // Chromium is not an active app.

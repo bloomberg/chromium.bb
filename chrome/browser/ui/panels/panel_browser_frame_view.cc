@@ -629,10 +629,6 @@ int PanelBrowserFrameView::IconOnlyWidth() const {
   return NonClientBorderThickness() * 2 + kIconAndBorderSpacing * 2 + kIconSize;
 }
 
-gfx::Size PanelBrowserFrameView::IconOnlySize() const {
-  return gfx::Size(IconOnlyWidth(), NonClientTopBorderHeight());
-}
-
 bool PanelBrowserFrameView::UsingDefaultTheme(PaintState paint_state) const {
   // No theme is provided for attention painting.
   if (paint_state == PAINT_FOR_ATTENTION)
