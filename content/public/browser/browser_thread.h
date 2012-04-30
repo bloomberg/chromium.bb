@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
+#include "base/task_runner_util.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
 
@@ -133,6 +134,18 @@ class CONTENT_EXPORT BrowserThread {
       const tracked_objects::Location& from_here,
       const base::Closure& task,
       const base::Closure& reply);
+
+  template <typename ReturnType>
+  static bool PostTaskAndReplyWithResult(
+      ID identifier,
+      const tracked_objects::Location& from_here,
+      const base::Callback<ReturnType(void)>& task,
+      const base::Callback<void(ReturnType)>& reply) {
+    scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
+        GetMessageLoopProxyForThread(identifier);
+    return base::PostTaskAndReplyWithResult<ReturnType>(
+        message_loop_proxy.get(), from_here, task, reply);
+  }
 
   template <class T>
   static bool DeleteSoon(ID identifier,
