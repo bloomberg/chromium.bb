@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -30,7 +30,7 @@
 
     'conditions': [
       [ 'use_system_yasm==0', {
-        'yasm_path': '<(PRODUCT_DIR)/yasm',
+        'yasm_path': '<(PRODUCT_DIR)/yasm<(EXECUTABLE_SUFFIX)',
       }, {
         'yasm_path': '<!(which yasm)',
       }],
@@ -97,7 +97,7 @@
         '<(RULE_INPUT_PATH)',
       ],
       'process_outputs_as_sources': 1,
-      'message': 'Compile assemly <(RULE_INPUT_PATH).',
+      'message': 'Compile assembly <(RULE_INPUT_PATH).',
     },
   ],  # rules
 }
