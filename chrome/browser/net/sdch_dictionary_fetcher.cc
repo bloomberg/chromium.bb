@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/common/url_fetcher.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -69,6 +70,8 @@ void SdchDictionaryFetcher::StartFetching() {
       fetch_queue_.front(), content::URLFetcher::GET, this));
   fetch_queue_.pop();
   current_fetch_->SetRequestContext(context_.get());
+  current_fetch_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                               net::LOAD_DO_NOT_SAVE_COOKIES);
   current_fetch_->Start();
 }
 
