@@ -275,6 +275,99 @@
             'host/installer/mac/uninstaller/remoting_uninstaller-Info.plist',
           ],
         },  # end of target 'remoting_host_uninstaller'
+
+        # This packages up the files needed for the remoting host installer so
+        # they can be sent off to be signed.
+        # We don't build an installer here because we don't have signed binaries.
+        {
+          'target_name': 'remoting_me2me_host_archive',
+          'type': 'none',
+          'dependencies': [
+            'remoting_me2me_host',
+            'remoting_host_uninstaller',
+          ],
+          'sources': [
+            'host/installer/build-installer-archive.py',
+            '<@(remoting_host_installer_mac_files)',
+          ],
+          'conditions': [
+            ['branding == "Chrome"', {
+              'variables': {
+                'copyright_by': 'Google Inc.',
+                'host_name': 'Chrome Remote Desktop Host',
+                'host_service_name': 'Chrome Remote Desktop Host Service',
+                'host_uninstaller_name': 'Chrome Remote Desktop Host Uninstaller',
+                'bundle_prefix': 'com.google.pkg',
+              },
+            }, { # else branding!="Chrome"
+              'variables': {
+                'copyright_by': 'The Chromium Authors.',
+                'host_name': 'Chromoting Host',
+                'host_service_name': 'Chromoting Host Service',
+                'host_uninstaller_name': 'Chromoting Host Uninstaller',
+                'bundle_prefix': 'org.chromium.pkg',
+              },
+            }],
+          ],  # conditions
+          'actions': [
+            {
+              'action_name': 'Zip installer files for signing',
+              'temp_dir': '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting-me2me-host',
+              'zip_path': '<(PRODUCT_DIR)/remoting-me2me-host-<(OS).zip',
+              'generated_files': [
+                '<(PRODUCT_DIR)/remoting_me2me_host',
+                '<(PRODUCT_DIR)/remoting_host_uninstaller.app',
+              ],
+              'generated_files_dst': [
+                'PrivilegedHelperTools/org.chromium.chromoting.me2me_host',
+                'Applications/<(host_uninstaller_name).app',
+              ],
+              'source_files_root': '<(remoting_host_installer_mac_root)',
+              'source_files': [
+                '<@(remoting_host_installer_mac_files)',
+              ],
+              'defs': [
+                'VERSION=<(version_full)',
+                'VERSION_SHORT=<(version_short)',
+                'VERSION_MAJOR=<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@")',
+                'VERSION_MINOR=<!(python <(version_py_path) -f <(version_path) -t "@MINOR@")',
+                'COPYRIGHT_BY=<(copyright_by)',
+                'HOST_NAME=<(host_name)',
+                'HOST_SERVICE_NAME=<(host_service_name)',
+                'HOST_UNINSTALLER_NAME=<(host_uninstaller_name)',
+                'HOST_PKG=<(host_name)',
+                'HOST_SERVICE_PKG=<!(echo <(host_service_name) | sed "s/ //g")',
+                'HOST_UNINSTALLER_PKG=<!(echo <(host_uninstaller_name) | sed "s/ //g")',
+                'BUNDLE_ID_HOST=<(bundle_prefix).<(host_name)',
+                'BUNDLE_ID_HOST_SERVICE=<(bundle_prefix).<(host_service_name)',
+                'BUNDLE_ID_HOST_UNINSTALLER=<(bundle_prefix).<(host_uninstaller_name)',
+                'DMG_NAME=<(host_name)',
+              ],
+              'inputs': [
+                'host/installer/build-installer-archive.py',
+                '<@(_source_files)',
+              ],
+              'outputs': [
+                '<(_zip_path)',
+              ],
+              'action': [
+                'python',
+                'host/installer/build-installer-archive.py',
+                '<(_temp_dir)',
+                '<(_zip_path)',
+                '<(_source_files_root)',
+                '--source-files',
+                '<@(_source_files)',
+                '--generated-files',
+                '<@(_generated_files)',
+                '--generated-files-dst',
+                '<@(_generated_files_dst)',
+                '--defs',
+                '<@(_defs)',
+              ],
+            },
+          ],  # actions
+        }, # end of target 'remoting_me2me_host_archive'
       ],  # end of 'targets'
     }],  # 'OS=="mac"'
     
@@ -1192,135 +1285,6 @@
         'host/keygen_main.cc',
       ],
     },  # end of target 'remoting_host_keygen'
-
-    # This packages up the files needed for the remoting host installer so
-    # they can be sent off to be signed.
-    # We don't build an installer here because we don't have signed binaries.
-    {
-      'target_name': 'remoting_me2me_host_archive',
-      'type': 'none',
-      'dependencies': [
-        'remoting_me2me_host',
-      ],
-      'sources': [
-        'host/installer/build-installer-archive.py',
-      ],
-      'conditions': [
-        ['branding == "Chrome"', {
-          'variables': {
-            'copyright_by': 'Google Inc.',
-            'host_name': 'Chrome Remote Desktop Host',
-            'host_service_name': 'Chrome Remote Desktop Host Service',
-            'host_uninstaller_name': 'Chrome Remote Desktop Host Uninstaller',
-            'bundle_prefix': 'com.google.pkg',
-          },
-        }, { # else branding!="Chrome"
-          'variables': {
-            'copyright_by': 'The Chromium Authors.',
-            'host_name': 'Chromoting Host',
-            'host_service_name': 'Chromoting Host Service',
-            'host_uninstaller_name': 'Chromoting Host Uninstaller',
-            'bundle_prefix': 'org.chromium.pkg',
-          },
-        }],
-        ['OS=="mac"', {
-          'sources': [
-            '<@(remoting_host_installer_mac_files)',
-          ],
-          'dependencies': [
-            'remoting_host_uninstaller',
-          ],
-        }],  # OS=="mac"
-        ['OS=="win"', {
-          'dependencies': [
-            # TODO(garykac)
-          ],
-        }],  # OS=="win"
-      ],  # conditions
-      'actions': [
-        {
-          'action_name': 'Zip installer files for signing',
-          'temp_dir': '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting-me2me-host',
-          'zip_path': '<(PRODUCT_DIR)/remoting-me2me-host-<(OS).zip',
-          'generated_files': [],
-          'generated_files_dst': [],
-          'source_files_root': '',
-          'source_files': [],
-          'defs': [],
-          'conditions': [
-            ['OS=="mac"', {
-              'generated_files': [
-                '<(PRODUCT_DIR)/remoting_me2me_host',
-                '<(PRODUCT_DIR)/remoting_host_uninstaller.app',
-              ],
-              'generated_files_dst': [
-                'PrivilegedHelperTools/org.chromium.chromoting.me2me_host',
-                'Applications/<(host_uninstaller_name).app',
-              ],
-              'source_files_root': '<(remoting_host_installer_mac_root)',
-              'source_files': [
-                '<@(remoting_host_installer_mac_files)',
-              ],
-              'defs': [
-                'VERSION=<(version_full)',
-                'VERSION_SHORT=<(version_short)',
-                'VERSION_MAJOR=<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@")',
-                'VERSION_MINOR=<!(python <(version_py_path) -f <(version_path) -t "@MINOR@")',
-                'COPYRIGHT_BY=<(copyright_by)',
-                'HOST_NAME=<(host_name)',
-                'HOST_SERVICE_NAME=<(host_service_name)',
-                'HOST_UNINSTALLER_NAME=<(host_uninstaller_name)',
-                'HOST_PKG=<(host_name)',
-                'HOST_SERVICE_PKG=<!(echo <(host_service_name) | sed "s/ //g")',
-                'HOST_UNINSTALLER_PKG=<!(echo <(host_uninstaller_name) | sed "s/ //g")',
-                'BUNDLE_ID_HOST=<(bundle_prefix).<(host_name)',
-                'BUNDLE_ID_HOST_SERVICE=<(bundle_prefix).<(host_service_name)',
-                'BUNDLE_ID_HOST_UNINSTALLER=<(bundle_prefix).<(host_uninstaller_name)',
-                'DMG_NAME=<(host_name)',
-              ],
-            }],  # OS=="mac"
-            ['OS=="win"', {
-              'generated_files': [
-                '<(PRODUCT_DIR)/remoting_me2me_host.exe',
-              ],
-              'generated_files_dst': [
-                'remoting_me2me_host.exe',
-              ],
-            }],  # OS=="win"
-            ['OS=="linux"', {
-              'generated_files': [
-                '<(PRODUCT_DIR)/remoting_me2me_host',
-              ],
-              'generated_files_dst': [
-                'remoting_me2me_host',
-              ],
-            }],  # OS=="linux"
-          ],  # conditions
-          'inputs': [
-            'host/installer/build-installer-archive.py',
-            '<@(_source_files)',
-          ],
-          'outputs': [
-            '<(_zip_path)',
-          ],
-          'action': [
-            'python',
-            'host/installer/build-installer-archive.py',
-            '<(_temp_dir)',
-            '<(_zip_path)',
-            '<(_source_files_root)',
-            '--source-files',
-            '<@(_source_files)',
-            '--generated-files',
-            '<@(_generated_files)',
-            '--generated-files-dst',
-            '<@(_generated_files_dst)',
-            '--defs',
-            '<@(_defs)',
-          ],
-        },
-      ],  # actions
-    }, # end of target 'remoting_me2me_host_archive'
 
     {
       'target_name': 'remoting_jingle_glue',
