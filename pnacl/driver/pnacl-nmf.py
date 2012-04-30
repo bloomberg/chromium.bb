@@ -97,7 +97,9 @@ def SetPortableUrl(json_dict, shortname, filepath):
   json_dict['portable']['pnacl-translate']['sha256'] = sha.hexdigest()
 
 def GetActualFilePathAndType(shortname):
-  actual_lib_path = ldtools.FindFile([shortname], env.get('SEARCH_DIRS'))
+  actual_lib_path = ldtools.FindFile([shortname],
+                                     env.get('SEARCH_DIRS'),
+                                     ldtools.LibraryTypes.ANY)
   if actual_lib_path == None:
     Log.Warning('Could not find path of lib: %s, assuming it is native',
                 shortname)

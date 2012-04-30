@@ -244,7 +244,8 @@ def main(argv):
   # and expands linker scripts into command-line arguments.
   inputs = ldtools.ExpandInputs(inputs,
                                 env.get('SEARCH_DIRS'),
-                                env.getbool('STATIC'))
+                                env.getbool('STATIC'),
+                                ldtools.LibraryTypes.NATIVE)
 
   # If there's a linker script which needs to be searched for, find it.
   LocateLinkerScript()
@@ -420,7 +421,8 @@ def LocateLinkerScript():
 
   # Search for the script
   search_dirs = [pathtools.normalize('.')] + env.get('SEARCH_DIRS')
-  path = ldtools.FindFile([ld_script], search_dirs)
+  path = ldtools.FindFile([ld_script], search_dirs,
+                          ldtools.LibraryTypes.ANY)
   if not path:
     Log.Fatal("Unable to find linker script '%s'", ld_script)
 

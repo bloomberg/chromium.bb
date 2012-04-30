@@ -9,7 +9,7 @@
 # updates the copy in the toolchain/ tree.
 #
 
-# Tool for reading linker script
+# Tool for reading linker scripts and searching for libraries.
 
 # TODO(pdox): Refactor driver_tools so that there is no circular dependency.
 import driver_tools
@@ -19,6 +19,14 @@ import driver_log
 
 def IsLinkerScript(filename):
   return ParseLinkerScript(filename) is not None
+
+
+class LibraryTypes(object):
+  """ An enum indicating the type of library that can be searched for. """
+  BITCODE = 1
+  NATIVE = 2
+  ANY = 3
+
 
 # Parses a linker script to determine additional ld arguments specified.
 # Returns a list of linker arguments.
@@ -166,11 +174,12 @@ def ExpandLinkerScripts(inputs, searchdirs, static_only):
       break
 
     new_inputs = ParseLinkerScript(path)
-    ExpandLibFlags(new_inputs, searchdirs, static_only)
+    ExpandLibFlags(new_inputs, searchdirs, static_only,
+                   LibraryTypes.ANY)
     inputs = inputs[:i] + new_inputs + inputs[i+1:]
   return inputs
 
-def ExpandLibFlags(inputs, searchdirs, static_only):
+def ExpandLibFlags(inputs, searchdirs, static_only, acceptable_types):
   """ Given an input list, expand -lfoo or -l:foo.so
       into a full filename. Returns the new input list """
   for i in xrange(len(inputs)):
@@ -178,7 +187,7 @@ def ExpandLibFlags(inputs, searchdirs, static_only):
     if IsFlag(f):
       continue
     if IsLib(f):
-      inputs[i] = FindLib(f, searchdirs, static_only)
+      inputs[i] = FindLib(f, searchdirs, static_only, acceptable_types)
 
 def IsFlag(arg):
   return arg.startswith('-') and not IsLib(arg)
@@ -186,7 +195,7 @@ def IsFlag(arg):
 def IsLib(arg):
   return arg.startswith('-l')
 
-def FindLib(arg, searchdirs, static_only):
+def FindLib(arg, searchdirs, static_only, acceptable_types):
   """Returns the full pathname for the library input.
      For example, name might be "-lc" or "-lm".
      Returns None if the library is not found.
@@ -218,7 +227,7 @@ def FindLib(arg, searchdirs, static_only):
     for ext in extensions:
       searchnames.append('lib' + name + '.' + ext)
 
-  foundpath = FindFile(searchnames, searchdirs)
+  foundpath = FindFile(searchnames, searchdirs, acceptable_types)
   if foundpath:
     return foundpath
 
@@ -228,17 +237,28 @@ def FindLib(arg, searchdirs, static_only):
     label = arg
   driver_log.Log.Fatal("Cannot find '%s'", label)
 
-def FindFile(search_names, search_dirs):
+def FindFile(search_names, search_dirs, acceptable_types):
   for curdir in search_dirs:
     for name in search_names:
       path = pathtools.join(curdir, name)
       if pathtools.exists(path):
-        return path
+        if acceptable_types == LibraryTypes.ANY:
+          return path
+        # Linker scripts aren't classified as Native or Bitcode.
+        if IsLinkerScript(path):
+          return path
+        if (acceptable_types == LibraryTypes.NATIVE and
+            driver_tools.IsNative(path)):
+          return path
+        if (acceptable_types == LibraryTypes.BITCODE and
+            (driver_tools.IsBitcode(path) or
+             driver_tools.IsBitcodeArchive(path))):
+          return path
   return None
 
-def ExpandInputs(inputs, searchdirs, static_only):
+def ExpandInputs(inputs, searchdirs, static_only, acceptable_types):
   # Expand all -l flags into filenames
-  ExpandLibFlags(inputs, searchdirs, static_only)
+  ExpandLibFlags(inputs, searchdirs, static_only, acceptable_types)
 
   # Expand input files which are linker scripts
   inputs = ExpandLinkerScripts(inputs, searchdirs, static_only)

@@ -269,7 +269,14 @@ def main(argv):
   # and expands linker scripts into command-line arguments.
   inputs = ldtools.ExpandInputs(inputs,
                                 env.get('SEARCH_DIRS'),
-                                env.getbool('STATIC'))
+                                env.getbool('STATIC'),
+                                # Once all glibc bitcode link is purely
+                                # bitcode (e.g., even libc_nonshared.a)
+                                # we may be able to restrict this more.
+                                # This is also currently used by
+                                # pnacl_generate_pexe=0 with glibc,
+                                # for user libraries.
+                                ldtools.LibraryTypes.ANY)
 
   # Make sure the inputs have matching arch.
   CheckInputsArch(inputs)
