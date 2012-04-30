@@ -682,11 +682,19 @@ def main(args):
                             cwd=os.path.abspath(dirnode), shell=True)
 
   # Archive on non-trybots.
-  if options.archive or '-sdk' in os.environ.get('BUILDBOT_BUILDERNAME', ''):
+  buildername = os.environ.get('BUILDBOT_BUILDERNAME', '')
+  if options.archive or '-sdk' in buildername:
     buildbot_common.BuildStep('Archive build')
     bucket_path = 'nativeclient-mirror/nacl/nacl_sdk/%s' % \
         build_utils.ChromeVersion()
     buildbot_common.Archive(tarname, bucket_path, os.path.dirname(tarfile))
+
+    if not skip_update:
+      # Only push up sdk_tools.tgz on the linux buildbot.
+      if buildername == 'linux-sdk-multi':
+        sdk_tools = os.path.join(OUT_DIR, 'sdk_tools.tgz')
+        buildbot_common.Archive('sdk_tools.tgz', bucket_path, OUT_DIR,
+                                step_link=False)
 
     # generate "manifest snippet" for this archive.
     if not skip_test_updater:
