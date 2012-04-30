@@ -71,38 +71,43 @@ def createZip(zip_path, directory):
   zip.close()
 
 
-def copyFileIntoArchive(src_file, out_dir, files_root, dst_file, defs):
-  """Copies the src_file into the out_dir, preserving the directory structure.
+def remapSrcFile(dst_root, src_root, src_file):
+  """Calculates destination file path and creates directory.
+
+  The |src_root| prefix is stripped from |src_file| before
+  appending to |dst_root|.
+
+  For example, given:
+    dst_root = /output
+    src_root = host/installer/mac
+    src_file = host/installer/mac/Scripts/keystone_install.sh
+  The final calculated path is:
+    /output/Scripts/keystone_install.sh
 
   Args:
-    src_file: Full or relative path to source file to copy.
-    out_dir: Target directory where files are copied.
-    files_root: Path prefix which is stripped of dst_file before appending
-                it to the out_dir.
-    dst_file: Relative path (and filename) where src_file should be copied.
-    defs: Dictionary of variable definitions.
+    dst_root: Target directory where files are copied.
+    src_root: Path prefix which is stripped of |src_file| before appending
+              it to the |dst_root|.
+    src_file: Source file to be copied.
+  Returns:
+    Full path to destination file in |dst_root|.
   """
-  root_len = len(files_root)
-  local_file_path = dst_file[root_len:]
-  full_dst_file = os.path.join(out_dir, local_file_path)
-  dst_dir = os.path.dirname(full_dst_file)
+  # Strip of directory prefix.
+  if src_file.startswith(src_root):
+    src_file = src_file[len(src_root):]
+  dst_file = os.path.join(dst_root, src_file)
+  # Make sure target directory exists.
+  dst_dir = os.path.dirname(dst_file)
   if not os.path.exists(dst_dir):
     os.makedirs(dst_dir, 0775)
-
-  (base, ext) = os.path.splitext(src_file)
-  if ext == '.app':
-    shutil.copytree(src_file, full_dst_file)
-  elif ext in ['.sh', '.packproj', '.plist']:
-    copyFileWithDefs(src_file, full_dst_file, defs)
-  else:
-    shutil.copy2(src_file, full_dst_file)
+  return dst_file
 
 
 def copyFileWithDefs(src_file, dst_file, defs):
   """Copies from src_file to dst_file, performing variable substitution.
 
-  Any @@variables@@ in the source are replaced with
-  file with the out_dir, preserving the directory structure.
+  Any @@VARIABLE@@ in the source is replaced with the value of VARIABLE
+  in the |defs| dictionary when written to the destination file.
 
   Args:
     src_file: Full or relative path to source file to copy.
@@ -138,9 +143,7 @@ def copyZipIntoArchive(out_dir, files_root, zip_file):
   os.chdir(old_dir)
 
   # Unzip into correct dir in out_dir.
-  root_len = len(files_root)
-  relative_zip_path = zip_file[root_len:]
-  out_zip_path = os.path.join(out_dir, relative_zip_path)
+  out_zip_path = remapSrcFile(out_dir, files_root, zip_file)
   out_zip_dir = os.path.dirname(out_zip_path)
 
   (src_dir, ignore1) = os.path.splitext(zip_file)
@@ -165,16 +168,23 @@ def buildHostArchive(temp_dir, zip_path, source_files_root, source_files,
   """
   cleanDir(temp_dir)
 
-  for file in source_files:
-    base_file = os.path.basename(file)
-    (base, ext) = os.path.splitext(file)
+  for f in source_files:
+    dst_file = remapSrcFile(temp_dir, source_files_root, f)
+    base_file = os.path.basename(f)
+    (base, ext) = os.path.splitext(f)
     if ext == '.zip':
-      copyZipIntoArchive(temp_dir, source_files_root, file)
+      copyZipIntoArchive(temp_dir, source_files_root, f)
+    elif ext in ['.sh', '.packproj', '.plist']:
+      copyFileWithDefs(f, dst_file, defs)
     else:
-      copyFileIntoArchive(file, temp_dir, source_files_root, file, defs)
+      shutil.copy2(src_file, dst_file)
 
   for bs, bd in zip(gen_files, gen_files_dst):
-    copyFileIntoArchive(bs, temp_dir, '', bd, {})
+    dst_file = remapSrcFile(temp_dir, source_files_root, bd)
+    if os.path.isdir(bs):
+      shutil.copytree(bs, dst_file)
+    else:
+      shutil.copy2(bs, dst_file)
 
   createZip(zip_path, temp_dir)
 
@@ -182,6 +192,7 @@ def buildHostArchive(temp_dir, zip_path, source_files_root, source_files,
 def error(msg):
   sys.stderr.write('ERROR: %s' % msg)
   sys.exit(1)
+
 
 def usage():
   """Display basic usage information."""
