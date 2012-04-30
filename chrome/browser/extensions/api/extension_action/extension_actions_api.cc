@@ -146,7 +146,7 @@ bool ExtensionActionFunction::ParseCSSColorString(
 
 bool ExtensionActionFunction::SetVisible(bool visible) {
   // If --browser-actions-for-all is enabled there will be a browser_action
-  // here instead of a page action. Until we decide to do with that, just
+  // here instead of a page action. Until we decide what to do with that, just
   // ignore.
   if (!GetExtension()->page_action())
     return true;
@@ -176,7 +176,7 @@ bool ExtensionActionSetIconFunction::RunExtensionAction() {
         IPC::ReadParam(&bitmap_pickle, &iter, &bitmap));
     extension_action_->SetIcon(tab_id_, bitmap);
   } else if (details_->GetInteger("iconIndex", &icon_index)) {
-    // If --browser-actions-for-all is enabled there might legimitely be an
+    // If --browser-actions-for-all is enabled there might legitimately be an
     // iconIndex set. Until we decide what to do with that, ignore.
     if (!GetExtension()->page_action())
       return true;

@@ -682,7 +682,7 @@ void ExtensionBrowserEventRouter::ExtensionActionExecuted(
     return;
 
   const char* event_name = NULL;
-  switch (extension->extension_action_api_type()) {
+  switch (extension->declared_action_type()) {
     case ExtensionAction::TYPE_NONE:
       break;
     case ExtensionAction::TYPE_BROWSER:

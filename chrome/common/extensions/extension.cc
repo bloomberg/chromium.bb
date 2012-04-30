@@ -2304,12 +2304,12 @@ bool Extension::LoadPageAction(string16* error) {
     page_action_ = LoadExtensionActionHelper(page_action_value, error);
     if (!page_action_.get())
       return false;  // Failed to parse page action definition.
-    extension_action_api_type_ = ExtensionAction::TYPE_PAGE;
+    declared_action_type_ = ExtensionAction::TYPE_PAGE;
 
     if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserActionsForAll)) {
       browser_action_ = page_action_.Pass();
-      // extension_action_api_type_ stays the same; that's the point.
+      // declared_action_type_ stays the same; that's the point.
     }
   }
 
@@ -2328,7 +2328,7 @@ bool Extension::LoadBrowserAction(string16* error) {
   browser_action_ = LoadExtensionActionHelper(browser_action_value, error);
   if (!browser_action_.get())
     return false;  // Failed to parse browser action definition.
-  extension_action_api_type_ = ExtensionAction::TYPE_BROWSER;
+  declared_action_type_ = ExtensionAction::TYPE_BROWSER;
   return true;
 }
 
@@ -2826,7 +2826,7 @@ Extension::Extension(const FilePath& path,
       incognito_split_mode_(false),
       offline_enabled_(false),
       converted_from_user_script_(false),
-      extension_action_api_type_(ExtensionAction::TYPE_NONE),
+      declared_action_type_(ExtensionAction::TYPE_NONE),
       background_page_is_persistent_(true),
       allow_background_js_access_(true),
       manifest_(manifest.release()),

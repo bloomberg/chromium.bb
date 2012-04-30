@@ -577,8 +577,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const UserScriptList& content_scripts() const { return content_scripts_; }
   ExtensionAction* page_action() const { return page_action_.get(); }
   ExtensionAction* browser_action() const { return browser_action_.get(); }
-  ExtensionAction::Type extension_action_api_type() const {
-    return extension_action_api_type_;
+  ExtensionAction::Type declared_action_type() const {
+    return declared_action_type_;
   }
   const FileBrowserHandlerList* file_browser_handlers() const {
     return file_browser_handlers_.get();
@@ -932,11 +932,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // The extension's browser action, if any.
   scoped_ptr<ExtensionAction> browser_action_;
 
-  // The "API type" of whichever extension action (|page_action_| or
-  // |browser_action_|) refers to. This flag is needed by code which must deal
-  // with browser actions that were automatically converted from page actions,
-  // since the extensions will still call the pageAction APIs.
-  ExtensionAction::Type extension_action_api_type_;
+  // Indicates the type of action (browser or page) that the extension declared
+  // in its manifest. This doesn't imply any value for page_action or
+  // browser_action, since page actions may be turned into browser actions and
+  // browser actions may be generated without any action declared.
+  ExtensionAction::Type declared_action_type_;
 
   // The extension's file browser actions, if any.
   scoped_ptr<FileBrowserHandlerList> file_browser_handlers_;
