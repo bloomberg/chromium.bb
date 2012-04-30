@@ -148,9 +148,6 @@ class ProfileImpl : public Profile,
 
   void InitHostZoomMap();
 
-  // The installation of any pre-defined protocol handlers.
-  void InstallDefaultProtocolHandlers();
-
   // Does final prefs initialization and calls Init().
   void OnPrefsLoaded(bool success);
 
