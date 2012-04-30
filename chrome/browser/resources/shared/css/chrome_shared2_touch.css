@@ -14,16 +14,17 @@ input[type='search'] {
   padding-top: 6px;
 }
 
-/* Additional padding to disambiguate controls on neighboring rows.
- * Ideally, the margin belongs on input[type=radio|checkbox] to be a more
- * general fix; however, this creates baseline problems as webkit is not
- * currently able to reconcile the baseline of a text-free inline box
- * containing a margin and fixed dimensions with neighboring content.
- * TODO(kevers): Reinvestigate once the baseline adjustment properties in
- * CSS3 are supported. */
+/* Margins are not touchable.  Use padding on the inner label instead to
+  increase the size of the touch target. */
 .checkbox,
 .radio {
-  margin: 12px 0;
+ margin: 0;
+}
+
+.checkbox label,
+.radio label {
+  padding-bottom: 7px;
+  padding-top: 7px;
 }
 
 li > button.link-button {
