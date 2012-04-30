@@ -311,20 +311,20 @@ Press Search key to cancel.
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_FULL" desc="The label in the tray dialog to indicate that the battery is full.">
         Battery full
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_LOW" desc="The label in the tray dialog to indicate that the battery is low.">
-        Battery low
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT" desc="The label in the tray dialog to show the remaining battery power as a percent.">
+        Battery: <ph name="percentage">$1<ex>56</ex></ph>%
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_STATUS" desc="The label in the tray dialog to show the status of the battery power.">
-Battery: <ph name="percentage">$1<ex>56</ex></ph>%
-<ph name="hour">$2</ph>h <ph name="minute">$3</ph>m
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL" desc="The label in the tray dialog to show a time estimate until the battery is fully charged.">
+        <ph name="hour">$1<ex>2</ex></ph>h <ph name="minute">$2<ex>53</ex></ph>m until full
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_EMPTY" desc="The label in the tray dialog to show a time estimate until the battery is empty.">
+        <ph name="hour">$1<ex>2</ex></ph>h <ph name="minute">$2<ex>53</ex></ph>m remaining
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ON" desc="The label in the tray dialog indicating that the time to completely charge the battery is being calculated.">
-Battery: <ph name="percentage">$1<ex>56</ex></ph>%
-Calculating time until full
+        Calculating time until full
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_OFF" desc="The label in the tray dialog indicating that the time to completely drain the battery is being calculated.">
-Battery: <ph name="percentage">$1<ex>56</ex></ph>%
-Calculating remaining time
+        Calculating remaining time
       </message>
       <message name="IDS_ASH_STATUS_TRAY_IP" desc="The label for the IP address of the network:">
         IP Address

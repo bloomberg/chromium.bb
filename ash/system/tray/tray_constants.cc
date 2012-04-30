@@ -12,6 +12,7 @@ const int kTrayPopupAutoCloseDelayInSeconds = 2;
 const int kTrayPopupAutoCloseDelayForTextInSeconds = 5;
 const int kTrayPopupPaddingHorizontal = 18;
 const int kTrayPopupPaddingBetweenItems = 10;
+const int kTrayPopupTextSpacingVertical = 4;
 
 const int kTrayPopupItemHeight = 48;
 const int kTrayPopupDetailsIconWidth = 27;

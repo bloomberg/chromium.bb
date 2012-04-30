@@ -14,6 +14,7 @@ extern const int kTrayPopupAutoCloseDelayInSeconds;
 extern const int kTrayPopupAutoCloseDelayForTextInSeconds;
 extern const int kTrayPopupPaddingHorizontal;
 extern const int kTrayPopupPaddingBetweenItems;
+extern const int kTrayPopupTextSpacingVertical;
 
 extern const int kTrayPopupItemHeight;
 extern const int kTrayPopupDetailsIconWidth;

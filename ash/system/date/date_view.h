@@ -19,40 +19,79 @@ namespace ash {
 namespace internal {
 namespace tray {
 
-// This view is used for both the TrayDate tray icon and the TrayPower popup.
-class DateView : public ActionableView {
+// Abstract base class containing common updating and layout code for the
+// DateView popup and the TimeView tray icon.
+class BaseDateTimeView : public ActionableView {
  public:
-  enum TimeType {
-    TIME,
-    DATE
-  };
+  virtual ~BaseDateTimeView();
 
-  explicit DateView(TimeType type);
+  // Updates the displayed text for the current time.
+  void UpdateText();
+
+ protected:
+  BaseDateTimeView();
+
+ private:
+  // Updates labels to display the current time.
+  virtual void UpdateTextInternal(const base::Time& now) = 0;
+
+  // Overridden from views::View.
+  virtual void OnLocaleChanged() OVERRIDE;
+
+  base::OneShotTimer<BaseDateTimeView> timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(BaseDateTimeView);
+};
+
+// Popup view used to display the date and day of week.
+class DateView : public BaseDateTimeView {
+ public:
+  DateView();
   virtual ~DateView();
-  void UpdateTimeFormat();
-  views::Label* label() const { return label_; }
 
   // Sets whether the view is actionable. An actionable date view gives visual
   // feedback on hover, can be focused by keyboard, and clicking/pressing space
   // or enter on the view shows date-related settings.
   void SetActionable(bool actionable);
 
-  void UpdateText();
-
  private:
+  // Overridden from BaseDateTimeView.
+  virtual void UpdateTextInternal(const base::Time& now) OVERRIDE;
+
   // Overridden from ActionableView.
   virtual bool PerformAction(const views::Event& event) OVERRIDE;
 
-  // Overridden from views::View.
-  virtual void OnLocaleChanged() OVERRIDE;
+  views::Label* date_label_;
+  views::Label* day_of_week_label_;
 
-  base::OneShotTimer<DateView> timer_;
-  base::HourClockType hour_type_;
-  TimeType type_;
   bool actionable_;
-  views::Label* label_;
 
   DISALLOW_COPY_AND_ASSIGN(DateView);
+};
+
+// Tray view used to display the current time.
+class TimeView : public BaseDateTimeView {
+ public:
+  TimeView();
+  virtual ~TimeView();
+
+  views::Label* label() const { return label_; }
+
+  // Updates the format of the displayed time.
+  void UpdateTimeFormat();
+
+ private:
+  // Overridden from BaseDateTimeView.
+  virtual void UpdateTextInternal(const base::Time& now) OVERRIDE;
+
+  // Overridden from ActionableView.
+  virtual bool PerformAction(const views::Event& event) OVERRIDE;
+
+  views::Label* label_;
+
+  base::HourClockType hour_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(TimeView);
 };
 
 }  // namespace tray

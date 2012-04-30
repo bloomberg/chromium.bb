@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/tray_constants.h"
 #include "base/time.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -17,83 +18,55 @@ namespace internal {
 namespace tray {
 
 namespace {
+
 // Amount of slop to add into the timer to make sure we're into the next minute
 // when the timer goes off.
 const int kTimerSlopSeconds = 1;
 
-string16 FormatNicely(const base::Time& time) {
+string16 FormatDate(const base::Time& time) {
   icu::UnicodeString date_string;
-
   scoped_ptr<icu::DateFormat> formatter(
-      icu::DateFormat::createDateInstance(icu::DateFormat::kFull));
-  icu::FieldPosition position;
-  position.setField(UDAT_DAY_OF_WEEK_FIELD);
-  formatter->format(static_cast<UDate>(time.ToDoubleT() * 1000),
-                    date_string,
-                    position);
-  icu::UnicodeString day = date_string.retainBetween(position.getBeginIndex(),
-                                                     position.getEndIndex());
-
-  date_string.remove();
-  formatter.reset(
       icu::DateFormat::createDateInstance(icu::DateFormat::kMedium));
   formatter->format(static_cast<UDate>(time.ToDoubleT() * 1000), date_string);
-
-  date_string += "\n";
-  date_string += day;
-
   return string16(date_string.getBuffer(),
                   static_cast<size_t>(date_string.length()));
 }
 
+string16 FormatDayOfWeek(const base::Time& time) {
+  scoped_ptr<icu::DateFormat> formatter(
+      icu::DateFormat::createDateInstance(icu::DateFormat::kFull));
+  icu::UnicodeString date_string;
+  icu::FieldPosition position;
+  position.setField(UDAT_DAY_OF_WEEK_FIELD);
+  formatter->format(
+      static_cast<UDate>(time.ToDoubleT() * 1000), date_string, position);
+  icu::UnicodeString day = date_string.retainBetween(position.getBeginIndex(),
+                                                     position.getEndIndex());
+  return string16(day.getBuffer(), static_cast<size_t>(day.length()));
 }
 
-DateView::DateView(TimeType type)
-    : hour_type_(ash::Shell::GetInstance()->tray_delegate()->
-          GetHourClockType()),
-      type_(type),
-      actionable_(false) {
-  // TODO(flackr): Investigate respecting the view's border in FillLayout.
-  SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 0, 0));
-  label_ = new views::Label;
-  label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  label_->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
-  UpdateText();
-  AddChildView(label_);
-  set_focusable(actionable_);
+views::Label* CreateLabel() {
+  views::Label* label = new views::Label;
+  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
+  return label;
 }
 
-DateView::~DateView() {
+}  // namespace
+
+BaseDateTimeView::~BaseDateTimeView() {
   timer_.Stop();
 }
 
-void DateView::UpdateTimeFormat() {
-  hour_type_ = ash::Shell::GetInstance()->tray_delegate()->GetHourClockType();
-  UpdateText();
-}
-
-void DateView::SetActionable(bool actionable) {
-  actionable_ = actionable;
-  set_focusable(actionable_);
-}
-
-void DateView::UpdateText() {
+void BaseDateTimeView::UpdateText() {
   base::Time now = base::Time::Now();
-  gfx::Size old_size = label_->GetPreferredSize();
-  if (type_ == DATE) {
-    label_->SetText(FormatNicely(now));
-  } else {
-    label_->SetText(base::TimeFormatTimeOfDayWithHourClockType(
-        now, hour_type_, base::kDropAmPm));
+  gfx::Size old_size = GetPreferredSize();
+  UpdateTextInternal(now);
+  if (GetWidget() && GetPreferredSize() != old_size) {
+    // Forcing the widget to the new size is sufficient. The positioning is
+    // taken care of by the layout manager (ShelfLayoutManager).
+    GetWidget()->SetSize(GetPreferredSize());
   }
-  if (label_->GetPreferredSize() != old_size && GetWidget()) {
-    // Forcing the widget to the new size is sufficient. The positing is taken
-    // care of by the layout manager (ShelfLayoutManager).
-    GetWidget()->SetSize(GetWidget()->GetContentsView()->GetPreferredSize());
-  }
-
-  label_->SetTooltipText(base::TimeFormatFriendlyDate(now));
   SchedulePaint();
 
   // Try to set the timer to go off at the next change of the minute. We don't
@@ -113,8 +86,41 @@ void DateView::UpdateText() {
   seconds_left += kTimerSlopSeconds;
 
   timer_.Stop();
-  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(seconds_left), this,
-      &DateView::UpdateText);
+  timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(seconds_left),
+      this, &BaseDateTimeView::UpdateText);
+}
+
+BaseDateTimeView::BaseDateTimeView() {
+}
+
+void BaseDateTimeView::OnLocaleChanged() {
+  UpdateText();
+}
+
+DateView::DateView() : actionable_(false) {
+  SetLayoutManager(
+      new views::BoxLayout(
+          views::BoxLayout::kVertical, 0, 0, kTrayPopupTextSpacingVertical));
+  date_label_ = CreateLabel();
+  day_of_week_label_ = CreateLabel();
+  UpdateTextInternal(base::Time::Now());
+  AddChildView(date_label_);
+  AddChildView(day_of_week_label_);
+  set_focusable(actionable_);
+}
+
+DateView::~DateView() {
+}
+
+void DateView::SetActionable(bool actionable) {
+  actionable_ = actionable;
+  set_focusable(actionable_);
+}
+
+void DateView::UpdateTextInternal(const base::Time& now) {
+  date_label_->SetText(FormatDate(now));
+  day_of_week_label_->SetText(FormatDayOfWeek(now));
 }
 
 bool DateView::PerformAction(const views::Event& event) {
@@ -125,9 +131,36 @@ bool DateView::PerformAction(const views::Event& event) {
   return true;
 }
 
-void DateView::OnLocaleChanged() {
+TimeView::TimeView()
+    : hour_type_(
+          ash::Shell::GetInstance()->tray_delegate()->GetHourClockType()) {
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+  label_ = CreateLabel();
+  UpdateTextInternal(base::Time::Now());
+  AddChildView(label_);
+  set_focusable(true);
+}
+
+TimeView::~TimeView() {
+}
+
+void TimeView::UpdateTimeFormat() {
+  hour_type_ = ash::Shell::GetInstance()->tray_delegate()->GetHourClockType();
   UpdateText();
 }
+
+void TimeView::UpdateTextInternal(const base::Time& now) {
+  label_->SetText(
+      base::TimeFormatTimeOfDayWithHourClockType(
+          now, hour_type_, base::kDropAmPm));
+  label_->SetTooltipText(base::TimeFormatFriendlyDate(now));
+}
+
+bool TimeView::PerformAction(const views::Event& event) {
+  return false;
+}
+
 
 }  // namespace tray
 }  // namespace internal

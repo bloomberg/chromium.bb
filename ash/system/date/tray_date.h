@@ -13,7 +13,7 @@ namespace ash {
 namespace internal {
 
 namespace tray {
-class DateView;
+class TimeView;
 }
 
 class TrayDate : public SystemTrayItem,
@@ -36,7 +36,7 @@ class TrayDate : public SystemTrayItem,
   virtual void OnDateFormatChanged() OVERRIDE;
   virtual void Refresh() OVERRIDE;
 
-  scoped_ptr<tray::DateView> date_tray_;
+  scoped_ptr<tray::TimeView> time_tray_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayDate);
 };

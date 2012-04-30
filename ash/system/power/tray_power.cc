@@ -103,12 +103,20 @@ class PowerTrayView : public views::ImageView {
 };
 
 // This view is used only for the popup.
-class PowerPopupView : public views::Label {
+class PowerPopupView : public views::View {
  public:
   PowerPopupView() {
-    SetHorizontalAlignment(ALIGN_RIGHT);
-    SetMultiLine(true);
+    status_label_ = new views::Label;
+    status_label_->SetHorizontalAlignment(views::Label::ALIGN_RIGHT);
+    time_label_ = new views::Label;
+    time_label_->SetHorizontalAlignment(views::Label::ALIGN_RIGHT);
     UpdateText();
+
+    SetLayoutManager(
+        new views::BoxLayout(
+            views::BoxLayout::kVertical, 0, 0, kTrayPopupTextSpacingVertical));
+    AddChildView(status_label_);
+    AddChildView(time_label_);
   }
 
   virtual ~PowerPopupView() {
@@ -126,11 +134,16 @@ class PowerPopupView : public views::Label {
  private:
   void UpdateText() {
     if (supply_status_.is_calculating_battery_time) {
-      SetText(l10n_util::GetStringFUTF16(supply_status_.line_power_on ?
-          IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ON :
-          IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_OFF,
-          base::IntToString16(
-              static_cast<int>(supply_status_.battery_percentage))));
+      status_label_->SetText(
+          l10n_util::GetStringFUTF16(
+              IDS_ASH_STATUS_TRAY_BATTERY_PERCENT,
+              base::IntToString16(
+                  static_cast<int>(supply_status_.battery_percentage))));
+      time_label_->SetText(
+          ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+              supply_status_.line_power_on ?
+                  IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ON :
+                  IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_OFF));
       return;
     }
 
@@ -141,21 +154,33 @@ class PowerPopupView : public views::Label {
     int hour = time.InHours();
     int min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
     if (hour || min) {
-      SetText(l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_BATTERY_STATUS,
-          base::IntToString16(
-              static_cast<int>(supply_status_.battery_percentage)),
-          base::IntToString16(hour),
-          base::IntToString16(min)));
+      status_label_->SetText(
+          l10n_util::GetStringFUTF16(
+              IDS_ASH_STATUS_TRAY_BATTERY_PERCENT,
+              base::IntToString16(
+                  static_cast<int>(supply_status_.battery_percentage))));
+      time_label_->SetText(
+          l10n_util::GetStringFUTF16(
+              supply_status_.line_power_on ?
+                  IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL :
+                  IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_EMPTY,
+              base::IntToString16(hour),
+              base::IntToString16(min)));
     } else {
       if (supply_status_.line_power_on) {
-        SetText(ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-            IDS_ASH_STATUS_TRAY_BATTERY_FULL));
+        status_label_->SetText(
+            ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+                IDS_ASH_STATUS_TRAY_BATTERY_FULL));
       } else {
         // Completely discharged? ... ha?
-        SetText(string16());
+        status_label_->SetText(string16());
       }
+      time_label_->SetText(string16());
     }
   }
+
+  views::Label* status_label_;
+  views::Label* time_label_;
 
   PowerSupplyStatus supply_status_;
 
@@ -184,7 +209,7 @@ views::View* TrayPower::CreateTrayView(user::LoginStatus status) {
 }
 
 views::View* TrayPower::CreateDefaultView(user::LoginStatus status) {
-  date_.reset(new tray::DateView(tray::DateView::DATE));
+  date_.reset(new tray::DateView());
 
   views::View* container = new views::View;
   views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
