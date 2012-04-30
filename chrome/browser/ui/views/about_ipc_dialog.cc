@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -262,8 +262,7 @@ views::View* AboutIPCDialog::GetContentsView() {
 }
 
 int AboutIPCDialog::GetDialogButtons() const {
-  // Don't want OK or Cancel.
-  return 0;
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 string16 AboutIPCDialog::GetWindowTitle() const {
