@@ -107,6 +107,10 @@ void ExtensionFunction::Run() {
     SendResponse(false);
 }
 
+bool ExtensionFunction::ShouldSkipQuotaLimiting() const {
+  return false;
+}
+
 bool ExtensionFunction::HasOptionalArgument(size_t index) {
   Value* value;
   return args_->Get(index, &value) && !value->IsType(Value::TYPE_NULL);

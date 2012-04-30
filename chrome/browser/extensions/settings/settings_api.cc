@@ -28,6 +28,17 @@ SettingsFunction::SettingsFunction()
 
 SettingsFunction::~SettingsFunction() {}
 
+bool SettingsFunction::ShouldSkipQuotaLimiting() const {
+  // Only apply quota if this is for sync storage.
+  std::string settings_namespace_string;
+  if (!args_->GetString(0, &settings_namespace_string)) {
+    // This is an error but it will be caught in RunImpl(), there is no
+    // mechanism to signify an error from this function.
+    return false;
+  }
+  return settings_namespace_string != "sync";
+}
+
 bool SettingsFunction::RunImpl() {
   {
     std::string settings_namespace_string;

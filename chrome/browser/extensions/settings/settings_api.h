@@ -27,6 +27,7 @@ class SettingsFunction : public AsyncExtensionFunction {
   virtual ~SettingsFunction();
 
   // ExtensionFunction:
+  virtual bool ShouldSkipQuotaLimiting() const OVERRIDE;
   virtual bool RunImpl() OVERRIDE;
 
   // Extension settings function implementations should do their work here.

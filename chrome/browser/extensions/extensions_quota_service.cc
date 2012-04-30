@@ -35,6 +35,9 @@ bool ExtensionsQuotaService::Assess(const std::string& extension_id,
     const base::TimeTicks& event_time) {
   DCHECK(CalledOnValidThread());
 
+  if (function->ShouldSkipQuotaLimiting())
+    return true;
+
   // Lookup function list for extension.
   FunctionHeuristicsMap& functions = function_heuristics_[extension_id];
 

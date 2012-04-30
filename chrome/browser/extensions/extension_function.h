@@ -84,10 +84,19 @@ class ExtensionFunction
   // NULL-check.
   virtual void Run();
 
+  // Gets whether quota should be applied to this individual function
+  // invocation. This is different to GetQuotaLimitHeuristics which is only
+  // invoked once and then cached.
+  //
+  // Returns false by default.
+  virtual bool ShouldSkipQuotaLimiting() const;
+
   // Optionally adds one or multiple QuotaLimitHeuristic instances suitable for
   // this function to |heuristics|. The ownership of the new QuotaLimitHeuristic
   // instances is passed to the owner of |heuristics|.
   // No quota limiting by default.
+  //
+  // Only called once per lifetime of the ExtensionsQuotaService.
   virtual void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const {}
 

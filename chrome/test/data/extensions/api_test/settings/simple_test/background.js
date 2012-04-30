@@ -334,24 +334,36 @@ chrome.test.runTests([
   // NOTE: throttling test must come last, since each test runs with a single
   // quota.
   function throttling() {
-    // We can only really test one of the namespaces since they will all get
-    // throttled together.
-    var api = chrome.storage.sync;
+    // Test script is as so:
+    //   1 - storage.local shouldn't be exceeded.
+    //   2 - storage.sync should be exceeded.
+    //   3 - storage.local still shouldn't be exceeded.
+    //   4 - storage.sync should still be exceeded.
+    //
+    // In general, things should get throttled after 1000 calls (though in
+    // reality will be fewer due to previous tests).
 
-    // Should get throttled after 1000 calls (though in reality will be fewer
-    // due to previous tests).
-    var maxRequests = 1001;
+    function clearNTimes(area, n, whenDone) {
+      if (n <= 0) {
+        whenDone();
+      } else {
+        area.clear(function() {
+          clearNTimes(area, n - 1, whenDone);
+        });
+      }
+    }
 
-    function next() {
-      api.clear((--maxRequests > 0) ? next : done);
-    }
-    function done() {
-      chrome.test.assertEq(
-          "This request exceeds available quota.",
-          chrome.extension.lastError.message);
-      chrome.test.succeed();
-    }
-    api.clear(next);
+    var local = chrome.storage.local;
+    var sync = chrome.storage.sync;
+    var test = chrome.test;
+    var quotaError = "This request exceeds available quota.";
+
+    clearNTimes(local, 1001, test.callbackPass(function() {
+      clearNTimes(sync, 1001, test.callbackFail(quotaError, function() {
+        clearNTimes(local, 1, test.callbackPass(function() {
+          clearNTimes(sync, 1, test.callbackFail(quotaError, test.succeed));
+        }));
+      }));
+    }));
   }
-
 ]);
