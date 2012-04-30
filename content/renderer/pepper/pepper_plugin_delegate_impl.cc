@@ -549,12 +549,6 @@ SkBitmap* PepperPluginDelegateImpl::GetSadPluginBitmap() {
   return GetContentClient()->renderer()->GetSadPluginBitmap();
 }
 
-WebKit::WebPlugin* PepperPluginDelegateImpl::CreatePluginReplacement(
-    const FilePath& file_path) {
-  return GetContentClient()->renderer()->CreatePluginReplacement(
-      render_view_, file_path);
-}
-
 webkit::ppapi::PluginDelegate::PlatformImage2D*
 PepperPluginDelegateImpl::CreateImage2D(int width, int height) {
   return PepperPlatformImage2DImpl::Create(width, height);

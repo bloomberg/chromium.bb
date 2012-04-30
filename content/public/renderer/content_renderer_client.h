@@ -14,7 +14,6 @@
 #include "content/public/common/content_client.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageVisibilityState.h"
 
-class FilePath;
 class GURL;
 class SkBitmap;
 
@@ -32,7 +31,6 @@ namespace webkit {
 namespace ppapi {
 class PpapiInterfaceFactoryManager;
 }
-struct WebPluginInfo;
 }
 
 namespace media {
@@ -84,12 +82,6 @@ class ContentRendererClient {
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
       WebKit::WebPlugin** plugin) = 0;
-
-  // Creates a replacement plug-in that is shown when the plug-in at |file_path|
-  // couldn't be loaded. This allows the embedder to show a custom placeholder.
-  virtual WebKit::WebPlugin* CreatePluginReplacement(
-      RenderView* render_view,
-      const FilePath& plugin_path) = 0;
 
   // Returns true if the embedder has an error page to show for the given http
   // status code. If so |error_domain| should be set to according to WebURLError

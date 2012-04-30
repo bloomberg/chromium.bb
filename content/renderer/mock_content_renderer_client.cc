@@ -37,12 +37,6 @@ bool MockContentRendererClient::OverrideCreatePlugin(
   return false;
 }
 
-WebKit::WebPlugin* MockContentRendererClient::CreatePluginReplacement(
-    RenderView* render_view,
-    const FilePath& plugin_path) {
-  return NULL;
-}
-
 bool MockContentRendererClient::HasErrorPage(int http_status_code,
                                              std::string* error_domain) {
   return false;

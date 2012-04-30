@@ -27,7 +27,6 @@
 
 using ppapi::NPObjectVar;
 using WebKit::WebCanvas;
-using WebKit::WebPlugin;
 using WebKit::WebPluginContainer;
 using WebKit::WebPluginParams;
 using WebKit::WebPoint;
@@ -85,15 +84,7 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   if (!success) {
     instance_->Delete();
     instance_ = NULL;
-
-    WebKit::WebPlugin* replacement_plugin =
-        init_data_->delegate->CreatePluginReplacement(
-            init_data_->module->path());
-    if (!replacement_plugin->initialize(container))
-      return false;
-
-    container->setPlugin(replacement_plugin);
-    return true;
+    return false;
   }
 
   init_data_.reset();
