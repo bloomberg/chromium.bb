@@ -95,10 +95,6 @@
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # crbug.com/123396
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
-      # crbug.com/119173
-      '-https.SSLTest',
-      # crbug.com/119110
-      '-https.SSLTest.testSSLCertOK',
       # crbug.com/100593
       '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',
       # crbug.com/105560
@@ -203,6 +199,7 @@
       '-fullscreen_mouselock.FullscreenMouselockTest.testPrefsForFullscreenExit',
       # crbug.com/119110
       '-https.SSLTest.testSSLCertAuthorityOK',
+      '-https.SSLTest.testSSLCertOK',
       # crbug.com/114244
       '-imports.ImportsTest.testImportSafariDataTwice',
       # Test fails due to keychain popup: crbug.com/124913
@@ -245,8 +242,6 @@
       # Permanently-disabled tests.
       # ===========================
       '-browser.BrowserTest.testWindowResize',  # Details at: crbug.com/44963
-      # crbug.com/119110
-      '-https.SSLTest.testSSLCertAuthorityOK',
       # crbug.com/104206
       '-notifications.NotificationsTest.testKillNotificationProcess',
       # Several omnibox tests do not show omnibox results when run
@@ -277,6 +272,9 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
+      # crbug.com/119110
+      '-https.SSLTest.testSSLCertAuthorityOK',
+      '-https.SSLTest.testSSLCertOK',
       # crbug.com/85310
       '-instant',
       # crbug.com/91033
@@ -482,6 +480,7 @@
     'all': [
       '@CONTINUOUS',
       'about_plugins_ui.ChromeAboutPluginsUITest',
+      'https.SSLTest',
       'media.media_basic_playback',
       'nacl_sdk',
       'translate',

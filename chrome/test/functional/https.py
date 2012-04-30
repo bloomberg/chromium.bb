@@ -105,8 +105,7 @@ class SSLTest(pyauto.PyUITest):
         pyauto.PAGE_TYPE_ERROR: 'error'}
     self.assertEqual(
         result_dict['page_type'], pyauto.PAGE_TYPE_NORMAL,
-        msg='Cert OK displayed page type: %s, but expected type normal.'
-        % page_type_dict[result_dict['page_type']])
+        msg='Cert OK did not display page type normal.')
 
   def testSSLCertIsExpiredAndCertNameMismatches(self):
     """Verify Certificate Expiration and Certificate Mismatched name."""
