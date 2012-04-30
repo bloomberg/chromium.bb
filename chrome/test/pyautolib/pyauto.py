@@ -4927,6 +4927,175 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = { 'command': 'CaptureProfilePhoto' }
     return self._GetResultFromJSONRequest(cmd_dict)
 
+  def GetMemoryStatsChromeOS(self, duration):
+    """Identifies and returns different kinds of current memory usage stats.
+
+    This function samples values each second for |duration| seconds, then
+    outputs the min, max, and ending values for each measurement type.
+
+    Args:
+      duration: The number of seconds to sample data before outputting the
+          minimum, maximum, and ending values for each measurement type.
+
+    Returns:
+      A dictionary containing memory usage information.  Each measurement type
+      is associated with the min, max, and ending values from among all
+      sampled values.  Values are specified in KB.
+      {
+        'gem_obj': {  # GPU memory usage.
+          'min': ...,
+          'max': ...,
+          'end': ...,
+        },
+        'gtt': { ... },  # GPU memory usage (graphics translation table).
+        'mem_free': { ... },  # CPU free memory.
+        'mem_available': { ... },  # CPU available memory.
+        'mem_shared': { ... },  # CPU shared memory.
+        'mem_cached': { ... },  # CPU cached memory.
+        'mem_anon': { ... },  # CPU anon memory (active + inactive).
+        'mem_file': { ... },  # CPU file memory (active + inactive).
+        'mem_slab': { ... },  # CPU slab memory.
+        'browser_priv': { ... },  # Chrome browser private memory.
+        'browser_shared': { ... },  # Chrome browser shared memory.
+        'gpu_priv': { ... },  # Chrome GPU private memory.
+        'gpu_shared': { ... },  # Chrome GPU shared memory.
+        'renderer_priv': { ... },  # Total private memory of all renderers.
+        'renderer_shared': { ... },  # Total shared memory of all renderers.
+      }
+    """
+    logging.debug('Sampling memory information for %d seconds...' % duration)
+    stats = {}
+
+    for _ in xrange(duration):
+      # GPU memory.
+      gem_obj_path = '/sys/kernel/debug/dri/0/i915_gem_objects'
+      if os.path.exists(gem_obj_path):
+        p = subprocess.Popen('grep bytes %s' % gem_obj_path,
+                             stdout=subprocess.PIPE, shell=True)
+        stdout = p.communicate()[0]
+
+        gem_obj = re.search(
+            '\d+ objects, (\d+) bytes\n', stdout).group(1)
+        if 'gem_obj' not in stats:
+          stats['gem_obj'] = []
+        stats['gem_obj'].append(int(gem_obj) / 1024.0)
+
+      gtt_path = '/sys/kernel/debug/dri/0/i915_gem_gtt'
+      if os.path.exists(gtt_path):
+        p = subprocess.Popen('grep bytes %s' % gtt_path,
+                             stdout=subprocess.PIPE, shell=True)
+        stdout = p.communicate()[0]
+
+        gtt = re.search(
+            'Total [\d]+ objects, ([\d]+) bytes', stdout).group(1)
+        if 'gtt' not in stats:
+          stats['gtt'] = []
+        stats['gtt'].append(int(gtt) / 1024.0)
+
+      # CPU memory.
+      stdout = ''
+      with open('/proc/meminfo') as f:
+        stdout = f.read()
+      mem_free = re.search('MemFree:\s*([\d]+) kB', stdout).group(1)
+
+      if 'mem_free' not in stats:
+        stats['mem_free'] = []
+      stats['mem_free'].append(int(mem_free))
+
+      mem_dirty = re.search('Dirty:\s*([\d]+) kB', stdout).group(1)
+      mem_active_file = re.search(
+          'Active\(file\):\s*([\d]+) kB', stdout).group(1)
+      mem_inactive_file = re.search(
+          'Inactive\(file\):\s*([\d]+) kB', stdout).group(1)
+
+      with open('/proc/sys/vm/min_filelist_kbytes') as f:
+        mem_min_file = f.read()
+
+      # Available memory =
+      #     MemFree + ActiveFile + InactiveFile - DirtyMem - MinFileMem
+      if 'mem_available' not in stats:
+        stats['mem_available'] = []
+      stats['mem_available'].append(
+          int(mem_free) + int(mem_active_file) + int(mem_inactive_file) -
+          int(mem_dirty) - int(mem_min_file))
+
+      mem_shared = re.search('Shmem:\s*([\d]+) kB', stdout).group(1)
+      if 'mem_shared' not in stats:
+        stats['mem_shared'] = []
+      stats['mem_shared'].append(int(mem_shared))
+
+      mem_cached = re.search('Cached:\s*([\d]+) kB', stdout).group(1)
+      if 'mem_cached' not in stats:
+        stats['mem_cached'] = []
+      stats['mem_cached'].append(int(mem_cached))
+
+      mem_anon_active = re.search('Active\(anon\):\s*([\d]+) kB',
+                                  stdout).group(1)
+      mem_anon_inactive = re.search('Inactive\(anon\):\s*([\d]+) kB',
+                                    stdout).group(1)
+      if 'mem_anon' not in stats:
+        stats['mem_anon'] = []
+      stats['mem_anon'].append(int(mem_anon_active) + int(mem_anon_inactive))
+
+      mem_file_active = re.search('Active\(file\):\s*([\d]+) kB',
+                                  stdout).group(1)
+      mem_file_inactive = re.search('Inactive\(file\):\s*([\d]+) kB',
+                                    stdout).group(1)
+      if 'mem_file' not in stats:
+        stats['mem_file'] = []
+      stats['mem_file'].append(int(mem_file_active) + int(mem_file_inactive))
+
+      mem_slab = re.search('Slab:\s*([\d]+) kB', stdout).group(1)
+      if 'mem_slab' not in stats:
+        stats['mem_slab'] = []
+      stats['mem_slab'].append(int(mem_slab))
+
+      # Chrome process memory.
+      pinfo = self.GetProcessInfo()['browsers'][0]['processes']
+      total_renderer_priv = 0
+      total_renderer_shared = 0
+      for process in pinfo:
+        mem_priv = process['working_set_mem']['priv']
+        mem_shared = process['working_set_mem']['shared']
+        if process['child_process_type'] == 'Browser':
+          if 'browser_priv' not in stats:
+            stats['browser_priv'] = []
+            stats['browser_priv'].append(int(mem_priv))
+          if 'browser_shared' not in stats:
+            stats['browser_shared'] = []
+            stats['browser_shared'].append(int(mem_shared))
+        elif process['child_process_type'] == 'GPU':
+          if 'gpu_priv' not in stats:
+            stats['gpu_priv'] = []
+            stats['gpu_priv'].append(int(mem_priv))
+          if 'gpu_shared' not in stats:
+            stats['gpu_shared'] = []
+            stats['gpu_shared'].append(int(mem_shared))
+        elif process['child_process_type'] == 'Tab':
+          # Sum the memory of all renderer processes.
+          total_renderer_priv += int(mem_priv)
+          total_renderer_shared += int(mem_shared)
+      if 'renderer_priv' not in stats:
+        stats['renderer_priv'] = []
+        stats['renderer_priv'].append(int(total_renderer_priv))
+      if 'renderer_shared' not in stats:
+        stats['renderer_shared'] = []
+        stats['renderer_shared'].append(int(total_renderer_shared))
+
+      time.sleep(1)
+
+    # Compute min, max, and ending values to return.
+    result = {}
+    for measurement_type in stats:
+      values = stats[measurement_type]
+      result[measurement_type] = {
+        'min': min(values),
+        'max': max(values),
+        'end': values[-1],
+      }
+
+    return result
+
   ## ChromeOS section -- end
 
 
