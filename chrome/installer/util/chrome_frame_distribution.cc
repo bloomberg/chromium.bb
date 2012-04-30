@@ -9,8 +9,6 @@
 
 #include "chrome/installer/util/chrome_frame_distribution.h"
 
-#include <string>
-
 #include "base/string_util.h"
 #include "chrome/common/net/test_server_locations.h"
 #include "chrome/installer/util/channel_info.h"
@@ -30,41 +28,41 @@ ChromeFrameDistribution::ChromeFrameDistribution()
     : BrowserDistribution(CHROME_FRAME) {
 }
 
-std::wstring ChromeFrameDistribution::GetAppGuid() {
+string16 ChromeFrameDistribution::GetAppGuid() {
   return kChromeFrameGuid;
 }
 
-std::wstring ChromeFrameDistribution::GetApplicationName() {
+string16 ChromeFrameDistribution::GetApplicationName() {
   return L"Google Chrome Frame";
 }
 
-std::wstring ChromeFrameDistribution::GetAppShortCutName() {
-  const std::wstring& product_name =
+string16 ChromeFrameDistribution::GetAppShortCutName() {
+  const string16& product_name =
       installer::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
   return product_name;
 }
 
-std::wstring ChromeFrameDistribution::GetAlternateApplicationName() {
-  const std::wstring& product_name =
+string16 ChromeFrameDistribution::GetAlternateApplicationName() {
+  const string16& product_name =
       installer::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
   return product_name;
 }
 
-std::wstring ChromeFrameDistribution::GetInstallSubDir() {
+string16 ChromeFrameDistribution::GetInstallSubDir() {
   return L"Google\\Chrome Frame";
 }
 
-std::wstring ChromeFrameDistribution::GetPublisherName() {
-  const std::wstring& publisher_name =
+string16 ChromeFrameDistribution::GetPublisherName() {
+  const string16& publisher_name =
       installer::GetLocalizedString(IDS_ABOUT_VERSION_COMPANY_NAME_BASE);
   return publisher_name;
 }
 
-std::wstring ChromeFrameDistribution::GetAppDescription() {
+string16 ChromeFrameDistribution::GetAppDescription() {
   return L"Chrome in a Frame.";
 }
 
-std::wstring ChromeFrameDistribution::GetLongAppDescription() {
+string16 ChromeFrameDistribution::GetLongAppDescription() {
   return L"Chrome in a Frame.";
 }
 
@@ -72,21 +70,21 @@ std::string ChromeFrameDistribution::GetSafeBrowsingName() {
   return "googlechromeframe";
 }
 
-std::wstring ChromeFrameDistribution::GetStateKey() {
-  std::wstring key(google_update::kRegPathClientState);
+string16 ChromeFrameDistribution::GetStateKey() {
+  string16 key(google_update::kRegPathClientState);
   key.append(L"\\");
   key.append(kChromeFrameGuid);
   return key;
 }
 
-std::wstring ChromeFrameDistribution::GetStateMediumKey() {
-  std::wstring key(google_update::kRegPathClientStateMedium);
+string16 ChromeFrameDistribution::GetStateMediumKey() {
+  string16 key(google_update::kRegPathClientStateMedium);
   key.append(L"\\");
   key.append(kChromeFrameGuid);
   return key;
 }
 
-std::wstring ChromeFrameDistribution::GetStatsServerURL() {
+string16 ChromeFrameDistribution::GetStatsServerURL() {
   return L"https://clients4.google.com/firefox/metrics/collect";
 }
 
@@ -98,17 +96,17 @@ std::string ChromeFrameDistribution::GetHttpPipeliningTestServer() const {
   return chrome_common_net::kPipelineTestServerBaseUrl;
 }
 
-std::wstring ChromeFrameDistribution::GetUninstallLinkName() {
+string16 ChromeFrameDistribution::GetUninstallLinkName() {
   return L"Uninstall Chrome Frame";
 }
 
-std::wstring ChromeFrameDistribution::GetUninstallRegPath() {
+string16 ChromeFrameDistribution::GetUninstallRegPath() {
   return L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"
          L"Google Chrome Frame";
 }
 
-std::wstring ChromeFrameDistribution::GetVersionKey() {
-  std::wstring key(google_update::kRegPathClients);
+string16 ChromeFrameDistribution::GetVersionKey() {
+  string16 key(google_update::kRegPathClients);
   key.append(L"\\");
   key.append(kChromeFrameGuid);
   return key;

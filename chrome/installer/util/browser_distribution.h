@@ -9,10 +9,10 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/string16.h"
 #include "base/version.h"
 #include "chrome/installer/util/util_constants.h"
 
@@ -37,7 +37,7 @@ class BrowserDistribution {
   // experiments we show toasts to the user if they are inactive for a certain
   // amount of time.
   struct UserExperiment {
-    std::wstring prefix;  // The experiment code prefix for this experiment,
+    string16 prefix;      // The experiment code prefix for this experiment,
                           // also known as the 'TV' part in 'TV80'.
     int flavor;           // The flavor index for this experiment.
     int heading;          // The heading resource ID to use for this experiment.
@@ -63,50 +63,50 @@ class BrowserDistribution {
 
   virtual void DoPostUninstallOperations(const Version& version,
                                          const FilePath& local_data_path,
-                                         const std::wstring& distribution_data);
+                                         const string16& distribution_data);
 
-  virtual std::wstring GetAppGuid();
+  virtual string16 GetAppGuid();
 
   // Returns the name by which the program is registered with Default Programs.
   // This is not a localized string suitable for presenting to a user.
-  virtual std::wstring GetApplicationName();
+  virtual string16 GetApplicationName();
 
   // Returns the localized name of the program.
-  virtual std::wstring GetAppShortCutName();
+  virtual string16 GetAppShortCutName();
 
-  virtual std::wstring GetAlternateApplicationName();
+  virtual string16 GetAlternateApplicationName();
 
-  virtual std::wstring GetBrowserAppId();
+  virtual string16 GetBrowserAppId();
 
-  virtual std::wstring GetInstallSubDir();
+  virtual string16 GetInstallSubDir();
 
-  virtual std::wstring GetPublisherName();
+  virtual string16 GetPublisherName();
 
-  virtual std::wstring GetAppDescription();
+  virtual string16 GetAppDescription();
 
-  virtual std::wstring GetLongAppDescription();
+  virtual string16 GetLongAppDescription();
 
   virtual std::string GetSafeBrowsingName();
 
-  virtual std::wstring GetStateKey();
+  virtual string16 GetStateKey();
 
-  virtual std::wstring GetStateMediumKey();
+  virtual string16 GetStateMediumKey();
 
-  virtual std::wstring GetStatsServerURL();
+  virtual string16 GetStatsServerURL();
 
   virtual std::string GetNetworkStatsServer() const;
 
   virtual std::string GetHttpPipeliningTestServer() const;
 
 #if defined(OS_WIN)
-  virtual std::wstring GetDistributionData(HKEY root_key);
+  virtual string16 GetDistributionData(HKEY root_key);
 #endif
 
-  virtual std::wstring GetUninstallLinkName();
+  virtual string16 GetUninstallLinkName();
 
-  virtual std::wstring GetUninstallRegPath();
+  virtual string16 GetUninstallRegPath();
 
-  virtual std::wstring GetVersionKey();
+  virtual string16 GetVersionKey();
 
   virtual bool CanSetAsDefault();
 
@@ -114,7 +114,7 @@ class BrowserDistribution {
 
   virtual int GetIconIndex();
 
-  virtual bool GetChromeChannel(std::wstring* channel);
+  virtual bool GetChromeChannel(string16* channel);
 
   // Returns true if the distribution includes a DelegateExecute verb handler,
   // and provides the COM registration data if so:
@@ -152,7 +152,7 @@ class BrowserDistribution {
   // The user has qualified for the inactive user toast experiment and this
   // function just performs it.
   virtual void InactiveUserToastExperiment(int flavor,
-      const std::wstring& experiment_group,
+      const string16& experiment_group,
       const installer::Product& installation,
       const FilePath& application_path);
 

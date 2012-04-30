@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This file declares a class that contains various method related to branding.
+// This file defines a class that contains various method related to branding.
 
 #include "chrome/installer/util/google_chrome_binaries_distribution.h"
 
@@ -21,28 +21,28 @@ GoogleChromeBinariesDistribution::GoogleChromeBinariesDistribution()
     : ChromiumBinariesDistribution() {
 }
 
-std::wstring GoogleChromeBinariesDistribution::GetAppGuid() {
+string16 GoogleChromeBinariesDistribution::GetAppGuid() {
   return kChromeBinariesGuid;
 }
 
-std::wstring GoogleChromeBinariesDistribution::GetAppShortCutName() {
+string16 GoogleChromeBinariesDistribution::GetAppShortCutName() {
   return kChromeBinariesName;
 }
 
-std::wstring GoogleChromeBinariesDistribution::GetStateKey() {
-  return std::wstring(google_update::kRegPathClientState)
+string16 GoogleChromeBinariesDistribution::GetStateKey() {
+  return string16(google_update::kRegPathClientState)
       .append(1, L'\\')
       .append(kChromeBinariesGuid);
 }
 
-std::wstring GoogleChromeBinariesDistribution::GetStateMediumKey() {
-  return std::wstring(google_update::kRegPathClientStateMedium)
+string16 GoogleChromeBinariesDistribution::GetStateMediumKey() {
+  return string16(google_update::kRegPathClientStateMedium)
       .append(1, L'\\')
       .append(kChromeBinariesGuid);
 }
 
-std::wstring GoogleChromeBinariesDistribution::GetVersionKey() {
-  return std::wstring(google_update::kRegPathClients)
+string16 GoogleChromeBinariesDistribution::GetVersionKey() {
+  return string16(google_update::kRegPathClients)
       .append(1, L'\\')
       .append(kChromeBinariesGuid);
 }

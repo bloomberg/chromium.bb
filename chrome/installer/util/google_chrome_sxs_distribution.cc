@@ -25,26 +25,26 @@ GoogleChromeSxSDistribution::GoogleChromeSxSDistribution()
   GoogleChromeDistribution::set_product_guid(kChromeSxSGuid);
 }
 
-std::wstring GoogleChromeSxSDistribution::GetApplicationName() {
+string16 GoogleChromeSxSDistribution::GetApplicationName() {
   return L"Google Chrome Canary";
 }
 
-std::wstring GoogleChromeSxSDistribution::GetAppShortCutName() {
-  const std::wstring& shortcut_name =
+string16 GoogleChromeSxSDistribution::GetAppShortCutName() {
+  const string16& shortcut_name =
       installer::GetLocalizedString(IDS_SXS_SHORTCUT_NAME_BASE);
   return shortcut_name;
 }
 
-std::wstring GoogleChromeSxSDistribution::GetBrowserAppId() {
+string16 GoogleChromeSxSDistribution::GetBrowserAppId() {
   return kBrowserAppId;
 }
 
-std::wstring GoogleChromeSxSDistribution::GetInstallSubDir() {
+string16 GoogleChromeSxSDistribution::GetInstallSubDir() {
   return GoogleChromeDistribution::GetInstallSubDir().append(
       installer::kSxSSuffix);
 }
 
-std::wstring GoogleChromeSxSDistribution::GetUninstallRegPath() {
+string16 GoogleChromeSxSDistribution::GetUninstallRegPath() {
   return GoogleChromeDistribution::GetUninstallRegPath().append(
       installer::kSxSSuffix);
 }
@@ -57,7 +57,7 @@ int GoogleChromeSxSDistribution::GetIconIndex() {
   return kSxSIconIndex;
 }
 
-bool GoogleChromeSxSDistribution::GetChromeChannel(std::wstring* channel) {
+bool GoogleChromeSxSDistribution::GetChromeChannel(string16* channel) {
   *channel = kChannelName;
   return true;
 }
@@ -70,6 +70,6 @@ bool GoogleChromeSxSDistribution::GetDelegateExecuteHandlerData(
   return false;
 }
 
-std::wstring GoogleChromeSxSDistribution::ChannelName() {
+string16 GoogleChromeSxSDistribution::ChannelName() {
   return kChannelName;
 }

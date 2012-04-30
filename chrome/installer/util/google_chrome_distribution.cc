@@ -7,6 +7,7 @@
 
 #include "chrome/installer/util/google_chrome_distribution.h"
 
+#include <vector>
 #include <windows.h>
 #include <wtsapi32.h>
 #include <msi.h>
@@ -71,20 +72,20 @@ const wchar_t kToastExpBaseGroup[] =         L"80";
 // Substitute the locale parameter in uninstall URL with whatever
 // Google Update tells us is the locale. In case we fail to find
 // the locale, we use US English.
-std::wstring LocalizeUrl(const wchar_t* url) {
-  std::wstring language;
+string16 LocalizeUrl(const wchar_t* url) {
+  string16 language;
   if (!GoogleUpdateSettings::GetLanguage(&language))
     language = L"en-US";  // Default to US English.
   return ReplaceStringPlaceholders(url, language.c_str(), NULL);
 }
 
-std::wstring GetUninstallSurveyUrl() {
+string16 GetUninstallSurveyUrl() {
   const wchar_t kSurveyUrl[] = L"http://www.google.com/support/chrome/bin/"
                                L"request.py?hl=$1&contact_type=uninstall";
   return LocalizeUrl(kSurveyUrl);
 }
 
-std::wstring GetWelcomeBackUrl() {
+string16 GetWelcomeBackUrl() {
   const wchar_t kWelcomeUrl[] = L"http://www.google.com/chrome/intl/$1/"
                                 L"welcomeback-new.html";
   return LocalizeUrl(kWelcomeUrl);
@@ -196,7 +197,7 @@ bool FixDACLsForExecute(const FilePath& exe) {
   if (!::ConvertSecurityDescriptorToStringSecurityDescriptorW(sd,
       SDDL_REVISION_1, DACL_SECURITY_INFORMATION, &sddl, NULL))
     return false;
-  std::wstring new_sddl(sddl);
+  string16 new_sddl(sddl);
   ::LocalFree(sddl);
   sd = NULL;
   // See MSDN for the  security descriptor definition language (SDDL) syntax,
@@ -205,12 +206,12 @@ bool FixDACLsForExecute(const FilePath& exe) {
   const wchar_t kAllowACE[] = L"(A;;GRGX;;;AU)";
   // We should check that there are no special ACES for the group we
   // are interested, which is nt\authenticated_users.
-  if (std::wstring::npos != new_sddl.find(L";AU)"))
+  if (string16::npos != new_sddl.find(L";AU)"))
     return false;
   // Specific ACEs (not inherited) need to go to the front. It is ok if we
   // are the very first one.
   size_t pos_insert = new_sddl.find(L"(");
-  if (std::wstring::npos == pos_insert)
+  if (string16::npos == pos_insert)
     return false;
   // All good, time to change the dacl.
   new_sddl.insert(pos_insert, kAllowACE);
@@ -297,7 +298,7 @@ GoogleChromeDistribution::GoogleChromeDistribution()
 // see the comment in google_chrome_distribution_dummy.cc
 #ifndef _WIN64
 bool GoogleChromeDistribution::BuildUninstallMetricsString(
-    DictionaryValue* uninstall_metrics_dict, std::wstring* metrics) {
+    DictionaryValue* uninstall_metrics_dict, string16* metrics) {
   DCHECK(NULL != metrics);
   bool has_values = false;
 
@@ -318,7 +319,7 @@ bool GoogleChromeDistribution::BuildUninstallMetricsString(
 
 bool GoogleChromeDistribution::ExtractUninstallMetricsFromFile(
     const FilePath& file_path,
-    std::wstring* uninstall_metrics_string) {
+    string16* uninstall_metrics_string) {
   JSONFileValueSerializer json_serializer(file_path);
 
   std::string json_error_string;
@@ -335,7 +336,8 @@ bool GoogleChromeDistribution::ExtractUninstallMetricsFromFile(
 }
 
 bool GoogleChromeDistribution::ExtractUninstallMetrics(
-    const DictionaryValue& root, std::wstring* uninstall_metrics_string) {
+    const DictionaryValue& root,
+    string16* uninstall_metrics_string) {
   // Make sure that the user wants us reporting metrics. If not, don't
   // add our uninstall metrics.
   bool metrics_reporting_enabled = false;
@@ -364,7 +366,7 @@ bool GoogleChromeDistribution::ExtractUninstallMetrics(
 void GoogleChromeDistribution::DoPostUninstallOperations(
     const Version& version,
     const FilePath& local_data_path,
-    const std::wstring& distribution_data) {
+    const string16& distribution_data) {
   // Send the Chrome version and OS version as params to the form.
   // It would be nice to send the locale, too, but I don't see an
   // easy way to get that in the existing code. It's something we
@@ -372,11 +374,11 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   // We depend on installed_version.GetString() not having spaces or other
   // characters that need escaping: 0.2.13.4. Should that change, we will
   // need to escape the string before using it in a URL.
-  const std::wstring kVersionParam = L"crversion";
-  const std::wstring kOSParam = L"os";
+  const string16 kVersionParam = L"crversion";
+  const string16 kOSParam = L"os";
   base::win::OSInfo::VersionNumber version_number =
       base::win::OSInfo::GetInstance()->version_number();
-  std::wstring os_version = base::StringPrintf(L"%d.%d.%d",
+  string16 os_version = base::StringPrintf(L"%d.%d.%d",
       version_number.major, version_number.minor, version_number.build);
 
   FilePath iexplore;
@@ -386,11 +388,11 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   iexplore = iexplore.AppendASCII("Internet Explorer");
   iexplore = iexplore.AppendASCII("iexplore.exe");
 
-  std::wstring command = iexplore.value() + L" " + GetUninstallSurveyUrl() +
+  string16 command = iexplore.value() + L" " + GetUninstallSurveyUrl() +
       L"&" + kVersionParam + L"=" + UTF8ToWide(version.GetString()) + L"&" +
       kOSParam + L"=" + os_version;
 
-  std::wstring uninstall_metrics;
+  string16 uninstall_metrics;
   if (ExtractUninstallMetricsFromFile(local_data_path, &uninstall_metrics)) {
     // The user has opted into anonymous usage data collection, so append
     // metrics and distribution data.
@@ -409,42 +411,48 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   installer::WMIProcess::Launch(command, &pid);
 }
 
-std::wstring GoogleChromeDistribution::GetAppGuid() {
+string16 GoogleChromeDistribution::GetAppGuid() {
   return product_guid();
 }
 
-std::wstring GoogleChromeDistribution::GetApplicationName() {
+string16 GoogleChromeDistribution::GetApplicationName() {
   // I'd really like to return L ## PRODUCT_FULLNAME_STRING; but that's no good
   // since it'd be "Chromium" in a non-Chrome build, which isn't at all what I
   // want.  Sigh.
   return L"Google Chrome";
 }
 
-std::wstring GoogleChromeDistribution::GetAlternateApplicationName() {
-  const std::wstring& alt_product_name =
+string16 GoogleChromeDistribution::GetAppShortCutName() {
+  const string16& app_shortcut_name =
+      installer::GetLocalizedString(IDS_PRODUCT_NAME_BASE);
+  return app_shortcut_name;
+}
+
+string16 GoogleChromeDistribution::GetAlternateApplicationName() {
+  const string16& alt_product_name =
       installer::GetLocalizedString(IDS_OEM_MAIN_SHORTCUT_NAME_BASE);
   return alt_product_name;
 }
 
-std::wstring GoogleChromeDistribution::GetBrowserAppId() {
+string16 GoogleChromeDistribution::GetBrowserAppId() {
   return kBrowserAppId;
 }
 
-std::wstring GoogleChromeDistribution::GetInstallSubDir() {
-  std::wstring sub_dir(installer::kGoogleChromeInstallSubDir1);
+string16 GoogleChromeDistribution::GetInstallSubDir() {
+  string16 sub_dir(installer::kGoogleChromeInstallSubDir1);
   sub_dir.append(L"\\");
   sub_dir.append(installer::kGoogleChromeInstallSubDir2);
   return sub_dir;
 }
 
-std::wstring GoogleChromeDistribution::GetPublisherName() {
-  const std::wstring& publisher_name =
+string16 GoogleChromeDistribution::GetPublisherName() {
+  const string16& publisher_name =
       installer::GetLocalizedString(IDS_ABOUT_VERSION_COMPANY_NAME_BASE);
   return publisher_name;
 }
 
-std::wstring GoogleChromeDistribution::GetAppDescription() {
-  const std::wstring& app_description =
+string16 GoogleChromeDistribution::GetAppDescription() {
+  const string16& app_description =
       installer::GetLocalizedString(IDS_SHORTCUT_TOOLTIP_BASE);
   return app_description;
 }
@@ -453,21 +461,21 @@ std::string GoogleChromeDistribution::GetSafeBrowsingName() {
   return "googlechrome";
 }
 
-std::wstring GoogleChromeDistribution::GetStateKey() {
-  std::wstring key(google_update::kRegPathClientState);
+string16 GoogleChromeDistribution::GetStateKey() {
+  string16 key(google_update::kRegPathClientState);
   key.append(L"\\");
   key.append(product_guid());
   return key;
 }
 
-std::wstring GoogleChromeDistribution::GetStateMediumKey() {
-  std::wstring key(google_update::kRegPathClientStateMedium);
+string16 GoogleChromeDistribution::GetStateMediumKey() {
+  string16 key(google_update::kRegPathClientStateMedium);
   key.append(L"\\");
   key.append(product_guid());
   return key;
 }
 
-std::wstring GoogleChromeDistribution::GetStatsServerURL() {
+string16 GoogleChromeDistribution::GetStatsServerURL() {
   return L"https://clients4.google.com/firefox/metrics/collect";
 }
 
@@ -479,14 +487,14 @@ std::string GoogleChromeDistribution::GetHttpPipeliningTestServer() const {
   return chrome_common_net::kPipelineTestServerBaseUrl;
 }
 
-std::wstring GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
-  std::wstring sub_key(google_update::kRegPathClientState);
+string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
+  string16 sub_key(google_update::kRegPathClientState);
   sub_key.append(L"\\");
   sub_key.append(product_guid());
 
   base::win::RegKey client_state_key(root_key, sub_key.c_str(), KEY_READ);
-  std::wstring result;
-  std::wstring brand_value;
+  string16 result;
+  string16 brand_value;
   if (client_state_key.ReadValue(google_update::kRegRLZBrandField,
                                  &brand_value) == ERROR_SUCCESS) {
     result = google_update::kRegRLZBrandField;
@@ -495,7 +503,7 @@ std::wstring GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
     result.append(L"&");
   }
 
-  std::wstring client_value;
+  string16 client_value;
   if (client_state_key.ReadValue(google_update::kRegClientField,
                                  &client_value) == ERROR_SUCCESS) {
     result.append(google_update::kRegClientField);
@@ -504,7 +512,7 @@ std::wstring GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
     result.append(L"&");
   }
 
-  std::wstring ap_value;
+  string16 ap_value;
   // If we fail to read the ap key, send up "&ap=" anyway to indicate
   // that this was probably a stable channel release.
   client_state_key.ReadValue(google_update::kRegApField, &ap_value);
@@ -515,19 +523,19 @@ std::wstring GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   return result;
 }
 
-std::wstring GoogleChromeDistribution::GetUninstallLinkName() {
-  const std::wstring& link_name =
+string16 GoogleChromeDistribution::GetUninstallLinkName() {
+  const string16& link_name =
       installer::GetLocalizedString(IDS_UNINSTALL_CHROME_BASE);
   return link_name;
 }
 
-std::wstring GoogleChromeDistribution::GetUninstallRegPath() {
+string16 GoogleChromeDistribution::GetUninstallRegPath() {
   return L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"
          L"Google Chrome";
 }
 
-std::wstring GoogleChromeDistribution::GetVersionKey() {
-  std::wstring key(google_update::kRegPathClients);
+string16 GoogleChromeDistribution::GetVersionKey() {
+  string16 key(google_update::kRegPathClients);
   key.append(L"\\");
   key.append(product_guid());
   return key;
@@ -576,7 +584,7 @@ void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,
 // command line, but HKCU otherwise. |experiment_group| is the value to write
 // and |last_write| is used when writing to HKLM to determine whether to close
 // the handle when done.
-void SetClient(const std::wstring& experiment_group, bool last_write) {
+void SetClient(const string16& experiment_group, bool last_write) {
   static int reg_key_handle = -1;
   if (reg_key_handle == -1) {
     // If a specific Toast Results key handle (presumably to our HKLM key) was
@@ -644,8 +652,8 @@ bool GoogleChromeDistribution::GetExperimentDetails(
     {kAll, kAll, 1, L'B', L'A', 1, {kEnUs3, 0, 0, 0} },
   };
 
-  std::wstring locale;
-  std::wstring brand;
+  string16 locale;
+  string16 brand;
 
   if (!GoogleUpdateSettings::GetLanguage(&locale))
     locale = ASCIIToWide("en-US");
@@ -674,11 +682,11 @@ bool GoogleChromeDistribution::GetExperimentDetails(
         kExperimentFlavors[i].locale != ASCIIToWide("*"))
       continue;
 
-    std::vector<std::wstring> brand_codes;
+    std::vector<string16> brand_codes;
     base::SplitString(kExperimentFlavors[i].brands, L',', &brand_codes);
     if (brand_codes.empty())
       return false;
-    for (std::vector<std::wstring>::iterator it = brand_codes.begin();
+    for (std::vector<string16>::iterator it = brand_codes.begin();
          it != brand_codes.end(); ++it) {
       if (*it != brand && *it != L"*")
         continue;
@@ -740,9 +748,9 @@ void GoogleChromeDistribution::LaunchUserExperiment(
     return;
   }
   int flavor = experiment.flavor;
-  std::wstring base_group = experiment.prefix;
+  string16 base_group = experiment.prefix;
 
-  std::wstring brand;
+  string16 brand;
   if (GoogleUpdateSettings::GetBrand(&brand) && (brand == L"CHXX")) {
     // Testing only: the user automatically qualifies for the experiment.
     VLOG(1) << "Experiment qualification bypass";
@@ -797,7 +805,7 @@ void GoogleChromeDistribution::LaunchUserExperiment(
 // User qualifies for the experiment. To test, use --try-chrome-again=|flavor|
 // as a parameter to chrome.exe.
 void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
-    const std::wstring& experiment_group,
+    const string16& experiment_group,
     const installer::Product& installation,
     const FilePath& application_path) {
   bool has_welcome_url = (flavor == 0);
@@ -807,12 +815,12 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
       base::IntToString16(flavor));
   if (has_welcome_url) {
     // Prepend the url with a space.
-    std::wstring url(GetWelcomeBackUrl());
+    string16 url(GetWelcomeBackUrl());
     options.AppendArg("--");
     options.AppendArgNative(url);
     // The command line should now have the url added as:
     // "chrome.exe -- <url>"
-    DCHECK_NE(std::wstring::npos,
+    DCHECK_NE(string16::npos,
         options.GetCommandLineString().find(L" -- " + url));
   }
   // Launch chrome now. It will show the toast UI.

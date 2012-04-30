@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -12,15 +12,15 @@
 
 class GoogleChromeBinariesDistribution : public ChromiumBinariesDistribution {
  public:
-  virtual std::wstring GetAppGuid();
+  virtual string16 GetAppGuid();
 
-  virtual std::wstring GetAppShortCutName();
+  virtual string16 GetAppShortCutName();
 
-  virtual std::wstring GetStateKey();
+  virtual string16 GetStateKey();
 
-  virtual std::wstring GetStateMediumKey();
+  virtual string16 GetStateMediumKey();
 
-  virtual std::wstring GetVersionKey();
+  virtual string16 GetVersionKey();
 
   virtual void UpdateInstallStatus(bool system_install,
       installer::ArchiveType archive_type,

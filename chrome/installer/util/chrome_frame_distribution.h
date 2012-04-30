@@ -9,56 +9,53 @@
 #define CHROME_INSTALLER_UTIL_CHROME_FRAME_DISTRIBUTION_H_
 #pragma once
 
-#include <string>
-#include <vector>
-
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/util_constants.h"
 
 class ChromeFrameDistribution : public BrowserDistribution {
  public:
-  virtual std::wstring GetAppGuid() OVERRIDE;
+  virtual string16 GetAppGuid() OVERRIDE;
 
-  virtual std::wstring GetApplicationName() OVERRIDE;
+  virtual string16 GetApplicationName() OVERRIDE;
 
-  virtual std::wstring GetAppShortCutName() OVERRIDE;
+  virtual string16 GetAppShortCutName() OVERRIDE;
 
-  virtual std::wstring GetAlternateApplicationName() OVERRIDE;
+  virtual string16 GetAlternateApplicationName() OVERRIDE;
 
-  virtual std::wstring GetInstallSubDir() OVERRIDE;
+  virtual string16 GetInstallSubDir() OVERRIDE;
 
-  virtual std::wstring GetPublisherName() OVERRIDE;
+  virtual string16 GetPublisherName() OVERRIDE;
 
-  virtual std::wstring GetAppDescription() OVERRIDE;
+  virtual string16 GetAppDescription() OVERRIDE;
 
-  virtual std::wstring GetLongAppDescription() OVERRIDE;
+  virtual string16 GetLongAppDescription() OVERRIDE;
 
   virtual std::string GetSafeBrowsingName() OVERRIDE;
 
-  virtual std::wstring GetStateKey() OVERRIDE;
+  virtual string16 GetStateKey() OVERRIDE;
 
-  virtual std::wstring GetStateMediumKey() OVERRIDE;
+  virtual string16 GetStateMediumKey() OVERRIDE;
 
-  virtual std::wstring GetStatsServerURL() OVERRIDE;
+  virtual string16 GetStatsServerURL() OVERRIDE;
 
   virtual std::string GetNetworkStatsServer() const OVERRIDE;
 
   virtual std::string GetHttpPipeliningTestServer() const OVERRIDE;
 
-  virtual std::wstring GetUninstallLinkName() OVERRIDE;
+  virtual string16 GetUninstallLinkName() OVERRIDE;
 
-  virtual std::wstring GetUninstallRegPath() OVERRIDE;
+  virtual string16 GetUninstallRegPath() OVERRIDE;
 
-  virtual std::wstring GetVersionKey() OVERRIDE;
+  virtual string16 GetVersionKey() OVERRIDE;
 
   virtual bool CanSetAsDefault() OVERRIDE;
 
   virtual bool CanCreateDesktopShortcuts() OVERRIDE;
 
   virtual bool GetDelegateExecuteHandlerData(string16* handler_class_uuid,
-                                           string16* type_lib_uuid,
-                                           string16* type_lib_version,
-                                           string16* interface_uuid) OVERRIDE;
+                                             string16* type_lib_uuid,
+                                             string16* type_lib_version,
+                                             string16* interface_uuid) OVERRIDE;
 
   virtual void UpdateInstallStatus(bool system_install,
       installer::ArchiveType archive_type,

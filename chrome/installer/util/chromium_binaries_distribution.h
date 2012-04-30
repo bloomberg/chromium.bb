@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -14,41 +14,41 @@
 
 class ChromiumBinariesDistribution : public BrowserDistribution {
  public:
-  virtual std::wstring GetAppGuid() OVERRIDE;
+  virtual string16 GetAppGuid() OVERRIDE;
 
-  virtual std::wstring GetApplicationName() OVERRIDE;
+  virtual string16 GetApplicationName() OVERRIDE;
 
-  virtual std::wstring GetAppShortCutName() OVERRIDE;
+  virtual string16 GetAppShortCutName() OVERRIDE;
 
-  virtual std::wstring GetAlternateApplicationName() OVERRIDE;
+  virtual string16 GetAlternateApplicationName() OVERRIDE;
 
-  virtual std::wstring GetBrowserAppId() OVERRIDE;
+  virtual string16 GetBrowserAppId() OVERRIDE;
 
-  virtual std::wstring GetInstallSubDir() OVERRIDE;
+  virtual string16 GetInstallSubDir() OVERRIDE;
 
-  virtual std::wstring GetPublisherName() OVERRIDE;
+  virtual string16 GetPublisherName() OVERRIDE;
 
-  virtual std::wstring GetAppDescription() OVERRIDE;
+  virtual string16 GetAppDescription() OVERRIDE;
 
-  virtual std::wstring GetLongAppDescription() OVERRIDE;
+  virtual string16 GetLongAppDescription() OVERRIDE;
 
   virtual std::string GetSafeBrowsingName() OVERRIDE;
 
-  virtual std::wstring GetStateKey() OVERRIDE;
+  virtual string16 GetStateKey() OVERRIDE;
 
-  virtual std::wstring GetStateMediumKey() OVERRIDE;
+  virtual string16 GetStateMediumKey() OVERRIDE;
 
-  virtual std::wstring GetUninstallLinkName() OVERRIDE;
+  virtual string16 GetUninstallLinkName() OVERRIDE;
 
-  virtual std::wstring GetUninstallRegPath() OVERRIDE;
+  virtual string16 GetUninstallRegPath() OVERRIDE;
 
-  virtual std::wstring GetVersionKey() OVERRIDE;
+  virtual string16 GetVersionKey() OVERRIDE;
 
   virtual bool CanSetAsDefault() OVERRIDE;
 
   virtual int GetIconIndex() OVERRIDE;
 
-  virtual bool GetChromeChannel(std::wstring* channel) OVERRIDE;
+  virtual bool GetChromeChannel(string16* channel) OVERRIDE;
 
  protected:
   friend class BrowserDistribution;
