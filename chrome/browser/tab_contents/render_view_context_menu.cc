@@ -53,6 +53,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
@@ -524,12 +525,12 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
 }
 
 void RenderViewContextMenu::InitMenu() {
-  const Extension* extension = GetExtension();
-  if (extension) {
-    if (extension->is_platform_app())
-      AppendPlatformAppItems(extension);
-    else
-      AppendPopupExtensionItems();
+  content::ViewType view_type = source_web_contents_->GetViewType();
+  if (view_type == chrome::VIEW_TYPE_APP_SHELL) {
+    AppendPlatformAppItems();
+    return;
+  } else if (view_type == chrome::VIEW_TYPE_EXTENSION_POPUP) {
+    AppendPopupExtensionItems();
     return;
   }
 
@@ -632,9 +633,11 @@ const Extension* RenderViewContextMenu::GetExtension() const {
       source_web_contents_->GetRenderViewHost());
 }
 
-void RenderViewContextMenu::AppendPlatformAppItems(
-    const Extension* platform_app) {
+void RenderViewContextMenu::AppendPlatformAppItems() {
+  const Extension* platform_app = GetExtension();
   DCHECK(platform_app);
+  DCHECK(platform_app->is_platform_app());
+
   int index = 0;
   AppendExtensionItems(platform_app->id(), &index);
 
@@ -1898,18 +1901,11 @@ void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
 
 bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
   if (id == IDC_CONTENT_CONTEXT_INSPECTELEMENT) {
-    // Don't enable the web inspector if JavaScript is disabled. We don't
-    // check this when this is the web contents of an extension (e.g.
-    // for a popup extension or a platform app) as they have JavaScript
-    // always enabled.
-    const Extension* extension = GetExtension();
-    if (!extension) {
-      const CommandLine* command_line = CommandLine::ForCurrentProcess();
-      if (!profile_->GetPrefs()->GetBoolean(
-          prefs::kWebKitGlobalJavascriptEnabled) ||
-          command_line->HasSwitch(switches::kDisableJavaScript))
-        return false;
-    }
+    const CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (!profile_->GetPrefs()->GetBoolean(
+        prefs::kWebKitGlobalJavascriptEnabled) ||
+        command_line->HasSwitch(switches::kDisableJavaScript))
+      return false;
 
     // Don't enable the web inspector if the developer tools are disabled via
     // the preference dev-tools-disabled.

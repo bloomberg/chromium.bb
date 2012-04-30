@@ -201,7 +201,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
 
   // Gets the extension (if any) associated with the WebContents that we're in.
   const Extension* GetExtension() const;
-  void AppendPlatformAppItems(const Extension* platform_app);
+  void AppendPlatformAppItems();
   void AppendPopupExtensionItems();
   bool AppendCustomItems();
   void AppendDeveloperItems();

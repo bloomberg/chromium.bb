@@ -109,7 +109,8 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
         process_manager->platform_app_hosts();
     for (iter = platform_app_hosts.begin(); iter != platform_app_hosts.end();
          ++iter) {
-      return (*iter)->host_contents();
+      if ((*iter)->extension_host_type() == chrome::VIEW_TYPE_APP_SHELL)
+        return (*iter)->host_contents();
     }
 
     return NULL;
