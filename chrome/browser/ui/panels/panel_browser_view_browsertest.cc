@@ -393,7 +393,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, CreatePanelInactive) {
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, PanelLayout) {
-  Panel* panel = CreatePanel("PanelTest");
+  // Create a fixed-size panel to avoid possible collapsing of the title
+  // if the enforced min sizes are too small.
+  Panel* panel = CreatePanelWithBounds("PanelTest", gfx::Rect(0, 0, 100, 50));
 
   views::View* title_icon = GetTitleIcon(panel);
   views::View* title_text = GetTitleText(panel);

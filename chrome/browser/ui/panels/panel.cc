@@ -136,11 +136,11 @@ void Panel::SetSizeRange(const gfx::Size& min_size, const gfx::Size& max_size) {
   ConfigureAutoResize(browser()->GetSelectedWebContents());
 }
 
-void Panel::ClampSize(gfx::Size* size) const {
+gfx::Size Panel::ClampSize(const gfx::Size& size) const {
 
   // The panel width:
   // * cannot grow or shrink to go beyond [min_width, max_width]
-  int new_width = size->width();
+  int new_width = size.width();
   if (new_width > max_size_.width())
     new_width = max_size_.width();
   if (new_width < min_size_.width())
@@ -148,13 +148,13 @@ void Panel::ClampSize(gfx::Size* size) const {
 
   // The panel height:
   // * cannot grow or shrink to go beyond [min_height, max_height]
-  int new_height = size->height();
+  int new_height = size.height();
   if (new_height > max_size_.height())
     new_height = max_size_.height();
   if (new_height < min_size_.height())
     new_height = min_size_.height();
 
-  size->SetSize(new_width, new_height);
+  return gfx::Size(new_width, new_height);
 }
 
 

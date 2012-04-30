@@ -50,13 +50,15 @@ const int kDelayBeforeCollapsingFromTitleOnlyStateMs = 0;
 // we refresh layout with a delay.
 const int kRefreshLayoutAfterActivePanelChangeDelayMs = 200;  // arbitrary
 
-// The minimum panel width when it is "squeezed" in the docked strip
-// due to lack of space.
-const int kMinPanelWidthForDisplay = 26;
 }  // namespace
 
 // static
-const int DockedPanelStrip::kPanelMinWidth = 100;
+// These numbers are semi-arbitrary.
+// Motivation for 'width' is to make main buttons on the titlebar functional.
+// Motivation for height is to allow autosized tightly-wrapped panel with a
+// single line of text - so the height is set to be likely less then a titlebar,
+// to make sure even small content is tightly wrapped.
+const int DockedPanelStrip::kPanelMinWidth = 80;
 const int DockedPanelStrip::kPanelMinHeight = 20;
 
 DockedPanelStrip::DockedPanelStrip(PanelManager* panel_manager)
@@ -160,6 +162,9 @@ void DockedPanelStrip::InsertNewlyCreatedPanel(Panel* panel) {
   gfx::Point pt = GetDefaultPositionForPanel(full_size);
 
   panel->Initialize(gfx::Rect(pt.x(), pt.y(), width, height));
+
+  panel->SetSizeRange(gfx::Size(kPanelMinWidth, kPanelMinHeight),
+                      gfx::Size(max_panel_width, max_panel_height));
 
   InsertExistingPanelAtDefaultPosition(panel, true /*update_bounds*/);
 }
@@ -572,7 +577,7 @@ void DockedPanelStrip::ResizePanelWindow(
   // Make sure the new size does not violate panel's size restrictions.
   gfx::Size new_size(preferred_window_size.width(),
                      preferred_window_size.height());
-  panel->ClampSize(&new_size);
+  new_size = panel->ClampSize(new_size);
 
   if (new_size == panel->full_size())
     return;
@@ -851,7 +856,7 @@ int DockedPanelStrip::WidthToDisplayPanelInStrip(bool is_for_active_panel,
                                                  int full_width) const {
   if (is_for_active_panel)
     return full_width;
-  return std::max(kMinPanelWidthForDisplay,
+  return std::max(kPanelMinWidth,
       static_cast<int>(floor(full_width * squeeze_factor)));
 }
 
@@ -868,13 +873,15 @@ void DockedPanelStrip::CloseAll() {
 }
 
 void DockedPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
-  // Always update limits, even on existing panels, in case the limits changed
-  // while panel was out of the strip.
-  int max_panel_width = GetMaxPanelWidth();
-  int max_panel_height = GetMaxPanelHeight();
-  panel->SetSizeRange(gfx::Size(kPanelMinWidth, kPanelMinHeight),
-                      gfx::Size(max_panel_width, max_panel_height));
-
+  // Update limits if the panel is still autosizable, in case the limit has
+  // changed. If the panel is not autoresizable, then it was resized
+  // by the user or by the app via API.
+  if (panel->auto_resizable()) {
+    int max_panel_width = GetMaxPanelWidth();
+    int max_panel_height = GetMaxPanelHeight();
+    panel->SetSizeRange(gfx::Size(kPanelMinWidth, kPanelMinHeight),
+                        gfx::Size(max_panel_width, max_panel_height));
+  }
   panel->set_attention_mode(Panel::USE_PANEL_ATTENTION);
   panel->SetAppIconVisibility(true);
   panel->SetAlwaysOnTop(true);

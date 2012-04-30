@@ -235,15 +235,21 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeDetachedPanelToClampSize) {
   panel_manager->EndResizingByMouse(false);
   EXPECT_EQ(bounds, panel->GetBounds());
 
-  // Make sure the panel does not resize larger than its size.
+  // Make sure the panel can resize larger than its size. User is in control.
   mouse_location = bounds.origin().Add(
       gfx::Point(bounds.width(), bounds.height() - 2));
   panel_manager->StartResizingByMouse(panel, mouse_location,
                                       panel::RESIZE_BOTTOM_RIGHT);
-  mouse_location.Offset(500, 40);
+
+  // This drag would take us beyond max size.
+  int delta_x = panel->max_size().width() + 10 - panel->GetBounds().width();
+  int delta_y = panel->max_size().height() + 10 - panel->GetBounds().height();
+  mouse_location.Offset(delta_x, delta_y);
   panel_manager->ResizeByMouse(mouse_location);
 
-  bounds.set_size(gfx::Size(panel->max_size().width(), bounds.height() + 40));
+  // The bounds if the max_size does not limit the resize.
+  bounds.set_size(gfx::Size(bounds.width() + delta_x,
+                            bounds.height() + delta_y));
   EXPECT_EQ(bounds, panel->GetBounds());
 
   panel_manager->EndResizingByMouse(false);

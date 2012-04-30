@@ -77,7 +77,7 @@ void DetachedPanelStrip::ResizePanelWindow(
   // Make sure the new size does not violate panel's size restrictions.
   gfx::Size new_size(preferred_window_size.width(),
                      preferred_window_size.height());
-  panel->ClampSize(&new_size);
+  new_size = panel->ClampSize(new_size);
 
   // Update restored size.
   if (new_size != panel->full_size())

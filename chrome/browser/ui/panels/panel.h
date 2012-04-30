@@ -299,7 +299,7 @@ class Panel : public BrowserWindow,
   void EnableResizeByMouse(bool enable);
 
   // Changes the preferred size to acceptable based on min_size() and max_size()
-  void ClampSize(gfx::Size* size) const;
+  gfx::Size ClampSize(const gfx::Size& size) const;
 
   // Called when the panel's active state changes.
   // |active| is true if panel became active.
