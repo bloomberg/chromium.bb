@@ -1079,6 +1079,13 @@ views::View* TabStrip::GetEventHandlerForPoint(const gfx::Point& point) {
         return tab_at(i);
     }
   } else {
+    if (newtab_button_->visible()) {
+      gfx::Point newtab_button_point(point);
+      View::ConvertPointToView(this, newtab_button_, &newtab_button_point);
+      if (newtab_button_->HitTest(newtab_button_point))
+        return newtab_button_->GetEventHandlerForPoint(newtab_button_point);
+    }
+
     int active_tab_index = touch_layout_->active_index();
     if (active_tab_index != -1) {
       Tab* tab = FindTabForEvent(point, active_tab_index, -1);
