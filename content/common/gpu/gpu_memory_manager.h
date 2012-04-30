@@ -28,6 +28,23 @@ class CONTENT_EXPORT GpuMemoryManager {
  public:
   enum { kDefaultMaxSurfacesWithFrontbufferSoftLimit = 8 };
 
+  // These are predefined values (in bytes) for
+  // GpuMemoryAllocation::gpuResourceSizeInBytes.
+  // Maximum Allocation for all tabs is a soft limit that can be exceeded
+  // during the time it takes for renderers to respect new allocations,
+  // including when switching tabs or opening a new window.
+  // To alleviate some pressure, we decrease our desired limit by "one tabs'
+  // worth" of memory.
+  enum {
+#if defined(OS_ANDROID)
+    kMinimumAllocationForTab = 32 * 1024 * 1024,
+    kMaximumAllocationForTabs = 64 * 1024 * 1024,
+#else
+    kMinimumAllocationForTab = 64 * 1024 * 1024,
+    kMaximumAllocationForTabs = 512 * 1024 * 1024 - kMinimumAllocationForTab,
+#endif
+  };
+
   GpuMemoryManager(GpuMemoryManagerClient* client,
                    size_t max_surfaces_with_frontbuffer_soft_limit);
   ~GpuMemoryManager();

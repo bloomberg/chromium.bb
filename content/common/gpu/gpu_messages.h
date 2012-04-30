@@ -445,6 +445,11 @@ IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_EnsureBackbuffer)
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetMemoryAllocation,
                     GpuMemoryAllocationForRenderer /* allocation */)
 
+// Sent to stub when proxy is assigned a memory allocation changed callback.
+IPC_MESSAGE_ROUTED1(
+    GpuCommandBufferMsg_SetClientHasMemoryAllocationChangedCallback,
+    bool /* has_callback */)
+
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Messages
 // These messages are sent from Renderer process to GPU process.
