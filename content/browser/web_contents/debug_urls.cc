@@ -11,9 +11,8 @@
 namespace content {
 
 bool HandleDebugURL(const GURL& url, content::PageTransition transition) {
-  content::PageTransition base_transition =
-      content::PageTransitionStripQualifier(transition);
-  if (base_transition != content::PAGE_TRANSITION_TYPED)
+  // Ensure that the user explicitly navigated to this URL.
+  if (!(transition & content::PAGE_TRANSITION_FROM_ADDRESS_BAR))
     return false;
 
   if (url.host() == chrome::kChromeUIBrowserCrashHost) {
