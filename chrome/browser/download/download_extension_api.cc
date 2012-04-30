@@ -172,12 +172,11 @@ DownloadItem::DownloadState StateEnumFromString(const std::string& state) {
 
 bool ValidateFilename(const string16& filename) {
   // TODO(benjhayden): More robust validation of filename.
+  if ((filename.find('/') != string16::npos) ||
+      (filename.find('\\') != string16::npos))
+    return false;
   if (filename.size() >= 2u && filename[0] == L'.' && filename[1] == L'.')
     return false;
-
-  if (filename.size() >= 1u && filename[0] == L'/')
-    return false;
-
   return true;
 }
 

@@ -588,6 +588,14 @@ chrome.test.getConfig(function(testConfig) {
           }));
     },
 
+    // TODO(benjhayden): Update this test when downloading to sub-directories is
+    // supported.
+    function downloadFilenameDisallowSlashes() {
+      downloads.download(
+          {'url': SAFE_FAST_URL, 'filename': 'subdirectory/file.txt'},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
     function downloadOnCreated() {
       // Test that the onCreated event fires when we start a download.
       var downloadId = getNextId();
