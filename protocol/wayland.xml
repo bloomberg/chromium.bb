@@ -403,14 +403,6 @@
       called before destroying the wl_surface object.
     </description>
 
-    <event name="ping">
-      <description summary="ping client">
-	Ping a client to check if it is receiving events and sending
-	requests. A client is expected to reply with a pong request.
-      </description>
-      <arg name="serial" type="uint"/>
-    </event>
-
     <request name="pong">
       <description summary="respond to a ping event">
 	A client must respond to a ping event with a pong request or
@@ -552,6 +544,14 @@
       </description>
       <arg name="output" type="object" interface="wl_output"/>
     </request>
+
+    <event name="ping">
+      <description summary="ping client">
+	Ping a client to check if it is receiving events and sending
+	requests. A client is expected to reply with a pong request.
+      </description>
+      <arg name="serial" type="uint"/>
+    </event>
 
     <event name="configure">
       <description summary="suggest resize">
