@@ -315,25 +315,15 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
                   check_admin_permissions_on_mac),
               Extension::EXTERNAL_PREF,
               Extension::EXTERNAL_PREF_DOWNLOAD,
-              Extension::NO_FLAGS)));
-
 #if defined(OS_CHROMEOS)
-  // Define a per-user source of external default extensions, which serves
-  // as a source for OEM customization. Mark these default extensions as
-  // being from the webstore so they can load Native Client modules.
-  provider_list->push_back(
-      linked_ptr<ExternalExtensionProviderInterface>(
-          new ExternalExtensionProviderImpl(
-              service,
-              new ExternalPrefExtensionLoader(
-                  chrome::DIR_USER_EXTERNAL_EXTENSIONS,
-                  ExternalPrefExtensionLoader::NONE),
-              Extension::EXTERNAL_PREF,
-              Extension::EXTERNAL_PREF_DOWNLOAD,
               Extension::FROM_WEBSTORE)));
+#else
+              Extension::NO_FLAGS)));
 #endif
-#if defined (OS_MACOSX)
+
+#if defined(OS_CHROMEOS) || defined (OS_MACOSX)
   // Define a per-user source of external extensions.
+  // On Chrome OS, this serves as a source for OEM customization.
   provider_list->push_back(
       linked_ptr<ExternalExtensionProviderInterface>(
           new ExternalExtensionProviderImpl(
