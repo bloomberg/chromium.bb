@@ -33,8 +33,6 @@ class UseVersion2 {
   ~UseVersion2();
 
  private:
-  bool previous_value_;
-
   DISALLOW_COPY_AND_ASSIGN(UseVersion2);
 };
 

@@ -16,19 +16,19 @@
 
 namespace {
 
-// True when building version 2 templates. See UseVersion2 class.
-bool g_version2 = false;
+// Non-zero when building version 2 templates. See UseVersion2 class.
+int g_version2 = 0;
 
 }  // namespace
 
 namespace jstemplate_builder {
 
-UseVersion2::UseVersion2() : previous_value_(g_version2) {
-  g_version2 = true;
+UseVersion2::UseVersion2() {
+  g_version2++;
 }
 
 UseVersion2::~UseVersion2() {
-  g_version2 = previous_value_;
+  g_version2--;
 }
 
 std::string GetTemplateHtml(const base::StringPiece& html_template,
