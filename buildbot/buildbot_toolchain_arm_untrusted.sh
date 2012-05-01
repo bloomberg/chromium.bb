@@ -164,19 +164,6 @@ for arch in ${RUN_TESTS} ; do
   clobber-chrome-profiles
 done
 
-# TODO: Remove this when we have a proper sdk for pnacl
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2547
-echo @@@BUILD_STEP adhoc_sdk@@@
-${PNACL_BUILD} sdk newlib
-${PNACL_BUILD} ppapi-headers
-${PNACL_BUILD} tarball pnacl-toolchain-adhoc-sdk.tgz
-chmod a+r pnacl-toolchain-adhoc-sdk.tgz
-if ! ${IS_TRYBOT}; then
-  echo @@@BUILD_STEP archive_build_adhoc_sdk@@@
-  ${UP_DOWN_LOAD} UploadArmUntrustedToolchains ${BUILDBOT_GOT_REVISION} \
-    ${TOOLCHAIN_LABEL}_adhoc_sdk pnacl-toolchain-adhoc-sdk.tgz
-fi
-
 if [[ ${RETCODE} != 0 ]]; then
   echo @@@BUILD_STEP summary@@@
   echo There were failed stages.
