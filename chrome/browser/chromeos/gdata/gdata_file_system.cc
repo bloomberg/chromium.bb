@@ -820,6 +820,17 @@ void RelayGetFileInfoCallback(
       base::Bind(callback, error, base::Passed(&file_proto)));
 }
 
+// Ditto for ReadDirectoryCallback.
+void RelayReadDirectoryCallback(
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
+    const ReadDirectoryCallback& callback,
+    base::PlatformFileError error,
+    scoped_ptr<GDataDirectoryProto> directory_proto) {
+  relay_proxy->PostTask(
+      FROM_HERE,
+      base::Bind(callback, error, base::Passed(&directory_proto)));
+}
+
 }  // namespace
 
 // GDataFileProperties struct implementation.
@@ -2124,7 +2135,7 @@ void GDataFileSystem::GetFileInfoByPathAsync(
     const bool posted = BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&GDataFileSystem::GetFileInfoByPathAsync,
+        base::Bind(&GDataFileSystem::GetFileInfoByPathAsyncOnUIThread,
                    ui_weak_ptr_,
                    file_path,
                    base::Bind(&RelayGetFileInfoCallback,
@@ -2144,15 +2155,15 @@ void GDataFileSystem::GetFileInfoByPathAsyncOnUIThread(
 
   FindEntryByPathAsyncOnUIThread(
       file_path,
-      base::Bind(&GDataFileSystem::OnEntryFound,
+      base::Bind(&GDataFileSystem::OnGetFileInfo,
                  ui_weak_ptr_,
                  callback));
 }
 
-void GDataFileSystem::OnEntryFound(const GetFileInfoCallback& callback,
-                                   base::PlatformFileError error,
-                                   const FilePath& directory_path,
-                                   GDataEntry* entry) {
+void GDataFileSystem::OnGetFileInfo(const GetFileInfoCallback& callback,
+                                    base::PlatformFileError error,
+                                    const FilePath& directory_path,
+                                    GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != base::PLATFORM_FILE_OK) {
@@ -2174,6 +2185,66 @@ void GDataFileSystem::OnEntryFound(const GetFileInfoCallback& callback,
 
   if (!callback.is_null())
     callback.Run(base::PLATFORM_FILE_OK, file_proto.Pass());
+}
+
+void GDataFileSystem::ReadDirectoryByPathAsync(
+    const FilePath& file_path,
+    const ReadDirectoryCallback& callback) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    const bool posted = BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::ReadDirectoryByPathAsyncOnUIThread,
+                   ui_weak_ptr_,
+                   file_path,
+                   base::Bind(&RelayReadDirectoryCallback,
+                              base::MessageLoopProxy::current(),
+                              callback)));
+    DCHECK(posted);
+    return;
+  }
+
+  ReadDirectoryByPathAsyncOnUIThread(file_path, callback);
+}
+
+void GDataFileSystem::ReadDirectoryByPathAsyncOnUIThread(
+    const FilePath& file_path,
+    const ReadDirectoryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  FindEntryByPathAsyncOnUIThread(
+      file_path,
+      base::Bind(&GDataFileSystem::OnReadDirectory,
+                 ui_weak_ptr_,
+                 callback));
+}
+
+void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
+                                      base::PlatformFileError error,
+                                      const FilePath& directory_path,
+                                      GDataEntry* entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(error, scoped_ptr<GDataDirectoryProto>());
+    return;
+  }
+
+  GDataDirectory* directory = entry->AsGDataDirectory();
+  if (!directory) {
+    if (!callback.is_null())
+      callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                   scoped_ptr<GDataDirectoryProto>());
+    return;
+  }
+
+  scoped_ptr<GDataDirectoryProto> directory_proto(new GDataDirectoryProto);
+  directory->ToProto(directory_proto.get());
+
+  if (!callback.is_null())
+    callback.Run(base::PLATFORM_FILE_OK, directory_proto.Pass());
 }
 
 bool GDataFileSystem::GetFileInfoByPath(

@@ -276,23 +276,54 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   // Gets the file info for |file_path| and compares the contents against
-  // |entry|. Returns true if the file info matches |entry|.
+  // |file|. Returns true if the file info matches |file|.
   bool GetFileInfoAndCompare(const FilePath& file_path,
-                             GDataEntry* entry) {
+                             GDataFile* file) {
     file_system_->GetFileInfoByPathAsync(
         file_path,
         base::Bind(&CallbackHelper::GetFileInfoCallback,
                    callback_helper_.get()));
     message_loop_.RunAllPending();
 
-    if (entry == NULL) {
+    if (file == NULL) {
       // File info is expected not to be found.
-      return callback_helper_->file_info_ == NULL;
+      return (callback_helper_->last_error_ ==
+              base::PLATFORM_FILE_ERROR_NOT_FOUND &&
+              callback_helper_->file_proto_ == NULL);
     }
 
-    scoped_ptr<GDataFileProto> file_info =
-        callback_helper_->file_info_.Pass();
-    return (entry->resource_id() == file_info->gdata_entry().resource_id());
+    if (callback_helper_->last_error_ != base::PLATFORM_FILE_OK)
+      return false;
+
+    scoped_ptr<GDataFileProto> file_proto =
+        callback_helper_->file_proto_.Pass();
+    return (file->resource_id() == file_proto->gdata_entry().resource_id());
+  }
+
+  // Reads the directory at |file_path| and compares the contents against
+  // |directory|. Returns true if the file info matches |directory|.
+  bool ReadDirectoryAndCompare(const FilePath& file_path,
+                               GDataDirectory* directory) {
+    file_system_->ReadDirectoryByPathAsync(
+        file_path,
+        base::Bind(&CallbackHelper::ReadDirectoryCallback,
+                   callback_helper_.get()));
+    message_loop_.RunAllPending();
+
+    if (directory == NULL) {
+      // Directory is expected not to be found.
+      return (callback_helper_->last_error_ ==
+              base::PLATFORM_FILE_ERROR_NOT_FOUND &&
+              callback_helper_->directory_proto_ == NULL);
+    }
+
+    if (callback_helper_->last_error_ != base::PLATFORM_FILE_OK)
+      return false;
+
+    scoped_ptr<GDataDirectoryProto> directory_proto =
+        callback_helper_->directory_proto_.Pass();
+    return (directory->resource_id() ==
+            directory_proto->gdata_entry().resource_id());
   }
 
   FilePath GetCacheFilePath(
@@ -971,8 +1002,9 @@ class GDataFileSystemTest : public testing::Test {
         : last_error_(base::PLATFORM_FILE_OK),
           quota_bytes_total_(0),
           quota_bytes_used_(0),
-          file_info_(NULL) {}
+          file_proto_(NULL) {}
     virtual ~CallbackHelper() {}
+
     virtual void GetFileCallback(base::PlatformFileError error,
                                  const FilePath& file_path,
                                  const std::string& mime_type,
@@ -982,11 +1014,13 @@ class GDataFileSystemTest : public testing::Test {
       mime_type_ = mime_type;
       file_type_ = file_type;
     }
+
     virtual void FileOperationCallback(base::PlatformFileError error) {
       DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
       last_error_ = error;
     }
+
     virtual void GetAvailableSpaceCallback(base::PlatformFileError error,
                                            int64 bytes_total,
                                            int64 bytes_used) {
@@ -994,11 +1028,19 @@ class GDataFileSystemTest : public testing::Test {
       quota_bytes_total_ = bytes_total;
       quota_bytes_used_ = bytes_used;
     }
+
     virtual void GetFileInfoCallback(
         base::PlatformFileError error,
-        scoped_ptr<GDataFileProto> file_info) {
+        scoped_ptr<GDataFileProto> file_proto) {
       last_error_ = error;
-      file_info_ = file_info.Pass();
+      file_proto_ = file_proto.Pass();
+    }
+
+    virtual void ReadDirectoryCallback(
+        base::PlatformFileError error,
+        scoped_ptr<GDataDirectoryProto> directory_proto) {
+      last_error_ = error;
+      directory_proto_ = directory_proto.Pass();
     }
 
     base::PlatformFileError last_error_;
@@ -1007,7 +1049,8 @@ class GDataFileSystemTest : public testing::Test {
     GDataFileType file_type_;
     int64 quota_bytes_total_;
     int64 quota_bytes_used_;
-    scoped_ptr<GDataFileProto> file_info_;
+    scoped_ptr<GDataFileProto> file_proto_;
+    scoped_ptr<GDataDirectoryProto> directory_proto_;
   };
 
   MessageLoopForUI message_loop_;
@@ -1070,10 +1113,13 @@ TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
 }
 
 TEST_F(GDataFileSystemTest, SearchRootDirectory) {
+  LoadRootFeedDocument("root_feed.json");
+
   const FilePath kFilePath = FilePath(FILE_PATH_LITERAL("gdata"));
   GDataEntry* entry = FindEntry(FilePath(FILE_PATH_LITERAL(kFilePath)));
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath, entry->GetFilePath());
+  EXPECT_TRUE(ReadDirectoryAndCompare(kFilePath, entry->AsGDataDirectory()));
 }
 
 TEST_F(GDataFileSystemTest, SearchExistingFile) {
@@ -1084,7 +1130,7 @@ TEST_F(GDataFileSystemTest, SearchExistingFile) {
   GDataEntry* entry = FindEntry(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath, entry->GetFilePath());
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath, entry));
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath, entry->AsGDataFile()));
 }
 
 TEST_F(GDataFileSystemTest, SearchExistingDocument) {
@@ -1095,7 +1141,7 @@ TEST_F(GDataFileSystemTest, SearchExistingDocument) {
   GDataEntry* entry = FindEntry(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath, entry->GetFilePath());
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath, entry));
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath, entry->AsGDataFile()));
 }
 
 TEST_F(GDataFileSystemTest, SearchNonExistingFile) {
@@ -1121,14 +1167,14 @@ TEST_F(GDataFileSystemTest, SearchEncodedFileNames) {
   entry = FindEntry(kFilePath2);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath2, entry->GetFilePath());
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath2, entry));
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath2, entry->AsGDataFile()));
 
   const FilePath kFilePath3 = FilePath::FromUTF8Unsafe(
       "gdata/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt");
   entry = FindEntry(kFilePath3);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath3, entry->GetFilePath());
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath3, entry));
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath3, entry->AsGDataFile()));
 }
 
 TEST_F(GDataFileSystemTest, SearchEncodedFileNamesLoadingRoot) {
@@ -1144,14 +1190,14 @@ TEST_F(GDataFileSystemTest, SearchEncodedFileNamesLoadingRoot) {
   entry = FindEntry(kFilePath2);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath2, entry->GetFilePath());
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath2, entry));
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath2, entry->AsGDataFile()));
 
   const FilePath kFilePath3 = FilePath::FromUTF8Unsafe(
       "gdata/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt");
   entry = FindEntry(kFilePath3);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath3, entry->GetFilePath());
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath3, entry));
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath3, entry->AsGDataFile()));
 }
 
 TEST_F(GDataFileSystemTest, SearchDuplicateNames) {
@@ -1162,14 +1208,14 @@ TEST_F(GDataFileSystemTest, SearchDuplicateNames) {
   GDataEntry* entry = FindEntry(kFilePath1);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath1, entry->GetFilePath());
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath1, entry));
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath1, entry->AsGDataFile()));
 
   const FilePath kFilePath2 = FilePath(
       FILE_PATH_LITERAL("gdata/Duplicate Name (2).txt"));
   entry = FindEntry(kFilePath2);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath2, entry->GetFilePath());
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath2, entry));
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath2, entry->AsGDataFile()));
 }
 
 TEST_F(GDataFileSystemTest, SearchExistingDirectory) {
@@ -1180,6 +1226,7 @@ TEST_F(GDataFileSystemTest, SearchExistingDirectory) {
   GDataEntry* entry = FindEntry(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath, entry->GetFilePath());
+  EXPECT_TRUE(ReadDirectoryAndCompare(kFilePath, entry->AsGDataDirectory()));
 }
 
 TEST_F(GDataFileSystemTest, SearchInSubdir) {
@@ -1190,7 +1237,7 @@ TEST_F(GDataFileSystemTest, SearchInSubdir) {
   GDataEntry* entry = FindEntry(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath, entry->GetFilePath());
-  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath, entry));
+  EXPECT_TRUE(GetFileInfoAndCompare(kFilePath, entry->AsGDataFile()));
 }
 
 // Check the reconstruction of the directory structure from only the root feed.
@@ -1203,6 +1250,7 @@ TEST_F(GDataFileSystemTest, SearchInSubSubdir) {
   GDataEntry* entry = FindEntry(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath, entry->GetFilePath());
+  EXPECT_TRUE(ReadDirectoryAndCompare(kFilePath, entry->AsGDataDirectory()));
 }
 
 TEST_F(GDataFileSystemTest, FilePathTests) {

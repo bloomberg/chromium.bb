@@ -75,6 +75,12 @@ typedef base::Callback<void(base::PlatformFileError error,
                             scoped_ptr<GDataFileProto> file_proto)>
     GetFileInfoCallback;
 
+// Used to read a directory from the file system.
+// If |error| is not PLATFORM_FILE_OK, |file_info| is set to NULL.
+typedef base::Callback<void(base::PlatformFileError error,
+                            scoped_ptr<GDataDirectoryProto> directory_proto)>
+    ReadDirectoryCallback;
+
 // Callback for SetMountedState.
 typedef base::Callback<void(base::PlatformFileError error,
                             const FilePath& file_path)>
@@ -313,10 +319,20 @@ class GDataFileSystemInterface {
                              const std::string& md5,
                              const GetCacheStateCallback& callback) = 0;
 
-  // Finds a file (not a directory) by |file_path| and returns its key
-  // |properties|.  Returns true if file was found.
+  // Finds a file (not a directory) by |file_path|. This call will also
+  // retrieve and refresh file system content from server and disk cache.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
   virtual void GetFileInfoByPathAsync(const FilePath& file_path,
                                       const GetFileInfoCallback& callback) = 0;
+
+  // Finds and reads a directory by |file_path|. This call will also retrieve
+  // and refresh file system content from server and disk cache.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  virtual void ReadDirectoryByPathAsync(
+      const FilePath& file_path,
+      const ReadDirectoryCallback& callback) = 0;
 
   // Finds a file (not a directory) by |file_path| and returns its key
   // |properties|.  Returns true if file was found.
@@ -413,6 +429,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void GetFileInfoByPathAsync(
       const FilePath& file_path,
       const GetFileInfoCallback& callback) OVERRIDE;
+  virtual void ReadDirectoryByPathAsync(
+      const FilePath& file_path,
+      const ReadDirectoryCallback& callback) OVERRIDE;
   virtual bool GetFileInfoByPath(const FilePath& file_path,
                                  GDataFileProperties* properties) OVERRIDE;
   virtual bool IsUnderGDataCacheDirectory(const FilePath& path) const OVERRIDE;
@@ -1211,11 +1230,17 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Initializes preference change observer.
   void InitializePreferenceObserver();
 
-  // Called when an entry is found for GetFileInfoByPath().
-  void OnEntryFound(const GetFileInfoCallback& callback,
-                    base::PlatformFileError error,
-                    const FilePath& directory_path,
-                    GDataEntry* entry);
+  // Called when an entry is found for GetFileInfoByPathAsync().
+  void OnGetFileInfo(const GetFileInfoCallback& callback,
+                     base::PlatformFileError error,
+                     const FilePath& directory_path,
+                     GDataEntry* entry);
+
+  // Called when an entry is found for ReadDirectoryByPathAsync().
+  void OnReadDirectory(const ReadDirectoryCallback& callback,
+                       base::PlatformFileError error,
+                       const FilePath& directory_path,
+                       GDataEntry* entry);
 
   // The following functions are used to forward calls to asynchronous public
   // member functions to UI thread.
@@ -1245,6 +1270,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void GetFileInfoByPathAsyncOnUIThread(
       const FilePath& file_path,
       const GetFileInfoCallback& callback);
+  void ReadDirectoryByPathAsyncOnUIThread(
+      const FilePath& file_path,
+      const ReadDirectoryCallback& callback);
   void GetCacheStateOnUIThread(const std::string& resource_id,
                                const std::string& md5,
                                const GetCacheStateCallback& callback);
