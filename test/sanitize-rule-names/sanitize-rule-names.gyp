@@ -11,7 +11,7 @@
         {
           # Make sure this rule name doesn't cause an invalid ninja file.
           'rule_name': 'assembler (gnu-compatible)',
-          'extension': 'X',
+          'extension': 'S',
           'outputs': ['outfile'],
           'msvs_cygwin_shell': 0,
           'msvs_quote_cmd': 0,
@@ -19,7 +19,7 @@
         },
       ],
       'sources': [
-        'blah.X',
+        'blah.S',
         'hello.cc',
       ],
     },

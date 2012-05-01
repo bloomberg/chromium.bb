@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Google Inc. All rights reserved.
+# Copyright (c) 2012 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,6 +8,7 @@ import gyp.SCons as SCons
 import os.path
 import pprint
 import re
+import string
 
 
 # TODO:  remove when we delete the last WriteList() call in this module
@@ -462,7 +463,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
 
   rules = spec.get('rules', [])
   for rule in rules:
-    name = rule['rule_name']
+    name = rule['rule_name'].translate(string.maketrans(' ()-', '____'))
     a = ['cd', src_subdir, '&&'] + rule['action']
     message = rule.get('message')
     if message:
