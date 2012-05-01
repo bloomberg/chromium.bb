@@ -269,6 +269,9 @@ struct weston_compositor {
 
 	struct {
 		struct xkb_rule_names names;
+		struct xkb_context *context;
+		struct xkb_keymap *keymap;
+		struct xkb_state *state;
 	} xkb_info;
 };
 
