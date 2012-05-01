@@ -219,10 +219,17 @@ remoting.HostSetupDialog.prototype.updateState_ = function() {
     l10n.localizeElementFromTag(messageDiv, tag);
     remoting.setMode(remoting.AppMode.HOST_SETUP_PROCESSING);
   }
-  /** @param {string} tag */
-  function showDoneMessage(tag) {
+  /** @param {string} tag1
+   *  @param {string=} opt_tag2 */
+  function showDoneMessage(tag1, opt_tag2) {
     var messageDiv = document.getElementById('host-setup-done-message');
-    l10n.localizeElementFromTag(messageDiv, tag);
+    l10n.localizeElementFromTag(messageDiv, tag1);
+    messageDiv = document.getElementById('host-setup-done-message-2');
+    if (opt_tag2) {
+      l10n.localizeElementFromTag(messageDiv, opt_tag2);
+    } else {
+      messageDiv.innerHTML = '';
+    }
     remoting.setMode(remoting.AppMode.HOST_SETUP_DONE);
   }
   /** @param {string} tag */
@@ -251,7 +258,10 @@ remoting.HostSetupDialog.prototype.updateState_ = function() {
     showProcessingMessage(/*i18n-content*/'HOST_SETUP_STOPPING');
     this.stopHost_();
   } else if (state == remoting.HostSetupFlow.State.HOST_STARTED) {
-    showDoneMessage(/*i18n-content*/'HOST_SETUP_STARTED');
+    // TODO(jamiewalch): Only display the second string if the computer's power
+    // management settings indicate that it's necessary.
+    showDoneMessage(/*i18n-content*/'HOST_SETUP_STARTED',
+                    /*i18n-content*/'HOST_SETUP_STARTED_DISABLE_SLEEP');
   } else if (state == remoting.HostSetupFlow.State.UPDATED_PIN) {
     showDoneMessage(/*i18n-content*/'HOST_SETUP_UPDATED_PIN');
   } else if (state == remoting.HostSetupFlow.State.HOST_STOPPED) {

@@ -246,6 +246,10 @@
     "message": "Remote connections for this computer have been enabled.",
     "description": "Message shown after access to local computer has been enabled successfully."
   },
+  "HOST_SETUP_STARTED_DISABLE_SLEEP": {
+    "message": "Please check your computer's power management settings and ensure that it is not configured to sleep when idle.",
+    "description": "Instructions to the user to ask them to disable power management for the computer in order to be able to connect to it."
+  },
   "HOST_SETUP_STARTING": {
     "message": "enabling remote connections for this computer\u2026",
     "description": "Message shown when local machine is being registered in the directory and when starting the host."
