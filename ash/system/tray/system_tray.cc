@@ -475,11 +475,13 @@ SystemTrayBubble::SystemTrayBubble(
       items_(items),
       detailed_(detailed),
       autoclose_delay_(0) {
-  MessageLoopForUI::current()->AddObserver(this);
 }
 
 SystemTrayBubble::~SystemTrayBubble() {
+  // The bubble may be closing without having been hidden first. So it may still
+  // be in the message-loop's observer list.
   MessageLoopForUI::current()->RemoveObserver(this);
+
   DestroyItemViews();
   // Reset the host pointer in bubble_view_ in case its destruction is deferred.
   if (bubble_view_)
@@ -509,7 +511,6 @@ void SystemTrayBubble::InitView(views::View* anchor,
 
   DCHECK(bubble_widget_ == NULL);
   bubble_widget_ = views::BubbleDelegateView::CreateBubble(bubble_view_);
-
 
   // Must occur after call to CreateBubble()
   bubble_view_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
