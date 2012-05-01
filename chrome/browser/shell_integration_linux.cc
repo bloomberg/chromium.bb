@@ -279,6 +279,9 @@ const int EXIT_XDG_SETTINGS_SYNTAX_ERROR = 1;
 // If |protocol| is empty this function sets Chrome as the default browser,
 // otherwise it sets Chrome as the default handler application for |protocol|.
 bool SetDefaultWebClient(const std::string& protocol) {
+#if defined(OS_CHROMEOS)
+  return true;
+#else
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -303,6 +306,7 @@ bool SetDefaultWebClient(const std::string& protocol) {
   }
 
   return ran_ok && exit_code == EXIT_SUCCESS;
+#endif
 }
 
 // If |protocol| is empty this function checks if Chrome is the default browser,
@@ -310,6 +314,9 @@ bool SetDefaultWebClient(const std::string& protocol) {
 // |protocol|.
 ShellIntegration::DefaultWebClientState GetIsDefaultWebClient(
     const std::string& protocol) {
+#if defined(OS_CHROMEOS)
+  return ShellIntegration::IS_DEFAULT_WEB_CLIENT;
+#else
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -344,6 +351,7 @@ ShellIntegration::DefaultWebClientState GetIsDefaultWebClient(
   // Allow any reply that starts with "yes".
   return (reply.find("yes") == 0) ? ShellIntegration::IS_DEFAULT_WEB_CLIENT :
                                     ShellIntegration::NOT_DEFAULT_WEB_CLIENT;
+#endif
 }
 
 } // namespace
