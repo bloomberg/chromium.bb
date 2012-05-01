@@ -179,6 +179,11 @@ class HGenerator(object):
       c.Substitute({'classname': classname, 'item_type':
           self._cpp_type_generator.GetType(type_.item_type,
                                            wrap_optional=True)})
+    elif type_.type_ == PropertyType.STRING:
+      if type_.description:
+        c.Comment(type_.description)
+      c.Append('typedef std::string %(classname)s;')
+      c.Substitute({'classname': classname})
     else:
       if type_.description:
         c.Comment(type_.description)

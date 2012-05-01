@@ -27,6 +27,14 @@ class CppTypeGeneratorTest(unittest.TestCase):
     self.model.AddNamespace(self.browser_action_json[0],
         'path/to/browserAction.json')
     self.browser_action = self.model.namespaces.get('browserAction')
+    self.font_settings_json = CachedLoad('test/fontSettings.json')
+    self.model.AddNamespace(self.font_settings_json[0],
+        'path/to/fontSettings.json')
+    self.font_settings = self.model.namespaces.get('fontSettings')
+    self.dependency_tester_json = CachedLoad('test/dependencyTester.json')
+    self.model.AddNamespace(self.dependency_tester_json[0],
+        'path/to/dependencyTester.json')
+    self.dependency_tester = self.model.namespaces.get('dependencyTester')
 
   def testGenerateIncludesAndForwardDeclarations(self):
     manager = CppTypeGenerator('', self.windows, self.windows.unix_name)
@@ -71,6 +79,32 @@ class CppTypeGeneratorTest(unittest.TestCase):
         '}  // windows',
         manager.GenerateForwardDeclarations().Render())
 
+  def testGenerateIncludesAndForwardDeclarationsDependencies(self):
+    m = model.Model()
+    browser_action_namespace = m.AddNamespace(self.browser_action_json[0],
+        'path/to/browserAction.json')
+    font_settings_namespace = m.AddNamespace(self.font_settings_json[0],
+        'path/to/fontSettings.json')
+    manager = CppTypeGenerator('', self.dependency_tester,
+        self.dependency_tester.unix_name)
+    manager.AddNamespace(browser_action_namespace,
+        self.browser_action.unix_name)
+    manager.AddNamespace(font_settings_namespace,
+        self.font_settings.unix_name)
+    self.assertEquals('#include "path/to/browser_action.h"\n'
+                      '#include "path/to/font_settings.h"',
+                      manager.GenerateIncludes().Render())
+    self.assertEquals(
+        'namespace browserAction {\n'
+        'typedef std::vector<int> ColorArray;\n'
+        '}\n'
+        'namespace fontSettings {\n'
+        'typedef std::string ScriptCode;\n'
+        '}\n'
+        'namespace dependency_tester {\n'
+        '}  // dependency_tester',
+        manager.GenerateForwardDeclarations().Render())
+
   def testChoicesEnum(self):
     manager = CppTypeGenerator('', self.tabs, self.tabs.unix_name)
     prop = self.tabs.functions['move'].params[0]
@@ -92,6 +126,13 @@ class CppTypeGeneratorTest(unittest.TestCase):
     self.assertEquals('bool',
         manager.GetType(
         self.tabs.types['Tab'].properties['selected']))
+
+  def testStringAsType(self):
+    manager = CppTypeGenerator('', self.font_settings,
+                               self.font_settings.unix_name)
+    self.assertEquals('std::string',
+        manager.GetType(
+        self.font_settings.types['ScriptCode']))
 
   def testArrayAsType(self):
     manager = CppTypeGenerator('', self.browser_action,

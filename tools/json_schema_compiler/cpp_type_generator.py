@@ -175,12 +175,19 @@ class CppTypeGenerator(object):
     for namespace, types in sorted(self._NamespaceTypeDependencies().items()):
       c.Append('namespace %s {' % namespace.name)
       for type_ in types:
-        if namespace.types[type_].type_ != PropertyType.ARRAY:
+        if namespace.types[type_].type_ == PropertyType.STRING:
+          c.Append('typedef std::string %s;' % type_)
+        elif namespace.types[type_].type_ == PropertyType.ARRAY:
+          c.Append('typedef std::vector<%(item_type)s> %(name)s;')
+          c.Substitute({'name': type_, 'item_type':
+              self.GetType(namespace.types[type_].item_type,
+                           wrap_optional=True)})
+        else:
           c.Append('struct %s;' % type_)
       c.Append('}')
     c.Concat(self.GetNamespaceStart())
     for (name, type_) in self._namespace.types.items():
-      if not type_.functions and type_.type_ != PropertyType.ARRAY:
+      if not type_.functions and type_.type_ == PropertyType.OBJECT:
         c.Append('struct %s;' % name)
     c.Concat(self.GetNamespaceEnd())
     return c

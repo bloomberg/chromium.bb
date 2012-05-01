@@ -354,7 +354,7 @@ class CCGenerator(object):
       return '%s.release()' % self._util_cc_helper.CreateValueFromArray(
           self._cpp_type_generator.GetReferencedProperty(prop), var,
           prop.optional)
-    elif prop.type_.is_fundamental:
+    elif self._IsFundamentalOrFundamentalRef(prop):
       if prop.optional:
         var = '*' + var
       return {
@@ -461,17 +461,22 @@ class CCGenerator(object):
         .Append('  return %(failure_value)s;')
       )
 
-    if prop.type_.is_fundamental:
+    if self._IsFundamentalOrFundamentalRef(prop):
       if prop.optional:
         (c.Append('%(ctype)s temp;')
           .Append('if (%s)' %
-              cpp_util.GetAsFundamentalValue(prop, value_var, '&temp'))
+              cpp_util.GetAsFundamentalValue(
+                  self._cpp_type_generator.GetReferencedProperty(prop),
+                  value_var,
+                  '&temp'))
           .Append('  %(dst)s->%(name)s.reset(new %(ctype)s(temp));')
         )
       else:
         (c.Append('if (!%s)' %
             cpp_util.GetAsFundamentalValue(
-                prop, value_var, '&%s->%s' % (dst, prop.unix_name)))
+                self._cpp_type_generator.GetReferencedProperty(prop),
+                value_var,
+                '&%s->%s' % (dst, prop.unix_name)))
           .Append('return %(failure_value)s;')
         )
     elif self._IsObjectOrObjectRef(prop):
@@ -657,3 +662,10 @@ class CCGenerator(object):
     """
     return (self._cpp_type_generator.GetReferencedProperty(prop).type_ ==
         PropertyType.ARRAY)
+
+  def _IsFundamentalOrFundamentalRef(self, prop):
+    """Determines if this property is a Fundamental type or is a ref to a
+    Fundamental type.
+    """
+    return (self._cpp_type_generator.GetReferencedProperty(prop).type_.
+        is_fundamental)

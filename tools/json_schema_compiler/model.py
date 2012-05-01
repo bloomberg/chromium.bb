@@ -76,6 +76,8 @@ class Type(object):
       self.item_type = Property(self, name + "Element", json['items'],
                                 from_json=True,
                                 from_client=True)
+    elif json.get('type') == 'string':
+      self.type_ = PropertyType.STRING
     else:
       if not (
           'properties' in json or
