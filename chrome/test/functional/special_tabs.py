@@ -274,7 +274,7 @@ class SpecialTabsTest(pyauto.PyUITest):
       self.assertTrue(self.WaitUntil(
           lambda: self.GetActiveTabTitle(), expect_retval=expected_title),
           msg='Title did not match for %s. Expected: %s. Got %s' % (
-              url, expect_retval, self.GetActiveTabTitle()))
+              url, expected_title, self.GetActiveTabTitle()))
       include_list = []
       exclude_list = []
       no_csp = 'CSP' in properties and not properties['CSP']
