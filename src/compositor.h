@@ -25,6 +25,7 @@
 #define _WAYLAND_SYSTEM_COMPOSITOR_H_
 
 #include <pixman.h>
+#include <xkbcommon/xkbcommon.h>
 #include <wayland-server.h>
 
 #include <GLES2/gl2.h>
@@ -265,6 +266,10 @@ struct weston_compositor {
 	int launcher_sock;
 
 	uint32_t output_id_pool;
+
+	struct {
+		struct xkb_rule_names names;
+	} xkb_info;
 };
 
 #define MODIFIER_CTRL	(1 << 8)

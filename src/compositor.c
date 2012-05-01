@@ -2608,6 +2608,29 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 	wl_event_loop_destroy(ec->input_loop);
 }
 
+static int weston_compositor_xkb_init(struct weston_compositor *ec,
+				      struct xkb_rule_names *names)
+{
+	ec->xkb_info.names = *names;
+	if (!ec->xkb_info.names.rules)
+		ec->xkb_info.names.rules = strdup("evdev");
+	if (!ec->xkb_info.names.model)
+		ec->xkb_info.names.model = strdup("pc105");
+	if (!ec->xkb_info.names.layout)
+		ec->xkb_info.names.layout = strdup("us");
+
+	return 0;
+}
+
+static void weston_compositor_xkb_destroy(struct weston_compositor *ec)
+{
+	free(ec->xkb_info.names.rules);
+	free(ec->xkb_info.names.model);
+	free(ec->xkb_info.names.layout);
+	free(ec->xkb_info.names.variant);
+	free(ec->xkb_info.names.options);
+}
+
 static int on_term_signal(int signal_number, void *data)
 {
 	struct wl_display *display = data;
@@ -2689,14 +2712,25 @@ int main(int argc, char *argv[])
 	int32_t xserver = 0;
 	char *socket_name = NULL;
 	char *config_file;
+	struct xkb_rule_names xkb_names;
 
 	const struct config_key shell_config_keys[] = {
 		{ "type", CONFIG_KEY_STRING, &shell },
 	};
 
+        const struct config_key keyboard_config_keys[] = {
+		{ "keymap_rules", CONFIG_KEY_STRING, &xkb_names.rules },
+		{ "keymap_model", CONFIG_KEY_STRING, &xkb_names.model },
+		{ "keymap_layout", CONFIG_KEY_STRING, &xkb_names.layout },
+		{ "keymap_variant", CONFIG_KEY_STRING, &xkb_names.variant },
+		{ "keymap_options", CONFIG_KEY_STRING, &xkb_names.options },
+        };
+
 	const struct config_section cs[] = {
 		{ "shell",
 		  shell_config_keys, ARRAY_LENGTH(shell_config_keys) },
+                { "keyboard",
+                  keyboard_config_keys, ARRAY_LENGTH(keyboard_config_keys) },
 	};
 
 	const struct weston_option core_options[] = {
@@ -2706,6 +2740,8 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_BOOLEAN, "xserver", 0, &xserver },
 		{ WESTON_OPTION_STRING, "module", 0, &module },
 	};
+
+	memset(&xkb_names, 0, sizeof(xkb_names));
 
 	argc = parse_options(core_options,
 			     ARRAY_LENGTH(core_options), argc, argv);
@@ -2759,6 +2795,11 @@ int main(int argc, char *argv[])
 	if (argv[1])
 		exit(EXIT_FAILURE);
 
+	if (weston_compositor_xkb_init(ec, &xkb_names) == -1) {
+		fprintf(stderr, "failed to initialise keyboard support\n");
+		exit(EXIT_FAILURE);
+	}
+
 	ec->option_idle_time = idle_time;
 	ec->idle_time = idle_time;
 
@@ -2803,6 +2844,8 @@ int main(int argc, char *argv[])
 
 	for (i = ARRAY_LENGTH(signals); i;)
 		wl_event_source_remove(signals[--i]);
+
+	weston_compositor_xkb_destroy(ec);
 
 	ec->destroy(ec);
 	wl_display_destroy(display);

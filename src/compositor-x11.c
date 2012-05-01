@@ -69,6 +69,7 @@ struct x11_compositor {
 		xcb_atom_t		 string;
 		xcb_atom_t		 utf8_string;
 		xcb_atom_t		 cardinal;
+		xcb_atom_t		 xkb_names;
 	} atom;
 };
 
@@ -713,6 +714,43 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	return event != NULL;
 }
 
+static void
+x11_compositor_get_keymap(struct x11_compositor *c)
+{
+	xcb_get_property_cookie_t cookie;
+	xcb_get_property_reply_t *reply;
+	xcb_generic_error_t *error;
+	const char *value_all, *value_part;
+	int length_all, length_part;
+
+	cookie = xcb_get_property(c->conn, 0, c->screen->root,
+				  c->atom.xkb_names, c->atom.string, 0, 1024);
+	reply = xcb_get_property_reply(c->conn, cookie, &error);
+	if (reply == NULL)
+		return;
+
+	value_all = xcb_get_property_value(reply);
+	length_all = xcb_get_property_value_length(reply);
+	value_part = value_all;
+
+#define copy_prop_value(to) \
+	length_part = strlen(value_part); \
+	if (value_part + length_part > (value_all + length_all) && \
+	    length_part > 0 && c->base.xkb_info.names.to == NULL) { \
+		free(c->base.xkb_info.names.to); \
+		c->base.xkb_info.names.to = strdup(value_part); \
+	} \
+	value_part += length_part + 1;
+
+	copy_prop_value(rules);
+	copy_prop_value(model);
+	copy_prop_value(layout);
+	copy_prop_value(variant);
+	copy_prop_value(options);
+
+#undef copy_prop_value
+}
+
 #define F(field) offsetof(struct x11_compositor, field)
 
 static void
@@ -731,6 +769,7 @@ x11_compositor_get_resources(struct x11_compositor *c)
 		{ "STRING",		F(atom.string) },
 		{ "UTF8_STRING",	F(atom.utf8_string) },
 		{ "CARDINAL",		F(atom.cardinal) },
+		{ "_XKB_RULES_NAMES",	F(atom.xkb_names) },
 	};
 
 	xcb_intern_atom_cookie_t cookies[ARRAY_LENGTH(atoms)];
@@ -762,6 +801,8 @@ x11_compositor_get_resources(struct x11_compositor *c)
 			   pixmap, pixmap, 0, 0, 0,  0, 0, 0,  1, 1);
 	xcb_free_gc(c->conn, gc);
 	xcb_free_pixmap(c->conn, pixmap);
+
+	x11_compositor_get_keymap(c);
 }
 
 static void
