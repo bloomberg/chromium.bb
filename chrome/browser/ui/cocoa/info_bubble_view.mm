@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,7 @@
   [bezier lineToPoint:NSMakePoint(arrowStart.x + info_bubble::kBubbleArrowWidth,
                                   arrowStart.y)];
   [bezier closePath];
-  [[NSColor whiteColor] set];
+  [[NSColor colorWithCalibratedWhite:1.0 alpha:0.9] set];
   [bezier fill];
 }
 

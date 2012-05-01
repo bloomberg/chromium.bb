@@ -467,11 +467,11 @@ const CGFloat kLabelInset = 49.0;
                                                  blue:246.0/255
                                                 alpha:1.0];
   } else {
-    backgroundColor = [NSColor whiteColor];
+    backgroundColor = [NSColor clearColor];
   }
 
   [backgroundColor set];
-  NSRectFill([self bounds]);
+  [NSBezierPath fillRect:[self bounds]];
 }
 
 // Make sure the element is focusable for accessibility.

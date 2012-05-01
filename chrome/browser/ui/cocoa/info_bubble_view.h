@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@ namespace info_bubble {
 
 const CGFloat kBubbleArrowHeight = 8.0;
 const CGFloat kBubbleArrowWidth = 15.0;
-const CGFloat kBubbleCornerRadius = 8.0;
+const CGFloat kBubbleCornerRadius = 2.0;
 const CGFloat kBubbleArrowXOffset = kBubbleArrowWidth + kBubbleCornerRadius;
 
 enum BubbleArrowLocation {
