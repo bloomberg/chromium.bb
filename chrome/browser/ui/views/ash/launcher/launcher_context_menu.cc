@@ -117,7 +117,8 @@ void LauncherContextMenu::ExecuteCommand(int command_id) {
       delegate_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_FULLSCREEN);
       break;
     case MENU_AUTO_HIDE:
-      ash::LauncherContextMenu::ToggleAutoHideMenu();
+      delegate_->SetAutoHideBehavior(
+          ash::LauncherContextMenu::GetToggledAutoHideBehavior());
       break;
     case MENU_NEW_WINDOW:
       delegate_->CreateNewWindow();

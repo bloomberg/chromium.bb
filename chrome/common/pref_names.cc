@@ -1800,9 +1800,6 @@ const char kRestoreSessionStateDialogShown[] =
 const char kWebIntentsEnabled[] = "webintents.enabled";
 
 #if defined(USE_AURA)
-// Boolean value indicating whether the shelf always hides.
-const char kAlwaysAutoHideShelf[] =
-    "auto_hide_shelf";
 // String value corresponding to ash::Shell::ShelfAutoHideBehavior.
 const char kShelfAutoHideBehavior[] =
     "auto_hide_behavior";

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/ash_export.h"
+#include "ash/wm/shelf_auto_hide_behavior.h"
 #include "base/basictypes.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -22,8 +23,8 @@ class ASH_EXPORT LauncherContextMenu : public ui::SimpleMenuModel,
   // Returns true if the auto-hide menu item is checked.
   static bool IsAutoHideMenuHideChecked();
 
-  // Toggles the state of the auto-hide menu item.
-  static void ToggleAutoHideMenu();
+  // Returns the toggled state of the auto-hide behavior.
+  static ShelfAutoHideBehavior GetToggledAutoHideBehavior();
 
   // Returns the resource id for the auto-hide menu.
   static int GetAutoHideResourceStringId();

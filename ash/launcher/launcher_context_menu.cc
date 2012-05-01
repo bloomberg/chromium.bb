@@ -31,7 +31,7 @@ bool LauncherContextMenu::IsAutoHideMenuHideChecked() {
 }
 
 // static
-void LauncherContextMenu::ToggleAutoHideMenu() {
+ShelfAutoHideBehavior LauncherContextMenu::GetToggledAutoHideBehavior() {
   ash::Shell* shell = ash::Shell::GetInstance();
   ash::ShelfAutoHideBehavior auto_hide_behavior;
   if (shell->IsInMaximizedMode()) {
@@ -44,7 +44,7 @@ void LauncherContextMenu::ToggleAutoHideMenu() {
   } else {
     auto_hide_behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
   }
-  shell->SetShelfAutoHideBehavior(auto_hide_behavior);
+  return auto_hide_behavior;
 }
 
 // static
@@ -76,7 +76,8 @@ bool LauncherContextMenu::GetAcceleratorForCommandId(
 void LauncherContextMenu::ExecuteCommand(int command_id) {
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_AUTO_HIDE:
-      ToggleAutoHideMenu();
+      ash::Shell::GetInstance()->SetShelfAutoHideBehavior(
+          GetToggledAutoHideBehavior());
       break;
   }
 }
