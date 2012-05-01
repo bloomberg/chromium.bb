@@ -18,7 +18,7 @@ class RuntimeEventRouter {
  public:
   // Dispatches the onInstalled event to the given extension.
   static void DispatchOnInstalledEvent(Profile* profile,
-                                       const Extension* extension);
+                                       const std::string& extension_id);
 };
 
 class RuntimeGetBackgroundPageFunction : public AsyncExtensionFunction {

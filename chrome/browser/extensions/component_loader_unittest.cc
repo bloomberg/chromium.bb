@@ -28,11 +28,10 @@ class MockExtensionService : public TestExtensionService {
   MockExtensionService() : ready_(false), unloaded_count_(0) {
   }
 
-  virtual bool AddExtension(const Extension* extension) OVERRIDE {
+  virtual void AddExtension(const Extension* extension) OVERRIDE {
     EXPECT_FALSE(extension_set_.Contains(extension->id()));
     // ExtensionService must become the owner of the extension object.
     extension_set_.Insert(extension);
-    return true;
   }
 
   virtual void UnloadExtension(

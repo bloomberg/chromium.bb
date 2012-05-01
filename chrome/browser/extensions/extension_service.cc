@@ -1994,7 +1994,7 @@ void ExtensionService::OnLoadedInstalledExtensions() {
       content::NotificationService::NoDetails());
 }
 
-bool ExtensionService::AddExtension(const Extension* extension) {
+void ExtensionService::AddExtension(const Extension* extension) {
   // Ensure extension is deleted unless we transfer ownership.
   scoped_refptr<const Extension> scoped_extension(extension);
 
@@ -2005,7 +2005,7 @@ bool ExtensionService::AddExtension(const Extension* extension) {
       !extension->is_theme() &&
       extension->location() != Extension::COMPONENT &&
       !Extension::IsExternalLocation(extension->location()))
-    return false;
+    return;
 
   SetBeingUpgraded(extension, false);
 
@@ -2036,9 +2036,7 @@ bool ExtensionService::AddExtension(const Extension* extension) {
         Extension::DISABLE_PERMISSIONS_INCREASE) {
       extensions::AddExtensionDisabledError(this, extension);
     }
-    // Although the extension is disabled, we technically did succeed in adding
-    // it to the list of installed extensions.
-    return true;
+    return;
   }
 
   // All apps that are displayed in the launcher are ordered by their ordinals
@@ -2049,8 +2047,6 @@ bool ExtensionService::AddExtension(const Extension* extension) {
   extensions_.Insert(scoped_extension);
   SyncExtensionChangeIfNeeded(*extension);
   NotifyExtensionLoaded(extension);
-
-  return true;
 }
 
 void ExtensionService::InitializePermissions(const Extension* extension) {
@@ -2267,13 +2263,13 @@ void ExtensionService::OnExtensionInstalled(
     extension_prefs_->SetAllowFileAccess(id, true);
   }
 
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_INSTALLED,
+      content::Source<Profile>(profile_),
+      content::Details<const Extension>(extension));
+
   // Transfer ownership of |extension| to AddExtension.
-  if (AddExtension(scoped_extension)) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_EXTENSION_INSTALLED,
-        content::Source<Profile>(profile_),
-        content::Details<const Extension>(extension));
-  }
+  AddExtension(scoped_extension);
 }
 
 const Extension* ExtensionService::GetExtensionByIdInternal(

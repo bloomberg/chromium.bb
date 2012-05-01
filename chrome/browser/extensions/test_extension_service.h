@@ -58,7 +58,7 @@ class TestExtensionService : public ExtensionServiceInterface {
 
   virtual bool is_ready() OVERRIDE;
 
-  virtual bool AddExtension(const Extension* extension) OVERRIDE;
+  virtual void AddExtension(const Extension* extension) OVERRIDE;
 
   virtual void UnloadExtension(
       const std::string& extension_id,

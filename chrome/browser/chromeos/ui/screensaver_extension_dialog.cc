@@ -62,16 +62,12 @@ void ScreensaverExtensionDialog::Show() {
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Profile* default_profile = ProfileManager::GetDefaultProfile();
-  if (default_profile->GetExtensionService()->AddExtension(
-          screensaver_extension_)) {
-    extension_dialog_ = ExtensionDialog::ShowFullscreen(
-        screensaver_extension_->GetFullLaunchURL(),
-        default_profile,
-        string16(),
-        this);
-  } else {
-    LOG(ERROR) << "Couldn't add screensaver extension to profile.";
-  }
+  default_profile->GetExtensionService()->AddExtension(screensaver_extension_);
+  extension_dialog_ = ExtensionDialog::ShowFullscreen(
+      screensaver_extension_->GetFullLaunchURL(),
+      default_profile,
+      string16(),
+      this);
 }
 
 void ScreensaverExtensionDialog::Close() {

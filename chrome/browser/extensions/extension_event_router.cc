@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
@@ -494,8 +495,9 @@ void ExtensionEventRouter::Observe(
       // Dispatch the onInstalled event.
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
-      extensions::RuntimeEventRouter::DispatchOnInstalledEvent(
-          profile_, extension);
+      MessageLoop::current()->PostTask(FROM_HERE,
+          base::Bind(&extensions::RuntimeEventRouter::DispatchOnInstalledEvent,
+                     profile_, extension->id()));
       break;
     }
     default:

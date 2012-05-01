@@ -124,8 +124,7 @@ class ExtensionServiceInterface : public SyncableService {
   // themes sync to not use it directly.
   virtual void CheckForUpdatesSoon() = 0;
 
-  // Returns true if the extension was successfully added.
-  virtual bool AddExtension(const Extension* extension) = 0;
+  virtual void AddExtension(const Extension* extension) = 0;
 
   virtual void UnloadExtension(
       const std::string& extension_id,
@@ -398,7 +397,7 @@ class ExtensionService
   // Adds |extension| to this ExtensionService and notifies observers than an
   // extension has been loaded.  Called by the backend after an extension has
   // been loaded from a file and installed.
-  virtual bool AddExtension(const Extension* extension) OVERRIDE;
+  virtual void AddExtension(const Extension* extension) OVERRIDE;
 
   // Called by the backend when an extension has been installed.
   void OnExtensionInstalled(

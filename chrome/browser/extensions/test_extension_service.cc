@@ -102,9 +102,8 @@ bool TestExtensionService::is_ready() {
   return false;
 }
 
-bool TestExtensionService::AddExtension(const Extension* extension) {
+void TestExtensionService::AddExtension(const Extension* extension) {
   ADD_FAILURE();
-  return false;
 }
 
 void TestExtensionService::UnloadExtension(

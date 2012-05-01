@@ -25,16 +25,19 @@ namespace extensions {
 
 // static
 void RuntimeEventRouter::DispatchOnInstalledEvent(
-    Profile* profile, const Extension* extension) {
+    Profile* profile, const std::string& extension_id) {
+  ExtensionSystem* system = ExtensionSystem::Get(profile);
+  if (!system)
+    return;
+
   // Special case: normally, extensions add their own lazy event listeners.
   // However, since the extension has just been installed, it hasn't had a
   // chance to register for events. So we register on its behalf. If the
   // extension does not actually have a listener, the event will just be
   // ignored.
-  ExtensionEventRouter* router = profile->GetExtensionEventRouter();
-  router->AddLazyEventListener(kOnInstalledEvent, extension->id());
-  router->DispatchEventToExtension(
-      extension->id(), kOnInstalledEvent, "[]", NULL, GURL());
+  system->event_router()->AddLazyEventListener(kOnInstalledEvent, extension_id);
+  system->event_router()->DispatchEventToExtension(
+      extension_id, kOnInstalledEvent, "[]", NULL, GURL());
 }
 
 bool RuntimeGetBackgroundPageFunction::RunImpl() {
