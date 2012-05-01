@@ -62,11 +62,6 @@ void BaseDateTimeView::UpdateText() {
   base::Time now = base::Time::Now();
   gfx::Size old_size = GetPreferredSize();
   UpdateTextInternal(now);
-  if (GetWidget() && GetPreferredSize() != old_size) {
-    // Forcing the widget to the new size is sufficient. The positioning is
-    // taken care of by the layout manager (ShelfLayoutManager).
-    GetWidget()->SetSize(GetPreferredSize());
-  }
   SchedulePaint();
 
   // Try to set the timer to go off at the next change of the minute. We don't
@@ -92,6 +87,12 @@ void BaseDateTimeView::UpdateText() {
 }
 
 BaseDateTimeView::BaseDateTimeView() {
+}
+
+void BaseDateTimeView::ChildPreferredSizeChanged(views::View* child) {
+  views::View::PreferredSizeChanged();
+  if (GetWidget())
+    GetWidget()->SetSize(GetWidget()->GetContentsView()->GetPreferredSize());
 }
 
 void BaseDateTimeView::OnLocaleChanged() {

@@ -36,6 +36,7 @@ class BaseDateTimeView : public ActionableView {
   virtual void UpdateTextInternal(const base::Time& now) = 0;
 
   // Overridden from views::View.
+  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
   virtual void OnLocaleChanged() OVERRIDE;
 
   base::OneShotTimer<BaseDateTimeView> timer_;
