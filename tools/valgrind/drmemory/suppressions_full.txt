@@ -1326,15 +1326,6 @@ name=http://crbug.com/125565
 *!SiteInstanceImpl::GetProcess
 *!BrowserTestOffTheRecord_DelayProfileDestruction_Test::TestBody
 
-# True uninit in media_unittests.
-UNINITIALIZED READ
-name=http://crbug.com/125723
-*!media::AddSaturated<*>
-*!media::MixStreams<*>
-*!media::MixStreams
-*!media::AudioOutputMixer::OnMoreData
-*!media::AudioOutputProxyTest_TwoStreams_BothPlaying_Mixer_Test::TestBody
-
 LEAK
 name=http://crbug.com/125724
 *!operator new

@@ -2417,12 +2417,3 @@
    fun:_ZN8remoting8protocol21AuthenticatorTestBase14RunChannelAuthEb
    fun:_ZN8remoting8protocol52NegotiatingAuthenticatorTest_SuccessfulAuthHmac_Test8TestBodyEv
 }
-{
-   bug_125728
-   Memcheck:Uninitialized
-   fun:_ZN5mediaL12AddSaturatedIiLin32768ELi32767EEEiii
-   fun:_ZN5mediaL10MixStreamsIsiLin32768ELi32767ELi0EEEvPT_S2_if
-   fun:_ZN5media10MixStreamsEPvS0_mif
-   fun:_ZN5media16AudioOutputMixer10OnMoreDataEPhjNS_17AudioBuffersStateE
-   fun:_ZN5media54AudioOutputProxyTest_TwoStreams_BothPlaying_Mixer_Test8TestBodyEv
-}
