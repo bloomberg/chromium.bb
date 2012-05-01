@@ -37,9 +37,9 @@ class TrayPower : public SystemTrayItem,
   // Overridden from PowerStatusObserver.
   virtual void OnPowerStatusChanged(const PowerSupplyStatus& status) OVERRIDE;
 
-  scoped_ptr<tray::DateView> date_;
-  scoped_ptr<tray::PowerPopupView> power_;
-  scoped_ptr<tray::PowerTrayView> power_tray_;
+  tray::DateView* date_;
+  tray::PowerPopupView* power_;
+  tray::PowerTrayView* power_tray_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayPower);
 };

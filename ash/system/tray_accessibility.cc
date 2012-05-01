@@ -20,6 +20,7 @@ namespace internal {
 
 TrayAccessibility::TrayAccessibility()
     : TrayImageItem(IDR_AURA_UBER_TRAY_ACCESSIBILITY),
+      detailed_(NULL),
       string_id_(0) {
 }
 
@@ -31,7 +32,8 @@ bool TrayAccessibility::GetInitialVisibility() {
 
 views::View* TrayAccessibility::CreateDetailedView(user::LoginStatus status) {
   DCHECK(string_id_);
-  detailed_.reset(new views::View);
+  CHECK(detailed_ == NULL);
+  detailed_ = new views::View;
 
   detailed_->SetLayoutManager(new
       views::BoxLayout(views::BoxLayout::kHorizontal,
@@ -46,11 +48,11 @@ views::View* TrayAccessibility::CreateDetailedView(user::LoginStatus status) {
   detailed_->AddChildView(new views::Label(
         bundle.GetLocalizedString(string_id_)));
 
-  return detailed_.get();
+  return detailed_;
 }
 
 void TrayAccessibility::DestroyDetailedView() {
-  detailed_.reset();
+  detailed_ = NULL;
 }
 
 void TrayAccessibility::OnAccessibilityModeChanged(bool enabled,
@@ -61,7 +63,7 @@ void TrayAccessibility::OnAccessibilityModeChanged(bool enabled,
   if (enabled) {
     string_id_ = string_id;
     PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
-  } else if (detailed_.get()) {
+  } else if (detailed_) {
     string_id_ = 0;
     detailed_->GetWidget()->Close();
   }

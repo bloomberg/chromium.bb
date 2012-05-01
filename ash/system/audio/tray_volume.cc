@@ -159,6 +159,7 @@ class VolumeView : public views::View,
 
 TrayVolume::TrayVolume()
     : TrayImageItem(IDR_AURA_UBER_TRAY_VOLUME_MUTE),
+      volume_view_(NULL),
       is_default_view_(false) {
 }
 
@@ -170,32 +171,32 @@ bool TrayVolume::GetInitialVisibility() {
 }
 
 views::View* TrayVolume::CreateDefaultView(user::LoginStatus status) {
-  volume_view_.reset(new tray::VolumeView);
+  volume_view_ = new tray::VolumeView;
   is_default_view_ = true;
-  return volume_view_.get();
+  return volume_view_;
 }
 
 views::View* TrayVolume::CreateDetailedView(user::LoginStatus status) {
-  volume_view_.reset(new tray::VolumeView);
+  volume_view_ = new tray::VolumeView;
   is_default_view_ = false;
-  return volume_view_.get();
+  return volume_view_;
 }
 
 void TrayVolume::DestroyDefaultView() {
   if (is_default_view_)
-    volume_view_.reset();
+    volume_view_ = NULL;
 }
 
 void TrayVolume::DestroyDetailedView() {
   if (!is_default_view_)
-    volume_view_.reset();
+    volume_view_ = NULL;
 }
 
 void TrayVolume::OnVolumeChanged(float percent) {
   if (tray_view())
     tray_view()->SetVisible(GetInitialVisibility());
 
-  if (volume_view_.get()) {
+  if (volume_view_) {
     volume_view_->SetVolumeLevel(percent);
     SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);
     return;

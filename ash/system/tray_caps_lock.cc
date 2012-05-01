@@ -98,6 +98,8 @@ class CapsLockDefaultView : public ActionableView {
 
 TrayCapsLock::TrayCapsLock()
     : TrayImageItem(IDR_AURA_UBER_TRAY_CAPS_LOCK),
+      default_(NULL),
+      detailed_(NULL),
       search_mapped_to_caps_lock_(false),
       caps_lock_enabled_(
           Shell::GetInstance()->tray_delegate()->IsCapsLockOn()) {
@@ -112,13 +114,15 @@ bool TrayCapsLock::GetInitialVisibility() {
 views::View* TrayCapsLock::CreateDefaultView(user::LoginStatus status) {
   if (!caps_lock_enabled_)
     return NULL;
-  default_.reset(new CapsLockDefaultView);
+  DCHECK(default_ == NULL);
+  default_ = new CapsLockDefaultView;
   default_->Update(caps_lock_enabled_, search_mapped_to_caps_lock_);
-  return default_.get();
+  return default_;
 }
 
 views::View* TrayCapsLock::CreateDetailedView(user::LoginStatus status) {
-  detailed_.reset(new views::View);
+  DCHECK(detailed_ == NULL);
+  detailed_ = new views::View;
 
   detailed_->SetLayoutManager(new
       views::BoxLayout(views::BoxLayout::kHorizontal,
@@ -137,15 +141,15 @@ views::View* TrayCapsLock::CreateDetailedView(user::LoginStatus status) {
   detailed_->AddChildView(
       new views::Label(bundle.GetLocalizedString(string_id)));
 
-  return detailed_.get();
+  return detailed_;
 }
 
 void TrayCapsLock::DestroyDefaultView() {
-  default_.reset();
+  default_ = NULL;
 }
 
 void TrayCapsLock::DestroyDetailedView() {
-  detailed_.reset();
+  detailed_ = NULL;
 }
 
 void TrayCapsLock::OnCapsLockChanged(bool enabled,
@@ -156,12 +160,12 @@ void TrayCapsLock::OnCapsLockChanged(bool enabled,
   caps_lock_enabled_ = enabled;
   search_mapped_to_caps_lock_ = search_mapped_to_caps_lock;
 
-  if (default_.get()) {
+  if (default_) {
     default_->Update(enabled, search_mapped_to_caps_lock);
   } else {
     if (enabled)
       PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
-    else if (detailed_.get())
+    else if (detailed_)
       detailed_->GetWidget()->Close();
   }
 }

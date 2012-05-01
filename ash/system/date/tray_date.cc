@@ -35,14 +35,16 @@
 namespace ash {
 namespace internal {
 
-TrayDate::TrayDate() {
+TrayDate::TrayDate()
+    : time_tray_(NULL) {
 }
 
 TrayDate::~TrayDate() {
 }
 
 views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
-  time_tray_.reset(new tray::TimeView());
+  CHECK(time_tray_ == NULL);
+  time_tray_ = new tray::TimeView();
   time_tray_->set_border(
       views::Border::CreateEmptyBorder(0, 10, 0, 7));
   SetupLabelForTray(time_tray_->label());
@@ -51,7 +53,7 @@ views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
       font.DeriveFont(0, font.GetStyle() & ~gfx::Font::BOLD));
 
   views::View* view = new TrayItemView;
-  view->AddChildView(time_tray_.get());
+  view->AddChildView(time_tray_);
   return view;
 }
 
@@ -64,7 +66,7 @@ views::View* TrayDate::CreateDetailedView(user::LoginStatus status) {
 }
 
 void TrayDate::DestroyTrayView() {
-  time_tray_.reset();
+  time_tray_ = NULL;
 }
 
 void TrayDate::DestroyDefaultView() {
@@ -77,11 +79,13 @@ void TrayDate::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
 void TrayDate::OnDateFormatChanged() {
-  time_tray_->UpdateTimeFormat();
+  if (time_tray_)
+    time_tray_->UpdateTimeFormat();
 }
 
 void TrayDate::Refresh() {
-  time_tray_->UpdateText();
+  if (time_tray_)
+    time_tray_->UpdateText();
 }
 
 }  // namespace internal

@@ -220,7 +220,9 @@ class BluetoothDetailedView : public views::View,
 
 }  // namespace tray
 
-TrayBluetooth::TrayBluetooth() {
+TrayBluetooth::TrayBluetooth()
+    : default_(NULL),
+      detailed_(NULL) {
 }
 
 TrayBluetooth::~TrayBluetooth() {
@@ -231,26 +233,28 @@ views::View* TrayBluetooth::CreateTrayView(user::LoginStatus status) {
 }
 
 views::View* TrayBluetooth::CreateDefaultView(user::LoginStatus status) {
-  default_.reset(new tray::BluetoothDefaultView(this));
-  return default_.get();
+  CHECK(default_ == NULL);
+  default_ = new tray::BluetoothDefaultView(this);
+  return default_;
 }
 
 views::View* TrayBluetooth::CreateDetailedView(user::LoginStatus status) {
   if (!Shell::GetInstance()->tray_delegate()->GetBluetoothAvailable())
     return NULL;
-  detailed_.reset(new tray::BluetoothDetailedView(status));
-  return detailed_.get();
+  CHECK(detailed_ == NULL);
+  detailed_ = new tray::BluetoothDetailedView(status);
+  return detailed_;
 }
 
 void TrayBluetooth::DestroyTrayView() {
 }
 
 void TrayBluetooth::DestroyDefaultView() {
-  default_.reset();
+  default_ = NULL;
 }
 
 void TrayBluetooth::DestroyDetailedView() {
-  detailed_.reset();
+  detailed_ = NULL;
 }
 
 void TrayBluetooth::UpdateAfterLoginStatusChange(user::LoginStatus status) {
@@ -259,9 +263,9 @@ void TrayBluetooth::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 void TrayBluetooth::OnBluetoothRefresh() {
   BluetoothDeviceList list;
   Shell::GetInstance()->tray_delegate()->GetAvailableBluetoothDevices(&list);
-  if (default_.get())
+  if (default_)
     default_->UpdateLabel();
-  else if (detailed_.get())
+  else if (detailed_)
     detailed_->Update(list);
 }
 

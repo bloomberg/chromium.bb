@@ -254,25 +254,29 @@ class RoundedImageView : public TrayItemView {
 
 }  // namespace tray
 
-TrayUser::TrayUser() {
+TrayUser::TrayUser()
+    : user_(NULL),
+      avatar_(NULL) {
 }
 
 TrayUser::~TrayUser() {
 }
 
 views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
-  avatar_.reset(new tray::RoundedImageView(kTrayRoundedBorderRadius));
+  CHECK(avatar_ == NULL);
+  avatar_ = new tray::RoundedImageView(kTrayRoundedBorderRadius);
   avatar_->set_border(views::Border::CreateEmptyBorder(0, 6, 0, 0));
   UpdateAfterLoginStatusChange(status);
-  return avatar_.get();
+  return avatar_;
 }
 
 views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
   if (status == user::LOGGED_IN_NONE)
     return NULL;
 
-  user_.reset(new tray::UserView(status));
-  return user_.get();
+  CHECK(user_ == NULL);
+  user_ = new tray::UserView(status);
+  return user_;
 }
 
 views::View* TrayUser::CreateDetailedView(user::LoginStatus status) {
@@ -280,11 +284,11 @@ views::View* TrayUser::CreateDetailedView(user::LoginStatus status) {
 }
 
 void TrayUser::DestroyTrayView() {
-  avatar_.reset();
+  avatar_ = NULL;
 }
 
 void TrayUser::DestroyDefaultView() {
-  user_.reset();
+  user_ = NULL;
 }
 
 void TrayUser::DestroyDetailedView() {

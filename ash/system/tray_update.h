@@ -38,8 +38,6 @@ class TrayUpdate : public TrayImageItem,
   // Overridden from UpdateObserver.
   virtual void OnUpdateRecommended() OVERRIDE;
 
-  scoped_ptr<views::View> default_;
-
   DISALLOW_COPY_AND_ASSIGN(TrayUpdate);
 };
 

@@ -9,7 +9,7 @@
 #include "ash/ash_export.h"
 #include "ash/system/user/login_status.h"
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/compiler_specific.h"
 
 namespace views {
 class View;

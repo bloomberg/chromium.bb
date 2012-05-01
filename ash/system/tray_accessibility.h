@@ -43,7 +43,7 @@ class TrayAccessibility : public TrayImageItem,
   virtual void OnAccessibilityModeChanged(bool enabled,
                                           int string_id) OVERRIDE;
 
-  scoped_ptr<views::View> detailed_;
+  views::View* detailed_;
   int string_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayAccessibility);
@@ -53,4 +53,3 @@ class TrayAccessibility : public TrayImageItem,
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_ACCESSIBILITY_H_
-

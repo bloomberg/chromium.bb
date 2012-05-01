@@ -36,7 +36,7 @@ class TrayDate : public SystemTrayItem,
   virtual void OnDateFormatChanged() OVERRIDE;
   virtual void Refresh() OVERRIDE;
 
-  scoped_ptr<tray::TimeView> time_tray_;
+  tray::TimeView* time_tray_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayDate);
 };

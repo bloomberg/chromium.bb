@@ -40,8 +40,8 @@ class TrayUser : public SystemTrayItem,
   // Overridden from UserObserver.
   virtual void OnUserUpdate() OVERRIDE;
 
-  scoped_ptr<tray::UserView> user_;
-  scoped_ptr<tray::RoundedImageView> avatar_;
+  tray::UserView* user_;
+  tray::RoundedImageView* avatar_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayUser);
 };

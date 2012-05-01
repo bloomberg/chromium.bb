@@ -45,8 +45,8 @@ class TrayCapsLock : public TrayImageItem,
   virtual void OnCapsLockChanged(bool enabled,
                                  bool search_mapped_to_caps_lock) OVERRIDE;
 
-  scoped_ptr<CapsLockDefaultView> default_;
-  scoped_ptr<views::View> detailed_;
+  CapsLockDefaultView* default_;
+  views::View* detailed_;
 
   bool search_mapped_to_caps_lock_;
   bool caps_lock_enabled_;

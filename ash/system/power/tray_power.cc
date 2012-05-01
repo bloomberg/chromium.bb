@@ -190,7 +190,8 @@ class PowerPopupView : public views::View {
 }  // namespace tray
 
 TrayPower::TrayPower()
-    : power_(NULL),
+    : date_(NULL),
+      power_(NULL),
       power_tray_(NULL) {
 }
 
@@ -203,13 +204,15 @@ views::View* TrayPower::CreateTrayView(user::LoginStatus status) {
   // necessary.
   PowerSupplyStatus power_status =
       ash::Shell::GetInstance()->tray_delegate()->GetPowerSupplyStatus();
-  power_tray_.reset(new tray::PowerTrayView());
+  CHECK(power_tray_ == NULL);
+  power_tray_ = new tray::PowerTrayView();
   power_tray_->UpdatePowerStatus(power_status);
-  return power_tray_.get();
+  return power_tray_;
 }
 
 views::View* TrayPower::CreateDefaultView(user::LoginStatus status) {
-  date_.reset(new tray::DateView());
+  CHECK(date_ == NULL);
+  date_ = new tray::DateView();
 
   views::View* container = new views::View;
   views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
@@ -221,7 +224,7 @@ views::View* TrayPower::CreateDefaultView(user::LoginStatus status) {
       kHeaderBackgroundColor));
   HoverHighlightView* view = new HoverHighlightView(NULL);
   view->SetLayoutManager(new views::FillLayout);
-  view->AddChildView(date_.get());
+  view->AddChildView(date_);
   date_->set_border(views::Border::CreateEmptyBorder(kPaddingVertical,
       kTrayPopupPaddingHorizontal,
       kPaddingVertical,
@@ -239,13 +242,14 @@ views::View* TrayPower::CreateDefaultView(user::LoginStatus status) {
   PowerSupplyStatus power_status =
       ash::Shell::GetInstance()->tray_delegate()->GetPowerSupplyStatus();
   if (power_status.battery_is_present) {
-    power_.reset(new tray::PowerPopupView());
+    CHECK(power_ == NULL);
+    power_ = new tray::PowerPopupView();
     power_->UpdatePowerStatus(power_status);
     power_->set_border(views::Border::CreateSolidSidedBorder(
         kPaddingVertical, kTrayPopupPaddingHorizontal,
         kPaddingVertical, kTrayPopupPaddingHorizontal,
         SkColorSetARGB(0, 0, 0, 0)));
-    container->AddChildView(power_.get());
+    container->AddChildView(power_);
   }
   ash::Shell::GetInstance()->tray_delegate()->RequestStatusUpdate();
 
@@ -257,12 +261,12 @@ views::View* TrayPower::CreateDetailedView(user::LoginStatus status) {
 }
 
 void TrayPower::DestroyTrayView() {
-  power_tray_.reset();
+  power_tray_ = NULL;
 }
 
 void TrayPower::DestroyDefaultView() {
-  date_.reset();
-  power_.reset();
+  date_ = NULL;
+  power_ = NULL;
 }
 
 void TrayPower::DestroyDetailedView() {
@@ -272,9 +276,9 @@ void TrayPower::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
 void TrayPower::OnPowerStatusChanged(const PowerSupplyStatus& status) {
-  if (power_tray_.get())
+  if (power_tray_)
     power_tray_->UpdatePowerStatus(status);
-  if (power_.get())
+  if (power_)
     power_->UpdatePowerStatus(status);
 }
 

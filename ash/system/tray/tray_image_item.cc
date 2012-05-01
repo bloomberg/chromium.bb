@@ -14,22 +14,24 @@ namespace ash {
 namespace internal {
 
 TrayImageItem::TrayImageItem(int resource_id)
-    : resource_id_(resource_id) {
+    : resource_id_(resource_id),
+      tray_view_(NULL) {
 }
 
 TrayImageItem::~TrayImageItem() {}
 
 views::View* TrayImageItem::tray_view() {
-  return tray_view_.get();
+  return tray_view_;
 }
 
 views::View* TrayImageItem::CreateTrayView(user::LoginStatus status) {
-  tray_view_.reset(new TrayItemView);
+  CHECK(tray_view_ == NULL);
+  tray_view_ = new TrayItemView;
   tray_view_->CreateImageView();
   tray_view_->image_view()->SetImage(ui::ResourceBundle::GetSharedInstance().
       GetImageNamed(resource_id_).ToSkBitmap());
   tray_view_->SetVisible(GetInitialVisibility());
-  return tray_view_.get();
+  return tray_view_;
 }
 
 views::View* TrayImageItem::CreateDefaultView(user::LoginStatus status) {
@@ -44,7 +46,7 @@ void TrayImageItem::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
 void TrayImageItem::DestroyTrayView() {
-  tray_view_.reset();
+  tray_view_ = NULL;
 }
 
 void TrayImageItem::DestroyDefaultView() {

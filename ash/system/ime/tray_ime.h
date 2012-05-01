@@ -8,7 +8,6 @@
 
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/tray/system_tray_item.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace views {
 class Label;
@@ -48,9 +47,9 @@ class TrayIME : public SystemTrayItem,
   // Overridden from IMEObserver.
   virtual void OnIMERefresh() OVERRIDE;
 
-  scoped_ptr<TrayItemView> tray_label_;
-  scoped_ptr<tray::IMEDefaultView> default_;
-  scoped_ptr<tray::IMEDetailedView> detailed_;
+  TrayItemView* tray_label_;
+  tray::IMEDefaultView* default_;
+  tray::IMEDetailedView* detailed_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayIME);
 };

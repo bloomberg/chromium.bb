@@ -181,24 +181,30 @@ class IMEDetailedView : public views::View,
 
 }  // namespace tray
 
-TrayIME::TrayIME() {
+TrayIME::TrayIME()
+    : tray_label_(NULL),
+      default_(NULL),
+      detailed_(NULL) {
 }
 
 TrayIME::~TrayIME() {
 }
 
 void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
-  tray_label_->label()->SetText(current.short_name);
-  tray_label_->SetVisible(count > 1);
+  if (tray_label_) {
+    tray_label_->label()->SetText(current.short_name);
+    tray_label_->SetVisible(count > 1);
+  }
 }
 
 views::View* TrayIME::CreateTrayView(user::LoginStatus status) {
-  tray_label_.reset(new TrayItemView);
+  CHECK(tray_label_ == NULL);
+  tray_label_ = new TrayItemView;
   tray_label_->CreateLabel();
   SetupLabelForTray(tray_label_->label());
   tray_label_->set_border(
       views::Border::CreateEmptyBorder(0, 2, 0, 2));
-  return tray_label_.get();
+  return tray_label_;
 }
 
 views::View* TrayIME::CreateDefaultView(user::LoginStatus status) {
@@ -209,25 +215,27 @@ views::View* TrayIME::CreateDefaultView(user::LoginStatus status) {
   delegate->GetCurrentIMEProperties(&property_list);
   if (list.size() <= 1 && property_list.size() <= 1)
     return NULL;
-  default_.reset(new tray::IMEDefaultView(this));
-  return default_.get();
+  CHECK(default_ == NULL);
+  default_ = new tray::IMEDefaultView(this);
+  return default_;
 }
 
 views::View* TrayIME::CreateDetailedView(user::LoginStatus status) {
-  detailed_.reset(new tray::IMEDetailedView(this, status));
-  return detailed_.get();
+  CHECK(detailed_ == NULL);
+  detailed_ = new tray::IMEDetailedView(this, status);
+  return detailed_;
 }
 
 void TrayIME::DestroyTrayView() {
-  tray_label_.reset();
+  tray_label_ = NULL;
 }
 
 void TrayIME::DestroyDefaultView() {
-  default_.reset();
+  default_ = NULL;
 }
 
 void TrayIME::DestroyDetailedView() {
-  detailed_.reset();
+  detailed_ = NULL;
 }
 
 void TrayIME::UpdateAfterLoginStatusChange(user::LoginStatus status) {
@@ -244,9 +252,9 @@ void TrayIME::OnIMERefresh() {
 
   UpdateTrayLabel(current, list.size());
 
-  if (default_.get())
+  if (default_)
     default_->UpdateLabel(current);
-  if (detailed_.get())
+  if (detailed_)
     detailed_->Update(list, property_list);
 }
 

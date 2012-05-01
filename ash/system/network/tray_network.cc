@@ -513,48 +513,54 @@ class NetworkDetailedView : public views::View,
 
 }  // namespace tray
 
-TrayNetwork::TrayNetwork() {
+TrayNetwork::TrayNetwork()
+    : tray_(NULL),
+      default_(NULL),
+      detailed_(NULL) {
 }
 
 TrayNetwork::~TrayNetwork() {
 }
 
 views::View* TrayNetwork::CreateTrayView(user::LoginStatus status) {
-  tray_.reset(new tray::NetworkTrayView(tray::LIGHT, true /*tray_icon*/));
-  return tray_.get();
+  CHECK(tray_ == NULL);
+  tray_ = new tray::NetworkTrayView(tray::LIGHT, true /*tray_icon*/);
+  return tray_;
 }
 
 views::View* TrayNetwork::CreateDefaultView(user::LoginStatus status) {
-  default_.reset(new tray::NetworkDefaultView(this));
-  return default_.get();
+  CHECK(default_ == NULL);
+  default_ = new tray::NetworkDefaultView(this);
+  return default_;
 }
 
 views::View* TrayNetwork::CreateDetailedView(user::LoginStatus status) {
-  detailed_.reset(new tray::NetworkDetailedView(status));
-  return detailed_.get();
+  CHECK(detailed_ == NULL);
+  detailed_ = new tray::NetworkDetailedView(status);
+  return detailed_;
 }
 
 void TrayNetwork::DestroyTrayView() {
-  tray_.reset();
+  tray_ = NULL;
 }
 
 void TrayNetwork::DestroyDefaultView() {
-  default_.reset();
+  default_ = NULL;
 }
 
 void TrayNetwork::DestroyDetailedView() {
-  detailed_.reset();
+  detailed_ = NULL;
 }
 
 void TrayNetwork::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
 void TrayNetwork::OnNetworkRefresh(const NetworkIconInfo& info) {
-  if (tray_.get())
+  if (tray_)
     tray_->Update(info);
-  if (default_.get())
+  if (default_)
     default_->Update();
-  if (detailed_.get())
+  if (detailed_)
     detailed_->Update();
 }
 

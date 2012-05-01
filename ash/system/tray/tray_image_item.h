@@ -38,7 +38,7 @@ class TrayImageItem : public SystemTrayItem {
 
  private:
   int resource_id_;
-  scoped_ptr<TrayItemView> tray_view_;
+  TrayItemView* tray_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayImageItem);
 };
