@@ -46,13 +46,8 @@ class GPUCrashTest : public InProcessBrowserTest {
   FilePath gpu_test_dir_;
 };
 
-// Currently Kill timeout on GPU Debug bots: http://crbug.com/101513
-#if !defined(NDEBUG)
-#define MAYBE_Kill DISABLED_Kill
-#else
-#define MAYBE_Kill Kill
-#endif
-IN_PROC_BROWSER_TEST_F(GPUCrashTest, MAYBE_Kill) {
+// Currently Kill times out on GPU bots: http://crbug.com/101513
+IN_PROC_BROWSER_TEST_F(GPUCrashTest, DISABLED_Kill) {
   ui_test_utils::DOMMessageQueue message_queue;
 
   ui_test_utils::NavigateToURL(
