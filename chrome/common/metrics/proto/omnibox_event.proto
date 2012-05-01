@@ -10,7 +10,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 10
+// Next tag: 11
 message OmniboxEventProto {
   // The timestamp for the event, in seconds since the epoch.
   optional int64 time = 1;
@@ -42,6 +42,20 @@ message OmniboxEventProto {
   // again), then writes in the omnibox again, this elapsed time should start
   // from the time of the second series of modification.
   optional int64 typing_duration_ms = 7;
+
+  // The type of page currently displayed when the user used the omnibox.
+  enum PageClassification {
+    INVALID_SPEC = 0;   // invalid URI; shouldn't happen
+    NEW_TAB_PAGE = 1;   // chrome://newtab/
+    // Note that chrome://newtab/ doesn't have to be the built-in
+    // version; it could be replaced by an extension.
+    BLANK = 2;          // about:blank
+    HOMEPAGE = 3;       // user switched settings to "open this page" mode.
+    // Note that if the homepage is set to the new tab page or about blank,
+    // then we'll classify the web page into those categories, not HOMEPAGE.
+    OTHER = 4;          // everything else
+  }
+  optional PageClassification current_page_classification = 10;
 
   // What kind of input the user provided.
   enum InputType {

@@ -27,6 +27,7 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -41,6 +42,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/metrics/proto/omnibox_event.pb.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
@@ -518,6 +521,8 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
         autocomplete_controller_->input().type(),
         popup_->selected_line(),
         -1,  // don't yet know tab ID; set later if appropriate
+        ClassifyPage(controller_->GetTabContentsWrapper()->
+                     web_contents()->GetURL()),
         base::TimeTicks::Now() - time_user_first_modified_omnibox_,
         0,  // inline autocomplete length; possibly set later
         result());
@@ -1137,4 +1142,18 @@ bool AutocompleteEditModel::IsSpaceCharForAcceptingKeyword(wchar_t c) {
     default:
       return false;
   }
+}
+
+metrics::OmniboxEventProto::PageClassification
+    AutocompleteEditModel::ClassifyPage(const GURL& gurl) const {
+  if (!gurl.is_valid())
+    return metrics::OmniboxEventProto_PageClassification_INVALID_SPEC;
+  const std::string& url = gurl.spec();
+  if (url == chrome::kChromeUINewTabURL)
+    return metrics::OmniboxEventProto_PageClassification_NEW_TAB_PAGE;
+  if (url == chrome::kAboutBlankURL)
+    return metrics::OmniboxEventProto_PageClassification_BLANK;
+  if (url == profile()->GetPrefs()->GetString(prefs::kHomePage))
+    return metrics::OmniboxEventProto_PageClassification_HOMEPAGE;
+  return metrics::OmniboxEventProto_PageClassification_OTHER;
 }

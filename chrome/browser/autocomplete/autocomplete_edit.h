@@ -12,6 +12,7 @@
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/common/instant_types.h"
+#include "chrome/common/metrics/proto/omnibox_event.pb.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
@@ -443,6 +444,13 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   // Checks if a given character is a valid space character for accepting
   // keyword.
   static bool IsSpaceCharForAcceptingKeyword(wchar_t c);
+
+  // Classify the current page being viewed as, for example, the new tab
+  // page or a normal web page.  Used for logging omnibox events for
+  // UMA opted-in users.  Examines the user's profile to determine if the
+  // current page is the user's home page.
+  metrics::OmniboxEventProto::PageClassification ClassifyPage(
+      const GURL& gurl) const;
 
   scoped_ptr<AutocompleteController> autocomplete_controller_;
 

@@ -17,6 +17,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/common/metrics/proto/omnibox_event.pb.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_parse.h"
 
@@ -776,6 +777,8 @@ struct AutocompleteLog {
       AutocompleteInput::Type input_type,
       size_t selected_index,
       SessionID::id_type tab_id,
+      metrics::OmniboxEventProto::PageClassification
+          current_page_classification,
       base::TimeDelta elapsed_time_since_user_first_modified_omnibox,
       size_t inline_autocompleted_length,
       const AutocompleteResult& result);
@@ -788,6 +791,9 @@ struct AutocompleteLog {
   // ID of the tab the selected autocomplete suggestion was opened in.
   // Set to -1 if we haven't yet determined the destination tab.
   SessionID::id_type tab_id;
+  // The type of page (e.g., new tab page, regular web page) that the
+  // user was viewing before going somewhere with the omnibox.
+  metrics::OmniboxEventProto::PageClassification current_page_classification;
   // The amount of time since the user first began modifying the text
   // in the omnibox.  If at some point after modifying the text, the
   // user reverts the modifications (thus seeing the current web
