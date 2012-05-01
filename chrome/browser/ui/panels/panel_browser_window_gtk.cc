@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/browser_titlebar.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
+#include "chrome/browser/ui/gtk/nine_box.h"
 #include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
@@ -18,6 +19,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/theme_resources_standard.h"
+#include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
@@ -151,6 +153,34 @@ bool PanelBrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
   }
 
   return TRUE;
+}
+
+GdkRegion* PanelBrowserWindowGtk::GetWindowShape(int width, int height) const {
+  // For panels, only top corners are rounded. The bottom corners are not
+  // rounded because panels are aligned to the bottom edge of the screen.
+  GdkRectangle top_top_rect = { 3, 0, width - 6, 1 };
+  GdkRectangle top_mid_rect = { 1, 1, width - 2, 2 };
+  GdkRectangle mid_rect = { 0, 3, width, height - 3 };
+  GdkRegion* mask = gdk_region_rectangle(&top_top_rect);
+  gdk_region_union_with_rect(mask, &top_mid_rect);
+  gdk_region_union_with_rect(mask, &mid_rect);
+  return mask;
+}
+
+void PanelBrowserWindowGtk::DrawCustomFrameBorder(GtkWidget* widget) {
+  static NineBox* custom_frame_border = NULL;
+  if (!custom_frame_border) {
+    custom_frame_border = new NineBox(IDR_WINDOW_TOP_LEFT_CORNER,
+                                      IDR_WINDOW_TOP_CENTER,
+                                      IDR_WINDOW_TOP_RIGHT_CORNER,
+                                      IDR_WINDOW_LEFT_SIDE,
+                                      0,
+                                      IDR_WINDOW_RIGHT_SIDE,
+                                      IDR_PANEL_BOTTOM_LEFT_CORNER,
+                                      IDR_WINDOW_BOTTOM_CENTER,
+                                      IDR_PANEL_BOTTOM_RIGHT_CORNER);
+  }
+  custom_frame_border->RenderToWidget(widget);
 }
 
 void PanelBrowserWindowGtk::EnsureDragHelperCreated() {

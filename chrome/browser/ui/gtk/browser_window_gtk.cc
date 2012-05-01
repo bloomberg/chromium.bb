@@ -448,23 +448,26 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
 
   cairo_destroy(cr);
 
-  if (UseCustomFrame() && !IsMaximized()) {
-    static NineBox* custom_frame_border = NULL;
-    if (!custom_frame_border) {
-      custom_frame_border = new NineBox(IDR_WINDOW_TOP_LEFT_CORNER,
-                                        IDR_WINDOW_TOP_CENTER,
-                                        IDR_WINDOW_TOP_RIGHT_CORNER,
-                                        IDR_WINDOW_LEFT_SIDE,
-                                        0,
-                                        IDR_WINDOW_RIGHT_SIDE,
-                                        IDR_WINDOW_BOTTOM_LEFT_CORNER,
-                                        IDR_WINDOW_BOTTOM_CENTER,
-                                        IDR_WINDOW_BOTTOM_RIGHT_CORNER);
-    }
-    custom_frame_border->RenderToWidget(widget);
-  }
+  if (UseCustomFrame() && !IsMaximized())
+    DrawCustomFrameBorder(widget);
 
   return FALSE;  // Allow subwidgets to paint.
+}
+
+void BrowserWindowGtk::DrawCustomFrameBorder(GtkWidget* widget) {
+  static NineBox* custom_frame_border = NULL;
+  if (!custom_frame_border) {
+    custom_frame_border = new NineBox(IDR_WINDOW_TOP_LEFT_CORNER,
+                                      IDR_WINDOW_TOP_CENTER,
+                                      IDR_WINDOW_TOP_RIGHT_CORNER,
+                                      IDR_WINDOW_LEFT_SIDE,
+                                      0,
+                                      IDR_WINDOW_RIGHT_SIDE,
+                                      IDR_WINDOW_BOTTOM_LEFT_CORNER,
+                                      IDR_WINDOW_BOTTOM_CENTER,
+                                      IDR_WINDOW_BOTTOM_RIGHT_CORNER);
+  }
+  custom_frame_border->RenderToWidget(widget);
 }
 
 void BrowserWindowGtk::DrawContentShadow(cairo_t* cr) {
@@ -1983,6 +1986,21 @@ void BrowserWindowGtk::OnSizeChanged(int width, int height) {
 }
 
 void BrowserWindowGtk::UpdateWindowShape(int width, int height) {
+  GdkRegion* mask = GetWindowShape(width, height);
+  gdk_window_shape_combine_region(
+      gtk_widget_get_window(GTK_WIDGET(window_)), mask, 0, 0);
+  if (mask)
+    gdk_region_destroy(mask);
+
+  if (UseCustomFrame() && !IsFullscreen() && !IsMaximized()) {
+    gtk_alignment_set_padding(GTK_ALIGNMENT(window_container_), 1,
+        kFrameBorderThickness, kFrameBorderThickness, kFrameBorderThickness);
+  } else {
+    gtk_alignment_set_padding(GTK_ALIGNMENT(window_container_), 0, 0, 0, 0);
+  }
+}
+
+GdkRegion* BrowserWindowGtk::GetWindowShape(int width, int height) const {
   if (UseCustomFrame() && !IsFullscreen() && !IsMaximized()) {
     // Make the corners rounded.  We set a mask that includes most of the
     // window except for a few pixels in each corner.
@@ -1999,26 +2017,17 @@ void BrowserWindowGtk::UpdateWindowShape(int width, int height) {
     gdk_region_union_with_rect(mask, &mid_rect);
     gdk_region_union_with_rect(mask, &bot_mid_rect);
     gdk_region_union_with_rect(mask, &bot_bot_rect);
-    gdk_window_shape_combine_region(gtk_widget_get_window(GTK_WIDGET(window_)),
-                                    mask, 0, 0);
-    gdk_region_destroy(mask);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(window_container_), 1,
-        kFrameBorderThickness, kFrameBorderThickness, kFrameBorderThickness);
+    return mask;
+  } else if (UseCustomFrame()) {
+    // Disable rounded corners.  Simply passing in a NULL region doesn't
+    // seem to work on KWin, so manually set the shape to the whole window.
+    GdkRectangle rect = { 0, 0, width, height };
+    GdkRegion* mask = gdk_region_rectangle(&rect);
+    return mask;
   } else {
-    // XFCE disables the system decorations if there's an xshape set.
-    if (UseCustomFrame()) {
-      // Disable rounded corners.  Simply passing in a NULL region doesn't
-      // seem to work on KWin, so manually set the shape to the whole window.
-      GdkRectangle rect = { 0, 0, width, height };
-      GdkRegion* mask = gdk_region_rectangle(&rect);
-      gdk_window_shape_combine_region(
-          gtk_widget_get_window(GTK_WIDGET(window_)), mask, 0, 0);
-      gdk_region_destroy(mask);
-    } else {
-      gdk_window_shape_combine_region(
-          gtk_widget_get_window(GTK_WIDGET(window_)), NULL, 0, 0);
-    }
-    gtk_alignment_set_padding(GTK_ALIGNMENT(window_container_), 0, 0, 0, 0);
+    // XFCE disables the system decorations if there's an xshape set. Do not
+    // use the KWin hack when the custom frame is not enabled.
+    return NULL;
   }
 }
 

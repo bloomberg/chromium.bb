@@ -262,6 +262,14 @@ class BrowserWindowGtk : public BrowserWindow,
   // it should and sets |edge|.
   virtual bool GetWindowEdge(int x, int y, GdkWindowEdge* edge);
 
+  // Returns the window shape for the window with |width| and |height|.
+  // The caller is responsible for destroying the region if non-null region is
+  // returned.
+  virtual GdkRegion* GetWindowShape(int width, int height) const;
+
+  // Draws the border, including resizable corners, for the custom frame.
+  virtual void DrawCustomFrameBorder(GtkWidget* widget);
+
   virtual bool HandleTitleBarLeftMousePress(GdkEventButton* event,
                                             guint32 last_click_time,
                                             gfx::Point last_click_position);
