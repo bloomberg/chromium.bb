@@ -9,7 +9,6 @@
 #include <map>
 #include <string>
 
-#include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "chrome/browser/tab_render_watcher.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/public/browser/notification_observer.h"

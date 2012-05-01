@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/login_html_dialog.h"
+#include "chrome/browser/chromeos/login/login_web_dialog.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -29,16 +29,16 @@ const double kDefaultHeightRatio = 0.6;
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
-// LoginHtmlDialog, public:
+// LoginWebDialog, public:
 
-void LoginHtmlDialog::Delegate::OnDialogClosed() {
+void LoginWebDialog::Delegate::OnDialogClosed() {
 }
 
-LoginHtmlDialog::LoginHtmlDialog(Delegate* delegate,
-                                 gfx::NativeWindow parent_window,
-                                 const std::wstring& title,
-                                 const GURL& url,
-                                 Style style)
+LoginWebDialog::LoginWebDialog(Delegate* delegate,
+                               gfx::NativeWindow parent_window,
+                               const std::wstring& title,
+                               const GURL& url,
+                               Style style)
     : delegate_(delegate),
       parent_window_(parent_window),
       title_(WideToUTF16Hack(title)),
@@ -51,80 +51,80 @@ LoginHtmlDialog::LoginHtmlDialog(Delegate* delegate,
   height_ = static_cast<int>(kDefaultHeightRatio * screen_bounds.height());
 }
 
-LoginHtmlDialog::~LoginHtmlDialog() {
+LoginWebDialog::~LoginWebDialog() {
   delegate_ = NULL;
 }
 
-void LoginHtmlDialog::Show() {
+void LoginWebDialog::Show() {
   views::Widget::CreateWindowWithParent(
       new WebDialogView(ProfileManager::GetDefaultProfile(), NULL, this),
       parent_window_)->Show();
   is_open_ = true;
 }
 
-void LoginHtmlDialog::SetDialogSize(int width, int height) {
+void LoginWebDialog::SetDialogSize(int width, int height) {
   DCHECK(width >= 0 && height >= 0);
   width_ = width;
   height_ = height;
 }
 
-void LoginHtmlDialog::SetDialogTitle(const string16& title) {
+void LoginWebDialog::SetDialogTitle(const string16& title) {
   title_ = title;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// LoginHtmlDialog, protected:
+// LoginWebDialog, protected:
 
-ui::ModalType LoginHtmlDialog::GetDialogModalType() const {
+ui::ModalType LoginWebDialog::GetDialogModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-string16 LoginHtmlDialog::GetDialogTitle() const {
+string16 LoginWebDialog::GetDialogTitle() const {
   return title_;
 }
 
-GURL LoginHtmlDialog::GetDialogContentURL() const {
+GURL LoginWebDialog::GetDialogContentURL() const {
   return url_;
 }
 
-void LoginHtmlDialog::GetWebUIMessageHandlers(
+void LoginWebDialog::GetWebUIMessageHandlers(
     std::vector<WebUIMessageHandler*>* handlers) const {
 }
 
-void LoginHtmlDialog::GetDialogSize(gfx::Size* size) const {
+void LoginWebDialog::GetDialogSize(gfx::Size* size) const {
   size->SetSize(width_, height_);
 }
 
-std::string LoginHtmlDialog::GetDialogArgs() const {
+std::string LoginWebDialog::GetDialogArgs() const {
   return std::string();
 }
 
-void LoginHtmlDialog::OnDialogClosed(const std::string& json_retval) {
+void LoginWebDialog::OnDialogClosed(const std::string& json_retval) {
   is_open_ = false;
   notification_registrar_.RemoveAll();
   if (delegate_)
     delegate_->OnDialogClosed();
 }
 
-void LoginHtmlDialog::OnCloseContents(WebContents* source,
-                                      bool* out_close_dialog) {
+void LoginWebDialog::OnCloseContents(WebContents* source,
+                                     bool* out_close_dialog) {
   if (out_close_dialog)
     *out_close_dialog = true;
 }
 
-bool LoginHtmlDialog::ShouldShowDialogTitle() const {
+bool LoginWebDialog::ShouldShowDialogTitle() const {
   return true;
 }
 
-bool LoginHtmlDialog::HandleContextMenu(
+bool LoginWebDialog::HandleContextMenu(
     const content::ContextMenuParams& params) {
   // Disable context menu.
   return true;
 }
 
-void LoginHtmlDialog::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
+void LoginWebDialog::Observe(int type,
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME);
   // TODO(saintlou): Do we need a throbber for Aura?
   NOTIMPLEMENTED();

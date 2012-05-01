@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_HTML_DIALOG_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_HTML_DIALOG_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_WEB_DIALOG_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_WEB_DIALOG_H_
 #pragma once
 
 #include <string>
@@ -20,16 +20,17 @@ namespace chromeos {
 class BubbleFrameView;
 
 // Launches web dialog during OOBE/Login with specified URL and title.
-class LoginHtmlDialog : public WebDialogDelegate,
-                        public content::NotificationObserver {
+class LoginWebDialog : public WebDialogDelegate,
+                       public content::NotificationObserver {
  public:
   // Delegate class to get notifications from the dialog.
   class Delegate {
-  public:
-    virtual ~Delegate() {}
-
+   public:
     // Called when dialog has been closed.
     virtual void OnDialogClosed();
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   enum Style {
@@ -37,14 +38,13 @@ class LoginHtmlDialog : public WebDialogDelegate,
     STYLE_BUBBLE   // Use chromeos::BubbleWindow as a host.
   };
 
-  LoginHtmlDialog(Delegate* delegate,
-                  gfx::NativeWindow parent_window,
-                  const std::wstring& title,
-                  const GURL& url,
-                  Style style);
-  virtual ~LoginHtmlDialog();
+  LoginWebDialog(Delegate* delegate,
+                 gfx::NativeWindow parent_window,
+                 const std::wstring& title,
+                 const GURL& url,
+                 Style style);
+  virtual ~LoginWebDialog();
 
-  // Shows created dialog.
   void Show();
 
   // Overrides default width/height for dialog.
@@ -94,9 +94,9 @@ class LoginHtmlDialog : public WebDialogDelegate,
   int width_;
   int height_;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginHtmlDialog);
+  DISALLOW_COPY_AND_ASSIGN(LoginWebDialog);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_HTML_DIALOG_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_WEB_DIALOG_H_

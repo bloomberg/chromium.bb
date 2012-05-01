@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,13 +55,13 @@ void HelpAppLauncher::ShowHelpTopic(HelpTopic help_topic_id) {
 
 void HelpAppLauncher::ShowHelpTopicDialog(const GURL& topic_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  dialog_.reset(new LoginHtmlDialog(
+  dialog_.reset(new LoginWebDialog(
       this,
       parent_window_,
       UTF16ToWide(
           l10n_util::GetStringUTF16(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE)),
       topic_url,
-      LoginHtmlDialog::STYLE_BUBBLE));
+      LoginWebDialog::STYLE_BUBBLE));
   dialog_->Show();
 }
 
