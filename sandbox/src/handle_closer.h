@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,8 +46,7 @@ class HandleCloser {
   // Adds a handle that will be closed in the target process after lockdown.
   // A NULL value for handle_name indicates all handles of the specified type.
   // An empty string for handle_name indicates the handle is unnamed.
-  ResultCode HandleCloser::AddHandle(const char16* handle_type,
-                                     const char16* handle_name);
+  ResultCode AddHandle(const char16* handle_type, const char16* handle_name);
 
   // Serializes and copies the closer table into the target process.
   bool InitializeTargetHandles(TargetProcess* target);
