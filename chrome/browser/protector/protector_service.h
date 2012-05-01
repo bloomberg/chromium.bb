@@ -62,6 +62,10 @@ class ProtectorService : public ProfileKeyedService,
   // backup.
   ProtectedPrefsWatcher* GetPrefsWatcher();
 
+  // Stops observing pref changes and updating the backup. Should be used in
+  // tests only.
+  void StopWatchingPrefsForTesting();
+
   // Returns the most recent change instance or NULL if there are no changes.
   BaseSettingChange* GetLastChange();
 

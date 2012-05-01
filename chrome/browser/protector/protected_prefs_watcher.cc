@@ -63,7 +63,7 @@ void StringAppendStringDictionary(const base::DictionaryValue* dict,
 }  // namespace
 
 // static
-const int ProtectedPrefsWatcher::kCurrentVersionNumber = 2;
+const int ProtectedPrefsWatcher::kCurrentVersionNumber = 3;
 
 ProtectedPrefsWatcher::ProtectedPrefsWatcher(Profile* profile)
     : is_backup_valid_(true),
@@ -208,7 +208,17 @@ void ProtectedPrefsWatcher::MigrateOldBackupIfNeeded() {
 
   switch (current_version) {
     case 1:
+      // Add pinned tabs.
       prefs->Set(kBackupPinnedTabs, *prefs->GetList(prefs::kPinnedTabs));
+      // FALL THROUGH
+
+    case 2:
+      // SessionStartupPref migration.
+      DCHECK(prefs->GetBoolean(prefs::kRestoreOnStartupMigrated));
+      prefs->SetInteger(kBackupRestoreOnStartup,
+                        prefs->GetInteger(prefs::kRestoreOnStartup));
+      prefs->Set(kBackupURLsToRestoreOnStartup,
+                 *prefs->GetList(prefs::kURLsToRestoreOnStartup));
       // FALL THROUGH
   }
 

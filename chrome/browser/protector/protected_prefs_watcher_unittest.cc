@@ -189,4 +189,34 @@ TEST_F(ProtectedPrefsWatcherTest, MigrationToVersion2) {
             prefs_->GetInteger("backup._version"));
 }
 
+// Verify that SessionStartupPref migration doesn't trigger Protector
+// (version 3 migration).
+TEST_F(ProtectedPrefsWatcherTest, MigrationToVersion3) {
+  EXPECT_TRUE(prefs_watcher_->is_backup_valid());
+
+  // Bring startup prefs to an old (pre-migration) version.
+  prefs_->SetBoolean(prefs::kHomePageIsNewTabPage, false);
+  prefs_->SetString(prefs::kHomePage, "http://example.com/");
+  prefs_->ClearPref(prefs::kRestoreOnStartupMigrated);
+
+  // Reset version to 2 and overwrite the signature.
+  prefs_->SetInteger("backup._version", 2);
+  ForceUpdateSignature();
+  EXPECT_TRUE(IsSignatureValid());
+
+  // Take down the old instance and create a new ProtectedPrefsWatcher from
+  // current prefs.
+  ProtectorServiceFactory::GetForProfile(&profile_)->
+      StopWatchingPrefsForTesting();
+  scoped_ptr<ProtectedPrefsWatcher> prefs_watcher2(
+      new ProtectedPrefsWatcher(&profile_));
+  EXPECT_TRUE(prefs_watcher2->is_backup_valid());
+
+  // Startup settings shouldn't be reported as changed.
+  EXPECT_FALSE(prefs_watcher2->DidPrefChange(prefs::kRestoreOnStartup));
+  EXPECT_FALSE(prefs_watcher2->DidPrefChange(prefs::kURLsToRestoreOnStartup));
+  EXPECT_EQ(ProtectedPrefsWatcher::kCurrentVersionNumber,
+            prefs_->GetInteger("backup._version"));
+}
+
 }  // namespace protector

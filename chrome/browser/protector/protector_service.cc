@@ -119,6 +119,10 @@ ProtectedPrefsWatcher* ProtectorService::GetPrefsWatcher() {
   return prefs_watcher_.get();
 }
 
+void ProtectorService::StopWatchingPrefsForTesting() {
+  prefs_watcher_.reset();
+}
+
 ProtectorService::Item* ProtectorService::FindItemToMergeWith(
     const BaseSettingChange* change) {
   if (!change->CanBeMerged())
