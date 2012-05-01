@@ -1828,4 +1828,13 @@
    ...
    fun:*_*_Test::TestBody
 }
+{
+   bug_125807
+   Heapcheck:Leak
+   ...
+   fun:TransportSecurityPersister::TransportSecurityPersister
+   fun:TransportSecurityPersisterTest::TransportSecurityPersisterTest
+   ...
+   fun:testing::internal::TestFactoryImpl::CreateTest
+}
 
