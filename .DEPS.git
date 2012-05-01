@@ -14,9 +14,9 @@ deps = {
     'base':
         Var('git_url') + '/chromium/src/base.git@a0e812491ac52c26d29329219986ea91ccecfcd3',
     'build':
-        Var('git_url') + '/chromium/src/build.git@bdfc0956b38878379ef65e564f154c2a1b58be63',
+        Var('git_url') + '/chromium/src/build.git@5c2bf40cf87bdb6c648feea028153ac8a7ae5504',
     'chrome/test/pyautolib':
-        Var('git_url') + '/chromium/src/chrome/test/pyautolib.git@4c09624004854b3403b618e7bf5063efc901713e',
+        Var('git_url') + '/chromium/src/chrome/test/pyautolib.git@cf50b704753b0e135c468a3c47fb916e1560b5b4',
     'gpu':
         Var('git_url') + '/chromium/src/gpu.git@90c391fd74b9c572d3bb6dd152616d63ed734e92',
     'native_client/tools/perf_expectations':
@@ -24,7 +24,7 @@ deps = {
     'net/tools/testserver':
         Var('git_url') + '/chromium/src/net/tools/testserver.git@143daa491f898b17c96405fe3173860c63f712d6',
     'ppapi':
-        Var('git_url') + '/chromium/src/ppapi.git@5fcfa0ff2f854dc529e9f541b448e1fee2d3fe12',
+        Var('git_url') + '/chromium/src/ppapi.git@ace75f40fa49852bc21770609215c4050adddc2d',
     'testing/gtest':
         Var('git_url') + '/external/googletest.git@a2965825b1953c7b8ad292f726eb5c3f2659d5d3',
     'third_party':
