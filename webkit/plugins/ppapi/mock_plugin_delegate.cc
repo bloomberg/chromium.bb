@@ -50,6 +50,11 @@ SkBitmap* MockPluginDelegate::GetSadPluginBitmap() {
   return NULL;
 }
 
+WebKit::WebPlugin* MockPluginDelegate::CreatePluginReplacement(
+    const FilePath& file_path) {
+  return NULL;
+}
+
 MockPluginDelegate::PlatformImage2D* MockPluginDelegate::CreateImage2D(
     int width,
     int height) {

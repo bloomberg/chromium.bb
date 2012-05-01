@@ -43,6 +43,12 @@ bool ShellContentRendererClient::OverrideCreatePlugin(
   return false;
 }
 
+WebKit::WebPlugin* ShellContentRendererClient::CreatePluginReplacement(
+    RenderView* render_view,
+    const FilePath& plugin_path) {
+  return NULL;
+}
+
 bool ShellContentRendererClient::HasErrorPage(int http_status_code,
                                               std::string* error_domain) {
   return false;

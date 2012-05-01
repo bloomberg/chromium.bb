@@ -445,6 +445,9 @@ class RenderViewImpl : public RenderWidget,
   virtual WebKit::WebPlugin* createPlugin(
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params);
+  virtual WebKit::WebPlugin* createPluginReplacement(
+      WebKit::WebFrame* frame,
+      const WebKit::WebPluginParams& params);
   virtual WebKit::WebSharedWorker* createSharedWorker(
       WebKit::WebFrame* frame, const WebKit::WebURL& url,
       const WebKit::WebString& name, unsigned long long documentId);
@@ -637,6 +640,8 @@ class RenderViewImpl : public RenderWidget,
   virtual webkit::npapi::WebPluginDelegate* CreatePluginDelegate(
       const FilePath& file_path,
       const std::string& mime_type) OVERRIDE;
+  virtual WebKit::WebPlugin* CreatePluginReplacement(
+      const FilePath& file_path) OVERRIDE;
   virtual void CreatedPluginWindow(gfx::PluginWindowHandle handle) OVERRIDE;
   virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle handle) OVERRIDE;
   virtual void DidMovePlugin(

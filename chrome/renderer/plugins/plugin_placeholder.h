@@ -16,10 +16,10 @@
 struct ChromeViewHostMsg_GetPluginInfo_Status;
 
 namespace webkit {
-struct WebPluginInfo;
 namespace npapi {
 class PluginGroup;
 }
+struct WebPluginInfo;
 }
 
 // Placeholders can be used if a plug-in is missing or not available
@@ -34,6 +34,10 @@ class PluginPlaceholder : public content::RenderViewObserver,
       content::RenderView* render_view,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params);
+
+  static PluginPlaceholder* CreateErrorPlugin(
+      content::RenderView* render_view,
+      const FilePath& plugin_path);
 
   static PluginPlaceholder* CreateBlockedPlugin(
       content::RenderView* render_view,

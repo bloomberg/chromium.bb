@@ -256,10 +256,8 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
 
   WebPluginDelegate* plugin_delegate = page_delegate_->CreatePluginDelegate(
       file_path_, mime_type_);
-  if (!plugin_delegate) {
-    LOG(ERROR) << "Couldn't create plug-in delegate";
+  if (!plugin_delegate)
     return false;
-  }
 
   // Set the container before Initialize because the plugin may
   // synchronously call NPN_GetValue to get its container during its
@@ -270,7 +268,14 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   if (!ok) {
     LOG(ERROR) << "Couldn't initialize plug-in";
     plugin_delegate->PluginDestroyed();
-    return false;
+
+    WebKit::WebPlugin* replacement_plugin =
+        page_delegate_->CreatePluginReplacement(file_path_);
+    if (!replacement_plugin || !replacement_plugin->initialize(container))
+      return false;
+
+    container->setPlugin(replacement_plugin);
+    return true;
   }
 
   delegate_ = plugin_delegate;
