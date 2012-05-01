@@ -30,7 +30,7 @@ class FindEntryDelegate {
  public:
   virtual ~FindEntryDelegate();
 
-  // Called when FindEntryByPathSync() completes search.
+  // Called when GDataRootDirectory::FindEntryByPath() completes search.
   virtual void OnDone(base::PlatformFileError error,
                       const FilePath& directory_path,
                       GDataEntry* entry) = 0;

@@ -196,13 +196,6 @@ class GDataFileSystemInterface {
   // Must be called on UI thread.
   virtual void Authenticate(const AuthStatusCallback& callback) = 0;
 
-  // Finds file info by using virtual |file_path|. This call will also
-  // retrieve and refresh file system content from server and disk cache.
-  //
-  // Can be called from UI/IO thread. |callback| is run on the calling thread.
-  virtual void FindEntryByPathAsync(const FilePath& file_path,
-                                    const FindEntryCallback& callback) = 0;
-
   // Finds file info by using |resource_id|. This call does not initiate
   // content refreshing and will invoke one of |delegate| methods directly as
   // it executes.
@@ -408,8 +401,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
-  virtual void FindEntryByPathAsync(const FilePath& file_path,
-                                    const FindEntryCallback& callback) OVERRIDE;
   virtual void FindEntryByResourceIdSync(const std::string& resource_id,
                                          FindEntryDelegate* delegate) OVERRIDE;
   virtual void TransferFile(const FilePath& local_file_path,
@@ -1264,10 +1255,13 @@ class GDataFileSystem : public GDataFileSystemInterface,
                        const FilePath& directory_path,
                        GDataEntry* entry);
 
-  // The following functions are used to forward calls to asynchronous public
-  // member functions to UI thread.
+  // Finds file info by using virtual |file_path|. This call will also
+  // retrieve and refresh file system content from server and disk cache.
   void FindEntryByPathAsyncOnUIThread(const FilePath& search_file_path,
                                       const FindEntryCallback& callback);
+
+  // The following functions are used to forward calls to asynchronous public
+  // member functions to UI thread.
   void CopyOnUIThread(const FilePath& src_file_path,
                       const FilePath& dest_file_path,
                       const FileOperationCallback& callback);

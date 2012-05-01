@@ -1041,27 +1041,6 @@ void GDataFileSystem::FindEntryByResourceIdSync(
   }
 }
 
-void GDataFileSystem::FindEntryByPathAsync(
-    const FilePath& search_file_path,
-    const FindEntryCallback& callback) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const bool posted = BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::FindEntryByPathAsyncOnUIThread,
-                   ui_weak_ptr_,
-                   search_file_path,
-                   base::Bind(&RelayFindEntryCallback,
-                              base::MessageLoopProxy::current(),
-                              callback)));
-    DCHECK(posted);
-    return;
-  }
-
-  FindEntryByPathAsyncOnUIThread(search_file_path, callback);
-}
-
 void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
     const FilePath& search_file_path,
     const FindEntryCallback& callback) {
