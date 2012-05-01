@@ -181,7 +181,7 @@
     "extension_types": ["platform_app"]
   },
   "storage": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"],
     "min_manifest_version": 2
   },
