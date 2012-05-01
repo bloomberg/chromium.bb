@@ -57,7 +57,7 @@ clobber() {
 }
 
 # Make up for the toolchain tarballs not quite being a full SDK
-build-prerequsites() {
+build-prerequisites() {
   echo "@@@BUILD_STEP build prerequisites [$*] @@@"
   pushd ${SPEC_BASE}
   ./run_all.sh BuildPrerequisites "$@"
@@ -142,14 +142,14 @@ download-test-binaries() {
 # TODO: elminate this long running bot in favor per arch sharded bots
 pnacl-trybot-arm-qemu() {
   clobber
-  build-prerequsites "arm" "bitcode"
+  build-prerequisites "arm" "bitcode"
   build-tests SetupPnaclArmOpt "${TRYBOT_TESTS}" 0 1
   run-tests SetupPnaclArmOpt "${TRYBOT_TESTS}" 0 1
 }
 
 pnacl-trybot-arm-buildonly() {
   clobber
-  build-prerequsites "arm" "bitcode"
+  build-prerequisites "arm" "bitcode"
   ${BUILDBOT_PNACL} archive-for-hw-bots "${NAME_ARM_TRY_UPLOAD}" try
   build-tests SetupPnaclArmOpt "${TRYBOT_TESTS}" 0 1
   upload-test-binaries "${TRYBOT_TESTS}" try
@@ -164,7 +164,7 @@ pnacl-trybot-arm-hw() {
 
 pnacl-trybot-x8632() {
   clobber
-  build-prerequsites "x86-32" "bitcode"
+  build-prerequisites "x86-32" "bitcode"
   build-tests SetupPnaclX8632Opt "${TRYBOT_TESTS}" 0 1
   run-tests SetupPnaclX8632Opt "${TRYBOT_TESTS}" 0 1
   build-tests SetupPnaclTranslatorX8632Opt "${TRYBOT_TRANSLATOR_TESTS}" 0 1
@@ -173,7 +173,7 @@ pnacl-trybot-x8632() {
 
 pnacl-trybot-x8664() {
   clobber
-  build-prerequsites "x86-64" "bitcode"
+  build-prerequisites "x86-64" "bitcode"
   build-tests SetupPnaclX8664Opt "${TRYBOT_TESTS}" 0 1
   run-tests SetupPnaclX8664Opt "${TRYBOT_TESTS}" 0 1
   build-tests SetupPnaclTranslatorX8664Opt "${TRYBOT_TRANSLATOR_TESTS}" 0 1
@@ -184,7 +184,7 @@ pnacl-trybot-x8664() {
 # to test locally
 pnacl-arm-qemu() {
   clobber
-  build-prerequsites "arm" "bitcode"
+  build-prerequisites "arm" "bitcode"
   # arm takes a long time and we do not have sandboxed tests working
   build-tests SetupPnaclArmOpt all 1 1
   run-tests SetupPnaclArmOpt all 1 1
@@ -207,7 +207,7 @@ pnacl-arm-hw() {
 
 pnacl-x8664() {
   clobber
-  build-prerequsites "x86-64" "bitcode"
+  build-prerequisites "x86-64" "bitcode"
   local setups="SetupPnaclX8664 \
                SetupPnaclX8664Opt \
                SetupPnaclTranslatorX8664 \
@@ -218,7 +218,7 @@ pnacl-x8664() {
 
 pnacl-x8632() {
   clobber
-  build-prerequsites "x86-32" "bitcode"
+  build-prerequisites "x86-32" "bitcode"
   local setups="SetupPnaclX8632 \
                 SetupPnaclX8632Opt \
                 SetupPnaclTranslatorX8632 \
@@ -229,7 +229,7 @@ pnacl-x8632() {
 
 nacl-x8632() {
   clobber
-  build-prerequsites "x86-32" ""
+  build-prerequisites "x86-32" ""
   local setups="SetupNaclX8632 \
                 SetupNaclX8632Opt"
   build-tests "${setups}" all 1 3
@@ -238,7 +238,7 @@ nacl-x8632() {
 
 nacl-x8664() {
   clobber
-  build-prerequsites "x86-64" ""
+  build-prerequisites "x86-64" ""
   local setups="SetupNaclX8664 \
                 SetupNaclX8664Opt"
   build-tests "${setups}" all 1 3
