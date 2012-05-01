@@ -33,6 +33,7 @@ class GDataEntryProto;
 class GDataFileProto;
 class GDataDirectoryProto;
 class GDataRootDirectoryProto;
+class PlatformFileInfoProto;
 
 // Directory content origin.
 enum ContentOrigin {
@@ -80,6 +81,16 @@ class GDataEntry {
   void SerializeToString(std::string* serialized_proto) const;
   static scoped_ptr<GDataEntry> FromProtoString(
       const std::string& serialized_proto);
+
+  // Converts the proto representation to the platform file.
+  static void ConvertProtoToPlatformFileInfo(
+      const PlatformFileInfoProto& proto,
+      base::PlatformFileInfo* file_info);
+
+  // Converts the platform file info to the proto representation.
+  static void ConvertPlatformFileInfoToProto(
+      const base::PlatformFileInfo& file_info,
+      PlatformFileInfoProto* proto);
 
   // Converts to/from proto.
   void FromProto(const GDataEntryProto& proto);

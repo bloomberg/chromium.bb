@@ -632,16 +632,35 @@ void GDataRootDirectory::RemoveTemporaryFilesFromCacheMap() {
 
 // Convert to/from proto.
 
+// static
+void GDataEntry::ConvertProtoToPlatformFileInfo(
+    const PlatformFileInfoProto& proto,
+    base::PlatformFileInfo* file_info) {
+  file_info->size = proto.size();
+  file_info->is_directory = proto.is_directory();
+  file_info->is_symbolic_link = proto.is_symbolic_link();
+  file_info->last_modified = base::Time::FromInternalValue(
+      proto.last_modified());
+  file_info->last_accessed = base::Time::FromInternalValue(
+      proto.last_accessed());
+  file_info->creation_time = base::Time::FromInternalValue(
+      proto.creation_time());
+}
+
+// static
+void GDataEntry::ConvertPlatformFileInfoToProto(
+    const base::PlatformFileInfo& file_info,
+    PlatformFileInfoProto* proto) {
+  proto->set_size(file_info.size);
+  proto->set_is_directory(file_info.is_directory);
+  proto->set_is_symbolic_link(file_info.is_symbolic_link);
+  proto->set_last_modified(file_info.last_modified.ToInternalValue());
+  proto->set_last_accessed(file_info.last_accessed.ToInternalValue());
+  proto->set_creation_time(file_info.creation_time.ToInternalValue());
+}
+
 void GDataEntry::FromProto(const GDataEntryProto& proto) {
-  file_info_.size = proto.file_info().size();
-  file_info_.is_directory = proto.file_info().is_directory();
-  file_info_.is_symbolic_link = proto.file_info().is_symbolic_link();
-  file_info_.last_modified = base::Time::FromInternalValue(
-      proto.file_info().last_modified());
-  file_info_.last_accessed = base::Time::FromInternalValue(
-      proto.file_info().last_accessed());
-  file_info_.creation_time = base::Time::FromInternalValue(
-      proto.file_info().creation_time());
+  ConvertProtoToPlatformFileInfo(proto.file_info(), &file_info_);
 
   // Don't copy from proto.file_name() as file_name_ is computed in
   // SetFileNameFromTitle().
@@ -654,16 +673,7 @@ void GDataEntry::FromProto(const GDataEntryProto& proto) {
 }
 
 void GDataEntry::ToProto(GDataEntryProto* proto) const {
-  PlatformFileInfoProto* proto_file_info = proto->mutable_file_info();
-  proto_file_info->set_size(file_info_.size);
-  proto_file_info->set_is_directory(file_info_.is_directory);
-  proto_file_info->set_is_symbolic_link(file_info_.is_symbolic_link);
-  proto_file_info->set_last_modified(
-      file_info_.last_modified.ToInternalValue());
-  proto_file_info->set_last_accessed(
-      file_info_.last_accessed.ToInternalValue());
-  proto_file_info->set_creation_time(
-      file_info_.creation_time.ToInternalValue());
+  ConvertPlatformFileInfoToProto(file_info_, proto->mutable_file_info());
 
   // The file_name field is used in GetFileInfoByPathAsync(). As shown in
   // FromProto(), the value is discarded when deserializing from proto.
