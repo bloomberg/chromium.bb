@@ -248,8 +248,6 @@ void GDataFileSystemProxy::OnReadDirectory(
     callback,
     base::PlatformFileError error,
     scoped_ptr<gdata::GDataDirectoryProto> directory_proto) {
-  DCHECK(error != base::PLATFORM_FILE_OK);
-
   if (error != base::PLATFORM_FILE_OK) {
     callback.Run(error, std::vector<base::FileUtilProxy::Entry>(), false);
     return;
