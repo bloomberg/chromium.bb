@@ -132,7 +132,6 @@ table_files = \
 	lang2table \
 	latinLetterDef6Dots.uti \
 	latinLetterDef8Dots.uti \
-	letterDefTest.ctb \
 	lt.ctb \
 	Lv-Lv-g1.utb \
 	malayalam.cti \
