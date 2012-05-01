@@ -843,11 +843,6 @@
   fun:media::AudioOutputController::DoCreate
 }
 {
-  bug_116421
-  ThreadSanitizer:Race
-  fun:talk_base::Event::EnsureInitialized
-}
-{
   bug_116559
   ThreadSanitizer:Race
   fun:logging::::LoggingTest_Dcheck_Test::TestBody
