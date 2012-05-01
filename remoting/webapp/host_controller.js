@@ -152,7 +152,7 @@ remoting.HostController.prototype.start = function(hostPin, callback) {
 
     if (success) {
       var hostSecretHash =
-          'hmac:' + that.plugin_.getPinHash(newHostId, hostPin);
+          that.plugin_.getPinHash(newHostId, hostPin);
       var hostConfig = JSON.stringify({
           xmpp_login: remoting.oauth2.getCachedEmail(),
           oauth_refresh_token: remoting.oauth2.exportRefreshToken(),
@@ -274,7 +274,7 @@ remoting.HostController.prototype.updatePin = function(newPin, callback) {
     }
     var hostId = config['host_id'];
     var newConfig = JSON.stringify({
-        host_secret_hash: 'hmac:' + that.plugin_.getPinHash(hostId, newPin)
+        host_secret_hash: that.plugin_.getPinHash(hostId, newPin)
       });
     that.plugin_.updateDaemonConfig(newConfig, callback);
   };

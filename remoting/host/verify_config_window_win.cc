@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "remoting/host/elevated_controller_resource.h"
+#include "remoting/host/pin_hash.h"
 #include "remoting/protocol/authentication_method.h"
 
 namespace remoting {
@@ -117,21 +118,8 @@ bool VerifyConfigWindowWin::VerifyHostSecretHash() {
   HWND hwndPin = GetDlgItem(hwnd_, IDC_PIN);
   CHECK(hwndPin);
   GetWindowText(hwndPin, pinWSTR.get(), kMaxPinLength);
-
-  // TODO(simonmorris): This code was copied from host_script_object.cc.
-  // Refactor to use PinIsValid(), from CL 10008092.
   std::string pin(UTF16ToUTF8(pinWSTR.get()));
-  std::string hash = protocol::AuthenticationMethod::ApplyHashFunction(
-      protocol::AuthenticationMethod::HMAC_SHA256, host_id_, pin);
-  std::string hash_base64;
-  bool base64_result = base::Base64Encode(hash, &hash_base64);
-  if (!base64_result) {
-    LOG(FATAL) << "Base64Encode failed";
-    return false;
-  }
-  hash_base64 = "hmac:" + hash_base64;
-
-  return (hash_base64 == host_secret_hash_);
+  return VerifyHostPinHash(host_secret_hash_, host_id_, pin);
 }
 
 }  // namespace remoting

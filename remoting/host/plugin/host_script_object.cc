@@ -4,7 +4,6 @@
 
 #include "remoting/host/plugin/host_script_object.h"
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -23,12 +22,12 @@
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_secret.h"
 #include "remoting/host/it2me_host_user_interface.h"
+#include "remoting/host/pin_hash.h"
 #include "remoting/host/plugin/daemon_controller.h"
 #include "remoting/host/plugin/host_log_handler.h"
 #include "remoting/host/policy_hack/nat_policy.h"
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
-#include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/it2me_host_authenticator_factory.h"
 
 namespace remoting {
@@ -638,15 +637,7 @@ bool HostNPScriptObject::GetPinHash(const NPVariant* args,
   }
   std::string pin = StringFromNPVariant(args[1]);
 
-  std::string hash = protocol::AuthenticationMethod::ApplyHashFunction(
-      protocol::AuthenticationMethod::HMAC_SHA256, host_id, pin);
-  std::string hash_base64;
-  bool base64_result = base::Base64Encode(hash, &hash_base64);
-  if (!base64_result) {
-    LOG(FATAL) << "Base64Encode failed";
-  }
-
-  *result = NPVariantFromString(hash_base64);
+  *result = NPVariantFromString(remoting::MakeHostPinHash(host_id, pin));
 
   return true;
 }
