@@ -520,6 +520,17 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   }
 #endif
 
+  // WebKit sometimes sends spurious mouse move events when the window doesn't
+  // have focus; Cocoa event model plugins don't expect to receive mouse move
+  // events when they are in a background window, so drop those events.
+  if (!containing_window_has_focus_ &&
+      instance()->event_model() == NPEventModelCocoa &&
+      (event.type == WebInputEvent::MouseMove ||
+       event.type == WebInputEvent::MouseEnter ||
+       event.type == WebInputEvent::MouseLeave)) {
+    return false;
+  }
+
   if (WebInputEvent::isMouseEventType(event.type) ||
       event.type == WebInputEvent::MouseWheel) {
     // Check our plugin location before we send the event to the plugin, just
