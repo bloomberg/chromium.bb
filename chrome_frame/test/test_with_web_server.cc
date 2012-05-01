@@ -295,7 +295,7 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
     scoped_ptr<Version> ver_user(InstallUtil::GetChromeVersion(dist, false));
     ASSERT_TRUE(ver_system.get() || ver_user.get());
 
-    bool system_install = ver_system.get() ? true : false;
+    bool system_install = ver_system != NULL;
     FilePath cf_dll_path(installer::GetChromeInstallPath(system_install, dist));
     cf_dll_path = cf_dll_path.Append(UTF8ToWide(
         ver_system.get() ? ver_system->GetString() : ver_user->GetString()));
