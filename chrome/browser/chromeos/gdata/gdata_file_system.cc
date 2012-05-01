@@ -1070,7 +1070,7 @@ void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
     // the end of the initialization.
     AddObserver(new InitialLoadObserver(
         this,
-        base::Bind(&GDataFileSystem::FindEntryByPathOnCallingThread,
+        base::Bind(&GDataFileSystem::FindEntryByPathSyncOnUIThread,
                    ui_weak_ptr_,
                    search_file_path,
                    callback)));
@@ -1099,15 +1099,18 @@ void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
   // FindEntryByPathAsync() is asynchronous.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::FindEntryByPathOnCallingThread,
+      base::Bind(&GDataFileSystem::FindEntryByPathSyncOnUIThread,
                  ui_weak_ptr_,
                  search_file_path,
                  callback));
 }
 
-void GDataFileSystem::FindEntryByPathOnCallingThread(
+void GDataFileSystem::FindEntryByPathSyncOnUIThread(
     const FilePath& search_file_path,
     const FindEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  base::AutoLock lock(lock_);  // To access root_.
   FindEntryCallbackRelayDelegate delegate(callback);
   root_->FindEntryByPath(search_file_path, &delegate);
 }
@@ -1137,6 +1140,8 @@ void GDataFileSystem::OnGetAccountMetadata(
     const FindEntryCallback& callback,
     GDataErrorCode status,
     scoped_ptr<base::Value> feed_data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error != base::PLATFORM_FILE_OK) {
     // Get changes starting from the next changestamp from what we have locally.
@@ -1171,7 +1176,7 @@ void GDataFileSystem::OnGetAccountMetadata(
   // No changes detected, continue with search as planned.
   if (!changes_detected) {
     if (!callback.is_null())
-      FindEntryByPathOnCallingThread(search_file_path, callback);
+      FindEntryByPathSyncOnUIThread(search_file_path, callback);
 
     NotifyInitialLoadFinished();
     return;
@@ -2757,7 +2762,7 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
   // If we had someone to report this too, then this retrieval was done in a
   // context of search... so continue search.
   if (!params->callback.is_null()) {
-    FindEntryByPathOnCallingThread(params->search_file_path, params->callback);
+    FindEntryByPathSyncOnUIThread(params->search_file_path, params->callback);
   }
 }
 
@@ -2781,6 +2786,8 @@ void GDataFileSystem::LoadRootFeedFromCache(
 }
 
 void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   {
     base::AutoLock lock(lock_);
     // If we have already received updates from the server, bail out.
@@ -2810,7 +2817,7 @@ void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params) {
       (params->load_error == base::PLATFORM_FILE_OK && !callback.is_null())) {
     // Continue file content search operation if the delegate hasn't terminated
     // this search branch already.
-    FindEntryByPathOnCallingThread(params->search_file_path, callback);
+    FindEntryByPathSyncOnUIThread(params->search_file_path, callback);
     callback.Reset();
   }
 

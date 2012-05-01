@@ -1231,10 +1231,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
     const base::Closure& request_task,
     const base::Closure& reply_task);
 
-  // Helper function used to perform file search on the calling thread of
-  // FindEntryByPath() request.
-  void FindEntryByPathOnCallingThread(const FilePath& search_file_path,
-                                      const FindEntryCallback& callback);
+  // Helper function used to perform synchronous file search on UI thread.
+  void FindEntryByPathSyncOnUIThread(const FilePath& search_file_path,
+                                     const FindEntryCallback& callback);
 
   void OnSetPinStateCompleted(const FileOperationCallback& callback,
                               base::PlatformFileError error,
