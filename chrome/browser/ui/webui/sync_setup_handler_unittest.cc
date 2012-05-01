@@ -378,7 +378,7 @@ TEST_F(SyncSetupHandlerTest, DisplayBasicLogin) {
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   handler_->OpenSyncSetup(false);
-  EXPECT_EQ(&web_ui_,
+  EXPECT_EQ(handler_.get(),
             LoginUIServiceFactory::GetForProfile(
                 profile_.get())->current_login_ui());
   ASSERT_EQ(1U, web_ui_.call_data().size());
@@ -406,7 +406,7 @@ TEST_F(SyncSetupHandlerTest, DisplayForceLogin) {
   // This should display the login UI even though sync setup has already
   // completed.
   handler_->OpenSyncSetup(true);
-  EXPECT_EQ(&web_ui_,
+  EXPECT_EQ(handler_.get(),
             LoginUIServiceFactory::GetForProfile(
                 profile_.get())->current_login_ui());
   ASSERT_EQ(1U, web_ui_.call_data().size());
@@ -803,7 +803,7 @@ TEST_F(SyncSetupHandlerTest, ShowSyncSetupWithAuthError) {
   // This should display the login dialog (not login).
   handler_->OpenSyncSetup(false);
 
-  EXPECT_EQ(&web_ui_,
+  EXPECT_EQ(handler_.get(),
             LoginUIServiceFactory::GetForProfile(
                 profile_.get())->current_login_ui());
   ASSERT_EQ(1U, web_ui_.call_data().size());
@@ -897,7 +897,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupSyncForAllTypesIndividually) {
     ExpectConfig();
     // Close the config overlay.
     LoginUIServiceFactory::GetForProfile(profile_.get())->LoginUIClosed(
-        &web_ui_);
+        handler_.get());
     const TestWebUI::CallData& data = web_ui_.call_data()[0];
     DictionaryValue* dictionary;
     ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));

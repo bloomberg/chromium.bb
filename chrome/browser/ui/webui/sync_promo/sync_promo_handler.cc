@@ -275,3 +275,9 @@ void SyncPromoHandler::RecordUserFlowAction(int action) {
   UMA_HISTOGRAM_ENUMERATION("SyncPromo.UserFlow", action,
                             SYNC_PROMO_BUCKET_BOUNDARY);
 }
+
+void SyncPromoHandler::CloseUI() {
+  // Callers should not ever try to close the promo UI (should only call
+  // CloseUI() if the user is already logged in).
+  NOTREACHED() << "Cannot close the promo UI";
+}

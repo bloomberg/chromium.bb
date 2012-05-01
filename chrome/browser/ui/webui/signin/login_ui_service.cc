@@ -9,10 +9,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_ui.h"
 
 LoginUIService::LoginUIService(Profile* profile)
     : ui_(NULL),
@@ -21,43 +17,32 @@ LoginUIService::LoginUIService(Profile* profile)
 
 LoginUIService::~LoginUIService() {}
 
-void LoginUIService::SetLoginUI(content::WebUI* ui) {
+void LoginUIService::SetLoginUI(LoginUI* ui) {
   DCHECK(!current_login_ui() || current_login_ui() == ui);
   ui_ = ui;
 }
 
-void LoginUIService::LoginUIClosed(content::WebUI* ui) {
+void LoginUIService::LoginUIClosed(LoginUI* ui) {
   if (current_login_ui() == ui)
     ui_ = NULL;
 }
 
-void LoginUIService::FocusLoginUI() {
-  if (!ui_) {
-    NOTREACHED() << "FocusLoginUI() called with no active login UI";
-    return;
-  }
-  ui_->GetWebContents()->GetRenderViewHost()->GetDelegate()->Activate();
-}
-
-void LoginUIService::ShowLoginUI(bool force_login) {
+void LoginUIService::ShowLoginUI() {
   if (ui_) {
     // We already have active login UI - make it visible.
-    FocusLoginUI();
+    ui_->FocusUI();
     return;
   }
-
-  std::string page(force_login ?
-      chrome::kSyncSetupForceLoginSubPage : chrome::kSyncSetupSubPage);
 
   // Need to navigate to the settings page and display the UI.
   if (profile_) {
     Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
     if (!browser) {
       browser = Browser::Create(profile_);
-      browser->ShowOptionsTab(page);
+      browser->ShowOptionsTab(chrome::kSyncSetupSubPage);
       browser->window()->Show();
     } else {
-      browser->ShowOptionsTab(page);
+      browser->ShowOptionsTab(chrome::kSyncSetupSubPage);
     }
   }
 }

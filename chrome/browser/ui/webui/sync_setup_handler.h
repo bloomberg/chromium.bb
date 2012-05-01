@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/signin/signin_tracker.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
 
 class LoginUIService;
 class ProfileManager;
@@ -16,7 +17,8 @@ class ProfileSyncService;
 class SigninManager;
 
 class SyncSetupHandler : public options2::OptionsPageUIHandler,
-                         public SigninTracker::Observer {
+                         public SigninTracker::Observer,
+                         public LoginUIService::LoginUI {
  public:
   // Constructs a new SyncSetupHandler. |profile_manager| may be NULL.
   explicit SyncSetupHandler(ProfileManager* profile_manager);
@@ -27,10 +29,14 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
       OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
-  // SigninTracker::Observer implementation
+  // SigninTracker::Observer implementation.
   virtual void GaiaCredentialsValid() OVERRIDE;
   virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void SigninSuccess() OVERRIDE;
+
+  // LoginUIService::LoginUI implementation.
+  virtual void FocusUI() OVERRIDE;
+  virtual void CloseUI() OVERRIDE;
 
   static void GetStaticLocalizedValues(
       base::DictionaryValue* localized_strings,

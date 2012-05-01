@@ -7,12 +7,17 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -128,10 +133,36 @@ void AppNotifyChannelUIImpl::PromptSyncSetup(
 void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {
   if (accepted) {
     StartObservingSync();
-    LoginUIServiceFactory::GetForProfile(profile_)->ShowLoginUI(true);
-  } else {
-    delegate_->OnSyncSetupResult(false);
+    // Bring up the login page.
+    LoginUIService* login_ui_service =
+        LoginUIServiceFactory::GetForProfile(profile_);
+    LoginUIService::LoginUI* login_ui = login_ui_service->current_login_ui();
+    if (login_ui) {
+      // Some sort of login UI is already visible.
+      SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
+      if (signin->GetAuthenticatedUsername().empty()) {
+        // User is not logged in yet, so just bring up the login UI (could be
+        // the promo UI).
+        login_ui->FocusUI();
+        return;
+      } else {
+        // User is already logged in, so close whatever sync config UI the
+        // user is looking at and display new login UI.
+        login_ui->CloseUI();
+        DCHECK(!login_ui_service->current_login_ui());
+      }
+    }
+    // Any existing UI is now closed - display new login UI.
+    Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+    if (browser) {
+      browser->ShowOptionsTab(chrome::kSyncSetupForceLoginSubPage);
+      return;
+    }
+    // Should not be possible to have no browser here, since we're in an
+    // infobar callback.
+    NOTREACHED();
   }
+  delegate_->OnSyncSetupResult(false);
 }
 
 void AppNotifyChannelUIImpl::OnStateChanged() {

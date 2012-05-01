@@ -67,7 +67,7 @@ void OneClickSigninSyncStarter::SigninSuccess() {
     // ProfileSyncService::setup_in_progress flag because we don't want sync
     // to start up until after the configure UI is displayed (the configure UI
     // will clear the flag when the user is done setting up sync).
-    LoginUIServiceFactory::GetForProfile(profile_)->ShowLoginUI(false);
+    LoginUIServiceFactory::GetForProfile(profile_)->ShowLoginUI();
   }
 
   delete this;

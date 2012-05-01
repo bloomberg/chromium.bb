@@ -39,7 +39,7 @@ class BrowserMock: public Browser {
 class LoginUIServiceMock: public LoginUIService {
  public:
   explicit LoginUIServiceMock(Profile* profile) : LoginUIService(profile) {}
-  MOCK_METHOD1(ShowLoginUI, void(bool));
+  MOCK_METHOD0(ShowLoginUI, void());
 };
 
 ProfileKeyedService* BuildMockLoginUIService(Profile* profile) {
@@ -110,9 +110,9 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
 #else
   // Test message handler.
   if (is_error) {
-    EXPECT_CALL(*login_ui_service, ShowLoginUI(false));
+    EXPECT_CALL(*login_ui_service, ShowLoginUI());
     error->ExecuteMenuItem(browser);
-    EXPECT_CALL(*login_ui_service, ShowLoginUI(false));
+    EXPECT_CALL(*login_ui_service, ShowLoginUI());
     error->BubbleViewAcceptButtonPressed(browser);
     error->BubbleViewDidClose(browser);
   }

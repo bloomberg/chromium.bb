@@ -63,7 +63,7 @@ void SyncGlobalError::ExecuteMenuItem(Browser* browser) {
     return;
   }
 #endif
-  LoginUIServiceFactory::GetForProfile(service_->profile())->ShowLoginUI(false);
+  LoginUIServiceFactory::GetForProfile(service_->profile())->ShowLoginUI();
 }
 
 bool SyncGlobalError::HasBubbleView() {

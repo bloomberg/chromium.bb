@@ -11,14 +11,24 @@
 
 class Profile;
 
-namespace content {
-class WebUI;
-};
-
 // The LoginUIService helps track per-profile information for the login UI -
 // for example, whether there is login UI currently on-screen.
 class LoginUIService : public ProfileKeyedService {
  public:
+  // Various UI components implement this API to allow LoginUIService to
+  // manipulate their associated login UI.
+  class LoginUI {
+   public:
+    // Invoked when the login UI should be brought to the foreground.
+    virtual void FocusUI() = 0;
+
+    // Invoked when the login UI should be closed. This can be invoked if the
+    // user takes an action that should display new login UI.
+    virtual void CloseUI() = 0;
+   protected:
+    virtual ~LoginUI() {}
+  };
+
   // Creates a LoginUIService associated with the passed |profile|. |profile|
   // is used to create a new browser in the case that ShowLoginUI() is invoked
   // when no browser windows are open (e.g. via the Mac menu bar).
@@ -26,33 +36,26 @@ class LoginUIService : public ProfileKeyedService {
   virtual ~LoginUIService();
 
   // Gets the currently active login UI, or null if no login UI is active.
-  content::WebUI* current_login_ui() const {
+  LoginUI* current_login_ui() const {
     return ui_;
   }
 
   // Sets the currently active login UI. It is illegal to call this if there is
   // already login UI visible.
-  void SetLoginUI(content::WebUI* ui);
+  void SetLoginUI(LoginUI* ui);
 
   // Called when login UI is closed. If the passed UI is the current login UI,
   // sets current_login_ui() to null.
-  void LoginUIClosed(content::WebUI* ui);
+  void LoginUIClosed(LoginUI* ui);
 
-  // Brings the current login UI for this profile to the foreground (it is an
-  // error to call this if there is no visible login UI.
-  void FocusLoginUI();
-
-  // Displays the login dialog if the user is not yet logged in, otherwise
-  // displays the sync setup dialog. If |force_login| is true, then the login
-  // UI is displayed even if the user is already logged in (useful if we need
-  // to gather GAIA credentials for oauth tokens). Virtual for mocking purposes.
-  // TODO(atwilson): Refactor this API to make the behavior more clear and use
-  // an enum instead of a boolean (http://crbug.com/118795).
-  virtual void ShowLoginUI(bool force_login);
+  // Brings the login UI to the foreground, or if there is no login UI,
+  // navigates to the login UI page in a new browser tab.
+  // Virtual for mocking purposes.
+  virtual void ShowLoginUI();
 
  private:
   // Weak pointer to the currently active login UI, or null if none.
-  content::WebUI* ui_;
+  LoginUI* ui_;
 
   // Weak pointer to the profile this service is associated with.
   Profile* profile_;

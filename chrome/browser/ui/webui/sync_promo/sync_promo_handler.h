@@ -34,6 +34,9 @@ class SyncPromoHandler : public SyncSetupHandler {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // LoginUIService::LoginUI implementation.
+  virtual void CloseUI() OVERRIDE;
+
  protected:
   virtual void ShowSetupUI() OVERRIDE;
 

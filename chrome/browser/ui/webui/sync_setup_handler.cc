@@ -421,7 +421,7 @@ bool SyncSetupHandler::IsActiveLogin() const {
   // LoginUIService can be NULL if page is brought up in incognito mode
   // (i.e. if the user is running in guest mode in cros and brings up settings).
   LoginUIService* service = GetLoginUIService();
-  return service && (service->current_login_ui() == web_ui());
+  return service && (service->current_login_ui() == this);
 }
 
 void SyncSetupHandler::RegisterMessages() {
@@ -756,7 +756,9 @@ void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
   }
 #endif
 
-  LoginUIServiceFactory::GetForProfile(GetProfile())->ShowLoginUI(false);
+  // Bring up the existing wizard, or just display it on this page.
+  if (!FocusExistingWizardIfPresent())
+    OpenSyncSetup(false);
 }
 
 void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
@@ -792,7 +794,7 @@ void SyncSetupHandler::CloseSyncSetup() {
     }
 
     // Let the various services know that we're no longer active.
-    GetLoginUIService()->LoginUIClosed(web_ui());
+    GetLoginUIService()->LoginUIClosed(this);
     if (sync_service)
       sync_service->set_setup_in_progress(false);
 
@@ -835,7 +837,7 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
   }
 
   // Notify services that we are now active.
-  GetLoginUIService()->SetLoginUI(web_ui());
+  GetLoginUIService()->SetLoginUI(this);
   service->set_setup_in_progress(true);
 
   // There are several different UI flows that can bring the user here:
@@ -887,13 +889,23 @@ void SyncSetupHandler::PrepareConfigDialog() {
   }
 }
 
+void SyncSetupHandler::FocusUI() {
+  DCHECK(IsActiveLogin());
+  web_ui()->GetWebContents()->GetRenderViewHost()->GetDelegate()->Activate();
+}
+
+void SyncSetupHandler::CloseUI() {
+  DCHECK(IsActiveLogin());
+  CloseOverlay();
+}
+
 // Private member functions.
 
 bool SyncSetupHandler::FocusExistingWizardIfPresent() {
   LoginUIService* service = GetLoginUIService();
   if (!service->current_login_ui())
     return false;
-  service->FocusLoginUI();
+  service->current_login_ui()->FocusUI();
   return true;
 }
 
