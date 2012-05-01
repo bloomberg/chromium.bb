@@ -328,6 +328,9 @@ TEST_F(TouchTabStripLayoutTest, SetWidth) {
     CommonTestData common_data;
     int new_width;
   } test_data[] = {
+    // Verifies a bug in AdjustTrailingStackedTabs().
+    { { 0, 103, 100, -10, 2, 0, 0, "", "0 2"}, 102 },
+
     { { 8, 250, 100, -10, 2, 2, 2, "0 4 8 98 148 150", "0 4 8 98 160 250"},
       350 },
     { { 8, 250, 100, -10, 2, 2, 2, "0 4 8 98 148 150", "0 4 8 96 98 100"},

@@ -324,7 +324,8 @@ void TouchTabStripLayout::AdjustTrailingStackedTabs() {
          ideal_x(index - 1) >= max_stacked_x) {
     index--;
   }
-  if (ideal_x(index) - ideal_x(index - 1) <= stacked_padding_ &&
+  if (index > active_index() &&
+      ideal_x(index) - ideal_x(index - 1) <= stacked_padding_ &&
       ideal_x(index - 1) >= max_stacked_x) {
     index--;
   }
