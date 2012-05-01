@@ -12,18 +12,12 @@
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
 #include "net/base/escape.h"
-#include "unicode/locid.h"
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/browser_distribution.h"
 #endif
 
-// Continue to this URL after submitting the phishing report form.
-// TODO(paulg): Change to a Chrome specific URL.
-static const char kContinueUrlFormat[] =
-  "http://www.google.com/tools/firefox/toolbar/FT2/intl/%s/submit_success.html";
-
-static const char kReportParams[] = "?tpl=%s&continue=%s&url=%s";
+static const char kReportParams[] = "?tpl=%s&url=%s";
 
 // SBChunk ---------------------------------------------------------------------
 
@@ -478,12 +472,6 @@ bool IsBadbinhashList(const std::string& list_name) {
 GURL GeneratePhishingReportUrl(const std::string& report_page,
                                const std::string& url_to_report,
                                bool is_client_side_detection) {
-  icu::Locale locale = icu::Locale::getDefault();
-  const char* lang = locale.getLanguage();
-  if (!lang)
-    lang = "en";  // fallback
-  const std::string continue_esc = net::EscapeQueryParamValue(
-      base::StringPrintf(kContinueUrlFormat, lang), true);
   const std::string current_esc = net::EscapeQueryParamValue(url_to_report,
                                                              true);
 
@@ -498,7 +486,6 @@ GURL GeneratePhishingReportUrl(const std::string& report_page,
 
   GURL report_url(report_page + base::StringPrintf(kReportParams,
                                                    client_name.c_str(),
-                                                   continue_esc.c_str(),
                                                    current_esc.c_str()));
   return google_util::AppendGoogleLocaleParam(report_url);
 }
