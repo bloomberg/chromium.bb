@@ -302,7 +302,8 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       three_finger_swipe_distance_thresh_(prop_reg,
                                           "Three Finger Swipe Distance Thresh",
                                           10.0),
-      max_pressure_change_(prop_reg, "Max Allowed Pressure Change", 30.0),
+      max_pressure_change_(prop_reg, "Max Allowed Pressure Change Per Sec",
+                           800.0),
       scroll_stationary_finger_max_distance_(
           prop_reg, "Scroll Stationary Finger Max Distance", 1.0),
       bottom_zone_size_(prop_reg, "Bottom Zone Size", 10.0),
@@ -371,6 +372,7 @@ Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
 
   SetPrevState(*hwstate);
   prev_gs_fingers_ = gs_fingers;
+  prev_result_ = result_;
   return result_.type != kGestureTypeNull ? &result_ : NULL;
 }
 
@@ -1330,6 +1332,15 @@ int ImmediateInterpreter::EvaluateButtonType(
       GESTURES_BUTTON_RIGHT : GESTURES_BUTTON_LEFT;
 }
 
+bool ImmediateInterpreter::PressureChangingSignificantly(
+    const HardwareState& hwstate,
+    const FingerState& current,
+    const FingerState& prev) const {
+  float dt = hwstate.timestamp - prev_state_.timestamp;
+  float dp = fabsf(current.pressure - prev.pressure);
+  return dp > dt * max_pressure_change_.val_;
+}
+
 void ImmediateInterpreter::UpdateStartedMovingTime(
     const HardwareState& hwstate,
     const set<short, kMaxGesturingFingers>& gs_fingers) {
@@ -1537,11 +1548,9 @@ void ImmediateInterpreter::FillResultGesture(
       // Find corresponding finger id in previous state
       const FingerState* prev =
           prev_state_.GetFingerState(current->tracking_id);
-      if (!prev)
+      if (!prev || !current ||
+          PressureChangingSignificantly(hwstate, *current, *prev))
         return;
-      if (fabsf(current->pressure - prev->pressure) >
-          max_pressure_change_.val_)
-        break;
       float dx = current->position_x - prev->position_x;
       if (current->flags & GESTURES_FINGER_WARP_X)
         dx = 0.0;
@@ -1560,13 +1569,13 @@ void ImmediateInterpreter::FillResultGesture(
       float max_mag_sq = 0.0;  // square of max mag
       float dx = 0.0;
       float dy = 0.0;
+      const FingerState* max_fs = NULL;
+      const FingerState* max_prev = NULL;
       for (set<short, kMaxGesturingFingers>::const_iterator it =
                fingers.begin(), e = fingers.end(); it != e; ++it) {
         const FingerState* fs = hwstate.GetFingerState(*it);
         const FingerState* prev = prev_state_.GetFingerState(*it);
         if (!prev)
-          return;
-        if (fabsf(fs->pressure - prev->pressure) > max_pressure_change_.val_)
           return;
         float local_dx = fs->position_x - prev->position_x;
         if (fs->flags & GESTURES_FINGER_WARP_X)
@@ -1576,6 +1585,8 @@ void ImmediateInterpreter::FillResultGesture(
           local_dy = 0.0;
         float local_max_mag_sq = local_dx * local_dx + local_dy * local_dy;
         if (local_max_mag_sq > max_mag_sq) {
+          max_fs = fs;
+          max_prev = prev;
           max_mag_sq = local_max_mag_sq;
           dx = local_dx;
           dy = local_dy;
@@ -1587,6 +1598,23 @@ void ImmediateInterpreter::FillResultGesture(
         dy = 0.0;  // snap to horizontal
       else if (fabsf(dy) > vertical_scroll_snap_slope_.val_ * fabsf(dx))
         dx = 0.0;  // snap to vertical
+
+      if (max_fs && max_prev &&
+          PressureChangingSignificantly(hwstate, *max_fs, *max_prev)) {
+        // If we get here, it means that the pressure of the finger causing
+        // the scroll is changing a lot, so we don't trust it. It's likely
+        // leaving the touchpad. Normally we might just do nothing, but having
+        // a frame or two of 0 length scroll before a fling looks janky. We
+        // could also just start the fling now, but we don't want to do that
+        // because the fingers may not actually be leaving. What seems to work
+        // well is sort of dead-reckoning approach where we just repeat the
+        // scroll event from the previous input frame.
+        // Since this isn't a "real" scroll event, we don't put it into
+        // scroll_buffer_.
+        if (prev_result_.type == kGestureTypeScroll)
+          result_ = prev_result_;
+        return;
+      }
 
       if (prev_scroll_fingers_ != fingers)
         scroll_buffer_.Clear();

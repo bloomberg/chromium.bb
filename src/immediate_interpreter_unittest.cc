@@ -741,6 +741,80 @@ TEST(ImmediateInterpreterTest, OneFatFingerScrollTest) {
   }
 };
 
+struct NoLiftoffScrollTestInputs {
+  stime_t now;
+  float x0, y0, p0, x1, y1, p1;  // (x, y) coordinate and pressure per finger
+};
+
+// Tests that if one scrolls backwards a bit before lifting fingers off, we
+// don't scroll backwards. Based on an actual log
+TEST(ImmediateInterpreterTest, NoLiftoffScrollTest) {
+  ImmediateInterpreter ii(NULL);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    106.666672,  // right edge
+    68.000000,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    25.4,  // screen DPI x
+    25.4,  // screen DPI y
+    15,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    true  // is button pad
+  };
+
+  ii.SetHardwareProperties(hwprops);
+
+  NoLiftoffScrollTestInputs inputs[] = {
+    { 4.9621, 59.5, 55.9, 17.30, 43.2, 62.5, 19.24 },
+    { 4.9745, 59.5, 55.9, 30.88, 43.2, 62.5, 25.06 },
+    { 4.9862, 59.3, 55.9, 34.76, 43.3, 61.7, 28.94 },
+    { 4.9974, 59.3, 55.4, 36.70, 43.0, 60.7, 32.82 },
+    { 5.0085, 59.0, 54.4, 40.58, 43.0, 58.7, 36.70 },
+    { 5.0194, 59.0, 50.9, 44.46, 42.5, 55.7, 42.52 },
+    { 5.0299, 59.0, 48.2, 46.40, 42.2, 52.7, 44.46 },
+    { 5.0412, 58.7, 44.5, 46.40, 41.6, 49.7, 48.34 },
+    { 5.0518, 57.3, 39.6, 48.34, 41.2, 45.7, 54.16 },
+    { 5.0626, 57.1, 35.2, 48.34, 41.0, 42.0, 61.93 },
+    { 5.0739, 56.7, 30.8, 56.10, 41.1, 36.6, 69.69 },
+    { 5.0848, 56.3, 26.4, 58.04, 39.7, 32.3, 63.87 },
+    { 5.0957, 56.3, 23.4, 61.93, 39.7, 27.8, 67.75 },
+    { 5.1068, 56.3, 19.9, 67.75, 39.7, 24.1, 71.63 },
+    { 5.1177, 56.7, 18.1, 71.63, 39.7, 20.4, 75.51 },
+    { 5.1287, 57.1, 15.9, 71.63, 39.7, 18.7, 75.51 },
+    { 5.1398, 57.5, 14.2, 77.45, 39.7, 17.3, 79.39 },
+    { 5.1508, 57.6, 13.3, 75.51, 39.7, 16.1, 77.45 },
+    { 5.1619, 57.7, 12.9, 79.39, 40.0, 15.5, 83.27 },
+    { 5.1734, 58.1, 12.8, 79.39, 40.0, 15.4, 83.27 },
+    { 5.1847, 58.1, 12.7, 79.39, 40.0, 15.3, 83.27 },
+    { 5.1963, 58.1, 12.7, 78.42, 40.0, 15.3, 83.27 },
+    { 5.2078, 58.1, 12.7, 77.45, 40.0, 15.3, 83.27 },
+    { 5.2191, 58.1, 12.7, 79.39, 40.0, 15.3, 83.27 },
+    { 5.2306, 58.1, 12.7, 78.42, 40.0, 15.3, 82.30 },
+    { 5.2421, 58.1, 12.7, 77.45, 40.0, 15.3, 81.33 },
+    { 5.2533, 58.1, 12.7, 77.45, 40.0, 15.3, 77.45 },
+    { 5.2642, 58.1, 12.7, 63.87, 40.0, 15.4, 58.04 },
+    { 5.2752, 57.9, 12.7, 34.76, 40.0, 15.8, 25.06 },
+  };
+  for (size_t i = 0; i < arraysize(inputs); i++) {
+    FingerState fs[] = {
+      { 0, 0, 0, 0, inputs[i].p0, 0.0, inputs[i].x0, inputs[i].y0, 1, 0 },
+      { 0, 0, 0, 0, inputs[i].p1, 0.0, inputs[i].x1, inputs[i].y1, 2, 0 },
+    };
+    HardwareState hs = { inputs[i].now, 0, 2, 2, fs };
+
+    stime_t timeout = -1.0;
+    Gesture* gs = ii.SyncInterpret(&hs, &timeout);
+    if (gs) {
+      EXPECT_EQ(kGestureTypeScroll, gs->type);
+      EXPECT_LE(gs->details.scroll.dy, 0.0);
+    }
+  }
+}
+
 struct HardwareStateAnScrollExpectations {
   HardwareState hs;
   float dx;
@@ -1246,10 +1320,10 @@ TEST(ImmediateInterpreterTest, PressureChangeMoveTest) {
   };
   HardwareState hardware_state[] = {
     // time, buttons, finger count, touch count, finger states pointer
-    { 200000, 0, 1, 1, &finger_states[0] },
-    { 200001, 0, 1, 1, &finger_states[1] },
-    { 200002, 0, 1, 1, &finger_states[2] },
-    { 200003, 0, 1, 1, &finger_states[3] },
+    { 2000.00, 0, 1, 1, &finger_states[0] },
+    { 2000.01, 0, 1, 1, &finger_states[1] },
+    { 2000.02, 0, 1, 1, &finger_states[2] },
+    { 2000.03, 0, 1, 1, &finger_states[3] },
   };
 
   for (size_t i = 0; i < arraysize(hardware_state); ++i) {
@@ -2871,12 +2945,12 @@ TEST(ImmediateInterpreterTest, AvoidAccidentalZoomTest) {
     { kC, 1.17044, 45.58, 65.50, 106.55, 16.75, 23.80, 81.33, kMov },
     { kC, 1.18117, 45.58, 65.50, 106.55, 16.33, 24.20, 77.45, kMov },
     { kC, 1.19188, 45.58, 65.50, 106.55, 16.00, 24.30, 71.63, kMov },
-    { kC, 1.20260, 45.58, 65.50, 106.55, 16.00, 24.50, 48.34, kMov },
+    { kC, 1.20260, 45.58, 65.50, 106.55, 16.00, 24.50, 48.34, kAny },
     { kC, 1.21331, 45.58, 65.50, 106.55, 15.91, 24.80,  9.54, kAny },
 
     { kS, 3.92951, 58.50, 58.40, 118.20, 38.25, 14.40,  3.71, kAny },
     { kC, 3.94014, 58.33, 58.40, 118.20, 38.25, 14.40, 38.64, kAny },
-    { kC, 3.95082, 58.25, 58.40, 118.20, 38.33, 14.40, 50.28, kMov },
+    { kC, 3.95082, 58.25, 58.40, 118.20, 38.33, 14.40, 50.28, kAny },
     { kC, 3.96148, 58.08, 58.40, 118.20, 38.41, 14.40, 52.22, kMov },
     { kC, 3.97222, 57.91, 58.40, 118.20, 38.41, 14.50, 56.10, kMov },
     { kC, 3.98303, 57.83, 58.40, 118.20, 38.58, 14.60, 59.99, kMov },
@@ -2968,7 +3042,7 @@ TEST(ImmediateInterpreterTest, AvoidAccidentalZoomTest) {
     stime_t timeout = -1;
     Gesture* gs = ii->SyncInterpret(&hs, &timeout);
     if (input.expected_gesture != kAny) {
-      ASSERT_NE(static_cast<Gesture*>(NULL), gs);
+      ASSERT_NE(static_cast<Gesture*>(NULL), gs) << "i=" << i;
       EXPECT_EQ(input.expected_gesture, gs->type);
     }
   }

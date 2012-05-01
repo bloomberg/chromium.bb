@@ -276,6 +276,13 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // GESTURES_BUTTON_{LEFT,MIDDLE,RIGHT}.
   int EvaluateButtonType(const HardwareState& hwstate);
 
+  // Looking at this finger and the previous, returns true iff the pressure
+  // is changing so quickly that we expect it's arriving on the pad or
+  // departing.
+  bool PressureChangingSignificantly(const HardwareState& hwstate,
+                                     const FingerState& current,
+                                     const FingerState& prev) const;
+
   // Returns the number of most recent event events in the scroll_buffer_ that
   // should be considered for fling. If it returns 0, there should be no fling.
   size_t ScrollEventsForFlingCount() const;
@@ -299,6 +306,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   set<short, kMaxGesturingFingers> prev_tap_gs_fingers_;
   HardwareProperties hw_props_;
   Gesture result_;
+  Gesture prev_result_;
 
   // Button data
   // Which button we are going to send/have sent for the physical btn press
@@ -429,7 +437,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Minimum distance [mm] each of the three fingers must move to perform a
   // swipe gesture.
   DoubleProperty three_finger_swipe_distance_thresh_;
-  // A finger must change in pressure by less than this amount to trigger motion
+  // A finger must change in pressure by less than this per second to trigger
+  // motion.
   DoubleProperty max_pressure_change_;
   // During a scroll one finger determines scroll speed and direction.
   // Maximum distance [mm] the other finger can move in opposite direction
