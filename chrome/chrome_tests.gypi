@@ -791,6 +791,36 @@
       ],
     },
     {
+      'target_name': 'ui_tests_run',
+      'type': 'none',
+      'dependencies': [
+        'ui_tests',
+      ],
+      'includes': [
+        'ui_tests.isolate',
+      ],
+      'actions': [
+        {
+          'action_name': 'isolate',
+          'inputs': [
+            '<@(isolate_dependency_tracked)',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/ui_tests.results',
+          ],
+          'action': [
+            'python',
+            '../tools/isolate/isolate.py',
+            '--mode', '<(tests_run)',
+            '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
+            '--variable', 'OS', '<(OS)',
+            '--result', '<@(_outputs)',
+            'ui_tests.isolate',
+          ],
+        },
+      ],
+    },
+    {
       # Third-party support sources for chromedriver_lib.
       'target_name': 'chromedriver_support',
       'type': 'static_library',
@@ -3412,6 +3442,36 @@
         ],
       ],  # conditions
     },  # target browser_tests
+    {
+      'target_name': 'browser_tests_run',
+      'type': 'none',
+      'dependencies': [
+        'browser_tests',
+      ],
+      'includes': [
+        'browser_tests.isolate',
+      ],
+      'actions': [
+        {
+          'action_name': 'isolate',
+          'inputs': [
+            '<@(isolate_dependency_tracked)',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/browser_tests.results',
+          ],
+          'action': [
+            'python',
+            '../tools/isolate/isolate.py',
+            '--mode', '<(tests_run)',
+            '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
+            '--variable', 'OS', '<(OS)',
+            '--result', '<@(_outputs)',
+            'browser_tests.isolate',
+          ],
+        },
+      ],
+    },
     {
       # Executable that runs each perf browser test in a new process.
       'target_name': 'performance_browser_tests',
