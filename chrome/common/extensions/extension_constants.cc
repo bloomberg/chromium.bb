@@ -85,7 +85,6 @@ const char kGeneratedBackgroundPageFilename[] =
 namespace extension_info_keys {
   const char kDescriptionKey[] = "description";
   const char kEnabledKey[] = "enabled";
-  const char kHomepageProvidedKey[] = "homepageProvided";
   const char kHomepageUrlKey[] = "homepageUrl";
   const char kIdKey[] = "id";
   const char kMayDisableKey[] = "mayDisable";

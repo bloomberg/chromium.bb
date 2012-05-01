@@ -65,7 +65,6 @@ namespace extension_filenames {
 namespace extension_info_keys {
   extern const char kDescriptionKey[];
   extern const char kEnabledKey[];
-  extern const char kHomepageProvidedKey[];
   extern const char kHomepageUrlKey[];
   extern const char kIdKey[];
   extern const char kMayDisableKey[];
