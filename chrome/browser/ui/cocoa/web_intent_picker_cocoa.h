@@ -85,7 +85,7 @@ class WebIntentPickerCocoa : public WebIntentPicker,
   WebIntentPickerCocoa();
 
   // For testing access.
-  friend class WebIntentPickerSheetControllerTest;
+  friend class WebIntentSheetControllerBrowserTest;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerCocoa);
 };
