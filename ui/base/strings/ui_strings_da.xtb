@@ -22,21 +22,22 @@
 <translation id="3234408098842461169">Pil nedad</translation>
 <translation id="3087734570205094154">Bund</translation>
 <translation id="6364916375976753737">Scroll Left</translation>
-<translation id="8210608804940886430">Page Down</translation>
+<translation id="8210608804940886430">Side ned</translation>
 <translation id="5329858601952122676">&amp;Slet</translation>
+<translation id="8901569739625249689"><ph name="QUANTITY"/> kB</translation>
 <translation id="6659594942844771486">Fane</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
-<translation id="3806858430610674159"><ph name="QUANTITY"/> kB</translation>
 <translation id="2497284189126895209">Alle filer</translation>
 <translation id="7814458197256864873">&amp;Kopier</translation>
 <translation id="3889424535448813030">Højrepil</translation>
 <translation id="1398853756734560583">Maksimer</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY"/> GB</translation>
 <translation id="1901303067676059328">Vælg &amp;alle</translation>
-<translation id="2168039046890040389">Page Up</translation>
+<translation id="2168039046890040389">Side op</translation>
 <translation id="3183922693828471536">Scroll hertil</translation>
 <translation id="4552416320897244156">PgDwn</translation>
 <translation id="7052633198403197513">F1</translation>
+<translation id="8677655579646609597"><ph name="QUANTITY"/> kB/sek.</translation>
 <translation id="2190355936436201913">(tom)</translation>
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="4588090240171750605">Scroll til højre</translation>
@@ -49,7 +50,6 @@
 <translation id="9170848237812810038">&amp;Fortryd</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
 <translation id="5583640892426849032">Returtast</translation>
-<translation id="2619528525756897123"><ph name="QUANTITY"/> kB/sek.</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> GB/sek.</translation>
 <translation id="436869212180315161">Tryk</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/sek.</translation>

@@ -1,4 +1,51 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
+<translation id="3595596368722241419">Baterie je nabitá.</translation>
+<translation id="908313544993743941">Vypnout mobilní síť</translation>
+<translation id="30155388420722288">Tlačítko přetečení</translation>
+<translation id="5571066253365925590">Rozhraní Bluetooth aktivováno</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
+<translation id="2268130516524549846">Rozhraní Bluetooth deaktivováno</translation>
+<translation id="3626281679859535460">Jas</translation>
+<translation id="7982789257301363584">Síť</translation>
+<translation id="2297568595583585744">Stavový panel</translation>
+<translation id="2946640296642327832">Zapnout Bluetooth</translation>
+<translation id="6596816719288285829">Adresa IP</translation>
+<translation id="289426338439836048">Jiná mobilní síť...</translation>
+<translation id="5233638681132016545">Nová karta</translation>
+<translation id="785750925697875037">Zobrazit mobilní účet</translation>
+<translation id="7864539943188674973">Vypnout Bluetooth</translation>
+<translation id="3126069444801937830">Restartovat a aktualizovat</translation>
+<translation id="8190698733819146287">Personalizovat jazyky a zadávání...</translation>
+<translation id="7911992579061465928">Slabá baterie</translation>
+<translation id="598295083618286569">Rozhraní Bluetooth je připojeno</translation>
+<translation id="5222676887888702881">Odhlásit se</translation>
+<translation id="811680302244032017">Přidat zařízení...</translation>
+<translation id="3232695630852378748">Nastavení Bluetooth...</translation>
+<translation id="1480041086352807611">Režim ukázky</translation>
+<translation id="4186384497305035875">Tato obrazovka byla záměrně ponechána prázdná.</translation>
+<translation id="9089416786594320554">Metody zadávání</translation>
+<translation id="7706302027196209560">Aktivovat připojení Wi-Fi</translation>
+<translation id="4430019312045809116">Hlasitost</translation>
+<translation id="3557139239102318020">Posunutím dolů okno minimalizujete, posunutím doprava nebo doleva okna zobrazíte vedle sebe.</translation>
+<translation id="5980301590375426705">Ukončit relaci hosta</translation>
+<translation id="8308637677604853869">Předchozí nabídka</translation>
+<translation id="3595065677684516080">Nastavení a nápověda</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="3784455785234192852">Zámek</translation>
+<translation id="5836819469861742634">Změna nastavení proxy...</translation>
+<translation id="2872961005593481000">Vypnout</translation>
+<translation id="8735871257195921372">Jiná síť Wi-Fi...</translation>
+<translation id="2152495481414285304">Aplikace</translation>
+<translation id="1690310444231390462">Deaktivovat připojení Wi-Fi</translation>
+<translation id="77565731175229781">Nastavení sítí...</translation>
+<translation id="7029814467594812963">Ukončit relaci</translation>
+<translation id="7908019422099334890">Nastavit tapetu...</translation>
+<translation id="6362354186508391853">Ctrl +</translation>
+<translation id="7841796031898165175">Aktivovat mobilní připojení</translation>
+<translation id="9072667645353666975">Baterie: <ph name="PERCENTAGE"/> %
+<ph name="HOUR"/>h <ph name="MINUTE"/>m</translation>
+<translation id="48607902311828362">Režim V letadle</translation>
 </translationbundle>

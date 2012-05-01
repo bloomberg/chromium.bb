@@ -1,4 +1,155 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
+<translation id="6676384891291319759">Приступите Интернету</translation>
+<translation id="6373523479360886564">Јесте ли сигурни да желите да деинсталирате Chromium?</translation>
+<translation id="8957741245723343544">Промене ће ступити на снагу када следећи пут поново покренете Chromium ОС.</translation>
+<translation id="6510925080656968729">Деинсталирај Chromium</translation>
+<translation id="6893813176749746474">Chromium је ажуриран, али га нисте користили најмање 30 дана.</translation>
+<translation id="2770231113462710648">Промени подразумевани прегледач у:</translation>
+<translation id="6613594504749178791">Промене ће ступити на снагу када следећи пут поново покренете Chromium.</translation>
+<translation id="3748537968684000502">Прегледате безбедну Chromium страницу.</translation>
+<translation id="8971920611044657379">Chromium Frame</translation>
+<translation id="1065672644894730302">Подешавања не могу да се прочитају.
+
+Неке функције су можда недоступне и промене подешавања неће бити сачуване.</translation>
+<translation id="2469082501656808441">Доступна је нова верзија Chromium-а</translation>
+<translation id="4222661289444749267">Ажурирање Chromium Frame-а.</translation>
+<translation id="2843244238218937196">Chromium приказивач</translation>
+<translation id="7128196614940529818">Chromium Frame је већ инсталиран и доступан свим корисницима овог рачунара. Ако желите да инсталирате Chromium Frame на нивоу корисника, морате прво да деинсталирате верзију на нивоу система коју је инсталирао администратор.</translation>
+<translation id="731644333568559921">Ажурирај &amp;Chromium ОС</translation>
+<translation id="7421823331379285070">Chromium захтева Windows XP или новију верзију. Неке функције можда неће радити.</translation>
+<translation id="1185134272377778587">О Chromium-у</translation>
+<translation id="4330297532943865716">У систему је пронађена некомпатибилна инсталација Chromium-а или Chromium Frame-а. Деинсталирајте је и покушајте поново.</translation>
+<translation id="6953661834318318668">Chromium трака с алаткама</translation>
+<translation id="7097100943370017396">Chromium се више не ажурира зато што је оперативни систем застарео.</translation>
+<translation id="2777754523825675150">Chromium ће вратити претходну сесију при покретању. Нека од подешавања заснованих на сесијама, као што су она која бришу податке при затварању, биће онемогућена.</translation>
+<translation id="4103959775970322855">Chromium је ажуриран на верзију <ph name="VERSION"/></translation>
+<translation id="4285930937574705105">Инсталација није успела због неодређене грешке. Ако је Chromium тренутно отворен, затворите га и покушајте поново.</translation>
+<translation id="2589479092236095792">Подешавања Chromium аутоматског попуњавања</translation>
+<translation id="3555616473548901994">Деинсталација је довршена.</translation>
+<translation id="2940837712536340734">Chromium ОС је ажуриран.</translation>
+<translation id="2886012850691518054">Опционално: Помозите да побољшамо Chromium тако што ћете Google-у аутоматски слати статистику коришћења и извештаје о отказивању.</translation>
+<translation id="3848258323044014972"><ph name="PAGE_TITLE"/> – Chromium</translation>
+<translation id="1989424089625731201">Покушали сте да успоставите везу са доменом &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, али сертификат који је сервер приказао садржи грешке. Chromium не може да користи сертификат са грешкама и не може да потврди идентитет сајта са којим сте покушали да се повежете.</translation>
+<translation id="3103660991484857065">Програм за инсталацију није успео да декомпримује архиву. Преузмите Chromium поново.</translation>
+<translation id="2933983827758164650">Ако сада затворите Chromium, ово преузимање ће бити отказано.</translation>
+<translation id="872034308864968620">Нека Chromium ради у позадини</translation>
+<translation id="4320129595801648679">Chromium-ова страница Нова картица је редизајнирана. Пребацујте се између одељака кликом на ове ознаке. Chromium ће запамтити подешавање за следећи пут.</translation>
+<translation id="3032787606318309379">Додавање у Chromium...</translation>
+<translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Упозорење:<ph name="END_BOLD"/> Chromium не може да спречи додатке да снимају историју прегледања. Да бисте онемогућили овај додатак у режиму без архивирања, опозовите избор ове опције.</translation>
+<translation id="985602178874221306">The Chromium Authors</translation>
+<translation id="8628626585870903697">Chromium не садржи PDF приказивач који је потребан да би Приказ пре штампања функционисао.</translation>
+<translation id="7138853919861947730">Chromium може да користи веб услуге да би побољшао доживљај прегледања.</translation>
+<translation id="4179848566211676653">Затвори Chromium</translation>
+<translation id="3849925841547750267">Нажалост, Mozilla Firefox подешавања нису доступна док тај прегледач ради. Да бисте увезли та подешавања у Chromium, сачувајте рад и затворите све Firefox прозоре. Затим кликните на Настави.</translation>
+<translation id="7771626876550251690">У овом случају, адреса наведена у сертификату се не подудара са адресом веб сајта на који је прегледач покушао да оде. Један од могућих разлога за то је тај што комуникацију пресреће нападач који приказује сертификат за други веб сајт, што би изазвало неподударање. Још један од могућих разлога је тај што је сервер подешен тако да враћа исти сертификат за више веб сајтова, укључујући онај који покушавате да посетите, иако тај сертификат није важећи за све те веб сајтове. Chromium може да потврди да сте успоставили везу са доменом &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, али не и да верификује да је то исти сајт као и &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; са којим сте намеравали да успоставите везу. Ако наставите, Chromium неће више проверавати да ли има неподударања у називу.</translation>
+<translation id="4330585738697551178">За овај модул је познато да се сукобљава са Chromium-ом.</translation>
+<translation id="3190315855212034486">Опа! Chromium је отказао. Желите ли да га одмах поново покренете?</translation>
+<translation id="6714487516757221107">Није пронађена ниједна Chromium или Chromium Frame инсталација за ажурирање.</translation>
+<translation id="4124681358536363708">Изгледа да се инсталациони директоријум Chromium-а тренутно користи. Покрените поново рачунар и покушајте поново.</translation>
+<translation id="8770560772173120024">Chromium тренутно увози Омиљене/Обележиваче.</translation>
+<translation id="6290315939897260265">Не користи се у Chromium-у. Резервисано место за очување синхронизације мапа ресурса.</translation>
+<translation id="2977470724722393594">Chromium је ажуриран</translation>
+<translation id="9191268552238695869">Администратор је инсталирао Chromium у овом систему и он је доступан за све кориснике. Chromium на нивоу система ће сада заменити инсталацију на нивоу корисника.</translation>
+<translation id="3509308970982693815">Затворите све Chromium прозоре и покушајте поново.</translation>
+<translation id="4077262827416206768">Затворите све Chromium прозоре и поново покрените Chromium да би ова промена ступила на снагу.</translation>
+<translation id="9119843944749246249">Copyright © 2006–2012. The Chromium Authors. Сва права задржана.</translation>
+<translation id="6944967875980567883">Модули који су учитани у Chromium</translation>
+<translation id="118298050220780080">Покушали сте да успоставите везу са доменом &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, али је сервер приказао сертификат који је издао ентитет у кога оперативни систем рачунара нема поверења. То може да значи да је сервер генерисао сопствене безбедносне акредитиве, на које Chromium не може да се ослони као на информације о идентитету, или да нападач можда покушава да пресретне комуникацију.</translation>
+<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="3296368748942286671">Настави са покретањем апликација у позадини када се Chromium затвори</translation>
+<translation id="2918265831258045091">Да ли желите да изађете из Chromium-а док је преузимање у току?</translation>
+<translation id="6055895534982063517">Доступна је нова верзија Chromium-а, бржа него икада пре.</translation>
+<translation id="2407806170074302369">О Chromium Frame-у...</translation>
+<translation id="5405650547142096840">Уклони из Chromium-а</translation>
+<translation id="7747138024166251722">Програм за инсталацију није могао да направи привремени директоријум. Проверите да ли имате слободног простора на диску, као и дозволу да инсталирате софтвер.</translation>
+<translation id="3258596308407688501">Chromium не може да чита податке из директоријума са подацима нити да их уписује у њега:
+
+<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="4932687624772039103">Chromium не подржава <ph name="OS_NAME"/>.</translation>
+<translation id="8738921060445980047">Непозната верзија.</translation>
+<translation id="2485422356828889247">Деинсталирај</translation>
+<translation id="85843667276690461">Пронађи помоћ за коришћење Chromium-а</translation>
+<translation id="263863604136125912">Покрени Chromium</translation>
+<translation id="2881203820889150661">Chromium не може да направи пречицу апликације јер не може да одреди тренутно рачунарско окружење.</translation>
+<translation id="4886158514168859177">Овај рачунар већ има новију верзију Chromium Frame-а. Ако софтвер не функционише, деинсталирајте Chromium Frame и покушајте поново.</translation>
+<translation id="911206726377975832">Желите ли да избришете и податке прегледања?</translation>
+<translation id="6734080038664603509">Ажурирај &amp;Chromium</translation>
+<translation id="8862326446509486874">Немате одговарајућа права за инсталацију на нивоу система. Покушајте поново да покренете програм за инсталацију, овога пута као администратор.</translation>
+<translation id="1774152462503052664">Нека Chromium ради у позадини</translation>
+<translation id="9022552996538154597">Пријављивање на Chromium</translation>
+<translation id="4365115785552740256">Chromium омогућавају <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> пројекат отвореног кода и други <ph name="BEGIN_LINK_OSS"/>софтвер отвореног кода<ph name="END_LINK_OSS"/>.</translation>
+<translation id="7549178288319965365">О Chromium ОС-у</translation>
+<translation id="6248213926982192922">Подеси Chromium за подразумевани прегледач</translation>
+<translation id="7337881442233988129">Chromium</translation>
+<translation id="3069161343438701711">Chromium радник</translation>
+<translation id="5820394555380036790">Chromium ОС</translation>
+<translation id="6757767188268205357">Не досађуј</translation>
+<translation id="7700951445648533795">Да ли желите да изађете из Chromium-а док су преузимања (<ph name="DOWNLOAD_COUNT"/>) у току?</translation>
+<translation id="275588974610408078">Извештавање о отказивањима није доступно у Chromium-у.</translation>
+<translation id="5909170354645388250">Не користи се у Chromium-у. Резервисано место за очување синхронизације мапа ресурса. Очекује један аргумент: $1.</translation>
+<translation id="3582788516608077514">Ажурирање Chromium-а...</translation>
+<translation id="7223968959479464213">Менаџер задатака – Chromium</translation>
+<translation id="3838208658251026018">Chromium тренутно увози следеће ставке из прегледача  <ph name="BROWSER_COMPONENT"/>:</translation>
+<translation id="2673087257647337101">Скоро ажурирано! Покрените поново Chromium да бисте довршили ажурирање.</translation>
+<translation id="5398878173008909840">Доступна је нова верзија Chromium-а.</translation>
+<translation id="2648074677641340862">Током инсталације је дошло до грешке у оперативном систему. Преузмите Chromium поново.</translation>
+<translation id="5942520288919337908">Додатак <ph name="EXTENSION_NAME"/> је додат у Chromium.</translation>
+<translation id="8678787945719392857">Да ли желите да користите овај Google налог за синхронизацију свих Chromium садржаја?</translation>
+<translation id="5974438302735098483">Chromium је ажуриран</translation>
+<translation id="8621669128220841554">Инсталација није успела због неодређене грешке. Преузмите Chromium поново.</translation>
+<translation id="6717134281241384636">Профил не може да се користи јер је из новије верзије Chromium-а.
+
+Неке функције ће можда бити недоступне. Наведите други директоријум профила или користите новију верзију Chromium-а.</translation>
+<translation id="2712549016134575851">Откривено је сукобљавање са другом инсталираном апликацијом.</translation>
+<translation id="9013087743919948559">Додавање у Chromium</translation>
+<translation id="6212496753309875659">Овај рачунар већ има новију верзију Chromium-а. Ако софтвер не функционише, деинсталирајте Chromium и покушајте поново.</translation>
+<translation id="3014684866565908571">Chromium услужни програм</translation>
+<translation id="1298199220304005244">Пронађи помоћ за коришћење Chromium ОС-а</translation>
+<translation id="667672506951335584">Ако сада затворите Chromium, ова преузимања ће бити отказана.</translation>
+<translation id="1691304614444223855">Chromium Frame је ажуриран. Покрените поново прегледач. Верзија Chromium-а: <ph name="TODO_0001"/>, Верзија Chromium Frame-а: <ph name="TODO_0002"/></translation>
+<translation id="1105130903706696483">Chromium се није исправно затворио. Да бисте поново отворили странице које су биле отворене, кликните на Врати.</translation>
+<translation id="1929939181775079593">Chromium не реагује. Желите ли да га одмах поново покренете?</translation>
+<translation id="6089587093203430357">Инстант</translation>
+<translation id="2966088006374919794">Chromium мора да покрене спољну апликацију ради обраде <ph name="SCHEME"/> веза. Захтевана веза је <ph name="PROTOLINK"/>.</translation>
+<translation id="5699533844376998780">Додатак „<ph name="EXTENSION_NAME"/>“ је додат.
+</translation>
+<translation id="8046283042877435986">Овај сајт препоручује Chromium Frame (већ је инсталиран).</translation>
+<translation id="6287463253129672858">Није могуће инсталирати исту верзију Chromium Frame-а која се тренутно користи. Затворите Chromium Frame и покушајте поново.</translation>
+<translation id="2558235863893655150">Да ли желите да Chromium сачува лозинку?</translation>
+<translation id="1688750314291223739">Подесите Синхронизацију како бисте сачували персонализоване функције прегледача на Веб и приступали им из Chromium-а на било ком рачунару.</translation>
+<translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
+<translation id="8865765905101981392">Интернет прегледач</translation>
+<translation id="2910007522516064972">О &amp;Chromium-у</translation>
+<translation id="8453117565092476964">Архива програма за инсталацију је оштећена или неважећа. Преузмите Chromium поново.</translation>
+<translation id="309634601461115233">Одјавите се из Chromium OS-а и пријавите се поново да би ова промена ступила на снагу.</translation>
+<translation id="3249425904492147663">Покушали сте да успоставите везу са доменом &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, али је сервер приказао истекли сертификат. Нису доступне никакве информације које би указале на то да ли је сертификат компромитован од када је истекао. То значи да Chromium не може да гарантује да комуницирате са доменом &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не са нападачем. Сат на рачунару је тренутно подешен на <ph name="CURRENT_TIME"/>. Да ли вам то делује тачно? Ако не делује, треба да исправите грешку и освежите ову страницу.</translation>
+<translation id="7196020411877309443">Зашто видим ово?</translation>
+<translation id="7483335560992089831">Није могуће инсталирати исту верзију Chromium-а која се тренутно користи. Затворите Chromium и покушајте поново.</translation>
+<translation id="7641113255207688324">Chromium није подразумевани прегледач.</translation>
+<translation id="2174090135251659490">Покушали сте да успоставите везу са доменом &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, али је сервер приказао сертификат који још увек није важећи. Нису доступне никакве информације које би указале на то да ли се том сертификату може веровати. Chromium не може са сигурношћу да тврди да комуницирате са доменом &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не са нападачем. Сат на рачунару је тренутно подешен на <ph name="CURRENT_TIME"/>. Да ли вам то делује тачно? Ако не делује, треба да исправите грешку и освежите ову страницу.</translation>
+<translation id="2119636228670142020">О &amp;Chromium ОС-у</translation>
+<translation id="1708666629004767631">Доступна је нова, безбеднија верзија Chromium-а.</translation>
+<translation id="5859758987635973787">Chromium је ажуриран (<ph name="VERSION"/>)</translation>
+<translation id="8616882682724010661">Прикажи <ph name="BEGIN_LINK"/>додатне погодности<ph name="END_LINK"/> пријављивања на Chromium.</translation>
+<translation id="378917192836375108">Chromium вам омогућава да кликнете на број телефона на Вебу и да га позовете помоћу Skype-а!</translation>
+<translation id="7503101070699687603">Хост Chromium додатне компоненте</translation>
+<translation id="9013262824292842194">За Chromium је неопходан Windows Vista или Windows XP са SP2 или новија верзија.</translation>
+<translation id="1967743265616885482">Модул истог назива се већ сукобљавао са Chromium-ом.</translation>
+<translation id="4224199872375172890">Chromium је ажуриран.</translation>
+<translation id="5498103559159810756">Chromium користи подразумевани претраживач, који је тренутно подешен на <ph name="PAGE_TITLE"/>. Желите ли да овај претраживач остане подразумевани претраживач?</translation>
+<translation id="5862307444128926510">Добро дошли у Chromium</translation>
+<translation id="1622565934590470080">Овај рачунар већ има новију верзију Chromium-а и Chromium Frame-а. Ако софтвер не функционише, деинсталирајте и Chromium и Chromium Frame и покушајте поново.</translation>
+<translation id="7318036098707714271">Датотека подешавања је оштећена или неважећа.
+
+Chromium не може да врати подешавања.</translation>
+<translation id="7123348595797445166">Дај да пробам (већ је инсталиран)</translation>
+<translation id="6403826409255603130">Chromium је веб прегледач који покреће веб странице и апликације муњевитом брзином. Брз је, стабилан и једноставан за коришћење. Прегледајте Веб безбедније са заштитом од малвера и „пецања“ која је уграђена у Chromium.</translation>
+<translation id="2927042866129133279">Неважећи аргументи. Chromium Frame не може да се инсталира у спремном режиму а да се при том не инсталира и Chromium.</translation>
+<translation id="2572494885440352020">Chromium помагач</translation>
+<translation id="442817494342774222">Chromium је конфигурисан тако да се аутоматски покреће када покренете рачунар.</translation>
+<translation id="8974095189086268230">Chromium ОС омогућава додатни <ph name="BEGIN_LINK_CROS_OSS"/>софтвер отвореног кода<ph name="END_LINK_CROS_OSS"/>.</translation>
+<translation id="6154296300983386343">Покрените поново Chromium да бисте довршили ажурирање</translation>
+<translation id="1221340462641866827">Chromium ОС не подржава покретање спољне апликације за обраду <ph name="SCHEME"/> веза. Захтевана веза је <ph name="PROTOLINK"/>.</translation>
 </translationbundle>

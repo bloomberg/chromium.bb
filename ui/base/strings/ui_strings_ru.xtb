@@ -24,9 +24,9 @@
 <translation id="6364916375976753737">Прокрутка влево</translation>
 <translation id="8210608804940886430">Прокрутка вниз</translation>
 <translation id="5329858601952122676">&amp;Удалить</translation>
+<translation id="8901569739625249689"><ph name="QUANTITY"/> КБ</translation>
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> МБ</translation>
-<translation id="3806858430610674159"><ph name="QUANTITY"/> КБ</translation>
 <translation id="2497284189126895209">Все файлы</translation>
 <translation id="7814458197256864873">&amp;Копировать</translation>
 <translation id="3889424535448813030">Стрелка вправо</translation>
@@ -37,6 +37,7 @@
 <translation id="3183922693828471536">Прокрутить до этого места</translation>
 <translation id="4552416320897244156">PgDwn</translation>
 <translation id="7052633198403197513">F1</translation>
+<translation id="8677655579646609597"><ph name="QUANTITY"/> КБ/с</translation>
 <translation id="2190355936436201913">(пусто)</translation>
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="4588090240171750605">Прокрутка вправо</translation>
@@ -49,7 +50,6 @@
 <translation id="9170848237812810038">&amp;Отменить</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> ПБ</translation>
 <translation id="5583640892426849032">Клавиша возврата (Backspace)</translation>
-<translation id="2619528525756897123"><ph name="QUANTITY"/> КБ/с</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> ГБ/с</translation>
 <translation id="436869212180315161">Нажать</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY"/> ТБ/с</translation>

@@ -5,6 +5,7 @@
 <translation id="8485767968786176057">W tym przypadku adres z certyfikatu nie pasuje do adresu strony, którą chcesz otworzyć w przeglądarce. Jedna z możliwych przyczyn to przechwycenie komunikacji przez intruza, który przedstawił certyfikat innej strony. Inna jest taka, że serwer zwraca ten sam certyfikat przy wielu stronach (również tej, którą próbujesz odwiedzić), mimo że jest on ważny tylko dla jednej. W tej chwili masz dostęp do &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ale Google Chrome nie jest w stanie stwierdzić, czy to ta sama strona co &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, na którą chcesz wejść. Jeśli przejdziesz dalej, przeglądarka nie będzie sprawdzać innych niezgodności nazw.</translation>
 <translation id="5430073640787465221">Plik ustawień jest uszkodzony lub nieprawidłowy. Google Chrome nie może odzyskać ustawień.</translation>
 <translation id="6676384891291319759">Skorzystaj z internetu</translation>
+<translation id="573759479754913123">System operacyjny &amp;Chrome – informacje</translation>
 <translation id="5453904507266736060">Zezwalaj przeglądarce Google Chrome na działanie w tle</translation>
 <translation id="2383457833405848421">Chrome Frame – informacje</translation>
 <translation id="386202838227397562">Zamknij wszystkie okna przeglądarki Google Chrome i spróbuj ponownie.</translation>
@@ -21,15 +22,16 @@
 <translation id="1761870329818521071">Nie można zainstalować tej samej wersji wtyczki Google Chrome Frame, która jest obecnie uruchomiona. Zamknij wtyczkę Google Chrome Frame i spróbuj ponownie.</translation>
 <translation id="2040709530900803995">Moduł renderowania Google Chrome</translation>
 <translation id="3140883423282498090">Zmiany zaczną obowiązywać po ponownym uruchomieniu Google Chrome.</translation>
+<translation id="1773601347087397504">Skorzystaj z pomocy dotyczącej używania systemu operacyjnego Chrome</translation>
 <translation id="1872436416934435136">Google Chrome nie jest już aktualizowany, bo Twój system operacyjny jest przestarzały.</translation>
 <translation id="5339639696978861456">Wtyczka Chrome Frame została zaktualizowana. Ponownie uruchom przeglądarkę. Wersja przeglądarki Chrome: <ph name="TODO_0001"/>, wersja wtyczki Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Warunki korzystania z usługi</translation>
+<translation id="8398145039500709259">Czy użyć tego konta do synchronizacji wszystkich Twoich rzeczy z Chrome?</translation>
 <translation id="6862759394142635932">Jeśli teraz zamkniesz Google Chrome, anulujesz pobieranie.</translation>
 <translation id="1779550429052479749">W systemie znaleziono zainstalowaną przeglądarkę Google Chrome lub wtyczkę Google Chrome Frame, która powoduje konflikt. Odinstaluj ją i spróbuj ponownie.</translation>
 <translation id="3555616473548901994">Zakończono odinstalowywanie.</translation>
 <translation id="8556340503434111824">Dostępna jest nowa, szybsza niż kiedykolwiek wersja przeglądarki Google Chrome.</translation>
 <translation id="4728575227883772061">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Google Chrome jest aktualnie uruchomiony, zamknij aplikację i spróbuj ponownie.</translation>
-<translation id="4727256538826447736">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił nieaktualny certyfikat. Nie ma informacji o tym, czy od czasu wygaśnięcia bezpieczeństwo certyfikatu zostało naruszone. Oznacza to, że Google Chrome nie może zagwarantować, że komunikujesz się z &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nie intruzem.</translation>
 <translation id="3080151273017101988">Kontynuuj działanie aplikacji w tle po zamknięciu przeglądarki Google Chrome</translation>
 <translation id="4149882025268051530">Instalator nie może prawidłowo rozpakować archiwum. Pobierz Google Chrome ponownie.</translation>
 <translation id="6989339256997917931">Przeglądarka Google Chrome została zaktualizowana, ale nie była przez Ciebie używana przez co najmniej 30 dni.</translation>
@@ -39,24 +41,29 @@
 <translation id="8227755444512189073">Chrome musi uruchomić zewnętrzną aplikację do obsługi linków <ph name="SCHEME"/>. Żądany link to <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">O kurczę! Przeglądarka Google Chrome uległa awarii. Uruchomić ją teraz ponownie?</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> Google Chrome</translation>
-<translation id="3487814320513494737">Strona Nowa karta w Chrome została zmieniona. Aby przejść między sekcjami, kliknij etykietę. Chrome zapamięta ustawienie na przyszłość.</translation>
+<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Warunki korzystania z usługi<ph name="END_TERMS_OF_SERVICE_LINK"/> Google Chrome</translation>
+<translation id="1393853151966637042">Pomoc do Chrome</translation>
+<translation id="3487814320513494737">Strona „Nowa karta” w Chrome została zmieniona. Aby przejść między sekcjami, kliknij etykietę. Chrome zapamięta ustawienie na przyszłość.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="6423071462708908582">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił nieważny certyfikat. Nie ma informacji na temat przejęcia tego certyfikatu po utracie ważności. To oznacza, że Google Chrome nie może zagwarantować, że komunikujesz się z &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nie z intruzem. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_TIME"/>. Czy wygląda to właściwie? Jeśli nie, popraw błąd i odśwież stronę.</translation>
 <translation id="2653935705142821164">Moduł renderowania Chrome</translation>
 <translation id="3889417619312448367">Odinstaluj Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3282568296779691940">Zaloguj się w Chrome</translation>
 <translation id="3089968997497233615">Dostępna jest nowa, bezpieczniejsza wersja przeglądarki Google Chrome.</translation>
 <translation id="5037239767309817516">Zamknij wszystkie okna przeglądarki Google Chrome i uruchom ją ponownie, aby zastosować zmiany.</translation>
 <translation id="7451721381978275812">Nieprawidłowe argumenty. Wtyczki Google Chrome Frame nie można zainstalować w trybie gotowości bez instalowania przeglądarki Google Chrome.</translation>
 <translation id="5727432509906037972">Chcesz zamknąć Google Chrome, mimo że trwa pobieranie?</translation>
-<translation id="1367236238006776563">Rozszerzenie „<ph name="EXTENSION_NAME"/>” zostało dodane do Chrome.</translation>
 <translation id="4585888816441913908">Na tym komputerze są już zainstalowane nowsze wersje Google Chrome i Google Chrome Frame. Jeśli oprogramowanie nie działa, odinstaluj Google Chrome i Google Chrome Frame, a następnie spróbuj ponownie.</translation>
 <translation id="6368958679917195344">Opracowanie systemu operacyjnego Chrome było możliwe dzięki dodatkowemu <ph name="BEGIN_LINK_CROS_OSS"/>oprogramowaniu typu open source<ph name="END_LINK_CROS_OSS"/>.</translation>
+<translation id="7459554271817304652">Skonfiguruj synchronizację, by zapisać w internecie własne funkcje przeglądarki i mieć do nich dostęp w Google Chrome na każdym komputerze.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat wystawiony przez podmiot, który nie jest zaufany w systemie operacyjnym na Twoim komputerze. Może to oznaczać, że na serwerze samodzielnie wygenerowano dane uwierzytelniające, które zawierają niewiarygodne informacje o tożsamości, albo że intruz próbuje przechwycić Twoją komunikację.</translation>
 <translation id="4331809312908958774">System operacyjny Chrome</translation>
 <translation id="1195935957447623558">Przeglądarka Chrome nie została poprawnie zamknięta. Aby ponownie otworzyć strony, które były wyświetlone, kliknij przycisk Przywróć.</translation>
 <translation id="2783467918276328046">Poznaj <ph name="BEGIN_LINK"/>inne zalety<ph name="END_LINK"/> logowania się w Chrome.</translation>
 <translation id="2580411288591421699">Nie można zainstalować tej samej wersji przeglądarki Google Chrome co obecnie uruchomiona. Zamknij przeglądarkę Google Chrome i spróbuj ponownie.</translation>
+<translation id="1457721931618994305">Aktualizowanie &amp;Google Chrome...</translation>
 <translation id="7747138024166251722">Instalator nie mógł utworzyć katalogu tymczasowego. Sprawdź, czy na dysku jest dość wolnego miejsca oraz sprawdź, czy posiadasz uprawnienia do instalowania programów.</translation>
 <translation id="5170938038195470297">Nie można użyć Twojego profilu, ponieważ został utworzony w nowszej wersji Google Chrome. Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub użyj nowszej wersji Chrome.</translation>
 <translation id="8738921060445980047">Nieznana wersja.</translation>
@@ -64,7 +71,7 @@
 <translation id="2748463065602559597">Przeglądasz bezpieczną stronę Google Chrome.</translation>
 <translation id="7185038942300673794">Rozszerzenie <ph name="EXTENSION_NAME"/> zostało dodane do Chrome.</translation>
 <translation id="9073088951656332330">Nie znaleziono instalacji przeglądarki Google Chrome ani wtyczki Google Chrome Frame do zaktualizowania.</translation>
-<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Uwaga:<ph name="END_BOLD"/> Przeglądarka Google Chrome nie może uniemożliwić rozszerzeniom zapisywania historii przeglądania. Aby wyłączyć to rozszerzenie w trybie incognito, usuń zaznaczenie tej opcji.</translation>
+<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Uwaga:<ph name="END_BOLD"/> Google Chrome nie może uniemożliwić rozszerzeniom zapisywania historii przeglądania. Aby wyłączyć to rozszerzenie w trybie incognito, usuń zaznaczenie tej opcji.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="3904146009066562368">Jest dostępna nowa wersja Google Chrome</translation>
 <translation id="911206726377975832">Czy usunąć także dane przeglądarki?</translation>
@@ -83,6 +90,7 @@
 <translation id="5941830788786076944">Ustaw Google Chrome jako domyślną przeglądarkę</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">W przeglądarce Google Chrome możesz kliknąć numer telefonu zamieszczony w sieci i zadzwonić na niego za pośrednictwem usługi Skype!</translation>
+<translation id="4573769928351971197">Google Chrome przywróci Twoją poprzednią sesję przy uruchomieniu. Niektóre ustawienia związane z sesją, takie jak te usuwające dane przy zamknięciu przeglądarki, zostaną wyłączone.</translation>
 <translation id="3612333635265770873">Znane są przypadki konfliktu modułu o takiej nazwie z przeglądarką Google Chrome.</translation>
 <translation id="61852838583753520">Aktualizuj system operacyjny &amp;Chrome</translation>
 <translation id="6650142020817594541">W tej witrynie jest zalecana wtyczka Google Chrome Frame (już zainstalowana).</translation>
@@ -100,6 +108,7 @@
 <translation id="3444832043240812445">Ta strona zawiera informacje o ostatnich awariach tylko w przypadku <ph name="BEGIN_LINK"/>włączenia funkcji zgłaszania awarii<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Przeglądarka Google Chrome nie odpowiada. Uruchomić ją teraz ponownie?</translation>
 <translation id="5318056482164160049">Serwer wtyczek przeglądarki Google Chrome</translation>
+<translation id="5699533844376998780">Rozszerzenie „<ph name="EXTENSION_NAME"/>” zostało dodane.</translation>
 <translation id="6126631249883707068">Czy chcesz, aby przeglądarka Google Chrome zapisała hasło?</translation>
 <translation id="5046764976540625289">Zakończ Chrome</translation>
 <translation id="2925521875688282191">Wyloguj się z systemu operacyjnego Chrome, a następnie zaloguj ponownie, aby zmiana zaczęła obowiązywać.</translation>
@@ -110,6 +119,7 @@
 <translation id="2189123953385179981">System operacyjny Google ChromeOS nie umożliwia uruchamiania zewnętrznej aplikacji w celu obsługi linków typu <ph name="SCHEME"/>. Żądany link to <ph name="PROTOLINK"/>.</translation>
 <translation id="711654979569750606">Copyright 2006-2012 Google Inc. Wszelkie prawa zastrzeżone.</translation>
 <translation id="8205111949707227942">Opcjonalnie: pomóż nam udoskonalać system operacyjny Chrome poprzez automatyczne wysyłanie do Google statystyk użytkowania i raportów o awariach.</translation>
+<translation id="8345657477105118085">System operacyjny Chrome jest aktualny.</translation>
 <translation id="7196020411877309443">Dlaczego wyświetla mi się to okienko?</translation>
 <translation id="2769762047821873045">Google Chrome nie jest domyślną przeglądarką.</translation>
 <translation id="7825851276765848807">Instalacja nie powiodła się z powodu nieokreślonego błędu. Pobierz Google Chrome ponownie.</translation>
@@ -117,6 +127,7 @@
 <translation id="2666187591945638709">Google Chrome został zaktualizowany do wersji <ph name="VERSION"/></translation>
 <translation id="5334545119300433702">Znane są przypadki konfliktu tego modułu z przeglądarką Google Chrome.</translation>
 <translation id="4892299120052124303">Jeśli teraz zamkniesz Google Chrome, anulujesz pobieranie tych plików.</translation>
+<translation id="6634887557811630702">Google Chrome jest aktualny.</translation>
 <translation id="2084710999043359739">Dodaj do Chrome</translation>
 <translation id="4084877369264707540">Wtyczka Google Chrome Frame jest już zainstalowana i dostępna dla wszystkich użytkowników tego komputera. Jeśli chcesz zainstalować wtyczkę Google Chrome Frame na poziomie użytkownika, musisz najpierw odinstalować wersję z poziomu systemu zainstalowaną przez administratora.</translation>
 <translation id="3360895254066713204">Pomoc Chrome</translation>
@@ -133,11 +144,12 @@
 <translation id="4338032231047635328">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat z błędami. Google Chrome nie może go użyć, a tym samym zweryfikować tożsamości strony, którą chcesz wyświetlić.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Ustawienia autouzupełniania Chrome</translation>
+<translation id="3836351788193713666">Prawie aktualny. Uruchom ponownie Google Chrome, by zakończyć aktualizację.</translation>
 <translation id="7106741999175697885">Menedżer zadań – Google Chrome</translation>
+<translation id="1826482739472655104">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat, który nie jest jeszcze ważny. Nie ma informacji, czy można ufać temu certyfikatowi. Google Chrome nie może zagwarantować, że komunikujesz się z &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nie z intruzem. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_TIME"/>. Czy wygląda to właściwie? Jeśli nie, popraw błąd i odśwież stronę.</translation>
 <translation id="8449380764213232436">Google Chrome rozpoczął importowanie następujących elementów z przeglądarki <ph name="BROWSER_COMPONENT"/></translation>
 <translation id="852884188147941900">Moduł roboczy Chrome</translation>
 <translation id="3396977131400919238">Podczas instalacji wystąpił błąd systemu operacyjnego. Pobierz Google Chrome ponownie.</translation>
 <translation id="5495581687705680288">Moduły załadowane do przeglądarki Google Chrome</translation>
-<translation id="4086010630946365132">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat, który nie jest jeszcze ważny. Nie ma informacji o tym, czy certyfikat jest wiarygodny. Google Chrome nie może zagwarantować, że komunikujesz się z &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nie intruzem. Sprawdź, czy godzina i strefa czasowa na Twoim komputerze są poprawne. Jeśli nie, ustaw je i odśwież tę stronę.</translation>
 <translation id="8129812357326543296">&amp;Google Chrome – informacje</translation>
 </translationbundle>

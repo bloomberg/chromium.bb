@@ -1,4 +1,51 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
+<translation id="3595596368722241419">બૅટરી પૂર્ણ ભરાઈ ગઈ</translation>
+<translation id="908313544993743941">સેલ્યુલરને અક્ષમ કરો</translation>
+<translation id="30155388420722288">ઓવરફ્લો બટન</translation>
+<translation id="5571066253365925590">Bluetooth સક્ષમ છે</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
+<translation id="2268130516524549846">Bluetooth અક્ષમ છે</translation>
+<translation id="3626281679859535460">તેજ</translation>
+<translation id="7982789257301363584">નેટવર્ક</translation>
+<translation id="2297568595583585744">સ્થિતિ ટ્રે</translation>
+<translation id="2946640296642327832">Bluetooth સક્ષમ કરો</translation>
+<translation id="6596816719288285829">IP સરનામું</translation>
+<translation id="289426338439836048">અન્ય મોબાઇલ નેટવર્ક...</translation>
+<translation id="5233638681132016545">નવું ટૅબ</translation>
+<translation id="785750925697875037">મોબાઇલ એકાઉન્ટ જુઓ</translation>
+<translation id="7864539943188674973">Bluetooth અક્ષમ કરો</translation>
+<translation id="3126069444801937830">અપડેટ કરવા માટે પુનઃપ્રારંભ કરો</translation>
+<translation id="8190698733819146287">ભાષાઓ અને ઇનપુટને કસ્ટમાઇઝ કરો...</translation>
+<translation id="7911992579061465928">બૅટરી ઓછી છે</translation>
+<translation id="598295083618286569">Bluetooth કનેક્ટ કરેલું છે</translation>
+<translation id="5222676887888702881">સાઇન આઉટ</translation>
+<translation id="811680302244032017">ઉપકરણ ઉમેરો...</translation>
+<translation id="3232695630852378748">Bluetooth સેટિંગ્સ...</translation>
+<translation id="1480041086352807611">ડેમો મોડ</translation>
+<translation id="4186384497305035875">આ સ્ક્રીન ઈરાદાપૂર્વક ખાલી છોડેલી છે</translation>
+<translation id="9089416786594320554">ઇનપુટ પદ્ધતિઓ</translation>
+<translation id="7706302027196209560">Wi-Fi સક્ષમ કરો</translation>
+<translation id="4430019312045809116">વૉલ્યૂમ</translation>
+<translation id="3557139239102318020">ડાબે અથવા જમણે ટાઇલ કરવા, નાનું કરવા માટે ખેંચો</translation>
+<translation id="5980301590375426705">અતિથિથી બહાર નીકળો</translation>
+<translation id="8308637677604853869">પહેલાનું મેનૂ</translation>
+<translation id="3595065677684516080">સેટિંગ્સ અને સહાય</translation>
+<translation id="4479639480957787382">ઇથરનેટ</translation>
+<translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="3784455785234192852">લૉક</translation>
+<translation id="5836819469861742634">પ્રોક્સી સેટિંગ્સ બદલો...</translation>
+<translation id="2872961005593481000">શટ ડાઉન કરો</translation>
+<translation id="8735871257195921372">અન્ય Wi-Fi નેટવર્ક...</translation>
+<translation id="2152495481414285304">એપ્લિકેશન્સ</translation>
+<translation id="1690310444231390462">Wi-Fi અક્ષમ કરો</translation>
+<translation id="77565731175229781">નેટવર્ક સેટિંગ્સ ...</translation>
+<translation id="7029814467594812963">સત્રમાંથી બહાર નીકળો</translation>
+<translation id="7908019422099334890">વૉલપેપર સેટ કરો...</translation>
+<translation id="6362354186508391853">Ctrl +</translation>
+<translation id="7841796031898165175">સેલ્યુલર સક્ષમ કરો</translation>
+<translation id="9072667645353666975">બૅટરી: <ph name="PERCENTAGE"/>%
+<ph name="HOUR"/>ક. <ph name="MINUTE"/>મિ.</translation>
+<translation id="48607902311828362">એરપ્લેન મોડ</translation>
 </translationbundle>

@@ -1,4 +1,51 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
+<translation id="3595596368722241419">బ్యాటరీ  నిండింది</translation>
+<translation id="908313544993743941">సెల్యులార్‌ని నిలిపివేయండి</translation>
+<translation id="30155388420722288">అతివ్యాప్తి బటన్</translation>
+<translation id="5571066253365925590">Bluetooth ప్రారంభించబడింది</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
+<translation id="2268130516524549846">Bluetooth నిలిపివేయబడింది</translation>
+<translation id="3626281679859535460">ప్రకాశం</translation>
+<translation id="7982789257301363584">నెట్‌వర్క్</translation>
+<translation id="2297568595583585744">స్థితి ట్రే</translation>
+<translation id="2946640296642327832">Bluetoothని ప్రారంభించు</translation>
+<translation id="6596816719288285829">IP చిరునామా</translation>
+<translation id="289426338439836048">ఇతర మొబైల్ నెట్‌వర్క్...</translation>
+<translation id="5233638681132016545">క్రొత్త టాబ్</translation>
+<translation id="785750925697875037">మొబైల్ ఖాతాని వీక్షించండి</translation>
+<translation id="7864539943188674973">Bluetoothని నిలిపివేయి</translation>
+<translation id="3126069444801937830">నవీకరించడానికి పునఃప్రారంభించండి</translation>
+<translation id="8190698733819146287">భాషలను అనుకూలీకరించి, ఇన్‌పుట్ చెయ్యి...</translation>
+<translation id="7911992579061465928">తక్కువ బ్యాటరీ</translation>
+<translation id="598295083618286569">Bluetooth కనెక్ట్ చేయబడింది</translation>
+<translation id="5222676887888702881">సైన్ ఔట్</translation>
+<translation id="811680302244032017">పరికరాన్ని జోడించు...</translation>
+<translation id="3232695630852378748">Bluetooth సెట్టింగ్‌లు...</translation>
+<translation id="1480041086352807611">డెమో మోడ్</translation>
+<translation id="4186384497305035875">ఈ స్క్రీన్‌ని ఉద్దేశపూర్వకంగా ఖాళీగా వదిలివేశారు</translation>
+<translation id="9089416786594320554">ఇన్‌పుట్ పద్ధతులు</translation>
+<translation id="7706302027196209560">Wi-fiని ప్రారంభించు</translation>
+<translation id="4430019312045809116">వాల్యూమ్</translation>
+<translation id="3557139239102318020">టైల్‌కు ఎడమవైపు లేదా కుడివైపు కనిష్టీకరించడానికి క్రిందికి లాగండి</translation>
+<translation id="5980301590375426705">అతిథిగా నిష్క్రమించు</translation>
+<translation id="8308637677604853869">మునుపటి మెను</translation>
+<translation id="3595065677684516080">సెట్టింగ్‌లు మరియు సహాయం</translation>
+<translation id="4479639480957787382">ఈథర్నెట్</translation>
+<translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="3784455785234192852">లాక్ చేయి</translation>
+<translation id="5836819469861742634">ప్రాక్సీ సెట్టింగ్‌లను మార్చు...</translation>
+<translation id="2872961005593481000">షట్ డౌన్ చెయ్యండి</translation>
+<translation id="8735871257195921372">ఇతర Wi-Fi నెట్‌వర్క్...</translation>
+<translation id="2152495481414285304">అనువర్తనాలు</translation>
+<translation id="1690310444231390462">Wi-Fiని నిలిపివేయి</translation>
+<translation id="77565731175229781">నెట్‌వర్క్ సెట్టింగ్‌లు...</translation>
+<translation id="7029814467594812963">సెషన్‌ని నిష్క్రమించు</translation>
+<translation id="7908019422099334890">వాల్‌పేపర్‌ని సెట్ చేయండి...</translation>
+<translation id="6362354186508391853">Ctrl +</translation>
+<translation id="7841796031898165175">సెల్యులార్‌ని ప్రారంభించు</translation>
+<translation id="9072667645353666975">బ్యాటరీ: <ph name="PERCENTAGE"/>%
+<ph name="HOUR"/>h <ph name="MINUTE"/>m</translation>
+<translation id="48607902311828362">ఎయిర్‌ప్లైన్ మోడ్</translation>
 </translationbundle>

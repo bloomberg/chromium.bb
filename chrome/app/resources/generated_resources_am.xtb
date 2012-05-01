@@ -32,7 +32,6 @@
 <translation id="4364779374839574930">ምንም አታሚ አልተገኘም። አባክዎ አታሚ ይጫኑ።</translation>
 <translation id="9013589315497579992">ጥሩ ያልሆነ SSL የተገልጋይ ማረጋገጫ ሰርቲፊኬት።</translation>
 <translation id="7567293639574541773">አባል መ&amp;ርምር</translation>
-<translation id="36224234498066874">የአሰሳ ውሂብ አስወግድ…</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/>ን በጭራሽ አትተርጉም</translation>
 <translation id="5341849548509163798">ከ<ph name="NUMBER_MANY"/> ሰዓታት በፊት</translation>
 <translation id="4422428420715047158">ጎራ፦</translation>
@@ -59,6 +58,7 @@
 <translation id="1510030919967934016">ይህ ገጽ አካባቢዎን ከመከታተል ታግዷል።</translation>
 <translation id="762917759028004464">በአሁኑ ጊዜ መነሻ አሳሹ <ph name="BROWSER_NAME"/> ነው።</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> ሰከንድ ይቀራል</translation>
+<translation id="7740287852186792672">የፍለጋ ውጤቶች</translation>
 <translation id="8487678622945914333">አጉላ</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
 <translation id="6391832066170725637">ፋይሉ ወይም ማውጫው ሊገኘም አልቻለም።</translation>
@@ -68,6 +68,7 @@
 <translation id="4569998400745857585">ድብቅ ቅጥያዎችን የያዘ ምናሌ</translation>
 <translation id="2179052183774520942">የፍለጋ ፕሮግራም አክል</translation>
 <translation id="1621207256975573490">&amp;ፍሬም አስቀምጥ እንደ…</translation>
+<translation id="1165039591588034296">ስህተት</translation>
 <translation id="2278562042389100163">የአሳሻ መስኮት ክፈት</translation>
 <translation id="9218430445555521422">እንደወረደ አዘጋጀው</translation>
 <translation id="5027550639139316293">የኢሜይል ሰርቲፊኬት</translation>
@@ -100,13 +101,13 @@
 <translation id="8879284080359814990">&amp;በትር አሳይ</translation>
 <translation id="3873139305050062481">አባል መ&amp;ርምር</translation>
 <translation id="1556537182262721003">የቅጥያ ማውጫን ወደ መገለጫ መውሰድ አልተቻለም።</translation>
-<translation id="5866557323934807206">ለቀጣይ ጉብኝቶች እነዚህን ቅንጅቶች አጽዳ</translation>
+<translation id="5866557323934807206">ለቀጣይ ጉብኝቶች እነዚህን ቅንብሮች  አጽዳ</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="8820817407110198400">ዕልባቶች</translation>
-<translation id="5191625995327478163">&amp;የቋንቋ ቅንጅቶች…</translation>
+<translation id="5191625995327478163">&amp;የቋንቋ ቅንብሮች …</translation>
 <translation id="5585645215698205895">&amp;ወደ ታች</translation>
 <translation id="6596816719288285829">IP አድራሻ</translation>
-<translation id="1674989413181946727">ኮምፒውተር-ሰፊ የSSL ቅንጅቶች፦</translation>
+<translation id="1674989413181946727">ኮምፒውተር-ሰፊ የSSL ቅንብሮች ፦</translation>
 <translation id="8703575177326907206">ከ<ph name="DOMAIN"/> ጋር ያለዎት ግንኙነት አልተመሰጠረም</translation>
 <translation id="1644574205037202324">ታሪክ</translation>
 <translation id="4256316378292851214">ቪዲዮ አስ&amp;ቀምጥ እንደ…</translation>
@@ -122,7 +123,7 @@
 <translation id="6451650035642342749">ራስ-ከፋች ቅንጅቶችን አስወግድ</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> ሰከንድ</translation>
 <translation id="5098629044894065541">ዕብራይስጥ</translation>
-<translation id="6380224340023442078">የይዘት ቅንጅቶች…</translation>
+<translation id="6380224340023442078">የይዘት ቅንብሮች …</translation>
 <translation id="5486326529110362464">ለግላዊ ቁልፍ የሚገባ እሴት መኖር አለበት።</translation>
 <translation id="8584280235376696778">&amp;ቪዲዮ በአዲስ ትር ክፈት</translation>
 <translation id="2845382757467349449">ሁልጊዜ የዕልባቶች አሞሌን አሳይ</translation>
@@ -154,7 +155,6 @@
 <translation id="4417271111203525803">የአድራሻ መስመር 2</translation>
 <translation id="4307992518367153382">መሠረታዊ</translation>
 <translation id="5912378097832178659">&amp;የፍለጋ ፕሮግራሞችን አርትዕ...</translation>
-<translation id="8272426682713568063">የብድር ካርዶች</translation>
 <translation id="5538092967727216836">ፍሬም ዳግም ጫን</translation>
 <translation id="4813345808229079766">መያያዝ</translation>
 <translation id="411666854932687641">የግል ማህደረ ትውስታ</translation>
@@ -172,7 +172,6 @@ nil</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="1541725072327856736">ግማሽ ወርድ ካታካና</translation>
 <translation id="7456847797759667638">የተቀመጠበትን ቦታ ክፈት…</translation>
-<translation id="1388866984373351434">ውሂብ አሰሳ</translation>
 <translation id="7378627244592794276">አይ</translation>
 <translation id="68541483639528434">ሌሎች ትሮችን ዝጋ</translation>
 <translation id="941543339607623937">ልክ ያልሆነ ግላዊ ቁልፍ።</translation>
@@ -242,7 +241,6 @@ nil</translation>
 <translation id="6622980291894852883">ምስሎችን ማገድ ቀጥል</translation>
 <translation id="4988792151665380515">ህዝባዊ ቁልፍን መላክ አልተሳካም።</translation>
 <translation id="4948468046837535074">የሚከተሉትን ገፆች ክፈት፦</translation>
-<translation id="6978121630131642226">የፍለጋ ፕሮግራሞች</translation>
 <translation id="6745994589677103306">ምንም አትስራ</translation>
 <translation id="855081842937141170">ትር አጣብቅ</translation>
 <translation id="6055392876709372977">PKCS #1 SHA-256 ከRSA ምስጠራ ጋር</translation>
@@ -270,7 +268,7 @@ nil</translation>
 <translation id="5442787703230926158">የማመሳሰል ስህተት…</translation>
 <translation id="6786747875388722282">ቅጥያዎች</translation>
 <translation id="9053965862400494292">ማመሳሰያን ለማዋቀር በሚሞከርበት ጊዜ ስህተት ተፈጥሯል።</translation>
-<translation id="4571852245489094179">ዕልባቶችን እና ቅንጅቶችን ከውጭ አስመጣ</translation>
+<translation id="6514771739083339959">መነሻ ገጽ፦</translation>
 <translation id="4421917670248123270">ዝጋ እና የሚወርዱ ሰርዝ</translation>
 <translation id="5605623530403479164">ሌላ የፍለጋ ፕሮግራሞች</translation>
 <translation id="5710435578057952990">የዚህ ድረ-ገጽ ማንነት አልተረጋገጠም።</translation>
@@ -299,7 +297,6 @@ nil</translation>
 <translation id="175196451752279553">የተ&amp;ዘጋውን ትር ዳግም ክፈት</translation>
 <translation id="5039804452771397117">ፍቀድ</translation>
 <translation id="2266011376676382776">ገጹ(ፆቹ) ምላሽ አይሰጥም(ጡም)</translation>
-<translation id="2714313179822741882">የሃንጉል ግቤት ቅንጅቶች</translation>
 <translation id="3627671146180677314">የNetscape ሰርቲፊኬት የእድሳት ጊዜ</translation>
 <translation id="3371861036502301517">የቅጥያ መጫን ከሽፏል</translation>
 <translation id="644038709730536388">ራስዎን  ከመስመር ላይ ጎጂ ሶፍትዌር እንዴት መከላከል እንደሚችሉ ተጨማሪ ይወቁ።</translation>
@@ -364,13 +361,12 @@ nil</translation>
 <translation id="1201402288615127009">ቀጣይ</translation>
 <translation id="1335588927966684346">መገልገያ፦</translation>
 <translation id="370665806235115550">በመጫን ላይ...</translation>
-<translation id="254416073296957292">&amp;የቋንቋ ቅንጅቶች…</translation>
+<translation id="254416073296957292">&amp;የቋንቋ ቅንብሮች …</translation>
 <translation id="52912272896845572">የግል ቁልፍ ፋይል ልክ አይደለም።</translation>
 <translation id="3232318083971127729">እሴት፦</translation>
 <translation id="4222982218026733335">ልክ ያልሆነ የአገልጋይ ሰርቲፊኬት</translation>
 <translation id="8494214181322051417">አዲስ!</translation>
 <translation id="2135787500304447609">&amp;ከቆመበት ቀጥል</translation>
-<translation id="1813414402673211292">የአሰሳ ውሂብ አስወግድ</translation>
 <translation id="2356762928523809690">የማዘመኛ አገልጋይ የለም (ስህተት፦ <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="219008588003277019">የውስጥ ተገልጋይ ሞዱል፦ <ph name="NEXE_NAME"/></translation>
 <translation id="5436510242972373446">ፍለጋ ከ<ph name="SITE_NAME"/>፦</translation>
@@ -405,7 +401,7 @@ nil</translation>
 <translation id="9009369504041480176">በማስገባት ላይ (<ph name="PROGRESS_PERCENT"/>%)...</translation>
 <translation id="5602600725402519729">ዳግም &amp;ጫን</translation>
 <translation id="7965010376480416255">የጋራ ማህደረ ትውስታ</translation>
-<translation id="6248988683584659830">የፍለጋ ቅንጅቶች</translation>
+<translation id="6248988683584659830">የፍለጋ ቅንብሮች </translation>
 <translation id="7053983685419859001">አግድ</translation>
 <translation id="2727712005121231835">ትክክለኛ መጠን</translation>
 <translation id="8887733174653581061">ሁልጊዜ ከላይ</translation>
@@ -480,13 +476,11 @@ nil</translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> ደቂቃ ይቀራል</translation>
 <translation id="748138892655239008">የሰርቲፊኬት መሰረታዊ እገዳዎች</translation>
 <translation id="457386861538956877">ተጨማሪ...</translation>
-<translation id="5966654788342289517">የግል ነገሮች</translation>
 <translation id="9137013805542155359">የመጀመሪያውን አሳይ</translation>
 <translation id="4792385443586519711">የኩባንያ ስም</translation>
 <translation id="8664389313780386848">የፍሬም ሶርስ &amp;አሳይ</translation>
 <translation id="57646104491463491">የተቀየረበት ቀን</translation>
 <translation id="6507969014813375884">ቀላል ቻይንኛ</translation>
-<translation id="4224803122026931301">የአካባቢ ልዩነቶች</translation>
 <translation id="749452993132003881">ሂራጋንኛ</translation>
 <translation id="8487693399751278191">ዕልባቶችን አሁን አስመጣ…</translation>
 <translation id="4474155171896946103">ለሁሉም ትሮች ዕልባት አብጅ...</translation>
@@ -502,7 +496,6 @@ nil</translation>
 <translation id="8235325155053717782">ስህተት <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
 <translation id="1084824384139382525">የአገናኝ አድ&amp;ራሻ ቅዳ</translation>
-<translation id="5042992464904238023">የድር ይዘት</translation>
 <translation id="6254503684448816922">ቁልፍ ስምምነት ማድረግ</translation>
 <translation id="1181037720776840403">አስወግድ</translation>
 <translation id="59174027418879706">ነቅቷል</translation>
@@ -513,7 +506,6 @@ nil</translation>
 <translation id="1974043046396539880">CRL የማሰራጫ ነጥቦች</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME"/> ጭነትዎን ለማጠናቀቅ ዝግጁ ነው</translation>
 <translation id="18139523105317219">EDI ፓርቲ ስም</translation>
-<translation id="1205605488412590044">የመተግበሪያ አቋራጭ ፍጠር…</translation>
 <translation id="2065985942032347596">ማረጋገጫ ያስፈልጋል</translation>
 <translation id="7222232353993864120">ኢሜይል አድራሻ</translation>
 <translation id="7186367841673660872">ይህ ገጽ ከ<ph name="ORIGINAL_LANGUAGE"/>ወደ<ph name="LANGUAGE_LANGUAGE"/>ተተርጉሟል</translation>
@@ -573,21 +565,18 @@ nil</translation>
 <translation id="720658115504386855">ሆሄያት መልከ ፊደልን ያገናዘቡ አይደሉም</translation>
 <translation id="2454247629720664989">ቁልፍ ቃል</translation>
 <translation id="3950820424414687140">ይግቡ</translation>
-<translation id="2840798130349147766">የድር ውሂብ ጎታዎች</translation>
 <translation id="1628736721748648976">ኢንኮዲንግ</translation>
 <translation id="6521850982405273806">ስህተት ሪፖርት አድርግ</translation>
 <translation id="8026334261755873520">የአሰሳ ውሂብ አስወግድ</translation>
 <translation id="1769104665586091481">አገናኙን በአዲስ &amp;መስኮት ክፈት</translation>
 <translation id="8503813439785031346">የተጣቃሚ ስም</translation>
 <translation id="8651585100578802546">ይህ ገጽ እንደገና እንዲጀምር አስገድድ</translation>
-<translation id="685714579710025096">የቁልፍ ሰሌዳ አቀማመጥ፦</translation>
 <translation id="1361655923249334273">ጥቅም ላይ ያልዋለ</translation>
 <translation id="290555789621781773"><ph name="NUMBER_TWO"/> ደቂቃ</translation>
 <translation id="5434065355175441495">PKCS #1 RSA ምስጠራ</translation>
 <translation id="7073704676847768330">ይህ ምናልባት እየፈለጉ ያሉት ጣቢያ ላይሆን ይችላል!</translation>
 <translation id="8477384620836102176">&amp;አጠቃላይ</translation>
 <translation id="6463795194797719782">&amp;አርትዕ</translation>
-<translation id="4775879719735953715">ነባሪ አሳሽ፦</translation>
 <translation id="4188026131102273494">ቁልፍ ቃል፦</translation>
 <translation id="1720318856472900922">TLS WWW የአገልጋይ ማረጋገጫ</translation>
 <translation id="1436238710092600782">የGoogle መለያ ፍጠር</translation>
@@ -656,10 +645,8 @@ nil</translation>
 <translation id="8448317557906454022">ከ<ph name="NUMBER_ZERO"/> ሰከንድ በፊት</translation>
 <translation id="402759845255257575">የትኛውም ጣቢያ JavaScript እንዲያሄድ አትፍቀድ</translation>
 <translation id="4610637590575890427"><ph name="SITE"/>ን ማለትዎ ይሆን?</translation>
-<translation id="3046388203776734202">የብቅ-ባይ ቅንጅቶች፦</translation>
 <translation id="8349305172487531364">የዕልባቶች አሞሌ</translation>
 <translation id="7208899522964477531">ስለ <ph name="SEARCH_TERMS"/>  ፍለጋ ከ<ph name="SITE_NAME"/></translation>
-<translation id="5584091888252706332">በሚነሳበት ጊዜ</translation>
 <translation id="2482878487686419369">ማስታወቂያዎች</translation>
 <translation id="8004582292198964060">አሳሽ</translation>
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> ቀን</translation>
@@ -668,7 +655,7 @@ nil</translation>
 <translation id="2527167509808613699">ማንኛውም አይነት መያያዝ</translation>
 <translation id="1234466194727942574">ትር መስመር</translation>
 <translation id="4035758313003622889">&amp;ተግባር አስተዳዳሪ</translation>
-<translation id="6356936121715252359">የAdobe Flash Player ማከማቺያ ቅንጅቶች…</translation>
+<translation id="6356936121715252359">የAdobe Flash Player ማከማቺያ ቅንብሮች …</translation>
 <translation id="8793043992023823866">በማስገባት ላይ…</translation>
 <translation id="8106211421800660735">የብድር ካርድ ቁጥር</translation>
 <translation id="8986267729801483565">የሚወርድ ቦታ፦</translation>
@@ -677,9 +664,7 @@ nil</translation>
 <translation id="8318945219881683434">የተሻረ እንዳለ ለማረጋገጥ አልታቸለም።</translation>
 <translation id="994289308992179865">&amp;ደጋግም</translation>
 <translation id="305803244554250778">በነዚህ ቦታዎች ላይ የመተግበሪያ አቋራጮችን ፍጠር፦</translation>
-<translation id="3745810751851099214">ለዚህ ላክ፦</translation>
 <translation id="8877448029301136595">[ወላጅ ማውጫ]</translation>
-<translation id="1963227389609234879">ሁሉንም አስወግድ</translation>
 <translation id="2496180316473517155">ታሪክ አሰሳ</translation>
 <translation id="602251597322198729">ይህ ጣቢያ በርካታ ፋይሎችን ለማውረድ እየሞከር ነው። ይህን መፍቀድ ይፈለጋሉ?</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> ሰዓታት</translation>
@@ -729,14 +714,12 @@ nil</translation>
 <translation id="2371076942591664043">&amp;ሲጠናቀቅ ክፈት</translation>
 <translation id="3920504717067627103">የሰርቲፊኬት ፖሊሲዎች</translation>
 <translation id="155865706765934889">ተችፓድ</translation>
-<translation id="6910239454641394402">የJavaScript ልዩነቶች</translation>
 <translation id="2822854841007275488">አረብኛ</translation>
 <translation id="5857090052475505287">አዲስ አቃፊ</translation>
 <translation id="5178667623289523808">ቀዳሚውን አግኝ</translation>
 <translation id="2815448242176260024">የይለፍ ቃላትን ፈጽሞ አታስቀመጥ</translation>
 <translation id="4122118036811378575">&amp;ቀጣዩን አግኝ</translation>
 <translation id="2610780100389066815">Microsoft Trust List Signing</translation>
-<translation id="1213999834285861200">የምስል ልዩነቶች</translation>
 <translation id="2805707493867224476">ሁሉም ጣቢያዎች ብቅ-ባዮችን እንዲያሳዩ ፍቀድ</translation>
 <translation id="3561217442734750519">ለግላዊ ቁልፍ የሚገባ እሴት ትክክለኛ ዱካ መሆን አለበት።</translation>
 <translation id="6503077044568424649">በይበልጥ የተጎበኙ</translation>
@@ -745,7 +728,7 @@ nil</translation>
 <translation id="1384617406392001144">የአሰሳ ታሪክዎ</translation>
 <translation id="3831099738707437457">&amp;የሆሄ መምረጫ ፓናልን ደብቅ</translation>
 <translation id="1040471547130882189">Plug-in ምላሽ አይሰጥም</translation>
-<translation id="8307664665247532435">በቀጣይ እንደገና ሲጀምር ቅንጅቶች ይወገዳሉ</translation>
+<translation id="8307664665247532435">በቀጣይ እንደገና ሲጀምር ቅንብሮች  ይወገዳሉ</translation>
 <translation id="790025292736025802"><ph name="URL"/> አልተገኘም</translation>
 <translation id="895347679606913382">በመጀመር ላይ…</translation>
 <translation id="3319048459796106952">አዲስ ማን&amp;ነትን የማያሳውቅ መስኮት</translation>
@@ -758,6 +741,7 @@ nil</translation>
 <translation id="5851868085455377790">ሰጪው</translation>
 <translation id="5578327870501192725">ከ<ph name="DOMAIN"/> ጋር ያለዎት ግንኙነት በ<ph name="BIT_COUNT"/>-ቢት ምስጠራ ተመስጥሯል</translation>
 <translation id="869884720829132584">የመተግበሪያዎች ምናሌ</translation>
+<translation id="8240697550402899963">ንቡር/ክላሲክ ገጽታ ተጠቀም</translation>
 <translation id="4779083564647765204">ማጉሊያ</translation>
 <translation id="1526560967942511387">ርእስ አልባ ሰነድ</translation>
 <translation id="5538307496474303926">በማጽዳት ላይ…</translation>
@@ -791,8 +775,6 @@ nil</translation>
 <translation id="7887334752153342268">አባዛ</translation>
 <translation id="9026731007018893674">የወረደ</translation>
 <translation id="7646591409235458998">ኢሜይል፦</translation>
-<translation id="112343676265501403">ተሰኪዎች ልዩነቶች</translation>
-<translation id="770273299705142744">ቅጽ ራስ ሙላ ፡-</translation>
 <translation id="4478664379124702289">አገ&amp;ናኝ አስቀምጥ እንደ…</translation>
 <translation id="8725066075913043281">በድጋሚ ሞክር</translation>
 <translation id="8502249598105294518"><ph name="PRODUCT_NAME"/>ን አብጅ እንዲሁም ተቆጣጠር</translation>
@@ -815,14 +797,12 @@ nil</translation>
 <translation id="9110447413660189038">&amp;ወደ ላይ</translation>
 <translation id="375403751935624634">በአገልጋይ ስህተት ምክንያት የትርጉም ስራው ተሰናክሏል።</translation>
 <translation id="2101225219012730419">ስሪት፦</translation>
-<translation id="1570242578492689919">ቅርጸ ቁምፊዎች እና ኢንኮዲንግ</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="3031557471081358569">ከውጪ ለማስመጣት ንጥሎችን ምረጥ፦</translation>
 <translation id="1368832886055348810">ከግራ ወደ ቀኝ</translation>
 <translation id="3031433885594348982">ከ<ph name="DOMAIN"/> ጋር ያለዎት ግንኙነት በቀላል ምስጠራ ተመስጥሯል</translation>
 <translation id="4047345532928475040">አይተግበሬ</translation>
 <translation id="5771816112378578655">ጭነቱ በሂደት ላይ…</translation>
-<translation id="8820901253980281117">የብቅ-ባይ ልዩነቶች</translation>
 <translation id="1143142264369994168">ሰርቲፊኬት ፈራሚ</translation>
 <translation id="3228279582454007836">ይህን ጣቢያ ከዛሬ በፊት ፈጽሞ ጎብኝተውት አያውቁም።</translation>
 <translation id="2814489978934728345">ይህን ገጽ መጫን አቁም</translation>
@@ -846,6 +826,7 @@ nil</translation>
 <translation id="1618661679583408047">የአገልጋዩ የደኅንነት ሰርቲፊኬት ገና አልጸናም</translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
 <translation id="3065140616557457172">ለመፈለግ ይተይቡ ወይም ለመዳሰስ URL ያስገቡ - ሁሉም ነገር በትክክል ይሰራል።</translation>
+<translation id="977224059380370527">ሜባ</translation>
 <translation id="5509693895992845810">አስቀምጥ &amp;እንደ…</translation>
 <translation id="5986279928654338866">አገልጋዩ <ph name="DOMAIN"/> የተጠቃሚ ስም እና የይለፈ ቃል ይፈልጋል።</translation>
 <translation id="521467793286158632">ሁሉንም የይለፍ ቃሎች አስወግድ</translation>
@@ -866,7 +847,6 @@ nil</translation>
 <translation id="7385854874724088939">ለማተም በሚሞክርበት ጊዜ አንድ ነገር በትክክል እየሄደ አልነበረም። እባክዎ አታሚዎን ይፈትሹና እንደገና ይሞክሩ።</translation>
 <translation id="770015031906360009">ግሪክኛ</translation>
 <translation id="884923133447025588">ምንም የመሻሪያ ዘዴ አልተገኘም።</translation>
-<translation id="6867459744367338172">ቋንቋዎችን እና ግብአት</translation>
 <translation id="7671130400130574146">የሥርዓት ርእሰ አሞሌ እና ጠርዞች</translation>
 <translation id="9170848237812810038">&amp;ቀልብስ</translation>
 <translation id="8135557862853121765"><ph name="NUM_KILOBYTES"/>K</translation>
@@ -898,7 +878,7 @@ nil</translation>
 <translation id="7063412606254013905">ስለ አስጋሪ ማጭበርበሪያዎች ተጨማሪ ይወቁ።</translation>
 <translation id="5295309862264981122">ዳሰሳን አረጋግጥ</translation>
 <translation id="5546865291508181392">አግኝ</translation>
-<translation id="2983818520079887040">ቅንጅቶች...</translation>
+<translation id="2983818520079887040">ቅንብሮች ...</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/> - <ph name="FULL_DATE"/></translation>
 <translation id="1285320974508926690">ይህን ጣቢያ በጭራሽ አትተርጉም</translation>
 <translation id="8954894007019320973">(ቀጣይ)</translation>
@@ -908,7 +888,6 @@ nil</translation>
 <translation id="6845383723252244143">አቃፊ ምረጥ</translation>
 <translation id="8948393169621400698">ሁልጊዜ በ<ph name="HOST"/> ላይ ተሰኪዎች ፍቀድ</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> ሰከንድ</translation>
-<translation id="7006788746334555276">የይዘት ቅንጅቶች</translation>
 <translation id="5139955368427980650">&amp;ክፈት</translation>
 <translation id="4643612240819915418">&amp;ቪዲዮ በአዲስ ትር ክፈት</translation>
 <translation id="2213819743710253654">የገጽ ተግባር</translation>
@@ -921,7 +900,6 @@ nil</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/>K (<ph name="NUM_KILOBYTES_LIVE"/>K በቀጥታ)</translation>
 <translation id="5034259512732355072">ሌላ ማውጫ ምረጥ…</translation>
 <translation id="8885905466771744233">ለተጠቀሰው ቅጥያ ቀድሞውንም ግላዊ ቁልፍ አለ። ይህን ቁልፍ ዳግም ይጠቀሙ ወይም  ይሰርዙት።</translation>
-<translation id="7505152414826719222">የውስጥ ማከማቻ</translation>
 <translation id="5030338702439866405">የቀረበው</translation>
 <translation id="6193618946302416945">ባነበብኩት ቋንቋ ያልሆኑ ገፆችን ትርጉም ማቅረብ እፈልጋለሁ</translation>
 <translation id="129553762522093515">በቅርብ ጊዜ የተዘጉ</translation>
@@ -963,7 +941,6 @@ nil</translation>
 <translation id="2168725742002792683">የፋይል ቅጥያዎች</translation>
 <translation id="1753905327828125965">በይበልጥ የተጎበኙ</translation>
 <translation id="8116972784401310538">&amp;ዕልባት አቀናባሪ</translation>
-<translation id="1849632043866553433">የመተግበሪያ መሸጎጫዎች</translation>
 <translation id="4927301649992043040">ቅጥያ ጠቅልል</translation>
 <translation id="6458308652667395253">JavaScript እገዳን አቀናብር…</translation>
 <translation id="5125751979347152379">ልክ ያልሆነ URL።</translation>
@@ -984,10 +961,8 @@ nil</translation>
 <translation id="281133045296806353">ባለው አሳሽ ክፍለ ጊዜ አዲስ መስኮት ተፈጥሯል።</translation>
 <translation id="6442697326824312960">ትር መጣበቅን አላቅ</translation>
 <translation id="5637380810526272785">የግቤት ዘዴዎች</translation>
-<translation id="6314007596429871800">የመተግበሪያ መሸጎጫ</translation>
 <translation id="9002707937526687073">አ&amp;ትም…</translation>
 <translation id="5556459405103347317">ዳግም ጫን</translation>
-<translation id="8326395326942127023">የውሂብ ጎታ ስም፦</translation>
 <translation id="7507930499305566459">የሁኔታ መላሽ ሰርቲፍኬት</translation>
 <translation id="7339763383339757376">PKCS #7፣ ነጠላ ሰርቲፊኬት</translation>
 <translation id="7587108133605326224">ባልቲክኛ</translation>
@@ -1005,11 +980,12 @@ nil</translation>
 <translation id="7297622089831776169">የግቤት &amp;ዘዴዎች</translation>
 <translation id="862542460444371744">&amp;ቅጥያዎች</translation>
 <translation id="8045462269890919536">ሮማንያን</translation>
-<translation id="6320286250305104236">የአውታረ መረብ ቅንጅቶች…</translation>
+<translation id="6320286250305104236">የአውታረ መረብ ቅንብሮች …</translation>
 <translation id="2927657246008729253">ለውጥ…</translation>
 <translation id="7978412674231730200">የግል ቁልፍ</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>: <ph name="STATUS"/></translation>
 <translation id="4414232939543644979">አዲስ ማን&amp;ነትን የማያሳውቅ መስኮት</translation>
+<translation id="7278870042769914968">ጂቲኬ ገጽታ ተጠቀም</translation>
 <translation id="1902576642799138955">የተገቢነት ክፍለ ጊዜ</translation>
 <translation id="3308006649705061278">ድርጅታዊ መስፈርት (ድመ)</translation>
 <translation id="8912362522468806198">የGoogle መለያ</translation>
@@ -1032,7 +1008,6 @@ nil</translation>
 <translation id="4861833787540810454">&amp;አጫውት</translation>
 <translation id="2552545117464357659">በጣም አዲስ</translation>
 <translation id="5869522115854928033">የተቀመጡ የይለፍ ቃሎች</translation>
-<translation id="1709220265083931213">በመከለያ ስር</translation>
 <translation id="4771973620359291008">ያልታወቀ ስህተት ተከስቷል።</translation>
 <translation id="6898699227549475383">ድርጅት (ድ)</translation>
 <translation id="4333854382783149454">PKCS #1 SHA-1 ከRSA ምስጠራ ጋር</translation>
@@ -1046,7 +1021,6 @@ nil</translation>
 <translation id="3943582379552582368">&amp;ተመለስ</translation>
 <translation id="7607002721634913082">ላፍታ ቆሟል</translation>
 <translation id="480990236307250886">መነሻ ገጹን ክፈት</translation>
-<translation id="5757539081890243754">መነሻ ገጽ</translation>
 <translation id="8007030362289124303">ባትሪ አንሷል</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> ሰዓታት ይቀራሉ</translation>
 <translation id="1753682364559456262">የምስል እገዳን አቀናብር…</translation>
@@ -1092,7 +1066,7 @@ nil</translation>
 <translation id="6735304988756581115">ኩኪዎችንና የሌላ ጣቢያ ውሂብ አሳይ…</translation>
 <translation id="2433507940547922241">መልክ</translation>
 <translation id="839072384475670817">የመተግበሪያ &amp;አቋራጮች ፍጠር…</translation>
-<translation id="6756161853376828318"><ph name="PRODUCT_NAME"/>ን የኔ መነሻ ማሰሻ አድርግ</translation>
+<translation id="6756161853376828318"><ph name="PRODUCT_NAME"/>ን የእኔ  መነሻ ማሰሻ አድርግ</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY"/> (<ph name="ENCODING_NAME"/>)</translation>
 <translation id="9147392381910171771">&amp;አማራጮች</translation>
 <translation id="6264485186158353794">ወደ አስተማማኝ ተመለስ</translation>
@@ -1104,7 +1078,6 @@ nil</translation>
 <translation id="1581962803218266616">በፈላጊ ውስጥ አሳይ</translation>
 <translation id="6096326118418049043">X.500 ስም</translation>
 <translation id="923467487918828349">ሁሉንም አሳይ</translation>
-<translation id="6349678711452810642">መነሻ አድርግ</translation>
 <translation id="6263284346895336537">ዋነኛ ያልሆነ</translation>
 <translation id="6409731863280057959">ብቅ-ባዮች</translation>
 <translation id="3459774175445953971">ለመጨረሻ ጊዜ የተሻሻለው፦</translation>
@@ -1188,5 +1161,6 @@ nil</translation>
 <translation id="7339785458027436441">በሚጽፉበት ጊዜ ሆሄ ያረጋግጡ</translation>
 <translation id="8308427013383895095">በአውታረመረብ ግንኙነት ችግር ምክንያት የትርጉም ስራው ተሰናክሏል።</translation>
 <translation id="1384721974622518101">ከላይ ባለው ሳጥን በቀጥታ መፈለግ እንደሚችሉ ያውቃሉ?</translation>
+<translation id="8203365863660628138">ጭነትን አረጋግጥ</translation>
 <translation id="406259880812417922">(ቁልፍ ቃል፦ <ph name="KEYWORD"/>)</translation>
 </translationbundle>

@@ -5,6 +5,7 @@
 <translation id="8485767968786176057">In diesem Fall stimmt die im Zertifikat angegebene Adresse nicht mit der Adresse der Website überein, die Ihr Browser aufzurufen versucht. Ein möglicher Grund hierfür ist, dass Ihre Kommunikation von einem Hacker abgefangen wird, der ein Zertifikat für eine andere Website vorlegt, wodurch keine Übereinstimmung vorliegen würde. Ein weiterer möglicher Grund ist, dass der Server so konfiguriert ist, dass das gleiche Zertifikat für mehrere Websites zurückgegeben wird, darunter die Website, die Sie aufrufen möchten, obwohl dieses Zertifikat nicht für alle Websites gültig ist. Google Chrome kann Ihnen in jedem Fall bestätigen, dass Sie &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; aufgerufen haben, kann jedoch nicht überprüfen, ob es sich um die gewünschte Website &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; handelt. Wenn Sie fortfahren, sucht Chrome nicht nach weiteren fehlenden Übereinstimmungen.</translation>
 <translation id="5430073640787465221">Ihre Einstellungsdatei ist beschädigt oder ungültig. Google Chrome kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="6676384891291319759">Internetzugriff</translation>
+<translation id="573759479754913123">Über Chrome OS</translation>
 <translation id="5453904507266736060">Google Chrome im Hintergrund ausführen</translation>
 <translation id="2383457833405848421">Über Google Chrome Frame...</translation>
 <translation id="386202838227397562">Schließen Sie alle Google Chrome-Fenster und versuchen Sie es erneut.</translation>
@@ -21,15 +22,16 @@
 <translation id="1761870329818521071">Die Google Chrome Frame-Version kann nicht installiert werden, da sie aktuell ausgeführt wird. Schließen Sie Google Chrome Frame und versuchen Sie es erneut.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="3140883423282498090">Ihre Änderungen werden beim nächsten Neustart von Google Chrome wirksam.</translation>
+<translation id="1773601347087397504">Hilfe für Chrome OS aufrufen</translation>
 <translation id="1872436416934435136">Google Chrome wird nicht mehr aktualisiert, weil Ihr Betriebssystem veraltet ist.</translation>
 <translation id="5339639696978861456">Google Chrome Frame wurde aktualisiert. Bitte starten Sie Ihren Browser neu. Google Chrome-Version: <ph name="TODO_0001"/>, Google Chrome Frame-Version: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Nutzungsbedingungen</translation>
+<translation id="8398145039500709259">Alle Ihre Chrome-Inhalte mit diesem Google-Konto synchronisieren?</translation>
 <translation id="6862759394142635932">Wenn Sie Google Chrome jetzt schließen, wird dieser Download abgebrochen.</translation>
 <translation id="1779550429052479749">Auf dem System wurde eine Installation von Google Chrome bzw. Google Chrome Frame gefunden, die einen Konflikt verursacht. Deinstallieren Sie sie und versuchen Sie es erneut.</translation>
 <translation id="3555616473548901994">Deinstallation ist abgeschlossen.</translation>
 <translation id="8556340503434111824">Es gibt eine neue Version von Google Chrome, die schneller ist, als anderen zuvor.</translation>
 <translation id="4728575227883772061">Installation aufgrund von unbekanntem Fehler fehlgeschlagen. Falls Google Chrome bereits ausgeführt wird, schließen Sie es und versuchen Sie es erneut.</translation>
-<translation id="4727256538826447736">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen, der Server hat  sich jedoch mit einem abgelaufenen Zertifikat ausgewiesen. Es liegen keine Informationen dahin gehend vor, ob dieses Zertifikat seit seinem Ablauf in fremden Besitz gelangt ist. Das bedeutet, dass Google Chrome nicht garantieren kann, dass Sie mit &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; und nicht mit einem Hacker kommunizieren.</translation>
 <translation id="3080151273017101988">Apps im Hintergrund ausführen, wenn Google Chrome geschlossen ist</translation>
 <translation id="4149882025268051530">Das Installationsprogramm konnte das Archiv nicht dekomprimieren. Laden Sie Google Chrome erneut herunter.</translation>
 <translation id="6989339256997917931">Google Chrome wurde aktualisiert, Sie haben den Browser jedoch mindestens 30 Tage nicht verwendet.</translation>
@@ -39,24 +41,29 @@
 <translation id="8227755444512189073">Google Chrome muss zum Verarbeiten von <ph name="SCHEME"/>-Links eine externe Anwendung starten. Der angeforderte Link lautet <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Google Chrome ist abgestürzt. Jetzt neu starten?</translation>
 <translation id="1281036569101707544">Google Chrome-<ph name="TERMS_OF_SERVICE_LINK"/></translation>
-<translation id="3487814320513494737">In Chrome wurde die Seite &quot;Neuer Tab&quot; umgestaltet. Klicken Sie auf diese Labels, um zwischen den Abschnitten zu wechseln. Ihre Einstellungen werden von Chrome gespeichert.</translation>
+<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Google Chrome-Nutzungsbedingungen<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="1393853151966637042">Hilfe für Chrome aufrufen</translation>
+<translation id="3487814320513494737">In Chrome wurde die &quot;Neuer Tab&quot;-Seite umgestaltet. Klicken Sie auf diese Labels, um zwischen den Abschnitten zu wechseln. Ihre Einstellungen werden von Chrome gespeichert.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="6423071462708908582">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen, der Server hat sich jedoch mit einem abgelaufenen Zertifikat ausgewiesen. Es liegen keine Informationen dahin gehend vor, ob dieses Zertifikat seit seinem Ablauf in fremden Besitz gelangt ist. Das bedeutet, dass Google Chrome nicht garantieren kann, dass Sie mit &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; und nicht mit einem Hacker kommunizieren. Die Uhr Ihres Computers zeigt aktuell <ph name="CURRENT_TIME"/> an. Ist das korrekt? Falls nicht, korrigieren Sie dies bitte und aktualisieren Sie diese Seite.</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="3889417619312448367">Google Chrome deinstallieren</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3282568296779691940">In Chrome anmelden</translation>
 <translation id="3089968997497233615">Es gibt eine neue, sicherere Version von Google Chrome.</translation>
 <translation id="5037239767309817516">Schließen Sie alle Google Chrome-Fenster und starten Sie die Anwendung neu, damit diese Änderung wirksam wird.</translation>
 <translation id="7451721381978275812">Ungültige Argumente. Google Chrome Frame kann nicht im Betriebsmodus installiert werden, ohne dass Google Chrome ebenfalls installiert wird.</translation>
 <translation id="5727432509906037972">Möchten Sie Google Chrome wirklich verlassen, obwohl der Download noch nicht abgeschlossen ist?</translation>
-<translation id="1367236238006776563">Die Erweiterung &quot;<ph name="EXTENSION_NAME"/>&quot; wurde zu Chrome hinzugefügt.</translation>
 <translation id="4585888816441913908">Auf diesem Computer ist bereits eine neuere Version von Google Chrome und Google Chrome Frame vorhanden. Sollte die Software nicht funktionieren, deinstallieren Sie Google Chrome und Google Chrome Frame und versuchen Sie es erneut.</translation>
 <translation id="6368958679917195344">Chrome OS wird durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS"/>Open-Source-Software<ph name="END_LINK_CROS_OSS"/> möglich gemacht.</translation>
+<translation id="7459554271817304652">Richten Sie die Synchronisierung ein, um Ihre personalisierten Browserfunktionen online zu speichern und über Google Chrome auf jedem Computer darauf zuzugreifen.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen, der Server hat sich jedoch mit einem Zertifikat ausgewiesen, das von einer Entität ausgestellt wurde, der das Betriebssystem des Computers nicht vertraut. Dies bedeutet möglicherweise, dass der Server seine eigenen Sicherheitsinformationen erzeugt hat, auf die Google Chrome als Identitätsinformation nicht vertrauen kann, oder dass ein Hacker versucht, Ihre Kommunikation abzufangen.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">Google Chrome wurde nicht richtig heruntergefahren. Klicken Sie auf &quot;Wiederherstellen&quot;, um die zuvor geöffneten Seiten erneut anzuzeigen.</translation>
 <translation id="2783467918276328046">Erfahren Sie, welche <ph name="BEGIN_LINK"/>weiteren Vorteile<ph name="END_LINK"/> die Anmeldung bei Chrome bietet.</translation>
 <translation id="2580411288591421699">Die Google Chrome-Version kann nicht installiert werden, da sie aktuell ausgeführt wird. Schließen Sie Google Chrome und versuchen Sie es erneut.</translation>
+<translation id="1457721931618994305">Google Chrome wird aktualisiert...</translation>
 <translation id="7747138024166251722">Das Installationsprogramm konnte kein temporäres Verzeichnis erstellen. Überprüfen Sie, ob freier Speicherplatz und die Rechte zum Installieren von Software vorhanden sind.</translation>
 <translation id="5170938038195470297">Ihr Profil kann nicht verwendet werden, da es von einer neueren Version von Google Chrome stammt. Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte ein anderes Profilverzeichnis an oder verwenden Sie eine neuere Version von Google Chrome.</translation>
 <translation id="8738921060445980047">Unbekannte Version</translation>
@@ -64,7 +71,7 @@
 <translation id="2748463065602559597">Dies ist eine sichere Google Chrome-Seite.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> wurde zu Chrome hinzugefügt.</translation>
 <translation id="9073088951656332330">Keine zu aktualisierende Installation von Google Chrome oder Google Chrome Frame gefunden</translation>
-<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Achtung:<ph name="END_BOLD"/> Google Chrome kann nicht verhindern, dass Ihr Browser-Verlauf von Erweiterungen protokolliert wird. Deaktivieren Sie diese Erweiterung für den Inkognito-Modus über das Kontrollkästchen.</translation>
+<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Achtung:<ph name="END_BOLD"/> Google Chrome kann nicht verhindern, dass Ihr Browserverlauf von Erweiterungen protokolliert wird. Deaktivieren Sie diese Erweiterung für den Inkognito-Modus, indem Sie das entsprechende Kontrollkästchen deaktivieren.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="3904146009066562368">Es ist eine neue Version von Google Chrome verfügbar.</translation>
 <translation id="911206726377975832">Auch die Browserdaten löschen?</translation>
@@ -83,6 +90,7 @@
 <translation id="5941830788786076944">Google Chrome als Standardbrowser festlegen</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">In Google Chrome können Sie auf eine Telefonnummer im Web klicken und diese mit Skype anrufen.</translation>
+<translation id="4573769928351971197">Google Chrome stellt Ihre vorherige Sitzung beim Start wieder her. Einige sitzungsbasierte Einstellungen, wie das Löschen von Daten beim Beenden der Sitzung, werden deaktiviert.</translation>
 <translation id="3612333635265770873">Es ist bekannt, dass ein Modul mit dem gleichen Namen in Konflikt mit Google Chrome steht.</translation>
 <translation id="61852838583753520">&amp;Chrome OS aktualisieren</translation>
 <translation id="6650142020817594541">Diese Website empfiehlt Google Chrome Frame (bereits installiert).</translation>
@@ -100,6 +108,7 @@
 <translation id="3444832043240812445">Diese Seite zeigt nur Informationen zu Ihren letzten Abstürzen, wenn Sie die <ph name="BEGIN_LINK"/>Absturzberichtsfunktion aktivieren<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome reagiert nicht. Jetzt neu starten?</translation>
 <translation id="5318056482164160049">Google Chrome-Plug-in-Host</translation>
+<translation id="5699533844376998780">Die Erweiterung &quot;<ph name="EXTENSION_NAME"/>&quot; wurde hinzugefügt.</translation>
 <translation id="6126631249883707068">Möchten Sie, dass Ihr Passwort von Google Chrome gespeichert wird?</translation>
 <translation id="5046764976540625289">Google Chrome beenden</translation>
 <translation id="2925521875688282191">Melden Sie sich von Chrome OS ab und wieder an, damit diese Änderung wirksam wird.</translation>
@@ -110,6 +119,7 @@
 <translation id="2189123953385179981">Google Chrome OS unterstützt keine externe Anwendung zur Verarbeitung von <ph name="SCHEME"/>-Links. Der angeforderte Link ist <ph name="PROTOLINK"/>.</translation>
 <translation id="711654979569750606">Copyright © 2006-2012 Google Inc. Alle Rechte vorbehalten.</translation>
 <translation id="8205111949707227942">Optional: Nutzungsstatistiken und Absturzberichte zur Verbesserung von Chrome OS automatisch an Google senden</translation>
+<translation id="8345657477105118085">Chrome OS ist auf dem neuesten Stand.</translation>
 <translation id="7196020411877309443">Warum wird diese Meldung angezeigt?</translation>
 <translation id="2769762047821873045">Google Chrome ist nicht als Ihr Standardbrowser festgelegt.</translation>
 <translation id="7825851276765848807">Die Installation ist aufgrund eines unbekannten Fehlers fehlgeschlagen. Laden Sie Google Chrome erneut herunter.</translation>
@@ -117,6 +127,7 @@
 <translation id="2666187591945638709">Google Chrome wurde auf die Version <ph name="VERSION"/> aktualisiert.</translation>
 <translation id="5334545119300433702">Es ist bekannt, dass dieses Modul einen Konflikt mit Google Chrome verursacht.</translation>
 <translation id="4892299120052124303">Wenn Sie Google Chrome jetzt schließen, werden diese Downloads abgebrochen.</translation>
+<translation id="6634887557811630702">Google Chrome ist auf dem neuesten Stand.</translation>
 <translation id="2084710999043359739">Zu Chrome hinzufügen</translation>
 <translation id="4084877369264707540">Google Chrome Frame ist bereits installiert und steht allen Nutzern dieses Computers zur Verfügung. Wenn Sie Google Chrome Frame auf Nutzerebene installieren möchten, müssen Sie vorher die Version auf Systemebene deinstallieren, die von einem Administrator installiert wurde.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -133,11 +144,12 @@
 <translation id="4338032231047635328">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen, der Server hat sich jedoch mit einem Zertifikat ausgewiesen, das Fehler enthält. Google Chrome kann kein Zertifikat mit Fehlern verwenden und die Identität dieser Website nicht überprüfen, zu der Sie eine Verbindung herstellen wollten.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">AutoFill-Einstellungen für Chrome</translation>
-<translation id="7106741999175697885">Task-Manager - Google Chrome</translation>
+<translation id="3836351788193713666">Fast fertig! Starten Sie Google Chrome neu, um die Aktualisierung abzuschließen.</translation>
+<translation id="7106741999175697885">Taskmanager - Google Chrome</translation>
+<translation id="1826482739472655104">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen, der Server hat sich jedoch mit einem Zertifikat ausgewiesen, das noch nicht gültig ist. Es liegen keine Informationen hinsichtlich der Vertrauenswürdigkeit des Zertifikats vor. Daher kann Google Chrome nicht zuverlässig garantieren, dass Sie mit &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; und nicht mit einem Hacker kommunizieren. Die Uhr Ihres Computers zeigt aktuell <ph name="CURRENT_TIME"/> an. Ist das korrekt? Falls nicht, korrigieren Sie dies bitte und aktualisieren Sie diese Seite.</translation>
 <translation id="8449380764213232436">Google Chrome importiert nun die folgenden Elemente aus <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Während der Installation ist ein Fehler im Betriebssystem aufgetreten. Laden Sie Google Chrome erneut herunter.</translation>
 <translation id="5495581687705680288">Module in Google Chrome geladen</translation>
-<translation id="4086010630946365132">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen, der Server hat sich jedoch mit einem Zertifikat ausgewiesen, das noch nicht gültig ist. Es liegen keine Informationen hinsichtlich der Vertrauenswürdigkeit des Zertifikats vor. Daher kann Google Chrome nicht zuverlässig garantieren, dass Sie mit &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; und nicht mit einem Hacker kommunizieren. Vergewissern Sie sich , dass Uhrzeit und Zeitzone auf dem Computer richtig eingestellt sind. Ist dies nicht der Fall, korrigieren Sie diese Werte und aktualisieren Sie die Seite.</translation>
 <translation id="8129812357326543296">Über &amp;Google Chrome</translation>
 </translationbundle>

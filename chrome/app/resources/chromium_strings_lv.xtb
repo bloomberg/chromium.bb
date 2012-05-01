@@ -1,4 +1,150 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
+<translation id="6676384891291319759">Piekļūt internetam</translation>
+<translation id="6373523479360886564">Vai tiešām vēlaties atinstalēt pārlūku Chromium?</translation>
+<translation id="8957741245723343544">Izmaiņas stāsies spēkā nākamajā reizē, kad restartēsiet Chromium OS.</translation>
+<translation id="6510925080656968729">Atinstalēt Chromium</translation>
+<translation id="6893813176749746474">Pārlūks Chromium ir atjaunināts, bet jūs neesat to izmantojis vismaz 30 dienas.</translation>
+<translation id="2770231113462710648">Mainīt noklusējuma pārlūkprogrammu uz:</translation>
+<translation id="6613594504749178791">Izmaiņas stāsies spēkā, kad restartēsiet Chromium.</translation>
+<translation id="3748537968684000502">Jūs skatāt drošu Chromium lapu.</translation>
+<translation id="8971920611044657379">Chromium Frame</translation>
+<translation id="1065672644894730302">Jūsu preferences nevar nolasīt. Dažas funkcijas var nebūt pieejamas, un preferenču izmaiņas netiks saglabātas</translation>
+<translation id="2469082501656808441">Ir pieejama jauna pārlūka Chromium versija.</translation>
+<translation id="4222661289444749267">Chromium Frame atjaunināšana.</translation>
+<translation id="2843244238218937196">Chromium renderētājs</translation>
+<translation id="7128196614940529818">Chromium Frame jau ir instalēta un pieejama visiem šī datora lietotājiem. Ja vēlaties instalēt Chromium Frame lietotāja līmenī, vispirms atinstalējiet sistēmas līmeņa versiju, kuru instalējis administrators.</translation>
+<translation id="731644333568559921">Atjaunināt &amp;Chromium OS</translation>
+<translation id="7421823331379285070">Chromium darbībai nepieciešams Windows XP vai jaunāka operētājsistēma. Dažas funkcijas var nedarboties.</translation>
+<translation id="1185134272377778587">Par Chromium</translation>
+<translation id="4330297532943865716">Sistēmā tika atrasta konfliktējoša Chromium vai Chromium Frame instalācija. Atinstalējiet to un mēģiniet vēlreiz.</translation>
+<translation id="6953661834318318668">Chromium rīkjosla</translation>
+<translation id="7097100943370017396">Chromium vairs netiek atjaunināts, jo jūsu operētājsistēma ir novecojusi.</translation>
+<translation id="2777754523825675150">Chromium atjaunos iepriekšējo sesiju tā startēšanas brīdī. Daži sesijas iestatījumi, piemēram, tie, kas notīra datus iziešanas brīdī, tiks atspējoti.</translation>
+<translation id="4103959775970322855">Chromium ir atjaunināts uz <ph name="VERSION"/></translation>
+<translation id="4285930937574705105">Instalācija neizdevās nenoteiktas kļūdas dēļ. Ja Chromium šobrīd darbojas, aizveriet to un mēģiniet vēlreiz.</translation>
+<translation id="2589479092236095792">Chromium automātiskās aizpildes iestatījumi</translation>
+<translation id="3555616473548901994">Atinstalēšana ir pabeigta.</translation>
+<translation id="2940837712536340734">Chromium OS ir atjaunināta.</translation>
+<translation id="2886012850691518054">Izvēles: palīdziet uzlabot Chromium, automātiski nosūtot lietojuma statistiku un avārijas pārskatus uzņēmumam Google.</translation>
+<translation id="3848258323044014972"><ph name="PAGE_TITLE"/> — Chromium</translation>
+<translation id="1989424089625731201">Jūs mēģinājāt sasniegt vietni &lt;strong&gt;<ph name="DOMAIN"/>&lt;/ strong&gt;, bet servera uzrādītais sertifikāts ietvēra kļūdas. Pārlūks Chromium nevar izmantot šo sertifikātu ar kļūdām un nevar apstiprināt tās vietnes identitāti, ar kuru mēģinājāt izveidot savienojumu.</translation>
+<translation id="3103660991484857065">Instalēšanas programmai neizdevās atarhivēt arhīvu. Lejupielādējiet Chromium vēlreiz.</translation>
+<translation id="2933983827758164650">Ja aizvērsiet to tūlīt, šī lejupielāde tiks atcelta.</translation>
+<translation id="872034308864968620">Ļaut Chromium darboties fonā</translation>
+<translation id="4320129595801648679">Chromium Jaunas cilnes lapa ir pārveidota. Pārslēdziet starp sadaļām, noklikšķinot uz šīm iezīmēm. Chromium iegaumēs jūsu izvēli nākamajai reizei.</translation>
+<translation id="3032787606318309379">Notiek pievienošana pārlūkam Chromium...</translation>
+<translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Brīdinājums!<ph name="END_BOLD"/> Chromium nevar novērst to, ka paplašinājumi ieraksta jūsu pārlūkošanas vēsturi. Lai atspējotu šo paplašinājumu inkognito režīmā, noņemiet atzīmi šai opcijai.</translation>
+<translation id="985602178874221306">Chromium autori</translation>
+<translation id="8628626585870903697">Pārlūka Chromium komplektācijā nav PDF skatītāja, kas nepieciešams funkcijas Drukas priekšskatījums darbībai.</translation>
+<translation id="7138853919861947730">Lai uzlabotu pārlūkošanu, Chromium var izmantot tīmekļa pakalpojumus.</translation>
+<translation id="4179848566211676653">Iziet no Chromium</translation>
+<translation id="3849925841547750267">Diemžēl jūsu Mozilla Firefox iestatījumi nav pieejami pārlūka darbības laikā. Lai šos iestatījumus importētu uz pārlūku Chromium, saglabājiet savu darbu un aizveriet visus Firefox logus. Pēc tam noklikšķiniet uz Turpināt.</translation>
+<translation id="7771626876550251690">Šādā gadījumā adrese, kas norādīta sertifikātā, neatbilst vietnes adresei, kuru centās atvērt jūsu pārlūks. Viens no iespējamajiem iemesliem ir tāds, ka saziņu pārķer uzbrucējs, kas uzrāda citas vietnes sertifikātu, kas izraisītu neatbilstību. Cits iespējamais iemesls ir tāds, ka serveris ir iestatīts uzrādīt vienu un to pašu sertifikātu vairākām vietnēm, tostarp tai, kuru cenšaties apmeklēt, lai gan sertifikāts nav derīgs visām vietnēm. Chromium var droši apgalvot, ka esat sasniedzis vietni &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, bet nevar verificēt, ka tā ir tā pati vietne &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuru vēlējāties apmeklēt. Ja turpināsiet, Chromium turpmāk nepārbaudīs nosaukumu neatbilstības.</translation>
+<translation id="4330585738697551178">Ir zināms, ka šis modulis konfliktē ar Chromium.</translation>
+<translation id="3190315855212034486">Eh! Chromium ir avarējis. Vai restartēt to tūlīt?</translation>
+<translation id="6714487516757221107">Nevienai Chromium vai Chromium Frame instalācijai nav atrasti atjauninājumi.</translation>
+<translation id="4124681358536363708">Šķiet, ka Chromium instalācijas direktorijs tiek lietots. Atsāknējiet datoru un mēģiniet vēlreiz.</translation>
+<translation id="8770560772173120024">Chromium šobrīd importē izlasi/grāmatzīmes.</translation>
+<translation id="6290315939897260265">Netiek izmantots pārlūkā Chromium. Vietturis resursu karšu uzturēšanai sinhronizācijā.</translation>
+<translation id="2977470724722393594">Chromium ir atjaunināts</translation>
+<translation id="9191268552238695869">Administrators šajā sistēmā ir instalējis Chromium, un tas ir pieejams visiem lietotājiem. Sistēmas līmeņa Chromium tūlīt aizstās lietotāja līmeņa instalāciju.</translation>
+<translation id="3509308970982693815">Aizveriet visus Chromium logus un mēģiniet vēlreiz.</translation>
+<translation id="4077262827416206768">Aizveriet visus Chromium logus un atkārtoti palaidiet Chromium, lai šīs izmaiņas stātos spēkā.</translation>
+<translation id="9119843944749246249">Autortiesības © 2006-2012 Chromium autori. Visas tiesības paturētas.</translation>
+<translation id="6944967875980567883">Pārlūkā Chromium ielādētie moduļi</translation>
+<translation id="118298050220780080">Jūs mēģinājāt sasniegt vietni &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serveris uzrādīja sertifikātu, ko izsniegusi iestāde, kurai neuzticas jūsu datora operētājsistēma. Tas var nozīmēt, ka serveris ir ģenerējis savus drošības akreditācijas datus, kam pārlūks Chromium nevar uzticēties, lai noteiktu identitātes informāciju, vai uzbrucējs, iespējams, mēģina pārķert jūsu saziņu.</translation>
+<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="3296368748942286671">Turpināt lietotņu izpildi fonā, kad Chromium ir aizvērts</translation>
+<translation id="2918265831258045091">Vai vēlaties aizvērt Chromium, kamēr notiek lejupielāde?</translation>
+<translation id="6055895534982063517">Ir pieejama jauna Chromium versija, un tā ir ātrāka nekā jebkad agrāk.</translation>
+<translation id="2407806170074302369">Par Chromium Frame...</translation>
+<translation id="5405650547142096840">Noņemt no pārlūka Chromium</translation>
+<translation id="7747138024166251722">Instalētājam neizdevās izveidot pagaidu katalogu. Lūdzu, pārbaudiet, vai diskā pietiek vietas un vai ir atļauja instalēt programmatūru.</translation>
+<translation id="3258596308407688501">Chromium nevar nolasīt savu datu direktoriju un ierakstīt tajā:
+
+<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="4932687624772039103">Chromium neatbalsta <ph name="OS_NAME"/>.</translation>
+<translation id="8738921060445980047">Nezināma versija.</translation>
+<translation id="2485422356828889247">Atinstalēt</translation>
+<translation id="85843667276690461">Saņemt palīdzību par Chromium izmantošanu</translation>
+<translation id="263863604136125912">Startēt Chromium</translation>
+<translation id="2881203820889150661">Pārlūks Chromium nevar izveidot lietojumprogrammas saīsni, jo tas nevar noteikt pašreizējo darbvirsmas vidi.</translation>
+<translation id="4886158514168859177">Šim datoram jau ir jaunākā Chromium Frame versija. Ja programmatūra nedarbojas, atinstalējiet Chromium Frame un mēģiniet vēlreiz.</translation>
+<translation id="911206726377975832">Vai dzēst arī pārlūkošanas datus?</translation>
+<translation id="6734080038664603509">Atjaunināt &amp;Chromium</translation>
+<translation id="8862326446509486874">Jums nav vajadzīgo tiesību, lai instalētu sistēmas līmenī. Mēģiniet vēlreiz palaist instalēšanas programmu kā administrators.</translation>
+<translation id="1774152462503052664">Ļaut Chromium darboties fonā</translation>
+<translation id="9022552996538154597">Pierakstieties pārlūkā Chromium</translation>
+<translation id="4365115785552740256">Chromium ir kļuvis iespējams, pateicoties <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> atklātā pirmkoda projektam un citai <ph name="BEGIN_LINK_OSS"/>atklātā pirmkoda programmatūrai<ph name="END_LINK_OSS"/>.</translation>
+<translation id="7549178288319965365">Par Chromium OS</translation>
+<translation id="6248213926982192922">Padarīt Chromium par noklusējuma pārlūku</translation>
+<translation id="7337881442233988129">Chromium</translation>
+<translation id="3069161343438701711">Chromium darbinieks</translation>
+<translation id="5820394555380036790">Chromium OS</translation>
+<translation id="6757767188268205357">Netraucējiet mani</translation>
+<translation id="7700951445648533795">Vai vēlaties iziet no Chromium brīdī, kad tiek veiktas <ph name="DOWNLOAD_COUNT"/> lejupielādes?</translation>
+<translation id="275588974610408078">Avāriju pārskatu sūtīšana nav pieejama pārlūkā Chromium.</translation>
+<translation id="5909170354645388250">Netiek izmantots pārlūkā Chromium. Vietturis resursu karšu uzturēšanai sinhronizācijā. Tas paredz vienu argumentu: $1.</translation>
+<translation id="3582788516608077514">Notiek Chromium atjaunināšana...</translation>
+<translation id="7223968959479464213">Uzdevumu pārvaldnieks — Chromium</translation>
+<translation id="3838208658251026018">Chromium šobrīd importē no <ph name="BROWSER_COMPONENT"/> šādus vienumus:</translation>
+<translation id="2673087257647337101">Atjaunināšana gandrīz pabeigta! Lai pabeigtu atjaunināšanu, atkārtoti palaidiet Chromium.</translation>
+<translation id="5398878173008909840">Pieejama jauna Chromium versija.</translation>
+<translation id="2648074677641340862">Instalācijas laikā radās operētājsistēmas kļūda. Lejupielādējiet Chromium vēlreiz.</translation>
+<translation id="5942520288919337908">Paplašinājums <ph name="EXTENSION_NAME"/> ir pievienots pārlūkam Chromium.</translation>
+<translation id="8678787945719392857">Vai izmantot šo Google kontu, lai sinhronizētu visus jūsu Chromium piederumus?</translation>
+<translation id="5974438302735098483">Chromium ir atjaunināts</translation>
+<translation id="8621669128220841554">Instalēšana neizdevās nenoteiktas kļūdas dēļ. Lejupielādējiet pārlūku Chromium vēlreiz.</translation>
+<translation id="6717134281241384636">Jūsu profilu nevar izmantot, jo tas ir no jaunākas Chromium versijas.
+
+Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai izmantojiet jaunāku Chromium versiju.</translation>
+<translation id="2712549016134575851">Atklāts konflikts ar citu instalētu lietojumprogrammu.</translation>
+<translation id="9013087743919948559">Pievienot pārlūkam Chromium</translation>
+<translation id="6212496753309875659">Šim datoram jau ir jaunākā Chromium versija. Ja programmatūra nedarbojas, atinstalējiet pārlūku Chromium un mēģiniet vēlreiz.</translation>
+<translation id="3014684866565908571">Chromium utilītprogramma</translation>
+<translation id="1298199220304005244">Saņemt palīdzību par Chromium OS izmantošanu</translation>
+<translation id="667672506951335584">Ja aizvērsiet Chromium tūlīt, šīs lejupielādes tiks atceltas.</translation>
+<translation id="1691304614444223855">Lietojumprogramma Chromium Frame ir atjaunināta. Palaidiet pārlūku atkārtoti. Chromium versija: <ph name="TODO_0001"/>, Chromium Frame versija: <ph name="TODO_0002"/></translation>
+<translation id="1105130903706696483">Chromium netika aizvērts pareizi. Lai atvērtās lapas atvērtu no jauna, noklikšķiniet uz Atjaunot.</translation>
+<translation id="1929939181775079593">Chromium nereaģē. Vai restartēt to tūlīt?</translation>
+<translation id="6089587093203430357">Dinamiskā meklēšana</translation>
+<translation id="2966088006374919794">Chromium ir jāpalaiž ārēja lietojumprogramma, lai rīkotos ar <ph name="SCHEME"/> saitēm. Pieprasītā saite ir <ph name="PROTOLINK"/>.</translation>
+<translation id="5699533844376998780">Paplašinājums <ph name="EXTENSION_NAME"/> ir pievienots.</translation>
+<translation id="8046283042877435986">Šī vietne iesaka Chromium Frame (jau instalēta).</translation>
+<translation id="6287463253129672858">Nevar instalēt to pašu Chromium Frame versiju, kas jau šobrīd darbojas. Aizveriet Chromium Frame un mēģiniet vēlreiz.</translation>
+<translation id="2558235863893655150">Vai vēlaties, lai Chromium saglabātu jūsu paroli?</translation>
+<translation id="1688750314291223739">Iestatiet sinhronizāciju, lai saglabātu savas personalizētās pārlūka funkcijas tīmeklī un piekļūtu tām no Chromium jebkurā datorā.</translation>
+<translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
+<translation id="8865765905101981392">Interneta pārlūkprogramma</translation>
+<translation id="2910007522516064972">Par &amp;Chromium</translation>
+<translation id="8453117565092476964">Instalēšanas programmas arhīvs ir bojāts vai nav derīgs. Lejupielādējiet Chromium vēlreiz.</translation>
+<translation id="309634601461115233">Lai šīs izmaiņas stātos spēkā, izrakstieties no Chromium OS un no jauna pierakstieties tajā.</translation>
+<translation id="3249425904492147663">Jūs mēģinājāt sasniegt vietni &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serveris uzrādīja sertifikātu, kuram beidzies derīguma termiņš. Nav pieejama informācija, kas apliecinātu, ka sertifikāts ir apdraudēts, kopš tam ir beidzies derīguma termiņš. Tas nozīmē, ka pārlūks Chromium nevar garantēt, ka jūs sazināties ar &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, nevis uzbrucēju. Jūsu datora pulkstenis šobrīd ir iestatīts uz <ph name="CURRENT_TIME"/>. Vai tas ir pareizs? Ja tā nav, novērsiet kļūdu un atsvaidziniet šo lapu.</translation>
+<translation id="7196020411877309443">Kāpēc es redzu šo dialoglodziņu?</translation>
+<translation id="7483335560992089831">Nevar instalēt to pašu Chromium versiju, kas jau šobrīd darbojas. Aizveriet Chromium un mēģiniet vēlreiz.</translation>
+<translation id="7641113255207688324">Chromium nav jūsu noklusējuma pārlūks.</translation>
+<translation id="2174090135251659490">Jūs mēģinājāt sasniegt vietni &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serveris uzrādīja sertifikātu, kas pagaidām nav derīgs. Nav pieejama informācija, kas apliecinātu, ka sertifikāts ir uzticams. Pārlūks Chromium nevar uzticami garantēt, ka jūs sazināties ar &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, nevis uzbrucēju. Jūsu datora pulkstenis šobrīd ir iestatīts uz <ph name="CURRENT_TIME"/>. Vai tas ir pareizs? Ja tā nav, novērsiet kļūdu un atsvaidziniet šo lapu.</translation>
+<translation id="2119636228670142020">Par &amp;Chromium OS</translation>
+<translation id="1708666629004767631">Ir pieejama jauna un drošāka Chromium versija.</translation>
+<translation id="5859758987635973787">Chromium ir atjaunināts (<ph name="VERSION"/>)</translation>
+<translation id="8616882682724010661">Skatiet <ph name="BEGIN_LINK"/>citas priekšrocības<ph name="END_LINK"/>, kas saistītas ar pierakstīšanos pārlūkā Chromium.</translation>
+<translation id="378917192836375108">Chromium ļauj jums noklikšķināt uz tālruņa numura un zvanīt uz to pakalpojumā Skype!</translation>
+<translation id="7503101070699687603">Chromium spraudņa saimniekdators</translation>
+<translation id="9013262824292842194">Pārlūka Chromium izmantošanai nepieciešama operētājsistēma Windows Vista vai Windows XP ar SP2, vai jaunāka tās versija.</translation>
+<translation id="1967743265616885482">Ir zināms, ka modulis ar tādu pašu nosaukumu konfliktē ar Chromium.</translation>
+<translation id="4224199872375172890">Chromium ir atjaunināts.</translation>
+<translation id="5498103559159810756">Chromium izmanto jūsu noklusējuma meklētājprogrammu — <ph name="PAGE_TITLE"/>. Vai vēlaties turpināt lietot noklusējuma meklētājprogrammu?</translation>
+<translation id="5862307444128926510">Laipni lūdzam pārlūkā Chromium!</translation>
+<translation id="1622565934590470080">Šim datoram jau ir jaunākā Chromium un Chromium Frame versija. Ja programmatūra nedarbojas, atinstalējiet gan Chromium, gan Chromium Frame un mēģiniet vēlreiz.</translation>
+<translation id="7318036098707714271">Jūsu preferenču fails ir bojāts vai nederīgs. Chromium nespēj atkopt jūsu iestatījumus.</translation>
+<translation id="7123348595797445166">Izmēģināt (jau instalēta)</translation>
+<translation id="6403826409255603130">Chromium ir tīmekļa pārlūks, kas darbina tīmekļa lapas un lietojumprogrammas zibenīgā ātrumā. Tas ir ātrs, stabils un ērti lietojams. Pārlūkojiet tīmekli vēl drošāk ar aizsardzību pret ļaunprātīgu programmatūru un pikšķerēšanu, kas iebūvēta pārlūkā Chromium.</translation>
+<translation id="2927042866129133279">Nederīgi argumenti. Chromium Frame nevar instalēt gatavā režīmā, ja Chromium netiek instalēts.</translation>
+<translation id="2572494885440352020">Chromium palīgs</translation>
+<translation id="442817494342774222">Pārlūks Chromium ir konfigurēts automātiskai palaišanai, kad jūs startējat savu datoru.</translation>
+<translation id="8974095189086268230">Chrome OS ir kļuvusi iespējama, pateicoties papildu <ph name="BEGIN_LINK_CROS_OSS"/>atklātā pirmkoda programmatūrai<ph name="END_LINK_CROS_OSS"/>.</translation>
+<translation id="6154296300983386343">Lai pabeigtu atjaunināšanu, atkārtoti palaidiet Chromium</translation>
+<translation id="1221340462641866827">Chromium OS neatbalsta ārējas lietojumprogrammas palaišanu, lai rīkotos ar <ph name="SCHEME"/> saitēm. Pieprasītā saite ir <ph name="PROTOLINK"/>.</translation>
 </translationbundle>

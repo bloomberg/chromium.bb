@@ -5,6 +5,7 @@
 <translation id="8485767968786176057">В данном случае указанный в сертификате адрес не совпадает с адресом веб-сайта, к которому обращался ваш браузер. Одна из возможных причин – вмешательство злоумышленника, представившего сертификат другого веб-сайта, что могло привести к несоответствию. Вторая возможная причина заключается в том, что сервер предоставляет один и тот же сертификат для разных веб-сайтов, включая тот, который вы хотели посетить, даже если сертификат недействителен ни для одного из них. Google Chrome может точно определить, что вы перешли на &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, но не может подтвердить, что этот сайт аналогичен &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, который вы хотели посетить. Если вы продолжите работу, дальнейшие несоответствия проверяться не будут.</translation>
 <translation id="5430073640787465221">Файл настроек поврежден или недействителен. Google Chrome не может восстановить ваши параметры.</translation>
 <translation id="6676384891291319759">Доступ в Интернет</translation>
+<translation id="573759479754913123">О Chrome OS</translation>
 <translation id="5453904507266736060">Разрешить работу Google Chrome в фоновом режиме</translation>
 <translation id="2383457833405848421">О Chrome Frame</translation>
 <translation id="386202838227397562">Закройте все окна Chrome и повторите попытку снова.</translation>
@@ -21,15 +22,16 @@
 <translation id="1761870329818521071">Невозможно установить ту же самую версию Google Chrome Frame, которая сейчас выполняется. Закройте Google Chrome Frame и повторите попытку.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="3140883423282498090">Внесенные изменения станут активны после перезапуска Google Chrome.</translation>
+<translation id="1773601347087397504">Помощь по использованию Chrome OS</translation>
 <translation id="1872436416934435136">Обновление Google Chrome невозможно, поскольку ваша операционная система устарела.</translation>
 <translation id="5339639696978861456">Установлено обновление для Chrome Frame. Перезапустите браузер. Версия Chrome: <ph name="TODO_0001"/>; версия Chrome Frame: <ph name="TODO_0002"/>.</translation>
 <translation id="4281844954008187215">Условия использования</translation>
+<translation id="8398145039500709259">Использовать этот аккаунт Google для синхронизации данных из Chrome?</translation>
 <translation id="6862759394142635932">Если закрыть Google Chrome сейчас, загрузка будет остановлена.</translation>
 <translation id="1779550429052479749">В системе установлена конфликтующая версия Google Chrome или Google Chrome Frame. Удалите ее и повторите попытку.</translation>
 <translation id="3555616473548901994">Удаление завершено.</translation>
 <translation id="8556340503434111824">Доступна новая версия Google Chrome, которая стала еще быстрее.</translation>
 <translation id="4728575227883772061">Установка не удалась из-за неизвестной ошибки. Закройте все окна Google Chrome и повторите попытку снова.</translation>
-<translation id="4727256538826447736">Вы попытались перейти на сайт &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но сервер предоставил просроченный сертификат. Данные о безопасности сертификата после истечения его срока годности отсутствуют. Таким образом, Google Chrome не гарантирует, что это действительно &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не атака.</translation>
 <translation id="3080151273017101988">Продолжать работу приложений в фоновом режиме после закрытия Google Chrome</translation>
 <translation id="4149882025268051530">Программе установки не удалось выполнить извлечение файлов из архива. Загрузите Google Chrome снова.</translation>
 <translation id="6989339256997917931">Google Chrome был обновлен, однако вы не использовали его в течение последних 30 дней.</translation>
@@ -39,24 +41,29 @@
 <translation id="8227755444512189073">Браузеру Google Chrome требуется запустить внешнее приложение для обработки ссылок <ph name="SCHEME"/>. Запрошенная ссылка: <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Произошел сбой Google Chrome. Перезапустить?</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> для Google Chrome</translation>
+<translation id="5204098752394657250"> <ph name="TERMS_OF_SERVICE_LINK"/>Условия использования<ph name="END_TERMS_OF_SERVICE_LINK"/> Google Chrome</translation>
+<translation id="1393853151966637042">Помощь по использованию Chrome</translation>
 <translation id="3487814320513494737">Страница быстрого доступа в Chrome изменена. Чтобы переключиться на нужный раздел, нажмите на соответствующий ярлык. Ваш выбор будет сохранен.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="6423071462708908582">Вы пытаетесь войти в &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, однако сервер представил просроченный сертификат безопасности. Неизвестно, был ли этот сертификат признан небезопасным с момента истечения срока действия. Это значит, что Chromium не может гарантировать, что вы обмениваетесь данными с &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не с сайтом злоумышленников. Часы вашего компьютера показывают <ph name="CURRENT_TIME"/>. Проверьте точность времени. Если оно неверно, исправьте его и обновите страницу.</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="3889417619312448367">Удалить Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3282568296779691940">Вход в Chrome</translation>
 <translation id="3089968997497233615">Доступна новая, более безопасная версия Google Chrome.</translation>
 <translation id="5037239767309817516">Чтобы изменения вступили в силу, закройте все окна Google Chrome и перезапустите браузер.</translation>
 <translation id="7451721381978275812">Недопустимые аргументы. Чтобы установить в режиме готовности Google Chrome Frame, необходимо также установить Google Chrome.</translation>
 <translation id="5727432509906037972">Закрыть Google Chrome, несмотря на то, что идет загрузка?</translation>
-<translation id="1367236238006776563">Расширение &quot;<ph name="EXTENSION_NAME"/>&quot; установлено.</translation>
 <translation id="4585888816441913908">На компьютере уже установлены последние версии Google Chrome и Google Chrome Frame. Если они не работают, удалите их и установите снова.</translation>
 <translation id="6368958679917195344">Своим появлением Chrome OS обязана дополнительному <ph name="BEGIN_LINK_CROS_OSS"/>программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS"/>.</translation>
+<translation id="7459554271817304652">Чтобы сохранить персонализированные функции для работы в Интернете и получить доступ к ним из Google Chrome на любом компьютере, необходимо настроить синхронизацию.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">Вы попытались перейти на сайт &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но сервер предоставил сертификат, выданный организацией, которая не классифицируется операционной системой компьютера как доверенная. Это может означать, что сервер имеет свои учетные данные защиты, которым Google Chrome не может доверять, или что вмешался злоумышленник.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">Работа Google Chrome была завершена некорректно. Чтобы вернуться к просматриваемым страницам, нажмите &quot;Восстановить&quot;.</translation>
 <translation id="2783467918276328046">Ознакомьтесь с <ph name="BEGIN_LINK"/>дополнительными преимуществами<ph name="END_LINK"/> входа в Chrome</translation>
 <translation id="2580411288591421699">Не удается установить версию Google Chrome, аналогичную уже выполняемой. Закройте Google Chrome и повторите попытку.</translation>
+<translation id="1457721931618994305">Выполняется обновление Google Chrome...</translation>
 <translation id="7747138024166251722">Программе установки не удалось создать временный каталог. Возможно, у вас нет прав на установку приложений или недостаточно места на диске.</translation>
 <translation id="5170938038195470297">Использовать этот профиль невозможно, так как он был создан в более новой версии Google Chrome. Некоторые функции могут быть недоступны. Укажите другой каталог профиля или установите более новую версию Chrome.</translation>
 <translation id="8738921060445980047">Неизвестная версия</translation>
@@ -64,7 +71,7 @@
 <translation id="2748463065602559597">Вы просматриваете безопасную страницу Google Chrome.</translation>
 <translation id="7185038942300673794">Расширение &quot;<ph name="EXTENSION_NAME"/>&quot; установлено.</translation>
 <translation id="9073088951656332330">Не найдены Google Chrome или Google Chrome Frame, обновление невозможно.</translation>
-<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Внимание!<ph name="END_BOLD"/> Google Chrome не может предотвратить запись расширений в историю просмотренных страниц. Чтобы отключить это расширение в режиме инкогнито, отмените этот параметр.</translation>
+<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Внимание!<ph name="END_BOLD"/> Google Chrome не может запретить расширениям записывать историю браузера. Чтобы отключить это расширение в режиме инкогнито, снимите этот флажок.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="3904146009066562368">Доступна новая версия Google Chrome</translation>
 <translation id="911206726377975832">Также удалить данные о работе в браузере?</translation>
@@ -83,6 +90,7 @@
 <translation id="5941830788786076944">Назначить Google Chrome браузером по умолчанию</translation>
 <translation id="4990567037958725628">Google Chrome – Канарейка</translation>
 <translation id="4561051373932531560">В Google Chrome вы можете нажать на любой номер телефона и позвонить на него через Skype!</translation>
+<translation id="4573769928351971197">Google Chrome восстановит ваш предыдущий сеанс при следующем запуске. Некоторые настройки сеанса, в частности удаление данных при выходе, будут отключены.</translation>
 <translation id="3612333635265770873">Известно, что модуль с таким названием конфликтует с Google Chrome.</translation>
 <translation id="61852838583753520">Обновить &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Для просмотра этого сайта рекомендуется использовать Google Chrome Frame (уже установлено).</translation>
@@ -100,6 +108,7 @@
 <translation id="3444832043240812445">Информация о недавних сбоях отображается на этой странице только при <ph name="BEGIN_LINK"/>включенной функции отчетов о сбоях<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome не отвечает. Перезапустить сейчас?</translation>
 <translation id="5318056482164160049">Хост подключаемых модулей Google Chrome</translation>
+<translation id="5699533844376998780">Расширение <ph name="EXTENSION_NAME"/> успешно добавлено.</translation>
 <translation id="6126631249883707068">Сохранить пароль в Google Chrome?</translation>
 <translation id="5046764976540625289">Закрыть Chrome</translation>
 <translation id="2925521875688282191">Выйдите из Chrome OS и войдите снова, чтобы это изменение вступило в силу.</translation>
@@ -110,6 +119,7 @@
 <translation id="2189123953385179981">Google Chrome OS не поддерживает запуск внешних приложений для обработки ссылок типа <ph name="SCHEME"/>. Запрошенная ссылка: <ph name="PROTOLINK"/>.</translation>
 <translation id="711654979569750606">© Google Inc., 2006–2012. Все права защищены.</translation>
 <translation id="8205111949707227942">(Необязательно) Помогите улучшить Chrome OS, разрешив автоматическую отправку статистики использования и отчетов о сбоях в Google.</translation>
+<translation id="8345657477105118085">Последняя версия Chrome OS уже установлена.</translation>
 <translation id="7196020411877309443">Что это?</translation>
 <translation id="2769762047821873045">Google Chrome не является браузером по умолчанию.</translation>
 <translation id="7825851276765848807">Не удалось выполнить установку из-за неизвестной ошибки. Загрузите Google Chrome еще раз.</translation>
@@ -117,6 +127,7 @@
 <translation id="2666187591945638709">Google Chrome обновлен до версии <ph name="VERSION"/></translation>
 <translation id="5334545119300433702">Этот модуль конфликтует с Google Chrome.</translation>
 <translation id="4892299120052124303">Если закрыть Google Chrome сейчас, загрузки будут остановлены.</translation>
+<translation id="6634887557811630702">Последняя версия Google Chrome уже установлена.</translation>
 <translation id="2084710999043359739">Установить</translation>
 <translation id="4084877369264707540">Платформа Google Chrome Frame уже установлена и доступна всем пользователям этого компьютера. Чтобы установить версии Google Chrome Frame на уровне пользователя, сначала удалите системную версию, установленную администратором.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -133,11 +144,12 @@
 <translation id="4338032231047635328">Вы попытались перейти на сайт &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но предоставленный сервером сертификат содержит ошибки. Google Chrome не может использовать такой сертификат и не имеет возможности осуществить проверку сайта, с которым вы пытались установить соединение.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Настройки автозаполнения в Chrome</translation>
+<translation id="3836351788193713666">Перезапустите Google Chrome для завершения обновления.</translation>
 <translation id="7106741999175697885">Диспетчер задач - Google Chrome</translation>
+<translation id="1826482739472655104">Вы пытаетесь получить доступ к &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но сертификат этого сервера еще не действителен. Неизвестно, насколько можно доверять этому сертификату. Google Chrome не может утверждать, что &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; не содержит угроз злоумышленников. Часы на вашем компьютере показывают <ph name="CURRENT_TIME"/>. Проверьте точность времени. Если оно неверно, исправьте его и обновите страницу.</translation>
 <translation id="8449380764213232436">Google Chrome выполняет импорт следующих элементов из раздела <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">При установке произошла ошибка операционной системы. Загрузите Google Chrome снова.</translation>
 <translation id="5495581687705680288">Модули, загруженные в Google Chrome</translation>
-<translation id="4086010630946365132">Вы попытались перейти на сайт &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но сервер предоставил сертификат, который еще не является действительным. Данные о его надежности отсутствуют. Google Chrome не гарантирует, что это действительно &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не атака. Убедитесь, что на вашем компьютере правильно установлено время и часовой пояс. В противном случае внесите исправления и обновите страницу.</translation>
 <translation id="8129812357326543296">О браузере &amp;Google Chrome</translation>
 </translationbundle>

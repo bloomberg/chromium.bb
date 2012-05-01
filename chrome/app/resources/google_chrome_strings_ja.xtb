@@ -5,6 +5,7 @@
 <translation id="8485767968786176057">証明書に記載されているアドレスが、ブラウザがアクセスしようとしたウェブサイトのアドレスと一致しません。理由の 1 つとして、通信が悪意のあるユーザーによって傍受され、そのユーザーから別のウェブサイトの証明書が提示されているために、アドレスが一致しないことが考えられます。あるいは、アクセスしようとしているウェブサイトを含む複数のウェブサイトについて同じ証明書を返すようにサーバーが設定されているが、その証明書がすべてのサイトについて有効とは限らないことが考えられます。Google Chrome では、アクセスしているサイトが確かに &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; であることは保証できますが、アクセスしようとした &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; と同じサイトであるかどうかは検証できません。次に進むと、以降 Chrome ではアドレスの不一致がチェックされなくなります。</translation>
 <translation id="5430073640787465221">ユーザー設定ファイルが壊れているか無効です。設定を復元できません。</translation>
 <translation id="6676384891291319759">インターネットにアクセス</translation>
+<translation id="573759479754913123">Chrome OS について</translation>
 <translation id="5453904507266736060">Google Chrome のバックグラウンドでの実行を許可する</translation>
 <translation id="2383457833405848421">Chrome フレームについて...</translation>
 <translation id="386202838227397562">すべての Google Chrome ウィンドウを閉じてからもう一度お試しください。</translation>
@@ -21,15 +22,16 @@
 <translation id="1761870329818521071">実行中の Google Chrome Frame と同じバージョンをインストールすることはできません。Google Chrome Frame を閉じてからもう一度お試しください。</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="3140883423282498090">変更内容は次に Google Chrome を再起動したときに有効になります。</translation>
+<translation id="1773601347087397504">Chrome OS の使用に関するアドバイス</translation>
 <translation id="1872436416934435136">お使いのオペレーティング システムはサポートが終了しているため、今後 Google Chrome は更新されません。</translation>
 <translation id="5339639696978861456">Chrome Frame が更新されました。ブラウザを再起動してください。Chrome のバージョン: <ph name="TODO_0001"/>、Chrome Frame のバージョン: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">利用規約</translation>
+<translation id="8398145039500709259">この Google アカウントを使用してすべての Chrome 設定を同期しますか？</translation>
 <translation id="6862759394142635932">Google Chrome を終了すると、ダウンロードはキャンセルされます。</translation>
 <translation id="1779550429052479749">システム上に競合している Google Chrome または Google Chrome Frame が見つかりました。こちらをアンインストールしてからもう一度お試しください。</translation>
 <translation id="3555616473548901994">アンインストールが完了しました。</translation>
 <translation id="8556340503434111824">Google クロームブラウザがバージョンアップ！是非お試しください。</translation>
 <translation id="4728575227883772061">原因不明のエラーによりインストールが失敗しました。実行中の Google Chrome を終了してからやり直してください。</translation>
-<translation id="4727256538826447736">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書は有効期限が切れています。この証明書の有効期限が切れた後に証明書がセキュリティ侵害を受けたのかどうかについて確認できる情報はありません。つまり Google Chrome では、悪意のあるユーザーでなく &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; と確かに通信していることを保証することはできません。</translation>
 <translation id="3080151273017101988">Google Chrome を閉じた際にバックグラウンド アプリケーションの処理を続行する</translation>
 <translation id="4149882025268051530">インストーラー アーカイブを解凍できませんでした。Google Chrome をダウンロードし直してください。</translation>
 <translation id="6989339256997917931">Google Chrome が更新されましたが、30 日間以上使用されていません。</translation>
@@ -39,24 +41,29 @@
 <translation id="8227755444512189073"><ph name="SCHEME"/> リンクを処理するには外部アプリケーションの起動が必要です。リクエストされたリンクは <ph name="PROTOLINK"/> です。</translation>
 <translation id="8290100596633877290">エラー: Google Chrome で問題が発生しました。今すぐ再起動しますか？</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/>利用規約<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="1393853151966637042">Chrome の使用に関するアドバイス</translation>
 <translation id="3487814320513494737">Chrome の新しいタブ ページが改良されました。これらのラベルをクリックしてセクションを切り替えることができます。設定は次回使用時にも引き継がれます。</translation>
 <translation id="1697213158865901863">Google Chrome フレーム</translation>
+<translation id="6423071462708908582">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書は有効期限が切れています。この証明書の有効期限が切れた後に証明書がセキュリティ侵害を受けたのかどうかについて確認できる情報はありません。つまり Google Chrome では、悪意のあるユーザーでなく &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; と確かに通信していることを保証することはできません。お使いのパソコンの時刻は現在 <ph name="CURRENT_TIME"/> に設定されています。時刻が正しくない場合は、エラーを修正してからこのページを更新してください。</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="3889417619312448367">Google Chrome をアンインストール</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3282568296779691940">Chrome にログイン</translation>
 <translation id="3089968997497233615">Google クロームブラウザがより速く、さらに便利に。いますぐトライ！</translation>
 <translation id="5037239767309817516">この変更を反映するには、すべての Google Chrome ウィンドウを閉じてからもう一度起動してください。</translation>
 <translation id="7451721381978275812">引数が無効です。Google Chrome Frame を準備完了モードでインストールするには、一緒に Google Chrome をインストールする必要があります。</translation>
 <translation id="5727432509906037972">現在ダウンロードを実行中です。Google Chrome を終了してよろしいですか？</translation>
-<translation id="1367236238006776563">拡張機能「<ph name="EXTENSION_NAME"/>」が Chrome に追加されました。</translation>
 <translation id="4585888816441913908">新しいバージョンの Google Chrome と Google Chrome Frame が既にインストールされています。ソフトウェアが動作しない場合は、Google Chrome と Google Chrome Frame の両方をアンインストールしてからもう一度お試しください。</translation>
 <translation id="6368958679917195344">Chrome OS は、<ph name="BEGIN_LINK_CROS_OSS"/>オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS"/>が追加されて実現しました。</translation>
+<translation id="7459554271817304652">同期を設定すると、パーソナライズされたブラウザ機能をウェブ上に保存して、どのパソコンの Google Chrome からでも使用できるようになります。</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書の発行元は、お使いのパソコンのオペレーティング システムによって信頼されていない発行元です。サーバーが独自のセキュリティ認証情報を生成し、それが Google Chrome では認証情報として信頼できないものであるか、悪意のあるユーザーが通信を傍受しようとしている可能性があります。</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">前回のセッション中に Google Chrome は強制終了されました。開いていたページをすべて復元するには、[復元] をクリックしてください。</translation>
 <translation id="2783467918276328046">Chrome にログインするとその他にも<ph name="BEGIN_LINK"/>さまざまなメリット<ph name="END_LINK"/>があります。</translation>
 <translation id="2580411288591421699">実行中の Google Chrome と同じバージョンをインストールすることはできません。Google Chrome を閉じてからもう一度お試しください。</translation>
+<translation id="1457721931618994305">Google Chrome を更新しています...</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
 <translation id="5170938038195470297">バージョンが新しい Google Chrome のプロフィールは使用できません。一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください。</translation>
 <translation id="8738921060445980047">バージョンが不明です。</translation>
@@ -83,6 +90,7 @@
 <translation id="5941830788786076944">Google Chrome を既定のブラウザにする</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
+<translation id="4573769928351971197">Google Chrome は、起動時に前回のセッションを復元します。終了時のデータの消去など、セッションベースの設定の一部は無効になります。</translation>
 <translation id="3612333635265770873">同じ名前のモジュールは Google Chrome と競合することがわかっています。</translation>
 <translation id="61852838583753520">Chrome OS を更新(&amp;C)</translation>
 <translation id="6650142020817594541">このサイトでは Google Chrome Frame（インストール済み）が推奨されています。</translation>
@@ -100,6 +108,7 @@
 <translation id="3444832043240812445"><ph name="BEGIN_LINK"/>障害レポートを有効<ph name="END_LINK"/>にした場合にのみ、このページに最近の障害情報が表示されます。</translation>
 <translation id="8614913330719544658">Google Chrome が応答しません。今すぐ再起動しますか？</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
+<translation id="5699533844376998780">拡張機能「<ph name="EXTENSION_NAME"/>」を追加しました。</translation>
 <translation id="6126631249883707068">Google Chrome でパスワードを保存しますか？</translation>
 <translation id="5046764976540625289">Chrome を終了</translation>
 <translation id="2925521875688282191">この変更を反映するには、Chrome OS からログアウトし、もう一度ログインしてください。</translation>
@@ -110,6 +119,7 @@
 <translation id="2189123953385179981">Google Chrome OS では、<ph name="SCHEME"/> リンクの処理に必要な外部アプリケーションの起動がサポートされていません。リクエストされたリンクは <ph name="PROTOLINK"/> です。</translation>
 <translation id="711654979569750606">Copyright © 2006-2012 Google Inc. All Rights Reserved.</translation>
 <translation id="8205111949707227942">オプション: 使用統計データと障害レポートを Google に自動送信して Chrome OS の機能向上に役立てる</translation>
+<translation id="8345657477105118085">Chrome OS は最新版です。</translation>
 <translation id="7196020411877309443">このウィンドウが表示される理由</translation>
 <translation id="2769762047821873045">Google Chromeはデフォルトのブラウザとして設定されていません。</translation>
 <translation id="7825851276765848807">原因不明のエラーによりインストールに失敗しました。Google Chrome をもう一度ダウンロードしてください。</translation>
@@ -117,6 +127,7 @@
 <translation id="2666187591945638709">Google Chrome は <ph name="VERSION"/> に更新されました</translation>
 <translation id="5334545119300433702">このモジュールは Google Chrome と競合することがわかっています。</translation>
 <translation id="4892299120052124303">Google Chrome を終了すると、ダウンロードはキャンセルされます。</translation>
+<translation id="6634887557811630702">Google Chrome は最新版です。</translation>
 <translation id="2084710999043359739">Chrome に追加</translation>
 <translation id="4084877369264707540">このコンピュータには既に Google Chrome Frame がインストールされており、コンピュータのすべてのユーザーが使用できます。ユーザー レベルで Google Chrome Frame をインストールする場合は、まず管理者がインストールしたシステム レベルの Google Chrome Frame をアンインストールする必要があります。</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -133,11 +144,12 @@
 <translation id="4338032231047635328">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書にはエラーがあります。Google Chrome ではエラーのある証明書を使用することはできず、そのサイトが確かに接続しようとしたサイトであるかどうかを検証することはできません。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Chrome での自動入力の設定</translation>
+<translation id="3836351788193713666">Google Chrome を再起動して更新を完了してください</translation>
 <translation id="7106741999175697885">タスク マネージャ - Google Chrome</translation>
+<translation id="1826482739472655104">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書はまだ有効になっていません。この証明書が信頼できるのかどうかについて確認できる情報はありません。Google Chrome では、悪意のあるユーザーでなく &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; と確かに通信していることを保証することはできません。お使いのパソコンの時刻は現在 <ph name="CURRENT_TIME"/> に設定されています。時刻が正しくない場合は、エラーを修正してからこのページを更新してください。</translation>
 <translation id="8449380764213232436"><ph name="BROWSER_COMPONENT"/> から Google Chrome にインポートしています:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">インストール中にオペレーティング システム エラーが発生しました。Google Chrome をダウンロード直してください。</translation>
 <translation id="5495581687705680288">Google Chrome に読み込まれているモジュール</translation>
-<translation id="4086010630946365132">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書はまだ有効になっていません。この証明書が信頼できるのかどうかについて確認できる情報はありません。Google Chrome では、悪意のあるユーザーでなく &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; と確かに通信していることを保証することはできません。パソコンの時計とタイムゾーンが正しく設定されていることをご確認ください。正しく設定されていない場合、問題を修正してからこのページを更新してください。</translation>
 <translation id="8129812357326543296">Google Chrome について(&amp;G)</translation>
 </translationbundle>

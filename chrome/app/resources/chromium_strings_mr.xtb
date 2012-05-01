@@ -1,4 +1,153 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
+<translation id="6676384891291319759">इंटरनेटमध्ये प्रवेश करा</translation>
+<translation id="6373523479360886564">आपल्‍याला खात्री आहे की आपण Chromium विस्‍थापित करू इच्‍छिता?</translation>
+<translation id="8957741245723343544">आपण पुढल्या वेळी Chromium OS पुनर्प्रारंभ कराल तोपर्यंत आपले बदल प्रभावी होतील.</translation>
+<translation id="6510925080656968729">Chromium विस्‍थापित करा</translation>
+<translation id="6893813176749746474">Chromium अद्यतनित केले गेले, परंतु आपण ते किमान 30 दिवसांपासून वापरलेले नाही.</translation>
+<translation id="2770231113462710648">डीफॉल्ट ब्राउझर यावर बदला:</translation>
+<translation id="6613594504749178791">आपण पुढल्या वेळी Chromium रीलाँच कराल तोपर्यंत आपले बदल प्रभावी होतील.</translation>
+<translation id="3748537968684000502">आपण सुरक्षित Chromium पृष्ठ पहात आहात.</translation>
+<translation id="8971920611044657379">Chromium Frame</translation>
+<translation id="1065672644894730302">आपली प्राधान्ये वाचता आली नाहीत.
+काही वैशिष्‍ट्ये अनुपलब्ध असू शकतात आणि प्राधान्यांमधील बदल जतन केले जाणार नाहीत.</translation>
+<translation id="2469082501656808441">Chromium ची नवीन आवृत्ती उपलब्ध आहे</translation>
+<translation id="4222661289444749267">Chromium Frame अद्यतन.</translation>
+<translation id="2843244238218937196">Chromium प्रस्तुतकर्ता</translation>
+<translation id="7128196614940529818">Chromium Frame ची आधीपासून स्‍थापना झाली आहे आणि या संगणकाचा वापर करणार्‍या सर्व वापरकर्त्यांसाठी उपलब्‍ध आहे. आपण Chromium Frame ची वापरकर्त्यांच्‍या स्‍तरावर स्‍थापना करू इच्‍छित असल्‍यास, आपण प्रथम प्रशासकाद्वारे स्‍थापना झालेली प्रणाली-स्‍तर आवृत्ती विस्थापित करणे आवश्‍यक आहे.</translation>
+<translation id="731644333568559921">&amp;Chromium OS अद्यतनित करा</translation>
+<translation id="7421823331379285070">Chromium साठी Windows XP किंवा नंतरचे आवश्‍यक आहे. काही वैशिष्‍ट्ये कदाचित कार्य करू शकत नाहीत.</translation>
+<translation id="1185134272377778587">Chromium बद्दल</translation>
+<translation id="4330297532943865716">सिस्टिमवर Chromium किंवा Chromium Frame ची विरोधी स्थापना आढळली. कृपया ती विस्थापित करा आणि पुन्हा प्रयत्न करा.</translation>
+<translation id="6953661834318318668">Chromium टूलबार</translation>
+<translation id="7097100943370017396">Chromium यापुढे अद्यनित नाही कारण आपली ऑपरेटिंग प्रणाली अप्रचलित आहे.</translation>
+<translation id="2777754523825675150">Chromium प्रारंभ करताना आपले मागील सत्र पुनर्संचयित करेल. आपली काही सत्र-आधारित सेटिंग्ज, जसे की निर्गमन करताना साफ करतात अशा, अक्षम होतील.</translation>
+<translation id="4103959775970322855">Chromium यावर अद्यतनित केले गेले <ph name="VERSION"/></translation>
+<translation id="4285930937574705105">अनिर्दिष्ट त्रुटीमुळे स्थापना अयशस्वी झाली. सध्‍या Chromium चालत असल्‍यास, कृपया त्‍यास बंद करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
+<translation id="2589479092236095792">Chromium स्वयंभरण सेटिंग्ज</translation>
+<translation id="3555616473548901994">विस्थापन पूर्ण.</translation>
+<translation id="2940837712536340734">Chromium OS अद्ययावत आहे.</translation>
+<translation id="2886012850691518054">पर्यायी: स्वयंचलितपणे वापर आकडेवारी आणि क्रॅश अहवाल Google कडे पाठवून Chromium ला अधिक चांगले करण्यात मदत करा.</translation>
+<translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
+<translation id="1989424089625731201">आपण &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; वर पोहचण्‍याचा प्रयत्‍न केला, परंतु सव्‍हर्रने सादर केलेल्‍या प्रमाणपत्रामध्‍ये त्रुटी आहेत. Chromium त्रुटी असलेले प्रमाणपत्र वापरू शकत नाही आणि आपण कनेक्‍ट करण्‍याचा प्रयत्‍न केलेल्‍या साइटची ओळख सत्यापित करू शकत नाही.</translation>
+<translation id="3103660991484857065">संग्रहण असंक्षिप्त करण्यास इन्स्टॉलर अयशस्वी. कृपया Chromium पुन्हा डाउनलोड करा.</translation>
+<translation id="2933983827758164650">आपण आत्ता Chromium बंद केल्यास, हे डाउनलोड रद्द केले जाईल.</translation>
+<translation id="872034308864968620">Chromium पार्श्वभूमीवर चालू द्या</translation>
+<translation id="4320129595801648679">Chromium च्‍या नवीन टॅब पृष्‍ठाची पुनर्निर्मिती केली आहे. हे लेबल क्‍लिक करून विभागांदरम्‍यान स्‍विच करा. Chromium पुढील वेळी आपले प्राधान्‍य स्मरणात ठेवेल.</translation>
+<translation id="3032787606318309379">Chromium वर जोडत आहे...</translation>
+<translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>चेतावणी:<ph name="END_BOLD"/> आपला ब्राउझिंग इतिहास रेकॉर्ड करण्यापासून विस्तारांना Chromium प्रतिबंधित करू शकत नाही. गुप्त विंडोमध्ये हा विस्तार अक्षम करण्यासाठी, या पर्यायाची निवड रद्द करा.</translation>
+<translation id="985602178874221306">Chromium लेखक</translation>
+<translation id="8628626585870903697">Chromium कार्य करण्यासाठी मुद्रण पूर्वावलोकनास आवश्यक असलेले PDF viewer समाविष्ट करीत नाही.</translation>
+<translation id="7138853919861947730">आपला ब्राउझिंग अनुभव सुधारण्यासाठी Chromium वेब सेवा वापरू शकते.</translation>
+<translation id="4179848566211676653">Chromium मधून निर्गमन करा</translation>
+<translation id="3849925841547750267">दुर्दैवाने, तो ब्राउझर चालू असताना आपली Mozilla Firefox सेटिंग्ज उपलब्ध नाहीत. Chromium मध्‍ये ती सेटिंग्‍ज आयात करताना, आपले कार्य जतन करा आणि सर्व Firefox विंडो बंद करा. नंतर सुरू ठेवा क्‍लिक करा.</translation>
+<translation id="7771626876550251690">या प्रकरणात, प्रमाणपत्रात सूचीबद्ध केलेला पत्ता आपल्या ब्राउझरने जाण्याचा प्रयत्न केलेल्या वेबसाइटच्या पत्त्याशी जुळत नाही.  याचे एक संभाव्य कारण असे असू शकते की आपल्या संप्रेषणांना एका भिन्न वेबसाइटकरिता प्रमाणपत्र सादर करणार्‍या एखाद्या आक्रमणकर्त्याद्वारे व्यत्यय आणला जात आहे, यामुळेच हे जुळत नाही. दुसरे संभाव्य कारण म्हणजे आपण भेट देण्याचा प्रयत्न करीत असलेल्या एका वेबसाइटसह, एकाधिक वेबसाइटसाठी सारखे प्रमाणपत्र परत करण्यावर सर्व्हर सेट केले आहे, जरी ते प्रमाणपत्र अशा सर्व वेबसाइटसाठी वैध नसले तरी. Chromium आपण &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; पोहोचलात हे खात्रीने सांगू शकते, परंतु आपला पोहोचण्याचा उद्देश असलेल्या &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; प्रमाणेच तीच साइट असल्याचे सत्यापित करू शकत नाही. आपण पुढे गेल्यास, Chromium कोणतेही पुढचे न जुळलेले नाव तपासणार नाही.</translation>
+<translation id="4330585738697551178">हे मॉड्यूल Chromium बरोबर विरोधाकरिता ओळखले जाते.</translation>
+<translation id="3190315855212034486">ओहो! Chromium क्रॅश झाले आहे. आता पुन्हा लाँच करायचे?</translation>
+<translation id="6714487516757221107">Chromium किंवा Chromium Frame ची कोणतीही स्थापना अद्यतनित असल्याचे आढळले नाही.</translation>
+<translation id="4124681358536363708">Chromium स्थापना निर्देशिका वापरात असल्यासारखे दिसत आहे. कृपया आपला संगणक रीबूट करा आणि पुन्हा प्रयत्न करा.</translation>
+<translation id="8770560772173120024">Chromium आता मनपसंत/बुकमार्क आयात करीत आहे.</translation>
+<translation id="6290315939897260265">Chromium मध्‍ये वापरले नाही. प्लेसहोल्डर समक्रमणामध्‍ये संसाधन नकाशे ठेवणार.</translation>
+<translation id="2977470724722393594">Chromium अद्ययावत आहे</translation>
+<translation id="9191268552238695869">प्रशासकाने या प्रणालीवर Chromium ची स्‍थापना केली आहे आणि ते सर्व वापरकर्त्‍यांसाठी उपलब्‍ध आहे. प्रणाली-स्‍तर Chromium आपल्‍या प्रणाली-स्‍तर स्‍थापनेला आता पुनर्स्‍थित करेल.</translation>
+<translation id="3509308970982693815">कृपया सर्व Chromium विंडो बंद करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
+<translation id="4077262827416206768">कृपया हा बदल प्रभावी होण्‍यासाठी सर्व Chromium विंडो बंद करा आणि Chromium पुन्‍हा लाँच करा.</translation>
+<translation id="9119843944749246249">कॉपीराइट © 2006-2012 Chromium लेखक. सर्व हक्क राखीव.</translation>
+<translation id="6944967875980567883">Chromium मध्ये लोड केलेली मॉड्यूल</translation>
+<translation id="118298050220780080">आपण &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; वर पोहचण्‍याचा प्रयत्‍न केला, परंतु आपल्‍या संगणकाच्‍या ऑपरेटिंग प्रणालीद्वारे विश्वसनीय नसलेले घटकाद्वारे जारी केलेले एक प्रमाणपत्र सर्व्‍हरने सादर केले. याचा अर्थ असा असू शकतो की सर्व्‍हरने त्‍याची स्वत:ची सुरक्षा क्रेडेंशियल्स व्‍युत्‍पन्‍न केले आहेत, ज्‍यावर ओळख माहितीसाठी Chromium विसंबून राहू शकत नाही किंवा आक्रमणकर्ता आपल्‍या संप्रेषणामध्‍ये व्‍यत्‍यय आणण्‍याचा प्रयत्‍न करू शकतो.</translation>
+<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="3296368748942286671">Chromium बंद असताना पार्श्वभूमी अनुप्रयोग चालवणे सुरू ठेवा</translation>
+<translation id="2918265831258045091">आपण प्रगतीपथावर असलेल्या डाउनलोडसह Chromium निर्गमन करू इच्छिता?</translation>
+<translation id="6055895534982063517">Chromium ची नवीन आवृत्ती उपलब्ध आहे आणि ही नेहमीपेक्षा जलद आहे.</translation>
+<translation id="2407806170074302369">Chromium Frame बद्दल...</translation>
+<translation id="5405650547142096840">Chromium मधून काढा</translation>
+<translation id="7747138024166251722">इन्स्टॉलर तात्पुरती निर्देशिका तयार करू शकत नाही. कृपया सॉफ्टवेअर स्थापन करण्यासाठी रिक्त डिस्क स्थान आणि परवानगी करिता पहा.</translation>
+<translation id="3258596308407688501">Chromium त्याची डेटा निर्देशिका वाचू किंवा लिहू शकत नाही:
+
+<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="4932687624772039103"><ph name="OS_NAME"/> चे Chromium समर्थन करत नाही.</translation>
+<translation id="8738921060445980047">अज्ञात आवृत्ती.</translation>
+<translation id="2485422356828889247">अनइन्स्टॉल करणे</translation>
+<translation id="85843667276690461">Chromium वापरून मदत मिळवा</translation>
+<translation id="263863604136125912">Chromium प्रारंभ करा</translation>
+<translation id="2881203820889150661">Chromium अनुप्रयोग शॉर्टकट तयार करु शकत नाही कारण ते वर्तमान डेस्कटॉप वातावरण निर्धारित करु शक‍त नाही.</translation>
+<translation id="4886158514168859177">या संगणकावर आधीपासून Chromium Frame ची अगदी अलीकडील आवृत्ती आहे. सॉफ्‍टवेअर कार्य करत नसल्‍यास, कृपया Chromium Frame विस्‍थापित करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
+<translation id="911206726377975832">आपला ब्राउझिंग डेटा देखील हटवायचा?</translation>
+<translation id="6734080038664603509">&amp;Chromium अद्यतनित करा</translation>
+<translation id="8862326446509486874">आपल्‍याकडे सिस्टम-स्तर स्थापनेसाठी उचित अधिकार नाहीत. प्रशासक म्हणून पुन्हा इन्स्टॉलर चालविण्याचा प्रयत्न करा.</translation>
+<translation id="1774152462503052664">Chromium पार्श्वभूमीवर चालू द्या</translation>
+<translation id="9022552996538154597">Chromium वर साइन इन करा</translation>
+<translation id="4365115785552740256">Chromium हे <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> खुला स्रोत प्रकल्प आणि इतर <ph name="BEGIN_LINK_OSS"/>खुले स्रोत सॉफ्टवेअर<ph name="END_LINK_OSS"/> द्वारे बनवणे शक्य झाले.</translation>
+<translation id="7549178288319965365">Chromium OS बद्दल</translation>
+<translation id="6248213926982192922">Chromium ला डीफॉल्‍ट ब्राउझर बनवा</translation>
+<translation id="7337881442233988129">Chromium</translation>
+<translation id="3069161343438701711">Chromium कर्मचारी</translation>
+<translation id="5820394555380036790">Chromium OS</translation>
+<translation id="6757767188268205357">माझा बग नोंदवू नका</translation>
+<translation id="7700951445648533795">आपण प्रगतीपथावर असलेल्या <ph name="DOWNLOAD_COUNT"/> डाउनलोडसह Chromium निर्गमन करू इच्छिता?</translation>
+<translation id="275588974610408078">Chromium मध्ये क्रॅश अहवाल उपलब्ध नाही.</translation>
+<translation id="5909170354645388250">Chromium मध्‍ये वापरले नाही. प्लेसहोल्डर समक्रमणामध्‍ये संसाधन नकाशे ठेवणार. हे एका वितर्काची अपेक्षा करते: $1.</translation>
+<translation id="3582788516608077514">Chromium अद्यतनित करीत आहे...</translation>
+<translation id="7223968959479464213">कार्य व्यवस्थापक- Chromium </translation>
+<translation id="3838208658251026018">Chromium आता <ph name="BROWSER_COMPONENT"/> वरून खालील आयटम आयात करीत आहे:</translation>
+<translation id="2673087257647337101">जवळपास अद्ययावत! अद्यतन समाप्त करण्यासाठी Chromium रीलाँच करा.</translation>
+<translation id="5398878173008909840">Chromium ची नवीन आवृत्ती उपलब्ध आहे.</translation>
+<translation id="2648074677641340862">स्‍थापनेदरम्‍यान ऑपरेटिंग प्रणाली त्रुटी आली. कृपया Chromium पुन्‍हा डाउनलोड करा.</translation>
+<translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> Chrome मध्‍ये जोडले गेले आहे.</translation>
+<translation id="8678787945719392857">आपली सर्व Chromium सामग्री समक्रमित करण्यासाठी हे Google खाते वापरायचे?</translation>
+<translation id="5974438302735098483">Chromium अद्यतनित केले गेले</translation>
+<translation id="8621669128220841554">अनिर्दिष्ट त्रुटीमुळे स्थापना अयशस्वी झाली. कृपया Chromium पुन्‍हा डाउनलोड करा.</translation>
+<translation id="6717134281241384636">आपले प्रोफाइल वापरले जाऊ शकत नाही कारण ते Chromium च्‍या नवीनतम आवृत्तीमधील आहे.
+
+काही वैशिष्‍ट्ये अनुपलब्‍ध असू शकतील. कृपया एक भिन्न प्रोफाइल निर्देशिका निर्दिष्‍ट करा किंवा Chromium ची नवीन आवृत्ती वापरा.</translation>
+<translation id="2712549016134575851">अन्य स्थापित अनुप्रयोगाशी विरोध आढळला आहे.</translation>
+<translation id="9013087743919948559">Chromium वर जोडा</translation>
+<translation id="6212496753309875659">या संगणकावर आधीपासून Chromium ची अगदी अलीकडील आवृत्ती आहे. सॉफ्‍टवेअर कार्य करत नसल्‍यास, कृपया Chromium विस्‍थापित करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
+<translation id="3014684866565908571">Chromium उपयुक्तता</translation>
+<translation id="1298199220304005244">Chromium OS वापरून मदत मिळवा</translation>
+<translation id="667672506951335584">आपण आत्ता Chromium बंद केल्यास, हे डाउनलोड रद्द केले जातील.</translation>
+<translation id="1691304614444223855">Chromium Frame अद्यतनित केली गेली. कृपया आपला ब्राउझर पुन्हा लाँच करा. Chromium आवृत्ती: <ph name="TODO_0001"/>, Chromium Frame आवृत्ती: <ph name="TODO_0002"/></translation>
+<translation id="1105130903706696483">Chromium योग्‍यरितीने बंद झालेले नव्‍हते. आपण उघडलेली पृष्‍ठे पुन्‍हा उघडण्‍यासाठी, पुनर्संचयित करा क्‍लिक करा.</translation>
+<translation id="1929939181775079593">Chromium असंवादी आहे. आता पुन्‍हा लाँच करायचे?</translation>
+<translation id="6089587093203430357">झटपट</translation>
+<translation id="2966088006374919794">Chromium ला <ph name="SCHEME"/> दुवे हाताळण्‍यासाठी बाह्य अनुप्रयोग लाँच करणे आवश्‍यक आहे. विनंती केलेला दुवा <ph name="PROTOLINK"/> हा आहे.</translation>
+<translation id="5699533844376998780">विस्तार &quot;<ph name="EXTENSION_NAME"/>&quot; जोडला गेला आहे.</translation>
+<translation id="8046283042877435986">ही साइट Chromium Frame ची शिफारस करते (आधीपासूनच स्थापित).</translation>
+<translation id="6287463253129672858">सध्‍या चालू असलेल्‍या सारख्याच Chromium Frame आवृत्तीची स्‍थापना होऊ शकत नाही. कृपया Chromium Frame बंद करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
+<translation id="2558235863893655150">Chromium ने आपला संकेतशब्द जतन करावा असे आपण इच्‍छिता?</translation>
+<translation id="1688750314291223739">वेबवर आपली वैयक्तीकृत केलेली ब्राउझर वैशिष्ट्ये जतन करण्यासाठी समक्रमण सेट करा आणि कोणत्याही संगणकावरील Chromium वरून त्यात प्रवेश करा.</translation>
+<translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
+<translation id="8865765905101981392">इंटरनेट ब्राउझर</translation>
+<translation id="2910007522516064972">&amp;Chromium बद्दल</translation>
+<translation id="8453117565092476964">इन्स्टॉलर संग्रहण दूषित किंवा वैध आहे. कृपया Chromium पुन्हा डाउनलोड करा.</translation>
+<translation id="309634601461115233">कृपया हा बदल प्रभावी करण्यासाठी Chrome OS मधून साइन आउट करा आणि पुन्हा साइन इन करा.</translation>
+<translation id="3249425904492147663">आपण &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; वर पोहोचण्याचा प्रयत्न केला, परंतु सर्व्हरने कालबाह्य झालेले प्रमाणपत्र सादर केले. त्या प्रमाणपत्राने कालबाह्य झाल्यापासून कोणतीही तडजोड केली किंवा नाही हे सूचित करणारी कोणतीही माहिती उपलब्ध नाही. याचा अर्थ असा की आपण &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; शी संप्रेषण करीत आहात आक्रमणकर्त्याशी नाही याची हमी Chromium देऊ शकत नाही. आपल्या संगणकाचे घड्याळ सध्या <ph name="CURRENT_TIME"/> वर सेट केले आहे. ते योग्य दिसते आहे? नसल्यास, आपण त्रुटी दुरुस्त करावी आणि हे पृष्ठ रीफ्रेश करावे.</translation>
+<translation id="7196020411877309443">मी हे का पहात आहे?</translation>
+<translation id="7483335560992089831">सध्‍या चालू असलेल्‍या सारख्याच Chromium आवृत्तीची स्‍थापना होऊ शकत नाही. कृपया Chromium बंद करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
+<translation id="7641113255207688324">Chromium आपला डीफॉल्ट ब्राउझर नाही.</translation>
+<translation id="2174090135251659490">आपण &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; वर पोहोचण्याचा प्रयत्न केला, परंतु सर्व्हरने अद्याप वैध नसलेले प्रमाणपत्र सादर केले आहे. या प्रमाणपत्रावर विश्वास ठेवला जाऊ शकतो किंवा नाही अशी कोणतीही माहिती उपलब्ध नाही. आपण &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; शी संप्रेषण करीत आहात आक्रमणकर्त्याशी नाही याची विश्वसनीयतेने हमी Chromium देऊ शकत नाही. आपल्या संगणकाचे घड्याळ सध्या <ph name="CURRENT_TIME"/> वर सेट केले आहे. ते योग्य दिसते आहे? नसल्यास, आपण त्रुटी दुरुस्त करावी आणि हे पृष्ठ रीफ्रेश करावे.</translation>
+<translation id="2119636228670142020">&amp;Chromium OS बद्दल</translation>
+<translation id="1708666629004767631">Chromium ची नवीन, सुरक्षित आवृत्ती उपलब्ध आहे.</translation>
+<translation id="5859758987635973787">Chromium अद्ययावत  आहे (<ph name="VERSION"/>)</translation>
+<translation id="8616882682724010661">Chromium मध्ये साइन इन करण्यासाठी <ph name="BEGIN_LINK"/>अधिक लाभ<ph name="END_LINK"/> पहा.</translation>
+<translation id="378917192836375108">Chromium आपल्याला वेबवरील फोन नंबर क्लिक करू देते आणि Skype सह त्याला कॉल करते!</translation>
+<translation id="7503101070699687603">Chromium प्लग-इन होस्ट</translation>
+<translation id="9013262824292842194">Chromium साठी SP2 किंवा त्यापेक्षा उच्च आवृत्तीसह Windows Vista किंवा Windows XP आवश्यक आहे.</translation>
+<translation id="1967743265616885482">यासारख्या नावाचे मॉड्यूल Chromium बरोबर विरोधाकरिता ओळखले जाते.</translation>
+<translation id="4224199872375172890">Chromium अद्ययावत आहे.</translation>
+<translation id="5498103559159810756">Chromium आपले डीफॉल्ट शोध इंजिन वापरते, जे सध्या <ph name="PAGE_TITLE"/> वर सेट केले आहे. आपण आपले डीफॉल्ट शोध इंजिन ठेवू इच्छिता?</translation>
+<translation id="5862307444128926510">Chromium वर आपले स्‍वागत आहे</translation>
+<translation id="1622565934590470080">या संगणकावर आधीपासून Chromium आणि Chromium Frame ची अगदी अलीकडील आवृत्ती आहे. सॉफ्‍टवेअर कार्य करत नसल्‍यास, कृपया Chromium आणि Chromium Frame दोन्‍ही विस्‍थापित करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
+<translation id="7318036098707714271">आपली प्राधान्ये फाइल दूषित किंवा अवैध आहे.
+
+Chromium आपली सेटिंग्ज पुनर्प्राप्त करण्‍यात अक्षम आहे.</translation>
+<translation id="7123348595797445166">हे वापरुन पहा (आधीपासूनच स्थापित केलेले)</translation>
+<translation id="6403826409255603130">Chromium हे एक वेबब्राउझर असून ते वेबपृष्ठे आणि अनुप्रयोग अतिशय वेगात चालवते. हे वापरण्यास जलद, स्थिर आणि सोपे आहे. Chromium मध्ये तयार करण्यासाठी मालवेयर आणि फिशिंग संरक्षणासह वेब अधिक सुरक्षितपणे ब्राउझ करा.</translation>
+<translation id="2927042866129133279">अवैध वादविवाद. Chromium Frame ही Chromium देखील स्थापित केल्याशिवाय तयार मोडमध्ये स्थापित केली जाऊ शकत नाही.</translation>
+<translation id="2572494885440352020">Chromium मदतनीस</translation>
+<translation id="442817494342774222">आपण आपल्या संगणकाचा प्रारंभ करता तेव्हा स्वयंचलितपणे लाँच होण्यासाठी Chromium कॉन्फिगर केले जाते.</translation>
+<translation id="8974095189086268230">अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS"/>खुले स्रोत सॉफ्‍टवेअर<ph name="END_LINK_CROS_OSS"/> द्वारे Chromium OS बनवणे शक्‍य झाले.</translation>
+<translation id="6154296300983386343">अद्यतन समाप्त करण्यासाठी Chromium रीलाँच करा</translation>
+<translation id="1221340462641866827">Chromium OS ला <ph name="SCHEME"/> दुवे हाताळण्‍यासाठी बाह्य अनुप्रयोग लाँच करणे आवश्‍यक आहे. विनंती केलेला दुवा <ph name="PROTOLINK"/> हा आहे.</translation>
 </translationbundle>

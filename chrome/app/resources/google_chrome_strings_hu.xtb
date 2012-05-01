@@ -5,6 +5,7 @@
 <translation id="8485767968786176057">Ezt a figyelmeztetést azért látja, mert a tanúsítvány nem arra a címre van kiállítva, amelyhez kapcsolódni szeretne. Lehetséges, hogy egy támadó eltérítette a kapcsolatát és egy hasonló névre kiállított tanúsítvánnyal próbálja megtéveszteni. Egy másik lehetséges magyarázat, hogy a szerver több címet is kiszolgál, de egy hibás beállítás folytán ugyanazt a tanúsítványt mutatja minden címen, köztük az Ön által felkeresetten is, noha a tanúsítvány nem érvényes ezek mindegyikén. A Google Chrome annyit biztosan állíthat, hogy Ön elérte a(z) &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; webhelyet, de azt nem, hogy az megegyezik-e az elérni próbált &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhellyel. Ha tovább lép, a Chrome a továbbiakban nem fogja ellenőrizni a nevek eltérését.</translation>
 <translation id="5430073640787465221">A beállításait tartalmazó fájl hibás vagy érvénytelen. A Google Chrome nem tudja helyreállítani a beállításait.</translation>
 <translation id="6676384891291319759">Internetelérés</translation>
+<translation id="573759479754913123">A Chrome OS névjegye</translation>
 <translation id="5453904507266736060">A Google Chrome futhat a háttérben</translation>
 <translation id="2383457833405848421">A Chrome Frame névjegye...</translation>
 <translation id="386202838227397562">Zárjon be minden Google Chrome-ablakot, és próbálkozzon újra.</translation>
@@ -21,15 +22,16 @@
 <translation id="1761870329818521071">Nem lehet ugyanazt a Google Chrome Frame verziót telepíteni, amely jelenleg is fut. Zárja be a Google Chrome Frame-et, és próbálja újra.</translation>
 <translation id="2040709530900803995">Google Chrome renderelő</translation>
 <translation id="3140883423282498090">A módosítások a következő alkalommal lépnek életbe, amikor újraindítja a Google Chrome-ot.</translation>
+<translation id="1773601347087397504">A Chrome OS használatával kapcsolatos súgó</translation>
 <translation id="1872436416934435136">A Google Chrome nem frissül tovább, mert az operációs rendszer elavult.</translation>
 <translation id="5339639696978861456">A Chrome Frame frissült. Kérjük, indítsa újra a böngészőt. Chrome verzió: <ph name="TODO_0001"/>, Chrome Frame verzió: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Általános Szerződési Feltételek</translation>
+<translation id="8398145039500709259">Ezzel a Google Fiókkal szeretné szinkronizálni minden Chrome-os anyagát?</translation>
 <translation id="6862759394142635932">Ha most bezárja a Google Chrome-ot, akkor ez a letöltés megszakad.</translation>
 <translation id="1779550429052479749">Már telepítve van a Google Chrome vagy a Google Chrome Frame a rendszeren, és ez ütközést okoz. Kérjük, távolítsa el, majd próbálkozzon újra.</translation>
 <translation id="3555616473548901994">Az eltávolítás befejeződött.</translation>
 <translation id="8556340503434111824">Elérhető a Google Chrome új verziója, amely gyorsabb, mint ezelőtt bármikor.</translation>
 <translation id="4728575227883772061">A telepítés váratlan hiba miatt nem sikerült. Ha a Google Chrome jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
-<translation id="4727256538826447736">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhelyet, de a szerver tanúsítványa lejárt. Nem áll rendelkezésre információ azzal kapcsolatban, hogy a tanúsítvány sérült-e a lejárat óta. Ez azt jelenti, hogy Google Chrome nem tudja garantálni, hogy a(z) &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; webhellyel kommunikál, nem pedig egy támadóval.</translation>
 <translation id="3080151273017101988">A háttéralkalmazások továbbfuttatása, ha a Google Chrome-ot bezárják</translation>
 <translation id="4149882025268051530">Nem sikerült a telepítőnek kibontani a tömörített állományt. Kérjük, töltse le újra a Google Chrome böngészőt.</translation>
 <translation id="6989339256997917931">A Google Chrome frissítése megtörtént, de nem használta a böngészőt legalább 30 napja.</translation>
@@ -39,24 +41,29 @@
 <translation id="8227755444512189073">A Google Chrome-nak el kell indítania egy külső alkalmazást a(z) <ph name="SCHEME"/> linkekhez. A kért link: <ph name="PROTOLINK"/>.</translation>
 <translation id="8290100596633877290">Hmm. A Google Chrome összeomlott. Újraindítja most?</translation>
 <translation id="1281036569101707544">Google Chrome - <ph name="TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/>Általános Szerződési Feltételek<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="1393853151966637042">A Chrome használatával kapcsolatos súgó</translation>
 <translation id="3487814320513494737">A Chrome Új lap oldala átalakult. Az egyes részek között a címkékre kattintva lehet váltani. A Chrome legközelebb már emlékezni fog a beállításra.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="6423071462708908582">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhelyet, de a szerver tanúsítványa lejárt. Nem áll rendelkezésre információ azzal kapcsolatban, hogy a tanúsítványt esetleg meghamisították-e a lejárat óta. Ez azt jelenti, hogy Google Chrome nem tudja garantálni, hogy a(z) &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; webhellyel kommunikál, nem pedig egy támadóval. Számítógépe órájának beállítása jelenleg <ph name="CURRENT_TIME"/>. Ez megfelelőnek tűnik? Ha nem, javítsa ki a hibát, és töltse újra az oldalt.</translation>
 <translation id="2653935705142821164">Chrome renderelő</translation>
 <translation id="3889417619312448367">A Google Chrome eltávolítása</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3282568296779691940">Bejelentkezés a Chrome-ba</translation>
 <translation id="3089968997497233615">Elérhető a Google Chrome új, biztonságosabb verziója.</translation>
 <translation id="5037239767309817516">Ahhoz, hogy a módosítás hatályba lépjen, zárja be az összes Google Chrome ablakot, és indítsa újra az alkalmazást.</translation>
 <translation id="7451721381978275812">Érvénytelen argumentumok. A Google Chrome Frame nem telepíthető készenléti üzemmódban anélkül, hogy a Google Chrome is telepítve lenne.</translation>
 <translation id="5727432509906037972">Biztosan kilép a Google Chrome-ból, miközben folyamatban van egy letöltés?</translation>
-<translation id="1367236238006776563">A(z) &quot;<ph name="EXTENSION_NAME"/>&quot; bővítmény hozzá lett adva a Chrome-hoz.</translation>
 <translation id="4585888816441913908">A számítógépen már megtalálható a Google Chrome és a Google Chrome Frame újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el a Google Chrome-ot és a Google Chrome Frame-et, majd próbálkozzon ismét.</translation>
 <translation id="6368958679917195344">A Chrome OS-hez egyéb <ph name="BEGIN_LINK_CROS_OSS"/>nyílt forráskódú szoftver<ph name="END_LINK_CROS_OSS"/> is hozzájárult.</translation>
+<translation id="7459554271817304652">A szinkronizálás beállításával személyre szabott beállításait az interneten tárolhatja, így azok bármelyik számítógépen elérhetők a Google Chrome böngészőből.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhelyet, de a szerver által bemutatott tanúsítványt egy olyan entitás állította ki, amelyben nem bízik meg számítógépének operációs rendszere. Ez jelentheti azt, hogy a szerver hozta létre saját biztonsági hitelesítő adatait, amelyekre a Google Chrome nem támaszkodhat azonosítás céljából, illetve azt is, hogy egy támadó próbálja meg elfogni az Ön kommunikációját.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">A Google Chrome nem záródott be megfelelően. Kattintson a &quot;Visszaállítás&quot; gombra, ha újra meg szeretné nyitni az oldalakat.</translation>
 <translation id="2783467918276328046">Nézze meg, milyen <ph name="BEGIN_LINK"/>további előnyökkel<ph name="END_LINK"/> jár, ha bejelentkezik a Chrome-ba.</translation>
 <translation id="2580411288591421699">Nem lehet ugyanazt a Google Chrome verziót telepíteni, amely jelenleg is fut. Zárja be a Google Chrome-ot, és próbálja újra.</translation>
+<translation id="1457721931618994305">A Google Chrome frissítése...</translation>
 <translation id="7747138024166251722">A telepítőnek nem sikerült létrehoznia az ideiglenes könyvtárat. Kérjük ellenőrizze, hogy van-e elegendő hely a lemezen, és rendelkezik-e engedéllyel a szoftvertelepítésre.</translation>
 <translation id="5170938038195470297">A profilja nem használható, mivel a Google Chrome egy újabb verziójából származik. Előfordulhat, hogy egyes funkciók nem érhetők el. Kérjük, adjon meg egy másik profilmappát, vagy használja a Google Chrome újabb verzióját.</translation>
 <translation id="8738921060445980047">Ismeretlen verzió.</translation>
@@ -64,7 +71,7 @@
 <translation id="2748463065602559597">Ön egy biztonságos Google Chrome-oldalt lát.</translation>
 <translation id="7185038942300673794">A(z) <ph name="EXTENSION_NAME"/> hozzá lett adva a Chrome-hoz.</translation>
 <translation id="9073088951656332330">Nem található telepített Google Chrome vagy Google Chrome Frame a frissítéshez.</translation>
-<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Figyelmeztetés:<ph name="END_BOLD"/> A Google Chrome nem tudja megakadályozni, hogy a bővítmények rögzítsék a böngészési előzményeit. A bővítmény inkognitómódban való használatának letiltásához törölje e lehetőség megjelölését.</translation>
+<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Figyelmeztetés:<ph name="END_BOLD"/> A Google Chrome nem tudja megakadályozni, hogy a bővítmények rögzítsék a böngészési előzményeit. A bővítmény inkognitómódban való használatának letiltásához törölje e lehetőség bejelölését.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="3904146009066562368">Elérhető a Google Chrome új verziója</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
@@ -83,6 +90,7 @@
 <translation id="5941830788786076944">A Google Chrome beállítása alapértelmezett böngészőként</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">A Google Chrome egyetlen kattintással lehetővé teszi a weboldalakon található telefonszámok felhívását Skype-pal!</translation>
+<translation id="4573769928351971197">Indításkor a Google Chrome visszaállítja az előző munkamenetet. Egyes munkamenet-alapú beállítások, így például azok, amelyek törlik az adatokat kilépéskor, le lesznek tiltva.</translation>
 <translation id="3612333635265770873">Egy ugyanilyen nevű modul ismereteink szerint ütközik a Google Chrome-mal.</translation>
 <translation id="61852838583753520">A &amp;Chrome OS frissítése</translation>
 <translation id="6650142020817594541">Ez a webhely ajánlja a Google Chrome Frame-et (már telepítve van).</translation>
@@ -100,6 +108,7 @@
 <translation id="3444832043240812445">Ez az oldal csak akkor jelenít meg információkat a legutóbbi rendszerösszeomlásokról, ha <ph name="BEGIN_LINK"/>engedélyezi a hibabejelentést<ph name="END_LINK"/> .</translation>
 <translation id="8614913330719544658">A Google Chrome nem válaszol. Újraindítja most?</translation>
 <translation id="5318056482164160049">Google Chrome plug-in tárhely</translation>
+<translation id="5699533844376998780">A(z) &quot;<ph name="EXTENSION_NAME"/>&quot; bővítmény hozzáadása megtörtént.</translation>
 <translation id="6126631249883707068">Szeretné, hogy a Google Chrome elmentse jelszavát?</translation>
 <translation id="5046764976540625289">Kilépés a Chrome alkalmazásból</translation>
 <translation id="2925521875688282191">Kérjük, jelentkezzen ki a Chrome OS-ből, majd jelentkezzen be újra, hogy érvénybe lépjenek a változtatások.</translation>
@@ -110,6 +119,7 @@
 <translation id="2189123953385179981">A Google ChromeOS nem támogatja külső alkalmazás indítását a(z) <ph name="SCHEME"/> linkek kezelésére. A kért link: <ph name="PROTOLINK"/>.</translation>
 <translation id="711654979569750606">Copyright © 2006-2012 Google Inc. Minden jog fenntartva.</translation>
 <translation id="8205111949707227942">Opcionális: Segítse a Chrome OS fejlesztését azzal, hogy automatikusan elküldi a használati statisztikákat és hibajelentéseket a Google részére</translation>
+<translation id="8345657477105118085">A Chrome OS naprakész.</translation>
 <translation id="7196020411877309443">Miért jelenik meg ez az üzenet?</translation>
 <translation id="2769762047821873045">Nem a Google Chrome az alapértelmezett böngésző.</translation>
 <translation id="7825851276765848807">A telepítés egy meg nem határozott hiba miatt nem sikerült. Kérjük, töltse le újra a Google Chrome-ot.</translation>
@@ -117,6 +127,7 @@
 <translation id="2666187591945638709">A Google Chrome frissült a következő verzióra: <ph name="VERSION"/></translation>
 <translation id="5334545119300433702">Ismereteink szerint ez a modul ütközik a Google Chrome-mal.</translation>
 <translation id="4892299120052124303">Ha most bezárja a Google Chrome-ot, ezek a letöltések megszakadnak.</translation>
+<translation id="6634887557811630702">A Google Chrome naprakész.</translation>
 <translation id="2084710999043359739">Hozzáadás a Chrome-hoz</translation>
 <translation id="4084877369264707540">A Google Chrome Frame már telepítve van, és a számítógép minden felhasználója számára elérhető. Ha felhasználói szinten kívánja telepíteni a Google Chrome Frame bővítményt, először el kell távolítania a rendszergazda által telepített rendszerszintű verziót.</translation>
 <translation id="3360895254066713204">Chrome segéd</translation>
@@ -133,11 +144,12 @@
 <translation id="4338032231047635328">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhelyet, de a szerver által bemutatott tanúsítvány hibákat tartalmaz. A Google Chrome nem használhat hibás tanúsítványt, és nem tudja igazolni annak a webhelynek az azonosságát, amelyet Ön el akart érni.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">A Chrome Automatikus kitöltésének beállításai</translation>
+<translation id="3836351788193713666">Már majdnem naprakész! Indítsa újra a Google Chrome-ot a frissítés befejezéséhez.</translation>
 <translation id="7106741999175697885">Feladatkezelő - Google Chrome</translation>
+<translation id="1826482739472655104">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, webhelyet, de a szerver által bemutatott tanúsítvány még nem érvényes. Nem áll rendelkezésre információ azzal kapcsolatban, hogy a tanúsítvány megbízható-e. A Google Chrome nem tudja garantálni, hogy a(z) &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; webhellyel kommunikál, nem pedig egy támadóval. Számítógépe órájának beállítása jelenleg <ph name="CURRENT_TIME"/> Ez megfelelőnek tűnik? Ha nem, javítsa ki a hibát, és töltse újra az oldalt.</translation>
 <translation id="8449380764213232436">A következő elemek importálása folyamatban van, innen <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Az operációs rendszer hibát jelzett a telepítés során.</translation>
 <translation id="5495581687705680288">A Google Chrome-ba betöltött modulok</translation>
-<translation id="4086010630946365132">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; webhelyet, de a szerver által bemutatott tanúsítvány még nem érvényes. Nem áll rendelkezésre információ azzal kapcsolatban, hogy a tanúsítvány megbízható-e. A Google Chrome nem tudja garantálni, hogy a(z) &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; webhellyel kommunikál, nem pedig egy támadóval. Ellenőrizze, hogy az óra és az időzóna jól van-e beállítva a számítógépén. Ha nem, akkor orvosolja a hibát, majd frissítse ezt az oldalt.</translation>
 <translation id="8129812357326543296">A &amp;Google Chrome névjegye</translation>
 </translationbundle>
