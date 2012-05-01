@@ -20,6 +20,7 @@
 using browser_sync::TypedUrlModelAssociator;
 using content::BrowserThread;
 
+namespace {
 class SyncTypedUrlModelAssociatorTest : public testing::Test {
  public:
   static history::URLRow MakeTypedUrlRow(const char* url,
@@ -63,6 +64,45 @@ class SyncTypedUrlModelAssociatorTest : public testing::Test {
            (lhs.hidden() == rhs.hidden());
   }
 };
+
+class TestTypedUrlModelAssociator : public TypedUrlModelAssociator {
+ public:
+  TestTypedUrlModelAssociator(base::WaitableEvent* startup,
+                              base::WaitableEvent* aborted)
+      : TypedUrlModelAssociator(&mock_, NULL, NULL),
+        startup_(startup),
+        aborted_(aborted) {}
+  virtual bool IsAbortPending() {
+    // Let the main thread know that we've been started up, and block until
+    // they've called Abort().
+    startup_->Signal();
+    EXPECT_TRUE(aborted_->TimedWait(base::TimeDelta::FromMilliseconds(
+      TestTimeouts::action_timeout_ms())));
+    return TypedUrlModelAssociator::IsAbortPending();
+  }
+ private:
+  ProfileSyncServiceMock mock_;
+  base::WaitableEvent* startup_;
+  base::WaitableEvent* aborted_;
+};
+
+static void CreateModelAssociator(base::WaitableEvent* startup,
+                                  base::WaitableEvent* aborted,
+                                  base::WaitableEvent* done,
+                                  TypedUrlModelAssociator** associator) {
+  // Grab the done lock - when we exit, this will be released and allow the
+  // test to finish.
+  *associator = new TestTypedUrlModelAssociator(startup, aborted);
+  // AssociateModels should be aborted and should return false.
+  SyncError error = (*associator)->AssociateModels();
+
+  // TODO(lipalani): crbug.com/122690 fix this when fixing abort.
+  // EXPECT_TRUE(error.IsSet());
+  delete *associator;
+  done->Signal();
+}
+
+} // namespace
 
 TEST_F(SyncTypedUrlModelAssociatorTest, MergeUrls) {
   history::VisitVector visits1;
@@ -378,43 +418,6 @@ TEST_F(SyncTypedUrlModelAssociatorTest, NoTypedVisits) {
   EXPECT_EQ(1000, typed_url.visits(0));
   EXPECT_EQ(content::PAGE_TRANSITION_RELOAD,
       static_cast<content::PageTransition>(typed_url.visit_transitions(0)));
-}
-
-class TestTypedUrlModelAssociator : public TypedUrlModelAssociator {
- public:
-  TestTypedUrlModelAssociator(base::WaitableEvent* startup,
-                              base::WaitableEvent* aborted)
-      : TypedUrlModelAssociator(&mock_, NULL, NULL),
-        startup_(startup),
-        aborted_(aborted) {}
-  virtual bool IsAbortPending() {
-    // Let the main thread know that we've been started up, and block until
-    // they've called Abort().
-    startup_->Signal();
-    EXPECT_TRUE(aborted_->TimedWait(base::TimeDelta::FromMilliseconds(
-      TestTimeouts::action_timeout_ms())));
-    return TypedUrlModelAssociator::IsAbortPending();
-  }
- private:
-  ProfileSyncServiceMock mock_;
-  base::WaitableEvent* startup_;
-  base::WaitableEvent* aborted_;
-};
-
-static void CreateModelAssociator(base::WaitableEvent* startup,
-                                  base::WaitableEvent* aborted,
-                                  base::WaitableEvent* done,
-                                  TypedUrlModelAssociator** associator) {
-  // Grab the done lock - when we exit, this will be released and allow the
-  // test to finish.
-  *associator = new TestTypedUrlModelAssociator(startup, aborted);
-  // AssociateModels should be aborted and should return false.
-  SyncError error = (*associator)->AssociateModels();
-
-  // TODO(lipalani): crbug.com/122690 fix this when fixing abort.
-  // EXPECT_TRUE(error.IsSet());
-  delete *associator;
-  done->Signal();
 }
 
 // This test verifies that we can abort model association from the UI thread.

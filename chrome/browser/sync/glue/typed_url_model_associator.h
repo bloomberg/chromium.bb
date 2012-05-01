@@ -76,10 +76,10 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   // Delete all typed url nodes.
   bool DeleteAllNodes(sync_api::WriteTransaction* trans);
 
-  SyncError WriteToHistoryBackend(const history::URLRows* new_urls,
-                                  const TypedUrlUpdateVector* updated_urls,
-                                  const TypedUrlVisitVector* new_visits,
-                                  const history::VisitVector* deleted_visits);
+  void WriteToHistoryBackend(const history::URLRows* new_urls,
+                             const TypedUrlUpdateVector* updated_urls,
+                             const TypedUrlVisitVector* new_visits,
+                             const history::VisitVector* deleted_visits);
 
   // Given a typed URL in the sync DB, looks for an existing entry in the
   // local history DB and generates a list of visits to add to the
@@ -88,8 +88,7 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   // visits to add to/remove from the history DB, and adds a new entry to either
   // |updated_urls| or |new_urls| depending on whether the URL already existed
   // in the history DB.
-  // Returns false if we encountered an error trying to access the history DB.
-  SyncError UpdateFromSyncDB(const sync_pb::TypedUrlSpecifics& typed_url,
+  void UpdateFromSyncDB(const sync_pb::TypedUrlSpecifics& typed_url,
                         TypedUrlVisitVector* visits_to_add,
                         history::VisitVector* visits_to_remove,
                         TypedUrlUpdateVector* updated_urls,
@@ -101,6 +100,8 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   sync_pb::TypedUrlSpecifics FilterExpiredVisits(
       const sync_pb::TypedUrlSpecifics& specifics);
 
+  // Returns the percentage of DB accesses that have resulted in an error.
+  int GetErrorPercentage() const;
 
   // Bitfield returned from MergeUrls to specify the result of the merge.
   typedef uint32 MergeResult;
@@ -144,16 +145,16 @@ class TypedUrlModelAssociator : public AssociatorInterface {
                                        const history::VisitVector& visits,
                                        sync_pb::TypedUrlSpecifics* specifics);
 
-  // Helper function that fetches visits from the history DB corresponding to
-  // the passed URL. This function compensates for the fact that the history DB
-  // has rather poor data integrity (duplicate visits, visit timestamps that
-  // don't match the last_visit timestamp, huge data sets that exhaust memory
-  // when fetched, etc) by modifying the passed |url| object and |visits|
-  // vector.
-  // Returns false if we could not fetch the visits for the passed URL.
-  static bool FixupURLAndGetVisits(history::HistoryBackend* backend,
-                                   history::URLRow* url,
-                                   history::VisitVector* visits);
+  // Fetches visits from the history DB corresponding to the passed URL. This
+  // function compensates for the fact that the history DB has rather poor data
+  // integrity (duplicate visits, visit timestamps that don't match the
+  // last_visit timestamp, huge data sets that exhaust memory when fetched,
+  // etc) by modifying the passed |url| object and |visits| vector.
+  // Returns false if we could not fetch the visits for the passed URL, and
+  // tracks DB error statistics internally for reporting via UMA.
+  bool FixupURLAndGetVisits(history::HistoryBackend* backend,
+                            history::URLRow* url,
+                            history::VisitVector* visits);
 
   // Updates the passed |url_row| based on the values in |specifics|. Fields
   // that are not contained in |specifics| (such as typed_count) are left
@@ -165,7 +166,16 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   // Returns true if pending_abort_ is true. Overridable by tests.
   virtual bool IsAbortPending();
 
+  // Helper function that clears our error counters (used to reset stats after
+  // model association so we can track model association errors separately).
+  // Overridden by tests.
+  virtual void ClearErrorStats();
+
  private:
+
+  // Helper routine that actually does the work of associating models.
+  SyncError DoAssociateModels();
+
   // Helper function that determines if we should ignore a URL for the purposes
   // of sync, because it contains invalid data or is import-only.
   bool ShouldIgnoreUrl(const history::URLRow& url,
@@ -183,6 +193,11 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   bool pending_abort_;
 
   DataTypeErrorHandler* error_handler_; // Guaranteed to outlive datatypes.
+
+  // Statistics for the purposes of tracking the percentage of DB accesses that
+  // fail for each client via UMA.
+  int num_db_accesses_;
+  int num_db_errors_;
 
   DISALLOW_COPY_AND_ASSIGN(TypedUrlModelAssociator);
 };

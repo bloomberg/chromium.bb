@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
 
 #include "base/location.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_backend.h"
@@ -80,6 +81,8 @@ void TypedUrlChangeProcessor::Observe(
     HandleURLsVisited(
         content::Details<history::URLVisitedDetails>(details).ptr());
   }
+  UMA_HISTOGRAM_PERCENTAGE("Sync.TypedUrlChangeProcessorErrors",
+                           model_associator_->GetErrorPercentage());
 }
 
 void TypedUrlChangeProcessor::HandleURLsModified(
@@ -101,7 +104,7 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
   DCHECK_GT(url.typed_count(), 0);
   // Get the visits for this node.
   history::VisitVector visit_vector;
-  if (!TypedUrlModelAssociator::FixupURLAndGetVisits(
+  if (!model_associator_->FixupURLAndGetVisits(
           history_backend_, &url, &visit_vector)) {
     error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "Could not get the url's visits.");
@@ -281,14 +284,9 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
       continue;
     }
 
-    SyncError error = model_associator_->UpdateFromSyncDB(
+    model_associator_->UpdateFromSyncDB(
         filtered_url, &pending_new_visits_, &pending_deleted_visits_,
         &pending_updated_urls_, &pending_new_urls_);
-    if (error.IsSet()) {
-      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-          "Could not get existing url's visits.");
-      return;
-    }
   }
 }
 
@@ -303,23 +301,18 @@ void TypedUrlChangeProcessor::CommitChangesFromSyncModel() {
   if (!pending_deleted_urls_.empty())
     history_backend_->DeleteURLs(pending_deleted_urls_);
 
-  SyncError error = model_associator_->WriteToHistoryBackend(
-      &pending_new_urls_,
-      &pending_updated_urls_,
-      &pending_new_visits_,
-      &pending_deleted_visits_);
-
-  if (error.IsSet()) {
-    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-        "Could not write to the history backend.");
-    return;
-  }
+  model_associator_->WriteToHistoryBackend(&pending_new_urls_,
+                                           &pending_updated_urls_,
+                                           &pending_new_visits_,
+                                           &pending_deleted_visits_);
 
   pending_new_urls_.clear();
   pending_updated_urls_.clear();
   pending_new_visits_.clear();
   pending_deleted_visits_.clear();
   pending_deleted_urls_.clear();
+  UMA_HISTOGRAM_PERCENTAGE("Sync.TypedUrlChangeProcessorErrors",
+                           model_associator_->GetErrorPercentage());
 }
 
 void TypedUrlChangeProcessor::StartImpl(Profile* profile) {

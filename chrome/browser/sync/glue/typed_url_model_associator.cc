@@ -9,6 +9,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/sync/api/sync_error.h"
@@ -64,7 +65,9 @@ TypedUrlModelAssociator::TypedUrlModelAssociator(
       history_backend_(history_backend),
       expected_loop_(MessageLoop::current()),
       pending_abort_(false),
-      error_handler_(error_handler) {
+      error_handler_(error_handler),
+      num_db_accesses_(0),
+      num_db_errors_(0) {
   DCHECK(sync_service_);
   // history_backend_ may be null for unit tests (since it's not mockable).
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -73,13 +76,16 @@ TypedUrlModelAssociator::TypedUrlModelAssociator(
 TypedUrlModelAssociator::~TypedUrlModelAssociator() {}
 
 
-// static
 bool TypedUrlModelAssociator::FixupURLAndGetVisits(
     history::HistoryBackend* backend,
     history::URLRow* url,
     history::VisitVector* visits) {
-  if (!backend->GetMostRecentVisitsForURL(url->id(), kMaxVisitsToFetch, visits))
+  ++num_db_accesses_;
+  if (!backend->GetMostRecentVisitsForURL(
+          url->id(), kMaxVisitsToFetch, visits)) {
+    ++num_db_errors_;
     return false;
+  }
 
   // Sometimes (due to a bug elsewhere in the history or sync code, or due to
   // a crash between adding a URL to the history database and updating the
@@ -133,13 +139,33 @@ bool TypedUrlModelAssociator::ShouldIgnoreUrl(
 }
 
 SyncError TypedUrlModelAssociator::AssociateModels() {
+  ClearErrorStats();
+  SyncError error = DoAssociateModels();
+  UMA_HISTOGRAM_PERCENTAGE("Sync.TypedUrlModelAssociationErrors",
+                           GetErrorPercentage());
+  ClearErrorStats();
+  return error;
+}
+
+void TypedUrlModelAssociator::ClearErrorStats() {
+  num_db_accesses_ = 0;
+  num_db_errors_ = 0;
+}
+
+int TypedUrlModelAssociator::GetErrorPercentage() const {
+  return num_db_accesses_ ? (100 * num_db_errors_ / num_db_accesses_) : 0;
+}
+
+SyncError TypedUrlModelAssociator::DoAssociateModels() {
   DVLOG(1) << "Associating TypedUrl Models";
   SyncError error;
   DCHECK(expected_loop_ == MessageLoop::current());
   if (IsAbortPending())
     return SyncError();
   history::URLRows typed_urls;
+  ++num_db_accesses_;
   if (!history_backend_->GetAllTypedURLs(&typed_urls)) {
+    ++num_db_errors_;
     return error_handler_->CreateAndUploadError(
         FROM_HERE,
         "Could not get the typed_url entries.",
@@ -315,14 +341,11 @@ SyncError TypedUrlModelAssociator::AssociateModels() {
         // Update the local DB from the sync DB. Since we are doing our
         // initial model association, we don't want to remove any of the
         // existing visits (pass NULL as |visits_to_remove|).
-        error = UpdateFromSyncDB(filtered_url,
-                                 &new_visits,
-                                 NULL,
-                                 &updated_urls,
-                                 &new_urls);
-        if (error.IsSet()) {
-          return error;
-        }
+        UpdateFromSyncDB(filtered_url,
+                         &new_visits,
+                         NULL,
+                         &updated_urls,
+                         &new_urls);
       }
     }
 
@@ -351,24 +374,17 @@ SyncError TypedUrlModelAssociator::AssociateModels() {
   // this is the only thread that writes to the database.  We also don't have
   // to worry about the sync model getting out of sync, because changes are
   // propagated to the ChangeProcessor on this thread.
-  error = WriteToHistoryBackend(&new_urls, &updated_urls,
-                                &new_visits, NULL);
-  if (error.IsSet()) {
-    return error;
-  }
+  WriteToHistoryBackend(&new_urls, &updated_urls, &new_visits, NULL);
   return error;
 }
 
-SyncError TypedUrlModelAssociator::UpdateFromSyncDB(
+void TypedUrlModelAssociator::UpdateFromSyncDB(
     const sync_pb::TypedUrlSpecifics& typed_url,
     TypedUrlVisitVector* visits_to_add,
     history::VisitVector* visits_to_remove,
     TypedUrlUpdateVector* updated_urls,
     history::URLRows* new_urls) {
   history::URLRow new_url(GURL(typed_url.url()));
-  visits_to_add->push_back(std::pair<GURL, std::vector<history::VisitInfo> >(
-      new_url.url(), std::vector<history::VisitInfo>()));
-
   history::VisitVector existing_visits;
   bool existing_url = history_backend_->GetURL(new_url.url(), &new_url);
   if (existing_url) {
@@ -377,11 +393,14 @@ SyncError TypedUrlModelAssociator::UpdateFromSyncDB(
     if (!FixupURLAndGetVisits(
             history_backend_, &new_url, &existing_visits)) {
       // Couldn't load the visits for this URL due to some kind of DB error.
-      // Just treat this URL as if it were not an existing URL.
-      LOG(ERROR) << "Could not load visits for url: " << new_url.url();
-      existing_url = false;
+      // Don't bother writing this URL to the history DB (if we ignore the
+      // error and continue, we might end up duplicating existing visits).
+      DLOG(ERROR) << "Could not load visits for url: " << new_url.url();
+      return;
     }
   }
+  visits_to_add->push_back(std::pair<GURL, std::vector<history::VisitInfo> >(
+      new_url.url(), std::vector<history::VisitInfo>()));
 
   // Update the URL with information from the typed URL.
   UpdateURLRowFromTypedUrlSpecifics(typed_url, &new_url);
@@ -396,8 +415,6 @@ SyncError TypedUrlModelAssociator::UpdateFromSyncDB(
   } else {
     new_urls->push_back(new_url);
   }
-
-  return SyncError();
 }
 
 sync_pb::TypedUrlSpecifics TypedUrlModelAssociator::FilterExpiredVisits(
@@ -473,7 +490,7 @@ bool TypedUrlModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   return true;
 }
 
-SyncError TypedUrlModelAssociator::WriteToHistoryBackend(
+void TypedUrlModelAssociator::WriteToHistoryBackend(
     const history::URLRows* new_urls,
     const TypedUrlUpdateVector* updated_urls,
     const TypedUrlVisitVector* new_visits,
@@ -488,12 +505,13 @@ SyncError TypedUrlModelAssociator::WriteToHistoryBackend(
       // visit_count or typed_count values here, because either one (or both)
       // could be zero in the case of bookmarks, or in the case of a URL
       // transitioning from non-typed to typed as a result of this sync.
+      ++num_db_accesses_;
       if (!history_backend_->UpdateURL(url->first, url->second)) {
-        LOG(ERROR) << "Could not update page: " << url->second.url().spec();
-        return error_handler_->CreateAndUploadError(
-            FROM_HERE,
-            "UpdateURl() failed",
-            model_type());
+        // In the field we sometimes run into errors on specific URLs. It's OK
+        // to just continue on (we can try writing again on the next model
+        // association).
+        ++num_db_errors_;
+        DLOG(ERROR) << "Could not update page: " << url->second.url().spec();
       }
     }
   }
@@ -503,28 +521,24 @@ SyncError TypedUrlModelAssociator::WriteToHistoryBackend(
       // If there are no visits to add, just skip this.
       if (visits->second.empty())
         continue;
+      ++num_db_accesses_;
       if (!history_backend_->AddVisits(visits->first, visits->second,
                                        history::SOURCE_SYNCED)) {
-        LOG(ERROR) << "Could not add visits.";
-        return error_handler_->CreateAndUploadError(
-            FROM_HERE,
-            "AddVisits() failed",
-            model_type());
-
+        ++num_db_errors_;
+        DLOG(ERROR) << "Could not add visits.";
       }
     }
   }
   if (deleted_visits) {
+    ++num_db_accesses_;
     if (!history_backend_->RemoveVisits(*deleted_visits)) {
-      LOG(ERROR) << "Could not remove visits.";
-      return error_handler_->CreateAndUploadError(
-          FROM_HERE,
-          "RemoveVisits() failed",
-          model_type());
-
+      ++num_db_errors_;
+      DLOG(ERROR) << "Could not remove visits.";
+      // This is bad news, since it means we may end up resurrecting history
+      // entries on the next reload. It's unavoidable so we'll just keep on
+      // syncing.
     }
   }
-  return SyncError();
 }
 
 // static

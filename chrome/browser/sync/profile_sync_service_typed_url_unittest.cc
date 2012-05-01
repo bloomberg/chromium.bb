@@ -81,6 +81,7 @@ using testing::Return;
 using testing::SetArgumentPointee;
 using testing::WithArgs;
 
+namespace {
 // Visits with this timestamp are treated as expired.
 static const int EXPIRED_VISIT = -1;
 
@@ -117,6 +118,20 @@ class HistoryServiceMock : public HistoryService {
   virtual ~HistoryServiceMock() {}
 };
 
+class TestTypedUrlModelAssociator : public TypedUrlModelAssociator {
+ public:
+  TestTypedUrlModelAssociator(
+      ProfileSyncService* sync_service,
+      history::HistoryBackend* history_backend,
+      browser_sync::DataTypeErrorHandler* error_handler) :
+      TypedUrlModelAssociator(sync_service, history_backend, error_handler) {}
+
+ protected:
+  // Don't clear error stats - that way we can verify their values in our
+  // tests.
+  virtual void ClearErrorStats() {}
+};
+
 void RunOnDBThreadCallback(HistoryBackend* backend,
                            HistoryDBTask* task) {
   task->RunOnDBThread(backend, NULL);
@@ -131,17 +146,18 @@ ACTION_P2(RunTaskOnDBThread, thread, backend) {
                             task));
 }
 
-ACTION_P5(MakeTypedUrlSyncComponents,
+ACTION_P6(MakeTypedUrlSyncComponents,
               profile,
               service,
               hb,
               dtc,
-              error_handler) {
-  TypedUrlModelAssociator* model_associator =
-      new TypedUrlModelAssociator(service, hb, error_handler);
+              error_handler,
+              model_associator) {
+  *model_associator =
+      new TestTypedUrlModelAssociator(service, hb, error_handler);
   TypedUrlChangeProcessor* change_processor =
-      new TypedUrlChangeProcessor(profile, model_associator, hb, dtc);
-  return ProfileSyncComponentsFactory::SyncComponents(model_associator,
+      new TypedUrlChangeProcessor(profile, *model_associator, hb, dtc);
+  return ProfileSyncComponentsFactory::SyncComponents(*model_associator,
                                                       change_processor);
 }
 
@@ -187,7 +203,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     AbstractProfileSyncServiceTest::TearDown();
   }
 
-  void StartSyncService(const base::Closure& callback) {
+  TypedUrlModelAssociator* StartSyncService(const base::Closure& callback) {
+    TypedUrlModelAssociator* model_associator = NULL;
     if (!service_.get()) {
       SigninManager* signin = SigninManagerFactory::GetForProfile(&profile_);
       signin->SetAuthenticatedUsername("test");
@@ -213,7 +230,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
                                               service_.get(),
                                               history_backend_.get(),
                                               data_type_controller,
-                                              &error_handler_));
+                                              &error_handler_,
+                                              &model_associator));
       EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
           WillOnce(ReturnNewDataTypeManager());
 
@@ -231,6 +249,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       service_->Initialize();
       MessageLoop::current()->Run();
     }
+    return model_associator;
   }
 
   void GetTypedUrlsFromSyncDB(history::URLRows* urls) {
@@ -322,15 +341,19 @@ void AddTypedUrlEntries(ProfileSyncServiceTypedUrlTest* test,
   }
 }
 
+} // namespace
+
 TEST_F(ProfileSyncServiceTypedUrlTest, EmptyNativeEmptySync) {
   EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
       WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
   CreateRootHelper create_root(this, syncable::TYPED_URLS);
-  StartSyncService(create_root.callback());
+  TypedUrlModelAssociator* associator =
+      StartSyncService(create_root.callback());
   history::URLRows sync_entries;
   GetTypedUrlsFromSyncDB(&sync_entries);
   EXPECT_EQ(0U, sync_entries.size());
+  ASSERT_EQ(0, associator->GetErrorPercentage());
 }
 
 TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeEmptySync) {
@@ -345,11 +368,13 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeEmptySync) {
       WillRepeatedly(DoAll(SetArgumentPointee<2>(visits), Return(true)));
   SetIdleChangeProcessorExpectations();
   CreateRootHelper create_root(this, syncable::TYPED_URLS);
-  StartSyncService(create_root.callback());
+  TypedUrlModelAssociator* associator =
+      StartSyncService(create_root.callback());
   history::URLRows sync_entries;
   GetTypedUrlsFromSyncDB(&sync_entries);
   ASSERT_EQ(1U, sync_entries.size());
   EXPECT_TRUE(URLsEqual(entries[0], sync_entries[0]));
+  ASSERT_EQ(0, associator->GetErrorPercentage());
 }
 
 TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeErrorReadingVisits) {
@@ -845,6 +870,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailWriteToHistoryBackend) {
   native_entries.push_back(native_entry);
   EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
       WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(true)));
+  EXPECT_CALL((*history_backend_.get()), GetURL(_, _)).
+      WillOnce(DoAll(SetArgumentPointee<1>(native_entry), Return(true)));
   EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
       WillRepeatedly(DoAll(SetArgumentPointee<2>(native_visits), Return(true)));
   EXPECT_CALL((*history_backend_.get()),
@@ -855,14 +882,47 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailWriteToHistoryBackend) {
 
   EXPECT_CALL((*history_backend_.get()), UpdateURL(_, _)).
       WillRepeatedly(Return(false));
+  TypedUrlModelAssociator* associator =
+      StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
+  // Errors writing to the DB should be recorded, but should not cause an
+  // unrecoverable error.
+  ASSERT_FALSE(
+      service_->failed_datatypes_handler().GetFailedTypes().Has(
+          syncable::TYPED_URLS));
+  // Some calls should have succeeded, so the error percentage should be
+  // somewhere > 0 and < 100.
+  ASSERT_NE(0, associator->GetErrorPercentage());
+  ASSERT_NE(100, associator->GetErrorPercentage());
+}
+
+TEST_F(ProfileSyncServiceTypedUrlTest, FailToGetTypedURLs) {
+  history::VisitVector native_visits;
+  history::VisitVector sync_visits;
+  history::URLRow native_entry(MakeTypedUrlEntry("http://native.com", "entry",
+                                                 2, 15, false, &native_visits));
+  history::URLRow sync_entry(MakeTypedUrlEntry("http://sync.com", "entry",
+                                               3, 16, false, &sync_visits));
+
+  history::URLRows native_entries;
+  native_entries.push_back(native_entry);
+  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
+      WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(false)));
+
+  history::URLRows sync_entries;
+  sync_entries.push_back(sync_entry);
+
   EXPECT_CALL(error_handler_, CreateAndUploadError(_, _, _)).
               WillOnce(Return(SyncError(FROM_HERE,
-                                         "Unit test",
-                                         syncable::TYPED_URLS)));
+                                        "Unit test",
+                                        syncable::TYPED_URLS)));
   StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
+  // Errors getting typed URLs will cause an unrecoverable error (since we can
+  // do *nothing* in that case).
   ASSERT_TRUE(
       service_->failed_datatypes_handler().GetFailedTypes().Has(
           syncable::TYPED_URLS));
   ASSERT_EQ(
       1u, service_->failed_datatypes_handler().GetFailedTypes().Size());
+  // Can't check GetErrorPercentage(), because generating an unrecoverable
+  // error will free the model associator.
 }
