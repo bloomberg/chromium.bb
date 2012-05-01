@@ -273,11 +273,12 @@ class DownloadTest : public InProcessBrowserTest {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
+    ASSERT_TRUE(InitialSetup());
   }
 
   // Returning false indicates a failure of the setup, and should be asserted
   // in the caller.
-  virtual bool InitialSetup(bool prompt_for_download) {
+  virtual bool InitialSetup() {
     bool have_test_dir = PathService::Get(chrome::DIR_TEST_DATA, &test_dir_);
     EXPECT_TRUE(have_test_dir);
     if (!have_test_dir)
@@ -294,8 +295,8 @@ class DownloadTest : public InProcessBrowserTest {
     EXPECT_TRUE(created_downloads_dir);
     if (!created_downloads_dir)
       return false;
-    browser()->profile()->GetPrefs()->SetBoolean(prefs::kPromptForDownload,
-                                                 prompt_for_download);
+    browser()->profile()->GetPrefs()->SetBoolean(
+        prefs::kPromptForDownload, false);
 
     DownloadManager* manager = DownloadManagerForBrowser(browser());
     DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
@@ -492,9 +493,6 @@ class DownloadTest : public InProcessBrowserTest {
                    SizeTestType type,
                    const std::string& partial_indication,
                    const std::string& total_indication) {
-    if (!InitialSetup(false))
-      return false;
-
     EXPECT_TRUE(type == SIZE_TEST_TYPE_UNKNOWN || type == SIZE_TEST_TYPE_KNOWN);
     if (type != SIZE_TEST_TYPE_KNOWN && type != SIZE_TEST_TYPE_UNKNOWN)
       return false;
@@ -813,8 +811,6 @@ class DownloadTest : public InProcessBrowserTest {
   // in |download_info|.
   void DownloadFilesToReadonlyFolder(size_t count,
                                      DownloadInfo* download_info) {
-    ASSERT_TRUE(InitialSetup(false));  // Creates temporary download folder.
-
     DownloadFilesCheckErrorsSetup();
 
     // Make the test folder unwritable.
@@ -861,7 +857,6 @@ class DownloadTest : public InProcessBrowserTest {
 
 // Download a file due to the associated MIME type.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeType) {
-  ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
 
@@ -878,7 +873,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeType) {
 // Download a file and confirm that the zone identifier (on windows)
 // is set to internet.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CheckInternetZone) {
-  ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
 
@@ -899,7 +893,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CheckInternetZone) {
 // Put up a Select File dialog when the file is downloaded, due to
 // downloads preferences settings.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeTypeSelect) {
-  ASSERT_TRUE(InitialSetup(true));
+  // Re-enable prompting.
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kPromptForDownload, true);
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
 
@@ -930,7 +926,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeTypeSelect) {
 // Access a file with a viewable mime-type, verify that a download
 // did not initiate.
 IN_PROC_BROWSER_TEST_F(DownloadTest, NoDownload) {
-  ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test2.html"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
   FilePath file_path(DestinationFile(browser(), file));
@@ -949,8 +944,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NoDownload) {
 // Verify that when the DownloadResourceThrottle cancels a download, the
 // download never makes it to the downloads system.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
-  ASSERT_TRUE(InitialSetup(false));
-
   // Navigate to a page with the same domain as the file to download.  We can't
   // navigate directly to the file we don't want to download because cross-site
   // navigations reset the TabDownloadState.
@@ -1009,7 +1002,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
 // header.  This also ensures we properly handle empty file downloads.
 // The download shelf should be visible in the current tab.
 IN_PROC_BROWSER_TEST_F(DownloadTest, ContentDisposition) {
-  ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test3.gif"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
   FilePath download_file(FILE_PATH_LITERAL("download-test3-attachment.gif"));
@@ -1028,7 +1020,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ContentDisposition) {
 // tab, opening a second tab, closing the shelf, going back to the first tab,
 // and checking that the shelf is closed.
 IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
-  ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test3.gif"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
   FilePath download_file(FILE_PATH_LITERAL("download-test3-attachment.gif"));
@@ -1064,7 +1055,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
 // Check whether the downloads shelf is closed when the downloads tab is
 // invoked.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CloseShelfOnDownloadsTab) {
-  ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
 
@@ -1104,7 +1094,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, KnownSize) {
 // Also check that the download shelf is not visible after closing the
 // Incognito window.
 IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownload) {
-  ASSERT_TRUE(InitialSetup(false));
   // Open an Incognito window.
   Browser* incognito = CreateIncognitoBrowser();  // Waits.
   ASSERT_TRUE(incognito);
@@ -1154,7 +1143,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownload) {
 // Navigate to a new background page, but don't download.  Confirm that the
 // download shelf is not visible and that we have two tabs.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab1) {
-  ASSERT_TRUE(InitialSetup(false));
   // Because it's an HTML link, it should open a web page rather than
   // downloading.
   FilePath file1(FILE_PATH_LITERAL("download-test2.html"));
@@ -1175,8 +1163,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab1) {
 // Download a file in a background tab. Verify that the tab is closed
 // automatically, and that the download shelf is visible in the current tab.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab1) {
-  ASSERT_TRUE(InitialSetup(false));
-
   // Download a file in a new background tab and wait.  The tab is automatically
   // closed when the download begins.
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
@@ -1203,7 +1189,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab1) {
 // The download_page1.html page contains an openNew() function that opens a
 // tab and then downloads download-test1.lib.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab2) {
-  ASSERT_TRUE(InitialSetup(false));
   // Because it's an HTML link, it should open a web page rather than
   // downloading.
   FilePath file1(FILE_PATH_LITERAL("download_page1.html"));
@@ -1235,7 +1220,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab2) {
 // The download_page2.html page contains an openNew() function that opens a
 // tab.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab3) {
-  ASSERT_TRUE(InitialSetup(false));
   // Because it's an HTML link, it should open a web page rather than
   // downloading.
   FilePath file1(FILE_PATH_LITERAL("download_page2.html"));
@@ -1277,7 +1261,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab3) {
 // tab with download-test1.lib in the URL.  When the URL is determined to be
 // a download, the tab is closed automatically.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab2) {
-  ASSERT_TRUE(InitialSetup(false));
   // Because it's an HTML link, it should open a web page rather than
   // downloading.
   FilePath file1(FILE_PATH_LITERAL("download_page3.html"));
@@ -1310,7 +1293,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab2) {
 // The download_page4.html page contains a form with download-test1.lib as the
 // action.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab3) {
-  ASSERT_TRUE(InitialSetup(false));
   // Because it's an HTML link, it should open a web page rather than
   // downloading.
   FilePath file1(FILE_PATH_LITERAL("download_page4.html"));
@@ -1345,7 +1327,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab3) {
 //
 // Regression test for http://crbug.com/44454
 IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
-  ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
 #if !defined(OS_MACOSX)
@@ -1405,7 +1386,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
 // Check that downloading multiple (in this case, 2) files does not result in
 // corrupted files.
 IN_PROC_BROWSER_TEST_F(DownloadTest, MultiDownload) {
-  ASSERT_TRUE(InitialSetup(false));
   EXPECT_EQ(1, browser()->tab_count());
 
   // Create a download, wait until it's started, and confirm
@@ -1475,7 +1455,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MultiDownload) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {
-  ASSERT_TRUE(InitialSetup(false));
   EXPECT_EQ(1, browser()->tab_count());
 
   // TODO(rdsmith): Fragile code warning!  The code below relies on the
@@ -1527,7 +1506,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {
 
 // Confirm a download makes it into the history properly.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
-  ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
   FilePath origin_file(OriginFile(file));
@@ -1565,7 +1543,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
 // Test for crbug.com/14505. This tests that chrome:// urls are still functional
 // after download of a file while viewing another chrome://.
 IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
-  ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));
   GURL flags_url(chrome::kChromeUIFlagsURL);
@@ -1589,7 +1566,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
 // a chrome:// page that has registered and onunload handler, the browser
 // will be able to close.
 IN_PROC_BROWSER_TEST_F(DownloadTest, BrowserCloseAfterDownload) {
-  ASSERT_TRUE(InitialSetup(false));
   GURL downloads_url(chrome::kChromeUIFlagsURL);
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));
@@ -1617,7 +1593,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, BrowserCloseAfterDownload) {
 
 // Test to make sure the 'download' attribute in anchor tag is respected.
 IN_PROC_BROWSER_TEST_F(DownloadTest, AnchorDownloadTag) {
-  ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-anchor-attrib.html"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
 
@@ -1644,7 +1619,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AnchorDownloadTag) {
 
 // Test to make sure auto-open works.
 IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_AutoOpen) {
-  ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-autoopen.txt"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
 
@@ -1675,7 +1649,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_AutoOpen) {
 // Download an extension.  Expect a dangerous download warning.
 // Deny the download.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
-  ASSERT_TRUE(InitialSetup(false));
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
 
   scoped_ptr<DownloadTestObserver> observer(
@@ -1700,7 +1673,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
 // Download an extension.  Expect a dangerous download warning.
 // Allow the download, deny the install.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
-  ASSERT_TRUE(InitialSetup(false));
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
 
   // Install a mock install UI that simulates a user denying permission to
@@ -1731,7 +1703,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
 // Download an extension.  Expect a dangerous download warning.
 // Allow the download, and the install.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallAcceptPermissions) {
-  ASSERT_TRUE(InitialSetup(false));
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
 
   // Install a mock install UI that simulates a user allowing permission to
@@ -1761,7 +1732,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallAcceptPermissions) {
 
 // Test installing a CRX that fails integrity checks.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInvalid) {
-  ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("extensions/bad_signature.crx"));
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(file));
 
@@ -1789,7 +1759,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInvalid) {
 
 // Install a large (100kb) theme.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxLargeTheme) {
-  ASSERT_TRUE(InitialSetup(false));
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kLargeThemePath));
 
   // Install a mock install UI that simulates a user allowing permission to
@@ -1824,8 +1793,6 @@ static bool DownloadItemSorter(DownloadItem* d1, DownloadItem* d2) {
 
 // Confirm that searching through the history works properly
 IN_PROC_BROWSER_TEST_F(DownloadTest, SearchDownloads) {
-  ASSERT_TRUE(InitialSetup(false));
-
   // Downloads to populate history with.
   base::Time current(base::Time::Now());
   DownloadPersistentStoreInfo population_entries[] = {
@@ -1951,7 +1918,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SearchDownloads) {
 
 // Tests for download initiation functions.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
-  ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
 
@@ -1983,7 +1949,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
-  ASSERT_TRUE(InitialSetup(false));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
 
@@ -2016,7 +1981,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
   // Do initial setup.
-  ASSERT_TRUE(InitialSetup(false));
   ASSERT_TRUE(test_server()->Start());
   NullSelectFile(browser());
   std::vector<DownloadItem*> download_items;
@@ -2078,7 +2042,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   // Do initial setup.
-  ASSERT_TRUE(InitialSetup(false));
   ASSERT_TRUE(test_server()->Start());
   NullSelectFile(browser());
   std::vector<DownloadItem*> download_items;
@@ -2200,9 +2163,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsServer) {
       false
     }
   };
-
-  // Do initial setup.
-  ASSERT_TRUE(InitialSetup(false));
 
   DownloadFilesCheckErrors(ARRAYSIZE_UNSAFE(download_info), download_info);
 }
@@ -2410,8 +2370,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorReadonlyFolder) {
 // Test that we show a dangerous downloads warning for a dangerous file
 // downloaded through a blob: URL.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDangerousBlobData) {
-  ASSERT_TRUE(InitialSetup(false));
-
 #if defined(OS_WIN)
   // On Windows, if SafeBrowsing is enabled, certain file types (.exe, .cab,
   // .msi) will be handled by the DownloadProtectionService. However, if the URL
