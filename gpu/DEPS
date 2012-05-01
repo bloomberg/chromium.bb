@@ -7,5 +7,6 @@ include_rules = [
   "+../common",
   "+../GLES2",
   "+../service",
+  "+crypto",
   "+ui/gfx",
 ]

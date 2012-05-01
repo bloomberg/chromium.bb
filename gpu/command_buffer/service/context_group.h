@@ -22,9 +22,10 @@ class IdAllocatorInterface;
 
 namespace gles2 {
 
-class GLES2Decoder;
 class BufferManager;
+class GLES2Decoder;
 class FramebufferManager;
+class MailboxManager;
 class RenderbufferManager;
 class ProgramManager;
 class ShaderManager;
@@ -37,7 +38,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
  public:
   typedef scoped_refptr<ContextGroup> Ref;
 
-  explicit ContextGroup(bool bind_generates_resource);
+  explicit ContextGroup(MailboxManager* mailbox_manager,
+                        bool bind_generates_resource);
   ~ContextGroup();
 
   // This should only be called by GLES2Decoder. This must be paired with a
@@ -48,6 +50,10 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   // Destroys all the resources when called for the last context in the group.
   // It should only be called by GLES2Decoder.
   void Destroy(bool have_context);
+
+  MailboxManager* mailbox_manager() const {
+    return mailbox_manager_.get();
+  }
 
   bool bind_generates_resource() {
     return bind_generates_resource_;
@@ -116,6 +122,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   bool CheckGLFeatureU(GLint min_required, uint32* v);
   bool QueryGLFeature(GLenum pname, GLint min_required, GLint* v);
   bool QueryGLFeatureU(GLenum pname, GLint min_required, uint32* v);
+
+  scoped_refptr<MailboxManager> mailbox_manager_;
 
   // Whether or not this context is initialized.
   int num_contexts_;

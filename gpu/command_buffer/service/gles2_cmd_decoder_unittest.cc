@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_base.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/stream_texture_mock.h"
 #include "gpu/command_buffer/service/stream_texture_manager_mock.h"
 #include "gpu/command_buffer/service/program_manager.h"
@@ -6787,6 +6788,132 @@ TEST_F(GLES2DecoderTest, BeingEndQueryEXTCommandsIssuedCHROMIUM) {
   EXPECT_FALSE(query->pending());
 }
 
+TEST_F(GLES2DecoderTest, GenMailboxCHROMIUM) {
+  const uint32 kBucketId = 123;
+
+  GenMailboxCHROMIUM gen_mailbox_cmd;
+  gen_mailbox_cmd.Init(kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(gen_mailbox_cmd));
+
+  CommonDecoder::Bucket* bucket = decoder_->GetBucket(kBucketId);
+  ASSERT_TRUE(bucket != NULL);
+  ASSERT_EQ(static_cast<uint32>(GL_MAILBOX_SIZE_CHROMIUM), bucket->size());
+
+  static const GLbyte zero[GL_MAILBOX_SIZE_CHROMIUM] = {
+    0
+  };
+  EXPECT_NE(0, memcmp(zero,
+                      bucket->GetData(0, GL_MAILBOX_SIZE_CHROMIUM),
+                      sizeof(zero)));
+}
+
+TEST_F(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
+  GLbyte mailbox[GL_MAILBOX_SIZE_CHROMIUM];
+  group().mailbox_manager()->GenerateMailboxName(
+      reinterpret_cast<MailboxName*>(mailbox));
+
+  memcpy(shared_memory_address_, mailbox, sizeof(mailbox));
+
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               0, 0);
+  DoTexImage2D(GL_TEXTURE_2D, 1, GL_RGBA, 2, 4, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               0, 0);
+  TextureManager::TextureInfo* info =
+      group().texture_manager()->GetTextureInfo(client_texture_id_);
+  EXPECT_EQ(kServiceTextureId, info->service_id());
+
+  // Assigns and binds new service side texture ID and applies the texture
+  // objects' state to it.
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+      .WillOnce(SetArgumentPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kNewServiceId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
+                                  GL_TEXTURE_MIN_FILTER,
+                                  GL_NEAREST_MIPMAP_LINEAR));
+  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
+                                  GL_TEXTURE_MAG_FILTER,
+                                  GL_LINEAR));
+  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
+                                  GL_TEXTURE_WRAP_S,
+                                  GL_REPEAT));
+  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
+                                  GL_TEXTURE_WRAP_T,
+                                  GL_REPEAT));
+
+  ProduceTextureCHROMIUM produce_cmd;
+  produce_cmd.Init(GL_TEXTURE_2D, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(produce_cmd));
+
+  // Texture is zero-by-zero.
+  GLsizei width;
+  GLsizei height;
+  GLenum type;
+  GLenum internal_format;
+
+  EXPECT_TRUE(info->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  EXPECT_EQ(0, width);
+  EXPECT_EQ(0, height);
+  EXPECT_TRUE(info->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
+  EXPECT_EQ(static_cast<GLenum>(GL_RGBA), internal_format);
+  EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
+
+  EXPECT_TRUE(info->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
+  EXPECT_EQ(0, width);
+  EXPECT_EQ(0, height);
+  EXPECT_TRUE(info->GetLevelType(GL_TEXTURE_2D, 1, &type, &internal_format));
+  EXPECT_EQ(static_cast<GLenum>(GL_RGBA), internal_format);
+  EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
+
+  // Service ID has changed.
+  EXPECT_EQ(kNewServiceId, info->service_id());
+
+  // Assigns and binds original service side texture ID and applies the texture
+  // objects' state to it.
+  EXPECT_CALL(*gl_, DeleteTextures(1, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kServiceTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
+                                  GL_TEXTURE_MIN_FILTER,
+                                  GL_NEAREST_MIPMAP_LINEAR));
+  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
+                                  GL_TEXTURE_MAG_FILTER,
+                                  GL_LINEAR));
+  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
+                                  GL_TEXTURE_WRAP_S,
+                                  GL_REPEAT));
+  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
+                                  GL_TEXTURE_WRAP_T,
+                                  GL_REPEAT));
+
+  ConsumeTextureCHROMIUM consume_cmd;
+  consume_cmd.Init(GL_TEXTURE_2D, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(consume_cmd));
+
+  // Texture is redefined.
+  EXPECT_TRUE(info->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  EXPECT_EQ(3, width);
+  EXPECT_EQ(1, height);
+  EXPECT_TRUE(info->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
+  EXPECT_EQ(static_cast<GLenum>(GL_RGBA), internal_format);
+  EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
+
+  EXPECT_TRUE(info->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
+  EXPECT_EQ(2, width);
+  EXPECT_EQ(4, height);
+  EXPECT_TRUE(info->GetLevelType(GL_TEXTURE_2D, 1, &type, &internal_format));
+  EXPECT_EQ(static_cast<GLenum>(GL_RGBA), internal_format);
+  EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
+
+  // Service ID is restored.
+  EXPECT_EQ(kServiceTextureId, info->service_id());
+}
 
 // TODO(gman): Complete this test.
 // TEST_F(GLES2DecoderTest, CompressedTexImage2DGLError) {

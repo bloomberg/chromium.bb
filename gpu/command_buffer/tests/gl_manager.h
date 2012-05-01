@@ -25,6 +25,7 @@ class GpuScheduler;
 
 namespace gles2 {
 
+class MailboxManager;
 class GLES2Decoder;
 class GLES2CmdHelper;
 class GLES2Implementation;
@@ -33,7 +34,8 @@ class GLES2Implementation;
 
 class GLManager {
  public:
-  GLManager();
+  GLManager(gles2::MailboxManager* mailbox_manager,
+            gfx::GLShareGroup* share_group);
   ~GLManager();
 
   void Initialize(const gfx::Size& size);
@@ -45,6 +47,7 @@ class GLManager {
   void PumpCommands();
   bool GetBufferChanged(int32 transfer_buffer_id);
 
+  scoped_refptr<gles2::MailboxManager> mailbox_manager_;
   scoped_refptr<gfx::GLShareGroup> share_group_;
   scoped_ptr<CommandBufferService> command_buffer_;
   scoped_ptr<gles2::GLES2Decoder> decoder_;

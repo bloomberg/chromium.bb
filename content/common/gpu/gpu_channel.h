@@ -156,6 +156,8 @@ class GpuChannel : public IPC::Channel::Listener,
   // process use.
   scoped_refptr<gfx::GLShareGroup> share_group_;
 
+  scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
+
 #if defined(ENABLE_GPU)
   typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;
   StubMap stubs_;

@@ -3138,5 +3138,20 @@ void GLES2Implementation::DrawElementsInstancedANGLE(
 #endif
 }
 
+void GLES2Implementation::GenMailboxCHROMIUM(
+    GLbyte* mailbox) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] glGenMailboxCHROMIUM("
+      << static_cast<const void*>(mailbox) << ")");
+  TRACE_EVENT0("gpu", "GLES2::GenMailboxCHROMIUM");
+
+  helper_->GenMailboxCHROMIUM(kResultBucketId);
+
+  std::vector<GLbyte> result;
+  GetBucketContents(kResultBucketId, &result);
+
+  std::copy(result.begin(), result.end(), mailbox);
+}
+
 }  // namespace gles2
 }  // namespace gpu

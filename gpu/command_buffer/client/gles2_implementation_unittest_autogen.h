@@ -1666,5 +1666,35 @@ TEST_F(GLES2ImplementationTest, VertexAttribDivisorANGLE) {
   gl_->VertexAttribDivisorANGLE(1, 2);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+
+TEST_F(GLES2ImplementationTest, ProduceTextureCHROMIUM) {
+  struct Cmds {
+    ProduceTextureCHROMIUMImmediate cmd;
+    GLbyte data[64];
+  };
+
+  Cmds expected;
+  for (int jj = 0; jj < 64; ++jj) {
+    expected.data[jj] = static_cast<GLbyte>(jj);
+  }
+  expected.cmd.Init(GL_TEXTURE_2D, &expected.data[0]);
+  gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, &expected.data[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, ConsumeTextureCHROMIUM) {
+  struct Cmds {
+    ConsumeTextureCHROMIUMImmediate cmd;
+    GLbyte data[64];
+  };
+
+  Cmds expected;
+  for (int jj = 0; jj < 64; ++jj) {
+    expected.data[jj] = static_cast<GLbyte>(jj);
+  }
+  expected.cmd.Init(GL_TEXTURE_2D, &expected.data[0]);
+  gl_->ConsumeTextureCHROMIUM(GL_TEXTURE_2D, &expected.data[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_
 

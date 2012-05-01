@@ -223,6 +223,7 @@
         'command_buffer/tests/gl_tests_main.cc',
         'command_buffer/tests/gl_manager.cc',
         'command_buffer/tests/gl_manager.h',
+        'command_buffer/tests/gl_texture_mailbox_unittests.cc',
         'command_buffer/tests/gl_unittests.cc',
       ],
     },

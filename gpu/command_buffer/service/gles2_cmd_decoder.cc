@@ -36,6 +36,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
@@ -43,6 +44,7 @@
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "gpu/command_buffer/service/stream_texture.h"
 #include "gpu/command_buffer/service/stream_texture_manager.h"
+#include "gpu/command_buffer/service/texture_definition.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "ui/gfx/gl/gl_context.h"
@@ -509,6 +511,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Sets DEPTH_TEST, STENCIL_TEST and color mask for the current framebuffer.
   void ApplyDirtyState();
 
+  // Reapply the texture parameters to the given texture.
+  void BindAndApplyTextureParameters(TextureManager::TextureInfo* info);
+
   // These check the state of the currently bound framebuffer or the
   // backbuffer if no framebuffer is bound.
   bool BoundFramebufferHasColorAttachmentWithAlpha();
@@ -617,6 +622,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   TextureManager* texture_manager() {
     return group_->texture_manager();
+  }
+
+  MailboxManager* mailbox_manager() {
+    return group_->mailbox_manager();
   }
 
   bool IsOffscreenBufferMultisampled() const {
@@ -741,6 +750,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     GLenum internal_format,
     GLsizei width,
     GLsizei height);
+
+  void DoProduceTextureCHROMIUM(GLenum target, const GLbyte* key);
+  void DoConsumeTextureCHROMIUM(GLenum target, const GLbyte* key);
 
   // Creates a ProgramInfo for the given program.
   ProgramManager::ProgramInfo* CreateProgramInfo(
@@ -3263,6 +3275,15 @@ void GLES2DecoderImpl::ApplyDirtyState() {
     EnableDisable(GL_SCISSOR_TEST, enable_scissor_test_);
     state_dirty_ = false;
   }
+}
+
+void GLES2DecoderImpl::BindAndApplyTextureParameters(
+    TextureManager::TextureInfo* info) {
+  glBindTexture(info->target(), info->service_id());
+  glTexParameteri(info->target(), GL_TEXTURE_MIN_FILTER, info->min_filter());
+  glTexParameteri(info->target(), GL_TEXTURE_MAG_FILTER, info->mag_filter());
+  glTexParameteri(info->target(), GL_TEXTURE_WRAP_S, info->wrap_s());
+  glTexParameteri(info->target(), GL_TEXTURE_WRAP_T, info->wrap_t());
 }
 
 GLuint GLES2DecoderImpl::GetBackbufferServiceId() {
@@ -8505,6 +8526,78 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
     }
     info->SetImmutable(true);
   }
+}
+
+error::Error GLES2DecoderImpl::HandleGenMailboxCHROMIUM(
+    uint32 immediate_data_size, const gles2::GenMailboxCHROMIUM& c) {
+  MailboxName name;
+  mailbox_manager()->GenerateMailboxName(&name);
+  uint32 bucket_id = static_cast<uint32>(c.bucket_id);
+  Bucket* bucket = CreateBucket(bucket_id);
+
+  bucket->SetSize(GL_MAILBOX_SIZE_CHROMIUM);
+  bucket->SetData(&name, 0, GL_MAILBOX_SIZE_CHROMIUM);
+
+  return error::kNoError;
+}
+
+void GLES2DecoderImpl::DoProduceTextureCHROMIUM(GLenum target,
+                                                const GLbyte* mailbox) {
+  TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
+  if (!info) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glProduceTextureCHROMIUM: unknown texture for target");
+    return;
+  }
+
+  TextureDefinition* definition = texture_manager()->Save(info);
+  if (!definition) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glProduceTextureCHROMIUM: invalid texture");
+    return;
+  }
+
+  if (!group_->mailbox_manager()->ProduceTexture(
+      target,
+      *reinterpret_cast<const MailboxName*>(mailbox),
+      definition,
+      texture_manager())) {
+    bool success = texture_manager()->Restore(info, definition);
+    DCHECK(success);
+    SetGLError(GL_INVALID_OPERATION,
+               "glProduceTextureCHROMIUM: invalid mailbox name");
+    return;
+  }
+
+  BindAndApplyTextureParameters(info);
+}
+
+void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
+                                                const GLbyte* mailbox) {
+  TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
+  if (!info) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glConsumeTextureCHROMIUM: unknown texture for target");
+    return;
+  }
+
+  scoped_ptr<TextureDefinition> definition(
+      group_->mailbox_manager()->ConsumeTexture(
+      target,
+      *reinterpret_cast<const MailboxName*>(mailbox)));
+  if (!definition.get()) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glConsumeTextureCHROMIUM: invalid mailbox name");
+    return;
+  }
+
+  if (!texture_manager()->Restore(info, definition.release())) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glConsumeTextureCHROMIUM: invalid texture");
+    return;
+  }
+
+  BindAndApplyTextureParameters(info);
 }
 
 // Include the auto-generated part of this file. We split this because it means

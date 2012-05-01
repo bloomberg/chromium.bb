@@ -2,16 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <GLES2/gl2.h>
+#ifndef GL_GLEXT_PROTOTYPES
+#define GL_GLEXT_PROTOTYPES
+#endif
 
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
+#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/gl/gl_share_group.h"
 
 namespace gpu {
 
 class GLTest : public testing::Test {
  protected:
+  GLTest() : gl_(new gles2::MailboxManager, new gfx::GLShareGroup) {
+  }
+
   virtual void SetUp() {
     gl_.Initialize(gfx::Size(4, 4));
   }

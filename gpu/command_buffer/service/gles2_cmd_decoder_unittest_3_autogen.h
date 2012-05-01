@@ -34,5 +34,10 @@
 // TODO(gman): DrawArraysInstancedANGLE
 // TODO(gman): DrawElementsInstancedANGLE
 // TODO(gman): VertexAttribDivisorANGLE
+// TODO(gman): GenMailboxCHROMIUM
+// TODO(gman): ProduceTextureCHROMIUM
+// TODO(gman): ProduceTextureCHROMIUMImmediate
+// TODO(gman): ConsumeTextureCHROMIUM
+// TODO(gman): ConsumeTextureCHROMIUMImmediate
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_3_AUTOGEN_H_
 

@@ -862,6 +862,15 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glClearDepth',
   },
   'ColorMask': {'decoder_func': 'DoColorMask', 'expectation': False},
+  'ConsumeTextureCHROMIUM': {
+    'decoder_func': 'DoConsumeTextureCHROMIUM',
+    'type': 'PUT',
+    'data_type': 'GLbyte',
+    'count': 64,
+    'unit_test': False,
+    'extension': True,
+    'chromium': True,
+  },
   'ClearStencil': {'decoder_func': 'DoClearStencil'},
   'EnableFeatureCHROMIUM': {
     'type': 'Custom',
@@ -987,6 +996,15 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glGenBuffersARB',
     'resource_type': 'Buffer',
     'resource_types': 'Buffers',
+  },
+  'GenMailboxCHROMIUM': {
+    'type': 'Manual',
+    'cmd_args': 'GLuint bucket_id',
+    'result': ['SizedResult<GLint>'],
+    'client_test': False,
+    'unit_test': False,
+    'extension': True,
+    'chromium': True,
   },
   'GenFramebuffers': {
     'type': 'GENn',
@@ -1277,6 +1295,15 @@ _FUNCTION_INFO = {
       'client_test': False,
       'extension': True,
       'chromium': True,
+  },
+  'ProduceTextureCHROMIUM': {
+    'decoder_func': 'DoProduceTextureCHROMIUM',
+    'type': 'PUT',
+    'data_type': 'GLbyte',
+    'count': 64,
+    'unit_test': False,
+    'extension': True,
+    'chromium': True,
   },
   'RenderbufferStorage': {
     'decoder_func': 'DoRenderbufferStorage',

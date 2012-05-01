@@ -121,6 +121,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   AddExtensionString("GL_CHROMIUM_discard_framebuffer");
   AddExtensionString("GL_CHROMIUM_command_buffer_query");
   AddExtensionString("GL_CHROMIUM_copy_texture");
+  AddExtensionString("GL_CHROMIUM_texture_mailbox");
   AddExtensionString("GL_ANGLE_translated_shader_source");
 
   if (ext.Have("GL_ANGLE_translated_shader_source")) {

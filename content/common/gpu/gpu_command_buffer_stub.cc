@@ -39,6 +39,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     GpuChannel* channel,
     GpuCommandBufferStub* share_group,
     const gfx::GLSurfaceHandle& handle,
+    gpu::gles2::MailboxManager* mailbox_manager,
     const gfx::Size& size,
     const gpu::gles2::DisallowedFeatures& disallowed_features,
     const std::string& allowed_extensions,
@@ -65,7 +66,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
   if (share_group) {
     context_group_ = share_group->context_group_;
   } else {
-    context_group_ = new gpu::gles2::ContextGroup(true);
+    context_group_ = new gpu::gles2::ContextGroup(mailbox_manager, true);
   }
   if (surface_id != 0)
     surface_state_.reset(new GpuCommandBufferStubBase::SurfaceState(

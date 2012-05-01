@@ -641,6 +641,15 @@ void GLES2DrawElementsInstancedANGLE(
 void GLES2VertexAttribDivisorANGLE(GLuint index, GLuint divisor) {
   gles2::GetGLContext()->VertexAttribDivisorANGLE(index, divisor);
 }
+void GLES2GenMailboxCHROMIUM(GLbyte* mailbox) {
+  gles2::GetGLContext()->GenMailboxCHROMIUM(mailbox);
+}
+void GLES2ProduceTextureCHROMIUM(GLenum target, const GLbyte* mailbox) {
+  gles2::GetGLContext()->ProduceTextureCHROMIUM(target, mailbox);
+}
+void GLES2ConsumeTextureCHROMIUM(GLenum target, const GLbyte* mailbox) {
+  gles2::GetGLContext()->ConsumeTextureCHROMIUM(target, mailbox);
+}
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 

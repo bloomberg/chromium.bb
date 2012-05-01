@@ -1562,5 +1562,21 @@ void DrawElementsInstancedANGLE(
 
 void VertexAttribDivisorANGLE(GLuint index, GLuint divisor);
 
+void GenMailboxCHROMIUM(GLbyte* mailbox);
+
+void ProduceTextureCHROMIUM(GLenum target, const GLbyte* mailbox) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] glProduceTextureCHROMIUM(" << GLES2Util::GetStringTextureTarget(target) << ", " << static_cast<const void*>(mailbox) << ")");  // NOLINT
+  GPU_CLIENT_LOG("values: " << mailbox[0] << ", " << mailbox[1] << ", " << mailbox[2] << ", " << mailbox[3] << ", " << mailbox[4] << ", " << mailbox[5] << ", " << mailbox[6] << ", " << mailbox[7] << ", " << mailbox[8] << ", " << mailbox[9] << ", " << mailbox[10] << ", " << mailbox[11] << ", " << mailbox[12] << ", " << mailbox[13] << ", " << mailbox[14] << ", " << mailbox[15] << ", " << mailbox[16] << ", " << mailbox[17] << ", " << mailbox[18] << ", " << mailbox[19] << ", " << mailbox[20] << ", " << mailbox[21] << ", " << mailbox[22] << ", " << mailbox[23] << ", " << mailbox[24] << ", " << mailbox[25] << ", " << mailbox[26] << ", " << mailbox[27] << ", " << mailbox[28] << ", " << mailbox[29] << ", " << mailbox[30] << ", " << mailbox[31] << ", " << mailbox[32] << ", " << mailbox[33] << ", " << mailbox[34] << ", " << mailbox[35] << ", " << mailbox[36] << ", " << mailbox[37] << ", " << mailbox[38] << ", " << mailbox[39] << ", " << mailbox[40] << ", " << mailbox[41] << ", " << mailbox[42] << ", " << mailbox[43] << ", " << mailbox[44] << ", " << mailbox[45] << ", " << mailbox[46] << ", " << mailbox[47] << ", " << mailbox[48] << ", " << mailbox[49] << ", " << mailbox[50] << ", " << mailbox[51] << ", " << mailbox[52] << ", " << mailbox[53] << ", " << mailbox[54] << ", " << mailbox[55] << ", " << mailbox[56] << ", " << mailbox[57] << ", " << mailbox[58] << ", " << mailbox[59] << ", " << mailbox[60] << ", " << mailbox[61] << ", " << mailbox[62] << ", " << mailbox[63]);  // NOLINT
+  helper_->ProduceTextureCHROMIUMImmediate(target, mailbox);
+}
+
+void ConsumeTextureCHROMIUM(GLenum target, const GLbyte* mailbox) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] glConsumeTextureCHROMIUM(" << GLES2Util::GetStringTextureTarget(target) << ", " << static_cast<const void*>(mailbox) << ")");  // NOLINT
+  GPU_CLIENT_LOG("values: " << mailbox[0] << ", " << mailbox[1] << ", " << mailbox[2] << ", " << mailbox[3] << ", " << mailbox[4] << ", " << mailbox[5] << ", " << mailbox[6] << ", " << mailbox[7] << ", " << mailbox[8] << ", " << mailbox[9] << ", " << mailbox[10] << ", " << mailbox[11] << ", " << mailbox[12] << ", " << mailbox[13] << ", " << mailbox[14] << ", " << mailbox[15] << ", " << mailbox[16] << ", " << mailbox[17] << ", " << mailbox[18] << ", " << mailbox[19] << ", " << mailbox[20] << ", " << mailbox[21] << ", " << mailbox[22] << ", " << mailbox[23] << ", " << mailbox[24] << ", " << mailbox[25] << ", " << mailbox[26] << ", " << mailbox[27] << ", " << mailbox[28] << ", " << mailbox[29] << ", " << mailbox[30] << ", " << mailbox[31] << ", " << mailbox[32] << ", " << mailbox[33] << ", " << mailbox[34] << ", " << mailbox[35] << ", " << mailbox[36] << ", " << mailbox[37] << ", " << mailbox[38] << ", " << mailbox[39] << ", " << mailbox[40] << ", " << mailbox[41] << ", " << mailbox[42] << ", " << mailbox[43] << ", " << mailbox[44] << ", " << mailbox[45] << ", " << mailbox[46] << ", " << mailbox[47] << ", " << mailbox[48] << ", " << mailbox[49] << ", " << mailbox[50] << ", " << mailbox[51] << ", " << mailbox[52] << ", " << mailbox[53] << ", " << mailbox[54] << ", " << mailbox[55] << ", " << mailbox[56] << ", " << mailbox[57] << ", " << mailbox[58] << ", " << mailbox[59] << ", " << mailbox[60] << ", " << mailbox[61] << ", " << mailbox[62] << ", " << mailbox[63]);  // NOLINT
+  helper_->ConsumeTextureCHROMIUMImmediate(target, mailbox);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

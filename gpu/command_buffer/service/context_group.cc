@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
@@ -22,8 +23,10 @@
 namespace gpu {
 namespace gles2 {
 
-ContextGroup::ContextGroup(bool bind_generates_resource)
-    : num_contexts_(0),
+ContextGroup::ContextGroup(MailboxManager* mailbox_manager,
+                           bool bind_generates_resource)
+    : mailbox_manager_(mailbox_manager ? mailbox_manager : new MailboxManager),
+      num_contexts_(0),
       enforce_gl_minimums_(CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnforceGLMinimums)),
       bind_generates_resource_(bind_generates_resource),
@@ -249,6 +252,8 @@ void ContextGroup::Destroy(bool have_context) {
   }
 
   if (texture_manager_ != NULL) {
+    mailbox_manager_->DestroyOwnedTextures(texture_manager_.get(),
+                                           have_context);
     texture_manager_->Destroy(have_context);
     texture_manager_.reset();
   }

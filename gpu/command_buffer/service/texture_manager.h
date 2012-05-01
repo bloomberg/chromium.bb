@@ -18,6 +18,8 @@ namespace gpu {
 namespace gles2 {
 
 class GLES2Decoder;
+class Display;
+class TextureDefinition;
 
 // This class keeps track of the textures and their sizes so we can do NPOT and
 // texture complete checking.
@@ -39,32 +41,7 @@ class GPU_EXPORT TextureManager {
    public:
     typedef scoped_refptr<TextureInfo> Ref;
 
-    TextureInfo(TextureManager* manager, GLuint service_id)
-        : manager_(manager),
-          service_id_(service_id),
-          deleted_(false),
-          cleared_(true),
-          num_uncleared_mips_(0),
-          target_(0),
-          min_filter_(GL_NEAREST_MIPMAP_LINEAR),
-          mag_filter_(GL_LINEAR),
-          wrap_s_(GL_REPEAT),
-          wrap_t_(GL_REPEAT),
-          usage_(GL_NONE),
-          max_level_set_(-1),
-          texture_complete_(false),
-          cube_complete_(false),
-          npot_(false),
-          has_been_bound_(false),
-          framebuffer_attachment_count_(0),
-          owned_(true),
-          stream_texture_(false),
-          immutable_(false),
-          estimated_size_(0) {
-      if (manager_) {
-        manager_->StartTracking(this);
-      }
-    }
+    TextureInfo(TextureManager* manager, GLuint service_id);
 
     GLenum min_filter() const {
       return min_filter_;
@@ -221,6 +198,20 @@ class GPU_EXPORT TextureManager {
            format(0),
            type(0),
            estimated_size(0) {
+      }
+
+      LevelInfo(const LevelInfo& rhs)
+         : cleared(rhs.cleared),
+           target(rhs.target),
+           level(rhs.level),
+           internal_format(rhs.internal_format),
+           width(rhs.width),
+           height(rhs.height),
+           depth(rhs.depth),
+           border(rhs.border),
+           format(rhs.format),
+           type(rhs.type),
+           estimated_size(rhs.estimated_size) {
       }
 
       bool cleared;
@@ -435,6 +426,13 @@ class GPU_EXPORT TextureManager {
       GLenum format,
       GLenum type,
       bool cleared);
+
+  // Save the texture definition and leave it undefined.
+  TextureDefinition* Save(TextureInfo* info);
+
+  // Redefine all the levels from the texture definition.
+  bool Restore(TextureInfo* info,
+               TextureDefinition* definition);
 
   // Sets a mip as cleared.
   void SetLevelCleared(TextureInfo* info, GLenum target, GLint level);

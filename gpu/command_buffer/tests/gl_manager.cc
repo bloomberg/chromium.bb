@@ -9,9 +9,10 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
-#include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_share_group.h"
@@ -19,7 +20,10 @@
 
 namespace gpu {
 
-GLManager::GLManager() {
+GLManager::GLManager(gles2::MailboxManager* mailbox_manager,
+                     gfx::GLShareGroup* share_group)
+    : mailbox_manager_(mailbox_manager),
+      share_group_(share_group) {
 }
 
 GLManager::~GLManager() {
@@ -54,13 +58,12 @@ void GLManager::Initialize(const gfx::Size& size) {
   attribs.push_back(16);
   attribs.push_back(EGL_NONE);
 
-  share_group_ = new gfx::GLShareGroup;
   command_buffer_.reset(new CommandBufferService);
   ASSERT_TRUE(command_buffer_->Initialize())
       << "could not create command buffer service";
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(
-      new gles2::ContextGroup(false)));
+      new gles2::ContextGroup(mailbox_manager_.get(), false)));
 
   gpu_scheduler_.reset(new GpuScheduler(command_buffer_.get(),
                                         decoder_.get(),

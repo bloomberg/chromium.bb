@@ -182,4 +182,6 @@ GL_APICALL void         GL_APIENTRY glCopyTextureCHROMIUM (GLenum target, GLenum
 GL_APICALL void         GL_APIENTRY glDrawArraysInstancedANGLE (GLenumDrawMode mode, GLint first, GLsizei count, GLsizei primcount);
 GL_APICALL void         GL_APIENTRY glDrawElementsInstancedANGLE (GLenumDrawMode mode, GLsizei count, GLenumIndexType type, const void* indices, GLsizei primcount);
 GL_APICALL void         GL_APIENTRY glVertexAttribDivisorANGLE (GLuint index, GLuint divisor);
-
+GL_APICALL void         GL_APIENTRY glGenMailboxCHROMIUM (GLbyte* mailbox);
+GL_APICALL void         GL_APIENTRY glProduceTextureCHROMIUM (GLenumTextureTarget target, const GLbyte* mailbox);
+GL_APICALL void         GL_APIENTRY glConsumeTextureCHROMIUM (GLenumTextureTarget target, const GLbyte* mailbox);

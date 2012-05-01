@@ -222,6 +222,11 @@
   OP(DrawArraysInstancedANGLE)                                 /* 465 */ \
   OP(DrawElementsInstancedANGLE)                               /* 466 */ \
   OP(VertexAttribDivisorANGLE)                                 /* 467 */ \
+  OP(GenMailboxCHROMIUM)                                       /* 468 */ \
+  OP(ProduceTextureCHROMIUM)                                   /* 469 */ \
+  OP(ProduceTextureCHROMIUMImmediate)                          /* 470 */ \
+  OP(ConsumeTextureCHROMIUM)                                   /* 471 */ \
+  OP(ConsumeTextureCHROMIUMImmediate)                          /* 472 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

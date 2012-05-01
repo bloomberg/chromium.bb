@@ -39,6 +39,12 @@ class GpuChannel;
 struct GpuMemoryAllocation;
 class GpuWatchdog;
 
+namespace gpu {
+namespace gles2 {
+class MailboxManager;
+}
+}
+
 // This Base class is used to expose methods of GpuCommandBufferStub used for
 // testability.
 class CONTENT_EXPORT GpuCommandBufferStubBase {
@@ -88,6 +94,7 @@ class GpuCommandBufferStub
       GpuChannel* channel,
       GpuCommandBufferStub* share_group,
       const gfx::GLSurfaceHandle& handle,
+      gpu::gles2::MailboxManager* mailbox_manager,
       const gfx::Size& size,
       const gpu::gles2::DisallowedFeatures& disallowed_features,
       const std::string& allowed_extensions,

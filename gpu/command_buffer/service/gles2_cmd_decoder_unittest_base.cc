@@ -194,7 +194,7 @@ void GLES2DecoderTestBase::InitDecoder(
     bool bind_generates_resource) {
   gl_.reset(new StrictMock<MockGLInterface>());
   ::gfx::GLInterface::SetGLInterface(gl_.get());
-  group_ = ContextGroup::Ref(new ContextGroup(bind_generates_resource));
+  group_ = ContextGroup::Ref(new ContextGroup(NULL, bind_generates_resource));
 
   InSequence sequence;
 

@@ -8,6 +8,8 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/texture_definition.h"
 
 namespace gpu {
 namespace gles2 {
@@ -85,6 +87,34 @@ void TextureManager::Destroy(bool have_context) {
 
   DCHECK_EQ(0u, mem_represented_);
   UpdateMemRepresented();
+}
+
+TextureManager::TextureInfo::TextureInfo(TextureManager* manager,
+                                         GLuint service_id)
+    : manager_(manager),
+      service_id_(service_id),
+      deleted_(false),
+      cleared_(true),
+      num_uncleared_mips_(0),
+      target_(0),
+      min_filter_(GL_NEAREST_MIPMAP_LINEAR),
+      mag_filter_(GL_LINEAR),
+      wrap_s_(GL_REPEAT),
+      wrap_t_(GL_REPEAT),
+      usage_(GL_NONE),
+      max_level_set_(-1),
+      texture_complete_(false),
+      cube_complete_(false),
+      npot_(false),
+      has_been_bound_(false),
+      framebuffer_attachment_count_(0),
+      owned_(true),
+      stream_texture_(false),
+      immutable_(false),
+      estimated_size_(0) {
+  if (manager_) {
+    manager_->StartTracking(this);
+  }
 }
 
 TextureManager::TextureInfo::~TextureInfo() {
@@ -798,6 +828,106 @@ void TextureManager::SetLevelInfo(
   }
 }
 
+TextureDefinition* TextureManager::Save(TextureInfo* info) {
+  DCHECK(info->owned_);
+
+  if (info->IsAttachedToFramebuffer())
+    return NULL;
+
+  if (info->IsImmutable())
+    return NULL;
+
+  TextureDefinition::LevelInfos level_infos(info->level_infos_.size());
+  for (size_t face = 0; face < level_infos.size(); ++face) {
+    GLenum target = info->target() == GL_TEXTURE_2D ?
+        GL_TEXTURE_2D : FaceIndexToGLTarget(face);
+    for (size_t level = 0; level < info->level_infos_[face].size(); ++level) {
+      const TextureInfo::LevelInfo& level_info =
+          info->level_infos_[face][level];
+      level_infos[face].push_back(
+          TextureDefinition::LevelInfo(target,
+                                       level_info.internal_format,
+                                       level_info.width,
+                                       level_info.height,
+                                       level_info.depth,
+                                       level_info.border,
+                                       level_info.format,
+                                       level_info.type,
+                                       level_info.cleared));
+
+      SetLevelInfo(info,
+                   target,
+                   level,
+                   GL_RGBA,
+                   0,
+                   0,
+                   0,
+                   0,
+                   GL_RGBA,
+                   GL_UNSIGNED_BYTE,
+                   true);
+    }
+  }
+
+  GLuint old_service_id = info->service_id();
+
+  GLuint new_service_id = 0;
+  glGenTextures(1, &new_service_id);
+  info->SetServiceId(new_service_id);
+
+  return new TextureDefinition(info->target(),
+                               old_service_id,
+                               level_infos);
+}
+
+bool TextureManager::Restore(TextureInfo* info,
+                             TextureDefinition* definition) {
+  DCHECK(info->owned_);
+
+  scoped_ptr<TextureDefinition> scoped_definition(definition);
+
+  if (info->IsAttachedToFramebuffer())
+    return false;
+
+  if (info->IsImmutable())
+    return false;
+
+  if (info->target() != definition->target())
+    return false;
+
+  if (info->level_infos_.size() != definition->level_infos().size())
+    return false;
+
+  if (info->level_infos_[0].size() != definition->level_infos()[0].size())
+    return false;
+
+  for (size_t face = 0; face < info->level_infos_.size(); ++face) {
+    GLenum target = info->target() == GL_TEXTURE_2D ?
+        GL_TEXTURE_2D : FaceIndexToGLTarget(face);
+    for (size_t level = 0; level < info->level_infos_[face].size(); ++level) {
+      const TextureDefinition::LevelInfo& level_info =
+          definition->level_infos()[face][level];
+      SetLevelInfo(info,
+                   target,
+                   level,
+                   level_info.internal_format,
+                   level_info.width,
+                   level_info.height,
+                   level_info.depth,
+                   level_info.border,
+                   level_info.format,
+                   level_info.type,
+                   level_info.cleared);
+    }
+  }
+
+  GLuint old_service_id = info->service_id();
+  glDeleteTextures(1, &old_service_id);
+  info->SetServiceId(definition->ReleaseServiceId());
+
+  return true;
+}
+
 bool TextureManager::SetParameter(
     TextureManager::TextureInfo* info, GLenum pname, GLint param) {
   DCHECK(info);
@@ -914,7 +1044,6 @@ GLsizei TextureManager::ComputeMipMapCount(
     GLsizei width, GLsizei height, GLsizei depth) {
   return 1 + base::bits::Log2Floor(std::max(std::max(width, height), depth));
 }
-
 
 }  // namespace gles2
 }  // namespace gpu

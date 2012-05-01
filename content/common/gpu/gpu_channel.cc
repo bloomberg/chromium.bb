@@ -18,6 +18,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface.h"
 
@@ -41,6 +42,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
     : gpu_channel_manager_(gpu_channel_manager),
       client_id_(client_id),
       share_group_(share_group ? share_group : new gfx::GLShareGroup),
+      mailbox_manager_(new gpu::gles2::MailboxManager),
       watchdog_(watchdog),
       software_(software),
       handle_messages_scheduled_(false),
@@ -192,6 +194,7 @@ void GpuChannel::CreateViewCommandBuffer(
       this,
       share_group,
       window,
+      mailbox_manager_,
       gfx::Size(),
       disallowed_features_,
       init_params.allowed_extensions,
@@ -349,6 +352,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       this,
       share_group,
       gfx::GLSurfaceHandle(),
+      mailbox_manager_.get(),
       size,
       disallowed_features_,
       init_params.allowed_extensions,
