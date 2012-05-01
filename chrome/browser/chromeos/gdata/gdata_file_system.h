@@ -75,8 +75,14 @@ typedef base::Callback<void(base::PlatformFileError error,
                             scoped_ptr<GDataFileProto> file_proto)>
     GetFileInfoCallback;
 
+// Used to get entry info from the file system.
+// If |error| is not PLATFORM_FILE_OK, |entry_info| is set to NULL.
+typedef base::Callback<void(base::PlatformFileError error,
+                            scoped_ptr<GDataEntryProto> entry_proto)>
+    GetEntryInfoCallback;
+
 // Used to read a directory from the file system.
-// If |error| is not PLATFORM_FILE_OK, |file_info| is set to NULL.
+// If |error| is not PLATFORM_FILE_OK, |directory_info| is set to NULL.
 typedef base::Callback<void(base::PlatformFileError error,
                             scoped_ptr<GDataDirectoryProto> directory_proto)>
     ReadDirectoryCallback;
@@ -319,6 +325,14 @@ class GDataFileSystemInterface {
                              const std::string& md5,
                              const GetCacheStateCallback& callback) = 0;
 
+  // Finds an entry (a file or a directory) by |file_path|. This call will also
+  // retrieve and refresh file system content from server and disk cache.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  virtual void GetEntryInfoByPathAsync(
+      const FilePath& file_path,
+      const GetEntryInfoCallback& callback) = 0;
+
   // Finds a file (not a directory) by |file_path|. This call will also
   // retrieve and refresh file system content from server and disk cache.
   //
@@ -426,6 +440,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void GetCacheState(const std::string& resource_id,
                              const std::string& md5,
                              const GetCacheStateCallback& callback) OVERRIDE;
+  virtual void GetEntryInfoByPathAsync(
+      const FilePath& file_path,
+      const GetEntryInfoCallback& callback) OVERRIDE;
   virtual void GetFileInfoByPathAsync(
       const FilePath& file_path,
       const GetFileInfoCallback& callback) OVERRIDE;
@@ -1230,6 +1247,12 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Initializes preference change observer.
   void InitializePreferenceObserver();
 
+  // Called when an entry is found for GetEntryInfoByPathAsync().
+  void OnGetEntryInfo(const GetEntryInfoCallback& callback,
+                      base::PlatformFileError error,
+                      const FilePath& entry_path,
+                      GDataEntry* entry);
+
   // Called when an entry is found for GetFileInfoByPathAsync().
   void OnGetFileInfo(const GetFileInfoCallback& callback,
                      base::PlatformFileError error,
@@ -1267,6 +1290,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& resource_id,
       const GetFileCallback& get_file_callback,
       const GetDownloadDataCallback& get_download_data_callback);
+  void GetEntryInfoByPathAsyncOnUIThread(
+      const FilePath& file_path,
+      const GetEntryInfoCallback& callback);
   void GetFileInfoByPathAsyncOnUIThread(
       const FilePath& file_path,
       const GetFileInfoCallback& callback);

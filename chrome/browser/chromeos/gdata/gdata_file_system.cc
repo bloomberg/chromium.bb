@@ -809,6 +809,17 @@ void RelaySetMountedStateCallback(
                         base::Bind(callback, error, file_path));
 }
 
+// Ditto for GetEntryInfoCallback.
+void RelayGetEntryInfoCallback(
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
+    const GetEntryInfoCallback& callback,
+    base::PlatformFileError error,
+    scoped_ptr<GDataEntryProto> entry_proto) {
+  relay_proxy->PostTask(
+      FROM_HERE,
+      base::Bind(callback, error, base::Passed(&entry_proto)));
+}
+
 // Ditto for GetFileInfoCallback.
 void RelayGetFileInfoCallback(
     scoped_refptr<base::MessageLoopProxy> relay_proxy,
@@ -2127,6 +2138,59 @@ void GDataFileSystem::ResumeUpload(
   documents_service_->ResumeUpload(params, callback);
 }
 
+void GDataFileSystem::GetEntryInfoByPathAsync(
+    const FilePath& file_path,
+    const GetEntryInfoCallback& callback) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    const bool posted = BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::GetEntryInfoByPathAsyncOnUIThread,
+                   ui_weak_ptr_,
+                   file_path,
+                   base::Bind(&RelayGetEntryInfoCallback,
+                              base::MessageLoopProxy::current(),
+                              callback)));
+    DCHECK(posted);
+    return;
+  }
+
+  GetEntryInfoByPathAsyncOnUIThread(file_path, callback);
+}
+
+void GDataFileSystem::GetEntryInfoByPathAsyncOnUIThread(
+    const FilePath& file_path,
+    const GetEntryInfoCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  FindEntryByPathAsyncOnUIThread(
+      file_path,
+      base::Bind(&GDataFileSystem::OnGetEntryInfo,
+                 ui_weak_ptr_,
+                 callback));
+}
+
+void GDataFileSystem::OnGetEntryInfo(const GetEntryInfoCallback& callback,
+                                    base::PlatformFileError error,
+                                    const FilePath& directory_path,
+                                    GDataEntry* entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(error, scoped_ptr<GDataEntryProto>());
+    return;
+  }
+  DCHECK(entry);
+
+  scoped_ptr<GDataEntryProto> entry_proto(new GDataEntryProto);
+  entry->ToProto(entry_proto.get());
+
+  if (!callback.is_null())
+    callback.Run(base::PLATFORM_FILE_OK, entry_proto.Pass());
+}
+
 void GDataFileSystem::GetFileInfoByPathAsync(
     const FilePath& file_path,
     const GetFileInfoCallback& callback) {
@@ -2171,6 +2235,7 @@ void GDataFileSystem::OnGetFileInfo(const GetFileInfoCallback& callback,
       callback.Run(error, scoped_ptr<GDataFileProto>());
     return;
   }
+  DCHECK(entry);
 
   GDataFile* file = entry->AsGDataFile();
   if (!file) {
@@ -2231,6 +2296,7 @@ void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
       callback.Run(error, scoped_ptr<GDataDirectoryProto>());
     return;
   }
+  DCHECK(entry);
 
   GDataDirectory* directory = entry->AsGDataDirectory();
   if (!directory) {
