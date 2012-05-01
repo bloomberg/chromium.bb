@@ -63,14 +63,12 @@ tramp3d-v4
 ############################################################################
 # dependent on stderr ordering
 # (these could be fixed by implementing a fuzzy/unordered compare)
-distray
 cdecl
 pairlocalalign
 mpeg2decode
 # Prints the value of argv[0] (is NaClMain on nacl)
 kc
-# Flush at end of file?
-hbd
+
 
 ############################################################################
 # Aggregates in va_arg

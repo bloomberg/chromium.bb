@@ -194,19 +194,16 @@ def main(argv):
           print '[  FAILED  ] ' + test + ': ' + failures[test] + ' failure'
           if options.verbose:
             PrintCompilationResult(options.buildpath, test)
-      elif test in EXCLUDES and options.check_excludes:
+      elif test in EXCLUDES:
         unexpected_passes += 1
         print test + ': ' + ' unexpected success'
 
-  failures = 0
-  failures += unexpected_failures
   print unexpected_failures, 'unexpected failures',
+  print unexpected_passes, 'unexpected passes'
+
   if options.check_excludes:
-    # For now do not report unexpected_passes as failures
-    #failures += unexpected_passes
-    print unexpected_passes, 'unexpected passes',
-  print
-  return failures > 0
+    return unexpected_failures + unexpected_passes > 0
+  return unexpected_failures > 0
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
