@@ -184,24 +184,6 @@ class SelLdrLauncherStandalone : public SelLdrLauncherBase {
   scoped_ptr<SelLdrLocator> sel_ldr_locator_;
 };
 
-// TODO(mseaborn): Move this class (and sel_ldr_launcher_chrome.cc)
-// into the Chromium repo.  There will be two copies present during
-// this process, but there should not be a naming conflict because
-// this copy is in the "nacl" namespace.
-class SelLdrLauncherChrome : public SelLdrLauncherBase {
- public:
-  virtual bool Start(const char* url);
-};
-
-// TODO(mseaborn): Remove this typedef.  This typedef is currently
-// provided because the NaCl plugin in the Chromium repo refers to
-// SelLdrLauncher.
-#if defined(NACL_STANDALONE)
-typedef SelLdrLauncherStandalone SelLdrLauncher;
-#else
-typedef SelLdrLauncherChrome SelLdrLauncher;
-#endif
-
 }  // namespace nacl
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_NONNACL_UTIL_SEL_LDR_LAUNCHER_H_

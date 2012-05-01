@@ -22,7 +22,6 @@
         'sources': [
           'sel_ldr_launcher.h',
           'sel_ldr_launcher_base.cc',
-          'sel_ldr_launcher_chrome.cc',
           'sel_ldr_launcher_standalone.cc',
         ],
         'cflags!': [

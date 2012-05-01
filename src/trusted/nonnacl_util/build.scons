@@ -34,7 +34,6 @@ if env.Bit('windows'):
 
 nonnacl_util_inputs = [
   'sel_ldr_launcher_base.cc',
-  'sel_ldr_launcher_chrome.cc',
   'sel_ldr_launcher_standalone.cc',
 ]
 
