@@ -217,6 +217,7 @@
   "4daa6becd0899a54776d9cf7f09613ed1a9f4d77": "COOKIE API TEST EXTENSION TESTING COOKIE API BACKGROUND_PAGE BROWSER_ACTION COOKIES TABS CHROME.BROWSERACTION.ONCLICKED CHROME.COOKIES.GET CHROME.COOKIES.GETALL CHROME.COOKIES.ONCHANGED CHROME.COOKIES.REMOVE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL",
   "9e4fd06300ee2b3a171e1f30d1b70f8f10152c2b": "DOWNLOAD SELECTED LINKS SELECT LINKS ON A PAGE AND DOWNLOAD THEM. BROWSER_ACTION EXPERIMENTAL TABS CHROME.EXPERIMENTAL.DOWNLOADS.DOWNLOAD CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT",
   "028eb5364924344029bcbe1d527f132fc72b34e5": "EMAIL THIS PAGE (BY GOOGLE) THIS EXTENSION ADDS AN EMAIL BUTTON TO THE TOOLBAR WHICH ALLOWS YOU TO EMAIL THE PAGE LINK USING YOUR DEFAULT MAIL CLIENT OR GMAIL. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.CONNECT CHROME.EXTENSION.ONCONNECT CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.UPDATE",
+  "26115f23aef245d6757587e3e517bbe4b3bc55fe": "EVENT PAGE EXAMPLE DEMONSTRATES USAGE AND FEATURES OF THE EVENT PAGE BACKGROUND_PAGE BOOKMARKS BROWSER_ACTION EXPERIMENTAL KEYBINDING TABS CHROME.BOOKMARKS.ONREMOVED CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXPERIMENTAL.ALARMS.CREATE CHROME.EXPERIMENTAL.ALARMS.ONALARM CHROME.EXPERIMENTAL.KEYBINDING.ONCOMMAND CHROME.EXPERIMENTAL.RUNTIME.ONBACKGROUNDPAGEUNLOADINGSOON CHROME.EXPERIMENTAL.RUNTIME.ONINSTALLED CHROME.EXPERIMENTAL.WEBREQUEST.ONREQUEST CHROME.EXTENSION.ONMESSAGE CHROME.EXTENSION.SENDMESSAGE CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.TABS.SENDMESSAGE",
   "763a08e9b06595d785568a8d392b95a2f3700258": "EVENT TRACKING WITH GOOGLE ANALYTICS A SAMPLE EXTENSION WHICH USES GOOGLE ANALYTICS TO TRACK USAGE. BROWSER_ACTION",
   "4efa12eaaa442b6b7c880e7a38ceeb0cff7e8b77": "FIREPHP FOR CHROME EXTENDS THE DEVELOPER TOOLS, ADDING SUPPORT FOR PARSING FIREPHP MESSAGES FROM SERVER BACKGROUND_PAGE DEVTOOLS_PAGE TABS CHROME.DEVTOOLS.NETWORK.GETHAR CHROME.DEVTOOLS.NETWORK.ONREQUESTFINISHED CHROME.TABS.EXECUTESCRIPT",
   "31d10fd5e61ca51eb59073b358d4ab5267cbf318": "FONT SETTINGS SAMPLE EXTENSION FOR FONT SETTINGS API BROWSER_ACTION EXPERIMENTAL POPUP CHROME.EXPERIMENTAL.FONTSETTINGS.GETDEFAULTFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONT CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONTLIST CHROME.EXPERIMENTAL.FONTSETTINGS.SETDEFAULTFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.SETFONT",
@@ -258,7 +259,6 @@
   "04f5d2ddea95746b0200be1ea223ccb7a748a771": "TALKING ALARM CLOCK A CLOCK WITH TWO CONFIGURABLE ALARMS THAT WILL PLAY A SOUND AND SPEAK A PHRASE OF YOUR CHOICE. BACKGROUND BACKGROUND_PAGE BROWSER_ACTION TTS CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.CONNECT CHROME.EXTENSION.ONCONNECT CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP",
   "e1697cacebad05218798bf3e8a0f724517f0e8c3": "TEST SCREENSHOT EXTENSION DEMONSTRATE SCREENSHOT FUNCTIONALITY IN THE CHROME.TABS API. NOTE: ONLY WORKS FOR CODE.GOOGLE.COM BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETURL CHROME.EXTENSION.GETVIEWS CHROME.TABS.CAPTUREVISIBLETAB CHROME.TABS.CREATE CHROME.TABS.ONUPDATED",
   "e8ac89b4015052cf11436985399129c927f972aa": "TOP CHROME EXTENSION QUESTIONS SAMPLE DEMONSTRATION OF THE OPTIONAL PERMISSIONS API. BROWSER_ACTION EXPERIMENTAL OPTIONS_PAGE CHROME.PERMISSIONS.CONTAINS CHROME.PERMISSIONS.ONADDED CHROME.PERMISSIONS.ONREMOVED CHROME.PERMISSIONS.REMOVE CHROME.PERMISSIONS.REQUEST CHROME.TABS.CREATE",
-  "7db846942d754cb51d0fd1fcb60a97fa4f1e21ad": "TRANSIENT PAGE EXAMPLE DEMONSTRATES USAGE AND FEATURES OF THE TRANSIENT PAGE BACKGROUND_PAGE BOOKMARKS BROWSER_ACTION EXPERIMENTAL KEYBINDING TABS CHROME.BOOKMARKS.ONREMOVED CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXPERIMENTAL.ALARMS.CREATE CHROME.EXPERIMENTAL.ALARMS.ONALARM CHROME.EXPERIMENTAL.KEYBINDING.ONCOMMAND CHROME.EXPERIMENTAL.RUNTIME.ONBACKGROUNDPAGEUNLOADINGSOON CHROME.EXPERIMENTAL.RUNTIME.ONINSTALLED CHROME.EXPERIMENTAL.WEBREQUEST.ONREQUEST CHROME.EXTENSION.ONMESSAGE CHROME.EXTENSION.SENDMESSAGE CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.TABS.SENDMESSAGE",
   "1d192cce77438e1a90383a6a3a6b28f29961ffa4": "TTS DEBUG TOOL FOR DEVELOPERS OF CHROME TTS ENGINE EXTENSIONS TO HELP THEM TEST THEIR ENGINES ARE IMPLEMENTING THE API CORRECTLY. TTS CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP",
   "3a1baf15462bdae4d886c2da4ff8f35f4e8ce02f": "TTS DEMO DEMO CHROMES SYNTHESIZED TEXT-TO-SPEECH CAPABILITIES. TTS CHROME.TTS.GETVOICES CHROME.TTS.ISSPEAKING CHROME.TTS.SPEAK CHROME.TTS.STOP",
   "b3de91ab04b7d7a2670ca7ee9d740eb42cead0b6": "TYPED URL HISTORY READS YOUR HISTORY, AND SHOWS THE TOP TEN PAGES YOU GO TO BY TYPING THE URL. BROWSER_ACTION HISTORY TABS CHROME.HISTORY.GETVISITS CHROME.HISTORY.SEARCH CHROME.TABS.CREATE",
@@ -1349,6 +1349,78 @@
   </div>
   <div>
     <a href="examples/extensions/email_this_page.zip">Download source</a>
+    <!-- Only show the Install CRX link if a CRX file is provided -->
+  </div>
+</div><div class="sample" id="26115f23aef245d6757587e3e517bbe4b3bc55fe">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a href="#26115f23aef245d6757587e3e517bbe4b3bc55fe">Event Page Example</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+    </span><span>
+      <strong>bookmarks</strong><span>, </span>
+    </span><span>
+      <strong>browser_action</strong><span>, </span>
+    </span><span>
+      <strong>experimental</strong><span>, </span>
+    </span><span>
+      <strong>keybinding</strong>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong>
+    </span>
+  </p>
+  <p>Demonstrates usage and features of the event page</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="bookmarks.html#event-onRemoved">chrome.bookmarks.onRemoved</a></code>
+      </li><li>
+        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
+      </li><li>
+        <code><a href="browserAction.html#method-setBadgeText">chrome.browserAction.setBadgeText</a></code>
+      </li><li>
+        <code><a href="experimental.alarms.html#method-create">chrome.experimental.alarms.create</a></code>
+      </li><li>
+        <code><a href="experimental.alarms.html#event-onAlarm">chrome.experimental.alarms.onAlarm</a></code>
+      </li><li>
+        <code><a href="experimental.keybinding.html#event-onCommand">chrome.experimental.keybinding.onCommand</a></code>
+      </li><li>
+        <code><a href="experimental.runtime.html#event-onBackgroundPageUnloadingSoon">chrome.experimental.runtime.onBackgroundPageUnloadingSoon</a></code>
+      </li><li>
+        <code><a href="experimental.runtime.html#event-onInstalled">chrome.experimental.runtime.onInstalled</a></code>
+      </li><li>
+        <code><a href="experimental.webRequest.html#event-onRequest">chrome.experimental.webRequest.onRequest</a></code>
+      </li><li>
+        <code><a href="extension.html#event-onMessage">chrome.extension.onMessage</a></code>
+      </li><li>
+        <code><a href="extension.html#method-sendMessage">chrome.extension.sendMessage</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-executeScript">chrome.tabs.executeScript</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-query">chrome.tabs.query</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-sendMessage">chrome.tabs.sendMessage</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="examples/api/eventPage/basic/background.js">background.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="examples/api/eventPage/basic/content.js">content.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="examples/api/eventPage/basic/manifest.json">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <a href="examples/api/eventPage/basic.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
   </div>
 </div><div class="sample" id="763a08e9b06595d785568a8d392b95a2f3700258">
@@ -3559,78 +3631,6 @@
     <span>
     - <a href="examples/api/permissions/extension-questions.crx">Install extension</a>
     </span>
-  </div>
-</div><div class="sample" id="7db846942d754cb51d0fd1fcb60a97fa4f1e21ad">
-  <img class="icon" src="images/sample-default-icon.png">
-  <h2 class="name">
-    <a href="#7db846942d754cb51d0fd1fcb60a97fa4f1e21ad">Transient Page Example</a>
-  </h2>
-  <p class="metadata features">Uses
-    <span>
-      <strong>background_page</strong><span>, </span>
-    </span><span>
-      <strong>bookmarks</strong><span>, </span>
-    </span><span>
-      <strong>browser_action</strong><span>, </span>
-    </span><span>
-      <strong>experimental</strong><span>, </span>
-    </span><span>
-      <strong>keybinding</strong>
-      <span> and</span>
-    </span><span>
-      <strong>tabs</strong>
-    </span>
-  </p>
-  <p>Demonstrates usage and features of the transient page</p>
-  <div class="apicalls"><strong>Calls:</strong>
-    <ul>
-      <li>
-        <code><a href="bookmarks.html#event-onRemoved">chrome.bookmarks.onRemoved</a></code>
-      </li><li>
-        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
-      </li><li>
-        <code><a href="browserAction.html#method-setBadgeText">chrome.browserAction.setBadgeText</a></code>
-      </li><li>
-        <code><a href="experimental.alarms.html#method-create">chrome.experimental.alarms.create</a></code>
-      </li><li>
-        <code><a href="experimental.alarms.html#event-onAlarm">chrome.experimental.alarms.onAlarm</a></code>
-      </li><li>
-        <code><a href="experimental.keybinding.html#event-onCommand">chrome.experimental.keybinding.onCommand</a></code>
-      </li><li>
-        <code><a href="experimental.runtime.html#event-onBackgroundPageUnloadingSoon">chrome.experimental.runtime.onBackgroundPageUnloadingSoon</a></code>
-      </li><li>
-        <code><a href="experimental.runtime.html#event-onInstalled">chrome.experimental.runtime.onInstalled</a></code>
-      </li><li>
-        <code><a href="experimental.webRequest.html#event-onRequest">chrome.experimental.webRequest.onRequest</a></code>
-      </li><li>
-        <code><a href="extension.html#event-onMessage">chrome.extension.onMessage</a></code>
-      </li><li>
-        <code><a href="extension.html#method-sendMessage">chrome.extension.sendMessage</a></code>
-      </li><li>
-        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
-      </li><li>
-        <code><a href="tabs.html#method-executeScript">chrome.tabs.executeScript</a></code>
-      </li><li>
-        <code><a href="tabs.html#method-query">chrome.tabs.query</a></code>
-      </li><li>
-        <code><a href="tabs.html#method-sendMessage">chrome.tabs.sendMessage</a></code>
-      </li>
-    </ul>
-  </div>
-  <div class="sourcefiles"><strong>Source files:</strong>
-    <ul>
-      <li>
-        <code><a target="_blank" href="examples/api/transientPage/basic/background.js">background.js</a></code>
-      </li><li>
-        <code><a target="_blank" href="examples/api/transientPage/basic/content.js">content.js</a></code>
-      </li><li>
-        <code><a target="_blank" href="examples/api/transientPage/basic/manifest.json">manifest.json</a></code>
-      </li>
-    </ul>
-  </div>
-  <div>
-    <a href="examples/api/transientPage/basic.zip">Download source</a>
-    <!-- Only show the Install CRX link if a CRX file is provided -->
   </div>
 </div><div class="sample" id="1d192cce77438e1a90383a6a3a6b28f29961ffa4">
   <img class="icon" src="examples/extensions/ttsdebug/128.png">

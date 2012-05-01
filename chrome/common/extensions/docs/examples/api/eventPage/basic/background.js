@@ -39,14 +39,16 @@ chrome.bookmarks.onRemoved.addListener(function(id, info) {
 });
 
 chrome.browserAction.onClicked.addListener(function() {
-  // The transient page will unload after handling this event (assuming nothing
+  // The event page will unload after handling this event (assuming nothing
   // else is keeping it awake). The content script will become the main way to
   // interact with us.
-  chrome.tabs.executeScript({file: "content.js"}, function() {
-    // Note: we also sent a message above, upon loading the transient page,
-    // but the content script will not be loaded at that point, so we send
-    // another here.
-    sendMessage();
+  chrome.tabs.create({url: "http://google.com"}, function(tab) {
+    chrome.tabs.executeScript(tab.id, {file: "content.js"}, function() {
+      // Note: we also sent a message above, upon loading the event page,
+      // but the content script will not be loaded at that point, so we send
+      // another here.
+      sendMessage();
+    });
   });
 });
 
@@ -60,7 +62,7 @@ chrome.extension.onMessage.addListener(function(msg, _, sendResponse) {
   } else if (msg.delayedResponse) {
     // Note: setTimeout itself does NOT keep the page awake. We return true
     // from the onMessage event handler, which keeps the message channel open -
-    // in turn keeping the transient page awake - until we call sendResponse.
+    // in turn keeping the event page awake - until we call sendResponse.
     setTimeout(function() {
       sendResponse("Got your message.");
     }, 5000);

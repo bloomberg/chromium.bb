@@ -1,6 +1,6 @@
 {
-  "name": "Transient Page Example",
-  "description": "Demonstrates usage and features of the transient page",
+  "name": "Event Page Example",
+  "description": "Demonstrates usage and features of the event page",
   "version": "1.0",
   "manifest_version": 2,
   "permissions": ["tabs", "bookmarks", "experimental", "keybinding", "http://*.google.com/*"],
@@ -10,7 +10,7 @@
   },
   "browser_action": {
     "default_icon" : "icon.png",
-    "default_title": "Start Transient Page"
+    "default_title": "Start Event Page"
   },
   "commands": {
     "open-google": {
