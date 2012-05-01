@@ -5,22 +5,12 @@
 {
   'conditions': [
     ['OS=="linux"', {
-      'defines': [
-        'XP_UNIX',
-      ],
       'sources': [
         'posix/get_plugin_dirname.cc',
         'posix/sel_ldr_launcher_posix.cc',
       ],
     }],
     ['OS=="mac"', {
-      'defines': [
-        'XP_MACOSX',
-        'XP_UNIX',
-        'TARGET_API_MAC_CARBON=1',
-        'NO_X11',
-        'USE_SYSTEM_CONSOLE',
-      ],
       'sources': [
         'osx/get_plugin_dirname.mm',
         'posix/sel_ldr_launcher_posix.cc',
@@ -38,7 +28,6 @@
     }],
     ['OS=="win"', {
       'defines': [
-        'XP_WIN',
         'WIN32',
         '_WINDOWS'
       ],

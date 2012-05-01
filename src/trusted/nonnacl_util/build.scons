@@ -8,28 +8,14 @@ import platform
 import sys
 Import('env')
 
-if env.Bit('linux'):
-    env.Append(
-        CPPDEFINES=['XP_UNIX'],
-    )
-
 if env.Bit('mac'):
     # there are some issue with compiling ".mm" files
     # TODO(sehr): this should Clone an env specifically for the mm file.
     env.FilterOut(CCFLAGS=['-pedantic'])
-    env.Append(
-        CPPDEFINES = [
-            'XP_MACOSX',
-            'XP_UNIX',
-            ['TARGET_API_MAC_CARBON', '1'],
-            'NO_X11',
-            'USE_SYSTEM_CONSOLE',
-        ],
-    )
 
 if env.Bit('windows'):
     env.Append(
-        CPPDEFINES = ['XP_WIN', 'WIN32', '_WINDOWS'],
+        CPPDEFINES = ['WIN32', '_WINDOWS'],
     )
 
 nonnacl_util_inputs = [

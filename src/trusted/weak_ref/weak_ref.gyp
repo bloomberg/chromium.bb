@@ -44,23 +44,8 @@
         },
       ],
     }],
-    ['OS=="linux"', {
-      'defines': [
-        'XP_UNIX',
-      ],
-    }],
-    ['OS=="mac"', {
-      'defines': [
-        'XP_MACOSX',
-        'XP_UNIX',
-        'TARGET_API_MAC_CARBON=1',
-        'NO_X11',
-        'USE_SYSTEM_CONSOLE',
-      ],
-    }],
     ['OS=="win"', {
       'defines': [
-        'XP_WIN',
         'WIN32',
         '_WINDOWS'
       ],
