@@ -45,7 +45,7 @@ void ResourceBundle::LoadCommonResources() {
 
   switch (ui::GetDisplayLayout()) {
     case ui::LAYOUT_TOUCH:
-      AddDataPack(GetResourcesPakFilePath("theme_resources_metro_1x.pak"),
+      AddDataPack(GetResourcesPakFilePath("theme_resources_touch_1x.pak"),
                   ResourceHandle::kScaleFactor100x);
       AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
                   ResourceHandle::kScaleFactor100x);

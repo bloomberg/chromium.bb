@@ -37,7 +37,7 @@ theme_resources_2x.pak: %(VersionDir)s\
 ui_resources_2x.pak: %(VersionDir)s\
 
 [METRO]
-theme_resources_metro_1x.pak: %(VersionDir)s\
+theme_resources_touch_1x.pak: %(VersionDir)s\
 
 [GOOGLE_CHROME]
 splash-620x300.png: %(ChromeDir)s\

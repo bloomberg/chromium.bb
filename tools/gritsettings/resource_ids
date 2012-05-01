@@ -146,7 +146,7 @@
   "chrome/app/theme/theme_resources_2x.grd": {
     "includes": [21000],
   },
-  "chrome/app/theme/theme_resources_metro_1x.grd": {
+  "chrome/app/theme/theme_resources_touch_1x.grd": {
     "includes": [21000],
   },
   # This file is generated during the build.

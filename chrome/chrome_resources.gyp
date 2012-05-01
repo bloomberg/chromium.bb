@@ -218,9 +218,9 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'theme_resources_metro_1x',
+          'action_name': 'theme_resources_touch_1x',
           'variables': {
-            'grit_grd_file': 'app/theme/theme_resources_metro_1x.grd',
+            'grit_grd_file': 'app/theme/theme_resources_touch_1x.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
@@ -283,7 +283,7 @@
             {
               'destination': '<(PRODUCT_DIR)',
               'files': [
-                '<(grit_out_dir)/theme_resources_metro_1x.pak',
+                '<(grit_out_dir)/theme_resources_touch_1x.pak',
               ],
             },
           ],
