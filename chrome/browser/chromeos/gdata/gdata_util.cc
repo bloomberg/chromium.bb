@@ -24,8 +24,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
-#include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -238,11 +236,6 @@ void InsertGDataCachePathsPermissions(
 }
 
 bool IsGDataAvailable(Profile* profile) {
-  if (!chromeos::UserManager::Get()->IsUserLoggedIn() ||
-      chromeos::UserManager::Get()->IsLoggedInAsGuest() ||
-      chromeos::UserManager::Get()->IsLoggedInAsDemoUser())
-    return false;
-
   // Do not allow GData for incognito windows / guest mode.
   if (profile->IsOffTheRecord())
     return false;

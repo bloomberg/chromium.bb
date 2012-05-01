@@ -69,13 +69,12 @@ class GDataOperationRegistry {
     // -1 if no expectation is available (yet).
     int64 progress_total;
   };
-  typedef std::vector<ProgressStatus> ProgressStatusList;
 
   // Observer interface for listening changes in the active set of operations.
   class Observer {
    public:
     // Called when a GData operation started, made some progress, or finished.
-    virtual void OnProgressUpdate(const ProgressStatusList& list) = 0;
+    virtual void OnProgressUpdate(const std::vector<ProgressStatus>& list) = 0;
    protected:
     virtual ~Observer() {}
   };
@@ -129,7 +128,7 @@ class GDataOperationRegistry {
   bool CancelForFilePath(const FilePath& file_path);
 
   // Obtains the list of currently active operations.
-  ProgressStatusList GetProgressStatusList();
+  std::vector<ProgressStatus> GetProgressStatusList();
 
   // Sets the observer.
   void AddObserver(Observer* observer);

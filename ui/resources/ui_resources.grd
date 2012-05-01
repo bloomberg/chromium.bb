@@ -293,12 +293,6 @@
         <include name="IDR_AURA_UBER_TRAY_CAPS_LOCK" file="aura/status_capslock.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK" file="aura/status_capslock_dark.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_BLUETOOTH" file="aura/status_bluetooth.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE" file="aura/status_drive.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE_FAILED" file="aura/status_drive_item_failed.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE_DONE" file="aura/status_drive_item_done.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL" file="aura/status_drive_item_cancel.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL_HOVER" file="aura/status_drive_item_cancel_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE_LIGHT" file="aura/status_drive_light.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_IME" file="aura/status_ime.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_UPDATE" file="aura/status_update.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_UPDATE_DARK" file="aura/status_update_dark.png" type="BINDATA" />

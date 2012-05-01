@@ -10,7 +10,6 @@
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/brightness/brightness_observer.h"
 #include "ash/system/date/clock_observer.h"
-#include "ash/system/drive/drive_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/network/network_observer.h"
 #include "ash/system/power/power_status_observer.h"
@@ -22,7 +21,6 @@
 #include "ash/system/user/user_observer.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
-#include "base/memory/weak_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
@@ -30,8 +28,6 @@
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
-#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
@@ -58,25 +54,15 @@
 #include "chrome/common/url_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using gdata::GDataFileSystem;
-using gdata::GDataOperationRegistry;
-using gdata::GDataSystemService;
-using gdata::GDataSystemServiceFactory;
-
 namespace chromeos {
 
 namespace {
-
-// Time delay for rechecking gdata operation when we suspect that there will
-// be no upcoming activity notifications that need to be pushed to UI.
-const int kGDataOperationRecheckDelayMs = 5000;
 
 bool ShouldShowNetworkIconInTray(const Network* network) {
   if (!network)
@@ -104,25 +90,6 @@ void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
   info->short_name = util.GetInputMethodShortName(ime);
 }
 
-ash::DriveOperationStatusList GetDriveStatusList(
-    const std::vector<GDataOperationRegistry::ProgressStatus>& list) {
-  ash::DriveOperationStatusList results;
-  for (GDataOperationRegistry::ProgressStatusList::const_iterator it =
-          list.begin();
-       it != list.end(); ++it) {
-    ash::DriveOperationStatus status;
-    status.file_path = it->file_path;
-    status.progress = it->progress_total == 0 ? 0.0 :
-        static_cast<double>(it->progress_current) /
-            static_cast<double>(it->progress_total);
-    status.type = static_cast<ash::DriveOperationStatus::OperationType>(
-        it->operation_type);
-    status.state = static_cast<ash::DriveOperationStatus::OperationState>(
-        it->transfer_state);
-    results.push_back(status);
-  }
-  return results;
-}
 
 void BluetoothPowerFailure() {
   // TODO(sad): Show an error bubble?
@@ -148,7 +115,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public NetworkLibrary::NetworkManagerObserver,
                            public NetworkLibrary::NetworkObserver,
                            public NetworkLibrary::CellularDataPlanObserver,
-                           public gdata::GDataOperationRegistry::Observer,
                            public content::NotificationObserver,
                            public input_method::InputMethodManager::Observer,
                            public system::TimezoneSettings::Observer,
@@ -158,8 +124,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
  public:
   explicit SystemTrayDelegate(ash::SystemTray* tray)
       : tray_(tray),
-        ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(
-            new base::WeakPtrFactory<SystemTrayDelegate>(this))),
         network_icon_(ALLOW_THIS_IN_INITIALIZER_LIST(
                       new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE))),
         network_icon_dark_(ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -306,10 +270,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     // TODO(sad): Make this work.
   }
 
-  virtual void ShowDriveSettings() OVERRIDE {
-    // TODO(zelidrag): Show settings once we put them in.
-  }
-
   virtual void ShowIMESettings() OVERRIDE {
     content::RecordAction(
         content::UserMetricsAction("OpenLanguageOptionsDialog"));
@@ -443,37 +403,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     input_method::InputMethodManager::GetInstance()->
         ActivateInputMethodProperty(key);
   }
-
-  virtual void CancelDriveOperation(const FilePath& file_path) OVERRIDE {
-    Profile* profile = ProfileManager::GetDefaultProfile();
-    if (!gdata::util::IsGDataAvailable(profile))
-      return;
-
-    GDataSystemService* system_service =
-          GDataSystemServiceFactory::FindForProfile(profile);
-    if (!system_service)
-      return;
-
-    system_service->file_system()->GetOperationRegistry()->CancelForFilePath(
-        file_path);
-  }
-
-  virtual void GetDriveOperationStatusList(
-      ash::DriveOperationStatusList* list) OVERRIDE {
-    Profile* profile = ProfileManager::GetDefaultProfile();
-    if (!gdata::util::IsGDataAvailable(profile))
-      return;
-
-    GDataSystemService* system_service =
-          GDataSystemServiceFactory::FindForProfile(profile);
-    if (!system_service)
-      return;
-
-    *list = GetDriveStatusList(
-        system_service->file_system()->GetOperationRegistry()->
-            GetProgressStatusList());
-  }
-
 
   virtual void GetMostRelevantNetworkIcon(ash::NetworkIconInfo* info,
                                           bool dark) OVERRIDE {
@@ -726,13 +655,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     UpdateClockType(profile->GetPrefs());
     search_key_mapped_to_ =
         profile->GetPrefs()->GetInteger(prefs::kLanguageXkbRemapSearchKeyTo);
-
-    if (gdata::util::IsGDataAvailable(profile)) {
-      GDataSystemService* system_service =
-          GDataSystemServiceFactory::FindForProfile(profile);
-      system_service->file_system()->GetOperationRegistry()->
-          AddObserver(this);
-    }
   }
 
   void UpdateClockType(PrefService* service) {
@@ -771,12 +693,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     ash::IMEObserver* observer = tray_->ime_observer();
     if (observer)
       observer->OnIMERefresh();
-  }
-
-  void NotifyRefreshDrive(ash::DriveOperationStatusList& list) {
-    ash::DriveObserver* observer = tray_->drive_observer();
-    if (observer)
-      observer->OnDriveRefresh(list);
   }
 
   void RefreshNetworkObserver(NetworkLibrary* crosnet) {
@@ -956,61 +872,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     NotifyRefreshIME();
   }
 
-  // gdata::GDataOperationRegistry::Observer overrides.
-  virtual void OnProgressUpdate(
-      const GDataOperationRegistry::ProgressStatusList& list) {
-    std::vector<ash::DriveOperationStatus> ui_list = GetDriveStatusList(list);
-    NotifyRefreshDrive(ui_list);
-
-    // If we have something to report right now (i.e. completion status only),
-    // we need to delayed re-check the status in few seconds to ensure we
-    // raise events that will let us properly clear the uber tray state.
-    if (list.size() > 0) {
-      bool has_in_progress_items = false;
-      for (GDataOperationRegistry::ProgressStatusList::const_iterator it =
-               list.begin();
-          it != list.end(); ++it) {
-        if (it->transfer_state ==
-                GDataOperationRegistry::OPERATION_STARTED ||
-            it->transfer_state ==
-                GDataOperationRegistry::OPERATION_IN_PROGRESS ||
-            it->transfer_state ==
-                GDataOperationRegistry::OPERATION_SUSPENDED) {
-          has_in_progress_items = true;
-          break;
-        }
-      }
-
-      if (!has_in_progress_items) {
-        content::BrowserThread::PostDelayedTask(
-            content::BrowserThread::UI,
-            FROM_HERE,
-            base::Bind(&SystemTrayDelegate::RecheckGDataOperations,
-                       ui_weak_ptr_factory_->GetWeakPtr()),
-            base::TimeDelta::FromMilliseconds(kGDataOperationRecheckDelayMs));
-      }
-    }
-
-  }
-
-  // Pulls the list of ongoing drive operations and initiates status update.
-  // This method is needed to ensure delayed cleanup of the latest reported
-  // status in UI in cases when there are no new changes coming (i.e. when the
-  // last set of transfer operations completed).
-  void RecheckGDataOperations() {
-    Profile* profile = ProfileManager::GetDefaultProfile();
-    if (!gdata::util::IsGDataAvailable(profile))
-      return;
-
-    GDataSystemService* system_service =
-          GDataSystemServiceFactory::FindForProfile(profile);
-    if (!system_service)
-      return;
-
-    OnProgressUpdate(system_service->file_system()->GetOperationRegistry()->
-        GetProgressStatusList());
-  }
-
   // Overridden from system::TimezoneSettings::Observer.
   virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE {
     NotifyRefreshClock();
@@ -1096,7 +957,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   ash::SystemTray* tray_;
-  scoped_ptr<base::WeakPtrFactory<SystemTrayDelegate> > ui_weak_ptr_factory_;
   scoped_ptr<NetworkMenuIcon> network_icon_;
   scoped_ptr<NetworkMenuIcon> network_icon_dark_;
   scoped_ptr<NetworkMenu> network_menu_;
