@@ -49,6 +49,11 @@ ClipboardStub* ConnectionToHost::clipboard_stub() {
   return &clipboard_forwarder_;
 }
 
+HostStub* ConnectionToHost::host_stub() {
+  // TODO(wez): Add a HostFilter class, equivalent to input filter.
+  return control_dispatcher_.get();
+}
+
 InputStub* ConnectionToHost::input_stub() {
   return &event_forwarder_;
 }

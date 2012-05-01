@@ -145,6 +145,7 @@ class ChromotingInstance :
   void RemapKey(uint32 in_usb_keycode, uint32 out_usb_keycode);
   void TrapKey(uint32 usb_keycode, bool trap);
   void SendClipboardItem(const std::string& mime_type, const std::string& item);
+  void NotifyClientDimensions(int width, int height);
 
   // Return statistics record by ChromotingClient.
   // If no connection is currently active then NULL will be returned.

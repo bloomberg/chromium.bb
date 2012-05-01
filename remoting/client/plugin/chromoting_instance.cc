@@ -102,7 +102,8 @@ static base::LazyInstance<base::Lock>::Leaky
 
 // String sent in the "hello" message to the plugin to describe features.
 const char ChromotingInstance::kApiFeatures[] =
-    "highQualityScaling injectKeyEvent sendClipboardItem remapKey trapKey";
+    "highQualityScaling injectKeyEvent sendClipboardItem remapKey trapKey "
+    "notifyClientDimensions";
 
 bool ChromotingInstance::ParseAuthMethods(const std::string& auth_methods_str,
                                           ClientConfig* config) {
@@ -299,6 +300,15 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
       return;
     }
     SendClipboardItem(mime_type, item);
+  } else if (method == "notifyClientDimensions") {
+    int width = 0;
+    int height = 0;
+    if (!data->GetInteger("width", &width) ||
+        !data->GetInteger("height", &height)) {
+      LOG(ERROR) << "Invalid notifyClientDimensions.";
+      return;
+    }
+    NotifyClientDimensions(width, height);
   }
 }
 
@@ -470,6 +480,16 @@ void ChromotingInstance::SendClipboardItem(const std::string& mime_type,
   event.set_mime_type(mime_type);
   event.set_data(item);
   host_connection_->clipboard_stub()->InjectClipboardEvent(event);
+}
+
+void ChromotingInstance::NotifyClientDimensions(int width, int height) {
+  if (!host_connection_.get()) {
+    return;
+  }
+  protocol::ClientDimensions client_dimensions;
+  client_dimensions.set_width(width);
+  client_dimensions.set_height(height);
+  host_connection_->host_stub()->NotifyClientDimensions(client_dimensions);
 }
 
 ChromotingStats* ChromotingInstance::GetStats() {
