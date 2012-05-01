@@ -577,15 +577,14 @@
           'outputs': [
             '<(PRODUCT_DIR)/chromoting.msi',
           ],
+          'wix_defines' : [
+            '"-dBranding=<(branding)"',
+          ],
           'conditions': [
             ['buildtype == "Official"', {
-              'variables': {
-                 'official_build': '-dOfficialBuild=1',
-              },
-            }, { # else branding!="Chrome"
-              'variables': {
-                 'official_build': '',
-              },
+              'wix_defines': [
+                '-dOfficialBuild=1',
+              ],
             }],
           ],
           'rules': [
@@ -596,7 +595,7 @@
                 '<(PRODUCT_DIR)/remoting_host_controller.exe',
                 '<(PRODUCT_DIR)/remoting_me2me_host.exe',
                 '<(PRODUCT_DIR)/remoting_service.exe',
-                '<(platformsdk_path)/redist/x86/sas.dll'
+                '<(platformsdk_path)/redist/x86/sas.dll',
               ],
               'outputs': [
                 '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).wixobj',
@@ -609,11 +608,10 @@
                 '-ext "<(wix_path)\\WixFirewallExtension.dll"',
                 '-ext "<(wix_path)\\WixUIExtension.dll"',
                 '-ext "<(wix_path)\\WixUtilExtension.dll"',
-                '-dVersion=<(version_full) '
-                '"-dFileSource=<(PRODUCT_DIR)." '
-                '"-dSasDllPath=<(platformsdk_path)/redist/x86/sas.dll" '
-                '<(official_build) '
-                '"-dBranding=<(branding)" '
+                '-dVersion=<(version_full)',
+                '"-dFileSource=<(PRODUCT_DIR)."',
+                '"-dSasDllPath=<(platformsdk_path)/redist/x86/sas.dll"',
+                '<@(_wix_defines)',
                 '-out <@(_outputs)',
                 '"<(RULE_INPUT_PATH)"',
               ],
@@ -626,7 +624,7 @@
                 '<(PRODUCT_DIR)/remoting_host_controller.exe',
                 '<(PRODUCT_DIR)/remoting_me2me_host.exe',
                 '<(PRODUCT_DIR)/remoting_service.exe',
-                '<(platformsdk_path)/redist/x86/sas.dll'
+                '<(platformsdk_path)/redist/x86/sas.dll',
               ],
               'outputs': [
                 '<(PRODUCT_DIR)/<(RULE_INPUT_ROOT).msi',
@@ -640,11 +638,10 @@
                 '-ext "<(wix_path)\\WixUIExtension.dll"',
                 '-ext "<(wix_path)\\WixUtilExtension.dll"',
                 '-cultures:en-us',
-                '-dVersion=<(version_full) '
-                '"-dFileSource=<(PRODUCT_DIR)." '
-                '"-dSasDllPath=<(platformsdk_path)/redist/x86/sas.dll" '
-                '<(official_build) '
-                '"-dBranding=<(branding)" '
+                '-dVersion=<(version_full)',
+                '"-dFileSource=<(PRODUCT_DIR)."',
+                '"-dSasDllPath=<(platformsdk_path)/redist/x86/sas.dll"',
+                '<@(_wix_defines)',
                 '-out "<(PRODUCT_DIR)/<(RULE_INPUT_ROOT).msi"',
                 '"<(RULE_INPUT_PATH)"',
               ],
