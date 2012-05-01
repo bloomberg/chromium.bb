@@ -31,11 +31,8 @@ class ExtensionPopup : public views::BubbleDelegateView,
   // by value of |arrow_location| remains fixed during popup resizes.
   // If |arrow_location| is BOTTOM_*, then the popup 'pops up', otherwise
   // the popup 'drops down'.
-  // Pass |inspect_with_devtools| as true to pin the popup open and show the
-  // devtools window for it.
   // The actual display of the popup is delayed until the page contents
   // finish loading in order to minimize UI flashing and resizing.
-  // TODO(benwells): remove unused |inspect_with_devtools| parameter.
   static ExtensionPopup* ShowPopup(
       const GURL& url,
       Browser* browser,
