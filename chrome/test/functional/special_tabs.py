@@ -41,7 +41,6 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://appcache-internals': { 'title': 'AppCache Internals' },
     'chrome://blob-internals': { 'title': 'Blob Storage Internals' },
     'chrome://feedback': {},
-    'chrome://feedback/#0': { 'title': 'Feedback' },
     'chrome://chrome-urls': { 'title': 'Chrome URLs' },
     'chrome://crashes': { 'title': 'Crashes' },
     'chrome://credits': { 'title': 'Credits' },
@@ -273,7 +272,9 @@ class SpecialTabsTest(pyauto.PyUITest):
       expected_title = 'title' in properties and properties['title'] or url
       actual_title = self.GetActiveTabTitle()
       self.assertTrue(self.WaitUntil(
-            lambda: self.GetActiveTabTitle(), expect_retval=expected_title))
+          lambda: self.GetActiveTabTitle(), expect_retval=expected_title),
+          msg='Title did not match for %s. Expected: %s. Got %s' % (
+              url, expect_retval, self.GetActiveTabTitle()))
       include_list = []
       exclude_list = []
       no_csp = 'CSP' in properties and not properties['CSP']
@@ -301,7 +302,8 @@ class SpecialTabsTest(pyauto.PyUITest):
         self.assertEqual(result, 'executed',
                          msg='Got %s for %s' % (result, url))
       else:
-        self.assertEqual(result, 'blocked');
+        self.assertEqual(result, 'blocked',
+                         msg='Got %s for %s' % (result, url))
 
       # Restart browser so that every URL gets a fresh instance.
       self.RestartBrowser(clear_profile=False)
