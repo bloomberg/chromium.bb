@@ -88,6 +88,10 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 }
 
+void ChromeBrowserMainExtraPartsAsh::PreMainMessageLoopStart() {
+  ash::Shell::GetRootWindow()->ShowRootWindow();
+}
+
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   ash::Shell::DeleteInstance();
 }
