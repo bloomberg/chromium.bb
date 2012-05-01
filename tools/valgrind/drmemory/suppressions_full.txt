@@ -1334,3 +1334,15 @@ name=http://crbug.com/125723
 *!media::MixStreams
 *!media::AudioOutputMixer::OnMoreData
 *!media::AudioOutputProxyTest_TwoStreams_BothPlaying_Mixer_Test::TestBody
+
+LEAK
+name=http://crbug.com/125724
+*!operator new
+*!cricket::StunAttribute::CreateByteString
+*!cricket::AllocateRequest::Prepare
+*!cricket::StunRequest::Construct
+*!cricket::StunRequestManager::SendDelayed
+*!cricket::RelayConnection::SendAllocateRequest
+*!cricket::RelayEntry::Connect
+*!cricket::RelayPort::PrepareAddress
+*!cricket::AllocationSequence::CreateRelayPorts
