@@ -20,8 +20,10 @@ using content::NavigationController;
 TestHtmlDialogObserver::TestHtmlDialogObserver(
     JsInjectionReadyObserver* js_injection_ready_observer)
     : js_injection_ready_observer_(js_injection_ready_observer),
-      web_ui_(NULL), done_(false), running_(false) {
-  registrar_.Add(this, chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
+      web_ui_(NULL),
+      done_(false),
+      running_(false) {
+  registrar_.Add(this, chrome::NOTIFICATION_WEB_DIALOG_SHOWN,
                  content::NotificationService::AllSources());
 }
 
@@ -33,13 +35,13 @@ void TestHtmlDialogObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_HTML_DIALOG_SHOWN:
+    case chrome::NOTIFICATION_WEB_DIALOG_SHOWN:
       if (js_injection_ready_observer_) {
         js_injection_ready_observer_->OnJsInjectionReady(
             content::Details<content::RenderViewHost>(details).ptr());
       }
       web_ui_ = content::Source<content::WebUI>(source).ptr();
-      registrar_.Remove(this, chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
+      registrar_.Remove(this, chrome::NOTIFICATION_WEB_DIALOG_SHOWN,
                         content::NotificationService::AllSources());
       // Wait for navigation on the new WebUI instance to complete. This depends
       // on receiving the notification of the HtmlDialog being shown before the

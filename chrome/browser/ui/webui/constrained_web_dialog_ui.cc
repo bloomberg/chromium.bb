@@ -55,7 +55,7 @@ void ConstrainedWebDialogUI::RenderViewCreated(
                  base::Unretained(this)));
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
+      chrome::NOTIFICATION_WEB_DIALOG_SHOWN,
       content::Source<content::WebUI>(web_ui()),
       content::Details<RenderViewHost>(render_view_host));
 }

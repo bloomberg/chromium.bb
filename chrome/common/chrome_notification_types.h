@@ -82,7 +82,7 @@ enum NotificationType {
   // Sent after an WebDialog dialog has been shown. The source is the
   // dialog. The details is a Details<RenderViewHost> with a pointer to the RVH
   // for the shown dialog.
-  NOTIFICATION_HTML_DIALOG_SHOWN,
+  NOTIFICATION_WEB_DIALOG_SHOWN,
 
   // A new tab is created from an existing tab to serve as a target of a
   // navigation that is about to happen. The source will be a Source<Profile>
