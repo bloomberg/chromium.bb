@@ -4,12 +4,17 @@
 
 #include "ui/views/widget/desktop_native_widget_helper_aura.h"
 
-#include "ui/views/widget/native_widget_aura.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
 #include "ui/aura/desktop/desktop_dispatcher_client.h"
 #include "ui/aura/desktop/desktop_root_window_event_filter.h"
 #include "ui/aura/client/dispatcher_client.h"
+#include "ui/views/widget/native_widget_aura.h"
+
+#if defined(OS_WIN)
+#include "ui/base/win/hwnd_subclass.h"
+#include "ui/views/widget/widget_message_filter.h"
+#endif
 
 namespace views {
 
@@ -29,6 +34,7 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
     bounds.set_size(gfx::Size(100, 100));
   }
   root_window_.reset(new aura::RootWindow(bounds));
+  root_window_->Init();
   root_window_->SetEventFilter(
       new aura::DesktopRootWindowEventFilter(root_window_.get()));
   root_window_->AddRootWindowObserver(this);
@@ -38,6 +44,14 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
       new aura::DesktopActivationClient(root_window_.get()));
   aura::client::SetDispatcherClient(root_window_.get(),
                                     new aura::DesktopDispatcherClient);
+}
+
+void DesktopNativeWidgetHelperAura::PostInitialize() {
+#if defined(OS_WIN)
+  subclass_.reset(new ui::HWNDSubclass(root_window_->GetAcceleratedWidget()));
+  subclass_->SetFilter(new WidgetMessageFilter(root_window_.get(),
+                                               widget_->GetWidget()));
+#endif
 }
 
 void DesktopNativeWidgetHelperAura::ShowRootWindow() {

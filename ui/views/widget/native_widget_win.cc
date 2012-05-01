@@ -47,6 +47,7 @@
 #include "ui/views/widget/native_widget_delegate.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_hwnd_utils.h"
 #include "ui/views/window/native_frame_view.h"
 
 #pragma comment(lib, "dwmapi.lib")
@@ -222,14 +223,6 @@ BOOL CALLBACK EnumerateChildWindowsForNativeWidgets(HWND hwnd, LPARAM l_param) {
     widgets->insert(widget);
   }
   return TRUE;
-}
-
-// Returns true if the WINDOWPOS data provided indicates the client area of
-// the window may have changed size. This can be caused by the window being
-// resized or its frame changing.
-bool DidClientAreaSizeChange(const WINDOWPOS* window_pos) {
-  return !(window_pos->flags & SWP_NOSIZE) ||
-         window_pos->flags & SWP_FRAMECHANGED;
 }
 
 // Callback used to notify child windows that the top level window received a

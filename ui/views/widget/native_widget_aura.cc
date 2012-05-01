@@ -231,9 +231,11 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
 
   aura::client::SetActivationDelegate(window_, this);
 
-  // TODO(erg): Move this somewhere else?
-  if (desktop_helper_.get())
+  if (desktop_helper_.get()) {
+    desktop_helper_->PostInitialize();
+    // TODO(erg): Move this somewhere else?
     desktop_helper_->ShowRootWindow();
+  }
 }
 
 NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {

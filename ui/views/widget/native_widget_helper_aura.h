@@ -21,6 +21,10 @@ class VIEWS_EXPORT NativeWidgetHelperAura {
   // set up a root_window_ for this widget.
   virtual void PreInitialize(const Widget::InitParams& params) = 0;
 
+  // Called at the end of InitNativeWidget; i.e. after the NativeWidgetAura's
+  // aura::Window has been initialized.
+  virtual void PostInitialize() = 0;
+
   // Passes through a message to show the RootWindow, if it exists.
   virtual void ShowRootWindow() = 0;
 

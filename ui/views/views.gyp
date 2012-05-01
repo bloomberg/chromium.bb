@@ -344,6 +344,10 @@
         'widget/widget.h',
         'widget/widget_delegate.cc',
         'widget/widget_delegate.h',
+        'widget/widget_hwnd_utils.cc',
+        'widget/widget_hwnd_utils.h',
+        'widget/widget_message_filter.cc',
+        'widget/widget_message_filter.h',
         'window/client_view.cc',
         'window/client_view.h',
         'window/custom_frame_view.cc',
@@ -430,6 +434,18 @@
         ['use_x11==0', {
           'sources!': [
             'events/event_x.cc',
+          ],
+        }],
+        ['use_aura==0 or OS!="win"', {
+          'sources!': [
+            'widget/widget_message_filter.cc',
+            'widget/widget_message_filter.h',
+          ],
+        }],
+        ['OS!="win"', {
+          'sources!': [
+            'widget/widget_hwnd_utils.cc',
+            'widget/widget_hwnd_utils.h',
           ],
         }],
       ],

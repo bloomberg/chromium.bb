@@ -16,8 +16,15 @@ namespace aura {
 class RootWindow;
 }
 
+namespace ui {
+#if defined(OS_WIN)
+class HWNDSubclass;
+#endif
+}
+
 namespace views {
 class NativeWidgetAura;
+class WidgetMessageFilter;
 
 // Implementation of non-Ash desktop integration code, allowing
 // NativeWidgetAuras to work in a traditional desktop environment.
@@ -30,6 +37,7 @@ class VIEWS_EXPORT DesktopNativeWidgetHelperAura
 
   // Overridden from aura::NativeWidgetHelperAura:
   virtual void PreInitialize(const Widget::InitParams& params) OVERRIDE;
+  virtual void PostInitialize() OVERRIDE;
   virtual void ShowRootWindow() OVERRIDE;
   virtual aura::RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::Rect ModifyAndSetBounds(const gfx::Rect& bounds) OVERRIDE;
@@ -47,6 +55,10 @@ class VIEWS_EXPORT DesktopNativeWidgetHelperAura
 
   // Optionally, a RootWindow that we attach ourselves to.
   scoped_ptr<aura::RootWindow> root_window_;
+
+#if defined(OS_WIN)
+  scoped_ptr<ui::HWNDSubclass> subclass_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetHelperAura);
 };

@@ -23,7 +23,6 @@ void Screen::SetInstance(ScreenImpl* screen) {
   g_instance_ = screen;
 }
 
-#if defined(USE_ASH)
 // TODO(oshima): Implement ScreenImpl for Linux/aura and remove this
 // ifdef.
 
@@ -61,7 +60,5 @@ Monitor Screen::GetPrimaryMonitor() {
 Monitor Screen::GetMonitorMatching(const gfx::Rect& match_rect) {
   return g_instance_->GetMonitorNearestPoint(match_rect.CenterPoint());
 }
-
-#endif
 
 }  // namespace gfx
