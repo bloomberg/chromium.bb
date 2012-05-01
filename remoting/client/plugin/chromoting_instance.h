@@ -190,6 +190,9 @@ class ChromotingInstance :
 
   void ProcessLogToUI(const std::string& message);
 
+  // Returns true if there is a ConnectionToHost and it is connected.
+  bool IsConnected();
+
   bool initialized_;
 
   PepperPluginThreadDelegate plugin_thread_delegate_;
@@ -199,6 +202,7 @@ class ChromotingInstance :
   scoped_ptr<PepperView> view_;
 
   scoped_refptr<RectangleUpdateDecoder> rectangle_decoder_;
+
   scoped_ptr<protocol::MouseInputFilter> mouse_input_filter_;
   scoped_ptr<protocol::InputEventTracker> input_tracker_;
   KeyEventMapper key_mapper_;

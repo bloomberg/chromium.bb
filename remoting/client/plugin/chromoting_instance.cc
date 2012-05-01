@@ -330,7 +330,7 @@ void ChromotingInstance::DidChangeView(const pp::Rect& position,
 bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
   DCHECK(plugin_message_loop_->BelongsToCurrentThread());
 
-  if (!input_handler_.get())
+  if (!IsConnected())
     return false;
 
   // TODO(wez): When we have a good hook into Host dimensions changes, move
@@ -452,13 +452,13 @@ void ChromotingInstance::OnIncomingIq(const std::string& iq) {
 }
 
 void ChromotingInstance::ReleaseAllKeys() {
-  if (input_tracker_.get())
+  if (IsConnected())
     input_tracker_->ReleaseAll();
 }
 
 void ChromotingInstance::InjectKeyEvent(const protocol::KeyEvent& event) {
   // Inject after the KeyEventMapper, so the event won't get mapped or trapped.
-  if (input_tracker_.get())
+  if (IsConnected())
     input_tracker_->InjectKeyEvent(event);
 }
 
@@ -473,7 +473,7 @@ void ChromotingInstance::TrapKey(uint32 usb_keycode, bool trap) {
 
 void ChromotingInstance::SendClipboardItem(const std::string& mime_type,
                                            const std::string& item) {
-  if (!host_connection_.get()) {
+  if (!IsConnected()) {
     return;
   }
   protocol::ClipboardEvent event;
@@ -483,7 +483,7 @@ void ChromotingInstance::SendClipboardItem(const std::string& mime_type,
 }
 
 void ChromotingInstance::NotifyClientDimensions(int width, int height) {
-  if (!host_connection_.get()) {
+  if (!IsConnected()) {
     return;
   }
   protocol::ClientDimensions client_dimensions;
@@ -652,6 +652,11 @@ void ChromotingInstance::ProcessLogToUI(const std::string& message) {
     scriptable_object->LogDebugInfo(message);
   }
   g_logging_to_plugin = false;
+}
+
+bool ChromotingInstance::IsConnected() {
+  return host_connection_.get() &&
+    (host_connection_->state() == protocol::ConnectionToHost::CONNECTED);
 }
 
 }  // namespace remoting
