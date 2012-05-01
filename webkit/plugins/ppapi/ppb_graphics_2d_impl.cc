@@ -344,24 +344,29 @@ int32_t PPB_Graphics2D_Impl::Flush(PP_CompletionCallback callback) {
         break;
     }
 
-    // We need the rect to be in terms of the current clip rect of the plugin
-    // since that's what will actually be painted. If we issue an invalidate
-    // for a clipped-out region, WebKit will do nothing and we won't get any
-    // ViewWillInitiatePaint/ViewFlushedPaint calls, leaving our callback
-    // stranded.
-    gfx::Rect visible_changed_rect;
-    if (bound_instance_ && !op_rect.IsEmpty())
-      visible_changed_rect =PP_ToGfxRect(bound_instance_->view_data().clip_rect).
-          Intersect(op_rect);
+    // For correctness with accelerated compositing, we must issue an invalidate
+    // on the full op_rect even if it is partially or completely off-screen.
+    // However, if we issue an invalidate for a clipped-out region, WebKit will
+    // do nothing and we won't get any ViewWillInitiatePaint/ViewFlushedPaint
+    // calls, leaving our callback stranded. So we still need to check whether
+    // the repainted area is visible to determine how to deal with the callback.
+    if (bound_instance_ && !op_rect.IsEmpty()) {
 
-    if (bound_instance_ && !visible_changed_rect.IsEmpty()) {
+      // Set |nothing_visible| to false if the change overlaps the visible area.
+      gfx::Rect visible_changed_rect =
+          PP_ToGfxRect(bound_instance_->view_data().clip_rect).
+          Intersect(op_rect);
+      if (!visible_changed_rect.IsEmpty())
+        nothing_visible = false;
+
+      // Notify the plugin of the entire change (op_rect), even if it is
+      // partially or completely off-screen.
       if (operation.type == QueuedOperation::SCROLL) {
         bound_instance_->ScrollRect(operation.scroll_dx, operation.scroll_dy,
-                                    visible_changed_rect);
+                                    op_rect);
       } else {
-        bound_instance_->InvalidateRect(visible_changed_rect);
+        bound_instance_->InvalidateRect(op_rect);
       }
-      nothing_visible = false;
     }
   }
   queued_operations_.clear();
