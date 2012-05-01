@@ -100,6 +100,18 @@ class ChromotingMixIn(object):
                               'document.getElementById("smsVerifyPin").click();'
                               % otp, tab_index, windex)
 
+    # If the account adder screen appears, then skip it.
+    self.assertTrue(
+        self._WaitForJavascriptCondition(
+            'document.getElementById("skip") || '
+            'document.getElementById("submit_approve_access")',
+            tab_index, windex),
+        msg='No "skip adding account" or "approve access" link.')
+    self._ExecuteJavascript(
+        'if (document.getElementById("skip")) '
+        '{ document.getElementById("skip").click(); }',
+        tab_index, windex)
+
     # Approve access.
     self.assertTrue(
         self._WaitForJavascriptCondition(
