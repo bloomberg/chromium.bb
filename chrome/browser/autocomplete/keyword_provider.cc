@@ -10,7 +10,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/extensions/extension_omnibox_api.h"
+#include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -294,9 +294,10 @@ void KeywordProvider::Start(const AutocompleteInput& input,
         keyword_mode_toggle.StayInKeywordMode();
       }
 
-      ApplyDefaultSuggestionForExtensionKeyword(profile_, template_url,
-                                                remaining_input,
-                                                &matches_[0]);
+      extensions::ApplyDefaultSuggestionForExtensionKeyword(
+          profile_, template_url,
+          remaining_input,
+          &matches_[0]);
 
       if (minimal_changes &&
           (input.matches_requested() != AutocompleteInput::BEST_MATCH)) {
@@ -311,9 +312,10 @@ void KeywordProvider::Start(const AutocompleteInput& input,
         extension_suggest_last_input_ = input;
         extension_suggest_matches_.clear();
 
-        bool have_listeners = ExtensionOmniboxEventRouter::OnInputChanged(
-            profile_, template_url->GetExtensionId(),
-            UTF16ToUTF8(remaining_input), current_input_id_);
+        bool have_listeners =
+          extensions::ExtensionOmniboxEventRouter::OnInputChanged(
+              profile_, template_url->GetExtensionId(),
+              UTF16ToUTF8(remaining_input), current_input_id_);
 
         // We only have to wait for suggest results if there are actually
         // extensions listening for input changes.
@@ -504,16 +506,18 @@ void KeywordProvider::Observe(int type,
 
       const TemplateURL* template_url(
           model->GetTemplateURLForKeyword(keyword));
-      ApplyDefaultSuggestionForExtensionKeyword(profile_, template_url,
-                                                remaining_input,
-                                                &matches_[0]);
+      extensions::ApplyDefaultSuggestionForExtensionKeyword(
+          profile_, template_url,
+          remaining_input,
+          &matches_[0]);
       listener_->OnProviderUpdate(true);
       return;
     }
 
     case chrome::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY: {
-      const ExtensionOmniboxSuggestions& suggestions =
-        *content::Details<ExtensionOmniboxSuggestions>(details).ptr();
+      const extensions::ExtensionOmniboxSuggestions& suggestions =
+        *content::Details<
+            extensions::ExtensionOmniboxSuggestions>(details).ptr();
       if (suggestions.request_id != current_input_id_)
         return;  // This is an old result. Just ignore.
 
@@ -526,7 +530,7 @@ void KeywordProvider::Observe(int type,
       // TODO(mpcomplete): consider clamping the number of suggestions to
       // AutocompleteProvider::kMaxMatches.
       for (size_t i = 0; i < suggestions.suggestions.size(); ++i) {
-        const ExtensionOmniboxSuggestion& suggestion =
+        const extensions::ExtensionOmniboxSuggestion& suggestion =
             suggestions.suggestions[i];
         // We want to order these suggestions in descending order, so start with
         // the relevance of the first result (added synchronously in Start()),
@@ -574,13 +578,13 @@ void KeywordProvider::EnterExtensionKeywordMode(
   DCHECK(current_keyword_extension_id_.empty());
   current_keyword_extension_id_ = extension_id;
 
-  ExtensionOmniboxEventRouter::OnInputStarted(
+  extensions::ExtensionOmniboxEventRouter::OnInputStarted(
       profile_, current_keyword_extension_id_);
 }
 
 void KeywordProvider::MaybeEndExtensionKeywordMode() {
   if (!current_keyword_extension_id_.empty()) {
-    ExtensionOmniboxEventRouter::OnInputCancelled(
+    extensions::ExtensionOmniboxEventRouter::OnInputCancelled(
         profile_, current_keyword_extension_id_);
 
     current_keyword_extension_id_.clear();

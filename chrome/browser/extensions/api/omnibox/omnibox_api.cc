@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_omnibox_api.h"
+#include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
@@ -25,7 +25,9 @@ const char kOnInputStarted[] = "omnibox.onInputStarted";
 const char kOnInputChanged[] = "omnibox.onInputChanged";
 const char kOnInputEntered[] = "omnibox.onInputEntered";
 const char kOnInputCancelled[] = "omnibox.onInputCancelled";
-};  // namespace events
+}  // namespace events
+
+namespace extensions {
 
 namespace {
 const char kDescriptionStylesOrderError[] =
@@ -61,7 +63,7 @@ const ExtensionOmniboxSuggestion* GetDefaultSuggestionForExtension(
       profile->GetExtensionService()->GetPropertyBag(extension));
 }
 
-};  // namespace
+}  // namespace
 
 // static
 void ExtensionOmniboxEventRouter::OnInputStarted(
@@ -295,3 +297,5 @@ void LaunchAppFromOmnibox(const AutocompleteMatch& match,
   Browser::OpenApplication(profile, extension, launch_container, GURL(),
                            disposition);
 }
+
+}  // namespace extensions

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_OMNIBOX_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_OMNIBOX_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_OMNIBOX_OMNIBOX_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_OMNIBOX_OMNIBOX_API_H_
 #pragma once
 
 #include <string>
@@ -18,6 +18,8 @@ class TemplateURL;
 namespace base {
 class ListValue;
 }
+
+namespace extensions {
 
 // Event router class for events related to the omnibox API.
 class ExtensionOmniboxEventRouter {
@@ -115,4 +117,6 @@ void LaunchAppFromOmnibox(const AutocompleteMatch& match,
                           Profile* profile,
                           WindowOpenDisposition disposition);
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_OMNIBOX_API_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_OMNIBOX_OMNIBOX_API_H_

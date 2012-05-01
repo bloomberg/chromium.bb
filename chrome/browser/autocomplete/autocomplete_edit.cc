@@ -22,7 +22,7 @@
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/extensions/extension_omnibox_api.h"
+#include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/predictor.h"
@@ -559,7 +559,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
 
         // Strip the keyword + leading space off the input.
         size_t prefix_length = match.template_url->keyword().length() + 1;
-        ExtensionOmniboxEventRouter::OnInputEntered(profile_,
+        extensions::ExtensionOmniboxEventRouter::OnInputEntered(profile_,
             template_url->GetExtensionId(),
             UTF16ToUTF8(match.fill_into_edit.substr(prefix_length)));
         view_->RevertAll();
@@ -591,7 +591,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
   }
 
   if (match.type == AutocompleteMatch::EXTENSION_APP) {
-    LaunchAppFromOmnibox(match, profile_, disposition);
+    extensions::LaunchAppFromOmnibox(match, profile_, disposition);
   } else {
     controller_->OnAutocompleteAccept(match.destination_url, disposition,
                                       match.transition, alternate_nav_url);

@@ -1,11 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_omnibox_api.h"
+#include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+namespace extensions {
 
 namespace {
 
@@ -131,3 +133,5 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine2) {
   EXPECT_TRUE(suggestions.ReadStylesFromValue(styles_value));
   CompareClassification(styles_expected, suggestions.description_styles);
 }
+
+}  // namespace extensions

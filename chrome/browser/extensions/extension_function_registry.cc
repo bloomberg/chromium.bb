@@ -34,7 +34,7 @@
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_metrics_module.h"
 #include "chrome/browser/extensions/extension_module.h"
-#include "chrome/browser/extensions/extension_omnibox_api.h"
+#include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_page_capture_api.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
@@ -253,8 +253,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<RemoveAllContextMenusFunction>();
 
   // Omnibox.
-  RegisterFunction<OmniboxSendSuggestionsFunction>();
-  RegisterFunction<OmniboxSetDefaultSuggestionFunction>();
+  RegisterFunction<extensions::OmniboxSendSuggestionsFunction>();
+  RegisterFunction<extensions::OmniboxSetDefaultSuggestionFunction>();
 
   // Speech input.
   RegisterFunction<StartSpeechInputFunction>();
