@@ -278,15 +278,22 @@ nouveau_object_new(struct nouveau_object *parent, uint64_t handle,
 void
 nouveau_object_del(struct nouveau_object **pobj)
 {
-	struct drm_nouveau_gpuobj_free req;
 	struct nouveau_object *obj = *pobj;
 	struct nouveau_device *dev;
 	if (obj) {
 		dev = nouveau_object_find(obj, NOUVEAU_DEVICE_CLASS);
-		req.channel = obj->parent->handle;
-		req.handle  = obj->handle;
-		drmCommandWrite(dev->fd, DRM_NOUVEAU_GPUOBJ_FREE,
-				&req, sizeof(req));
+		if (obj->oclass == NOUVEAU_FIFO_CHANNEL_CLASS) {
+			struct drm_nouveau_channel_free req;
+			req.channel = obj->handle;
+			drmCommandWrite(dev->fd, DRM_NOUVEAU_CHANNEL_FREE,
+					&req, sizeof(req));
+		} else {
+			struct drm_nouveau_gpuobj_free req;
+			req.channel = obj->parent->handle;
+			req.handle  = obj->handle;
+			drmCommandWrite(dev->fd, DRM_NOUVEAU_GPUOBJ_FREE,
+					&req, sizeof(req));
+		}
 	}
 	free(obj);
 	*pobj = NULL;
