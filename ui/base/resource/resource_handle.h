@@ -25,6 +25,10 @@ class UI_EXPORT ResourceHandle {
     UTF16
   };
 
+  // The scale factors for image resources.
+  static const float kScaleFactor100x;
+  static const float kScaleFactor200x;
+
   virtual ~ResourceHandle() {}
 
   // Get resource by id |resource_id|, filling in |data|.
@@ -40,6 +44,10 @@ class UI_EXPORT ResourceHandle {
 
   // Get the encoding type of text resources.
   virtual TextEncodingType GetTextEncodingType() const = 0;
+
+  // The scale of images in this resource pack relative to images in the 1x
+  // resource pak.
+  virtual float GetScaleFactor() const = 0;
 };
 
 }  // namespace ui

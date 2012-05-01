@@ -32,6 +32,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/resource/resource_handle.h"
 
 using content::NavigationController;
 using content::RenderViewHost;
@@ -320,7 +321,8 @@ void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
   // TODO(dtseng): should this be part of every BrowserTest or just WebUI test.
   FilePath resources_pack_path;
   PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
-  ResourceBundle::GetSharedInstance().AddDataPack(resources_pack_path);
+  ResourceBundle::GetSharedInstance().AddDataPack(
+      resources_pack_path, ui::ResourceHandle::kScaleFactor100x);
 
   FilePath mockPath;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &mockPath));

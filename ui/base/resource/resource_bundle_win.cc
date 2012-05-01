@@ -45,16 +45,22 @@ void ResourceBundle::LoadCommonResources() {
 
   switch (ui::GetDisplayLayout()) {
     case ui::LAYOUT_TOUCH:
-      AddDataPack(GetResourcesPakFilePath("theme_resources_metro_1x.pak"));
-      AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"));
+      AddDataPack(GetResourcesPakFilePath("theme_resources_metro_1x.pak"),
+                  ResourceHandle::kScaleFactor100x);
+      AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
+                  ResourceHandle::kScaleFactor100x);
       break;
     default:
       if (use_hidpi) {
-        AddDataPack(GetResourcesPakFilePath("theme_resources_2x.pak"));
-        AddDataPack(GetResourcesPakFilePath("ui_resources_2x.pak"));
+        AddDataPack(GetResourcesPakFilePath("theme_resources_2x.pak"),
+                  ResourceHandle::kScaleFactor200x);
+        AddDataPack(GetResourcesPakFilePath("ui_resources_2x.pak"),
+                  ResourceHandle::kScaleFactor200x);
       } else {
-        AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"));
-        AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"));
+        AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"),
+                  ResourceHandle::kScaleFactor100x);
+        AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
+                  ResourceHandle::kScaleFactor100x);
       }
       break;
   }

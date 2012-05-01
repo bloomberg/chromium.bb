@@ -103,7 +103,7 @@ void AfterInitialize(bool unit_test_mode) {
     return;  // We don't have a resource pack when running the unit-tests.
 
   // Load a data pack.
-  g_resource_data_pack = new ui::DataPack;
+  g_resource_data_pack = new ui::DataPack(ui::ResourceHandle::kScaleFactor100x);
   NSString* resource_path =
       [base::mac::FrameworkBundle() pathForResource:@"DumpRenderTree"
                                              ofType:@"pak"];

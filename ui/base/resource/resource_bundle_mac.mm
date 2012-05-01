@@ -44,17 +44,23 @@ FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
 }  // namespace
 
 void ResourceBundle::LoadCommonResources() {
-  AddDataPack(GetResourcesPakFilePath(@"chrome", nil));
-  AddDataPack(GetResourcesPakFilePath(@"theme_resources_standard", nil));
-  AddDataPack(GetResourcesPakFilePath(@"ui_resources_standard", nil));
+  AddDataPack(GetResourcesPakFilePath(@"chrome", nil),
+              ResourceHandle::kScaleFactor100x);
+  AddDataPack(GetResourcesPakFilePath(@"theme_resources_standard", nil),
+              ResourceHandle::kScaleFactor100x);
+  AddDataPack(GetResourcesPakFilePath(@"ui_resources_standard", nil),
+              ResourceHandle::kScaleFactor100x);
 
   // On Windows and ChromeOS we load either the 1x resource or the 2x resource.
   // On Mac we load both and let the UI framework decide which one to use.
 #if defined(ENABLE_HIDPI)
   if (base::mac::IsOSLionOrLater()) {
-    AddDataPack(GetResourcesPakFilePath(@"theme_resources_2x", nil));
-    AddDataPack(GetResourcesPakFilePath(@"theme_resources_standard_2x", nil));
-    AddDataPack(GetResourcesPakFilePath(@"ui_resources_standard_2x", nil));
+    AddDataPack(GetResourcesPakFilePath(@"theme_resources_2x", nil),
+              ResourceHandle::kScaleFactor200x);
+    AddDataPack(GetResourcesPakFilePath(@"theme_resources_standard_2x", nil),
+              ResourceHandle::kScaleFactor200x);
+    AddDataPack(GetResourcesPakFilePath(@"ui_resources_standard_2x", nil),
+              ResourceHandle::kScaleFactor200x);
   }
 #endif
 }

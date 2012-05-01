@@ -48,4 +48,8 @@ ResourceHandle::TextEncodingType ResourceDataDLL::GetTextEncodingType() const {
   return BINARY;
 }
 
+float ResourceDataDLL::GetScaleFactor() const {
+  return 1.0;
+}
+
 }  // namespace ui

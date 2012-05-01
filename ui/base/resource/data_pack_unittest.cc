@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ TEST(DataPackTest, Load) {
             static_cast<int>(kSamplePakSize));
 
   // Load the file through the data pack API.
-  DataPack pack;
+  DataPack pack(ResourceHandle::kScaleFactor100x);
   ASSERT_TRUE(pack.Load(data_path));
 
   base::StringPiece data;
@@ -63,7 +63,7 @@ TEST(DataPackTest, LoadFileWithTruncatedHeader) {
   data_path = data_path.Append(FILE_PATH_LITERAL(
       "ui/base/test/data/data_pack_unittest/truncated-header.pak"));
 
-  DataPack pack;
+  DataPack pack(ResourceHandle::kScaleFactor100x);
   ASSERT_FALSE(pack.Load(data_path));
 }
 
@@ -87,7 +87,7 @@ TEST_P(DataPackTest, Write) {
   ASSERT_TRUE(DataPack::WritePack(file, resources, GetParam()));
 
   // Now try to read the data back in.
-  DataPack pack;
+  DataPack pack(ResourceHandle::kScaleFactor100x);
   ASSERT_TRUE(pack.Load(file));
   EXPECT_EQ(pack.GetTextEncodingType(), GetParam());
 

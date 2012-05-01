@@ -24,6 +24,7 @@ class ResourceDataDLL : public ResourceHandle {
   virtual base::RefCountedStaticMemory* GetStaticMemory(
       uint16 resource_id) const OVERRIDE;
   virtual TextEncodingType GetTextEncodingType() const OVERRIDE;
+  virtual float GetScaleFactor() const OVERRIDE;
 
  private:
   const HINSTANCE module_;

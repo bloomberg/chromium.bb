@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "ui/base/layout.h"
+#include "ui/base/resource/resource_handle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/image/image.h"
 
@@ -24,13 +25,17 @@ FilePath GetResourcesPakFilePath(const std::string& pak_name) {
 namespace ui {
 
 void ResourceBundle::LoadCommonResources() {
-  AddDataPack(GetResourcesPakFilePath("chrome.pak"));
-  AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"));
+  AddDataPack(GetResourcesPakFilePath("chrome.pak"),
+              ResourceHandle::kScaleFactor100x);
+  AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"),
+              ResourceHandle::kScaleFactor100x);
 
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
-    AddDataPack(GetResourcesPakFilePath("ui_resources_touch.pak"));
+    AddDataPack(GetResourcesPakFilePath("ui_resources_touch.pak"),
+                ResourceHandle::kScaleFactor100x);
   } else {
-    AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"));
+    AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
+                ResourceHandle::kScaleFactor100x);
   }
 }
 

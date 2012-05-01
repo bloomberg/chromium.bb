@@ -61,9 +61,12 @@ enum LoadErrors {
 
 namespace ui {
 
-// In .cc for MemoryMappedFile dtor.
-DataPack::DataPack() : resource_count_(0), text_encoding_type_(BINARY) {
+DataPack::DataPack(float scale_factor)
+    : resource_count_(0),
+      text_encoding_type_(BINARY),
+      scale_factor_(scale_factor) {
 }
+
 DataPack::~DataPack() {
 }
 
@@ -181,6 +184,10 @@ base::RefCountedStaticMemory* DataPack::GetStaticMemory(
 
 ResourceHandle::TextEncodingType DataPack::GetTextEncodingType() const {
   return text_encoding_type_;
+}
+
+float DataPack::GetScaleFactor() const {
+  return scale_factor_;
 }
 
 // static

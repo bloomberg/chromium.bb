@@ -25,6 +25,7 @@
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/resource/resource_handle.h"
 #include "ui/base/ui_base_paths.h"
 
 #if defined(OS_MACOSX)
@@ -199,7 +200,8 @@ void ChromeTestSuite::Initialize() {
   PathService::Get(base::DIR_MODULE, &resources_pack_path);
   resources_pack_path =
       resources_pack_path.Append(FILE_PATH_LITERAL("resources.pak"));
-  ResourceBundle::GetSharedInstance().AddDataPack(resources_pack_path);
+  ResourceBundle::GetSharedInstance().AddDataPack(
+      resources_pack_path, ui::ResourceHandle::kScaleFactor100x);
 
   // Mock out the compositor on platforms that use it.
   ui::SetupTestCompositor();

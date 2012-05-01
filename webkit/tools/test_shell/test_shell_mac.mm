@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -212,7 +212,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
   // mmap the data pack which holds strings used by WebCore. This is only
   // a fatal error if we're bundled, which means we might be running layout
   // tests. This is a harmless failure for test_shell_tests.
-  g_resource_data_pack = new ui::DataPack;
+  g_resource_data_pack = new ui::DataPack(ui::ResourceHandle::kScaleFactor100x);
   NSString *resource_path =
       [base::mac::FrameworkBundle() pathForResource:@"test_shell"
                                              ofType:@"pak"];

@@ -123,6 +123,7 @@
 #include "net/websockets/websocket_job.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/resource/resource_handle.h"
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util_linux.h"
@@ -1305,7 +1306,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
     FilePath resources_pack_path;
     PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
-    ResourceBundle::GetSharedInstance().AddDataPack(resources_pack_path);
+    ResourceBundle::GetSharedInstance().AddDataPack(
+        resources_pack_path, ui::ResourceHandle::kScaleFactor100x);
 #endif  // defined(OS_MACOSX)
   }
 

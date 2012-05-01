@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
+#include "ui/base/resource/resource_handle.h"
 
 namespace {
 
@@ -26,9 +27,12 @@ FilePath GetResourcesPakFilePath(const std::string& pak_name) {
 namespace ui {
 
 void ResourceBundle::LoadCommonResources() {
-  AddDataPack(GetResourcesPakFilePath("chrome.pak"));
-  AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"));
-  AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"));
+  AddDataPack(GetResourcesPakFilePath("chrome.pak"),
+              ResourceHandle::kScaleFactor100x);
+  AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"),
+              ResourceHandle::kScaleFactor100x);
+  AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
+              ResourceHandle::kScaleFactor100x);
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {

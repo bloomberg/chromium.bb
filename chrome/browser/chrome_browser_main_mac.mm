@@ -25,6 +25,7 @@
 #include "content/public/common/result_codes.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/resource/resource_handle.h"
 
 void RecordBreakpadStatusUMA(MetricsService* metrics) {
   metrics->RecordBreakpadRegistration(IsCrashReporterEnabled());
@@ -92,7 +93,8 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
 
     FilePath resources_pack_path;
     PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
-    ResourceBundle::GetSharedInstance().AddDataPack(resources_pack_path);
+    ResourceBundle::GetSharedInstance().AddDataPack(
+        resources_pack_path, ui::ResourceHandle::kScaleFactor100x);
   }
 
   // This is a no-op if the KeystoneRegistration framework is not present.

@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/resource/resource_handle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/gfx_paths.h"
 
@@ -54,7 +55,8 @@ void UITestSuite::Initialize() {
 
 #if !defined(OS_MACOSX) && defined(OS_POSIX)
   ui::ResourceBundle::GetSharedInstance().AddDataPack(
-      pak_dir.AppendASCII("ui_resources.pak"));
+      pak_dir.AppendASCII("ui_resources.pak"),
+      ResourceHandle::kScaleFactor100x);
 #endif
 }
 

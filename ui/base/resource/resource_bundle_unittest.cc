@@ -40,7 +40,7 @@ TEST(ResourceBundle, LoadDataResourceBytes) {
 
   // Give a .pak file that doesn't exist so we will fail to load it.
   resource_bundle.AddDataPack(FilePath(
-      FILE_PATH_LITERAL("non-existant-file.pak")));
+      FILE_PATH_LITERAL("non-existant-file.pak")), 1.0);
   EXPECT_EQ(NULL, resource_bundle.LoadDataResourceBytes(kUnfoundResourceId));
 }
 

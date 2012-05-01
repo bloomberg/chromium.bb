@@ -89,8 +89,9 @@ bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
   return !GetLocaleFilePath(locale).empty();
 }
 
-void ResourceBundle::AddDataPack(const FilePath& path) {
-  scoped_ptr<DataPack> data_pack(new DataPack());
+void ResourceBundle::AddDataPack(const FilePath& path, float scale_factor) {
+  scoped_ptr<DataPack> data_pack(
+      new DataPack(ResourceHandle::kScaleFactor100x));
   if (data_pack->Load(path)) {
     data_packs_.push_back(data_pack.release());
   } else {
@@ -141,7 +142,8 @@ std::string ResourceBundle::LoadLocaleResources(
     return std::string();
   }
 
-  scoped_ptr<DataPack> data_pack(new DataPack());
+  scoped_ptr<DataPack> data_pack(
+      new DataPack(ResourceHandle::kScaleFactor100x));
   if (!data_pack->Load(locale_file_path)) {
     UMA_HISTOGRAM_ENUMERATION("ResourceBundle.LoadLocaleResourcesError",
                               logging::GetLastSystemErrorCode(), 16000);
@@ -155,11 +157,12 @@ std::string ResourceBundle::LoadLocaleResources(
 
 void ResourceBundle::LoadTestResources(const FilePath& path) {
   // Use the given resource pak for both common and localized resources.
-  scoped_ptr<DataPack> data_pack(new DataPack());
+  scoped_ptr<DataPack> data_pack(
+      new DataPack(ResourceHandle::kScaleFactor100x));
   if (data_pack->Load(path))
     data_packs_.push_back(data_pack.release());
 
-  data_pack.reset(new DataPack());
+  data_pack.reset(new DataPack(ResourceHandle::kScaleFactor100x));
   if (data_pack->Load(path))
     locale_resources_data_.reset(data_pack.release());
 }

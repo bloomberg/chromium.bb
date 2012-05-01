@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,7 @@ ui::DataPack* LoadResourceDataPack(const char* dir_path,
                              dir_path, branding_strings_name, locale_name];
   if (resource_path) {
     FilePath resources_pak_path([resource_path fileSystemRepresentation]);
-    resource_pack = new ui::DataPack;
+    resource_pack = new ui::DataPack(ui::ResourceHandle::kScaleFactor100x);
     bool success = resource_pack->Load(resources_pak_path);
     if (!success) {
       delete resource_pack;

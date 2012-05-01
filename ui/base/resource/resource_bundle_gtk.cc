@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
+#include "ui/base/resource/resource_handle.h"
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/gtk/scoped_gobject.h"
@@ -61,9 +62,12 @@ FilePath GetResourcesPakFilePath(const std::string& pak_name) {
 }  // namespace
 
 void ResourceBundle::LoadCommonResources() {
-  AddDataPack(GetResourcesPakFilePath("chrome.pak"));
-  AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"));
-  AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"));
+  AddDataPack(GetResourcesPakFilePath("chrome.pak"),
+              ResourceHandle::kScaleFactor100x);
+  AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"),
+              ResourceHandle::kScaleFactor100x);
+  AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
+              ResourceHandle::kScaleFactor100x);
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {

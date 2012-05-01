@@ -32,7 +32,7 @@ namespace ui {
 
 class UI_EXPORT DataPack : public ResourceHandle {
  public:
-  DataPack();
+  DataPack(float scale_factor);
   virtual ~DataPack();
 
   // Load a pack file from |path|, returning false on error.
@@ -52,6 +52,7 @@ class UI_EXPORT DataPack : public ResourceHandle {
   virtual base::RefCountedStaticMemory* GetStaticMemory(
       uint16 resource_id) const OVERRIDE;
   virtual TextEncodingType GetTextEncodingType() const OVERRIDE;
+  virtual float GetScaleFactor() const OVERRIDE;
 
  private:
   // The memory-mapped data.
@@ -62,6 +63,10 @@ class UI_EXPORT DataPack : public ResourceHandle {
 
   // Type of encoding for text resources.
   TextEncodingType text_encoding_type_;
+
+  // The scale of the image in this resource pack relative to images in the 1x
+  // resource pak.
+  float scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(DataPack);
 };

@@ -10,7 +10,8 @@
 #include "base/path_service.h"
 #include "base/string_piece.h"
 
-TestContentClient::TestContentClient() {
+TestContentClient::TestContentClient()
+    : data_pack_(ui::ResourceHandle::kScaleFactor100x) {
   FilePath content_resources_pack_path;
   PathService::Get(base::DIR_MODULE, &content_resources_pack_path);
   content_resources_pack_path = content_resources_pack_path.Append(

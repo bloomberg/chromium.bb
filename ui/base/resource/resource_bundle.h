@@ -87,9 +87,10 @@ class UI_EXPORT ResourceBundle {
 
   // Registers additional data pack files with the global ResourceBundle.  When
   // looking for a DataResource, we will search these files after searching the
-  // main module.  This method is not thread safe!  You should call it
-  // immediately after calling InitSharedInstance.
-  void AddDataPack(const FilePath& path);
+  // main module. |scale_factor| is the scale of images in this resource pak
+  // relative to the images in the 1x resource pak. This method is not thread
+  // safe! You should call it immediately after calling InitSharedInstance.
+  void AddDataPack(const FilePath& path, float scale_factor);
 
   // Changes the locale for an already-initialized ResourceBundle, returning the
   // name of the newly-loaded locale.  Future calls to get strings will return
