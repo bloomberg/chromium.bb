@@ -1075,17 +1075,17 @@ class GDataFileSystemTest : public testing::Test {
   int root_feed_changestamp_;
 };
 
-void AsyncInitializationCallback(int* counter,
-                                 int expected_counter,
-                                 const FilePath& expected_file_path,
-                                 MessageLoop* message_loop,
-                                 base::PlatformFileError error,
-                                 const FilePath& directory_path,
-                                 GDataEntry* entry) {
-  LOG(INFO) << "here";
+void AsyncInitializationCallback(
+    int* counter,
+    int expected_counter,
+    const FilePath& expected_file_path,
+    MessageLoop* message_loop,
+    base::PlatformFileError error,
+    scoped_ptr<GDataDirectoryProto> directory_proto) {
   ASSERT_EQ(base::PLATFORM_FILE_OK, error);
-  EXPECT_EQ(expected_file_path, directory_path);
-  EXPECT_FALSE(entry == NULL);
+  ASSERT_TRUE(directory_proto.get());
+  EXPECT_EQ(expected_file_path.value(),
+            directory_proto->gdata_entry().file_name());
 
   (*counter)++;
   if (*counter >= expected_counter)
@@ -1094,7 +1094,7 @@ void AsyncInitializationCallback(int* counter,
 
 TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
   int counter = 0;
-  FindEntryCallback callback = base::Bind(
+  ReadDirectoryCallback callback = base::Bind(
       &AsyncInitializationCallback,
       &counter,
       2,
@@ -1104,9 +1104,9 @@ TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
   EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, _)).Times(1);
 
-  file_system_->FindEntryByPathAsync(
+  file_system_->ReadDirectoryByPathAsync(
       FilePath(FILE_PATH_LITERAL("gdata")), callback);
-  file_system_->FindEntryByPathAsync(
+  file_system_->ReadDirectoryByPathAsync(
       FilePath(FILE_PATH_LITERAL("gdata")), callback);
   message_loop_.Run();  // Wait to get our result
   EXPECT_EQ(2, counter);
