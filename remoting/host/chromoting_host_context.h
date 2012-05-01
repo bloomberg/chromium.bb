@@ -12,9 +12,11 @@
 #include "base/threading/thread.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 
-namespace remoting {
-
+namespace net {
 class URLRequestContextGetter;
+}  // namespace net
+
+namespace remoting {
 
 // A class that manages threads and running context for the chromoting host
 // process.  This class is virtual only for testing purposes (see below).
@@ -40,7 +42,8 @@ class ChromotingHostContext {
   virtual base::MessageLoopProxy* ui_message_loop();
   virtual base::MessageLoopProxy* io_message_loop();
   virtual base::MessageLoopProxy* file_message_loop();
-  const scoped_refptr<URLRequestContextGetter>& url_request_context_getter();
+  const scoped_refptr<net::URLRequestContextGetter>&
+      url_request_context_getter();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingHostContextTest, StartAndStop);
@@ -67,7 +70,7 @@ class ChromotingHostContext {
 
   scoped_refptr<base::MessageLoopProxy> ui_message_loop_;
 
-  scoped_refptr<URLRequestContextGetter> url_request_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHostContext);
 };

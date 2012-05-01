@@ -13,9 +13,11 @@
 #include "remoting/host/gaia_oauth_client.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 
-namespace remoting {
-
+namespace net {
 class URLRequestContextGetter;
+}  // namespace net
+
+namespace remoting {
 
 // SignalingConnector listens for SignalStrategy status notifications
 // and attempts to keep it connected when possible. When signalling is
@@ -55,7 +57,7 @@ class SignalingConnector
 
   void EnableOAuth(scoped_ptr<OAuthCredentials> oauth_credentials,
                    const base::Closure& oauth_failed_callback,
-                   URLRequestContextGetter* url_context);
+                   net::URLRequestContextGetter* url_context);
 
   // SignalStrategy::Listener interface.
   virtual void OnSignalStrategyStateChange(

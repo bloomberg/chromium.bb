@@ -24,6 +24,7 @@ class UrlFetcher::Core : public base::RefCountedThreadSafe<Core>,
       net::URLRequestContextGetter* request_context_getter);
   void SetUploadData(const std::string& upload_content_type,
                      const std::string& upload_content);
+  void SetHeader(const std::string& key, const std::string& value);
   void Start(const UrlFetcher::DoneCallback& done_callback);
 
   void Detach();
@@ -57,6 +58,8 @@ class UrlFetcher::Core : public base::RefCountedThreadSafe<Core>,
   std::string upload_content_;
   std::string upload_content_type_;
 
+  net::HttpRequestHeaders request_headers_;
+
   scoped_ptr<net::URLRequest> request_;
 
   scoped_refptr<net::IOBuffer> buffer_;
@@ -87,6 +90,11 @@ void UrlFetcher::Core::SetUploadData(const std::string& upload_content_type,
                                      const std::string& upload_content) {
   upload_content_type_ = upload_content_type;
   upload_content_ = upload_content;
+}
+
+void UrlFetcher::Core::SetHeader(const std::string& key,
+                                 const std::string& value) {
+  request_headers_.SetHeader(key, value);
 }
 
 void UrlFetcher::Core::Start(const UrlFetcher::DoneCallback& done_callback) {
@@ -146,15 +154,15 @@ void UrlFetcher::Core::DoStart() {
       DCHECK(!upload_content_type_.empty());
       request_->set_method("POST");
 
-      net::HttpRequestHeaders headers;
-      headers.SetHeader(net::HttpRequestHeaders::kContentType,
-                        upload_content_type_);
-      request_->SetExtraRequestHeaders(headers);
+      request_headers_.SetHeader(net::HttpRequestHeaders::kContentType,
+                                 upload_content_type_);
 
       request_->AppendBytesToUpload(
           upload_content_.data(), static_cast<int>(upload_content_.length()));
       break;
   }
+
+  request_->SetExtraRequestHeaders(request_headers_);
 
   request_->Start();
 }
@@ -198,6 +206,10 @@ void UrlFetcher::SetRequestContext(
 void UrlFetcher::SetUploadData(const std::string& upload_content_type,
                                const std::string& upload_content) {
   core_->SetUploadData(upload_content_type, upload_content);
+}
+
+void UrlFetcher::SetHeader(const std::string& key, const std::string& value) {
+  core_->SetHeader(key, value);
 }
 
 void UrlFetcher::Start(const DoneCallback& done_callback) {

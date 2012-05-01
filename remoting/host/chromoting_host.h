@@ -18,6 +18,7 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_status_observer.h"
+#include "remoting/host/network_settings.h"
 #include "remoting/host/ui_strings.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/signal_strategy.h"
@@ -38,49 +39,6 @@ class ChromotingHostContext;
 class DesktopEnvironment;
 class Encoder;
 class ScreenRecorder;
-
-struct NetworkSettings {
-  enum NatTraversalMode {
-    // Don't use STUN or relay servers. Accept incoming P2P connection
-    // attempts, but don't initiate any. This ensures that the peer is
-    // on the same network. Note that connection will always fail if
-    // both ends use this mode.
-    NAT_TRAVERSAL_DISABLED,
-
-    // Don't use STUN or relay servers but make outgoing connections.
-    NAT_TRAVERSAL_OUTGOING,
-
-    // Active NAT traversal using STUN and relay servers.
-    NAT_TRAVERSAL_ENABLED,
-  };
-
-  NetworkSettings()
-      : nat_traversal_mode(NAT_TRAVERSAL_DISABLED),
-        min_port(0),
-        max_port(0) {
-  }
-
-  explicit NetworkSettings(bool allow_nat_traversal)
-      : nat_traversal_mode(allow_nat_traversal ?
-                           NAT_TRAVERSAL_ENABLED :
-                           NAT_TRAVERSAL_DISABLED),
-        min_port(0),
-        max_port(0) {
-  }
-
-  explicit NetworkSettings(NatTraversalMode nat_traversal_mode)
-      : nat_traversal_mode(nat_traversal_mode),
-        min_port(0),
-        max_port(0) {
-  }
-
-  NatTraversalMode nat_traversal_mode;
-
-  // |min_port| and |max_port| specify range (inclusive) of ports used by
-  // P2P sessions. Any port can be used when both values are set to 0.
-  int min_port;
-  int max_port;
-};
 
 // A class to implement the functionality of a host process.
 //

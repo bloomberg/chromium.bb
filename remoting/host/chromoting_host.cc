@@ -17,6 +17,7 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
+#include "remoting/host/host_port_allocator.h"
 #include "remoting/host/screen_recorder.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/client_stub.h"
@@ -25,9 +26,6 @@
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
 #include "remoting/protocol/session_config.h"
-#include "third_party/libjingle/source/talk/base/basicpacketsocketfactory.h"
-#include "third_party/libjingle/source/talk/base/network.h"
-#include "third_party/libjingle/source/talk/p2p/client/httpportallocator.h"
 
 using remoting::protocol::ConnectionToClient;
 using remoting::protocol::InputStub;
@@ -100,38 +98,18 @@ void ChromotingHost::Start() {
     return;
   state_ = kStarted;
 
-  // Create port allocator.
-  // TODO(sergeyu): Replace the code below with HostPortAllocator when
-  // it is implemented.
-  scoped_ptr<talk_base::NetworkManager> network_manager(
-      new talk_base::BasicNetworkManager());
-  scoped_ptr<talk_base::PacketSocketFactory> socket_factory(
-      new talk_base::BasicPacketSocketFactory());
-  scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator(
-      new cricket::HttpPortAllocator(
-          network_manager.get(), socket_factory.get(), ""));
-
-
-  // We always use PseudoTcp to provide a reliable channel. It
-  // provides poor performance when combined with TCP-based transport,
-  // so we have to disable TCP ports.
-  int port_allocator_flags = cricket::PORTALLOCATOR_DISABLE_TCP;
-  if (network_settings_.nat_traversal_mode !=
-      NetworkSettings::NAT_TRAVERSAL_ENABLED) {
-    port_allocator_flags |= cricket::PORTALLOCATOR_DISABLE_STUN |
-        cricket::PORTALLOCATOR_DISABLE_RELAY;
-  }
-  port_allocator->set_flags(port_allocator_flags);
-  port_allocator->SetPortRange(network_settings_.min_port,
-                               network_settings_.max_port);
+  // Create port allocator and transport factory.
+  scoped_ptr<HostPortAllocator> port_allocator(
+      HostPortAllocator::Create(context_->url_request_context_getter(),
+                                network_settings_));
 
   bool incoming_only = network_settings_.nat_traversal_mode ==
       NetworkSettings::NAT_TRAVERSAL_DISABLED;
 
   scoped_ptr<protocol::TransportFactory> transport_factory(
       new protocol::LibjingleTransportFactory(
-          network_manager.Pass(), socket_factory.Pass(),
-          port_allocator.Pass(), incoming_only));
+          port_allocator.PassAs<cricket::HttpPortAllocatorBase>(),
+          incoming_only));
 
   // Create and start session manager.
   bool fetch_stun_relay_info = network_settings_.nat_traversal_mode ==

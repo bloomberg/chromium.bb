@@ -47,6 +47,7 @@ class UrlFetcher {
       net::URLRequestContextGetter* request_context_getter);
   void SetUploadData(const std::string& upload_content_type,
                      const std::string& upload_content);
+  void SetHeader(const std::string& key, const std::string& value);
   void Start(const DoneCallback& done_callback);
 
  private:

@@ -22,9 +22,11 @@ namespace protocol {
 
 class LibjingleTransportFactory : public TransportFactory {
  public:
+  // Need to use cricket::HttpPortAllocatorBase pointer for the
+  // |port_allocator|, so that it is possible to configure
+  // |port_allocator| with STUN/Relay addresses.
+  // TODO(sergeyu): Reconsider this design.
   LibjingleTransportFactory(
-      scoped_ptr<talk_base::NetworkManager> network_manager,
-      scoped_ptr<talk_base::PacketSocketFactory> socket_factory,
       scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator,
       bool incoming_only);
 

@@ -50,7 +50,7 @@ SignalingConnector::~SignalingConnector() {
 void SignalingConnector::EnableOAuth(
     scoped_ptr<OAuthCredentials> oauth_credentials,
     const base::Closure& oauth_failed_callback,
-    URLRequestContextGetter* url_context) {
+    net::URLRequestContextGetter* url_context) {
   oauth_credentials_ = oauth_credentials.Pass();
   oauth_failed_callback_ = oauth_failed_callback;
   gaia_oauth_client_.reset(new GaiaOAuthClient(kGaiaOAuth2Url, url_context));

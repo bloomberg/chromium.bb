@@ -75,7 +75,7 @@ base::MessageLoopProxy* ChromotingHostContext::file_message_loop() {
   return file_thread_.message_loop_proxy();
 }
 
-const scoped_refptr<URLRequestContextGetter>&
+const scoped_refptr<net::URLRequestContextGetter>&
 ChromotingHostContext::url_request_context_getter() {
   DCHECK(url_request_context_getter_.get());
   return url_request_context_getter_;
