@@ -10221,6 +10221,12 @@ The following application will be launched if you accept this request:
         Manage certificates...
       </message>
 
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_OPTIONS_DISABLE_GDATA" desc="The text in the options panel describes that we can disable webdrive on ChromeOS.">
+          Disable Google Drive on this device.
+        </message>
+      </if>
+
       <message name="IDS_OPTIONS_DISABLE_WEB_SERVICES" desc="The text in the options panel describes that we can disable web services.">
         You may optionally disable these services.
       </message>

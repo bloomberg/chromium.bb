@@ -171,6 +171,9 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "defaultFontSizeLabel", IDS_OPTIONS_DEFAULT_FONT_SIZE_LABEL },
     { "defaultSearchManageEngines", IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES },
     { "defaultZoomFactorLabel", IDS_OPTIONS_DEFAULT_ZOOM_LEVEL_LABEL },
+#if defined(OS_CHROMEOS)
+    { "disableGData", IDS_OPTIONS_DISABLE_GDATA },
+#endif
     { "disableWebServices", IDS_OPTIONS_DISABLE_WEB_SERVICES },
     { "downloadLocationAskForSaveLocation",
       IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION },

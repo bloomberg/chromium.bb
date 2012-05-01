@@ -381,10 +381,20 @@
       </label>
     </div>
   </section>
-<if expr="not pp_ifdef('chromeos')">
   <section>
     <h3 i18n-content="downloadLocationGroupName"></h3>
     <div>
+<if expr="pp_ifdef('chromeos')">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" 
+          pref="gdata.disabled" 
+          metric="Options_DisableGData">
+          <span i18n-content="disableGData"></span>
+        </label>
+      </div>  
+</if>    
+<if expr="not pp_ifdef('chromeos')">
       <div class="settings-row">
         <label>
           <span i18n-content="downloadLocationBrowseTitle"></span>
@@ -411,9 +421,9 @@
               i18n-content="autoOpenFileTypesResetToDefault"></button>
         </div>
       </div>
+</if>
     </div>
   </section>
-</if>
   <section>
       <h3 i18n-content="advancedSectionTitleSecurity"></h3>
       <div>
