@@ -2677,7 +2677,9 @@ NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
 
 void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
   bool enable_viewport =
-      command_line.HasSwitch(switches::kEnableViewport);
+      command_line.HasSwitch(switches::kEnableViewport) ||
+      // Setting a default device scale factor forces enable_viewport on.
+      webkit_preferences_.default_device_scale_factor > 1;
   bool enable_fixed_layout =
       command_line.HasSwitch(switches::kEnableFixedLayout);
 
