@@ -162,6 +162,7 @@ function(automation_id, observer_id, observer_type, xpath, attribute,
     obs.observe(document,
         { childList: true,
           attributes: true,
+          characterData: true,
           subtree: true});
   }
 
@@ -227,6 +228,7 @@ function(automation_id, observer_id, observer_type, xpath, attribute,
     obs.observe(document,
         { childList: true,
           attributes: true,
+          characterData: true,
           subtree: true});
   }
 
