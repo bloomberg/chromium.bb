@@ -437,6 +437,10 @@ button {
   display: -webkit-box;
 }
 
+.prominent {
+  color: #222;
+}
+
 .space-before {
   margin-top: 30px;
 }

@@ -174,6 +174,10 @@
     "message": "An unexpected error occurred. Please report this problem to the developers.",
     "description": "Error displayed in situations where things go wrong in ways not anticipated by the developers. There is typically no user-workaround to suggest, other than reporting the error so that we can investigate further."
   },
+  "FOOTER_CONNECTING": {
+    "message": "Connecting\u2026",
+    "description": "Text displayed while a client is connecting to a host, but before the connection is established."
+  },
   "FOOTER_WAITING": {
     "message": "waiting for connection\u2026",
     "description": "Footer text displayed at the host after an access code has been generated, but before a client connects."
@@ -251,7 +255,7 @@
     "description": "Instructions to the user to ask them to disable power management for the computer in order to be able to connect to it."
   },
   "HOST_SETUP_STARTING": {
-    "message": "enabling remote connections for this computer\u2026",
+    "message": "Enabling remote connections for this computer\u2026",
     "description": "Message shown when local machine is being registered in the directory and when starting the host."
   },
   "HOST_SETUP_STOP_FAILED": {
@@ -263,15 +267,15 @@
     "description": "Message shown after host has been stopped."
   },
   "HOST_SETUP_STOPPING": {
-    "message": "disabling remote connections for this computer\u2026",
+    "message": "Disabling remote connections for this computer\u2026",
     "description": "Message shown when host is being stopped on the local machine."
   },
   "HOST_SETUP_UPDATED_PIN": {
-    "message": "PIN has been updated.",
+    "message": "Your PIN has been updated.",
     "description": "Message shown after changing PIN for the local computer."
   },
   "HOST_SETUP_UPDATING_PIN": {
-    "message": "PIN for this computer is being updated\u2026",
+    "message": "The PIN for this computer is being updated\u2026",
     "description": "Message shown while changing PIN for the local computer."
   },
   "HOST_SETUP_UPDATE_PIN_FAILED": {

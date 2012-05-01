@@ -230,12 +230,14 @@ found in the LICENSE file.
         <div data-ui-mode="home.host-setup.processing"
              class="waiting-container"
              hidden>
-          <span class="waiting" id="host-setup-processing-message"></span>
+          <span class="waiting prominent"
+                id="host-setup-processing-message">
+          </span>
         </div>
         <div data-ui-mode="home.host-setup.done" hidden>
           <div id="host-setup-done-message" class="message"></div>
           <div id="host-setup-done-message-2" class="message"></div>
-         <div class="button-row">
+          <div class="button-row">
             <div class="box-spacer"></div>
             <button id="host-config-done-dismiss" i18n-content="OK"></button>
           </div>
@@ -372,7 +374,8 @@ found in the LICENSE file.
         </div> <!-- client.unconnected -->
 
         <div data-ui-mode="home.client.connecting" class="waiting-container">
-          <span class="waiting" i18n-content="FOOTER_WAITING"></span>
+          <span class="waiting prominent"
+                i18n-content="FOOTER_CONNECTING"></span>
           <div class="box-spacer"></div>
           <button id="cancel-connect-button" i18n-content="CANCEL"></button>
         </div> <!-- client.connecting -->
