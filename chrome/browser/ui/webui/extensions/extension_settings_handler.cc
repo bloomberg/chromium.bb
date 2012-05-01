@@ -56,37 +56,6 @@ using content::RenderViewHost;
 using content::WebContents;
 using extensions::ExtensionUpdater;
 
-namespace {
-
-bool ShouldShowExtension(const Extension* extension) {
-  // Don't show themes since this page's UI isn't really useful for themes.
-  if (extension->is_theme())
-    return false;
-
-  // Don't show component extensions because they are only extensions as an
-  // implementation detail of Chrome.
-  if (extension->location() == Extension::COMPONENT &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kShowComponentExtensionOptions))
-    return false;
-
-  // Always show unpacked extensions and apps.
-  if (extension->location() == Extension::LOAD)
-    return true;
-
-  // Unless they are unpacked, never show hosted apps. Note: We intentionally
-  // show packaged apps and platform apps because there are some pieces of
-  // functionality that are only available in chrome://extensions/ but which
-  // are needed for packaged and platform apps. For example, inspecting
-  // background pages. See http://crbug.com/116134.
-  if (extension->is_hosted_app())
-    return false;
-
-  return true;
-}
-
-}  // namespace
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // ExtensionSettingsHandler
@@ -467,7 +436,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   const ExtensionSet* extensions = extension_service_->extensions();
   for (ExtensionSet::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
-    if (ShouldShowExtension(*extension)) {
+    if ((*extension)->ShouldDisplayInExtensionSettings()) {
       extensions_list->Append(CreateExtensionDetailValue(
           *extension,
           GetInspectablePagesForExtension(*extension, true),
@@ -477,7 +446,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   extensions = extension_service_->disabled_extensions();
   for (ExtensionSet::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
-    if (ShouldShowExtension(*extension)) {
+    if ((*extension)->ShouldDisplayInExtensionSettings()) {
       extensions_list->Append(CreateExtensionDetailValue(
           *extension,
           GetInspectablePagesForExtension(*extension, false),
@@ -488,7 +457,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   std::vector<ExtensionPage> empty_pages;
   for (ExtensionSet::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
-    if (ShouldShowExtension(*extension)) {
+    if ((*extension)->ShouldDisplayInExtensionSettings()) {
       extensions_list->Append(CreateExtensionDetailValue(
           *extension,
           empty_pages,  // Terminated process has no active pages.

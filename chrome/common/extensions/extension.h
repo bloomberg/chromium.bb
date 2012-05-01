@@ -558,6 +558,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns true if the extension should be displayed in the launcher.
   bool ShouldDisplayInLauncher() const;
 
+  // Returns true if the extension should be displayed in the extension
+  // settings page (i.e. chrome://extensions).
+  bool ShouldDisplayInExtensionSettings() const;
+
   // Accessors:
 
   const FilePath& path() const { return path_; }
@@ -786,6 +790,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadContentScripts(string16* error);
   bool LoadPageAction(string16* error);
   bool LoadBrowserAction(string16* error);
+  void GenerateBrowserActionIfPossible();
   bool LoadFileBrowserHandlers(string16* error);
   // Helper method to load a FileBrowserHandlerList from the manifest.
   FileBrowserHandlerList* LoadFileBrowserHandlersHelper(

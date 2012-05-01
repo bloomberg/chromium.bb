@@ -2334,6 +2334,22 @@ bool Extension::LoadBrowserAction(string16* error) {
   return true;
 }
 
+void Extension::GenerateBrowserActionIfPossible() {
+  // It only makes sense to generate brower actions for extensions that are
+  // shown in chrome://extensions.
+  if (!ShouldDisplayInExtensionSettings())
+    return;
+
+  // Hosted and platform apps are shown in extension settings, but we don't
+  // want to generate browser actions for those either, since they can't define
+  // browser actions.
+  if (is_app())
+    return;
+
+  browser_action_.reset(new ExtensionAction(id()));
+  browser_action_->SetTitle(ExtensionAction::kDefaultTabId, name());
+}
+
 bool Extension::LoadFileBrowserHandlers(string16* error) {
   if (!manifest_->HasKey(keys::kFileBrowserHandlers))
     return true;
@@ -3083,6 +3099,12 @@ bool Extension::InitFromValue(int flags, string16* error) {
   if (!LoadThemeFeatures(error))
     return false;
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableBrowserActionsForAll) &&
+      !browser_action()) {
+    GenerateBrowserActionIfPossible();
+  }
+
   if (HasMultipleUISurfaces()) {
     *error = ASCIIToUTF16(errors::kOneUISurfaceOnly);
     return false;
@@ -3645,6 +3667,33 @@ ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,
       extension_location(location) {
   if (manifest)
     extension_manifest.reset(manifest->DeepCopy());
+}
+
+bool Extension::ShouldDisplayInExtensionSettings() const {
+  // Don't show for themes since the settings UI isn't really useful for them.
+  if (is_theme())
+    return false;
+
+  // Don't show component extensions because they are only extensions as an
+  // implementation detail of Chrome.
+  if (location() == Extension::COMPONENT &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kShowComponentExtensionOptions))
+    return false;
+
+  // Always show unpacked extensions and apps.
+  if (location() == Extension::LOAD)
+    return true;
+
+  // Unless they are unpacked, never show hosted apps. Note: We intentionally
+  // show packaged apps and platform apps because there are some pieces of
+  // functionality that are only available in chrome://extensions/ but which
+  // are needed for packaged and platform apps. For example, inspecting
+  // background pages. See http://crbug.com/116134.
+  if (is_hosted_app())
+    return false;
+
+  return true;
 }
 
 ExtensionInfo::~ExtensionInfo() {}
