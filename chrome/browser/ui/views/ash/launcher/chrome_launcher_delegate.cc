@@ -106,6 +106,9 @@ ChromeLauncherDelegate::ChromeLauncherDelegate(Profile* profile,
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                 content::Source<Profile>(profile_));
 }
 
 ChromeLauncherDelegate::~ChromeLauncherDelegate() {
@@ -155,7 +158,7 @@ void ChromeLauncherDelegate::Init() {
           Item pending_item;
           pending_item.item_type = TYPE_APP;
           pending_item.app_id = app_id;
-          pending_pinned_apps_.push(pending_item);
+          pending_pinned_apps_.push_back(pending_item);
         }
       }
     }
@@ -541,7 +544,26 @@ void ChromeLauncherDelegate::Observe(
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* extension =
           content::Details<UnloadedExtensionInfo>(details)->extension;
-      UnpinAppsWithID(extension->id());
+      if (IsAppPinned(extension->id())) {
+        // TODO(dpolukhin): also we need to remember index of the app to show
+        // it on the same place when it gets loaded again.
+        Item pending_item;
+        pending_item.item_type = TYPE_APP;
+        pending_item.app_id = extension->id();
+        pending_pinned_apps_.push_back(pending_item);
+        UnpinAppsWithID(extension->id());
+      }
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
+      std::string id = *content::Details<const std::string>(details).ptr();
+      for (std::deque<Item>::iterator it = pending_pinned_apps_.begin();
+           it != pending_pinned_apps_.end(); ++it) {
+        if (it->app_id == id) {
+          pending_pinned_apps_.erase(it);
+          break;
+        }
+      }
       break;
     }
     default:
@@ -586,6 +608,6 @@ void ChromeLauncherDelegate::ProcessPendingPinnedApps() {
       return;
 
     PinAppWithID(item.app_id);
-    pending_pinned_apps_.pop();
+    pending_pinned_apps_.pop_front();
   }
 }

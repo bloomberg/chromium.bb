@@ -7,7 +7,7 @@
 #pragma once
 
 #include <map>
-#include <queue>
+#include <deque>
 #include <string>
 
 #include "ash/launcher/launcher_delegate.h"
@@ -237,7 +237,7 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   // not ready. Keep them in this list and create pinned item when the apps
   // are installed (via sync or external extension provider.) The order of the
   // list reflects the original order in pinned app list.
-  std::queue<Item> pending_pinned_apps_;
+  std::deque<Item> pending_pinned_apps_;
 
   content::NotificationRegistrar registrar_;
 
