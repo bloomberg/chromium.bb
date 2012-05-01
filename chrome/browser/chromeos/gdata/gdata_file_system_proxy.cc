@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
+#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "webkit/blob/shareable_file_reference.h"
@@ -56,17 +57,16 @@ void CallSnapshotFileCallback(
 
 namespace gdata {
 
-base::FileUtilProxy::Entry GDataEntryToFileUtilProxyEntry(
-    const GDataEntry& gdata_entry) {
+base::FileUtilProxy::Entry GDataEntryProtoToFileUtilProxyEntry(
+    const GDataEntryProto& proto) {
+  base::PlatformFileInfo file_info;
+  GDataEntry::ConvertProtoToPlatformFileInfo(proto.file_info(), &file_info);
+
   base::FileUtilProxy::Entry entry;
-  entry.is_directory = gdata_entry.file_info().is_directory;
-
-  // TODO(zelidrag): Add file name modification logic to enforce uniquness of
-  // file paths across this file system.
-  entry.name = gdata_entry.file_name();
-
-  entry.size = gdata_entry.file_info().size;
-  entry.last_modified_time = gdata_entry.file_info().last_modified;
+  entry.name = proto.file_name();
+  entry.is_directory = file_info.is_directory;
+  entry.size = file_info.size;
+  entry.last_modified_time = file_info.last_modified;
   return entry;
 }
 
@@ -98,7 +98,7 @@ void GDataFileSystemProxy::GetFileInfo(const GURL& file_url,
     return;
   }
 
-  file_system_->FindEntryByPathAsync(
+  file_system_->GetEntryInfoByPathAsync(
       file_path,
       base::Bind(&GDataFileSystemProxy::OnGetMetadata,
                  this,
@@ -152,7 +152,7 @@ void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
     return;
   }
 
-  file_system_->FindEntryByPathAsync(
+  file_system_->ReadDirectoryByPathAsync(
       file_path,
       base::Bind(&GDataFileSystemProxy::OnReadDirectory,
                  this,
@@ -227,14 +227,19 @@ void GDataFileSystemProxy::OnGetMetadata(
     const FilePath& file_path,
     const FileSystemOperationInterface::GetMetadataCallback& callback,
     base::PlatformFileError error,
-    const FilePath& directory_path,
-    GDataEntry* entry) {
+    scoped_ptr<gdata::GDataEntryProto> entry_proto) {
   if (error != base::PLATFORM_FILE_OK) {
     callback.Run(error, base::PlatformFileInfo(), FilePath());
     return;
   }
+  DCHECK(entry_proto.get());
 
-  callback.Run(base::PLATFORM_FILE_OK, entry->file_info(), file_path);
+  base::PlatformFileInfo file_info;
+  GDataEntry::ConvertProtoToPlatformFileInfo(
+      entry_proto->file_info(),
+      &file_info);
+
+  callback.Run(base::PLATFORM_FILE_OK, file_info, file_path);
 }
 
 void GDataFileSystemProxy::OnReadDirectory(
@@ -242,13 +247,8 @@ void GDataFileSystemProxy::OnReadDirectory(
     const FileSystemOperationInterface::ReadDirectoryCallback&
     callback,
     base::PlatformFileError error,
-    const FilePath& directory_path,
-    GDataEntry* entry) {
-  DCHECK(entry || error != base::PLATFORM_FILE_OK);
-
-  GDataDirectory* directory = entry ? entry->AsGDataDirectory() : NULL;
-  if (!directory && error == base::PLATFORM_FILE_OK)
-    error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    scoped_ptr<gdata::GDataDirectoryProto> directory_proto) {
+  DCHECK(error != base::PLATFORM_FILE_OK);
 
   if (error != base::PLATFORM_FILE_OK) {
     callback.Run(error, std::vector<base::FileUtilProxy::Entry>(), false);
@@ -256,20 +256,17 @@ void GDataFileSystemProxy::OnReadDirectory(
   }
   std::vector<base::FileUtilProxy::Entry> entries;
   // Convert gdata files to something File API stack can understand.
-  for (GDataDirectoryCollection::const_iterator iter =
-            directory->child_directories().begin();
-       iter != directory->child_directories().end(); ++iter) {
-    entries.push_back(GDataEntryToFileUtilProxyEntry(*(iter->second)));
+  for (int i = 0; i < directory_proto->child_directories_size(); ++i) {
+    const GDataDirectoryProto& proto = directory_proto->child_directories(i);
+    entries.push_back(
+        GDataEntryProtoToFileUtilProxyEntry(proto.gdata_entry()));
   }
-  for (GDataFileCollection::const_iterator iter =
-            directory->child_files().begin();
-       iter != directory->child_files().end(); ++iter) {
-    if (hide_hosted_documents) {
-      GDataFile* file = iter->second;
-      if (file->is_hosted_document())
+  for (int i = 0; i < directory_proto->child_files_size(); ++i) {
+    const GDataFileProto& proto = directory_proto->child_files(i);
+    if (hide_hosted_documents && proto.is_hosted_document())
         continue;
-    }
-    entries.push_back(GDataEntryToFileUtilProxyEntry(*(iter->second)));
+    entries.push_back(
+        GDataEntryProtoToFileUtilProxyEntry(proto.gdata_entry()));
   }
 
   callback.Run(base::PLATFORM_FILE_OK, entries, false);

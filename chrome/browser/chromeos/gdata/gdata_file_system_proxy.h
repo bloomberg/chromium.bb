@@ -13,6 +13,8 @@ class Profile;
 namespace gdata {
 
 class GDataEntry;
+class GDataEntryProto;
+class GDataDirectoryProto;
 class GDataFileSystemInterface;
 
 // The interface class for remote file system proxy.
@@ -58,28 +60,22 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   static bool ValidateUrl(const GURL& url, FilePath* file_path);
 
   // Helper callback for relaying reply for metadata retrieval request to the
-  // calling thread. The callback is invoked while |file| is kept under lock
-  // so it is safe to retrieve data from it, but this pointer is not safe to
-  // be used outside of this method.
+  // calling thread.
   void OnGetMetadata(
       const FilePath& file_path,
       const fileapi::FileSystemOperationInterface::GetMetadataCallback&
           callback,
       base::PlatformFileError error,
-      const FilePath& directory_path,
-      GDataEntry* entry);
+      scoped_ptr<gdata::GDataEntryProto> entry_proto);
 
   // Helper callback for relaying reply for ReadDirectory() to the calling
-  // thread. The callback is invoked while |file| is kept under lock
-  // so it is safe to retrieve data from it, but this pointer is not safe to
-  // be used outside of this method.
+  // thread.
   void OnReadDirectory(
       bool hide_hosted_documents,
       const fileapi::FileSystemOperationInterface::ReadDirectoryCallback&
           callback,
       base::PlatformFileError error,
-      const FilePath& directory_path,
-      GDataEntry* entry);
+      scoped_ptr<GDataDirectoryProto> directory_proto);
 
   // GDataFileSystemProxy is owned by Profile, which outlives
   // GDataFileSystemProxy, which is owned by CrosMountPointProvider (i.e. by
