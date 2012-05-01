@@ -4,22 +4,23 @@
 
 # newlib does not have ffsl function?
 2005-05-11-Popcount-ffs-fls
-# newlib math.h defines infinity as a function, the test source defines
-# a double called infinity
-sphereflake
 
 # runtime errors
+# EH: exception not caught
+inlined_cleanup x86-64
+# EH: infinite loop
+exception_spec_test arm
+# some output incorrect
+anagram
+sphereflake
 
 # crash, works on ARM
 aha x86-64
 # crash w/ newlib: http://code.google.com/p/nativeclient/issues/detail?id=2505
 dt
 # crash on ARM/qemu
-lua arm
 almabench arm
 spirit arm
-flops arm
-CrystalMk arm
 # has stderr ordering problem, but also extraneous "<<" in output
 lambda
 # FP nan/inf handling

@@ -39,7 +39,8 @@ run.py options:
 
   -n | --dry-run         Just print commands, don't execute them
   -h | --help            Display this information
-  -q | --quiet           Don't print nexe information
+  -q | --quiet           Don't print anything (nexe output can be redirected
+                         with NACL_EXE_STDOUT/STDERR env vars)
   --more                 Display sel_ldr usage
 
   -arch <arch> | -m32 | -m64 | -marm
@@ -94,7 +95,7 @@ def SetupEnvironment():
   # Force a specific IRT
   env.force_irt = None
 
-  # Don't print nexe information
+  # Don't print anything
   env.quiet = False
 
   # Arch (x86-32, x86-64, arm)
@@ -360,15 +361,18 @@ def Run(args, cwd = None, capture = False):
       return
 
   stdout_pipe = None
-  stderr_pipe = None
+  stderr_redir = None
   if capture:
     stdout_pipe = subprocess.PIPE
   if env.quiet and not env.paranoid:
-    stderr_pipe = subprocess.PIPE
+    # Even if you redirect NACLLOG to /dev/null it still prints
+    # "DEBUG MODE ENABLED (bypass acl)", so just swallow the output
+    stderr_redir = open(os.devnull)
+    os.environ['NACLLOG'] = os.devnull
 
   p = None
   try:
-    p = subprocess.Popen(args, stdout=stdout_pipe, stderr=stderr_pipe, cwd=cwd)
+    p = subprocess.Popen(args, stdout=stdout_pipe, stderr=stderr_redir, cwd=cwd)
     (stdout_contents, stderr_contents) = p.communicate()
   except KeyboardInterrupt, e:
     if p:
@@ -378,15 +382,6 @@ def Run(args, cwd = None, capture = False):
     if p:
       p.kill()
     raise e
-
-  if env.quiet and not env.paranoid:
-    # Filter out sel_ldr's un-suppressable output when -a or -Q is given
-    for line in stderr_contents.split('\n'):
-      if (not line.startswith('DEBUG MODE') and
-          not line.endswith('ACL CHECKS') and
-          not line.startswith('PLATFORM QUALIFICATION') and
-          line != ''):
-        print >> sys.stderr, line
 
   if p.returncode != 0:
     if capture:

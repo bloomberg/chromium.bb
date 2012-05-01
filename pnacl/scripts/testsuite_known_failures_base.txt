@@ -63,21 +63,15 @@ tramp3d-v4
 ############################################################################
 # dependent on stderr ordering
 # (these could be fixed by implementing a fuzzy/unordered compare)
-hbd
-kc
-analyzer
 distray
 cdecl
 pairlocalalign
 mpeg2decode
-anagram
-mason
-# dependeng on output buffering
-inlined_cleanup x86-64
-fourinarow
-pcompress2
-neural
-pifft
+# Prints the value of argv[0] (is NaClMain on nacl)
+kc
+# Flush at end of file?
+hbd
+
 ############################################################################
 # Aggregates in va_arg
 ############################################################################
