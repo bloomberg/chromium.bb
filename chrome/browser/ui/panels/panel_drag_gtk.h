@@ -48,7 +48,8 @@ class PanelDragGtk {
 
   enum DragState {
     NOT_DRAGGING,
-    DRAG_IN_PROGRESS,
+    DRAG_CAN_START,  // mouse pressed
+    DRAG_IN_PROGRESS,  // mouse moved beyond drag threshold
     DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE
   };
 

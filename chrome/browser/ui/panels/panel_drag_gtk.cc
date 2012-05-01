@@ -148,6 +148,7 @@ void PanelDragGtk::InitialWindowEdgeMousePress(GdkEventButton* event,
                                                GdkWindowEdge& edge) {
   AssertCleanState();
   drag_delegate_ = new ResizeDragDelegate(panel_, edge);
+  drag_state_ = DRAG_CAN_START;
   GrabPointerAndKeyboard(event, cursor);
 }
 
@@ -156,6 +157,7 @@ void PanelDragGtk::InitialTitlebarMousePress(GdkEventButton* event,
   AssertCleanState();
   click_handler_ = titlebar_widget;
   drag_delegate_ = new MoveDragDelegate(panel_);
+  drag_state_ = DRAG_CAN_START;
   GrabPointerAndKeyboard(event, gfx::GetCursor(GDK_FLEUR));  // Drag cursor.
 }
 
@@ -188,6 +190,7 @@ void PanelDragGtk::GrabPointerAndKeyboard(GdkEventButton* event,
                 << pointer_grab_status << ", keyboard_status="
                 << keyboard_grab_status << ")";
     EndDrag(true);
+    ReleasePointerAndKeyboardGrab();
     return;
   }
 
@@ -195,6 +198,7 @@ void PanelDragGtk::GrabPointerAndKeyboard(GdkEventButton* event,
 }
 
 void PanelDragGtk::ReleasePointerAndKeyboardGrab() {
+  DCHECK(!drag_delegate_);
   if (drag_state_ == NOT_DRAGGING)
     return;
 
@@ -206,29 +210,40 @@ void PanelDragGtk::ReleasePointerAndKeyboardGrab() {
 }
 
 void PanelDragGtk::EndDrag(bool canceled) {
+  if (drag_state_ == NOT_DRAGGING ||
+      drag_state_ == DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE) {
+    DCHECK(!drag_delegate_);
+    return;
+  }
+
+  DCHECK(drag_delegate_);
+
   if (initial_mouse_down_) {
     gdk_event_free(initial_mouse_down_);
     initial_mouse_down_ = NULL;
   }
 
-  if (drag_delegate_) {
-    if (drag_state_ == DRAG_IN_PROGRESS) {
-      drag_delegate_->DragEnded(canceled);
-      drag_state_ = DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE;
-    }
-
-    delete drag_delegate_;
-    drag_delegate_ = NULL;
+  if (drag_state_ == DRAG_IN_PROGRESS) {
+    drag_delegate_->DragEnded(canceled);
   }
+  drag_state_ = DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE;
+
+  delete drag_delegate_;
+  drag_delegate_ = NULL;
 
   click_handler_ = NULL;
 }
 
 gboolean PanelDragGtk::OnMouseMoveEvent(GtkWidget* widget,
                                         GdkEventMotion* event) {
-  DCHECK(drag_delegate_ || drag_state_ == DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE);
-  if (!drag_delegate_)
+  DCHECK(drag_state_ != NOT_DRAGGING);
+
+  if (drag_state_ == DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE) {
+    DCHECK(!drag_delegate_);
     return TRUE;
+  }
+
+  DCHECK(drag_delegate_);
 
   gdouble new_x_double;
   gdouble new_y_double;
@@ -238,7 +253,7 @@ gboolean PanelDragGtk::OnMouseMoveEvent(GtkWidget* widget,
   gint new_y = static_cast<gint>(new_y_double);
 
   // Begin dragging only after mouse has moved beyond the drag threshold.
-  if (drag_state_ == NOT_DRAGGING) {
+  if (drag_state_ == DRAG_CAN_START) {
     DCHECK(initial_mouse_down_);
     gdouble old_x_double;
     gdouble old_y_double;
@@ -264,25 +279,22 @@ gboolean PanelDragGtk::OnMouseMoveEvent(GtkWidget* widget,
 
 gboolean PanelDragGtk::OnButtonPressEvent(GtkWidget* widget,
                                           GdkEventButton* event) {
-  DCHECK(drag_delegate_ || drag_state_ == DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE);
+  DCHECK(drag_state_ != NOT_DRAGGING);
   return TRUE;
 }
 
 gboolean PanelDragGtk::OnButtonReleaseEvent(GtkWidget* widget,
                                             GdkEventButton* event) {
-  DCHECK(drag_delegate_ || drag_state_ == DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE);
+  DCHECK(drag_state_ != NOT_DRAGGING);
+
   if (event->button == 1) {
-    // There will be no drag delegate if drag was canceled/ended using
-    // the keyboard before the mouse was released.
-    if (drag_delegate_) {
-      // Treat release as a mouse click if drag was never started.
-      if (drag_state_ == NOT_DRAGGING && click_handler_) {
-        gtk_propagate_event(click_handler_,
-                            reinterpret_cast<GdkEvent*>(event));
-      }
-      //  Cleanup state regardless.
-      EndDrag(false);
+    // Treat release as a mouse click if drag was never started.
+    if (drag_state_ == DRAG_CAN_START && click_handler_) {
+      gtk_propagate_event(click_handler_,
+                          reinterpret_cast<GdkEvent*>(event));
     }
+    // Cleanup state regardless.
+    EndDrag(false);
     ReleasePointerAndKeyboardGrab();
   }
 
@@ -291,15 +303,20 @@ gboolean PanelDragGtk::OnButtonReleaseEvent(GtkWidget* widget,
 
 gboolean PanelDragGtk::OnKeyPressEvent(GtkWidget* widget,
                                        GdkEventKey* event) {
-  DCHECK(drag_delegate_ || drag_state_ == DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE);
+  DCHECK(drag_state_ != NOT_DRAGGING);
   return TRUE;
 }
 
 gboolean PanelDragGtk::OnKeyReleaseEvent(GtkWidget* widget,
                                          GdkEventKey* event) {
-  DCHECK(drag_delegate_ || drag_state_ == DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE);
-  if (!drag_delegate_)
+  DCHECK(drag_state_ != NOT_DRAGGING);
+
+  if (drag_state_ == DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE) {
+    DCHECK(!drag_delegate_);
     return TRUE;
+  }
+
+  DCHECK(drag_delegate_);
 
   switch (event->keyval) {
   case GDK_Escape:
@@ -317,7 +334,7 @@ gboolean PanelDragGtk::OnKeyReleaseEvent(GtkWidget* widget,
 
 gboolean PanelDragGtk::OnGrabBrokenEvent(GtkWidget* widget,
                                          GdkEventGrabBroken* event) {
-  DCHECK(drag_delegate_ || drag_state_ == DRAG_ENDED_WAITING_FOR_MOUSE_RELEASE);
+  DCHECK(drag_state_ != NOT_DRAGGING);
   EndDrag(true);  // Cancel drag.
   ReleasePointerAndKeyboardGrab();
   return TRUE;
