@@ -31,6 +31,12 @@ remoting::ElevatedControllerModuleWin _AtlModule;
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int command) {
   CommandLine::Init(0, NULL);
 
+  // Register and initialize common controls.
+  INITCOMMONCONTROLSEX info;
+  info.dwSize = sizeof(info);
+  info.dwICC = ICC_STANDARD_CLASSES;
+  InitCommonControlsEx(&info);
+
   // This object instance is required by Chrome code (for example,
   // FilePath, LazyInstance, MessageLoop).
   base::AtExitManager exit_manager;

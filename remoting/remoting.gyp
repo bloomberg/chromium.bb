@@ -429,9 +429,21 @@
             'host/verify_config_window_win.h',
             '<(SHARED_INTERMEDIATE_DIR)/remoting/elevated_controller_version.rc'
           ],
+          'link_settings': {
+            'libraries': [
+              '-lcomctl32.lib',
+            ],
+          },
           'msvs_settings': {
             'VCLinkerTool': {
-              'AdditionalOptions': ["/MANIFESTUAC:level='requireAdministrator'"],
+              'AdditionalOptions': [
+                "/MANIFESTUAC:level='requireAdministrator'",
+                "\"/manifestdependency:type='win32' "
+                    "name='Microsoft.Windows.Common-Controls' "
+                    "version='6.0.0.0' "
+                    "processorArchitecture='*' "
+                    "publicKeyToken='6595b64144ccf1df' language='*'\"",
+              ],
               # 2 == /SUBSYSTEM:WINDOWS
               'SubSystem': '2',
             },
