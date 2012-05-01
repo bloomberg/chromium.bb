@@ -5791,6 +5791,15 @@
    fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
    fun:ChromeMain
 }
+{
+   bug_125807
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN26TransportSecurityPersisterC1EPN3net22TransportSecurityStateERK8FilePathb
+   fun:_ZN30TransportSecurityPersisterTestC2Ev
+   ...
+   fun:_ZN7testing8internal15TestFactoryImpl*
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
