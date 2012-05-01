@@ -773,6 +773,10 @@ void RelayGetDownloadDataCallback(
     const GetDownloadDataCallback& callback,
     GDataErrorCode error,
     scoped_ptr<std::string> download_data) {
+  // Unlike other callbacks, GetDownloadDataCallback is optional, hence it
+  // can be null here.
+  if (callback.is_null())
+    return;
   relay_proxy->PostTask(
       FROM_HERE,
       base::Bind(callback, error, base::Passed(&download_data)));
