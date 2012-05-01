@@ -39,6 +39,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/network_change_notifier.h"
 #include "policy/policy_constants.h"
 #include "ui/views/widget/widget.h"
@@ -288,6 +289,11 @@ void TestingAutomationProvider::Login(DictionaryValue* args,
 
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
+  if (!controller) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Unable to access ExistingUserController");
+    return;
+  }
 
   // Set up an observer (it will delete itself).
   new LoginObserver(controller, this, reply_message);
@@ -951,6 +957,50 @@ void TestingAutomationProvider::EnrollEnterpriseDevice(
   new EnrollmentObserver(this, reply_message, enroll_screen->GetActor(),
                          enroll_screen);
   enroll_screen->GetActor()->SubmitTestCredentials(user, password);
+}
+
+void TestingAutomationProvider::ExecuteJavascriptInOOBEWebUI(
+    DictionaryValue* args, IPC::Message* reply_message) {
+  std::string javascript, frame_xpath;
+  if (!args->GetString("javascript", &javascript)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'javascript' missing or invalid");
+    return;
+  }
+  if (!args->GetString("frame_xpath", &frame_xpath)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'frame_xpath' missing or invalid");
+    return;
+  }
+  const UserManager* user_manager = UserManager::Get();
+  if (!user_manager) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "No user manager!");
+    return;
+  }
+  if (user_manager->IsUserLoggedIn()) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "User is already logged in.");
+    return;
+  }
+  chromeos::ExistingUserController* controller =
+      chromeos::ExistingUserController::current_controller();
+  if (!controller) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Unable to access ExistingUserController");
+    return;
+  }
+  chromeos::WebUILoginDisplayHost* webui_login_display_host =
+      static_cast<chromeos::WebUILoginDisplayHost*>(
+          controller->login_display_host());
+  content::WebContents* web_contents =
+      webui_login_display_host->GetOobeUI()->web_ui()->GetWebContents();
+
+  new DomOperationMessageSender(this, reply_message, true);
+  ExecuteJavascriptInRenderViewFrame(ASCIIToUTF16(frame_xpath),
+                                     ASCIIToUTF16(javascript),
+                                     reply_message,
+                                     web_contents->GetRenderViewHost());
 }
 
 void TestingAutomationProvider::GetEnterprisePolicyInfo(

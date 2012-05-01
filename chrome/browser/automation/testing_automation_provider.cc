@@ -1315,9 +1315,7 @@ void TestingAutomationProvider::GetFullscreenBubbleVisibility(int handle,
   }
 }
 
-namespace {
-
-void ExecuteJavascriptInRenderViewFrame(
+void TestingAutomationProvider::ExecuteJavascriptInRenderViewFrame(
     const string16& frame_xpath,
     const string16& script,
     IPC::Message* reply_message,
@@ -1332,8 +1330,6 @@ void ExecuteJavascriptInRenderViewFrame(
   render_view_host->ExecuteJavascriptInWebFrame(
       frame_xpath, script);
 }
-
-}  // namespace
 
 void TestingAutomationProvider::ExecuteJavascript(
     int handle,
@@ -2280,6 +2276,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
   handler_map["ShowCreateAccountUI"] =
       &TestingAutomationProvider::ShowCreateAccountUI;
+  handler_map["ExecuteJavascriptInOOBEWebUI"] =
+      &TestingAutomationProvider::ExecuteJavascriptInOOBEWebUI;
   handler_map["LoginAsGuest"] = &TestingAutomationProvider::LoginAsGuest;
   handler_map["Login"] = &TestingAutomationProvider::Login;
 

@@ -40,6 +40,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace content {
+class RenderViewHost;
+}
+
 namespace webkit {
 struct WebPluginInfo;
 }
@@ -1444,6 +1448,18 @@ class TestingAutomationProvider : public AutomationProvider,
 
   void Login(base::DictionaryValue* args, IPC::Message* reply_message);
 
+  // Executes javascript in the specified frame in the OOBE WebUI on chromeos.
+  // Waits for a result from the |DOMAutomationController|. The javascript must
+  // send a string. Must be run before a user has logged in.
+  // Example:
+  //   input: { "frame_xpath": "//frames[1]",
+  //            "javascript":
+  //                "window.domAutomationController.send(window.name)",
+  //           }
+  //   output: { "result": "My Window Name" }
+  void ExecuteJavascriptInOOBEWebUI(
+      base::DictionaryValue* args, IPC::Message* reply_message);
+
   // Screen locker.
   void LockScreen(base::DictionaryValue* args, IPC::Message* reply_message);
 
@@ -1578,6 +1594,11 @@ class TestingAutomationProvider : public AutomationProvider,
       int tab_handle, int* browser_handle, bool* success);
 
   void OnRemoveProvider();  // Called via PostTask
+
+  // Execute Javascript in the context of a specific render view.
+  void ExecuteJavascriptInRenderViewFrame(
+      const string16& frame_xpath, const string16& script,
+      IPC::Message* reply_message, content::RenderViewHost* render_view_host);
 
 #if defined(TOOLKIT_VIEWS)
   // Keep track of whether a popup menu has been opened since the last time

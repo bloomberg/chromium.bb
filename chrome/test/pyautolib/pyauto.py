@@ -3227,6 +3227,38 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     json_string = '[' + result + ']'
     return json.loads(json_string)[0]
 
+  def ExecuteJavascriptInOOBEWebUI(self, js, frame_xpath=''):
+    """Executes a script in the specified frame of the OOBE WebUI.
+
+    By default, execute the script in the top frame of the OOBE window. This
+    also works for all OOBE pages, including the enterprise enrollment
+    screen and login page. The invoked javascript function must send a result
+    back via the domAutomationController.send function, or this function will
+    never return.
+
+    Args:
+      js: Script to be executed.
+      frame_xpath: XPath of the frame to execute the script. Default is no
+          frame. Example: '//frames[1]'
+
+    Returns:
+      A value that was sent back via the domAutomationController.send method.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'ExecuteJavascriptInOOBEWebUI',
+
+      'javascript': js,
+      'frame_xpath': frame_xpath,
+    }
+    result = self._GetResultFromJSONRequest(cmd_dict, windex=None)['result']
+    # Wrap result in an array before deserializing because valid JSON has an
+    # array or an object as the root.
+    return json.loads('[' + result + ']')[0]
+
+
   def GetDOMValue(self, expr, tab_index=0, windex=0, frame_xpath=''):
     """Executes a Javascript expression and returns the value.
 

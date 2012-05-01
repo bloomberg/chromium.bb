@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -30,6 +30,13 @@ class ChromeosLogin(pyauto.PyUITest):
       A dictionary with the keys 'username' and 'password'
     """
     return self.GetPrivateInfo()[account_type]
+
+  def testExecuteJavascriptInOOBEWebUI(self):
+    """Test that javascript can be executed at the login page."""
+    msg = 'test success'
+    ret = self.ExecuteJavascriptInOOBEWebUI(
+              'window.domAutomationController.send("%s");' % msg)
+    self.assertEqual(ret, msg)
 
   def testGoodLogin(self):
     """Test that login is successful with valid credentials."""
