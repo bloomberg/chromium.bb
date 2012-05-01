@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "ui/gfx/gl/gl_bindings.h"
@@ -547,6 +548,8 @@ GLHelper::~GLHelper() {
         FROM_HERE,
         base::Bind(&SignalWaitableEvent,
                    &event));
+    // http://crbug.com/125415
+    base::ThreadRestrictions::ScopedAllowWait allow_wait;
     event.Wait();
   }
 }
