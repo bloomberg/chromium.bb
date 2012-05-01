@@ -55,24 +55,11 @@ class ComThread : public base::Thread {
  public:
   explicit ComThread(const char* name);
 
-  // Activates an elevated instance of the controller and returns the pointer
-  // to the control interface in |control_out|. This class keeps the ownership
-  // of the pointer so the caller should not call call AddRef() or Release().
-  HRESULT ActivateElevatedController(HWND window_handle,
-                                     IDaemonControl** control_out);
-
   bool Start();
 
  protected:
   virtual void Init() OVERRIDE;
   virtual void CleanUp() OVERRIDE;
-
-  void ReleaseElevatedController();
-
-  ScopedComPtr<IDaemonControl> control_;
-
-  // This timer is used to release |control_| after a timeout.
-  base::OneShotTimer<ComThread> release_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ComThread);
 };
@@ -93,11 +80,11 @@ class DaemonControllerWin : public remoting::DaemonController {
   virtual void SetWindow(void* window_handle) OVERRIDE;
 
  private:
-  // Converts a Windows service status code to a Daemon state.
-  static State ConvertToDaemonState(DWORD service_state);
+  // Activates an elevated instance of the controller and caches it.
+  HRESULT ActivateElevatedController();
 
-  // Converts HRESULT to the AsyncResult.
-  static AsyncResult HResultToAsyncResult(HRESULT hr);
+  // Releases the cached instance of the elevated controller.
+  void ReleaseElevatedController();
 
   // Procedes with the daemon configuration if the installation succeeded,
   // otherwise reports the error.
@@ -112,6 +99,12 @@ class DaemonControllerWin : public remoting::DaemonController {
   static void ConfigToString(const base::DictionaryValue& config,
                              ScopedBstr* out);
 
+  // Converts a Windows service status code to a Daemon state.
+  static State ConvertToDaemonState(DWORD service_state);
+
+  // Converts HRESULT to the AsyncResult.
+  static AsyncResult HResultToAsyncResult(HRESULT hr);
+
   // The functions that actually do the work. They should be called in
   // the context of |worker_thread_|;
   void DoGetConfig(const GetConfigCallback& callback);
@@ -124,6 +117,11 @@ class DaemonControllerWin : public remoting::DaemonController {
   void DoStop(const CompletionCallback& done_callback);
   void DoSetWindow(void* window_handle);
 
+  ScopedComPtr<IDaemonControl> control_;
+
+  // This timer is used to release |control_| after a timeout.
+  scoped_ptr<base::OneShotTimer<DaemonControllerWin> > release_timer_;
+
   // Handle of the plugin window.
   HWND window_handle_;
 
@@ -135,38 +133,7 @@ class DaemonControllerWin : public remoting::DaemonController {
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerWin);
 };
 
-ComThread::ComThread(const char* name) : base::Thread(name), control_(NULL) {
-}
-
-HRESULT ComThread::ActivateElevatedController(
-    HWND window_handle,
-    IDaemonControl** control_out) {
-  // Cache an instance of the Elevated Controller to prevent a UAC prompt on
-  // every operation.
-  if (control_.get() == NULL) {
-    BIND_OPTS3 bind_options;
-    memset(&bind_options, 0, sizeof(bind_options));
-    bind_options.cbStruct = sizeof(bind_options);
-    bind_options.hwnd = GetTopLevelWindow(window_handle);
-    bind_options.dwClassContext  = CLSCTX_LOCAL_SERVER;
-
-    HRESULT hr = ::CoGetObject(
-        kDaemonControllerElevationMoniker,
-        &bind_options,
-        IID_IDaemonControl,
-        control_.ReceiveVoid());
-    if (FAILED(hr)) {
-      return hr;
-    }
-
-    // Release |control_| upon expiration of the timeout.
-    release_timer_.Start(FROM_HERE,
-                         base::TimeDelta::FromSeconds(kUacTimeoutSec),
-                         this, &ComThread::ReleaseElevatedController);
-  }
-
-  *control_out = control_.get();
-  return S_OK;
+ComThread::ComThread(const char* name) : base::Thread(name) {
 }
 
 bool ComThread::Start() {
@@ -180,12 +147,7 @@ void ComThread::Init() {
 }
 
 void ComThread::CleanUp() {
-  ReleaseElevatedController();
   CoUninitialize();
-}
-
-void ComThread::ReleaseElevatedController() {
-  control_.Release();
 }
 
 DaemonControllerWin::DaemonControllerWin()
@@ -197,6 +159,11 @@ DaemonControllerWin::DaemonControllerWin()
 }
 
 DaemonControllerWin::~DaemonControllerWin() {
+  // Clean up resources allocated on the worker thread.
+  worker_thread_.message_loop_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&DaemonControllerWin::ReleaseElevatedController,
+                 base::Unretained(this)));
   worker_thread_.Stop();
 }
 
@@ -265,40 +232,43 @@ void DaemonControllerWin::SetWindow(void* window_handle) {
           window_handle));
 }
 
-// static
-remoting::DaemonController::State DaemonControllerWin::ConvertToDaemonState(
-    DWORD service_state) {
-  switch (service_state) {
-  case SERVICE_RUNNING:
-    return STATE_STARTED;
+HRESULT DaemonControllerWin::ActivateElevatedController() {
+  DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
-  case SERVICE_CONTINUE_PENDING:
-  case SERVICE_START_PENDING:
-    return STATE_STARTING;
-    break;
+  // Cache an instance of the Elevated Controller to prevent a UAC prompt on
+  // every operation.
+  if (control_.get() == NULL) {
+    BIND_OPTS3 bind_options;
+    memset(&bind_options, 0, sizeof(bind_options));
+    bind_options.cbStruct = sizeof(bind_options);
+    bind_options.hwnd = GetTopLevelWindow(window_handle_);
+    bind_options.dwClassContext  = CLSCTX_LOCAL_SERVER;
 
-  case SERVICE_PAUSE_PENDING:
-  case SERVICE_STOP_PENDING:
-    return STATE_STOPPING;
-    break;
+    HRESULT hr = ::CoGetObject(
+        kDaemonControllerElevationMoniker,
+        &bind_options,
+        IID_IDaemonControl,
+        control_.ReceiveVoid());
+    if (FAILED(hr)) {
+      return hr;
+    }
 
-  case SERVICE_PAUSED:
-  case SERVICE_STOPPED:
-    return STATE_STOPPED;
-    break;
-
-  default:
-    NOTREACHED();
-    return STATE_UNKNOWN;
+    // Release |control_| upon expiration of the timeout.
+    release_timer_.reset(new base::OneShotTimer<DaemonControllerWin>());
+    release_timer_->Start(FROM_HERE,
+                          base::TimeDelta::FromSeconds(kUacTimeoutSec),
+                          this,
+                          &DaemonControllerWin::ReleaseElevatedController);
   }
+
+  return S_OK;
 }
 
-// static
-DaemonController::AsyncResult DaemonControllerWin::HResultToAsyncResult(
-    HRESULT hr) {
-  // TODO(sergeyu): Report other errors to the webapp once it knows
-  // how to handle them.
-  return FAILED(hr) ? RESULT_FAILED : RESULT_OK;
+void DaemonControllerWin::ReleaseElevatedController() {
+  DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
+
+  control_.Release();
+  release_timer_.reset();
 }
 
 void DaemonControllerWin::OnInstallationComplete(
@@ -346,12 +316,49 @@ DWORD DaemonControllerWin::OpenService(ScopedScHandle* service_out) {
   return ERROR_SUCCESS;
 }
 
+// static
 void DaemonControllerWin::ConfigToString(const base::DictionaryValue& config,
                                          ScopedBstr* out) {
   std::string config_str;
   base::JSONWriter::Write(&config, &config_str);
   ScopedBstr config_scoped_bstr(UTF8ToUTF16(config_str).c_str());
   out->Swap(config_scoped_bstr);
+}
+
+// static
+remoting::DaemonController::State DaemonControllerWin::ConvertToDaemonState(
+    DWORD service_state) {
+  switch (service_state) {
+  case SERVICE_RUNNING:
+    return STATE_STARTED;
+
+  case SERVICE_CONTINUE_PENDING:
+  case SERVICE_START_PENDING:
+    return STATE_STARTING;
+    break;
+
+  case SERVICE_PAUSE_PENDING:
+  case SERVICE_STOP_PENDING:
+    return STATE_STOPPING;
+    break;
+
+  case SERVICE_PAUSED:
+  case SERVICE_STOPPED:
+    return STATE_STOPPED;
+    break;
+
+  default:
+    NOTREACHED();
+    return STATE_UNKNOWN;
+  }
+}
+
+// static
+DaemonController::AsyncResult DaemonControllerWin::HResultToAsyncResult(
+    HRESULT hr) {
+  // TODO(sergeyu): Report other errors to the webapp once it knows
+  // how to handle them.
+  return FAILED(hr) ? RESULT_FAILED : RESULT_OK;
 }
 
 void DaemonControllerWin::DoGetConfig(const GetConfigCallback& callback) {
@@ -412,11 +419,8 @@ void DaemonControllerWin::DoInstallAsNeededAndStart(
     const CompletionCallback& done_callback) {
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
-  IDaemonControl* control = NULL;
-  HRESULT hr = worker_thread_.ActivateElevatedController(window_handle_,
-                                                         &control);
-
-  // Just configure and start the Daemon Controller if it is installed already.
+  // Configure and start the Daemon Controller if it is installed already.
+  HRESULT hr = ActivateElevatedController();
   if (SUCCEEDED(hr)) {
     DoSetConfigAndStart(config.Pass(), done_callback);
     return;
@@ -447,9 +451,7 @@ void DaemonControllerWin::DoSetConfigAndStart(
     const CompletionCallback& done_callback) {
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
-  IDaemonControl* control = NULL;
-  HRESULT hr = worker_thread_.ActivateElevatedController(window_handle_,
-                                                         &control);
+  HRESULT hr = ActivateElevatedController();
   if (FAILED(hr)) {
     done_callback.Run(HResultToAsyncResult(hr));
     return;
@@ -463,14 +465,14 @@ void DaemonControllerWin::DoSetConfigAndStart(
     return;
   }
 
-  hr = control->SetConfig(config_str);
+  hr = control_->SetConfig(config_str);
   if (FAILED(hr)) {
     done_callback.Run(HResultToAsyncResult(hr));
     return;
   }
 
   // Start daemon.
-  hr = control->StartDaemon();
+  hr = control_->StartDaemon();
   done_callback.Run(HResultToAsyncResult(hr));
 }
 
@@ -479,9 +481,7 @@ void DaemonControllerWin::DoUpdateConfig(
     const CompletionCallback& done_callback) {
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
-  IDaemonControl* control = NULL;
-  HRESULT hr = worker_thread_.ActivateElevatedController(window_handle_,
-                                                         &control);
+  HRESULT hr = ActivateElevatedController();
   if (FAILED(hr)) {
     done_callback.Run(HResultToAsyncResult(hr));
     return;
@@ -495,22 +495,20 @@ void DaemonControllerWin::DoUpdateConfig(
     return;
   }
 
-  hr = control->UpdateConfig(config_str);
+  hr = control_->UpdateConfig(config_str);
   done_callback.Run(HResultToAsyncResult(hr));
 }
 
 void DaemonControllerWin::DoStop(const CompletionCallback& done_callback) {
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
-  IDaemonControl* control = NULL;
-  HRESULT hr = worker_thread_.ActivateElevatedController(window_handle_,
-                                                         &control);
+  HRESULT hr = ActivateElevatedController();
   if (FAILED(hr)) {
     done_callback.Run(HResultToAsyncResult(hr));
     return;
   }
 
-  hr = control->StopDaemon();
+  hr = control_->StopDaemon();
   done_callback.Run(HResultToAsyncResult(hr));
 }
 
