@@ -264,10 +264,6 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL(
     g_all_shared_contexts.Pointer()->insert(this);
   }
 
-  command_buffer_->SetMemoryAllocationChangedCallback(base::Bind(
-      &WebGraphicsContext3DCommandBufferImpl::OnMemoryAllocationChanged,
-      weak_ptr_factory_.GetWeakPtr()));
-
   visible_ = true;
   initialized_ = true;
   return true;
@@ -680,6 +676,17 @@ void WebGraphicsContext3DCommandBufferImpl::
     setMemoryAllocationChangedCallbackCHROMIUM(
         WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) {
   memory_allocation_changed_callback_ = callback;
+
+  if (!command_buffer_)
+    return;
+
+  if (callback)
+    command_buffer_->SetMemoryAllocationChangedCallback(base::Bind(
+        &WebGraphicsContext3DCommandBufferImpl::OnMemoryAllocationChanged,
+        weak_ptr_factory_.GetWeakPtr()));
+  else
+    command_buffer_->SetMemoryAllocationChangedCallback(
+        base::Callback<void(const GpuMemoryAllocationForRenderer&)>());
 }
 
 

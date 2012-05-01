@@ -59,7 +59,9 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       route_id_(route_id),
       software_(software),
       last_flush_count_(0),
-      allocation_(GpuMemoryAllocation::INVALID_RESOURCE_SIZE, true, true),
+      allocation_(GpuMemoryAllocation::INVALID_RESOURCE_SIZE,
+                  GpuMemoryAllocation::kHasFrontbuffer |
+                  GpuMemoryAllocation::kHasBackbuffer),
       parent_stub_for_initialization_(),
       parent_texture_for_initialization_(0),
       watchdog_(watchdog) {
@@ -131,6 +133,9 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnDiscardBackbuffer)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_EnsureBackbuffer,
                         OnEnsureBackbuffer)
+    IPC_MESSAGE_HANDLER(
+        GpuCommandBufferMsg_SetClientHasMemoryAllocationChangedCallback,
+        OnSetClientHasMemoryAllocationChangedCallback)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -589,6 +594,12 @@ void GpuCommandBufferStub::OnEnsureBackbuffer() {
       gfx::GLSurface::BUFFER_ALLOCATION_FRONT_AND_BACK);
 }
 
+void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(
+    bool has_callback) {
+  client_has_memory_allocation_changed_callback_ = has_callback;
+  channel_->gpu_channel_manager()->gpu_memory_manager()->ScheduleManage();
+}
+
 void GpuCommandBufferStub::SendConsoleMessage(
     int32 id,
     const std::string& message) {
@@ -615,6 +626,11 @@ bool GpuCommandBufferStub::IsInSameContextShareGroup(
     const GpuCommandBufferStubBase& other) const {
   return context_group_ ==
       static_cast<const GpuCommandBufferStub&>(other).context_group_;
+}
+
+bool GpuCommandBufferStub::
+    client_has_memory_allocation_changed_callback() const {
+  return client_has_memory_allocation_changed_callback_;
 }
 
 bool GpuCommandBufferStub::has_surface_state() const {
