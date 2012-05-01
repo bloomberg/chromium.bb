@@ -110,7 +110,17 @@ BluetoothDevice::DeviceType BluetoothDevice::GetDeviceType() const {
       switch ((bluetooth_class_ & 0xc0) >> 6) {
         case 0x00:
           // "Not a keyboard or pointing device."
-          return DEVICE_PERIPHERAL;
+          switch ((bluetooth_class_ & 0x01e) >> 2) {
+            case 0x01:
+              // Joystick.
+              return DEVICE_JOYSTICK;
+            case 0x02:
+              // Gamepad.
+              return DEVICE_GAMEPAD;
+            default:
+              return DEVICE_PERIPHERAL;
+          }
+          break;
         case 0x01:
           // Keyboard.
           return DEVICE_KEYBOARD;
@@ -137,7 +147,9 @@ BluetoothDevice::DeviceType BluetoothDevice::GetDeviceType() const {
 
 bool BluetoothDevice::IsSupported() const {
   DeviceType device_type = GetDeviceType();
-  return (device_type == DEVICE_KEYBOARD ||
+  return (device_type == DEVICE_JOYSTICK ||
+          device_type == DEVICE_GAMEPAD ||
+          device_type == DEVICE_KEYBOARD ||
           device_type == DEVICE_MOUSE ||
           device_type == DEVICE_TABLET ||
           device_type == DEVICE_KEYBOARD_MOUSE_COMBO);
@@ -155,6 +167,12 @@ string16 BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() const {
                                             address);
     case DEVICE_MODEM:
       return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_MODEM,
+                                        address);
+    case DEVICE_JOYSTICK:
+      return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_JOYSTICK,
+                                        address);
+    case DEVICE_GAMEPAD:
+      return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_GAMEPAD,
                                         address);
     case DEVICE_KEYBOARD:
       return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_KEYBOARD,
