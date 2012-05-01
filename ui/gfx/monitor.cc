@@ -4,22 +4,52 @@
 
 #include "ui/gfx/monitor.h"
 
-#include "ui/gfx/insets.h"
+#include "base/command_line.h"
+#include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "ui/base/ui_base_switches.h"
+#include "ui/gfx/insets.h"
 
 namespace gfx {
+namespace {
 
-Monitor::Monitor() : id_(-1), device_scale_factor_(1.0) {
+float GetDefaultDeviceScaleFactorImpl() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  double scale_in_double = 1.0;
+  if (command_line.HasSwitch(switches::kDefaultDeviceScaleFactor)) {
+    std::string value =
+        command_line.GetSwitchValueASCII(switches::kDefaultDeviceScaleFactor);
+    if (!base::StringToDouble(value, &scale_in_double))
+      LOG(ERROR) << "Failed to parse the deafult device scale factor:" << value;
+  }
+  return static_cast<float>(scale_in_double);
 }
 
-Monitor::Monitor(int id) : id_(id), device_scale_factor_(1.0) {
+} // namespace
+
+// static
+float Monitor::GetDefaultDeviceScaleFactor() {
+  static const float kDefaultDeviceScaleFactor =
+      GetDefaultDeviceScaleFactorImpl();
+  return kDefaultDeviceScaleFactor;
+}
+
+Monitor::Monitor()
+    : id_(-1),
+      device_scale_factor_(GetDefaultDeviceScaleFactor()) {
+}
+
+Monitor::Monitor(int id)
+    : id_(id),
+      device_scale_factor_(GetDefaultDeviceScaleFactor()) {
 }
 
 Monitor::Monitor(int id, const gfx::Rect& bounds)
     : id_(id),
       bounds_(bounds),
       work_area_(bounds),
-      device_scale_factor_(1.0) {
+      device_scale_factor_(GetDefaultDeviceScaleFactor()) {
 #if defined(USE_ASH)
   SetScaleAndBounds(device_scale_factor_, bounds);
 #endif

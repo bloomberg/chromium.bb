@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string_number_conversions.h"
@@ -18,7 +17,6 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_switches.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
@@ -126,19 +124,10 @@ void GetScreenInfoForWindow(WebKit::WebScreenInfo* results,
   const gfx::Size size = monitor.size();
   results->rect = WebKit::WebRect(0, 0, size.width(), size.height());
   results->availableRect = results->rect;
-  // TODO(derat): Don't hardcode this?
+  // TODO(derat|oshima): Don't hardcode this. Get this from monitor object.
   results->depth = 24;
   results->depthPerComponent = 8;
   int default_dpi = monitor.device_scale_factor() * 160;
-  // TODO(fsamuel): This is a temporary hack until Monitor code is complete.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDefaultDeviceScaleFactor)) {
-    int default_device_scale_factor;
-    base::StringToInt(command_line.GetSwitchValueASCII(
-                          switches::kDefaultDeviceScaleFactor),
-                      &default_device_scale_factor);
-    default_dpi = default_device_scale_factor * 160;
-  }
   results->verticalDPI = default_dpi;
   results->horizontalDPI = default_dpi;
 }

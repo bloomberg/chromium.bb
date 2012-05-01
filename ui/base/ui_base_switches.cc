@@ -6,6 +6,10 @@
 
 namespace switches {
 
+// The default device scale factor to apply to the browser UI and
+// the contents in the absence of a viewport meta tag.
+const char kDefaultDeviceScaleFactor[] = "default-device-scale-factor";
+
 // Enable support for touch events.
 const char kEnableTouchEvents[]             = "enable-touch-events";
 

@@ -6,6 +6,7 @@
 #define UI_GFX_SCREEN_H_
 #pragma once
 
+#include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/monitor.h"
 #include "ui/gfx/point.h"

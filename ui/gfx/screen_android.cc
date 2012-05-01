@@ -16,6 +16,11 @@ gfx::Monitor Screen::GetPrimaryMonitor() {
 }
 
 // static
+gfx::Monitor Screen::GetMonitorNearestWindow(gfx::NativeView view) {
+  return GetPrimaryMonitor();
+}
+
+// static
 int Screen::GetNumMonitors() {
   return 1;
 }

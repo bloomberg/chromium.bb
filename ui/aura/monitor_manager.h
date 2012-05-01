@@ -42,6 +42,8 @@ class AURA_EXPORT MonitorManager {
   // The location can be omitted and be just "1440x800", which creates
   // monitor at the origin of the screen. An empty string creates
   // the monitor with default size.
+  //  The device scale factor can be specified by "*", like "1280x780*2",
+  // or |gfx::Monitor::GetDefaultDeviceScaleFactor()| will be used if omitted.
   static gfx::Monitor CreateMonitorFromSpec(const std::string& spec);
 
   // A utility function to create a root window for primary monitor.

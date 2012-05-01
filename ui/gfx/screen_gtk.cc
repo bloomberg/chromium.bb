@@ -57,7 +57,7 @@ gfx::Rect NativePrimaryMonitorBounds() {
 gfx::Rect GetMonitorAreaNearestWindow(gfx::NativeView view) {
   GdkScreen* screen = gdk_screen_get_default();
   gint monitor_num = 0;
-  if (view) {
+  if (view && GTK_IS_WINDOW(view)) {
     GtkWidget* top_level = gtk_widget_get_toplevel(view);
     DCHECK(GTK_IS_WINDOW(top_level));
     GtkWindow* window = GTK_WINDOW(top_level);

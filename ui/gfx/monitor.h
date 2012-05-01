@@ -20,6 +20,10 @@ namespace gfx {
 // TODO(oshima): Update the comment when ENABLE_DIP macro is removed.
 class UI_EXPORT Monitor {
  public:
+  // Returns the default value for the device scale factor, which is
+  // given by "--default-device-scale-factor".
+  static float GetDefaultDeviceScaleFactor();
+
   // Creates a monitor with invalid id(-1) as default.
   Monitor();
   explicit Monitor(int id);

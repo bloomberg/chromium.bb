@@ -32,7 +32,7 @@ gfx::Monitor MonitorManager::CreateMonitorFromSpec(const std::string& spec) {
   gfx::Rect bounds(kDefaultHostWindowX, kDefaultHostWindowY,
                    kDefaultHostWindowWidth, kDefaultHostWindowHeight);
   int x = 0, y = 0, width, height;
-  float scale = 1.0f;
+  float scale = gfx::Monitor::GetDefaultDeviceScaleFactor();
   if (sscanf(spec.c_str(), "%dx%d*%f", &width, &height, &scale) >= 2) {
     bounds.set_size(gfx::Size(width, height));
   } else if (sscanf(spec.c_str(), "%d+%d-%dx%d*%f", &x, &y, &width, &height,
