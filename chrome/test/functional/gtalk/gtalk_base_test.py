@@ -22,9 +22,6 @@ class GTalkBaseTest(pyauto.PyUITest):
 
   _injected_js = None
 
-  def ExtraChromeFlags(self):
-    return pyauto.PyUITest.ExtraChromeFlags(self) + ['--no-sandbox']
-
   def Prompt(self, text):
     """Pause execution with debug output.
 
