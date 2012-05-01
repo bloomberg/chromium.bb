@@ -495,7 +495,10 @@ class NinjaWriter:
                                              name)
       is_cygwin = (self.msvs_settings.IsRuleRunUnderCygwin(action)
                    if self.flavor == 'win' else False)
-      rule_name = self.WriteNewNinjaRule(name, action['action'], description,
+      args = action['action']
+      args = [self.msvs_settings.ConvertVSMacros(arg, self.base_to_build)
+              for arg in args] if self.flavor == 'win' else args
+      rule_name = self.WriteNewNinjaRule(name, args, description,
                                          is_cygwin, env=env)
 
       inputs = [self.GypPathToNinja(i, env) for i in action['inputs']]
@@ -527,6 +530,8 @@ class NinjaWriter:
           ('%s ' + generator_default_variables['RULE_INPUT_PATH']) % name)
       is_cygwin = (self.msvs_settings.IsRuleRunUnderCygwin(rule)
                    if self.flavor == 'win' else False)
+      args = [self.msvs_settings.ConvertVSMacros(arg, self.base_to_build)
+              for arg in args] if self.flavor == 'win' else args
       rule_name = self.WriteNewNinjaRule(name, args, description, is_cygwin)
 
       # TODO: if the command references the outputs directly, we should
@@ -1074,6 +1079,9 @@ class NinjaWriter:
 
     args = args[:]
 
+    if self.flavor == 'win':
+      description = self.msvs_settings.ConvertVSMacros(description)
+
     # gyp dictates that commands are run from the base directory.
     # cd into the directory before running, and adjust paths in
     # the arguments to point to the proper locations.
@@ -1087,8 +1095,6 @@ class NinjaWriter:
     args = [self.ExpandSpecial(arg, self.base_to_build) for arg in args]
     env = self.ComputeExportEnvString(env) if self.flavor != 'win' else ''
     if self.flavor == 'win':
-      args = [self.msvs_settings.ConvertVSMacros(a, self.base_to_build)
-              for a in args]
       if is_cygwin:
         command = self.msvs_settings.BuildCygwinBashCommandLine(
             args, self.build_to_base)

@@ -150,8 +150,10 @@ class MsvsSettings(object):
         '$(VCInstallDir)': os.path.join(self.vs_version.Path(), 'VC'),
         '$(OutDir)\\': base_to_build + '\\' if base_to_build else '',
         '$(IntDir)': '$!INTERMEDIATE_DIR',
+        '$(InputPath)': '${source}',
         '$(InputName)': '${root}',
         '$(ProjectName)': self.spec['target_name'],
+        '$(PlatformName)': 'Win32', # TODO(scottmg): Support for x64 toolchain.
     }
     # Chromium uses DXSDK_DIR in include/lib paths, but it may or may not be
     # set. This happens when the SDK is sync'd via src-internal, rather than
