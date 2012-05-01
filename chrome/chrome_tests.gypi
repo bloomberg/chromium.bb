@@ -2600,6 +2600,36 @@
       ],
     },
     {
+      'target_name': 'unit_tests_run',
+      'type': 'none',
+      'dependencies': [
+        'unit_tests',
+      ],
+      'includes': [
+        'unit_tests.isolate',
+      ],
+      'actions': [
+        {
+          'action_name': 'isolate',
+          'inputs': [
+            '<@(isolate_dependency_tracked)',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/unit_tests.results',
+          ],
+          'action': [
+            'python',
+            '../tools/isolate/isolate.py',
+            '--mode', '<(tests_run)',
+            '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
+            '--variable', 'OS', '<(OS)',
+            '--result', '<@(_outputs)',
+            'unit_tests.isolate',
+          ],
+        },
+      ],
+    },
+    {
       # Executable that runs each browser test in a new process.
       'target_name': 'browser_tests',
       'type': 'executable',
