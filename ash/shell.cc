@@ -309,6 +309,9 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowBluetoothSettings() OVERRIDE {
   }
 
+  virtual void ShowDriveSettings() OVERRIDE {
+  }
+
   virtual void ShowIMESettings() OVERRIDE {
   }
 
@@ -373,6 +376,13 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   }
 
   virtual void ActivateIMEProperty(const std::string& key) OVERRIDE {
+  }
+
+  virtual void CancelDriveOperation(const FilePath&) OVERRIDE {
+  }
+
+  virtual void GetDriveOperationStatusList(
+      ash::DriveOperationStatusList*) OVERRIDE {
   }
 
   virtual void GetMostRelevantNetworkIcon(NetworkIconInfo* info,

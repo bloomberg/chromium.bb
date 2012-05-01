@@ -282,6 +282,15 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_ADD_DEVICE" desc="The label used in the tray popup to add a bluetooth device.">
         Add device...
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_DRIVE_SYNCING" desc="The label in the tray to indicate onoing file sync operations.">
+        Syncing <ph name="count">$1<ex>3</ex></ph> file(s)
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DRIVE" desc="The label used for Google Drive tray details header.">
+        Google Drive
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DRIVE_SETTINGS" desc="The label used for Google Drive settings entry.">
+        Google Drive settings...
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_IME" desc="The label used as the header in the IME popup.">
         Input methods
       </message>

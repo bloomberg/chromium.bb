@@ -11,6 +11,7 @@
 #include "ash/system/bluetooth/tray_bluetooth.h"
 #include "ash/system/brightness/tray_brightness.h"
 #include "ash/system/date/tray_date.h"
+#include "ash/system/drive/tray_drive.h"
 #include "ash/system/ime/tray_ime.h"
 #include "ash/system/network/tray_network.h"
 #include "ash/system/power/power_status_observer.h"
@@ -133,6 +134,10 @@ class TrayPopupItemContainer : public views::View {
     if (visible() == child->visible())
       return;
     SetVisible(child->visible());
+    PreferredSizeChanged();
+  }
+
+  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE {
     PreferredSizeChanged();
   }
 
@@ -605,37 +610,6 @@ void SystemTrayBubble::OnWidgetVisibilityChanged(views::Widget* widget,
 
 }  // namespace internal
 
-// From system_tray_delegate.h
-
-NetworkIconInfo::NetworkIconInfo()
-    : highlight(false),
-      tray_icon_visible(true) {
-}
-
-NetworkIconInfo::~NetworkIconInfo() {
-}
-
-BluetoothDeviceInfo::BluetoothDeviceInfo()
-    : connected(false) {
-}
-
-BluetoothDeviceInfo::~BluetoothDeviceInfo() {
-}
-
-IMEInfo::IMEInfo()
-    : selected(false) {
-}
-
-IMEInfo::~IMEInfo() {
-}
-
-IMEPropertyInfo::IMEPropertyInfo()
-    : selected(false) {
-}
-
-IMEPropertyInfo::~IMEPropertyInfo() {
-}
-
 // SystemTray
 
 SystemTray::SystemTray()
@@ -646,6 +620,7 @@ SystemTray::SystemTray()
       brightness_observer_(NULL),
       caps_lock_observer_(NULL),
       clock_observer_(NULL),
+      drive_observer_(NULL),
       ime_observer_(NULL),
       network_observer_(NULL),
       power_status_observer_(NULL),
@@ -696,6 +671,7 @@ void SystemTray::CreateItems() {
   internal::TrayAccessibility* tray_accessibility =
       new internal::TrayAccessibility;
   internal::TrayCapsLock* tray_caps_lock = new internal::TrayCapsLock;
+  internal::TrayDrive* tray_drive = new internal::TrayDrive;
   internal::TrayIME* tray_ime = new internal::TrayIME;
   internal::TrayUpdate* tray_update = new internal::TrayUpdate;
 
@@ -705,6 +681,7 @@ void SystemTray::CreateItems() {
   brightness_observer_ = tray_brightness;
   caps_lock_observer_ = tray_caps_lock;
   clock_observer_ = tray_date;
+  drive_observer_ = tray_drive;
   ime_observer_ = tray_ime;
   network_observer_ = tray_network;
   power_status_observer_ = tray_power;
@@ -716,6 +693,7 @@ void SystemTray::CreateItems() {
   AddTrayItem(tray_power);
   AddTrayItem(tray_network);
   AddTrayItem(tray_bluetooth);
+  AddTrayItem(tray_drive);
   AddTrayItem(tray_ime);
   AddTrayItem(tray_volume);
   AddTrayItem(tray_brightness);
