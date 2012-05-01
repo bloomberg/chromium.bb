@@ -226,7 +226,7 @@ remoting.OAuth2.prototype.processTokenResponse_ = function(xhr) {
           (tokens['expires_in'] - (120 + 30)) * 1000 + Date.now());
     } catch (err) {
       console.error('Invalid "token" response from server:',
-                    /** @type {*} */ err);
+                    /** @type {*} */ (err));
     }
   } else {
     console.error('Failed to get tokens. Status: ' + xhr.status +
