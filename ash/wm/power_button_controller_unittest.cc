@@ -9,6 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "ui/aura/root_window.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace ash {
 namespace test {
@@ -523,6 +525,18 @@ TEST_F(PowerButtonControllerTest, RequestShutdownFromLockScreen) {
   EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
   test_api_->trigger_real_shutdown_timeout();
   EXPECT_EQ(1, delegate_->num_shutdown_requests());
+}
+
+// Test that the background layer is resized in response to root window resizes.
+TEST_F(PowerButtonControllerTest, ResizeBackgroundLayer) {
+  controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_EQ(Shell::GetRootWindow()->bounds().ToString(),
+            test_api_->GetBackgroundLayerBounds().ToString());
+
+  const gfx::Size kNewSize(400, 300);
+  Shell::GetRootWindow()->SetHostSize(kNewSize);
+  EXPECT_EQ(gfx::Rect(kNewSize).ToString(),
+            test_api_->GetBackgroundLayerBounds().ToString());
 }
 
 }  // namespace test

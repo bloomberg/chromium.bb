@@ -15,6 +15,7 @@
 #include "ui/aura/root_window_observer.h"
 
 namespace gfx {
+class Rect;
 class Size;
 }
 
@@ -119,6 +120,10 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver,
 
     // Returns true if |background_layer_| is non-NULL and visible.
     bool BackgroundLayerIsVisible() const;
+
+    // Returns |background_layer_|'s bounds, or an empty rect if the layer is
+    // NULL.
+    gfx::Rect GetBackgroundLayerBounds() const;
 
    private:
     PowerButtonController* controller_;  // not owned

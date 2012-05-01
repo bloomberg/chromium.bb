@@ -574,14 +574,15 @@ Shell::~Shell() {
   // Alphabetical.
   activation_controller_.reset();
   drag_drop_controller_.reset();
+  event_client_.reset();
   magnification_controller_.reset();
+  monitor_controller_.reset();
+  power_button_controller_.reset();
   resize_shadow_controller_.reset();
   screen_dimmer_.reset();
   shadow_controller_.reset();
-  window_cycle_controller_.reset();
-  event_client_.reset();
-  monitor_controller_.reset();
   tooltip_controller_.reset();
+  window_cycle_controller_.reset();
 
   // Launcher widget has a InputMethodBridge that references to
   // input_method_filter_'s input_method_. So explicitly release launcher_

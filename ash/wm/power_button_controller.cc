@@ -275,6 +275,11 @@ bool PowerButtonController::TestApi::BackgroundLayerIsVisible() const {
          controller_->background_layer_->visible();
 }
 
+gfx::Rect PowerButtonController::TestApi::GetBackgroundLayerBounds() const {
+  ui::Layer* layer = controller_->background_layer_.get();
+  return layer ? layer->bounds() : gfx::Rect();
+}
+
 PowerButtonController::PowerButtonController()
     : login_status_(user::LOGGED_IN_NONE),
       unlocked_login_status_(user::LOGGED_IN_NONE),
@@ -284,9 +289,11 @@ PowerButtonController::PowerButtonController()
       has_legacy_power_button_(
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAuraLegacyPowerButton)) {
+  Shell::GetInstance()->GetRootWindow()->AddRootWindowObserver(this);
 }
 
 PowerButtonController::~PowerButtonController() {
+  Shell::GetInstance()->GetRootWindow()->RemoveRootWindowObserver(this);
 }
 
 void PowerButtonController::OnLoginStateChanged(user::LoginStatus status) {
