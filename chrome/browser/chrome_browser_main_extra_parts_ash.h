@@ -19,7 +19,6 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
 
   virtual void PreProfileInit() OVERRIDE;
   virtual void PostProfileInit() OVERRIDE;
-  virtual void PreMainMessageLoopStart() OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
  private:

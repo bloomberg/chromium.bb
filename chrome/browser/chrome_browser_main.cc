@@ -182,6 +182,14 @@
 #include "chrome/browser/chrome_browser_main_x11.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#endif
+
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -1889,6 +1897,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   // Set the result code set in PreMainMessageLoopRun or set above.
   *result_code = result_code_;
+
   if (!run_message_loop_)
     return true;  // Don't run the default message loop.
 
@@ -1896,7 +1905,11 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   // UI thread message loop as possible to get a stable measurement
   // across versions.
   RecordBrowserStartupTime();
+
 #if defined(USE_AURA)
+#if defined(USE_ASH)
+  ash::Shell::GetRootWindow()->ShowRootWindow();
+#endif
   MessageLoopForUI::current()->Run();
 #elif defined(TOOLKIT_VIEWS)
   views::AcceleratorHandler accelerator_handler;
