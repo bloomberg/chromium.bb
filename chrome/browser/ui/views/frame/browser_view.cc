@@ -108,7 +108,7 @@
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/ash/launcher/launcher_updater.h"
 #include "chrome/browser/ui/views/ash/window_positioner.h"
-#elif defined(OS_WIN)
+#elif defined(OS_WIN) && !defined(USE_AURA)
 #include "base/win/metro.h"
 #include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist_win.h"

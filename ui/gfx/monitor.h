@@ -69,7 +69,7 @@ class UI_EXPORT Monitor {
   // |work_area_insets| and the bounds.
   void UpdateWorkAreaFromInsets(const gfx::Insets& work_area_insets);
 
-#if defined(USE_ASH)
+#if defined(USE_AURA)
   // TODO(oshima): |bounds()| on ash is not screen's coordinate and
   // this is an workaround for this. This will be removed when ash
   // has true multi monitor support. crbug.com/119268.
@@ -84,7 +84,7 @@ class UI_EXPORT Monitor {
   int id_;
   Rect bounds_;
   Rect work_area_;
-#if defined(USE_ASH)
+#if defined(USE_AURA)
   Rect bounds_in_pixel_;
 #endif
   float device_scale_factor_;

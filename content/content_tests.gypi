@@ -372,6 +372,9 @@
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
           ],
+          'sources!': [
+            'browser/accessibility/browser_accessibility_win_unittest.cc',
+          ],
         }],
       ],
     },

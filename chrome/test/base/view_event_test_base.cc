@@ -15,8 +15,10 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 #include "ash/shell.h"
+#endif
+#if defined(USE_AURA)
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -81,7 +83,7 @@ void ViewEventTestBase::Done() {
 
 void ViewEventTestBase::SetUp() {
   ui::CompositorTestSupport::Initialize();
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   ash::Shell::CreateInstance(NULL);
   // The shell runs with a locked screen in tests, so we must clear the event
   // client so it doesn't interfere with event propagation.
@@ -101,8 +103,10 @@ void ViewEventTestBase::TearDown() {
 #endif
     window_ = NULL;
   }
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   ash::Shell::DeleteInstance();
+#endif
+#if defined(USE_AURA)
   aura::Env::DeleteInstance();
 #endif
   ui::CompositorTestSupport::Terminate();

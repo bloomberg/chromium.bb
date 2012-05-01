@@ -35,17 +35,6 @@ class Widget;
 
 namespace browser {
 
-#if defined(OS_WIN)
-void ShowSSLClientCertificateSelector(
-    TabContentsWrapper* parent,
-    const net::HttpNetworkSession* network_session,
-    net::SSLCertRequestInfo* cert_request_info,
-    const base::Callback<void(net::X509Certificate*)>& callback) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-}
-#endif
-
 void ShowAboutIPCDialog() {
   // TODO(beng):
   NOTIMPLEMENTED();

@@ -3438,6 +3438,9 @@
         ['use_aura==1', {
           'sources!': [
             '../content/browser/plugin_browsertest.cc',
+            '../content/browser/accessibility/dump_accessibility_tree_browsertest.cc',
+            '../content/browser/accessibility/dump_accessibility_tree_helper_win.cc',
+            '../content/browser/accessibility/dump_accessibility_tree_helper.cc',
           ]},
         ],
       ],  # conditions

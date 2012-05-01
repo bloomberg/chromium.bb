@@ -50,7 +50,7 @@ Monitor::Monitor(int id, const gfx::Rect& bounds)
       bounds_(bounds),
       work_area_(bounds),
       device_scale_factor_(GetDefaultDeviceScaleFactor()) {
-#if defined(USE_ASH)
+#if defined(USE_AURA)
   SetScaleAndBounds(device_scale_factor_, bounds);
 #endif
 }
@@ -63,7 +63,7 @@ void Monitor::SetScaleAndBounds(
     const gfx::Rect& bounds_in_pixel) {
   Insets insets = bounds_.InsetsFrom(work_area_);
   device_scale_factor_ = device_scale_factor;
-#if defined(USE_ASH)
+#if defined(USE_AURA)
   bounds_in_pixel_ = bounds_in_pixel;
 #endif
   // TODO(oshima): For m19, work area/monitor bounds that chrome/webapps sees
@@ -81,7 +81,7 @@ void Monitor::SetScaleAndBounds(
 void Monitor::SetSize(const gfx::Size& size_in_pixel) {
   SetScaleAndBounds(
       device_scale_factor_,
-#if defined(USE_ASH)
+#if defined(USE_AURA)
       gfx::Rect(bounds_in_pixel_.origin(), size_in_pixel));
 #else
       gfx::Rect(bounds_.origin(), size_in_pixel));

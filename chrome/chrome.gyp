@@ -864,6 +864,14 @@
             '../net/net.gyp:net_unittests',
             '../ui/ui.gyp:ui_unittests',
           ],
+          'conditions': [
+            ['use_aura==1', {
+              'dependencies!': [
+                '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
+                '../chrome_frame/chrome_frame.gyp:chrome_frame_net_tests',
+              ],
+            }],
+          ],
         },
         {
           'target_name': 'chrome_version_resources',
