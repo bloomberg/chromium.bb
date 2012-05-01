@@ -37,8 +37,6 @@ class CONTENT_EXPORT WebContentsViewAura
 
   void EndDrag(WebKit::WebDragOperationsMask ops);
 
-  content::WebDragDestDelegate* GetDragDestDelegate();
-
   // Overridden from WebContentsView:
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
   virtual content::RenderWidgetHostView* CreateViewForWidget(
@@ -136,6 +134,8 @@ class CONTENT_EXPORT WebContentsViewAura
   // Set to true if we want to close the tab after the system drag operation
   // has finished.
   bool close_tab_after_drag_ends_;
+
+  content::WebDragDestDelegate* drag_dest_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAura);
 };

@@ -169,7 +169,8 @@ WebContentsViewAura::WebContentsViewAura(
       view_(NULL),
       delegate_(delegate),
       current_drag_op_(WebKit::WebDragOperationNone),
-      close_tab_after_drag_ends_(false) {
+      close_tab_after_drag_ends_(false),
+      drag_dest_delegate_(NULL) {
 }
 
 WebContentsViewAura::~WebContentsViewAura() {
@@ -198,10 +199,6 @@ void WebContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
       screen_loc.y(), ops);
 }
 
-content::WebDragDestDelegate* WebContentsViewAura::GetDragDestDelegate() {
-  return delegate_.get() ? delegate_->GetDragDestDelegate() : NULL;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, WebContentsView implementation:
 
@@ -218,6 +215,12 @@ void WebContentsViewAura::CreateView(const gfx::Size& initial_size) {
 #endif
   window_->layer()->SetMasksToBounds(true);
   window_->SetName("WebContentsViewAura");
+
+  // delegate_->GetDragDestDelegate() creates a new delegate on every call.
+  // Hence, we save a reference to it locally. Similar model is used on other
+  // platforms as well.
+  if (delegate_.get())
+    drag_dest_delegate_ = delegate_->GetDragDestDelegate();
 }
 
 content::RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
@@ -450,7 +453,8 @@ void WebContentsViewAura::StartDragging(
   }
 
   EndDrag(ConvertToWeb(result_op));
-  web_contents_->GetRenderViewHost()->DragSourceSystemDragEnded();}
+  web_contents_->GetRenderViewHost()->DragSourceSystemDragEnded();
+}
 
 void WebContentsViewAura::UpdateDragCursor(WebKit::WebDragOperation operation) {
   current_drag_op_ = operation;
@@ -554,8 +558,8 @@ void WebContentsViewAura::OnWindowVisibilityChanged(bool visible) {
 // WebContentsViewAura, aura::client::DragDropDelegate implementation:
 
 void WebContentsViewAura::OnDragEntered(const aura::DropTargetEvent& event) {
-  if (GetDragDestDelegate())
-    GetDragDestDelegate()->DragInitialize(web_contents_);
+  if (drag_dest_delegate_)
+    drag_dest_delegate_->DragInitialize(web_contents_);
 
   WebDropData drop_data;
   PrepareWebDropData(&drop_data, event.data());
@@ -566,9 +570,9 @@ void WebContentsViewAura::OnDragEntered(const aura::DropTargetEvent& event) {
   web_contents_->GetRenderViewHost()->DragTargetDragEnter(
       drop_data, event.location(), screen_pt, op);
 
-  if (GetDragDestDelegate()) {
-    GetDragDestDelegate()->OnReceiveDragData(event.data());
-    GetDragDestDelegate()->OnDragEnter();
+  if (drag_dest_delegate_) {
+    drag_dest_delegate_->OnReceiveDragData(event.data());
+    drag_dest_delegate_->OnDragEnter();
   }
 }
 
@@ -579,23 +583,23 @@ int WebContentsViewAura::OnDragUpdated(const aura::DropTargetEvent& event) {
   web_contents_->GetRenderViewHost()->DragTargetDragOver(
       event.location(), screen_pt, op);
 
-  if (GetDragDestDelegate())
-    GetDragDestDelegate()->OnDragOver();
+  if (drag_dest_delegate_)
+    drag_dest_delegate_->OnDragOver();
 
   return ConvertFromWeb(current_drag_op_);
 }
 
 void WebContentsViewAura::OnDragExited() {
   web_contents_->GetRenderViewHost()->DragTargetDragLeave();
-  if (GetDragDestDelegate())
-    GetDragDestDelegate()->OnDragLeave();
+  if (drag_dest_delegate_)
+    drag_dest_delegate_->OnDragLeave();
 }
 
 int WebContentsViewAura::OnPerformDrop(const aura::DropTargetEvent& event) {
   web_contents_->GetRenderViewHost()->DragTargetDrop(
       event.location(),
       GetNativeView()->GetRootWindow()->last_mouse_location());
-  if (GetDragDestDelegate())
-    GetDragDestDelegate()->OnDrop();
+  if (drag_dest_delegate_)
+    drag_dest_delegate_->OnDrop();
   return current_drag_op_;
 }
