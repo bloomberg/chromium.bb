@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
+#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
@@ -1584,48 +1585,44 @@ void GetGDataFilePropertiesFunction::OnOperationComplete(
 
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
-  system_service->file_system()->FindEntryByPathAsync(
+  system_service->file_system()->GetFileInfoByPathAsync(
       path,
-      base::Bind(&GetGDataFilePropertiesFunction::OnFileProperties,
+      base::Bind(&GetGDataFilePropertiesFunction::OnGetFileInfo,
                  this,
                  property_dict,
                  path));
 }
 
-void GetGDataFilePropertiesFunction::OnFileProperties(
+void GetGDataFilePropertiesFunction::OnGetFileInfo(
     base::DictionaryValue* property_dict,
     const FilePath& file_path,
     base::PlatformFileError error,
-    const FilePath& /* directory_path */,
-    gdata::GDataEntry* entry) {
+    scoped_ptr<gdata::GDataFileProto> file_proto) {
+  DCHECK(property_dict);
+
   if (error != base::PLATFORM_FILE_OK) {
     property_dict->SetInteger("errorCode", error);
     CompleteGetFileProperties();
     return;
   }
+  DCHECK(file_proto.get());
 
-  gdata::GDataFile* file = entry->AsGDataFile();
-  if (!file) {
-    LOG(WARNING) << "Reading properties of a non-file at "
-                 << file_path.value();
-    CompleteGetFileProperties();
-    return;
+  property_dict->SetString("thumbnailUrl", file_proto->thumbnail_url());
+  if (!file_proto->alternate_url().empty())
+    property_dict->SetString("editUrl", file_proto->alternate_url());
+
+  if (!file_proto->gdata_entry().content_url().empty()) {
+    property_dict->SetString("contentUrl",
+                             file_proto->gdata_entry().content_url());
   }
 
-  property_dict->SetString("thumbnailUrl", file->thumbnail_url().spec());
-  if (!file->alternate_url().is_empty())
-    property_dict->SetString("editUrl", file->alternate_url().spec());
-
-  if (!file->content_url().is_empty())
-    property_dict->SetString("contentUrl", file->content_url().spec());
-
-  property_dict->SetBoolean("isHosted", file->is_hosted_document());
+  property_dict->SetBoolean("isHosted", file_proto->is_hosted_document());
 
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
   system_service->file_system()->GetCacheState(
-      file->resource_id(),
-      file->file_md5(),
+      file_proto->gdata_entry().resource_id(),
+      file_proto->file_md5(),
       base::Bind(
           &GetGDataFilePropertiesFunction::CacheStateReceived,
           this, property_dict));
