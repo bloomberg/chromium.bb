@@ -28,7 +28,7 @@ def QuoteForRspFile(arg):
 
   # If the string ends in a \, then it will be interpreted as an escaper for
   # the trailing ", so we need to pre-escape that.
-  if arg[-1] == '\\':
+  if arg and arg[-1] == '\\':
     arg = arg + '\\'
 
   # For a literal quote, CommandLineToArgvW requires 2n+1 backslashes
@@ -53,7 +53,21 @@ def QuoteForRspFile(arg):
 
 def EncodeRspFileList(args):
   """Process a list of arguments using QuoteCmdExeArgument."""
-  return ' '.join(QuoteForRspFile(arg) for arg in args)
+  # Note that the first argument is assumed to be the command. We take extra
+  # steps to make sure that calls to .bat files are handled correctly, and
+  # that paths are normalized and quoted as necessary.
+  if not args: return ''
+  program = args[0]
+  if program.startswith('call '):
+    call, batch = program.split(' ', 1)
+    program = 'call ' + QuoteForRspFile(os.path.normpath(batch))
+  else:
+    program = os.path.normpath(program)
+    # Don't add quotes around things without spaces so that 'call', 'echo',
+    # etc. will work if they're specified as individual arguments.
+    if ' ' in program:
+      program = QuoteForRspFile(program)
+  return program + ' ' + ' '.join(QuoteForRspFile(arg) for arg in args[1:])
 
 
 def _GenericRetrieve(root, default, path):
