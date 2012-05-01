@@ -259,6 +259,9 @@ extern const char kBluetoothAddDeviceSubPage[];
 
 extern const char kSyncGoogleDashboardURL[];
 
+// "Learn more" URL for the auto password generation.
+extern const char kAutoPasswordGenerationLearnMoreURL[];
+
 extern const char kPasswordManagerLearnMoreURL[];
 
 // General help link for Chrome.

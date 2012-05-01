@@ -34,9 +34,12 @@ class PasswordGenerationBubbleGtk {
  private:
   CHROMEGTK_CALLBACK_0(PasswordGenerationBubbleGtk, void, OnDestroy);
   CHROMEGTK_CALLBACK_0(PasswordGenerationBubbleGtk, void, OnAcceptClicked);
+  CHROMEG_CALLBACK_0(
+      PasswordGenerationBubbleGtk, void, OnLearnMoreLinkClicked, GtkButton*);
 
   BubbleGtk* bubble_;
   GtkWidget* text_field_;
+  Profile* profile_;
 
   // RenderViewHost associated with the button that spawned this bubble.
   content::RenderViewHost* render_view_host_;

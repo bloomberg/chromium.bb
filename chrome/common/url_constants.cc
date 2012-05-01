@@ -264,6 +264,10 @@ const char kBluetoothAddDeviceSubPage[] = "bluetooth";
 
 const char kSyncGoogleDashboardURL[] = "https://www.google.com/dashboard/";
 
+const char kAutoPasswordGenerationLearnMoreURL[] =
+    "https://support.google.com/chrome/?hl=en&p=ui_generate_password";
+
+
 const char kPasswordManagerLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromeos/?p=settings_password";
