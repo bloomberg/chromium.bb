@@ -137,11 +137,14 @@ cr.define('options', function() {
         activity.hidden = false;
       }
 
-      // The 'View in Web Store' checkbox.
+      // The 'View in Web Store/View Web Site' link.
       if (extension.homepageUrl) {
-        var store = node.querySelector('.store-link');
-        store.href = extension.homepageUrl;
-        store.hidden = false;
+        var siteLink = node.querySelector('.site-link');
+        siteLink.href = extension.homepageUrl;
+        siteLink.textContent = localStrings.getString(
+                extension.homepageProvided ? 'extensionSettingsVisitWebsite' :
+                                             'extensionSettingsVisitWebStore');
+        siteLink.hidden = false;
       }
 
       // The 'Reload' checkbox.

@@ -621,6 +621,7 @@ void Extension::GetBasicInfo(bool enabled,
                   options_url().possibly_invalid_spec());
   info->SetString(info_keys::kHomepageUrlKey,
                   GetHomepageURL().possibly_invalid_spec());
+  info->SetBoolean(info_keys::kHomepageProvidedKey, homepage_url_.is_valid());
 }
 
 Extension::Type Extension::GetType() const {
