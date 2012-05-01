@@ -1333,6 +1333,9 @@ def CopyLibsForExtensionCommand(target, source, env):
       # Note: This probably does NOT work with pnacl _pexes_ right now, because
       # the NEEDED metadata in the bitcode doesn't have the original file paths.
       # This should probably be done without such knowledge.
+      if lib_path == 'NaClMain':
+        # This is a fake file name, which we cannot copy.
+        continue
       shutil.copyfile(lib_path, os.path.join(target_dir, lib_name))
   shutil.copyfile(env.subst('${NACL_SDK_LIB}/runnable-ld.so'),
                   os.path.join(target_dir, 'runnable-ld.so'))
