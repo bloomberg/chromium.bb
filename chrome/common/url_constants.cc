@@ -397,6 +397,12 @@ const char kSyncErrorsHelpURL[] =
 const char kSyncCreateNewAccountURL[] =
     "https://www.google.com/accounts/NewAccount?service=chromiumsync";
 
+#if defined(OS_CHROMEOS)
+const char kNaturalScrollHelpURL[] =
+    "https://support.google.com/chromeos/?p=simple_scrolling";
+#endif
+
+
 const char* const kChromeDebugURLs[] = {
   kChromeUICrashURL,
   kChromeUIKillURL,

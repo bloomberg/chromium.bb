@@ -5,9 +5,12 @@
 #include "chrome/browser/ui/webui/options2/chromeos/pointer_handler2.h"
 
 #include "base/basictypes.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 namespace options2 {
@@ -29,11 +32,14 @@ void PointerHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
       IDS_OPTIONS_POINTER_OVERLAY_SECTION_TITLE_MOUSE },
     { "enableTapToClick",
       IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION },
-    { "naturalScroll",
-      IDS_OPTIONS_SETTINGS_NATURAL_SCROLL_DESCRIPTION },
     { "primaryMouseRight",
       IDS_OPTIONS_SETTINGS_PRIMARY_MOUSE_RIGHT_DESCRIPTION },
   };
+
+  localized_strings->SetString("naturalScroll",
+      l10n_util::GetStringFUTF16(
+          IDS_OPTIONS_SETTINGS_NATURAL_SCROLL_DESCRIPTION,
+          ASCIIToUTF16(chrome::kNaturalScrollHelpURL)));
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
 }

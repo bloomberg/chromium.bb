@@ -336,6 +336,11 @@ extern const char kSyncErrorsHelpURL[];
 // The URL to create a new Google account via sync.
 extern const char kSyncCreateNewAccountURL[];
 
+#if defined(OS_CHROMEOS)
+// The URL for the "Learn more" link for natural scrolling on ChromeOS.
+extern const char kNaturalScrollHelpURL[];
+#endif
+
 // "Debug" pages which are dangerous and not for general consumption.
 extern const char* const kChromeDebugURLs[];
 extern int kNumberOfChromeDebugURLs;
