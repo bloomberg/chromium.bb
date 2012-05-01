@@ -67,6 +67,10 @@ class DefaultTabDragController : public TabDragController,
 
   typedef std::set<gfx::NativeView> DockWindows;
 
+  // Used to indicate the direction the mouse has moved when attached.
+  static const int kMovedMouseLeft  = 1 << 0;
+  static const int kMovedMouseRight = 1 << 1;
+
   // Enumeration of the ways a drag session can end.
   enum EndDragType {
     // Drag session exited normally: the user released the mouse.
@@ -171,13 +175,22 @@ class DefaultTabDragController : public TabDragController,
 
   // Handles dragging for a touch tabstrip when the tabs are stacked. Doesn't
   // actually reorder the tabs in anyway, just changes what's visible.
-  void MoveAttachedStacked(const gfx::Point& screen_point);
+  void DragActiveTabStacked(const gfx::Point& screen_point);
+
+  // Moves the active tab to the next/previous tab. Used when the next/previous
+  // tab is stacked.
+  void MoveAttachedToNextStackedIndex();
+  void MoveAttachedToPreviousStackedIndex();
 
   // Handles dragging tabs while the tabs are attached.
   void MoveAttached(const gfx::Point& screen_point);
 
   // Handles dragging while the tabs are detached.
   void MoveDetached(const gfx::Point& screen_point);
+
+  // If necessary starts the |move_stacked_timer_|. The timer is started if
+  // close enough to an edge with stacked tabs.
+  void StartMoveStackedTimerIfNecessary(int delay_ms);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Returns the compatible TabStrip that is under the specified point (screen
@@ -198,12 +211,33 @@ class DefaultTabDragController : public TabDragController,
   // Detach the dragged Tab from the current TabStrip.
   void Detach();
 
+  // Determines the index to insert tabs at. |dragged_bounds| is the bounds of
+  // the tabs being dragged, |start| the index of the tab to start looking from
+  // and |delta| the amount to increment (1 or -1).
+  int GetInsertionIndexFrom(const gfx::Rect& dragged_bounds,
+                            int start,
+                            int delta) const;
+
   // Returns the index where the dragged WebContents should be inserted into
   // |attached_tabstrip_| given the DraggedTabView's bounds |dragged_bounds| in
   // coordinates relative to |attached_tabstrip_| and has had the mirroring
   // transformation applied.
   // NOTE: this is invoked from |Attach| before the tabs have been inserted.
   int GetInsertionIndexForDraggedBounds(const gfx::Rect& dragged_bounds) const;
+
+  // Returns true if |dragged_bounds| is close enough to the next stacked tab
+  // so that the active tab should be dragged there.
+  bool ShouldDragToNextStackedTab(const gfx::Rect& dragged_bounds,
+                                  int index) const;
+
+  // Returns true if |dragged_bounds| is close enough to the previous stacked
+  // tab so that the active tab should be dragged there.
+  bool ShouldDragToPreviousStackedTab(const gfx::Rect& dragged_bounds,
+                                      int index) const;
+
+  // Used by GetInsertionIndexForDraggedBounds() when the tabstrip is stacked.
+  int GetInsertionIndexForDraggedBoundsStacked(
+      const gfx::Rect& dragged_bounds) const;
 
   // Retrieve the bounds of the DraggedTabView relative to the attached
   // TabStrip. |tab_strip_point| is in the attached TabStrip's coordinate
@@ -346,6 +380,10 @@ class DefaultTabDragController : public TabDragController,
   // brought to front.
   base::OneShotTimer<DefaultTabDragController> bring_to_front_timer_;
 
+  // Timer used to move the stacked tabs. See comment aboue
+  // StartMoveStackedTimerIfNecessary().
+  base::OneShotTimer<DefaultTabDragController> move_stacked_timer_;
+
   // Did the mouse move enough that we started a drag?
   bool started_drag_;
 
@@ -373,6 +411,14 @@ class DefaultTabDragController : public TabDragController,
 
   // TODO(sky): clean up.
   bool move_only_;
+
+  // Updated as the mouse is moved when attached. Indicates whether the mouse
+  // has ever moved to the left or right. If the tabs are ever detached this
+  // is set to kMovedMouseRight | kMovedMouseLeft.
+  int mouse_move_direction_;
+
+  // Coordinate last used in MoveAttached().
+  gfx::Point last_screen_point_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultTabDragController);
 };

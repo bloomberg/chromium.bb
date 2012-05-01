@@ -510,12 +510,12 @@ void TabStrip::MoveTab(int from_model_index,
   BaseTab* last_tab = tab_at(tab_count() - 1);
   tab_at(from_model_index)->SetData(data);
   if (touch_layout_.get()) {
-    tabs_.Move(from_model_index, to_model_index);
-    int mini_tab_count = 0;
-    int start_x = GenerateIdealBoundsForMiniTabs(&mini_tab_count);
+    tabs_.MoveViewOnly(from_model_index, to_model_index);
+    int mini_count = 0;
+    GenerateIdealBoundsForMiniTabs(&mini_count);
     touch_layout_->MoveTab(
         from_model_index, to_model_index, controller_->GetActiveIndex(),
-        start_x, mini_tab_count);
+        GetStartXForNormalTabs(), mini_count);
   } else {
     tabs_.Move(from_model_index, to_model_index);
   }
@@ -796,12 +796,14 @@ void TabStrip::MaybeStartDrag(
   // creating the DragController remembers the WebContents delegates and we need
   // to make sure the existing DragController isn't still a delegate.
   drag_controller_.reset();
+  // TODO(sky): verify ET_TOUCH_PRESSED is right.
+  bool move_only = touch_layout_.get() &&
+      (event.type() == ui::ET_TOUCH_PRESSED ||
+       (event.type() == ui::ET_MOUSE_PRESSED &&
+        event.flags() & ui::EF_CONTROL_DOWN));
   drag_controller_.reset(TabDragController::Create(
       this, tab, tabs, gfx::Point(x, y), tab->GetMirroredXInView(event.x()),
-      selection_model, touch_layout_.get() != NULL));
-  // TODO: Instead of touch layout need to look at event type, eg
-  // event.type() == ui::ET_TOUCH_PRESSED)), and need to plumb through long
-  // press and touch stuff.
+      selection_model, move_only));
 }
 
 void TabStrip::ContinueDrag(const views::MouseEvent& event) {
@@ -1324,11 +1326,6 @@ void TabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
                                    BaseTab* active_tab,
                                    const gfx::Point& location,
                                    bool initial_drag) {
-  if (touch_layout_.get()) {
-    touch_layout_->DragActiveTab(location.x() - active_tab->bounds().x());
-    DoLayout();
-    return;
-  }
   // Immediately hide the new tab button if the last tab is being dragged.
   if (tab_at(tab_count() - 1)->dragging())
     newtab_button_->SetVisible(false);

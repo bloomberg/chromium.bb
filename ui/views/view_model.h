@@ -39,6 +39,12 @@ class VIEWS_EXPORT ViewModel {
   // of the model *after* the view at |index| is removed.
   void Move(int index, int target_index);
 
+  // Variant of Move() that leaves the bounds as is. That is, after invoking
+  // this the bounds of the view at |target_index| (and all other indices) are
+  // exactly the same as the bounds of the view at |target_index| before
+  // invoking this.
+  void MoveViewOnly(int index, int target_index);
+
   // Returns the number of views.
   int view_size() const { return static_cast<int>(entries_.size()); }
 

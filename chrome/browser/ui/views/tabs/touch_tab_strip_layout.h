@@ -77,6 +77,11 @@ class TouchTabStripLayout {
     return active_index_ < mini_tab_count_ ? mini_tab_count_ : active_index_;
   }
 
+  int mini_tab_count() const { return mini_tab_count_; }
+
+  // Returns true if the tab at index is stacked.
+  bool IsStacked(int index) const;
+
  private:
   friend class TouchTabStripLayoutTest;
 

@@ -281,6 +281,11 @@ TEST_F(TouchTabStripLayoutTest, RemoveTab) {
     const int remove_index;
     const int x_after_remove;
   } test_data[] = {
+    // Remove before active.
+    { { 0, 200, 100, -10, 2, 0, 4, "0 2 4 6 8 10 80 98 100",
+        "0 2 6 8 10 80 98 100" },
+      2, 0 },
+
     // Stacked tabs on both sides.
     { { 0, 200, 100, -10, 2, 0, 4, "0 2 4 6 8 10 80 98 100",
         "0 2 4 6 10 80 98 100" },
@@ -373,4 +378,67 @@ TEST_F(TouchTabStripLayoutTest, EmptyTest) {
   layout.SetWidth(50);
   layout.SetWidth(0);
   layout.SetWidth(500);
+}
+
+// Assertions around removing tabs.
+TEST_F(TouchTabStripLayoutTest, MoveTab) {
+  // TODO: add coverage of removing mini tabs!
+  struct TestData {
+    struct CommonTestData common_data;
+    const int from;
+    const int to;
+    const int new_active_index;
+    const int new_start_x;
+    const int new_mini_tab_count;
+  } test_data[] = {
+    // Moves and unpins.
+    { { 10, 300, 100, -10, 2, 2, 0, "", "0 5 10 100 190 198 200" },
+      0, 1, 2, 5, 1 },
+
+    // Moves and pins.
+    { { 0, 300, 100, -10, 2, 0, 4, "", "0 5 95 185 196 198 200" },
+      2, 0, 0, 5, 1 },
+    { { 0, 300, 100, -10, 2, 1, 2, "", "0 5 10 100 190 198 200" },
+      2, 0, 0, 10, 2 },
+
+    { { 0, 200, 100, -10, 2, 0, 4, "0 2 4 6 96 98 100", "0 2 4 6 96 98 100" },
+      2, 0, 4, 0, 0 },
+    { { 0, 200, 100, -10, 2, 0, 4, "0 2 4 6 96 98 100", "0 2 4 6 8 10 100" },
+      0, 6, 6, 0, 0 },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+    CreateLayout(test_data[i].common_data);
+    view_model_.MoveViewOnly(test_data[i].from, test_data[i].to);
+    for (int j = 0; j < test_data[i].new_mini_tab_count; ++j) {
+      gfx::Rect bounds;
+      bounds.set_x(j * 5);
+      view_model_.set_ideal_bounds(j, bounds);
+    }
+    layout_->MoveTab(test_data[i].from, test_data[i].to,
+                     test_data[i].new_active_index, test_data[i].new_start_x,
+                     test_data[i].new_mini_tab_count);
+    EXPECT_EQ(test_data[i].common_data.expected_bounds, BoundsString()) <<
+        " at " << i;
+  }
+}
+
+// Assertions around IsStacked().
+TEST_F(TouchTabStripLayoutTest, IsStacked) {
+  // A single tab with enough space should never be stacked.
+  PrepareChildViews(1);
+  layout_.reset(new TouchTabStripLayout(
+                    gfx::Size(100, 10), -10, 2, 4, &view_model_));
+  Reset(layout_.get(), 0, 400, 0, 0);
+  EXPECT_FALSE(layout_->IsStacked(0));
+
+  // First tab active, remaining tabs stacked.
+  PrepareChildViews(8);
+  Reset(layout_.get(), 0, 400, 0, 0);
+  EXPECT_FALSE(layout_->IsStacked(0));
+  EXPECT_TRUE(layout_->IsStacked(7));
+
+  // Last tab active, preceeding tabs stacked.
+  layout_->SetActiveIndex(7);
+  EXPECT_FALSE(layout_->IsStacked(7));
+  EXPECT_TRUE(layout_->IsStacked(0));
 }

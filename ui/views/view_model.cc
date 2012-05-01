@@ -40,6 +40,22 @@ void ViewModel::Move(int index, int target_index) {
   entries_.insert(entries_.begin() + target_index, entry);
 }
 
+void ViewModel::MoveViewOnly(int index, int target_index) {
+  if (index == target_index)
+    return;
+  if (target_index < index) {
+    View* view = entries_[index].view;
+    for (int i = index; i > target_index; --i)
+      entries_[i].view = entries_[i - 1].view;
+    entries_[target_index].view = view;
+  } else {
+    View* view = entries_[index].view;
+    for (int i = index; i < target_index; ++i)
+      entries_[i].view = entries_[i + 1].view;
+    entries_[target_index].view = view;
+  }
+}
+
 void ViewModel::Clear() {
   Entries entries;
   entries.swap(entries_);

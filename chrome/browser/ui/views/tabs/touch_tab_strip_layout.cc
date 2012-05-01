@@ -109,7 +109,7 @@ void TouchTabStripLayout::AddTab(int index,
 void TouchTabStripLayout::RemoveTab(int index, int start_x, int old_x) {
   if (index == active_index_)
     active_index_ = std::min(active_index_, tab_count() - 1);
-  else if (index > active_index_)
+  else if (index < active_index_)
     active_index_--;
   bool removed_mini_tab = index < mini_tab_count_;
   if (removed_mini_tab) {
@@ -138,10 +138,22 @@ void TouchTabStripLayout::MoveTab(int from,
   x_ = start_x;
   mini_tab_count_ = mini_tab_count;
   active_index_ = new_active_index;
+  if (!requires_stacking() || tab_count() == mini_tab_count_) {
+    ResetToIdealState();
+    return;
+  }
   SetIdealBoundsAt(active_index(), ConstrainActiveX(ideal_x(active_index())));
   LayoutByTabOffsetAfter(active_index());
   LayoutByTabOffsetBefore(active_index());
   AdjustStackedTabs();
+}
+
+bool TouchTabStripLayout::IsStacked(int index) const {
+  if (index == active_index() || tab_count() == mini_tab_count_)
+    return false;
+  if (index > active_index())
+    return ideal_x(index) != ideal_x(index - 1) + tab_offset();
+  return ideal_x(index + 1) != ideal_x(index) + tab_offset();
 }
 
 void TouchTabStripLayout::Reset(int x,
