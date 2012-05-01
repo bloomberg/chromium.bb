@@ -953,6 +953,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
   void NotifySessionServiceOfRestoredTabs(Browser* browser, int initial_count) {
     SessionService* session_service =
         SessionServiceFactory::GetForProfile(profile_);
+    if (!session_service)
+      return;
     for (int i = initial_count; i < browser->tab_count(); ++i)
       session_service->TabRestored(browser->GetTabContentsWrapperAt(i),
                                    browser->IsTabPinned(i));
