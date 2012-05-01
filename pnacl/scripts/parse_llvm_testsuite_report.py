@@ -198,10 +198,15 @@ def main(argv):
         unexpected_passes += 1
         print test + ': ' + ' unexpected success'
 
+  failures = 0
+  failures += unexpected_failures
   print unexpected_failures, 'unexpected failures',
   if options.check_excludes:
-    print unexpected_passes, 'unexpected passes'
-  return unexpected_failures + unexpected_passes
+    # For now do not report unexpected_passes as failures
+    #failures += unexpected_passes
+    print unexpected_passes, 'unexpected passes',
+  print
+  return failures > 0
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
