@@ -5776,22 +5776,6 @@
    fun:_ZN*_*_Test8TestBodyEv
 }
 {
-   bug_125801
-   Memcheck:Unaddressable
-   fun:_ZNK10scoped_ptrIN4aura10RootWindowEE3getEv
-   fun:_ZN3ash5Shell13GetRootWindowEv
-   fun:_ZN30ChromeBrowserMainExtraPartsAsh23PreMainMessageLoopStartEv
-   fun:_ZN22ChromeBrowserMainParts23PreMainMessageLoopStartEv
-   fun:_ZN30ChromeBrowserMainPartsChromeos23PreMainMessageLoopStartEv
-   fun:_ZN7content15BrowserMainLoop20MainMessageLoopStartEv
-   fun:_ZN12_GLOBAL__N_121BrowserMainRunnerImpl10InitializeERKN7content18MainFunctionParamsE
-   fun:_Z11BrowserMainRKN7content18MainFunctionParamsE
-   fun:_ZN12_GLOBAL__N_123RunNamedProcessTypeMainERKSsRKN7content18MainFunctionParamsEPNS2_19ContentMainDelegateE
-   fun:_ZN12_GLOBAL__N_121ContentMainRunnerImpl3RunEv
-   fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
-   fun:ChromeMain
-}
-{
    bug_125807
    Memcheck:Leak
    fun:_Znw*
