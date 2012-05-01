@@ -49,7 +49,7 @@ def main(args):
   tar_file = None
   buildbot_common.RemoveFile(options.tar_path)
   try:
-    tar_file = tarfile.open(options.tar_path, mode='w:bz2')
+    tar_file = tarfile.open(options.tar_path, mode='w:bz2', dereference=True)
     for subfolder in install_folders:
       tar_file.add(os.path.join(options.install_dir, subfolder),
                    arcname=subfolder)
