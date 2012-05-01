@@ -449,7 +449,9 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
 
         pool = validation_pool.ValidationPool.AcquirePool(
             self._build_config['overlays'], self._build_root,
-            self._options.buildnumber, self.builder_name, self._options.debug)
+            self._options.buildnumber, self.builder_name,
+            self._options.debug or
+            self._build_config['unified_manifest_version'])
 
         # We only have work to do if there are changes to try.
         try:
