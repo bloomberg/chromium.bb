@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
-#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -136,7 +135,12 @@ void ExtensionDialog::InitWindowFullscreen() {
       gfx::Screen::GetMonitorNearestWindow(root_window).bounds();
 
   // We want to be the fullscreen topmost child of the root window.
-  window_ = browser::CreateFramelessViewsWindow(root_window, this);
+  window_ = new views::Widget;
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.delegate = this;
+  params.parent = root_window;
+  window_->Init(params);
   window_->StackAtTop();
   window_->SetBounds(screen_rect);
   window_->Show();

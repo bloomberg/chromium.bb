@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/keyboard_overlay_delegate.h"
-#include "chrome/browser/ui/views/window.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "grit/generated_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -81,19 +80,24 @@ bool KeyboardOverlayDialogView::AcceleratorPressed(
   return true;
 }
 
-void KeyboardOverlayDialogView::ShowDialog(
-    gfx::NativeWindow owning_window, BrowserView* parent_view) {
+void KeyboardOverlayDialogView::ShowDialog(gfx::NativeWindow owning_window,
+                                           BrowserView* parent_view) {
   // Temporarily disable Shift+Alt. crosbug.com/17208.
   chromeos::input_method::InputMethodManager::GetInstance()->DisableHotkeys();
 
   KeyboardOverlayDelegate* delegate = new KeyboardOverlayDelegate(
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TITLE));
-  KeyboardOverlayDialogView* view =
-      new KeyboardOverlayDialogView(parent_view->browser()->profile(),
-                                    delegate,
-                                    parent_view);
+  KeyboardOverlayDialogView* view = new KeyboardOverlayDialogView(
+      parent_view->browser()->profile(), delegate, parent_view);
   delegate->set_view(view);
-  browser::CreateFramelessViewsWindow(owning_window, view);
+
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.delegate = view;
+  params.parent = owning_window;
+  widget->Init(params);
+
   // Show the widget at the bottom of the work area.
   gfx::Size size;
   delegate->GetDialogSize(&size);
