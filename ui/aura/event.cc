@@ -313,9 +313,6 @@ TouchEvent* TouchEvent::Copy() const {
 #if defined(OS_WIN)
   if (native_event().message)
     return new TouchEvent(::CopyNativeEvent(native_event()));
-#else
-  if (native_event())
-    return new TouchEvent(::CopyNativeEvent(native_event()));
 #endif
   return new TouchEvent(*this, NULL, NULL);
 }
