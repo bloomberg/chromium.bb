@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 // correct transport security information.
 //
 // To load the state, we schedule a Task on the file thread which loads,
-// deserialises and configures the TransportSecurityState.
+// deserializes and configures the TransportSecurityState.
 //
 // The TransportSecurityState object supports running a callback function
 // when it changes. This object registers the callback, pointing at itself.
@@ -26,8 +26,8 @@
 //
 // ...
 //
-// TransportSecurityPersister::SerialiseState
-//   copies the current state of the TransportSecurityState, serialises
+// TransportSecurityPersister::SerializeState
+//   copies the current state of the TransportSecurityState, serializes
 //   and writes to disk.
 
 #ifndef CHROME_BROWSER_TRANSPORT_SECURITY_PERSISTER_H_
@@ -56,10 +56,62 @@ class TransportSecurityPersister
   virtual void StateIsDirty(net::TransportSecurityState*) OVERRIDE;
 
   // ImportantFileWriter::DataSerializer:
+  //
+  // Serializes |transport_security_state_| into |*output|. Returns true if
+  // all DomainStates were serialized correctly.
+  //
+  // The serialization format is JSON; the JSON represents a dictionary of
+  // host:DomainState pairs (host is a string). The DomainState is
+  // represented as a dictionary containing the following keys and value
+  // types (not all keys will always be present):
+  //
+  //     "include_subdomains": true|false
+  //     "created": double
+  //     "expiry": double
+  //     "dynamic_spki_hashes_expiry": double
+  //     "mode": "default"|"force-https"
+  //             legacy value synonyms "strict" = "force-https"
+  //                                   "pinning-only" = "default"
+  //             legacy value "spdy-only" is unused and ignored
+  //     "static_spki_hashes": list of strings
+  //         legacy key synonym "preloaded_spki_hashes"
+  //     "bad_static_spki_hashes": list of strings
+  //         legacy key synonym "bad_preloaded_spki_hashes"
+  //     "dynamic_spki_hashes": list of strings
+  //
+  // The JSON dictionary keys are strings containing
+  // Base64(SHA256(net::TransportSecurityState::CanonicalizeHost(domain))).
+  // The reason for hashing them is so that the stored state does not
+  // trivially reveal a user's browsing history to an attacker reading the
+  // serialized state on disk.
   virtual bool SerializeData(std::string* data) OVERRIDE;
+
+  // Parses an array of JSON-encoded TransportSecurityState::DomainState
+  // entries. For use in loading entries defined on the command line
+  // (switches::kHstsHosts).
+  bool DeserializeFromCommandLine(const std::string& serialized);
+
+  // Clears any existing non-static entries, and then re-populates
+  // |transport_security_state_|.
+  //
+  // Sets |*dirty| to true if the new state differs from the persisted
+  // state; false otherwise.
+  bool LoadEntries(const std::string& serialized, bool* dirty);
 
  private:
   class Loader;
+
+  // Populates |state| from the JSON string |serialized|. Returns true if
+  // all entries were parsed and deserialized correctly. If |forced| is
+  // true, updates |state|'s map of "forced" DomainState entries; normally,
+  // leave this false.
+  //
+  // Sets |*dirty| to true if the new state differs from the persisted
+  // state; false otherwise.
+  static bool Deserialize(const std::string& serialized,
+                          bool forced,
+                          bool* dirty,
+                          net::TransportSecurityState* state);
 
   void CompleteLoad(const std::string& state);
 

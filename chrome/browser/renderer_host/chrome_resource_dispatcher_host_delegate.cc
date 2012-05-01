@@ -4,6 +4,8 @@
 
 #include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -315,7 +317,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
       bool has_sni = net::SSLConfigService::IsSNIAvailable(
           context->ssl_config_service());
       if (state->GetDomainState(
-              &domain_state, request->url().host(), has_sni)) {
+              request->url().host(), has_sni, &domain_state)) {
         sender->Send(new ChromeViewMsg_AddStrictSecurityHost(
             info->GetRouteID(), request->url().host()));
       }

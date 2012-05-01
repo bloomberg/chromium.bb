@@ -1040,22 +1040,21 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
       result->SetString("error", "no TransportSecurityState active");
     } else {
       net::TransportSecurityState::DomainState state;
-      const bool found = transport_security_state->HasMetadata(
-          &state, domain, true);
+      const bool found = transport_security_state->GetDomainState(
+          domain, true, &state);
 
       result->SetBoolean("result", found);
       if (found) {
-        result->SetInteger("mode", static_cast<int>(state.mode));
+        result->SetInteger("mode", static_cast<int>(state.upgrade_mode));
         result->SetBoolean("subdomains", state.include_subdomains);
-        result->SetBoolean("preloaded", state.preloaded);
         result->SetString("domain", state.domain);
-        result->SetDouble("expiry", state.expiry.ToDoubleT());
+        result->SetDouble("expiry", state.upgrade_expiry.ToDoubleT());
         result->SetDouble("dynamic_spki_hashes_expiry",
                           state.dynamic_spki_hashes_expiry.ToDoubleT());
 
         std::string hashes;
-        SPKIHashesToString(state.preloaded_spki_hashes, &hashes);
-        result->SetString("preloaded_spki_hashes", hashes);
+        SPKIHashesToString(state.static_spki_hashes, &hashes);
+        result->SetString("static_spki_hashes", hashes);
 
         hashes.clear();
         SPKIHashesToString(state.dynamic_spki_hashes, &hashes);
@@ -1088,7 +1087,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
     return;
 
   net::TransportSecurityState::DomainState state;
-  state.expiry = state.created + base::TimeDelta::FromDays(1000);
+  state.upgrade_expiry = state.created + base::TimeDelta::FromDays(1000);
   state.include_subdomains = include_subdomains;
   if (!hashes_str.empty()) {
     std::vector<std::string> type_and_b64s;

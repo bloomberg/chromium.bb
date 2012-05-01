@@ -403,7 +403,7 @@ void IOThread::Init() {
   globals_->host_resolver.reset(
       CreateGlobalHostResolver(net_log_));
   globals_->cert_verifier.reset(net::CertVerifier::CreateDefault());
-  globals_->transport_security_state.reset(new net::TransportSecurityState(""));
+  globals_->transport_security_state.reset(new net::TransportSecurityState());
   globals_->ssl_config_service = GetSSLConfigService();
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));

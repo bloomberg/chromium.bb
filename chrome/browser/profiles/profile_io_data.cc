@@ -460,12 +460,14 @@ void ProfileIOData::LazyInitialize() const {
           profile_params_->proxy_config_service.release(),
           command_line));
 
-  transport_security_state_.reset(new net::TransportSecurityState(
-      command_line.GetSwitchValueASCII(switches::kHstsHosts)));
+  transport_security_state_.reset(new net::TransportSecurityState());
   transport_security_persister_.reset(
       new TransportSecurityPersister(transport_security_state_.get(),
                                      profile_params_->path,
                                      profile_params_->is_incognito));
+  const std::string& serialized =
+      command_line.GetSwitchValueASCII(switches::kHstsHosts);
+  transport_security_persister_.get()->DeserializeFromCommandLine(serialized);
 
   // NOTE(willchan): Keep these protocol handlers in sync with
   // ProfileIOData::IsHandledProtocol().

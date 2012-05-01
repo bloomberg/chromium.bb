@@ -115,12 +115,15 @@ CheckQueryResultTask.prototype = {
     expectEquals(this.subdomains_, result.subdomains);
 
     // |public_key_hashes| is an old synonym for what is now
-    // |preloaded_spki_hashes|. Look for both, and also for
+    // |preloaded_spki_hashes|, which in turn is a legacy synonym for
+    // |static_spki_hashes|. Look for all three, and also for
     // |dynamic_spki_hashes|.
     if (typeof result.public_key_hashes === 'undefined')
       result.public_key_hashes = '';
     if (typeof result.preloaded_spki_hashes === 'undefined')
       result.preloaded_spki_hashes = '';
+    if (typeof result.static_spki_hashes === 'undefined')
+      result.static_spki_hashes = '';
     if (typeof result.dynamic_spki_hashes === 'undefined')
       result.dynamic_spki_hashes = '';
 
@@ -129,10 +132,12 @@ CheckQueryResultTask.prototype = {
       hashes.push(result.public_key_hashes);
     if (result.preloaded_spki_hashes)
       hashes.push(result.preloaded_spki_hashes);
+    if (result.static_spki_hashes)
+      hashes.push(result.static_spki_hashes);
     if (result.dynamic_spki_hashes)
       hashes.push(result.dynamic_spki_hashes);
 
-    expectEquals(this.publicKeyHashes_, hashes.join(","));
+    expectEquals(this.publicKeyHashes_, hashes.join(','));
 
     // Verify that the domain appears somewhere in the displayed text.
     outputText = $(HSTSView.QUERY_OUTPUT_DIV_ID).innerText;

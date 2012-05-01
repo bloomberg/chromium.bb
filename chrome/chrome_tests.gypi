@@ -1720,6 +1720,7 @@
         'browser/task_profiler/task_profiler_data_serializer_unittest.cc',
         'browser/themes/browser_theme_pack_unittest.cc',
         'browser/themes/theme_service_unittest.cc',
+        'browser/transport_security_persister_unittest.cc',
         'browser/ui/browser_list_unittest.cc',
         'browser/ui/browser_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list

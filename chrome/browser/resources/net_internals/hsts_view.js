@@ -134,13 +134,17 @@ var HSTSView = (function() {
       addTextNode(this.queryOutputDiv_, ' pubkey_hashes:');
 
       t = addNode(this.queryOutputDiv_, 'tt');
+
       // |public_key_hashes| is an old synonym for what is now
-      // |preloaded_spki_hashes|. Look for both, and also for
+      // |preloaded_spki_hashes|, which in turn is a legacy synonym for
+      // |static_spki_hashes|. Look for all three, and also for
       // |dynamic_spki_hashes|.
       if (typeof result.public_key_hashes === 'undefined')
         result.public_key_hashes = '';
       if (typeof result.preloaded_spki_hashes === 'undefined')
         result.preloaded_spki_hashes = '';
+      if (typeof result.static_spki_hashes === 'undefined')
+        result.static_spki_hashes = '';
       if (typeof result.dynamic_spki_hashes === 'undefined')
         result.dynamic_spki_hashes = '';
 
@@ -149,6 +153,8 @@ var HSTSView = (function() {
         hashes.push(result.public_key_hashes);
       if (result.preloaded_spki_hashes)
         hashes.push(result.preloaded_spki_hashes);
+      if (result.static_spki_hashes)
+        hashes.push(result.static_spki_hashes);
       if (result.dynamic_spki_hashes)
         hashes.push(result.dynamic_spki_hashes);
 
@@ -158,14 +164,12 @@ var HSTSView = (function() {
   };
 
   function modeToString(m) {
+    // These numbers must match those in
+    // TransportSecurityState::DomainState::UpgradeMode.
     if (m == 0) {
       return 'STRICT';
     } else if (m == 1) {
       return 'OPPORTUNISTIC';
-    } else if (m == 2) {
-      return 'SPDY';
-    } else if (m == 3) {
-      return 'NONE';
     } else {
       return 'UNKNOWN';
     }
