@@ -88,12 +88,23 @@ class RietveldTest(unittest.TestCase):
       self.assertEquals(p.svn_properties, svn_properties)
 
   def test_get_patch_no_status(self):
-    self.requests = [('/api/123/456', _api({'file_a': {}}))]
-    try:
-      self.rietveld.get_patch(123, 456)
-      self.fail()
-    except patch.UnsupportedPatchFormat, e:
-      self.assertEquals('file_a', e.filename)
+    self.requests = [
+        ( '/api/123/456',
+          _api(
+            {
+              'tools/clang_check/README.chromium': {
+                'status': None,
+                'id': 789,
+              }})),
+        ('/download/issue123_456_789.diff', RAW.DELETE),
+    ]
+    patches = self.rietveld.get_patch(123, 456)
+    self.assertEquals(1, len(patches.patches))
+    self._check_patch(
+        patches.patches[0],
+        'tools/clang_check/README.chromium',
+        RAW.DELETE,
+        is_delete=True)
 
   def test_get_patch_2_files(self):
     self.requests = [

@@ -109,10 +109,9 @@ class Rietveld(object):
     out = []
     for filename, state in props.get('files', {}).iteritems():
       logging.debug('%s' % filename)
-      status = state.get('status')
-      if not status:
-        raise patch.UnsupportedPatchFormat(
-            filename, 'File\'s status is None, patchset upload is incomplete.')
+      # If not status, just assume it's a 'M'. Rietveld often gets it wrong and
+      # just has status: null. Oh well.
+      status = state.get('status') or 'M'
       if status[0] not in ('A', 'D', 'M'):
         raise patch.UnsupportedPatchFormat(
             filename, 'Change with status \'%s\' is not supported.' % status)
