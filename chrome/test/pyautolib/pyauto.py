@@ -3933,6 +3933,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     installed before this call is issued are guaranteed to be ready after it
     returns.
     """
+    # TODO(craigdh): Determine the root cause of RefreshPolicies' flakiness.
+    #                See crosbug.com/30221
+    timeout = PyUITest.ActionTimeoutChanger(self, 3 * 60 * 1000)
     cmd_dict = { 'command': 'RefreshPolicies' }
     self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
