@@ -151,6 +151,24 @@ class RetryTest(Exception):
   pass
 
 
+def DumpNetLog(netlog):
+  sys.stdout.write('\n')
+  if not os.path.isfile(netlog):
+    sys.stdout.write('Cannot find netlog, did Chrome actually launch?\n')
+  else:
+    sys.stdout.write('Netlog exists (%d bytes).\n' % os.path.getsize(netlog))
+    sys.stdout.write('Dumping URLs.\n')
+    i = 0
+    for line in open(netlog):
+      # Filter out events that don't list a URL.
+      if '"url"' in line:
+        sys.stdout.write(line)
+        i += 1
+        if i >= 30:
+          break
+    sys.stdout.write('\n')
+
+
 def RunTestsOnce(url, options):
   # Set the default here so we're assured hard_timeout will be defined.
   # Tests, such as run_inbrowser_trusted_crash_in_startup_test, may not use the
@@ -255,6 +273,15 @@ def RunTestsOnce(url, options):
       tool_failed = ProcessToolLogs(options, browser.tool_log_dir)
 
   finally:
+    try:
+      if listener.ever_failed and not options.interactive:
+        if not server.received_request:
+          sys.stdout.write('\nNo URLs were served by the test runner. It is '
+                           'unlikely this test failure has anything to do with '
+                           'this particular test.\n')
+        DumpNetLog(browser.NetLogName())
+    except Exception:
+      listener.ever_failed = 1
     browser.Cleanup()
     server.server_close()
 

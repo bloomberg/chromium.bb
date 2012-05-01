@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -262,6 +262,9 @@ class ChromeLauncher(BrowserLauncher):
 
     return profile
 
+  def NetLogName(self):
+    return os.path.join(self.profile, 'netlog.json')
+
   def MakeCmd(self, url, port):
     cmd = [self.binary,
             '--disable-web-resources',
@@ -279,6 +282,8 @@ class ChromeLauncher(BrowserLauncher):
             # whatever port it is using.
             '--explicitly-allowed-ports=%d' % port,
             '--user-data-dir=%s' % self.profile]
+    # Log network requests to assist debugging.
+    cmd.append('--log-net-log=%s' % self.NetLogName())
     if self.options.ppapi_plugin is None:
       cmd.append('--enable-nacl')
       disable_sandbox = False
