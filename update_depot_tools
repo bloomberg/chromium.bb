@@ -63,6 +63,26 @@ function test_git_svn {
   fi
 }
 
+function is_git_clone_repo {
+  "$GIT" config remote.origin.fetch > /dev/null
+}
+
+function update_git_repo {
+  if is_git_clone_repo; then
+    git fetch -q origin > /dev/null
+    git rebase -q origin > /dev/null
+    return 0
+  fi
+
+  test_git_svn
+  # work around a git-svn --quiet bug
+  OUTPUT=`"$GIT" svn rebase -q -q`
+  if [[ ! "$OUTPUT" == *Current.branch* ]]; then
+    echo $OUTPUT 1>&2
+  fi
+  return 0
+}
+
 # Get the current SVN revision.
 get_svn_revision() {
   LANGUAGE=C "$SVN" info "$base_dir" | \
@@ -73,12 +93,7 @@ get_svn_revision() {
 if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/.git" ]
 then
   cd $base_dir
-  test_git_svn
-  # work around a git-svn --quiet bug
-  OUTPUT=`"$GIT" svn rebase -q -q`
-  if [[ ! "$OUTPUT" == *Current.branch* ]]; then
-    echo $OUTPUT 1>&2
-  fi
+  update_git_repo
   cd - > /dev/null
 fi
 

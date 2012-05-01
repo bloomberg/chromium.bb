@@ -13,6 +13,8 @@ setlocal
 :: not already in the PATH environment variable.
 call "%~dp0bootstrap\win\win_tools.bat" force
 if errorlevel 1 goto :EOF
+:: Now clear errorlevel so it can be set by other programs later.
+set errorlevel=
 
 :: Shall skip automatic update?
 IF "%DEPOT_TOOLS_UPDATE%" == "0" GOTO :EOF
@@ -30,6 +32,14 @@ goto :EOF
 
 
 :GIT_UPDATE
+cd /d "%~dp0."
+call git config remote.origin.fetch > NUL
+if errorlevel 1 goto :GIT_SVN_UPDATE
+call git fetch -q origin > NUL
+call git rebase -q origin > NUL
+goto :EOF
+
+:GIT_SVN_UPDATE
 cd /d "%~dp0."
 call git svn rebase -q -q
 goto :EOF
