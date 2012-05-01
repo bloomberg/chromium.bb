@@ -39,12 +39,15 @@ static const char* kBasicTests[] = {
 
 static const char* kComplexTests[] = {
   "prefetch-bugfix-108071.html",
-  "pending-version-change-stuck-works-with-terminate.html",
+  // Flaky: http://crbug.com/123685
+  // "pending-version-change-stuck-works-with-terminate.html",
   NULL
 };
 
 static const char* kIndexTests[] = {
   "deleteIndex.html",
+  // Flaky: http://crbug.com/123685
+  // "index-basics-workers.html",
   "index-count.html",
   "index-cursor.html",  // Locally takes ~6s compared to <1 for the others.
   "index-get-key-argument-required.html",
@@ -98,13 +101,6 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, BasicTests) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, ComplexTests) {
   RunLayoutTests(kComplexTests);
-}
-
-// Frequently times out, sometimes due to webkit assertion failure.
-// http://crbug.com/120924
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, FAILS_IndexBasicsWorkersTest) {
-  RunLayoutTest("deleteIndex.html");
-  RunLayoutTest("index-basics-workers.html");
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, IndexTests) {
