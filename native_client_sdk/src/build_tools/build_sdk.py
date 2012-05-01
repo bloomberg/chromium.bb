@@ -558,6 +558,7 @@ def main(args):
     parser.error('Incompatible arguments with archive.')
 
   pepper_ver = str(int(build_utils.ChromeMajorVersion()))
+  pepper_old = str(int(build_utils.ChromeMajorVersion()) - 1)
   clnumber = lastchange.FetchVersionInfo(None).revision
   if options.release:
     pepper_ver = options.release
@@ -568,9 +569,11 @@ def main(args):
     buildbot_common.Run(['gclient', 'runhooks'],
                         cwd=SRC_DIR, shell=(platform=='win'))
 
+  buildbot_common.BuildStep('Clean Pepper Dirs')
   pepperdir = os.path.join(SRC_DIR, 'out', 'pepper_' + pepper_ver)
+  pepperold = os.path.join(SRC_DIR, 'out', 'pepper_' + pepper_old)
+  buildbot_common.RemoveDir(pepperold)
   if not skip_untar:
-    buildbot_common.BuildStep('Clean Pepper Dir')
     buildbot_common.RemoveDir(pepperdir)
     buildbot_common.MakeDir(os.path.join(pepperdir, 'toolchain'))
     buildbot_common.MakeDir(os.path.join(pepperdir, 'tools'))
@@ -599,6 +602,13 @@ def main(args):
       buildbot_common.BuildStep('Add MAKE')
       http_download.HttpDownload(GSTORE + MAKE,
                                  os.path.join(pepperdir, 'tools' ,'make.exe'))
+      rename_list = ['ncval_x86_32', 'ncval_x86_64',
+                     'sel_ldr_x86_32', 'sel_ldr_x86_64']
+      tools = os.path.join(pepperdir, 'tools')
+      for name in rename_list:
+          src = os.path.join(pepperdir, 'tools', name)
+          dst = os.path.join(pepperdir, 'tools', name + '.exe')
+          buildbot_common.Move(src, dst)
 
   if not skip_examples:
     CopyExamples(pepperdir, toolchains)
