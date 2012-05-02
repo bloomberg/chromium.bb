@@ -41,6 +41,7 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
   // text. We send the given results to a renderer.
   void OnTextCheckComplete(
       int tag,
+      bool success,
       const std::vector<SpellCheckResult>& results);
 
   // Checks the user profile and sends a JSON-RPC request to the Spelling

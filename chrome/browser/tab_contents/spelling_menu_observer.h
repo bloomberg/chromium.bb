@@ -53,6 +53,7 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver {
   // misspelled word.
   void OnTextCheckComplete(
       int tag,
+      bool success,
       const std::vector<SpellCheckResult>& results);
 
  private:

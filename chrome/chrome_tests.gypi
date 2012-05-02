@@ -1635,6 +1635,7 @@
         'browser/speech/speech_recognition_bubble_controller_unittest.cc',
         'browser/spellchecker/spellcheck_platform_mac_unittest.cc',
         'browser/spellchecker/spellcheck_profile_unittest.cc',
+        'browser/spellchecker/spelling_service_client_unittest.cc',
         'browser/status_icons/status_icon_unittest.cc',
         'browser/status_icons/status_tray_unittest.cc',
         'browser/sync/abstract_profile_sync_service_test.cc',

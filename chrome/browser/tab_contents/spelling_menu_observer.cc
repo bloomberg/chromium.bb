@@ -246,6 +246,7 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
 
 void SpellingMenuObserver::OnTextCheckComplete(
     int tag,
+    bool success,
     const std::vector<SpellCheckResult>& results) {
   animation_timer_.Stop();
 
@@ -253,7 +254,7 @@ void SpellingMenuObserver::OnTextCheckComplete(
   // suggested words. If the replaced text is included in the suggestion list
   // provided by the local spellchecker, we show a "No suggestions from Google"
   // message.
-  succeeded_ = true;
+  succeeded_ = success;
   if (results.empty()) {
     succeeded_ = false;
   } else {

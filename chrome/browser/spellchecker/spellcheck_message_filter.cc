@@ -117,11 +117,12 @@ void SpellCheckMessageFilter::OnCallSpellingService(
 
 void SpellCheckMessageFilter::OnTextCheckComplete(
     int tag,
+    bool success,
     const std::vector<SpellCheckResult>& results) {
   Send(new SpellCheckMsg_RespondSpellingService(route_id_,
                                                 identifier_,
                                                 tag,
-                                                true,
+                                                success,
                                                 string16(),
                                                 results));
   client_.reset();

@@ -25,8 +25,12 @@
 
 // Use the public URL to the Spelling service on Chromium. Unfortunately, this
 // service is an experimental service and returns an error without a key.
-#ifndef SPELLING_SERVICE_KEY
-#define SPELLING_SERVICE_KEY
+#ifndef SPELLING_SERVICE_KEY_V1
+#define SPELLING_SERVICE_KEY_V1 ""
+#endif
+
+#ifndef SPELLING_SERVICE_KEY_V2
+#define SPELLING_SERVICE_KEY_V2 ""
 #endif
 
 #ifndef SPELLING_SERVICE_URL
@@ -51,7 +55,7 @@ bool SpellingServiceClient::RequestTextCheck(
     return false;
   std::string locale = profile->GetPrefs()->GetString(
       prefs::kSpellCheckDictionary);
-  char language[ULOC_LANG_CAPACITY] = "en";
+  char language[ULOC_LANG_CAPACITY] = ULOC_ENGLISH;
   const char* country = "USA";
   if (!locale.empty()) {
     // Create the parameters needed by Spelling API. Spelling API needs three
@@ -83,18 +87,20 @@ bool SpellingServiceClient::RequestTextCheck(
       "\"text\":\"%s\","
       "\"language\":\"%s\","
       "\"origin_country\":\"%s\","
-      "\"key\":\"" SPELLING_SERVICE_KEY "\""
+      "\"key\":\"%s\""
       "}"
       "}";
-  std::string request = base::StringPrintf(kSpellingRequest,
-                                           type,
-                                           encoded_text.c_str(),
-                                           language, country);
+  std::string request = base::StringPrintf(
+      kSpellingRequest,
+      type,
+      encoded_text.c_str(),
+      language,
+      country,
+      type == SUGGEST ? SPELLING_SERVICE_KEY_V1 : SPELLING_SERVICE_KEY_V2);
 
   static const char kSpellingServiceURL[] = SPELLING_SERVICE_URL;
   GURL url = GURL(kSpellingServiceURL);
-  fetcher_.reset(content::URLFetcher::Create(
-      url, content::URLFetcher::POST, this));
+  fetcher_.reset(CreateURLFetcher(url));
   fetcher_->SetRequestContext(context);
   fetcher_->SetUploadData("application/json", request);
   fetcher_->SetLoadFlags(
@@ -107,15 +113,19 @@ bool SpellingServiceClient::RequestTextCheck(
 
 void SpellingServiceClient::OnURLFetchComplete(
     const content::URLFetcher* source) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   scoped_ptr<content::URLFetcher> clean_up_fetcher(fetcher_.release());
+  bool success = false;
   std::vector<SpellCheckResult> results;
   if (source->GetResponseCode() / 100 == 2) {
     std::string data;
     source->GetResponseAsString(&data);
-    ParseResponse(data, &results);
+    success = ParseResponse(data, &results);
   }
-  callback_.Run(tag_, results);
+  callback_.Run(tag_, success, results);
+}
+
+content::URLFetcher* SpellingServiceClient::CreateURLFetcher(const GURL& url) {
+  return content::URLFetcher::Create(url, content::URLFetcher::POST, this);
 }
 
 bool SpellingServiceClient::ParseResponse(
@@ -158,13 +168,13 @@ bool SpellingServiceClient::ParseResponse(
   if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY))
     return false;
 
-  // Retrieve the array of Misspelling objects. When an internal error happens
-  // in the Spelling service, it returns a JSON representing the internal error.
-  // (In this case, its HTTP status is 200.) We just return false for this case.
+  // Retrieve the array of Misspelling objects. When the input text does not
+  // have misspelled words, it returns an empty JSON. (In this case, its HTTP
+  // status is 200.) We just return true for this case.
   ListValue* misspellings = NULL;
   const char kMisspellings[] = "result.spellingCheckResponse.misspellings";
   if (!value->GetList(kMisspellings, &misspellings))
-    return false;
+    return true;
 
   for (size_t i = 0; i < misspellings->GetSize(); ++i) {
     // Retrieve the i-th misspelling region and put it to the given vector. When

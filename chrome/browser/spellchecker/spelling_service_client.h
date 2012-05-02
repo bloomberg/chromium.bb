@@ -15,6 +15,7 @@
 #include "base/string16.h"
 #include "content/public/common/url_fetcher_delegate.h"
 
+class GURL;
 class Profile;
 class TextCheckClientDelegate;
 struct SpellCheckResult;
@@ -34,6 +35,7 @@ struct SpellCheckResult;
 //
 //     void OnTextCheckComplete(
 //         int tag,
+//         bool success,
 //         const std::vector<SpellCheckResult>& results) {
 //       ...
 //     }
@@ -62,6 +64,7 @@ class SpellingServiceClient : public content::URLFetcherDelegate {
   };
   typedef base::Callback<void(
       int /* tag */,
+      bool /* success */,
       const std::vector<SpellCheckResult>& /* results */)>
           TextCheckCompleteCallback;
 
@@ -82,6 +85,11 @@ class SpellingServiceClient : public content::URLFetcherDelegate {
                         const TextCheckCompleteCallback& callback);
 
  private:
+  // Creates a URLFetcher object used for sending a JSON-RPC request. This
+  // function is overriden by unit tests to prevent them from actually sending
+  // requests to the Spelling service.
+  virtual content::URLFetcher* CreateURLFetcher(const GURL& url);
+
   // Parses a JSON-RPC response from the Spelling service.
   bool ParseResponse(const std::string& data,
                      std::vector<SpellCheckResult>* results);
