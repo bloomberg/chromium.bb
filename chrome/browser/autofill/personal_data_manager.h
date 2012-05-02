@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,7 +85,7 @@ class PersonalDataManager
   void UpdateProfile(const AutofillProfile& profile);
 
   // Removes the profile represented by |guid|.
-  void RemoveProfile(const std::string& guid);
+  virtual void RemoveProfile(const std::string& guid);
 
   // Returns the profile with the specified |guid|, or NULL if there is no
   // profile with the specified |guid|.
@@ -98,7 +98,7 @@ class PersonalDataManager
   void UpdateCreditCard(const CreditCard& credit_card);
 
   // Removes the credit card represented by |guid|.
-  void RemoveCreditCard(const std::string& guid);
+  virtual void RemoveCreditCard(const std::string& guid);
 
   // Returns the credit card with the specified |guid|, or NULL if there is
   // no credit card with the specified |guid|.

@@ -52,13 +52,11 @@ void AutofillExternalDelegateGtk::ApplyAutofillSuggestions(
     const std::vector<string16>& autofill_values,
     const std::vector<string16>& autofill_labels,
     const std::vector<string16>& autofill_icons,
-    const std::vector<int>& autofill_unique_ids,
-    int separator_index) {
+    const std::vector<int>& autofill_unique_ids) {
   view_->Show(autofill_values,
               autofill_labels,
               autofill_icons,
-              autofill_unique_ids,
-              separator_index);
+              autofill_unique_ids);
 }
 
 void AutofillExternalDelegateGtk::SetBounds(const gfx::Rect& bounds) {

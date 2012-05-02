@@ -42,6 +42,7 @@ class AutofillPopupViewGtk : public AutofillPopupView,
   virtual void ShowInternal() OVERRIDE;
   virtual void HideInternal() OVERRIDE;
   virtual void InvalidateRow(size_t row) OVERRIDE;
+  virtual void ResizePopup() OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_1(AutofillPopupViewGtk, gboolean, HandleButtonRelease,

@@ -7,6 +7,11 @@
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
+
+using ::testing::_;
+using ::testing::AtLeast;
+using WebKit::WebAutofillClient;
 
 namespace {
 
@@ -15,24 +20,17 @@ class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
   MockAutofillExternalDelegate() : TestAutofillExternalDelegate(NULL, NULL) {};
   virtual ~MockAutofillExternalDelegate() {};
 
-  virtual void SelectAutofillSuggestionAtIndex(int unique_id, int list_index)
+  virtual void SelectAutofillSuggestionAtIndex(int unique_id)
       OVERRIDE {}
+  virtual void RemoveAutocompleteEntry(const string16& value) OVERRIDE {}
+  virtual void RemoveAutofillProfileOrCreditCard(int unique_id) OVERRIDE {}
+  virtual void ClearPreviewedForm() OVERRIDE {}
 };
 
 class TestAutofillPopupView : public AutofillPopupView {
  public:
   explicit TestAutofillPopupView(AutofillExternalDelegate* external_delegate) :
-      AutofillPopupView(NULL, external_delegate) {
-    std::vector<string16> autofill_values;
-    autofill_values.push_back(string16());
-    autofill_values.push_back(string16());
-
-    std::vector<int> autofill_ids;
-    autofill_ids.push_back(0);
-    autofill_ids.push_back(1);
-
-    Show(autofill_values, autofill_values, autofill_values, autofill_ids, 0);
-  }
+      AutofillPopupView(NULL, external_delegate) {}
   virtual ~TestAutofillPopupView() {}
 
   // Making protected functions public for testing
@@ -51,12 +49,20 @@ class TestAutofillPopupView : public AutofillPopupView {
   void SelectPreviousLine() {
     AutofillPopupView::SelectPreviousLine();
   }
+  bool RemoveSelectedLine() {
+    return AutofillPopupView::RemoveSelectedLine();
+  }
+  bool IsSeparatorIndex(int index) {
+    return AutofillPopupView::IsSeparatorIndex(index);
+  }
 
   MOCK_METHOD1(InvalidateRow, void(size_t));
+  MOCK_METHOD0(HideInternal, void());
 
  private:
   virtual void ShowInternal() OVERRIDE {}
-  virtual void HideInternal() OVERRIDE {}
+
+  virtual void ResizePopup() OVERRIDE {}
 };
 
 }  // namespace
@@ -75,6 +81,15 @@ class AutofillPopupViewUnitTest : public ::testing::Test {
 };
 
 TEST_F(AutofillPopupViewUnitTest, ChangeSelectedLine) {
+  // Set up the popup.
+  std::vector<string16> autofill_values(2, string16());
+  std::vector<int> autofill_ids(2, 0);
+  autofill_popup_view_->Show(autofill_values, autofill_values, autofill_values,
+                             autofill_ids);
+
+  // To remove warnings.
+  EXPECT_CALL(*autofill_popup_view_, InvalidateRow(_)).Times(AtLeast(0));
+
   EXPECT_LT(autofill_popup_view_->selected_line(), 0);
   // Check that there are at least 2 values so that the first and last selection
   // are different.
@@ -93,6 +108,12 @@ TEST_F(AutofillPopupViewUnitTest, ChangeSelectedLine) {
 }
 
 TEST_F(AutofillPopupViewUnitTest, RedrawSelectedLine) {
+  // Set up the popup.
+  std::vector<string16> autofill_values(2, string16());
+  std::vector<int> autofill_ids(2, 0);
+  autofill_popup_view_->Show(autofill_values, autofill_values, autofill_values,
+                             autofill_ids);
+
   // Make sure that when a new line is selected, it is invalidated so it can
   // be updated to show it is selected.
   int selected_line = 0;
@@ -106,4 +127,48 @@ TEST_F(AutofillPopupViewUnitTest, RedrawSelectedLine) {
   // Change back to no selection.
   EXPECT_CALL(*autofill_popup_view_, InvalidateRow(selected_line));
   autofill_popup_view_->SetSelectedLine(-1);
+}
+
+TEST_F(AutofillPopupViewUnitTest, RemoveLine) {
+  // Set up the popup.
+  std::vector<string16> autofill_values(2, string16());
+  std::vector<int> autofill_ids;
+  autofill_ids.push_back(1);
+  autofill_ids.push_back(WebAutofillClient::MenuItemIDAutofillOptions);
+  autofill_popup_view_->Show(autofill_values, autofill_values, autofill_values,
+                             autofill_ids);
+
+  // To remove warnings.
+  EXPECT_CALL(*autofill_popup_view_, InvalidateRow(_)).Times(AtLeast(0));
+
+  // No line is selected so the removal should fail.
+  EXPECT_FALSE(autofill_popup_view_->RemoveSelectedLine());
+
+  // Try to remove the last entry and ensure it fails (it is an option).
+  autofill_popup_view_->SetSelectedLine(
+      autofill_popup_view_->autofill_values().size() - 1);
+  EXPECT_FALSE(autofill_popup_view_->RemoveSelectedLine());
+  EXPECT_LE(0, autofill_popup_view_->selected_line());
+
+  // Remove the first (and only) entry. The popup should then be hidden since
+  // there are no Autofill entries left.
+  EXPECT_CALL(*autofill_popup_view_, HideInternal());
+  autofill_popup_view_->SetSelectedLine(0);
+  EXPECT_TRUE(autofill_popup_view_->RemoveSelectedLine());
+}
+
+TEST_F(AutofillPopupViewUnitTest, IsSeparatorIndex) {
+ // Set up the popup.
+  std::vector<string16> autofill_values(3, string16());
+  std::vector<int> autofill_ids;
+  autofill_ids.push_back(3);
+  autofill_ids.push_back(WebAutofillClient::MenuItemIDClearForm);
+  autofill_ids.push_back(WebAutofillClient::MenuItemIDAutofillOptions);
+
+  autofill_popup_view_->Show(autofill_values, autofill_values, autofill_values,
+                             autofill_ids);
+
+  EXPECT_FALSE(autofill_popup_view_->IsSeparatorIndex(0));
+  EXPECT_TRUE(autofill_popup_view_->IsSeparatorIndex(1));
+  EXPECT_FALSE(autofill_popup_view_->IsSeparatorIndex(2));
 }

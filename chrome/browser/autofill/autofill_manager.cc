@@ -57,13 +57,13 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 #include "webkit/forms/form_data.h"
 #include "webkit/forms/form_data_predictions.h"
 #include "webkit/forms/form_field.h"
 #include "webkit/forms/password_form_dom_manager.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 
 using base::TimeTicks;
 using content::BrowserThread;
@@ -695,6 +695,30 @@ void AutofillManager::OnShowPasswordGenerationPopup(const gfx::Rect& bounds) {
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
   browser->window()->ShowPasswordGenerationBubble(bounds);
 #endif  // #if defined(OS_ANDROID)
+}
+
+void AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
+  const std::vector<AutofillProfile*>& profiles = personal_data_->profiles();
+  const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
+  const AutofillProfile* profile = NULL;
+  const CreditCard* credit_card = NULL;
+  size_t variant = 0;
+  if (!GetProfileOrCreditCard(unique_id, profiles, credit_cards, &profile,
+                              &credit_card, &variant)) {
+    NOTREACHED();
+    return;
+  }
+
+  // TODO(csharp): If we are dealing with a variant only the variant should
+  // be deleted, instead of doing nothing.
+  // http://crbug.com/124211
+  if (variant != 0)
+    return;
+
+  if (profile)
+    personal_data_->RemoveProfile(profile->guid());
+  else
+    personal_data_->RemoveCreditCard(credit_card->guid());
 }
 
 void AutofillManager::OnAddPasswordFormMapping(

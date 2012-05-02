@@ -82,21 +82,16 @@ void AutofillPopupViewGtk::ShowInternal() {
   gint origin_x, origin_y;
   gdk_window_get_origin(gtk_widget_get_window(parent_), &origin_x, &origin_y);
 
-  int popup_width = GetPopupRequiredWidth();
-
   // Move the popup to appear right below the text field it is using.
   bounds_.SetRect(
       origin_x + element_bounds().x(),
       origin_y + element_bounds().y() + element_bounds().height(),
-      popup_width,
+      GetPopupRequiredWidth(),
       row_height_ * autofill_values().size());
 
   gtk_window_move(GTK_WINDOW(window_), bounds_.x(), bounds_.y());
 
-  gtk_widget_set_size_request(
-      window_,
-      popup_width,
-      row_height_ * autofill_values().size());
+  ResizePopup();
 
   render_view_host_->AddKeyboardListener(this);
 
@@ -118,6 +113,13 @@ void AutofillPopupViewGtk::InvalidateRow(size_t row) {
       row, bounds_.width(), row_height_).ToGdkRectangle();
   GdkWindow* gdk_window = gtk_widget_get_window(window_);
   gdk_window_invalidate_rect(gdk_window, &row_rect, FALSE);
+}
+
+void AutofillPopupViewGtk::ResizePopup() {
+  gtk_widget_set_size_request(
+      window_,
+      GetPopupRequiredWidth(),
+      row_height_ * autofill_values().size());
 }
 
 gboolean AutofillPopupViewGtk::HandleButtonRelease(GtkWidget* widget,
@@ -164,7 +166,7 @@ gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
     if (!line_rect.Intersects(damage_rect))
       continue;
 
-    if (separator_index() == static_cast<int>(i)) {
+    if (IsSeparatorIndex(i)) {
       int line_y = i * row_height_;
 
       cairo_save(cr);
@@ -220,6 +222,9 @@ gboolean AutofillPopupViewGtk::HandleMotion(GtkWidget* widget,
 }
 
 bool AutofillPopupViewGtk::HandleKeyPressEvent(GdkEventKey* event) {
+  // Filter modifier to only include accelerator modifiers.
+  guint modifier = event->state & gtk_accelerator_get_default_mod_mask();
+
   switch (event->keyval) {
     case GDK_Up:
       SelectPreviousLine();
@@ -238,7 +243,7 @@ bool AutofillPopupViewGtk::HandleKeyPressEvent(GdkEventKey* event) {
       return true;
     case GDK_Delete:
     case GDK_KP_Delete:
-      return (event->state == GDK_SHIFT_MASK) && RemoveSelectedLine();
+      return (modifier == GDK_SHIFT_MASK) && RemoveSelectedLine();
     case GDK_Return:
     case GDK_KP_Enter:
       return AcceptSelectedLine();

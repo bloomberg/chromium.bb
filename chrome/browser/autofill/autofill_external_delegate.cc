@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -30,15 +31,12 @@ AutofillExternalDelegate::AutofillExternalDelegate(
           tab_contents_wrapper ? tab_contents_wrapper->web_contents() : NULL),
       autofill_query_id_(0),
       display_warning_if_disabled_(false),
-      has_shown_autofill_popup_for_current_edit_(false),
-      suggestions_clear_index_(-1),
-      suggestions_options_index_(-1) {
+      has_shown_autofill_popup_for_current_edit_(false) {
 }
 
-void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int unique_id,
-                                                               int list_index) {
-  if (list_index == suggestions_options_index_ ||
-      list_index == suggestions_clear_index_ ||
+void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int unique_id) {
+  if (unique_id == WebAutofillClient::MenuItemIDAutofillOptions ||
+      unique_id == WebAutofillClient::MenuItemIDClearForm ||
       unique_id == WebAutofillClient::MenuItemIDWarningMessage)
     return;
 
@@ -82,7 +80,6 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   std::vector<string16> l(labels);
   std::vector<string16> i(icons);
   std::vector<int> ids(unique_ids);
-  int separator_index = -1;
 
   DCHECK_GT(ids.size(), 0U);
   if (!autofill_query_field_.should_autocomplete) {
@@ -116,14 +113,11 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 
   // The form has been auto-filled, so give the user the chance to clear the
   // form.  Append the 'Clear form' menu item.
-  if (has_autofill_item &&
-      autofill_query_field_.is_autofilled) {
+  if (has_autofill_item && autofill_query_field_.is_autofilled) {
     v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
     l.push_back(string16());
     i.push_back(string16());
-    ids.push_back(0);
-    suggestions_clear_index_ = v.size() - 1;
-    separator_index = v.size() - 1;
+    ids.push_back(WebAutofillClient::MenuItemIDClearForm);
   }
 
   if (has_autofill_item) {
@@ -131,14 +125,12 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP));
     l.push_back(string16());
     i.push_back(string16());
-    ids.push_back(0);
-    suggestions_options_index_ = v.size() - 1;
-    separator_index = values.size();
+    ids.push_back(WebAutofillClient::MenuItemIDAutofillOptions);
   }
 
   // Send to display.
   if (!v.empty() && autofill_query_field_.is_focusable)
-    ApplyAutofillSuggestions(v, l, i, ids, separator_index);
+    ApplyAutofillSuggestions(v, l, i, ids);
 
   tab_contents_wrapper_->autofill_manager()->OnDidShowAutofillSuggestions(
       has_autofill_item && !has_shown_autofill_popup_for_current_edit_);
@@ -161,8 +153,21 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
   std::vector<string16> empty(suggestions.size());
   std::vector<int> password_ids(suggestions.size(),
                                 WebAutofillClient::MenuItemIDPasswordEntry);
-  ApplyAutofillSuggestions(suggestions, empty, empty, password_ids, -1);
+  ApplyAutofillSuggestions(suggestions, empty, empty, password_ids);
 }
+
+void AutofillExternalDelegate::RemoveAutocompleteEntry(const string16& value) {
+  if (tab_contents_wrapper_) {
+    tab_contents_wrapper_->autocomplete_history_manager()->
+        OnRemoveAutocompleteEntry(autofill_query_field_.name, value);
+  }
+}
+
+void AutofillExternalDelegate::RemoveAutofillProfileOrCreditCard(
+    int unique_id) {
+  autofill_manager_->RemoveAutofillProfileOrCreditCard(unique_id);
+}
+
 
 void AutofillExternalDelegate::DidEndTextFieldEditing() {
   has_shown_autofill_popup_for_current_edit_ = false;
@@ -176,12 +181,10 @@ bool AutofillExternalDelegate::DidAcceptAutofillSuggestions(
   if (unique_id == WebAutofillClient::MenuItemIDWarningMessage)
     return false;
 
-  if (suggestions_options_index_ != -1 &&
-      index == static_cast<unsigned>(suggestions_options_index_)) {
+  if (unique_id == WebAutofillClient::MenuItemIDAutofillOptions) {
     // User selected 'Autofill Options'.
     autofill_manager_->OnShowAutofillDialog();
-  } else if (suggestions_clear_index_ != -1 &&
-             index == static_cast<unsigned>(suggestions_clear_index_)) {
+  } else if (unique_id == WebAutofillClient::MenuItemIDClearForm) {
     // User selected 'Clear form'.
     RenderViewHost* host =
         tab_contents_wrapper_->web_contents()->GetRenderViewHost();
@@ -191,7 +194,7 @@ bool AutofillExternalDelegate::DidAcceptAutofillSuggestions(
                  autofill_query_field_, value)) {
     // DidAcceptAutofillSuggestion has already handled the work to fill in
     // the page as required.
-  } else if (!unique_id) {
+  } else if (unique_id == WebAutofillClient::MenuItemIDAutocompleteEntry) {
     // User selected an Autocomplete, so we fill directly.
     RenderViewHost* host =
         tab_contents_wrapper_->web_contents()->GetRenderViewHost();
@@ -214,9 +217,6 @@ void AutofillExternalDelegate::ClearPreviewedForm() {
 }
 
 void AutofillExternalDelegate::HideAutofillPopup() {
-  suggestions_clear_index_ = -1;
-  suggestions_options_index_ = -1;
-
   HideAutofillPopupInternal();
 }
 

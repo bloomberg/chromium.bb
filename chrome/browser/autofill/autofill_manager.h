@@ -92,6 +92,10 @@ class AutofillManager : public content::WebContentsObserver,
   void OnDidPreviewAutofillFormData();
   void OnShowPasswordGenerationPopup(const gfx::Rect& bounds);
 
+  // Remove the credit card or Autofill profile that matches |unique_id|
+  // from the database.
+  void RemoveAutofillProfileOrCreditCard(int unique_id);
+
  protected:
   // Only test code should subclass AutofillManager.
   friend class base::RefCounted<AutofillManager>;

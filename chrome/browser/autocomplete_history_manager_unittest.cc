@@ -151,8 +151,7 @@ class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
       const std::vector<string16>& autofill_values,
       const std::vector<string16>& autofill_labels,
       const std::vector<string16>& autofill_icons,
-      const std::vector<int>& autofill_unique_ids,
-      int separator_index) OVERRIDE {};
+      const std::vector<int>& autofill_unique_ids) OVERRIDE {};
 
   MOCK_METHOD5(OnSuggestionsReturned,
                void(int query_id,

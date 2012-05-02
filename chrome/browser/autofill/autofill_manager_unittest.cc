@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <vector>
 
 #include "base/command_line.h"
@@ -39,11 +40,11 @@
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 #include "webkit/forms/form_data.h"
 #include "webkit/forms/form_field.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -86,12 +87,37 @@ class TestPersonalDataManager : public PersonalDataManager {
     return NULL;
   }
 
+  CreditCard* GetCreditCardWithGUID(const char* guid) {
+    for (std::vector<CreditCard *>::iterator it = credit_cards_.begin();
+         it != credit_cards_.end(); ++it){
+      if (!(*it)->guid().compare(guid))
+        return *it;
+    }
+    return NULL;
+  }
+
   void AddProfile(AutofillProfile* profile) {
     web_profiles_->push_back(profile);
   }
 
   void AddCreditCard(CreditCard* credit_card) {
     credit_cards_->push_back(credit_card);
+  }
+
+  virtual void RemoveProfile(const std::string& guid) OVERRIDE {
+    AutofillProfile* profile = GetProfileWithGUID(guid.c_str());
+
+    web_profiles_.erase(
+        std::remove(web_profiles_.begin(), web_profiles_.end(), profile),
+        web_profiles_.end());
+  }
+
+  virtual void RemoveCreditCard(const std::string& guid) OVERRIDE {
+    CreditCard* credit_card = GetCreditCardWithGUID(guid.c_str());
+
+    credit_cards_.erase(
+        std::remove(credit_cards_.begin(), credit_cards_.end(), credit_card),
+        credit_cards_.end());
   }
 
   void ClearAutofillProfiles() {
@@ -507,6 +533,10 @@ class TestAutofillManager : public AutofillManager {
 
   AutofillProfile* GetProfileWithGUID(const char* guid) {
     return personal_data_->GetProfileWithGUID(guid);
+  }
+
+  CreditCard* GetCreditCardWithGUID(const char* guid) {
+    return personal_data_->GetCreditCardWithGUID(guid);
   }
 
   void AddProfile(AutofillProfile* profile) {
@@ -2941,6 +2971,57 @@ TEST_F(AutofillManagerTest, UpdatePasswordGenerationState) {
   EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
   EXPECT_FALSE(autofill_manager_->GetSentStates()[0]);
   autofill_manager_->ClearSentStates();
+}
+
+TEST_F(AutofillManagerTest, RemoveProfile) {
+  // Add and remove an Autofill profile.
+  AutofillProfile* profile = new AutofillProfile;
+  std::string guid = "00000000-0000-0000-0000-000000000102";
+  profile->set_guid(guid.c_str());
+  autofill_manager_->AddProfile(profile);
+
+  GUIDPair guid_pair(guid, 0);
+  GUIDPair empty(std::string(), 0);
+  int id = PackGUIDs(empty, guid_pair);
+
+  autofill_manager_->RemoveAutofillProfileOrCreditCard(id);
+
+  EXPECT_FALSE(autofill_manager_->GetProfileWithGUID(guid.c_str()));
+}
+
+TEST_F(AutofillManagerTest, RemoveCreditCard){
+  // Add and remove an Autofill credit card.
+  CreditCard* credit_card = new CreditCard;
+  std::string guid = "00000000-0000-0000-0000-000000100007";
+  credit_card->set_guid(guid.c_str());
+  autofill_manager_->AddCreditCard(credit_card);
+
+  GUIDPair guid_pair(guid, 0);
+  GUIDPair empty(std::string(), 0);
+  int id = PackGUIDs(guid_pair, empty);
+
+  autofill_manager_->RemoveAutofillProfileOrCreditCard(id);
+
+  EXPECT_FALSE(autofill_manager_->GetCreditCardWithGUID(guid.c_str()));
+}
+
+TEST_F(AutofillManagerTest, RemoveProfileVariant) {
+  // Add and remove an Autofill profile.
+  AutofillProfile* profile = new AutofillProfile;
+  std::string guid = "00000000-0000-0000-0000-000000000102";
+  profile->set_guid(guid.c_str());
+  autofill_manager_->AddProfile(profile);
+
+  GUIDPair guid_pair(guid, 1);
+  GUIDPair empty(std::string(), 0);
+  int id = PackGUIDs(empty, guid_pair);
+
+  autofill_manager_->RemoveAutofillProfileOrCreditCard(id);
+
+  // TODO(csharp): Currently variants should not be deleted, but once they are
+  // update these expectations.
+  // http://crbug.com/124211
+  EXPECT_TRUE(autofill_manager_->GetProfileWithGUID(guid.c_str()));
 }
 
 namespace {

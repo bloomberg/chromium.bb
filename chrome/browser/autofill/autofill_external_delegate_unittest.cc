@@ -34,12 +34,11 @@ class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
       : TestAutofillExternalDelegate(wrapper, autofill_manger) {}
   ~MockAutofillExternalDelegate() {}
 
-  MOCK_METHOD5(ApplyAutofillSuggestions, void(
+  MOCK_METHOD4(ApplyAutofillSuggestions, void(
       const std::vector<string16>& autofill_values,
       const std::vector<string16>& autofill_labels,
       const std::vector<string16>& autofill_icons,
-      const std::vector<int>& autofill_unique_ids,
-      int separator_index));
+      const std::vector<int>& autofill_unique_ids));
 
   MOCK_METHOD4(OnQueryPlatformSpecific,
                void(int query_id,
@@ -111,7 +110,7 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
   // This should call OnQueryPlatform specific.
   external_delegate_->OnQuery(kQueryId, form, field, bounds, false);
 
-  EXPECT_CALL(*external_delegate_, ApplyAutofillSuggestions(_, _, _, _, _));
+  EXPECT_CALL(*external_delegate_, ApplyAutofillSuggestions(_, _, _, _));
 
   // This should call ApplyAutofillSuggestions.
   std::vector<string16> autofill_item;
@@ -141,7 +140,7 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {
   // Ensure it doesn't try to preview the negative id.
   EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _)).Times(0);
-  external_delegate_->SelectAutofillSuggestionAtIndex(-1, 0);
+  external_delegate_->SelectAutofillSuggestionAtIndex(-1);
 
   // Ensure it doesn't try to fill the form in with the negative id.
   EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _)).Times(0);
@@ -159,9 +158,8 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
   // cause any previews to get cleared.
   EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
   external_delegate_->SelectAutofillSuggestionAtIndex(
-      WebAutofillClient::MenuItemIDPasswordEntry,
-      0);
+      WebAutofillClient::MenuItemIDPasswordEntry);
 
   EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
-  external_delegate_->SelectAutofillSuggestionAtIndex(1, 0);
+  external_delegate_->SelectAutofillSuggestionAtIndex(1);
 }

@@ -34,8 +34,7 @@ class AutofillExternalDelegate {
 
   // When using an external Autofill delegate.  Allows Chrome to tell
   // WebKit which Autofill selection has been chosen.
-  // TODO(jrg): add feedback mechanism for hover on relevant platforms.
-  virtual void SelectAutofillSuggestionAtIndex(int unique_id, int list_index);
+  virtual void SelectAutofillSuggestionAtIndex(int unique_id);
 
   // Records and associates a query_id with web form data.  Called
   // when the renderer posts an Autofill query to the browser. |bounds|
@@ -63,6 +62,12 @@ class AutofillExternalDelegate {
   void OnShowPasswordSuggestions(const std::vector<string16>& suggestions,
                                  const webkit::forms::FormField& field,
                                  const gfx::Rect& bounds);
+
+  // Remove the given Autocomplete entry from the DB.
+  virtual void RemoveAutocompleteEntry(const string16& value);
+
+  // Remove the given Autofill profile or credit credit.
+  virtual void RemoveAutofillProfileOrCreditCard(int unique_id);
 
   // Inform the delegate that the text field editing has ended, this is
   // used to help record the metrics of when a new popup is shown.
@@ -106,8 +111,7 @@ class AutofillExternalDelegate {
       const std::vector<string16>& autofill_values,
       const std::vector<string16>& autofill_labels,
       const std::vector<string16>& autofill_icons,
-      const std::vector<int>& autofill_unique_ids,
-      int separator_index) = 0;
+      const std::vector<int>& autofill_unique_ids) = 0;
 
   // Handle instance specific OnQueryCode.
   virtual void OnQueryPlatformSpecific(int query_id,
@@ -148,12 +152,6 @@ class AutofillExternalDelegate {
   // Have we already shown Autofill suggestions for the field the user is
   // currently editing?  Used to keep track of state for metrics logging.
   bool has_shown_autofill_popup_for_current_edit_;
-
-  // The menu index of the "Clear" menu item.
-  int suggestions_clear_index_;
-
-  // The menu index of the "Autofill options..." menu item.
-  int suggestions_options_index_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillExternalDelegate);
 };

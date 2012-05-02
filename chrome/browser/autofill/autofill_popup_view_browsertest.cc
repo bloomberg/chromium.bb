@@ -29,7 +29,7 @@ class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
   MockAutofillExternalDelegate() : TestAutofillExternalDelegate(NULL, NULL) {}
   ~MockAutofillExternalDelegate() {}
 
-  virtual void SelectAutofillSuggestionAtIndex(int unique_id, int list_index)
+  virtual void SelectAutofillSuggestionAtIndex(int unique_id)
       OVERRIDE {}
 };
 
@@ -49,6 +49,8 @@ class TestAutofillPopupView : public AutofillPopupView {
   virtual void HideInternal() OVERRIDE {}
 
   virtual void InvalidateRow(size_t row) OVERRIDE {}
+
+  virtual void ResizePopup() OVERRIDE {}
 };
 
 }  // namespace

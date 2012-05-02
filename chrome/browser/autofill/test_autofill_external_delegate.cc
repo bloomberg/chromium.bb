@@ -14,8 +14,7 @@ void TestAutofillExternalDelegate::ApplyAutofillSuggestions(
     const std::vector<string16>& autofill_values,
     const std::vector<string16>& autofill_labels,
     const std::vector<string16>& autofill_icons,
-    const std::vector<int>& autofill_unique_ids,
-    int separator_index) {}
+    const std::vector<int>& autofill_unique_ids) {}
 
 void TestAutofillExternalDelegate::OnQueryPlatformSpecific(
     int query_id,
