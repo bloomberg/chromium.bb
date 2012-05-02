@@ -9,7 +9,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram.h"
 #include "base/string_split.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
@@ -18,7 +17,6 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/screen_locker_settings.h"
-#include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -31,18 +29,14 @@
 #include "ui/base/events.h"
 #include "unicode/timezone.h"
 
-namespace chromeos {
 namespace {
 
-// TODO(achuith): Use a cmd-line flag + use flags for this instead.
-bool IsLumpy() {
-  std::string board;
-  system::StatisticsProvider::GetInstance()->GetMachineStatistic(
-      "CHROMEOS_RELEASE_BOARD", &board);
-  return StartsWithASCII(board, "lumpy", false);
-}
+const bool kDefaultTapToClickEnabled = true;
+const bool kDefaultNaturalScrollEnabled = false;
 
 }  // namespace
+
+namespace chromeos {
 
 static const char kFallbackInputMethodLocale[] = "en-US";
 
@@ -69,15 +63,14 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
     hardware_keyboard_id = "xkb:us::eng";  // only for testing.
   }
 
-  const bool enable_tap_to_click_default = IsLumpy();
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled,
-                             enable_tap_to_click_default,
+                             kDefaultTapToClickEnabled,
                              PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kEnableTouchpadThreeFingerClick,
                              false,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kNaturalScroll,
-                             false,
+                             kDefaultNaturalScrollEnabled,
                              PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPrimaryMouseButtonRight,
                              false,
@@ -258,6 +251,12 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kOAuth1Secret,
                             "",
                             PrefService::UNSYNCABLE_PREF);
+}
+
+// static
+void Preferences::SetDefaultOSSettings() {
+  system::touchpad_settings::SetTapToClick(kDefaultTapToClickEnabled);
+  ui::SetNaturalScroll(kDefaultNaturalScrollEnabled);
 }
 
 void Preferences::InitUserPrefs(PrefService* prefs) {
