@@ -196,6 +196,27 @@
       ],
     },
     {
+      'target_name': 'gl_unittests',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        'gles2_implementation_client_side_arrays',
+      ],
+      'defines': [
+        'GLES2_C_LIB_IMPLEMENTATION',
+      ],
+      'sources': [
+        'command_buffer/tests/gl_test_utils.cc',
+        'command_buffer/tests/gl_test_utils.h',
+        'command_buffer/tests/gl_texture_mailbox_unittests.cc',
+        'command_buffer/tests/gl_unittests.cc',
+        'command_buffer/tests/occlusion_query_unittests.cc',
+      ],
+    },
+    {
       'target_name': 'gl_tests',
       'type': 'executable',
       'dependencies': [
@@ -204,7 +225,6 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/angle/src/build_angle.gyp:translator_glsl',
-        '../ui/gfx/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui',
         'command_buffer/command_buffer.gyp:gles2_utils',
         'command_buffer_client',
@@ -214,6 +234,7 @@
         'gpu_unittest_utils',
         'gles2_implementation_client_side_arrays',
         'gles2_cmd_helper',
+        'gl_unittests',
       ],
       'defines': [
         'GLES2_C_LIB_IMPLEMENTATION',
@@ -223,8 +244,6 @@
         'command_buffer/tests/gl_tests_main.cc',
         'command_buffer/tests/gl_manager.cc',
         'command_buffer/tests/gl_manager.h',
-        'command_buffer/tests/gl_texture_mailbox_unittests.cc',
-        'command_buffer/tests/gl_unittests.cc',
       ],
     },
     {

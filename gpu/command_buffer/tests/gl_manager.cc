@@ -22,8 +22,9 @@ namespace gpu {
 
 GLManager::GLManager(gles2::MailboxManager* mailbox_manager,
                      gfx::GLShareGroup* share_group)
-    : mailbox_manager_(mailbox_manager),
-      share_group_(share_group) {
+    : mailbox_manager_(
+        mailbox_manager ? mailbox_manager : new gles2::MailboxManager),
+      share_group_(share_group ? share_group : new gfx::GLShareGroup) {
 }
 
 GLManager::~GLManager() {

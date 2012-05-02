@@ -9,17 +9,15 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/gl/gl_share_group.h"
 
 namespace gpu {
 
 class GLTest : public testing::Test {
  protected:
-  GLTest() : gl_(new gles2::MailboxManager, new gfx::GLShareGroup) {
+  GLTest() : gl_(NULL, NULL) {
   }
 
   virtual void SetUp() {
