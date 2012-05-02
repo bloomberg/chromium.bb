@@ -19,6 +19,19 @@
 //  91533 WIN : gl_min_uniforms = FAIL
 //  91532 MAC NVIDIA 0x0640 : tex_image_and_sub_image_2d_with_video = PASS FAIL
 
+125864 WIN : conformance_canvas_texture_bindings_unaffected_on_resize = FAIL
+125864 WIN : conformance_glsl_misc_shader_with_comma_assignment = FAIL
+125864 WIN : conformance_glsl_misc_shader_with_comma_conditional_assignment = FAIL
+125864 WIN : conformance_programs_gl_bind_attrib_location_long_names_test = FAIL
+125864 WIN : conformance_textures_texture_upload_cube_maps = FAIL
+
+125864 MAC WIN LINUX : conformance_uniforms_uniform_default_values = FAIL
+
+125864 LINUX : conformance_extensions_ext_texture_filter_anisotropic = FAIL
+
+125864 MAC : conformance_glsl_misc_glsl_vertex_branch = FAIL
+125864 MAC : conformance_glsl_misc_shader_with_gles_1_frag = FAIL
+
 103759 MAC WIN LINUX : conformance_more_functions_readPixelsBadArgs = FAIL
 103759 MAC WIN LINUX : conformance_more_functions_texImage2DHTML = FAIL
 103759 MAC WIN LINUX : conformance_more_functions_texSubImage2DHTML = FAIL
