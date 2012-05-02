@@ -838,6 +838,7 @@ wl_display_add_global(struct wl_display *display,
 		      void *data, wl_global_bind_func_t bind)
 {
 	struct wl_global *global;
+	struct wl_client *client;
 
 	global = malloc(sizeof *global);
 	if (global == NULL)
@@ -848,6 +849,13 @@ wl_display_add_global(struct wl_display *display,
 	global->data = data;
 	global->bind = bind;
 	wl_list_insert(display->global_list.prev, &global->link);
+
+	wl_list_for_each(client, &display->client_list, link)
+		wl_resource_post_event(client->display_resource,
+				       WL_DISPLAY_GLOBAL,
+				       global->name,
+				       global->interface->name,
+				       global->interface->version);
 
 	return global;
 }
