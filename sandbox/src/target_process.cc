@@ -209,7 +209,7 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
   return win_result;
 }
 
-ResultCode TargetProcess::TransferVariable(char* name, void* address,
+ResultCode TargetProcess::TransferVariable(const char* name, void* address,
                                            size_t size) {
   if (!sandbox_process_info_.IsValid())
     return SBOX_ERROR_UNEXPECTED_CALL;

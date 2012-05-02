@@ -28,7 +28,7 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
   explicit ChromeBrowserMainPartsWin(
       const content::MainFunctionParams& parameters);
 
-  virtual ChromeBrowserMainPartsWin::~ChromeBrowserMainPartsWin();
+  virtual ~ChromeBrowserMainPartsWin();
 
   // BrowserParts overrides.
   virtual void ToolkitInitialized() OVERRIDE;

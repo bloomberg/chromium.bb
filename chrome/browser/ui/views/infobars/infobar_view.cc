@@ -130,7 +130,7 @@ views::TextButton* InfoBarView::CreateTextButton(
   if (needs_elevation &&
       (base::win::GetVersion() >= base::win::VERSION_VISTA) &&
       base::win::UserAccountControlIsEnabled()) {
-    SHSTOCKICONINFO icon_info = { sizeof SHSTOCKICONINFO };
+    SHSTOCKICONINFO icon_info = { sizeof(SHSTOCKICONINFO) };
     // Even with the runtime guard above, we have to use GetProcAddress() here,
     // because otherwise the loader will try to resolve the function address on
     // startup, which will break on XP.

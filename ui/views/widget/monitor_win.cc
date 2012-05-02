@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ gfx::Rect GetMonitorBoundsForRect(const gfx::Rect& rect) {
 }
 
 HWND GetTopmostAutoHideTaskbarForEdge(UINT edge, HMONITOR monitor) {
-  APPBARDATA taskbar_data =  { sizeof APPBARDATA, NULL, 0, edge };
+  APPBARDATA taskbar_data =  { sizeof(APPBARDATA), NULL, 0, edge };
   HWND taskbar = reinterpret_cast<HWND>(SHAppBarMessage(ABM_GETAUTOHIDEBAR,
                                                         &taskbar_data));
   return (::IsWindow(taskbar) && (monitor != NULL) &&

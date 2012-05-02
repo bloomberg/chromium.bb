@@ -137,7 +137,7 @@ bool Wow64::WaitForNtdll() {
 }
 
 bool Wow64::RunWowHelper(void* buffer) {
-  COMPILE_ASSERT(sizeof(buffer) <= sizeof DWORD, unsupported_64_bits);
+  COMPILE_ASSERT(sizeof(buffer) <= sizeof(DWORD), unsupported_64_bits);
 
   // Get the path to the helper (beside the exe).
   wchar_t prog_name[MAX_PATH];

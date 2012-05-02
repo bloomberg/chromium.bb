@@ -660,7 +660,7 @@ class PrintSystemWin : public PrintSystem {
       base::win::ScopedComPtr<IXpsPrintJob> xps_print_job_;
       bool should_couninit_;
 
-      DISALLOW_COPY_AND_ASSIGN(JobSpoolerWin::Core);
+      DISALLOW_COPY_AND_ASSIGN(Core);
     };
     scoped_refptr<Core> core_;
 

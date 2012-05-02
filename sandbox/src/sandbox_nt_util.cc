@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -538,7 +538,7 @@ void* operator new(size_t size, sandbox::AllocationType type,
 
   if (NT_ALLOC == type) {
     if (!InitHeap())
-      return false;
+      return NULL;
 
     // Use default flags for the allocation.
     return g_nt.RtlAllocateHeap(sandbox::g_heap, 0, size);

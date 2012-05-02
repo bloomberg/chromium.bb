@@ -222,7 +222,7 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
 
   {
     base::win::ScopedGetDC screen_dc(NULL);
-    base::win::ScopedSelectObject font(screen_dc, font);
+    base::win::ScopedSelectObject scoped_font(screen_dc, font);
     ui::ScopedSetMapMode mode(screen_dc, MM_TEXT);
     GetTextMetrics(screen_dc, &font_metrics);
   }

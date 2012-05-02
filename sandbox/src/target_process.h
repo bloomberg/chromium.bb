@@ -81,7 +81,7 @@ class TargetProcess {
   }
 
   // Transfers a 32-bit variable between the broker and the target.
-  ResultCode TransferVariable(char* name, void* address, size_t size);
+  ResultCode TransferVariable(const char* name, void* address, size_t size);
 
  private:
   // Details of the target process.
