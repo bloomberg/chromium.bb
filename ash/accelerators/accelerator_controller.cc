@@ -125,6 +125,11 @@ bool HandleCrosh() {
   ash::Shell::GetInstance()->delegate()->OpenCrosh();
   return true;
 }
+
+bool HandleToggleSpokenFeedback() {
+  ash::Shell::GetInstance()->delegate()->ToggleSpokenFeedback();
+  return true;
+}
 #endif
 
 bool HandleExit() {
@@ -350,6 +355,8 @@ bool AcceleratorController::AcceleratorPressed(
       return HandleFileManager();
     case OPEN_CROSH:
       return HandleCrosh();
+    case TOGGLE_SPOKEN_FEEDBACK:
+      return HandleToggleSpokenFeedback();
 #endif
     case EXIT:
       return HandleExit();

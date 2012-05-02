@@ -71,6 +71,10 @@ class ASH_EXPORT ShellDelegate {
   // Invoked when the user needs to set up mobile networking.
   virtual void OpenMobileSetup() = 0;
 
+  // Invoked when the user presses a shortcut to toggle spoken feedback
+  // for accessibility.
+  virtual void ToggleSpokenFeedback() = 0;
+
   // Invoked to create an AppListViewDelegate. Shell takes the ownership of
   // the created delegate.
   virtual AppListViewDelegate* CreateAppListViewDelegate() = 0;

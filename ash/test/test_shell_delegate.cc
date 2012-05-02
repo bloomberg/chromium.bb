@@ -59,6 +59,9 @@ void TestShellDelegate::OpenCrosh() {
 void TestShellDelegate::OpenMobileSetup() {
 }
 
+void TestShellDelegate::ToggleSpokenFeedback() {
+}
+
 AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {
   return NULL;
 }

@@ -34,6 +34,7 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_T, false, true, true, OPEN_CROSH },
 #endif
   { true, ui::VKEY_Q, true, true, false, EXIT },
+  { true, ui::VKEY_Z, false, true, true, TOGGLE_SPOKEN_FEEDBACK },
 
   // When you change the shortcut for NEW_INCOGNITO_WINDOW or NEW_WINDOW,
   // you also need to modify ToolbarView::GetAcceleratorForCommandId() in
@@ -120,6 +121,7 @@ const AcceleratorAction kActionsAllowedAtLoginScreen[] = {
   TAKE_SCREENSHOT,
   TAKE_PARTIAL_SCREENSHOT,
   TOGGLE_CAPS_LOCK,
+  TOGGLE_SPOKEN_FEEDBACK,
   VOLUME_DOWN,
   VOLUME_MUTE,
   VOLUME_UP,

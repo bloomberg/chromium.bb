@@ -29,11 +29,14 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/background/desktop_background_observer.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
+#include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -183,6 +186,18 @@ void ChromeShellDelegate::OpenMobileSetup() {
                                false));
     browser->window()->Activate();
   }
+#endif
+}
+
+void ChromeShellDelegate::ToggleSpokenFeedback() {
+#if defined(OS_CHROMEOS)
+  content::WebUI* login_screen_web_ui = NULL;
+  chromeos::WebUILoginDisplayHost* host =
+      static_cast<chromeos::WebUILoginDisplayHost*>(
+          chromeos::BaseLoginDisplayHost::default_host());
+  if (host && host->GetOobeUI())
+    login_screen_web_ui = host->GetOobeUI()->web_ui();
+  chromeos::accessibility::ToggleSpokenFeedback(login_screen_web_ui);
 #endif
 }
 

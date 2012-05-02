@@ -75,6 +75,9 @@ void ShellDelegateImpl::OpenCrosh() {
 void ShellDelegateImpl::OpenMobileSetup() {
 }
 
+void ShellDelegateImpl::ToggleSpokenFeedback() {
+}
+
 ash::AppListViewDelegate* ShellDelegateImpl::CreateAppListViewDelegate() {
   return ash::shell::CreateAppListViewDelegate();
 }
