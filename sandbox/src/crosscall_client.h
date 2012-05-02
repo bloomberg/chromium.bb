@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -297,7 +297,7 @@ class CopyHelper<InOutCountedBuffer> {
   void* raw_mem = ipc_provider.GetBuffer(); \
   if (NULL == raw_mem) \
     return SBOX_ERROR_NO_SPACE; \
-  ActualParams* ##params = new(raw_mem) ActualParams(tag);
+  ActualParams* params = new(raw_mem) ActualParams(tag);
 
 #define XCALL_GEN_COPY_PARAM(num, params) \
   COMPILE_ASSERT(kMaxIpcParams >= num, too_many_parameters); \

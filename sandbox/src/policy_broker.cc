@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,15 +28,15 @@ namespace sandbox {
 SANDBOX_INTERCEPT NtExports g_nt;
 
 #define INIT_GLOBAL_NT(member) \
-  g_nt.##member = reinterpret_cast<Nt##member##Function>( \
+  g_nt.member = reinterpret_cast<Nt##member##Function>( \
                       ntdll_image.GetProcAddress("Nt" #member)); \
-  if (NULL == g_nt.##member) \
+  if (NULL == g_nt.member) \
     return false
 
 #define INIT_GLOBAL_RTL(member) \
-  g_nt.##member = reinterpret_cast<##member##Function>( \
+  g_nt.member = reinterpret_cast<member##Function>( \
                       ntdll_image.GetProcAddress(#member)); \
-  if (NULL == g_nt.##member) \
+  if (NULL == g_nt.member) \
     return false
 
 bool SetupNtdllImports(TargetProcess *child) {
