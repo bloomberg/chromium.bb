@@ -1181,3 +1181,19 @@ body:not([type='saveas-file']):not([type='full-page'])
   float: none;
   margin-left: 1px;
 }
+
+/* To animate the #gdata-settings element to invisibility we set every property
+  that affects its horizontal size to 0. */
+.dialog-container:not([gdata]) #gdata-settings {
+  border-color: transparent;  /* Changing only the color to preserve layout. */
+  border-left-width: 0;
+  border-right-width: 0;
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+  width: 0;
+}
+
+.dialog-container:not([gdata]) #gdata-settings > * {
+  display: none;
+}

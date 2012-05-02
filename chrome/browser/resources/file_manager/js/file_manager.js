@@ -355,11 +355,8 @@ FileManager.prototype = {
     chrome.fileBrowserPrivate.onFileChanged.addListener(
         this.onFileChanged_.bind(this));
 
-    var path = this.getPathFromUrlOrParams_();
     var invokeHandler = !this.params_.selectOnly;
-    if (path &&
-        FileManager.isGDataEnabled() &&
-        DirectoryModel.getRootType(path) == DirectoryModel.RootType.GDATA) {
+    if (this.isStartingOnGData_()) {
       // We are opening on a GData path. Mount GData and show
       // "Loading Google Docs" message until the directory content loads.
       this.dialogContainer_.setAttribute('unmounted', true);
@@ -545,6 +542,11 @@ FileManager.prototype = {
         'click', this.onDetailViewButtonClick_.bind(this));
     this.dialogDom_.querySelector('#thumbnail-view').addEventListener(
         'click', this.onThumbnailViewButtonClick_.bind(this));
+
+    // When we show the page for the first time we want to avoid
+    // the GDrive settings button animation, so we set the attribute ASAP.
+    if (this.isStartingOnGData_())
+      this.dialogContainer_.setAttribute('gdata', true);
 
     this.syncButton = this.dialogDom_.querySelector('#gdata-sync-settings');
     this.syncButton.addEventListener('click',
@@ -2308,6 +2310,13 @@ FileManager.prototype = {
     return this.directoryModel_ &&
         this.directoryModel_.getCurrentRootPath() ==
             '/' + DirectoryModel.GDATA_DIRECTORY;
+  };
+
+  FileManager.prototype.isStartingOnGData_ = function() {
+    var path = this.getPathFromUrlOrParams_();
+    return path &&
+        FileManager.isGDataEnabled() &&
+        DirectoryModel.getRootType(path) == DirectoryModel.RootType.GDATA;
   };
 
   FileManager.prototype.getMetadataProvider = function() {
