@@ -59,7 +59,7 @@ def EncodeRspFileList(args):
   # to get quotes around the remainder (after 'call') since other generators
   # and gyp in general don't really support spaces in paths.
   if not args: return ''
-  program = args[0]
+  program = os.path.normpath(args[0])
   return program + ' ' + ' '.join(QuoteForRspFile(arg) for arg in args[1:])
 
 
