@@ -46,6 +46,12 @@ GEN_LIST = [_gen_file(x) for x in
              'arm32_decode_named_decoder.h',
              'arm32_decode_tests.cc']]
 
+# If non-empty, it should include the list of table names (in
+# armv7.table) that valgen should generate tests for. Allows testing
+# of a small number of tables without the overhead of running tests
+# for all tables.
+GEN_TABLES=""
+
 generate = False
 gen_env = env.Clone();
 if 'valgen' in COMMAND_LINE_TARGETS: generate = True
@@ -68,7 +74,7 @@ def _generate_source(filename):
                       'dgen_test_output.py',
                       ],
               action=['${SOURCES[1].abspath} ${SOURCES[0].abspath} '
-                      '${TARGET.abspath} Arm32DecoderState'])
+                      '${TARGET.abspath} Arm32DecoderState ' + GEN_TABLES])
 
 for f in GEN_LIST:
   _generate_source(f)

@@ -37,6 +37,10 @@ def main(argv):
     table_filename = argv[1]
     output_filename = argv[2]
     decoder_name = argv[3]
+    tables = None
+
+    if len(argv) > 4:
+      tables = argv[4:]
 
     print "Decoder Generator reading ", table_filename
     f = open(table_filename, 'r')
@@ -51,7 +55,7 @@ def main(argv):
     if output_filename.endswith('tests.cc'):
       dgen_test_output.generate_tests_cc(decoder,
                                          decoder_name,
-                                         f)
+                                         f, tables)
     elif output_filename.endswith('named_classes.h'):
       dgen_test_output.generate_named_classes_h(
           decoder, decoder_name, _localize_filename(output_filename),

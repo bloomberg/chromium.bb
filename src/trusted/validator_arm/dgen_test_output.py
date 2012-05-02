@@ -161,6 +161,7 @@ parsed table representations.
 #
 # is used instead.
 
+import dgen_core
 import dgen_opt
 import dgen_output
 
@@ -602,7 +603,7 @@ int main(int argc, char* argv[]) {
 }
 """
 
-def generate_tests_cc(decoder, decoder_name, out):
+def generate_tests_cc(decoder, decoder_name, out, tables):
   if not decoder.primary: raise Exception('No tables provided.')
   values = {
       'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
@@ -612,7 +613,8 @@ def generate_tests_cc(decoder, decoder_name, out):
   out.write(TEST_CC_HEADER % values)
   _generate_rule_testers(decoder, values, out)
   out.write(TEST_HARNESS % values)
-  _generate_test_patterns(decoder, values, out)
+  _generate_test_patterns(_decoder_restricted_to_tables(decoder, tables),
+                          values, out)
   out.write(TEST_CC_FOOTER % values)
 
 def _generate_rule_testers(decoder, values, out):
@@ -621,6 +623,14 @@ def _generate_rule_testers(decoder, values, out):
     values['rule'] = d.rule
     values['constraints'] = d.constraints if d.constraints else ''
     out.write(TESTER_CLASS % values)
+
+def _decoder_restricted_to_tables(decoder, tables):
+  if not tables:
+    return decoder
+  new_decoder = dgen_core.Decoder()
+  for tbl in [tbl for tbl in decoder.tables() if tbl.name in tables]:
+    new_decoder.add(tbl)
+  return new_decoder
 
 def _generate_test_patterns(decoder, values, out):
   for d in decoder.decoders():
