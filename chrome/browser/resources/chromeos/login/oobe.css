@@ -26,12 +26,12 @@ button {
 }
 
 /* Follow same focus coloring as in widgets.css */
-button.custom-appearance:enabled {
+button.custom-appearance {
   -webkit-transition: border-color 200ms;
   border: 1px solid transparent;
 }
 
-button.custom-appearance:enabled:focus {
+button.custom-appearance:focus {
   border-color: rgb(77, 144, 254);
 }
 
