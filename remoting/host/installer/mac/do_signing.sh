@@ -14,12 +14,14 @@
 
 set -e -u
 
+ME="$(basename "${0}")"
+readonly ME
+
+declare -a g_cleanup_dirs
+
 # Binaries to sign.
 ME2ME_HOST='PrivilegedHelperTools/org.chromium.chromoting.me2me_host'
 UNINSTALLER='Applications/@@HOST_UNINSTALLER_NAME@@.app'
-
-# Iceberg creates this directory to write its output.
-PKG_DIR=build
 
 # The Chromoting Host installer is a meta-package that consists of 3
 # components:
@@ -33,13 +35,19 @@ PKGPROJ_HOST_UNINSTALLER='ChromotingHostUninstaller.packproj'
 # Final (user-visible) mpkg name.
 PKG_FINAL='@@HOST_PKG@@.mpkg'
 
-DMG_TEMP=dmg_tmp
 DMG_NAME='@@DMG_NAME@@'
-DMG_DIR="${DMG_TEMP}/${DMG_NAME}"
 DMG_FILENAME='@@DMG_NAME@@.dmg'
 
-ME="$(basename "${0}")"
-readonly ME
+# Temp directory for Iceberg output.
+PKG_DIR=build
+g_cleanup_dirs+=("${PKG_DIR}")
+
+# Temp directories for building the dmg.
+DMG_TEMP_DIR="$(mktemp -d -t "${ME}"-dmg)"
+g_cleanup_dirs+=("${DMG_TEMP_DIR}")
+
+DMG_EMPTY_DIR="$(mktemp -d -t "${ME}"-empty)"
+g_cleanup_dirs+=("${DMG_EMPTY_DIR}")
 
 err() {
   echo "[$(date +'%Y-%m-%d %H:%M:%S%z')]: ${@}" >&2
@@ -118,25 +126,25 @@ build_dmg() {
   local input_dir="${1}"
   local output_dir="${2}"
 
-  # TODO(garykac): Change this to use the pkg-dmg script.
-
   # Create the .dmg.
   echo "Building .dmg..."
-  mkdir -p "${input_dir}/${DMG_DIR}/${PKG_FINAL}"
-  # Copy .mpkg installer.
-  echo "Copying ${input_dir}/${PKG_DIR}/${PKG_FINAL}"
-  ditto "${input_dir}/${PKG_DIR}/${PKG_FINAL}" \
-      "${input_dir}/${DMG_DIR}/${PKG_FINAL}"
-  # Copy .keystone_install script to top level of .dmg.
-  # Keystone calls this script during upgrades.
-  cp "${input_dir}/Scripts/keystone_install.sh" \
-      "${input_dir}/${DMG_DIR}/.keystone_install"
-  # Build the .dmg from the directory.
-  hdiutil create "${output_dir}/${DMG_FILENAME}" \
-      -srcfolder "${input_dir}/${DMG_DIR}" -ov -quiet
+  ./pkg-dmg \
+      --format UDBZ \
+      --tempdir "${DMG_TEMP_DIR}" \
+      --source "${DMG_EMPTY_DIR}" \
+      --target "${output_dir}/${DMG_FILENAME}" \
+      --volname "${DMG_NAME}" \
+      --copy "${input_dir}/${PKG_DIR}/${PKG_FINAL}" \
+      --copy "${input_dir}/Scripts/keystone_install.sh:/.keystone_install"
 
   if [[ ! -f "${output_dir}/${DMG_FILENAME}" ]]; then
     err_exit "Unable to create disk image: ${DMG_FILENAME}"
+  fi
+}
+
+cleanup() {
+  if [[ "${#g_cleanup_dirs[@]}" > 0 ]]; then
+    rm -rf "${g_cleanup_dirs[@]}"
   fi
 }
 
@@ -156,6 +164,8 @@ main() {
   build_packages "${input_dir}"
   # TODO(garykac): Sign final .mpkg.
   build_dmg "${input_dir}" "${output_dir}"
+
+  cleanup
 }
 
 if [[ ${#} -ne 4 ]]; then
