@@ -77,8 +77,11 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   // Adds optional debug items for frame type toggling.
   void AddFrameToggleItems();
 
-  // Handles metro navigation search requests.
-  void HandleMetroRequest(WPARAM w_param, LPARAM l_param);
+  // Handles metro navigation and search requests.
+  void HandleMetroNavSearchRequest(WPARAM w_param, LPARAM l_param);
+
+  // Returns information about the currently displayed tab in metro mode.
+  void GetMetroCurrentTabInfo(WPARAM w_param);
 
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;
