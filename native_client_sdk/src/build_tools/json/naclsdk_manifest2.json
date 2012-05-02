@@ -199,31 +199,31 @@
       "repath": "pepper_20",
       "archives": [
         {
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.133336/naclsdk_mac.bz2",
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.134804/naclsdk_mac.bz2",
           "checksum": {
-            "sha1": "16eb7b9a06b4c02cc1cc2872130147da433f289c"
+            "sha1": "d134ebad9887fe8f163f7599f136aa21cb5779a7"
           },
           "host_os": "mac",
-          "size": 118163755
+          "size": 123117593
         },
         {
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.133336/naclsdk_linux.bz2",
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.134804/naclsdk_linux.bz2",
           "checksum": {
-            "sha1": "a15b33febeab471594e8e6f457e8c7e60719b794"
+            "sha1": "f30ae1fe30208e52da0e26d262d42190b6575011"
           },
           "host_os": "linux",
-          "size": 117709970
+          "size": 127113829
         },
         {
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.133336/naclsdk_win.bz2",
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.134804/naclsdk_win.bz2",
           "checksum": {
-            "sha1": "86d78e7805e3ecf49893b46b1feb677b99c62166"
+            "sha1": "a4457505fe1c8ee12aaaa1e0c85eae6edf74656d"
           },
           "host_os": "win",
-          "size": 113689986
+          "size": 119404351
         }
       ],
-      "revision": 133336
+      "revision": 134804
     }
   ],
   "manifest_version": 2
