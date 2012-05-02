@@ -186,6 +186,9 @@ void NetworkStateInformer::Init() {
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_PROXY_CHANGED,
                  content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_SESSION_STARTED,
+                 content::NotificationService::AllSources());
 }
 
 NetworkStateInformer::~NetworkStateInformer() {
@@ -221,8 +224,12 @@ void NetworkStateInformer::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_LOGIN_PROXY_CHANGED);
-  SendStateToObservers(kReasonProxyChanged);
+  if (type == chrome::NOTIFICATION_SESSION_STARTED)
+    registrar_.RemoveAll();
+  else if (type == chrome::NOTIFICATION_LOGIN_PROXY_CHANGED)
+    SendStateToObservers(kReasonProxyChanged);
+  else
+    NOTREACHED() << "Unknown notification: " << type;
 }
 
 void NetworkStateInformer::OnPortalDetected() {

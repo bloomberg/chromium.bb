@@ -154,6 +154,9 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
   registrar_.Add(this,
                  chrome::NOTIFICATION_AUTH_SUPPLIED,
                  content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_SESSION_STARTED,
+                 content::NotificationService::AllSources());
   cros_settings_->AddSettingsObserver(kAccountsPrefShowUserNamesOnSignIn, this);
   cros_settings_->AddSettingsObserver(kAccountsPrefAllowNewUser, this);
   cros_settings_->AddSettingsObserver(kAccountsPrefAllowGuest, this);
@@ -213,6 +216,14 @@ void ExistingUserController::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_SESSION_STARTED) {
+    // Stop listening to any notification once session has started.
+    // Sign in screen objects are marked for deletion with DeleteSoon so
+    // make sure no object would be used after session has started.
+    // http://crbug.com/125276
+    registrar_.RemoveAll();
+    return;
+  }
   if (type == chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED) {
     // Signed settings changed notify views and update them.
     const chromeos::UserList& users = chromeos::UserManager::Get()->GetUsers();
