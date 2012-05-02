@@ -898,14 +898,14 @@ gboolean BrowserTitlebar::OnWindowStateChanged(GtkWindow* window,
 }
 
 gboolean BrowserTitlebar::OnScroll(GtkWidget* widget, GdkEventScroll* event) {
-  TabStripModel* tabstrip_model = browser_window_->browser()->tabstrip_model();
-  int index = tabstrip_model->active_index();
+  Browser* browser = browser_window_->browser();
+  int index = browser->active_index();
   if (event->direction == GDK_SCROLL_LEFT ||
       event->direction == GDK_SCROLL_UP) {
     if (index != 0)
-      tabstrip_model->SelectPreviousTab();
-  } else if (index + 1 < tabstrip_model->count()) {
-    tabstrip_model->SelectNextTab();
+      browser->SelectPreviousTab();
+  } else if (index + 1 < browser->tab_count()) {
+    browser->SelectNextTab();
   }
   return TRUE;
 }
