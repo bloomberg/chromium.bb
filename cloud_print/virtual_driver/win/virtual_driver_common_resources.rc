@@ -7,8 +7,8 @@
 #endif // APSTUDIO_INVOKED
 
 1 VERSIONINFO
- FILEVERSION 0,1,0,3
- PRODUCTVERSION 0,1,0,3
+ FILEVERSION 0,1,0,4
+ PRODUCTVERSION 0,1,0,4
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -25,10 +25,10 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Google, Inc."
             VALUE "FileDescription", "Google Cloud Printer"
-            VALUE "FileVersion", "0.1.0.3"
+            VALUE "FileVersion", "0.1.0.4"
             VALUE "InternalName", "Google Cloud Printer"
             VALUE "ProductName", "Google Cloud Printer"
-            VALUE "ProductVersion", "0.1.0.3"
+            VALUE "ProductVersion", "0.1.0.4"
             VALUE "LegalCopyright", "Copyright (c) 2012 The Chromium Authors. All rights reserved."
         END
     END
