@@ -20,5 +20,12 @@ if sys.platform == 'win32':
   test = TestGyp.TestGyp(formats=['msvs', 'ninja'])
   CHDIR = 'command-quote'
   test.run_gyp('command-quote.gyp', chdir=CHDIR)
-  test.build('command-quote.gyp', test.ALL, chdir=CHDIR)
+
+  test.build('command-quote.gyp', 'test_batch', chdir=CHDIR)
+  test.build('command-quote.gyp', 'test_call_separate', chdir=CHDIR)
+
+  # We confirm that this fails because other generators don't handle spaces in
+  # inputs so it's preferable to not have it work here.
+  test.build('command-quote.gyp', 'test_with_spaces', chdir=CHDIR, status=1)
+
   test.pass_test()

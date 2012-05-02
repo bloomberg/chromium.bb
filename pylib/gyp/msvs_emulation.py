@@ -53,20 +53,13 @@ def QuoteForRspFile(arg):
 
 def EncodeRspFileList(args):
   """Process a list of arguments using QuoteCmdExeArgument."""
-  # Note that the first argument is assumed to be the command. We take extra
-  # steps to make sure that calls to .bat files are handled correctly, and
-  # that paths are normalized and quoted as necessary.
+  # Note that the first argument is assumed to be the command. Don't add
+  # quotes around it because then commands like 'call x.bat' or shell
+  # built-ins like 'echo', etc. won't work. Also, don't bother special casing
+  # to get quotes around the remainder (after 'call') since other generators
+  # and gyp in general don't really support spaces in paths.
   if not args: return ''
   program = args[0]
-  if program.startswith('call '):
-    call, batch = program.split(' ', 1)
-    program = 'call ' + QuoteForRspFile(os.path.normpath(batch))
-  else:
-    program = os.path.normpath(program)
-    # Don't add quotes around things without spaces so that 'call', 'echo',
-    # etc. will work if they're specified as individual arguments.
-    if ' ' in program:
-      program = QuoteForRspFile(program)
   return program + ' ' + ' '.join(QuoteForRspFile(arg) for arg in args[1:])
 
 
