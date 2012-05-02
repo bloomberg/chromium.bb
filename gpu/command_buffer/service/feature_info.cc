@@ -114,7 +114,6 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   AddExtensionString("GL_CHROMIUM_resource_safe");
   AddExtensionString("GL_CHROMIUM_resize");
   AddExtensionString("GL_CHROMIUM_strict_attribs");
-  AddExtensionString("GL_CHROMIUM_swapbuffers_complete_callback");
   AddExtensionString("GL_CHROMIUM_rate_limit_offscreen_context");
   AddExtensionString("GL_CHROMIUM_set_visibility");
   AddExtensionString("GL_CHROMIUM_gpu_memory_manager");
@@ -463,6 +462,8 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     validators_.vertex_attribute.AddValue(GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE);
   }
 
+  if (!disallowed_features_.swap_buffer_complete_callback)
+    AddExtensionString("GL_CHROMIUM_swapbuffers_complete_callback");
 }
 
 void FeatureInfo::AddExtensionString(const std::string& str) {

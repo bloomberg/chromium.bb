@@ -424,11 +424,13 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
     return false;
   }
 
+  ::gpu::gles2::DisallowedFeatures disallowed_features;
+  disallowed_features.swap_buffer_complete_callback = true;
   if (!decoder_->Initialize(surface_.get(),
                             context_.get(),
                             true,
                             size,
-                            ::gpu::gles2::DisallowedFeatures(),
+                            disallowed_features,
                             allowed_extensions,
                             attribs)) {
     LOG(ERROR) << "Could not initialize decoder.";
