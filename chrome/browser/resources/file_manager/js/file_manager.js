@@ -4342,9 +4342,12 @@ FileManager.prototype = {
       dismiss.addEventListener('click', closeBanner);
     }
 
+    var previousDirWasOnGData = false;
+
     function maybeShowBanner() {
       if (!self.isOnGData()) {
         self.dialogContainer_.removeAttribute('gdrive-welcome');
+        previousDirWasOnGData = false;
         return;
       }
 
@@ -4355,15 +4358,22 @@ FileManager.prototype = {
         // Do not increment the counter.
         showBanner('page', 'GDATA_WELCOME_TEXT_LONG');
       } else if (counter < WELCOME_HEADER_COUNTER_LIMIT) {
-        localStorage[WELCOME_HEADER_COUNTER_KEY] = ++counter;
+        // We do not want to increment the counter when the user navigates
+        // between different directories on GDrive, but we increment the counter
+        // once anyway to prevent the full page banner from showing.
+        if (!previousDirWasOnGData || counter == 0)
+          localStorage[WELCOME_HEADER_COUNTER_KEY] = ++counter;
         showBanner('header', 'GDATA_WELCOME_TEXT_SHORT');
       } else {
         closeBanner();
       }
+      previousDirWasOnGData = true;
     }
 
     function closeBanner() {
       self.directoryModel_.removeEventListener('scan-completed',
+          maybeShowBanner);
+      self.directoryModel_.removeEventListener('rescan-completed',
           maybeShowBanner);
 
       self.dialogContainer_.removeAttribute('gdrive-welcome');
@@ -4372,6 +4382,7 @@ FileManager.prototype = {
     }
 
     this.directoryModel_.addEventListener('scan-completed', maybeShowBanner);
+    this.directoryModel_.addEventListener('rescan-completed', maybeShowBanner);
 
     var style = this.document_.createElement('link');
     style.rel = 'stylesheet';
