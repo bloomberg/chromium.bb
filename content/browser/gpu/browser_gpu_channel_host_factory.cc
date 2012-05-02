@@ -180,11 +180,15 @@ GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
           base::Unretained(this),
           &request,
           cause_for_gpu_launch));
-  // We're blocking the UI thread, which is generally undesirable.
-  // In this case we need to wait for this before we can show any UI /anyway/,
-  // so it won't cause additional jank.
-  // TODO(piman): Make this asynchronous.
-  request.event.Wait();
+
+  {
+    // We're blocking the UI thread, which is generally undesirable.
+    // In this case we need to wait for this before we can show any UI /anyway/,
+    // so it won't cause additional jank.
+    // TODO(piman): Make this asynchronous (http://crbug.com/125248).
+    base::ThreadRestrictions::ScopedAllowWait allow_wait;
+    request.event.Wait();
+  }
 
   if (request.channel_handle.name.empty())
     return NULL;
