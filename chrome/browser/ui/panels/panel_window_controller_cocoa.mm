@@ -774,8 +774,6 @@ enum {
 
 - (void)setPanelFrame:(NSRect)frame
               animate:(BOOL)animate {
-  [self updateTitleBarMinimizeRestoreButtonVisibility];
-
   BOOL jumpToDestination = (!animateOnBoundsChange_ || !animate);
 
   // If no animation is in progress, apply bounds change instantly.

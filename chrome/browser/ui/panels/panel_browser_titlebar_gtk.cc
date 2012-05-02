@@ -97,11 +97,18 @@ bool PanelBrowserTitlebarGtk::BuildButton(const std::string& button_token,
   if (button_token != "close" && button_token != "minimize")
     return false;
 
-  // Create unminimze button in order to show it to expand the minimized panel.
-  if (button_token == "minimize")
+  if (!BrowserTitlebar::BuildButton(button_token, left_side))
+    return false;
+
+  if (button_token == "minimize") {
+    // Create unminimze button, used to expand the minimized panel.
     unminimize_button_.reset(CreateTitlebarButton("unminimize", left_side));
 
-  return BrowserTitlebar::BuildButton(button_token, left_side);
+    // We control visibility of minimize and unminimize buttons.
+    gtk_widget_set_no_show_all(minimize_button()->widget(), TRUE);
+    gtk_widget_set_no_show_all(unminimize_button_->widget(), TRUE);
+  }
+  return true;
 }
 
 void PanelBrowserTitlebarGtk::GetButtonResources(const std::string& button_name,

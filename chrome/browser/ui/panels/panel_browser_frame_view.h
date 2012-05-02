@@ -35,6 +35,7 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   virtual ~PanelBrowserFrameView();
 
   void UpdateTitleBar();
+  void UpdateTitleBarMinimizeRestoreButtonVisibility();
 
   // Returns the height of the entire nonclient top border, including the window
   // frame, any title area, and any connected client edge.

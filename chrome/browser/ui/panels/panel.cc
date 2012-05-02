@@ -157,11 +157,6 @@ gfx::Size Panel::ClampSize(const gfx::Size& size) const {
   return gfx::Size(new_width, new_height);
 }
 
-
-void Panel::SetAppIconVisibility(bool visible) {
-  native_panel_->SetPanelAppIconVisibility(visible);
-}
-
 void Panel::SetAlwaysOnTop(bool on_top) {
   if (always_on_top_ == on_top)
     return;
@@ -174,15 +169,13 @@ void Panel::EnableResizeByMouse(bool enable) {
   native_panel_->EnableResizeByMouse(enable);
 }
 
+void Panel::UpdateMinimizeRestoreButtonVisibility() {
+  native_panel_->UpdatePanelMinimizeRestoreButtonVisibility();
+}
+
 void Panel::SetPreviewMode(bool in_preview) {
   DCHECK_NE(in_preview_mode_, in_preview);
   in_preview_mode_ = in_preview;
-}
-
-void  Panel::SetPanelStrip(PanelStrip* new_strip) {
-  panel_strip_ = new_strip;
-  if (panel_strip_ != NULL && initialized_)
-    native_panel_->PreventActivationByOS(panel_strip_->IsPanelMinimized(this));
 }
 
 void Panel::SetExpansionState(ExpansionState new_state) {
@@ -194,6 +187,7 @@ void Panel::SetExpansionState(ExpansionState new_state) {
 
   DCHECK(initialized_ && panel_strip_ != NULL);
   native_panel_->PreventActivationByOS(panel_strip_->IsPanelMinimized(this));
+  UpdateMinimizeRestoreButtonVisibility();
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,

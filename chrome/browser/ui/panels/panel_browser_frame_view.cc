@@ -312,6 +312,7 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
                             restore_button_resources.hover_image);
   restore_button_->SetTooltipText(restore_button_resources.tooltip_text);
   restore_button_->SetAccessibleName(restore_button_resources.tooltip_text);
+  restore_button_->SetVisible(false);  // only visible when panel is minimized
   AddChildView(restore_button_);
 
   title_icon_ = new TabIconView(this);
@@ -465,48 +466,27 @@ void PanelBrowserFrameView::Layout() {
   if (!panel_strip)
     return;
 
-  // Check if the width is only enough to show only the icon, or both icon
-  // and title. Hide corresponding controls accordingly.
-  // TODO(aburago) Make sure the close button is always visible even if the
-  // panel is too narrow.
-  bool show_close_button = true;
-  bool show_title_label = true;
-  bool show_restore_button = panel->CanRestore();
-  bool show_minimize_button = panel->CanMinimize();
-
-  close_button_->SetVisible(show_close_button);
-  minimize_button_->SetVisible(show_minimize_button);
-  restore_button_->SetVisible(show_restore_button);
-  title_label_->SetVisible(show_title_label);
-
   // Layout the close button.
   int right = width();
-  if (show_close_button) {
-    gfx::Size close_button_size = close_button_->GetPreferredSize();
-    close_button_->SetBounds(
-        width() - NonClientBorderThickness() - kCloseButtonAndBorderSpacing -
-            close_button_size.width(),
-        (NonClientTopBorderHeight() - close_button_size.height()) / 2,
-        close_button_size.width(),
-        close_button_size.height());
-    right = close_button_->x();
-  }
+  gfx::Size close_button_size = close_button_->GetPreferredSize();
+  close_button_->SetBounds(
+      width() - NonClientBorderThickness() - kCloseButtonAndBorderSpacing -
+      close_button_size.width(),
+      (NonClientTopBorderHeight() - close_button_size.height()) / 2,
+      close_button_size.width(),
+      close_button_size.height());
+  right = close_button_->x();
 
-  // Layout the minimize/restore button.
-  views::ImageButton* minimize_or_restore_button = NULL;
-  if (show_minimize_button)
-    minimize_or_restore_button = minimize_button_;
-  else if (show_restore_button)
-    minimize_or_restore_button = restore_button_;
-  if (minimize_or_restore_button) {
-    gfx::Size button_size = minimize_or_restore_button->GetPreferredSize();
-    minimize_or_restore_button->SetBounds(
-        right - kMinimizeButtonAndCloseButtonSpacing - button_size.width(),
-        (NonClientTopBorderHeight() - button_size.height()) / 2,
-        button_size.width(),
-        button_size.height());
-    right = minimize_or_restore_button->x();
-  }
+  // Layout the minimize and restore button. Both occupy the same space,
+  // but at most one is visible at any time.
+  gfx::Size button_size = minimize_button_->GetPreferredSize();
+  minimize_button_->SetBounds(
+      right - kMinimizeButtonAndCloseButtonSpacing - button_size.width(),
+      (NonClientTopBorderHeight() - button_size.height()) / 2,
+      button_size.width(),
+      button_size.height());
+  restore_button_->SetBoundsRect(minimize_button_->bounds());
+  right = minimize_button_->x();
 
   // Layout the icon.
   int icon_y = (NonClientTopBorderHeight() - kIconSize) / 2;
@@ -517,15 +497,13 @@ void PanelBrowserFrameView::Layout() {
       kIconSize);
 
   // Layout the title.
-  if (show_title_label) {
-    int title_x = title_icon_->bounds().right() + kTitleSpacing;
-    int title_height = BrowserFrame::GetTitleFont().GetHeight();
-    title_label_->SetBounds(
-        title_x,
-        icon_y + ((kIconSize - title_height - 1) / 2),
-        std::max(0, right - kTitleSpacing - title_x),
-        title_height);
-  }
+  int title_x = title_icon_->bounds().right() + kTitleSpacing;
+  int title_height = BrowserFrame::GetTitleFont().GetHeight();
+  title_label_->SetBounds(
+      title_x,
+      icon_y + ((kIconSize - title_height - 1) / 2),
+      std::max(0, right - kTitleSpacing - title_x),
+      title_height);
 
   // Calculate the client area bounds.
   int top_height = NonClientTopBorderHeight();
@@ -809,6 +787,12 @@ string16 PanelBrowserFrameView::GetTitleText() const {
 
 void PanelBrowserFrameView::UpdateTitleBar() {
   title_label_->SetText(GetTitleText());
+}
+
+void PanelBrowserFrameView::UpdateTitleBarMinimizeRestoreButtonVisibility() {
+  Panel* panel = panel_browser_view_->panel();
+  minimize_button_->SetVisible(panel->CanMinimize());
+  restore_button_->SetVisible(panel->CanRestore());
 }
 
 bool PanelBrowserFrameView::CanResize() const {

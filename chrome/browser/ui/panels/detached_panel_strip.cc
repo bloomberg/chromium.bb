@@ -38,13 +38,13 @@ void DetachedPanelStrip::AddPanel(Panel* panel,
                                   PositioningMask positioning_mask) {
   // positioning_mask is ignored since the detached panel is free-floating.
   DCHECK_NE(this, panel->panel_strip());
-  panel->SetPanelStrip(this);
+  panel->set_panel_strip(this);
   panels_.insert(panel);
 }
 
 void DetachedPanelStrip::RemovePanel(Panel* panel) {
   DCHECK_EQ(this, panel->panel_strip());
-  panel->SetPanelStrip(NULL);
+  panel->set_panel_strip(NULL);
   panels_.erase(panel);
 }
 
@@ -196,6 +196,7 @@ void DetachedPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
                                         Panel::USE_SYSTEM_ATTENTION));
   panel->SetAlwaysOnTop(false);
   panel->EnableResizeByMouse(true);
+  panel->UpdateMinimizeRestoreButtonVisibility();
 }
 
 void DetachedPanelStrip::OnPanelActiveStateChanged(Panel* panel) {

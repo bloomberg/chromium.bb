@@ -304,8 +304,6 @@ const gfx::Image* PanelBrowserWindowGtk::GetThemeFrameImage() const {
 void PanelBrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
                                             GtkWidget* widget,
                                             GdkEventExpose* event) {
-  GetPanelTitlebar()->UpdateMinimizeRestoreButtonVisibility();
-
   gfx::CairoCachedSurface* surface = GetThemeFrameImage()->ToCairo();
 
   surface->SetSource(cr, widget, 0, 0);
@@ -501,15 +499,15 @@ void PanelBrowserWindowGtk::EnsurePanelFullyVisible() {
   gtk_window_present(window());
 }
 
-void PanelBrowserWindowGtk::SetPanelAppIconVisibility(bool visible) {
-  return;
-}
-
 void PanelBrowserWindowGtk::SetPanelAlwaysOnTop(bool on_top) {
   gtk_window_set_keep_above(window(), on_top);
 }
 
 void PanelBrowserWindowGtk::EnableResizeByMouse(bool enable) {
+}
+
+void PanelBrowserWindowGtk::UpdatePanelMinimizeRestoreButtonVisibility() {
+  GetPanelTitlebar()->UpdateMinimizeRestoreButtonVisibility();
 }
 
 gfx::Size PanelBrowserWindowGtk::WindowSizeFromContentSize(

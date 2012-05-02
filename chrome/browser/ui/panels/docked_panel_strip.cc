@@ -99,7 +99,7 @@ void DockedPanelStrip::AddPanel(Panel* panel,
   DCHECK_EQ(Panel::EXPANDED, panel->expansion_state());
 
   DCHECK_NE(this, panel->panel_strip());
-  panel->SetPanelStrip(this);
+  panel->set_panel_strip(this);
 
   bool known_position = (positioning_mask & KNOWN_POSITION) != 0;
   bool update_bounds = (positioning_mask & DO_NOT_UPDATE_BOUNDS) == 0;
@@ -217,7 +217,7 @@ int DockedPanelStrip::GetRightMostAvailablePosition() const {
 
 void DockedPanelStrip::RemovePanel(Panel* panel) {
   DCHECK_EQ(this, panel->panel_strip());
-  panel->SetPanelStrip(NULL);
+  panel->set_panel_strip(NULL);
 
   // Removing an element from the list will invalidate the iterator that refers
   // to it. We need to update the iterator in that case.
@@ -883,9 +883,9 @@ void DockedPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
                         gfx::Size(max_panel_width, max_panel_height));
   }
   panel->set_attention_mode(Panel::USE_PANEL_ATTENTION);
-  panel->SetAppIconVisibility(true);
   panel->SetAlwaysOnTop(true);
   panel->EnableResizeByMouse(true);
+  panel->UpdateMinimizeRestoreButtonVisibility();
 }
 
 void DockedPanelStrip::OnPanelActiveStateChanged(Panel* panel) {

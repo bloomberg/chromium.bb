@@ -242,7 +242,7 @@ class Panel : public BrowserWindow,
   PanelStrip* panel_strip() const { return panel_strip_; }
 
   // Sets the current panel strip that contains this panel.
-  void SetPanelStrip(PanelStrip* new_strip);
+  void set_panel_strip(PanelStrip* new_strip) { panel_strip_ = new_strip; }
 
   ExpansionState expansion_state() const { return expansion_state_; }
   const gfx::Size& min_size() const { return min_size_; }
@@ -283,9 +283,6 @@ class Panel : public BrowserWindow,
   // Sets minimum and maximum size for the panel.
   void SetSizeRange(const gfx::Size& min_size, const gfx::Size& max_size);
 
-  // Sets whether the panel app icon is visible in the taskbar.
-  void SetAppIconVisibility(bool visible);
-
   // Whether the panel window is always on top.
   void SetAlwaysOnTop(bool on_top);
   bool always_on_top() const { return always_on_top_; }
@@ -297,6 +294,9 @@ class Panel : public BrowserWindow,
   // Sets up the panel for being resizable by the user - for example,
   // enables the resize mouse cursors when mouse is hovering over the edges.
   void EnableResizeByMouse(bool enable);
+
+  // Sets whether the minimize or restore button, if any, are visible.
+  void UpdateMinimizeRestoreButtonVisibility();
 
   // Changes the preferred size to acceptable based on min_size() and max_size()
   gfx::Size ClampSize(const gfx::Size& size) const;

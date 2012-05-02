@@ -122,9 +122,9 @@ class PanelBrowserView : public BrowserView,
   virtual Browser* GetPanelBrowser() const OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;
   virtual void EnsurePanelFullyVisible() OVERRIDE;
-  virtual void SetPanelAppIconVisibility(bool visible) OVERRIDE;
   virtual void SetPanelAlwaysOnTop(bool on_top) OVERRIDE;
   virtual void EnableResizeByMouse(bool enable) OVERRIDE;
+  virtual void UpdatePanelMinimizeRestoreButtonVisibility() OVERRIDE;
 
   // Overridden from AnimationDelegate:
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;

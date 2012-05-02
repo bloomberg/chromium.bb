@@ -81,15 +81,14 @@ class NativePanel {
   // will make sure that the panel is not obscured by other top-most windows.
   virtual void EnsurePanelFullyVisible() = 0;
 
-  // Sets whether the panel app icon is visible (usually refers to the app icons
-  // in the desktop bar).
-  virtual void SetPanelAppIconVisibility(bool visible) = 0;
-
   // Sets whether the panel window is always on top.
   virtual void SetPanelAlwaysOnTop(bool on_top) = 0;
 
   // Enables resizing by dragging edges/corners.
   virtual void EnableResizeByMouse(bool enable) = 0;
+
+  // Updates the visibility of the minimize and restore buttons.
+  virtual void UpdatePanelMinimizeRestoreButtonVisibility() = 0;
 };
 
 // A NativePanel utility interface used for accessing elements of the

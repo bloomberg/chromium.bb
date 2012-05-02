@@ -284,16 +284,16 @@ void PanelBrowserWindowCocoa::EnsurePanelFullyVisible() {
   [controller_ ensureFullyVisible];
 }
 
-void PanelBrowserWindowCocoa::SetPanelAppIconVisibility(bool visible) {
-  // TODO(dimich): to be implemented.
-}
-
 void PanelBrowserWindowCocoa::SetPanelAlwaysOnTop(bool on_top) {
   [controller_ updateWindowLevel];
 }
 
 void PanelBrowserWindowCocoa::EnableResizeByMouse(bool enable) {
   [controller_ enableResizeByMouse:enable];
+}
+
+void PanelBrowserWindowCocoa::UpdatePanelMinimizeRestoreButtonVisibility() {
+  [controller_ updateTitleBarMinimizeRestoreButtonVisibility];
 }
 
 void PanelBrowserWindowCocoa::DidCloseNativeWindow() {

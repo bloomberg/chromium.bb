@@ -513,25 +513,6 @@ bool PanelBrowserView::EndDragging(bool cancelled) {
   return true;
 }
 
-void PanelBrowserView::SetPanelAppIconVisibility(bool visible) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  gfx::NativeWindow native_window = GetNativeHandle();
-  int style = ::GetWindowLong(native_window, GWL_EXSTYLE);
-  int new_style = style;
-  if (visible)
-    new_style &= (~WS_EX_TOOLWINDOW);
-  else
-    new_style |= WS_EX_TOOLWINDOW;
-  if (style != new_style) {
-    ::ShowWindow(native_window, SW_HIDE);
-    ::SetWindowLong(native_window, GWL_EXSTYLE, new_style);
-    ::ShowWindow(native_window, SW_SHOWNA);
-  }
-#else
-  NOTIMPLEMENTED();
-#endif
-}
-
 void PanelBrowserView::SetPanelAlwaysOnTop(bool on_top) {
   GetWidget()->SetAlwaysOnTop(on_top);
   GetWidget()->non_client_view()->Layout();
@@ -544,6 +525,11 @@ bool PanelBrowserView::IsAnimatingBounds() const {
 
 void PanelBrowserView::EnableResizeByMouse(bool enable) {
 }
+
+void PanelBrowserView::UpdatePanelMinimizeRestoreButtonVisibility() {
+  GetFrameView()->UpdateTitleBarMinimizeRestoreButtonVisibility();
+}
+
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 void PanelBrowserView::UpdateWindowAttribute(int attribute_index,
