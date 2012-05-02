@@ -577,8 +577,6 @@
       # crbug.com/123419
       '-browsing_data.BrowsingDataTest.testClearCookies',
       '-databases.DatabasesTest.testDeleteAndUpdateDatabase',
-      # crbug.com/125480
-      '-youtube.YoutubeTest.testPlayerStatus',
     ],
 
     'chromeos': [
