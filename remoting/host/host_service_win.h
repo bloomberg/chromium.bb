@@ -44,12 +44,6 @@ class HostService : public WtsConsoleMonitor {
   // Notifies the service of changes in session state.
   void OnSessionChange();
 
-  // This routine registers the service with the service control manager.
-  int Install();
-
-  // This routine uninstalls the service previously regerested by Install().
-  int Remove();
-
   // This is a common entry point to the main service loop called by both
   // RunAsService() and RunInConsole().
   void RunMessageLoop();
@@ -63,7 +57,6 @@ class HostService : public WtsConsoleMonitor {
   int RunInConsole();
 
   static BOOL WINAPI ConsoleControlHandler(DWORD event);
-  static VOID CALLBACK OnServiceStopped(PVOID context);
 
   // The control handler of the service.
   static DWORD WINAPI ServiceControlHandler(DWORD control,
