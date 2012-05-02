@@ -445,3 +445,13 @@ TEST_F(TouchTabStripLayoutTest, IsStacked) {
   EXPECT_FALSE(layout_->IsStacked(7));
   EXPECT_TRUE(layout_->IsStacked(0));
 }
+
+// Assertions around SetXAndMiniCount.
+TEST_F(TouchTabStripLayoutTest, SetXAndMiniCount) {
+  // Verifies we don't crash when transitioning to all mini-tabs.
+  PrepareChildViews(1);
+  layout_.reset(new TouchTabStripLayout(
+                    gfx::Size(100, 10), -10, 2, 4, &view_model_));
+  Reset(layout_.get(), 0, 400, 0, 0);
+  layout_->SetXAndMiniCount(0, 1);
+}

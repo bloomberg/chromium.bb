@@ -31,6 +31,10 @@ TouchTabStripLayout::~TouchTabStripLayout() {
 void TouchTabStripLayout::SetXAndMiniCount(int x, int mini_tab_count) {
   x_ = x;
   mini_tab_count_ = mini_tab_count;
+  if (!requires_stacking() || tab_count() == mini_tab_count) {
+    ResetToIdealState();
+    return;
+  }
   SetIdealBoundsAt(active_index(), ConstrainActiveX(ideal_x(active_index())));
   LayoutByTabOffsetAfter(active_index());
   LayoutByTabOffsetBefore(active_index());
