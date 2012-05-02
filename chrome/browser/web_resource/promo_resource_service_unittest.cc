@@ -133,10 +133,8 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
         max_group_(0),
         max_views_(0),
         platform_(NotificationPromo::PLATFORM_NONE),
-        feature_mask_(0),
         text_(),
         closed_(false),
-        gplus_(false),
         current_platform_(NotificationPromo::CurrentPlatform()) {
   }
 
@@ -145,8 +143,7 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
             double start, double end,
             int build, int time_slice,
             int max_group, int max_views, int platform,
-            int feature_mask, const std::string& text, bool closed,
-            bool gplus) {
+            const std::string& text, bool closed) {
     notification_promo_ = notification_promo;
 
     test_json_.reset(static_cast<DictionaryValue*>(
@@ -163,8 +160,6 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
 
     text_ = text;
     closed_ = closed;
-    gplus_ = gplus;
-    feature_mask_ = feature_mask;
 
     received_notification_ = false;
   }
@@ -202,62 +197,12 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
   void InitPromoFromJson(bool should_receive_notification) {
     should_receive_notification_ = should_receive_notification;
     received_notification_ = false;
-    notification_promo_->InitFromJson(TestJson(), false);
+    notification_promo_->InitFromJson(TestJson());
     EXPECT_TRUE(received_notification_ == should_receive_notification);
 
     // Test the fields.
     TestNotification();
     TestPrefs();
-  }
-
-  void TestCookie(const std::string& cookies,
-      bool should_receive_notification, bool should_find_cookie) {
-    gplus_ = should_find_cookie;
-    should_receive_notification_ = should_receive_notification;
-    received_notification_ = false;
-
-    bool found_cookie = NotificationPromo::CheckForGPlusCookie(cookies);
-    EXPECT_TRUE(found_cookie == should_find_cookie);
-
-    notification_promo_->CheckForNewNotification(found_cookie);
-    EXPECT_TRUE(received_notification_ == should_receive_notification);
-
-    // Test the fields.
-    EXPECT_EQ(notification_promo_->gplus_, gplus_);
-    EXPECT_EQ(notification_promo_->feature_mask_, feature_mask_);
-    // Test the prefs.
-    EXPECT_EQ(prefs_->GetBoolean(prefs::kNtpPromoIsLoggedInToPlus), gplus_);
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoFeatureMask), feature_mask_);
-
-    // Set group_ manually to a passing group.
-    notification_promo_->group_ = max_group_ - 1;
-    // Assumes feature_mask = GPLUS_FEATURE, so whether or not the promo is
-    // is shown depends only on the value of gplus_.
-    EXPECT_TRUE(notification_promo_->CanShow() == gplus_);
-  }
-
-  void TestGPlus() {
-    feature_mask_ = NotificationPromo::FEATURE_GPLUS;
-    notification_promo_->feature_mask_ = NotificationPromo::FEATURE_GPLUS;
-    // Force a notification when gplus_ is found to be false.
-    notification_promo_->prefs_->
-        SetBoolean(prefs::kNtpPromoIsLoggedInToPlus, true);
-
-    TestCookie("WRONG=123456;", true, false);
-    // Should not trigger notification on second call.
-    TestCookie("WRONG=123456;", false, false);
-
-    TestCookie("SID=123456;", true, true);
-    // Should not trigger notification on second call.
-    TestCookie("SID=123456;", false, true);
-
-    // Reset the notification_promo to its original state.
-    feature_mask_ = NotificationPromo::NO_FEATURE;
-    notification_promo_->feature_mask_ = NotificationPromo::NO_FEATURE;
-    gplus_ = false;
-    notification_promo_->prefs_->
-        SetBoolean(prefs::kNtpPromoIsLoggedInToPlus, false);
-    notification_promo_->gplus_ = false;
   }
 
   void TestNotification() {
@@ -271,8 +216,6 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
     EXPECT_EQ(notification_promo_->platform_, platform_);
     EXPECT_EQ(notification_promo_->text_, text_);
     EXPECT_EQ(notification_promo_->closed_, closed_);
-    EXPECT_EQ(notification_promo_->gplus_, gplus_);
-    EXPECT_EQ(notification_promo_->feature_mask_, feature_mask_);
 
     // Check group within bounds.
     EXPECT_GE(notification_promo_->group_, 0);
@@ -300,8 +243,6 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
     EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoViews), 0);
     EXPECT_EQ(prefs_->GetString(prefs::kNtpPromoLine), text_);
     EXPECT_EQ(prefs_->GetBoolean(prefs::kNtpPromoClosed), closed_);
-    EXPECT_EQ(prefs_->GetBoolean(prefs::kNtpPromoIsLoggedInToPlus), gplus_);
-    EXPECT_EQ(prefs_->GetInteger(prefs::kNtpPromoFeatureMask), feature_mask_);
   }
 
   // Create a new NotificationPromo from prefs and compare to current
@@ -508,27 +449,6 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
     EXPECT_TRUE(notification_promo_->CanShow());
   }
 
-  void TestFeatureMask() {
-    // No gplus cookie, feature mask in use.
-    notification_promo_->gplus_ = false;
-    notification_promo_->feature_mask_ = NotificationPromo::FEATURE_GPLUS;
-    EXPECT_FALSE(notification_promo_->CanShow());
-
-    // Gplus cookie, feature mask in use.
-    notification_promo_->gplus_ = true;
-    notification_promo_->feature_mask_ = NotificationPromo::FEATURE_GPLUS;
-    EXPECT_TRUE(notification_promo_->CanShow());
-
-    // If no feature mask, gplus_ value is ignored.
-    notification_promo_->gplus_ = true;
-    notification_promo_->feature_mask_ = NotificationPromo::NO_FEATURE;
-    EXPECT_TRUE(notification_promo_->CanShow());
-
-    notification_promo_->gplus_ = false;
-    notification_promo_->feature_mask_ = NotificationPromo::NO_FEATURE;
-    EXPECT_TRUE(notification_promo_->CanShow());
-  }
-
  private:
   Profile* profile_;
   PrefService* prefs_;
@@ -546,12 +466,10 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
   int max_group_;
   int max_views_;
   int platform_;
-  int feature_mask_;
 
   std::string text_;
   bool closed_;
 
-  bool gplus_;
   int current_platform_;
 };
 
@@ -588,8 +506,8 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
                 "}",
                 1264899600,  // unix epoch for Jan 31 2010 0100 GMT.
                 1391130000,  // unix epoch for Jan 31 2012 0100 GMT.
-                3, 2, 5, 10, 15, 0,
-                "Eat more pie!", false, false);
+                3, 2, 5, 10, 15,
+                "Eat more pie!", false);
 
   delegate.InitPromoFromJson(true);
 
@@ -606,9 +524,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
   delegate.TestClosed();
   delegate.TestText();
   delegate.TestTime();
-  delegate.TestFeatureMask();
   delegate.TestPlatforms();
-  delegate.TestGPlus();
 }
 
 TEST_F(PromoResourceServiceTest, NotificationPromoTestFail) {
@@ -628,7 +544,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTestFail) {
                 "    \"answers\": ["
                 "       {"
                 "        \"name\": \"promo_start\","
-                "        \"question\": \"12:8:10:20:15:0\","
+                "        \"question\": \"12:8:10:20:15\","
                 "        \"tooltip\": \"Happy 3rd Birthday!\","
                 "        \"inproduct\": \"09/15/10 05:00 PDT\""
                 "       },"
@@ -641,8 +557,8 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTestFail) {
                 "}",
                 1284552000,  // unix epoch for Sep 15 2010 0500 PDT.
                 1285848000,  // unix epoch for Sep 30 2010 0500 PDT.
-                12, 8, 10, 20, 15, 0,
-                "Happy 3rd Birthday!", false, false);
+                12, 8, 10, 20, 15,
+                "Happy 3rd Birthday!", false);
 
   delegate.InitPromoFromJson(true);
 

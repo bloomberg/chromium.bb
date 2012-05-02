@@ -235,7 +235,7 @@ void PromoResourceService::UnpackNotificationSignal(
     const DictionaryValue& parsed_json) {
   scoped_refptr<NotificationPromo> notification_promo =
       NotificationPromo::Create(profile_, this);
-  notification_promo->InitFromJson(parsed_json, true);
+  notification_promo->InitFromJson(parsed_json);
 }
 
 bool PromoResourceService::CanShowNotificationPromo(Profile* profile) {

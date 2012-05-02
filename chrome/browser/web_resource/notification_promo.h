@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
-  class DictionaryValue;
-}
-
-namespace net {
-  class URLRequestContextGetter;
+class DictionaryValue;
 }
 
 class PrefService;
@@ -43,7 +39,7 @@ class NotificationPromo
   static NotificationPromo* Create(Profile* profile, Delegate* delegate);
 
   // Initialize from json/prefs.
-  void InitFromJson(const base::DictionaryValue& json, bool do_cookie_check);
+  void InitFromJson(const base::DictionaryValue& json);
   void InitFromPrefs();
 
   // Can this promo be shown?
@@ -79,12 +75,6 @@ class NotificationPromo
     PLATFORM_ALL = (1 << 4) -1,
   };
 
-  // Flags for feature_mask_.
-  enum Feature {
-    NO_FEATURE = 0,
-    FEATURE_GPLUS = 1,
-  };
-
   // Users are randomly assigned to one of kMaxGroupSize + 1 buckets, in order
   // to be able to roll out promos slowly, or display different promos to
   // different groups.
@@ -95,25 +85,15 @@ class NotificationPromo
   void Parse(const base::DictionaryValue* dict);
 
   // Set promo notification params from a question string, which is of the form
-  // <build_type>:<time_slice>:<max_group>:<max_views>:<platform>:<feature_mask>
+  // <build_type>:<time_slice>:<max_group>:<max_views>:<platform>
   void ParseParams(const base::DictionaryValue* dict);
 
   // Check if this promo notification is new based on start/end times,
   // and trigger events accordingly.
-  void CheckForNewNotification(bool found_cookie);
+  void CheckForNewNotification();
 
   // Actions on receiving a new promo notification.
   void OnNewNotification();
-
-  // Async method to get cookies from GPlus url. Used to check if user is
-  // logged in to GPlus.
-  void GetCookies(scoped_refptr<net::URLRequestContextGetter> getter);
-
-  // Callback for GetCookies.
-  void GetCookiesCallback(const std::string& cookies);
-
-  // Parse cookies in search of a SID= value.
-  static bool CheckForGPlusCookie(const std::string& cookies);
 
   // Create a new promo notification group.
   static int NewGroup();
@@ -152,13 +132,11 @@ class NotificationPromo
   int max_group_;
   int max_views_;
   int platform_;
-  int feature_mask_;
 
   int group_;
   int views_;
   std::string text_;
   bool closed_;
-  bool gplus_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPromo);
 };
