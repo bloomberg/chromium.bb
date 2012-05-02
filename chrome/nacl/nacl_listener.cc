@@ -206,7 +206,8 @@ void NaClListener::OnMsgStart(const nacl::NaClStartParams& params) {
   args->irt_fd = irt_handle;
 #endif
 
-  if (CheckEnvVar("NACL_VALIDATION_CACHE", true)) {
+  if (CheckEnvVar("NACL_VALIDATION_CACHE", false)) {
+    LOG(INFO) << "NaCl validation cache enabled.";
     // The cache structure is not freed and exists until the NaCl process exits.
     args->validation_cache = CreateValidationCache(
         new BrowserValidationDBProxy(this), params.validation_cache_key,
