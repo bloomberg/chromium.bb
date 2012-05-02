@@ -21,19 +21,19 @@ namespace extensions {
 // properties of the manifest using ManifestFeatureProvider.
 class Manifest {
  public:
-  explicit Manifest(Extension::Location location,
-                    scoped_ptr<DictionaryValue> value);
+  Manifest(Extension::Location location, scoped_ptr<DictionaryValue> value);
   virtual ~Manifest();
 
   const std::string& extension_id() const { return extension_id_; }
   void set_extension_id(const std::string& id) { extension_id_ = id; }
 
   Extension::Location location() const { return location_; }
-  void set_location(Extension::Location location) { location_ = location; }
 
-  // Returns true if all keys in the manifest can be specified by
+  // |error| will be non-empty if the manifest is malformed. |warnings| will
+  // be populated if there are keys in the manifest that cannot be specified by
   // the extension type.
-  void ValidateManifest(std::vector<std::string>* warnings) const;
+  void ValidateManifest(std::string* error,
+                        std::vector<std::string>* warnings) const;
 
   // The version of this extension's manifest. We increase the manifest
   // version when making breaking changes to the extension system. If the
@@ -42,19 +42,12 @@ class Manifest {
   int GetManifestVersion() const;
 
   // Returns the manifest type.
-  Extension::Type GetType() const;
+  Extension::Type type() const { return type_; }
 
-  // Returns true if the manifest represents an Extension::TYPE_THEME.
-  bool IsTheme() const;
-
-  // Returns true for Extension::TYPE_PLATFORM_APP
-  bool IsPlatformApp() const;
-
-  // Returns true for Extension::TYPE_PACKAGED_APP.
-  bool IsPackagedApp() const;
-
-  // Returns true for Extension::TYPE_HOSTED_APP.
-  bool IsHostedApp() const;
+  bool is_theme() const { return type_ == Extension::TYPE_THEME; }
+  bool is_platform_app() const { return type_ == Extension::TYPE_PLATFORM_APP; }
+  bool is_packaged_app() const { return type_ == Extension::TYPE_PACKAGED_APP; }
+  bool is_hosted_app() const { return type_ == Extension::TYPE_HOSTED_APP; }
 
   // These access the wrapped manifest value, returning false when the property
   // does not exist or if the manifest type can't access it.
@@ -77,7 +70,7 @@ class Manifest {
 
   // Gets the underlying DictionaryValue representing the manifest.
   // Note: only know this when you KNOW you don't need the validation.
-  base::DictionaryValue* value() const { return value_.get(); }
+  const base::DictionaryValue* value() const { return value_.get(); }
 
  private:
   // Returns true if the extension can specify the given |path|.
@@ -95,6 +88,8 @@ class Manifest {
 
   // The underlying dictionary representation of the manifest.
   scoped_ptr<base::DictionaryValue> value_;
+
+  Extension::Type type_;
 
   DISALLOW_COPY_AND_ASSIGN(Manifest);
 };

@@ -7,6 +7,10 @@
     "channel": "stable",
     "extension_types": ["packaged_app", "hosted_app", "platform_app"]
   },
+  "app.launch": {
+    "channel": "stable",
+    "extension_types": ["packaged_app", "hosted_app"]
+  },
   "background": {
     "channel": "stable",
     "extension_types": [
@@ -51,7 +55,7 @@
   "converted_from_user_script": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      "extension", "packaged_app", "hosted_app"
     ],
     "no_doc": true
   },
@@ -200,7 +204,7 @@
   "web_accessible_resources": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      "extension", "packaged_app", "hosted_app"
     ]
   }
 }

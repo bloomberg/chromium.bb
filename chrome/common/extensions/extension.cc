@@ -481,7 +481,9 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
   }
 
   std::vector<std::string> install_warnings;
-  manifest->ValidateManifest(&install_warnings);
+  manifest->ValidateManifest(utf8_error, &install_warnings);
+  if (!utf8_error->empty())
+    return NULL;
 
   scoped_refptr<Extension> extension = new Extension(path, manifest.Pass());
   extension->install_warnings_.swap(install_warnings);
@@ -627,7 +629,7 @@ Extension::Type Extension::GetType() const {
   if (converted_from_user_script())
     return TYPE_USER_SCRIPT;
   else
-    return manifest_->GetType();
+    return manifest_->type();
 }
 
 // static
@@ -643,19 +645,19 @@ GURL Extension::GetResourceURL(const GURL& extension_url,
 }
 
 bool Extension::is_platform_app() const {
-  return manifest_->IsPlatformApp();
+  return manifest_->is_platform_app();
 }
 
 bool Extension::is_hosted_app() const {
-  return manifest()->IsHostedApp();
+  return manifest()->is_hosted_app();
 }
 
 bool Extension::is_packaged_app() const {
-  return manifest()->IsPackagedApp();
+  return manifest()->is_packaged_app();
 }
 
 bool Extension::is_theme() const {
-  return manifest()->IsTheme();
+  return manifest()->is_theme();
 }
 
 GURL Extension::GetBackgroundURL() const {
@@ -1282,13 +1284,6 @@ bool Extension::LoadExtent(const char* key,
 
 bool Extension::LoadLaunchURL(string16* error) {
   Value* temp = NULL;
-
-  // TODO(mihaip): Implement this check via _manifest_features.json (requires
-  // subkey support, see http://crbug.com/122459).
-  if (is_platform_app() && manifest_->Get(keys::kLaunch, &temp)) {
-      *error = ASCIIToUTF16(errors::kLaunchNotAllowedForPlatformApps);
-      return false;
-  }
 
   // launch URL can be either local (to chrome-extension:// root) or an absolute
   // web URL.

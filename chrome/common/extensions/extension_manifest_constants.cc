@@ -437,8 +437,6 @@ const char kLaunchPathAndExtentAreExclusive[] =
 const char kLaunchPathAndURLAreExclusive[] =
     "The 'app.launch.local_path' and 'app.launch.web_url' keys cannot "
     "both be set.";
-const char kLaunchNotAllowedForPlatformApps[] =
-    "Platform apps may not have 'app.launch' keys.";
 const char kLaunchURLRequired[] =
     "Either 'app.launch.local_path' or 'app.launch.web_url' is required.";
 const char kLocalesMessagesFileMissing[] =
@@ -469,6 +467,8 @@ const char kPlatformAppFlagRequired[] =
     "Loading platform_app extension type is turned off by default. "
     "You can enable this type with the --enable-platform-apps "
     "command-line flag.";
+const char kPlatformAppNeedsManifestVersion2[] =
+    "Platform apps need manifest_version set to >= 2";
 const char kReservedMessageFound[] =
     "Reserved key * found in message catalog.";
 #if defined(OS_CHROMEOS)

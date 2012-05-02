@@ -20,13 +20,41 @@ namespace extensions {
 
 Manifest::Manifest(Extension::Location location,
                    scoped_ptr<DictionaryValue> value)
-    : location_(location), value_(value.Pass()) {
+    : location_(location),
+      value_(value.Pass()),
+      type_(Extension::TYPE_UNKNOWN) {
+  if (value_->HasKey(keys::kTheme)) {
+    type_ = Extension::TYPE_THEME;
+  } else {
+    bool is_platform_app = false;
+    if (value_->GetBoolean(keys::kPlatformApp, &is_platform_app) &&
+        is_platform_app) {
+      type_ = Extension::TYPE_PLATFORM_APP;
+    } else if (value_->HasKey(keys::kApp)) {
+      if (value_->Get(keys::kWebURLs, NULL) ||
+          value_->Get(keys::kLaunchWebURL, NULL)) {
+        type_ = Extension::TYPE_HOSTED_APP;
+      } else {
+        type_ = Extension::TYPE_PACKAGED_APP;
+      }
+    } else {
+      type_ = Extension::TYPE_EXTENSION;
+    }
+  }
+  CHECK_NE(type_, Extension::TYPE_UNKNOWN);
 }
 
 Manifest::~Manifest() {
 }
 
-void Manifest::ValidateManifest(std::vector<std::string>* warnings) const {
+void Manifest::ValidateManifest(std::string* error,
+                                std::vector<std::string>* warnings) const {
+  *error = "";
+  if (type_ == Extension::TYPE_PLATFORM_APP && GetManifestVersion() < 2) {
+    *error = errors::kPlatformAppNeedsManifestVersion2;
+    return;
+  }
+
   // Check every feature to see if its in the manifest. Note that this means
   // we will ignore keys that are not features; we do this for forward
   // compatibility.
@@ -44,7 +72,7 @@ void Manifest::ValidateManifest(std::vector<std::string>* warnings) const {
     Feature* feature =
         SimpleFeatureProvider::GetManifestFeatures()->GetFeature(*feature_name);
     Feature::Availability result = feature->IsAvailableToManifest(
-        extension_id_, GetType(), Feature::ConvertLocation(location_),
+        extension_id_, type_, Feature::ConvertLocation(location_),
         GetManifestVersion());
     if (result != Feature::IS_AVAILABLE)
       warnings->push_back(feature->GetErrorMessage(result));
@@ -107,40 +135,6 @@ int Manifest::GetManifestVersion() const {
   return manifest_version;
 }
 
-Extension::Type Manifest::GetType() const {
-  if (value_->HasKey(keys::kTheme))
-    return Extension::TYPE_THEME;
-  bool is_platform_app = false;
-  if (value_->GetBoolean(keys::kPlatformApp, &is_platform_app) &&
-      is_platform_app)
-    return Extension::TYPE_PLATFORM_APP;
-  if (value_->HasKey(keys::kApp)) {
-    if (value_->Get(keys::kWebURLs, NULL) ||
-        value_->Get(keys::kLaunchWebURL, NULL))
-      return Extension::TYPE_HOSTED_APP;
-    else
-      return Extension::TYPE_PACKAGED_APP;
-  } else {
-    return Extension::TYPE_EXTENSION;
-  }
-}
-
-bool Manifest::IsTheme() const {
-  return GetType() == Extension::TYPE_THEME;
-}
-
-bool Manifest::IsPlatformApp() const {
-  return GetType() == Extension::TYPE_PLATFORM_APP;
-}
-
-bool Manifest::IsPackagedApp() const {
-  return GetType() == Extension::TYPE_PACKAGED_APP;
-}
-
-bool Manifest::IsHostedApp() const {
-  return GetType() == Extension::TYPE_HOSTED_APP;
-}
-
 bool Manifest::CanAccessPath(const std::string& path) const {
   std::vector<std::string> components;
   base::SplitString(path, '.', &components);
@@ -161,7 +155,7 @@ bool Manifest::CanAccessKey(const std::string& key) const {
     return true;
 
   return Feature::IS_AVAILABLE == feature->IsAvailableToManifest(
-      extension_id_, GetType(), Feature::ConvertLocation(location_),
+      extension_id_, type_, Feature::ConvertLocation(location_),
       GetManifestVersion());
 }
 

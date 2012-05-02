@@ -296,7 +296,6 @@ namespace extension_manifest_errors {
   extern const char kInvalidZipHash[];
   extern const char kLaunchPathAndExtentAreExclusive[];
   extern const char kLaunchPathAndURLAreExclusive[];
-  extern const char kLaunchNotAllowedForPlatformApps[];
   extern const char kLaunchURLRequired[];
   extern const char kLocalesMessagesFileMissing[];
   extern const char kLocalesNoDefaultLocaleSpecified[];
@@ -310,6 +309,7 @@ namespace extension_manifest_errors {
   extern const char kNoWildCardsInPaths[];
   extern const char kPermissionNotAllowed[];
   extern const char kPlatformAppFlagRequired[];
+  extern const char kPlatformAppNeedsManifestVersion2[];
   extern const char kOneUISurfaceOnly[];
   extern const char kReservedMessageFound[];
   extern const char kWebContentMustBeEnabled[];
