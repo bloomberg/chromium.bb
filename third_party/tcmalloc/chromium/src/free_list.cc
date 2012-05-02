@@ -68,14 +68,14 @@ using tcmalloc::kCrash;
 
 // TODO(jar): We should use C++ rather than a macro here.
 #define MEMORY_CHECK(v1, v2) \
-  if (v1 != v2) Log(kCrash, __FILE__, __LINE__, "Memory corruption detected.\n")
+  if (v1 != v2) Log(kCrash, __FILE__, __LINE__, "Memory corruption detected.")
 
 namespace {
 void EnsureNonLoop(void* node, void* next) {
   // We only have time to do minimal checking.  We don't traverse the list, but
   // only look for an immediate loop (cycle back to ourself).
   if (node != next) return;
-  Log(kCrash, __FILE__, __LINE__, "Circular loop in list detected: %p\n", next);
+  Log(kCrash, __FILE__, __LINE__, "Circular loop in list detected: ", next);
 }
 
 // Returns value of the |previous| pointer w/out running a sanity
