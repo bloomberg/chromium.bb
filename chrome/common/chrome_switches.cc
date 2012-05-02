@@ -593,6 +593,9 @@ const char kEnableSdch[]                    = "enable-sdch";
 // Enable SPDY/3. This is a temporary testing flag.
 const char kEnableSpdy3[]                   = "enable-spdy3";
 
+// Enables the stacked tabstrip.
+const char kEnableStackedTabStrip[]         = "enable-stacked-tab-strip";
+
 // Enables experimental suggestions pane in New Tab page.
 const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
 

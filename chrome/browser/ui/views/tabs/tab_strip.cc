@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/touch_tab_strip_layout.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -1177,7 +1178,9 @@ void TabStrip::Init() {
     drop_indicator_width = drop_image->width();
     drop_indicator_height = drop_image->height();
   }
-  if (TouchModeSupport::IsTouchOptimized()) {
+  if (TouchModeSupport::IsTouchOptimized() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableStackedTabStrip)) {
     touch_layout_.reset(new TouchTabStripLayout(
                             Tab::GetStandardSize(),
                             GetTabHOffset(),

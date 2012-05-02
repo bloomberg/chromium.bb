@@ -4998,11 +4998,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_TABPOSE_DESCRIPTION" desc="Description of the 'Tab Overview' lab.">
         Swipe down with three fingers on your trackpad to see an overview of all your tabs. Click on a thumbnail to select it. Works great in fullscreen mode.
       </message>
-      <message name="IDS_FLAGS_SIDE_TABS_NAME" desc="Name of the 'Left Tabs' lab.">
-        Side Tabs
+      <message name="IDS_FLAGS_STACKED_TAB_STRIP_NAME" desc="Name of the 'Stacked Tabs' lab.">
+        Stacked Tabs
       </message>
-      <message name="IDS_FLAGS_SIDE_TABS_DESCRIPTION" desc="Description of the 'Left Tabs' lab.">
-        Adds a "Use Side Tabs" entry to the tabstrip's context menu. Use this to toggle between tabs on top (default) and tabs on the side. Useful on widescreen monitors.
+      <message name="IDS_FLAGS_STACKED_TAB_STRIP_DESCRIPTION" desc="Description of the 'Stacked Tabs' lab.">
+        Tabs never shrink, instead they stack on top of each other when there is not enough space.
       </message>
       <message name="IDS_FLAGS_INSTANT_AUTOCOMPLETE_IMMEDIATELY_NAME" desc="Name of the 'Instant Autocomplete Immediately' lab.">
         Instant Autocomplete Immediately
