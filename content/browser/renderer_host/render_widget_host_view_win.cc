@@ -406,7 +406,6 @@ void RenderWidgetHostViewWin::DidBecomeSelected() {
   if (web_contents_switch_paint_time_.is_null())
     web_contents_switch_paint_time_ = TimeTicks::Now();
   is_hidden_ = false;
-  EnsureTooltip();
 
   // |render_widget_host_| may be NULL if the WebContentsImpl is in the process
   // of closing.
@@ -452,7 +451,6 @@ void RenderWidgetHostViewWin::SetBounds(const gfx::Rect& rect) {
 
   SetWindowPos(NULL, point.x, point.y, rect.width(), rect.height(), swp_flags);
   render_widget_host_->WasResized();
-  EnsureTooltip();
 }
 
 gfx::NativeView RenderWidgetHostViewWin::GetNativeView() const {
@@ -873,6 +871,9 @@ void RenderWidgetHostViewWin::Destroy() {
 }
 
 void RenderWidgetHostViewWin::SetTooltipText(const string16& tooltip_text) {
+  if (!is_hidden_)
+    EnsureTooltip();
+
   // Clamp the tooltip length to kMaxTooltipLength so that we don't
   // accidentally DOS the user with a mega tooltip (since Windows doesn't seem
   // to do this itself).
@@ -2529,10 +2530,6 @@ void RenderWidgetHostViewWin::DoPopupOrFullscreenInit(HWND parent_hwnd,
   parent_hwnd_ = parent_hwnd;
   Create(parent_hwnd_, NULL, NULL, WS_POPUP, ex_style);
   MoveWindow(pos.x(), pos.y(), pos.width(), pos.height(), TRUE);
-  // To show tooltip on popup window.(e.g. title in <select>)
-  // Popups default to showing, which means |DidBecomeSelected()| isn't invoked.
-  // Ensure the tooltip is created otherwise tooltips are never shown.
-  EnsureTooltip();
   ShowWindow(IsActivatable() ? SW_SHOW : SW_SHOWNA);
 }
 
