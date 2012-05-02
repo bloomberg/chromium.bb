@@ -19,6 +19,9 @@
 //  91533 WIN : gl_min_uniforms = FAIL
 //  91532 MAC NVIDIA 0x0640 : tex_image_and_sub_image_2d_with_video = PASS FAIL
 
+125963 MAC AMD : conformance_programs_use_program_crash_with_discard_in_fragment_shader = FAIL
+125963 MAC AMD : conformance_typedarrays_data_view_test = FAIL
+
 125864 WIN : conformance_canvas_texture_bindings_unaffected_on_resize = FAIL
 125864 WIN : conformance_glsl_misc_shader_with_comma_assignment = FAIL
 125864 WIN : conformance_glsl_misc_shader_with_comma_conditional_assignment = FAIL
