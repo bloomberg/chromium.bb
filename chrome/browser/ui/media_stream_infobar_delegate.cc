@@ -110,15 +110,6 @@ void MediaStreamInfoBarDelegate::AddDeviceWithId(
 // MediaStreamInfoBarDelegate::CreateInfoBar is implemented in platform-specific
 // files.
 
-#if defined(OS_MACOSX)
-// TODO(macourteau): This section is temporary, until the InfoBar is implemented
-// on MacOS, to make sure everything compiles and links.
-InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
-  DCHECK(owner);
-  return NULL;
-}
-#endif  // OS_MACOSX
-
 void MediaStreamInfoBarDelegate::InfoBarDismissed() {
   // Deny the request if the infobar was closed with the 'x' button, since
   // we don't want WebRTC to be waiting for an answer that will never come.

@@ -1132,7 +1132,6 @@ void ChromeContentBrowserClient::RequestMediaAccessPermission(
         infobar_helper->GetInfoBarDelegateAt(i)->AsMediaStreamInfoBarDelegate();
   }
 
-#if defined(TOOLKIT_VIEWS) || defined(OS_LINUX)
   InfoBarDelegate* infobar = new MediaStreamInfoBarDelegate(infobar_helper,
                                                             request,
                                                             callback);
@@ -1140,19 +1139,6 @@ void ChromeContentBrowserClient::RequestMediaAccessPermission(
     infobar_helper->ReplaceInfoBar(old_infobar, infobar);
   else
     infobar_helper->AddInfoBar(infobar);
-#elif defined(OS_MACOSX)
-  // TODO(macourteau): UI is not implemented yet for OS X. Fallback to
-  // the default behaviour and allow access to the first device of each
-  // requested type.
-  content::MediaStreamDevices devices;
-  for (content::MediaStreamDeviceMap::const_iterator it =
-       request->devices.begin(); it != request->devices.end(); ++it) {
-    if (!it->second.empty())
-      devices.push_back(*it->second.begin());
-  }
-
-  callback.Run(devices);
-#endif  // TOOLKIT_VIEWS || OS_LINUX
 }
 
 content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {
