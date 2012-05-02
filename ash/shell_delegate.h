@@ -71,6 +71,9 @@ class ASH_EXPORT ShellDelegate {
   // Invoked when the user needs to set up mobile networking.
   virtual void OpenMobileSetup() = 0;
 
+  // Get the current browser context. This will get us the current profile.
+  virtual content::BrowserContext* GetCurrentBrowserContext() = 0;
+
   // Invoked to create an AppListViewDelegate. Shell takes the ownership of
   // the created delegate.
   virtual AppListViewDelegate* CreateAppListViewDelegate() = 0;
