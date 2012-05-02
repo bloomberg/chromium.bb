@@ -9,7 +9,7 @@ namespace dbus {
 const char kDBusPropertiesInterface[] = "org.freedesktop.DBus.Properties";
 // Methods
 const char kDBusPropertiesGetAll[] = "GetAll";
-} // namespace dbus
+}  // namespace dbus
 
 
 namespace cryptohome {
@@ -885,7 +885,6 @@ const char kDeviceIsDrive[] = "DeviceIsDrive";
 const char kDeviceIsMediaAvailable[] = "DeviceIsMediaAvailable";
 const char kDeviceIsMounted[] = "DeviceIsMounted";
 const char kDeviceIsOnBootDevice[] = "DeviceIsOnBootDevice";
-const char kDeviceIsOpticalDisc[] = "DeviceIsOpticalDisc";
 const char kDeviceIsReadOnly[] = "DeviceIsReadOnly";
 const char kDeviceIsVirtual[] = "DeviceIsVirtual";
 const char kDeviceMediaType[] = "DeviceMediaType";
@@ -902,15 +901,16 @@ const char kNativePath[] = "NativePath";
 // Enum values.
 // DeviceMediaType enum values are reported through UMA.
 // All values but DEVICE_MEDIA_NUM_VALUES should not be changed or removed.
-// Additional values can be added but DEVICE_MEDIA_NUM_VALUES should be
-// adjusted accordingly.
+// Additional values can be added but DEVICE_MEDIA_NUM_VALUES should always
+// be the last value in the enum.
 enum DeviceMediaType {
   DEVICE_MEDIA_UNKNOWN = 0,
   DEVICE_MEDIA_USB = 1,
   DEVICE_MEDIA_SD = 2,
   DEVICE_MEDIA_OPTICAL_DISC = 3,
   DEVICE_MEDIA_MOBILE = 4,
-  DEVICE_MEDIA_NUM_VALUES = 5,
+  DEVICE_MEDIA_DVD = 5,
+  DEVICE_MEDIA_NUM_VALUES,
 };
 
 enum FormatErrorType {
