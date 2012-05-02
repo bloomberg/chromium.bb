@@ -135,12 +135,15 @@ class ValidationPool(object):
     self._builder_name = builder_name
     self._content_merging_projects = None
 
-  def __getnewargs__(self):
+  def __reduce__(self):
     """Used for pickling to re-create validation pool."""
-    return (self._overlays, self._build_number, self._builder_name,
+    return (
+        self.__class__,
+        (
+            self._overlays, self._build_number, self._builder_name,
             self.is_master, self.dryrun, self.changes,
             self.non_manifest_changes,
-            self.changes_that_failed_to_apply_earlier)
+            self.changes_that_failed_to_apply_earlier))
 
   @property
   def gerrit_helpers(self):

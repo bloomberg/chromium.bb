@@ -543,9 +543,9 @@ class GerritPatch(GitRepoPatch):
     # ['NEW', 'SUBMITTED', 'MERGED', 'ABANDONED'].
     self.status = patch_dict['status']
 
-  def __getnewargs__(self):
+  def __reduce__(self):
     """Used for pickling to re-create patch object."""
-    return self.patch_dict, self.internal
+    return self.__class__, (self.patch_dict.copy(), self.internal)
 
   def IsAlreadyMerged(self):
     """Returns whether the patch has already been merged in Gerrit."""
