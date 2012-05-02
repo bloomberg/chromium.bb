@@ -109,6 +109,7 @@ class HoverHighlightView : public ActionableView {
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual void OnEnabledChanged() OVERRIDE;
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
 
   ViewClickListener* listener_;
   SkColor highlight_color_;

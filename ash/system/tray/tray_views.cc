@@ -161,6 +161,11 @@ void HoverHighlightView::OnPaintBackground(gfx::Canvas* canvas) {
   canvas->DrawColor(hover_ ? highlight_color_ : default_color_);
 }
 
+void HoverHighlightView::OnFocus() {
+  ScrollRectToVisible(gfx::Rect(gfx::Point(), size()));
+  ActionableView::OnFocus();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // FixedSizedScrollView
 
