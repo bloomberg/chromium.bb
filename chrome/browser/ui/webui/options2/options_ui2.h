@@ -112,11 +112,6 @@ class OptionsUI : public content::WebUIController,
 
   static RefCountedMemory* GetFaviconResourceBytes();
 
-  // WebUIController implementation.
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewReused(
-      content::RenderViewHost* render_view_host) OVERRIDE;
   // Overridden from OptionsPageUIHandlerHost:
   virtual void InitializeHandlers() OVERRIDE;
 
@@ -124,10 +119,6 @@ class OptionsUI : public content::WebUIController,
   // Adds OptionsPageUiHandler to the handlers list if handler is enabled.
   void AddOptionsPageUIHandler(base::DictionaryValue* localized_strings,
                                OptionsPageUIHandler* handler);
-
-  // Sets the WebUI CommandLineString property with arguments passed while
-  // launching chrome.
-  void SetCommandLineString(content::RenderViewHost* render_view_host);
 
   bool initialized_handlers_;
 

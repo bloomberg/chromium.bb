@@ -73,8 +73,6 @@ without changes to the corresponding grd file. -->
                file="shared/images/x-hover.png" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR"
                file="shared/js/cr.js" type="BINDATA" />
-      <include name="IDR_SHARED_JS_CR_COMMAND_LINE"
-               file="shared/js/cr/command_line.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_EVENT_TARGET"
                file="shared/js/cr/event_target.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_LINK_CONTROLLER"

@@ -159,13 +159,6 @@ void UberUI::RenderViewCreated(RenderViewHost* render_view_host) {
   }
 }
 
-void UberUI::RenderViewReused(RenderViewHost* render_view_host) {
-  for (SubpageMap::iterator iter = sub_uis_.begin(); iter != sub_uis_.end();
-       ++iter) {
-    iter->second->GetController()->RenderViewReused(render_view_host);
-  }
-}
-
 bool UberUI::OverrideHandleWebUIMessage(const GURL& source_url,
                                         const std::string& message,
                                         const ListValue& args) {

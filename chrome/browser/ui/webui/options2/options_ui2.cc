@@ -330,14 +330,6 @@ OptionsUI::~OptionsUI() {
     handlers_[i]->Uninitialize();
 }
 
-void OptionsUI::RenderViewCreated(RenderViewHost* render_view_host) {
-  SetCommandLineString(render_view_host);
-}
-
-void OptionsUI::RenderViewReused(RenderViewHost* render_view_host) {
-  SetCommandLineString(render_view_host);
-}
-
 // static
 void OptionsUI::ProcessAutocompleteSuggestions(
       const AutocompleteResult& autocompleteResult,
@@ -398,20 +390,6 @@ void OptionsUI::AddOptionsPageUIHandler(DictionaryValue* localized_strings,
     handler_raw->GetLocalizedValues(localized_strings);
     handlers_.push_back(handler_raw);
   }
-}
-
-void OptionsUI::SetCommandLineString(RenderViewHost* render_view_host) {
-  std::string command_line_string;
-
-#if defined(OS_WIN)
-  command_line_string =
-      WideToASCII(CommandLine::ForCurrentProcess()->GetCommandLineString());
-#else
-  command_line_string =
-      CommandLine::ForCurrentProcess()->GetCommandLineString();
-#endif
-
-  render_view_host->SetWebUIProperty("commandLineString", command_line_string);
 }
 
 }  // namespace options2

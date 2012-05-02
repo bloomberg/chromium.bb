@@ -31,8 +31,6 @@ class UberUI : public content::WebUIController {
   // We forward these to |sub_uis_|.
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewReused(
-      content::RenderViewHost* render_view_host) OVERRIDE;
 
  private:
   // A map from URL origin to WebUI instance.
