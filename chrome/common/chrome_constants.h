@@ -134,8 +134,6 @@ extern const char kPreReadEnvironmentVariable[];
 extern const wchar_t kMetroChromeUserDataSubDir[];
 // Used by Metro Chrome to initiate navigation and search requests.
 extern const wchar_t kMetroNavigationAndSearchMessage[];
-// Used by Metro Chrome to get information about the current tab.
-extern const wchar_t kMetroGetCurrentTabInfoMessage[];
 #endif
 
 }  // namespace chrome

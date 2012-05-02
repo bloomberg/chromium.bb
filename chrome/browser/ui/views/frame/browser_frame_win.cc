@@ -10,8 +10,6 @@
 #include <set>
 
 #include "base/command_line.h"
-#include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "base/win/metro.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -26,9 +24,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
-#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -54,20 +50,6 @@ static int explicit_show_state = -1;
 
 using content::OpenURLParams;
 using content::Referrer;
-using content::WebContents;
-
-namespace {
-
-void LocalAllocAndCopyString(const wchar_t* src, wchar_t** dest) {
-  DCHECK(src);
-  DCHECK(dest);
-
-  size_t dest_size = (wcslen(src) + 1) * sizeof(wchar_t);
-  *dest = reinterpret_cast<wchar_t*>(LocalAlloc(LPTR, dest_size));
-  base::wcslcpy(*dest, src, dest_size);
-}
-
-}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameWin, public:
@@ -226,15 +208,9 @@ LRESULT BrowserFrameWin::OnWndProc(UINT message,
                                    LPARAM l_param) {
   static const UINT metro_navigation_search_message =
       RegisterWindowMessage(chrome::kMetroNavigationAndSearchMessage);
+  if (message == metro_navigation_search_message)
+    HandleMetroRequest(w_param, l_param);
 
-  static const UINT metro_get_current_tab_info_message =
-      RegisterWindowMessage(chrome::kMetroGetCurrentTabInfoMessage);
-
-  if (message == metro_navigation_search_message) {
-    HandleMetroNavSearchRequest(w_param, l_param);
-  } else if (message == metro_get_current_tab_info_message) {
-    GetMetroCurrentTabInfo(w_param);
-  }
   return views::NativeWidgetWin::OnWndProc(message, w_param, l_param);
 }
 
@@ -331,8 +307,7 @@ void BrowserFrameWin::AddFrameToggleItems() {
   }
 }
 
-void BrowserFrameWin::HandleMetroNavSearchRequest(WPARAM w_param,
-                                                  LPARAM l_param) {
+void BrowserFrameWin::HandleMetroRequest(WPARAM w_param, LPARAM l_param) {
   if (!base::win::GetMetroModule()) {
     NOTREACHED() << "Received unexpected metro navigation request";
     return;
@@ -369,35 +344,6 @@ void BrowserFrameWin::HandleMetroNavSearchRequest(WPARAM w_param,
     browser->OpenURL(OpenURLParams(request_url, Referrer(), NEW_FOREGROUND_TAB,
                                    content::PAGE_TRANSITION_TYPED, false));
   }
-}
-
-void BrowserFrameWin::GetMetroCurrentTabInfo(WPARAM w_param) {
-  if (!base::win::GetMetroModule()) {
-    NOTREACHED() << "Received unexpected metro request";
-    return;
-  }
-
-  if (!w_param) {
-    NOTREACHED() << "Invalid metro request parameter";
-    return;
-  }
-
-  base::win::CurrentTabInfo* current_tab_info =
-      reinterpret_cast<base::win::CurrentTabInfo*>(w_param);
-
-  Browser* browser = browser_view()->browser();
-  DCHECK(browser);
-
-  // We allocate memory for the title and url via LocalAlloc. The caller has to
-  // free the memory via LocalFree.
-  LocalAllocAndCopyString(browser->GetWindowTitleForCurrentTab().c_str(),
-                          &current_tab_info->title);
-
-  WebContents* current_tab = browser->GetSelectedWebContents();
-  DCHECK(current_tab);
-
-  LocalAllocAndCopyString(UTF8ToWide(current_tab->GetURL().spec()).c_str(),
-                          &current_tab_info->url);
 }
 
 
