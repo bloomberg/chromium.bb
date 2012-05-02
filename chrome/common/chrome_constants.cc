@@ -203,7 +203,8 @@ const char kPreReadEnvironmentVariable[] = "CHROME_PRE_READ_EXPERIMENT";
 const wchar_t kMetroChromeUserDataSubDir[] = L"Metro";
 const wchar_t kMetroNavigationAndSearchMessage[] =
     L"CHROME_METRO_NAV_SEARCH_REQUEST";
-
+const wchar_t kMetroGetCurrentTabInfoMessage[] =
+    L"CHROME_METRO_GET_CURRENT_TAB_INFO";
 #endif
 
 }  // namespace chrome
