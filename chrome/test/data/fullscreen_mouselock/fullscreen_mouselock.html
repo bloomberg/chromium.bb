@@ -35,6 +35,26 @@ function lockMouse1(callback) {
   );
 }
 
+var lock_result1 = "";
+// In the pyAuto test the fullscreen is initiated, accepted and enters into a wait state
+// reading the value of lock_result1. One of the two asynchronous functions in the JS will
+// be executed. The pyAuto code waits for lock_result to return "success" or "failure".
+// Sample pyAuto code: lock_result = self._driver.execute_script('lockMouse1AndSetLockResult()')
+function lockMouse1AndSetLockResult() {
+  console.log("lockMouse1AndSetLockResult()");
+  lock_result1 = "";
+  navigator.webkitPointer.lock(document.getElementById("lockTarget1"),
+    function() {
+      console.log("lock success");
+      lock_result = "success"
+    },
+    function() {
+      console.log("lock failed");
+      lock_result = "failure"
+    }
+  );
+}
+
 function lockMouse2() {
   console.log("lockMouse2()");
   navigator.webkitPointer.lock(document.getElementById("lockTarget2"),

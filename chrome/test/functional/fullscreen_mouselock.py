@@ -288,34 +288,76 @@ class FullscreenMouselockTest(pyauto.PyUITest):
     when there is a content setting for Allow.
     """
     self._InitiateBrowserFullscreen()
-    self._driver.find_element_by_id('lockMouse1').click()
     self._driver.set_script_timeout(2)
-    # Receive callback status (success or failure) from javascript that the
-    # click has registered and the mouse lock status had changed.
-    lock_result = self._driver.execute_async_script(
-        'lockMouse1(arguments[arguments.length - 1]);')
+    lock_result = self._driver.execute_script('lockMouse1AndSetLockResult()')
+    # Waits until lock_result gets 'success' or 'failure'.
+    lock_result = self._driver.execute_script('return lock_result')
     self.assertEqual(
-        lock_result, 'failure', msg='Mouse locked in browser fullscreen.')
+        lock_result, 'failure', msg='Mouse is locked in browser fullscreen.')
+
+  def testNoMouseLockWhenCancelFS(self):
+    """Verify mouse lock breaks when canceling tab fullscreen.
+
+    This test uses javascript to initiate exit of tab fullscreen after mouse
+    lock success callback.
+    """
+    self._LaunchFSAndExpectPrompt()
+    self._driver.set_script_timeout(2)
+    lock_result = self._driver.execute_script('lockMouse1AndSetLockResult()')
+    self.assertTrue(
+        self.WaitUntil(lambda: self.IsMouseLockPermissionRequested()))
+    self.AcceptCurrentFullscreenOrMouseLockRequest()
+    # Waits until lock_result gets 'success' or 'failure'.
+    lock_result = self._driver.execute_script('return lock_result')
+    self.assertEqual(
+        lock_result, 'success', msg='Mouse is not locked.')
+    self._driver.execute_script('document.webkitCancelFullScreen()')
+    self.assertTrue(self.WaitUntil(lambda: not self.IsFullscreenForTab()),
+                    msg='Tab is still in fullscreen.')
     self.assertTrue(self.WaitUntil(lambda: not self.IsMouseLocked()),
-                    msg='Mouse is locked in browser fullscreen.')
+                    msg='Mouse is still locked after exiting fullscreen.')
+
+  def testNoTabFSExitWhenJSExitMouseLock(self):
+    """Verify tab fullscreen does not exit when javascript init mouse lock exit.
+
+    This test uses javascript to initiate exit of mouse lock after mouse
+    lock success callback.
+    """
+    self._LaunchFSAndExpectPrompt()
+    self._EnableMouseLockMode()
+    self._driver.execute_script('navigator.webkitPointer.unlock()')
+    self.WaitUntil(lambda: not self.IsMouseLocked())
+    self.assertTrue(self.IsFullscreenForTab(), msg='Tab fullscreen was lost.')
+
+  def testMouseLockExitWhenAlertDialogShow(self):
+    """Verify mouse lock breaks when alert dialog appears."""
+    self._LaunchFSAndExpectPrompt()
+    self._EnableMouseLockMode()
+    # Need to catch the exception here since the alert dialog raises
+    # a WebDriverException due to a modal dialog.
+    from selenium.common.exceptions import WebDriverException
+    try:
+      self._driver.execute_script('alert("A modal dialog")')
+    except WebDriverException:
+      pass
+
+    self.assertTrue(self.WaitUntil(lambda: self.IsFullscreenForTab()),
+                    msg='Tab fullscreen was lost.')
+    self.assertTrue(self.WaitUntil(lambda: not self.IsMouseLocked()),
+                    msg='Mouse is still locked')
 
   def testMouseLockExitWhenBrowserLoseFocus(self):
     """Verify mouse lock breaks when browser loses focus.
 
     Mouse lock breaks when the focus is placed on another new window.
     """
-    self.NavigateToURL(self.GetHttpURLForDataPath(
-        'fullscreen_mouselock', 'fullscreen_mouselock.html'))
-    self._driver.find_element_by_id('enterFullscreen').click()
-    self._driver.find_element_by_id('lockMouse1').click()
+    self._LaunchFSAndExpectPrompt()
     self.AcceptCurrentFullscreenOrMouseLockRequest()
-    self.WaitUntil(lambda: self.IsFullscreenForTab())
-    self.WaitUntil(lambda: self.IsMouseLocked())
     # Open a new window to shift focus away.
     self.OpenNewBrowserWindow(True)
     self.assertTrue(self.WaitUntil(lambda: self.IsFullscreenForTab()))
     self.assertTrue(self.WaitUntil(lambda: not self.IsMouseLocked()),
-                    msg='Alert dialog did not break mouse lock.')
+                    msg='Mouse lock did not break when browser lost focus.')
 
   def ExitTabFSToBrowserFS(self):
     """Verify exiting tab fullscreen leaves browser in browser fullscreen.
@@ -387,6 +429,7 @@ class FullscreenMouselockTest(pyauto.PyUITest):
     # Go into fullscreen mode.
     self._driver.find_element_by_id('enterFullscreen').click()
     self.assertTrue(self.WaitUntil(self.IsFullscreenForTab))
+    time.sleep(5)
     # TODO(dyu): find a way to verify on screen text instead of using
     #            FindInPage() which searches for text in the HTML.
 
