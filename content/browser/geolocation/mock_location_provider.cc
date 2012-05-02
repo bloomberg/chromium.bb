@@ -32,7 +32,8 @@ MockLocationProvider::~MockLocationProvider() {
   *self_ref_ = NULL;
 }
 
-void MockLocationProvider::HandlePositionChanged(const Geoposition& position) {
+void MockLocationProvider::HandlePositionChanged(
+    const content::Geoposition& position) {
   if (provider_loop_->BelongsToCurrentThread()) {
     // The location arbitrator unit tests rely on this method running
     // synchronously.
@@ -55,7 +56,7 @@ void MockLocationProvider::StopProvider() {
   state_ = STOPPED;
 }
 
-void MockLocationProvider::GetPosition(Geoposition* position) {
+void MockLocationProvider::GetPosition(content::Geoposition* position) {
   *position = position_;
 }
 
@@ -82,7 +83,8 @@ class AutoMockLocationProvider : public MockLocationProvider {
       // contemporary.
       position_.timestamp = base::Time::Now();
     } else {
-      position_.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+      position_.error_code =
+          content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
     }
   }
   virtual bool StartProvider(bool high_accuracy) {

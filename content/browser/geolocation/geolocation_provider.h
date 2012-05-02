@@ -11,7 +11,7 @@
 #include "base/threading/thread.h"
 #include "content/browser/geolocation/geolocation_observer.h"
 #include "content/common/content_export.h"
-#include "content/common/geoposition.h"
+#include "content/public/common/geoposition.h"
 
 class GeolocationArbitrator;
 
@@ -46,12 +46,13 @@ class CONTENT_EXPORT GeolocationProvider
   bool HasPermissionBeenGranted() const;
 
   // GeolocationObserver
-  virtual void OnLocationUpdate(const Geoposition& position) OVERRIDE;
+  virtual void OnLocationUpdate(const content::Geoposition& position) OVERRIDE;
 
   // Overrides the location for automation/testing. Updates any current
   // observers with the overriden position. Any further updates from location
   // providers will be ignored.
-  void OverrideLocationForTesting(const Geoposition& override_position);
+  void OverrideLocationForTesting(
+      const content::Geoposition& override_position);
 
   // Gets a pointer to the singleton instance of the location relayer, which
   // is in turn bound to the browser's global context objects. Ownership is NOT
@@ -84,7 +85,7 @@ class CONTENT_EXPORT GeolocationProvider
   void InformProvidersPermissionGranted();
 
   // Notifies observers when a new position fix is available.
-  void NotifyObservers(const Geoposition& position);
+  void NotifyObservers(const content::Geoposition& position);
 
   // Thread
   virtual void Init() OVERRIDE;
@@ -95,7 +96,7 @@ class CONTENT_EXPORT GeolocationProvider
   // Only used on client thread
   ObserverMap observers_;
   bool is_permission_granted_;
-  Geoposition position_;
+  content::Geoposition position_;
   // True only in testing, where we want to use a custom position.
   bool ignore_location_updates_;
 

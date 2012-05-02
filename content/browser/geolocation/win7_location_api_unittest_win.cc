@@ -13,7 +13,7 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "content/browser/geolocation/win7_location_api_win.h"
-#include "content/common/geoposition.h"
+#include "content/public/common/geoposition.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -311,18 +311,18 @@ TEST_F(GeolocationApiWin7Tests, PermissionDenied) {
   EXPECT_CALL(*locator_, GetReport(_, _))
       .Times(AtLeast(1))
       .WillRepeatedly(Return(E_ACCESSDENIED));
-  Geoposition position;
+  content::Geoposition position;
   api_->GetPosition(&position);
-  EXPECT_EQ(Geoposition::ERROR_CODE_PERMISSION_DENIED,
+  EXPECT_EQ(content::Geoposition::ERROR_CODE_PERMISSION_DENIED,
             position.error_code);
 }
 
 TEST_F(GeolocationApiWin7Tests, GetValidPosition) {
   EXPECT_CALL(*locator_, GetReport(_, _))
       .Times(AtLeast(1));
-  Geoposition position;
+  content::Geoposition position;
   api_->GetPosition(&position);
-  EXPECT_TRUE(position.IsValidFix());
+  EXPECT_TRUE(position.Validate());
 }
 
 TEST_F(GeolocationApiWin7Tests, GetInvalidPosition) {
@@ -331,9 +331,9 @@ TEST_F(GeolocationApiWin7Tests, GetInvalidPosition) {
       .WillRepeatedly(Return(HRESULT_FROM_WIN32(ERROR_NO_DATA)));
   EXPECT_CALL(*locator_, GetReport(_, _))
       .Times(AtLeast(1));
-  Geoposition position;
+  content::Geoposition position;
   api_->GetPosition(&position);
-  EXPECT_FALSE(position.IsValidFix());
+  EXPECT_FALSE(position.Validate());
 }
 
 }  // namespace

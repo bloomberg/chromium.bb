@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #pragma once
 
 #include "content/browser/geolocation/location_provider.h"
-#include "content/common/geoposition.h"
+#include "content/public/common/geoposition.h"
 
 class CoreLocationDataProviderMac;
 
@@ -23,15 +23,15 @@ class CoreLocationProviderMac : public LocationProviderBase {
   // LocationProvider
   virtual bool StartProvider(bool high_accuracy) OVERRIDE;
   virtual void StopProvider() OVERRIDE;
-  virtual void GetPosition(Geoposition* position) OVERRIDE;
+  virtual void GetPosition(content::Geoposition* position) OVERRIDE;
 
   // Receives new positions and calls UpdateListeners
-  void SetPosition(Geoposition* position);
+  void SetPosition(content::Geoposition* position);
 
  private:
   bool is_updating_;
   CoreLocationDataProviderMac* data_provider_;
-  Geoposition position_;
+  content::Geoposition position_;
 };
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_CORE_LOCATION_PROVIDER_MAC_H_

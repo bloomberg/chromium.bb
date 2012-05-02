@@ -1,14 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
 #include "content/browser/geolocation/win7_location_provider_win.h"
 #include "content/browser/geolocation/win7_location_api_win.h"
+#include "content/public/common/geoposition.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-struct Geoposition;
 
 using testing::_;
 using testing::AtLeast;
@@ -27,26 +26,27 @@ class MockWin7LocationApi : public Win7LocationApi {
   // Used to signal when the destructor is called.
   MOCK_METHOD0(Die, void());
   // Win7LocationApi
-  MOCK_METHOD1(GetPosition, void(Geoposition*));
+  MOCK_METHOD1(GetPosition, void(content::Geoposition*));
   MOCK_METHOD1(SetHighAccuracy, bool(bool));
 
   virtual ~MockWin7LocationApi() {
     Die();
   }
 
-  void GetPositionValid(Geoposition* position) {
+  void GetPositionValid(content::Geoposition* position) {
     position->latitude = 4.5;
     position->longitude = -34.1;
     position->accuracy = 0.5;
     position->timestamp = base::Time::FromDoubleT(200);
-    position->error_code = Geoposition::ERROR_CODE_NONE;
+    position->error_code = content::Geoposition::ERROR_CODE_NONE;
   }
-  void GetPositionInvalid(Geoposition* position) {
+  void GetPositionInvalid(content::Geoposition* position) {
     position->latitude = 4.5;
     position->longitude = -340000.1;
     position->accuracy = 0.5;
     position->timestamp = base::Time::FromDoubleT(200);
-    position->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+    position->error_code =
+        content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   }
 
  private:
@@ -119,9 +119,9 @@ TEST_F(GeolocationProviderWin7Tests, GetValidPosition) {
       .WillOnce(Return(true));
   EXPECT_TRUE(provider_->StartProvider(true));
   main_message_loop_.Run();
-  Geoposition position;
+  content::Geoposition position;
   provider_->GetPosition(&position);
-  EXPECT_TRUE(position.IsValidFix());
+  EXPECT_TRUE(position.Validate());
 }
 
 TEST_F(GeolocationProviderWin7Tests, GetInvalidPosition) {
@@ -133,9 +133,9 @@ TEST_F(GeolocationProviderWin7Tests, GetInvalidPosition) {
       .WillOnce(Return(true));
   EXPECT_TRUE(provider_->StartProvider(true));
   main_message_loop_.Run();
-  Geoposition position;
+  content::Geoposition position;
   provider_->GetPosition(&position);
-  EXPECT_FALSE(position.IsValidFix());
+  EXPECT_FALSE(position.Validate());
 }
 
 }  // namespace

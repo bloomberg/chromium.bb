@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,17 +36,18 @@ void CoreLocationProviderMac::StopProvider() {
   is_updating_ = false;
 }
 
-void CoreLocationProviderMac::GetPosition(Geoposition* position) {
+void CoreLocationProviderMac::GetPosition(content::Geoposition* position) {
   DCHECK(position);
   *position = position_;
-  DCHECK(position->IsInitialized());
+  DCHECK(position->Validate() ||
+         position->error_code != content::Geoposition::ERROR_CODE_NONE);
 }
 
-void CoreLocationProviderMac::SetPosition(Geoposition* position) {
+void CoreLocationProviderMac::SetPosition(content::Geoposition* position) {
   DCHECK(position);
   position_ = *position;
-  DCHECK(position->IsInitialized());
-
+  DCHECK(position->Validate() ||
+         position->error_code != content::Geoposition::ERROR_CODE_NONE);
   UpdateListeners();
 }
 

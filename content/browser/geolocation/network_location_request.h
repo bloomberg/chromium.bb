@@ -14,8 +14,11 @@
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 
-struct Geoposition;
 class URLFetcher;
+
+namespace content {
+struct Geoposition;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -33,7 +36,7 @@ class NetworkLocationRequest : private content::URLFetcherDelegate {
     // Updates the listener with a new position. server_error indicates whether
     // was a server or network error - either no response or a 500 error code.
     virtual void LocationResponseAvailable(
-        const Geoposition& position,
+        const content::Geoposition& position,
         bool server_error,
         const string16& access_token,
         const RadioData& radio_data,

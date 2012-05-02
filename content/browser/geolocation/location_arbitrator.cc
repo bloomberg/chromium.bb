@@ -13,6 +13,7 @@
 #include "googleurl/src/gurl.h"
 
 using content::AccessTokenStore;
+using content::Geoposition;
 
 namespace {
 
@@ -124,7 +125,8 @@ void GeolocationArbitrator::LocationUpdateAvailable(
   DCHECK(provider);
   Geoposition new_position;
   provider->GetPosition(&new_position);
-  DCHECK(new_position.IsInitialized());
+  DCHECK(new_position.Validate() ||
+         new_position.error_code != content::Geoposition::ERROR_CODE_NONE);
   if (!IsNewPositionBetter(position_, new_position,
                            provider == position_provider_))
     return;
@@ -138,11 +140,11 @@ bool GeolocationArbitrator::IsNewPositionBetter(
     bool from_same_provider) const {
   // Updates location_info if it's better than what we currently have,
   // or if it's a newer update from the same provider.
-  if (!old_position.IsValidFix()) {
+  if (!old_position.Validate()) {
     // Older location wasn't locked.
     return true;
   }
-  if (new_position.IsValidFix()) {
+  if (new_position.Validate()) {
     // New location is locked, let's check if it's any better.
     if (old_position.accuracy >= new_position.accuracy) {
       // Accuracy is better.

@@ -26,13 +26,13 @@ const int kMovementThresholdMeters = 20;
 // The arbitrary delta is decreased (Gears used 100 meters); if we need to
 // decrease it any further we'll likely want to do some smarter filtering to
 // remove GPS location jitter noise.
-bool PositionsDifferSiginificantly(const Geoposition& position_1,
-                                   const Geoposition& position_2) {
-  const bool pos_1_valid = position_1.IsValidFix();
-  if (pos_1_valid != position_2.IsValidFix())
+bool PositionsDifferSiginificantly(const content::Geoposition& position_1,
+                                   const content::Geoposition& position_2) {
+  const bool pos_1_valid = position_1.Validate();
+  if (pos_1_valid != position_2.Validate())
     return true;
   if (!pos_1_valid) {
-    DCHECK(!position_2.IsValidFix());
+    DCHECK(!position_2.Validate());
     return false;
   }
   double delta = std::sqrt(
@@ -66,7 +66,7 @@ bool GpsLocationProviderLinux::StartProvider(bool high_accuracy) {
     DCHECK(weak_factory_.HasWeakPtrs());
     return true;
   }
-  position_.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+  position_.error_code = content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   gps_.reset(libgps_factory_());
   if (gps_ == NULL) {
     DLOG(WARNING) << "libgps could not be loaded";
@@ -81,10 +81,11 @@ void GpsLocationProviderLinux::StopProvider() {
   gps_.reset();
 }
 
-void GpsLocationProviderLinux::GetPosition(Geoposition* position) {
+void GpsLocationProviderLinux::GetPosition(content::Geoposition* position) {
   DCHECK(position);
   *position = position_;
-  DCHECK(position->IsInitialized());
+  DCHECK(position->Validate() ||
+         position->error_code != content::Geoposition::ERROR_CODE_NONE);
 }
 
 void GpsLocationProviderLinux::UpdatePosition() {
@@ -98,17 +99,19 @@ void GpsLocationProviderLinux::DoGpsPollTask() {
     return;
   }
 
-  Geoposition new_position;
+  content::Geoposition new_position;
   if (!gps_->Read(&new_position)) {
     ScheduleNextGpsPoll(poll_period_stationary_millis_);
     return;
   }
 
-  DCHECK(new_position.IsInitialized());
+  DCHECK(new_position.Validate() ||
+         new_position.error_code != content::Geoposition::ERROR_CODE_NONE);
   const bool differ = PositionsDifferSiginificantly(position_, new_position);
   ScheduleNextGpsPoll(differ ? poll_period_moving_millis_ :
                                poll_period_stationary_millis_);
-  if (differ || new_position.error_code != Geoposition::ERROR_CODE_NONE) {
+  if (differ ||
+      new_position.error_code != content::Geoposition::ERROR_CODE_NONE) {
     // Update if the new location is interesting or we have an error to report.
     position_ = new_position;
     UpdateListeners();

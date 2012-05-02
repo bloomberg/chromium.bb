@@ -14,6 +14,7 @@
 
 using content::AccessTokenStore;
 using content::FakeAccessTokenStore;
+using content::Geoposition;
 using testing::_;
 using testing::DoAll;
 using testing::DoDefault;

@@ -14,11 +14,12 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/geolocation_permission_context.h"
+#include "content/public/common/geoposition.h"
 #include "content/common/geolocation_messages.h"
-#include "content/common/geoposition.h"
 
 using content::BrowserThread;
 using content::GeolocationPermissionContext;
+using content::Geoposition;
 using content::RenderViewHostImpl;
 
 namespace {

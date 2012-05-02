@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "content/browser/geolocation/location_provider.h"
-#include "content/common/geoposition.h"
+#include "content/public/common/geoposition.h"
 
 // Mock implementation of a location provider for testing.
 class MockLocationProvider : public LocationProviderBase {
@@ -22,15 +22,15 @@ class MockLocationProvider : public LocationProviderBase {
   virtual ~MockLocationProvider();
 
   // Updates listeners with the new position.
-  void HandlePositionChanged(const Geoposition& position);
+  void HandlePositionChanged(const content::Geoposition& position);
 
   // LocationProviderBase implementation.
   virtual bool StartProvider(bool high_accuracy) OVERRIDE;
   virtual void StopProvider() OVERRIDE;
-  virtual void GetPosition(Geoposition* position) OVERRIDE;
+  virtual void GetPosition(content::Geoposition* position) OVERRIDE;
   virtual void OnPermissionGranted() OVERRIDE;
 
-  Geoposition position_;
+  content::Geoposition position_;
   enum State { STOPPED, LOW_ACCURACY, HIGH_ACCURACY } state_;
   bool is_permission_granted_;
   MockLocationProvider** self_ref_;

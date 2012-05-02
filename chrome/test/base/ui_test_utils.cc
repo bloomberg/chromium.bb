@@ -23,6 +23,7 @@
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/test/test_timeouts.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -57,6 +58,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/geoposition.h"
 #include "content/test/test_navigation_observer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -1192,8 +1194,14 @@ bool TakeEntirePageSnapshot(RenderViewHost* rvh, SkBitmap* bitmap) {
 }
 
 void OverrideGeolocation(double latitude, double longitude) {
-  content::OverrideLocationForTesting(
-      latitude, longitude, 0, base::Bind(MessageLoop::QuitClosure()));
+  content::Geoposition position;
+  position.latitude = latitude;
+  position.longitude = longitude;
+  position.altitude = 0.;
+  position.accuracy = 0.;
+  position.timestamp = base::Time::Now();
+  content::OverrideLocationForTesting(position,
+                                      base::Bind(MessageLoop::QuitClosure()));
   RunMessageLoop();
 }
 

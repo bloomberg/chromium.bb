@@ -33,7 +33,8 @@ void GeolocationProvider::AddObserver(GeolocationObserver* observer,
   DCHECK(OnClientThread());
   observers_[observer] = update_options;
   OnObserversChanged();
-  if (position_.IsInitialized())
+  if (position_.Validate() ||
+      position_.error_code != content::Geoposition::ERROR_CODE_NONE)
     observer->OnLocationUpdate(position_);
 }
 
@@ -67,9 +68,11 @@ void GeolocationProvider::OnObserversChanged() {
   message_loop()->PostTask(FROM_HERE, task);
 }
 
-void GeolocationProvider::NotifyObservers(const Geoposition& position) {
+void GeolocationProvider::NotifyObservers(
+    const content::Geoposition& position) {
   DCHECK(OnClientThread());
-  DCHECK(position.IsInitialized());
+  DCHECK(position.Validate() ||
+         position.error_code != content::Geoposition::ERROR_CODE_NONE);
   position_ = position;
   ObserverMap::const_iterator it = observers_.begin();
   while (it != observers_.end()) {
@@ -126,7 +129,8 @@ void GeolocationProvider::CleanUp() {
   arbitrator_ = NULL;
 }
 
-void GeolocationProvider::OnLocationUpdate(const Geoposition& position) {
+void GeolocationProvider::OnLocationUpdate(
+    const content::Geoposition& position) {
   DCHECK(OnGeolocationThread());
   // Will be true only in testing.
   if (ignore_location_updates_)
@@ -138,7 +142,7 @@ void GeolocationProvider::OnLocationUpdate(const Geoposition& position) {
 }
 
 void GeolocationProvider::OverrideLocationForTesting(
-    const Geoposition& position) {
+    const content::Geoposition& position) {
   DCHECK(OnClientThread());
   position_ = position;
   ignore_location_updates_ = true;

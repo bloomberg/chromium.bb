@@ -12,8 +12,8 @@
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/geolocation_observer.h"
 #include "content/common/content_export.h"
-#include "content/common/geoposition.h"
 #include "content/public/browser/access_token_store.h"
+#include "content/public/common/geoposition.h"
 #include "net/url_request/url_request_context_getter.h"
 
 class GeolocationArbitratorDependencyFactory;
@@ -26,8 +26,6 @@ class AccessTokenStore;
 namespace net {
 class URLRequestContextGetter;
 }
-
-struct Geoposition;
 
 // This class is responsible for handling updates from multiple underlying
 // providers and resolving them to a single 'best' location fix at any given
@@ -84,8 +82,8 @@ class CONTENT_EXPORT GeolocationArbitrator
   // Returns true if |new_position| is an improvement over |old_position|.
   // Set |from_same_provider| to true if both the positions came from the same
   // provider.
-  bool IsNewPositionBetter(const Geoposition& old_position,
-                           const Geoposition& new_position,
+  bool IsNewPositionBetter(const content::Geoposition& old_position,
+                           const content::Geoposition& new_position,
                            bool from_same_provider) const;
 
   scoped_refptr<GeolocationArbitratorDependencyFactory> dependency_factory_;
@@ -98,7 +96,7 @@ class CONTENT_EXPORT GeolocationArbitrator
   const LocationProviderBase* position_provider_;
   bool is_permission_granted_;
   // The current best estimate of our position.
-  Geoposition position_;
+  content::Geoposition position_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationArbitrator);
 };

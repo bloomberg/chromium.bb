@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "content/common/geoposition.h"
+#include "content/public/common/geoposition.h"
 #include "third_party/gpsd/release-3.1/gps.h"
 
 COMPILE_ASSERT(GPSD_API_MAJOR_VERSION == 5, GPSD_API_version_is_not_5);
@@ -96,9 +96,9 @@ void LibGps::Stop() {
   is_open_ = false;
 }
 
-bool LibGps::Read(Geoposition* position) {
+bool LibGps::Read(content::Geoposition* position) {
   DCHECK(position);
-  position->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+  position->error_code = content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   if (!is_open_) {
       DLOG(WARNING) << "No gpsd connection";
       position->error_message = "No gpsd connection";
@@ -117,23 +117,24 @@ bool LibGps::Read(Geoposition* position) {
       return false;
   }
 
-  position->error_code = Geoposition::ERROR_CODE_NONE;
+  position->error_code = content::Geoposition::ERROR_CODE_NONE;
   position->timestamp = base::Time::Now();
-  if (!position->IsValidFix()) {
+  if (!position->Validate()) {
     // GetPositionIfFixed returned true, yet we've not got a valid fix.
     // This shouldn't happen; something went wrong in the conversion.
     NOTREACHED() << "Invalid position from GetPositionIfFixed: lat,long "
                  << position->latitude << "," << position->longitude
                  << " accuracy " << position->accuracy << " time "
                  << position->timestamp.ToDoubleT();
-    position->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+    position->error_code =
+        content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
     position->error_message = "Bad fix from gps";
     return false;
   }
   return true;
 }
 
-bool LibGps::GetPositionIfFixed(Geoposition* position) {
+bool LibGps::GetPositionIfFixed(content::Geoposition* position) {
   DCHECK(position);
   if (gps_data_->status == STATUS_NO_FIX) {
     DVLOG(2) << "Status_NO_FIX";

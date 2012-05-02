@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,9 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 
+namespace content {
 struct Geoposition;
+}
 
 // This interface is implemented by observers of GeolocationProvider as
 // well as GeolocationProvider itself as an observer of GeolocationArbitrator.
@@ -18,7 +20,7 @@ class CONTENT_EXPORT GeolocationObserver {
   // This will be called whenever the 'best available' location is updated,
   // or when an error is encountered meaning no location data will be
   // available in the forseeable future.
-  virtual void OnLocationUpdate(const Geoposition& position) = 0;
+  virtual void OnLocationUpdate(const content::Geoposition& position) = 0;
 
  protected:
   GeolocationObserver() {}

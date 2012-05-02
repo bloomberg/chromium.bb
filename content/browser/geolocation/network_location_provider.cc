@@ -10,6 +10,7 @@
 #include "content/public/browser/access_token_store.h"
 
 using content::AccessTokenStore;
+using content::Geoposition;
 
 namespace {
 // The maximum period of time we'll wait for a complete set of device data
@@ -178,7 +179,7 @@ void NetworkLocationProvider::LocationResponseAvailable(
   DCHECK(CalledOnValidThread());
   // Record the position and update our cache.
   position_ = position;
-  if (position.IsValidFix()) {
+  if (position.Validate()) {
     position_cache_->CachePosition(wifi_data, position);
   }
 
@@ -243,7 +244,7 @@ void NetworkLocationProvider::RequestPosition() {
   DCHECK(!device_data_updated_timestamp_.is_null()) <<
       "Timestamp must be set before looking up position";
   if (cached_position) {
-    DCHECK(cached_position->IsValidFix());
+    DCHECK(cached_position->Validate());
     // Record the position and update its timestamp.
     position_ = *cached_position;
     // The timestamp of a position fix is determined by the timestamp

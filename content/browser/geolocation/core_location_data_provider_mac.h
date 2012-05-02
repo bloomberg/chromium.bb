@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_nsobject.h"
-#include "content/common/geoposition.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/geoposition.h"
 
 #import <Foundation/Foundation.h>
 
@@ -30,7 +30,7 @@ class CoreLocationDataProviderMac
   bool StartUpdating(CoreLocationProviderMac* provider);
   void StopUpdating();
 
-  void UpdatePosition(Geoposition *position);
+  void UpdatePosition(content::Geoposition* position);
 
  protected:
   friend class base::RefCountedThreadSafe<CoreLocationDataProviderMac>;
@@ -41,7 +41,7 @@ class CoreLocationDataProviderMac
   void StartUpdatingTask();
   void StopUpdatingTask();
   // This must execute in the origin thread (IO thread)
-  void PositionUpdated(Geoposition position);
+  void PositionUpdated(content::Geoposition position);
 
   // The wrapper class that supplies this class with position data
   scoped_nsobject<CoreLocationWrapperMac> wrapper_;

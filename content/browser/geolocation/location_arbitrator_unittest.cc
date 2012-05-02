@@ -9,12 +9,13 @@
 #include "content/browser/geolocation/location_arbitrator.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/mock_location_provider.h"
-#include "content/common/geoposition.h"
+#include "content/public/common/geoposition.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::AccessTokenStore;
 using content::FakeAccessTokenStore;
+using content::Geoposition;
 using ::testing::NiceMock;
 
 namespace {
@@ -24,7 +25,7 @@ class MockLocationObserver : public GeolocationObserver {
   void InvalidateLastPosition() {
     last_position_.latitude = 100;
     last_position_.error_code = Geoposition::ERROR_CODE_NONE;
-    ASSERT_FALSE(last_position_.IsInitialized());
+    ASSERT_FALSE(last_position_.Validate());
   }
   // Delegate
   virtual void OnLocationUpdate(const Geoposition& position) {
@@ -54,8 +55,7 @@ void SetPositionFix(MockLocationProvider* provider,
   position.longitude = longitude;
   position.accuracy = accuracy;
   position.timestamp = GetTimeNowForTest();
-  ASSERT_TRUE(position.IsInitialized());
-  ASSERT_TRUE(position.IsValidFix());
+  ASSERT_TRUE(position.Validate());
   provider->HandlePositionChanged(position);
 }
 
@@ -126,7 +126,7 @@ class GeolocationLocationArbitratorTest : public testing::Test {
                              double longitude,
                              double accuracy) {
     Geoposition geoposition = observer_->last_position_;
-    EXPECT_TRUE(geoposition.IsValidFix());
+    EXPECT_TRUE(geoposition.Validate());
     EXPECT_DOUBLE_EQ(latitude, geoposition.latitude);
     EXPECT_DOUBLE_EQ(longitude, geoposition.longitude);
     EXPECT_DOUBLE_EQ(accuracy, geoposition.accuracy);
@@ -187,11 +187,15 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   EXPECT_TRUE(cell()->has_listeners());
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, cell()->state_);
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, gps()->state_);
-  EXPECT_FALSE(observer_->last_position_.IsInitialized());
+  EXPECT_FALSE(observer_->last_position_.Validate());
+  EXPECT_EQ(content::Geoposition::ERROR_CODE_NONE,
+            observer_->last_position_.error_code);
 
   SetReferencePosition(cell());
 
-  EXPECT_TRUE(observer_->last_position_.IsInitialized());
+  EXPECT_TRUE(observer_->last_position_.Validate() ||
+              observer_->last_position_.error_code !=
+                  content::Geoposition::ERROR_CODE_NONE);
   EXPECT_EQ(cell()->position_.latitude,
             observer_->last_position_.latitude);
 
@@ -226,7 +230,7 @@ TEST_F(GeolocationLocationArbitratorTest, Arbitration) {
   SetPositionFix(cell(), 1, 2, 150);
 
   // First position available
-  EXPECT_TRUE(observer_->last_position_.IsValidFix());
+  EXPECT_TRUE(observer_->last_position_.Validate());
   CheckLastPositionInfo(1, 2, 150);
 
   SetPositionFix(gps(), 3, 4, 50);

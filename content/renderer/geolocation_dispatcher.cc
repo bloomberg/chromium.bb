@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,35 +112,38 @@ void GeolocationDispatcher::OnPermissionSet(int bridge_id, bool is_allowed) {
 }
 
 // We have an updated geolocation position or error code.
-void GeolocationDispatcher::OnPositionUpdated(const Geoposition& geoposition) {
+void GeolocationDispatcher::OnPositionUpdated(
+    const content::Geoposition& geoposition) {
   // It is possible for the browser process to have queued an update message
   // before receiving the stop updating message.
   if (!updating_)
     return;
 
-  DCHECK(geoposition.IsInitialized());
-  if (geoposition.IsValidFix()) {
+  if (geoposition.Validate()) {
     controller_->positionChanged(
         WebGeolocationPosition(
             geoposition.timestamp.ToDoubleT(),
             geoposition.latitude, geoposition.longitude,
             geoposition.accuracy,
-            geoposition.is_valid_altitude(), geoposition.altitude,
-            geoposition.is_valid_altitude_accuracy(),
+            // Lowest point on land is at approximately -400 meters.
+            geoposition.altitude > -10000.,
+            geoposition.altitude,
+            geoposition.altitude_accuracy >= 0.,
             geoposition.altitude_accuracy,
-            geoposition.is_valid_heading(), geoposition.heading,
-            geoposition.is_valid_speed(), geoposition.speed));
+            geoposition.heading >= 0. && geoposition.heading <= 360.,
+            geoposition.heading,
+            geoposition.speed >= 0.,
+            geoposition.speed));
   } else {
     WebGeolocationError::Error code;
     switch (geoposition.error_code) {
-      case Geoposition::ERROR_CODE_PERMISSION_DENIED:
+      case content::Geoposition::ERROR_CODE_PERMISSION_DENIED:
         code = WebGeolocationError::ErrorPermissionDenied;
         break;
-      case Geoposition::ERROR_CODE_POSITION_UNAVAILABLE:
+      case content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE:
         code = WebGeolocationError::ErrorPositionUnavailable;
         break;
       default:
-        DCHECK(false);
         NOTREACHED() << geoposition.error_code;
         return;
     }

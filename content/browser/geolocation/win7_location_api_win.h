@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,9 @@
 #include "base/win/scoped_com_initializer.h"
 #include "content/common/content_export.h"
 
+namespace content {
 struct Geoposition;
+}
 
 // PropVariantToDouble
 typedef HRESULT (WINAPI* PropVariantToDoubleFunction)
@@ -33,7 +35,7 @@ class CONTENT_EXPORT Win7LocationApi {
             ILocation* locator);
   // Gives the best available position.
   // Returns false if no valid position is available.
-  virtual void GetPosition(Geoposition* position);
+  virtual void GetPosition(content::Geoposition* position);
   // Changes the "accuracy" needed. Affects power levels of devices.
   virtual bool SetHighAccuracy(bool acc);
 
@@ -48,7 +50,7 @@ class CONTENT_EXPORT Win7LocationApi {
   // Provides the best position fix if one is available.
   // Does this by requesting a location report and querying it to obtain
   // location information.
-  virtual bool GetPositionIfFixed(Geoposition* position);
+  virtual bool GetPositionIfFixed(content::Geoposition* position);
 
   // Ensure that COM has been initialized for this thread.
   base::win::ScopedCOMInitializer com_initializer_;

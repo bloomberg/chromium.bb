@@ -11,6 +11,8 @@
 
 namespace content {
 
+struct Geoposition;
+
 // Overrides the current location for testing. This function may be called on
 // any thread. The completion callback will be invoked asynchronously on the
 // calling thread when the override operation is completed.
@@ -18,9 +20,7 @@ namespace content {
 // to provide fake location results when not testing the innards of the
 // geolocation code.
 void CONTENT_EXPORT OverrideLocationForTesting(
-    double latitude,
-    double longitude,
-    double altitude,
+    const Geoposition& position,
     const base::Closure& completion_callback);
 
 }  // namespace content

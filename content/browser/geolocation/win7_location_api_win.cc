@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "content/common/geoposition.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/geoposition.h"
 
 namespace {
 const double kKnotsToMetresPerSecondConversionFactor = 0.5144;
@@ -89,35 +89,36 @@ Win7LocationApi* Win7LocationApi::CreateForTesting(
   return result;
 }
 
-void Win7LocationApi::GetPosition(Geoposition* position) {
+void Win7LocationApi::GetPosition(content::Geoposition* position) {
   DCHECK(position);
-  position->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+  position->error_code = content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   if (!locator_)
     return;
   // Try to get a position fix
   if (!GetPositionIfFixed(position))
     return;
-  position->error_code = Geoposition::ERROR_CODE_NONE;
-  if (!position->IsValidFix()) {
+  position->error_code = content::Geoposition::ERROR_CODE_NONE;
+  if (!position->Validate()) {
     // GetPositionIfFixed returned true, yet we've not got a valid fix.
     // This shouldn't happen; something went wrong in the conversion.
     NOTREACHED() << "Invalid position from GetPositionIfFixed: lat,long "
                  << position->latitude << "," << position->longitude
                  << " accuracy " << position->accuracy << " time "
                  << position->timestamp.ToDoubleT();
-    position->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+    position->error_code =
+        content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
     position->error_message = "Bad fix from Win7 provider";
   }
 }
 
-bool Win7LocationApi::GetPositionIfFixed(Geoposition* position) {
+bool Win7LocationApi::GetPositionIfFixed(content::Geoposition* position) {
   HRESULT result_type;
   CComPtr<ILocationReport> location_report;
   CComPtr<ILatLongReport> lat_long_report;
   result_type = locator_->GetReport(IID_ILatLongReport, &location_report);
   // Checks to see if location access is allowed.
   if (result_type == E_ACCESSDENIED)
-    position->error_code = Geoposition::ERROR_CODE_PERMISSION_DENIED;
+    position->error_code = content::Geoposition::ERROR_CODE_PERMISSION_DENIED;
   // Checks for any other errors while requesting a location report.
   if (!SUCCEEDED(result_type))
     return false;

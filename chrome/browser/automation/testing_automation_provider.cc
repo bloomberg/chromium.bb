@@ -139,6 +139,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/geoposition.h"
 #include "content/public/common/ssl_status.h"
 #include "net/cookies/cookie_store.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -4928,8 +4929,14 @@ void TestingAutomationProvider::OverrideGeoposition(
         "Missing or invalid geolocation parameters");
     return;
   }
+  content::Geoposition position;
+  position.latitude = latitude;
+  position.longitude = longitude;
+  position.altitude = altitude;
+  position.accuracy = 0.;
+  position.timestamp = base::Time::Now();
   content::OverrideLocationForTesting(
-      latitude, longitude, altitude,
+      position,
       base::Bind(&SendSuccessIfAlive, AsWeakPtr(), reply_message));
 }
 

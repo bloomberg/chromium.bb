@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::FakeAccessTokenStore;
+using content::Geoposition;
 
 namespace {
 
@@ -373,7 +374,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
 
   Geoposition position;
   provider->GetPosition(&position);
-  EXPECT_FALSE(position.IsValidFix());
+  EXPECT_FALSE(position.Validate());
 
   // Now wifi data arrives -- SetData will notify listeners.
   const int kFirstScanAps = 6;
@@ -406,8 +407,8 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   EXPECT_EQ(51.0, position.latitude);
   EXPECT_EQ(-0.1, position.longitude);
   EXPECT_EQ(1200.4, position.accuracy);
-  EXPECT_TRUE(position.is_valid_timestamp());
-  EXPECT_TRUE(position.IsValidFix());
+  EXPECT_FALSE(position.timestamp.is_null());
+  EXPECT_TRUE(position.Validate());
 
   // Token should be in the store.
   EXPECT_EQ(UTF8ToUTF16(REFERENCE_ACCESS_TOKEN),
@@ -424,7 +425,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   provider->GetPosition(&position);
   EXPECT_EQ(51.0, position.latitude);
   EXPECT_EQ(-0.1, position.longitude);
-  EXPECT_TRUE(position.IsValidFix());
+  EXPECT_TRUE(position.Validate());
 
   // Now a third scan with more than twice the original amount -> new request.
   const int kThirdScanAps = kFirstScanAps * 2 + 1;
@@ -445,8 +446,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
 
   // Error means we now no longer have a fix.
   provider->GetPosition(&position);
-  EXPECT_FALSE(position.is_valid_latlong());
-  EXPECT_FALSE(position.IsValidFix());
+  EXPECT_FALSE(position.Validate());
 
   // Wifi scan returns to original set: should be serviced from cache.
   wifi_data_provider_->SetData(CreateReferenceWifiScanData(kFirstScanAps));
@@ -456,7 +456,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   provider->GetPosition(&position);
   EXPECT_EQ(51.0, position.latitude);
   EXPECT_EQ(-0.1, position.longitude);
-  EXPECT_TRUE(position.IsValidFix());
+  EXPECT_TRUE(position.Validate());
 }
 
 TEST_F(GeolocationNetworkProviderTest, NoRequestOnStartupUntilWifiData) {

@@ -1,19 +1,19 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // IPC messages for geolocation.
 // Multiply-included message file, hence no include guard.
 
-#include "content/common/geoposition.h"
+#include "content/public/common/geoposition.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START GeolocationMsgStart
 
-IPC_ENUM_TRAITS(Geoposition::ErrorCode)
+IPC_ENUM_TRAITS(content::Geoposition::ErrorCode)
 
-IPC_STRUCT_TRAITS_BEGIN(Geoposition)
+IPC_STRUCT_TRAITS_BEGIN(content::Geoposition)
   IPC_STRUCT_TRAITS_MEMBER(latitude)
   IPC_STRUCT_TRAITS_MEMBER(longitude)
   IPC_STRUCT_TRAITS_MEMBER(altitude)
@@ -37,7 +37,7 @@ IPC_MESSAGE_ROUTED2(GeolocationMsg_PermissionSet,
 // permission and we have a position available or an error occurs (such as
 // permission denied, position unavailable, etc.)
 IPC_MESSAGE_ROUTED1(GeolocationMsg_PositionUpdated,
-                    Geoposition /* geoposition */)
+                    content::Geoposition /* geoposition */)
 
 // Messages sent from the renderer to the browser.
 

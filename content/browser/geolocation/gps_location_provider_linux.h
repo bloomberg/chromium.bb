@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/common/content_export.h"
-#include "content/common/geoposition.h"
+#include "content/public/common/geoposition.h"
 
 class LibGps;
 
@@ -46,7 +46,7 @@ class CONTENT_EXPORT GpsLocationProviderLinux : public LocationProviderBase {
   // LocationProvider
   virtual bool StartProvider(bool high_accuracy) OVERRIDE;
   virtual void StopProvider() OVERRIDE;
-  virtual void GetPosition(Geoposition* position) OVERRIDE;
+  virtual void GetPosition(content::Geoposition* position) OVERRIDE;
   virtual void UpdatePosition() OVERRIDE;
 
  private:
@@ -62,7 +62,7 @@ class CONTENT_EXPORT GpsLocationProviderLinux : public LocationProviderBase {
 
   const LibGpsFactory libgps_factory_;
   scoped_ptr<LibGps> gps_;
-  Geoposition position_;
+  content::Geoposition position_;
 
   // Holder for the tasks which run on the thread; takes care of cleanup.
   base::WeakPtrFactory<GpsLocationProviderLinux> weak_factory_;
