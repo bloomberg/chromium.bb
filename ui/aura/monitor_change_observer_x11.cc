@@ -30,8 +30,8 @@ XRRModeInfo* FindMode(XRRScreenResources* screen_resources, XID current_mode) {
   return NULL;
 }
 
-bool CompareMonitorY(gfx::Monitor lhs, gfx::Monitor rhs) {
-  return lhs.bounds().y() < rhs.bounds().y();
+bool CompareMonitorY(const gfx::Monitor& lhs, const gfx::Monitor& rhs) {
+  return lhs.bounds_in_pixel().y() > rhs.bounds_in_pixel().y();
 }
 
 }  // namespace
