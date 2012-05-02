@@ -6,6 +6,7 @@
 #define WEBKIT_GLUE_WEB_INTENT_DATA_H_
 
 #include <map>
+#include <vector>
 
 #include "base/file_path.h"
 #include "base/string16.h"
@@ -36,6 +37,9 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
 
   // String payload data.
   string16 unserialized_data;
+
+  // The global message port IDs of any transferred MessagePorts.
+  std::vector<int> message_port_ids;
 
   // The file of a payload blob. Together with |blob_length|, suitable
   // arguments to WebBlob::createFromFile.

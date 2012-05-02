@@ -5,6 +5,9 @@
 #include "webkit/glue/web_intent_data.h"
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIntent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebMessagePortChannel.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
 namespace webkit_glue {
 
@@ -20,8 +23,13 @@ WebIntentData::WebIntentData(const WebKit::WebIntent& intent)
     : action(intent.action()),
       type(intent.type()),
       data(intent.data()),
+      service(intent.service()),
       blob_length(0),
       data_type(SERIALIZED) {
+  WebKit::WebVector<WebKit::WebString> names = intent.extrasNames();
+  for (size_t i = 0; i < names.size(); ++i) {
+    extra_data[names[i]] = intent.extrasValue(names[i]);
+  }
 }
 
 WebIntentData::WebIntentData(const string16& action_in,
