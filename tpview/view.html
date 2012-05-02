@@ -1,0 +1,202 @@
+<html>
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+  <title>Touchpad Log Viewer</title>
+<link type="text/css" href="css/smoothness/jquery-ui-1.8.16.custom.css" rel="stylesheet" />	
+<script src="jquery-1.6.4.min.js"></script>
+<script src="jquery.mousewheel.js"></script>
+
+<script src="js/jquery-ui-1.8.16.custom.min.js"></script>
+
+<script src="finger_view_controller.js"></script>
+<script src="graph_controller.js"></script>
+<script src="secret_entries.js"></script>
+
+<link rel="stylesheet" href="style.css" type="text/css" media="all" />
+<script type="text/javascript" charset="utf-8">
+
+var finger_view_controller;
+
+function loadLogObj(obj) {
+  finger_view_controller.setEntriesLog(obj);
+  var MAX_SIZE = 10000;
+  var min = Math.max(0, obj.entries.length - MAX_SIZE);
+  finger_view_controller.setRange(min, obj.entries.length);
+  $("#slider").slider({
+    min: min,
+    max: obj.entries.length,
+    values: [min, obj.entries.length],
+    range: true,
+    slide: function(event, ui) {
+      finger_view_controller.setRange(ui.values[0], ui.values[1]);
+    },
+    change: function(event, ui) {
+      finger_view_controller.setRange(ui.values[0], ui.values[1]);
+    }
+  });
+  finger_view_controller.resetZooms();
+}
+
+function handleFileSelect(evt) {
+  $('#text_box').removeClass('text_box_hilight');
+  evt.stopPropagation();
+  evt.preventDefault();
+
+  var files = evt.dataTransfer.files;  // FileList object.
+
+  var file = files[0];
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    $('#text_box').val(e.target.result);
+    var obj = jQuery.parseJSON(e.target.result);
+    loadLogObj(obj);
+  };
+  reader.readAsText(file);
+}
+
+var count = 0;
+
+function handleDragOver(evt) {
+  evt.stopPropagation();
+  evt.preventDefault();
+}
+
+function handleDragEnter(evt) {
+  $('#text_box').addClass('text_box_hilight');
+  evt.stopPropagation();
+  evt.preventDefault();
+}
+
+function handleDragOut(evt) {
+  $('#text_box').removeClass('text_box_hilight');
+  evt.stopPropagation();
+  evt.preventDefault();
+}
+
+function setup() {
+  var dropZone = document.getElementById('text_box');
+  dropZone.addEventListener('dragenter', handleDragEnter, false);
+  dropZone.addEventListener('dragleave', handleDragOut, false);
+  dropZone.addEventListener('dragover', handleDragOver, false);
+  dropZone.addEventListener('drop', handleFileSelect, false);
+}
+
+// fix layerX, layerY warnings
+(function(){
+    // remove layerX and layerY
+    var all = $.event.props,
+        len = all.length,
+        res = [];
+    while (len--) {
+      var el = all[len];
+      if (el != 'layerX' && el != 'layerY') res.push(el);
+    }
+    $.event.props = res;
+}());
+
+function stepBack() {
+  var values = $("#slider").slider("option", "values");
+  var range = $("#slider").slider("option", "max");
+  if (values[1] > values[0]) {
+    var newValue = finger_view_controller.prevHardwareState();
+    if (newValue < 0)
+      return;
+    values[1] = newValue + 1;
+    $("#slider").slider("option", "values", values);
+  }
+}
+
+function stepForward() {
+  var values = $("#slider").slider("option", "values");
+  var maxValue = $("#slider").slider("option", "max");
+  if (values[1] < maxValue) {
+    var newValue = finger_view_controller.nextHardwareState();
+    if (newValue < 0)
+      return;
+    values[1] = newValue + 1;
+    $("#slider").slider("option", "values", values);
+  }
+}
+
+$(document).ready(function() {
+  
+  setup();
+  $("#playpause").button({
+    text: false,
+    icons: {
+      primary: "ui-icon-play"
+    }
+  });
+  var canvas = document.getElementById('fview');
+  // var ctx = canvas.getContext('2d');
+  var gc = new GraphController($('#gview'));
+  gc.setLineSegments([{'start': {'xPos': 0.1, 'yPos': 0.1},
+                       'end': {'xPos': 0.9, 'yPos': 0.5}}]);
+  gc.draw();
+  
+  var inGc = new GraphController($('#fview'));
+  
+  finger_view_controller = new FingerViewController(inGc, gc);
+  finger_view_controller.setEntriesLog(secret_obj);
+  $("#out-resetzoom").button({
+    icons: {
+      primary: "ui-icon-arrow-4-diag"
+    }
+  }).click(function() {
+    gc.animResetZoom();
+  });
+
+  $("#in-resetzoom").button({
+    icons: {
+      primary: "ui-icon-arrow-4-diag"
+    }
+  }).click(function() {
+    inGc.animResetZoom();
+  });
+
+  $("#stepback").button({
+    text: false,
+    icons: {
+      primary: "ui-icon-triangle-1-w"
+    }
+  }).click(stepBack);
+  $("#stepforward").button({
+    text: false,
+    icons: {
+      primary: "ui-icon-triangle-1-e"
+    }
+  }).click(stepForward);
+
+  $(window).keypress(function (event) {
+    if (event.keyCode == 107)
+      stepBack();
+    else if (event.keyCode == 106)
+      stepForward();
+  });
+
+  loadLogObj(secret_obj);
+});
+
+</script>
+</head>
+<body>
+<div class="viewspan">
+<div class="heading">Input:</div>
+<canvas class="view" id="fview" width="480" height="320"></canvas><br/>
+<button class="button" id="in-resetzoom">Reset Zoom</button><br/>
+</div><div class="viewspan">
+<div class="heading">Output:</div>
+<canvas class="view" id="gview" width="480" height="320"></canvas><br/>
+<button class="button" id="out-resetzoom">Reset Zoom</button><br/>
+</div>
+<div id="playbar">
+<button id="playpause">Play</button>
+<div id="sliderdiv"><div id="slider"></div></div>
+<button id="stepback">Step Back</button>
+<button id="stepforward">Step Forward</button>
+</div>
+<div id="textdiv">
+<textarea rows="24" cols="80" id="text_box">Drag and drop a touchpad log file here.</textarea></div>
+
+</body>
+</html>

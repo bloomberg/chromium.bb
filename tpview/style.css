@@ -1,0 +1,77 @@
+#drop_zone {
+	text-align: center;
+	border: 2px dashed #b9b9ba;
+	padding-top: 2em;
+	padding-bottom: 2em;
+}
+
+body {
+	padding: 0;
+	margin: 0;
+	font: 13px Helvetica, Arial, Geneva, sans-serif;
+}
+
+.viewspan {
+	width: 49%;
+	/*float: left;*/
+	/*border: 1px solid #f77;*/
+	display: inline-block;
+}
+
+.heading {
+	margin: 0.3em 0 0 1em;
+}
+
+.view {
+	/*box-shadow: inset #888 0 2px 10px;*/
+	border: 1px solid #ccc;
+	margin: 0.3em 0 0 1em;
+}
+
+.button {
+	margin: 1em 0 0 1.5em;
+}
+
+.ui-widget {
+	font-size: 11px;
+}
+
+#playbar {
+	padding-top: 1em;
+	/*border: 1px solid #fff;*/
+}
+
+#playpause {
+	float: left;
+	margin-top: 0.8em;
+	margin-left: 1.5em;
+	visibility: hidden;
+}
+
+#stepback {
+	display: inline;
+}
+
+#stepforward {
+	display: inline;
+}
+
+#sliderdiv {
+	margin: 1.2em 1.8em 1em 4.4em;
+}
+
+#textdiv {
+	margin: 2em 1em 1em 1em;
+}
+
+#text_box {
+	width: 100%;
+	border: 1px inset #a3a6a6;
+}
+
+.text_box_hilight {
+	box-shadow: 0 0 7px rgb(0, 255, 255);
+	-webkit-box-shadow: 0 0 7px rgb(0, 255, 255);
+	-moz-box-shadow: 0 0 7px rgb(0, 255, 255);
+}
+
