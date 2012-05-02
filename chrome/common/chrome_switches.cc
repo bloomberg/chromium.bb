@@ -1238,6 +1238,10 @@ const char kDisableGData[]                  = "disable-gdata";
 // Enables Libcros.
 const char kEnableLibcros[]                = "enable-libcros";
 
+// Enables touchpad three-finger-click as middle button.
+const char kEnableTouchpadThreeFingerClick[]
+    = "touchpad-enable-three-finger-click";
+
 // Skips OAuth part of ChromeOS login process.
 const char kSkipOAuthLogin[]                = "skip-oauth-login";
 

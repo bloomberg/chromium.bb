@@ -104,6 +104,7 @@ class Preferences : public content::NotificationObserver {
   input_method::InputMethodManager* input_method_manager_;
 
   BooleanPrefMember tap_to_click_enabled_;
+  BooleanPrefMember three_finger_click_enabled_;
   BooleanPrefMember natural_scroll_;
   BooleanPrefMember vert_edge_scroll_enabled_;
   BooleanPrefMember accessibility_enabled_;

@@ -107,6 +107,13 @@ void SetTapToClick(bool enabled) {
   ExecuteScript(3, kTpControl, "taptoclick", enabled ? "on" : "off");
 }
 
+void SetThreeFingerClick(bool enabled) {
+  ExecuteScript(3, kTpControl, "three_finger_click", enabled ? "on" : "off");
+  // For Alex/ZGB.
+  ExecuteScript(3, kTpControl, "t5r2_three_finger_click",
+      enabled ? "on" : "off");
+}
+
 }  // namespace touchpad_settings
 
 namespace mouse_settings {

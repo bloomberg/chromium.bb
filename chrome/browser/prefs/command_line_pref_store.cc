@@ -61,6 +61,8 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
 #endif
 #if defined(OS_CHROMEOS)
       { switches::kDisableGData, prefs::kDisableGData, true },
+      { switches::kEnableTouchpadThreeFingerClick,
+          prefs::kEnableTouchpadThreeFingerClick, true },
 #endif
 };
 

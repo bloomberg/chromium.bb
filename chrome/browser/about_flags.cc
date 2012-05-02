@@ -685,6 +685,15 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE_AND_VALUE(switches::kDefaultDeviceScaleFactor, "2")
   },
+#if defined(OS_CHROMEOS)
+  {
+    "allow-touchpad-three-finger-click",
+    IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_NAME,
+    IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableTouchpadThreeFingerClick)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

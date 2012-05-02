@@ -19,6 +19,9 @@ void SetSensitivity(int value);
 // Turns tap to click on / off.
 void SetTapToClick(bool enabled);
 
+// Switch for three-finger click.
+void SetThreeFingerClick(bool enabled);
+
 }  // namespace touchpad_settings
 
 namespace mouse_settings {

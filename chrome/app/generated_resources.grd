@@ -5597,6 +5597,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Allows applications to use NaCl Socket API. Use only to test NaCl plugins.
       </message>
 
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_NAME" desc="Name for the flag to enable touchpad three finger click as middle button.">
+          Enable touchpad three-finger-click.
+        </message>
+        <message name="IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_DESCRIPTION" desc="Description for the flag to enable touchpad three finger click as middle button.">
+          Enables touchpad three-finger-click as middle button.
+        </message>
+      </if>
+
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
         Crashes
