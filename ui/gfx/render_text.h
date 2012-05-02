@@ -45,7 +45,7 @@ class SkiaTextRenderer {
   void SetTextSize(int size);
   void SetFontFamilyWithStyle(const std::string& family, int font_style);
   void SetForegroundColor(SkColor foreground);
-  void SetShader(SkShader* shader);
+  void SetShader(SkShader* shader, const Rect& bounds);
   void DrawSelection(const std::vector<Rect>& selection, SkColor color);
   void DrawPosText(const SkPoint* pos,
                    const uint16* glyphs,
@@ -54,7 +54,10 @@ class SkiaTextRenderer {
 
  private:
   SkCanvas* canvas_skia_;
+  bool started_drawing_;
   SkPaint paint_;
+  SkRect bounds_;
+  SkRefPtr<SkShader> deferred_fade_shader_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaTextRenderer);
 };

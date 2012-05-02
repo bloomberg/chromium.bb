@@ -19,6 +19,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_theme.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/shadow_value.h"
 
 namespace {
@@ -176,7 +177,8 @@ namespace gfx {
 namespace internal {
 
 SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
-    : canvas_skia_(canvas->sk_canvas()) {
+    : canvas_skia_(canvas->sk_canvas()),
+      started_drawing_(false) {
   DCHECK(canvas_skia_);
   paint_.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
   paint_.setStyle(SkPaint::kFill_Style);
@@ -186,6 +188,18 @@ SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
 }
 
 SkiaTextRenderer::~SkiaTextRenderer() {
+  // Work-around for http://crbug.com/122743, where non-ClearType text is
+  // rendered with incorrect gamma when using the fade shader. Draw the text
+  // to a layer and restore it faded by drawing a rect in kDstIn_Mode mode.
+  //
+  // TODO(asvitkine): Remove this work-around once the Skia bug is fixed.
+  //                  http://code.google.com/p/skia/issues/detail?id=590
+  if (deferred_fade_shader_.get()) {
+    paint_.setShader(deferred_fade_shader_.get());
+    paint_.setXfermodeMode(SkXfermode::kDstIn_Mode);
+    canvas_skia_->drawRect(bounds_, paint_);
+    canvas_skia_->restore();
+  }
 }
 
 void SkiaTextRenderer::SetDrawLooper(SkDrawLooper* draw_looper) {
@@ -229,14 +243,30 @@ void SkiaTextRenderer::SetForegroundColor(SkColor foreground) {
   paint_.setColor(foreground);
 }
 
-void SkiaTextRenderer::SetShader(SkShader* shader) {
+void SkiaTextRenderer::SetShader(SkShader* shader, const Rect& bounds) {
+  bounds_ = RectToSkRect(bounds);
   paint_.setShader(shader);
 }
 
 void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
                                    const uint16* glyphs,
                                    size_t glyph_count) {
-  size_t byte_length = glyph_count * sizeof(glyphs[0]);
+  if (!started_drawing_) {
+    started_drawing_ = true;
+    // Work-around for http://crbug.com/122743, where non-ClearType text is
+    // rendered with incorrect gamma when using the fade shader. Draw the text
+    // to a layer and restore it faded by drawing a rect in kDstIn_Mode mode.
+    //
+    // TODO(asvitkine): Remove this work-around once the Skia bug is fixed.
+    //                  http://code.google.com/p/skia/issues/detail?id=590
+    if (!paint_.isLCDRenderText() && paint_.getShader()) {
+      deferred_fade_shader_ = paint_.getShader();
+      paint_.setShader(NULL);
+      canvas_skia_->saveLayer(&bounds_, NULL);
+    }
+  }
+
+  const size_t byte_length = glyph_count * sizeof(glyphs[0]);
   canvas_skia_->drawPosText(&glyphs[0], byte_length, &pos[0], paint_);
 }
 
@@ -800,7 +830,7 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
   SkAutoUnref auto_unref(shader);
   if (shader) {
     // |renderer| adds its own ref. So don't |release()| it from the ref ptr.
-    renderer->SetShader(shader);
+    renderer->SetShader(shader, display_rect());
   }
 }
 
