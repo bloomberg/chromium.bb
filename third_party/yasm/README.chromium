@@ -5,7 +5,6 @@ With these patches merged:
 * https://github.com/yasm/yasm/commit/a2cbb10ee1b90b73647667ac849c74d65761d412
 * https://github.com/yasm/yasm/commit/01ab853e68ef8aeded716d6f5b34895200f66a51
 * https://github.com/yasm/yasm/commit/82fafa7b5619e702c8681c959ade0746498e3cbc
-* https://github.com/yasm/yasm/commit/2bd66514b6b100887c19d8598da38347b3cff40e
 
 License File: source/patched-yasm/COPYING
 Security Critical: no
