@@ -34,16 +34,20 @@
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
 
+struct window;
+
 struct display {
 	struct wl_display *display;
 	struct wl_compositor *compositor;
 	struct wl_shell *shell;
+	struct wl_input_device *input;
 	struct {
 		EGLDisplay dpy;
 		EGLContext ctx;
 		EGLConfig conf;
 	} egl;
 	uint32_t mask;
+	struct window *window;
 };
 
 struct window {
@@ -67,6 +71,7 @@ struct window {
 	struct wl_shell_surface *shell_surface;
 	EGLSurface egl_surface;
 	struct wl_callback *callback;
+	int fullscreen, configured;
 };
 
 static const char *vert_shader_text =
@@ -87,19 +92,19 @@ static const char *frag_shader_text =
 	"}\n";
 
 static void
-init_egl(struct display *display)
+init_egl(struct display *display, EGLint alpha_size)
 {
 	static const EGLint context_attribs[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 2,
 		EGL_NONE
 	};
 
-	static const EGLint config_attribs[] = {
+	EGLint config_attribs[] = {
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 		EGL_RED_SIZE, 1,
 		EGL_GREEN_SIZE, 1,
 		EGL_BLUE_SIZE, 1,
-		EGL_ALPHA_SIZE, 1,
+		EGL_ALPHA_SIZE, alpha_size,
 		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 		EGL_NONE
 	};
@@ -202,6 +207,35 @@ init_gl(struct window *window)
 }
 
 static void
+handle_ping(void *data, struct wl_shell_surface *shell_surface,
+	    uint32_t serial)
+{
+	wl_shell_surface_pong(shell_surface, serial);
+}
+
+static void
+handle_configure(void *data, struct wl_shell_surface *shell_surface,
+		 uint32_t edges, int32_t width, int32_t height)
+{
+	struct window *window = data;
+
+	window->geometry.width = width;
+	window->geometry.height = height;
+	window->configured = 1;
+}
+
+static void
+handle_popup_done(void *data, struct wl_shell_surface *shell_surface)
+{
+}
+
+static const struct wl_shell_surface_listener shell_surface_listener = {
+	handle_ping,
+	handle_configure,
+	handle_popup_done
+};
+
+static void
 create_surface(struct window *window)
 {
 	struct display *display = window->display;
@@ -210,6 +244,22 @@ create_surface(struct window *window)
 	window->surface = wl_compositor_create_surface(display->compositor);
 	window->shell_surface = wl_shell_get_shell_surface(display->shell,
 							   window->surface);
+
+	wl_shell_surface_add_listener(window->shell_surface,
+				      &shell_surface_listener, window);
+
+	if (window->fullscreen) {
+		window->configured = 0;
+		wl_shell_surface_set_fullscreen(window->shell_surface,
+						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
+						0, NULL);
+
+		while (!window->configured)
+			wl_display_iterate(display->display, display->mask);
+	}
+	else
+		wl_shell_surface_set_toplevel(window->shell_surface);
+
 	window->native =
 		wl_egl_window_create(window->surface,
 				     window->geometry.width,
@@ -218,8 +268,6 @@ create_surface(struct window *window)
 		eglCreateWindowSurface(display->egl.dpy,
 				       display->egl.conf,
 				       window->native, NULL);
-
-	wl_shell_surface_set_toplevel(window->shell_surface);
 
 	ret = eglMakeCurrent(window->display->egl.dpy, window->egl_surface,
 			     window->egl_surface, window->display->egl.ctx);
@@ -304,6 +352,119 @@ static const struct wl_callback_listener frame_listener = {
 };
 
 static void
+input_handle_motion(void *data, struct wl_input_device *input_device,
+		    uint32_t time, int32_t sx, int32_t sy)
+{
+}
+
+static void
+input_handle_button(void *data,
+		    struct wl_input_device *input_device, uint32_t serial,
+		    uint32_t time, uint32_t button, uint32_t state)
+{
+}
+
+static void
+input_handle_axis(void *data,
+		    struct wl_input_device *input_device,
+		    uint32_t time, uint32_t axis, int32_t value)
+{
+}
+
+static void
+input_handle_key(void *data, struct wl_input_device *input_device,
+		 uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
+{
+}
+
+static void
+input_handle_pointer_enter(void *data,
+			   struct wl_input_device *input_device,
+			   uint32_t serial, struct wl_surface *surface,
+			   int32_t sx, int32_t sy)
+{
+	struct display *display = data;
+
+	if (display->window->fullscreen)
+		wl_input_device_attach(input_device, serial, NULL, 0, 0);
+}
+
+static void
+input_handle_pointer_leave(void *data,
+			   struct wl_input_device *input_device,
+			   uint32_t serial, struct wl_surface *surface)
+{
+}
+
+static void
+input_handle_keyboard_enter(void *data,
+			    struct wl_input_device *input_device,
+			    uint32_t serial,
+			    struct wl_surface *surface,
+			    struct wl_array *keys)
+{
+}
+
+static void
+input_handle_keyboard_leave(void *data,
+			    struct wl_input_device *input_device,
+			    uint32_t serial,
+			    struct wl_surface *surface)
+{
+}
+
+static void
+input_handle_touch_down(void *data,
+			struct wl_input_device *wl_input_device,
+			uint32_t serial, uint32_t time,
+			struct wl_surface *surface,
+			int32_t id, int32_t x, int32_t y)
+{
+}
+
+static void
+input_handle_touch_up(void *data,
+		      struct wl_input_device *wl_input_device,
+		      uint32_t serial, uint32_t time, int32_t id)
+{
+}
+
+static void
+input_handle_touch_motion(void *data,
+			  struct wl_input_device *wl_input_device,
+			  uint32_t time, int32_t id, int32_t x, int32_t y)
+{
+}
+
+static void
+input_handle_touch_frame(void *data,
+			 struct wl_input_device *wl_input_device)
+{
+}
+
+static void
+input_handle_touch_cancel(void *data,
+			  struct wl_input_device *wl_input_device)
+{
+}
+
+static const struct wl_input_device_listener input_listener = {
+	input_handle_motion,
+	input_handle_button,
+	input_handle_axis,
+	input_handle_key,
+	input_handle_pointer_enter,
+	input_handle_pointer_leave,
+	input_handle_keyboard_enter,
+	input_handle_keyboard_leave,
+	input_handle_touch_down,
+	input_handle_touch_up,
+	input_handle_touch_motion,
+	input_handle_touch_frame,
+	input_handle_touch_cancel,
+};
+
+static void
 display_handle_global(struct wl_display *display, uint32_t id,
 		      const char *interface, uint32_t version, void *data)
 {
@@ -314,6 +475,9 @@ display_handle_global(struct wl_display *display, uint32_t id,
 			wl_display_bind(display, id, &wl_compositor_interface);
 	} else if (strcmp(interface, "wl_shell") == 0) {
 		d->shell = wl_display_bind(display, id, &wl_shell_interface);
+	} else if (strcmp(interface, "wl_input_device") == 0) {
+		d->input = wl_display_bind(display, id, &wl_input_device_interface);
+		wl_input_device_add_listener(d->input, &input_listener, d);
 	}
 }
 
@@ -343,8 +507,12 @@ main(int argc, char **argv)
 	struct window  window  = { 0 };
 
 	window.display = &display;
+	display.window = &window;
 	window.geometry.width  = 250;
 	window.geometry.height = 250;
+
+	if (argc >= 2 && strcmp("-f", argv[0]))
+		window.fullscreen = 1;
 
 	display.display = wl_display_connect(NULL);
 	assert(display.display);
@@ -355,7 +523,7 @@ main(int argc, char **argv)
 	wl_display_get_fd(display.display, event_mask_update, &display);
 	wl_display_iterate(display.display, WL_DISPLAY_READABLE);
 
-	init_egl(&display);
+	init_egl(&display, window.fullscreen ? 0 : 1);
 	create_surface(&window);
 	init_gl(&window);
 
