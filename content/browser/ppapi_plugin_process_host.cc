@@ -185,6 +185,8 @@ bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
   // forking the zygote.
 #if defined(OS_POSIX)
   bool use_zygote = !is_broker_ && plugin_launcher.empty() && info.is_sandboxed;
+  if (!info.is_sandboxed)
+    cmd_line->AppendSwitchASCII(switches::kNoSandbox, "");
 #endif  // OS_POSIX
   process_->Launch(
 #if defined(OS_WIN)
