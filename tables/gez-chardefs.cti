@@ -58,16 +58,7 @@ punctuation , 2						# 44
 punctuation - 36					# 45
 punctuation . 256					# 46
 math / 34							# 47
-digit 0 356							# 48
-digit 1 2							# 49
-digit 2 23							# 50
-digit 3 25							# 51
-digit 4 256							# 52
-digit 5 26							# 53
-digit 6 235							# 54
-digit 7 2356						# 55
-digit 8 236							# 56
-digit 9 35							# 57
+include loweredDigits6Dots.uti
 punctuation : 25					# 58
 punctuation ; 23					# 59
 math < 126-3						# 60

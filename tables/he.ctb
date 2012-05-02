@@ -42,16 +42,7 @@ punctuation	,	28	# COMMA
 punctuation	-	36	# HYPHEN-MINUS
 punctuation	.	2568	# FULL STOP
 punctuation	/	348	# SOLIDUS
-digit	0	356	# DIGIT ZERO
-digit	1	2	# DIGIT ONE
-digit	2	23	# DIGIT TWO
-digit	3	25	# DIGIT THREE
-digit	4	256	# DIGIT FOUR
-digit	5	26	# DIGIT FIVE
-digit	6	235	# DIGIT SIX
-digit	7	2356	# DIGIT SEVEN
-digit	8	236	# DIGIT EIGHT
-digit	9	35	# DIGIT NINE
+include loweredDigits6Dots.uti
 punctuation	:	258	# COLON
 punctuation	;	238	# SEMICOLON
 punctuation	<	1268	# LESS-THAN SIGN

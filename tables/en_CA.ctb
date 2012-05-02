@@ -66,16 +66,7 @@ punctuation , 6		COMMA
 punctuation - 36		HYPHEN-MINUS
 punctuation . 46		FULL STOP
 punctuation / 34		SOLIDUS
-digit 0 356		DIGIT ZERO
-digit 1 2		DIGIT ONE
-digit 2 23		DIGIT TWO
-digit 3 25		DIGIT THREE
-digit 4 256		DIGIT FOUR
-digit 5 26		DIGIT FIVE
-digit 6 235		DIGIT SIX
-digit 7 2356		DIGIT SEVEN
-digit 8 236		DIGIT EIGHT
-digit 9 35		DIGIT NINE
+include loweredDigits6Dots.uti
 punctuation : 156		COLON
 punctuation ; 56		SEMICOLON
 punctuation < 126		LESS-THAN SIGN

@@ -61,16 +61,7 @@ punctuation - 36						# 45
 punctuation \x06D4 256					# Arabic Full stop
 punctuation . 256						# 46	[Peter Engström 2011-03-15]
 math / 34								# 47
-digit 0 356								# 48
-digit 1 2
-digit 2 23
-digit 3 25
-digit 4 256
-digit 5 26
-digit 6 235
-digit 7 2356
-digit 8 236
-digit 9 35								# 57
+include loweredDigits6Dots.uti
 punctuation : 5-2						# 58	[Peter Engström 2011-03-15]
 punctuation ; 5							# 59	[Peter Engström 2011-03-15]
 math < 0-126-0							# 60	[Peter Engström 2011-03-15]

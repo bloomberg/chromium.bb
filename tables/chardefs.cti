@@ -36,16 +36,7 @@ space \x000c 0
 space \x000d 0 carriage return
 space \x001b 1b escape character for html back-translation
 space \x00A0 a NO-BREAK SPACE <noBreak> 0020 NON-BREAKING SPACE 
-digit 0 356
-digit 1 2
-digit 2 23
-digit 3 25
-digit 4 256
-digit 5 26
-digit 6 235
-digit 7 2356
-digit 8 236
-digit 9 35
+include loweredDigits6Dots.uti
 
 include latinLetterDef8Dots.uti
 

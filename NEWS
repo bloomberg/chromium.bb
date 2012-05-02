@@ -23,7 +23,10 @@ liblouis NEWS -- history of user-visible changes.
      characters
 
 ** Braille Table Improvements
-   - Added latinLetterDef6Dots.uti and latinLetterDef8Dots.uti, to better make use of table include infrastructure.
+   - Added:
+     latinLetterDef6Dots.uti, latinLetterDef8Dots.uti,
+     loweredDigits6Dots.uti, loweredDigits8Dots.uti,
+     to better make use of table include infrastructure.
      This removes duplication in tables, and should make it easier to define tables, since instead of defining individual 
      characters, the table producer can simply include the right class of definitions.
    - ar-ar-g1.utb, ca-chardefs.cti, chardefs.cti, ckb-chardefs.cti,
@@ -39,6 +42,13 @@ liblouis NEWS -- history of user-visible changes.
      sv-1989.ctb, sv-1996.ctb, ukchardefs.cti, ukmaths_single_cell_defs.cti,
      zh-tw.ctb
      make use of the latinLetterDef6Dots.uti and latinLetterDef8Dots.uti.
+   - ar-ar-g1.utb, bo.ctb, ca-chardefs.cti, chardefs.cti,
+     ckb-chardefs.cti, cy-cy-g1.utb, en-us-comp6.ctb, en-us-comp8.ctb,
+     en-us-compbrl.ctb, en-us-g1.utb, en_CA.ctb, es-chardefs.cti,
+     gez-chardefs.cti, gr-bb.ctb, he.ctb, printables.cti, ru-ru-comp8
+     ru-ru-g1.utb, ru.ctb, sk-sk-g1.utb, sl-si-g1.utb,
+     ukchardefs.cti, vi.ctb, zh-tw.ctb
+     make use of the loweredDigits6Dots.uti, loweredDigits8Dots.uti.
 
 * Noteworthy changes in release 2.4.1 (2012-2-22)
 
