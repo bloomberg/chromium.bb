@@ -901,8 +901,11 @@ WebContents* Browser::OpenApplicationTab(Profile* profile,
           content::Referrer(existing_tab->GetURL(),
                             WebKit::WebReferrerPolicyDefault),
           disposition, content::PAGE_TRANSITION_LINK, false));
+    // Reset existing_tab as OpenURL() may have clobbered it.
+    existing_tab = browser->GetSelectedWebContents();
     if (params.tabstrip_add_types & TabStripModel::ADD_PINNED) {
       model->SetTabPinned(tab_index, true);
+      // Pinning may have moved the tab.
       tab_index = model->GetWrapperIndex(existing_tab);
     }
     if (params.tabstrip_add_types & TabStripModel::ADD_ACTIVE)
