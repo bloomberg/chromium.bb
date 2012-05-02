@@ -76,6 +76,17 @@ struct drm_mode {
 	drmModeModeInfo mode_info;
 };
 
+struct drm_output;
+
+struct drm_fb {
+	struct gbm_bo *bo;
+	struct drm_output *output;
+	uint32_t fb_id;
+	int is_client_buffer;
+	struct wl_buffer *buffer;
+	struct wl_listener buffer_destroy_listener;
+};
+
 struct drm_output {
 	struct weston_output   base;
 
@@ -85,15 +96,7 @@ struct drm_output {
 
 	struct gbm_surface *surface;
 	EGLSurface egl_surface;
-	uint32_t current_fb_id;
-	uint32_t next_fb_id;
-	struct gbm_bo *current_bo;
-	struct gbm_bo *next_bo;
-
-	struct wl_buffer *scanout_buffer;
-	struct wl_listener scanout_buffer_destroy_listener;
-	struct wl_buffer *pending_scanout_buffer;
-	struct wl_listener pending_scanout_buffer_destroy_listener;
+	struct drm_fb *current, *next;
 	struct backlight *backlight;
 };
 
@@ -157,12 +160,80 @@ drm_sprite_crtc_supported(struct weston_output *output_base, uint32_t supported)
 	return 0;
 }
 
+static void
+drm_fb_destroy_callback(struct gbm_bo *bo, void *data)
+{
+	struct drm_fb *fb = data;
+	struct gbm_device *gbm = gbm_bo_get_device(bo);
+
+	if (fb->fb_id)
+		drmModeRmFB(gbm_device_get_fd(gbm), fb->fb_id);
+
+	if (fb->buffer) {
+		weston_buffer_post_release(fb->buffer);
+		wl_list_remove(&fb->buffer_destroy_listener.link);
+	}
+
+	free(data);
+}
+
+static struct drm_fb *
+drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_output *output)
+{
+	struct drm_fb *fb = gbm_bo_get_user_data(bo);
+	struct drm_compositor *compositor =
+		(struct drm_compositor *) output->base.compositor;
+	uint32_t width, height, stride, handle;
+	int ret;
+
+	if (fb)
+		return fb;
+
+	fb = malloc(sizeof *fb);
+
+	fb->bo = bo;
+	fb->output = output;
+	fb->is_client_buffer = 0;
+	fb->buffer = NULL;
+
+	width = gbm_bo_get_width(bo);
+	height = gbm_bo_get_height(bo);
+	stride = gbm_bo_get_pitch(bo);
+	handle = gbm_bo_get_handle(bo).u32;
+
+	ret = drmModeAddFB(compositor->drm.fd, width, height, 24, 32,
+			   stride, handle, &fb->fb_id);
+	if (ret) {
+		fprintf(stderr, "failed to create kms fb: %m\n");
+		free(fb);
+		return NULL;
+	}
+
+	gbm_bo_set_user_data(bo, fb, drm_fb_destroy_callback);
+
+	return fb;
+}
+
+static void
+fb_handle_buffer_destroy(struct wl_listener *listener, void *data)
+{
+	struct drm_fb *fb = container_of(listener, struct drm_fb,
+					 buffer_destroy_listener);
+
+	fb->buffer = NULL;
+
+	if (fb == fb->output->next ||
+	    (fb == fb->output->current && !fb->output->next))
+		weston_compositor_schedule_repaint(fb->output->base.compositor);
+}
+
 static int
 drm_output_prepare_scanout_surface(struct drm_output *output)
 {
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->base.compositor;
 	struct weston_surface *es;
+	struct gbm_bo *bo;
 
 	es = container_of(c->base.surface_list.next,
 			  struct weston_surface, link);
@@ -179,19 +250,25 @@ drm_output_prepare_scanout_surface(struct drm_output *output)
 	    es->image == EGL_NO_IMAGE_KHR)
 		return -1;
 
-	output->next_bo =
-		gbm_bo_create_from_egl_image(c->gbm,
-					     c->base.display, es->image,
-					     es->geometry.width,
-					     es->geometry.height,
-					     GBM_BO_USE_SCANOUT);
+	bo = gbm_bo_create_from_egl_image(c->gbm,
+					  c->base.display, es->image,
+					  es->geometry.width,
+					  es->geometry.height,
+					  GBM_BO_USE_SCANOUT);
 
-	/* assert output->pending_scanout_buffer == NULL */
-	output->pending_scanout_buffer = es->buffer;
-	output->pending_scanout_buffer->busy_count++;
+	output->next = drm_fb_get_from_bo(bo, output);
+	if (!output->next) {
+		gbm_bo_destroy(bo);
+		return -1;
+	}
 
-	wl_signal_add(&output->pending_scanout_buffer->resource.destroy_signal,
-		      &output->pending_scanout_buffer_destroy_listener);
+	output->next->is_client_buffer = 1;
+	output->next->buffer = es->buffer;
+	output->next->buffer->busy_count++;
+	output->next->buffer_destroy_listener.notify = fb_handle_buffer_destroy;
+
+	wl_signal_add(&output->next->buffer->resource.destroy_signal,
+		      &output->next->buffer_destroy_listener);
 
 	pixman_region32_fini(&es->damage);
 	pixman_region32_init(&es->damage);
@@ -205,6 +282,7 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 	struct drm_compositor *compositor =
 		(struct drm_compositor *) output->base.compositor;
 	struct weston_surface *surface;
+	struct gbm_bo *bo;
 
 	if (!eglMakeCurrent(compositor->base.display, output->egl_surface,
 			    output->egl_surface, compositor->base.context)) {
@@ -218,9 +296,16 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 	weston_output_do_read_pixels(&output->base);
 
 	eglSwapBuffers(compositor->base.display, output->egl_surface);
-	output->next_bo = gbm_surface_lock_front_buffer(output->surface);
-	if (!output->next_bo) {
+	bo = gbm_surface_lock_front_buffer(output->surface);
+	if (!bo) {
 		fprintf(stderr, "failed to lock front buffer: %m\n");
+		return;
+	}
+
+	output->next = drm_fb_get_from_bo(bo, output);
+	if (!output->next) {
+		fprintf(stderr, "failed to get drm_fb for bo\n");
+		gbm_surface_release_buffer(output->surface, bo);
 		return;
 	}
 }
@@ -234,39 +319,18 @@ drm_output_repaint(struct weston_output *output_base,
 		(struct drm_compositor *) output->base.compositor;
 	struct drm_sprite *s;
 	struct drm_mode *mode;
-	uint32_t stride, handle;
 	int ret = 0;
 
 	drm_output_prepare_scanout_surface(output);
-	if (!output->next_bo)
+	if (!output->next)
 		drm_output_render(output, damage);
-
-	stride = gbm_bo_get_pitch(output->next_bo);
-	handle = gbm_bo_get_handle(output->next_bo).u32;
-
-	/* Destroy and set to NULL now so we don't try to
-	 * gbm_surface_release_buffer() a client buffer in the
-	 * page_flip_handler. */
-	if (output->pending_scanout_buffer) {
-		gbm_bo_destroy(output->next_bo);
-		output->next_bo = NULL;
-	}
-
-	ret = drmModeAddFB(compositor->drm.fd,
-			   output->base.current->width,
-			   output->base.current->height,
-			   24, 32, stride, handle, &output->next_fb_id);
-	if (ret) {
-		fprintf(stderr, "failed to create kms fb: %m\n");
-		gbm_surface_release_buffer(output->surface, output->next_bo);
-		output->next_bo = NULL;
+	if (!output->next)
 		return;
-	}
 
 	mode = container_of(output->base.current, struct drm_mode, base);
-	if (output->current_fb_id == 0) {
+	if (!output->current) {
 		ret = drmModeSetCrtc(compositor->drm.fd, output->crtc_id,
-				     output->next_fb_id, 0, 0,
+				     output->next->fb_id, 0, 0,
 				     &output->connector_id, 1,
 				     &mode->mode_info);
 		if (ret) {
@@ -276,7 +340,7 @@ drm_output_repaint(struct weston_output *output_base,
 	}
 
 	if (drmModePageFlip(compositor->drm.fd, output->crtc_id,
-			    output->next_fb_id,
+			    output->next->fb_id,
 			    DRM_MODE_PAGE_FLIP_EVENT, output) < 0) {
 		fprintf(stderr, "queueing pageflip failed: %m\n");
 		return;
@@ -351,34 +415,19 @@ page_flip_handler(int fd, unsigned int frame,
 		  unsigned int sec, unsigned int usec, void *data)
 {
 	struct drm_output *output = (struct drm_output *) data;
-	struct drm_compositor *c =
-		(struct drm_compositor *) output->base.compositor;
 	uint32_t msecs;
 
-	if (output->current_fb_id)
-		drmModeRmFB(c->drm.fd, output->current_fb_id);
-	output->current_fb_id = output->next_fb_id;
-	output->next_fb_id = 0;
-
-	if (output->scanout_buffer) {
-		weston_buffer_post_release(output->scanout_buffer);
-		wl_list_remove(&output->scanout_buffer_destroy_listener.link);
-		output->scanout_buffer = NULL;
-	} else if (output->current_bo) {
-		gbm_surface_release_buffer(output->surface,
-					   output->current_bo);
+	if (output->current) {
+		if (output->current->is_client_buffer)
+			gbm_bo_destroy(output->current->bo);
+		else
+			gbm_surface_release_buffer(output->surface,
+						   output->current->bo);
 	}
 
-	output->current_bo = output->next_bo;
-	output->next_bo = NULL;
+	output->current = output->next;
+	output->next = NULL;
 
-	if (output->pending_scanout_buffer) {
-		output->scanout_buffer = output->pending_scanout_buffer;
-		wl_list_remove(&output->pending_scanout_buffer_destroy_listener.link);
-		wl_signal_add(&output->scanout_buffer->resource.destroy_signal,
-			      &output->scanout_buffer_destroy_listener);
-		output->pending_scanout_buffer = NULL;
-	}
 	msecs = sec * 1000 + usec / 1000;
 	weston_output_finish_frame(&output->base, msecs);
 }
@@ -818,7 +867,7 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 		/* only change refresh value */
 		ret = drmModeSetCrtc(ec->drm.fd,
 				     output->crtc_id,
-				     output->current_fb_id, 0, 0,
+				     output->current->fb_id, 0, 0,
 				     &output->connector_id, 1, &drm_mode->mode_info);
 
 		if (ret) {
@@ -864,7 +913,7 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 
 	ret = drmModeSetCrtc(ec->drm.fd,
 			     output->crtc_id,
-			     output->current_fb_id, 0, 0,
+			     output->current->fb_id, 0, 0,
 			     &output->connector_id, 1, &drm_mode->mode_info);
 	if (ret) {
 		fprintf(stderr, "failed to set mode\n");
@@ -872,23 +921,23 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 	}
 
 	/* reset rendering stuff. */
-	if (output->current_fb_id)
-		drmModeRmFB(ec->drm.fd, output->current_fb_id);
-	output->current_fb_id = 0;
+	if (output->current) {
+		if (output->current->is_client_buffer)
+			gbm_bo_destroy(output->current->bo);
+		else
+			gbm_surface_release_buffer(output->surface,
+						   output->current->bo);
+	}
+	output->current = NULL;
 
-	if (output->next_fb_id)
-		drmModeRmFB(ec->drm.fd, output->next_fb_id);
-	output->next_fb_id = 0;
-
-	if (output->current_bo)
-		gbm_surface_release_buffer(output->surface,
-					   output->current_bo);
-		output->current_bo = NULL;
-
-	if (output->next_bo)
-		gbm_surface_release_buffer(output->surface,
-					   output->next_bo);
-	output->next_bo = NULL;
+	if (output->next) {
+		if (output->next->is_client_buffer)
+			gbm_bo_destroy(output->next->bo);
+		else
+			gbm_surface_release_buffer(output->surface,
+						   output->next->bo);
+	}
+	output->next = NULL;
 
 	eglDestroySurface(ec->base.display, output->egl_surface);
 	gbm_surface_destroy(output->surface);
@@ -1063,32 +1112,6 @@ drm_subpixel_to_wayland(int drm_value)
 	case DRM_MODE_SUBPIXEL_VERTICAL_BGR:
 		return WL_OUTPUT_SUBPIXEL_VERTICAL_BGR;
 	}
-}
-
-static void
-output_handle_scanout_buffer_destroy(struct wl_listener *listener, void *data)
-{
-	struct drm_output *output =
-		container_of(listener, struct drm_output,
-			     scanout_buffer_destroy_listener);
-
-	output->scanout_buffer = NULL;
-
-	if (!output->pending_scanout_buffer)
-		weston_compositor_schedule_repaint(output->base.compositor);
-}
-
-static void
-output_handle_pending_scanout_buffer_destroy(struct wl_listener *listener,
-					     void *data)
-{
-	struct drm_output *output =
-		container_of(listener, struct drm_output,
-			     pending_scanout_buffer_destroy_listener);
-
-	output->pending_scanout_buffer = NULL;
-
-	weston_compositor_schedule_repaint(output->base.compositor);
 }
 
 static void
@@ -1290,12 +1313,6 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 
-	output->scanout_buffer_destroy_listener.notify =
-		output_handle_scanout_buffer_destroy;
-	output->pending_scanout_buffer_destroy_listener.notify =
-		output_handle_pending_scanout_buffer_destroy;
-
-	output->next_fb_id = 0;
 	output->base.origin = output->base.current;
 	output->base.repaint = drm_output_repaint;
 	output->base.destroy = drm_output_destroy;
@@ -1603,7 +1620,7 @@ drm_compositor_set_modes(struct drm_compositor *compositor)
 	wl_list_for_each(output, &compositor->base.output_list, base.link) {
 		drm_mode = (struct drm_mode *) output->base.current;
 		ret = drmModeSetCrtc(compositor->drm.fd, output->crtc_id,
-				     output->current_fb_id, 0, 0,
+				     output->current->fb_id, 0, 0,
 				     &output->connector_id, 1,
 				     &drm_mode->mode_info);
 		if (ret < 0) {
