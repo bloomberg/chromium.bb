@@ -129,6 +129,8 @@
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       # crbug.com/112051
       '-prefs_ui.PrefsUITest.testChangeExceptionBehaviorUI',
+      # crbug.com/125972
+      '-protector.ProtectorHomepageTest.testDetectHomepageChangeWhenButtonNotShown',
       # crbug.com/119183
       '-protector.ProtectorSessionStartupTest.testDetectSessionStartupChangeAndApply',
       # crbug.com/119326
