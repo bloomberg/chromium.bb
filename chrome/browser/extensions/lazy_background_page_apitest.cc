@@ -103,6 +103,9 @@ public:
   void SetUpCommandLine(CommandLine* command_line) {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+    // Set shorter delays to prevent test timeouts.
+    command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "1");
+    command_line->AppendSwitchASCII(switches::kEventPageUnloadingTime, "1");
   }
 
   // Loads the extension, which temporarily starts the lazy background page

@@ -5,6 +5,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/message_loop.h"
+#include "base/string_number_conversions.h"
+#include "base/time.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -125,7 +128,8 @@ ExtensionProcessManager* ExtensionProcessManager::Create(Profile* profile) {
 }
 
 ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
-    : site_instance_(SiteInstance::Create(profile)) {
+  : site_instance_(SiteInstance::Create(profile)),
+    weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   Profile* original_profile = profile->GetOriginalProfile();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  content::Source<Profile>(original_profile));
@@ -145,6 +149,20 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
                  content::Source<content::BrowserContext>(profile));
   registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
                  content::Source<content::BrowserContext>(profile));
+
+  event_page_idle_time_ = base::TimeDelta::FromSeconds(10);
+  unsigned idle_time_sec = 0;
+  if (base::StringToUint(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kEventPageIdleTime), &idle_time_sec)) {
+    event_page_idle_time_ = base::TimeDelta::FromSeconds(idle_time_sec);
+  }
+  event_page_unloading_time_ = base::TimeDelta::FromSeconds(5);
+  unsigned unloading_time_sec = 0;
+  if (base::StringToUint(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kEventPageUnloadingTime), &unloading_time_sec)) {
+    event_page_unloading_time_ = base::TimeDelta::FromSeconds(
+        unloading_time_sec);
+  }
 }
 
 ExtensionProcessManager::~ExtensionProcessManager() {
@@ -414,22 +432,31 @@ int ExtensionProcessManager::DecrementLazyKeepaliveCount(
 
   int& count = background_page_data_[extension->id()].lazy_keepalive_count;
   DCHECK_GT(count, 0);
-  if (--count == 0)
-    OnLazyBackgroundPageIdle(extension->id());
+  if (--count == 0) {
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ExtensionProcessManager::OnLazyBackgroundPageIdle,
+                   weak_ptr_factory_.GetWeakPtr(), extension->id(),
+                   ++background_page_data_[extension->id()].close_sequence_id),
+        event_page_idle_time_);
+  }
 
   return count;
 }
 
 void ExtensionProcessManager::OnLazyBackgroundPageIdle(
-    const std::string& extension_id) {
+    const std::string& extension_id, int sequence_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
-  if (host && !background_page_data_[extension_id].is_closing) {
+  if (host && !background_page_data_[extension_id].is_closing &&
+      sequence_id == background_page_data_[extension_id].close_sequence_id) {
     // Tell the renderer we are about to close. This is a simple ping that the
     // renderer will respond to. The purpose is to control sequencing: if the
     // extension remains idle until the renderer responds with an ACK, then we
-    // know that the extension process is ready to shut down.
+    // know that the extension process is ready to shut down. If our
+    // close_sequence_id has already changed, then we would ignore the
+    // ShouldUnloadAck, so we don't send the ping.
     host->render_view_host()->Send(new ExtensionMsg_ShouldUnload(
-        extension_id, ++background_page_data_[extension_id].close_sequence_id));
+        extension_id, sequence_id));
   }
 }
 
@@ -449,8 +476,19 @@ void ExtensionProcessManager::OnShouldUnloadAck(
   if (host &&
       sequence_id == background_page_data_[extension_id].close_sequence_id) {
     background_page_data_[extension_id].is_closing = true;
-    host->render_view_host()->Send(new ExtensionMsg_Unload(extension_id));
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ExtensionProcessManager::CloseLazyBackgroundPageNow,
+                   weak_ptr_factory_.GetWeakPtr(), extension_id),
+        event_page_unloading_time_);
   }
+}
+
+void ExtensionProcessManager::CloseLazyBackgroundPageNow(
+    const std::string& extension_id) {
+  ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
+  if (host)
+    host->render_view_host()->Send(new ExtensionMsg_Unload(extension_id));
 }
 
 void ExtensionProcessManager::OnUnloadAck(const std::string& extension_id) {

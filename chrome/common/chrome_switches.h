@@ -18,7 +18,8 @@ namespace switches {
 // -----------------------------------------------------------------------------
 // Can't find the switch you are looking for? Try looking in
 // ui/gfx/gl/gl_switches.cc or base/base_switches.cc or
-// content/common/content_switches.cc or media/base/media_switches.cc instead.
+// content/public/common/content_switches.cc or media/base/media_switches.cc
+// instead.
 // -----------------------------------------------------------------------------
 
 // All switches in alphabetical order. The switches should be documented
@@ -178,6 +179,8 @@ extern const char kEnableWatchdog[];
 extern const char kEnableWebsiteSettings[];
 extern const char kEnableWebSocketOverSpdy[];
 extern const char kEnableWebStoreLink[];
+extern const char kEventPageIdleTime[];
+extern const char kEventPageUnloadingTime[];
 extern const char kExperimentalSpellcheckerFeatures[];
 extern const char kExplicitlyAllowedPorts[];
 extern const char kExtensionProcess[];

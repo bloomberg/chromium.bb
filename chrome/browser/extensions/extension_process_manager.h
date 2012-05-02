@@ -12,6 +12,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/time.h"
 #include "content/public/common/view_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -182,8 +184,10 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   // These are called when the extension transitions between idle and active.
   // They control the process of closing the background page when idle.
-  void OnLazyBackgroundPageIdle(const std::string& extension_id);
+  void OnLazyBackgroundPageIdle(const std::string& extension_id,
+                                int sequence_id);
   void OnLazyBackgroundPageActive(const std::string& extension_id);
+  void CloseLazyBackgroundPageNow(const std::string& extension_id);
 
   // Updates a potentially-registered RenderViewHost once it has been
   // associated with a WebContents. This allows us to gather information that
@@ -191,6 +195,16 @@ class ExtensionProcessManager : public content::NotificationObserver {
   void UpdateRegisteredRenderView(content::RenderViewHost* render_view_host);
 
   BackgroundPageDataMap background_page_data_;
+
+  // The time to delay between an extension becoming idle and
+  // sending a ShouldUnload message; read from command-line switch.
+  base::TimeDelta event_page_idle_time_;
+
+  // The time to delay between sending a ShouldUnload message and
+  // sending a Unload message; read from command-line switch.
+  base::TimeDelta event_page_unloading_time_;
+
+  base::WeakPtrFactory<ExtensionProcessManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessManager);
 };
