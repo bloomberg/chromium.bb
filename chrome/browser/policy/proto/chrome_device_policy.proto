@@ -158,6 +158,22 @@ message AutoUpdateSettingsProto {
   // 1412.24.34: update to this specific version only
   // ---------------------------------------------------------------------
   optional string target_version_prefix = 2;
+
+  // The Chrome browser version (e.g. "17.*") corresponding to the
+  // target_version_prefix above. The target_version_prefix is the internal OS
+  // version that external users normally are not aware of. This display_name
+  // can be used by the devices to display a message to end-users about the auto
+  // update setting.
+  optional string target_version_display_name = 3;
+
+  // Specifies the number of seconds up to which a device may randomly
+  // delay its download of an update from the time the update was first pushed
+  // out to the server. The device may wait a portion of this time in terms
+  // of wall-clock-time and the remaining portion in terms of the number of
+  // update checks. In any case, the scatter is upper bounded to a constant
+  // amount of time so that a device does not ever get stuck waiting to download
+  // an update forever.
+  optional int64 scatter_factor_in_seconds = 4;
 }
 
 message StartUpUrlsProto {
