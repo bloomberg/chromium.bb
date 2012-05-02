@@ -21,7 +21,7 @@ void PrepareEmptyTestData(Pickle* pickle) {
 
 void PrepareTestData(Pickle* pickle) {
   std::map<string16, string16> data;
-  data.insert(std::make_pair(ASCIIToUTF16("abc"), ASCIIToUTF16("")));
+  data.insert(std::make_pair(ASCIIToUTF16("abc"), string16()));
   data.insert(std::make_pair(ASCIIToUTF16("de"), ASCIIToUTF16("1")));
   data.insert(std::make_pair(ASCIIToUTF16("f"), ASCIIToUTF16("23")));
   WriteCustomDataToPickle(data, pickle);
@@ -45,7 +45,7 @@ TEST(CustomDataHelperTest, EmptyReadSingleType) {
                         pickle.size(),
                         ASCIIToUTF16("f"),
                         &result);
-  EXPECT_EQ(ASCIIToUTF16(""), result);
+  EXPECT_EQ(string16(), result);
 }
 
 TEST(CustomDataHelperTest, EmptyReadMap) {
@@ -80,7 +80,7 @@ TEST(CustomDataHelperTest, ReadSingleType) {
                         pickle.size(),
                         ASCIIToUTF16("abc"),
                         &result);
-  EXPECT_EQ(ASCIIToUTF16(""), result);
+  EXPECT_EQ(string16(), result);
 
   ReadCustomDataForType(pickle.data(),
                         pickle.size(),
@@ -103,7 +103,7 @@ TEST(CustomDataHelperTest, ReadMap) {
   ReadCustomDataIntoMap(pickle.data(), pickle.size(), &result);
 
   std::map<string16, string16> expected;
-  expected.insert(std::make_pair(ASCIIToUTF16("abc"), ASCIIToUTF16("")));
+  expected.insert(std::make_pair(ASCIIToUTF16("abc"), string16()));
   expected.insert(std::make_pair(ASCIIToUTF16("de"), ASCIIToUTF16("1")));
   expected.insert(std::make_pair(ASCIIToUTF16("f"), ASCIIToUTF16("23")));
   EXPECT_EQ(expected, result);
