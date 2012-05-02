@@ -1106,14 +1106,14 @@ FileManager.prototype = {
 
     var columns = [
         new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'),
-                                    fullPage ? 64 : 324),
+                                    fullPage ? 470 : 324),
         new cr.ui.table.TableColumn('size', str('SIZE_COLUMN_LABEL'),
-                                    fullPage ? 15.5 : 92, true),
+                                    fullPage ? 110 : 92, true),
         new cr.ui.table.TableColumn('type', str('TYPE_COLUMN_LABEL'),
-                                    fullPage ? 15.5 : 160),
+                                    fullPage ? 200 : 160),
         new cr.ui.table.TableColumn('modificationTime',
                                     str('DATE_COLUMN_LABEL'),
-                                    fullPage ? 21 : 210)
+                                    fullPage ? 150 : 210)
     ];
 
     // TODO(dgozman): refactor render/update/display stuff.
@@ -1131,7 +1131,7 @@ FileManager.prototype = {
 
     if (fullPage) {
       columns.push(new cr.ui.table.TableColumn(
-          'offline', str('OFFLINE_COLUMN_LABEL'), 21));
+          'offline', str('OFFLINE_COLUMN_LABEL'), 150));
       columns[4].renderFunction = this.renderOffline_.bind(this);
 
       this.gdataColumnModel_ = new cr.ui.table.TableColumnModel(columns);
