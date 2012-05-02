@@ -221,7 +221,7 @@ void FaviconHandler::SetFavicon(
 }
 
 void FaviconHandler::UpdateFavicon(NavigationEntry* entry,
-                                   scoped_refptr<RefCountedMemory> data) {
+                                   scoped_refptr<base::RefCountedMemory> data) {
   scoped_ptr<gfx::Image> image(gfx::ImageFromPNGEncodedData(data->front(),
                                                             data->size()));
   UpdateFavicon(entry, image.get());

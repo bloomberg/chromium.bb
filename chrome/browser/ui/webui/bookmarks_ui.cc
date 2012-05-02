@@ -68,7 +68,7 @@ BookmarksUI::BookmarksUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 }
 
 // static
-RefCountedMemory* BookmarksUI::GetFaviconResourceBytes() {
+base::RefCountedMemory* BookmarksUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytes(IDR_BOOKMARKS_FAVICON);
 }

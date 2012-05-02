@@ -101,7 +101,7 @@ DownloadsUI::DownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 }
 
 // static
-RefCountedMemory* DownloadsUI::GetFaviconResourceBytes() {
+base::RefCountedMemory* DownloadsUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytes(IDR_DOWNLOADS_FAVICON);
 }

@@ -25,8 +25,11 @@ typedef struct _GdkColor GdkColor;
 typedef struct _GdkPixbuf GdkPixbuf;
 #endif  // OS_*
 
-class RefCountedMemory;
 class SkBitmap;
+
+namespace base {
+class RefCountedMemory;
+}
 
 namespace ui {
 
@@ -65,7 +68,7 @@ class UI_EXPORT ThemeProvider {
   // Reads the image data from the theme file into the specified vector. Only
   // valid for un-themed resources and the themed IDR_THEME_NTP_* in most
   // implementations of ThemeProvider. Returns NULL on error.
-  virtual RefCountedMemory* GetRawData(int id) const = 0;
+  virtual base::RefCountedMemory* GetRawData(int id) const = 0;
 
 #if defined(OS_MACOSX) && !defined(TOOLKIT_VIEWS)
   // Gets the NSImage with the specified |id|.

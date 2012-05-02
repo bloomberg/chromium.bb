@@ -41,7 +41,7 @@ bool DefaultThemeProvider::HasCustomImage(int id) const {
   return false;
 }
 
-RefCountedMemory* DefaultThemeProvider::GetRawData(int id) const {
+base::RefCountedMemory* DefaultThemeProvider::GetRawData(int id) const {
   return NULL;
 }
 

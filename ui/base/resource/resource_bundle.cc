@@ -377,7 +377,7 @@ void ResourceBundle::LoadFontsIfNecessary() {
 
 SkBitmap* ResourceBundle::LoadBitmap(const ResourceHandle& data_handle,
                                      int resource_id) {
-  scoped_refptr<RefCountedMemory> memory(
+  scoped_refptr<base::RefCountedMemory> memory(
       data_handle.GetStaticMemory(resource_id));
   if (!memory)
     return NULL;

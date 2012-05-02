@@ -768,7 +768,7 @@ struct FaviconData {
   bool known_icon;
 
   // The bits of image.
-  scoped_refptr<RefCountedMemory> image_data;
+  scoped_refptr<base::RefCountedMemory> image_data;
 
   // Indicates whether image is expired.
   bool expired;

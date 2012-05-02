@@ -268,7 +268,7 @@ SessionsUI::SessionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 }
 
 // static
-RefCountedMemory* SessionsUI::GetFaviconResourceBytes() {
+base::RefCountedMemory* SessionsUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytes(IDR_HISTORY_FAVICON);
 }

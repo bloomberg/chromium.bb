@@ -380,7 +380,7 @@ FlashUI::FlashUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 }
 
 // static
-RefCountedMemory* FlashUI::GetFaviconResourceBytes() {
+base::RefCountedMemory* FlashUI::GetFaviconResourceBytes() {
   // Use the default icon for now.
   return NULL;
 }

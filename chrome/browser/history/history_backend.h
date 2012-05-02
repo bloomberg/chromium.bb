@@ -257,7 +257,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   void SetFavicon(const GURL& page_url,
                   const GURL& icon_url,
-                  scoped_refptr<RefCountedMemory> data,
+                  scoped_refptr<base::RefCountedMemory> data,
                   IconType icon_type);
 
   void UpdateFaviconMappingAndFetch(scoped_refptr<GetFaviconRequest> request,

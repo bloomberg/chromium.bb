@@ -409,7 +409,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
     return;
   }
 
-  scoped_refptr<RefCountedMemory> html_bytes(
+  scoped_refptr<base::RefCountedMemory> html_bytes(
       NTPResourceCacheFactory::GetForProfile(profile_)->
       GetNewTabHTML(is_incognito));
 

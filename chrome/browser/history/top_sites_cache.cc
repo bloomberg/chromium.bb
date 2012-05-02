@@ -28,8 +28,9 @@ Images* TopSitesCache::GetImage(const GURL& url) {
   return &images_[GetCanonicalURL(url)];
 }
 
-bool TopSitesCache::GetPageThumbnail(const GURL& url,
-                                     scoped_refptr<RefCountedMemory>* bytes) {
+bool TopSitesCache::GetPageThumbnail(
+    const GURL& url,
+    scoped_refptr<base::RefCountedMemory>* bytes) {
   std::map<GURL, Images>::const_iterator found =
       images_.find(GetCanonicalURL(url));
   if (found != images_.end()) {

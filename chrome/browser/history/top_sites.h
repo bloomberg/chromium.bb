@@ -15,7 +15,6 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -30,6 +29,11 @@
 
 class FilePath;
 class Profile;
+
+namespace base {
+class RefCountedBytes;
+class RefCountedMemory;
+}
 
 namespace history {
 
@@ -78,7 +82,7 @@ class TopSites
   // As this method may be invoked on any thread the ref count needs to be
   // incremented before this method returns, so this takes a scoped_refptr*.
   bool GetPageThumbnail(const GURL& url,
-                        scoped_refptr<RefCountedMemory>* bytes);
+                        scoped_refptr<base::RefCountedMemory>* bytes);
 
   // Get a thumbnail score for a given page. Returns true iff we have the
   // thumbnail score.  This may be invoked on any thread. The score will

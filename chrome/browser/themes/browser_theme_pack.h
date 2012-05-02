@@ -18,7 +18,6 @@
 #include "ui/gfx/color_utils.h"
 
 class FilePath;
-class RefCountedMemory;
 namespace ui {
 class DataPack;
 }
@@ -27,6 +26,7 @@ class Image;
 }
 namespace base {
 class DictionaryValue;
+class RefCountedMemory;
 }
 
 // An optimized representation of a theme, backed by a mmapped DataPack.
@@ -87,7 +87,7 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
 
   // Returns the raw PNG encoded data for IDR_THEME_NTP_*. This method is only
   // supposed to work for the NTP attribution and background resources.
-  RefCountedMemory* GetRawData(int id) const;
+  base::RefCountedMemory* GetRawData(int id) const;
 
   // Whether this theme provides an image for |id|.
   bool HasCustomImage(int id) const;
@@ -104,7 +104,7 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   typedef std::map<int, const gfx::Image*> ImageCache;
 
   // The raw PNG memory associated with a certain id.
-  typedef std::map<int, scoped_refptr<RefCountedMemory> > RawImages;
+  typedef std::map<int, scoped_refptr<base::RefCountedMemory> > RawImages;
 
   // The type passed to ui::DataPack::WritePack.
   typedef std::map<uint16, base::StringPiece> RawDataForWriting;

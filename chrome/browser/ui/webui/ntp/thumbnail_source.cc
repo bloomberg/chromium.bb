@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 
 #include "base/callback.h"
+#include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -24,7 +25,7 @@ ThumbnailSource::~ThumbnailSource() {
 void ThumbnailSource::StartDataRequest(const std::string& path,
                                        bool is_incognito,
                                        int request_id) {
-  scoped_refptr<RefCountedMemory> data;
+  scoped_refptr<base::RefCountedMemory> data;
   if (top_sites_->GetPageThumbnail(GURL(path), &data)) {
     // We have the thumbnail.
     SendResponse(request_id, data.get());

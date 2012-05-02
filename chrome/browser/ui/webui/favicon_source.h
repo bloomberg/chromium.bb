@@ -70,9 +70,9 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
   // Raw PNG representation of the favicon to show when the favicon
   // database doesn't have a favicon for a webpage.
   // 16x16
-  scoped_refptr<RefCountedMemory> default_favicon_;
+  scoped_refptr<base::RefCountedMemory> default_favicon_;
   // 32x32
-  scoped_refptr<RefCountedMemory> default_favicon_large_;
+  scoped_refptr<base::RefCountedMemory> default_favicon_large_;
 
   // The history::IconTypes of icon that this FaviconSource handles.
   int icon_types_;

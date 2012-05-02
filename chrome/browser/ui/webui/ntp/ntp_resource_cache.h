@@ -16,7 +16,10 @@
 #include "content/public/browser/notification_registrar.h"
 
 class Profile;
+
+namespace base {
 class RefCountedMemory;
+}
 
 // This class keeps a cache of NTP resources (HTML and CSS) so we don't have to
 // regenerate them all the time.
@@ -26,8 +29,8 @@ class NTPResourceCache : public content::NotificationObserver,
   explicit NTPResourceCache(Profile* profile);
   virtual ~NTPResourceCache();
 
-  RefCountedMemory* GetNewTabHTML(bool is_incognito);
-  RefCountedMemory* GetNewTabCSS(bool is_incognito);
+  base::RefCountedMemory* GetNewTabHTML(bool is_incognito);
+  base::RefCountedMemory* GetNewTabCSS(bool is_incognito);
 
   // content::NotificationObserver interface.
   virtual void Observe(int type,
@@ -38,7 +41,7 @@ class NTPResourceCache : public content::NotificationObserver,
   Profile* profile_;
 
   void CreateNewTabHTML();
-  scoped_refptr<RefCountedMemory> new_tab_html_;
+  scoped_refptr<base::RefCountedMemory> new_tab_html_;
 
   // Helper to determine if the resource cache should be invalidated.
   // This is called on every page load, and can be used to check values that
@@ -51,12 +54,12 @@ class NTPResourceCache : public content::NotificationObserver,
   string16 GetSyncTypeMessage();
 
   void CreateNewTabIncognitoHTML();
-  scoped_refptr<RefCountedMemory> new_tab_incognito_html_;
+  scoped_refptr<base::RefCountedMemory> new_tab_incognito_html_;
 
   void CreateNewTabIncognitoCSS();
-  scoped_refptr<RefCountedMemory> new_tab_incognito_css_;
+  scoped_refptr<base::RefCountedMemory> new_tab_incognito_css_;
   void CreateNewTabCSS();
-  scoped_refptr<RefCountedMemory> new_tab_css_;
+  scoped_refptr<base::RefCountedMemory> new_tab_css_;
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;

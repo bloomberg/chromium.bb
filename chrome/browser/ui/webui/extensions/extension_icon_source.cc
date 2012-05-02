@@ -31,7 +31,7 @@
 
 namespace {
 
-scoped_refptr<RefCountedMemory> BitmapToMemory(const SkBitmap* image) {
+scoped_refptr<base::RefCountedMemory> BitmapToMemory(const SkBitmap* image) {
   base::RefCountedBytes* image_bytes = new base::RefCountedBytes;
   gfx::PNGCodec::EncodeBGRASkBitmap(*image, false, &image_bytes->data());
   return image_bytes;

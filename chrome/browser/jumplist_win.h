@@ -52,7 +52,7 @@ class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
   const std::wstring& title() const { return title_; }
   const std::wstring& icon() const { return icon_; }
   int index() const { return index_; }
-  scoped_refptr<RefCountedMemory> data() const { return data_; }
+  scoped_refptr<base::RefCountedMemory> data() const { return data_; }
 
   void SetArguments(const std::wstring& arguments) {
     arguments_ = arguments;
@@ -68,7 +68,7 @@ class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
     favicon_ = favicon;
   }
 
-  void SetIconData(scoped_refptr<RefCountedMemory> data) {
+  void SetIconData(scoped_refptr<base::RefCountedMemory> data) {
     data_ = data;
   }
 
@@ -80,7 +80,7 @@ class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
   std::wstring arguments_;
   std::wstring title_;
   std::wstring icon_;
-  scoped_refptr<RefCountedMemory> data_;
+  scoped_refptr<base::RefCountedMemory> data_;
   int index_;
   bool favicon_;
 

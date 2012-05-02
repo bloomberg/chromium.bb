@@ -110,7 +110,7 @@ class OptionsUI : public content::WebUIController,
       const AutocompleteResult& autocompleteResult,
       base::ListValue * const suggestions);
 
-  static RefCountedMemory* GetFaviconResourceBytes();
+  static base::RefCountedMemory* GetFaviconResourceBytes();
 
   // Overridden from OptionsPageUIHandlerHost:
   virtual void InitializeHandlers() OVERRIDE;

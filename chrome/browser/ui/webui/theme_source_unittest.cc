@@ -24,7 +24,7 @@ class MockThemeSource : public ThemeSource {
         result_data_size_(0) {
   }
 
-  virtual void SendResponse(int request_id, RefCountedMemory* data) {
+  virtual void SendResponse(int request_id, base::RefCountedMemory* data) {
     result_data_size_ = data ? data->size() : 0;
     result_request_id_ = request_id;
   }

@@ -137,7 +137,7 @@ OptionsUIHTMLSource::OptionsUIHTMLSource(DictionaryValue* localized_strings)
 void OptionsUIHTMLSource::StartDataRequest(const std::string& path,
                                             bool is_incognito,
                                             int request_id) {
-  scoped_refptr<RefCountedMemory> response_bytes;
+  scoped_refptr<base::RefCountedMemory> response_bytes;
   SetFontAndTextDirection(localized_strings_.get());
 
   if (path == kLocalizedStringsFile) {
@@ -352,7 +352,7 @@ void OptionsUI::ProcessAutocompleteSuggestions(
 }
 
 // static
-RefCountedMemory* OptionsUI::GetFaviconResourceBytes() {
+base::RefCountedMemory* OptionsUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytes(IDR_SETTINGS_FAVICON);
 }

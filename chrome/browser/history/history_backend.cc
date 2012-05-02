@@ -1941,7 +1941,7 @@ void HistoryBackend::GetFaviconForID(scoped_refptr<GetFaviconRequest> request,
 void HistoryBackend::SetFavicon(
     const GURL& page_url,
     const GURL& icon_url,
-    scoped_refptr<RefCountedMemory> data,
+    scoped_refptr<base::RefCountedMemory> data,
     IconType icon_type) {
   DCHECK(data.get());
   if (!thumbnail_db_.get() || !db_.get())

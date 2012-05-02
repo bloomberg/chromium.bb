@@ -29,13 +29,13 @@ class MockChromeWebUIDataSource : public ChromeWebUIDataSource {
   }
 
   // Store response for later comparisons.
-  virtual void SendResponse(int request_id, RefCountedMemory* data) {
+  virtual void SendResponse(int request_id, base::RefCountedMemory* data) {
     result_request_id_ = request_id;
     result_data_ = data;
   }
 
   int result_request_id_;
-  scoped_refptr<RefCountedMemory> result_data_;
+  scoped_refptr<base::RefCountedMemory> result_data_;
 
  private:
   virtual ~MockChromeWebUIDataSource() {}

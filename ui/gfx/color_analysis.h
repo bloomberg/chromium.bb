@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,10 +57,12 @@ class UI_EXPORT GridSampler : public KMeanImageSampler {
 // color of the image, then the color is moved to HSV space so the saturation
 // and luminance can be modified to move the color towards the white end of
 // the spectrum. The color is then moved back to RGB space and returned.
-SkColor CalculateRecommendedBgColorForPNG(scoped_refptr<RefCountedMemory> png);
+SkColor CalculateRecommendedBgColorForPNG(
+    scoped_refptr<base::RefCountedMemory> png);
 
-SkColor CalculateRecommendedBgColorForPNG(scoped_refptr<RefCountedMemory> png,
-                                          KMeanImageSampler& sampler);
+SkColor CalculateRecommendedBgColorForPNG(
+    scoped_refptr<base::RefCountedMemory> png,
+    KMeanImageSampler& sampler);
 
 // Returns an SkColor that represents the calculated dominant color in the png.
 // This uses a KMean clustering algorithm to find clusters of pixel colors in
@@ -99,14 +101,15 @@ SkColor CalculateRecommendedBgColorForPNG(scoped_refptr<RefCountedMemory> png,
 //   |darkness_limit| < SUM(R, G, B) < |brightness_limit|. Return that color.
 //   If no color fulfills that requirement return the color with the largest
 //   weight regardless of whether or not it fulfills the equation above.
-SkColor CalculateKMeanColorOfPNG(scoped_refptr<RefCountedMemory> png,
+SkColor CalculateKMeanColorOfPNG(scoped_refptr<base::RefCountedMemory> png,
                                  uint32_t darkness_limit,
                                  uint32_t brightness_limit);
 
-UI_EXPORT SkColor CalculateKMeanColorOfPNG(scoped_refptr<RefCountedMemory> png,
-                                           uint32_t darkness_limit,
-                                           uint32_t brightness_limit,
-                                           KMeanImageSampler& sampler);
+UI_EXPORT SkColor CalculateKMeanColorOfPNG(
+    scoped_refptr<base::RefCountedMemory> png,
+    uint32_t darkness_limit,
+    uint32_t brightness_limit,
+    KMeanImageSampler& sampler);
 
 }  // namespace color_utils
 

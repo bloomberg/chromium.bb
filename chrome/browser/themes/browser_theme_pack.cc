@@ -287,7 +287,7 @@ const int kPreloadIDs[] = {
 };
 
 // Returns a piece of memory with the contents of the file |path|.
-RefCountedMemory* ReadFileData(const FilePath& path) {
+base::RefCountedMemory* ReadFileData(const FilePath& path) {
   if (!path.empty()) {
     net::FileStream file(NULL);
     int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
@@ -529,7 +529,7 @@ const gfx::Image* BrowserThemePack::GetImageNamed(int idr_id) const {
   if (image_iter != loaded_images_.end())
     return image_iter->second;
 
-  scoped_refptr<RefCountedMemory> memory;
+  scoped_refptr<base::RefCountedMemory> memory;
   if (data_pack_.get()) {
     memory = data_pack_->GetStaticMemory(prs_id);
   } else {
@@ -558,8 +558,8 @@ const gfx::Image* BrowserThemePack::GetImageNamed(int idr_id) const {
   return NULL;
 }
 
-RefCountedMemory* BrowserThemePack::GetRawData(int idr_id) const {
-  RefCountedMemory* memory = NULL;
+base::RefCountedMemory* BrowserThemePack::GetRawData(int idr_id) const {
+  base::RefCountedMemory* memory = NULL;
   int prs_id = GetPersistentIDByIDR(idr_id);
 
   if (prs_id != -1) {
@@ -871,7 +871,7 @@ bool BrowserThemePack::LoadRawBitmapsTo(
 
   for (FilePathMap::const_iterator it = file_paths.begin();
        it != file_paths.end(); ++it) {
-    scoped_refptr<RefCountedMemory> raw_data(ReadFileData(it->second));
+    scoped_refptr<base::RefCountedMemory> raw_data(ReadFileData(it->second));
     if (!raw_data.get()) {
       LOG(ERROR) << "Could not load theme image";
       return false;

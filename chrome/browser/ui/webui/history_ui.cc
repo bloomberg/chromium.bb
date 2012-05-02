@@ -483,7 +483,7 @@ const GURL HistoryUI::GetHistoryURLWithSearchText(const string16& text) {
 }
 
 // static
-RefCountedMemory* HistoryUI::GetFaviconResourceBytes() {
+base::RefCountedMemory* HistoryUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytes(IDR_HISTORY_FAVICON);
 }

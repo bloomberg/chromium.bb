@@ -309,14 +309,14 @@ bool ThemeService::HasCustomImage(int id) const {
   return false;
 }
 
-RefCountedMemory* ThemeService::GetRawData(int id) const {
+base::RefCountedMemory* ThemeService::GetRawData(int id) const {
   // Check to see whether we should substitute some images.
   int ntp_alternate;
   GetDisplayProperty(NTP_LOGO_ALTERNATE, &ntp_alternate);
   if (id == IDR_PRODUCT_LOGO && ntp_alternate != 0)
     id = IDR_PRODUCT_LOGO_WHITE;
 
-  RefCountedMemory* data = NULL;
+  base::RefCountedMemory* data = NULL;
   if (theme_pack_.get())
     data = theme_pack_->GetRawData(id);
   if (!data)

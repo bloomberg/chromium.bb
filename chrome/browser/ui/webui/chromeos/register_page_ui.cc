@@ -165,7 +165,7 @@ void RegisterPageUIHTMLSource::StartDataRequest(const std::string& path,
     return;
   }
 
-  scoped_refptr<RefCountedMemory> html_bytes(
+  scoped_refptr<base::RefCountedMemory> html_bytes(
       ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
           IDR_HOST_REGISTRATION_PAGE_HTML));
 

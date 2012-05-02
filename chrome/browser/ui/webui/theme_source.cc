@@ -113,7 +113,8 @@ void ThemeSource::SendThemeBitmap(int request_id, int resource_id) {
     ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
     DCHECK(tp);
 
-    scoped_refptr<RefCountedMemory> image_data(tp->GetRawData(resource_id));
+    scoped_refptr<base::RefCountedMemory> image_data(tp->GetRawData(
+        resource_id));
     SendResponse(request_id, image_data);
   } else {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

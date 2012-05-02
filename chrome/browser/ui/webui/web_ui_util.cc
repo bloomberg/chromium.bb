@@ -33,7 +33,7 @@ std::string GetImageDataUrlFromResource(int res) {
       ResourceBundle::GetSharedInstance().LoadDataResourceBytes(res);
   if (!icon_data)
     return std::string();
-  scoped_refptr<RefCountedMemory> raw_icon(icon_data);
+  scoped_refptr<base::RefCountedMemory> raw_icon(icon_data);
   std::string str_url;
   str_url.insert(str_url.end(),
     raw_icon->front(),

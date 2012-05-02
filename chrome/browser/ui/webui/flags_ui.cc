@@ -167,7 +167,7 @@ FlagsUI::FlagsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 }
 
 // static
-RefCountedMemory* FlagsUI::GetFaviconResourceBytes() {
+base::RefCountedMemory* FlagsUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytes(IDR_FLAGS);
 }

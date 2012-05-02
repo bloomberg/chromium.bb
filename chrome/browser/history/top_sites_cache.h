@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ class TopSitesCache {
   // thumbnail for the specified url. It is possible for a URL to be in TopSites
   // but not have an thumbnail.
   bool GetPageThumbnail(const GURL& url,
-                        scoped_refptr<RefCountedMemory>* bytes);
+                        scoped_refptr<base::RefCountedMemory>* bytes);
 
   // Fetches the thumbnail score for the specified url. Returns true if
   // there is a thumbnail score for the specified url.

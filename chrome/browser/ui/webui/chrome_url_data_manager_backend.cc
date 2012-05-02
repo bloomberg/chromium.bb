@@ -175,7 +175,7 @@ class URLRequestChromeJob : public net::URLRequestJob {
 
   // Called by ChromeURLDataManager to notify us that the data blob is ready
   // for us.
-  void DataAvailable(RefCountedMemory* bytes);
+  void DataAvailable(base::RefCountedMemory* bytes);
 
   void SetMimeType(const std::string& mime_type) {
     mime_type_ = mime_type;
@@ -193,7 +193,7 @@ class URLRequestChromeJob : public net::URLRequestJob {
   void CompleteRead(net::IOBuffer* buf, int buf_size, int* bytes_read);
 
   // The actual data we're serving.  NULL until it's been fetched.
-  scoped_refptr<RefCountedMemory> data_;
+  scoped_refptr<base::RefCountedMemory> data_;
   // The current offset into the data that we're handing off to our
   // callers via the Read interfaces.
   int data_offset_;
@@ -256,7 +256,7 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
   AddContentSecurityPolicyHeader(request_->url(), info->headers);
 }
 
-void URLRequestChromeJob::DataAvailable(RefCountedMemory* bytes) {
+void URLRequestChromeJob::DataAvailable(base::RefCountedMemory* bytes) {
   TRACE_EVENT_ASYNC_END0("browser", "DataManager:Request", this);
   if (bytes) {
     // The request completed, and we have all the data.
@@ -454,7 +454,7 @@ void ChromeURLDataManagerBackend::RemoveRequest(URLRequestChromeJob* job) {
 }
 
 void ChromeURLDataManagerBackend::DataAvailable(RequestID request_id,
-                                                RefCountedMemory* bytes) {
+                                                base::RefCountedMemory* bytes) {
   // Forward this data on to the pending net::URLRequest, if it exists.
   PendingRequestMap::iterator i = pending_requests_.find(request_id);
   if (i != pending_requests_.end()) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,12 +157,12 @@ int GridSampler::GetSample(int width, int height) {
 }
 
 SkColor CalculateRecommendedBgColorForPNG(
-    scoped_refptr<RefCountedMemory> png) {
+    scoped_refptr<base::RefCountedMemory> png) {
   RandomSampler sampler;
   return CalculateRecommendedBgColorForPNG(png, sampler);
 }
 
-SkColor CalculateKMeanColorOfPNG(scoped_refptr<RefCountedMemory> png,
+SkColor CalculateKMeanColorOfPNG(scoped_refptr<base::RefCountedMemory> png,
                                  uint32_t darkness_limit,
                                  uint32_t brightness_limit) {
   RandomSampler sampler;
@@ -171,7 +171,7 @@ SkColor CalculateKMeanColorOfPNG(scoped_refptr<RefCountedMemory> png,
 }
 
 SkColor CalculateRecommendedBgColorForPNG(
-    scoped_refptr<RefCountedMemory> png,
+    scoped_refptr<base::RefCountedMemory> png,
     KMeanImageSampler& sampler) {
   return CalculateKMeanColorOfPNG(png,
                                   kMinDarkness,
@@ -179,7 +179,7 @@ SkColor CalculateRecommendedBgColorForPNG(
                                   sampler);
 }
 
-SkColor CalculateKMeanColorOfPNG(scoped_refptr<RefCountedMemory> png,
+SkColor CalculateKMeanColorOfPNG(scoped_refptr<base::RefCountedMemory> png,
                                  uint32_t darkness_limit,
                                  uint32_t brightness_limit,
                                  KMeanImageSampler& sampler) {

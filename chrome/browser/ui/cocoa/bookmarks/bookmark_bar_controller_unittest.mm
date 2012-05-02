@@ -194,7 +194,7 @@ class FakeTheme : public ui::ThemeProvider {
   virtual bool GetDisplayProperty(int id, int* result) const { return false; }
   virtual bool ShouldUseNativeFrame() const { return false; }
   virtual bool HasCustomImage(int id) const { return false; }
-  virtual RefCountedMemory* GetRawData(int id) const { return NULL; }
+  virtual base::RefCountedMemory* GetRawData(int id) const { return NULL; }
   virtual NSImage* GetNSImageNamed(int id, bool allow_default) const {
     return nil;
   }

@@ -34,7 +34,7 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {}
 
 NTPResourceCache::~NTPResourceCache() {}
 
-RefCountedMemory* NTPResourceCache::GetNewTabHTML(bool is_incognito) {
+base::RefCountedMemory* NTPResourceCache::GetNewTabHTML(bool is_incognito) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Android uses same html/css for incognito NTP and normal NTP
   if (!new_tab_html_.get())
@@ -42,7 +42,7 @@ RefCountedMemory* NTPResourceCache::GetNewTabHTML(bool is_incognito) {
   return new_tab_html_.get();
 }
 
-RefCountedMemory* NTPResourceCache::GetNewTabCSS(bool is_incognito) {
+base::RefCountedMemory* NTPResourceCache::GetNewTabCSS(bool is_incognito) {
   // This is used for themes, which are not currently supported on Android.
   NOTIMPLEMENTED();
   return NULL;

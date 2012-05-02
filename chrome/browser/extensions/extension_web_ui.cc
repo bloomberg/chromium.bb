@@ -109,7 +109,7 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
   // Forwards the result on the request. If no favicon was available then
   // |icon_data| may be backed by NULL. Once the result has been forwarded the
   // instance is deleted.
-  void ForwardResult(scoped_refptr<RefCountedMemory> icon_data) {
+  void ForwardResult(scoped_refptr<base::RefCountedMemory> icon_data) {
     history::FaviconData favicon;
     favicon.known_icon = icon_data.get() != NULL && icon_data->size() > 0;
     favicon.image_data = icon_data;

@@ -480,7 +480,7 @@ PluginsUI::PluginsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 }
 
 // static
-RefCountedMemory* PluginsUI::GetFaviconResourceBytes() {
+base::RefCountedMemory* PluginsUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytes(IDR_PLUGIN);
 }

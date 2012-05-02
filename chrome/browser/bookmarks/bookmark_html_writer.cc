@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
@@ -261,7 +262,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
       BookmarkFaviconFetcher::URLFaviconMap::iterator itr =
           favicons_map_->find(url_string);
       if (itr != favicons_map_->end()) {
-        scoped_refptr<RefCountedMemory> data(itr->second.get());
+        scoped_refptr<base::RefCountedMemory> data(itr->second.get());
         std::string favicon_data;
         favicon_data.assign(reinterpret_cast<const char*>(data->front()),
                             data->size());

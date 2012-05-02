@@ -18,10 +18,10 @@
 class ChromeURLDataManagerBackend;
 class MessageLoop;
 class Profile;
-class RefCountedMemory;
 
 namespace base {
 class DictionaryValue;
+class RefCountedMemory;
 }
 
 // To serve dynamic data off of chrome: URLs, implement the
@@ -82,7 +82,7 @@ class ChromeURLDataManager : public ProfileKeyedService {
     // Report that a request has resulted in the data |bytes|.
     // If the request can't be satisfied, pass NULL for |bytes| to indicate
     // the request is over.
-    virtual void SendResponse(int request_id, RefCountedMemory* bytes);
+    virtual void SendResponse(int request_id, base::RefCountedMemory* bytes);
 
     // Returns the MessageLoop on which the DataSource wishes to have
     // StartDataRequest called to handle the request for |path|.  If the
@@ -120,8 +120,9 @@ class ChromeURLDataManager : public ProfileKeyedService {
 
     // SendResponse invokes this on the IO thread. Notifies the backend to
     // handle the actual work of sending the data.
-    virtual void SendResponseOnIOThread(int request_id,
-                                        scoped_refptr<RefCountedMemory> bytes);
+    virtual void SendResponseOnIOThread(
+        int request_id,
+        scoped_refptr<base::RefCountedMemory> bytes);
 
     // The name of this source.
     // E.g., for favicons, this could be "favicon", which results in paths for

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,14 +8,16 @@
 
 #include "content/public/browser/web_ui_controller.h"
 
+namespace base {
 class RefCountedMemory;
+}
 
 // The Web UI handler for about:flash.
 class FlashUI : public content::WebUIController {
  public:
   explicit FlashUI(content::WebUI* web_ui);
 
-  static RefCountedMemory* GetFaviconResourceBytes();
+  static base::RefCountedMemory* GetFaviconResourceBytes();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FlashUI);

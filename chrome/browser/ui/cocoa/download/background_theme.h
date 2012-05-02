@@ -22,7 +22,7 @@ class BackgroundTheme : public ui::ThemeProvider {
   virtual bool GetDisplayProperty(int id, int* result) const OVERRIDE;
   virtual bool ShouldUseNativeFrame() const OVERRIDE;
   virtual bool HasCustomImage(int id) const OVERRIDE;
-  virtual RefCountedMemory* GetRawData(int id) const OVERRIDE;
+  virtual base::RefCountedMemory* GetRawData(int id) const OVERRIDE;
   virtual NSImage* GetNSImageNamed(int id, bool allow_default) const OVERRIDE;
   virtual NSColor* GetNSImageColorNamed(int id,
                                         bool allow_default) const OVERRIDE;

@@ -130,10 +130,11 @@ ChromeURLDataManager::DataSource::DataSource(const std::string& source_name,
 ChromeURLDataManager::DataSource::~DataSource() {
 }
 
-void ChromeURLDataManager::DataSource::SendResponse(int request_id,
-                                                    RefCountedMemory* bytes) {
+void ChromeURLDataManager::DataSource::SendResponse(
+    int request_id,
+    base::RefCountedMemory* bytes) {
   // Take a ref-pointer on entry so byte->Release() will always get called.
-  scoped_refptr<RefCountedMemory> bytes_ptr(bytes);
+  scoped_refptr<base::RefCountedMemory> bytes_ptr(bytes);
   if (IsScheduledForDeletion(this)) {
     // We're scheduled for deletion. Servicing the request would result in
     // this->AddRef being invoked, even though the ref count is 0 and 'this' is
@@ -194,7 +195,7 @@ void ChromeURLDataManager::DataSource::SetFontAndTextDirection(
 
 void ChromeURLDataManager::DataSource::SendResponseOnIOThread(
     int request_id,
-    scoped_refptr<RefCountedMemory> bytes) {
+    scoped_refptr<base::RefCountedMemory> bytes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (backend_)
     backend_->DataAvailable(request_id, bytes);

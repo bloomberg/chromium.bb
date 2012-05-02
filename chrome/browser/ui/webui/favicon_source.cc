@@ -143,7 +143,7 @@ void FaviconSource::OnFaviconDataAvailable(
 }
 
 void FaviconSource::SendDefaultResponse(int request_id) {
-  RefCountedMemory* bytes = NULL;
+  base::RefCountedMemory* bytes = NULL;
   if (request_size_map_[request_id] == 32) {
     if (!default_favicon_large_.get()) {
       default_favicon_large_ =

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,13 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 
 class Profile;
+
+namespace base {
+class RefCountedMemory;
+}
 
 namespace history {
 class TopSites;
@@ -44,7 +47,7 @@ class ThumbnailSource : public ChromeURLDataManager::DataSource {
 
   // Raw PNG representation of the thumbnail to show when the thumbnail
   // database doesn't have a thumbnail for a webpage.
-  scoped_refptr<RefCountedMemory> default_thumbnail_;
+  scoped_refptr<base::RefCountedMemory> default_thumbnail_;
 
   // TopSites.
   scoped_refptr<history::TopSites> top_sites_;

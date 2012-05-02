@@ -18,11 +18,11 @@
 #include "sql/statement.h"
 
 class FilePath;
-class RefCountedMemory;
 struct ThumbnailScore;
 class SkBitmap;
 
 namespace base {
+class RefCountedMemory;
 class Time;
 }
 
@@ -105,7 +105,7 @@ class ThumbnailDatabase {
   // The time indicates the access time, and is used to detect when the favicon
   // should be refreshed.
   bool SetFavicon(FaviconID icon_id,
-                  scoped_refptr<RefCountedMemory> icon_data,
+                  scoped_refptr<base::RefCountedMemory> icon_data,
                   base::Time time);
 
   // Sets the time the favicon was last updated.

@@ -11,7 +11,9 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "content/public/browser/web_ui_controller.h"
 
+namespace base {
 class RefCountedMemory;
+}
 
 // This class provides the source for chrome://bookmarks/
 class BookmarksUIHTMLSource : public ChromeURLDataManager::DataSource {
@@ -37,7 +39,7 @@ class BookmarksUI : public content::WebUIController {
  public:
   explicit BookmarksUI(content::WebUI* web_ui);
 
-  static RefCountedMemory* GetFaviconResourceBytes();
+  static base::RefCountedMemory* GetFaviconResourceBytes();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarksUI);

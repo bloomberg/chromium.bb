@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/md5.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -241,7 +242,7 @@ void TopSites::GetMostVisitedURLs(CancelableRequestConsumer* consumer,
 }
 
 bool TopSites::GetPageThumbnail(const GURL& url,
-                                scoped_refptr<RefCountedMemory>* bytes) {
+                                scoped_refptr<base::RefCountedMemory>* bytes) {
   // WARNING: this may be invoked on any thread.
   {
     base::AutoLock lock(lock_);

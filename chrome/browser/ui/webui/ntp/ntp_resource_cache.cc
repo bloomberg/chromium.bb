@@ -212,7 +212,7 @@ bool NTPResourceCache::NewTabCacheNeedsRefresh() {
   return false;
 }
 
-RefCountedMemory* NTPResourceCache::GetNewTabHTML(bool is_incognito) {
+base::RefCountedMemory* NTPResourceCache::GetNewTabHTML(bool is_incognito) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (is_incognito) {
     if (!new_tab_incognito_html_.get())
@@ -228,7 +228,7 @@ RefCountedMemory* NTPResourceCache::GetNewTabHTML(bool is_incognito) {
                         new_tab_html_.get();
 }
 
-RefCountedMemory* NTPResourceCache::GetNewTabCSS(bool is_incognito) {
+base::RefCountedMemory* NTPResourceCache::GetNewTabCSS(bool is_incognito) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (is_incognito) {
     if (!new_tab_incognito_css_.get())
