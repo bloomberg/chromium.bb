@@ -58,6 +58,7 @@
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/monitor.h"
 #include "ui/gfx/screen.h"
 #include "net/base/mime_util.h"
@@ -76,7 +77,6 @@
 #include "content/browser/web_contents/web_contents_view_gtk.h"
 #elif defined(OS_MACOSX)
 #include "content/browser/web_contents/web_contents_view_mac.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/surface/io_surface_support_mac.h"
 #elif defined(OS_ANDROID)
 #include "content/browser/web_contents/web_contents_view_android.h"
@@ -510,11 +510,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
 #if defined(OS_MACOSX)
   // Mac doesn't have gfx::Screen::GetMonitorNearestWindow impl.
   // crbug.com/125690.
-  int default_device_scale_factor;
-  base::StringToInt(command_line.GetSwitchValueASCII(
-                        switches::kDefaultDeviceScaleFactor),
-                    &default_device_scale_factor);
-  prefs.default_device_scale_factor = default_device_scale_factor;
+  prefs.default_device_scale_factor =
+      gfx::Monitor::GetDefaultDeviceScaleFactor();
 #else
   if (rvh->GetView()) {
     gfx::Monitor monitor = gfx::Screen::GetMonitorNearestWindow(
@@ -522,7 +519,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
     prefs.default_device_scale_factor =
         static_cast<int>(monitor.device_scale_factor());
   } else {
-    prefs.default_device_scale_factor = 1;
+    prefs.default_device_scale_factor =
+        gfx::Monitor::GetDefaultDeviceScaleFactor();;
   }
 #endif
 
