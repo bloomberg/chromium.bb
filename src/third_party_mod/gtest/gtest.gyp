@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2009, Google Inc.
+# Copyright 2012, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -42,10 +42,14 @@
           '<(DEPTH)/testing/gtest/',
           '<(DEPTH)/testing/gtest/include',
         ],
-        'cflags_cc!': ['-fno-rtti'],
+        'cflags_cc!': [
+          '-fno-rtti',
+          '-Wno-missing-field-initializers'
+        ],
         'cflags!': [
           '-pedantic',
-          '-Wswitch-enum'
+          '-Wswitch-enum',
+          '-Wno-missing-field-initializers'
         ],
         'xcode_settings': {
           'WARNING_CFLAGS!': [

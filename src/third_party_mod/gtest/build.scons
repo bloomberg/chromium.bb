@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -30,6 +30,10 @@ if env.Bit('linux') or env.Bit('clang'):
   # because of: testing/gtest/src/gtest-printers.cc:291: error:
   # comparison of unsigned expression >= 0 is always true [-Wtype-limits]
   env.Append(CCFLAGS=['-Wno-type-limits'])
+
+if env.Bit('linux') or env.Bit('clang') or env.Bit('mac'):
+  # See gtest-port.h GTEST_DEFINE_STATIC_MUTEX_ define for more info
+  env.Append(CCFLAGS=['-Wno-missing-field-initializers'])
 
 # NOTE: this makes use of the overlay from the toplevel SConstruct
 env.ComponentLibrary('gtest',
