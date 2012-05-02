@@ -344,6 +344,9 @@ Press Search key to cancel.
       <message name="IDS_ASH_STATUS_TRAY_WIFI" desc="The wifi network device.">
         Wi-Fi
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NO_NETWORKS" desc="The message to display in the network info bubble when it is otherwise empty.">
+        No network information available
+      </message>
       <message name="IDS_ASH_SECONDARY_MONITOR" desc="The message shown on the secondary monitors.">
         This screen intentionally left blank
       </message>

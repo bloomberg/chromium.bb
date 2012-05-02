@@ -39,29 +39,24 @@ namespace {
 // Height of the list of networks in the popup.
 const int kNetworkListHeight = 203;
 
-// Creates a row of labels.
-views::View* CreateTextLabels(const string16& text_label,
-                              const std::string& text_string) {
+// Create a label with the font size and color used in the network info bubble.
+views::Label* CreateInfoBubbleLabel(const string16& text) {
   const SkColor text_color = SkColorSetARGB(127, 0, 0, 0);
+  views::Label* label = new views::Label(text);
+  label->SetFont(label->font().DeriveFont(-1));
+  label->SetEnabledColor(text_color);
+  return label;
+}
+
+// Create a row of labels for the network info bubble.
+views::View* CreateInfoBubbleLine(const string16& text_label,
+                                  const std::string& text_string) {
   views::View* view = new views::View;
-  view->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-        0, 0, 1));
-
-  views::Label* label = new views::Label(text_label);
-  label->SetFont(label->font().DeriveFont(-1));
-  label->SetEnabledColor(text_color);
-  view->AddChildView(label);
-
-  label = new views::Label(UTF8ToUTF16(": "));
-  label->SetFont(label->font().DeriveFont(-1));
-  label->SetEnabledColor(text_color);
-  view->AddChildView(label);
-
-  label = new views::Label(UTF8ToUTF16(text_string));
-  label->SetFont(label->font().DeriveFont(-1));
-  label->SetEnabledColor(text_color);
-  view->AddChildView(label);
-
+  view->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 1));
+  view->AddChildView(CreateInfoBubbleLabel(text_label));
+  view->AddChildView(CreateInfoBubbleLabel(UTF8ToUTF16(": ")));
+  view->AddChildView(CreateInfoBubbleLabel(UTF8ToUTF16(text_string)));
   return view;
 }
 
@@ -381,14 +376,28 @@ class NetworkDetailedView : public views::View,
     views::View* container = new views::View;
     container->SetLayoutManager(new
         views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
-    container->set_border(views::Border::CreateEmptyBorder(0, 20, 0, 0));
+    container->set_border(views::Border::CreateEmptyBorder(0, 5, 0, 5));
 
-    container->AddChildView(CreateTextLabels(bundle.GetLocalizedString(
-        IDS_ASH_STATUS_TRAY_IP), ip_address));
-    container->AddChildView(CreateTextLabels(bundle.GetLocalizedString(
-        IDS_ASH_STATUS_TRAY_ETHERNET), ethernet_address));
-    container->AddChildView(CreateTextLabels(bundle.GetLocalizedString(
-        IDS_ASH_STATUS_TRAY_WIFI), wifi_address));
+    // GetNetworkAddresses returns empty strings if no information is available.
+    if (!ip_address.empty()) {
+      container->AddChildView(CreateInfoBubbleLine(bundle.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_IP), ip_address));
+    }
+    if (!ethernet_address.empty()) {
+      container->AddChildView(CreateInfoBubbleLine(bundle.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_ETHERNET), ethernet_address));
+    }
+    if (!wifi_address.empty()) {
+      container->AddChildView(CreateInfoBubbleLine(bundle.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_WIFI), wifi_address));
+    }
+
+    // Avoid an empty bubble in the unlikely event that there is no network
+    // information at all.
+    if (!container->has_children()) {
+      container->AddChildView(CreateInfoBubbleLabel(bundle.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_NO_NETWORKS)));
+    }
 
     return container;
   }
