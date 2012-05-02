@@ -94,6 +94,8 @@ remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
   this.shrinkToFit_.addEventListener('click', this.callEnableShrink_, false);
   this.originalSize_.addEventListener('click', this.callDisableShrink_, false);
   this.fullScreen_.addEventListener('click', this.callToggleFullScreen_, false);
+  /** @type {number?} @private */
+  this.bumpScrollTimer_ = null;
 };
 
 // Note that the positive values in both of these enums are copied directly
@@ -525,6 +527,10 @@ remoting.ClientSession.prototype.onResize = function() {
   }
   this.notifyClientDimensionsTimer_ =
       window.setTimeout(notifyClientDimensions, 1000);
+
+  // If bump-scrolling is enabled, adjust the plugin margins to fully utilize
+  // the new window area.
+  this.scroll_(0, 0);
 };
 
 /**
@@ -619,8 +625,10 @@ remoting.ClientSession.prototype.logStatistics = function(stats) {
 remoting.ClientSession.prototype.toggleFullScreen_ = function() {
   if (document.webkitIsFullScreen) {
     document.webkitCancelFullScreen();
+    this.enableBumpScroll_(false);
   } else {
     document.body.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+    this.enableBumpScroll_(true);
   }
 };
 
@@ -634,4 +642,118 @@ remoting.ClientSession.prototype.onShowOptionsMenu_ = function() {
   remoting.MenuButton.select(this.shrinkToFit_, this.scaleToFit);
   remoting.MenuButton.select(this.originalSize_, !this.scaleToFit);
   remoting.MenuButton.select(this.fullScreen_, document.webkitIsFullScreen);
+};
+
+/**
+ * Scroll the client plugin by the specified amount, keeping it visible.
+ * Note that this is only used in content full-screen mode (not windowed or
+ * browser full-screen modes), where window.scrollBy and the scrollTop and
+ * scrollLeft properties don't work.
+ * @param {number} dx The amount by which to scroll horizontally. Positive to
+ *     scroll right; negative to scroll left.
+ * @param {number} dy The amount by which to scroll vertically. Positive to
+ *     scroll down; negative to scroll up.
+ * @return {boolean} True if the requested scroll had no effect because both
+ *     vertical and horizontal edges of the screen have been reached.
+ * @private
+ */
+remoting.ClientSession.prototype.scroll_ = function(dx, dy) {
+  var plugin = this.plugin.element();
+  var style = plugin.style;
+
+  /**
+   * Helper function for x- and y-scrolling
+   * @param {number|string} curr The current margin, eg. "10px".
+   * @param {number} delta The requested scroll amount.
+   * @param {number} windowBound The size of the window, in pixels.
+   * @param {number} pluginBound The size of the plugin, in pixels.
+   * @param {{stop: boolean}} stop Reference parameter used to indicate when
+   *     the scroll has reached one of the edges and can be stopped in that
+   *     direction.
+   * @return {string} The new margin value.
+   */
+  var adjustMargin = function(curr, delta, windowBound, pluginBound, stop) {
+    var minMargin = Math.min(0, windowBound - pluginBound);
+    var result = (curr ? parseFloat(curr) : 0) - delta;
+    result = Math.min(0, Math.max(minMargin, result));
+    stop.stop = (result == 0 || result == minMargin);
+    return result + "px";
+  };
+
+  var stopX = { stop: false };
+  style.marginLeft = adjustMargin(style.marginLeft, dx,
+                                  window.innerWidth, plugin.width, stopX);
+  var stopY = { stop: false };
+  style.marginTop = adjustMargin(style.marginTop, dy,
+                                 window.innerHeight, plugin.height, stopY);
+  return stopX.stop && stopY.stop;
+}
+
+/**
+ * Enable or disable bump-scrolling.
+ * @param {boolean} enable True to enable bump-scrolling, false to disable it.
+ */
+remoting.ClientSession.prototype.enableBumpScroll_ = function(enable) {
+  if (enable) {
+    /** @type {remoting.ClientSession} */
+    var that = this;
+    /** @param {Event} event */
+    this.onMouseMoveRef_ = function(event) {
+      that.onMouseMove_(event);
+    }
+    this.plugin.element().addEventListener('mousemove', this.onMouseMoveRef_,
+                                           false);
+  } else {
+    this.plugin.element().removeEventListener('mousemove', this.onMouseMoveRef_,
+                                              false);
+    this.onMouseMoveRef_ = null;
+  }
+};
+
+/**
+ * @param {Event} event The mouse event.
+ * @private
+ */
+remoting.ClientSession.prototype.onMouseMove_ = function(event) {
+  if (this.bumpScrollTimer_) {
+    window.clearTimeout(this.bumpScrollTimer_);
+    this.bumpScrollTimer_ = null;
+  }
+  // It's possible to leave content full-screen mode without using the Screen
+  // Options menu, so we disable bump scrolling as soon as we detect this.
+  if (!document.webkitIsFullScreen) {
+    this.enableBumpScroll_(false);
+  }
+
+  /**
+   * Compute the scroll speed based on how close the mouse is to the edge.
+   * @param {number} mousePos The mouse x- or y-coordinate
+   * @param {number} size The width or height of the content area.
+   * @return {number} The scroll delta, in pixels.
+   */
+  var computeDelta = function(mousePos, size) {
+    var threshold = 10;
+    if (mousePos >= size - threshold) {
+      return 1 + 5 * (mousePos - (size - threshold)) / threshold;
+    } else if (mousePos <= threshold) {
+      return -1 - 5 * (threshold - mousePos) / threshold;
+    }
+    return 0;
+  };
+
+  var dx = computeDelta(event.x, window.innerWidth);
+  var dy = computeDelta(event.y, window.innerHeight);
+
+  if (dx != 0 || dy != 0) {
+    /** @type {remoting.ClientSession} */
+    var that = this;
+    // Scroll the view, and schedule a timer to do so again unless we've hit
+    // the edges of the screen. This timer is cancelled when the mouse moves.
+    var repeatScroll = function() {
+      if (!that.scroll_(dx, dy)) {
+        that.bumpScrollTimer_ = window.setTimeout(repeatScroll, 10);
+      }
+    };
+    repeatScroll();
+  }
 };

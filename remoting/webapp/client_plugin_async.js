@@ -200,7 +200,7 @@ remoting.ClientPluginAsync.prototype.cleanup = function() {
 };
 
 /**
- * @return {Element} HTML element that correspods to the plugin.
+ * @return {HTMLEmbedElement} HTML element that correspods to the plugin.
  */
 remoting.ClientPluginAsync.prototype.element = function() {
   return this.plugin;

@@ -119,7 +119,7 @@ remoting.ClientPluginV1.prototype.cleanup = function() {
 };
 
 /**
- * @return {Element} HTML element that correspods to the plugin.
+ * @return {HTMLEmbedElement} HTML element that correspods to the plugin.
  */
 remoting.ClientPluginV1.prototype.element = function() {
   return this.plugin;

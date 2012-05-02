@@ -61,7 +61,7 @@ remoting.ClientPlugin.Feature = {
 remoting.ClientPlugin.prototype.hasFeature = function(feature) {};
 
 /**
- * @return {Element} HTML element that corresponds to the plugin.
+ * @return {HTMLEmbedElement} HTML element that corresponds to the plugin.
  */
 remoting.ClientPlugin.prototype.element = function() {};
 

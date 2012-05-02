@@ -9,7 +9,7 @@
 var remoting = remoting || {};
 
 /** @constructor
- *  @extends HTMLElement
+ *  @extends HTMLEmbedElement
  */
 remoting.ViewerPlugin = function() { };
 
