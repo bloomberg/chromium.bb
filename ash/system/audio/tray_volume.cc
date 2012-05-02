@@ -116,11 +116,15 @@ class VolumeView : public views::View,
   virtual ~VolumeView() {}
 
   void SetVolumeLevel(float percent) {
+    // The change in volume will be reflected via accessibility system events,
+    // so we prevent the UI event from being sent here.
+    slider_->set_enable_accessibility_events(false);
     slider_->SetValue(percent);
     // It is possible that the volume was (un)muted, but the actual volume level
     // did not change. In that case, setting the value of the slider won't
     // trigger an update. So explicitly trigger an update.
     icon_->Update();
+    slider_->set_enable_accessibility_events(true);
   }
 
  private:

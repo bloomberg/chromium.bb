@@ -60,6 +60,10 @@ class VIEWS_EXPORT Slider : public View,
 
   void SetAccessibleName(const string16& name);
 
+  void set_enable_accessibility_events(bool enabled) {
+    accessibility_events_enabled_ = enabled;
+  }
+
   void set_focus_border_color(SkColor color) { focus_border_color_ = color; }
 
  private:
@@ -93,6 +97,7 @@ class VIEWS_EXPORT Slider : public View,
   float animating_value_;
   bool value_is_valid_;
   string16 accessible_name_;
+  bool accessibility_events_enabled_;
   SkColor focus_border_color_;
 
   DISALLOW_COPY_AND_ASSIGN(Slider);

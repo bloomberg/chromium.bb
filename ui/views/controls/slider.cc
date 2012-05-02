@@ -31,6 +31,7 @@ Slider::Slider(SliderListener* listener, Orientation orientation)
       keyboard_increment_(0.1f),
       animating_value_(0.f),
       value_is_valid_(false),
+      accessibility_events_enabled_(true),
       focus_border_color_(0) {
   EnableCanvasFlippingForRTLUI(true);
   set_focusable(true);
@@ -73,7 +74,7 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
   } else {
     SchedulePaint();
   }
-  if (GetWidget()) {
+  if (accessibility_events_enabled_ && GetWidget()) {
     GetWidget()->NotifyAccessibilityEvent(
         this, ui::AccessibilityTypes::EVENT_VALUE_CHANGED, true);
   }
