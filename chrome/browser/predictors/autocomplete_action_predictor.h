@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_NETWORK_ACTION_PREDICTOR_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_NETWORK_ACTION_PREDICTOR_H_
+#ifndef CHROME_BROWSER_PREDICTORS_AUTOCOMPLETE_ACTION_PREDICTOR_H_
+#define CHROME_BROWSER_PREDICTORS_AUTOCOMPLETE_ACTION_PREDICTOR_H_
 #pragma once
 
 #include <map>
@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/autocomplete/network_action_predictor_database.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/predictors/autocomplete_action_predictor_database.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -31,16 +31,16 @@ class URLDatabase;
 
 // This class is responsible for determining the correct predictive network
 // action to take given for a given AutocompleteMatch and entered text. it uses
-// a NetworkActionPredictorDatabase accessed asynchronously on the DB thread to
-// permanently store the data used to make predictions, and keeps local caches
-// of that data to be able to make predictions synchronously on the UI thread
-// where it lives. It can be accessed as a weak pointer so that it can safely
-// use PostTaskAndReply without fear of crashes if it is destroyed before the
-// reply triggers. This is necessary during initialization.
-class NetworkActionPredictor
+// an AutocompleteActionPredictorDatabase accessed asynchronously on the DB
+// thread to permanently store the data used to make predictions, and keeps
+// local caches of that data to be able to make predictions synchronously on the
+// UI thread where it lives. It can be accessed as a weak pointer so that it can
+// safely use PostTaskAndReply without fear of crashes if it is destroyed before
+// the reply triggers. This is necessary during initialization.
+class AutocompleteActionPredictor
     : public ProfileKeyedService,
       public content::NotificationObserver,
-      public base::SupportsWeakPtr<NetworkActionPredictor> {
+      public base::SupportsWeakPtr<AutocompleteActionPredictor> {
  public:
   enum Action {
     ACTION_PRERENDER = 0,
@@ -49,8 +49,8 @@ class NetworkActionPredictor
     LAST_PREDICT_ACTION = ACTION_NONE
   };
 
-  explicit NetworkActionPredictor(Profile* profile);
-  virtual ~NetworkActionPredictor();
+  explicit AutocompleteActionPredictor(Profile* profile);
+  virtual ~AutocompleteActionPredictor();
 
   static void set_hit_weight(double weight) { hit_weight_ = weight; }
   static double get_hit_weight() { return hit_weight_; }
@@ -79,8 +79,8 @@ class NetworkActionPredictor
   static bool IsPreconnectable(const AutocompleteMatch& match);
 
  private:
-  friend class NetworkActionPredictorTest;
-  friend class NetworkActionPredictorDOMHandler;
+  friend class AutocompleteActionPredictorTest;
+  friend class AutocompleteActionPredictorDOMHandler;
 
   struct TransitionalMatch {
     TransitionalMatch();
@@ -114,7 +114,7 @@ class NetworkActionPredictor
   };
 
   typedef std::map<DBCacheKey, DBCacheValue> DBCacheMap;
-  typedef std::map<DBCacheKey, NetworkActionPredictorDatabase::Row::Id>
+  typedef std::map<DBCacheKey, AutocompleteActionPredictorDatabase::Row::Id>
       DBIdCacheMap;
 
   static const int kMaximumDaysToKeepEntry;
@@ -139,7 +139,7 @@ class NetworkActionPredictor
   // |id_list| must not be NULL. Every row id deleted will be added to id_list.
   void DeleteOldIdsFromCaches(
       history::URLDatabase* url_db,
-      std::vector<NetworkActionPredictorDatabase::Row::Id>* id_list);
+      std::vector<AutocompleteActionPredictorDatabase::Row::Id>* id_list);
 
   // Called to delete any old or invalid entries from the database. Called after
   // the local caches are created once the history service is available.
@@ -149,7 +149,7 @@ class NetworkActionPredictor
   // if the history service is available, or registers for the notification of
   // it becoming available.
   void CreateCaches(
-      std::vector<NetworkActionPredictorDatabase::Row>* row_buffer);
+      std::vector<AutocompleteActionPredictorDatabase::Row>* row_buffer);
 
   // Attempts to call DeleteOldEntries if the in-memory database has been loaded
   // by |service|. Returns success as a boolean.
@@ -168,11 +168,11 @@ class NetworkActionPredictor
 
   // Adds a row to the database and caches.
   void AddRow(const DBCacheKey& key,
-              const NetworkActionPredictorDatabase::Row& row);
+              const AutocompleteActionPredictorDatabase::Row& row);
 
   // Updates a row in the database and the caches.
   void UpdateRow(DBCacheMap::iterator it,
-                 const NetworkActionPredictorDatabase::Row& row);
+                 const AutocompleteActionPredictorDatabase::Row& row);
 
   // Removes all rows from the database and caches.
   void DeleteAllRows();
@@ -185,7 +185,7 @@ class NetworkActionPredictor
   void CommitTransaction();
 
   Profile* profile_;
-  scoped_refptr<NetworkActionPredictorDatabase> db_;
+  scoped_refptr<AutocompleteActionPredictorDatabase> db_;
   content::NotificationRegistrar notification_registrar_;
 
   // This is cleared after every Omnibox navigation.
@@ -200,7 +200,7 @@ class NetworkActionPredictor
 
   bool initialized_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkActionPredictor);
+  DISALLOW_COPY_AND_ASSIGN(AutocompleteActionPredictor);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_NETWORK_ACTION_PREDICTOR_H_
+#endif  // CHROME_BROWSER_PREDICTORS_AUTOCOMPLETE_ACTION_PREDICTOR_H_

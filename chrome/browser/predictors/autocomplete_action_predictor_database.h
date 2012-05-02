@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_NETWORK_ACTION_PREDICTOR_DATABASE_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_NETWORK_ACTION_PREDICTOR_DATABASE_H_
+#ifndef CHROME_BROWSER_PREDICTORS_AUTOCOMPLETE_ACTION_PREDICTOR_DATABASE_H_
+#define CHROME_BROWSER_PREDICTORS_AUTOCOMPLETE_ACTION_PREDICTOR_DATABASE_H_
 #pragma once
 
 #include <ostream>
@@ -20,8 +20,8 @@
 
 class Profile;
 
-// This manages the network action predictor table within the SQLite database
-// passed in to the constructor. It expects the following scheme:
+// This manages the autocomplete action predictor table within the SQLite
+// database passed in to the constructor. It expects the following scheme:
 //
 // network_action_predictor
 //   id                 A unique id.
@@ -34,8 +34,8 @@ class Profile;
 //
 // Ref-counted as it is created and destroyed on a different thread to the DB
 // thread that is required for all methods performing database access.
-class NetworkActionPredictorDatabase
-    : public base::RefCountedThreadSafe<NetworkActionPredictorDatabase> {
+class AutocompleteActionPredictorDatabase
+    : public base::RefCountedThreadSafe<AutocompleteActionPredictorDatabase> {
  public:
   struct Row {
     // TODO(dominich): Make this 64-bit integer as an optimization. This
@@ -60,7 +60,7 @@ class NetworkActionPredictorDatabase
     int number_of_misses;
   };
 
-  explicit NetworkActionPredictorDatabase(Profile* profile);
+  explicit AutocompleteActionPredictorDatabase(Profile* profile);
 
   // Opens the database file from the profile path. Separated from the
   // constructor to ease construction/destruction of this object on one thread
@@ -83,9 +83,9 @@ class NetworkActionPredictorDatabase
   void OnPredictorDestroyed();
 
  private:
-  friend class NetworkActionPredictorDatabaseTest;
-  friend class base::RefCountedThreadSafe<NetworkActionPredictorDatabase>;
-  virtual ~NetworkActionPredictorDatabase();
+  friend class AutocompleteActionPredictorDatabaseTest;
+  friend class base::RefCountedThreadSafe<AutocompleteActionPredictorDatabase>;
+  virtual ~AutocompleteActionPredictorDatabase();
 
   void CreateTable();
 
@@ -95,11 +95,11 @@ class NetworkActionPredictorDatabase
   FilePath db_path_;
   sql::Connection db_;
 
-  // Set when the NetworkActionPredictor is destroyed so we can cancel any
+  // Set when the AutocompleteActionPredictor is destroyed so we can cancel any
   // posted database requests.
   base::CancellationFlag canceled_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkActionPredictorDatabase);
+  DISALLOW_COPY_AND_ASSIGN(AutocompleteActionPredictorDatabase);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_NETWORK_ACTION_PREDICTOR_DATABASE_H_
+#endif  // CHROME_BROWSER_PREDICTORS_AUTOCOMPLETE_ACTION_PREDICTOR_DATABASE_H_

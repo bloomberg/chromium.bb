@@ -8,7 +8,6 @@
 #include <deque>
 #include <iterator>
 
-#include "chrome/browser/autocomplete/network_action_predictor_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/plugin_prefs_factory.h"
+#include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -172,6 +172,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   if (built_factories_)
     return;
 
+  AutocompleteActionPredictorFactory::GetInstance();
   ChromeURLDataManagerFactory::GetInstance();
   CookieSettings::Factory::GetInstance();
   DownloadServiceFactory::GetInstance();
@@ -180,7 +181,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   GesturePrefsObserverFactoryAura::GetInstance();
 #endif
   GlobalErrorServiceFactory::GetInstance();
-  NetworkActionPredictorFactory::GetInstance();
   NTPResourceCacheFactory::GetInstance();
   PasswordStoreFactory::GetInstance();
   PersonalDataManagerFactory::GetInstance();

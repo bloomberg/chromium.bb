@@ -34,7 +34,7 @@
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/ui/webui/media/media_internals_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
-#include "chrome/browser/ui/webui/network_action_predictor/network_action_predictor_ui.h"
+#include "chrome/browser/ui/webui/predictors/autocomplete_action_predictor_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
@@ -191,10 +191,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<MediaInternalsUI>;
   if (url.host() == chrome::kChromeUINetInternalsHost)
     return &NewWebUI<NetInternalsUI>;
-  if (url.host() == chrome::kChromeUINetworkActionPredictorHost)
-    return &NewWebUI<NetworkActionPredictorUI>;
   if (url.host() == chrome::kChromeUIOmniboxHost)
     return &NewWebUI<OmniboxUI>;
+  if (url.host() == chrome::kChromeUIPredictorsHost)
+    return &NewWebUI<AutocompleteActionPredictorUI>;
   if (url.host() == chrome::kChromeUIProfilerHost)
     return &NewWebUI<ProfilerUI>;
   if (url.host() == chrome::kChromeUIQuotaInternalsHost)

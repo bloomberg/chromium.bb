@@ -9,7 +9,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/autocomplete/network_action_predictor.h"
+#include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_util.h"
@@ -48,7 +48,7 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
     case ORIGIN_OMNIBOX:
       return ComposeHistogramName(
           StringPrintf("omnibox_%.1f",
-                       NetworkActionPredictor::get_hit_weight()).c_str(),
+                       AutocompleteActionPredictor::get_hit_weight()).c_str(),
           name);
     case ORIGIN_LINK_REL_PRERENDER:
       return ComposeHistogramName("web", name);
@@ -153,7 +153,7 @@ void PrerenderHistograms::RecordPrerenderStarted(Origin origin) const {
   if (OriginIsOmnibox(origin)) {
     UMA_HISTOGRAM_COUNTS(
         StringPrintf("Prerender.OmniboxPrerenderCount_%.1f%s",
-                     NetworkActionPredictor::get_hit_weight(),
+                     AutocompleteActionPredictor::get_hit_weight(),
                      PrerenderManager::GetModeString()).c_str(),
         1);
   }
@@ -163,7 +163,7 @@ void PrerenderHistograms::RecordUsedPrerender(Origin origin) const {
   if (OriginIsOmnibox(origin)) {
     UMA_HISTOGRAM_COUNTS(
         StringPrintf("Prerender.OmniboxNavigationsUsedPrerenderCount_%.1f%s",
-                     NetworkActionPredictor::get_hit_weight(),
+                     AutocompleteActionPredictor::get_hit_weight(),
                      PrerenderManager::GetModeString()).c_str(),
         1);
   }

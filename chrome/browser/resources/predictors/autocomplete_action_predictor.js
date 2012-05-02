@@ -5,16 +5,16 @@
 /**
  * Requests the database from the backend.
  */
-function requestNetworkActionPredictorDb() {
+function requestAutocompleteActionPredictorDb() {
   console.debug('Requesting NAP DB');
-  chrome.send('requestNetworkActionPredictorDb');
+  chrome.send('requestAutocompleteActionPredictorDb');
 }
 
 
 /**
  * Callback from backend with the database contents. Sets up some globals and
  * calls to create the UI.
- * @param {Dictionary} database Information about NetworkActionPredictor
+ * @param {Dictionary} database Information about AutocompleteActionPredictor
  *     including the database as a flattened list, a boolean indicating if the
  *     system is enabled and the current hit weight.
  */
@@ -32,7 +32,7 @@ function updateDatabaseTable(database) {
 
 /**
  * Updates the table from the database.
- * @param {Dictionary} database Information about NetworkActionPredictor
+ * @param {Dictionary} database Information about AutocompleteActionPredictor
  *     including the database as a flattened list, a boolean indicating if the
  *     system is enabled and the current hit weight.
  */
@@ -77,6 +77,5 @@ function updateDatabaseView(database) {
   $('countBanner').textContent += '  Hit Weight: ' + database.hit_weight;
 }
 
-document.addEventListener('DOMContentLoaded', requestNetworkActionPredictorDb);
-
-
+document.addEventListener('DOMContentLoaded',
+                          requestAutocompleteActionPredictorDb);

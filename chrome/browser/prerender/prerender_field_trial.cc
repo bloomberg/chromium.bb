@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/autocomplete/network_action_predictor.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -217,9 +217,9 @@ void ConfigureOmniboxPrerender() {
                                    kEightProbability);
   const int group = weighting_trial->group();
   if (group == kOmniboxWeightFourGroup)
-    NetworkActionPredictor::set_hit_weight(4.0);
+    AutocompleteActionPredictor::set_hit_weight(4.0);
   else if (group == kOmniboxWeightEightGroup)
-    NetworkActionPredictor::set_hit_weight(8.0);
+    AutocompleteActionPredictor::set_hit_weight(8.0);
 }
 
 bool IsOmniboxEnabled(Profile* profile) {

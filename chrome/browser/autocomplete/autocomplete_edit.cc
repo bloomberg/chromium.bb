@@ -17,8 +17,6 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
-#include "chrome/browser/autocomplete/network_action_predictor.h"
-#include "chrome/browser/autocomplete/network_action_predictor_factory.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/command_updater.h"
@@ -27,6 +25,8 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/predictors/autocomplete_action_predictor.h"
+#include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -227,39 +227,38 @@ void AutocompleteEditModel::OnChanged() {
   const AutocompleteMatch& current_match = user_input_in_progress_ ?
       CurrentMatch() : AutocompleteMatch();
 
-  NetworkActionPredictor::Action recommended_action =
-      NetworkActionPredictor::ACTION_NONE;
-  NetworkActionPredictor* network_action_predictor =
+  AutocompleteActionPredictor::Action recommended_action =
+      AutocompleteActionPredictor::ACTION_NONE;
+  AutocompleteActionPredictor* action_predictor =
       user_input_in_progress_ ?
-      NetworkActionPredictorFactory::GetForProfile(profile_) : NULL;
-  if (network_action_predictor) {
-    network_action_predictor->RegisterTransitionalMatches(user_text_,
-                                                          result());
-    // Confer with the NetworkActionPredictor to determine what action, if any,
-    // we should take. Get the recommended action here even if we don't need it
-    // so we can get stats for anyone who is opted in to UMA, but only get it if
-    // the user has actually typed something to avoid constructing it before
-    // it's needed. Note: This event is triggered as part of startup when the
-    // initial tab transitions to the start page.
+      AutocompleteActionPredictorFactory::GetForProfile(profile_) : NULL;
+  if (action_predictor) {
+    action_predictor->RegisterTransitionalMatches(user_text_, result());
+    // Confer with the AutocompleteActionPredictor to determine what action, if
+    // any, we should take. Get the recommended action here even if we don't
+    // need it so we can get stats for anyone who is opted in to UMA, but only
+    // get it if the user has actually typed something to avoid constructing it
+    // before it's needed. Note: This event is triggered as part of startup when
+    // the initial tab transitions to the start page.
     recommended_action =
-        network_action_predictor->RecommendAction(user_text_, current_match);
+        action_predictor->RecommendAction(user_text_, current_match);
   }
 
   UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.Action", recommended_action,
-                            NetworkActionPredictor::LAST_PREDICT_ACTION);
+                            AutocompleteActionPredictor::LAST_PREDICT_ACTION);
   string16 suggested_text;
 
   if (DoInstant(current_match, &suggested_text)) {
     SetSuggestedText(suggested_text, instant_complete_behavior_);
   } else {
     switch (recommended_action) {
-      case NetworkActionPredictor::ACTION_PRERENDER:
+      case AutocompleteActionPredictor::ACTION_PRERENDER:
         DoPrerender(current_match);
         break;
-      case NetworkActionPredictor::ACTION_PRECONNECT:
+      case AutocompleteActionPredictor::ACTION_PRECONNECT:
         DoPreconnect(current_match);
         break;
-      case NetworkActionPredictor::ACTION_NONE:
+      case AutocompleteActionPredictor::ACTION_NONE:
         break;
       default:
         NOTREACHED() << "Unexpected recommended action: " << recommended_action;
@@ -416,10 +415,10 @@ void AutocompleteEditModel::Revert() {
   view_->SetWindowTextAndCaretPos(permanent_text_,
                                   has_focus_ ? permanent_text_.length() : 0,
                                   false, true);
-  NetworkActionPredictor* network_action_predictor =
-      NetworkActionPredictorFactory::GetForProfile(profile_);
-  if (network_action_predictor)
-    network_action_predictor->ClearTransitionalMatches();
+  AutocompleteActionPredictor* action_predictor =
+      AutocompleteActionPredictorFactory::GetForProfile(profile_);
+  if (action_predictor)
+    action_predictor->ClearTransitionalMatches();
 }
 
 void AutocompleteEditModel::StartAutocomplete(
@@ -1125,7 +1124,7 @@ void AutocompleteEditModel::DoPreconnect(const AutocompleteMatch& match) {
     if (profile_->GetNetworkPredictor()) {
       profile_->GetNetworkPredictor()->AnticipateOmniboxUrl(
           match.destination_url,
-          NetworkActionPredictor::IsPreconnectable(match));
+          AutocompleteActionPredictor::IsPreconnectable(match));
     }
     // We could prefetch the alternate nav URL, if any, but because there
     // can be many of these as a user types an initial series of characters,

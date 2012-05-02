@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/network_action_predictor.h"
+#include "chrome/browser/predictors/autocomplete_action_predictor.h"
 
 #include <math.h>
 
@@ -16,10 +16,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/network_action_predictor_database.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/in_memory_database.h"
+#include "chrome/browser/predictors/autocomplete_action_predictor_database.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -42,7 +42,7 @@ const size_t kMinimumUserTextLength = 1;
 const int kMinimumNumberOfHits = 3;
 
 COMPILE_ASSERT(arraysize(kConfidenceCutoff) ==
-               NetworkActionPredictor::LAST_PREDICT_ACTION,
+               AutocompleteActionPredictor::LAST_PREDICT_ACTION,
                ConfidenceCutoff_count_mismatch);
 
 enum DatabaseAction {
@@ -70,16 +70,16 @@ bool IsAutocompleteMatchSearchType(const AutocompleteMatch& match) {
 
 }
 
-const int NetworkActionPredictor::kMaximumDaysToKeepEntry = 14;
+const int AutocompleteActionPredictor::kMaximumDaysToKeepEntry = 14;
 
-double NetworkActionPredictor::hit_weight_ = 1.0;
+double AutocompleteActionPredictor::hit_weight_ = 1.0;
 
-NetworkActionPredictor::NetworkActionPredictor(Profile* profile)
+AutocompleteActionPredictor::AutocompleteActionPredictor(Profile* profile)
     : profile_(profile),
-      db_(new NetworkActionPredictorDatabase(profile)),
+      db_(new AutocompleteActionPredictorDatabase(profile)),
       initialized_(false) {
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&NetworkActionPredictorDatabase::Initialize, db_));
+      base::Bind(&AutocompleteActionPredictorDatabase::Initialize, db_));
 
   // Request the in-memory database from the history to force it to load so it's
   // available as soon as possible.
@@ -91,20 +91,20 @@ NetworkActionPredictor::NetworkActionPredictor(Profile* profile)
   // Create local caches using the database as loaded. We will garbage collect
   // rows from the caches and the database once the history service is
   // available.
-  std::vector<NetworkActionPredictorDatabase::Row>* rows =
-      new std::vector<NetworkActionPredictorDatabase::Row>();
+  std::vector<AutocompleteActionPredictorDatabase::Row>* rows =
+      new std::vector<AutocompleteActionPredictorDatabase::Row>();
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&NetworkActionPredictorDatabase::GetAllRows, db_, rows),
-      base::Bind(&NetworkActionPredictor::CreateCaches, AsWeakPtr(),
+      base::Bind(&AutocompleteActionPredictorDatabase::GetAllRows, db_, rows),
+      base::Bind(&AutocompleteActionPredictor::CreateCaches, AsWeakPtr(),
                  base::Owned(rows)));
 
 }
 
-NetworkActionPredictor::~NetworkActionPredictor() {
+AutocompleteActionPredictor::~AutocompleteActionPredictor() {
 }
 
-void NetworkActionPredictor::RegisterTransitionalMatches(
+void AutocompleteActionPredictor::RegisterTransitionalMatches(
     const string16& user_text,
     const AutocompleteResult& result) {
   if (user_text.length() < kMinimumUserTextLength)
@@ -132,14 +132,15 @@ void NetworkActionPredictor::RegisterTransitionalMatches(
   }
 }
 
-void NetworkActionPredictor::ClearTransitionalMatches() {
+void AutocompleteActionPredictor::ClearTransitionalMatches() {
   transitional_matches_.clear();
 }
 
 // Given a match, return a recommended action.
-NetworkActionPredictor::Action NetworkActionPredictor::RecommendAction(
-    const string16& user_text,
-    const AutocompleteMatch& match) const {
+AutocompleteActionPredictor::Action
+    AutocompleteActionPredictor::RecommendAction(
+        const string16& user_text,
+        const AutocompleteMatch& match) const {
   bool is_in_db = false;
   const double confidence = CalculateConfidence(user_text, match, &is_in_db);
   DCHECK(confidence >= 0.0 && confidence <= 1.0);
@@ -181,15 +182,16 @@ NetworkActionPredictor::Action NetworkActionPredictor::RecommendAction(
 // Return true if the suggestion type warrants a TCP/IP preconnection.
 // i.e., it is now quite likely that the user will select the related domain.
 // static
-bool NetworkActionPredictor::IsPreconnectable(const AutocompleteMatch& match) {
+bool AutocompleteActionPredictor::IsPreconnectable(
+    const AutocompleteMatch& match) {
   return IsAutocompleteMatchSearchType(match);
 }
 
-void NetworkActionPredictor::Shutdown() {
+void AutocompleteActionPredictor::Shutdown() {
   db_->OnPredictorDestroyed();
 }
 
-void NetworkActionPredictor::Observe(
+void AutocompleteActionPredictor::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -234,7 +236,8 @@ void NetworkActionPredictor::Observe(
   }
 }
 
-void NetworkActionPredictor::OnOmniboxOpenedUrl(const AutocompleteLog& log) {
+void AutocompleteActionPredictor::OnOmniboxOpenedUrl(
+    const AutocompleteLog& log) {
   if (log.text.length() < kMinimumUserTextLength)
     return;
 
@@ -275,7 +278,7 @@ void NetworkActionPredictor::OnOmniboxOpenedUrl(const AutocompleteLog& log) {
       const DBCacheKey key = { it->user_text, *url_it };
       const bool is_hit = (*url_it == opened_url);
 
-      NetworkActionPredictorDatabase::Row row;
+      AutocompleteActionPredictorDatabase::Row row;
       row.user_text = key.user_text;
       row.url = key.url;
 
@@ -313,9 +316,9 @@ void NetworkActionPredictor::OnOmniboxOpenedUrl(const AutocompleteLog& log) {
   tracked_urls_.clear();
 }
 
-void NetworkActionPredictor::DeleteOldIdsFromCaches(
+void AutocompleteActionPredictor::DeleteOldIdsFromCaches(
     history::URLDatabase* url_db,
-    std::vector<NetworkActionPredictorDatabase::Row::Id>* id_list) {
+    std::vector<AutocompleteActionPredictorDatabase::Row::Id>* id_list) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(url_db);
   DCHECK(id_list);
@@ -337,15 +340,16 @@ void NetworkActionPredictor::DeleteOldIdsFromCaches(
   }
 }
 
-void NetworkActionPredictor::DeleteOldEntries(history::URLDatabase* url_db) {
+void AutocompleteActionPredictor::DeleteOldEntries(
+    history::URLDatabase* url_db) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!initialized_);
 
-  std::vector<NetworkActionPredictorDatabase::Row::Id> ids_to_delete;
+  std::vector<AutocompleteActionPredictorDatabase::Row::Id> ids_to_delete;
   DeleteOldIdsFromCaches(url_db, &ids_to_delete);
 
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&NetworkActionPredictorDatabase::DeleteRows, db_,
+      base::Bind(&AutocompleteActionPredictorDatabase::DeleteRows, db_,
                  ids_to_delete));
 
   // Register for notifications and set the |initialized_| flag.
@@ -356,15 +360,15 @@ void NetworkActionPredictor::DeleteOldEntries(history::URLDatabase* url_db) {
   initialized_ = true;
 }
 
-void NetworkActionPredictor::CreateCaches(
-    std::vector<NetworkActionPredictorDatabase::Row>* rows) {
+void AutocompleteActionPredictor::CreateCaches(
+    std::vector<AutocompleteActionPredictorDatabase::Row>* rows) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!initialized_);
   DCHECK(db_cache_.empty());
   DCHECK(db_id_cache_.empty());
 
-  for (std::vector<NetworkActionPredictorDatabase::Row>::const_iterator it =
-       rows->begin(); it != rows->end(); ++it) {
+  for (std::vector<AutocompleteActionPredictorDatabase::Row>::const_iterator
+       it = rows->begin(); it != rows->end(); ++it) {
     const DBCacheKey key = { it->user_text, it->url };
     const DBCacheValue value = { it->number_of_hits, it->number_of_misses };
     db_cache_[key] = value;
@@ -382,7 +386,7 @@ void NetworkActionPredictor::CreateCaches(
   }
 }
 
-bool NetworkActionPredictor::TryDeleteOldEntries(HistoryService* service) {
+bool AutocompleteActionPredictor::TryDeleteOldEntries(HistoryService* service) {
   if (!service)
     return false;
 
@@ -394,7 +398,7 @@ bool NetworkActionPredictor::TryDeleteOldEntries(HistoryService* service) {
   return true;
 }
 
-double NetworkActionPredictor::CalculateConfidence(
+double AutocompleteActionPredictor::CalculateConfidence(
     const string16& user_text,
     const AutocompleteMatch& match,
     bool* is_in_db) const {
@@ -412,7 +416,7 @@ double NetworkActionPredictor::CalculateConfidence(
   return CalculateConfidenceForDbEntry(iter);
 }
 
-double NetworkActionPredictor::CalculateConfidenceForDbEntry(
+double AutocompleteActionPredictor::CalculateConfidenceForDbEntry(
     DBCacheMap::const_iterator iter) const {
   const DBCacheValue& value = iter->second;
   if (value.number_of_hits < kMinimumNumberOfHits)
@@ -422,9 +426,9 @@ double NetworkActionPredictor::CalculateConfidenceForDbEntry(
   return number_of_hits / (number_of_hits + value.number_of_misses);
 }
 
-void NetworkActionPredictor::AddRow(
+void AutocompleteActionPredictor::AddRow(
     const DBCacheKey& key,
-    const NetworkActionPredictorDatabase::Row& row) {
+    const AutocompleteActionPredictorDatabase::Row& row) {
   if (!initialized_)
     return;
 
@@ -432,15 +436,15 @@ void NetworkActionPredictor::AddRow(
   db_cache_[key] = value;
   db_id_cache_[key] = row.id;
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&NetworkActionPredictorDatabase::AddRow, db_, row));
+      base::Bind(&AutocompleteActionPredictorDatabase::AddRow, db_, row));
 
   UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.DatabaseAction",
                             DATABASE_ACTION_ADD, DATABASE_ACTION_COUNT);
 }
 
-void NetworkActionPredictor::UpdateRow(
+void AutocompleteActionPredictor::UpdateRow(
     DBCacheMap::iterator it,
-    const NetworkActionPredictorDatabase::Row& row) {
+    const AutocompleteActionPredictorDatabase::Row& row) {
   if (!initialized_)
     return;
 
@@ -448,28 +452,29 @@ void NetworkActionPredictor::UpdateRow(
   it->second.number_of_hits = row.number_of_hits;
   it->second.number_of_misses = row.number_of_misses;
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&NetworkActionPredictorDatabase::UpdateRow, db_, row));
+      base::Bind(&AutocompleteActionPredictorDatabase::UpdateRow, db_, row));
   UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.DatabaseAction",
                             DATABASE_ACTION_UPDATE, DATABASE_ACTION_COUNT);
 }
 
-void NetworkActionPredictor::DeleteAllRows() {
+void AutocompleteActionPredictor::DeleteAllRows() {
   if (!initialized_)
     return;
 
   db_cache_.clear();
   db_id_cache_.clear();
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&NetworkActionPredictorDatabase::DeleteAllRows, db_));
+      base::Bind(&AutocompleteActionPredictorDatabase::DeleteAllRows, db_));
   UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.DatabaseAction",
                             DATABASE_ACTION_DELETE_ALL, DATABASE_ACTION_COUNT);
 }
 
-void NetworkActionPredictor::DeleteRowsWithURLs(const history::URLRows& rows) {
+void AutocompleteActionPredictor::DeleteRowsWithURLs(
+    const history::URLRows& rows) {
   if (!initialized_)
     return;
 
-  std::vector<NetworkActionPredictorDatabase::Row::Id> id_list;
+  std::vector<AutocompleteActionPredictorDatabase::Row::Id> id_list;
 
   for (DBCacheMap::iterator it = db_cache_.begin(); it != db_cache_.end();) {
     if (std::find_if(rows.begin(), rows.end(),
@@ -485,29 +490,30 @@ void NetworkActionPredictor::DeleteRowsWithURLs(const history::URLRows& rows) {
   }
 
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&NetworkActionPredictorDatabase::DeleteRows, db_, id_list));
+      base::Bind(&AutocompleteActionPredictorDatabase::DeleteRows,
+                 db_, id_list));
   UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.DatabaseAction",
                             DATABASE_ACTION_DELETE_SOME, DATABASE_ACTION_COUNT);
 }
 
-void NetworkActionPredictor::BeginTransaction() {
+void AutocompleteActionPredictor::BeginTransaction() {
   if (!initialized_)
     return;
 
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&NetworkActionPredictorDatabase::BeginTransaction, db_));
+      base::Bind(&AutocompleteActionPredictorDatabase::BeginTransaction, db_));
 }
 
-void NetworkActionPredictor::CommitTransaction() {
+void AutocompleteActionPredictor::CommitTransaction() {
   if (!initialized_)
     return;
 
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&NetworkActionPredictorDatabase::CommitTransaction, db_));
+      base::Bind(&AutocompleteActionPredictorDatabase::CommitTransaction, db_));
 }
 
-NetworkActionPredictor::TransitionalMatch::TransitionalMatch() {
+AutocompleteActionPredictor::TransitionalMatch::TransitionalMatch() {
 }
 
-NetworkActionPredictor::TransitionalMatch::~TransitionalMatch() {
+AutocompleteActionPredictor::TransitionalMatch::~TransitionalMatch() {
 }

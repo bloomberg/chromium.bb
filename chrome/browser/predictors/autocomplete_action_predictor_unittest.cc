@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/network_action_predictor.h"
+#include "chrome/browser/predictors/autocomplete_action_predictor.h"
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
@@ -32,56 +32,56 @@ struct TestUrlInfo {
   string16 user_text;
   int number_of_hits;
   int number_of_misses;
-  NetworkActionPredictor::Action expected_action;
+  AutocompleteActionPredictor::Action expected_action;
 } test_url_db[] = {
   { GURL("http://www.testsite.com/a.html"),
     ASCIIToUTF16("Test - site - just a test"), 1,
     ASCIIToUTF16("j"), 5, 0,
-    NetworkActionPredictor::ACTION_PRERENDER },
+    AutocompleteActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/b.html"),
     ASCIIToUTF16("Test - site - just a test"), 1,
     ASCIIToUTF16("ju"), 3, 0,
-    NetworkActionPredictor::ACTION_PRERENDER },
+    AutocompleteActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/c.html"),
     ASCIIToUTF16("Test - site - just a test"), 5,
     ASCIIToUTF16("just"), 3, 1,
-    NetworkActionPredictor::ACTION_PRECONNECT },
+    AutocompleteActionPredictor::ACTION_PRECONNECT },
   { GURL("http://www.testsite.com/d.html"),
     ASCIIToUTF16("Test - site - just a test"), 5,
     ASCIIToUTF16("just"), 3, 0,
-    NetworkActionPredictor::ACTION_PRERENDER },
+    AutocompleteActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/e.html"),
     ASCIIToUTF16("Test - site - just a test"), 8,
     ASCIIToUTF16("just"), 3, 1,
-    NetworkActionPredictor::ACTION_PRECONNECT },
+    AutocompleteActionPredictor::ACTION_PRECONNECT },
   { GURL("http://www.testsite.com/f.html"),
     ASCIIToUTF16("Test - site - just a test"), 8,
     ASCIIToUTF16("just"), 3, 0,
-    NetworkActionPredictor::ACTION_PRERENDER },
+    AutocompleteActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/g.html"),
     ASCIIToUTF16("Test - site - just a test"), 12,
     ASCIIToUTF16(""), 5, 0,
-    NetworkActionPredictor::ACTION_NONE },
+    AutocompleteActionPredictor::ACTION_NONE },
   { GURL("http://www.testsite.com/h.html"),
     ASCIIToUTF16("Test - site - just a test"), 21,
     ASCIIToUTF16("just a test"), 2, 0,
-    NetworkActionPredictor::ACTION_NONE },
+    AutocompleteActionPredictor::ACTION_NONE },
   { GURL("http://www.testsite.com/i.html"),
     ASCIIToUTF16("Test - site - just a test"), 28,
     ASCIIToUTF16("just a test"), 2, 0,
-    NetworkActionPredictor::ACTION_NONE }
+    AutocompleteActionPredictor::ACTION_NONE }
 };
 
 }  // end namespace
 
-class NetworkActionPredictorTest : public testing::Test {
+class AutocompleteActionPredictorTest : public testing::Test {
  public:
-  NetworkActionPredictorTest()
+  AutocompleteActionPredictorTest()
       : loop_(MessageLoop::TYPE_DEFAULT),
         ui_thread_(BrowserThread::UI, &loop_),
         db_thread_(BrowserThread::DB, &loop_),
         file_thread_(BrowserThread::FILE, &loop_),
-        predictor_(new NetworkActionPredictor(&profile_)) {
+        predictor_(new AutocompleteActionPredictor(&profile_)) {
   }
 
   void SetUp() {
@@ -103,10 +103,10 @@ class NetworkActionPredictorTest : public testing::Test {
   }
 
  protected:
-  typedef NetworkActionPredictor::DBCacheKey DBCacheKey;
-  typedef NetworkActionPredictor::DBCacheValue DBCacheValue;
-  typedef NetworkActionPredictor::DBCacheMap DBCacheMap;
-  typedef NetworkActionPredictor::DBIdCacheMap DBIdCacheMap;
+  typedef AutocompleteActionPredictor::DBCacheKey DBCacheKey;
+  typedef AutocompleteActionPredictor::DBCacheValue DBCacheValue;
+  typedef AutocompleteActionPredictor::DBCacheMap DBCacheMap;
+  typedef AutocompleteActionPredictor::DBIdCacheMap DBIdCacheMap;
 
   void AddAllRowsToHistory() {
     for (size_t i = 0; i < arraysize(test_url_db); ++i)
@@ -131,9 +131,9 @@ class NetworkActionPredictorTest : public testing::Test {
     return url_db->AddURL(row);
   }
 
-  NetworkActionPredictorDatabase::Row CreateRowFromTestUrlInfo(
+  AutocompleteActionPredictorDatabase::Row CreateRowFromTestUrlInfo(
       const TestUrlInfo& test_row) const {
-    NetworkActionPredictorDatabase::Row row;
+    AutocompleteActionPredictorDatabase::Row row;
     row.id = guid::GenerateGUID();
     row.user_text = test_row.user_text;
     row.url = test_row.url;
@@ -148,18 +148,18 @@ class NetworkActionPredictorTest : public testing::Test {
   }
 
   std::string AddRow(const TestUrlInfo& test_row) {
-    NetworkActionPredictor::DBCacheKey key = { test_row.user_text,
+    AutocompleteActionPredictor::DBCacheKey key = { test_row.user_text,
                                                test_row.url };
-    NetworkActionPredictorDatabase::Row row =
+    AutocompleteActionPredictorDatabase::Row row =
         CreateRowFromTestUrlInfo(test_row);
     predictor_->AddRow(key, row);
 
     return row.id;
   }
 
-  void UpdateRow(NetworkActionPredictor::DBCacheKey key,
-                 const NetworkActionPredictorDatabase::Row& row) {
-    NetworkActionPredictor::DBCacheMap::iterator it =
+  void UpdateRow(AutocompleteActionPredictor::DBCacheKey key,
+                 const AutocompleteActionPredictorDatabase::Row& row) {
+    AutocompleteActionPredictor::DBCacheMap::iterator it =
         db_cache()->find(key);
     ASSERT_TRUE(it != db_cache()->end());
 
@@ -175,7 +175,7 @@ class NetworkActionPredictorTest : public testing::Test {
   }
 
   void DeleteOldIdsFromCaches(
-      std::vector<NetworkActionPredictorDatabase::Row::Id>* id_list) {
+      std::vector<AutocompleteActionPredictorDatabase::Row::Id>* id_list) {
     HistoryService* history_service =
         profile_.GetHistoryService(Profile::EXPLICIT_ACCESS);
     ASSERT_TRUE(history_service);
@@ -186,13 +186,13 @@ class NetworkActionPredictorTest : public testing::Test {
     predictor_->DeleteOldIdsFromCaches(url_db, id_list);
   }
 
-  NetworkActionPredictor* predictor() { return predictor_.get(); }
+  AutocompleteActionPredictor* predictor() { return predictor_.get(); }
 
   DBCacheMap* db_cache() { return &predictor_->db_cache_; }
   DBIdCacheMap* db_id_cache() { return &predictor_->db_id_cache_; }
 
   static int maximum_days_to_keep_entry() {
-    return NetworkActionPredictor::kMaximumDaysToKeepEntry;
+    return AutocompleteActionPredictor::kMaximumDaysToKeepEntry;
   }
 
  private:
@@ -201,11 +201,11 @@ class NetworkActionPredictorTest : public testing::Test {
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;
   TestingProfile profile_;
-  scoped_ptr<NetworkActionPredictor> predictor_;
+  scoped_ptr<AutocompleteActionPredictor> predictor_;
 };
 
 
-TEST_F(NetworkActionPredictorTest, AddRow) {
+TEST_F(AutocompleteActionPredictorTest, AddRow) {
   // Add a test entry to the predictor.
   std::string guid = AddRow(test_url_db[0]);
 
@@ -224,7 +224,7 @@ TEST_F(NetworkActionPredictorTest, AddRow) {
   EXPECT_EQ(guid, id_it->second);
 }
 
-TEST_F(NetworkActionPredictorTest, UpdateRow) {
+TEST_F(AutocompleteActionPredictorTest, UpdateRow) {
   ASSERT_NO_FATAL_FAILURE(AddAllRows());
 
   EXPECT_EQ(arraysize(test_url_db), db_cache()->size());
@@ -238,7 +238,7 @@ TEST_F(NetworkActionPredictorTest, UpdateRow) {
   DBIdCacheMap::const_iterator id_it = db_id_cache()->find(key);
   EXPECT_TRUE(id_it != db_id_cache()->end());
 
-  NetworkActionPredictorDatabase::Row update_row;
+  AutocompleteActionPredictorDatabase::Row update_row;
   update_row.id = id_it->second;
   update_row.user_text = key.user_text;
   update_row.url = key.url;
@@ -260,7 +260,7 @@ TEST_F(NetworkActionPredictorTest, UpdateRow) {
   EXPECT_EQ(id_it->second, update_id_it->second);
 }
 
-TEST_F(NetworkActionPredictorTest, DeleteAllRows) {
+TEST_F(AutocompleteActionPredictorTest, DeleteAllRows) {
   ASSERT_NO_FATAL_FAILURE(AddAllRows());
 
   EXPECT_EQ(arraysize(test_url_db), db_cache()->size());
@@ -272,7 +272,7 @@ TEST_F(NetworkActionPredictorTest, DeleteAllRows) {
   EXPECT_TRUE(db_id_cache()->empty());
 }
 
-TEST_F(NetworkActionPredictorTest, DeleteRowsWithURLs) {
+TEST_F(AutocompleteActionPredictorTest, DeleteRowsWithURLs) {
   ASSERT_NO_FATAL_FAILURE(AddAllRows());
 
   EXPECT_EQ(arraysize(test_url_db), db_cache()->size());
@@ -296,9 +296,9 @@ TEST_F(NetworkActionPredictorTest, DeleteRowsWithURLs) {
   }
 }
 
-TEST_F(NetworkActionPredictorTest, DeleteOldIdsFromCaches) {
-  std::vector<NetworkActionPredictorDatabase::Row::Id> expected;
-  std::vector<NetworkActionPredictorDatabase::Row::Id> all_ids;
+TEST_F(AutocompleteActionPredictorTest, DeleteOldIdsFromCaches) {
+  std::vector<AutocompleteActionPredictorDatabase::Row::Id> expected;
+  std::vector<AutocompleteActionPredictorDatabase::Row::Id> all_ids;
 
   for (size_t i = 0; i < arraysize(test_url_db); ++i) {
     std::string row_id = AddRow(test_url_db[i]);
@@ -313,13 +313,13 @@ TEST_F(NetworkActionPredictorTest, DeleteOldIdsFromCaches) {
       ASSERT_TRUE(AddRowToHistory(test_url_db[i]));
   }
 
-  std::vector<NetworkActionPredictorDatabase::Row::Id> id_list;
+  std::vector<AutocompleteActionPredictorDatabase::Row::Id> id_list;
   DeleteOldIdsFromCaches(&id_list);
   EXPECT_EQ(expected.size(), id_list.size());
   EXPECT_EQ(all_ids.size() - expected.size(), db_cache()->size());
   EXPECT_EQ(all_ids.size() - expected.size(), db_id_cache()->size());
 
-  for (std::vector<NetworkActionPredictorDatabase::Row::Id>::iterator it =
+  for (std::vector<AutocompleteActionPredictorDatabase::Row::Id>::iterator it =
        all_ids.begin();
        it != all_ids.end(); ++it) {
     bool in_expected =
@@ -330,7 +330,7 @@ TEST_F(NetworkActionPredictorTest, DeleteOldIdsFromCaches) {
   }
 }
 
-TEST_F(NetworkActionPredictorTest, RecommendActionURL) {
+TEST_F(AutocompleteActionPredictorTest, RecommendActionURL) {
   ASSERT_NO_FATAL_FAILURE(AddAllRows());
 
   AutocompleteMatch match;
@@ -344,7 +344,7 @@ TEST_F(NetworkActionPredictorTest, RecommendActionURL) {
   }
 }
 
-TEST_F(NetworkActionPredictorTest, RecommendActionSearch) {
+TEST_F(AutocompleteActionPredictorTest, RecommendActionSearch) {
   ASSERT_NO_FATAL_FAILURE(AddAllRows());
 
   AutocompleteMatch match;
@@ -352,10 +352,10 @@ TEST_F(NetworkActionPredictorTest, RecommendActionSearch) {
 
   for (size_t i = 0; i < arraysize(test_url_db); ++i) {
     match.destination_url = GURL(test_url_db[i].url);
-    NetworkActionPredictor::Action expected_action =
+    AutocompleteActionPredictor::Action expected_action =
         (test_url_db[i].expected_action ==
-         NetworkActionPredictor::ACTION_PRERENDER) ?
-        NetworkActionPredictor::ACTION_PRECONNECT :
+         AutocompleteActionPredictor::ACTION_PRERENDER) ?
+        AutocompleteActionPredictor::ACTION_PRECONNECT :
         test_url_db[i].expected_action;
     EXPECT_EQ(expected_action,
               predictor()->RecommendAction(test_url_db[i].user_text, match))
