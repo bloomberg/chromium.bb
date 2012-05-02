@@ -917,7 +917,6 @@ void TabDragController2::Detach() {
            i != drag_data_.rend(); ++i) {
         selection_model.DecrementFrom(i->source_model_index);
       }
-      attached_model->SetSelectionFromModel(selection_model);
       // We may have cleared out the selection model. Only reset it if it
       // contains something.
       if (!selection_model.empty())
