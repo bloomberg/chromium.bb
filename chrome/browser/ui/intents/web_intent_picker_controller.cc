@@ -162,8 +162,7 @@ void WebIntentPickerController::SetIntentsDispatcher(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void WebIntentPickerController::ShowDialog(Browser* browser,
-                                           const string16& action,
+void WebIntentPickerController::ShowDialog(const string16& action,
                                            const string16& type) {
   // Only show a picker once.
   // TODO(gbillock): There's a hole potentially admitting multiple
@@ -253,9 +252,9 @@ void WebIntentPickerController::OnServiceChosen(const GURL& url,
       Browser* browser = Browser::GetBrowserForController(
           &wrapper_->web_contents()->GetController(), &index);
       TabContentsWrapper* contents = Browser::TabContentsFactory(
-          browser->profile(),
+          wrapper_->profile(),
           tab_util::GetSiteInstanceForNewTab(
-              browser->profile(), url),
+              wrapper_->profile(), url),
           MSG_ROUTING_NONE, NULL, NULL);
 
       intents_dispatcher_->DispatchIntent(contents->web_contents());
@@ -608,12 +607,8 @@ void WebIntentPickerController::AsyncOperationFinished() {
 
 void WebIntentPickerController::CreatePicker() {
   // If picker is non-NULL, it was set by a test.
-  Browser* browser =
-      BrowserList::FindBrowserWithWebContents(wrapper_->web_contents());
-  if (picker_ == NULL) {
-    picker_ = WebIntentPicker::Create(browser, wrapper_, this,
-                                      picker_model_.get());
-  }
+  if (picker_ == NULL)
+    picker_ = WebIntentPicker::Create(wrapper_, this, picker_model_.get());
   picker_shown_ = true;
 }
 

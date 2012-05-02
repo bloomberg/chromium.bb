@@ -26,8 +26,7 @@ class WebIntentPickerCocoa : public WebIntentPicker,
  public:
   // |wrapper|, and |delegate| must not be NULL.
   // |browser| should only be NULL for testing purposes.
-  WebIntentPickerCocoa(Browser* browser,
-                       TabContentsWrapper* wrapper,
+  WebIntentPickerCocoa(TabContentsWrapper* wrapper,
                        WebIntentPickerDelegate* delegate,
                        WebIntentPickerModel* model);
   virtual ~WebIntentPickerCocoa();
@@ -65,7 +64,8 @@ class WebIntentPickerCocoa : public WebIntentPicker,
   // The picker model. Weak reference.
   WebIntentPickerModel* model_;
 
-  Browser* browser_;  // The browser we're in. Weak Reference.
+  // Wrapper around the WebContents we're in. Weak Reference.
+  TabContentsWrapper* wrapper_;
 
   WebIntentPickerSheetController* sheet_controller_;  // Weak reference.
 

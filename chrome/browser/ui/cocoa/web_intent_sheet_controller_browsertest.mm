@@ -40,7 +40,7 @@ class WebIntentSheetControllerBrowserTest : public InProcessBrowserTest {
 
 void WebIntentSheetControllerBrowserTest::CreateBubble(
     TabContentsWrapper* wrapper) {
-  picker_.reset(new WebIntentPickerCocoa(NULL, wrapper, &delegate_, &model_));
+  picker_.reset(new WebIntentPickerCocoa(wrapper, &delegate_, &model_));
 
   controller_ =
      [[WebIntentPickerSheetController alloc] initWithPicker:picker_.get()];

@@ -11,7 +11,6 @@
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -138,15 +137,13 @@ GtkWidget* CreateStarsWidget(double rating) {
 } // namespace
 
 // static
-WebIntentPicker* WebIntentPicker::Create(Browser* browser,
-                                         TabContentsWrapper* wrapper,
+WebIntentPicker* WebIntentPicker::Create(TabContentsWrapper* wrapper,
                                          WebIntentPickerDelegate* delegate,
                                          WebIntentPickerModel* model) {
-  return new WebIntentPickerGtk(browser, wrapper, delegate, model);
+  return new WebIntentPickerGtk(wrapper, delegate, model);
 }
 
-WebIntentPickerGtk::WebIntentPickerGtk(Browser* browser,
-                                       TabContentsWrapper* wrapper,
+WebIntentPickerGtk::WebIntentPickerGtk(TabContentsWrapper* wrapper,
                                        WebIntentPickerDelegate* delegate,
                                        WebIntentPickerModel* model)
     : wrapper_(wrapper),
@@ -157,10 +154,8 @@ WebIntentPickerGtk::WebIntentPickerGtk(Browser* browser,
       button_vbox_(NULL),
       cws_label_(NULL),
       extensions_vbox_(NULL),
-      window_(NULL),
-      browser_(browser) {
+      window_(NULL) {
   DCHECK(delegate_ != NULL);
-  DCHECK(browser);
 
   model_->set_observer(this);
   InitContents();
@@ -227,8 +222,8 @@ void WebIntentPickerGtk::OnExtensionIconChanged(WebIntentPickerModel* model,
 void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model,
                                              const GURL& url) {
   content::WebContents* web_contents = content::WebContents::Create(
-      browser_->profile(),
-      tab_util::GetSiteInstanceForNewTab(browser_->profile(), url),
+      wrapper_->profile(),
+      tab_util::GetSiteInstanceForNewTab(wrapper_->profile(), url),
       MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
   inline_disposition_delegate_.reset(

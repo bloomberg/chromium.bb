@@ -23,12 +23,12 @@ void Browser::RegisterIntentHandlerHelper(WebContents* tab,
                                           const string16& href,
                                           const string16& title,
                                           const string16& disposition) {
-  if (!web_intents::IsWebIntentsEnabled())
-    return;
-
   TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
       tab);
   if (!tcw || tcw->profile()->IsOffTheRecord())
+    return;
+
+  if (!web_intents::IsWebIntentsEnabled(tcw->profile()))
     return;
 
   FaviconService* favicon_service =

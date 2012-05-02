@@ -3998,14 +3998,13 @@ void Browser::RegisterIntentHandler(WebContents* tab,
 void Browser::WebIntentDispatch(
     WebContents* tab, content::WebIntentsDispatcher* intents_dispatcher) {
 #if defined(ENABLE_WEB_INTENTS)
-  if (!web_intents::IsWebIntentsEnabled())
+  if (!web_intents::IsWebIntentsEnabled(profile_))
     return;
 
   TabContentsWrapper* tcw =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
   tcw->web_intent_picker_controller()->SetIntentsDispatcher(intents_dispatcher);
   tcw->web_intent_picker_controller()->ShowDialog(
-      this,
       intents_dispatcher->GetIntent().action,
       intents_dispatcher->GetIntent().type);
 #endif  // defined(ENABLE_WEB_INTENTS)

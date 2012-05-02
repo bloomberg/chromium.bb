@@ -19,19 +19,24 @@ void RegisterUserPrefs(PrefService* user_prefs) {
                                   PrefService::SYNCABLE_PREF);
 }
 
-bool IsWebIntentsEnabled() {
+bool IsWebIntentsEnabled(Profile* profile) {
   bool disabled_flag = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableWebIntents);
 
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser)
-    browser = *BrowserList::begin();
-
-  Profile* profile = browser->GetProfile();
   bool enabled_pref = profile->GetPrefs()->GetBoolean(
       prefs::kWebIntentsEnabled);
 
   return !disabled_flag && enabled_pref;
+}
+
+bool IsWebIntentsEnabledInActiveBrowser() {
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser)
+    browser = *BrowserList::begin();
+  DCHECK(browser);
+
+  Profile* profile = browser->GetProfile();
+  return IsWebIntentsEnabled(profile);
 }
 
 }  // namespace web_intents

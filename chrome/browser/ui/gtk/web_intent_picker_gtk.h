@@ -22,7 +22,6 @@
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
-class Browser;
 class CustomDrawButton;
 class GURL;
 class TabContentsContainerGtk;
@@ -36,8 +35,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
                            public ConstrainedWindowGtkDelegate,
                            public content::NotificationObserver {
  public:
-  WebIntentPickerGtk(Browser* browser,
-                     TabContentsWrapper* tab_contents,
+  WebIntentPickerGtk(TabContentsWrapper* tab_contents,
                      WebIntentPickerDelegate* delegate,
                      WebIntentPickerModel* model);
   virtual ~WebIntentPickerGtk();
@@ -140,9 +138,6 @@ class WebIntentPickerGtk : public WebIntentPicker,
 
   // A weak pointer to the constrained window.
   ConstrainedWindowGtk* window_;
-
-  // The browser we're in.
-  Browser* browser_;
 
   // Container for the HTML in the inline disposition case.
   scoped_ptr<TabContentsWrapper> inline_disposition_tab_contents_;

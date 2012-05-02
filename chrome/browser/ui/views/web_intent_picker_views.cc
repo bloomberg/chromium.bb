@@ -8,7 +8,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/time.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
@@ -662,8 +661,7 @@ class WebIntentPickerViews : public views::ButtonListener,
                              public ServiceButtonsView::Delegate,
                              public SuggestedExtensionsRowView::Delegate {
  public:
-  WebIntentPickerViews(Browser* browser,
-                       TabContentsWrapper* tab_contents,
+  WebIntentPickerViews(TabContentsWrapper* tab_contents,
                        WebIntentPickerDelegate* delegate,
                        WebIntentPickerModel* model);
   virtual ~WebIntentPickerViews();
@@ -743,8 +741,8 @@ class WebIntentPickerViews : public views::ButtonListener,
   // Delegate for inline disposition tab contents.
   scoped_ptr<WebIntentInlineDispositionDelegate> inline_disposition_delegate_;
 
-  // A weak pointer to the browser this picker is in.
-  Browser* browser_;
+  // A weak pointer to the wrapper of the WebContents this picker is in.
+  TabContentsWrapper* wrapper_;
 
   // A weak pointer to the WebView that hosts the WebContents being displayed.
   views::WebView* webview_;
@@ -772,18 +770,16 @@ class WebIntentPickerViews : public views::ButtonListener,
 };
 
 // static
-WebIntentPicker* WebIntentPicker::Create(Browser* browser,
-                                         TabContentsWrapper* wrapper,
+WebIntentPicker* WebIntentPicker::Create(TabContentsWrapper* wrapper,
                                          WebIntentPickerDelegate* delegate,
                                          WebIntentPickerModel* model) {
   WebIntentPickerViews* picker =
-      new WebIntentPickerViews(browser, wrapper, delegate, model);
+      new WebIntentPickerViews(wrapper, delegate, model);
 
   return picker;
 }
 
-WebIntentPickerViews::WebIntentPickerViews(Browser* browser,
-                                           TabContentsWrapper* wrapper,
+WebIntentPickerViews::WebIntentPickerViews(TabContentsWrapper* wrapper,
                                            WebIntentPickerDelegate* delegate,
                                            WebIntentPickerModel* model)
     : delegate_(delegate),
@@ -792,8 +788,8 @@ WebIntentPickerViews::WebIntentPickerViews(Browser* browser,
       action_label_(NULL),
       suggestions_label_(NULL),
       extensions_(NULL),
-      browser_(browser),
-      webview_(new views::WebView(browser->profile())),
+      wrapper_(wrapper),
+      webview_(new views::WebView(wrapper->profile())),
       contents_(NULL),
       window_(NULL),
       more_suggestions_link_(NULL),
@@ -967,8 +963,8 @@ void WebIntentPickerViews::OnExtensionIconChanged(
 void WebIntentPickerViews::OnInlineDisposition(
     WebIntentPickerModel* model, const GURL& url) {
   inline_web_contents_.reset(WebContents::Create(
-      browser_->profile(),
-      tab_util::GetSiteInstanceForNewTab(browser_->profile(), url),
+      wrapper_->profile(),
+      tab_util::GetSiteInstanceForNewTab(wrapper_->profile(), url),
       MSG_ROUTING_NONE, NULL, NULL));
   // Does not take ownership, so we keep a scoped_ptr
   // for the WebContents locally.

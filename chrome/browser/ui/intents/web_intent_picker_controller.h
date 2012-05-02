@@ -54,10 +54,8 @@ class WebIntentPickerController : public content::NotificationObserver,
   // |intents_dispatcher|. |intents_dispatcher| must not be NULL.
   void SetIntentsDispatcher(content::WebIntentsDispatcher* intents_dispatcher);
 
-  // Shows the web intent picker for |browser|, given the intent
-  // |action| and MIME-type |type|.
-  void ShowDialog(Browser* browser,
-                  const string16& action,
+  // Shows the web intent picker given the intent |action| and MIME-type |type|.
+  void ShowDialog(const string16& action,
                   const string16& type);
 
  protected:

@@ -11,7 +11,6 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
@@ -67,28 +66,26 @@ void ConstrainedPickerSheetDelegate::DeleteDelegate() {
 }  // namespace
 
 // static
-WebIntentPicker* WebIntentPicker::Create(Browser* browser,
-                                         TabContentsWrapper* wrapper,
+WebIntentPicker* WebIntentPicker::Create(TabContentsWrapper* wrapper,
                                          WebIntentPickerDelegate* delegate,
                                          WebIntentPickerModel* model) {
-  return new WebIntentPickerCocoa(browser, wrapper, delegate, model);
+  return new WebIntentPickerCocoa(wrapper, delegate, model);
 }
 
 WebIntentPickerCocoa::WebIntentPickerCocoa()
     : delegate_(NULL),
       model_(NULL),
-      browser_(NULL),
+      wrapper_(NULL),
       sheet_controller_(nil),
       service_invoked(false) {
 }
 
-WebIntentPickerCocoa::WebIntentPickerCocoa(Browser* browser,
-                                           TabContentsWrapper* wrapper,
+WebIntentPickerCocoa::WebIntentPickerCocoa(TabContentsWrapper* wrapper,
                                            WebIntentPickerDelegate* delegate,
                                            WebIntentPickerModel* model)
     : delegate_(delegate),
       model_(model),
-      browser_(browser),
+      wrapper_(wrapper),
       sheet_controller_(nil),
       service_invoked(false) {
   model_->set_observer(this);
@@ -159,10 +156,9 @@ void WebIntentPickerCocoa::OnExtensionIconChanged(
 
 void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model,
                                                const GURL& url) {
-  DCHECK(browser_);
   content::WebContents* web_contents = content::WebContents::Create(
-      browser_->profile(),
-      tab_util::GetSiteInstanceForNewTab(browser_->profile(), url),
+      wrapper_->profile(),
+      tab_util::GetSiteInstanceForNewTab(wrapper_->profile(), url),
       MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
   inline_disposition_delegate_.reset(

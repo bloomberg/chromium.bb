@@ -327,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
   AddWebIntentService(kAction1, kServiceURL2);
   AddCWSExtensionServiceEmpty(kAction1);
 
-  controller_->ShowDialog(browser(), kAction1, kType1);
+  controller_->ShowDialog(kAction1, kType1);
   picker_.Wait();
   EXPECT_EQ(2, picker_.num_installed_services_);
   EXPECT_EQ(0, picker_.num_icons_changed_);
@@ -355,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   AddWebIntentService(kAction1, kServiceURL2);
   AddCWSExtensionServiceWithResult(kDummyExtensionId, kAction1, kType1);
 
-  controller_->ShowDialog(browser(), kAction1, kType1);
+  controller_->ShowDialog(kAction1, kType1);
   picker_.Wait();
   EXPECT_EQ(2, picker_.num_installed_services_);
   EXPECT_EQ(0, picker_.num_icons_changed_);
@@ -367,11 +367,11 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, OpenCancelOpen) {
   AddWebIntentService(kAction1, kServiceURL2);
   AddCWSExtensionServiceEmpty(kAction1);
 
-  controller_->ShowDialog(browser(), kAction1, kType1);
+  controller_->ShowDialog(kAction1, kType1);
   picker_.Wait();
   OnCancelled();
 
-  controller_->ShowDialog(browser(), kAction1, kType1);
+  controller_->ShowDialog(kAction1, kType1);
   OnCancelled();
 }
 
@@ -389,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   ASSERT_EQ(2, browser()->tab_count());
   EXPECT_EQ(original, browser()->GetSelectedWebContents()->GetURL());
 
-  controller_->ShowDialog(browser(), kAction1, kType1);
+  controller_->ShowDialog(kAction1, kType1);
   picker_.Wait();
   EXPECT_EQ(1, picker_.num_installed_services_);
 
@@ -431,7 +431,7 @@ class WebIntentPickerControllerIncognitoBrowserTest :
 
 IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerIncognitoBrowserTest,
                        ShowDialogShouldntCrash) {
-  controller_->ShowDialog(GetBrowser(), kAction1, kType1);
+  controller_->ShowDialog(kAction1, kType1);
   // This should do nothing for now.
   EXPECT_EQ(0, pending_async_count());
 }
@@ -441,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   const char extension_id[] = "ooodacpbmglpoagccnepcbfhfhpdgddn";
   AddCWSExtensionServiceWithResult(extension_id, kAction1, kType2);
 
-  controller_->ShowDialog(browser(), kAction1, kType2);
+  controller_->ShowDialog(kAction1, kType2);
   picker_.Wait();
 
   webkit_glue::WebIntentData intent;
@@ -470,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   // Install a target service for the explicit intent.
   const char extension_id[] = "ooodacpbmglpoagccnepcbfhfhpdgddn";
   AddCWSExtensionServiceWithResult(extension_id, kAction1, kType2);
-  controller_->ShowDialog(browser(), kAction1, kType2);
+  controller_->ShowDialog(kAction1, kType2);
   picker_.Wait();
 
   webkit_glue::WebIntentData intent;
@@ -500,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   LOG(INFO) << "Calling " << explicitIntent.service.spec();
   IntentsDispatcherMock dispatcher2(explicitIntent);
   controller_->SetIntentsDispatcher(&dispatcher2);
-  controller_->ShowDialog(browser(), kAction1, kType2);
+  controller_->ShowDialog(kAction1, kType2);
   picker_.Wait();
 
   EXPECT_EQ(3, browser()->tab_count());
@@ -529,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   LOG(INFO) << "Calling " << intent.service.spec();
   IntentsDispatcherMock dispatcher(intent);
   controller_->SetIntentsDispatcher(&dispatcher);
-  controller_->ShowDialog(browser(), kAction1, kType1);
+  controller_->ShowDialog(kAction1, kType1);
   picker_.Wait();
 
   EXPECT_EQ(1, browser()->tab_count());
@@ -553,7 +553,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   intent.service = GURL("http://www.google.com/");
   IntentsDispatcherMock dispatcher(intent);
   controller_->SetIntentsDispatcher(&dispatcher);
-  controller_->ShowDialog(browser(), kAction1, kType1);
+  controller_->ShowDialog(kAction1, kType1);
 
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(0, picker_.num_inline_disposition_);
