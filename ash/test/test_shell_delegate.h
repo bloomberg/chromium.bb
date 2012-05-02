@@ -29,7 +29,6 @@ class TestShellDelegate : public ShellDelegate {
   virtual void OpenFileManager() OVERRIDE;
   virtual void OpenCrosh() OVERRIDE;
   virtual void OpenMobileSetup() OVERRIDE;
-  virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
   virtual AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual void StartPartialScreenshot(
       ScreenshotDelegate* screenshot_delegate) OVERRIDE;
