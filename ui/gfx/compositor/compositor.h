@@ -38,7 +38,7 @@ class Layer;
 // a global object.
 class COMPOSITOR_EXPORT ContextFactory {
  public:
-  virtual ~ContextFactory() { }
+  virtual ~ContextFactory() {}
 
   // Gets the global instance.
   static ContextFactory* GetInstance();
@@ -97,14 +97,18 @@ class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
 class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
  public:
   Texture(bool flipped, const gfx::Size& size);
-  virtual ~Texture();
 
   unsigned int texture_id() const { return texture_id_; }
   void set_texture_id(unsigned int id) { texture_id_ = id; }
   bool flipped() const { return flipped_; }
   gfx::Size size() const { return size_; }
 
+ protected:
+  virtual ~Texture();
+
  private:
+  friend class base::RefCounted<Texture>;
+
   unsigned int texture_id_;
   bool flipped_;
   gfx::Size size_;

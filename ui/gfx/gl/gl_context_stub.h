@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,10 @@ namespace gfx {
 class GL_EXPORT GLContextStub : public GLContext {
  public:
   GLContextStub();
-  virtual ~GLContextStub();
 
   // Implement GLContext.
-  virtual bool Initialize(
-      GLSurface* compatible_surface, GpuPreference gpu_preference) OVERRIDE;
+  virtual bool Initialize(GLSurface* compatible_surface,
+                          GpuPreference gpu_preference) OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual bool MakeCurrent(GLSurface* surface) OVERRIDE;
   virtual void ReleaseCurrent(GLSurface* surface) OVERRIDE;
@@ -26,6 +25,9 @@ class GL_EXPORT GLContextStub : public GLContext {
   virtual void* GetHandle() OVERRIDE;
   virtual void SetSwapInterval(int interval) OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
+
+ protected:
+  virtual ~GLContextStub();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLContextStub);

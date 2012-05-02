@@ -18,7 +18,6 @@ namespace gfx {
 class GL_EXPORT GLSurfaceOSMesa : public GLSurface {
  public:
   GLSurfaceOSMesa(unsigned format, const gfx::Size& size);
-  virtual ~GLSurfaceOSMesa();
 
   // Implement GLSurface.
   virtual bool Initialize() OVERRIDE;
@@ -29,6 +28,9 @@ class GL_EXPORT GLSurfaceOSMesa : public GLSurface {
   virtual gfx::Size GetSize() OVERRIDE;
   virtual void* GetHandle() OVERRIDE;
   virtual unsigned GetFormat() OVERRIDE;
+
+ protected:
+  virtual ~GLSurfaceOSMesa();
 
  private:
   unsigned format_;

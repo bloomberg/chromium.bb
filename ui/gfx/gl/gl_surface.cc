@@ -70,13 +70,7 @@ bool GLSurface::InitializeOneOff() {
   return initialized;
 }
 
-GLSurface::GLSurface() {
-}
-
-GLSurface::~GLSurface() {
-  if (GetCurrent() == this)
-    SetCurrent(NULL);
-}
+GLSurface::GLSurface() {}
 
 bool GLSurface::Initialize()
 {
@@ -134,15 +128,16 @@ GLSurface* GLSurface::GetCurrent() {
   return current_surface_.Pointer()->Get();
 }
 
+GLSurface::~GLSurface() {
+  if (GetCurrent() == this)
+    SetCurrent(NULL);
+}
+
 void GLSurface::SetCurrent(GLSurface* surface) {
   current_surface_.Pointer()->Set(surface);
 }
 
-GLSurfaceAdapter::GLSurfaceAdapter(GLSurface* surface) : surface_(surface) {
-}
-
-GLSurfaceAdapter::~GLSurfaceAdapter() {
-}
+GLSurfaceAdapter::GLSurfaceAdapter(GLSurface* surface) : surface_(surface) {}
 
 bool GLSurfaceAdapter::Initialize() {
   return surface_->Initialize();
@@ -207,5 +202,7 @@ void* GLSurfaceAdapter::GetConfig() {
 unsigned GLSurfaceAdapter::GetFormat() {
   return surface_->GetFormat();
 }
+
+GLSurfaceAdapter::~GLSurfaceAdapter() {}
 
 }  // namespace gfx

@@ -38,18 +38,19 @@ namespace printing {
 class PrintBackendWin : public PrintBackend {
  public:
   PrintBackendWin() {}
+
+  // PrintBackend implementation.
+  virtual bool EnumeratePrinters(PrinterList* printer_list) OVERRIDE;
+  virtual std::string GetDefaultPrinterName() OVERRIDE;
+  virtual bool GetPrinterCapsAndDefaults(
+      const std::string& printer_name,
+      PrinterCapsAndDefaults* printer_info) OVERRIDE;
+  virtual std::string GetPrinterDriverInfo(
+      const std::string& printer_name) OVERRIDE;
+  virtual bool IsValidPrinter(const std::string& printer_name) OVERRIDE;
+
+ protected:
   virtual ~PrintBackendWin() {}
-
-  virtual bool EnumeratePrinters(PrinterList* printer_list);
-
-  virtual std::string GetDefaultPrinterName();
-
-  virtual bool GetPrinterCapsAndDefaults(const std::string& printer_name,
-                                         PrinterCapsAndDefaults* printer_info);
-
-  virtual std::string GetPrinterDriverInfo(const std::string& printer_name);
-
-  virtual bool IsValidPrinter(const std::string& printer_name);
 };
 
 bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {

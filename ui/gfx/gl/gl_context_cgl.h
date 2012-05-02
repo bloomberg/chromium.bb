@@ -12,11 +12,10 @@ class GLSurface;
 class GLContextCGL : public GLContext {
  public:
   explicit GLContextCGL(GLShareGroup* share_group);
-  virtual ~GLContextCGL();
 
   // Implement GLContext.
-  virtual bool Initialize(
-      GLSurface* compatible_surface, GpuPreference gpu_preference) OVERRIDE;
+  virtual bool Initialize(GLSurface* compatible_surface,
+                          GpuPreference gpu_preference) OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual bool MakeCurrent(GLSurface* surface) OVERRIDE;
   virtual void ReleaseCurrent(GLSurface* surface) OVERRIDE;
@@ -24,18 +23,21 @@ class GLContextCGL : public GLContext {
   virtual void* GetHandle() OVERRIDE;
   virtual void SetSwapInterval(int interval) OVERRIDE;
 
-  // Expose ForceUseOfDiscreteGPU only to GLContext implementation.
-  friend class GLContext;
+ protected:
+  virtual ~GLContextCGL();
 
  private:
-  void* context_;
-  GpuPreference gpu_preference_;
+  // Expose ForceUseOfDiscreteGPU only to GLContext implementation.
+  friend class GLContext;
 
   GpuPreference GetGpuPreference();
 
   // Helper for dual-GPU support on systems where this is necessary
   // for stability reasons.
   static void ForceUseOfDiscreteGPU();
+
+  void* context_;
+  GpuPreference gpu_preference_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContextCGL);
 };

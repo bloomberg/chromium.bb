@@ -14,10 +14,6 @@ GLSurfaceOSMesa::GLSurfaceOSMesa(unsigned format, const gfx::Size& size)
       size_(size) {
 }
 
-GLSurfaceOSMesa::~GLSurfaceOSMesa() {
-  Destroy();
-}
-
 bool GLSurfaceOSMesa::Initialize() {
   return Resize(size_);
 }
@@ -77,6 +73,10 @@ void* GLSurfaceOSMesa::GetHandle() {
 
 unsigned GLSurfaceOSMesa::GetFormat() {
   return format_;
+}
+
+GLSurfaceOSMesa::~GLSurfaceOSMesa() {
+  Destroy();
 }
 
 }  // namespace gfx

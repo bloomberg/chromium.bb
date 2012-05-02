@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,12 +18,8 @@ GLContextOSMesa::GLContextOSMesa(GLShareGroup* share_group)
       context_(NULL) {
 }
 
-GLContextOSMesa::~GLContextOSMesa() {
-  Destroy();
-}
-
-bool GLContextOSMesa::Initialize(
-    GLSurface* compatible_surface, GpuPreference gpu_preference) {
+bool GLContextOSMesa::Initialize(GLSurface* compatible_surface,
+                                 GpuPreference gpu_preference) {
   DCHECK(!context_);
 
   OSMesaContext share_handle = static_cast<OSMesaContext>(
@@ -125,6 +121,10 @@ void* GLContextOSMesa::GetHandle() {
 void GLContextOSMesa::SetSwapInterval(int interval) {
   DCHECK(IsCurrent(NULL));
   LOG(WARNING) << "GLContextOSMesa::SetSwapInterval is ignored.";
+}
+
+GLContextOSMesa::~GLContextOSMesa() {
+  Destroy();
 }
 
 }  // namespace gfx

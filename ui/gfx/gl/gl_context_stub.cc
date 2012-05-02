@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,19 +6,14 @@
 
 namespace gfx {
 
-GLContextStub::GLContextStub() : GLContext(NULL) {
-}
-
-GLContextStub::~GLContextStub() {
-}
+GLContextStub::GLContextStub() : GLContext(NULL) {}
 
 bool GLContextStub::Initialize(
     GLSurface* compatible_surface, GpuPreference gpu_preference) {
   return true;
 }
 
-void GLContextStub::Destroy() {
-}
+void GLContextStub::Destroy() {}
 
 bool GLContextStub::MakeCurrent(GLSurface* surface) {
   SetCurrent(this, surface);
@@ -42,5 +37,7 @@ void GLContextStub::SetSwapInterval(int interval) {
 std::string GLContextStub::GetExtensions() {
   return std::string();
 }
+
+GLContextStub::~GLContextStub() {}
 
 }  // namespace gfx

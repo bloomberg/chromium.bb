@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,11 +19,7 @@ namespace {
 CGLPixelFormatObj g_pixel_format;
 }
 
-GLSurfaceCGL::GLSurfaceCGL() {
-}
-
-GLSurfaceCGL::~GLSurfaceCGL() {
-}
+GLSurfaceCGL::GLSurfaceCGL() {}
 
 bool GLSurfaceCGL::InitializeOneOff() {
   static bool initialized = false;
@@ -68,12 +64,10 @@ void* GLSurfaceCGL::GetPixelFormat() {
   return g_pixel_format;
 }
 
+GLSurfaceCGL::~GLSurfaceCGL() {}
+
 NoOpGLSurfaceCGL::NoOpGLSurfaceCGL(const gfx::Size& size)
   : size_(size) {
-}
-
-NoOpGLSurfaceCGL::~NoOpGLSurfaceCGL() {
-  Destroy();
 }
 
 bool NoOpGLSurfaceCGL::Initialize() {
@@ -98,6 +92,10 @@ gfx::Size NoOpGLSurfaceCGL::GetSize() {
 
 void* NoOpGLSurfaceCGL::GetHandle() {
   return NULL;
+}
+
+NoOpGLSurfaceCGL::~NoOpGLSurfaceCGL() {
+  Destroy();
 }
 
 }  // namespace gfx

@@ -21,12 +21,8 @@ GLContextCGL::GLContextCGL(GLShareGroup* share_group)
     gpu_preference_(PreferIntegratedGpu) {
 }
 
-GLContextCGL::~GLContextCGL() {
-  Destroy();
-}
-
-bool GLContextCGL::Initialize(
-    GLSurface* compatible_surface, GpuPreference gpu_preference) {
+bool GLContextCGL::Initialize(GLSurface* compatible_surface,
+                              GpuPreference gpu_preference) {
   DCHECK(compatible_surface);
 
   GLContextCGL* share_context = share_group() ?
@@ -142,6 +138,10 @@ void* GLContextCGL::GetHandle() {
 void GLContextCGL::SetSwapInterval(int interval) {
   DCHECK(IsCurrent(NULL));
   LOG(WARNING) << "GLContex: GLContextCGL::SetSwapInterval is ignored.";
+}
+
+GLContextCGL::~GLContextCGL() {
+  Destroy();
 }
 
 GpuPreference GLContextCGL::GetGpuPreference() {

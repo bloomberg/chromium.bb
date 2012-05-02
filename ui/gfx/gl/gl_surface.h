@@ -122,7 +122,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 class GL_EXPORT GLSurfaceAdapter : public GLSurface {
  public:
   explicit GLSurfaceAdapter(GLSurface* surface);
-  virtual ~GLSurfaceAdapter();
 
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
@@ -142,6 +141,9 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   virtual unsigned GetFormat() OVERRIDE;
 
   GLSurface* surface() const { return surface_.get(); }
+
+ protected:
+  virtual ~GLSurfaceAdapter();
 
  private:
   scoped_refptr<GLSurface> surface_;

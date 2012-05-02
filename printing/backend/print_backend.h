@@ -53,8 +53,6 @@ struct PRINTING_EXPORT PrinterCapsAndDefaults {
 class PRINTING_EXPORT PrintBackend
     : public base::RefCountedThreadSafe<PrintBackend> {
  public:
-  virtual ~PrintBackend();
-
   // Enumerates the list of installed local and network printers.
   virtual bool EnumeratePrinters(PrinterList* printer_list) = 0;
 
@@ -78,6 +76,10 @@ class PRINTING_EXPORT PrintBackend
   // Return NULL if no print backend available.
   static scoped_refptr<PrintBackend> CreateInstance(
       const base::DictionaryValue* print_backend_settings);
+
+ protected:
+  friend class base::RefCountedThreadSafe<PrintBackend>;
+  virtual ~PrintBackend();
 };
 
 }  // namespace printing

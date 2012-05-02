@@ -103,21 +103,19 @@ static const char kCUPSPrinterMakeModelOpt[] = "printer-make-and-model";
 class PrintBackendCUPS : public PrintBackend {
  public:
   PrintBackendCUPS(const GURL& print_server_url, bool blocking);
-  virtual ~PrintBackendCUPS() {}
 
   // PrintBackend implementation.
   virtual bool EnumeratePrinters(PrinterList* printer_list) OVERRIDE;
-
   virtual std::string GetDefaultPrinterName() OVERRIDE;
-
   virtual bool GetPrinterCapsAndDefaults(
       const std::string& printer_name,
       PrinterCapsAndDefaults* printer_info) OVERRIDE;
-
   virtual std::string GetPrinterDriverInfo(
       const std::string& printer_name) OVERRIDE;
-
   virtual bool IsValidPrinter(const std::string& printer_name) OVERRIDE;
+
+ protected:
+  virtual ~PrintBackendCUPS() {}
 
  private:
   // Following functions are wrappers around corresponding CUPS functions.
