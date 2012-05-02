@@ -66,9 +66,9 @@ Viewport.prototype.setScale = function(scale, notify) {
 Viewport.prototype.getFittingScale = function() {
   var scaleX = this.screenBounds_.width / this.imageBounds_.width;
   var scaleY = this.screenBounds_.height / this.imageBounds_.height;
-  // Scales > 1 do not look good. Also they are not really useful
-  // as we do not have any pixel-level operations.
-  return Math.min(1, scaleX, scaleY);
+  // Scales > (1 / this.getDevicePixelRatio()) do not look good. Also they are
+  // not really useful as we do not have any pixel-level operations.
+  return Math.min(1 / this.getDevicePixelRatio(), scaleX, scaleY);
 };
 
 Viewport.prototype.fitImage = function() {
@@ -214,6 +214,41 @@ Viewport.prototype.imageToScreenRect = function(rect) {
       this.imageToScreenY(rect.top),
       Math.round(this.imageToScreenSize(rect.width)),
       Math.round(this.imageToScreenSize(rect.height)));
+};
+
+/**
+ * @return {number} The number of physical pixels in one CSS pixel.
+ */
+Viewport.prototype.getDevicePixelRatio = function() {
+  return window.devicePixelRatio;
+};
+
+/**
+ * Convert a rectangle from screen coordinates to 'device' coordinates.
+ *
+ * This conversion enlarges the original rectangle devicePixelRatio times
+ * with the screen center as a fixed point.
+ *
+ * @param {Rect} rect Rectangle in screen coordinates.
+ * @return {Rect} Rectangle in device coordinates.
+ */
+Viewport.prototype.screenToDeviceRect = function(rect) {
+  var ratio = this.getDevicePixelRatio();
+  var screenCenterX = Math.round(
+      this.screenBounds_.left + this.screenBounds_.width / 2);
+  var screenCenterY = Math.round(
+      this.screenBounds_.top + this.screenBounds_.height / 2);
+  return new Rect(screenCenterX + (rect.left - screenCenterX) * ratio,
+                  screenCenterY + (rect.top - screenCenterY) * ratio,
+                  rect.width * ratio,
+                  rect.height * ratio);
+};
+
+/**
+ * @return {Rect} The visible part of the image, in device coordinates.
+ */
+Viewport.prototype.getDeviceClipped = function() {
+  return this.screenToDeviceRect(this.getScreenClipped());
 };
 
 /**

@@ -107,8 +107,7 @@ ImageEditor.Mode.Crop.GRAB_RADIUS = 6;
 
 ImageEditor.Mode.Crop.prototype.getCommand = function() {
   var cropImageRect = this.cropRect_.getRect();
-  var cropScreenRect = this.viewport_.imageToScreenRect(cropImageRect);
-  return new Command.Crop(cropImageRect, cropScreenRect);
+  return new Command.Crop(cropImageRect);
 };
 
 ImageEditor.Mode.Crop.prototype.createDefaultCrop = function() {

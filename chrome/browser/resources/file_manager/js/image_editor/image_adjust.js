@@ -73,20 +73,10 @@ ImageEditor.Mode.Adjust.prototype.updatePreviewImage = function() {
     this.viewportGeneration_ = this.getViewport().getCacheGeneration();
 
     if (!this.canvas_) {
-      var container = this.getImageView().container_;
-      this.canvas_ = container.ownerDocument.createElement('canvas');
-      this.canvas_.className = 'image';
-      container.appendChild(this.canvas_);
+      this.canvas_ = this.getImageView().createOverlayCanvas();
     }
 
-    var screenClipped = this.getViewport().getScreenClipped();
-
-    this.canvas_.style.left = screenClipped.left + 'px';
-    this.canvas_.style.top = screenClipped.top + 'px';
-    if (this.canvas_.width != screenClipped.width)
-      this.canvas_.width = screenClipped.width;
-    if (this.canvas_.height != screenClipped.height)
-      this.canvas_.height = screenClipped.height;
+    this.getImageView().setupDeviceBuffer(this.canvas_);
 
     this.originalImageData = this.getImageView().copyScreenImageData();
     this.previewImageData_ = this.getImageView().copyScreenImageData();

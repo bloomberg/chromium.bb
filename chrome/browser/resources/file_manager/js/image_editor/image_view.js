@@ -65,20 +65,11 @@ ImageView.prototype.draw = function() {
 
   var forceRepaint = false;
 
-  var screenClipped = this.viewport_.getScreenClipped();
-
   if (this.displayedViewportGeneration_ !=
       this.viewport_.getCacheGeneration()) {
     this.displayedViewportGeneration_ = this.viewport_.getCacheGeneration();
 
-    if (this.screenImage_.width != screenClipped.width)
-      this.screenImage_.width = screenClipped.width;
-
-    if (this.screenImage_.height != screenClipped.height)
-      this.screenImage_.height = screenClipped.height;
-
-    this.screenImage_.style.left = screenClipped.left + 'px';
-    this.screenImage_.style.top = screenClipped.top + 'px';
+    this.setupDeviceBuffer(this.screenImage_);
 
     forceRepaint = true;
   }
@@ -88,8 +79,8 @@ ImageView.prototype.draw = function() {
     this.displayedContentGeneration_ = this.contentGeneration_;
 
     ImageUtil.trace.resetTimer('paint');
-    this.paintScreenRect(
-        screenClipped, this.contentCanvas_, this.viewport_.getImageClipped());
+    this.paintDeviceRect(this.viewport_.getDeviceClipped(),
+        this.contentCanvas_, this.viewport_.getImageClipped());
     ImageUtil.trace.reportTimer('paint');
   }
 };
@@ -131,10 +122,18 @@ ImageView.prototype.getVideo = function() { return this.videoElement_ };
 
 ImageView.prototype.getThumbnail = function() { return this.thumbnailCanvas_ };
 
-ImageView.prototype.paintScreenRect = function (screenRect, canvas, imageRect) {
-  // Map screen canvas (0,0) to (screenClipped.left, screenClipped.top)
-  var screenClipped = this.viewport_.getScreenClipped();
-  screenRect = screenRect.shift(-screenClipped.left, -screenClipped.top);
+/**
+ * Copy an image fragment from a full resolution canvas to a device resolution
+ * canvas.
+ *
+ * @param {Rect} deviceRect Rectangle in the device coordinates.
+ * @param {HTMLCanvasElement} canvas Full resolution canvas.
+ * @param {Rect} imageRect Rectangle in the full resolution canvas.
+ */
+ImageView.prototype.paintDeviceRect = function (deviceRect, canvas, imageRect) {
+  // Map screen canvas (0,0) to (deviceBounds.left, deviceBounds.top)
+  var deviceBounds = this.viewport_.getDeviceClipped();
+  deviceRect = deviceRect.shift(-deviceBounds.left, -deviceBounds.top);
 
   // The source canvas may have different physical size than the image size
   // set at the viewport. Adjust imageRect accordingly.
@@ -144,7 +143,42 @@ ImageView.prototype.paintScreenRect = function (screenRect, canvas, imageRect) {
   imageRect = new Rect(imageRect.left * scaleX, imageRect.top * scaleY,
                        imageRect.width * scaleX, imageRect.height * scaleY);
   Rect.drawImage(
-      this.screenImage_.getContext("2d"), canvas, screenRect, imageRect);
+      this.screenImage_.getContext("2d"), canvas, deviceRect, imageRect);
+};
+
+/**
+ * Create an overlay canvas with properties similar to the screen canvas.
+ * Useful for showing quick feedback when editing.
+ *
+ * @return {HTMLCanvasElement} Overlay canvas
+ */
+ImageView.prototype.createOverlayCanvas = function() {
+  var canvas = this.document_.createElement('canvas');
+  canvas.className = 'image';
+  this.container_.appendChild(canvas);
+  return canvas;
+};
+
+/**
+ * Sets up the canvas as a buffer in the device resolution.
+ *
+ * @param {HTMLCanvasElement} canvas The buffer canvas.
+ */
+ImageView.prototype.setupDeviceBuffer = function(canvas) {
+  var deviceRect = this.viewport_.getDeviceClipped();
+
+  // Set the canvas position and size in device pixels.
+  if (canvas.width != deviceRect.width)
+    canvas.width = deviceRect.width;
+
+  if (canvas.height != deviceRect.height)
+    canvas.height = deviceRect.height;
+
+  canvas.style.left = deviceRect.left + 'px';
+  canvas.style.top = deviceRect.top + 'px';
+
+  // Scale the canvas down down to screen pixels.
+  this.setTransform(canvas);
 };
 
 /**
@@ -442,59 +476,106 @@ ImageView.prototype.replace = function(
 
   this.replaceContent_(content, !opt_slide, opt_width, opt_height, opt_preview);
 
+  opt_slide = opt_slide || 0;
   // TODO(kaznacheev): The line below is too obscure.
   // Refactor the whole 'slide' thing for clarity.
   if (!opt_slide && !this.getVideo()) return;
 
-  var newScreenCanvas = this.screenImage_;
+  var newScreenImage = this.screenImage_;
 
   function numToSlideAttr(num) {
     return num < 0 ? 'left' : num > 0 ? 'right' : 'center';
   }
 
-  newScreenCanvas.setAttribute('fade', numToSlideAttr(opt_slide));
-  this.container_.appendChild(newScreenCanvas);
+  newScreenImage.setAttribute('fade', 'true');
+  this.setTransform(newScreenImage, opt_slide);
+  this.container_.appendChild(newScreenImage);
 
   setTimeout(function() {
-    newScreenCanvas.removeAttribute('fade');
+    newScreenImage.removeAttribute('fade');
+    this.setTransform(newScreenImage);
     if (oldScreenImage) {
-      oldScreenImage.setAttribute('fade', numToSlideAttr(-opt_slide));
+      oldScreenImage.setAttribute('fade', 'true');
+      this.setTransform(oldScreenImage, -opt_slide);
       setTimeout(function() {
         oldScreenImage.parentNode.removeChild(oldScreenImage);
       }, ImageView.ANIMATION_WAIT_INTERVAL);
     }
-  }, 0);
-};
-
-ImageView.makeTransform = function(rect1, rect2, scale, rotate90) {
-  var shiftX = (rect1.left + rect1.width / 2) - (rect2.left + rect2.width / 2);
-  var shiftY = (rect1.top + rect1.height / 2) - (rect2.top + rect2.height / 2);
-
-  return 'rotate(' + (rotate90 || 0) * 90 + 'deg) ' +
-      'translate(' + shiftX + 'px,' + shiftY + 'px)' +
-      'scaleX(' + scale + ') ' +
-      'scaleY(' + scale + ')';
+  }.bind(this), 0);
 };
 
 /**
- * Hide the old image instantly, animate the new image to visualize
- * cropping and/or rotation.
+ * @param {HTMLCanvasElement|HTMLVideoElement} element The element to transform.
+ * @param {number} opt_slide The slide direction, positive for right.
  */
-ImageView.prototype.replaceAndAnimate = function(canvas, cropRect, rotate90) {
-  cropRect  = cropRect || this.viewport_.getScreenClipped();
+ImageView.prototype.setTransform = function(element, opt_slide) {
+  var transform = '';
+  if (element.constructor.name == 'HTMLCanvasElement' &&
+      this.viewport_.getDevicePixelRatio() != 1) {
+    var scale = 1 / this.viewport_.getDevicePixelRatio();
+    transform += 'scale(' + scale + ') ';
+  }
+  if (opt_slide) {
+    var shift = (opt_slide > 0) ? 40 : -40;
+    transform += 'translate(' + shift + 'px, 0px)';
+  }
+  element.style.webkitTransform = transform;
+};
+
+/**
+ * Transform the canvas to visualize an editing operation.
+ *
+ * @param {HTMLCanvasElement} canvas The canvas to transform.
+ * @param {Rect} rect1 Source rectangle. If null no translation is performed.
+ * @param {Rect} rect2 Target rectangle. If null no translation is performed.
+ * @param {number} scale Transform scale.
+ * @param {number} rotate90 Rotation in 90 degree increments.
+ */
+ImageView.prototype.setTransformWithEffect = function(
+    canvas, rect1, rect2, scale, rotate90) {
+  var ratio = this.viewport_.getDevicePixelRatio();
+  var transform = '';
+  if (rotate90) {
+    transform += 'rotate(' + rotate90 * 90 + 'deg) ';
+  }
+  if (rect1 && rect2) {
+    var dx = (rect1.left + rect1.width / 2) - (rect2.left + rect2.width / 2);
+    var dy = (rect1.top + rect1.height / 2) - (rect2.top + rect2.height / 2);
+    transform += 'translate(' + (dx / ratio) + 'px,' + (dy / ratio) + 'px) ';
+  }
+  transform += 'scale(' + (scale / ratio) + ')';
+
+  canvas.style.webkitTransform = transform;
+};
+
+/**
+ * Visualize crop or rotate operation. Hide the old image instantly, animate
+ * the new image to visualize the operation.
+ *
+ * @param {HTMLCanvasElement} canvas New content canvas.
+ * @param {Rect} imageCropRect The crop rectangle in image coordinates.
+ *                             Null for rotation operations.
+ * @param {number} rotate90 Rotation angle in 90 degree increments.
+ */
+ImageView.prototype.replaceAndAnimate = function(
+    canvas, imageCropRect, rotate90) {
   var oldScale = this.viewport_.getScale();
+  var deviceCropRect = imageCropRect && this.viewport_.screenToDeviceRect(
+        this.viewport_.imageToScreenRect(imageCropRect));
 
   var oldScreenImage = this.screenImage_;
   this.replaceContent_(canvas);
   var newScreenImage = this.screenImage_;
 
   // Display the new canvas, initially transformed.
+  var deviceFullRect = this.viewport_.getDeviceClipped();
 
-  // Transform instantly.
+  //Transform instantly.
   newScreenImage.style.webkitTransitionDuration = '0ms';
-  newScreenImage.style.webkitTransform = ImageView.makeTransform(
-      cropRect,
-      this.viewport_.getScreenClipped(),
+  this.setTransformWithEffect(
+      newScreenImage,
+      deviceCropRect,
+      deviceFullRect,
       oldScale / this.viewport_.getScale(),
       -rotate90);
 
@@ -505,30 +586,36 @@ ImageView.prototype.replaceAndAnimate = function(canvas, cropRect, rotate90) {
   setTimeout(function() {
     // Animated back to non-transformed state.
     newScreenImage.style.webkitTransitionDuration = '';
-    newScreenImage.style.webkitTransform = '';
-  }, 0);
+    this.setTransform(newScreenImage);
+  }.bind(this), 0);
 };
 
 /**
- * Shrink the given current image to the given crop rectangle while fading in
- * the new image.
+ * Visualize "undo crop". Shrink the current image to the given crop rectangle
+ * while fading in the new image.
+ *
+ * @param {HTMLCanvasElement} canvas New content canvas.
+ * @param {Rect} imageCropRect The crop rectangle in image coordinates.
  */
-ImageView.prototype.animateAndReplace = function(canvas, cropRect) {
-  var fullRect = this.viewport_.getScreenClipped();
+ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
+  var deviceFullRect = this.viewport_.getDeviceClipped();
   var oldScale = this.viewport_.getScale();
 
   var oldScreenImage = this.screenImage_;
   this.replaceContent_(canvas);
   var newScreenImage = this.screenImage_;
 
-  newScreenImage.setAttribute('fade', 'center');
+  var deviceCropRect = this.viewport_.screenToDeviceRect(
+        this.viewport_.imageToScreenRect(imageCropRect));
+
+  newScreenImage.setAttribute('fade', 'true');
   oldScreenImage.parentNode.insertBefore(newScreenImage, oldScreenImage);
 
   // Animate to the transformed state.
-
-  oldScreenImage.style.webkitTransform = ImageView.makeTransform(
-      cropRect,
-      fullRect,
+  this.setTransformWithEffect(
+      oldScreenImage,
+      deviceCropRect,
+      deviceFullRect,
       this.viewport_.getScale() / oldScale,
       0);
 

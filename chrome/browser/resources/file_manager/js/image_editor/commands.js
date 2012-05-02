@@ -260,12 +260,10 @@ Command.Rotate.prototype.revertView = function(canvas, imageView) {
  * Crop command.
  *
  * @param {Rect} imageRect Crop rectange in image coordinates.
- * @param {Rect} screenRect Crop rectange in screen coordinates (for animation).
  */
-Command.Crop = function(imageRect, screenRect) {
+Command.Crop = function(imageRect) {
   Command.call(this, 'crop' + imageRect.toString());
   this.imageRect_ = imageRect;
-  this.screenRect_ = screenRect;
 };
 
 Command.Crop.prototype = { __proto__: Command.prototype };
@@ -276,13 +274,13 @@ Command.Crop.prototype.execute = function(
       document, srcCanvas, this.imageRect_.width, this.imageRect_.height);
   Rect.drawImage(result.getContext("2d"), srcCanvas, null, this.imageRect_);
   if (uiContext.imageView) {
-    uiContext.imageView.replaceAndAnimate(result, this.screenRect_, 0);
+    uiContext.imageView.replaceAndAnimate(result, this.imageRect_, 0);
   }
   setTimeout(callback.bind(null, result), 0);
 };
 
 Command.Crop.prototype.revertView = function(canvas, imageView) {
-  imageView.animateAndReplace(canvas, this.screenRect_);
+  imageView.animateAndReplace(canvas, this.imageRect_);
 };
 
 
@@ -327,7 +325,8 @@ Command.Filter.prototype.execute = function(
       screenStrip.height =
           Math.round(viewport.imageToScreenY(updatedRow)) - screenStrip.top;
 
-      uiContext.imageView.paintScreenRect(screenStrip, result, imageStrip);
+      uiContext.imageView.paintDeviceRect(
+          viewport.screenToDeviceRect(screenStrip), result, imageStrip);
       previousRow = updatedRow;
     }
   }
