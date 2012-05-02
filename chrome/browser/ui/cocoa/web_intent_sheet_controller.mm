@@ -540,6 +540,19 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   return NSHeight([button frame]);
 }
 
+- (void)addCloseButtonToSubviews:(NSMutableArray*)subviews  {
+  if (!closeButton_.get()) {
+    NSRect buttonFrame = NSMakeRect(
+        kFramePadding + kImageSize + kTextWidth, kFramePadding,
+        kCloseButtonSize, kCloseButtonSize);
+    closeButton_.reset(
+        [[HoverCloseButton alloc] initWithFrame:buttonFrame]);
+    [closeButton_ setTarget:self];
+    [closeButton_ setAction:@selector(cancelOperation:)];
+  }
+  [subviews addObject:closeButton_];
+}
+
 // Adds a header (icon and explanatory text) to picker bubble.
 // Returns the y position delta for the next offset.
 - (CGFloat)addHeaderToSubviews:(NSMutableArray*)subviews
@@ -566,17 +579,8 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   NSRect textFrame = [actionTextField_ frame];
   textFrame.origin.y = offset;
 
-  NSRect buttonFrame = NSMakeRect(
-      kFramePadding + kImageSize + kTextWidth, offset,
-      kCloseButtonSize, kCloseButtonSize);
-  closeButton_.reset(
-      [[HoverCloseButton alloc] initWithFrame:buttonFrame]);
-  [closeButton_ setTarget:self];
-  [closeButton_ setAction:@selector(cancelOperation:)];
-
   // Adjust view height to fit elements, center-align elements.
-  CGFloat maxHeight = std::max(NSHeight(buttonFrame),
-      std::max(NSHeight(imageFrame), NSHeight(textFrame)));
+  CGFloat maxHeight = std::max(NSHeight(imageFrame), NSHeight(textFrame));
   textFrame.origin.y += (maxHeight - NSHeight(textFrame)) / 2;
   imageFrame.origin.y += (maxHeight - NSHeight(imageFrame)) / 2;
 
@@ -585,7 +589,6 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 
   [subviews addObject:actionTextField_];
   [subviews addObject:imageView];
-  [subviews addObject:closeButton_];
 
   return NSHeight([imageView frame]);
 }
@@ -652,8 +655,11 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 
   if (contents_) {
     offset += [self addInlineHtmlToSubviews:subviews atOffset:offset];
+    [self addCloseButtonToSubviews:subviews];
   } else {
     offset += [self addHeaderToSubviews:subviews atOffset:offset];
+    [self addCloseButtonToSubviews:subviews];
+
     if (model) {
       [intentButtons_ removeAllObjects];
 
