@@ -179,6 +179,14 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // fingers changed.
   float DistanceTravelledSq(const FingerState& fs) const;
 
+  // Returns a vector describing the movement of the finger since the
+  // fingers changed.
+  Point FingerTraveledVector(const FingerState& fs) const;
+
+  // Returns the square of distance between two fingers.
+  // Returns -1 if not exactly two fingers are present.
+  float TwoFingerDistanceSq(const HardwareState& hwstate) const;
+
   // Updates thumb_ below.
   void UpdateThumbState(const HardwareState& hwstate);
 
@@ -209,6 +217,12 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // unknown.
   GestureType GetTwoFingerGestureType(const FingerState& finger1,
                                       const FingerState& finger2);
+
+  // In case no other gesture has been detected,
+  // DeterminePotentialZoomGestureType will check for a zoom gesture
+  // and return the updated gesture type.
+  GestureType DeterminePotentialZoomGestureType(
+      const HardwareState& hwstate) const;
 
   // Returns the current three-finger gesture, or kGestureTypeNull if no gesture
   // should be produced.
@@ -308,9 +322,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // and it's reset when fingers change.
   set<short, kMaxFingers> palm_;  // tracking ids of known palms
   set<short, kMaxFingers> pending_palm_;  // tracking ids of potential palms
-  // tracking ids of known non-palms
+  // tracking ids of known fingers that are not palms, nor thumbs.
   set<short, kMaxFingers> pointing_;
-
+  // tracking ids of known non-palms. But might be thumbs.
+  set<short, kMaxFingers> fingers_;
   // contacts believed to be thumbs, and when they were inserted into the map
   map<short, stime_t, kMaxFingers> thumb_;
 
@@ -331,6 +346,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   // If we are currently pointing, scrolling, etc.
   GestureType current_gesture_type_;
+
+  // Cache for distance between fingers at start of zoom gesture
+  float two_finger_start_distance_;
 
   // If the last time we were called, we did a scroll, it contains the ids
   // of the scrolling fingers. Otherwise it's empty.
@@ -446,6 +464,13 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // are the slopes for the two lines.
   DoubleProperty vertical_scroll_snap_slope_;
   DoubleProperty horizontal_scroll_snap_slope_;
+
+  // Minimal distance [mm] of movement per finger
+  // before a zoom gesture is considered.
+  DoubleProperty zoom_min_movement_;
+  // Minimal distance [mm] of movement per finger
+  // before the zoom gesture is locked in.
+  DoubleProperty zoom_lock_min_movement_;
 };
 
 }  // namespace gestures

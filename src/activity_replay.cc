@@ -316,6 +316,9 @@ bool ActivityReplay::ParseGesture(DictionaryValue* entry) {
   } else if (gesture_type == ActivityLog::kValueGestureTypeScroll) {
     if (!ParseGestureScroll(entry, &gs))
       return false;
+  } else if (gesture_type == ActivityLog::kValueGestureTypeZoom) {
+    if (!ParseGestureZoom(entry, &gs))
+      return false;
   } else if (gesture_type == ActivityLog::kValueGestureTypeButtonsChange) {
     if (!ParseGestureButtonsChange(entry, &gs))
       return false;
@@ -359,6 +362,18 @@ bool ActivityReplay::ParseGestureScroll(DictionaryValue* entry,
     return false;
   }
   out_gs->details.scroll.dy = dbl;
+  return true;
+}
+
+bool ActivityReplay::ParseGestureZoom(DictionaryValue* entry,
+                                        Gesture* out_gs) {
+  out_gs->type = kGestureTypeZoom;
+  double dbl;
+  if (!entry->GetDouble(ActivityLog::kKeyGestureZoomDZ, &dbl)) {
+    Err("can't parse zoom dz");
+    return false;
+  }
+  out_gs->details.zoom.dz = dbl;
   return true;
 }
 

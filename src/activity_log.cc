@@ -225,6 +225,13 @@ const char kSubSubEntryPadding[] = "      ";
       ret->Set(kKeyGestureScrollDY,
                new FundamentalValue(gesture.details.scroll.dy));
       break;
+    case kGestureTypeZoom:
+      handled = true;
+      ret->Set(kKeyGestureType,
+               new StringValue(kValueGestureTypeZoom));
+      ret->Set(kKeyGestureZoomDZ,
+               new FundamentalValue(gesture.details.zoom.dz));
+      break;
     case kGestureTypeButtonsChange:
       handled = true;
       ret->Set(kKeyGestureType,
@@ -373,6 +380,7 @@ const char ActivityLog::kValueGestureTypeContactInitiated[] =
     "contactInitiated";
 const char ActivityLog::kValueGestureTypeMove[] = "move";
 const char ActivityLog::kValueGestureTypeScroll[] = "scroll";
+const char ActivityLog::kValueGestureTypeZoom[] = "zoom";
 const char ActivityLog::kValueGestureTypeButtonsChange[] = "buttonsChange";
 const char ActivityLog::kValueGestureTypeFling[] = "fling";
 const char ActivityLog::kValueGestureTypeSwipe[] = "swipe";
@@ -382,6 +390,7 @@ const char ActivityLog::kKeyGestureMoveDX[] = "dx";
 const char ActivityLog::kKeyGestureMoveDY[] = "dy";
 const char ActivityLog::kKeyGestureScrollDX[] = "dx";
 const char ActivityLog::kKeyGestureScrollDY[] = "dy";
+const char ActivityLog::kKeyGestureZoomDZ[] = "dz";
 const char ActivityLog::kKeyGestureButtonsChangeDown[] = "down";
 const char ActivityLog::kKeyGestureButtonsChangeUp[] = "up";
 const char ActivityLog::kKeyGestureFlingVX[] = "vx";

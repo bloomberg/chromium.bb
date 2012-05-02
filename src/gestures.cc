@@ -81,6 +81,9 @@ string Gesture::String() const {
       return StringPrintf("(Gesture type: scroll start: %f stop: %f "
                           "dx: %f dy: %f)", start_time, end_time,
                           details.scroll.dx, details.scroll.dy);
+    case kGestureTypeZoom:
+      return StringPrintf("(Gesture type: zoom start: %f stop: %f "
+                          "dz: %f)", start_time, end_time, details.zoom.dz);
     case kGestureTypeButtonsChange:
       return StringPrintf("(Gesture type: buttons start: %f stop: "
                           "%f down: %d up: %d)", start_time, end_time,
@@ -115,6 +118,10 @@ bool Gesture::operator==(const Gesture& that) const {
           gestures::DoubleEq(end_time, that.end_time) &&
           gestures::FloatEq(details.scroll.dx, that.details.scroll.dx) &&
           gestures::FloatEq(details.scroll.dy, that.details.scroll.dy);
+    case kGestureTypeZoom:
+      return gestures::DoubleEq(start_time, that.start_time) &&
+          gestures::DoubleEq(end_time, that.end_time) &&
+          gestures::FloatEq(details.zoom.dz, that.details.zoom.dz);
     case kGestureTypeButtonsChange:
       return gestures::DoubleEq(start_time, that.start_time) &&
           gestures::DoubleEq(end_time, that.end_time) &&

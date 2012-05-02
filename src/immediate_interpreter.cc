@@ -246,6 +246,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
     : button_type_(0),
       sent_button_down_(false),
       button_down_timeout_(0.0),
+      started_moving_time_(-1.0),
       finger_leave_time_(0.0),
       tap_to_click_state_(kTtcIdle),
       tap_to_click_state_entered_(0.0),
@@ -319,7 +320,9 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       vertical_scroll_snap_slope_(prop_reg, "Vertical Scroll Snap Slope",
                                   tanf(DegToRad(50.0))),  // 50 deg. from horiz.
       horizontal_scroll_snap_slope_(prop_reg, "Horizontal Scroll Snap Slope",
-                                    tanf(DegToRad(30.0))) {  // 30 deg.
+                                    tanf(DegToRad(30.0))),
+      zoom_min_movement_(prop_reg, "Zoom Min Movement", 1.5),
+      zoom_lock_min_movement_(prop_reg, "Zoom Lock Min Movement", 2.0) {
   memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
@@ -383,8 +386,10 @@ Gesture* ImmediateInterpreter::HandleTimer(stime_t now, stime_t* timeout) {
 void ImmediateInterpreter::ResetSameFingersState(stime_t now) {
   palm_.clear();
   pointing_.clear();
+  fingers_.clear();
   start_positions_.clear();
   changed_time_ = now;
+  two_finger_start_distance_ = -1;
 }
 
 bool ImmediateInterpreter::FingersCloseEnoughToGesture(
@@ -446,6 +451,7 @@ void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
     if (fs.pressure >= palm_pressure_.val_) {
       palm_.insert(fs.tracking_id);
       pointing_.erase(fs.tracking_id);
+      fingers_.erase(fs.tracking_id);
       continue;
     }
   }
@@ -461,17 +467,38 @@ void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
     // If another finger is close by, let this be pointing
     if (FingerNearOtherFinger(hwstate, i) || !FingerInPalmEnvelope(fs))
       pointing_.insert(fs.tracking_id);
+      fingers_.insert(fs.tracking_id);
   }
 }
 
 float ImmediateInterpreter::DistanceTravelledSq(const FingerState& fs) const {
-  map<short, Point, kMaxFingers>::const_iterator it =
-      start_positions_.find(fs.tracking_id);
-  if (it == start_positions_.end())
-    return 0.0;
-  float dx = fs.position_x - (*it).second.x_;
-  float dy = fs.position_y - (*it).second.y_;
-  return dx * dx + dy * dy;
+  Point delta = FingerTraveledVector(fs);
+  return delta.x_ * delta.x_ + delta.y_ * delta.y_;
+}
+
+ImmediateInterpreter::Point ImmediateInterpreter::FingerTraveledVector(
+    const FingerState& fs) const {
+  if (!MapContainsKey(start_positions_, fs.tracking_id))
+    return Point(0.0f, 0.0f);
+  const Point& start = start_positions_[fs.tracking_id];
+  float dx = fs.position_x - start.x_;
+  float dy = fs.position_y - start.y_;
+  return Point(dx, dy);
+}
+
+float ImmediateInterpreter::TwoFingerDistanceSq(
+    const HardwareState& hwstate) const {
+  if (fingers_.size() == 2) {
+    const FingerState* finger_a = hwstate.GetFingerState(*fingers_.begin());
+    const FingerState* finger_b = hwstate.GetFingerState(*(fingers_.begin()+1));
+    if (finger_a == NULL || finger_b == NULL) {
+      Err("Finger unexpectedly NULL");
+      return -1;
+    }
+    return DistSq(*finger_a, *finger_b);
+  } else {
+    return -1;
+  }
 }
 
 // Updates thumb_ below.
@@ -650,6 +677,15 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
           }
         }
       }
+
+      if (current_gesture_type_ == kGestureTypeMove ||
+          current_gesture_type_ == kGestureTypeNull) {
+        // Calculate and cache distance between fingers at start of gesture.
+        if (two_finger_start_distance_ < 0) {
+          two_finger_start_distance_ = sqrtf(TwoFingerDistanceSq(hwstate));
+        }
+        current_gesture_type_ = DeterminePotentialZoomGestureType(hwstate);
+      }
       break;
 
     case kGestureTypeScroll:
@@ -663,7 +699,58 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
         }
       }
       break;
+    case kGestureTypeZoom:
+      if (fingers_.size() == 2) {
+        return;
+      } else {
+        current_gesture_type_ = kGestureTypeNull;
+      }
+      break;
   }
+}
+
+GestureType ImmediateInterpreter::DeterminePotentialZoomGestureType(
+    const HardwareState& hwstate) const {
+
+  if (fingers_.size() != 2) {
+    return current_gesture_type_;
+  }
+
+  const FingerState* finger1 = hwstate.GetFingerState(*fingers_.begin());
+  const FingerState* finger2 = hwstate.GetFingerState(*(fingers_.begin()+1));
+  if (finger1 == NULL || finger2 == NULL) {
+    Err("Finger unexpectedly NULL");
+    return current_gesture_type_;
+  }
+
+  if (!MapContainsKey(start_positions_, finger1->tracking_id) ||
+      !MapContainsKey(start_positions_, finger2->tracking_id)) {
+    return current_gesture_type_;
+  }
+
+  float zoom_min_mov_sq = zoom_min_movement_.val_ *
+      zoom_min_movement_.val_;
+  float zoom_lock_min_mov_sq = zoom_lock_min_movement_.val_ *
+      zoom_lock_min_movement_.val_;
+
+  if (changed_time_ > started_moving_time_ ||
+      hwstate.timestamp - started_moving_time_ < evaluation_timeout_.val_) {
+    Point delta1 = FingerTraveledVector(*finger1);
+    Point delta2 = FingerTraveledVector(*finger2);
+
+    // dot > 0 for fingers moving in a similar direction
+    // dot < 0 for fingers moving in opposite directions
+    float dot  = delta1.x_ * delta2.x_ + delta1.y_ * delta2.y_;
+    float d1sq = delta1.x_ * delta1.x_ + delta1.y_ * delta1.y_;
+    float d2sq = delta2.x_ * delta2.x_ + delta2.y_ * delta2.y_;
+
+    if (d1sq > zoom_lock_min_mov_sq && d2sq > zoom_lock_min_mov_sq && dot < 0)
+      return kGestureTypeZoom;  // pinch zoom accepted and locked.
+
+    if (d1sq > zoom_min_mov_sq && d2sq > zoom_min_mov_sq && dot < 0)
+      return kGestureTypeNull;  // possible pinch zoom. Don't move cursor.
+  }
+  return current_gesture_type_;
 }
 
 bool ImmediateInterpreter::TwoFingersGesturing(
@@ -1504,6 +1591,13 @@ void ImmediateInterpreter::FillResultGesture(
       }
       double dx = (end_sum_x - start_sum_x) / fingers.size();
       result_ = Gesture(kGestureSwipe, changed_time_, hwstate.timestamp, dx);
+      break;
+    }
+
+    case kGestureTypeZoom: {
+      float current_dist = sqrtf(TwoFingerDistanceSq(hwstate));
+      result_ = Gesture(kGestureZoom, changed_time_, hwstate.timestamp,
+                        current_dist / two_finger_start_distance_);
       break;
     }
     default:

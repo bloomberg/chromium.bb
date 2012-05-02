@@ -126,6 +126,13 @@ typedef struct {
   float dx;
 } GestureSwipe;
 
+typedef struct {
+  // Relative zoom factor starting with 1.0 = no zoom
+  // <1.0 for zooming out
+  // >1.0 for zooming in
+  float dz;
+} GestureZoom;
+
 enum GestureType {
 #ifdef GESTURES_INTERNAL
   kGestureTypeNull = -1,  // internal to Gestures library only
@@ -136,6 +143,7 @@ enum GestureType {
   kGestureTypeButtonsChange,
   kGestureTypeFling,
   kGestureTypeSwipe,
+  kGestureTypeZoom
 };
 
 #ifdef __cplusplus
@@ -145,6 +153,7 @@ extern const GestureScroll kGestureScroll;
 extern const GestureButtonsChange kGestureButtonsChange;
 extern const GestureFling kGestureFling;
 extern const GestureSwipe kGestureSwipe;
+extern const GestureZoom kGestureZoom;
 #endif  // __cplusplus
 
 struct Gesture {
@@ -187,6 +196,13 @@ struct Gesture {
         type(kGestureTypeSwipe) {
     details.swipe.dx = dx;
   }
+  Gesture(const GestureZoom&,
+          stime_t start, stime_t end, float dz)
+      : start_time(start),
+        end_time(end),
+        type(kGestureTypeZoom) {
+    details.zoom.dz = dz;
+  }
 #endif  // __cplusplus
 
   stime_t start_time, end_time;
@@ -197,6 +213,7 @@ struct Gesture {
     GestureButtonsChange buttons;
     GestureFling fling;
     GestureSwipe swipe;
+    GestureZoom zoom;
   } details;
 };
 

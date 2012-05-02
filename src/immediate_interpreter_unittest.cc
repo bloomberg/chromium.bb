@@ -2675,4 +2675,148 @@ TEST(ImmediateInterpreterTest, SwipeTest) {
   EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[5], NULL));
 }
 
+// Tests that fingers that have been present a while, but are stationary,
+// can be evaluated multiple times when they start moving.
+
+enum ZoomTestExpectedResult {
+  kZoom,
+  kNoZoom,
+  kAny
+};
+
+struct ZoomTestInput {
+  HardwareState hs;
+  ZoomTestExpectedResult expected_result;
+};
+
+TEST(ImmediateInterpreterTest, ZoomTests) {
+  ImmediateInterpreter ii(NULL);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    100,  // right edge
+    100,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    96,  // x screen DPI
+    96,  // y screen DPI
+    2,  // max fingers
+    5,  // max touch
+    0,  // tripletap
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    // 0: start position
+    {0, 0, 0, 0, 20, 0, 40, 40, 1, 0},
+    {0, 0, 0, 0, 20, 0, 90, 90, 2, 0},
+
+    // 2: pinch inwards
+    {0, 0, 0, 0, 20, 0, 41, 41, 1, 0},
+    {0, 0, 0, 0, 20, 0, 89, 89, 2, 0},
+    {0, 0, 0, 0, 20, 0, 42, 42, 1, 0},
+    {0, 0, 0, 0, 20, 0, 88, 88, 2, 0},
+    {0, 0, 0, 0, 20, 0, 43, 43, 1, 0},
+    {0, 0, 0, 0, 20, 0, 87, 87, 2, 0},
+    {0, 0, 0, 0, 20, 0, 44, 44, 1, 0},
+    {0, 0, 0, 0, 20, 0, 86, 86, 2, 0},
+    {0, 0, 0, 0, 20, 0, 45, 45, 1, 0},
+    {0, 0, 0, 0, 20, 0, 85, 85, 2, 0},
+
+    // 12: pinch outwards
+    {0, 0, 0, 0, 20, 0, 39, 39, 1, 0},
+    {0, 0, 0, 0, 20, 0, 91, 91, 2, 0},
+    {0, 0, 0, 0, 20, 0, 38, 38, 1, 0},
+    {0, 0, 0, 0, 20, 0, 92, 92, 2, 0},
+    {0, 0, 0, 0, 20, 0, 37, 37, 1, 0},
+    {0, 0, 0, 0, 20, 0, 93, 93, 2, 0},
+    {0, 0, 0, 0, 20, 0, 36, 36, 1, 0},
+    {0, 0, 0, 0, 20, 0, 94, 94, 2, 0},
+    {0, 0, 0, 0, 20, 0, 35, 35, 1, 0},
+    {0, 0, 0, 0, 20, 0, 95, 95, 2, 0},
+
+    // 22: single finger pinch
+    {0, 0, 0, 0, 20, 0, 39, 39, 1, 0},
+    {0, 0, 0, 0, 20, 0, 90, 90, 2, 0},
+    {0, 0, 0, 0, 20, 0, 38, 38, 1, 0},
+    {0, 0, 0, 0, 20, 0, 90, 90, 2, 0},
+    {0, 0, 0, 0, 20, 0, 37, 37, 1, 0},
+    {0, 0, 0, 0, 20, 0, 90, 90, 2, 0},
+    {0, 0, 0, 0, 20, 0, 36, 36, 1, 0},
+    {0, 0, 0, 0, 20, 0, 90, 90, 2, 0},
+    {0, 0, 0, 0, 20, 0, 35, 35, 1, 0},
+    {0, 0, 0, 0, 20, 0, 90, 90, 2, 0},
+  };
+
+  ZoomTestInput input_states[] = {
+    // time, buttons, finger count, touch count, finger states pointer
+    {{ 0.00, 0, 0, 0, NULL }, kAny},
+
+    // fast pinch outwards
+    {{ 0.01, 0, 2, 2, &finger_states[0] }, kAny},
+    {{ 0.02, 0, 2, 2, &finger_states[4] }, kAny},
+    {{ 0.03, 0, 2, 2, &finger_states[8] }, kAny},
+    {{ 0.04, 0, 2, 2, &finger_states[10] }, kZoom},
+    {{ 0.05, 0, 0, 0, NULL }, kAny},
+
+    // slow pinch
+    {{ 1.01, 0, 2, 2, &finger_states[0] }, kAny},
+    {{ 1.02, 0, 2, 2, &finger_states[0] }, kAny},
+    {{ 1.03, 0, 2, 2, &finger_states[2] }, kAny},
+    {{ 1.04, 0, 2, 2, &finger_states[2] }, kAny},
+    {{ 1.05, 0, 2, 2, &finger_states[4] }, kAny},
+    {{ 1.06, 0, 2, 2, &finger_states[4] }, kAny},
+    {{ 1.07, 0, 2, 2, &finger_states[6] }, kAny},
+    {{ 1.08, 0, 2, 2, &finger_states[6] }, kAny},
+    {{ 1.09, 0, 2, 2, &finger_states[8] }, kAny},
+    {{ 1.10, 0, 2, 2, &finger_states[8] }, kAny},
+    {{ 1.11, 0, 2, 2, &finger_states[10] }, kAny},
+    {{ 1.12, 0, 2, 2, &finger_states[10] }, kZoom},
+    {{ 1.13, 0, 0, 0, NULL }, kAny},
+
+    // single finger pinch
+    {{ 2.01, 0, 2, 2, &finger_states[22] }, kAny},
+    {{ 2.02, 0, 2, 2, &finger_states[26] }, kAny},
+    {{ 2.03, 0, 2, 2, &finger_states[30] }, kAny},
+    {{ 2.04, 0, 2, 2, &finger_states[32] }, kNoZoom},
+    {{ 2.05, 0, 0, 0, NULL }, kAny},
+
+
+    // first single finger pinch, then second moves too.
+    {{ 3.01, 0, 2, 2, &finger_states[22] }, kAny},
+    {{ 3.02, 0, 2, 2, &finger_states[24] }, kAny},
+    {{ 3.03, 0, 2, 2, &finger_states[6] }, kAny},
+    {{ 3.04, 0, 2, 2, &finger_states[8] }, kAny},
+    {{ 3.05, 0, 2, 2, &finger_states[10] }, kZoom},
+    {{ 3.06, 0, 0, 0, NULL }, kAny},
+
+    // fast pinch inwards
+    {{ 4.01, 0, 2, 2, &finger_states[10] }, kAny},
+    {{ 4.02, 0, 2, 2, &finger_states[8] }, kAny},
+    {{ 4.03, 0, 2, 2, &finger_states[4] }, kAny},
+    {{ 4.04, 0, 2, 2, &finger_states[0] }, kZoom},
+    {{ 4.05, 0, 0, 0, NULL }, kAny},
+  };
+
+  ii.SetHardwareProperties(hwprops);
+
+  for (size_t idx = 0; idx < arraysize(input_states); ++idx) {
+    Gesture* gs = ii.SyncInterpret(&input_states[idx].hs, NULL);
+    // assert zoom detection
+    if (input_states[idx].expected_result == kZoom) {
+      ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+      EXPECT_EQ(kGestureTypeZoom, gs->type);
+    }
+    // assert zoom not detected
+    if (input_states[idx].expected_result == kNoZoom) {
+      if (gs != NULL) {
+        EXPECT_NE(kGestureTypeZoom, gs->type);
+      }
+    }
+  }
+}
+
+
 }  // namespace gestures
