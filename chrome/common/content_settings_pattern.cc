@@ -12,11 +12,11 @@
 #include "chrome/common/content_settings_pattern_parser.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "net/base/dns_util.h"
-#include "net/base/net_util.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
 #include "ipc/ipc_message_utils.h"
+#include "net/base/dns_util.h"
+#include "net/base/net_util.h"
 
 namespace {
 
@@ -167,7 +167,7 @@ bool ContentSettingsPattern::Builder::Canonicalize(PatternParts* parts) {
   if (parts->scheme == std::string(chrome::kFileScheme) &&
       !parts->is_path_wildcard) {
       GURL url(std::string(chrome::kFileScheme) +
-               std::string(chrome::kStandardSchemeSeparator) + parts->path);
+               std::string(content::kStandardSchemeSeparator) + parts->path);
       parts->path = url.path();
   }
 

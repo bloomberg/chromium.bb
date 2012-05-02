@@ -220,7 +220,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
         // URL of the form "username:password@foo.com".
         const string16 http_scheme_prefix =
             ASCIIToUTF16(std::string(chrome::kHttpScheme) +
-                         chrome::kStandardSchemeSeparator);
+                         content::kStandardSchemeSeparator);
         url_parse::Parsed http_parts;
         string16 http_scheme;
         GURL http_canonicalized_url;

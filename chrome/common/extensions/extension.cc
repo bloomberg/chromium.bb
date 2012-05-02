@@ -27,8 +27,8 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/csp_validator.h"
 #include "chrome/common/extensions/extension_action.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/feature.h"
 #include "chrome/common/extensions/file_browser_handler.h"
@@ -3028,7 +3028,7 @@ const SkBitmap& Extension::GetDefaultIcon(bool is_app) {
 // static
 GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
   return GURL(std::string(chrome::kExtensionScheme) +
-              chrome::kStandardSchemeSeparator + extension_id + "/");
+              content::kStandardSchemeSeparator + extension_id + "/");
 }
 
 bool Extension::InitFromValue(int flags, string16* error) {

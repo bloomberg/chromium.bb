@@ -108,7 +108,7 @@ GURL GetURLFromCanonicalCookie(
       cookie.IsSecure() ? chrome::kHttpsScheme : chrome::kHttpScheme;
   const std::string host =
       domain_key.find('.') != 0 ? domain_key : domain_key.substr(1);
-  return GURL(scheme + chrome::kStandardSchemeSeparator + host + "/");
+  return GURL(scheme + content::kStandardSchemeSeparator + host + "/");
 }
 
 void AppendMatchingCookiesToList(

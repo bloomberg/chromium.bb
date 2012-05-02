@@ -390,7 +390,7 @@ void AutocompleteEditModel::AdjustTextForCopy(int sel_min,
       url->SchemeIs(chrome::kHttpScheme) && perm_url.host() == url->host()) {
     *write_url = true;
     string16 http = ASCIIToUTF16(chrome::kHttpScheme) +
-        ASCIIToUTF16(chrome::kStandardSchemeSeparator);
+        ASCIIToUTF16(content::kStandardSchemeSeparator);
     if (text->compare(0, http.length(), http) != 0)
       *text = http + *text;
   }

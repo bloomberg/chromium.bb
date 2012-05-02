@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,7 @@ TEST_F(BuiltinProviderTest, TypingScheme) {
   const string16 kChrome = ASCIIToUTF16(chrome::kChromeUIScheme);
   const string16 kSeparator1 = ASCIIToUTF16(":");
   const string16 kSeparator2 = ASCIIToUTF16(":/");
-  const string16 kSeparator3 = ASCIIToUTF16(chrome::kStandardSchemeSeparator);
+  const string16 kSeparator3 = ASCIIToUTF16(content::kStandardSchemeSeparator);
 
   // These default URLs should correspond with those in BuiltinProvider::Start.
   const GURL kURL1 = GURL(chrome::kChromeUIChromeURLsURL);
@@ -136,7 +136,7 @@ TEST_F(BuiltinProviderTest, ChromeURLs) {
   const string16 kChrome = ASCIIToUTF16(chrome::kChromeUIScheme);
   const string16 kSeparator1 = ASCIIToUTF16(":");
   const string16 kSeparator2 = ASCIIToUTF16(":/");
-  const string16 kSeparator3 = ASCIIToUTF16(chrome::kStandardSchemeSeparator);
+  const string16 kSeparator3 = ASCIIToUTF16(content::kStandardSchemeSeparator);
 
   // This makes assumptions about the chrome URLs listed by the BuiltinProvider.
   // Currently they are derived from ChromePaths() in browser_about_handler.cc.

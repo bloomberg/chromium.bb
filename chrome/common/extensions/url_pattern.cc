@@ -144,7 +144,7 @@ URLPattern::ParseResult URLPattern::Parse(const std::string& pattern) {
   }
 
   // Parse out the scheme.
-  size_t scheme_end_pos = pattern.find(chrome::kStandardSchemeSeparator);
+  size_t scheme_end_pos = pattern.find(content::kStandardSchemeSeparator);
   bool has_standard_scheme_separator = true;
 
   // Some urls also use ':' alone as the scheme separator.
@@ -165,7 +165,7 @@ URLPattern::ParseResult URLPattern::Parse(const std::string& pattern) {
 
   // Advance past the scheme separator.
   scheme_end_pos +=
-      (standard_scheme ? strlen(chrome::kStandardSchemeSeparator) : 1);
+      (standard_scheme ? strlen(content::kStandardSchemeSeparator) : 1);
   if (scheme_end_pos >= pattern.size())
     return PARSE_ERROR_EMPTY_HOST;
 
@@ -340,7 +340,7 @@ bool URLPattern::MatchesScheme(const std::string& test) const {
 
 bool URLPattern::MatchesHost(const std::string& host) const {
   std::string test(chrome::kHttpScheme);
-  test += chrome::kStandardSchemeSeparator;
+  test += content::kStandardSchemeSeparator;
   test += host;
   test += "/";
   return MatchesHost(GURL(test));
@@ -404,7 +404,7 @@ const std::string& URLPattern::GetAsString() const {
   bool standard_scheme = IsStandardScheme(scheme_);
 
   std::string spec = scheme_ +
-      (standard_scheme ? chrome::kStandardSchemeSeparator : ":");
+      (standard_scheme ? content::kStandardSchemeSeparator : ":");
 
   if (scheme_ != chrome::kFileScheme && standard_scheme) {
     if (match_subdomains_) {

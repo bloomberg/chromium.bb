@@ -34,9 +34,6 @@ CONTENT_EXPORT extern const char kMetadataScheme[];
 CONTENT_EXPORT extern const char kSwappedOutScheme[];
 CONTENT_EXPORT extern const char kViewSourceScheme[];
 
-// Used to separate a standard scheme and the hostname: "://".
-CONTENT_EXPORT extern const char kStandardSchemeSeparator[];
-
 // Hosts for about URLs.
 CONTENT_EXPORT extern const char kAboutBlankURL[];
 CONTENT_EXPORT extern const char kChromeUIAppCacheInternalsHost[];
@@ -58,6 +55,9 @@ CONTENT_EXPORT extern const char kChromeUIShorthangURL[];
 }  // namespace chrome
 
 namespace content {
+
+// Used to separate a standard scheme and the hostname: "://".
+CONTENT_EXPORT extern const char kStandardSchemeSeparator[];
 
 // Special URL used to start a navigation to an error page.
 extern const char kUnreachableWebDataURL[];

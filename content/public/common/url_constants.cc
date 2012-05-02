@@ -52,8 +52,6 @@ const char kMetadataScheme[] = "metadata";
 const char kSwappedOutScheme[] = "swappedout";
 const char kViewSourceScheme[] = "view-source";
 
-const char kStandardSchemeSeparator[] = "://";
-
 const char kAboutBlankURL[] = "about:blank";
 const char kChromeUIAppCacheInternalsHost[] = "appcache-internals";
 const char kChromeUIBlobInternalsHost[] = "blob-internals";
@@ -72,6 +70,8 @@ const char kChromeUIShorthangURL[] = "chrome://shorthang";
 }  // namespace chrome
 
 namespace content {
+
+const char kStandardSchemeSeparator[] = "://";
 
 // This error URL is loaded in normal web renderer processes, so it should not
 // have a chrome:// scheme that might let it be confused with a WebUI page.
