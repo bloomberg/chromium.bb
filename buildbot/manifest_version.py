@@ -17,13 +17,10 @@ import time
 from chromite.buildbot import constants, repository
 from chromite.lib import cros_build_lib as cros_lib
 
-logging_format = '%(asctime)s - %(filename)s - %(levelname)-8s: %(message)s'
-date_format = '%Y/%m/%d %H:%M:%S'
-logging.basicConfig(level=logging.DEBUG, format=logging_format,
-                    datefmt=date_format)
 
 PUSH_BRANCH = 'temp_auto_checkin_branch'
 NUM_RETRIES = 20
+
 
 class VersionUpdateException(Exception):
   """Exception gets thrown for failing to update the version file"""
@@ -667,18 +664,3 @@ class BuildSpecsManager(object):
       # Cleanse any failed local changes and throw an exception.
       self.RefreshManifestCheckout()
       raise StatusUpdateException(last_error)
-
-
-def SetLogFileHandler(logfile):
-  """This sets the logging handler to a file.
-
-    Defines a Handler which writes INFO messages or higher to the sys.stderr
-    Add the log message handler to the logger
-
-    Args:
-      logfile: name of the logfile to open
-  """
-  logfile_handler = logging.handlers.RotatingFileHandler(logfile, backupCount=5)
-  logfile_handler.setLevel(logging.DEBUG)
-  logfile_handler.setFormatter(logging.Formatter(logging_format))
-  logging.getLogger().addHandler(logfile_handler)

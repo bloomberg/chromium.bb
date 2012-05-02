@@ -7,6 +7,7 @@
    periodically from a host machine."""
 
 import filecmp
+import logging
 import optparse
 import os
 import re
@@ -322,9 +323,9 @@ def main(argv):
 
   # Set cros_build_lib debug level to hide RunCommand spew.
   if options.verbose:
-    cros_lib.DebugLevel.SetDebugLevel(cros_lib.DebugLevel.DEBUG)
+    cros_lib.logger.setLevel(logging.DEBUG)
   else:
-    cros_lib.DebugLevel.SetDebugLevel(cros_lib.DebugLevel.WARNING)
+    cros_lib.logger.setLevel(logging.WARNING)
 
   repo_root = cros_lib.FindRepoCheckoutRoot()
   chromium_src_root = os.path.join(repo_root, _CHROMIUM_SRC_ROOT)

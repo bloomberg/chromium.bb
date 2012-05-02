@@ -12,6 +12,7 @@ full and pre-flight-queue builds.
 
 import distutils.version
 import glob
+import logging
 import multiprocessing
 import optparse
 import os
@@ -1010,7 +1011,7 @@ def main(argv):
   _PostParseCheck(options, args)
 
   if options.remote:
-    cros_lib.DebugLevel.SetDebugLevel(cros_lib.DebugLevel.WARNING)
+    cros_lib.logger.setLevel(logging.WARNING)
 
     # Verify configs are valid.
     for bot in args:

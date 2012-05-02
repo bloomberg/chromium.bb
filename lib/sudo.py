@@ -84,8 +84,7 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
       # We need to go interactive and allow sudo to ask for credentials.
 
       cros_build_lib.Info('Launching sudo keepalive process. '
-                          'This may ask for your password twice.',
-                          flush=True)
+                          'This may ask for your password twice.')
 
       cros_build_lib.RunCommand(
           'sudo true; sudo true < /dev/null > /dev/null 2>&1',

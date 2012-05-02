@@ -5,13 +5,13 @@
 """Common python commands used by various build scripts."""
 
 import errno
+import logging
 import os
 import re
 import signal
 import subprocess
 import sys
 import time
-from terminal import Color
 import xml.sax
 import functools
 import contextlib
@@ -28,45 +28,15 @@ YES = 'yes'
 NO = 'no'
 GERRIT_SSH_REMOTE = 'gerrit'
 
-class DebugLevel(object):
-  """Object that controls the verbosity of program output.
 
-  Setting the debug level to a given level will mute all output that is at a
-  lower debug level.  I.e., setting debug level of ERROR will hide all output
-  that is at WARNING, INFO, and DEBUG levels.
-  """
-  class Level(object):
-    """Object that represents an enumerated debug level."""
-    def __init__(self, level):
-      self.level = level
+# Set up basic logging information for all modules that use logging.
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(levelname)s: %(asctime)s: %(message)s',
+    datefmt='%H:%M:%S')
 
-    def __cmp__(self, other):
-      return self.level - other.level
 
-  # Available levels
-  DEBUG = Level(0)
-  INFO = Level(1)
-  WARNING = Level(2)
-  ERROR = Level(3)
-
-  # Internal variable that stores current global debug level.
-  _current_debug_level = INFO
-
-  @classmethod
-  def GetCurrentDebugLevel(cls):
-    """Get the current debug level for the cros_build_lib module."""
-    return cls._current_debug_level
-
-  @classmethod
-  def SetDebugLevel(cls, debug_level):
-    """Set the current debug level for the cros_build_lib module."""
-    assert isinstance(debug_level, cls.Level), 'Invalid debug level.'
-    cls._current_debug_level = debug_level
-
-  @classmethod
-  def IsValidDebugLevel(cls, debug_level):
-    """Returns whether the passed in debug_level is a valid level."""
-    return isinstance(debug_level, cls.Level)
+logger = logging.getLogger('chromite')
 
 
 class CommandResult(object):
@@ -77,6 +47,7 @@ class CommandResult(object):
     self.error = error
     self.output = output
     self.returncode = returncode
+
 
 class RunCommandError(Exception):
   """Error caught in RunCommand() method."""
@@ -141,7 +112,7 @@ def SudoRunCommand(cmd, user='root', **kwds):
   if kwds.pop("strict", True) and STRICT_SUDO:
     if 'CROS_SUDO_KEEP_ALIVE' not in os.environ:
       raise RunCommandError(
-          'We were invoked in a strict sudo non-interactive context, but no '
+          'We were invoked in a strict sudo non - interactive context, but no '
           'sudo keep alive daemon is running.  This is a bug in the code.',
           CommandResult(cmd=cmd, returncode=126))
     sudo_cmd += ['-n']
@@ -199,7 +170,7 @@ def _KillChildProcess(proc, kill_timeout, cmd, original_handler, signum, frame):
 
   if not signals.RelaySignal(original_handler, signum, frame):
     # Mock up our own, matching exit code for signaling.
-    cmd_result = CommandResult(cmd=cmd, returncode=signum<<8)
+    cmd_result = CommandResult(cmd=cmd, returncode=signum << 8)
     raise TerminateRunCommandError('Received signal %i' % signum, cmd_result)
 
 
@@ -257,7 +228,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                cwd=None, input=None, enter_chroot=False, shell=False,
                env=None, extra_env=None, ignore_sigint=False,
                combine_stdout_stderr=False, log_stdout_to_file=None,
-               chroot_args=None, debug_level=DebugLevel.INFO,
+               chroot_args=None, debug_level=logging.INFO,
                error_code_ok=False, kill_timeout=1):
   """Runs a command.
 
@@ -294,9 +265,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       to the specified file.
     chroot_args: An array of arguments for the chroot environment wrapper.
     debug_level: The debug level of RunCommand's output - applies to output
-                 coming from subprocess as well.  Having a debug level less than
-                 the global debug level has the effect of muting this command.
-                 Valid debug levels for RunCommand are DEBUG and INFO.
+                 coming from subprocess as well.
     error_code_ok: Does not raise an exception when command returns a non-zero
                    exit code.  Instead, returns the CommandResult object
                    containing the exit code.
@@ -316,9 +285,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   file_handle = None
   cmd_result = CommandResult()
 
-  assert DebugLevel.IsValidDebugLevel(debug_level), 'Invalid debug level'
-  assert debug_level <= DebugLevel.INFO, 'Valid debug levels are DEBUG and INFO'
-  mute_output = DebugLevel.GetCurrentDebugLevel() > debug_level
+  mute_output = logger.getEffectiveLevel() > debug_level
 
   # Force the timeout to float; in the process, if it's not convertible,
   # a self-explanatory exception will be thrown.
@@ -384,11 +351,12 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     env.update(extra_env)
 
   # Print out the command before running.
-  if not mute_output and print_cmd:
+  if print_cmd:
     if cwd:
-      Print('RunCommand: %r in %s' % (cmd, cwd), debug_level)
+      logger.log(debug_level, 'RunCommand: %r in %s', cmd, cwd)
     else:
-      Print('RunCommand: %r' % cmd, debug_level)
+      logger.log(debug_level, 'RunCommand: %r', cmd)
+
   cmd_result.cmd = cmd
 
   proc = None
@@ -451,67 +419,38 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   return cmd_result
 
 
-#TODO(sjg): Remove this in favor of operation.Die
-def Die(message):
-  """Emits a red error message and halts execution.
+def Die(message, *args):
+  """Emits an error message with a stack trace and halts execution.
 
   Args:
     message: The message to be emitted before exiting.
   """
-  Error(message)
+  logger.exception(message, *args)
   sys.exit(1)
 
 
-def _WriteMessage(message, flush):
-  print >> sys.stderr, message
-  if flush:
-    sys.stderr.flush()
+def Error(message, *args, **kwargs):
+  """Emits a red warning message using the logging module."""
+  logger.error(message, *args, **kwargs)
 
 
-def Error(message, flush=False):
-  """Emits a red warning message and continues execution."""
-  if DebugLevel.GetCurrentDebugLevel() <= DebugLevel.ERROR:
-    _WriteMessage(
-        Color(_STDOUT_IS_TTY).Color(Color.RED, '\nERROR: ' + message), flush)
-
-
-#TODO(sjg): Remove this in favor of operation.Warning
-def Warning(message, flush=False):
-  """Emits a yellow warning message and continues execution."""
-  if DebugLevel.GetCurrentDebugLevel() <= DebugLevel.WARNING:
-    _WriteMessage('\nWARNING: ' + message, flush)
+def Warning(message, *args, **kwargs):
+  """Emits a warning message using the logging module."""
+  logger.warn(message, *args, **kwargs)
 
 
 # This command is deprecated in favor of operation.Info()
 # It is left here for the moment so people are aware what happened.
 # The reason is that this is not aware of the terminal output restrictions such
 # as verbose, quiet and subprocess output. You should not be calling this.
-def Info(message, flush=False):
-  """Emits a blue informational message and continues execution."""
-  if DebugLevel.GetCurrentDebugLevel() <= DebugLevel.INFO:
-    _WriteMessage('\nINFO: ' + message, flush)
+def Info(message, *args, **kwargs):
+  """Emits an info message using the logging module."""
+  logger.info(message, *args, **kwargs)
 
 
-def Debug(message, flush=False):
-  """Emits a plain-text debug message and continues execution."""
-  if DebugLevel.GetCurrentDebugLevel() <= DebugLevel.INFO:
-    _WriteMessage('\nDEBUG: ' + message, flush)
-
-
-def Print(message, debug_level=DebugLevel.INFO, flush=False):
-  """Print message with a specified debug level to stdout."""
-  assert DebugLevel.IsValidDebugLevel(debug_level), 'Invalid debug level'
-
-  if debug_level == DebugLevel.DEBUG:
-    Debug(message, flush=flush)
-  elif debug_level == DebugLevel.INFO:
-    Info(message, flush=flush)
-  elif debug_level == DebugLevel.WARNING:
-    Warning(message, flush=flush)
-  elif debug_level == DebugLevel.ERROR:
-    Error(message, flush=flush)
-  else:
-    assert False, 'Invalid debug level'
+def Debug(message, *args, **kwargs):
+  """Emits a debugging message using the logging module."""
+  logger.debug(message, *args, **kwargs)
 
 
 def PrintBuildbotLink(text, url):
@@ -775,7 +714,6 @@ class ManifestHandler(xml.sax.handler.ContentHandler):
   def __init__(self):
     self.default = None
     self.projects = {}
-    pass
 
   @classmethod
   def ParseManifest(cls, manifest_path):
