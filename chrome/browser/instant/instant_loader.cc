@@ -22,6 +22,7 @@
 #include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
@@ -831,6 +832,10 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
         base::Histogram::kUmaTargetedHistogramFlag);
     histogram->Add(tab_contents == NULL || session_storage_namespace_ ==
         GetSessionStorageNamespace(tab_contents));
+    // Now that the ownership is being passed to the caller, the thumbnailer
+    // needs to resume taking thumbnails.
+    if (preview_contents_->thumbnail_generator())
+      preview_contents_->thumbnail_generator()->set_enabled(true);
   }
   session_storage_namespace_ = NULL;
   return preview_contents_.release();
@@ -1072,6 +1077,10 @@ void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
       preview_tab_contents_delegate_.get());
   preview_contents_->core_tab_helper()->set_delegate(
       preview_tab_contents_delegate_.get());
+  // Disables thumbnailing while the web contents is shown as preview to avoid
+  // generating unnecessary thumbnails.
+  if (preview_contents_->thumbnail_generator())
+    preview_contents_->thumbnail_generator()->set_enabled(false);
 
 #if defined(OS_MACOSX)
   // If |preview_contents_| does not currently have a RWHV, we will call

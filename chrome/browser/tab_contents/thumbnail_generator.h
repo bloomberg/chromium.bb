@@ -73,6 +73,11 @@ class ThumbnailGenerator : public content::NotificationObserver,
   // Starts taking thumbnails of the given tab contents.
   void StartThumbnailing(content::WebContents* web_contents);
 
+  // Enables or disables the function of taking thumbnails.
+  // A disabled ThumbnailGenerator generates no thumbnails although it still
+  // continues to receive the notifications from the web contents.
+  void set_enabled(bool enabled) { enabled_ = enabled; }
+
   // This registers a callback that can receive the resulting SkBitmap
   // from the renderer when it is done rendering it.  This differs
   // from GetThumbnailForRenderer in that it may be asynchronous, and
@@ -174,6 +179,7 @@ class ThumbnailGenerator : public content::NotificationObserver,
   // through being closed, or because the renderer is no longer there).
   void WebContentsDisconnected(content::WebContents* contents);
 
+  bool enabled_;
   content::NotificationRegistrar registrar_;
 
   // Map of callback objects by sequence number.

@@ -197,6 +197,11 @@ class TabContentsWrapper : public content::WebContentsObserver {
     return content_settings_.get();
   }
 
+  // NOTE: This returns NULL unless in-browser thumbnail generation is enabled.
+  ThumbnailGenerator* thumbnail_generator() {
+    return thumbnail_generator_.get();
+  }
+
   TranslateTabHelper* translate_tab_helper() {
     return translate_tab_helper_.get();
   }
@@ -256,6 +261,7 @@ class TabContentsWrapper : public content::WebContentsObserver {
   // state by various UI elements.
   scoped_ptr<TabSpecificContentSettings> content_settings_;
 
+  scoped_ptr<ThumbnailGenerator> thumbnail_generator_;
   scoped_ptr<TranslateTabHelper> translate_tab_helper_;
 
   // Handles displaying a web intents picker to the user.
@@ -278,7 +284,6 @@ class TabContentsWrapper : public content::WebContentsObserver {
   scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
   scoped_ptr<safe_browsing::SafeBrowsingTabObserver>
       safe_browsing_tab_observer_;
-  scoped_ptr<ThumbnailGenerator> thumbnail_generation_observer_;
 
   // WebContents (MUST BE LAST) ------------------------------------------------
 

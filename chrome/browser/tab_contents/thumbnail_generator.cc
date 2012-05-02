@@ -191,7 +191,8 @@ struct ThumbnailGenerator::AsyncRequestInfo {
 };
 
 ThumbnailGenerator::ThumbnailGenerator()
-    : load_interrupted_(false),
+    : enabled_(true),
+      load_interrupted_(false),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // The BrowserProcessImpl creates this non-lazily. If you add nontrivial
   // stuff here, be sure to convert it to being lazily created.
@@ -407,7 +408,7 @@ void ThumbnailGenerator::WidgetHidden(RenderWidgetHost* widget) {
   // web_contents() can be NULL, if StartThumbnailing() is not called, but
   // MonitorRenderer() is called. The use case is found in
   // chrome/test/base/ui_test_utils.cc.
-  if (!web_contents())
+  if (!enabled_ || !web_contents())
     return;
   UpdateThumbnailIfNecessary(web_contents());
 }

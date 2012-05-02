@@ -139,8 +139,8 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
   // Start the in-browser thumbnailing if the feature is enabled.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableInBrowserThumbnailing)) {
-    thumbnail_generation_observer_.reset(new ThumbnailGenerator);
-    thumbnail_generation_observer_->StartThumbnailing(web_contents_.get());
+    thumbnail_generator_.reset(new ThumbnailGenerator);
+    thumbnail_generator_->StartThumbnailing(web_contents_.get());
   }
 
   // If this is not an incognito window, setup to handle one-click login.
