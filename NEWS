@@ -27,9 +27,12 @@ liblouis NEWS -- history of user-visible changes.
      This removes duplication in tables, and should make it easier to define tables, since instead of defining individual 
      characters, the table producer can simply include the right class of definitions.
    - ar-ar-g1.utb, ca-chardefs.cti, chardefs.cti, ckb-chardefs.cti,
-     cy-cy-g1.utb, de-chardefs6.cti, en-us-compbrl.ctb, en-us-g1.utb,
-     Es-Es-G0.utb, Es-Es-g1.utb, et-g0.utb, fr-bfu-comp6.utb,
-     fr-bfu-comp8.utb, gez-chardefs.cti, is-chardefs6.cti,  marburg_single_cell_defs.cti,
+     cy-cy-g1.utb, Cz-Cz-g1.utb, de-chardefs6.cti, 
+     en-us-comp6.ctb,  en-us-comp8.ctb, en-us-compbrl.ctb, en-us-g1.utb,
+     es-chardefs.cti, Es-Es-G0.utb, Es-Es-g1.utb, et-g0.utb, eurodefs.cti,
+     fr-bfu-comp6.utb, fr-bfu-comp8.utb, fr-ca-g1.utb, fr-fr-g1.utb,
+     gez-chardefs.cti, gr-bb.ctb, gr-gr-g1.utb, is-chardefs6.cti, 
+     it-it-g1.utb, it-it-g1.utb2, marburg_single_cell_defs.cti,
      nl-BE-chardefs.cti, nl-be-g1.utb, Nl-Nl-g1.utb, no-no-g0.utb,
      Pl-Pl-g1.utb, printables.cti, pt-pt-g1.utb, Se-Se-g1.utb,
      sk-sk.utb, sk-sk-g1.utb, sl-si-g1.utb, sr-chardefs.cti,

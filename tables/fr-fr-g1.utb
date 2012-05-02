@@ -31,31 +31,7 @@ space \x000D 0
 space \x00A0 0
 space \s 0 blank				# 32
 
-uplow Aa 1				lettre a		x0041 / 0061
-uplow Bb 12				lettre b		x0042 / 0062
-uplow Cc 14				lettre c
-uplow Dd 145			lettre d
-uplow Ee 15				lettre e
-uplow Ff 124			lettre f
-uplow Gg 1245			lettre g
-uplow Hh 125			lettre h
-uplow Ii 24				lettre i
-uplow Jj 245			lettre j
-uplow Kk 13				lettre k
-uplow Ll 123			lettre l
-uplow Mm 134			lettre m
-uplow Nn 1345			lettre n
-uplow Oo 135			lettre o
-uplow Pp 1234			lettre p
-uplow Qq 12345		lettre q
-uplow Rr 1235			lettre r
-uplow Ss 234			lettre s
-uplow Tt 2345			lettre t
-uplow Uu 136			lettre u
-uplow Vv 1236			lettre v
-uplow Xx 1346			lettre x
-uplow Yy 13456		lettre y
-uplow Zz 1356			lettre z						x005A / 007A
+include latinLetterDef6Dots.uti
 uplow Çç 12346		c cédille
 uplow Éé 123456		e accent aigu
 uplow Àà 12356		a accent grave
@@ -73,7 +49,6 @@ uplow Üü 1256			u tréma
 #	uplow oe 246		oe ligatur
 uplow \x0152\x0153 246
 
-uplow Ww 2456				lettre w							x0057 / 0077
 
 punctuation , 2			virgule
 punctuation ; 23		point-virgule
