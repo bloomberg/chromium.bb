@@ -49,17 +49,18 @@ class SessionStartupChange : public BasePrefsChange {
  private:
   virtual ~SessionStartupChange();
 
-  // Returns the first URL among new startup pages. Returns an empty URL if
-  // there are no new startup pages.
+  // Returns the first URL that was added to the startup pages. Returns the
+  // first startup URL if they haven't changed. Returns an empty URL if there
+  // are no startup URLs.
   GURL GetFirstNewURL() const;
 
   // Opens all tabs in |tabs| and makes them pinned.
   void OpenPinnedTabs(Browser* browser, const PinnedTabCodec::Tabs& tabs);
 
-  SessionStartupPref new_startup_pref_;
-  SessionStartupPref backup_startup_pref_;
-  PinnedTabCodec::Tabs new_pinned_tabs_;
-  PinnedTabCodec::Tabs backup_pinned_tabs_;
+  const SessionStartupPref new_startup_pref_;
+  const SessionStartupPref backup_startup_pref_;
+  const PinnedTabCodec::Tabs new_pinned_tabs_;
+  const PinnedTabCodec::Tabs backup_pinned_tabs_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStartupChange);
 };
@@ -171,15 +172,36 @@ GURL SessionStartupChange::GetNewSettingURL() const {
 }
 
 GURL SessionStartupChange::GetFirstNewURL() const {
-  // TODO(ivankr): this actually should return the first URL present in new
-  // startup prefs AND not in old.
-  if (new_startup_pref_.type == SessionStartupPref::URLS &&
-      !new_startup_pref_.urls.empty()) {
-    return new_startup_pref_.urls[0];
+  if (new_startup_pref_.type == SessionStartupPref::LAST)
+    return GURL();
+
+  std::set<GURL> old_urls;
+  if (backup_startup_pref_.type == SessionStartupPref::URLS) {
+    old_urls.insert(backup_startup_pref_.urls.begin(),
+                    backup_startup_pref_.urls.end());
   }
-  if (!new_pinned_tabs_.empty())
-    return new_pinned_tabs_[0].url;
-  return GURL();
+  for (size_t i = 0; i < backup_pinned_tabs_.size(); ++i)
+    old_urls.insert(backup_pinned_tabs_[i].url);
+
+  std::vector<GURL> new_urls;
+  if (new_startup_pref_.type == SessionStartupPref::URLS) {
+    new_urls.insert(new_urls.end(), new_startup_pref_.urls.begin(),
+                    new_startup_pref_.urls.end());
+  }
+  for (size_t i = 0; i < new_pinned_tabs_.size(); ++i)
+    new_urls.push_back(new_pinned_tabs_[i].url);
+
+  if (new_urls.empty())
+    return GURL();
+
+  // First try to find a URL in new settings that is not present in backup.
+  for (size_t i = 0; i < new_urls.size(); ++i) {
+    if (!old_urls.count(new_urls[i]))
+      return new_urls[i];
+  }
+  // Then fallback to the first of the current startup URLs - this means that
+  // URLs themselves haven't changed.
+  return new_urls[0];
 }
 
 void SessionStartupChange::OpenPinnedTabs(
