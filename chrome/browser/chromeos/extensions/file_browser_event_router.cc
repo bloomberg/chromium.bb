@@ -171,7 +171,14 @@ void FileBrowserEventRouter::RemoveFileWatch(
     const FilePath& local_path,
     const std::string& extension_id) {
   base::AutoLock lock(lock_);
-  WatcherMap::iterator iter = file_watchers_.find(local_path);
+  FilePath watch_path = local_path;
+  // Tweak watch path for remote sources - we need to drop leading /special
+  // directory from there in order to be able to pair these events with
+  // their change notifications.
+  if (gdata::util::GetSpecialRemoteRootPath().IsParent(watch_path)) {
+    watch_path = gdata::util::ExtractGDataPath(watch_path);
+  }
+  WatcherMap::iterator iter = file_watchers_.find(watch_path);
   if (iter == file_watchers_.end())
     return;
   // Remove the renderer process for this watch.
