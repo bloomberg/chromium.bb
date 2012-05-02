@@ -92,8 +92,12 @@ bool ChromeDownloadManagerDelegate::IsExtensionDownload(
   if (item->PromptUserForSaveLocation())
     return false;
 
-  return (item->GetMimeType() == Extension::kMimeType) ||
-      UserScript::IsURLUserScript(item->GetURL(), item->GetMimeType());
+  if ((item->GetMimeType() != Extension::kMimeType) &&
+      !UserScript::IsURLUserScript(item->GetURL(), item->GetMimeType())) {
+    return false;
+  }
+
+  return download_crx_util::ShouldOpenExtensionDownload(*item);
 }
 
 void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {

@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_shelf_context_menu.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
@@ -43,12 +44,13 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
 bool DownloadShelfContextMenu::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
     case SHOW_IN_FOLDER:
-    case OPEN_WHEN_COMPLETE:
-      // Don't enable "Open when complete" if the download is no longer
-      // available or if it is temporary. We explicitly ignore "Open when
-      // complete" for temporary downloads.
       return download_item_->CanShowInFolder() &&
           !download_item_->IsTemporary();
+    case OPEN_WHEN_COMPLETE:
+      return download_item_->CanShowInFolder() &&
+          !download_item_->IsTemporary() &&
+          (!Extension::IsExtension(download_item_->GetTargetName()) ||
+           download_crx_util::ShouldOpenExtensionDownload(*download_item_));
     case ALWAYS_OPEN_TYPE:
       // For temporary downloads, the target filename might be a temporary
       // filename. Don't base an "Always open" decision based on it. Also

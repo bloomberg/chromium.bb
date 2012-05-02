@@ -140,6 +140,8 @@
         'common/extensions/extension_resource.h',
         'common/extensions/extension_set.cc',
         'common/extensions/extension_set.h',
+        'common/extensions/extension_switch_utils.cc',
+        'common/extensions/extension_switch_utils.h',
         'common/extensions/extension_unpacker.cc',
         'common/extensions/extension_unpacker.h',
         'common/extensions/feature.cc',

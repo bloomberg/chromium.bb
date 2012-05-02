@@ -330,6 +330,11 @@ const char kDisableLoginAnimations[]        = "disable-login-animations";
 // Disables the menu on the NTP for accessing sessions from other devices.
 const char kDisableNTPOtherSessionsMenu[]   = "disable-ntp-other-sessions-menu";
 
+// Disables the inline off-store extension installation UI. With this switch,
+// users must use a new out-of-band installation UI from chrome://extensions/.
+const char kDisableOffStoreExtensionInstall[] =
+    "disable-off-store-extension-install";
+
 // Disable speculative TCP/IP preconnection.
 const char kDisablePreconnect[]             = "disable-preconnect";
 

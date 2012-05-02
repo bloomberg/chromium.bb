@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_service.h"
 
@@ -48,6 +49,15 @@ ExtensionInstallUI* CreateExtensionInstallUI(Profile* profile) {
 // to be used to confirm permissions on a downloaded CRX.
 void SetMockInstallUIForTesting(ExtensionInstallUI* mock_ui) {
   mock_install_ui_for_testing = mock_ui;
+}
+
+bool ShouldOpenExtensionDownload(const DownloadItem& download_item) {
+  if (extensions::switch_utils::IsOffStoreInstallEnabled() ||
+      WebstoreInstaller::GetAssociatedApproval(download_item)) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 scoped_refptr<CrxInstaller> OpenChromeExtension(
