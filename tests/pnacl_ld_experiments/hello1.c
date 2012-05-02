@@ -1,6 +1,7 @@
-/* Copyright 2012 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+/*
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* This is highly experimental code to test shared/dynamic images
@@ -32,7 +33,14 @@ typedef void (*TYPE_nacl_exit) (int status);
 /* proto-types for functions  inside ld.so */
 extern void _dl_get_tls_static_info(int *static_tls_size,
                                     int *static_tls_align);
+
+extern void _dl_debug_state();
+
 extern int __tls_get_addr();
+
+extern int ___tls_get_addr();
+
+extern int fortytwo();
 /* ====================================================================== */
 int mystrlen(const char* s) {
    int count = 0;
@@ -61,7 +69,7 @@ __thread int tdata1 = 1;
 __thread int tdata2 = 3;
 
 
-ssize_t  write(int fd, const void* buf, size_t n)  {
+ssize_t write(int fd, const void* buf, size_t n)  {
   return NACL_SYSCALL(write)(fd, buf, n);
 }
 
@@ -90,16 +98,34 @@ int main(int argc, char** argv, char** envp) {
   myprint(buffer);
   myprint(" expecting 3\n");
 
-#if 0
-  int static_tls_size;
-  int static_tls_align;
-
-
-  /* will be enabled soon */
-  int x = (int) & __tls_get_addr;
+#if 1
+  /* call into another .so */
+  int x = fortytwo();
   myhextochar(x, buffer);
   myprint(buffer);
+  myprint(" expecting 42\n");
+#endif
+
+  /* call into ld.so */
+  _dl_debug_state();
+
+#if 0
+  /* will be enabled soon */
+  int tls_fun_addr = (int) & __tls_get_addr;
+  myhextochar(tls_fun_addr, buffer);
+  myprint(buffer);
   myprint("\n");
+
+  int tls_addr = ___tls_get_addr();
+  myhextochar(tls_addr, buffer);
+  myprint(buffer);
+  myprint("\n");
+#endif
+
+#if 0
+  /* will be enabled soon */
+  int static_tls_size;
+  int static_tls_align;
   _dl_get_tls_static_info (&static_tls_size, &static_tls_align);
 #endif
   return 0;

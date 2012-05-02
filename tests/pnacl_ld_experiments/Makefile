@@ -9,6 +9,7 @@ ROOT=$(shell readlink -f ../../)
 TC_ROOT=$(ROOT)/toolchain/pnacl_linux_x86_64/glibc
 PNACL_CC=$(TC_ROOT)/bin/pnacl-clang
 PNACL_LD=$(TC_ROOT)/bin/pnacl-nativeld
+PNACL_TRANS=$(TC_ROOT)/bin/pnacl-translate
 
 BOOTER=$(ROOT)/scons-out/opt-linux-x86-32/staging/nacl_helper_bootstrap
 LOADER=$(ROOT)/scons-out/opt-linux-x86-32/staging/sel_ldr
@@ -20,7 +21,7 @@ PATH_CRT_SRC=$(ROOT)/pnacl/support
 COMMON_FLAGS= --pnacl-driver-verbose -save-temps
 
 RUNNER=$(BOOTER) $(LOADER) -S -E LD_DEBUG=all --r_debug=0xXXXXXXXXXXXXXXXX -a \
-       -- $(LDSO) --library-path $(LIBPATH_SHARED)
+       -- $(LDSO) --library-path $(LIBPATH_SHARED):.
 
 
 ######################################################################
@@ -38,11 +39,18 @@ crtbegin.bc:  $(PATH_CRT_SRC)/crtbegin.c
 crtend.bc:  $(PATH_CRT_SRC)/crtend.c
 	$(PNACL_CC)  -c  $(PNACL_CC_FLAGS) -o $@ $^
 
-# TODO(robertm): add soname and maybe go to pso first
-#libsimple.so: fortytwo.bc
-#	$(PNACL_CC) $(COMMON_FLAGS) -nostdlib -shared -fPIC  -arch x86-32 -o $@ $^
+# NOTE: without -nostdlib a gratuitous libc dep is added
+#       but with -nostdlib we get:
+#       error: symbol lookup error: undefined symbol: fortytwo (fatal)
+libsimple.pso: fortytwo.bc
+	$(PNACL_CC) $(COMMON_FLAGS) -Wl,--soname=libsimple.so -shared -fPIC -o $@ $^
 
-LIBS = -L $(LIBPATH_SHARED)  -l:ld-2.9.so
+libsimple.so: libsimple.pso
+	$(PNACL_TRANS) -arch x86-32 -shared -fPIC -o $@ $^
+
+
+
+
 LD_FLAGS_NATIVE = --pnacl-allow-native -arch x86-32
 # NOTE: the duplication of crtbegin.bc.
 # The one here was build from $(PATH_CRT_SRC)/bitcode
@@ -57,16 +65,23 @@ FINI = crtend.bc
 # because of special handling of -l:ld-2.9.so which gets passed through as
 # --add-extra-dt-needed=ld-nacl-x86-32.so.1 which does not trigger the
 # a dynamic image
-hello1.x86-32.nexe.dummy: hello1.bc crtend.bc crtbegin.bc
+LIBS = -L $(LIBPATH_SHARED)  -l:ld-2.9.so  -L . -l:libsimple.pso
+hello1.x86-32.nexe.dummy: hello1.bc crtend.bc crtbegin.bc libsimple.pso
 	$(PNACL_CC) $(COMMON_FLAGS) $(LD_FLAGS_NATIVE) -nodefaultlibs -nostdlib \
         $(INIT) hello1.bc $(LIBS) $(FINI)  -o $@
 
 
 # We steal this object file from hello1.x86-32.nexe.dummy
+# NOTE:
+# NOTE: the dependency tracking is broken here
+# NOTE: you must run "make hello1.x86-32.nexe.dummy" which fails
+# NOTE: followed by "hello1.x86-32.nexe"
+# NOTE:
 MAGIC_OBJ = hello1.x86-32.nexe.dummy---linked.o
+LIBS2 = -L $(LIBPATH_SHARED)  -l:ld-2.9.so  -L . -l:libsimple.so
 
-hello1.x86-32.nexe: hello1.x86-32.nexe.dummy
-	$(PNACL_LD) $(COMMON_FLAGS) -arch x86-32   $(LIBS) $(MAGIC_OBJ) -o $@
+hello1.x86-32.nexe: libsimple.so
+	$(PNACL_LD) $(COMMON_FLAGS) -arch x86-32 $(MAGIC_OBJ) $(LIBS2)  -o $@
 
 
 ######################################################################
