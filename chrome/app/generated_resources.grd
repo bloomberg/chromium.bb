@@ -9556,15 +9556,25 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         </message>
       </if>
       <if expr="not pp_ifdef('android')">
-        <message name="IDS_NEW_TAB_INCOGNITO_MESSAGE"
-                 desc="Used when a person opens an incognito window">
-          <ph name="BEGIN_HEADING">&lt;h1&gt;</ph>You've gone incognito<ph name="END_HEADING">&lt;/h1&gt;</ph>
-          <ph name="BEGIN_PARAGRAPH">&lt;p&gt;</ph>Pages you view in this window won't appear in your browser history or search history, and they won't leave other traces, like cookies, on your computer after you close &lt;strong&gt;all&lt;/strong&gt; open incognito windows. Any files you download or bookmarks you create will be preserved. Be aware that websites, your internet provider, and people standing behind you may still be able to see what you do. <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more about incognito browsing.<ph name="END_LINK">&lt;/a&gt;</ph><ph name="END_PARAGRAPH">&lt;/p&gt;</ph>
+        <message name="IDS_NEW_TAB_OTR_MESSAGE"
+                 desc="Used when a person opens an OTR window">
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito<ph name="END_BOLD">"&lt;/strong&gt;</ph>. Pages you view in this window won't appear in your browser history or search history, and they won't leave other traces, like cookies, on your computer after you close &lt;strong&gt;all&lt;/strong&gt; open incognito windows. Any files you download or bookmarks you create will be preserved, however.
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Going incognito doesn't affect the behavior of other people, servers, or software. Be wary of:<ph name="END_BOLD">&lt;/strong&gt;</ph>
+          <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
+            <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Websites that collect or share information about you<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+            <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Internet service providers or employers that track the pages you visit<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+            <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Malicious software that tracks your keystrokes in exchange for free smileys<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+            <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>Surveillance by secret agents<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+            <ph name="BEGIN_LIST_ITEM">&lt;li&gt;</ph>People standing behind you<ph name="END_LIST_ITEM">&lt;/li&gt;</ph>
+          <ph name="END_LIST">&lt;/ul&gt;</ph>
+          <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about incognito browsing.
         </message>
       </if>
-      <message name="IDS_NEW_TAB_INCOGNITO_EXTENSIONS_MESSAGE"
-               desc="Explanation in a new incognito window that extensions have been disabled while in incognito.">
-               Because extensions handle your personal data, all extensions are disabled in incognito windows; you can reenable them in the <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>extensions manager<ph name="END_LINK">&lt;/a&gt;</ph>.
+      <message name="IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE"
+               desc="Explanation in a new OTR window that extensions have been disabled while in OTR.">
+        Because <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not control how extensions handle your personal data, all extensions have been disabled for incognito windows. You can reenable them individually in the
+        <ph name="BEGIN_LINK">&lt;a href="$2"&gt;</ph>extensions manager<ph name="END_LINK">&lt;/a&gt;</ph>.
       </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"

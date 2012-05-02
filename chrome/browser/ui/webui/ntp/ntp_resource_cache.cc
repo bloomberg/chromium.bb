@@ -266,7 +266,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   DictionaryValue localized_strings;
   localized_strings.SetString("title",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
-  int new_tab_message_ids = IDS_NEW_TAB_INCOGNITO_MESSAGE;
+  int new_tab_message_ids = IDS_NEW_TAB_OTR_MESSAGE;
   int new_tab_html_idr = IDR_INCOGNITO_TAB_HTML;
   const char* new_tab_link = kLearnMoreIncognitoUrl;
   // TODO(altimofeev): consider implementation without 'if def' usage.
@@ -282,7 +282,8 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
                                  GetUrlWithLang(GURL(new_tab_link))));
   localized_strings.SetString("extensionsmessage",
       l10n_util::GetStringFUTF16(
-          IDS_NEW_TAB_INCOGNITO_EXTENSIONS_MESSAGE,
+          IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
           ASCIIToUTF16(chrome::kChromeUIExtensionsURL)));
   bool bookmark_bar_attached = profile_->GetPrefs()->GetBoolean(
       prefs::kShowBookmarkBar);
