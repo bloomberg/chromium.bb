@@ -30,32 +30,58 @@ class TrackingTestURLRequestContextGetter
     : public TestURLRequestContextGetter {
  public:
   explicit TrackingTestURLRequestContextGetter(
-      base::MessageLoopProxy* io_message_loop_proxy)
-          : TestURLRequestContextGetter(io_message_loop_proxy) {
+      base::MessageLoopProxy* io_message_loop_proxy,
+      net::URLRequestThrottlerManager* throttler_manager)
+      : TestURLRequestContextGetter(io_message_loop_proxy),
+        throttler_manager_(throttler_manager),
+        context_(NULL) {
     g_request_context_getter_instances++;
   }
+
+  virtual TestURLRequestContext* GetURLRequestContext() OVERRIDE {
+    if (!context_) {
+      context_ = new TestURLRequestContext(true);
+      context_->set_throttler_manager(throttler_manager_);
+      context_->Init();
+    }
+    return context_.get();
+  }
+
  protected:
   virtual ~TrackingTestURLRequestContextGetter() {
     g_request_context_getter_instances--;
   }
+
+ private:
+  // Not owned here.
+  net::URLRequestThrottlerManager* throttler_manager_;
+  scoped_refptr<TestURLRequestContext> context_;
 };
 
 class TestCloudPrintURLFetcher : public CloudPrintURLFetcher {
  public:
   explicit TestCloudPrintURLFetcher(
       base::MessageLoopProxy* io_message_loop_proxy)
-          : io_message_loop_proxy_(io_message_loop_proxy) {
+      : io_message_loop_proxy_(io_message_loop_proxy) {
   }
 
   virtual net::URLRequestContextGetter* GetRequestContextGetter() {
     return new TrackingTestURLRequestContextGetter(
-        io_message_loop_proxy_.get());
+        io_message_loop_proxy_.get(), throttler_manager());
+  }
+
+  net::URLRequestThrottlerManager* throttler_manager() {
+    return &throttler_manager_;
   }
 
  private:
   virtual ~TestCloudPrintURLFetcher() {}
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+
+  // We set this as the throttler manager for the
+  // TestURLRequestContext we create.
+  net::URLRequestThrottlerManager throttler_manager_;
 };
 
 class CloudPrintURLFetcherTest : public testing::Test,
@@ -112,7 +138,7 @@ class CloudPrintURLFetcherTest : public testing::Test,
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   int max_retries_;
   Time start_time_;
-  scoped_refptr<CloudPrintURLFetcher> fetcher_;
+  scoped_refptr<TestCloudPrintURLFetcher> fetcher_;
 };
 
 class CloudPrintURLFetcherBasicTest : public CloudPrintURLFetcherTest {
@@ -187,6 +213,14 @@ class CloudPrintURLFetcherRetryBackoffTest : public CloudPrintURLFetcherTest {
 
 void CloudPrintURLFetcherTest::CreateFetcher(const GURL& url, int max_retries) {
   fetcher_ = new TestCloudPrintURLFetcher(io_message_loop_proxy());
+
+  // Registers an entry for test url. It only allows 3 requests to be sent
+  // in 200 milliseconds.
+  scoped_refptr<net::URLRequestThrottlerEntry> entry(
+      new net::URLRequestThrottlerEntry(
+          fetcher_->throttler_manager(), "", 200, 3, 1, 2.0, 0.0, 256));
+  fetcher_->throttler_manager()->OverrideEntryForTests(url, entry);
+
   max_retries_ = max_retries;
   start_time_ = Time::Now();
   fetcher_->StartGetRequest(url, this, max_retries_, std::string());
@@ -323,20 +357,9 @@ TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
   ASSERT_TRUE(test_server.Start());
 
   GURL url(test_server.GetURL("defaultresponse"));
-
-  // Registers an entry for test url. It only allows 3 requests to be sent
-  // in 200 milliseconds.
-  net::URLRequestThrottlerManager* manager =
-      net::URLRequestThrottlerManager::GetInstance();
-  scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(manager, "", 200, 3, 1, 2.0, 0.0, 256));
-  manager->OverrideEntryForTests(url, entry);
-
   CreateFetcher(url, 11);
 
   MessageLoop::current()->Run();
-
-  net::URLRequestThrottlerManager::GetInstance()->EraseEntryForTests(url);
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=60426
@@ -347,22 +370,9 @@ TEST_F(CloudPrintURLFetcherRetryBackoffTest, DISABLED_GiveUp) {
   ASSERT_TRUE(test_server.Start());
 
   GURL url(test_server.GetURL("defaultresponse"));
-
-  // Registers an entry for test url. The backoff time is calculated by:
-  //     new_backoff = 2.0 * old_backoff + 0
-  // and maximum backoff time is 256 milliseconds.
-  // Maximum retries allowed is set to 11.
-  net::URLRequestThrottlerManager* manager =
-      net::URLRequestThrottlerManager::GetInstance();
-  scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(manager, "", 200, 3, 1, 2.0, 0.0, 256));
-  manager->OverrideEntryForTests(url, entry);
-
   CreateFetcher(url, 11);
 
   MessageLoop::current()->Run();
-
-  net::URLRequestThrottlerManager::GetInstance()->EraseEntryForTests(url);
 }
 
 }  // namespace.

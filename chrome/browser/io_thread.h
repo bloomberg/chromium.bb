@@ -46,6 +46,7 @@ class SSLConfigService;
 class TransportSecurityState;
 class URLRequestContext;
 class URLRequestContextGetter;
+class URLRequestThrottlerManager;
 class URLSecurityManager;
 }  // namespace net
 
@@ -86,6 +87,7 @@ class IOThread : public content::BrowserThreadDelegate {
         proxy_script_fetcher_http_transaction_factory;
     scoped_ptr<net::FtpTransactionFactory>
         proxy_script_fetcher_ftp_transaction_factory;
+    scoped_ptr<net::URLRequestThrottlerManager> throttler_manager;
     scoped_ptr<net::URLSecurityManager> url_security_manager;
     // We use a separate URLRequestContext for PAC fetches, in order to break
     // the reference cycle:

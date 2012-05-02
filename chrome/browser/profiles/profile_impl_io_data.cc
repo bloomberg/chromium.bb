@@ -312,6 +312,13 @@ void ProfileImplIOData::LazyInitializeInternal(
   media_request_context_->set_fraudulent_certificate_reporter(
       fraudulent_certificate_reporter());
 
+  main_context->set_throttler_manager(
+      io_thread_globals->throttler_manager.get());
+  media_request_context_->set_throttler_manager(
+      io_thread_globals->throttler_manager.get());
+  extensions_context->set_throttler_manager(
+      io_thread_globals->throttler_manager.get());
+
   main_context->set_proxy_service(proxy_service());
   media_request_context_->set_proxy_service(proxy_service());
 

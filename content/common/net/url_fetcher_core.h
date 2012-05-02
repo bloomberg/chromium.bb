@@ -338,13 +338,19 @@ class URLFetcherCore
 
   // Used to determine how long to wait before making a request or doing a
   // retry.
+  //
   // Both of them can only be accessed on the IO thread.
-  // We need not only the throttler entry for |original_URL|, but also the one
-  // for |url|. For example, consider the case that URL A redirects to URL B,
-  // for which the server returns a 500 response. In this case, the exponential
-  // back-off release time of URL A won't increase. If we retry without
-  // considering the back-off constraint of URL B, we may send out too many
-  // requests for URL A in a short period of time.
+  //
+  // We need not only the throttler entry for |original_URL|, but also
+  // the one for |url|. For example, consider the case that URL A
+  // redirects to URL B, for which the server returns a 500
+  // response. In this case, the exponential back-off release time of
+  // URL A won't increase. If we retry without considering the
+  // back-off constraint of URL B, we may send out too many requests
+  // for URL A in a short period of time.
+  //
+  // Both of these will be NULL if
+  // URLRequestContext::throttler_manager() is NULL.
   scoped_refptr<net::URLRequestThrottlerEntryInterface>
       original_url_throttler_entry_;
   scoped_refptr<net::URLRequestThrottlerEntryInterface> url_throttler_entry_;

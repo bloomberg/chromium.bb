@@ -52,6 +52,7 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
+#include "net/url_request/url_request_throttler_manager.h"
 
 #if defined(USE_NSS)
 #include "net/ocsp/nss_ocsp.h"
@@ -244,6 +245,7 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
   context->set_cookie_store(globals->system_cookie_store.get());
   context->set_server_bound_cert_service(
       globals->system_server_bound_cert_service.get());
+  context->set_throttler_manager(globals->throttler_manager.get());
   return context;
 }
 
@@ -442,6 +444,15 @@ void IOThread::Init() {
       new net::HttpNetworkLayer(network_session));
   globals_->proxy_script_fetcher_ftp_transaction_factory.reset(
       new net::FtpNetworkLayer(globals_->host_resolver.get()));
+
+  globals_->throttler_manager.reset(new net::URLRequestThrottlerManager());
+  // Always done in production, disabled only for unit tests.
+  globals_->throttler_manager->set_enable_thread_checks(true);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableExtensionsHttpThrottling)) {
+    globals_->throttler_manager->set_enforce_throttling(false);
+  }
+  globals_->throttler_manager->set_net_log(net_log_);
 
   globals_->proxy_script_fetcher_context =
       ConstructProxyScriptFetcherContext(globals_, net_log_);

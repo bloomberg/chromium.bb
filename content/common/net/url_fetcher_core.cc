@@ -16,6 +16,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_throttler_manager.h"
 
@@ -606,8 +607,11 @@ void URLFetcherCore::OnReadCompleted(net::URLRequest* request,
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   url_ = request->url();
-  url_throttler_entry_ =
-      net::URLRequestThrottlerManager::GetInstance()->RegisterRequestUrl(url_);
+  net::URLRequestThrottlerManager* throttler_manager =
+      request->context()->throttler_manager();
+  if (throttler_manager) {
+    url_throttler_entry_ = throttler_manager->RegisterRequestUrl(url_);
+  }
 
   bool waiting_on_write = false;
   do {
@@ -660,9 +664,11 @@ void URLFetcherCore::RetryOrCompleteUrlFetch() {
     // after backoff time.
     ++num_retries_;
 
-    // Note that backoff_delay may be 0 because (a) the URLRequestThrottler
-    // code does not necessarily back off on the first error, and (b) it
-    // only backs off on some of the 5xx status codes.
+    // Note that backoff_delay may be 0 because (a) the
+    // URLRequestThrottlerManager and related code does not
+    // necessarily back off on the first error, (b) it only backs off
+    // on some of the 5xx status codes, (c) not all URLRequestContexts
+    // have a throttler manager.
     base::TimeTicks backoff_release_time = GetBackoffReleaseTime();
     backoff_delay = backoff_release_time - base::TimeTicks::Now();
     if (backoff_delay < base::TimeDelta())
@@ -794,14 +800,22 @@ void URLFetcherCore::StartURLRequestWhenAppropriate() {
   if (was_cancelled_)
     return;
 
+  DCHECK(request_context_getter_);
+
+  int64 delay = 0LL;
   if (original_url_throttler_entry_ == NULL) {
-    original_url_throttler_entry_ =
-        net::URLRequestThrottlerManager::GetInstance()->RegisterRequestUrl(
-            original_url_);
+    net::URLRequestThrottlerManager* manager =
+        request_context_getter_->GetURLRequestContext()->throttler_manager();
+    if (manager) {
+      original_url_throttler_entry_ =
+          manager->RegisterRequestUrl(original_url_);
+    }
+  }
+  if (original_url_throttler_entry_ != NULL) {
+    delay = original_url_throttler_entry_->ReserveSendingTimeForNextRequest(
+        GetBackoffReleaseTime());
   }
 
-  int64 delay = original_url_throttler_entry_->ReserveSendingTimeForNextRequest(
-      GetBackoffReleaseTime());
   if (delay == 0) {
     StartURLRequest();
   } else {
@@ -932,19 +946,22 @@ void URLFetcherCore::ReleaseRequest() {
 
 base::TimeTicks URLFetcherCore::GetBackoffReleaseTime() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  DCHECK(original_url_throttler_entry_ != NULL);
 
-  base::TimeTicks original_url_backoff =
-      original_url_throttler_entry_->GetExponentialBackoffReleaseTime();
-  base::TimeTicks destination_url_backoff;
-  if (url_throttler_entry_ != NULL &&
-      original_url_throttler_entry_ != url_throttler_entry_) {
-    destination_url_backoff =
-        url_throttler_entry_->GetExponentialBackoffReleaseTime();
+  if (original_url_throttler_entry_) {
+    base::TimeTicks original_url_backoff =
+        original_url_throttler_entry_->GetExponentialBackoffReleaseTime();
+    base::TimeTicks destination_url_backoff;
+    if (url_throttler_entry_ != NULL &&
+        original_url_throttler_entry_ != url_throttler_entry_) {
+      destination_url_backoff =
+          url_throttler_entry_->GetExponentialBackoffReleaseTime();
+    }
+
+    return original_url_backoff > destination_url_backoff ?
+        original_url_backoff : destination_url_backoff;
+  } else {
+    return base::TimeTicks();
   }
-
-  return original_url_backoff > destination_url_backoff ?
-      original_url_backoff : destination_url_backoff;
 }
 
 }  // namespace content

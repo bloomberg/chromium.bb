@@ -119,7 +119,6 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_throttler_manager.h"
 #include "net/websockets/websocket_job.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -272,27 +271,6 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
         &value);
     net::HttpStreamFactory::set_testing_fixed_https_port(value);
   }
-}
-
-void InitializeURLRequestThrottlerManager(
-    const CommandLine& parsed_command_line,
-    net::NetLog* net_log) {
-  net::URLRequestThrottlerManager* manager =
-      net::URLRequestThrottlerManager::GetInstance();
-
-  // Always done in production, disabled only for unit tests.
-  manager->set_enable_thread_checks(true);
-
-  if (parsed_command_line.HasSwitch(
-          switches::kDisableExtensionsHttpThrottling)) {
-    manager->set_enforce_throttling(false);
-  }
-
-  // TODO(joi): Passing the NetLog here is temporary; once I switch the
-  // URLRequestThrottlerManager to be part of the URLRequestContext it will
-  // come from there. Doing it this way for now (2011/5/12) to try to fail
-  // fast in case A/B experiment gives unexpected results.
-  manager->set_net_log(net_log);
 }
 
 // Returns the new local state object, guaranteed non-NULL.
@@ -1378,8 +1356,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #endif
 
   InitializeNetworkOptions(parsed_command_line());
-  InitializeURLRequestThrottlerManager(parsed_command_line(),
-                                       browser_process_->net_log());
 
   // Initialize histogram synchronizer system. This is a singleton and is used
   // for posting tasks via base::Bind. Its deleted when it goes out of scope.

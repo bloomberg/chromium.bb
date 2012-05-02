@@ -36,12 +36,47 @@ namespace {
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 const char kTestServerFilePrefix[] = "files/";
 
+class ThrottlingTestURLRequestContext : public TestURLRequestContext {
+ public:
+  ThrottlingTestURLRequestContext() : TestURLRequestContext(true) {
+    set_throttler_manager(&throttler_manager_);
+    Init();
+    DCHECK(throttler_manager() != NULL);
+  }
+
+ private:
+  net::URLRequestThrottlerManager throttler_manager_;
+};
+
+class ThrottlingTestURLRequestContextGetter
+    : public TestURLRequestContextGetter {
+ public:
+  ThrottlingTestURLRequestContextGetter(
+      base::MessageLoopProxy* io_message_loop_proxy,
+      TestURLRequestContext* request_context)
+      : TestURLRequestContextGetter(io_message_loop_proxy),
+        context_(request_context) {
+  }
+
+  virtual TestURLRequestContext* GetURLRequestContext() OVERRIDE {
+    return context_.get();
+  }
+
+ protected:
+  virtual ~ThrottlingTestURLRequestContextGetter() {}
+
+  scoped_refptr<TestURLRequestContext> context_;
+};
+
 }  // namespace
 
 class URLFetcherTest : public testing::Test,
                        public content::URLFetcherDelegate {
  public:
-  URLFetcherTest() : fetcher_(NULL) { }
+  URLFetcherTest()
+      : fetcher_(NULL),
+        context_(new ThrottlingTestURLRequestContext()) {
+  }
 
   static int GetNumFetcherCores() {
     return URLFetcherImpl::GetNumFetcherCores();
@@ -55,6 +90,10 @@ class URLFetcherTest : public testing::Test,
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy() {
     return io_message_loop_proxy_;
+  }
+
+  TestURLRequestContext* request_context() {
+    return context_.get();
   }
 
  protected:
@@ -83,12 +122,13 @@ class URLFetcherTest : public testing::Test,
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
   URLFetcherImpl* fetcher_;
+  scoped_refptr<TestURLRequestContext> context_;
 };
 
 void URLFetcherTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
-  fetcher_->SetRequestContext(new TestURLRequestContextGetter(
-      io_message_loop_proxy()));
+  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
+      io_message_loop_proxy(), request_context()));
   fetcher_->Start();
 }
 
@@ -228,7 +268,12 @@ class URLFetcherCancelTest : public URLFetcherTest {
 
 // Version of TestURLRequestContext that posts a Quit task to the IO
 // thread once it is deleted.
-class CancelTestURLRequestContext : public TestURLRequestContext {
+class CancelTestURLRequestContext : public ThrottlingTestURLRequestContext {
+ public:
+  explicit CancelTestURLRequestContext() {
+  }
+
+ private:
   virtual ~CancelTestURLRequestContext() {
     // The d'tor should execute in the IO thread. Post the quit task to the
     // current thread.
@@ -236,16 +281,33 @@ class CancelTestURLRequestContext : public TestURLRequestContext {
   }
 };
 
-class CancelTestURLRequestContextGetter : public net::URLRequestContextGetter {
+class CancelTestURLRequestContextGetter
+    : public TestURLRequestContextGetter {
  public:
-  explicit CancelTestURLRequestContextGetter(
-      base::MessageLoopProxy* io_message_loop_proxy)
-      : io_message_loop_proxy_(io_message_loop_proxy),
-        context_created_(false, false) {
+  CancelTestURLRequestContextGetter(
+      base::MessageLoopProxy* io_message_loop_proxy,
+      const GURL& throttle_for_url)
+      : TestURLRequestContextGetter(io_message_loop_proxy),
+        io_message_loop_proxy_(io_message_loop_proxy),
+        context_created_(false, false),
+        throttle_for_url_(throttle_for_url) {
   }
-  virtual net::URLRequestContext* GetURLRequestContext() {
+  virtual TestURLRequestContext* GetURLRequestContext() OVERRIDE {
     if (!context_) {
       context_ = new CancelTestURLRequestContext();
+      DCHECK(context_->throttler_manager());
+
+      // Registers an entry for test url. The backoff time is calculated by:
+      //     new_backoff = 2.0 * old_backoff + 0
+      // The initial backoff is 2 seconds and maximum backoff is 4 seconds.
+      // Maximum retries allowed is set to 2.
+      scoped_refptr<net::URLRequestThrottlerEntry> entry(
+          new net::URLRequestThrottlerEntry(
+              context_->throttler_manager(),
+              "", 200, 3, 2000, 2.0, 0.0, 4000));
+      context_->throttler_manager()->OverrideEntryForTests(
+          throttle_for_url_, entry);
+
       context_created_.Signal();
     }
     return context_;
@@ -261,9 +323,10 @@ class CancelTestURLRequestContextGetter : public net::URLRequestContextGetter {
   virtual ~CancelTestURLRequestContextGetter() {}
 
  private:
+  scoped_refptr<ThrottlingTestURLRequestContext> context_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   base::WaitableEvent context_created_;
-  scoped_refptr<net::URLRequestContext> context_;
+  GURL throttle_for_url_;
 };
 
 // Version of URLFetcherTest that tests retying the same request twice.
@@ -302,8 +365,8 @@ class URLFetcherFileTest : public URLFetcherTest {
 
 void URLFetcherPostTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, content::URLFetcher::POST, this);
-  fetcher_->SetRequestContext(new TestURLRequestContextGetter(
-      io_message_loop_proxy()));
+  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
+      io_message_loop_proxy(), request_context()));
   fetcher_->SetUploadData("application/x-www-form-urlencoded",
                           "bobsyeruncle");
   fetcher_->Start();
@@ -318,8 +381,8 @@ void URLFetcherPostTest::OnURLFetchComplete(const content::URLFetcher* source) {
 
 void URLFetcherDownloadProgressTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
-  fetcher_->SetRequestContext(new TestURLRequestContextGetter(
-      io_message_loop_proxy()));
+  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
+      io_message_loop_proxy(), request_context()));
   previous_progress_ = 0;
   fetcher_->Start();
 }
@@ -336,8 +399,8 @@ void URLFetcherDownloadProgressTest::OnURLFetchDownloadProgress(
 
 void URLFetcherDownloadProgressCancelTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
-  fetcher_->SetRequestContext(new TestURLRequestContextGetter(
-      io_message_loop_proxy()));
+  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
+      io_message_loop_proxy(), request_context()));
   cancelled_ = false;
   fetcher_->Start();
 }
@@ -362,8 +425,8 @@ void URLFetcherDownloadProgressCancelTest::OnURLFetchComplete(
 
 void URLFetcherUploadProgressTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, content::URLFetcher::POST, this);
-  fetcher_->SetRequestContext(new TestURLRequestContextGetter(
-      io_message_loop_proxy()));
+  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
+      io_message_loop_proxy(), request_context()));
   previous_progress_ = 0;
   // Large enough data to require more than one read from UploadDataStream.
   chunk_.assign(1<<16, 'a');
@@ -408,8 +471,8 @@ void URLFetcherSocketAddressTest::OnURLFetchComplete(
 
 void URLFetcherProtectTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
-  fetcher_->SetRequestContext(new TestURLRequestContextGetter(
-      io_message_loop_proxy()));
+  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
+      io_message_loop_proxy(), request_context()));
   start_time_ = Time::Now();
   fetcher_->SetMaxRetries(11);
   fetcher_->Start();
@@ -434,7 +497,8 @@ void URLFetcherProtectTest::OnURLFetchComplete(
     count++;
     if (count < 20) {
       fetcher_->SetRequestContext(
-          new TestURLRequestContextGetter(io_message_loop_proxy()));
+          new ThrottlingTestURLRequestContextGetter(
+              io_message_loop_proxy(), request_context()));
       fetcher_->Start();
     } else {
       // We have already sent 20 requests continuously. And we expect that
@@ -447,8 +511,8 @@ void URLFetcherProtectTest::OnURLFetchComplete(
 
 void URLFetcherProtectTestPassedThrough::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
-  fetcher_->SetRequestContext(new TestURLRequestContextGetter(
-      io_message_loop_proxy()));
+  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
+      io_message_loop_proxy(), request_context()));
   fetcher_->SetAutomaticallyRetryOn5xx(false);
   start_time_ = Time::Now();
   fetcher_->SetMaxRetries(11);
@@ -511,7 +575,8 @@ void URLFetcherBadHTTPSTest::OnURLFetchComplete(
 void URLFetcherCancelTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
   CancelTestURLRequestContextGetter* context_getter =
-      new CancelTestURLRequestContextGetter(io_message_loop_proxy());
+      new CancelTestURLRequestContextGetter(io_message_loop_proxy(),
+                                            url);
   fetcher_->SetRequestContext(context_getter);
   fetcher_->SetMaxRetries(2);
   fetcher_->Start();
@@ -545,8 +610,8 @@ void URLFetcherMultipleAttemptTest::OnURLFetchComplete(
   EXPECT_FALSE(data.empty());
   if (!data.empty() && data_.empty()) {
     data_ = data;
-    fetcher_->SetRequestContext(
-        new TestURLRequestContextGetter(io_message_loop_proxy()));
+    fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
+        io_message_loop_proxy(), request_context()));
     fetcher_->Start();
   } else {
     EXPECT_EQ(data, data_);
@@ -563,8 +628,8 @@ void URLFetcherMultipleAttemptTest::OnURLFetchComplete(
 void URLFetcherFileTest::CreateFetcherForFile(const GURL& url,
                                               const FilePath& file_path) {
   fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
-  fetcher_->SetRequestContext(new TestURLRequestContextGetter(
-      io_message_loop_proxy()));
+  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
+      io_message_loop_proxy(), request_context()));
 
   // Use the IO message loop to do the file operations in this test.
   fetcher_->SaveResponseToFileAtPath(file_path, io_message_loop_proxy());
@@ -573,8 +638,8 @@ void URLFetcherFileTest::CreateFetcherForFile(const GURL& url,
 
 void URLFetcherFileTest::CreateFetcherForTempFile(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
-  fetcher_->SetRequestContext(new TestURLRequestContextGetter(
-      io_message_loop_proxy()));
+  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
+      io_message_loop_proxy(), request_context()));
 
   // Use the IO message loop to do the file operations in this test.
   fetcher_->SaveResponseToTemporaryFile(io_message_loop_proxy());
@@ -766,17 +831,15 @@ TEST_F(URLFetcherProtectTest, Overload) {
 
   // Registers an entry for test url. It only allows 3 requests to be sent
   // in 200 milliseconds.
-  net::URLRequestThrottlerManager* manager =
-      net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(manager, "", 200, 3, 1, 2.0, 0.0, 256));
-  manager->OverrideEntryForTests(url, entry);
+      new net::URLRequestThrottlerEntry(
+          request_context()->throttler_manager(),
+          "", 200, 3, 1, 2.0, 0.0, 256));
+  request_context()->throttler_manager()->OverrideEntryForTests(url, entry);
 
   CreateFetcher(url);
 
   MessageLoop::current()->Run();
-
-  net::URLRequestThrottlerManager::GetInstance()->EraseEntryForTests(url);
 }
 
 TEST_F(URLFetcherProtectTest, ServerUnavailable) {
@@ -791,17 +854,15 @@ TEST_F(URLFetcherProtectTest, ServerUnavailable) {
   //     new_backoff = 2.0 * old_backoff + 0
   // and maximum backoff time is 256 milliseconds.
   // Maximum retries allowed is set to 11.
-  net::URLRequestThrottlerManager* manager =
-      net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(manager, "", 200, 3, 1, 2.0, 0.0, 256));
-  manager->OverrideEntryForTests(url, entry);
+      new net::URLRequestThrottlerEntry(
+          request_context()->throttler_manager(),
+          "", 200, 3, 1, 2.0, 0.0, 256));
+  request_context()->throttler_manager()->OverrideEntryForTests(url, entry);
 
   CreateFetcher(url);
 
   MessageLoop::current()->Run();
-
-  net::URLRequestThrottlerManager::GetInstance()->EraseEntryForTests(url);
 }
 
 TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
@@ -816,20 +877,17 @@ TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
   //     new_backoff = 2.0 * old_backoff + 0
   // and maximum backoff time is 150000 milliseconds.
   // Maximum retries allowed is set to 11.
-  net::URLRequestThrottlerManager* manager =
-      net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
       new net::URLRequestThrottlerEntry(
-          manager, "", 200, 3, 100, 2.0, 0.0, 150000));
+          request_context()->throttler_manager(),
+          "", 200, 3, 100, 2.0, 0.0, 150000));
   // Total time if *not* for not doing automatic backoff would be 150s.
   // In reality it should be "as soon as server responds".
-  manager->OverrideEntryForTests(url, entry);
+  request_context()->throttler_manager()->OverrideEntryForTests(url, entry);
 
   CreateFetcher(url);
 
   MessageLoop::current()->Run();
-
-  net::URLRequestThrottlerManager::GetInstance()->EraseEntryForTests(url);
 }
 
 #if defined(OS_MACOSX)
@@ -860,17 +918,6 @@ TEST_F(URLFetcherCancelTest, ReleasesContext) {
 
   GURL url(test_server.GetURL("files/server-unavailable.html"));
 
-  // Registers an entry for test url. The backoff time is calculated by:
-  //     new_backoff = 2.0 * old_backoff + 0
-  // The initial backoff is 2 seconds and maximum backoff is 4 seconds.
-  // Maximum retries allowed is set to 2.
-  net::URLRequestThrottlerManager* manager =
-      net::URLRequestThrottlerManager::GetInstance();
-  scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(
-          manager, "", 200, 3, 2000, 2.0, 0.0, 4000));
-  manager->OverrideEntryForTests(url, entry);
-
   // Create a separate thread that will create the URLFetcher.  The current
   // (main) thread will do the IO, and when the fetch is complete it will
   // terminate the main thread's message loop; then the other thread's
@@ -880,11 +927,10 @@ TEST_F(URLFetcherCancelTest, ReleasesContext) {
   ASSERT_TRUE(t.Start());
   t.message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&URLFetcherTest::CreateFetcher, base::Unretained(this), url));
+      base::Bind(&URLFetcherCancelTest::CreateFetcher,
+                 base::Unretained(this), url));
 
   MessageLoop::current()->Run();
-
-  net::URLRequestThrottlerManager::GetInstance()->EraseEntryForTests(url);
 }
 
 TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
@@ -898,12 +944,11 @@ TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
   // Register an entry for test url.
   // Using a sliding window of 4 seconds, and max of 1 request, under a fast
   // run we expect to have a 4 second delay when posting the Start task.
-  net::URLRequestThrottlerManager* manager =
-      net::URLRequestThrottlerManager::GetInstance();
   scoped_refptr<net::URLRequestThrottlerEntry> entry(
       new net::URLRequestThrottlerEntry(
-          manager, "", 4000, 1, 2000, 2.0, 0.0, 4000));
-  manager->OverrideEntryForTests(url, entry);
+          request_context()->throttler_manager(),
+          "", 4000, 1, 2000, 2.0, 0.0, 4000));
+  request_context()->throttler_manager()->OverrideEntryForTests(url, entry);
   // Fake that a request has just started.
   entry->ReserveSendingTimeForNextRequest(base::TimeTicks());
 
@@ -918,8 +963,6 @@ TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
       base::Bind(&URLFetcherTest::CreateFetcher, base::Unretained(this), url));
 
   MessageLoop::current()->Run();
-
-  net::URLRequestThrottlerManager::GetInstance()->EraseEntryForTests(url);
 }
 
 TEST_F(URLFetcherMultipleAttemptTest, SameData) {

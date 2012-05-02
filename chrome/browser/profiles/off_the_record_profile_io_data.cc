@@ -182,6 +182,11 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
       fraudulent_certificate_reporter());
   main_context->set_proxy_service(proxy_service());
 
+  main_context->set_throttler_manager(
+      io_thread_globals->throttler_manager.get());
+  extensions_context->set_throttler_manager(
+      io_thread_globals->throttler_manager.get());
+
   // For incognito, we use the default non-persistent HttpServerPropertiesImpl.
   http_server_properties_.reset(new net::HttpServerPropertiesImpl);
   main_context->set_http_server_properties(http_server_properties_.get());
