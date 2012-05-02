@@ -64,6 +64,10 @@ class TestViewsDelegate : public ViewsDelegate {
       views::NativeWidgetAura* native_widget) OVERRIDE;
 #endif
 
+  virtual content::WebContents* CreateWebContents(
+      content::BrowserContext* browser_context,
+      content::SiteInstance* site_instance) OVERRIDE;
+
  private:
   mutable scoped_ptr<ui::Clipboard> clipboard_;
   bool use_transparent_windows_;

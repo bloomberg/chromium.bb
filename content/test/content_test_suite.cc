@@ -5,13 +5,11 @@
 #include "content/test/content_test_suite.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/mock_content_browser_client.h"
-#include "content/browser/notification_service_impl.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_content_client.h"
+#include "content/test/test_content_client_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -20,40 +18,27 @@
 #endif
 #include "ui/gfx/compositor/compositor_setup.h"
 
+
 namespace {
 
-class TestContentClientInitializer : public testing::EmptyTestEventListener {
+class TestInitializationListener : public testing::EmptyTestEventListener {
  public:
-  TestContentClientInitializer() {
+  TestInitializationListener() : test_content_client_initializer_(NULL) {
   }
 
   virtual void OnTestStart(const testing::TestInfo& test_info) OVERRIDE {
-    notification_service_.reset(new NotificationServiceImpl());
-
-    DCHECK(!content::GetContentClient());
-    content_client_.reset(new TestContentClient);
-    content::SetContentClient(content_client_.get());
-
-    content_browser_client_.reset(new content::MockContentBrowserClient());
-    content_client_->set_browser(content_browser_client_.get());
+    test_content_client_initializer_ =
+        new content::TestContentClientInitializer();
   }
 
   virtual void OnTestEnd(const testing::TestInfo& test_info) OVERRIDE {
-    notification_service_.reset();
-
-    DCHECK_EQ(content_client_.get(), content::GetContentClient());
-    content::SetContentClient(NULL);
-    content_client_.reset();
-
-    content_browser_client_.reset();
+    delete test_content_client_initializer_;
   }
 
  private:
-  scoped_ptr<NotificationServiceImpl> notification_service_;
-  scoped_ptr<content::ContentClient> content_client_;
-  scoped_ptr<content::ContentBrowserClient> content_browser_client_;
+  content::TestContentClientInitializer* test_content_client_initializer_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestContentClientInitializer);
+  DISALLOW_COPY_AND_ASSIGN(TestInitializationListener);
 };
 
 }  // namespace
@@ -85,6 +70,6 @@ void ContentTestSuite::Initialize() {
 
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
-  listeners.Append(new TestContentClientInitializer);
+  listeners.Append(new TestInitializationListener);
 }
 

@@ -128,6 +128,12 @@ class ViewsDelegateImpl : public views::ViewsDelegate {
   }
 #endif
 
+  virtual content::WebContents* CreateWebContents(
+      content::BrowserContext* browser_context,
+      content::SiteInstance* site_instance) OVERRIDE {
+    return NULL;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ViewsDelegateImpl);
 };

@@ -170,3 +170,9 @@ views::NativeWidgetHelperAura* ChromeViewsDelegate::CreateNativeWidgetHelper(
 #endif
 }
 #endif
+
+content::WebContents* ChromeViewsDelegate::CreateWebContents(
+    content::BrowserContext* browser_context,
+    content::SiteInstance* site_instance) {
+  return NULL;
+}
