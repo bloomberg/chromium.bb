@@ -58,6 +58,10 @@ remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
   this.scaleToFit = false;
   this.logToServer = new remoting.LogToServer();
   this.onStateChange = onStateChange;
+
+  /** @type {number?} */
+  this.notifyClientDimensionsTimer_ = null;
+
   /** @type {remoting.ClientSession} */
   var that = this;
   /** @type {function():void} @private */
@@ -71,20 +75,22 @@ remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
   /** @type {function():void} @private */
   this.callToggleFullScreen_ = function() { that.toggleFullScreen_(); };
   /** @type {remoting.MenuButton} @private */
-  this.sendKeysMenu_ = new remoting.MenuButton(
-      document.getElementById('send-keys-menu')
-  );
-  /** @type {remoting.MenuButton} @private */
   this.screenOptionsMenu_ = new remoting.MenuButton(
       document.getElementById('screen-options-menu'),
       function() { that.onShowOptionsMenu_(); }
   );
+  /** @type {remoting.MenuButton} @private */
+  this.sendKeysMenu_ = new remoting.MenuButton(
+      document.getElementById('send-keys-menu')
+  );
+
   /** @type {HTMLElement} @private */
   this.shrinkToFit_ = document.getElementById('enable-shrink-to-fit');
   /** @type {HTMLElement} @private */
   this.originalSize_ = document.getElementById('disable-shrink-to-fit');
   /** @type {HTMLElement} @private */
   this.fullScreen_ = document.getElementById('toggle-full-screen');
+
   this.shrinkToFit_.addEventListener('click', this.callEnableShrink_, false);
   this.originalSize_.addEventListener('click', this.callDisableShrink_, false);
   this.fullScreen_.addEventListener('click', this.callToggleFullScreen_, false);
@@ -504,6 +510,21 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
  */
 remoting.ClientSession.prototype.onResize = function() {
   this.updateDimensions();
+
+  if (this.notifyClientDimensionsTimer_) {
+    window.clearTimeout(this.notifyClientDimensionsTimer_);
+    this.notifyClientDimensionsTimer_ = null;
+  }
+
+  // Defer notifying the host of the change until the window stops resizing, to
+  // avoid overloading the control channel with notifications.
+  /** @type {remoting.ClientSession} */
+  var that = this;
+  var notifyClientDimensions = function() {
+    that.plugin.notifyClientDimensions(window.innerWidth, window.innerHeight);
+  }
+  this.notifyClientDimensionsTimer_ =
+      window.setTimeout(notifyClientDimensions, 1000);
 };
 
 /**

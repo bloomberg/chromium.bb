@@ -49,6 +49,7 @@ remoting.ClientPlugin.prototype.isSupportedVersion = function() {};
 remoting.ClientPlugin.Feature = {
   HIGH_QUALITY_SCALING: 'highQualityScaling',
   INJECT_KEY_EVENT: 'injectKeyEvent',
+  NOTIFY_CLIENT_DIMENSIONS: 'notifyClientDimensions',
   REMAP_KEY: 'remapKey',
   SEND_CLIPBOARD_ITEM: 'sendClipboardItem'
 };
@@ -134,3 +135,12 @@ remoting.ClientPlugin.prototype.getPerfStats = function() {};
  * @param {string} item The clipboard item.
  */
 remoting.ClientPlugin.prototype.sendClipboardItem = function(mimeType, item) {};
+
+/**
+ * Notifies the host that the client has the specified dimensions.
+ *
+ * @param {number} width The available client width.
+ * @param {number} height The available client height.
+ */
+remoting.ClientPlugin.prototype.notifyClientDimensions =
+    function(width, height) {};

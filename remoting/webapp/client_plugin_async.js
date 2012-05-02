@@ -365,6 +365,21 @@ remoting.ClientPluginAsync.prototype.sendClipboardItem =
 };
 
 /**
+ * Notifies the host that the client has the specified dimensions.
+ *
+ * @param {number} width The available client width.
+ * @param {number} height The available client height.
+ */
+remoting.ClientPluginAsync.prototype.notifyClientDimensions =
+    function(width, height) {
+  if (!this.hasFeature(remoting.ClientPlugin.Feature.NOTIFY_CLIENT_DIMENSIONS))
+    return;
+  this.plugin.postMessage(JSON.stringify(
+      { method: 'notifyClientDimensions',
+        data: { width: width, height: height }}));
+};
+
+/**
  * If we haven't yet received a "hello" message from the plugin, change its
  * size so that the user can confirm it if click-to-play is enabled, or can
  * see the "this plugin is disabled" message if it is actually disabled.

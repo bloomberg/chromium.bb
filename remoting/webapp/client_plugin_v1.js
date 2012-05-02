@@ -230,20 +230,20 @@ remoting.ClientPluginV1.prototype.getPerfStats = function() {
 };
 
 /**
- * This dummy method exists only so that this class implements ClientPlugin.
- *
- * @param {string} mimeType The MIME type of the clipboard item.
- * @param {string} item The clipboard item.
+ * These dummy methods exist only so that this class implements ClientPlugin.
+ */
+
+/**
+ * @param {string} mimeType
+ * @param {string} item
  */
 remoting.ClientPluginV1.prototype.sendClipboardItem = function(mimeType, item) {
   return;
 };
 
 /**
- * This dummy method exists only so that this class implements ClientPlugin.
- *
- * @param {number} usbKeycode The USB-style code of the key to inject.
- * @param {boolean} pressed True to inject a key press, False for a release.
+ * @param {number} usbKeycode
+ * @param {boolean} pressed
  */
 remoting.ClientPluginV1.prototype.injectKeyEvent =
     function(usbKeycode, pressed) {
@@ -251,12 +251,19 @@ remoting.ClientPluginV1.prototype.injectKeyEvent =
 };
 
 /**
- * Remap one USB keycode to another in all subsequent key events.
- *
- * @param {number} fromKeycode The USB-style code of the key to remap.
- * @param {number} toKeycode The USB-style code to remap the key to.
+ * @param {number} fromKeycode
+ * @param {number} toKeycode
  */
 remoting.ClientPluginV1.prototype.remapKey =
     function(fromKeycode, toKeycode) {
+  return;
+};
+
+/**
+ * @param {number} width
+ * @param {number} height
+ */
+remoting.ClientPluginV1.prototype.notifyClientDimensions =
+    function(width, height) {
   return;
 };
