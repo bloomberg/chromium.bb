@@ -493,19 +493,39 @@ std::string BrowserCloseTest::DownloadsCloseCheckCase::DebugString() const {
 // The following test is split into six chunks to reduce the chance
 // of hitting the 25s timeout.
 
-IN_PROC_BROWSER_TEST_F(BrowserCloseTest, DownloadsCloseCheck_0) {
+// This test is timing out very often under AddressSanitizer.
+// http://crbug.com/111914 and http://crbug.com/103371.
+#if defined(ADDRESS_SANITIZER)
+
+#define MAYBE_DownloadsCloseCheck_0 DISABLED_DownloadsCloseCheck_0
+#define MAYBE_DownloadsCloseCheck_1 DISABLED_DownloadsCloseCheck_1
+#define MAYBE_DownloadsCloseCheck_2 DISABLED_DownloadsCloseCheck_2
+#define MAYBE_DownloadsCloseCheck_3 DISABLED_DownloadsCloseCheck_3
+#define MAYBE_DownloadsCloseCheck_4 DISABLED_DownloadsCloseCheck_4
+#define MAYBE_DownloadsCloseCheck_5 DISABLED_DownloadsCloseCheck_5
+
+#else
+
+#define MAYBE_DownloadsCloseCheck_0 DownloadsCloseCheck_0
+#define MAYBE_DownloadsCloseCheck_1 DownloadsCloseCheck_1
+#define MAYBE_DownloadsCloseCheck_3 DownloadsCloseCheck_3
+#define MAYBE_DownloadsCloseCheck_4 DownloadsCloseCheck_4
+// Timing out on XP debug. http://crbug.com/111914
+#if defined(OS_WIN)
+# define MAYBE_DownloadsCloseCheck_2 DISABLED_DownloadsCloseCheck_2
+# define MAYBE_DownloadsCloseCheck_5 DISABLED_DownloadsCloseCheck_5
+#else
+# define MAYBE_DownloadsCloseCheck_2 DownloadsCloseCheck_2
+# define MAYBE_DownloadsCloseCheck_5 DownloadsCloseCheck_5
+#endif  // defined(OS_WIN)
+
+#endif  // defined(ADDRESS_SANITIZER)
+IN_PROC_BROWSER_TEST_F(BrowserCloseTest, MAYBE_DownloadsCloseCheck_0) {
   ASSERT_TRUE(SetupForDownloadCloseCheck());
   for (size_t i = 0; i < arraysize(download_close_check_cases) / 6; ++i) {
     ExecuteDownloadCloseCheckCase(i);
   }
 }
-
-// Crashing on Linux. http://crbug.com/100566
-#if defined(OS_LINUX)
-#define MAYBE_DownloadsCloseCheck_1 DISABLED_DownloadsCloseCheck_1
-#else
-#define MAYBE_DownloadsCloseCheck_1 DownloadsCloseCheck_1
-#endif
 
 IN_PROC_BROWSER_TEST_F(BrowserCloseTest, MAYBE_DownloadsCloseCheck_1) {
   ASSERT_TRUE(SetupForDownloadCloseCheck());
@@ -515,13 +535,6 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseTest, MAYBE_DownloadsCloseCheck_1) {
   }
 }
 
-// Timing out on XP debug. http://crbug.com/111914
-#if defined(OS_WIN)
-#define MAYBE_DownloadsCloseCheck_2 DISABLED_DownloadsCloseCheck_2
-#else
-#define MAYBE_DownloadsCloseCheck_2 DownloadsCloseCheck_2
-#endif
-
 IN_PROC_BROWSER_TEST_F(BrowserCloseTest, MAYBE_DownloadsCloseCheck_2) {
   ASSERT_TRUE(SetupForDownloadCloseCheck());
   for (size_t i = 2 * arraysize(download_close_check_cases) / 6;
@@ -530,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseTest, MAYBE_DownloadsCloseCheck_2) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserCloseTest, DownloadsCloseCheck_3) {
+IN_PROC_BROWSER_TEST_F(BrowserCloseTest, MAYBE_DownloadsCloseCheck_3) {
   ASSERT_TRUE(SetupForDownloadCloseCheck());
   for (size_t i = 3 * arraysize(download_close_check_cases) / 6;
        i < 4 * arraysize(download_close_check_cases) / 6; ++i) {
@@ -538,20 +551,13 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseTest, DownloadsCloseCheck_3) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserCloseTest, DownloadsCloseCheck_4) {
+IN_PROC_BROWSER_TEST_F(BrowserCloseTest, MAYBE_DownloadsCloseCheck_4) {
   ASSERT_TRUE(SetupForDownloadCloseCheck());
   for (size_t i = 4 * arraysize(download_close_check_cases) / 6;
        i < 5 * arraysize(download_close_check_cases) / 6; ++i) {
     ExecuteDownloadCloseCheckCase(i);
   }
 }
-
-// Timing out on XP debug. http://crbug.com/111914
-#if defined(OS_WIN)
-#define MAYBE_DownloadsCloseCheck_5 DISABLED_DownloadsCloseCheck_5
-#else
-#define MAYBE_DownloadsCloseCheck_5 DownloadsCloseCheck_5
-#endif
 
 IN_PROC_BROWSER_TEST_F(BrowserCloseTest, MAYBE_DownloadsCloseCheck_5) {
   ASSERT_TRUE(SetupForDownloadCloseCheck());
