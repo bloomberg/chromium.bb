@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,12 @@ struct VIEWS_EXPORT MenuConfig {
 
   // Normal text color.
   SkColor text_color;
+
+  // Submenu horizontal margin size.
+  int submenu_horizontal_margin_size;
+
+  // Submenu vertical margin size.
+  int submenu_vertical_margin_size;
 
   // Margins between the top of the item and the label.
   int item_top_margin;
@@ -87,6 +93,9 @@ struct VIEWS_EXPORT MenuConfig {
   // Padding between the label and accelerator. Only used if there is an
   // accelerator.
   int label_to_accelerator_padding;
+
+  // Minimum height of menu item.
+  int item_min_height;
 
   // Whether the keyboard accelerators are visible.
   bool show_accelerators;
