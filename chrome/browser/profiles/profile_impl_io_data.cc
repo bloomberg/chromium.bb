@@ -113,6 +113,8 @@ void ProfileImplIOData::Handle::Init(
                                              local_state,
                                              io_thread,
                                              main_request_context_getter_);
+
+  io_data_->InitializeMetricsEnabledStateOnUIThread();
 }
 
 base::Callback<ChromeURLDataManagerBackend*(void)>

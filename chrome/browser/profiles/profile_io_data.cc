@@ -56,6 +56,8 @@
 #include "net/url_request/url_request.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #endif  // defined(OS_CHROMEOS)
@@ -160,7 +162,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   scoped_ptr<ProfileParams> params(new ProfileParams);
   params->path = profile->GetPath();
-  params->is_incognito = profile->IsOffTheRecord();
   params->clear_local_state_on_exit =
       pref_service->GetBoolean(prefs::kClearSiteDataOnExit);
 
@@ -247,8 +248,7 @@ void ProfileIOData::AppRequestContext::SetHttpTransactionFactory(
 ProfileIOData::AppRequestContext::~AppRequestContext() {}
 
 ProfileIOData::ProfileParams::ProfileParams()
-    : is_incognito(false),
-      clear_local_state_on_exit(false),
+    : clear_local_state_on_exit(false),
       io_thread(NULL),
 #if defined(ENABLE_NOTIFICATIONS)
       notification_service(NULL),
@@ -262,7 +262,8 @@ ProfileIOData::ProfileIOData(bool is_incognito)
     : initialized_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           resource_context_(new ResourceContext(this))),
-      initialized_on_UI_thread_(false) {
+      initialized_on_UI_thread_(false),
+      is_incognito_(is_incognito) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -376,6 +377,34 @@ DesktopNotificationService* ProfileIOData::GetNotificationService() const {
 }
 #endif
 
+void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+#if defined(OS_CHROMEOS)
+  // Just fetch the value from ChromeOS' settings while we're on the UI thread.
+  // TODO(stevet): For now, this value is only set on profile initialization.
+  // We will want to do something similar to the PrefMember method below in the
+  // future to more accurately capture this state.
+  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                            &enable_metrics_);
+#else
+  // Prep the PrefMember and send it to the IO thread, since this value will be
+  // read from there.
+  enable_metrics_.Init(prefs::kMetricsReportingEnabled,
+                       g_browser_process->local_state(),
+                       NULL);
+  enable_metrics_.MoveToThread(BrowserThread::IO);
+#endif  // defined(OS_CHROMEOS)
+}
+
+bool ProfileIOData::GetMetricsEnabledStateOnIOThread() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+#if defined(OS_CHROMEOS)
+  return enable_metrics_;
+#else
+  return enable_metrics_.GetValue();
+#endif  // defined(OS_CHROMEOS)
+}
+
 chrome_browser_net::HttpServerPropertiesManager*
     ProfileIOData::http_server_properties_manager() const {
   return http_server_properties_manager_.get();
@@ -464,7 +493,7 @@ void ProfileIOData::LazyInitialize() const {
   transport_security_persister_.reset(
       new TransportSecurityPersister(transport_security_state_.get(),
                                      profile_params_->path,
-                                     profile_params_->is_incognito));
+                                     is_incognito()));
   const std::string& serialized =
       command_line.GetSwitchValueASCII(switches::kHstsHosts);
   transport_security_persister_.get()->DeserializeFromCommandLine(serialized);
@@ -479,7 +508,7 @@ void ProfileIOData::LazyInitialize() const {
   }
   bool set_protocol = job_factory_->SetProtocolHandler(
       chrome::kExtensionScheme,
-      CreateExtensionProtocolHandler(profile_params_->is_incognito,
+      CreateExtensionProtocolHandler(is_incognito(),
                                      profile_params_->extension_info_map));
   DCHECK(set_protocol);
   set_protocol = job_factory_->SetProtocolHandler(
@@ -517,7 +546,7 @@ void ProfileIOData::LazyInitialize() const {
 
 void ProfileIOData::ApplyProfileParamsToContext(
     ChromeURLRequestContext* context) const {
-  context->set_is_incognito(profile_params_->is_incognito);
+  context->set_is_incognito(is_incognito());
   context->set_accept_language(profile_params_->accept_language);
   context->set_accept_charset(profile_params_->accept_charset);
   context->set_referrer_charset(profile_params_->referrer_charset);
@@ -527,6 +556,9 @@ void ProfileIOData::ApplyProfileParamsToContext(
 void ProfileIOData::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   enable_referrers_.Destroy();
+#if !defined(OS_CHROMEOS)
+  enable_metrics_.Destroy();
+#endif
   clear_local_state_on_exit_.Destroy();
   safe_browsing_enabled_.Destroy();
   session_startup_pref_.Destroy();

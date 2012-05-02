@@ -46,8 +46,21 @@ bool GetReactivationBrand(std::string* brand);
 // need to restrict some behavior to only happen on Google's officially-owned
 // domains, use TransportSecurityState::IsGooglePinnedProperty() instead.
 
-// True if |host| is "[www.]google.<TLD>" with a valid TLD.
-bool IsGoogleHostname(const std::string& host);
+// Designate whether or not a URL checking function also checks for specific
+// subdomains, or only "www" and empty subdomains.
+enum SubdomainPermission {
+  ALLOW_SUBDOMAIN,
+  DISALLOW_SUBDOMAIN,
+};
+
+// True if |url| is an HTTP[S] request with host "[www.]google.<TLD>" and no
+// explicit port. If |permission| is ALLOW_SUBDOMAIN, we check against host
+// "*.google.<TLD>" instead.
+bool IsGoogleDomainUrl(const std::string& url, SubdomainPermission permission);
+// True if |host| is "[www.]google.<TLD>" with a valid TLD. If
+// |permission| is ALLOW_SUBDOMAIN, we check against host "*.google.<TLD>"
+// instead.
+bool IsGoogleHostname(const std::string& host, SubdomainPermission permission);
 // True if |url| represents a valid Google home page URL.
 bool IsGoogleHomePageUrl(const std::string& url);
 // True if |url| represents a valid Google search URL.

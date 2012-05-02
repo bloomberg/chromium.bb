@@ -114,6 +114,19 @@ class ProfileIOData {
   chrome_browser_net::HttpServerPropertiesManager*
       http_server_properties_manager() const;
 
+  bool is_incognito() const {
+    return is_incognito_;
+  }
+
+  // Initialize the member needed to track the metrics enabled state. This is
+  // only to be called on the UI thread.
+  void InitializeMetricsEnabledStateOnUIThread();
+
+  // Returns whether or not metrics reporting is enabled in the browser instance
+  // on which this profile resides. This is safe for use from the IO thread, and
+  // should only be called from there.
+  bool GetMetricsEnabledStateOnIOThread() const;
+
  protected:
   class AppRequestContext : public ChromeURLRequestContext {
    public:
@@ -136,7 +149,6 @@ class ProfileIOData {
     ~ProfileParams();
 
     FilePath path;
-    bool is_incognito;
     bool clear_local_state_on_exit;
     std::string accept_language;
     std::string accept_charset;
@@ -295,6 +307,15 @@ class ProfileIOData {
   // TODO(marja): Remove session_startup_pref_ if no longer needed.
   mutable IntegerPrefMember session_startup_pref_;
 
+  // The state of metrics reporting in the browser that this profile runs on.
+  // Unfortunately, since ChromeOS has a separate representation of this state,
+  // we need to make one available based on the platform.
+#if defined(OS_CHROMEOS)
+  bool enable_metrics_;
+#else
+  BooleanPrefMember enable_metrics_;
+#endif
+
   // Pointed to by NetworkDelegate.
   mutable scoped_ptr<policy::URLBlacklistManager> url_blacklist_manager_;
 
@@ -332,6 +353,8 @@ class ProfileIOData {
 
   // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
   bool initialized_on_UI_thread_;
+
+  bool is_incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileIOData);
 };
