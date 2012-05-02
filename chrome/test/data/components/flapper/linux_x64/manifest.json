@@ -16,7 +16,7 @@
         "PPB_FileChooser(Dev);0.5", 
         "PPB_FileChooserTrusted;0.5", 
         "PPB_FileRef;1.0", 
-        "PPB_Flash;11", 
+        "PPB_Flash;12.3", 
         "PPB_Flash_Clipboard;3", 
         "PPB_Flash_File_FileRef;2", 
         "PPB_Flash_File_ModuleLocal;2", 

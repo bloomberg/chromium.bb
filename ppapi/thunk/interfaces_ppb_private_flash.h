@@ -9,9 +9,6 @@
 
 PROXIED_API(PPB_Flash)
 PROXIED_IFACE(PPB_Flash,
-              PPB_FLASH_INTERFACE_11_0,
-              PPB_Flash_11)
-PROXIED_IFACE(PPB_Flash,
               PPB_FLASH_INTERFACE_12_0,
               PPB_Flash_12_0)
 PROXIED_IFACE(PPB_Flash,
@@ -20,6 +17,10 @@ PROXIED_IFACE(PPB_Flash,
 PROXIED_IFACE(PPB_Flash,
               PPB_FLASH_INTERFACE_12_2,
               PPB_Flash_12_2)
+PROXIED_IFACE(PPB_Flash,
+              PPB_FLASH_INTERFACE_12_3,
+              PPB_Flash_12_3)
+
 PROXIED_IFACE(PPB_Flash,
               PPB_FLASH_CLIPBOARD_INTERFACE_3_LEGACY,
               PPB_Flash_Clipboard_3_0)

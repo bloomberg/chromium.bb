@@ -43,6 +43,8 @@ class PPAPI_THUNK_EXPORT PPB_Flash_API {
   virtual int32_t InvokePrinting(PP_Instance instance) = 0;
   virtual void UpdateActivity(PP_Instance instance) = 0;
   virtual PP_Var GetDeviceID(PP_Instance instance) = 0;
+  virtual int32_t GetSettingInt(PP_Instance instance,
+                                PP_FlashSetting setting) = 0;
 
   // FlashClipboard.
   virtual PP_Bool IsClipboardFormatAvailable(

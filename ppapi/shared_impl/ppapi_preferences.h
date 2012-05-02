@@ -24,6 +24,8 @@ struct PPAPI_SHARED_EXPORT Preferences {
   string16 sans_serif_font_family;
   int default_font_size;
   int default_fixed_font_size;
+
+  bool is_3d_supported;
 };
 
 }  // namespace ppapi

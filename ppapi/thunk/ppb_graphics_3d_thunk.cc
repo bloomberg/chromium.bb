@@ -16,7 +16,7 @@ namespace {
 
 typedef EnterResource<PPB_Graphics3D_API> EnterGraphics3D;
 
-int32_t GetAttribMaxValue(PP_Resource instance,
+int32_t GetAttribMaxValue(PP_Instance instance,
                           int32_t attribute,
                           int32_t* value) {
   // TODO(alokp): Implement me.

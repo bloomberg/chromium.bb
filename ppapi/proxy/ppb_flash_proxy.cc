@@ -555,6 +555,17 @@ PP_Var PPB_Flash_Proxy::GetDeviceID(PP_Instance instance) {
   return StringVar::StringToPPVar(id);
 }
 
+int32_t PPB_Flash_Proxy::GetSettingInt(PP_Instance instance,
+                                       PP_FlashSetting setting) {
+  switch (setting) {
+    case PP_FLASHSETTING_3DENABLED:
+      return static_cast<PluginDispatcher*>(dispatcher())->preferences().
+          is_3d_supported;
+    default:
+      return -1;
+  }
+}
+
 PP_Bool PPB_Flash_Proxy::IsClipboardFormatAvailable(
     PP_Instance instance,
     PP_Flash_Clipboard_Type clipboard_type,

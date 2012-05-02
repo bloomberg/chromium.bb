@@ -10,7 +10,25 @@
 label Chrome {
   M17 = 12.0,
   M19 = 12.1,
-  M20 = 12.2
+  M20_0 = 12.2,
+  M20_1 = 12.3
+};
+
+[assert_size(4)]
+enum PP_FlashSetting {
+  /**
+   * Specifies if the system likely supports 3D hardware acceleration.
+   *
+   * The result is an int where 1 corresponds to true and 0 corresponds to
+   * false, depending on the supported nature of 3D acceleration. If querying
+   * this function returns 1, the 3D system will normally use the native
+   * hardware for rendering which will be much faster.
+   *
+   * In rare cases (depending on the platform) this value will be 1 but a
+   * created 3D context will use emulation because context initialization
+   * failed.
+   */
+  PP_FLASHSETTING_3DENABLED = 1
 };
 
 /**
@@ -136,6 +154,13 @@ interface PPB_Flash {
    */
   [version=12.2]
   PP_Var GetDeviceID([in] PP_Instance instance);
+
+  /**
+   * Returns the value associated with the given setting. Invalid enums will
+   * result in -1 return value.
+   */
+  [version=12.3]
+  int32_t GetSettingInt(PP_Instance instance, PP_FlashSetting setting);
 };
 
 #inline c

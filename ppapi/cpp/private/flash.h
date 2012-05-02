@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_time.h"
 
@@ -58,6 +59,8 @@ class Flash {
   static int32_t InvokePrinting(const InstanceHandle& instance);
   static void UpdateActivity(const InstanceHandle& instance);
   static Var GetDeviceID(const InstanceHandle& instance);
+  static int32_t GetSettingInt(const InstanceHandle& instance,
+                               PP_FlashSetting setting);
 };
 
 }  // namespace flash
