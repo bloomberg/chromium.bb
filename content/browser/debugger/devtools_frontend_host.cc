@@ -74,10 +74,9 @@ bool DevToolsFrontendHost::OnMessageReceived(
                         OnRequestUndockWindow)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestSetDockSide,
                         OnRequestSetDockSide)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_OpenInNewTab,
-                        OnOpenInNewTab)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_Save,
-                        OnSave)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_OpenInNewTab, OnOpenInNewTab)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_Save, OnSave)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_Append, OnAppend)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -110,6 +109,12 @@ void DevToolsFrontendHost::OnSave(
     const std::string& content,
     bool save_as) {
   delegate_->SaveToFile(url, content, save_as);
+}
+
+void DevToolsFrontendHost::OnAppend(
+    const std::string& url,
+    const std::string& content) {
+  delegate_->AppendToFile(url, content);
 }
 
 void DevToolsFrontendHost::OnRequestDockWindow() {

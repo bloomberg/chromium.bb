@@ -142,10 +142,12 @@ class DevToolsWindow : private content::NotificationObserver,
   virtual void SaveToFile(const std::string& url,
                           const std::string& content,
                           bool save_as) OVERRIDE;
+  virtual void AppendToFile(const std::string& url,
+                            const std::string& content) OVERRIDE;
 
   // Overridden from DevToolsFileHelper::Delegate
-  virtual void FileSavedAs(const std::string& url,
-                           const FilePath& path)  OVERRIDE;
+  virtual void FileSavedAs(const std::string& url)  OVERRIDE;
+  virtual void AppendedTo(const std::string& url)  OVERRIDE;
 
   void RequestSetDocked(bool docked);
 

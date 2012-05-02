@@ -94,6 +94,15 @@ void DevToolsFileHelper::WriteFile(const FilePath& path,
   file_util::WriteFile(path, content.c_str(), content.length());
 }
 
+// static
+void DevToolsFileHelper::AppendToFile(const FilePath& path,
+                                    const std::string& content) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(!path.empty());
+
+  file_util::AppendToFile(path, content.c_str(), content.length());
+}
+
 DevToolsFileHelper::DevToolsFileHelper(Profile* profile, Delegate* delegate)
     : profile_(profile),
       delegate_(delegate) {
@@ -145,6 +154,21 @@ void DevToolsFileHelper::Save(const std::string& url,
   save_as_dialog_->Show(url, initial_path, content);
 }
 
+void DevToolsFileHelper::Append(const std::string& url,
+                                const std::string& content) {
+  PathsMap::iterator it = saved_files_.find(url);
+  if (it == saved_files_.end())
+    return;
+
+  delegate_->AppendedTo(url);
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DevToolsFileHelper::AppendToFile,
+                 it->second,
+                 content));
+}
+
 void DevToolsFileHelper::FileSelected(const std::string& url,
                                       const FilePath& path,
                                       const std::string& content) {
@@ -156,7 +180,7 @@ void DevToolsFileHelper::FileSelected(const std::string& url,
   DictionaryValue* files_map = update.Get();
   files_map->SetWithoutPathExpansion(base::MD5String(url),
                                      base::CreateFilePathValue(path));
-  delegate_->FileSavedAs(url, path);
+  delegate_->FileSavedAs(url);
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,

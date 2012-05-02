@@ -739,9 +739,19 @@ void DevToolsWindow::SaveToFile(const std::string& url,
   file_helper_->Save(url, content, save_as);
 }
 
-void DevToolsWindow::FileSavedAs(const std::string& url, const FilePath& path) {
+void DevToolsWindow::AppendToFile(const std::string& url,
+                                  const std::string& content) {
+  file_helper_->Append(url, content);
+}
+
+void DevToolsWindow::FileSavedAs(const std::string& url) {
   StringValue url_value(url);
   CallClientFunction("InspectorFrontendAPI.savedURL", &url_value);
+}
+
+void DevToolsWindow::AppendedTo(const std::string& url) {
+  StringValue url_value(url);
+  CallClientFunction("InspectorFrontendAPI.appendedToURL", &url_value);
 }
 
 content::JavaScriptDialogCreator* DevToolsWindow::GetJavaScriptDialogCreator() {

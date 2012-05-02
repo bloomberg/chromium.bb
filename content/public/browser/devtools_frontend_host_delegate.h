@@ -45,6 +45,11 @@ class DevToolsFrontendHostDelegate {
                           const std::string& content,
                           bool save_as) = 0;
 
+  // Appends given |content| to the file that has been associated with the
+  // given |url| by SaveToFile method.
+  virtual void AppendToFile(const std::string& url,
+                            const std::string& content) = 0;
+
   // This method is called when the contents inspected by this devtools frontend
   // is closing.
   virtual void InspectedContentsClosing() = 0;

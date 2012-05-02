@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,6 +86,13 @@ void DevToolsClient::save(const WebKit::WebString& url,
                                 url.utf8(),
                                 content.utf8(),
                                 save_as));
+}
+
+void DevToolsClient::append(const WebKit::WebString& url,
+                            const WebKit::WebString& content) {
+  Send(new DevToolsHostMsg_Append(routing_id(),
+                                  url.utf8(),
+                                  content.utf8()));
 }
 
 void DevToolsClient::OnDispatchOnInspectorFrontend(const std::string& message) {

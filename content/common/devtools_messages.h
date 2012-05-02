@@ -155,6 +155,12 @@ IPC_MESSAGE_ROUTED3(DevToolsHostMsg_Save,
                     std::string /* content */,
                     bool /* save_as */)
 
+// Appends given |content| to the file that has been associated with the
+// given |url| by Save message handler.
+IPC_MESSAGE_ROUTED2(DevToolsHostMsg_Append,
+                    std::string /* url */,
+                    std::string /* content */)
+
 // Updates agent runtime state stored in devtools manager in order to support
 // cross-navigation instrumentation.
 IPC_MESSAGE_ROUTED1(DevToolsHostMsg_SaveAgentRuntimeState,
