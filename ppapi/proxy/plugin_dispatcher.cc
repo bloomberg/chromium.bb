@@ -59,11 +59,13 @@ InstanceData::~InstanceData() {
 }
 
 PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
-                                   PP_GetInterface_Func get_interface)
+                                   PP_GetInterface_Func get_interface,
+                                   bool incognito)
     : Dispatcher(remote_process_handle, get_interface),
       plugin_delegate_(NULL),
       received_preferences_(false),
-      plugin_dispatcher_id_(0) {
+      plugin_dispatcher_id_(0),
+      incognito_(incognito) {
   SetSerializationRules(new PluginVarSerializationRules(AsWeakPtr()));
 
   if (!g_live_dispatchers)

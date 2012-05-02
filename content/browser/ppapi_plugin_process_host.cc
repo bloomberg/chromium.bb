@@ -206,8 +206,8 @@ void PpapiPluginProcessHost::RequestPluginChannel(Client* client) {
 
   // We can't send any sync messages from the browser because it might lead to
   // a hang. See the similar code in PluginProcessHost for more description.
-  PpapiMsg_CreateChannel* msg = new PpapiMsg_CreateChannel(process_handle,
-                                                           renderer_id);
+  PpapiMsg_CreateChannel* msg = new PpapiMsg_CreateChannel(
+      process_handle, renderer_id, client->OffTheRecord());
   msg->set_unblock(true);
   if (Send(msg)) {
     sent_requests_.push(client);

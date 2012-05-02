@@ -138,6 +138,10 @@ class OpenChannelToPpapiPluginCallback
     SendReplyAndDeleteThis();
   }
 
+  virtual bool OffTheRecord() {
+    return filter()->OffTheRecord();
+  }
+
   virtual content::ResourceContext* GetResourceContext() {
     return context_;
   }
@@ -173,6 +177,10 @@ class OpenChannelToPpapiBrokerCallback
                                                         broker_process_handle,
                                                         channel_handle));
     delete this;
+  }
+
+  virtual bool OffTheRecord() {
+    return filter_->OffTheRecord();
   }
 
  private:

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash.idl modified Fri Apr 27 10:13:19 2012. */
+/* From private/ppb_flash.idl modified Tue May 01 16:01:19 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_H_
@@ -50,7 +50,12 @@ typedef enum {
    * created 3D context will use emulation because context initialization
    * failed.
    */
-  PP_FLASHSETTING_3DENABLED = 1
+  PP_FLASHSETTING_3DENABLED = 1,
+  /**
+   * Specifies if the given instance is in private/inconito/off-the-record mode
+   * (returns 1) or "regular" mode (returns 0). Returns -1 on invalid instance.
+   */
+  PP_FLASHSETTING_INCOGNITO = 2
 } PP_FlashSetting;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FlashSetting, 4);
 /**

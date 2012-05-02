@@ -158,7 +158,8 @@ void PluginProxyTestHarness::SetUpHarness() {
 
   plugin_dispatcher_.reset(new PluginDispatcher(
       base::Process::Current().handle(),
-      &MockGetInterface));
+      &MockGetInterface,
+      false));
   plugin_dispatcher_->InitWithTestSink(&sink());
   plugin_dispatcher_->DidCreateInstance(pp_instance());
 }
@@ -175,7 +176,8 @@ void PluginProxyTestHarness::SetUpHarnessWithChannel(
 
   plugin_dispatcher_.reset(new PluginDispatcher(
       base::Process::Current().handle(),
-      &MockGetInterface));
+      &MockGetInterface,
+      false));
   plugin_dispatcher_->InitPluginWithChannel(&plugin_delegate_mock_,
                                             channel_handle,
                                             is_client);

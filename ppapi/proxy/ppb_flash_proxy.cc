@@ -561,6 +561,8 @@ int32_t PPB_Flash_Proxy::GetSettingInt(PP_Instance instance,
     case PP_FLASHSETTING_3DENABLED:
       return static_cast<PluginDispatcher*>(dispatcher())->preferences().
           is_3d_supported;
+    case PP_FLASHSETTING_INCOGNITO:
+      return static_cast<PluginDispatcher*>(dispatcher())->incognito();
     default:
       return -1;
   }

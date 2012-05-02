@@ -209,9 +209,10 @@ IPC_MESSAGE_CONTROL1(PpapiMsg_LoadPlugin, FilePath /* path */)
 
 // Creates a channel to talk to a renderer. The plugin will respond with
 // PpapiHostMsg_ChannelCreated.
-IPC_MESSAGE_CONTROL2(PpapiMsg_CreateChannel,
+IPC_MESSAGE_CONTROL3(PpapiMsg_CreateChannel,
                      base::ProcessHandle /* host_process_handle */,
-                     int /* renderer_id */)
+                     int /* renderer_id */,
+                     bool /* incognito */)
 
 // Each plugin may be referenced by multiple renderers. We need the instance
 // IDs to be unique within a plugin, despite coming from different renderers,

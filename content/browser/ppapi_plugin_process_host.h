@@ -48,6 +48,9 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
         base::ProcessHandle plugin_process_handle,
         const IPC::ChannelHandle& channel_handle,
         int plugin_child_id) = 0;
+
+    // Returns true if the current connection is off-the-record.
+    virtual bool OffTheRecord() = 0;
   };
 
   class PluginClient : public Client {

@@ -71,7 +71,8 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   //
   // You must call InitPluginWithChannel after the constructor.
   PluginDispatcher(base::ProcessHandle remote_process_handle,
-                   PP_GetInterface_Func get_interface);
+                   PP_GetInterface_Func get_interface,
+                   bool incognito);
   virtual ~PluginDispatcher();
 
   // The plugin side maintains a mapping from PP_Instance to Dispatcher so
@@ -131,6 +132,7 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   const Preferences& preferences() const { return preferences_; }
 
   uint32 plugin_dispatcher_id() const { return plugin_dispatcher_id_; }
+  bool incognito() const { return incognito_; }
 
  private:
   friend class PluginDispatcherTest;
@@ -161,6 +163,10 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   Preferences preferences_;
 
   uint32 plugin_dispatcher_id_;
+
+  // Set to true when the instances associated with this dispatcher are
+  // incognito mode.
+  bool incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginDispatcher);
 };

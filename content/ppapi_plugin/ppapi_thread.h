@@ -56,7 +56,8 @@ class PpapiThread : public ChildThread,
   // Message handlers.
   void OnMsgLoadPlugin(const FilePath& path);
   void OnMsgCreateChannel(base::ProcessHandle host_process_handle,
-                          int renderer_id);
+                          int renderer_id,
+                          bool incognito);
   void OnMsgSetNetworkState(bool online);
   void OnPluginDispatcherMessageReceived(const IPC::Message& msg);
 
@@ -64,6 +65,7 @@ class PpapiThread : public ChildThread,
   // fills the given ChannelHandle with the information from the new channel.
   bool SetupRendererChannel(base::ProcessHandle host_process_handle,
                             int renderer_id,
+                            bool incognito,
                             IPC::ChannelHandle* handle);
 
   // Sets up the name of the plugin for logging using the given path.

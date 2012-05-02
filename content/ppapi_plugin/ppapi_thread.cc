@@ -248,10 +248,11 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
 }
 
 void PpapiThread::OnMsgCreateChannel(base::ProcessHandle host_process_handle,
-                                     int renderer_id) {
+                                     int renderer_id,
+                                     bool incognito) {
   IPC::ChannelHandle channel_handle;
   if (!library_.is_valid() ||  // Plugin couldn't be loaded.
-      !SetupRendererChannel(host_process_handle, renderer_id,
+      !SetupRendererChannel(host_process_handle, renderer_id, incognito,
                             &channel_handle)) {
     Send(new PpapiHostMsg_ChannelCreated(IPC::ChannelHandle()));
     return;
@@ -285,6 +286,7 @@ void PpapiThread::OnPluginDispatcherMessageReceived(const IPC::Message& msg) {
 
 bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
                                        int renderer_id,
+                                       bool incognito,
                                        IPC::ChannelHandle* handle) {
   DCHECK(is_broker_ == (connect_instance_func_ != NULL));
   IPC::ChannelHandle plugin_handle;
@@ -304,7 +306,8 @@ bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,
     dispatcher = broker_dispatcher;
   } else {
     PluginProcessDispatcher* plugin_dispatcher =
-        new PluginProcessDispatcher(host_process_handle, get_plugin_interface_);
+        new PluginProcessDispatcher(host_process_handle, get_plugin_interface_,
+                                    incognito);
     init_result = plugin_dispatcher->InitPluginWithChannel(this,
                                                            plugin_handle,
                                                            false);

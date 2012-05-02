@@ -28,7 +28,13 @@ enum PP_FlashSetting {
    * created 3D context will use emulation because context initialization
    * failed.
    */
-  PP_FLASHSETTING_3DENABLED = 1
+  PP_FLASHSETTING_3DENABLED = 1,
+
+  /**
+   * Specifies if the given instance is in private/inconito/off-the-record mode
+   * (returns 1) or "regular" mode (returns 0). Returns -1 on invalid instance.
+   */
+  PP_FLASHSETTING_INCOGNITO = 2
 };
 
 /**
