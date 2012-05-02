@@ -16,7 +16,7 @@ class VisualStudioVersion(object):
 
   def __init__(self, short_name, description,
                solution_version, project_version, flat_sln, uses_vcxproj,
-               path):
+               path, sdk_based):
     self.short_name = short_name
     self.description = description
     self.solution_version = solution_version
@@ -24,6 +24,7 @@ class VisualStudioVersion(object):
     self.flat_sln = flat_sln
     self.uses_vcxproj = uses_vcxproj
     self.path = path
+    self.sdk_based = sdk_based
 
   def ShortName(self):
     return self.short_name
@@ -54,6 +55,22 @@ class VisualStudioVersion(object):
   def Path(self):
     """Returns the path to Visual Studio installation."""
     return self.path
+
+  def ToolPath(self, tool):
+    """Returns the path to a given compiler tool. """
+    return os.path.normpath(os.path.join(self.path, "VC/bin", tool))
+
+  def SetupScript(self):
+    """Returns the path to the setup script for setting up the environment."""
+    # Check if we are running in the SDK command line environment and use
+    # the setup script from the SDK if so.
+    # TODO(alexeypa): specify the target platform (x86 or x64).
+    sdk_dir = os.environ.get('WindowsSDKDir')
+    if self.sdk_based and sdk_dir:
+      return os.path.normpath(os.path.join(sdk_dir, 'Bin/SetEnv.Cmd'))
+    else:
+      return os.path.normpath(
+          os.path.join(self.path, 'Common7/Tools/vsvars32.bat'))
 
 def _RegistryQueryBase(sysdir, key, value):
   """Use reg.exe to read a particular key.
@@ -146,7 +163,7 @@ def _RegistryKeyExists(key):
   return True
 
 
-def _CreateVersion(name, path):
+def _CreateVersion(name, path, sdk_based=False):
   """Sets up MSVS project generation.
 
   Setup is based off the GYP_MSVS_VERSION environment variable or whatever is
@@ -160,42 +177,48 @@ def _CreateVersion(name, path):
                                   project_version='4.0',
                                   flat_sln=False,
                                   uses_vcxproj=True,
-                                  path=path),
+                                  path=path,
+                                  sdk_based=sdk_based),
       '2010e': VisualStudioVersion('2010e',
                                    'Visual Studio 2010',
                                    solution_version='11.00',
                                    project_version='4.0',
                                    flat_sln=True,
                                    uses_vcxproj=True,
-                                   path=path),
+                                   path=path,
+                                   sdk_based=sdk_based),
       '2008': VisualStudioVersion('2008',
                                   'Visual Studio 2008',
                                   solution_version='10.00',
                                   project_version='9.00',
                                   flat_sln=False,
                                   uses_vcxproj=False,
-                                  path=path),
+                                  path=path,
+                                  sdk_based=sdk_based),
       '2008e': VisualStudioVersion('2008e',
                                    'Visual Studio 2008',
                                    solution_version='10.00',
                                    project_version='9.00',
                                    flat_sln=True,
                                    uses_vcxproj=False,
-                                   path=path),
+                                   path=path,
+                                   sdk_based=sdk_based),
       '2005': VisualStudioVersion('2005',
                                   'Visual Studio 2005',
                                   solution_version='9.00',
                                   project_version='8.00',
                                   flat_sln=False,
                                   uses_vcxproj=False,
-                                  path=path),
+                                  path=path,
+                                  sdk_based=sdk_based),
       '2005e': VisualStudioVersion('2005e',
                                    'Visual Studio 2005',
                                    solution_version='9.00',
                                    project_version='8.00',
                                    flat_sln=True,
                                    uses_vcxproj=False,
-                                   path=path),
+                                   path=path,
+                                   sdk_based=sdk_based),
   }
   return versions[str(name)]
 
@@ -249,7 +272,7 @@ def _DetectVisualStudioVersions(versions_to_check, force_express):
       if not path:
         continue
       versions.append(_CreateVersion(version_to_year[version] + 'e',
-          os.path.join(path, '..')))
+          os.path.join(path, '..'), sdk_based=True))
 
   return versions
 
