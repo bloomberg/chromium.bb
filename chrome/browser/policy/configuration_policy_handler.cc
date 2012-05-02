@@ -1035,7 +1035,7 @@ bool RestoreOnStartupPolicyHandler::CheckPolicySettings(
     if (restore_policy->GetAsInteger(&restore_value)) {
       switch (restore_value) {
         case SessionStartupPref::kPrefValueHomePage:
-          // TODO(tbreisacher): AddError indicating this value is deprecated.
+          errors->AddError(policy_name(), IDS_POLICY_VALUE_DEPRECATED);
           break;
         case SessionStartupPref::kPrefValueLast: {
           // If the "restore last session" policy is set, session cookies are
