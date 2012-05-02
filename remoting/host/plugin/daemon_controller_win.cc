@@ -118,6 +118,7 @@ class DaemonControllerWin : public remoting::DaemonController {
   void DoSetWindow(void* window_handle);
 
   ScopedComPtr<IDaemonControl> control_;
+  ScopedComPtr<IDaemonControlUi> control_ui_;
 
   // This timer is used to release |control_| after a timeout.
   scoped_ptr<base::OneShotTimer<DaemonControllerWin> > release_timer_;
@@ -259,6 +260,9 @@ HRESULT DaemonControllerWin::ActivateElevatedController() {
                           base::TimeDelta::FromSeconds(kUacTimeoutSec),
                           this,
                           &DaemonControllerWin::ReleaseElevatedController);
+
+    // Ignore the error. IID_IDaemonControlUi is optional.
+    control_.QueryInterface(IID_IDaemonControlUi, control_ui_.ReceiveVoid());
   }
 
   return S_OK;
@@ -268,6 +272,7 @@ void DaemonControllerWin::ReleaseElevatedController() {
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   control_.Release();
+  control_ui_.Release();
   release_timer_.reset();
 }
 
@@ -429,7 +434,7 @@ void DaemonControllerWin::DoInstallAsNeededAndStart(
   // Otherwise, install it if its COM registration entry is missing.
   if (hr == CO_E_CLASSSTRING) {
     scoped_ptr<DaemonInstallerWin> installer = DaemonInstallerWin::Create(
-        window_handle_,
+        GetTopLevelWindow(window_handle_),
         base::Bind(&DaemonControllerWin::OnInstallationComplete,
                    base::Unretained(this),
                    base::Passed(&config),
@@ -465,6 +470,16 @@ void DaemonControllerWin::DoSetConfigAndStart(
     return;
   }
 
+  // Make sure that the PIN confirmation dialog is focused properly.
+  if (control_ui_.get() != NULL) {
+    hr = control_ui_->SetOwnerWindow(
+      reinterpret_cast<LONG_PTR>(GetTopLevelWindow(window_handle_)));
+    if (FAILED(hr)) {
+      done_callback.Run(HResultToAsyncResult(hr));
+      return;
+    }
+  }
+
   hr = control_->SetConfig(config_str);
   if (FAILED(hr)) {
     done_callback.Run(HResultToAsyncResult(hr));
@@ -493,6 +508,16 @@ void DaemonControllerWin::DoUpdateConfig(
   if (config_str == NULL) {
     done_callback.Run(HResultToAsyncResult(E_OUTOFMEMORY));
     return;
+  }
+
+  // Make sure that the PIN confirmation dialog is focused properly.
+  if (control_ui_.get() != NULL) {
+    hr = control_ui_->SetOwnerWindow(
+      reinterpret_cast<LONG_PTR>(GetTopLevelWindow(window_handle_)));
+    if (FAILED(hr)) {
+      done_callback.Run(HResultToAsyncResult(hr));
+      return;
+    }
   }
 
   hr = control_->UpdateConfig(config_str);

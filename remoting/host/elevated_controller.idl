@@ -14,10 +14,7 @@ import "ocidl.idl";
   pointer_default(unique)
 ]
 interface IDaemonControl: IDispatch {
-  [ id(1), helpstring("Returns a filtered copy of the daemon's configuration. "
-                      "Only 'host_id' and 'xmpp_login' values are returned, "
-                      "because any other values may contain security-sensitive "
-                      "information.") ]
+  [ id(1), helpstring("Deprecated.") ]
   HRESULT GetConfig([out, retval] BSTR* config_out);
 
   [ id(2), helpstring("Replaces the existing daemon's configuration with "
@@ -38,6 +35,20 @@ interface IDaemonControl: IDispatch {
 };
 
 [
+  object,
+  uuid(d8cc6ebc-df7a-447b-b582-21b7174afb3a),
+  dual,
+  nonextensible,
+  helpstring("IDaemonControlUi Interface"),
+  pointer_default(unique)
+]
+interface IDaemonControlUi: IDaemonControl {
+  [ id(6), helpstring("Sets the owner window for any windows shown by "
+                      "the daemon controller.") ]
+  HRESULT SetOwnerWindow([in] LONG_PTR owner_window);
+};
+
+[
   uuid(9d9a5a2c-576e-4acd-9c75-aabff74b205d),
   version(1.0),
   helpstring("Chromoting Elevated Controller 1.0 Type Library")
@@ -50,6 +61,6 @@ library ChromotingElevatedControllerLib {
     helpstring("ElevatedController Class")
   ]
   coclass ElevatedController {
-    [default] interface IDaemonControl;
+    [default] interface IDaemonControlUi;
   };
 };

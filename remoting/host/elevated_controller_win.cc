@@ -172,7 +172,7 @@ HRESULT MoveConfigFileFromTemp(const FilePath& filename) {
 }
 
 // Writes the configuration file up to |kMaxConfigFileSize| in size.
-HRESULT WriteConfig(const char* content, size_t length) {
+HRESULT WriteConfig(const char* content, size_t length, HWND owner_window) {
   if (length > remoting::kMaxConfigFileSize) {
       return E_FAIL;
   }
@@ -195,7 +195,7 @@ HRESULT WriteConfig(const char* content, size_t length) {
 
   // Ask the user to verify the configuration.
   remoting::VerifyConfigWindowWin verify_win(email, host_id, host_secret_hash);
-  if (verify_win.DoModal() != IDOK) {
+  if (verify_win.DoModal(owner_window) != IDOK) {
     return E_FAIL;
   }
 
@@ -252,7 +252,7 @@ HRESULT WriteConfig(const char* content, size_t length) {
 
 namespace remoting {
 
-ElevatedControllerWin::ElevatedControllerWin() {
+ElevatedControllerWin::ElevatedControllerWin() : owner_window_(NULL) {
 }
 
 HRESULT ElevatedControllerWin::FinalConstruct() {
@@ -262,38 +262,9 @@ HRESULT ElevatedControllerWin::FinalConstruct() {
 void ElevatedControllerWin::FinalRelease() {
 }
 
-STDMETHODIMP ElevatedControllerWin::GetConfig(BSTR* config_out) {
-  FilePath config_dir = remoting::GetConfigDir();
-
-  // Read the host configuration.
-  scoped_ptr<base::DictionaryValue> config;
-  HRESULT hr = ReadConfig(config_dir.Append(kConfigFileName), &config);
-  if (FAILED(hr)) {
-    return hr;
-  }
-
-  // Build the filtered config.
-  scoped_ptr<base::DictionaryValue> filtered_config(
-      new base::DictionaryValue());
-
-  std::string value;
-  if (config->GetString(kHostId, &value)) {
-    filtered_config->SetString(kHostId, value);
-  }
-  if (config->GetString(kXmppLogin, &value)) {
-    filtered_config->SetString(kXmppLogin, value);
-  }
-
-  // Convert the filtered config back to a string and return it to the caller.
-  std::string file_content;
-  base::JSONWriter::Write(filtered_config.get(), &file_content);
-
-  *config_out = ::SysAllocString(UTF8ToUTF16(file_content).c_str());
-  if (config_out == NULL) {
-    return E_OUTOFMEMORY;
-  }
-
-  return S_OK;
+STDMETHODIMP ElevatedControllerWin::GetConfig(BSTR* config) {
+  // Deprecated.
+  return E_NOTIMPL;
 }
 
 STDMETHODIMP ElevatedControllerWin::SetConfig(BSTR config) {
@@ -306,7 +277,7 @@ STDMETHODIMP ElevatedControllerWin::SetConfig(BSTR config) {
   std::string file_content = UTF16ToUTF8(
     string16(static_cast<char16*>(config), ::SysStringLen(config)));
 
-  return WriteConfig(file_content.c_str(), file_content.size());
+  return WriteConfig(file_content.c_str(), file_content.size(), owner_window_);
 }
 
 STDMETHODIMP ElevatedControllerWin::StartDaemon() {
@@ -419,7 +390,13 @@ STDMETHODIMP ElevatedControllerWin::UpdateConfig(BSTR config) {
   // Write the updated config.
   std::string config_updated_str;
   base::JSONWriter::Write(config_old.get(), &config_updated_str);
-  return WriteConfig(config_updated_str.c_str(), config_updated_str.size());
+  return WriteConfig(config_updated_str.c_str(), config_updated_str.size(),
+                     owner_window_);
+}
+
+STDMETHODIMP ElevatedControllerWin::SetOwnerWindow(LONG_PTR window_handle) {
+  owner_window_ = reinterpret_cast<HWND>(window_handle);
+  return S_OK;
 }
 
 HRESULT ElevatedControllerWin::OpenService(ScopedScHandle* service_out) {

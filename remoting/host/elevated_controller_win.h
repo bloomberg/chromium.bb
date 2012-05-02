@@ -19,7 +19,7 @@ namespace remoting {
 class ATL_NO_VTABLE ElevatedControllerWin
     : public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>,
       public ATL::CComCoClass<ElevatedControllerWin, &CLSID_ElevatedController>,
-      public ATL::IDispatchImpl<IDaemonControl, &IID_IDaemonControl,
+      public ATL::IDispatchImpl<IDaemonControlUi, &IID_IDaemonControlUi,
                                 &LIBID_ChromotingElevatedControllerLib, 1, 0> {
  public:
   ElevatedControllerWin();
@@ -27,12 +27,13 @@ class ATL_NO_VTABLE ElevatedControllerWin
   HRESULT FinalConstruct();
   void FinalRelease();
 
-  // IDaemonControl implementation.
-  STDMETHOD(GetConfig)(BSTR* config_out);
+  // IDaemonControlUi implementation.
+  STDMETHOD(GetConfig)(BSTR* config);
   STDMETHOD(SetConfig)(BSTR config);
   STDMETHOD(StartDaemon)();
   STDMETHOD(StopDaemon)();
   STDMETHOD(UpdateConfig)(BSTR config);
+  STDMETHOD(SetOwnerWindow)(LONG_PTR owner_window);
 
   DECLARE_NO_REGISTRY()
 
@@ -41,8 +42,12 @@ class ATL_NO_VTABLE ElevatedControllerWin
 
   BEGIN_COM_MAP(ElevatedControllerWin)
     COM_INTERFACE_ENTRY(IDaemonControl)
+    COM_INTERFACE_ENTRY(IDaemonControlUi)
     COM_INTERFACE_ENTRY(IDispatch)
   END_COM_MAP()
+
+  // Handle of the owner window (if any) for any UI to be shown.
+  HWND owner_window_;
 
   DECLARE_PROTECT_FINAL_CONSTRUCT()
 };
