@@ -373,6 +373,10 @@ void OptionsUI::InitializeHandlers() {
 #endif
   }
 
+#if defined(OS_CHROMEOS)
+  pointer_device_observer_->CheckDevices();
+#endif
+
   // Always initialize the page as when handlers are left over we still need to
   // do various things like show/hide sections and send data to the Javascript.
   for (size_t i = 0; i < handlers_.size(); ++i)

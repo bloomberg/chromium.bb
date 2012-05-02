@@ -28,7 +28,7 @@ void MouseExistsFileThread(bool* exists) {
 }  // namespace
 
 PointerDeviceObserver::PointerDeviceObserver()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)){
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 PointerDeviceObserver::~PointerDeviceObserver() {
@@ -39,7 +39,11 @@ PointerDeviceObserver::~PointerDeviceObserver() {
 void PointerDeviceObserver::Init() {
   XInputHierarchyChangedEventListener::GetInstance()
       ->AddObserver(this);
-  DeviceHierarchyChanged();
+}
+
+void PointerDeviceObserver::CheckDevices() {
+  CheckMouseExists();
+  CheckTouchpadExists();
 }
 
 void PointerDeviceObserver::AddObserver(Observer* observer) {
@@ -51,15 +55,14 @@ void PointerDeviceObserver::RemoveObserver(Observer* observer) {
 }
 
 void PointerDeviceObserver::DeviceHierarchyChanged() {
-  CheckMouseExists();
-  CheckTouchpadExists();
+  CheckDevices();
 }
 
 void PointerDeviceObserver::CheckTouchpadExists() {
   bool* exists = new bool;
   BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
       base::Bind(&TouchpadExistsFileThread, exists),
-      base::Bind(&PointerDeviceObserver::TouchpadExists,
+      base::Bind(&PointerDeviceObserver::OnTouchpadExists,
                  weak_factory_.GetWeakPtr(),
                  base::Owned(exists)));
 }
@@ -68,16 +71,16 @@ void PointerDeviceObserver::CheckMouseExists() {
   bool* exists = new bool;
   BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
       base::Bind(&MouseExistsFileThread, exists),
-      base::Bind(&PointerDeviceObserver::MouseExists,
+      base::Bind(&PointerDeviceObserver::OnMouseExists,
                  weak_factory_.GetWeakPtr(),
                  base::Owned(exists)));
 }
 
-void PointerDeviceObserver::TouchpadExists(bool* exists) {
+void PointerDeviceObserver::OnTouchpadExists(bool* exists) {
   FOR_EACH_OBSERVER(Observer, observers_, TouchpadExists(*exists));
 }
 
-void PointerDeviceObserver::MouseExists(bool* exists) {
+void PointerDeviceObserver::OnMouseExists(bool* exists) {
   FOR_EACH_OBSERVER(Observer, observers_, MouseExists(*exists));
 }
 
