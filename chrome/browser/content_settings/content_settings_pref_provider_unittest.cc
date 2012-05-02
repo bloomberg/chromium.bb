@@ -471,6 +471,7 @@ TEST_F(PrefProviderTest, MigrateObsoleteGeolocationPref) {
   PrefService* prefs = profile.GetPrefs();
   GURL secondary_url("http://www.foo.com");
   GURL primary_url("http://www.bar.com");
+  GURL corrupted_setting_url("http://www.corruptedsetting.com");
 
   // Set obsolete preference.
   DictionaryValue* secondary_patterns_dictionary = new DictionaryValue();
@@ -481,9 +482,12 @@ TEST_F(PrefProviderTest, MigrateObsoleteGeolocationPref) {
       new DictionaryValue());
   geolocation_settings_dictionary->SetWithoutPathExpansion(
       primary_url.spec(), secondary_patterns_dictionary);
+  // Add a non dictionary value to the geolocation settings dictionary to test
+  // that corrupted settings are ignored (See http://crbug.com/125009).
+  geolocation_settings_dictionary->SetWithoutPathExpansion(
+      corrupted_setting_url.spec(), Value::CreateIntegerValue(0));
   prefs->Set(prefs::kGeolocationContentSettings,
              *geolocation_settings_dictionary);
-
 
   content_settings::PrefProvider provider(prefs, false);
 
@@ -499,6 +503,13 @@ TEST_F(PrefProviderTest, MigrateObsoleteGeolocationPref) {
       &provider,
       GURL("http://www.example.com"),
       secondary_url,
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      "",
+      false));
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT, GetContentSetting(
+      &provider,
+      corrupted_setting_url,
+      corrupted_setting_url,
       CONTENT_SETTINGS_TYPE_GEOLOCATION,
       "",
       false));

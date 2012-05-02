@@ -647,9 +647,13 @@ void PrefProvider::MigrateObsoleteGeolocationPref() {
     DCHECK(primary_url.is_valid());
 
     DictionaryValue* requesting_origin_settings = NULL;
-    bool found = geolocation_settings->GetDictionaryWithoutPathExpansion(
-        primary_key, &requesting_origin_settings);
-    DCHECK(found);
+    // The method GetDictionaryWithoutPathExpansion() returns false if the
+    // value for the given key is not a |DictionaryValue|. If the value for the
+    // |primary_key| is not a |DictionaryValue| then the location settings for
+    // this key are corrupted. Therefore they are ignored.
+    if (!geolocation_settings->GetDictionaryWithoutPathExpansion(
+        primary_key, &requesting_origin_settings))
+      continue;
 
     for (DictionaryValue::key_iterator j =
              requesting_origin_settings->begin_keys();
@@ -664,7 +668,7 @@ void PrefProvider::MigrateObsoleteGeolocationPref() {
       }
 
       base::Value* value = NULL;
-      found = requesting_origin_settings->GetWithoutPathExpansion(
+      bool found = requesting_origin_settings->GetWithoutPathExpansion(
           secondary_key, &value);
       DCHECK(found);
 
