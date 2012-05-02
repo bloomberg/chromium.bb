@@ -17,9 +17,7 @@
 
 typedef bool (*LaunchNaClProcessFunc)(const char* url,
                                       int socket_count,
-                                      nacl::Handle* result_sockets,
-                                      nacl::Handle* nacl_process_handle,
-                                      int* nacl_process_id);
+                                      nacl::Handle* result_sockets);
 
 typedef int (*GetURandomFDFunc)(void);
 

@@ -29,8 +29,7 @@ base::LazyInstance<scoped_refptr<IPC::SyncMessageFilter> >
 
 // Launch NaCl's sel_ldr process.
 bool LaunchSelLdr(const char* alleged_url, int socket_count,
-                  void* imc_handles, void* nacl_process_handle,
-                  int* nacl_process_id) {
+                  void* imc_handles) {
   std::vector<nacl::FileDescriptor> sockets;
   IPC::Message::Sender* sender = content::RenderThread::Get();
   if (sender == NULL)
@@ -45,11 +44,6 @@ bool LaunchSelLdr(const char* alleged_url, int socket_count,
     static_cast<nacl::Handle*>(imc_handles)[i] =
         nacl::ToNativeHandle(sockets[i]);
   }
-  // TODO(mseaborn): Remove the arguments nacl_process_handle and
-  // nacl_process_id from the interface.
-  *reinterpret_cast<base::ProcessHandle*>(nacl_process_handle) =
-      (base::ProcessHandle) -1;
-  *nacl_process_id = 0;
   return true;
 }
 
