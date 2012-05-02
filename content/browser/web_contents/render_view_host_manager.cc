@@ -75,7 +75,7 @@ void RenderViewHostManager::Init(content::BrowserContext* browser_context,
     site_instance = SiteInstance::Create(browser_context);
   render_view_host_ = static_cast<RenderViewHostImpl*>(
       RenderViewHostFactory::Create(
-          site_instance, render_view_delegate_, routing_id, delegate_->
+          site_instance, render_view_delegate_, routing_id, false, delegate_->
           GetControllerForRenderManager().GetSessionStorageNamespace()));
 
   // Keep track of renderer processes as they start to shut down.
@@ -112,13 +112,14 @@ RenderViewHostImpl* RenderViewHostManager::Navigate(
       !render_view_host_->IsRenderViewLive()) {
     // Note: we don't call InitRenderView here because we are navigating away
     // soon anyway, and we don't have the NavigationEntry for this host.
-    delegate_->CreateRenderViewForRenderManager(render_view_host_);
+    delegate_->CreateRenderViewForRenderManager(render_view_host_,
+                                                MSG_ROUTING_NONE);
   }
 
   // If the renderer crashed, then try to create a new one to satisfy this
   // navigation request.
   if (!dest_render_view_host->IsRenderViewLive()) {
-    if (!InitRenderView(dest_render_view_host, entry))
+    if (!InitRenderView(dest_render_view_host, MSG_ROUTING_NONE))
       return NULL;
 
     // Now that we've created a new renderer, be sure to hide it if it isn't
@@ -543,62 +544,64 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     // BrowsingInstance.  It is important to immediately give this new
     // SiteInstance to a RenderViewHost (if it is different than our current
     // SiteInstance), so that it is ref counted.  This will happen in
-    // CreatePendingRenderView.
+    // CreateRenderView.
     return curr_instance->GetRelatedSiteInstance(dest_url);
   }
 }
 
-bool RenderViewHostManager::CreatePendingRenderView(
-  const NavigationEntryImpl& entry, SiteInstance* instance) {
-  NavigationEntry* curr_entry =
-      delegate_->GetControllerForRenderManager().GetLastCommittedEntry();
-  if (curr_entry) {
-    DCHECK(!curr_entry->GetContentState().empty());
-    // TODO(creis): Should send a message to the RenderView to let it know
-    // we're about to switch away, so that it sends an UpdateState message.
-  }
-
-  // Check if we've already created an RVH for this SiteInstance.
+int RenderViewHostManager::CreateRenderView(
+    SiteInstance* instance,
+    int opener_route_id,
+    bool swapped_out) {
   CHECK(instance);
-  RenderViewHostMap::iterator iter =
-      swapped_out_hosts_.find(instance->GetId());
-  if (iter != swapped_out_hosts_.end()) {
-    // Re-use the existing RenderViewHost, which has already been initialized.
-    // We'll remove it from the list of swapped out hosts if it commits.
-    pending_render_view_host_ = iter->second;
+
+  // Check if we've already created an RVH for this SiteInstance.  If so, try
+  // to re-use the existing one, which has already been initialized.  We'll
+  // remove it from the list of swapped out hosts if it commits.
+  RenderViewHostImpl* new_render_view_host = static_cast<RenderViewHostImpl*>(
+      GetSwappedOutRenderViewHost(instance));
+  if (new_render_view_host) {
+    // Prevent the process from exiting while we're trying to use it.
+    new_render_view_host->GetProcess()->AddPendingView();
+  } else {
+    // Create a new RenderViewHost if we don't find an existing one.
+    new_render_view_host = static_cast<RenderViewHostImpl*>(
+        RenderViewHostFactory::Create(instance,
+            render_view_delegate_, MSG_ROUTING_NONE, swapped_out, delegate_->
+            GetControllerForRenderManager().GetSessionStorageNamespace()));
 
     // Prevent the process from exiting while we're trying to use it.
-    pending_render_view_host_->GetProcess()->AddPendingView();
+    new_render_view_host->GetProcess()->AddPendingView();
 
-    return true;
+    // Store the new RVH as swapped out if necessary.
+    if (swapped_out)
+      swapped_out_hosts_[instance->GetId()] = new_render_view_host;
+
+    bool success = InitRenderView(new_render_view_host, opener_route_id);
+    if (success) {
+      // Don't show the view until we get a DidNavigate from it.
+      new_render_view_host->GetView()->Hide();
+    } else if (!swapped_out) {
+      CancelPending();
+    }
   }
 
-  pending_render_view_host_ = static_cast<RenderViewHostImpl*>(
-      RenderViewHostFactory::Create(
-          instance, render_view_delegate_, MSG_ROUTING_NONE, delegate_->
-          GetControllerForRenderManager().GetSessionStorageNamespace()));
+  // Use this as our new pending RVH if it isn't swapped out.
+  if (!swapped_out)
+    pending_render_view_host_ = new_render_view_host;
 
-  // Prevent the process from exiting while we're trying to use it.
-  pending_render_view_host_->GetProcess()->AddPendingView();
-
-  bool success = InitRenderView(pending_render_view_host_, entry);
-  if (success) {
-    // Don't show the view until we get a DidNavigate from it.
-    pending_render_view_host_->GetView()->Hide();
-  } else {
-    CancelPending();
-  }
-  return success;
+  return new_render_view_host->GetRoutingID();
 }
 
 bool RenderViewHostManager::InitRenderView(RenderViewHost* render_view_host,
-                                           const NavigationEntryImpl& entry) {
+                                           int opener_route_id) {
   // If the pending navigation is to a WebUI, tell the RenderView about any
   // bindings it will need enabled.
   if (pending_web_ui())
     render_view_host->AllowBindings(pending_web_ui()->GetBindings());
 
-  return delegate_->CreateRenderViewForRenderManager(render_view_host);
+  return delegate_->CreateRenderViewForRenderManager(render_view_host,
+                                                     opener_route_id);
 }
 
 void RenderViewHostManager::CommitPending() {
@@ -737,9 +740,19 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
         delegate_->CreateWebUIForRenderManager(entry.GetURL()));
     pending_and_current_web_ui_.reset();
 
-    // Create a pending RVH and navigate it.
-    bool success = CreatePendingRenderView(entry, new_instance);
-    if (!success)
+    // Ensure that we have created RVHs for the new RVH's opener chain if
+    // we are staying in the same BrowsingInstance. This allows the pending RVH
+    // to send cross-process script calls to its opener(s).
+    int opener_route_id = MSG_ROUTING_NONE;
+    if (new_instance->IsRelatedSiteInstance(curr_instance)) {
+      opener_route_id =
+          delegate_->CreateOpenerRenderViewsForRenderManager(new_instance);
+    }
+
+    // Create a non-swapped-out pending RVH with the given opener and navigate
+    // it.
+    int route_id = CreateRenderView(new_instance, opener_route_id, false);
+    if (route_id == MSG_ROUTING_NONE)
       return NULL;
 
     // Check if our current RVH is live before we set up a transition.
@@ -877,4 +890,13 @@ bool RenderViewHostManager::IsSwappedOut(RenderViewHost* rvh) {
 
   return swapped_out_hosts_.find(rvh->GetSiteInstance()->GetId()) !=
       swapped_out_hosts_.end();
+}
+
+RenderViewHost* RenderViewHostManager::GetSwappedOutRenderViewHost(
+    SiteInstance* instance) {
+  RenderViewHostMap::iterator iter = swapped_out_hosts_.find(instance->GetId());
+  if (iter != swapped_out_hosts_.end())
+    return iter->second;
+
+  return NULL;
 }

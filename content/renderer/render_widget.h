@@ -167,7 +167,8 @@ class CONTENT_EXPORT RenderWidget
   };
 
   RenderWidget(WebKit::WebPopupType popup_type,
-               const WebKit::WebScreenInfo& screen_info);
+               const WebKit::WebScreenInfo& screen_info,
+               bool swapped_out);
   virtual ~RenderWidget();
 
   // Initializes this view with the given opener.  CompleteInit must be called

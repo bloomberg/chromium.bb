@@ -1543,7 +1543,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   entry->SetContentState("state");
   entries.push_back(entry);
   WebContentsImpl our_contents(
-      browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+      browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL, NULL);
   NavigationControllerImpl& our_controller = our_contents.GetControllerImpl();
   our_controller.Restore(0, true, &entries);
   ASSERT_EQ(0u, entries.size());
@@ -1610,7 +1610,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   entry->SetContentState("state");
   entries.push_back(entry);
   WebContentsImpl our_contents(
-      browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+      browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL, NULL);
   NavigationControllerImpl& our_controller = our_contents.GetControllerImpl();
   our_controller.Restore(0, true, &entries);
   ASSERT_EQ(0u, entries.size());

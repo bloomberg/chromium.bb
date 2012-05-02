@@ -28,6 +28,7 @@ class RenderViewHostFactory {
       content::SiteInstance* instance,
       content::RenderViewHostDelegate* delegate,
       int routing_id,
+      bool swapped_out,
       content::SessionStorageNamespace* session_storage);
 
   // Returns true if there is currently a globally-registered factory.
@@ -45,6 +46,7 @@ class RenderViewHostFactory {
       content::SiteInstance* instance,
       content::RenderViewHostDelegate* delegate,
       int routing_id,
+      bool swapped_out,
       content::SessionStorageNamespace* session_storage_namespace) = 0;
 
   // Registers your factory to be called when new RenderViewHosts are created.

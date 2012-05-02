@@ -12,6 +12,9 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/test/mock_render_process_host.h"
 #include "webkit/forms/password_form.h"
@@ -21,7 +24,8 @@ namespace content {
 
 TestWebContents::TestWebContents(BrowserContext* browser_context,
                                  SiteInstance* instance)
-    : WebContentsImpl(browser_context, instance, MSG_ROUTING_NONE, NULL, NULL),
+    : WebContentsImpl(browser_context, instance, MSG_ROUTING_NONE, NULL, NULL,
+                      NULL),
       transition_cross_site(false),
       delegate_view_override_(NULL),
       expect_set_history_length_and_prune_(false),
@@ -83,10 +87,10 @@ WebPreferences TestWebContents::TestGetWebkitPrefs() {
 }
 
 bool TestWebContents::CreateRenderViewForRenderManager(
-    RenderViewHost* render_view_host) {
+    RenderViewHost* render_view_host, int opener_route_id) {
   // This will go to a TestRenderViewHost.
   static_cast<RenderViewHostImpl*>(
-      render_view_host)->CreateRenderView(string16(), -1);
+      render_view_host)->CreateRenderView(string16(), opener_route_id, -1);
   return true;
 }
 
@@ -154,6 +158,14 @@ RenderViewHostDelegate::View* TestWebContents::GetViewDelegate() {
   if (delegate_view_override_)
     return delegate_view_override_;
   return WebContentsImpl::GetViewDelegate();
+}
+
+void TestWebContents::SetOpener(TestWebContents* opener) {
+  // This is normally only set in the WebContents constructor, which also
+  // registers an observer for when the opener gets closed.
+  opener_ = opener;
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 content::Source<WebContents>(opener_));
 }
 
 void TestWebContents::ExpectSetHistoryLengthAndPrune(

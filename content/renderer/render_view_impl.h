@@ -193,6 +193,8 @@ class RenderViewImpl : public RenderWidget,
       int32 surface_id,
       int64 session_storage_namespace_id,
       const string16& frame_name,
+      bool is_renderer_created,
+      bool swapped_out,
       int32 next_page_id,
       const WebKit::WebScreenInfo& screen_info,
       bool guest,
@@ -747,6 +749,8 @@ class RenderViewImpl : public RenderWidget,
                  int32 surface_id,
                  int64 session_storage_namespace_id,
                  const string16& frame_name,
+                 bool is_renderer_created,
+                 bool swapped_out,
                  int32 next_page_id,
                  const WebKit::WebScreenInfo& screen_info,
                  bool guest,
@@ -983,6 +987,9 @@ class RenderViewImpl : public RenderWidget,
   bool MaybeLoadAlternateErrorPage(WebKit::WebFrame* frame,
                                    const WebKit::WebURLError& error,
                                    bool replace);
+
+  // Make this RenderView show an empty, unscriptable page.
+  void NavigateToSwappedOutURL();
 
   // If we initiated a navigation, this function will populate |document_state|
   // with the navigation information saved in OnNavigate().

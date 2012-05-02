@@ -632,6 +632,13 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // The name of the frame associated with this view (or empty if none).
   IPC_STRUCT_MEMBER(string16, frame_name)
 
+  // The route ID of the opener RenderView if we need to set one
+  // (MSG_ROUTING_NONE otherwise).
+  IPC_STRUCT_MEMBER(int, opener_route_id)
+
+  // Whether the RenderView should initially be swapped out.
+  IPC_STRUCT_MEMBER(bool, swapped_out)
+
   // The initial page ID to use for this view, which must be larger than any
   // existing navigation that might be loaded in the view.  Page IDs are unique
   // to a view and are only updated by the renderer after this initial value.

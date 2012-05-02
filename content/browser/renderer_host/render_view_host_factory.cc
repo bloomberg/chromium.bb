@@ -20,13 +20,15 @@ RenderViewHost* RenderViewHostFactory::Create(
     SiteInstance* instance,
     content::RenderViewHostDelegate* delegate,
     int routing_id,
+    bool swapped_out,
     SessionStorageNamespace* session_storage_namespace) {
   if (factory_) {
-    return factory_->CreateRenderViewHost(instance, delegate, routing_id,
+    return factory_->CreateRenderViewHost(instance, delegate,
+                                          routing_id, swapped_out,
                                           session_storage_namespace);
   }
   return new RenderViewHostImpl(instance, delegate, routing_id,
-                                session_storage_namespace);
+                                swapped_out, session_storage_namespace);
 }
 
 // static

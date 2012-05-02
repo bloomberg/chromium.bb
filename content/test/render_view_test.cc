@@ -46,7 +46,7 @@ using WebKit::WebString;
 using WebKit::WebURLRequest;
 
 namespace {
-const int32 kOpenerId = 7;
+const int32 kOpenerId = -2;
 const int32 kRouteId = 5;
 const int32 kNewWindowRouteId = 6;
 const int32 kSurfaceId = 42;
@@ -164,6 +164,8 @@ void RenderViewTest::SetUp() {
       kSurfaceId,
       dom_storage::kInvalidSessionStorageNamespaceId,
       string16(),
+      false,
+      false,
       1,
       WebKit::WebScreenInfo(),
       false,

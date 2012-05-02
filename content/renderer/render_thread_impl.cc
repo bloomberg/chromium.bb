@@ -899,7 +899,7 @@ void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
   RenderViewImpl::Create(
       params.parent_window,
-      MSG_ROUTING_NONE,
+      params.opener_route_id,
       params.renderer_preferences,
       params.web_preferences,
       new SharedRenderViewCounter(0),
@@ -907,6 +907,8 @@ void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
       params.surface_id,
       params.session_storage_namespace_id,
       params.frame_name,
+      false,
+      params.swapped_out,
       params.next_page_id,
       params.screen_info,
       params.guest,

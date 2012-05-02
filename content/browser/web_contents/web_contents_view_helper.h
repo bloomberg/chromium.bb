@@ -37,7 +37,7 @@ class CONTENT_EXPORT WebContentsViewHelper
 
   // Creates a new window; call |ShowCreatedWindow| below to show it.
   WebContentsImpl* CreateNewWindow(
-      WebContentsImpl* web_contents,
+      WebContentsImpl* opener,
       int route_id,
       const ViewHostMsg_CreateWindow_Params& params);
 

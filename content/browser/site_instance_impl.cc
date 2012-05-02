@@ -142,6 +142,11 @@ SiteInstance* SiteInstanceImpl::GetRelatedSiteInstance(const GURL& url) {
   return browsing_instance_->GetSiteInstanceForURL(url);
 }
 
+bool SiteInstanceImpl::IsRelatedSiteInstance(const SiteInstance* instance) {
+  return browsing_instance_ ==
+      static_cast<const SiteInstanceImpl*>(instance)->browsing_instance_;
+}
+
 bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) const {
   // Having no process isn't a problem, since we'll assign it correctly.
   if (!HasProcess())

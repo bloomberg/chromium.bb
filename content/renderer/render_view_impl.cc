@@ -26,6 +26,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "content/common/appcache/appcache_dispatcher.h"
+#include "content/common/child_thread.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/database_messages.h"
 #include "content/common/drag_messages.h"
@@ -436,11 +437,13 @@ RenderViewImpl::RenderViewImpl(
     int32 surface_id,
     int64 session_storage_namespace_id,
     const string16& frame_name,
+    bool is_renderer_created,
+    bool swapped_out,
     int32 next_page_id,
     const WebKit::WebScreenInfo& screen_info,
     bool guest,
     AccessibilityMode accessibility_mode)
-    : RenderWidget(WebKit::WebPopupTypeNone, screen_info),
+    : RenderWidget(WebKit::WebPopupTypeNone, screen_info, swapped_out),
       webkit_preferences_(webkit_prefs),
       send_content_state_immediately_(false),
       enabled_bindings_(0),
@@ -483,7 +486,7 @@ RenderViewImpl::RenderViewImpl(
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)) {
   routing_id_ = routing_id;
   surface_id_ = surface_id;
-  if (opener_id != MSG_ROUTING_NONE)
+  if (opener_id != MSG_ROUTING_NONE && is_renderer_created)
     opener_id_ = opener_id;
 
   // Ensure we start with a valid next_page_id_ from the browser.
@@ -500,7 +503,9 @@ RenderViewImpl::RenderViewImpl(
 
   if (counter) {
     shared_popup_counter_ = counter;
-    shared_popup_counter_->data++;
+    // Only count this if it isn't swapped out upon creation.
+    if (!swapped_out)
+      shared_popup_counter_->data++;
     decrement_shared_popup_at_destruction_ = true;
   } else {
     shared_popup_counter_ = new SharedRenderViewCounter(0);
@@ -514,7 +519,7 @@ RenderViewImpl::RenderViewImpl(
 
   // If this is a popup, we must wait for the CreatingNew_ACK message before
   // completing initialization.  Otherwise, we can finish it now.
-  if (opener_id == MSG_ROUTING_NONE) {
+  if (opener_id_ == MSG_ROUTING_NONE) {
     did_show_ = true;
     CompleteInit(parent_hwnd);
   }
@@ -563,6 +568,20 @@ RenderViewImpl::RenderViewImpl(
   ProcessViewLayoutFlags(command_line);
 
   content::GetContentClient()->renderer()->RenderViewCreated(this);
+
+  // If we have an opener_id but we weren't created by a renderer, then
+  // it's the browser asking us to set our opener to another RenderView.
+  // TODO(creis): This doesn't yet handle openers that are subframes.
+  if (opener_id != MSG_ROUTING_NONE && !is_renderer_created) {
+    RenderViewImpl* opener_view = static_cast<RenderViewImpl*>(
+        ChildThread::current()->ResolveRoute(opener_id));
+    webview()->mainFrame()->setOpener(opener_view->webview()->mainFrame());
+  }
+
+  // If we are initially swapped out, navigate to kSwappedOutURL.
+  // This ensures we are in a unique origin that others cannot script.
+  if (is_swapped_out_)
+    NavigateToSwappedOutURL();
 }
 
 RenderViewImpl::~RenderViewImpl() {
@@ -634,6 +653,8 @@ RenderViewImpl* RenderViewImpl::Create(
     int32 surface_id,
     int64 session_storage_namespace_id,
     const string16& frame_name,
+    bool is_renderer_created,
+    bool swapped_out,
     int32 next_page_id,
     const WebKit::WebScreenInfo& screen_info,
     bool guest,
@@ -649,6 +670,8 @@ RenderViewImpl* RenderViewImpl::Create(
       surface_id,
       session_storage_namespace_id,
       frame_name,
+      is_renderer_created,
+      swapped_out,
       next_page_id,
       screen_info,
       guest,
@@ -1514,6 +1537,8 @@ WebView* RenderViewImpl::createView(
       surface_id,
       cloned_session_storage_namespace_id,
       frame_name,
+      true,
+      false,
       1,
       screen_info_,
       guest_,
@@ -4472,19 +4497,23 @@ void RenderViewImpl::OnSwapOut(const ViewMsg_SwapOut_Params& params) {
 
     // Replace the page with a blank dummy URL. The unload handler will not be
     // run a second time, thanks to a check in FrameLoader::stopLoading.
-    // We use loadRequest instead of loadHTMLString because the former commits
-    // synchronously.  Otherwise a new navigation can interrupt the navigation
-    // to content::kSwappedOutURL. If that happens to be to the page we had been
-    // showing, then WebKit will never send a commit and we'll be left spinning.
     // TODO(creis): Need to add a better way to do this that avoids running the
     // beforeunload handler. For now, we just run it a second time silently.
-    GURL swappedOutURL(content::kSwappedOutURL);
-    WebURLRequest request(swappedOutURL);
-    webview()->mainFrame()->loadRequest(request);
+    NavigateToSwappedOutURL();
   }
 
   // Just echo back the params in the ACK.
   Send(new ViewHostMsg_SwapOut_ACK(routing_id_, params));
+}
+
+void RenderViewImpl::NavigateToSwappedOutURL() {
+  // We use loadRequest instead of loadHTMLString because the former commits
+  // synchronously.  Otherwise a new navigation can interrupt the navigation
+  // to content::kSwappedOutURL. If that happens to be to the page we had been
+  // showing, then WebKit will never send a commit and we'll be left spinning.
+  GURL swappedOutURL(content::kSwappedOutURL);
+  WebURLRequest request(swappedOutURL);
+  webview()->mainFrame()->loadRequest(request);
 }
 
 void RenderViewImpl::OnClosePage() {

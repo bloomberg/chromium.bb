@@ -57,7 +57,7 @@ class CONTENT_EXPORT RenderViewHostManager
     // If you are attaching to an already-existing RenderView, you should call
     // InitWithExistingID.
     virtual bool CreateRenderViewForRenderManager(
-        content::RenderViewHost* render_view_host) = 0;
+        content::RenderViewHost* render_view_host, int opener_route_id) = 0;
     virtual void BeforeUnloadFiredFromRenderManager(
         bool proceed, bool* proceed_to_fire_unload) = 0;
     virtual void DidStartLoadingFromRenderManager(
@@ -67,6 +67,13 @@ class CONTENT_EXPORT RenderViewHostManager
     virtual void UpdateRenderViewSizeForRenderManager() = 0;
     virtual void NotifySwappedFromRenderManager() = 0;
     virtual NavigationControllerImpl& GetControllerForRenderManager() = 0;
+
+    // Create swapped out RenderViews in the given SiteInstance for each tab in
+    // the opener chain of this tab, if any.  This allows the current tab to
+    // make cross-process script calls to its opener(s).  Returns the route ID
+    // of the immediate opener, if one exists (otherwise MSG_ROUTING_NONE).
+    virtual int CreateOpenerRenderViewsForRenderManager(
+        content::SiteInstance* instance) = 0;
 
     // Creates a WebUI object for the given URL if one applies. Ownership of the
     // returned pointer will be passed to the caller. If no WebUI applies,
@@ -154,6 +161,13 @@ class CONTENT_EXPORT RenderViewHostManager
   // Called when a renderer's main frame navigates.
   void DidNavigateMainFrame(content::RenderViewHost* render_view_host);
 
+  // Helper method to create a RenderViewHost.  If |swapped_out| is true, it
+  // will be initially placed on the swapped out hosts list.  Otherwise, it
+  // will be used for a pending cross-site navigation.
+  int CreateRenderView(content::SiteInstance* instance,
+                       int opener_route_id,
+                       bool swapped_out);
+
   // Set the WebUI after committing a page load. This is useful for navigations
   // initiated from a renderer, where we want to give the new renderer WebUI
   // privileges from the originating renderer.
@@ -204,6 +218,10 @@ class CONTENT_EXPORT RenderViewHostManager
   // RenderViewHosts.
   bool IsSwappedOut(content::RenderViewHost* rvh);
 
+  // Returns the swapped out RenderViewHost for the given SiteInstance, if any.
+  content::RenderViewHost* GetSwappedOutRenderViewHost(
+      content::SiteInstance* instance);
+
  private:
   friend class content::TestWebContents;
   friend class RenderViewHostManagerTest;
@@ -234,15 +252,9 @@ class CONTENT_EXPORT RenderViewHostManager
       const content::NavigationEntryImpl& entry,
       content::SiteInstance* curr_instance);
 
-  // Helper method to create a pending RenderViewHost for a cross-site
-  // navigation.
-  bool CreatePendingRenderView(const content::NavigationEntryImpl& entry,
-                               content::SiteInstance* instance);
-
-  // Sets up the necessary state for a new RenderViewHost navigating to the
-  // given entry.
+  // Sets up the necessary state for a new RenderViewHost with the given opener.
   bool InitRenderView(content::RenderViewHost* render_view_host,
-                      const content::NavigationEntryImpl& entry);
+                      int opener_route_id);
 
   // Sets the pending RenderViewHost/WebUI to be the active one. Note that this
   // doesn't require the pending render_view_host_ pointer to be non-NULL, since

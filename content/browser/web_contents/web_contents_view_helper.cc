@@ -21,6 +21,7 @@ using content::RenderWidgetHost;
 using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;
+using content::SiteInstance;
 
 WebContentsViewHelper::WebContentsViewHelper() {
   registrar_.Add(this,
@@ -46,13 +47,13 @@ void WebContentsViewHelper::Observe(
 }
 
 WebContentsImpl* WebContentsViewHelper::CreateNewWindow(
-    WebContentsImpl* web_contents,
+    WebContentsImpl* opener,
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
   bool should_create = true;
-  if (web_contents->GetDelegate()) {
-    should_create = web_contents->GetDelegate()->ShouldCreateWebContents(
-        web_contents,
+  if (opener->GetDelegate()) {
+    should_create = opener->GetDelegate()->ShouldCreateWebContents(
+        opener,
         route_id,
         params.window_container_type,
         params.frame_name,
@@ -66,22 +67,22 @@ WebContentsImpl* WebContentsViewHelper::CreateNewWindow(
   // script-related windows), by passing in the current SiteInstance.  However,
   // if the opener is being suppressed, we create a new SiteInstance in its own
   // BrowsingInstance.
-  scoped_refptr<content::SiteInstance> site_instance =
+  scoped_refptr<SiteInstance> site_instance =
       params.opener_suppressed ?
-      content::SiteInstance::Create(web_contents->GetBrowserContext()) :
-      web_contents->GetSiteInstance();
+      SiteInstance::Create(opener->GetBrowserContext()) :
+      opener->GetSiteInstance();
 
   // Create the new web contents. This will automatically create the new
   // WebContentsView. In the future, we may want to create the view separately.
   WebContentsImpl* new_contents =
-      new WebContentsImpl(web_contents->GetBrowserContext(),
+      new WebContentsImpl(opener->GetBrowserContext(),
                           site_instance,
                           route_id,
-                          web_contents,
+                          opener,
+                          params.opener_suppressed ? NULL : opener,
                           NULL);
   new_contents->set_opener_web_ui_type(
-      web_contents->GetWebUITypeForCurrentState());
-  new_contents->set_has_opener(!params.opener_url.is_empty());
+      opener->GetWebUITypeForCurrentState());
 
   if (!params.opener_suppressed) {
     content::WebContentsView* new_view = new_contents->GetView();
@@ -96,20 +97,21 @@ WebContentsImpl* WebContentsViewHelper::CreateNewWindow(
     pending_contents_[route_id] = new_contents;
   }
 
-  if (web_contents->GetDelegate())
-    web_contents->GetDelegate()->WebContentsCreated(web_contents,
-                                                    params.opener_frame_id,
-                                                    params.target_url,
-                                                    new_contents);
+  if (opener->GetDelegate()) {
+    opener->GetDelegate()->WebContentsCreated(opener,
+                                              params.opener_frame_id,
+                                              params.target_url,
+                                              new_contents);
+  }
 
   if (params.opener_suppressed) {
     // When the opener is suppressed, the original renderer cannot access the
     // new window.  As a result, we need to show and navigate the window here.
     gfx::Rect initial_pos;
-    web_contents->AddNewContents(new_contents,
-                                 params.disposition,
-                                 initial_pos,
-                                 params.user_gesture);
+    opener->AddNewContents(new_contents,
+                           params.disposition,
+                           initial_pos,
+                           params.user_gesture);
 
     content::OpenURLParams open_params(params.target_url, content::Referrer(),
                                        CURRENT_TAB,

@@ -19,6 +19,8 @@
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/render_view_host_manager.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
@@ -56,13 +58,15 @@ struct WebIntentData;
 class CONTENT_EXPORT WebContentsImpl
     : public NON_EXPORTED_BASE(content::WebContents),
       public content::RenderViewHostDelegate,
-      public RenderViewHostManager::Delegate {
+      public RenderViewHostManager::Delegate,
+      public content::NotificationObserver {
  public:
   // See WebContents::Create for a description of these parameters.
   WebContentsImpl(content::BrowserContext* browser_context,
                   content::SiteInstance* site_instance,
                   int routing_id,
                   const WebContentsImpl* base_web_contents,
+                  WebContentsImpl* opener,
                   SessionStorageNamespaceImpl* session_storage_namespace);
   virtual ~WebContentsImpl();
 
@@ -115,10 +119,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   void set_opener_web_ui_type(content::WebUI::TypeID opener_web_ui_type) {
     opener_web_ui_type_ = opener_web_ui_type;
-  }
-
-  void set_has_opener(bool has_opener) {
-    has_opener_ = has_opener;
   }
 
   JavaBridgeDispatcherHostManager* java_bridge_dispatcher_host_manager() const {
@@ -340,7 +340,7 @@ class CONTENT_EXPORT WebContentsImpl
   // RenderViewHostManager::Delegate -------------------------------------------
 
   virtual bool CreateRenderViewForRenderManager(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host, int opener_route_id) OVERRIDE;
   virtual void BeforeUnloadFiredFromRenderManager(
       bool proceed,
       bool* proceed_to_fire_unload) OVERRIDE;
@@ -350,6 +350,8 @@ class CONTENT_EXPORT WebContentsImpl
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void UpdateRenderViewSizeForRenderManager() OVERRIDE;
   virtual void NotifySwappedFromRenderManager() OVERRIDE;
+  virtual int CreateOpenerRenderViewsForRenderManager(
+      content::SiteInstance* instance) OVERRIDE;
   virtual NavigationControllerImpl& GetControllerForRenderManager() OVERRIDE;
   virtual WebUIImpl* CreateWebUIForRenderManager(const GURL& url) OVERRIDE;
   virtual content::NavigationEntry*
@@ -358,6 +360,12 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
   virtual void CreateViewAndSetSizeForRVH(
       content::RenderViewHost* rvh) OVERRIDE;
+
+  // content::NotificationObserver ---------------------------------------------
+
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  protected:
   friend class content::WebContentsObserver;
@@ -385,6 +393,9 @@ class CONTENT_EXPORT WebContentsImpl
 
   // TODO(brettw) TestWebContents shouldn't exist!
   friend class content::TestWebContents;
+
+  // Clears this tab's opener if it has been closed.
+  void OnWebContentsDestroyed(content::WebContents* web_contents);
 
   // Callback function when showing JS dialogs.
   void OnDialogClosed(content::RenderViewHost* rvh,
@@ -512,6 +523,12 @@ class CONTENT_EXPORT WebContentsImpl
       int merge_history_length,
       int32 minimum_page_id);
 
+  // Recursively creates swapped out RenderViews for this tab's opener chain
+  // (including this tab) in the given SiteInstance, allowing other tabs to send
+  // cross-process JavaScript calls to their opener(s).  Returns the route ID of
+  // this tab's RenderView for |instance|.
+  int CreateOpenerRenderViews(content::SiteInstance* instance);
+
   // Misc non-view stuff -------------------------------------------------------
 
   // Helper functions for sending notifications.
@@ -530,6 +547,9 @@ class CONTENT_EXPORT WebContentsImpl
   // WARNING: this needs to be deleted after NavigationController.
   base::PropertyBag property_bag_;
 
+  // Listen for notifications as well.
+  content::NotificationRegistrar registrar_;
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -546,6 +566,10 @@ class CONTENT_EXPORT WebContentsImpl
   // latter might cause RenderViewHost's destructor to call us and we might use
   // the observer list then.
   ObserverList<content::WebContentsObserver> observers_;
+
+  // The tab that opened this tab, if any.  Will be set to null if the opener
+  // is closed.
+  WebContentsImpl* opener_;
 
   // Helper classes ------------------------------------------------------------
 
@@ -673,9 +697,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Our view type. Default is VIEW_TYPE_WEB_CONTENTS.
   content::ViewType view_type_;
-
-  // Is there an opener associated with this?
-  bool has_opener_;
 
   // Color chooser that was opened by this tab.
   content::ColorChooser* color_chooser_;

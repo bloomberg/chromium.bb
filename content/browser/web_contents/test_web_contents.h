@@ -56,7 +56,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   // Prevent interaction with views.
   virtual bool CreateRenderViewForRenderManager(
-      RenderViewHost* render_view_host) OVERRIDE;
+      RenderViewHost* render_view_host, int opener_route_id) OVERRIDE;
   virtual void UpdateRenderViewSizeForRenderManager() OVERRIDE {}
 
   // Returns a clone of this TestWebContents. The returned object is also a
@@ -71,6 +71,9 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   void set_view_delegate(RenderViewHostDelegate::View* view) {
     delegate_view_override_ = view;
   }
+
+  // Allows us to simulate this tab having an opener.
+  void SetOpener(TestWebContents* opener);
 
   // Establish expected arguments for |SetHistoryLengthAndPrune()|. When
   // |SetHistoryLengthAndPrune()| is called, the arguments are compared

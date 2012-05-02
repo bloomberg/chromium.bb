@@ -44,6 +44,7 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
       content::SiteInstance* instance,
       content::RenderViewHostDelegate* delegate,
       int routing_id,
+      bool swapped_out,
       content::SessionStorageNamespace* session_storage) OVERRIDE;
 
  private:
@@ -78,11 +79,12 @@ content::RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
     int routing_id,
+    bool swapped_out,
     SessionStorageNamespace* session_storage) {
   // See declaration of render_process_host_factory_ below.
   static_cast<SiteInstanceImpl*>(instance)->
       set_render_process_host_factory(render_process_host_factory_);
-  return new TestRenderViewHost(instance, delegate, routing_id);
+  return new TestRenderViewHost(instance, delegate, routing_id, swapped_out);
 }
 
 // static

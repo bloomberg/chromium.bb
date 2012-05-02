@@ -489,8 +489,8 @@ WebContents* InterstitialPageImpl::web_contents() const {
 
 RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
   RenderViewHostImpl* render_view_host = new RenderViewHostImpl(
-      SiteInstance::Create(web_contents()->GetBrowserContext()),
-      this, MSG_ROUTING_NONE, dom_storage::kInvalidSessionStorageNamespaceId);
+      SiteInstance::Create(web_contents()->GetBrowserContext()), this,
+      MSG_ROUTING_NONE, false, dom_storage::kInvalidSessionStorageNamespaceId);
   return render_view_host;
 }
 
@@ -505,7 +505,8 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
 
   int32 max_page_id = web_contents()->
       GetMaxPageIDForSiteInstance(render_view_host_->GetSiteInstance());
-  render_view_host_->CreateRenderView(string16(), max_page_id);
+  render_view_host_->CreateRenderView(string16(), MSG_ROUTING_NONE,
+                                      max_page_id);
   view->SetSize(web_contents_view->GetContainerSize());
   // Don't show the interstitial until we have navigated to it.
   view->Hide();

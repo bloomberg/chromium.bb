@@ -66,6 +66,7 @@ class RenderViewHostTester {
 
   // Gives tests access to RenderViewHostImpl::CreateRenderView.
   virtual bool CreateRenderView(const string16& frame_name,
+                                int opener_route_id,
                                 int32 max_page_id) = 0;
 
   // Calls OnMsgNavigate on the RenderViewHost with the given information,

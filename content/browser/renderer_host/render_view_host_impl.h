@@ -119,10 +119,12 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Convenience function, just like RenderViewHost::FromID.
   static RenderViewHostImpl* FromID(int render_process_id, int render_view_id);
 
-  // routing_id could be a valid route id, or it could be MSG_ROUTING_NONE, in
-  // which case RenderWidgetHost will create a new one.
+  // |routing_id| could be a valid route id, or it could be MSG_ROUTING_NONE, in
+  // which case RenderWidgetHost will create a new one.  |swapped_out| indicates
+  // whether the view should initially be swapped out (e.g., for an opener
+  // frame being rendered by another process).
   //
-  // The session storage namespace parameter allows multiple render views and
+  // The |session_storage_namespace| parameter allows multiple render views and
   // WebContentses to share the same session storage (part of the WebStorage
   // spec) space. This is useful when restoring contentses, but most callers
   // should pass in NULL which will cause a new SessionStorageNamespace to be
@@ -131,6 +133,7 @@ class CONTENT_EXPORT RenderViewHostImpl
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
       int routing_id,
+      bool swapped_out,
       SessionStorageNamespace* session_storage_namespace);
   virtual ~RenderViewHostImpl();
 
@@ -225,9 +228,13 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // Set up the RenderView child process. Virtual because it is overridden by
   // TestRenderViewHost. If the |frame_name| parameter is non-empty, it is used
-  // as the name of the new top-level frame.  If |max_page_id| is larger than
-  // -1, the RenderView is told to start issuing page IDs at |max_page_id| + 1.
-  virtual bool CreateRenderView(const string16& frame_name, int32 max_page_id);
+  // as the name of the new top-level frame.  The |opener_route_id| parameter
+  // indicates which RenderView created this (MSG_ROUTING_NONE if none). If
+  // |max_page_id| is larger than -1, the RenderView is told to start issuing
+  // page IDs at |max_page_id| + 1.
+  virtual bool CreateRenderView(const string16& frame_name,
+                                int opener_route_id,
+                                int32 max_page_id);
 
   base::TerminationStatus render_view_termination_status() const {
     return render_view_termination_status_;

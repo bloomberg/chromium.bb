@@ -233,10 +233,8 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   // The two RVH's should be different in every way.
   EXPECT_NE(active_rvh()->GetProcess(), dest_rvh2->GetProcess());
   EXPECT_NE(active_rvh()->GetSiteInstance(), dest_rvh2->GetSiteInstance());
-  EXPECT_NE(static_cast<SiteInstanceImpl*>(active_rvh()->GetSiteInstance())->
-                browsing_instance_,
-            static_cast<SiteInstanceImpl*>(dest_rvh2->GetSiteInstance())->
-                browsing_instance_);
+  EXPECT_FALSE(active_rvh()->GetSiteInstance()->IsRelatedSiteInstance(
+                   dest_rvh2->GetSiteInstance()));
 
   // Navigate both to the new tab page, and verify that they share a
   // SiteInstance.
@@ -771,4 +769,69 @@ TEST_F(RenderViewHostManagerTest, NavigateAfterMissingSwapOutACK) {
   EXPECT_EQ(rvh2, rvh());
   EXPECT_FALSE(rvh2->is_swapped_out());
   EXPECT_TRUE(rvh1->is_swapped_out());
+}
+
+// Test that we create swapped out RVHs for the opener chain when navigating an
+// opened tab cross-process.  This allows us to support certain cross-process
+// JavaScript calls (http://crbug.com/99202).
+TEST_F(RenderViewHostManagerTest, CreateSwappedOutOpenerRVHs) {
+  const GURL kUrl1("http://www.google.com/");
+  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kNtpUrl(chrome::kTestNewTabURL);
+
+  // Navigate to an initial URL.
+  contents()->NavigateAndCommit(kUrl1);
+  RenderViewHostManager* manager = contents()->GetRenderManagerForTesting();
+
+  // Pretend the RVH is alive so it doesn't go away.
+  TestRenderViewHost* rvh1 = test_rvh();
+
+  // Create 2 new tabs and simulate them being the opener chain for the main
+  // tab.  They should be in the same SiteInstance.
+  TestWebContents opener1(browser_context(), rvh1->GetSiteInstance());
+  RenderViewHostManager* opener1_manager = opener1.GetRenderManagerForTesting();
+  contents()->SetOpener(&opener1);
+
+  TestWebContents opener2(browser_context(), rvh1->GetSiteInstance());
+  RenderViewHostManager* opener2_manager = opener2.GetRenderManagerForTesting();
+  opener1.SetOpener(&opener2);
+
+  // Navigate to a cross-site URL (different SiteInstance but same
+  // BrowsingInstance).
+  contents()->NavigateAndCommit(kUrl2);
+  TestRenderViewHost* rvh2 = test_rvh();
+  EXPECT_NE(rvh1->GetSiteInstance(), rvh2->GetSiteInstance());
+  EXPECT_TRUE(rvh1->GetSiteInstance()->IsRelatedSiteInstance(
+                  rvh2->GetSiteInstance()));
+
+  // Ensure rvh1 is placed on swapped out list of the current tab.
+  EXPECT_TRUE(manager->IsSwappedOut(rvh1));
+  EXPECT_EQ(rvh1,
+            manager->GetSwappedOutRenderViewHost(rvh1->GetSiteInstance()));
+
+  // Ensure a swapped out RVH is created in the first opener tab.
+  TestRenderViewHost* opener1_rvh = static_cast<TestRenderViewHost*>(
+      opener1_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
+  EXPECT_TRUE(opener1_manager->IsSwappedOut(opener1_rvh));
+  EXPECT_TRUE(opener1_rvh->is_swapped_out());
+
+  // Ensure a swapped out RVH is created in the second opener tab.
+  TestRenderViewHost* opener2_rvh = static_cast<TestRenderViewHost*>(
+      opener2_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
+  EXPECT_TRUE(opener2_manager->IsSwappedOut(opener2_rvh));
+  EXPECT_TRUE(opener2_rvh->is_swapped_out());
+
+  // Navigate to a cross-BrowsingInstance URL.
+  contents()->NavigateAndCommit(kNtpUrl);
+  TestRenderViewHost* rvh3 = test_rvh();
+  EXPECT_NE(rvh1->GetSiteInstance(), rvh3->GetSiteInstance());
+  EXPECT_FALSE(rvh1->GetSiteInstance()->IsRelatedSiteInstance(
+                   rvh3->GetSiteInstance()));
+
+  // No scripting is allowed across BrowsingInstances, so we should not create
+  // swapped out RVHs for the opener chain in this case.
+  EXPECT_FALSE(opener1_manager->GetSwappedOutRenderViewHost(
+                   rvh3->GetSiteInstance()));
+  EXPECT_FALSE(opener2_manager->GetSwappedOutRenderViewHost(
+                   rvh3->GetSiteInstance()));
 }

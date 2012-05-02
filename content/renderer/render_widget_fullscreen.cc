@@ -31,7 +31,7 @@ void RenderWidgetFullscreen::show(WebKit::WebNavigationPolicy) {
 }
 
 RenderWidgetFullscreen::RenderWidgetFullscreen()
-    : RenderWidget(WebKit::WebPopupTypeNone, WebKit::WebScreenInfo()) {
+    : RenderWidget(WebKit::WebPopupTypeNone, WebKit::WebScreenInfo(), false) {
 }
 
 RenderWidgetFullscreen::~RenderWidgetFullscreen() {}

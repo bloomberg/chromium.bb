@@ -82,6 +82,11 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // Darin suggests.
   virtual SiteInstance* GetRelatedSiteInstance(const GURL& url) = 0;
 
+  // Returns whether the given SiteInstance is in the same BrowsingInstance as
+  // this one.  If so, JavaScript interactions that are permitted across
+  // origins (e.g., postMessage) should be supported.
+  virtual bool IsRelatedSiteInstance(const SiteInstance* instance) = 0;
+
   // Factory method to create a new SiteInstance.  This will create a new
   // new BrowsingInstance, so it should only be used when creating a new tab
   // from scratch (or similar circumstances).  Callers should ensure that

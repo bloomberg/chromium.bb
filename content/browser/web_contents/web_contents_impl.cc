@@ -239,6 +239,7 @@ WebContents* WebContents::Create(
       site_instance,
       routing_id,
       static_cast<const WebContentsImpl*>(base_web_contents),
+      NULL,
       static_cast<SessionStorageNamespaceImpl*>(session_storage_namespace));
 }
 }
@@ -250,10 +251,12 @@ WebContentsImpl::WebContentsImpl(
     SiteInstance* site_instance,
     int routing_id,
     const WebContentsImpl* base_web_contents,
+    WebContentsImpl* opener,
     SessionStorageNamespaceImpl* session_storage_namespace)
     : delegate_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(controller_(
           this, browser_context, session_storage_namespace)),
+      opener_(opener),
       ALLOW_THIS_IN_INITIALIZER_LIST(render_manager_(this, this)),
       is_loading_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
@@ -280,7 +283,6 @@ WebContentsImpl::WebContentsImpl(
       temporary_zoom_settings_(false),
       content_restrictions_(0),
       view_type_(content::VIEW_TYPE_WEB_CONTENTS),
-      has_opener_(false),
       color_chooser_(NULL) {
   render_manager_.Init(browser_context, site_instance, routing_id);
 
@@ -309,6 +311,12 @@ WebContentsImpl::WebContentsImpl(
   // the passed in WebContents.
   view_->CreateView(base_web_contents ?
       base_web_contents->GetView()->GetContainerSize() : gfx::Size());
+
+  // Listen for whether our opener gets destroyed.
+  if (opener_) {
+    registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                   content::Source<WebContents>(opener_));
+  }
 
 #if defined(ENABLE_JAVA_BRIDGE)
   java_bridge_dispatcher_host_manager_.reset(
@@ -920,13 +928,12 @@ void WebContentsImpl::Stop() {
 }
 
 WebContents* WebContentsImpl::Clone() {
-  // We create a new SiteInstance so that the new tab won't share processes
-  // with the old one. This can be changed in the future if we need it to share
-  // processes for some reason.
+  // We use our current SiteInstance since the cloned entry will use it anyway.
+  // We pass |this| for the |base_web_contents| to size the view correctly, and
+  // our own opener so that the cloned page can access it if it was before.
   WebContentsImpl* tc = new WebContentsImpl(
-      GetBrowserContext(),
-      SiteInstance::Create(GetBrowserContext()),
-      MSG_ROUTING_NONE, this, NULL);
+      GetBrowserContext(), GetSiteInstance(),
+      MSG_ROUTING_NONE, this, opener_, NULL);
   tc->GetControllerImpl().CopyStateFrom(controller_);
   return tc;
 }
@@ -956,6 +963,28 @@ void WebContentsImpl::GetContainerBounds(gfx::Rect* out) const {
 
 void WebContentsImpl::Focus() {
   view_->Focus();
+}
+
+void WebContentsImpl::Observe(int type,
+                              const content::NotificationSource& source,
+                              const content::NotificationDetails& details) {
+  switch (type) {
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
+      OnWebContentsDestroyed(
+          content::Source<content::WebContents>(source).ptr());
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+void WebContentsImpl::OnWebContentsDestroyed(WebContents* web_contents) {
+  // Clear the opener if it has been closed.
+  if (web_contents == opener_) {
+    registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                      content::Source<WebContents>(opener_));
+    opener_ = NULL;
+  }
 }
 
 void WebContentsImpl::AddObserver(WebContentsObserver* observer) {
@@ -1408,7 +1437,7 @@ bool WebContentsImpl::GotResponseToLockMouseRequest(bool allowed) {
 }
 
 bool WebContentsImpl::HasOpener() const {
-  return has_opener_;
+  return opener_ != NULL;
 }
 
 void WebContentsImpl::DidChooseColorInColorChooser(int color_chooser_id,
@@ -2000,6 +2029,12 @@ gfx::Rect WebContentsImpl::GetRootWindowResizerRect() const {
 }
 
 void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
+  // Don't send notifications if we are just creating a swapped-out RVH for
+  // the opener chain.  These won't be used for view-source or WebUI, so it's
+  // ok to return early.
+  if (static_cast<RenderViewHostImpl*>(render_view_host)->is_swapped_out())
+    return;
+
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
       content::Source<WebContents>(this),
@@ -2547,6 +2582,28 @@ void WebContentsImpl::NotifySwappedFromRenderManager() {
   NotifySwapped();
 }
 
+int WebContentsImpl::CreateOpenerRenderViewsForRenderManager(
+    SiteInstance* instance) {
+  if (!opener_)
+    return MSG_ROUTING_NONE;
+
+  // Recursively create RenderViews for anything else in the opener chain.
+  return opener_->CreateOpenerRenderViews(instance);
+}
+
+int WebContentsImpl::CreateOpenerRenderViews(SiteInstance* instance) {
+  int opener_route_id = MSG_ROUTING_NONE;
+
+  // If this tab has an opener, ensure it has a RenderView in the given
+  // SiteInstance as well.
+  if (opener_)
+    opener_route_id = opener_->CreateOpenerRenderViews(instance);
+
+  // Create a swapped out RenderView in the given SiteInstance if none exists,
+  // setting its opener to the given route_id.  Return the new view's route_id.
+  return render_manager_.CreateRenderView(instance, opener_route_id, true);
+}
+
 NavigationControllerImpl& WebContentsImpl::GetControllerForRenderManager() {
   return GetControllerImpl();
 }
@@ -2561,7 +2618,7 @@ NavigationEntry*
 }
 
 bool WebContentsImpl::CreateRenderViewForRenderManager(
-    RenderViewHost* render_view_host) {
+    RenderViewHost* render_view_host, int opener_route_id) {
   // Can be NULL during tests.
   RenderWidgetHostView* rwh_view = view_->CreateViewForWidget(render_view_host);
 
@@ -2575,8 +2632,10 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
       GetMaxPageIDForSiteInstance(render_view_host->GetSiteInstance());
 
   if (!static_cast<RenderViewHostImpl*>(
-          render_view_host)->CreateRenderView(string16(), max_page_id))
+          render_view_host)->CreateRenderView(string16(), opener_route_id,
+                                              max_page_id)) {
     return false;
+  }
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   // Force a ViewMsg_Resize to be sent, needed to make plugins show up on

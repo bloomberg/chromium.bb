@@ -210,10 +210,12 @@ void TestRenderWidgetHostView::UnlockMouse() {
 
 TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
                                        RenderViewHostDelegate* delegate,
-                                       int routing_id)
+                                       int routing_id,
+                                       bool swapped_out)
     : RenderViewHostImpl(instance,
                          delegate,
                          routing_id,
+                         swapped_out,
                          dom_storage::kInvalidSessionStorageNamespaceId),
       render_view_created_(false),
       delete_counter_(NULL),
@@ -235,6 +237,7 @@ TestRenderViewHost::~TestRenderViewHost() {
 }
 
 bool TestRenderViewHost::CreateRenderView(const string16& frame_name,
+                                          int opener_route_id,
                                           int32 max_page_id) {
   DCHECK(!render_view_created_);
   render_view_created_ = true;

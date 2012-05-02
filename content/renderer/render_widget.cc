@@ -93,7 +93,8 @@ bool CanSendMessageWhileClosing(const IPC::Message* msg) {
 }  // namespace
 
 RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
-                           const WebKit::WebScreenInfo& screen_info)
+                           const WebKit::WebScreenInfo& screen_info,
+                           bool swapped_out)
     : routing_id_(MSG_ROUTING_NONE),
       surface_id_(0),
       webwidget_(NULL),
@@ -113,7 +114,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       has_focus_(false),
       handling_input_event_(false),
       closing_(false),
-      is_swapped_out_(false),
+      is_swapped_out_(swapped_out),
       input_method_is_active_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
@@ -149,7 +150,7 @@ RenderWidget* RenderWidget::Create(int32 opener_id,
                                    const WebKit::WebScreenInfo& screen_info) {
   DCHECK(opener_id != MSG_ROUTING_NONE);
   scoped_refptr<RenderWidget> widget(
-      new RenderWidget(popup_type, screen_info));
+      new RenderWidget(popup_type, screen_info, false));
   widget->Init(opener_id);  // adds reference
   return widget;
 }

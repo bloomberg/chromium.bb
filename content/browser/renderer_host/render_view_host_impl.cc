@@ -135,6 +135,7 @@ RenderViewHostImpl* RenderViewHostImpl::FromID(int render_process_id,
 RenderViewHostImpl::RenderViewHostImpl(SiteInstance* instance,
                                        RenderViewHostDelegate* delegate,
                                        int routing_id,
+                                       bool swapped_out,
                                        SessionStorageNamespace* session_storage)
     : RenderWidgetHostImpl(instance->GetProcess(), routing_id),
       delegate_(delegate),
@@ -145,7 +146,7 @@ RenderViewHostImpl::RenderViewHostImpl(SiteInstance* instance,
       pending_request_id_(-1),
       navigations_suspended_(false),
       suspended_nav_message_(NULL),
-      is_swapped_out_(false),
+      is_swapped_out_(swapped_out),
       run_modal_reply_msg_(NULL),
       is_waiting_for_beforeunload_ack_(false),
       is_waiting_for_unload_ack_(false),
@@ -205,6 +206,7 @@ content::SiteInstance* RenderViewHostImpl::GetSiteInstance() const {
 }
 
 bool RenderViewHostImpl::CreateRenderView(const string16& frame_name,
+                                          int opener_route_id,
                                           int32 max_page_id) {
   DCHECK(!IsRenderViewLive()) << "Creating view twice";
 
@@ -237,6 +239,9 @@ bool RenderViewHostImpl::CreateRenderView(const string16& frame_name,
   params.surface_id = surface_id();
   params.session_storage_namespace_id = session_storage_namespace_->id();
   params.frame_name = frame_name;
+  // Ensure the RenderView sets its opener correctly.
+  params.opener_route_id = opener_route_id;
+  params.swapped_out = is_swapped_out_;
   params.next_page_id = next_page_id;
 #if defined(OS_POSIX) || defined(USE_AURA)
   if (GetView()) {

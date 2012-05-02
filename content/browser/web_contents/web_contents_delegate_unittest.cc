@@ -25,10 +25,12 @@ TEST(WebContentsDelegateTest, UnregisterInDestructor) {
                                                              NULL,
                                                              MSG_ROUTING_NONE,
                                                              NULL,
+                                                             NULL,
                                                              NULL));
   scoped_ptr<WebContentsImpl> contents_b(new WebContentsImpl(&browser_context,
                                                              NULL,
                                                              MSG_ROUTING_NONE,
+                                                             NULL,
                                                              NULL,
                                                              NULL));
   EXPECT_TRUE(contents_a->GetDelegate() == NULL);
