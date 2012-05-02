@@ -36,12 +36,21 @@ const int kVideoCaptureWidth = 640;
 const int kVideoCaptureHeight = 480;
 const int kVideoCaptureFramePerSecond = 30;
 
-// Histogram names. Histograms can be viewed at chrome://histograms/WebRTC
-const char kHistogramGetUserMedia[] = "WebRTC.webkitGetUserMediaCount";
-const char kHistogramPeerConnection[] = "WebRTC.webkitPeerConnection00Count";
-const char kHistogramDeprecatedPeerConnection[] =
-    "WebRTC.webkitDeprecatedPeerConnectionCount";
+// Helper enum used for histogramming calls to WebRTC APIs from JavaScript.
+enum JavaScriptAPIName {
+  kWebkitGetUserMedia,
+  kWebkitPeerConnection,
+  kWebkitDeprecatedPeerConnection,
+  kInvalidName
+};
 }  // namespace
+
+// Helper method used to collect information about the number of times
+// different WebRTC API:s are called from JavaScript.
+// The histogram can be viewed at chrome://histograms/WebRTC.webkitApiCount.
+static void UpdateWebRTCMethodCount(JavaScriptAPIName api_name) {
+  UMA_HISTOGRAM_ENUMERATION("WebRTC.webkitApiCount", api_name, kInvalidName);
+}
 
 // The MediaStreamMananger label for a stream is globally unique. The track
 // session id is globally unique for the set of audio tracks and video tracks
@@ -120,7 +129,7 @@ WebKit::WebPeerConnectionHandler* MediaStreamImpl::CreatePeerConnectionHandler(
   // Save histogram data so we can see how much PeerConnetion is used.
   // The histogram counts the number of calls to the JS API
   // webKitDeprecatedPeerConnection.
-  UMA_HISTOGRAM_COUNTS_100(kHistogramDeprecatedPeerConnection, 1);
+  UpdateWebRTCMethodCount(kWebkitDeprecatedPeerConnection);
   DCHECK(CalledOnValidThread());
   if (!EnsurePeerConnectionFactory())
     return NULL;
@@ -139,8 +148,8 @@ MediaStreamImpl::CreatePeerConnectionHandlerJsep(
     WebKit::WebPeerConnection00HandlerClient* client) {
   // Save histogram data so we can see how much PeerConnetion is used.
   // The histogram counts the number of calls to the JS API
-  // webKitPeerConnection.
-  UMA_HISTOGRAM_COUNTS_100(kHistogramPeerConnection, 1);
+  // webKitPeerConnection00.
+  UpdateWebRTCMethodCount(kWebkitPeerConnection);
   DCHECK(CalledOnValidThread());
   if (!EnsurePeerConnectionFactory())
     return NULL;
@@ -177,7 +186,7 @@ void MediaStreamImpl::requestUserMedia(
   // Save histogram data so we can see how much GetUserMedia is used.
   // The histogram counts the number of calls to the JS API
   // webGetUserMedia.
-  UMA_HISTOGRAM_COUNTS_100(kHistogramGetUserMedia, 1);
+  UpdateWebRTCMethodCount(kWebkitGetUserMedia);
   DCHECK(CalledOnValidThread());
   DCHECK(!user_media_request.isNull());
   int request_id = g_next_request_id++;
