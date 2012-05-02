@@ -237,16 +237,6 @@
         '<(DEPTH)/ui/ui.gyp:ui_resources_touch',
       ],
       'conditions': [
-        ['chromeos==1', {
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)',
-              'files': [
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_touch/ui_resources_touch.pak',
-              ],
-            },
-          ],
-        }],
         ['OS != "mac"', {
           # Copy pak files to the product directory. These files will be picked
           # up by the following installer scripts:
@@ -254,7 +244,7 @@
           #   - Linux: chrome/installer/linux/internal/common/installer.include
           # Ensure that the above scripts are updated when adding or removing
           # pak files.
-          # Coping files to the product directory is not needed on the Mac
+          # Copying files to the product directory is not needed on the Mac
           # since the framework build phase will copy them into the framework
           # bundle directly.
           'copies': [
@@ -278,12 +268,13 @@
             },
           ],
         }],
-        ['enable_metro == 1', {
+        ['enable_touch_ui==1', {
           'copies': [
             {
               'destination': '<(PRODUCT_DIR)',
               'files': [
                 '<(grit_out_dir)/theme_resources_touch_1x.pak',
+                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_touch/ui_resources_touch.pak',
               ],
             },
           ],
