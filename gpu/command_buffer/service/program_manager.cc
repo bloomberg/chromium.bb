@@ -446,9 +446,10 @@ const ProgramManager::ProgramInfo::UniformInfo*
 }
 
 bool ProgramManager::ProgramInfo::SetSamplers(
-    GLint fake_location, GLsizei count, const GLint* value) {
+    GLint num_texture_units, GLint fake_location,
+    GLsizei count, const GLint* value) {
   if (fake_location < 0) {
-    return false;
+    return true;
   }
   GLint uniform_index = GetUniformInfoIndexFromFakeLocation(fake_location);
   if (uniform_index >= 0 &&
@@ -458,13 +459,18 @@ bool ProgramManager::ProgramInfo::SetSamplers(
     if (element_index < info.size) {
       count = std::min(info.size - element_index, count);
       if (info.IsSampler() && count > 0) {
+        for (GLsizei ii = 0; ii < count; ++ii) {
+          if (value[ii] < 0 || value[ii] >= num_texture_units) {
+            return false;
+          }
+        }
         std::copy(value, value + count,
                   info.texture_units.begin() + element_index);
         return true;
       }
     }
   }
-  return false;
+  return true;
 }
 
 void ProgramManager::ProgramInfo::GetProgramiv(GLenum pname, GLint* params) {

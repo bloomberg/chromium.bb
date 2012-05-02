@@ -1863,6 +1863,26 @@ TEST_F(GLES2DecoderWithShaderTest, Uniform1ivZeroCount) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_F(GLES2DecoderWithShaderTest, Uniform1iSamplerIsLmited) {
+  EXPECT_CALL(*gl_, Uniform1i(_, _)).Times(0);
+  Uniform1i cmd;
+  cmd.Init(
+      program_manager()->SwizzleLocation(kUniform1FakeLocation),
+      kNumTextureUnits);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+TEST_F(GLES2DecoderWithShaderTest, Uniform1ivSamplerIsLimited) {
+  EXPECT_CALL(*gl_, Uniform1iv(_, _, _)).Times(0);
+  Uniform1ivImmediate& cmd = *GetImmediateAs<Uniform1ivImmediate>();
+  GLint temp[] = { kNumTextureUnits };
+  cmd.Init(program_manager()->SwizzleLocation(kUniform1FakeLocation), 1,
+           &temp[0]);
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
 
 TEST_F(GLES2DecoderWithShaderTest, BindBufferToDifferentTargetFails) {
   // Bind the buffer to GL_ARRAY_BUFFER

@@ -126,7 +126,11 @@ class GPU_EXPORT ProgramManager {
     // Sets the sampler values for a uniform.
     // This is safe to call for any location. If the location is not
     // a sampler uniform nothing will happen.
-    bool SetSamplers(GLint fake_location, GLsizei count, const GLint* value);
+    // Returns false if fake_location is a sampler and any value
+    // is >= num_texture_units. Returns true otherwise.
+    bool SetSamplers(
+        GLint num_texture_units, GLint fake_location,
+        GLsizei count, const GLint* value);
 
     bool IsDeleted() const {
       return deleted_;

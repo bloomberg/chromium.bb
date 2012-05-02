@@ -4615,7 +4615,11 @@ void GLES2DecoderImpl::DoUniform1i(GLint fake_location, GLint v0) {
       fake_location, "glUniform1iv", &real_location, &type, &count)) {
     return;
   }
-  current_program_->SetSamplers(fake_location, 1, &v0);
+  if (!current_program_->SetSamplers(
+      group_->max_texture_units(), fake_location, 1, &v0)) {
+    SetGLError(GL_INVALID_VALUE, "glUniform1i: texture unit out of range");
+    return;
+  }
   glUniform1i(real_location, v0);
 }
 
@@ -4629,7 +4633,11 @@ void GLES2DecoderImpl::DoUniform1iv(
   }
   if (type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE ||
       type == GL_SAMPLER_EXTERNAL_OES) {
-    current_program_->SetSamplers(fake_location, count, value);
+    if (!current_program_->SetSamplers(
+          group_->max_texture_units(), fake_location, count, value)) {
+      SetGLError(GL_INVALID_VALUE, "glUniform1iv: texture unit out of range");
+      return;
+    }
   }
   glUniform1iv(real_location, count, value);
 }
