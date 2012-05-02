@@ -168,7 +168,10 @@
       'resources/infographic_remote_assistance.png',
       'resources/tick.png',
     ],
-    'remoting_host_installer_mac_root': 'host/installer/mac/',
+    'remoting_host_installer_mac_roots': [
+      'host/installer/mac/',
+      '<(DEPTH)/chrome/installer/mac/',
+    ],
     'remoting_host_installer_mac_files': [
       'host/installer/mac/do_signing.sh',
       'host/installer/mac/ChromotingHost.packproj',
@@ -180,6 +183,7 @@
       'host/installer/mac/Scripts/remoting_postflight.sh',
       'host/installer/mac/Scripts/remoting_preflight.sh',
       'host/installer/mac/Keystone/GoogleSoftwareUpdate.pkg.zip',
+      '<(DEPTH)/chrome/installer/mac/pkg-dmg',
     ],
   },
 
@@ -322,7 +326,6 @@
                 'PrivilegedHelperTools/org.chromium.chromoting.me2me_host',
                 'Applications/<(host_uninstaller_name).app',
               ],
-              'source_files_root': '<(remoting_host_installer_mac_root)',
               'source_files': [
                 '<@(remoting_host_installer_mac_files)',
               ],
@@ -355,7 +358,8 @@
                 'host/installer/build-installer-archive.py',
                 '<(_temp_dir)',
                 '<(_zip_path)',
-                '<(_source_files_root)',
+                '--source-file-roots',
+                '<@(remoting_host_installer_mac_roots)',
                 '--source-files',
                 '<@(_source_files)',
                 '--generated-files',

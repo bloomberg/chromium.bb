@@ -71,30 +71,45 @@ def createZip(zip_path, directory):
   zip.close()
 
 
-def remapSrcFile(dst_root, src_root, src_file):
+def remapSrcFile(dst_root, src_roots, src_file):
   """Calculates destination file path and creates directory.
 
-  The |src_root| prefix is stripped from |src_file| before
+  Any matching |src_roots| prefix is stripped from |src_file| before
   appending to |dst_root|.
 
   For example, given:
-    dst_root = /output
-    src_root = host/installer/mac
-    src_file = host/installer/mac/Scripts/keystone_install.sh
+    dst_root = '/output'
+    src_roots = ['host/installer/mac']
+    src_file = 'host/installer/mac/Scripts/keystone_install.sh'
   The final calculated path is:
-    /output/Scripts/keystone_install.sh
+    '/output/Scripts/keystone_install.sh'
+
+  The |src_file| must match one of the |src_roots| prefixes. If there are no
+  matches, then an error is reported.
+
+  If multiple |src_roots| match, then only the first match is applied. Because
+  of this, if you have roots that share a common prefix, the longest string
+  should be first in this array.
 
   Args:
     dst_root: Target directory where files are copied.
-    src_root: Path prefix which is stripped of |src_file| before appending
-              it to the |dst_root|.
+    src_roots: Array of path prefixes which will be stripped of |src_file|
+               (if they match) before appending it to the |dst_root|.
     src_file: Source file to be copied.
   Returns:
     Full path to destination file in |dst_root|.
   """
   # Strip of directory prefix.
-  if src_file.startswith(src_root):
-    src_file = src_file[len(src_root):]
+  found_root = False
+  for root in src_roots:
+    if src_file.startswith(root):
+      src_file = src_file[len(root):]
+      found_root = True
+      break
+
+  if not found_root:
+    error('Unable to match prefix for %s' % src_file)
+
   dst_file = os.path.join(dst_root, src_file)
   # Make sure target directory exists.
   dst_dir = os.path.dirname(dst_file)
@@ -151,14 +166,15 @@ def copyZipIntoArchive(out_dir, files_root, zip_file):
   shutil.copytree(src_dir, os.path.join(out_zip_dir, base_dir_name))
 
 
-def buildHostArchive(temp_dir, zip_path, source_files_root, source_files,
+def buildHostArchive(temp_dir, zip_path, source_file_roots, source_files,
                      gen_files, gen_files_dst, defs):
   """Builds a zip archive with the files needed to build the installer.
 
   Args:
     temp_dir: Temporary dir used to build up the contents for the archive.
     zip_path: Full path to the zip file to create.
-    source_files_root: Path prefix to strip off |files| when adding to archive.
+    source_file_roots: Array of path prefixes to strip off |files| when adding
+                       to the archive.
     source_files: The array of files to add to archive. The path structure is
                   preserved (except for the |files_root| prefix).
     gen_files: Full path to binaries to add to archive.
@@ -169,18 +185,18 @@ def buildHostArchive(temp_dir, zip_path, source_files_root, source_files,
   cleanDir(temp_dir)
 
   for f in source_files:
-    dst_file = remapSrcFile(temp_dir, source_files_root, f)
+    dst_file = remapSrcFile(temp_dir, source_file_roots, f)
     base_file = os.path.basename(f)
     (base, ext) = os.path.splitext(f)
     if ext == '.zip':
-      copyZipIntoArchive(temp_dir, source_files_root, f)
+      copyZipIntoArchive(temp_dir, source_file_roots, f)
     elif ext in ['.sh', '.packproj', '.plist']:
       copyFileWithDefs(f, dst_file, defs)
     else:
-      shutil.copy2(src_file, dst_file)
+      shutil.copy2(f, dst_file)
 
   for bs, bd in zip(gen_files, gen_files_dst):
-    dst_file = remapSrcFile(temp_dir, source_files_root, bd)
+    dst_file = os.path.join(temp_dir, bd)
     if os.path.isdir(bs):
       shutil.copytree(bs, dst_file)
     else:
@@ -190,14 +206,15 @@ def buildHostArchive(temp_dir, zip_path, source_files_root, source_files,
 
 
 def error(msg):
-  sys.stderr.write('ERROR: %s' % msg)
+  sys.stderr.write('ERROR: %s\n' % msg)
   sys.exit(1)
 
 
 def usage():
   """Display basic usage information."""
   print ('Usage: %s\n'
-         '  <temp-dir> <zip-path> <files-root-dir>\n'
+         '  <temp-dir> <zip-path>\n'
+         '  --source-file-roots <list of roots to strip off source files...>\n'
          '  --source-files <list of source files...>\n'
          '  --generated-files <list of generated target files...>\n'
          '  --generated-files-dst <dst for each generated file...>\n'
@@ -206,21 +223,23 @@ def usage():
 
 
 def main():
-  if len(sys.argv) < 3:
+  if len(sys.argv) < 2:
     usage()
     error('Too few arguments')
 
   temp_dir = sys.argv[1]
   zip_path = sys.argv[2]
-  source_files_root = sys.argv[3]
 
   arg_mode = ''
+  source_file_roots = []
   source_files = []
   generated_files = []
   generated_files_dst = []
   definitions = []
-  for arg in sys.argv[4:]:
-    if arg == '--source-files':
+  for arg in sys.argv[3:]:
+    if arg == '--source-file-roots':
+      arg_mode = 'src-roots'
+    elif arg == '--source-files':
       arg_mode = 'files'
     elif arg == '--generated-files':
       arg_mode = 'gen-src'
@@ -229,6 +248,8 @@ def main():
     elif arg == '--defs':
       arg_mode = 'defs'
 
+    elif arg_mode == 'src-roots':
+      source_file_roots.append(arg)
     elif arg_mode == 'files':
       source_files.append(arg)
     elif arg_mode == 'gen-src':
@@ -245,9 +266,14 @@ def main():
   if len(source_files) == 0 and len(generated_files) == 0:
     error('At least one input file must be specified.')
 
-  # Ensure that source_files_root ends with a directory separator.
-  if source_files_root[-1:] != os.sep:
-    source_files_root += os.sep
+  # Ensure that each path in source_file_roots ends with a directory separator.
+  for root in source_file_roots:
+    if root[-1:] != os.sep:
+      error('Each source-file-root should end with a "\": %s' % root)
+
+  # Sort roots to ensure the longest one is first. See comment in remapSrcFile
+  # for why this is necessary.
+  source_file_roots.sort(key=len, reverse=True)
 
   # Verify that the 2 generated_files arrays have the same number of elements.
   if len(generated_files) != len(generated_files_dst):
@@ -255,7 +281,7 @@ def main():
 
   defs = buildDefDictionary(definitions)
 
-  result = buildHostArchive(temp_dir, zip_path, source_files_root,
+  result = buildHostArchive(temp_dir, zip_path, source_file_roots,
                             source_files, generated_files, generated_files_dst,
                             defs)
 
