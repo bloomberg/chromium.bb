@@ -1,0 +1,119 @@
+Name
+
+    CHROMIUM_texture_mailbox
+
+Name Strings
+
+    GL_CHROMIUM_texture_mailbox
+
+Version
+
+    Last Modifed Date: April 25, 2012
+
+Dependencies
+
+    OpenGL ES 2.0 is required.
+
+Overview
+
+    This extension defines a way of sharing texture image data between texture
+    objects in different contexts where the contexts would not normally share
+    texture resources. Three new functions are exported. glGenMailboxCHROMIUM
+    generates a name that can be used to identify texture image data outside
+    the scope of a context group. glProduceMailboxCHROMIUM moves texture image
+    data out of a texture object and into a mailbox. glConsumeMailboxCHROMIUM
+    moves texture image data out of a mailbox and into a texture object.
+
+New Procedures and Functions
+
+    void glGenMailboxCHROMIUM (GLbyte *mailbox)
+
+    Generates a unique name identifying a mailbox. The name is generated using
+    a cryptographic random number generator and is intended to be difficult to
+    guess. The scope of the name is implementation specific, for example it
+    might not span multiple displays.
+
+    <mailbox> returns a GL_MAILBOX_SIZE_CHROMIUM byte sized name
+
+
+    void glProduceTextureCHROMIUM (GLenum target, const GLbyte *mailbox)
+
+    Moves the image data of the currently bound texture object into the mailbox.
+    The texture object is redefined as though all its levels had been resized to
+    zero by zero and the texture object is therefore incomplete. If the mailbox
+    previously contained image data, the old image data is deleted. The state
+    of the bound texture object is not saved in the mailbox, only the image
+    data.
+
+    If glProduceTextureCHROMIUM generates an error, the associated image data
+    is preserved in the texture object.
+
+    The mailbox is emptied and the texture image data deleted if the context
+    is destroyed before being consumed. See glConsumeTextureCHROMIUM.
+
+    <target> uses the same parameters as TexImage2D.
+
+    <mailbox> identifies a GL_MAILBOX_SIZE_CHROMIUM byte sized name returned by
+    glGenMailboxCHROMIUM.
+
+    INVALID_OPERATION is generated if <target> is not a valid target.
+
+    INVALID_OPERATION is generated if the texture is attached to a framebuffer.
+
+    INVALID_OPERATION is generated if the texture is immutable.
+
+    INVALID_OPERATION is generated if <mailbox> is invalid.
+
+
+    void glConsumeTextureCHROMIUM (GLenum target, const GLbyte *mailbox)
+
+    <target> uses the same parameters as TexImage2D.
+
+    <mailbox> identifies a GL_MAILBOX_SIZE_CHROMIUM byte sized name returned by
+    glGenMailboxCHROMIUM.
+
+    Redefines the image data of the currently bound texture object with the
+    image data in the mailbox and empties the mailbox. The state of the
+    currently bound texture object is not modified, only the image data. All
+    levels are redefined.
+
+    If glConsumeTextureCHROMIUM generates an error, the associated image data
+    is preserved in the texture object.
+
+    INVALID_OPERATION is generated if <target> is not a valid target.
+
+    INVALID_OPERATION is generated if <mailbox> is empty.
+
+    INVALID_OPERATION is generated if <mailbox> is not in the scope of the
+    context.
+
+    INVALID_OPERATION is generated if <mailbox> is invalid.
+
+    INVALID_OPERATION is generated if the texture is attached to a framebuffer.
+
+    INVALID_OPERATION is generated if the texture is immutable.
+
+    INVALID_OPERATION is generated if the image data is invalid in the current
+    context.
+
+New Tokens
+
+    The size of a mailbox name in bytes.
+
+        GL_MAILBOX_SIZE_CHROMIUM                             64
+
+Errors
+
+    None.
+
+New Tokens
+
+    None.
+
+New State
+
+    None.
+
+Revision History
+
+    4/25/2011    Documented the extension
