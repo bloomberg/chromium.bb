@@ -6,7 +6,7 @@
 #ifndef LIBRARIES_NACL_MOUNTS_MOUNT_NODE_MEM_H_
 #define LIBRARIES_NACL_MOUNTS_MOUNT_NODE_MEM_H_
 
-#include "mount_node.h"
+#include "nacl_mounts/mount_node.h"
 
 class MountNodeMem : public MountNode {
  public:
@@ -25,7 +25,7 @@ public:
  private:
   char* data_;
   size_t capacity_;
-  friend class Mount;
+  friend class MountMem;
 };
 
 #endif  // LIBRARIES_NACL_MOUNTS_MOUNT_NODE_MEM_H_

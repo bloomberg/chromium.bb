@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "mount_node.h"
+#include "nacl_mounts/mount_node.h"
 
 
 class MountNodeDir : public MountNode {
@@ -32,7 +32,8 @@ class MountNodeDir : public MountNode {
   // Adds a finds or adds a directory entry as an INO, updating the refcount
   virtual int AddChild(const std::string& name, MountNode *node);
   virtual int RemoveChild(const std::string& name);
-  virtual MountNode*  FindChild(const std::string& name);
+  virtual MountNode* FindChild(const std::string& name);
+  virtual int ChildCount();
 
 
 protected:
@@ -42,7 +43,8 @@ protected:
 private:
   struct dirent* cache_;
   MountNodeMap_t map_;
-  friend class Mount;
+
+  friend class MountMem;
 };
 
 #endif  // LIBRARIES_NACL_MOUNTS_MOUNT_NODE_DIR_H_

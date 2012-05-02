@@ -23,7 +23,7 @@ class MountNode : public RefObject {
  protected:
   MountNode(Mount* mount, int ino, int dev);
   virtual bool Init(int mode, short uid, short gid);
-  virtual void Destroy();
+  virtual int Close();
 
 public:
   // Normal OS operations on a node (file), can be called by the kernel
@@ -55,6 +55,7 @@ protected:
 
   // Find a child and return it without updating the refcount
   virtual MountNode* FindChild(const std::string& name);
+  virtual int ChildCount();
 
   // Update the link count
   virtual void Link();
@@ -64,7 +65,8 @@ protected:
   struct stat stat_;
   Mount* mount_;
 
-  friend class Mount;
+  friend class MountHFS;
+  friend class MountMem;
   friend class MountNodeDir;
 };
 

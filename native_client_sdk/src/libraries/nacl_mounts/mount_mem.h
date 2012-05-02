@@ -9,56 +9,45 @@
 #include <map>
 #include <string>
 
-#include "mount.h"
-#include "util/macros.h"
-#include "util/SlotAllocator.h"
+#include "nacl_mounts/mount.h"
 
-struct dirent;
-struct stat;
 
-class MountMemNode;
-
-// Mount serves as the base mounting class that will be used by
-// the mount manager (class MountManager).  The mount manager
-// relies heavily on the GetNode method as a way of directing
-// system calls that take a path as an argument.  The methods
-// of this class are pure virtual.  BaseMount class contains
-// stub implementations for these methods.  Feel free to use
-// BaseMount if your mount does not implement all of these
-// operations.
-class MountMem : public Mount {
+class MountMem : public MountFactory<MountMem, Mount> {
  protected:
   MountMem();
-  virtual ~MountMem();
 
-  // Init must be called by the factory before
-  void Init();
+  virtual bool Init(int dev, StringMap_t& args);
+  virtual void Destroy();
 
-  int MountMem::AddDirEntry(MountNode* node, MountNode* node, const char *name);
+  // The protected functions are only used internally and will not
+  // acquire or release the mount's lock themselves.  The caller is
+  // returned to use correct locking as needed.
+  virtual MountNode *AllocateData(int mode);
+  virtual MountNode *AllocatePath(int mode);
+  virtual void ReleaseNode(MountNode *node);
+
+  // Allocate or free an INODE number.
+  int AllocateINO();
+  void FreeINO(int ino);
+
+  // Find a Node specified node optionally failing if type does not match.
+  virtual MountNode* FindNode(const Path& path, int type = 0);
 
  public:
-  // System calls that can be overridden by a mount implementation
-  virtual int Creat(const std::string& path, int mode, struct stat *st);
-  virtual int Mkdir(const std::string& path, int mode, struct stat *st);
-  virtual int Unlink(const std::string& path);
+  typedef std::vector<ino_t> INOList_t;
 
-  virtual int Rmdir(int node);
-  virtual int Chmod(int node, int mode);
-  virtual int Stat(int node, struct stat *buf);
-  virtual int Fsync(int node);
+  virtual MountNode *Open(const Path& path, int mode);
+  virtual int Close(MountNode* node);
+  virtual int Unlink(const Path& path);
+  virtual int Mkdir(const Path& path, int perm);
+  virtual int Rmdir(const Path& path);
 
-  virtual int Getdents(int node, off_t offset, struct dirent *dirp,
-                       unsigned int count);
+private:
+  MountNode* root_;
+  INOList_t inos_;
+  size_t max_ino_;
 
-  virtual ssize_t Read(int node, off_t offset,
-                       void *buf, size_t count);
-  virtual ssize_t Write(int node, off_t offset,
-                        const void *buf, size_t count);
-  virtual int Isatty(int node);
-
- private:
-  pthread_mutex_t lock_;
-  SlotAllocator<MountMemNode> inodes_;
+  template <class M, class P> friend class MountFactory;
   DISALLOW_COPY_AND_ASSIGN(MountMem);
 };
 

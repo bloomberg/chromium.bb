@@ -13,8 +13,8 @@
 #include "mount.h"
 #include "mount_node.h"
 
-MountNode::MountNode(Mount* mount, int ino, int dev) :
-  mount_(mount) {
+MountNode::MountNode(Mount* mount, int ino, int dev)
+    : mount_(mount) {
   memset(&stat_, 0, sizeof(stat_));
   stat_.st_ino = ino;
   stat_.st_dev = dev;
@@ -23,16 +23,16 @@ MountNode::MountNode(Mount* mount, int ino, int dev) :
 MountNode::~MountNode() {
 }
 
-bool MountNode::Init(int mode, short gid, short uid) {
+bool MountNode::Init(int mode, short uid, short gid) {
   stat_.st_mode = mode;
   stat_.st_gid = gid;
   stat_.st_uid = uid;
   return true;
 }
 
-void MountNode::Destroy() {
+int MountNode::Close() {
   FSync();
-  mount_->FreeNode(this);
+  return 0;
 }
 
 int MountNode::FSync() {
@@ -111,6 +111,11 @@ int MountNode::RemoveChild(const std::string& name) {
 MountNode* MountNode::FindChild(const std::string& name) {
   errno = ENOTDIR;
   return NULL;
+}
+
+int MountNode::ChildCount() {
+  errno = ENOTDIR;
+  return -1;
 }
 
 void MountNode::Link() {

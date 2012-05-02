@@ -2,290 +2,291 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-
-#include <assert.h>
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <string>
+#include <unistd.h>
 
-#include <vector>
-
+#include "mount.h"
 #include "mount_mem.h"
+#include "mount_node.h"
+#include "mount_node_dir.h"
+#include "mount_node_mem.h"
 #include "path.h"
-#include "util/simple_auto_lock.h"
 
-static const size_t s_blksize = 1024;
+#include "auto_lock.h"
+#include "ref_object.h"
 
-class MountNodeMem {
- public:
-  MountNodeMem(int ino) {
-    ino_ = ino;
-    ref_count_ = 0;
-    data_ = NULL;
-    memset(&stat_, 0, sizeof(stat_));
-    Resize(s_blksize);
-  };
+// TODO(noelallen) : Grab/Redefine these in the kernel object once available.
+#define USR_ID 1002
+#define GRP_ID 1003
 
-  size_t Size() const {
-    return stat_.st_size;
+MountMem::MountMem()
+    : MountFactory(),
+      root_(NULL),
+      max_ino_(0) {
+}
+
+bool MountMem::Init(int dev, StringMap_t& args) { 
+  dev_ = dev;
+  root_ = AllocatePath(_S_IREAD | _S_IWRITE);
+  return (bool) (root_ != NULL);
+}
+
+void MountMem::Destroy() {
+  if (root_)
+    root_->Release();
+  root_ = NULL;
+}
+
+MountNode* MountMem::AllocatePath(int mode) {
+  ino_t ino = AllocateINO();
+
+  MountNode *ptr = new MountNodeDir(this, ino, dev_);
+  if (!ptr->Init(mode, 1002, 1003)) { 
+    ptr->Release();
+    FreeINO(ino);
+    return NULL;
   }
+  return ptr;
+}
 
-  void Resize(size_t size) {
-    size_t cap = blocks_;
-    size_t req = (size + s_blksize - 1) / s_blksize;
+MountNode* MountMem::AllocateData(int mode) {
+  ino_t ino = AllocateINO();
 
-    if ((req > cap) || (req < (cap / 2))) {
-      char *newdata = (char *) malloc(req * s_blksize);
-      memcpy(newdata, data_, size);
-      free(data_);
-      stat_.st_size = size;
-      data_ = newdata;
-      blocks_ = req;
+  MountNode* ptr = new MountNodeMem(this, ino, dev_);
+  if (!ptr->Init(mode, getuid(), getgid())) { 
+    ptr->Release();
+    FreeINO(ino);
+    return NULL;
+  }
+  return ptr;
+}
+
+void MountMem::ReleaseNode(MountNode* node) {
+  node->Release();
+}
+
+int MountMem::AllocateINO() {
+  const int INO_CNT = 8;
+
+  // If we run out of INO numbers, then allocate 8 more
+  if (inos_.size() == 0) {
+    max_ino_ += INO_CNT;
+    // Add eight more to the stack in reverse order, offset by 1
+    // since '0' refers to no INO.
+    for (int a = 0; a < INO_CNT; a++) {
+      inos_.push_back(max_ino_ - a);
     }
   }
 
-  int ino_;
-  int ref_count_;
-  struct stat stat_;
-  void *data_;
-  size_t blocks_;
-  pthread_mutex_t lock_;
-};
+  // Return the INO at the top of the stack.
+  int val = inos_.back();
+  inos_.pop_back();
+  return val;
+}
 
-MountMem::MountMem() {}
-MountMem::~MountMem() {}
+void MountMem::FreeINO(int ino) {
+  inos_.push_back(ino);
+}
 
-int MountMem::AddDirEntry(MountMemNode* dir_node, MountMemNode* obj_node, const char *name) {
-  if (strlen(name > 255)) {
+MountNode* MountMem::FindNode(const Path& path, int type) {
+  MountNode* node = root_;
+
+  // If there is no root there, we have an error.
+  if (node == NULL) {
+    errno = ENOTDIR;
+    return NULL;
+  }
+
+  // We are expecting an "absolute" path from this mount point.
+  if (!path.IsAbsolute()) {
     errno = EINVAL;
-    return -1;
+    return NULL;
   }
 
-  struct dirent* d = (struct dirent *) dir_node->data_;
-  size_t cnt = dir_node->Size() / sizeof(struct dirent);
-  size_t off;
-
-  // Find a free location
-  for (off = 0; off < cnt; off++) {
-    if (d->d_name[0] == 0) break;
-    d++;
-  }
-
-  // Otherwise regrow and take the last spot.
-  if (off == cnt) {
-    dir_node->Resize(dir_node->Size() + sizeof(struct dirent));
-    d = &((struct dirent *) dir_node->data_)[off];
-  }
-
-  strcpy(d->d_name, name);
-  d->d_ino = obj_node->ino_;
-  d->d_reclen = sizeof(dirent);
-  d->d_off = off * sizeof(dirent);
-
-  // Add a ref_count_ and link count for the directory
-  obj_node->Acquire();
-  obj_node->stat_.st_nlink++;
-  return 0;
-}
-
-
-
-
-int MountMem::DelDirEntry_locked(int dir_ino, const char *name) {
-  MountMemNode* dir_node = inodes_.At(dir_ino);
-  struct dirent* d = (struct dirent *) dir_node->data_;
-  size_t cnt = dir_node->Size() / sizeof(struct dirent);
-  size_t off = 0;
-
-  // Find a free location
-  for (off = 0; off < cnt; off++) {
-    if (!strcmp(d->d_name, name)) {
-      d->d_name[0] = 0;
-      obj_node->stat_.st_nlink--;
-      if (0 == --obj_node->ref_count_) FreeNode(obj_node->ino_);
-      dir_node->ref_count_--;
-      return 0;
+  // Starting at the root, traverse the path parts.
+  for (size_t index = 1; node && index < path.Size(); index++) {
+    // If not a directory, then we have an error so return.
+    if (!node->IsaDir()) {
+      errno = ENOTDIR;
+      return NULL;
     }
+
+    // Find the child node
+    node = node->FindChild(path.Part(index));
   }
 
-  errno = ENOENT;
-  return -1;
-}
+  // node should be root, a found child, or a failed 'FindChild' 
+  // which already has the correct errno set.
+  if (NULL == node) return NULL;
 
-MountNodeMem* MountMem::AcquireNode(int ino) {
-  SimpleAutoLock lock(&lock_);
-  MountNodeMem *node = inodes_.At(ino);
-  if (node) node->ref_count_++;
+  // If a directory is expected, but it's not a directory, then fail.
+  if ((type & _S_IFDIR) && !node->IsaDir()) {
+    errno = ENOTDIR;
+    return NULL;
+  }
+
+  // If a file is expected, but it's not a file, then fail.
+  if ((type & _S_IFREG) && node->IsaDir()) {
+    errno = EISDIR;
+    return NULL;
+  }
+
+  // We now have a valid object of the expected type, so return it.
   return node;
 }
 
-void MountMem::ReleaseNode(MountMemNode* node) {
-  if (node) {
-    SimpleAutoLock lock(&lock_);
-    if (--node->ref_count_) inodes_.Free(node->ino_);
+MountNode* MountMem::Open(const Path& path, int mode) {
+  AutoLock lock(&lock_);
+  MountNode* node = FindNode(path);
+
+  if (NULL == node) {
+    // Now first find the parent directory to see if we can add it
+    MountNode* parent = FindNode(path.Parent(), _S_IFDIR);
+    if (NULL == parent) return NULL;
+
+    // If the node does not exist and we can't create it, fail
+    if ((mode & O_CREAT) == 0) return NULL;
+
+    // Otherwise, create it with a single refernece
+    mode = OpenModeToPermission(mode);
+    node = AllocateData(mode);
+    if (NULL == node) return NULL;
+
+    if (parent->AddChild(path.Filename(), node) == -1) {
+      // Or if it fails, release it
+      node->Release();
+      return NULL;
+    }
+    return node;
   }
-}
 
-void MountMem::Init(void) {
-  int root = inodes_.Alloc();
-
-  assert(root == 0);
-  AddDirEntry(root, root, "/");
-}
-
-int MountMem::Mkdir(const std::string& path, mode_t mode, struct stat *buf) {
-  SimpleAutoLock lock(&lock_);
-
-  int ino = AcquireNode(path);
-
-  // Make sure it doesn't already exist.
-  child = GetMemNode(path);
-  if (child) {
+  // If we were expected to create it exclusively, fail
+  if (mode & O_EXCL) {
     errno = EEXIST;
-    return -1;
+    return NULL;
   }
-  // Get the parent node.
-  int parent_slot = GetParentSlot(path);
-  if (parent_slot == -1) {
+
+  // Verify we got the requested permisions.
+  int req_mode = OpenModeToPermission(mode);
+  int obj_mode = node->GetMode() & OpenModeToPermission(O_RDWR);
+  if ((obj_mode & req_mode) != req_mode) {
+    errno = EACCES;
+    return NULL;
+  }
+
+  // We opened it, so ref count it before passing it back.
+  node->Acquire();
+  return node;
+}
+
+int MountMem::Close(MountNode* node) {
+  AutoLock lock(&lock_);
+  node->Close();
+  ReleaseNode(node);
+  return 0;
+}
+
+int MountMem::Unlink(const Path& path) {
+  AutoLock lock(&lock_);
+  MountNode* parent = FindNode(path.Parent(), _S_IFDIR);
+
+  if (NULL == parent) return -1;
+
+  MountNode* child = parent->FindChild(path.Filename());
+  if (NULL == child) {
     errno = ENOENT;
     return -1;
   }
-  parent = slots_.At(parent_slot);
-  if (!parent->is_dir()) {
+  if (child->IsaDir()) {
+    errno = EISDIR;
+    return -1;
+  }
+  return parent->RemoveChild(path.Filename());
+}
+
+int MountMem::Mkdir(const Path& path, int mode) {
+  AutoLock lock(&lock_);
+
+  // We expect a Mount "absolute" path
+  if (!path.IsAbsolute()) {
+    errno = ENOENT;
+    return -1;
+  }
+
+  // The root of the mount is already created by the mount
+  if (path.Size() == 1) {
+    errno = EEXIST;
+    return -1;
+  }
+
+  MountNode* parent = FindNode(path.Parent(), _S_IFDIR);
+  MountNode* node;
+
+  // If we failed to find the parent, the error code is already set.
+  if (NULL == parent) return -1;
+
+  node = parent->FindChild(path.Filename());
+  if (NULL != node) {
+    errno = EEXIST;
+    return -1;
+  }
+
+  // Otherwise, create a new node and attempt to add it
+  mode = OpenModeToPermission(mode);
+
+  // Allocate a node, with a RefCount of 1.  If added to the parent
+  // it will get ref counted again.  In either case, release the
+  // recount we have on exit.
+  node = AllocatePath(_S_IREAD | _S_IWRITE);
+  if (NULL == node) return -1;
+
+  if (parent->AddChild(path.Filename(), node) == -1) {
+    node->Release();
+    return -1;
+  }
+
+  node->Release();
+  return 0;
+}
+
+int MountMem::Rmdir(const Path& path) {
+  AutoLock lock(&lock_);
+
+  // We expect a Mount "absolute" path
+  if (!path.IsAbsolute()) {
+    errno = ENOENT;
+    return -1;
+  }
+
+  // The root of the mount is already created by the mount
+  if (path.Size() == 1) {
+    errno = EEXIST;
+    return -1;
+  }
+
+  MountNode* parent = FindNode(path.Parent(), _S_IFDIR);
+  MountNode* node;
+
+  // If we failed to find the parent, the error code is already set.
+  if (NULL == parent) return -1;
+
+  // Verify we find a child which is also a directory
+  node = parent->FindChild(path.Filename());
+  if (NULL == node) {
+    errno = ENOENT;
+    return -1;
+  }
+  if (!node->IsaDir()) {
     errno = ENOTDIR;
     return -1;
   }
-
-  // Create a new node
-  int slot = slots_.Alloc();
-  child = slots_.At(slot);
-  child->set_slot(slot);
-  child->set_mount(this);
-  child->set_is_dir(true);
-  Path p(path);
-  child->set_name(p.Last());
-  child->set_parent(parent_slot);
-  parent->AddChild(slot);
-  if (!buf) {
-    return 0;
-  }
-
-  return Stat(slot, buf);
-}
-
-int MountMem::Rmdir(int node) {
-}
-
-int MountMem::Chmod(int ino, int mode) {
-  MountMemNode* node = AcquireNode(ino);
-
-  if (NULL == node) {
-    errno = BADF;
+  if (node->ChildCount() > 0) {
+    errno = ENOTEMPTY;
     return -1;
   }
-
-  node->stat_.st_mode = mode;
-  ReleaseNode(node);
-  return 0;
+  return parent->RemoveChild(path.Filename());
 }
-
-int MountMem::Stat(int ino, struct stat *buf) {
-  MountMemNode* node = AcquireNode(ino);
-
-  if (NULL == node) {
-    errno = BADF;
-    return -1;
-  }
-
-  memcpy(buf, node->stat_, sizeof(struct stat));
-  ReleaseNode(node);
-  return 0;
-}
-
-int MountMem::Fsync(int ino) {
-  // Acquire the node in case he node
-  MountMemNode* node = AcquireNode(ino);
-  if (node) {
-    ReleaseNode(node);
-    return 0
-  }
-
-  errno = BADF;
-  return -1;
-}
-
-int MountMem::Getdents(int ino, off_t offset, struct dirent *dirp, unsigned int count) {
-  MountMemNode* node = AcquireNode(ino);
-  if ((NULL == node) == 0) {
-    errno = EBADF;
-    return -1;
-  }
-
-  if ((node->stat_.st_mode & S_IFDIR) == 0) {
-    errno =ENOTDIR;
-    return -1;
-  }
-
-  if (offset + count > node->Size()) {
-    count = node->Size() - offset;
-  }
-
-  memcpy(dirp, &node->data_[offset], count);
-  return count;
-}
-
-ssize_t MountMem::Write(int ino, off_t offset, const void *buf, size_t count) {
-  MountMemNode* node = AcquireNode(ino);
-
-  if (NULL == node || (node->stat_.st_mode & S_IWUSER) == 0) {
-    errno = EBADF;
-    return -1;
-  }
-
-  if (offset + count > node->Size()) {
-    int err = node->Resize();
-    if (err) {
-      errno = err;
-      ReleaseNode(node);
-      return -1;
-    }
-  }
-
-  mempcy(&node->data_[offset], buf, count);
-  ReleaseNode(node);
-  return count;
-}
-
-ssize_t MountMem::Read(int ino, off_t offset, const void *buf, size_t count) {
-  MountMemNode* node = AcquireNode(ino);
-
-  if (NULL == node || (node->stat_.st_mode & S_IRUSER) == 0) {
-    errno = EBADF;
-    return -1;
-  }
-
-  if (offset + count > node->Size()) {
-    count = node->Size() - offset;
-  }
-
-  mempcy(buf, &node->data_[offset], count);
-  ReleaseNode(node);
-  return count;
-}
-
-int MountMem::Isatty(int ino) {
-  // Acquire the node in case he node array is in flux
-  MountMemNode* node = AcquireNode(ino);
-
-  if (node) {
-    errno = ENOTTY;
-    ReleaseNode(node);
-  }
-  else {
-    errno = BADF;
-  }
-  return 0;
-}
-

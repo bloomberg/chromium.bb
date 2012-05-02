@@ -3,15 +3,17 @@
  * found in the LICENSE file.
  */
 
+#include <dirent.h>
 #include <errno.h>
 #include <sys/stat.h>
 
+#include "macros.h"
 #include "auto_lock.h"
 #include "mount_node_dir.h"
 
-MountNodeDir::MountNodeDir(Mount* mount, int ino, int dev) :
-    MountNode(mount, ino, dev),
-    cache_(NULL) {
+MountNodeDir::MountNodeDir(Mount* mount, int ino, int dev)
+    : MountNode(mount, ino, dev),
+      cache_(NULL) {
 }
 
 MountNodeDir::~MountNodeDir() {
@@ -73,7 +75,6 @@ int MountNodeDir:: AddChild(const std::string& name, MountNode* node) {
     errno = ENOENT;
     return -1;
   }
-
   if (name.length() >= MEMBER_SIZE(struct dirent, d_name)) {
     errno = ENAMETOOLONG;
     return -1;
@@ -112,6 +113,11 @@ MountNode* MountNodeDir::FindChild(const std::string& name) {
   }
   errno = ENOENT;
   return NULL;
+}
+
+int MountNodeDir::ChildCount() {
+  AutoLock lock(&lock_);
+  return map_.size();
 }
 
 void MountNodeDir::ClearCache() {
