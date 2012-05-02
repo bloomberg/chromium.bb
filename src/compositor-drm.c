@@ -238,10 +238,6 @@ drm_output_prepare_scanout_surface(struct drm_output *output)
 	es = container_of(c->base.surface_list.next,
 			  struct weston_surface, link);
 
-	/* Need to verify output->region contained in surface opaque
-	 * region.  Or maybe just that format doesn't have alpha. */
-	return -1;
-
 	if (es->geometry.x != output->base.x ||
 	    es->geometry.y != output->base.y ||
 	    es->geometry.width != output->base.current->width ||
@@ -255,6 +251,14 @@ drm_output_prepare_scanout_surface(struct drm_output *output)
 					  es->geometry.width,
 					  es->geometry.height,
 					  GBM_BO_USE_SCANOUT);
+
+	/* Need to verify output->region contained in surface opaque
+	 * region.  Or maybe just that format doesn't have alpha.
+	 * For now, scanout only if format is XRGB8888. */
+	if (gbm_bo_get_format(bo) != GBM_FORMAT_XRGB8888) {
+		gbm_bo_destroy(bo);
+		return -1;
+	}
 
 	output->next = drm_fb_get_from_bo(bo, output);
 	if (!output->next) {
