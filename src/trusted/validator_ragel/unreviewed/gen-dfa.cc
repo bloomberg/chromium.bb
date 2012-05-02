@@ -416,7 +416,6 @@ namespace {
         auto operation = split_till_comma(&it, line_end);
         /* Line with just whitespaces is ignored.  */
         if (operation.size() != 0) {
-          instruction_names[instruction.name = operation[0]] = 0;
           for_each(operation.rbegin(),
                    operation.rend() - 1,
                    extract_operand(&instruction, operation));
@@ -459,6 +458,7 @@ namespace {
             }
           }
           if (enabled_instruction) {
+            instruction_names[instruction.name = operation[0]] = 0;
             instructions.push_back(instruction);
           }
         }
@@ -1357,6 +1357,7 @@ namespace {
       kDefaultRexW,
       kData16DefaultRexW,
       kSize8Data16DefaultRexW,
+      kSize8Data16DefaultRexWxDefaultRexW,
       kLSetUnset,
       kLSetUnsetDefaultRexW,
       /* Unknown: if all arguments are unknown the result is kDefault.  */
@@ -1460,7 +1461,8 @@ namespace {
                    ((instruction_class ==
                                    InstructionClass::kSize8Data16DefaultRexW) &&
                     (operand_class == InstructionClass::kDefaultRexW))) {
-          instruction_class = InstructionClass::kSize8Data16DefaultRexW;
+          instruction_class =
+                          InstructionClass::kSize8Data16DefaultRexWxDefaultRexW;
         } else {
           fprintf(stderr, "%s: error - incompatible modes %d & %d\n",
                   short_program_name, instruction_class, operand_class);
@@ -1518,6 +1520,24 @@ namespace {
           print_one_size_definition_rexw();
           instruction_class = saved_class;
           break;
+        case InstructionClass::kSize8Data16DefaultRexWxDefaultRexW: {
+          /* Here we need to set instruction_class simultaneously to kSize8
+             and to kRexW.  We can not do that thus we are cheating: we convert
+             all Size8/Size16/Size32/Size64 operands to pure Size8 operands
+             right here and leave all other operands to be handled by the
+             print_one_size_definition() call.  */
+          instruction_class = InstructionClass::kRexW;
+          auto saved_operands = operands;
+          for (auto operand_it = operands.begin();
+               operand_it != operands.end(); ++operand_it) {
+            auto &operand = *operand_it;
+            if (operand.size == "") {
+              operand.size = "b";
+            }
+          }
+          print_one_size_definition_rexw();
+          operands = saved_operands;
+        } /* Falltrought: the rest is as in kSize8Data16DefaultRexW.  */
         case InstructionClass::kSize8Data16DefaultRexW:
           instruction_class = InstructionClass::kSize8;
           print_one_size_definition();
