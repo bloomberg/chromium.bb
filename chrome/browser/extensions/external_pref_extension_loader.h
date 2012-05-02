@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,10 +29,10 @@ class ExternalPrefExtensionLoader : public ExternalExtensionLoader {
     ENSURE_PATH_CONTROLLED_BY_ADMIN = 1 << 0
   };
 
-  // |base_path_key| is the directory containing the external_extensions.json
-  // file.  Relative file paths to extension files are resolved relative
-  // to this path.
-  explicit ExternalPrefExtensionLoader(int base_path_key, Options options);
+  // |base_path_id| is the directory containing the external_extensions.json
+  // file or the standalone extension manifest files. Relative file paths to
+  // extension files are resolved relative to this path.
+  explicit ExternalPrefExtensionLoader(int base_path_id, Options options);
 
   virtual const FilePath GetBaseCrxFilePath() OVERRIDE;
 
@@ -47,11 +47,32 @@ class ExternalPrefExtensionLoader : public ExternalExtensionLoader {
 
   virtual ~ExternalPrefExtensionLoader() {}
 
-  DictionaryValue* ReadJsonPrefsFile();
+  // Actually searches for and loads candidate standalone extension preference
+  // files in the path corresponding to |base_path_id|.
+  // Must be called on the file thread.
   void LoadOnFileThread();
 
-  int base_path_key_;
+  // Extracts the information contained in an external_extension.json file
+  // regarding which extensions to install. |prefs| will be modified to
+  // receive the extracted extension information.
+  // Must be called from the File thread.
+  void ReadExternalExtensionPrefFile(DictionaryValue * prefs);
+
+  // Extracts the information contained in standalone external extension
+  // json files (<extension id>.json) regarding what external extensions
+  // to install. |prefs| will be modified to receive the extracted extension
+  // information.
+  // Must be called from the File thread.
+  void ReadStandaloneExtensionPrefFiles(DictionaryValue * prefs);
+
+  // The resource id of the base path with the information about the json
+  // file containing which extensions to load.
+  int base_path_id_;
+
   Options options_;
+
+  // The path (coresponding to |base_path_id_| containing the json files
+  // describing which extensions to load.
   FilePath base_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPrefExtensionLoader);

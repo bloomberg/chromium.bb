@@ -345,6 +345,20 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
               Extension::INVALID,
               Extension::NO_FLAGS)));
 #endif
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  provider_list->push_back(
+      linked_ptr<ExternalExtensionProviderInterface>(
+          new ExternalExtensionProviderImpl(
+              service,
+              new ExternalPrefExtensionLoader(
+                  chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
+                  ExternalPrefExtensionLoader::NONE),
+              Extension::EXTERNAL_PREF,
+              Extension::EXTERNAL_PREF_DOWNLOAD,
+              Extension::NO_FLAGS)));
+#endif
+
   provider_list->push_back(
       linked_ptr<ExternalExtensionProviderInterface>(
           new ExternalExtensionProviderImpl(

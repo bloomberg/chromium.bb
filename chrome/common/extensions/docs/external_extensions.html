@@ -293,6 +293,13 @@ Until <a href="http://crbug.com/41902">bug 41902</a> is fixed,
 you might want to use the <a href="#registry">Windows registry</a>
 instead of the preferences file.
 </p>
+<p class="note">
+<b>Note:</b>
+Previous versions of Google Chrome used an
+<code>external_extensions.json</code> file to specify which extensions to
+install. This file has been deprecated in favor of individual <code>.json</code>
+files, one per extension.
+</p>
 <ol>
 <li>If you are installing from a file, make the <code>.crx</code> extension
 file available to the machine you want to install the extension on.
@@ -300,8 +307,9 @@ file available to the machine you want to install the extension on.
 <code>\\server\share\extension.crx</code>
 or <code>/home/share/extension.crx</code>.)
 </li>
-<li>Locate the <code>external_extensions.json</code> file.
-  If the file doesn't exist, create it.
+<li>Create a file with the following name in one of the folders listed below:
+  <code>aaaaaaaaaabbbbbbbbbbcccccccccc.json</code> where the file name (without the extension)
+  corresponds to your extension's ID.
   The location depends on the operating system.
   <dl>
   <dt> Windows: </dt>
@@ -312,7 +320,7 @@ or <code>/home/share/extension.crx</code>.)
   <dt> Mac OS X:</dt>
     <dd>For a specific user: <code>~USERNAME/Library/Application Support/Google/Chrome/External Extensions/</code><br>
         For all users: <code>/Library/Application Support/Google/Chrome/External Extensions/</code>
-    <p>The external extensions file for all users is read only if every directory in the path is owned by the user <code>root</code>, has the group <code>admin</code> or <code>wheel</code>, and is not world writable.  The path must also be free of symbolic links.  These restrictions prevent an unprivileged user from causing extensions to be installed for all users.  See <a href="#troubleshooting">troubleshooting</a> for details.</p>
+    <p>The external extension file for all users is read only if every directory in the path is owned by the user <code>root</code>, has the group <code>admin</code> or <code>wheel</code>, and is not world writable.  The path must also be free of symbolic links.  These restrictions prevent an unprivileged user from causing extensions to be installed for all users.  See <a href="#troubleshooting">troubleshooting</a> for details.</p>
     <p class="note">
     <b>Note:</b> The above path for all users was added in Chrome 16.  Prior versions used a different path:<br>
      <code>/Applications/Google Chrome.app/Contents/Extensions/</code>
@@ -320,23 +328,24 @@ or <code>/home/share/extension.crx</code>.)
   </dd>
   <dt> Linux: </dt>
     <dd> <code>/opt/google/chrome/extensions/</code> <br>
+    </dd>
+    <dd> <code>/usr/share/google-chrome/extensions/</code> <br>
     <b>Note:</b> Use <code>chmod</code> if necessary
-    to make sure that <code>extensions/external_extensions.json</code>
-    is world-readable.
+    to make sure that the <code>aaaaaaaaaabbbbbbbbbbcccccccccc.json</code> files
+    are world-readable.
     </dd>
   </dl>
 </li>
-<li> Add an entry to <code>external_extensions.json</code>
-for your extension's ID.  If you are installing from a file, specify the
-extension's location and version with fields named "external_crx" and
-"external_version".
+<li>If you are installing from a file, specify the extension's location and version with fields
+named "external_crx" and "external_version" in the file created above.
+<p>
 Example:
-<pre>{
-  "aaaaaaaaaabbbbbbbbbbcccccccccc": {
+</p><pre>  {
     "external_crx": "/home/share/extension.crx",
     "external_version": "1.0"
   }
-}</pre>
+</pre>
+<p></p>
 <p class="note">
 <b>Note:</b>
 You need to escape
@@ -346,14 +355,13 @@ For example,
 <code>"\\\\server\\share\\extension.crx"</code>.
 </p>
 <p>
+</p><p>
 If you are installing from an update URL, specify the extension's update URL
 with field name "external_update_url".
 </p>
 Example:
 <pre>{
-  "aaaaaaaaaabbbbbbbbbbcccccccccc": {
-    "external_update_url": "http://myhost.com/mytestextension/updates.xml"
-  }
+  "external_update_url": "http://myhost.com/mytestextension/updates.xml"
 }</pre>
 <p>
 If you would like to install extension only for some browser locales,
@@ -366,10 +374,8 @@ is missing, the extension will be installed for any locale.
 </p>
 Example:
 <pre>{
-  "aaaaaaaaaabbbbbbbbbbcccccccccc": {
-    "external_update_url": "http://myhost.com/mytestextension/updates.xml",
-    "supported_locales": [ "en", "fr", "de" ]
-  }
+  "external_update_url": "http://myhost.com/mytestextension/updates.xml",
+  "supported_locales": [ "en", "fr", "de" ]
 }</pre>
 </li>
 <li>Save the JSON file. </li>
@@ -377,12 +383,12 @@ Example:
 you should see the extension listed. </li>
 </ol>
 <h3 id="troubleshooting">Troubleshooting Mac OS permissions problems</h3>
-<p>On Mac OS, the external extensions file for all users is only read if file system permissions prevent unprivelaged users from changing it.  If you do not see external extensions installed when Chrome is launched, there may be a permissions problem with the external extensions preferences file.  To see if this is the problem, follow these steps:</p>
+<p>On Mac OS, the external extensions files for all users are only read if file system permissions prevent unprivileged users from changing it.  If you do not see external extensions installed when Chrome is launched, there may be a permissions problem with the external extensions preferences files.  To see if this is the problem, follow these steps:</p>
 <ol>
   <li> Launch the Console program.  You can find it under /Applications/Utilities/Console. </li>
   <li> If the leftmost icon in the Console says "Show Log List", click that icon.  A second column appears at the left. </li>
   <li> Click "Console Messages" in the left pane. </li>
-  <li> Search for the string <b>Can not read external extensions</b>.  If there is a problem reading the external extensions file, you will find an error message.  Look for another error message directly above it, which should explain the issue.  For example, if you see the following error:
+  <li> Search for the string <b>Can not read external extensions</b>.  If there is a problem reading the external extensions files, you will see an error message.  Look for another error message directly above it, which should explain the issue.  For example, if you see the following error:
      "Path /Library/Application Support/Google/Chrome is owned by the wrong group", you need to use <code>chgrp</code> or the Finder's Get Info dialog to change the directory's group owner to the Administrator group.</li>
   <li> After fixing the issue, relaunch Chrome.  Test that the external extension is now installed.  It is possible that one permissions error keeps Chrome from detecting a second error.  If the external extension was not installed, repeat these steps until you do not see an error in the Console application.
 </li></ol>
@@ -428,8 +434,8 @@ update the file, and then update the version
 in the preferences or registry. </p>
 <p>To uninstall your extension
 (for example, if your software is uninstalled),
-remove the metadata from the preferences file
-or registry. </p>
+remove your preference file (aaaaaaaaaabbbbbbbbbbcccccccccc.json)
+or the metadata from the registry. </p>
 <h2 id="faq">FAQ</h2>
 <p>
 This section answers common questions about external extensions.
@@ -449,13 +455,12 @@ file?</b></p>
     Not specifying the same id/version
     as the one listed in the <code>.crx</code> </li>
   <li>
-    <code>external_extensions.json</code> is in the wrong location </li>
-  <li>
+    The .json file (<code>aaaaaaaaaabbbbbbbbbbcccccccccc.json</code>) is in
+    the wrong location or the ID specified does not match the extension ID.
+  </li><li>
     Syntax error in JSON file
     (forgetting to separate entries with comma or
     leaving a trailing comma somewhere) </li>
-  <li>
-    Extra curly brackets around the top level dictionary </li>
   <li>
     JSON file entry points to the wrong path
     to the <code>.crx</code> (or path specified but no filename) </li>

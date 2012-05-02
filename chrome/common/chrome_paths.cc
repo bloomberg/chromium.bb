@@ -71,6 +71,18 @@ const FilePath::CharType kGTalkPluginFileName[] =
     FILE_PATH_LITERAL("pepper/libppgoogletalk.so");
 
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// The path to the external extension <id>.json files.
+// /usr/share seems like a good choice, see: http://www.pathname.com/fhs/
+const char kFilepathSinglePrefExtensions[] =
+#if defined(GOOGLE_CHROME_BUILD)
+    FILE_PATH_LITERAL("/usr/share/google-chrome/extensions");
+#else
+    FILE_PATH_LITERAL("/usr/share/chromium/extensions");
+#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+
 }  // namespace
 
 namespace chrome {
@@ -358,6 +370,12 @@ bool PathProvider(int key, FilePath* result) {
       if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("External Extensions"));
+      break;
+    }
+#endif
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    case chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS: {
+      cur = FilePath(FILE_PATH_LITERAL(kFilepathSinglePrefExtensions));
       break;
     }
 #endif

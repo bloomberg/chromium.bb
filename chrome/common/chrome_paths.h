@@ -55,6 +55,12 @@ enum {
                                  // Getting this path does not create it.
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  DIR_STANDALONE_EXTERNAL_EXTENSIONS,  // Directory for 'per-extension'
+                                       // definition manifest files that
+                                       // describe extensions which are to be
+                                       // installed when chrome is run.
+#endif
   DIR_EXTERNAL_EXTENSIONS,      // Directory where installer places .crx files.
 
   DIR_DEFAULT_APPS,             // Directory where installer places .crx files
