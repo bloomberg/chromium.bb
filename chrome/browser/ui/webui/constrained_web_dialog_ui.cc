@@ -49,7 +49,7 @@ void ConstrainedWebDialogUI::RenderViewCreated(
     web_ui()->AddMessageHandler(*it);
   }
 
-  // Add a "DialogClose" callback which matches HTMLDialogUI behavior.
+  // Add a "DialogClose" callback which matches WebDialogUI behavior.
   web_ui()->RegisterMessageCallback("DialogClose",
       base::Bind(&ConstrainedWebDialogUI::OnDialogCloseMessage,
                  base::Unretained(this)));

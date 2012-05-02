@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/test_html_dialog_observer.h"
+#include "chrome/test/base/test_web_dialog_observer.h"
 
 #include "chrome/common/chrome_notification_types.h"
 #include "content/test/js_injection_ready_observer.h"
@@ -17,7 +17,7 @@
 
 using content::NavigationController;
 
-TestHtmlDialogObserver::TestHtmlDialogObserver(
+TestWebDialogObserver::TestWebDialogObserver(
     JsInjectionReadyObserver* js_injection_ready_observer)
     : js_injection_ready_observer_(js_injection_ready_observer),
       web_ui_(NULL),
@@ -27,10 +27,10 @@ TestHtmlDialogObserver::TestHtmlDialogObserver(
                  content::NotificationService::AllSources());
 }
 
-TestHtmlDialogObserver::~TestHtmlDialogObserver() {
+TestWebDialogObserver::~TestWebDialogObserver() {
 }
 
-void TestHtmlDialogObserver::Observe(
+void TestWebDialogObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -44,9 +44,9 @@ void TestHtmlDialogObserver::Observe(
       registrar_.Remove(this, chrome::NOTIFICATION_WEB_DIALOG_SHOWN,
                         content::NotificationService::AllSources());
       // Wait for navigation on the new WebUI instance to complete. This depends
-      // on receiving the notification of the HtmlDialog being shown before the
-      // NavigationController finishes loading. The HtmlDialog notification is
-      // issued from html_dialog_ui.cc on RenderView creation which results from
+      // on receiving the notification of the WebDialog being shown before the
+      // NavigationController finishes loading. The WebDialog notification is
+      // issued from web_dialog_ui.cc on RenderView creation which results from
       // the call to render_manager_.Navigate in the method
       // WebContents::NavigateToEntry. The new RenderView is later told to
       // navigate in this method, ensuring that this is not a race condition.
@@ -71,7 +71,7 @@ void TestHtmlDialogObserver::Observe(
   };
 }
 
-content::WebUI* TestHtmlDialogObserver::GetWebUI() {
+content::WebUI* TestWebDialogObserver::GetWebUI() {
   if (!done_) {
     EXPECT_FALSE(running_);
     running_ = true;

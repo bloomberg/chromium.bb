@@ -155,7 +155,7 @@ void AutoLoginPrompter::Observe(int type,
   if (type == content::NOTIFICATION_LOAD_STOP) {
     TabContentsWrapper* wrapper =
         TabContentsWrapper::GetCurrentWrapperForContents(web_contents_);
-    // |wrapper| is NULL for WebContents hosted in HTMLDialog.
+    // |wrapper| is NULL for WebContents hosted in WebDialog.
     if (wrapper) {
       InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
       infobar_helper->AddInfoBar(new AutoLoginInfoBarDelegate(infobar_helper,
