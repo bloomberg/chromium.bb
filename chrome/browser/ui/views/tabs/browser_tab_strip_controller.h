@@ -134,6 +134,9 @@ class BrowserTabStripController : public TabStripController,
       TabStripModel::ContextMenuCommand command_id,
       BaseTab* tab);
 
+  // Adds a tab.
+  void AddTab(TabContentsWrapper* contents, int index, bool is_active);
+
   TabStripModel* model_;
 
   TabStrip* tabstrip_;

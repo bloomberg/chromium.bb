@@ -160,7 +160,7 @@ void BrowserTabStripController::InitFromModel(TabStrip* tabstrip) {
   // Walk the model, calling our insertion observer method for each item within
   // it.
   for (int i = 0; i < model_->count(); ++i)
-    TabInsertedAt(model_->GetTabContentsAt(i), i, model_->active_index() == i);
+    AddTab(model_->GetTabContentsAt(i), i, model_->active_index() == i);
 }
 
 bool BrowserTabStripController::IsCommandEnabledForTab(
@@ -329,16 +329,10 @@ void BrowserTabStripController::TabInsertedAt(TabContentsWrapper* contents,
                                               int model_index,
                                               bool is_active) {
   DCHECK(contents);
-  DCHECK(model_index == TabStripModel::kNoTab ||
-         model_->ContainsIndex(model_index));
-
-  // Cancel any pending tab transition.
-  hover_tab_selector_.CancelTabTransition();
-
-  TabRendererData data;
-  SetTabRendererDataFromModel(contents->web_contents(), model_index, &data,
-                              NEW_TAB);
-  tabstrip_->AddTabAt(model_index, data, is_active);
+  CHECK_GE(model_index, 0);
+  CHECK_LT(model_index, model_->count());
+  CHECK_EQ(model_->count(), tabstrip_->tab_count() + 1);
+  AddTab(contents, model_index, is_active);
 }
 
 void BrowserTabStripController::TabDetachedAt(TabContentsWrapper* contents,
@@ -485,4 +479,15 @@ void BrowserTabStripController::StopHighlightTabsForCommand(
     // Just tell all Tabs to stop pulsing - it's safe.
     tabstrip_->StopAllHighlighting();
   }
+}
+
+void BrowserTabStripController::AddTab(TabContentsWrapper* contents,
+                                       int index,
+                                       bool is_active) {
+  // Cancel any pending tab transition.
+  hover_tab_selector_.CancelTabTransition();
+
+  TabRendererData data;
+  SetTabRendererDataFromModel(contents->web_contents(), index, &data, NEW_TAB);
+  tabstrip_->AddTabAt(index, data, is_active);
 }
