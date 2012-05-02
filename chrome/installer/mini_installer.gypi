@@ -156,6 +156,26 @@
         'create_installer_archive_py_path':
           '../tools/build/win/create_installer_archive.py',
       },
+      'conditions': [
+        ['enable_hidpi == 1', {
+          'variables': {
+            'enable_hidpi_flag': '--enable_hidpi=1',
+          },
+        }, {
+          'variables': {
+            'enable_hidpi_flag': '',
+          },
+        }],
+        ['enable_metro == 1', {
+          'variables': {
+            'enable_metro_flag': '--enable_metro=1',
+          },
+        }, {
+          'variables': {
+            'enable_metro_flag': '',
+          },
+        }],
+      ],
       'inputs': [
         '<(create_installer_archive_py_path)',
         '<(PRODUCT_DIR)/chrome.exe',
@@ -182,6 +202,8 @@
         '--staging_dir=<(INTERMEDIATE_DIR)',
         '--input_file=<(RULE_INPUT_PATH)',
         '--resource_file_path=<(INTERMEDIATE_DIR)/packed_files.rc',
+        '<(enable_hidpi_flag)',
+        '<(enable_metro_flag)',
         # TODO(sgk):  may just use environment variables
         #'--distribution=$(CHROMIUM_BUILD)',
         '--distribution=_google_chrome',
