@@ -18,6 +18,7 @@
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/c/private/ppb_flash_print.h"
 
 namespace pp {
 
@@ -39,6 +40,9 @@ template <> const char* interface_name<PPB_Flash_12_0>() {
   return PPB_FLASH_INTERFACE_12_0;
 }
 
+template <> const char* interface_name<PPB_Flash_Print_1_0>() {
+  return PPB_FLASH_PRINT_INTERFACE_1_0;
+}
 
 // The combined Flash interface is all Flash v12.* interfaces. All v12
 // interfaces just append one or more functions to the previous one, so we can
@@ -201,14 +205,6 @@ bool Flash::IsRectTopmost(const InstanceHandle& instance, const Rect& rect) {
 }
 
 // static
-int32_t Flash::InvokePrinting(const InstanceHandle& instance) {
-  InitializeCombinedInterface();
-  if (flash_12_combined_interface.InvokePrinting)
-    return flash_12_combined_interface.InvokePrinting(instance.pp_instance());
-  return PP_ERROR_NOTSUPPORTED;
-}
-
-// static
 void Flash::UpdateActivity(const InstanceHandle& instance) {
   InitializeCombinedInterface();
   if (flash_12_combined_interface.UpdateActivity)
@@ -234,6 +230,14 @@ int32_t Flash::GetSettingInt(const InstanceHandle& instance,
                                                      setting);
   }
   return -1;
+}
+
+// static
+void Flash::InvokePrinting(const InstanceHandle& instance) {
+  if (has_interface<PPB_Flash_Print_1_0>()) {
+    get_interface<PPB_Flash_Print_1_0>()->InvokePrinting(
+        instance.pp_instance());
+  }
 }
 
 }  // namespace flash

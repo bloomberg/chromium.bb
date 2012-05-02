@@ -56,11 +56,13 @@ class Flash {
   static Var GetCommandLineArgs(Module* module);
   static void PreloadFontWin(const void* logfontw);
   static bool IsRectTopmost(const InstanceHandle& instance, const Rect& rect);
-  static int32_t InvokePrinting(const InstanceHandle& instance);
   static void UpdateActivity(const InstanceHandle& instance);
   static Var GetDeviceID(const InstanceHandle& instance);
   static int32_t GetSettingInt(const InstanceHandle& instance,
                                PP_FlashSetting setting);
+
+  // PPB_Flash_Print.
+  static void InvokePrinting(const InstanceHandle& instance);
 };
 
 }  // namespace flash
