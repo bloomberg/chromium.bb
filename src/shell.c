@@ -116,6 +116,7 @@ struct shell_surface {
 	struct desktop_shell *shell;
 
 	enum shell_surface_type type, next_type;
+	char *title, *class;
 	int32_t saved_x, saved_y;
 	bool saved_position_valid;
 	bool saved_rotation_valid;
@@ -474,6 +475,26 @@ shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
 		shsurf->unresponsive = 0;
 		ping_timer_destroy(shsurf);
 	}
+}
+
+static void
+shell_surface_set_title(struct wl_client *client,
+			struct wl_resource *resource, const char *title)
+{
+	struct shell_surface *shsurf = resource->data;
+
+	free(shsurf->title);
+	shsurf->title = strdup(title);
+}
+
+static void
+shell_surface_set_class(struct wl_client *client,
+			struct wl_resource *resource, const char *class)
+{
+	struct shell_surface *shsurf = resource->data;
+
+	free(shsurf->class);
+	shsurf->class = strdup(class);
 }
 
 static int
@@ -1137,7 +1158,9 @@ static const struct wl_shell_surface_interface shell_surface_implementation = {
 	shell_surface_set_transient,
 	shell_surface_set_fullscreen,
 	shell_surface_set_popup,
-	shell_surface_set_maximized
+	shell_surface_set_maximized,
+	shell_surface_set_title,
+	shell_surface_set_class
 };
 
 static void
