@@ -70,14 +70,14 @@ int CriticalNotificationBubbleView::GetRemainingTime() {
 
 void CriticalNotificationBubbleView::UpdateBubbleHeadline(int seconds) {
   if (seconds > 0) {
-    headline_->SetText(UTF16ToWide(
+    headline_->SetText(
         l10n_util::GetStringFUTF16(IDS_CRITICAL_NOTIFICATION_HEADLINE,
             l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-            base::IntToString16(seconds))));
+            base::IntToString16(seconds)));
   } else {
-    headline_->SetText(UTF16ToWide(
+    headline_->SetText(
         l10n_util::GetStringFUTF16(IDS_CRITICAL_NOTIFICATION_HEADLINE_ALTERNATE,
-            l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))));
+            l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   }
 }
 
@@ -194,11 +194,10 @@ void CriticalNotificationBubbleView::Init() {
   views::Label* message = new views::Label();
   message->SetMultiLine(true);
   message->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  message->SetText(UTF16ToWide(
-      l10n_util::GetStringFUTF16(IDS_CRITICAL_NOTIFICATION_TEXT,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))));
+  message->SetText(l10n_util::GetStringFUTF16(IDS_CRITICAL_NOTIFICATION_TEXT,
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   message->SizeToFit(views::Widget::GetLocalizedContentsWidth(
-                         IDS_CRUCIAL_NOTIFICATION_BUBBLE_WIDTH_CHARS));
+      IDS_CRUCIAL_NOTIFICATION_BUBBLE_WIDTH_CHARS));
   layout->AddView(message);
 
   const int bottom_column_set_id = 2;
@@ -213,12 +212,11 @@ void CriticalNotificationBubbleView::Init() {
                               0, kMessageBubblePadding);
 
   restart_button_ = new views::NativeTextButton(this,
-      UTF16ToWide(l10n_util::GetStringUTF16(
-          IDS_CRITICAL_NOTIFICATION_RESTART)));
+      l10n_util::GetStringUTF16(IDS_CRITICAL_NOTIFICATION_RESTART));
   restart_button_->SetIsDefault(true);
   layout->AddView(restart_button_);
-  dismiss_button_ = new views::NativeTextButton(this, UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_CRITICAL_NOTIFICATION_DISMISS)));
+  dismiss_button_ = new views::NativeTextButton(this,
+      l10n_util::GetStringUTF16(IDS_CRITICAL_NOTIFICATION_DISMISS));
   layout->AddView(dismiss_button_);
 
   refresh_timer_.Start(FROM_HERE,
