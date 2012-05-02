@@ -13,6 +13,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -42,7 +43,9 @@ typedef struct _GtkSelectionData GtkSelectionData;
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
-class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
+class CONTENT_EXPORT RenderWidgetHostViewGtk
+    : public content::RenderWidgetHostViewBase,
+      public BrowserAccessibilityDelegate {
  public:
   virtual ~RenderWidgetHostViewGtk();
 
@@ -122,6 +125,9 @@ class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
+  virtual void OnAccessibilityNotifications(
+      const std::vector<AccessibilityHostMsg_NotificationParams>& params)
+      OVERRIDE;
 
   // If the widget is aligned with an edge of the monitor its on and the user
   // attempts to drag past that edge we track the number of times it has
@@ -145,6 +151,19 @@ class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   bool RetrieveSurrounding(std::string* text, size_t* cursor_index);
+
+  // BrowserAccessibilityDelegate implementation.
+  virtual void SetAccessibilityFocus(int acc_obj_id) OVERRIDE;
+  virtual void AccessibilityDoDefaultAction(int acc_obj_id) OVERRIDE;
+  virtual void AccessibilityScrollToMakeVisible(
+      int acc_obj_id, gfx::Rect subfocus) OVERRIDE;
+  virtual void AccessibilityScrollToPoint(
+      int acc_obj_id, gfx::Point point) OVERRIDE;
+  virtual void AccessibilitySetTextSelection(
+      int acc_obj_id, int start_offset, int end_offset) OVERRIDE;
+
+  // Get the root of the AtkObject* tree for accessibility.
+  AtkObject* GetAccessible();
 
  protected:
   friend class content::RenderWidgetHostView;
@@ -286,6 +305,10 @@ class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
   // The event for the last mouse down we handled. We need this for context
   // menus and drags.
   GdkEventButton* last_mouse_down_;
+
+  // Instance of accessibility information for the root of the AtkObject
+  // tree representation of the WebKit render tree.
+  scoped_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;
 
   ui::GtkSignalRegistrar signals_;
 };

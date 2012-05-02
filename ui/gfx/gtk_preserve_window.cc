@@ -24,6 +24,10 @@ struct _GtkPreserveWindowPrivate {
   // Whether or not we delegate the resize of the GdkWindow
   // to someone else.
   gboolean delegate_resize;
+
+  // Accessible factory and userdata.
+  AtkObject* (*accessible_factory)(void* userdata);
+  void* accessible_factory_userdata;
 };
 
 G_DEFINE_TYPE(GtkPreserveWindow, gtk_preserve_window, GTK_TYPE_FIXED)
@@ -33,12 +37,14 @@ static void gtk_preserve_window_realize(GtkWidget* widget);
 static void gtk_preserve_window_unrealize(GtkWidget* widget);
 static void gtk_preserve_window_size_allocate(GtkWidget* widget,
                                               GtkAllocation* allocation);
+static AtkObject* gtk_preserve_window_get_accessible(GtkWidget* widget);
 
 static void gtk_preserve_window_class_init(GtkPreserveWindowClass *klass) {
   GtkWidgetClass* widget_class = reinterpret_cast<GtkWidgetClass*>(klass);
   widget_class->realize = gtk_preserve_window_realize;
   widget_class->unrealize = gtk_preserve_window_unrealize;
   widget_class->size_allocate = gtk_preserve_window_size_allocate;
+  widget_class->get_accessible = gtk_preserve_window_get_accessible;
 
   GtkObjectClass* object_class = reinterpret_cast<GtkObjectClass*>(klass);
   object_class->destroy = gtk_preserve_window_destroy;
@@ -50,6 +56,8 @@ static void gtk_preserve_window_class_init(GtkPreserveWindowClass *klass) {
 static void gtk_preserve_window_init(GtkPreserveWindow* widget) {
   GtkPreserveWindowPrivate* priv = GTK_PRESERVE_WINDOW_GET_PRIVATE(widget);
   priv->preserve_window = FALSE;
+  priv->accessible_factory = NULL;
+  priv->accessible_factory_userdata = NULL;
 
   // These widgets always have their own window.
   gtk_widget_set_has_window(GTK_WIDGET(widget), TRUE);
@@ -232,6 +240,25 @@ void gtk_preserve_window_delegate_resize(GtkPreserveWindow* widget,
                                          gboolean delegate) {
   GtkPreserveWindowPrivate* priv = GTK_PRESERVE_WINDOW_GET_PRIVATE(widget);
   priv->delegate_resize = delegate;
+}
+
+void gtk_preserve_window_set_accessible_factory(
+    GtkPreserveWindow* widget,
+    AtkObject* (*factory)(void* userdata),
+    gpointer userdata) {
+  GtkPreserveWindowPrivate* priv = GTK_PRESERVE_WINDOW_GET_PRIVATE(widget);
+  priv->accessible_factory = factory;
+  priv->accessible_factory_userdata = userdata;
+}
+
+AtkObject* gtk_preserve_window_get_accessible(GtkWidget* widget) {
+  GtkPreserveWindowPrivate* priv = GTK_PRESERVE_WINDOW_GET_PRIVATE(widget);
+  if (priv->accessible_factory) {
+    return priv->accessible_factory(priv->accessible_factory_userdata);
+  } else {
+    return GTK_WIDGET_CLASS(gtk_preserve_window_parent_class)
+        ->get_accessible(widget);
+  }
 }
 
 G_END_DECLS
