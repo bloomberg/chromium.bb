@@ -150,26 +150,6 @@ void BrowserPolicyConnector::Init() {
 #endif
 }
 
-ConfigurationPolicyProvider*
-    BrowserPolicyConnector::GetManagedPlatformProvider() const {
-  return managed_platform_provider_.get();
-}
-
-ConfigurationPolicyProvider*
-    BrowserPolicyConnector::GetManagedCloudProvider() const {
-  return managed_cloud_provider_.get();
-}
-
-ConfigurationPolicyProvider*
-    BrowserPolicyConnector::GetRecommendedPlatformProvider() const {
-  return recommended_platform_provider_.get();
-}
-
-ConfigurationPolicyProvider*
-    BrowserPolicyConnector::GetRecommendedCloudProvider() const {
-  return recommended_cloud_provider_.get();
-}
-
 PolicyService* BrowserPolicyConnector::CreatePolicyService() const {
   // |providers| in decreasing order of priority.
   PolicyServiceImpl::Providers providers;

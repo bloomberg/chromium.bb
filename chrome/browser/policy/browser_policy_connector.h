@@ -47,11 +47,6 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // policy system running.
   void Init();
 
-  ConfigurationPolicyProvider* GetManagedPlatformProvider() const;
-  ConfigurationPolicyProvider* GetManagedCloudProvider() const;
-  ConfigurationPolicyProvider* GetRecommendedPlatformProvider() const;
-  ConfigurationPolicyProvider* GetRecommendedCloudProvider() const;
-
   // Ownership is transferred to the caller.
   PolicyService* CreatePolicyService() const;
 
