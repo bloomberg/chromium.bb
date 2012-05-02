@@ -13,6 +13,8 @@
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -401,6 +403,12 @@ void FileBrowserEventRouter::DispatchMountCompletedEvent(
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
       extension_event_names::kOnFileBrowserMountCompleted, args_json, NULL,
       GURL());
+
+  // Do not attempt to open File Manager while the login is in progress or
+  // the screen is locked.
+  if (chromeos::BaseLoginDisplayHost::default_host() ||
+      chromeos::ScreenLocker::default_screen_locker())
+    return;
 
   if (relative_mount_path_set &&
       mount_info.mount_type == chromeos::MOUNT_TYPE_DEVICE &&
