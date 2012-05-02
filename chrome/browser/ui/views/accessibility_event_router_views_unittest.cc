@@ -90,6 +90,12 @@ class AccessibilityViewsDelegate : public views::ViewsDelegate {
   }
 #endif
 
+  virtual content::WebContents* CreateWebContents(
+      content::BrowserContext* browser_context,
+      content::SiteInstance* site_instance) OVERRIDE {
+    return NULL;
+  }
+
   DISALLOW_COPY_AND_ASSIGN(AccessibilityViewsDelegate);
 };
 

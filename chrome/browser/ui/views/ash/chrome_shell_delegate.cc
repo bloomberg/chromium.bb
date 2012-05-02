@@ -186,6 +186,10 @@ void ChromeShellDelegate::OpenMobileSetup() {
 #endif
 }
 
+content::BrowserContext* ChromeShellDelegate::GetCurrentBrowserContext() {
+  return ProfileManager::GetDefaultProfile();
+}
+
 ash::AppListViewDelegate*
     ChromeShellDelegate::CreateAppListViewDelegate() {
   // Shell will own the created delegate.
