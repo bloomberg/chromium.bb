@@ -5,6 +5,9 @@
 #ifndef CHROME_COMMON_PEPPER_FLASH_H_
 #define CHROME_COMMON_PEPPER_FLASH_H_
 
+// Whether a field trial for Pepper Flash is going on.
+bool ConductingPepperFlashFieldTrial();
+
 // True if Pepper Flash should be enabled by default.
 bool IsPepperFlashEnabledByDefault();
 

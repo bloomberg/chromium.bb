@@ -65,6 +65,14 @@ bool IsInFieldTrialGroup() {
 
 }  // namespace
 
+bool ConductingPepperFlashFieldTrial() {
+#if defined(OS_WIN)
+  return true;
+#else
+  return false;
+#endif
+}
+
 bool IsPepperFlashEnabledByDefault() {
 #if defined(USE_AURA)
   // Pepper Flash is required for Aura (on any OS).

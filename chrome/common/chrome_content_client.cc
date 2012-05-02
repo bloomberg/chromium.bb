@@ -252,6 +252,38 @@ void AddPepperFlashFromCommandLine(
       CreatePepperFlashInfo(FilePath(flash_path), flash_version));
 }
 
+bool GetBundledPepperFlash(content::PepperPluginInfo* plugin,
+                           bool* override_npapi_flash) {
+#if defined(FLAPPER_AVAILABLE)
+  // Ignore bundled Pepper Flash if there is Pepper Flash specified from the
+  // command-line.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kPpapiFlashPath))
+    return false;
+
+  bool force_disable = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableBundledPpapiFlash);
+  if (force_disable)
+    return false;
+
+  FilePath flash_path;
+  if (!PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &flash_path))
+    return false;
+  // It is an error to have FLAPPER_AVAILABLE defined but then not having the
+  // plugin file in place, but this happens in Chrome OS builds.
+  // Use --disable-bundled-ppapi-flash to skip this.
+  DCHECK(file_util::PathExists(flash_path));
+
+  bool force_enable = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBundledPpapiFlash);
+
+  *plugin = CreatePepperFlashInfo(flash_path, FLAPPER_VERSION_STRING);
+  *override_npapi_flash = force_enable || IsPepperFlashEnabledByDefault();
+  return true;
+#else
+  return false;
+#endif  // FLAPPER_AVAILABLE
+}
+
 #if defined(OS_WIN)
 // Launches the privileged flash broker, used when flash is sandboxed.
 // The broker is the same flash dll, except that it uses a different
@@ -327,6 +359,15 @@ void ChromeContentClient::AddPepperPlugins(
     std::vector<content::PepperPluginInfo>* plugins) {
   ComputeBuiltInPlugins(plugins);
   AddPepperFlashFromCommandLine(plugins);
+
+  // Don't try to register Pepper Flash if there exists a Pepper Flash field
+  // trial. It will be registered separately.
+  if (!ConductingPepperFlashFieldTrial() && IsPepperFlashEnabledByDefault()) {
+    content::PepperPluginInfo plugin;
+    bool add_at_beginning = false;
+    if (GetBundledPepperFlash(&plugin, &add_at_beginning))
+      plugins->push_back(plugin);
+  }
 }
 
 void ChromeContentClient::AddNPAPIPlugins(
@@ -456,37 +497,12 @@ bool ChromeContentClient::GetSandboxProfileForSandboxType(
 }
 #endif
 
-bool ChromeContentClient::GetBundledPepperFlash(
+bool ChromeContentClient::GetBundledFieldTrialPepperFlash(
     content::PepperPluginInfo* plugin,
     bool* override_npapi_flash) {
-#if defined(FLAPPER_AVAILABLE)
-  // Ignore bundled Pepper Flash if there is Pepper Flash specified from the
-  // command-line.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kPpapiFlashPath))
+  if (!ConductingPepperFlashFieldTrial())
     return false;
-
-  bool force_disable = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableBundledPpapiFlash);
-  if (force_disable)
-    return false;
-
-  FilePath flash_path;
-  if (!PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &flash_path))
-    return false;
-  // It is an error to have FLAPPER_AVAILABLE defined but then not having the
-  // plugin file in place, but this happens in Chrome OS builds.
-  // Use --disable-bundled-ppapi-flash to skip this.
-  DCHECK(file_util::PathExists(flash_path));
-
-  bool force_enable = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBundledPpapiFlash);
-
-  *plugin = CreatePepperFlashInfo(flash_path, FLAPPER_VERSION_STRING);
-  *override_npapi_flash = force_enable || IsPepperFlashEnabledByDefault();
-  return true;
-#else
-  return false;
-#endif  // FLAPPER_AVAILABLE
+  return GetBundledPepperFlash(plugin, override_npapi_flash);
 }
 
 }  // namespace chrome

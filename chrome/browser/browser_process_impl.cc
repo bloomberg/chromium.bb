@@ -769,7 +769,8 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   bool add_at_beginning = false;
   chrome::ChromeContentClient* content_client =
       static_cast<chrome::ChromeContentClient*>(content::GetContentClient());
-  if (content_client->GetBundledPepperFlash(&plugin, &add_at_beginning)) {
+  if (content_client->GetBundledFieldTrialPepperFlash(&plugin,
+                                                      &add_at_beginning)) {
     plugin_service->RegisterInternalPlugin(plugin.ToWebPluginInfo(),
                                            add_at_beginning);
   }
