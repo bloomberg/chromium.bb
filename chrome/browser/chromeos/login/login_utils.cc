@@ -1048,6 +1048,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kDisableAcceleratedPlugins,
       switches::kDisableGpuWatchdog,
       switches::kDisableLoginAnimations,
+      switches::kDisableSeccompFilterSandbox,
       switches::kDisableSeccompSandbox,
       switches::kDisableThreadedAnimation,
       switches::kEnableDevicePolicy,
