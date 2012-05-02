@@ -197,8 +197,11 @@
       '-codesign',
       # crbug.com/124922
       '-fullscreen_mouselock.FullscreenMouselockTest.testMouseLockExitWhenBrowserLoseFocus',
+      # crbug.com/125989
+      '-fullscreen_mouselock.FullscreenMouselockTest.testMouseLockExitWhenAlertDialogShow',
       # Fails on chrome-mac-10_7-qa only: crbug.com/124886
       '-fullscreen_mouselock.FullscreenMouselockTest.testPrefsForFullscreenExit',
+      '-fullscreen_mouselock.FullscreenMouselockTest.testNoMouseLockWhenCancelFS',
       # crbug.com/119110
       '-https.SSLTest.testSSLCertAuthorityOK',
       '-https.SSLTest.testSSLCertOK',
