@@ -392,7 +392,7 @@ void RenderWidgetHostViewWin::InitAsFullscreen(
   gfx::Rect pos = gfx::Screen::GetMonitorNearestWindow(
       reference_host_view->GetNativeView()).bounds();
   is_fullscreen_ = true;
-  DoPopupOrFullscreenInit(GetDesktopWindow(), pos, 0);
+  DoPopupOrFullscreenInit(ui::GetWindowToParentTo(true), pos, 0);
 }
 
 RenderWidgetHost* RenderWidgetHostViewWin::GetRenderWidgetHost() const {
@@ -668,7 +668,7 @@ bool RenderWidgetHostViewWin::HasFocus() const {
 void RenderWidgetHostViewWin::Show() {
   if (!is_fullscreen_) {
     DCHECK(parent_hwnd_);
-    DCHECK(parent_hwnd_ != GetDesktopWindow());
+    DCHECK(parent_hwnd_ != ui::GetWindowToParentTo(true));
     SetParent(parent_hwnd_);
   }
   ShowWindow(SW_SHOW);
@@ -677,7 +677,7 @@ void RenderWidgetHostViewWin::Show() {
 }
 
 void RenderWidgetHostViewWin::Hide() {
-  if (!is_fullscreen_ && GetParent() == GetDesktopWindow()) {
+  if (!is_fullscreen_ && GetParent() == ui::GetWindowToParentTo(true)) {
     LOG(WARNING) << "Hide() called twice in a row: " << this << ":" <<
         parent_hwnd_ << ":" << GetParent();
     return;

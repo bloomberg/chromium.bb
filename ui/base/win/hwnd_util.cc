@@ -6,6 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
+#include "base/win/metro.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -179,6 +180,20 @@ void ShowSystemMenu(HWND window, int screen_x, int screen_y) {
                                window, NULL);
   if (command)
     SendMessage(window, WM_SYSCOMMAND, command, 0);
+}
+
+extern "C" {
+  typedef HWND (*RootWindow)();
+}
+
+HWND GetWindowToParentTo(bool get_real_hwnd) {
+  HMODULE metro = base::win::GetMetroModule();
+  if (!metro)
+    return get_real_hwnd ? ::GetDesktopWindow() : HWND_DESKTOP;
+  // In windows 8 metro-mode the root window is not the desktop.
+  RootWindow root_window =
+      reinterpret_cast<RootWindow>(::GetProcAddress(metro, "GetRootWindow"));
+  return root_window();
 }
 
 }  // namespace ui

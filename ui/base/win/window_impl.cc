@@ -12,29 +12,6 @@
 #include "base/win/wrapped_window_proc.h"
 #include "ui/base/win/hwnd_util.h"
 
-namespace {
-
-extern "C" {
-  typedef HWND (*GetRootWindow)();
-}
-
-HMODULE GetMetroDll() {
-  static HMODULE hm = ::GetModuleHandleA("metro_driver.dll");
-  return hm;
-}
-
-HWND RootWindow(bool is_child_window) {
-  HMODULE metro = GetMetroDll();
-  if (!metro) {
-    return is_child_window ? ::GetDesktopWindow() : HWND_DESKTOP;
-  }
-  GetRootWindow get_root_window =
-      reinterpret_cast<GetRootWindow>(::GetProcAddress(metro, "GetRootWindow"));
-  return get_root_window();
-}
-
-}  // namespace
-
 namespace ui {
 
 static const DWORD kWindowDefaultChildStyle =
@@ -164,10 +141,10 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
   if (parent == HWND_DESKTOP) {
     // Only non-child windows can have HWND_DESKTOP (0) as their parent.
     CHECK((window_style_ & WS_CHILD) == 0);
-    parent = RootWindow(false);
+    parent = GetWindowToParentTo(false);
   } else if (parent == ::GetDesktopWindow()) {
     // Any type of window can have the "Desktop Window" as their parent.
-    parent = RootWindow(true);
+    parent = GetWindowToParentTo(true);
   } else if (parent != HWND_MESSAGE) {
     CHECK(::IsWindow(parent));
   }
