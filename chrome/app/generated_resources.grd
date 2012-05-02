@@ -10751,7 +10751,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Retry
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_SPACE_MESSAGE" desc="Message informing the user how to make more space available to save the selected file offline.">
-        To save this file offline you must free up an additional <ph name="TOTAL_FILE_SIZE">$2<ex>3.3 MB</ex></ph> of space:<ph name="MARKUP_1">&lt;br&gt;</ph>
+        To save "<ph name="FILE_NAME">$1<ex>document.pdf</ex></ph>" offline you must free up an additional <ph name="TOTAL_FILE_SIZE">$2<ex>3.3 MB</ex></ph> of space:<ph name="MARKUP_1">&lt;br&gt;</ph>
         <ph name="MARKUP_2">&lt;ul&gt;&lt;li&gt;</ph>unpin files that you no longer need to access offline<ph name="MARKUP_3">&lt;/li&gt;</ph>
         <ph name="MARKUP_4">&lt;li&gt;</ph>delete files from your Downloads folder<ph name="MARKUP_5">&lt;/li&gt;&lt;/ul&gt;</ph>
       </message>

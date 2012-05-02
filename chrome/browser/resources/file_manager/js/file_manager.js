@@ -3119,6 +3119,7 @@ FileManager.prototype = {
         self.metadataCache_.get(entry, 'filesystem', function(filesystem) {
           self.alert.showHtml(str('GDATA_OUT_OF_SPACE_HEADER'),
               strf('GDATA_OUT_OF_SPACE_MESSAGE',
+                  unescape(entry.name),
                   util.bytesToSi(filesystem.size)));
         });
       }
