@@ -197,7 +197,6 @@ RenderTextWin::RenderTextWin()
       needs_layout_(false) {
   memset(&script_control_, 0, sizeof(script_control_));
   memset(&script_state_, 0, sizeof(script_state_));
-  script_control_.fMergeNeutralItems = true;
 
   MoveCursorTo(EdgeSelectionModel(CURSOR_LEFT));
 }
