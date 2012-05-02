@@ -330,7 +330,7 @@ MostVisitedURL::~MostVisitedURL() {}
 
 // FilteredURL -----------------------------------------------------------------
 
-FilteredURL::FilteredURL() {}
+FilteredURL::FilteredURL() : score(0.0) {}
 
 FilteredURL::FilteredURL(const PageUsageData& page_data)
     : url(page_data.GetURL()),
