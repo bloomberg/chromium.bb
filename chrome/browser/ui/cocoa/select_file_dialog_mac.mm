@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #import "base/mac/cocoa_protocols.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/memory/scoped_nsobject.h"
@@ -27,6 +28,23 @@
 namespace {
 
 const int kFileTypePopupTag = 1234;
+
+CFStringRef CreateUTIFromExtensionList(
+    const std::vector<FilePath::StringType>& ext_list) {
+  // The extensions specified in FileTypeInfo contains a list of lists; the
+  // example given there is:
+  // { { "htm", "html" }, { "txt" } }
+  // In that case, each extension list holds synonym extensions for the same
+  // file type. With Uniform Type Identifiers there is one identifier that
+  // covers all those extensions, so if they are all synonymous anyway, just
+  // make a UTI from the first.
+  DCHECK(!ext_list.empty());
+  base::mac::ScopedCFTypeRef<CFStringRef> type_extension(
+      base::SysUTF8ToCFStringRef(ext_list[0]));
+  return UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension,
+                                               type_extension.get(),
+                                               NULL);
+}
 
 }  // namespace
 
@@ -183,7 +201,7 @@ void SelectFileDialogImpl::SelectFileImpl(
   parents_.insert(owning_window);
 
   // Note: we need to retain the dialog as owning_window can be null.
-  // (see http://crbug.com/29213)
+  // (See http://crbug.com/29213 .)
   NSSavePanel* dialog;
   if (type == SELECT_SAVEAS_FILE)
     dialog = [[NSSavePanel savePanel] retain];
@@ -212,12 +230,10 @@ void SelectFileDialogImpl::SelectFileImpl(
   if (file_types) {
     if (!file_types->extensions.empty()) {
       allowed_file_types = [NSMutableArray array];
-      for (size_t i=0; i < file_types->extensions.size(); ++i) {
-        const std::vector<FilePath::StringType>& ext_list =
-            file_types->extensions[i];
-        for (size_t j=0; j < ext_list.size(); ++j) {
-          [allowed_file_types addObject:base::SysUTF8ToNSString(ext_list[j])];
-        }
+      for (size_t i = 0; i < file_types->extensions.size(); ++i) {
+        base::mac::ScopedCFTypeRef<CFStringRef> uti(
+            CreateUTIFromExtensionList(file_types->extensions[i]));
+        [allowed_file_types addObject:base::mac::CFToNSCast(uti.get())];
       }
     }
     if (type == SELECT_SAVEAS_FILE)
@@ -318,30 +334,24 @@ NSView* SelectFileDialogImpl::GetAccessoryView(const FileTypeInfo* file_types,
   DCHECK(popup);
 
   size_t type_count = file_types->extensions.size();
-  for (size_t type = 0; type<type_count; ++type) {
+  for (size_t type = 0; type < type_count; ++type) {
     NSString* type_description;
     if (type < file_types->extension_description_overrides.size()) {
       type_description = base::SysUTF16ToNSString(
           file_types->extension_description_overrides[type]);
     } else {
-      const std::vector<FilePath::StringType>& ext_list =
-          file_types->extensions[type];
-      DCHECK(!ext_list.empty());
-      NSString* type_extension = base::SysUTF8ToNSString(ext_list[0]);
       base::mac::ScopedCFTypeRef<CFStringRef> uti(
-          UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension,
-                                                (CFStringRef)type_extension,
-                                                NULL));
+          CreateUTIFromExtensionList(file_types->extensions[type]));
       base::mac::ScopedCFTypeRef<CFStringRef> description(
           UTTypeCopyDescription(uti.get()));
 
       type_description =
-          [NSString stringWithString:(NSString*)description.get()];
+          [[base::mac::CFToNSCast(description.get()) retain] autorelease];
     }
     [popup addItemWithTitle:type_description];
   }
 
-  [popup selectItemAtIndex:file_type_index-1];  // 1-based
+  [popup selectItemAtIndex:file_type_index - 1];  // 1-based
   return accessory_view;
 }
 
@@ -363,8 +373,8 @@ bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
         withReturn:(int)returnCode
            context:(void*)context {
   // |context| should never be NULL, but we are seeing indications otherwise.
-  // |This CHECK is here to confirm if we are actually getting NULL
-  // ||context|s. http://crbug.com/58959
+  // This CHECK is here to confirm if we are actually getting NULL
+  // |context|s. http://crbug.com/58959
   CHECK(context);
 
   int index = 0;
