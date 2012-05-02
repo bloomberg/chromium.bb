@@ -878,3 +878,49 @@
   fun:base::Thread::ThreadMain
   fun:base::::ThreadFunc
 }
+{
+  bug_125928_a
+  ThreadSanitizer:Race
+  fun:__alloc_dir
+  fun:opendir
+  fun:g_dir_open
+  fun:pango_find_map
+  fun:itemize_state_process_run
+  fun:pango_itemize_with_base_dir
+  fun:pango_layout_check_lines
+  fun:pango_layout_get_unknown_glyphs_count
+  fun:find_invisible_char
+  fun:gtk_entry_init
+  fun:g_type_create_instance
+  fun:g_object_constructor
+  fun:g_object_newv
+  fun:g_object_new
+  fun:ThemeServiceGtk::ThemeServiceGtk
+  fun:ThemeServiceFactory::BuildServiceInstanceFor
+  fun:ProfileKeyedServiceFactory::GetServiceForProfile
+  fun:ThemeServiceFactory::GetForProfile
+  fun:ExtensionService::GarbageCollectExtensions
+  fun:ExtensionService::InitAfterImport
+  fun:ExtensionService::Observe
+  fun:NotificationServiceImpl::Notify
+  fun:ProfileManager::OnImportFinished
+  fun:ChromeBrowserMainParts::PreMainMessageLoopRunImpl
+  fun:ChromeBrowserMainParts::PreMainMessageLoopRun
+  fun:content::BrowserMainLoop::CreateThreads
+  fun:::BrowserMainRunnerImpl::Initialize
+  fun:BrowserMain
+  fun:::RunNamedProcessTypeMain
+  fun:::ContentMainRunnerImpl::Run
+}
+{
+  bug_125928_b
+  ThreadSanitizer:Race
+  fun:__alloc_dir
+  fun:opendir
+  fun:file_util::FileEnumerator::ReadDirectory
+  fun:file_util::FileEnumerator::Next
+  fun:::GetPrefsCandidateFilesFromFolder
+  fun:ExternalPrefExtensionLoader::ReadStandaloneExtensionPrefFiles
+  fun:ExternalPrefExtensionLoader::LoadOnFileThread
+  fun:base::internal::RunnableAdapter::Run
+}
