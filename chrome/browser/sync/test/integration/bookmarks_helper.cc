@@ -138,22 +138,22 @@ bool FaviconBitmapsMatch(const SkBitmap& bitmap_a, const SkBitmap& bitmap_b) {
 }
 
 // Gets the favicon associated with |node| in |model|.
-const SkBitmap& GetFavicon(BookmarkModel* model, const BookmarkNode* node) {
+SkBitmap GetFavicon(BookmarkModel* model, const BookmarkNode* node) {
   // If a favicon wasn't explicitly set for a particular URL, simply return its
   // blank favicon.
   if (!urls_with_favicons_ ||
       urls_with_favicons_->find(node->url()) == urls_with_favicons_->end()) {
-    return node->favicon();
+    return SkBitmap();
   }
   // If a favicon was explicitly set, we may need to wait for it to be loaded
-  // via BookmarkModel::GetFavIcon(), which is an asynchronous operation.
+  // via BookmarkModel::GetFavicon(), which is an asynchronous operation.
   if (!node->is_favicon_loaded()) {
     FaviconChangeObserver observer(model, node);
     model->GetFavicon(node);
     observer.WaitForGetFavicon();
   }
   EXPECT_TRUE(node->is_favicon_loaded());
-  return node->favicon();
+  return model->GetFavicon(node);
 }
 
 // Checks if the favicon in |node_a| from |model_a| matches that of |node_b|
@@ -162,8 +162,8 @@ bool FaviconsMatch(BookmarkModel* model_a,
                    BookmarkModel* model_b,
                    const BookmarkNode* node_a,
                    const BookmarkNode* node_b) {
-  const SkBitmap& bitmap_a = GetFavicon(model_a, node_a);
-  const SkBitmap& bitmap_b = GetFavicon(model_b, node_b);
+  SkBitmap bitmap_a = GetFavicon(model_a, node_a);
+  SkBitmap bitmap_b = GetFavicon(model_b, node_b);
   return FaviconBitmapsMatch(bitmap_a, bitmap_b);
 }
 
