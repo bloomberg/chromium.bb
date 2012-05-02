@@ -344,6 +344,7 @@
         '../ui/views/test/test_views_delegate.h',
         'accelerators/accelerator_controller_unittest.cc',
         'accelerators/accelerator_filter_unittest.cc',
+        'accelerators/accelerator_table_unittest.cc',
         'accelerators/nested_dispatcher_controller_unittest.cc',
         'app_list/app_list_unittest.cc',
         'dip_unittest.cc',
