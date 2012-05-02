@@ -1935,6 +1935,8 @@ binutils-configure() {
   # The --enable-gold and --enable-plugins options are on so that we
   # can use gold's support for plugin to link PNaCl modules.
 
+  # We llvm's mc for asseblemy so we no longer build gas
+
   # TODO(pdox): Building binutils for nacl/nacl64 target currently requires
   # providing NACL_ALIGN_* defines. This should really be defined inside
   # binutils instead.
@@ -1955,6 +1957,7 @@ binutils-configure() {
                                       --enable-ld=yes \
                                       --enable-plugins \
                                       --disable-werror \
+                                      --without-gas \
                                       --with-sysroot="${NONEXISTENT_PATH}"
   # There's no point in setting the correct path as sysroot, because we
   # want the toolchain to be relocatable. The driver will use ld command-line
@@ -2513,6 +2516,7 @@ binutils-sb-configure() {
         --enable-targets=${BINUTILS_SB_ELF_TARGETS} \
         --disable-nls \
         --disable-werror \
+        --without-gas \
         --disable-plugins \
         --enable-static \
         --enable-shared=no
