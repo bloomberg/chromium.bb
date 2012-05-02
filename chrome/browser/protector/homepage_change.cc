@@ -49,7 +49,6 @@ class HomepageChange : public BasePrefsChange {
   virtual string16 GetDiscardButtonText() const OVERRIDE;
   virtual DisplayName GetApplyDisplayName() const OVERRIDE;
   virtual GURL GetNewSettingURL() const OVERRIDE;
-  virtual bool IsUserVisible() const OVERRIDE;
 
  private:
   virtual ~HomepageChange();
@@ -102,14 +101,10 @@ bool HomepageChange::Init(Profile* profile) {
 }
 
 void HomepageChange::Apply(Browser* browser) {
-  if (IsUserVisible()) {
-    // Don't report statistics if this change was applied as part of a composite
-    // change and is not user-visible.
-    UMA_HISTOGRAM_ENUMERATION(
-        kProtectorHistogramHomepageApplied,
-        new_homepage_type_,
-        HOMEPAGE_TYPE_COUNT);
-  }
+  UMA_HISTOGRAM_ENUMERATION(
+      kProtectorHistogramHomepageApplied,
+      new_homepage_type_,
+      HOMEPAGE_TYPE_COUNT);
   IgnorePrefChanges();
   PrefService* prefs = profile()->GetPrefs();
   prefs->SetString(prefs::kHomePage, new_homepage_);
@@ -118,23 +113,19 @@ void HomepageChange::Apply(Browser* browser) {
 }
 
 void HomepageChange::Discard(Browser* browser) {
-  if (IsUserVisible()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        kProtectorHistogramHomepageDiscarded,
-        new_homepage_type_,
-        HOMEPAGE_TYPE_COUNT);
-  }
+  UMA_HISTOGRAM_ENUMERATION(
+      kProtectorHistogramHomepageDiscarded,
+      new_homepage_type_,
+      HOMEPAGE_TYPE_COUNT);
   IgnorePrefChanges();
   // Nothing to do here since backup has already been made active by Init().
 }
 
 void HomepageChange::Timeout() {
-  if (IsUserVisible()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        kProtectorHistogramHomepageTimeout,
-        new_homepage_type_,
-        HOMEPAGE_TYPE_COUNT);
-  }
+  UMA_HISTOGRAM_ENUMERATION(
+      kProtectorHistogramHomepageTimeout,
+      new_homepage_type_,
+      HOMEPAGE_TYPE_COUNT);
 }
 
 int HomepageChange::GetBadgeIconID() const {
@@ -159,34 +150,39 @@ string16 HomepageChange::GetBubbleMessage() const {
 }
 
 string16 HomepageChange::GetApplyButtonText() const {
-  return new_homepage_is_ntp_ ?
+  GURL homepage_url(GetNewSettingURL());
+  return homepage_url.is_empty() ?
       l10n_util::GetStringUTF16(IDS_CHANGE_HOMEPAGE_NTP) :
       l10n_util::GetStringFUTF16(IDS_CHANGE_HOMEPAGE,
-                                 UTF8ToUTF16(GURL(new_homepage_).host()));
+                                 UTF8ToUTF16(homepage_url.host()));
 }
 
 string16 HomepageChange::GetDiscardButtonText() const {
-  return backup_homepage_is_ntp_ ?
+  GURL new_homepage_url(GetNewSettingURL());
+  GURL backup_homepage_url;
+  if (!backup_homepage_is_ntp_)
+    backup_homepage_url = GURL(backup_homepage_);
+  if (backup_homepage_url.host() == new_homepage_url.host()) {
+    // Display a generic string if new setting looks the same as the backup (for
+    // example, when homepage hasn't changed but 'show homepage button' has).
+    return l10n_util::GetStringUTF16(IDS_KEEP_SETTING);
+  }
+  return backup_homepage_url.is_empty() ?
       l10n_util::GetStringUTF16(IDS_KEEP_HOMEPAGE_NTP) :
       l10n_util::GetStringFUTF16(IDS_KEEP_HOMEPAGE,
-                                 UTF8ToUTF16(GURL(backup_homepage_).host()));
+                                 UTF8ToUTF16(backup_homepage_url.host()));
 }
 
 BaseSettingChange::DisplayName HomepageChange::GetApplyDisplayName() const {
-  return new_homepage_is_ntp_ ?
+  GURL homepage_url(GetNewSettingURL());
+  return homepage_url.is_empty() ?
       DisplayName(kDefaultNamePriority, string16()) :
       DisplayName(kHomepageChangeNamePriority,
-                  UTF8ToUTF16(GURL(new_homepage_).host()));
+                  UTF8ToUTF16(homepage_url.host()));
 }
 
 GURL HomepageChange::GetNewSettingURL() const {
   return new_homepage_is_ntp_ ? GURL() : GURL(new_homepage_);
-}
-
-bool HomepageChange::IsUserVisible() const {
-  // Should not be presented to user unless the homepage button was previously
-  // visible or has been made visible by this change.
-  return new_show_homepage_ || backup_show_homepage_;
 }
 
 BaseSettingChange* CreateHomepageChange(
