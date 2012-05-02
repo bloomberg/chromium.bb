@@ -80,11 +80,6 @@ ICCCM
    recommended types for text or images, types that a clipboard
    manager must support, mime-types must be listed in preferred order
 
- - TRANSIENT_FOR handled by wl_shell_surface, WM_CLASS replaced by
-   .desktop file filename (absolute path if non-standard location)
-   WM_CLASS used for grouping windows in one button in a panel, for
-   example.  So we'll need a request to set that.
-
  - we need a "no kb focus please" mechanism.  Or should this be
    implicit in a specific surface type?
 
@@ -92,10 +87,6 @@ EWMH
 
  - configure should provide dx_left, dx_right, dy_top, dy_bottom, or
    dx, dy, width and height.
-
- - _NET_WM_NAME (shell_surface.set_title(utf8)), _NET_WM_ICON Is this
-   just another wl_surface? Do we need this if we have the .desktop
-   file?  How to set multiple sizes?
 
  - move to workspace, keep on top, on all workspaces, minimize etc
    requests for implementing client side window menu? or just make a

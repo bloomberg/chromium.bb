@@ -545,6 +545,22 @@
       <arg name="output" type="object" interface="wl_output"/>
     </request>
 
+    <request name="set_title">
+      <description summary="set surface title">
+      </description>
+      <arg name="title" type="string"/>
+    </request>
+
+    <request name="set_class">
+      <description summary="set surface class">
+	The surface class identifies the general class of applications
+	to which the surface belongs.  The class is the file name of
+	the applications .desktop file (absolute path if non-standard
+	location). 
+      </description>
+      <arg name="class" type="string"/>
+    </request>
+
     <event name="ping">
       <description summary="ping client">
 	Ping a client to check if it is receiving events and sending
