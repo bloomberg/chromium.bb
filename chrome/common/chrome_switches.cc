@@ -908,18 +908,6 @@ const char kNtpAppInstallHint[]             = "ntp-app-install-hint";
 // Autoconfig (PAC) script.
 const char kNumPacThreads[]                 = "num-pac-threads";
 
-// Controls whether the omnibox's HistoryURL provider is aggressive.
-const char kOmniboxAggressiveHistoryURL[] =
-    "omnibox-aggressive-with-history-url";
-// The values the kOmniboxAggressiveHistoryURL switch may have, as in
-// "--omnibox-aggressive-with-history-url=auto".
-//   auto: Allow field trial selection.
-const char kOmniboxAggressiveHistoryURLAuto[] = "auto";
-//   enabled: always aggressive.
-const char kOmniboxAggressiveHistoryURLEnabled[] = "enabled";
-//   disabled: never aggressive ( == current behavior as of 1/2012).
-const char kOmniboxAggressiveHistoryURLDisabled[] = "disabled";
-
 // Controls whether the omnibox's HistoryQuickProvider is allowed to
 // inline suggestions.
 const char kOmniboxInlineHistoryQuickProvider[] =

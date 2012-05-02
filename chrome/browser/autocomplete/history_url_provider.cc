@@ -10,11 +10,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
@@ -316,70 +314,7 @@ HistoryURLProvider::HistoryURLProvider(ACProviderListener* listener,
                                        Profile* profile)
     : HistoryProvider(listener, profile, "HistoryURL"),
       prefixes_(GetPrefixes()),
-      params_(NULL),
-      enable_aggressive_scoring_(false) {
-  enum AggressivenessOption {
-    AGGRESSIVENESS_DISABLED = 0,
-    AGGRESSIVENESS_ENABLED = 1,
-    AGGRESSIVENESS_AUTO_BUT_NOT_IN_FIELD_TRIAL = 2,
-    AGGRESSIVENESS_FIELD_TRIAL_DEFAULT_GROUP = 3,
-    AGGRESSIVENESS_FIELD_TRIAL_EXPERIMENT_GROUP = 4,
-    NUM_OPTIONS = 5
-  };
-  // should always be overwritten
-  AggressivenessOption aggressiveness_option = NUM_OPTIONS;
-
-  const std::string switch_value = CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kOmniboxAggressiveHistoryURL);
-  if (switch_value == switches::kOmniboxAggressiveHistoryURLEnabled) {
-    aggressiveness_option = AGGRESSIVENESS_ENABLED;
-    enable_aggressive_scoring_ = true;
-  } else if (switch_value == switches::kOmniboxAggressiveHistoryURLDisabled) {
-    aggressiveness_option = AGGRESSIVENESS_DISABLED;
-    enable_aggressive_scoring_ = false;
-  } else {
-    // Either: switch_value == switches::kOmniboxAggressiveHistoryURLAuto
-    // or someone passed an invalid command line flag.  We'll default
-    // the latter case to automatic but report an error.
-    if (!switch_value.empty() &&
-        (switch_value != switches::kOmniboxAggressiveHistoryURLAuto)) {
-      LOG(ERROR) << "Invalid --omnibox-aggressive-with-history-url option "
-                 << "received on command line: " << switch_value;
-      LOG(ERROR) << "Making automatic.";
-    }
-    // Automatic means eligible for the field trial.
-    // For the field trial stuff to work correctly, we must be running
-    // on the same thread as the thread that created the field trial,
-    // which happens via a call to AutocompleteFieldTrial::Active in
-    // chrome_browser_main.cc on the main thread.  Let's check this to
-    // be sure.  We check "if we've heard of the UI thread then we'd better
-    // be on it."  The first part is necessary so unit tests pass.  (Many
-    // unit tests don't set up the threading naming system; hence
-    // CurrentlyOn(UI thread) will fail.)
-    DCHECK(!content::BrowserThread::IsWellKnownThread(
-               content::BrowserThread::UI) ||
-           content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    if (AutocompleteFieldTrial::InAggressiveHUPFieldTrial()) {
-      if (AutocompleteFieldTrial::InAggressiveHUPFieldTrialExperimentGroup()) {
-        enable_aggressive_scoring_ = true;
-        aggressiveness_option = AGGRESSIVENESS_FIELD_TRIAL_EXPERIMENT_GROUP;
-      } else {
-        enable_aggressive_scoring_ = false;
-        aggressiveness_option = AGGRESSIVENESS_FIELD_TRIAL_DEFAULT_GROUP;
-      }
-    } else {
-      enable_aggressive_scoring_ = false;
-      aggressiveness_option = AGGRESSIVENESS_AUTO_BUT_NOT_IN_FIELD_TRIAL;
-    }
-  }
-
-  // Add a beacon to the logs that'll allow us to identify later what
-  // aggressiveness state a user is in.  Do this by incrementing a
-  // bucket in a histogram, where the bucket represents the user's
-  // aggressiveness state.
-  UMA_HISTOGRAM_ENUMERATION(
-      "Omnibox.AggressiveHistoryURLProviderFieldTrialBeacon",
-      aggressiveness_option, NUM_OPTIONS);
+      params_(NULL) {
 }
 
 void HistoryURLProvider::Start(const AutocompleteInput& input,
@@ -533,10 +468,9 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
     DCHECK(!have_what_you_typed_match ||
            (match.url_info.url() !=
             GURL(params->matches.front().destination_url)));
-    // With aggressive scoring, we assume that the results are all of similar
-    // quality, so we give them consecutively decreasing scores.
-    relevance = (enable_aggressive_scoring_ && (relevance > 0)) ?
-       (relevance - 1) :
+    // If we've assigned a score already, all later matches score one
+    // less than the previous match.
+    relevance = (relevance > 0) ? (relevance - 1) :
        CalculateRelevance(NORMAL, history_matches.size() - 1 - i);
     AutocompleteMatch ac_match = HistoryMatchToACMatch(params, match,
         NORMAL, relevance);
@@ -599,17 +533,15 @@ history::Prefixes HistoryURLProvider::GetPrefixes() {
 
 int HistoryURLProvider::CalculateRelevance(MatchType match_type,
                                            size_t match_number) const {
-  int shift = enable_aggressive_scoring_ ? kMaxMatches : 0;
-
   switch (match_type) {
     case INLINE_AUTOCOMPLETE:
-      return 1410 + shift;
+      return 1410 + kMaxMatches;
 
     case UNVISITED_INTRANET:
-      return 1400 + shift;
+      return 1400 + kMaxMatches;
 
     case WHAT_YOU_TYPED:
-      return 1200 + shift;
+      return 1200 + kMaxMatches;
 
     default:  // NORMAL
       return 900 + static_cast<int>(match_number);

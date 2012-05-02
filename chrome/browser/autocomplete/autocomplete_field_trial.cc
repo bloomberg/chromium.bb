@@ -13,19 +13,11 @@
 namespace {
 
 // Field trial names.
-static const char kAggressiveHUPFieldTrialName[] =
-    "OmniboxAggressiveHistoryURLProvider";
 static const char kDisallowInlineHQPFieldTrialName[] =
     "OmniboxDisallowInlineHQP";
 static const char kSuggestFieldTrialName[] = "OmniboxSearchSuggest";
 
 // Field trial experiment probabilities.
-
-// For aggressive History URL Provider field trial, put 50% ( = 50/100 )
-// of the users in the aggressive experiment group.
-const base::FieldTrial::Probability kAggressiveHUPFieldTrialDivisor = 100;
-const base::FieldTrial::Probability
-    kAggressiveHUPFieldTrialExperimentFraction = 50;
 
 // For inline History Quick Provider field trial, put 10% ( = 10/100 )
 // of the users in the disallow-inline experiment group.
@@ -41,9 +33,6 @@ const int kSuggestFieldTrialNumberOfGroups = 20;
 // Field trial IDs.
 // Though they are not literally "const", they are set only once, in
 // Activate() below.
-
-// Field trial ID for the aggressive History URL Provider experiment group.
-int aggressive_hup_experiment_group = 0;
 
 // Field trial ID for the disallow-inline History Quick Provider
 // experiment group.
@@ -62,21 +51,12 @@ void AutocompleteFieldTrial::Activate() {
   // trust the omnibox.  Hence, to create the field trials we require
   // that field trials can be made sticky.
   if (base::FieldTrialList::IsOneTimeRandomizationEnabled()) {  // sticky trials
-    // Create aggressive History URL Provider field trial.
-    // Make it expire on August 1, 2012.
-    scoped_refptr<base::FieldTrial> trial(
-        base::FieldTrialList::FactoryGetFieldTrial(
-            kAggressiveHUPFieldTrialName, kAggressiveHUPFieldTrialDivisor,
-            "Standard", 2012, 8, 1, NULL));
-    trial->UseOneTimeRandomization();
-    aggressive_hup_experiment_group = trial->AppendGroup("Aggressive",
-        kAggressiveHUPFieldTrialExperimentFraction);
-
     // Create inline History Quick Provider field trial.
     // Make it expire on November 8, 2012.
-    trial = base::FieldTrialList::FactoryGetFieldTrial(
+    scoped_refptr<base::FieldTrial> trial(
+        base::FieldTrialList::FactoryGetFieldTrial(
         kDisallowInlineHQPFieldTrialName, kDisallowInlineHQPFieldTrialDivisor,
-        "Standard", 2012, 11, 8, NULL);
+        "Standard", 2012, 11, 8, NULL));
     trial->UseOneTimeRandomization();
     disallow_inline_hqp_experiment_group = trial->AppendGroup("DisallowInline",
         kDisallowInlineHQPFieldTrialExperimentFraction);
@@ -95,20 +75,6 @@ void AutocompleteFieldTrial::Activate() {
   // kSuggestFieldTrialNumGroups - 1 more.
   for (int i = 1; i < kSuggestFieldTrialNumberOfGroups; i++)
     trial->AppendGroup(base::StringPrintf("%d", i), 1);
-}
-
-bool AutocompleteFieldTrial::InAggressiveHUPFieldTrial() {
-  return base::FieldTrialList::TrialExists(kAggressiveHUPFieldTrialName);
-}
-
-bool AutocompleteFieldTrial::InAggressiveHUPFieldTrialExperimentGroup() {
-  if (!base::FieldTrialList::TrialExists(kAggressiveHUPFieldTrialName))
-    return false;
-
-  // Return true if we're in the aggressive experiment group.
-  const int group = base::FieldTrialList::FindValue(
-      kAggressiveHUPFieldTrialName);
-  return group == aggressive_hup_experiment_group;
 }
 
 bool AutocompleteFieldTrial::InDisallowInlineHQPFieldTrial() {

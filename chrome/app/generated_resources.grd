@@ -5328,21 +5328,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable Omnibox History in the sync settings. This allows syncing your typed URL history to other clients to assist in omnibox auto-completion.
         </message>
       </if>
-      <message name="IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_NAME" desc="Title for the flag for omnibox to be more aggressive with matches from the HistoryURL provider">
-        Aggressive history URL scoring
-      </message>
-      <message name="IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_DESCRIPTION" desc="Description for the flag for omnibox to be more aggressive with matches from the HistoryURL provider">
-        In omnibox autocomplete ranking, be more aggressive at ranking matches coming from the HistoryURL provider.
-      </message>
-      <message name="IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_AUTOMATIC" desc="Option name for automatic selection of the aggressiveness of the omnibox HistoryURL provider.">
-        Automatic
-      </message>
-      <message name="IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_ENABLED" desc="Option name for always enabling aggressive behavior in the omnibox HistoryURL provider.">
-        Enabled
-      </message>
-      <message name="IDS_FLAGS_OMNIBOX_AGGRESSIVE_HISTORY_URL_SCORING_DISABLED" desc="Option name for always disabling aggressive behavior in the omnibox HistoryURL provider.">
-        Disabled
-      </message>
       <message name="IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_NAME" desc="Title for the flag for omnibox to prohibit the HistoryQuickProvider from inlining suggestions">
         Inline HistoryQuickProvider suggestions
       </message>

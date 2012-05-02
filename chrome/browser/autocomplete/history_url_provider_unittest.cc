@@ -556,12 +556,13 @@ TEST_F(HistoryURLProviderTest, DontAutocompleteOnTrailingWhitespace) {
 
 TEST_F(HistoryURLProviderTest, TreatEmailsAsSearches) {
   // Visiting foo.com should not make this string be treated as a navigation.
-  // That means the result should be scored at 1200 ("what you typed") and not
-  // 1400+.
+  // That means the result should be scored around 1200 ("what you typed")
+  // and not 1400+.
   const std::string expected[] = {"http://user@foo.com/"};
   ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("user@foo.com"), string16(),
                                   false, expected, arraysize(expected)));
-  EXPECT_EQ(1200, matches_[0].relevance);
+  EXPECT_LE(1200, matches_[0].relevance);
+  EXPECT_LT(matches_[0].relevance, 1210);
 }
 
 TEST_F(HistoryURLProviderTest, IntranetURLsWithPaths) {
@@ -588,7 +589,10 @@ TEST_F(HistoryURLProviderTest, IntranetURLsWithPaths) {
       };
       ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16(test_cases[i].input),
                               string16(), false, output, arraysize(output)));
-      EXPECT_EQ(test_cases[i].relevance, matches_[0].relevance);
+      // Actual relevance should be at least what test_cases expects and
+      // and no more than 10 more.
+      EXPECT_LE(test_cases[i].relevance, matches_[0].relevance);
+      EXPECT_LT(matches_[0].relevance, test_cases[i].relevance + 10);
     }
   }
 }
@@ -604,8 +608,9 @@ TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
   };
   ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("intra/t"), string16(), false,
                                   expected1, arraysize(expected1)));
-  EXPECT_EQ(1410, matches_[0].relevance);
-  EXPECT_EQ(900, matches_[1].relevance);
+  EXPECT_LE(1410, matches_[0].relevance);
+  EXPECT_LT(matches_[0].relevance, 1420);
+  EXPECT_EQ(matches_[0].relevance - 1, matches_[1].relevance);
 
   const std::string expected2[] = {
     "http://moo/b",
@@ -613,9 +618,10 @@ TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
   };
   ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("moo/b"), string16(), false,
                                   expected2, arraysize(expected2)));
-  // The what you typed match should be 1400, otherwise the search what you
-  // typed match is going to be first.
-  EXPECT_EQ(1400, matches_[0].relevance);
+  // The url what you typed match should be around 1400, otherwise the
+  // search what you typed match is going to be first.
+  EXPECT_LE(1400, matches_[0].relevance);
+  EXPECT_LT(matches_[0].relevance, 1410);
 
   const std::string expected3[] = {
     "http://intra/one",
@@ -638,21 +644,24 @@ TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
   };
   ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("intra/o"), string16(), false,
                                   expected5, arraysize(expected5)));
-  EXPECT_EQ(1410, matches_[0].relevance);
+  EXPECT_LE(1410, matches_[0].relevance);
+  EXPECT_LT(matches_[0].relevance, 1420);
 
   const std::string expected6[] = {
     "http://intra/x",
   };
   ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("intra/x"), string16(), false,
                                   expected6, arraysize(expected6)));
-  EXPECT_EQ(1400, matches_[0].relevance);
+  EXPECT_LE(1400, matches_[0].relevance);
+  EXPECT_LT(matches_[0].relevance, 1410);
 
   const std::string expected7[] = {
     "http://typedhost/untypedpath",
   };
   ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("typedhost/untypedpath"),
       string16(), false, expected7, arraysize(expected7)));
-  EXPECT_EQ(1400, matches_[0].relevance);
+  EXPECT_LE(1400, matches_[0].relevance);
+  EXPECT_LT(matches_[0].relevance, 1410);
 }
 
 TEST_F(HistoryURLProviderTest, CrashDueToFixup) {

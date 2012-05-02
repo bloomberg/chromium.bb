@@ -18,18 +18,6 @@ class AutocompleteFieldTrial {
   static void Activate();
 
   // ---------------------------------------------------------
-  // For the aggressive History URL Provider field trial.
-
-  // Returns whether the user is in any field trial group for this
-  // field trial.  False indicates that the field trial wasn't
-  // successfully created for some reason.
-  static bool InAggressiveHUPFieldTrial();
-
-  // Returns whether the user should get the experiment setup or
-  // the default setup for this field trial.
-  static bool InAggressiveHUPFieldTrialExperimentGroup();
-
-  // ---------------------------------------------------------
   // For the inline History Quick Provider field trial.
 
   // Returns whether the user is in any field trial group for this
