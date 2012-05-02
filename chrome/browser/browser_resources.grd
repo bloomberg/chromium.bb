@@ -110,6 +110,9 @@
       <include name="IDR_SAFE_BROWSING_MALWARE_BLOCK" file="resources\safe_browsing_malware_block.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SAFE_BROWSING_MULTIPLE_THREAT_BLOCK" file="resources\safe_browsing_multiple_threat_block.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SAFE_BROWSING_PHISHING_BLOCK" file="resources\safe_browsing_phishing_block.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_SUGGESTIONS_INTERNALS_HTML" file="resources\suggestions_internals\suggestions_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_SUGGESTIONS_INTERNALS_CSS" file="resources\suggestions_internals\suggestions_internals.css" type="BINDATA" />
+      <include name="IDR_SUGGESTIONS_INTERNALS_JS" file="resources\suggestions_internals\suggestions_internals.js" type="BINDATA" />
       <include name="IDR_SUGGESTIONS_PAGE_CSS" file="resources\ntp4\suggestions_page.css" type="BINDATA" />
       <include name="IDR_SUGGESTIONS_PAGE_JS" file="resources\ntp4\suggestions_page.js" type="BINDATA" />
       <include name="IDR_SESSIONS_HTML" file="resources\sessions.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
