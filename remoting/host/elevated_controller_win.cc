@@ -195,7 +195,7 @@ HRESULT WriteConfig(const char* content, size_t length) {
 
   // Ask the user to verify the configuration.
   remoting::VerifyConfigWindowWin verify_win(email, host_id, host_secret_hash);
-  if (!verify_win.Run()) {
+  if (verify_win.DoModal() != IDOK) {
     return E_FAIL;
   }
 

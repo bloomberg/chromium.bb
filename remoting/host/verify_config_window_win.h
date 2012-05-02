@@ -5,34 +5,41 @@
 #ifndef REMOTING_HOST_VERIFY_CONFIG_WINDOW_WIN_H
 #define REMOTING_HOST_VERIFY_CONFIG_WINDOW_WIN_H
 
+#include <atlbase.h>
+#include <atlcrack.h>
+#include <atlwin.h>
 #include <string>
 
 #include "base/callback.h"
+#include "remoting/host/elevated_controller_resource.h"
 
 namespace remoting {
 
-// TODO(simonmorris): Derive this class from ATL's CDialog.
-class VerifyConfigWindowWin {
+class VerifyConfigWindowWin : public ATL::CDialogImpl<VerifyConfigWindowWin> {
  public:
-   VerifyConfigWindowWin(const std::string& email,
-                         const std::string& host_id,
-                         const std::string& host_secret_hash);
-  ~VerifyConfigWindowWin();
+  enum { IDD = IDD_VERIFY_CONFIG_DIALOG };
 
-  // Run the dialog modally. Returns true on successful verification.
-  bool Run();
+  BEGIN_MSG_MAP_EX(VerifyConfigWindowWin)
+    MSG_WM_INITDIALOG(OnInitDialog)
+    MSG_WM_CLOSE(OnClose)
+    COMMAND_ID_HANDLER_EX(IDOK, OnOk)
+    COMMAND_ID_HANDLER_EX(IDCANCEL, OnCancel)
+  END_MSG_MAP()
+
+  VerifyConfigWindowWin(const std::string& email,
+                        const std::string& host_id,
+                        const std::string& host_secret_hash);
+
+  void OnCancel(UINT code, int id, HWND control);
+  void OnClose();
+  LRESULT OnInitDialog(HWND wparam, LPARAM lparam);
+  void OnOk(UINT code, int id, HWND control);
 
  private:
-  static BOOL CALLBACK DialogProc(HWND hwmd, UINT msg, WPARAM wParam,
-                                  LPARAM lParam);
-
-  BOOL OnDialogMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-  void InitDialog();
-  void EndDialog();
+  // Centers the dialog window against the owner window.
+  void CenterWindow();
   bool VerifyHostSecretHash();
 
-  HWND hwnd_;
   const std::string email_;
   const std::string host_id_;
   const std::string host_secret_hash_;
