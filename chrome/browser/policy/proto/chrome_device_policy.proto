@@ -19,7 +19,6 @@ message UserWhitelistProto {
 
 message AllowNewUsersProto {
   // Determines whether we allow arbitrary users to log into the device.
-  // Should default to true.
   // This interacts with the UserWhitelistProto as follows:
   // allow_new_users | user_whitelist | user_whitelist_size | anyone can log in
   //-----------------+----------------+---------------------+------------------
@@ -39,24 +38,22 @@ message AllowNewUsersProto {
   //-----------------+----------------+---------------------+------------------
   //  not present    | present        | > 0                 | No, W/L enforced
   //-----------------+----------------+---------------------+------------------
-  optional bool allow_new_users = 1;
+  optional bool allow_new_users = 1 [default = true];
 }
 
 message GuestModeEnabledProto {
   // Determines if guests are allowed to log in to the device.
-  // Should default to true.
-  optional bool guest_mode_enabled = 1;
+  optional bool guest_mode_enabled = 1 [default = true];
 }
 
 message ShowUserNamesOnSigninProto {
   // Determines if we show pods for existing users on the sign in screen.
-  // Should default to true.
-  optional bool show_user_names = 1;
+  optional bool show_user_names = 1 [default = true];
 }
 
 message DataRoamingEnabledProto {
-  // Determines if cellular data roaming is enabled.  Should default to false.
-  optional bool data_roaming_enabled = 1;
+  // Determines if cellular data roaming is enabled.
+  optional bool data_roaming_enabled = 1 [default = false];
 }
 
 message DeviceProxySettingsProto {
