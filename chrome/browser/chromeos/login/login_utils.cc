@@ -1388,6 +1388,8 @@ void LoginUtilsImpl::FetchPolicyToken(Profile* offrecord_profile,
       FilePath user_data_dir;
       PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
       ProfileManager* profile_manager = g_browser_process->profile_manager();
+      // Temporarily allow until fix: http://crosbug.com/30391.
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
       profile = profile_manager->GetProfile(user_data_dir)->
           GetOffTheRecordProfile();
     } else {
