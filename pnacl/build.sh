@@ -250,7 +250,7 @@ if ${PNACL_IN_CROS_CHROOT}; then
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-d0e15f4d58d2}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-87aa8e9ce9e3}
 
 readonly NEWLIB_REV=346ea38d142f
 readonly BINUTILS_REV=f44074cff866
@@ -2291,13 +2291,15 @@ llvm-sb-make() {
   spushd "${objdir}"
   ts-touch-open "${objdir}"
 
+  local tools_to_build="llc"
   local isjit=0
   if ${SB_JIT}; then
     isjit=1
+    tools_to_build="llc lli"
   fi
   RunWithLog ${LLVM_SB_LOG_PREFIX}.make \
       env -i PATH="/usr/bin:/bin" \
-      ONLY_TOOLS="llc lli"\
+      ONLY_TOOLS="${tools_to_build}" \
       NACL_SANDBOX=1 \
       NACL_SB_JIT=${isjit} \
       KEEP_SYMBOLS=1 \
