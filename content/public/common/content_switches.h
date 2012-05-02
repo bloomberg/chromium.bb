@@ -92,6 +92,7 @@ extern const char kEnableGamepad[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kEnableMediaSource[];
 extern const char kEnableMediaStream[];
+extern const char kEnablePeerConnection[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnableOriginBoundCerts[];
 extern const char kEnablePartialSwap[];

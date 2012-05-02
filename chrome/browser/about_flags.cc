@@ -530,6 +530,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableMediaStream)
   },
   {
+    "enable-peer-connection",
+    IDS_FLAGS_PEER_CONNECTION_NAME,
+    IDS_FLAGS_PEER_CONNECTION_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnablePeerConnection)
+  },
+  {
     "enable-shadow-dom",
     IDS_FLAGS_SHADOW_DOM_NAME,
     IDS_FLAGS_SHADOW_DOM_DESCRIPTION,
