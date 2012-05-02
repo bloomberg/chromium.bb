@@ -343,7 +343,7 @@ NSDictionary* attributeToMethodNameMap = nil;
          index < browserAccessibility_->child_count();
          ++index) {
       BrowserAccessibilityCocoa* child =
-          browserAccessibility_->GetChild(index)->ToBrowserAccessibilityCocoa();
+          browserAccessibility_->GetChild(index)->toBrowserAccessibilityCocoa();
       if ([child isIgnored])
         [children_ addObjectsFromArray:[child children]];
       else
@@ -362,7 +362,7 @@ NSDictionary* attributeToMethodNameMap = nil;
       // a DCHECK in the future.
       if (child) {
         BrowserAccessibilityCocoa* child_cocoa =
-            child->ToBrowserAccessibilityCocoa();
+            child->toBrowserAccessibilityCocoa();
         [children_ addObject:child_cocoa];
       }
     }
@@ -374,7 +374,7 @@ NSDictionary* attributeToMethodNameMap = nil;
   if (![self isIgnored]) {
     children_.reset();
   } else {
-    [browserAccessibility_->parent()->ToBrowserAccessibilityCocoa()
+    [browserAccessibility_->parent()->toBrowserAccessibilityCocoa()
        childrenChanged];
   }
 }
@@ -488,7 +488,7 @@ NSDictionary* attributeToMethodNameMap = nil;
   // A nil parent means we're the root.
   if (browserAccessibility_->parent()) {
     return NSAccessibilityUnignoredAncestor(
-        browserAccessibility_->parent()->ToBrowserAccessibilityCocoa());
+        browserAccessibility_->parent()->toBrowserAccessibilityCocoa());
   } else {
     // Hook back up to RenderWidgetHostViewCocoa.
     return browserAccessibility_->manager()->GetParentView();
@@ -632,7 +632,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     BrowserAccessibility* titleElement =
         browserAccessibility_->manager()->GetFromRendererID(titleElementId);
     if (titleElement)
-      return titleElement->ToBrowserAccessibilityCocoa();
+      return titleElement->toBrowserAccessibilityCocoa();
   }
   return nil;
 }

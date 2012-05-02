@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 #define UI_GFX_GTK_PRESERVE_WINDOW_H_
 #pragma once
 
-#include <atk/atk.h>
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
@@ -61,14 +60,6 @@ void gtk_preserve_window_set_preserve(GtkPreserveWindow* widget,
 // with swapped between front and back buffer).
 UI_EXPORT void gtk_preserve_window_delegate_resize(GtkPreserveWindow* widget,
                                                    gboolean delegate);
-
-// Provide a function to return an AtkObject* when calls to get_accessible
-// are made on this widget. The parameter |userdata| will be passed to the
-// factory function.
-void gtk_preserve_window_set_accessible_factory(
-    GtkPreserveWindow* widget,
-    AtkObject* (*factory)(void* userdata),
-    gpointer userdata);
 
 G_END_DECLS
 

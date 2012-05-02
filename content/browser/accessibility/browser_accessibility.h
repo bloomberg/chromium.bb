@@ -20,8 +20,6 @@ class BrowserAccessibilityManager;
 @class BrowserAccessibilityCocoa;
 #elif defined(OS_WIN)
 class BrowserAccessibilityWin;
-#elif defined(TOOLKIT_GTK)
-class BrowserAccessibilityGtk;
 #endif
 
 using webkit_glue::WebAccessibility;
@@ -190,11 +188,9 @@ class CONTENT_EXPORT BrowserAccessibility {
   int32 ref_count() const { return ref_count_; }
 
 #if defined(OS_MACOSX) && __OBJC__
-  BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa();
+  BrowserAccessibilityCocoa* toBrowserAccessibilityCocoa();
 #elif defined(OS_WIN)
-  BrowserAccessibilityWin* ToBrowserAccessibilityWin();
-#elif defined(TOOLKIT_GTK)
-  BrowserAccessibilityGtk* ToBrowserAccessibilityGtk();
+  BrowserAccessibilityWin* toBrowserAccessibilityWin();
 #endif
 
   // Retrieve the value of a bool attribute from the bool attribute
