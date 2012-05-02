@@ -48,7 +48,8 @@ getpid_test_nexe = env.ComponentProgram('getpid_test',
 node = env.CommandSelLdrTestNacl(
     'getpid_test.out',
     getpid_test_nexe,
-    )
+    # Pass '-a' to enable the getpid() syscall.
+    sel_ldr_flags=['-a'])
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_getpid_test')
@@ -59,13 +60,23 @@ raw_getpid_test_nexe = env.ComponentProgram(
                            raw_syscall_objects,
                            EXTRA_LIBS=['syscall_test_framework',
                                        '${NONIRT_LIBS}'])
-
 node = env.CommandSelLdrTestNacl('raw_getpid_test.out',
-                                 raw_getpid_test_nexe)
+                                 raw_getpid_test_nexe,
+                                 # Pass '-a' to enable the getpid() syscall.
+                                 sel_ldr_flags=['-a'])
 
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_raw_getpid_test')
+
+getpid_disabled_test_nexe = env.ComponentProgram(
+    'getpid_disabled_test', ['getpid_disabled_test.c'],
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl('getpid_disabled_test.out',
+                                 getpid_disabled_test_nexe)
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_getpid_disabled_test')
 
 # The next few tests test the exit syscall.
 # The first one checks for exit success.

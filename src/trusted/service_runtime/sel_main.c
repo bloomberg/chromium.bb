@@ -135,7 +135,7 @@ static void PrintUsage() {
           "    used with this flag.\n"
           "\n"
           " (testing flags)\n"
-          " -a allow file access! dangerous!\n"
+          " -a allow file access plus some other syscalls! dangerous!\n"
           " -c ignore validator! dangerous! Repeating this option twice skips\n"
           "    validation completely.\n"
           " -F fuzz testing; quit after loading NaCl app\n"

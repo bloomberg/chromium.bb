@@ -58,12 +58,6 @@
 #include "native_client/src/trusted/service_runtime/win/nacl_syscall_inl.h"
 
 
-int32_t NaClSysGetpid(struct NaClAppThread  *natp) {
-  UNREFERENCED_PARAMETER(natp);
-
-  return _getpid();  /* TODO(bsy): obfuscate? */
-}
-
 int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
                             struct nacl_abi_timeval   *tv,
                             struct nacl_abi_timezone  *tz) {

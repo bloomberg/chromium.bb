@@ -46,6 +46,8 @@ int32_t NaClOpenAclCheck(struct NaClApp *nap,
 int32_t NaClStatAclCheck(struct NaClApp *nap,
                          char const     *path);
 
+int32_t NaClSysGetpid(struct NaClAppThread *natp);
+
 int32_t NaClCommonSysExit(struct NaClAppThread  *natp,
                           int                   status);
 

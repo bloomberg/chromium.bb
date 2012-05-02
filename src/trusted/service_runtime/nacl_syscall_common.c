@@ -17,6 +17,7 @@
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_platform.h"
+#include "native_client/src/include/portability_process.h"
 #include "native_client/src/include/portability_string.h"
 
 #include "native_client/src/shared/platform/nacl_clock.h"
@@ -331,6 +332,20 @@ int32_t NaClIoctlAclCheck(struct NaClApp  *nap,
     return 0;
   }
   return -NACL_ABI_EINVAL;
+}
+
+int32_t NaClSysGetpid(struct NaClAppThread *natp) {
+  int32_t pid;
+  UNREFERENCED_PARAMETER(natp);
+
+  if (NaClAclBypassChecks) {
+    pid = GETPID();
+  } else {
+    pid = -NACL_ABI_EACCES;
+  }
+  NaClLog(4, "NaClSysGetpid: returning %d\n", pid);
+
+  return pid;
 }
 
 int32_t NaClCommonSysExit(struct NaClAppThread  *natp,

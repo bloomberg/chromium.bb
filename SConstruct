@@ -633,6 +633,7 @@ nacl_glibc_skiplist = set([
     'run_syscall_test',
     # GetPid is no longer supplied by IRT so does not work in GLibC.
     'run_getpid_test',
+    'run_getpid_disabled_test',
     ])
 
 
