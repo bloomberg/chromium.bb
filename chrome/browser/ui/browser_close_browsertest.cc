@@ -506,8 +506,15 @@ std::string BrowserCloseTest::DownloadsCloseCheckCase::DebugString() const {
 
 #else
 
+// Crashing on Linux. http://crbug.com/100566
+#if defined(OS_LINUX)
+#define MAYBE_DownloadsCloseCheck_0 DISABLED_DownloadsCloseCheck_0
+#define MAYBE_DownloadsCloseCheck_1 DISABLED_DownloadsCloseCheck_1
+#else
 #define MAYBE_DownloadsCloseCheck_0 DownloadsCloseCheck_0
 #define MAYBE_DownloadsCloseCheck_1 DownloadsCloseCheck_1
+#endif
+
 #define MAYBE_DownloadsCloseCheck_3 DownloadsCloseCheck_3
 #define MAYBE_DownloadsCloseCheck_4 DownloadsCloseCheck_4
 // Timing out on XP debug. http://crbug.com/111914
