@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service_impl.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -14,6 +15,11 @@
 #include "chrome/common/pref_names.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::Return;
+using ::testing::_;
+
+namespace policy {
 
 namespace {
 
@@ -65,15 +71,22 @@ void assertProxyModeWithoutParams(const ProxyConfigDictionary& dict,
   assertBypassList(dict, "");
 }
 
+}  // namespace
+
 class ProxyPolicyTest : public testing::Test {
  protected:
   ProxyPolicyTest()
       : command_line_(CommandLine::NO_PROGRAM) {}
 
   virtual void SetUp() OVERRIDE {
-   policy::PolicyServiceImpl::Providers providers;
-   providers.push_back(&provider_);
-   policy_service_.reset(new policy::PolicyServiceImpl(providers));
+    EXPECT_CALL(provider_, ProvideInternal(_))
+        .WillRepeatedly(CopyPolicyMap(&policy_));
+    EXPECT_CALL(provider_, IsInitializationComplete())
+        .WillRepeatedly(Return(true));
+
+    PolicyServiceImpl::Providers providers;
+    providers.push_back(&provider_);
+    policy_service_.reset(new PolicyServiceImpl(providers));
   }
 
   PrefService* CreatePrefService(bool with_managed_policies) {
@@ -87,8 +100,9 @@ class ProxyPolicyTest : public testing::Test {
   }
 
   CommandLine command_line_;
-  policy::MockConfigurationPolicyProvider provider_;
-  scoped_ptr<policy::PolicyServiceImpl> policy_service_;
+  PolicyMap policy_;
+  MockConfigurationPolicyProvider provider_;
+  scoped_ptr<PolicyServiceImpl> policy_service_;
 };
 
 TEST_F(ProxyPolicyTest, OverridesCommandLineOptions) {
@@ -96,12 +110,13 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineOptions) {
   command_line_.AppendSwitchASCII(switches::kProxyServer, "789");
   Value* mode_name = Value::CreateStringValue(
       ProxyPrefs::kFixedServersProxyModeName);
-  provider_.AddMandatoryPolicy(policy::key::kProxyMode, mode_name);
-  provider_.AddMandatoryPolicy(policy::key::kProxyBypassList,
-                               Value::CreateStringValue("abc"));
-  provider_.AddMandatoryPolicy(policy::key::kProxyServer,
-                               Value::CreateStringValue("ghi"));
-  provider_.RefreshPolicies();
+  policy_.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+              mode_name);
+  policy_.Set(key::kProxyBypassList, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+              Value::CreateStringValue("abc"));
+  policy_.Set(key::kProxyServer, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+              Value::CreateStringValue("ghi"));
+  provider_.NotifyPolicyUpdated();
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
@@ -128,8 +143,9 @@ TEST_F(ProxyPolicyTest, OverridesUnrelatedCommandLineOptions) {
   command_line_.AppendSwitchASCII(switches::kProxyServer, "789");
   Value* mode_name = Value::CreateStringValue(
       ProxyPrefs::kAutoDetectProxyModeName);
-  provider_.AddMandatoryPolicy(policy::key::kProxyMode, mode_name);
-  provider_.RefreshPolicies();
+  policy_.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+              mode_name);
+  provider_.NotifyPolicyUpdated();
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
@@ -153,8 +169,9 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineNoProxy) {
   command_line_.AppendSwitch(switches::kNoProxyServer);
   Value* mode_name = Value::CreateStringValue(
       ProxyPrefs::kAutoDetectProxyModeName);
-  provider_.AddMandatoryPolicy(policy::key::kProxyMode, mode_name);
-  provider_.RefreshPolicies();
+  policy_.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+              mode_name);
+  provider_.NotifyPolicyUpdated();
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
@@ -174,8 +191,9 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineAutoDetect) {
   command_line_.AppendSwitch(switches::kProxyAutoDetect);
   Value* mode_name = Value::CreateStringValue(
       ProxyPrefs::kDirectProxyModeName);
-  provider_.AddMandatoryPolicy(policy::key::kProxyMode, mode_name);
-  provider_.RefreshPolicies();
+  policy_.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+              mode_name);
+  provider_.NotifyPolicyUpdated();
 
   // First verify that the auto-detect is set if there is no managed
   // PrefStore.
@@ -191,4 +209,4 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineAutoDetect) {
   assertProxyModeWithoutParams(dict2, ProxyPrefs::MODE_DIRECT);
 }
 
-}  // namespace
+}  // namespace policy

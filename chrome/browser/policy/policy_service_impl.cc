@@ -4,8 +4,13 @@
 
 #include "chrome/browser/policy/policy_service_impl.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace policy {
 
@@ -18,6 +23,7 @@ struct PolicyServiceImpl::ProviderData {
   ConfigurationPolicyProvider* provider;
   ConfigurationPolicyObserverRegistrar registrar;
   PolicyMap policies;
+  bool refresh_pending;
 };
 
 PolicyServiceImpl::PolicyServiceImpl(const Providers& providers) {
@@ -27,6 +33,7 @@ PolicyServiceImpl::PolicyServiceImpl(const Providers& providers) {
     ProviderData* data = new ProviderData;
     data->provider = provider;
     data->registrar.Init(provider, this);
+    data->refresh_pending = false;
     if (provider->IsInitializationComplete())
       provider->Provide(&data->policies);
     else
@@ -35,7 +42,7 @@ PolicyServiceImpl::PolicyServiceImpl(const Providers& providers) {
   }
   // There are no observers yet, but calls to GetPolicies() should already get
   // the processed policy values.
-  MergeAndTriggerUpdates();
+  MergeAndTriggerUpdates(false);
 }
 
 PolicyServiceImpl::~PolicyServiceImpl() {
@@ -75,12 +82,32 @@ bool PolicyServiceImpl::IsInitializationComplete() const {
   return initialization_complete_;
 }
 
+void PolicyServiceImpl::RefreshPolicies(const base::Closure& callback) {
+  if (!callback.is_null())
+    refresh_callbacks_.push_back(callback);
+
+  if (providers_.empty()) {
+    // Refresh is immediately complete if there are no providers.
+    MergeAndTriggerUpdates(true);
+  } else {
+    // Some providers might invoke OnUpdatePolicy synchronously while handling
+    // RefreshPolicies. Flag all with refresh_pending before refreshing.
+    ProviderList::iterator it;
+    for (it = providers_.begin(); it != providers_.end(); ++it)
+      (*it)->refresh_pending = true;
+    for (it = providers_.begin(); it != providers_.end(); ++it)
+      (*it)->provider->RefreshPolicies();
+  }
+}
+
 void PolicyServiceImpl::OnUpdatePolicy(ConfigurationPolicyProvider* provider) {
   ProviderList::iterator it = GetProviderData(provider);
   if (it == providers_.end())
     return;
   provider->Provide(&(*it)->policies);
-  MergeAndTriggerUpdates();
+  bool did_refresh = (*it)->refresh_pending;
+  (*it)->refresh_pending = false;
+  MergeAndTriggerUpdates(did_refresh);
 }
 
 void PolicyServiceImpl::OnProviderGoingAway(
@@ -88,9 +115,10 @@ void PolicyServiceImpl::OnProviderGoingAway(
   ProviderList::iterator it = GetProviderData(provider);
   if (it == providers_.end())
     return;
+  bool did_refresh = (*it)->refresh_pending;
   delete *it;
   providers_.erase(it);
-  MergeAndTriggerUpdates();
+  MergeAndTriggerUpdates(did_refresh);
 }
 
 PolicyServiceImpl::Entry* PolicyServiceImpl::GetOrCreate(
@@ -122,13 +150,16 @@ void PolicyServiceImpl::MaybeCleanup(const PolicyNamespace& ns) {
   }
 }
 
-void PolicyServiceImpl::MergeAndTriggerUpdates() {
+void PolicyServiceImpl::MergeAndTriggerUpdates(bool is_refresh) {
   // TODO(joaodasilva): do this for each namespace once the providers also
   // provide policy for more namespaces.
+
   PolicyMap policies;
+  bool refresh_pending = false;
   for (ProviderList::iterator it = providers_.begin();
        it != providers_.end(); ++it) {
     policies.MergeFrom((*it)->policies);
+    refresh_pending |= (*it)->refresh_pending;
   }
 
   Entry* entry = GetOrCreate(std::make_pair(POLICY_DOMAIN_CHROME, ""));
@@ -159,6 +190,14 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
                           OnPolicyServiceInitialized());
       }
     }
+  }
+
+  // Invoke all the callbacks if a refresh has just fully completed.
+  if (is_refresh && !refresh_pending) {
+    std::vector<base::Closure> callbacks;
+    callbacks.swap(refresh_callbacks_);
+    for (size_t i = 0; i < callbacks.size(); ++i)
+      callbacks[i].Run();
   }
 }
 

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -31,7 +32,7 @@
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/browser_url_util.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -101,8 +102,8 @@ const long int kSafeModeRestartUiDelayMs = 30000;
 // Makes a call to the policy subsystem to reload the policy when we detect
 // authentication change.
 void RefreshPoliciesOnUIThread() {
-  if (g_browser_process->browser_policy_connector())
-    g_browser_process->browser_policy_connector()->RefreshPolicies();
+  if (g_browser_process->policy_service())
+    g_browser_process->policy_service()->RefreshPolicies(base::Closure());
 }
 
 // Copies any authentication details that were entered in the login profile in

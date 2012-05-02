@@ -150,7 +150,7 @@
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/policy_service.h"
 #include "policy/policy_constants.h"
 #endif
 
@@ -185,6 +185,18 @@ using content::SSLStatus;
 using content::WebContents;
 
 namespace {
+
+// Helper to reply asynchronously if |automation| is still valid.
+void SendSuccessReply(base::WeakPtr<AutomationProvider> automation,
+                      IPC::Message* reply_message) {
+  if (automation)
+    AutomationJSONReply(automation.get(), reply_message).SendSuccess(NULL);
+}
+
+// Helper to resolve the overloading of PostTask.
+void PostTask(BrowserThread::ID id, const base::Closure& callback) {
+  BrowserThread::PostTask(id, FROM_HERE, callback);
+}
 
 void SendMouseClick(int flags) {
   ui_controls::MouseButton button = ui_controls::LEFT;
@@ -3751,8 +3763,7 @@ void TestingAutomationProvider::EnablePlugin(Browser* browser,
   }
   plugin_prefs->EnablePlugin(
       true, FilePath(path),
-      base::Bind(&TestingAutomationProvider::SendSuccessReply, this,
-                 reply_message));
+      base::Bind(SendSuccessReply, AsWeakPtr(), reply_message));
 }
 
 // Sample json input:
@@ -3774,8 +3785,7 @@ void TestingAutomationProvider::DisablePlugin(Browser* browser,
   }
   plugin_prefs->EnablePlugin(
       false, FilePath(path),
-      base::Bind(&TestingAutomationProvider::SendSuccessReply, this,
-                 reply_message));
+      base::Bind(SendSuccessReply, AsWeakPtr(), reply_message));
 }
 
 // Sample json input:
@@ -5894,15 +5904,10 @@ void TestingAutomationProvider::SendOSLevelKeyEventToTab(
   if (!ui_controls::SendKeyPressNotifyWhenDone(
           window, static_cast<ui::KeyboardCode>(keycode),
           control, shift, alt, meta,
-          base::Bind(&TestingAutomationProvider::SendSuccessReply, this,
-                     reply_message))) {
+          base::Bind(SendSuccessReply, AsWeakPtr(), reply_message))) {
     AutomationJSONReply(this, reply_message)
         .SendError("Could not send the native key event");
   }
-}
-
-void TestingAutomationProvider::SendSuccessReply(IPC::Message* reply_message) {
-  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 
 void TestingAutomationProvider::ProcessWebMouseEvent(
@@ -6362,10 +6367,18 @@ void TestingAutomationProvider::RefreshPolicies(
   AutomationJSONReply(this, reply_message).SendError(
       "Configuration Policy disabled");
 #else
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
-  new PolicyUpdatesObserver(this, reply_message, connector);
-  connector->RefreshPolicies();
+  // Some policies (e.g. URLBlacklist) post tasks to other message loops
+  // before they start enforcing updated policy values; make sure those tasks
+  // have finished after a policy update.
+  // Updates of the URLBlacklist are done on IO, after building the blacklist
+  // on FILE, which is initiated from IO.
+  base::Closure reply =
+      base::Bind(SendSuccessReply, AsWeakPtr(), reply_message);
+  g_browser_process->policy_service()->RefreshPolicies(
+      base::Bind(PostTask, BrowserThread::IO,
+          base::Bind(PostTask, BrowserThread::FILE,
+              base::Bind(PostTask, BrowserThread::IO,
+                  base::Bind(PostTask, BrowserThread::UI, reply)))));
 #endif
 }
 

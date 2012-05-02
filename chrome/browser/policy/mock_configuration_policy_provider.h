@@ -19,25 +19,20 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   MockConfigurationPolicyProvider();
   virtual ~MockConfigurationPolicyProvider();
 
-  void AddMandatoryPolicy(const std::string& policy, Value* value);
-  void AddRecommendedPolicy(const std::string& policy, Value* value);
-  void RemovePolicy(const std::string& policy);
-
-  void SetInitializationComplete(bool initialization_complete);
-
-  // ConfigurationPolicyProvider method overrides.
-  virtual bool ProvideInternal(PolicyMap* policies) OVERRIDE;
-  virtual bool IsInitializationComplete() const OVERRIDE;
-  virtual void RefreshPolicies() OVERRIDE;
+  MOCK_METHOD1(ProvideInternal, bool(PolicyMap*));
+  MOCK_CONST_METHOD0(IsInitializationComplete, bool());
+  MOCK_METHOD0(RefreshPolicies, void());
 
   // Make public for tests.
   using ConfigurationPolicyProvider::NotifyPolicyUpdated;
-
- private:
-
-  PolicyMap policy_map_;
-  bool initialization_complete_;
 };
+
+// A gmock action that copies |policy_map| into the first argument of the mock
+// method, as expected by ProvideInternal().
+ACTION_P(CopyPolicyMap, policy_map) {
+  arg0->CopyFrom(*policy_map);
+  return true;
+}
 
 class MockConfigurationPolicyObserver
     : public ConfigurationPolicyProvider::Observer {

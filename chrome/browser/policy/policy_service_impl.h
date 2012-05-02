@@ -41,6 +41,7 @@ class PolicyServiceImpl : public PolicyService,
       PolicyDomain domain,
       const std::string& component_id) const OVERRIDE;
   virtual bool IsInitializationComplete() const OVERRIDE;
+  virtual void RefreshPolicies(const base::Closure& callback) OVERRIDE;
 
  private:
   struct Entry;
@@ -63,7 +64,9 @@ class PolicyServiceImpl : public PolicyService,
 
   // Combines the policies from all the providers, and notifies the observers
   // of namespaces whose policies have been modified.
-  void MergeAndTriggerUpdates();
+  // |is_refresh| should be true if MergeAndTriggerUpdates() was invoked because
+  // a provider has just refreshed its policies.
+  void MergeAndTriggerUpdates(bool is_refresh);
 
   // Contains all the providers together with a cached copy of their policies
   // and their registrars.
@@ -74,6 +77,10 @@ class PolicyServiceImpl : public PolicyService,
 
   // True if all the providers are initialized.
   bool initialization_complete_;
+
+  // List of callbacks to invoke once all providers refresh after a
+  // RefreshPolicies() call.
+  std::vector<base::Closure> refresh_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyServiceImpl);
 };

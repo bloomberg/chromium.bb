@@ -76,6 +76,11 @@ class PolicyService {
   // already true when an Observer is registered, then that Observer will not
   // have a OnPolicyServiceInitialized() notification.
   virtual bool IsInitializationComplete() const = 0;
+
+  // Asks the PolicyService to reload policy from all available policy sources.
+  // |callback| is invoked once every source has reloaded its policies, and
+  // GetPolicies() is guaranteed to return the updated values at that point.
+  virtual void RefreshPolicies(const base::Closure& callback) = 0;
 };
 
 // A registrar that only observes changes to particular policies within the

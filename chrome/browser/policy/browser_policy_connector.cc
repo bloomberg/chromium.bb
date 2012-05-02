@@ -277,17 +277,6 @@ void BrowserPolicyConnector::FetchCloudPolicy() {
 #endif
 }
 
-void BrowserPolicyConnector::RefreshPolicies() {
-  if (managed_platform_provider_.get())
-    managed_platform_provider_->RefreshPolicies();
-  if (recommended_platform_provider_.get())
-    recommended_platform_provider_->RefreshPolicies();
-  if (managed_cloud_provider_.get())
-    managed_cloud_provider_->RefreshPolicies();
-  if (recommended_cloud_provider_.get())
-    recommended_cloud_provider_->RefreshPolicies();
-}
-
 void BrowserPolicyConnector::ScheduleServiceInitialization(
     int64 delay_milliseconds) {
   if (user_cloud_policy_subsystem_.get()) {

@@ -10,9 +10,6 @@ var policyDataFormat = {
   // Whether any of the policies in 'policies' have a value.
   'anyPoliciesSet': true,
 
-  // False if the policy information is being sent due to an initial page load
-  // and true if it is being sent due to a change of policy values.
-  'isPolicyUpdate': false,
   'policies': [
     {
       'level': 'managed',
@@ -216,15 +213,18 @@ cr.define('policies', function() {
    * by the policyDataFormat.
    */
   Policy.returnData = function(policyData) {
-    if (policyData.isPolicyUpdate) {
-      Policy.getInstance().collapseExpandedCells();
-      Policy.getInstance().renderTemplate(policyData);
-      Policy.getInstance().updatePolicyVisibility();
+    var policy = Policy.getInstance();
+    policy.collapseExpandedCells();
+    policy.renderTemplate(policyData);
+    policy.updatePolicyVisibility();
+  };
 
-      $('fetch-policies-button').disabled = false;
-    } else {
-      Policy.getInstance().renderTemplate(policyData);
-    }
+  /**
+   * Called by the C++ PolicyUIHandler when a requested policy refresh has
+   * completed.
+   */
+  Policy.refreshDone = function() {
+    $('fetch-policies-button').disabled = false;
   };
 
   /**

@@ -1364,9 +1364,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void ProcessWebMouseEvent(base::DictionaryValue* args,
                             IPC::Message* message);
 
-  // Method used as a Task that sends a success AutomationJSONReply.
-  void SendSuccessReply(IPC::Message* reply_message);
-
   // Gets the active JavaScript modal dialog's message.
   // Example:
   //   input: none

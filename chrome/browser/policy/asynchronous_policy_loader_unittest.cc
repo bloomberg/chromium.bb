@@ -33,13 +33,11 @@ class AsynchronousPolicyLoaderTest : public AsynchronousPolicyTestBase {
 
   virtual void SetUp() {
     AsynchronousPolicyTestBase::SetUp();
-    mock_provider_.reset(new MockConfigurationPolicyProvider());
     ignore_callback_ = base::Bind(&IgnoreCallback);
   }
 
  protected:
   base::Closure ignore_callback_;
-  scoped_ptr<MockConfigurationPolicyProvider> mock_provider_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AsynchronousPolicyLoaderTest);

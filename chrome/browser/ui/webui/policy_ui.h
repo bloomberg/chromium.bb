@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/configuration_policy_reader.h"
@@ -38,10 +39,11 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   // Callback for the "fetchPolicy" message. The parameter |args| is unused.
   void HandleFetchPolicy(const ListValue* args);
 
-  // Send requested data to UI. |is_policy_update| should be set to true when
-  // policy data is pushed to the UI without having been requested by a
-  // javascript message and to false otherwise.
-  void SendDataToUI(bool is_policy_update);
+  // Callback for completion of a RefreshPolicies call.
+  void OnRefreshDone();
+
+  // Sends policy data to UI.
+  void SendDataToUI();
 
   // Returns a DictionaryValue pointer containing information about the status
   // of the policy system. The caller acquires ownership of the returned
@@ -65,6 +67,9 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
       policy::CloudPolicySubsystem::ErrorDetails error_details);
 
   scoped_ptr<policy::PolicyStatus> policy_status_;
+
+  // Used to post a callback to RefreshPolicies with a WeakPtr to |this|.
+  base::WeakPtrFactory<PolicyUIHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyUIHandler);
 };

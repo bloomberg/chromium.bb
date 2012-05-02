@@ -10,45 +10,9 @@
 namespace policy {
 
 MockConfigurationPolicyProvider::MockConfigurationPolicyProvider()
-    : ConfigurationPolicyProvider(GetChromePolicyDefinitionList()),
-      initialization_complete_(false) {
-}
+    : ConfigurationPolicyProvider(GetChromePolicyDefinitionList()) {}
 
 MockConfigurationPolicyProvider::~MockConfigurationPolicyProvider() {}
-
-void MockConfigurationPolicyProvider::AddMandatoryPolicy(
-    const std::string& policy,
-    Value* value) {
-  policy_map_.Set(policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, value);
-}
-
-void MockConfigurationPolicyProvider::AddRecommendedPolicy(
-    const std::string& policy,
-    Value* value) {
-  policy_map_.Set(policy, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER, value);
-}
-
-void MockConfigurationPolicyProvider::RemovePolicy(const std::string& policy) {
-  policy_map_.Erase(policy);
-}
-
-void MockConfigurationPolicyProvider::SetInitializationComplete(
-    bool initialization_complete) {
-  initialization_complete_ = initialization_complete;
-}
-
-bool MockConfigurationPolicyProvider::ProvideInternal(PolicyMap* policies) {
-  policies->CopyFrom(policy_map_);
-  return true;
-}
-
-bool MockConfigurationPolicyProvider::IsInitializationComplete() const {
-  return initialization_complete_;
-}
-
-void MockConfigurationPolicyProvider::RefreshPolicies() {
-  NotifyPolicyUpdated();
-}
 
 MockConfigurationPolicyObserver::MockConfigurationPolicyObserver() {}
 

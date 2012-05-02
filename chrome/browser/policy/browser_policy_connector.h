@@ -109,9 +109,6 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // will be cancelled.
   void FetchCloudPolicy();
 
-  // Refreshes policies on each existing provider.
-  void RefreshPolicies();
-
   // Schedules initialization of the cloud policy backend services, if the
   // services are already constructed.
   void ScheduleServiceInitialization(int64 delay_milliseconds);

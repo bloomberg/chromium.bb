@@ -42,7 +42,6 @@
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
-#include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/automation_constants.h"
@@ -1794,45 +1793,6 @@ class BrowserOpenedWithNewProfileNotificationObserver
 
   DISALLOW_COPY_AND_ASSIGN(BrowserOpenedWithNewProfileNotificationObserver);
 };
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-
-// Waits for a policy refresh on each policy provider available. Refreshes
-// can be triggered by invoking |connector|->RefreshPolicies().
-// Deletes itself when done.
-class PolicyUpdatesObserver
-    : public policy::ConfigurationPolicyProvider::Observer {
- public:
-  PolicyUpdatesObserver(AutomationProvider* automation,
-                        IPC::Message* reply_message,
-                        policy::BrowserPolicyConnector* connector);
-  virtual ~PolicyUpdatesObserver();
-
-  // Invokes |callback| on the UI thread after policies that have changed
-  // recently are ready and being enforced.
-  static void PostCallbackAfterPolicyUpdates(const base::Closure& callback);
-
- private:
-  virtual void OnUpdatePolicy(
-      policy::ConfigurationPolicyProvider* provider) OVERRIDE;
-  virtual void OnProviderGoingAway(
-      policy::ConfigurationPolicyProvider* provider) OVERRIDE;
-  void MaybeReply();
-  void Reply();
-
-  // Helper for WaitForPoliciesToBeReadyAndThen that resolves the overloading
-  // of BrowserThread::PostTask within Bind calls.
-  static void PostTask(content::BrowserThread::ID id,
-                       const base::Closure& callback);
-
-  base::WeakPtr<AutomationProvider> automation_;
-  scoped_ptr<IPC::Message> reply_message_;
-  std::vector<policy::ConfigurationPolicyObserverRegistrar*> registrars_;
-
-  DISALLOW_COPY_AND_ASSIGN(PolicyUpdatesObserver);
-};
-
-#endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
 // Waits for an extension popup to appear and load.
 class ExtensionPopupObserver : public content::NotificationObserver {

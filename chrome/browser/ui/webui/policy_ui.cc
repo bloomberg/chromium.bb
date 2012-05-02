@@ -12,6 +12,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
+#include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -78,7 +79,8 @@ ChromeWebUIDataSource* CreatePolicyUIHTMLSource() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-PolicyUIHandler::PolicyUIHandler() {
+PolicyUIHandler::PolicyUIHandler()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   policy::ConfigurationPolicyReader* managed_platform =
       policy::ConfigurationPolicyReader::CreateManagedPlatformPolicyReader();
   policy::ConfigurationPolicyReader* managed_cloud =
@@ -111,18 +113,27 @@ void PolicyUIHandler::RegisterMessages() {
 }
 
 void PolicyUIHandler::OnPolicyValuesChanged() {
-  SendDataToUI(true);
+  SendDataToUI();
 }
 
 void PolicyUIHandler::HandleRequestData(const ListValue* args) {
-  SendDataToUI(false);
+  SendDataToUI();
 }
 
 void PolicyUIHandler::HandleFetchPolicy(const ListValue* args) {
-  g_browser_process->browser_policy_connector()->RefreshPolicies();
+  // Fetching policy can potentially take a while due to cloud policy fetches.
+  // Use a WeakPtr to make sure the callback is invalidated if the tab is closed
+  // before the fetching completes.
+  g_browser_process->policy_service()->RefreshPolicies(
+      base::Bind(&PolicyUIHandler::OnRefreshDone,
+                 weak_factory_.GetWeakPtr()));
 }
 
-void PolicyUIHandler::SendDataToUI(bool is_policy_update) {
+void PolicyUIHandler::OnRefreshDone() {
+  web_ui()->CallJavascriptFunction("Policy.refreshDone");
+}
+
+void PolicyUIHandler::SendDataToUI() {
   DictionaryValue results;
   bool any_policies_set;
   ListValue* list = policy_status_->GetPolicyStatusList(&any_policies_set);
@@ -130,8 +141,6 @@ void PolicyUIHandler::SendDataToUI(bool is_policy_update) {
   results.SetBoolean("anyPoliciesSet", any_policies_set);
   DictionaryValue* dict = GetStatusData();
   results.Set("status", dict);
-  results.SetBoolean("isPolicyUpdate", is_policy_update);
-
   web_ui()->CallJavascriptFunction("Policy.returnData", results);
 }
 

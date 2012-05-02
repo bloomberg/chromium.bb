@@ -11,6 +11,7 @@
 #include "chrome/browser/policy/configuration_policy_reader.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/mock_configuration_policy_reader.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,7 +23,12 @@ namespace policy {
 
 class ConfigurationPolicyReaderTest : public testing::Test {
  protected:
-  ConfigurationPolicyReaderTest() : provider_() {
+  ConfigurationPolicyReaderTest() {
+    EXPECT_CALL(provider_, ProvideInternal(_))
+        .WillRepeatedly(CopyPolicyMap(&policy_));
+    EXPECT_CALL(provider_, IsInitializationComplete())
+        .WillRepeatedly(Return(true));
+
     reader_.reset(new ConfigurationPolicyReader(&provider_));
     status_ok_ = ASCIIToUTF16("OK");
   }
@@ -44,6 +50,7 @@ class ConfigurationPolicyReaderTest : public testing::Test {
     return dict;
   }
 
+  PolicyMap policy_;
   MockConfigurationPolicyProvider provider_;
   scoped_ptr<ConfigurationPolicyReader> reader_;
   string16 status_ok_;
@@ -61,10 +68,10 @@ TEST_F(ConfigurationPolicyReaderTest, SetListValue) {
   ListValue recommended_value;
   recommended_value.Append(Value::CreateStringValue("test3"));
   recommended_value.Append(Value::CreateStringValue("test4"));
-  provider_.AddMandatoryPolicy(key::kRestoreOnStartupURLs,
-                               mandatory_value.DeepCopy());
-  provider_.AddRecommendedPolicy(key::kDisabledSchemes,
-                                 recommended_value.DeepCopy());
+  policy_.Set(key::kRestoreOnStartupURLs, POLICY_LEVEL_MANDATORY,
+              POLICY_SCOPE_USER, mandatory_value.DeepCopy());
+  policy_.Set(key::kDisabledSchemes, POLICY_LEVEL_RECOMMENDED,
+              POLICY_SCOPE_USER, recommended_value.DeepCopy());
   reader_->OnUpdatePolicy(&provider_);
 
   scoped_ptr<DictionaryValue> dict(
@@ -87,10 +94,10 @@ TEST_F(ConfigurationPolicyReaderTest, SetListValue) {
 TEST_F(ConfigurationPolicyReaderTest, SetStringValue) {
   StringValue mandatory_value("http://chromium.org");
   StringValue recommended_value("http://www.google.com/q={searchTerms}");
-  provider_.AddMandatoryPolicy(key::kHomepageLocation,
-                               mandatory_value.DeepCopy());
-  provider_.AddRecommendedPolicy(key::kDefaultSearchProviderSearchURL,
-                                 recommended_value.DeepCopy());
+  policy_.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+              mandatory_value.DeepCopy());
+  policy_.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_RECOMMENDED,
+              POLICY_SCOPE_USER, recommended_value.DeepCopy());
   reader_->OnUpdatePolicy(&provider_);
   scoped_ptr<DictionaryValue> dict(
       CreateDictionary(key::kHomepageLocation,
@@ -110,10 +117,10 @@ TEST_F(ConfigurationPolicyReaderTest, SetStringValue) {
 
 // Test for boolean-valued policy settings.
 TEST_F(ConfigurationPolicyReaderTest, SetBooleanValue) {
-  provider_.AddMandatoryPolicy(key::kShowHomeButton,
-                               Value::CreateBooleanValue(true));
-  provider_.AddRecommendedPolicy(key::kHomepageIsNewTabPage,
-                                 Value::CreateBooleanValue(false));
+  policy_.Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+              Value::CreateBooleanValue(true));
+  policy_.Set(key::kHomepageIsNewTabPage, POLICY_LEVEL_RECOMMENDED,
+              POLICY_SCOPE_USER, Value::CreateBooleanValue(false));
   reader_->OnUpdatePolicy(&provider_);
   scoped_ptr<DictionaryValue> dict(
       CreateDictionary(key::kShowHomeButton, Value::CreateBooleanValue(true)));
@@ -132,10 +139,10 @@ TEST_F(ConfigurationPolicyReaderTest, SetBooleanValue) {
 
 // Test for integer-valued policy settings.
 TEST_F(ConfigurationPolicyReaderTest, SetIntegerValue) {
-  provider_.AddMandatoryPolicy(key::kRestoreOnStartup,
-                               Value::CreateIntegerValue(4));
-  provider_.AddRecommendedPolicy(key::kIncognitoModeAvailability,
-                                 Value::CreateIntegerValue(2));
+  policy_.Set(key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+              Value::CreateIntegerValue(4));
+  policy_.Set(key::kIncognitoModeAvailability, POLICY_LEVEL_RECOMMENDED,
+              POLICY_SCOPE_USER, Value::CreateIntegerValue(2));
   reader_->OnUpdatePolicy(&provider_);
   scoped_ptr<DictionaryValue> dict(
       CreateDictionary(key::kRestoreOnStartup, Value::CreateIntegerValue(4)));

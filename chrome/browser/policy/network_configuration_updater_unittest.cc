@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,6 +23,8 @@ class NetworkConfigurationUpdaterTest
     : public testing::TestWithParam<const char*> {
  protected:
   virtual void SetUp() OVERRIDE {
+    EXPECT_CALL(provider_, ProvideInternal(_))
+        .WillRepeatedly(CopyPolicyMap(&policy_));
     EXPECT_CALL(network_library_, LoadOncNetworks(_, "", _, _))
         .WillRepeatedly(Return(true));
   }
@@ -37,11 +40,13 @@ class NetworkConfigurationUpdaterTest
   }
 
   chromeos::MockNetworkLibrary network_library_;
+  PolicyMap policy_;
   MockConfigurationPolicyProvider provider_;
 };
 
 TEST_P(NetworkConfigurationUpdaterTest, InitialUpdate) {
-  provider_.AddMandatoryPolicy(GetParam(), Value::CreateStringValue(kFakeONC));
+  policy_.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+              Value::CreateStringValue(kFakeONC));
 
   EXPECT_CALL(network_library_,
               LoadOncNetworks(kFakeONC, "", NameToONCSource(GetParam()), _))
@@ -58,7 +63,8 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
   EXPECT_CALL(network_library_,
               LoadOncNetworks(kFakeONC, "", NameToONCSource(GetParam()), _))
       .WillOnce(Return(true));
-  provider_.AddMandatoryPolicy(GetParam(), Value::CreateStringValue(kFakeONC));
+  policy_.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+              Value::CreateStringValue(kFakeONC));
   provider_.NotifyPolicyUpdated();
   Mock::VerifyAndClearExpectations(&network_library_);
 
@@ -74,7 +80,7 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
               LoadOncNetworks(NetworkConfigurationUpdater::kEmptyConfiguration,
                               "", NameToONCSource(GetParam()), _))
       .WillOnce(Return(true));
-  provider_.RemovePolicy(GetParam());
+  policy_.Erase(GetParam());
   provider_.NotifyPolicyUpdated();
   Mock::VerifyAndClearExpectations(&network_library_);
 }
