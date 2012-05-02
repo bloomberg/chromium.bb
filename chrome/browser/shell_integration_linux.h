@@ -36,18 +36,12 @@ std::string GetDesktopFileContents(const std::string& template_contents,
                                    const GURL& url,
                                    const std::string& extension_id,
                                    const bool is_platform_app,
-                                   const FilePath& web_app_path,
                                    const FilePath& extension_path,
                                    const string16& title,
                                    const std::string& icon_name);
 
 bool CreateDesktopShortcut(const ShellIntegration::ShortcutInfo& shortcut_info,
                            const std::string& shortcut_template);
-
-bool CreateDesktopShortcutForChromeApp(
-    const ShellIntegration::ShortcutInfo& shortcut_info,
-    const FilePath& web_app_path,
-    const std::string& shortcut_template);
 
 }  // namespace ShellIntegrationLinux
 

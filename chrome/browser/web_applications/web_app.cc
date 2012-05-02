@@ -138,11 +138,6 @@ bool CreateShortcutOnFileThread(
 
   FilePath shortcut_data_dir = GetWebAppDataDirectory(
       profile_path, shortcut_info.extension_id, shortcut_info.url);
-  // Ensure shortcut_data_dir exists
-  if (!file_util::PathExists(shortcut_data_dir) &&
-      !file_util::CreateDirectory(shortcut_data_dir)) {
-    return false;
-  }
   return internals::CreatePlatformShortcut(
       shortcut_data_dir, profile_path, shortcut_info);
 }

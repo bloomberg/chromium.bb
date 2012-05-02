@@ -484,7 +484,6 @@ std::string GetDesktopFileContents(
     const GURL& url,
     const std::string& extension_id,
     const bool is_platform_app,
-    const FilePath& web_app_path,
     const FilePath& extension_path,
     const string16& title,
     const std::string& icon_name) {
@@ -551,13 +550,8 @@ std::string GetDesktopFileContents(
       final_path += exec_tokenizer.token();
     }
     CommandLine cmd_line(CommandLine::NO_PROGRAM);
-    if (is_platform_app) {
-      cmd_line = ShellIntegration::CommandLineArgsForPlatformApp(
-          extension_id, web_app_path, extension_path);
-    } else {
-      cmd_line = ShellIntegration::CommandLineArgsForLauncher(
-          url, extension_id);
-    }
+    cmd_line = ShellIntegration::CommandLineArgsForLauncher(
+        url, extension_id, is_platform_app);
     const CommandLine::SwitchMap& switch_map = cmd_line.GetSwitches();
     for (CommandLine::SwitchMap::const_iterator i = switch_map.begin();
          i != switch_map.end(); ++i) {
@@ -599,17 +593,6 @@ std::string GetDesktopFileContents(
 bool CreateDesktopShortcut(
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const std::string& shortcut_template) {
-  DCHECK(!shortcut_info.is_platform_app);
-  DCHECK(shortcut_info.extension_id.empty());
-
-  return ShellIntegrationLinux::CreateDesktopShortcutForChromeApp(
-      shortcut_info, FilePath(), shortcut_template);
-}
-
-bool CreateDesktopShortcutForChromeApp(
-    const ShellIntegration::ShortcutInfo& shortcut_info,
-    const FilePath& web_app_path,
-    const std::string& shortcut_template) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   FilePath shortcut_filename =
@@ -627,7 +610,6 @@ bool CreateDesktopShortcutForChromeApp(
       shortcut_info.url,
       shortcut_info.extension_id,
       shortcut_info.is_platform_app,
-      web_app_path,
       shortcut_info.extension_path,
       shortcut_info.title,
       icon_name);

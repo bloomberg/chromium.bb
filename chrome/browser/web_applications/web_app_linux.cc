@@ -25,8 +25,8 @@ bool CreatePlatformShortcut(
                                                          &shortcut_template)) {
     return false;
   }
-  return ShellIntegrationLinux::CreateDesktopShortcutForChromeApp(
-      shortcut_info, web_app_path, shortcut_template);
+  return ShellIntegrationLinux::CreateDesktopShortcut(
+      shortcut_info, shortcut_template);
 }
 
 }  // namespace internals

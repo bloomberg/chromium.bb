@@ -53,7 +53,8 @@ bool ShellIntegration::IsRunningInAppMode() {
 // static
 CommandLine ShellIntegration::CommandLineArgsForLauncher(
     const GURL& url,
-    const std::string& extension_app_id) {
+    const std::string& extension_app_id,
+    bool is_platform_app) {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   CommandLine new_cmd_line(CommandLine::NO_PROGRAM);
 
@@ -78,6 +79,10 @@ CommandLine ShellIntegration::CommandLineArgsForLauncher(
   // during launch.
   if (!extension_app_id.empty()) {
     new_cmd_line.AppendSwitchASCII(switches::kAppId, extension_app_id);
+    if (is_platform_app) {
+      new_cmd_line.AppendSwitch(switches::kEnablePlatformApps);
+      new_cmd_line.AppendSwitch(switches::kEnableExperimentalExtensionApis);
+    }
   } else {
     // Use '--app=url' instead of just 'url' to launch the browser with minimal
     // chrome.
@@ -87,46 +92,6 @@ CommandLine ShellIntegration::CommandLineArgsForLauncher(
   return new_cmd_line;
 }
 
-
-// static
-CommandLine ShellIntegration::CommandLineArgsForPlatformApp(
-    const std::string& extension_app_id,
-    const FilePath& user_data_dir,
-    const FilePath& extension_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  CommandLine new_cmd_line(CommandLine::NO_PROGRAM);
-
-  DCHECK(!extension_app_id.empty());
-  DCHECK(!user_data_dir.empty());
-  DCHECK(!extension_path.empty());
-
-  // Convert path to absolute and ensure it exists.
-  FilePath absolute_user_data_dir(user_data_dir);
-  DCHECK(file_util::AbsolutePath(&absolute_user_data_dir) &&
-      file_util::PathExists(absolute_user_data_dir));
-  new_cmd_line.AppendSwitchPath(switches::kUserDataDir, absolute_user_data_dir);
-
-#if defined(OS_CHROMEOS)
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-  FilePath profile = cmd_line.GetSwitchValuePath(switches::kLoginProfile);
-  if (!profile.empty())
-    new_cmd_line.AppendSwitchPath(switches::kLoginProfile, profile);
-#endif
-
-  new_cmd_line.AppendSwitchASCII(switches::kAppId, extension_app_id);
-  new_cmd_line.AppendSwitch(switches::kEnablePlatformApps);
-
-  // Convert path to absolute and ensure it exists.
-  FilePath absolute_extension_path(extension_path);
-  DCHECK(file_util::AbsolutePath(&absolute_extension_path) &&
-      file_util::PathExists(absolute_extension_path));
-  // TODO(sail): Use a different flag that doesn't imply Location::LOAD for the
-  // extension.
-  new_cmd_line.AppendSwitchPath(switches::kLoadExtension,
-      absolute_extension_path);
-
-  return new_cmd_line;
-}
 ///////////////////////////////////////////////////////////////////////////////
 // ShellIntegration::DefaultWebClientWorker
 //

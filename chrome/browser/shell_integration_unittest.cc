@@ -360,7 +360,6 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
             "",
             false,
             FilePath(),
-            FilePath(),
             ASCIIToUTF16(test_cases[i].title),
             test_cases[i].icon_name));
   }
