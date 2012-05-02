@@ -44,13 +44,10 @@ using content::WebContents;
 - (void)UpdateActiveTabPairs {
   activeTabPairsVector_.clear();
   Browser* browser = BrowserList::GetLastActive();
-  TabStripModel* tabstrip_model = browser->tabstrip_model();
-  const int tabCount = tabstrip_model->count();
+  const int tabCount = browser->tab_count();
   for (int i = 0; i < tabCount; ++i) {
-    WebContents* wc = tabstrip_model->GetTabContentsAt(i)->web_contents();
-    const string16 tabTitle = wc->GetTitle();
-    const GURL& tabURL(wc->GetURL());
-    ActiveTabNameURLPair tabPair(tabTitle, tabURL);
+    WebContents* contents = browser->GetWebContentsAt(i);
+    ActiveTabNameURLPair tabPair(contents->GetTitle(), contents->GetURL());
     activeTabPairsVector_.push_back(tabPair);
   }
 }
