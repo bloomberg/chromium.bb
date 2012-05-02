@@ -1352,10 +1352,6 @@ const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
 // files needed to make this decision.
 const char kEnableCrashReporter[]           = "enable-crash-reporter";
 
-// Bypass the error dialog when the profile lock couldn't be attained. This
-// switch is used during automated testing.
-const char kNoProcessSingletonDialog[]      = "no-process-singleton-dialog";
-
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
 // Specifies which password store to use (detect, default, gnome, kwallet).
 const char kPasswordStore[]                 = "password-store";

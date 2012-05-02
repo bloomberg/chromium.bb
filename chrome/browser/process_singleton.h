@@ -21,6 +21,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/process.h"
 #include "base/threading/non_thread_safe.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -94,6 +95,9 @@ class ProcessSingleton : public base::NonThreadSafe {
       const CommandLine& command_line,
       const NotificationCallback& notification_callback,
       int timeout_seconds);
+  void OverrideCurrentPidForTesting(base::ProcessId pid);
+  void OverrideKillCallbackForTesting(const base::Callback<void(int)>& callback);
+  static void DisablePromptForTesting();
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -168,6 +172,28 @@ class ProcessSingleton : public base::NonThreadSafe {
   HWND window_;  // The HWND_MESSAGE window.
   bool is_virtualized_;  // Stuck inside Microsoft Softricity VM environment.
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
+  // Return true if the given pid is one of our child processes.
+  // Assumes that the current pid is the root of all pids of the current
+  // instance.
+  bool IsSameChromeInstance(pid_t pid);
+
+  // Extract the process's pid from a symbol link path and if it is on
+  // the same host, kill the process, unlink the lock file and return true.
+  // If the process is part of the same chrome instance, unlink the lock file
+  // and return true without killing it.
+  // If the process is on a different host, return false.
+  bool KillProcessByLockPath();
+
+  // Default function to kill a process, overridable by tests.
+  void KillProcess(int pid);
+
+  // Allow overriding for tests.
+  base::ProcessId current_pid_;
+
+  // Function to call when the other process is hung and needs to be killed.
+  // Allows overriding for tests.
+  base::Callback<void(int)> kill_callback_;
+
   // Path in file system to the socket.
   FilePath socket_path_;
 

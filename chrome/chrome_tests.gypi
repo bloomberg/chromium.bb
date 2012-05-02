@@ -716,7 +716,6 @@
         # NOTE: DON'T ADD NEW TESTS HERE!
         # New tests should be browser_tests. browser_tests are sharded and are
         # less flakier.
-        'browser/process_singleton_linux_uitest.cc',
         'browser/ui/tests/browser_uitest.cc',
         'test/automation/automation_proxy_uitest.cc',
         'test/automation/automation_proxy_uitest.h',
@@ -726,16 +725,6 @@
         # DON'T ADD NEW FILES! SEE NOTE AT TOP OF SECTION.
       ],
       'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-          ],
-        }, { # else: toolkit_uses_gtk != 1
-          'sources!': [
-            'browser/process_singleton_linux_uitest.cc',
-          ],
-        }],
         ['toolkit_views==1', {
           'dependencies': [
             '../ui/views/views.gyp:views',
@@ -1569,6 +1558,7 @@
         'browser/printing/print_preview_unit_test_base.cc',
         'browser/printing/print_preview_unit_test_base.h',
         'browser/process_info_snapshot_mac_unittest.cc',
+        'browser/process_singleton_linux_unittest.cc',
         'browser/process_singleton_mac_unittest.cc',
         'browser/profiles/avatar_menu_model_unittest.cc',
         'browser/profiles/gaia_info_update_service_unittest.cc',
