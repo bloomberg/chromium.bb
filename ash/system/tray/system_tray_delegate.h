@@ -12,6 +12,7 @@
 #include "ash/ash_export.h"
 #include "ash/system/user/login_status.h"
 #include "ash/system/power/power_supply_status.h"
+#include "base/file_path.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -42,6 +43,37 @@ struct ASH_EXPORT BluetoothDeviceInfo {
 };
 
 typedef std::vector<BluetoothDeviceInfo> BluetoothDeviceList;
+
+// Structure that packs progress information of each operation.
+struct ASH_EXPORT DriveOperationStatus {
+  enum OperationType {
+    OPERATION_UPLOAD,
+    OPERATION_DOWNLOAD,
+    OPERATION_OTHER,
+  };
+
+  enum OperationState {
+    OPERATION_NOT_STARTED,
+    OPERATION_STARTED,
+    OPERATION_IN_PROGRESS,
+    OPERATION_COMPLETED,
+    OPERATION_FAILED,
+    OPERATION_SUSPENDED,
+  };
+
+  DriveOperationStatus();
+  ~DriveOperationStatus();
+
+  // File path.
+  FilePath file_path;
+  // Current operation completion progress [0.0 - 1.0].
+  double progress;
+  OperationType type;
+  OperationState state;
+};
+
+typedef std::vector<DriveOperationStatus> DriveOperationStatusList;
+
 
 struct ASH_EXPORT IMEPropertyInfo {
   IMEPropertyInfo();
@@ -106,6 +138,9 @@ class SystemTrayDelegate {
   // Shows the settings related to bluetooth.
   virtual void ShowBluetoothSettings() = 0;
 
+  // Shows settings related to Google Drive.
+  virtual void ShowDriveSettings() = 0;
+
   // Shows settings related to input methods.
   virtual void ShowIMESettings() = 0;
 
@@ -165,6 +200,13 @@ class SystemTrayDelegate {
 
   // Activates an IME property.
   virtual void ActivateIMEProperty(const std::string& key) = 0;
+
+  // Cancels ongoing drive operation.
+  virtual void CancelDriveOperation(const FilePath& file_path) = 0;
+
+  // Returns information about the ongoing drive operations.
+  virtual void GetDriveOperationStatusList(
+      DriveOperationStatusList* list) = 0;
 
   // Returns information about the most relevant network. Relevance is
   // determined by the implementor (e.g. a connecting network may be more

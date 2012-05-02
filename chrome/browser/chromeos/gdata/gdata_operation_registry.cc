@@ -272,11 +272,11 @@ bool GDataOperationRegistry::IsFileTransferOperation(
   return type == OPERATION_UPLOAD || type == OPERATION_DOWNLOAD;
 }
 
-std::vector<GDataOperationRegistry::ProgressStatus>
+GDataOperationRegistry::ProgressStatusList
 GDataOperationRegistry::GetProgressStatusList() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  std::vector<ProgressStatus> status_list;
+  ProgressStatusList status_list;
   for (OperationIDMap::const_iterator iter(&in_flight_operations_);
        !iter.IsAtEnd();
        iter.Advance()) {

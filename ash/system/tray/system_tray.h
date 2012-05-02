@@ -26,6 +26,7 @@ class BluetoothObserver;
 class BrightnessObserver;
 class CapsLockObserver;
 class ClockObserver;
+class DriveObserver;
 class IMEObserver;
 class NetworkObserver;
 class PowerStatusObserver;
@@ -105,6 +106,9 @@ class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
   ClockObserver* clock_observer() const {
     return clock_observer_;
   }
+  DriveObserver* drive_observer() const {
+    return drive_observer_;
+  }
   IMEObserver* ime_observer() const {
     return ime_observer_;
   }
@@ -160,6 +164,7 @@ class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
   BrightnessObserver* brightness_observer_;
   CapsLockObserver* caps_lock_observer_;
   ClockObserver* clock_observer_;
+  DriveObserver* drive_observer_;
   IMEObserver* ime_observer_;
   NetworkObserver* network_observer_;
   PowerStatusObserver* power_status_observer_;
