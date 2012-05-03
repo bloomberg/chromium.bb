@@ -62,6 +62,13 @@ class AppNonClientFrameViewAura : public BrowserNonClientFrameView,
   // Restore the app window (will result in switching the frame_view back).
   void Restore();
 
+  // Returns true if the app controls are being displayed.
+  bool IsShowingControls() const;
+
+  void set_animate_controls(bool animate_controls) {
+    animate_controls_ = animate_controls;
+  }
+
  private:
   class ControlView;
   class Host;
@@ -74,6 +81,8 @@ class AppNonClientFrameViewAura : public BrowserNonClientFrameView,
   views::Widget* control_widget_;
   // Tracks the mouse and causes the controls to slide back up when it exits.
   views::MouseWatcher mouse_watcher_;
+  // Should controls be animated.
+  bool animate_controls_;
 
   DISALLOW_COPY_AND_ASSIGN(AppNonClientFrameViewAura);
 };
