@@ -446,8 +446,6 @@ class WindowedNotificationObserver : public content::NotificationObserver {
  private:
   bool seen_;
   bool running_;
-  std::set<uintptr_t> sources_seen_;
-  content::NotificationSource waiting_for_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowedNotificationObserver);

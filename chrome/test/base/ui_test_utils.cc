@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -960,36 +961,28 @@ WindowedNotificationObserver::WindowedNotificationObserver(
     int notification_type,
     const content::NotificationSource& source)
     : seen_(false),
-      running_(false),
-      waiting_for_(source) {
-  registrar_.Add(this, notification_type, waiting_for_);
+      running_(false) {
+  registrar_.Add(this, notification_type, source);
 }
 
 WindowedNotificationObserver::~WindowedNotificationObserver() {}
 
 void WindowedNotificationObserver::Wait() {
-  if (seen_ || (waiting_for_ == content::NotificationService::AllSources() &&
-                !sources_seen_.empty())) {
+  if (seen_)
     return;
-  }
 
-  running_ = true;
+  AutoReset<bool> auto_reset(&running_, true);
   ui_test_utils::RunMessageLoop();
-  running_ = false;
+  EXPECT_TRUE(seen_);
 }
 
 void WindowedNotificationObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (waiting_for_ == source ||
-      (running_ && waiting_for_ == content::NotificationService::AllSources())) {
-    seen_ = true;
-    if (running_)
-      MessageLoopForUI::current()->Quit();
-  } else {
-    sources_seen_.insert(source.map_key());
-  }
+  seen_ = true;
+  if (running_)
+    MessageLoopForUI::current()->Quit();
 }
 
 WindowedTabAddedNotificationObserver::WindowedTabAddedNotificationObserver(
