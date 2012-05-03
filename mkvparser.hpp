@@ -86,7 +86,7 @@ public:
     Block(long long start, long long size);
     ~Block();
 
-    long Parse(IMkvReader*);
+    long Parse(const Cluster*);
 
     long long GetTrackNumber() const;
     long long GetTimeCode(const Cluster*) const;  //absolute, but not scaled

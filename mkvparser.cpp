@@ -7962,7 +7962,6 @@ Cluster::GetEntry(
         }
 
         const long long tc_ = pBlock->GetTimeCode(this);
-        assert(tc_ >= 0);
 
         if (tc_ < tc)
         {
@@ -8081,7 +8080,7 @@ SimpleBlock::SimpleBlock(
 
 long SimpleBlock::Parse()
 {
-    return m_block.Parse(m_pCluster->m_pSegment->m_pReader);
+    return m_block.Parse(m_pCluster);
 }
 
 
@@ -8116,7 +8115,7 @@ BlockGroup::BlockGroup(
 
 long BlockGroup::Parse()
 {
-    const long status = m_block.Parse(m_pCluster->m_pSegment->m_pReader);
+    const long status = m_block.Parse(m_pCluster);
 
     if (status)
         return status;
@@ -8186,9 +8185,14 @@ Block::~Block()
 }
 
 
-long Block::Parse(IMkvReader* pReader)
+long Block::Parse(const Cluster* pCluster)
 {
-    assert(pReader);
+    if (pCluster == NULL)
+        return -1;
+
+    if (pCluster->m_pSegment == NULL)
+        return -1;
+
     assert(m_start >= 0);
     assert(m_size >= 0);
     assert(m_track <= 0);
@@ -8199,6 +8203,8 @@ long Block::Parse(IMkvReader* pReader)
     const long long stop = m_start + m_size;
 
     long len;
+
+    IMkvReader* const pReader = pCluster->m_pSegment->m_pReader;
 
     m_track = ReadUInt(pReader, pos, len);
 
@@ -8528,7 +8534,6 @@ long long Block::GetTimeCode(const Cluster* pCluster) const
     assert(tc0 >= 0);
 
     const long long tc = tc0 + m_timecode;
-    assert(tc >= 0);
 
     return tc;  //unscaled timecode units
 }
