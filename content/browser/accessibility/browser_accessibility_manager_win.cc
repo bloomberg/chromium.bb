@@ -23,7 +23,7 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
 }
 
 BrowserAccessibilityManagerWin*
-BrowserAccessibilityManager::toBrowserAccessibilityManagerWin() {
+BrowserAccessibilityManager::ToBrowserAccessibilityManagerWin() {
   return static_cast<BrowserAccessibilityManagerWin*>(this);
 }
 

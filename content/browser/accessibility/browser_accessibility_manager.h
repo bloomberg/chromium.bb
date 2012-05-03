@@ -133,7 +133,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   gfx::NativeView GetParentView();
 
 #if defined(OS_WIN)
-  BrowserAccessibilityManagerWin* toBrowserAccessibilityManagerWin();
+  BrowserAccessibilityManagerWin* ToBrowserAccessibilityManagerWin();
 #endif
 
   // Return the object that has focus, if it's a descandant of the

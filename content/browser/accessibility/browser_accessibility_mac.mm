@@ -53,7 +53,7 @@ void BrowserAccessibilityMac::DetachTree(
   BrowserAccessibility::DetachTree(nodes);
 }
 
-BrowserAccessibilityCocoa* BrowserAccessibility::toBrowserAccessibilityCocoa() {
+BrowserAccessibilityCocoa* BrowserAccessibility::ToBrowserAccessibilityCocoa() {
   return static_cast<BrowserAccessibilityMac*>(this)->
       native_view();
 }

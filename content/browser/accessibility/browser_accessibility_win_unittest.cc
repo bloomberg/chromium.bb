@@ -115,7 +115,7 @@ TEST_F(BrowserAccessibilityTest, TestNoLeaks) {
           new CountedBrowserAccessibilityFactory());
   ASSERT_EQ(3, CountedBrowserAccessibility::global_obj_count_);
   IAccessible* root_accessible =
-      manager->GetRoot()->toBrowserAccessibilityWin();
+      manager->GetRoot()->ToBrowserAccessibilityWin();
   IDispatch* root_iaccessible = NULL;
   IDispatch* child1_iaccessible = NULL;
   VARIANT var_child;
@@ -170,7 +170,7 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   // Query for the text IAccessible and verify that it returns "old text" as its
   // value.
   base::win::ScopedComPtr<IDispatch> text_dispatch;
-  HRESULT hr = manager->GetRoot()->toBrowserAccessibilityWin()->get_accChild(
+  HRESULT hr = manager->GetRoot()->ToBrowserAccessibilityWin()->get_accChild(
       CreateI4Variant(1), text_dispatch.Receive());
   ASSERT_EQ(S_OK, hr);
 
@@ -199,7 +199,7 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
 
   // Query for the text IAccessible and verify that it now returns "new text"
   // as its value.
-  hr = manager->GetRoot()->toBrowserAccessibilityWin()->get_accChild(
+  hr = manager->GetRoot()->ToBrowserAccessibilityWin()->get_accChild(
       CreateI4Variant(1),
       text_dispatch.Receive());
   ASSERT_EQ(S_OK, hr);
@@ -297,9 +297,9 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   ASSERT_EQ(2, CountedBrowserAccessibility::global_obj_count_);
 
   BrowserAccessibilityWin* root_obj =
-      manager->GetRoot()->toBrowserAccessibilityWin();
+      manager->GetRoot()->ToBrowserAccessibilityWin();
   BrowserAccessibilityWin* text1_obj =
-      root_obj->GetChild(0)->toBrowserAccessibilityWin();
+      root_obj->GetChild(0)->ToBrowserAccessibilityWin();
 
   BSTR text;
   long start;
@@ -393,7 +393,7 @@ TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
   ASSERT_EQ(3, CountedBrowserAccessibility::global_obj_count_);
 
   BrowserAccessibilityWin* root_obj =
-      manager->GetRoot()->toBrowserAccessibilityWin();
+      manager->GetRoot()->ToBrowserAccessibilityWin();
 
   BSTR text;
 
@@ -477,7 +477,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   ASSERT_EQ(7, CountedBrowserAccessibility::global_obj_count_);
 
   BrowserAccessibilityWin* root_obj =
-      manager->GetRoot()->toBrowserAccessibilityWin();
+      manager->GetRoot()->ToBrowserAccessibilityWin();
 
   BSTR text;
 

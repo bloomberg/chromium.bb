@@ -98,7 +98,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
       event_id = NSAccessibilityValueChangedNotification;
       break;
   }
-  BrowserAccessibilityCocoa* native_node = node->toBrowserAccessibilityCocoa();
+  BrowserAccessibilityCocoa* native_node = node->ToBrowserAccessibilityCocoa();
   DCHECK(native_node);
   NSAccessibilityPostNotification(native_node, event_id);
 }

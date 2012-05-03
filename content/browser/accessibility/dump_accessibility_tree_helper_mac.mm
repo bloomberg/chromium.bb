@@ -15,7 +15,7 @@ void DumpAccessibilityTreeHelper::Initialize() {}
 
 string16 DumpAccessibilityTreeHelper::ToString(BrowserAccessibility* node,
                                                char* prefix) {
-  BrowserAccessibilityCocoa* cocoa_node = node->toBrowserAccessibilityCocoa();
+  BrowserAccessibilityCocoa* cocoa_node = node->ToBrowserAccessibilityCocoa();
   NSString* dump =
       [NSString stringWithFormat:@"%s%@ "
                                   "subrole=%@ "
