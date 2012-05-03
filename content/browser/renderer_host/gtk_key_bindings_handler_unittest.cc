@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,9 +103,9 @@ TEST_F(GtkKeyBindingsHandlerTest, MoveCursor) {
     // "move-cursor" (visual-positions, 1, 1)
     { "MoveRightAndModifySelection", "" },
     // "move-cursor" (words, -1, 0)
-    { "MoveWordBackward", "" },
+    { "MoveWordLeft", "" },
     // "move-cursor" (words, 1, 0)
-    { "MoveWordForward", "" },
+    { "MoveWordRight", "" },
     // "move-cursor" (display-lines, -1, 0)
     { "MoveUp", "" },
     // "move-cursor" (display-lines, 1, 0)
