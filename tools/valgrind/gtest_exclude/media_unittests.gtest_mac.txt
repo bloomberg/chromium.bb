@@ -1,3 +1,0 @@
-# Occasionally crashes, http://crbug.com/122447
-PipelineIntegrationTest.BasicPlayback
-PipelineIntegrationTest.EncryptedPlayback

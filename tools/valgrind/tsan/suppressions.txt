@@ -542,10 +542,10 @@
 {
   bug_93932_f
   ThreadSanitizer:Race
-  fun:update_context_from_thread
+  ...
   fun:ff_thread_flush
   ...
-  fun:media::FFmpegVideoDecoder::Flush
+  fun:media::FFmpegVideoDecoder::Reset
 }
 {
   bug_93932_g
@@ -789,18 +789,6 @@
   ...
   fun:pa_rtpoll_run
 }
-{
-  bug_112200
-  ThreadSanitizer:Race
-  ...
-  fun:ff_thread_flush
-  fun:avcodec_flush_buffers
-  fun:avcodec_flush_buffers
-  ...
-  fun:media::FFmpegVideoDecoder::Flush
-  fun:base::internal::RunnableAdapter::Run
-}
-
 {
   bug_112419
   ThreadSanitizer:Race
