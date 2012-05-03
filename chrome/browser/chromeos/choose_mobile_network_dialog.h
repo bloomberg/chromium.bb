@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CHOOSE_MOBILE_NETWORK_DIALOG_H_
 #define CHROME_BROWSER_CHROMEOS_CHOOSE_MOBILE_NETWORK_DIALOG_H_
 
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace chromeos {

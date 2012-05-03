@@ -10,8 +10,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
+#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/web_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;

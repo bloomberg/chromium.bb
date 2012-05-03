@@ -13,6 +13,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

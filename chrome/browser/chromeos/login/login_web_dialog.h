@@ -9,11 +9,12 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
+#include "googleurl/src/gurl.h"
 
 namespace chromeos {
 

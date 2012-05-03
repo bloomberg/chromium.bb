@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/size.h"

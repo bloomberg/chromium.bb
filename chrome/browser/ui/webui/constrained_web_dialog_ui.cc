@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/property_bag.h"
 #include "base/values.h"
+#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"

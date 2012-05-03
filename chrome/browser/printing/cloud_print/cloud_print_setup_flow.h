@@ -10,7 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -27,6 +27,10 @@ class ServiceProcessControl;
 
 namespace base {
 class DictionaryValue;
+}
+
+namespace content {
+class WebUI;
 }
 
 // This class is responsible for showing a cloud print setup dialog

@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/values.h"
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "net/base/x509_certificate.h"
 #include "ui/gfx/native_widget_types.h"

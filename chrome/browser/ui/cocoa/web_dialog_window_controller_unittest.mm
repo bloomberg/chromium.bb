@@ -14,7 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_ui.h"

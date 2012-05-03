@@ -11,8 +11,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"

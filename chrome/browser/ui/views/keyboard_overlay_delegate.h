@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_KEYBOARD_OVERLAY_DELEGATE_H_
 #define CHROME_BROWSER_UI_VIEWS_KEYBOARD_OVERLAY_DELEGATE_H_
 
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 
 class WebDialogView;
 

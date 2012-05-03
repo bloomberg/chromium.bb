@@ -9,6 +9,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "content/public/browser/web_contents.h"

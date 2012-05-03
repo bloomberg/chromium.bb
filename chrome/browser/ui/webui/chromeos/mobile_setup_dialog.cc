@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

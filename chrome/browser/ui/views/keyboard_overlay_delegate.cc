@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/ui/views/web_dialog_view.h"
 #include "chrome/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"

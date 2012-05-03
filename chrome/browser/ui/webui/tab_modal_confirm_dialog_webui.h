@@ -12,7 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/webui/web_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 
 class ConstrainedWebDialogDelegate;
 class TabContentsWrapper;

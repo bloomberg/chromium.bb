@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"

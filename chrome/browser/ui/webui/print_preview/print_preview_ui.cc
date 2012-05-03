@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_data_source.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
