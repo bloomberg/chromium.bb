@@ -86,33 +86,11 @@ bool GoogleURLTrackerInfoBarDelegate::LinkClicked(
 }
 
 void GoogleURLTrackerInfoBarDelegate::Show() {
-  owner()->AddInfoBar(this);
   showing_ = true;
+  owner()->AddInfoBar(this);  // May delete |this| on failure!
 }
 
 void GoogleURLTrackerInfoBarDelegate::Close(bool redo_search) {
-  if (!showing_) {
-    // We haven't been added to a tab, so just delete ourselves.
-    delete this;
-    return;
-  }
-
-  // Synchronously remove ourselves from the URL tracker's list, because the
-  // RemoveInfoBar() call below may result in either a synchronous or an
-  // asynchronous call back to InfoBarClosed(), and it's easier to handle when
-  // we just guarantee the removal is synchronous.
-  google_url_tracker_->InfoBarClosed(map_key_);
-  google_url_tracker_ = NULL;
-
-  // If we were showing in a background tab that was then closed, we could have
-  // been leaked, and subsequently reached here due to
-  // GoogleURLTracker::CloseAllInfoBars().  In this case our owner is now NULL
-  // so we should just do nothing.
-  // TODO(pkasting): This can go away once the InfoBar ownership model is fixed
-  // so that infobars in background tabs don't leak on tab closure.
-  if (!owner())
-    return;
-
   if (redo_search) {
     // Re-do the user's search on the new domain.
     url_canon::Replacements<char> replacements;
@@ -126,7 +104,28 @@ void GoogleURLTrackerInfoBarDelegate::Close(bool redo_search) {
     }
   }
 
-  owner()->RemoveInfoBar(this);
+  if (!showing_) {
+    // We haven't been added to a tab, so just delete ourselves.
+    delete this;
+    return;
+  }
+
+  // Synchronously remove ourselves from the URL tracker's list, because the
+  // RemoveInfoBar() call below may result in either a synchronous or an
+  // asynchronous call back to InfoBarClosed(), and it's easier to handle when
+  // we just guarantee the removal is synchronous.
+  google_url_tracker_->InfoBarClosed(map_key_);
+  google_url_tracker_ = NULL;
+
+  // If we're already animating closed, we won't have an owner.  Do nothing in
+  // this case.
+  // TODO(pkasting): For now, this can also happen if we were showing in a
+  // background tab that was then closed, in which case we'll have leaked and
+  // subsequently reached here due to GoogleURLTracker::CloseAllInfoBars().
+  // This case will no longer happen once infobars are refactored to own their
+  // delegates.
+  if (owner())
+    owner()->RemoveInfoBar(this);
 }
 
 GoogleURLTrackerInfoBarDelegate::~GoogleURLTrackerInfoBarDelegate() {

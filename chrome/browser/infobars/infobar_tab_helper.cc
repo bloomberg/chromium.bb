@@ -38,8 +38,10 @@ void InfoBarTabHelper::AddInfoBar(InfoBarDelegate* delegate) {
     return;
   }
 
-  for (size_t i = 0; i < infobars_.size(); ++i) {
-    if (GetInfoBarDelegateAt(i)->EqualsDelegate(delegate)) {
+  for (InfoBars::const_iterator i(infobars_.begin()); i != infobars_.end();
+       ++i) {
+    if ((*i)->EqualsDelegate(delegate)) {
+      DCHECK_NE(*i, delegate);
       delegate->InfoBarClosed();
       return;
     }
@@ -75,17 +77,14 @@ void InfoBarTabHelper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
     return;
   }
 
-  size_t i;
-  for (i = 0; i < infobars_.size(); ++i) {
-    if (GetInfoBarDelegateAt(i) == old_delegate)
-      break;
-  }
-  DCHECK_LT(i, infobars_.size());
+  InfoBars::iterator i(std::find(infobars_.begin(), infobars_.end(),
+                                 old_delegate));
+  DCHECK(i != infobars_.end());
 
-  infobars_.insert(infobars_.begin() + i, new_delegate);
+  i = infobars_.insert(i, new_delegate) + 1;
   // Remove the old delegate before notifying, so that if any observers call
   // back to AddInfoBar() or similar, we don't dupe-check against this delegate.
-  infobars_.erase(infobars_.begin() + i + 1);
+  infobars_.erase(i);
 
   old_delegate->clear_owner();
   InfoBarReplacedDetails replaced_details(old_delegate, new_delegate);
@@ -106,18 +105,13 @@ void InfoBarTabHelper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
     return;
   }
 
-  size_t i;
-  for (i = 0; i < infobars_.size(); ++i) {
-    if (GetInfoBarDelegateAt(i) == delegate)
-      break;
-  }
-  DCHECK_LT(i, infobars_.size());
-  InfoBarDelegate* infobar = infobars_[i];
+  InfoBars::iterator i(std::find(infobars_.begin(), infobars_.end(), delegate));
+  DCHECK(i != infobars_.end());
 
-  infobar->clear_owner();
+  delegate->clear_owner();
   // Remove the delegate before notifying, so that if any observers call back to
   // AddInfoBar() or similar, we don't dupe-check against this delegate.
-  infobars_.erase(infobars_.begin() + i);
+  infobars_.erase(i);
   // Remove ourselves as an observer if we are tracking no more InfoBars.
   if (infobars_.empty()) {
     registrar_.Remove(
@@ -126,7 +120,7 @@ void InfoBarTabHelper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
             &web_contents()->GetController()));
   }
 
-  InfoBarRemovedDetails removed_details(infobar, animate);
+  InfoBarRemovedDetails removed_details(delegate, animate);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
       content::Source<InfoBarTabHelper>(this),

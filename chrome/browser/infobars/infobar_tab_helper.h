@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,6 +64,8 @@ class InfoBarTabHelper : public content::WebContentsObserver,
   }
 
  private:
+  typedef std::vector<InfoBarDelegate*> InfoBars;
+
   void RemoveInfoBarInternal(InfoBarDelegate* delegate, bool animate);
   void RemoveAllInfoBars(bool animate);
 
@@ -72,7 +74,7 @@ class InfoBarTabHelper : public content::WebContentsObserver,
   void OnDidBlockRunningInsecureContent();
 
   // Delegates for InfoBars associated with this InfoBarTabHelper.
-  std::vector<InfoBarDelegate*> infobars_;
+  InfoBars infobars_;
   bool infobars_enabled_;
 
   content::NotificationRegistrar registrar_;
