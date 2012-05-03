@@ -6,7 +6,7 @@
 #cookies-view-page {
   height: 90%;
   margin-left: -15px;
-  min-width: 720px;
+  width: 720px;
 }
 
 /* Styles for the cookies list elements in cookies_view.html. */
