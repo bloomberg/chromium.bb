@@ -202,7 +202,7 @@
 
           Prehliadač <ph name="PRODUCT_NAME"/> v prípade každej položky prijme z aktualizačnej služby, ktorá sa nachádza na uvedenej adrese URL pre aktualizácie, rozšírenie určené ID rozšírenia a potichu ho nainštaluje.
 
-         Identifikátor <ph name="EXTENSION_POLICY_EXAMPLE"/> napríklad nainštaluje rozšírenie <ph name="EXTENSION_NAME_EXAMPLE"/> zo štandardnej adresy URL pre aktualizácie v službe Internetový obchod Chrome. Viac informácií o hostených rozšíreniach nájdete na adrese: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+         Identifikátor <ph name="EXTENSION_POLICY_EXAMPLE"/> napríklad nainštaluje rozšírenie <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> zo štandardnej adresy URL pre aktualizácie v službe Internetový obchod Chrome. Viac informácií o hostených rozšíreniach nájdete na adrese: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Používatelia nebudú môcť odinštalovať rozšírenia, ktoré budú uvedené v rámci tohto pravidla. Ak rozšírenie zo zoznamu odstránite, prehliadač <ph name="PRODUCT_NAME"/> ho automaticky odinštaluje.
 

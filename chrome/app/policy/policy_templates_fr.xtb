@@ -212,7 +212,7 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
 
           Pour chaque élément, <ph name="PRODUCT_NAME"/> récupère l'extension définie par l'identifiant d'extension à partir du service de mise à jour sous l'URL de mise à jour spécifiée, puis l'installe en arrière-plan.
 
-          Par exemple, <ph name="EXTENSION_POLICY_EXAMPLE"/> installe l'extension <ph name="EXTENSION_NAME_EXAMPLE"/> à partir de l'URL de mise à jour standard de Chrome Web Store. Pour plus d'informations sur les extensions hébergées, consultez la page suivante : <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Par exemple, <ph name="EXTENSION_POLICY_EXAMPLE"/> installe l'extension <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> à partir de l'URL de mise à jour standard de Chrome Web Store. Pour plus d'informations sur les extensions hébergées, consultez la page suivante : <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Les utilisateurs ne peuvent pas désinstaller les extensions spécifiées par cette règle. Si vous supprimez une extension de cette liste, elle sera désinstallée automatiquement par <ph name="PRODUCT_NAME"/>.
 

@@ -108,7 +108,7 @@
 
           Pentru fiecare element, <ph name="PRODUCT_NAME"/> va prelua extensia specificată de ID-ul din serviciul de actualizare de la adresa URL indicată şi o va instala în fundal.
 
-          De exemplu, <ph name="EXTENSION_POLICY_EXAMPLE"/> instalează extensia <ph name="EXTENSION_NAME_EXAMPLE"/> de la adresa URL de actualizare standard din Magazinul web Chrome. Pentru mai multe informaţii despre găzduirea extensiilor, accesaţi: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          De exemplu, <ph name="EXTENSION_POLICY_EXAMPLE"/> instalează extensia <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> de la adresa URL de actualizare standard din Magazinul web Chrome. Pentru mai multe informaţii despre găzduirea extensiilor, accesaţi: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Utilizatorii nu vor putea dezinstala extensiile specificate de această politică. Dacă ştergeţi o extensie din această listă, aceasta va fi în mod automat dezinstalată de <ph name="PRODUCT_NAME"/>.
 

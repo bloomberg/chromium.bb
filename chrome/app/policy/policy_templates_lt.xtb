@@ -211,7 +211,7 @@
 
           Kiekvienam elementui „<ph name="PRODUCT_NAME"/>“ gaus plėtinį, nurodytą pagal plėtinio ID, iš naujinių paslaugos nurodytu naujinio URL ir tyliai jį įdiegs.
 
-          Pvz., <ph name="EXTENSION_POLICY_EXAMPLE"/> įdiegia „<ph name="EXTENSION_NAME_EXAMPLE"/>“ plėtinį iš standartinio „Chrome“ internetinės parduotuvės naujinio URL. Jei reikia daugiau informacijos apie plėtinių prieglobą, žr. šiuo adresu: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Pvz., <ph name="EXTENSION_POLICY_EXAMPLE"/> įdiegia „<ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/>“ plėtinį iš standartinio „Chrome“ internetinės parduotuvės naujinio URL. Jei reikia daugiau informacijos apie plėtinių prieglobą, žr. šiuo adresu: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Naudotojai negalės pašalinti plėtinių, kurie nurodyti pagal šią politiką. Jei pašalinsite plėtinį iš šio sąrašo, jis bus automatiškai pašalintas „<ph name="PRODUCT_NAME"/>“.
 

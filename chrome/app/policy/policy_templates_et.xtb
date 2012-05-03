@@ -189,7 +189,7 @@
 
           <ph name="PRODUCT_NAME"/> toob iga üksuse puhul värskendusteenuse URL-ilt ID-ga määratud laienduse ja installib selle taustal.
 
-          Näiteks installib <ph name="EXTENSION_POLICY_EXAMPLE"/> Chrome'i veebipoe värskendamise URL-ilt laienduse <ph name="EXTENSION_NAME_EXAMPLE"/>. Laienduste hostimise kohta lisateabe saamiseks vt <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Näiteks installib <ph name="EXTENSION_POLICY_EXAMPLE"/> Chrome'i veebipoe värskendamise URL-ilt laienduse <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/>. Laienduste hostimise kohta lisateabe saamiseks vt <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Kasutajad ei saa selle reegliga määratud laiendusi desinstallida. Kui eemaldate laienduse loendist, siis desinstallib <ph name="PRODUCT_NAME"/> selle automaatselt.
 

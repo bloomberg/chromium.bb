@@ -108,7 +108,7 @@
 
           对于每一项，<ph name="PRODUCT_NAME"/>都会从位于指定的更新网址中的更新服务检索由扩展程序 ID 指定的扩展程序，然后进行静默安装。
 
-          例如，<ph name="EXTENSION_POLICY_EXAMPLE"/> 用于从标准 Chrome 网上应用店更新网址安装 <ph name="EXTENSION_NAME_EXAMPLE"/>。有关托管扩展程序的详情，请参阅：<ph name="LINK_TO_EXTENSION_DOC2"/>。
+          例如，<ph name="EXTENSION_POLICY_EXAMPLE"/> 用于从标准 Chrome 网上应用店更新网址安装 <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/>。有关托管扩展程序的详情，请参阅：<ph name="LINK_TO_EXTENSION_DOC2"/>。
 
           用户无法卸载由此政策指定的扩展程序。如果您从该列表中删除了某个扩展程序，<ph name="PRODUCT_NAME"/>就会自动卸载该扩展程序。
 

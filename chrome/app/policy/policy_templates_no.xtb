@@ -175,7 +175,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
           <ph name="PRODUCT_NAME"/> henter, for hvert element, utvidelsen angitt av utvidelse-ID-en fra oppdateringstjenesten på den spesifiserte nettadressen for oppdatering. Deretter installeres utvidelsen.
 
-          Eksempelvis installerer <ph name="EXTENSION_POLICY_EXAMPLE"/> <ph name="EXTENSION_NAME_EXAMPLE"/>-utvidelsen fra standard oppdateringsnettadresse for Chrome Nettmarked. Se <ph name="LINK_TO_EXTENSION_DOC2"/> for mer informasjon om å være vert for utvidelser.
+          Eksempelvis installerer <ph name="EXTENSION_POLICY_EXAMPLE"/> <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/>-utvidelsen fra standard oppdateringsnettadresse for Chrome Nettmarked. Se <ph name="LINK_TO_EXTENSION_DOC2"/> for mer informasjon om å være vert for utvidelser.
 
           Brukere vil ikke kunne avinstallere utvidelser som er spesifisert i denne retningslinjen. Hvis du fjerner en utvidelse fra denne listen, blir den automatisk avinstallert av <ph name="PRODUCT_NAME"/>.
 

@@ -108,7 +108,7 @@
 
           <ph name="PRODUCT_NAME"/> 會從指定更新網址的更新服務，為每個項目擷取擴充功能 ID 指定的擴充功能，並以無訊息方式加以安裝。
 
-          舉例來說，<ph name="EXTENSION_POLICY_EXAMPLE"/> 從標準 Chrome 線上應用程式商店更新網址安裝 <ph name="EXTENSION_NAME_EXAMPLE"/> 擴充功能。如要進一步瞭解如何管理擴充功能，請參閱：<ph name="LINK_TO_EXTENSION_DOC2"/>。
+          舉例來說，<ph name="EXTENSION_POLICY_EXAMPLE"/> 從標準 Chrome 線上應用程式商店更新網址安裝 <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> 擴充功能。如要進一步瞭解如何管理擴充功能，請參閱：<ph name="LINK_TO_EXTENSION_DOC2"/>。
 
           使用者無法自行解除安裝這項政策所指定的擴充功能。如果您從這份清單移除擴充功能，則 <ph name="PRODUCT_NAME"/> 會自動解除安裝該擴充功能。
 

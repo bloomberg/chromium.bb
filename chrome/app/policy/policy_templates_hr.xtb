@@ -116,7 +116,7 @@
 
           Za svaku stavku usluga <ph name="PRODUCT_NAME"/> dohvatit će proširenje koje odredi ID proširenja iz usluge ažuriranja na navedenom URL-u i neprimjetno ga instalirati.
 
-          Na primjer, pravilo <ph name="EXTENSION_POLICY_EXAMPLE"/> instalira proširenje <ph name="EXTENSION_NAME_EXAMPLE"/> sa standardnog URL-a za ažuriranje Chrome web-trgovine. Više informacija o hostingu proširenja potražite na stranici <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Na primjer, pravilo <ph name="EXTENSION_POLICY_EXAMPLE"/> instalira proširenje <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> sa standardnog URL-a za ažuriranje Chrome web-trgovine. Više informacija o hostingu proširenja potražite na stranici <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Korisnici neće moći instalirati proširenja koja to pravilo navede. Ako uklonite neko proširenje s tog popisa, usluga <ph name="PRODUCT_NAME"/> automatski će ga deinstalirati.
 

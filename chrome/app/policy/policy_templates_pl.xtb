@@ -110,7 +110,7 @@
 
           Dla każdej pozycji <ph name="PRODUCT_NAME"/> będzie pobierać z usługi aktualizacji określonej przez podany URL aktualizacji rozszerzenie o danym identyfikatorze i dyskretnie je aktualizować.
 
-          Na przykład <ph name="EXTENSION_POLICY_EXAMPLE"/> instaluje rozszerzenie <ph name="EXTENSION_NAME_EXAMPLE"/> ze standardowego URL-a aktualizacji Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Na przykład <ph name="EXTENSION_POLICY_EXAMPLE"/> instaluje rozszerzenie <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> ze standardowego URL-a aktualizacji Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Użytkownicy nie będą mieli możliwości odinstalowania rozszerzeń określonych przez tę zasadę. Jeśli usuniesz rozszerzenie z tej listy, zostanie ono automatycznie odinstalowane przez <ph name="PRODUCT_NAME"/>.
 

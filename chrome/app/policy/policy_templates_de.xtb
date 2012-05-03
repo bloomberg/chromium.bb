@@ -114,7 +114,7 @@
 
           <ph name="PRODUCT_NAME"/> ruft für jedes Element die über die Erweiterungs-ID angegebene Erweiterung vom Aktualisierungsdienst unter der angegebenen URL ab und installiert diese ohne Nutzereingriff.
 
-          <ph name="EXTENSION_POLICY_EXAMPLE"/> installiert beispielsweise die Erweiterung &quot;<ph name="EXTENSION_NAME_EXAMPLE"/>&quot; über die Standard-Aktualisierungs-URL des Chrome Web Stores. Weitere Informationen zum Hosten von Erweiterungen finden Sie unter <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          <ph name="EXTENSION_POLICY_EXAMPLE"/> installiert beispielsweise die Erweiterung &quot;<ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/>&quot; über die Standard-Aktualisierungs-URL des Chrome Web Stores. Weitere Informationen zum Hosten von Erweiterungen finden Sie unter <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Nutzer können keine Erweiterungen deinstallieren, die mithilfe dieser Richtlinie angegeben werden. Wenn Sie eine Erweiterung aus dieser Liste entfernen, wird sie automatisch durch <ph name="PRODUCT_NAME"/> deinstalliert.
 

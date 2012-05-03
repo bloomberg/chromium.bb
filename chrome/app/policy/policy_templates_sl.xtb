@@ -211,7 +211,7 @@
 
           Za vsak element <ph name="PRODUCT_NAME"/> iz storitve za posodobitev na določenem URL-ju prenese razširitev, določeno v ID-ju razširitve, in jo namesti v ozadju.
 
-          Na primer, <ph name="EXTENSION_POLICY_EXAMPLE"/> z običajnega URL-ja za posodobitev Spletne trgovine Chrome namesti razširitev <ph name="EXTENSION_NAME_EXAMPLE"/>. Če želite več informacij o gostovanju razširitev, glejte: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Na primer, <ph name="EXTENSION_POLICY_EXAMPLE"/> z običajnega URL-ja za posodobitev Spletne trgovine Chrome namesti razširitev <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/>. Če želite več informacij o gostovanju razširitev, glejte: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Uporabniki lahko odstranijo razširitve, določene s tem pravilnikom. Če razširitev odstranite s tega seznama, jo <ph name="PRODUCT_NAME"/> samodejno odstrani.
 

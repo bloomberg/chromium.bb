@@ -125,7 +125,7 @@
 
           بالنسبة إلى كل عنصر، سيسترد <ph name="PRODUCT_NAME"/> الإضافة المحددة بحسب المعرّف من خدمة التحديث على عنوان URL المحدد للتحديث وتثبيتها تلقائيًا.
 
-          على سبيل المثال، يثبت <ph name="EXTENSION_POLICY_EXAMPLE"/> الإضافة <ph name="EXTENSION_NAME_EXAMPLE"/> من عنوان URL قياسي في سوق Chrome الإلكتروني. للحصول على مزيد من المعلومات حول استضافة الإضافات، راجع: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          على سبيل المثال، يثبت <ph name="EXTENSION_POLICY_EXAMPLE"/> الإضافة <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> من عنوان URL قياسي في سوق Chrome الإلكتروني. للحصول على مزيد من المعلومات حول استضافة الإضافات، راجع: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           لن يتمكن المستخدمون من إزالة الإضافات التي تم تحديدها باستخدام هذه السياسة. وفي حالة إزالة إضافة من هذه القائمة، فستتم إزالتها من <ph name="PRODUCT_NAME"/> تلقائيًا.
 

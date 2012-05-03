@@ -211,7 +211,7 @@
 
           Pro každou položku načte <ph name="PRODUCT_NAME"/> z aktualizační služby, která se nachází na uvedené adrese URL pro aktualizace, rozšíření určené identifikátorem ID rozšíření a bez zásahu uživatele jej nainstaluje.
 
-          Zásada <ph name="EXTENSION_POLICY_EXAMPLE"/> například nainstaluje rozšíření <ph name="EXTENSION_NAME_EXAMPLE"/> ze standardní adresy URL pro aktualizace v Internetovém obchodě Chrome. Další informace o hostovaných rozšířeních naleznete na adrese: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Zásada <ph name="EXTENSION_POLICY_EXAMPLE"/> například nainstaluje rozšíření <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> ze standardní adresy URL pro aktualizace v Internetovém obchodě Chrome. Další informace o hostovaných rozšířeních naleznete na adrese: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
            Rozšíření určená touto zásadou uživatelé nebudou moci odinstalovat. Pokud rozšíření ze seznamu odstraníte, <ph name="PRODUCT_NAME"/> je automaticky odinstaluje.
 

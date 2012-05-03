@@ -211,7 +211,7 @@
 
           Katram vienumam produkts <ph name="PRODUCT_NAME"/> atjaunos paplašinājumu, kas norādīts ar paplašinājuma ID no atjauninājumu pakalpojuma norādītā atjaunināšanas URL, un instalēs to nemanot.
 
-          Piemēram, <ph name="EXTENSION_POLICY_EXAMPLE"/> instalē paplašinājumu <ph name="EXTENSION_NAME_EXAMPLE"/> no standarta Chrome interneta veikala atjaunināšanas URL. Lai uzzinātu vairāk par paplašinājumu mitināšanu, skatiet šeit: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Piemēram, <ph name="EXTENSION_POLICY_EXAMPLE"/> instalē paplašinājumu <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> no standarta Chrome interneta veikala atjaunināšanas URL. Lai uzzinātu vairāk par paplašinājumu mitināšanu, skatiet šeit: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Lietotāji nevarēs atinstalēt paplašinājumus, kas norādīti saskaņā ar šo politiku. Ja noņemsiet paplašinājumu no saraksta, produkts <ph name="PRODUCT_NAME"/> to automātiski atinstalēs.
 

@@ -205,7 +205,7 @@
 
           <ph name="PRODUCT_NAME"/> her öğe için uzantı kimliği tarafından belirtilen uzantıyı belirtilen güncelleme URL'sindeki güncelleme hizmetinden alır ve sessiz şekilde yükler.
 
-          Örneğin, <ph name="EXTENSION_POLICY_EXAMPLE"/> standart Chrome Web Mağazası güncelleme URL'sinden <ph name="EXTENSION_NAME_EXAMPLE"/> uzantısını yükler. Barındırma uzantıları hakkında daha fazla bilgi için bkz: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Örneğin, <ph name="EXTENSION_POLICY_EXAMPLE"/> standart Chrome Web Mağazası güncelleme URL'sinden <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> uzantısını yükler. Barındırma uzantıları hakkında daha fazla bilgi için bkz: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Kullanıcılar, bu politikanın belirttiği uzantıları kaldıramazlar. Bu listeden bir uzantıyı kaldırırsanız <ph name="PRODUCT_NAME"/>  tarafından otomatik olarak yüklemesi kaldırılır.
 

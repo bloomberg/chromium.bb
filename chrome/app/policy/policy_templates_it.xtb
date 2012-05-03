@@ -108,7 +108,7 @@
 
           Per ogni elemento <ph name="PRODUCT_NAME"/> recupererà l'estensione specifica dall'ID estensione dal servizio di aggiornamento  in corrispondenza dell'URL di aggiornamento specificato e la installerà automaticamente.
 
-          Ad esempio, <ph name="EXTENSION_POLICY_EXAMPLE"/> installa l'estensione <ph name="EXTENSION_NAME_EXAMPLE"/> dall'URL di aggiornamento standard del Chrome Web Store. Per ulteriori informazioni sulle estensioni in hosting, visita il sito all'indirizzo: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Ad esempio, <ph name="EXTENSION_POLICY_EXAMPLE"/> installa l'estensione <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> dall'URL di aggiornamento standard del Chrome Web Store. Per ulteriori informazioni sulle estensioni in hosting, visita il sito all'indirizzo: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Gli utenti non potranno disinstallare estensioni specificate in questa norma. Se si rimuove un'estensione dall'elenco, tale estensione verrà disinstallata automaticamente da <ph name="PRODUCT_NAME"/>.
 

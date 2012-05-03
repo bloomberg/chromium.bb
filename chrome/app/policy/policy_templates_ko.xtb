@@ -205,7 +205,7 @@
 
           각 항목에서 <ph name="PRODUCT_NAME"/>은(는) 특정 업데이트 URL의 업데이트 서비스에서 확장 프로그램 ID가 지정한 확장 프로그램을 검색하여 설치합니다.
 
-         예를 들어 <ph name="EXTENSION_POLICY_EXAMPLE"/>은(는) 기본 Chrome 웹 스토어 업데이트 URL에서 <ph name="EXTENSION_NAME_EXAMPLE"/> 확장 프로그램을 설치합니다. 확장 프로그램 호스팅 정보는 다음을 참조하세요: <ph name="LINK_TO_EXTENSION_DOC2"/>
+         예를 들어 <ph name="EXTENSION_POLICY_EXAMPLE"/>은(는) 기본 Chrome 웹 스토어 업데이트 URL에서 <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> 확장 프로그램을 설치합니다. 확장 프로그램 호스팅 정보는 다음을 참조하세요: <ph name="LINK_TO_EXTENSION_DOC2"/>
 
           사용자는 이 정책이 지정한 확장 프로그램 설치를 제거할 수 없습니다. 목록에서 확장 프로그램을 제거하는 경우 <ph name="PRODUCT_NAME"/>이(가) 자동으로 설치를 제거합니다.
 

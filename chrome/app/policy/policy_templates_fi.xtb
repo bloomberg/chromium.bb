@@ -108,7 +108,7 @@
 
           <ph name="PRODUCT_NAME"/> hakee luettelokohteiden tunnusten määrittämät laajennukset URL-osoitteiden mukaisista päivityspalveluista ja asentaa ne huomaamattomasti.
 
-          Esimerkiksi <ph name="EXTENSION_POLICY_EXAMPLE"/> asentaa laajennuksen <ph name="EXTENSION_NAME_EXAMPLE"/> Chrome Web Storen tavallisesta päivitysosoitteesta. Lisätietoja laajennusten ylläpitämisestä saat osoitteesta <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Esimerkiksi <ph name="EXTENSION_POLICY_EXAMPLE"/> asentaa laajennuksen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> Chrome Web Storen tavallisesta päivitysosoitteesta. Lisätietoja laajennusten ylläpitämisestä saat osoitteesta <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Käyttäjät eivät voi poistaa tässä käytännössä määritettyjä laajennuksia. Jos poistat laajennuksen tästä luettelosta, <ph name="PRODUCT_NAME"/> poistaa sen asennuksen automaattisesti.
 

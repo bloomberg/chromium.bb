@@ -108,7 +108,7 @@
 
           アイテムごとに <ph name="PRODUCT_NAME"/> は、指定された更新 URL にアクセスして更新サービスから拡張機能 ID で指定された拡張機能を取得し、その拡張機能をサイレントでインストールします。
 
-          たとえば、<ph name="EXTENSION_POLICY_EXAMPLE"/> では標準の Chrome ウェブストア更新 URL から <ph name="EXTENSION_NAME_EXAMPLE"/> 拡張機能をインストールします。拡張機能のホスティングについては <ph name="LINK_TO_EXTENSION_DOC2"/> をご覧ください。
+          たとえば、<ph name="EXTENSION_POLICY_EXAMPLE"/> では標準の Chrome ウェブストア更新 URL から <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> 拡張機能をインストールします。拡張機能のホスティングについては <ph name="LINK_TO_EXTENSION_DOC2"/> をご覧ください。
 
           ユーザーは、このポリシーによって指定される拡張機能をアンインストールできません。拡張機能をこのリストから削除すると、<ph name="PRODUCT_NAME"/> によって自動的にアンインストールされます。
 

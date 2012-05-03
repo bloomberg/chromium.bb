@@ -161,7 +161,7 @@
 
           For hvert element henter <ph name="PRODUCT_NAME"/> den udvidelse, der er angivet af udvidelses-id'et, fra opdateringstjenesten på den angivne opdateringswebadresse og installerer den ubemærket.
 
-          Eksempelvis installerer <ph name="EXTENSION_POLICY_EXAMPLE"/> udvidelsen <ph name="EXTENSION_NAME_EXAMPLE"/> fra Chrome Webshops standardopdateringswebadresese. Du kan få flere oplysninger om hostingudvidelser i: <ph name="LINK_TO_EXTENSION_DOC2"/>
+          Eksempelvis installerer <ph name="EXTENSION_POLICY_EXAMPLE"/> udvidelsen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> fra Chrome Webshops standardopdateringswebadresese. Du kan få flere oplysninger om hostingudvidelser i: <ph name="LINK_TO_EXTENSION_DOC2"/>
 
           Brugerne kan ikke afinstallere udvidelser, der er angivet af denne politik. Hvis du fjerner en udvidelse fra listen, afinstalleres den automatisk af <ph name="PRODUCT_NAME"/>.
 

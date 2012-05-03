@@ -108,7 +108,7 @@
 
           Untuk setiap item, <ph name="PRODUCT_NAME"/> akan mengambil ekstensi yang ditentukan oleh ID ekstensi dari layanan pembaruan di URL pembaruan yang ditentukan dan kemudian memasangnya diam-diam.
 
-          Misalnya, <ph name="EXTENSION_POLICY_EXAMPLE"/> memasang ekstensi <ph name="EXTENSION_NAME_EXAMPLE"/> dari URL pembaruan Toko Web Chrome standar. Untuk informasi selengkapnya mengenai hosting ekstensi, lihat: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Misalnya, <ph name="EXTENSION_POLICY_EXAMPLE"/> memasang ekstensi <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> dari URL pembaruan Toko Web Chrome standar. Untuk informasi selengkapnya mengenai hosting ekstensi, lihat: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Pengguna tidak akan dapat memasang ekstensi yang ditentukan oleh kebijakan ini. Jika Anda menghapus ekstensi dari daftar ini, maka ekstensi tersebut akan dicopot secara otomatis oleh <ph name="PRODUCT_NAME"/>.
 

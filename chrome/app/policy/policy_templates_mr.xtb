@@ -177,7 +177,7 @@
 
           प्रत्येक आयटमसाठी, <ph name="PRODUCT_NAME"/> निर्दिष्‍ट अद्यतन URL मध्‍ये निर्दिष्‍ट अद्यतन सेवेकडून निर्दिष्‍ट विस्तार पुनर्प्राप्त करेल आणि शांतपणे तो स्थापन करेल.
 
-          उदाहरणार्थ, <ph name="EXTENSION_POLICY_EXAMPLE"/> हे मानक Chrome वेब स्टोअर अद्यतन URL मधून <ph name="EXTENSION_NAME_EXAMPLE"/> विस्तार स्थापित करते. विस्तार होस्टिंगबाबत अधिक माहितीसाठी, पहा: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          उदाहरणार्थ, <ph name="EXTENSION_POLICY_EXAMPLE"/> हे मानक Chrome वेब स्टोअर अद्यतन URL मधून <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> विस्तार स्थापित करते. विस्तार होस्टिंगबाबत अधिक माहितीसाठी, पहा: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           या धोरणाने निर्दिष्‍ट विस्तार विस्थापित करण्यात वापरकर्ते अक्षम असतील. आपण सूचीमधून विस्तार हटविल्यास, <ph name="PRODUCT_NAME"/> द्वारे तो स्वयंचलितपणे विस्‍थापित केला जाईल.
 

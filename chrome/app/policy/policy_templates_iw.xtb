@@ -108,7 +108,7 @@
 
           עבור כל פריט, <ph name="PRODUCT_NAME"/> יאחזר את התוסף שמצוין באמצעות מזהה התוסף משירות העדכון שבכתובת האתר לעדכון המצוינת ויתקין אותו ללא הודעה.
 
-          לדוגמה, <ph name="EXTENSION_POLICY_EXAMPLE"/> מתקין את התוסף <ph name="EXTENSION_NAME_EXAMPLE"/> מכתובת האתר לעדכון הסטנדרטית של חנות האינטרנט של Chrome. לקבלת מידע נוסף על אירוח תוספים, בקר בכתובת: <ph name="LINK_TO_EXTENSION_DOC2"/>. 
+          לדוגמה, <ph name="EXTENSION_POLICY_EXAMPLE"/> מתקין את התוסף <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> מכתובת האתר לעדכון הסטנדרטית של חנות האינטרנט של Chrome. לקבלת מידע נוסף על אירוח תוספים, בקר בכתובת: <ph name="LINK_TO_EXTENSION_DOC2"/>. 
 
           המשתמשים לא יוכלו להסיר התקנת תוספים שהוגדרו על ידי מדיניות זו. אם תסיר תוסף מרשימה זו, ההתקנה שלו תוסר באופן אוטומטי על ידי <ph name="PRODUCT_NAME"/>. 
 

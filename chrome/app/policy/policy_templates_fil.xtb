@@ -206,7 +206,7 @@
 
           Para sa bawat item, babawiin ng <ph name="PRODUCT_NAME"/> ang extension na tinukoy ng extension ID mula sa serbisyo ng pag-update sa tinukoy na URL ng update at ii-install ito sa background.
 
-          Halimbawa, ini-install ng <ph name="EXTENSION_POLICY_EXAMPLE"/> ang extension na <ph name="EXTENSION_NAME_EXAMPLE"/> mula sa karaniwang URL ng update ng Chrome Web Store. Para sa higit pang impormasyon tungkol sa mga extension ng pag-host, tingnan ang: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Halimbawa, ini-install ng <ph name="EXTENSION_POLICY_EXAMPLE"/> ang extension na <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> mula sa karaniwang URL ng update ng Chrome Web Store. Para sa higit pang impormasyon tungkol sa mga extension ng pag-host, tingnan ang: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Hindi magagawa ng mga user na mag-install ng extension na tinukoy ng patakarang ito. Kapag nag-alis ka ng extension mula sa listahang ito, awtomatiko itong ia-uninstall ng <ph name="PRODUCT_NAME"/>.
 

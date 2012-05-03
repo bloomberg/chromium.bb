@@ -205,7 +205,7 @@
 
           Untuk setiap item, <ph name="PRODUCT_NAME"/> akan mendapatkan balik pelanjutan yang ditetapkan oleh ID pelanjutan dari perkhidmatan kemas kini di URL yang dinyatakan dan memasangnya secara senyap.
 
-          Contohnya, <ph name="EXTENSION_POLICY_EXAMPLE"/> memasang <ph name="EXTENSION_NAME_EXAMPLE"/> pelanjutan dari URL kemas kini standard Kedai Web Chrome. Untuk mendapatkan maklumat lanjut mengenai mengehoskan pelanjutan, lihat: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Contohnya, <ph name="EXTENSION_POLICY_EXAMPLE"/> memasang <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> pelanjutan dari URL kemas kini standard Kedai Web Chrome. Untuk mendapatkan maklumat lanjut mengenai mengehoskan pelanjutan, lihat: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Pengguna tidak akan dapat menyahpasang pelanjutan yang dinyatakan oleh dasar ini. Jika anda mengalih keluar pelanjutan daripada senarai ini, maka pelanjutan tersebut akan dinyahpasang secara automatik oleh <ph name="PRODUCT_NAME"/>.
 

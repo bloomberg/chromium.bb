@@ -207,7 +207,7 @@
 
           Voor elk item haalt <ph name="PRODUCT_NAME"/> de door de extensie-ID gespecificeerde extensie op uit de service voor bijwerken via de gespecificeerde URL voor bijwerken. Vervolgens wordt de extensie op de achtergrond geïnstalleerd.
 
-          Een voorbeeld: <ph name="EXTENSION_POLICY_EXAMPLE"/> installeert de extensie <ph name="EXTENSION_NAME_EXAMPLE"/> via de standaard-URL voor bijwerken uit de Chrome Web Store. Voor meer informatie over het hosten van extensies gaat u naar: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Een voorbeeld: <ph name="EXTENSION_POLICY_EXAMPLE"/> installeert de extensie <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> via de standaard-URL voor bijwerken uit de Chrome Web Store. Voor meer informatie over het hosten van extensies gaat u naar: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Gebruikers kunnen extensies die in dit beleid zijn gespecificeerd, niet verwijderen. Als u een extensie uit deze lijst verwijdert, zal deze automatisch worden verwijderd door <ph name="PRODUCT_NAME"/>.
 

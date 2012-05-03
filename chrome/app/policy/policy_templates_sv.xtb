@@ -211,7 +211,7 @@
 
           För varje objekt hämtar <ph name="PRODUCT_NAME"/> det tillägg som anges av tilläggs-ID:t från uppdateringstjänsten på den angivna uppdateringsadressen och installerar det utan att användaren märker något.
 
-          <ph name="EXTENSION_POLICY_EXAMPLE"/> installerar till exempel tillägget <ph name="EXTENSION_NAME_EXAMPLE"/> från standarduppdateringsadressen i Chrome Web Store. Mer information om värdenheter för tillägg finns på: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          <ph name="EXTENSION_POLICY_EXAMPLE"/> installerar till exempel tillägget <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> från standarduppdateringsadressen i Chrome Web Store. Mer information om värdenheter för tillägg finns på: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Användarna kan inte avinstallera tillägg som anges av den här policyn. Om du tar bort ett tillägg från listan avinstalleras det automatiskt av <ph name="PRODUCT_NAME"/>.
 

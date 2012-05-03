@@ -205,7 +205,7 @@
 
           Đối với từng mục, <ph name="PRODUCT_NAME"/> sẽ truy xuất tiện ích mở rộng được chỉ định bởi ID tiện ích mở rộng từ dịch vụ cập nhật tại URL cập nhật đã chỉ định và tự động cài đặt tiện ích này.
 
-          Ví dụ: <ph name="EXTENSION_POLICY_EXAMPLE"/> cài đặt tiện ích mở rộng <ph name="EXTENSION_NAME_EXAMPLE"/> từ URL cập nhật của Cửa hàng Chrome trực tuyến tiêu chuẩn. Để biết thêm thông tin về việc lưu trữ tiện ích mở rộng, hãy xem: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Ví dụ: <ph name="EXTENSION_POLICY_EXAMPLE"/> cài đặt tiện ích mở rộng <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> từ URL cập nhật của Cửa hàng Chrome trực tuyến tiêu chuẩn. Để biết thêm thông tin về việc lưu trữ tiện ích mở rộng, hãy xem: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Người dùng sẽ không thể gỡ cài đặt tiện ích mở rộng được chính sách này chỉ định. Nếu bạn xóa một tiện ích mở rộng khỏi danh sách này, khi ấy, tiện ích mở rộng đó sẽ tự động được <ph name="PRODUCT_NAME"/> gỡ cài đặt.
 

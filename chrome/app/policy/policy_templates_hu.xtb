@@ -108,7 +108,7 @@ Bármely érték, amely nem ebben a tartományban van, a közelebbi határhoz le
 
           A(z) <ph name="PRODUCT_NAME"/> minden egyes elemnél lekéri a bővítményazonosító által meghatározott bővítményt a megadott frissítési URL-ről, majd csendben telepíti.
 
-          A(z) <ph name="EXTENSION_POLICY_EXAMPLE"/> szolgáltatás például a(z) <ph name="EXTENSION_NAME_EXAMPLE"/> bővítményt a normál Chrome Internetes áruház frissítéseknél használt URL-jéről telepíti. Ha további információt szeretne a bővítmények szolgáltatásáról, keresse fel a következő címet: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          A(z) <ph name="EXTENSION_POLICY_EXAMPLE"/> szolgáltatás például a(z) <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> bővítményt a normál Chrome Internetes áruház frissítéseknél használt URL-jéről telepíti. Ha további információt szeretne a bővítmények szolgáltatásáról, keresse fel a következő címet: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           A felhasználók nem távolíthatják el azokat a bővítményeket, amelyeket ez a házirend meghatároz. Ha eltávolítja a listán szereplő egyik bővítményt, akkor azt a(z) <ph name="PRODUCT_NAME"/> szolgáltatás automatikusan eltávolítja.
 

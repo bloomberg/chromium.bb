@@ -108,7 +108,7 @@
 
          Para cada item, o <ph name="PRODUCT_NAME"/> irá recuperar a extensão especificada pela ID de extensão a partir do serviço de atualização no URL de atualização especificado e instalá-la automaticamente.
 
-          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE"/> instala a extensão <ph name="EXTENSION_NAME_EXAMPLE"/> a partir do URL de atualização padrão da Web Store do Chrome. Para mais informações sobre o alojamento de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE"/> instala a extensão <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> a partir do URL de atualização padrão da Web Store do Chrome. Para mais informações sobre o alojamento de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2"/>.
 
           Os utilizadores não poderão desinstalar extensões que são especificadas por esta política. Se remover uma extensão desta lista, esta será automaticamente desinstalada pelo <ph name="PRODUCT_NAME"/>.
 
