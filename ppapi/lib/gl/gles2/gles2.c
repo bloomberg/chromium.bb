@@ -7,6 +7,7 @@
 // DO NOT EDIT!
 
 #include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
 
 void GL_APIENTRY glActiveTexture(GLenum texture) {

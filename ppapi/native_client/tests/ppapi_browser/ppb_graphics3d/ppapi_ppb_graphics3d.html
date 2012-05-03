@@ -38,6 +38,9 @@ function setupTests(tester, plugin) {
   tester.addAsyncTest('Basic Setup', function(test) {
     testAndAssertStatus(test, 'TestBasicSetup');
   });
+  tester.addAsyncTest('Basic Extensions', function(test) {
+    testAndAssertStatus(test, 'TestBasicExtensions');
+  });
   tester.addAsyncTest('PPB_Graphics3D::SwapBuffers', function(test) {
     testAndAssertStatus(test, 'TestSwapBuffers', 'TestSwapCallback:PASSED');
   });

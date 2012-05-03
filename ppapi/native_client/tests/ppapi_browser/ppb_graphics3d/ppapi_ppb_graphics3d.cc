@@ -6,6 +6,7 @@
 // TODO(nfullagar): More comprehensive testing of the PPAPI interface.
 
 #include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 #include <string.h>
 #include <sys/time.h>
 
@@ -128,6 +129,38 @@ void TestBasicSetup() {
   PPBCore()->ReleaseResource(graphics3d_id);
   TEST_PASSED;
 }
+
+// Test basic extensions.
+//   Simple test, mostly to see if extensions can compile, link, and return
+//   something that makes sense without crashing.  The build environment must
+//   define GL_GLEXT_PROTOTYPES to enable this test.
+void TestBasicExtensions() {
+#if defined(GL_GLEXT_PROTOTYPES)
+  int32_t attribs[] = {
+      PP_GRAPHICS3DATTRIB_WIDTH, kWidth,
+      PP_GRAPHICS3DATTRIB_HEIGHT, kHeight,
+      PP_GRAPHICS3DATTRIB_DEPTH_SIZE, 32,
+      PP_GRAPHICS3DATTRIB_NONE};
+  PP_Resource graphics3d_id = PPBGraphics3D()->
+      Create(pp_instance(), kInvalidResource, attribs);
+  EXPECT(graphics3d_id != kInvalidResource);
+  glSetCurrentContextPPAPI(graphics3d_id);
+  EXPECT(glGetString(GL_VERSION) != NULL);
+  const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+  if (strstr(ext, "GL_EXT_occlusion_query_boolean")) {
+    GLuint a_query;
+    glGenQueriesEXT(1, &a_query);
+    EXPECT(0 != a_query);
+  }
+  if (strstr(ext, "GL_ANGLE_instanced_arrays")) {
+    glDrawArraysInstancedANGLE(GL_TRIANGLE_STRIP, 0, 0, 0);
+  }
+  glSetCurrentContextPPAPI(0);
+  PPBCore()->ReleaseResource(graphics3d_id);
+#endif
+  TEST_PASSED;
+}
+
 
 struct RenderInfo {
   PP_Resource graphics3d_id;
@@ -275,6 +308,7 @@ void SetupTests() {
   RegisterTest("TestIsGraphics3D", TestIsGraphics3D);
   RegisterTest("Test_glInitializePPAPI", Test_glInitializePPAPI);
   RegisterTest("TestBasicSetup", TestBasicSetup);
+  RegisterTest("TestBasicExtensions", TestBasicExtensions);
   RegisterTest("TestSwapBuffers", TestSwapBuffers);
   RegisterTest("TestResizeBuffersWithoutDepthBuffer",
       TestResizeBuffersWithoutDepthBuffer);

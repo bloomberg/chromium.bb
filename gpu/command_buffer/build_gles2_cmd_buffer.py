@@ -6089,6 +6089,7 @@ const size_t GLES2Util::enum_to_string_table_len_ =
     file.Write(_DO_NOT_EDIT_WARNING)
 
     file.Write("#include <GLES2/gl2.h>\n")
+    file.Write("#include <GLES2/gl2ext.h>\n")
     file.Write("#include \"ppapi/lib/gl/gles2/gl2ext_ppapi.h\"\n\n")
 
     for func in self.original_functions:

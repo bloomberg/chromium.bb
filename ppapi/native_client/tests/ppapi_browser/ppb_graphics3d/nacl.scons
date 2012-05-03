@@ -7,7 +7,7 @@
 
 Import('env')
 
-env.Prepend(CPPDEFINES=['XP_UNIX'])
+env.Prepend(CPPDEFINES=['XP_UNIX', 'GL_GLEXT_PROTOTYPES'])
 env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
                      'ppb_graphics3d')
 

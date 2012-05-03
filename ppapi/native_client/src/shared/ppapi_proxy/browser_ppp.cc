@@ -169,8 +169,8 @@ const void* BrowserPpp::GetPluginInterface(const char* interface_name) {
       strcmp(interface_name, PPP_INSTANCE_INTERFACE_1_1) == 0) {
     srpc_result =
         PppRpcClient::PPP_GetInterface(main_channel_,
-                                       PPP_INSTANCE_INTERFACE_1_0,
-                                       &exports_interface_name);
+            const_cast<char *>(PPP_INSTANCE_INTERFACE_1_0),
+            &exports_interface_name);
   }
 
   const void* ppp_interface = NULL;
