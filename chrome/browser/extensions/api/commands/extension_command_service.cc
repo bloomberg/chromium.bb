@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_command_service.h"
+#include "chrome/browser/extensions/api/commands/extension_command_service.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"

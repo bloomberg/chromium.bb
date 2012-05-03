@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/gtk/extensions/extension_keybinding_registry_gtk.h"
 
+#include "chrome/browser/extensions/api/commands/extension_command_service.h"
+#include "chrome/browser/extensions/api/commands/extension_command_service_factory.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
-#include "chrome/browser/extensions/extension_command_service.h"
-#include "chrome/browser/extensions/extension_command_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"

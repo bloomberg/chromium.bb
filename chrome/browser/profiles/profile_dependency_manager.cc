@@ -12,7 +12,7 @@
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/extensions/extension_command_service_factory.h"
+#include "chrome/browser/extensions/api/commands/extension_command_service_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"

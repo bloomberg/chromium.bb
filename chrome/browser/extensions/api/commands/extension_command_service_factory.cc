@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_command_service_factory.h"
+#include "chrome/browser/extensions/api/commands/extension_command_service_factory.h"
 
-#include "chrome/browser/extensions/extension_command_service.h"
+#include "chrome/browser/extensions/api/commands/extension_command_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
