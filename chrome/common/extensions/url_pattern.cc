@@ -97,14 +97,12 @@ bool IsValidPortForScheme(const std::string scheme, const std::string& port) {
 URLPattern::URLPattern()
     : valid_schemes_(SCHEME_NONE),
       match_all_urls_(false),
-      partial_filesystem_support_hack_(false),
       match_subdomains_(false),
       port_("*") {}
 
 URLPattern::URLPattern(int valid_schemes)
     : valid_schemes_(valid_schemes),
       match_all_urls_(false),
-      partial_filesystem_support_hack_(false),
       match_subdomains_(false),
       port_("*") {}
 
@@ -113,7 +111,6 @@ URLPattern::URLPattern(int valid_schemes, const std::string& pattern)
     // appropriate when we know |pattern| is valid.
     : valid_schemes_(valid_schemes),
       match_all_urls_(false),
-      partial_filesystem_support_hack_(false),
       match_subdomains_(false),
       port_("*") {
   if (PARSE_SUCCESS != Parse(pattern))
@@ -301,11 +298,11 @@ bool URLPattern::MatchesURL(const GURL& test) const {
   const GURL* test_url = &test;
   bool has_inner_url = test.inner_url() != NULL;
 
-  if (partial_filesystem_support_hack_ != has_inner_url)
-    return false;
-
-  if (has_inner_url)
+  if (has_inner_url) {
+    if (!test.SchemeIsFileSystem())
+      return false;  // The only nested URLs we handle are filesystem URLs.
     test_url = test.inner_url();
+  }
 
   if (!MatchesScheme(test_url->scheme()))
     return false;
@@ -322,13 +319,22 @@ bool URLPattern::MatchesURL(const GURL& test) const {
 }
 
 bool URLPattern::MatchesSecurityOrigin(const GURL& test) const {
-  if (!MatchesScheme(test.scheme()))
+  const GURL* test_url = &test;
+  bool has_inner_url = test.inner_url() != NULL;
+
+  if (has_inner_url) {
+    if (!test.SchemeIsFileSystem())
+      return false;  // The only nested URLs we handle are filesystem URLs.
+    test_url = test.inner_url();
+  }
+
+  if (!MatchesScheme(test_url->scheme()))
     return false;
 
   if (match_all_urls_)
     return true;
 
-  return MatchesSecurityOriginHelper(test);
+  return MatchesSecurityOriginHelper(*test_url);
 }
 
 bool URLPattern::MatchesScheme(const std::string& test) const {
@@ -448,10 +454,6 @@ bool URLPattern::OverlapsWith(const URLPattern& other) const {
   // case, but we don't need that yet.
   DCHECK(path_.find('*') == path_.size() - 1);
   DCHECK(other.path().find('*') == other.path().size() - 1);
-
-  if (partial_filesystem_support_hack_ !=
-      other.partial_filesystem_support_hack())
-    return false;
 
   if (!MatchesPath(other.path().substr(0, other.path().size() - 1)) &&
       !other.MatchesPath(path_.substr(0, path_.size() - 1)))

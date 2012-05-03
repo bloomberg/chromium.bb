@@ -110,11 +110,8 @@ TEST(ExtensionURLPatternTest, Match2) {
   EXPECT_TRUE(pattern.MatchesURL(GURL("https://www.google.com/foobar")));
   EXPECT_FALSE(pattern.MatchesURL(GURL("http://www.google.com/foo")));
   EXPECT_FALSE(pattern.MatchesURL(GURL("https://www.google.com/")));
-  EXPECT_FALSE(pattern.MatchesURL(
-      GURL("filesystem:https://www.google.com/foobar/")));
-  pattern.set_partial_filesystem_support_hack(true);
   EXPECT_TRUE(pattern.MatchesURL(
-      GURL("filesystem:https://www.google.com/foobar/bas")));
+      GURL("filesystem:https://www.google.com/foobar/")));
 }
 
 // subdomains
@@ -132,9 +129,8 @@ TEST(URLPatternTest, Match3) {
   EXPECT_TRUE(pattern.MatchesURL(
       GURL("http://monkey.images.google.com/foooobar")));
   EXPECT_FALSE(pattern.MatchesURL(GURL("http://yahoo.com/foobar")));
-  EXPECT_FALSE(pattern.MatchesURL(
-      GURL("filesystem:http://google.com/foobar/")));
-  pattern.set_partial_filesystem_support_hack(true);
+  EXPECT_TRUE(pattern.MatchesURL(
+      GURL("filesystem:http://google.com/foo/bar")));
   EXPECT_FALSE(pattern.MatchesURL(
       GURL("filesystem:http://google.com/temporary/foobar")));
 }
@@ -383,8 +379,6 @@ TEST(ExtensionURLPatternTest, Match17) {
   EXPECT_FALSE(pattern.MatchesURL(
       GURL("filesystem:http://www.example.com:8080/foo/")));
   EXPECT_FALSE(pattern.MatchesURL(GURL("filesystem:http://www.example.com/f/foo")));
-  pattern.set_partial_filesystem_support_hack(true);
-  EXPECT_FALSE(pattern.MatchesURL(GURL("filesystem:http://www.example.com/f/foo")));
 }
 
 // Explicit port wildcard
@@ -421,9 +415,6 @@ TEST(ExtensionURLPatternTest, Match19) {
   EXPECT_TRUE(pattern.MatchesURL(
       GURL("chrome-extension://ftw/https://google.com")));
   EXPECT_FALSE(pattern.MatchesURL(GURL("chrome-extension://foobar")));
-  EXPECT_FALSE(pattern.MatchesURL(
-      GURL("filesystem:chrome-extension://ftw/t/file.txt")));
-  pattern.set_partial_filesystem_support_hack(true);
   EXPECT_TRUE(pattern.MatchesURL(
       GURL("filesystem:chrome-extension://ftw/t/file.txt")));
 };

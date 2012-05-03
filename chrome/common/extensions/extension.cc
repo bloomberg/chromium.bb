@@ -2459,7 +2459,6 @@ FileBrowserHandler* Extension::LoadFileBrowserHandler(
       // wildcards in URLPattern, so transform to what will match correctly.
       filter.replace(0, 11, "chrome-extension://*/");
       URLPattern pattern(URLPattern::SCHEME_EXTENSION);
-      pattern.set_partial_filesystem_support_hack(true);
       if (pattern.Parse(filter) != URLPattern::PARSE_SUCCESS) {
         *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidURLPatternError, filter);

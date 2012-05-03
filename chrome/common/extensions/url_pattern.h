@@ -119,15 +119,6 @@ class URLPattern {
   bool match_all_urls() const { return match_all_urls_; }
   void SetMatchAllURLs(bool val);
 
-  // Returns true if this pattern matches inner URLs of filesystem: URLs only.
-  // Returns false if this pattern matches only non-filesystem URLs.
-  bool partial_filesystem_support_hack() const {
-    return partial_filesystem_support_hack_;
-  }
-  void set_partial_filesystem_support_hack(bool val) {
-    partial_filesystem_support_hack_ = val;
-  }
-
   // Sets the scheme for pattern matches. This can be a single '*' if the
   // pattern matches all valid schemes (as defined by the valid_schemes_
   // property). Returns false on failure (if the scheme is not valid).
@@ -147,6 +138,9 @@ class URLPattern {
   bool MatchesSecurityOrigin(const GURL& test) const;
 
   // Returns true if |test| matches our scheme.
+  // Note that if test is "filesystem", this may fail whereas MatchesURL
+  // may succeed.  MatchesURL is smart enough to look at the inner_url instead
+  // of the outer "filesystem:" part.
   bool MatchesScheme(const std::string& test) const;
 
   // Returns true if |test| matches our host.
@@ -212,11 +206,6 @@ class URLPattern {
 
   // True if this is a special-case "<all_urls>" pattern.
   bool match_all_urls_;
-
-  // True if we're trying to match against the inner URL of a filesystem URL;
-  // this is a temporary hack so as not to break ChromeOS as we work on full
-  // support.
-  bool partial_filesystem_support_hack_;
 
   // The scheme for the pattern.
   std::string scheme_;
