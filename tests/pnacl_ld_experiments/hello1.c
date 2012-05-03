@@ -31,8 +31,10 @@ typedef void (*TYPE_nacl_exit) (int status);
 
 /* ====================================================================== */
 /* proto-types for functions  inside ld.so */
-extern void _dl_get_tls_static_info(int *static_tls_size,
-                                    int *static_tls_align);
+#define REGPARM(n) __attribute__((regparm(n)))
+
+extern REGPARM(2) void _dl_get_tls_static_info(int *static_tls_size,
+                                               int *static_tls_align);
 
 extern void _dl_debug_state();
 
@@ -45,7 +47,6 @@ extern int fortytwo();
 /* This does not seem to have any effect - left for reference
  */
 #define EXPORT __attribute__ ((visibility("default"),externally_visible))
-
 /* ====================================================================== */
 int mystrlen(const char* s) {
    int count = 0;
@@ -97,6 +98,8 @@ int main(int argc, char** argv, char** envp) {
   myprint("hello world\n");
   char buffer[9];
 
+  /* ======================================== */
+  /* tls initialization test */
   myhextochar(tdata1, buffer);
   myprint(buffer);
   myprint(" expecting 1\n");
@@ -105,34 +108,30 @@ int main(int argc, char** argv, char** envp) {
   myprint(buffer);
   myprint(" expecting 3\n");
 
+  /* ======================================== */
   /* call into another .so (and back) */
   int x = fortytwo();
   myhextochar(x, buffer);
   myprint(buffer);
   myprint(" expecting 42\n");
 
-  /* call into ld.so */
+  /* ======================================== */
+  /* trivial call into ld.so */
   _dl_debug_state();
 
-#if 0
-  /* will be enabled soon */
-  int tls_fun_addr = (int) & __tls_get_addr;
-  myhextochar(tls_fun_addr, buffer);
-  myprint(buffer);
-  myprint("\n");
-
-  int tls_addr = ___tls_get_addr();
-  myhextochar(tls_addr, buffer);
-  myprint(buffer);
-  myprint("\n");
-#endif
-
-#if 0
-  /* will be enabled soon */
+  /* ======================================== */
+  /* non-trivial call into ld.so */
   int static_tls_size;
   int static_tls_align;
   _dl_get_tls_static_info (&static_tls_size, &static_tls_align);
-#endif
+  myprint("tls size and alignment\n");
+  myhextochar(static_tls_size, buffer);
+  myprint(buffer);
+  myprint("\n");
+  myhextochar(static_tls_align, buffer);
+  myprint(buffer);
+  myprint("\n");
+
   return 0;
 }
 
@@ -150,7 +149,7 @@ void __libc_csu_fini (void) {
 
 void __libc_start_main (int (*main) (int argc, char **argv, char **envp),
                         int argc, char **argv,
-                         int (*init) (int argc, char **argv, char **envp),
+                        int (*init) (int argc, char **argv, char **envp),
                         void (*fini) (void),
                         void (*rtld_fini) (void),
                         void *stack_end) {
