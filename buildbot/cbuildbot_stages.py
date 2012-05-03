@@ -1200,6 +1200,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     #       \- ArchivePayloads
     #    \- ArchiveTestResults
     #    \- ArchiveDebugSymbols
+    #    \- ArchiveFirmwareImages
     #    \- BuildAndArchiveAllImages
     #       (builds recovery image first, then launches functions below)
     #       \- BuildAndArchiveFactoryImages
@@ -1308,6 +1309,12 @@ class ArchiveStage(BoardSpecificBuilderStage):
       shutil.copy(os.path.join(image_dir, filename), archive_path)
       upload_queue.put([filename])
 
+    def ArchiveFirmwareImages():
+      """Archive firmware images built from source if available."""
+      archive = commands.BuildFirmwareArchive(buildroot, board, archive_path)
+      if archive:
+        upload_queue.put([archive])
+
     def BuildAndArchiveAllImages():
       # If we're an official build, generate the recovery image. To conserve
       # loop devices, we try to only run one instance of build_image at a
@@ -1339,7 +1346,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
       with bg_task_runner(upload_queue, UploadArtifact, num_upload_processes):
         # Run archiving steps in parallel.
         steps = [ArchiveDebugSymbols, BuildAndArchiveAllImages,
-                 ArchiveArtifactsForHWTesting, ArchiveTestResults]
+                 ArchiveArtifactsForHWTesting, ArchiveTestResults,
+                 ArchiveFirmwareImages]
 
         background.RunParallelSteps(steps)
 
