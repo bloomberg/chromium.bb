@@ -123,6 +123,43 @@ void MockLocalVideoTrack::UnregisterObserver(ObserverInterface* observer) {
   NOTIMPLEMENTED();
 }
 
+AudioDeviceModule* MockLocalAudioTrack::GetAudioDevice() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+std::string MockLocalAudioTrack::kind() const {
+  NOTIMPLEMENTED();
+  return "";
+}
+
+std::string MockLocalAudioTrack::label() const { return label_; }
+
+bool MockLocalAudioTrack::enabled() const { return enabled_; }
+
+MockLocalVideoTrack::TrackState MockLocalAudioTrack::state() const {
+  NOTIMPLEMENTED();
+  return kInitializing;
+}
+
+bool MockLocalAudioTrack::set_enabled(bool enable) {
+  enabled_ = enable;
+  return true;
+}
+
+bool MockLocalAudioTrack::set_state(TrackState new_state) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void MockLocalAudioTrack::RegisterObserver(ObserverInterface* observer) {
+  NOTIMPLEMENTED();
+}
+
+void MockLocalAudioTrack::UnregisterObserver(ObserverInterface* observer) {
+  NOTIMPLEMENTED();
+}
+
 class MockSessionDescription : public SessionDescriptionInterface {
  public:
   MockSessionDescription(const std::string& sdp)
@@ -192,8 +229,10 @@ class MockIceCandidate : public IceCandidateInterface {
 
 }  // namespace webrtc
 
-MockMediaStreamDependencyFactory::MockMediaStreamDependencyFactory()
-    : mock_pc_factory_created_(false) {
+MockMediaStreamDependencyFactory::MockMediaStreamDependencyFactory(
+    VideoCaptureImplManager* vc_manager)
+    : MediaStreamDependencyFactory(vc_manager),
+      mock_pc_factory_created_(false) {
 }
 
 MockMediaStreamDependencyFactory::~MockMediaStreamDependencyFactory() {}
@@ -243,18 +282,19 @@ MockMediaStreamDependencyFactory::CreateLocalMediaStream(
 talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface>
 MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
     const std::string& label,
-    cricket::VideoCapturer* video_device) {
-  talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface> stream(
+    int video_session_id) {
+  talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface> track(
       new talk_base::RefCountedObject<webrtc::MockLocalVideoTrack>(label));
-  return stream;
+  return track;
 }
 
 talk_base::scoped_refptr<webrtc::LocalAudioTrackInterface>
 MockMediaStreamDependencyFactory::CreateLocalAudioTrack(
     const std::string& label,
     webrtc::AudioDeviceModule* audio_device) {
-  NOTIMPLEMENTED();
-  return NULL;
+  talk_base::scoped_refptr<webrtc::LocalAudioTrackInterface> track(
+      new talk_base::RefCountedObject<webrtc::MockLocalAudioTrack>(label));
+  return track;
 }
 
 webrtc::SessionDescriptionInterface*

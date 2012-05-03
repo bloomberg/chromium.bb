@@ -3337,7 +3337,8 @@ void RenderViewImpl::EnsureMediaStreamImpl() {
     media_stream_dispatcher_ = new MediaStreamDispatcher(this);
 
   if (!media_stream_impl_) {
-    MediaStreamDependencyFactory* factory = new MediaStreamDependencyFactory();
+    MediaStreamDependencyFactory* factory = new MediaStreamDependencyFactory(
+        RenderThreadImpl::current()->video_capture_impl_manager());
     media_stream_impl_ = new MediaStreamImpl(
         this,
         media_stream_dispatcher_,

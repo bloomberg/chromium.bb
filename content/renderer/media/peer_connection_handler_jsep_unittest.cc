@@ -43,7 +43,7 @@ TEST(PeerConnectionHandlerJsepTest, Basic) {
       new WebKit::MockWebPeerConnection00HandlerClient());
   scoped_ptr<MockMediaStreamImpl> mock_ms_impl(new MockMediaStreamImpl());
   scoped_ptr<MockMediaStreamDependencyFactory> mock_dependency_factory(
-      new MockMediaStreamDependencyFactory());
+      new MockMediaStreamDependencyFactory(NULL));
   mock_dependency_factory->CreatePeerConnectionFactory(NULL,
                                                        NULL,
                                                        NULL,
@@ -139,9 +139,13 @@ TEST(PeerConnectionHandlerJsepTest, Basic) {
   // TODO(grunell): Add an audio track as well.
   std::string stream_label("stream-label");
   std::string video_track_label("video-label");
+
+  talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface> native_stream(
+      mock_dependency_factory->CreateLocalMediaStream(stream_label));
   talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface> local_video_track(
-      mock_dependency_factory->CreateLocalVideoTrack(video_track_label, NULL));
-  mock_ms_impl->AddTrack(video_track_label, local_video_track);
+      mock_dependency_factory->CreateLocalVideoTrack(video_track_label, 0));
+  native_stream->AddTrack(local_video_track);
+  mock_ms_impl->AddLocalStream(native_stream);
   WebKit::WebVector<WebKit::WebMediaStreamSource> source_vector(
       static_cast<size_t>(1));
   source_vector[0].initialize(WebKit::WebString::fromUTF8(video_track_label),
@@ -164,7 +168,7 @@ TEST(PeerConnectionHandlerJsepTest, Basic) {
       mock_dependency_factory->CreateLocalMediaStream(remote_stream_label));
   talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface> remote_video_track(
       mock_dependency_factory->CreateLocalVideoTrack(remote_video_track_label,
-                                                     NULL));
+                                                     0));
   remote_video_track->set_enabled(true);
   remote_stream->AddTrack(remote_video_track);
   mock_peer_connection->AddRemoteStream(remote_stream);
@@ -172,7 +176,6 @@ TEST(PeerConnectionHandlerJsepTest, Basic) {
   EXPECT_EQ(remote_stream_label, mock_client->stream_label());
 
   // Set renderer.
-  EXPECT_TRUE(pc_handler->HasRemoteVideoTrack(remote_video_track_label));
   talk_base::scoped_refptr<webrtc::MockVideoRendererWrapper> renderer(
       new talk_base::RefCountedObject<webrtc::MockVideoRendererWrapper>());
   pc_handler->SetRemoteVideoRenderer(remote_video_track_label, renderer);

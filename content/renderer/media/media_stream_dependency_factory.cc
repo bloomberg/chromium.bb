@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_module_impl.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
@@ -66,8 +67,10 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
   talk_base::PacketSocketFactory* socket_factory_;
 };
 
-
-MediaStreamDependencyFactory::MediaStreamDependencyFactory() {}
+MediaStreamDependencyFactory::MediaStreamDependencyFactory(
+    VideoCaptureImplManager* vc_manager)
+    : vc_manager_(vc_manager) {
+}
 
 MediaStreamDependencyFactory::~MediaStreamDependencyFactory() {}
 
@@ -127,8 +130,14 @@ MediaStreamDependencyFactory::CreateLocalMediaStream(
 talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface>
 MediaStreamDependencyFactory::CreateLocalVideoTrack(
     const std::string& label,
-    cricket::VideoCapturer* video_device) {
-  return pc_factory_->CreateLocalVideoTrack(label, video_device);
+    int video_session_id) {
+  webrtc::VideoCaptureModule* vcm = new VideoCaptureModuleImpl(
+      video_session_id,
+      vc_manager_.get());
+
+  // The video capturer takes ownership of |vcm|.
+  return pc_factory_->CreateLocalVideoTrack(label,
+                                            webrtc::CreateVideoCapturer(vcm));
 }
 
 talk_base::scoped_refptr<webrtc::LocalAudioTrackInterface>

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnection.h"
@@ -34,10 +35,12 @@ class PeerConnection;
 class VideoCaptureModule;
 }
 
+class VideoCaptureImplManager;
+
 // Object factory for MediaStreamImpl and PeerConnectionHandler.
 class CONTENT_EXPORT MediaStreamDependencyFactory {
  public:
-  MediaStreamDependencyFactory();
+  MediaStreamDependencyFactory(VideoCaptureImplManager* vc_manager);
   virtual ~MediaStreamDependencyFactory();
 
   // Creates and deletes |pc_factory_|, which in turn is used for
@@ -67,7 +70,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory {
   // Asks the PeerConnection factory to create a Local VideoTrack object.
   virtual talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface>
       CreateLocalVideoTrack(const std::string& label,
-                            cricket::VideoCapturer* video_device);
+                            int video_session_id);
+
 
   // Asks the PeerConnection factory to create a Local AudioTrack object.
   virtual talk_base::scoped_refptr<webrtc::LocalAudioTrackInterface>
@@ -82,6 +86,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory {
 
  private:
   talk_base::scoped_refptr<webrtc::PeerConnectionFactoryInterface> pc_factory_;
+  scoped_refptr<VideoCaptureImplManager> vc_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDependencyFactory);
 };

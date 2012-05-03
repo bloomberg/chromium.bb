@@ -44,6 +44,8 @@ class Thread;
 }
 
 namespace WebKit {
+class WebMediaStreamComponent;
+class WebMediaStreamDescriptor;
 class WebPeerConnection00Handler;
 class WebPeerConnection00HandlerClient;
 class WebPeerConnectionHandler;
@@ -85,8 +87,10 @@ class CONTENT_EXPORT MediaStreamImpl
   virtual WebKit::WebPeerConnection00Handler* CreatePeerConnectionHandlerJsep(
       WebKit::WebPeerConnection00HandlerClient* client);
   virtual void ClosePeerConnection(PeerConnectionHandlerBase* pc_handler);
-  virtual webrtc::MediaStreamTrackInterface* GetLocalMediaStreamTrack(
-      const std::string& label);
+
+  virtual webrtc::LocalMediaStreamInterface* GetLocalMediaStream(
+      const WebKit::WebMediaStreamDescriptor& stream);
+  bool StopLocalMediaStream(const WebKit::WebMediaStreamDescriptor& stream);
 
   // WebKit::WebUserMediaClient implementation
   virtual void requestUserMedia(
@@ -128,6 +132,7 @@ class CONTENT_EXPORT MediaStreamImpl
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaStreamImplTest, Basic);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamImplTest, MultiplePeerConnections);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamImplTest, LocalMediaStream);
 
   class VideoRendererWrapper : public webrtc::VideoRendererWrapperInterface {
    public:
@@ -151,19 +156,20 @@ class CONTENT_EXPORT MediaStreamImpl
 
   bool EnsurePeerConnectionFactory();
 
-  bool IsLocalSource(const std::string& source_id);
-  // Returns the PeerConnectionHandlerBase with a video track with a label
-  // that matches |source_id|.
-  PeerConnectionHandlerBase* FindPeerConnectionBySource(
-      const std::string& source_id);
+  PeerConnectionHandlerBase* FindPeerConnectionByStream(
+      const WebKit::WebMediaStreamDescriptor& stream);
   scoped_refptr<media::VideoDecoder> CreateLocalVideoDecoder(
-      const std::string& source_id,
+      webrtc::LocalMediaStreamInterface* stream,
       media::MessageLoopFactory* message_loop_factory);
   scoped_refptr<media::VideoDecoder> CreateRemoteVideoDecoder(
-      const std::string& source_id,
+      const WebKit::WebMediaStreamDescriptor& stream,
       PeerConnectionHandlerBase* pc_handler,
       const GURL& url,
       media::MessageLoopFactory* message_loop_factory);
+  void CreateNativeLocalMediaStream(
+      const std::string& label,
+      const WebKit::WebVector<WebKit::WebMediaStreamSource>& audio_sources,
+      const WebKit::WebVector<WebKit::WebMediaStreamSource>& video_sources);
 
   scoped_ptr<MediaStreamDependencyFactory> dependency_factory_;
 
@@ -188,12 +194,13 @@ class CONTENT_EXPORT MediaStreamImpl
   // ClosePeerConnection on us and we remove the pointer).
   std::list<PeerConnectionHandlerBase*> peer_connection_handlers_;
 
-  // We keep a list of the generated local tracks, so that we can add capture
-  // devices when generated and also use them for recording.
-  typedef talk_base::scoped_refptr<webrtc::MediaStreamTrackInterface>
-      MediaStreamTrackPtr;
-  typedef std::map<std::string, MediaStreamTrackPtr> MediaStreamTrackPtrMap;
-  MediaStreamTrackPtrMap local_tracks_;
+  // We keep a list of the generated local media streams,
+  // so that we can enable and disable individual tracks and add renderers
+  // when needed.
+  typedef talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
+      LocalMediaStreamPtr;
+  typedef std::map<std::string, LocalMediaStreamPtr> LocalNativeStreamMap;
+  LocalNativeStreamMap local_media_streams_;
 
   // PeerConnection threads. signaling_thread_ is created from the
   // "current" chrome thread.

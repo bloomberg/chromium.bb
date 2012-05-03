@@ -6,7 +6,10 @@
 
 #include <utility>
 
+#include "base/utf_string_conversions.h"
 #include "content/renderer/media/rtc_video_decoder.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 MockMediaStreamImpl::MockMediaStreamImpl()
     : MediaStreamImpl(NULL, NULL, NULL, NULL, NULL) {
@@ -25,13 +28,13 @@ void MockMediaStreamImpl::ClosePeerConnection(
     PeerConnectionHandlerBase* pc_handler) {
 }
 
-webrtc::MediaStreamTrackInterface*
-MockMediaStreamImpl::GetLocalMediaStreamTrack(const std::string& label) {
-  MockMediaStreamTrackPtrMap::iterator it = mock_local_tracks_.find(label);
-  if (it == mock_local_tracks_.end())
+webrtc::LocalMediaStreamInterface* MockMediaStreamImpl::GetLocalMediaStream(
+    const WebKit::WebMediaStreamDescriptor& stream) {
+  MockMediaStreamPtrMap::iterator it = mock_local_streams_.find(
+      UTF16ToUTF8(stream.label()));
+  if (it == mock_local_streams_.end())
     return NULL;
-  webrtc::MediaStreamTrackInterface* stream = it->second;
-  return stream;
+  return it->second;
 }
 
 scoped_refptr<media::VideoDecoder> MockMediaStreamImpl::GetVideoDecoder(
@@ -65,9 +68,8 @@ void MockMediaStreamImpl::OnAudioDeviceFailed(
   NOTIMPLEMENTED();
 }
 
-void MockMediaStreamImpl::AddTrack(
-    const std::string& label,
-    webrtc::MediaStreamTrackInterface* track) {
-  mock_local_tracks_.insert(
-      std::pair<std::string, webrtc::MediaStreamTrackInterface*>(label, track));
+void MockMediaStreamImpl::AddLocalStream(
+    webrtc::LocalMediaStreamInterface* stream) {
+  mock_local_streams_[stream->label()] =
+      talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>(stream);
 }

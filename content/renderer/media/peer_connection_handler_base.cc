@@ -23,9 +23,14 @@ PeerConnectionHandlerBase::PeerConnectionHandlerBase(
 PeerConnectionHandlerBase::~PeerConnectionHandlerBase() {
 }
 
-bool PeerConnectionHandlerBase::HasRemoteVideoTrack(
-    const std::string& source_id) {
-  return FindRemoteVideoTrack(source_id) != NULL;
+webrtc::MediaStreamInterface* PeerConnectionHandlerBase::GetRemoteMediaStream(
+    const WebKit::WebMediaStreamDescriptor& stream) {
+  for (RemoteStreamMap::const_iterator it = remote_streams_.begin();
+       it != remote_streams_.end(); ++it) {
+    if (it->second.label() == stream.label())
+      return it->first;
+  }
+  return NULL;
 }
 
 void PeerConnectionHandlerBase::SetRemoteVideoRenderer(
@@ -45,41 +50,20 @@ void PeerConnectionHandlerBase::SetRemoteVideoRenderer(
 
 void PeerConnectionHandlerBase::AddStream(
     const WebKit::WebMediaStreamDescriptor& stream) {
-  talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface> native_stream =
-      dependency_factory_->CreateLocalMediaStream(UTF16ToUTF8(stream.label()));
-  WebKit::WebVector<WebKit::WebMediaStreamSource> source_vector;
-  stream.sources(source_vector);
-
-  // Get and add all tracks.
-  for (size_t i = 0; i < source_vector.size(); ++i) {
-    webrtc::MediaStreamTrackInterface* track = media_stream_impl_
-        ->GetLocalMediaStreamTrack(UTF16ToUTF8(source_vector[i].id()));
-    DCHECK(track);
-    if (source_vector[i].type() == WebKit::WebMediaStreamSource::TypeVideo) {
-      native_stream->AddTrack(static_cast<webrtc::VideoTrackInterface*>(track));
-    } else {
-      DCHECK(source_vector[i].type() ==
-          WebKit::WebMediaStreamSource::TypeAudio);
-      native_stream->AddTrack(static_cast<webrtc::AudioTrackInterface*>(track));
-    }
-  }
-
-  native_peer_connection_->AddStream(native_stream);
+  webrtc::LocalMediaStreamInterface* native_stream =
+      media_stream_impl_->GetLocalMediaStream(stream);
+  if (native_stream)
+    native_peer_connection_->AddStream(native_stream);
+  DCHECK(native_stream);
 }
 
 void PeerConnectionHandlerBase::RemoveStream(
     const WebKit::WebMediaStreamDescriptor& stream) {
-  talk_base::scoped_refptr<webrtc::StreamCollectionInterface> native_streams =
-      native_peer_connection_->local_streams();
-  if (!native_streams)
-    return;
-  // TODO(perkj): Change libJingle PeerConnection::RemoveStream API to take a
-  // label as input instead of stream and return bool.
   webrtc::LocalMediaStreamInterface* native_stream =
-      static_cast<webrtc::LocalMediaStreamInterface*>(native_streams->find(
-          UTF16ToUTF8(stream.label())));
+      media_stream_impl_->GetLocalMediaStream(stream);
+  if (native_stream)
+    native_peer_connection_->RemoveStream(native_stream);
   DCHECK(native_stream);
-  native_peer_connection_->RemoveStream(native_stream);
 }
 
 WebKit::WebMediaStreamDescriptor
@@ -125,7 +109,7 @@ webrtc::VideoTrackInterface* PeerConnectionHandlerBase::FindRemoteVideoTrack(
       native_peer_connection_->remote_streams();
   for (size_t i = 0; i < streams->count(); ++i) {
     webrtc::VideoTracks* track_list =streams->at(i)->video_tracks();
-    for(size_t j =0; j < track_list->count(); ++j) {
+    for (size_t j =0; j < track_list->count(); ++j) {
       if (track_list->at(i)->label() == source_id) {
         return track_list->at(j);
       }

@@ -28,7 +28,9 @@ class CONTENT_EXPORT PeerConnectionHandlerBase
       MediaStreamImpl* msi,
       MediaStreamDependencyFactory* dependency_factory);
 
-  bool HasRemoteVideoTrack(const std::string& source_id);
+  webrtc::MediaStreamInterface* GetRemoteMediaStream(
+      const WebKit::WebMediaStreamDescriptor& stream);
+
   void SetRemoteVideoRenderer(const std::string& source_id,
                               webrtc::VideoRendererWrapperInterface* renderer);
 
