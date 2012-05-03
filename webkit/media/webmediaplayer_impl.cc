@@ -912,17 +912,13 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
     case media::DEMUXER_ERROR_COULD_NOT_OPEN:
     case media::DEMUXER_ERROR_COULD_NOT_PARSE:
     case media::DEMUXER_ERROR_NO_SUPPORTED_STREAMS:
-    case media::DEMUXER_ERROR_COULD_NOT_CREATE_THREAD:
     case media::DECODER_ERROR_NOT_SUPPORTED:
-    case media::DATASOURCE_ERROR_URL_NOT_SUPPORTED:
       // Format error.
       SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
       break;
 
     case media::PIPELINE_ERROR_DECODE:
     case media::PIPELINE_ERROR_ABORT:
-    case media::PIPELINE_ERROR_OUT_OF_MEMORY:
-    case media::PIPELINE_ERROR_AUDIO_HARDWARE:
     case media::PIPELINE_ERROR_OPERATION_PENDING:
     case media::PIPELINE_ERROR_INVALID_STATE:
       // Decode error.
