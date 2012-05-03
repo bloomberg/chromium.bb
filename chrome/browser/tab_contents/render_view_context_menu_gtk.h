@@ -41,6 +41,7 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
  protected:
   // RenderViewContextMenu implementation --------------------------------------
   virtual void PlatformInit() OVERRIDE;
+  virtual void PlatformCancel() OVERRIDE;
   // TODO(port): implement.
   virtual bool GetAcceleratorForCommandId(
       int command_id,

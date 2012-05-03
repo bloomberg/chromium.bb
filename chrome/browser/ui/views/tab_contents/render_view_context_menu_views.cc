@@ -61,6 +61,11 @@ void RenderViewContextMenuViews::PlatformInit() {
   UpdateMenuItemStates();
 }
 
+void RenderViewContextMenuViews::PlatformCancel() {
+  DCHECK(menu_runner_.get());
+  menu_runner_->Cancel();
+}
+
 bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
     int command_id,
     ui::Accelerator* accel) {

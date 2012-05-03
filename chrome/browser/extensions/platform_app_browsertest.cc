@@ -41,6 +41,7 @@ class PlatformAppContextMenu : public RenderViewContextMenu {
     return false;
   }
   virtual void PlatformInit() {}
+  virtual void PlatformCancel() {}
 };
 
 }  // namespace

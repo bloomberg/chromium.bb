@@ -37,6 +37,7 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
  protected:
   // RenderViewContextMenu implementation.
   virtual void PlatformInit() OVERRIDE;
+  virtual void PlatformCancel() OVERRIDE;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;

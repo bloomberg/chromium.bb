@@ -260,6 +260,10 @@ void RenderViewContextMenu::Init() {
   PlatformInit();
 }
 
+void RenderViewContextMenu::Cancel() {
+  PlatformCancel();
+}
+
 static bool ExtensionPatternMatch(const URLPatternSet& patterns,
                                   const GURL& url) {
   // No patterns means no restriction, so that implicitly matches.
@@ -1882,6 +1886,11 @@ void RenderViewContextMenu::MenuWillShow(ui::SimpleMenuModel* source) {
       source_web_contents_->GetRenderWidgetHostView();
   if (view)
     view->SetShowingContextMenu(true);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_CONTEXT_MENU_SHOWN,
+      content::Source<RenderViewContextMenu>(this),
+      content::NotificationService::NoDetails());
 }
 
 void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
