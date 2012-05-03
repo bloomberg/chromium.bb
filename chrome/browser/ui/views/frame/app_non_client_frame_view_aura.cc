@@ -115,12 +115,11 @@ class AppNonClientFrameViewAura::ControlView
     canvas->DrawBitmapInt(*shadow_, 0, kShadowHeightStretch);
   }
 
-  void ButtonPressed(
-      views::Button* sender,
-      const views::Event& event) OVERRIDE {
-    if (sender == close_button_)
+  void ButtonPressed(views::Button* sender,
+                     const views::Event& event) OVERRIDE {
+    if (sender == close_button_) {
       owner_->Close();
-    else if (sender == restore_button_) {
+    } else if (sender == restore_button_) {
       restore_button_->SetState(views::CustomButton::BS_NORMAL);
       owner_->Restore();
     }
@@ -177,7 +176,11 @@ AppNonClientFrameViewAura::AppNonClientFrameViewAura(
       control_view_(new ControlView(this)),
       control_widget_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          mouse_watcher_(new Host(this), this)) {
+          mouse_watcher_(new Host(this), this)),
+     animate_controls_(true) {
+  // This FrameView is always maximized so we don't want the window to have
+  // resize borders.
+  frame->GetNativeView()->set_hit_test_bounds_override_inner(gfx::Insets());
   set_background(views::Background::CreateSolidBackground(SK_ColorBLACK));
 }
 
@@ -241,32 +244,40 @@ void AppNonClientFrameViewAura::OnMouseEntered(
     control_widget_->Init(params);
     control_widget_->SetContentsView(control_view_);
     aura::Window* window = control_widget_->GetNativeView();
+    window->SetName("AppNonClientFrameViewAuraControls");
     gfx::Rect control_bounds = GetControlBounds();
-    control_bounds.set_y(control_bounds.y() - control_bounds.height());
+    if (animate_controls_)
+      control_bounds.set_y(control_bounds.y() - control_bounds.height());
     window->SetBounds(control_bounds);
     control_widget_->Show();
   }
 
-  ui::Layer* layer = control_widget_->GetNativeView()->layer();
-  ui::ScopedLayerAnimationSettings scoped_setter(layer->GetAnimator());
-  scoped_setter.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kHoverFadeDurationMs));
-  layer->SetBounds(GetControlBounds());
-  layer->SetOpacity(1);
+  if (animate_controls_) {
+    ui::Layer* layer = control_widget_->GetNativeView()->layer();
+    ui::ScopedLayerAnimationSettings scoped_setter(layer->GetAnimator());
+    scoped_setter.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kHoverFadeDurationMs));
+    layer->SetBounds(GetControlBounds());
+    layer->SetOpacity(1);
+  }
 
   mouse_watcher_.Start();
 }
 
 void AppNonClientFrameViewAura::MouseMovedOutOfHost() {
-  ui::Layer* layer = control_widget_->GetNativeView()->layer();
-
-  ui::ScopedLayerAnimationSettings scoped_setter(layer->GetAnimator());
-  scoped_setter.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kHoverFadeDurationMs));
   gfx::Rect control_bounds = GetControlBounds();
   control_bounds.set_y(control_bounds.y() - control_bounds.height());
-  layer->SetBounds(control_bounds);
-  layer->SetOpacity(0);
+
+  if (animate_controls_) {
+    ui::Layer* layer = control_widget_->GetNativeView()->layer();
+    ui::ScopedLayerAnimationSettings scoped_setter(layer->GetAnimator());
+    scoped_setter.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kHoverFadeDurationMs));
+    layer->SetBounds(control_bounds);
+    layer->SetOpacity(0);
+  } else {
+    control_widget_->SetBounds(control_bounds);
+  }
 }
 
 void AppNonClientFrameViewAura::OnWidgetClosing(views::Widget* widget) {
@@ -288,6 +299,10 @@ void AppNonClientFrameViewAura::Close() {
     control_widget_->Close();
   mouse_watcher_.Stop();
   frame()->Close();
+}
+
+bool AppNonClientFrameViewAura::IsShowingControls() const {
+  return control_widget_ && control_widget_->IsVisible();
 }
 
 void AppNonClientFrameViewAura::Restore() {

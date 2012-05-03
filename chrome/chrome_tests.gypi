@@ -2978,6 +2978,7 @@
         'browser/ui/views/ash/caps_lock_handler_browsertest.cc',
         'browser/ui/views/ash/launcher/launcher_favicon_loader_browsertest.cc',
         'browser/ui/views/browser_actions_container_browsertest.cc',
+        'browser/ui/views/frame/app_non_client_frame_view_aura_browsertest.cc',
         'browser/ui/views/select_file_dialog_extension_browsertest.cc',
         'browser/ui/views/sync/one_click_signin_bubble_view_browsertest.cc',
         'browser/ui/views/web_dialog_view_browsertest.cc',
@@ -3430,8 +3431,12 @@
             '../content/browser/accessibility/dump_accessibility_tree_browsertest.cc',
             '../content/browser/accessibility/dump_accessibility_tree_helper_win.cc',
             '../content/browser/accessibility/dump_accessibility_tree_helper.cc',
-          ]},
-        ],
+          ]
+        }, { # else: use_aura == 0 
+          'sources!': [
+            'browser/ui/views/frame/app_non_client_frame_view_aura_browsertest.cc',
+          ],
+        }],
       ],  # conditions
     },  # target browser_tests
     {
