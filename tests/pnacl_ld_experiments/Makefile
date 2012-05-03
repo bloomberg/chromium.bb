@@ -39,19 +39,23 @@ crtbegin.bc:  $(PATH_CRT_SRC)/crtbegin.c
 crtend.bc:  $(PATH_CRT_SRC)/crtend.c
 	$(PNACL_CC)  -c  $(PNACL_CC_FLAGS) -o $@ $^
 
+# bookends for shared libs
+S_INIT = crtbegin.bc $(PATH_CRT)/crti.bc \
+       $(PATH_CRT)/crtdummy.bc $(PATH_CRT)/crtbeginS.bc
+
+S_FINI = crtend.bc
+
 # NOTE: without -nostdlib a gratuitous libc dep is added
-#       but with -nostdlib we get:
-#       error: symbol lookup error: undefined symbol: fortytwo (fatal)
-libsimple.pso: fortytwo.bc
-	$(PNACL_CC) $(COMMON_FLAGS) -Wl,--soname=libsimple.so -shared -fPIC -o $@ $^
+libsimple.pso: $(S_INIT) fortytwo.bc $(S_FINI)
+	$(PNACL_CC) $(COMMON_FLAGS) -Wl,--soname=libsimple.so -nostdlib -shared -fPIC -o $@ $^
 
 libsimple.so: libsimple.pso
-	$(PNACL_TRANS) -arch x86-32 -shared -fPIC -o $@ $^
-
-
+	$(PNACL_TRANS) $(COMMON_FLAGS) -arch x86-32 -nostdlib -shared -fPIC -o $@ $^
 
 
 LD_FLAGS_NATIVE = --pnacl-allow-native -arch x86-32
+
+# bookends for dynamic images
 # NOTE: the duplication of crtbegin.bc.
 # The one here was build from $(PATH_CRT_SRC)/bitcode
 # The one above from $(PATH_CRT_SRC)
@@ -65,7 +69,7 @@ FINI = crtend.bc
 # because of special handling of -l:ld-2.9.so which gets passed through as
 # --add-extra-dt-needed=ld-nacl-x86-32.so.1 which does not trigger the
 # a dynamic image
-LIBS = -L $(LIBPATH_SHARED)  -l:ld-2.9.so  -L . -l:libsimple.pso
+LIBS = -L $(LIBPATH_SHARED)  -l:ld-2.9.so  -L . -l:libsimple.pso -l:keep_alive.x
 hello1.x86-32.nexe.dummy: hello1.bc crtend.bc crtbegin.bc libsimple.pso
 	$(PNACL_CC) $(COMMON_FLAGS) $(LD_FLAGS_NATIVE) -nodefaultlibs -nostdlib \
         $(INIT) hello1.bc $(LIBS) $(FINI)  -o $@
@@ -92,4 +96,4 @@ run1: hello1.x86-32.nexe
 ######################################################################
 
 clean:
-	rm -f *.bc *.o *.ll *.so main *.pso *.raw *.nexe
+	rm -f *.bc *.o *.ll *.so main *.pso *.raw *.nexe *.pexe *.meta

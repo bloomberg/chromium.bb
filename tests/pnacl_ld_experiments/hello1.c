@@ -41,6 +41,11 @@ extern int __tls_get_addr();
 extern int ___tls_get_addr();
 
 extern int fortytwo();
+
+/* This does not seem to have any effect - left for reference
+ */
+#define EXPORT __attribute__ ((visibility("default"),externally_visible))
+
 /* ====================================================================== */
 int mystrlen(const char* s) {
    int count = 0;
@@ -63,26 +68,28 @@ void myhextochar(int n, char buffer[9]) {
   }
 }
 
-#define myprint(s) NACL_SYSCALL(write)(1, s, mystrlen(s))
-
 __thread int tdata1 = 1;
 __thread int tdata2 = 3;
 
 
-ssize_t write(int fd, const void* buf, size_t n)  {
+int mywrite(int fd, const void* buf, int n)  {
   return NACL_SYSCALL(write)(fd, buf, n);
 }
+
+#define myprint(s) mywrite(1, s, mystrlen(s))
+
+
 
 void exit(int ret) {
   NACL_SYSCALL(exit)(ret);
 }
 
 void __deregister_frame_info(const void *begin) {
-  myprint("__deregister_frame_info\n");
+  myprint("DUMMY __deregister_frame_info\n");
 }
 
 void __register_frame_info(void *begin, void *ob) {
-  myprint("__register_frame_info\n");
+  myprint("DUMMY __register_frame_info\n");
 }
 
 
@@ -98,13 +105,11 @@ int main(int argc, char** argv, char** envp) {
   myprint(buffer);
   myprint(" expecting 3\n");
 
-#if 1
-  /* call into another .so */
+  /* call into another .so (and back) */
   int x = fortytwo();
   myhextochar(x, buffer);
   myprint(buffer);
   myprint(" expecting 42\n");
-#endif
 
   /* call into ld.so */
   _dl_debug_state();
@@ -134,13 +139,13 @@ int main(int argc, char** argv, char** envp) {
 char message_init[] = "init\n";
 
 int __libc_csu_init (int argc, char **argv, char **envp) {
-  write(1, message_init, sizeof(message_init));
+  mywrite(1, message_init, sizeof(message_init));
   return 0;
 }
 
 char message_fini[] = "fini\n";
 void __libc_csu_fini (void) {
-  write(1, message_fini, sizeof(message_fini));
+  mywrite(1, message_fini, sizeof(message_fini));
 }
 
 void __libc_start_main (int (*main) (int argc, char **argv, char **envp),
