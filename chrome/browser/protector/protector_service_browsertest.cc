@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/global_error_bubble_view_base.h"
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 
@@ -25,7 +27,12 @@ namespace protector {
 
 class ProtectorServiceTest : public InProcessBrowserTest {
  public:
-  virtual void SetUpOnMainThread() {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // Make sure protector is enabled.
+    command_line->AppendSwitch(switches::kProtector);
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
     protector_service_ =
         ProtectorServiceFactory::GetForProfile(browser()->profile());
     // ProtectService will own this change instance.

@@ -1346,10 +1346,6 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
     switches::kSingleProcess,
     switches::kNoSandbox,
     switches::kInProcessWebGL,
-    // This should only be used for tests and to disable Protector on ChromeOS.
-#if !defined(OS_CHROMEOS)
-    switches::kNoProtector,
-#endif
     NULL
   };
 

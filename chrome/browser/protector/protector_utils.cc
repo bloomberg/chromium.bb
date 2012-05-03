@@ -41,7 +41,7 @@ bool IsSettingValid(const std::string& value, const std::string& signature) {
 }
 
 bool IsEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoProtector);
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kProtector);
 }
 
 }  // namespace protector

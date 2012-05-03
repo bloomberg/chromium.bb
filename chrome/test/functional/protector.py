@@ -34,6 +34,20 @@ class BaseProtectorTest(pyauto.PyUITest):
     # _GetDefaultSearchEngine call.
     self._new_default_search_keyword = None
 
+  def _IsEnabled(self):
+    """Whether protector should be enabled for the test suite."""
+    return True
+
+  def ExtraChromeFlags(self):
+    """Adds required Protector-related flags.
+
+    Returns:
+      A list of extra flags to pass to Chrome when it is launched.
+    """
+    return super(BaseProtectorTest, self).ExtraChromeFlags() + [
+        '--protector' if self._IsEnabled() else '--no-protector'
+        ]
+
   def _GetDefaultSearchEngine(self):
     """Returns the default search engine, if any; None otherwise.
 
@@ -659,21 +673,9 @@ class ProtectorHomepageTest(BaseProtectorTest):
 class ProtectorDisabledTest(BaseProtectorTest):
   """Test suite for Protector in disabled state."""
 
-  def ExtraChromeFlags(self):
-    """Ensures Protector is disabled.
-
-    Returns:
-      A list of extra flags to pass to Chrome when it is launched.
-    """
-    return super(ProtectorDisabledTest, self).ExtraChromeFlags() + [
-        '--no-protector'
-        ]
-
-  def testInfobarIsPresent(self):
-    """Verify that an infobar is present when running Chrome with --no-protector
-    flag.
-    """
-    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+  def _IsEnabled(self):
+    """Overriden from BaseProtectorTest to disable Protector."""
+    return False
 
   def testNoSearchEngineChangeReported(self):
     """Test that the default search engine change is neither reported to user
