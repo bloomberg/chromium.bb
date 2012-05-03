@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/string16.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/media/media_internals_observer.h"
+#include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "media/base/media_log.h"
@@ -61,6 +62,28 @@ void MediaInternals::OnMediaEvent(
   dict.SetDouble("time", event.time.ToDoubleT());
   dict.Set("params", event.params.DeepCopy());
   SendUpdate("media.onMediaEvent", &dict);
+}
+
+void MediaInternals::OnCaptureDevicesOpened(
+    int render_process_id,
+    int render_view_id,
+    const content::MediaStreamDevices& devices) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!media_stream_capture_indicator_.get())
+    media_stream_capture_indicator_ = new MediaStreamCaptureIndicator();
+  media_stream_capture_indicator_->CaptureDevicesOpened(render_process_id,
+                                                        render_view_id,
+                                                        devices);
+}
+
+void MediaInternals::OnCaptureDevicesClosed(
+    int render_process_id,
+    int render_view_id,
+    const content::MediaStreamDevices& devices) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  media_stream_capture_indicator_->CaptureDevicesClosed(render_process_id,
+                                                        render_view_id,
+                                                        devices);
 }
 
 void MediaInternals::AddObserver(MediaInternalsObserver* observer) {

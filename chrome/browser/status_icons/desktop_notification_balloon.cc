@@ -19,6 +19,11 @@
 namespace {
 
 void CloseBalloon(const std::string& id) {
+  // The browser process may have gone away during shutting down, in this case
+  // notification_ui_manager() will close the balloon in its destructor.
+  if (!g_browser_process)
+    return;
+
   g_browser_process->notification_ui_manager()->CancelById(id);
 }
 

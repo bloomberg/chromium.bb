@@ -133,13 +133,17 @@ class CONTENT_EXPORT MediaStreamManager
   // Contains all data needed to keep track of requests.
   struct DeviceRequest;
 
+  // Helpers for signaling the media observer that new capture devices are
+  // opened/closed.
+  void NotifyObserverDevicesOpened(DeviceRequest* request);
+  void NotifyObserverDevicesClosed(DeviceRequest* request);
+  void DevicesFromRequest(DeviceRequest* request,
+                          content::MediaStreamDevices* devices);
+
   // Helpers.
   bool RequestDone(const MediaStreamManager::DeviceRequest& request) const;
   MediaStreamProvider* GetDeviceManager(MediaStreamType stream_type);
   void StartEnumeration(DeviceRequest* new_request,
-                        int render_process_id,
-                        int render_view_id,
-                        const std::string& security_origin,
                         std::string* label);
 
   scoped_ptr<MediaStreamDeviceSettings> device_settings_;
