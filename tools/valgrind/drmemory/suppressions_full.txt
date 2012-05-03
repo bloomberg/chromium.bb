@@ -1337,3 +1337,10 @@ name=http://crbug.com/125724
 *!cricket::RelayEntry::Connect
 *!cricket::RelayPort::PrepareAddress
 *!cricket::AllocationSequence::CreateRelayPorts
+
+LEAK
+name=http://crbug.com/125807
+*!generic_cpp_alloc
+*!operator new
+*!TransportSecurityPersister::TransportSecurityPersister
+*!TransportSecurityPersisterTest::TransportSecurityPersisterTest
