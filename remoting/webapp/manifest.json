@@ -26,6 +26,7 @@
     "https://www.google.com/accounts/*",
     "https://www.googleapis.com/chromoting/*",
     "https://talkgadget.google.com/talkgadget/*",
+    "https://relay.google.com/*",
     "clipboardRead",
     "clipboardWrite"
   ],
