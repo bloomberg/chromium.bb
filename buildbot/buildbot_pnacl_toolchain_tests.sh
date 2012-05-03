@@ -51,6 +51,16 @@ build-sbtc-prerequisites() {
     -j ${PNACL_CONCURRENCY}
 }
 
+scons-tests-pic() {
+  local platform=$1
+
+  echo "@@@BUILD_STEP scons-tests-pic [${platform}]@@@"
+  local extra="--mode=opt-host,nacl \
+               -j${PNACL_CONCURRENCY} -k \
+               nacl_pic=0  pnacl_generate_pexe=0"
+  ${SCONS_COMMON} ${extra} platform=${platform} smoke_tests || handle-error
+}
+
 scons-tests-translator() {
   local platform=$1
 
@@ -96,6 +106,7 @@ tc-test-bot() {
         ${LLVM_TESTSUITE} testsuite-report ${arch} -v -c
     } || handle-error
 
+    scons-tests-pic ${arch}
     # Note: we do not build the sandboxed translator on this bot
     # because this would add another 20min to the build time.
     # The upshot of this is that we are using the sandboxed
