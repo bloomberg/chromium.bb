@@ -69,7 +69,7 @@ bool ExtensionTtsPlatformImplWin::Speak(
   std::wstring prefix;
   std::wstring suffix;
 
-  if (!speech_synthesizer_)
+  if (!speech_synthesizer_.get())
     return false;
 
   // TODO(dmazzoni): support languages other than the default: crbug.com/88059
@@ -114,7 +114,7 @@ bool ExtensionTtsPlatformImplWin::Speak(
 }
 
 bool ExtensionTtsPlatformImplWin::StopSpeaking() {
-  if (speech_synthesizer_) {
+  if (speech_synthesizer_.get()) {
     // Clear the stream number so that any further events relating to this
     // utterance are ignored.
     stream_number_ = 0;
@@ -128,7 +128,7 @@ bool ExtensionTtsPlatformImplWin::StopSpeaking() {
 }
 
 bool ExtensionTtsPlatformImplWin::IsSpeaking() {
-  if (speech_synthesizer_) {
+  if (speech_synthesizer_.get()) {
     SPVOICESTATUS status;
     HRESULT result = speech_synthesizer_->GetStatus(&status, NULL);
     if (result == S_OK) {
@@ -187,18 +187,12 @@ void ExtensionTtsPlatformImplWin::OnSpeechEvent() {
 }
 
 ExtensionTtsPlatformImplWin::ExtensionTtsPlatformImplWin()
-  : speech_synthesizer_(NULL),
-    utterance_id_(0),
+  : utterance_id_(0),
     prefix_len_(0),
     stream_number_(0),
     char_position_(0) {
-  CoCreateInstance(
-      CLSID_SpVoice,
-      NULL,
-      CLSCTX_SERVER,
-      IID_ISpVoice,
-      reinterpret_cast<void**>(&speech_synthesizer_));
-  if (speech_synthesizer_) {
+  speech_synthesizer_.CreateInstance(CLSID_SpVoice);
+  if (speech_synthesizer_.get()) {
     ULONGLONG event_mask =
         SPFEI(SPEI_START_INPUT_STREAM) |
         SPFEI(SPEI_TTS_BOOKMARK) |
