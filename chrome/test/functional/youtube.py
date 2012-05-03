@@ -8,11 +8,12 @@ import time
 
 import pyauto_functional
 import pyauto
+import pyauto_errors
 
 
 class YoutubeTestHelper():
   """Helper functions for Youtube tests.
-     
+
   For sample usage, look at class YoutubeTest.
   """
 
@@ -31,17 +32,20 @@ class YoutubeTestHelper():
     return [x for x in self._pyauto.GetPluginsInfo().Plugins() \
             if x['name'] == 'Shockwave Flash' and x['enabled']]
 
+  def AssertPlayerState(self, state, msg):
+    expected_regex = '^%s$' % state
+    self.WaitForDomNode('id("playerState")', expected_value=expected_regex,
+                        msg=msg)
+
   def WaitUntilPlayerReady(self):
     """Verify that player is ready."""
-    return self._pyauto.WaitUntil(lambda: self._pyauto.ExecuteJavascript("""
-        playerState = document.getElementById("playerState");
-        window.domAutomationController.send(playerState.innerHTML);
-        """), expect_retval='-1')
+    self.AssertPlayerState(state=self.is_unstarted,
+                           msg='Failed to load youtube player.')
 
   def GetPlayerState(self):
     """Returns a player state."""
     js = """
-        var val = ytplayer.getPlayerState(); 
+        var val = ytplayer.getPlayerState();
         window.domAutomationController.send(val + '');
     """
     return self._pyauto.ExecuteJavascript(js)
@@ -55,7 +59,7 @@ class YoutubeTestHelper():
 
   def GetVideoDroppedFrames(self):
     """Returns total Youtube video dropped frames.
-  
+
     Returns:
       -1 if failed to get video frames from the video data
     """
@@ -81,7 +85,7 @@ class YoutubeTestHelper():
 
   def GetVideoTotalBytes(self):
     """Returns video total size in bytes.
-       
+
     To call this function, video must be in the paying state,
     or this returns 0.
     """
@@ -124,38 +128,31 @@ class YoutubeTestHelper():
         window.domAutomationController.send('');
     """)
 
-  def AssertPlayingState(self):
-    """Assert player's playing state."""
-    self._pyauto.assertTrue(self._pyauto.WaitUntil(self._pyauto.GetPlayerState,
-        expect_retval=self._pyauto.is_playing),
-        msg='Player did not enter the playing state')
-
   def PlayVideoAndAssert(self, youtube_video='zuzaxlddWbk'):
     """Start video and assert the playing state.
-    
+
     By default test uses http://www.youtube.com/watch?v=zuzaxlddWbki.
 
     Args:
       youtube_video: The string ID of the youtube video to play.
     """
-    self._pyauto.assertTrue(self._pyauto.IsFlashPluginEnabled(), 
+    self._pyauto.assertTrue(self._pyauto.IsFlashPluginEnabled(),
         msg='From here Flash plugin is disabled or not available')
     url = self._pyauto.GetHttpURLForDataPath(
         'media', 'youtube.html?video=' + youtube_video)
     self._pyauto.NavigateToURL(url)
-    self._pyauto.assertTrue(self._pyauto.WaitUntilPlayerReady(),
-                            msg='Failed to load YouTube player')
+    self.WaitUntilPlayerReady()
     i = 0
     # The YouTube player will get in a state where it does not return the
     # number of loaded bytes.  When this happens we need to reload the page
     # before starting the test.
     while self.GetVideoLoadedBytes() == 1 and i < 30:
       self._pyauto.NavigateToURL(url)
-      self._pyauto.assertTrue(self._pyauto.WaitUntilPlayerReady(),
-                              msg='Failed to load YouTube player')
+      self.WaitUntilPlayerReady()
       i = i + 1
-    self._pyauto.PlayVideo()
-    self._pyauto.AssertPlayingState()
+    self.PlayVideo()
+    self.AssertPlayerState(state=self.is_playing,
+                           msg='Player did not enter the playing state')
 
 
 class YoutubeTest(pyauto.PyUITest, YoutubeTestHelper):
@@ -166,8 +163,8 @@ class YoutubeTest(pyauto.PyUITest, YoutubeTestHelper):
     YoutubeTestHelper.__init__(self, self)
 
   def testPlayerStatus(self):
-    """Test that YouTube loads a player and changes player states 
-        
+    """Test that YouTube loads a player and changes player states.
+
     Test verifies various player states like unstarted, playing, paused
     and ended.
     """
@@ -175,9 +172,8 @@ class YoutubeTest(pyauto.PyUITest, YoutubeTestHelper):
     # During tests, we are not goinig to play this video full.
     self.PlayVideoAndAssert()
     self.PauseVideo()
-    self.assertTrue(self.WaitUntil(self.GetPlayerState,
-                                   expect_retval=self.is_paused),
-                     msg='Player did not enter the paused state')
+    self.AssertPlayerState(state=self.is_paused,
+                           msg='Player did not enter the paused state')
     # Seek to the end of video
     self.ExecuteJavascript("""
         val = ytplayer.getDuration();
@@ -187,9 +183,8 @@ class YoutubeTest(pyauto.PyUITest, YoutubeTestHelper):
     self.PlayVideo()
     # We've seeked to almost the end of the video but not quite.
     # Wait until the end.
-    self.assertTrue(self.WaitUntil(self.GetPlayerState,
-                                   expect_retval=self.has_ended), 
-                    msg='Player did not reach the stopped state')
+    self.AssertPlayerState(state=self.has_ended,
+                           msg='Player did not reach the stopped state')
 
   def testPlayerResolution(self):
     """Test various video resolutions."""
@@ -209,7 +204,7 @@ class YoutubeTest(pyauto.PyUITest, YoutubeTestHelper):
           window.domAutomationController.send(res + '');
       """)
       self.assertEqual(res, curr_res, msg='Resolution is not set to %s.' % res)
-      
+
   def testPlayerBytes(self):
     """Test that player downloads video bytes."""
     self.PlayVideoAndAssert()
