@@ -87,7 +87,12 @@ EXTRA_ENV = {
   'TRIPLE_X8664': 'x86_64-none-nacl-gnu',
 
   'LLC_FLAGS_COMMON': '-asm-verbose=false -tail-merge-threshold=50 ' +
-                      '${PIC ? -relocation-model=pic}',
+                      '${PIC ? -relocation-model=pic} ' +
+                      #  -force-tls-non-pic makes the code generator (llc)
+                      # do the work that would otherwise be done by
+                      # linker rewrites which are quite messy in the nacl
+                      # case and hence have not been implemented in gold
+                      '${PIC && !SHARED ? -force-tls-non-pic}',
 
   'LLC_FLAGS_ARM'    :
     # The following options might come in handy and are left here as comments:
