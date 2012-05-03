@@ -558,7 +558,7 @@
 	the applications .desktop file (absolute path if non-standard
 	location). 
       </description>
-      <arg name="class" type="string"/>
+      <arg name="class_" type="string"/>
     </request>
 
     <event name="ping">
