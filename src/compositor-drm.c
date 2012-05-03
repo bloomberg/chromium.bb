@@ -95,6 +95,8 @@ struct drm_output {
 	drmModeCrtcPtr original_crtc;
 
 	struct gbm_surface *surface;
+	struct gbm_bo *cursor_bo[2];
+	int current_cursor;
 	EGLSurface egl_surface;
 	struct drm_fb *current, *next;
 	struct backlight *backlight;
@@ -657,8 +659,7 @@ weston_output_set_cursor(struct weston_output *output,
 	} else {
 		if (!prior_was_hardware)
 			weston_surface_damage_below(device->sprite);
-		pixman_region32_fini(&device->sprite->damage);
-		pixman_region32_init(&device->sprite->damage);
+		wl_list_remove(&device->sprite->link);
 		device->hw_cursor = 1;
 	}
 
@@ -670,7 +671,7 @@ static void
 drm_assign_planes(struct weston_output *output)
 {
 	struct weston_compositor *ec = output->compositor;
-	struct weston_surface *es;
+	struct weston_surface *es, *next;
 	pixman_region32_t overlap, surface_overlap;
 	struct weston_input_device *device;
 
@@ -688,7 +689,7 @@ drm_assign_planes(struct weston_output *output)
 	 * as we do for flipping full screen surfaces.
 	 */
 	pixman_region32_init(&overlap);
-	wl_list_for_each(es, &ec->surface_list, link) {
+	wl_list_for_each_safe(es, next, &ec->surface_list, link) {
 		/*
 		 * FIXME: try to assign hw cursors here too, they're just
 		 * special overlays
@@ -730,36 +731,42 @@ drm_output_set_cursor(struct weston_output *output_base,
 	EGLint handle, stride;
 	int ret = -1;
 	struct gbm_bo *bo;
+	uint32_t buf[64 * 64];
+	unsigned char *d, *s, *end;
 
 	if (eid == NULL) {
 		drmModeSetCursor(c->drm.fd, output->crtc_id, 0, 0, 0);
 		return 0;
 	}
 
-	if (eid->sprite->image == EGL_NO_IMAGE_KHR)
+	if (eid->sprite->buffer == NULL ||
+	    !wl_buffer_is_shm(eid->sprite->buffer))
 		goto out;
 
 	if (eid->sprite->geometry.width > 64 ||
 	    eid->sprite->geometry.height > 64)
 		goto out;
 
-	bo = gbm_bo_create_from_egl_image(c->gbm,
-					  c->base.display,
-					  eid->sprite->image, 64, 64,
-					  GBM_BO_USE_CURSOR_64X64);
-	/* Not suitable for hw cursor, fall back */
+	output->current_cursor ^= 1;
+	bo = output->cursor_bo[output->current_cursor];
 	if (bo == NULL)
 		goto out;
 
-	handle = gbm_bo_get_handle(bo).s32;
-	stride = gbm_bo_get_pitch(bo);
-	gbm_bo_destroy(bo);
+	memset(buf, 0, sizeof buf);
+	d = (unsigned char *) buf;
+	stride = wl_shm_buffer_get_stride(eid->sprite->buffer);
+	s = wl_shm_buffer_get_data(eid->sprite->buffer);
+	end = s + stride * eid->sprite->geometry.height;
+	while (s < end) {
+		memcpy(d, s, eid->sprite->geometry.width * 4);
+		s += stride;
+		d += 64 * 4;
+	}
 
-	/* gbm_bo_create_from_egl_image() didn't always validate the usage
-	 * flags, and in that case we might end up with a bad stride. */
-	if (stride != 64 * 4)
+	if (gbm_bo_write(bo, buf, sizeof buf) < 0)
 		goto out;
 
+	handle = gbm_bo_get_handle(bo).s32;
 	ret = drmModeSetCursor(c->drm.fd, output->crtc_id, handle, 64, 64);
 	if (ret) {
 		fprintf(stderr, "failed to set cursor: %s\n", strerror(-ret));
@@ -1303,6 +1310,13 @@ create_output_for_connector(struct drm_compositor *ec,
 		fprintf(stderr, "failed to create egl surface\n");
 		goto err_surface;
 	}
+
+	output->cursor_bo[0] =
+		gbm_bo_create(ec->gbm, 64, 64, GBM_FORMAT_ARGB8888,
+			      GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_WRITE);
+	output->cursor_bo[1] =
+		gbm_bo_create(ec->gbm, 64, 64, GBM_FORMAT_ARGB8888,
+			      GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_WRITE);
 
 	output->backlight = backlight_init(drm_device,
 					   connector->connector_type);
