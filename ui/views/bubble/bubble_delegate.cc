@@ -296,10 +296,8 @@ void BubbleDelegateView::AnimationProgressed(const ui::Animation* animation) {
   SetLayeredWindowAttributes(hwnd, 0, opacity, LWA_ALPHA);
   // Update the border widget's opacity.
   border_widget_->SetOpacity(opacity);
-  border_widget_->non_client_view()->SchedulePaint();
 #endif
   GetWidget()->SetOpacity(opacity);
-  SchedulePaint();
 }
 
 void BubbleDelegateView::Init() {}

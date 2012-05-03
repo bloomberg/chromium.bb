@@ -1044,6 +1044,7 @@ bool NativeWidgetWin::IsFullscreen() const {
 
 void NativeWidgetWin::SetOpacity(unsigned char opacity) {
   layered_alpha_ = static_cast<BYTE>(opacity);
+  GetWidget()->GetRootView()->SchedulePaint();
 }
 
 void NativeWidgetWin::SetUseDragFrame(bool use_drag_frame) {

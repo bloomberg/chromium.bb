@@ -261,7 +261,6 @@ class TabDragController2::DockDisplayer : public ui::AnimationDelegate {
     double scale = in_enable_area_ ? 1 : .5;
     popup_->SetOpacity(static_cast<unsigned char>(animation_.GetCurrentValue() *
         scale * 255.0));
-    popup_->GetRootView()->SchedulePaint();
   }
 
  private:

@@ -163,10 +163,7 @@ void DownloadStartedAnimationWin::AnimateToState(double state) {
     double opacity = std::min(1.0 - pow(GetCurrentValue() - 0.5, 2) * 4.0,
                               static_cast<double>(1.0));
 
-    popup_->SetOpacity(
-        static_cast<SkColor>(opacity * 255.0));
-    SchedulePaint();  // Reposition() calls MoveWindow() which never picks up
-                      // alpha changes, so we need to force a paint.
+    popup_->SetOpacity(static_cast<unsigned char>(opacity * 255.0));
   }
 }
 

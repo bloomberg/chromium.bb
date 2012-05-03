@@ -391,8 +391,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Sets the opacity of the widget. This may allow widgets behind the widget
   // in the Z-order to become visible, depending on the capabilities of the
-  // underlying windowing system. Note that the caller must then schedule a
-  // repaint to allow this change to take effect.
+  // underlying windowing system.
   void SetOpacity(unsigned char opacity);
 
   // Sets whether or not the window should show its frame as a "transient drag
