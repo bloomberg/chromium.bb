@@ -57,10 +57,14 @@ clobber() {
 }
 
 # Make up for the toolchain tarballs not quite being a full SDK
+# Also clean the SPEC dir (that step is here because it should
+# not be run on hw bots which download rather than build binaries)
 build-prerequisites() {
   echo "@@@BUILD_STEP build prerequisites [$*] @@@"
   pushd ${SPEC_BASE}
   ./run_all.sh BuildPrerequisites "$@"
+  ./run_all.sh CleanBenchmarks
+  ./run_all.sh PopulateFromSpecHarness "${SPEC_HARNESS}"
   popd
 }
 
@@ -72,8 +76,6 @@ build-tests() {
   local count=$(testcount "${tests}")
 
   pushd ${SPEC_BASE}
-  ./run_all.sh CleanBenchmarks
-  ./run_all.sh PopulateFromSpecHarness "${SPEC_HARNESS}"
   for setup in ${setups}; do
     echo "@@@BUILD_STEP spec2k build [${setup}] [${count} tests]@@@"
     MAKEOPTS=-j8 \
@@ -151,7 +153,7 @@ pnacl-trybot-arm-buildonly() {
   clobber
   build-prerequisites "arm" "bitcode"
   ${BUILDBOT_PNACL} archive-for-hw-bots "${NAME_ARM_TRY_UPLOAD}" try
-  build-tests SetupPnaclArmOpt "${TRYBOT_TESTS}" 0 1
+  build-tests SetupPnaclPexeOpt "${TRYBOT_TESTS}" 0 1
   upload-test-binaries "${TRYBOT_TESTS}" try
 }
 
@@ -159,7 +161,8 @@ pnacl-trybot-arm-hw() {
   clobber
   ${BUILDBOT_PNACL} unarchive-for-hw-bots "${NAME_ARM_TRY_DOWNLOAD}" try
   download-test-binaries try
-  run-tests SetupPnaclArmOptHW "${TRYBOT_TESTS}" 0 1
+  build-tests SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" 0 1
+  run-tests SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" 0 1
 }
 
 pnacl-trybot-x8632() {
@@ -194,7 +197,7 @@ pnacl-arm-buildonly() {
   clobber
   build-prerequisites "arm" "bitcode"
   ${BUILDBOT_PNACL} archive-for-hw-bots "${NAME_ARM_UPLOAD}" regular
-  build-tests SetupPnaclArmOpt all 1 1
+  build-tests SetupPnaclPexeOpt all 0 1
   upload-test-binaries all regular
 }
 
@@ -202,7 +205,8 @@ pnacl-arm-hw() {
   clobber
   ${BUILDBOT_PNACL} unarchive-for-hw-bots "${NAME_ARM_DOWNLOAD}" regular
   download-test-binaries regular
-  run-tests SetupPnaclArmOptHW all 1 1
+  build-tests SetupPnaclTranslatorArmOptHW all 1 3
+  run-tests SetupPnaclTranslatorArmOptHW all 1 3
 }
 
 pnacl-x8664() {
