@@ -482,7 +482,7 @@ const ClassDecoder& Arm32DecoderState::decode_media(
 
     return decode_signed_mult(insn);
 
-  if ((true) && (true))
+  if ((true))
 
     return Undefined_instance_;
 
@@ -546,7 +546,7 @@ const ClassDecoder& Arm32DecoderState::decode_misc(
 
     return Forbidden_instance_;
 
-  if ((true) && (true) && (true))
+  if ((true))
 
     return Undefined_instance_;
 
@@ -630,7 +630,7 @@ const ClassDecoder& Arm32DecoderState::decode_misc_hints_simd(
 
     return decode_simd_dp(insn);
 
-  if ((true) && (true) && (true))
+  if ((true))
 
     return Undefined_instance_;
 
@@ -686,7 +686,7 @@ const ClassDecoder& Arm32DecoderState::decode_msr_and_hints(
 
     return Forbidden_instance_;
 
-  if ((true) && (true) && (true))
+  if ((true))
 
     return Forbidden_instance_;
 
@@ -774,7 +774,7 @@ const ClassDecoder& Arm32DecoderState::decode_pack_sat_rev(
 
     return PackSatRev_instance_;
 
-  if ((true) && (true))
+  if ((true))
 
     return Undefined_instance_;
 
@@ -814,7 +814,7 @@ const ClassDecoder& Arm32DecoderState::decode_parallel_add_sub(
 
     return DataProc_instance_;
 
-  if ((true) && (true))
+  if ((true))
 
     return Undefined_instance_;
 
@@ -866,7 +866,7 @@ const ClassDecoder& Arm32DecoderState::decode_signed_mult(
 
     return Multiply_instance_;
 
-  if ((true) && (true) && (true))
+  if ((true))
 
     return Undefined_instance_;
 
@@ -938,7 +938,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp(
 
     return decode_simd_dp_2shift(insn);
 
-  if ((true) && (true) && (true) && (true))
+  if ((true))
 
     return Undefined_instance_;
 
@@ -1038,7 +1038,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2misc(
 
     return EffectiveNoOp_instance_;
 
-  if ((true) && (true))
+  if ((true))
 
     return Undefined_instance_;
 
@@ -1074,7 +1074,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2scalar(
 
     return EffectiveNoOp_instance_;
 
-  if ((true) && (true))
+  if ((true))
 
     return Undefined_instance_;
 
@@ -1126,7 +1126,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2shift(
 
     return EffectiveNoOp_instance_;
 
-  if ((true) && (true) && (true) && (true))
+  if ((true))
 
     return Undefined_instance_;
 
@@ -1158,7 +1158,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_3diff(
 
     return EffectiveNoOp_instance_;
 
-  if ((true) && (true))
+  if ((true))
 
     return Undefined_instance_;
 
@@ -1238,7 +1238,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_3same(
 
     return EffectiveNoOp_instance_;
 
-  if ((true) && (true) && (true) && (true))
+  if ((true))
 
     return Undefined_instance_;
 
@@ -1298,7 +1298,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_load_store_l0(
 
     return VectorStore_instance_;
 
-  if ((true) && (true))
+  if ((true))
 
     return Undefined_instance_;
 
@@ -1334,7 +1334,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_load_store_l1(
 
     return VectorLoad_instance_;
 
-  if ((true) && (true))
+  if ((true))
 
     return Undefined_instance_;
 
@@ -1502,7 +1502,7 @@ const ClassDecoder& Arm32DecoderState::decode_unconditional(
 
     return decode_misc_hints_simd(insn);
 
-  if ((true) && (true) && (true))
+  if ((true))
 
     return Undefined_instance_;
 

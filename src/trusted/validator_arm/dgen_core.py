@@ -198,7 +198,8 @@ class Table(object):
         """
         self.name = name
         self.citation = citation
-        self.rows = []
+        self.default_row = None
+        self._rows = []
         self._columns = []
 
     def add_column(self, name, hi_bit, lo_bit):
@@ -214,6 +215,23 @@ class Table(object):
         """
         self._columns.append( (name, hi_bit, lo_bit) )
 
+    def rows(self, default_also = True):
+        """Returns all rows in table (including the default row
+           as the last element if requested).
+        """
+        r = self._rows[:]
+        if default_also and self.default_row:
+          r.append(self.default_row)
+        return r
+
+    def add_default_row(self, action, arch):
+        """Adds a default action to use if none of the rows apply.
+           Returns True if able to define.
+        """
+        if self.default_row: return False
+        self.default_row = Row([BitPattern(0, 0, "==")], action, arch)
+        return True
+
     def add_row(self, patterns, action, arch):
         """Adds a row to the table.
         Args:
@@ -224,7 +242,7 @@ class Table(object):
             arch: a string defining the architectures it applies to. None
                 implies all.
         """
-        self.rows.append(Row(patterns, action, arch))
+        self._rows.append(Row(patterns, action, arch))
 
     def define_pattern(self, pattern, column):
         """Converts the given input pattern (for the given column) to the
@@ -240,9 +258,20 @@ class Table(object):
         """
         table = Table(self.name, self.citation)
         table._columns = self._columns
-        for r in self.rows:
+        for r in self._rows:
           table.add_row(r.patterns, r.action.action_filter(names), r.arch)
+        if self.default_row:
+          table.add_default_row(self.default_row.action.action_filter(names),
+                                self.default_row.arch)
         return table
+
+    def methods(self):
+      """Returns the (sorted) list of methods called by the table."""
+      methods = set()
+      for r in self.rows(True):
+        if r.action.__class__.__name__ == 'DecoderMethod':
+          methods.add(r.action)
+      return sorted(methods)
 
 class DecoderAction:
   """An action defining a class decoder to apply.
@@ -450,7 +479,7 @@ class Decoder(object):
     """Returns the sorted sequence of DecoderAction's defined in the tables."""
     decoders = set()
     for t in self._tables:
-        for r in t.rows:
+        for r in t.rows(True):
             if r.action.__class__.__name__ == 'DecoderAction':
                 decoders.add(r.action)
     return sorted(decoders)

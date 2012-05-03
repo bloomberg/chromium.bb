@@ -19,15 +19,17 @@ citation       ::= '(' word+ ')'
 decoder        ::= id ('=>' id)?
 decoder_action ::= '=' decoder (id (word (id)?)?)?
 decoder_method ::= '->' id
+default_row    ::= 'else' ':' action
 footer         ::= '+' '-' '-'
 header         ::= "|" (id '(' int (':' int)? ')')+
 int            ::= word     (where word is a sequence of digits)
 id             ::= word     (where word is sequence of letters, digits and _)
 parenthesized_exp ::= '(' (word | punctuation)+ ')'
-pattern ::= 'word' | '-' | '"'
-row ::= '|' pattern+ action
-table ::= table_desc header row+ footer
-table_desc ::= '+' '-' '-' id citation?
+pat_row        ::= pattern+ action
+pattern        ::= 'word' | '-' | '"'
+row            ::= '|' (pat_row | default_row)
+table          ::= table_desc header row+ footer
+table_desc     ::= '+' '-' '-' id citation?
 
 If a decoder_action has more than one element, the interpretation is as follows:
    id[0] = action (plus optional architecture) to apply.
@@ -77,7 +79,8 @@ class Parser(object):
     # Punctuation allowed. Must be ordered such that if
     # p1 != p2 are in the list, and p1.startswith(p2), then
     # p1 must appear before p2.
-    self._punctuation = ['=>', '->', '-', '+', '(', ')', '=', ':', '"', '|']
+    self._punctuation = ['else', '=>', '->', '-', '+',
+                         '(', ')', '=', ':', '"', '|']
 
   def _action(self, last_action, last_arch):
     """ action ::= decoder_action arch | decoder_method | '"' """
@@ -132,6 +135,15 @@ class Parser(object):
     self._read_token('->')
     name = self._id()
     return dgen_core.DecoderMethod(name)
+
+  def _default_row(self, table, last_action, last_arch):
+    """ default_row ::= 'else' ':' action """
+    self._read_token('else')
+    self._read_token(':')
+    (action, arch) = self._action(last_action, last_arch)
+    if not table.add_default_row(action, arch):
+      self._unexpected('Unable to install row default')
+    return (None, action, arch)
 
   def _footer(self):
     """ footer ::= '+' '-' '-' """
@@ -191,6 +203,31 @@ class Parser(object):
       self._unexpected("len(parenthesized expresssion) < %s" % minlength)
     self._read_token(')')
     return words
+  def _pat_row(self, table, last_patterns, last_action, last_arch):
+    """ pat_row ::= pattern+ action
+
+    Passed in sequence of patterns and action from last row,
+    and returns list of patterns and action from this row.
+    """
+    patterns = []             # Patterns as found on input.
+    expanded_patterns = []    # Patterns after being expanded.
+    num_patterns = 0
+    num_patterns_last = len(last_patterns) if last_patterns else None
+    while self._next_token().kind not in ['=', '->', '|', '+']:
+      if not last_patterns or num_patterns < num_patterns_last:
+        last_pattern = last_patterns[num_patterns] if last_patterns else None
+        pattern = self._pattern(last_pattern)
+        patterns.append(pattern)
+        expanded_patterns.append(table.define_pattern(pattern, num_patterns))
+        num_patterns += 1
+      else:
+        # Processed patterns in this row, since width is now the
+        # same as last row.
+        break;
+
+    (action, arch) = self._action(last_action, last_arch)
+    table.add_row(expanded_patterns, action, arch)
+    return (patterns, action, arch)
 
   def _pattern(self, last_pattern):
     """ pattern ::= 'word' | '-' | '"'
@@ -210,31 +247,16 @@ class Parser(object):
 
   def _row(self, table, last_patterns=None,
            last_action=None, last_arch= None):
-    """ row ::= '|' pattern+ (decoder_action arch? | decoder_method)?
+    """ row ::= '|' (pat_row | default_row)
 
     Passed in sequence of patterns and action from last row,
     and returns list of patterns and action from this row.
     """
-    patterns = []             # Patterns as found on input.
-    expanded_patterns = []    # Patterns after being expanded.
     self._read_token('|')
-    num_patterns = 0
-    num_patterns_last = len(last_patterns) if last_patterns else None
-    while self._next_token().kind not in ['=', '->', '|', '+']:
-      if not last_patterns or num_patterns < num_patterns_last:
-        last_pattern = last_patterns[num_patterns] if last_patterns else None
-        pattern = self._pattern(last_pattern)
-        patterns.append(pattern)
-        expanded_patterns.append(table.define_pattern(pattern, num_patterns))
-        num_patterns += 1
-      else:
-        # Processed patterns in this row, since width is now the
-        # same as last row.
-        break;
-
-    (action, arch) = self._action(last_action, last_arch)
-    table.add_row(expanded_patterns, action, arch)
-    return (patterns, action, arch)
+    if self._next_token().kind == 'else':
+      return self._default_row(table, last_action, last_arch)
+    else:
+      return self._pat_row(table, last_patterns, last_action, last_arch)
 
   def _table(self, decoder):
     """ table ::= table_desc header row+ footer """

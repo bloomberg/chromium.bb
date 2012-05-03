@@ -603,10 +603,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_byte(
 const NamedClassDecoder& NamedArm32DecoderState::decode_media(
      const nacl_arm_dec::Instruction insn) const {
 
-  if ((true) && (true)) {
-   return Undefined_instance_;
-  }
-
   if (((insn & 0x01800000) == 0x00800000) && (true)) {
    return decode_pack_sat_rev(insn);
   }
@@ -635,6 +631,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_media(
    return Multiply_instance_;
   }
 
+  if ((true)) {
+   return Undefined_instance_;
+  }
+
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: media could not parse %08X",
           insn.bits(31,0));
@@ -651,10 +651,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_misc(
 
   if (((insn & 0x00000070) == 0x00000010) && ((insn & 0x00600000) == 0x00200000) && (true)) {
    return BxBlx_instance_;
-  }
-
-  if ((true) && (true) && (true)) {
-   return Undefined_instance_;
   }
 
   if (((insn & 0x00000070) == 0x00000010) && ((insn & 0x00600000) == 0x00600000) && (true)) {
@@ -701,6 +697,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_misc(
    return Breakpoint_instance_;
   }
 
+  if ((true)) {
+   return Undefined_instance_;
+  }
+
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: misc could not parse %08X",
           insn.bits(31,0));
@@ -733,10 +733,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_misc_hints_simd(
 
   if (((insn & 0x07F00000) == 0x05700000) && ((insn & 0x000000D0) == 0x00000040) && (true)) {
    return EffectiveNoOp_instance_;
-  }
-
-  if ((true) && (true) && (true)) {
-   return Undefined_instance_;
   }
 
   if (((insn & 0x07100000) == 0x04000000) && (true) && (true)) {
@@ -787,6 +783,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_misc_hints_simd(
    return Forbidden_instance_;
   }
 
+  if ((true)) {
+   return Undefined_instance_;
+  }
+
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: misc_hints_simd could not parse %08X",
           insn.bits(31,0));
@@ -833,16 +833,16 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_msr_and_hints(
    return Forbidden_instance_;
   }
 
-  if ((true) && (true) && (true)) {
-   return Forbidden_instance_;
-  }
-
   if (((insn & 0x00400000) == 0x00000000) && ((insn & 0x000F0000) == 0x00040000) && (true)) {
    return MoveToStatusRegister_instance_;
   }
 
   if (((insn & 0x00400000) == 0x00000000) && ((insn & 0x000B0000) == 0x00080000) && (true)) {
    return MoveToStatusRegister_instance_;
+  }
+
+  if ((true)) {
+   return Forbidden_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -897,10 +897,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_pack_sat_rev(
    return PackSatRev_instance_;
   }
 
-  if ((true) && (true)) {
-   return Undefined_instance_;
-  }
-
   if (((insn & 0x00700000) == 0x00000000) && ((insn & 0x00000020) == 0x00000000)) {
    return PackSatRev_instance_;
   }
@@ -937,6 +933,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_pack_sat_rev(
    return PackSatRev_instance_;
   }
 
+  if ((true)) {
+   return Undefined_instance_;
+  }
+
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: pack_sat_rev could not parse %08X",
           insn.bits(31,0));
@@ -951,10 +951,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_pack_sat_rev(
 const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_add_sub(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
-  if ((true) && (true)) {
-   return Undefined_instance_;
-  }
-
   if (((insn & 0x00300000) == 0x00200000) && ((insn & 0x000000E0) == 0x00000080)) {
    return DataProc_instance_;
   }
@@ -977,6 +973,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_add_sub(
 
   if (((insn & 0x00100000) == 0x00100000) && ((insn & 0x00000080) == 0x00000000)) {
    return DataProc_instance_;
+  }
+
+  if ((true)) {
+   return Undefined_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -1011,10 +1011,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_sat_add_sub(
 const NamedClassDecoder& NamedArm32DecoderState::decode_signed_mult(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
-  if ((true) && (true) && (true)) {
-   return Undefined_instance_;
-  }
-
   if (((insn & 0x00700000) == 0x00400000) && ((insn & 0x00000080) == 0x00000000) && (true)) {
    return LongMultiply_instance_;
   }
@@ -1035,6 +1031,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_mult(
    return Multiply_instance_;
   }
 
+  if ((true)) {
+   return Undefined_instance_;
+  }
+
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: signed_mult could not parse %08X",
           insn.bits(31,0));
@@ -1048,10 +1048,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_mult(
  */
 const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp(
      const nacl_arm_dec::Instruction insn) const {
-
-  if ((true) && (true) && (true) && (true)) {
-   return Undefined_instance_;
-  }
 
   if ((true) && ((insn & 0x00A00000) == 0x00800000) && (true) && ((insn & 0x00000050) == 0x00000000)) {
    return decode_simd_dp_3diff(insn);
@@ -1109,6 +1105,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp(
    return decode_simd_dp_2misc(insn);
   }
 
+  if ((true)) {
+   return Undefined_instance_;
+  }
+
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp could not parse %08X",
           insn.bits(31,0));
@@ -1161,10 +1161,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_1imm(
 const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2misc(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
-  if ((true) && (true)) {
-   return Undefined_instance_;
-  }
-
   if (((insn & 0x00030000) == 0x00000000) && ((insn & 0x00000780) == 0x00000700)) {
    return EffectiveNoOp_instance_;
   }
@@ -1213,6 +1209,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2misc(
    return EffectiveNoOp_instance_;
   }
 
+  if ((true)) {
+   return Undefined_instance_;
+  }
+
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_2misc could not parse %08X",
           insn.bits(31,0));
@@ -1227,10 +1227,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2misc(
 const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2scalar(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
-  if ((true) && (true)) {
-   return Undefined_instance_;
-  }
-
   if (((insn & 0x00000B00) == 0x00000200) && (true)) {
    return EffectiveNoOp_instance_;
   }
@@ -1251,6 +1247,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2scalar(
    return EffectiveNoOp_instance_;
   }
 
+  if ((true)) {
+   return Undefined_instance_;
+  }
+
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_2scalar could not parse %08X",
           insn.bits(31,0));
@@ -1265,10 +1265,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2scalar(
 const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2shift(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
-  if ((true) && (true) && (true) && (true)) {
-   return Undefined_instance_;
-  }
-
   if (((insn & 0x00000F00) == 0x00000500) && ((insn & 0x01000000) == 0x00000000) && (true) && (true)) {
    return EffectiveNoOp_instance_;
   }
@@ -1305,6 +1301,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2shift(
    return EffectiveNoOp_instance_;
   }
 
+  if ((true)) {
+   return Undefined_instance_;
+  }
+
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_2shift could not parse %08X",
           insn.bits(31,0));
@@ -1319,10 +1319,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2shift(
 const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_3diff(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
-  if ((true) && (true)) {
-   return Undefined_instance_;
-  }
-
   if (((insn & 0x00000D00) == 0x00000900) && ((insn & 0x01000000) == 0x00000000)) {
    return EffectiveNoOp_instance_;
   }
@@ -1339,6 +1335,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_3diff(
    return EffectiveNoOp_instance_;
   }
 
+  if ((true)) {
+   return Undefined_instance_;
+  }
+
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_3diff could not parse %08X",
           insn.bits(31,0));
@@ -1353,10 +1353,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_3diff(
 const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_3same(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
-  if ((true) && (true) && (true) && (true)) {
-   return Undefined_instance_;
-  }
-
   if (((insn & 0x00000F00) == 0x00000D00) && ((insn & 0x00000010) == 0x00000010) && ((insn & 0x01000000) == 0x01000000) && ((insn & 0x00200000) == 0x00000000)) {
    return EffectiveNoOp_instance_;
   }
@@ -1421,6 +1417,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_3same(
    return EffectiveNoOp_instance_;
   }
 
+  if ((true)) {
+   return Undefined_instance_;
+  }
+
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_3same could not parse %08X",
           insn.bits(31,0));
@@ -1457,10 +1457,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_load_store(
 const NamedClassDecoder& NamedArm32DecoderState::decode_simd_load_store_l0(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
-  if ((true) && (true)) {
-   return Undefined_instance_;
-  }
-
   if (((insn & 0x00800000) == 0x00000000) && ((insn & 0x00000F00) == 0x00000300)) {
    return VectorStore_instance_;
   }
@@ -1483,6 +1479,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_load_store_l0(
 
   if (((insn & 0x00800000) == 0x00800000) && ((insn & 0x00000C00) == 0x00000800)) {
    return VectorStore_instance_;
+  }
+
+  if ((true)) {
+   return Undefined_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -1519,7 +1519,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_load_store_l1(
    return VectorLoad_instance_;
   }
 
-  if ((true) && (true)) {
+  if ((true)) {
    return Undefined_instance_;
   }
 
@@ -1595,10 +1595,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_sync(
    return LoadDoubleExclusive_instance_;
   }
 
-  if ((true)) {
-   return Undefined_instance_;
-  }
-
   if (((insn & 0x00F00000) == 0x00C00000)) {
    return StoreExclusive_instance_;
   }
@@ -1617,6 +1613,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_sync(
 
   if (((insn & 0x00D00000) == 0x00D00000)) {
    return LoadExclusive_instance_;
+  }
+
+  if ((true)) {
+   return Undefined_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -1651,10 +1651,6 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_unconditional(
 
   if (((insn & 0x0F100000) == 0x0D100000) && (true) && ((insn & 0x000F0000) == 0x000F0000)) {
    return LoadCoprocessor_instance_;
-  }
-
-  if ((true) && (true) && (true)) {
-   return Undefined_instance_;
   }
 
   if (((insn & 0x0FF00000) == 0x0C500000) && (true) && (true)) {
@@ -1695,6 +1691,10 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_unconditional(
 
   if (((insn & 0x0E000000) == 0x0A000000) && (true) && (true)) {
    return Forbidden_instance_;
+  }
+
+  if ((true)) {
+   return Undefined_instance_;
   }
 
   // Catch any attempt to fall through...

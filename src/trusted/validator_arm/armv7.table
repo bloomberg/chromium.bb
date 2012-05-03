@@ -312,7 +312,7 @@
 | 1101      =LoadExclusive(v6K)        # LDREXB
 | 1110      =StoreExclusive(v6K)       # STREXH
 | 1111      =LoadExclusive(v6K)        # LDREXH
-| -         =Undefined(v6K)            # Note on page A5-16
+| else:     =Undefined(v6K)            # Note on page A5-16
 +--
 
 +-- msr_and_hints (See Section A5.2.11)
@@ -328,7 +328,7 @@
 | "      xx01       -          =Forbidden  # MSR(immediate), ring0 version
 | "      xx1x       -          =Forbidden  # MSR(immediate), ring0 version
 | 1      -          -          =Forbidden  # MSR(immediate), ring0 version
-| -      -          -          =Forbidden  # Unallocated hints, page A5-17
+| else:                        =Forbidden  # Unallocated hints, page A5-17
 +--
 
 +-- misc (See Section A5.2.12)
@@ -345,7 +345,7 @@
 | 101      -         -          ->sat_add_sub
 | 111      01        -          =Breakpoint(v5T)  # BKPT
 | 111      11        -          =Forbidden     # SMC
-| -        -         -          =Undefined     # Note on page A5-18
+| else:                         =Undefined     # Note on page A5-18
 +--
 
 +-- load_store_word_byte (See Section A5.3)
@@ -385,7 +385,7 @@
 | "          x00      -         ~1111   =DataProc(v6T2)  # BFI
 | 1111x      x10      -         -       =DataProc(v6T2)  # UBFX
 | 11111      111      -         -       =Roadblock  # Permanently Undefined
-| -          -        -         -       =Undefined  # Note on page A5-21
+| else:                                 =Undefined  # Note on page A5-21
 +--
 
 +-- parallel_add_sub (See Sections A5.4.1, A5.4.2)
@@ -413,7 +413,7 @@
 | 11         011      =DataProc(v6)  # UHSUB16
 | 11         100      =DataProc(v6)  # UHADD8
 | 11         111      =DataProc(v6)  # UHSUB8
-| -          -        =Undefined  # Note on page A5-23
+| else:               =Undefined  # Note on page A5-23
 +--
 
 +-- pack_sat_rev (See Section A5.4.3)
@@ -440,7 +440,7 @@
 | "          011      ~1111    =PackSatRev(v6)    # UXTAH
 | "          "        1111     =PackSatRev(v6)    # UXTH
 | "          101      -        =PackSatRev(v6)    # REVSH
-| -          -        -        =Undefined  # Note on page A5-24
+| else:                        =Undefined  # Note on page A5-24
 +--
 
 +-- signed_mult (See Section A5.4.4)
@@ -454,7 +454,7 @@
 | 101        00x      ~1111    =Multiply(v6T2)          # SMMLA
 | "          "        1111     =Multiply(v6T2)          # SMMUL
 | "          11x      -        =Multiply(v6T2)          # SMMLS
-| -          -        -        =Undefined  # Note on page A5-26
+| else:                        =Undefined  # Note on page A5-26
 +--
 
 +-- branch_block_xfer (See Section A5.5)
@@ -507,7 +507,7 @@
 | 1110_xxxx  0     -         =CoprocessorOp(v5)  # CDP, CDP2
 | 1110_xxx0  1     -         =CoprocessorOp(v5)  # MCR, MCR2
 | 1110_xxx1  1     -         =MoveFromCoprocessor(v5)  # MRC, MRC2
-| -          -     -         =Undefined         # Note on page A5-30
+| else:                      =Undefined         # Note on page A5-30
 +--
 
 +-- misc_hints_simd (See Section A5.7.1)
@@ -532,7 +532,7 @@
 | 111_x001   xxx0     -         =EffectiveNoOp(MP)    # PLDW(register)
 | 111_x101   xxx0     -         =EffectiveNoOp(v5TE)  # PLD(register)
 | 11x_xx11   xxx0     -         =Unpredictable
-| -          -        -         =Undefined   # Note on page A5-31
+| else:                         =Undefined   # Note on page A5-31
 +--
 
 +-- simd_dp (See Section A7.4)
@@ -551,7 +551,7 @@
 | 1     1x11x    0xxx    xxx0   ->simd_dp_2misc
 | "     "        10xx    xxx0   =EffectiveNoOp  # VTBL, VTBX
 | "     "        1100    0xx0   =EffectiveNoOp  # VDUP(scalar)
-| -     -        -       -      =Undefined  # Note on page A7-10
+| else:                         =Undefined  # Note on page A7-10
 +--
 
 +-- simd_dp_3same (See Section A7.4.1)
@@ -605,7 +605,7 @@
 | "       "    1     -        =EffectiveNoOp  # VPMAX, VPMIN(float)
 | "       1    0     0x       =EffectiveNoOp  # VRECPS
 | "       "    0     1x       =EffectiveNoOp  # VRSQRTS
-| -       -    -     -        =Undefined  # Note on page A7-12
+| else:                       =Undefined  # Note on page A7-12
 +--
 
 +-- simd_dp_3diff (See Section A7.4.2)
@@ -623,7 +623,7 @@
 | 1100    -     =EffectiveNoOp  # VMUL, VMULL (integer)
 | 1101    0     =EffectiveNoOp  # VQDMULL
 | 1110    -     =EffectiveNoOp  # VMUL, VMULL (polynomial)
-| -       -     =Undefined  # Note on page A7-15
+| else:         =Undefined  # Note on page A7-15
 +--
 
 +-- simd_dp_2scalar (See Section A7.4.3)
@@ -636,7 +636,7 @@
 | 1011    0     =EffectiveNoOp  # VQDMULL
 | 1100    -     =EffectiveNoOp  # VQDMULH
 | 1101    -     =EffectiveNoOp  # VQRDMULH
-| -       -     =Undefined  # Note on page A7-16
+| else:         =Undefined  # Note on page A7-16
 +--
 
 +-- simd_dp_2shift (See Section A7.4.4)
@@ -657,7 +657,7 @@
 | "       -     1    -    =EffectiveNoOp  # VQRSHRN
 | 1010    -     0    -    =EffectiveNoOp  # VSHLL, VMOVL
 | 111x    -     -    -    =EffectiveNoOp  # VCVT (floating- and fixed-point)
-| -       -     -    -    =Undefined  # Note on page A7-17
+| else:                   =Undefined  # Note on page A7-17
 +--
 
 +-- simd_dp_2misc (See Section A7.4.5)
@@ -692,7 +692,7 @@
 | 11       10x0x   =EffectiveNoOp  # VRECPE
 | "        10x1x   =EffectiveNoOp  # VRSQRTE
 | "        11xxx   =EffectiveNoOp  # VCVT (float and integer)
-| -        -       =Undefined  # Note on page A7-19
+| else:            =Undefined  # Note on page A7-19
 +--
 
 +-- simd_dp_1imm (See Section A7.4.6)
@@ -735,7 +735,7 @@
 | "     1010    "
 | "     0x11    =VectorStore  # VST4(single)
 | "     1011    "
-| -     -       =Undefined    # Note on page A7-27
+| else:         =Undefined    # Note on page A7-27
 +--
 
 +-- simd_load_store_l1 (See Section A7.7, Table A7-21)
@@ -759,5 +759,5 @@
 | "     0x11    =VectorLoad  # VLD4(single)
 | "     1011    "
 | "     1111    =VectorLoad  # VLD4(single, all lanes)
-| -     -       =Undefined   # Note on page A7-27
+| else:         =Undefined   # Note on page A7-27
 +--

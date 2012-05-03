@@ -225,18 +225,23 @@ def _generate_constructors(decoder, values, out):
 
 def _generate_methods(decoder, values, out):
   for table in decoder.tables():
-    opt_rows = sorted(dgen_opt.optimize_rows(table.rows))
+    # Add the default row as the last in the optimized row, so that
+    # it is applied if all other rows do not.
+    opt_rows = sorted(dgen_opt.optimize_rows(table.rows(False)))
+    if table.default_row:
+      opt_rows.append(table.default_row)
+
     print ("Table %s: %d rows minimized to %d"
-           % (table.name, len(table.rows), len(opt_rows)))
+           % (table.name, len(table.rows()), len(opt_rows)))
 
     values['table_name'] = table.name
     values['citation'] = table.citation
     out.write(METHOD_HEADER % values)
 
+
     # Add message to stop compilation warnings if this table
     # doesn't require subtables to select a class decoder.
-    if not [r for r in opt_rows
-            if r.action.__class__.__name__ == 'DecoderMethod']:
+    if not table.methods():
       out.write("  UNREFERENCED_PARAMETER(insn);")
 
     for row in opt_rows:
