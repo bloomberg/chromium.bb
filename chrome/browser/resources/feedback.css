@@ -95,8 +95,6 @@ hr {
   left: 0;
   padding: 1px;
   position: absolute;
-  text-align: center
-  top: 130%;
 }
 
 .image-thumbnail:hover div img {
@@ -132,8 +130,6 @@ hr {
   left: 0;
   padding: 1px;
   position: absolute;
-  text-align: center
-  top: 130%;
 }
 
 .image-thumbnail-current:hover div img {
