@@ -88,18 +88,7 @@ void PanelResizeController::Resize(const gfx::Point& mouse_location) {
                       mouse_location_at_start_.y() - mouse_location.y(), 0));
   }
 
-  // Update the max size of the panel so it's never smaller then the actual
-  // panel's size. Note that even if the user resizes the panel smaller later,
-  // the increased max size will still be in effect. Since it's not possible
-  // currently to switch the panel back to autosizing from user-resizable, it
-  // should not be a problem.
-  gfx::Size max_panel_size = resizing_panel_->max_size();
-  if (max_panel_size.width() < bounds.width())
-    max_panel_size.set_width(bounds.width());
-  if (max_panel_size.height() < bounds.height())
-    max_panel_size.set_height(bounds.height());
-
-  resizing_panel_->SetSizeRange(resizing_panel_->min_size(), max_panel_size);
+  resizing_panel_->IncreaseMaxSize(bounds.size());
 
   // This effectively only clamps using the min size, since the max_size was
   // updated above.

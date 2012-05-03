@@ -457,7 +457,8 @@ gfx::Size PanelBrowserFrameView::GetMinimumSize() {
 }
 
 gfx::Size PanelBrowserFrameView::GetMaximumSize() {
-  return panel_browser_view_->panel()->max_size();
+  // When the user resizes the panel, there is no max size limit.
+  return gfx::Size();
 }
 
 void PanelBrowserFrameView::Layout() {

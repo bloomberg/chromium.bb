@@ -283,6 +283,13 @@ class Panel : public BrowserWindow,
   // Sets minimum and maximum size for the panel.
   void SetSizeRange(const gfx::Size& min_size, const gfx::Size& max_size);
 
+  // Updates the maximum size of the panel so that it's never smaller than the
+  // panel's desired size. Note that even if the user resizes the panel smaller
+  // later, the increased maximum size will still be in effect. Since it's not
+  // possible currently to switch the panel back to autosizing from
+  // user-resizable, it should not be a problem.
+  void IncreaseMaxSize(const gfx::Size& desired_panel_size);
+
   // Whether the panel window is always on top.
   void SetAlwaysOnTop(bool on_top);
   bool always_on_top() const { return always_on_top_; }
