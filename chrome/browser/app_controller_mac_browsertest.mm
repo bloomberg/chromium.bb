@@ -18,7 +18,9 @@ namespace {
 
 class AppControllerPlatformAppBrowserTest : public InProcessBrowserTest {
  protected:
-  AppControllerPlatformAppBrowserTest() {}
+  AppControllerPlatformAppBrowserTest() {
+    set_initial_window_required(false);
+  }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     InProcessBrowserTest::SetUpCommandLine(command_line);
@@ -33,17 +35,19 @@ IN_PROC_BROWSER_TEST_F(AppControllerPlatformAppBrowserTest,
                        PlatformAppReopenWithWindows) {
   scoped_nsobject<AppController> ac([[AppController alloc] init]);
   NSUInteger old_window_count = [[NSApp windows] count];
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(0u, BrowserList::size());
   BOOL result = [ac applicationShouldHandleReopen:NSApp hasVisibleWindows:YES];
 
   EXPECT_TRUE(result);
   EXPECT_EQ(old_window_count, [[NSApp windows] count]);
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(0u, BrowserList::size());
 }
 
 class AppControllerWebAppBrowserTest : public InProcessBrowserTest {
  protected:
-  AppControllerWebAppBrowserTest() {}
+  AppControllerWebAppBrowserTest() {
+    set_initial_window_required(false);
+  }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     InProcessBrowserTest::SetUpCommandLine(command_line);
@@ -60,11 +64,11 @@ class AppControllerWebAppBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(AppControllerWebAppBrowserTest,
                        WebAppReopenWithNoWindows) {
   scoped_nsobject<AppController> ac([[AppController alloc] init]);
-  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(0u, BrowserList::size());
   BOOL result = [ac applicationShouldHandleReopen:NSApp hasVisibleWindows:NO];
 
   EXPECT_FALSE(result);
-  EXPECT_EQ(2u, BrowserList::size());
+  EXPECT_EQ(1u, BrowserList::size());
 
   Browser* browser = *(BrowserList::begin());
   GURL current_url = browser->GetSelectedWebContents()->GetURL();

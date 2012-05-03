@@ -103,6 +103,7 @@ class WindowedPersonalDataManagerObserver : public PersonalDataManagerObserver {
 class AutofillTest : public InProcessBrowserTest {
  protected:
   AutofillTest() {
+    set_show_window(true);
     EnableDOMAutomation();
   }
 

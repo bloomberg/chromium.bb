@@ -4,14 +4,12 @@
 
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 
-#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 
@@ -22,11 +20,7 @@ WizardInProcessBrowserTest::WizardInProcessBrowserTest(const char* screen_name)
       host_(NULL) {
 }
 
-void WizardInProcessBrowserTest::SetUpCommandLine(CommandLine* command_line) {
-  command_line->AppendSwitch(switches::kNoStartupWindow);
-}
-
-void WizardInProcessBrowserTest::SetUpOnMainThread() {
+Browser* WizardInProcessBrowserTest::CreateBrowser(Profile* profile) {
   SetUpWizard();
 
   WizardController::SetZeroDelays();
@@ -35,13 +29,22 @@ void WizardInProcessBrowserTest::SetUpOnMainThread() {
     browser::ShowLoginWizard(screen_name_.c_str(), gfx::Size(1024, 600));
     host_ = BaseLoginDisplayHost::default_host();
   }
+  return NULL;
 }
 
 void WizardInProcessBrowserTest::CleanUpOnMainThread() {
+  ui_test_utils::WindowedNotificationObserver wizard_destroyed_observer(
+      chrome::NOTIFICATION_WIZARD_CONTENT_VIEW_DESTROYED,
+      content::NotificationService::AllSources());
+
   // LoginDisplayHost owns controllers and all windows.
   MessageLoopForUI::current()->DeleteSoon(FROM_HERE, host_);
 
-  ui_test_utils::RunMessageLoop();
+  // Observers and what not are notified after the views are deleted, which
+  // happens after a delay (because they are contained in a NativeWidgetGtk
+  // which delays deleting itself). Run the message loop until we know the
+  // wizard has been deleted.
+  wizard_destroyed_observer.Wait();
 }
 
 }  // namespace chromeos

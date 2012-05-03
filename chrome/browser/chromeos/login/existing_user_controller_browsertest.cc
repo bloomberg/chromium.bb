@@ -120,8 +120,6 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     cros_mock_->SetStatusAreaMocksExpectations();
 
     mock_network_library_ = cros_mock_->mock_network_library();
-    EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
-        .Times(AnyNumber());
     MockSessionManagerClient* mock_session_manager_client =
         mock_dbus_thread_manager->mock_session_manager_client();
     EXPECT_CALL(*mock_session_manager_client, EmitLoginPromptReady())

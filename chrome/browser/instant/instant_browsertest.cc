@@ -48,6 +48,7 @@ using content::WebContents;
 class InstantTest : public InProcessBrowserTest {
  public:
   InstantTest() {
+    set_show_window(true);
     EnableDOMAutomation();
   }
 

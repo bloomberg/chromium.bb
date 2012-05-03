@@ -485,14 +485,14 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, UpdateWithTwoProfiles) {
   new_browser = FindOneOtherBrowserForProfile(profile1, NULL);
   ASSERT_TRUE(new_browser);
   ASSERT_EQ(1, new_browser->tab_count());
-  EXPECT_EQ(GURL(chrome::kAboutBlankURL),
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
             new_browser->GetWebContentsAt(0)->GetURL());
 
   ASSERT_EQ(1u, BrowserList::GetBrowserCount(profile2));
   new_browser = FindOneOtherBrowserForProfile(profile2, NULL);
   ASSERT_TRUE(new_browser);
   ASSERT_EQ(1, new_browser->tab_count());
-  EXPECT_EQ(GURL(chrome::kAboutBlankURL),
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
             new_browser->GetWebContentsAt(0)->GetURL());
 }
 
@@ -584,7 +584,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, ProfilesWithoutPagesNotLaunched) {
   new_browser = FindOneOtherBrowserForProfile(profile_last, NULL);
   ASSERT_TRUE(new_browser);
   ASSERT_EQ(1, new_browser->tab_count());
-  EXPECT_EQ(GURL(chrome::kAboutBlankURL),
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
             new_browser->GetWebContentsAt(0)->GetURL());
 
   // profile_home2 was not launched since it would've only opened the home page.

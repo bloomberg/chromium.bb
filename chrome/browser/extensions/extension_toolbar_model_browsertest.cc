@@ -25,10 +25,12 @@ class ExtensionToolbarModelTest : public ExtensionBrowserTest,
     ExtensionBrowserTest::SetUp();
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
-    ExtensionService* service = browser()->profile()->GetExtensionService();
+  virtual Browser* CreateBrowser(Profile* profile) {
+    Browser* b = InProcessBrowserTest::CreateBrowser(profile);
+    ExtensionService* service = b->profile()->GetExtensionService();
     model_ = service->toolbar_model();
     model_->AddObserver(this);
+    return b;
   }
 
   virtual void CleanUpOnMainThread() {

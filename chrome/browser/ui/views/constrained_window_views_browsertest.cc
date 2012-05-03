@@ -94,6 +94,7 @@ class TestConstrainedDialog : public views::DialogDelegate {
 class ConstrainedWindowViewTest : public InProcessBrowserTest {
  public:
   ConstrainedWindowViewTest() {
+    set_show_window(true);
   }
 };
 

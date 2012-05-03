@@ -33,8 +33,7 @@ class WizardInProcessBrowserTest : public CrosInProcessBrowserTest {
   virtual void SetUpWizard() {}
 
   // Overriden from InProcessBrowserTest:
-  virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual Browser* CreateBrowser(Profile* profile) OVERRIDE;
   virtual void CleanUpOnMainThread() OVERRIDE;
 
  private:

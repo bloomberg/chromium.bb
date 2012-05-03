@@ -267,8 +267,6 @@ const char kDisableChromeToMobile[]         = "disable-chrome-to-mobile";
 const char kDisableClientSidePhishingDetection[] =
     "disable-client-side-phishing-detection";
 
-const char kDisableComponentUpdate[]        = "disable-component-update";
-
 // Disables establishing a backup TCP connection if a specified timeout is
 // exceeded.
 const char kDisableConnectBackupJobs[]      = "disable-connect-backup-jobs";
@@ -406,6 +404,12 @@ const char kDisableSyncThemes[]             = "disable-sync-themes";
 
 // Disables syncing browser typed urls.
 const char kDisableSyncTypedUrls[]          = "disable-sync-typed-urls";
+
+// TabCloseableStateWatcher disallows closing of tabs and browsers under
+// certain situations on ChromeOS. Some tests expect tabs or browsers to close,
+// so we need a switch to disable the watcher.
+const char kDisableTabCloseableStateWatcher[] =
+    "disable-tab-closeable-state-watcher";
 
 // Disables TLS v1.0 (usually for testing purposes).
 const char kDisableTLS1[]                   = "disable-tls1";
