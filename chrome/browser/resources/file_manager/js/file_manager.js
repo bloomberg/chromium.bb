@@ -777,8 +777,12 @@ FileManager.prototype = {
    * Compare by mtime first, then by name.
    */
   FileManager.prototype.compareMtime_ = function(a, b) {
-    var aTime = this.metadataCache_.getCached(a, 'filesystem').modificationTime;
-    var bTime = this.metadataCache_.getCached(b, 'filesystem').modificationTime;
+    var aCachedFilesystem = this.metadataCache_.getCached(a, 'filesystem');
+    var aTime = aCachedFilesystem ? aCachedFilesystem.modificationTime : 0;
+
+    var bCachedFilesystem = this.metadataCache_.getCached(b, 'filesystem');
+    var bTime = bCachedFilesystem ? bCachedFilesystem.modificationTime : 0;
+
     if (aTime > bTime)
       return 1;
 
@@ -792,8 +796,12 @@ FileManager.prototype = {
    * Compare by size first, then by name.
    */
   FileManager.prototype.compareSize_ = function(a, b) {
-    var aSize = this.metadataCache_.getCached(a, 'filesystem').size;
-    var bSize = this.metadataCache_.getCached(b, 'filesystem').size;
+    var aCachedFilesystem = this.metadataCache_.getCached(a, 'filesystem');
+    var aSize = aCachedFilesystem ? aCachedFilesystem.size : 0;
+
+    var bCachedFilesystem = this.metadataCache_.getCached(b, 'filesystem');
+    var bSize = bCachedFilesystem ? bCachedFilesystem.size : 0;
+
     if (aSize != bSize) return aSize - bSize;
     return this.collator_.compare(a.name, b.name);
   };
@@ -802,8 +810,12 @@ FileManager.prototype = {
    * Compare by type first, then by subtype and then by name.
    */
   FileManager.prototype.compareType_ = function(a, b) {
-    var aType = this.metadataCache_.getCached(a, 'filesystem').fileType;
-    var bType = this.metadataCache_.getCached(b, 'filesystem').fileType;
+    var aCachedFilesystem = this.metadataCache_.getCached(a, 'filesystem');
+    var aType = aCachedFilesystem ? aCachedFilesystem.fileType : {};
+
+    var bCachedFilesystem = this.metadataCache_.getCached(b, 'filesystem');
+    var bType = bCachedFilesystem ? bCachedFilesystem.fileType : {};
+
 
     // Files of unknown type follows all the others.
     var result = this.collator_.compare(aType.type || 'Z',
@@ -1673,7 +1685,8 @@ FileManager.prototype = {
     var icon = this.document_.createElement('div');
     icon.className = 'detail-icon';
     this.metadataCache_.get(entry, 'filesystem', function(filesystem) {
-      icon.setAttribute('iconType', filesystem.icon);
+      if (filesystem)
+        icon.setAttribute('iconType', filesystem.icon);
     });
     return icon;
   };
