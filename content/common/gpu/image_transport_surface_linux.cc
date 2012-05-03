@@ -269,7 +269,7 @@ EGLAcceleratedSurface::~EGLAcceleratedSurface() {
 EGLImageTransportSurface::EGLImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub)
-    : gfx::PbufferGLSurfaceEGL(false, gfx::Size(1, 1)),
+    : gfx::PbufferGLSurfaceEGL(false, gfx::Size(16, 16)),
       buffer_allocation_state_(BUFFER_ALLOCATION_FRONT_AND_BACK),
       fbo_id_(0),
       made_current_(false) {
@@ -317,8 +317,9 @@ bool EGLImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
 
   glGenFramebuffersEXT(1, &fbo_id_);
   glBindFramebufferEXT(GL_FRAMEBUFFER, fbo_id_);
-  // TODO(anush): Revert to 1x1 once crosbug.com/p/8834 is fixed
-  // Use 16x16 instead of 1x1 as small tiles can cause prototype HW to hang
+
+  // Creating 16x16 (instead of 1x1) to work around ARM Mali driver issue
+  // (see https://code.google.com/p/chrome-os-partner/issues/detail?id=9445)
   OnResize(gfx::Size(16, 16));
 
   GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);

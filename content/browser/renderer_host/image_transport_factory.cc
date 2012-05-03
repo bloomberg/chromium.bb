@@ -117,7 +117,10 @@ class TestTransportFactory : public DefaultTransportFactory {
 class InProcessTransportFactory : public DefaultTransportFactory {
  public:
   InProcessTransportFactory() {
-    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1));
+    // Creating 16x16 (instead of 1x1) to work around ARM Mali driver issue
+    // (see https://code.google.com/p/chrome-os-partner/issues/detail?id=9445)
+    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(
+        false, gfx::Size(16, 16));
     CHECK(surface_.get()) << "Unable to create compositor GL surface.";
 
     context_ = gfx::GLContext::CreateGLContext(
