@@ -9,9 +9,10 @@
 # segment. See http://code.google.com/p/nativeclient/issues/detail?id=2684
 Import('env')
 
-# Do not run these tests with pexes, assuming they are portable, since
-# they use inline assembler.
-if env.Bit('pnacl_generate_pexe'):
+# We cannot run these tests as pexes as they are not portable,
+# they also do not work in non-pexe mode and are very limited in
+# that case anyway, i.e. only run_ff_null_test, run_ff_null_Z_test are active
+if env.Bit('bitcode'):
   Return()
 
 if 'TRUSTED_ENV' not in env:
