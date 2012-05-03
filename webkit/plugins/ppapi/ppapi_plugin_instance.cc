@@ -38,6 +38,7 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
+#include "printing/custom_scaling.h"
 #include "printing/units.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -1468,14 +1469,26 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
         static_cast<int>(printing::kPointsPerInch),
         current_print_settings_.dpi));
     // We need to scale down DC to fit an entire page into DC available area.
+    // First, we'll try to use default scaling based on the 72dpi that is
+    // used in webkit for printing.
+    // If default scaling is not enough to fit the entire PDF without
     // Current metafile is based on screen DC and have current screen size.
     // Writing outside of those boundaries will result in the cut-off output.
     // On metafiles (this is the case here), scaling down will still record
     // original coordinates and we'll be able to print in full resolution.
     // Before playback we'll need to counter the scaling up that will happen
     // in the browser (printed_document_win.cc).
-    gfx::ScaleDC(dc, gfx::CalculatePageScale(dc, size_in_pixels.width(),
-                                             size_in_pixels.height()));
+    double dynamic_scale = gfx::CalculatePageScale(dc, size_in_pixels.width(),
+                                                   size_in_pixels.height());
+    double page_scale = static_cast<double>(printing::kPointsPerInch) /
+        static_cast<double>(current_print_settings_.dpi);
+
+    if (dynamic_scale < page_scale) {
+      page_scale = dynamic_scale;
+      printing::SetCustomPrintingPageScale(page_scale);
+    }
+
+    gfx::ScaleDC(dc, page_scale);
 
     ret = render_proc(static_cast<unsigned char*>(mapper.data()), mapper.size(),
                       0, dc, current_print_settings_.dpi,

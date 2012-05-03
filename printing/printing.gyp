@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -32,6 +32,8 @@
         'backend/print_backend_consts.cc',
         'backend/print_backend_consts.h',
         'backend/print_backend_dummy.cc',
+        'custom_scaling.cc',
+        'custom_scaling.h',
         'emf_win.cc',
         'emf_win.h',
         'image.cc',
