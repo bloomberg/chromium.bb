@@ -26,29 +26,11 @@ liblouis NEWS -- history of user-visible changes.
    - Added:
      latinLetterDef6Dots.uti, latinLetterDef8Dots.uti,
      loweredDigits6Dots.uti, loweredDigits8Dots.uti,
+     digits6Dots.uti, digits6DotsPlusDot6.uti, digits8Dots.uti
      to better make use of table include infrastructure.
      This removes duplication in tables, and should make it easier to define tables, since instead of defining individual 
      characters, the table producer can simply include the right class of definitions.
-   - ar-ar-g1.utb, ca-chardefs.cti, chardefs.cti, ckb-chardefs.cti,
-     cy-cy-g1.utb, Cz-Cz-g1.utb, de-chardefs6.cti, 
-     en-us-comp6.ctb,  en-us-comp8.ctb, en-us-compbrl.ctb, en-us-g1.utb,
-     es-chardefs.cti, Es-Es-G0.utb, Es-Es-g1.utb, et-g0.utb, eurodefs.cti,
-     fr-bfu-comp6.utb, fr-bfu-comp8.utb, fr-ca-g1.utb, fr-fr-g1.utb,
-     gez-chardefs.cti, gr-bb.ctb, gr-gr-g1.utb, is-chardefs6.cti, 
-     it-it-g1.utb, it-it-g1.utb2, marburg_single_cell_defs.cti,
-     nl-BE-chardefs.cti, nl-be-g1.utb, Nl-Nl-g1.utb, no-no-g0.utb,
-     Pl-Pl-g1.utb, printables.cti, pt-pt-g1.utb, Se-Se-g1.utb,
-     sk-sk.utb, sk-sk-g1.utb, sl-si-g1.utb, sr-chardefs.cti,
-     sv-1989.ctb, sv-1996.ctb, ukchardefs.cti, ukmaths_single_cell_defs.cti,
-     zh-tw.ctb
-     make use of the latinLetterDef6Dots.uti and latinLetterDef8Dots.uti.
-   - ar-ar-g1.utb, bo.ctb, ca-chardefs.cti, chardefs.cti,
-     ckb-chardefs.cti, cy-cy-g1.utb, en-us-comp6.ctb, en-us-comp8.ctb,
-     en-us-compbrl.ctb, en-us-g1.utb, en_CA.ctb, es-chardefs.cti,
-     gez-chardefs.cti, gr-bb.ctb, he.ctb, printables.cti, ru-ru-comp8
-     ru-ru-g1.utb, ru.ctb, sk-sk-g1.utb, sl-si-g1.utb,
-     ukchardefs.cti, vi.ctb, zh-tw.ctb
-     make use of the loweredDigits6Dots.uti, loweredDigits8Dots.uti.
+   - Most tables were touched by the deduplication tables mensioned above.
 
 * Noteworthy changes in release 2.4.1 (2012-2-22)
 

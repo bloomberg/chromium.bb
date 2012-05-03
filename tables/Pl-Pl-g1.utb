@@ -25,16 +25,7 @@ punctuation - 36				hyphen-minus								002D
 punctuation . 3					point												002E
 math / 456-34						solidus											002F
 
-digit 0 245					zero														x0030
-digit 1 1						one
-digit 2 12
-digit 3 14
-digit 4 145
-digit 5 15
-digit 6 124
-digit 7 1245
-digit 8 125
-digit 9 24																					x0039
+include digits6Dots.uti
 
 punctuation : 25				colon								x003A
 punctuation ; 23				semicolon						x003B

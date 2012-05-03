@@ -100,16 +100,7 @@ punctuation \x002C        2                   ,                   COMMA
 punctuation \x002D        36                  -                   HYPHEN-MINUS
 punctuation \x002E        3                   .                   FULL STOP
 math        \x002F        12456               /                   SOLIDUS
-digit       \x0030        245                 0                   DIGIT ZERO
-digit       \x0031        1                   1                   DIGIT ONE
-digit       \x0032        12                  2                   DIGIT TWO
-digit       \x0033        14                  3                   DIGIT THREE
-digit       \x0034        145                 4                   DIGIT FOUR
-digit       \x0035        15                  5                   DIGIT FIVE
-digit       \x0036        124                 6                   DIGIT SIX
-digit       \x0037        1245                7                   DIGIT SEVEN
-digit       \x0038        125                 8                   DIGIT EIGHT
-digit       \x0039        24                  9                   DIGIT NINE
+include digits6Dots.uti
 punctuation \x003A        25                  :                   COLON
 punctuation \x003B        23                  ;                   SEMICOLON
 math        \x003C        126                 <                   LESS-THAN SIGN

@@ -53,6 +53,9 @@ table_files = \
 	de-g1-core.ctb \
 	de-g2-core.ctb \
 	devanagari.cti \
+	digits6Dots.uti \
+	digits6DotsPlusDot6.uti \
+	digits8Dots.uti \
 	dra.ctb \
 	en_CA.ctb \
 	en-chess.ctb \

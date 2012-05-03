@@ -77,16 +77,7 @@ punctuation  ,      2               \x002C &#44;   COMMA
 punctuation  -      36              \x002D &#45;   HYPHEN-MINUS
 punctuation  .      3               \x002E &#46;   FULL STOP PERIOD
 punctuation  /      256             \x002F &#47;   SOLIDUS SLASH
-digit        0      346             \x0030 &#48;   DIGIT ZERO
-digit        1      16              \x0031 &#49;   DIGIT ONE
-digit        2      126             \x0032 &#50;   DIGIT TWO
-digit        3      146             \x0033 &#51;   DIGIT THREE
-digit        4      1456            \x0034 &#52;   DIGIT FOUR
-digit        5      156             \x0035 &#53;   DIGIT FIVE
-digit        6      1246            \x0036 &#54;   DIGIT SIX
-digit        7      12456           \x0037 &#55;   DIGIT SEVEN
-digit        8      1256            \x0038 &#56;   DIGIT EIGHT
-digit        9      246             \x0039 &#57;   DIGIT NINE
+include digits6DotsPlusDot6.uti
 punctuation  :      25              \x003A &#58;   COLON
 punctuation  ;      23              \x003B &#59;   SEMICOLON
 math         <      56              \x003C &#60;   LESS-THAN SIGN

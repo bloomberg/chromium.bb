@@ -30,16 +30,7 @@
 # Unicode 0000..007F  C0 Controls and Basic Latin
 # ----------------------------------------------------------------------------------------------
 
-digit       \x0030        245                 0                   DIGIT ZERO
-digit       \x0031        1                   1                   DIGIT ONE
-digit       \x0032        12                  2                   DIGIT TWO
-digit       \x0033        14                  3                   DIGIT THREE
-digit       \x0034        145                 4                   DIGIT FOUR
-digit       \x0035        15                  5                   DIGIT FIVE
-digit       \x0036        124                 6                   DIGIT SIX
-digit       \x0037        1245                7                   DIGIT SEVEN
-digit       \x0038        125                 8                   DIGIT EIGHT
-digit       \x0039        24                  9                   DIGIT NINE
+include digits6Dots.uti
 
 space       \x0020        0                                       SPACE
 punctuation \x0021        6-235               !                   EXCLAMATION MARK

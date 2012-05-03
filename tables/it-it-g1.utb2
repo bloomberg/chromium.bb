@@ -71,16 +71,7 @@ punctuation - 36					#45  the hyphen-minus
 punctuation . 3						#46
 sign / 256								#47
 
-digit 0 346								#48
-digit 1 16								#49
-digit 2 126   #50
-digit 3 146   #51
-digit 4 1456   #52
-digit 5 156   #53
-digit 6 1246   #54
-digit 7 12456   #55
-digit 8 1256    #56
-digit 9 246			#57
+include digits6DotsPlusDot6.uti
 
 punctuation : 25			#colon	x003A
 punctuation ;	23			#semicolon x003B

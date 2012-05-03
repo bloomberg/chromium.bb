@@ -103,18 +103,7 @@ math \x00F7 1256 					# DIVISION SIGN
 #uplow	\x00D3\x00F3 346				# LATIN CAPITAL LETTER O WITH ACUTE
 
 
-#------------- DIGITS ----------------------------------------
-digit 0 245							
-digit 1 1							
-digit 2 12							
-digit 3 14
-digit 4 145
-digit 5 15
-digit 6 124
-digit 7 1245
-digit 8 125
-digit 9 24							
-
+include digits6Dots.uti
 
 include latinLetterDef6Dots.uti
 uplow \x010C\x010D 16				# LATIN LETTER C WITH CARON

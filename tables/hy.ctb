@@ -35,16 +35,7 @@ punctuation ) 356		RIGHT PARENTHESIS
 punctuation , 2		COMMA
 punctuation - 36		HYPHEN-MINUS
 punctuation . 256		FULL STOP
-digit 0 2458		DIGIT ZERO
-digit 1 18		DIGIT ONE
-digit 2 128		DIGIT TWO
-digit 3 148		DIGIT THREE
-digit 4 1458		DIGIT FOUR
-digit 5 158		DIGIT FIVE
-digit 6 1248		DIGIT SIX
-digit 7 12458		DIGIT SEVEN
-digit 8 1258		DIGIT EIGHT
-digit 9 248		DIGIT NINE
+include digits8Dots.uti
 punctuation : 25		COLON
 punctuation ; 23		SEMICOLON
 punctuation ? 236		QUESTION MARK
