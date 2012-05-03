@@ -10,7 +10,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 11
+// Next tag: 12
 message OmniboxEventProto {
   // The timestamp for the event, in seconds since the epoch.
   optional int64 time = 1;
@@ -23,6 +23,10 @@ message OmniboxEventProto {
 
   // The number of characters the user had typed before autocompleting.
   optional int32 typed_length = 3;
+
+  // Whether the user deleted text immediately before selecting an omnibox
+  // suggestion.  This is usually the result of pressing backspace or delete.
+  optional bool just_deleted_text = 11;
 
   // The number of terms that the user typed in the omnibox.
   optional int32 num_typed_terms = 4;

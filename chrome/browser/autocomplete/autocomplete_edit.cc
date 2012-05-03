@@ -517,6 +517,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
   if (popup_->IsOpen()) {
     AutocompleteLog log(
         autocomplete_controller_->input().text(),
+        just_deleted_text_,
         autocomplete_controller_->input().type(),
         popup_->selected_line(),
         -1,  // don't yet know tab ID; set later if appropriate

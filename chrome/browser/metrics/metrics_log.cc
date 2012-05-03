@@ -928,6 +928,7 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
     omnibox_event->set_tab_id(log.tab_id);
   }
   omnibox_event->set_typed_length(log.text.length());
+  omnibox_event->set_just_deleted_text(log.just_deleted_text);
   omnibox_event->set_num_typed_terms(num_terms);
   omnibox_event->set_selected_index(log.selected_index);
   omnibox_event->set_completed_length(log.inline_autocompleted_length);

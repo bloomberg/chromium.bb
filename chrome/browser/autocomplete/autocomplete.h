@@ -774,6 +774,7 @@ class AutocompleteController : public ACProviderListener {
 struct AutocompleteLog {
   AutocompleteLog(
       const string16& text,
+      bool just_deleted_text,
       AutocompleteInput::Type input_type,
       size_t selected_index,
       SessionID::id_type tab_id,
@@ -784,6 +785,9 @@ struct AutocompleteLog {
       const AutocompleteResult& result);
   // The user's input text in the omnibox.
   string16 text;
+  // Whether the user deleted text immediately before selecting an omnibox
+  // suggestion.  This is usually the result of pressing backspace or delete.
+  bool just_deleted_text;
   // The detected type of the user's input.
   AutocompleteInput::Type input_type;
   // Selected index (if selected) or -1 (AutocompletePopupModel::kNoMatch).

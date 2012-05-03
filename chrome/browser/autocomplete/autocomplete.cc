@@ -1130,6 +1130,7 @@ void AutocompleteController::StartExpireTimer() {
 
 AutocompleteLog::AutocompleteLog(
     const string16& text,
+    bool just_deleted_text,
     AutocompleteInput::Type input_type,
     size_t selected_index,
     SessionID::id_type tab_id,
@@ -1138,6 +1139,7 @@ AutocompleteLog::AutocompleteLog(
     size_t inline_autocompleted_length,
     const AutocompleteResult& result)
     : text(text),
+      just_deleted_text(just_deleted_text),
       input_type(input_type),
       selected_index(selected_index),
       tab_id(tab_id),
