@@ -118,6 +118,9 @@ class RenderTextWin : public RenderText {
   // Cached map from font names to vectors of linked fonts.
   static std::map<std::string, std::vector<Font> > cached_linked_fonts_;
 
+  // Cached map from font name to the last successful substitute font used.
+  static std::map<std::string, Font> successful_substitute_fonts_;
+
   SCRIPT_CONTROL script_control_;
   SCRIPT_STATE script_state_;
 

@@ -191,6 +191,9 @@ HDC RenderTextWin::cached_hdc_ = NULL;
 // static
 std::map<std::string, std::vector<Font> > RenderTextWin::cached_linked_fonts_;
 
+// static
+std::map<std::string, Font> RenderTextWin::successful_substitute_fonts_;
+
 RenderTextWin::RenderTextWin()
     : RenderText(),
       common_baseline_(0),
@@ -608,6 +611,7 @@ void RenderTextWin::LayoutVisualText() {
     internal::TextRun* run = runs_[i];
     size_t run_length = run->range.length();
     const wchar_t* run_text = &(text()[run->range.start()]);
+    bool tried_cached_font = false;
     bool tried_fallback = false;
     size_t linked_font_index = 0;
     const std::vector<Font>* linked_fonts = NULL;
@@ -656,8 +660,23 @@ void RenderTextWin::LayoutVisualText() {
       }
 
       // Skip font substitution if there are no missing glyphs.
-      if (!glyphs_missing)
+      if (!glyphs_missing) {
+        // Save the successful fallback font that was chosen.
+        if (tried_fallback)
+          successful_substitute_fonts_[original_font.GetFontName()] = run->font;
         break;
+      }
+
+      // First, try the cached font from previous runs, if any.
+      if (!tried_cached_font) {
+        tried_cached_font = true;
+        std::map<std::string, Font>::const_iterator it =
+            successful_substitute_fonts_.find(original_font.GetFontName());
+        if (it != successful_substitute_fonts_.end()) {
+          ApplySubstituteFont(run, it->second);
+          continue;
+        }
+      }
 
       // If there are missing glyphs, first try finding a fallback font using a
       // meta file, if it hasn't yet been attempted for this run.
