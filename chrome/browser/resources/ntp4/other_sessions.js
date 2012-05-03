@@ -9,20 +9,22 @@
 cr.define('ntp', function() {
   'use strict';
 
-  var Menu = cr.ui.Menu;
-  var MenuItem = cr.ui.MenuItem;
-  var MenuButton = cr.ui.MenuButton;
-  var OtherSessionsMenuButton = cr.ui.define('button');
+  /** @const */ var ContextMenuButton = cr.ui.ContextMenuButton;
+  /** @const */ var Menu = cr.ui.Menu;
+  /** @const */ var MenuItem = cr.ui.MenuItem;
+  /** @const */ var MenuButton = cr.ui.MenuButton;
+  /** @const */ var OtherSessionsMenuButton = cr.ui.define('button');
 
   // Histogram buckets for UMA tracking of menu usage.
-  var HISTOGRAM_EVENT = {
+  /** @const */ var HISTOGRAM_EVENT = {
       INITIALIZED: 0,
       SHOW_MENU: 1,
       LINK_CLICKED: 2,
       LINK_RIGHT_CLICKED: 3,
       SESSION_NAME_RIGHT_CLICKED: 4
   };
-  var HISTOGRAM_EVENT_LIMIT = HISTOGRAM_EVENT.SESSION_NAME_RIGHT_CLICKED + 1;
+  /** @const */ var HISTOGRAM_EVENT_LIMIT =
+      HISTOGRAM_EVENT.SESSION_NAME_RIGHT_CLICKED + 1;
 
   OtherSessionsMenuButton.prototype = {
     __proto__: MenuButton.prototype,
@@ -47,6 +49,10 @@ cr.define('ntp', function() {
       this.sessions_ = [];
       this.anchorType = cr.ui.AnchorType.ABOVE;
       this.invertLeftRight = true;
+
+      // Initialize the images for the drop-down buttons that appear beside the
+      // session names.
+      MenuButton.createDropDownArrows();
 
       this.recordUmaEvent_(HISTOGRAM_EVENT.INITIALIZED);
     },
@@ -95,7 +101,7 @@ cr.define('ntp', function() {
      */
     hideMenu: function() {
       // Don't hide if the device context menu is currently showing.
-      if (cr.ui.contextMenuHandler.menu != this.deviceContextMenu_)
+      if (this.deviceContextMenu_.style.display == 'none')
         MenuButton.prototype.hideMenu.call(this);
     },
 
@@ -156,6 +162,18 @@ cr.define('ntp', function() {
       timeSpan.className = 'details';
       timeSpan.textContent = session.modifiedTime;
       heading.appendChild(timeSpan);
+
+      var dropDownButton = new ContextMenuButton;
+      dropDownButton.classList.add('drop-down');
+      // Keep track of the drop down that triggered the menu, so we know
+      // which element to apply the command to.
+      function handleDropDownFocus(e) {
+        DeviceContextMenuController.getInstance().setSessionTag(
+          heading.sessionTag_);
+      };
+      dropDownButton.addEventListener('mousedown', handleDropDownFocus);
+      dropDownButton.addEventListener('focus', handleDropDownFocus);
+      heading.appendChild(dropDownButton);
 
       cr.ui.contextMenuHandler.setContextMenu(heading,
                                               this.deviceContextMenu_);

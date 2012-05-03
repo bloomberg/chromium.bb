@@ -25,7 +25,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Shows a menu as a context menu.
-     * @param {!Event} e The event triggering the show (usally a contextmenu
+     * @param {!Event} e The event triggering the show (usually a contextmenu
      *     event).
      * @param {!cr.ui.Menu} menu The menu to show.
      */

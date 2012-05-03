@@ -43,28 +43,11 @@ var deleteQueue = [];
 var selectionAnchor = -1;
 var activePage = null;
 
-/** @const */ var MenuButton = cr.ui.MenuButton;
 /** @const */ var Command = cr.ui.Command;
 /** @const */ var Menu = cr.ui.Menu;
+/** @const */ var MenuButton = cr.ui.MenuButton;
 
-function createDropDownBgImage(canvasName, colorSpec) {
-  var ctx = document.getCSSCanvasContext('2d', canvasName, 6, 4);
-  ctx.fillStyle = ctx.strokeStyle = colorSpec;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(6, 0);
-  ctx.lineTo(3, 3);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-  return ctx;
-}
-
-// Create the canvases to be used as the drop down button background images.
-var arrow = createDropDownBgImage('drop-down-arrow', 'rgb(192, 195, 198)');
-var hoverArrow = createDropDownBgImage('drop-down-arrow-hover',
-                                       'rgb(48, 57, 66)');
-var activeArrow = createDropDownBgImage('drop-down-arrow-active', 'white');
+MenuButton.createDropDownArrows();
 
 ///////////////////////////////////////////////////////////////////////////////
 // Page:

@@ -29,6 +29,7 @@ cr.define('cr.ui', function() {
       // Adding the 'custom-appearance' class prevents widgets.css from changing
       // the appearance of this element.
       this.classList.add('custom-appearance');
+      this.classList.add('menu-button');  // For styles in menu_button.css.
 
       var menu;
       if ((menu = this.getAttribute('menu')))
@@ -178,6 +179,52 @@ cr.define('cr.ui', function() {
       }
     }
   };
+
+  /**
+   * Helper for styling a menu button with a drop-down arrow indicator.
+   * Creates a new 2D canvas context and draws a downward-facing arrow into it.
+   * @param {string} canvasName The name of the canvas. The canvas can be
+   *     addressed from CSS using -webkit-canvas(<canvasName>).
+   * @param {number} width The width of the canvas and the arrow.
+   * @param {number} height The height of the canvas and the arrow.
+   * @param {string} colorSpec The CSS color to use when drawing the arrow.
+   */
+  function createDropDownArrowCanvas(canvasName, width, height, colorSpec) {
+    var ctx = document.getCSSCanvasContext('2d', canvasName, width, height);
+    ctx.fillStyle = ctx.strokeStyle = colorSpec;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(width, 0);
+    ctx.lineTo(height, height);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  };
+
+  /** @const */ var ARROW_WIDTH = 6;
+  /** @const */ var ARROW_HEIGHT = 3;
+
+  /**
+   * Create the images used to style drop-down-style MenuButtons.
+   * This should be called before creating any MenuButtons that will have the
+   * CSS class 'drop-down'. If no colors are specified, defaults will be used.
+   * @param {=string} normalColor CSS color for the default button state.
+   * @param {=string} hoverColor CSS color for the hover button state.
+   * @param {=string} activeColor CSS color for the active button state.
+   */
+  MenuButton.createDropDownArrows = function(
+      normalColor, hoverColor, activeColor) {
+    normalColor = normalColor || 'rgb(192, 195, 198)';
+    hoverColor = hoverColor || 'rgb(48, 57, 66)';
+    activeColor = activeColor || 'white';
+
+    createDropDownArrowCanvas(
+        'drop-down-arrow', ARROW_WIDTH, ARROW_HEIGHT, normalColor);
+    createDropDownArrowCanvas(
+        'drop-down-arrow-hover', ARROW_WIDTH, ARROW_HEIGHT, hoverColor);
+    createDropDownArrowCanvas(
+        'drop-down-arrow-active', ARROW_WIDTH, ARROW_HEIGHT, activeColor);
+  }
 
   // Export
   return {

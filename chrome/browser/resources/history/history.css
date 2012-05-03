@@ -206,3 +206,8 @@ html[dir='rtl'] .entry .title {
   -webkit-transition: opacity 200ms;
   opacity: 0;
 }
+
+.menu-button.drop-down {
+  position: relative;
+  top: 2px;
+}
