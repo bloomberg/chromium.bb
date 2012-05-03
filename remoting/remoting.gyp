@@ -655,6 +655,7 @@
                 '-ext "<(wix_path)\\WixUIExtension.dll"',
                 '-ext "<(wix_path)\\WixUtilExtension.dll"',
                 '-cultures:en-us',
+                '-sw1076',
                 '-dVersion=<(version_full)',
                 '"-dFileSource=<(PRODUCT_DIR)."',
                 '"-dSasDllPath=<(platformsdk_path)/redist/x86/sas.dll"',
@@ -666,6 +667,83 @@
             },
           ],
         },  # end of target 'remoting_host_installation'
+
+        # The 'remoting_host_installation_unittest' target is used to make sure
+        # that the code signing job (running outside of Chromium tree) will be
+        # able to unpack and re-assemble the installation successfully.
+        #
+        # *** If this target fails to compile the code signing job will fail
+        # too, breaking the official build. ***
+        #
+        # N.B. The command lines passed to the WiX tools here should be in sync
+        # with the code signing script.
+        {
+          'target_name': 'remoting_host_installation_unittest',
+          'type': 'none',
+          'dependencies': [
+            'remoting_host_installation',
+          ],
+          'sources': [
+            '<(PRODUCT_DIR)/chromoting.msi',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/chromoting-test.msi',
+          ],
+          'rules': [
+            {
+              'rule_name': 'dark',
+              'extension': 'msi',
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).wxs',
+              ],
+              'process_outputs_as_sources': 1,
+              'msvs_cygwin_shell': 0,
+              'msvs_quote_cmd': 0,
+              'action': [
+                '"<(wix_path)\\dark"',
+                '"<(RULE_INPUT_PATH)"',
+                '-o <@(_outputs)',
+                '-o <@(_outputs)',
+                '-x <(INTERMEDIATE_DIR)',
+              ],
+              'message': 'Dark: unpacking <(RULE_INPUT_PATH)',
+            },
+            {
+              'rule_name': 'candle',
+              'extension': 'wxs',
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).wixobj',
+              ],
+              'process_outputs_as_sources': 1,
+              'msvs_cygwin_shell': 0,
+              'msvs_quote_cmd': 0,
+              'action': [
+                '"<(wix_path)\\candle"',
+                '"<(RULE_INPUT_PATH)"',
+                '-o <@(_outputs)',
+                '-ext "<(wix_path)\\WixFirewallExtension.dll"',
+              ],
+              'message': 'Candle: compiling <(RULE_INPUT_PATH)',
+            },
+            {
+              'rule_name': 'light',
+              'extension': 'wixobj',
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT)-test.msi',
+              ],
+              'msvs_cygwin_shell': 0,
+              'msvs_quote_cmd': 0,
+              'action': [
+                '"<(wix_path)\\light"',
+                '"<(RULE_INPUT_PATH)"',
+                '-o <@(_outputs)',
+                '-ext "<(wix_path)\\WixFirewallExtension.dll"',
+                '-sw1076',
+              ],
+              'message': 'Light: linking <(RULE_INPUT_PATH)',
+            },
+          ],
+        },  # end of target 'remoting_host_installation_unittest'
       ],  # end of 'targets'
     }],  # '<(wix_path) != ""'
 
