@@ -76,6 +76,12 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   void NotifyPrefChanged(const std::string& pref_name,
                          const std::string& controlling_pref_name);
 
+  // Calls JS callbacks to report a change in the value of the |name|
+  // preference. |value| is the new value for |name|.  Called from
+  // Notify*Changed methods to fire off the notifications.
+  void DispatchPrefChangeNotification(const std::string& name,
+                                      scoped_ptr<base::Value> value);
+
   // Creates dictionary value for |pref|, |controlling_pref| controls if |pref|
   // is managed by policy/extension; NULL indicates no other pref is controlling
   // |pref|.

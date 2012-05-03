@@ -251,25 +251,10 @@ void CoreChromeOSOptionsHandler::Observe(
 void CoreChromeOSOptionsHandler::NotifySettingsChanged(
     const std::string* setting_name) {
   DCHECK(CrosSettings::Get()->IsCrosSettings(*setting_name));
-  const base::Value* value = FetchPref(*setting_name);
-  if (!value) {
+  scoped_ptr<base::Value> value(FetchPref(*setting_name));
+  if (!value.get())
     NOTREACHED();
-    return;
-  }
-  std::pair<PreferenceCallbackMap::const_iterator,
-            PreferenceCallbackMap::const_iterator> range =
-      pref_callback_map_.equal_range(*setting_name);
-  for (PreferenceCallbackMap::const_iterator iter = range.first;
-      iter != range.second; ++iter) {
-    const std::wstring& callback_function = iter->second;
-    ListValue result_value;
-    result_value.Append(base::Value::CreateStringValue(setting_name->c_str()));
-    result_value.Append(value->DeepCopy());
-    web_ui()->CallJavascriptFunction(WideToASCII(callback_function),
-                                     result_value);
-  }
-  if (value)
-    delete value;
+  DispatchPrefChangeNotification(*setting_name, value.Pass());
 }
 
 void CoreChromeOSOptionsHandler::NotifyProxyPrefsChanged() {
@@ -278,18 +263,8 @@ void CoreChromeOSOptionsHandler::NotifyProxyPrefsChanged() {
     proxy_cros_settings_parser::GetProxyPrefValue(
         Profile::FromWebUI(web_ui()), kProxySettings[i], &value);
     DCHECK(value);
-    PreferenceCallbackMap::const_iterator iter =
-        pref_callback_map_.find(kProxySettings[i]);
-    for (; iter != pref_callback_map_.end(); ++iter) {
-      const std::wstring& callback_function = iter->second;
-      ListValue result_value;
-      result_value.Append(base::Value::CreateStringValue(kProxySettings[i]));
-      result_value.Append(value->DeepCopy());
-      web_ui()->CallJavascriptFunction(WideToASCII(callback_function),
-                                       result_value);
-    }
-    if (value)
-      delete value;
+    scoped_ptr<base::Value> ptr(value);
+    DispatchPrefChangeNotification(kProxySettings[i], ptr.Pass());
   }
 }
 
