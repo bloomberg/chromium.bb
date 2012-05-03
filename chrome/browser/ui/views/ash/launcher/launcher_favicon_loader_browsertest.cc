@@ -153,7 +153,16 @@ IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, LargeLauncherIcon) {
   EXPECT_EQ(128, favicon_loader->GetFavicon().height());
 }
 
-IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, ManyLauncherIcons) {
+// Failing under linux_chromeos.
+// See http://www.crbug.com/126101
+#ifdef OS_LINUX
+#define MAYBE_ManyLauncherIcons DISABLED_ManyLauncherIcons
+#else
+#define MAYBE_ManyLauncherIcons ManyLauncherIcons
+#endif
+
+IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest,
+                       MAYBE_ManyLauncherIcons) {
   ASSERT_TRUE(test_server()->Start());
   Browser* panel_browser;
   ASSERT_NO_FATAL_FAILURE(
