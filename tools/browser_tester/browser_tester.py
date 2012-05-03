@@ -6,6 +6,7 @@
 import glob
 import optparse
 import os.path
+import socket
 import sys
 import thread
 import time
@@ -169,6 +170,21 @@ def DumpNetLog(netlog):
     sys.stdout.write('\n')
 
 
+# Try to discover the real IP address of this machine.  If we can't figure it
+# out, fall back to localhost.
+# A windows bug makes using the loopback interface flaky in rare cases.
+# http://code.google.com/p/chromium/issues/detail?id=114369
+def GetHostName():
+  host = 'localhost'
+  try:
+    host = socket.gethostbyname(socket.gethostname())
+  except Exception:
+    pass
+  if host == '0.0.0.0':
+    host = 'localhost'
+  return host
+
+
 def RunTestsOnce(url, options):
   # Set the default here so we're assured hard_timeout will be defined.
   # Tests, such as run_inbrowser_trusted_crash_in_startup_test, may not use the
@@ -181,7 +197,12 @@ def RunTestsOnce(url, options):
   options.files.append(os.path.join(script_dir, 'browserdata', 'nacltest.js'))
 
   # Create server
-  server = browsertester.server.Create('localhost', options.port)
+  host = GetHostName()
+  try:
+    server = browsertester.server.Create(host, options.port)
+  except Exception:
+    sys.stdout.write('Could not bind %r, falling back to localhost.\n' % host)
+    server = browsertester.server.Create('localhost', options.port)
 
   # If port 0 has been requested, an arbitrary port will be bound so we need to
   # query it.  Older version of Python do not set server_address correctly when
