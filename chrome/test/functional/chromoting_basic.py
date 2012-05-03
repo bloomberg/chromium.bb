@@ -20,27 +20,32 @@ class ChromotingBasic(chromoting.ChromotingMixIn, pyauto.PyUITest):
     using the default Chromoting test account.
     """
     super(ChromotingBasic, self).setUp()
-    app = self.InstallExtension(self.GetWebappPath())
-    self.LaunchApp(app)
+    self._app = self.InstallExtension(self.GetWebappPath())
+    self.LaunchApp(self._app)
     account = self.GetPrivateInfo()['test_chromoting_account']
     self.Authenticate(account['username'], account['password'])
 
   def testChromoting(self):
     """Verify that we can start and disconnect from a Chromoting session."""
+    client_local = (self.remote == None)
     host = self
-    client = self.remote
+    client = self if client_local else self.remote
+    client_tab_index = 2 if client_local else 1
 
     access_code = host.Share()
     self.assertTrue(access_code,
                     msg='Host attempted to share, but it failed. '
                         'No access code was found.')
 
-    self.assertTrue(client.Connect(access_code),
+    if client_local:
+      client.LaunchApp(self._app)
+
+    self.assertTrue(client.Connect(access_code, client_tab_index),
                     msg='The client attempted to connect to the host, '
                         'but the chromoting session did not start.')
 
     host.CancelShare()
-    client.Disconnect()
+    client.Disconnect(client_tab_index)
 
 
 if __name__ == '__main__':
