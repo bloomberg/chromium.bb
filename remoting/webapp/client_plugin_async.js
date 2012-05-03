@@ -380,6 +380,19 @@ remoting.ClientPluginAsync.prototype.notifyClientDimensions =
 };
 
 /**
+ * Requests that the host pause or resume sending video updates.
+ *
+ * @param {boolean} pause True to suspend video updates, false otherwise.
+ */
+remoting.ClientPluginAsync.prototype.pauseVideo =
+    function(pause) {
+  if (!this.hasFeature(remoting.ClientPlugin.Feature.PAUSE_VIDEO))
+    return;
+  this.plugin.postMessage(JSON.stringify(
+      { method: 'pauseVideo', data: { pause: pause }}));
+};
+
+/**
  * If we haven't yet received a "hello" message from the plugin, change its
  * size so that the user can confirm it if click-to-play is enabled, or can
  * see the "this plugin is disabled" message if it is actually disabled.

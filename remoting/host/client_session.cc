@@ -8,6 +8,7 @@
 
 #include "base/message_loop_proxy.h"
 #include "remoting/host/capturer.h"
+#include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
 
 namespace remoting {
@@ -70,6 +71,19 @@ void ClientSession::InjectMouseEvent(const protocol::MouseEvent& event) {
 void ClientSession::NotifyClientDimensions(
     const protocol::ClientDimensions& dimensions) {
   // TODO(wez): Use the dimensions, e.g. to resize the host desktop to match.
+  if (dimensions.has_width() && dimensions.has_height()) {
+    VLOG(1) << "Received ClientDimensions (width="
+            << dimensions.width() << ", height=" << dimensions.height() << ")";
+  }
+}
+
+void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {
+  // TODO(wez): Pause/resume video updates, being careful not to let clients
+  // override any host-initiated pause of the video channel.
+  if (video_control.has_enable()) {
+    VLOG(1) << "Received VideoControl (enable="
+            << video_control.enable() << ")";
+  }
 }
 
 void ClientSession::OnConnectionAuthenticated(

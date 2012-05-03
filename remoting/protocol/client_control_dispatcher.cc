@@ -50,6 +50,12 @@ void ClientControlDispatcher::NotifyClientDimensions(
   writer_->Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
+void ClientControlDispatcher::ControlVideo(const VideoControl& video_control) {
+  ControlMessage message;
+  message.mutable_video_control()->CopyFrom(video_control);
+  writer_->Write(SerializeAndFrameMessage(message), base::Closure());
+}
+
 void ClientControlDispatcher::OnMessageReceived(
     scoped_ptr<ControlMessage> message, const base::Closure& done_task) {
   DCHECK(client_stub_);

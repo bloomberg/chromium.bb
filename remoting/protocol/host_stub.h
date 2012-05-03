@@ -15,6 +15,7 @@ namespace remoting {
 namespace protocol {
 
 class ClientDimensions;
+class VideoControl;
 
 class HostStub {
  public:
@@ -24,6 +25,10 @@ class HostStub {
   // Notification of the available client display dimensions.
   // This may be used to resize the host display to match the client area.
   virtual void NotifyClientDimensions(const ClientDimensions& dimensions) = 0;
+
+  // Configures video update properties. Currently only pausing & resuming the
+  // video channel is supported.
+  virtual void ControlVideo(const VideoControl& video_control) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostStub);

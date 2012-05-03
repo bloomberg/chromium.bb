@@ -267,3 +267,11 @@ remoting.ClientPluginV1.prototype.notifyClientDimensions =
     function(width, height) {
   return;
 };
+
+/**
+ * @param {boolean} pause
+ */
+remoting.ClientPluginV1.prototype.pauseVideo =
+    function(pause) {
+  return;
+};

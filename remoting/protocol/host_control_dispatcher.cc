@@ -51,6 +51,8 @@ void HostControlDispatcher::OnMessageReceived(
     clipboard_stub_->InjectClipboardEvent(message->clipboard_event());
   } else if (message->has_client_dimensions()) {
     host_stub_->NotifyClientDimensions(message->client_dimensions());
+  } else if (message->has_video_control()) {
+    host_stub_->ControlVideo(message->video_control());
   } else {
     LOG(WARNING) << "Unknown control message received.";
   }

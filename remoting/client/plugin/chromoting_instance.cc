@@ -103,7 +103,7 @@ static base::LazyInstance<base::Lock>::Leaky
 // String sent in the "hello" message to the plugin to describe features.
 const char ChromotingInstance::kApiFeatures[] =
     "highQualityScaling injectKeyEvent sendClipboardItem remapKey trapKey "
-    "notifyClientDimensions";
+    "notifyClientDimensions pauseVideo";
 
 bool ChromotingInstance::ParseAuthMethods(const std::string& auth_methods_str,
                                           ClientConfig* config) {
@@ -309,6 +309,13 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
       return;
     }
     NotifyClientDimensions(width, height);
+  } else if (method == "pauseVideo") {
+    bool pause = false;
+    if (!data->GetBoolean("pause", &pause)) {
+      LOG(ERROR) << "Invalid pauseVideo.";
+      return;
+    }
+    PauseVideo(pause);
   }
 }
 
@@ -490,6 +497,15 @@ void ChromotingInstance::NotifyClientDimensions(int width, int height) {
   client_dimensions.set_width(width);
   client_dimensions.set_height(height);
   host_connection_->host_stub()->NotifyClientDimensions(client_dimensions);
+}
+
+void ChromotingInstance::PauseVideo(bool pause) {
+  if (!IsConnected()) {
+    return;
+  }
+  protocol::VideoControl video_control;
+  video_control.set_enable(!pause);
+  host_connection_->host_stub()->ControlVideo(video_control);
 }
 
 ChromotingStats* ChromotingInstance::GetStats() {

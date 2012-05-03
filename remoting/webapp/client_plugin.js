@@ -50,6 +50,7 @@ remoting.ClientPlugin.Feature = {
   HIGH_QUALITY_SCALING: 'highQualityScaling',
   INJECT_KEY_EVENT: 'injectKeyEvent',
   NOTIFY_CLIENT_DIMENSIONS: 'notifyClientDimensions',
+  PAUSE_VIDEO: 'pauseVideo',
   REMAP_KEY: 'remapKey',
   SEND_CLIPBOARD_ITEM: 'sendClipboardItem'
 };
@@ -144,3 +145,11 @@ remoting.ClientPlugin.prototype.sendClipboardItem = function(mimeType, item) {};
  */
 remoting.ClientPlugin.prototype.notifyClientDimensions =
     function(width, height) {};
+
+/**
+ * Requests that the host pause or resume sending video updates.
+ *
+ * @param {boolean} pause True to suspend video updates, false otherwise.
+ */
+remoting.ClientPlugin.prototype.pauseVideo =
+    function(pause) {};

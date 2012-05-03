@@ -35,6 +35,7 @@ class ClientControlDispatcher : public ChannelDispatcherBase,
   // HostStub implementation.
   virtual void NotifyClientDimensions(
       const ClientDimensions& dimensions) OVERRIDE;
+  virtual void ControlVideo(const VideoControl& video_control) OVERRIDE;
 
   // Sets the ClientStub that will be called for each incoming control
   // message. |client_stub| must outlive this object.

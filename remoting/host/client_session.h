@@ -80,6 +80,8 @@ class ClientSession : public protocol::HostEventStub,
   // protocol::HostStub interface.
   virtual void NotifyClientDimensions(
       const protocol::ClientDimensions& dimensions) OVERRIDE;
+  virtual void ControlVideo(
+      const protocol::VideoControl& video_control) OVERRIDE;
 
   // protocol::ConnectionToClient::EventHandler interface.
   virtual void OnConnectionAuthenticated(
