@@ -26,7 +26,10 @@ const SkScalar kTabTop = 0;
 }  // namespace
 
 // static
-void TabResources::GetHitTestMask(int width, int height, gfx::Path* path) {
+void TabResources::GetHitTestMask(int width,
+                                  int height,
+                                  bool include_top_shadow,
+                                  gfx::Path* path) {
   DCHECK(path);
 
   SkScalar left = kTabInset;
@@ -42,6 +45,12 @@ void TabResources::GetHitTestMask(int width, int height, gfx::Path* path) {
   path->lineTo(left + kTabCapWidth - kTabTopCurveWidth,
                top + kTabTopCurveWidth);
   path->lineTo(left + kTabCapWidth, top);
+
+  // Extend over the top shadow area if we have one and the caller wants it.
+  if (kTabTop > 0 && include_top_shadow) {
+    path->lineTo(left + kTabCapWidth, 0);
+    path->lineTo(right - kTabCapWidth, 0);
+  }
 
   // Connect to the right cap.
   path->lineTo(right - kTabCapWidth, top);

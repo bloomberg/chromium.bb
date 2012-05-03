@@ -431,7 +431,11 @@ bool Tab::HasHitTestMask() const {
 }
 
 void Tab::GetHitTestMask(gfx::Path* path) const {
-  TabResources::GetHitTestMask(width(), height(), path);
+  // When the window is maximized we don't want to shave off the edges or top
+  // shadow of the tab, such that the user can click anywhere along the top
+  // edge of the screen to select a tab.
+  bool include_top_shadow = GetWidget() && GetWidget()->IsMaximized();
+  TabResources::GetHitTestMask(width(), height(), include_top_shadow, path);
 }
 
 bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) const {
