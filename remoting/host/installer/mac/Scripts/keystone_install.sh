@@ -4,4 +4,4 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-/usr/sbin/installer -pkg "$1/Chrome Remote Desktop.mpkg" -target /
+/usr/sbin/installer -pkg "$1/@@HOST_PKG@@.mpkg" -target /
