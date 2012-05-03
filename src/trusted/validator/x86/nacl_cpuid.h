@@ -21,36 +21,42 @@ EXTERN_C_BEGIN
  * CPUFeatureDescriptions in nacl_cpuid.c.
  */
 typedef enum {
-  NaClCPUFeature_x87 = 0,
+  NaClCPUFeature_3DNOW = 0, /* AMD-specific */
+  NaClCPUFeature_AES,
+  NaClCPUFeature_AVX,
+  NaClCPUFeature_BMI1,
+  NaClCPUFeature_CLFLUSH,
+  NaClCPUFeature_CLMUL,
+  NaClCPUFeature_CMOV,
+  NaClCPUFeature_CX16,
+  NaClCPUFeature_CX8,
+  NaClCPUFeature_E3DNOW, /* AMD-specific */
+  NaClCPUFeature_EMMX, /* AMD-specific */
+  NaClCPUFeature_F16C,
+  NaClCPUFeature_FMA,
+  NaClCPUFeature_FMA4, /* AMD-specific */
+  NaClCPUFeature_FXSR,
+  NaClCPUFeature_LAHF,
+  NaClCPUFeature_LM,
+  NaClCPUFeature_LWP, /* AMD-specific */
+  NaClCPUFeature_LZCNT, /* AMD-specific */
   NaClCPUFeature_MMX,
+  NaClCPUFeature_MON,
+  NaClCPUFeature_MOVBE,
+  NaClCPUFeature_OSXSAVE,
+  NaClCPUFeature_POPCNT,
+  NaClCPUFeature_PRE, /* AMD-specific */
   NaClCPUFeature_SSE,
   NaClCPUFeature_SSE2,
   NaClCPUFeature_SSE3,
-  NaClCPUFeature_SSSE3,
   NaClCPUFeature_SSE41,
   NaClCPUFeature_SSE42,
-  NaClCPUFeature_MOVBE,
-  NaClCPUFeature_POPCNT,
-  NaClCPUFeature_CX8,
-  NaClCPUFeature_CX16,
-  NaClCPUFeature_CMOV,
-  NaClCPUFeature_MON,
-  NaClCPUFeature_FXSR,
-  NaClCPUFeature_CLFLUSH,
-  NaClCPUFeature_MSR,
-  NaClCPUFeature_TSC,
-  NaClCPUFeature_VME,
-  NaClCPUFeature_PSN,
-  NaClCPUFeature_VMX,
-  NaClCPUFeature_OSXSAVE,
-  NaClCPUFeature_AVX,
-  NaClCPUFeature_3DNOW, /* AMD-specific */
-  NaClCPUFeature_EMMX, /* AMD-specific */
-  NaClCPUFeature_E3DNOW, /* AMD-specific */
-  NaClCPUFeature_LZCNT, /* AMD-specific */
   NaClCPUFeature_SSE4A, /* AMD-specific */
-  NaClCPUFeature_LM,
-  NaClCPUFeature_SVM, /* AMD-specific */
+  NaClCPUFeature_SSSE3,
+  NaClCPUFeature_TBM, /* AMD-specific */
+  NaClCPUFeature_TSC,
+  NaClCPUFeature_x87,
+  NaClCPUFeature_XOP, /* AMD-specific */
   NaClCPUFeature_Max
 } NaClCPUFeatureID;
 
@@ -77,7 +83,7 @@ typedef struct cpu_feature_struct {
  * Note: This value corresponds to the number of enumerated elements in
  * enum CPUFeatureReg defined in nacl_cpuid.c.
  */
-#define kMaxCPUFeatureReg 8
+#define kMaxCPUFeatureReg 12
 
 /* Defines the maximum number of extended control registers.
  */

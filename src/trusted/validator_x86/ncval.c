@@ -656,8 +656,6 @@ static const char usage_str[] =
       "\tModel a CPU that supports MMX instructions.\n"
       "--MOVBE\n"
       "\tModel a CPU that supports the movbe instruction.\n"
-      "--MSR\n"
-      "\tModel a CPU that supports the rdmsr and wrmsr instructions.\n"
       "--POPCNT\n"
       "\tModel a CPU that supports the popcnt instruction.\n"
 #if NACL_TARGET_SUBARCH == 64
@@ -699,15 +697,11 @@ static const char usage_str[] =
       "--validator_decoder\n"
       "\tUse validator (partial) decoder instead of full decoder.\n"
 #endif
-      "--VMX\n"
-      "\tModel a CPU that supports VMX instructions.\n"
       "--3DNOW\n"
       "\tModel a CPU that supports 3DNOW instructions.\n"
       "--E3DNOW\n"
       "\tModel a CPU that supports E3DNOW instructions.\n"
       "\n"
-      "--SVM\n"
-      "\tModel a the CPU supports SVM instrutions.\n"
       "--time\n"
       "\tTime the validator and print out results. Same as option -t.\n"
 #if NACL_TARGET_SUBARCH == 64
@@ -790,17 +784,12 @@ static Bool GrokABoolFlag(const char *arg) {
     { "--FXSR"   , NaClCPUFeature_FXSR },
     { "--CLFLUSH", NaClCPUFeature_CLFLUSH },
     { "--TSC"    , NaClCPUFeature_TSC },
-    { "--MSR"    , NaClCPUFeature_MSR },
-    { "--VME"    , NaClCPUFeature_VME },
-    { "--PSN"    , NaClCPUFeature_PSN },
-    { "--VMX"    , NaClCPUFeature_VMX },
     { "--3DNOW"  , NaClCPUFeature_3DNOW },
     { "--EMMX"   , NaClCPUFeature_EMMX },
     { "--E3DNOW" , NaClCPUFeature_E3DNOW },
     { "--LZCNT"  , NaClCPUFeature_LZCNT },
     { "--SSE4A"  , NaClCPUFeature_SSE4A },
     { "--LM"     , NaClCPUFeature_LM },
-    { "--SVM"    , NaClCPUFeature_SVM },
   };
 
   int i;
