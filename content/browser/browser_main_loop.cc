@@ -28,6 +28,7 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_shutdown.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -591,6 +592,10 @@ void BrowserMainLoop::InitializeMainThread() {
 void BrowserMainLoop::BrowserThreadsStarted() {
   // RDH needs the IO thread to be created.
   resource_dispatcher_host_.reset(new ResourceDispatcherHostImpl());
+
+  // Start the GpuDataManager before we set up the MessageLoops because
+  // otherwise we'll trigger the assertion about doing IO on the UI thread.
+  content::GpuDataManager::GetInstance();
 }
 
 void BrowserMainLoop::InitializeToolkit() {
