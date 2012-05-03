@@ -94,7 +94,7 @@ bool AdjustLowMemoryMargin(int64_t margin_mb) {
     case 50L:
     case 100L:
     case 200L:
-      snprintf(value, sizeof(value), "%zu", margin_mb);
+      snprintf(value, sizeof(value), "%lld", (long long int)margin_mb);
       break;
     default:
       return false;
