@@ -58,7 +58,7 @@ void AddKeyValue(GtkTable* table, int row, const std::string& text,
 class CertificateViewer {
  public:
   CertificateViewer(gfx::NativeWindow parent,
-                    const net::X509Certificate::OSCertHandles& cert_chain_list);
+                    net::X509Certificate* certificate);
   ~CertificateViewer();
 
   void InitGeneralPage();
@@ -106,6 +106,7 @@ class CertificateViewer {
 
   // The certificate hierarchy (leaf cert first).
   net::X509Certificate::OSCertHandles cert_chain_list_;
+  scoped_refptr<net::X509Certificate> certificate_;
 
   GtkWidget* dialog_;
   GtkWidget* notebook_;
@@ -134,8 +135,14 @@ void OnDestroy(GtkDialog* dialog, CertificateViewer* cert_viewer) {
 
 CertificateViewer::CertificateViewer(
     gfx::NativeWindow parent,
-    const net::X509Certificate::OSCertHandles& cert_chain_list)
-    : cert_chain_list_(cert_chain_list) {
+    net::X509Certificate* certificate)
+    : certificate_(certificate) {
+  cert_chain_list_.insert(cert_chain_list_.begin(),
+                          certificate_->os_cert_handle());
+  const net::X509Certificate::OSCertHandles& certs =
+      certificate_->GetIntermediateCertificates();
+  cert_chain_list_.insert(cert_chain_list_.end(), certs.begin(), certs.end());
+
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringFUTF8(
           IDS_CERT_INFO_DIALOG_TITLE,
@@ -180,7 +187,6 @@ CertificateViewer::CertificateViewer(
 }
 
 CertificateViewer::~CertificateViewer() {
-  x509_certificate_model::DestroyCertChain(&cert_chain_list_);
 }
 
 void CertificateViewer::InitGeneralPage() {
@@ -710,13 +716,6 @@ void CertificateViewer::Show() {
 } // namespace
 
 void ShowCertificateViewer(gfx::NativeWindow parent,
-                           net::X509Certificate::OSCertHandle cert) {
-  net::X509Certificate::OSCertHandles cert_chain;
-  x509_certificate_model::GetCertChainFromCert(cert, &cert_chain);
-  (new CertificateViewer(parent, cert_chain))->Show();
-}
-
-void ShowCertificateViewer(gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
-  ShowCertificateViewer(parent, cert->os_cert_handle());
+  (new CertificateViewer(parent, cert))->Show();
 }
