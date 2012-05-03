@@ -240,7 +240,9 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
 
 ProfileImplIOData::LazyParams::LazyParams()
     : cache_max_size(0),
-      media_cache_max_size(0) {}
+      media_cache_max_size(0),
+      restore_old_session_cookies(false) {}
+
 ProfileImplIOData::LazyParams::~LazyParams() {}
 
 ProfileImplIOData::ProfileImplIOData()

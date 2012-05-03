@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
 
-ExtensionResource::ExtensionResource() {
+ExtensionResource::ExtensionResource() : follow_symlinks_anywhere_(false) {
 }
 
 ExtensionResource::ExtensionResource(const std::string& extension_id,
