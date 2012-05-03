@@ -120,7 +120,6 @@ SyncTest::SyncTest(TestType test_type)
       notifications_enabled_(true),
       test_server_handle_(base::kNullProcessHandle),
       number_of_default_sync_items_(0) {
-  InProcessBrowserTest::set_show_window(true);
   sync_datatype_helper::AssociateWithTest(this);
   switch (test_type_) {
     case SINGLE_CLIENT: {

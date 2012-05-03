@@ -427,9 +427,6 @@ void ProxyLauncher::PrepareTestCommandline(CommandLine* command_line,
   command_line->AppendSwitch(switches::kDebugOnStart);
 #endif
 
-  // Disable TabCloseableStateWatcher for tests.
-  command_line->AppendSwitch(switches::kDisableTabCloseableStateWatcher);
-
   // Force the app to always exit when the last browser window is closed.
   command_line->AppendSwitch(switches::kDisableZeroBrowsersOpenForTests);
 

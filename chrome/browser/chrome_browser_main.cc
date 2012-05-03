@@ -1791,17 +1791,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // http://crbug.com/105065.
   browser_process_->notification_ui_manager();
 
-  if (parameters().ui_task) {
-    // We are in test mode. Run one task and enter the main message loop.
-    process_singleton_->Unlock();
-#if defined(OS_MACOSX)
-    if (parameters().autorelease_pool)
-      parameters().autorelease_pool->Recycle();
-#endif
-    parameters().ui_task->Run();
-    delete parameters().ui_task;
-    run_message_loop_ = false;
-  } else {
     // Most general initialization is behind us, but opening a
     // tab and/or session restore and such is still to be done.
     base::TimeTicks browser_open_start = base::TimeTicks::Now();
@@ -1864,10 +1853,15 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     } else {
       run_message_loop_ = false;
     }
-  }
   browser_init_.reset();
 
   PostBrowserStart();
+
+  if (parameters().ui_task) {
+    parameters().ui_task->Run();
+    delete parameters().ui_task;
+    run_message_loop_ = false;
+  }
 
   return result_code_;
 }

@@ -30,8 +30,6 @@ namespace chromeos {
 class TabCloseableStateWatcherTest : public InProcessBrowserTest {
  public:
   TabCloseableStateWatcherTest() {
-    // This test is testing TabCloseStateWatcher, so enable it.
-    EnableTabCloseableStateWatcher();
     blank_url_ = GURL(chrome::kAboutBlankURL);
     ntp_url_ = GURL(chrome::kChromeUINewTabURL);
     other_url_ = ui_test_utils::GetTestUrl(

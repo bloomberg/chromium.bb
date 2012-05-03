@@ -9,7 +9,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "net/base/mock_host_resolver.h"
 
 // Possible race in ChromeURLDataManager. http://crbug.com/59198
@@ -43,7 +45,19 @@
 #define MAYBE_UpdateWindowResize UpdateWindowResize
 #endif  // defined(OS_LINUX) && !defined(USE_AURA)
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
+class ExtensionApiNewTabTest : public ExtensionApiTest {
+ public:
+  ExtensionApiNewTabTest() {}
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    // Override the default which InProcessBrowserTest adds if it doesn't see a
+    // homepage.
+    command_line->AppendSwitchASCII(
+        switches::kHomePage, chrome::kChromeUINewTabURL);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiNewTabTest, Tabs) {
   // The test creates a tab and checks that the URL of the new tab
   // is that of the new tab page.  Make sure the pref that controls
   // this is set.

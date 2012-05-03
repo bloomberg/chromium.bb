@@ -122,7 +122,6 @@ class DevToolsSanityTest : public InProcessBrowserTest {
   DevToolsSanityTest()
       : window_(NULL),
         inspected_rvh_(NULL) {
-    set_show_window(true);
     EnableDOMAutomation();
   }
 
@@ -271,7 +270,6 @@ class DevToolsExperimentalExtensionTest : public DevToolsExtensionTest {
 class WorkerDevToolsSanityTest : public InProcessBrowserTest {
  public:
   WorkerDevToolsSanityTest() : window_(NULL) {
-    set_show_window(true);
     EnableDOMAutomation();
   }
 

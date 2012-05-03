@@ -128,7 +128,6 @@ class TestFinishObserver : public content::NotificationObserver {
 class BrowserKeyEventsTest : public InProcessBrowserTest {
  public:
   BrowserKeyEventsTest() {
-    set_show_window(true);
     EnableDOMAutomation();
   }
 

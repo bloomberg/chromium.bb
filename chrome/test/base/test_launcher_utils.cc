@@ -75,6 +75,8 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   // Disable the Instant field trial, which may cause unexpected page loads.
   if (!command_line->HasSwitch(switches::kInstantFieldTrial))
     command_line->AppendSwitchASCII(switches::kInstantFieldTrial, "disabled");
+
+  command_line->AppendSwitch(switches::kDisableComponentUpdate);
 }
 
 bool OverrideUserDataDir(const FilePath& user_data_dir) {
