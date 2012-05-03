@@ -759,13 +759,23 @@ remoting.ClientSession.prototype.onMouseMove_ = function(event) {
   if (dx != 0 || dy != 0) {
     /** @type {remoting.ClientSession} */
     var that = this;
-    // Scroll the view, and schedule a timer to do so again unless we've hit
-    // the edges of the screen. This timer is cancelled when the mouse moves.
-    var repeatScroll = function() {
-      if (!that.scroll_(dx, dy)) {
-        that.bumpScrollTimer_ = window.setTimeout(repeatScroll, 10);
+    /**
+     * Scroll the view, and schedule a timer to do so again unless we've hit
+     * the edges of the screen. This timer is cancelled when the mouse moves.
+     * @param {number} expected The time at which we expect to be called.
+     */
+    var repeatScroll = function(expected) {
+      /** @type {number} */
+      var now = new Date().getTime();
+      /** @type {number} */
+      var timeout = 10;
+      var lateAdjustment = 1 + (now - expected) / timeout;
+      if (!that.scroll_(lateAdjustment * dx, lateAdjustment * dy)) {
+        that.bumpScrollTimer_ = window.setTimeout(
+            function() { repeatScroll(now + timeout); },
+            timeout);
       }
     };
-    repeatScroll();
+    repeatScroll(new Date().getTime());
   }
 };
