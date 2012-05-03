@@ -49,7 +49,7 @@ template <> const char* interface_name<PPB_Flash_Print_1_0>() {
 // have this meta one at the most recent version. Function pointers will be
 // null if they're not supported on the current Chrome version.
 bool initialized_combined_interface = false;
-PPB_Flash flash_12_combined_interface = {};
+PPB_Flash flash_12_combined_interface;
 
 // Makes sure that the most recent version is loaded into the combined
 // interface struct above. Any unsupported functions will be NULL. If there
