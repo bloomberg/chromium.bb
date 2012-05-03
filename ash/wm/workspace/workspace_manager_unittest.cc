@@ -617,6 +617,44 @@ TEST_F(WorkspaceManagerTest, GetWindowStateWithUnmanagedFullscreenWindow) {
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
 }
 
+// Variant of GetWindowStateWithUnmanagedFullscreenWindow that uses a maximized
+// window rather than a normal window.
+TEST_F(WorkspaceManagerTest,
+       GetWindowStateWithUnmanagedFullscreenWindowWithMaximized) {
+  ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+
+  // Make the first window maximized.
+  scoped_ptr<Window> w1(CreateTestWindow());
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  w1->Show();
+
+  scoped_ptr<Window> w2(CreateTestWindow());
+  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  SetPersistsAcrossAllWorkspaces(
+      w2.get(),
+      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
+  w2->Show();
+
+  // Even though auto-hide behavior is NEVER full-screen windows cause the shelf
+  // to hide.
+  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+  ASSERT_FALSE(manager_->IsManagedWindow(w2.get()));
+  EXPECT_EQ(WorkspaceManager::WINDOW_STATE_FULL_SCREEN,
+            manager_->GetWindowState());
+
+  w2->Hide();
+  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+
+  w2->Show();
+  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(WorkspaceManager::WINDOW_STATE_FULL_SCREEN,
+            manager_->GetWindowState());
+
+  w2.reset();
+  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+}
+
 // Makes sure that if animations are disabled on a window they don't get reset
 // when switching workspaces.
 TEST_F(WorkspaceManagerTest, DontResetAnimation) {

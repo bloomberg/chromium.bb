@@ -142,18 +142,24 @@ WorkspaceManager::WindowState WorkspaceManager::GetWindowState() {
   bounds.set_height(bounds.height() - shelf_->shelf_height());
   const aura::Window::Windows& windows(contents_view_->children());
   bool window_overlaps_launcher = false;
+  bool has_maximized_window = false;
   for (aura::Window::Windows::const_iterator i = windows.begin();
        i != windows.end(); ++i) {
     ui::Layer* layer = (*i)->layer();
     if (!layer->GetTargetVisibility() || layer->GetTargetOpacity() == 0.0f)
       continue;
-    if (wm::IsWindowMaximized(*i))
-      return WINDOW_STATE_MAXIMIZED;
-    if (wm::IsWindowFullscreen(*i))
+    if (wm::IsWindowMaximized(*i)) {
+      // An untracked window may still be fullscreen so we keep iterating when
+      // we hit a maximized window.
+      has_maximized_window = true;
+    } else if (wm::IsWindowFullscreen(*i)) {
       return WINDOW_STATE_FULL_SCREEN;
+    }
     if (!window_overlaps_launcher && (*i)->bounds().bottom() > bounds.bottom())
       window_overlaps_launcher = true;
   }
+  if (has_maximized_window)
+    return WINDOW_STATE_MAXIMIZED;
 
   return window_overlaps_launcher ? WINDOW_STATE_WINDOW_OVERLAPS_SHELF :
       WINDOW_STATE_DEFAULT;
