@@ -65,6 +65,14 @@ cr.define('options', function() {
       return this.contentElement_;
     },
 
+    /**
+     * Returns the close button element.
+     * @return {HTMLElement} The close |<button>| element.
+     */
+    get closeButtonElement() {
+      return this.closeButtonElement_;
+    },
+
     /* Gets/sets the deletable property. An item that is not deletable doesn't
      * show the delete button (although space is still reserved for it).
      */

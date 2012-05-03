@@ -76,6 +76,10 @@ html[dir=rtl] #account-picture-wrapper {
   height: 40px;
 }
 
+#profiles-list:focus {
+  border-color: rgb(77, 144, 254);
+}
+
 .profile-img {
   height: 31px;
   padding: 3px;

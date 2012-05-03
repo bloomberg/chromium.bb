@@ -63,6 +63,9 @@ cr.define('options.browser_options', function() {
             'profilesListItemCurrent',
             profileInfo.name);
       nameEl.textContent = displayName;
+
+      // Ensure that the button cannot be tabbed to for accessibility reasons.
+      this.closeButtonElement.tabIndex = -1;
     },
   };
 
