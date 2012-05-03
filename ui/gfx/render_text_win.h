@@ -98,6 +98,9 @@ class RenderTextWin : public RenderText {
   // Helper function to update the font on a text run after font substitution.
   void ApplySubstituteFont(internal::TextRun* run, const Font& font);
 
+  // Returns whether |run| contains missing glyphs.
+  bool HasMissingGlyphs(internal::TextRun* run) const;
+
   // Returns a vector of linked fonts corresponding to |font|.
   const std::vector<Font>* GetLinkedFonts(const Font& font) const;
 
@@ -109,8 +112,8 @@ class RenderTextWin : public RenderText {
   // Given a |run|, returns the SelectionModel that contains the logical first
   // or last caret position inside (not at a boundary of) the run.
   // The returned value represents a cursor/caret position without a selection.
-  SelectionModel FirstSelectionModelInsideRun(internal::TextRun* run);
-  SelectionModel LastSelectionModelInsideRun(internal::TextRun* run);
+  SelectionModel FirstSelectionModelInsideRun(const internal::TextRun* run);
+  SelectionModel LastSelectionModelInsideRun(const internal::TextRun* run);
 
   // Cached HDC for performing Uniscribe API calls.
   static HDC cached_hdc_;

@@ -609,7 +609,7 @@ void RenderTextWin::LayoutVisualText() {
   string_size_.set_height(0);
   for (size_t i = 0; i < runs_.size(); ++i) {
     internal::TextRun* run = runs_[i];
-    size_t run_length = run->range.length();
+    const size_t run_length = run->range.length();
     const wchar_t* run_text = &(text()[run->range.start()]);
     bool tried_cached_font = false;
     bool tried_fallback = false;
@@ -620,16 +620,11 @@ void RenderTextWin::LayoutVisualText() {
     // Select the font desired for glyph generation.
     SelectObject(cached_hdc_, run->font.GetNativeFont());
 
-    SCRIPT_FONTPROPERTIES properties;
-    memset(&properties, 0, sizeof(properties));
-    properties.cBytes = sizeof(properties);
-
     run->logical_clusters.reset(new WORD[run_length]);
     run->glyph_count = 0;
     // Max glyph guess: http://msdn.microsoft.com/en-us/library/dd368564.aspx
     size_t max_glyphs = static_cast<size_t>(1.5 * run_length + 16);
     while (max_glyphs < kMaxGlyphs) {
-      bool glyphs_missing = false;
       run->glyphs.reset(new WORD[max_glyphs]);
       run->visible_attributes.reset(new SCRIPT_VISATTR[max_glyphs]);
       hr = ScriptShape(cached_hdc_,
@@ -645,18 +640,15 @@ void RenderTextWin::LayoutVisualText() {
       if (hr == E_OUTOFMEMORY) {
         max_glyphs *= 2;
         continue;
-      } else if (hr == USP_E_SCRIPT_NOT_IN_FONT) {
+      }
+
+      bool glyphs_missing = false;
+      if (hr == USP_E_SCRIPT_NOT_IN_FONT) {
         glyphs_missing = true;
       } else if (hr == S_OK) {
         // If |hr| is S_OK, there could still be missing glyphs in the output,
         // see: http://msdn.microsoft.com/en-us/library/windows/desktop/dd368564.aspx
-        ScriptGetFontProperties(cached_hdc_, &run->script_cache, &properties);
-        for (int i = 0; i < run->glyph_count; ++i) {
-          if (run->glyphs[i] == properties.wgDefault) {
-            glyphs_missing = true;
-            break;
-          }
-        }
+        glyphs_missing = HasMissingGlyphs(run);
       }
 
       // Skip font substitution if there are no missing glyphs.
@@ -786,6 +778,35 @@ void RenderTextWin::ApplySubstituteFont(internal::TextRun* run,
   SelectObject(cached_hdc_, run->font.GetNativeFont());
 }
 
+bool RenderTextWin::HasMissingGlyphs(internal::TextRun* run) const {
+  SCRIPT_FONTPROPERTIES properties;
+  memset(&properties, 0, sizeof(properties));
+  properties.cBytes = sizeof(properties);
+  ScriptGetFontProperties(cached_hdc_, &run->script_cache, &properties);
+
+  const wchar_t* run_text = &(text()[run->range.start()]);
+  for (size_t char_index = 0; char_index < run->range.length(); ++char_index) {
+    const int glyph_index = run->logical_clusters[char_index];
+    DCHECK_GE(glyph_index, 0);
+    DCHECK_LT(glyph_index, run->glyph_count);
+
+    if (run->glyphs[glyph_index] == properties.wgDefault)
+      return true;
+
+    // Windows Vista sometimes returns glyphs equal to wgBlank (instead of
+    // wgDefault), with fZeroWidth set. Treat such cases as having missing
+    // glyphs if the corresponding character is not whitespace.
+    // See: http://crbug.com/125629
+    if (run->glyphs[glyph_index] == properties.wgBlank &&
+        run->visible_attributes[glyph_index].fZeroWidth &&
+        !IsWhitespace(run_text[char_index])) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 const std::vector<Font>* RenderTextWin::GetLinkedFonts(const Font& font) const {
   const std::string& font_name = font.GetFontName();
   std::map<std::string, std::vector<Font> >::const_iterator it =
@@ -822,13 +843,13 @@ size_t RenderTextWin::GetRunContainingPoint(const Point& point) const {
 }
 
 SelectionModel RenderTextWin::FirstSelectionModelInsideRun(
-    internal::TextRun* run) {
+    const internal::TextRun* run) {
   size_t cursor = IndexOfAdjacentGrapheme(run->range.start(), CURSOR_FORWARD);
   return SelectionModel(cursor, CURSOR_BACKWARD);
 }
 
 SelectionModel RenderTextWin::LastSelectionModelInsideRun(
-    internal::TextRun* run) {
+    const internal::TextRun* run) {
   size_t caret = IndexOfAdjacentGrapheme(run->range.end(), CURSOR_BACKWARD);
   return SelectionModel(caret, CURSOR_FORWARD);
 }
