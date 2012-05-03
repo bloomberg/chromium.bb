@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,13 @@ GamepadSharedMemoryReader::GamepadSharedMemoryReader() {
   memset(ever_interacted_with_, 0, sizeof(ever_interacted_with_));
   CHECK(RenderThread::Get()->Send(new GamepadHostMsg_StartPolling(
       &renderer_shared_memory_handle_)));
+  // If we don't get a valid handle from the browser, don't try to Map (we're
+  // probably out of memory or file handles).
+  bool valid_handle = base::SharedMemory::IsHandleValid(
+      renderer_shared_memory_handle_);
+  UMA_HISTOGRAM_BOOLEAN("Gamepad.ValidSharedMemoryHandle", valid_handle);
+  if (!valid_handle)
+    return;
   renderer_shared_memory_.reset(
       new base::SharedMemory(renderer_shared_memory_handle_, true));
   CHECK(renderer_shared_memory_->Map(sizeof(GamepadHardwareBuffer)));
@@ -29,6 +36,9 @@ GamepadSharedMemoryReader::GamepadSharedMemoryReader() {
 void GamepadSharedMemoryReader::SampleGamepads(WebKit::WebGamepads& gamepads) {
   WebKit::WebGamepads read_into;
   TRACE_EVENT0("GAMEPAD", "SampleGamepads");
+
+  if (!base::SharedMemory::IsHandleValid(renderer_shared_memory_handle_))
+    return;
 
   // Only try to read this many times before failing to avoid waiting here
   // very long in case of contention with the writer. TODO(scottmg) Tune this
@@ -44,7 +54,7 @@ void GamepadSharedMemoryReader::SampleGamepads(WebKit::WebGamepads& gamepads) {
     if (contention_count == kMaximumContentionCount)
       break;
   } while (gamepad_hardware_buffer_->sequence.ReadRetry(version));
-  HISTOGRAM_COUNTS("Gamepad.ReadContentionCount", contention_count);
+  UMA_HISTOGRAM_COUNTS("Gamepad.ReadContentionCount", contention_count);
 
   if (contention_count >= kMaximumContentionCount) {
       // We failed to successfully read, presumably because the hardware
