@@ -6,9 +6,6 @@
 #define CHROME_BROWSER_UI_TAB_CONTENTS_TAB_CONTENTS_WRAPPER_H_
 #pragma once
 
-#include <string>
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -38,7 +35,6 @@ class PasswordManager;
 class PasswordManagerDelegate;
 class PDFTabObserver;
 class PluginObserver;
-class PrefService;
 class PrefsTabHelper;
 class Profile;
 class RestoreTabHelper;
