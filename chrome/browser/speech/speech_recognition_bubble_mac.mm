@@ -83,7 +83,15 @@ void SpeechRecognitionBubbleImpl::Show() {
       anchor_y > NSHeight([parentWindow frame])) {
     LocationBarViewMac* locationBar =
         [[parentWindow windowController] locationBarBridge];
-    anchor = locationBar->GetPageInfoBubblePoint();
+
+    if (locationBar) {
+      anchor = locationBar->GetPageInfoBubblePoint();
+    } else {
+      // This is very rare, but possible. Just use the top-left corner.
+      // See crbug.com/119237
+      anchor = NSMakePoint(tab_bounds.origin.x,
+                           tab_bounds.origin.y + tab_bounds.size.height);
+    }
   } else {
     anchor = NSMakePoint(anchor_x, anchor_y);
   }
