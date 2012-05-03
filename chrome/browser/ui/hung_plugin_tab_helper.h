@@ -12,6 +12,8 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class FilePath;
@@ -29,7 +31,8 @@ class InfoBarTabHelper;
 //   terminating the plugin.
 // - Hide the infobar if the plugin starts responding again.
 // - Keep track of all of this for any number of plugins.
-class HungPluginTabHelper : public content::WebContentsObserver {
+class HungPluginTabHelper : public content::WebContentsObserver,
+                            public content::NotificationObserver {
  public:
   explicit HungPluginTabHelper(content::WebContents* contents);
   virtual ~HungPluginTabHelper();
@@ -39,6 +42,11 @@ class HungPluginTabHelper : public content::WebContentsObserver {
   virtual void PluginHungStatusChanged(int plugin_child_id,
                                        const FilePath& plugin_path,
                                        bool is_hung) OVERRIDE;
+
+  // NotificationObserver overrides.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   class InfoBarDelegate;
@@ -76,10 +84,6 @@ class HungPluginTabHelper : public content::WebContentsObserver {
   // Called by an infobar when the user selects to kill the plugin.
   void KillPlugin(int child_id);
 
-  // Called by an infobar when the user presses the close button to dismiss the
-  // bar without doing anything.
-  void BarClosed(int child_id);
-
   // Called on a timer for a hung plugin to re-show the bar.
   void OnReshowTimer(int child_id);
 
@@ -93,6 +97,8 @@ class HungPluginTabHelper : public content::WebContentsObserver {
 
   // Possibly returns null.
   InfoBarTabHelper* GetInfoBarHelper();
+
+  content::NotificationRegistrar registrar_;
 
   // All currently hung plugins.
   PluginStateMap hung_plugins_;

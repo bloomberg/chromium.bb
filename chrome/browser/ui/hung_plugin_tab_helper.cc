@@ -7,12 +7,16 @@
 #include "base/bind.h"
 #include "base/process_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/result_codes.h"
 #include "grit/chromium_strings.h"
@@ -74,7 +78,6 @@ class HungPluginTabHelper::InfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual int GetButtons() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
-  virtual void InfoBarDismissed() OVERRIDE;
 
  private:
   HungPluginTabHelper* helper_;
@@ -126,10 +129,6 @@ bool HungPluginTabHelper::InfoBarDelegate::Accept() {
   return true;
 }
 
-void HungPluginTabHelper::InfoBarDelegate::InfoBarDismissed() {
-  helper_->BarClosed(plugin_child_id_);
-}
-
 // -----------------------------------------------------------------------------
 
 HungPluginTabHelper::PluginState::PluginState(const FilePath& p,
@@ -148,6 +147,8 @@ HungPluginTabHelper::PluginState::~PluginState() {
 
 HungPluginTabHelper::HungPluginTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents) {
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
+                 content::NotificationService::AllSources());
 }
 
 HungPluginTabHelper::~HungPluginTabHelper() {
@@ -201,6 +202,41 @@ void HungPluginTabHelper::PluginHungStatusChanged(int plugin_child_id,
   ShowBar(plugin_child_id, state.get());
 }
 
+void HungPluginTabHelper::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
+
+  // Note: do not dereference. The InfoBarContainer will delete the object when
+  // it gets this notification, we only remove our tracking info, if we have
+  // any.
+  //
+  // TODO(pkasting): This comment will be incorrect and should be removed once
+  // InfoBars own their delegates.
+  ::InfoBarDelegate* delegate =
+      content::Details<InfoBarRemovedDetails>(details)->first;
+
+  for (PluginStateMap::iterator i = hung_plugins_.begin();
+       i != hung_plugins_.end(); ++i) {
+    PluginState* state = i->second.get();
+    if (state->info_bar == delegate) {
+      state->info_bar = NULL;
+
+      // Schedule the timer to re-show the infobar if the plugin continues to be
+      // hung.
+      state->timer.Start(FROM_HERE, state->next_reshow_delay,
+          base::Bind(&HungPluginTabHelper::OnReshowTimer,
+                     base::Unretained(this),
+                     i->first));
+
+      // Next time we do this, delay it twice as long to avoid being annoying.
+      state->next_reshow_delay *= 2;
+      return;
+    }
+  }
+}
+
 void HungPluginTabHelper::KillPlugin(int child_id) {
   PluginStateMap::iterator found = hung_plugins_.find(child_id);
   if (found == hung_plugins_.end()) {
@@ -212,25 +248,6 @@ void HungPluginTabHelper::KillPlugin(int child_id) {
                                    FROM_HERE,
                                    base::Bind(&KillPluginOnIOThread, child_id));
   CloseBar(found->second.get());
-}
-
-void HungPluginTabHelper::BarClosed(int child_id) {
-  PluginStateMap::iterator found = hung_plugins_.find(child_id);
-  if (found == hung_plugins_.end() || !found->second->info_bar) {
-    NOTREACHED();
-    return;
-  }
-  found->second->info_bar = NULL;
-
-  // Schedule the timer to re-show the infobar if the plugin continues to be
-  // hung.
-  found->second->timer.Start(FROM_HERE, found->second->next_reshow_delay,
-      base::Bind(&HungPluginTabHelper::OnReshowTimer,
-                 base::Unretained(this),
-                 child_id));
-
-  // Next time we do this, delay it twice as long to avoid being annoying.
-  found->second->next_reshow_delay *= 2;
 }
 
 void HungPluginTabHelper::OnReshowTimer(int child_id) {
