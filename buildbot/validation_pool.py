@@ -110,6 +110,29 @@ class ValidationPool(object):
     self._public_helper = None
     self._private_helper = None
 
+    # These instances can be instantiated via both older, or newer pickle
+    # dumps.  Thus we need to assert the given args since we may be getting
+    # a value we no longer like (nor work with).
+    if overlays not in constants.VALID_OVERLAYS:
+      raise ValueError("Unknown/unsupported overlay: %r" % (overlays,))
+
+    if not isinstance(build_number, int):
+      raise ValueError("Invalid build_number: %r" % (build_number,))
+
+    if not isinstance(builder_name, basestring):
+      raise ValueError("Invalid builder_name: %r" % (builder_name,))
+
+    for changes_name, changes_value in (
+        ('changes', changes), ('non_os_changes', non_os_changes),
+        ('conflicting_changes', conflicting_changes)):
+      if changes_value is None:
+        continue
+      if not all(isinstance(x, cros_patch.GitRepoPatch) for x in changes_value):
+        raise ValueError(
+            'Invalid %s: all elements must be a GitRepoPatch derivative, got %r'
+            % (changes_name, changes_value))
+
+
     # TODO(sosa): Remove False case once overlays logic has stabilized on TOT.
     if overlays in [constants.PUBLIC_OVERLAYS, constants.BOTH_OVERLAYS, False]:
       self._public_helper = gerrit_helper.GerritHelper(internal=False)
@@ -121,8 +144,8 @@ class ValidationPool(object):
     self.build_log = '%s/builders/%s/builds/%s' % (
         build_dashboard, builder_name, str(build_number))
 
-    self.is_master = is_master
-    self.dryrun = dryrun | self.GLOBAL_DRYRUN
+    self.is_master = bool(is_master)
+    self.dryrun = bool(dryrun) or self.GLOBAL_DRYRUN
 
     # See optional args for types of changes.
     self.changes = changes or []

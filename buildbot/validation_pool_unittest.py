@@ -8,6 +8,8 @@
 
 import logging
 import mox
+import os
+import pickle
 import sys
 import time
 import unittest
@@ -20,11 +22,25 @@ sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.buildbot import gerrit_helper
 from chromite.buildbot import patch as cros_patch
-from chromite.buildbot import validation_pool
 from chromite.buildbot import patch_unittest
+from chromite.buildbot import repository
+from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 
 _CountingSource = itertools.count()
+
+def GetTestJson(change_id=None):
+  """Get usable fake Gerrit patch json data
+
+  Args:
+    change_id: If given, force this ChangeId
+  """
+  data = copy.deepcopy(patch_unittest.FAKE_PATCH_JSON)
+  if change_id is not None:
+    data['id'] = str(change_id)
+  return data
+
 
 # pylint: disable=W0212,R0904
 class TestValidationPool(mox.MoxTestBase):
@@ -35,10 +51,6 @@ class TestValidationPool(mox.MoxTestBase):
     self.mox.StubOutWithMock(validation_pool, '_RunCommand')
     self.mox.StubOutWithMock(time, 'sleep')
     self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
-
-  @property
-  def test_json(self):
-    return copy.deepcopy(patch_unittest.FAKE_PATCH_JSON)
 
   def MockPatch(self, change_id, patch_number=None):
     patch = self.mox.CreateMock(cros_patch.GerritPatch)
@@ -389,7 +401,7 @@ class TestValidationPool(mox.MoxTestBase):
     """Tests submission review string looks correct."""
     pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
 
-    my_patch = cros_patch.GerritPatch(self.test_json, False)
+    my_patch = cros_patch.GerritPatch(GetTestJson(), False)
     validation_pool._RunCommand(
         'ssh -p 29418 gerrit.chromium.org gerrit review '
         '--submit 1112,2'.split(), False).AndReturn(None)
@@ -401,7 +413,7 @@ class TestValidationPool(mox.MoxTestBase):
     """Tests review string looks correct."""
     pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
 
-    my_patch = cros_patch.GerritPatch(self.test_json, False)
+    my_patch = cros_patch.GerritPatch(GetTestJson(), False)
     pool._SendNotification(my_patch, mox.IgnoreArg())
 
     self.mox.ReplayAll()
@@ -415,7 +427,7 @@ class TestValidationPool(mox.MoxTestBase):
         mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
         is_command=True).AndReturn(None)
 
-    my_patch = cros_patch.GerritPatch(self.test_json, False)
+    my_patch = cros_patch.GerritPatch(GetTestJson(), False)
     pool._SendNotification(my_patch, mox.IgnoreArg())
 
     self.mox.ReplayAll()
@@ -429,7 +441,7 @@ class TestValidationPool(mox.MoxTestBase):
         mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
         is_command=True).AndReturn(None)
 
-    my_patch = cros_patch.GerritPatch(self.test_json, False)
+    my_patch = cros_patch.GerritPatch(GetTestJson(), False)
     pool._SendNotification(my_patch, mox.IgnoreArg())
 
     self.mox.ReplayAll()
@@ -443,7 +455,7 @@ class TestValidationPool(mox.MoxTestBase):
         mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
         is_command=True).AndReturn(None)
 
-    my_patch = cros_patch.GerritPatch(self.test_json, False)
+    my_patch = cros_patch.GerritPatch(GetTestJson(), False)
     pool._SendNotification(my_patch, mox.IgnoreArg())
 
     self.mox.ReplayAll()
@@ -524,6 +536,82 @@ class TestTreeStatus(mox.MoxTestBase):
     """Checks for non-500 errors.."""
     self._TreeStatusTestHelper('Tree is open (flaky bug on flaky builder)',
                                'open', True, retries_500=2)
+
+
+
+class TestPickling(cros_test_lib.TempDirMixin, unittest.TestCase):
+
+  """Tests to validate pickling of ValidationPool, covering CQ's needs"""
+
+  def testSelfCompatibility(self):
+    """Verify compatibility of current git HEAD against itself."""
+    self._CheckTestData(self._GetTestData())
+
+  def testToTCompatibility(self):
+    """Validate that ToT can use our pickles, and that we can use ToT's data."""
+    repo = os.path.join(self.tempdir, 'chromite')
+    reference = os.path.abspath(__file__)
+    reference = os.path.normpath(os.path.join(reference, '../../'))
+
+    repository.CloneGitRepo(repo,
+                            '%s/chromiumos/chromite' % constants.GIT_HTTP_URL,
+                            reference=reference)
+
+    env = os.environ.copy()
+    env['PYTHON_PATH'] = reference
+
+    code = """
+import sys
+from chromite.buildbot import validation_pool_unittest
+if not hasattr(validation_pool_unittest, 'TestPickling'):
+  sys.exit(0)
+sys.stdout.write(validation_pool_unittest.TestPickling.%s)
+"""
+
+    # Verify ToT can take our pickle.
+    cros_build_lib.RunCommandCaptureOutput(
+        ['python', '-c', code % '_CheckTestData(sys.stdin.read())'],
+        cwd=self.tempdir, print_cmd=False,
+        input=self._GetTestData())
+
+    # Verify we can handle ToT's pickle.
+    ret = cros_build_lib.RunCommandCaptureOutput(
+        ['python', '-c', code % '_GetTestData()'],
+        cwd=self.tempdir, print_cmd=False)
+
+    try:
+      self._CheckTestData(pickle.loads(ret.output))
+    except EOFError:
+      # TODO(ferringb): remove this after these tests land;
+      # this is needed purely for compatibility against ToT which
+      # currently lacks the necessary test methods
+      pass
+
+  @staticmethod
+  def _GetTestData():
+    ids = [cros_patch.MakeChangeId() for _ in xrange(3)]
+    changes = [cros_patch.GerritPatch(GetTestJson(ids[0]), True)]
+    non_os = [cros_patch.GerritPatch(GetTestJson(ids[1]), False)]
+    conflicting = [cros_patch.GerritPatch(GetTestJson(ids[2]), True)]
+    pool = validation_pool.ValidationPool(
+        constants.PUBLIC_OVERLAYS, 1, 'testing', True, True,
+        changes=changes, non_os_changes=non_os,
+        conflicting_changes=conflicting)
+    return pickle.dumps([pool, changes, non_os, conflicting])
+
+  @staticmethod
+  def _CheckTestData(data):
+    results = pickle.loads(data)
+    pool, changes, non_os, conflicting = results
+    def _f(source, value):
+      assert len(source) == len(value)
+      for s_item, v_item in zip(source, value):
+        assert s_item.id == v_item.id
+        assert s_item.internal == v_item.internal
+    _f(pool.changes, changes)
+    _f(pool.non_manifest_changes, non_os)
+    _f(pool.changes_that_failed_to_apply_earlier, conflicting)
+    return ''
 
 
 if __name__ == '__main__':

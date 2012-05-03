@@ -71,16 +71,21 @@ def IsInternalRepoCheckout(root):
           == os.path.splitext(os.path.basename(constants.MANIFEST_INT_URL))[0])
 
 
-def CloneGitRepo(working_dir, repo_url):
+def CloneGitRepo(working_dir, repo_url, reference=None):
   """Clone given git repo
   Args:
     repo_url: git repo to clone
     repo_dir: location where it should be cloned to
+    reference: If given, pathway to a git repository to access git objects
+      from.  Note that the reference must exist as long as the newly created
+      repo is to be usable.
   """
-  if not os.path.exists(working_dir): os.makedirs(working_dir)
-  cros_lib.RunCommand(['git', 'clone', repo_url, working_dir],
-                      redirect_stderr=True, redirect_stdout=True,
-                      cwd=working_dir)
+  if not os.path.exists(working_dir):
+    os.makedirs(working_dir)
+  cmd = ['git', 'clone', repo_url, working_dir]
+  if reference:
+    cmd += ['--reference', reference]
+  cros_lib.RunCommandCaptureOutput(cmd, cwd=working_dir)
 
 
 def GetTrybotMarkerPath(buildroot):
