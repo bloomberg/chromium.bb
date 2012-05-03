@@ -1863,7 +1863,7 @@ FileManager.prototype = {
   FileManager.prototype.displaySizeInDiv_ = function(div, filesystemProps) {
     if (!filesystemProps) return;
     if (filesystemProps.size == -1) {
-      div.textContent = '';
+      div.textContent = '--';
     } else if (filesystemProps.size == 0 &&
                filesystemProps.fileType.type == 'hosted') {
       div.textContent = '--';
