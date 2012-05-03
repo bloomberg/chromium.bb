@@ -154,7 +154,7 @@ class MsvsSettings(object):
     equivalents."""
     replacements = {
         '$(VSInstallDir)': self.vs_version.Path(),
-        '$(VCInstallDir)': os.path.join(self.vs_version.Path(), 'VC'),
+        '$(VCInstallDir)': os.path.join(self.vs_version.Path(), 'VC') + '\\',
         '$(OutDir)\\': base_to_build + '\\' if base_to_build else '',
         '$(IntDir)': '$!INTERMEDIATE_DIR',
         '$(InputPath)': '${source}',
