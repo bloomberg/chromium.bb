@@ -711,4 +711,12 @@
        'media.media_seek_perf',
      ],
   },
+
+  # WebRTC MediaStream tests. Requires webcam and audio device to be present on
+  # the test machine.
+  'WEBRTC': {
+    'linux': [
+      'webrtc_call',
+    ],
+  },
 }
