@@ -6,6 +6,8 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_command_service.h"
+#include "chrome/browser/extensions/extension_command_service_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -62,8 +64,10 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
 
   set_accessibility_focusable(true);
 
+  ExtensionCommandService* command_service =
+      ExtensionCommandServiceFactory::GetForProfile(browser_->profile());
   const Extension::ExtensionKeybinding* page_action_command =
-      extension->page_action_command();
+      command_service->GetActivePageActionCommand(extension->id());
   if (page_action_command) {
     keybinding_.reset(new ui::Accelerator(page_action_command->accelerator()));
     owner_->GetFocusManager()->RegisterAccelerator(

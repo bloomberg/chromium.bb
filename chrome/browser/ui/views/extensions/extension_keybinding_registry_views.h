@@ -21,7 +21,7 @@ class FocusManager;
 }
 
 // ExtensionKeybindingRegistryViews is a class that handles Views-specific
-// implemenation of the Extension Keybinding shortcuts (keyboard accelerators).
+// implementation of the Extension Keybinding shortcuts (keyboard accelerators).
 // Note: It handles regular extension commands (not browserAction and pageAction
 // popups, which are handled elsewhere). This class registers the accelerators
 // on behalf of the extensions and routes the commands to them via the

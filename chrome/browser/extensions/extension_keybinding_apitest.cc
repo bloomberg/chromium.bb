@@ -31,14 +31,26 @@ class KeybindingApiTest : public ExtensionApiTest {
 };
 
 #if !defined(OS_MACOSX)
+// Test the basic functionality of the Keybinding API:
+// - That pressing the shortcut keys should perform actions (activate the
+//   browser action or send an event).
+// - Note: Page action keybindings are tested in PageAction test below.
+// - The shortcut keys taken by one extension are not overwritten by the last
+//   installed extension.
 IN_PROC_BROWSER_TEST_F(KeybindingApiTest, Basic) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/basics")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  // Test that there is a browser action in the toolbar.
-  ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
+  // Load this extension, which uses the same keybindings but sets the page
+  // to different colors. This is so we can see that it doesn't interfere. We
+  // don't test this extension in any other way (it should otherwise be
+  // immaterial to this test).
+  ASSERT_TRUE(RunExtensionTest("keybinding/conflicting")) << message_;
+
+  // Test that there are two browser actions in the toolbar.
+  ASSERT_EQ(2, GetBrowserActionsBar().NumberOfBrowserActions());
 
   ui_test_utils::NavigateToURL(browser(),
       test_server()->GetURL("files/extensions/test_file.txt"));

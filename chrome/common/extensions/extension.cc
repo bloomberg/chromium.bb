@@ -331,6 +331,21 @@ ui::Accelerator Extension::ExtensionKeybinding::ParseImpl(
   return ui::Accelerator(key, shift, ctrl, alt);
 }
 
+// static
+std::string Extension::ExtensionKeybinding::KeybindingPlatform() {
+#if defined(OS_WIN)
+  return values::kKeybindingPlatformWin;
+#elif defined(OS_MACOSX)
+  return values::kKeybindingPlatformMac;
+#elif defined(OS_CHROMEOS)
+  return values::kKeybindingPlatformChromeOs;
+#elif defined(OS_LINUX)
+  return values::kKeybindingPlatformLinux;
+#else
+  return "";
+#endif
+}
+
 bool Extension::ExtensionKeybinding::Parse(DictionaryValue* command,
                                            const std::string& command_name,
                                            int index,
@@ -379,19 +394,7 @@ bool Extension::ExtensionKeybinding::Parse(DictionaryValue* command,
     }
   }
 
-  std::string platform =
-#if defined(OS_WIN)
-      values::kKeybindingPlatformWin;
-#elif defined(OS_MACOSX)
-      values::kKeybindingPlatformMac;
-#elif defined(OS_CHROMEOS)
-      values::kKeybindingPlatformChromeOs;
-#elif defined(OS_LINUX)
-      values::kKeybindingPlatformLinux;
-#else
-      "";
-#endif
-
+  std::string platform = KeybindingPlatform();
   std::string key = platform;
   if (suggestions.find(key) == suggestions.end())
     key = values::kKeybindingPlatformDefault;

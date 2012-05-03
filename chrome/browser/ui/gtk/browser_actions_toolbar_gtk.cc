@@ -14,6 +14,8 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_command_service.h"
+#include "chrome/browser/extensions/extension_command_service_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
@@ -365,8 +367,11 @@ class BrowserActionButton : public content::NotificationObserver,
 
   // Connect the accelerator for the browser action popup.
   void ConnectBrowserActionPopupAccelerator() {
+    ExtensionCommandService* command_service =
+        ExtensionCommandServiceFactory::GetForProfile(
+            toolbar_->browser()->profile());
     const Extension::ExtensionKeybinding* command =
-        extension_->browser_action_command();
+        command_service->GetActiveBrowserActionCommand(extension_->id());
     if (command) {
       // Found the browser action shortcut command, register it.
       keybinding_.reset(new ui::AcceleratorGtk(

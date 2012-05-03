@@ -12,6 +12,8 @@
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/extensions/extension_command_service_factory.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -176,6 +178,8 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   ChromeURLDataManagerFactory::GetInstance();
   CookieSettings::Factory::GetInstance();
   DownloadServiceFactory::GetInstance();
+  ExtensionCommandServiceFactory::GetInstance();
+  ExtensionSystemFactory::GetInstance();
   FindBarStateFactory::GetInstance();
 #if defined(USE_AURA)
   GesturePrefsObserverFactoryAura::GetInstance();

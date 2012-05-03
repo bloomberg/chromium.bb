@@ -11,6 +11,8 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_command_service.h"
+#include "chrome/browser/extensions/extension_command_service_factory.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -142,8 +144,11 @@ class InstalledBubbleContent : public views::View,
 
     switch (type_) {
       case ExtensionInstalledBubble::BROWSER_ACTION: {
+        ExtensionCommandService* command_service =
+            ExtensionCommandServiceFactory::GetForProfile(
+                browser_->profile());
         const Extension::ExtensionKeybinding* browser_action_command =
-            extension->browser_action_command();
+            command_service->GetActiveBrowserActionCommand(extension->id());
         if (!browser_action_command) {
           info_ = new views::Label(l10n_util::GetStringUTF16(
               IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO));
@@ -153,6 +158,7 @@ class InstalledBubbleContent : public views::View,
               IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO_WITH_SHORTCUT,
               browser_action_command->accelerator().GetShortcutText()));
         }
+
         info_->SetFont(font);
         info_->SetMultiLine(true);
         info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -160,8 +166,11 @@ class InstalledBubbleContent : public views::View,
         break;
       }
       case ExtensionInstalledBubble::PAGE_ACTION: {
+        ExtensionCommandService* command_service =
+            ExtensionCommandServiceFactory::GetForProfile(
+                browser_->profile());
         const Extension::ExtensionKeybinding* page_action_command =
-            extension->page_action_command();
+            command_service->GetActivePageActionCommand(extension->id());
         if (!page_action_command) {
           info_ = new views::Label(l10n_util::GetStringUTF16(
               IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO));

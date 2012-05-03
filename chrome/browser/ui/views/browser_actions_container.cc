@@ -9,6 +9,8 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_command_service.h"
+#include "chrome/browser/extensions/extension_command_service_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -118,8 +120,11 @@ void BrowserActionButton::ViewHierarchyChanged(
       UpdateState();
     }
 
+    ExtensionCommandService* command_service =
+        ExtensionCommandServiceFactory::GetForProfile(
+            panel_->browser()->profile());
     const Extension::ExtensionKeybinding* browser_action_command =
-        extension_->browser_action_command();
+        command_service->GetActiveBrowserActionCommand(extension_->id());
     if (browser_action_command) {
       keybinding_.reset(new ui::Accelerator(
           browser_action_command->accelerator()));
@@ -307,7 +312,6 @@ void BrowserActionButton::SetButtonNotPushed() {
 
 BrowserActionButton::~BrowserActionButton() {
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionView

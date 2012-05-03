@@ -17,6 +17,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/extension_command_service.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -184,6 +185,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   chrome_browser_net::Predictor::RegisterUserPrefs(user_prefs);
   DownloadPrefs::RegisterUserPrefs(user_prefs);
   extensions::ComponentLoader::RegisterUserPrefs(user_prefs);
+  ExtensionCommandService::RegisterUserPrefs(user_prefs);
   ExtensionPrefs::RegisterUserPrefs(user_prefs);
   ExtensionSettingsHandler::RegisterUserPrefs(user_prefs);
   ExtensionWebUI::RegisterUserPrefs(user_prefs);

@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/gtk/extensions/extension_keybinding_registry_gtk.h"
 
 #include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_command_service.h"
+#include "chrome/browser/extensions/extension_command_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
@@ -42,9 +44,12 @@ gboolean ExtensionKeybindingRegistryGtk::HasPriorityHandler(
 
 void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
     const Extension* extension) {
-  // Add all the keybindings (except pageAction and browserAction, which are
-  // handled elsewhere).
-  const Extension::CommandMap& commands = extension->named_commands();
+  // Add all the active keybindings (except page actions and browser actions,
+  // which are handled elsewhere).
+  ExtensionCommandService* command_service =
+      ExtensionCommandServiceFactory::GetForProfile(profile_);
+  const Extension::CommandMap& commands =
+      command_service->GetActiveNamedCommands(extension->id());
   Extension::CommandMap::const_iterator iter = commands.begin();
   for (; iter != commands.end(); ++iter) {
     ui::AcceleratorGtk accelerator(iter->second.accelerator().key_code(),

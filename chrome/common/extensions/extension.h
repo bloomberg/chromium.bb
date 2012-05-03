@@ -164,6 +164,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     ExtensionKeybinding();
     ~ExtensionKeybinding();
 
+    // The Keybinding platform value.
+    static std::string KeybindingPlatform();
+
     // Parse the key binding.
     bool Parse(base::DictionaryValue* command,
                const std::string& command_name,
@@ -185,6 +188,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     std::string description_;
   };
 
+  // A mapping of command name (std::string) to a keybinding object.
   typedef std::map<std::string, ExtensionKeybinding> CommandMap;
 
   struct TtsVoice {
@@ -594,12 +598,21 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const std::vector<InputComponentInfo>& input_components() const {
     return input_components_;
   }
+  // The browser action command keybinding that the extension wants to use,
+  // which is not necessarily the one it can use, as it might be inactive
+  // (see also GetActiveBrowserActionCommand in ExtensionKeybindingRegistry).
   const ExtensionKeybinding* browser_action_command() const {
     return browser_action_command_.get();
   }
+  // The page action command keybinding that the extension wants to use,
+  // which is not necessarily the one it can use, as it might be inactive
+  // (see also GetActivePageActionCommand in ExtensionKeybindingRegistry).
   const ExtensionKeybinding* page_action_command() const {
     return page_action_command_.get();
   }
+  // The map of named commands to keybindings that the extension wants to use,
+  // which is not necessarily the one it can use, as they might be inactive
+  // (see also GetActiveNamedCommands in ExtensionKeybindingRegistry).
   const CommandMap& named_commands() const {
     return named_commands_;
   }
