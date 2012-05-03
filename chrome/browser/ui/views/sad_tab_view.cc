@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/feedback/feedback_util.h"
@@ -28,22 +29,36 @@
 using content::OpenURLParams;
 using content::WebContents;
 
-static const int kPadding = 20;
-static const float kMessageSize = 0.65f;
-static const SkColor kTextColor = SK_ColorWHITE;
-static const SkColor kCrashColor = SkColorSetRGB(35, 48, 64);
-static const SkColor kKillColor = SkColorSetRGB(57, 48, 88);
+namespace {
+
+const int kPadding = 20;
+const float kMessageSize = 0.65f;
+const SkColor kTextColor = SK_ColorWHITE;
+const SkColor kCrashColor = SkColorSetRGB(35, 48, 64);
+const SkColor kKillColor = SkColorSetRGB(57, 48, 88);
 
 const char kCategoryTagCrash[] = "Crash";
 
 // Font size correction.
 #if defined(CROS_FONTS_USING_BCI)
-static const int kTitleFontSizeDelta = 1;
-static const int kMessageFontSizeDelta = 0;
+const int kTitleFontSizeDelta = 1;
+const int kMessageFontSizeDelta = 0;
 #else
-static const int kTitleFontSizeDelta = 2;
-static const int kMessageFontSizeDelta = 1;
+const int kTitleFontSizeDelta = 2;
+const int kMessageFontSizeDelta = 1;
 #endif
+
+// Name of the experiment to run.
+const char kExperiment[] = "LowMemoryMargin";
+
+#define EXPERIMENT_CUSTOM_COUNTS(name, sample, min, max, buckets)          \
+    UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, buckets);          \
+    if (base::FieldTrialList::TrialExists(kExperiment))                    \
+      UMA_HISTOGRAM_CUSTOM_COUNTS(                                         \
+          base::FieldTrial::MakeName(name, kExperiment),                   \
+          sample, min, max, buckets);
+
+}  // namespace
 
 SadTabView::SadTabView(WebContents* web_contents, Kind kind)
     : web_contents_(web_contents),
@@ -70,14 +85,16 @@ SadTabView::SadTabView(WebContents* web_contents, Kind kind)
   switch (kind_) {
     case CRASHED: {
       static int crashed = 0;
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Tabs.SadTab.CrashCreated", ++crashed, 1, 1000, 50);
+      crashed++;
+      EXPERIMENT_CUSTOM_COUNTS(
+          "Tabs.SadTab.CrashCreated", crashed, 1, 1000, 50);
       break;
     }
     case KILLED: {
       static int killed = 0;
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Tabs.SadTab.KillCreated", ++killed, 1, 1000, 50);
+      killed++;
+      EXPERIMENT_CUSTOM_COUNTS(
+          "Tabs.SadTab.KillCreated", killed, 1, 1000, 50);
       break;
     }
     default:

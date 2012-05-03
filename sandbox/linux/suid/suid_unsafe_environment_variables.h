@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,10 @@
 // List gathered from glibc sources (00ebd7ed58df389a78e41dece058048725cb585e):
 //   sysdeps/unix/sysv/linux/i386/dl-librecon.h
 //   sysdeps/generic/unsecvars.h
+
+#ifndef SANDBOX_LINUX_SUID_SUID_UNSAFE_ENVIRONMENT_VARIABLES_H_
+#define SANDBOX_LINUX_SUID_SUID_UNSAFE_ENVIRONMENT_VARIABLES_H_
+#pragma once
 
 static const char* kSUIDUnsafeEnvironmentVariables[] = {
   "LD_AOUT_LIBRARY_PATH",
@@ -57,3 +61,5 @@ static inline char* SandboxSavedEnvironmentVariable(const char* envvar) {
 
   return saved_envvar;
 }
+
+#endif  // SANDBOX_LINUX_SUID_SUID_UNSAFE_ENVIRONMENT_VARIABLES_H_

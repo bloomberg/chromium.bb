@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/process_util.h"
@@ -51,14 +52,25 @@ namespace browser {
 
 namespace {
 
+// Name of the experiment to run.
+const char kExperiment[] = "LowMemoryMargin";
+
+#define EXPERIMENT_CUSTOM_COUNTS(name, sample, min, max, buckets)          \
+    UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, buckets);          \
+    if (base::FieldTrialList::TrialExists(kExperiment))                    \
+      UMA_HISTOGRAM_CUSTOM_COUNTS(                                         \
+          base::FieldTrial::MakeName(name, kExperiment),                   \
+          sample, min, max, buckets);
+
 // Record a time in seconds, over a potential interval of about a day. Must be a
 // macro and not a function because the histograms system requires a unique
 // static variable at the site of each call.
-#define UMA_HISTOGRAM_SECONDS(name, sample) UMA_HISTOGRAM_CUSTOM_COUNTS( \
-    name, sample, 1, 10000, 50)
+#define EXPERIMENT_HISTOGRAM_SECONDS(name, sample)                         \
+    EXPERIMENT_CUSTOM_COUNTS(name, sample, 1, 10000, 50)
+
 // Record a size in megabytes, over a potential interval up to 32 GB.
-#define UMA_HISTOGRAM_MEGABYTES(name, sample) UMA_HISTOGRAM_CUSTOM_COUNTS( \
-    name, sample, 1, 32768, 50)
+#define EXPERIMENT_HISTOGRAM_MEGABYTES(name, sample)                       \
+    EXPERIMENT_CUSTOM_COUNTS(name, sample, 1, 32768, 50)
 
 // The default interval in seconds after which to adjust the oom_score_adj
 // value.
@@ -241,11 +253,11 @@ bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
 void OomPriorityManager::RecordDiscardStatistics() {
   // Record a raw count so we can compare to discard reloads.
   discard_count_++;
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Tabs.Discard.DiscardCount", discard_count_, 1, 1000, 50);
+  EXPERIMENT_CUSTOM_COUNTS("Tabs.Discard.DiscardCount",
+                           discard_count_, 1, 1000, 50);
 
   // TODO(jamescook): Maybe incorporate extension count?
-  UMA_HISTOGRAM_COUNTS_100("Tabs.Discard.TabCount", GetTabCount());
+  EXPERIMENT_CUSTOM_COUNTS("Tabs.Discard.TabCount", GetTabCount(), 1, 100, 50);
 
   // TODO(jamescook): If the time stats prove too noisy, then divide up users
   // based on how heavily they use Chrome using tab count as a proxy.
@@ -254,23 +266,24 @@ void OomPriorityManager::RecordDiscardStatistics() {
     // This is the first discard this session.
     TimeDelta interval = TimeTicks::Now() - start_time_;
     int interval_seconds = static_cast<int>(interval.InSeconds());
-    UMA_HISTOGRAM_SECONDS("Tabs.Discard.InitialTime", interval_seconds);
+    EXPERIMENT_HISTOGRAM_SECONDS("Tabs.Discard.InitialTime", interval_seconds);
   } else {
     // Not the first discard, so compute time since last discard.
     TimeDelta interval = TimeTicks::Now() - last_discard_time_;
     int interval_seconds = static_cast<int>(interval.InSeconds());
-    UMA_HISTOGRAM_SECONDS("Tabs.Discard.IntervalTime", interval_seconds);
+    EXPERIMENT_HISTOGRAM_SECONDS("Tabs.Discard.IntervalTime", interval_seconds);
   }
   // Record Chrome's concept of system memory usage at the time of the discard.
   base::SystemMemoryInfoKB memory;
   if (base::GetSystemMemoryInfo(&memory)) {
-    int mem_anonymous_kb = memory.active_anon + memory.inactive_anon;
-    UMA_HISTOGRAM_MEGABYTES("Tabs.Discard.MemAnonymousMB",
-                            mem_anonymous_kb / 1024);
-    int mem_available_kb =
-        memory.active_file + memory.inactive_file + memory.free;
-    UMA_HISTOGRAM_MEGABYTES("Tabs.Discard.MemAvailableMB",
-                            mem_available_kb / 1024);
+    int mem_anonymous_mb = (memory.active_anon + memory.inactive_anon) / 1024;
+    EXPERIMENT_HISTOGRAM_MEGABYTES("Tabs.Discard.MemAnonymousMB",
+                                   mem_anonymous_mb);
+
+    int mem_available_mb =
+        (memory.active_file + memory.inactive_file + memory.free) / 1024;
+    EXPERIMENT_HISTOGRAM_MEGABYTES("Tabs.Discard.MemAvailableMB",
+                                   mem_available_mb);
   }
   // Set up to record the next interval.
   last_discard_time_ = TimeTicks::Now();

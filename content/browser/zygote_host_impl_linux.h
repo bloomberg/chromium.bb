@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,6 +55,7 @@ class CONTENT_EXPORT ZygoteHostImpl : public content::ZygoteHost {
   virtual int GetSandboxStatus() const OVERRIDE;
   virtual void AdjustRendererOOMScore(base::ProcessHandle process_handle,
                                       int score) OVERRIDE;
+  virtual void AdjustLowMemoryMargin(int64 margin_mb) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<ZygoteHostImpl>;

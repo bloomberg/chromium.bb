@@ -15,6 +15,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/oom_priority_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/zygote_host_linux.h"
+
+#if !defined(OS_CHROMEOS)
+#error This file only meant to be compiled on ChromeOS
+#endif
 
 using content::BrowserThread;
 
@@ -178,6 +183,11 @@ void LowMemoryObserver::Stop() {
       FROM_HERE,
       base::Bind(&LowMemoryObserverImpl::StopObservingOnFileThread,
                  observer_.get()));
+}
+
+// static
+void LowMemoryObserver::SetLowMemoryMargin(int64 margin_mb) {
+  content::ZygoteHost::GetInstance()->AdjustLowMemoryMargin(margin_mb);
 }
 
 }  // namespace browser

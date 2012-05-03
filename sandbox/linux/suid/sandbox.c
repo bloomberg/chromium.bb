@@ -4,6 +4,8 @@
 
 // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
 
+#include "sandbox.h"
+
 #define _GNU_SOURCE
 #include <asm/unistd.h>
 #include <errno.h>
@@ -38,7 +40,6 @@
 #define CLONE_NEWNET 0x40000000
 #endif
 
-static const char kAdjustOOMScoreSwitch[] = "--adjust-oom-score";
 static const char kSandboxDescriptorEnvironmentVarName[] = "SBX_D";
 static const char kSandboxHelperPidEnvironmentVarName[] = "SBX_HELPER_PID";
 
@@ -405,9 +406,10 @@ int main(int argc, char **argv) {
   // when you call it with --find-inode INODE_NUMBER.
   if (argc == 3 && (0 == strcmp(argv[1], kFindInodeSwitch))) {
     pid_t pid;
-    char* endptr;
+    char* endptr = NULL;
+    errno = 0;
     ino_t inode = strtoull(argv[2], &endptr, 10);
-    if (inode == ULLONG_MAX || *endptr)
+    if (inode == ULLONG_MAX || !endptr || *endptr || errno != 0)
       return 1;
     if (!FindProcessHoldingSocket(&pid, inode))
       return 1;
@@ -417,17 +419,31 @@ int main(int argc, char **argv) {
   // Likewise, we cannot adjust /proc/pid/oom_adj for sandboxed renderers
   // because those files are owned by root. So we need another helper here.
   if (argc == 4 && (0 == strcmp(argv[1], kAdjustOOMScoreSwitch))) {
-    char* endptr;
+    char* endptr = NULL;
     long score;
+    errno = 0;
     unsigned long pid_ul = strtoul(argv[2], &endptr, 10);
-    if (pid_ul == ULONG_MAX || *endptr)
+    if (pid_ul == ULONG_MAX || !endptr || *endptr || errno != 0)
       return 1;
     pid_t pid = pid_ul;
+    endptr = NULL;
+    errno = 0;
     score = strtol(argv[3], &endptr, 10);
-    if (score == LONG_MAX || score == LONG_MIN || *endptr)
+    if (score == LONG_MAX || score == LONG_MIN ||
+        !endptr || *endptr || errno != 0)
       return 1;
     return AdjustOOMScore(pid, score);
   }
+#if defined(OS_CHROMEOS)
+  if (argc == 3 && (0 == strcmp(argv[1], kAdjustLowMemMarginSwitch))) {
+    char* endptr = NULL;
+    errno = 0;
+    unsigned long margin_mb = strtoul(argv[2], &endptr, 10);
+    if (!endptr || *endptr || errno != 0)
+      return 1;
+    return AdjustLowMemoryMargin(margin_mb);
+  }
+#endif
 
   if (!MoveToNewNamespaces())
     return 1;

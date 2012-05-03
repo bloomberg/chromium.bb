@@ -49,6 +49,7 @@
 #include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/low_memory_observer.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/oom_priority_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -59,6 +60,7 @@
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -285,6 +287,13 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
 }
 
+int ChromeBrowserMainPartsChromeos::PreCreateThreads() {
+  // Set up field trial for low memory headroom settings.
+  SetupLowMemoryHeadroomFieldTrial();
+
+  return ChromeBrowserMainPartsLinux::PreCreateThreads();
+}
+
 // Threads are initialized MainMessageLoopStart and MainMessageLoopRun.
 
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
@@ -495,3 +504,50 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 }
+
+void ChromeBrowserMainPartsChromeos::SetupLowMemoryHeadroomFieldTrial() {
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  // Only enable this experiment on Canary and Dev, since it's possible
+  // that this will make the machine unstable.
+  // Note that to have this code execute in a developer build,
+  // then chrome::VersionInfo::CHANNEL_UNKNOWN needs to be added here.
+  if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
+      channel == chrome::VersionInfo::CHANNEL_DEV) {
+    const base::FieldTrial::Probability kDivisor = 7;
+    // 1 in 7 probability of being in each group.  If the default value for the
+    // kernel matches one of the experiment groups, then they will have
+    // identical results.
+    const base::FieldTrial::Probability kEnableProbability = 1;
+    scoped_refptr<base::FieldTrial> trial =
+        base::FieldTrialList::FactoryGetFieldTrial(
+            "LowMemoryMargin", kDivisor, "default", 2012, 6, 30, NULL);
+    int disable = trial->AppendGroup("off", kEnableProbability);
+    int margin_0mb = trial->AppendGroup("0mb", kEnableProbability);
+    int margin_25mb = trial->AppendGroup("25mb", kEnableProbability);
+    int margin_50mb = trial->AppendGroup("50mb", kEnableProbability);
+    int margin_100mb = trial->AppendGroup("100mb", kEnableProbability);
+    int margin_200mb = trial->AppendGroup("200mb", kEnableProbability);
+    if (trial->group() == disable) {
+      LOG(WARNING) << "low_mem: Part of 'off' experiment";
+      browser::LowMemoryObserver::SetLowMemoryMargin(0);
+    } else if (trial->group() == margin_0mb) {
+      LOG(WARNING) << "low_mem: Part of '0MB' experiment";
+      browser::LowMemoryObserver::SetLowMemoryMargin(50);
+    } else if (trial->group() == margin_25mb) {
+      LOG(WARNING) << "low_mem: Part of '25MB' experiment";
+      browser::LowMemoryObserver::SetLowMemoryMargin(50);
+    } else if (trial->group() == margin_50mb) {
+      LOG(WARNING) << "low_mem: Part of '50MB' experiment";
+      browser::LowMemoryObserver::SetLowMemoryMargin(50);
+    } else if (trial->group() == margin_100mb) {
+      LOG(WARNING) << "low_mem: Part of '100MB' experiment";
+      browser::LowMemoryObserver::SetLowMemoryMargin(100);
+    } else if (trial->group() == margin_200mb) {
+      LOG(WARNING) << "low_mem: Part of '200MB' experiment";
+      browser::LowMemoryObserver::SetLowMemoryMargin(200);
+    } else {
+      LOG(WARNING) << "low_mem: Part of 'default' experiment";
+    }
+  }
+}
+

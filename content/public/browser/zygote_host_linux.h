@@ -46,6 +46,12 @@ class ZygoteHost {
   // likely to be killed by the OOM killer.
   virtual void AdjustRendererOOMScore(base::ProcessHandle process_handle,
                                       int score) = 0;
+
+  // Adjust the point at which the low memory notifier in the kernel tells
+  // us that we're low on memory.  When there is less than |margin_mb| left,
+  // then the notifier will notify us.  Set |margin_mb| to -1 to turn off
+  // low memory notification altogether.
+  virtual void AdjustLowMemoryMargin(int64 margin_mb) = 0;
 };
 
 }  // namespace content

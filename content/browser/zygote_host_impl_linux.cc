@@ -30,6 +30,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "sandbox/linux/suid/sandbox.h"
 #include "sandbox/linux/suid/suid_unsafe_environment_variables.h"
 
 #if defined(USE_TCMALLOC)
@@ -371,13 +372,9 @@ void ZygoteHostImpl::AdjustRendererOOMScore(base::ProcessHandle pid,
     if (IsHeapProfilerRunning())
       return;
 #endif
-    // The command line switch used for supplying the OOM adjustment score
-    // to the setuid sandbox.
-    static const char kAdjustOOMScoreSwitch[] = "--adjust-oom-score";
-
     std::vector<std::string> adj_oom_score_cmdline;
     adj_oom_score_cmdline.push_back(sandbox_binary_);
-    adj_oom_score_cmdline.push_back(kAdjustOOMScoreSwitch);
+    adj_oom_score_cmdline.push_back(sandbox::kAdjustOOMScoreSwitch);
     adj_oom_score_cmdline.push_back(base::Int64ToString(pid));
     adj_oom_score_cmdline.push_back(base::IntToString(score));
 
@@ -392,6 +389,41 @@ void ZygoteHostImpl::AdjustRendererOOMScore(base::ProcessHandle pid,
   }
 }
 #endif
+
+void ZygoteHostImpl::AdjustLowMemoryMargin(int64 margin_mb) {
+#if defined(OS_CHROMEOS)
+  // You can't change the low memory margin unless you're root. Because of this,
+  // we can't set the low memory margin from the browser process.
+  // So, we use the SUID binary to change it for us.
+  if (using_suid_sandbox_) {
+#if defined(USE_TCMALLOC)
+    // If heap profiling is running, these processes are not exiting, at least
+    // on ChromeOS. The easiest thing to do is not launch them when profiling.
+    // TODO(stevenjb): Investigate further and fix.
+    if (IsHeapProfilerRunning())
+      return;
+#endif
+    std::vector<std::string> adj_low_mem_commandline;
+    adj_low_mem_commandline.push_back(sandbox_binary_);
+    adj_low_mem_commandline.push_back(sandbox::kAdjustLowMemMarginSwitch);
+    adj_low_mem_commandline.push_back(base::Int64ToString(margin_mb));
+
+    base::ProcessHandle sandbox_helper_process;
+    if (base::LaunchProcess(adj_low_mem_commandline, base::LaunchOptions(),
+                            &sandbox_helper_process)) {
+      base::EnsureProcessGetsReaped(sandbox_helper_process);
+    } else {
+      LOG(ERROR) << "Unable to run suid sandbox to set low memory margin.";
+    }
+  }
+  // Don't adjust memory margin if we're not running with the sandbox: this
+  // isn't very common, and not doing it has little impact.
+#else
+  // Low memory notification is currently only implemented on ChromeOS.
+  NOTREACHED() << "AdjustLowMemoryMargin not implemented";
+#endif  // defined(OS_CHROMEOS)
+}
+
 
 void ZygoteHostImpl::EnsureProcessTerminated(pid_t process) {
   DCHECK(init_);

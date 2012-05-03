@@ -34,6 +34,11 @@ class LowMemoryObserver {
 
   void Start();
   void Stop();
+
+  // Sets the threshold level of the low memory notifier in megabytes.  Setting
+  // to -1 will turn off the low memory notifier.
+  static void SetLowMemoryMargin(int64 margin_mb);
+
  private:
   scoped_refptr<LowMemoryObserverImpl> observer_;
 

@@ -167,6 +167,7 @@
             'linux/suid/linux_util.h',
             'linux/suid/process_util.h',
             'linux/suid/process_util_linux.c',
+            'linux/suid/sandbox.h',
             'linux/suid/sandbox.c',
           ],
           'cflags': [

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #ifndef SANDBOX_LINUX_SUID_PROCESS_UTIL_H_
 #define SANDBOX_LINUX_SUID_PROCESS_UTIL_H_
+#pragma once
 
 #include <stdbool.h>
 #include <sys/types.h>
@@ -22,5 +23,11 @@
 // the required range of [0, 15]. This may result in some aliasing of
 // values, of course.
 BASE_EXPORT bool AdjustOOMScore(pid_t process, int score);
+
+// This adjusts /sys/kernel/mm/chromeos-low_mem/margin so that
+// the kernel notifies us that we are low on memory when less than
+// |margin_mb| megabytes are available.  Setting |margin_mb| to -1
+// turns off low memory notification.
+BASE_EXPORT bool AdjustLowMemoryMargin(int64_t margin_mb);
 
 #endif  // SANDBOX_LINUX_SUID_PROCESS_UTIL_H_
