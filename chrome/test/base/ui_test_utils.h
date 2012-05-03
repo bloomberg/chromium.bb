@@ -461,19 +461,10 @@ class WindowedTabAddedNotificationObserver
   // Register to listen for notifications of NOTIFICATION_TAB_ADDED from either
   // a specific source, or from all sources if |source| is
   // NotificationService::AllSources().
-  explicit WindowedTabAddedNotificationObserver(
+  WindowedTabAddedNotificationObserver(
       const content::NotificationSource& source);
 
-  // Returns the added tab, or NULL if no notification was observed yet.
-  content::WebContents* GetTab() { return added_tab_; }
-
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
  private:
-  content::WebContents* added_tab_;
-
   DISALLOW_COPY_AND_ASSIGN(WindowedTabAddedNotificationObserver);
 };
 

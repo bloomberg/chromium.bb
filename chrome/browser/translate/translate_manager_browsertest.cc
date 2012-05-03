@@ -323,7 +323,6 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   }
 
   virtual void PlatformInit() { }
-  virtual void PlatformCancel() { }
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) { return false; }

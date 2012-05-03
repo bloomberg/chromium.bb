@@ -98,7 +98,6 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     return false;
   }
   virtual void PlatformInit() {}
-  virtual void PlatformCancel() {}
 
 
   // Given an extension menu item id, tries to find the corresponding command id

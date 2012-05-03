@@ -57,7 +57,6 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
 
  private:
   virtual void PlatformInit() {}
-  virtual void PlatformCancel() {}
   virtual bool GetAcceleratorForCommandId(int, ui::Accelerator*) {
     return false;
   }

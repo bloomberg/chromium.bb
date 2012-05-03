@@ -994,16 +994,7 @@ void WindowedNotificationObserver::Observe(
 
 WindowedTabAddedNotificationObserver::WindowedTabAddedNotificationObserver(
     const content::NotificationSource& source)
-    : WindowedNotificationObserver(chrome::NOTIFICATION_TAB_ADDED, source),
-      added_tab_(NULL) {
-}
-
-void WindowedTabAddedNotificationObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  added_tab_ = content::Details<content::WebContents>(details).ptr();
-  WindowedNotificationObserver::Observe(type, source, details);
+    : WindowedNotificationObserver(chrome::NOTIFICATION_TAB_ADDED, source) {
 }
 
 TitleWatcher::TitleWatcher(WebContents* web_contents,

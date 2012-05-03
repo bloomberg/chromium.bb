@@ -112,10 +112,6 @@ void RenderViewContextMenuGtk::PlatformInit() {
   }
 }
 
-void RenderViewContextMenuGtk::PlatformCancel() {
-  menu_gtk_->Cancel();
-}
-
 bool RenderViewContextMenuGtk::GetAcceleratorForCommandId(
     int command_id,
     ui::Accelerator* accelerator) {
