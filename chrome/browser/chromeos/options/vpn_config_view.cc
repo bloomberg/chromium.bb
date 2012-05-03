@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/onc_constants.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -350,8 +351,8 @@ bool VPNConfigView::Login() {
         break;
     }
     vpn->SetEnrollmentDelegate(
-        EnrollmentDialogView::CreateEnrollmentDelegate(
-            GetWidget()->GetNativeWindow()));
+        CreateEnrollmentDelegate(GetWidget()->GetNativeWindow(),
+                                 ProfileManager::GetLastUsedProfile()));
     cros->ConnectToVirtualNetwork(vpn);
   }
   // Connection failures are responsible for updating the UI, including

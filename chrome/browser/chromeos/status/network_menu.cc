@@ -346,8 +346,8 @@ void NetworkMenu::ConnectToNetwork(Network* network) {
         ShowTabbedNetworkSettings(wifi);
       } else {
         wifi->SetEnrollmentDelegate(
-            EnrollmentDialogView::CreateEnrollmentDelegate(
-                delegate()->GetNativeWindow()));
+            CreateEnrollmentDelegate(delegate()->GetNativeWindow(),
+                                     ProfileManager::GetLastUsedProfile()));
         wifi->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
                                            weak_pointer_factory_.GetWeakPtr(),
                                            wifi));
@@ -377,8 +377,8 @@ void NetworkMenu::ConnectToNetwork(Network* network) {
         ShowTabbedNetworkSettings(vpn);
       } else {
         vpn->SetEnrollmentDelegate(
-            EnrollmentDialogView::CreateEnrollmentDelegate(
-                delegate()->GetNativeWindow()));
+            CreateEnrollmentDelegate(delegate()->GetNativeWindow(),
+                                     ProfileManager::GetLastUsedProfile()));
         vpn->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
                                           weak_pointer_factory_.GetWeakPtr(),
                                           vpn));

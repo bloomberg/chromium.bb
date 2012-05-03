@@ -12,52 +12,14 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/window/dialog_delegate.h"
 
+class Profile;
+
 namespace chromeos {
 
 class EnrollmentDelegate;
 
-// Dialog for certificate enrollment. This displays the content from the
-// certificate enrollment URI.
-class EnrollmentDialogView
-    : public views::DialogDelegateView,
-      public net::CertDatabase::Observer {
- public:
-  virtual ~EnrollmentDialogView();
-
-  static EnrollmentDelegate* CreateEnrollmentDelegate(
-      gfx::NativeWindow owning_window);
-
-  static void ShowDialog(gfx::NativeWindow owning_window,
-                         const GURL& target_uri,
-                         const base::Closure& connect);
-  void Close();
-
-  // views::DialogDelegateView overrides
-  virtual int GetDialogButtons() const OVERRIDE;
-  virtual void OnClose() OVERRIDE;
-
-  // views::WidgetDelegate overrides
-  virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
-
-  // views::View overrides
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-
-  // views::Widget overrides
-  virtual views::View* GetContentsView() OVERRIDE;
-
-  // net::CertDatabase::Observer overrides
-  virtual void OnUserCertAdded(const net::X509Certificate* cert) OVERRIDE;
-
- private:
-  EnrollmentDialogView(const GURL& target_uri,
-                       const base::Closure& connect);
-  void InitDialog();
-
-  GURL target_uri_;
-  base::Closure connect_;
-  bool added_cert_;
-};
+EnrollmentDelegate* CreateEnrollmentDelegate(gfx::NativeWindow owning_window,
+                                             Profile* profile);
 
 }  // namespace chromeos
 

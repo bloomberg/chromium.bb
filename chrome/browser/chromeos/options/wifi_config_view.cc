@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/cros/onc_constants.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -728,8 +729,8 @@ bool WifiConfigView::Login() {
     }
     bool share_default = (wifi->profile_type() != PROFILE_USER);
     wifi->SetEnrollmentDelegate(
-        EnrollmentDialogView::CreateEnrollmentDelegate(
-            GetWidget()->GetNativeWindow()));
+        CreateEnrollmentDelegate(GetWidget()->GetNativeWindow(),
+                                 ProfileManager::GetLastUsedProfile()));
     cros->ConnectToWifiNetwork(wifi, GetShareNetwork(share_default));
     // Connection failures are responsible for updating the UI, including
     // reopening dialogs.
