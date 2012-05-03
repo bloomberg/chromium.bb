@@ -3041,7 +3041,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return observer_id
 
   def WaitForDomNode(self, xpath, attribute='textContent',
-                     expected_value=None, exec_js=None, timeout=-1, **kwargs):
+                     expected_value=None, exec_js=None, timeout=-1,
+                     msg='Expected DOM node failed to appear.', **kwargs):
     """Waits until a node specified by an xpath exists in the DOM.
 
     NOTE: This does NOT poll. It returns as soon as the node appears, or
@@ -3056,6 +3057,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       exec_js: A callable of the form f(self, js, **kwargs) used to inject the
           MutationObserver javascript. Defaults to None, which uses
           PyUITest.ExecuteJavascript.
+      msg: An optional error message used if a JSONInterfaceError is caught
+          while waiting for the DOM node to appear.
       timeout: Time to wait for the node to exist before raising an exception,
           defaults to the default automation timeout.
 
@@ -3070,7 +3073,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     observer_id = self.AddDomMutationObserver('exists', xpath, attribute,
                                               expected_value, exec_js=exec_js,
                                               **kwargs)
-    self.GetNextEvent(observer_id, timeout=timeout)
+    try:
+      self.GetNextEvent(observer_id, timeout=timeout)
+    except JSONInterfaceError:
+      raise JSONInterfaceError(msg)
 
   def GetNextEvent(self, observer_id=-1, blocking=True, timeout=-1):
     """Waits for an observed event to occur.
