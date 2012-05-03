@@ -16,6 +16,10 @@
 #include "ui/aura/root_window_host.h"
 #include "ui/gfx/rect.h"
 
+namespace ui {
+class ViewProp;
+}
+
 namespace aura {
 
 class RootWindowHostLinux : public RootWindowHost,
@@ -94,6 +98,8 @@ class RootWindowHostLinux : public RootWindowHost,
   bool focus_when_shown_;
 
   scoped_array<XID> pointer_barriers_;
+
+  scoped_ptr<ui::ViewProp> prop_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowHostLinux);
 };

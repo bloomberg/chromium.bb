@@ -23,6 +23,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/base/view_prop.h"
 #include "ui/gfx/compositor/layer.h"
 
 using std::max;
@@ -35,6 +36,8 @@ namespace {
 // Standard Linux mouse buttons for going back and forward.
 const int kBackMouseButton = 8;
 const int kForwardMouseButton = 9;
+
+const char kRootWindowHostLinuxKey[] = "__AURA_ROOT_WINDOW_HOST_LINUX__";
 
 // The events reported for slave devices can have incorrect information for some
 // fields. This utility function is used to check for such inconsistencies.
@@ -313,6 +316,8 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       &swa);
   static_cast<DispatcherLinux*>(Env::GetInstance()->GetDispatcher())->
       WindowDispatcherCreated(xwindow_, this);
+
+  prop_.reset(new ui::ViewProp(xwindow_, kRootWindowHostLinuxKey, this));
 
   long event_mask = ButtonPressMask | ButtonReleaseMask | FocusChangeMask |
                     KeyPressMask | KeyReleaseMask |
@@ -806,8 +811,8 @@ RootWindowHost* RootWindowHost::Create(const gfx::Rect& bounds) {
 // static
 RootWindowHost* RootWindowHost::GetForAcceleratedWidget(
     gfx::AcceleratedWidget accelerated_widget) {
-  NOTIMPLEMENTED();
-  return NULL;  // TODO(erg): implement if necessary or remove this comment.
+  return reinterpret_cast<RootWindowHost*>(
+      ui::ViewProp::GetValue(accelerated_widget, kRootWindowHostLinuxKey));
 }
 
 // static

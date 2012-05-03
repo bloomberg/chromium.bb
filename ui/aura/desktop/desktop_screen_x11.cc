@@ -2,16 +2,121 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "ui/aura/desktop/desktop_screen.h"
 
-namespace aura {
+#include <X11/Xlib.h>
+
+// It clashes with out RootWindow.
+#undef RootWindow
+
+#include "base/logging.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/root_window_host.h"
+#include "ui/base/x/x11_util.h"
+#include "ui/gfx/monitor.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/screen_impl.h"
+
+namespace {
+
+// TODO(erg): This method is a temporary hack, until we can reliably extract
+// location data out of XRandR.
+gfx::Size GetPrimaryMonitorSize() {
+  ::Display* display = ui::GetXDisplay();
+  ::Screen* screen = DefaultScreenOfDisplay(display);
+  int width = WidthOfScreen(screen);
+  int height = HeightOfScreen(screen);
+
+  return gfx::Size(width, height);
+}
+
+class DesktopScreenX11 : public gfx::ScreenImpl {
+ public:
+  DesktopScreenX11();
+  virtual ~DesktopScreenX11();
+
+  // Overridden from gfx::ScreenImpl:
+  virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
+  virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;
+  virtual int GetNumMonitors() OVERRIDE;
+  virtual gfx::Monitor GetMonitorNearestWindow(
+      gfx::NativeView window) const OVERRIDE;
+  virtual gfx::Monitor GetMonitorNearestPoint(
+      const gfx::Point& point) const OVERRIDE;
+  virtual gfx::Monitor GetPrimaryMonitor() const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DesktopScreenX11);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopScreenX11, public:
+
+DesktopScreenX11::DesktopScreenX11() {
+}
+
+DesktopScreenX11::~DesktopScreenX11() {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopScreenX11, gfx::ScreenImpl implementation:
+
+gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
+  Display* display = ui::GetXDisplay();
+
+  ::Window root, child;
+  int root_x, root_y, win_x, win_y;
+  unsigned int mask;
+  XQueryPointer(display,
+                DefaultRootWindow(display),
+                &root,
+                &child,
+                &root_x,
+                &root_y,
+                &win_x,
+                &win_y,
+                &mask);
+
+  return gfx::Point(root_x, root_y);
+}
+
+gfx::NativeWindow DesktopScreenX11::GetWindowAtCursorScreenPoint() {
+  // TODO(erg): Implement using the discussion at
+  // http://codereview.chromium.org/10279005/
+  return NULL;
+}
+
+int DesktopScreenX11::GetNumMonitors() {
+  // TODO(erg): Figure this out with oshima or piman because I have no clue
+  // about the XRandR implications here.
+  return 1;
+}
+
+gfx::Monitor DesktopScreenX11::GetMonitorNearestWindow(
+    gfx::NativeView window) const {
+  // TODO(erg): Do the right thing once we know what that is.
+  return gfx::Monitor(0, gfx::Rect(GetPrimaryMonitorSize()));
+}
+
+gfx::Monitor DesktopScreenX11::GetMonitorNearestPoint(
+    const gfx::Point& point) const {
+  // TODO(erg): Do the right thing once we know what that is.
+  return gfx::Monitor(0, gfx::Rect(GetPrimaryMonitorSize()));
+}
+
+gfx::Monitor DesktopScreenX11::GetPrimaryMonitor() const {
+  // TODO(erg): Do the right thing once we know what that is.
+  return gfx::Monitor(0, gfx::Rect(GetPrimaryMonitorSize()));
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 
+namespace aura {
+
 gfx::ScreenImpl* CreateDesktopScreen() {
-  NOTIMPLEMENTED();  // TODO(erg): implement me!
-  return NULL;
+  return new DesktopScreenX11;
 }
 
 }  // namespace aura
