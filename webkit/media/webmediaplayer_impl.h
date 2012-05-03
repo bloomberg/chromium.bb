@@ -184,11 +184,13 @@ class WebMediaPlayerImpl
   virtual AddIdStatus sourceAddId(const WebKit::WebString& id,
                                   const WebKit::WebString& type);
   virtual bool sourceRemoveId(const WebKit::WebString& id);
+  virtual WebKit::WebTimeRanges sourceBuffered(const WebKit::WebString& id);
   // TODO(acolwell): Remove non-id version when http://webk.it/83788 fix lands.
   virtual bool sourceAppend(const unsigned char* data, unsigned length);
   virtual bool sourceAppend(const WebKit::WebString& id,
                             const unsigned char* data,
                             unsigned length);
+  virtual bool sourceAbort(const WebKit::WebString& id);
   virtual void sourceEndOfStream(EndOfStreamStatus status);
 
   virtual MediaKeyException generateKeyRequest(

@@ -204,10 +204,20 @@ void WebMediaPlayerProxy::DemuxerRemoveId(const std::string& id) {
   chunk_demuxer_->RemoveId(id);
 }
 
+bool WebMediaPlayerProxy::DemuxerBufferedRange(
+    const std::string& id,
+    media::ChunkDemuxer::Ranges* ranges_out) {
+  return chunk_demuxer_->GetBufferedRanges(id, ranges_out);
+}
+
 bool WebMediaPlayerProxy::DemuxerAppend(const std::string& id,
                                         const uint8* data,
                                         size_t length) {
   return chunk_demuxer_->AppendData(id, data, length);
+}
+
+void WebMediaPlayerProxy::DemuxerAbort(const std::string& id) {
+  chunk_demuxer_->Abort(id);
 }
 
 void WebMediaPlayerProxy::DemuxerEndOfStream(media::PipelineStatus status) {

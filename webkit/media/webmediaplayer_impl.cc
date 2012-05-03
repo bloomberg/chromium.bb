@@ -660,6 +660,20 @@ bool WebMediaPlayerImpl::sourceRemoveId(const WebKit::WebString& id) {
   return true;
 }
 
+WebKit::WebTimeRanges WebMediaPlayerImpl::sourceBuffered(
+    const WebKit::WebString& id) {
+  media::ChunkDemuxer::Ranges buffered_ranges;
+  if (!proxy_->DemuxerBufferedRange(id.utf8().data(), &buffered_ranges))
+    return WebKit::WebTimeRanges();
+
+  WebKit::WebTimeRanges ranges(buffered_ranges.size());
+  for (size_t i = 0; i < buffered_ranges.size(); i++) {
+    ranges[i].start = buffered_ranges[i].first.InSecondsF();
+    ranges[i].end = buffered_ranges[i].second.InSecondsF();
+  }
+  return ranges;
+}
+
 bool WebMediaPlayerImpl::sourceAppend(const unsigned char* data,
                                       unsigned length) {
   return sourceAppend(WebKit::WebString::fromUTF8("DefaultSourceId"),
@@ -671,6 +685,11 @@ bool WebMediaPlayerImpl::sourceAppend(const WebKit::WebString& id,
                                       unsigned length) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
   return proxy_->DemuxerAppend(id.utf8().data(), data, length);
+}
+
+bool WebMediaPlayerImpl::sourceAbort(const WebKit::WebString& id) {
+  proxy_->DemuxerAbort(id.utf8().data());
+  return true;
 }
 
 void WebMediaPlayerImpl::sourceEndOfStream(

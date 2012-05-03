@@ -6,6 +6,7 @@
 #define WEBKIT_MEDIA_WEBMEDIAPLAYER_PROXY_H_
 
 #include <list>
+#include <string>
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -94,7 +95,10 @@ class WebMediaPlayerProxy
   media::ChunkDemuxer::Status DemuxerAddId(const std::string& id,
                                            const std::string& type);
   void DemuxerRemoveId(const std::string& id);
+  bool DemuxerBufferedRange(const std::string& id,
+                            media::ChunkDemuxer::Ranges* ranges_out);
   bool DemuxerAppend(const std::string& id, const uint8* data, size_t length);
+  void DemuxerAbort(const std::string& id);
   void DemuxerEndOfStream(media::PipelineStatus status);
   void DemuxerShutdown();
 
