@@ -544,11 +544,14 @@ void NetworkStats::GetHistogramNames(const ProtocolValue& protocol,
       kPorts[port],
       load_size_string);
 
-  // Build "NetConnectivity.<protocol>.PacketLoss.<port>" histogram
+  // Build "NetConnectivity.<protocol>.PacketLoss.<port>.<load_size>" histogram
   // name. Total number of histograms are 5 (because we do this test for UDP
   // only).
   *packet_loss_histogram_name =  base::StringPrintf(
-      "NetConnectivity.%s.PacketLoss.%d", protocol_string, kPorts[port]);
+      "NetConnectivity.%s.PacketLoss.%d.%s",
+      protocol_string,
+      kPorts[port],
+      load_size_string);
 }
 
 void NetworkStats::RecordHistograms(const ProtocolValue& protocol,

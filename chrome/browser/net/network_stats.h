@@ -232,8 +232,8 @@ class NetworkStats {
   // name for RTT histogram,
   // "NetConnectivity.<protocol>.Status.<port>.<load_size>" as histogram name
   // for status histogram and
-  // "NetConnectivity.<protocol>.PacketLoss.<port>" as histogram name
-  // for packet loss histogram.
+  // "NetConnectivity.<protocol>.PacketLoss.<port>.<load_size>" as histogram
+  // name for packet loss histogram.
   // |protocol| argument sets <protocol> in the histogram name. It would be
   // either TCP or UDP. <port> is the string representation of |histogram_port|.
   // |load_size| argument determines <load_size> in the histogram name. It would
