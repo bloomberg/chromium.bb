@@ -44,7 +44,7 @@ math > 345							greater-than sign		x003E
 punctuation ? 26				question mark				x003F
 sign @ 3456-12456				commercial at				x0040
 
-latinLetterDef6Dots.uti
+include latinLetterDef6Dots.uti
 
 punctuation [ 6-236			left square bracket		x005B
 sign \\ 3456-1256				reverse solidus				x005C
