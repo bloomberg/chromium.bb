@@ -5818,6 +5818,33 @@
    fun:_ZN12*SpellingServiceClientTestC2Ev
    fun:_ZN47SpellingServiceClientTest_RequestTextCheck_TestC1Ev
 }
+{
+   bug_todo_process_singleton1
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16ProcessSingletonC1ERK8FilePath
+   fun:_ZN12_GLOBAL__N_125ProcessSingletonLinuxTest22CreateProcessSingletonEv
+   fun:_ZN12_GLOBAL__N_125ProcessSingletonLinuxTest30CreateProcessSingletonInternalEv
+}
+{
+   bug_todo_process_singleton2
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeIPN16ProcessSingleton12LinuxWatcher12SocketReaderEEE8allocateEmPKv
+   fun:_ZNSt8_Rb_treeIPN16ProcessSingleton12LinuxWatcher12SocketReaderES3_St9_IdentityIS3_ESt4lessIS3_ESaIS3_EE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeIPN16ProcessSingleton12LinuxWatcher12SocketReaderES3_St9_IdentityIS3_ESt4lessIS3_ESaIS3_EE14_M_create_nodeERKS3_
+   fun:_ZNSt8_Rb_treeIPN16ProcessSingleton12LinuxWatcher12SocketReaderES3_St9_IdentityIS3_ESt4lessIS3_ESaIS3_EE10_M_insert_EPKSt18_Rb_tree_node_baseSC_RKS3_
+   fun:_ZNSt8_Rb_treeIPN16ProcessSingleton12LinuxWatcher12SocketReaderES3_St9_IdentityIS3_ESt4lessIS3_ESaIS3_EE16_M_insert_uniqueERKS3_
+   fun:_ZNSt3setIPN16ProcessSingleton12LinuxWatcher12SocketReaderESt4lessIS3_ESaIS3_EE6insertERKS3_
+   fun:_ZN16ProcessSingleton12LinuxWatcher28OnFileCanReadWithoutBlockingEi
+   fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher28OnFileCanReadWithoutBlockingEiPS0_
+   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
+   fun:event_process_active
+   fun:event_base_loop
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
@@ -5847,4 +5874,3 @@
    obj:/bin/grep
    obj:/bin/grep
 }
-

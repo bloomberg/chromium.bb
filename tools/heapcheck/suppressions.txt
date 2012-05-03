@@ -1837,4 +1837,46 @@
    ...
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
-
+{
+   bug_todo_process_singleton1
+   Heapcheck:Leak
+   fun:ProcessSingleton::LinuxWatcher::OnFileCanReadWithoutBlocking
+   fun:base::MessagePumpLibevent::FileDescriptorWatcher::OnFileCanReadWithoutBlocking
+   fun:base::MessagePumpLibevent::OnLibeventNotification
+   fun:event_process_active
+   fun:event_base_loop
+   fun:base::MessagePumpLibevent::Run
+}
+{
+   bug_todo_process_singleton2
+   Heapcheck:Leak
+   fun:ProcessSingleton::ProcessSingleton
+   fun:::ProcessSingletonLinuxTest::CreateProcessSingleton
+   fun:::ProcessSingletonLinuxTest::CreateProcessSingletonInternal
+}
+{
+   bug_todo_process_singleton3
+   Heapcheck:Leak
+   fun:base::internal::WeakReferenceOwner::GetRef
+   fun:base::WeakPtrFactory::GetWeakPtr
+   fun:base::MessagePumpLibevent::OnLibeventNotification
+   fun:event_process_active
+   fun:event_base_loop
+   fun:base::MessagePumpLibevent::Run
+}
+{
+   bug_todo_process_singleton4
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Rb_tree::_M_get_node
+   fun:std::_Rb_tree::_M_create_node
+   fun:std::_Rb_tree::_M_insert_
+   fun:std::_Rb_tree::_M_insert_unique
+   fun:std::set::insert
+   fun:ProcessSingleton::LinuxWatcher::OnFileCanReadWithoutBlocking
+   fun:base::MessagePumpLibevent::FileDescriptorWatcher::OnFileCanReadWithoutBlocking
+   fun:base::MessagePumpLibevent::OnLibeventNotification
+   fun:event_process_active
+   fun:event_base_loop
+   fun:base::MessagePumpLibevent::Run
+}
