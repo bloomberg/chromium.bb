@@ -14,8 +14,6 @@ static MenuConfig* config_instance = NULL;
 
 MenuConfig::MenuConfig()
     : text_color(SK_ColorBLACK),
-      submenu_horizontal_margin_size(3),
-      submenu_vertical_margin_size(3),
       item_top_margin(3),
       item_bottom_margin(4),
       item_no_icon_top_margin(1),
@@ -37,7 +35,6 @@ MenuConfig::MenuConfig()
       show_mnemonics(false),
       scroll_arrow_height(3),
       label_to_accelerator_padding(10),
-      item_min_height(0),
       show_accelerators(true) {
   // Use 40px tall menu items when running in touch optimized mode.
   if (CommandLine::ForCurrentProcess()->HasSwitch(

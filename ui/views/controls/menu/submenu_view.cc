@@ -29,6 +29,9 @@ const SkColor kDropIndicatorColor = SK_ColorBLACK;
 namespace views {
 
 // static
+const int SubmenuView::kSubmenuBorderSize = 3;
+
+// static
 const char SubmenuView::kViewClassName[] = "views/SubmenuView";
 
 SubmenuView::SubmenuView(MenuItemView* parent)
@@ -143,7 +146,7 @@ gfx::Size SubmenuView::GetPreferredSize() {
   gfx::Insets insets = GetInsets();
   return gfx::Size(
       std::max(max_width + max_accelerator_width_ + insets.width(),
-               minimum_preferred_width_ - 2 * insets.width()),
+               minimum_preferred_width_ - 2 * kSubmenuBorderSize),
       height + insets.height());
 }
 
