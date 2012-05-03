@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "media/base/demuxer.h"
-#include "media/base/filters.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -20,7 +19,6 @@ using media::CopyUPlane;
 using media::CopyVPlane;
 using media::CopyYPlane;
 using media::DemuxerStream;
-using media::PipelineStatusCB;
 using media::kNoTimestamp;
 using media::PIPELINE_OK;
 using media::PipelineStatusCB;
@@ -36,51 +34,41 @@ RTCVideoDecoder::RTCVideoDecoder(MessageLoop* message_loop,
       got_first_frame_(false) {
 }
 
-void RTCVideoDecoder::Play(const base::Closure& callback) {
+void RTCVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
+                                 const PipelineStatusCB& status_cb,
+                                 const StatisticsCB& statistics_cb) {
   if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE,
-                            base::Bind(&RTCVideoDecoder::Play, this, callback));
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&RTCVideoDecoder::Initialize, this,
+                   stream, status_cb, statistics_cb));
     return;
-  }
-
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
-
-  callback.Run();
-}
-
-void RTCVideoDecoder::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
-  if (MessageLoop::current() != message_loop_) {
-     message_loop_->PostTask(FROM_HERE,
-                             base::Bind(&RTCVideoDecoder::Seek, this,
-                                        time, cb));
-     return;
   }
 
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   state_ = kNormal;
-  cb.Run(PIPELINE_OK);
+  status_cb.Run(PIPELINE_OK);
+
+  // TODO(acolwell): Implement stats.
 }
 
-void RTCVideoDecoder::Pause(const base::Closure& callback) {
+void RTCVideoDecoder::Read(const ReadCB& read_cb) {
   if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(FROM_HERE,
-                            base::Bind(&RTCVideoDecoder::Pause,
-                                       this, callback));
+    message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&RTCVideoDecoder::Read, this, read_cb));
     return;
   }
-
   DCHECK_EQ(MessageLoop::current(), message_loop_);
-
-  state_ = kPaused;
-
-  callback.Run();
+  base::AutoLock auto_lock(lock_);
+  CHECK(read_cb_.is_null());
+  read_cb_ = read_cb;
 }
 
-void RTCVideoDecoder::Flush(const base::Closure& callback) {
+void RTCVideoDecoder::Reset(const base::Closure& closure) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(FROM_HERE,
-                            base::Bind(&RTCVideoDecoder::Flush,
-                                       this, callback));
+                            base::Bind(&RTCVideoDecoder::Reset, this, closure));
     return;
   }
 
@@ -101,14 +89,13 @@ void RTCVideoDecoder::Flush(const base::Closure& callback) {
     read_cb.Run(kOk, video_frame);
   }
 
-  VideoDecoder::Flush(callback);
+  closure.Run();
 }
 
-void RTCVideoDecoder::Stop(const base::Closure& callback) {
+void RTCVideoDecoder::Stop(const base::Closure& closure) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(FROM_HERE,
-                            base::Bind(&RTCVideoDecoder::Stop,
-                                       this, callback));
+                            base::Bind(&RTCVideoDecoder::Stop, this, closure));
     return;
   }
 
@@ -116,39 +103,7 @@ void RTCVideoDecoder::Stop(const base::Closure& callback) {
 
   state_ = kStopped;
 
-  VideoDecoder::Stop(callback);
-}
-
-void RTCVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
-                                 const PipelineStatusCB& status_cb,
-                                 const StatisticsCB& statistics_cb) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&RTCVideoDecoder::Initialize, this,
-                   make_scoped_refptr(demuxer_stream),
-                   status_cb, statistics_cb));
-    return;
-  }
-
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
-  state_ = kNormal;
-  status_cb.Run(PIPELINE_OK);
-
-  // TODO(acolwell): Implement stats.
-}
-
-void RTCVideoDecoder::Read(const ReadCB& callback) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&RTCVideoDecoder::Read, this, callback));
-    return;
-  }
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
-  base::AutoLock auto_lock(lock_);
-  CHECK(read_cb_.is_null());
-  read_cb_ = callback;
+  closure.Run();
 }
 
 const gfx::Size& RTCVideoDecoder::natural_size() {

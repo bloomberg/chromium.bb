@@ -6,7 +6,6 @@
 #include "content/renderer/media/capture_video_decoder.h"
 #include "content/renderer/media/video_capture_impl.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
-#include "media/base/filters.h"
 #include "media/base/limits.h"
 #include "media/base/mock_callback.h"
 #include "media/base/mock_filters.h"
@@ -140,21 +139,6 @@ class CaptureVideoDecoderTest : public ::testing::Test {
     message_loop_->RunAllPending();
   }
 
-  void Play() {
-    decoder_->Play(media::NewExpectedClosure());
-    message_loop_->RunAllPending();
-  }
-
-  void Flush() {
-    // Issue a read.
-    EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk, _));
-    decoder_->Read(read_cb_);
-
-    decoder_->Pause(media::NewExpectedClosure());
-    decoder_->Flush(media::NewExpectedClosure());
-    message_loop_->RunAllPending();
-  }
-
   void Stop() {
     EXPECT_CALL(*vc_impl_, StopCapture(capture_client()))
         .Times(1)
@@ -185,14 +169,18 @@ class CaptureVideoDecoderTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CaptureVideoDecoderTest);
 };
 
-TEST_F(CaptureVideoDecoderTest, Play) {
-  // Test basic initialize, play, and teardown sequence.
+TEST_F(CaptureVideoDecoderTest, ReadAndReset) {
+  // Test basic initialize and teardown sequence.
   Initialize();
   // Natural size should be initialized to default capability.
   EXPECT_EQ(kWidth, decoder_->natural_size().width());
   EXPECT_EQ(kHeight, decoder_->natural_size().height());
-  Play();
-  Flush();
+
+  EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk, _));
+  decoder_->Read(read_cb_);
+  decoder_->Reset(media::NewExpectedClosure());
+  message_loop_->RunAllPending();
+
   Stop();
 }
 

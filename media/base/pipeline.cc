@@ -21,6 +21,7 @@
 #include "media/base/filter_collection.h"
 #include "media/base/filters.h"
 #include "media/base/media_log.h"
+#include "media/base/video_decoder.h"
 
 namespace media {
 

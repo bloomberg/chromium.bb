@@ -57,34 +57,4 @@ void Filter::Seek(base::TimeDelta time, const PipelineStatusCB& callback) {
 void Filter::OnAudioRendererDisabled() {
 }
 
-VideoDecoder::VideoDecoder() {}
-
-VideoDecoder::~VideoDecoder() {}
-
-// TODO(xhwang): Remove the following four functions when VideoDecoder is not a
-// Filter any more. See bug: http://crbug.com/108340
-void VideoDecoder::Play(const base::Closure& /* callback */) {
-  LOG(FATAL) << "VideoDecoder::Play is not supposed to be called.";
-}
-
-void VideoDecoder::Pause(const base::Closure& /* callback */) {
-  LOG(FATAL) << "VideoDecoder::Pause is not supposed to be called.";
-}
-
-void VideoDecoder::Seek(base::TimeDelta /* time */,
-                        const PipelineStatusCB& /* callback */) {
-  LOG(FATAL) << "VideoDecoder::Seek is not supposed to be called.";
-}
-
-FilterHost* VideoDecoder::host() {
-  LOG(FATAL) << "VideoDecoder::host is not supposed to be called.";
-  return NULL;
-}
-
-bool VideoDecoder::HasAlpha() const {
-  return false;
-}
-
-void VideoDecoder::PrepareForShutdownHack() {}
-
 }  // namespace media

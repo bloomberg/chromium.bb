@@ -12,8 +12,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
-#include "media/base/filters.h"
-#include "media/base/video_frame.h"
+#include "media/base/video_decoder.h"
 #include "third_party/libjingle/source/talk/session/phone/mediachannel.h"
 #include "third_party/libjingle/source/talk/session/phone/videorenderer.h"
 
@@ -29,20 +28,13 @@ class CONTENT_EXPORT RTCVideoDecoder
  public:
   RTCVideoDecoder(MessageLoop* message_loop, const std::string& url);
 
-  // Filter implementation.
-  virtual void Play(const base::Closure& callback) OVERRIDE;
-  virtual void Seek(base::TimeDelta time,
-                    const media::PipelineStatusCB& cb) OVERRIDE;
-  virtual void Pause(const base::Closure& callback) OVERRIDE;
-  virtual void Flush(const base::Closure& callback) OVERRIDE;
-  virtual void Stop(const base::Closure& callback) OVERRIDE;
-
-  // Decoder implementation.
-  virtual void Initialize(
-      media::DemuxerStream* demuxer_stream,
-      const media::PipelineStatusCB& status_cb,
-      const media::StatisticsCB& statistics_cb) OVERRIDE;
-  virtual void Read(const ReadCB& callback) OVERRIDE;
+  // media::VideoDecoder implementation.
+  virtual void Initialize(const scoped_refptr<media::DemuxerStream>& stream,
+                          const media::PipelineStatusCB& status_cb,
+                          const media::StatisticsCB& statistics_cb) OVERRIDE;
+  virtual void Read(const ReadCB& read_cb) OVERRIDE;
+  virtual void Reset(const base::Closure& clusure) OVERRIDE;
+  virtual void Stop(const base::Closure& clusure) OVERRIDE;
   virtual const gfx::Size& natural_size() OVERRIDE;
 
   // cricket::VideoRenderer implementation
@@ -55,15 +47,13 @@ class CONTENT_EXPORT RTCVideoDecoder
  private:
   friend class RTCVideoDecoderTest;
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, Initialize_Successful);
-  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoSeek);
-  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoFlush);
+  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoReset);
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoRenderFrame);
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoSetSize);
 
   enum DecoderState {
     kUnInitialized,
     kNormal,
-    kPaused,
     kStopped
   };
 

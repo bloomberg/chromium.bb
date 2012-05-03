@@ -133,7 +133,7 @@ class RTCVideoDecoderTest : public testing::Test {
 
     DCHECK(decoder_);
 
-    EXPECT_CALL(stats_callback_object_, OnStatistics(_))
+    EXPECT_CALL(statistics_cb_, OnStatistics(_))
         .Times(AnyNumber());
   }
 
@@ -151,7 +151,7 @@ class RTCVideoDecoderTest : public testing::Test {
 
   StatisticsCB NewStatisticsCB() {
     return base::Bind(&MockStatisticsCB::OnStatistics,
-                      base::Unretained(&stats_callback_object_));
+                      base::Unretained(&statistics_cb_));
   }
 
   MOCK_METHOD2(FrameReady, void(media::VideoDecoder::DecoderStatus status,
@@ -160,7 +160,7 @@ class RTCVideoDecoderTest : public testing::Test {
   // Fixture members.
   scoped_refptr<RTCVideoDecoder> decoder_;
   scoped_refptr<MockVideoRenderer> renderer_;
-  MockStatisticsCB stats_callback_object_;
+  MockStatisticsCB statistics_cb_;
   MessageLoop message_loop_;
   media::VideoDecoder::ReadCB read_cb_;
 
@@ -182,35 +182,18 @@ TEST_F(RTCVideoDecoderTest, Initialize_Successful) {
   EXPECT_EQ(kHeight, decoder_->natural_size().height());
 }
 
-TEST_F(RTCVideoDecoderTest, DoSeek) {
-  const base::TimeDelta kZero;
-
+TEST_F(RTCVideoDecoderTest, DoReset) {
   InitializeDecoderSuccessfully();
 
-  // Expect seek and verify the results.
-  decoder_->Seek(kZero, NewExpectedStatusCB(PIPELINE_OK));
+  EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk, _));
+  decoder_->Read(read_cb_);
+  decoder_->Reset(media::NewExpectedClosure());
 
   message_loop_.RunAllPending();
   EXPECT_EQ(RTCVideoDecoder::kNormal, decoder_->state_);
 }
 
-TEST_F(RTCVideoDecoderTest, DoFlush) {
-  const base::TimeDelta kZero;
-
-  InitializeDecoderSuccessfully();
-
-  EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk, _));
-  decoder_->Read(read_cb_);
-  decoder_->Pause(media::NewExpectedClosure());
-  decoder_->Flush(media::NewExpectedClosure());
-
-  message_loop_.RunAllPending();
-  EXPECT_EQ(RTCVideoDecoder::kPaused, decoder_->state_);
-}
-
 TEST_F(RTCVideoDecoderTest, DoRenderFrame) {
-  const base::TimeDelta kZero;
-
   InitializeDecoderSuccessfully();
 
   NullVideoFrame video_frame;

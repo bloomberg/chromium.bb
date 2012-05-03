@@ -7,15 +7,16 @@
 
 #include "base/time.h"
 #include "content/common/content_export.h"
-#include "media/base/demuxer_stream.h"
-#include "media/base/filters.h"
 #include "media/base/pipeline_status.h"
-#include "media/base/video_frame.h"
+#include "media/base/video_decoder.h"
 #include "media/video/capture/video_capture.h"
 #include "media/video/capture/video_capture_types.h"
 
 namespace base {
 class MessageLoopProxy;
+}
+namespace media {
+class VideoFrame;
 }
 class VideoCaptureImplManager;
 
@@ -31,20 +32,13 @@ class CONTENT_EXPORT CaptureVideoDecoder
       VideoCaptureImplManager* vc_manager,
       const media::VideoCaptureCapability& capability);
 
-  // Filter implementation.
-  virtual void Play(const base::Closure& callback) OVERRIDE;
-  virtual void Seek(base::TimeDelta time,
-                    const media::PipelineStatusCB& cb) OVERRIDE;
-  virtual void Pause(const base::Closure& callback) OVERRIDE;
-  virtual void Flush(const base::Closure& callback) OVERRIDE;
-  virtual void Stop(const base::Closure& callback) OVERRIDE;
-
-  // Decoder implementation.
-  virtual void Initialize(
-      media::DemuxerStream* demuxer_stream,
-      const media::PipelineStatusCB& status_cb,
-      const media::StatisticsCB& statistics_cb) OVERRIDE;
-  virtual void Read(const ReadCB& callback) OVERRIDE;
+  // media::VideoDecoder implementation.
+  virtual void Initialize(const scoped_refptr<media::DemuxerStream>& stream,
+                          const media::PipelineStatusCB& status_cb,
+                          const media::StatisticsCB& statistics_cb) OVERRIDE;
+  virtual void Read(const ReadCB& read_cb) OVERRIDE;
+  virtual void Reset(const base::Closure& closure) OVERRIDE;
+  virtual void Stop(const base::Closure& closure) OVERRIDE;
   virtual const gfx::Size& natural_size() OVERRIDE;
 
   // VideoCapture::EventHandler implementation.
@@ -73,18 +67,13 @@ class CONTENT_EXPORT CaptureVideoDecoder
     kPaused
   };
 
-  void PlayOnDecoderThread(const base::Closure& callback);
-  void SeekOnDecoderThread(base::TimeDelta time,
-                           const media::PipelineStatusCB& cb);
-  void PauseOnDecoderThread(const base::Closure& callback);
-  void FlushOnDecoderThread(const base::Closure& callback);
-  void StopOnDecoderThread(const base::Closure& callback);
-
   void InitializeOnDecoderThread(
-      media::DemuxerStream* demuxer_stream,
+      const scoped_refptr<media::DemuxerStream>& stream,
       const media::PipelineStatusCB& status_cb,
       const media::StatisticsCB& statistics_cb);
-  void ReadOnDecoderThread(const ReadCB& callback);
+  void ReadOnDecoderThread(const ReadCB& read_cb);
+  void ResetOnDecoderThread(const base::Closure& closure);
+  void StopOnDecoderThread(const base::Closure& closure);
 
   void OnStoppedOnDecoderThread(media::VideoCapture* capture);
   void OnBufferReadyOnDecoderThread(

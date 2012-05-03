@@ -74,45 +74,11 @@ GpuVideoDecoder::~GpuVideoDecoder() {
   bitstream_buffers_in_decoder_.clear();
 }
 
-void GpuVideoDecoder::Stop(const base::Closure& callback) {
-  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
-    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &GpuVideoDecoder::Stop, this, callback));
-    return;
-  }
-  if (!vda_) {
-    callback.Run();
-    return;
-  }
-  vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-      &VideoDecodeAccelerator::Destroy, vda_));
-  vda_ = NULL;
-  callback.Run();
-}
-
-void GpuVideoDecoder::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
-  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
-    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &GpuVideoDecoder::Seek, this, time, cb));
-    return;
-  }
-  cb.Run(PIPELINE_OK);
-}
-
-void GpuVideoDecoder::Pause(const base::Closure& callback)  {
-  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
-    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &GpuVideoDecoder::Pause, this, callback));
-    return;
-  }
-  callback.Run();
-}
-
-void GpuVideoDecoder::Flush(const base::Closure& callback)  {
+void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   if (!gvd_loop_proxy_->BelongsToCurrentThread() ||
       state_ == kDrainingDecoder) {
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &GpuVideoDecoder::Flush, this, callback));
+        &GpuVideoDecoder::Reset, this, closure));
     return;
   }
 
@@ -120,12 +86,12 @@ void GpuVideoDecoder::Flush(const base::Closure& callback)  {
   ready_video_frames_.clear();
 
   if (!vda_) {
-    callback.Run();
+    closure.Run();
     return;
   }
 
   DCHECK(pending_reset_cb_.is_null());
-  DCHECK(!callback.is_null());
+  DCHECK(!closure.is_null());
 
   if (shutting_down_) {
     // VideoRendererBase::Flush() can't complete while it has a pending read to
@@ -134,32 +100,48 @@ void GpuVideoDecoder::Flush(const base::Closure& callback)  {
       EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
     // Immediate fire the callback instead of waiting for the reset to complete
     // (which will happen after PipelineImpl::Stop() completes).
-    callback.Run();
+    closure.Run();
   } else {
-    pending_reset_cb_ = callback;
+    pending_reset_cb_ = closure;
   }
 
   vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::Reset, vda_));
 }
 
-void GpuVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
+void GpuVideoDecoder::Stop(const base::Closure& closure) {
+  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+        &GpuVideoDecoder::Stop, this, closure));
+    return;
+  }
+  if (!vda_) {
+    closure.Run();
+    return;
+  }
+  vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+      &VideoDecodeAccelerator::Destroy, vda_));
+  vda_ = NULL;
+  closure.Run();
+}
+
+void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
                                  const PipelineStatusCB& status_cb,
                                  const StatisticsCB& statistics_cb) {
   if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &GpuVideoDecoder::Initialize, this,
-        make_scoped_refptr(demuxer_stream), status_cb, statistics_cb));
+        &GpuVideoDecoder::Initialize,
+        this, stream, status_cb, statistics_cb));
     return;
   }
 
   DCHECK(!demuxer_stream_);
-  if (!demuxer_stream) {
+  if (!stream) {
     status_cb.Run(PIPELINE_ERROR_DECODE);
     return;
   }
 
-  const VideoDecoderConfig& config = demuxer_stream->video_decoder_config();
+  const VideoDecoderConfig& config = stream->video_decoder_config();
   // TODO(scherkus): this check should go in Pipeline prior to creating
   // decoder objects.
   if (!config.IsValidConfig()) {
@@ -174,7 +156,7 @@ void GpuVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
     return;
   }
 
-  demuxer_stream_ = demuxer_stream;
+  demuxer_stream_ = stream;
   statistics_cb_ = statistics_cb;
 
   demuxer_stream_->EnableBitstreamConverter();

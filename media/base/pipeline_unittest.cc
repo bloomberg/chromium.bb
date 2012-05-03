@@ -113,7 +113,7 @@ class PipelineTest : public ::testing::Test {
                         Invoke(&RunPipelineStatusCB2)));
     EXPECT_CALL(*mocks_->demuxer(), SetPlaybackRate(0.0f));
     EXPECT_CALL(*mocks_->demuxer(), Stop(_))
-        .WillOnce(Invoke(&RunStopFilterCallback));
+        .WillOnce(Invoke(&RunClosure));
 
     // Demuxer properties.
     EXPECT_CALL(*mocks_->demuxer(), GetBitrate())
@@ -145,7 +145,7 @@ class PipelineTest : public ::testing::Test {
   }
 
   // Sets up expectations to allow the video decoder to initialize.
-  void InitializeVideoDecoder(MockDemuxerStream* stream) {
+  void InitializeVideoDecoder(const scoped_refptr<DemuxerStream>& stream) {
     EXPECT_CALL(*mocks_->video_decoder(),
                 Initialize(stream, _, _))
         .WillOnce(Invoke(&RunPipelineStatusCB3));
@@ -167,7 +167,7 @@ class PipelineTest : public ::testing::Test {
                 Seek(mocks_->demuxer()->GetStartTime(), _))
         .WillOnce(Invoke(&RunPipelineStatusCB2));
     EXPECT_CALL(*mocks_->video_renderer(), Stop(_))
-        .WillOnce(Invoke(&RunStopFilterCallback));
+        .WillOnce(Invoke(&RunClosure));
   }
 
   // Sets up expectations to allow the audio renderer to initialize.
@@ -187,7 +187,7 @@ class PipelineTest : public ::testing::Test {
     EXPECT_CALL(*mocks_->audio_renderer(), Seek(base::TimeDelta(), _))
         .WillOnce(Invoke(&RunPipelineStatusCB2));
     EXPECT_CALL(*mocks_->audio_renderer(), Stop(_))
-        .WillOnce(Invoke(&RunStopFilterCallback));
+        .WillOnce(Invoke(&RunClosure));
   }
 
   // Sets up expectations on the callback and initializes the pipeline.  Called
@@ -304,7 +304,7 @@ TEST_F(PipelineTest, NeverInitializes) {
   // Don't execute the callback passed into Initialize().
   EXPECT_CALL(*mocks_->demuxer(), Initialize(_, _));
   EXPECT_CALL(*mocks_->demuxer(), Stop(_))
-      .WillOnce(Invoke(&RunStopFilterCallback));
+      .WillOnce(Invoke(&RunClosure));
 
   // This test hangs during initialization by never calling
   // InitializationComplete().  StrictMock<> will ensure that the callback is
@@ -346,7 +346,7 @@ TEST_F(PipelineTest, URLNotFound) {
   EXPECT_CALL(*mocks_->demuxer(), Initialize(_, _))
       .WillOnce(InitializeDemuxerWithError(PIPELINE_ERROR_URL_NOT_FOUND));
   EXPECT_CALL(*mocks_->demuxer(), Stop(_))
-      .WillOnce(Invoke(&RunStopFilterCallback));
+      .WillOnce(Invoke(&RunClosure));
 
   InitializePipeline(PIPELINE_ERROR_URL_NOT_FOUND);
   EXPECT_FALSE(pipeline_->IsInitialized());
@@ -356,7 +356,7 @@ TEST_F(PipelineTest, NoStreams) {
   EXPECT_CALL(*mocks_->demuxer(), Initialize(_, _))
       .WillOnce(Invoke(&RunPipelineStatusCB2));
   EXPECT_CALL(*mocks_->demuxer(), Stop(_))
-      .WillOnce(Invoke(&RunStopFilterCallback));
+      .WillOnce(Invoke(&RunClosure));
 
   InitializePipeline(PIPELINE_ERROR_COULD_NOT_RENDER);
   EXPECT_FALSE(pipeline_->IsInitialized());
