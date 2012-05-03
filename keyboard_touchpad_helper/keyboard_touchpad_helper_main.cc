@@ -34,9 +34,9 @@ using std::string;
 using std::vector;
 
 DEFINE_string(display, "", "X display. Default: use env var DISPLAY");
-DEFINE_string(exclude_keycodes, "125,42,29,56,100,97,54",
+DEFINE_string(exclude_keycodes, "1,125,42,29,56,100,97,54",
               "Comma separated list of keycodes to ignore. Default excludes "
-              "modifier keys and search key on US keyboards.");
+              "ESC, modifier keys, and search key on US keyboards.");
 DEFINE_bool(foreground, false, "Don't daemon()ize; run in foreground.");
 DEFINE_string(keyboard_name, "AT Translated Set 2 keyboard",
               "Name of the keyboard to monitor");
