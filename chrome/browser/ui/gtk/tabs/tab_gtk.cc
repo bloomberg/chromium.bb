@@ -279,7 +279,7 @@ void TabGtk::SetBounds(const gfx::Rect& bounds) {
 
   if (gtk_input_event_box_get_window(GTK_INPUT_EVENT_BOX(event_box_))) {
     gfx::Path mask;
-    TabResources::GetHitTestMask(bounds.width(), bounds.height(), false, &mask);
+    TabResources::GetHitTestMask(bounds.width(), bounds.height(), &mask);
     ui::ScopedRegion region(mask.CreateNativeRegion());
     gdk_window_input_shape_combine_region(
         gtk_input_event_box_get_window(GTK_INPUT_EVENT_BOX(event_box_)),
