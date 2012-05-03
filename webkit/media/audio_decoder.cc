@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,13 +56,13 @@ bool DecodeAudioFileData(
   //   (sample_rate != 0.0) ? sample_rate : file_sample_rate;
   double destination_sample_rate = file_sample_rate;
 
-  DLOG(INFO) << "Decoding file data -"
-      << " data: " << data
-      << " data size: " << data_size
-      << " duration: " << duration
-      << " number of frames: " << number_of_frames
-      << " sample rate: " << file_sample_rate
-      << " number of channels: " << number_of_channels;
+  DVLOG(1) << "Decoding file data -"
+           << " data: " << data
+           << " data size: " << data_size
+           << " duration: " << duration
+           << " number of frames: " << number_of_frames
+           << " sample rate: " << file_sample_rate
+           << " number of channels: " << number_of_channels;
 
   // Change to destination sample-rate.
   number_of_frames = static_cast<size_t>(number_of_frames *
