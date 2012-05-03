@@ -562,7 +562,8 @@ int RenderViewHostManager::CreateRenderView(
       GetSwappedOutRenderViewHost(instance));
   if (new_render_view_host) {
     // Prevent the process from exiting while we're trying to use it.
-    new_render_view_host->GetProcess()->AddPendingView();
+    if (!swapped_out)
+      new_render_view_host->GetProcess()->AddPendingView();
   } else {
     // Create a new RenderViewHost if we don't find an existing one.
     new_render_view_host = static_cast<RenderViewHostImpl*>(
@@ -570,12 +571,13 @@ int RenderViewHostManager::CreateRenderView(
             render_view_delegate_, MSG_ROUTING_NONE, swapped_out, delegate_->
             GetControllerForRenderManager().GetSessionStorageNamespace()));
 
-    // Prevent the process from exiting while we're trying to use it.
-    new_render_view_host->GetProcess()->AddPendingView();
-
-    // Store the new RVH as swapped out if necessary.
-    if (swapped_out)
+    // If the new RVH is swapped out already, store it.  Otherwise prevent the
+    // process from exiting while we're trying to navigate in it.
+    if (swapped_out) {
       swapped_out_hosts_[instance->GetId()] = new_render_view_host;
+    } else {
+      new_render_view_host->GetProcess()->AddPendingView();
+    }
 
     bool success = InitRenderView(new_render_view_host, opener_route_id);
     if (success) {

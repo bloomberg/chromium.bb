@@ -126,7 +126,8 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       invalidation_task_posted_(false),
       screen_info_(screen_info),
       invert_(false) {
-  RenderProcess::current()->AddRefProcess();
+  if (!swapped_out)
+    RenderProcess::current()->AddRefProcess();
   DCHECK(RenderThread::Get());
   has_disable_gpu_vsync_switch_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuVsync);
