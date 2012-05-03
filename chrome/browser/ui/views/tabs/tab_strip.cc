@@ -1466,6 +1466,7 @@ void TabStrip::DraggedTabsDetached() {
 }
 
 void TabStrip::StoppedDraggingTabs(const std::vector<BaseTab*>& tabs) {
+  newtab_button_->SetVisible(true);
   bool is_first_tab = true;
   for (size_t i = 0; i < tabs.size(); ++i)
     StoppedDraggingTab(tabs[i], &is_first_tab);
