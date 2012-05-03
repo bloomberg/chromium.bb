@@ -40,6 +40,11 @@ class MetricsLogManager {
     NO_LOG,       // Placeholder value for when there is no log.
   };
 
+  enum StoreType {
+    NORMAL_STORE,       // A standard store operation.
+    PROVISIONAL_STORE,  // A store operation that can be easily reverted later.
+  };
+
   // Takes ownership of |log|, which has type |log_type|, and makes it the
   // current_log. This should only be called if there is not a current log.
   void BeginLoggingWithLog(MetricsLogBase* log, LogType log_type);
@@ -97,8 +102,18 @@ class MetricsLogManager {
   void ResumePausedLog();
 
   // Saves the staged log, then clears staged_log().
+  // If |store_type| is PROVISIONAL_STORE, it can be dropped from storage with
+  // a later call to DiscardLastProvisionalStore (if it hasn't already been
+  // staged again).
+  // This is intended to be used when logs are being saved while an upload is in
+  // progress, in case the upload later succeeds.
   // This can only be called if has_staged_log() is true.
-  void StoreStagedLogAsUnsent();
+  void StoreStagedLogAsUnsent(StoreType store_type);
+
+  // Discards the last log stored with StoreStagedLogAsUnsent with |store_type|
+  // set to PROVISIONAL_STORE, as long as it hasn't already been re-staged. If
+  // the log is no longer present, this is a no-op.
+  void DiscardLastProvisionalStore();
 
   // Sets the threshold for how large an onging log can be and still be written
   // to persistant storage. Ongoing logs larger than this will be discarded
@@ -143,7 +158,9 @@ class MetricsLogManager {
   // |max_ongoing_log_store_size_|).
   // NOTE: This clears the contents of |log_text| (to avoid an expensive
   // string copy), so the log should be discarded after this call.
-  void StoreLog(SerializedLog* log_text, LogType log_type);
+  void StoreLog(SerializedLog* log_text,
+                LogType log_type,
+                StoreType store_type);
 
   // Compresses current_log_ into compressed_log.
   void CompressCurrentLog(SerializedLog* compressed_log);
@@ -178,6 +195,15 @@ class MetricsLogManager {
   std::vector<SerializedLog> unsent_ongoing_logs_;
 
   size_t max_ongoing_log_store_size_;
+
+  // The index and type of the last provisional store. If nothing has been
+  // provisionally stored, or the last provisional store has already been
+  // re-staged, the index will be -1;
+  // This is necessary because during an upload there are two logs (staged
+  // and current) and a client might store them in either order, so it's
+  // not necessarily the case that the provisional store is the last store.
+  int last_provisional_store_index_;
+  LogType last_provisional_store_type_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsLogManager);
 };

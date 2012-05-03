@@ -22,10 +22,13 @@ const char kDiscardedLog[] = "Log discarded";
 
 }  // anonymous namespace
 
-MetricsLogManager::MetricsLogManager() : current_log_type_(NO_LOG),
-                                         paused_log_type_(NO_LOG),
-                                         staged_log_type_(NO_LOG),
-                                         max_ongoing_log_store_size_(0) {}
+MetricsLogManager::MetricsLogManager()
+    : current_log_type_(NO_LOG),
+      paused_log_type_(NO_LOG),
+      staged_log_type_(NO_LOG),
+      max_ongoing_log_store_size_(0),
+      last_provisional_store_index_(-1),
+      last_provisional_store_type_(INITIAL_LOG) {}
 
 MetricsLogManager::~MetricsLogManager() {}
 
@@ -54,7 +57,7 @@ void MetricsLogManager::FinishCurrentLog() {
   SerializedLog compressed_log;
   CompressCurrentLog(&compressed_log);
   if (!compressed_log.empty())
-    StoreLog(&compressed_log, current_log_type_);
+    StoreLog(&compressed_log, current_log_type_, NORMAL_STORE);
   current_log_.reset();
   current_log_type_ = NO_LOG;
 }
@@ -72,6 +75,15 @@ void MetricsLogManager::StageNextLogForUpload() {
   staged_log_text_.swap(source_list->back());
   staged_log_type_ = source_type;
   source_list->pop_back();
+
+  // If the staged log was the last provisional store, clear that.
+  if (last_provisional_store_index_ != -1) {
+    if (source_type == last_provisional_store_type_ &&
+        static_cast<unsigned int>(last_provisional_store_index_) ==
+            source_list->size()) {
+      last_provisional_store_index_ = -1;
+    }
+  }
 }
 
 bool MetricsLogManager::has_staged_log() const {
@@ -114,24 +126,43 @@ void MetricsLogManager::ResumePausedLog() {
   paused_log_type_ = NO_LOG;
 }
 
-void MetricsLogManager::StoreStagedLogAsUnsent() {
+void MetricsLogManager::StoreStagedLogAsUnsent(StoreType store_type) {
   DCHECK(has_staged_log());
 
   // If compressing the log failed, there's nothing to store.
   if (staged_log_text_.empty())
     return;
 
-  StoreLog(&staged_log_text_, staged_log_type_);
+  StoreLog(&staged_log_text_, staged_log_type_, store_type);
   DiscardStagedLog();
 }
 
-void MetricsLogManager::StoreLog(SerializedLog* log_text, LogType log_type) {
+void MetricsLogManager::StoreLog(SerializedLog* log_text,
+                                 LogType log_type,
+                                 StoreType store_type) {
   DCHECK(log_type != NO_LOG);
   std::vector<SerializedLog>* destination_list =
       (log_type == INITIAL_LOG) ? &unsent_initial_logs_
                                 : &unsent_ongoing_logs_;
   destination_list->push_back(SerializedLog());
   destination_list->back().swap(*log_text);
+
+  if (store_type == PROVISIONAL_STORE) {
+    last_provisional_store_index_ = destination_list->size() - 1;
+    last_provisional_store_type_ = log_type;
+  }
+}
+
+void MetricsLogManager::DiscardLastProvisionalStore() {
+  if (last_provisional_store_index_ == -1)
+    return;
+  std::vector<SerializedLog>* source_list =
+      (last_provisional_store_type_ == ONGOING_LOG) ? &unsent_ongoing_logs_
+                                                    : &unsent_initial_logs_;
+  DCHECK_LT(static_cast<unsigned int>(last_provisional_store_index_),
+            source_list->size());
+  source_list->erase(source_list->begin() + last_provisional_store_index_);
+  last_provisional_store_index_ = -1;
 }
 
 void MetricsLogManager::PersistUnsentLogs() {

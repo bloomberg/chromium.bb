@@ -909,7 +909,9 @@ void MetricsService::PushPendingLogsToPersistentStorage() {
     // We may race here, and send second copy of initial log later.
     if (state_ == INITIAL_LOG_READY)
       state_ = SENDING_OLD_LOGS;
-    log_manager_.StoreStagedLogAsUnsent();
+    MetricsLogManager::StoreType store_type = current_fetch_xml_.get() ?
+        MetricsLogManager::PROVISIONAL_STORE : MetricsLogManager::NORMAL_STORE;
+    log_manager_.StoreStagedLogAsUnsent(store_type);
   }
   DCHECK(!log_manager_.has_staged_log());
   StopRecording();
@@ -1230,6 +1232,9 @@ void MetricsService::OnURLFetchComplete(const content::URLFetcher* source) {
   DCHECK_NE(response_code_, kNoResponseCode);
   waiting_for_asynchronus_reporting_step_ = false;
 
+  // If the upload was provisionally stored, drop it now that the upload is
+  // known to have gone through.
+  log_manager_.DiscardLastProvisionalStore();
 
   // Confirm send so that we can move on.
   VLOG(1) << "METRICS RESPONSE CODE: " << response_code_
