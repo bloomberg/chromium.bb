@@ -8,7 +8,7 @@
 
 #include <set>
 
-#include "chrome/browser/chromeos/notifications/balloon_view_host.h"  // MessageCallback
+#include "chrome/browser/chromeos/notifications/balloon_view_host_chromeos.h"  // MessageCallback
 #include "chrome/browser/notifications/balloon_collection_impl.h"
 
 namespace chromeos {

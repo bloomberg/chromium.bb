@@ -42,8 +42,8 @@
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_CHROMEOS) && defined(USE_AURA)
-#include "chrome/browser/chromeos/notifications/balloon_view_host.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/notifications/balloon_view_host_chromeos.h"
 #else
 #include "chrome/browser/ui/views/notifications/balloon_view_host.h"
 #endif

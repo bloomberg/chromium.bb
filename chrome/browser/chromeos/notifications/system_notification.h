@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "chrome/browser/chromeos/notifications/balloon_view_host.h"  // MessageCallback
+#include "chrome/browser/chromeos/notifications/balloon_view_host_chromeos.h"  // MessageCallback
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "googleurl/src/gurl.h"
 
