@@ -129,12 +129,6 @@
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       # crbug.com/112051
       '-prefs_ui.PrefsUITest.testChangeExceptionBehaviorUI',
-      # crbug.com/125972
-      '-protector.ProtectorHomepageTest.testDetectHomepageChangeWhenButtonNotShown',
-      # crbug.com/119183
-      '-protector.ProtectorSessionStartupTest.testDetectSessionStartupChangeAndApply',
-      # crbug.com/119326
-      '-protector.ProtectorSessionStartupTest.testSessionStartupChangeDismissedOnEdit',
       # crbug.com/102517 -- external webpage throws 500
       '-special_tabs.SpecialTabsTest.testAboutAppCacheTab',
       # Flaky: crbug.com/67851
@@ -226,8 +220,6 @@
       '-plugins.PluginsTest.testDisableEnableAllPlugins',
       # crbug.com/79263
       '-popups.PopupsTest.testPopupsLaunchUponBrowserBackButton',
-      # crbug.com/120317
-      '-protector.ProtectorPreferencesTest.testPreferencesBackupInvalidRestoreLastSession',
       # crbug.com/69619
       '-search_engines.SearchEnginesTest.testDiscoverSearchEngine',
       # Keychain popups make sync tests difficult on Mac.  crbug.com/49378

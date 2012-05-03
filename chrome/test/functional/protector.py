@@ -204,16 +204,20 @@ class BaseProtectorTest(pyauto.PyUITest):
     prefs['browser']['show_home_button'] = show_homepage_button
     self._WritePreferences(prefs)
 
-  def _AssertSingleTabOpen(self, url):
-    """Asserts that a single tab with given url is open.
+  def _AssertTabsOpen(self, urls, pinned=None):
+    """Asserts that exactly one window with the specified URLs is open.
 
     Args:
-      url: URL of the single tab.
+      urls: list of URLs of expected open tabs.
+      pinned: if given, list of boolean values whether the corresponding tab is
+          expected to be pinned or not.
     """
     info = self.GetBrowserInfo()
     self.assertEqual(1, len(info['windows']))  # one window
-    self.assertEqual(1, len(info['windows'][0]['tabs']))  # one tab
-    self.assertEqual(url, info['windows'][0]['tabs'][0]['url'])
+    self.assertEqual(urls, [tab['url'] for tab in info['windows'][0]['tabs']])
+    if pinned:
+      self.assertEqual(pinned,
+                       [tab['pinned'] for tab in info['windows'][0]['tabs']])
 
   def testNoChangeOnCleanProfile(self):
     """Test that no change is reported on a clean profile."""
@@ -349,15 +353,12 @@ class ProtectorPreferencesTest(BaseProtectorTest):
     self.assertEqual(self._SESSION_STARTUP_NTP,
                      self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
     # Verify that previous startup URL has not been opened.
-    self._AssertSingleTabOpen('chrome://newtab/')
+    self._AssertTabsOpen(['chrome://newtab/'])
     # Click "Edit Settings...".
     self.DiscardProtectorChange()
     # Verify that a new tab with settings is opened.
     info = self.GetBrowserInfo()
-    self.assertEqual(1, len(info['windows']))  # one window
-    self.assertEqual(2, len(info['windows'][0]['tabs']))  # 2 tabs
-    self.assertEqual('chrome://chrome/settings/',
-                     info['windows'][0]['tabs'][1]['url'])
+    self._AssertTabsOpen(['chrome://newtab/', 'chrome://chrome/settings/'])
     # No longer showing the change.
     self.assertFalse(self.GetProtectorState()['showing_change'])
     self.RestartBrowser(clear_profile=False)
@@ -368,8 +369,10 @@ class ProtectorPreferencesTest(BaseProtectorTest):
     """Test that session restore setting is not reset if backup is invalid."""
     # Set startup prefs to restore the last session.
     self.SetPrefs(pyauto.kRestoreOnStartup, self._SESSION_STARTUP_LAST)
-    previous_url = 'chrome://version/'
-    self.NavigateToURL(previous_url)
+    previous_urls = ['chrome://version/', 'http://news.google.com/']
+    self.NavigateToURL(previous_urls[0])
+    for url in previous_urls[1:]:
+      self.AppendTab(pyauto.GURL(url))
     self.RestartBrowser(
         clear_profile=False,
         pre_launch_hook=self._InvalidatePreferencesBackup)
@@ -379,7 +382,7 @@ class ProtectorPreferencesTest(BaseProtectorTest):
     self.assertEqual(self._SESSION_STARTUP_LAST,
                      self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
     # Session has been restored.
-    self._AssertSingleTabOpen(previous_url)
+    self._AssertTabsOpen(previous_urls)
 
   def testPreferencesBackupInvalidChangeDismissedOnEdit(self):
     """Test that editing protected prefs dismisses the invalid backup bubble."""
@@ -401,8 +404,10 @@ class ProtectorSessionStartupTest(BaseProtectorTest):
     """Test for detecting and applying a session startup pref change."""
     # Set startup prefs to restoring last open tabs.
     self.SetPrefs(pyauto.kRestoreOnStartup, self._SESSION_STARTUP_LAST)
-    previous_url = 'chrome://version/'
-    self.NavigateToURL(previous_url)
+    previous_urls = ['chrome://version/', 'http://news.google.com/']
+    self.NavigateToURL(previous_urls[0])
+    for url in previous_urls[1:]:
+      self.AppendTab(pyauto.GURL(url))
     # Restart browser with startup prefs set to open google.com.
     self.RestartBrowser(
         clear_profile=False,
@@ -415,7 +420,7 @@ class ProtectorSessionStartupTest(BaseProtectorTest):
     self.assertEqual(self._SESSION_STARTUP_LAST,
                      self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
     # Verify that open tabs are consistent with restored prefs.
-    self._AssertSingleTabOpen(previous_url)
+    self._AssertTabsOpen(previous_urls)
     self.ApplyProtectorChange()
     # Now the new preference values are active.
     self.assertEqual(self._SESSION_STARTUP_URLS,
@@ -562,29 +567,19 @@ class ProtectorSessionStartupTest(BaseProtectorTest):
                      self.GetPrefsInfo().Prefs(pyauto.kPinnedTabs))
     # No pinned tabs are open, only NTP.
     info = self.GetBrowserInfo()
-    self._AssertSingleTabOpen('chrome://newtab/')
+    self._AssertTabsOpen(['chrome://newtab/'])
     self.ApplyProtectorChange()
     # No longer showing the change.
     self.assertFalse(self.GetProtectorState()['showing_change'])
     # Pinned tabs should have been opened now in the correct order.
-    info = self.GetBrowserInfo()
-    self.assertEqual(1, len(info['windows']))  # one window
-    self.assertEqual(3, len(info['windows'][0]['tabs']))  # 3 tabs
-    self.assertEqual(pinned_urls[0], info['windows'][0]['tabs'][0]['url'])
-    self.assertEqual(pinned_urls[1], info['windows'][0]['tabs'][1]['url'])
-    self.assertTrue(info['windows'][0]['tabs'][0]['pinned'])  # 1st tab pinned
-    self.assertTrue(info['windows'][0]['tabs'][1]['pinned'])  # 2nd tab pinned
+    self._AssertTabsOpen(pinned_urls + ['chrome://newtab/'],
+                         pinned=[True, True, False])
     self.RestartBrowser(clear_profile=False)
     # Not showing the change after a restart
     self.assertFalse(self.GetProtectorState()['showing_change'])
     # Same pinned tabs are open.
-    info = self.GetBrowserInfo()
-    self.assertEqual(1, len(info['windows']))  # one window
-    self.assertEqual(3, len(info['windows'][0]['tabs']))  # 3 tabs
-    self.assertEqual(pinned_urls[0], info['windows'][0]['tabs'][0]['url'])
-    self.assertEqual(pinned_urls[1], info['windows'][0]['tabs'][1]['url'])
-    self.assertTrue(info['windows'][0]['tabs'][0]['pinned'])  # 1st tab pinned
-    self.assertTrue(info['windows'][0]['tabs'][1]['pinned'])  # 2nd tab pinned
+    self._AssertTabsOpen(pinned_urls + ['chrome://newtab/'],
+                         pinned=[True, True, False])
 
   def testDetectPinnedTabsChangeAndDiscard(self):
     """Test for detecting and discarding a change to pinned tabs."""
@@ -599,36 +594,19 @@ class ProtectorSessionStartupTest(BaseProtectorTest):
                      self.GetPrefsInfo().Prefs(pyauto.kPinnedTabs))
     # No pinned tabs are open, only NTP.
     info = self.GetBrowserInfo()
-    self._AssertSingleTabOpen('chrome://newtab/')
+    self._AssertTabsOpen(['chrome://newtab/'])
     self.DiscardProtectorChange()
     # No longer showing the change.
     self.assertFalse(self.GetProtectorState()['showing_change'])
     # Pinned tabs are not opened after another restart.
     self.RestartBrowser(clear_profile=False)
-    self._AssertSingleTabOpen('chrome://newtab/')
+    self._AssertTabsOpen(['chrome://newtab/'])
     # Not showing the change after a restart.
     self.assertFalse(self.GetProtectorState()['showing_change'])
 
 
 class ProtectorHomepageTest(BaseProtectorTest):
   """Test suite for homepage changes with Protector enabled."""
-
-  def testDetectHomepageChangeWhenButtonNotShown(self):
-    """Test that homepage change is detected and reverted when homepage button
-    is set to not be shown.
-    """
-    previous_homepage = 'http://example.com/'
-    self.SetPrefs(pyauto.kHomePage, previous_homepage)
-    self.SetPrefs(pyauto.kHomePageIsNewTabPage, False)
-    self.SetPrefs(pyauto.kShowHomeButton, False)
-    self.RestartBrowser(
-        clear_profile=False,
-        pre_launch_hook=lambda: self._ChangeHomepage(
-            'http://example.info/', False, False))
-    # Change has been automatically reverted, no bubble shown.
-    self.assertFalse(self.GetProtectorState()['showing_change'])
-    self.assertEquals(previous_homepage,
-                      self.GetPrefsInfo().Prefs(pyauto.kHomePage))
 
   def testDetectHomepageChangeAndApply(self):
     """Test that homepage change is detected and can be applied."""
@@ -728,10 +706,7 @@ class ProtectorDisabledTest(BaseProtectorTest):
     self.assertEqual(self._SESSION_STARTUP_URLS,
                      self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
     # Verify that open tabs are consistent with new prefs.
-    info = self.GetBrowserInfo()
-    self.assertEqual(1, len(info['windows']))  # one window
-    self.assertEqual(1, len(info['windows'][0]['tabs']))  # one tab
-    self.assertEqual(new_url, info['windows'][0]['tabs'][0]['url'])
+    self._AssertTabsOpen([new_url])
 
   def testNoSessionStartupChangeReported(self):
     """Test that the session startup change is neither reported nor reverted."""
@@ -751,10 +726,7 @@ class ProtectorDisabledTest(BaseProtectorTest):
     self.assertEqual(self._SESSION_STARTUP_URLS,
                      self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
     # Verify that open tabs are consistent with new prefs.
-    info = self.GetBrowserInfo()
-    self.assertEqual(1, len(info['windows']))  # one window
-    self.assertEqual(1, len(info['windows'][0]['tabs']))  # one tab
-    self.assertEqual(new_url, info['windows'][0]['tabs'][0]['url'])
+    self._AssertTabsOpen([new_url])
 
   def testNoHomepageChangeReported(self):
     """Test that homepage change is neither reported nor reverted."""
