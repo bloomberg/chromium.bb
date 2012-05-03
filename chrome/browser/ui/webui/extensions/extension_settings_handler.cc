@@ -121,6 +121,8 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean("allow_reload",
                              extension->location() == Extension::LOAD);
   extension_data->SetBoolean("is_hosted_app", extension->is_hosted_app());
+  extension_data->SetBoolean("homepageProvided",
+                             extension->GetHomepageURL().is_valid());
 
   // Determine the sort order: Extensions loaded through --load-extensions show
   // up at the top. Disabled extensions show up at the bottom.
@@ -240,6 +242,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ACTIVITY_LINK));
   localized_strings->SetString("extensionSettingsVisitWebsite",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VISIT_WEBSITE));
+  localized_strings->SetString("extensionSettingsVisitWebStore",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_VISIT_WEBSTORE));
   localized_strings->SetString("extensionSettingsPolicyControlled",
      l10n_util::GetStringUTF16(IDS_EXTENSIONS_POLICY_CONTROLLED));
   localized_strings->SetString("extensionSettingsShowButton",
