@@ -109,7 +109,7 @@ void SizeAndPlaceControl(NSView* toModify, NSView* anchor, bool after) {
 }
 
 // Called when "Deny" button is pressed.
-- (IBAction)cancel:(id)sender {
+- (void)cancel:(id)sender {
   static_cast<MediaStreamInfoBarDelegate*>([self delegate])->Deny();
 
   // Remove the infobar, we're done.
