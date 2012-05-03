@@ -510,6 +510,210 @@ chrome.test.getConfig(function(testConfig) {
           }));
     },
 
+    function downloadHeadersInvalid0() {
+      // Test that we disallow certain headers case-insensitive.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'Accept-chArsEt', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid1() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'accept-eNcoding', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid2() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'coNNection', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid3() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'coNteNt-leNgth', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid4() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'cooKIE', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid5() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'cOOkie2', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid6() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'coNteNt-traNsfer-eNcodiNg', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid7() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'dAtE', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid8() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'ExpEcT', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid9() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'hOsT', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid10() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'kEEp-aLivE', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid11() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'rEfErEr', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid12() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'tE', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid13() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'trAilER', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid14() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'trANsfer-eNcodiNg', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid15() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'upGRAde', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid16() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'usER-agENt', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid17() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'viA', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid18() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'pRoxY-', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid19() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'sEc-', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid20() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'pRoxY-probably-not-evil', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid21() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'sEc-probably-not-evil', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    function downloadHeadersInvalid22() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'oRiGiN', 'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
+
+    // TODO(benjhayden): Find why these aren't caught by
+    // net::HttpUtil::IsSafeHeader().
+    // function downloadHeadersInvalid23() {
+    //   // Test that we disallow certain headers.
+    //   downloads.download(
+    //       {'url': SAFE_FAST_URL,
+    //        'headers': [{'name': 'Access-Control-Request-Headers',
+    //                     'value': 'evil'}]},
+    //       chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    // },
+
+    // function downloadHeadersInvalid24() {
+    //   // Test that we disallow certain headers.
+    //   downloads.download(
+    //       {'url': SAFE_FAST_URL,
+    //        'headers': [{'name': 'Access-Control-Request-Method',
+    //                     'value': 'evil'}]},
+    //       chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    // },
+
     function downloadInterrupted() {
       // Test that cancel()ing an in-progress download causes its state to
       // transition to interrupted, and test that that state transition is
