@@ -151,8 +151,12 @@ void PepperUDPSocket::OnRecvFromCompleted(int result) {
 void PepperUDPSocket::OnSendToCompleted(int result) {
   DCHECK(sendto_buffer_.get());
 
-  manager_->Send(new PpapiMsg_PPBUDPSocket_SendToACK(
-      routing_id_, plugin_dispatcher_id_, socket_id_, true, result));
+  if (result < 0) {
+    SendSendToACKError();
+  } else {
+    manager_->Send(new PpapiMsg_PPBUDPSocket_SendToACK(
+        routing_id_, plugin_dispatcher_id_, socket_id_, true, result));
+  }
 
   sendto_buffer_ = NULL;
 }
