@@ -57,7 +57,7 @@ scons-tests-pic() {
   echo "@@@BUILD_STEP scons-tests-pic [${platform}]@@@"
   local extra="--mode=opt-host,nacl \
                -j${PNACL_CONCURRENCY} -k \
-               nacl_pic=0  pnacl_generate_pexe=0"
+               nacl_pic=1  pnacl_generate_pexe=0"
   ${SCONS_COMMON} ${extra} platform=${platform} smoke_tests || handle-error
 }
 
