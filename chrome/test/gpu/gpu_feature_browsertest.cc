@@ -23,7 +23,7 @@
 #include "net/base/net_util.h"
 #include "ui/gfx/gl/gl_switches.h"
 #if defined(OS_MACOSX)
-#include "ui/gfx/surface/io_surface_support_mac.h"
+#include "ui/surface/io_surface_support_mac.h"
 #endif
 
 using content::GpuDataManager;

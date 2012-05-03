@@ -9,12 +9,12 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface_cgl.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/surface/io_surface_support_mac.h"
+#include "ui/surface/io_surface_support_mac.h"
 
 namespace {
 

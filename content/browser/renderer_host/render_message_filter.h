@@ -24,7 +24,7 @@
 #include "media/base/channel_layout.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/surface/transport_dib.h"
+#include "ui/surface/transport_dib.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_loader.h"

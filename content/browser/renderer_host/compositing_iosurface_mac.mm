@@ -14,7 +14,7 @@
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_switches.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
-#include "ui/gfx/surface/io_surface_support_mac.h"
+#include "ui/surface/io_surface_support_mac.h"
 
 #ifdef NDEBUG
 #define CHECK_GL_ERROR()

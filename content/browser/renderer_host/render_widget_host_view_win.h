@@ -27,8 +27,8 @@
 #include "ui/base/win/ime_input.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
-#include "ui/gfx/surface/accelerated_surface_win.h"
 #include "ui/gfx/sys_color_change_listener.h"
+#include "ui/surface/accelerated_surface_win.h"
 #include "webkit/glue/webcursor.h"
 
 class BackingStore;

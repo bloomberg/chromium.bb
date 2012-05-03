@@ -16,8 +16,8 @@
 #include "base/observer_list.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
-#include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
+#include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -29,10 +29,10 @@
 #include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
-#include "ui/gfx/surface/transport_dib.h"
+#include "ui/surface/transport_dib.h"
 
 #if defined(OS_MACOSX)
-#include "ui/gfx/surface/accelerated_surface_mac.h"
+#include "ui/surface/accelerated_surface_mac.h"
 #endif
 
 class GpuChannel;

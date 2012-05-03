@@ -14,7 +14,7 @@
         '../gpu/gpu.gyp:gpu_ipc',
         '../ipc/ipc.gyp:ipc',
         '../skia/skia.gyp:skia',
-        '../ui/gfx/surface/surface.gyp:surface',
+        '../ui/surface/surface.gyp:surface',
         'ppapi.gyp:ppapi_c',
         'ppapi_shared',
       ],

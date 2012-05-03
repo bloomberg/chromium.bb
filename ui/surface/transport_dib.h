@@ -1,13 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_SURFACE_TRANSPORT_DIB_H_
-#define UI_GFX_SURFACE_TRANSPORT_DIB_H_
+#ifndef UI_SURFACE_TRANSPORT_DIB_H_
+#define UI_SURFACE_TRANSPORT_DIB_H_
 #pragma once
 
 #include "base/basictypes.h"
-#include "ui/gfx/surface/surface_export.h"
+#include "ui/surface/surface_export.h"
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
 #include "base/shared_memory.h"
@@ -214,4 +214,4 @@ class SURFACE_EXPORT TransportDIB {
   DISALLOW_COPY_AND_ASSIGN(TransportDIB);
 };
 
-#endif  // UI_GFX_SURFACE_TRANSPORT_DIB_H_
+#endif  // UI_SURFACE_TRANSPORT_DIB_H_

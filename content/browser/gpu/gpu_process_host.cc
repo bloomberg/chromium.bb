@@ -42,7 +42,7 @@
 #endif
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-#include "ui/gfx/surface/accelerated_surface_win.h"
+#include "ui/surface/accelerated_surface_win.h"
 #endif
 
 using content::BrowserThread;

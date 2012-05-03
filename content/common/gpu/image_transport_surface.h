@@ -21,7 +21,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "ui/gfx/surface/transport_dib.h"
+#include "ui/surface/transport_dib.h"
 
 class GpuChannelManager;
 class GpuCommandBufferStub;

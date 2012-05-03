@@ -17,7 +17,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/scoped_cg_context_save_gstate_mac.h"
-#include "ui/gfx/surface/transport_dib.h"
+#include "ui/surface/transport_dib.h"
 
 // Mac Backing Stores:
 //

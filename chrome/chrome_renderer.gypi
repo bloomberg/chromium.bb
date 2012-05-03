@@ -27,7 +27,7 @@
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/smhasher/smhasher.gyp:murmurhash3',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
-        '../ui/gfx/surface/surface.gyp:surface',
+        '../ui/surface/surface.gyp:surface',
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:webkit_gpu',
         '../webkit/support/webkit_support.gyp:webkit_media',

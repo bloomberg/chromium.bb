@@ -58,14 +58,14 @@
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "ui/base/ui_base_switches.h"
-#include "ui/gfx/monitor.h"
-#include "ui/gfx/screen.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/base/ui_base_switches.h"
+#include "ui/gfx/monitor.h"
+#include "ui/gfx/screen.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -77,7 +77,7 @@
 #include "content/browser/web_contents/web_contents_view_gtk.h"
 #elif defined(OS_MACOSX)
 #include "content/browser/web_contents/web_contents_view_mac.h"
-#include "ui/gfx/surface/io_surface_support_mac.h"
+#include "ui/surface/io_surface_support_mac.h"
 #elif defined(OS_ANDROID)
 #include "content/browser/web_contents/web_contents_view_android.h"
 #endif

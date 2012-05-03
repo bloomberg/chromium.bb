@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
-#define UI_GFX_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
+#ifndef UI_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
+#define UI_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
 #pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
@@ -11,7 +11,7 @@
 #include <OpenGL/OpenGL.h>
 
 #include "base/basictypes.h"
-#include "ui/gfx/surface/surface_export.h"
+#include "ui/surface/surface_export.h"
 
 // This Mac OS X-specific class provides dynamically-linked access to
 // IOSurface.framework, which is only available on 10.6 and later.
@@ -67,5 +67,4 @@ class SURFACE_EXPORT IOSurfaceSupport {
   DISALLOW_COPY_AND_ASSIGN(IOSurfaceSupport);
 };
 
-#endif  // UI_GFX_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
-
+#endif  // UI_SURFACE_IO_SURFACE_SUPPORT_MAC_H_

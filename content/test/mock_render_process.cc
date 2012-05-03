@@ -5,7 +5,7 @@
 #include "content/test/mock_render_process.h"
 
 #include "ui/gfx/rect.h"
-#include "ui/gfx/surface/transport_dib.h"
+#include "ui/surface/transport_dib.h"
 
 MockRenderProcess::MockRenderProcess()
     : transport_dib_next_sequence_number_(0),

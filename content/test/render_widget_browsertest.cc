@@ -17,7 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/size.h"
-#include "ui/gfx/surface/transport_dib.h"
+#include "ui/surface/transport_dib.h"
 
 const int RenderWidgetTest::kNumBytesPerPixel = 4;
 const int RenderWidgetTest::kLargeWidth = 1024;

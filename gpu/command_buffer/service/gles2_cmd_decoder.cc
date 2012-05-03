@@ -12,8 +12,8 @@
 #include <string>
 #include <vector>
 
-#include "base/atomicops.h"
 #include "base/at_exit.h"
+#include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -51,7 +51,7 @@
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface.h"
 #if defined(OS_MACOSX)
-#include "ui/gfx/surface/io_surface_support_mac.h"
+#include "ui/surface/io_surface_support_mac.h"
 #endif
 
 #if !defined(GL_DEPTH24_STENCIL8)

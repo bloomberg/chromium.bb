@@ -18,7 +18,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "ui/gfx/surface/transport_dib.h"
+#include "ui/surface/transport_dib.h"
 
 class CommandLine;
 class GpuMessageFilter;

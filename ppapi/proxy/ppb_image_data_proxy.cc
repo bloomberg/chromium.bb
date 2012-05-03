@@ -23,7 +23,7 @@
 
 #if !defined(OS_NACL)
 #include "skia/ext/platform_canvas.h"
-#include "ui/gfx/surface/transport_dib.h"
+#include "ui/surface/transport_dib.h"
 #endif
 
 namespace ppapi {

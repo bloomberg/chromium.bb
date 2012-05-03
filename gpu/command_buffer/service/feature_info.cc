@@ -11,7 +11,7 @@
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #if defined(OS_MACOSX)
-#include "ui/gfx/surface/io_surface_support_mac.h"
+#include "ui/surface/io_surface_support_mac.h"
 #endif
 
 namespace gpu {

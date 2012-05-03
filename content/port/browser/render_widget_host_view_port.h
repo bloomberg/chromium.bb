@@ -13,8 +13,8 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/gfx/surface/transport_dib.h"
 #include "ui/base/range/range.h"
+#include "ui/surface/transport_dib.h"
 
 class BackingStore;
 class WebCursor;

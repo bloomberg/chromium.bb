@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/surface/accelerated_surface_mac.h"
+#include "ui/surface/accelerated_surface_mac.h"
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -12,7 +12,7 @@
 #include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/gl/scoped_make_current.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/surface/io_surface_support_mac.h"
+#include "ui/surface/io_surface_support_mac.h"
 
 AcceleratedSurface::AcceleratedSurface()
     : io_surface_id_(0),

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_SURFACE_ACCELERATED_SURFACE_WIN_H_
-#define UI_GFX_SURFACE_ACCELERATED_SURFACE_WIN_H_
+#ifndef UI_SURFACE_ACCELERATED_SURFACE_WIN_H_
+#define UI_SURFACE_ACCELERATED_SURFACE_WIN_H_
 #pragma once
 
 #include <d3d9.h>
@@ -15,7 +15,7 @@
 #include "base/win/scoped_comptr.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
-#include "ui/gfx/surface/surface_export.h"
+#include "ui/surface/surface_export.h"
 
 class PresentThread;
 
@@ -121,4 +121,4 @@ class SURFACE_EXPORT AcceleratedSurface {
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurface);
 };
 
-#endif  // UI_GFX_SURFACE_ACCELERATED_SURFACE_WIN_H_
+#endif  // UI_SURFACE_ACCELERATED_SURFACE_WIN_H_

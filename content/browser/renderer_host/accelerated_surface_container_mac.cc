@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/renderer_host/accelerated_surface_container_manager_mac.h"
-#include "ui/gfx/surface/io_surface_support_mac.h"
+#include "ui/surface/io_surface_support_mac.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
 AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac(

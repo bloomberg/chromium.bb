@@ -52,7 +52,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
-        '../ui/gfx/surface/surface.gyp:surface',
+        '../ui/surface/surface.gyp:surface',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
         '../ui/ui.gyp:ui_resources_2x',

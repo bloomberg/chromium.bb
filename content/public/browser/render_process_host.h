@@ -13,7 +13,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/surface/transport_dib.h"
+#include "ui/surface/transport_dib.h"
 
 class GURL;
 struct ViewMsg_SwapOut_Params;

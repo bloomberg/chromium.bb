@@ -29,7 +29,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         # TODO(ananta) : The WebKit dependency needs to move to a new target for NACL.
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
-        '../ui/gfx/surface/surface.gyp:surface',
+        '../ui/surface/surface.gyp:surface',
       ],
       'defines': [
         'PPAPI_SHARED_IMPLEMENTATION',

@@ -5,8 +5,8 @@
 // Multiply-included message file, hence no include guard here, but see below
 // for a much smaller-than-usual include guard section.
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "base/shared_memory.h"
 #include "content/common/content_export.h"
@@ -23,7 +23,7 @@
 #include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
-#include "ui/gfx/surface/transport_dib.h"
+#include "ui/surface/transport_dib.h"
 
 #define IPC_MESSAGE_START GpuMsgStart
 

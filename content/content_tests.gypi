@@ -17,7 +17,7 @@
         '../testing/gtest.gyp:gtest',
         '../third_party/libvpx/libvpx.gyp:libvpx',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
-        '../ui/gfx/surface/surface.gyp:surface',
+        '../ui/surface/surface.gyp:surface',
         '../ui/ui.gyp:ui_test_support',
         '../webkit/support/webkit_support.gyp:appcache',
       ],

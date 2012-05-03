@@ -3,7 +3,7 @@ include_rules = [
   "+ipc",
   "+gpu",
   "+skia",
-  "+ui/gfx/surface",
+  "+ui/surface",
 
   # We don't want the proxy to depend on the C++ layer, which is appropriate
   # for plugins only. However, the completion callback factory is a very useful

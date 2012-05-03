@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,9 +16,9 @@
 #endif
 
 #include <algorithm>
-#include <utility>
 #include <limits>
 #include <queue>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -28,11 +28,11 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
-#include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/surface/transport_dib.h"
+#include "ui/surface/transport_dib.h"
 
 using content::RenderWidgetHost;
 

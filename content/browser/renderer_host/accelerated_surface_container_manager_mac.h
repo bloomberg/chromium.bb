@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/synchronization/lock.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/surface/transport_dib.h"
+#include "ui/surface/transport_dib.h"
 
 namespace gfx {
 class Rect;

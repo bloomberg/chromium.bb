@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/render_process_impl.h"
+
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -9,8 +11,6 @@
 #include <objidl.h>
 #include <mlang.h>
 #endif
-
-#include "content/renderer/render_process_impl.h"
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -25,10 +25,10 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message_utils.h"
 #include "skia/ext/platform_canvas.h"
-#include "ui/gfx/surface/transport_dib.h"
+#include "ui/surface/transport_dib.h"
+#include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
-#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

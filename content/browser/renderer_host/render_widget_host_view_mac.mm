@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/closure_blocks_leopard_compat.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
 #import "base/memory/scoped_nsobject.h"
@@ -49,7 +49,7 @@
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
-#include "ui/gfx/surface/io_surface_support_mac.h"
+#include "ui/surface/io_surface_support_mac.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/plugins/npapi/webplugin.h"
 

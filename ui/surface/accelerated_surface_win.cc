@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/surface/accelerated_surface_win.h"
+#include "ui/surface/accelerated_surface_win.h"
 
 #include <windows.h>
 #include <algorithm>
@@ -11,17 +11,17 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/string_number_conversions.h"
-#include "base/time.h"
 #include "base/debug/trace_event.h"
 #include "base/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_native_library.h"
+#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time.h"
 #include "base/tracked_objects.h"
 #include "base/win/wrapped_window_proc.h"
 #include "ui/base/win/hwnd_util.h"

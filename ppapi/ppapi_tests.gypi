@@ -171,7 +171,7 @@
         '../ipc/ipc.gyp:test_support_ipc',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../ui/gfx/surface/surface.gyp:surface',
+        '../ui/surface/surface.gyp:surface',
       ],
       'sources': [
         'proxy/run_all_unittests.cc',
