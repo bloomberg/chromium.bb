@@ -41,21 +41,20 @@ class WebIntentPickerSheetControllerTest : public CocoaTest {
 
     NSArray* views = [[flip_views objectAtIndex:0] subviews];
 
-    // 4 + |row_count| subviews - icon, header text, close button,
+    // 3 + |row_count| subviews - header text, close button,
     // |row_count| buttons, and a CWS link.
-    ASSERT_EQ(4U + row_count, [views count]);
+    ASSERT_EQ(3U + row_count, [views count]);
 
     ASSERT_TRUE([[views objectAtIndex:0] isKindOfClass:[NSTextField class]]);
-    ASSERT_TRUE([[views objectAtIndex:1] isKindOfClass:[NSImageView class]]);
-    ASSERT_TRUE([[views objectAtIndex:2] isKindOfClass:
+    ASSERT_TRUE([[views objectAtIndex:1] isKindOfClass:
         [HoverCloseButton class]]);
     for(NSUInteger i = 0; i < row_count; ++i) {
-      ASSERT_TRUE([[views objectAtIndex:3 + i] isKindOfClass:
+      ASSERT_TRUE([[views objectAtIndex:2 + i] isKindOfClass:
           [NSButton class]]);
     }
 
     // Verify the close button
-    NSButton* close_button = static_cast<NSButton*>([views objectAtIndex:2]);
+    NSButton* close_button = static_cast<NSButton*>([views objectAtIndex:1]);
     CheckButton(close_button, @selector(cancelOperation:));
 
     // Verify the Chrome Web Store button.
@@ -66,7 +65,7 @@ class WebIntentPickerSheetControllerTest : public CocoaTest {
 
     // Verify buttons pointing to services.
     for(NSUInteger i = 0; i < row_count; ++i) {
-      NSButton* button = [views objectAtIndex:3 + i];
+      NSButton* button = [views objectAtIndex:2 + i];
       CheckServiceButton(button, i);
     }
   }
@@ -119,9 +118,9 @@ TEST_F(WebIntentPickerSheetControllerTest, SuggestionView) {
   NSArray* main_views = [[flip_views objectAtIndex:0] subviews];
 
   // 4th object should be the suggestion view.
-  ASSERT_TRUE([main_views count] > 3);
-  ASSERT_TRUE([[main_views objectAtIndex:3] isKindOfClass:[NSView class]]);
-  NSView* suggest_view = [main_views objectAtIndex:3];
+  ASSERT_TRUE([main_views count] > 2);
+  ASSERT_TRUE([[main_views objectAtIndex:2] isKindOfClass:[NSView class]]);
+  NSView* suggest_view = [main_views objectAtIndex:2];
 
   // There is exactly one subview, which contains the suggested item.
   ASSERT_EQ(1U, [[suggest_view subviews] count]);

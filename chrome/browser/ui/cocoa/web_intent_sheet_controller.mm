@@ -47,21 +47,15 @@ const CGFloat kFramePadding = 10;
 // Spacing in between sections.
 const CGFloat kVerticalSpacing = 10;
 
-// Square size of the image.
-const CGFloat kImageSize = 32;
-
 // Square size of the close button.
 const CGFloat kCloseButtonSize = 16;
 
-// Spacing between the image and the text.
-const CGFloat kImageSpacing = 10;
-
-// Spacing between icons.
-const CGFloat kImagePadding = 6;
+// Font size for picker header.
+const CGFloat kHeaderFontSize = 14.5;
 
 // Width of the text fields.
-const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
-    kFramePadding * 2);
+const CGFloat kTextWidth = kWindowWidth -
+    (kFramePadding * 2 + kCloseButtonSize);
 
 }  // namespace
 
@@ -183,8 +177,6 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
           forController:(WebIntentPickerSheetController*)controller {
   const CGFloat kMaxHeight = 34.0;
   const CGFloat kTitleX = 20.0;
-  const CGFloat kTitleWidth = 120.0;
-  const CGFloat kStarX = 150.0;
   const CGFloat kMinAddButtonHeight = 24.0;
   const CGFloat kAddButtonX = 245;
   const CGFloat kAddButtonWidth = 128.0;
@@ -211,28 +203,33 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
     [subviews addObject:iconView_];
 
     // Add the extension title.
-    NSRect frame = NSMakeRect(kTitleX, 0, kTitleWidth, 0.0);
+    NSRect frame = NSMakeRect(kTitleX, 0, 0, 0);
 
     NSString* string = base::SysUTF16ToNSString(extension->title);
     cwsButton_.reset(
       [WebIntentPickerSheetController createHyperlinkButton:string
                                                   withFrame:frame]);
+    [cwsButton_ setAlignment:NSLeftTextAlignment];
     [cwsButton_ setTarget:controller];
     [cwsButton_ setAction:@selector(openExtensionLink:)];
     [cwsButton_ setTag:index];
+    [cwsButton_ sizeToFit];
+
+    frame = [cwsButton_ frame];
     frame.size.height = std::min([[cwsButton_ cell] cellSize].height,
                                  kMaxHeight);
-    frame.origin.y += (kMaxHeight - NSHeight(frame)) / 2.0;
+    frame.origin.y = (kMaxHeight - NSHeight(frame)) / 2.0;
     [cwsButton_ setFrame:frame];
     [subviews addObject:cwsButton_];
 
     // Add the star rating
+    CGFloat offsetX = frame.origin.x + NSWidth(frame) + kFramePadding;
     ratingsWidget_.reset(
         [SingleSuggestionView
             createStarWidgetWithRating:extension->average_rating]);
     frame = [ratingsWidget_ frame];
     frame.origin.y += (kMaxHeight - NSHeight(frame)) / 2.0;
-    frame.origin.x = kStarX;
+    frame.origin.x = offsetX;
     [ratingsWidget_ setFrame: frame];
     [subviews addObject:ratingsWidget_];
 
@@ -370,15 +367,11 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 }
 
 - (void)startThrobberForRow:(NSInteger)index {
-  // Check against number of subviews
-  // Get appropriate subview
-  // Dim all subviews except our subview
   for (SingleSuggestionView* row in [self subviews]) {
     [row setEnabled:NO];
     if ([row tag] == index)
       [row startThrobber];
   }
-  // replace button on our subview with throbber
 }
 
 - (void)stopThrobber {
@@ -543,7 +536,7 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 - (void)addCloseButtonToSubviews:(NSMutableArray*)subviews  {
   if (!closeButton_.get()) {
     NSRect buttonFrame = NSMakeRect(
-        kFramePadding + kImageSize + kTextWidth, kFramePadding,
+        kFramePadding + kTextWidth, kFramePadding,
         kCloseButtonSize, kCloseButtonSize);
     closeButton_.reset(
         [[HoverCloseButton alloc] initWithFrame:buttonFrame]);
@@ -557,16 +550,6 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 // Returns the y position delta for the next offset.
 - (CGFloat)addHeaderToSubviews:(NSMutableArray*)subviews
                       atOffset:(CGFloat)offset {
-  NSRect imageFrame = NSMakeRect(kFramePadding, offset, kImageSize, kImageSize);
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* nsImage = rb.GetNativeImageNamed(IDR_PAGEINFO_INFO);
-
-  scoped_nsobject<NSImageView> imageView(
-      [[NSImageView alloc] initWithFrame:imageFrame]);
-  [imageView setImage:nsImage];
-  [imageView setImageFrameStyle:NSImageFrameNone];
-
   // Create a new text field if we don't have one yet.
   // TODO(groby): This should not be necessary since the controller sends this
   // string.
@@ -579,18 +562,10 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   NSRect textFrame = [actionTextField_ frame];
   textFrame.origin.y = offset;
 
-  // Adjust view height to fit elements, center-align elements.
-  CGFloat maxHeight = std::max(NSHeight(imageFrame), NSHeight(textFrame));
-  textFrame.origin.y += (maxHeight - NSHeight(textFrame)) / 2;
-  imageFrame.origin.y += (maxHeight - NSHeight(imageFrame)) / 2;
-
   [actionTextField_ setFrame:textFrame];
-  [imageView setFrame:imageFrame];
-
   [subviews addObject:actionTextField_];
-  [subviews addObject:imageView];
 
-  return NSHeight([imageView frame]);
+  return NSHeight([actionTextField_ frame]);
 }
 
 - (CGFloat)addInlineHtmlToSubviews:(NSMutableArray*)subviews
@@ -660,6 +635,8 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
     offset += [self addHeaderToSubviews:subviews atOffset:offset];
     [self addCloseButtonToSubviews:subviews];
 
+    offset += kVerticalSpacing;
+
     if (model) {
       [intentButtons_ removeAllObjects];
 
@@ -672,6 +649,9 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
                               toSubviews:subviews
                                 atOffset:offset];
       }
+
+      // Leave room for defaults section. TODO(groby): Add defaults.
+      offset += kVerticalSpacing * 3;
 
       suggestionView_.reset(
           [[SuggestionView alloc] initWithModel:model forController:self]);
@@ -709,11 +689,12 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 - (void)setActionString:(NSString*)actionString {
   NSRect textFrame;
   if (!actionTextField_.get()) {
-    textFrame = NSMakeRect(kFramePadding + kImageSize + kImageSpacing, 0,
+    textFrame = NSMakeRect(kFramePadding, 0,
                            kTextWidth, 1);
 
     actionTextField_.reset([[NSTextField alloc] initWithFrame:textFrame]);
     [self configureTextFieldAsLabel:actionTextField_.get()];
+    [actionTextField_ setFont:[NSFont systemFontOfSize:kHeaderFontSize]];
   } else {
     textFrame = [actionTextField_ frame];
   }
