@@ -345,8 +345,7 @@ const Extension* ExtensionProcessManager::GetExtensionForRenderViewHost(
 
   ExtensionService* service =
       ExtensionSystem::Get(GetProfile())->extension_service();
-  return service->extensions()->GetByID(
-      render_view_host->GetSiteInstance()->GetSite().host());
+  return service->extensions()->GetByID(GetExtensionID(render_view_host));
 }
 
 void ExtensionProcessManager::RegisterRenderViewHost(
@@ -552,7 +551,7 @@ void ExtensionProcessManager::Observe(
     case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       if (background_hosts_.erase(host))
-        background_page_data_.erase(host->extension()->id());
+        ClearBackgroundPageData(host->extension()->id());
       platform_app_hosts_.erase(host);
       break;
     }
@@ -641,6 +640,20 @@ void ExtensionProcessManager::CloseBackgroundHosts() {
        iter != background_hosts_.end(); ) {
     ExtensionHostSet::iterator current = iter++;
     delete *current;
+  }
+}
+
+void ExtensionProcessManager::ClearBackgroundPageData(
+    const std::string& extension_id) {
+  background_page_data_.erase(extension_id);
+
+  // Re-register all RenderViews for this extension. We do this to restore
+  // the lazy_keepalive_count (if any) to properly reflect the number of open
+  // views.
+  for (ExtensionRenderViews::const_iterator it = all_extension_views_.begin();
+       it != all_extension_views_.end(); ++it) {
+    if (GetExtensionID(it->first) == extension_id)
+      UpdateRegisteredRenderView(it->first);
   }
 }
 

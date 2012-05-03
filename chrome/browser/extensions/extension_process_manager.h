@@ -194,6 +194,9 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // was not available when the host was first registered.
   void UpdateRegisteredRenderView(content::RenderViewHost* render_view_host);
 
+  // Clears background page data for this extension.
+  void ClearBackgroundPageData(const std::string& extension_id);
+
   BackgroundPageDataMap background_page_data_;
 
   // The time to delay between an extension becoming idle and
