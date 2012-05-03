@@ -867,10 +867,6 @@ enum NotificationType {
   // may not be fully rendered at this point.
   NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
 
-  // Sent when the wizard's content view is destroyed. The source and details
-  // are not used.
-  NOTIFICATION_WIZARD_CONTENT_VIEW_DESTROYED,
-
   // Sent when the screen lock state has changed. The source is
   // ScreenLocker and the details is a bool specifing that the
   // screen is locked. When details is a false, the source object

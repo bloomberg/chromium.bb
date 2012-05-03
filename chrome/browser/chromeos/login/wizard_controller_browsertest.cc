@@ -106,8 +106,8 @@ class WizardControllerFlowTest : public WizardControllerTest {
  protected:
   WizardControllerFlowTest() {}
   // Overriden from InProcessBrowserTest:
-  virtual Browser* CreateBrowser(Profile* profile) {
-    Browser* ret = WizardControllerTest::CreateBrowser(profile);
+  virtual void SetUpOnMainThread() OVERRIDE {
+    WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
     WizardController::default_controller()->is_official_build_ = true;
@@ -129,8 +129,6 @@ class WizardControllerFlowTest : public WizardControllerTest {
     EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
     WizardController::default_controller()->AdvanceToScreen(
         WizardController::kNetworkScreenName);
-
-    return ret;
   }
 
   void OnExit(ScreenObserver::ExitCodes exit_code) {

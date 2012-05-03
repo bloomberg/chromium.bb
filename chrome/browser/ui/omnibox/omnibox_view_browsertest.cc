@@ -152,7 +152,6 @@ class OmniboxViewTest : public InProcessBrowserTest,
  protected:
   OmniboxViewTest()
       : location_bar_focus_view_id_(VIEW_ID_LOCATION_BAR) {
-    set_show_window(true);
   }
 
   virtual void SetUpOnMainThread() {

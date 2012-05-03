@@ -21,7 +21,6 @@ const char kSharedWorkerJs[] =
 class InspectUITest : public InProcessBrowserTest {
  public:
   InspectUITest() {
-    set_show_window(true);
     EnableDOMAutomation();
   }
 

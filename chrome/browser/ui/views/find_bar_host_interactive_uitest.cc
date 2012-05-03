@@ -47,7 +47,6 @@ class FindInPageTest : public InProcessBrowserTest {
       location_bar_focus_view_id_(VIEW_ID_LOCATION_BAR)
 #endif
   {
-    set_show_window(true);
     FindBarHost::disable_animations_during_testing_ = true;
   }
 

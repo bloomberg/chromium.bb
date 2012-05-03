@@ -143,10 +143,10 @@ class InProcessBrowserTest : public BrowserTestBase {
   // finish loading and shows the browser.
   //
   // This is invoked from Setup.
-  virtual Browser* CreateBrowser(Profile* profile);
+  Browser* CreateBrowser(Profile* profile);
 
   // Similar to |CreateBrowser|, but creates an incognito browser.
-  virtual Browser* CreateIncognitoBrowser();
+  Browser* CreateIncognitoBrowser();
 
   // Creates a browser for a popup window with a single tab (about:blank), waits
   // for the tab to finish loading, and shows the browser.
@@ -178,14 +178,7 @@ class InProcessBrowserTest : public BrowserTestBase {
 
   // Sets some test states (see below for comments).  Call this in your test
   // constructor.
-  void set_show_window(bool show) { show_window_ = show; }
-  void set_initial_window_required(bool flag) {
-    initial_window_required_= flag;
-  }
   void EnableDOMAutomation() { dom_automation_enabled_ = true; }
-  void EnableTabCloseableStateWatcher() {
-    tab_closeable_state_watcher_enabled_ = true;
-  }
 #if defined(OS_POSIX)
   // This is only needed by a test that raises SIGTERM to ensure that a specific
   // codepath is taken.
@@ -222,19 +215,9 @@ class InProcessBrowserTest : public BrowserTestBase {
   // ContentRendererClient when running in single-process mode.
   scoped_ptr<content::ContentRendererClient> single_process_renderer_client_;
 
-  // Whether this test requires the browser windows to be shown (interactive
-  // tests for example need the windows shown).
-  bool show_window_;
-
-  // Whether this test requires an initial window.
-  bool initial_window_required_;
-
   // Whether the JavaScript can access the DOMAutomationController (a JS object
   // that can send messages back to the browser).
   bool dom_automation_enabled_;
-
-  // Whether this test requires the TabCloseableStateWatcher.
-  bool tab_closeable_state_watcher_enabled_;
 
   // Host resolver to use during the test.
   scoped_refptr<net::RuleBasedHostResolverProc> host_resolver_;

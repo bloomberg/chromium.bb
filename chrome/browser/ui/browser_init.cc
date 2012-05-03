@@ -1705,7 +1705,8 @@ bool BrowserInit::ProcessCmdLineImpl(
   if (process_startup) {
     if (command_line.HasSwitch(switches::kDisablePromptOnRepost))
       content::NavigationController::DisablePromptOnRepost();
-    RegisterComponentsForUpdate(command_line);
+    if (!command_line.HasSwitch(switches::kDisableComponentUpdate))
+      RegisterComponentsForUpdate(command_line);
   }
 
   bool silent_launch = false;

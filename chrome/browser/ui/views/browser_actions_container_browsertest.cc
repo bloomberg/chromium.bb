@@ -13,17 +13,13 @@
 
 class BrowserActionsContainerTest : public ExtensionBrowserTest {
  public:
-  BrowserActionsContainerTest() : browser_(NULL) {
+  BrowserActionsContainerTest() {
   }
   virtual ~BrowserActionsContainerTest() {}
 
-  virtual Browser* CreateBrowser(Profile* profile) {
-    browser_ = InProcessBrowserTest::CreateBrowser(profile);
-    browser_actions_bar_.reset(new BrowserActionTestUtil(browser_));
-    return browser_;
+  virtual void SetUpOnMainThread() OVERRIDE {
+    browser_actions_bar_.reset(new BrowserActionTestUtil(browser()));
   }
-
-  Browser* browser() { return browser_; }
 
   BrowserActionTestUtil* browser_actions_bar() {
     return browser_actions_bar_.get();
@@ -41,8 +37,6 @@ class BrowserActionsContainerTest : public ExtensionBrowserTest {
 
  private:
   scoped_ptr<BrowserActionTestUtil> browser_actions_bar_;
-
-  Browser* browser_;  // Weak.
 };
 
 // Test the basic functionality.

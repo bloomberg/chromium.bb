@@ -66,6 +66,8 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     // Minimal set of expectations needed on NetworkScreen initialization.
     // Status bar expectations are defined with RetiresOnSaturation() so
     // these mocks will be active once status bar is initialized.
+    EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
+        .Times(AnyNumber());
     EXPECT_CALL(*mock_network_library_, wifi_connected())
         .Times(1)
         .WillRepeatedly(Return(false));
@@ -111,6 +113,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() {
+    WizardInProcessBrowserTest::SetUpOnMainThread();
     mock_screen_observer_.reset(new MockScreenObserver());
     ASSERT_TRUE(WizardController::default_controller() != NULL);
     network_screen_ =

@@ -56,10 +56,7 @@ const char kBrowserTestType[] = "browser";
 
 InProcessBrowserTest::InProcessBrowserTest()
     : browser_(NULL),
-      show_window_(false),
-      initial_window_required_(true),
-      dom_automation_enabled_(false),
-      tab_closeable_state_watcher_enabled_(false)
+      dom_automation_enabled_(false)
 #if defined(OS_POSIX)
       , handle_sigterm_(true)
 #endif
@@ -140,6 +137,16 @@ void InProcessBrowserTest::SetUp() {
   net::ScopedDefaultHostResolverProc scoped_host_resolver_proc(
       host_resolver_.get());
 
+#if defined(OS_MACOSX)
+  // On Mac, without the following autorelease pool, code which is directly
+  // executed (as opposed to executed inside a message loop) would autorelease
+  // objects into a higher-level pool. This pool is not recycled in-sync with
+  // the message loops' pools and causes problems with code relying on
+  // deallocation via an autorelease pool (such as browser window closure and
+  // browser shutdown). To avoid this, the following pool is recycled after each
+  // time code is directly executed.
+  autorelease_pool_ = new base::mac::ScopedNSAutoreleasePool;
+#endif
   BrowserTestBase::SetUp();
 }
 
@@ -176,12 +183,15 @@ void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
                                  subprocess_path);
 #endif
 
-  // If neccessary, disable TabCloseableStateWatcher.
-  if (!tab_closeable_state_watcher_enabled_)
-    command_line->AppendSwitch(switches::kDisableTabCloseableStateWatcher);
-
   // TODO(pkotwicz): Investigate if we can remove this switch.
   command_line->AppendSwitch(switches::kDisableZeroBrowsersOpenForTests);
+
+  if (!command_line->HasSwitch(switches::kHomePage)) {
+      command_line->AppendSwitchASCII(
+          switches::kHomePage, chrome::kAboutBlankURL);
+  }
+  if (command_line->GetArgs().empty())
+    command_line->AppendArg(chrome::kAboutBlankURL);
 }
 
 bool InProcessBrowserTest::CreateUserDataDirectory() {
@@ -328,31 +338,16 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
     signal(SIGTERM, DumpStackTraceSignalHandler);
 #endif  // defined(OS_POSIX)
 
-#if defined(OS_MACOSX)
-  // On Mac, without the following autorelease pool, code which is directly
-  // executed (as opposed to executed inside a message loop) would autorelease
-  // objects into a higher-level pool. This pool is not recycled in-sync with
-  // the message loops' pools and causes problems with code relying on
-  // deallocation via an autorelease pool (such as browser window closure and
-  // browser shutdown). To avoid this, the following pool is recycled after each
-  // time code is directly executed.
-  base::mac::ScopedNSAutoreleasePool pool;
-  AutoReset<base::mac::ScopedNSAutoreleasePool*> autorelease_pool_reset(
-      &autorelease_pool_, &pool);
-#endif
-
   // Pump startup related events.
   ui_test_utils::RunAllPendingInMessageLoop();
 
 #if defined(OS_MACOSX)
-  pool.Recycle();
+  autorelease_pool_->Recycle();
 #endif
 
-  if (initial_window_required_) {
-    browser_ = CreateBrowser(ProfileManager::GetDefaultProfile());
-#if defined(OS_MACOSX)
-    pool.Recycle();
-#endif
+  if (BrowserList::size()) {
+    browser_ = *BrowserList::begin();
+    ui_test_utils::WaitForLoadStop(browser_->GetSelectedWebContents());
   }
 
   // Pump any pending events that were created as a result of creating a
@@ -361,26 +356,23 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 
   SetUpOnMainThread();
 #if defined(OS_MACOSX)
-  pool.Recycle();
+  autorelease_pool_->Recycle();
 #endif
 
   if (!HasFatalFailure())
     RunTestOnMainThread();
 #if defined(OS_MACOSX)
-  pool.Recycle();
+  autorelease_pool_->Recycle();
 #endif
 
   // Invoke cleanup and quit even if there are failures. This is similar to
   // gtest in that it invokes TearDown even if Setup fails.
   CleanUpOnMainThread();
 #if defined(OS_MACOSX)
-  pool.Recycle();
+  autorelease_pool_->Recycle();
 #endif
 
   QuitBrowsers();
-#if defined(OS_MACOSX)
-  pool.Recycle();
-#endif
 }
 
 void InProcessBrowserTest::QuitBrowsers() {
@@ -393,4 +385,9 @@ void InProcessBrowserTest::QuitBrowsers() {
   MessageLoopForUI::current()->PostTask(FROM_HERE,
                                         base::Bind(&BrowserList::AttemptExit));
   ui_test_utils::RunMessageLoop();
+
+#if defined(OS_MACOSX)
+  delete autorelease_pool_;
+  autorelease_pool_ = NULL;
+#endif
 }

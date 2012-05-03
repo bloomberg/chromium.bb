@@ -71,6 +71,8 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     EXPECT_CALL(*mock_network_library_, AddNetworkManagerObserver(_))
         .Times(1)
         .RetiresOnSaturation();
+    EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
+        .Times(AnyNumber());
     EXPECT_CALL(*mock_network_library_, FindWifiDevice())
         .Times(AnyNumber());
     EXPECT_CALL(*mock_network_library_, FindEthernetDevice())
@@ -78,6 +80,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() {
+    WizardInProcessBrowserTest::SetUpOnMainThread();
     mock_screen_observer_.reset(new MockScreenObserver());
     ASSERT_TRUE(WizardController::default_controller() != NULL);
     update_screen_ = WizardController::default_controller()->GetUpdateScreen();
