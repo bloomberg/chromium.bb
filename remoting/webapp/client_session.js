@@ -534,6 +534,18 @@ remoting.ClientSession.prototype.onResize = function() {
 };
 
 /**
+ * Requests that the host pause or resume video updates.
+ *
+ * @param {boolean} pause True to pause video, false to resume.
+ * @return {void} Nothing.
+ */
+remoting.ClientSession.prototype.pauseVideo = function(pause) {
+  if (this.plugin) {
+    this.plugin.pauseVideo(pause)
+  }
+}
+
+/**
  * This is a callback that gets called when the plugin notifies us of a change
  * in the size of the remote desktop.
  *

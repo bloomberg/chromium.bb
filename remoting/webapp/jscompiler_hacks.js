@@ -18,6 +18,9 @@ Document.prototype.webkitCancelFullScreen = function() {};
 /** @type {boolean} */
 Document.prototype.webkitIsFullScreen;
 
+/** @type {boolean} */
+Document.prototype.webkitHidden;
+
 /** @type {number} */
 Element.ALLOW_KEYBOARD_INPUT;
 

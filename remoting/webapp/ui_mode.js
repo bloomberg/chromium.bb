@@ -108,9 +108,13 @@ remoting.setMode = function(mode) {
   if (mode == remoting.AppMode.IN_SESSION) {
     document.removeEventListener('keydown', remoting.ConnectionStats.onKeydown,
                                  false);
+    document.addEventListener('webkitvisibilitychange',
+                              remoting.onVisibilityChanged, false);
   } else {
     document.addEventListener('keydown', remoting.ConnectionStats.onKeydown,
                               false);
+    document.removeEventListener('webkitvisibilitychange',
+                                 remoting.onVisibilityChanged, false);
   }
 };
 

@@ -115,6 +115,16 @@ remoting.onResize = function() {
 };
 
 /**
+ * Handle changes in the visibility of the window, for example by pausing video.
+ *
+ * @return {void} Nothing.
+ */
+remoting.onVisibilityChanged = function() {
+  if (remoting.clientSession)
+    remoting.clientSession.pauseVideo(document.webkitHidden);
+}
+
+/**
  * Disconnect the remoting client.
  *
  * @return {void} Nothing.
