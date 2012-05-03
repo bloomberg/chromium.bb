@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
@@ -129,6 +130,20 @@ GoogleServiceAuthError::second_factor() const {
 
 int GoogleServiceAuthError::network_error() const {
   return network_error_;
+}
+
+const std::string& GoogleServiceAuthError::token() const {
+  switch (state_) {
+    case CAPTCHA_REQUIRED:
+      return captcha_.token;
+      break;
+    case TWO_FACTOR:
+      return second_factor_.token;
+      break;
+    default:
+      NOTREACHED();
+  }
+  return EmptyString();
 }
 
 DictionaryValue* GoogleServiceAuthError::ToValue() const {

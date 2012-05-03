@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 
@@ -148,13 +149,13 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
 
   // Start a challenge response to obtain an OAuth2 token.  This method is
   // called after a challenge response is issued from a previous call to
-  // StartClientOAuth().  The |name| and |token| arguments are come from the
+  // StartClientOAuth().  The |type| and |token| arguments come from the
   // error response to StartClientOAuth(), while the |solution| argument
   // represents the answer from the user for the partocular challenge.
   //
   // Either OnClientOAuthSuccess or OnClientOAuthFailure will be
   // called on the consumer on the original thread.
-  void StartClientOAuthChallengeResponse(const std::string& name,
+  void StartClientOAuthChallengeResponse(GoogleServiceAuthError::State type,
                                          const std::string& token,
                                          const std::string& solution);
 
@@ -231,6 +232,11 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   static const char kCaptchaUrlParam[];
   static const char kCaptchaTokenParam[];
 
+  // Constants for parsing ClientOAuth errors.
+  static const char kNeedsAdditional[];
+  static const char kCaptcha[];
+  static const char kTwoFactor[];
+
   // Constants for request/response for OAuth2 requests.
   static const char kAuthHeaderFormat[];
   static const char kOAuthHeaderFormat[];
@@ -238,9 +244,6 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   static const char kClientLoginToOAuth2CookiePartHttpOnly[];
   static const char kClientLoginToOAuth2CookiePartCodePrefix[];
   static const int kClientLoginToOAuth2CookiePartCodePrefixLength;
-  static const char kOAuth2RefreshTokenKey[];
-  static const char kOAuth2AccessTokenKey[];
-  static const char kOAuth2ExpiresInKey[];
 
   // Process the results of a ClientLogin fetch.
   void OnClientLoginFetched(const std::string& data,
@@ -301,12 +304,6 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   static bool ParseClientLoginToOAuth2Response(
       const net::ResponseCookies& cookies,
       std::string* auth_code);
-
-  // Parse OAuth2 token pairresponse.
-  static bool ParseOAuth2TokenPairResponse(const std::string& data,
-                                           std::string* refresh_token,
-                                           std::string* access_token,
-                                           int* expires_in_secs);
 
   static bool ParseClientLoginToOAuth2Cookie(const std::string& cookie,
                                              std::string* auth_code);

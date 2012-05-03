@@ -169,6 +169,7 @@ class GoogleServiceAuthError {
   const Captcha& captcha() const;
   const SecondFactor& second_factor() const;
   int network_error() const;
+  const std::string& token() const;
 
   // Returns info about this object in a dictionary.  Caller takes
   // ownership of returned dictionary.

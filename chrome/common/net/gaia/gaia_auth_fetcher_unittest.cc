@@ -46,23 +46,14 @@ static const char kGetTokenPairValidResponse[] =
     "  \"expires_in\": 3600,"
     "  \"token_type\": \"Bearer\""
     "}";
-static const char kGetTokenPairResponseNoRefreshToken[] =
+static const char kClientOAuthValidResponse[] =
     "{"
-    "  \"access_token\": \"at1\","
-    "  \"expires_in\": 3600,"
-    "  \"token_type\": \"Bearer\""
-    "}";
-static const char kGetTokenPairResponseNoAccessToken[] =
-    "{"
-    "  \"refresh_token\": \"rt1\","
-    "  \"expires_in\": 3600,"
-    "  \"token_type\": \"Bearer\""
-    "}";
-static const char kGetTokenPairResponseNoExpiresIn[] =
-    "{"
-    "  \"refresh_token\": \"rt1\","
-    "  \"access_token\": \"at1\","
-    "  \"token_type\": \"Bearer\""
+    "  \"oauth2\": {"
+    "    \"refresh_token\": \"rt1\","
+    "    \"access_token\": \"at1\","
+    "    \"expires_in\": 3600,"
+    "    \"token_type\": \"Bearer\""
+    "  }"
     "}";
 
 static void ExpectCaptchaChallenge(const GoogleServiceAuthError& error) {
@@ -73,6 +64,10 @@ static void ExpectCaptchaChallenge(const GoogleServiceAuthError& error) {
   EXPECT_EQ("http://www.image.com/", error.captcha().image_url.spec());
   EXPECT_EQ(640, error.captcha().image_width);
   EXPECT_EQ(480, error.captcha().image_height);
+}
+
+static void ExpectBadAuth(const GoogleServiceAuthError& error) {
+  EXPECT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS, error.state());
 }
 
 static void ExpectTwoFactorChallenge(const GoogleServiceAuthError& error) {
@@ -867,62 +862,9 @@ TEST_F(GaiaAuthFetcherTest, ParseClientLoginToOAuth2Response) {
   }
 }
 
-TEST_F(GaiaAuthFetcherTest, ParseOAuth2TokenPairResponse) {
-  {  // No data.
-    std::string rt;
-    std::string at;
-    int exp = -1;
-    EXPECT_FALSE(GaiaAuthFetcher::ParseOAuth2TokenPairResponse(
-        "", &rt, &at, &exp));
-    EXPECT_EQ("", rt);
-    EXPECT_EQ("", at);
-    EXPECT_EQ(-1, exp);
-  }
-  {  // No refresh token.
-    std::string rt;
-    std::string at;
-    int exp = -1;
-    EXPECT_FALSE(GaiaAuthFetcher::ParseOAuth2TokenPairResponse(
-        kGetTokenPairResponseNoRefreshToken, &rt, &at, &exp));
-    EXPECT_EQ("", rt);
-    EXPECT_EQ("", at);
-    EXPECT_EQ(-1, exp);
-  }
-  {  // No access token.
-    std::string rt;
-    std::string at;
-    int exp = -1;
-    EXPECT_FALSE(GaiaAuthFetcher::ParseOAuth2TokenPairResponse(
-        kGetTokenPairResponseNoAccessToken, &rt, &at, &exp));
-    EXPECT_EQ("", rt);
-    EXPECT_EQ("", at);
-    EXPECT_EQ(-1, exp);
-  }
-  {  // No expiration.
-    std::string rt;
-    std::string at;
-    int exp = -1;
-    EXPECT_FALSE(GaiaAuthFetcher::ParseOAuth2TokenPairResponse(
-        kGetTokenPairResponseNoExpiresIn, &rt, &at, &exp));
-    EXPECT_EQ("", rt);
-    EXPECT_EQ("", at);
-    EXPECT_EQ(-1, exp);
-  }
-  {  // Valid response.
-    std::string rt;
-    std::string at;
-    int exp = -1;
-    EXPECT_TRUE(GaiaAuthFetcher::ParseOAuth2TokenPairResponse(
-        kGetTokenPairValidResponse, &rt, &at, &exp));
-    EXPECT_EQ("rt1", rt);
-    EXPECT_EQ("at1", at);
-    EXPECT_EQ(3600, exp);
-  }
-}
-
 TEST_F(GaiaAuthFetcherTest, ClientOAuthSuccess) {
   MockURLFetcherFactory<MockFetcher> factory;
-  factory.set_results(kGetTokenPairValidResponse);
+  factory.set_results(kClientOAuthValidResponse);
 
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnClientOAuthSuccess(
@@ -943,18 +885,39 @@ TEST_F(GaiaAuthFetcherTest, ClientOAuthSuccess) {
       "             \"https://some.other.scope.com\"],"
       "\"oauth2_client_id\": \"77185425430.apps.googleusercontent.com\","
       "\"friendly_device_name\": \"tests\","
-      "\"accepts_challenge\": [\"Captcha\", \"TwoStep\"],"
+      "\"accepts_challenges\": [\"Captcha\", \"TwoStep\"],"
       "\"locale\": \"en\","
-      "\"fallback\": \"Terminating\""
+      "\"fallback\": { \"name\": \"GetOAuth2Token\" }"
       "}"));
   EXPECT_TRUE(expected->Equals(actual.get()));
+}
+
+TEST_F(GaiaAuthFetcherTest, ClientOAuthBadAuth) {
+  MockURLFetcherFactory<MockFetcher> factory;
+  factory.set_success(false);
+  factory.set_results("{"
+                      "  \"cause\" : \"BadAuthentication\","
+                      "  \"fallback\" : {"
+                      "    \"name\" : \"Terminating\","
+                      "    \"url\" : \"https://www.terminating.com\""
+                      "  }"
+                      "}");
+
+  MockGaiaConsumer consumer;
+  EXPECT_CALL(consumer, OnClientOAuthFailure(_))
+      .WillOnce(Invoke(ExpectBadAuth));
+
+  GaiaAuthFetcher auth(&consumer, "tests", profile_.GetRequestContext());
+  std::vector<std::string> scopes;
+  scopes.push_back(GaiaUrls::GetInstance()->oauth1_login_scope());
+  auth.StartClientOAuth("username", "password", scopes, "", "en");
 }
 
 TEST_F(GaiaAuthFetcherTest, ClientOAuthCaptchaChallenge) {
   MockURLFetcherFactory<MockFetcher> factory;
   factory.set_success(false);
   factory.set_results("{"
-                      "  \"cause\" : \"NeedsChallenge\","
+                      "  \"cause\" : \"NeedsAdditional\","
                       "  \"fallback\" : {"
                       "    \"name\" : \"Terminating\","
                       "    \"url\" : \"https://www.terminating.com\""
@@ -983,7 +946,7 @@ TEST_F(GaiaAuthFetcherTest, ClientOAuthTwoFactorChallenge) {
   MockURLFetcherFactory<MockFetcher> factory;
   factory.set_success(false);
   factory.set_results("{"
-                      "  \"cause\" : \"NeedsChallenge\","
+                      "  \"cause\" : \"NeedsAdditional\","
                       "  \"fallback\" : {"
                       "    \"name\" : \"Terminating\","
                       "    \"url\" : \"https://www.terminating.com\""
@@ -1009,14 +972,15 @@ TEST_F(GaiaAuthFetcherTest, ClientOAuthTwoFactorChallenge) {
 
 TEST_F(GaiaAuthFetcherTest, ClientOAuthChallengeSuccess) {
   MockURLFetcherFactory<MockFetcher> factory;
-  factory.set_results(kGetTokenPairValidResponse);
+  factory.set_results(kClientOAuthValidResponse);
 
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnClientOAuthSuccess(
       GaiaAuthConsumer::ClientOAuthResult("rt1", "at1", 3600))).Times(2);
 
   GaiaAuthFetcher auth1(&consumer, std::string(), profile_.GetRequestContext());
-  auth1.StartClientOAuthChallengeResponse("TwoFactor", "token", "mysolution");
+  auth1.StartClientOAuthChallengeResponse(GoogleServiceAuthError::TWO_FACTOR,
+                                          "token", "mysolution");
 
   scoped_ptr<base::Value> actual1(base::JSONReader::Read(auth1.request_body_));
   scoped_ptr<base::Value> expected1(base::JSONReader::Read(
@@ -1030,7 +994,8 @@ TEST_F(GaiaAuthFetcherTest, ClientOAuthChallengeSuccess) {
   EXPECT_TRUE(expected1->Equals(actual1.get()));
 
   GaiaAuthFetcher auth2(&consumer, "tests", profile_.GetRequestContext());
-  auth2.StartClientOAuthChallengeResponse("Captcha", "token", "mysolution");
+  auth2.StartClientOAuthChallengeResponse(
+      GoogleServiceAuthError::CAPTCHA_REQUIRED, "token", "mysolution");
 
   scoped_ptr<base::Value> actual2(base::JSONReader::Read(auth2.request_body_));
   scoped_ptr<base::Value> expected2(base::JSONReader::Read(

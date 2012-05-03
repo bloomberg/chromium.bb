@@ -33,6 +33,24 @@ static bool CookiePartsContains(const std::vector<std::string>& parts,
                                 const char* part) {
   return std::find(parts.begin(), parts.end(), part) != parts.end();
 }
+
+bool ExtractOAuth2TokenPairResponse(DictionaryValue* dict,
+                                    std::string* refresh_token,
+                                    std::string* access_token,
+                                    int* expires_in_secs) {
+  DCHECK(refresh_token);
+  DCHECK(access_token);
+  DCHECK(expires_in_secs);
+
+  if (!dict->GetStringWithoutPathExpansion("refresh_token", refresh_token) ||
+      !dict->GetStringWithoutPathExpansion("access_token", access_token) ||
+      !dict->GetIntegerWithoutPathExpansion("expires_in", expires_in_secs)) {
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 // TODO(chron): Add sourceless version of this formatter.
@@ -95,10 +113,10 @@ const char GaiaAuthFetcher::kClientOAuthFormat[] =
     "\"scopes\": [%s],"
     "\"oauth2_client_id\": \"%s\","
     "\"friendly_device_name\": \"%s\","
-    "\"accepts_challenge\": [\"Captcha\", \"TwoStep\"],"
+    "\"accepts_challenges\": [\"Captcha\", \"TwoStep\"],"
     "\"locale\": \"%s\","
     "%s"  // persistent_id
-    "\"fallback\": \"Terminating\""
+    "\"fallback\": { \"name\": \"GetOAuth2Token\" }"
     "}";
 
 const char GaiaAuthFetcher::kClientOAuthChallengeResponseFormat[] =
@@ -139,6 +157,13 @@ const char GaiaAuthFetcher::kCaptchaUrlParam[] = "CaptchaUrl";
 const char GaiaAuthFetcher::kCaptchaTokenParam[] = "CaptchaToken";
 
 // static
+const char GaiaAuthFetcher::kNeedsAdditional[] = "NeedsAdditional";
+// static
+const char GaiaAuthFetcher::kCaptcha[] = "Captcha";
+// static
+const char GaiaAuthFetcher::kTwoFactor[] = "TwoFactor";
+
+// static
 const char GaiaAuthFetcher::kCookiePersistence[] = "true";
 // static
 // TODO(johnnyg): When hosted accounts are supported by sync,
@@ -167,12 +192,6 @@ const char GaiaAuthFetcher::kClientLoginToOAuth2CookiePartCodePrefix[] =
 // static
 const int GaiaAuthFetcher::kClientLoginToOAuth2CookiePartCodePrefixLength =
     arraysize(GaiaAuthFetcher::kClientLoginToOAuth2CookiePartCodePrefix) - 1;
-// static
-const char GaiaAuthFetcher::kOAuth2RefreshTokenKey[] = "refresh_token";
-// static
-const char GaiaAuthFetcher::kOAuth2AccessTokenKey[] = "access_token";
-// static
-const char GaiaAuthFetcher::kOAuth2ExpiresInKey[] = "expires_in";
 
 GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
                                  const std::string& source,
@@ -421,7 +440,7 @@ std::string GaiaAuthFetcher::MakeClientOAuthChallengeResponseBody(
     const std::string& name,
     const std::string& token,
     const std::string& solution) {
-  std::string field_name = name == "TwoFactor" ? "otp" : "solution";
+  std::string field_name = name == kTwoFactor ? "otp" : "solution";
 
   return StringPrintf(kClientOAuthChallengeResponseFormat, name.c_str(),
                       token.c_str(), field_name.c_str(), solution.c_str());
@@ -476,34 +495,6 @@ bool GaiaAuthFetcher::ParseClientLoginToOAuth2Response(
 }
 
 // static
-bool GaiaAuthFetcher::ParseOAuth2TokenPairResponse(const std::string& data,
-                                                   std::string* refresh_token,
-                                                   std::string* access_token,
-                                                   int* expires_in_secs) {
-  DCHECK(refresh_token);
-  DCHECK(access_token);
-  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
-  if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY)
-    return false;
-
-  DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
-  std::string rt;
-  std::string at;
-  int exp;
-
-  if (!dict->GetStringWithoutPathExpansion(kOAuth2RefreshTokenKey, &rt) ||
-      !dict->GetStringWithoutPathExpansion(kOAuth2AccessTokenKey, &at) ||
-      !dict->GetIntegerWithoutPathExpansion(kOAuth2ExpiresInKey, &exp)) {
-    return false;
-  }
-
-  refresh_token->assign(rt);
-  access_token->assign(at);
-  *expires_in_secs = exp;
-  return true;
-}
-
-// static
 bool GaiaAuthFetcher::ParseClientLoginToOAuth2Cookie(const std::string& cookie,
                                                      std::string* auth_code) {
   std::vector<std::string> parts;
@@ -537,9 +528,15 @@ GaiaAuthFetcher::GenerateClientOAuthError(const std::string& data,
   DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
 
   std::string cause;
-  if (!dict->GetStringWithoutPathExpansion("cause", &cause) ||
-      cause != "NeedsChallenge")
+  if (!dict->GetStringWithoutPathExpansion("cause", &cause))
     return GenerateAuthError(data, status);
+
+  if (cause == kBadAuthenticationError) {
+    return GoogleServiceAuthError(
+        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  } else if (cause != kNeedsAdditional) {
+    return GenerateAuthError(data, status);
+  }
 
   DictionaryValue* challenge;
   if (!dict->GetDictionaryWithoutPathExpansion("challenge", &challenge))
@@ -549,7 +546,7 @@ GaiaAuthFetcher::GenerateClientOAuthError(const std::string& data,
   if (!challenge->GetStringWithoutPathExpansion("name", &name))
     return GenerateAuthError(data, status);
 
-  if (name == "Captcha") {
+  if (name == kCaptcha) {
     std::string token;
     std::string audio_url;
     std::string image_url;
@@ -568,7 +565,7 @@ GaiaAuthFetcher::GenerateClientOAuthError(const std::string& data,
                                                         GURL(image_url),
                                                         image_width,
                                                         image_height);
-  } else if (name == "TwoFactor") {
+  } else if (name == kTwoFactor) {
     std::string token;
     std::string prompt_text;
     std::string alternate_text;
@@ -780,10 +777,22 @@ void GaiaAuthFetcher::StartClientOAuth(const std::string& username,
 }
 
 void GaiaAuthFetcher::StartClientOAuthChallengeResponse(
-    const std::string& name,
+    GoogleServiceAuthError::State type,
     const std::string& token,
     const std::string& solution) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
+
+  std::string name;
+  switch (type) {
+    case GoogleServiceAuthError::CAPTCHA_REQUIRED:
+      name = kCaptcha;
+      break;
+    case GoogleServiceAuthError::TWO_FACTOR:
+      name = kTwoFactor;
+      break;
+    default:
+      NOTREACHED();
+  }
 
   request_body_ = MakeClientOAuthChallengeResponseBody(name, token, solution);
   fetcher_.reset(CreateGaiaFetcher(getter_,
@@ -986,10 +995,14 @@ void GaiaAuthFetcher::OnOAuth2TokenPairFetched(
   std::string access_token;
   int expires_in_secs = 0;
 
-  bool success = status.is_success() && response_code == net::HTTP_OK;
-  if (success) {
-    success = ParseOAuth2TokenPairResponse(data, &refresh_token, &access_token,
-                                           &expires_in_secs);
+  bool success = false;
+  if (status.is_success() && response_code == net::HTTP_OK) {
+    scoped_ptr<base::Value> value(base::JSONReader::Read(data));
+    if (value.get() && value->GetType() == base::Value::TYPE_DICTIONARY) {
+      DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
+      success = ExtractOAuth2TokenPairResponse(dict, &refresh_token,
+                                               &access_token, &expires_in_secs);
+    }
   }
 
   if (success) {
@@ -1057,16 +1070,24 @@ void GaiaAuthFetcher::OnClientOAuthFetched(const std::string& data,
   std::string access_token;
   int expires_in_secs = 0;
 
-  bool success = status.is_success() && response_code == net::HTTP_OK;
-  if (success) {
-    success = ParseOAuth2TokenPairResponse(data, &refresh_token, &access_token,
-                                           &expires_in_secs);
+  bool success = false;
+  if (status.is_success() && response_code == net::HTTP_OK) {
+    scoped_ptr<base::Value> value(base::JSONReader::Read(data));
+    if (value.get() && value->GetType() == base::Value::TYPE_DICTIONARY) {
+      DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
+      DictionaryValue* dict_oauth2;
+      if (dict->GetDictionaryWithoutPathExpansion("oauth2", &dict_oauth2)) {
+        success = ExtractOAuth2TokenPairResponse(dict_oauth2, &refresh_token,
+                                                 &access_token,
+                                                 &expires_in_secs);
+      }
+    }
   }
 
   // TODO(rogerta): for now this reuses the OnOAuthLoginTokenXXX callbacks
   // since the data is exactly the same.  This ignores the optional
   // persistent_id data in the response, which we may need to handle.
-  // If we do, we'll need to modify ParseOAuth2TokenPairResponse() to parse
+  // If we do, we'll need to modify ExtractOAuth2TokenPairResponse() to parse
   // the optional data and declare new consumer callbacks to take it.
   if (success) {
     consumer_->OnClientOAuthSuccess(
