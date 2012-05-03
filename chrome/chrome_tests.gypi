@@ -716,7 +716,6 @@
         # NOTE: DON'T ADD NEW TESTS HERE!
         # New tests should be browser_tests. browser_tests are sharded and are
         # less flakier.
-        'browser/ui/tests/browser_uitest.cc',
         'test/automation/automation_proxy_uitest.cc',
         'test/automation/automation_proxy_uitest.h',
         'test/base/chrome_process_util_uitest.cc',

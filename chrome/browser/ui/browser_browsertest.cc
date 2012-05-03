@@ -22,6 +22,7 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
@@ -1745,3 +1746,167 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   app_popup_browser->CloseAllTabs();
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose) {
+  GURL url = ui_test_utils::GetTestUrl(
+      FilePath(), FilePath().AppendASCII("window.close.html"));
+
+  string16 title = ASCIIToUTF16("Title Of Awesomeness");
+  ui_test_utils::TitleWatcher title_watcher(
+      browser()->GetSelectedWebContents(), title);
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 2);
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+}
+
+class ShowModalDialogTest : public BrowserTest {
+ public:
+   ShowModalDialogTest() {}
+
+   virtual void SetUpCommandLine(CommandLine* command_line) {
+     command_line->AppendSwitch(switches::kDisablePopupBlocking);
+   }
+};
+
+IN_PROC_BROWSER_TEST_F(ShowModalDialogTest, BasicTest) {
+  // This navigation should show a modal dialog that will be immediately
+  // closed, but the fact that it was shown should be recorded.
+  GURL url = ui_test_utils::GetTestUrl(
+      FilePath(), FilePath().AppendASCII("showmodaldialog.html"));
+
+  string16 expected_title(ASCIIToUTF16("SUCCESS"));
+  ui_test_utils::TitleWatcher title_watcher(
+      browser()->GetSelectedWebContents(), expected_title);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Verify that we set a mark on successful dialog show.
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, DisallowFileUrlUniversalAccessTest) {
+  GURL url = ui_test_utils::GetTestUrl(
+      FilePath(), FilePath().AppendASCII("fileurl_universalaccess.html"));
+
+  string16 expected_title(ASCIIToUTF16("Disallowed"));
+  ui_test_utils::TitleWatcher title_watcher(
+      browser()->GetSelectedWebContents(), expected_title);
+  title_watcher.AlsoWaitForTitle(ASCIIToUTF16("Allowed"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
+#if !defined(OS_MACOSX)
+class KioskModeTest : public BrowserTest {
+ public:
+  KioskModeTest() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    command_line->AppendSwitch(switches::kKioskMode);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(KioskModeTest, EnableKioskModeTest) {
+  // Check if browser is in fullscreen mode.
+  ASSERT_TRUE(browser()->window()->IsFullscreen());
+  ASSERT_FALSE(browser()->window()->IsFullscreenBubbleVisible());
+}
+#endif  // !defined(OS_MACOSX)
+
+#if defined(OS_WIN)
+// This test verifies that Chrome can be launched with a user-data-dir path
+// which contains non ASCII characters.
+class LaunchBrowserWithNonAsciiUserDatadir : public BrowserTest {
+ public:
+  LaunchBrowserWithNonAsciiUserDatadir() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    FilePath tmp_profile = temp_dir_.path().AppendASCII("tmp_profile");
+    tmp_profile = tmp_profile.Append(L"Test Chrome G�raldine");
+
+    ASSERT_TRUE(file_util::CreateDirectory(tmp_profile));
+    command_line->AppendSwitchPath(switches::kUserDataDir, tmp_profile);
+  }
+
+  ScopedTempDir temp_dir_;
+};
+
+IN_PROC_BROWSER_TEST_F(LaunchBrowserWithNonAsciiUserDatadir,
+                       TestNonAsciiUserDataDir) {
+  // Verify that the window is present.
+  ASSERT_TRUE(browser());
+}
+#endif  // defined(OS_WIN)
+
+// Tests to ensure that the browser continues running in the background after
+// the last window closes.
+class RunInBackgroundTest : public BrowserTest {
+ public:
+   RunInBackgroundTest() {}
+
+   virtual void SetUpCommandLine(CommandLine* command_line) {
+     command_line->AppendSwitch(switches::kKeepAliveForTest);
+   }
+};
+
+IN_PROC_BROWSER_TEST_F(RunInBackgroundTest, RunInBackgroundBasicTest) {
+  // Close the browser window, then open a new one - the browser should keep
+  // running.
+  Profile* profile = browser()->profile();
+  EXPECT_EQ(1u, BrowserList::size());
+  ui_test_utils::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::Source<Browser>(browser()));
+  browser()->CloseWindow();
+  observer.Wait();
+  EXPECT_EQ(0u, BrowserList::size());
+
+  ui_test_utils::BrowserAddedObserver browser_added_observer;
+  Browser::NewEmptyWindow(profile);
+  browser_added_observer.WaitForSingleNewBrowser();
+
+  EXPECT_EQ(1u, BrowserList::size());
+}
+
+// Tests to ensure that the browser continues running in the background after
+// the last window closes.
+class NoStartupWindowTest : public BrowserTest {
+ public:
+   NoStartupWindowTest() {}
+
+   virtual void SetUpCommandLine(CommandLine* command_line) {
+     command_line->AppendSwitch(switches::kNoStartupWindow);
+     command_line->AppendSwitch(switches::kKeepAliveForTest);
+   }
+};
+
+IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
+  // No browser window should be started by default.
+  EXPECT_EQ(0u, BrowserList::size());
+
+  // Starting a browser window should work just fine.
+  ui_test_utils::BrowserAddedObserver browser_added_observer;
+  CreateBrowser(ProfileManager::GetDefaultProfile());
+  browser_added_observer.WaitForSingleNewBrowser();
+
+  EXPECT_EQ(1u, BrowserList::size());
+}
+
+// This test needs to be placed outside the anonymouse namespace because we
+// need to access private type of Browser.
+class AppModeTest : public BrowserTest {
+ public:
+   AppModeTest() {}
+
+   virtual void SetUpCommandLine(CommandLine* command_line) {
+     GURL url = ui_test_utils::GetTestUrl(
+        FilePath(), FilePath().AppendASCII("title1.html"));
+     command_line->AppendSwitchASCII(switches::kApp, url.spec());
+   }
+};
+
+IN_PROC_BROWSER_TEST_F(AppModeTest, EnableAppModeTest) {
+  // Test that an application browser window loads correctly.
+
+  // Verify the browser is in application mode.
+  EXPECT_TRUE(browser()->IsApplication());
+}
