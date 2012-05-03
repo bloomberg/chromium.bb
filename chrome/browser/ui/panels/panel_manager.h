@@ -121,7 +121,7 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   // Wrapper should be used around all time intervals in panels code.
   static inline double AdjustTimeInterval(double interval) {
     if (shorten_time_intervals_)
-      return interval / 100.0;
+      return interval / 500.0;
     else
       return interval;
   }

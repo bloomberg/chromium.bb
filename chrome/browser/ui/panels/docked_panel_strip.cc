@@ -48,7 +48,11 @@ const int kDelayBeforeCollapsingFromTitleOnlyStateMs = 0;
 
 // After focus changed, one panel lost active status, another got it,
 // we refresh layout with a delay.
-const int kRefreshLayoutAfterActivePanelChangeDelayMs = 200;  // arbitrary
+const int kRefreshLayoutAfterActivePanelChangeDelayMs = 600;  // arbitrary
+
+// As we refresh panel positions, some or all panels may move. We make sure
+// we do not animate too many panels at once as this tends to perform poorly.
+const int kNumPanelsToAnimateSimultaneously = 3;
 
 }  // namespace
 
@@ -107,21 +111,40 @@ void DockedPanelStrip::AddPanel(Panel* panel,
   if (!panel->initialized()) {
     DCHECK(!known_position && update_bounds);
     InsertNewlyCreatedPanel(panel);
+    ScheduleLayoutRefresh();
   } else if (known_position) {
     DCHECK(update_bounds);
     InsertExistingPanelAtKnownPosition(panel);
+    RefreshLayout();
   } else {
     DCHECK(!known_position);
-    InsertExistingPanelAtDefaultPosition(panel, update_bounds);
+    InsertExistingPanelAtDefaultPosition(panel);
+    if (update_bounds)
+      RefreshLayout();
   }
 }
 
 gfx::Point DockedPanelStrip::GetDefaultPositionForPanel(
     const gfx::Size& full_size) const {
-  return gfx::Point(
-      std::max(GetRightMostAvailablePosition() - full_size.width(),
-               display_area_.x()),
-      display_area_.bottom() - full_size.height());
+  int x = 0;
+  if (!panels_.empty() &&
+      panels_.back()->GetBounds().x() < display_area_.x()) {
+    // Panels go off screen. Make sure the default position will place
+    // the panel in view.
+    Panels::const_reverse_iterator iter = panels_.rbegin();
+    for (; iter != panels_.rend(); ++iter) {
+      if ((*iter)->GetBounds().x() >= display_area_.x()) {
+        x = (*iter)->GetBounds().x();
+        break;
+      }
+    }
+    // At least one panel should fit on the screen.
+    DCHECK(x > display_area_.x());
+  } else {
+    x = std::max(GetRightMostAvailablePosition() - full_size.width(),
+                 display_area_.x());
+  }
+  return gfx::Point(x, display_area_.bottom() - full_size.height());
 }
 
 void DockedPanelStrip::InsertNewlyCreatedPanel(Panel* panel) {
@@ -166,7 +189,7 @@ void DockedPanelStrip::InsertNewlyCreatedPanel(Panel* panel) {
   panel->SetSizeRange(gfx::Size(kPanelMinWidth, kPanelMinHeight),
                       gfx::Size(max_panel_width, max_panel_height));
 
-  InsertExistingPanelAtDefaultPosition(panel, true /*update_bounds*/);
+  InsertExistingPanelAtKnownPosition(panel);
 }
 
 void DockedPanelStrip::InsertExistingPanelAtKnownPosition(Panel* panel) {
@@ -178,13 +201,9 @@ void DockedPanelStrip::InsertExistingPanelAtKnownPosition(Panel* panel) {
     if (x > (*iter)->GetBounds().x())
       break;
   panels_.insert(iter, panel);
-
-  // This will automatically update all affected panels due to the insertion.
-  RefreshLayout();
 }
 
-void DockedPanelStrip::InsertExistingPanelAtDefaultPosition(Panel* panel,
-    bool update_bounds) {
+void DockedPanelStrip::InsertExistingPanelAtDefaultPosition(Panel* panel) {
   DCHECK(panel->initialized());
 
   gfx::Size full_size = panel->full_size();
@@ -192,10 +211,6 @@ void DockedPanelStrip::InsertExistingPanelAtDefaultPosition(Panel* panel,
   panel->SetPanelBounds(gfx::Rect(pt, full_size));
 
   panels_.push_back(panel);
-
-  // This will automatically update all affected panels due to the insertion.
-  if (update_bounds)
-    RefreshLayout();
 }
 
 int DockedPanelStrip::GetMaxPanelWidth() const {
@@ -772,8 +787,8 @@ void DockedPanelStrip::OnFullScreenModeChanged(bool is_full_screen) {
 }
 
 void DockedPanelStrip::RefreshLayout() {
-  int total_inactive_width = 0;
   int total_active_width = 0;
+  int total_inactive_width = 0;
 
   for (Panels::const_iterator panel_iter = panels_.begin();
        panel_iter != panels_.end(); ++panel_iter) {
@@ -786,22 +801,25 @@ void DockedPanelStrip::RefreshLayout() {
 
   double display_width_for_inactive_panels =
       display_area_.width() - total_active_width -
-      kPanelsHorizontalSpacing * panels_.size();
+          kPanelsHorizontalSpacing * panels_.size();
   double overflow_squeeze_factor = (total_inactive_width > 0) ?
       std::min(display_width_for_inactive_panels / total_inactive_width, 1.0) :
       1.0;
 
   // We want to calculate all bounds first, then apply them in a specific order.
   typedef std::pair<Panel*, gfx::Rect> PanelBoundsInfo;
-  std::vector<PanelBoundsInfo> right_of_active;
-  std::queue<PanelBoundsInfo> left_of_active;
-  bool active_panel_found = false;
+  // The next pair of variables will hold panels that move, respectively,
+  // to the right and to the left. We want to process them from the center
+  // outwards, so one is a stack and another is a queue.
+  std::vector<PanelBoundsInfo> moving_right;
+  std::queue<PanelBoundsInfo> moving_left;
 
   int rightmost_position = StartingRightPosition();
   for (Panels::const_iterator panel_iter = panels_.begin();
        panel_iter != panels_.end(); ++panel_iter) {
     Panel* panel = *panel_iter;
-    gfx::Rect new_bounds = panel->GetBounds();
+    gfx::Rect old_bounds = panel->GetBounds();
+    gfx::Rect new_bounds = old_bounds;
     AdjustPanelBoundsPerExpansionState(panel, &new_bounds);
 
     new_bounds.set_width(
@@ -811,53 +829,59 @@ void DockedPanelStrip::RefreshLayout() {
     int x = rightmost_position - new_bounds.width();
     new_bounds.set_x(x);
 
-    if (panel->IsActive())
-      active_panel_found = true;
-
-    if (active_panel_found)
-      left_of_active.push(std::make_pair(panel, new_bounds));
+    if (x < old_bounds.x() ||
+        (x == old_bounds.x() && new_bounds.width() <= old_bounds.width()))
+      moving_left.push(std::make_pair(panel, new_bounds));
     else
-      right_of_active.push_back(std::make_pair(panel, new_bounds));
+      moving_right.push_back(std::make_pair(panel, new_bounds));
 
     rightmost_position = x - kPanelsHorizontalSpacing;
   }
 
-  // Update panels starting from the active one going in both directions.
+  // Update panels going in both directions.
   // This is important on Mac where bounds changes are slow and you see a
   // "wave" instead of a smooth sliding effect.
-  // When no panel is active, we'll start from the left.
-  int num_processed = 0;
-  while (!right_of_active.empty() || !left_of_active.empty()) {
+  int num_animated = 0;
+  bool going_right = true;
+  while (!moving_right.empty() || !moving_left.empty()) {
     PanelBoundsInfo bounds_info;
-    // Alternate between processing the panels to the left and to the right
-    // of the active one, based on parity of num_processed.
+    // Alternate between processing the panels that moving left and right,
+    // starting from the center.
+    going_right = !going_right;
     bool take_panel_on_right =
-        ((num_processed & 1) && !right_of_active.empty()) ||
-        left_of_active.empty();
+        (going_right && !moving_right.empty()) ||
+        moving_left.empty();
     if (take_panel_on_right) {
-      bounds_info = right_of_active.back();
-      right_of_active.pop_back();
+      bounds_info = moving_right.back();
+      moving_right.pop_back();
     } else {
-      bounds_info = left_of_active.front();
-      left_of_active.pop();
+      bounds_info = moving_left.front();
+      moving_left.pop();
     }
 
     // Don't update the docked panel that is in preview mode.
     Panel* panel = bounds_info.first;
-    if (!panel->in_preview_mode())
-      panel->SetPanelBounds(bounds_info.second);  // Animates.
-
-    ++num_processed;
+    gfx::Rect bounds = bounds_info.second;
+    if (!panel->in_preview_mode() && bounds != panel->GetBounds()) {
+      // We animate a limited number of panels, starting with the
+      // "most important" ones, that is, ones that are close to the center
+      // of the action. Other panels are moved instantly to improve performance.
+      if (num_animated < kNumPanelsToAnimateSimultaneously) {
+        panel->SetPanelBounds(bounds);  // Animates.
+        ++num_animated;
+      } else {
+        panel->SetPanelBoundsInstantly(bounds);
+      }
+    }
   }
 }
 
 int DockedPanelStrip::WidthToDisplayPanelInStrip(bool is_for_active_panel,
                                                  double squeeze_factor,
                                                  int full_width) const {
-  if (is_for_active_panel)
-    return full_width;
-  return std::max(kPanelMinWidth,
-      static_cast<int>(floor(full_width * squeeze_factor)));
+  return is_for_active_panel ? full_width :
+      std::max(kPanelMinWidth,
+               static_cast<int>(floor(full_width * squeeze_factor)));
 }
 
 void DockedPanelStrip::CloseAll() {
@@ -888,17 +912,20 @@ void DockedPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
   panel->UpdateMinimizeRestoreButtonVisibility();
 }
 
+void DockedPanelStrip::ScheduleLayoutRefresh() {
+  refresh_action_factory_.InvalidateWeakPtrs();
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      base::Bind(&DockedPanelStrip::RefreshLayout,
+                 refresh_action_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(PanelManager::AdjustTimeInterval(
+          kRefreshLayoutAfterActivePanelChangeDelayMs)));
+}
+
 void DockedPanelStrip::OnPanelActiveStateChanged(Panel* panel) {
   // Refresh layout, but wait till active states settle.
   // This lets us avoid refreshing too many times when one panel loses
   // focus and another gains it.
-  refresh_action_factory_.InvalidateWeakPtrs();
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&DockedPanelStrip::RefreshLayout,
-          refresh_action_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(PanelManager::AdjustTimeInterval(
-          kRefreshLayoutAfterActivePanelChangeDelayMs)));
+  ScheduleLayoutRefresh();
 }
 
 bool DockedPanelStrip::HasPanel(Panel* panel) const {

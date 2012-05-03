@@ -147,7 +147,10 @@ class DockedPanelStrip : public PanelStrip,
   gfx::Point GetDefaultPositionForPanel(const gfx::Size& full_size) const;
   void InsertNewlyCreatedPanel(Panel* panel);
   void InsertExistingPanelAtKnownPosition(Panel* panel);
-  void InsertExistingPanelAtDefaultPosition(Panel* panel, bool update_bounds);
+  void InsertExistingPanelAtDefaultPosition(Panel* panel);
+
+  // Schedules a layout refresh with a short delay to avoid too much flicker.
+  void ScheduleLayoutRefresh();
 
   // Keep track of the minimized panels to control mouse watching.
   void UpdateMinimizedPanelCount();

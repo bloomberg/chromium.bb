@@ -788,9 +788,10 @@ enum {
   NSArray *animations = [NSArray arrayWithObjects:windowResize, nil];
 
   // If an animation is in progress, update the animation with new target
-  // bounds. Otherwise, apply bounds change instantly.
+  // bounds. Also, set the destination frame bounds to the new value.
   if (jumpToDestination && [self isAnimatingBounds]) {
     [boundsAnimation_ setViewAnimations:animations];
+    [[self window] setFrame:frame display:YES animate:NO];
     return;
   }
 
