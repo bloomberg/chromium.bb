@@ -28,4 +28,8 @@ if sys.platform == 'win32':
   # inputs so it's preferable to not have it work here.
   test.build('command-quote.gyp', 'test_with_spaces', chdir=CHDIR, status=1)
 
+  CHDIR = 'command-quote/subdir/and/another'
+  test.run_gyp('in-subdir.gyp', chdir=CHDIR)
+  test.build('in-subdir.gyp', 'test_batch_depth', chdir=CHDIR)
+
   test.pass_test()

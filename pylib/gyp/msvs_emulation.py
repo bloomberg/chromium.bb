@@ -54,12 +54,16 @@ def QuoteForRspFile(arg):
 def EncodeRspFileList(args):
   """Process a list of arguments using QuoteCmdExeArgument."""
   # Note that the first argument is assumed to be the command. Don't add
-  # quotes around it because then commands like 'call x.bat' or shell
-  # built-ins like 'echo', etc. won't work. Also, don't bother special casing
-  # to get quotes around the remainder (after 'call') since other generators
-  # and gyp in general don't really support spaces in paths.
+  # quotes around it because then built-ins like 'echo', etc. won't work.
+  # Take care to normpath only the path in the case of 'call ../x.bat' because
+  # otherwise the whole thing is incorrectly interpreted as a path and not
+  # normalized correctly.
   if not args: return ''
-  program = os.path.normpath(args[0])
+  if args[0].startswith('call '):
+    call, program = args[0].split(' ', 1)
+    program = call + ' ' + os.path.normpath(program)
+  else:
+    program = os.path.normpath(args[0])
   return program + ' ' + ' '.join(QuoteForRspFile(arg) for arg in args[1:])
 
 
