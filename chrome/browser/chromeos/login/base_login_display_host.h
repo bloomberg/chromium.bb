@@ -10,9 +10,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
-#include "chrome/browser/chromeos/login/ownership_status_checker.h"
+#include "chrome/browser/chromeos/login/ownership_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
@@ -88,6 +89,8 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
 
   content::NotificationRegistrar registrar_;
 
+  base::WeakPtrFactory<BaseLoginDisplayHost> pointer_factory_;
+
   // Default LoginDisplayHost.
   static LoginDisplayHost* default_host_;
 
@@ -99,9 +102,6 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
 
   // Client for enterprise auto-enrollment check.
   scoped_ptr<policy::AutoEnrollmentClient> auto_enrollment_client_;
-
-  // Used to verify if the device has already been owned.
-  scoped_ptr<OwnershipStatusChecker> ownership_status_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseLoginDisplayHost);
 };

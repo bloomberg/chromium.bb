@@ -35,6 +35,11 @@ class OwnershipService : public content::NotificationObserver {
     OWNERSHIP_TAKEN
   };
 
+  // Callback function type. The status code is guaranteed to be different from
+  // OWNERSHIP_UNKNOWN. The bool parameter is true iff the currently logged in
+  // user is the owner.
+  typedef base::Callback<void(OwnershipService::Status, bool)> Callback;
+
   // Returns the singleton instance of the OwnershipService.
   static OwnershipService* GetSharedInstance();
   virtual ~OwnershipService();
@@ -88,6 +93,10 @@ class OwnershipService : public content::NotificationObserver {
   // occasionally block doing i/o.
   virtual Status GetStatus(bool blocking);
 
+  // Determines the ownership status on the FILE thread and calls the |callback|
+  // with the result.
+  virtual void GetStatusAsync(const Callback& callback);
+
  protected:
   OwnershipService();
 
@@ -105,6 +114,10 @@ class OwnershipService : public content::NotificationObserver {
 
   // Sets ownership status. May be called on either thread.
   void SetStatus(Status new_status);
+
+  // Used by |CheckOwnershipAsync| to call the callback with the result.
+  static void ReturnStatus(const Callback& callback,
+                           std::pair<OwnershipService::Status, bool> status);
 
   static void UpdateOwnerKey(OwnershipService* service,
                              const content::BrowserThread::ID thread_id,

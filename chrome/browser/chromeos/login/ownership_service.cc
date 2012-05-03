@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -20,6 +21,25 @@
 using content::BrowserThread;
 
 namespace chromeos {
+
+namespace {
+
+typedef std::pair<OwnershipService::Status, bool> OwnershipStatusReturnType;
+
+// Makes the check for ownership on the FILE thread and stores the result in the
+// provided pointers.
+OwnershipStatusReturnType CheckStatusOnFileThread() {
+  bool current_user_is_owner;
+  OwnershipService::Status status;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  status = OwnershipService::GetSharedInstance()->IsAlreadyOwned() ?
+      OwnershipService::OWNERSHIP_TAKEN : OwnershipService::OWNERSHIP_NONE;
+  current_user_is_owner =
+      OwnershipService::GetSharedInstance()->IsCurrentUserOwner();
+  return OwnershipStatusReturnType(status, current_user_is_owner);
+}
+
+}  // namespace
 
 static base::LazyInstance<OwnershipService> g_ownership_service =
     LAZY_INSTANCE_INITIALIZER;
@@ -151,6 +171,16 @@ bool OwnershipService::IsCurrentUserOwner() {
   return IsAlreadyOwned() && manager_->EnsurePrivateKey();
 }
 
+void OwnershipService::GetStatusAsync(const Callback& callback) {
+  PostTaskAndReplyWithResult(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      FROM_HERE,
+      base::Bind(&CheckStatusOnFileThread),
+      base::Bind(&OwnershipService::ReturnStatus,
+                 callback));
+}
+
+
 // static
 void OwnershipService::UpdateOwnerKey(OwnershipService* service,
                                       const BrowserThread::ID thread_id,
@@ -218,6 +248,12 @@ void OwnershipService::SetStatus(Status new_status) {
   DCHECK(new_status == OWNERSHIP_TAKEN || new_status == OWNERSHIP_NONE);
   base::AutoLock lk(ownership_status_lock_);
   ownership_status_ = new_status;
+}
+
+// static
+void OwnershipService::ReturnStatus(const Callback& callback,
+                                    OwnershipStatusReturnType status) {
+  callback.Run(status.first, status.second);
 }
 
 }  // namespace chromeos

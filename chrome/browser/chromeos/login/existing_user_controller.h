@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_performer.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/login/ownership_status_checker.h"
+#include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/password_changed_view.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "content/public/browser/notification_observer.h"
@@ -208,9 +208,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Whether everything is ready to launch the browser.
   bool ready_for_browser_launch_;
-
-  // Used to verify ownership before starting enterprise enrollment.
-  scoped_ptr<OwnershipStatusChecker> ownership_checker_;
 
   // Whether it's first login to the device and this user will be owner.
   bool is_owner_login_;

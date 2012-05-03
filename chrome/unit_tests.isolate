@@ -1031,7 +1031,6 @@
           'browser/chromeos/login/login_display.h',
           'browser/chromeos/login/login_display_host.h',
           'browser/chromeos/login/oobe_display.h',
-          'browser/chromeos/login/ownership_status_checker.h',
           'browser/chromeos/login/screen_observer.h',
           'browser/chromeos/login/signed_settings.h',
           'browser/chromeos/login/take_photo_view.h',

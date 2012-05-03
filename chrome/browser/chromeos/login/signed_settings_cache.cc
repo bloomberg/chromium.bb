@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
-#include "chrome/browser/chromeos/login/ownership_status_checker.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -75,14 +74,12 @@ void FinishFinalize(PrefService* local_state,
 // temp storage, and write them back the blob in FinishFinalize.
 void ReloadSignedSettingsAndFinalize(
     PrefService* local_state,
-    OwnershipStatusChecker* ownership_checker,
     OwnershipService::Status status,
     bool current_user_is_owner) {
   if (current_user_is_owner) {
     SignedSettingsHelper::Get()->StartRetrievePolicyOp(
         base::Bind(FinishFinalize, local_state));
   }
-  delete ownership_checker;
 }
 
 }  // namespace
@@ -127,9 +124,8 @@ bool Retrieve(em::PolicyData *policy, PrefService* local_state) {
 void Finalize(PrefService* local_state) {
   // First we have to make sure the owner is really logged in because the key
   // notification is generated on every cloud policy key rotation too.
-  OwnershipStatusChecker* ownership_checker = new OwnershipStatusChecker();
-  ownership_checker->Check(base::Bind(&ReloadSignedSettingsAndFinalize,
-                                      local_state, ownership_checker));
+  OwnershipService::GetSharedInstance()->GetStatusAsync(
+      base::Bind(&ReloadSignedSettingsAndFinalize, local_state));
 }
 
 }  // namespace signed_settings_cache

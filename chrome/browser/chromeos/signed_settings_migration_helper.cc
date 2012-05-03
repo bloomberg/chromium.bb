@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,8 @@
 
 namespace chromeos {
 
-SignedSettingsMigrationHelper::SignedSettingsMigrationHelper() {
+SignedSettingsMigrationHelper::SignedSettingsMigrationHelper()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(ptr_factory_(this)) {
   registrar_.Add(this, chrome::NOTIFICATION_OWNERSHIP_CHECKED,
                  content::NotificationService::AllSources());
 }
@@ -28,10 +29,10 @@ void SignedSettingsMigrationHelper::AddMigrationValue(const std::string& path,
 }
 
 void SignedSettingsMigrationHelper::MigrateValues(void) {
-  ownership_checker_.reset(new OwnershipStatusChecker());
-  ownership_checker_->Check(
+  ptr_factory_.InvalidateWeakPtrs();
+  OwnershipService::GetSharedInstance()->GetStatusAsync(
       base::Bind(&SignedSettingsMigrationHelper::DoMigrateValues,
-                 base::Unretained(this)));
+                 ptr_factory_.GetWeakPtr()));
 }
 
 // NotificationObserver overrides:
@@ -46,8 +47,6 @@ void SignedSettingsMigrationHelper::Observe(
 void SignedSettingsMigrationHelper::DoMigrateValues(
     OwnershipService::Status status,
     bool current_user_is_owner) {
-  ownership_checker_.reset(NULL);
-
   // We can call StartStorePropertyOp in two cases - either if the owner is
   // currently logged in and the policy can be updated immediately or if there
   // is no owner yet in which case the value will be temporarily stored in the

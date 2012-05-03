@@ -445,10 +445,9 @@ void ExistingUserController::OnUserSelected(const std::string& username) {
 void ExistingUserController::OnStartEnterpriseEnrollment() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableDevicePolicy)) {
-    ownership_checker_.reset(new OwnershipStatusChecker());
-    ownership_checker_->Check(base::Bind(
-        &ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
-        base::Unretained(this)));
+    OwnershipService::GetSharedInstance()->GetStatusAsync(
+        base::Bind(&ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -457,7 +456,6 @@ void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
     bool current_user_is_owner) {
   if (status == OwnershipService::OWNERSHIP_NONE)
     ShowEnrollmentScreen(false, std::string());
-  ownership_checker_.reset();
 }
 
 void ExistingUserController::ShowEnrollmentScreen(bool is_auto_enrollment,

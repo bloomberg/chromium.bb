@@ -128,7 +128,8 @@ LoginDisplayHost* BaseLoginDisplayHost::default_host_ = NULL;
 // BaseLoginDisplayHost, public
 
 BaseLoginDisplayHost::BaseLoginDisplayHost(const gfx::Rect& background_bounds)
-    : background_bounds_(background_bounds) {
+    : background_bounds_(background_bounds),
+      ALLOW_THIS_IN_INITIALIZER_LIST(pointer_factory_(this)) {
   // We need to listen to APP_EXITING but not APP_TERMINATING because
   // APP_TERMINATING will never be fired as long as this keeps ref-count.
   // APP_EXITING is safe here because there will be no browser instance that
@@ -254,10 +255,10 @@ void BaseLoginDisplayHost::CheckForAutoEnrollment() {
   }
 
   // Start by checking if the device has already been owned.
-  ownership_status_checker_.reset(new OwnershipStatusChecker);
-  ownership_status_checker_->Check(base::Bind(
-      &BaseLoginDisplayHost::OnOwnershipStatusCheckDone,
-      base::Unretained(this)));
+  pointer_factory_.InvalidateWeakPtrs();
+  OwnershipService::GetSharedInstance()->GetStatusAsync(
+      base::Bind(&BaseLoginDisplayHost::OnOwnershipStatusCheckDone,
+                 pointer_factory_.GetWeakPtr()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
