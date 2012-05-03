@@ -153,26 +153,18 @@ IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, LargeLauncherIcon) {
   EXPECT_EQ(128, favicon_loader->GetFavicon().height());
 }
 
-// Failing under linux_chromeos.
-// See http://www.crbug.com/126101
-#ifdef OS_LINUX
-#define MAYBE_ManyLauncherIcons DISABLED_ManyLauncherIcons
-#else
-#define MAYBE_ManyLauncherIcons ManyLauncherIcons
-#endif
-
-IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest,
-                       MAYBE_ManyLauncherIcons) {
+IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, ManyLauncherIcons) {
   ASSERT_TRUE(test_server()->Start());
   Browser* panel_browser;
   ASSERT_NO_FATAL_FAILURE(
       CreatePanelBrowser("launcher-manyfavicon.html", &panel_browser));
   LauncherFaviconLoader* favicon_loader = GetFaviconLoader(panel_browser);
   ASSERT_NE(static_cast<LauncherFaviconLoader*>(NULL), favicon_loader);
+
+  EXPECT_TRUE(WaitForFaviconDownlads(3));
   EXPECT_FALSE(favicon_loader->GetFavicon().empty());
   // When multiple favicons are present, the correctly sized icon should be
   // chosen. The icons are sized assuming ash::kLauncherPreferredHeight < 128.
-  EXPECT_TRUE(WaitForFaviconDownlads(3));
   EXPECT_GT(128, ash::kLauncherPreferredHeight);
   EXPECT_EQ(48, favicon_loader->GetFavicon().height());
 }
