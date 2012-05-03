@@ -246,10 +246,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Allows an embedder to control behavior. Guaranteed to outlive this object.
   content::DownloadManagerDelegate* delegate_;
 
-  // TODO(rdsmith): Remove when http://crbug.com/85408 is fixed.
-  // For debugging only.
-  int64 largest_db_handle_in_history_;
-
   net::NetLog* net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerImpl);

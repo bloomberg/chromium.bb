@@ -225,11 +225,9 @@ void DownloadsDOMHandler::ModelChanged(content::DownloadManager* manager) {
     if (static_cast<int>(it - download_items_.begin()) > kMaxDownloads)
       break;
 
-    // TODO(rdsmith): Convert to DCHECK()s when http://crbug.com/85408 is
-    // fixed.
     // We should never see anything that isn't already in the history.
-    CHECK(*it);
-    CHECK((*it)->IsPersisted());
+    DCHECK(*it);
+    DCHECK((*it)->IsPersisted());
 
     (*it)->AddObserver(this);
   }
@@ -317,8 +315,7 @@ void DownloadsDOMHandler::HandleRemove(const ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_REMOVE);
   content::DownloadItem* file = GetDownloadByValue(args);
   if (file) {
-    // TODO(rdsmith): Change to DCHECK when http://crbug.com/85408 is fixed.
-    CHECK(file->IsPersisted());
+    DCHECK(file->IsPersisted());
     file->Remove();
   }
 }

@@ -19,16 +19,6 @@
 #include "content/public/browser/download_persistent_store_info.h"
 #include "sql/statement.h"
 
-// TODO(benjhayden): Change this to DCHECK when we have more debugging
-// information from the next dev cycle, before the next stable/beta branch is
-// cut, in order to prevent unnecessary crashes on those channels. If we still
-// don't have root cause before the dev cycle after the next stable/beta
-// releases, uncomment it out to re-enable debugging checks. Whenever this macro
-// is toggled, the corresponding macro in download_manager_impl.cc should also
-// be toggled. When 96627 is fixed, this macro and all its usages and
-// returned_ids_ can be deleted or permanently changed to DCHECK as appropriate.
-#define CHECK_96627 CHECK
-
 using content::DownloadItem;
 using content::DownloadPersistentStoreInfo;
 
@@ -88,7 +78,7 @@ DownloadDatabase::~DownloadDatabase() {
 
 void DownloadDatabase::CheckThread() {
   if (owning_thread_set_) {
-    CHECK_96627(owning_thread_ == base::PlatformThread::CurrentId());
+    DCHECK(owning_thread_ == base::PlatformThread::CurrentId());
   } else {
     owning_thread_ = base::PlatformThread::CurrentId();
     owning_thread_set_ = true;
@@ -149,7 +139,7 @@ void DownloadDatabase::QueryDownloads(
     if (!db_handles.insert(info.db_handle).second) {
       // info.db_handle was already in db_handles. The database is corrupt.
       base::debug::Alias(&info.db_handle);
-      CHECK_96627(false);
+      DCHECK(false);
     }
   }
 }

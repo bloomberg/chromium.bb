@@ -36,16 +36,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "net/base/upload_data.h"
 
-// TODO(benjhayden): Change this to DCHECK when we have more debugging
-// information from the next dev cycle, before the next stable/beta branch is
-// cut, in order to prevent unnecessary crashes on those channels. If we still
-// don't have root cause before the dev cycle after the next stable/beta
-// releases, uncomment it out to re-enable debugging checks. Whenever this macro
-// is toggled, the corresponding macro in download_database.cc should also
-// be toggled. When 96627 is fixed, this macro and all its usages can be
-// deleted or permanently changed to DCHECK as appropriate.
-#define CHECK_96627 CHECK
-
 using content::BrowserThread;
 using content::DownloadId;
 using content::DownloadItem;
@@ -174,7 +164,6 @@ DownloadManagerImpl::DownloadManagerImpl(
           browser_context_(NULL),
           file_manager_(NULL),
           delegate_(delegate),
-          largest_db_handle_in_history_(DownloadItem::kUninitializedHandle),
           net_log_(net_log) {
 }
 
@@ -433,7 +422,7 @@ net::BoundNetLog DownloadManagerImpl::CreateDownloadItem(
   int32 download_id = info->download_id.local();
   DCHECK(!ContainsKey(in_progress_, download_id));
 
-  CHECK_96627(!ContainsKey(active_downloads_, download_id));
+  DCHECK(!ContainsKey(active_downloads_, download_id));
   downloads_.insert(download);
   active_downloads_[download_id] = download;
 
@@ -559,12 +548,11 @@ void DownloadManagerImpl::OnResponseCompleted(int32 download_id,
 }
 
 void DownloadManagerImpl::AssertStateConsistent(DownloadItem* download) const {
-  // TODO(rdsmith): Change to DCHECK after http://crbug.com/96627 resolved.
   if (download->GetState() == DownloadItem::REMOVING) {
-    CHECK(!ContainsKey(downloads_, download));
-    CHECK(!ContainsKey(active_downloads_, download->GetId()));
-    CHECK(!ContainsKey(in_progress_, download->GetId()));
-    CHECK(!ContainsKey(history_downloads_, download->GetDbHandle()));
+    DCHECK(!ContainsKey(downloads_, download));
+    DCHECK(!ContainsKey(active_downloads_, download->GetId()));
+    DCHECK(!ContainsKey(in_progress_, download->GetId()));
+    DCHECK(!ContainsKey(history_downloads_, download->GetDbHandle()));
     return;
   }
 
@@ -577,7 +565,7 @@ void DownloadManagerImpl::AssertStateConsistent(DownloadItem* download) const {
   } else {
     for (DownloadMap::const_iterator it = history_downloads_.begin();
          it != history_downloads_.end(); ++it) {
-      CHECK_96627(it->second != download);
+      DCHECK(it->second != download);
     }
   }
 
@@ -934,14 +922,10 @@ void DownloadManagerImpl::FileSelectionCanceled(int32 download_id) {
 // 'DownloadPersistentStoreInfo's in sorted order (by ascending start_time).
 void DownloadManagerImpl::OnPersistentStoreQueryComplete(
     std::vector<DownloadPersistentStoreInfo>* entries) {
-  // TODO(rdsmith): Remove this and related logic when
-  // http://crbug.com/96627 is fixed.
-  largest_db_handle_in_history_ = 0;
-
   for (size_t i = 0; i < entries->size(); ++i) {
     int64 db_handle = entries->at(i).db_handle;
     base::debug::Alias(&db_handle);
-    CHECK_96627(!ContainsKey(history_downloads_, db_handle));
+    DCHECK(!ContainsKey(history_downloads_, db_handle));
 
     net::BoundNetLog bound_net_log =
         net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
@@ -951,9 +935,6 @@ void DownloadManagerImpl::OnPersistentStoreQueryComplete(
     history_downloads_[download->GetDbHandle()] = download;
     VLOG(20) << __FUNCTION__ << "()" << i << ">"
              << " download = " << download->DebugString(true);
-
-    if (download->GetDbHandle() > largest_db_handle_in_history_)
-      largest_db_handle_in_history_ = download->GetDbHandle();
   }
   NotifyModelChanged();
   CheckForHistoryFilesRemoval();
@@ -962,10 +943,7 @@ void DownloadManagerImpl::OnPersistentStoreQueryComplete(
 void DownloadManagerImpl::AddDownloadItemToHistory(DownloadItem* download,
                                                    int64 db_handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // TODO(rdsmith): Convert to DCHECK() when http://crbug.com/96627
-  // is fixed.
-  CHECK_NE(DownloadItem::kUninitializedHandle, db_handle);
+  DCHECK_NE(DownloadItem::kUninitializedHandle, db_handle);
 
   download_stats::RecordHistorySize(history_downloads_.size());
 
@@ -973,9 +951,7 @@ void DownloadManagerImpl::AddDownloadItemToHistory(DownloadItem* download,
   download->SetDbHandle(db_handle);
   download->SetIsPersisted();
 
-  // TODO(rdsmith): Convert to DCHECK() when http://crbug.com/96627
-  // is fixed.
-  CHECK_96627(!ContainsKey(history_downloads_, download->GetDbHandle()));
+  DCHECK(!ContainsKey(history_downloads_, download->GetDbHandle()));
   history_downloads_[download->GetDbHandle()] = download;
 
   // Show in the appropriate browser UI.
@@ -1011,15 +987,12 @@ void DownloadManagerImpl::OnDownloadItemAddedToPersistentStore(
            << " download_id = " << download_id
            << " download = " << download->DebugString(true);
 
-  // TODO(rdsmith): Remove after http://crbug.com/96627 resolved.
-  int64 largest_handle = largest_db_handle_in_history_;
-  base::debug::Alias(&largest_handle);
   int32 matching_item_download_id
       = (ContainsKey(history_downloads_, db_handle) ?
          history_downloads_[db_handle]->GetId() : 0);
   base::debug::Alias(&matching_item_download_id);
 
-  CHECK_96627(!ContainsKey(history_downloads_, db_handle));
+  DCHECK(!ContainsKey(history_downloads_, db_handle));
 
   AddDownloadItemToHistory(download, db_handle);
 
@@ -1033,10 +1006,7 @@ void DownloadManagerImpl::OnDownloadItemAddedToPersistentStore(
   if (download->IsInProgress()) {
     MaybeCompleteDownload(download);
   } else {
-    // TODO(rdsmith): Convert to DCHECK() when http://crbug.com/96627
-    // is fixed.
-    CHECK(download->IsCancelled())
-        << " download = " << download->DebugString(true);
+    DCHECK(download->IsCancelled());
     in_progress_.erase(download_id);
     active_downloads_.erase(download_id);
     delegate_->UpdateItemInPersistentStore(download);
@@ -1174,10 +1144,7 @@ void DownloadManagerImpl::OnSavePageItemAddedToPersistentStore(
     return;
   }
 
-  // TODO(rdsmith): Remove after http://crbug.com/96627 resolved.
-  int64 largest_handle = largest_db_handle_in_history_;
-  base::debug::Alias(&largest_handle);
-  CHECK_96627(!ContainsKey(history_downloads_, db_handle));
+  DCHECK(!ContainsKey(history_downloads_, db_handle));
 
   AddDownloadItemToHistory(download, db_handle);
 
