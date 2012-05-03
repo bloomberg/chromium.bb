@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const BookmarkList = bmm.BookmarkList;
-const BookmarkTree = bmm.BookmarkTree;
-const ListItem = cr.ui.ListItem;
-const TreeItem = cr.ui.TreeItem;
-const LinkKind = cr.LinkKind;
-const Command = cr.ui.Command;
-const CommandBinding = cr.ui.CommandBinding;
-const Menu = cr.ui.Menu;
-const MenuButton  = cr.ui.MenuButton;
-const Promise = cr.Promise;
+/** @const */ var BookmarkList = bmm.BookmarkList;
+/** @const */ var BookmarkTree = bmm.BookmarkTree;
+/** @const */ var Command = cr.ui.Command;
+/** @const */ var CommandBinding = cr.ui.CommandBinding;
+/** @const */ var LinkKind = cr.LinkKind;
+/** @const */ var ListItem = cr.ui.ListItem;
+/** @const */ var Menu = cr.ui.Menu;
+/** @const */ var MenuButton  = cr.ui.MenuButton;
+/** @const */ var Promise = cr.Promise;
+/** @const */ var Splitter = cr.ui.Splitter;
+/** @const */ var TreeItem = cr.ui.TreeItem;
 
 // Sometimes the extension API is not initialized.
 if (!chrome.bookmarks)
@@ -45,10 +46,23 @@ chrome.experimental.bookmarkManager.getStrings(function(data) {
  * The id of the bookmark root.
  * @type {number}
  */
-const ROOT_ID = '0';
+/** @const */ var ROOT_ID = '0';
 
 var splitter = document.querySelector('.main > .splitter');
-cr.ui.Splitter.decorate(splitter);
+Splitter.decorate(splitter);
+
+/**
+ * An array containing the BookmarkTreeNodes that were deleted in the last
+ * deletion action. This is used for implementing undo.
+ * @type {Array.<BookmarkTreeNode>}
+ */
+var lastDeletedNodes;
+
+/**
+ * Holds a function that will undo that last action, if global undo is enabled.
+ * @type {Function}
+ */
+var performGlobalUndo;
 
 // The splitter persists the size of the left component in the local store.
 if ('treeWidth' in localStorage)
@@ -923,14 +937,19 @@ function updatePasteCommand(opt_f) {
   }
 }
 
-// We can always execute the export-menu command.
 document.addEventListener('canExecute', function(e) {
   var command = e.command;
   var commandId = command.id;
-  if (commandId == 'import-menu-command')
+  if (commandId == 'import-menu-command') {
     e.canExecute = canEdit;
-  if (commandId == 'export-menu-command')
+  } else if (commandId == 'export-menu-command') {
+    // We can always execute the export-menu command.
     e.canExecute = true;
+  } else if (commandId == 'undo-command') {
+    // The global undo command has no visible UI, so always enable it, and just
+    // make it a no-op if undo is not possible.
+    e.canExecute = true;
+  }
 });
 
 /**
@@ -974,6 +993,10 @@ function canExecuteShared(e, isRecentOrSearch) {
     case 'open-in-new-window-command':
     case 'open-incognito-window-command':
       updateOpenCommands(e, command);
+      break;
+
+    case 'undo-delete-command':
+      e.canExecute = !!lastDeletedNodes;
       break;
   }
 }
@@ -1135,20 +1158,26 @@ organizeButton.addEventListener('click', updateEditingCommands);
 list.addEventListener('contextmenu', updateEditingCommands);
 tree.addEventListener('contextmenu', updateEditingCommands);
 
+// Handle global commands.
 document.addEventListener('command', function(e) {
   var command = e.command;
   var commandId = command.id;
   console.log(command.id, 'executed', 'on', e.target);
-  if (commandId == 'import-menu-command')
+  if (commandId == 'import-menu-command') {
     chrome.bookmarks.import();
-  else if (command.id == 'export-menu-command')
+  } else if (command.id == 'export-menu-command') {
     chrome.bookmarks.export();
+  } else if (command.id == 'undo-command') {
+    if (performGlobalUndo)
+      performGlobalUndo();
+  }
 });
 
 function handleRename(e) {
   var item = e.target;
   var bookmarkNode = item.bookmarkNode;
   chrome.bookmarks.update(bookmarkNode.id, {title: item.label});
+  performGlobalUndo = null;  // This can't be undone, so disable global undo.
 }
 
 tree.addEventListener('rename', handleRename);
@@ -1187,6 +1216,7 @@ list.addEventListener('edit', function(e) {
     // Edit
     chrome.bookmarks.update(bookmarkNode.id, context);
   }
+  performGlobalUndo = null;  // This can't be undone, so disable global undo.
 });
 
 list.addEventListener('canceledit', function(e) {
@@ -1320,12 +1350,74 @@ function openItem() {
 }
 
 /**
- * Deletes the selected bookmarks.
+ * Deletes the selected bookmarks. The bookmarks are saved in memory in case
+ * the user needs to undo the deletion.
  */
 function deleteBookmarks() {
-  getSelectedBookmarkIds().forEach(function(id) {
-    chrome.bookmarks.removeTree(id);
+  var selectedIds = getSelectedBookmarkIds();
+  lastDeletedNodes = [];
+
+  function performDelete() {
+    selectedIds.forEach(function(id) {
+      chrome.bookmarks.removeTree(id);
+    });
+    $('undo-delete-command').canExecuteChange();
+    performGlobalUndo = undoDelete;
+  }
+
+  // First, store information about the bookmarks being deleted.
+  selectedIds.forEach(function(id) {
+    chrome.bookmarks.getSubTree(id, function(results) {
+      lastDeletedNodes.push(results);
+
+      // When all nodes have been saved, perform the deletion.
+      if (lastDeletedNodes.length === selectedIds.length)
+        performDelete();
+    });
   });
+}
+
+/**
+ * Restores a tree of bookmarks under a specified folder.
+ * @param {BookmarkTreeNode} node The node to restore.
+ * @param {=string} parentId The ID of the folder to restore under. If not
+ *     specified, the original parentId of the node will be used.
+ */
+function restoreTree(node, parentId) {
+  var bookmarkInfo = {
+    parentId: parentId || node.parentId,
+    title: node.title,
+    index: node.index,
+    url: node.url
+  };
+
+  chrome.bookmarks.create(bookmarkInfo, function(result) {
+    if (!result) {
+      console.error('Failed to restore bookmark.');
+      return;
+    }
+
+    if (node.children) {
+      // Restore the children using the new ID for this node.
+      node.children.forEach(function(child) {
+        restoreTree(child, result.id);
+      });
+    }
+  });
+}
+
+/**
+ * Restores the last set of bookmarks that was deleted.
+ */
+function undoDelete() {
+  lastDeletedNodes.forEach(function(arr) {
+    arr.forEach(restoreTree);
+  });
+  lastDeletedNodes = null;
+  $('undo-delete-command').canExecuteChange();
+
+  // Only a single level of undo is supported, so disable global undo now.
+  performGlobalUndo = null;
 }
 
 /**
@@ -1355,6 +1447,7 @@ function newFolder() {
       }
     }, 50);
   });
+  performGlobalUndo = null;  // This can't be undone, so disable global undo.
 }
 
 /**
@@ -1504,12 +1597,18 @@ function handleCommand(e) {
     case 'open-in-same-window-command':
       openItem();
       break;
+    case 'undo-delete-command':
+      undoDelete();
+      break;
   }
 }
 
 // Delete on all platforms. On Mac we also allow Meta+Backspace.
 $('delete-command').shortcut = 'U+007F' +
                                (cr.isMac ? ' U+0008 Meta-U+0008' : '');
+
+// Global undo is Ctrl-Z (Command-Z on Mac). It is not in any menu.
+$('undo-command').shortcut = (cr.isMac ? 'Meta' : 'Ctrl') + '-U+005A';
 
 $('open-in-same-window-command').shortcut = cr.isMac ? 'Meta-Down' :
                                                        'Enter';

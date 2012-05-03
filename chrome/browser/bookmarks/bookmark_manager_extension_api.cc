@@ -345,6 +345,8 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PASTE));
   localized_strings->SetString("delete",
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_DELETE));
+  localized_strings->SetString("undo_delete",
+      l10n_util::GetStringUTF16(IDS_UNDO_DELETE));
   localized_strings->SetString("new_folder_name",
       l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME));
   localized_strings->SetString("name_input_placeholder",

@@ -355,6 +355,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_ADD" desc="Used for Add on buttons">
         Add
       </message>
+      <message name="IDS_UNDO_DELETE" desc="Description for a command to undo a delete command.">
+        Undo Delete
+      </message>
       <message name="IDS_EDIT" desc="Edit menu item">
         &amp;Edit
       </message>
