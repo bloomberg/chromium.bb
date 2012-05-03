@@ -93,6 +93,10 @@ void Monitor::UpdateWorkAreaFromInsets(const gfx::Insets& insets) {
   work_area_.Inset(insets);
 }
 
+gfx::Size Monitor::GetSizeInPixel() const {
+  return size().Scale(device_scale_factor_);
+}
+
 std::string Monitor::ToString() const {
   return base::StringPrintf("Monitor[%d] bounds=%s, workarea=%s, scale=%f",
                             id_,

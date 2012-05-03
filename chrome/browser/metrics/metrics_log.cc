@@ -343,13 +343,12 @@ PrefService* MetricsLog::GetPrefService() {
 }
 
 gfx::Size MetricsLog::GetScreenSize() const {
-  return gfx::Screen::GetPrimaryMonitor().size();
+  return gfx::Screen::GetPrimaryMonitor().GetSizeInPixel();
 }
 
 int MetricsLog::GetScreenCount() const {
   return gfx::Screen::GetNumMonitors();
 }
-
 
 void MetricsLog::GetFieldTrialIds(
     std::vector<SelectedGroupId>* field_trial_ids) const {

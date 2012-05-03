@@ -7,6 +7,10 @@
 #import <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
 
+@interface NSScreen (LionAPI)
+- (CGFloat)backingScaleFactor;
+@end
+
 #include "base/logging.h"
 #include "ui/gfx/monitor.h"
 
@@ -57,6 +61,12 @@ gfx::Monitor GetMonitorForScreen(NSScreen* screen, bool is_primary) {
   } else {
     monitor.set_work_area(ConvertCoordinateSystem(visible_frame));
   }
+  CGFloat scale;
+  if ([screen respondsToSelector:@selector(backingScaleFactor)])
+    scale = [screen backingScaleFactor];
+  else
+    scale = [screen userSpaceScaleFactor];
+  monitor.set_device_scale_factor(scale);
   return monitor;
 }
 
@@ -79,12 +89,6 @@ gfx::Monitor Screen::GetPrimaryMonitor() {
   // which is always at index 0.
   NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
   gfx::Monitor monitor = GetMonitorForScreen(primary, true /* primary */);
-
-  CGDirectDisplayID main_display = CGMainDisplayID();
-  CHECK_EQ(static_cast<const int>(CGDisplayPixelsWide(main_display)),
-           monitor.size().width());
-  CHECK_EQ(static_cast<const int>(CGDisplayPixelsHigh(main_display)),
-           monitor.size().height());
   return monitor;
 }
 

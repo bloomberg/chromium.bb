@@ -69,6 +69,9 @@ class UI_EXPORT Monitor {
   // |work_area_insets| and the bounds.
   void UpdateWorkAreaFromInsets(const gfx::Insets& work_area_insets);
 
+  // Returns the monitor's size in pixel coordinates.
+  gfx::Size GetSizeInPixel() const;
+
 #if defined(USE_AURA)
   // TODO(oshima): |bounds()| on ash is not screen's coordinate and
   // this is an workaround for this. This will be removed when ash
