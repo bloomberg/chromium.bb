@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
+#include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "net/cookies/cookie_monster.h"
@@ -46,7 +48,8 @@ bool SigninManager::AreSigninCookiesAllowed(Profile* profile) {
 
 SigninManager::SigninManager()
     : profile_(NULL),
-      had_two_factor_error_(false) {
+      had_two_factor_error_(false),
+      type_(SIGNIN_TYPE_NONE) {
 }
 
 SigninManager::~SigninManager() {}
@@ -112,7 +115,9 @@ void SigninManager::SetAuthenticatedUsername(const std::string& username) {
   // authenticated_username_ altogether). Bug 107160.
 }
 
-void SigninManager::PrepareForSignin() {
+void SigninManager::PrepareForSignin(SigninType type,
+                                     const std::string& username,
+                                     const std::string& password) {
   DCHECK(possibly_invalid_username_.empty());
   // This attempt is either 1) the user trying to establish initial sync, or
   // 2) trying to refresh credentials for an existing username.  If it is 2, we
@@ -120,6 +125,13 @@ void SigninManager::PrepareForSignin() {
   // user has successfully signed in once before with this username, so that on
   // restart we don't think sync setup has never completed.
   ClearTransientSigninData();
+  type_ = type;
+  possibly_invalid_username_.assign(username);
+  password_.assign(password);
+
+  client_login_.reset(new GaiaAuthFetcher(this,
+                                          GaiaConstants::kChromeSource,
+                                          profile_->GetRequestContext()));
 }
 
 // Users must always sign out before they sign in again.
@@ -129,13 +141,8 @@ void SigninManager::StartSignIn(const std::string& username,
                                 const std::string& login_captcha) {
   DCHECK(authenticated_username_.empty() ||
          username == authenticated_username_);
-  PrepareForSignin();
-  possibly_invalid_username_.assign(username);
-  password_.assign(password);
+  PrepareForSignin(SIGNIN_TYPE_CLIENT_LOGIN, username, password);
 
-  client_login_.reset(new GaiaAuthFetcher(this,
-                                          GaiaConstants::kChromeSource,
-                                          profile_->GetRequestContext()));
   client_login_->StartClientLogin(username,
                                   password,
                                   "",
@@ -161,6 +168,7 @@ void SigninManager::ProvideSecondFactorAccessCode(
     const std::string& access_code) {
   DCHECK(!possibly_invalid_username_.empty() && !password_.empty() &&
       last_result_.data.empty());
+  DCHECK(type_ == SIGNIN_TYPE_CLIENT_LOGIN);
 
   client_login_.reset(new GaiaAuthFetcher(this,
                                           GaiaConstants::kChromeSource,
@@ -177,13 +185,7 @@ void SigninManager::StartSignInWithCredentials(const std::string& session_index,
                                                const std::string& username,
                                                const std::string& password) {
   DCHECK(authenticated_username_.empty());
-  PrepareForSignin();
-  possibly_invalid_username_.assign(username);
-  password_.assign(password);
-
-  client_login_.reset(new GaiaAuthFetcher(this,
-                                          GaiaConstants::kChromeSource,
-                                          profile_->GetRequestContext()));
+  PrepareForSignin(SIGNIN_TYPE_WITH_CREDENTIALS, username, password);
 
   // This function starts with the current state of the web session's cookie
   // jar and mints a new ClientLogin-style SID/LSID pair.  This involves going
@@ -201,6 +203,44 @@ void SigninManager::StartSignInWithCredentials(const std::string& session_index,
   client_login_->StartCookieForOAuthLoginTokenExchange(session_index);
 }
 
+void SigninManager::StartSignInWithOAuth(const std::string& username,
+                                         const std::string& password) {
+  DCHECK(authenticated_username_.empty());
+  PrepareForSignin(SIGNIN_TYPE_CLIENT_OAUTH, username, password);
+
+  std::vector<std::string> scopes;
+  scopes.push_back(GaiaUrls::GetInstance()->oauth1_login_scope());
+  const std::string& locale = g_browser_process->GetApplicationLocale();
+
+  client_login_->StartClientOAuth(username, password, scopes, "", locale);
+
+  // Register for token availability.  The signin manager will pre-login the
+  // user when the GAIA service token is ready for use.  Only do this if we
+  // are not running in ChomiumOS, since it handles pre-login itself, and if
+  // cookies are not disabled for Google accounts.
+#if !defined(OS_CHROMEOS)
+  if (AreSigninCookiesAllowed(profile_)) {
+    TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_TOKEN_AVAILABLE,
+                   content::Source<TokenService>(token_service));
+  }
+#endif
+}
+
+void SigninManager::ProvideOAuthChallengeResponse(
+    GoogleServiceAuthError::State type,
+    const std::string& token,
+    const std::string& solution) {
+  DCHECK(!possibly_invalid_username_.empty() && !password_.empty());
+  DCHECK(type_ == SIGNIN_TYPE_CLIENT_OAUTH);
+
+  client_login_.reset(new GaiaAuthFetcher(this,
+                                          GaiaConstants::kChromeSource,
+                                          profile_->GetRequestContext()));
+  client_login_->StartClientOAuthChallengeResponse(type, token, solution);
+}
+
 void SigninManager::ClearTransientSigninData() {
   DCHECK(IsInitialized());
 
@@ -210,15 +250,21 @@ void SigninManager::ClearTransientSigninData() {
   possibly_invalid_username_.clear();
   password_.clear();
   had_two_factor_error_ = false;
+  type_ = SIGNIN_TYPE_NONE;
 }
 
-void SigninManager::HandleAuthError(const GoogleServiceAuthError& error) {
+void SigninManager::HandleAuthError(const GoogleServiceAuthError& error,
+                                    bool clear_transient_data) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
       content::Source<Profile>(profile_),
       content::Details<const GoogleServiceAuthError>(&error));
 
-  ClearTransientSigninData();
+  // In some cases, the user should not be signed out.  For example, the failure
+  // may be due to a captcha or OTP challenge.  In these cases, the transient
+  // data must be kept to properly handle the follow up.
+  if (clear_transient_data)
+    ClearTransientSigninData();
 }
 
 void SigninManager::SignOut() {
@@ -260,7 +306,7 @@ void SigninManager::OnClientLoginSuccess(const ClientLoginResult& result) {
 void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
   // If we got a bad ASP, prompt for an ASP again by forcing another TWO_FACTOR
   // error.  This function does not call HandleAuthError() because dealing
-  // with TWO_FACTOR errors neds special handling: we don't want to clear the
+  // with TWO_FACTOR errors needs special handling: we don't want to clear the
   // transient signin data in such error cases.
   bool invalid_gaia = error.state() ==
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS;
@@ -268,32 +314,43 @@ void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
   GoogleServiceAuthError current_error =
       (invalid_gaia && had_two_factor_error_) ?
       GoogleServiceAuthError(GoogleServiceAuthError::TWO_FACTOR) : error;
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
-      content::Source<Profile>(profile_),
-      content::Details<const GoogleServiceAuthError>(&current_error));
 
-  // We don't sign-out if the password was valid and we're just dealing with
-  // a second factor error, and we don't sign out if we're dealing with
-  // an invalid access code (again, because the password was valid).
-  if (current_error.state() == GoogleServiceAuthError::TWO_FACTOR) {
+  if (current_error.state() == GoogleServiceAuthError::TWO_FACTOR)
     had_two_factor_error_ = true;
-    return;
-  }
 
-  ClearTransientSigninData();
+  HandleAuthError(current_error, !had_two_factor_error_);
 }
 
 void SigninManager::OnClientOAuthSuccess(const ClientOAuthResult& result) {
   DVLOG(1) << "SigninManager::OnClientOAuthSuccess access_token="
            << result.access_token;
-  client_login_->StartTokenFetchForUberAuthExchange(result.access_token);
+
+  switch (type_) {
+    case SIGNIN_TYPE_CLIENT_OAUTH:
+      client_login_->StartOAuthLogin(result.access_token,
+                                     GaiaConstants::kGaiaService);
+      break;
+    case SIGNIN_TYPE_WITH_CREDENTIALS:
+      client_login_->StartTokenFetchForUberAuthExchange(result.access_token);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 void SigninManager::OnClientOAuthFailure(
     const GoogleServiceAuthError& error) {
-  LOG(WARNING) << "SigninManager::OnClientOAuthFailure";
-  HandleAuthError(error);
+  bool clear_transient_data = true;
+  if (type_ == SIGNIN_TYPE_CLIENT_OAUTH) {
+    // If the error is a challenge (captcha or 2-factor), then don't sign out.
+    clear_transient_data =
+        error.state() != GoogleServiceAuthError::TWO_FACTOR &&
+        error.state() != GoogleServiceAuthError::CAPTCHA_REQUIRED;
+  } else {
+    LOG(WARNING) << "SigninManager::OnClientOAuthFailure";
+  }
+  HandleAuthError(error, clear_transient_data);
 }
 
 void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
@@ -372,7 +429,7 @@ void SigninManager::OnTokenAuthSuccess(const net::ResponseCookies& cookies,
 
 void SigninManager::OnTokenAuthFailure(const GoogleServiceAuthError& error) {
   DVLOG(1) << "Unable to retrieve the token auth.";
-  HandleAuthError(error);
+  HandleAuthError(error, true);
 }
 
 void SigninManager::OnUberAuthTokenSuccess(const std::string& token) {
@@ -383,7 +440,7 @@ void SigninManager::OnUberAuthTokenSuccess(const std::string& token) {
 void SigninManager::OnUberAuthTokenFailure(
     const GoogleServiceAuthError& error) {
   LOG(WARNING) << "SigninManager::OnUberAuthTokenFailure";
-  HandleAuthError(error);
+  HandleAuthError(error, true);
 }
 
 void SigninManager::Observe(int type,

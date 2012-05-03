@@ -13,6 +13,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "sync/sessions/session_state.h"
 
 using browser_sync::sessions::SyncSessionSnapshot;
@@ -171,7 +173,12 @@ bool ProfileSyncServiceHarness::SetupSync(
   service_->set_setup_in_progress(true);
 
   // Authenticate sync client using GAIA credentials.
-  service_->signin()->StartSignIn(username_, password_, "", "");
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableClientOAuthSignin)) {
+    service_->signin()->StartSignInWithOAuth(username_, password_);
+  } else {
+    service_->signin()->StartSignIn(username_, password_, "", "");
+  }
 
   // Wait for the OnBackendInitialized() callback.
   if (!AwaitBackendInitialized()) {

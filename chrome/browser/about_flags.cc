@@ -689,6 +689,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableTouchpadThreeFingerClick)
   },
 #endif
+  {
+    "enable-client-oauth-signin",
+    IDS_FLAGS_ENABLE_CLIENT_OAUTH_SIGNIN_NAME,
+    IDS_FLAGS_ENABLE_CLIENT_OAUTH_SIGNIN_DESCRIPTION,
+    kOsMac | kOsWin | kOsLinux,
+    SINGLE_VALUE_TYPE(switches::kEnableClientOAuthSignin)
+  },
 };
 
 const Experiment* experiments = kExperiments;

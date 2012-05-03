@@ -16059,6 +16059,14 @@ Battery full
       Web pages are displayed inverted because you have High Constrast mode enabled and you're using a light-on-dark color scheme.
     </message>
 
+    <message name="IDS_FLAGS_ENABLE_CLIENT_OAUTH_SIGNIN_NAME" desc="Name of about:flag option to turn on ClientOAuth sign in">
+      Enable ClientOAuth signin
+    </message>
+    <message name="IDS_FLAGS_ENABLE_CLIENT_OAUTH_SIGNIN_DESCRIPTION" desc="Description of about:flag option to turn on ClientOAuth sign in">
+      When enabled, will use ClientOAuth to connect a profile to a Google account.  Otherwise ClientLogin is used.
+      ClientOAuth permits using OTPs instead of ASPs to during authentication.
+    </message>
+      
     </messages>
     <structures fallback_to_english="true">
       <!-- Make sure these stay in sync with the structures in generated_resources.grd. -->

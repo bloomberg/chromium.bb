@@ -35,9 +35,6 @@ const char kGetTokenPairValidResponse[] =
     "  \"token_type\": \"Bearer\""
     "}";
 
-const char kUberAuthTokenURLFormat[] =
-    "%s?source=%s&issueuberauth=1";
-
 }  // namespace
 
 
@@ -53,97 +50,127 @@ class SigninManagerTest : public TokenServiceTestHarness {
                                     content::Source<Profile>(profile_.get()));
   }
 
-  void SimulateValidResponseSignInWithCredentials() {
-    // Simulate the correct StartOAuthLoginTokenFetch response.  This involves
-    // two separate fetches.
+  void SetupFetcherAndComplete(const std::string& url,
+                               int response_code,
+                               const net::ResponseCookies& cookies,
+                               const std::string& response_string) {
     TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
     DCHECK(fetcher);
     DCHECK(fetcher->delegate());
 
-    fetcher->set_url(
-      GURL(GaiaUrls::GetInstance()->client_login_to_oauth2_url()));
+    fetcher->set_url(GURL(url));
     fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(200);
-    fetcher->SetResponseString(kGetTokenPairValidResponse);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
-
-    fetcher = factory_.GetFetcherByID(0);
-    DCHECK(fetcher);
-    DCHECK(fetcher->delegate());
-
-    fetcher->set_url(
-        GURL(GaiaUrls::GetInstance()->oauth2_token_url()));
-    fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(200);
-    fetcher->SetResponseString(kGetTokenPairValidResponse);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
-
-    // Simulate the correct StartUberAuthTokenFetch response.
-    GURL url(base::StringPrintf(
-        kUberAuthTokenURLFormat,
-        GaiaUrls::GetInstance()->oauth1_login_url().c_str(),
-        GaiaConstants::kChromeSource));
-    fetcher = factory_.GetFetcherByID(0);
-    DCHECK(fetcher);
-    DCHECK(fetcher->delegate());
-    fetcher->set_url(url);
-    fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(200);
-    fetcher->SetResponseString("token");
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
-
-    // Simulate the correct StartTokenAuth response.
-    fetcher = factory_.GetFetcherByID(0);
-    DCHECK(fetcher);
-    DCHECK(fetcher->delegate());
-
-    fetcher->set_url(
-        GURL(GaiaUrls::GetInstance()->token_auth_url()));
-    fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(200);
-    net::ResponseCookies cookies;
-    cookies.push_back("SID=sid");
-    cookies.push_back("LSID=lsid");
+    fetcher->set_response_code(response_code);
+    fetcher->SetResponseString(response_string);
     fetcher->set_cookies(cookies);
-    fetcher->SetResponseString("data");
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
-
-    // Simulate the correct GetUserInfo response.
-    fetcher = factory_.GetFetcherByID(0);
-    DCHECK(fetcher);
-    DCHECK(fetcher->delegate());
-    fetcher->set_url(GURL(GaiaUrls::GetInstance()->get_user_info_url()));
-    fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(200);
-    fetcher->SetResponseString("email=user@gmail.com\nallServices=");
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
+  void SimulateValidResponseSignInWithOAuth() {
+    // Simulate the correct StartClientOAuth response.  This involves
+    // separate fetches.
+    SetupFetcherAndComplete(GaiaUrls::GetInstance()->client_oauth_url(), 200,
+                            net::ResponseCookies(),
+                            "{"
+                            "  \"oauth2\": {"
+                            "    \"refresh_token\": \"rt1\","
+                            "    \"access_token\": \"at1\","
+                            "    \"expires_in\": 3600,"
+                            "    \"token_type\": \"Bearer\""
+                            "  }"
+                            "}");
+
+    SetupFetcherAndComplete(GaiaUrls::GetInstance()->oauth1_login_url(), 200,
+                            net::ResponseCookies(),
+                            "SID=sid\nLSID=lsid\nAuth=auth_token");
+
+    SimulateValidResponseGetClientInfo(false);
+  }
+
+  void SimulateSignInWithOAuthChallengeCaptcha() {
+    SetupFetcherAndComplete(GaiaUrls::GetInstance()->oauth1_login_scope(), 200,
+                            net::ResponseCookies(),
+                            "{"
+                            "  \"cause\" : \"NeedsAdditional\","
+                            "  \"fallback\" : {"
+                            "    \"name\" : \"Terminating\","
+                            "    \"url\" : \"https://www.terminating.com\""
+                            "  },"
+                            "  \"challenge\" : {"
+                            "    \"name\" : \"Captcha\","
+                            "    \"image_url\" : \"http://www.image.com/\","
+                            "    \"image_width\" : 640,"
+                            "    \"image_height\" : 480,"
+                            "    \"audio_url\" : \"http://www.audio.com/\","
+                            "    \"challenge_token\" : \"challengetokenblob\""
+                            "  }"
+                            "}");
+  }
+
+  void SimulateSignInWithOAuthChallengeOtp() {
+    SetupFetcherAndComplete(GaiaUrls::GetInstance()->oauth1_login_scope(), 200,
+                            net::ResponseCookies(),
+                            "{"
+                            "  \"cause\" : \"NeedsAdditional\","
+                            "  \"fallback\" : {"
+                            "    \"name\" : \"Terminating\","
+                            "    \"url\" : \"https://www.terminating.com\""
+                            "  },"
+                            "  \"challenge\" : {"
+                            "    \"name\" : \"TwoFactor\","
+                            "    \"prompt_text\" : \"prompt_text\","
+                            "    \"alternate_text\" : \"alternate_text\","
+                            "    \"challenge_token\" : \"challengetokenblob\","
+                            "    \"field_length\" : 10"
+                            "  }"
+                            "}");
+  }
+
+  void SimulateProvideOAuthChallengeResponseValid() {
+    SimulateValidResponseSignInWithOAuth();
+  }
+
+  void SimulateValidResponseSignInWithCredentials() {
+    // Simulate the correct StartOAuthLoginTokenFetch response.  This involves
+    // two separate fetches.
+    SetupFetcherAndComplete(
+        GaiaUrls::GetInstance()->client_login_to_oauth2_url(), 200,
+        net::ResponseCookies(), kGetTokenPairValidResponse);
+
+    SetupFetcherAndComplete(GaiaUrls::GetInstance()->oauth2_token_url(), 200,
+                            net::ResponseCookies(), kGetTokenPairValidResponse);
+
+    // Simulate the correct StartUberAuthTokenFetch response.
+    std::string url(base::StringPrintf(
+        "%s?source=%s&issueuberauth=1",
+        GaiaUrls::GetInstance()->oauth1_login_url().c_str(),
+        GaiaConstants::kChromeSource));
+    SetupFetcherAndComplete(url, 200, net::ResponseCookies(), "token");
+
+    // Simulate the correct StartTokenAuth response.
+    net::ResponseCookies cookies;
+    cookies.push_back("SID=sid");
+    cookies.push_back("LSID=lsid");
+    SetupFetcherAndComplete(GaiaUrls::GetInstance()->token_auth_url(), 200,
+                            cookies, "data");
+
+    SimulateValidResponseGetClientInfo(false);
+  }
+
   void SimulateValidResponseClientLogin(bool isGPlusUser) {
+    SetupFetcherAndComplete(GaiaUrls::GetInstance()->client_login_url(), 200,
+                            net::ResponseCookies(),
+                            "SID=sid\nLSID=lsid\nAuth=auth");
+    SimulateValidResponseGetClientInfo(isGPlusUser);
+  }
+
+  void SimulateValidResponseGetClientInfo(bool isGPlusUser) {
     // Simulate the correct ClientLogin response.
-    std::string respons_string = isGPlusUser ?
+    std::string response_string = isGPlusUser ?
         "email=user@gmail.com\nallServices=googleme" :
         "email=user@gmail.com\nallServices=";
-    TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-    DCHECK(fetcher);
-    DCHECK(fetcher->delegate());
-
-    fetcher->set_url(GURL(GaiaUrls::GetInstance()->client_login_url()));
-    fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(200);
-    fetcher->SetResponseString("SID=sid\nLSID=lsid\nAuth=auth");
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
-
-    // Then simulate the correct GetUserInfo response for the canonical email.
-    // A new URL fetcher is used for each call.
-    fetcher = factory_.GetFetcherByID(0);
-    DCHECK(fetcher);
-    DCHECK(fetcher->delegate());
-    fetcher->set_url(GURL(GaiaUrls::GetInstance()->get_user_info_url()));
-    fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(200);
-    fetcher->SetResponseString(respons_string);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    SetupFetcherAndComplete(GaiaUrls::GetInstance()->get_user_info_url(), 200,
+                            net::ResponseCookies(), response_string);
   }
 
   TestURLFetcherFactory factory_;
@@ -329,4 +356,57 @@ TEST_F(SigninManagerTest, SignOutMidConnect) {
   EXPECT_EQ(0U, google_login_failure_.size());
 
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+}
+
+TEST_F(SigninManagerTest, SignInWithOAuth) {
+  manager_->Initialize(profile_.get());
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  manager_->StartSignInWithOAuth("user@gmail.com", "password");
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  SimulateValidResponseSignInWithOAuth();
+  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
+
+  // Should go into token service and stop.
+  EXPECT_EQ(1U, google_login_success_.size());
+  EXPECT_EQ(0U, google_login_failure_.size());
+}
+
+TEST_F(SigninManagerTest, SignInWithOAuthChallengeCaptcha) {
+  manager_->Initialize(profile_.get());
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  manager_->StartSignInWithOAuth("user@gmail.com", "password");
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  SimulateSignInWithOAuthChallengeCaptcha();
+
+  manager_->ProvideOAuthChallengeResponse(
+      GoogleServiceAuthError::CAPTCHA_REQUIRED, "token", "solution");
+
+  SimulateProvideOAuthChallengeResponseValid();
+  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
+
+  EXPECT_EQ(1U, google_login_success_.size());
+  EXPECT_EQ(1U, google_login_failure_.size());
+}
+
+TEST_F(SigninManagerTest, SignInWithOAuthChallengeOtp) {
+  manager_->Initialize(profile_.get());
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  manager_->StartSignInWithOAuth("user@gmail.com", "password");
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  SimulateSignInWithOAuthChallengeOtp();
+
+  manager_->ProvideOAuthChallengeResponse(
+      GoogleServiceAuthError::CAPTCHA_REQUIRED, "token", "solution");
+
+  SimulateProvideOAuthChallengeResponseValid();
+  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
+
+  EXPECT_EQ(1U, google_login_success_.size());
+  EXPECT_EQ(1U, google_login_failure_.size());
 }

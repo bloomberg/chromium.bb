@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/basictypes.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -26,8 +27,9 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
@@ -570,7 +572,7 @@ void SyncSetupHandler::HandleSubmitAuth(const ListValue* args) {
 
 void SyncSetupHandler::TryLogin(const std::string& username,
                                 const std::string& password,
-                                const std::string& captcha,
+                                const std::string& solution,
                                 const std::string& access_code) {
   DCHECK(IsActiveLogin());
   // Make sure we are listening for signin traffic.
@@ -580,14 +582,24 @@ void SyncSetupHandler::TryLogin(const std::string& username,
   last_attempted_user_email_ = username;
 
   // User is trying to log in again so reset the cached error.
+  GoogleServiceAuthError current_error = last_signin_error_;
   last_signin_error_ = GoogleServiceAuthError::None();
 
-  // If we're just being called to provide an ASP, then pass it to the
-  // SigninManager and wait for the next step.
   SigninManager* signin = GetSignin();
-  if (!access_code.empty()) {
-    signin->ProvideSecondFactorAccessCode(access_code);
-    return;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableClientOAuthSignin)) {
+    if (!solution.empty()) {
+      signin->ProvideOAuthChallengeResponse(current_error.state(),
+                                            current_error.token(), solution);
+      return;
+    }
+  } else {
+    // If we're just being called to provide an ASP, then pass it to the
+    // SigninManager and wait for the next step.
+    if (!access_code.empty()) {
+      signin->ProvideSecondFactorAccessCode(access_code);
+      return;
+    }
   }
 
   // The user has submitted credentials, which indicates they don't want to
@@ -596,10 +608,13 @@ void SyncSetupHandler::TryLogin(const std::string& username,
   GetSyncService()->UnsuppressAndStart();
 
   // Kick off a sign-in through the signin manager.
-  signin->StartSignIn(username,
-                      password,
-                      last_signin_error_.captcha().token,
-                      captcha);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableClientOAuthSignin)) {
+    signin->StartSignInWithOAuth(username, password);
+  } else {
+    signin->StartSignIn(username, password, current_error.captcha().token,
+                        solution);
+  }
 }
 
 void SyncSetupHandler::GaiaCredentialsValid() {

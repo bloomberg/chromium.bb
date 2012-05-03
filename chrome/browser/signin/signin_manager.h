@@ -94,6 +94,20 @@ class SigninManager : public GaiaAuthConsumer,
                                           const std::string& username,
                                           const std::string& password);
 
+  // Attempt to sign in this user with ClientOAuth. If successful, set a
+  // preference indicating the signed in user and send out a notification,
+  // then start fetching tokens for the user.
+  virtual void StartSignInWithOAuth(const std::string& username,
+                                    const std::string& password);
+
+  // Provide a challenge solution to a failed signin attempt with
+  // StartSignInWithOAuth().  |type| and |token| come from the
+  // GoogleServiceAuthError of the failed attempt.
+  // |solution| is the answer typed by the user.
+  void ProvideOAuthChallengeResponse(GoogleServiceAuthError::State type,
+                                     const std::string& token,
+                                     const std::string& solution);
+
   // Sign a user out, removing the preference, erasing all keys
   // associated with the user, and canceling all auth in progress.
   virtual void SignOut();
@@ -129,11 +143,25 @@ class SigninManager : public GaiaAuthConsumer,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  enum SigninType {
+    SIGNIN_TYPE_NONE,
+    SIGNIN_TYPE_CLIENT_LOGIN,
+    SIGNIN_TYPE_WITH_CREDENTIALS,
+    SIGNIN_TYPE_CLIENT_OAUTH,
+  };
+
   friend class FakeSigninManager;
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ClearTransientSigninData);
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorSuccess);
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorFailure);
-  void PrepareForSignin();
+
+  // Called to setup the transient signin data during one of the
+  // StartSigninXXX methods.  |type| indicates which of the methods is being
+  // used to perform the signin while |username| and |password| identify the
+  // account to be signed in.
+  void PrepareForSignin(SigninType type,
+                        const std::string& username,
+                        const std::string& password);
 
   // Called when a new request to re-authenticate a user is in progress.
   // Will clear in memory data but leaves the db as such so when the browser
@@ -142,8 +170,9 @@ class SigninManager : public GaiaAuthConsumer,
 
   // Called to handle an error from a GAIA auth fetch.  Sets the last error
   // to |error|, sends out a notification of login failure, and clears the
-  // transient signin data.
-  void HandleAuthError(const GoogleServiceAuthError& error);
+  // transient signin data if |clear_transient_data| is true.
+  void HandleAuthError(const GoogleServiceAuthError& error,
+                       bool clear_transient_data);
 
   Profile* profile_;
 
@@ -164,7 +193,13 @@ class SigninManager : public GaiaAuthConsumer,
   // Register for notifications from the TokenService.
   content::NotificationRegistrar registrar_;
 
+  // Actual username after successful authentication.
   std::string authenticated_username_;
+
+  // The type of sign being performed.  This value is valid only between a call
+  // to one of the StartSigninXXX methods and when the sign in is either
+  // successful or not.
+  SigninType type_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninManager);
 };

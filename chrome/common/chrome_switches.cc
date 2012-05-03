@@ -484,6 +484,10 @@ const char kEnableBrowserActionsForAll[]    = "enable-browser-actions-for-all";
 // Enables the bundled PPAPI version of Flash.
 const char kEnableBundledPpapiFlash[]       = "enable-bundled-ppapi-flash";
 
+// Enables the new ClientOAuth signin flow for connecting a profile a Google
+// account.  When disabled, Chrome will use the ClientLogin flow instead.
+const char kEnableClientOAuthSignin[]       = "enable-client-oauth-signin";
+
 // Enables Chrome To Mobile.
 // This switch is not currently respected; use the disable switch instead.
 const char kEnableChromeToMobile[]          = "enable-chrome-to-mobile";
