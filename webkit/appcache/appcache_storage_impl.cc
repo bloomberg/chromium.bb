@@ -424,6 +424,13 @@ void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
     (*group) = cache->get()->owning_group();
     DCHECK(group->get());
     DCHECK_EQ(group_record_.group_id, group->get()->group_id());
+
+    // TODO(michaeln): histogram is fishing for clues to crbug/95101
+    if (!cache->get()->GetEntry(group_record_.manifest_url)) {
+      AppCacheHistograms::AddMissingManifestDetectedAtCallsite(
+          AppCacheHistograms::CALLSITE_0);
+    }
+
     storage_->NotifyStorageAccessed(group_record_.origin);
     return;
   }
@@ -440,12 +447,24 @@ void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
   if (group->get()) {
     DCHECK(group_record_.group_id == group->get()->group_id());
     group->get()->AddCache(cache->get());
+
+    // TODO(michaeln): histogram is fishing for clues to crbug/95101
+    if (!cache->get()->GetEntry(group_record_.manifest_url)) {
+      AppCacheHistograms::AddMissingManifestDetectedAtCallsite(
+          AppCacheHistograms::CALLSITE_1);
+    }
   } else {
     (*group) = new AppCacheGroup(
         storage_->service_, group_record_.manifest_url,
         group_record_.group_id);
     group->get()->set_creation_time(group_record_.creation_time);
     group->get()->AddCache(cache->get());
+
+    // TODO(michaeln): histogram is fishing for clues to crbug/95101
+    if (!cache->get()->GetEntry(group_record_.manifest_url)) {
+      AppCacheHistograms::AddMissingManifestDetectedAtCallsite(
+          AppCacheHistograms::CALLSITE_2);
+    }
   }
   DCHECK(group->get()->newest_complete_cache() == cache->get());
 
@@ -1423,6 +1442,12 @@ void AppCacheStorageImpl::StoreGroupAndNewestCache(
       new StoreGroupAndCacheTask(this, group, newest_cache));
   task->AddDelegate(GetOrCreateDelegateReference(delegate));
   task->GetQuotaThenSchedule();
+
+  // TODO(michaeln): histogram is fishing for clues to crbug/95101
+  if (!newest_cache->GetEntry(group->manifest_url())) {
+    AppCacheHistograms::AddMissingManifestDetectedAtCallsite(
+        AppCacheHistograms::CALLSITE_3);
+  }
 }
 
 void AppCacheStorageImpl::FindResponseForMainRequest(

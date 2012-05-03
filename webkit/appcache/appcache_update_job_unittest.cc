@@ -571,6 +571,7 @@ class AppCacheUpdateJobTest : public testing::Test,
       : do_checks_after_update_finished_(false),
         expect_group_obsolete_(false),
         expect_group_has_cache_(false),
+        expect_group_is_being_deleted_(false),
         expect_old_cache_(NULL),
         expect_newest_cache_(NULL),
         expect_non_null_update_time_(false),
@@ -987,6 +988,41 @@ class AppCacheUpdateJobTest : public testing::Test,
                    base::Unretained(this)));
 
     // Start update after data write completes asynchronously.
+  }
+
+  // See http://code.google.com/p/chromium/issues/detail?id=95101
+  void Bug95101Test() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    MakeService();
+    group_ = new AppCacheGroup(
+        service_.get(), MockHttpServer::GetMockUrl("files/empty-manifest"),
+        service_->storage()->NewGroupId());
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    // Create a malformed cache with a missing manifest entry.
+    GURL wrong_manifest_url =
+        MockHttpServer::GetMockUrl("files/missing-mime-manifest");
+    AppCache* cache = MakeCacheForGroup(1, wrong_manifest_url, 111);
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    host->AssociateCompleteCache(cache);
+
+    update->StartUpdate(NULL, GURL());
+    EXPECT_TRUE(update->manifest_fetcher_ != NULL);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_is_being_deleted_ = true;
+    expect_group_has_cache_ = true;
+    expect_newest_cache_ = cache;  // newest cache unaffected by update
+    MockFrontend::HostIds id(1, host->host_id());
+    frontend->AddExpectedEvent(id, CHECKING_EVENT);
+    frontend->AddExpectedEvent(id, ERROR_EVENT);
+    frontend->expected_error_message_ =
+        "Manifest entry not found in existing cache";
+    WaitForUpdateToFinish();
   }
 
   void StartUpdateAfterSeedingStorageData(int result) {
@@ -2902,13 +2938,19 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   AppCache* MakeCacheForGroup(int64 cache_id, int64 manifest_response_id) {
+    return MakeCacheForGroup(cache_id, group_->manifest_url(),
+                             manifest_response_id);
+  }
+
+  AppCache* MakeCacheForGroup(int64 cache_id, const GURL& manifest_entry_url,
+                              int64 manifest_response_id) {
     AppCache* cache = new AppCache(service_.get(), cache_id);
     cache->set_complete(true);
     cache->set_update_time(base::Time::Now());
     group_->AddCache(cache);
 
     // Add manifest entry to cache.
-    cache->AddEntry(group_->manifest_url(),
+    cache->AddEntry(manifest_entry_url,
         AppCacheEntry(AppCacheEntry::MANIFEST, manifest_response_id));
 
     return cache;
@@ -2945,6 +2987,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     HttpHeadersRequestTestJob::Verify();
 
     EXPECT_EQ(expect_group_obsolete_, group_->is_obsolete());
+    EXPECT_EQ(expect_group_is_being_deleted_, group_->is_being_deleted());
 
     if (expect_group_has_cache_) {
       EXPECT_TRUE(group_->newest_complete_cache() != NULL);
@@ -3243,6 +3286,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   bool do_checks_after_update_finished_;
   bool expect_group_obsolete_;
   bool expect_group_has_cache_;
+  bool expect_group_is_being_deleted_;
   AppCache* expect_old_cache_;
   AppCache* expect_newest_cache_;
   bool expect_non_null_update_time_;
@@ -3357,6 +3401,10 @@ TEST_F(AppCacheUpdateJobTest, UpgradeNotModified) {
 
 TEST_F(AppCacheUpdateJobTest, UpgradeManifestDataUnchanged) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeManifestDataUnchangedTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, Bug95101Test) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::Bug95101Test);
 }
 
 TEST_F(AppCacheUpdateJobTest, BasicCacheAttemptSuccess) {

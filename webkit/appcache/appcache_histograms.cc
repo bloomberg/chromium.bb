@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,14 +8,12 @@
 
 namespace appcache {
 
-// static
 void AppCacheHistograms::CountInitResult(InitResultType init_result) {
   UMA_HISTOGRAM_ENUMERATION(
        "appcache.InitResult",
        init_result, NUM_INIT_RESULT_TYPES);
 }
 
-// static
 void AppCacheHistograms::CountCheckResponseResult(
     CheckResponseResultType result) {
   UMA_HISTOGRAM_ENUMERATION(
@@ -23,28 +21,35 @@ void AppCacheHistograms::CountCheckResponseResult(
        result, NUM_CHECK_RESPONSE_RESULT_TYPES);
 }
 
-// static
 void AppCacheHistograms::AddTaskQueueTimeSample(
     const base::TimeDelta& duration) {
   UMA_HISTOGRAM_TIMES("appcache.TaskQueueTime", duration);
 }
 
-// static
 void AppCacheHistograms::AddTaskRunTimeSample(
     const base::TimeDelta& duration) {
   UMA_HISTOGRAM_TIMES("appcache.TaskRunTime", duration);
 }
 
-// static
 void AppCacheHistograms::AddCompletionQueueTimeSample(
     const base::TimeDelta& duration) {
   UMA_HISTOGRAM_TIMES("appcache.CompletionQueueTime", duration);
 }
 
-// static
 void AppCacheHistograms::AddCompletionRunTimeSample(
     const base::TimeDelta& duration) {
   UMA_HISTOGRAM_TIMES("appcache.CompletionRunTime", duration);
+}
+
+void AppCacheHistograms::AddMissingManifestEntrySample() {
+  UMA_HISTOGRAM_BOOLEAN("appcache.MissingManifestEntry", true);
+}
+
+void AppCacheHistograms::AddMissingManifestDetectedAtCallsite(
+    MissingManifestCallsiteType callsite) {
+  UMA_HISTOGRAM_ENUMERATION(
+       "appcache.MissingManifestDetectedAtCallsite",
+       callsite, NUM_MISSING_MANIFEST_CALLSITE_TYPES);
 }
 
 }  // namespace appcache

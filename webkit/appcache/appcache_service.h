@@ -99,7 +99,7 @@ class APPCACHE_EXPORT AppCacheService {
 
   // Checks the integrity of 'response_id' by reading the headers and data.
   // If it cannot be read, the cache group for 'manifest_url' is deleted.
-  void CheckAppCacheResponse(const GURL& manifest_url_, int64 cache_id,
+  void CheckAppCacheResponse(const GURL& manifest_url, int64 cache_id,
                              int64 response_id);
 
   // Context for use during cache updates, should only be accessed
@@ -159,7 +159,6 @@ class APPCACHE_EXPORT AppCacheService {
   friend class AppCacheServiceTest;
 
   class AsyncHelper;
-  class NewAsyncHelper;
   class CanHandleOfflineHelper;
   class DeleteHelper;
   class DeleteOriginHelper;
@@ -167,7 +166,6 @@ class APPCACHE_EXPORT AppCacheService {
   class CheckResponseHelper;
 
   typedef std::set<AsyncHelper*> PendingAsyncHelpers;
-  typedef std::set<NewAsyncHelper*> PendingNewAsyncHelpers;
   typedef std::map<int, AppCacheBackendImpl*> BackendMap;
 
   AppCachePolicy* appcache_policy_;
@@ -176,7 +174,6 @@ class APPCACHE_EXPORT AppCacheService {
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
   PendingAsyncHelpers pending_helpers_;
-  PendingNewAsyncHelpers pending_new_helpers_;
   BackendMap backends_;  // One 'backend' per child process.
   // Context for use during cache updates.
   net::URLRequestContext* request_context_;

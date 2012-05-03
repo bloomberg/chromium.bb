@@ -16,6 +16,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "webkit/appcache/appcache_group.h"
+#include "webkit/appcache/appcache_histograms.h"
 
 namespace appcache {
 
@@ -294,6 +295,7 @@ bool AppCacheUpdateJob::URLFetcher::MaybeRetryRequest() {
 AppCacheUpdateJob::AppCacheUpdateJob(AppCacheService* service,
                                      AppCacheGroup* group)
     : service_(service),
+      manifest_url_(group->manifest_url()),
       group_(group),
       update_type_(UNKNOWN_TYPE),
       internal_state_(FETCH_MANIFEST),
@@ -301,8 +303,6 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheService* service,
       url_fetches_completed_(0),
       manifest_fetcher_(NULL),
       stored_state_(UNSTORED) {
-  DCHECK(group_);
-  manifest_url_ = group_->manifest_url();
 }
 
 AppCacheUpdateJob::~AppCacheUpdateJob() {
@@ -751,6 +751,9 @@ void AppCacheUpdateJob::StoreGroupAndCache() {
   else
     newest_cache = group_->newest_complete_cache();
   newest_cache->set_update_time(base::Time::Now());
+
+  // TODO(michaeln): dcheck is fishing for clues to crbug/95101
+  DCHECK_EQ(manifest_url_, group_->manifest_url());
   service_->storage()->StoreGroupAndNewestCache(group_, newest_cache,
                                                 this);  // async
 }
@@ -842,7 +845,14 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
   DCHECK(update_type_ == UPGRADE_ATTEMPT);
   AppCacheEntry* entry =
       group_->newest_complete_cache()->GetEntry(manifest_url_);
-  DCHECK(entry);
+  if (!entry) {
+    // TODO(michaeln): This is just a bandaid to avoid a crash.
+    // http://code.google.com/p/chromium/issues/detail?id=95101
+    HandleCacheFailure("Manifest entry not found in existing cache");
+    AppCacheHistograms::AddMissingManifestEntrySample();
+    service_->DeleteAppCacheGroup(manifest_url_, net::CompletionCallback());
+    return;
+  }
 
   // Load manifest data from storage to compare against fetched manifest.
   manifest_response_reader_.reset(

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,54 +38,12 @@ AppCacheInfoCollection::~AppCacheInfoCollection() {}
 
 // AsyncHelper -------
 
-class AppCacheService::NewAsyncHelper
-    : public AppCacheStorage::Delegate {
- public:
-  NewAsyncHelper(AppCacheService* service,
-                 const net::CompletionCallback& callback)
-      : service_(service), callback_(callback) {
-    service_->pending_new_helpers_.insert(this);
-  }
-
-  virtual ~NewAsyncHelper() {
-    if (service_)
-      service_->pending_new_helpers_.erase(this);
-  }
-
-  virtual void Start() = 0;
-  virtual void Cancel();
-
- protected:
-  void CallCallback(int rv) {
-    if (!callback_.is_null()) {
-      // Defer to guarantee async completion.
-      MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(&DeferredCallback, callback_, rv));
-    }
-    callback_.Reset();
-  }
-
-  AppCacheService* service_;
-  net::CompletionCallback callback_;
-};
-
-void AppCacheService::NewAsyncHelper::Cancel() {
-  if (!callback_.is_null()) {
-    callback_.Run(net::ERR_ABORTED);
-    callback_.Reset();
-  }
-
-  service_->storage()->CancelDelegateCallbacks(this);
-  service_ = NULL;
-}
-
 class AppCacheService::AsyncHelper
     : public AppCacheStorage::Delegate {
  public:
-  AsyncHelper(
-      AppCacheService* service, const net::CompletionCallback& callback)
-      : service_(service),
-        callback_(callback) {
+  AsyncHelper(AppCacheService* service,
+              const net::CompletionCallback& callback)
+      : service_(service), callback_(callback) {
     service_->pending_helpers_.insert(this);
   }
 
@@ -122,12 +80,12 @@ void AppCacheService::AsyncHelper::Cancel() {
 
 // CanHandleOfflineHelper -------
 
-class AppCacheService::CanHandleOfflineHelper : NewAsyncHelper {
+class AppCacheService::CanHandleOfflineHelper : AsyncHelper {
  public:
   CanHandleOfflineHelper(
       AppCacheService* service, const GURL& url,
       const GURL& first_party, const net::CompletionCallback& callback)
-      : NewAsyncHelper(service, callback),
+      : AsyncHelper(service, callback),
         url_(url),
         first_party_(first_party) {
   }
@@ -167,12 +125,12 @@ void AppCacheService::CanHandleOfflineHelper::OnMainResponseFound(
 
 // DeleteHelper -------
 
-class AppCacheService::DeleteHelper : public NewAsyncHelper {
+class AppCacheService::DeleteHelper : public AsyncHelper {
  public:
   DeleteHelper(
       AppCacheService* service, const GURL& manifest_url,
       const net::CompletionCallback& callback)
-      : NewAsyncHelper(service, callback), manifest_url_(manifest_url) {
+      : AsyncHelper(service, callback), manifest_url_(manifest_url) {
   }
 
   virtual void Start() {
@@ -210,12 +168,12 @@ void AppCacheService::DeleteHelper::OnGroupMadeObsolete(
 
 // DeleteOriginHelper -------
 
-class AppCacheService::DeleteOriginHelper : public NewAsyncHelper {
+class AppCacheService::DeleteOriginHelper : public AsyncHelper {
  public:
   DeleteOriginHelper(
       AppCacheService* service, const GURL& origin,
       const net::CompletionCallback& callback)
-      : NewAsyncHelper(service, callback), origin_(origin),
+      : AsyncHelper(service, callback), origin_(origin),
         num_caches_to_delete_(0), successes_(0), failures_(0) {
   }
 
@@ -302,12 +260,12 @@ void AppCacheService::DeleteOriginHelper::CacheCompleted(bool success) {
 
 // GetInfoHelper -------
 
-class AppCacheService::GetInfoHelper : NewAsyncHelper {
+class AppCacheService::GetInfoHelper : AsyncHelper {
  public:
   GetInfoHelper(
       AppCacheService* service, AppCacheInfoCollection* collection,
       const net::CompletionCallback& callback)
-      : NewAsyncHelper(service, callback), collection_(collection) {
+      : AsyncHelper(service, callback), collection_(collection) {
   }
 
   virtual void Start() {
@@ -481,10 +439,6 @@ AppCacheService::~AppCacheService() {
                 pending_helpers_.end(),
                 std::mem_fun(&AsyncHelper::Cancel));
   STLDeleteElements(&pending_helpers_);
-  std::for_each(pending_new_helpers_.begin(),
-                pending_new_helpers_.end(),
-                std::mem_fun(&NewAsyncHelper::Cancel));
-  STLDeleteElements(&pending_new_helpers_);
   if (quota_client_)
     quota_client_->NotifyAppCacheDestroyed();
 

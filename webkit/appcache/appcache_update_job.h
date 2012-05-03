@@ -235,8 +235,8 @@ class APPCACHE_EXPORT AppCacheUpdateJob : public AppCacheStorage::Delegate,
   bool IsTerminating() { return internal_state_ >= REFETCH_MANIFEST ||
                                 stored_state_ != UNSTORED; }
 
-  GURL manifest_url_;  // here for easier access
   AppCacheService* service_;
+  const GURL manifest_url_;  // here for easier access
 
   scoped_refptr<AppCache> inprogress_cache_;
 
