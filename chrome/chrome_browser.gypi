@@ -2872,7 +2872,7 @@
         'browser/ui/gtk/content_setting_bubble_gtk.h',
         'browser/ui/gtk/create_application_shortcuts_dialog_gtk.cc',
         'browser/ui/gtk/create_application_shortcuts_dialog_gtk.h',
-        'browser/ui/gtk/crypto_module_password_dialog.cc',
+        'browser/ui/gtk/crypto_module_password_dialog_gtk.cc',
         'browser/ui/gtk/custom_button.cc',
         'browser/ui/gtk/custom_button.h',
         'browser/ui/gtk/custom_drag.cc',
