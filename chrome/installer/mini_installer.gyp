@@ -19,6 +19,7 @@
           '../chrome.gyp:chrome_dll',
           '../chrome.gyp:default_extensions',
           '../chrome.gyp:setup',
+          'mini_installer/support/mini_installer_support.gyp:*',
         ],
         'include_dirs': [
           '../..',
