@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/value_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -145,9 +146,10 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
 
   CommandLinePrefStore* command_line =
       new CommandLinePrefStore(CommandLine::ForCurrentProcess());
-  JsonPrefStore* user = new JsonPrefStore(
-      pref_filename,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner =
+      BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+          BrowserThread::GetBlockingPool()->GetSequenceToken());
+  JsonPrefStore* user = new JsonPrefStore(pref_filename, io_task_runner);
   DefaultPrefStore* default_pref_store = new DefaultPrefStore();
 
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
