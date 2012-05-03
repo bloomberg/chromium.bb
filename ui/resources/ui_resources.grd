@@ -70,7 +70,7 @@
         <include name="IDR_RESTORE_H" file="linux_restore_h.png" type="BINDATA" />
         <include name="IDR_RESTORE_P" file="linux_restore_p.png" type="BINDATA" />
       </if>
-      <if expr="pp_ifdef('use_aura')">
+      <if expr="pp_ifdef('toolkit_views')">
         <!-- TODO(jamescook): Rename the IDR constants to put hot/pressed state before position. -->
         <include name="IDR_TEXTBUTTON_BOTTOM_H" file="aura/textbutton_hot_bottom.png" type="BINDATA" />
         <include name="IDR_TEXTBUTTON_BOTTOM_LEFT_H" file="aura/textbutton_hot_bottom_left.png" type="BINDATA" />
@@ -91,7 +91,7 @@
         <include name="IDR_TEXTBUTTON_TOP_RIGHT_H" file="aura/textbutton_hot_top_right.png" type="BINDATA" />
         <include name="IDR_TEXTBUTTON_TOP_RIGHT_P" file="aura/textbutton_pressed_top_right.png" type="BINDATA" />
       </if>
-      <if expr="not pp_ifdef('use_aura')">
+      <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_TEXTBUTTON_BOTTOM_H" file="textbutton_b_h.png" type="BINDATA" />
         <include name="IDR_TEXTBUTTON_BOTTOM_LEFT_H" file="textbutton_bl_h.png" type="BINDATA" />
         <include name="IDR_TEXTBUTTON_BOTTOM_LEFT_P" file="textbutton_bl_p.png" type="BINDATA" />
