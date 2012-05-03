@@ -158,16 +158,9 @@ def DumpNetLog(netlog):
     sys.stdout.write('Cannot find netlog, did Chrome actually launch?\n')
   else:
     sys.stdout.write('Netlog exists (%d bytes).\n' % os.path.getsize(netlog))
-    sys.stdout.write('Dumping URLs.\n')
-    i = 0
-    for line in open(netlog):
-      # Filter out events that don't list a URL.
-      if '"url"' in line:
-        sys.stdout.write(line)
-        i += 1
-        if i >= 30:
-          break
-    sys.stdout.write('\n')
+    sys.stdout.write('Dumping it to stdout.\n\n\n')
+    sys.stdout.write(open(netlog).read())
+    sys.stdout.write('\n\n\n')
 
 
 # Try to discover the real IP address of this machine.  If we can't figure it
@@ -300,7 +293,7 @@ def RunTestsOnce(url, options):
           sys.stdout.write('\nNo URLs were served by the test runner. It is '
                            'unlikely this test failure has anything to do with '
                            'this particular test.\n')
-        DumpNetLog(browser.NetLogName())
+          DumpNetLog(browser.NetLogName())
     except Exception:
       listener.ever_failed = 1
     browser.Cleanup()
