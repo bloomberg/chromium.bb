@@ -448,6 +448,10 @@ void QuitMessageLoop() {
   MessageLoop::current()->Quit();
 }
 
+void QuitMessageLoopNow() {
+  MessageLoop::current()->QuitNow();
+}
+
 void RunAllPendingMessages() {
   MessageLoop::current()->RunAllPending();
 }

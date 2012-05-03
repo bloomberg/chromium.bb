@@ -144,6 +144,7 @@ class TaskAdaptor {
 
 void RunMessageLoop();
 void QuitMessageLoop();
+void QuitMessageLoopNow();
 void RunAllPendingMessages();
 void DispatchMessageLoop();
 bool MessageLoopNestableTasksAllowed();
