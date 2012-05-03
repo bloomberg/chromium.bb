@@ -30,7 +30,7 @@ GamepadProvider::GamepadProvider(GamepadDataFetcher* fetcher)
   if (monitor)
     monitor->AddDevicesChangedObserver(this);
   bool res = gamepad_shared_memory_.CreateAndMapAnonymous(data_size);
-  DCHECK(res);
+  CHECK(res);
   GamepadHardwareBuffer* hwbuf = SharedMemoryAsHardwareBuffer();
   memset(hwbuf, 0, sizeof(GamepadHardwareBuffer));
 
@@ -146,7 +146,7 @@ void GamepadProvider::ScheduleDoPoll() {
 
 GamepadHardwareBuffer* GamepadProvider::SharedMemoryAsHardwareBuffer() {
   void* mem = gamepad_shared_memory_.memory();
-  DCHECK(mem);
+  CHECK(mem);
   return static_cast<GamepadHardwareBuffer*>(mem);
 }
 
