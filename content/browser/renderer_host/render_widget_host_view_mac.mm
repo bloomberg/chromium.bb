@@ -2106,7 +2106,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
           [attribute isEqualToString:NSAccessibilityContentsAttribute]) &&
       manager) {
     return [NSArray arrayWithObjects:manager->
-        GetRoot()->ToBrowserAccessibilityCocoa(), nil];
+        GetRoot()->toBrowserAccessibilityCocoa(), nil];
   } else if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
     return NSAccessibilityScrollAreaRole;
   }
@@ -2129,7 +2129,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   localPoint.y = NSHeight([self bounds]) - localPoint.y;
   BrowserAccessibilityCocoa* root = renderWidgetHostView_->
       GetBrowserAccessibilityManager()->
-          GetRoot()->ToBrowserAccessibilityCocoa();
+          GetRoot()->toBrowserAccessibilityCocoa();
   id obj = [root accessibilityHitTest:localPoint];
   return obj;
 }
@@ -2143,7 +2143,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
       renderWidgetHostView_->GetBrowserAccessibilityManager();
   // Only child is root.
   if (manager &&
-      manager->GetRoot()->ToBrowserAccessibilityCocoa() == child) {
+      manager->GetRoot()->toBrowserAccessibilityCocoa() == child) {
     return 0;
   } else {
     return NSNotFound;
@@ -2158,7 +2158,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     DCHECK(focused_item);
     if (focused_item) {
       BrowserAccessibilityCocoa* focused_item_cocoa =
-          focused_item->ToBrowserAccessibilityCocoa();
+          focused_item->toBrowserAccessibilityCocoa();
       DCHECK(focused_item_cocoa);
       if (focused_item_cocoa)
         return focused_item_cocoa;
