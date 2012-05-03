@@ -170,12 +170,6 @@ class DockView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(DockView);
 };
 
-// Returns the the x-coordinate of |point| if the type of tabstrip is horizontal
-// otherwise returns the y-coordinate.
-int MajorAxisValue(const gfx::Point& point, TabStrip* tabstrip) {
-  return point.x();
-}
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -682,8 +676,7 @@ void TabDragController2::MoveAttached(const gfx::Point& screen_point) {
   // Update the model, moving the WebContents from one index to another. Do this
   // only if we have moved a minimum distance since the last reorder (to prevent
   // jitter) or if this the first move and the tabs are not consecutive.
-  if (abs(MajorAxisValue(screen_point, attached_tabstrip_) -
-          last_move_screen_loc_) > threshold ||
+  if (abs(screen_point.x() - last_move_screen_loc_) > threshold ||
       (initial_move_ && !AreTabsConsecutive())) {
     TabStripModel* attached_model = GetModel(attached_tabstrip_);
     gfx::Rect bounds = GetDraggedViewTabStripBounds(dragged_view_point);
@@ -707,7 +700,7 @@ void TabDragController2::MoveAttached(const gfx::Point& screen_point) {
     // last_move_screen_loc_.
     if (index_of_last_item !=
         attached_model->GetIndexOfTabContents(last_contents)) {
-      last_move_screen_loc_ = MajorAxisValue(screen_point, attached_tabstrip_);
+      last_move_screen_loc_ = screen_point.x();
     }
   }
 
@@ -831,7 +824,7 @@ void TabDragController2::Attach(TabStrip* attached_tabstrip,
 
     // Inserting counts as a move. We don't want the tabs to jitter when the
     // user moves the tab immediately after attaching it.
-    last_move_screen_loc_ = MajorAxisValue(screen_point, attached_tabstrip);
+    last_move_screen_loc_ = screen_point.x();
 
     // Figure out where to insert the tab based on the bounds of the dragged
     // representation and the ideal bounds of the other Tabs already in the
@@ -844,7 +837,6 @@ void TabDragController2::Attach(TabStrip* attached_tabstrip,
     tab_strip_point.Offset(-mouse_offset_.x(), -mouse_offset_.y());
     gfx::Rect bounds = GetDraggedViewTabStripBounds(tab_strip_point);
     int index = GetInsertionIndexForDraggedBounds(bounds);
-    attached_tabstrip_->set_attaching_dragged_tab(true);
     for (size_t i = 0; i < drag_data_.size(); ++i) {
       int add_types = TabStripModel::ADD_NONE;
       if (drag_data_[i].pinned)
@@ -852,7 +844,6 @@ void TabDragController2::Attach(TabStrip* attached_tabstrip,
       GetModel(attached_tabstrip_)->InsertTabContentsAt(
           index + i, drag_data_[i].contents, add_types);
     }
-    attached_tabstrip_->set_attaching_dragged_tab(false);
 
     tabs = GetTabsMatchingDraggedContents(attached_tabstrip_);
   }

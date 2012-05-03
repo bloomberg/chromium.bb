@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer.h"
-#include "chrome/browser/ui/views/tabs/abstract_tab_strip_view.h"
 #include "chrome/browser/ui/views/tabs/base_tab.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "ui/base/animation/animation_container.h"
@@ -20,6 +19,7 @@
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/mouse_watcher.h"
+#include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
 class BaseTab;
@@ -47,7 +47,7 @@ class ImageView;
 //      in response to dragged tabs.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class TabStrip : public AbstractTabStripView,
+class TabStrip : public views::View,
                  public views::ButtonListener,
                  public views::MouseWatcherListener,
                  public TabController {
@@ -131,6 +131,29 @@ class TabStrip : public AbstractTabStripView,
   // Returns true if a tab is being dragged into this tab strip.
   bool IsActiveDropTarget() const;
 
+  // Returns true if the tab strip is editable. Returns false if the tab strip
+  // is being dragged or animated to prevent extensions from messing things up
+  // while that's happening.
+  bool IsTabStripEditable() const;
+
+  // Returns false when there is a drag operation in progress so that the frame
+  // doesn't close.
+  bool IsTabStripCloseable() const;
+
+  // Updates the loading animations displayed by tabs in the tabstrip to the
+  // next frame.
+  void UpdateLoadingAnimations();
+
+  // Returns true if the specified point (in TabStrip coordinates) is in the
+  // window caption area of the browser window.
+  bool IsPositionInWindowCaption(const gfx::Point& point);
+
+  // Set the background offset used by inactive tabs to match the frame image.
+  void SetBackgroundOffset(const gfx::Point& offset);
+
+  // Returns the new tab button. This is never NULL.
+  views::View* newtab_button();
+
   // TabController overrides:
   virtual const TabStripSelectionModel& GetSelectionModel() OVERRIDE;
   virtual bool SupportsMultipleSelection() OVERRIDE;
@@ -157,14 +180,6 @@ class TabStrip : public AbstractTabStripView,
 
   // MouseWatcherListener overrides:
   virtual void MouseMovedOutOfHost() OVERRIDE;
-
-  // AbstractTabStripView implementation:
-  virtual bool IsTabStripEditable() const OVERRIDE;
-  virtual bool IsTabStripCloseable() const OVERRIDE;
-  virtual void UpdateLoadingAnimations() OVERRIDE;
-  virtual bool IsPositionInWindowCaption(const gfx::Point& point) OVERRIDE;
-  virtual void SetBackgroundOffset(const gfx::Point& offset) OVERRIDE;
-  virtual views::View* GetNewTabButton() OVERRIDE;
 
   // views::View overrides:
   virtual void Layout() OVERRIDE;
@@ -317,9 +332,6 @@ class TabStrip : public AbstractTabStripView,
   // Invoked from StoppedDraggingTabs to cleanup |tab|. If |tab| is known
   // |is_first_tab| is set to true.
   void StoppedDraggingTab(BaseTab* tab, bool* is_first_tab);
-
-  // See description above field for details.
-  void set_attaching_dragged_tab(bool value) { attaching_dragged_tab_ = value; }
 
   // Takes ownership of |controller|.
   void OwnDragController(TabDragController* controller);
@@ -483,11 +495,6 @@ class TabStrip : public AbstractTabStripView,
   base::OneShotTimer<TabStrip> new_tab_timer_;
 
   scoped_ptr<views::MouseWatcher> mouse_watcher_;
-
-  // TODO: is this needed?
-  // If true, the insert is a result of a drag attaching the tab back to the
-  // model.
-  bool attaching_dragged_tab_;
 
   // The controller for a drag initiated from a Tab. Valid for the lifetime of
   // the drag session.

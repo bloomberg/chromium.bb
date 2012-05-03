@@ -437,7 +437,6 @@ TabStrip::TabStrip(TabStripController* controller)
       available_width_for_tabs_(-1),
       in_tab_close_(false),
       animation_container_(new ui::AnimationContainer()),
-      attaching_dragged_tab_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(bounds_animator_(this)) {
   Init();
 }
@@ -666,6 +665,52 @@ bool TabStrip::IsActiveDropTarget() const {
   return false;
 }
 
+bool TabStrip::IsTabStripEditable() const {
+  return !IsDragSessionActive() && !IsActiveDropTarget();
+}
+
+bool TabStrip::IsTabStripCloseable() const {
+  return !IsDragSessionActive();
+}
+
+void TabStrip::UpdateLoadingAnimations() {
+  controller_->UpdateLoadingAnimations();
+}
+
+bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
+  views::View* v = GetEventHandlerForPoint(point);
+
+  // If there is no control at this location, claim the hit was in the title
+  // bar to get a move action.
+  if (v == this)
+    return true;
+
+  // Check to see if the point is within the non-button parts of the new tab
+  // button. The button has a non-rectangular shape, so if it's not in the
+  // visual portions of the button we treat it as a click to the caption.
+  gfx::Point point_in_newtab_coords(point);
+  View::ConvertPointToView(this, newtab_button_, &point_in_newtab_coords);
+  if (newtab_button_->GetLocalBounds().Contains(point_in_newtab_coords) &&
+      !newtab_button_->HitTest(point_in_newtab_coords)) {
+    return true;
+  }
+
+  // All other regions, including the new Tab button, should be considered part
+  // of the containing Window's client area so that regular events can be
+  // processed for them.
+  return false;
+}
+
+void TabStrip::SetBackgroundOffset(const gfx::Point& offset) {
+  for (int i = 0; i < tab_count(); ++i)
+    tab_at(i)->set_background_offset(offset);
+  newtab_button_->set_background_offset(offset);
+}
+
+views::View* TabStrip::newtab_button() {
+  return newtab_button_;
+}
+
 const TabStripSelectionModel& TabStrip::GetSelectionModel() {
   return controller_->GetSelectionModel();
 }
@@ -847,55 +892,6 @@ void TabStrip::MouseMovedOutOfHost() {
   ResizeLayoutTabs();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// TabStrip, AbstractTabStripView implementation:
-
-bool TabStrip::IsTabStripEditable() const {
-  return !IsDragSessionActive() && !IsActiveDropTarget();
-}
-
-bool TabStrip::IsTabStripCloseable() const {
-  return !IsDragSessionActive();
-}
-
-void TabStrip::UpdateLoadingAnimations() {
-  controller_->UpdateLoadingAnimations();
-}
-
-bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
-  views::View* v = GetEventHandlerForPoint(point);
-
-  // If there is no control at this location, claim the hit was in the title
-  // bar to get a move action.
-  if (v == this)
-    return true;
-
-  // Check to see if the point is within the non-button parts of the new tab
-  // button. The button has a non-rectangular shape, so if it's not in the
-  // visual portions of the button we treat it as a click to the caption.
-  gfx::Point point_in_newtab_coords(point);
-  View::ConvertPointToView(this, newtab_button_, &point_in_newtab_coords);
-  if (newtab_button_->GetLocalBounds().Contains(point_in_newtab_coords) &&
-      !newtab_button_->HitTest(point_in_newtab_coords)) {
-    return true;
-  }
-
-  // All other regions, including the new Tab button, should be considered part
-  // of the containing Window's client area so that regular events can be
-  // processed for them.
-  return false;
-}
-
-void TabStrip::SetBackgroundOffset(const gfx::Point& offset) {
-  for (int i = 0; i < tab_count(); ++i)
-    tab_at(i)->set_background_offset(offset);
-  newtab_button_->set_background_offset(offset);
-}
-
-views::View* TabStrip::GetNewTabButton() {
-  return newtab_button_;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // TabStrip, views::View overrides:
 
@@ -936,7 +932,6 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
         if (!stacking)
           tab->Paint(canvas);
       } else {
-        // TODO(scottmg): Multiple selection may be incorrect in touch mode.
         selected_tabs.push_back(tab);
       }
     } else {

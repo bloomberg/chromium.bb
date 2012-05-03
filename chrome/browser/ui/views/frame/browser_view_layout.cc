@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
-#include "chrome/browser/ui/views/tabs/abstract_tab_strip_view.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/point.h"
@@ -236,7 +236,7 @@ void BrowserViewLayout::ViewAdded(views::View* host, views::View* view) {
       toolbar_ = static_cast<ToolbarView*>(view);
       break;
     case VIEW_ID_TAB_STRIP:
-      tabstrip_ = static_cast<AbstractTabStripView*>(view);
+      tabstrip_ = static_cast<TabStrip*>(view);
       break;
   }
 }

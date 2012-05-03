@@ -56,7 +56,7 @@
 #include "chrome/browser/ui/views/password_generation_bubble_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_factory.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
@@ -1820,15 +1820,6 @@ views::LayoutManager* BrowserView::CreateLayoutManager() const {
   return new BrowserViewLayout;
 }
 
-void BrowserView::InitTabStrip(TabStripModel* model) {
-  // Throw away the existing tabstrip if we're switching display modes.
-  scoped_ptr<AbstractTabStripView> old_strip(tabstrip_);
-  if (tabstrip_)
-    tabstrip_->parent()->RemoveChildView(tabstrip_);
-
-  tabstrip_ = CreateTabStrip(browser_.get(), this, model);
-}
-
 ToolbarView* BrowserView::CreateToolbar() const {
   return new ToolbarView(browser_.get());
 }
@@ -1855,7 +1846,12 @@ void BrowserView::Init() {
 
   LoadAccelerators();
 
-  InitTabStrip(browser_->tabstrip_model());
+  // TabStrip takes ownership of the controller.
+  BrowserTabStripController* tabstrip_controller =
+      new BrowserTabStripController(browser_.get(), browser_->tabstrip_model());
+  tabstrip_ = new TabStrip(tabstrip_controller);
+  AddChildView(tabstrip_);
+  tabstrip_controller->InitFromModel(tabstrip_);
 
   SetToolbar(CreateToolbar());
 

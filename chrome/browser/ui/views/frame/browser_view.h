@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
-#include "chrome/browser/ui/views/tabs/abstract_tab_strip_view.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -47,6 +46,7 @@ class FullscreenExitBubbleViews;
 class InfoBarContainerView;
 class LocationBarView;
 class StatusBubbleViews;
+class TabStrip;
 class TabStripModel;
 class ToolbarView;
 
@@ -135,7 +135,7 @@ class BrowserView : public BrowserWindow,
       const gfx::Point& point) const;
 
   // Accessor for the TabStrip.
-  AbstractTabStripView* tabstrip() const { return tabstrip_; }
+  TabStrip* tabstrip() const { return tabstrip_; }
 
   // Accessor for the Toolbar.
   ToolbarView* toolbar() const { return toolbar_; }
@@ -412,9 +412,6 @@ class BrowserView : public BrowserWindow,
   // override to implement different layout policy.
   virtual views::LayoutManager* CreateLayoutManager() const;
 
-  // Initializes a new TabStrip for the browser view.
-  virtual void InitTabStrip(TabStripModel* tab_strip_model);
-
   // Factory Method.
   // Returns a new ToolbarView for this browser view. A subclass may
   // override to implement different layout policy.
@@ -583,7 +580,7 @@ class BrowserView : public BrowserWindow,
   views::View* active_bookmark_bar_;
 
   // The TabStrip.
-  AbstractTabStripView* tabstrip_;
+  TabStrip* tabstrip_;
 
   // The Toolbar containing the navigation buttons, menus and the address bar.
   ToolbarView* toolbar_;

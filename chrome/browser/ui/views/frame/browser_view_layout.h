@@ -11,13 +11,13 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/layout/layout_manager.h"
 
-class AbstractTabStripView;
 class BookmarkBarView;
 class Browser;
 class BrowserView;
 class ContentsContainer;
 class DownloadShelfView;
 class TabContentsContainer;
+class TabStrip;
 class ToolbarView;
 
 namespace gfx {
@@ -99,7 +99,7 @@ class BrowserViewLayout : public views::LayoutManager {
   }
 
   // Child views that the layout manager manages.
-  AbstractTabStripView* tabstrip_;
+  TabStrip* tabstrip_;
   ToolbarView* toolbar_;
   views::SingleSplitView* contents_split_;
   ContentsContainer* contents_container_;

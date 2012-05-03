@@ -401,8 +401,8 @@ void ExtensionInstalledBubble::ShowInternal() {
   views::View* reference_view = NULL;
   if (type_ == APP) {
     if (browser_view->IsTabStripVisible()) {
-      AbstractTabStripView* tabstrip = browser_view->tabstrip();
-      views::View* ntp_button = tabstrip->GetNewTabButton();
+      TabStrip* tabstrip = browser_view->tabstrip();
+      views::View* ntp_button = tabstrip->newtab_button();
       if (ntp_button && ntp_button->IsDrawn()) {
         reference_view = ntp_button;
       } else {
