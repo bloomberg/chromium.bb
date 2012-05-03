@@ -240,9 +240,7 @@ END_MSG_MAP()
 
   virtual void GetProfilePath(const std::wstring& profile_name,
                               FilePath* profile_path) {
-    chrome::GetChromeFrameUserDataDirectory(profile_path);
-    *profile_path = profile_path->Append(profile_name);
-    DVLOG(1) << __FUNCTION__ << ": " << profile_path->value();
+    return GetChromeFrameProfilePath(profile_name, profile_path);
   }
 
  protected:

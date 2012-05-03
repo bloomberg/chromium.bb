@@ -281,8 +281,6 @@ class TimedMsgLoop {
 // Returns S_OK on success.
 HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser);
 
-FilePath GetProfilePath(const std::wstring& suffix);
-
 // Returns the path of the exe passed in.
 std::wstring GetExecutableAppPath(const std::wstring& file);
 

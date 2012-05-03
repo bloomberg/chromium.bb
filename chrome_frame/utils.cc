@@ -1671,3 +1671,10 @@ bool IncreaseWinInetConnections(DWORD connections) {
   wininet_connection_count_updated = true;
   return true;
 }
+
+void GetChromeFrameProfilePath(const string16& profile_name,
+                               FilePath* profile_path) {
+  chrome::GetChromeFrameUserDataDirectory(profile_path);
+  *profile_path = profile_path->Append(profile_name);
+  DVLOG(1) << __FUNCTION__ << ": " << profile_path->value();
+}

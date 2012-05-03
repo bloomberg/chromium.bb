@@ -413,13 +413,6 @@ HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser) {
   return hr;
 }
 
-// TODO(joi@chromium.org) Could share this code with chrome_frame_plugin.h
-FilePath GetProfilePath(const std::wstring& profile_name) {
-  FilePath profile_path;
-  chrome::GetChromeFrameUserDataDirectory(&profile_path);
-  return profile_path.Append(profile_name);
-}
-
 std::wstring GetExeVersion(const std::wstring& exe_path) {
   scoped_ptr<FileVersionInfo> ie_version_info(
       FileVersionInfo::CreateFileVersionInfo(FilePath(exe_path)));
@@ -458,7 +451,7 @@ FilePath GetProfilePathForIE() {
     profile_path = GetIETemporaryFilesFolder();
     profile_path = profile_path.Append(L"Google Chrome Frame");
   } else {
-    profile_path = GetProfilePath(kIEProfileName);
+    GetChromeFrameProfilePath(kIEProfileName, &profile_path);
   }
   return profile_path;
 }

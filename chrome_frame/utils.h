@@ -621,4 +621,9 @@ bool IsChromeFrameDocument(IWebBrowser2* web_browser);
 // Returns true on success.
 bool IncreaseWinInetConnections(DWORD connections);
 
+// Sets |profile_path| to the path for the Chrome Frame |profile_name|
+// profile.
+void GetChromeFrameProfilePath(const string16& profile_name,
+                               FilePath* profile_path);
+
 #endif  // CHROME_FRAME_UTILS_H_

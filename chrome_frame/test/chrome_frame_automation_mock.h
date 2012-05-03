@@ -41,8 +41,8 @@ class AutomationMockDelegate
 
     mock_server_.ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
 
-    FilePath profile_path(
-        chrome_frame_test::GetProfilePath(profile_name));
+    FilePath profile_path;
+    GetChromeFrameProfilePath(profile_name, &profile_path);
     chrome_frame_test::OverrideDataDirectoryForThisTest(profile_path.value());
 
     automation_client_ = new ChromeFrameAutomationClient;

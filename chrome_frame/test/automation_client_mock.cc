@@ -123,7 +123,7 @@ FilePath CFACWithChrome::profile_path_;
 
 // static
 void CFACWithChrome::SetUpTestCase() {
-  profile_path_ = chrome_frame_test::GetProfilePath(L"Adam.N.Epilinter");
+  GetChromeFrameProfilePath(L"Adam.N.Epilinter", &profile_path_);
 }
 
 // static

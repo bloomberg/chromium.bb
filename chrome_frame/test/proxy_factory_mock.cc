@@ -9,6 +9,7 @@
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/proxy_factory_mock.h"
 #include "chrome_frame/test/test_scrubber.h"
+#include "chrome_frame/utils.h"
 
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 #include "testing/gmock_mutant.h"
@@ -33,7 +34,8 @@ void ProxyFactoryTest::SetUp() {
 ChromeFrameLaunchParams* ProxyFactoryTest::MakeLaunchParams(
     const wchar_t* profile_name) {
   GURL empty;
-  FilePath profile_path(chrome_frame_test::GetProfilePath(profile_name));
+  FilePath profile_path;
+  GetChromeFrameProfilePath(profile_name, &profile_path);
   chrome_frame_test::OverrideDataDirectoryForThisTest(profile_path.value());
   ChromeFrameLaunchParams* params =
       new ChromeFrameLaunchParams(empty, empty, profile_path,

@@ -97,9 +97,10 @@ const size_t kBlankPngFileLength = 95;
 // Looks up |element_name| in the Chrome form data DB and ensures that the
 // results match |matcher|.
 ACTION_P2(ExpectFormValuesForElementNameMatch, element_name, matcher) {
+  FilePath root_path;
+  GetChromeFrameProfilePath(kIexploreProfileName, &root_path);
   FilePath profile_path(
-      chrome_frame_test::GetProfilePath(kIexploreProfileName)
-          .Append(L"Default").Append(chrome::kWebDataFilename));
+      root_path.Append(L"Default").Append(chrome::kWebDataFilename));
 
   WebDatabase web_database;
   sql::InitStatus init_status = web_database.Init(profile_path);

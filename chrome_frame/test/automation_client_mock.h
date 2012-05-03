@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/proxy_factory_mock.h"
+#include "chrome_frame/utils.h"
 #include "gmock/gmock.h"
 
 using testing::StrictMock;
@@ -169,9 +170,8 @@ class CFACMockTest : public testing::Test {
  protected:
   CFACMockTest()
     : tracker_(NULL), timeout_(500),
-      returned_proxy_(static_cast<ChromeFrameAutomationProxy*>(&mock_proxy_)),
-      profile_path_(
-        chrome_frame_test::GetProfilePath(L"Adam.N.Epilinter")) {
+      returned_proxy_(static_cast<ChromeFrameAutomationProxy*>(&mock_proxy_)) {
+    GetChromeFrameProfilePath(L"Adam.N.Epilinter", &profile_path_);
     id_ = reinterpret_cast<void*>(5);
     tab_handle_ = 3;
   }
