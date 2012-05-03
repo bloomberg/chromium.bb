@@ -2,56 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var cr = (function() {
+/**
+ * The global object.
+ * @type {!Object}
+ * @const
+ */
+var global = this;
 
-  /**
-   * Whether we are using a Mac or not.
-   * @type {boolean}
-   * @const
-   */
-  var isMac = /Mac/.test(navigator.platform);
-
-  /**
-   * Whether this is on the Windows platform or not.
-   * @type {boolean}
-   * @const
-   */
-  var isWindows = /Win/.test(navigator.platform);
-
-  /**
-   * Whether this is on chromeOS or not.
-   * @type {boolean}
-   * @const
-   */
-  var isChromeOS = /CrOS/.test(navigator.userAgent);
-
-  /**
-   * Whether this is on vanilla Linux (not chromeOS).
-   * @type {boolean}
-   * @const
-   */
-  var isLinux = /Linux/.test(navigator.userAgent);
-
-  /**
-   * Whether this uses GTK or not.
-   * @type {boolean}
-   * @const
-   */
-  var isGTK = /GTK/.test(chrome.toolkit);
-
-  /**
-   * Whether this uses the views toolkit or not.
-   * @type {boolean}
-   * @const
-   */
-  var isViews = /views/.test(chrome.toolkit);
-
-  /**
-   * Whether this window is optimized for touch-based input.
-   * @type {boolean}
-   * @const
-   */
-  var isTouchOptimized = !!chrome.touchOptimized;
+/** Platform, package, object property, and Event support. **/
+this.cr = (function() {
+  'use strict';
 
   /**
    * Tags the html element with an attribute that allows touch-specific css
@@ -59,7 +19,7 @@ var cr = (function() {
    * TODO(rbyers): make Chrome always touch-optimized. http://crbug.com/105380
    */
   function enableTouchOptimizedCss() {
-    if (isTouchOptimized)
+    if (cr.isTouchOptimized)
       doc.documentElement.setAttribute('touch-optimized', '');
   }
 
@@ -71,12 +31,12 @@ var cr = (function() {
    * @param {string} name Name of the object that this file defines.
    * @param {*=} opt_object The object to expose at the end of the path.
    * @param {Object=} opt_objectToExportTo The object to add the path to;
-   *     default is {@code window}.
+   *     default is {@code global}.
    * @private
    */
   function exportPath(name, opt_object, opt_objectToExportTo) {
     var parts = name.split('.');
-    var cur = opt_objectToExportTo || window /* global */;
+    var cur = opt_objectToExportTo || global;
 
     for (var part; parts.length && (part = parts.shift());) {
       if (!parts.length && opt_object !== undefined) {
@@ -91,32 +51,6 @@ var cr = (function() {
     return cur;
   };
 
-  // cr.Event is called CrEvent in here to prevent naming conflicts. We also
-  // store the original Event in case someone does a global alias of cr.Event.
-  // @const
-  var DomEvent = Event;
-
-  /**
-   * Creates a new event to be used with cr.EventTarget or DOM EventTarget
-   * objects.
-   * @param {string} type The name of the event.
-   * @param {boolean=} opt_bubbles Whether the event bubbles. Default is false.
-   * @param {boolean=} opt_preventable Whether the default action of the event
-   *     can be prevented.
-   * @constructor
-   * @extends {DomEvent}
-   */
-  function CrEvent(type, opt_bubbles, opt_preventable) {
-    var e = cr.doc.createEvent('Event');
-    e.initEvent(type, !!opt_bubbles, !!opt_preventable);
-    e.__proto__ = CrEvent.prototype;
-    return e;
-  }
-
-  CrEvent.prototype = {
-    __proto__: DomEvent.prototype
-  };
-
   /**
    * Fires a property change event on the target.
    * @param {EventTarget} target The target to dispatch the event on.
@@ -125,7 +59,7 @@ var cr = (function() {
    * @param {*} oldValue The old value for the property.
    */
   function dispatchPropertyChange(target, propertyName, newValue, oldValue) {
-    var e = new CrEvent(propertyName + 'Change');
+    var e = new cr.Event(propertyName + 'Change');
     e.propertyName = propertyName;
     e.newValue = newValue;
     e.oldValue = oldValue;
@@ -345,28 +279,6 @@ var cr = (function() {
   }
 
   /**
-   * Document used for various document related operations.
-   * @type {!Document}
-   */
-  var doc = document;
-
-
-  /**
-   * Allows you to run func in the context of a different document.
-   * @param {!Document} document The document to use.
-   * @param {function():*} func The function to call.
-   */
-  function withDoc(document, func) {
-    var oldDoc = doc;
-    doc = document;
-    try {
-      func();
-    } finally {
-      doc = oldDoc;
-    }
-  }
-
-  /**
    * Adds a {@code getInstance} static method that always return the same
    * instance object.
    * @param {!Function} ctor The constructor for the class to add the static
@@ -378,33 +290,110 @@ var cr = (function() {
     };
   }
 
+  /**
+   * Creates a new event to be used with cr.EventTarget or DOM EventTarget
+   * objects.
+   * @param {string} type The name of the event.
+   * @param {boolean=} opt_bubbles Whether the event bubbles.
+   *     Default is false.
+   * @param {boolean=} opt_preventable Whether the default action of the event
+   *     can be prevented.
+   * @constructor
+   * @extends {Event}
+   */
+  function Event(type, opt_bubbles, opt_preventable) {
+    var e = cr.doc.createEvent('Event');
+    e.initEvent(type, !!opt_bubbles, !!opt_preventable);
+    e.__proto__ = global.Event.prototype;
+    return e;
+  };
+
+  /**
+   * Initialization which must be deferred until run-time.
+   */
+  function initialize() {
+    // If 'document' isn't defined, then we must be being pre-compiled,
+    // so set a trap so that we're initialized on first access at run-time.
+    if (!global.document) {
+      var originalCr = cr;
+
+      Object.defineProperty(global, 'cr', {
+        get: function() {
+          Object.defineProperty(global, 'cr', {value: originalCr});
+          originalCr.initialize();
+          return originalCr;
+        },
+        configurable: true
+      });
+
+      return;
+    }
+
+    Event.prototype = {__proto__: global.Event.prototype};
+
+    /**
+     * Whether we are using a Mac or not.
+     */
+    cr.isMac = /Mac/.test(navigator.platform);
+
+    /**
+     * Whether this is on the Windows platform or not.
+     */
+    cr.isWindows = /Win/.test(navigator.platform);
+
+    /**
+     * Whether this is on chromeOS or not.
+     */
+    cr.isChromeOS = /CrOS/.test(navigator.userAgent);
+
+    /**
+     * Whether this is on vanilla Linux (not chromeOS).
+     */
+    cr.isLinux = /Linux/.test(navigator.userAgent);
+
+    /**
+     * Whether this uses GTK or not.
+     */
+    cr.isGTK = /GTK/.test(chrome.toolkit);
+
+    /**
+     * Whether this uses the views toolkit or not.
+     */
+    cr.isViews = /views/.test(chrome.toolkit);
+
+    /**
+     * Whether this window is optimized for touch-based input.
+     */
+    cr.isTouchOptimized = !!chrome.touchOptimized;
+
+    enableTouchOptimizedCss();
+  }
+
   return {
     addSingletonGetter: addSingletonGetter,
-    isChromeOS: isChromeOS,
-    isMac: isMac,
-    isWindows: isWindows,
-    isLinux: isLinux,
-    isViews: isViews,
-    isTouchOptimized: isTouchOptimized,
-    enableTouchOptimizedCss: enableTouchOptimizedCss,
+    createUid: createUid,
     define: define,
     defineProperty: defineProperty,
-    PropertyKind: PropertyKind,
-    createUid: createUid,
-    getUid: getUid,
-    dispatchSimpleEvent: dispatchSimpleEvent,
     dispatchPropertyChange: dispatchPropertyChange,
+    dispatchSimpleEvent: dispatchSimpleEvent,
+    Event: Event,
+    getUid: getUid,
+    initialize: initialize,
+    PropertyKind: PropertyKind,
 
     /**
      * The document that we are currently using.
      * @type {!Document}
      */
     get doc() {
-      return doc;
-    },
-    withDoc: withDoc,
-    Event: CrEvent
+      return document;
+    }
   };
 })();
 
-cr.enableTouchOptimizedCss();
+
+/**
+ * TODO(kgr): Move this to another file which is to be loaded last.
+ * This will be done as part of future work to make this code pre-compilable.
+ */
+cr.initialize();
