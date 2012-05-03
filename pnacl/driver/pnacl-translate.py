@@ -291,13 +291,6 @@ def main(argv):
   return 0
 
 def ApplyBitcodeConfig(metadata, bctype):
-  # Normally, only pso files need to be translated with PIC, but since we
-  # are linking executables with unresolved symbols, dynamic nexe's
-  # also need to be PIC to be able to generate the correct relocations.
-  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2351
-  if bctype == 'pexe' and env.getbool('LIBMODE_GLIBC'):
-    env.append('LD_FLAGS', '--unresolved-symbols=ignore-all')
-
   # Read the bitcode metadata to extract library
   # dependencies and SOName.
   # For now, we use LD_FLAGS to convey the information.
