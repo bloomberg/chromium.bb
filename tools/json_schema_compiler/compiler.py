@@ -70,7 +70,7 @@ def handle_single_schema(filename, dest_dir, root, root_namespace):
 
     # The output filename must match the input filename for gyp to deal with it
     # properly.
-    out_file = namespace.unix_name
+    out_file = namespace.name
     type_generator = cpp_type_generator.CppTypeGenerator(
         root_namespace, namespace, namespace.unix_name)
     for referenced_namespace in api_model.namespaces.values():
@@ -78,7 +78,7 @@ def handle_single_schema(filename, dest_dir, root, root_namespace):
         continue
       type_generator.AddNamespace(
           referenced_namespace,
-          referenced_namespace.unix_name)
+          referenced_namespace.name)
 
     h_code = (h_generator.HGenerator(namespace, type_generator)
         .Generate().Render())
@@ -120,7 +120,7 @@ def handle_bundle_schema(filenames, dest_dir, root, root_namespace):
   for referenced_namespace in api_model.namespaces.values():
     type_generator.AddNamespace(
         referenced_namespace,
-        referenced_namespace.unix_name)
+        referenced_namespace.name)
 
   generator = schema_bundle_generator.SchemaBundleGenerator(
       api_model, api_defs, type_generator)

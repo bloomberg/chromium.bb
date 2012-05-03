@@ -11,7 +11,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/common/extensions/api/experimental_declarative.h"
+#include "chrome/common/extensions/api/experimental.declarative.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace base {

@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/experimental_declarative.h"
+#include "chrome/common/extensions/api/experimental.declarative.h"
 #include "content/public/browser/browser_thread.h"
 
 using extensions::api::experimental_declarative::Rule;
