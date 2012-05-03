@@ -66,8 +66,9 @@ function requestWebcamAndMicrophone() {
   }
 
   debug("Requesting webcam and microphone.");
-  navigator.webkitGetUserMedia(
-    "video,audio", getUserMediaOkCallback, getUserMediaFailedCallback);
+  navigator.webkitGetUserMedia({video:true, audio:true},
+                               getUserMediaOkCallback,
+                               getUserMediaFailedCallback);
   returnToPyAuto('ok-requested');
 }
 
