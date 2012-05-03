@@ -12,7 +12,7 @@
 
 #include "base/timer.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/common/extensions/api/experimental.alarms.h"
+#include "chrome/common/extensions/api/experimental_alarms.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

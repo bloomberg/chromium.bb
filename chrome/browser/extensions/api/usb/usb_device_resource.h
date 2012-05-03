@@ -12,7 +12,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/extensions/api/api_resource.h"
-#include "chrome/common/extensions/api/experimental.usb.h"
+#include "chrome/common/extensions/api/experimental_usb.h"
 
 class UsbDevice;
 

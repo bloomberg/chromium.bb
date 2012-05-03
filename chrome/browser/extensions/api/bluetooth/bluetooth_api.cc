@@ -7,7 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/experimental.bluetooth.h"
+#include "chrome/common/extensions/api/experimental_bluetooth.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
