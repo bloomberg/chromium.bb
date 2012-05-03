@@ -1099,8 +1099,13 @@
             '../third_party/skia/src/opts/SkBlitRow_opts_SSE2.cpp',
             '../third_party/skia/src/opts/SkUtils_opts_SSE2.cpp',
           ],
-          'dependencies': [
-            'skia_opts_ssse3',
+          'conditions': [
+            # x86 Android doesn't support SSSE3 instructions.
+            [ 'OS != "android"', {
+              'dependencies': [
+                'skia_opts_ssse3',
+              ],
+            }],
           ],
         },
         {  # arm
