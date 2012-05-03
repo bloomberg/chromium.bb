@@ -180,7 +180,7 @@ class BasePerfTest(pyauto.PyUITest):
         std_dev = math.sqrt(sum(temp_vals) / (len(temp_vals) - 1))
     return avg, std_dev
 
-  def _OutputDataForStandaloneGraphing(self, graph_name, description, value,
+  def _OutputPerfForStandaloneGraphing(self, graph_name, description, value,
                                        units, units_x):
     """Outputs perf measurement data to a local folder to be graphed.
 
@@ -206,11 +206,22 @@ class BasePerfTest(pyauto.PyUITest):
           are iteration numbers.  If this argument is specified, then the
           |value| argument must be a list of (x, y) tuples.
     """
+    revision_num_file = os.path.join(self._local_perf_dir, 'last_revision.dat')
+    if os.path.exists(revision_num_file):
+      with open(revision_num_file) as f:
+        revision = int(f.read())
+    else:
+      revision = 0
+
+    if not self._seen_graph_lines:
+      # We're about to output data for a new test run.
+      revision += 1
+
     # Update graphs.dat.
     existing_graphs = []
     graphs_file = os.path.join(self._local_perf_dir, 'graphs.dat')
     if os.path.exists(graphs_file):
-      with open(graphs_file, 'r') as f:
+      with open(graphs_file) as f:
         existing_graphs = simplejson.loads(f.read())
     is_new_graph = True
     for graph in existing_graphs:
@@ -231,13 +242,12 @@ class BasePerfTest(pyauto.PyUITest):
       os.chmod(graphs_file, 0755)
 
     # Update data file for this particular graph.
-    data_file_name = graph_name + '-summary.dat'
     existing_lines = []
-    data_file = os.path.join(self._local_perf_dir, data_file_name)
+    data_file = os.path.join(self._local_perf_dir, graph_name + '-summary.dat')
     if os.path.exists(data_file):
-      with open(data_file, 'r') as f:
+      with open(data_file) as f:
         existing_lines = f.readlines()
-    existing_lines = map(lambda x: x.strip(), existing_lines)
+    existing_lines = map(eval, map(lambda x: x.strip(), existing_lines))
 
     seen_key = graph_name + '|' + description
     if units_x:
@@ -246,9 +256,9 @@ class BasePerfTest(pyauto.PyUITest):
         # We've added points previously for this graph line in the current
         # test execution, so retrieve the original set of points specified in
         # the most recent revision in the data file.
-        points = eval(existing_lines[0])['traces'][description]
-      for point in value:
-        points.append([str(point[0]), str(point[1])])
+        points = existing_lines[0]['traces'][description]
+      for x_value, y_value in value:
+        points.append([str(x_value), str(y_value)])
       new_traces = {
         description: points
       }
@@ -256,17 +266,14 @@ class BasePerfTest(pyauto.PyUITest):
       new_traces = {
         description: [str(value), str(0.0)]
       }
-    revision = 1
-    if existing_lines:
-      revision = int(eval(existing_lines[0])['rev']) + 1
+
     new_line = {
-      'traces': new_traces,
-      'rev': revision
+      'rev': revision,
+      'traces': new_traces
     }
 
     if seen_key in self._seen_graph_lines:
       # Update results for the most recent revision.
-      new_line['rev'] = int(eval(existing_lines[0])['rev'])
       existing_lines[0] = new_line
     else:
       # New results for a new revision.
@@ -277,6 +284,9 @@ class BasePerfTest(pyauto.PyUITest):
     with open(data_file, 'w') as f:
       f.write('\n'.join(existing_lines))
     os.chmod(data_file, 0755)
+
+    with open(revision_num_file, 'w') as f:
+      f.write(str(revision))
 
   def _OutputPerfGraphValue(self, description, value, units,
                             graph_name, units_x=None):
@@ -342,8 +352,107 @@ class BasePerfTest(pyauto.PyUITest):
         pyauto_utils.PrintPerfResult(graph_name, description, value, units)
 
       if self._local_perf_dir:
-        self._OutputDataForStandaloneGraphing(
+        self._OutputPerfForStandaloneGraphing(
             graph_name, description, value, units, units_x)
+
+  def _OutputEventForStandaloneGraphing(self, description, event_list):
+    """Outputs event information to a local folder to be graphed.
+
+    See function _OutputEventGraphValue below for a description of an event.
+
+    This function only applies to Chrome Endure tests running on Chrome desktop,
+    and assumes that environment variable 'LOCAL_PERF_DIR' has been specified
+    and refers to a valid directory on the local machine.
+
+    Args:
+      description: A string description of the event.  Should not include
+          spaces.
+      event_list: A list of (x, y) tuples representing one or more events
+          occurring during an endurance test, where 'x' is the time of the event
+          (in seconds since the start of the test), and 'y' is a dictionary
+          representing relevant data associated with that event (as key/value
+          pairs).
+    """
+    revision_num_file = os.path.join(self._local_perf_dir, 'last_revision.dat')
+    if os.path.exists(revision_num_file):
+      with open(revision_num_file) as f:
+        revision = int(f.read())
+    else:
+      revision = 0
+
+    if not self._seen_graph_lines:
+      # We're about to output data for a new test run.
+      revision += 1
+
+    existing_lines = []
+    data_file = os.path.join(self._local_perf_dir, '_EVENT_-summary.dat')
+    if os.path.exists(data_file):
+      with open(data_file) as f:
+        existing_lines = f.readlines()
+    existing_lines = map(eval, map(lambda x: x.strip(), existing_lines))
+
+    seen_event_type = description
+    value_list = []
+    if seen_event_type in self._seen_graph_lines:
+      # We've added events previously for this event type in the current
+      # test execution, so retrieve the original set of values specified in
+      # the most recent revision in the data file.
+      value_list = existing_lines[0]['events'][description]
+    for event_time, event_data in event_list:
+      value_list.append([str(event_time), event_data])
+    new_events = {
+      description: value_list
+    }
+
+    new_line = {
+      'rev': revision,
+      'events': new_events
+    }
+
+    if seen_event_type in self._seen_graph_lines:
+      # Update results for the most recent revision.
+      existing_lines[0] = new_line
+    else:
+      # New results for a new revision.
+      existing_lines.insert(0, new_line)
+      self._seen_graph_lines[seen_event_type] = True
+
+    existing_lines = map(str, existing_lines)
+    with open(data_file, 'w') as f:
+      f.write('\n'.join(existing_lines))
+    os.chmod(data_file, 0755)
+
+    with open(revision_num_file, 'w') as f:
+      f.write(str(revision))
+
+  def _OutputEventGraphValue(self, description, event_list):
+    """Outputs a set of events to have them graphed on the Chrome Endure bots.
+
+    An "event" can be anything recorded by a performance test that occurs at
+    particular times during a test execution.  For example, a garbage collection
+    in the v8 heap can be considered an event.  An event is distinguished from a
+    regular perf measurement in two ways: (1) an event is depicted differently
+    in the performance graphs than performance measurements; (2) an event can
+    be associated with zero or more data fields describing relevant information
+    associated with the event.  For example, a garbage collection event will
+    occur at a particular time, and it may be associated with data such as
+    the number of collected bytes and/or the length of time it took to perform
+    the garbage collection.
+
+    This function only applies to Chrome Endure tests running on Chrome desktop.
+
+    Args:
+      description: A string description of the event.  Should not include
+          spaces.
+      event_list: A list of (x, y) tuples representing one or more events
+          occurring during an endurance test, where 'x' is the time of the event
+          (in seconds since the start of the test), and 'y' is a dictionary
+          representing relevant data associated with that event (as key/value
+          pairs).
+    """
+    pyauto_utils.PrintPerfResult('_EVENT_', description, event_list, '')
+    if self._local_perf_dir:
+      self._OutputEventForStandaloneGraphing(description, event_list)
 
   def _PrintSummaryResults(self, description, values, units, graph_name):
     """Logs summary measurement information.
@@ -436,7 +545,7 @@ class BasePerfTest(pyauto.PyUITest):
       }
     """
     try:
-      f = open('/proc/stat', 'r')
+      f = open('/proc/stat')
       cpu_usage_str = f.readline().split()
       f.close()
     except IOError, e:
@@ -1415,7 +1524,7 @@ class ScrollTest(BasePerfTest):
           in the webpage immediately before running the scroll test.
     """
     scroll_file = os.path.join(self.DataDir(), 'scroll', 'scroll.js')
-    with open(scroll_file, 'r') as f:
+    with open(scroll_file) as f:
       scroll_text = f.read()
 
     def _RunSingleInvocation(url, scroll_text):

@@ -54,7 +54,7 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
 
     self._test_start_time = 0
     self._num_errors = 0
-    self._iteration_num = 0
+    self._events_to_output = []
 
   def tearDown(self):
     logging.info('Terminating connection to remote inspector...')
@@ -72,6 +72,25 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     # interact with Chrome's remote inspector.
     return (perf.BasePerfTest.ExtraChromeFlags(self) +
             ['--remote-debugging-port=9222'])
+
+  def _OnTimelineEvent(self, event_info):
+    """Invoked by the Remote Inspector Client when a timeline event occurs.
+
+    Args:
+      event_info: A dictionary containing raw information associated with a
+         timeline event received from Chrome's remote inspector.  Refer to
+         chrome/src/third_party/WebKit/Source/WebCore/inspector/Inspector.json
+         for the format of this dictionary.
+    """
+    elapsed_time = int(round(time.time() - self._test_start_time))
+
+    if event_info['type'] == 'GCEvent':
+      self._events_to_output.append({
+        'type': 'GarbageCollection',
+        'time': elapsed_time,
+        'data':
+            {'collected_bytes': event_info['data']['usedHeapSizeDelta']},
+      })
 
   def _RunEndureTest(self, webapp_name, tab_title_substring, test_description,
                      do_scenario):
@@ -97,9 +116,13 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     last_perf_stats_time = time.time()
     self._GetPerformanceStats(
         webapp_name, test_description, tab_title_substring)
-    self._iteration_num = 0
+    iteration_num = 0
+
+    self._remote_inspector_client.StartTimelineEventMonitoring(
+        self._OnTimelineEvent)
+
     while time.time() - self._test_start_time < self._test_length_sec:
-      self._iteration_num += 1
+      iteration_num += 1
 
       if self._num_errors >= self._ERROR_COUNT_THRESHOLD:
         logging.error('Error count threshold (%d) reached. Terminating test '
@@ -111,14 +134,15 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
         self._GetPerformanceStats(
             webapp_name, test_description, tab_title_substring)
 
-      if self._iteration_num % 10 == 0:
+      if iteration_num % 10 == 0:
         remaining_time = self._test_length_sec - (time.time() -
                                                   self._test_start_time)
         logging.info('Chrome interaction #%d. Time remaining in test: %d sec.' %
-                     (self._iteration_num, remaining_time))
+                     (iteration_num, remaining_time))
 
       do_scenario()
 
+    self._remote_inspector_client.StopTimelineEventMonitoring()
     self._GetPerformanceStats(
         webapp_name, test_description, tab_title_substring)
 
@@ -189,8 +213,7 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
           the tab to use, for identifying the appropriate tab.
     """
     logging.info('Gathering performance stats...')
-    elapsed_time = time.time() - self._test_start_time
-    elapsed_time = int(round(elapsed_time))
+    elapsed_time = int(round(time.time() - self._test_start_time))
 
     memory_counts = self._remote_inspector_client.GetMemoryObjectCounts()
 
@@ -239,6 +262,21 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     logging.info('  Tab process private memory: %d KB' %
                  proc_info['tab_private_mem'])
     logging.info('  V8 memory used: %f KB' % v8_mem_used)
+
+    # Output any new timeline events that have occurred.
+    if self._events_to_output:
+      logging.info('Logging timeline events...')
+      event_type_to_value_list = {}
+      for event_info in self._events_to_output:
+        if not event_info['type'] in event_type_to_value_list:
+          event_type_to_value_list[event_info['type']] = []
+        event_type_to_value_list[event_info['type']].append(
+            (event_info['time'], event_info['data']))
+      for event_type, value_list in event_type_to_value_list.iteritems():
+        self._OutputEventGraphValue(event_type, value_list)
+      self._events_to_output = []
+    else:
+      logging.info('No new timeline events to log.')
 
   def _GetElement(self, find_by, value):
     """Gets a WebDriver element object from the webpage DOM.
@@ -442,8 +480,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     match = re.search(r'\[(\d+) ms\]', latency_dom_element.text)
     if match:
       latency = int(match.group(1))
-      elapsed_time = time.time() - self._test_start_time
-      elapsed_time = int(round(elapsed_time))
+      elapsed_time = int(round(time.time() - self._test_start_time))
       if elapsed_time > 60:  # Ignore the first minute of latency measurements.
         self._OutputPerfGraphValue(
             '%sLatency' % action_description, [(elapsed_time, latency)], 'msec',
