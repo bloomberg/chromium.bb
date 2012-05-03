@@ -60,7 +60,7 @@ struct TestUrlInfo {
     AutocompleteActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/g.html"),
     ASCIIToUTF16("Test - site - just a test"), 12,
-    ASCIIToUTF16(""), 5, 0,
+    string16(), 5, 0,
     AutocompleteActionPredictor::ACTION_NONE },
   { GURL("http://www.testsite.com/h.html"),
     ASCIIToUTF16("Test - site - just a test"), 21,
