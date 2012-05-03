@@ -512,6 +512,9 @@ class ProcessSingleton::LinuxWatcher
   virtual ~LinuxWatcher() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     STLDeleteElements(&readers_);
+
+    MessageLoopForIO* ml = MessageLoopForIO::current();
+    ml->RemoveDestructionObserver(this);
   }
 
   // Removes and deletes the SocketReader.

@@ -27,6 +27,7 @@
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
 
 namespace {
 
@@ -39,7 +40,7 @@ class ProcessSingletonLinuxTest : public testing::Test {
  public:
   ProcessSingletonLinuxTest()
       : kill_callbacks_(0),
-        io_thread_(content::BrowserThread::IO),
+        io_thread_(BrowserThread::IO),
         wait_event_(true, false),
         signal_event_(true, false),
         process_singleton_on_thread_(NULL) {
@@ -59,9 +60,12 @@ class ProcessSingletonLinuxTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    io_thread_.Stop();
-    testing::Test::TearDown();
+    scoped_refptr<base::ThreadTestHelper> io_helper(new base::ThreadTestHelper(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+    ASSERT_TRUE(io_helper->Run());
 
+    // Destruct the ProcessSingleton object before the IO thread so that its
+    // internals are destructed properly.
     if (process_singleton_on_thread_) {
       worker_thread_->message_loop()->PostTask(
           FROM_HERE,
@@ -69,10 +73,12 @@ class ProcessSingletonLinuxTest : public testing::Test {
                      base::Unretained(this)));
 
       scoped_refptr<base::ThreadTestHelper> helper(
-          new base::ThreadTestHelper(
-              worker_thread_->message_loop_proxy()));
+          new base::ThreadTestHelper(worker_thread_->message_loop_proxy()));
       ASSERT_TRUE(helper->Run());
     }
+
+    io_thread_.Stop();
+    testing::Test::TearDown();
   }
 
   void CreateProcessSingletonOnThread() {
