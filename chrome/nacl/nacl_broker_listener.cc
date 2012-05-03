@@ -20,8 +20,8 @@
 
 namespace {
 
-void SendReply(IPC::Channel* channel, int32 pid) {
-  channel->Send(new NaClProcessMsg_DebugExceptionHandlerLaunched(pid));
+void SendReply(IPC::Channel* channel, int32 pid, bool result) {
+  channel->Send(new NaClProcessMsg_DebugExceptionHandlerLaunched(pid, result));
 }
 
 }  // namespace
@@ -100,10 +100,10 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
 
 void NaClBrokerListener::OnLaunchDebugExceptionHandler(
     int32 pid, base::ProcessHandle process_handle) {
-  base::Closure reply_sender(base::Bind(SendReply, channel_.get(), pid));
-  NaClStartDebugExceptionHandlerThread(process_handle,
-                                       base::MessageLoopProxy::current(),
-                                       reply_sender);
+  NaClStartDebugExceptionHandlerThread(
+      process_handle,
+      base::MessageLoopProxy::current(),
+      base::Bind(SendReply, channel_.get(), pid));
 }
 
 void NaClBrokerListener::OnStopBroker() {

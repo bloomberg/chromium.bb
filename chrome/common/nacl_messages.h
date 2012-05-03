@@ -25,6 +25,7 @@ IPC_STRUCT_TRAITS_END()
 IPC_MESSAGE_CONTROL1(NaClProcessMsg_Start,
                      nacl::NaClStartParams /* params */)
 
+#if defined(OS_WIN)
 // Tells the NaCl broker to launch a NaCl loader process.
 IPC_MESSAGE_CONTROL1(NaClProcessMsg_LaunchLoaderThroughBroker,
                      std::string /* channel ID for the loader */)
@@ -43,12 +44,20 @@ IPC_MESSAGE_CONTROL2(NaClProcessMsg_LaunchDebugExceptionHandler,
 // Notify the browser process that the broker process finished
 // attaching a debug exception handler to the given NaCl loader
 // process.
-IPC_MESSAGE_CONTROL1(NaClProcessMsg_DebugExceptionHandlerLaunched,
-                     int32 /* pid */)
+IPC_MESSAGE_CONTROL2(NaClProcessMsg_DebugExceptionHandlerLaunched,
+                     int32 /* pid */,
+                     bool /* success */)
 
 // Notify the broker that all loader processes have been terminated and it
 // should shutdown.
 IPC_MESSAGE_CONTROL0(NaClProcessMsg_StopBroker)
+
+// Used by the NaCl process to request that a Windows debug exception
+// handler be attached to it.
+IPC_SYNC_MESSAGE_CONTROL1_1(NaClProcessMsg_AttachDebugExceptionHandler,
+                            std::string, /* Internal process info */
+                            bool /* Result */)
+#endif
 
 // Used by the NaCl process to query a database in the browser.  The database
 // contains the signatures of previously validated code chunks.

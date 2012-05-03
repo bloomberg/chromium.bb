@@ -53,7 +53,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
 #if defined(OS_WIN)
   void OnProcessLaunchedByBroker(base::ProcessHandle handle);
-  void OnDebugExceptionHandlerLaunchedByBroker();
+  void OnDebugExceptionHandlerLaunchedByBroker(bool success);
 #endif
 
   bool Send(IPC::Message* msg);
@@ -105,14 +105,17 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // Message handlers for validation caching.
   void OnQueryKnownToValidate(const std::string& signature, bool* result);
   void OnSetKnownToValidate(const std::string& signature);
+#if defined(OS_WIN)
+  // Message handler for Windows hardware exception handling.
+  void OnAttachDebugExceptionHandler(const std::string& info,
+                                     IPC::Message* reply_msg);
+  bool AttachDebugExceptionHandler(const std::string& info,
+                                   IPC::Message* reply_msg);
+#endif
 
   GURL manifest_url_;
 
 #if defined(OS_WIN)
-  class DebugContext;
-
-  scoped_refptr<DebugContext> debug_context_;
-
   // This field becomes true when the broker successfully launched
   // the NaCl loader.
   bool process_launched_by_broker_;
@@ -129,6 +132,10 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // sub-process either succeeds or fails to unblock the renderer waiting for
   // the reply. NULL when there is no reply to send.
   IPC::Message* reply_msg_;
+#if defined(OS_WIN)
+  bool debug_exception_handler_requested_;
+  scoped_ptr<IPC::Message> attach_debug_exception_handler_reply_msg_;
+#endif
 
   // Set of extensions for (NaCl) manifest auto-detection. The file path to
   // manifest is passed to nacl-gdb when it is used to debug the NaCl loader.

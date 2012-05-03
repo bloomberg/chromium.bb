@@ -51,8 +51,8 @@
 #include "base/process_util.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/browser/nacl_host/nacl_broker_service_win.h"
+#include "chrome/common/nacl_debug_exception_handler_win.h"
 #include "content/public/common/sandbox_init.h"
-#include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
 #endif
 
 using content::BrowserThread;
@@ -298,115 +298,6 @@ void NaClBrowser::OpenIrtLibraryFile() {
 
 }  // namespace
 
-// DebugContext ----------------------------------------------------------------
-
-#if defined(OS_WIN)
-class NaClProcessHost::DebugContext
-  : public base::RefCountedThreadSafe<NaClProcessHost::DebugContext> {
- public:
-  DebugContext()
-      : can_send_start_msg_(false) {
-  }
-
-  ~DebugContext() {
-  }
-
-  void AttachDebugger(int pid, base::ProcessHandle process);
-
-  // 6 methods below must be called on Browser::IO thread.
-  void SetStartMessage(IPC::Message* start_msg);
-  void SetNaClProcessHost(base::WeakPtr<NaClProcessHost> nacl_process_host);
-  void SetDebugThread(base::Thread* thread_);
-
-  // Start message is sent from 2 flows of execution. The first flow is
-  // NaClProcessHost::SendStart. The second flow is
-  // NaClProcessHost::OnChannelConnected and
-  // NaClProcessHost::DebugContext::AttachThread. The message itself is created
-  // by first flow. But the moment it can be sent is determined by second flow.
-  // So first flow executes SetStartMessage and SendStartMessage while second
-  // flow uses AllowAndSendStartMessage to either send potentially pending
-  // start message or set the flag that allows the first flow to do this.
-
-  // Clears the flag that prevents sending start message.
-  void AllowToSendStartMsg();
-  // Send start message to the NaCl process or do nothing if message is not
-  // set or not allowed to be send. If message is sent, it is cleared and
-  // repeated calls do nothing.
-  void SendStartMessage();
-  // Clear the flag that prevents further sending start message and send start
-  // message if it is set.
-  void AllowAndSendStartMessage();
- private:
-  void StopThread();
-  // These 4 fields are accessed only from Browser::IO thread.
-  scoped_ptr<base::Thread> thread_;
-  scoped_ptr<IPC::Message> start_msg_;
-  // Debugger is attached or exception handling is not switched on.
-  // This means that start message can be sent to the NaCl process.
-  bool can_send_start_msg_;
-  base::WeakPtr<NaClProcessHost> nacl_process_host_;
-};
-
-void NaClProcessHost::DebugContext::AttachDebugger(
-    int pid, base::ProcessHandle process) {
-  BOOL attached;
-  DWORD exit_code;
-  attached = DebugActiveProcess(pid);
-  if (!attached) {
-    DLOG(ERROR) << "Failed to connect to the process";
-  }
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &NaClProcessHost::DebugContext::AllowAndSendStartMessage, this));
-  if (attached) {
-    // debug the process
-    NaClDebugLoop(process, &exit_code);
-    base::CloseProcessHandle(process);
-  }
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&NaClProcessHost::DebugContext::StopThread, this));
-}
-
-void NaClProcessHost::DebugContext::SetStartMessage(IPC::Message* start_msg) {
-  start_msg_.reset(start_msg);
-}
-
-void NaClProcessHost::DebugContext::SetNaClProcessHost(
-    base::WeakPtr<NaClProcessHost> nacl_process_host) {
-  nacl_process_host_ = nacl_process_host;
-}
-
-void NaClProcessHost::DebugContext::SetDebugThread(base::Thread* thread) {
-  thread_.reset(thread);
-}
-
-void NaClProcessHost::DebugContext::AllowToSendStartMsg() {
-  can_send_start_msg_ = true;
-}
-
-void NaClProcessHost::DebugContext::SendStartMessage() {
-  if (start_msg_.get() && can_send_start_msg_) {
-    if (nacl_process_host_) {
-      if (!nacl_process_host_->Send(start_msg_.release())) {
-        DLOG(ERROR) << "Failed to send start message";
-      }
-    }
-  }
-}
-
-void NaClProcessHost::DebugContext::AllowAndSendStartMessage() {
-  AllowToSendStartMsg();
-  SendStartMessage();
-}
-
-void NaClProcessHost::DebugContext::StopThread() {
-  thread_->Stop();
-  thread_.reset();
-}
-#endif
-
 struct NaClProcessHost::NaClInternal {
   std::vector<nacl::Handle> sockets_for_renderer;
   std::vector<nacl::Handle> sockets_for_sel_ldr;
@@ -422,6 +313,9 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url)
       wait_for_nacl_gdb_(false),
 #endif
       reply_msg_(NULL),
+#if defined(OS_WIN)
+      debug_exception_handler_requested_(false),
+#endif
       internal_(new NaClInternal()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       enable_exception_handling_(false) {
@@ -440,9 +334,6 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url)
           switches::kEnableNaClExceptionHandling) ||
       getenv("NACL_UNTRUSTED_EXCEPTION_HANDLING") != NULL) {
     enable_exception_handling_ = true;
-#if defined(OS_WIN)
-    debug_context_ = new DebugContext();
-#endif
   }
 }
 
@@ -568,72 +459,6 @@ void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
       DLOG(ERROR) << "Failed to get process handle";
     }
   }
-  if (debug_context_ == NULL) {
-    return;
-  }
-  debug_context_->SetNaClProcessHost(weak_factory_.GetWeakPtr());
-  if (RunningOnWOW64()) {
-    base::win::ScopedHandle process_handle;
-    // We cannot use process_->GetData().handle because it does not
-    // have the necessary access rights.  We open the new handle here
-    // rather than in the NaCl broker process in case the NaCl loader
-    // process dies before the NaCl broker process receives the
-    // message we send.  The debug exception handler uses
-    // DebugActiveProcess() to attach, but this takes a PID.  We need
-    // to prevent the NaCl loader's PID from being reused before
-    // DebugActiveProcess() is called, and holding a process handle
-    // open achieves this.
-    if (!base::OpenProcessHandleWithAccess(
-             peer_pid,
-             base::kProcessAccessQueryInformation |
-             base::kProcessAccessSuspendResume |
-             base::kProcessAccessTerminate |
-             base::kProcessAccessVMOperation |
-             base::kProcessAccessVMRead |
-             base::kProcessAccessVMWrite |
-             base::kProcessAccessWaitForTermination,
-             process_handle.Receive())) {
-      LOG(ERROR) << "Failed to get process handle";
-      debug_context_->AllowAndSendStartMessage();
-    } else {
-      if (!NaClBrokerService::GetInstance()->LaunchDebugExceptionHandler(
-             weak_factory_.GetWeakPtr(), peer_pid, process_handle)) {
-        debug_context_->AllowAndSendStartMessage();
-      }
-    }
-  } else {
-    // Start new thread for debug loop
-    // We can't use process_->GetData().handle because it doesn't have necessary
-    // access rights.
-    base::ProcessHandle process;
-    if (!base::OpenProcessHandleWithAccess(
-             peer_pid,
-             base::kProcessAccessQueryInformation |
-             base::kProcessAccessSuspendResume |
-             base::kProcessAccessTerminate |
-             base::kProcessAccessVMOperation |
-             base::kProcessAccessVMRead |
-             base::kProcessAccessVMWrite |
-             base::kProcessAccessWaitForTermination,
-             &process)) {
-      DLOG(ERROR) << "Failed to open the process";
-      debug_context_->AllowAndSendStartMessage();
-      return;
-    }
-    base::Thread* dbg_thread = new base::Thread("Debug thread");
-    if (!dbg_thread->Start()) {
-      DLOG(ERROR) << "Debug thread not started";
-      debug_context_->AllowAndSendStartMessage();
-      base::CloseProcessHandle(process);
-      return;
-    }
-    debug_context_->SetDebugThread(dbg_thread);
-    // System can not reallocate pid until we close process handle. So using
-    // pid in different thread is fine.
-    dbg_thread->message_loop()->PostTask(FROM_HERE,
-        base::Bind(&NaClProcessHost::DebugContext::AttachDebugger,
-                   debug_context_, peer_pid, process));
-  }
 }
 #else
 void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
@@ -648,8 +473,10 @@ void NaClProcessHost::OnProcessLaunchedByBroker(base::ProcessHandle handle) {
     delete this;
 }
 
-void NaClProcessHost::OnDebugExceptionHandlerLaunchedByBroker() {
-  debug_context_->AllowAndSendStartMessage();
+void NaClProcessHost::OnDebugExceptionHandlerLaunchedByBroker(bool success) {
+  IPC::Message* reply = attach_debug_exception_handler_reply_msg_.release();
+  NaClProcessMsg_AttachDebugExceptionHandler::WriteReplyParams(reply, success);
+  Send(reply);
 }
 #endif
 
@@ -882,6 +709,10 @@ bool NaClProcessHost::OnMessageReceived(const IPC::Message& msg) {
                         OnQueryKnownToValidate)
     IPC_MESSAGE_HANDLER(NaClProcessMsg_SetKnownToValidate,
                         OnSetKnownToValidate)
+#if defined(OS_WIN)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClProcessMsg_AttachDebugExceptionHandler,
+                                    OnAttachDebugExceptionHandler)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1006,17 +837,7 @@ bool NaClProcessHost::StartNaClExecution() {
   params.handles.push_back(memory_fd);
 #endif
 
-  IPC::Message* start_message = new NaClProcessMsg_Start(params);
-#if defined(OS_WIN)
-  if (debug_context_ != NULL) {
-    debug_context_->SetStartMessage(start_message);
-    debug_context_->SendStartMessage();
-  } else {
-    process_->Send(start_message);
-  }
-#else
-  process_->Send(start_message);
-#endif
+  process_->Send(new NaClProcessMsg_Start(params));
 
   internal_->sockets_for_sel_ldr.clear();
   return true;
@@ -1056,3 +877,71 @@ void NaClProcessHost::OnQueryKnownToValidate(const std::string& signature,
 void NaClProcessHost::OnSetKnownToValidate(const std::string& signature) {
   NaClBrowser::GetInstance()->SetKnownToValidate(signature);
 }
+
+#if defined(OS_WIN)
+void NaClProcessHost::OnAttachDebugExceptionHandler(const std::string& info,
+                                                    IPC::Message* reply_msg) {
+  if (!AttachDebugExceptionHandler(info, reply_msg)) {
+    // Send failure message.
+    NaClProcessMsg_AttachDebugExceptionHandler::WriteReplyParams(reply_msg,
+                                                                 false);
+    Send(reply_msg);
+  }
+}
+
+bool NaClProcessHost::AttachDebugExceptionHandler(const std::string& info,
+                                                  IPC::Message* reply_msg) {
+  if (!enable_exception_handling_) {
+    DLOG(ERROR) <<
+        "Exception handling requested by NaCl process when not enabled";
+    return false;
+  }
+  if (debug_exception_handler_requested_) {
+    // The NaCl process should not request this multiple times.
+    DLOG(ERROR) << "Multiple AttachDebugExceptionHandler requests received";
+    return false;
+  }
+  debug_exception_handler_requested_ = true;
+
+  base::ProcessId nacl_pid = base::GetProcId(process_->GetData().handle);
+  base::win::ScopedHandle process_handle;
+  // We cannot use process_->GetData().handle because it does not have
+  // the necessary access rights.  We open the new handle here rather
+  // than in the NaCl broker process in case the NaCl loader process
+  // dies before the NaCl broker process receives the message we send.
+  // The debug exception handler uses DebugActiveProcess() to attach,
+  // but this takes a PID.  We need to prevent the NaCl loader's PID
+  // from being reused before DebugActiveProcess() is called, and
+  // holding a process handle open achieves this.
+  if (!base::OpenProcessHandleWithAccess(
+           nacl_pid,
+           base::kProcessAccessQueryInformation |
+           base::kProcessAccessSuspendResume |
+           base::kProcessAccessTerminate |
+           base::kProcessAccessVMOperation |
+           base::kProcessAccessVMRead |
+           base::kProcessAccessVMWrite |
+           base::kProcessAccessWaitForTermination,
+           process_handle.Receive())) {
+    LOG(ERROR) << "Failed to get process handle";
+    return false;
+  }
+
+  attach_debug_exception_handler_reply_msg_.reset(reply_msg);
+  // If the NaCl loader is 64-bit, the process running its debug
+  // exception handler must be 64-bit too, so we use the 64-bit NaCl
+  // broker process for this.  Otherwise, on a 32-bit system, we use
+  // the 32-bit browser process to run the debug exception handler.
+  if (RunningOnWOW64()) {
+    return NaClBrokerService::GetInstance()->LaunchDebugExceptionHandler(
+               weak_factory_.GetWeakPtr(), nacl_pid, process_handle);
+  } else {
+    NaClStartDebugExceptionHandlerThread(
+        process_handle.Take(),
+        base::MessageLoopProxy::current(),
+        base::Bind(&NaClProcessHost::OnDebugExceptionHandlerLaunchedByBroker,
+                   weak_factory_.GetWeakPtr()));
+    return true;
+  }
+}
+#endif

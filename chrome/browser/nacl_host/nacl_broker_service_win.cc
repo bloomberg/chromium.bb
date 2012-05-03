@@ -76,14 +76,15 @@ bool NaClBrokerService::LaunchDebugExceptionHandler(
   return broker_host->LaunchDebugExceptionHandler(pid, process_handle);
 }
 
-void NaClBrokerService::OnDebugExceptionHandlerLaunched(int32 pid) {
+void NaClBrokerService::OnDebugExceptionHandlerLaunched(int32 pid,
+                                                        bool success) {
   PendingDebugExceptionHandlersMap::iterator it = pending_debuggers_.find(pid);
   if (pending_debuggers_.end() == it)
     NOTREACHED();
 
   NaClProcessHost* client = it->second;
   if (client)
-    client->OnDebugExceptionHandlerLaunchedByBroker();
+    client->OnDebugExceptionHandlerLaunchedByBroker(success);
   pending_debuggers_.erase(it);
 }
 

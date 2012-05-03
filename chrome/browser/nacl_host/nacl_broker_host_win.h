@@ -39,7 +39,7 @@ class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
   void OnLoaderLaunched(const std::string& loader_channel_id,
                         base::ProcessHandle handle);
   // Handler for NaClProcessMsg_DebugExceptionHandlerLaunched message
-  void OnDebugExceptionHandlerLaunched(int32 pid);
+  void OnDebugExceptionHandlerLaunched(int32 pid, bool success);
 
   // BrowserChildProcessHostDelegate implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg);

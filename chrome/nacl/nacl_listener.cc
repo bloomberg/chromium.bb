@@ -71,6 +71,8 @@ int CreateMemoryObject(size_t size, int executable) {
 
 #elif defined(OS_WIN)
 
+NaClListener* g_listener;
+
 // We wrap the function to convert the bool return value to an int.
 int BrokerDuplicateHandle(NaClHandle source_handle,
                           uint32_t process_id,
@@ -80,6 +82,15 @@ int BrokerDuplicateHandle(NaClHandle source_handle,
   return content::BrokerDuplicateHandle(source_handle, process_id,
                                         target_handle, desired_access,
                                         options);
+}
+
+int AttachDebugExceptionHandler(void* info, size_t info_size) {
+  std::string info_string(reinterpret_cast<char*>(info), info_size);
+  bool result = false;
+  if (!g_listener->Send(new NaClProcessMsg_AttachDebugExceptionHandler(
+           info_string, &result)))
+    return false;
+  return result;
 }
 
 #endif
@@ -133,11 +144,18 @@ NaClListener::NaClListener() : shutdown_event_(true, false),
                                main_loop_(NULL),
                                debug_enabled_(false) {
   io_thread_.StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
+#if defined(OS_WIN)
+  DCHECK(g_listener == NULL);
+  g_listener = this;
+#endif
 }
 
 NaClListener::~NaClListener() {
   NOTREACHED();
   shutdown_event_.Signal();
+#if defined(OS_WIN)
+  g_listener = NULL;
+#endif
 }
 
 bool NaClListener::Send(IPC::Message* msg) {
@@ -220,6 +238,7 @@ void NaClListener::OnMsgStart(const nacl::NaClStartParams& params) {
   args->enable_debug_stub = debug_enabled_;
 #if defined(OS_WIN)
   args->broker_duplicate_handle_func = BrokerDuplicateHandle;
+  args->attach_debug_exception_handler_func = AttachDebugExceptionHandler;
 #endif
   NaClChromeMainStart(args);
   NOTREACHED();

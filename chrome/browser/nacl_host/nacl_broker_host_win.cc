@@ -84,8 +84,9 @@ bool NaClBrokerHost::LaunchDebugExceptionHandler(
       pid, handle_in_broker_process));
 }
 
-void NaClBrokerHost::OnDebugExceptionHandlerLaunched(int32 pid) {
-  NaClBrokerService::GetInstance()->OnDebugExceptionHandlerLaunched(pid);
+void NaClBrokerHost::OnDebugExceptionHandlerLaunched(int32 pid, bool success) {
+  NaClBrokerService::GetInstance()->OnDebugExceptionHandlerLaunched(pid,
+                                                                    success);
 }
 
 void NaClBrokerHost::StopBroker() {

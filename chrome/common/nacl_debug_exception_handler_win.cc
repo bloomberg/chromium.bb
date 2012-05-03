@@ -4,6 +4,7 @@
 
 #include "chrome/common/nacl_debug_exception_handler_win.h"
 
+#include "base/bind.h"
 #include "base/process_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_handle.h"
@@ -15,7 +16,7 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
  public:
   DebugExceptionHandler(base::ProcessHandle nacl_process,
                         base::MessageLoopProxy* message_loop,
-                        const base::Closure& on_connected)
+                        const base::Callback<void(bool)>& on_connected)
       : nacl_process_(nacl_process),
         message_loop_(message_loop),
         on_connected_(on_connected) {
@@ -26,21 +27,18 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
     // thread-local, so we have to attach to the process (using
     // DebugActiveProcess()) on the same thread on which
     // NaClDebugLoop() receives debug events for the process.
-    BOOL attached = false;
+    bool attached = false;
     int pid = GetProcessId(nacl_process_);
     if (pid == 0) {
       LOG(ERROR) << "Invalid process handle";
     } else {
-      attached = DebugActiveProcess(pid);
-      if (!attached) {
+      if (!DebugActiveProcess(pid)) {
         LOG(ERROR) << "Failed to connect to the process";
+      } else {
+        attached = true;
       }
     }
-    // At the moment we do not say in the reply whether attaching as a
-    // debugger succeeded.  In the future, when we attach on demand
-    // when an exception handler is first registered, we can make the
-    // NaCl syscall indicate whether attaching succeeded.
-    message_loop_->PostTask(FROM_HERE, on_connected_);
+    message_loop_->PostTask(FROM_HERE, base::Bind(on_connected_, attached));
 
     if (attached) {
       DWORD exit_code;
@@ -52,22 +50,23 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
  private:
   base::win::ScopedHandle nacl_process_;
   base::MessageLoopProxy* message_loop_;
-  base::Closure on_connected_;
+  base::Callback<void(bool)> on_connected_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugExceptionHandler);
 };
 
 }  // namespace
 
-void NaClStartDebugExceptionHandlerThread(base::ProcessHandle nacl_process,
-                                          base::MessageLoopProxy* message_loop,
-                                          const base::Closure& on_connected) {
+void NaClStartDebugExceptionHandlerThread(
+    base::ProcessHandle nacl_process,
+    base::MessageLoopProxy* message_loop,
+    const base::Callback<void(bool)>& on_connected) {
   // The new PlatformThread will take ownership of the
   // DebugExceptionHandler object, which will delete itself on exit.
   DebugExceptionHandler* handler = new DebugExceptionHandler(
       nacl_process, message_loop, on_connected);
   if (!base::PlatformThread::CreateNonJoinable(0, handler)) {
-    on_connected.Run();
+    on_connected.Run(false);
     delete handler;
   }
 }

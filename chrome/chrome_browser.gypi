@@ -4051,6 +4051,8 @@
             'browser/nacl_host/nacl_broker_service_win.h',
             'browser/nacl_host/nacl_process_host.cc',
             'browser/nacl_host/nacl_process_host.h',
+            'common/nacl_debug_exception_handler_win.cc',
+            'common/nacl_debug_exception_handler_win.h',
           ],
           'dependencies': [
             '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel',

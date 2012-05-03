@@ -10,8 +10,9 @@
 #include "base/message_loop.h"
 #include "base/process.h"
 
-void NaClStartDebugExceptionHandlerThread(base::ProcessHandle nacl_process,
-                                          base::MessageLoopProxy* message_loop,
-                                          const base::Closure& on_connected);
+void NaClStartDebugExceptionHandlerThread(
+    base::ProcessHandle nacl_process,
+    base::MessageLoopProxy* message_loop,
+    const base::Callback<void(bool)>& on_connected);
 
 #endif  // CHROME_COMMON_NACL_DEBUG_EXCEPTION_HANDLER_WIN_H_

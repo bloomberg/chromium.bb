@@ -41,7 +41,7 @@ class NaClBrokerService {
 
   // Called by NaClBrokerHost to notify the service that a debug
   // exception handler was started.
-  void OnDebugExceptionHandlerLaunched(int32 pid);
+  void OnDebugExceptionHandlerLaunched(int32 pid, bool success);
 
  private:
   typedef std::map<std::string, base::WeakPtr<NaClProcessHost> >
