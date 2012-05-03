@@ -924,3 +924,13 @@
   fun:ExternalPrefExtensionLoader::LoadOnFileThread
   fun:base::internal::RunnableAdapter::Run
 }
+{
+  bug_121574
+  ThreadSanitizer:Race
+  fun:base::Thread::message_loop
+  fun:content::BrowserThreadImpl::PostTaskHelper
+  fun:content::BrowserThread::PostTask
+  fun:ProcessSingleton::LinuxWatcher::SocketReader::FinishWithACK
+  fun:ProcessSingleton::LinuxWatcher::HandleMessage
+  fun:base::internal::RunnableAdapter::Run
+}
