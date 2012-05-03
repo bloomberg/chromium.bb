@@ -709,7 +709,7 @@ PackageArmBinaries() {
 #@ located in the nacl root directory, but the script is run from the spec dir.
 UnpackArmBinaries() {
   (cd ${NACL_ROOT};
-    tar xzf ${TESTS_ARCHIVE})
+    tar xvzf ${TESTS_ARCHIVE})
 }
 
 GetTestArchiveName() {

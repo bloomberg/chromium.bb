@@ -48,11 +48,7 @@ testcount() {
 
 clobber() {
   if [ "${CLOBBER}" == "yes" ] ; then
-    echo "@@@BUILD_STEP clobber@@@"
     rm -rf scons-out
-
-    echo "@@@BUILD_STEP gclient_runhooks@@@"
-    gclient runhooks --force
   fi
 }
 
@@ -113,9 +109,10 @@ upload-test-binaries() {
   local try="$2" # set to "try" if this is a try run
 
   pushd ${SPEC_BASE}
-  echo "@@@BUILD_STEP spec2k archive/upload@@@"
+  echo "@@@BUILD_STEP spec2k archive@@@"
   ./run_all.sh PackageArmBinaries ${tests}
   popd
+  echo "@@@BUILD_STEP spec2k upload@@@"
   if [[ ${try} == "try" ]]; then
     ${UP_DOWN_LOAD} UploadArmBinariesForHWBotsTry ${NAME_ARM_TRY_UPLOAD} \
       ${ARCHIVE_NAME}
@@ -127,6 +124,7 @@ upload-test-binaries() {
 
 download-test-binaries() {
   local try="$1"
+  echo "@@@BUILD_STEP spec2k download@@@"
   if [[ ${try} == "try" ]]; then
     ${UP_DOWN_LOAD} DownloadArmBinariesForHWBotsTry ${NAME_ARM_TRY_DOWNLOAD} \
       ${ARCHIVE_NAME}
@@ -134,6 +132,7 @@ download-test-binaries() {
     ${UP_DOWN_LOAD} DownloadArmBinariesForHWBots ${NAME_ARM_DOWNLOAD} \
       ${ARCHIVE_NAME}
   fi
+  echo "@@@BUILD_STEP spec2k untar@@@"
   pushd ${SPEC_BASE}
   ./run_all.sh UnpackArmBinaries
   popd
@@ -205,8 +204,8 @@ pnacl-arm-hw() {
   clobber
   ${BUILDBOT_PNACL} unarchive-for-hw-bots "${NAME_ARM_DOWNLOAD}" regular
   download-test-binaries regular
-  build-tests SetupPnaclTranslatorArmOptHW all 1 3
-  run-tests SetupPnaclTranslatorArmOptHW all 1 3
+  build-tests SetupPnaclTranslatorArmOptHW all 1 1
+  run-tests SetupPnaclTranslatorArmOptHW all 1 1
 }
 
 pnacl-x8664() {
