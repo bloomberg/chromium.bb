@@ -1849,4 +1849,11 @@ const char kRailStartProportion[] =
 // Indicates whether the browser is in managed mode.
 const char kInManagedMode[] = "managed_mode";
 
+// Counts how many more times the 'profile on a network share' warning should be
+// shown to the user before the next silence period.
+const char kNetworkProfileWarningsLeft[] = "network_profile.warnings_left";
+// Tracks the time of the last shown warning. Used to reset
+// |network_profile.warnings_left| after a silence period.
+const char kNetworkProfileLastWarningTime[] =
+    "network_profile.last_warning_time";
 }  // namespace prefs

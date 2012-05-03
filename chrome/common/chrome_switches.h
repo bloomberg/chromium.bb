@@ -242,6 +242,7 @@ extern const char kNoExperiments[];
 extern const char kNoFirstRun[];
 extern const char kNoJsRandomness[];
 extern const char kNoManaged[];
+extern const char kNoNetworkProfileWarning[];
 extern const char kNoProxyServer[];
 extern const char kNoPings[];
 extern const char kNoProtector[];

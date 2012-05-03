@@ -102,7 +102,7 @@ class BrowserView : public BrowserWindow,
 #endif
 
   // Returns the BrowserView used for the specified Browser.
-  static BrowserView* GetBrowserViewForBrowser(Browser* browser);
+  static BrowserView* GetBrowserViewForBrowser(const Browser* browser);
 
   // Returns a Browser instance of this view.
   Browser* browser() const { return browser_.get(); }

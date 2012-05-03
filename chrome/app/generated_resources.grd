@@ -10328,6 +10328,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_REFUSE_TO_RUN_AS_ROOT_2" desc="Detailed message in the error dialog when the user tries to start chrome as root">
         Please start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as a normal user. To run as root, you must specify an alternate --user-data-dir for storage of profile information.
       </message>
+      <message name="IDS_PROFILE_ON_NETWORK_WARNING" desc="Warning shown to the user when she is running Chrome on Windows with a profile located on a network share.">
+        Warning: your <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> settings are stored on a network drive. This may result in slowdowns, crashes, or even loss of data.
+      </message>
 
       <!-- Can't write to user data directory dialog -->
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_TITLE" desc="Title of dialog that is displayed when we can't create a directory for this user.">

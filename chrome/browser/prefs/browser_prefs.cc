@@ -73,6 +73,10 @@
 #include "chrome/browser/ui/cocoa/presentation_mode_prefs.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/browser/profiles/network_profile_bubble.h"
+#endif
+
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
 #include "chrome/browser/accessibility/invert_bubble_views.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
@@ -241,6 +245,10 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #if defined(OS_MACOSX)
   confirm_quit::RegisterObsoleteUserPrefs(user_prefs);
   PresentationModePrefs::RegisterUserPrefs(user_prefs);
+#endif
+
+#if defined(OS_WIN)
+  NetworkProfileBubble::RegisterPrefs(user_prefs);
 #endif
 }
 

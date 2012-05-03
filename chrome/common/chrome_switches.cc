@@ -889,6 +889,10 @@ const char kNoJsRandomness[]                = "no-js-randomness";
 // Starts the browser outside of managed mode.
 const char kNoManaged[]                     = "no-managed";
 
+// Whether or not the browser should warn if the profile is on a network share.
+// This flag is only relevant for Windows currently.
+const char kNoNetworkProfileWarning[]       = "no-network-profile-warning";
+
 // Don't send hyperlink auditing pings
 const char kNoPings[]                       = "no-pings";
 
