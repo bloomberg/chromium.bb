@@ -104,6 +104,8 @@ remoting.HostList.prototype.refresh = function(onDone) {
       onDone(false);
     }
   };
+  this.hosts_ = [];
+  this.lastError_ = '';
   remoting.oauth2.callWithToken(getHosts);
 };
 
@@ -118,8 +120,6 @@ remoting.HostList.prototype.refresh = function(onDone) {
  * @private
  */
 remoting.HostList.prototype.parseHostListResponse_ = function(xhr, onDone) {
-  this.hosts_ = [];
-  this.lastError_ = '';
   try {
     if (xhr.status == 200) {
       var response =
