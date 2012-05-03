@@ -895,7 +895,7 @@
   fun:g_object_constructor
   fun:g_object_newv
   fun:g_object_new
-  fun:ThemeServiceGtk::ThemeServiceGtk
+  ...
   fun:ThemeServiceFactory::BuildServiceInstanceFor
   fun:ProfileKeyedServiceFactory::GetServiceForProfile
   fun:ThemeServiceFactory::GetForProfile
