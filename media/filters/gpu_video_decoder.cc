@@ -93,13 +93,14 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   DCHECK(pending_reset_cb_.is_null());
   DCHECK(!closure.is_null());
 
+  // VideoRendererBase::Flush() can't complete while it has a pending read to
+  // us, so we fulfill such a read here.
+  if (!pending_read_cb_.is_null())
+    EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
+
   if (shutting_down_) {
-    // VideoRendererBase::Flush() can't complete while it has a pending read to
-    // us, so we fulfill such a read here.
-    if (!pending_read_cb_.is_null())
-      EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
-    // Immediate fire the callback instead of waiting for the reset to complete
-    // (which will happen after PipelineImpl::Stop() completes).
+    // Immediately fire the callback instead of waiting for the reset to
+    // complete (which will happen after PipelineImpl::Stop() completes).
     closure.Run();
   } else {
     pending_reset_cb_ = closure;
