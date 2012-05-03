@@ -39,7 +39,7 @@ namespace ui {
 class MultiAnimation;
 }
 
-class ThemeServiceGtk;
+class GtkThemeService;
 
 class OmniboxViewGtk : public OmniboxView,
                        public content::NotificationObserver,
@@ -408,7 +408,7 @@ class OmniboxViewGtk : public OmniboxView,
   bool button_1_pressed_;
 
   // Supplies colors, et cetera.
-  ThemeServiceGtk* theme_service_;
+  GtkThemeService* theme_service_;
 
   content::NotificationRegistrar registrar_;
 

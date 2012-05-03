@@ -11,10 +11,10 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/rounded_window.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/base/animation/slide_animation.h"
@@ -41,7 +41,7 @@ const int kMousePadding = 20;
 }  // namespace
 
 StatusBubbleGtk::StatusBubbleGtk(Profile* profile)
-    : theme_service_(ThemeServiceGtk::GetFrom(profile)),
+    : theme_service_(GtkThemeService::GetFrom(profile)),
       padding_(NULL),
       flip_horizontally_(false),
       y_offset_(0),

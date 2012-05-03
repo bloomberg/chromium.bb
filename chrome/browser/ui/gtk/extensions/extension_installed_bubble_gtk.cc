@@ -16,9 +16,9 @@
 #include "chrome/browser/ui/gtk/browser_actions_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -177,7 +177,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
   if (reference_widget == NULL)
     reference_widget = browser_window->GetToolbar()->GetAppMenuButton();
 
-  ThemeServiceGtk* theme_provider = ThemeServiceGtk::GetFrom(
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(
       browser_->profile());
 
   // Setup the BubbleGtk content.

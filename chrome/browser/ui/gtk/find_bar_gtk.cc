@@ -24,12 +24,12 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -178,7 +178,7 @@ void BuildBorder(GtkWidget* child,
 FindBarGtk::FindBarGtk(BrowserWindowGtk* window)
     : browser_(window->browser()),
       window_(window),
-      theme_service_(ThemeServiceGtk::GetFrom(browser_->profile())),
+      theme_service_(GtkThemeService::GetFrom(browser_->profile())),
       container_width_(-1),
       container_height_(-1),
       match_label_failure_(false),

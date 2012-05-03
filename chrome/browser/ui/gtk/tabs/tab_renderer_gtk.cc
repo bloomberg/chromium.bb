@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -111,7 +111,7 @@ gfx::Rect GetWidgetBoundsRelativeToParent(GtkWidget* parent,
 }  // namespace
 
 TabRendererGtk::LoadingAnimation::Data::Data(
-    ThemeServiceGtk* theme_service) {
+    GtkThemeService* theme_service) {
   // The loading animation image is a strip of states. Each state must be
   // square, so the height must divide the width evenly.
   SkBitmap* loading_animation_frames =
@@ -163,7 +163,7 @@ int TabRendererGtk::close_button_height_ = 0;
 // TabRendererGtk::LoadingAnimation, public:
 //
 TabRendererGtk::LoadingAnimation::LoadingAnimation(
-    ThemeServiceGtk* theme_service)
+    GtkThemeService* theme_service)
     : data_(new Data(theme_service)),
       theme_service_(theme_service),
       animation_state_(ANIMATION_NONE),
@@ -276,7 +276,7 @@ class TabRendererGtk::FaviconCrashAnimation : public ui::LinearAnimation,
 ////////////////////////////////////////////////////////////////////////////////
 // TabRendererGtk, public:
 
-TabRendererGtk::TabRendererGtk(ThemeServiceGtk* theme_service)
+TabRendererGtk::TabRendererGtk(GtkThemeService* theme_service)
     : showing_icon_(false),
       showing_close_button_(false),
       favicon_hiding_offset_(0),
@@ -870,7 +870,7 @@ void TabRendererGtk::PaintIcon(GtkWidget* widget, cairo_t* cr) {
     to_display = theme_service_->GetImageNamed(IDR_SAD_FAVICON)->ToCairo();
   } else if (!data_.favicon.isNull()) {
     if (data_.is_default_favicon && theme_service_->UsingNativeTheme()) {
-      to_display = ThemeServiceGtk::GetDefaultFavicon(true)->ToCairo();
+      to_display = GtkThemeService::GetDefaultFavicon(true)->ToCairo();
     } else if (data_.cairo_favicon.valid()) {
       to_display = &data_.cairo_favicon;
     }

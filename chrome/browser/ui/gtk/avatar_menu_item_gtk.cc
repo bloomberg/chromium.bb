@@ -10,8 +10,8 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
@@ -47,7 +47,7 @@ const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
 AvatarMenuItemGtk::AvatarMenuItemGtk(Delegate* delegate,
                                      const AvatarMenuModel::Item& item,
                                      size_t item_index,
-                                     ThemeServiceGtk* theme_service)
+                                     GtkThemeService* theme_service)
     : delegate_(delegate),
       item_(item),
       item_index_(item_index),
@@ -183,7 +183,7 @@ gboolean AvatarMenuItemGtk::OnEventBoxExpose(GtkWidget* widget,
   return TRUE;
 }
 
-void AvatarMenuItemGtk::Init(ThemeServiceGtk* theme_service) {
+void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
   widget_.Own(gtk_event_box_new());
 
   g_signal_connect(widget_.get(), "button-press-event",

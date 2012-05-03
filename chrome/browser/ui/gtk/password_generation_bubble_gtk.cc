@@ -9,8 +9,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/render_view_host.h"
@@ -63,7 +63,7 @@ PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
                             BubbleGtk::ARROW_LOCATION_TOP_LEFT,
                             true,  // match_system_theme
                             true,  // grab_input
-                            ThemeServiceGtk::GetFrom(profile_),
+                            GtkThemeService::GetFrom(profile_),
                             NULL);  // delegate
 
   g_signal_connect(content, "destroy",

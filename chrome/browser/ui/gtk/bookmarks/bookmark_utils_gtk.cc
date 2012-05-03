@@ -13,8 +13,8 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_screen_util.h"
@@ -53,7 +53,7 @@ void* AsVoid(const BookmarkNode* node) {
 
 // Creates the widget hierarchy for a bookmark button.
 void PackButton(GdkPixbuf* pixbuf, const string16& title, bool ellipsize,
-                ThemeServiceGtk* provider, GtkWidget* button) {
+                GtkThemeService* provider, GtkWidget* button) {
   GtkWidget* former_child = gtk_bin_get_child(GTK_BIN(button));
   if (former_child)
     gtk_container_remove(GTK_CONTAINER(button), former_child);
@@ -171,11 +171,11 @@ GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
     if (model->GetFavicon(node).width() != 0) {
       pixbuf = gfx::GdkPixbufFromSkBitmap(&model->GetFavicon(node));
     } else {
-      pixbuf = ThemeServiceGtk::GetDefaultFavicon(native)->ToGdkPixbuf();
+      pixbuf = GtkThemeService::GetDefaultFavicon(native)->ToGdkPixbuf();
       g_object_ref(pixbuf);
     }
   } else {
-    pixbuf = ThemeServiceGtk::GetFolderIcon(native)->ToGdkPixbuf();
+    pixbuf = GtkThemeService::GetFolderIcon(native)->ToGdkPixbuf();
     g_object_ref(pixbuf);
   }
 
@@ -184,7 +184,7 @@ GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
 
 GtkWidget* GetDragRepresentation(GdkPixbuf* pixbuf,
                                  const string16& title,
-                                 ThemeServiceGtk* provider) {
+                                 GtkThemeService* provider) {
   GtkWidget* window = gtk_window_new(GTK_WINDOW_POPUP);
 
   if (ui::IsScreenComposited() &&
@@ -224,7 +224,7 @@ GtkWidget* GetDragRepresentation(GdkPixbuf* pixbuf,
 
 GtkWidget* GetDragRepresentationForNode(const BookmarkNode* node,
                                         BookmarkModel* model,
-                                        ThemeServiceGtk* provider) {
+                                        GtkThemeService* provider) {
   GdkPixbuf* pixbuf = GetPixbufForNode(
       node, model, provider->UsingNativeTheme());
   GtkWidget* widget = GetDragRepresentation(pixbuf, node->GetTitle(), provider);
@@ -233,7 +233,7 @@ GtkWidget* GetDragRepresentationForNode(const BookmarkNode* node,
 }
 
 void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
-                            GtkWidget* button, ThemeServiceGtk* provider) {
+                            GtkWidget* button, GtkThemeService* provider) {
   GdkPixbuf* pixbuf = bookmark_utils::GetPixbufForNode(
       node, model, provider->UsingNativeTheme());
   PackButton(pixbuf, node->GetTitle(), node != model->other_node(), provider,
@@ -275,7 +275,7 @@ const BookmarkNode* BookmarkNodeForWidget(GtkWidget* widget) {
       g_object_get_data(G_OBJECT(widget), bookmark_utils::kBookmarkNode));
 }
 
-void SetButtonTextColors(GtkWidget* label, ThemeServiceGtk* provider) {
+void SetButtonTextColors(GtkWidget* label, GtkThemeService* provider) {
   if (provider->UsingNativeTheme()) {
     gtk_util::SetLabelColor(label, NULL);
   } else {

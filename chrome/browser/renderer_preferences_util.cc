@@ -10,8 +10,8 @@
 #include "content/public/common/renderer_preferences.h"
 
 #if defined(TOOLKIT_GTK)
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #endif
 
 namespace renderer_preferences_util {
@@ -21,7 +21,7 @@ void UpdateFromSystemSettings(
 #if defined(TOOLKIT_GTK)
   gtk_util::UpdateGtkFontSettings(prefs);
 
-  ThemeServiceGtk* theme_service = ThemeServiceGtk::GetFrom(profile);
+  GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
 
   prefs->focus_ring_color = theme_service->get_focus_ring_color();
   prefs->thumb_active_color = theme_service->get_thumb_active_color();

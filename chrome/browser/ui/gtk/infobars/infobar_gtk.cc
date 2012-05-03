@@ -11,9 +11,9 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
@@ -52,7 +52,7 @@ const int InfoBarGtk::kEndOfLabelSpacing = 6;
 
 InfoBarGtk::InfoBarGtk(InfoBarTabHelper* owner, InfoBarDelegate* delegate)
     : InfoBar(owner, delegate),
-      theme_service_(ThemeServiceGtk::GetFrom(Profile::FromBrowserContext(
+      theme_service_(GtkThemeService::GetFrom(Profile::FromBrowserContext(
           owner->web_contents()->GetBrowserContext()))),
       signals_(new ui::GtkSignalRegistrar) {
   DCHECK(delegate);

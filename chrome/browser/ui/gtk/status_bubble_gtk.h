@@ -22,7 +22,7 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/point.h"
 
-class ThemeServiceGtk;
+class GtkThemeService;
 class Profile;
 
 namespace ui {
@@ -116,7 +116,7 @@ class StatusBubbleGtk : public StatusBubble,
   content::NotificationRegistrar registrar_;
 
   // Provides colors.
-  ThemeServiceGtk* theme_service_;
+  GtkThemeService* theme_service_;
 
   // The toplevel event box.
   ui::OwnedWidgetGtk container_;

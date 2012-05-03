@@ -23,10 +23,10 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/dragged_tab_controller_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_menu_controller.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
@@ -716,7 +716,7 @@ TabStripGtk::TabStripGtk(TabStripModel* model, BrowserWindowGtk* window)
       tab_vertical_offset_(0),
       model_(model),
       window_(window),
-      theme_service_(ThemeServiceGtk::GetFrom(model->profile())),
+      theme_service_(GtkThemeService::GetFrom(model->profile())),
       weak_factory_(this),
       layout_factory_(this),
       added_as_message_loop_observer_(false),
@@ -1300,7 +1300,7 @@ bool TabStripGtk::HasAvailableDragActions() const {
   return model_->delegate()->GetDragActions() != 0;
 }
 
-ThemeServiceGtk* TabStripGtk::GetThemeProvider() {
+GtkThemeService* TabStripGtk::GetThemeProvider() {
   return theme_service_;
 }
 

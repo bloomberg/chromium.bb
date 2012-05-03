@@ -7,8 +7,8 @@
 #include "base/observer_list.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_shrinkable_hbox.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
@@ -18,7 +18,7 @@ BookmarkBarInstructionsGtk::BookmarkBarInstructionsGtk(Delegate* delegate,
                                                        Profile* profile)
     : delegate_(delegate),
       profile_(profile),
-      theme_service_(ThemeServiceGtk::GetFrom(profile_)) {
+      theme_service_(GtkThemeService::GetFrom(profile_)) {
   instructions_hbox_ = gtk_chrome_shrinkable_hbox_new(FALSE, FALSE, 0);
   gtk_widget_set_size_request(instructions_hbox_, 0, -1);
 

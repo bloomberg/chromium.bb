@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/gtk/throbber_gtk.h"
 
 #include "base/logging.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/ui_resources.h"
@@ -19,7 +19,7 @@ const int kThrobberDurationMs = 750;
 
 }  // namespace
 
-ThrobberGtk::ThrobberGtk(ThemeServiceGtk* theme_service)
+ThrobberGtk::ThrobberGtk(GtkThemeService* theme_service)
     : theme_service_(theme_service),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)),
       frames_(NULL),

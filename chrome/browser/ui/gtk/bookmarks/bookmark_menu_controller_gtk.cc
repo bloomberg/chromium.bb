@@ -13,9 +13,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -342,7 +342,7 @@ void BookmarkMenuController::OnMenuItemDragBegin(GtkWidget* menu_item,
 
   const BookmarkNode* node = bookmark_utils::BookmarkNodeForWidget(menu_item);
   drag_icon_ = bookmark_utils::GetDragRepresentationForNode(
-      node, model_, ThemeServiceGtk::GetFrom(profile_));
+      node, model_, GtkThemeService::GetFrom(profile_));
   gint x, y;
   gtk_widget_get_pointer(menu_item, &x, &y);
   gtk_drag_set_icon_widget(drag_context, drag_icon_, x, y);

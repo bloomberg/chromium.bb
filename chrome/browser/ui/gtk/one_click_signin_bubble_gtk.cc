@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -46,7 +46,7 @@ OneClickSigninBubbleGtk::OneClickSigninBubbleGtk(
   gtk_misc_set_alignment(GTK_MISC(message_label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(bubble_content), message_label, FALSE, FALSE, 0);
 
-  ThemeServiceGtk* const theme_provider = ThemeServiceGtk::GetFrom(
+  GtkThemeService* const theme_provider = GtkThemeService::GetFrom(
       browser_window_gtk->browser()->profile());
 
   GtkWidget* learn_more_line = gtk_hbox_new(FALSE, kContentBorder);

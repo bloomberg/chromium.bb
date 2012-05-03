@@ -11,7 +11,7 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -46,7 +46,7 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
                                const gfx::Rect& rect)
     : profile_(profile),
       bubble_(NULL) {
-  ThemeServiceGtk* theme_service = ThemeServiceGtk::GetFrom(profile_);
+  GtkThemeService* theme_service = GtkThemeService::GetFrom(profile_);
   GtkWidget* title = theme_service->BuildLabel("", ui::kGdkBlack);
   char* markup = g_markup_printf_escaped(kSearchLabelMarkup,
       l10n_util::GetStringFUTF8(IDS_FR_BUBBLE_TITLE,

@@ -16,8 +16,8 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "base/value_conversions.h"
 #include "base/values.h"
+#include "base/value_conversions.h"
 #include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_page_zoom.h"
@@ -96,7 +96,7 @@
 #endif  // defined(OS_WIN)
 
 #if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #endif  // defined(TOOLKIT_GTK)
 
 using content::BrowserThread;
@@ -958,7 +958,7 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
 void BrowserOptionsHandler::ObserveThemeChanged() {
   Profile* profile = Profile::FromWebUI(web_ui());
 #if defined(TOOLKIT_GTK)
-  ThemeServiceGtk* theme_service = ThemeServiceGtk::GetFrom(profile);
+  GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
   bool is_gtk_theme = theme_service->UsingNativeTheme();
   base::FundamentalValue gtk_enabled(!is_gtk_theme);
   web_ui()->CallJavascriptFunction("BrowserOptions.setGtkThemeButtonEnabled",

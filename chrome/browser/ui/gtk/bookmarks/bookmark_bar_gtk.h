@@ -34,7 +34,7 @@
 class BookmarkMenuController;
 class Browser;
 class BrowserWindowGtk;
-class ThemeServiceGtk;
+class GtkThemeService;
 class MenuGtk;
 class TabstripOriginProvider;
 
@@ -361,7 +361,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   GtkToolItem* toolbar_drop_item_;
 
   // Theme provider for building buttons.
-  ThemeServiceGtk* theme_service_;
+  GtkThemeService* theme_service_;
 
   // Whether we should show the instructional text in the bookmark bar.
   bool show_instructions_;

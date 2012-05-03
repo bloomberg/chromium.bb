@@ -24,12 +24,12 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/hover_controller_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/rounded_window.h"
 #include "chrome/browser/ui/gtk/tabstrip_origin_provider.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -140,7 +140,7 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       dragged_node_(NULL),
       drag_icon_(NULL),
       toolbar_drop_item_(NULL),
-      theme_service_(ThemeServiceGtk::GetFrom(browser->profile())),
+      theme_service_(GtkThemeService::GetFrom(browser->profile())),
       show_instructions_(true),
       menu_bar_helper_(this),
       slide_animation_(this),
@@ -1386,7 +1386,7 @@ gboolean BookmarkBarGtk::OnFolderDragMotion(GtkWidget* button,
 gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
                                           GdkEventExpose* event) {
   TRACE_EVENT0("ui::gtk", "BookmarkBarGtk::OnEventBoxExpose");
-  ThemeServiceGtk* theme_provider = theme_service_;
+  GtkThemeService* theme_provider = theme_service_;
 
   // We don't need to render the toolbar image in GTK mode, except when
   // detached.

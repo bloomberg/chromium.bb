@@ -11,9 +11,9 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
@@ -36,7 +36,7 @@ ReloadButtonGtk::ReloadButtonGtk(LocationBarViewGtk* location_bar,
       intended_mode_(MODE_RELOAD),
       visible_mode_(MODE_RELOAD),
       theme_service_(browser ?
-                     ThemeServiceGtk::GetFrom(browser->profile()) : NULL),
+                     GtkThemeService::GetFrom(browser->profile()) : NULL),
       reload_(theme_service_, IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0),
       stop_(theme_service_, IDR_STOP, IDR_STOP_P, IDR_STOP_H, IDR_STOP_D),
       widget_(gtk_chrome_button_new()),
@@ -134,7 +134,7 @@ void ReloadButtonGtk::Observe(int type,
                               const content::NotificationDetails& details) {
   DCHECK(chrome::NOTIFICATION_BROWSER_THEME_CHANGED == type);
 
-  ThemeServiceGtk* provider = static_cast<ThemeServiceGtk*>(
+  GtkThemeService* provider = static_cast<GtkThemeService*>(
       content::Source<ThemeService>(source).ptr());
   DCHECK_EQ(provider, theme_service_);
   GtkButtonWidth = 0;

@@ -32,11 +32,11 @@
 #if defined(USE_GCONF)
 #include "chrome/browser/ui/gtk/gconf_titlebar_listener.h"
 #endif
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/gtk/unity_service.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
@@ -373,7 +373,7 @@ void BrowserTitlebar::Init() {
     UpdateTitleAndIcon();
   }
 
-  theme_service_ = ThemeServiceGtk::GetFrom(
+  theme_service_ = GtkThemeService::GetFrom(
       browser_window_->browser()->profile());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(theme_service_));

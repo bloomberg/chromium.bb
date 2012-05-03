@@ -79,7 +79,7 @@ class ChromeToMobileBubbleGtk : public BubbleDelegateGtk,
   ChromeToMobileService* service_;
 
   // Support members for getting theme colors and theme change notifications.
-  ThemeServiceGtk* theme_service_;
+  GtkThemeService* theme_service_;
   content::NotificationRegistrar registrar_;
 
   // The file path for the MHTML page snapshot.

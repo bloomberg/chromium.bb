@@ -21,7 +21,7 @@
 #include "ui/gfx/rect.h"
 
 class BubbleGtk;
-class ThemeServiceGtk;
+class GtkThemeService;
 
 namespace gfx {
 class Rect;
@@ -73,7 +73,7 @@ class BubbleGtk : public content::NotificationObserver {
                          ArrowLocationGtk arrow_location,
                          bool match_system_theme,
                          bool grab_input,
-                         ThemeServiceGtk* provider,
+                         GtkThemeService* provider,
                          BubbleDelegateGtk* delegate);
 
   // Close the bubble if it's open.  This will delete the widgets and object,
@@ -110,7 +110,7 @@ class BubbleGtk : public content::NotificationObserver {
     FRAME_STROKE,
   };
 
-  BubbleGtk(ThemeServiceGtk* provider, bool match_system_theme);
+  BubbleGtk(GtkThemeService* provider, bool match_system_theme);
   virtual ~BubbleGtk();
 
   // Creates the Bubble.
@@ -184,7 +184,7 @@ class BubbleGtk : public content::NotificationObserver {
   GtkWidget* window_;
 
   // Provides colors and stuff.
-  ThemeServiceGtk* theme_service_;
+  GtkThemeService* theme_service_;
 
   // The accel group attached to |window_|, to handle closing with escape.
   GtkAccelGroup* accel_group_;

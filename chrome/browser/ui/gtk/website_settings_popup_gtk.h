@@ -14,9 +14,9 @@
 
 class Browser;
 class BubbleGtk;
+class GtkThemeService;
 class Profile;
 class TabContentsWrapper;
-class ThemeServiceGtk;
 class WebsiteSettings;
 
 // GTK implementation of the website settings UI. The website settings UI is
@@ -72,7 +72,7 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   GtkWidget* anchor_;
 
   // Provides colors and stuff.
-  ThemeServiceGtk* theme_service_;
+  GtkThemeService* theme_service_;
 
   // The popup bubble container.
   BubbleGtk* bubble_;

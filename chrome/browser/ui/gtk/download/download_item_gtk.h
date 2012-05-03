@@ -27,7 +27,7 @@
 class BaseDownloadItemModel;
 class DownloadShelfContextMenuGtk;
 class DownloadShelfGtk;
-class ThemeServiceGtk;
+class GtkThemeService;
 class NineBox;
 
 namespace gfx {
@@ -186,7 +186,7 @@ class DownloadItemGtk : public content::DownloadItem::Observer,
   bool menu_showing_;
 
   // Whether we should use the GTK text color
-  ThemeServiceGtk* theme_service_;
+  GtkThemeService* theme_service_;
 
   // The widget that contains the animation progress and the file's icon
   // (as well as the complete animation).

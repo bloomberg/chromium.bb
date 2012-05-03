@@ -8,8 +8,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/browser_titlebar.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_browser_titlebar_gtk.h"
@@ -287,7 +287,7 @@ const gfx::Image* PanelBrowserWindowGtk::GetThemeFrameImage() const {
   if (paint_state == PAINT_FOR_ATTENTION)
     return GetAttentionBackgroundImage();
 
-  ThemeServiceGtk* theme_provider = ThemeServiceGtk::GetFrom(
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(
       browser()->profile());
   if (theme_provider->UsingDefaultTheme()) {
     // We choose to use the window frame theme to paint panels for the default

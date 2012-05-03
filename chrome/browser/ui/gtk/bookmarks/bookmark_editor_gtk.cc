@@ -20,9 +20,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_tree_model.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -574,7 +574,7 @@ void BookmarkEditorGtk::AddNewFolder(GtkTreeIter* parent, GtkTreeIter* child) {
   gtk_tree_store_set(
       tree_store_, child,
       bookmark_utils::FOLDER_ICON,
-      ThemeServiceGtk::GetFolderIcon(true)->ToGdkPixbuf(),
+      GtkThemeService::GetFolderIcon(true)->ToGdkPixbuf(),
       bookmark_utils::FOLDER_NAME,
           l10n_util::GetStringUTF8(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME).c_str(),
       bookmark_utils::ITEM_ID, static_cast<int64>(0),

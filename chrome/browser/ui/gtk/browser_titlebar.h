@@ -25,7 +25,7 @@
 class AvatarMenuButtonGtk;
 class BrowserWindowGtk;
 class CustomDrawButton;
-class ThemeServiceGtk;
+class GtkThemeService;
 class MenuGtk;
 class PopupPageMenuModel;
 
@@ -127,7 +127,7 @@ class BrowserTitlebar : public content::NotificationObserver,
   CustomDrawButton* close_button() const { return close_button_.get(); }
   GtkWidget* app_mode_title() const { return app_mode_title_; }
 
-  ThemeServiceGtk* theme_service() const { return theme_service_; }
+  GtkThemeService* theme_service() const { return theme_service_; }
 
  private:
   // A helper class to keep track of which frame of the throbber animation
@@ -293,7 +293,7 @@ class BrowserTitlebar : public content::NotificationObserver,
   scoped_ptr<AvatarMenuButtonGtk> avatar_button_;
 
   // Theme provider for building buttons.
-  ThemeServiceGtk* theme_service_;
+  GtkThemeService* theme_service_;
 
   content::NotificationRegistrar registrar_;
 };

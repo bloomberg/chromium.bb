@@ -18,8 +18,8 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_to_mobile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
@@ -146,7 +146,7 @@ ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkImage* anchor_image,
                                                  Profile* profile)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       service_(ChromeToMobileServiceFactory::GetForProfile(profile)),
-      theme_service_(ThemeServiceGtk::GetFrom(profile)),
+      theme_service_(GtkThemeService::GetFrom(profile)),
       selected_mobile_(NULL),
       anchor_image_(anchor_image),
       send_copy_(NULL),

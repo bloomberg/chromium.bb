@@ -14,9 +14,9 @@
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
@@ -39,7 +39,7 @@ AvatarMenuBubbleGtk::AvatarMenuBubbleGtk(Browser* browser,
                                          BubbleGtk::ArrowLocationGtk arrow,
                                          const gfx::Rect* rect)
     : contents_(NULL),
-      theme_service_(ThemeServiceGtk::GetFrom(browser->profile())),
+      theme_service_(GtkThemeService::GetFrom(browser->profile())),
       new_profile_link_(NULL),
       minimum_width_(kBubbleMinWidth) {
   avatar_menu_model_.reset(new AvatarMenuModel(

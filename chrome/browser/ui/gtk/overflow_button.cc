@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
@@ -15,10 +15,10 @@
 #include "ui/gfx/image/image.h"
 
 OverflowButton::OverflowButton(Profile* profile) : profile_(profile) {
-  widget_.Own(ThemeServiceGtk::GetFrom(profile)->BuildChromeButton());
+  widget_.Own(GtkThemeService::GetFrom(profile)->BuildChromeButton());
   gtk_widget_set_no_show_all(widget_.get(), TRUE);
 
-  ThemeServiceGtk* theme_service = ThemeServiceGtk::GetFrom(profile);
+  GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(theme_service));
   theme_service->InitThemesFor(this);
@@ -36,7 +36,7 @@ void OverflowButton::Observe(int type,
     gtk_widget_destroy(former_child);
 
   GtkWidget* new_child;
-  if (ThemeServiceGtk::GetFrom(profile_)->UsingNativeTheme()) {
+  if (GtkThemeService::GetFrom(profile_)->UsingNativeTheme()) {
     new_child = gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE);
   } else {
     const gfx::Image& image = ui::ResourceBundle::GetSharedInstance().

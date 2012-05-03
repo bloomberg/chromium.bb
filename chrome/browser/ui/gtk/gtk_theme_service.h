@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_THEME_SERVICE_GTK_H_
-#define CHROME_BROWSER_UI_GTK_THEME_SERVICE_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_GTK_THEME_SERVICE_H_
+#define CHROME_BROWSER_UI_GTK_GTK_THEME_SERVICE_H_
 #pragma once
 
 #include <map>
@@ -37,7 +37,7 @@ typedef struct _GtkStyle GtkStyle;
 typedef struct _GtkWidget GtkWidget;
 
 // Specialization of ThemeService which supplies system colors.
-class ThemeServiceGtk : public ThemeService {
+class GtkThemeService : public ThemeService {
  public:
   // A list of integer keys for a separate PerDisplaySurfaceMap that keeps
   // what would otherwise be static icons on the X11 server.
@@ -48,11 +48,11 @@ class ThemeServiceGtk : public ThemeService {
     CHROME_FOLDER
   };
 
-  // Returns ThemeServiceGtk, casted from our superclass.
-  static ThemeServiceGtk* GetFrom(Profile* profile);
+  // Returns GtkThemeService, casted from our superclass.
+  static GtkThemeService* GetFrom(Profile* profile);
 
-  ThemeServiceGtk();
-  virtual ~ThemeServiceGtk();
+  GtkThemeService();
+  virtual ~GtkThemeService();
 
   // Calls |observer|.Observe() for the browser theme with this provider as the
   // source.
@@ -223,15 +223,15 @@ class ThemeServiceGtk : public ThemeService {
   void GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const;
 
   // Handles signal from GTK that our theme has been changed.
-  CHROMEGTK_CALLBACK_1(ThemeServiceGtk, void, OnStyleSet, GtkStyle*);
+  CHROMEGTK_CALLBACK_1(GtkThemeService, void, OnStyleSet, GtkStyle*);
 
   // A notification from various GObject destructors that we should
   // remove it from our internal list.
-  CHROMEGTK_CALLBACK_0(ThemeServiceGtk, void, OnDestroyChromeButton);
-  CHROMEGTK_CALLBACK_0(ThemeServiceGtk, void, OnDestroyChromeLinkButton);
-  CHROMEGTK_CALLBACK_0(ThemeServiceGtk, void, OnDestroyLabel);
+  CHROMEGTK_CALLBACK_0(GtkThemeService, void, OnDestroyChromeButton);
+  CHROMEGTK_CALLBACK_0(GtkThemeService, void, OnDestroyChromeLinkButton);
+  CHROMEGTK_CALLBACK_0(GtkThemeService, void, OnDestroyLabel);
 
-  CHROMEGTK_CALLBACK_1(ThemeServiceGtk, gboolean, OnSeparatorExpose,
+  CHROMEGTK_CALLBACK_1(GtkThemeService, gboolean, OnSeparatorExpose,
                        GdkEventExpose*);
 
   // Whether we should be using gtk rendering.
@@ -299,4 +299,4 @@ class ThemeServiceGtk : public ThemeService {
   static gfx::Image* default_bookmark_icon_;
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_THEME_SERVICE_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_GTK_THEME_SERVICE_H_

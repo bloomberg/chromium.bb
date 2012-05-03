@@ -16,10 +16,10 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/gtk/throbber_gtk.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
@@ -68,8 +68,8 @@ enum {
   kInstallButtonIndex,
 };
 
-ThemeServiceGtk *GetThemeService(TabContentsWrapper* wrapper) {
-  return ThemeServiceGtk::GetFrom(wrapper->profile());
+GtkThemeService *GetThemeService(TabContentsWrapper* wrapper) {
+  return GtkThemeService::GetFrom(wrapper->profile());
 }
 
 // Set the image of |button| to |pixbuf|.
@@ -163,7 +163,7 @@ WebIntentPickerGtk::WebIntentPickerGtk(TabContentsWrapper* wrapper,
   UpdateCWSLabel();
   UpdateSuggestedExtensions();
 
-  ThemeServiceGtk* theme_service = GetThemeService(wrapper);
+  GtkThemeService* theme_service = GetThemeService(wrapper);
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                        content::Source<ThemeService>(theme_service));
   theme_service->InitThemesFor(this);
@@ -299,7 +299,7 @@ void WebIntentPickerGtk::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
-  ThemeServiceGtk* theme_service = GetThemeService(wrapper_);
+  GtkThemeService* theme_service = GetThemeService(wrapper_);
   if (theme_service->UsingNativeTheme())
     gtk_util::UndoForceFontSize(header_label_);
   else
@@ -378,7 +378,7 @@ void WebIntentPickerGtk::OnServiceButtonClick(GtkWidget* button) {
 }
 
 void WebIntentPickerGtk::InitContents() {
-  ThemeServiceGtk* theme_service = GetThemeService(wrapper_);
+  GtkThemeService* theme_service = GetThemeService(wrapper_);
 
   // Main contents vbox.
   contents_ = gtk_vbox_new(FALSE, 0);
@@ -522,7 +522,7 @@ void WebIntentPickerGtk::UpdateCWSLabel() {
 }
 
 void WebIntentPickerGtk::UpdateSuggestedExtensions() {
-  ThemeServiceGtk* theme_service = GetThemeService(wrapper_);
+  GtkThemeService* theme_service = GetThemeService(wrapper_);
 
   gtk_util::RemoveAllChildren(extensions_vbox_);
 

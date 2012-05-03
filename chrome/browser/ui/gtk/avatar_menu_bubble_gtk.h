@@ -22,7 +22,7 @@
 
 class AvatarMenuModel;
 class Browser;
-class ThemeServiceGtk;
+class GtkThemeService;
 
 // This bubble is displayed when the user clicks on the avatar button.
 // It displays a list of profiles and allows users to switch between profiles.
@@ -77,7 +77,7 @@ class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
   BubbleGtk* bubble_;
 
   // A weak pointer to the theme service.
-  ThemeServiceGtk* theme_service_;
+  GtkThemeService* theme_service_;
 
   // A weak pointer to the new proifle link to keep its theme information
   // updated.

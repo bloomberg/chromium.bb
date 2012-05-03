@@ -18,7 +18,7 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 class Browser;
-class ThemeServiceGtk;
+class GtkThemeService;
 class LocationBarViewGtk;
 
 class ReloadButtonGtk : public content::NotificationObserver {
@@ -77,7 +77,7 @@ class ReloadButtonGtk : public content::NotificationObserver {
   // Used to listen for theme change notifications.
   content::NotificationRegistrar registrar_;
 
-  ThemeServiceGtk* theme_service_;
+  GtkThemeService* theme_service_;
 
   CustomDrawButtonBase reload_;
   CustomDrawButtonBase stop_;

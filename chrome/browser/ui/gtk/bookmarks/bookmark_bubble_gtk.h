@@ -88,7 +88,7 @@ class BookmarkBubbleGtk : public BubbleDelegateGtk,
   BookmarkModel* model_;
 
   // Provides colors and stuff.
-  ThemeServiceGtk* theme_service_;
+  GtkThemeService* theme_service_;
 
   // The widget relative to which we are positioned.
   GtkWidget* anchor_;

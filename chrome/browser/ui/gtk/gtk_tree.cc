@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/table_model.h"
 #include "ui/gfx/gtk_util.h"
@@ -384,7 +384,7 @@ void TreeAdapter::FillRow(GtkTreeIter* iter, ui::TreeModelNode* node) {
   if (icon_index >= 0 && icon_index < static_cast<int>(pixbufs_.size()))
     pixbuf = pixbufs_[icon_index];
   else
-    pixbuf = ThemeServiceGtk::GetFolderIcon(true)->ToGdkPixbuf();
+    pixbuf = GtkThemeService::GetFolderIcon(true)->ToGdkPixbuf();
   gtk_tree_store_set(tree_store_, iter,
                      COL_ICON, pixbuf,
                      COL_TITLE, UTF16ToUTF8(node->GetTitle()).c_str(),

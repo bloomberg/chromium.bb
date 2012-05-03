@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_accelerators_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/base/gtk/gtk_compat.h"
@@ -79,7 +79,7 @@ BubbleGtk* BubbleGtk::Show(GtkWidget* anchor_widget,
                            ArrowLocationGtk arrow_location,
                            bool match_system_theme,
                            bool grab_input,
-                           ThemeServiceGtk* provider,
+                           GtkThemeService* provider,
                            BubbleDelegateGtk* delegate) {
   BubbleGtk* bubble = new BubbleGtk(provider, match_system_theme);
   bubble->Init(anchor_widget, rect, content, arrow_location, grab_input);
@@ -87,7 +87,7 @@ BubbleGtk* BubbleGtk::Show(GtkWidget* anchor_widget,
   return bubble;
 }
 
-BubbleGtk::BubbleGtk(ThemeServiceGtk* provider,
+BubbleGtk::BubbleGtk(GtkThemeService* provider,
                      bool match_system_theme)
     : delegate_(NULL),
       window_(NULL),

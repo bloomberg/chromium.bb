@@ -24,7 +24,7 @@
 
 class AutocompleteEditModel;
 class AutocompletePopupModel;
-class ThemeServiceGtk;
+class GtkThemeService;
 class OmniboxView;
 class SkBitmap;
 
@@ -116,7 +116,7 @@ class OmniboxPopupViewGtk : public AutocompletePopupView,
   // The pango layout object created from the window, cached across exposes.
   PangoLayout* layout_;
 
-  ThemeServiceGtk* theme_service_;
+  GtkThemeService* theme_service_;
   content::NotificationRegistrar registrar_;
 
   // Font used for suggestions after being derived from the constructor's

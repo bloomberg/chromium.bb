@@ -11,9 +11,9 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -45,7 +45,7 @@ BackForwardButtonGtk::BackForwardButtonGtk(Browser* browser, bool is_forward)
     stock = GTK_STOCK_GO_BACK;
   }
   button_.reset(new CustomDrawButton(
-      ThemeServiceGtk::GetFrom(browser_->profile()),
+      GtkThemeService::GetFrom(browser_->profile()),
       normal, pushed, hover, disabled, stock, GTK_ICON_SIZE_SMALL_TOOLBAR));
   gtk_widget_set_tooltip_text(widget(),
                               l10n_util::GetStringUTF8(tooltip).c_str());

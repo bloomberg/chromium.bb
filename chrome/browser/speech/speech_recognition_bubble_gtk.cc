@@ -11,9 +11,9 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -174,7 +174,7 @@ void SpeechRecognitionBubbleGtk::Show() {
       kBubbleControlHorizontalSpacing, kBubbleControlHorizontalSpacing);
   gtk_container_add(GTK_CONTAINER(content), vbox);
 
-  ThemeServiceGtk* theme_provider = ThemeServiceGtk::GetFrom(profile);
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(profile);
   GtkWidget* reference_widget = GetWebContents()->GetNativeView();
   gfx::Rect container_rect;
   GetWebContents()->GetContainerBounds(&container_rect);

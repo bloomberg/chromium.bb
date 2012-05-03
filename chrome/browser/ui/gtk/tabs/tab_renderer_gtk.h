@@ -31,7 +31,7 @@ class Size;
 }  // namespace gfx
 
 class CustomDrawButton;
-class ThemeServiceGtk;
+class GtkThemeService;
 
 namespace content {
 class WebContents;
@@ -55,7 +55,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   class LoadingAnimation : public content::NotificationObserver {
    public:
     struct Data {
-      explicit Data(ThemeServiceGtk* theme_service);
+      explicit Data(GtkThemeService* theme_service);
       Data(int loading, int waiting, int waiting_to_loading);
 
       int loading_animation_frame_count;
@@ -63,7 +63,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
       int waiting_to_loading_frame_count_ratio;
     };
 
-    explicit LoadingAnimation(ThemeServiceGtk* theme_service);
+    explicit LoadingAnimation(GtkThemeService* theme_service);
 
     // Used in unit tests to inject specific data.
     explicit LoadingAnimation(const LoadingAnimation::Data& data);
@@ -90,7 +90,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
     content::NotificationRegistrar registrar_;
 
     // Gives us our throbber images.
-    ThemeServiceGtk* theme_service_;
+    GtkThemeService* theme_service_;
 
     // Current state of the animation.
     AnimationState animation_state_;
@@ -101,7 +101,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
     DISALLOW_COPY_AND_ASSIGN(LoadingAnimation);
   };
 
-  explicit TabRendererGtk(ThemeServiceGtk* theme_service);
+  explicit TabRendererGtk(GtkThemeService* theme_service);
   virtual ~TabRendererGtk();
 
   // Provide content::NotificationObserver implementation.
@@ -413,7 +413,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   // alignment in the BrowserTitlebar.
   int background_offset_y_;
 
-  ThemeServiceGtk* theme_service_;
+  GtkThemeService* theme_service_;
 
   // The close button.
   scoped_ptr<CustomDrawButton> close_button_;

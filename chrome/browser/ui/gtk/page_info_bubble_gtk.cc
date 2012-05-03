@@ -16,9 +16,9 @@
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/ssl_status.h"
 #include "googleurl/src/gurl.h"
@@ -79,7 +79,7 @@ class PageInfoBubbleGtk : public PageInfoModelObserver,
   GtkWidget* anchor_;
 
   // Provides colors and stuff.
-  ThemeServiceGtk* theme_service_;
+  GtkThemeService* theme_service_;
 
   BubbleGtk* bubble_;
 
@@ -99,7 +99,7 @@ PageInfoBubbleGtk::PageInfoBubbleGtk(gfx::NativeWindow parent,
       cert_id_(ssl.cert_id),
       parent_(parent),
       contents_(NULL),
-      theme_service_(ThemeServiceGtk::GetFrom(profile)),
+      theme_service_(GtkThemeService::GetFrom(profile)),
       profile_(profile) {
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);

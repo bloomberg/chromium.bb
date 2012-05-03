@@ -16,10 +16,10 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/drag_data.h"
 #include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -66,7 +66,7 @@ DraggedViewGtk::DraggedViewGtk(DragData* drag_data,
       close_animation_(this) {
   std::vector<WebContents*> data_sources(drag_data_->GetDraggedTabsContents());
   for (size_t i = 0; i < data_sources.size(); i++) {
-    renderers_.push_back(new TabRendererGtk(ThemeServiceGtk::GetFrom(
+    renderers_.push_back(new TabRendererGtk(GtkThemeService::GetFrom(
         Profile::FromBrowserContext(data_sources[i]->GetBrowserContext()))));
   }
 

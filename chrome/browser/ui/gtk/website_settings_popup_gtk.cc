@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/gtk/collected_cookies_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/website_settings.h"
@@ -74,7 +74,7 @@ WebsiteSettingsPopupGtk::WebsiteSettingsPopupGtk(
     TabContentsWrapper* tab_contents_wrapper)
     : parent_(parent),
       contents_(NULL),
-      theme_service_(ThemeServiceGtk::GetFrom(profile)),
+      theme_service_(GtkThemeService::GetFrom(profile)),
       profile_(profile),
       tab_contents_wrapper_(tab_contents_wrapper),
       browser_(NULL),

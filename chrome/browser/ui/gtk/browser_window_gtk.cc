@@ -57,6 +57,7 @@
 #include "chrome/browser/ui/gtk/find_bar_gtk.h"
 #include "chrome/browser/ui/gtk/fullscreen_exit_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/global_menu_bar.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
@@ -69,7 +70,6 @@
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/task_manager_gtk.h"
-#include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/gtk/update_recommended_dialog.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
@@ -624,7 +624,7 @@ void BrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
 void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
                                        GtkWidget* widget,
                                        GdkEventExpose* event) {
-  ThemeServiceGtk* theme_provider = ThemeServiceGtk::GetFrom(
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(
       browser()->profile());
 
   int image_name = GetThemeFrameResource();
@@ -1379,7 +1379,7 @@ void BrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
 }
 
 SkColor BrowserWindowGtk::GetInfoBarSeparatorColor() const {
-  ThemeServiceGtk* theme_service = ThemeServiceGtk::GetFrom(
+  GtkThemeService* theme_service = GtkThemeService::GetFrom(
       browser()->profile());
   return gfx::GdkColorToSkColor(theme_service->GetBorderColor());
 }
@@ -1940,7 +1940,7 @@ void BrowserWindowGtk::InitWidgets() {
 
 void BrowserWindowGtk::SetBackgroundColor() {
   Profile* profile = browser()->profile();
-  ThemeServiceGtk* theme_provider = ThemeServiceGtk::GetFrom(profile);
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(profile);
   int frame_color_id;
   if (UsingCustomPopupFrame()) {
     frame_color_id = ThemeService::COLOR_TOOLBAR;
@@ -2458,7 +2458,7 @@ bool BrowserWindowGtk::IsBookmarkBarSupported() const {
 }
 
 bool BrowserWindowGtk::UsingCustomPopupFrame() const {
-  ThemeServiceGtk* theme_provider = ThemeServiceGtk::GetFrom(
+  GtkThemeService* theme_provider = GtkThemeService::GetFrom(
       browser()->profile());
   return !theme_provider->UsingNativeTheme() && browser()->is_type_popup();
 }

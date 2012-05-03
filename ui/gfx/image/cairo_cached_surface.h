@@ -24,10 +24,10 @@ namespace gfx {
 // once. From then on, that cached version is used so we don't upload the same
 // image each and every time we expose.
 //
-// Most cached surfaces are owned by the ThemeServiceGtk, which associates
+// Most cached surfaces are owned by the GtkThemeService, which associates
 // them with a certain XDisplay. Some users of surfaces (CustomDrawButtonBase,
 // for example) own their surfaces instead since they interact with the
-// ResourceBundle instead of the ThemeServiceGtk.
+// ResourceBundle instead of the GtkThemeService.
 class UI_EXPORT CairoCachedSurface {
  public:
   CairoCachedSurface();

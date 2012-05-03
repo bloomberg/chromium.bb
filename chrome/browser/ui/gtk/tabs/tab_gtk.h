@@ -84,7 +84,7 @@ class TabGtk : public TabRendererGtk,
     virtual bool HasAvailableDragActions() const = 0;
 
     // Returns the theme provider for icons and colors.
-    virtual ThemeServiceGtk* GetThemeProvider() = 0;
+    virtual GtkThemeService* GetThemeProvider() = 0;
 
     // Returns a context menu controller for |tab|. Caller takes ownership of
     // the pointed object.

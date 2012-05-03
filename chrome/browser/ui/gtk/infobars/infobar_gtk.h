@@ -20,7 +20,7 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 class CustomDrawButton;
-class ThemeServiceGtk;
+class GtkThemeService;
 
 namespace ui {
 class GtkSignalRegistrar;
@@ -110,7 +110,7 @@ class InfoBarGtk : public InfoBar,
   scoped_ptr<CustomDrawButton> close_button_;
 
   // The theme provider, used for getting border colors.
-  ThemeServiceGtk* theme_service_;
+  GtkThemeService* theme_service_;
 
   content::NotificationRegistrar registrar_;
 
