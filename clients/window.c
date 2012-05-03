@@ -57,12 +57,15 @@
 
 #include <xkbcommon/xkbcommon.h>
 #include <X11/X.h>
+#include <X11/Xcursor/Xcursor.h>
 
 #include <linux/input.h>
 #include <wayland-client.h>
 #include "cairo-util.h"
 
 #include "window.h"
+
+struct cursor;
 
 struct display {
 	struct wl_display *display;
@@ -91,7 +94,7 @@ struct display {
 	cairo_surface_t *active_frame, *inactive_frame, *shadow;
 	int frame_radius;
 	struct xkb_desc *xkb;
-	cairo_surface_t **pointer_surfaces;
+	struct cursor *cursors;
 
 	PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
 	PFNEGLCREATEIMAGEKHRPROC create_image;
@@ -172,7 +175,7 @@ struct input {
 	struct wl_input_device *input_device;
 	struct window *pointer_focus;
 	struct window *keyboard_focus;
-	int current_pointer_image;
+	int current_cursor;
 	uint32_t modifiers;
 	uint32_t pointer_enter_serial;
 	int32_t sx, sy;
@@ -214,6 +217,18 @@ struct menu {
 	int current;
 	int count;
 	menu_func_t func;
+};
+
+struct cursor_image {
+	cairo_surface_t *surface;
+	int width, height;
+	int hotspot_x, hotspot_y;
+	int delay;
+};
+
+struct cursor {
+	int n_images;
+	struct cursor_image *images;
 };
 
 enum {
@@ -345,6 +360,14 @@ shm_surface_data_destroy(void *p)
 		munmap(data->map, data->length);
 }
 
+static void
+shm_surface_write(cairo_surface_t *surface, unsigned char *data, int count)
+{
+	void *dest = cairo_image_surface_get_data(surface);
+
+	memcpy(dest, data, count);
+}
+
 static struct wl_shm_pool *
 make_shm_pool(struct display *display, int size, void **data)
 {
@@ -432,35 +455,6 @@ display_create_shm_surface(struct display *display,
 	return surface;
 }
 
-static cairo_surface_t *
-display_create_shm_surface_from_file(struct display *display,
-				     const char *filename,
-				     struct rectangle *rect)
-{
-	cairo_surface_t *surface;
-	pixman_image_t *image;
-	void *dest;
-	int size;
-
-	image = load_image(filename);
-	if (image == NULL)
-		return NULL;
-
-	surface = display_create_shm_surface(display, rect, 0, NULL);
-	if (surface == NULL) {
-		pixman_image_unref(image);
-		return NULL;
-	}
-
-	size = pixman_image_get_stride(image) * pixman_image_get_height(image);
-	dest = cairo_image_surface_get_data(surface);
-	memcpy(dest, pixman_image_get_data(image), size);
-
-	pixman_image_unref(image);
-
-	return surface;
-}
-
 static int
 check_size(struct rectangle *rect)
 {
@@ -490,70 +484,102 @@ display_create_surface(struct display *display,
 	return display_create_shm_surface(display, rectangle, flags, NULL);
 }
 
-static cairo_surface_t *
-display_create_surface_from_file(struct display *display,
-				 const char *filename,
-				 struct rectangle *rectangle)
-{
-	if (check_size(rectangle) < 0)
-		return NULL;
-
-	return display_create_shm_surface_from_file(display, filename, rectangle);
-}
- static const struct {
-	const char *filename;
-	int hotspot_x, hotspot_y;
-} pointer_images[] = {
-	{ DATADIR "/weston/bottom_left_corner.png",	 6, 30 },
-	{ DATADIR "/weston/bottom_right_corner.png",	28, 28 },
-	{ DATADIR "/weston/bottom_side.png",		16, 20 },
-	{ DATADIR "/weston/grabbing.png",		20, 17 },
-	{ DATADIR "/weston/left_ptr.png",		10,  5 },
-	{ DATADIR "/weston/left_side.png",		10, 20 },
-	{ DATADIR "/weston/right_side.png",		30, 19 },
-	{ DATADIR "/weston/top_left_corner.png",	 8,  8 },
-	{ DATADIR "/weston/top_right_corner.png",	26,  8 },
-	{ DATADIR "/weston/top_side.png",		18,  8 },
-	{ DATADIR "/weston/xterm.png",			15, 15 },
-	{ DATADIR "/weston/hand1.png",			18, 11 }
+static const char *cursors[] = {
+	"bottom_left_corner",
+	"bottom_right_corner",
+	"bottom_side",
+	"grabbing",
+	"left_ptr",
+	"left_side",
+	"right_side",
+	"top_left_corner",
+	"top_right_corner",
+	"top_side",
+	"xterm",
+	"hand1",
 };
 
 static void
-create_pointer_surfaces(struct display *display)
+create_cursor_from_images(struct display *display, struct cursor *cursor,
+			  XcursorImages *images)
 {
-	int i, count;
-	const int width = 32, height = 32;
+	int i;
 	struct rectangle rect;
+	XcursorImage *image;
 
-	count = ARRAY_LENGTH(pointer_images);
-	display->pointer_surfaces =
-		malloc(count * sizeof *display->pointer_surfaces);
-	rect.width = width;
-	rect.height = height;
-	for (i = 0; i < count; i++) {
-		display->pointer_surfaces[i] =
-			display_create_surface_from_file(display,
-							 pointer_images[i].filename,
-							 &rect);
-		if (!display->pointer_surfaces[i]) {
-			fprintf(stderr, "Error loading pointer image: %s\n",
-				pointer_images[i].filename);
-		}
+	cursor->images = malloc(images->nimage * sizeof *cursor->images);
+	cursor->n_images = images->nimage;
+
+	for (i = 0; i < images->nimage; i++) {
+		image = images->images[i];
+
+		rect.width = image->width;
+		rect.height = image->height;
+
+		cursor->images[i].surface =
+			display_create_shm_surface(display, &rect, 0, NULL);
+
+		shm_surface_write(cursor->images[i].surface,
+				  (unsigned char *) image->pixels,
+				  image->width * image->height * sizeof image->pixels[0]);
+
+		cursor->images[i].width = image->width;
+		cursor->images[i].height = image->height;
+		cursor->images[i].hotspot_x = image->xhot;
+		cursor->images[i].hotspot_y = image->yhot;
+		cursor->images[i].delay = image->delay;
 	}
 
 }
 
 static void
-destroy_pointer_surfaces(struct display *display)
+create_cursors(struct display *display)
+{
+	int i, count;
+	struct cursor *cursor;
+	XcursorImages *images;
+
+	count = ARRAY_LENGTH(cursors);
+	display->cursors = malloc(count * sizeof *display->cursors);
+	for (i = 0; i < count; i++) {
+		images = XcursorLibraryLoadImages(cursors[i], NULL, 32);
+
+		if (!images) {
+			fprintf(stderr, "Error loading cursor: %s\n",
+				cursors[i]);
+			continue;
+		}
+
+		cursor = &display->cursors[i];
+		create_cursor_from_images(display, cursor, images);
+
+		XcursorImagesDestroy(images);
+	}
+
+}
+
+static void
+destroy_cursor_images(struct cursor *cursor)
+{
+	int i;
+
+	for (i = 0; i < cursor->n_images; i++)
+		if (cursor->images[i].surface)
+			cairo_surface_destroy(cursor->images[i].surface);
+
+	free(cursor->images);
+}
+
+static void
+destroy_cursors(struct display *display)
 {
 	int i, count;
 
-	count = ARRAY_LENGTH(pointer_images);
+	count = ARRAY_LENGTH(cursors);
 	for (i = 0; i < count; ++i) {
-		if (display->pointer_surfaces[i])
-			cairo_surface_destroy(display->pointer_surfaces[i]);
+		destroy_cursor_images(&display->cursors[i]);
 	}
-	free(display->pointer_surfaces);
+	free(display->cursors);
 }
 
 cairo_surface_t *
@@ -561,18 +587,17 @@ display_get_pointer_surface(struct display *display, int pointer,
 			    int *width, int *height,
 			    int *hotspot_x, int *hotspot_y)
 {
-	cairo_surface_t *surface;
+	struct cursor *cursor = &display->cursors[pointer];
+	cairo_surface_t *surface = cursor->images[0].surface;
 
-	surface = display->pointer_surfaces[pointer];
-#if HAVE_CAIRO_EGL
-	*width = cairo_gl_surface_get_width(surface);
-	*height = cairo_gl_surface_get_height(surface);
-#else
+	/* FIXME returning information for the first image. Something better
+	 * is needed for animated cursors */
+
 	*width = cairo_image_surface_get_width(surface);
 	*height = cairo_image_surface_get_height(surface);
-#endif
-	*hotspot_x = pointer_images[pointer].hotspot_x;
-	*hotspot_y = pointer_images[pointer].hotspot_y;
+
+	*hotspot_x = cursor->images[0].hotspot_x;
+	*hotspot_y = cursor->images[0].hotspot_y;
 
 	return cairo_surface_reference(surface);
 }
@@ -1442,7 +1467,7 @@ input_remove_pointer_focus(struct input *input)
 	input_set_focus_widget(input, NULL, 0, 0);
 
 	input->pointer_focus = NULL;
-	input->current_pointer_image = POINTER_UNSET;
+	input->current_cursor = POINTER_UNSET;
 }
 
 static void
@@ -1773,21 +1798,20 @@ input_set_pointer_image(struct input *input, uint32_t time, int pointer)
 {
 	struct display *display = input->display;
 	struct wl_buffer *buffer;
-	cairo_surface_t *surface;
+	struct cursor_image *image;
 
-	if (pointer == input->current_pointer_image)
+	if (pointer == input->current_cursor)
 		return;
 
-	input->current_pointer_image = pointer;
-	surface = display->pointer_surfaces[pointer];
+	image = &display->cursors[pointer].images[0];
 
-	if (!surface)
+	if (!image->surface)
 		return;
 
-	buffer = display_get_buffer_for_surface(display, surface);
+	input->current_cursor = pointer;
+	buffer = display_get_buffer_for_surface(display, image->surface);
 	wl_input_device_attach(input->input_device, time, buffer,
-			       pointer_images[pointer].hotspot_x,
-			       pointer_images[pointer].hotspot_y);
+			       image->hotspot_x, image->hotspot_y);
 }
 
 struct wl_data_device *
@@ -2854,7 +2878,7 @@ display_create(int argc, char *argv[])
 	d->create_image = (void *) eglGetProcAddress("eglCreateImageKHR");
 	d->destroy_image = (void *) eglGetProcAddress("eglDestroyImageKHR");
 
-	create_pointer_surfaces(d);
+	create_cursors(d);
 
 	display_render_frame(d);
 
@@ -2902,7 +2926,7 @@ display_destroy(struct display *display)
 	cairo_surface_destroy(display->active_frame);
 	cairo_surface_destroy(display->inactive_frame);
 	cairo_surface_destroy(display->shadow);
-	destroy_pointer_surfaces(display);
+	destroy_cursors(display);
 
 #ifdef HAVE_CAIRO_EGL
 	fini_egl(display);

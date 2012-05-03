@@ -137,7 +137,7 @@ AM_CONDITIONAL(BUILD_CLIENTS, test x$enable_clients = xyes)
 if test x$enable_clients = xyes; then
   AC_DEFINE([BUILD_CLIENTS], [1], [Build the Wayland clients])
 
-  PKG_CHECK_MODULES(CLIENT, [wayland-client wayland-egl egl >= 7.10 cairo >= 1.10.0 xkbcommon])
+  PKG_CHECK_MODULES(CLIENT, [wayland-client wayland-egl egl >= 7.10 cairo >= 1.10.0 xkbcommon xcursor])
 
   CLIENT_CFLAGS="$CLIENT_CFLAGS $IMAGE_CFLAGS"
   CLIENT_LIBS="$CLIENT_LIBS $IMAGE_LIBS"
