@@ -143,8 +143,16 @@ class BrowserActionButton : public content::NotificationObserver,
                      G_CALLBACK(&OnDragBegin), this);
     signals_.ConnectAfter(widget(), "expose-event",
                      G_CALLBACK(OnExposeEvent), this);
-    signals_.Connect(toolbar->widget(), "realize",
-                     G_CALLBACK(OnRealize), this);
+    if (toolbar_->browser()->window()) {
+      // If the window exists already, then the browser action button has been
+      // recreated after the window was created, for example when the extension
+      // is reloaded.
+      ConnectBrowserActionPopupAccelerator();
+    } else {
+      // Window doesn't exist yet, wait for it.
+      signals_.Connect(toolbar->widget(), "realize",
+                       G_CALLBACK(OnRealize), this);
+    }
 
     registrar_.Add(
         this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
@@ -156,6 +164,8 @@ class BrowserActionButton : public content::NotificationObserver,
   }
 
   ~BrowserActionButton() {
+    DisconnectBrowserActionPopupAccelerator();
+
     if (tab_specific_icon_)
       g_object_unref(tab_specific_icon_);
 
