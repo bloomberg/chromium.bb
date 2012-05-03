@@ -476,22 +476,20 @@ void ExtensionProcessManager::OnShouldUnloadAck(
   if (host &&
       sequence_id == background_page_data_[extension_id].close_sequence_id) {
     background_page_data_[extension_id].is_closing = true;
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ExtensionProcessManager::CloseLazyBackgroundPageNow,
-                   weak_ptr_factory_.GetWeakPtr(), extension_id),
-        event_page_unloading_time_);
+    host->render_view_host()->Send(new ExtensionMsg_Unload(extension_id));
   }
+}
+
+void ExtensionProcessManager::OnUnloadAck(const std::string& extension_id) {
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ExtensionProcessManager::CloseLazyBackgroundPageNow,
+                 weak_ptr_factory_.GetWeakPtr(), extension_id),
+      event_page_unloading_time_);
 }
 
 void ExtensionProcessManager::CloseLazyBackgroundPageNow(
     const std::string& extension_id) {
-  ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
-  if (host)
-    host->render_view_host()->Send(new ExtensionMsg_Unload(extension_id));
-}
-
-void ExtensionProcessManager::OnUnloadAck(const std::string& extension_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
   if (host)
     CloseBackgroundHost(host);
