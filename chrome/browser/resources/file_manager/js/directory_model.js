@@ -666,7 +666,7 @@ DirectoryModel.prototype.changeDirectory = function(path) {
   }.bind(this), function(error) {
     console.error('Error changing directory to ' + path + ': ', error);
   });
-}
+};
 
 /**
  * Resolves absolute directory path. Handles GData stub.
@@ -707,14 +707,10 @@ DirectoryModel.prototype.changeDirectoryOrRoot = function(path) {
   if (DirectoryModel.getRootPath(path) == this.getCurrentRootPath()) {
     this.changeDirectory(path);
   } else if (this.currentDirByRoot_[path]) {
-    var self = this;
-    this.resolveDirectory(this.currentDirByRoot_[path],
-        function(directoryEntry) {
-          self.changeDirectoryEntry_(false, directoryEntry);
-        },
-        function(error) {
-          self.changeDrectory(path);
-        });
+    this.resolveDirectory(
+        this.currentDirByRoot_[path],
+        this.changeDirectoryEntry_.bind(this, false),
+        this.changeDirectory.bind(this, path));
   } else {
     this.changeDirectory(path);
   }
