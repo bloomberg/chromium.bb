@@ -413,6 +413,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
     observer.Wait();
   }
   ASSERT_EQ(2, browser()->tab_count());
+  ASSERT_EQ(0, browser()->active_index());
   VerifyNavigationEntries(
       browser()->GetWebContentsAt(1)->GetController(), url1, url2);
 

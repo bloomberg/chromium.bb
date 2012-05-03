@@ -565,8 +565,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     bool use_new_window = disposition == NEW_WINDOW;
 
-    StartTabCreation();
-
     // The browser should not be specified; the browser to use is
     // dictated by the WindowOpenDisposition.
     DCHECK(browser_ == NULL);
@@ -585,14 +583,17 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                   NULL);
     } else {
       int tab_index = use_new_window ? 0 : browser->active_index() + 1;
-      browser->AddRestoredTab(tab.navigations,
-                              tab_index,
-                              selected_index,
-                              tab.extension_app_id,
-                              true,
-                              tab.pinned,
-                              true,
-                              NULL);
+      WebContents* web_contents = browser->AddRestoredTab(
+          tab.navigations,
+          tab_index,
+          selected_index,
+          tab.extension_app_id,
+          false,
+          tab.pinned,
+          true,
+          NULL);
+      // Start loading the tab immediately.
+      web_contents->GetController().LoadIfNecessary();
     }
 
     if (use_new_window) {
@@ -600,7 +601,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
       browser->window()->Show();
     }
     NotifySessionServiceOfRestoredTabs(browser, browser->tab_count());
-    FinishedTabCreation(true, use_new_window);
+
+    // Since FinishedTabCreation() is not called here, |this| will leak if we
+    // are not in sychronous mode.
+    DCHECK(synchronous_);
   }
 
   ~SessionRestoreImpl() {
