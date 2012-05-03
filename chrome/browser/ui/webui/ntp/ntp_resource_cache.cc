@@ -50,9 +50,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/sys_color_change_listener.h"
 
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #elif defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bar_gtk.h"
