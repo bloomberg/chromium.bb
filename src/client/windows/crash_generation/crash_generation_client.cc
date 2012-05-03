@@ -167,6 +167,23 @@ bool CrashGenerationClient::Register() {
   return success;
 }
 
+bool CrashGenerationClient::RequestUpload(DWORD crash_id) {
+  HANDLE pipe = ConnectToServer();
+  if (!pipe) {
+    return false;
+  }
+
+  CustomClientInfo custom_info;
+  ProtocolMessage msg(MESSAGE_TAG_UPLOAD_REQUEST, crash_id,
+                      static_cast<MINIDUMP_TYPE>(NULL), NULL, NULL, NULL,
+                      custom_info, NULL, NULL, NULL);
+  DWORD bytes_count = 0;
+  bool success = WriteFile(pipe, &msg, sizeof(msg), &bytes_count, NULL);
+
+  CloseHandle(pipe);
+  return success;
+}
+
 HANDLE CrashGenerationClient::ConnectToServer() {
   HANDLE pipe = ConnectToPipe(pipe_name_.c_str(),
                               kPipeDesiredAccess,

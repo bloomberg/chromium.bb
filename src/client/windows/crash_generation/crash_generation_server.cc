@@ -424,9 +424,10 @@ void CrashGenerationServer::HandleReadDoneState() {
   if (msg_.tag == MESSAGE_TAG_UPLOAD_REQUEST) {
     if (upload_request_callback_)
       upload_request_callback_(upload_context_, msg_.id);
+    EnterStateImmediately(IPC_SERVER_STATE_DISCONNECTING);
     return;
   }
-  
+
   scoped_ptr<ClientInfo> client_info(
       new ClientInfo(this,
                      msg_.id,

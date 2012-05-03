@@ -312,6 +312,10 @@ ExceptionHandler::~ExceptionHandler() {
   }
 }
 
+bool ExceptionHandler::RequestUpload(DWORD crash_id) {
+  return crash_generation_client_->RequestUpload(crash_id);
+}
+
 // static
 DWORD ExceptionHandler::ExceptionHandlerThreadMain(void* lpParameter) {
   ExceptionHandler* self = reinterpret_cast<ExceptionHandler *>(lpParameter);
