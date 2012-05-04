@@ -257,9 +257,14 @@ void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
     // rendered with incorrect gamma when using the fade shader. Draw the text
     // to a layer and restore it faded by drawing a rect in kDstIn_Mode mode.
     //
+    // Skip this when there is a looper which seems not working well with
+    // deferred paint. Currently a looper is only used for text shadows.
+    //
     // TODO(asvitkine): Remove this work-around once the Skia bug is fixed.
     //                  http://code.google.com/p/skia/issues/detail?id=590
-    if (!paint_.isLCDRenderText() && paint_.getShader()) {
+    if (!paint_.isLCDRenderText() &&
+        paint_.getShader() &&
+        !paint_.getLooper()) {
       deferred_fade_shader_ = paint_.getShader();
       paint_.setShader(NULL);
       canvas_skia_->saveLayer(&bounds_, NULL);
