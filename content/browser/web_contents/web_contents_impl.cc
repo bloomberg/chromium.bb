@@ -2337,10 +2337,18 @@ void WebContentsImpl::DocumentOnLoadCompletedInMainFrame(
       content::Details<int>(&page_id));
 }
 
-void WebContentsImpl::RequestOpenURL(const GURL& url,
+void WebContentsImpl::RequestOpenURL(RenderViewHost* rvh,
+                                     const GURL& url,
                                      const content::Referrer& referrer,
                                      WindowOpenDisposition disposition,
                                      int64 source_frame_id) {
+  // If this came from a swapped out RenderViewHost, we only allow the request
+  // if we are still in the same BrowsingInstance.
+  if (static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out() &&
+      !rvh->GetSiteInstance()->IsRelatedSiteInstance(GetSiteInstance())) {
+    return;
+  }
+
   // Delegate to RequestTransferURL because this is just the generic
   // case where |old_request_id| is empty.
   RequestTransferURL(url, referrer, disposition, source_frame_id,

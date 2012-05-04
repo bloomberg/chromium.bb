@@ -1258,7 +1258,7 @@ void RenderViewHostImpl::OnMsgOpenURL(const GURL& url,
             GetProcess()->GetID(), false, &validated_url);
 
   delegate_->RequestOpenURL(
-      validated_url, referrer, disposition, source_frame_id);
+      this, validated_url, referrer, disposition, source_frame_id);
 }
 
 void RenderViewHostImpl::OnMsgDidContentsPreferredSizeChange(
@@ -1490,6 +1490,8 @@ bool RenderViewHostImpl::IsFullscreen() const {
 }
 
 void RenderViewHostImpl::OnMsgFocus() {
+  // Note: We allow focus and blur from swapped out RenderViewHosts, even when
+  // the active RenderViewHost is in a different BrowsingInstance (e.g., WebUI).
   delegate_->Activate();
 }
 

@@ -282,7 +282,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DocumentOnLoadCompletedInMainFrame(
       content::RenderViewHost* render_view_host,
       int32 page_id) OVERRIDE;
-  virtual void RequestOpenURL(const GURL& url,
+  virtual void RequestOpenURL(content::RenderViewHost* rvh,
+                              const GURL& url,
                               const content::Referrer& referrer,
                               WindowOpenDisposition disposition,
                               int64 source_frame_id) OVERRIDE;

@@ -284,7 +284,8 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
       int32 page_id) {}
 
   // The page wants to open a URL with the specified disposition.
-  virtual void RequestOpenURL(const GURL& url,
+  virtual void RequestOpenURL(RenderViewHost* rvh,
+                              const GURL& url,
                               const content::Referrer& referrer,
                               WindowOpenDisposition disposition,
                               int64 source_frame_id) {}
