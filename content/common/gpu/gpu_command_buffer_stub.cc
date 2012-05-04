@@ -58,6 +58,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       gpu_preference_(gpu_preference),
       route_id_(route_id),
       software_(software),
+      client_has_memory_allocation_changed_callback_(false),
       last_flush_count_(0),
       allocation_(GpuMemoryAllocation::INVALID_RESOURCE_SIZE,
                   GpuMemoryAllocation::kHasFrontbuffer |
