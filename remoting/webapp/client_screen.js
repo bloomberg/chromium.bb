@@ -526,7 +526,8 @@ remoting.connectMe2MeWithPin = function() {
   remoting.hostJid = host.jabberId;
   remoting.hostPublicKey = host.publicKey;
   document.getElementById('connected-to').innerText = host.hostName;
-  document.title = document.title + ': ' + host.hostName;
+  document.title = chrome.i18n.getMessage('PRODUCT_NAME') + ': ' +
+      host.hostName;
 
   remoting.WcsLoader.load(connectMe2MeWithAccessToken_);
 };
