@@ -61,6 +61,9 @@ bool DetectClipping(const speech::AudioChunk& chunk) {
   return false;
 }
 
+void KeepAudioControllerRefcountedForDtor(scoped_refptr<AudioInputController>) {
+}
+
 }  // namespace
 
 // TODO(primiano) Create(...) is transitional (until we fix speech input
@@ -178,6 +181,10 @@ SpeechRecognizerImpl::recognition_engine() const {
 
 SpeechRecognizerImpl::~SpeechRecognizerImpl() {
   endpointer_.EndSession();
+  if (audio_controller_.get()) {
+    audio_controller_->Close(base::Bind(&KeepAudioControllerRefcountedForDtor,
+                                        audio_controller_));
+  }
 }
 
 // Invoked in the audio thread.

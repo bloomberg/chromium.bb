@@ -42,7 +42,8 @@ SpeechRecognitionManager* SpeechRecognitionManager::GetInstance() {
 namespace speech {
 
 SpeechRecognitionManagerImpl* SpeechRecognitionManagerImpl::GetInstance() {
-  return Singleton<SpeechRecognitionManagerImpl>::get();
+  return Singleton<SpeechRecognitionManagerImpl,
+                   LeakySingletonTraits<SpeechRecognitionManagerImpl> >::get();
 }
 
 SpeechRecognitionManagerImpl::SpeechRecognitionManagerImpl()
@@ -111,7 +112,7 @@ void SpeechRecognitionManagerImpl::StartSession(int session_id) {
     delegate_->CheckRecognitionIsAllowed(
         session_id,
         base::Bind(&SpeechRecognitionManagerImpl::RecognitionAllowedCallback,
-                   base::Unretained(this)));
+                   Unretained(this)));
 }
 
 void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
@@ -302,12 +303,26 @@ void SpeechRecognitionManagerImpl::AbortAllSessionsForListener(
     SpeechRecognitionEventListener* listener) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  // AbortSession is asynchronous and the session will not be removed from the
-  // collection while we are iterating over it.
+  // This method ungracefully destroys sessions (and the underlying recognizer)
+  // for the listener. There is no time to call Abort (that is asynchronous) on
+  // them since the listener itself is likely to be destroyed after the call,
+  // and in that case we won't deliver events to a freed listener.
+  // Thus we assume that the dtors of Sessions (and in turn dtors of all
+  // contained objects) are designed to dispose resources cleanly.
+  std::vector<int> sessions_for_listener;
+
+  // Copy coressponding session ids.
   for (SessionsTable::iterator it = sessions_.begin(); it != sessions_.end();
        ++it) {
     if (it->second.event_listener == listener)
-      AbortSession(it->first);
+      sessions_for_listener.push_back(it->first);
+  }
+  // Remove them.
+  for (size_t i = 0; i < sessions_for_listener.size(); ++i) {
+    const int session_id = sessions_for_listener[i];
+    if (interactive_session_id_ == session_id)
+      interactive_session_id_ = kSessionIDInvalid;
+    sessions_.erase(session_id);
   }
 }
 
@@ -336,7 +351,9 @@ void SpeechRecognitionManagerImpl::DispatchEvent(int session_id,
     DCHECK_NE(interactive_session_id_, session_id);
   }
 
-  session.state = ExecuteTransitionAndGetNextState(session, event_args);
+  FSMState next_state = ExecuteTransitionAndGetNextState(session, event_args);
+  if (SessionExists(session_id))  // Session might be deleted.
+    session.state = next_state;
 
   is_dispatching_event_ = false;
 }
@@ -596,7 +613,7 @@ void SpeechRecognitionManagerImpl::ShowAudioInputSettings() {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&SpeechRecognitionManagerImpl::ShowAudioInputSettings,
-                   base::Unretained(this)));
+                   Unretained(this)));
     return;
   }
 
