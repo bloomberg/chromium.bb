@@ -263,6 +263,10 @@ void BackgroundModeManager::LaunchBackgroundApplication(
                            NEW_FOREGROUND_TAB);
 }
 
+bool BackgroundModeManager::IsBackgroundModeActiveForTest() {
+  return in_background_mode_;
+}
+
 int BackgroundModeManager::NumberOfBackgroundModeData() {
   return background_mode_data_.size();
 }
@@ -290,10 +294,11 @@ void BackgroundModeManager::Observe(
 
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
         Extension* extension = content::Details<Extension>(details).ptr();
-        if (BackgroundApplicationListModel::IsBackgroundApp(*extension)) {
+        Profile* profile = content::Source<Profile>(source).ptr();
+        if (BackgroundApplicationListModel::IsBackgroundApp(
+                *extension, profile)) {
           // Extensions loaded after the ExtensionsService is ready should be
           // treated as new installs.
-          Profile* profile = content::Source<Profile>(source).ptr();
           if (profile->GetExtensionService()->is_ready())
             OnBackgroundAppInstalled(extension);
         }
@@ -537,6 +542,11 @@ void BackgroundModeManager::StartBackgroundMode() {
 
   // Display a status icon to exit Chrome.
   InitStatusTrayIcon();
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_BACKGROUND_MODE_CHANGED,
+      content::Source<BackgroundModeManager>(this),
+      content::Details<bool>(&in_background_mode_));
 }
 
 void BackgroundModeManager::InitStatusTrayIcon() {
@@ -556,6 +566,10 @@ void BackgroundModeManager::EndBackgroundMode() {
   BrowserList::EndKeepAlive();
 
   RemoveStatusTrayIcon();
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_BACKGROUND_MODE_CHANGED,
+      content::Source<BackgroundModeManager>(this),
+      content::Details<bool>(&in_background_mode_));
 }
 
 void BackgroundModeManager::EnableBackgroundMode() {

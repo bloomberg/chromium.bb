@@ -17,8 +17,9 @@
 
 class Profile;
 
-// Model for list of Background Applications, that is, Extensions with
-// kBackgroundPermission set, associated with a Profile.
+// Model for list of Background Applications associated with a Profile (i.e.
+// extensions with kBackgroundPermission set, or hosted apps with a
+// BackgroundContents).
 class BackgroundApplicationListModel : public content::NotificationObserver {
  public:
   // Observer is informed of changes to the model.  Users of the
@@ -66,7 +67,8 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
   const Extension* GetExtension(int position) const;
 
   // Returns true if the passed extension is a background app.
-  static bool IsBackgroundApp(const Extension& extension);
+  static bool IsBackgroundApp(const Extension& extension,
+                              Profile* profile);
 
   // Dissociate observer from this model.
   void RemoveObserver(Observer* observer);

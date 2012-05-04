@@ -200,6 +200,17 @@ enum NotificationType {
   // and the details are the BackgroundContents.
   NOTIFICATION_BACKGROUND_CONTENTS_TERMINATED,
 
+  // The background contents associated with a hosted app has changed (either
+  // a new background contents has been created, or an existing background
+  // contents has closed). The source is the parent Profile, and the details
+  // are the BackgroundContentsService.
+  NOTIFICATION_BACKGROUND_CONTENTS_SERVICE_CHANGED,
+
+  // Chrome has entered/exited background mode. The source is the
+  // BackgroundModeManager and the details are a boolean value which is set to
+  // true if Chrome is now in background mode.
+  NOTIFICATION_BACKGROUND_MODE_CHANGED,
+
   // This is sent when a login prompt is shown.  The source is the
   // Source<NavigationController> for the tab in which the prompt is shown.
   // Details are a LoginNotificationDetails which provide the LoginHandler

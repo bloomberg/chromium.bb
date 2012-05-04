@@ -6,6 +6,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
+#include "chrome/browser/background/background_mode_manager.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,6 +16,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
 #include "content/test/test_notification_tracker.h"
 #include "net/base/mock_host_resolver.h"
 
@@ -42,6 +45,33 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
     }
     *app_dir = app_dir_.path();
     return true;
+  }
+
+  bool WaitForBackgroundMode(bool expected_background_mode) {
+#if defined(OS_CHROMEOS)
+    // BackgroundMode is not supported on chromeos, so we should test the
+    // behavior of BackgroundContents, but not the background mode state itself.
+    return true;
+#else
+    BackgroundModeManager* manager =
+        g_browser_process->background_mode_manager();
+    // If background mode is disabled on this platform (e.g. cros), then skip
+    // this check.
+    if (!manager || !manager->IsBackgroundModePrefEnabled()) {
+      DLOG(WARNING) << "Skipping check - background mode disabled";
+      return true;
+    }
+    if (manager->IsBackgroundModeActiveForTest() == expected_background_mode)
+      return true;
+
+    // We are not currently in the expected state - wait for the state to
+    // change.
+    ui_test_utils::WindowedNotificationObserver watcher(
+        chrome::NOTIFICATION_BACKGROUND_MODE_CHANGED,
+        content::NotificationService::AllSources());
+    watcher.Wait();
+    return manager->IsBackgroundModeActiveForTest() == expected_background_mode;
+#endif
   }
 
  private:
@@ -79,7 +109,12 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, MAYBE_Basic) {
   FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
   ASSERT_TRUE(LoadExtension(app_dir));
+  // Background mode should not be active until a background page is created.
+  ASSERT_TRUE(WaitForBackgroundMode(false));
   ASSERT_TRUE(RunExtensionTest("app_background_page/basic")) << message_;
+  // The test closes the background contents, so we should fall back to no
+  // background mode at the end.
+  ASSERT_TRUE(WaitForBackgroundMode(false));
 }
 
 // Crashy, http://crbug.com/69215.
@@ -108,6 +143,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_LacksPermission) {
   ASSERT_TRUE(LoadExtension(app_dir));
   ASSERT_TRUE(RunExtensionTest("app_background_page/lacks_permission"))
       << message_;
+  ASSERT_TRUE(WaitForBackgroundMode(false));
 }
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
@@ -137,7 +173,12 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
 
   FilePath app_dir;
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
+  // Background mode should not be active now because no background app was
+  // loaded.
   ASSERT_TRUE(LoadExtension(app_dir));
+  // Background mode be active now because a background page was created when
+  // the app was loaded.
+  ASSERT_TRUE(WaitForBackgroundMode(true));
 
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(
@@ -322,4 +363,50 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_OpenPopupFromBGPage) {
   ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
   ASSERT_TRUE(LoadExtension(app_dir));
   ASSERT_TRUE(RunExtensionTest("app_background_page/bg_open")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenThenClose) {
+  host_resolver()->AddRule("a.com", "127.0.0.1");
+  ASSERT_TRUE(StartTestServer());
+
+  std::string app_manifest = base::StringPrintf(
+      "{"
+      "  \"name\": \"App\","
+      "  \"version\": \"0.1\","
+      "  \"manifest_version\": 2,"
+      "  \"app\": {"
+      "    \"urls\": ["
+      "      \"http://a.com/\""
+      "    ],"
+      "    \"launch\": {"
+      "      \"web_url\": \"http://a.com:%d/\""
+      "    }"
+      "  },"
+      "  \"permissions\": [\"background\"]"
+      "}",
+      test_server()->host_port_pair().port());
+
+  FilePath app_dir;
+  ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
+  ASSERT_TRUE(LoadExtension(app_dir));
+  // There isn't a background page loaded initially.
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_FALSE(
+      BackgroundContentsServiceFactory::GetForProfile(browser()->profile())->
+          GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
+  // Background mode should not be active until a background page is created.
+  ASSERT_TRUE(WaitForBackgroundMode(false));
+  ASSERT_TRUE(RunExtensionTest("app_background_page/basic_open")) << message_;
+  // Background mode should be active now because a background page was created.
+  ASSERT_TRUE(WaitForBackgroundMode(true));
+  ASSERT_TRUE(
+      BackgroundContentsServiceFactory::GetForProfile(browser()->profile())->
+          GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
+  // Now close the BackgroundContents.
+  ASSERT_TRUE(RunExtensionTest("app_background_page/basic_close")) << message_;
+  // Background mode should no longer be active.
+  ASSERT_TRUE(WaitForBackgroundMode(false));
+  ASSERT_FALSE(
+      BackgroundContentsServiceFactory::GetForProfile(browser()->profile())->
+          GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
 }

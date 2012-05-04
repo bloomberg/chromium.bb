@@ -11,6 +11,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background/background_mode_manager.h"
+#include "chrome/browser/background/background_contents_service.h"
+#include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -79,8 +81,10 @@ void GetServiceApplications(ExtensionService* service,
        cursor != extensions->end();
        ++cursor) {
     const Extension* extension = *cursor;
-    if (BackgroundApplicationListModel::IsBackgroundApp(*extension))
+    if (BackgroundApplicationListModel::IsBackgroundApp(*extension,
+                                                        service->profile())) {
       applications_result->push_back(extension);
+    }
   }
 
   // Walk the list of terminated extensions also (just because an extension
@@ -90,8 +94,10 @@ void GetServiceApplications(ExtensionService* service,
        cursor != extensions->end();
        ++cursor) {
     const Extension* extension = *cursor;
-    if (BackgroundApplicationListModel::IsBackgroundApp(*extension))
+    if (BackgroundApplicationListModel::IsBackgroundApp(*extension,
+                                                        service->profile())) {
       applications_result->push_back(extension);
+    }
   }
 
   std::string locale = g_browser_process->GetApplicationLocale();
@@ -167,6 +173,9 @@ BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
                  content::Source<Profile>(profile));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_BACKGROUND_CONTENTS_SERVICE_CHANGED,
+                 content::Source<Profile>(profile));
   ExtensionService* service = profile->GetExtensionService();
   if (service && service->is_ready())
     Update();
@@ -178,7 +187,7 @@ void BackgroundApplicationListModel::AddObserver(Observer* observer) {
 
 void BackgroundApplicationListModel::AssociateApplicationData(
     const Extension* extension) {
-  DCHECK(IsBackgroundApp(*extension));
+  DCHECK(IsBackgroundApp(*extension, profile_));
   Application* application = FindApplication(extension);
   if (!application) {
     // App position is used as a dynamic command and so must be less than any
@@ -250,8 +259,41 @@ int BackgroundApplicationListModel::GetPosition(
 
 // static
 bool BackgroundApplicationListModel::IsBackgroundApp(
-    const Extension& extension) {
-  return extension.HasAPIPermission(ExtensionAPIPermission::kBackground);
+    const Extension& extension, Profile* profile) {
+  // An extension is a "background app" if it has the "background API"
+  // permission, and meets one of the following criteria:
+  // 1) It is an extension (not a hosted app).
+  // 2) It is a hosted app, and has a background contents registered or in the
+  //    manifest.
+
+  // Not a background app if we don't have the background permission.
+  if (!extension.HasAPIPermission(ExtensionAPIPermission::kBackground))
+    return false;
+
+  // Extensions and packaged apps with background permission are always treated
+  // as background apps.
+  if (!extension.is_hosted_app())
+    return true;
+
+  // Hosted apps with manifest-provided background pages are background apps.
+  if (extension.has_background_page())
+    return true;
+
+  BackgroundContentsService* service =
+      BackgroundContentsServiceFactory::GetForProfile(profile);
+  string16 app_id = ASCIIToUTF16(extension.id());
+  // If we have an active or registered background contents for this app, then
+  // it's a background app. This covers the cases where the app has created its
+  // background contents, but it hasn't navigated yet, or the background
+  // contents crashed and hasn't yet been restarted - in both cases we still
+  // want to treat the app as a background app.
+  if (service->GetAppBackgroundContents(app_id) ||
+      service->HasRegisteredBackgroundContents(app_id)) {
+    return true;
+  }
+
+  // Doesn't meet our criteria, so it's not a background app.
+  return false;
 }
 
 void BackgroundApplicationListModel::Observe(
@@ -281,6 +323,9 @@ void BackgroundApplicationListModel::Observe(
           content::Details<UpdatedExtensionPermissionsInfo>(details)->
               permissions);
       break;
+    case chrome::NOTIFICATION_BACKGROUND_CONTENTS_SERVICE_CHANGED:
+      Update();
+      break;
     default:
       NOTREACHED() << "Received unexpected notification";
   }
@@ -295,14 +340,14 @@ void BackgroundApplicationListModel::SendApplicationDataChangedNotifications(
 void BackgroundApplicationListModel::OnExtensionLoaded(
     const Extension* extension) {
   // We only care about extensions that are background applications
-  if (!IsBackgroundApp(*extension))
+  if (!IsBackgroundApp(*extension, profile_))
     return;
   AssociateApplicationData(extension);
 }
 
 void BackgroundApplicationListModel::OnExtensionUnloaded(
     const Extension* extension) {
-  if (!IsBackgroundApp(*extension))
+  if (!IsBackgroundApp(*extension, profile_))
     return;
   Update();
   DissociateApplicationData(extension);
@@ -315,11 +360,11 @@ void BackgroundApplicationListModel::OnExtensionPermissionsUpdated(
   if (permissions->HasAPIPermission(ExtensionAPIPermission::kBackground)) {
     switch (reason) {
       case UpdatedExtensionPermissionsInfo::ADDED:
-        DCHECK(IsBackgroundApp(*extension));
+        DCHECK(IsBackgroundApp(*extension, profile_));
         OnExtensionLoaded(extension);
         break;
       case UpdatedExtensionPermissionsInfo::REMOVED:
-        DCHECK(!IsBackgroundApp(*extension));
+        DCHECK(!IsBackgroundApp(*extension, profile_));
         Update();
         DissociateApplicationData(extension);
         break;

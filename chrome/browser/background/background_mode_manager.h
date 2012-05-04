@@ -45,7 +45,6 @@ class BackgroundModeManager
     : public content::NotificationObserver,
       public BackgroundApplicationListModel::Observer,
       public ProfileInfoCacheObserver,
-      public ProfileKeyedService,
       public ui::SimpleMenuModel::Delegate {
  public:
   BackgroundModeManager(CommandLine* command_line,
@@ -63,8 +62,9 @@ class BackgroundModeManager
   int NumberOfBackgroundModeData();
 
  private:
-  friend class TestBackgroundModeManager;
+  friend class AppBackgroundPageApiTest;
   friend class BackgroundModeManagerTest;
+  friend class TestBackgroundModeManager;
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            BackgroundAppLoadUnload);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
@@ -237,6 +237,9 @@ class BackgroundModeManager
   // Returns true if the "Let chrome run in the background" pref is checked.
   // (virtual to allow overriding in tests).
   virtual bool IsBackgroundModePrefEnabled() const;
+
+  // Returns true if background mode is active. Used only by tests.
+  bool IsBackgroundModeActiveForTest();
 
   // Turns off background mode if it's currently enabled.
   void DisableBackgroundMode();
