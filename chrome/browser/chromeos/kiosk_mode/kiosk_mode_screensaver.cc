@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
 
+#include "ash/screensaver/screensaver_view.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/lazy_instance.h"
@@ -11,7 +12,7 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/ui/screensaver_extension_dialog.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -24,6 +25,7 @@ namespace chromeos {
 
 typedef base::Callback<void(
     scoped_refptr<Extension>,
+    Profile*,
     const FilePath&)> UnpackCallback;
 
 class ScreensaverUnpackerClient : public SandboxedExtensionUnpackerClient {
@@ -82,12 +84,14 @@ void ScreensaverUnpackerClient::LoadScreensaverExtension(
     return;
   }
 
+  Profile* default_profile = ProfileManager::GetDefaultProfile();
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
       base::Bind(
           unpack_callback_,
           screensaver_extension,
+          default_profile,
           extension_base_path));
 }
 
@@ -152,6 +156,7 @@ void KioskModeScreensaver::ScreensaverPathCallback(
 
 void KioskModeScreensaver::SetupScreensaver(
     scoped_refptr<Extension> extension,
+    Profile* default_profile,
     const FilePath& extension_base_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   extension_base_path_ = extension_base_path;
@@ -173,7 +178,13 @@ void KioskModeScreensaver::SetupScreensaver(
   chromeos::DBusThreadManager::Get()->
       GetPowerManagerClient()->RequestActiveNotification();
 
-  browser::ShowScreensaverDialog(extension);
+  // Add the extension to the extension service and display the screensaver.
+  if (default_profile) {
+    default_profile->GetExtensionService()->AddExtension(extension);
+    ash::ShowScreensaver(extension->GetFullLaunchURL());
+  } else {
+    LOG(ERROR) << "Couldn't get default profile. Unable to load screensaver!";
+  }
 }
 
 // NotificationObserver overrides:
@@ -188,7 +199,7 @@ void KioskModeScreensaver::Observe(
   if (power_manager->HasObserver(this))
     power_manager->RemoveObserver(this);
 
-  browser::CloseScreensaverDialog();
+  ash::CloseScreensaver();
   ShutdownKioskModeScreensaver();
 }
 
@@ -203,7 +214,7 @@ void KioskModeScreensaver::ActiveNotify() {
   } else {
     // Remove the screensaver so the user can at least use the underlying
     // login screen to be able to log in.
-    browser::CloseScreensaverDialog();
+    ash::CloseScreensaver();
   }
 }
 

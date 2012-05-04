@@ -67,7 +67,7 @@ class KioskModeScreensaverTest : public testing::Test {
         .Times(AnyNumber());
 
     screensaver_ = new KioskModeScreensaver();
-    screensaver_->SetupScreensaver(NULL, FilePath());
+    screensaver_->SetupScreensaver(NULL, NULL, FilePath());
   }
 
   virtual void TearDown() OVERRIDE {

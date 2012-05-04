@@ -845,8 +845,6 @@
         'browser/chromeos/ui/brightness_bubble.h',
         'browser/chromeos/ui/idle_logout_dialog_view.cc',
         'browser/chromeos/ui/idle_logout_dialog_view.h',
-        'browser/chromeos/ui/screensaver_extension_dialog.cc',
-        'browser/chromeos/ui/screensaver_extension_dialog.h',
         'browser/chromeos/ui/setting_level_bubble.cc',
         'browser/chromeos/ui/setting_level_bubble.h',
         'browser/chromeos/ui/setting_level_bubble_view.cc',
