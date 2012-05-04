@@ -83,6 +83,18 @@ void OfflineResourceThrottle::WillStartRequest(bool* defer) {
 
   DVLOG(1) << "WillStartRequest: this=" << this << ", url=" << request_->url();
 
+  const GURL* url = &(request_->url());
+  const GURL* first_party = &(request_->first_party_for_cookies());
+
+  // Anticipate a client-side HSTS based redirect from HTTP to HTTPS, and
+  // ask the appcache about the HTTPS url instead of the HTTP url.
+  GURL redirect_url;
+  if (request_->GetHSTSRedirect(&redirect_url)) {
+    if (url->GetOrigin() == first_party->GetOrigin())
+      first_party = &redirect_url;
+    url = &redirect_url;
+  }
+
   DCHECK(appcache_completion_callback_.IsCancelled());
 
   appcache_completion_callback_.Reset(
@@ -90,8 +102,7 @@ void OfflineResourceThrottle::WillStartRequest(bool* defer) {
                  AsWeakPtr()));
   ResourceContext::GetAppCacheService(resource_context_)->
       CanHandleMainResourceOffline(
-          request_->url(),
-          request_->first_party_for_cookies(),
+          *url, *first_party,
           appcache_completion_callback_.callback());
 
   *defer = true;
