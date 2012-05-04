@@ -89,7 +89,7 @@ FileType.types = [
   // Others
   {type: 'document', icon: 'pdf', name: 'PDF_DOCUMENT_FILE_TYPE',
    subtype: 'PDF', pattern: /\.pdf$/i},
-  {type: 'document', icon: 'html', name: 'HTML_DOCUMENT_FILE_TYPE',
+  {type: 'document', icon: 'generic', name: 'HTML_DOCUMENT_FILE_TYPE',
    subtype: 'HTML', pattern: /\.(html?|mht|mhtml)$/i},
   {type: 'document', icon: 'word', name: 'WORD_DOCUMENT_FILE_TYPE',
    subtype: 'Word', pattern: /\.(doc|docx)$/i},
