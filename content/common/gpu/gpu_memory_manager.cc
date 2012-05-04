@@ -26,7 +26,27 @@ bool IsInSameContextShareGroupAsAnyOf(
   return false;
 }
 
-void AssignMemoryAllocations(std::vector<GpuCommandBufferStubBase*>& stubs,
+#if defined(OS_ANDROID)
+size_t CalculateBonusMemoryAllocationBasedOnSize(gfx::Size size) {
+  const int viewportMultiplier = 16;
+  const unsigned int componentsPerPixel = 4; // GraphicsContext3D::RGBA
+  const unsigned int bytesPerComponent = 1; // sizeof(GC3Dubyte)
+
+  if (size.IsEmpty())
+    return 0;
+
+  size_t limit = viewportMultiplier * size.width() * size.height() *
+                     componentsPerPixel * bytesPerComponent;
+  if (limit < GpuMemoryManager::kMinimumAllocationForTab)
+    limit = GpuMemoryManager::kMinimumAllocationForTab;
+  else if (limit > GpuMemoryManager::kMaximumAllocationForTabs)
+    limit = GpuMemoryManager::kMaximumAllocationForTabs;
+  return limit - GpuMemoryManager::kMinimumAllocationForTab;
+}
+#endif
+
+void AssignMemoryAllocations(
+    std::vector<GpuCommandBufferStubBase*>& stubs,
     GpuMemoryAllocation allocation) {
   for (std::vector<GpuCommandBufferStubBase*>::iterator it = stubs.begin();
       it != stubs.end(); ++it) {
@@ -162,17 +182,24 @@ void GpuMemoryManager::Manage() {
       stubs_without_surface_hibernated.push_back(stub);
   }
 
-  // Calculate memory allocation size in bytes given to each stub, by sharing
-  // global limit equally among those that need it.
+  size_t bonus_allocation = 0;
+#if !defined(OS_ANDROID)
+  // Calculate bonus allocation by splitting remainder of global limit equally
+  // after giving out the minimum to those that need it.
   size_t num_stubs_need_mem = stubs_with_surface_foreground.size() +
                               stubs_without_surface_foreground.size() +
                               stubs_without_surface_background.size();
   size_t base_allocation_size = kMinimumAllocationForTab * num_stubs_need_mem;
-  size_t bonus_allocation = 0;
   if (base_allocation_size < kMaximumAllocationForTabs &&
       !stubs_with_surface_foreground.empty())
     bonus_allocation = (kMaximumAllocationForTabs - base_allocation_size) /
                            stubs_with_surface_foreground.size();
+#else
+  // On android, calculate bonus allocation based on surface size.
+  if (!stubs_with_surface_foreground.empty())
+    bonus_allocation = CalculateBonusMemoryAllocationBasedOnSize(
+        stubs_with_surface_foreground[0]->GetSurfaceSize());
+#endif
 
   // Now give out allocations to everyone.
   AssignMemoryAllocations(stubs_with_surface_foreground,

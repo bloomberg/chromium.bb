@@ -224,6 +224,10 @@ void ImageTransportHelper::Resize(gfx::Size size) {
 
   surface_->OnResize(size);
 
+#if defined(OS_ANDROID)
+  manager_->gpu_memory_manager()->ScheduleManage();
+#endif
+
 #if defined(OS_WIN)
   Decoder()->MakeCurrent();
   SetSwapInterval();

@@ -33,6 +33,9 @@ class FakeCommandBufferStub : public GpuCommandBufferStubBase {
     return surface_state_;
   }
 
+  virtual gfx::Size GetSurfaceSize() const {
+    return gfx::Size();
+  }
   virtual bool IsInSameContextShareGroup(
       const GpuCommandBufferStubBase& stub) const {
     return false;
@@ -64,6 +67,9 @@ class FakeCommandBufferStubWithoutSurface : public GpuCommandBufferStubBase {
     return *surface_state_;
   }
 
+  virtual gfx::Size GetSurfaceSize() const {
+    return gfx::Size();
+  }
   virtual bool IsInSameContextShareGroup(
       const GpuCommandBufferStubBase& stub) const {
     return std::find(share_group_.begin(),

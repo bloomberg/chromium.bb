@@ -67,6 +67,8 @@ class CONTENT_EXPORT GpuCommandBufferStubBase {
   virtual bool has_surface_state() const = 0;
   virtual const SurfaceState& surface_state() const = 0;
 
+  virtual gfx::Size GetSurfaceSize() const = 0;
+
   virtual bool IsInSameContextShareGroup(
       const GpuCommandBufferStubBase& other) const = 0;
 
@@ -119,6 +121,9 @@ class GpuCommandBufferStub
   virtual bool has_surface_state() const OVERRIDE;
   virtual const GpuCommandBufferStubBase::SurfaceState& surface_state() const
       OVERRIDE;
+
+  // Returns surface size.
+  virtual gfx::Size GetSurfaceSize() const OVERRIDE;
 
   // Returns true iff |other| is in the same context share group as this stub.
   virtual bool IsInSameContextShareGroup(
