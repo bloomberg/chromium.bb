@@ -29,7 +29,8 @@ class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
   bool LaunchLoader(const std::string& loader_channel_id);
 
   bool LaunchDebugExceptionHandler(int32 pid,
-                                   base::ProcessHandle process_handle);
+                                   base::ProcessHandle process_handle,
+                                   const std::string& startup_info);
 
   // Stop the broker process.
   void StopBroker();

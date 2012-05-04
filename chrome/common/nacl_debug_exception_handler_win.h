@@ -12,6 +12,7 @@
 
 void NaClStartDebugExceptionHandlerThread(
     base::ProcessHandle nacl_process,
+    const std::string& startup_info,
     base::MessageLoopProxy* message_loop,
     const base::Callback<void(bool)>& on_connected);
 

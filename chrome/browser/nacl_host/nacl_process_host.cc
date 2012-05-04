@@ -934,10 +934,10 @@ bool NaClProcessHost::AttachDebugExceptionHandler(const std::string& info,
   // the 32-bit browser process to run the debug exception handler.
   if (RunningOnWOW64()) {
     return NaClBrokerService::GetInstance()->LaunchDebugExceptionHandler(
-               weak_factory_.GetWeakPtr(), nacl_pid, process_handle);
+               weak_factory_.GetWeakPtr(), nacl_pid, process_handle, info);
   } else {
     NaClStartDebugExceptionHandlerThread(
-        process_handle.Take(),
+        process_handle.Take(), info,
         base::MessageLoopProxy::current(),
         base::Bind(&NaClProcessHost::OnDebugExceptionHandlerLaunchedByBroker,
                    weak_factory_.GetWeakPtr()));

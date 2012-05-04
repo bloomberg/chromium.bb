@@ -15,9 +15,11 @@ namespace {
 class DebugExceptionHandler : public base::PlatformThread::Delegate {
  public:
   DebugExceptionHandler(base::ProcessHandle nacl_process,
+                        const std::string& startup_info,
                         base::MessageLoopProxy* message_loop,
                         const base::Callback<void(bool)>& on_connected)
       : nacl_process_(nacl_process),
+        startup_info_(startup_info),
         message_loop_(message_loop),
         on_connected_(on_connected) {
   }
@@ -41,14 +43,19 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
     message_loop_->PostTask(FROM_HERE, base::Bind(on_connected_, attached));
 
     if (attached) {
-      DWORD exit_code;
-      NaClDebugLoop(nacl_process_, &exit_code);
+      // TODO(mseaborn): Clean up the NaCl side to remove the need for
+      // a const_cast here.
+      NaClDebugExceptionHandlerRun(
+          nacl_process_,
+          reinterpret_cast<void*>(const_cast<char*>(startup_info_.data())),
+          startup_info_.size());
     }
     delete this;
   }
 
  private:
   base::win::ScopedHandle nacl_process_;
+  std::string startup_info_;
   base::MessageLoopProxy* message_loop_;
   base::Callback<void(bool)> on_connected_;
 
@@ -59,12 +66,13 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
 
 void NaClStartDebugExceptionHandlerThread(
     base::ProcessHandle nacl_process,
+    const std::string& startup_info,
     base::MessageLoopProxy* message_loop,
     const base::Callback<void(bool)>& on_connected) {
   // The new PlatformThread will take ownership of the
   // DebugExceptionHandler object, which will delete itself on exit.
   DebugExceptionHandler* handler = new DebugExceptionHandler(
-      nacl_process, message_loop, on_connected);
+      nacl_process, startup_info, message_loop, on_connected);
   if (!base::PlatformThread::CreateNonJoinable(0, handler)) {
     on_connected.Run(false);
     delete handler;

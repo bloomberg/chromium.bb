@@ -73,7 +73,8 @@ void NaClBrokerHost::OnLoaderLaunched(const std::string& loader_channel_id,
 }
 
 bool NaClBrokerHost::LaunchDebugExceptionHandler(
-    int32 pid, base::ProcessHandle process_handle) {
+    int32 pid, base::ProcessHandle process_handle,
+    const std::string& startup_info) {
   base::ProcessHandle broker_process = process_->GetData().handle;
   base::ProcessHandle handle_in_broker_process;
   if (!DuplicateHandle(::GetCurrentProcess(), process_handle,
@@ -81,7 +82,7 @@ bool NaClBrokerHost::LaunchDebugExceptionHandler(
                        0, /* bInheritHandle= */ FALSE, DUPLICATE_SAME_ACCESS))
     return false;
   return process_->Send(new NaClProcessMsg_LaunchDebugExceptionHandler(
-      pid, handle_in_broker_process));
+      pid, handle_in_broker_process, startup_info));
 }
 
 void NaClBrokerHost::OnDebugExceptionHandlerLaunched(int32 pid, bool success) {

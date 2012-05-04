@@ -37,7 +37,8 @@ class NaClBrokerService {
 
   bool LaunchDebugExceptionHandler(base::WeakPtr<NaClProcessHost> client,
                                    int32 pid,
-                                   base::ProcessHandle process_handle);
+                                   base::ProcessHandle process_handle,
+                                   const std::string& startup_info);
 
   // Called by NaClBrokerHost to notify the service that a debug
   // exception handler was started.
