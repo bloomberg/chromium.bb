@@ -97,6 +97,8 @@ const LinkTypeMap kLinkTypeMap[] = {
       "http://schemas.google.com/spreadsheets/2006#worksheetsfeed"},
     { Link::EMBED,
       "http://schemas.google.com/docs/2007#embed"},
+    { Link::PRODUCT,
+      "http://schemas.google.com/docs/2007#product"},
     { Link::ICON,
       "http://schemas.google.com/docs/2007#icon"},
 };
@@ -130,6 +132,12 @@ const CategoryTypeMap kCategoryTypeMap[] = {
 // TODO(mukai): make it return false in case of invalid |url_string|.
 bool GetGURLFromString(const base::StringPiece& url_string, GURL* result) {
   *result = GURL(url_string.as_string());
+  return true;
+}
+
+// Converts boolean string values like "true" into bool.
+bool GetBoolFromString(const base::StringPiece& value, bool* result) {
+  *result = (value == "true");
   return true;
 }
 
@@ -786,6 +794,70 @@ bool DocumentFeed::GetNextFeedURL(GURL* url) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// InstalledApp implementation
+
+const char InstalledApp::kInstalledAppNameField[] =
+    "docs$installedAppName";
+const char InstalledApp::kInstalledAppObjectType[] =
+    "docs$installedAppObjectType";
+const char InstalledApp::kInstalledAppSupportsCreate[] =
+    "docs$installedAppSupportsCreate";
+const char InstalledApp::kInstalledAppPrimaryMimeType[] =
+    "docs$installedAppPrimaryMimeType";
+const char InstalledApp::kInstalledAppPrimaryFileExtension[] =
+    "docs$installedAppPrimaryFileExtension";
+const char InstalledApp::kInstalledAppSecondaryMimeType[] =
+    "docs$installedAppSecondaryMimeType";
+const char InstalledApp::kInstalledAppSecondaryFileExtension[] =
+    "docs$installedAppSecondaryFileExtension";
+const char InstalledApp::kLinkField[] = "link";
+const char InstalledApp::kTField[] = "$t";
+
+InstalledApp::InstalledApp() : supports_create_(false) {
+}
+
+InstalledApp::~InstalledApp() {
+}
+
+// static
+bool InstalledApp::GetValueString(const base::Value* value,
+                                  std::string* result) {
+  const base::DictionaryValue* dict = NULL;
+  if (!value->GetAsDictionary(&dict))
+    return false;
+
+  if (!dict->GetString(kTField, result))
+    return false;
+
+  return true;
+}
+
+// static
+void InstalledApp::RegisterJSONConverter(
+    base::JSONValueConverter<InstalledApp>* converter) {
+  converter->RegisterStringField(kInstalledAppNameField,
+                                 &InstalledApp::app_name_);
+  converter->RegisterStringField(kInstalledAppObjectType,
+                                 &InstalledApp::object_type_);
+  converter->RegisterCustomField<bool>(kInstalledAppSupportsCreate,
+                                       &InstalledApp::supports_create_,
+                                       &GetBoolFromString);
+  converter->RegisterRepeatedCustomValue(kInstalledAppPrimaryMimeType,
+                                         &InstalledApp::primary_mimetypes_,
+                                         &GetValueString);
+  converter->RegisterRepeatedCustomValue(kInstalledAppSecondaryMimeType,
+                                         &InstalledApp::secondary_mimetypes_,
+                                         &GetValueString);
+  converter->RegisterRepeatedCustomValue(kInstalledAppPrimaryFileExtension,
+                                         &InstalledApp::primary_extensions_,
+                                         &GetValueString);
+  converter->RegisterRepeatedCustomValue(kInstalledAppSecondaryFileExtension,
+                                         &InstalledApp::secondary_extensions_,
+                                         &GetValueString);
+  converter->RegisterRepeatedMessage(kLinkField, &InstalledApp::links_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // AccountMetadataFeed implementation
 
 const char AccountMetadataFeed::kQuotaBytesTotalField[] =
@@ -794,6 +866,9 @@ const char AccountMetadataFeed::kQuotaBytesUsedField[] =
     "entry.gd$quotaBytesUsed.$t";
 const char AccountMetadataFeed::kLargestChangestampField[] =
     "entry.docs$largestChangestamp.value";
+const char AccountMetadataFeed::kInstalledAppField[] =
+    "entry.docs$installedApp";
+
 
 AccountMetadataFeed::AccountMetadataFeed()
     : quota_bytes_total_(0),
@@ -819,6 +894,8 @@ void AccountMetadataFeed::RegisterJSONConverter(
       kLargestChangestampField,
       &AccountMetadataFeed::largest_changestamp_,
       &base::StringToInt);
+  converter->RegisterRepeatedMessage(kInstalledAppField,
+                                     &AccountMetadataFeed::installed_apps_);
 }
 
 // static

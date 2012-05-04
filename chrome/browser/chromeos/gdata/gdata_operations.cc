@@ -96,6 +96,15 @@ GURL AddStandardUrlParams(const GURL& url) {
   return result;
 }
 
+// Adds additional parameters to metadata feed to include installed 3rd party
+// applications.
+GURL AddMetadataUrlParams(const GURL& url) {
+  GURL result = AddStandardUrlParams(url);
+  result = chrome_browser_net::AppendOrReplaceQueryParameter(
+      result, "include-installed-apps", "true");
+  return result;
+}
+
 // Adds additional parameters for API version, output content type and to show
 // folders in the feed are added to document feed URLs.
 GURL AddFeedUrlParams(const GURL& url, int num_items_to_fetch,
@@ -485,7 +494,7 @@ GetAccountMetadataOperation::GetAccountMetadataOperation(
 GetAccountMetadataOperation::~GetAccountMetadataOperation() {}
 
 GURL GetAccountMetadataOperation::GetURL() const {
-  return AddStandardUrlParams(GURL(kAccountMetadataURL));
+  return AddMetadataUrlParams(GURL(kAccountMetadataURL));
 }
 
 //============================ DownloadFileOperation ===========================

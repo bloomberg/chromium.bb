@@ -273,6 +273,71 @@
                 "kind": "file"
             }
         ],
+        "docs$installedApp": [
+            {
+               "docs$installedAppName": "Drive App 1",
+               "docs$installedAppObjectType": "Drive App Object 1",
+               "docs$installedAppSupportsCreate": "true",
+               "link": [
+                     {
+                      "rel": "http://schemas.google.com/docs/2007#product",
+                      "type": "text/html",
+                      "href": "https://chrome.google.com/webstore/detail/11111111"
+                     }
+               ],
+               "docs$installedAppPrimaryMimeType": [
+                     {
+                      "$t": "application/test_type_1"
+                     },
+                     {
+                      "$t": "application/vnd.google-apps.drive-sdk.11111111"
+                     }
+               ],
+               "docs$installedAppSecondaryMimeType": [
+                     {
+                      "$t": "image/jpeg"
+                     }
+               ],
+               "docs$installedAppPrimaryFileExtension": [
+                     {
+                      "$t": "p1_ext_1"
+                     },
+                     {
+                      "$t": "p1_ext_2"
+                     }
+               ],
+               "docs$installedAppSecondaryFileExtension": [
+                     {
+                      "$t": "s1_ext_1"
+                     }
+               ]
+             },
+             {
+               "docs$installedAppName": "Drive App 2",
+               "docs$installedAppObjectType": "Drive App Object 2",
+               "docs$installedAppSupportsCreate": "false",
+               "link": [
+                     {
+                      "rel": "http://schemas.google.com/docs/2007#product",
+                      "type": "text/html",
+                      "href": "https://chrome.google.com/webstore/detail/22222222"
+                     }
+               ],
+               "docs$installedAppPrimaryMimeType": [
+                     {
+                      "$t": "application/test_type_2"
+                     },
+                     {
+                      "$t": "application/vnd.google-apps.drive-sdk.22222222"
+                     }
+               ],
+               "docs$installedAppPrimaryFileExtension": [
+                     {
+                      "$t": "p2_ext_1"
+                     }
+               ]
+            }
+        ],
         "docs$quotaBytesUsedInTrash": {
             "$t": "123"
         },

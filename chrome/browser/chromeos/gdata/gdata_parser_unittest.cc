@@ -237,7 +237,6 @@ TEST_F(GDataParserTest, DocumentEntryXmlParser) {
   EXPECT_EQ(26562560, entry->file_size());
 }
 
-
 TEST_F(GDataParserTest, AccountMetadataFeedParser) {
   scoped_ptr<Value> document(LoadJSONFile("account_metadata.json"));
   ASSERT_TRUE(document.get());
@@ -249,9 +248,37 @@ TEST_F(GDataParserTest, AccountMetadataFeedParser) {
 
   scoped_ptr<AccountMetadataFeed> feed(
       AccountMetadataFeed::CreateFrom(*document));
+  ASSERT_TRUE(feed.get());
   EXPECT_EQ(GG_LONGLONG(6789012345), feed->quota_bytes_used());
   EXPECT_EQ(GG_LONGLONG(9876543210), feed->quota_bytes_total());
   EXPECT_EQ(654321, feed->largest_changestamp());
+  ASSERT_EQ(2U, feed->installed_apps()->size());
+  const InstalledApp* first_app = feed->installed_apps()[0];
+  const InstalledApp* second_app = feed->installed_apps()[1];
+
+  EXPECT_EQ("Drive App 1", first_app->app_name());
+  EXPECT_EQ("Drive App Object 1", first_app->object_type());
+  EXPECT_TRUE(first_app->supports_create());
+  ASSERT_EQ(2U, first_app->primary_mimetypes()->size());
+  EXPECT_EQ("application/test_type_1",
+            *first_app->primary_mimetypes()->at(0));
+  EXPECT_EQ("application/vnd.google-apps.drive-sdk.11111111",
+            *first_app->primary_mimetypes()->at(1));
+  ASSERT_EQ(1U, first_app->secondary_mimetypes()->size());
+  EXPECT_EQ("image/jpeg", *first_app->secondary_mimetypes()->at(0));
+  ASSERT_EQ(2U, first_app->primary_extensions()->size());
+  EXPECT_EQ("p1_ext_1", *first_app->primary_extensions()->at(0));
+  EXPECT_EQ("p1_ext_2", *first_app->primary_extensions()->at(1));
+  ASSERT_EQ(1U, first_app->secondary_extensions()->size());
+  EXPECT_EQ("s1_ext_1", *first_app->secondary_extensions()->at(0));
+
+  EXPECT_EQ("Drive App 2", second_app->app_name());
+  EXPECT_EQ("Drive App Object 2", second_app->object_type());
+  EXPECT_FALSE(second_app->supports_create());
+  EXPECT_EQ(2U, second_app->primary_mimetypes()->size());
+  EXPECT_EQ(0U, second_app->secondary_mimetypes()->size());
+  EXPECT_EQ(1U, second_app->primary_extensions()->size());
+  EXPECT_EQ(0U, second_app->secondary_extensions()->size());
 }
 
 // Test file extension checking in DocumentEntry::HasDocumentExtension().
