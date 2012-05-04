@@ -322,7 +322,8 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       horizontal_scroll_snap_slope_(prop_reg, "Horizontal Scroll Snap Slope",
                                     tanf(DegToRad(30.0))),
       zoom_min_movement_(prop_reg, "Zoom Min Movement", 1.5),
-      zoom_lock_min_movement_(prop_reg, "Zoom Lock Min Movement", 2.0) {
+      zoom_lock_min_movement_(prop_reg, "Zoom Lock Min Movement", 2.0),
+      zoom_enable_(prop_reg, "Zoom Enable", 0.0) {
   memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
@@ -678,8 +679,9 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
         }
       }
 
-      if (current_gesture_type_ == kGestureTypeMove ||
-          current_gesture_type_ == kGestureTypeNull) {
+      if ((current_gesture_type_ == kGestureTypeMove ||
+           current_gesture_type_ == kGestureTypeNull) &&
+          zoom_enable_.val_) {
         // Calculate and cache distance between fingers at start of gesture.
         if (two_finger_start_distance_ < 0) {
           two_finger_start_distance_ = sqrtf(TwoFingerDistanceSq(hwstate));

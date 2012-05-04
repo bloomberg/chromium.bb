@@ -111,6 +111,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickStateMachineTest);
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest);
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainTest);
+  FRIEND_TEST(ImmediateInterpreterTest, ZoomTests);
   friend class TapRecord;
 
  public:
@@ -475,6 +476,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Minimal distance [mm] of movement per finger
   // before the zoom gesture is locked in.
   DoubleProperty zoom_lock_min_movement_;
+  // Temporary flag to turn Zoom on/off while we tune it.
+  BoolProperty zoom_enable_;
 };
 
 }  // namespace gestures
