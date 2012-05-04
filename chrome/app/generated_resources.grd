@@ -16052,7 +16052,7 @@ Battery full
     </message>
 
     <!-- Aura strings -->
-    <if expr="pp_ifdef('use_aura')">
+    <if expr="pp_ifdef('use_ash')">
       <message name="IDS_SEARCH_BOX_HINT" desc="Hint text for the search box in app list window.">
         Search apps and more
       </message>
