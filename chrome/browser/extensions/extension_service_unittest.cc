@@ -1429,6 +1429,7 @@ TEST_F(ExtensionServiceTest, FailOnWrongVersion) {
   ASSERT_FALSE(service_->GetExtensionById(good_crx, false));
 
   // Try again with the right version. Expect success.
+  service_->pending_extension_manager()->Remove(good_crx);
   scoped_ptr<Version> correct_version;
   correct_version.reset(Version::GetVersionFromString("1.0.0.0"));
   service_->OnExternalExtensionFileFound(
@@ -2637,7 +2638,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionAlreadyInstalled) {
 
   // Use AddExtensionImpl() as AddFrom*() would balk.
   service_->pending_extension_manager()->AddExtensionImpl(
-      good->id(), good->update_url(), &IsExtension,
+      good->id(), good->update_url(), Version(), &IsExtension,
       kGoodIsFromSync, kGoodInstallSilently, Extension::INTERNAL);
   UpdateExtension(good->id(), path, ENABLED);
 
@@ -4680,6 +4681,66 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalLocalFile) {
           kGoodId, newer_version.get(), kInvalidPathToCrx,
           Extension::EXTERNAL_PREF, kCreationFlags, kDontMarkAcknowledged));
   EXPECT_TRUE(pending->IsIdPending(kGoodId));
+}
+
+TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
+  Version kVersion123("1.2.3");
+  Version kVersion124("1.2.4");
+  Version kVersion125("1.2.5");
+  const FilePath kInvalidPathToCrx = FilePath();
+  const int kCreationFlags = 0;
+  const bool kDontMarkAcknowledged = false;
+
+  InitializeEmptyExtensionService();
+
+  PendingExtensionManager* pending = service_->pending_extension_manager();
+  EXPECT_FALSE(pending->IsIdPending(kGoodId));
+
+  // An external provider starts installing from a local crx.
+  EXPECT_TRUE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, &kVersion123, kInvalidPathToCrx,
+          Extension::EXTERNAL_PREF, kCreationFlags, kDontMarkAcknowledged));
+  PendingExtensionInfo info;
+  EXPECT_TRUE(pending->GetById(kGoodId, &info));
+  EXPECT_TRUE(info.version().IsValid());
+  EXPECT_TRUE(info.version().Equals(kVersion123));
+
+  // Adding a newer version overrides the currently pending version.
+  EXPECT_TRUE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, &kVersion124, kInvalidPathToCrx,
+          Extension::EXTERNAL_PREF, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_TRUE(pending->GetById(kGoodId, &info));
+  EXPECT_TRUE(info.version().IsValid());
+  EXPECT_TRUE(info.version().Equals(kVersion124));
+
+  // Adding an older version fails.
+  EXPECT_FALSE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, &kVersion123, kInvalidPathToCrx,
+          Extension::EXTERNAL_PREF, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_TRUE(pending->GetById(kGoodId, &info));
+  EXPECT_TRUE(info.version().IsValid());
+  EXPECT_TRUE(info.version().Equals(kVersion124));
+
+  // Adding an older version fails even when coming from a higher-priority
+  // location.
+  EXPECT_FALSE(
+      service_->OnExternalExtensionFileFound(
+          kGoodId, &kVersion123, kInvalidPathToCrx,
+          Extension::EXTERNAL_REGISTRY, kCreationFlags, kDontMarkAcknowledged));
+  EXPECT_TRUE(pending->GetById(kGoodId, &info));
+  EXPECT_TRUE(info.version().IsValid());
+  EXPECT_TRUE(info.version().Equals(kVersion124));
+
+  // Adding the latest version from the webstore overrides a specific version.
+  GURL kUpdateUrl("http://example.com/update");
+  EXPECT_TRUE(
+      service_->OnExternalExtensionUpdateUrlFound(
+          kGoodId, kUpdateUrl, Extension::EXTERNAL_POLICY_DOWNLOAD));
+  EXPECT_TRUE(pending->GetById(kGoodId, &info));
+  EXPECT_FALSE(info.version().IsValid());
 }
 
 // This makes sure we can package and install CRX files that use whitelisted

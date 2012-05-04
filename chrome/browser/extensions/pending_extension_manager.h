@@ -15,6 +15,7 @@
 class ExtensionServiceInterface;
 class GURL;
 class PendingExtensionManager;
+class Version;
 
 namespace extensions {
 class ExtensionUpdaterTest;
@@ -80,7 +81,8 @@ class PendingExtensionManager {
   // pending record overrides it.
   bool AddFromExternalFile(
       const std::string& id,
-      Extension::Location location);
+      Extension::Location location,
+      const Version& version);
 
   // Get the set of pending IDs that should be installed from an update URL.
   // Pending extensions that will be installed from local files will not be
@@ -96,6 +98,7 @@ class PendingExtensionManager {
   bool AddExtensionImpl(
       const std::string& id,
       const GURL& update_url,
+      const Version& version,
       PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
       bool is_from_sync,
       bool install_silently,

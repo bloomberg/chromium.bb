@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,13 @@
 
 PendingExtensionInfo::PendingExtensionInfo(
     const GURL& update_url,
+    const Version& version,
     ShouldAllowInstallPredicate should_allow_install,
     bool is_from_sync,
     bool install_silently,
     Extension::Location install_source)
     : update_url_(update_url),
+      version_(version),
       should_allow_install_(should_allow_install),
       is_from_sync_(is_from_sync),
       install_silently_(install_silently),

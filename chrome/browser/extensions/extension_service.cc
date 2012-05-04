@@ -2379,8 +2379,10 @@ bool ExtensionService::OnExternalExtensionFileFound(
   }
 
   // If the extension is already pending, don't start an install.
-  if (!pending_extension_manager()->AddFromExternalFile(id, location))
+  if (!pending_extension_manager()->AddFromExternalFile(
+          id, location, *version)) {
     return false;
+  }
 
   // no client (silent install)
   scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(this, NULL));

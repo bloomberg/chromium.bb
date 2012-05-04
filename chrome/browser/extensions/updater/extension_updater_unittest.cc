@@ -248,6 +248,7 @@ void SetupPendingExtensionManagerForTest(
     pending_extension_manager->AddForTesting(
         id,
         PendingExtensionInfo(update_url,
+                             Version(),
                              should_allow_install,
                              kIsFromSync,
                              kInstallSilently,
@@ -867,7 +868,8 @@ class ExtensionUpdaterTest : public testing::Test {
           service->pending_extension_manager();
       pending_extension_manager->AddForTesting(
           id,
-          PendingExtensionInfo(test_url, &ShouldAlwaysInstall, kIsFromSync,
+          PendingExtensionInfo(test_url, *version,
+                               &ShouldAlwaysInstall, kIsFromSync,
                                kInstallSilently,
                                Extension::INTERNAL));
     }

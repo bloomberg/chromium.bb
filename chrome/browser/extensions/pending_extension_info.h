@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_EXTENSIONS_PENDING_EXTENSION_INFO_H_
 #pragma once
 
+#include "base/version.h"
 #include "chrome/common/extensions/extension.h"
-
-class GURL;
+#include "googleurl/src/gurl.h"
 
 // A pending extension is an extension that hasn't been installed yet
 // and is intended to be installed in the next auto-update cycle.  The
@@ -22,6 +22,7 @@ class PendingExtensionInfo {
 
   PendingExtensionInfo(
       const GURL& update_url,
+      const Version& version,
       ShouldAllowInstallPredicate should_allow_install,
       bool is_from_sync,
       bool install_silently,
@@ -31,6 +32,7 @@ class PendingExtensionInfo {
   PendingExtensionInfo();
 
   const GURL& update_url() const { return update_url_; }
+  const Version& version() const { return version_; }
 
   // ShouldAllowInstall() returns the result of running constructor argument
   // |should_allow_install| on an extension. After an extension is unpacked,
@@ -47,6 +49,7 @@ class PendingExtensionInfo {
 
  private:
   GURL update_url_;
+  Version version_;
 
   // When the extension is about to be installed, this function is
   // called.  If this function returns true, the install proceeds.  If

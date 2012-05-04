@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/version.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/common/extensions/extension.h"
@@ -72,7 +73,7 @@ bool PendingExtensionManager::AddFromSync(
   const bool kIsFromSync = true;
   const Extension::Location kSyncLocation = Extension::INTERNAL;
 
-  return AddExtensionImpl(id, update_url, should_allow_install,
+  return AddExtensionImpl(id, update_url, Version(), should_allow_install,
                           kIsFromSync, install_silently, kSyncLocation);
 }
 
@@ -101,7 +102,7 @@ bool PendingExtensionManager::AddFromExternalUpdateUrl(
     }
   }
 
-  return AddExtensionImpl(id, update_url, &AlwaysInstall,
+  return AddExtensionImpl(id, update_url, Version(), &AlwaysInstall,
                           kIsFromSync, kInstallSilently,
                           location);
 }
@@ -109,8 +110,8 @@ bool PendingExtensionManager::AddFromExternalUpdateUrl(
 
 bool PendingExtensionManager::AddFromExternalFile(
     const std::string& id,
-    Extension::Location install_source) {
-
+    Extension::Location install_source,
+    const Version& version) {
   // TODO(skerner): AddFromSync() checks to see if the extension is
   // installed, but this method assumes that the caller already
   // made sure it is not installed.  Make all AddFrom*() methods
@@ -122,12 +123,11 @@ bool PendingExtensionManager::AddFromExternalFile(
   return AddExtensionImpl(
       id,
       kUpdateUrl,
+      version,
       &AlwaysInstall,
       kIsFromSync,
       kInstallSilently,
       install_source);
-
-  return true;
 }
 
 void PendingExtensionManager::GetPendingIdsForUpdateCheck(
@@ -152,16 +152,15 @@ void PendingExtensionManager::GetPendingIdsForUpdateCheck(
 bool PendingExtensionManager::AddExtensionImpl(
     const std::string& id,
     const GURL& update_url,
+    const Version& version,
     PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
     bool is_from_sync,
     bool install_silently,
     Extension::Location install_source) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Will add a pending extension record unless this variable is set to false.
-  bool should_add_pending_record = true;
-
-  if (ContainsKey(pending_extension_map_, id)) {
+  PendingExtensionInfo pending;
+  if (GetById(id, &pending)) {
     // Bugs in this code will manifest as sporadic incorrect extension
     // locations in situations where multiple install sources run at the
     // same time. For example, on first login to a chrome os machine, an
@@ -169,32 +168,39 @@ bool PendingExtensionManager::AddExtensionImpl(
     // The following logging will help diagnose such issues.
     VLOG(1) << "Extension id " << id
             << " was entered for update more than once."
-            << "  old location: " << pending_extension_map_[id].install_source()
+            << "  old location: " << pending.install_source()
             << "  new location: " << install_source;
+
+    // Never override an existing extension with an older version. Only
+    // extensions from local CRX files have a known version; extensions from an
+    // update URL will get the latest version.
+    if (version.IsValid() &&
+        pending.version().IsValid() &&
+        pending.version().CompareTo(version) == 1) {
+      VLOG(1) << "Keep existing record (has a newer version).";
+      return false;
+    }
 
     Extension::Location higher_priority_location =
         Extension::GetHigherPriorityLocation(
-            install_source, pending_extension_map_[id].install_source());
+            install_source, pending.install_source());
 
-    if (higher_priority_location == install_source) {
-      VLOG(1) << "Overwrite existing record.";
-
-    } else {
-      VLOG(1) << "Keep existing record.";
-      should_add_pending_record = false;
+    if (higher_priority_location != install_source) {
+      VLOG(1) << "Keep existing record (has a higher priority location).";
+      return false;
     }
+
+    VLOG(1) << "Overwrite existing record.";
   }
 
-  if (should_add_pending_record) {
-    pending_extension_map_[id] = PendingExtensionInfo(
-        update_url,
-        should_allow_install,
-        is_from_sync,
-        install_silently,
-        install_source);
-    return true;
-  }
-  return false;
+  pending_extension_map_[id] = PendingExtensionInfo(
+      update_url,
+      version,
+      should_allow_install,
+      is_from_sync,
+      install_silently,
+      install_source);
+  return true;
 }
 
 void PendingExtensionManager::AddForTesting(
