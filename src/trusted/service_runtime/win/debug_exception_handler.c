@@ -32,7 +32,7 @@ struct StartupInfo {
 };
 
 
-static int HandleException(struct StartupInfo *startup_info,
+static int HandleException(const struct StartupInfo *startup_info,
                            HANDLE process_handle, DWORD windows_thread_id,
                            HANDLE thread_handle);
 
@@ -122,8 +122,8 @@ static BOOL WriteProcessMemoryChecked(HANDLE process_handle, void *remote_addr,
  */
 
 void NaClDebugExceptionHandlerRun(HANDLE process_handle,
-                                  void *info, size_t info_size) {
-  struct StartupInfo *startup_info = info;
+                                  const void *info, size_t info_size) {
+  const struct StartupInfo *startup_info = info;
   DEBUG_EVENT debug_event;
   int process_exited = 0;
   int error = 0;
@@ -232,7 +232,7 @@ void NaClDebugExceptionHandlerRun(HANDLE process_handle,
  * determine whether the thread faulted in trusted or untrusted code.
  */
 #if NACL_BUILD_SUBARCH == 32
-static BOOL GetThreadIndex(struct StartupInfo *startup_info,
+static BOOL GetThreadIndex(const struct StartupInfo *startup_info,
                            HANDLE process_handle, HANDLE thread_handle,
                            const CONTEXT *regs,
                            uint32_t windows_thread_id,
@@ -267,7 +267,7 @@ static BOOL GetThreadIndex(struct StartupInfo *startup_info,
  * The implementation below is simpler but slower, because it copies
  * all of the nacl_thread_ids global array.
  */
-static BOOL GetThreadIndex(struct StartupInfo *startup_info,
+static BOOL GetThreadIndex(const struct StartupInfo *startup_info,
                            HANDLE process_handle, HANDLE thread_handle,
                            const CONTEXT *regs,
                            uint32_t windows_thread_id,
@@ -298,7 +298,7 @@ static BOOL GetThreadIndex(struct StartupInfo *startup_info,
 }
 #endif
 
-static BOOL HandleException(struct StartupInfo *startup_info,
+static BOOL HandleException(const struct StartupInfo *startup_info,
                             HANDLE process_handle, DWORD windows_thread_id,
                             HANDLE thread_handle) {
   CONTEXT context;

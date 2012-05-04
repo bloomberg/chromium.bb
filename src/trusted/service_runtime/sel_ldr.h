@@ -95,7 +95,8 @@ enum NaClDebugExceptionHandlerState {
  * Callback function used to request that an exception handler be
  * attached using the Windows debug API.  See sel_main_chrome.h.
  */
-typedef int (*NaClAttachDebugExceptionHandlerFunc)(void *info, size_t size);
+typedef int (*NaClAttachDebugExceptionHandlerFunc)(const void *info,
+                                                   size_t size);
 #endif
 
 struct NaClApp {

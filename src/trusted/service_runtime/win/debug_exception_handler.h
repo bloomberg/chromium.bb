@@ -43,7 +43,7 @@ int NaClDebugLoop(HANDLE process_handle, DWORD *exit_code);
  * callback by NaClDebugExceptionHandlerEnsureAttached().
  */
 void NaClDebugExceptionHandlerRun(HANDLE process_handle,
-                                  void *info, size_t info_size);
+                                  const void *info, size_t info_size);
 
 /*
  * This requests that a debug exception handler be attached to the
@@ -57,7 +57,8 @@ int NaClDebugExceptionHandlerEnsureAttached(struct NaClApp *nap);
  * exception handler to the current process by launching sel_ldr with
  * --debug-exception-handler.
  */
-int NaClDebugExceptionHandlerStandaloneAttach(void *info, size_t info_size);
+int NaClDebugExceptionHandlerStandaloneAttach(const void *info,
+                                              size_t info_size);
 
 /*
  * This implements sel_ldr's --debug-exception-handler option.

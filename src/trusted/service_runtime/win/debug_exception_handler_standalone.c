@@ -14,7 +14,8 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 
 
-int NaClDebugExceptionHandlerStandaloneAttach(void *info, size_t info_size) {
+int NaClDebugExceptionHandlerStandaloneAttach(const void *info,
+                                              size_t info_size) {
   NaClHandle sockets[2];
   STARTUPINFOA startup_info;
   PROCESS_INFORMATION process_information;

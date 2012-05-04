@@ -57,7 +57,8 @@ struct NaClChromeMainArgs {
    * Windows debug API.  The data in info/info_size must be passed to
    * NaClDebugExceptionHandlerRun().  Optional; may be NULL.
    */
-  int (*attach_debug_exception_handler_func)(void *info, size_t info_size);
+  int (*attach_debug_exception_handler_func)(const void *info,
+                                             size_t info_size);
 #endif
 };
 
