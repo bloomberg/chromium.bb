@@ -715,6 +715,9 @@
   # WebRTC MediaStream tests. Requires webcam and audio device to be present on
   # the test machine.
   'WEBRTC': {
+    'all': [
+      'media_stream_infobar',
+    ],
     'linux': [
       'webrtc_call',
     ],

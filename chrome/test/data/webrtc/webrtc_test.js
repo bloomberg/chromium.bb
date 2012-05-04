@@ -23,6 +23,12 @@ var gPeerConnection = null;
 var gOurPeerId = null;
 
 /**
+ * The client id we use to identify to peerconnection_server.
+ * @private
+ */
+var gOurClientName = null;
+
+/**
  * The URL to the peerconnection_server.
  * @private
  */
@@ -44,6 +50,12 @@ var gRemotePeerId = null;
 var gFailures = [];
 
 /**
+ * String which keeps track of what happened when we requested user media.
+ * @private
+ */
+var gRequestWebcamAndMicrophoneResult = null;
+
+/**
  * We need a STUN server for some API calls.
  * @private
  */
@@ -56,20 +68,31 @@ var STUN_SERVER = "STUN stun.l.google.com:19302";
  * will return ok-requested to PyAuto. This does not mean the request was
  * approved though. The test will then have to click past the dialog that
  * appears in Chrome, which will run either the OK or failed callback as a
- * a result. The OK callback will not notify the test whereas the fail callback
- * registers a test error.
+ * a result. To see which callback was called, use obtainGetUserMediaResult().
  */
-function requestWebcamAndMicrophone() {
+function getUserMedia(requestVideo, requestAudio) {
   if (!navigator.webkitGetUserMedia) {
     returnToPyAuto('Browser does not support WebRTC.');
     return;
   }
 
   debug("Requesting webcam and microphone.");
-  navigator.webkitGetUserMedia({video:true, audio:true},
+  navigator.webkitGetUserMedia({video: requestVideo, audio: requestAudio},
                                getUserMediaOkCallback,
                                getUserMediaFailedCallback);
   returnToPyAuto('ok-requested');
+}
+
+/**
+ * Must be called after calling getUserMedia. Returns either ok-got-stream
+ * or failed-with-error-x (where x is the error code from the error callback)
+ * depending on which callback got called by WebRTC.
+ */
+function obtainGetUserMediaResult() {
+  if (gRequestWebcamAndMicrophoneResult == null)
+    failTest('getUserMedia has not been called!');
+
+  returnToPyAuto(gRequestWebcamAndMicrophoneResult);
 }
 
 /**
@@ -85,6 +108,7 @@ function connect(serverUrl, clientName) {
 
   debug("Connecting to " + serverUrl + " as " + clientName);
   gServerUrl = serverUrl;
+  gOurClientName = clientName;
 
   request = new XMLHttpRequest();
   request.open("GET", serverUrl + "/sign_in?" + clientName, true);
@@ -153,7 +177,12 @@ function getAnyTestFailures() {
  * Prints a debug message on the webpage itself.
  */
 function debug(txt) {
-  console.log(txt)
+  if (gOurClientName == null)
+    prefix = '';
+  else
+    prefix = gOurClientName + ' says: ';
+
+  console.log(prefix + txt)
 }
 
 /**
@@ -194,10 +223,12 @@ function getUserMediaOkCallback(stream) {
   gLocalStream = stream;
   var streamUrl = webkitURL.createObjectURL(stream);
   document.getElementById("local_view").src = streamUrl;
+
+  gRequestWebcamAndMicrophoneResult = 'ok-got-stream';
 }
 
 function getUserMediaFailedCallback(error) {
-  addTestFailure('Failed to get user media.');
+  gRequestWebcamAndMicrophoneResult = 'failed-with-error-' + error.code;
 }
 
 function connectCallback(request) {

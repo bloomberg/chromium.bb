@@ -59,58 +59,82 @@ class WebRTCCallTest(pyauto.PyUITest):
     self.NavigateToURL(url)
     self.AppendTab(pyauto.GURL(url))
 
-    self._AcquireWebcamAndMicrophone()
-    self._Connect()
+    self.assertEquals('ok-got-stream', self._GetUserMedia(tab_index=0))
+    self.assertEquals('ok-got-stream', self._GetUserMedia(tab_index=1))
+    self._Connect("user_1", tab_index=0)
+    self._Connect("user_2", tab_index=1)
 
-    self._EstablishCall()
+    self._EstablishCall(from_tab_with_index=0)
 
     # Give the call some time to run so video flows through the system.
     time.sleep(5)
 
-    self._HangUp()
+    # The hang-up will automatically propagate to the second tab.
+    self._HangUp(from_tab_with_index=0)
+    self._VerifyHungUp(tab_index=1)
 
     # Ensure we didn't miss any errors.
-    self._AssertNoFailuresReceived()
+    self._AssertNoFailuresReceivedInTwoTabs()
 
-  def _AcquireWebcamAndMicrophone(self):
+  def testHandlesNewGetUserMediaRequestSeparately(self):
+    """Ensures WebRTC doesn't allow new requests to piggy-back on old ones."""
+    assert self.IsLinux()
+
+    url = self.GetFileURLForDataPath('webrtc', 'webrtc_test.html')
+    self.NavigateToURL(url)
+    self.AppendTab(pyauto.GURL(url))
+
+    self._GetUserMedia(tab_index=0)
+    self._GetUserMedia(tab_index=1)
+    self._Connect("user_1", tab_index=0)
+    self._Connect("user_2", tab_index=1)
+
+    self._EstablishCall(from_tab_with_index=0)
+
+    self.assertEquals('failed-with-error-1',
+                      self._GetUserMedia(tab_index=0, action='deny'))
+    self.assertEquals('failed-with-error-1',
+                      self._GetUserMedia(tab_index=0, action='dismiss'))
+
+  def _GetUserMedia(self, tab_index, action='allow'):
+    """Acquires webcam or mic for one tab and returns the result."""
     self.assertEquals('ok-requested', self.ExecuteJavascript(
-        'requestWebcamAndMicrophone()', tab_index=0))
-    self.assertEquals('ok-requested', self.ExecuteJavascript(
-        'requestWebcamAndMicrophone()', tab_index=1))
+        'getUserMedia(true, true)', tab_index=tab_index))
 
-    self.WaitForInfobarCount(1, tab_index=0)
-    self.WaitForInfobarCount(1, tab_index=1)
+    self.WaitForInfobarCount(1, tab_index=tab_index)
+    self.PerformActionOnInfobar(action, infobar_index=0, tab_index=tab_index)
 
-    self.PerformActionOnInfobar('allow', infobar_index=0, tab_index=0)
-    self.PerformActionOnInfobar('allow', infobar_index=0, tab_index=1)
-    self._AssertNoFailuresReceived()
+    result = self.ExecuteJavascript(
+        'obtainGetUserMediaResult()', tab_index=tab_index)
+    self._AssertNoFailuresReceivedInTwoTabs()
+    return result
 
-  def _Connect(self):
+  def _Connect(self, user_name, tab_index):
     self.assertEquals('ok-connected', self.ExecuteJavascript(
-        'connect("http://localhost:8888", "user_1")', tab_index=0))
-    self.assertEquals('ok-connected', self.ExecuteJavascript(
-        'connect("http://localhost:8888", "user_2")', tab_index=1))
-    self._AssertNoFailuresReceived()
+        'connect("http://localhost:8888", "%s")' % user_name,
+        tab_index=tab_index))
+    self._AssertNoFailuresReceivedInTwoTabs()
 
-  def _EstablishCall(self):
+  def _EstablishCall(self, from_tab_with_index):
     self.assertEquals('ok-call-established', self.ExecuteJavascript(
-        'call()', tab_index=0))
-    self._AssertNoFailuresReceived()
+        'call()', tab_index=from_tab_with_index))
+    self._AssertNoFailuresReceivedInTwoTabs()
 
     # Double-check the call reached the other side.
     self.assertEquals('yes', self.ExecuteJavascript(
-        'is_call_active()', tab_index=1))
+        'is_call_active()', tab_index=from_tab_with_index))
 
-  def _HangUp(self):
+  def _HangUp(self, from_tab_with_index):
     self.assertEquals('ok-call-hung-up', self.ExecuteJavascript(
-        'hangUp()', tab_index=0))
-    self.assertEquals('no', self.ExecuteJavascript(
-        'is_call_active()', tab_index=0))
-    self.assertEquals('no', self.ExecuteJavascript(
-        'is_call_active()', tab_index=0))
-    self._AssertNoFailuresReceived()
+        'hangUp()', tab_index=from_tab_with_index))
+    self._VerifyHungUp(from_tab_with_index)
+    self._AssertNoFailuresReceivedInTwoTabs()
 
-  def _AssertNoFailuresReceived(self):
+  def _VerifyHungUp(self, tab_index):
+    self.assertEquals('no', self.ExecuteJavascript(
+        'is_call_active()', tab_index=tab_index))
+
+  def _AssertNoFailuresReceivedInTwoTabs(self):
     # Make sure both tabs' errors get reported if there is a problem.
     tab_0_errors = self.ExecuteJavascript('getAnyTestFailures()', tab_index=0)
     tab_1_errors = self.ExecuteJavascript('getAnyTestFailures()', tab_index=1)
