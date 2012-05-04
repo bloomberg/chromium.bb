@@ -1281,7 +1281,10 @@ checked out tree via 'patch -p0 < patchfile'.
                     help='override deps for the specified (comma-separated) '
                          'platform(s); \'all\' will process all deps_os '
                          'references')
+  parser.remove_option('--jobs')
   (options, args) = parser.parse_args(args)
+  # Force jobs to 1 so the stdout is not annotated with the thread ids 
+  options.jobs = 1
   client = GClient.LoadCurrentConfig(options)
   if not client:
     raise gclient_utils.Error('client not configured; see \'gclient config\'')

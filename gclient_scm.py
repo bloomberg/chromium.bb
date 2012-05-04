@@ -16,11 +16,11 @@ import scm
 import subprocess2
 
 
-class DiffFilterer(object):
-  """Simple class which tracks which file is being diffed and
+class DiffFiltererWrapper(object):
+  """Simple base class which tracks which file is being diffed and
   replaces instances of its file name in the original and
   working copy lines of the svn/git diff output."""
-  index_string = "Index: "
+  index_string = None
   original_prefix = "--- "
   working_prefix = "+++ "
 
@@ -28,14 +28,14 @@ class DiffFilterer(object):
     # Note that we always use '/' as the path separator to be
     # consistent with svn's cygwin-style output on Windows
     self._relpath = relpath.replace("\\", "/")
-    self._current_file = ""
-    self._replacement_file = ""
+    self._current_file = None
 
   def SetCurrentFile(self, current_file):
     self._current_file = current_file
-    # Note that we always use '/' as the path separator to be
-    # consistent with svn's cygwin-style output on Windows
-    self._replacement_file = posixpath.join(self._relpath, current_file)
+
+  @property 
+  def _replacement_file(self): 
+    return posixpath.join(self._relpath, self._current_file)
 
   def _Replace(self, line):
     return line.replace(self._current_file, self._replacement_file)
@@ -49,6 +49,21 @@ class DiffFilterer(object):
           line.startswith(self.working_prefix)):
         line = self._Replace(line)
     print(line)
+
+
+class SvnDiffFilterer(DiffFiltererWrapper):
+  index_string = "Index: "
+
+
+class GitDiffFilterer(DiffFiltererWrapper):
+  index_string = "diff --git "
+
+  def SetCurrentFile(self, current_file):
+    # Get filename by parsing "a/<filename> b/<filename>"
+    self._current_file = current_file[:(len(current_file)/2)][2:]
+
+  def _Replace(self, line):
+    return re.sub("[a|b]/" + self._current_file, self._replacement_file, line)
 
 
 def ask_for_data(prompt):
@@ -177,7 +192,7 @@ class GitWrapper(SCMWrapper):
     gclient_utils.CheckCallAndFilter(
         ['git', 'diff', merge_base],
         cwd=self.checkout_path,
-        filter_fn=DiffFilterer(self.relpath).Filter)
+        filter_fn=GitDiffFilterer(self.relpath).Filter)
 
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
@@ -830,7 +845,7 @@ class SVNWrapper(SCMWrapper):
         ['svn', 'diff', '-x', '--ignore-eol-style'] + args,
         cwd=self.checkout_path,
         print_stdout=False,
-        filter_fn=DiffFilterer(self.relpath).Filter)
+        filter_fn=SvnDiffFilterer(self.relpath).Filter)
 
   def update(self, options, args, file_list):
     """Runs svn to update or transparently checkout the working copy.
