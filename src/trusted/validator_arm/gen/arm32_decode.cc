@@ -418,29 +418,49 @@ const ClassDecoder& Arm32DecoderState::decode_load_store_word_byte(
      const Instruction insn) const
 {
   UNREFERENCED_PARAMETER(insn);
+  if (((insn & 0x02000000) == 0x00000000) && ((insn & 0x01300000) == 0x00000000) && (true))
+
+    return StoreImmediate_instance_;
+
+  if (((insn & 0x02000000) == 0x00000000) && ((insn & 0x01300000) == 0x00100000) && (true))
+
+    return LoadImmediate_instance_;
+
+  if (((insn & 0x02000000) == 0x00000000) && ((insn & 0x01100000) == 0x01000000) && (true))
+
+    return StoreImmediate_instance_;
+
+  if (((insn & 0x02000000) == 0x00000000) && ((insn & 0x01100000) == 0x01100000) && (true))
+
+    return LoadImmediate_instance_;
+
   if (((insn & 0x02000000) == 0x00000000) && ((insn & 0x01200000) == 0x00200000) && (true))
 
     return Forbidden_instance_;
 
-  if (((insn & 0x02000000) == 0x00000000) && ((insn & 0x00100000) == 0x00000000) && (true))
+  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x01700000) == 0x00500000) && ((insn & 0x00000010) == 0x00000000))
 
-    return StoreImmediate_instance_;
+    return LoadRegister_instance_;
 
-  if (((insn & 0x02000000) == 0x00000000) && ((insn & 0x00100000) == 0x00100000) && (true))
+  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x00700000) == 0x00100000) && ((insn & 0x00000010) == 0x00000000))
 
-    return LoadImmediate_instance_;
+    return LoadRegister_instance_;
+
+  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x01300000) == 0x00000000) && ((insn & 0x00000010) == 0x00000000))
+
+    return StoreRegister_instance_;
+
+  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x01100000) == 0x01000000) && ((insn & 0x00000010) == 0x00000000))
+
+    return StoreRegister_instance_;
+
+  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x01100000) == 0x01100000) && ((insn & 0x00000010) == 0x00000000))
+
+    return LoadRegister_instance_;
 
   if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x01200000) == 0x00200000) && ((insn & 0x00000010) == 0x00000000))
 
     return Forbidden_instance_;
-
-  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x00100000) == 0x00000000) && ((insn & 0x00000010) == 0x00000000))
-
-    return StoreRegister_instance_;
-
-  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x00100000) == 0x00100000) && ((insn & 0x00000010) == 0x00000000))
-
-    return LoadRegister_instance_;
 
   // Catch any attempt to fall though ...
   fprintf(stderr, "TABLE IS INCOMPLETE: load_store_word_byte could not parse %08X",

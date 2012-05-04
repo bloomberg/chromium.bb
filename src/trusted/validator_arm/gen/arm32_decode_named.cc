@@ -565,15 +565,31 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_half_mult(
 const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_byte(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
-  if (((insn & 0x02000000) == 0x00000000) && ((insn & 0x00100000) == 0x00100000) && (true)) {
+  if (((insn & 0x02000000) == 0x00000000) && ((insn & 0x01100000) == 0x01100000) && (true)) {
    return LoadImmediate_instance_;
   }
 
-  if (((insn & 0x02000000) == 0x00000000) && ((insn & 0x00100000) == 0x00000000) && (true)) {
+  if (((insn & 0x02000000) == 0x00000000) && ((insn & 0x01300000) == 0x00100000) && (true)) {
+   return LoadImmediate_instance_;
+  }
+
+  if (((insn & 0x02000000) == 0x00000000) && ((insn & 0x01100000) == 0x01000000) && (true)) {
    return StoreImmediate_instance_;
   }
 
-  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x00100000) == 0x00100000) && ((insn & 0x00000010) == 0x00000000)) {
+  if (((insn & 0x02000000) == 0x00000000) && ((insn & 0x01300000) == 0x00000000) && (true)) {
+   return StoreImmediate_instance_;
+  }
+
+  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x00700000) == 0x00100000) && ((insn & 0x00000010) == 0x00000000)) {
+   return LoadRegister_instance_;
+  }
+
+  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x01700000) == 0x00500000) && ((insn & 0x00000010) == 0x00000000)) {
+   return LoadRegister_instance_;
+  }
+
+  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x01100000) == 0x01100000) && ((insn & 0x00000010) == 0x00000000)) {
    return LoadRegister_instance_;
   }
 
@@ -585,7 +601,11 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_byte(
    return Forbidden_instance_;
   }
 
-  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x00100000) == 0x00000000) && ((insn & 0x00000010) == 0x00000000)) {
+  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x01100000) == 0x01000000) && ((insn & 0x00000010) == 0x00000000)) {
+   return StoreRegister_instance_;
+  }
+
+  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x01300000) == 0x00000000) && ((insn & 0x00000010) == 0x00000000)) {
    return StoreRegister_instance_;
   }
 

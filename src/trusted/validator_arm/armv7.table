@@ -349,26 +349,44 @@
 +--
 
 +-- load_store_word_byte (See Section A5.3)
-# The source table's "x not y" rules are implicit in the decoder, since we
-# evaluate patterns in order of specificity, not table order.
 | A(25) op1(24:20) B(4) Rn(19:16)
-| 0     xx0x0      -    -        =StoreImmediate  # STR(immediate)
-| 1     xx0x0      0    -        =StoreRegister   # STR(register)
-| 0     0x010      -    -        =Forbidden       # STRT
+# Following 2 rows implement op1 = xx0x0 & ~0x010
+| 0     1x0x0      -    -        =StoreImmediate  # STR(immediate) A8-384
+| "     0x000      "    "        "
+# Following 2 rows implement op1 = xx0x0 & ~0x010
+| 1     1x0x0      0    -        =StoreRegister   # STR(register) A8-386
+| "     0x000      "    "        "
+| 0     0x010      -    -        =Forbidden       # STRT A8-416
 | 1     0x010      0    -        "
-| 0     xx0x1      -    ~1111    =LoadImmediate   # LDR(immediate)
-| "     "          "    1111     =LoadImmediate   # LDR(literal)
-| 1     xx0x1      0    -        =LoadRegister    # LDR(register)
-| 0     0x011      -    -        =Forbidden       # LDRT
+# Following 2 rows implement op1 = xx0x1 & ~0x011
+| 0     1x0x1      -    ~1111    =LoadImmediate   # LDR(immediate) A8-120
+| "     0x001      "    "        "
+# Following 2 rows implement op1 = xx0x1 & ~0x011
+| "     1x0x1      "    1111     =LoadImmediate   # LDR(literal) A8-122
+| "     0x001      "    "        "
+# Following 2 rows implement op1 = xx0x1 & ~0x011
+| 1     1x0x1      0    -        =LoadRegister    # LDR(register) A8-124
+| "     xx001      "    "        "
+| 0     0x011      -    -        =Forbidden       # LDRT A8-176
 | 1     0x011      0    -        "
-| 0     xx1x0      -    -        =StoreImmediate  # STRB(immediate)
-| 1     xx1x0      0    -        =StoreRegister   # STRB(register)
-| 0     0x110      -    -        =Forbidden       # STRBT
+# Following 2 rows implement op1 = xx1x0 & ~0x110
+| 0     1x1x0      -    -        =StoreImmediate  # STRB(immediate) A8-390
+| "     0x100      "    "        "
+# Following 2 rows implement op1 = xx1x0 & ~0x110
+| 1     1x1x0      0    -        =StoreRegister   # STRB(register) A8-392
+| "     0x100      "    "        "
+| 0     0x110      -    -        =Forbidden       # STRBT A8-394
 | 1     0x110      0    -        "
-| 0     xx1x1      -    ~1111    =LoadImmediate   # LDRB(immediate)
-| "     "          "    1111     =LoadImmediate   # LDRB(literal)
-| 1     xx1x1      0    -        =LoadRegister    # LDRB(register)
-| 0     0x111      -    -        =Forbidden       # LDRBT
+# Following 2 rows implement op1 = xx1x1 & ~0x111
+| 0     1x1x1      -    ~1111    =LoadImmediate   # LDRB(immediate) A8-128
+| "     0x101      "    "        "
+# Following 2 rows implement op1 = xx1x1 & ~0x111
+| "     1x1x1      "    1111     =LoadImmediate   # LDRB(literal) A8-130
+| "     0x101      "    "        "
+# Following 2 rows implement op1 = xx1x1 & ~0x111
+| 1     1x1x1      0    -        =LoadRegister    # LDRB(register) A8-132
+| "     0x101      "    "        "
+| 0     0x111      -    -        =Forbidden       # LDRBT          A8-132
 | 1     0x111      0    -        "
 +--
 
