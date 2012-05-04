@@ -66,8 +66,7 @@ aura::Window* DesktopActivationClient::GetActiveWindow() {
 
 bool DesktopActivationClient::OnWillFocusWindow(Window* window,
                                                 const Event* event) {
-  // TODO(erg): Is this OK? Logic is much more nuanced in ash.
-  return true;
+  return CanActivateWindow(window);
 }
 
 void DesktopActivationClient::OnWindowFocused(aura::Window* window) {
