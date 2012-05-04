@@ -66,7 +66,7 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
 
   ExtensionCommandService* command_service =
       ExtensionCommandServiceFactory::GetForProfile(browser_->profile());
-  const Extension::Command* page_action_command =
+  const extensions::Command* page_action_command =
       command_service->GetActivePageActionCommand(extension->id());
   if (page_action_command) {
     keybinding_.reset(new ui::Accelerator(page_action_command->accelerator()));

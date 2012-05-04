@@ -46,9 +46,9 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
     const Extension* extension) {
   ExtensionCommandService* command_service =
       ExtensionCommandServiceFactory::GetForProfile(profile_);
-  const Extension::CommandMap& commands =
+  const extensions::CommandMap& commands =
       command_service->GetActiveNamedCommands(extension->id());
-  Extension::CommandMap::const_iterator iter = commands.begin();
+  extensions::CommandMap::const_iterator iter = commands.begin();
   for (; iter != commands.end(); ++iter) {
     ui::AcceleratorGtk accelerator(iter->second.accelerator().key_code(),
                                    iter->second.accelerator().IsShiftDown(),
@@ -73,7 +73,7 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
   // Unlike on Windows, we need to explicitly add the browser action and page
   // action to the event_targets_, even though we don't register them as
   // handlers. See http://crbug.com/124873.
-  const Extension::Command* browser_action =
+  const extensions::Command* browser_action =
       command_service->GetActiveBrowserActionCommand(extension->id());
   if (browser_action) {
     ui::AcceleratorGtk accelerator(browser_action->accelerator().key_code(),
@@ -84,7 +84,7 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
       std::make_pair(extension->id(), browser_action->command_name());
   }
 
-  const Extension::Command* page_action =
+  const extensions::Command* page_action =
       command_service->GetActivePageActionCommand(extension->id());
   if (page_action) {
     ui::AcceleratorGtk accelerator(page_action->accelerator().key_code(),

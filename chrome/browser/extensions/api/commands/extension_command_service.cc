@@ -21,7 +21,7 @@ const char kCommandName[] = "command_name";
 
 std::string GetPlatformKeybindingKeyForAccelerator(
     const ui::Accelerator& accelerator) {
-  return Extension::Command::CommandPlatform() + ":" +
+  return extensions::Command::CommandPlatform() + ":" +
          UTF16ToUTF8(accelerator.GetShortcutText());
 }
 
@@ -46,7 +46,7 @@ ExtensionCommandService::ExtensionCommandService(
 ExtensionCommandService::~ExtensionCommandService() {
 }
 
-const Extension::Command*
+const extensions::Command*
     ExtensionCommandService::GetActiveBrowserActionCommand(
         const std::string& extension_id) {
   const ExtensionSet* extensions =
@@ -54,7 +54,7 @@ const Extension::Command*
   const Extension* extension = extensions->GetByID(extension_id);
   CHECK(extension);
 
-  const Extension::Command* command = extension->browser_action_command();
+  const extensions::Command* command = extension->browser_action_command();
   if (!command)
     return NULL;
   if (!IsKeybindingActive(command->accelerator(),
@@ -66,14 +66,14 @@ const Extension::Command*
   return command;
 }
 
-const Extension::Command* ExtensionCommandService::GetActivePageActionCommand(
+const extensions::Command* ExtensionCommandService::GetActivePageActionCommand(
     const std::string& extension_id) {
   const ExtensionSet* extensions =
       ExtensionSystem::Get(profile_)->extension_service()->extensions();
   const Extension* extension = extensions->GetByID(extension_id);
   CHECK(extension);
 
-  const Extension::Command* command = extension->page_action_command();
+  const extensions::Command* command = extension->page_action_command();
   if (!command)
     return NULL;
   if (!IsKeybindingActive(command->accelerator(),
@@ -85,19 +85,19 @@ const Extension::Command* ExtensionCommandService::GetActivePageActionCommand(
   return command;
 }
 
-Extension::CommandMap ExtensionCommandService::GetActiveNamedCommands(
+extensions::CommandMap ExtensionCommandService::GetActiveNamedCommands(
     const std::string& extension_id) {
   const ExtensionSet* extensions =
       ExtensionSystem::Get(profile_)->extension_service()->extensions();
   const Extension* extension = extensions->GetByID(extension_id);
   CHECK(extension);
 
-  Extension::CommandMap result;
-  const Extension::CommandMap& commands = extension->named_commands();
+  extensions::CommandMap result;
+  const extensions::CommandMap& commands = extension->named_commands();
   if (commands.empty())
     return result;
 
-  Extension::CommandMap::const_iterator iter = commands.begin();
+  extensions::CommandMap::const_iterator iter = commands.begin();
   for (; iter != commands.end(); ++iter) {
     if (!IsKeybindingActive(iter->second.accelerator(),
                             extension_id,
@@ -180,8 +180,8 @@ void ExtensionCommandService::Observe(
 
 void ExtensionCommandService::AssignInitialKeybindings(
     const Extension* extension) {
-  const Extension::CommandMap& commands = extension->named_commands();
-  Extension::CommandMap::const_iterator iter = commands.begin();
+  const extensions::CommandMap& commands = extension->named_commands();
+  extensions::CommandMap::const_iterator iter = commands.begin();
   for (; iter != commands.end(); ++iter) {
     AddKeybindingPref(iter->second.accelerator(),
                       extension->id(),
@@ -189,7 +189,7 @@ void ExtensionCommandService::AssignInitialKeybindings(
                       false);  // Overwriting not allowed.
   }
 
-  const Extension::Command* browser_action_command =
+  const extensions::Command* browser_action_command =
       extension->browser_action_command();
   if (browser_action_command) {
     AddKeybindingPref(browser_action_command->accelerator(),
@@ -198,7 +198,7 @@ void ExtensionCommandService::AssignInitialKeybindings(
                       false);  // Overwriting not allowed.
   }
 
-  const Extension::Command* page_action_command =
+  const extensions::Command* page_action_command =
       extension->page_action_command();
   if (page_action_command) {
     AddKeybindingPref(page_action_command->accelerator(),

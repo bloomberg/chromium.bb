@@ -1702,7 +1702,7 @@ void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
   ExtensionCommandService* command_service =
       ExtensionCommandServiceFactory::GetForProfile(
           owner_->browser()->profile());
-  const Extension::Command* command =
+  const extensions::Command* command =
       command_service->GetActivePageActionCommand(extension->id());
   if (command) {
     // Found the browser action shortcut command, register it.

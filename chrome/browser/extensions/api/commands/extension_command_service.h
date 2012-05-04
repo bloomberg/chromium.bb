@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_commands.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -40,21 +41,22 @@ class ExtensionCommandService : public ProfileKeyedService,
   // given its |extension_id|. The function consults the master list to see if
   // the keybinding is active. Returns NULL if the extension has no browser
   // action or no active keybinding for it.
-  const Extension::Command* GetActiveBrowserActionCommand(
+  const extensions::Command* GetActiveBrowserActionCommand(
       const std::string& extension_id);
 
   // Gets the active keybinding (if any) for the page action of an extension
   // given its |extension_id|. The function consults the master list to see if
   // the keybinding is active. Returns NULL if the extension has no page action
   // or no active keybinding for it.
-  const Extension::Command* GetActivePageActionCommand(
+  const extensions::Command* GetActivePageActionCommand(
       const std::string& extension_id);
 
   // Gets the active keybinding (if any) for the named commands of an extension
   // given its |extension_id|. The function consults the master list to see if
   // the keybinding is active. Returns an empty map if the extension has no
   // named commands or no active keybinding for the commands.
-  Extension::CommandMap GetActiveNamedCommands(const std::string& extension_id);
+  extensions::CommandMap GetActiveNamedCommands(
+      const std::string& extension_id);
 
   // Checks to see if a keybinding |accelerator| for a given |command_name| in
   // an extension with id |extension_id| is registered as active (by consulting

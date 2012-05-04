@@ -147,7 +147,7 @@ class InstalledBubbleContent : public views::View,
         ExtensionCommandService* command_service =
             ExtensionCommandServiceFactory::GetForProfile(
                 browser_->profile());
-        const Extension::Command* browser_action_command =
+        const extensions::Command* browser_action_command =
             command_service->GetActiveBrowserActionCommand(extension->id());
         if (!browser_action_command) {
           info_ = new views::Label(l10n_util::GetStringUTF16(
@@ -169,7 +169,7 @@ class InstalledBubbleContent : public views::View,
         ExtensionCommandService* command_service =
             ExtensionCommandServiceFactory::GetForProfile(
                 browser_->profile());
-        const Extension::Command* page_action_command =
+        const extensions::Command* page_action_command =
             command_service->GetActivePageActionCommand(extension->id());
         if (!page_action_command) {
           info_ = new views::Label(l10n_util::GetStringUTF16(

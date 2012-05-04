@@ -32,9 +32,9 @@ void ExtensionKeybindingRegistryViews::AddExtensionKeybinding(
       ExtensionCommandServiceFactory::GetForProfile(profile_);
   // Add all the active keybindings (except page actions and browser actions,
   // which are handled elsewhere).
-  const Extension::CommandMap& commands =
+  const extensions::CommandMap& commands =
       command_service->GetActiveNamedCommands(extension->id());
-  Extension::CommandMap::const_iterator iter = commands.begin();
+  extensions::CommandMap::const_iterator iter = commands.begin();
   for (; iter != commands.end(); ++iter) {
     event_targets_[iter->second.accelerator()] =
         std::make_pair(extension->id(), iter->second.command_name());

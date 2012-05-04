@@ -114,6 +114,8 @@
         'common/extensions/extension.h',
         'common/extensions/extension_action.cc',
         'common/extensions/extension_action.h',
+        'common/extensions/extension_commands.cc',
+        'common/extensions/extension_commands.h',
         'common/extensions/extension_constants.cc',
         'common/extensions/extension_constants.h',
         'common/extensions/extension_error_utils.cc',

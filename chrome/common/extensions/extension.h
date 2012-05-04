@@ -21,6 +21,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_commands.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_permission_set.h"
@@ -157,39 +158,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     bool shortcut_ctrl;
     bool shortcut_shift;
   };
-
-  class Command {
-   public:
-    // Define out of line constructor/destructor to please Clang.
-    Command();
-    ~Command();
-
-    // The platform value for the Command.
-    static std::string CommandPlatform();
-
-    // Parse the command.
-    bool Parse(base::DictionaryValue* command,
-               const std::string& command_name,
-               int index,
-               string16* error);
-
-    // Accessors:
-    const std::string& command_name() const { return command_name_; }
-    const ui::Accelerator& accelerator() const { return accelerator_; }
-    const std::string& description() const { return description_; }
-
-   private:
-    ui::Accelerator ParseImpl(const std::string& shortcut,
-                              const std::string& platform_key,
-                              int index,
-                              string16* error);
-    std::string command_name_;
-    ui::Accelerator accelerator_;
-    std::string description_;
-  };
-
-  // A mapping of command name (std::string) to a command object.
-  typedef std::map<std::string, Command> CommandMap;
 
   struct TtsVoice {
     // Define out of line constructor/destructor to please Clang.
@@ -601,19 +569,19 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // The browser action command that the extension wants to use, which is not
   // necessarily the one it can use, as it might be inactive (see also
   // GetActiveBrowserActionCommand in ExtensionKeybindingRegistry).
-  const Command* browser_action_command() const {
+  const extensions::Command* browser_action_command() const {
     return browser_action_command_.get();
   }
   // The page action command that the extension wants to use, which is not
   // necessarily the one it can use, as it might be inactive (see also
   // GetActivePageActionCommand in ExtensionKeybindingRegistry).
-  const Command* page_action_command() const {
+  const extensions::Command* page_action_command() const {
     return page_action_command_.get();
   }
   // The map (of command names to commands) that the extension wants to use,
   // which is not necessarily the one it can use, as they might be inactive
   // (see also GetActiveNamedCommands in ExtensionKeybindingRegistry).
-  const CommandMap& named_commands() const {
+  const extensions::CommandMap& named_commands() const {
     return named_commands_;
   }
   bool has_background_page() const {
@@ -970,9 +938,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   std::vector<InputComponentInfo> input_components_;
 
   // Optional list of commands (keyboard shortcuts).
-  scoped_ptr<Command> browser_action_command_;
-  scoped_ptr<Command> page_action_command_;
-  CommandMap named_commands_;
+  scoped_ptr<extensions::Command> browser_action_command_;
+  scoped_ptr<extensions::Command> page_action_command_;
+  extensions::CommandMap named_commands_;
 
   // Optional list of web accessible extension resources.
   base::hash_set<std::string> web_accessible_resources_;
