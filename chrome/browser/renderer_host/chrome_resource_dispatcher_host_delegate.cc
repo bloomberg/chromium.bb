@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/base64.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -31,8 +30,6 @@
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/user_script.h"
-#include "chrome/common/metrics/experiments_helper.h"
-#include "chrome/common/metrics/proto/chrome_experiments.pb.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -43,7 +40,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/ssl_config_service.h"
 #include "net/url_request/url_request.h"
-#include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 // TODO(oshima): Enable this for other platforms.
 #if defined(OS_CHROMEOS)
@@ -91,8 +87,7 @@ ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate(
     : download_request_limiter_(g_browser_process->download_request_limiter()),
       safe_browsing_(g_browser_process->safe_browsing_service()),
       user_script_listener_(new UserScriptListener()),
-      prerender_tracker_(prerender_tracker),
-      variation_ids_cache_initialized_(false) {
+      prerender_tracker_(prerender_tracker) {
 }
 
 ChromeResourceDispatcherHostDelegate::~ChromeResourceDispatcherHostDelegate() {
@@ -315,23 +310,13 @@ void ChromeResourceDispatcherHostDelegate::AppendChromeMetricsHeaders(
   // 2. We only transmit for non-Incognito profiles.
   // 3. For the X-Chrome-UMA-Enabled bit, we only set it if UMA is in fact
   //    enabled for this install of Chrome.
-  // 4. For the X-Chrome-Variations, we only include non-empty variation IDs.
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  if (io_data->is_incognito() ||
-      !google_util::IsGoogleDomainUrl(request->url().spec(),
-                                      google_util::ALLOW_SUBDOMAIN))
-    return;
-
-  if (io_data->GetMetricsEnabledStateOnIOThread())
-    request->SetExtraRequestHeaderByName("X-Chrome-UMA-Enabled", "1", false);
-
-  // Lazily initialize the header, if not already done, before we attempt to
-  // transmit it.
-  InitVariationIDsCacheIfNeeded();
-  if (!variation_ids_header_.empty()) {
-    request->SetExtraRequestHeaderByName("X-Chrome-Variations",
-        variation_ids_header_,
-        false);
+  if (google_util::IsGoogleDomainUrl(request->url().spec(),
+                                     google_util::ALLOW_SUBDOMAIN) &&
+      !io_data->is_incognito() && io_data->GetMetricsEnabledStateOnIOThread()) {
+    request->SetExtraRequestHeaderByName("X-Chrome-UMA-Enabled",
+                                         "1",
+                                         false);
   }
 }
 
@@ -385,64 +370,4 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   OneClickSigninHelper::ShowInfoBarIfPossible(request, info->GetChildID(),
                                               info->GetRouteID());
 #endif
-}
-
-void ChromeResourceDispatcherHostDelegate::OnFieldTrialGroupFinalized(
-    const std::string& trial_name,
-    const std::string& group_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  chrome_variations::ID new_id =
-      experiments_helper::GetGoogleExperimentID(trial_name, group_name);
-  if (new_id == chrome_variations::kEmptyID)
-    return;
-  variation_ids_set_.insert(new_id);
-  UpdateVariationIDsHeaderValue();
-}
-
-void ChromeResourceDispatcherHostDelegate::InitVariationIDsCacheIfNeeded() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (variation_ids_cache_initialized_)
-    return;
-
-  // Register for additional cache updates. We do this first to avoid a race
-  // that could cause us to miss registered FieldTrials.
-  base::FieldTrialList::AddObserver(this);
-
-  base::FieldTrial::SelectedGroups initial_groups;
-  base::FieldTrialList::GetFieldTrialSelectedGroups(&initial_groups);
-  for (base::FieldTrial::SelectedGroups::const_iterator it =
-       initial_groups.begin(); it != initial_groups.end(); ++it) {
-    chrome_variations::ID id =
-        experiments_helper::GetGoogleExperimentID(it->trial, it->group);
-    if (id != chrome_variations::kEmptyID)
-      variation_ids_set_.insert(id);
-  }
-  UpdateVariationIDsHeaderValue();
-
-  variation_ids_cache_initialized_ = true;
-}
-
-void ChromeResourceDispatcherHostDelegate::UpdateVariationIDsHeaderValue() {
-  // The header value is a serialized protobuffer of Variation IDs which we
-  // base64 encode before transmitting as a string.
-  if (variation_ids_set_.empty())
-    return;
-  metrics::ChromeVariations proto;
-  for (std::set<chrome_variations::ID>::const_iterator it =
-      variation_ids_set_.begin(); it != variation_ids_set_.end(); ++it)
-    proto.add_variation_id(*it);
-
-  std::string serialized;
-  proto.SerializeToString(&serialized);
-
-  std::string hashed;
-  if (base::Base64Encode(serialized, &hashed)) {
-    // If successful, swap the header value with the new one.
-    // Note that the list of IDs and the header could be temporarily out of sync
-    // if IDs are added as we are recreating the header, but we're OK with those
-    // descrepancies.
-    variation_ids_header_ = hashed;
-  } else {
-    DVLOG(1) << "Failed to base64 encode Variation IDs value: " << serialized;
-  }
 }
