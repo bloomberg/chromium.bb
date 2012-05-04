@@ -16,6 +16,7 @@
 #include "base/win/scoped_co_mem.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "content/public/common/content_switches.h"
 
 namespace chrome {
 
@@ -95,6 +96,18 @@ bool GetUserDesktop(FilePath* result) {
     return false;
   *result = FilePath(system_buffer);
   return true;
+}
+
+bool ProcessNeedsProfileDir(const std::string& process_type) {
+  // On windows we don't want subprocesses other than the browser process and
+  // service processes to be able to use the profile directory because if it
+  // lies on a network share the sandbox will prevent us from accessing it.
+  // TODO(pastarmovj): For no gpu processes are whitelisted too because they do
+  // use the profile dir in some way but this must be investigated and fixed if
+  // possible.
+  return process_type.empty() ||
+         process_type == switches::kServiceProcess ||
+         process_type == switches::kGpuProcess;
 }
 
 }  // namespace chrome

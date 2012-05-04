@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/common/content_switches.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -144,6 +145,9 @@ bool PathProvider(int key, FilePath* result) {
   FilePath cur;
   switch (key) {
     case chrome::DIR_USER_DATA:
+      CHECK(ProcessNeedsProfileDir(
+          CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kProcessType)));
       if (!GetDefaultUserDataDirectory(&cur)) {
         NOTREACHED();
         return false;

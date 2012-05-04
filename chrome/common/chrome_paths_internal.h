@@ -6,6 +6,8 @@
 #define CHROME_COMMON_CHROME_PATHS_INTERNAL_H_
 #pragma once
 
+#include <string>
+
 #include "build/build_config.h"
 
 #if defined(OS_MACOSX)
@@ -84,6 +86,9 @@ bool GetGlobalApplicationSupportDirectory(FilePath* result);
 NSBundle* OuterAppBundle();
 
 #endif  // OS_MACOSX
+
+// Checks if the |process_type| has the rights to access the profile.
+bool ProcessNeedsProfileDir(const std::string& process_type);
 
 }  // namespace chrome
 
