@@ -3814,8 +3814,6 @@
    fun:_gdk_window_impl_new
    fun:gdk_window_ensure_native
    fun:gdk_x11_drawable_get_xid
-   fun:_gtk_socket_windowing_realize_window
-   fun:gtk_socket_realize
    ...
    fun:g_closure_invoke
    fun:signal_emit_unlocked_R
