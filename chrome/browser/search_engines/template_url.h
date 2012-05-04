@@ -111,9 +111,6 @@ class TemplateURLRef {
   // {google:baseURL} or {google:baseSuggestURL}.
   bool HasGoogleBaseURLs() const;
 
-  // Collects metrics whether searches through Google are sent with RLZ string.
-  void CollectRLZMetrics() const;
-
  private:
   friend class TemplateURL;
   FRIEND_TEST_ALL_PREFIXES(TemplateURLTest, SetPrepopulatedAndParse);
