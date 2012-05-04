@@ -1342,6 +1342,21 @@ void RenderViewHostImpl::OnMsgStartDragging(
   if (!filtered_data.url.SchemeIs(chrome::kJavaScriptScheme))
     FilterURL(policy, GetProcess()->GetID(), true, &filtered_data.url);
   FilterURL(policy, GetProcess()->GetID(), false, &filtered_data.html_base_url);
+  // Filter out any paths that the renderer didn't have access to. This prevents
+  // the following attack on a malicious renderer:
+  // 1. StartDragging IPC sent with renderer-specified filesystem paths that it
+  //    doesn't have read permissions for.
+  // 2. We initiate a native DnD operation.
+  // 3. DnD operation immediately ends since mouse is not held down. DnD events
+  //    still fire though, which causes read permissions to be granted to the
+  //    renderer for any file paths in the drop.
+  filtered_data.filenames.clear();
+  for (std::vector<string16>::const_iterator it = drop_data.filenames.begin();
+       it != drop_data.filenames.end(); ++it) {
+    FilePath path(FilePath::FromUTF8Unsafe(UTF16ToUTF8(*it)));
+    if (policy->CanReadFile(GetProcess()->GetID(), path))
+      filtered_data.filenames.push_back(*it);
+  }
   view->StartDragging(filtered_data, drag_operations_mask, image, image_offset);
 }
 
