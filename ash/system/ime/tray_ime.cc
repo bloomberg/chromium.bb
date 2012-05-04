@@ -202,7 +202,7 @@ views::View* TrayIME::CreateTrayView(user::LoginStatus status) {
   tray_label_ = new TrayItemView;
   tray_label_->CreateLabel();
   SetupLabelForTray(tray_label_->label());
-  tray_label_->set_border(
+  tray_label_->label()->set_border(
       views::Border::CreateEmptyBorder(0, 2, 0, 2));
   return tray_label_;
 }
