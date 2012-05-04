@@ -96,7 +96,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, OneAtATime) {
   EXPECT_EQ(-1, GetRemovalMask());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemoveBrowsingDataAll) {
+// Use-after-free, see http://crbug.com/116522
+IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
+                       DISABLED_RemoveBrowsingDataAll) {
   EXPECT_EQ(NULL, RunFunctionAndReturnResult(new RemoveBrowsingDataFunction(),
       kRemoveEverythingArguments, browser()));
 

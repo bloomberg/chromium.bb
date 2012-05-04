@@ -20,7 +20,13 @@ class GuestModeOptionsBrowserTest : public options2::OptionsBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(GuestModeOptionsBrowserTest, LoadOptionsByURL) {
+// See http://crbug.com/126224
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_LoadOptionsByURL DISABLED_LoadOptionsByURL
+#else
+#define MAYBE_LoadOptionsByURL LoadOptionsByURL
+#endif  // defined(ADDRESS_SANITIZER)
+IN_PROC_BROWSER_TEST_F(GuestModeOptionsBrowserTest, MAYBE_LoadOptionsByURL) {
   NavigateToSettings();
   VerifyTitle();
   VerifyNavbar();
