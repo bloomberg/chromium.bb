@@ -72,7 +72,7 @@ case ${BUILD_OS}-${BUILD_ARCH} in
     RUN_TESTS+=" x86-64 x86-64-browser"
     RUN_TESTS+=" x86-32-glibc x86-32-browser-glibc"
     RUN_TESTS+=" x86-64-glibc x86-64-browser-glibc"
-    RUN_TESTS+=" arm arm-pic arm-browser"
+    RUN_TESTS+=" arm arm-browser"
     ;;
   mac-32)
     export PNACL_VERBOSE=true  # To avoid timing out, since this bot is slow.

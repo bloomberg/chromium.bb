@@ -252,6 +252,10 @@ mode-buildbot-x86() {
   scons-stage "x86-${bits}" "--mode=opt-host,nacl -k pnacl_generate_pexe=0" \
     "nonpexe_tests"
 
+  scons-build-test "x86-${bits}" \
+    "--mode=opt-host,nacl -k pnacl_generate_pexe=0 nacl_pic=1" \
+    "small_tests medium_tests large_tests"
+
   # sandboxed translation
   build-sbtc-prerequisites x86-${bits}
   scons-build-test "x86-${bits}" "--mode=opt-host,nacl -j8 -k \
@@ -273,7 +277,7 @@ mode-buildbot-arm() {
   gyp-arm-build Release
 
   scons-build-test "arm" "${qemuflags}" "small_tests medium_tests large_tests"
-  scons-build-test "arm" "${qemuflags} nacl_pic=1" \
+  scons-build-test "arm" "${qemuflags} pnacl_generate_pexe=0 nacl_pic=1" \
     "small_tests medium_tests large_tests"
 
   # non-pexe tests
@@ -303,11 +307,11 @@ mode-buildbot-arm-hw() {
   local hwflags="${mode} -j2 -k naclsdk_validate=0 built_elsewhere=1"
 
   scons-stage "arm" "${hwflags}" "small_tests medium_tests large_tests"
-  scons-stage "arm" "${hwflags} pnacl_generate_pexe=0" \
-    "nonpexe_tests"
+  scons-stage "arm" "${hwflags} pnacl_generate_pexe=0" "nonpexe_tests"
   scons-stage "arm" \
     "${hwflags} use_sandboxed_translator=1 translate_in_build_step=0" \
     "toolchain_tests"
+  # TODO(dschuff): consider running pic tests here as well
   browser-tests "arm" "${hwflags}"
 }
 
