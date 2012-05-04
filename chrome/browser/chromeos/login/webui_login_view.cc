@@ -318,7 +318,7 @@ bool WebUILoginView::IsPopupOrPanel(const WebContents* source) const {
 
 bool WebUILoginView::TakeFocus(bool reverse) {
   ash::SystemTray* tray = ash::Shell::GetInstance()->tray();
-  if (tray) {
+  if (tray && tray->GetWidget()->IsVisible()) {
     tray->SetNextFocusableView(this);
     ash::Shell::GetInstance()->RotateFocus(reverse ? ash::Shell::BACKWARD :
                                                      ash::Shell::FORWARD);
