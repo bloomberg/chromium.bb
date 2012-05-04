@@ -781,6 +781,8 @@
         'client/plugin/pepper_packet_socket_factory.h',
         'client/plugin/pepper_plugin_thread_delegate.cc',
         'client/plugin/pepper_plugin_thread_delegate.h',
+        'client/plugin/pepper_port_allocator.cc',
+        'client/plugin/pepper_port_allocator.h',
         'client/plugin/pepper_view.cc',
         'client/plugin/pepper_view.h',
         'client/plugin/pepper_util.cc',
