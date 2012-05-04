@@ -95,6 +95,8 @@
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # crbug.com/123396
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
+      # crbug.com/126311
+      '-infobars.OneClickInfobarTest.testDisplayOneClickInfobarPerProfile',
       # crbug.com/126261
       '-instant.InstantSettingsTest.testEnableDisableInstant',
       '-instant.InstantTest.testExtnPageCanDismissInstant',
@@ -108,12 +110,17 @@
       '-instant.InstantTest.testNTPCanDismissInstant',
       '-instant.InstantTest.testNewWindowCanDismissInstant',
       '-instant.InstantTest.testPreFetchInstantURLNotInHistory',
+      # crbug.com/126311
+      '-multiprofile.MultiprofileTest.test20NewProfiles',
+      '-multiprofile.MultiprofileTest.testBasic',
       # crbug.com/100593
       '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',
       # crbug.com/105560
       '-notifications',
       # crbug.com/99506
       '-notifications.NotificationsTest.testSpecialURLNotification',
+      # crbug.com/126311
+      '-ntp.NTPTest.testDifferentProfileNotAppearInMostVisited',
       # crbug.com/71715
       '-omnibox.OmniboxTest.testHistoryResult',
       # crbug.com/123019
