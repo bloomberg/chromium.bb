@@ -51,6 +51,13 @@ static const int kMaxBufferCapacity = 20 * kMegabyte;
 // location and will instead reset the request.
 static const int kForwardWaitThreshold = 2 * kMegabyte;
 
+// The lower bound on our buffer (expressed as a fraction of the buffer size)
+// where we'll disable deferring and continue downloading data.
+//
+// TODO(scherkus): refer to http://crbug.com/124719 for more discussion on
+// how we could improve our buffering logic.
+static const double kDisableDeferThreshold = 0.9;
+
 // Computes the suggested backward and forward capacity for the buffer
 // if one wants to play at |playback_rate| * the natural playback speed.
 // Use a value of 0 for |bitrate| if it is unknown.
@@ -634,12 +641,15 @@ bool BufferedResourceLoader::ShouldDisableDefer() const {
     case kReadThenDefer:
       return !read_cb_.is_null() && last_offset_ > buffer_->forward_bytes();
 
-    // We have less than half the capacity of our threshold, so
-    // disable defer to get more data.
+    // Disable deferring whenever our forward-buffered amount falls beneath our
+    // threshold.
+    //
+    // TODO(scherkus): refer to http://crbug.com/124719 for more discussion on
+    // how we could improve our buffering logic.
     case kThresholdDefer: {
-      int amount_buffered = buffer_->forward_bytes();
-      int half_capacity = buffer_->forward_capacity() / 2;
-      return amount_buffered < half_capacity;
+      int buffered = buffer_->forward_bytes();
+      int threshold = buffer_->forward_capacity() * kDisableDeferThreshold;
+      return buffered < threshold;
     }
   }
 

@@ -663,8 +663,8 @@ TEST_F(BufferedResourceLoaderTest, ThresholdDeferStrategy) {
   ConfirmLoaderDeferredState(true);
 
   // Read a little from the buffer: keep deferring.
-  EXPECT_CALL(*this, ReadCallback(BufferedResourceLoader::kOk, 2));
-  ReadLoader(10, 2, buffer);
+  EXPECT_CALL(*this, ReadCallback(BufferedResourceLoader::kOk, 1));
+  ReadLoader(10, 1, buffer);
   ConfirmLoaderDeferredState(true);
 
   // Read a little more and go under threshold: stop deferring.
@@ -679,8 +679,8 @@ TEST_F(BufferedResourceLoaderTest, ThresholdDeferStrategy) {
   ConfirmLoaderDeferredState(true);
 
   // Read a little from the buffer: keep deferring.
-  EXPECT_CALL(*this, ReadCallback(BufferedResourceLoader::kOk, 4));
-  ReadLoader(16, 4, buffer);
+  EXPECT_CALL(*this, ReadCallback(BufferedResourceLoader::kOk, 1));
+  ReadLoader(16, 1, buffer);
   ConfirmLoaderDeferredState(true);
 
   StopWhenLoad();
@@ -697,10 +697,10 @@ TEST_F(BufferedResourceLoaderTest, Tricky_ReadForwardsPastBuffered) {
 
   // PRECONDITION
   WriteUntilThreshold();
-  EXPECT_CALL(*this, ReadCallback(BufferedResourceLoader::kOk, 4));
-  ReadLoader(10, 4, buffer);
-  ConfirmBufferState(4, 10, 6, 10);
-  ConfirmLoaderOffsets(14, 0, 0);
+  EXPECT_CALL(*this, ReadCallback(BufferedResourceLoader::kOk, 1));
+  ReadLoader(10, 1, buffer);
+  ConfirmBufferState(1, 10, 9, 10);
+  ConfirmLoaderOffsets(11, 0, 0);
   ConfirmLoaderDeferredState(true);
 
   // *** TRICKY BUSINESS, PT. I ***
@@ -710,8 +710,8 @@ TEST_F(BufferedResourceLoaderTest, Tricky_ReadForwardsPastBuffered) {
   //   1) Stop deferring to receive more data.
   //
   // BEFORE
-  //   offset=14 [xxxxxx____]
-  //                    ^^^^ requested 4 bytes @ offset 20
+  //   offset=11 [xxxxxxxxx_]
+  //                       ^ ^^^ requested 4 bytes @ offset 20
   // AFTER
   //   offset=24 [__________]
   //
