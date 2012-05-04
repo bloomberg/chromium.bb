@@ -26,9 +26,10 @@ void CheckURLs(const GURL& server_base_url) {
   EXPECT_EQ(expected_url, url.spec());
 
   url = CloudPrintHelpers::GetUrlForPrinterDelete(server_base_url,
-                                                  "printeridbar");
-  expected_url = base::StringPrintf("%sdelete?printerid=printeridbar",
-                                    expected_url_base.c_str());
+                                                  "printeridbar", "deleted");
+  expected_url = base::StringPrintf(
+      "%sdelete?printerid=printeridbar&reason=deleted",
+      expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 
   url = CloudPrintHelpers::GetUrlForPrinterList(server_base_url, "demoproxy");

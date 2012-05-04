@@ -44,6 +44,9 @@ class CloudPrintConnector
   void Stop();
   bool IsRunning();
 
+  // Return list of printer ids registered with CloudPrint.
+  void GetPrinterIds(std::list<std::string>* printer_ids);
+
   // Register printer from the list.
   void RegisterPrinters(const printing::PrinterList& printers);
 

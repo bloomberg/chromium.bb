@@ -343,6 +343,8 @@
         'service/cloud_print/cloud_print_token_store.h',
         'service/cloud_print/cloud_print_url_fetcher.cc',
         'service/cloud_print/cloud_print_url_fetcher.h',
+        'service/cloud_print/cloud_print_wipeout.cc',
+        'service/cloud_print/cloud_print_wipeout.h',
         'service/cloud_print/job_status_updater.cc',
         'service/cloud_print/job_status_updater.h',
         'service/cloud_print/print_system_dummy.cc',

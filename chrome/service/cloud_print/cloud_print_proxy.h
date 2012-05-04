@@ -6,12 +6,14 @@
 #define CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_PROXY_H_
 #pragma once
 
+#include <list>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/service/cloud_print/cloud_print_proxy_backend.h"
+#include "chrome/service/cloud_print/cloud_print_wipeout.h"
 
 class ServiceProcessPrefs;
 
@@ -22,6 +24,7 @@ struct CloudPrintProxyInfo;
 // CloudPrintProxy is the layer between the service process UI thread
 // and the cloud print proxy backend.
 class CloudPrintProxy : public CloudPrintProxyFrontend,
+                        public CloudPrintWipeout::Client,
                         public base::NonThreadSafe {
  public:
   class Client {
@@ -43,6 +46,7 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
       const std::string& robot_auth_code,
       const std::string& robot_email,
       const std::string& user_email);
+  void UnregisterPrintersAndDisableForUser();
   void DisableForUser();
   // Returns the proxy info.
   void GetProxyInfo(cloud_print::CloudPrintProxyInfo* info);
@@ -60,9 +64,15 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
                                const std::string& user_email) OVERRIDE;
   virtual void OnAuthenticationFailed() OVERRIDE;
   virtual void OnPrintSystemUnavailable() OVERRIDE;
+  virtual void OnUnregisterPrinters(
+      const std::string& auth_token,
+      const std::list<std::string> printer_ids) OVERRIDE;
+
+  // CloudPrintWipeout::Client implementation.
+  virtual void OnUnregisterPrintersComplete() OVERRIDE;
 
  protected:
-  void Shutdown();
+  void ShutdownBackend();
   bool CreateBackend();
 
   // Our asynchronous backend to communicate with sync components living on
@@ -83,6 +93,10 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   // This is initialized after a successful call to one of the Enable* methods.
   // It is not cleared in DisableUser.
   std::string proxy_id_;
+  // Cloud Print server url.
+  GURL cloud_print_server_url_;
+  // This is a cleanup class for unregistering printers on proxy disable.
+  scoped_ptr<CloudPrintWipeout> wipeout_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintProxy);
 };

@@ -58,12 +58,14 @@ GURL CloudPrintHelpers::GetUrlForPrinterUpdate(
 
 GURL CloudPrintHelpers::GetUrlForPrinterDelete(
     const GURL& cloud_print_server_url,
-    const std::string& printer_id) {
+    const std::string& printer_id,
+    const std::string& reason) {
   std::string path(
       cloud_print::AppendPathToUrl(cloud_print_server_url, "delete"));
   GURL::Replacements replacements;
   replacements.SetPathStr(path);
-  std::string query = StringPrintf("printerid=%s", printer_id.c_str());
+  std::string query = StringPrintf("printerid=%s&reason=%s",
+      printer_id.c_str(), reason.c_str());
   replacements.SetQueryStr(query);
   return cloud_print_server_url.ReplaceComponents(replacements);
 }
@@ -215,18 +217,21 @@ bool CloudPrintHelpers::IsDryRunJob(const std::vector<std::string>& tags) {
   return false;
 }
 
-std::string CloudPrintHelpers::GetCloudPrintAuthHeader() {
-  std::string header;
+std::string CloudPrintHelpers::GetCloudPrintAuthHeaderFromStore() {
   CloudPrintTokenStore* token_store = CloudPrintTokenStore::current();
   if (!token_store || token_store->token().empty()) {
     // Using LOG here for critical errors. GCP connector may run in the headless
     // mode and error indication might be useful for user in that case.
     LOG(ERROR) << "CP_PROXY: Missing OAuth token for request";
+    return std::string();
   }
+  return GetCloudPrintAuthHeader(token_store->token());
+}
 
-  if (token_store) {
-    header = "Authorization: OAuth ";
-    header += token_store->token();
-  }
+std::string CloudPrintHelpers::GetCloudPrintAuthHeader(
+    const std::string& auth_token) {
+  std::string header;
+  header = "Authorization: OAuth ";
+  header += auth_token;
   return header;
 }

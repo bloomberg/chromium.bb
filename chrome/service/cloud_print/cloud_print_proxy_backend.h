@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_PROXY_BACKEND_H_
 #pragma once
 
+#include <list>
 #include <string>
 
 #include "base/threading/thread.h"
@@ -39,6 +40,10 @@ class CloudPrintProxyFrontend {
   virtual void OnAuthenticationFailed() = 0;
   // The print system could not be initialized.
   virtual void OnPrintSystemUnavailable() = 0;
+  // Receive auth token and list of printers.
+  virtual void OnUnregisterPrinters(
+      const std::string& auth_token,
+      const std::list<std::string> printer_ids) = 0;
 
  protected:
   // Don't delete through SyncFrontend interface.
@@ -84,6 +89,7 @@ class CloudPrintProxyBackend {
                                    const std::string& proxy_id);
   void Shutdown();
   void RegisterPrinters(const printing::PrinterList& printer_list);
+  void UnregisterPrinters();
 
  private:
   // The real guts of SyncBackendHost, to keep the public client API clean.

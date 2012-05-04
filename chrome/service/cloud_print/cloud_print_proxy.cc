@@ -62,7 +62,7 @@ CloudPrintProxy::CloudPrintProxy()
 
 CloudPrintProxy::~CloudPrintProxy() {
   DCHECK(CalledOnValidThread());
-  Shutdown();
+  ShutdownBackend();
 }
 
 void CloudPrintProxy::Initialize(ServiceProcessPrefs* service_prefs,
@@ -169,14 +169,26 @@ bool CloudPrintProxy::CreateBackend() {
   oauth_client_info.client_id = kDefaultCloudPrintOAuthClientId;
   oauth_client_info.client_secret = kDefaultCloudPrintOAuthClientSecret;
 
-  GURL cloud_print_server_url(cloud_print_server_url_str.c_str());
-  DCHECK(cloud_print_server_url.is_valid());
+  cloud_print_server_url_ = GURL(cloud_print_server_url_str.c_str());
+  DCHECK(cloud_print_server_url_.is_valid());
   backend_.reset(new CloudPrintProxyBackend(this, proxy_id_,
-                                            cloud_print_server_url,
+                                            cloud_print_server_url_,
                                             print_system_settings,
                                             oauth_client_info,
                                             enable_job_poll));
   return true;
+}
+
+void CloudPrintProxy::UnregisterPrintersAndDisableForUser() {
+  DCHECK(CalledOnValidThread());
+  if (backend_.get()) {
+    // Try getting auth and printers info from the backend.
+    // We'll get notified in this case.
+    backend_->UnregisterPrinters();
+  } else {
+    // If no backend avaialble, disable connector immidiately.
+    DisableForUser();
+  }
 }
 
 void CloudPrintProxy::DisableForUser() {
@@ -186,7 +198,7 @@ void CloudPrintProxy::DisableForUser() {
   if (client_) {
     client_->OnCloudPrintProxyDisabled(true);
   }
-  Shutdown();
+  ShutdownBackend();
 }
 
 void CloudPrintProxy::GetProxyInfo(cloud_print::CloudPrintProxyInfo* info) {
@@ -228,6 +240,7 @@ void CloudPrintProxy::OnAuthenticated(
 void CloudPrintProxy::OnAuthenticationFailed() {
   DCHECK(CalledOnValidThread());
   // If authenticated failed, we will disable the cloud print proxy.
+  // We can't delete printers at this point.
   DisableForUser();
   // Also delete the cached robot credentials since they may not be valid any
   // longer.
@@ -245,13 +258,27 @@ void CloudPrintProxy::OnAuthenticationFailed() {
 void CloudPrintProxy::OnPrintSystemUnavailable() {
   // If the print system is unavailable, we want to shutdown the proxy and
   // disable it non-persistently.
-  Shutdown();
+  ShutdownBackend();
   if (client_) {
     client_->OnCloudPrintProxyDisabled(false);
   }
 }
 
-void CloudPrintProxy::Shutdown() {
+void CloudPrintProxy::OnUnregisterPrinters(
+    const std::string& auth_token,
+    const std::list<std::string> printer_ids) {
+  ShutdownBackend();
+  wipeout_.reset(new CloudPrintWipeout(this, cloud_print_server_url_));
+  wipeout_->UnregisterPrinters(auth_token, printer_ids);
+}
+
+void CloudPrintProxy::OnUnregisterPrintersComplete() {
+  wipeout_.reset();
+  // Finish disabling cloud print for this user.
+  DisableForUser();
+}
+
+void CloudPrintProxy::ShutdownBackend() {
   DCHECK(CalledOnValidThread());
   if (backend_.get())
     backend_->Shutdown();

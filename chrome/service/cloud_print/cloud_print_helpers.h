@@ -24,7 +24,8 @@ class CloudPrintHelpers {
   static GURL GetUrlForPrinterUpdate(const GURL& cloud_print_server_url,
                                      const std::string& printer_id);
   static GURL GetUrlForPrinterDelete(const GURL& cloud_print_server_url,
-                                     const std::string& printer_id);
+                                     const std::string& printer_id,
+                                     const std::string& reason);
   static GURL GetUrlForPrinterList(const GURL& cloud_print_server_url,
                                    const std::string& proxy_id);
   static GURL GetUrlForJobFetch(const GURL& cloud_print_server_url,
@@ -54,7 +55,10 @@ class CloudPrintHelpers {
   // Returns true is tags indicate a dry run (test) job.
   static bool IsDryRunJob(const std::vector<std::string>& tags);
 
-  static std::string GetCloudPrintAuthHeader();
+  // Created CloudPrint auth header from the auth token stored in the store.
+  static std::string GetCloudPrintAuthHeaderFromStore();
+  // Created CloudPrint auth header from the auth token.
+  static std::string GetCloudPrintAuthHeader(const std::string& auth_token);
 
  private:
   CloudPrintHelpers() {}

@@ -39,7 +39,8 @@ class PrinterChangeHandleTraits {
   typedef HANDLE Handle;
 
   static bool CloseHandle(HANDLE handle) {
-    return ::FindClosePrinterChangeNotification(handle) != FALSE;
+    ::FindClosePrinterChangeNotification(handle);
+    return true;
   }
 
   static bool IsHandleValid(HANDLE handle) {

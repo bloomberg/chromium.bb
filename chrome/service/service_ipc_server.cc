@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,7 +139,10 @@ void ServiceIPCServer::OnGetCloudPrintProxyInfo() {
 }
 
 void ServiceIPCServer::OnDisableCloudPrintProxy() {
-  g_service_process->GetCloudPrintProxy()->DisableForUser();
+  // User disabled CloudPrint proxy explicitly. Delete printers
+  // registered from this proxy and disable proxy.
+  g_service_process->GetCloudPrintProxy()->
+      UnregisterPrintersAndDisableForUser();
 }
 
 void ServiceIPCServer::OnShutdown() {

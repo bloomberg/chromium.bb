@@ -72,10 +72,20 @@ void CloudPrintConnector::Stop() {
     print_server_watcher_.release();
     print_system_.release();
   }
+  request_ = NULL;
 }
 
 bool CloudPrintConnector::IsRunning() {
   return print_system_.get() != NULL;
+}
+
+void CloudPrintConnector::GetPrinterIds(std::list<std::string>* printer_ids) {
+  DCHECK(printer_ids);
+  printer_ids->clear();
+  for (JobHandlerMap::const_iterator iter = job_handler_map_.begin();
+       iter != job_handler_map_.end(); ++iter) {
+    printer_ids->push_back(iter->first);
+  }
 }
 
 void CloudPrintConnector::RegisterPrinters(
@@ -148,7 +158,7 @@ CloudPrintURLFetcher::ResponseAction CloudPrintConnector::OnRequestAuthError() {
 }
 
 std::string CloudPrintConnector::GetAuthHeader() {
-  return CloudPrintHelpers::GetCloudPrintAuthHeader();
+  return CloudPrintHelpers::GetCloudPrintAuthHeaderFromStore();
 }
 
 CloudPrintConnector::~CloudPrintConnector() {}
@@ -460,7 +470,8 @@ void CloudPrintConnector::OnPrinterDelete(const std::string& printer_id) {
   // twice should be enough.
   // Bug: http://code.google.com/p/chromium/issues/detail?id=101850
   GURL url = CloudPrintHelpers::GetUrlForPrinterDelete(cloud_print_server_url_,
-                                                       printer_id);
+                                                       printer_id,
+                                                       "printer_deleted");
   StartGetRequest(url,
                   kCloudPrintAPIMaxRetryCount,
                   &CloudPrintConnector::HandlePrinterDeleteResponse);

@@ -98,7 +98,7 @@ CloudPrintURLFetcher::ResponseAction JobStatusUpdater::OnRequestAuthError() {
 }
 
 std::string JobStatusUpdater::GetAuthHeader() {
-  return CloudPrintHelpers::GetCloudPrintAuthHeader();
+  return CloudPrintHelpers::GetCloudPrintAuthHeaderFromStore();
 }
 
 JobStatusUpdater::~JobStatusUpdater() {}
