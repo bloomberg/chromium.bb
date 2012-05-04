@@ -491,7 +491,6 @@
       ],
       'sources': [
         'browser/accessibility/accessibility_mac_uitest.mm',
-        'browser/autofill/autofill_browsertest.cc',
         'browser/browser_focus_uitest.cc',
         'browser/browser_keyevents_browsertest.cc',
         'browser/collected_cookies_uitest.cc',
@@ -2624,6 +2623,7 @@
         'browser/accessibility/accessibility_extension_apitest.cc',
         'browser/app_controller_mac_browsertest.mm',
         'browser/autocomplete/autocomplete_browsertest.cc',
+        'browser/autofill/autofill_browsertest.cc',
         'browser/autofill/form_structure_browsertest.cc',
         'browser/autofill/autofill_popup_view_browsertest.cc',
         'browser/automation/automation_tab_helper_browsertest.cc',

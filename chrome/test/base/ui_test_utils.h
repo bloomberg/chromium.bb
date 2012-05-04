@@ -218,9 +218,18 @@ int FindInPage(TabContentsWrapper* tab,
                bool case_sensitive,
                int* ordinal);
 
-// Simulates clicking at the specified position in the given tab. Unlike
+// Simulates clicking at the center of the given tab asynchronously. Unlike
 // ClickOnView, this works even if the browser isn't in the foreground.
-void SimulateMouseClick(content::WebContents* tab, int x, int y);
+void SimulateMouseClick(content::WebContents* tab);
+
+// Sends a key press asynchronously. Unlike the SendKeyPress functions, this
+// works even if the browser isn't in the foreground.
+void SimulateKeyPress(content::WebContents* tab,
+                      ui::KeyboardCode key,
+                      bool control,
+                      bool shift,
+                      bool alt,
+                      bool command);
 
 #if defined OS_MACOSX
 void SetWindowBounds(gfx::NativeWindow window, const gfx::Rect& bounds);

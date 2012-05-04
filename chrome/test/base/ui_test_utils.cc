@@ -620,7 +620,9 @@ int FindInPage(TabContentsWrapper* tab_contents, const string16& search_string,
   return observer.number_of_matches();
 }
 
-void SimulateMouseClick(content::WebContents* tab, int x, int y) {
+void SimulateMouseClick(content::WebContents* tab) {
+  int x = tab->GetView()->GetContainerSize().width() / 2;
+  int y = tab->GetView()->GetContainerSize().height() / 2;
   WebKit::WebMouseEvent mouse_event;
   mouse_event.type = WebKit::WebInputEvent::MouseDown;
   mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
@@ -635,6 +637,66 @@ void SimulateMouseClick(content::WebContents* tab, int x, int y) {
   tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
   mouse_event.type = WebKit::WebInputEvent::MouseUp;
   tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+}
+
+void BuildSimpleWebKeyEvent(WebKit::WebInputEvent::Type type,
+                            ui::KeyboardCode key,
+                            bool control,
+                            bool shift,
+                            bool alt,
+                            bool command,
+                            NativeWebKeyboardEvent* event) {
+  event->nativeKeyCode = 0;
+  event->windowsKeyCode = key;
+  event->setKeyIdentifierFromWindowsKeyCode();
+  event->type = type;
+  event->modifiers = 0;
+  event->isSystemKey = false;
+  event->timeStampSeconds = base::Time::Now().ToDoubleT();
+  event->skip_in_browser = true;
+
+  if (type == WebKit::WebInputEvent::Char ||
+      type == WebKit::WebInputEvent::RawKeyDown) {
+    event->text[0] = key;
+    event->unmodifiedText[0] = key;
+  }
+
+  if (control)
+    event->modifiers |= WebKit::WebInputEvent::ControlKey;
+
+  if (shift)
+    event->modifiers |= WebKit::WebInputEvent::ShiftKey;
+
+  if (alt)
+    event->modifiers |= WebKit::WebInputEvent::AltKey;
+
+  if (command)
+    event->modifiers |= WebKit::WebInputEvent::MetaKey;
+}
+
+void SimulateKeyPress(content::WebContents* tab,
+                      ui::KeyboardCode key,
+                      bool control,
+                      bool shift,
+                      bool alt,
+                      bool command) {
+  NativeWebKeyboardEvent event_down;
+  BuildSimpleWebKeyEvent(
+      WebKit::WebInputEvent::RawKeyDown, key, control, shift, alt, command,
+      &event_down);
+  tab->GetRenderViewHost()->ForwardKeyboardEvent(event_down);
+
+  NativeWebKeyboardEvent char_event;
+  BuildSimpleWebKeyEvent(
+      WebKit::WebInputEvent::Char, key, control, shift, alt, command,
+      &char_event);
+  tab->GetRenderViewHost()->ForwardKeyboardEvent(char_event);
+
+  NativeWebKeyboardEvent event_up;
+  BuildSimpleWebKeyEvent(
+      WebKit::WebInputEvent::KeyUp, key, control, shift, alt, command,
+      &event_up);
+  tab->GetRenderViewHost()->ForwardKeyboardEvent(event_up);
 }
 
 void RegisterAndWait(content::NotificationObserver* observer,

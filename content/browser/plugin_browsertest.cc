@@ -118,8 +118,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest,
   ui_test_utils::TitleWatcher title_watcher(
       browser()->GetSelectedWebContents(), expected_title);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
-  ui_test_utils::SimulateMouseClick(
-      browser()->GetSelectedWebContents(), 150, 250);
+  ui_test_utils::SimulateMouseClick(browser()->GetSelectedWebContents());
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 #endif

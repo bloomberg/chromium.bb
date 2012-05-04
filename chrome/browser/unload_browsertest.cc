@@ -389,8 +389,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTabWhenOtherTabHasListener) {
   ui_test_utils::WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  ui_test_utils::SimulateMouseClick(
-      browser()->GetSelectedWebContents(), 20, 20);
+  ui_test_utils::SimulateMouseClick(browser()->GetSelectedWebContents());
   observer.Wait();
   load_stop_observer.Wait();
   CheckTitle("popup");
