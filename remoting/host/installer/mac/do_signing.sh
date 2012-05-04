@@ -35,8 +35,8 @@ PKGPROJ_HOST_UNINSTALLER='ChromotingHostUninstaller.packproj'
 # Final (user-visible) mpkg name.
 PKG_FINAL='@@HOST_PKG@@.mpkg'
 
-DMG_NAME='@@DMG_NAME@@'
-DMG_FILENAME='@@DMG_NAME@@.dmg'
+DMG_VOLUME_NAME='@@DMG_VOLUME_NAME@@'
+DMG_FILE_NAME='@@DMG_FILE_NAME@@.dmg'
 
 # Temp directory for Iceberg output.
 PKG_DIR=build
@@ -132,13 +132,13 @@ build_dmg() {
       --format UDBZ \
       --tempdir "${DMG_TEMP_DIR}" \
       --source "${DMG_EMPTY_DIR}" \
-      --target "${output_dir}/${DMG_FILENAME}" \
-      --volname "${DMG_NAME}" \
+      --target "${output_dir}/${DMG_FILE_NAME}" \
+      --volname "${DMG_VOLUME_NAME}" \
       --copy "${input_dir}/${PKG_DIR}/${PKG_FINAL}" \
       --copy "${input_dir}/Scripts/keystone_install.sh:/.keystone_install"
 
-  if [[ ! -f "${output_dir}/${DMG_FILENAME}" ]]; then
-    err_exit "Unable to create disk image: ${DMG_FILENAME}"
+  if [[ ! -f "${output_dir}/${DMG_FILE_NAME}" ]]; then
+    err_exit "Unable to create disk image: ${DMG_FILE_NAME}"
   fi
 }
 
