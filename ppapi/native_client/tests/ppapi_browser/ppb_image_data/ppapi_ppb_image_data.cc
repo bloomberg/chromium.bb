@@ -48,7 +48,7 @@ const PP_Size kInvalidImageSize[] = {
 };
 const int kNumInvalidImages = sizeof(kInvalidImageSize) / sizeof(PP_Size);
 const int kManyResources = 100;
-const int kManyLargeResources = 1000;
+const int kManyLargeResources = 500;
 
 union BogusFormat {
   int bogus;
