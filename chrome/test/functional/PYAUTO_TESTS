@@ -574,16 +574,6 @@
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       # crbug.com/100365
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
-      # crbug.com/115917
-      '-flash.FlashTest.testFlashLoadsAfterKill',
-      '-infobars.InfobarTest.testPluginCrashForMultiTabs',
-      '-infobars.InfobarTest.testPluginCrashInfobar',
-      '-flash.FlashTest.testCanLoadFlash',
-      '-flash.FlashTest.testFlashIncognitoMode',
-      '-flash.FlashTest.testFlashWithMultipleTabs',
-      '-flash.FlashTest.testSingleFlashPluginProcess',
-      '-plugins.PluginsTest.testBlockAllPlugins',
-      '-plugins.PluginsTest.testBlockPluginException',
       # crbug.com/123419
       '-browsing_data.BrowsingDataTest.testClearCookies',
       '-databases.DatabasesTest.testDeleteAndUpdateDatabase',

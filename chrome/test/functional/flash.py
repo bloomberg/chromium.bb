@@ -16,7 +16,7 @@ class FlashTest(pyauto.PyUITest):
   def setUp(self):
     pyauto.PyUITest.setUp(self)
     self._flash_plugin_type = 'Plug-in'
-    if (self.IsChromeOS() and
+    if (self.IsLinux() and
         self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome'):
       self._flash_plugin_type = 'Pepper Plugin'
 

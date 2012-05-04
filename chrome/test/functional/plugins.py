@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -27,7 +27,7 @@ class PluginsTest(pyauto.PyUITest):
   def setUp(self):
     pyauto.PyUITest.setUp(self)
     self._flash_plugin_type = 'Plug-in'
-    if (self.IsChromeOS() and
+    if (self.IsLinux() and
         self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome'):
       self._flash_plugin_type = 'Pepper Plugin'
 
