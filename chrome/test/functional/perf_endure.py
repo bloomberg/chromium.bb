@@ -116,13 +116,13 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     last_perf_stats_time = time.time()
     self._GetPerformanceStats(
         webapp_name, test_description, tab_title_substring)
-    iteration_num = 0
+    self._iteration_num = 0  # Available to |do_scenario| if needed.
 
     self._remote_inspector_client.StartTimelineEventMonitoring(
         self._OnTimelineEvent)
 
     while time.time() - self._test_start_time < self._test_length_sec:
-      iteration_num += 1
+      self._iteration_num += 1
 
       if self._num_errors >= self._ERROR_COUNT_THRESHOLD:
         logging.error('Error count threshold (%d) reached. Terminating test '
@@ -134,11 +134,11 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
         self._GetPerformanceStats(
             webapp_name, test_description, tab_title_substring)
 
-      if iteration_num % 10 == 0:
+      if self._iteration_num % 10 == 0:
         remaining_time = self._test_length_sec - (time.time() -
                                                   self._test_start_time)
         logging.info('Chrome interaction #%d. Time remaining in test: %d sec.' %
-                     (iteration_num, remaining_time))
+                     (self._iteration_num, remaining_time))
 
       do_scenario()
 
@@ -569,8 +569,10 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       self._wait.until(lambda _: not self._GetElement(
                            self._driver.find_element_by_name, 'to'))
 
-      logging.debug('Sleeping 30 seconds.')
-      time.sleep(30)
+      # Sleep 2 minutes after every batch of 500 compose/discard iterations.
+      if self._iteration_num % 500 == 0:
+        logging.info('Sleeping 2 minutes.')
+        time.sleep(120)
 
     self._RunEndureTest(self._webapp_name, self._tab_title_substring,
                         test_description, scenario)
