@@ -141,7 +141,12 @@ bool AndroidURLsDatabase::UpdateAndroidURLRow(AndroidURLID id,
 }
 
 bool AndroidURLsDatabase::ClearAndroidURLRows() {
-  return GetDB().Execute("DELETE FROM android_urls");
+  // The android_urls table might not exist if the Android content provider is
+  // never used, especially in the unit tests. See http://b/6385692.
+  if (GetDB().DoesTableExist("android_urls"))
+    return GetDB().Execute("DELETE FROM android_urls");
+
+  return true;
 }
 
 bool AndroidURLsDatabase::MigrateToVersion22() {
