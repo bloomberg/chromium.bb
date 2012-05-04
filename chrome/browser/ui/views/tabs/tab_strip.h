@@ -477,13 +477,6 @@ class TabStrip : public views::View,
   // preserve current tab bounds.
   bool in_tab_close_;
 
-  // The size of the new tab button must be hardcoded because we need to be
-  // able to lay it out before we are able to get its image from the
-  // ui::ThemeProvider.  It also makes sense to do this, because the size of the
-  // new tab button should not need to be calculated dynamically.
-  static const int kNewTabButtonWidth = 34;
-  static const int kNewTabButtonHeight = 18;
-
   // Valid for the lifetime of a drag over us.
   scoped_ptr<DropInfo> drop_info_;
 

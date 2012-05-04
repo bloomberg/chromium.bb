@@ -34,7 +34,7 @@ namespace {
 
 // Padding around the "content" of a tab, occupied by the tab border graphics.
 
-const int GetLeftPadding() {
+int left_padding() {
   static int value = -1;
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
@@ -43,7 +43,7 @@ const int GetLeftPadding() {
         value = 22;
         break;
       case ui::LAYOUT_TOUCH:
-        value = 20;
+        value = 30;
         break;
       default:
         NOTREACHED();
@@ -52,7 +52,7 @@ const int GetLeftPadding() {
   return value;
 }
 
-const int GetTopPadding() {
+int top_padding() {
   static int value = -1;
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
@@ -70,14 +70,16 @@ const int GetTopPadding() {
   return value;
 }
 
-const int GetRightPadding() {
+int right_padding() {
   static int value = -1;
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
       case ui::LAYOUT_ASH:
       case ui::LAYOUT_DESKTOP:
-      case ui::LAYOUT_TOUCH:
         value = 21;
+        break;
+      case ui::LAYOUT_TOUCH:
+        value = 23;
         break;
       default:
         NOTREACHED();
@@ -86,7 +88,7 @@ const int GetRightPadding() {
   return value;
 }
 
-const int GetBottomPadding() {
+int bottom_padding() {
   static int value = -1;
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
@@ -105,7 +107,7 @@ const int GetBottomPadding() {
 }
 
 // Height of the shadow at the top of the tab image assets.
-const int GetDropShadowHeight() {
+int drop_shadow_height() {
   static int value = -1;
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
@@ -114,7 +116,7 @@ const int GetDropShadowHeight() {
         value = 4;
         break;
       case ui::LAYOUT_TOUCH:
-        value = 2;
+        value = 5;
         break;
       default:
         NOTREACHED();
@@ -238,7 +240,7 @@ gfx::Size Tab::GetBasicMinimumUnselectedSize() {
   InitTabResources();
 
   gfx::Size minimum_size;
-  minimum_size.set_width(GetLeftPadding() + GetRightPadding());
+  minimum_size.set_width(left_padding() + right_padding());
   // Since we use bitmap images, the real minimum height of the image is
   // defined most accurately by the height of the end cap images.
   minimum_size.set_height(tab_active_.image_l->height());
@@ -253,7 +255,7 @@ gfx::Size Tab::GetMinimumUnselectedSize() {
 gfx::Size Tab::GetMinimumSelectedSize() {
   gfx::Size minimum_size = GetBasicMinimumUnselectedSize();
   minimum_size.set_width(
-      GetLeftPadding() + gfx::kFaviconSize + GetRightPadding());
+      left_padding() + gfx::kFaviconSize + right_padding());
   return minimum_size;
 }
 
@@ -334,7 +336,7 @@ void Tab::Layout() {
   if (lb.IsEmpty())
     return;
   lb.Inset(
-      GetLeftPadding(), GetTopPadding(), GetRightPadding(), GetBottomPadding());
+      left_padding(), top_padding(), right_padding(), bottom_padding());
 
   // The height of the content of the Tab is the largest of the favicon,
   // the title text and the close button graphic.
@@ -346,7 +348,7 @@ void Tab::Layout() {
   showing_icon_ = ShouldShowIcon();
   if (showing_icon_) {
     // Use the size of the favicon as apps use a bigger favicon size.
-    int favicon_top = GetTopPadding() + content_height / 2 - kTabIconSize / 2;
+    int favicon_top = top_padding() + content_height / 2 - kTabIconSize / 2;
     int favicon_left = lb.x();
     favicon_bounds_.SetRect(favicon_left, favicon_top,
                             kTabIconSize, kTabIconSize);
@@ -371,7 +373,7 @@ void Tab::Layout() {
   // Size the Close button.
   showing_close_button_ = ShouldShowCloseBox();
   if (showing_close_button_) {
-    int close_button_top = GetTopPadding() + kCloseButtonVertFuzz +
+    int close_button_top = top_padding() + kCloseButtonVertFuzz +
         (content_height - close_button_size.height()) / 2;
     // If the ratio of the close button size to tab width exceeds the maximum.
     close_button()->SetBounds(lb.width() + kCloseButtonHorzFuzz,
@@ -384,7 +386,7 @@ void Tab::Layout() {
   }
 
   int title_left = favicon_bounds_.right() + kFaviconTitleSpacing;
-  int title_top = GetTopPadding() + kTitleTextOffsetY +
+  int title_top = top_padding() + kTitleTextOffsetY +
       (content_height - font_height()) / 2;
   // Size the Title text to fill the remaining space.
   if (!data().mini || width() >= kMiniTabRendererAsNormalTabWidth) {
@@ -392,7 +394,7 @@ void Tab::Layout() {
     // on the y-axis if we use the regular top padding, so we need to adjust it
     // so that the text appears centered.
     gfx::Size minimum_size = GetMinimumUnselectedSize();
-    int text_height = title_top + font_height() + GetBottomPadding();
+    int text_height = title_top + font_height() + bottom_padding();
     if (text_height > minimum_size.height())
       title_top -= (text_height - minimum_size.height()) / 2;
 
@@ -579,11 +581,11 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   // rectangle. And again, don't draw over the toolbar.
   background_canvas.TileImageInt(*tab_bg,
      offset + tab_image->l_width,
-     bg_offset_y + GetDropShadowHeight() + tab_image->y_offset,
+     bg_offset_y + drop_shadow_height() + tab_image->y_offset,
      tab_image->l_width,
-     GetDropShadowHeight() + tab_image->y_offset,
+     drop_shadow_height() + tab_image->y_offset,
      width() - tab_image->l_width - tab_image->r_width,
-     height() - GetDropShadowHeight() - kToolbarOverlap - tab_image->y_offset);
+     height() - drop_shadow_height() - kToolbarOverlap - tab_image->y_offset);
 
   canvas->DrawBitmapInt(background_canvas.ExtractBitmap(), 0, 0);
 
@@ -631,11 +633,11 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
   // by incrementing by GetDropShadowHeight(), since it's a simple rectangle.
   canvas->TileImageInt(*tab_bg,
      offset + tab_image->l_width,
-     GetDropShadowHeight() + tab_image->y_offset,
+     drop_shadow_height() + tab_image->y_offset,
      tab_image->l_width,
-     GetDropShadowHeight() + tab_image->y_offset,
+     drop_shadow_height() + tab_image->y_offset,
      width() - tab_image->l_width - tab_image->r_width,
-     height() - GetDropShadowHeight() - tab_image->y_offset);
+     height() - drop_shadow_height() - tab_image->y_offset);
 
   // Now draw the highlights/shadows around the tab edge.
   canvas->DrawBitmapInt(*tab_image->image_l, 0, 0);
@@ -647,7 +649,7 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
 int Tab::IconCapacity() const {
   if (height() < GetMinimumUnselectedSize().height())
     return 0;
-  return (width() - GetLeftPadding() - GetRightPadding()) / kTabIconSize;
+  return (width() - left_padding() - right_padding()) / kTabIconSize;
 }
 
 bool Tab::ShouldShowIcon() const {

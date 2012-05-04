@@ -32,6 +32,7 @@
 #include "grit/theme_resources_standard.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -53,24 +54,15 @@
 using content::UserMetricsAction;
 using content::WebContents;
 
-// static
-const char ToolbarView::kViewClassName[] = "browser/ui/views/ToolbarView";
-// The space between items is 3 px in general.
-const int ToolbarView::kStandardSpacing = 3;
-// The top of the toolbar has an edge we have to skip over in addition to the
-// above spacing.
-const int ToolbarView::kVertSpacing = 5;
-// The omnibox border has some additional shadow, so we use less vertical
-// spacing.
-static const int kLocationBarVertSpacing = 4;
+namespace {
 
 // The edge graphics have some built-in spacing/shadowing, so we have to adjust
 // our spacing to make it match.
-static const int kLeftEdgeSpacing = 3;
-static const int kRightEdgeSpacing = 2;
+const int kLeftEdgeSpacing = 3;
+const int kRightEdgeSpacing = 2;
 
 // The buttons to the left of the omnibox are close together.
-static const int kButtonSpacing = 0;
+const int kButtonSpacing = 0;
 
 #if defined(USE_ASH)
 // Ash doesn't use a rounded content area and its top edge has an extra shadow.
@@ -80,15 +72,45 @@ const int kContentShadowHeight = 2;
 const int kContentShadowHeight = 0;
 #endif
 
-static const int kPopupTopSpacingNonGlass = 3;
-static const int kPopupBottomSpacingNonGlass = 2;
-static const int kPopupBottomSpacingGlass = 1;
+const int kPopupTopSpacingNonGlass = 3;
+const int kPopupBottomSpacingNonGlass = 2;
+const int kPopupBottomSpacingGlass = 1;
 
 // Top margin for the wrench menu badges (badge is placed in the upper right
 // corner of the wrench menu).
-static const int kBadgeTopMargin = 2;
+const int kBadgeTopMargin = 2;
 
-static SkBitmap* kPopupBackgroundEdge = NULL;
+SkBitmap* kPopupBackgroundEdge = NULL;
+
+// The omnibox border has some additional shadow, so we use less vertical
+// spacing than ToolbarView::kVertSpacing.
+int location_bar_vert_spacing() {
+  static int value = -1;
+  if (value == -1) {
+    switch (ui::GetDisplayLayout()) {
+      case ui::LAYOUT_ASH:
+      case ui::LAYOUT_DESKTOP:
+        value = 4;
+        break;
+      case ui::LAYOUT_TOUCH:
+        value = 6;
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+  return value;
+}
+
+}  // namespace
+
+// static
+const char ToolbarView::kViewClassName[] = "browser/ui/views/ToolbarView";
+// The space between items is 3 px in general.
+const int ToolbarView::kStandardSpacing = 3;
+// The top of the toolbar has an edge we have to skip over in addition to the
+// above spacing.
+const int ToolbarView::kVertSpacing = 5;
 
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, public:
@@ -578,7 +600,7 @@ void ToolbarView::Layout() {
   int location_x = home_->x() + home_->width() + kStandardSpacing;
   int available_width = width() - kRightEdgeSpacing - app_menu_width -
       browser_actions_width - location_x;
-  int location_y = std::min(kLocationBarVertSpacing, height());
+  int location_y = std::min(location_bar_vert_spacing(), height());
   int location_bar_height = location_bar_->GetPreferredSize().height();
 
   location_bar_->SetBounds(location_x, location_y, std::max(available_width, 0),
