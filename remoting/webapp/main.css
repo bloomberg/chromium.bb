@@ -184,7 +184,6 @@ Component: Text Field
 ------------------------------------------------------------------*/
 input {
     height: 29px;
-    line-height: 27px;
     padding-left: 8px;
     color: #333;
     border: 1px solid #d9d9d9;
