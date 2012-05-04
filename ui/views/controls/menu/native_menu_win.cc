@@ -74,7 +74,7 @@ static NativeMenuWin* GetNativeMenuWinFromHMENU(HMENU hmenu) {
 // structure we have constructed in NativeMenuWin.
 class NativeMenuWin::MenuHostWindow {
  public:
-  MenuHostWindow(NativeMenuWin* parent) : parent_(parent) {
+  explicit MenuHostWindow(NativeMenuWin* parent) : parent_(parent) {
     RegisterClass();
     hwnd_ = CreateWindowEx(l10n_util::GetExtendedStyles(), kWindowClassName,
                            L"", 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);

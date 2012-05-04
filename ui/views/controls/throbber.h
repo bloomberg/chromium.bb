@@ -62,7 +62,7 @@ class VIEWS_EXPORT Throbber : public View {
 // a small amount of work time has passed.
 class VIEWS_EXPORT SmoothedThrobber : public Throbber {
  public:
-  SmoothedThrobber(int frame_delay_ms);
+  explicit SmoothedThrobber(int frame_delay_ms);
   SmoothedThrobber(int frame_delay_ms, SkBitmap* frames);
   virtual ~SmoothedThrobber();
 

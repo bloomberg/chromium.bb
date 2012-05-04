@@ -36,7 +36,7 @@ typedef NativeWidgetWin NativeWidgetPlatform;
 #if defined(USE_AURA)
 class NativeWidgetCapture : public NativeWidgetPlatform {
  public:
-  NativeWidgetCapture(internal::NativeWidgetDelegate* delegate)
+  explicit NativeWidgetCapture(internal::NativeWidgetDelegate* delegate)
       : NativeWidgetPlatform(delegate),
         mouse_capture_(false) {}
   virtual ~NativeWidgetCapture() {}
@@ -404,7 +404,7 @@ class OwnershipTestNativeWidgetPlatform : public NativeWidgetPlatformForTest {
 // A Widget subclass that updates a bag of state when it is destroyed.
 class OwnershipTestWidget : public Widget {
  public:
-  OwnershipTestWidget(OwnershipTestState* state) : state_(state) {}
+  explicit OwnershipTestWidget(OwnershipTestState* state) : state_(state) {}
   virtual ~OwnershipTestWidget() {
     state_->widget_deleted = true;
   }

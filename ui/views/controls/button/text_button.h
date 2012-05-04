@@ -92,7 +92,7 @@ class VIEWS_EXPORT TextButtonBorder : public Border {
 ////////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT TextButtonNativeThemeBorder : public Border {
  public:
-   TextButtonNativeThemeBorder(NativeThemeDelegate* delegate);
+  explicit TextButtonNativeThemeBorder(NativeThemeDelegate* delegate);
   virtual ~TextButtonNativeThemeBorder();
 
   // Implementation of Border:
@@ -399,12 +399,11 @@ class VIEWS_EXPORT NativeTextButton : public TextButton {
   // The button's class name.
   static const char kViewClassName[];
 
-  NativeTextButton(ButtonListener* listener);
+  explicit NativeTextButton(ButtonListener* listener);
   NativeTextButton(ButtonListener* listener, const string16& text);
 
   // Overridden from TextButton:
   virtual gfx::Size GetMinimumSize() OVERRIDE;
-
   virtual std::string GetClassName() const OVERRIDE;
 
  private:

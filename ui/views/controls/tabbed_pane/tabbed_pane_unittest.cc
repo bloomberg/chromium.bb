@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,10 +15,11 @@ namespace views {
 // A view for testing that takes a fixed preferred size upon construction.
 class FixedSizeView : public View {
  public:
-  FixedSizeView(const gfx::Size& size)
+  explicit FixedSizeView(const gfx::Size& size)
     : size_(size) {}
 
-  virtual gfx::Size GetPreferredSize() {
+  // Overridden from View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     return size_;
   }
 

@@ -17,8 +17,9 @@ class SidedSolidBorder : public Border {
  public:
   SidedSolidBorder(int top, int left, int bottom, int right, SkColor color);
 
-  virtual void Paint(const View& view, gfx::Canvas* canvas) const;
-  virtual void GetInsets(gfx::Insets* insets) const;
+  // Overridden from Border:
+  virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE;
+  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
 
  private:
   int top_, left_, bottom_, right_;
@@ -72,9 +73,10 @@ class EmptyBorder : public Border {
   EmptyBorder(int top, int left, int bottom, int right)
       : top_(top), left_(left), bottom_(bottom), right_(right) {}
 
-  virtual void Paint(const View& view, gfx::Canvas* canvas) const {}
+  // Overridden from Border:
+  virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE {}
 
-  virtual void GetInsets(gfx::Insets* insets) const {
+  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
     DCHECK(insets);
     insets->Set(top_, left_, bottom_, right_);
   }
@@ -90,20 +92,22 @@ class EmptyBorder : public Border {
 
 class BorderPainter : public Border {
  public:
-  BorderPainter(Painter* painter)
+  explicit BorderPainter(Painter* painter)
       : painter_(painter) {
     DCHECK(painter);
   }
 
   virtual ~BorderPainter() {
     delete painter_;
+    painter_ = NULL;
   }
 
-  void Paint(const View& view, gfx::Canvas* canvas) const {
+  // Overridden from Border:
+  virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE {
     Painter::PaintPainterAt(canvas, painter_, view.GetLocalBounds());
   }
 
-  virtual void GetInsets(gfx::Insets* insets) const {
+  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
     DCHECK(insets);
     insets->Set(0, 0, 0, 0);
   }

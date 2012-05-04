@@ -18,7 +18,7 @@ namespace {
 // OnKeyReleased() methods.
 class TestCombobox : public views::Combobox {
  public:
-  TestCombobox(ui::ComboboxModel* model)
+  explicit TestCombobox(ui::ComboboxModel* model)
       : Combobox(model),
         key_handled_(false),
         key_received_(false) {

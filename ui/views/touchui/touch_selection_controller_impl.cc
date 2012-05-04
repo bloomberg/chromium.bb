@@ -89,7 +89,7 @@ namespace views {
 // A View that displays the text selection handle.
 class TouchSelectionControllerImpl::SelectionHandleView : public View {
  public:
-  SelectionHandleView(TouchSelectionControllerImpl* controller)
+  explicit SelectionHandleView(TouchSelectionControllerImpl* controller)
       : controller_(controller) {
     widget_.reset(CreateTouchSelectionPopupWidget());
     widget_->SetContentsView(this);
@@ -200,7 +200,7 @@ class TouchSelectionControllerImpl::TouchContextMenuView
     : public ButtonListener,
       public View {
  public:
-  TouchContextMenuView(TouchSelectionControllerImpl* controller)
+  explicit TouchContextMenuView(TouchSelectionControllerImpl* controller)
       : controller_(controller) {
     widget_.reset(CreateTouchSelectionPopupWidget());
     widget_->SetContentsView(this);

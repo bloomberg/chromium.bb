@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ BubbleConfig kFadeOutConfig = { ASCIIToUTF16("FadeOut"), SK_ColorWHITE, NULL,
 
 class ExampleBubbleDelegateView : public BubbleDelegateView {
  public:
-  ExampleBubbleDelegateView(const BubbleConfig& config)
+  explicit ExampleBubbleDelegateView(const BubbleConfig& config)
       : BubbleDelegateView(config.anchor_view, config.arrow),
         label_(config.label) {
     set_color(config.color);
