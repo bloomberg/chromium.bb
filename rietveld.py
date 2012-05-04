@@ -1,3 +1,4 @@
+# coding: utf-8
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -217,6 +218,10 @@ class Rietveld(object):
         ('xsrf_token', self.xsrf_token())])
 
   def add_comment(self, issue, message):
+    max_message = 10000
+    tail = '…\n(message too large)'
+    if len(message) > max_message:
+      message = message[:max_message-len(tail)] + tail
     logging.info('issue %s; comment: %s' % (issue, message))
     return self.post('/%s/publish' % issue, [
         ('xsrf_token', self.xsrf_token()),
