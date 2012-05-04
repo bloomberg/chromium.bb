@@ -324,9 +324,6 @@ class GDataDirectory : public GDataEntry {
   // Removes children elements.
   void RemoveChildren();
 
-  // Checks if directory content needs to be refreshed from the server.
-  bool NeedsRefresh() const;
-
   // Last refresh time.
   const base::Time& refresh_time() const { return refresh_time_; }
   void set_refresh_time(const base::Time& time) { refresh_time_ = time; }

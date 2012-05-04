@@ -18,13 +18,6 @@
 namespace gdata {
 namespace {
 
-// Content refresh time.
-#ifndef NDEBUG
-const int kRefreshTimeInSec = 10;
-#else
-const int kRefreshTimeInSec = 5*60;
-#endif
-
 const char kSlash[] = "/";
 const char kEscapedSlash[] = "\xE2\x88\x95";
 const FilePath::CharType kGDataRootDirectory[] = FILE_PATH_LITERAL("gdata");
@@ -268,21 +261,6 @@ GDataEntry* GDataDirectory::FromDocumentEntry(GDataDirectory* parent,
     dir->upload_url_ = upload_link->href();
 
   return dir;
-}
-
-bool GDataDirectory::NeedsRefresh() const {
-  // Already refreshing by someone else.
-  if (origin_ == REFRESHING)
-    return false;
-
-  // Refresh is needed for content read from disk cache or stale content.
-  if (origin_ == FROM_CACHE)
-    return true;
-
-  if ((base::Time::Now() - refresh_time_).InSeconds() < kRefreshTimeInSec)
-    return false;
-
-  return true;
 }
 
 void GDataDirectory::AddEntry(GDataEntry* entry) {

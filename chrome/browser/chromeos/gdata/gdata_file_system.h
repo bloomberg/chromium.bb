@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
+#include "base/timer.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/gdata/find_entry_delegate.h"
@@ -174,6 +175,13 @@ class GDataFileSystemInterface {
   // Adds and removes the observer.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+
+  // Starts and stops periodic updates.
+  virtual void StartUpdates() = 0;
+  virtual void StopUpdates() = 0;
+
+  // Checks for updates on the server.
+  virtual void CheckForUpdates() = 0;
 
   // Enum defining origin of a cached file.
   enum CachedFileOrigin {
@@ -400,6 +408,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void Initialize() OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
+  virtual void StartUpdates() OVERRIDE;
+  virtual void StopUpdates() OVERRIDE;
+  virtual void CheckForUpdates() OVERRIDE;
   virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
   virtual void FindEntryByResourceIdSync(const std::string& resource_id,
                                          FindEntryDelegate* delegate) OVERRIDE;
@@ -1332,6 +1343,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Number of pending tasks on the blocking thread pool.
   int num_pending_tasks_;
   base::Lock num_pending_tasks_lock_;
+
+  // Periodic timer for checking updates.
+  base::Timer update_timer_;
 
   // True if hosted documents should be hidden.
   bool hide_hosted_docs_;

@@ -156,6 +156,16 @@ class FileBrowserEventRouter
                       const std::string& device_path,
                       bool small);
 
+  // Returns the GDataFileSystem for the current profile.
+  gdata::GDataFileSystem* GetRemoteFileSystem() const;
+
+  // Handles requests to start and stop periodic updates on remote file system.
+  // When |start| is set to true, this function starts periodic updates only if
+  // it is not yet started; when |start| is set to false, this function stops
+  // periodic updates only if the number of outstanding update requests reaches
+  // zero.
+  void HandleRemoteUpdateRequestOnUIThread(bool start);
+
   scoped_refptr<FileWatcherDelegate> delegate_;
   WatcherMap file_watchers_;
   scoped_ptr<FileBrowserNotifications> notifications_;
@@ -164,6 +174,9 @@ class FileBrowserEventRouter
 
   bool current_gdata_operation_failed_;
   int last_active_gdata_operation_count_;
+
+  // Number of active update requests on the remote file system.
+  int num_remote_update_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(FileBrowserEventRouter);
 };

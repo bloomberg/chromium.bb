@@ -87,7 +87,8 @@ FileBrowserEventRouter::FileBrowserEventRouter(
     Profile* profile)
     : delegate_(new FileBrowserEventRouter::FileWatcherDelegate(this)),
       notifications_(new FileBrowserNotifications(profile)),
-      profile_(profile) {
+      profile_(profile),
+      num_remote_update_requests_(0) {
 }
 
 FileBrowserEventRouter::~FileBrowserEventRouter() {
@@ -150,6 +151,10 @@ bool FileBrowserEventRouter::AddFileWatch(
   if (gdata::util::GetSpecialRemoteRootPath().IsParent(watch_path)) {
     watch_path = gdata::util::ExtractGDataPath(watch_path);
     is_remote_watch = true;
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread,
+                   this, true));
   }
 
   WatcherMap::iterator iter = file_watchers_.find(watch_path);
@@ -179,6 +184,10 @@ void FileBrowserEventRouter::RemoveFileWatch(
   // their change notifications.
   if (gdata::util::GetSpecialRemoteRootPath().IsParent(watch_path)) {
     watch_path = gdata::util::ExtractGDataPath(watch_path);
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread,
+                   this, false));
   }
   WatcherMap::iterator iter = file_watchers_.find(watch_path);
   if (iter == file_watchers_.end())
@@ -188,6 +197,25 @@ void FileBrowserEventRouter::RemoveFileWatch(
   if (iter->second->GetRefCount() == 0) {
     delete iter->second;
     file_watchers_.erase(iter);
+  }
+}
+
+void FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread(bool start) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  gdata::GDataFileSystem* file_system = GetRemoteFileSystem();
+  DCHECK(file_system);
+
+  if (start) {
+    file_system->CheckForUpdates();
+    if (num_remote_update_requests_ == 0)
+      file_system->StartUpdates();
+    ++num_remote_update_requests_;
+  } else {
+    DCHECK_LE(0, num_remote_update_requests_);
+    --num_remote_update_requests_;
+    if (num_remote_update_requests_ == 0)
+      file_system->StopUpdates();
   }
 }
 
@@ -255,10 +283,7 @@ void FileBrowserEventRouter::MountCompleted(
     if ((event_type == DiskMountManager::MOUNTING) !=
         (error_code == chromeos::MOUNT_ERROR_NONE)) {
       FilePath source_path(mount_info.source_path);
-      gdata::GDataSystemService* system_service =
-          gdata::GDataSystemServiceFactory::GetForProfile(profile_);
-      gdata::GDataFileSystem* file_system =
-          system_service ? system_service->file_system() : NULL;
+      gdata::GDataFileSystem* file_system = GetRemoteFileSystem();
       if (file_system && file_system->IsUnderGDataCacheDirectory(source_path))
         file_system->SetMountedState(source_path, false,
                                      gdata::SetMountedStateCallback());
@@ -599,6 +624,13 @@ FileBrowserEventRouter::FileWatcherExtensions::GetRefCount() const {
 const FilePath&
 FileBrowserEventRouter::FileWatcherExtensions::GetVirtualPath() const {
   return virtual_path_;
+}
+
+gdata::GDataFileSystem* FileBrowserEventRouter::GetRemoteFileSystem() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  return (system_service ? system_service->file_system() : NULL);
 }
 
 bool FileBrowserEventRouter::FileWatcherExtensions::Watch

@@ -21,6 +21,9 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_METHOD0(Initialize, void());
   MOCK_METHOD1(AddObserver, void(Observer* observer));
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
+  MOCK_METHOD0(StartUpdates, void());
+  MOCK_METHOD0(StopUpdates, void());
+  MOCK_METHOD0(CheckForUpdates, void());
   MOCK_METHOD1(Authenticate, void(const AuthStatusCallback& callback));
   MOCK_METHOD2(FindEntryByResourceIdSync, void(const std::string& resource_id,
                                                FindEntryDelegate* delegate));

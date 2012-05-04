@@ -77,6 +77,13 @@ const FilePath::CharType kFilesystemProtoFile[] =
     FILE_PATH_LITERAL("file_system.pb");
 const FilePath::CharType kSymLinkToDevNull[] = FILE_PATH_LITERAL("/dev/null");
 
+// GData update check interval (in seconds).
+#ifndef NDEBUG
+const int kGDataUpdateCheckIntervalInSec = 5;
+#else
+const int kGDataUpdateCheckIntervalInSec = 60;
+#endif
+
 // Schedule for dumping root file system proto buffers to disk depending its
 // total protobuffer size in MB.
 typedef struct {
@@ -928,6 +935,7 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
           true /* manual reset */, true /* initially signaled */)),
       cache_initialization_started_(false),
       num_pending_tasks_(0),
+      update_timer_(true /* retain_user_task */, true /* is_repeating */),
       hide_hosted_docs_(false),
       ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(
           new base::WeakPtrFactory<GDataFileSystem>(this))),
@@ -959,6 +967,18 @@ void GDataFileSystem::Initialize() {
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableGDataHostedFiles);
 
   InitializePreferenceObserver();
+}
+
+void GDataFileSystem::CheckForUpdates() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ContentOrigin initial_origin = root_->origin();
+  if (initial_origin == FROM_SERVER) {
+    root_->set_origin(REFRESHING);
+    ReloadFeedFromServerIfNeeded(initial_origin,
+                                 root_->largest_changestamp(),
+                                 root_->GetFilePath(),
+                                 gdata::FindEntryCallback());
+  }
 }
 
 bool GDataFileSystem::SetCacheRootPathForTesting(const FilePath& root_path) {
@@ -1016,6 +1036,20 @@ void GDataFileSystem::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void GDataFileSystem::StartUpdates() {
+  DCHECK(!update_timer_.IsRunning());
+  update_timer_.Start(FROM_HERE,
+                      base::TimeDelta::FromSeconds(
+                          kGDataUpdateCheckIntervalInSec),
+                      base::Bind(&GDataFileSystem::CheckForUpdates,
+                          ui_weak_ptr_));
+}
+
+void GDataFileSystem::StopUpdates() {
+  DCHECK(update_timer_.IsRunning());
+  update_timer_.Stop();
+}
+
 void GDataFileSystem::Authenticate(const AuthStatusCallback& callback) {
   // TokenFetcher, used in DocumentsService, must be run on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1065,16 +1099,6 @@ void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
     LoadRootFeedFromCache(true,  // should_load_from_server
                           search_file_path,
                           callback);
-    return;
-  } else if (root_->NeedsRefresh()) {
-    // If content is stale or from disk from cache, fetch content from
-    // the server.
-    ContentOrigin initial_origin = root_->origin();
-    root_->set_origin(REFRESHING);
-    ReloadFeedFromServerIfNeeded(initial_origin,
-                                 root_->largest_changestamp(),
-                                 search_file_path,
-                                 callback);
     return;
   }
 
