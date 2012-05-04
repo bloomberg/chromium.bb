@@ -25,13 +25,16 @@ class BaseDateTimeView : public ActionableView {
  public:
   virtual ~BaseDateTimeView();
 
-  // Updates the displayed text for the current time.
+  // Updates the displayed text for the current time and calls SetTimer().
   void UpdateText();
 
  protected:
   BaseDateTimeView();
 
  private:
+  // Starts |timer_| to schedule the next update.
+  void SetTimer(const base::Time& now);
+
   // Updates labels to display the current time.
   virtual void UpdateTextInternal(const base::Time& now) = 0;
 
@@ -39,6 +42,7 @@ class BaseDateTimeView : public ActionableView {
   virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
   virtual void OnLocaleChanged() OVERRIDE;
 
+  // Invokes UpdateText() when the displayed time should change.
   base::OneShotTimer<BaseDateTimeView> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseDateTimeView);

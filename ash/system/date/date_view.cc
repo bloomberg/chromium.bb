@@ -60,10 +60,16 @@ BaseDateTimeView::~BaseDateTimeView() {
 
 void BaseDateTimeView::UpdateText() {
   base::Time now = base::Time::Now();
-  gfx::Size old_size = GetPreferredSize();
   UpdateTextInternal(now);
   SchedulePaint();
+  SetTimer(now);
+}
 
+BaseDateTimeView::BaseDateTimeView() {
+  SetTimer(base::Time::Now());
+}
+
+void BaseDateTimeView::SetTimer(const base::Time& now) {
   // Try to set the timer to go off at the next change of the minute. We don't
   // want to have the timer go off more than necessary since that will cause
   // the CPU to wake up and consume power.
@@ -84,9 +90,6 @@ void BaseDateTimeView::UpdateText() {
   timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(seconds_left),
       this, &BaseDateTimeView::UpdateText);
-}
-
-BaseDateTimeView::BaseDateTimeView() {
 }
 
 void BaseDateTimeView::ChildPreferredSizeChanged(views::View* child) {
