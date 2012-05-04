@@ -10405,9 +10405,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_SIZE_COLUMN_LABEL" desc="Size column label.">
         Size
       </message>
-      <message name="IDS_FILE_BROWSER_SIZE_B" desc="Byte.">
-        B
-      </message>
       <message name="IDS_FILE_BROWSER_SIZE_KB" desc="Kilo bytes.">
         KB
       </message>

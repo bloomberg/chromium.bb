@@ -367,7 +367,6 @@ chrome.fileBrowserPrivate = {
       DOWNLOADS_DIRECTORY_WARNING: "&lt;strong&gt;Caution:&lt;/strong&gt; These files are temporary and may be automatically deleted to free up disk space.  &lt;a href='javascript://'&gt;Learn More&lt;/a&gt;",
       NAME_COLUMN_LABEL: 'Name',
       SIZE_COLUMN_LABEL: 'Size',
-      SIZE_B: 'B',
       SIZE_KB: 'KB',
       SIZE_MB: 'MB',
       SIZE_GB: 'GB',
