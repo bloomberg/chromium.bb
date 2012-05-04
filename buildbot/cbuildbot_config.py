@@ -536,6 +536,12 @@ internal_chromium_pfq.add_config('tegra2-chromium-pfq',
   boards=['tegra2'],
 )
 
+internal_chromium_pfq.add_config('daisy-chromium-pfq',
+  arm,
+  boards=['daisy'],
+  important=False
+)
+
 internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
   amd64,
   boards=['amd64-generic'],
