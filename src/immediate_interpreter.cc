@@ -468,9 +468,10 @@ void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
     if (prev_palm || prev_pointing)
       continue;
     // If another finger is close by, let this be pointing
-    if (FingerNearOtherFinger(hwstate, i) || !FingerInPalmEnvelope(fs))
+    if (FingerNearOtherFinger(hwstate, i) || !FingerInPalmEnvelope(fs)) {
       pointing_.insert(fs.tracking_id);
       fingers_.insert(fs.tracking_id);
+    }
   }
 }
 
@@ -610,12 +611,23 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
   }
 
   // current gesture state machine
-  switch(current_gesture_type_) {
-
+  switch (current_gesture_type_) {
     case kGestureTypeContactInitiated:
     case kGestureTypeButtonsChange:
       break;
 
+    case kGestureTypeScroll:
+      // If a scrolling finger just left, do fling
+      for (set<short, kMaxGesturingFingers>::const_iterator
+               it = prev_scroll_fingers_.begin(),
+               e = prev_scroll_fingers_.end();
+           it != e; ++it) {
+        if (!hwstate.GetFingerState(*it)) {
+          current_gesture_type_ = kGestureTypeFling;
+          return;
+        }
+      }
+      // fallthrough
     case kGestureTypeSwipe:
     case kGestureTypeFling:
     case kGestureTypeMove:
@@ -692,17 +704,6 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
       }
       break;
 
-    case kGestureTypeScroll:
-      // If a scrolling finger just left, do fling
-      for (set<short, kMaxGesturingFingers>::const_iterator
-           it = prev_scroll_fingers_.begin(), e = prev_scroll_fingers_.end();
-           it != e; ++it) {
-        if (!hwstate.GetFingerState(*it)) {
-          current_gesture_type_ = kGestureTypeFling;
-          return;
-        }
-      }
-      break;
     case kGestureTypeZoom:
       if (fingers_.size() == 2) {
         return;

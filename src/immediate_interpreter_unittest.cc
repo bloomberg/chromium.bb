@@ -505,6 +505,74 @@ TEST(ImmediateInterpreterTest, DelayedStartScrollTest) {
   EXPECT_EQ(kGestureTypeScroll, gs->type);
 }
 
+// Tests that after a scroll is happening, if a finger lets go, scrolling stops.
+TEST(ImmediateInterpreterTest, ScrollReevaluateTest) {
+  ImmediateInterpreter ii(NULL);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    100,  // right edge
+    100,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    96,  // x screen DPI
+    96,  // y screen DPI
+    2,  // max fingers
+    5,  // max touch
+    0,  // tripletap
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    // Consistent movement for 4 frames
+    {0, 0, 0, 0, 20, 0, 10, 95, 1, 0},
+    {0, 0, 0, 0, 20, 0, 59, 95, 2, 0},
+
+    {0, 0, 0, 0, 20, 0, 10, 85, 1, 0},
+    {0, 0, 0, 0, 20, 0, 59, 85, 2, 0},
+
+    {0, 0, 0, 0, 20, 0, 10, 75, 1, 0},
+    {0, 0, 0, 0, 20, 0, 59, 75, 2, 0},
+
+    // Just too far apart to be scrolling
+    {0, 0, 0, 0, 20, 0, 10, 65, 1, 0},
+    {0, 0, 0, 0, 20, 0, 61, 65, 2, 0},
+  };
+  HardwareState hardware_states[] = {
+    // time, buttons, finger count, touch count, finger states pointer
+    { 1.00, 0, 2, 2, &finger_states[0] },
+    { 2.00, 0, 2, 2, &finger_states[0] },
+    { 2.01, 0, 2, 2, &finger_states[2] },
+    { 2.02, 0, 2, 2, &finger_states[4] },
+    { 2.03, 0, 2, 2, &finger_states[6] },
+  };
+
+  ii.SetHardwareProperties(hwprops);
+
+  size_t idx = 0;
+
+  // Consistent movement
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[idx++], NULL));
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[idx++], NULL));
+
+  Gesture* gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeScroll, gs->type);
+
+  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeScroll, gs->type);
+
+  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  if (gs) {
+    LOG(INFO)<< "gs:" << gs->String() << "i=" << idx;
+    EXPECT_NE(kGestureTypeScroll, gs->type);
+  }
+}
+
+
 // This is based on a log from Dave Moore. He put one finger down, which put
 // it into move mode, then put a second finger down a bit later, but it was
 // stuck in move mode. This tests that it does switch to scroll mode.
