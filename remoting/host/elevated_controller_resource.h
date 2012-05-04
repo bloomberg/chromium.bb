@@ -5,6 +5,9 @@
 #ifndef REMOTING_HOST_ELEVATED_CONTROLLER_RESOURCE_H_
 #define REMOTING_HOST_ELEVATED_CONTROLLER_RESOURCE_H_
 
+// N.B. Values of both |IDS_CONTROLLER| and |IDD_VERIFY_CONFIG_DIALOG| are
+//      hardcoded in remoting/host/install/chromoting.wxs. Make sure the values
+//      below and in the installation script match.
 #define IDS_CONTROLLER 100
 #define IDD_VERIFY_CONFIG_DIALOG 101
 #define IDC_MESSAGE 102

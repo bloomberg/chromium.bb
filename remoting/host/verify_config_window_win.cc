@@ -34,6 +34,12 @@ void VerifyConfigWindowWin::OnClose() {
 }
 
 LRESULT VerifyConfigWindowWin::OnInitDialog(HWND wparam, LPARAM lparam) {
+  // Set the small window icon.
+  if (icon_.LoadIcon(IDD, ::GetSystemMetrics(SM_CXSMICON),
+                     ::GetSystemMetrics(SM_CYSMICON)) != NULL) {
+    SetIcon(icon_, FALSE);
+  }
+
   CenterWindow();
 
   // TODO(simonmorris): l10n.

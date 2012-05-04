@@ -5,9 +5,12 @@
 #ifndef REMOTING_HOST_VERIFY_CONFIG_WINDOW_WIN_H
 #define REMOTING_HOST_VERIFY_CONFIG_WINDOW_WIN_H
 
+// altbase.h must be included before atlapp.h
 #include <atlbase.h>
+#include <atlapp.h>
 #include <atlcrack.h>
 #include <atlwin.h>
+#include <atluser.h>
 #include <string>
 
 #include "base/callback.h"
@@ -39,6 +42,8 @@ class VerifyConfigWindowWin : public ATL::CDialogImpl<VerifyConfigWindowWin> {
   // Centers the dialog window against the owner window.
   void CenterWindow();
   bool VerifyHostSecretHash();
+
+  CIcon icon_;
 
   const std::string email_;
   const std::string host_id_;

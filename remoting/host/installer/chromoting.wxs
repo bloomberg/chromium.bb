@@ -29,6 +29,10 @@
     <?error FileSource must be defined ?>
   <?endif?>
 
+  <?ifndef IconPath ?>
+    <?error IconPath must be defined ?>
+  <?endif?>
+
   <?ifndef SasDllPath ?>
     <?error SasDllPath must be defined ?>
   <?endif?>
@@ -241,6 +245,9 @@
                 <RegistryValue Type="integer"
                                Name="Enabled"
                                Value="1"/>
+                <RegistryValue Type="string"
+                               Name="IconReference"
+                               Value="@[#$(var.ControllerBinary)],-101"/>
               </RegistryKey>
             </RegistryKey>
           </RegistryKey>
@@ -341,12 +348,15 @@
       <ComponentRef Id="service_controller"/>
     </Feature>
 
-  <InstallExecuteSequence>
-    <Custom Action="query_auto_start_service" Before="InstallInitialize"/>
-    <Custom Action="set_auto_start_service" After="StartServices">
-      <![CDATA[NOT REMOVE AND (auto_start_service = "#2")]]>
-    </Custom>
-  </InstallExecuteSequence>
+    <!-- Set the icon shown in Add/Remove Programs. -->
+    <Icon Id="chromoting.ico" SourceFile="$(var.IconPath)"/>
+    <Property Id="ARPPRODUCTICON" Value="chromoting.ico" />
 
+    <InstallExecuteSequence>
+      <Custom Action="query_auto_start_service" Before="InstallInitialize"/>
+      <Custom Action="set_auto_start_service" After="StartServices">
+        <![CDATA[NOT REMOVE AND (auto_start_service = "#2")]]>
+      </Custom>
+    </InstallExecuteSequence>
   </Product>
 </Wix>

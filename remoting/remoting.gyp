@@ -614,6 +614,7 @@
                 '<(PRODUCT_DIR)/remoting_me2me_host.exe',
                 '<(PRODUCT_DIR)/remoting_service.exe',
                 '<(platformsdk_path)/redist/x86/sas.dll',
+                'resources/chromoting.ico',
               ],
               'outputs': [
                 '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).wixobj',
@@ -628,6 +629,7 @@
                 '-ext "<(wix_path)\\WixUtilExtension.dll"',
                 '-dVersion=<(version_full)',
                 '"-dFileSource=<(PRODUCT_DIR)."',
+                '"-dIconPath=resources/chromoting.ico"',
                 '"-dSasDllPath=<(platformsdk_path)/redist/x86/sas.dll"',
                 '<@(_wix_defines)',
                 '-out <@(_outputs)',
@@ -643,6 +645,7 @@
                 '<(PRODUCT_DIR)/remoting_me2me_host.exe',
                 '<(PRODUCT_DIR)/remoting_service.exe',
                 '<(platformsdk_path)/redist/x86/sas.dll',
+                'resources/chromoting.ico',
               ],
               'outputs': [
                 '<(PRODUCT_DIR)/<(RULE_INPUT_ROOT).msi',
@@ -659,6 +662,7 @@
                 '-sw1076',
                 '-dVersion=<(version_full)',
                 '"-dFileSource=<(PRODUCT_DIR)."',
+                '"-dIconPath=resources/chromoting.ico"',
                 '"-dSasDllPath=<(platformsdk_path)/redist/x86/sas.dll"',
                 '<@(_wix_defines)',
                 '-out "<(PRODUCT_DIR)/<(RULE_INPUT_ROOT).msi"',
