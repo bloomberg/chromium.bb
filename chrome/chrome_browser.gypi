@@ -4318,8 +4318,6 @@
             ['exclude', '^browser/ui/views/user_data_dir_dialog.cc'],
             ['exclude', '^browser/ui/window_sizer_win.cc'],
             ['exclude', '^browser/ui/window_snapshot/window_snapshot_win.cc'],
-            # For now, always include this code for aura builds, even though it
-            # is located under browser/chromeos.
             # TODO: (stevenjb/beng): Find a home for these.
             ['include', '^browser/ui/views/simple_message_box_views.cc'],
             ['include', '^browser/ui/views/simple_message_box_views.h'],
@@ -4760,15 +4758,19 @@
           ],
         }, {  # 'OS!="win"
           'sources/': [
+            # Exclude files that should be excluded for all non-Windows platforms.
+            ['exclude', '^browser/aeropeek_manager.cc'],
+            ['exclude', '^browser/aeropeek_manager.h'],
+            ['exclude', '^browser/first_run/try_chrome_dialog_view.cc'],
+            ['exclude', '^browser/first_run/try_chrome_dialog_view.h'],
+            ['exclude', '^browser/google/google_update.cc'],
+            ['exclude', '^browser/importer/ie_importer.cc'],
+
             # Exclude all of hang_monitor.
             ['exclude', '^browser/hang_monitor/'],
 
             # Exclude parts of password_manager.
             ['exclude', '^browser/password_manager/ie7_password\\.cc$'],
-
-            # Exclude try chrome dialog.
-            ['exclude', '^browser/first_run/try_chrome_dialog_view.cc'],
-            ['exclude', '^browser/first_run/try_chrome_dialog_view.h'],
           ],
           'conditions': [
             ['use_aura==1',{
@@ -4824,9 +4826,6 @@
                 ['exclude', '^browser/ui/views/keyboard_overlay_delegate.h'],
                 ['exclude', '^browser/ui/views/keyboard_overlay_dialog_view.cc'],
                 ['exclude', '^browser/ui/views/keyboard_overlay_dialog_view.h'],
-                ['include', '^browser/ui/views/frame/browser_non_client_frame_view_factory_x11.cc'],
-                ['include', '^browser/ui/views/notifications/balloon_view.cc'],
-                ['include', '^browser/ui/views/notifications/balloon_view.h'],
                 ['include', '^browser/ui/views/select_file_dialog_aura.cc'],
               ],
             }],
@@ -4841,18 +4840,11 @@
                 ['exclude', '^browser/ui/panels/panel_browser_view.cc'],
                 ['exclude', '^browser/ui/panels/panel_browser_view.h'],
                 ['exclude', '^browser/ui/toolbar/bookmark_sub_menu_model.cc'],
-                ['exclude', '^browser/ui/views/edit_search_engine_dialog.cc'],
-                ['exclude', '^browser/ui/views/edit_search_engine_dialog.h'],
                 ['include', '^browser/printing/print_dialog_gtk.cc'],
                 ['include', '^browser/printing/print_dialog_gtk.h'],
               ],
             }],
             ['chromeos==1',{
-              'sources/': [
-                ['include', '^browser/ui/views/omnibox/omnibox_view_views.cc'],
-                ['include', '^browser/ui/views/omnibox/omnibox_view_views.h'],
-                ['exclude', '^browser/notifications/balloon_collection_gtk.cc'],
-              ],
               'dependencies': [
                 '../dbus/dbus.gyp:dbus',
                 '../third_party/protobuf/protobuf.gyp:protobuf_lite',
@@ -4883,12 +4875,6 @@
                 '-fno-ipa-cp',
               ],
             }],
-          ],
-          # Exclude files that should be excluded for all non-Windows platforms.
-          'sources!': [
-            'browser/aeropeek_manager.cc',
-            'browser/google/google_update.cc',
-            'browser/importer/ie_importer.cc',
           ],
         }],
         ['enable_plugin_installation==0', {
