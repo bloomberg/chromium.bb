@@ -293,6 +293,7 @@ extern const char kReloadKilledTabs[];
 extern const char kRemoteDebuggingFrontend[];
 extern const char kRendererPrintPreview[];
 extern const char kRestoreLastSession[];
+extern const char kSavePageAsMHTML[];
 extern const char kSbURLPrefix[];
 extern const char kSbDisableAutoUpdate[];
 extern const char kSbDisableDownloadProtection[];

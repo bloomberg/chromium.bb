@@ -73,10 +73,11 @@ class MockDownloadManager : public content::DownloadManager {
   MOCK_METHOD2(CreateDownloadItem, net::BoundNetLog(
       DownloadCreateInfo* info,
       const DownloadRequestHandle& request_handle));
-  MOCK_METHOD4(CreateSavePackageDownloadItem, content::DownloadItem*(
+  MOCK_METHOD5(CreateSavePackageDownloadItem, content::DownloadItem*(
       const FilePath& main_file_path,
       const GURL& page_url,
       bool is_otr,
+      const std::string& mime_type,
       content::DownloadItem::Observer* observer));
   MOCK_METHOD0(ClearLastDownloadPath, void());
   MOCK_METHOD2(FileSelected, void(const FilePath& path, int32 download_id));

@@ -51,6 +51,10 @@ class ChromeDownloadManagerDelegate
   // Returns true if the given item is for an extension download.
   static bool IsExtensionDownload(const content::DownloadItem* item);
 
+  // Should be called before the first call to ShouldCompleteDownload() to
+  // disable SafeBrowsing checks for |item|.
+  static void DisableSafeBrowsing(content::DownloadItem* item);
+
   virtual void Shutdown() OVERRIDE;
   virtual content::DownloadId GetNextId() OVERRIDE;
   virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;
@@ -83,7 +87,7 @@ class ChromeDownloadManagerDelegate
       const FilePath& suggested_path,
       const FilePath::StringType& default_extension,
       bool can_save_as_complete,
-      content::SaveFilePathPickedCallback callback) OVERRIDE;
+      const content::SavePackagePathPickedCallback& callback) OVERRIDE;
 
   DownloadPrefs* download_prefs() { return download_prefs_.get(); }
   DownloadHistory* download_history() { return download_history_.get(); }

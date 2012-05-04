@@ -1083,6 +1083,12 @@ const char kRendererPrintPreview[]          = "renderer-print-preview";
 // sent to the ui_test.
 const char kRestoreLastSession[]            = "restore-last-session";
 
+// Disable saving pages as HTML-only, disable saving pages as HTML Complete
+// (with a directory of sub-resources). Enable only saving pages as MHTML.
+// TODO(benjhayden): Remove this switch/flag when SavePackageFilePicker and all
+// platform-specific file pickers support switching save-as filetypes.
+const char kSavePageAsMHTML[] = "save-page-as-mhtml";
+
 // URL prefix used by safebrowsing to fetch hash, download data and report
 // malware.
 const char kSbURLPrefix[] = "safebrowsing-url-prefix";

@@ -229,6 +229,7 @@ class CONTENT_EXPORT DownloadManager
       const FilePath& main_file_path,
       const GURL& page_url,
       bool is_otr,
+      const std::string& mime_type,
       DownloadItem::Observer* observer) = 0;
 
   // Clears the last download path, used to initialize "save as" dialogs.

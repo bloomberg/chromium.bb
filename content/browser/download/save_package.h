@@ -19,6 +19,7 @@
 #include "base/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
@@ -35,12 +36,14 @@ class WebContents;
 }
 
 // The SavePackage object manages the process of saving a page as only-html or
-// complete-html and providing the information for displaying saving status.
-// Saving page as only-html means means that we save web page to a single HTML
-// file regardless internal sub resources and sub frames.
-// Saving page as complete-html page means we save not only the main html file
-// the user told it to save but also a directory for the auxiliary files such
-// as all sub-frame html files, image files, css files and js files.
+// complete-html or MHTML and providing the information for displaying saving
+// status.  Saving page as only-html means means that we save web page to a
+// single HTML file regardless internal sub resources and sub frames.  Saving
+// page as complete-html page means we save not only the main html file the user
+// told it to save but also a directory for the auxiliary files such as all
+// sub-frame html files, image files, css files and js files.  Saving page as
+// MHTML means the same thing as complete-html, but it uses the MHTML format to
+// contain the html and all auxiliary files in a single text file.
 //
 // Each page saving job may include one or multiple files which need to be
 // saved. Each file is represented by a SaveItem, and all SaveItems are owned
@@ -84,11 +87,12 @@ class CONTENT_EXPORT SavePackage
               const FilePath& file_full_path,
               const FilePath& directory_full_path);
 
-  // Initialize the SavePackage. Returns true if it initializes properly.
-  // Need to make sure that this method must be called in the UI thread because
-  // using g_browser_process on a non-UI thread can cause crashes during
-  // shutdown.
-  bool Init();
+  // Initialize the SavePackage. Returns true if it initializes properly.  Need
+  // to make sure that this method must be called in the UI thread because using
+  // g_browser_process on a non-UI thread can cause crashes during shutdown.
+  // |cb| will be called when the DownloadItem is created, before data is
+  // written to disk.
+  bool Init(const content::SavePackageDownloadCreatedCallback& cb);
 
   // Cancel all in progress request, might be called by user or internal error.
   void Cancel(bool user_action);
@@ -117,6 +121,9 @@ class CONTENT_EXPORT SavePackage
 
  private:
   friend class base::RefCountedThreadSafe<SavePackage>;
+
+  // Callback for content::WebContents::GenerateMHTML().
+  void OnMHTMLGenerated(const FilePath& path, int64 size);
 
   // For testing only.
   SavePackage(content::WebContents* web_contents,
@@ -185,7 +192,10 @@ class CONTENT_EXPORT SavePackage
                                    const std::string& accept_langs);
   void ContinueGetSaveInfo(const FilePath& suggested_path,
                            bool can_save_as_complete);
-  void OnPathPicked(const FilePath& final_name, content::SavePageType type);
+  void OnPathPicked(
+      const FilePath& final_name,
+      content::SavePageType type,
+      const content::SavePackageDownloadCreatedCallback& cb);
   void OnReceivedSavableResourceLinksForCurrentPage(
       const std::vector<GURL>& resources_list,
       const std::vector<GURL>& referrers_list,
@@ -269,6 +279,9 @@ class CONTENT_EXPORT SavePackage
 
   // Indicates whether the actual saving job is finishing or not.
   bool finished_;
+
+  // Indicates whether a call to Finish() has been scheduled.
+  bool mhtml_finishing_;
 
   // Indicates whether user canceled the saving job.
   bool user_canceled_;

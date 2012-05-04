@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/file_path.h"
+#include "base/logging.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/save_page_type.h"
@@ -19,13 +20,23 @@ class DownloadId;
 class DownloadItem;
 class WebContents;
 
-typedef base::Callback<void(const FilePath&, content::SavePageType)>
-    SaveFilePathPickedCallback;
+// Called by SavePackage when it creates a DownloadItem.
+typedef base::Callback<void(DownloadItem*)>
+    SavePackageDownloadCreatedCallback;
+
+// Will be called asynchronously with the results of the ChooseSavePath
+// operation.  If the delegate wants notification of the download item created
+// in response to this operation, the SavePackageDownloadCreatedCallback will be
+// non-null.
+typedef base::Callback<void(const FilePath&,
+                            content::SavePageType,
+                            const SavePackageDownloadCreatedCallback&)>
+    SavePackagePathPickedCallback;
 
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManagerDelegate {
  public:
-  virtual ~DownloadManagerDelegate() {}
+  virtual ~DownloadManagerDelegate();
 
   // Lets the delegate know that the download manager is shutting down.
   virtual void Shutdown() {}
@@ -109,14 +120,13 @@ class CONTENT_EXPORT DownloadManagerDelegate {
                           FilePath* download_save_dir) {}
 
   // Asks the user for the path to save a page. The delegate calls the callback
-  // to give the answer, except on ChromeOS, where the saving is done by
-  // SavePackageFilePickerChromeOS. TODO(achuith): Move ChromeOS save
-  // functionality to SavePackage.
+  // to give the answer.
   virtual void ChooseSavePath(WebContents* web_contents,
                               const FilePath& suggested_path,
                               const FilePath::StringType& default_extension,
                               bool can_save_as_complete,
-                              SaveFilePathPickedCallback callback) {}
+                              const SavePackagePathPickedCallback& callback) {
+  }
 };
 
 }  // namespace content

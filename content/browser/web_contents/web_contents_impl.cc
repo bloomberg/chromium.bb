@@ -1236,7 +1236,7 @@ bool WebContentsImpl::SavePage(const FilePath& main_file,
   Stop();
 
   save_package_ = new SavePackage(this, save_type, main_file, dir_path);
-  return save_package_->Init();
+  return save_package_->Init(content::SavePackageDownloadCreatedCallback());
 }
 
 void WebContentsImpl::GenerateMHTML(

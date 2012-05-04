@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_DOWNLOAD_SAVE_PACKAGE_FILE_PICKER_CHROMEOS_H_
 #pragma once
 
-#include "base/platform_file.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/select_file_dialog.h"
+#include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace gdata {
@@ -20,29 +20,25 @@ class GDataFileSystem;
 class SavePackageFilePickerChromeOS : public SelectFileDialog::Listener,
                                       public content::WebContentsObserver {
  public:
-  SavePackageFilePickerChromeOS(content::WebContents* web_contents,
-                                const FilePath& suggested_path);
+  SavePackageFilePickerChromeOS(
+      content::WebContents* web_contents,
+      const FilePath& suggested_path,
+      const content::SavePackagePathPickedCallback& callback);
+
+  // Used to disable prompting the user for a directory/filename of the saved
+  // web page.  This is available for testing.
+  static void SetShouldPromptUser(bool should_prompt);
 
  private:
   virtual ~SavePackageFilePickerChromeOS();
 
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const FilePath& path,
-                            int index,
-                            void* params) OVERRIDE;
+                            int unused_index,
+                            void* unused_params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
-  // Calls WebContent::GenerateMHTML.
-  void GenerateMHTML(const FilePath* mhtml_path);
-
-  // Callback for WebContents::GenerateMHTML.
-  void OnMHTMLGenerated(const FilePath& file_path, int64 file_size);
-
-  // GDataFileSystem::TransferFile callback.
-  void OnTransferFile(base::PlatformFileError error);
-
-  // Use web_contents() to get at GDataFileSystem.
-  gdata::GDataFileSystem* GetGDataFileSystem();
+  content::SavePackagePathPickedCallback callback_;
 
   // For managing select file dialogs.
   scoped_refptr<SelectFileDialog> select_file_dialog_;

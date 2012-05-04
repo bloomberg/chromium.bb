@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_DOWNLOAD_SAVE_PACKAGE_FILE_PICKER_H_
 #pragma once
 
-#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -21,7 +20,7 @@ class SavePackageFilePicker : public SelectFileDialog::Listener {
                         const FilePath::StringType& default_extension,
                         bool can_save_as_complete,
                         DownloadPrefs* download_prefs,
-                        content::SaveFilePathPickedCallback callback);
+                        const content::SavePackagePathPickedCallback& callback);
   virtual ~SavePackageFilePicker();
 
   // Used to disable prompting the user for a directory/filename of the saved
@@ -32,13 +31,18 @@ class SavePackageFilePicker : public SelectFileDialog::Listener {
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const FilePath& path,
                             int index,
-                            void* params) OVERRIDE;
-  virtual void FileSelectionCanceled(void* params) OVERRIDE;
+                            void* unused_params) OVERRIDE;
+  virtual void FileSelectionCanceled(void* unused_params) OVERRIDE;
+
+  bool ShouldSaveAsMHTML() const;
 
   // Used to look up the renderer process for this request to get the context.
   int render_process_id_;
 
-  content::SaveFilePathPickedCallback callback_;
+  // Whether the web page can be saved as a complete HTML file.
+  bool can_save_as_complete_;
+
+  content::SavePackagePathPickedCallback callback_;
 
   // For managing select file dialogs.
   scoped_refptr<SelectFileDialog> select_file_dialog_;

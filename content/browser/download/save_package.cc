@@ -131,6 +131,7 @@ SavePackage::SavePackage(WebContents* web_contents,
       title_(web_contents->GetTitle()),
       start_tick_(base::TimeTicks::Now()),
       finished_(false),
+      mhtml_finishing_(false),
       user_canceled_(false),
       disk_error_occurred_(false),
       save_type_(save_type),
@@ -141,8 +142,9 @@ SavePackage::SavePackage(WebContents* web_contents,
       wrote_to_completed_file_(false),
       wrote_to_failed_file_(false) {
   DCHECK(page_url_.is_valid());
-  DCHECK(save_type_ == content::SAVE_PAGE_TYPE_AS_ONLY_HTML ||
-         save_type_ == content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML);
+  DCHECK((save_type_ == content::SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
+         (save_type_ == content::SAVE_PAGE_TYPE_AS_MHTML) ||
+         (save_type_ == content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML));
   DCHECK(!saved_main_file_path_.empty() &&
          saved_main_file_path_.value().length() <= kMaxFilePathLength);
   DCHECK(!saved_main_directory_path_.empty() &&
@@ -159,6 +161,7 @@ SavePackage::SavePackage(WebContents* web_contents)
       title_(web_contents->GetTitle()),
       start_tick_(base::TimeTicks::Now()),
       finished_(false),
+      mhtml_finishing_(false),
       user_canceled_(false),
       disk_error_occurred_(false),
       save_type_(content::SAVE_PAGE_TYPE_UNKNOWN),
@@ -186,6 +189,7 @@ SavePackage::SavePackage(WebContents* web_contents,
       saved_main_directory_path_(directory_full_path),
       start_tick_(base::TimeTicks::Now()),
       finished_(true),
+      mhtml_finishing_(false),
       user_canceled_(false),
       disk_error_occurred_(false),
       save_type_(content::SAVE_PAGE_TYPE_UNKNOWN),
@@ -265,7 +269,9 @@ void SavePackage::InternalInit() {
   download_stats::RecordSavePackageEvent(download_stats::SAVE_PACKAGE_STARTED);
 }
 
-bool SavePackage::Init() {
+bool SavePackage::Init(
+    const content::SavePackageDownloadCreatedCallback&
+      download_created_callback) {
   // Set proper running state.
   if (wait_state_ != INITIALIZE)
     return false;
@@ -282,14 +288,23 @@ bool SavePackage::Init() {
 
   // The download manager keeps ownership but adds us as an observer.
   download_ = download_manager_->CreateSavePackageDownloadItem(
-      saved_main_file_path_, page_url_,
-      browser_context->IsOffTheRecord(), this);
+      saved_main_file_path_,
+      page_url_,
+      browser_context->IsOffTheRecord(),
+      ((save_type_ == content::SAVE_PAGE_TYPE_AS_MHTML) ?
+       "multipart/related" : "text/html"),
+      this);
+  if (!download_created_callback.is_null())
+    download_created_callback.Run(download_);
 
   // Check save type and process the save page job.
   if (save_type_ == content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
     // Get directory
     DCHECK(!saved_main_directory_path_.empty());
     GetAllSavableResourceLinksForCurrentPage();
+  } else if (save_type_ == content::SAVE_PAGE_TYPE_AS_MHTML) {
+    web_contents()->GenerateMHTML(saved_main_file_path_, base::Bind(
+        &SavePackage::OnMHTMLGenerated, this));
   } else {
     wait_state_ = NET_FILES;
     SaveFileCreateInfo::SaveFileSource save_source = page_url_.SchemeIsFile() ?
@@ -308,6 +323,25 @@ bool SavePackage::Init() {
   }
 
   return true;
+}
+
+void SavePackage::OnMHTMLGenerated(const FilePath& path, int64 size) {
+  if (size <= 0) {
+    Cancel(false);
+    return;
+  }
+  wrote_to_completed_file_ = true;
+  download_->SetTotalBytes(size);
+  download_->UpdateProgress(size, size, DownloadItem::kEmptyFileHash);
+  // Must call OnAllDataSaved here in order for
+  // GDataDownloadObserver::ShouldUpload() to return true.
+  // ShouldCompleteDownload() may depend on the gdata uploader to finish.
+  download_->OnAllDataSaved(size, DownloadItem::kEmptyFileHash);
+  // GDataDownloadObserver is waiting for the upload to complete. When that
+  // happens, it will call download_->MaybeCompleteDownload(), which will call
+  // through our OnDownloadUpdated() allowing us to Finish().
+  // OnDownloadUpdated() may have been called in OnAllDataSaved(), so |this| may
+  // be deleted at this point.
 }
 
 // On POSIX, the length of |pure_file_name| + |file_name_ext| is further
@@ -705,8 +739,9 @@ void SavePackage::Finish() {
                  save_ids));
 
   if (download_) {
-    download_->OnAllDataSaved(all_save_items_count_,
-                              DownloadItem::kEmptyFileHash);
+    if (save_type_ != content::SAVE_PAGE_TYPE_AS_MHTML)
+      download_->OnAllDataSaved(all_save_items_count_,
+                                DownloadItem::kEmptyFileHash);
     download_->MarkAsComplete();
     FinalizeDownloadEntry();
   }
@@ -774,8 +809,9 @@ void SavePackage::SaveFailed(const GURL& save_url) {
   if (download_)
     download_->UpdateProgress(completed_count(), CurrentSpeed(), "");
 
-  if (save_type_ == content::SAVE_PAGE_TYPE_AS_ONLY_HTML ||
-      save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_DOM) {
+  if ((save_type_ == content::SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
+      (save_type_ == content::SAVE_PAGE_TYPE_AS_MHTML) ||
+      (save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_DOM)) {
     // We got error when saving page. Treat it as disk error.
     Cancel(true);
   }
@@ -881,9 +917,10 @@ void SavePackage::DoSavingProcess() {
       DCHECK(wait_state_ == HTML_DATA);
     }
   } else {
-    // Save as HTML only.
+    // Save as HTML only or MHTML.
     DCHECK(wait_state_ == NET_FILES);
-    DCHECK(save_type_ == content::SAVE_PAGE_TYPE_AS_ONLY_HTML);
+    DCHECK((save_type_ == content::SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
+           (save_type_ == content::SAVE_PAGE_TYPE_AS_MHTML));
     if (waiting_item_queue_.size()) {
       DCHECK(all_save_items_count_ == waiting_item_queue_.size());
       SaveNextFile(false);
@@ -1271,15 +1308,19 @@ void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
   if (can_save_as_complete)
     default_extension = kDefaultHtmlExtension;
 
-  // On ChromeOS, OnPathPicked is not invoked; SavePackageFilePickerChromeOS
-  // handles the the save.
   download_manager_->delegate()->ChooseSavePath(
-      web_contents(), suggested_path, default_extension, can_save_as_complete,
+      web_contents(),
+      suggested_path,
+      default_extension,
+      can_save_as_complete,
       base::Bind(&SavePackage::OnPathPicked, AsWeakPtr()));
 }
 
-void SavePackage::OnPathPicked(const FilePath& final_name,
-                               content::SavePageType type) {
+void SavePackage::OnPathPicked(
+    const FilePath& final_name,
+    content::SavePageType type,
+    const content::SavePackageDownloadCreatedCallback&
+      download_created_callback) {
   // Ensure the filename is safe.
   saved_main_file_path_ = final_name;
   // TODO(asanka): This call may block on IO and shouldn't be made
@@ -1296,7 +1337,7 @@ void SavePackage::OnPathPicked(const FilePath& final_name,
         FILE_PATH_LITERAL("_files"));
   }
 
-  Init();
+  Init(download_created_callback);
 }
 
 void SavePackage::StopObservation() {
@@ -1314,8 +1355,23 @@ void SavePackage::OnDownloadUpdated(DownloadItem* download) {
   DCHECK(download_manager_);
 
   // Check for removal.
-  if (download->GetState() == DownloadItem::REMOVING)
+  if (download_->GetState() == DownloadItem::REMOVING) {
     StopObservation();
+  }
+
+  // MHTML saves may need to wait for GData to finish uploading.
+  if ((save_type_ == content::SAVE_PAGE_TYPE_AS_MHTML) &&
+      download_->AllDataSaved() &&
+      !download_->IsComplete() &&
+      !mhtml_finishing_ &&
+      download_manager_->delegate()->ShouldCompleteDownload(download_)) {
+    // Post a task to avoid re-entering OnDownloadUpdated. Set a flag to
+    // prevent double-calling Finish() in case another OnDownloadUpdated happens
+    // before Finish() runs.
+    mhtml_finishing_ = true;
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        base::Bind(&SavePackage::Finish, this));
+  }
 }
 
 void SavePackage::FinalizeDownloadEntry() {

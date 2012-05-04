@@ -5065,6 +5065,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DOWNLOADS_NEW_UI_DESCRIPTION" desc="Description of the 'New Downloads UI' lab.">
         Disables the download shelf. Will show the new downloads UI as it is implemented.
       </message>
+      <message name="IDS_FLAGS_SAVE_PAGE_AS_MHTML_NAME" desc="Name of the 'Save Page as MHTML' lab.">
+        Save Page as MHTML
+      </message>
+      <message name="IDS_FLAGS_SAVE_PAGE_AS_MHTML_DESCRIPTION" desc="Description of the 'Save Page as MHTML' lab.">
+        Disables saving pages as HTML-only or HTML Complete; enables saving pages only as MHTML: a single text file containing HTML and all sub-resources.
+      </message>
       <message name="IDS_FLAGS_XSS_AUDITOR_NAME" desc="Description of the 'XSS Auditor' lab.">
         XSS Auditor
       </message>
@@ -10213,9 +10219,6 @@ The following application will be launched if you accept this request:
       </message>
       <message name="IDS_SAVE_PAGE_DESC_COMPLETE" desc="In the Save Page dialog, the description of saving both the HTML and all shown resources.">
         Webpage, Complete
-      </message>
-      <message name="IDS_SAVE_PAGE_DESC_COMPLETE_SINGLE_FILE" desc="In the Save Page dialog, the description of saving both the HTML and all shown resources into a single MHTML file.">
-        Webpage, Complete, Single File
       </message>
       <message name="IDS_SAVE_PAGE_STATUS_COMPLETED" desc="Save page status: completed">
         Completed

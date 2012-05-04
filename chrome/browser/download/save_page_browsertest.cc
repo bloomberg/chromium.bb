@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -15,12 +16,15 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/download/save_package_file_picker.h"
 #include "chrome/browser/net/url_request_mock_util.h"
+#include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -32,6 +36,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/download/save_package_file_picker_chromeos.h"
+#else
+#include "chrome/browser/download/save_package_file_picker.h"
+#endif
 
 using content::BrowserThread;
 using content::DownloadItem;
@@ -53,6 +63,10 @@ static const char* kAppendedExtension =
 }  // namespace
 
 class SavePageBrowserTest : public InProcessBrowserTest {
+ public:
+  SavePageBrowserTest() {}
+  virtual ~SavePageBrowserTest();
+
  protected:
   void SetUp() OVERRIDE {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir_));
@@ -61,6 +75,8 @@ class SavePageBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() OVERRIDE {
+    browser()->profile()->GetPrefs()->SetFilePath(
+        prefs::kDownloadDefaultDirectory, save_dir_.path());
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
@@ -154,12 +170,27 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 
   void CheckDownloadHistory(const GURL& url,
                             const FilePath& path,
-                            int64 num_files_) {
+                            int64 num_files) {
     QueryDownloadHistory();
 
-    EXPECT_NE(std::find_if(history_entries_.begin(), history_entries_.end(),
-        DownloadPersistentStoreInfoMatch(url, path, num_files_)),
-        history_entries_.end());
+    std::vector<DownloadPersistentStoreInfo>::iterator found =
+      std::find_if(history_entries_.begin(), history_entries_.end(),
+                   DownloadPersistentStoreInfoMatch(url, path, num_files));
+
+    if (found == history_entries_.end()) {
+      LOG(ERROR) << "Missing url=" << url.spec()
+                 << " path=" << path.value()
+                 << " received=" << num_files;
+      for (size_t index = 0; index < history_entries_.size(); ++index) {
+        LOG(ERROR) << "History@" << index << ": url="
+                   << history_entries_[index].url.spec()
+                   << " path=" << history_entries_[index].path.value()
+                   << " received=" << history_entries_[index].received_bytes
+                   << " total=" << history_entries_[index].total_bytes
+                   << " state=" << history_entries_[index].state;
+      }
+      EXPECT_TRUE(false);
+    }
   }
 
   std::vector<DownloadPersistentStoreInfo> history_entries_;
@@ -169,7 +200,13 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 
   // Temporary directory we will save pages to.
   ScopedTempDir save_dir_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SavePageBrowserTest);
 };
+
+SavePageBrowserTest::~SavePageBrowserTest() {
+}
 
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
   GURL url = NavigateToMockURL("a");
@@ -335,3 +372,43 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
   EXPECT_TRUE(file_util::DieFileDie(dir, true));
 }
 #endif
+
+class SavePageAsMHTMLBrowserTest : public SavePageBrowserTest {
+ public:
+  SavePageAsMHTMLBrowserTest() {}
+  virtual ~SavePageAsMHTMLBrowserTest();
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(switches::kSavePageAsMHTML);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SavePageAsMHTMLBrowserTest);
+};
+
+SavePageAsMHTMLBrowserTest::~SavePageAsMHTMLBrowserTest() {
+}
+
+IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
+  static const int64 kFileSize = 2759;
+  GURL url = NavigateToMockURL("b");
+  FilePath download_dir = DownloadPrefs::FromDownloadManager(
+      GetDownloadManager())->download_path();
+  FilePath full_file_name = download_dir.AppendASCII(std::string(
+      "Test page for saving page feature.mhtml"));
+#if defined(OS_CHROMEOS)
+  SavePackageFilePickerChromeOS::SetShouldPromptUser(false);
+#else
+  SavePackageFilePicker::SetShouldPromptUser(false);
+#endif
+  ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
+        content::NotificationService::AllSources());
+  browser()->SavePage();
+  observer.Wait();
+  CheckDownloadHistory(url, full_file_name, kFileSize);
+
+  EXPECT_TRUE(file_util::PathExists(full_file_name));
+  int64 actual_file_size = -1;
+  EXPECT_TRUE(file_util::GetFileSize(full_file_name, &actual_file_size));
+  EXPECT_EQ(kFileSize, actual_file_size);
+}

@@ -81,6 +81,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       const FilePath& main_file_path,
       const GURL& page_url,
       bool is_otr,
+      const std::string& mime_type,
       content::DownloadItem::Observer* observer) OVERRIDE;
   virtual void ClearLastDownloadPath() OVERRIDE;
   virtual void FileSelected(const FilePath& path, int32 download_id) OVERRIDE;

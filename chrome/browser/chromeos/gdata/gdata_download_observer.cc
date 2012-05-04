@@ -133,7 +133,7 @@ bool GDataDownloadObserver::IsReadyToComplete(DownloadItem* download) {
   // 2. The upload has completed.
   UploadingExternalData* upload_data = GetUploadingExternalData(download);
   return !IsGDataDownload(download) ||
-      (upload_data && upload_data->is_complete());
+         (upload_data && upload_data->is_complete());
 }
 
 // static
@@ -291,10 +291,10 @@ bool GDataDownloadObserver::ShouldUpload(DownloadItem* download) {
   // Upload if the item is in pending_downloads_,
   // is complete or large enough to stream, and,
   // is not already being uploaded.
-  return pending_downloads_.count(download->GetId()) != 0 &&
+  return (pending_downloads_.count(download->GetId()) != 0) &&
          (download->AllDataSaved() ||
           download->GetReceivedBytes() > kStreamingFileSize) &&
-         GetUploadingExternalData(download) == NULL;
+         (GetUploadingExternalData(download) == NULL);
 }
 
 scoped_ptr<UploadFileInfo> GDataDownloadObserver::CreateUploadFileInfo(
@@ -340,6 +340,14 @@ void GDataDownloadObserver::OnUploadComplete(int32 download_id,
   DCHECK(upload_data);
   upload_data->MarkAsComplete();
   download->MaybeCompleteDownload();
+  // MaybeCompleteDownload() only works for non-SavePackage downloads.
+  // SavePackage::Finish() is the SavePackage equivalent of
+  // MaybeCompleteDownload(). MHTML SavePackages may upload to GData (see
+  // SavePackageFilePickerChromeOS), so MHTML SavePackages use
+  // OnDownloadUpdated() to wait for the upload to complete before calling
+  // Finish(). Call UpdateObservers() manually now in case this download is an
+  // MHTML SavePackage.
+  download->UpdateObservers();
 }
 
 }  // namespace gdata

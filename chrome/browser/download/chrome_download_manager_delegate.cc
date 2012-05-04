@@ -158,11 +158,11 @@ void ChromeDownloadManagerDelegate::ChooseDownloadPath(
     int32 download_id) {
   // Deletes itself.
 #if defined(OS_CHROMEOS)
-  new DownloadFilePickerChromeOS(
+  new DownloadFilePickerChromeOS
 #else
-  new DownloadFilePicker(
+  new DownloadFilePicker
 #endif
-      download_manager_, web_contents, suggested_path, download_id);
+      (download_manager_, web_contents, suggested_path, download_id);
 }
 
 FilePath ChromeDownloadManagerDelegate::GetIntermediatePath(
@@ -197,33 +197,51 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
   return download_prefs_->IsAutoOpenEnabledForExtension(extension);
 }
 
+// static
+void ChromeDownloadManagerDelegate::DisableSafeBrowsing(DownloadItem* item) {
+#if defined(ENABLE_SAFE_BROWSING)
+  SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
+      item->GetExternalData(&safe_browsing_id));
+  DCHECK(state == NULL);
+  if (state == NULL) {
+    state = new SafeBrowsingState();
+    item->SetExternalData(&safe_browsing_id, state);
+  }
+  state->pending = false;
+  state->verdict = DownloadProtectionService::SAFE;
+#endif
+}
+
 bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
 #if defined(ENABLE_SAFE_BROWSING)
   // See if there is already a pending SafeBrowsing check for that download.
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
       item->GetExternalData(&safe_browsing_id));
-  if (state)
-    // Don't complete the download until we have an answer.
-    return !state->pending;
-
-  // Begin the safe browsing download protection check.
-  DownloadProtectionService* service = GetDownloadProtectionService();
-  if (service) {
-    VLOG(2) << __FUNCTION__ << "() Start SB download check for download = "
-            << item->DebugString(false);
-    state = new SafeBrowsingState();
-    state->pending = true;
-    state->verdict = DownloadProtectionService::SAFE;
-    item->SetExternalData(&safe_browsing_id, state);
-    service->CheckClientDownload(
-        DownloadProtectionService::DownloadInfo::FromDownloadItem(*item),
-        base::Bind(
-            &ChromeDownloadManagerDelegate::CheckClientDownloadDone,
-            this,
-            item->GetId()));
+  // Don't complete the download until we have an answer.
+  if (state && state->pending)
     return false;
+
+  if (state == NULL) {
+    // Begin the safe browsing download protection check.
+    DownloadProtectionService* service = GetDownloadProtectionService();
+    if (service) {
+      VLOG(2) << __FUNCTION__ << "() Start SB download check for download = "
+              << item->DebugString(false);
+      state = new SafeBrowsingState();
+      state->pending = true;
+      state->verdict = DownloadProtectionService::SAFE;
+      item->SetExternalData(&safe_browsing_id, state);
+      service->CheckClientDownload(
+          DownloadProtectionService::DownloadInfo::FromDownloadItem(*item),
+          base::Bind(
+              &ChromeDownloadManagerDelegate::CheckClientDownloadDone,
+              this,
+              item->GetId()));
+      return false;
+    }
   }
 #endif
+
 #if defined(OS_CHROMEOS)
   // If there's a GData upload associated with this download, we wait until that
   // is complete before allowing the download item to complete.
@@ -379,13 +397,10 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
     const FilePath& suggested_path,
     const FilePath::StringType& default_extension,
     bool can_save_as_complete,
-    content::SaveFilePathPickedCallback callback) {
+    const content::SavePackagePathPickedCallback& callback) {
   // Deletes itself.
 #if defined(OS_CHROMEOS)
-  // Note that we're ignoring the callback here.
-  // SavePackageFilePickerChromeOS completes the save operation itself.
-  // TODO(achuith): Fix this.
-  new SavePackageFilePickerChromeOS(web_contents, suggested_path);
+  new SavePackageFilePickerChromeOS(web_contents, suggested_path, callback);
 #else
   new SavePackageFilePicker(web_contents, suggested_path, default_extension,
       can_save_as_complete, download_prefs_.get(), callback);

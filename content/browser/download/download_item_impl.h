@@ -105,6 +105,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
                    const GURL& url,
                    bool is_otr,
                    content::DownloadId download_id,
+                   const std::string& mime_type,
                    const net::BoundNetLog& bound_net_log);
 
   virtual ~DownloadItemImpl();

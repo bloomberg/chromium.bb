@@ -433,11 +433,18 @@ DownloadItem* DownloadManagerImpl::CreateSavePackageDownloadItem(
     const FilePath& main_file_path,
     const GURL& page_url,
     bool is_otr,
+    const std::string& mime_type,
     DownloadItem::Observer* observer) {
   net::BoundNetLog bound_net_log =
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
   DownloadItem* download = new DownloadItemImpl(
-      this, main_file_path, page_url, is_otr, GetNextId(), bound_net_log);
+      this,
+      main_file_path,
+      page_url,
+      is_otr,
+      GetNextId(),
+      mime_type,
+      bound_net_log);
 
   download->AddObserver(observer);
 
@@ -605,6 +612,16 @@ bool DownloadManagerImpl::IsDownloadReadyForCompletion(DownloadItem* download) {
 
   return true;
 }
+
+// When SavePackage downloads MHTML to GData (see
+// SavePackageFilePickerChromeOS), GData calls MaybeCompleteDownload() like it
+// does for non-SavePackage downloads, but SavePackage downloads never satisfy
+// IsDownloadReadyForCompletion(). GDataDownloadObserver manually calls
+// DownloadItem::UpdateObservers() when the upload completes so that SavePackage
+// notices that the upload has completed and runs its normal Finish() pathway.
+// MaybeCompleteDownload() is never the mechanism by which SavePackage completes
+// downloads. SavePackage always uses its own Finish() to mark downloads
+// complete.
 
 void DownloadManagerImpl::MaybeCompleteDownload(DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
