@@ -234,7 +234,8 @@ onload = function() {
     // Register a bad dispatchEvent to make sure it isn't used. See 'EVIL' note
     // below.
     obj.dispatchEvent = function() {
-      LogHTML("<p>Bad dispatchEvent called!");
+      LogHTML("<p>Bad dispatchEvent called! " +
+              "see <a href='http://crbug.com/109775'>crbug.com/109775</a>)");
     }
     container.appendChild(obj);
   }
@@ -246,9 +247,13 @@ onload = function() {
 // particular, we replace document.createEvent, MessageEvent.initMessageEvent,
 // and the MessageEvent constructor. Previous versions of the PostMessage
 // implementation made use of these and would fail (http://crbug.com/82604).
-// TODO(dmichael): These should clear the PASS cookie so that ui_tests sees
-//                 these as a failure (see ConditionFailed for how to do this).
-//                 crbug.com/109775
+// The NaCl plugin uses some of these still for progress events, hence you will
+// see:
+//   Bad dispatchEvent called!
+// in the output. See crbug.com/109775 for more information.
+// TODO(dmichael): Once the NaCl plugin progress events are fixed, we should
+//                 clear the PASS cookie so that browser_tests sees these as a
+//                 failure (see ConditionFailed for how to do this).
 document.createEvent = function() {
   LogHTML("<p>Bad document.createEvent called!");
 }
