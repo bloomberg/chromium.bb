@@ -4,11 +4,15 @@
  */
 
 #include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
 
-#include "../nacl_mounts/mount_node.h"
-#include "../nacl_mounts/mount_node_dir.h"
-#include "../nacl_mounts/mount_node_mem.h"
+#include "nacl_mounts/kernel_proxy.h"
+#include "nacl_mounts/mount_node.h"
+#include "nacl_mounts/mount_node_dir.h"
+#include "nacl_mounts/mount_node_mem.h"
 
+#define __STDC__ 1
 #include "gtest/gtest.h"
 
 #define NULL_NODE ((MountNode *) NULL)

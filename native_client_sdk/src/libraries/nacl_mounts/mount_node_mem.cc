@@ -12,10 +12,10 @@
 #define BLOCK_SIZE (1 << 16)
 #define BLOCK_MASK (BLOCK_SIZE - 1)
 
-MountNodeMem::MountNodeMem(Mount *mount, int ino, int dev) : 
-    MountNode(mount, ino, dev),
-    data_(NULL),
-    capacity_(0) {
+MountNodeMem::MountNodeMem(Mount *mount, int ino, int dev)
+    : MountNode(mount, ino, dev),
+      data_(NULL),
+      capacity_(0) {
 }
 
 MountNodeMem::~MountNodeMem() {
@@ -35,7 +35,7 @@ int MountNodeMem::Read(size_t offs, void *buf, size_t count) {
     count = GetSize() - offs;
   }
 
-  memcpy(buf, data_, count);
+  memcpy(buf, &data_[offs], count);
   return static_cast<int>(count);
 }
 
@@ -49,7 +49,7 @@ int MountNodeMem::Write(size_t offs, const void *buf, size_t count) {
     count = GetSize() - offs;
   }
 
-  memcpy(data_, buf, count);
+  memcpy(&data_[offs], buf, count);
   return static_cast<int>(count);
 }
 
