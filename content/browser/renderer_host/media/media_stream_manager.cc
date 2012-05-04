@@ -29,16 +29,19 @@ namespace media_stream {
 
 // Creates a random label used to identify requests.
 static std::string RandomLabel() {
-  // Alphabet according to WhatWG standard, i.e. containing 36 characters from
+  // An earlier PeerConnection spec,
+  // http://dev.w3.org/2011/webrtc/editor/webrtc.html, specified the
+  // MediaStream::label alphabet as containing 36 characters from
   // range: U+0021, U+0023 to U+0027, U+002A to U+002B, U+002D to U+002E,
   // U+0030 to U+0039, U+0041 to U+005A, U+005E to U+007E.
-  static const char alphabet[] = "!#$%&\'*+-.0123456789"
-      "abcdefghijklmnopqrstuvwxyz^_`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~";
+  // Here we use a safe subset.
+  static const char kAlphabet[] = "0123456789"
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
   std::string label(36, ' ');
   for (size_t i = 0; i < label.size(); ++i) {
-    int random_char = base::RandGenerator(sizeof(alphabet) - 1);
-    label[i] = alphabet[random_char];
+    int random_char = base::RandGenerator(sizeof(kAlphabet) - 1);
+    label[i] = kAlphabet[random_char];
   }
   return label;
 }
