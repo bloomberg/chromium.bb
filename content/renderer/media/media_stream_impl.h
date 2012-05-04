@@ -44,6 +44,7 @@ class Thread;
 }
 
 namespace WebKit {
+class WebFrame;
 class WebMediaStreamComponent;
 class WebMediaStreamDescriptor;
 class WebPeerConnection00Handler;
@@ -129,6 +130,9 @@ class CONTENT_EXPORT MediaStreamImpl
       const media_stream::StreamDeviceInfo& device_info) OVERRIDE;
   virtual void OnDeviceOpenFailed(int request_id) OVERRIDE;
 
+  // content::RenderViewObserver OVERRIDE
+  virtual void FrameWillClose(WebKit::WebFrame* frame) OVERRIDE;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaStreamImplTest, Basic);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamImplTest, MultiplePeerConnections);
@@ -147,6 +151,36 @@ class CONTENT_EXPORT MediaStreamImpl
    private:
     scoped_refptr<RTCVideoDecoder> rtc_video_decoder_;
   };
+
+  // Structure for storing information about a WebKit request to create a
+  // MediaStream.
+  struct UserMediaRequestInfo {
+    UserMediaRequestInfo() : frame_(NULL), request_() {}
+    UserMediaRequestInfo(WebKit::WebFrame* frame,
+                         const WebKit::WebUserMediaRequest& request)
+        : frame_(frame), request_(request) {}
+    WebKit::WebFrame* frame_;  // WebFrame that requested the MediaStream.
+    WebKit::WebUserMediaRequest request_;
+  };
+  typedef std::map<int, UserMediaRequestInfo> MediaRequestMap;
+
+  // We keep a list of the generated local media streams,
+  // so that we can enable and disable individual tracks and add renderers
+  // when needed.
+  typedef talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
+      LocalMediaStreamPtr;
+  struct LocalMediaStreamInfo {
+    LocalMediaStreamInfo() : frame_(NULL), stream_() {}
+    LocalMediaStreamInfo(WebKit::WebFrame* frame,
+                         webrtc::LocalMediaStreamInterface* stream)
+        : frame_(frame), stream_(stream) {}
+    ~LocalMediaStreamInfo();
+    // WebFrame that requested the Stream.
+    WebKit::WebFrame* frame_;
+    // Native representation of a local MediaStream.
+    LocalMediaStreamPtr stream_;
+  };
+  typedef std::map<std::string, LocalMediaStreamInfo> LocalNativeStreamMap;
 
   void InitializeWorkerThread(talk_base::Thread** thread,
                               base::WaitableEvent* event);
@@ -168,6 +202,7 @@ class CONTENT_EXPORT MediaStreamImpl
       media::MessageLoopFactory* message_loop_factory);
   void CreateNativeLocalMediaStream(
       const std::string& label,
+      WebKit::WebFrame* frame,
       const WebKit::WebVector<WebKit::WebMediaStreamSource>& audio_sources,
       const WebKit::WebVector<WebKit::WebMediaStreamSource>& video_sources);
 
@@ -184,9 +219,7 @@ class CONTENT_EXPORT MediaStreamImpl
   // We own network_manager_, must be deleted on the worker thread.
   // The network manager uses |p2p_socket_dispatcher_|.
   content::IpcNetworkManager* network_manager_;
-
   scoped_ptr<content::IpcPacketSocketFactory> socket_factory_;
-
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
 
   // peer_connection_handlers_ contains raw references, owned by WebKit. A
@@ -194,12 +227,7 @@ class CONTENT_EXPORT MediaStreamImpl
   // ClosePeerConnection on us and we remove the pointer).
   std::list<PeerConnectionHandlerBase*> peer_connection_handlers_;
 
-  // We keep a list of the generated local media streams,
-  // so that we can enable and disable individual tracks and add renderers
-  // when needed.
-  typedef talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
-      LocalMediaStreamPtr;
-  typedef std::map<std::string, LocalMediaStreamPtr> LocalNativeStreamMap;
+  MediaRequestMap user_media_requests_;
   LocalNativeStreamMap local_media_streams_;
 
   // PeerConnection threads. signaling_thread_ is created from the
@@ -207,9 +235,6 @@ class CONTENT_EXPORT MediaStreamImpl
   talk_base::Thread* signaling_thread_;
   talk_base::Thread* worker_thread_;
   base::Thread chrome_worker_thread_;
-
-  typedef std::map<int, WebKit::WebUserMediaRequest> MediaRequestMap;
-  MediaRequestMap user_media_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamImpl);
 };

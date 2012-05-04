@@ -83,8 +83,8 @@ class MediaStreamImplTest : public ::testing::Test {
     loop_.RunAllPending();
   }
 
-  WebKit::WebMediaStreamDescriptor RequestLocalMediaStream (bool audio,
-                                                            bool video) {
+  WebKit::WebMediaStreamDescriptor RequestLocalMediaStream(bool audio,
+                                                           bool video) {
     WebKit::WebUserMediaRequest user_media_request;
     WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources(
         audio ? static_cast<size_t>(1) : 0);
@@ -220,13 +220,15 @@ TEST_F(MediaStreamImplTest, LocalMediaStream) {
                                         message_loop_factory.get()));
   EXPECT_TRUE(video_decoder.get() != NULL);
 
-  // Stop all generated local streams.
+  // Stop generated local streams.
   EXPECT_TRUE(ms_impl_->StopLocalMediaStream(mixed_desc));
   EXPECT_TRUE(ms_impl_->GetLocalMediaStream(mixed_desc) == NULL);
 
   EXPECT_TRUE(ms_impl_->StopLocalMediaStream(audio_desc));
   EXPECT_TRUE(ms_impl_->GetLocalMediaStream(audio_desc) == NULL);
 
-  EXPECT_TRUE(ms_impl_->StopLocalMediaStream(video_desc));
+  // Test that the MediaStreams are deleted if the owning WebFrame is deleted.
+  // In the unit test the owning frame is NULL.
+  ms_impl_->FrameWillClose(NULL);
   EXPECT_TRUE(ms_impl_->GetLocalMediaStream(video_desc) == NULL);
 }

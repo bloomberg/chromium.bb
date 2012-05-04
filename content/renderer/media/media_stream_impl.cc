@@ -24,6 +24,7 @@
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "media/base/message_loop_factory.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaStreamRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamComponent.h"
@@ -123,6 +124,7 @@ MediaStreamImpl::MediaStreamImpl(
 
 MediaStreamImpl::~MediaStreamImpl() {
   DCHECK(peer_connection_handlers_.empty());
+  DCHECK(local_media_streams_.empty());
   if (dependency_factory_.get())
     dependency_factory_->ReleasePeerConnectionFactory();
   if (network_manager_) {
@@ -212,7 +214,7 @@ webrtc::LocalMediaStreamInterface* MediaStreamImpl::GetLocalMediaStream(
   LocalNativeStreamMap::iterator it = local_media_streams_.find(msm_label);
   if (it == local_media_streams_.end())
     return NULL;
-  return it->second.get();
+  return it->second.stream_.get();
 }
 
 bool MediaStreamImpl::StopLocalMediaStream(
@@ -241,6 +243,7 @@ void MediaStreamImpl::requestUserMedia(
   int request_id = g_next_request_id++;
   bool audio = false;
   bool video = false;
+  WebKit::WebFrame* frame = NULL;
   std::string security_origin;
 
   // |user_media_request| can't be mocked. So in order to test at all we check
@@ -254,6 +257,11 @@ void MediaStreamImpl::requestUserMedia(
     video = user_media_request.video();
     security_origin = UTF16ToUTF8(
         user_media_request.securityOrigin().toString());
+    // Get the WebFrame that requested a MediaStream.
+    // The frame is needed to tell the MediaStreamDispatcher when a stream goes
+    // out of scope.
+    frame = WebKit::WebFrame::frameForCurrentContext();
+    DCHECK(frame);
   }
 
   DVLOG(1) << "MediaStreamImpl::generateStream(" << request_id << ", [ "
@@ -261,9 +269,8 @@ void MediaStreamImpl::requestUserMedia(
            << (user_media_request.video() ? " video" : "") << "], "
            << security_origin << ")";
 
-  user_media_requests_.insert(
-      std::pair<int, WebKit::WebUserMediaRequest>(
-          request_id, user_media_request));
+  user_media_requests_[request_id] =
+      UserMediaRequestInfo(frame, user_media_request);
 
   media_stream_dispatcher_->GenerateStream(
       request_id,
@@ -330,9 +337,10 @@ void MediaStreamImpl::OnStreamGenerated(
     return;
   }
 
-  CreateNativeLocalMediaStream(label, audio_source_vector, video_source_vector);
+  CreateNativeLocalMediaStream(label, it->second.frame_,
+                               audio_source_vector, video_source_vector);
 
-  WebKit::WebUserMediaRequest user_media_request(it->second);
+  WebKit::WebUserMediaRequest user_media_request(it->second.request_);
   user_media_requests_.erase(it);
 
   // |user_media_request| can't be mocked. So in order to test at all we check
@@ -351,7 +359,7 @@ void MediaStreamImpl::OnStreamGenerationFailed(int request_id) {
     DVLOG(1) << "Request ID not found";
     return;
   }
-  WebKit::WebUserMediaRequest user_media_request = it->second;
+  WebKit::WebUserMediaRequest user_media_request(it->second.request_);
   user_media_requests_.erase(it);
 
   user_media_request.requestFailed();
@@ -402,6 +410,21 @@ void MediaStreamImpl::OnDeviceOpenFailed(int request_id) {
   DVLOG(1) << "MediaStreamImpl::VideoDeviceOpenFailed("
            << request_id << ")";
   NOTIMPLEMENTED();
+}
+
+void MediaStreamImpl::FrameWillClose(WebKit::WebFrame* frame) {
+  LocalNativeStreamMap::iterator it = local_media_streams_.begin();
+  while (it != local_media_streams_.end()) {
+    if (it->second.frame_ == frame) {
+      DVLOG(1) << "MediaStreamImpl::FrameWillClose: "
+               << "Stopping stream " << it->first;
+      media_stream_dispatcher_->StopStream(it->first);
+      local_media_streams_.erase(it);
+      it = local_media_streams_.begin();
+    } else {
+      ++it;
+    }
+  }
 }
 
 void MediaStreamImpl::InitializeWorkerThread(talk_base::Thread** thread,
@@ -537,6 +560,7 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateRemoteVideoDecoder(
 
 void MediaStreamImpl::CreateNativeLocalMediaStream(
     const std::string& label,
+    WebKit::WebFrame* frame,
     const WebKit::WebVector<WebKit::WebMediaStreamSource>& audio_sources,
     const WebKit::WebVector<WebKit::WebMediaStreamSource>& video_sources) {
   // Creating the peer connection factory can fail if for example the audio
@@ -574,7 +598,7 @@ void MediaStreamImpl::CreateNativeLocalMediaStream(
             UTF16ToUTF8(video_sources[i].name()), video_session_id));
     native_stream->AddTrack(video_track);
   }
-  local_media_streams_[label] = native_stream;
+  local_media_streams_[label] = LocalMediaStreamInfo(frame, native_stream);
 }
 
 MediaStreamImpl::VideoRendererWrapper::VideoRendererWrapper(
@@ -583,4 +607,7 @@ MediaStreamImpl::VideoRendererWrapper::VideoRendererWrapper(
 }
 
 MediaStreamImpl::VideoRendererWrapper::~VideoRendererWrapper() {
+}
+
+MediaStreamImpl::LocalMediaStreamInfo::~LocalMediaStreamInfo() {
 }
