@@ -82,15 +82,19 @@
   display: none;
 }
 
+.gdrive-welcome.page .cr-dialog-close {
+  display: none;
+}
+
 .gdrive-welcome.page .gdrive-welcome-wrapper {
+  -webkit-box-align: center;
+  -webkit-box-orient: vertical;
   background-position: 0 50px;
   background-size: 520px 173px;
-  border: 2px solid rgb(186, 210, 231);
-  border-radius: 4px;
   bottom: 0;
+  display: -webkit-box;
   font-size: 120%;
   left: 0;
-  margin: 16px;
   overflow: hidden;
   position: absolute;
   right: 0;
@@ -103,16 +107,20 @@
   left: 0;
   right: 0;
   top: 0;
+  width: 100%;
 }
 
 .gdrive-welcome.page .gdrive-welcome-message {
-  padding-left: 30%;
-  padding-right: 25%;
+  color: #333;
+  margin-left: 10px;
+  margin-right: 10px;
+  max-width: 525px;
 }
 
 .gdrive-welcome.page .gdrive-welcome-title {
   font-size: 133%;
   margin-bottom: 30px;
+  text-align: center;
 }
 
 .gdrive-welcome.page .gdrive-welcome-text {
@@ -123,19 +131,10 @@
   margin-left: 20px;
 }
 
-body:not([type='full-page']) .gdrive-welcome.page .gdrive-welcome-title {
-  text-align: center;
-}
-
 body:not([type='full-page']) .gdrive-welcome.page .gdrive-welcome-wrapper {
   background-position: 0 0;
 }
 
 body:not([type='full-page']) .gdrive-welcome.page .gdrive-welcome-icon {
   height: 200px;
-}
-
-body:not([type='full-page']) .gdrive-welcome.page .gdrive-welcome-message {
-  padding-left: 10%;
-  padding-right: 10%;
 }
