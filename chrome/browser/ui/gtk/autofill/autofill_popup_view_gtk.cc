@@ -79,16 +79,7 @@ AutofillPopupViewGtk::~AutofillPopupViewGtk() {
 }
 
 void AutofillPopupViewGtk::ShowInternal() {
-  gint origin_x, origin_y;
-  gdk_window_get_origin(gtk_widget_get_window(parent_), &origin_x, &origin_y);
-
-  // Move the popup to appear right below the text field it is using.
-  bounds_.SetRect(
-      origin_x + element_bounds().x(),
-      origin_y + element_bounds().y() + element_bounds().height(),
-      GetPopupRequiredWidth(),
-      row_height_ * autofill_values().size());
-
+  SetBounds();
   gtk_window_move(GTK_WINDOW(window_), bounds_.x(), bounds_.y());
 
   ResizePopup();
@@ -268,6 +259,35 @@ void AutofillPopupViewGtk::SetupLayout(const gfx::Rect& window_rect,
 
   pango_layout_set_attributes(layout_, attrs);  // Ref taken.
   pango_attr_list_unref(attrs);
+}
+
+void AutofillPopupViewGtk::SetBounds() {
+  gint origin_x, origin_y;
+  gdk_window_get_origin(gtk_widget_get_window(parent_), &origin_x, &origin_y);
+
+  GdkScreen* screen = gtk_widget_get_screen(parent_);
+  gint screen_height = gdk_screen_get_height(screen);
+
+  int bottom_of_field = origin_y + element_bounds().y() +
+      element_bounds().height();
+  int popup_size =  row_height_ * autofill_values().size();
+
+  // Find the correct top position of the popup so that is doesn't go off
+  // the screen.
+  int top_of_popup = 0;
+  if (screen_height < bottom_of_field + popup_size) {
+    // The popup must appear above the field.
+    top_of_popup = origin_y + element_bounds().y() - popup_size;
+  } else {
+    // The popup can appear below the field.
+    top_of_popup = bottom_of_field;
+  }
+
+  bounds_.SetRect(
+      origin_x + element_bounds().x(),
+      top_of_popup,
+      GetPopupRequiredWidth(),
+      popup_size);
 }
 
 int AutofillPopupViewGtk::GetPopupRequiredWidth() {

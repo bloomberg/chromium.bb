@@ -58,6 +58,9 @@ class AutofillPopupViewGtk : public AutofillPopupView,
   // Setup the pango layout to display the autofill results.
   void SetupLayout(const gfx::Rect& window_rect, const GdkColor& text_color);
 
+  // Set the bounds of the popup to show, including the placement of it.
+  void SetBounds();
+
   // Get width of popup needed by values.
   int GetPopupRequiredWidth();
 
