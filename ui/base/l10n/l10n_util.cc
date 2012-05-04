@@ -27,6 +27,10 @@
 #include "unicode/rbbi.h"
 #include "unicode/uloc.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/locale_utils.h"
+#endif
+
 #if defined(OS_LINUX)
 #include <glib.h>
 #endif
@@ -474,24 +478,47 @@ string16 GetDisplayNameForLocale(const std::string& locale,
   // #1 and #2 wouldn't work if display_locale != current UI locale although
   // we can think of additional hack to work around the problem.
   // #3 can be potentially expensive.
-  if (locale_code == "zh-CN")
+  bool is_zh = false;
+  if (locale_code == "zh-CN") {
     locale_code = "zh-Hans";
-  else if (locale_code == "zh-TW")
+    is_zh = true;
+  } else if (locale_code == "zh-TW") {
     locale_code = "zh-Hant";
-
-  UErrorCode error = U_ZERO_ERROR;
-  const int kBufferSize = 1024;
+    is_zh = true;
+  }
 
   string16 display_name;
-  int actual_size = uloc_getDisplayName(locale_code.c_str(),
-      display_locale.c_str(),
-      WriteInto(&display_name, kBufferSize), kBufferSize - 1, &error);
-  DCHECK(U_SUCCESS(error));
-  display_name.resize(actual_size);
+#if defined(OS_ANDROID)
+  // Use Java API to get locale display name so that we can remove most of
+  // the lang data from icu data to reduce binary size, except for zh-Hans and
+  // zh-Hant because the current Android Java API doesn't support scripts.
+  // TODO(wangxianzhu): remove the special handling of zh-Hans and zh-Hant once
+  // Android Java API supports scripts.
+  if (!is_zh) {
+    display_name = base::android::GetDisplayNameForLocale(locale_code,
+                                                          display_locale);
+  } else
+#endif
+  {
+    UErrorCode error = U_ZERO_ERROR;
+    const int kBufferSize = 1024;
+
+    int actual_size = uloc_getDisplayName(locale_code.c_str(),
+        display_locale.c_str(),
+        WriteInto(&display_name, kBufferSize), kBufferSize - 1, &error);
+    DCHECK(U_SUCCESS(error));
+    display_name.resize(actual_size);
+  }
+
   // Add an RTL mark so parentheses are properly placed.
   if (is_for_ui && base::i18n::IsRTL())
     display_name.push_back(static_cast<char16>(base::i18n::kRightToLeftMark));
   return display_name;
+}
+
+string16 GetDisplayNameForCountry(const std::string& country_code,
+                                  const std::string& display_locale) {
+  return GetDisplayNameForLocale("_" + country_code, display_locale, false);
 }
 
 std::string NormalizeLocale(const std::string& locale) {
