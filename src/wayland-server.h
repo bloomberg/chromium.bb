@@ -189,7 +189,7 @@ struct wl_pointer_grab_interface {
 	void (*motion)(struct wl_pointer_grab *grab,
 		       uint32_t time, int32_t x, int32_t y);
 	void (*button)(struct wl_pointer_grab *grab,
-		       uint32_t time, uint32_t button, int32_t state);
+		       uint32_t time, uint32_t button, uint32_t state);
 };
 
 struct wl_pointer_grab {
@@ -202,7 +202,7 @@ struct wl_pointer_grab {
 struct wl_keyboard_grab;
 struct wl_keyboard_grab_interface {
 	void (*key)(struct wl_keyboard_grab *grab, uint32_t time,
-		    uint32_t key, int32_t state);
+		    uint32_t key, uint32_t state);
 };
 
 struct wl_keyboard_grab {

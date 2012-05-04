@@ -253,7 +253,7 @@ data_device_end_drag_grab(struct wl_input_device *device)
 
 static void
 drag_grab_button(struct wl_pointer_grab *grab,
-		 uint32_t time, uint32_t button, int32_t state)
+		 uint32_t time, uint32_t button, uint32_t state)
 {
 	struct wl_input_device *device =
 		container_of(grab, struct wl_input_device, drag_grab);
