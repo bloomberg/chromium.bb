@@ -221,6 +221,9 @@ struct _drm_intel_bo_gem {
 	bool mapped_cpu_write;
 
 	uint32_t aub_offset;
+
+	drm_intel_aub_annotation *aub_annotations;
+	unsigned aub_annotation_count;
 };
 
 static unsigned int
@@ -735,6 +738,8 @@ retry:
 	bo_gem->used_as_reloc_target = false;
 	bo_gem->has_error = false;
 	bo_gem->reusable = true;
+	bo_gem->aub_annotations = NULL;
+	bo_gem->aub_annotation_count = 0;
 
 	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
 
@@ -926,6 +931,7 @@ drm_intel_gem_bo_free(drm_intel_bo *bo)
 		DBG("DRM_IOCTL_GEM_CLOSE %d failed (%s): %s\n",
 		    bo_gem->gem_handle, bo_gem->name, strerror(errno));
 	}
+	free(bo_gem->aub_annotations);
 	free(bo);
 }
 
@@ -1880,26 +1886,58 @@ aub_write_trace_block(drm_intel_bo *bo, uint32_t type, uint32_t subtype,
 	aub_write_bo_data(bo, offset, size);
 }
 
+/**
+ * Break up large objects into multiple writes.  Otherwise a 128kb VBO
+ * would overflow the 16 bits of size field in the packet header and
+ * everything goes badly after that.
+ */
 static void
-aub_write_bo(drm_intel_bo *bo)
+aub_write_large_trace_block(drm_intel_bo *bo, uint32_t type, uint32_t subtype,
+			    uint32_t offset, uint32_t size)
 {
 	uint32_t block_size;
-	uint32_t offset;
+	uint32_t sub_offset;
 
-	aub_bo_get_address(bo);
-
-	/* Break up large objects into multiple writes.  Otherwise a
-	 * 128kb VBO would overflow the 16 bits of size field in the
-	 * packet header and everything goes badly after that.
-	 */
-	for (offset = 0; offset < bo->size; offset += block_size) {
-		block_size = bo->size - offset;
+	for (sub_offset = 0; sub_offset < size; sub_offset += block_size) {
+		block_size = size - sub_offset;
 
 		if (block_size > 8 * 4096)
 			block_size = 8 * 4096;
 
-		aub_write_trace_block(bo, AUB_TRACE_TYPE_NOTYPE, 0,
-				      offset, block_size);
+		aub_write_trace_block(bo, type, subtype, offset + sub_offset,
+				      block_size);
+	}
+}
+
+static void
+aub_write_bo(drm_intel_bo *bo)
+{
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+	uint32_t offset = 0;
+	unsigned i;
+
+	aub_bo_get_address(bo);
+
+	/* Write out each annotated section separately. */
+	for (i = 0; i < bo_gem->aub_annotation_count; ++i) {
+		drm_intel_aub_annotation *annotation =
+			&bo_gem->aub_annotations[i];
+		uint32_t ending_offset = annotation->ending_offset;
+		if (ending_offset > bo->size)
+			ending_offset = bo->size;
+		if (ending_offset > offset) {
+			aub_write_large_trace_block(bo, annotation->type,
+						    annotation->subtype,
+						    offset,
+						    ending_offset - offset);
+			offset = ending_offset;
+		}
+	}
+
+	/* Write out any remaining unannotated data */
+	if (offset < bo->size) {
+		aub_write_large_trace_block(bo, AUB_TRACE_TYPE_NOTYPE, 0,
+					    offset, bo->size - offset);
 	}
 }
 
@@ -1989,23 +2027,31 @@ aub_exec(drm_intel_bo *bo, int ring_flag, int used)
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	int i;
+	bool batch_buffer_needs_annotations;
 
 	if (!bufmgr_gem->aub_file)
 		return;
 
-	/* Write out all but the batchbuffer to AUB memory */
-	for (i = 0; i < bufmgr_gem->exec_count - 1; i++) {
-		if (bufmgr_gem->exec_bos[i] != bo)
-			aub_write_bo(bufmgr_gem->exec_bos[i]);
+	/* If batch buffer is not annotated, annotate it the best we
+	 * can.
+	 */
+	batch_buffer_needs_annotations = bo_gem->aub_annotation_count == 0;
+	if (batch_buffer_needs_annotations) {
+		drm_intel_aub_annotation annotations[2] = {
+			{ AUB_TRACE_TYPE_BATCH, 0, used },
+			{ AUB_TRACE_TYPE_NOTYPE, 0, bo->size }
+		};
+		drm_intel_bufmgr_gem_set_aub_annotations(bo, annotations, 2);
 	}
 
-	aub_bo_get_address(bo);
+	/* Write out all buffers to AUB memory */
+	for (i = 0; i < bufmgr_gem->exec_count; i++) {
+		aub_write_bo(bufmgr_gem->exec_bos[i]);
+	}
 
-	/* Dump the batchbuffer. */
-	aub_write_trace_block(bo, AUB_TRACE_TYPE_BATCH, 0,
-			      0, used);
-	aub_write_trace_block(bo, AUB_TRACE_TYPE_NOTYPE, 0,
-			      used, bo->size - used);
+	/* Remove any annotations we added */
+	if (batch_buffer_needs_annotations)
+		drm_intel_bufmgr_gem_set_aub_annotations(bo, NULL, 0);
 
 	/* Dump ring buffer */
 	aub_build_dump_ringbuffer(bufmgr_gem, bo_gem->aub_offset, ring_flag);
@@ -2721,6 +2767,47 @@ drm_intel_bufmgr_gem_set_aub_dump(drm_intel_bufmgr *bufmgr, int enable)
 	for (i = 0x000; i < gtt_size; i += 4, entry += 0x1000) {
 		aub_out(bufmgr_gem, entry);
 	}
+}
+
+/**
+ * Annotate the given bo for use in aub dumping.
+ *
+ * \param annotations is an array of drm_intel_aub_annotation objects
+ * describing the type of data in various sections of the bo.  Each
+ * element of the array specifies the type and subtype of a section of
+ * the bo, and the past-the-end offset of that section.  The elements
+ * of \c annotations must be sorted so that ending_offset is
+ * increasing.
+ *
+ * \param count is the number of elements in the \c annotations array.
+ * If \c count is zero, then \c annotations will not be dereferenced.
+ *
+ * Annotations are copied into a private data structure, so caller may
+ * re-use the memory pointed to by \c annotations after the call
+ * returns.
+ *
+ * Annotations are stored for the lifetime of the bo; to reset to the
+ * default state (no annotations), call this function with a \c count
+ * of zero.
+ */
+void
+drm_intel_bufmgr_gem_set_aub_annotations(drm_intel_bo *bo,
+					 drm_intel_aub_annotation *annotations,
+					 unsigned count)
+{
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+	unsigned size = sizeof(*annotations) * count;
+	drm_intel_aub_annotation *new_annotations =
+		count > 0 ? realloc(bo_gem->aub_annotations, size) : NULL;
+	if (new_annotations == NULL) {
+		free(bo_gem->aub_annotations);
+		bo_gem->aub_annotations = NULL;
+		bo_gem->aub_annotation_count = 0;
+		return;
+	}
+	memcpy(new_annotations, annotations, size);
+	bo_gem->aub_annotations = new_annotations;
+	bo_gem->aub_annotation_count = count;
 }
 
 /**

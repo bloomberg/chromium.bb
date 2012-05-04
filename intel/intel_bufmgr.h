@@ -92,6 +92,12 @@ enum aub_dump_bmp_format {
 	AUB_DUMP_BMP_FORMAT_ARGB_8888 = 7,
 };
 
+typedef struct _drm_intel_aub_annotation {
+	uint32_t type;
+	uint32_t subtype;
+	uint32_t ending_offset;
+} drm_intel_aub_annotation;
+
 #define BO_ALLOC_FOR_RENDER (1<<0)
 
 drm_intel_bo *drm_intel_bo_alloc(drm_intel_bufmgr *bufmgr, const char *name,
@@ -169,6 +175,10 @@ void drm_intel_gem_bo_aub_dump_bmp(drm_intel_bo *bo,
 				   int x1, int y1, int width, int height,
 				   enum aub_dump_bmp_format format,
 				   int pitch, int offset);
+void
+drm_intel_bufmgr_gem_set_aub_annotations(drm_intel_bo *bo,
+					 drm_intel_aub_annotation *annotations,
+					 unsigned count);
 
 int drm_intel_get_pipe_from_crtc_id(drm_intel_bufmgr *bufmgr, int crtc_id);
 
