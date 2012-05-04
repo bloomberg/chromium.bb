@@ -13,15 +13,29 @@ namespace content {
 
 struct Geoposition;
 
+typedef base::Callback<void(const Geoposition&)> GeolocationUpdateCallback;
+
 // Overrides the current location for testing. This function may be called on
 // any thread. The completion callback will be invoked asynchronously on the
 // calling thread when the override operation is completed.
-// This should be used instead of a mock location provider for a simpler way
-// to provide fake location results when not testing the innards of the
-// geolocation code.
+//
+// This function allows the current location to be faked without having to
+// manually instantiate a GeolocationProvider backed by a MockLocationProvider
+// that serves a fake location.
+//
+// Do not use this function in unit tests. The function instantiates the
+// singleton geolocation stack in the background and manipulates it to report
+// a fake location. Neither step can be undone, breaking unit test isolation
+// (crbug.com/125931).
 void CONTENT_EXPORT OverrideLocationForTesting(
     const Geoposition& position,
     const base::Closure& completion_callback);
+
+// Requests a one-time callback when the next location update becomes available.
+// This function may be called on any thread. The callback will be invoked on
+// the calling thread.
+void CONTENT_EXPORT RequestLocationUpdate(
+    const GeolocationUpdateCallback& callback);
 
 }  // namespace content
 

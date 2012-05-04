@@ -48,6 +48,11 @@ struct GeolocationObserverOptions {
     return GeolocationObserverOptions(false);
   }
 
+  // Collapse options with another instance so that both are satisfied.
+  void Collapse(const GeolocationObserverOptions& other) {
+    use_high_accuracy = use_high_accuracy | other.use_high_accuracy;
+  }
+
   bool use_high_accuracy;
 };
 
