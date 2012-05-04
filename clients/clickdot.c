@@ -110,7 +110,7 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 static void
 button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
-	       int button, int state, void *data)
+	       int button, uint32_t state, void *data)
 {
 	struct clickdot *clickdot = data;
 

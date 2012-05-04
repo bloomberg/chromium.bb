@@ -1604,7 +1604,7 @@ weston_surface_activate(struct weston_surface *surface,
 
 WL_EXPORT void
 notify_button(struct wl_input_device *device,
-	      uint32_t time, int32_t button, int32_t state)
+	      uint32_t time, int32_t button, uint32_t state)
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *compositor = wd->compositor;

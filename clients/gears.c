@@ -251,7 +251,7 @@ motion_handler(struct widget *widget, struct input *input,
 
 static void
 button_handler(struct widget *widget, struct input *input,
-		uint32_t time, int button, int state, void *data)
+		uint32_t time, int button, uint32_t state, void *data)
 {
 	struct gears *gears = data;
 

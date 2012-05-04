@@ -138,7 +138,7 @@ view_page_down(struct view *view)
 
 static void
 button_handler(struct widget *widget, struct input *input, uint32_t time,
-               int button, int state, void *data)
+               int button, uint32_t state, void *data)
 {
         struct view *view = data;
 

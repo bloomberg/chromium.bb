@@ -256,7 +256,7 @@ panel_launcher_leave_handler(struct widget *widget,
 static void
 panel_launcher_button_handler(struct widget *widget,
 			      struct input *input, uint32_t time,
-			      int button, int state, void *data)
+			      int button, uint32_t state, void *data)
 {
 	struct panel_launcher *launcher;
 
@@ -269,7 +269,7 @@ panel_launcher_button_handler(struct widget *widget,
 static void
 panel_button_handler(struct widget *widget,
 		     struct input *input, uint32_t time,
-		     int button, int state, void *data)
+		     int button, uint32_t state, void *data)
 {
 	struct panel *panel = data;
 
@@ -481,7 +481,7 @@ unlock_dialog_redraw_handler(struct widget *widget, void *data)
 static void
 unlock_dialog_button_handler(struct widget *widget,
 			     struct input *input, uint32_t time,
-			     int button, int state, void *data)
+			     int button, uint32_t state, void *data)
 {
 	struct unlock_dialog *dialog = data;
 	struct desktop *desktop = dialog->desktop;

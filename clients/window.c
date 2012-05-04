@@ -1220,7 +1220,7 @@ frame_motion_handler(struct widget *widget,
 static void
 frame_button_handler(struct widget *widget,
 		     struct input *input, uint32_t time,
-		     int button, int state, void *data)
+		     int button, uint32_t state, void *data)
 
 {
 	struct frame *frame = data;
@@ -2363,7 +2363,7 @@ menu_leave_handler(struct widget *widget, struct input *input, void *data)
 static void
 menu_button_handler(struct widget *widget,
 		    struct input *input, uint32_t time,
-		    int button, int state, void *data)
+		    int button, uint32_t state, void *data)
 
 {
 	struct menu *menu = data;

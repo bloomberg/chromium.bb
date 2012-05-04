@@ -327,7 +327,7 @@ move_grab_motion(struct wl_pointer_grab *grab,
 
 static void
 move_grab_button(struct wl_pointer_grab *grab,
-		 uint32_t time, uint32_t button, int32_t state)
+		 uint32_t time, uint32_t button, uint32_t state)
 {
 	struct shell_grab *shell_grab = container_of(grab, struct shell_grab,
 						    grab);
@@ -587,7 +587,7 @@ resize_grab_motion(struct wl_pointer_grab *grab,
 
 static void
 resize_grab_button(struct wl_pointer_grab *grab,
-		   uint32_t time, uint32_t button, int32_t state)
+		   uint32_t time, uint32_t button, uint32_t state)
 {
 	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
 	struct wl_input_device *device = grab->input_device;
@@ -1062,7 +1062,7 @@ popup_grab_motion(struct wl_pointer_grab *grab,
 
 static void
 popup_grab_button(struct wl_pointer_grab *grab,
-		  uint32_t time, uint32_t button, int32_t state)
+		  uint32_t time, uint32_t button, uint32_t state)
 {
 	struct wl_resource *resource;
 	struct shell_surface *shsurf =
@@ -1711,7 +1711,7 @@ rotate_grab_motion(struct wl_pointer_grab *grab,
 
 static void
 rotate_grab_button(struct wl_pointer_grab *grab,
-		 uint32_t time, uint32_t button, int32_t state)
+		 uint32_t time, uint32_t button, uint32_t state)
 {
 	struct rotate_grab *rotate =
 		container_of(grab, struct rotate_grab, base.grab);
@@ -2403,7 +2403,7 @@ switcher_destroy(struct switcher *switcher, uint32_t time)
 
 static void
 switcher_key(struct wl_keyboard_grab *grab,
-	     uint32_t time, uint32_t key, int32_t state)
+	     uint32_t time, uint32_t key, uint32_t state)
 {
 	struct switcher *switcher = container_of(grab, struct switcher, grab);
 	struct weston_input_device *device =

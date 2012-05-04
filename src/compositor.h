@@ -416,7 +416,7 @@ notify_motion(struct wl_input_device *device,
 	      uint32_t time, int x, int y);
 void
 notify_button(struct wl_input_device *device,
-	      uint32_t time, int32_t button, int32_t state);
+	      uint32_t time, int32_t button, uint32_t state);
 void
 notify_axis(struct wl_input_device *device,
 	      uint32_t time, uint32_t axis, int32_t value);
