@@ -165,6 +165,8 @@ class NetworkDetailedView : public views::View,
         button_cellular_(NULL),
         view_mobile_account_(NULL),
         setup_mobile_account_(NULL),
+        networks_list_(NULL),
+        scroller_(NULL),
         other_wifi_(NULL),
         other_mobile_(NULL),
         settings_(NULL),
@@ -175,6 +177,7 @@ class NetworkDetailedView : public views::View,
     set_background(views::Background::CreateSolidBackground(kBackgroundColor));
     SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
     delegate->RequestNetworkScan();
+    CreateItems();
     Update();
   }
 
@@ -183,7 +186,7 @@ class NetworkDetailedView : public views::View,
       info_bubble_->GetWidget()->CloseNow();
   }
 
-  void Update() {
+  void CreateItems() {
     RemoveAllChildViews(true);
 
     header_ = NULL;
@@ -195,6 +198,8 @@ class NetworkDetailedView : public views::View,
     button_cellular_ = NULL;
     view_mobile_account_ = NULL;
     setup_mobile_account_ = NULL;
+    networks_list_ = NULL;
+    scroller_ = NULL;
     other_wifi_ = NULL;
     other_mobile_ = NULL;
     settings_ = NULL;
@@ -206,6 +211,14 @@ class NetworkDetailedView : public views::View,
 
     if (login_ != user::LOGGED_IN_LOCKED)
       AppendNetworkExtra();
+
+    Update();
+  }
+
+  void Update() {
+    UpdateHeaderButtons();
+    UpdateNetworkEntries();
+    UpdateNetworkExtra();
 
     Layout();
   }
@@ -221,8 +234,6 @@ class NetworkDetailedView : public views::View,
   }
 
   void AppendHeaderButtons() {
-    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
-
     header_buttons_ = new views::View;
     header_buttons_->SetLayoutManager(new
         views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
@@ -230,16 +241,12 @@ class NetworkDetailedView : public views::View,
     button_wifi_ = new TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_WIFI_ENABLED,
         IDR_AURA_UBER_TRAY_WIFI_DISABLED);
-    button_wifi_->SetToggled(!delegate->GetWifiEnabled());
     header_buttons_->AddChildView(button_wifi_);
 
-    if (delegate->GetCellularAvailable()) {
-      button_cellular_ = new TrayPopupHeaderButton(this,
-          IDR_AURA_UBER_TRAY_CELLULAR_ENABLED,
-          IDR_AURA_UBER_TRAY_CELLULAR_DISABLED);
-      button_cellular_->SetToggled(!delegate->GetCellularEnabled());
-      header_buttons_->AddChildView(button_cellular_);
-    }
+    button_cellular_ = new TrayPopupHeaderButton(this,
+        IDR_AURA_UBER_TRAY_CELLULAR_ENABLED,
+        IDR_AURA_UBER_TRAY_CELLULAR_DISABLED);
+    header_buttons_->AddChildView(button_cellular_);
 
     info_icon_ = new TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_NETWORK_INFO,
@@ -249,73 +256,99 @@ class NetworkDetailedView : public views::View,
     header_->AddChildView(header_buttons_);
   }
 
+  void UpdateHeaderButtons() {
+    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+    button_wifi_->SetToggled(!delegate->GetWifiEnabled());
+    button_cellular_->SetToggled(!delegate->GetCellularEnabled());
+    button_cellular_->SetVisible(delegate->GetCellularAvailable());
+  }
+
   void AppendNetworkEntries() {
+    FixedSizedScrollView* scroller = new FixedSizedScrollView;
+    networks_list_ = new views::View;
+    networks_list_->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kVertical, 0, 0, 1));
+
+    HoverHighlightView* container = new HoverHighlightView(this);
+    container->set_fixed_height(kTrayPopupItemHeight);
+    container->AddLabel(ui::ResourceBundle::GetSharedInstance().
+        GetLocalizedString(IDS_ASH_STATUS_TRAY_MOBILE_VIEW_ACCOUNT),
+        gfx::Font::NORMAL);
+    AddChildView(container);
+    view_mobile_account_ = container;
+
+    container = new HoverHighlightView(this);
+    container->set_fixed_height(kTrayPopupItemHeight);
+    container->AddLabel(ui::ResourceBundle::GetSharedInstance().
+        GetLocalizedString(IDS_ASH_STATUS_TRAY_SETUP_MOBILE),
+        gfx::Font::NORMAL);
+    AddChildView(container);
+    setup_mobile_account_ = container;
+
+    scroller->set_border(views::Border::CreateSolidSidedBorder(1, 0, 1, 0,
+        SkColorSetARGB(25, 0, 0, 0)));
+    scroller->set_fixed_size(
+        gfx::Size(networks_list_->GetPreferredSize().width() +
+                  scroller->GetScrollBarWidth(),
+                  kNetworkListHeight));
+    scroller->SetContentsView(networks_list_);
+    AddChildView(scroller);
+    scroller_ = scroller;
+  }
+
+  void UpdateNetworkEntries() {
     SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
     std::vector<NetworkIconInfo> list;
     delegate->GetAvailableNetworks(&list);
-    FixedSizedScrollView* scroller = new FixedSizedScrollView;
-    views::View* networks = new views::View;
-    networks->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kVertical, 0, 0, 1));
+
     network_map_.clear();
+    networks_list_->RemoveAllChildViews(true);
+    views::View* highlighted_view = NULL;
     for (size_t i = 0; i < list.size(); i++) {
       HoverHighlightView* container = new HoverHighlightView(this);
       container->set_fixed_height(kTrayPopupItemHeight);
       container->AddIconAndLabel(list[i].image,
           list[i].description.empty() ? list[i].name : list[i].description,
           list[i].highlight ? gfx::Font::BOLD : gfx::Font::NORMAL);
-      networks->AddChildView(container);
+      networks_list_->AddChildView(container);
+      if (list[i].highlight)
+        highlighted_view = container;
       container->set_border(views::Border::CreateEmptyBorder(0,
           kTrayPopupDetailsIconWidth, 0, 0));
       network_map_[container] = list[i].service_path;
     }
+    networks_list_->SizeToPreferredSize();
+    scroller_->Layout();
+    if (highlighted_view)
+      networks_list_->ScrollRectToVisible(highlighted_view->bounds());
 
-    if (login_ != user::LOGGED_IN_NONE) {
-      std::string carrier_id, topup_url, setup_url;
-      if (delegate->GetCellularCarrierInfo(&carrier_id,
-                                           &topup_url,
-                                           &setup_url)) {
-        if (carrier_id != carrier_id_) {
-          carrier_id_ = carrier_id;
-          if (!topup_url.empty())
-            topup_url_ = topup_url;
-        }
-        if (!setup_url.empty())
-          setup_url_ = setup_url;
-        if (!topup_url_.empty()) {
-          HoverHighlightView* container = new HoverHighlightView(this);
-          container->set_fixed_height(kTrayPopupItemHeight);
-          container->AddLabel(ui::ResourceBundle::GetSharedInstance().
-              GetLocalizedString(IDS_ASH_STATUS_TRAY_MOBILE_VIEW_ACCOUNT),
-              gfx::Font::NORMAL);
-          AddChildView(container);
-          view_mobile_account_ = container;
-        }
-        if (!setup_url_.empty()) {
-          HoverHighlightView* container = new HoverHighlightView(this);
-          container->set_fixed_height(kTrayPopupItemHeight);
-          container->AddLabel(ui::ResourceBundle::GetSharedInstance().
-              GetLocalizedString(IDS_ASH_STATUS_TRAY_SETUP_MOBILE),
-              gfx::Font::NORMAL);
-          AddChildView(container);
-          setup_mobile_account_ = container;
-        }
+    view_mobile_account_->SetVisible(false);
+    setup_mobile_account_->SetVisible(false);
+
+    if (login_ == user::LOGGED_IN_NONE)
+      return;
+
+    std::string carrier_id, topup_url, setup_url;
+    if (delegate->GetCellularCarrierInfo(&carrier_id,
+                                         &topup_url,
+                                         &setup_url)) {
+      if (carrier_id != carrier_id_) {
+        carrier_id_ = carrier_id;
+        if (!topup_url.empty())
+          topup_url_ = topup_url;
       }
-    }
 
-    scroller->set_border(views::Border::CreateSolidSidedBorder(1, 0, 1, 0,
-        SkColorSetARGB(25, 0, 0, 0)));
-    scroller->set_fixed_size(
-        gfx::Size(networks->GetPreferredSize().width() +
-                  scroller->GetScrollBarWidth(),
-                  kNetworkListHeight));
-    scroller->SetContentsView(networks);
-    AddChildView(scroller);
+      if (!setup_url.empty())
+        setup_url_ = setup_url;
+
+      if (!topup_url_.empty())
+        view_mobile_account_->SetVisible(true);
+      if (!setup_url_.empty())
+        setup_mobile_account_->SetVisible(true);
+    }
   }
 
   void AppendNetworkExtra() {
-    ash::SystemTrayDelegate* delegate =
-        ash::Shell::GetInstance()->tray_delegate();
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
     TrayPopupTextButtonContainer* bottom_row =
@@ -323,22 +356,25 @@ class NetworkDetailedView : public views::View,
 
     other_wifi_ = new TrayPopupTextButton(this,
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_OTHER_WIFI));
-    other_wifi_->SetEnabled(delegate->GetWifiEnabled());
     bottom_row->AddTextButton(other_wifi_);
 
-    if (delegate->GetCellularAvailable()) {
-      if (delegate->GetCellularScanSupported()) {
-        other_mobile_ = new TrayPopupTextButton(this,
-            rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_OTHER_MOBILE));
-        other_mobile_->SetEnabled(delegate->GetCellularEnabled());
-        bottom_row->AddTextButton(other_mobile_);
-      }
-    }
+    other_mobile_ = new TrayPopupTextButton(this,
+        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_OTHER_MOBILE));
+    bottom_row->AddTextButton(other_mobile_);
 
     CreateSettingsEntry();
     bottom_row->AddTextButton(settings_ ? settings_ : proxy_settings_);
 
     AddChildView(bottom_row);
+  }
+
+  void UpdateNetworkExtra() {
+    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+    other_wifi_->SetEnabled(delegate->GetWifiEnabled());
+    other_mobile_->SetVisible(delegate->GetCellularAvailable() &&
+                              delegate->GetCellularScanSupported());
+    if (other_mobile_->visible())
+      other_mobile_->SetEnabled(delegate->GetCellularEnabled());
   }
 
   void AppendAirplaneModeEntry() {
@@ -510,6 +546,8 @@ class NetworkDetailedView : public views::View,
   views::ToggleImageButton* button_cellular_;
   views::View* view_mobile_account_;
   views::View* setup_mobile_account_;
+  views::View* networks_list_;
+  views::View* scroller_;
   TrayPopupTextButton* other_wifi_;
   TrayPopupTextButton* other_mobile_;
   TrayPopupTextButton* settings_;

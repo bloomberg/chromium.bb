@@ -185,10 +185,19 @@ gfx::Size FixedSizedScrollView::GetPreferredSize() {
   return fixed_size_;
 }
 
+void FixedSizedScrollView::Layout() {
+  views::View* contents = GetContents();
+  gfx::Rect bounds = gfx::Rect(contents->GetPreferredSize());
+  bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
+  contents->SetBoundsRect(bounds);
+
+  views::ScrollView::Layout();
+}
+
 void FixedSizedScrollView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   views::View* contents = GetContents();
-  gfx::Rect bounds = contents->bounds();
-  bounds.set_width(width() - GetScrollBarWidth());
+  gfx::Rect bounds = gfx::Rect(contents->GetPreferredSize());
+  bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
   contents->SetBoundsRect(bounds);
 }
 
