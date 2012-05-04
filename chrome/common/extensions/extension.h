@@ -843,6 +843,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool CanSpecifyHostPermission(const URLPattern& pattern,
       const ExtensionAPIPermissionSet& permissions) const;
 
+  // Check that platform app features are valid. Called after InitFromValue.
+  bool CheckPlatformAppFeatures(std::string* utf8_error);
+
   // Cached images for this extension. This should only be touched on the UI
   // thread.
   mutable ImageCache image_cache_;

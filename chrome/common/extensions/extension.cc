@@ -299,18 +299,8 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
     return NULL;
   }
 
-  if (extension->is_platform_app()) {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnablePlatformApps)) {
-      *utf8_error = errors::kPlatformAppFlagRequired;
-      return NULL;
-    }
-
-    if (!extension->has_background_page()) {
-      *utf8_error = errors::kBackgroundRequiredForPlatformApps;
-      return NULL;
-    }
-  }
+  if (!extension->CheckPlatformAppFeatures(utf8_error))
+    return NULL;
 
   return extension;
 }
@@ -1681,6 +1671,11 @@ bool Extension::LoadBackgroundPage(
 bool Extension::LoadBackgroundPersistent(
     const ExtensionAPIPermissionSet& api_permissions,
     string16* error) {
+  if (is_platform_app()) {
+    background_page_is_persistent_ = false;
+    return true;
+  }
+
   Value* background_persistent = NULL;
   if (!manifest_->Get(keys::kBackgroundPersistent, &background_persistent))
     return true;
@@ -3503,6 +3498,24 @@ bool Extension::ShouldDisplayInExtensionSettings() const {
   // background pages. See http://crbug.com/116134.
   if (is_hosted_app())
     return false;
+
+  return true;
+}
+
+bool Extension::CheckPlatformAppFeatures(std::string* utf8_error) {
+  if (!is_platform_app())
+    return true;
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnablePlatformApps)) {
+    *utf8_error = errors::kPlatformAppFlagRequired;
+    return false;
+  }
+
+  if (!has_background_page()) {
+    *utf8_error = errors::kBackgroundRequiredForPlatformApps;
+    return false;
+  }
 
   return true;
 }
