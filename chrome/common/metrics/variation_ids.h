@@ -65,6 +65,17 @@ enum ID {
 
   // Add new variation IDs below.
 
+  // Suggest (Autocomplete) field trial, 20 IDs.
+  kSuggestIDMin = 3310000,
+  kSuggestIDMax = 3310019,
+
+  // Instant field trial.
+  kInstantIDControl = 3310020,
+  kInstantIDSilent  = 3310021,
+  kInstantIDHidden  = 3310022,
+  kInstantIDSuggest = 3310023,
+  kInstantIDInstant = 3310024,
+
   // USABLE IDs END HERE.
   //
   // The largest possible Chrome variation ID in the reserved range. When

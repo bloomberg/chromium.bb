@@ -10,6 +10,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/metrics/experiments_helper.h"
+#include "chrome/common/metrics/variation_ids.h"
 #include "chrome/common/pref_names.h"
 
 namespace {
@@ -40,6 +42,18 @@ void InstantFieldTrial::Activate() {
   g_suggest = trial->AppendGroup("SUGGEST", 200);  // 20%
   g_hidden  = trial->AppendGroup("HIDDEN",  200);  // 20%
   g_silent  = trial->AppendGroup("SILENT",  200);  // 20%
+
+  // Mark these groups in requests to Google.
+  experiments_helper::AssociateGoogleExperimentID(
+      "Instant", "CONTROL", chrome_variations::kInstantIDControl);
+  experiments_helper::AssociateGoogleExperimentID(
+      "Instant", "SILENT", chrome_variations::kInstantIDSilent);
+  experiments_helper::AssociateGoogleExperimentID(
+      "Instant", "HIDDEN", chrome_variations::kInstantIDHidden);
+  experiments_helper::AssociateGoogleExperimentID(
+      "Instant", "SUGGEST", chrome_variations::kInstantIDSuggest);
+  experiments_helper::AssociateGoogleExperimentID(
+      "Instant", "INSTANT", chrome_variations::kInstantIDInstant);
 }
 
 // static

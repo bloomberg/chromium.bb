@@ -7,8 +7,9 @@
 #include <string>
 
 #include "base/metrics/field_trial.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "chrome/common/metrics/experiments_helper.h"
+#include "chrome/common/metrics/variation_ids.h"
 
 namespace {
 
@@ -71,10 +72,24 @@ void AutocompleteFieldTrial::Activate() {
         "0", 2012, 10, 1, NULL));
   if (base::FieldTrialList::IsOneTimeRandomizationEnabled())
     trial->UseOneTimeRandomization();
+
+  // Mark this group in suggest requests to Google.
+  experiments_helper::AssociateGoogleExperimentID(
+      kSuggestFieldTrialName, "0", chrome_variations::kSuggestIDMin);
+  DCHECK_EQ(kSuggestFieldTrialNumberOfGroups,
+      chrome_variations::kSuggestIDMax - chrome_variations::kSuggestIDMin + 1);
+
   // We've already created one group; now just need to create
-  // kSuggestFieldTrialNumGroups - 1 more.
-  for (int i = 1; i < kSuggestFieldTrialNumberOfGroups; i++)
-    trial->AppendGroup(base::StringPrintf("%d", i), 1);
+  // kSuggestFieldTrialNumGroups - 1 more. Mark these groups in
+  // suggest requests to Google.
+  for (int i = 1; i < kSuggestFieldTrialNumberOfGroups; i++) {
+    const std::string group_name = base::IntToString(i);
+    trial->AppendGroup(group_name, 1);
+    experiments_helper::AssociateGoogleExperimentID(
+        kSuggestFieldTrialName, group_name,
+        static_cast<chrome_variations::ID>(
+            chrome_variations::kSuggestIDMin + i));
+  }
 }
 
 bool AutocompleteFieldTrial::InDisallowInlineHQPFieldTrial() {
