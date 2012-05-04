@@ -25,7 +25,6 @@
       },
       'include_dirs': [
         '..',
-        '../..',  # For nacl includes to work.
       ],
       'sources': [
         # Take some standalong files from the C++ wrapper allowing us to more
