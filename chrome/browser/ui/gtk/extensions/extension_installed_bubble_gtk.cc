@@ -236,7 +236,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
 
   // Browser action label.
   if (type_ == BROWSER_ACTION) {
-    const Extension::ExtensionKeybinding* browser_action_command =
+    const Extension::Command* browser_action_command =
         extension_->browser_action_command();
     GtkWidget* info_label;
     if (!browser_action_command) {
@@ -254,7 +254,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
 
   // Page action label.
   if (type_ == PAGE_ACTION) {
-    const Extension::ExtensionKeybinding* page_action_command =
+    const Extension::Command* page_action_command =
         extension_->page_action_command();
     GtkWidget* info_label;
     if (!page_action_command) {

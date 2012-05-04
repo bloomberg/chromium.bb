@@ -123,7 +123,7 @@ void BrowserActionButton::ViewHierarchyChanged(
     ExtensionCommandService* command_service =
         ExtensionCommandServiceFactory::GetForProfile(
             panel_->browser()->profile());
-    const Extension::ExtensionKeybinding* browser_action_command =
+    const Extension::Command* browser_action_command =
         command_service->GetActiveBrowserActionCommand(extension_->id());
     if (browser_action_command) {
       keybinding_.reset(new ui::Accelerator(

@@ -250,10 +250,10 @@ ExtensionOAuth2Scopes Extension::OAuth2Info::GetScopesAsSet() {
   return result;
 }
 
-Extension::ExtensionKeybinding::ExtensionKeybinding() {}
-Extension::ExtensionKeybinding::~ExtensionKeybinding() {}
+Extension::Command::Command() {}
+Extension::Command::~Command() {}
 
-ui::Accelerator Extension::ExtensionKeybinding::ParseImpl(
+ui::Accelerator Extension::Command::ParseImpl(
     const std::string& shortcut,
     const std::string& platform_key,
     int index,
@@ -332,7 +332,7 @@ ui::Accelerator Extension::ExtensionKeybinding::ParseImpl(
 }
 
 // static
-std::string Extension::ExtensionKeybinding::KeybindingPlatform() {
+std::string Extension::Command::CommandPlatform() {
 #if defined(OS_WIN)
   return values::kKeybindingPlatformWin;
 #elif defined(OS_MACOSX)
@@ -346,10 +346,10 @@ std::string Extension::ExtensionKeybinding::KeybindingPlatform() {
 #endif
 }
 
-bool Extension::ExtensionKeybinding::Parse(DictionaryValue* command,
-                                           const std::string& command_name,
-                                           int index,
-                                           string16* error) {
+bool Extension::Command::Parse(DictionaryValue* command,
+                               const std::string& command_name,
+                               int index,
+                               string16* error) {
   DCHECK(!command_name.empty());
 
   // We'll build up a map of platform-to-shortcut suggestions.
@@ -394,7 +394,7 @@ bool Extension::ExtensionKeybinding::Parse(DictionaryValue* command,
     }
   }
 
-  std::string platform = KeybindingPlatform();
+  std::string platform = CommandPlatform();
   std::string key = platform;
   if (suggestions.find(key) == suggestions.end())
     key = values::kKeybindingPlatformDefault;
@@ -1594,8 +1594,7 @@ bool Extension::LoadCommands(string16* error) {
         return false;
       }
 
-      scoped_ptr<Extension::ExtensionKeybinding> binding(
-          new ExtensionKeybinding());
+      scoped_ptr<Extension::Command> binding(new Command());
       if (!binding->Parse(command, *iter, command_index, error))
         return false;  // |error| already set.
 

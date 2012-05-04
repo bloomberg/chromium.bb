@@ -17,6 +17,8 @@
 class Extension;
 class Profile;
 
+namespace extensions {
+
 // The ExtensionKeybindingRegistry is a class that handles the cross-platform
 // logic for keyboard accelerators. See platform-specific implementations for
 // implementation details for each platform.
@@ -52,5 +54,7 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionKeybindingRegistry);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_KEYBINDING_REGISTRY_H_

@@ -380,7 +380,7 @@ class BrowserActionButton : public content::NotificationObserver,
     ExtensionCommandService* command_service =
         ExtensionCommandServiceFactory::GetForProfile(
             toolbar_->browser()->profile());
-    const Extension::ExtensionKeybinding* command =
+    const Extension::Command* command =
         command_service->GetActiveBrowserActionCommand(extension_->id());
     if (command) {
       // Found the browser action shortcut command, register it.

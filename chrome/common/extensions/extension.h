@@ -158,16 +158,16 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     bool shortcut_shift;
   };
 
-  class ExtensionKeybinding {
+  class Command {
    public:
     // Define out of line constructor/destructor to please Clang.
-    ExtensionKeybinding();
-    ~ExtensionKeybinding();
+    Command();
+    ~Command();
 
-    // The Keybinding platform value.
-    static std::string KeybindingPlatform();
+    // The platform value for the Command.
+    static std::string CommandPlatform();
 
-    // Parse the key binding.
+    // Parse the command.
     bool Parse(base::DictionaryValue* command,
                const std::string& command_name,
                int index,
@@ -188,8 +188,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     std::string description_;
   };
 
-  // A mapping of command name (std::string) to a keybinding object.
-  typedef std::map<std::string, ExtensionKeybinding> CommandMap;
+  // A mapping of command name (std::string) to a command object.
+  typedef std::map<std::string, Command> CommandMap;
 
   struct TtsVoice {
     // Define out of line constructor/destructor to please Clang.
@@ -598,19 +598,19 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const std::vector<InputComponentInfo>& input_components() const {
     return input_components_;
   }
-  // The browser action command keybinding that the extension wants to use,
-  // which is not necessarily the one it can use, as it might be inactive
-  // (see also GetActiveBrowserActionCommand in ExtensionKeybindingRegistry).
-  const ExtensionKeybinding* browser_action_command() const {
+  // The browser action command that the extension wants to use, which is not
+  // necessarily the one it can use, as it might be inactive (see also
+  // GetActiveBrowserActionCommand in ExtensionKeybindingRegistry).
+  const Command* browser_action_command() const {
     return browser_action_command_.get();
   }
-  // The page action command keybinding that the extension wants to use,
-  // which is not necessarily the one it can use, as it might be inactive
-  // (see also GetActivePageActionCommand in ExtensionKeybindingRegistry).
-  const ExtensionKeybinding* page_action_command() const {
+  // The page action command that the extension wants to use, which is not
+  // necessarily the one it can use, as it might be inactive (see also
+  // GetActivePageActionCommand in ExtensionKeybindingRegistry).
+  const Command* page_action_command() const {
     return page_action_command_.get();
   }
-  // The map of named commands to keybindings that the extension wants to use,
+  // The map (of command names to commands) that the extension wants to use,
   // which is not necessarily the one it can use, as they might be inactive
   // (see also GetActiveNamedCommands in ExtensionKeybindingRegistry).
   const CommandMap& named_commands() const {
@@ -970,8 +970,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   std::vector<InputComponentInfo> input_components_;
 
   // Optional list of commands (keyboard shortcuts).
-  scoped_ptr<ExtensionKeybinding> browser_action_command_;
-  scoped_ptr<ExtensionKeybinding> page_action_command_;
+  scoped_ptr<Command> browser_action_command_;
+  scoped_ptr<Command> page_action_command_;
   CommandMap named_commands_;
 
   // Optional list of web accessible extension resources.

@@ -30,7 +30,8 @@ typedef struct _GdkEventKey GdkEventKey;
 // route the events to them -- that is handled elsewhere. This class registers
 // the accelerators on behalf of the extensions and routes the commands to them
 // via the BrowserEventRouter.
-class ExtensionKeybindingRegistryGtk : public ExtensionKeybindingRegistry {
+class ExtensionKeybindingRegistryGtk
+    : public extensions::ExtensionKeybindingRegistry {
  public:
   ExtensionKeybindingRegistryGtk(Profile* profile, gfx::NativeWindow window);
   virtual ~ExtensionKeybindingRegistryGtk();

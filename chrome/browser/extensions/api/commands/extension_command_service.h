@@ -40,14 +40,14 @@ class ExtensionCommandService : public ProfileKeyedService,
   // given its |extension_id|. The function consults the master list to see if
   // the keybinding is active. Returns NULL if the extension has no browser
   // action or no active keybinding for it.
-  const Extension::ExtensionKeybinding* GetActiveBrowserActionCommand(
+  const Extension::Command* GetActiveBrowserActionCommand(
       const std::string& extension_id);
 
   // Gets the active keybinding (if any) for the page action of an extension
   // given its |extension_id|. The function consults the master list to see if
   // the keybinding is active. Returns NULL if the extension has no page action
   // or no active keybinding for it.
-  const Extension::ExtensionKeybinding* GetActivePageActionCommand(
+  const Extension::Command* GetActivePageActionCommand(
       const std::string& extension_id);
 
   // Gets the active keybinding (if any) for the named commands of an extension

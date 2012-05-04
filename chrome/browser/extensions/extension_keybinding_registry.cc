@@ -10,6 +10,8 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/browser/extensions/extension_service.h"
 
+namespace extensions {
+
 ExtensionKeybindingRegistry::ExtensionKeybindingRegistry(Profile* profile)
     : profile_(profile) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -56,3 +58,5 @@ void ExtensionKeybindingRegistry::Observe(
       break;
   }
 }
+
+}  // namespace extensions

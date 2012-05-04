@@ -21,7 +21,7 @@ const char kCommandName[] = "command_name";
 
 std::string GetPlatformKeybindingKeyForAccelerator(
     const ui::Accelerator& accelerator) {
-  return Extension::ExtensionKeybinding::KeybindingPlatform() + ":" +
+  return Extension::Command::CommandPlatform() + ":" +
          UTF16ToUTF8(accelerator.GetShortcutText());
 }
 
@@ -46,7 +46,7 @@ ExtensionCommandService::ExtensionCommandService(
 ExtensionCommandService::~ExtensionCommandService() {
 }
 
-const Extension::ExtensionKeybinding*
+const Extension::Command*
     ExtensionCommandService::GetActiveBrowserActionCommand(
         const std::string& extension_id) {
   const ExtensionSet* extensions =
@@ -54,8 +54,7 @@ const Extension::ExtensionKeybinding*
   const Extension* extension = extensions->GetByID(extension_id);
   CHECK(extension);
 
-  const Extension::ExtensionKeybinding* command =
-      extension->browser_action_command();
+  const Extension::Command* command = extension->browser_action_command();
   if (!command)
     return NULL;
   if (!IsKeybindingActive(command->accelerator(),
@@ -67,16 +66,14 @@ const Extension::ExtensionKeybinding*
   return command;
 }
 
-const Extension::ExtensionKeybinding*
-    ExtensionCommandService::GetActivePageActionCommand(
-        const std::string& extension_id) {
+const Extension::Command* ExtensionCommandService::GetActivePageActionCommand(
+    const std::string& extension_id) {
   const ExtensionSet* extensions =
       ExtensionSystem::Get(profile_)->extension_service()->extensions();
   const Extension* extension = extensions->GetByID(extension_id);
   CHECK(extension);
 
-  const Extension::ExtensionKeybinding* command =
-      extension->page_action_command();
+  const Extension::Command* command = extension->page_action_command();
   if (!command)
     return NULL;
   if (!IsKeybindingActive(command->accelerator(),
@@ -192,7 +189,7 @@ void ExtensionCommandService::AssignInitialKeybindings(
                       false);  // Overwriting not allowed.
   }
 
-  const Extension::ExtensionKeybinding* browser_action_command =
+  const Extension::Command* browser_action_command =
       extension->browser_action_command();
   if (browser_action_command) {
     AddKeybindingPref(browser_action_command->accelerator(),
@@ -201,7 +198,7 @@ void ExtensionCommandService::AssignInitialKeybindings(
                       false);  // Overwriting not allowed.
   }
 
-  const Extension::ExtensionKeybinding* page_action_command =
+  const Extension::Command* page_action_command =
       extension->page_action_command();
   if (page_action_command) {
     AddKeybindingPref(page_action_command->accelerator(),

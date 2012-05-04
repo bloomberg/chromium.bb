@@ -947,7 +947,7 @@ TEST(ExtensionTest, OnlySyncInternal) {
   EXPECT_FALSE(extension_noninternal->IsSyncable());
 }
 
-TEST(ExtensionTest, ExtensionKeybindingParsing) {
+TEST(ExtensionTest, ExtensionCommandParsing) {
   const ui::Accelerator None = ui::Accelerator();
   const ui::Accelerator ShiftF =
       ui::Accelerator(ui::VKEY_F, true, false, false);
@@ -1007,68 +1007,68 @@ TEST(ExtensionTest, ExtensionKeybindingParsing) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
     // First parse the command as a simple string.
-    scoped_ptr<DictionaryValue> command(new DictionaryValue);
-    command->SetString("suggested_key", kTests[i].key);
-    command->SetString("description", kTests[i].description);
+    scoped_ptr<DictionaryValue> input(new DictionaryValue);
+    input->SetString("suggested_key", kTests[i].key);
+    input->SetString("description", kTests[i].description);
 
     SCOPED_TRACE(std::string("Command name: |") + kTests[i].command_name +
                  "| key: |" + kTests[i].key +
                  "| description: |" + kTests[i].description +
                  "| index: " + base::IntToString(i));
 
-    Extension::ExtensionKeybinding keybinding;
+    Extension::Command command;
     string16 error;
     bool result =
-        keybinding.Parse(command.get(), kTests[i].command_name, i, &error);
+        command.Parse(input.get(), kTests[i].command_name, i, &error);
 
     EXPECT_EQ(kTests[i].expected_result, result);
     if (result) {
-      EXPECT_STREQ(kTests[i].description, keybinding.description().c_str());
-      EXPECT_STREQ(kTests[i].command_name, keybinding.command_name().c_str());
-      EXPECT_EQ(kTests[i].accelerator, keybinding.accelerator());
+      EXPECT_STREQ(kTests[i].description, command.description().c_str());
+      EXPECT_STREQ(kTests[i].command_name, command.command_name().c_str());
+      EXPECT_EQ(kTests[i].accelerator, command.accelerator());
     }
 
     // Now parse the command as a dictionary of multiple values.
-    command.reset(new DictionaryValue);
+    input.reset(new DictionaryValue);
     DictionaryValue* key_dict = new DictionaryValue();
     key_dict->SetString("default", kTests[i].key);
     key_dict->SetString("windows", kTests[i].key);
     key_dict->SetString("mac", kTests[i].key);
-    command->Set("suggested_key", key_dict);
-    command->SetString("description", kTests[i].description);
+    input->Set("suggested_key", key_dict);
+    input->SetString("description", kTests[i].description);
 
-    result = keybinding.Parse(command.get(), kTests[i].command_name, i, &error);
+    result = command.Parse(input.get(), kTests[i].command_name, i, &error);
 
     EXPECT_EQ(kTests[i].expected_result, result);
     if (result) {
-      EXPECT_STREQ(kTests[i].description, keybinding.description().c_str());
-      EXPECT_STREQ(kTests[i].command_name, keybinding.command_name().c_str());
-      EXPECT_EQ(kTests[i].accelerator, keybinding.accelerator());
+      EXPECT_STREQ(kTests[i].description, command.description().c_str());
+      EXPECT_STREQ(kTests[i].command_name, command.command_name().c_str());
+      EXPECT_EQ(kTests[i].accelerator, command.accelerator());
     }
   }
 }
 
-TEST(ExtensionTest, ExtensionKeybindingParsingFallback) {
+TEST(ExtensionTest, ExtensionCommandParsingFallback) {
   std::string description = "desc";
   std::string command_name = "foo";
 
   // Test that platform specific keys are honored on each platform, despite
   // fallback being given.
-  scoped_ptr<DictionaryValue> command(new DictionaryValue);
+  scoped_ptr<DictionaryValue> input(new DictionaryValue);
   DictionaryValue* key_dict = new DictionaryValue();
   key_dict->SetString("default",  "Ctrl+Shift+D");
   key_dict->SetString("windows",  "Ctrl+Shift+W");
   key_dict->SetString("mac",      "Ctrl+Shift+M");
   key_dict->SetString("linux",    "Ctrl+Shift+L");
   key_dict->SetString("chromeos", "Ctrl+Shift+C");
-  command->Set("suggested_key", key_dict);
-  command->SetString("description", description);
+  input->Set("suggested_key", key_dict);
+  input->SetString("description", description);
 
-  Extension::ExtensionKeybinding keybinding;
+  Extension::Command command;
   string16 error;
-  EXPECT_TRUE(keybinding.Parse(command.get(), command_name, 0, &error));
-  EXPECT_STREQ(description.c_str(), keybinding.description().c_str());
-  EXPECT_STREQ(command_name.c_str(), keybinding.command_name().c_str());
+  EXPECT_TRUE(command.Parse(input.get(), command_name, 0, &error));
+  EXPECT_STREQ(description.c_str(), command.description().c_str());
+  EXPECT_STREQ(command_name.c_str(), command.command_name().c_str());
 
 #if defined(OS_WIN)
   ui::Accelerator accelerator(ui::VKEY_W, true, true, false);
@@ -1081,11 +1081,11 @@ TEST(ExtensionTest, ExtensionKeybindingParsingFallback) {
 #else
   ui::Accelerator accelerator(ui::VKEY_D, true, true, false);
 #endif
-  EXPECT_EQ(accelerator, keybinding.accelerator());
+  EXPECT_EQ(accelerator, command.accelerator());
 
   // Misspell a platform.
   key_dict->SetString("windosw", "Ctrl+M");
-  EXPECT_FALSE(keybinding.Parse(command.get(), command_name, 0, &error));
+  EXPECT_FALSE(command.Parse(input.get(), command_name, 0, &error));
   EXPECT_TRUE(key_dict->Remove("windosw", NULL));
 
   // Now remove platform specific keys (leaving just "default") and make sure
@@ -1094,13 +1094,13 @@ TEST(ExtensionTest, ExtensionKeybindingParsingFallback) {
   EXPECT_TRUE(key_dict->Remove("mac", NULL));
   EXPECT_TRUE(key_dict->Remove("linux", NULL));
   EXPECT_TRUE(key_dict->Remove("chromeos", NULL));
-  EXPECT_TRUE(keybinding.Parse(command.get(), command_name, 0, &error));
-  EXPECT_EQ(ui::VKEY_D, keybinding.accelerator().key_code());
+  EXPECT_TRUE(command.Parse(input.get(), command_name, 0, &error));
+  EXPECT_EQ(ui::VKEY_D, command.accelerator().key_code());
 
   // Now remove "default", leaving no option but failure. Or, in the words of
   // the immortal Adam Savage: "Failure is always an option".
   EXPECT_TRUE(key_dict->Remove("default", NULL));
-  EXPECT_FALSE(keybinding.Parse(command.get(), command_name, 0, &error));
+  EXPECT_FALSE(command.Parse(input.get(), command_name, 0, &error));
 
   // Now add only a valid platform that we are not running on to make sure devs
   // are notified of errors on other platforms.
@@ -1109,14 +1109,14 @@ TEST(ExtensionTest, ExtensionKeybindingParsingFallback) {
 #else
   key_dict->SetString("windows", "Ctrl+Shift+W");
 #endif
-  EXPECT_FALSE(keybinding.Parse(command.get(), command_name, 0, &error));
+  EXPECT_FALSE(command.Parse(input.get(), command_name, 0, &error));
 
   // Make sure Mac specific keys are not processed on other platforms.
 #if !defined(OS_MACOSX)
   key_dict->SetString("windows", "Command+Shift+M");
-  EXPECT_FALSE(keybinding.Parse(command.get(), command_name, 0, &error));
+  EXPECT_FALSE(command.Parse(input.get(), command_name, 0, &error));
   key_dict->SetString("windows", "Options+Shift+M");
-  EXPECT_FALSE(keybinding.Parse(command.get(), command_name, 0, &error));
+  EXPECT_FALSE(command.Parse(input.get(), command_name, 0, &error));
 #endif
 }
 
