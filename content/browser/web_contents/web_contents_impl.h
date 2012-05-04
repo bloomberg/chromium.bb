@@ -293,6 +293,7 @@ class CONTENT_EXPORT WebContentsImpl
       WindowOpenDisposition disposition,
       int64 source_frame_id,
       const content::GlobalRequestID& transferred_global_request_id) OVERRIDE;
+  virtual void RouteCloseEvent(content::RenderViewHost* rvh) OVERRIDE;
   virtual void RunJavaScriptMessage(content::RenderViewHost* rvh,
                                     const string16& message,
                                     const string16& default_prompt,

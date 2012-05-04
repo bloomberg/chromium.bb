@@ -389,7 +389,6 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(orig_site_instance, blank_site_instance);
 
   // Now navigate the new tab to a different site.
-  //browser()->ActivateTabAt(1, true);
   content::WebContents* new_contents = browser()->GetSelectedWebContents();
   ui_test_utils::NavigateToURL(browser(),
                                https_server.GetURL("files/title1.html"));
@@ -415,6 +414,23 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   scoped_refptr<SiteInstance> revisit_site_instance(
       browser()->GetSelectedWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, revisit_site_instance);
+
+  // If it navigates away to another process, the original window should
+  // still be able to close it (using a cross-process close message).
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server.GetURL("files/title1.html"));
+  EXPECT_EQ(new_site_instance,
+            browser()->GetSelectedWebContents()->GetSiteInstance());
+  browser()->ActivateTabAt(0, true);
+  ui_test_utils::WindowedNotificationObserver close_observer(
+        content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+        content::Source<content::WebContents>(new_contents));
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(testCloseWindow());",
+      &success));
+  EXPECT_TRUE(success);
+  close_observer.Wait();
 }
 
 // Test for crbug.com/116192.  Navigations to a window's opener should

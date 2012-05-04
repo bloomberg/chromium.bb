@@ -938,6 +938,8 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgDidChangeScrollOffsetPinningForMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeNumWheelEvents,
                         OnMsgDidChangeNumWheelEvents)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RouteCloseEvent,
+                        OnMsgRouteCloseEvent)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunJavaScriptMessage,
                                     OnMsgRunJavaScriptMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunBeforeUnloadConfirm,
@@ -1297,6 +1299,11 @@ void RenderViewHostImpl::OnMsgSelectionBoundsChanged(
     const gfx::Rect& end_rect) {
   if (view_)
     view_->SelectionBoundsChanged(start_rect, end_rect);
+}
+
+void RenderViewHostImpl::OnMsgRouteCloseEvent() {
+  // Have the delegate route this to the active RenderViewHost.
+  delegate_->RouteCloseEvent(this);
 }
 
 void RenderViewHostImpl::OnMsgRunJavaScriptMessage(

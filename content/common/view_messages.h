@@ -1611,6 +1611,10 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_DownloadUrl,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_GoToEntryAtOffset,
                     int /* offset (from current) of history item to get */)
 
+// Sent from an inactive renderer for the browser to route to the active
+// renderer, instructing it to close.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_RouteCloseEvent)
+
 IPC_SYNC_MESSAGE_ROUTED4_2(ViewHostMsg_RunJavaScriptMessage,
                            string16     /* in - alert message */,
                            string16     /* in - default prompt */,

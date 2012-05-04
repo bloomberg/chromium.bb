@@ -2398,6 +2398,16 @@ void WebContentsImpl::RequestTransferURL(
   }
 }
 
+void WebContentsImpl::RouteCloseEvent(RenderViewHost* rvh) {
+  // Tell the active RenderViewHost to run unload handlers and close, as long
+  // as the request came from a RenderViewHost in the same BrowsingInstance.
+  // In most cases, we receive this from a swapped out RenderViewHost.
+  // It is possible to receive it from one that has just been swapped in,
+  // in which case we might as well deliver the message anyway.
+  if (rvh->GetSiteInstance()->IsRelatedSiteInstance(GetSiteInstance()))
+    GetRenderViewHost()->ClosePage();
+}
+
 void WebContentsImpl::RunJavaScriptMessage(
     RenderViewHost* rvh,
     const string16& message,

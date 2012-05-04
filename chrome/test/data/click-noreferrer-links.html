@@ -33,9 +33,17 @@
   }
 
   function testScriptAccessToWindow() {
+    // Grab a reference to the existing foo window and access its location.
     var w = window.open("", "foo");
     var url = w.location.href;
     return url != undefined;
+  }
+
+  function testCloseWindow() {
+    // Grab a reference to the existing foo window and close it.
+    var w = window.open("", "foo");
+    w.close();
+    return true;
   }
 
  </script>

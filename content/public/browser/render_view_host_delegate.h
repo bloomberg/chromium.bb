@@ -298,6 +298,9 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
       int64 source_frame_id,
       const content::GlobalRequestID& old_request_id) {}
 
+  // The page wants to close the active view in this tab.
+  virtual void RouteCloseEvent(RenderViewHost* rvh) {}
+
   // A javascript message, confirmation or prompt should be shown.
   virtual void RunJavaScriptMessage(RenderViewHost* rvh,
                                     const string16& message,

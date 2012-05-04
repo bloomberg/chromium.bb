@@ -1255,6 +1255,14 @@ void RenderWidget::DoDeferredClose() {
 }
 
 void RenderWidget::closeWidgetSoon() {
+  if (is_swapped_out_) {
+    // This widget is currently swapped out, and the active widget is in a
+    // different process.  Have the browser route the close request to the
+    // active widget instead, so that the correct unload handlers are run.
+    Send(new ViewHostMsg_RouteCloseEvent(routing_id_));
+    return;
+  }
+
   // If a page calls window.close() twice, we'll end up here twice, but that's
   // OK.  It is safe to send multiple Close messages.
 

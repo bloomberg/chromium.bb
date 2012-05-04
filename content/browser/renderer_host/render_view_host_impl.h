@@ -474,6 +474,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnMsgSelectionBoundsChanged(const gfx::Rect& start_rect,
                                    const gfx::Rect& end_rect);
   void OnMsgPasteFromSelectionClipboard();
+  void OnMsgRouteCloseEvent();
   void OnMsgRunJavaScriptMessage(const string16& message,
                                  const string16& default_prompt,
                                  const GURL& frame_url,
