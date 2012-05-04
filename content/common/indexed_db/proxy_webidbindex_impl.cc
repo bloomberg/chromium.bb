@@ -12,6 +12,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
+using content::IndexedDBKeyPath;
+using content::IndexedDBKeyRange;
 using WebKit::WebExceptionCode;
 using WebKit::WebDOMStringList;
 using WebKit::WebIDBKeyPath;
@@ -46,7 +48,7 @@ WebString RendererWebIDBIndexImpl::storeName() const {
 }
 
 WebIDBKeyPath RendererWebIDBIndexImpl::keyPath() const {
-  content::IndexedDBKeyPath result;
+  IndexedDBKeyPath result;
   IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_IndexKeyPath(idb_index_id_, &result));
   return result;
@@ -109,7 +111,8 @@ void RendererWebIDBIndexImpl::getObject(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBIndexGetObject(
-      IndexedDBKeyRange(key_range), callbacks, idb_index_id_, transaction, &ec);
+      IndexedDBKeyRange(key_range), callbacks, idb_index_id_,
+      transaction, &ec);
 }
 
 void RendererWebIDBIndexImpl::getKey(
@@ -120,5 +123,6 @@ void RendererWebIDBIndexImpl::getKey(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBIndexGetKey(
-      IndexedDBKeyRange(key_range), callbacks, idb_index_id_, transaction, &ec);
+      IndexedDBKeyRange(key_range), callbacks, idb_index_id_,
+      transaction, &ec);
 }

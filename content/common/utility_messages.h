@@ -33,7 +33,7 @@ IPC_MESSAGE_CONTROL3(UtilityMsg_IDBKeysFromValuesAndKeyPath,
                      content::IndexedDBKeyPath)
 
 IPC_MESSAGE_CONTROL3(UtilityMsg_InjectIDBKey,
-                     IndexedDBKey /* key */,
+                     content::IndexedDBKey /* key */,
                      content::SerializedScriptValue /* value */,
                      content::IndexedDBKeyPath)
 
@@ -58,7 +58,7 @@ IPC_MESSAGE_CONTROL1(UtilityMsg_LoadPlugins,
 // IDBKeyPath.
 IPC_MESSAGE_CONTROL2(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Succeeded,
                      int /* id */,
-                     std::vector<IndexedDBKey> /* value */)
+                     std::vector<content::IndexedDBKey> /* value */)
 
 // Reply when the utility process has finished injecting an IDBKey into
 // a SerializedScriptValue.

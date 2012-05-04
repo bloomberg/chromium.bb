@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 
-class IndexedDBKey;
 class KeyUtilityClientImpl;
 
 namespace base {
@@ -20,6 +19,7 @@ struct DefaultLazyInstanceTraits;
 }  // namespace base
 
 namespace content {
+class IndexedDBKey;
 class IndexedDBKeyPath;
 class SerializedScriptValue;
 }
@@ -33,12 +33,12 @@ class IndexedDBKeyUtilityClient {
   static void CreateIDBKeysFromSerializedValuesAndKeyPath(
       const std::vector<content::SerializedScriptValue>& values,
       const content::IndexedDBKeyPath& key_path,
-      std::vector<IndexedDBKey>* keys);
+      std::vector<content::IndexedDBKey>* keys);
 
   // Synchronously inject |key| into |value| using |key_path|. Returns the new
   // value.
   static content::SerializedScriptValue InjectIDBKeyIntoSerializedValue(
-      const IndexedDBKey& key,
+      const content::IndexedDBKey& key,
       const content::SerializedScriptValue& value,
       const content::IndexedDBKeyPath& key_path);
 

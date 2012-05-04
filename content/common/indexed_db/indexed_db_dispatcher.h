@@ -21,8 +21,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
 #include "webkit/glue/worker_task_runner.h"
 
-class IndexedDBKey;
-class IndexedDBKeyRange;
 struct IndexedDBMsg_CallbacksSuccessCursorContinue_Params;
 struct IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params;
 struct IndexedDBMsg_CallbacksSuccessIDBCursor_Params;
@@ -39,6 +37,8 @@ class WebIDBTransaction;
 }
 
 namespace content {
+class IndexedDBKey;
+class IndexedDBKeyRange;
 class SerializedScriptValue;
 }
 
@@ -93,7 +93,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
       WebKit::WebExceptionCode* ec);
 
   void RequestIDBCursorContinue(
-      const IndexedDBKey& key,
+      const content::IndexedDBKey& key,
       WebKit::WebIDBCallbacks* callbacks_ptr,
       int32 idb_cursor_id,
       WebKit::WebExceptionCode* ec);
@@ -149,28 +149,28 @@ class CONTENT_EXPORT IndexedDBDispatcher
       WebKit::WebExceptionCode* ec);
 
   void RequestIDBIndexGetObject(
-      const IndexedDBKeyRange& key_range,
+      const content::IndexedDBKeyRange& key_range,
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_index_id,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode* ec);
 
   void RequestIDBIndexGetKey(
-      const IndexedDBKeyRange& key_range,
+      const content::IndexedDBKeyRange& key_range,
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_index_id,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode* ec);
 
   void RequestIDBObjectStoreGet(
-      const IndexedDBKeyRange& key_range,
+      const content::IndexedDBKeyRange& key_range,
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_object_store_id,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode* ec);
 
   void RequestIDBObjectStorePut(const content::SerializedScriptValue& value,
-                                const IndexedDBKey& key,
+                                const content::IndexedDBKey& key,
                                 WebKit::WebIDBObjectStore::PutMode putMode,
                                 WebKit::WebIDBCallbacks* callbacks,
                                 int32 idb_object_store_id,
@@ -178,14 +178,14 @@ class CONTENT_EXPORT IndexedDBDispatcher
                                 WebKit::WebExceptionCode* ec);
 
   void RequestIDBObjectStoreDelete(
-      const IndexedDBKey& key,
+      const content::IndexedDBKey& key,
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_object_store_id,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode* ec);
 
   void RequestIDBObjectStoreDeleteRange(
-      const IndexedDBKeyRange& key_range,
+      const content::IndexedDBKeyRange& key_range,
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_object_store_id,
       const WebKit::WebIDBTransaction& transaction,
@@ -230,7 +230,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
                             int32 object_id);
   void OnSuccessIndexedDBKey(int32 thread_id,
                              int32 response_id,
-                             const IndexedDBKey& key);
+                             const content::IndexedDBKey& key);
   void OnSuccessIDBTransaction(int32 thread_id,
                                int32 response_id,
                                int32 object_id);

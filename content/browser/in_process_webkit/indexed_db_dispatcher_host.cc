@@ -35,7 +35,11 @@
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;
+using content::IndexedDBKey;
+using content::IndexedDBKeyPath;
+using content::IndexedDBKeyRange;
 using content::UserMetricsAction;
+using content::SerializedScriptValue;
 using webkit_database::DatabaseUtil;
 using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
@@ -532,12 +536,12 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnStoreName(
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnKeyPath(
-    int32 object_id, content::IndexedDBKeyPath* key_path) {
+    int32 object_id, IndexedDBKeyPath* key_path) {
   WebIDBIndex* idb_index = parent_->GetOrTerminateProcess(&map_, object_id);
   if (!idb_index)
     return;
 
-  *key_path = content::IndexedDBKeyPath(idb_index->keyPath());
+  *key_path = IndexedDBKeyPath(idb_index->keyPath());
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnUnique(
@@ -709,13 +713,13 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnName(
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnKeyPath(
-    int32 object_id, content::IndexedDBKeyPath* key_path) {
+    int32 object_id, IndexedDBKeyPath* key_path) {
   WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
       &map_,object_id);
   if (!idb_object_store)
     return;
 
-  *key_path = content::IndexedDBKeyPath(idb_object_store->keyPath());
+  *key_path = IndexedDBKeyPath(idb_object_store->keyPath());
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnIndexNames(
@@ -1014,19 +1018,19 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrimaryKey(
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnValue(
     int32 object_id,
-    content::SerializedScriptValue* script_value) {
+    SerializedScriptValue* script_value) {
   WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_, object_id);
   if (!idb_cursor)
     return;
 
-  *script_value = content::SerializedScriptValue(idb_cursor->value());
+  *script_value = SerializedScriptValue(idb_cursor->value());
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnUpdate(
     int32 cursor_id,
     int32 thread_id,
     int32 response_id,
-    const content::SerializedScriptValue& value,
+    const SerializedScriptValue& value,
     WebKit::WebExceptionCode* ec) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_, cursor_id);

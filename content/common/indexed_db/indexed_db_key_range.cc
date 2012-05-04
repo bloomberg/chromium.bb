@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 
+namespace content {
+
 using WebKit::WebIDBKeyRange;
 using WebKit::WebIDBKey;
 
@@ -39,3 +41,5 @@ void IndexedDBKeyRange::Set(const IndexedDBKey& lower,
 IndexedDBKeyRange::operator WebIDBKeyRange() const {
   return WebIDBKeyRange(lower_, upper_, lower_open_, upper_open_);
 }
+
+}  // namespace content

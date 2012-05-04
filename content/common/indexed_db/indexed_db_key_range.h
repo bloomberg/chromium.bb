@@ -11,6 +11,8 @@
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyRange.h"
 
+namespace content {
+
 class CONTENT_EXPORT IndexedDBKeyRange {
  public:
   IndexedDBKeyRange();
@@ -33,5 +35,7 @@ class CONTENT_EXPORT IndexedDBKeyRange {
   bool lower_open_;
   bool upper_open_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_RANGE_H_

@@ -8,6 +8,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
+namespace content {
+
 using WebKit::WebIDBKey;
 using WebKit::WebVector;
 
@@ -85,3 +87,5 @@ IndexedDBKey::operator WebIDBKey() const {
   NOTREACHED();
   return WebIDBKey::createInvalid();
 }
+
+}  // namespace content

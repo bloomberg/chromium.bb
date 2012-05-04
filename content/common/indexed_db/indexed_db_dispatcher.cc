@@ -21,6 +21,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyRange.h"
 
 using base::ThreadLocalPointer;
+using content::IndexedDBKey;
+using content::IndexedDBKeyRange;
+using content::SerializedScriptValue;
 using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
 using WebKit::WebFrame;
@@ -119,7 +122,7 @@ bool IndexedDBDispatcher::Send(IPC::Message* msg) {
 }
 
 void IndexedDBDispatcher::RequestIDBCursorUpdate(
-    const content::SerializedScriptValue& value,
+    const SerializedScriptValue& value,
     WebIDBCallbacks* callbacks_ptr,
     int32 idb_cursor_id,
     WebExceptionCode* ec) {
@@ -412,7 +415,7 @@ void IndexedDBDispatcher::RequestIDBObjectStoreGet(
 }
 
 void IndexedDBDispatcher::RequestIDBObjectStorePut(
-    const content::SerializedScriptValue& value,
+    const SerializedScriptValue& value,
     const IndexedDBKey& key,
     WebKit::WebIDBObjectStore::PutMode put_mode,
     WebIDBCallbacks* callbacks_ptr,
@@ -557,9 +560,10 @@ void IndexedDBDispatcher::OnSuccessIDBDatabase(int32 thread_id,
   pending_callbacks_.Remove(response_id);
 }
 
-void IndexedDBDispatcher::OnSuccessIndexedDBKey(int32 thread_id,
-                                                int32 response_id,
-                                                const IndexedDBKey& key) {
+void IndexedDBDispatcher::OnSuccessIndexedDBKey(
+    int32 thread_id,
+    int32 response_id,
+    const IndexedDBKey& key) {
   DCHECK_EQ(thread_id, CurrentWorkerId());
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
   if (!callbacks)
@@ -595,7 +599,7 @@ void IndexedDBDispatcher::OnSuccessStringList(
 
 void IndexedDBDispatcher::OnSuccessSerializedScriptValue(
     int32 thread_id, int32 response_id,
-    const content::SerializedScriptValue& value) {
+    const SerializedScriptValue& value) {
   DCHECK_EQ(thread_id, CurrentWorkerId());
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
   if (!callbacks)
@@ -611,7 +615,7 @@ void IndexedDBDispatcher::OnSuccessOpenCursor(
   int32 object_id = p.cursor_id;
   const IndexedDBKey& key = p.key;
   const IndexedDBKey& primary_key = p.primary_key;
-  const content::SerializedScriptValue& value = p.serialized_value;
+  const SerializedScriptValue& value = p.serialized_value;
 
   WebIDBCallbacks* callbacks =
       pending_callbacks_.Lookup(response_id);
@@ -633,7 +637,7 @@ void IndexedDBDispatcher::OnSuccessCursorContinue(
   int32 cursor_id = p.cursor_id;
   const IndexedDBKey& key = p.key;
   const IndexedDBKey& primary_key = p.primary_key;
-  const content::SerializedScriptValue& value = p.serialized_value;
+  const SerializedScriptValue& value = p.serialized_value;
 
   RendererWebIDBCursorImpl* cursor = cursors_[cursor_id];
   DCHECK(cursor);
@@ -654,7 +658,7 @@ void IndexedDBDispatcher::OnSuccessCursorPrefetch(
   int32 cursor_id = p.cursor_id;
   const std::vector<IndexedDBKey>& keys = p.keys;
   const std::vector<IndexedDBKey>& primary_keys = p.primary_keys;
-  const std::vector<content::SerializedScriptValue>& values = p.values;
+  const std::vector<SerializedScriptValue>& values = p.values;
   RendererWebIDBCursorImpl* cursor = cursors_[cursor_id];
   DCHECK(cursor);
   cursor->SetPrefetchData(keys, primary_keys, values);

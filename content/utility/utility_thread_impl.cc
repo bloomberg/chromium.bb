@@ -101,14 +101,14 @@ void UtilityThreadImpl::OnIDBKeysFromValuesAndKeyPath(
   std::vector<WebKit::WebIDBKey> web_keys;
   webkit_glue::IDBKeysFromValuesAndKeyPath(
       web_values, idb_key_path, &web_keys);
-  std::vector<IndexedDBKey> keys;
+  std::vector<content::IndexedDBKey> keys;
   ConvertVector(web_keys, &keys);
   Send(new UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Succeeded(id, keys));
   ReleaseProcessIfNeeded();
 }
 
 void UtilityThreadImpl::OnInjectIDBKey(
-    const IndexedDBKey& key,
+    const content::IndexedDBKey& key,
     const content::SerializedScriptValue& value,
     const content::IndexedDBKeyPath& key_path) {
   content::SerializedScriptValue new_value(

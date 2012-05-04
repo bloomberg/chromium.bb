@@ -17,6 +17,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "webkit/glue/webkit_glue.h"
 
+using content::IndexedDBKey;
+using content::IndexedDBKeyPath;
+using content::SerializedScriptValue;
+
 BrowserWebKitPlatformSupportImpl::BrowserWebKitPlatformSupportImpl() {
   file_utilities_.set_sandbox_enabled(false);
 }
@@ -134,16 +138,16 @@ BrowserWebKitPlatformSupportImpl::createIDBKeysFromSerializedValuesAndKeyPath(
     const WebKit::WebIDBKeyPath& keyPath,
     WebKit::WebVector<WebKit::WebIDBKey>& keys) {
 
-  std::vector<content::SerializedScriptValue> std_values;
+  std::vector<SerializedScriptValue> std_values;
   size_t size = values.size();
   std_values.reserve(size);
   for (size_t i = 0; i < size; ++i)
-    std_values.push_back(content::SerializedScriptValue(values[i]));
+    std_values.push_back(SerializedScriptValue(values[i]));
 
   std::vector<IndexedDBKey> std_keys;
   IndexedDBKeyUtilityClient::
       CreateIDBKeysFromSerializedValuesAndKeyPath(
-          std_values, content::IndexedDBKeyPath(keyPath), &std_keys);
+          std_values, IndexedDBKeyPath(keyPath), &std_keys);
 
   keys = std_keys;
 }
@@ -153,8 +157,8 @@ BrowserWebKitPlatformSupportImpl::injectIDBKeyIntoSerializedValue(
     const WebKit::WebIDBKey& key, const WebKit::WebSerializedScriptValue& value,
     const WebKit::WebIDBKeyPath& keyPath) {
   return IndexedDBKeyUtilityClient::InjectIDBKeyIntoSerializedValue(
-      IndexedDBKey(key), content::SerializedScriptValue(value),
-      content::IndexedDBKeyPath(keyPath));
+      IndexedDBKey(key), SerializedScriptValue(value),
+      IndexedDBKeyPath(keyPath));
 }
 
 GpuChannelHostFactory*

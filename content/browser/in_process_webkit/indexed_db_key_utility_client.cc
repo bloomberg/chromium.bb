@@ -16,8 +16,10 @@
 #include "content/public/common/serialized_script_value.h"
 
 using content::BrowserThread;
+using content::IndexedDBKey;
 using content::IndexedDBKeyPath;
 using content::UtilityProcessHostClient;
+using content::SerializedScriptValue;
 
 // This class is used to obtain IndexedDBKeys from SerializedScriptValues
 // given an IDBKeyPath. It uses UtilityProcess to do this inside a sandbox
@@ -37,15 +39,15 @@ class KeyUtilityClientImpl
 
   // Synchronously obtain the |keys| from |values| for the given |key_path|.
   void CreateIDBKeysFromSerializedValuesAndKeyPath(
-      const std::vector<content::SerializedScriptValue>& values,
+      const std::vector<SerializedScriptValue>& values,
       const IndexedDBKeyPath& key_path,
       std::vector<IndexedDBKey>* keys);
 
   // Synchronously inject |key| into |value| using the given |key_path|,
   // returning the new value.
-  content::SerializedScriptValue InjectIDBKeyIntoSerializedValue(
+  SerializedScriptValue InjectIDBKeyIntoSerializedValue(
       const IndexedDBKey& key,
-      const content::SerializedScriptValue& value,
+      const SerializedScriptValue& value,
       const IndexedDBKeyPath& key_path);
 
  private:
@@ -61,7 +63,7 @@ class KeyUtilityClientImpl
     void OnIDBKeysFromValuesAndKeyPathSucceeded(
         int id, const std::vector<IndexedDBKey>& keys);
     void OnIDBKeysFromValuesAndKeyPathFailed(int id);
-    void OnInjectIDBKeyFinished(const content::SerializedScriptValue& value);
+    void OnInjectIDBKeyFinished(const SerializedScriptValue& value);
 
    private:
     virtual ~Client() {}
@@ -78,16 +80,16 @@ class KeyUtilityClientImpl
   void StartUtilityProcessInternal();
   void EndUtilityProcessInternal();
   void CallStartIDBKeyFromValueAndKeyPathFromIOThread(
-      const std::vector<content::SerializedScriptValue>& values,
+      const std::vector<SerializedScriptValue>& values,
       const IndexedDBKeyPath& key_path);
   void CallStartInjectIDBKeyFromIOThread(
       const IndexedDBKey& key,
-      const content::SerializedScriptValue& value,
+      const SerializedScriptValue& value,
       const IndexedDBKeyPath& key_path);
 
   void SetKeys(const std::vector<IndexedDBKey>& keys);
   void FinishCreatingKeys();
-  void SetValueAfterInjection(const content::SerializedScriptValue& value);
+  void SetValueAfterInjection(const SerializedScriptValue& value);
   void FinishInjectingKey();
 
   base::WaitableEvent waitable_event_;
@@ -103,7 +105,7 @@ class KeyUtilityClientImpl
   };
   State state_;
   std::vector<IndexedDBKey> keys_;
-  content::SerializedScriptValue value_after_injection_;
+  SerializedScriptValue value_after_injection_;
 
   // Used in the IO thread.
   base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
@@ -139,7 +141,7 @@ void IndexedDBKeyUtilityClient::Shutdown() {
 
 //  static
 void IndexedDBKeyUtilityClient::CreateIDBKeysFromSerializedValuesAndKeyPath(
-      const std::vector<content::SerializedScriptValue>& values,
+      const std::vector<SerializedScriptValue>& values,
       const IndexedDBKeyPath& key_path,
       std::vector<IndexedDBKey>* keys) {
   IndexedDBKeyUtilityClient* instance = client_instance.Pointer();
@@ -159,14 +161,14 @@ void IndexedDBKeyUtilityClient::CreateIDBKeysFromSerializedValuesAndKeyPath(
 }
 
 //  static
-content::SerializedScriptValue
+SerializedScriptValue
 IndexedDBKeyUtilityClient::InjectIDBKeyIntoSerializedValue(
-    const IndexedDBKey& key, const content::SerializedScriptValue& value,
+    const IndexedDBKey& key, const SerializedScriptValue& value,
     const IndexedDBKeyPath& key_path) {
   IndexedDBKeyUtilityClient* instance = client_instance.Pointer();
 
   if (instance->is_shutdown_)
-    return content::SerializedScriptValue();
+    return SerializedScriptValue();
 
   if (!instance->impl_) {
     instance->impl_ = new KeyUtilityClientImpl();
@@ -213,7 +215,7 @@ void KeyUtilityClientImpl::StartUtilityProcess() {
 }
 
 void KeyUtilityClientImpl::CreateIDBKeysFromSerializedValuesAndKeyPath(
-    const std::vector<content::SerializedScriptValue>& values,
+    const std::vector<SerializedScriptValue>& values,
     const IndexedDBKeyPath& key_path,
     std::vector<IndexedDBKey>* keys) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
@@ -232,14 +234,13 @@ void KeyUtilityClientImpl::CreateIDBKeysFromSerializedValuesAndKeyPath(
   *keys = keys_;
 }
 
-content::SerializedScriptValue
-    KeyUtilityClientImpl::InjectIDBKeyIntoSerializedValue(
+SerializedScriptValue KeyUtilityClientImpl::InjectIDBKeyIntoSerializedValue(
         const IndexedDBKey& key,
-        const content::SerializedScriptValue& value,
+        const SerializedScriptValue& value,
         const IndexedDBKeyPath& key_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   if (state_ == STATE_SHUTDOWN)
-    return content::SerializedScriptValue();
+    return SerializedScriptValue();
 
   DCHECK(state_ == STATE_INITIALIZED);
 
@@ -307,7 +308,7 @@ void KeyUtilityClientImpl::EndUtilityProcessInternal() {
 }
 
 void KeyUtilityClientImpl::CallStartIDBKeyFromValueAndKeyPathFromIOThread(
-    const std::vector<content::SerializedScriptValue>& values,
+    const std::vector<SerializedScriptValue>& values,
     const IndexedDBKeyPath& key_path) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
@@ -327,7 +328,7 @@ void KeyUtilityClientImpl::CallStartIDBKeyFromValueAndKeyPathFromIOThread(
 
 void KeyUtilityClientImpl::CallStartInjectIDBKeyFromIOThread(
     const IndexedDBKey& key,
-    const content::SerializedScriptValue& value,
+    const SerializedScriptValue& value,
     const IndexedDBKeyPath& key_path) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
@@ -355,7 +356,7 @@ void KeyUtilityClientImpl::FinishCreatingKeys() {
 }
 
 void KeyUtilityClientImpl::SetValueAfterInjection(
-    const content::SerializedScriptValue& value) {
+    const SerializedScriptValue& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   value_after_injection_ = value;
 }
@@ -396,7 +397,7 @@ void KeyUtilityClientImpl::Client::OnIDBKeysFromValuesAndKeyPathSucceeded(
 }
 
 void KeyUtilityClientImpl::Client::OnInjectIDBKeyFinished(
-    const content::SerializedScriptValue& value) {
+    const SerializedScriptValue& value) {
   parent_->SetValueAfterInjection(value);
   parent_->FinishInjectingKey();
 }

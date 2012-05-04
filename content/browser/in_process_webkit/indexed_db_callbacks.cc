@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,9 @@
 
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "webkit/quota/quota_manager.h"
+
+using content::IndexedDBKey;
+using content::SerializedScriptValue;
 
 IndexedDBCallbacksBase::IndexedDBCallbacksBase(
     IndexedDBDispatcherHost* dispatcher_host,
@@ -37,7 +40,7 @@ void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(
   params.cursor_id = object_id;
   params.key = IndexedDBKey(idb_object->key());
   params.primary_key = IndexedDBKey(idb_object->primaryKey());
-  params.serialized_value = content::SerializedScriptValue(idb_object->value());
+  params.serialized_value = SerializedScriptValue(idb_object->value());
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessIDBCursor(params));
 }
 
@@ -45,7 +48,7 @@ void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(
     const WebKit::WebSerializedScriptValue& value) {
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksSuccessSerializedScriptValue(
-          thread_id(), response_id(), content::SerializedScriptValue(value)));
+          thread_id(), response_id(), SerializedScriptValue(value)));
 }
 
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccessWithContinuation() {
@@ -62,7 +65,7 @@ void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccessWithContinuation() {
   params.cursor_id = cursor_id_;
   params.key = IndexedDBKey(idb_cursor->key());
   params.primary_key = IndexedDBKey(idb_cursor->primaryKey());
-  params.serialized_value = content::SerializedScriptValue(idb_cursor->value());
+  params.serialized_value = SerializedScriptValue(idb_cursor->value());
 
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksSuccessCursorContinue(params));
@@ -76,12 +79,12 @@ void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccessWithPrefetch(
 
   std::vector<IndexedDBKey> msgKeys;
   std::vector<IndexedDBKey> msgPrimaryKeys;
-  std::vector<content::SerializedScriptValue> msgValues;
+  std::vector<SerializedScriptValue> msgValues;
 
   for (size_t i = 0; i < keys.size(); ++i) {
     msgKeys.push_back(IndexedDBKey(keys[i]));
     msgPrimaryKeys.push_back(IndexedDBKey(primaryKeys[i]));
-    msgValues.push_back(content::SerializedScriptValue(values[i]));
+    msgValues.push_back(SerializedScriptValue(values[i]));
   }
 
   IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params params;
@@ -118,5 +121,5 @@ void IndexedDBCallbacks<WebKit::WebSerializedScriptValue>::onSuccess(
     const WebKit::WebSerializedScriptValue& value) {
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksSuccessSerializedScriptValue(
-          thread_id(), response_id(), content::SerializedScriptValue(value)));
+          thread_id(), response_id(), SerializedScriptValue(value)));
 }

@@ -8,6 +8,8 @@
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
 
+using content::IndexedDBKey;
+using content::SerializedScriptValue;
 using WebKit::WebExceptionCode;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBKey;
@@ -58,7 +60,7 @@ void RendererWebIDBCursorImpl::update(const WebSerializedScriptValue& value,
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBCursorUpdate(
-      content::SerializedScriptValue(value), callbacks, idb_cursor_id_, &ec);
+      SerializedScriptValue(value), callbacks, idb_cursor_id_, &ec);
 }
 
 void RendererWebIDBCursorImpl::advance(unsigned long count,
@@ -107,7 +109,8 @@ void RendererWebIDBCursorImpl::continueFunction(const WebIDBKey& key,
     ResetPrefetchCache();
   }
 
-  dispatcher->RequestIDBCursorContinue(IndexedDBKey(key), callbacks.release(),
+  dispatcher->RequestIDBCursorContinue(IndexedDBKey(key),
+                                       callbacks.release(),
                                        idb_cursor_id_, &ec);
 }
 
@@ -135,7 +138,7 @@ void RendererWebIDBCursorImpl::postSuccessHandlerCallback()
 void RendererWebIDBCursorImpl::SetKeyAndValue(
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
-    const content::SerializedScriptValue& value) {
+    const SerializedScriptValue& value) {
   key_ = key;
   primary_key_ = primary_key;
   value_ = value;
@@ -144,7 +147,7 @@ void RendererWebIDBCursorImpl::SetKeyAndValue(
 void RendererWebIDBCursorImpl::SetPrefetchData(
     const std::vector<IndexedDBKey>& keys,
     const std::vector<IndexedDBKey>& primary_keys,
-    const std::vector<content::SerializedScriptValue>& values) {
+    const std::vector<SerializedScriptValue>& values) {
   prefetch_keys_.assign(keys.begin(), keys.end());
   prefetch_primary_keys_.assign(primary_keys.begin(), primary_keys.end());
   prefetch_values_.assign(values.begin(), values.end());
