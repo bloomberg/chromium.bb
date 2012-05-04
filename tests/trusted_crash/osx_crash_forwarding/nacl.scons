@@ -42,9 +42,13 @@ env.AddNodeToTestSuite(node, test_suites,
 node = env.CommandTest('mach_forward_untrusted_caught_test.out',
                        [runner, 'untrusted_caught', untrusted_caught_nexe],
                        declares_exit_status=True)
+# For Coverage instrumented tests, we ignore mach_forward_untrusted_caught_test
+# which can produce strange result.
+# Bug=http://code.google.com/p/nativeclient/issues/detail?id=1983
 env.AddNodeToTestSuite(node, test_suites,
                        'run_mach_forward_untrusted_caught_test',
-                       is_broken=is_broken)
+                       is_broken=is_broken or
+                                 trusted_env.Bit('coverage_enabled'))
 
 node = env.CommandTest('mach_forward_trusted_crash_test.out',
                        [runner, 'trusted', trusted_crash_nexe],
