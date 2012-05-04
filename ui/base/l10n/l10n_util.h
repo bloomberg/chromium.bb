@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,10 +50,6 @@ bool IsLocaleSupportedByOS(const std::string& locale);
 UI_EXPORT string16 GetDisplayNameForLocale(const std::string& locale,
                                            const std::string& display_locale,
                                            bool is_for_ui);
-
-// Returns the display name of the |country_code| in |display_locale|.
-UI_EXPORT string16 GetDisplayNameForCountry(const std::string& country_code,
-                                            const std::string& display_locale);
 
 // Converts all - into _, to be consistent with ICU and file system names.
 UI_EXPORT std::string NormalizeLocale(const std::string& locale);
