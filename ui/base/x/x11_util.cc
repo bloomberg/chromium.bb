@@ -37,6 +37,8 @@
 
 #if defined(USE_AURA)
 #include <X11/Xcursor/Xcursor.h>
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/skia_util.h"
 #endif
 
 #if defined(TOOLKIT_GTK)
@@ -410,6 +412,25 @@ void RefCustomXCursor(::Cursor cursor) {
 
 void UnrefCustomXCursor(::Cursor cursor) {
   XCustomCursorCache::GetInstance()->Unref(cursor);
+}
+
+XcursorImage* SkBitmapToXcursorImage(const SkBitmap* bitmap,
+                                     const gfx::Point& hotspot) {
+  DCHECK(bitmap->config() == SkBitmap::kARGB_8888_Config);
+  XcursorImage* image = XcursorImageCreate(bitmap->width(), bitmap->height());
+  image->xhot = hotspot.x();
+  image->yhot = hotspot.y();
+
+  if (bitmap->width() && bitmap->height()) {
+    bitmap->lockPixels();
+    gfx::ConvertSkiaToRGBA(
+        static_cast<const unsigned char*>(bitmap->getPixels()),
+        bitmap->width() * bitmap->height(),
+        reinterpret_cast<unsigned char*>(image->pixels));
+    bitmap->unlockPixels();
+  }
+
+  return image;
 }
 #endif
 
