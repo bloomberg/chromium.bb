@@ -3,7 +3,7 @@
 " found in the LICENSE file.
 "
 " Adds a "Compile this file" function, using ninja. On Mac, binds Cmd-k to
-" this command.
+" this command. On Windows, Ctrl-F7 (which is the same as the VS default).
 "
 " Requires that gyp has already generated build.ninja files, and that ninja is
 " in your path (which it is automatically if depot_tools is in your path).
@@ -70,14 +70,20 @@ def compute_ninja_command(configuration=None):
 
 
 def set_makepgr_to_single_file_ninja():
-  vim.command('let &makeprg="%s"' % compute_ninja_command())
+  build_cmd = compute_ninja_command()
+  if sys.platform == 'win32':
+    # Escape \ for Vim, and ^ for both Vim and shell.
+    build_cmd = build_cmd.replace('\\', '\\\\').replace('^', '^^^^')
+  vim.command('let &makeprg=\'%s\'' % build_cmd)
 endpython
 
 fun! CrCompileFile()
   let l:oldmakepgr = &makeprg
   python set_makepgr_to_single_file_ninja()
   silent make | cwindow
-  redraw!
+  if !has('gui')
+    redraw!
+  endif
   let &makeprg = l:oldmakepgr
 endfun
 
@@ -86,5 +92,8 @@ command! CrCompileFile call CrCompileFile()
 if has('mac')
   map <D-k> :CrCompileFile<cr>
   imap <D-k> <esc>:CrCompileFile<cr>
+elseif has('win32')
+  map <C-F7> :CrCompileFile<cr>
+  imap <C-F7> <esc>:CrCompileFile<cr>
 endif
 " TODO(linuxuser): Suggest a keyboard shortcut and send review to thakis@.
