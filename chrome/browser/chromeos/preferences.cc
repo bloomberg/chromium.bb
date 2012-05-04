@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/system/drm_settings.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/screen_locker_settings.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -251,6 +252,12 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kOAuth1Secret,
                             "",
                             PrefService::UNSYNCABLE_PREF);
+
+  // TODO(wad): Once UI is connected, a final default can be set. At that point
+  // change this pref from UNSYNCABLE to SYNCABLE.
+  prefs->RegisterBooleanPref(prefs::kEnableCrosDRM,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
 // static
@@ -334,6 +341,8 @@ void Preferences::InitUserPrefs(PrefService* prefs) {
       prefs::kLanguageXkbAutoRepeatInterval, prefs, this);
 
   enable_screen_lock_.Init(prefs::kEnableScreenLock, prefs, this);
+
+  enable_drm_.Init(prefs::kEnableCrosDRM, prefs, this);
 }
 
 void Preferences::Init(PrefService* prefs) {
@@ -561,6 +570,11 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kEnableScreenLock) {
     system::screen_locker_settings::EnableScreenLock(
         enable_screen_lock_.GetValue());
+  }
+
+  // Init or update protected content (DRM) support.
+  if (!pref_name || *pref_name == prefs::kEnableCrosDRM) {
+    system::ToggleDrm(enable_drm_.GetValue());
   }
 }
 

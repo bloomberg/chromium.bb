@@ -625,6 +625,9 @@ class PluginDelegate {
   // Create a ClipboardClient for writing to the clipboard. The caller will own
   // the pointer to this.
   virtual webkit_glue::ClipboardClient* CreateClipboardClient() const = 0;
+
+  // Returns a Device ID
+  virtual std::string GetDeviceID() = 0;
 };
 
 }  // namespace ppapi

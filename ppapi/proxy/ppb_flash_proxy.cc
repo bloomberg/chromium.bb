@@ -424,6 +424,8 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgOpenFileRef)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_QueryFileRef,
                         OnHostMsgQueryFileRef)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetDeviceID,
+                        OnHostMsgGetDeviceID)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw) handle bad messages!
@@ -549,10 +551,10 @@ void PPB_Flash_Proxy::UpdateActivity(PP_Instance instance) {
 }
 
 PP_Var PPB_Flash_Proxy::GetDeviceID(PP_Instance instance) {
-  std::string id;
-  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
-      new PpapiHostMsg_PPBFlash_GetDeviceID(API_ID_PPB_FLASH, &id));
-  return StringVar::StringToPPVar(id);
+  ReceiveSerializedVarReturnValue result;
+  dispatcher()->Send(new PpapiHostMsg_PPBFlash_GetDeviceID(
+      API_ID_PPB_FLASH, instance, &result));
+  return result.Return(dispatcher());
 }
 
 int32_t PPB_Flash_Proxy::GetSettingInt(PP_Instance instance,
@@ -1137,6 +1139,18 @@ void PPB_Flash_Proxy::OnHostMsgQueryFileRef(
   }
   *result = enter.functions()->GetFlashAPI()->QueryFileRef(
       instance, host_resource.host_resource(), info);
+}
+
+void PPB_Flash_Proxy::OnHostMsgGetDeviceID(PP_Instance instance,
+                                           SerializedVarReturnValue id) {
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded()) {
+    id.Return(dispatcher(),
+                  enter.functions()->GetFlashAPI()->GetDeviceID(
+                      instance));
+  } else {
+    id.Return(dispatcher(), PP_MakeUndefined());
+  }
 }
 
 }  // namespace proxy

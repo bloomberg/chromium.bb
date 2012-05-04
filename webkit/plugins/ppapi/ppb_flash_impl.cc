@@ -242,8 +242,8 @@ void PPB_Flash_Impl::UpdateActivity(PP_Instance pp_instance) {
 }
 
 PP_Var PPB_Flash_Impl::GetDeviceID(PP_Instance pp_instance) {
-  // Not supported in-process.
-  return PP_MakeUndefined();
+  std::string id = instance_->delegate()->GetDeviceID();
+  return StringVar::StringToPPVar(id);
 }
 
 int32_t PPB_Flash_Impl::GetSettingInt(PP_Instance instance,

@@ -187,6 +187,8 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
                              const ppapi::HostResource& host_resource,
                              PP_FileInfo* info,
                              int32_t* result);
+  void OnHostMsgGetDeviceID(PP_Instance instance,
+                            SerializedVarReturnValue id);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Flash_Proxy);
 };

@@ -1176,8 +1176,9 @@ IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBFlash_FlashGetScreenSize,
                            PP_Bool /* result */,
                            PP_Size /* size */)
 IPC_MESSAGE_ROUTED0(PpapiHostMsg_PPBFlash_UpdateActivity)
-IPC_SYNC_MESSAGE_ROUTED0_1(PpapiHostMsg_PPBFlash_GetDeviceID,
-                           std::string /* id */)
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFlash_GetDeviceID,
+                           PP_Instance /* instance */,
+                           ppapi::proxy::SerializedVar /* id */)
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_IsClipboardFormatAvailable,
                            PP_Instance /* instance */,
                            int /* clipboard_type */,

@@ -189,6 +189,7 @@ class MockPluginDelegate : public PluginDelegate {
   virtual int EnumerateDevices(PP_DeviceType_Dev type,
                                const EnumerateDevicesCallback& callback);
   virtual webkit_glue::ClipboardClient* CreateClipboardClient() const;
+  virtual std::string GetDeviceID();
 };
 
 }  // namespace ppapi

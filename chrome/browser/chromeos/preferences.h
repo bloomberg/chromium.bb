@@ -157,6 +157,8 @@ class Preferences : public content::NotificationObserver {
 
   BooleanPrefMember enable_screen_lock_;
 
+  BooleanPrefMember enable_drm_;
+
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };
 

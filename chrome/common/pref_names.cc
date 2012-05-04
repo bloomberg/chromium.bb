@@ -672,6 +672,9 @@ const char kOAuth1Token[] = "settings.account.oauth1_token";
 
 // A string prefs for OAuth1 secret.
 const char kOAuth1Secret[] = "settings.account.oauth1_secret";
+
+// A boolean pref that enables the (private) pepper GetID() call.
+const char kEnableCrosDRM[] = "settings.privacy.drm_enabled";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

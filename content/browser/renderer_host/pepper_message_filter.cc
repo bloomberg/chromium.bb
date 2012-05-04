@@ -8,6 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -23,6 +25,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/pepper_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/font_list_async.h"
@@ -55,18 +58,28 @@ namespace {
 const size_t kMaxSocketsAllowed = 1024;
 const uint32 kInvalidSocketID = 0;
 
+// The ID is a 256-bit hash digest hex-encoded.
+const int kDRMIdentifierSize = (256 / 8) * 2;
+// The path to the file containing the DRM ID.
+// It is mirrored from
+//   chrome/browser/chromeos/system/drm_settings.cc
+const char kDRMIdentifierFile[] = "Pepper DRM ID.0";
+
 }  // namespace
 
 PepperMessageFilter::PepperMessageFilter(
     ProcessType type,
     int process_id,
-    content::ResourceContext* resource_context)
+    content::BrowserContext* browser_context)
     : process_type_(type),
       process_id_(process_id),
-      resource_context_(resource_context),
+      resource_context_(browser_context ?
+          browser_context->GetResourceContext() : NULL),
       host_resolver_(NULL),
       next_socket_id_(1) {
   DCHECK(type == RENDERER);
+  DCHECK(browser_context);
+  browser_path_ = browser_context->GetPath();
   DCHECK(resource_context_);
 }
 
@@ -90,7 +103,7 @@ void PepperMessageFilter::OverrideThreadForMessage(
       message.type() == PpapiHostMsg_PPBTCPServerSocket_Listen::ID ||
       message.type() == PpapiHostMsg_PPBHostResolver_Resolve::ID) {
     *thread = BrowserThread::UI;
-  } else if (message.type() == PpapiHostMsg_PPBFlash_GetDeviceID::ID) {
+  } else if (message.type() == PepperMsg_GetDeviceID::ID) {
     *thread = BrowserThread::FILE;
   }
 }
@@ -145,7 +158,7 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
 
     // Flash messages.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_UpdateActivity, OnUpdateActivity)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetDeviceID, OnGetDeviceID)
+    IPC_MESSAGE_HANDLER(PepperMsg_GetDeviceID, OnGetDeviceID)
 
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -633,8 +646,33 @@ void PepperMessageFilter::OnUpdateActivity() {
 }
 
 void PepperMessageFilter::OnGetDeviceID(std::string* id) {
-  // TODO(brettw) implement this.
-  *id = "<undefined>";
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  id->clear();
+
+  // Grab the contents of the DRM identifier file.
+  FilePath drm_id_file = browser_path_;
+  drm_id_file = drm_id_file.AppendASCII(kDRMIdentifierFile);
+
+  // This method should not be called with high frequency and its
+  // useful to be able to validate use with a VLOG.
+  VLOG(1) << "DRM ID requested @ " << drm_id_file.value();
+
+  if (browser_path_.empty()) {
+    LOG(ERROR) << "GetDeviceID requested from outside the RENDERER context.";
+    return;
+  }
+
+  // TODO(wad,brettw) Add OffTheRecord() enforcement here.
+  // Normally this is left for the plugin to do, but in the
+  // future we should check here as an added safeguard.
+
+  char id_buf[kDRMIdentifierSize];
+  if (file_util::ReadFile(drm_id_file, id_buf, kDRMIdentifierSize) !=
+      kDRMIdentifierSize) {
+    VLOG(1) << "file not readable: " << drm_id_file.value();
+    return;
+  }
+  id->assign(id_buf, kDRMIdentifierSize);
 }
 
 void PepperMessageFilter::GetFontFamiliesComplete(

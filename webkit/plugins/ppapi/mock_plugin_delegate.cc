@@ -440,5 +440,9 @@ MockPluginDelegate::CreateClipboardClient() const {
   return NULL;
 }
 
+std::string MockPluginDelegate::GetDeviceID() {
+  return std::string();
+}
+
 }  // namespace ppapi
 }  // namespace webkit

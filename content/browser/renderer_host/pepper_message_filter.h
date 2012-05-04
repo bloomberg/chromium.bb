@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
@@ -34,6 +35,7 @@ class ListValue;
 }
 
 namespace content {
+class BrowserContext;
 class ResourceContext;
 }
 
@@ -63,7 +65,7 @@ class PepperMessageFilter
   // provided for sanity checking).
   PepperMessageFilter(ProcessType type,
                       int process_id,
-                      content::ResourceContext* resource_context);
+                      content::BrowserContext* browser_context);
 
   // Constructor when used in the context of a PPAPI process (the argument is
   // provided for sanity checking).
@@ -251,6 +253,8 @@ class PepperMessageFilter
   TCPServerSocketMap tcp_server_sockets_;
 
   NetworkMonitorIdSet network_monitor_ids_;
+
+  FilePath browser_path_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperMessageFilter);
 };

@@ -32,6 +32,7 @@ void TestFlash::RunTests(const std::string& filter) {
   RUN_TEST(MessageLoop, filter);
   RUN_TEST(GetLocalTimeZoneOffset, filter);
   RUN_TEST(GetCommandLineArgs, filter);
+  RUN_TEST(GetDeviceID, filter);
 }
 
 std::string TestFlash::TestSetInstanceAlwaysOnTop() {
@@ -98,6 +99,15 @@ std::string TestFlash::TestGetCommandLineArgs() {
 
   PASS();
 }
+
+std::string TestFlash::TestGetDeviceID() {
+  Var result(pp::PASS_REF,
+             flash_interface_->GetDeviceID(instance_->pp_instance()));
+  // TODO(wad) figure out how to mock the input and test the full flow.
+  ASSERT_TRUE(result.is_string());
+  PASS();
+}
+
 
 void TestFlash::QuitMessageLoopTask(int32_t) {
   flash_interface_->QuitMessageLoop(instance_->pp_instance());

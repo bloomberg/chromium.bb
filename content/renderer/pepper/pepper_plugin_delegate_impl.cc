@@ -1280,6 +1280,12 @@ double PepperPluginDelegateImpl::GetLocalTimeZoneOffset(base::Time t) {
   return result;
 }
 
+std::string PepperPluginDelegateImpl::GetDeviceID() {
+  std::string result;
+  render_view_->Send(new PepperMsg_GetDeviceID(&result));
+  return result;
+}
+
 base::SharedMemory* PepperPluginDelegateImpl::CreateAnonymousSharedMemory(
     uint32_t size) {
   if (size == 0)
