@@ -743,7 +743,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     GLenum target,
     GLuint source_id,
     GLuint target_id,
-    GLint level);
+    GLint level,
+    GLenum internal_format);
 
   // Wrapper for TexStorage2DEXT.
   void DoTexStorage2DEXT(
@@ -1415,6 +1416,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   GLuint mask_stencil_back_;
   GLclampf clear_depth_;
   GLboolean mask_depth_;
+  bool enable_blend_;
   bool enable_cull_face_;
   bool enable_scissor_test_;
   bool enable_depth_test_;
@@ -1892,6 +1894,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       mask_stencil_back_(-1),
       clear_depth_(1.0f),
       mask_depth_(true),
+      enable_blend_(false),
       enable_cull_face_(false),
       enable_scissor_test_(false),
       enable_depth_test_(false),
@@ -3278,6 +3281,7 @@ void GLES2DecoderImpl::ApplyDirtyState() {
     EnableDisable(GL_STENCIL_TEST, enable_stencil_test_ && have_stencil);
     EnableDisable(GL_CULL_FACE, enable_cull_face_);
     EnableDisable(GL_SCISSOR_TEST, enable_scissor_test_);
+    EnableDisable(GL_BLEND, enable_blend_);
     state_dirty_ = false;
   }
 }
@@ -4097,6 +4101,9 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
 
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
+    case GL_BLEND:
+      enable_blend_ = enabled;
+      return true;
     case GL_CULL_FACE:
       enable_cull_face_ = enabled;
       return true;
@@ -6248,6 +6255,12 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
                        "glPixelSTore: param GL_INVALID_VALUE");
             return error::kNoError;
         }
+    case GL_UNPACK_FLIP_Y_CHROMIUM:
+        unpack_flip_y_ = (param != 0);
+        return error::kNoError;
+    case GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM:
+        unpack_premultiply_alpha_ = (param != 0);
+        return error::kNoError;
     default:
         break;
   }
@@ -6260,12 +6273,6 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
       break;
   case GL_UNPACK_ALIGNMENT:
       unpack_alignment_ = param;
-      break;
-  case GL_UNPACK_FLIP_Y_CHROMIUM:
-      unpack_flip_y_ = (param != 0);
-      break;
-  case GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM:
-      unpack_premultiply_alpha_ = (param != 0);
       break;
   default:
       // Validation should have prevented us from getting here.
@@ -8380,7 +8387,8 @@ static GLenum ExtractFormatFromStorageFormat(GLenum internalformat) {
 }
 
 void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
-    GLenum target, GLuint source_id, GLuint dest_id, GLint level) {
+    GLenum target, GLuint source_id, GLuint dest_id, GLint level,
+    GLenum internal_format) {
   TextureManager::TextureInfo* dest_info = GetTextureInfo(dest_id);
   TextureManager::TextureInfo* source_info = GetTextureInfo(source_id);
 
@@ -8395,18 +8403,18 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     return;
   }
 
+  if (dest_info->target() != GL_TEXTURE_2D ||
+      source_info->target() != GL_TEXTURE_2D) {
+    SetGLError(GL_INVALID_VALUE,
+               "glCopyTextureCHROMIUM: invalid texture target binding");
+    return;
+  }
+
   int source_width, source_height, dest_width, dest_height;
   if (!source_info->GetLevelSize(GL_TEXTURE_2D, 0, &source_width,
                                  &source_height)) {
     SetGLError(GL_INVALID_VALUE,
                "glCopyTextureChromium: source texture has no level 0");
-    return;
-  }
-
-  if (!dest_info->GetLevelSize(GL_TEXTURE_2D, level, &dest_width,
-                               &dest_height)) {
-    SetGLError(GL_INVALID_VALUE,
-        "glCopyTextureChromium: destination texture level does not exist");
     return;
   }
 
@@ -8418,28 +8426,44 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     return;
   }
 
-  // Resize the destination texture to the dimensions of the source texture.
-  if (dest_width != source_width && dest_height != source_height) {
-    GLenum type;
-    GLenum internal_format;
-    dest_info->GetLevelType(GL_TEXTURE_2D, level, &type, &internal_format);
+  GLenum dest_type;
+  GLenum dest_internal_format;
+  bool dest_level_defined = dest_info->GetLevelSize(GL_TEXTURE_2D, level,
+                                                    &dest_width,
+                                                    &dest_height);
 
+  if (dest_level_defined) {
+    dest_info->GetLevelType(GL_TEXTURE_2D, level, &dest_type,
+                            &dest_internal_format);
+  } else {
+    GLenum source_internal_format;
+    source_info->GetLevelType(GL_TEXTURE_2D, 0, &dest_type,
+                              &source_internal_format);
+  }
+
+  // Resize the destination texture to the dimensions of the source texture.
+  if (!dest_level_defined || dest_width != source_width ||
+      dest_height != source_height ||
+      dest_internal_format != internal_format) {
     // Ensure that the glTexImage2D succeeds.
     CopyRealGLErrorsToWrapper();
+    glBindTexture(GL_TEXTURE_2D, dest_info->service_id());
     WrappedTexImage2D(
         GL_TEXTURE_2D, level, internal_format, source_width, source_height,
-        0, internal_format, type, NULL);
+        0, internal_format, dest_type, NULL);
     GLenum error = PeekGLError();
-    if (error != GL_NO_ERROR)
+    if (error != GL_NO_ERROR) {
+      RestoreCurrentTexture2DBindings();
       return;
+    }
 
     texture_manager()->SetLevelInfo(
         dest_info, GL_TEXTURE_2D, level, internal_format, source_width,
-        source_height, 1, 0, internal_format, type, true);
+        source_height, 1, 0, internal_format, dest_type, true);
   }
 
   state_dirty_ = true;
-  glViewport(0, 0, dest_width, dest_height);
+  glViewport(0, 0, source_width, source_height);
   copy_texture_CHROMIUM_->DoCopyTexture(target, source_info->service_id(),
                                         dest_info->service_id(), level,
                                         unpack_flip_y_,

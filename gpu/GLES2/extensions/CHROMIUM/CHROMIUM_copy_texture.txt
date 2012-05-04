@@ -31,7 +31,8 @@ Overview
 New Procedures and Functions
 
     void glCopyTextureCHROMIUM (GLenum target, GLenum source_id,
-                                GLenum dest_id, GLint level)
+                                GLenum dest_id, GLint level,
+                                GLint internal_format)
 
     Copies the contents of texture referred to by <source_id> to texture
     <dest_id>.
@@ -39,12 +40,18 @@ New Procedures and Functions
     Texture level 0 is copied from the source image to level <level> of the
     destination texture.
 
+    The internal format of the destination texture is converted to that
+    specified by <internal_format>
+
     <target> uses the same parameters as TexImage2D.
 
     INVALID_VALUE is generated if <target> is not GL_TEXTURE_2D.
 
     INVALID_VALUE is generated if <source_id> or <dest_id> are not valid texture
     objects.
+
+    INVALID_VALUE is generated if textures corresponding to <source_id> and
+    <dest_id> have not been bound as GL_TEXTURE_2D objects.
 
     INVALID_VALUE is generated if <level> is not a valid level of the
     destination texture, or if level 0 of the source texture is not defined.

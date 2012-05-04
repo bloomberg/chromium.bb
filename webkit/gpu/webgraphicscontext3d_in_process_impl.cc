@@ -1671,6 +1671,11 @@ DELEGATE_TO_GL_3(getQueryivEXT, GetQueryivARB, WGC3Denum, WGC3Denum, WGC3Dint*)
 DELEGATE_TO_GL_3(getQueryObjectuivEXT, GetQueryObjectuivARB,
                  WebGLId, WGC3Denum, WGC3Duint*)
 
+void WebGraphicsContext3DInProcessImpl::copyTextureCHROMIUM(
+    WGC3Denum, WGC3Denum, WGC3Denum, WGC3Dint)
+{
+}
+
 #if WEBKIT_USING_SKIA
 GrGLInterface* WebGraphicsContext3DInProcessImpl::onCreateGrGLInterface() {
   return gfx::CreateInProcessSkiaGLBinding();

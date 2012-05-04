@@ -665,7 +665,8 @@ void GLES2DecoderTestBase::SetupExpectationsForApplyingDirtyState(
     GLuint back_stencil_mask,
     bool stencil_enabled,
     bool cull_face_enabled,
-    bool scissor_test_enabled) {
+    bool scissor_test_enabled,
+    bool blend_enabled) {
   EXPECT_CALL(*gl_, ColorMask(
       (color_bits & 0x1000) != 0,
       (color_bits & 0x0100) != 0,
@@ -710,13 +711,22 @@ void GLES2DecoderTestBase::SetupExpectationsForApplyingDirtyState(
         .RetiresOnSaturation();
   }
   if (scissor_test_enabled) {
-      EXPECT_CALL(*gl_, Enable(GL_SCISSOR_TEST))
-          .Times(1)
-          .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, Enable(GL_SCISSOR_TEST))
+        .Times(1)
+        .RetiresOnSaturation();
   } else {
-      EXPECT_CALL(*gl_, Disable(GL_SCISSOR_TEST))
-          .Times(1)
-          .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, Disable(GL_SCISSOR_TEST))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  if (blend_enabled) {
+    EXPECT_CALL(*gl_, Enable(GL_BLEND))
+        .Times(1)
+        .RetiresOnSaturation();
+  } else {
+    EXPECT_CALL(*gl_, Disable(GL_BLEND))
+        .Times(1)
+        .RetiresOnSaturation();
   }
 }
 
@@ -732,7 +742,8 @@ void GLES2DecoderTestBase::SetupExpectationsForApplyingDefaultDirtyState() {
       0,       // back stencil mask
       false,   // stencil enabled
       false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
 }
 
 void GLES2DecoderTestBase::DoBindFramebuffer(

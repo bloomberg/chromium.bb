@@ -2732,7 +2732,14 @@ error::Error GLES2DecoderImpl::HandleCopyTextureCHROMIUM(
   GLenum source_id = static_cast<GLenum>(c.source_id);
   GLenum dest_id = static_cast<GLenum>(c.dest_id);
   GLint level = static_cast<GLint>(c.level);
-  DoCopyTextureCHROMIUM(target, source_id, dest_id, level);
+  GLint internalformat = static_cast<GLint>(c.internalformat);
+  if (!validators_->texture_internal_format.IsValid(internalformat)) {
+    SetGLError(
+        GL_INVALID_VALUE,
+        "glCopyTextureCHROMIUM: internalformat GL_INVALID_VALUE");
+    return error::kNoError;
+  }
+  DoCopyTextureCHROMIUM(target, source_id, dest_id, level, internalformat);
   return error::kNoError;
 }
 

@@ -178,7 +178,7 @@ GL_APICALL void         GL_APIENTRY glDestroyStreamTextureCHROMIUM (GLuint textu
 GL_APICALL void         GL_APIENTRY glGetTranslatedShaderSourceANGLE (GLidShader shader, GLsizeiNotNegative bufsize, GLsizei* length, char* source);
 GL_APICALL void         GL_APIENTRY glPostSubBufferCHROMIUM (GLint x, GLint y, GLint width, GLint height);
 GL_APICALL void         GL_APIENTRY glTexImageIOSurface2DCHROMIUM (GLenumTextureBindTarget target, GLsizei width, GLsizei height, GLuint ioSurfaceId, GLuint plane);
-GL_APICALL void         GL_APIENTRY glCopyTextureCHROMIUM (GLenum target, GLenum source_id, GLenum dest_id, GLint level);
+GL_APICALL void         GL_APIENTRY glCopyTextureCHROMIUM (GLenum target, GLenum source_id, GLenum dest_id, GLint level, GLintTextureInternalFormat internalformat);
 GL_APICALL void         GL_APIENTRY glDrawArraysInstancedANGLE (GLenumDrawMode mode, GLint first, GLsizei count, GLsizei primcount);
 GL_APICALL void         GL_APIENTRY glDrawElementsInstancedANGLE (GLenumDrawMode mode, GLsizei count, GLenumIndexType type, const void* indices, GLsizei primcount);
 GL_APICALL void         GL_APIENTRY glVertexAttribDivisorANGLE (GLuint index, GLuint divisor);

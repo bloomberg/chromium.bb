@@ -305,7 +305,8 @@ class GLES2DecoderTestBase : public testing::Test {
       GLuint back_stencil_mask,
       bool stencil_enabled,
       bool cull_face_enabled,
-      bool scissor_test_enabled);
+      bool scissor_test_enabled,
+      bool blend_enabled);
 
   void SetupExpectationsForApplyingDefaultDirtyState();
 

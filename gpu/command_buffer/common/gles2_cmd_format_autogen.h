@@ -9537,18 +9537,22 @@ struct CopyTextureCHROMIUM {
     header.SetCmd<ValueType>();
   }
 
-  void Init(GLenum _target, GLenum _source_id, GLenum _dest_id, GLint _level) {
+  void Init(
+      GLenum _target, GLenum _source_id, GLenum _dest_id, GLint _level,
+      GLint _internalformat) {
     SetHeader();
     target = _target;
     source_id = _source_id;
     dest_id = _dest_id;
     level = _level;
+    internalformat = _internalformat;
   }
 
   void* Set(
       void* cmd, GLenum _target, GLenum _source_id, GLenum _dest_id,
-      GLint _level) {
-    static_cast<ValueType*>(cmd)->Init(_target, _source_id, _dest_id, _level);
+      GLint _level, GLint _internalformat) {
+    static_cast<ValueType*>(
+        cmd)->Init(_target, _source_id, _dest_id, _level, _internalformat);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -9557,10 +9561,11 @@ struct CopyTextureCHROMIUM {
   uint32 source_id;
   uint32 dest_id;
   int32 level;
+  int32 internalformat;
 };
 
-COMPILE_ASSERT(sizeof(CopyTextureCHROMIUM) == 20,
-               Sizeof_CopyTextureCHROMIUM_is_not_20);
+COMPILE_ASSERT(sizeof(CopyTextureCHROMIUM) == 24,
+               Sizeof_CopyTextureCHROMIUM_is_not_24);
 COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, header) == 0,
                OffsetOf_CopyTextureCHROMIUM_header_not_0);
 COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, target) == 4,
@@ -9571,6 +9576,8 @@ COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, dest_id) == 12,
                OffsetOf_CopyTextureCHROMIUM_dest_id_not_12);
 COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, level) == 16,
                OffsetOf_CopyTextureCHROMIUM_level_not_16);
+COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, internalformat) == 20,
+               OffsetOf_CopyTextureCHROMIUM_internalformat_not_20);
 
 struct DrawArraysInstancedANGLE {
   typedef DrawArraysInstancedANGLE ValueType;

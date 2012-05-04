@@ -1639,9 +1639,9 @@ TEST_F(GLES2ImplementationTest, CopyTextureCHROMIUM) {
     CopyTextureCHROMIUM cmd;
   };
   Cmds expected;
-  expected.cmd.Init(1, 2, 3, 4);
+  expected.cmd.Init(1, 2, 3, 4, GL_ALPHA);
 
-  gl_->CopyTextureCHROMIUM(1, 2, 3, 4);
+  gl_->CopyTextureCHROMIUM(1, 2, 3, 4, GL_ALPHA);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

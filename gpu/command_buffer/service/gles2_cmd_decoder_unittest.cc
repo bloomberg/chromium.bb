@@ -3548,7 +3548,8 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMask) {
       0,       // back stencil mask
       false,   // stencil enabled
       false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -3604,7 +3605,8 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferDepthMask) {
       0,       // back stencil mask
       false,   // stencil enabled
       false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -3658,7 +3660,8 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferStencilMask) {
       0,       // back stencil mask
       false,   // stencil enabled
       false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -3713,7 +3716,8 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
       0,       // back stencil mask
       false,   // stencil enabled
       false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -3761,7 +3765,8 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
       0,       // back stencil mask
       false,   // stencil enabled
       false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -3790,7 +3795,8 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
       0,       // back stencil mask
       false,   // stencil enabled
       false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -4015,7 +4021,9 @@ TEST_F(GLES2DecoderManualInitTest, DepthEnableWithDepth) {
       0,       // back stencil mask
       false,   // stencil enabled
       false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
+
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -4075,7 +4083,8 @@ TEST_F(GLES2DecoderManualInitTest, DepthEnableWithoutRequestedDepth) {
       0,       // back stencil mask
       false,   // stencil enabled
       false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -4133,9 +4142,10 @@ TEST_F(GLES2DecoderManualInitTest, StencilEnableWithStencil) {
       false,   // depth enabled
       -1,      // front stencil mask
       -1,      // back stencil mask
-      true,   // stencil enabled
+      true,    // stencil enabled
       false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -4195,7 +4205,8 @@ TEST_F(GLES2DecoderManualInitTest, StencilEnableWithoutRequestedStencil) {
       0,       // back stencil mask
       false,   // stencil enabled
       false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -5950,7 +5961,8 @@ TEST_F(GLES2DecoderWithShaderTest, DrawClearsAfterTexImage2DNULLInFBO) {
       0,       // back stencil mask
       false,   // stencil enabled
       false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -6115,7 +6127,8 @@ TEST_F(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnClear) {
       0,       // back stencil mask
       false,   // stencil enabled
       false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
 
   EXPECT_CALL(*gl_, Clear(GL_COLOR_BUFFER_BIT))
       .Times(1)
@@ -6271,7 +6284,8 @@ TEST_F(GLES2DecoderWithShaderTest, DrawClearsAfterRenderbufferStorageInFBO) {
       0,       // back stencil mask
       false,   // stencil enabled
       false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -6386,7 +6400,8 @@ TEST_F(GLES2DecoderWithShaderTest,
       0,       // back stencil mask
       false,   // stencil enabled
       false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -6606,7 +6621,8 @@ TEST_F(GLES2DecoderWithShaderTest,
       0,       // back stencil mask
       false,   // stencil enabled
       false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false,   // scissor_test_enabled
+      false);  // blend_enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)

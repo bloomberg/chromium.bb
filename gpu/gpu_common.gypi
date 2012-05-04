@@ -241,9 +241,11 @@
       ],
       'sources': [
         '<@(gles2_c_lib_source_files)',
-        'command_buffer/tests/gl_tests_main.cc',
+        'command_buffer/tests/gl_copy_texture_CHROMIUM_unittest.cc',
         'command_buffer/tests/gl_manager.cc',
         'command_buffer/tests/gl_manager.h',
+        'command_buffer/tests/gl_tests_main.cc',
+        'command_buffer/tests/gl_unittests.cc',
       ],
     },
     {

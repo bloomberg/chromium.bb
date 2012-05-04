@@ -1480,6 +1480,9 @@ DELEGATE_TO_GL_3(getQueryivEXT, GetQueryivEXT, WGC3Denum, WGC3Denum, WGC3Dint*)
 DELEGATE_TO_GL_3(getQueryObjectuivEXT, GetQueryObjectuivEXT,
                  WebGLId, WGC3Denum, WGC3Duint*)
 
+DELEGATE_TO_GL_5(copyTextureCHROMIUM, CopyTextureCHROMIUM,  WGC3Denum,
+                 WGC3Denum, WGC3Denum, WGC3Dint, WGC3Dint);
+
 #if WEBKIT_USING_SKIA
 GrGLInterface* WebGraphicsContext3DCommandBufferImpl::onCreateGrGLInterface() {
   return webkit_glue::CreateCommandBufferSkiaGLBinding();
@@ -1523,4 +1526,3 @@ void WebGraphicsContext3DCommandBufferImpl::OnErrorMessage(
     error_message_callback_->onErrorMessage(str, id);
   }
 }
-

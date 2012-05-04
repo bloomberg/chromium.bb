@@ -1547,10 +1547,12 @@ void TexImageIOSurface2DCHROMIUM(
 }
 
 void CopyTextureCHROMIUM(
-    GLenum target, GLenum source_id, GLenum dest_id, GLint level) {
+    GLenum target, GLenum source_id, GLenum dest_id, GLint level,
+    GLint internalformat) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << this << "] glCopyTextureCHROMIUM(" << GLES2Util::GetStringEnum(target) << ", " << GLES2Util::GetStringEnum(source_id) << ", " << GLES2Util::GetStringEnum(dest_id) << ", " << level << ")");  // NOLINT
-  helper_->CopyTextureCHROMIUM(target, source_id, dest_id, level);
+  GPU_CLIENT_LOG("[" << this << "] glCopyTextureCHROMIUM(" << GLES2Util::GetStringEnum(target) << ", " << GLES2Util::GetStringEnum(source_id) << ", " << GLES2Util::GetStringEnum(dest_id) << ", " << level << ", " << internalformat << ")");  // NOLINT
+  helper_->CopyTextureCHROMIUM(
+      target, source_id, dest_id, level, internalformat);
 }
 
 void DrawArraysInstancedANGLE(
@@ -1579,4 +1581,3 @@ void ConsumeTextureCHROMIUM(GLenum target, const GLbyte* mailbox) {
 }
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
-
