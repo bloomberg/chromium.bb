@@ -184,6 +184,10 @@ class NonFrontendDataTypeController : public DataTypeController {
   // TODO(lipalani): Remove this after debugging.
   base::WaitableEvent start_association_called_;
 
+  // This is added for debugging purpose.
+  // TODO(lipalani): Remove after debugging.
+  bool start_models_failed_;
+
   DISALLOW_COPY_AND_ASSIGN(NonFrontendDataTypeController);
 };
 

@@ -34,7 +34,8 @@ NonFrontendDataTypeController::NonFrontendDataTypeController(
       abort_association_(false),
       abort_association_complete_(false, false),
       datatype_stopped_(false, false),
-      start_association_called_(true, false) {
+      start_association_called_(true, false),
+      start_models_failed_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_sync_factory_);
   DCHECK(profile_);
@@ -44,6 +45,8 @@ NonFrontendDataTypeController::NonFrontendDataTypeController(
 void NonFrontendDataTypeController::Start(const StartCallback& start_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!start_callback.is_null());
+  start_association_called_.Reset();
+  start_models_failed_ = false;
   if (state_ != NOT_RUNNING) {
     start_callback.Run(BUSY, SyncError());
     return;
@@ -54,6 +57,7 @@ void NonFrontendDataTypeController::Start(const StartCallback& start_callback) {
 
   state_ = MODEL_STARTING;
   if (!StartModels()) {
+    start_models_failed_ = true;
     // If we are waiting for some external service to load before associating
     // or we failed to start the models, we exit early.
     DCHECK(state_ == NOT_RUNNING || state_ == MODEL_STARTING
@@ -81,10 +85,23 @@ void NonFrontendDataTypeController::StopWhileAssociating() {
   // Wait for the model association to abort.
   if (start_association_called_.IsSignaled()) {
     LOG(INFO) << "Stopping after |StartAssocation| is called.";
-    abort_association_complete_.Wait();
+    if (start_models_failed_) {
+      LOG(INFO) << "Start models failed";
+      abort_association_complete_.Wait();
+    } else {
+      LOG(INFO) << "Start models succeeded";
+      abort_association_complete_.Wait();
+    }
   } else {
     LOG(INFO) << "Stopping before |StartAssocation| is called.";
-    abort_association_complete_.Wait();
+    if (start_models_failed_) {
+      LOG(INFO) << "Start models failed";
+      abort_association_complete_.Wait();
+    } else {
+      LOG(INFO) << "Start models succeeded";
+      abort_association_complete_.Wait();
+    }
+
   }
 
   StartDoneImpl(ABORTED, STOPPING, SyncError());
@@ -111,7 +128,47 @@ void NonFrontendDataTypeController::Stop() {
       } else if (type() == syncable::TYPED_URLS) {
         LOG(INFO) << " Type is TypedUrl";
         StopWhileAssociating();
+      } else if (type() == syncable::APPS) {
+        LOG(INFO) << "Type is Apps";
+        StopWhileAssociating();
+      } else if (type() == syncable::EXTENSIONS) {
+        LOG(INFO) << "Type is Extension";
+        StopWhileAssociating();
+      } else if (type() == syncable::PREFERENCES) {
+        LOG(INFO) << "Type is Preferences(Does not belong to non-frontend)";
+        StopWhileAssociating();
+      } else if (type() == syncable::EXTENSION_SETTINGS) {
+        LOG(INFO) << "Type is Extension Settings";
+        StopWhileAssociating();
+      } else if (type() == syncable::APP_SETTINGS) {
+        LOG(INFO) << "Type is App Settings.";
+        StopWhileAssociating();
+      } else if (type() == syncable::BOOKMARKS) {
+        LOG(INFO) << "Type is BOOKMARKS.";
+        StopWhileAssociating();
+      } else if (type() == syncable::AUTOFILL_PROFILE) {
+        LOG(INFO) << "Type is AUTOFILL_PROFILE.";
+        StopWhileAssociating();
+      } else if (type() == syncable::AUTOFILL) {
+        LOG(INFO) << "Type is AUTOFILL.";
+        StopWhileAssociating();
+      } else if (type() == syncable::THEMES) {
+        LOG(INFO) << "Type is THEMES.";
+        StopWhileAssociating();
+      } else if (type() == syncable::NIGORI) {
+        LOG(INFO) << "Type is NIGORI.";
+        StopWhileAssociating();
+      } else if (type() == syncable::SEARCH_ENGINES) {
+        LOG(INFO) << "Type is SEARCH_ENGINES.";
+        StopWhileAssociating();
+      } else if (type() == syncable::SESSIONS) {
+        LOG(INFO) << "Type is SESSIONS.";
+        StopWhileAssociating();
+      } else if (type() == syncable::APP_NOTIFICATIONS) {
+        LOG(INFO) << "Type is APP_NOTIFICATIONS.";
+        StopWhileAssociating();
       } else {
+        LOG(INFO) << "Type is unknown";
         StopWhileAssociating();
       }
       break;
@@ -353,6 +410,7 @@ void NonFrontendDataTypeController::set_change_processor(
 
 void NonFrontendDataTypeController::StartAssociation() {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  start_association_called_.Signal();
   DCHECK_EQ(state_, ASSOCIATING);
   {
     base::AutoLock lock(abort_association_lock_);
