@@ -255,7 +255,11 @@ class CompletionCallbackWithOutput : public CompletionCallback {
 /// allowed from background threads.
 ///
 /// @return A <code>CompletionCallback</code> corresponding to a NULL callback.
-CompletionCallback BlockUntilComplete();
+inline CompletionCallback BlockUntilComplete() {
+  // Note: Explicitly inlined to avoid link errors when included into
+  // ppapi_proxy and ppapi_cpp_objects.
+  return CompletionCallback();
+}
 
 }  // namespace pp
 

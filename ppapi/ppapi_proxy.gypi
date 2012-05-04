@@ -33,7 +33,6 @@
         # full C++ wrappers at this layer since the C++ wrappers expect
         # symbols defining the globals for "being a plugin" which we are not.
         # These callback files are standalone.
-        'cpp/completion_callback.cc',
         'cpp/completion_callback.h',
         'utility/completion_callback_factory.h',
 
