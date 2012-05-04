@@ -17,6 +17,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
@@ -38,6 +39,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -61,6 +63,8 @@ namespace {
 // Url for setting up sync authentication.
 const char kSettingsSyncLoginURL[] = "chrome://settings/personal";
 
+#define NEW_GSG_URL
+
 // Getting started guide URL, will be opened as in app window for each new
 // user who logs on the device.
 // TODO(nkostylev): Remove this when new URL is live.
@@ -80,6 +84,7 @@ const char kGetStartedBoardParam[] = "board";
 #if defined(NEW_GSG_URL)
 const char kGetStartedOwnerParam[] = "owner";
 const char kGetStartedOwnerParamValue[] = "true";
+const char kGetStartedInitialLocaleParam[] = "initial_locale";
 #else
 const char kGetStartedOwnerParam[] = "#first";
 #endif
@@ -568,6 +573,7 @@ void ExistingUserController::OnLoginSuccess(
 }
 
 void ExistingUserController::OnProfilePrepared(Profile* profile) {
+  OptionallyShowReleaseNotes(profile);
   if (!ready_for_browser_launch_) {
     // Don't specify start URLs if the administrator has configured the start
     // URLs via policy.
@@ -765,6 +771,10 @@ std::string ExistingUserController::GetGettingStartedGuideURL() const {
         kGetStartedOwnerParamValue);
   }
   guide_url = google_util::AppendGoogleLocaleParam(guide_url);
+  guide_url = chrome_browser_net::AppendQueryParameter(
+      guide_url,
+      kGetStartedInitialLocaleParam,
+      WizardController::GetInitialLocale());
   return guide_url.spec();
 }
 #else
@@ -779,6 +789,46 @@ std::string ExistingUserController::GetGettingStartedGuideURL() const {
   return guide_url;
 }
 #endif
+
+void ExistingUserController::OptionallyShowReleaseNotes(
+    Profile* profile) const {
+  // TODO(nkostylev): Fix WizardControllerFlowTest case.
+  if (!profile)
+    return;
+  PrefService* prefs = profile->GetPrefs();
+  chrome::VersionInfo version_info;
+  // New users would get this info with default getting started guide.
+  if (UserManager::Get()->IsCurrentUserNew()) {
+    prefs->SetString(prefs::kChromeOSReleaseNotesVersion,
+                     version_info.Version());
+    return;
+  }
+
+  std::string prev_version_pref =
+      prefs->GetString(prefs::kChromeOSReleaseNotesVersion);
+  Version prev_version(prev_version_pref);
+  if (!prev_version.IsValid())
+    prev_version = Version("0.0.0.0");
+  Version current_version(version_info.Version());
+
+  if (!current_version.components().size()) {
+    NOTREACHED() << "Incorrect version " << current_version.GetString();
+    return;
+  }
+
+  // TODO(nkostylev): Disable this prior to M19>M20 update.
+  // Trigger on major version change.
+  if (current_version.components()[0] > prev_version.components()[0]) {
+    std::string release_notes_url = GetGettingStartedGuideURL();
+    if (!release_notes_url.empty()) {
+      // TODO(nkostylev): Ideally we'd want to show this in app window
+      // but passing --app=<url> would ignore session restore.
+      CommandLine::ForCurrentProcess()->AppendArg(release_notes_url);
+      prefs->SetString(prefs::kChromeOSReleaseNotesVersion,
+                       current_version.GetString());
+    }
+  }
+}
 
 void ExistingUserController::ShowError(int error_id,
                                        const std::string& details) {

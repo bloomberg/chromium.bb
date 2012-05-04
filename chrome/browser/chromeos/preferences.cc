@@ -245,6 +245,12 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                              true,
                              PrefService::UNSYNCABLE_PREF);
 
+  // Initially all existing users would see "What's new"
+  // for current version after update.
+  prefs->RegisterStringPref(prefs::kChromeOSReleaseNotesVersion,
+                            "0.0.0.0",
+                            PrefService::SYNCABLE_PREF);
+
   // OAuth1 all access token and secret pair.
   prefs->RegisterStringPref(prefs::kOAuth1Token,
                             "",

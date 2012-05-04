@@ -664,6 +664,9 @@ const char kShowPlanNotifications[] =
 const char kShow3gPromoNotification[] =
     "settings.internet.mobile.show_3g_promo_notification";
 
+// A string pref that contains version where "What's new" promo was shown.
+const char kChromeOSReleaseNotesVersion[] = "settings.release_notes.version";
+
 // A boolean pref that uses shared proxies.
 const char kUseSharedProxies[] = "settings.use_shared_proxies";
 
