@@ -61,7 +61,7 @@ function testUnderLimit()
     }, 0);
 
   function doStore() {
-    var transaction = db.transaction("store", IDBTransaction.READ_WRITE);
+    var transaction = db.transaction("store", 'readwrite');
     var store = transaction.objectStore("store");
     var request;
 
@@ -106,7 +106,7 @@ function testOverLimit()
     }, 0);
 
   function doStore() {
-    var transaction = db.transaction("store", IDBTransaction.READ_WRITE);
+    var transaction = db.transaction("store", 'readwrite');
     var store = transaction.objectStore("store");
     var request;
     try {

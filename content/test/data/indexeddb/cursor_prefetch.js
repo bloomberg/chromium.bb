@@ -42,7 +42,7 @@ function setVersionSuccess() {
 
 function fillObjectStore() {
   debug("fillObjectStore()");
-  var trans = db.transaction(['store'], IDBTransaction.READ_WRITE);
+  var trans = db.transaction(['store'], 'readwrite');
   trans.onabort = unexpectedAbortCallback;
   trans.oncomplete = firstTest;
 
@@ -61,7 +61,7 @@ function firstTest() {
 
   // Test iterating straight through the object store.
 
-  var trans = db.transaction(['store'], IDBTransaction.READ_WRITE);
+  var trans = db.transaction(['store'], 'readwrite');
   trans.onabort = unexpectedAbortCallback;
   trans.oncomplete = secondTest;
 
@@ -94,7 +94,7 @@ function secondTest() {
   // Test iterating through the object store, intermixed with
   // continue calls to specific keys.
 
-  var trans = db.transaction(['store'], IDBTransaction.READ_WRITE);
+  var trans = db.transaction(['store'], 'readwrite');
   trans.onabort = unexpectedAbortCallback;
   trans.oncomplete = thirdTest;
 
@@ -144,13 +144,13 @@ function thirdTest() {
 
   // Test iterating straight through the object store in reverse.
 
-  var trans = db.transaction(['store'], IDBTransaction.READ_WRITE);
+  var trans = db.transaction(['store'], 'readwrite');
   trans.onabort = unexpectedAbortCallback;
   trans.oncomplete = fourthTest;
 
   var store = trans.objectStore('store');
   var cursorReq = store.openCursor(
-      IDBKeyRange.upperBound(kNumberOfItems-1), IDBCursor.PREV);
+      IDBKeyRange.upperBound(kNumberOfItems-1), 'prev');
   cursorReq.onerror = unexpectedErrorCallback;
 
   count = 0;
@@ -180,7 +180,7 @@ function fourthTest() {
   // Test iterating, and then stopping before reaching the end.
   // Make sure transaction terminates anyway.
 
-  var trans = db.transaction(['store'], IDBTransaction.READ_WRITE);
+  var trans = db.transaction(['store'], 'readwrite');
   trans.onabort = unexpectedAbortCallback;
   trans.oncomplete = function() {
     debug("fourthTest() transaction completed");
@@ -253,7 +253,7 @@ function fifthTest() {
   // in the range when pre-fetch fires, and make sure a null cursor
   // is the result as expected.
 
-  var trans = db.transaction(['store'], IDBTransaction.READ_WRITE);
+  var trans = db.transaction(['store'], 'readwrite');
   trans.onabort = unexpectedAbortCallback;
   trans.oncomplete = sixthTest;
 
@@ -285,7 +285,7 @@ function sixthTest() {
   // Test stepping two cursors simultaneously. First cursor1 steps
   // for a while, then cursor2, then back to cursor1, etc.
 
-  var trans = db.transaction(['store'], IDBTransaction.READ_WRITE);
+  var trans = db.transaction(['store'], 'readwrite');
   trans.onabort = unexpectedAbortCallback;
   trans.oncomplete = seventhTest;
   var store = trans.objectStore('store');
@@ -363,7 +363,7 @@ function seventhTest() {
 
   // Test iterating straight through an index.
 
-  var trans = db.transaction(['store'], IDBTransaction.READ_WRITE);
+  var trans = db.transaction(['store'], 'readwrite');
   trans.onabort = unexpectedAbortCallback;
   trans.oncomplete = eighthTest;
 
@@ -398,7 +398,7 @@ function eighthTest() {
 
   // Run a key cursor over an index.
 
-  var trans = db.transaction(['store'], IDBTransaction.READ_WRITE);
+  var trans = db.transaction(['store'], 'readwrite');
   trans.onabort = unexpectedAbortCallback;
   trans.oncomplete = done;
 

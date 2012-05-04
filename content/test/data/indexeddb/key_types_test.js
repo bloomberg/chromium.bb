@@ -128,7 +128,7 @@ function testValidKeys() {
 
     key = eval("(" + key + ")");
     var value = 'value' + (count++);
-    var trans = db.transaction('store', IDBTransaction.READ_WRITE);
+    var trans = db.transaction('store', 'readwrite');
     var store = trans.objectStore('store');
     var putreq = store.put(value, key);
     putreq.onerror = unexpectedErrorCallback;
@@ -145,7 +145,7 @@ function testValidKeys() {
 
 function testInvalidKeys() {
 
-  var trans = db.transaction('store', IDBTransaction.READ_WRITE);
+  var trans = db.transaction('store', 'readwrite');
   var store = trans.objectStore('store');
 
   invalid_keys.forEach(

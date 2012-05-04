@@ -7,7 +7,7 @@ function cursorSuccess()
 {
     debug("Cursor opened successfully.")
     // FIXME: check that we can iterate the cursor.
-    shouldBe("event.target.result.direction", "0");
+    shouldBe("event.target.result.direction", "'next'");
     shouldBe("event.target.result.key", "'myKey' + count");
     shouldBe("event.target.result.value.keyPath", "'myKey' + count");
     shouldBe("event.target.result.value.value", "'myValue' + count");

@@ -27,7 +27,7 @@ function cursorSuccess()
   }
 
   debug('Cursor opened successfully.');
-  shouldBe("event.target.result.direction", "0");
+  shouldBe("event.target.result.direction", "'next'");
   shouldBe("event.target.result.key", "3.14");
   shouldBe("event.target.result.value", "'myValue'");
 

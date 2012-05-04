@@ -23,7 +23,7 @@ function newTransactionComplete()
   debug('The transaction completed.');
 
   var finalTransaction = db.transaction(['employees'],
-                                        IDBTransaction.READ_ONLY);
+                                        'readonly');
   finalTransaction.oncomplete = unexpectedCompleteCallback;
   finalTransaction.onabort = unexpectedErrorCallback;
 
@@ -35,7 +35,7 @@ function newTransactionComplete()
 function onSetVersionComplete()
 {
   debug('Creating new transaction.');
-  var newTransaction = db.transaction(['employees'], IDBTransaction.READ_WRITE);
+  var newTransaction = db.transaction(['employees'], 'readwrite');
   newTransaction.oncomplete = newTransactionComplete;
   newTransaction.onabort = unexpectedAbortCallback;
 

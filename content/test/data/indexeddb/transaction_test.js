@@ -24,7 +24,7 @@ function newTransactionAborted()
   debug('The transaction was aborted.');
 
   var finalTransaction = db.transaction(['employees'],
-                                        IDBTransaction.READ_ONLY);
+                                        'readonly');
   finalTransaction.oncomplete = finalTransactionCompleted;
   finalTransaction.onabort = finalTransactionAborted;
 
@@ -48,7 +48,7 @@ function onSetVersionComplete()
 {
   debug('Creating new transaction.');
   window.newTransaction = db.transaction(['employees'],
-                                         IDBTransaction.READ_WRITE);
+                                         'readwrite');
   newTransaction.oncomplete = newTransactionCompleted;
   newTransaction.onabort = newTransactionAborted;
 

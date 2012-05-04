@@ -72,7 +72,7 @@ function startNewTransaction() {
   debug("");
   debug("Starting new transaction.");
 
-  var trans = db.transaction(['test123'], webkitIDBTransaction.READ_WRITE);
+  var trans = db.transaction(['test123'], 'readwrite');
   trans.onabort = onAbort;
   trans.oncomplete = getQuotaAndUsage;
   var store = trans.objectStore('test123');

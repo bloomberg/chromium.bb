@@ -65,16 +65,22 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
+// TODO(alecflett): reenable this once
+// https://bugs.webkit.org/show_bug.cgi?id=84894 lands and webkit rolls
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_CursorTest) {
   SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("cursor_test.html"))));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTestIncognito) {
+// TODO(alecflett): reenable this once
+// https://bugs.webkit.org/show_bug.cgi?id=84894 lands and webkit rolls
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_CursorTestIncognito) {
   SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("cursor_test.html"))),
              true /* incognito */);
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorPrefetch) {
+// TODO(alecflett): reenable this once
+// https://bugs.webkit.org/show_bug.cgi?id=84894 lands and webkit rolls
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_CursorPrefetch) {
   SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("cursor_prefetch.html"))));
 }
 
@@ -82,7 +88,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, IndexTest) {
   SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("index_test.html"))));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, KeyPathTest) {
+// TODO(alecflett): reenable this once
+// https://bugs.webkit.org/show_bug.cgi?id=84894 lands and webkit rolls
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_KeyPathTest) {
   SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("key_path_test.html"))));
 }
 
@@ -91,7 +99,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionGetTest) {
       FILE_PATH_LITERAL("transaction_get_test.html"))));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, KeyTypesTest) {
+// TODO(alecflett): reenable this once
+// https://bugs.webkit.org/show_bug.cgi?id=84894 lands and webkit rolls
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_KeyTypesTest) {
   SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("key_types_test.html"))));
 }
 
@@ -103,7 +113,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DatabaseTest) {
   SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("database_test.html"))));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionTest) {
+// TODO(alecflett): reenable this once
+// https://bugs.webkit.org/show_bug.cgi?id=84894 lands and webkit rolls
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_TransactionTest) {
   SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
 }
 
@@ -112,7 +124,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_ValueSizeTest) {
   SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("value_size_test.html"))));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DoesntHangTest) {
+// TODO(alecflett): reenable this once
+// https://bugs.webkit.org/show_bug.cgi?id=84894 lands and webkit rolls
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_DoesntHangTest) {
   SimpleTest(GetTestURL(FilePath(
       FILE_PATH_LITERAL("transaction_run_forever.html"))));
   ui_test_utils::CrashTab(browser()->GetSelectedWebContents());
@@ -170,7 +184,9 @@ class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
 
 };
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithLowQuota, QuotaTest) {
+// TODO(alecflett): reenable this once
+// https://bugs.webkit.org/show_bug.cgi?id=84894 lands and webkit rolls
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithLowQuota, DISABLED_QuotaTest) {
   SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("quota_test.html"))));
 }
 
