@@ -23,6 +23,8 @@
 namespace {
 
 const char kInputSubsystem[] = "input";
+const char kUsbSubsystem[] = "usb";
+const char kUsbDeviceType[] = "usb_device";
 const float kMaxLinuxAxisValue = 32767.0;
 
 void CloseFileDescriptorIfValid(int fd) {
@@ -146,14 +148,14 @@ void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
 
     CloseFileDescriptorIfValid(device_fd);
 
-    // The device pointed to by dev contains information about the input
-    // device. In order to get the information about the USB device, get the
-    // parent device with the subsystem/devtype pair of "usb"/"usb_device".
-    // This function walks up the tree several levels.
+    // The device pointed to by dev contains information about the logical
+    // joystick device. In order to get the information about the physical
+    // hardware, get the parent device that is also in the "input" subsystem.
+    // This function should just walk up the tree one level.
     dev = udev_device_get_parent_with_subsystem_devtype(
         dev,
-        "usb",
-        "usb_device");
+        kInputSubsystem,
+        NULL);
     if (!dev) {
       // Unable to get device information, don't use this device.
       device_fd = -1;
@@ -168,22 +170,49 @@ void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
       return;
     }
 
-    const char* vendor_id = udev_device_get_sysattr_value(dev, "idVendor");
-    const char* product_id = udev_device_get_sysattr_value(dev, "idProduct");
+    const char* vendor_id = udev_device_get_sysattr_value(dev, "id/vendor");
+    const char* product_id = udev_device_get_sysattr_value(dev, "id/product");
     mapper = GetGamepadStandardMappingFunction(vendor_id, product_id);
 
-    const char* manufacturer =
-        udev_device_get_sysattr_value(dev, "manufacturer");
-    const char* product = udev_device_get_sysattr_value(dev, "product");
+    // Driver returns utf-8 strings here, so combine in utf-8 first and
+    // convert to WebUChar later once we've picked an id string.
+    const char* name = udev_device_get_sysattr_value(dev, "name");
+    std::string name_string = base::StringPrintf("%s", name);
 
-    // Driver returns utf-8 strings here, so combine in utf-8 and then convert
-    // to WebUChar to build the id string.
-    std::string id = base::StringPrintf("%s %s (%sVendor: %s Product: %s)",
-          manufacturer,
-          product,
-          mapper ? "STANDARD GAMEPAD " : "",
-          vendor_id,
-          product_id);
+    // In many cases the information the input subsystem contains isn't
+    // as good as the information that the device bus has, walk up further
+    // to the subsystem/device type "usb"/"usb_device" and if this device
+    // has the same vendor/product id, prefer the description from that.
+    struct udev_device *usb_dev = udev_device_get_parent_with_subsystem_devtype(
+        dev,
+        kUsbSubsystem,
+        kUsbDeviceType);
+    if (usb_dev) {
+      const char* usb_vendor_id =
+          udev_device_get_sysattr_value(usb_dev, "idVendor");
+      const char* usb_product_id =
+          udev_device_get_sysattr_value(usb_dev, "idProduct");
+
+      if (strcmp(vendor_id, usb_vendor_id) == 0 &&
+          strcmp(product_id, usb_product_id) == 0) {
+        const char* manufacturer =
+            udev_device_get_sysattr_value(usb_dev, "manufacturer");
+        const char* product = udev_device_get_sysattr_value(usb_dev, "product");
+
+        // Replace the previous name string with one containing the better
+        // information, again driver returns utf-8 strings here so combine
+        // in utf-8 for conversion to WebUChar below.
+        name_string = base::StringPrintf("%s %s", manufacturer, product);
+      }
+    }
+
+    // Append the vendor and product information then convert the utf-8
+    // id string to WebUChar.
+    std::string id = name_string + base::StringPrintf(
+        " (%sVendor: %s Product: %s)",
+        mapper ? "STANDARD GAMEPAD " : "",
+        vendor_id,
+        product_id);
     TruncateUTF8ToByteSize(id, WebGamepad::idLengthCap - 1, &id);
     string16 tmp16 = UTF8ToUTF16(id);
     memset(pad.id, 0, sizeof(pad.id));
