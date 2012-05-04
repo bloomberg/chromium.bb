@@ -9,14 +9,8 @@
 		<string>Aqua</string>
 		<string>LoginWindow</string>
 	</array>
-	<key>KeepAlive</key>
-	<dict>
-		<key>PathState</key>
-		<dict>
-			<key>/Library/PrivilegedHelperTools/org.chromium.chromoting.me2me_enabled</key>
-			<true/>
-		</dict>
-	</dict>
+	<key>RunAtLoad</key>
+	<true/>
 	<key>Disabled</key>
 	<false/>
 	<key>ProgramArguments</key>

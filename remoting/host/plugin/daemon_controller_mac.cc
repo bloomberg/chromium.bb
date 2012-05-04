@@ -34,12 +34,8 @@ namespace {
 #define kConfigDir "/Library/PrivilegedHelperTools/"
 
 // This helper script is executed as root.  It is passed a command-line option
-// (--enable or --disable), which causes it to create or remove a trigger file.
-// The trigger file (defined in the service's plist file) informs launchd
-// whether the Host service should be running.  Creating the trigger file causes
-// launchd to immediately start the service.  Deleting the trigger file has no
-// immediate effect, but it prevents the service from being restarted if it
-// becomes stopped.
+// (--enable or --disable), which causes it to create or remove a file that
+// informs the host's launch script of whether the host is enabled or disabled.
 const char kStartStopTool[] = kConfigDir kServiceName ".me2me.sh";
 
 // Use a single configuration file, instead of separate "auth" and "host" files.
@@ -78,7 +74,7 @@ class DaemonControllerMac : public remoting::DaemonController {
                          const base::TimeDelta& sleep);
 
   bool RunToolScriptAsRoot(const char* command, const std::string& input_data);
-  bool StopService();
+  bool SendJobControlMessage(const char* launchKey);
 
   // The API for gaining root privileges is blocking (it prompts the user for
   // a password). Since Start() and Stop() must not block the main thread, they
@@ -173,10 +169,11 @@ void DaemonControllerMac::DoSetConfigAndStart(
     const CompletionCallback& done_callback) {
   std::string file_content;
   base::JSONWriter::Write(config.get(), &file_content);
-
-  // Creating the trigger file causes launchd to start the service, so the
-  // extra step performed in DoStop() is not necessary here.
-  bool result = RunToolScriptAsRoot("--enable", file_content);
+  if (!RunToolScriptAsRoot("--enable", file_content)) {
+    done_callback.Run(RESULT_FAILED);
+    return;
+  }
+  bool result = SendJobControlMessage(LAUNCH_KEY_STARTJOB);
   done_callback.Run(result ? RESULT_OK : RESULT_FAILED);
 }
 
@@ -187,6 +184,7 @@ void DaemonControllerMac::DoUpdateConfig(
   JsonHostConfig config_file(config_file_path);
   if (!config_file.Read()) {
     done_callback.Run(RESULT_FAILED);
+    return;
   }
   for (DictionaryValue::key_iterator key(config->begin_keys());
        key != config->end_keys(); ++key) {
@@ -194,14 +192,18 @@ void DaemonControllerMac::DoUpdateConfig(
     if (!config->GetString(*key, &value)) {
       LOG(ERROR) << *key << " is not a string.";
       done_callback.Run(RESULT_FAILED);
+      return;
     }
     config_file.SetString(*key, value);
   }
 
   std::string file_content = config_file.GetSerializedData();
-  bool success = RunToolScriptAsRoot("--save-config", file_content);
+  if (!RunToolScriptAsRoot("--save-config", file_content)) {
+      done_callback.Run(RESULT_FAILED);
+      return;
+  }
 
-  done_callback.Run(success ? RESULT_OK : RESULT_FAILED);
+  done_callback.Run(RESULT_OK);
   pid_t job_pid = base::mac::PIDForJob(kServiceName);
   if (job_pid > 0) {
     kill(job_pid, SIGHUP);
@@ -218,13 +220,13 @@ void DaemonControllerMac::DoStop(const CompletionCallback& done_callback) {
   // Since the service is running for the local user's desktop (not as root),
   // it has to be stopped for that user.  This cannot easily be done in the
   // shell-script running as root, so it is done here instead.
-  if (!StopService()) {
+  if (!SendJobControlMessage(LAUNCH_KEY_STOPJOB)) {
     done_callback.Run(RESULT_FAILED);
     return;
   }
 
-  // StopService does not wait for the stop to take effect, so we can't return
-  // immediately. Instead, we wait up to 10s.
+  // SendJobControlMessage does not wait for the stop to take effect, so we
+  // can't return immediately. Instead, we wait up to 10s.
   NotifyWhenStopped(done_callback,
                     kStopWaitRetryLimit,
                     base::TimeDelta::FromMilliseconds(kStopWaitTimeout));
@@ -315,9 +317,9 @@ bool DaemonControllerMac::RunToolScriptAsRoot(const char* command,
   }
 }
 
-bool DaemonControllerMac::StopService() {
+bool DaemonControllerMac::SendJobControlMessage(const char* launchKey) {
   base::mac::ScopedLaunchData response(
-      base::mac::MessageForJob(kServiceName, LAUNCH_KEY_STOPJOB));
+      base::mac::MessageForJob(kServiceName, launchKey));
   if (!response) {
     LOG(ERROR) << "Failed to send message to launchd";
     return false;

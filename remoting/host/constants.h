@@ -8,6 +8,9 @@
 namespace remoting {
 
 // Known host exit codes.
+// Please keep this enum in sync with:
+// remoting/host/installer/mac/PrivilegedHelperTools/
+// org.chromium.chromoting.me2me.sh
 enum HostExitCodes {
   kSuccessExitCode = 0,
   kReservedForX11ExitCode = 1,
