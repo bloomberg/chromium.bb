@@ -42,6 +42,10 @@ GLContextGLX::~GLContextGLX() {
   Destroy();
 }
 
+Display* GLContextGLX::display() {
+  return display_;
+}
+
 bool GLContextGLX::Initialize(
     GLSurface* compatible_surface, GpuPreference gpu_preference) {
   display_ = static_cast<Display*>(compatible_surface->GetDisplay());
