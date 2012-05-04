@@ -1825,6 +1825,7 @@
         'browser/ui/views/tabs/touch_tab_strip_layout_unittest.cc',
         'browser/ui/webui/chrome_web_ui_data_source_unittest.cc',
         'browser/ui/webui/fileicon_source_unittest.cc',
+        'browser/ui/webui/ntp/suggestions_combiner_unittest.cc',
         'browser/ui/webui/options2/chromeos/virtual_keyboard_manager_handler2_unittest.cc',
         'browser/ui/webui/options2/language_options_handler2_unittest.cc',
         'browser/ui/webui/policy_ui_unittest.cc',

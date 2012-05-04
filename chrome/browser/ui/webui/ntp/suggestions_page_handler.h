@@ -7,7 +7,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
@@ -18,6 +17,7 @@
 class GURL;
 class PageUsageData;
 class PrefService;
+class SuggestionsCombiner;
 
 namespace base {
 class ListValue;
@@ -62,20 +62,12 @@ class SuggestionsHandler : public content::WebUIMessageHandler,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Called by the suggestions combiner when pages value is ready.
+  void OnPagesValueReady();
+
   static void RegisterUserPrefs(PrefService* prefs);
 
  private:
-  // Send a request to the HistoryService to get the suggestions pages.
-  void StartQueryForSuggestions();
-
-  // Sets pages_value_ from a format produced by TopSites.
-  void SetPagesValueFromTopSites(const history::FilteredURLList& data);
-
-  // Callback for History.
-  void OnSuggestionsURLsAvailable(
-      CancelableRequestProvider::Handle handle,
-      const history::FilteredURLList& data);
-
   // Puts the passed URL in the blacklist (so it does not show as a thumbnail).
   void BlacklistURL(const GURL& url);
 
@@ -87,18 +79,12 @@ class SuggestionsHandler : public content::WebUIMessageHandler,
 
   content::NotificationRegistrar registrar_;
 
-  // Our consumer for the history service page data.
-  CancelableRequestConsumerTSimple<PageUsageData*> cancelable_consumer_;
-
-  // Consumer for history service general request(s).
-  CancelableRequestConsumer history_consumer_;
-
   // We pre-fetch the first set of result pages.  This variable is false until
   // we get the first getSuggestions() call.
   bool got_first_suggestions_request_;
 
-  // Keep the results of the db query here.
-  scoped_ptr<base::ListValue> pages_value_;
+  // Used to combine suggestions from various sources.
+  scoped_ptr<SuggestionsCombiner> suggestions_combiner_;
 
   // Whether the user has viewed the 'suggested' pane.
   bool suggestions_viewed_;
