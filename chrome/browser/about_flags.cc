@@ -315,13 +315,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableTabGroupsContextMenu)
   },
   {
-    "preload-instant-search",
-    IDS_FLAGS_PRELOAD_INSTANT_SEARCH_NAME,
-    IDS_FLAGS_PRELOAD_INSTANT_SEARCH_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kPreloadInstantSearch)
-  },
-  {
     "static-ip-config",
     IDS_FLAGS_STATIC_IP_CONFIG_NAME,
     IDS_FLAGS_STATIC_IP_CONFIG_DESCRIPTION,

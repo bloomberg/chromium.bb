@@ -779,8 +779,6 @@ const char kIncognito[]                     = "incognito";
 // Controls the Instant field trial. Valid values are defined below. If an
 // unknown value is supplied on the command line, the field trial is disabled.
 const char kInstantFieldTrial[]             = "instant-field-trial";
-// The field trial is forced into the CONTROL group.
-const char kInstantFieldTrialControl[]      = "control";
 // The field trial is forced into the HIDDEN group.
 const char kInstantFieldTrialHidden[]       = "hidden";
 // The field trial is forced into the INSTANT group.
@@ -974,11 +972,6 @@ const char kPpapiFlashFieldTrialEnableByDefault[] = "enable-by-default";
 // Forces the PPAPI version of Flash (if it's being used) to run in the
 // renderer process rather than in a separate plugin process.
 const char kPpapiFlashInProcess[]           = "ppapi-flash-in-process";
-
-// Aggressively preloads the default search engine's Instant URL, so it's ready
-// to receive queries. Only has an effect if Instant is turned on (via "Enable
-// Instant for faster searching and browsing" in Preferences -> Basics).
-const char kPreloadInstantSearch[]          = "preload-instant-search";
 
 // Triggers prerendering of pages from suggestions in the omnibox. Only has an
 // effect when Instant is either disabled or restricted to search, and when

@@ -11,19 +11,10 @@
 
 class Profile;
 
-// This class manages the Instant field trial.
+// This class manages the Instant field trial, which is in one of these modes:
 //
-// If a user (profile) has an explicit preference for Instant, having disabled
-// or enabled it in the Preferences page, or by having a group policy override,
-// the field trial is INACTIVE for them. There is no change in behaviour. Their
-// Instant preference is respected. Incognito profiles are also INACTIVE.
-//
-// The following mutually exclusive groups each select a small random sample of
-// the remaining users. Instant is enabled with preloading of the search engine
-// homepage for all the experiment groups. It remains disabled, as is default,
-// for the CONTROL group.
-//
-// INSTANT: Queries are issued as the user types. Predicted query is inline
+// INSTANT: The default search engine is preloaded when the omnibox gets focus.
+//     Queries are issued as the user types. Predicted queries are inline
 //     autocompleted into the omnibox. Result previews are shown.
 //
 // SUGGEST: Same as INSTANT, without the previews.
@@ -34,12 +25,9 @@ class Profile;
 //     is sent only after the user presses <Enter>.
 //
 // CONTROL: Instant is disabled.
-//
-// Users not chosen into any of the above groups are INACTIVE.
 class InstantFieldTrial {
  public:
-  enum Group {
-    INACTIVE,
+  enum Mode {
     INSTANT,
     SUGGEST,
     HIDDEN,
@@ -47,32 +35,19 @@ class InstantFieldTrial {
     CONTROL
   };
 
-  // Activate the field trial. Before this call, all calls to GetGroup will
-  // return INACTIVE. *** MUST NOT BE CALLED MORE THAN ONCE. ***
+  // Activate the field trial and choose a mode at random. Without this, most
+  // calls to GetMode() will return CONTROL. See GetMode() for more details.
+  // *** MUST NOT BE CALLED MORE THAN ONCE. ***
   static void Activate();
 
-  // Return the field trial group this profile belongs to.
-  static Group GetGroup(Profile* profile);
+  // Return the field trial mode for this profile. This will usually be the
+  // mode selected by Activate(), but can sometimes be different, depending on
+  // the profile. See the implementation in the .cc file for specific details.
+  static Mode GetMode(Profile* profile);
 
-  // Check if the user is in any of the experiment groups.
-  static bool IsInstantExperiment(Profile* profile);
-
-  // Check if the user is in the SUGGEST, HIDDEN or SILENT groups.
-  static bool IsHiddenExperiment(Profile* profile);
-
-  // Check if the user is in the SILENT group.
-  static bool IsSilentExperiment(Profile* profile);
-
-  // Returns a string describing the user's group. Can be added to histogram
-  // names, to split histograms by field trial groups.
-  static std::string GetGroupName(Profile* profile);
-
-  // Returns a string denoting the user's group, for adding as a URL param.
-  static std::string GetGroupAsUrlParam(Profile* profile);
-
-  // Returns whether the Instant suggested text should be autocompleted inline
-  // into the omnibox.
-  static bool ShouldSetSuggestedText(Profile* profile);
+  // Return a string describing the mode. Can be added to histogram names, to
+  // split histograms by modes.
+  static std::string GetModeAsString(Profile* profile);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(InstantFieldTrial);

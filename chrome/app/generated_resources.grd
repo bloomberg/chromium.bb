@@ -5275,12 +5275,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NTP_SUGGESTIONS_PAGE_DESCRIPTION" desc="Description of the 'Enable suggestions page' lab.">
         Add 'Suggestions' card to the new tab page, which suggests the pages to be opened.
       </message>
-      <message name="IDS_FLAGS_PRELOAD_INSTANT_SEARCH_NAME" desc="Title for the flag to preload Instant search">
-        Preload Instant Search
-      </message>
-      <message name="IDS_FLAGS_PRELOAD_INSTANT_SEARCH_DESCRIPTION" desc="Description for the flag to preload Instant search">
-        Preload the default search engine for Instant.
-      </message>
       <message name="IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_NAME" desc="Title for the flag to turn on smooth scrolling">
         Smooth Scrolling
       </message>

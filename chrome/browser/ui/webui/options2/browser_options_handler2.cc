@@ -901,8 +901,8 @@ void BrowserOptionsHandler::ToggleAutoLaunch(const ListValue* args) {
 void BrowserOptionsHandler::GetInstantFieldTrialStatus(const ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   base::FundamentalValue enabled(
-      InstantFieldTrial::IsInstantExperiment(profile) &&
-      !InstantFieldTrial::IsHiddenExperiment(profile));
+      !profile->GetPrefs()->GetBoolean(prefs::kInstantEnabled) &&
+      InstantFieldTrial::GetMode(profile) == InstantFieldTrial::INSTANT);
   web_ui()->CallJavascriptFunction("BrowserOptions.setInstantFieldTrialStatus",
                                    enabled);
 }

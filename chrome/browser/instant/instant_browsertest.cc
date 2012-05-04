@@ -52,6 +52,8 @@ class InstantTest : public InProcessBrowserTest {
   }
 
   void EnableInstant() {
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kInstantFieldTrial, switches::kInstantFieldTrialInstant);
     InstantController::Enable(browser()->profile());
   }
 
@@ -731,8 +733,6 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_PreloadsInstant) {
 #else
 IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(PreloadsInstant)) {
 #endif
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kPreloadInstantSearch);
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   SetupInstantProvider("instant.html");

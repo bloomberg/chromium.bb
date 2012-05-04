@@ -1089,15 +1089,12 @@ const PrepopulatedEngine google = {
   "http://www.google.com/favicon.ico",
   "{google:baseURL}search?{google:RLZ}{google:acceptedSuggestion}"
       "{google:originalQueryForSuggestion}{google:searchFieldtrialParameter}"
-      "{google:instantFieldTrialGroupParameter}sourceid=chrome&"
-      "ie={inputEncoding}&q={searchTerms}",
+      "sourceid=chrome&ie={inputEncoding}&q={searchTerms}",
   "UTF-8",
   "{google:baseSuggestURL}search?{google:searchFieldtrialParameter}"
-      "{google:instantFieldTrialGroupParameter}client=chrome&hl={language}&"
-      "q={searchTerms}",
+      "client=chrome&hl={language}&q={searchTerms}",
   "{google:baseURL}webhp?{google:RLZ}sourceid=chrome-instant&"
-      "{google:instantFieldTrialGroupParameter}ie={inputEncoding}"
-      "{google:instantEnabledParameter}{searchTerms}",
+      "ie={inputEncoding}{google:instantEnabledParameter}{searchTerms}",
   SEARCH_ENGINE_GOOGLE,
   1,
 };
@@ -3140,7 +3137,7 @@ void RegisterUserPrefs(PrefService* prefs) {
 int GetDataVersion(PrefService* prefs) {
   // Increment this if you change the above data in ways that mean users with
   // existing data should get a new version.
-  const int kCurrentDataVersion = 38;
+  const int kCurrentDataVersion = 39;
   if (!prefs)
     return kCurrentDataVersion;
   // If a version number exist in the preferences file, it overrides the

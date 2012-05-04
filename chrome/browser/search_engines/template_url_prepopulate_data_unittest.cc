@@ -154,17 +154,14 @@ TEST_F(TemplateURLPrepopulateDataTest, GetEngineTypeAdvanced) {
     // Original with google:baseURL:
     "{google:baseURL}search?{google:RLZ}{google:acceptedSuggestion}"
     "{google:originalQueryForSuggestion}{google:searchFieldtrialParameter}"
-    "{google:instantFieldTrialGroupParameter}"
     "sourceid=chrome&ie={inputEncoding}&q={searchTerms}",
     // Custom with google.com:
     "http://google.com/search?{google:RLZ}{google:acceptedSuggestion}"
     "{google:originalQueryForSuggestion}{google:searchFieldtrialParameter}"
-    "{google:instantFieldTrialGroupParameter}"
     "sourceid=chrome&ie={inputEncoding}&q={searchTerms}",
     // Custom with a country TLD:
     "http://www.google.ru/search?{google:RLZ}{google:acceptedSuggestion}"
     "{google:originalQueryForSuggestion}{google:searchFieldtrialParameter}"
-    "{google:instantFieldTrialGroupParameter}"
     "sourceid=chrome&ie={inputEncoding}&q={searchTerms}"
   };
   for (size_t i = 0; i < arraysize(kGoogleURLs); ++i) {

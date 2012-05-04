@@ -47,13 +47,6 @@ class SearchTermsData {
   // UIThreadSearchTermsData.
   virtual std::string InstantEnabledParam() const;
 
-  // Returns a string indicating the Instant field trial group, suitable for
-  // adding as a query string param to suggest/search URLs, or an empty string
-  // if the field trial is not active. Checking the field trial group requires
-  // accessing the Profile, which means this can only ever be non-empty for
-  // UIThreadSearchTermsData.
-  virtual std::string InstantFieldTrialUrlParam() const;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchTermsData);
 };
@@ -63,8 +56,8 @@ class UIThreadSearchTermsData : public SearchTermsData {
  public:
   UIThreadSearchTermsData();
 
-  // Callers who need an accurate answer from InstantFieldTrialUrlParam() or
-  // InstantEnabledParam() must set the profile here before calling them.
+  // Callers who need an accurate answer from InstantEnabledParam() must set the
+  // profile here before calling them.
   void set_profile(Profile* profile) { profile_ = profile; }
 
   // Implementation of SearchTermsData.
@@ -77,10 +70,6 @@ class UIThreadSearchTermsData : public SearchTermsData {
   // This returns the empty string unless set_profile() has been called with a
   // non-NULL Profile.
   virtual std::string InstantEnabledParam() const OVERRIDE;
-
-  // This returns the empty string unless set_profile() has been called with a
-  // non-NULL Profile.
-  virtual std::string InstantFieldTrialUrlParam() const OVERRIDE;
 
   // Used by tests to override the value for the Google base URL.  Passing the
   // empty string cancels this override.

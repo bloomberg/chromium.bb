@@ -55,8 +55,6 @@ static const char kGoogleBaseSuggestURLParameterFull[] =
     "{google:baseSuggestURL}";
 static const char kGoogleInstantEnabledParameter[] =
     "google:instantEnabledParameter";
-static const char kGoogleInstantFieldTrialGroupParameter[] =
-    "google:instantFieldTrialGroupParameter";
 static const char kGoogleOriginalQueryForSuggestionParameter[] =
     "google:originalQueryForSuggestion";
 static const char kGoogleRLZParameter[] = "google:RLZ";
@@ -207,10 +205,6 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
 
       case GOOGLE_INSTANT_ENABLED:
         url.insert(i->index, search_terms_data.InstantEnabledParam());
-        break;
-
-      case GOOGLE_INSTANT_FIELD_TRIAL_GROUP:
-        url.insert(i->index, search_terms_data.InstantFieldTrialUrlParam());
         break;
 
       case GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION:
@@ -429,9 +423,6 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_BASE_SUGGEST_URL, start));
   } else if (parameter == kGoogleInstantEnabledParameter) {
     replacements->push_back(Replacement(GOOGLE_INSTANT_ENABLED, start));
-  } else if (parameter == kGoogleInstantFieldTrialGroupParameter) {
-    replacements->push_back(Replacement(GOOGLE_INSTANT_FIELD_TRIAL_GROUP,
-                                        start));
   } else if (parameter == kGoogleOriginalQueryForSuggestionParameter) {
     replacements->push_back(Replacement(GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
                                         start));

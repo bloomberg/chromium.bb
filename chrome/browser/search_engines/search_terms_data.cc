@@ -8,7 +8,6 @@
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_url_tracker.h"
-#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/instant_field_trial.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -64,10 +63,6 @@ std::string SearchTermsData::InstantEnabledParam() const {
   return std::string();
 }
 
-std::string SearchTermsData::InstantFieldTrialUrlParam() const {
-  return std::string();
-}
-
 // static
 std::string* UIThreadSearchTermsData::google_base_url_ = NULL;
 
@@ -111,15 +106,8 @@ string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
 std::string UIThreadSearchTermsData::InstantEnabledParam() const {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return (profile_ && InstantController::IsEnabled(profile_) &&
-      !InstantFieldTrial::IsHiddenExperiment(profile_)) ?
+  return InstantFieldTrial::GetMode(profile_) == InstantFieldTrial::INSTANT ?
       "&ion=1" : std::string();
-}
-
-std::string UIThreadSearchTermsData::InstantFieldTrialUrlParam() const {
-  DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return InstantFieldTrial::GetGroupAsUrlParam(profile_);
 }
 
 // static

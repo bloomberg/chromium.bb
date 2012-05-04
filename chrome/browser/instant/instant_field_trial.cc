@@ -14,10 +14,8 @@
 
 namespace {
 
-// Field trial IDs of the control and experiment groups. Though they are not
-// literally "const", they are set only once, in Activate() below. See the .h
-// file for what these groups represent.
-int g_inactive = -1;
+// IDs of the field trial groups. Though they are not literally "const", they
+// are set only once, in Activate() below.
 int g_instant = 0;
 int g_suggest = 0;
 int g_hidden  = 0;
@@ -30,21 +28,22 @@ int g_control = 0;
 void InstantFieldTrial::Activate() {
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
-          "Instant", 1000, "Inactive", 2013, 7, 1, &g_inactive));
+          "Instant", 1000, "CONTROL", 2013, 7, 1, &g_control));
 
   // Try to give the user a consistent experience, if possible.
   if (base::FieldTrialList::IsOneTimeRandomizationEnabled())
     trial->UseOneTimeRandomization();
 
-  g_instant = trial->AppendGroup("Instant",  10);  //  1%
-  g_suggest = trial->AppendGroup("Suggest",  10);  //  1%
-  g_hidden  = trial->AppendGroup("Hidden",  960);  // 96%
-  g_silent  = trial->AppendGroup("Silent",   10);  //  1%
-  g_control = trial->AppendGroup("Control",  10);  //  1%
+  // Though each group (including CONTROL) is nominally at 20%, GetMode()
+  // often returns SILENT. See below for details.
+  g_instant = trial->AppendGroup("INSTANT", 200);  // 20%
+  g_suggest = trial->AppendGroup("SUGGEST", 200);  // 20%
+  g_hidden  = trial->AppendGroup("HIDDEN",  200);  // 20%
+  g_silent  = trial->AppendGroup("SILENT",  200);  // 20%
 }
 
 // static
-InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
+InstantFieldTrial::Mode InstantFieldTrial::GetMode(Profile* profile) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kInstantFieldTrial)) {
     std::string switch_value =
@@ -57,106 +56,52 @@ InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
       return HIDDEN;
     if (switch_value == switches::kInstantFieldTrialSilent)
       return SILENT;
-    if (switch_value == switches::kInstantFieldTrialControl)
-      return CONTROL;
-    return INACTIVE;
+    return CONTROL;
   }
 
-  const int group = base::FieldTrialList::FindValue("Instant");
-  if (group == base::FieldTrial::kNotFinalized || group == g_inactive)
-    return INACTIVE;
-
-  // If Instant is already enabled explicitly, then it's not a field trial.
+  // Instant explicitly enabled in chrome://settings.
   const PrefService* prefs = profile ? profile->GetPrefs() : NULL;
   if (prefs && prefs->GetBoolean(prefs::kInstantEnabled))
-    return INACTIVE;
-
-  // CONTROL and SILENT are unconstrained.
-  if (group == g_control)
-    return CONTROL;
-  if (group == g_silent)
-    return SILENT;
-
-  // HIDDEN, SUGGEST and INSTANT need non-incognito, suggest-enabled profiles.
-  if (!prefs || profile->IsOffTheRecord() ||
-      !prefs->GetBoolean(prefs::kSearchSuggestEnabled)) {
-    return INACTIVE;
-  }
-
-  if (group == g_hidden)
-    return HIDDEN;
-
-  // SUGGEST and INSTANT require UMA opt-in.
-  if (!MetricsServiceHelper::IsMetricsReportingEnabled())
-    return INACTIVE;
-
-  if (group == g_suggest)
-    return SUGGEST;
-
-  // Disable INSTANT for group policy overrides and explicit opt-out.
-  if (prefs->IsManagedPreference(prefs::kInstantEnabled) ||
-      prefs->GetBoolean(prefs::kInstantEnabledOnce)) {
-    return INACTIVE;
-  }
-
-  if (group == g_instant)
     return INSTANT;
 
-  NOTREACHED();
-  return INACTIVE;
+  const int group = base::FieldTrialList::FindValue("Instant");
+  if (group == base::FieldTrial::kNotFinalized || group == g_control)
+    return CONTROL;
+
+  // HIDDEN, SUGGEST and INSTANT need non-incognito, suggest-enabled, UMA
+  // opted-in profiles.
+  if (prefs && !profile->IsOffTheRecord() &&
+      prefs->GetBoolean(prefs::kSearchSuggestEnabled) &&
+      MetricsServiceHelper::IsMetricsReportingEnabled()) {
+    if (group == g_hidden)
+      return HIDDEN;
+    if (group == g_suggest)
+      return SUGGEST;
+
+    // INSTANT also requires no group policy override and no explicit opt-out.
+    if (!prefs->IsManagedPreference(prefs::kInstantEnabled) &&
+        !prefs->GetBoolean(prefs::kInstantEnabledOnce)) {
+      if (group == g_instant)
+        return INSTANT;
+    }
+  }
+
+  // Default is SILENT. This will be returned for most users (for example, even
+  // if a user falls into another group, but has suggest or UMA disabled).
+  return SILENT;
 }
 
 // static
-bool InstantFieldTrial::IsInstantExperiment(Profile* profile) {
-  Group group = GetGroup(profile);
-  return group == INSTANT || group == SUGGEST || group == HIDDEN ||
-         group == SILENT;
-}
-
-// static
-bool InstantFieldTrial::IsHiddenExperiment(Profile* profile) {
-  Group group = GetGroup(profile);
-  return group == SUGGEST || group == HIDDEN || group == SILENT;
-}
-
-// static
-bool InstantFieldTrial::IsSilentExperiment(Profile* profile) {
-  Group group = GetGroup(profile);
-  return group == SILENT;
-}
-
-// static
-std::string InstantFieldTrial::GetGroupName(Profile* profile) {
-  switch (GetGroup(profile)) {
-    case INACTIVE: return std::string();
-    case INSTANT:  return "_Instant";
-    case SUGGEST:  return "_Suggest";
-    case HIDDEN:   return "_Hidden";
-    case SILENT:   return "_Silent";
-    case CONTROL:  return "_Control";
+std::string InstantFieldTrial::GetModeAsString(Profile* profile) {
+  const Mode mode = GetMode(profile);
+  switch (mode) {
+    case INSTANT: return "_Instant";
+    case SUGGEST: return "_Suggest";
+    case HIDDEN:  return "_Hidden";
+    case SILENT:  return "_Silent";
+    case CONTROL: return std::string();
   }
 
   NOTREACHED();
   return std::string();
-}
-
-// static
-std::string InstantFieldTrial::GetGroupAsUrlParam(Profile* profile) {
-  switch (GetGroup(profile)) {
-    case INACTIVE: return std::string();
-    case INSTANT:  return "ix=i9&";
-    case SUGGEST:  return "ix=t9&";
-    case HIDDEN:   return "ix=h9&";
-    case SILENT:   return "ix=s9&";
-    case CONTROL:  return "ix=c9&";
-  }
-
-  NOTREACHED();
-  return std::string();
-}
-
-// static
-bool InstantFieldTrial::ShouldSetSuggestedText(Profile* profile) {
-  Group group = GetGroup(profile);
-  return group != HIDDEN && group != SILENT;
 }
