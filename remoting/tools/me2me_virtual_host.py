@@ -282,6 +282,7 @@ class Desktop:
     logging.info("Starting Xvfb on display :%d" % display);
     screen_option = "%dx%dx24" % (self.width, self.height)
     self.x_proc = subprocess.Popen(["Xvfb", ":%d" % display,
+                                    "-noreset",
                                     "-auth", X_AUTH_FILE,
                                     "-nolisten", "tcp",
                                     "-screen", "0", screen_option
@@ -317,6 +318,18 @@ class Desktop:
       raise Exception("Could not connect to Xvfb.")
     else:
       logging.info("Xvfb is active.")
+
+    # The remoting host expects the server to use "evdev" keycodes, but Xvfb
+    # starts configured to use the "base" ruleset, resulting in XKB configuring
+    # for "xfree86" keycodes, and screwing up some keys. See crbug.com/119013.
+    # Reconfigure the X server to use "evdev" keymap rules.  The X server must
+    # be started with -noreset otherwise it'll reset as soon as the command
+    # completes, since there are no other X clients running yet.
+    proc = subprocess.Popen("setxkbmap -rules evdev", env=self.child_env,
+                            shell=True)
+    pid, retcode = os.waitpid(proc.pid, 0)
+    if retcode != 0:
+      logging.error("Failed to set XKB to 'evdev'")
 
   def launch_x_session(self):
     # Start desktop session
