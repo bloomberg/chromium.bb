@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
+#include "base/threading/worker_pool.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/default_server_bound_cert_store.h"
 #include "net/base/host_resolver.h"
@@ -50,7 +51,8 @@ void TestShellRequestContext::Init(
     bool no_proxy) {
   storage_.set_cookie_store(new net::CookieMonster(NULL, NULL));
   storage_.set_server_bound_cert_service(new net::ServerBoundCertService(
-      new net::DefaultServerBoundCertStore(NULL)));
+      new net::DefaultServerBoundCertStore(NULL),
+      base::WorkerPool::GetTaskRunner(true)));
 
   // hard-code A-L and A-C for test shells
   set_accept_language("en-us,en");

@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/threading/worker_pool.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
@@ -332,7 +333,8 @@ void ProfileImplIOData::LazyInitializeInternal(
         NULL, profile_params->cookie_monster_delegate);
     // Don't use existing server-bound certs and use an in-memory store.
     server_bound_cert_service = new net::ServerBoundCertService(
-        new net::DefaultServerBoundCertStore(NULL));
+        new net::DefaultServerBoundCertStore(NULL),
+        base::WorkerPool::GetTaskRunner(true));
   }
 
   // setup cookie store
@@ -375,7 +377,8 @@ void ProfileImplIOData::LazyInitializeInternal(
     server_bound_cert_db->SetClearLocalStateOnExit(
         profile_params->clear_local_state_on_exit);
     server_bound_cert_service = new net::ServerBoundCertService(
-        new net::DefaultServerBoundCertStore(server_bound_cert_db.get()));
+        new net::DefaultServerBoundCertStore(server_bound_cert_db.get()),
+        base::WorkerPool::GetTaskRunner(true));
   }
 
   set_server_bound_cert_service(server_bound_cert_service);

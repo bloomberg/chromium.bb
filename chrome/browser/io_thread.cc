@@ -17,6 +17,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
+#include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
@@ -418,7 +419,8 @@ void IOThread::Init() {
   // In-memory server bound cert store.
   globals_->system_server_bound_cert_service.reset(
       new net::ServerBoundCertService(
-          new net::DefaultServerBoundCertStore(NULL)));
+          new net::DefaultServerBoundCertStore(NULL),
+          base::WorkerPool::GetTaskRunner(true)));
   net::HttpNetworkSession::Params session_params;
   session_params.host_resolver = globals_->host_resolver.get();
   session_params.cert_verifier = globals_->cert_verifier.get();

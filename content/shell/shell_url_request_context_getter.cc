@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/string_split.h"
+#include "base/threading/worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/shell/shell_network_delegate.h"
 #include "net/base/cert_verifier.h"
@@ -55,7 +56,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     storage_.reset(new net::URLRequestContextStorage(url_request_context_));
     storage_->set_cookie_store(new net::CookieMonster(NULL, NULL));
     storage_->set_server_bound_cert_service(new net::ServerBoundCertService(
-        new net::DefaultServerBoundCertStore(NULL)));
+        new net::DefaultServerBoundCertStore(NULL),
+        base::WorkerPool::GetTaskRunner(true)));
     url_request_context_->set_accept_language("en-us,en");
     url_request_context_->set_accept_charset("iso-8859-1,*,utf-8");
 

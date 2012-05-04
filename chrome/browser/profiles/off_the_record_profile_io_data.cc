@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
@@ -194,7 +195,8 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   // For incognito, we use a non-persistent server bound cert store.
   net::ServerBoundCertService* server_bound_cert_service =
       new net::ServerBoundCertService(
-          new net::DefaultServerBoundCertStore(NULL));
+          new net::DefaultServerBoundCertStore(NULL),
+          base::WorkerPool::GetTaskRunner(true));
   set_server_bound_cert_service(server_bound_cert_service);
   main_context->set_server_bound_cert_service(server_bound_cert_service);
 
