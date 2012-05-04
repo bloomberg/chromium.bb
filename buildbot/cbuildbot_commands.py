@@ -1065,17 +1065,43 @@ def CreateTestRoot(build_root):
   return os.path.sep + os.path.relpath(test_root, start=chroot)
 
 
-def GenerateNPlus1Payloads(build_root, build_config, target_image_path,
-                           archive_dir, board):
-  """Generates nplus1 payloads for hw testing."""
+def GenerateFullPayload(build_root, target_image_path, archive_dir):
+  """Generates the full and stateful payloads for hw testing.
+
+  Args:
+    build_root: The root of the chromium os checkout.
+    target_image_path: The path to the image to generate payloads to.
+    archive_dir: Where to store payloads we generated.
+  """
   crostestutils = os.path.join(build_root, 'src', 'platform', 'crostestutils')
   payload_generator = 'generate_test_payloads/cros_generate_test_payloads.py'
   cmd = [os.path.join(crostestutils, payload_generator),
-         '--board=%s' % board,
+         '--target=%s' % target_image_path,
+         '--full_payload',
+         '--nplus1_archive_dir=%s' % archive_dir,
+        ]
+  cros_lib.RunCommandCaptureOutput(cmd)
+
+
+def GenerateNPlus1Payloads(build_root, build_config, target_image_path,
+                           archive_dir):
+  """Generates nplus1 payloads for hw testing.
+
+  We generate the nplus1 payloads for testing. These include the full and
+  stateful payloads. In addition we generate the n-1->n and n->n delta payloads.
+
+  Args:
+    build_root: The root of the chromium os checkout.
+    build_config: The name of the builder.
+    target_image_path: The path to the image to generate payloads to.
+    archive_dir: Where to store payloads we generated.
+  """
+  crostestutils = os.path.join(build_root, 'src', 'platform', 'crostestutils')
+  payload_generator = 'generate_test_payloads/cros_generate_test_payloads.py'
+  cmd = [os.path.join(crostestutils, payload_generator),
          '--target=%s' % target_image_path,
          '--base_latest_from_config=%s' % build_config,
          '--nplus1',
-         '--novm',
          '--nplus1_archive_dir=%s' % archive_dir,
         ]
   cros_lib.RunCommandCaptureOutput(cmd)

@@ -1218,11 +1218,18 @@ class ArchiveStage(BoardSpecificBuilderStage):
       """Archives update payloads when they are ready."""
       if self._build_config['upload_hw_test_artifacts']:
         update_payloads_dir = tempfile.mkdtemp(prefix='cbuildbot')
-        commands.GenerateNPlus1Payloads(
-            buildroot, self._bot_id,
-            os.path.join(self.GetImageDirSymlink(),
-                         'chromiumos_test_image.bin'),
-            update_payloads_dir, board)
+        target_image_path = os.path.join(self.GetImageDirSymlink(),
+                                         'chromiumos_test_image.bin')
+        # For non release builds, we are only interested in generating payloads
+        # for the purpose of imaging machines. This means we shouldn't generate
+        # delta payloads for n-1->n testing.
+        if self._build_config['build_type'] != constants.CANARY_TYPE:
+          commands.GenerateFullPayload(
+              buildroot, target_image_path, update_payloads_dir)
+        else:
+          commands.GenerateNPlus1Payloads(
+              buildroot, self._bot_id, target_image_path, update_payloads_dir)
+
         for payload in os.listdir(update_payloads_dir):
           full_path = os.path.join(update_payloads_dir, payload)
           hw_test_upload_queue.put([commands.ArchiveFile(full_path,
