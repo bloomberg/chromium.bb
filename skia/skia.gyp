@@ -603,7 +603,6 @@
         '../third_party/skia/include/core/SkShader.h',
         '../third_party/skia/include/core/SkStream.h',
         '../third_party/skia/include/core/SkString.h',
-        '../third_party/skia/include/core/SkStroke.h',
         '../third_party/skia/include/core/SkTArray.h',
         '../third_party/skia/include/core/SkTDArray.h',
         '../third_party/skia/include/core/SkTDStack.h',
