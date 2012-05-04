@@ -253,19 +253,32 @@ bool PluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
 
 void PluginPlaceholder::ReplacePlugin(WebPlugin* new_plugin) {
   CHECK(plugin_);
-  WebPluginContainer* container = plugin_->container();
-  if (new_plugin && new_plugin->initialize(container)) {
-    plugin_->RestoreTitleText();
-    container->setPlugin(new_plugin);
-    container->invalidate();
-    container->reportGeometry();
-    plugin_->ReplayReceivedData(new_plugin);
-    plugin_->destroy();
-  } else {
+  if (!new_plugin) {
     MissingPluginReporter::GetInstance()->ReportPluginMissing(
         plugin_params_.mimeType.utf8(),
         plugin_params_.url);
+    return;
   }
+
+  // Set the new plug-in on the container before initializing it.
+  WebPluginContainer* container = plugin_->container();
+  container->setPlugin(new_plugin);
+  if (!new_plugin->initialize(container)) {
+    // We couldn't initialize the new plug-in. Restore the old one and abort.
+    container->setPlugin(plugin_);
+    return;
+  }
+
+  // During initialization, the new plug-in might have replaced itself in turn
+  // with another plug-in. Make sure not to use the passed in |new_plugin| after
+  // this point.
+  new_plugin = container->plugin();
+
+  plugin_->RestoreTitleText();
+  container->invalidate();
+  container->reportGeometry();
+  plugin_->ReplayReceivedData(new_plugin);
+  plugin_->destroy();
 }
 
 void PluginPlaceholder::HidePlugin() {
