@@ -487,11 +487,6 @@ chrome.fileBrowserPrivate = {
       PASTE_FILESYSTEM_ERROR: 'Paste failed, filesystem error: $1',
       PASTE_UNEXPECTED_ERROR: 'Paste failed, unexpected error: $1',
 
-      DEVICE_TYPE_FLASH: 'Flash Device',
-      DEVICE_TYPE_HDD: 'Hard Disk Device',
-      DEVICE_TYPE_OPTICAL: 'Optical Device',
-      DEVICE_TYPE_UNDEFINED: 'Unknown Device',
-
       CANCEL_LABEL: 'Cancel',
       OPEN_LABEL: 'Open',
       SAVE_LABEL: 'Save',

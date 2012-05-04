@@ -10651,19 +10651,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Paste failed, unexpected error: $1
       </message>
 
-      <message name="IDS_FILE_BROWSER_DEVICE_TYPE_FLASH" desc="Indication of mounted device type.">
-        Flash Device
-      </message>
-      <message name="IDS_FILE_BROWSER_DEVICE_TYPE_HDD" desc="Indication of mounted device type.">
-        Hard Disk Device
-      </message>
-      <message name="IDS_FILE_BROWSER_DEVICE_TYPE_OPTICAL" desc="Indication of mounted device type.">
-        Optical Device
-      </message>
-      <message name="IDS_FILE_BROWSER_DEVICE_TYPE_UNDEFINED" desc="Indication of mounted device type.">
-        Unknown Device
-      </message>
-
       <message name="IDS_FILE_BROWSER_CANCEL_LABEL" desc="Cancel label.">
         Cancel
       </message>

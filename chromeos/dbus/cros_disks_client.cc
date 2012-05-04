@@ -57,6 +57,8 @@ DeviceType DeviceMediaTypeToDeviceType(uint32 media_type_uint32) {
       return DEVICE_TYPE_OPTICAL_DISC;
     case(cros_disks::DEVICE_MEDIA_MOBILE):
       return DEVICE_TYPE_MOBILE;
+    case(cros_disks::DEVICE_MEDIA_DVD):
+      return DEVICE_TYPE_DVD;
     default:
       return DEVICE_TYPE_UNKNOWN;
   }
@@ -463,10 +465,6 @@ DiskInfo::~DiskInfo() {
 //   }
 //   dict entry {
 //     string "DeviceIsOnBootDevice"
-//     variant       bool false
-//   }
-//   dict entry {
-//     string "DeviceIsOpticalDisc"
 //     variant       bool false
 //   }
 //   dict entry {

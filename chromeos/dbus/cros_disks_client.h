@@ -35,8 +35,9 @@ enum DeviceType {
   DEVICE_TYPE_UNKNOWN,
   DEVICE_TYPE_USB,  // USB stick.
   DEVICE_TYPE_SD,  // SD card.
-  DEVICE_TYPE_OPTICAL_DISC,  // e.g. DVD.
-  DEVICE_TYPE_MOBILE  // Storage on a mobile device (e.g. Android).
+  DEVICE_TYPE_OPTICAL_DISC,  // e.g. Optical disc excluding DVD.
+  DEVICE_TYPE_MOBILE,  // Storage on a mobile device (e.g. Android).
+  DEVICE_TYPE_DVD,  // DVD.
 };
 
 // Mount error code used by cros-disks.
