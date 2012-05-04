@@ -159,14 +159,15 @@ class PluginDataRemoverImpl::Context
   // PpapiPluginProcessHost::BrokerClient implementation.
   virtual void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
                                    int* renderer_id) OVERRIDE {
+    *renderer_handle = base::kNullProcessHandle;
     *renderer_id = 0;
   }
 
   virtual void OnPpapiChannelOpened(
-      base::ProcessHandle plugin_process_handle,
+      base::ProcessHandle /* plugin_process_handle */,
       const IPC::ChannelHandle& channel_handle,
       int /* child_id */) OVERRIDE {
-    if (plugin_process_handle != base::kNullProcessHandle)
+    if (!channel_handle.name.empty())
       ConnectToChannel(channel_handle, true);
 
     // Balancing the AddRef call.
