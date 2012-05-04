@@ -502,6 +502,7 @@
       'target_name': 'metrics_proto',
       'type': 'static_library',
       'sources': [
+        'common/metrics/proto/chrome_experiments.proto',
         'common/metrics/proto/chrome_user_metrics_extension.proto',
         'common/metrics/proto/histogram_event.proto',
         'common/metrics/proto/omnibox_event.proto',
