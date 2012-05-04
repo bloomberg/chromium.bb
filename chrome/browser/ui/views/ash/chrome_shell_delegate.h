@@ -42,7 +42,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual void OpenFileManager() OVERRIDE;
   virtual void OpenCrosh() OVERRIDE;
   virtual void OpenMobileSetup() OVERRIDE;
-  virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
   virtual void ToggleSpokenFeedback() OVERRIDE;
   virtual ash::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual void StartPartialScreenshot(

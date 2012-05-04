@@ -17,7 +17,6 @@
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/views_delegate.h"
 
 namespace views {
 
@@ -47,7 +46,11 @@ content::WebContents* WebView::GetWebContents() {
 void WebView::CreateWebContentsWithSiteInstance(
     content::SiteInstance* site_instance) {
   if (!web_contents_) {
-    wc_owner_.reset(CreateWebContents(browser_context_, site_instance));
+    wc_owner_.reset(content::WebContents::Create(browser_context_,
+                                                 site_instance,
+                                                 MSG_ROUTING_NONE,
+                                                 NULL,
+                                                 NULL));
     web_contents_ = wc_owner_.get();
     web_contents_->SetDelegate(this);
     AttachWebContents();
@@ -223,26 +226,6 @@ void WebView::RenderViewHostChanged(content::RenderViewHost* old_host,
 void WebView::WebContentsDestroyed(content::WebContents* web_contents) {
   DCHECK(web_contents == web_contents_);
   SetWebContents(NULL);
-}
-
-content::WebContents* WebView::CreateWebContents(
-      content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) {
-  content::WebContents* contents = NULL;
-  if (ViewsDelegate::views_delegate) {
-    contents = ViewsDelegate::views_delegate->CreateWebContents(
-        browser_context, site_instance);
-  }
-
-  if (!contents) {
-    return content::WebContents::Create(browser_context,
-                                        site_instance,
-                                        MSG_ROUTING_NONE,
-                                        NULL,
-                                        NULL);
-  }
-
-  return contents;
 }
 
 }  // namespace views

@@ -71,9 +71,6 @@ class ASH_EXPORT ShellDelegate {
   // Invoked when the user needs to set up mobile networking.
   virtual void OpenMobileSetup() = 0;
 
-  // Get the current browser context. This will get us the current profile.
-  virtual content::BrowserContext* GetCurrentBrowserContext() = 0;
-
   // Invoked when the user presses a shortcut to toggle spoken feedback
   // for accessibility.
   virtual void ToggleSpokenFeedback() = 0;

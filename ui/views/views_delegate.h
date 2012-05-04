@@ -17,12 +17,6 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/views/views_export.h"
 
-namespace content {
-class WebContents;
-class BrowserContext;
-class SiteInstance;
-}
-
 namespace gfx {
 class Rect;
 }
@@ -114,11 +108,6 @@ class VIEWS_EXPORT ViewsDelegate {
   virtual NativeWidgetHelperAura* CreateNativeWidgetHelper(
       NativeWidgetAura* native_widget) = 0;
 #endif
-
-  // Creates a web contents. This will return NULL unless overriden.
-  virtual content::WebContents* CreateWebContents(
-      content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) = 0;
 };
 
 }  // namespace views

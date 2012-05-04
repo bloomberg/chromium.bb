@@ -102,13 +102,6 @@ class VIEWS_EXPORT WebView : public View,
                              content::RenderViewHost* new_host);
   void WebContentsDestroyed(content::WebContents* web_contents);
 
-  // Create a regular or test web contents (based on whether we're running
-  // in a unit test or not).
-  content::WebContents* CreateWebContents(
-      content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance);
-
-
   NativeViewHost* wcv_holder_;
   scoped_ptr<content::WebContents> wc_owner_;
   content::WebContents* web_contents_;

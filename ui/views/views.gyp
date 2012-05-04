@@ -451,32 +451,6 @@
       ],
     }, # target_name: views
     {
-      'target_name': 'test_support_views',
-      'type': 'static_library',
-      'dependencies': [
-        '../../base/base.gyp:base',
-        '../../content/content.gyp:test_support_content',
-        '../../ipc/ipc.gyp:test_support_ipc',
-        '../../net/net.gyp:net_test_support',
-        '../../skia/skia.gyp:skia',
-        '../../testing/gtest.gyp:gtest',
-        '../ui.gyp:ui',
-        'views',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'test/test_tooltip_client.h',
-        'test/test_views_delegate.cc',
-        'test/test_views_delegate.h',
-        'test/views_test_base.cc',
-        'test/views_test_base.h',
-        'test/webview_test_helper.cc',
-        'test/webview_test_helper.h',
-      ],
-    },  # target_name: test_support_views
-    {
       'target_name': 'views_unittests',
       'type': 'executable',
       'dependencies': [
@@ -499,7 +473,6 @@
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
         '../ui.gyp:ui_resources_standard',
-        'test_support_views',
         'views',
       ],
       'include_dirs': [
@@ -531,6 +504,11 @@
         'focus/focus_traversal_unittest.cc',
         'layout/box_layout_unittest.cc',
         'layout/grid_layout_unittest.cc',
+        'test/test_tooltip_client.h',
+        'test/test_views_delegate.cc',
+        'test/test_views_delegate.h',
+        'test/views_test_base.cc',
+        'test/views_test_base.h',
         'view_model_unittest.cc',
         'view_model_utils_unittest.cc',
         'view_unittest.cc',
@@ -677,7 +655,6 @@
         '../../chrome/chrome_resources.gyp:packed_resources',
         '../../content/content.gyp:content_shell_lib',
         '../../content/content.gyp:content',
-        '../../content/content.gyp:test_support_content',
         '../../skia/skia.gyp:skia',
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',

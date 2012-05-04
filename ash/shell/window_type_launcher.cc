@@ -4,7 +4,6 @@
 
 #include "ash/shell/window_type_launcher.h"
 
-#include "ash/screensaver/screensaver_view.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
@@ -12,10 +11,7 @@
 #include "ash/shell/panel_window.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/wm/shadow_types.h"
-#include "base/bind.h"
-#include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
@@ -220,10 +216,7 @@ WindowTypeLauncher::WindowTypeLauncher()
               this, ASCIIToUTF16("Open Views Examples Window")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(show_hide_window_button_(
           new views::NativeTextButton(
-              this, ASCIIToUTF16("Show/Hide a Window")))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(show_screensaver_(
-          new views::NativeTextButton(
-              this, ASCIIToUTF16("Show the Screensaver [for 5 seconds]")))) {
+              this, ASCIIToUTF16("Show/Hide a Window")))) {
   views::GridLayout* layout = new views::GridLayout(this);
   layout->SetInsets(5, 5, 5, 5);
   SetLayoutManager(layout);
@@ -246,7 +239,6 @@ WindowTypeLauncher::WindowTypeLauncher()
   AddViewToLayout(layout, transient_button_);
   AddViewToLayout(layout, examples_button_);
   AddViewToLayout(layout, show_hide_window_button_);
-  AddViewToLayout(layout, show_screensaver_);
 #if !defined(OS_MACOSX)
   set_context_menu_controller(this);
 #endif
@@ -313,13 +305,6 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
     NonModalTransient::OpenNonModalTransient(GetWidget()->GetNativeView());
   } else if (sender == show_hide_window_button_) {
     NonModalTransient::ToggleNonModalTransient(GetWidget()->GetNativeView());
-  } else if (sender == show_screensaver_) {
-    ash::ShowScreensaver(GURL("http://www.google.com"));
-    content::BrowserThread::PostDelayedTask(content::BrowserThread::UI,
-                                            FROM_HERE,
-                                            base::Bind(&ash::CloseScreensaver),
-                                            base::TimeDelta::FromSeconds(5));
-
   }
 #if !defined(OS_MACOSX)
   else if (sender == examples_button_) {

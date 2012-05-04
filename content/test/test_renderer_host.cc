@@ -12,7 +12,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/test/mock_render_process_host.h"
 #include "content/test/test_browser_context.h"
-#include "content/test/test_render_view_host_factory.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
@@ -25,6 +24,68 @@
 #endif
 
 namespace content {
+
+// Manages creation of the RenderViewHosts using our special subclass. This
+// automatically registers itself when it goes in scope, and unregisters itself
+// when it goes out of scope. Since you can't have more than one factory
+// registered at a time, you can only have one of these objects at a time.
+//
+// This is an implementation detail of this file and used only via
+// RenderViewHostTestEnabler.
+class TestRenderViewHostFactory : public RenderViewHostFactory {
+ public:
+  explicit TestRenderViewHostFactory(
+      content::RenderProcessHostFactory* rph_factory);
+  virtual ~TestRenderViewHostFactory();
+
+  virtual void set_render_process_host_factory(
+      content::RenderProcessHostFactory* rph_factory);
+  virtual content::RenderViewHost* CreateRenderViewHost(
+      content::SiteInstance* instance,
+      content::RenderViewHostDelegate* delegate,
+      int routing_id,
+      bool swapped_out,
+      content::SessionStorageNamespace* session_storage) OVERRIDE;
+
+ private:
+  // This is a bit of a hack. With the current design of the site instances /
+  // browsing instances, it's difficult to pass a RenderProcessHostFactory
+  // around properly.
+  //
+  // Instead, we set it right before we create a new RenderViewHost, which
+  // happens before the RenderProcessHost is created. This way, the instance
+  // has the correct factory and creates our special RenderProcessHosts.
+  content::RenderProcessHostFactory* render_process_host_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestRenderViewHostFactory);
+};
+
+TestRenderViewHostFactory::TestRenderViewHostFactory(
+    content::RenderProcessHostFactory* rph_factory)
+    : render_process_host_factory_(rph_factory) {
+  RenderViewHostFactory::RegisterFactory(this);
+}
+
+TestRenderViewHostFactory::~TestRenderViewHostFactory() {
+  RenderViewHostFactory::UnregisterFactory();
+}
+
+void TestRenderViewHostFactory::set_render_process_host_factory(
+    content::RenderProcessHostFactory* rph_factory) {
+  render_process_host_factory_ = rph_factory;
+}
+
+content::RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
+    SiteInstance* instance,
+    RenderViewHostDelegate* delegate,
+    int routing_id,
+    bool swapped_out,
+    SessionStorageNamespace* session_storage) {
+  // See declaration of render_process_host_factory_ below.
+  static_cast<SiteInstanceImpl*>(instance)->
+      set_render_process_host_factory(render_process_host_factory_);
+  return new TestRenderViewHost(instance, delegate, routing_id, swapped_out);
+}
 
 // static
 RenderViewHostTester* RenderViewHostTester::For(RenderViewHost* host) {

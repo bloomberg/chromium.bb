@@ -51,10 +51,6 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
       views::NativeWidgetAura* native_widget) OVERRIDE;
 #endif
 
-  virtual content::WebContents* CreateWebContents(
-      content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) OVERRIDE;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeViewsDelegate);
 };
