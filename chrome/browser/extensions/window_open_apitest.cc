@@ -103,15 +103,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupLarge) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("window_open").AppendASCII("popup_large")));
 
-#if defined(OS_CHROMEOS)
-  // On ChromeOS this should open a new tab.
-  const int num_tabs = 1;
-  const int num_popups = 0;
-#else
   // On other systems this should open a new popup window.
   const int num_tabs = 0;
   const int num_popups = 1;
-#endif
   WaitForTabsAndPopups(browser(), num_tabs, num_popups, 0);
 }
 

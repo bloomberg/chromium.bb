@@ -57,44 +57,4 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
             incognito_browser->GetSelectedWebContents()->GetURL());
 }
 
-// This test verifies that navigating to a large window with
-// WindowOpenDisposition = NEW_POPUP from a normal Browser results in a new tab.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_LargePopup) {
-  browser::NavigateParams p(MakeNavigateParams());
-  p.disposition = NEW_POPUP;
-  p.window_bounds = gfx::Rect(0, 0, 10000, 10000);
-  ui_test_utils::NavigateToURL(&p);
-
-  // NavigateToURL() should have opened a new tab.
-  EXPECT_EQ(browser(), p.browser);
-
-  // We should have one window with two tabs.
-  EXPECT_EQ(1u, BrowserList::size());
-  EXPECT_EQ(2, browser()->tab_count());
-}
-
-// This test verifies that navigating to a large window with
-// WindowOpenDisposition = NEW_POPUP from a popup window results in a new tab
-// in the parent browser.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_LargePopupFromPopup) {
-  // Open a popup.
-  browser::NavigateParams p1(MakeNavigateParams());
-  p1.disposition = NEW_POPUP;
-  p1.window_bounds = gfx::Rect(0, 0, 200, 200);
-  ui_test_utils::NavigateToURL(&p1);
-
-  // Open a large popup from the popup.
-  browser::NavigateParams p2(MakeNavigateParams(p1.browser));
-  p2.disposition = NEW_POPUP;
-  p2.window_bounds = gfx::Rect(0, 0, 10000, 10000);
-  ui_test_utils::NavigateToURL(&p2);
-
-  // NavigateToURL() should have opened a new tab in the primary browser.
-  EXPECT_EQ(browser(), p2.browser);
-
-  // We should have two windows. browser() should have two tabs.
-  EXPECT_EQ(2u, BrowserList::size());
-  EXPECT_EQ(2, browser()->tab_count());
-}
-
 }  // namespace

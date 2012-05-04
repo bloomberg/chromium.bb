@@ -1304,14 +1304,13 @@ gfx::Rect BrowserView::GetInstantBounds() {
 
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
+#if defined(OS_WIN)
 #if defined(USE_AURA)
-  gfx::Size window_size = gfx::Screen::GetMonitorNearestWindow(
-      GetWidget()->GetNativeView()).size();
-  return browser::DispositionForPopupBounds(
-      bounds, window_size.width(), window_size.height());
-#elif defined(OS_WIN)
+  return NEW_POPUP;
+#else
   // If we are in windows metro-mode, we can't allow popup windows.
   return (base::win::GetMetroModule() == NULL) ? NEW_POPUP : NEW_BACKGROUND_TAB;
+#endif
 #else
   return NEW_POPUP;
 #endif

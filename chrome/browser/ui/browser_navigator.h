@@ -201,13 +201,6 @@ int GetIndexOfSingletonTab(NavigateParams* params);
 // Returns true if the url is allowed to open in incognito window.
 bool IsURLAllowedInIncognito(const GURL& url);
 
-#if defined(OS_CHROMEOS) || defined(USE_AURA)
-// Returns NEW_FOREGROUND_TAB if popup_bounds exceeds a specified percentage
-// of the window size, otherwise returns NEW_POPUP.
-WindowOpenDisposition DispositionForPopupBounds(
-    const gfx::Rect& popup_bounds, int window_width, int window_height);
-#endif
-
 }  // namespace browser
 
 #endif  // CHROME_BROWSER_UI_BROWSER_NAVIGATOR_H_

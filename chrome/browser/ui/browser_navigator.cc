@@ -427,7 +427,7 @@ void Navigate(NavigateParams* params) {
   if (!AdjustNavigateParamsForURL(params))
     return;
 
-  // Adjust disposition based on size of popup window.
+  // The browser window may want to adjust the disposition.
   if (params->disposition == NEW_POPUP &&
       (source_browser && source_browser->window())) {
     params->disposition =
@@ -684,27 +684,5 @@ bool IsURLAllowedInIncognito(const GURL& url) {
        url.host() == chrome::kChromeUISyncPromoHost ||
        url.host() == chrome::kChromeUIUberHost));
 }
-
-#if defined(OS_CHROMEOS) || defined(USE_AURA)
-// On Chrome desktop platforms (Aura, ChromeOS), if a popup window is larger
-// than this fraction of the screen, create a foreground tab instead.
-const float kPopupMaxWidthFactor = 0.5f;
-const float kPopupMaxHeightFactor = 0.6f;
-
-WindowOpenDisposition DispositionForPopupBounds(
-    const gfx::Rect& popup_bounds, int window_width, int window_height) {
-  // Check against scaled window bounds. Also check for width or height == 0,
-  // which would indicate a tab sized popup window.
-  int max_width = window_width * kPopupMaxWidthFactor;
-  int max_height = window_height * kPopupMaxHeightFactor;
-  if (popup_bounds.width() > max_width ||
-      popup_bounds.height() > max_height ||
-      popup_bounds.width() == 0 ||
-      popup_bounds.height() == 0) {
-    return NEW_FOREGROUND_TAB;
-  }
-  return NEW_POPUP;
-}
-#endif
 
 }  // namespace browser
