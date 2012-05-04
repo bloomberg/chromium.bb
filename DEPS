@@ -43,7 +43,7 @@ vars = {
 
   "libjingle_revision": "136",
   "libphonenumber_revision": "425",
-  "libvpx_revision": "125647",
+  "libvpx_revision": "134182",
   "lss_revision": "9",
 
   # These two FFmpeg variables must be updated together.  One is used for SVN
@@ -281,7 +281,7 @@ deps = {
     "/trunk/deps/third_party/yasm/patched-yasm@134927",
 
   "src/third_party/libjpeg_turbo":
-    "/trunk/deps/third_party/libjpeg_turbo@126090",
+    "/trunk/deps/third_party/libjpeg_turbo@134206",
 
   "src/third_party/flac":
     "/trunk/deps/third_party/flac@120197",
