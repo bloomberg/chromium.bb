@@ -60,6 +60,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
   ASSERT_TRUE(listener1.WaitUntilSatisfied());
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
+                       SelfUninstall) {
+  ExtensionTestMessageListener listener1("success", false);
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("management/self_uninstall_helper")));
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("management/self_uninstall")));
+  ASSERT_TRUE(listener1.WaitUntilSatisfied());
+}
+
 class ExtensionManagementApiEscalationTest : public ExtensionBrowserTest {
  protected:
   // The id of the permissions escalation test extension we use.

@@ -242,6 +242,10 @@ void ExtensionFunctionDispatcher::Dispatch(
     LogFailure(extension, params.name, kQuotaExceeded);
   }
 
+  // Check if extension was uninstalled by management.uninstall.
+  if (!service->extensions()->GetByID(params.extension_id))
+    return;
+
   // We only adjust the keepalive count for UIThreadExtensionFunction for
   // now, largely for simplicity's sake. This is OK because currently, only
   // the webRequest API uses IOThreadExtensionFunction, and that API is not
