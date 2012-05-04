@@ -143,7 +143,7 @@ def GetCurrentAndPreviousResults(debug, test_group_file_location,
           test_group_file_location)
       parent_location_list = (
           layouttests.LayoutTests.GetParentDirectoryList(filter_names))
-      recursion = False
+      recursion = True
     else:
       # When test group CSV file is not specified, test group name
       # (e.g., 'media') is used for getting layout tests.

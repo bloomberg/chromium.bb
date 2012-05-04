@@ -172,7 +172,7 @@ class LayoutTests(object):
           file_name = file_name[0].repos_path.encode(default_encoding)
           # Remove the word '/truck/LayoutTests'.
           file_name = file_name.replace('/trunk/LayoutTests/', '')
-          if file_name.endswith('.html') or file_name.endswith('.svg'):
+          if file_name.endswith('.html'):
             name_map[file_name] = True
     return name_map
 
