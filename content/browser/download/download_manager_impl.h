@@ -57,14 +57,8 @@ class CONTENT_EXPORT DownloadManagerImpl
                                      base::Time remove_end) OVERRIDE;
   virtual int RemoveDownloads(base::Time remove_begin) OVERRIDE;
   virtual int RemoveAllDownloads() OVERRIDE;
-  virtual void DownloadUrl(const GURL& url,
-                           const GURL& referrer,
-                           const std::string& referrer_encoding,
-                           bool prefer_cache,
-                           int64 post_id,
-                           const content::DownloadSaveInfo& save_info,
-                           content::WebContents* web_contents,
-                           const OnStartedCallback& callback) OVERRIDE;
+  virtual void DownloadUrl(
+      scoped_ptr<content::DownloadUrlParameters> params) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual void OnPersistentStoreQueryComplete(

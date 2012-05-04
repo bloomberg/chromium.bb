@@ -62,6 +62,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_save_info.h"
+#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -86,8 +87,14 @@
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #endif
 
+using WebKit::WebContextMenuData;
+using WebKit::WebMediaPlayerAction;
+using WebKit::WebPluginAction;
+using WebKit::WebString;
+using WebKit::WebURL;
 using content::ChildProcessSecurityPolicy;
 using content::DownloadManager;
+using content::DownloadUrlParameters;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
@@ -95,11 +102,6 @@ using content::RenderViewHost;
 using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;
-using WebKit::WebContextMenuData;
-using WebKit::WebMediaPlayerAction;
-using WebKit::WebPluginAction;
-using WebKit::WebURL;
-using WebKit::WebString;
 
 namespace {
 
@@ -1517,14 +1519,12 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       save_info.prompt_for_save_location = true;
       DownloadManager* dlm =
           DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
-      dlm->DownloadUrl(url,
-                       referrer,
-                       params_.frame_charset,
-                       false,  // Don't prefer_cache
-                       -1,  // No POST id
-                       save_info,
-                       source_web_contents_,
-                       DownloadManager::OnStartedCallback());
+      scoped_ptr<DownloadUrlParameters> dl_params(
+          DownloadUrlParameters::FromWebContents(
+            source_web_contents_, url, save_info));
+      dl_params->set_referrer(referrer);
+      dl_params->set_referrer_encoding(params_.frame_charset);
+      dlm->DownloadUrl(dl_params.Pass());
       break;
     }
 
@@ -1546,14 +1546,15 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       }
       DownloadManager* dlm =
           DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager();
-      dlm->DownloadUrl(url,
-                       referrer,
-                       "",
-                       true,  // prefer_cache
-                       post_id,
-                       save_info,
-                       source_web_contents_,
-                       DownloadManager::OnStartedCallback());
+      scoped_ptr<DownloadUrlParameters> dl_params(
+          DownloadUrlParameters::FromWebContents(
+            source_web_contents_, url, save_info));
+      dl_params->set_referrer(referrer);
+      dl_params->set_post_id(post_id);
+      dl_params->set_prefer_cache(true);
+      if (post_id >= 0)
+        dl_params->set_method("POST");
+      dlm->DownloadUrl(dl_params.Pass());
       break;
     }
 

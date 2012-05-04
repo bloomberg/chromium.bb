@@ -30,10 +30,12 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/download_persistent_store_info.h"
+#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "net/base/load_flags.h"
 #include "net/base/upload_data.h"
 
 using content::BrowserThread;
@@ -45,52 +47,48 @@ using content::WebContents;
 
 namespace {
 
-// Param structs exist because base::Bind can only handle 6 args.
-struct URLParams {
-  URLParams(const GURL& url, const GURL& referrer, int64 post_id, bool cache)
-    : url_(url), referrer_(referrer), post_id_(post_id), prefer_cache_(cache) {}
-  GURL url_;
-  GURL referrer_;
-  int64 post_id_;
-  bool prefer_cache_;
-};
-
-struct RenderParams {
-  RenderParams(int rpi, int rvi)
-    : render_process_id_(rpi), render_view_id_(rvi) {}
-  int render_process_id_;
-  int render_view_id_;
-};
-
-void BeginDownload(
-    const URLParams& url_params,
-    const content::DownloadSaveInfo& save_info,
-    ResourceDispatcherHostImpl* resource_dispatcher_host,
-    const RenderParams& render_params,
-    content::ResourceContext* context,
-    const content::DownloadManager::OnStartedCallback& callback) {
-  scoped_ptr<net::URLRequest> request(
-      new net::URLRequest(url_params.url_, resource_dispatcher_host));
-  request->set_referrer(url_params.referrer_.spec());
-  if (url_params.post_id_ >= 0) {
+void BeginDownload(content::DownloadUrlParameters* params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // ResourceDispatcherHost{Base} is-not-a URLRequest::Delegate, and
+  // DownloadUrlParameters can-not include resource_dispatcher_host_impl.h, so
+  // we must down cast. RDHI is the only subclass of RDH as of 2012 May 4.
+  content::ResourceDispatcherHostImpl* resource_dispatcher_host =
+    static_cast<content::ResourceDispatcherHostImpl*>(
+        params->resource_dispatcher_host());
+  scoped_ptr<net::URLRequest> request(new net::URLRequest(
+      params->url(), resource_dispatcher_host));
+  request->set_referrer(params->referrer().spec());
+  request->set_load_flags(request->load_flags() | params->load_flags());
+  request->set_method(params->method());
+  if (!params->post_body().empty())
+    request->AppendBytesToUpload(params->post_body().data(),
+                                 params->post_body().size());
+  if (params->post_id() >= 0) {
     // The POST in this case does not have an actual body, and only works
     // when retrieving data from cache. This is done because we don't want
     // to do a re-POST without user consent, and currently don't have a good
     // plan on how to display the UI for that.
-    DCHECK(url_params.prefer_cache_);
-    request->set_method("POST");
+    DCHECK(params->prefer_cache());
+    DCHECK(params->method() == "POST");
     scoped_refptr<net::UploadData> upload_data = new net::UploadData();
-    upload_data->set_identifier(url_params.post_id_);
+    upload_data->set_identifier(params->post_id());
     request->set_upload(upload_data);
+  }
+  for (content::DownloadUrlParameters::RequestHeadersType::const_iterator iter
+           = params->request_headers_begin();
+       iter != params->request_headers_end();
+       ++iter) {
+    request->SetExtraRequestHeaderByName(
+        iter->first, iter->second, false/*overwrite*/);
   }
   resource_dispatcher_host->BeginDownload(
       request.Pass(),
-      context,
-      render_params.render_process_id_,
-      render_params.render_view_id_,
-      url_params.prefer_cache_,
-      save_info,
-      callback);
+      params->resource_context(),
+      params->render_process_host_id(),
+      params->render_view_host_routing_id(),
+      params->prefer_cache(),
+      params->save_info(),
+      params->callback());
 }
 
 class MapValueIteratorAdapter {
@@ -855,36 +853,15 @@ int DownloadManagerImpl::RemoveAllDownloads() {
   return RemoveDownloadsBetween(base::Time(), base::Time());
 }
 
-// Initiate a download of a specific URL. We send the request to the
-// ResourceDispatcherHost, and let it send us responses like a regular
-// download.
 void DownloadManagerImpl::DownloadUrl(
-    const GURL& url,
-    const GURL& referrer,
-    const std::string& referrer_charset,
-    bool prefer_cache,
-    int64 post_id,
-    const content::DownloadSaveInfo& save_info,
-    WebContents* web_contents,
-    const OnStartedCallback& callback) {
-  ResourceDispatcherHostImpl* resource_dispatcher_host =
-      ResourceDispatcherHostImpl::Get();
-  DCHECK(resource_dispatcher_host);
-
-  // We send a pointer to content::ResourceContext, instead of the usual
-  // reference, so that a copy of the object isn't made.
-  // base::Bind can't handle 7 args, so we use URLParams and RenderParams.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &BeginDownload,
-          URLParams(url, referrer, post_id, prefer_cache),
-          save_info,
-          resource_dispatcher_host,
-          RenderParams(web_contents->GetRenderProcessHost()->GetID(),
-                       web_contents->GetRenderViewHost()->GetRoutingID()),
-          web_contents->GetBrowserContext()->GetResourceContext(),
-          callback));
+    scoped_ptr<content::DownloadUrlParameters> params) {
+  if (params->post_id() >= 0) {
+    // Check this here so that the traceback is more useful.
+    DCHECK(params->prefer_cache());
+    DCHECK(params->method() == "POST");
+  }
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
+      &BeginDownload, base::Owned(params.release())));
 }
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {

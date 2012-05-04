@@ -71,6 +71,8 @@
     'public/browser/download_persistent_store_info.h',
     'public/browser/download_save_info.cc',
     'public/browser/download_save_info.h',
+    'public/browser/download_url_parameters.cc',
+    'public/browser/download_url_parameters.h',
     'public/browser/favicon_status.cc',
     'public/browser/favicon_status.h',
     'public/browser/font_list_async.h',

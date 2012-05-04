@@ -42,6 +42,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/javascript_dialogs.h"
 #include "content/public/browser/load_notification_details.h"
@@ -129,6 +130,7 @@ using content::DevToolsAgentHostRegistry;
 using content::DevToolsManagerImpl;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::DownloadUrlParameters;
 using content::GlobalRequestID;
 using content::HostZoomMap;
 using content::InterstitialPage;
@@ -144,9 +146,9 @@ using content::RenderWidgetHost;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;
 using content::ResourceDispatcherHostImpl;
+using content::SSLStatus;
 using content::SessionStorageNamespace;
 using content::SiteInstance;
-using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;
 using content::WebContentsObserver;
@@ -2694,14 +2696,14 @@ void WebContentsImpl::SaveURL(const GURL& url,
   }
   content::DownloadSaveInfo save_info;
   save_info.prompt_for_save_location = true;
-  dlm->DownloadUrl(url,
-                   referrer,
-                   "",
-                   true,  // prefer_cache
-                   post_id,
-                   save_info,
-                   this,
-                   DownloadManager::OnStartedCallback());
+  scoped_ptr<DownloadUrlParameters> params(
+      DownloadUrlParameters::FromWebContents(this, url, save_info));
+  params->set_referrer(referrer);
+  params->set_post_id(post_id);
+  params->set_prefer_cache(true);
+  if (post_id >= 0)
+    params->set_method("POST");
+  dlm->DownloadUrl(params.Pass());
 }
 
 void WebContentsImpl::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {

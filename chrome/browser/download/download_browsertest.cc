@@ -48,6 +48,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_persistent_store_info.h"
 #include "content/public/browser/download_save_info.h"
+#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
@@ -66,6 +67,7 @@ using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::DownloadPersistentStoreInfo;
+using content::DownloadUrlParameters;
 using content::WebContents;
 
 namespace {
@@ -667,9 +669,10 @@ class DownloadTest : public InProcessBrowserTest {
       scoped_refptr<DownloadTestItemCreationObserver> creation_observer(
           new DownloadTestItemCreationObserver);
 
-      DownloadManagerForBrowser(browser())->DownloadUrl(
-          url, GURL(""), "", false, -1, save_info, web_contents,
-          creation_observer->callback());
+      scoped_ptr<DownloadUrlParameters> params(
+          DownloadUrlParameters::FromWebContents(web_contents, url, save_info));
+      params->set_callback(creation_observer->callback());
+      DownloadManagerForBrowser(browser())->DownloadUrl(params.Pass());
 
       // Wait until the item is created, or we have determined that it
       // won't be.
@@ -1935,9 +1938,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
           DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   content::DownloadSaveInfo save_info;
   save_info.prompt_for_save_location = true;
-  DownloadManagerForBrowser(browser())->DownloadUrl(
-      url, GURL(""), "", false, -1, save_info, web_contents,
-      DownloadManager::OnStartedCallback());
+  scoped_ptr<DownloadUrlParameters> params(
+      DownloadUrlParameters::FromWebContents(web_contents, url, save_info));
+  DownloadManagerForBrowser(browser())->DownloadUrl(params.Pass());
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
   CheckDownloadStates(1, DownloadItem::COMPLETE);
@@ -1964,9 +1967,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
   save_info.file_path = target_file_full_path;
 
   DownloadTestObserver* observer(CreateWaiter(browser(), 1));
-  DownloadManagerForBrowser(browser())->DownloadUrl(
-      url, GURL(""), "", false, -1, save_info, web_contents,
-      DownloadManager::OnStartedCallback());
+  scoped_ptr<DownloadUrlParameters> params(
+      DownloadUrlParameters::FromWebContents(web_contents, url, save_info));
+  DownloadManagerForBrowser(browser())->DownloadUrl(params.Pass());
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 

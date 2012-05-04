@@ -11,6 +11,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_save_info.h"
+#include "content/public/browser/download_url_parameters.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,15 +53,10 @@ class MockDownloadManager : public content::DownloadManager {
                                            base::Time remove_end));
   MOCK_METHOD1(RemoveDownloads, int(base::Time remove_begin));
   MOCK_METHOD0(RemoveAllDownloads, int());
-  MOCK_METHOD8(DownloadUrl,
-      void(const GURL& url,
-           const GURL& referrer,
-           const std::string& referrer_encoding,
-           bool prefer_cache,
-           int64 post_id,
-           const DownloadSaveInfo& save_info,
-           content::WebContents* web_contents,
-           const DownloadManager::OnStartedCallback& callback));
+  MOCK_METHOD1(DownloadUrlMock, void(DownloadUrlParameters*));
+  virtual void DownloadUrl(scoped_ptr<DownloadUrlParameters> params) OVERRIDE {
+    DownloadUrlMock(params.get());
+  }
   MOCK_METHOD1(AddObserver, void(Observer* observer));
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
   MOCK_METHOD1(OnPersistentStoreQueryComplete, void(

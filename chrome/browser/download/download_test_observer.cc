@@ -11,6 +11,7 @@
 #include "chrome/browser/download/download_test_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_url_parameters.h"
 
 using content::BrowserThread;
 using content::DownloadItem;
@@ -394,7 +395,7 @@ void DownloadTestItemCreationObserver::DownloadItemCreationCallback(
     MessageLoopForUI::current()->Quit();
 }
 
-const content::DownloadManager::OnStartedCallback
+const content::DownloadUrlParameters::OnStartedCallback
     DownloadTestItemCreationObserver::callback() {
   return base::Bind(
       &DownloadTestItemCreationObserver::DownloadItemCreationCallback, this);

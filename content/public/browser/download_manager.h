@@ -37,12 +37,12 @@
 #include "base/gtest_prod_util.h"
 #include "base/message_loop_helpers.h"
 #include "base/time.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
-#include "content/public/browser/browser_thread.h"
-#include "net/base/net_log.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 
 class DownloadRequestHandle;
 class GURL;
@@ -50,19 +50,16 @@ struct DownloadCreateInfo;
 struct DownloadRetrieveInfo;
 
 namespace content {
+
 class BrowserContext;
 class DownloadManagerDelegate;
 class DownloadQuery;
-class WebContents;
-struct DownloadSaveInfo;
+class DownloadUrlParameters;
 
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManager
     : public base::RefCountedThreadSafe<DownloadManager> {
  public:
-  // NOTE: If there is an error, the DownloadId will be invalid.
-  typedef base::Callback<void(DownloadId, net::Error)> OnStartedCallback;
-
   virtual ~DownloadManager() {}
 
   static DownloadManager* Create(
@@ -172,26 +169,8 @@ class CONTENT_EXPORT DownloadManager
   // deleted is returned back to the caller.
   virtual int RemoveAllDownloads() = 0;
 
-  // Downloads the content at |url|. |referrer| and |referrer_encoding| are the
-  // referrer for the download, and may be empty. If |prefer_cache| is true,
-  // then if the response to |url| is in the HTTP cache it will be used without
-  // revalidation. If |post_id| is non-negative, then it identifies the post
-  // transaction used to originally retrieve the |url| resource - it also
-  // requires |prefer_cache| to be |true| since re-post'ing is not done.
-  // |save_info| specifies where the downloaded file should be
-  // saved, and whether the user should be prompted about the download.
-  // |web_contents| is the web page that the download is done in context of,
-  // and must be non-NULL.
-  // |callback| will be called when the download starts, or if an error
-  // occurs that prevents a download item from being created.
-  virtual void DownloadUrl(const GURL& url,
-                           const GURL& referrer,
-                           const std::string& referrer_encoding,
-                           bool prefer_cache,
-                           int64 post_id,
-                           const DownloadSaveInfo& save_info,
-                           WebContents* web_contents,
-                           const OnStartedCallback& callback) = 0;
+  // See DownloadUrlParameters for details about controlling the download.
+  virtual void DownloadUrl(scoped_ptr<DownloadUrlParameters> parameters) = 0;
 
   // Allow objects to observe the download creation process.
   virtual void AddObserver(Observer* observer) = 0;

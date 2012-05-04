@@ -13,11 +13,13 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
+#include "content/public/browser/download_url_parameters.h"
 #include "net/base/file_stream.h"
 
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::DownloadUrlParameters;
 using content::WebContents;
 
 DragDownloadFile::DragDownloadFile(
@@ -135,14 +137,11 @@ void DragDownloadFile::InitiateDownload() {
 
   download_stats::RecordDownloadSource(
       download_stats::INITIATED_BY_DRAG_N_DROP);
-  download_manager_->DownloadUrl(url_,
-                                 referrer_,
-                                 referrer_encoding_,
-                                 false,
-                                 -1,
-                                 save_info,
-                                 web_contents_,
-                                 DownloadManager::OnStartedCallback());
+  scoped_ptr<DownloadUrlParameters> params(
+      DownloadUrlParameters::FromWebContents(web_contents_, url_, save_info));
+  params->set_referrer(referrer_);
+  params->set_referrer_encoding(referrer_encoding_);
+  download_manager_->DownloadUrl(params.Pass());
 }
 
 void DragDownloadFile::DownloadCompleted(bool is_successful) {
