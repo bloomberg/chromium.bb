@@ -306,20 +306,29 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
   check_admin_permissions_on_mac = ExternalPrefExtensionLoader::NONE;
 #endif
 
-  provider_list->push_back(
-      linked_ptr<ExternalExtensionProviderInterface>(
-          new ExternalExtensionProviderImpl(
-              service,
-              new ExternalPrefExtensionLoader(
-                  chrome::DIR_EXTERNAL_EXTENSIONS,
-                  check_admin_permissions_on_mac),
-              Extension::EXTERNAL_PREF,
-              Extension::EXTERNAL_PREF_DOWNLOAD,
+  bool is_chromeos_demo_session = false;
+  int bundled_extension_creation_flags = Extension::NO_FLAGS;
 #if defined(OS_CHROMEOS)
-              Extension::FROM_WEBSTORE)));
-#else
-              Extension::NO_FLAGS)));
+  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  is_chromeos_demo_session =
+      user_manager && user_manager->IsLoggedInAsDemoUser() &&
+      g_browser_process->browser_policy_connector()->GetDeviceMode() ==
+          policy::DEVICE_MODE_KIOSK;
+  bundled_extension_creation_flags = Extension::FROM_WEBSTORE;
 #endif
+
+  if (!is_chromeos_demo_session) {
+    provider_list->push_back(
+        linked_ptr<ExternalExtensionProviderInterface>(
+            new ExternalExtensionProviderImpl(
+                service,
+                new ExternalPrefExtensionLoader(
+                    chrome::DIR_EXTERNAL_EXTENSIONS,
+                    check_admin_permissions_on_mac),
+                Extension::EXTERNAL_PREF,
+                Extension::EXTERNAL_PREF_DOWNLOAD,
+                bundled_extension_creation_flags)));
+  }
 
 #if defined(OS_CHROMEOS) || defined (OS_MACOSX)
   // Define a per-user source of external extensions.
@@ -383,12 +392,9 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
 #endif
 
 #if defined(OS_CHROMEOS)
-  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
   policy::BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
-  if (user_manager && user_manager->IsLoggedInAsDemoUser() &&
-      connector->GetDeviceMode() == policy::DEVICE_MODE_KIOSK &&
-      connector->GetAppPackUpdater()) {
+  if (is_chromeos_demo_session && connector->GetAppPackUpdater()) {
     provider_list->push_back(
         linked_ptr<ExternalExtensionProviderInterface>(
           new ExternalExtensionProviderImpl(
