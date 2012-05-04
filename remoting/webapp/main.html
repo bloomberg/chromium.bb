@@ -198,24 +198,34 @@ found in the LICENSE file.
               data-ui-mode="home.host-setup.ask-pin"
               action="">
           <p class="message" i18n-content="HOST_SETUP_DIALOG_DESCRIPTION"></p>
-          <div>
-            <label for="daemon-pin-entry"
-                   i18n-content="ASK_PIN_DIALOG_LABEL"
-                   class="box-spacer"></label>
-            <input id="daemon-pin-entry"
-                   autofocus="autofocus"
-                   type="password">
-          </div>
-          <div>
-            <label for="daemon-pin-confirm"
-                   i18n-content="ASK_PIN_DIALOG_CONFIRM_LABEL"></label>
-            <input id="daemon-pin-confirm" type="password">
-          </div>
+          <table id="set-pin-table">
+            <tr>
+              <td class="table-label">
+                <label for="daemon-pin-entry"
+                       i18n-content="ASK_PIN_DIALOG_LABEL"
+                       class="box-spacer"></label>
+              </td>
+              <td>
+                <input id="daemon-pin-entry"
+                       autofocus="autofocus"
+                       type="password">
+              </td>
+            </tr>
+            <tr>
+              <td class="table-label">
+                <label for="daemon-pin-confirm"
+                       i18n-content="ASK_PIN_DIALOG_CONFIRM_LABEL"></label>
+              </td>
+              <td>
+                <input id="daemon-pin-confirm" type="password">
+              </td>
+            <tr>
+          </table>
           <div id="daemon-pin-error-div" class="message centered" hidden>
             <span id="daemon-pin-error-message" class="error-state">
             </span>
           </div>
-          <div class="button-row">
+          <div class="box">
             <a href="https://support.google.com/chrome/?p=ui_pin_safety"
                target="_blank"
                id="why-is-this-safe"
@@ -228,7 +238,7 @@ found in the LICENSE file.
           </div>
         </form>
         <div data-ui-mode="home.host-setup.processing"
-             class="waiting-container"
+             class="box"
              hidden>
           <span class="waiting prominent"
                 id="host-setup-processing-message">
@@ -237,7 +247,7 @@ found in the LICENSE file.
         <div data-ui-mode="home.host-setup.done" hidden>
           <div id="host-setup-done-message" class="message"></div>
           <div id="host-setup-done-message-2" class="message"></div>
-          <div class="button-row">
+          <div class="box">
             <div class="box-spacer"></div>
             <button id="host-config-done-dismiss"
                     autofocus="autofocus"
@@ -246,7 +256,7 @@ found in the LICENSE file.
         </div>
         <div data-ui-mode="home.host-setup.error" hidden>
           <div id="host-setup-error-message" class="error-state"></div>
-          <div class="button-row">
+          <div class="box">
             <div class="box-spacer"></div>
             <button id="host-config-error-dismiss"
                     autofocus="autofocus"
@@ -255,7 +265,7 @@ found in the LICENSE file.
         </div>
         <div data-ui-mode="home.host-setup.install" hidden>
           <div class="message" i18n-content="HOST_SETUP_INSTALL"></div>
-          <div class="button-row">
+          <div class="box">
             <div class="box-spacer"></div>
             <button id="host-config-install-continue"
                     autofocus="autofocus"
@@ -267,7 +277,7 @@ found in the LICENSE file.
         <div data-ui-mode="home.host-setup.install-pending" hidden>
           <div class="message"
                     i18n-content="HOST_SETUP_INSTALL_PENDING"></div>
-          <div class="button-row">
+          <div class="box">
             <div class="box-spacer"></div>
             <button id="host-config-install-retry"
                     autofocus="autofocus"
@@ -345,7 +355,7 @@ found in the LICENSE file.
         </div> <!-- nat-box -->
 
         <div data-ui-mode="home.host.waiting-for-connection home.host.waiting-for-code"
-             class="waiting-container space-before">
+             class="box space-before">
           <span class="waiting" i18n-content="FOOTER_WAITING"></span>
           <div class="box-spacer"></div>
           <button id="cancel-share-button" i18n-content="CANCEL"></button>
@@ -363,24 +373,33 @@ found in the LICENSE file.
           <div i18n-content="DESCRIPTION_CONNECT"></div>
           <div id="access-code-entry-row">
             <form id="access-code-form" action="">
-              <label for="access-code-entry" i18n-content="ACCESS_CODE"></label>
-              <input id="access-code-entry"
-                     type="text"
-                     autofocus="autofocus"
-                     autocomplete="off"/>
-              <button id="connect-button"
-                      type="submit"
-                      i18n-content="CONNECT_BUTTON">
-              </button>
-              <button id="cancel-access-code-button"
-                      type="button"
-                      i18n-content="CANCEL">
-              </button>
+              <div class="box">
+                <div class="box-spacer"></div>
+                <label for="access-code-entry"
+                       i18n-content="ACCESS_CODE">
+                </label>
+                <input id="access-code-entry"
+                       type="text"
+                       autofocus="autofocus"
+                       autocomplete="off"/>
+                <div class="box-spacer"></div>
+              </div>
+              <div class="box space-before">
+                <div class="box-spacer"></div>
+                <button id="connect-button"
+                        type="submit"
+                        i18n-content="CONNECT_BUTTON">
+                </button>
+                <button id="cancel-access-code-button"
+                        type="button"
+                        i18n-content="CANCEL">
+                </button>
+              </div>
             </form>
           </div> <!-- code-entry-row -->
         </div> <!-- client.unconnected -->
 
-        <div data-ui-mode="home.client.connecting" class="waiting-container">
+        <div data-ui-mode="home.client.connecting" class="box">
           <span class="waiting prominent"
                 i18n-content="FOOTER_CONNECTING"></span>
           <div class="box-spacer"></div>

@@ -184,7 +184,7 @@ Component: Text Field
 ------------------------------------------------------------------*/
 input {
     height: 29px;
-    padding-left: 8px;
+    padding-__MSG_@@bidi_start_edge__: 8px;
     color: #333;
     border: 1px solid #d9d9d9;
     border-top: 1px solid #c0c0c0;
@@ -296,7 +296,7 @@ section {
   cursor: pointer;
 }
 
-.button-row {
+.box {
   display: -webkit-box;
 }
 
@@ -332,7 +332,7 @@ section {
 
 .infographic {
   position: absolute;
-  right: 22px;
+  __MSG_@@bidi_end_edge__: 22px;
   top: 24px;
 }
 
@@ -403,7 +403,7 @@ td {
 }
 
 .host-list-main-icon {
-  margin-right: 10px;
+  margin-__MSG_@@bidi_end_edge__: 10px;
   vertical-align: middle;
 }
 
@@ -432,16 +432,12 @@ button {
   line-height: 27px; /* Same as line-height for buttons */
 }
 
-.waiting-container {
-  display: -webkit-box;
-}
-
 .prominent {
   color: #222;
 }
 
 .space-before {
-  margin-top: 30px;
+  margin-top: 20px;
 }
 
 
@@ -499,9 +495,12 @@ button {
   opacity: 0.75;
 }
 
+/* TODO(jamiewalch): Reinstate this if we're able to get translations for
+ *     "Why is this safe?" that don't overflow in any language.
 #host-setup-dialog {
   width: 460px;
 }
+*/
 
 #host-plugin-container {
   width: 0;
@@ -529,6 +528,11 @@ button {
   display: block;
 }
 
+#set-pin-table td {
+  border-bottom: 6px solid transparent;
+  text-align: right;
+}
+
 #top-secondary {
   margin-top: 10px
 }
@@ -540,7 +544,7 @@ button {
 
 #why-is-this-safe {
   display: inline-block;
-  margin-top: 11px;
+  margin-top: 7px;
 }
 
 * {
