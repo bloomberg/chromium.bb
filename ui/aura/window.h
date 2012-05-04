@@ -406,6 +406,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Updates the layer name with a name based on the window's name and id.
   void UpdateLayerName(const std::string& name);
 
+#ifndef NDEBUG
+  // These methods are useful when debugging.
+  std::string GetDebugInfo() const;
+  void PrintWindowHierarchy(int depth) const;
+#endif
+
   client::WindowType type_;
 
   // True if the Window is owned by its parent - i.e. it will be deleted by its

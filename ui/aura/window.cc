@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/visibility_client.h"
@@ -836,5 +837,25 @@ void Window::UpdateLayerName(const std::string& name) {
   layer()->set_name(layer_name);
 #endif
 }
+
+#ifndef NDEBUG
+std::string Window::GetDebugInfo() const {
+  return StringPrintf(
+      "%s<%d> bounds(%d, %d, %d, %d) %s",
+      name().empty() ? "Unknown" : name().c_str(), id(),
+      bounds().x(), bounds().y(), bounds().width(), bounds().height(),
+      IsVisible() ? "Visible" : "Hidden");
+}
+
+void Window::PrintWindowHierarchy(int depth) const {
+  printf("%*s%s\n", depth * 2, "", GetDebugInfo().c_str());
+  for (Windows::const_reverse_iterator it = children_.rbegin(),
+           rend = children_.rend();
+       it != rend; ++it) {
+    Window* child = *it;
+    child->PrintWindowHierarchy(depth + 1);
+  }
+}
+#endif
 
 }  // namespace aura
