@@ -294,7 +294,7 @@ string16 MediaStreamCaptureIndicator::GetTitle(int render_process_id,
   WebContents* tab_content = tab_util::GetWebContentsByID(
       render_process_id, render_view_id);
   if (!tab_content)
-    return NULL;
+    return string16();
 
   string16 tab_title = tab_content->GetTitle();
   if (tab_title.empty()) {
