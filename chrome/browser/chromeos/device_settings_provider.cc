@@ -53,6 +53,7 @@ const char* kKnownSettings[] = {
   kReleaseChannelDelegated,
   kReportDeviceActivityTimes,
   kReportDeviceBootMode,
+  kReportDeviceLocation,
   kReportDeviceVersionInfo,
   kScreenSaverExtensionId,
   kScreenSaverTimeout,
@@ -287,14 +288,15 @@ void DeviceSettingsProvider::SetInPolicy() {
     // The remaining settings don't support Set(), since they are not
     // intended to be customizable by the user:
     //   kAppPack
-    //   kIdleLogoutTimeout,
-    //   kIdleLogoutWarningDuration,
-    //   kReleaseChannelDelegated,
+    //   kIdleLogoutTimeout
+    //   kIdleLogoutWarningDuration
+    //   kReleaseChannelDelegated
     //   kReportDeviceVersionInfo
     //   kReportDeviceActivityTimes
     //   kReportDeviceBootMode
-    //   kScreenSaverExtensionId,
-    //   kScreenSaverTimeout,
+    //   kReportDeviceLocation
+    //   kScreenSaverExtensionId
+    //   kScreenSaverTimeout
     //   kStartUpUrls
 
     NOTREACHED();
@@ -489,6 +491,11 @@ void DeviceSettingsProvider::DecodeReportingPolicies(
       new_values_cache->SetBoolean(
           kReportDeviceBootMode,
           policy.device_reporting().report_boot_mode());
+    }
+    if (policy.device_reporting().has_report_location()) {
+      new_values_cache->SetBoolean(
+          kReportDeviceLocation,
+          policy.device_reporting().report_location());
     }
   }
 }

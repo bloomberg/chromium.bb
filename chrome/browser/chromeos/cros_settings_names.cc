@@ -42,9 +42,13 @@ const char kReportDeviceVersionInfo[] =
 const char kReportDeviceActivityTimes[] =
     "cros.device_status.report_activity_times";
 
-// A boolean pref that indicates whether device the state of the dev switch
-// at boot mode should be reported along with device policy requests.
+// A boolean pref that indicates whether the state of the dev mode switch at
+// boot should be reported along with device policy requests.
 const char kReportDeviceBootMode[] = "cros.device_status.report_boot_mode";
+
+// A boolean pref that indicates whether the current location should be reported
+// along with device policy requests.
+const char kReportDeviceLocation[] = "cros.device_status.report_location";
 
 // A list of dictionaries, each detailing one extension to install as part of
 // the AppPack and including the following fields:

@@ -1655,17 +1655,13 @@ const char kShouldAutoEnroll[] = "ShouldAutoEnroll";
 // modulus, then it will retry auto-enrollment using the updated value.
 const char kAutoEnrollmentPowerLimit[] = "AutoEnrollmentPowerLimit";
 
-// A boolean pref that indicates whether OS & firmware version info should be
-// reported along with device policy requests.
-const char kReportDeviceVersionInfo[] = "device_status.report_version_info";
-
-// A boolean pref that indicates whether device activity times should be
-// recorded and reported along with device policy requests.
-const char kReportDeviceActivityTimes[] = "device_status.report_activity_times";
-
 // The local state pref that stores device activity times before reporting
 // them to the policy server.
-extern const char kDeviceActivityTimes[] = "device_status.activity_times";
+const char kDeviceActivityTimes[] = "device_status.activity_times";
+
+// A pref holding the last known location when device location reporting is
+// enabled.
+const char kDeviceLocation[] = "device_status.location";
 
 // A string that is used to store first-time sync startup after once sync is
 // disabled. This will be refreshed every sign-in.

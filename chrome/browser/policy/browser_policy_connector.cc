@@ -494,7 +494,8 @@ void BrowserPolicyConnector::CompleteInitialization() {
   device_data_store_->set_device_status_collector(
       new DeviceStatusCollector(
           g_browser_process->local_state(),
-          chromeos::system::StatisticsProvider::GetInstance()));
+          chromeos::system::StatisticsProvider::GetInstance(),
+          NULL));
 #endif
 }
 

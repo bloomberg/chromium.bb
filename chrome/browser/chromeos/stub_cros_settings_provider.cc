@@ -26,6 +26,7 @@ const char* kHandledSettings[] = {
   kReportDeviceVersionInfo,
   kReportDeviceActivityTimes,
   kReportDeviceBootMode,
+  kReportDeviceLocation,
   kSettingProxyEverywhere,
   kSignedDataRoamingEnabled,
   kStatsReportingPref,

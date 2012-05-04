@@ -264,6 +264,44 @@ message InstallableLaunch {
   optional int64 total_count = 4;
 }
 
+// Used to report the device location.
+message DeviceLocation {
+  enum ErrorCode {
+    ERROR_CODE_NONE                 = 0;
+    ERROR_CODE_POSITION_UNAVAILABLE = 1;
+  }
+
+  // Latitude in decimal degrees north (WGS84 coordinate frame).
+  optional double latitude = 1;
+
+  // Longitude in decimal degrees west (WGS84 coordinate frame).
+  optional double longitude = 2;
+
+  // Altitude in meters (above WGS84 datum).
+  optional double altitude = 3;
+
+  // Accuracy of horizontal position in meters.
+  optional double accuracy = 4;
+
+  // Accuracy of altitude in meters.
+  optional double altitude_accuracy = 5;
+
+  // Heading in decimal degrees clockwise from true north.
+  optional double heading = 6;
+
+  // Horizontal component of device velocity in meters per second.
+  optional double speed = 7;
+
+  // Time of position measurement in milisecons since Epoch in UTC time.
+  optional int64 timestamp = 8;
+
+  // Error code, see enum above.
+  optional ErrorCode error_code = 9;
+
+  // Human-readable error message.
+  optional string error_message = 10;
+}
+
 // Report device level status.
 message DeviceStatusReportRequest {
   optional string os_version = 1;
@@ -281,6 +319,9 @@ message DeviceStatusReportRequest {
 
   // A list of periods when the device was active, aggregated by day.
   repeated ActiveTimePeriod active_period = 6;
+
+  // The device location.
+  optional DeviceLocation device_location = 7;
 }
 
 // Report session (a user on one device) level status.

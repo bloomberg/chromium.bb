@@ -628,9 +628,8 @@ extern const char kHardwareKeyboardLayout[];
 extern const char kCarrierDealPromoShown[];
 extern const char kShouldAutoEnroll[];
 extern const char kAutoEnrollmentPowerLimit[];
-extern const char kReportDeviceVersionInfo[];
-extern const char kReportDeviceActivityTimes[];
 extern const char kDeviceActivityTimes[];
+extern const char kDeviceLocation[];
 extern const char kSyncSpareBootstrapToken[];
 #endif
 

@@ -38,6 +38,7 @@ const char* kReportingFlags[] = {
   chromeos::kReportDeviceVersionInfo,
   chromeos::kReportDeviceActivityTimes,
   chromeos::kReportDeviceBootMode,
+  chromeos::kReportDeviceLocation,
 };
 
 }

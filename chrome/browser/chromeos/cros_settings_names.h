@@ -32,6 +32,7 @@ extern const char kReleaseChannelDelegated[];
 extern const char kReportDeviceVersionInfo[];
 extern const char kReportDeviceActivityTimes[];
 extern const char kReportDeviceBootMode[];
+extern const char kReportDeviceLocation[];
 
 extern const char kAppPack[];
 
