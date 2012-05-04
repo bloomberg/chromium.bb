@@ -1499,7 +1499,8 @@ get_shell_surface_type(struct weston_surface *surface)
 
 static void
 move_binding(struct wl_input_device *device, uint32_t time,
-	     uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
+	     uint32_t key, uint32_t button, uint32_t axis, int32_t value,
+	     void *data)
 {
 	struct weston_surface *surface =
 		(struct weston_surface *) device->pointer_focus;
@@ -1522,7 +1523,8 @@ move_binding(struct wl_input_device *device, uint32_t time,
 
 static void
 resize_binding(struct wl_input_device *device, uint32_t time,
-	       uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
+	       uint32_t key, uint32_t button, uint32_t axis, int32_t value,
+	       void *data)
 {
 	struct weston_surface *surface =
 		(struct weston_surface *) device->pointer_focus;
@@ -1570,7 +1572,8 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 
 static void
 surface_opacity_binding(struct wl_input_device *device, uint32_t time,
-	       uint32_t key, uint32_t button, uint32_t axis, int32_t value, void *data)
+			uint32_t key, uint32_t button, uint32_t axis,
+			int32_t value, void *data)
 {
 	uint32_t step = 15;
 	struct shell_surface *shsurf;
@@ -1605,7 +1608,8 @@ surface_opacity_binding(struct wl_input_device *device, uint32_t time,
 
 static void
 zoom_binding(struct wl_input_device *device, uint32_t time,
-	       uint32_t key, uint32_t button, uint32_t axis, int32_t value, void *data)
+	     uint32_t key, uint32_t button, uint32_t axis, int32_t value,
+	     void *data)
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *compositor = wd->compositor;
@@ -1736,7 +1740,8 @@ static const struct wl_pointer_grab_interface rotate_grab_interface = {
 
 static void
 rotate_binding(struct wl_input_device *device, uint32_t time,
-	       uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
+	       uint32_t key, uint32_t button, uint32_t axis, int32_t value,
+	       void *data)
 {
 	struct weston_surface *base_surface =
 		(struct weston_surface *) device->pointer_focus;
@@ -2423,7 +2428,7 @@ static const struct wl_keyboard_grab_interface switcher_grab = {
 static void
 switcher_binding(struct wl_input_device *device, uint32_t time,
 		 uint32_t key, uint32_t button, uint32_t axis,
-		 int32_t state, void *data)
+		 int32_t value, void *data)
 {
 	struct desktop_shell *shell = data;
 	struct switcher *switcher;
@@ -2475,7 +2480,8 @@ backlight_binding(struct wl_input_device *device, uint32_t time,
 
 static void
 debug_repaint_binding(struct wl_input_device *device, uint32_t time,
-		      uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
+		      uint32_t key, uint32_t button, uint32_t axis,
+		      int32_t value, void *data)
 {
 	struct desktop_shell *shell = data;
 	struct weston_compositor *compositor = shell->compositor;

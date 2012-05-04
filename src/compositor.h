@@ -468,10 +468,11 @@ typedef void (*weston_binding_handler_t)(struct wl_input_device *device,
 					 uint32_t time, uint32_t key,
 					 uint32_t button,
 					 uint32_t axis,
-					 int32_t state, void *data);
+					 int32_t value, void *data);
 struct weston_binding *
 weston_compositor_add_binding(struct weston_compositor *compositor,
-			      uint32_t key, uint32_t button, uint32_t axis, uint32_t modifier,
+			      uint32_t key, uint32_t button, uint32_t axis,
+			      uint32_t modifier,
 			      weston_binding_handler_t binding, void *data);
 void
 weston_binding_destroy(struct weston_binding *binding);
@@ -483,7 +484,8 @@ void
 weston_compositor_run_binding(struct weston_compositor *compositor,
 			      struct weston_input_device *device,
 			      uint32_t time,
-			      uint32_t key, uint32_t button, uint32_t axis, int32_t state);
+			      uint32_t key, uint32_t button, uint32_t axis,
+			      int32_t value);
 int
 weston_environment_get_fd(const char *env);
 

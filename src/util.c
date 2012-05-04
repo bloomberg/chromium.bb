@@ -290,15 +290,15 @@ WL_EXPORT void
 weston_compositor_run_binding(struct weston_compositor *compositor,
 			      struct weston_input_device *device,
 			      uint32_t time, uint32_t key,
-			      uint32_t button, uint32_t axis, int32_t state)
+			      uint32_t button, uint32_t axis, int32_t value)
 {
 	struct weston_binding *b;
 
 	wl_list_for_each(b, &compositor->binding_list, link) {
 		if (b->key == key && b->button == button && b->axis == axis &&
-		    b->modifier == device->modifier_state && state) {
+		    b->modifier == device->modifier_state && value) {
 			b->handler(&device->input_device,
-				   time, key, button, axis, state, b->data);
+				   time, key, button, axis, value, b->data);
 
 			/* If this was a key binding and it didn't
 			 * install a keyboard grab, install one now to
