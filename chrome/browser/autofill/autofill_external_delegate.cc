@@ -170,6 +170,8 @@ void AutofillExternalDelegate::RemoveAutofillProfileOrCreditCard(
 
 
 void AutofillExternalDelegate::DidEndTextFieldEditing() {
+  HideAutofillPopup();
+
   has_shown_autofill_popup_for_current_edit_ = false;
 }
 

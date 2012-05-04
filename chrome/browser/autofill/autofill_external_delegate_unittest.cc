@@ -163,3 +163,11 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
   EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
   external_delegate_->SelectAutofillSuggestionAtIndex(1);
 }
+
+// Test that the popup is hidden once we are done editing the autofill field.
+TEST_F(AutofillExternalDelegateUnitTest,
+       ExternalDelegateHidePopupAfterEditing) {
+  EXPECT_CALL(*external_delegate_, HideAutofillPopup());
+
+  external_delegate_->DidEndTextFieldEditing();
+}
