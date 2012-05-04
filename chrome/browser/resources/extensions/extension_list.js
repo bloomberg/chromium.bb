@@ -141,7 +141,7 @@ cr.define('options', function() {
       if (extension.homepageUrl) {
         var siteLink = node.querySelector('.site-link');
         siteLink.href = extension.homepageUrl;
-        siteLink.textContent = localStrings.getString(
+        siteLink.textContent = loadTimeData.getString(
                 extension.homepageProvided ? 'extensionSettingsVisitWebsite' :
                                              'extensionSettingsVisitWebStore');
         siteLink.hidden = false;
