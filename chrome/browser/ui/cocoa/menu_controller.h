@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,9 @@ class MenuModel;
 // cannot be changed after it has been created.
 - (id)initWithModel:(ui::MenuModel*)model
     useWithPopUpButtonCell:(BOOL)useWithCell;
+
+// Programmatically close the constructed menu.
+- (void)cancel;
 
 // Access to the constructed menu if the complex initializer was used. If the
 // default initializer was used, then this will create the menu on first call.

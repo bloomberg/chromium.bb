@@ -925,6 +925,10 @@ enum NotificationType {
   NOTIFICATION_TAB_DRAG_LOOP_DONE,
 #endif
 
+  // Send when a context menu is shown. Used to notify tests that the context
+  // menu has been created and shown.
+  NOTIFICATION_CONTEXT_MENU_SHOWN,
+
   // Sent when the tab's closeable state has changed due to increase/decrease
   // in number of tabs in browser or increase/decrease in number of browsers.
   // Details<bool> contain the closeable flag while source is AllSources.

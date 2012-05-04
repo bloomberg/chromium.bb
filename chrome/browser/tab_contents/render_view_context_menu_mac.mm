@@ -108,6 +108,10 @@ void RenderViewContextMenuMac::PlatformInit() {
   }
 }
 
+void RenderViewContextMenuMac::PlatformCancel() {
+  [menu_controller_ cancel];
+}
+
 void RenderViewContextMenuMac::ExecuteCommand(int id) {
   // Auxiliary windows that do not have address bars (Panels for example)
   // may not have Instant support.

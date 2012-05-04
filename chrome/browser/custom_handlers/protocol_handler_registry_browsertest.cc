@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
       : RenderViewContextMenu(web_contents, params) { }
 
   virtual void PlatformInit() { }
+  virtual void PlatformCancel() { }
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       ui::Accelerator* accelerator) {

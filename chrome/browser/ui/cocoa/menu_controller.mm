@@ -43,14 +43,18 @@
 
   // Close the menu if it is still open. This could happen if a tab gets closed
   // while its context menu is still open.
+  [self cancel];
+
+  model_ = NULL;
+  [super dealloc];
+}
+
+- (void)cancel {
   if (isMenuOpen_) {
     [menu_ cancelTracking];
     model_->MenuClosed();
     isMenuOpen_ = NO;
   }
-
-  model_ = NULL;
-  [super dealloc];
 }
 
 // Creates a NSMenu from the given model. If the model has submenus, this can
@@ -209,8 +213,10 @@
 }
 
 - (void)menuDidClose:(NSMenu*)menu {
-  model_->MenuClosed();
-  isMenuOpen_ = NO;
+  if (isMenuOpen_) {
+    model_->MenuClosed();
+    isMenuOpen_ = NO;
+  }
 }
 
 @end
