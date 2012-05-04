@@ -34,7 +34,9 @@ struct DownloadPersistentStoreInfo;
 }
 
 namespace history {
-
+#if defined(OS_ANDROID)
+class AndroidProviderBackend;
+#endif
 class CommitLaterTask;
 class HistoryPublisher;
 class VisitFilter;
@@ -309,6 +311,64 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       const string16& prefix,
       int max_count);
 
+#if defined(OS_ANDROID)
+  // Android Provider ---------------------------------------------------------
+
+  // History and bookmarks ----------------------------------------------------
+  void InsertHistoryAndBookmark(scoped_refptr<InsertRequest> request,
+                                const HistoryAndBookmarkRow& row);
+
+  void QueryHistoryAndBookmarks(
+      scoped_refptr<QueryRequest> request,
+      const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
+      const std::string& selection,
+      const std::vector<string16>& selection_args,
+      const std::string& sort_order);
+
+  void UpdateHistoryAndBookmarks(scoped_refptr<UpdateRequest> request,
+                                 const HistoryAndBookmarkRow& row,
+                                 const std::string& selection,
+                                 const std::vector<string16>& selection_args);
+
+  void DeleteHistoryAndBookmarks(scoped_refptr<DeleteRequest> request,
+                                 const std::string& selection,
+                                 const std::vector<string16>& selection_args);
+
+  void DeleteHistory(scoped_refptr<DeleteRequest> request,
+                     const std::string& selection,
+                     const std::vector<string16>& selection_args);
+
+  // Statement ----------------------------------------------------------------
+  // Move the statement's current position.
+  void MoveStatement(scoped_refptr<MoveStatementRequest> request,
+                     history::AndroidStatement* statement,
+                     int current_pos,
+                     int destination);
+
+  // Close the given statement. The ownership is transfered.
+  void CloseStatement(AndroidStatement* statement);
+
+  // Search terms -------------------------------------------------------------
+  void InsertSearchTerm(scoped_refptr<InsertRequest> request,
+                        const SearchRow& row);
+
+  void UpdateSearchTerms(scoped_refptr<UpdateRequest> request,
+                         const SearchRow& row,
+                         const std::string& selection,
+                         const std::vector<string16> selection_args);
+
+  void DeleteSearchTerms(scoped_refptr<DeleteRequest> request,
+                         const std::string& selection,
+                         const std::vector<string16> selection_args);
+
+  void QuerySearchTerms(scoped_refptr<QueryRequest> request,
+                        const std::vector<SearchRow::ColumnID>& projections,
+                        const std::string& selection,
+                        const std::vector<string16>& selection_args,
+                        const std::string& sort_order);
+
+#endif  // defined(OS_ANDROID)
+
   // Generic operations --------------------------------------------------------
 
   void ProcessDBTask(scoped_refptr<HistoryDBTaskRequest> request);
@@ -421,6 +481,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // See ThumbnailDatabase::RenameAndDropThumbnails.
   FilePath GetFaviconsFileName() const;
   FilePath GetArchivedFileName() const;
+
+#if defined(OS_ANDROID)
+  // Returns the name of android cache database.
+  FilePath GetAndroidCacheFileName() const;
+#endif
 
   class URLQuerier;
   friend class URLQuerier;
@@ -684,6 +749,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Publishes the history to all indexers which are registered to receive
   // history data from us. Can be NULL if there are no listeners.
   scoped_ptr<HistoryPublisher> history_publisher_;
+
+#if defined(OS_ANDROID)
+  // Used to provide the Android ContentProvider APIs.
+  scoped_ptr<AndroidProviderBackend> android_provider_backend_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(HistoryBackend);
 };

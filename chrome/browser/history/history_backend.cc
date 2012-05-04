@@ -36,6 +36,10 @@
 #include "grit/generated_resources.h"
 #include "net/base/registry_controlled_domain.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/history/android/android_provider_backend.h"
+#endif
+
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
@@ -217,6 +221,11 @@ HistoryBackend::~HistoryBackend() {
   DCHECK(!scheduled_commit_) << "Deleting without cleanup";
   ReleaseDBTasks();
 
+#if defined(OS_ANDROID)
+  // Release AndroidProviderBackend before other objects.
+  android_provider_backend_.reset();
+#endif
+
   // First close the databases before optionally running the "destroy" task.
   if (db_.get()) {
     // Commit the long-running transaction.
@@ -241,6 +250,10 @@ HistoryBackend::~HistoryBackend() {
     DCHECK(backend_destroy_message_loop_);
     backend_destroy_message_loop_->PostTask(FROM_HERE, backend_destroy_task_);
   }
+
+#if defined(OS_ANDROID)
+  file_util::Delete(GetAndroidCacheFileName(), false);
+#endif
 }
 
 void HistoryBackend::Init(const std::string& languages, bool force_fail) {
@@ -282,6 +295,12 @@ FilePath HistoryBackend::GetFaviconsFileName() const {
 FilePath HistoryBackend::GetArchivedFileName() const {
   return history_dir_.Append(chrome::kArchivedHistoryFilename);
 }
+
+#if defined(OS_ANDROID)
+FilePath HistoryBackend::GetAndroidCacheFileName() const {
+  return history_dir_.Append(chrome::kAndroidCacheFilename);
+}
+#endif
 
 SegmentID HistoryBackend::GetLastSegmentID(VisitID from_visit) {
   // Set is used to detect referrer loops.  Should not happen, but can
@@ -701,6 +720,14 @@ void HistoryBackend::InitImpl(const std::string& languages) {
 
   // Start expiring old stuff.
   expirer_.StartArchivingOldStuff(TimeDelta::FromDays(kArchiveDaysThreshold));
+
+#if defined(OS_ANDROID)
+  if (thumbnail_db_.get()) {
+    android_provider_backend_.reset(new AndroidProviderBackend(
+        GetAndroidCacheFileName(), db_.get(), thumbnail_db_.get(),
+        bookmark_service_, delegate_.get()));
+  }
+#endif
 
   HISTOGRAM_TIMES("History.InitTime",
                   TimeTicks::Now() - beginning_time);

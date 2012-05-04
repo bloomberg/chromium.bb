@@ -15,6 +15,10 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/page_usage_data.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/history/history_marshaling_android.h"
+#endif
+
 namespace history {
 
 // Querying -------------------------------------------------------------------

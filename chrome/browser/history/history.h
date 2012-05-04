@@ -26,6 +26,10 @@
 #include "content/public/common/page_transition_types.h"
 #include "sql/init_status.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/history/android/android_history_provider_service.h"
+#endif
+
 class BookmarkService;
 class FilePath;
 class GURL;
@@ -620,6 +624,9 @@ class HistoryService : public CancelableRequestProvider,
 
  private:
   class BackendDelegate;
+#if defined(OS_ANDROID)
+  friend class AndroidHistoryProviderService;
+#endif
   friend class base::RefCountedThreadSafe<HistoryService>;
   friend class BackendDelegate;
   friend class FaviconService;
@@ -803,6 +810,31 @@ class HistoryService : public CancelableRequestProvider,
     ScheduleTask(priority,
                  base::Bind(func, history_backend_.get(),
                             scoped_refptr<RequestType>(request), a, b, c));
+    return request->handle();
+  }
+
+  template<typename BackendFunc,
+           class RequestType,  // Descendant of CancelableRequstBase.
+           typename ArgA,
+           typename ArgB,
+           typename ArgC,
+           typename ArgD>
+  Handle Schedule(SchedulePriority priority,
+                  BackendFunc func,  // Function to call on the HistoryBackend.
+                  CancelableRequestConsumerBase* consumer,
+                  RequestType* request,
+                  const ArgA& a,
+                  const ArgB& b,
+                  const ArgC& c,
+                  const ArgD& d) {
+    DCHECK(thread_) << "History service being called after cleanup";
+    LoadBackendIfNecessary();
+    if (consumer)
+      AddRequest(request, consumer);
+    ScheduleTask(priority,
+                 base::Bind(func, history_backend_.get(),
+                                   scoped_refptr<RequestType>(request),
+                                   a, b, c, d));
     return request->handle();
   }
 

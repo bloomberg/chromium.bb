@@ -197,6 +197,9 @@ TestingProfile::TestingProfile(const FilePath& path,
 }
 
 void TestingProfile::Init() {
+  if (!file_util::PathExists(profile_path_))
+    file_util::CreateDirectory(profile_path_);
+
   ExtensionSystemFactory::GetInstance()->SetTestingFactory(
       this, TestExtensionSystem::Build);
 

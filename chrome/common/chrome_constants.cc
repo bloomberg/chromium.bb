@@ -122,6 +122,9 @@ const FilePath::CharType kExtensionFileExtension[] = FPL(".crx");
 const FilePath::CharType kExtensionKeyFileExtension[] = FPL(".pem");
 
 // filenames
+#if defined(OS_ANDROID)
+const FilePath::CharType kAndroidCacheFilename[] = FPL("AndroidCache");
+#endif
 const FilePath::CharType kArchivedHistoryFilename[] = FPL("Archived History");
 const FilePath::CharType kCacheDirname[] = FPL("Cache");
 const FilePath::CharType kCRLSetFilename[] =

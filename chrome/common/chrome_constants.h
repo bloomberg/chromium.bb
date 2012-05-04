@@ -52,6 +52,9 @@ extern const FilePath::CharType kExtensionFileExtension[];
 extern const FilePath::CharType kExtensionKeyFileExtension[];
 
 // filenames
+#if defined(OS_ANDROID)
+extern const FilePath::CharType kAndroidCacheFilename[];
+#endif
 extern const FilePath::CharType kArchivedHistoryFilename[];
 extern const FilePath::CharType kCacheDirname[];
 extern const FilePath::CharType kCRLSetFilename[];

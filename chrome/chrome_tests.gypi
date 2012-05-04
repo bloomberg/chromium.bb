@@ -1300,6 +1300,7 @@
         'browser/gpu_blacklist_unittest.cc',
         'browser/gpu_util_unittest.cc',
         'browser/history/android/android_cache_database_unittest.cc',
+        'browser/history/android/android_history_provider_service_unittest.cc',
         'browser/history/android/android_history_types_unittest.cc',
         'browser/history/android/android_provider_backend_unittest.cc',
         'browser/history/android/android_urls_database_unittest.cc',
