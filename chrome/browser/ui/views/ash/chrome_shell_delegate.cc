@@ -137,7 +137,8 @@ void ChromeShellDelegate::Search() {
   Browser* target_browser = Browser::GetOrCreateTabbedBrowser(
       last_active ? last_active->profile() :
                     ProfileManager::GetDefaultProfileOrOffTheRecord());
-  const GURL& url = target_browser->GetSelectedWebContents()->GetURL();
+  const GURL& url = target_browser->GetSelectedWebContents() ?
+      target_browser->GetSelectedWebContents()->GetURL() : GURL();
   if (url.SchemeIs(chrome::kChromeUIScheme) &&
       url.host() == chrome::kChromeUINewTabHost) {
     // If the NTP is showing, focus the omnibox.
@@ -145,6 +146,7 @@ void ChromeShellDelegate::Search() {
   } else {
     target_browser->NewTab();
   }
+  target_browser->window()->Show();
 }
 
 void ChromeShellDelegate::OpenFileManager() {
