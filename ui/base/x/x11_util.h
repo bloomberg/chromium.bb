@@ -18,7 +18,6 @@
 #include "base/basictypes.h"
 #include "ui/base/events.h"
 #include "ui/base/ui_export.h"
-#include "ui/gfx/point.h"
 
 typedef unsigned long Atom;
 typedef unsigned long XID;
@@ -36,7 +35,6 @@ typedef struct _GtkWindow GtkWindow;
 namespace gfx {
 class Rect;
 }
-class SkBitmap;
 
 namespace ui {
 
@@ -91,11 +89,6 @@ UI_EXPORT void RefCustomXCursor(::Cursor cursor);
 
 // Decreases the refcount of the custom cursor, and destroys it if it reaches 0.
 UI_EXPORT void UnrefCustomXCursor(::Cursor cursor);
-
-// Creates a XcursorImage and copies the SkBitmap |bitmap| on it. |bitmap|
-// should be non-null. Caller owns the returned object.
-UI_EXPORT XcursorImage* SkBitmapToXcursorImage(const SkBitmap* bitmap,
-                                               const gfx::Point& hotspot);
 #endif
 
 // These functions do not cache their results --------------------------
