@@ -12,13 +12,13 @@ vars = {
 
 deps = {
     'base':
-        Var('git_url') + '/chromium/src/base.git@a0e812491ac52c26d29329219986ea91ccecfcd3',
+        Var('git_url') + '/chromium/src/base.git@e7002cd11a06dd215600cd18e0aadfbd9a2d44cf',
     'build':
-        Var('git_url') + '/chromium/src/build.git@5c2bf40cf87bdb6c648feea028153ac8a7ae5504',
+        Var('git_url') + '/chromium/src/build.git@f433c669011580c6ba838e13ce937475837c4544',
     'chrome/test/pyautolib':
-        Var('git_url') + '/chromium/src/chrome/test/pyautolib.git@cf50b704753b0e135c468a3c47fb916e1560b5b4',
+        Var('git_url') + '/chromium/src/chrome/test/pyautolib.git@3eff8039fa78dadf18332b791906c3c79d2337e5',
     'gpu':
-        Var('git_url') + '/chromium/src/gpu.git@90c391fd74b9c572d3bb6dd152616d63ed734e92',
+        Var('git_url') + '/chromium/src/gpu.git@cd08e132879cc9b35ce2c37020905ec65648d710',
     'native_client/tools/perf_expectations':
         Var('git_url') + '/chromium/src/tools/perf_expectations.git@5eb13a0c566e624c29d0a64af8d32ab0fc7c4d30',
     'net/tools/testserver':
@@ -40,7 +40,7 @@ deps = {
     'third_party/jsoncpp/source/src/lib_json':
         Var('git_url') + '/external/jsoncpp/jsoncpp/src/lib_json.git@a8caa51ba2f80971a45880425bf2ae864a786784',
     'third_party/khronos':
-        Var('git_url') + '/chromium/src/third_party/khronos.git@5025fb9891d84310ac2dbc3f69124bb8d3589143',
+        Var('git_url') + '/chromium/src/third_party/khronos.git@f394f5831bd7e452b098f05f283f07ffd2951dbd',
     'third_party/lcov':
         Var('git_url') + '/chromium/src/third_party/lcov.git@ba4a791b2b525fc13d169b4cc671dede09bbfb64',
     'third_party/lss':
@@ -60,7 +60,7 @@ deps = {
     'tools/gyp':
         Var('git_url') + '/external/gyp.git@714d6eaec919fd4e2882b245a066619c02d9be5e',
     'tools/valgrind':
-        Var('git_url') + '/chromium/src/tools/valgrind.git@63e20959a8eb75bab42e4e36f0890ade50040728',
+        Var('git_url') + '/chromium/src/tools/valgrind.git@542d93b593cb5eaf21af6aa0c5f86fcadcc16e25',
     'validator_snapshots':
         Var('git_url') + '/native_client/src/validator_snapshots.git@4c1ea6b6ebe020993b0a091fd4e38a6487704b60',
 }
