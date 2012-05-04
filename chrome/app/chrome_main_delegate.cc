@@ -567,12 +567,8 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #if defined(OS_MACOSX) || defined(OS_WIN)
   CheckUserDataDirPolicy(&user_data_dir);
 #endif
-  if (!user_data_dir.empty()) {
-    CHECK(PathService::OverrideAndCreateIfNeeded(
-        chrome::DIR_USER_DATA,
-        user_data_dir,
-        chrome::ProcessNeedsProfileDir(process_type)));
-  }
+  if (!user_data_dir.empty())
+    CHECK(PathService::Override(chrome::DIR_USER_DATA, user_data_dir));
 
   startup_timer_.reset(new base::StatsScope<base::StatsCounterTimer>
                        (content::Counters::chrome_main()));

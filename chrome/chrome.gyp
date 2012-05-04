@@ -1055,10 +1055,6 @@
             'tools/crash_service/crash_service.cc',
             'tools/crash_service/crash_service.h',
             'tools/crash_service/main.cc',
-            '../content/public/common/content_switches.cc',
-          ],
-          'defines': [
-            'COMPILE_CONTENT_STATICALLY',
           ],
           'msvs_settings': {
             'VCLinkerTool': {
