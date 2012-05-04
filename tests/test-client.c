@@ -25,6 +25,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#include <poll.h>
 #include <wayland-client.h>
 
 struct display {
