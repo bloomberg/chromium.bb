@@ -902,6 +902,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
     }
   }
 
+  bool allow_download = request_data.allow_download &&
+      ResourceType::IsFrame(request_data.resource_type);
   // Make extra info and read footer (contains request ID).
   ResourceRequestInfoImpl* extra_info =
       new ResourceRequestInfoImpl(
@@ -919,7 +921,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
           request_data.transition_type,
           upload_size,
           false,  // is download
-          ResourceType::IsFrame(request_data.resource_type),  // allow_download
+          allow_download,
           request_data.has_user_gesture,
           request_data.referrer_policy,
           resource_context);

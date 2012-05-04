@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -172,7 +172,7 @@ class ResourceDispatcherTest : public testing::Test,
     request_info.appcache_host_id = appcache::kNoHostId;
     request_info.routing_id = 0;
     RequestExtraData extra_data(WebKit::WebReferrerPolicyDefault,
-                                true, 0, false, -1,
+                                true, 0, false, -1, true,
                                 content::PAGE_TRANSITION_LINK, -1, -1);
     request_info.extra_data = &extra_data;
 

@@ -90,6 +90,7 @@ static ResourceHostMsg_Request CreateResourceRequest(
   request.parent_is_main_frame = false;
   request.parent_frame_id = -1;
   request.transition_type = content::PAGE_TRANSITION_LINK;
+  request.allow_download = true;
   return request;
 }
 

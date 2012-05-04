@@ -2694,6 +2694,7 @@ NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
         params.transferred_request_child_id);
     navigation_state->set_transferred_request_request_id(
         params.transferred_request_request_id);
+    navigation_state->set_allow_download(params.allow_download);
   } else {
     navigation_state = NavigationState::CreateContentInitiated();
   }
@@ -3105,7 +3106,7 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
   GURL request_url(request.url());
   GURL new_url;
   if (content::GetContentClient()->renderer()->WillSendRequest(
-          frame, request_url, &new_url)) {
+      frame, request_url, &new_url)) {
     request.setURL(WebURL(new_url));
   }
 
@@ -3124,6 +3125,7 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
                            frame->identifier(),
                            frame->parent() == top_frame,
                            frame->parent() ? frame->parent()->identifier() : -1,
+                           navigation_state->allow_download(),
                            transition_type,
                            navigation_state->transferred_request_child_id(),
                            navigation_state->transferred_request_request_id()));

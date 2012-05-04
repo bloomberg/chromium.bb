@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,8 @@ NavigationState::NavigationState(content::PageTransition transition_type,
       pending_history_list_offset_(pending_history_list_offset),
       was_within_same_page_(false),
       transferred_request_child_id_(-1),
-      transferred_request_request_id_(-1) {
+      transferred_request_request_id_(-1),
+      allow_download_(true) {
 }
 
 NavigationState::~NavigationState() {}

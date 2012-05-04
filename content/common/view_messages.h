@@ -608,6 +608,9 @@ IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
   // Unless this refers to a transferred navigation, these values are -1 and -1.
   IPC_STRUCT_MEMBER(int, transferred_request_child_id)
   IPC_STRUCT_MEMBER(int, transferred_request_request_id)
+
+  // Whether or not we should allow the url to download.
+  IPC_STRUCT_MEMBER(bool, allow_download)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_New_Params)

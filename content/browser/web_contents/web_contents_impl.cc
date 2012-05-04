@@ -219,6 +219,8 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
       entry.transferred_global_request_id().child_id;
   params->transferred_request_request_id =
       entry.transferred_global_request_id().request_id;
+  // Avoid downloading when in view-source mode.
+  params->allow_download = !entry.IsViewSourceMode();
 
   if (delegate)
     delegate->AddNavigationHeaders(params->url, &params->extra_headers);

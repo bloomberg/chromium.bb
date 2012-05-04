@@ -113,6 +113,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
     request_.frame_id = extra_data->frame_id();
     request_.parent_is_main_frame = extra_data->parent_is_main_frame();
     request_.parent_frame_id = extra_data->parent_frame_id();
+    request_.allow_download = extra_data->allow_download();
     request_.transition_type = extra_data->transition_type();
     request_.transferred_request_child_id =
         extra_data->transferred_request_child_id();
@@ -123,6 +124,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
     request_.frame_id = -1;
     request_.parent_is_main_frame = false;
     request_.parent_frame_id = -1;
+    request_.allow_download = true;
     request_.transition_type = content::PAGE_TRANSITION_LINK;
     request_.transferred_request_child_id = -1;
     request_.transferred_request_request_id = -1;
