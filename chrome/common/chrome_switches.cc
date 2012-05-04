@@ -234,11 +234,6 @@ const char kDiagnostics[]                   = "diagnostics";
 // device, useful when using remote desktop or machines without sound cards.
 // This is temporary until we fix the underlying problem.
 
-// Disables asynchronous spellchecking features for all time. Disabling this
-// feature also disables unified spellchecking.
-const char kDisableAsynchronousSpellChecking[] =
-    "disable-asynchronous-spellchecking";
-
 // Disables CNAME lookup of the host when generating the Kerberos SPN for a
 // Negotiate challenge. See HttpAuthHandlerNegotiate::CreateSPN for more
 // background.
@@ -454,6 +449,11 @@ const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
 
 // Enables the experimental asynchronous DNS client.
 const char kEnableAsyncDns[]                = "enable-async-dns";
+
+// Enables asynchronous spellchecking features for all time.
+// Enabling this feature also enables unified spellchecking.
+const char kEnableAsynchronousSpellChecking[] =
+    "enable-asynchronous-spellchecking";
 
 // Enables the inclusion of non-standard ports when generating the Kerberos SPN
 // in response to a Negotiate challenge. See

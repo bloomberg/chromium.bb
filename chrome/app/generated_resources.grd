@@ -5574,11 +5574,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_CHROME_TO_MOBILE_DESCRIPTION" desc="Description for the flag to enable Chrome To Mobile.">
         Enable the Chrome To Mobile page action, which allows you to send page URLs and offline copies to Chrome on your mobile device.
       </message>
-      <message name="IDS_FLAGS_DISABLE_ASYNCHRONOUS_SPELLCHECKING" desc="Title for the flag to disable asynchronous spellchecking.">
-        Disable Asynchronous Spellchecking
+      <message name="IDS_FLAGS_ENABLE_ASYNCHRONOUS_SPELLCHECKING" desc="Title for the flag to enable asynchronous spellchecking.">
+        Enable Asynchronous Spellchecking
       </message>
-      <message name="IDS_FLAGS_DISABLE_ASYNCHRONOUS_SPELLCHECKING_DESCRIPTION" desc="Description for the flag to disable asynchronous spellchecking.">
-        Disable experimental asynchronous spellchecking. It also disallows Chrome to use a web service to get spellchecking results.
+      <message name="IDS_FLAGS_ENABLE_ASYNCHRONOUS_SPELLCHECKING_DESCRIPTION" desc="Description for the flag to enable asynchronous spellchecking.">
+        Enable experimental asynchronous spellchecking, which allows Chrome to use a web service to get spellchecking results.
       </message>
       <message name="IDS_FLAGS_NO_DISCARD_TABS_NAME" desc="Name for the flag to disable the tab discarding feature.">
         Don't discard tabs.

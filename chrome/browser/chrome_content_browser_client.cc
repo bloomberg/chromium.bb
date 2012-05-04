@@ -757,9 +757,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kAppsGalleryURL,
       switches::kCloudPrintServiceURL,
       switches::kDebugPrint,
-      switches::kDisableAsynchronousSpellChecking,
       switches::kDisableBundledPpapiFlash,
       switches::kDumpHistogramsOnExit,
+      switches::kEnableAsynchronousSpellChecking,
       switches::kEnableBenchmarking,
       switches::kEnableBundledPpapiFlash,
       switches::kEnableCrxlessWebApps,
@@ -1418,14 +1418,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   }
 
   web_prefs->asynchronous_spell_checking_enabled =
-#if defined(OS_MACOSX)
-      // TODO(hbono): Bug 107371: Implement asynchronous spellchecking API for
-      // Mac so it uses NSSpellChecker in the background.
-      false;
-#else
-      !CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kDisableAsynchronousSpellChecking);
-#endif
+      CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kEnableAsynchronousSpellChecking);
   web_prefs->unified_textchecker_enabled =
       web_prefs->asynchronous_spell_checking_enabled ||
           CommandLine::ForCurrentProcess()->

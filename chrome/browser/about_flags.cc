@@ -608,13 +608,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableChromeToMobile)
   },
+#if defined(GOOGLE_CHROME_BUILD)
   {
-    "disable-asynchronous-spellchecking",
-    IDS_FLAGS_DISABLE_ASYNCHRONOUS_SPELLCHECKING,
-    IDS_FLAGS_DISABLE_ASYNCHRONOUS_SPELLCHECKING_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kDisableAsynchronousSpellChecking)
+    "enable-asynchronous-spellchecking",
+    IDS_FLAGS_ENABLE_ASYNCHRONOUS_SPELLCHECKING,
+    IDS_FLAGS_ENABLE_ASYNCHRONOUS_SPELLCHECKING_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableAsynchronousSpellChecking)
   },
+#endif
   {
     "touch-optimized-ui",
     IDS_TOUCH_OPTIMIZED_UI_NAME,
