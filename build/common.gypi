@@ -654,7 +654,6 @@
           'CERT_CHAIN_PARA_HAS_EXTRA_FIELDS',
           'WIN32_LEAN_AND_MEAN',
           '_SECURE_ATL',
-          '_HAS_TR1=0',
           '__STDC_LIMIT_MACROS=1',
 
           'NACL_LINUX=0',
@@ -665,6 +664,11 @@
           ['component=="static_library"', {
             'defines': [
               '_HAS_EXCEPTIONS=0',
+            ],
+          }],
+          ['MSVS_VERSION=="2008"', {
+            'defines': [
+              '_HAS_TR1=0',
             ],
           }],
         ],
