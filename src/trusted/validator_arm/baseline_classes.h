@@ -69,6 +69,102 @@ class Unary1RegisterImmediateOp : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOp);
 };
 
+// Models a 2-register binary operation with an immediate value.
+// Op(S)<c> <Rd>, <Rn>, #<const>
+// +--------+--------------+--+--------+--------+------------------------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+--------------+--+--------+--------+------------------------+
+// |  cond  |              | S|   Rn   |   Rd   |          imm12         |
+// +--------+--------------+--+--------+--------+------------------------+
+// Definitions:
+//    Rd = The destination register.
+//    Rn = The first operand register.
+//    const = The immediate value to be used as the second argument.
+//
+// NaCl disallows writing to PC to cause a jump.
+class Binary2RegisterImmediateOp : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const Imm12Bits0To11Interface imm;
+  static const RegDBits12To15Interface d;
+  static const RegNBits16To19Interface n;
+  static const UpdatesFlagsRegisterBit20Interface flags;
+  static const ConditionBits28To31Interface cond;
+
+  // Methods for class.
+  inline Binary2RegisterImmediateOp() : ClassDecoder() {}
+  virtual ~Binary2RegisterImmediateOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterImmediateOp);
+};
+
+// Models a Binary2RegisterImmediateOp that is used to mask a memory
+// address to the actual limits of user's memory, using the immediate
+// value. We use this to capture ImmediateBic.
+class MaskedBinary2RegisterImmediateOp : public Binary2RegisterImmediateOp {
+ public:
+  MaskedBinary2RegisterImmediateOp() : Binary2RegisterImmediateOp() {}
+  virtual ~MaskedBinary2RegisterImmediateOp() {}
+  // TODO(karl): find out why we added this so that we allowed an
+  // override on NaCl restriction that one can write to r15.
+  // virtual SafetyLevel safety(Instruction i) const;
+  virtual bool clears_bits(Instruction i, uint32_t mask) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MaskedBinary2RegisterImmediateOp);
+};
+
+// Models a Register to immediate test of the form:
+// Op(S)<c> Rn, #<const>
+// +--------+--------------+--+--------+--------+------------------------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+--------------+--+--------+--------+------------------------+
+// |  cond  |              | S|   Rn   |        |        imm12           |
+// +--------+--------------+--+--------+--------+------------------------+
+// Definitions:
+//    Rn 0 The operand register.
+//    const = ARMExpandImm_C(imm12, ASPR.C)
+//
+// Implements:
+//    CMN(immediate) A1 A8-74
+//    CMP(immediate) A1 A8-80
+//    TEQ(immediate) A1 A8-448
+//    TST(immediate) A1 A8-454 - Note: See class TestImmediate.
+class BinaryRegisterImmediateTest : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const Imm12Bits0To11Interface imm;
+  static const RegNBits16To19Interface n;
+  static const UpdatesFlagsRegisterBit20Interface flags;
+  static const ConditionBits28To31Interface cond;
+
+  // Methods for class.
+  inline BinaryRegisterImmediateTest() : ClassDecoder() {}
+  virtual ~BinaryRegisterImmediateTest() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(BinaryRegisterImmediateTest);
+};
+
+// Models a BinaryRegisterImmediateTest that can be used to set a condition
+// by testing if the immediate value appropriately masks the value in Rn.
+class MaskedBinaryRegisterImmediateTest : public BinaryRegisterImmediateTest {
+ public:
+  inline MaskedBinaryRegisterImmediateTest() : BinaryRegisterImmediateTest() {}
+  virtual ~MaskedBinaryRegisterImmediateTest() {}
+  virtual bool sets_Z_if_bits_clear(Instruction i,
+                                    Register r,
+                                    uint32_t mask) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MaskedBinaryRegisterImmediateTest);
+};
+
 // Models a 2 register unary operation of the form:
 // Op(S)<c> <Rd>, <Rm>
 // +--------+--------------+--+--------+--------+----------------+--------+

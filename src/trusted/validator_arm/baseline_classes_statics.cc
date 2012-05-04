@@ -20,6 +20,19 @@ const UpdatesFlagsRegisterBit20Interface
 Unary1RegisterImmediateOp::flags;
 const ConditionBits28To31Interface Unary1RegisterImmediateOp::cond;
 
+// Binary2RegisterImmediateOp
+const Imm12Bits0To11Interface Binary2RegisterImmediateOp::imm;
+const RegDBits12To15Interface Binary2RegisterImmediateOp::d;
+const RegNBits16To19Interface Binary2RegisterImmediateOp::n;
+const UpdatesFlagsRegisterBit20Interface Binary2RegisterImmediateOp::flags;
+const ConditionBits28To31Interface Binary2RegisterImmediateOp::cond;
+
+// BinaryRegisterImmediateTest::
+const Imm12Bits0To11Interface BinaryRegisterImmediateTest::imm;
+const RegNBits16To19Interface BinaryRegisterImmediateTest::n;
+const UpdatesFlagsRegisterBit20Interface BinaryRegisterImmediateTest::flags;
+const ConditionBits28To31Interface BinaryRegisterImmediateTest::cond;
+
 // Unary2RegisterOp
 const RegMBits0To3Interface Unary2RegisterOp::m;
 const RegDBits12To15Interface Unary2RegisterOp::d;

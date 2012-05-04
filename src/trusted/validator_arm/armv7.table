@@ -62,6 +62,27 @@
 #    Imm5NotZero - The immediate (5-bit) value must not be zero.
 #    NotRdIsPcAndS - Rd not Pc (R15) and S=1 (updates register bit).
 #    NotRdIsPcAndSOrRnIsSp = not (Rd=15 & S=1) or not Rn=13.
+#    RdCanBePc - Overrides Nacl Constraint that Rd!=Pc.
+#    RdCanBePcAndNotRdIsPcAndS - Overrides Nacl Constraint that Rd!=Pc,
+#         and adds constraint Rd not Pc (R15) and S=1 (updates
+#         register bit).
+
+##############################################################
+# The following defines a class decoder hierarchy used to select the
+# appropriate tester. We want to add class hierarchy information for
+# classes that want their tester to be defined on a superclass.
+# By providing this information, the generator can pick out
+# the corresponding baseline class tester to use, and does
+# not need to define separate testers for derived classes of
+# the baseline class tester.
+# #############################################################
+
+class MaskedBinary2RegisterImmediateOp : Binary2RegisterImmediateOp
+class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
+
+##############################################################
+# The following define decoder tables.
+##############################################################
 
 +-- ARMv7 (See Section A5.1)
 | cond(31:28) op1(27:25) op(4)
@@ -224,8 +245,9 @@
 +--
 
 +-- dp_immed (See Section A5.2.3)
-# We model this separately so we can recognize our mask instructions.
-# Side-effect-wise it's identical to dp_reg, above.
+# Note: The two interesting instructions in this set are TestImmediate
+# and ImmediateBic. These two instructions are the ones that we
+# allow testing/setting of bits to mask data addresses appropriately.
 | op(24:20) Rn(19:16)
 | 0000x      -        =DataProc  # AND(immediate)
 | 0001x      -        =DataProc  # EOR(immediate)
@@ -237,13 +259,23 @@
 | 0101x      -        =DataProc  # ADC(immediate)
 | 0110x      -        =DataProc  # SBC(immediate)
 | 0111x      -        =DataProc  # RSC(immediate)
-| 10001      -        =TestImmediate # TST(immediate)
+                        # Note: Following instruction is used to test
+                        # if the immediate value appropriately (data address)
+                        # masks the value in Rn.
+| 10001      -        = MaskedBinaryRegisterImmediateTest => TestImmediate
+                           Tst_Rule_230_A1_P454
+                           cccc00110001nnnn0000iiiiiiiiiiii
 | 10011      -        =Test      # TEQ(immediate)
 | 10101      -        =Test      # CMP(immediate)
 | 10111      -        =Test      # CMN(immediate)
 | 1100x      -        =DataProc  # ORR(immediate)
 | 1101x      -        =DataProc  # MOV(immediate)
-| 1110x      -        =ImmediateBic  # BIC(immediate)
+                        # Note: The following instruction is used to mask
+                        # memory addresses.
+| 1110x      -        = MaskedBinary2RegisterImmediateOp => ImmediateBic
+                           Bic_Rule_19_A1_P50
+                           cccc0011110unnnnddddiiiiiiiiiiii
+                           RdCanBePcAndNotRdIsPcAndS
 | 1111x      -        =DataProc  # MVN(immediate)
 +--
 

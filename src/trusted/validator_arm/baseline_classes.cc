@@ -27,6 +27,48 @@ RegisterList Unary1RegisterImmediateOp::defs(const Instruction i) const {
   return d.reg(i) + flags.reg_if_updated(i);
 }
 
+// Binary2RegisterImmediateOp
+SafetyLevel Binary2RegisterImmediateOp::safety(Instruction i) const {
+  // NaCl Constraint.
+  if (d.reg(i) == kRegisterPc) return FORBIDDEN_OPERANDS;
+  return MAY_BE_SAFE;
+}
+
+RegisterList Binary2RegisterImmediateOp::defs(Instruction i) const {
+  return d.reg(i) + flags.reg_if_updated(i);
+}
+
+// TODO(karl): find out why we added this so that we allowed an
+// override on NaCl restriction that one can write to r15.
+// MaskedBinary2RegisterImmediateOp
+// SafetyLevel MaskedBinary2RegisterImmediateOp::safety(Instruction i) const {
+//   UNREFERENCED_PARAMETER(i);
+//   return MAY_BE_SAFE;
+// }
+
+bool MaskedBinary2RegisterImmediateOp::clears_bits(
+    Instruction i, uint32_t mask) const {
+  return (imm.get_modified_immediate(i) & mask) == mask;
+}
+
+// BinaryRegisterImmediateTest::
+SafetyLevel BinaryRegisterImmediateTest::safety(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return MAY_BE_SAFE;
+}
+
+RegisterList BinaryRegisterImmediateTest::defs(Instruction i) const {
+  return flags.reg_if_updated(i);
+}
+
+// MaskedBinaryRegisterImmediateTest
+bool MaskedBinaryRegisterImmediateTest::sets_Z_if_bits_clear(
+    Instruction i, Register r, uint32_t mask) const {
+  return n.reg(i) == r &&
+      (imm.get_modified_immediate(i) & mask) == mask &&
+      defs(i)[kRegisterFlags];
+}
+
 // Unary2RegisterOp
 SafetyLevel Unary2RegisterOp::safety(const Instruction i) const {
   // NaCl Constraint.

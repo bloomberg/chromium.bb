@@ -165,6 +165,84 @@ import dgen_core
 import dgen_opt
 import dgen_output
 
+# The following defines naming conventions used for identifiers.
+# Note: DECODER will be replaced by 'actual' and 'baseline', defining
+# how both types of symbols are generated.
+
+CLASS = '%(DECODER)s_%(rule)s'
+NAMED_CLASS = 'Named%(DECODER)s_%(rule)s'
+INSTANCE = '%(DECODER_class)s_instance_'
+BASE_TESTER='%(decoder_base)sTester%(constraints)s'
+DECODER_TESTER='%(baseline)sTester_%(rule)s_%(constraints)s'
+
+def _install_action(decoder, action, values):
+  # Installs common names needed from the given decoder action. This
+  # code is somewhat inefficient in that most cases, most of the
+  # added strings are not needed. On the other hand, by having a
+  # single routine that generates all action specific names at one
+  # spot, it is much easier to change definitions.
+  values['baseline'] = action.baseline
+  values['actual'] = action.actual
+  values['decoder_base'] = decoder.base_class(values['baseline'])
+  values['rule'] = action.rule
+  values['constraints'] = action.constraints if action.constraints else ''
+  values['pattern'] = action.pattern
+  values['baseline_class'] =  _decoder_replace(CLASS, 'baseline') % values
+  values['actual_class'] = (
+      _decoder_replace(CLASS, 'actual') %
+      values if values['rule'] else values['actual'])
+  _install_baseline_and_actuals('named_DECODER_class', NAMED_CLASS, values)
+  _install_baseline_and_actuals('DECODER_instance', INSTANCE, values)
+  values['base_tester'] = BASE_TESTER % values
+  values['decoder_tester'] = DECODER_TESTER % values
+
+def _decoder_replace(string, basis):
+  return string.replace('DECODER', basis)
+
+def _install_key_pattern(key, pattern, basis, values):
+  # Replace DECODER in key and pattern with basis, then
+  # install into values.
+  values[_decoder_replace(key, basis)] = (
+      _decoder_replace(pattern, basis) % values)
+
+def _install_baseline_and_actuals(key, pattern, values):
+  # Replace DECODER with 'baseline' and 'actual', apply it
+  # to the key and pattern, and then install into values.
+  for basis in ['baseline', 'actual']:
+    _install_key_pattern(key, pattern, basis, values)
+
+def _install_forbidden(values):
+  # Install the 'Forbidden' instance into values.
+  vals = {'baseline': 'Forbidden',
+          'rule': None}
+  _install_key_pattern('DECODER_class', CLASS, 'baseline', vals)
+  _install_key_pattern('DECODER_instance', INSTANCE, 'baseline', vals)
+  values['forbidden'] = vals['baseline_instance']
+
+def _generate_baseline_and_actual(code, decoder,
+                                  values, out, actions=['rule']):
+  # Generate code for 'baseline' and 'actual' decoders, filtering
+  # actions with the given set of fields.
+
+  # Generate one for each type of basline decoder.
+  baseline_actions = actions[:]
+  baseline_actions.insert(0, 'baseline');
+  baseline_code = _decoder_replace(code, 'baseline')
+  for d in decoder.action_filter(baseline_actions).decoders():
+    _install_action(decoder, d, values);
+    out.write(baseline_code % values)
+
+  # Generate one for each actual type that is different than the
+  # baseline.
+  actual_actions = actions[:]
+  actual_actions.insert(0, 'actual-not-baseline')
+  actual_code = _decoder_replace(code, 'actual')
+  for d in decoder.action_filter(actual_actions).decoders():
+    # Note: 'actual-not-baseline' sets actual to None if same as baseline.
+    if d.actual:
+      _install_action(decoder, d, values);
+      out.write(actual_code % values)
+
 # Defines the header for decoder_named_classes.h
 NAMED_CLASSES_H_HEADER="""%(FILE_HEADER)s
 %(NOT_TCB_MESSAGE)s
@@ -185,18 +263,16 @@ namespace nacl_arm_dec {
 
 """
 
-RULE_CLASS="""class %(rule)s%(decoder)s
-   : public %(decoder)s {
+RULE_CLASS="""class %(DECODER_class)s
+   : public %(DECODER)s {
  public:
-  virtual ~%(rule)s%(decoder)s() {}
+  virtual ~%(DECODER_class)s() {}
 };
 
 """
 
-RULE_CLASSES_FOOTER="""}  // nacl_arm_dec
-"""
+NAMED_DECODERS_HEADER="""}  // nacl_arm_dec
 
-NAMED_DECODERS_HEADER="""
 namespace nacl_arm_test {
 
 /*
@@ -212,17 +288,17 @@ namespace nacl_arm_test {
 
 """
 
-NAMED_DECODER_DECLARE="""class Named%(rule)s%(decoder)s
+NAMED_CLASS_DECLARE="""class %(named_DECODER_class)s
     : public NamedClassDecoder {
  public:
-  inline Named%(rule)s%(decoder)s()
-    : NamedClassDecoder(decoder_, "%(rule)s%(decoder)s")
+  inline %(named_DECODER_class)s()
+    : NamedClassDecoder(decoder_, "%(DECODER)s %(rule)s")
   {}
-  virtual ~Named%(rule)s%(decoder)s() {}
+  virtual ~%(named_DECODER_class)s() {}
 
  private:
-  nacl_arm_dec::%(rule)s%(decoder)s decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(Named%(rule)s%(decoder)s);
+  nacl_arm_dec::%(DECODER_class)s decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(%(named_DECODER_class)s);
 };
 
 """
@@ -250,41 +326,12 @@ def generate_named_classes_h(decoder, decoder_name, filename, out):
       'decoder_name': decoder_name,
       }
   out.write(NAMED_CLASSES_H_HEADER % values)
-  _generate_rule_classes(decoder, values, out)
-  _generate_named_decoder_classes(decoder, values, out)
-  out.write(NAMED_CLASSES_H_FOOTER % values)
-
-def _generate_named_decoder_classes(decoder, values, out):
-  out.write(NAMED_DECODERS_HEADER)
-  # Generate one for each type of decoder in the decoder.
-  for d in decoder.action_filter(['baseline']).decoders():
-    values['decoder'] = d.baseline
-    values['rule'] = ''
-    out.write(NAMED_DECODER_DECLARE % values)
-  # Generate one for each actual type that is different than the
-  # baseline.
-  for d in decoder.action_filter(['actual-not-baseline']).decoders():
-    # Only print decoders with actual value.
-    if d.actual:
-      values['decoder'] = d.actual
-      values['rule'] = ''
-      out.write(NAMED_DECODER_DECLARE % values)
-  # Now generate one for each decoder that has a rule associated with it.
-  for d in decoder.action_filter(['baseline', 'rule']).rules():
-    values['decoder'] = d.baseline
-    values['rule'] = d.rule
-    out.write(NAMED_DECODER_DECLARE % values)
-
-def _generate_rule_classes(decoder, values, out):
-  # Note: we generate these classes in nacl_arm_dec, so that
-  # all decoder classes generated by the pareser are in the
-  # same namesapce.
   out.write(RULE_CLASSES_HEADER)
-  for action in decoder.action_filter(['baseline', 'rule']).rules():
-    values['decoder'] = action.baseline
-    values['rule'] = action.rule
-    out.write(RULE_CLASS % values)
-  out.write(RULE_CLASSES_FOOTER)
+  _generate_baseline_and_actual(RULE_CLASS, decoder, values, out)
+  out.write(NAMED_DECODERS_HEADER)
+  _generate_baseline_and_actual(NAMED_CLASS_DECLARE,
+                                decoder, values, out)
+  out.write(NAMED_CLASSES_H_FOOTER % values)
 
 NAMED_DECODER_H_HEADER="""%(FILE_HEADER)s
 %(NOT_TCB_MESSAGE)s
@@ -297,9 +344,7 @@ NAMED_DECODER_H_HEADER="""%(FILE_HEADER)s
 #include "native_client/src/trusted/validator_arm/named_class_decoder.h"
 
 namespace nacl_arm_test {
-"""
 
-DECODER_STATE_HEADER="""
 // Defines a (named) decoder class selector for instructions
 class Named%(decoder_name)s : nacl_arm_dec::DecoderState {
  public:
@@ -315,9 +360,7 @@ class Named%(decoder_name)s : nacl_arm_dec::DecoderState {
   // to use.
   virtual const nacl_arm_dec::ClassDecoder& decode(
      const nacl_arm_dec::Instruction) const;
-"""
 
-DECODER_STATE_FIELD_COMMENTS="""
   // The following fields define the set of class decoders
   // that can be returned by the API function "decode_named". They
   // are created once as instance fields, and then returned
@@ -326,13 +369,11 @@ DECODER_STATE_FIELD_COMMENTS="""
   // for each call to "decode_named")."""
 
 DECODER_STATE_FIELD="""
-  const Named%(rule)s%(decoder)s %(rule)s%(decoder)s_instance_;"""
-
-DECODER_STATE_PRIVATE="""
- private:
-"""
+  const %(named_DECODER_class)s %(DECODER_instance)s;"""
 
 DECODER_STATE_DECODER_COMMENTS="""
+ private:
+
   // The following list of methods correspond to each decoder table,
   // and implements the pattern matching of the corresponding bit
   // patterns. After matching the corresponding bit patterns, they
@@ -345,11 +386,9 @@ DECODER_STATE_DECODER="""
   inline const NamedClassDecoder& decode_%(table)s(
       const nacl_arm_dec::Instruction insn) const;"""
 
-DECODER_STATE_FOOTER="""
-};
-"""
-
 NAMED_DECODER_H_FOOTER="""
+};
+
 } // namespace nacl_arm_test
 #endif  // %(IFDEF_NAME)s
 """
@@ -374,28 +413,12 @@ def generate_named_decoder_h(decoder, decoder_name, filename, out):
         'decoder_name': decoder_name,
         }
     out.write(NAMED_DECODER_H_HEADER % values)
-    _generate_decoder_state_class(decoder, values, out)
+    _generate_baseline_and_actual(DECODER_STATE_FIELD, decoder, values, out)
+    out.write(DECODER_STATE_DECODER_COMMENTS)
+    for table in decoder.tables():
+      values['table'] = table.name
+      out.write(DECODER_STATE_DECODER % values)
     out.write(NAMED_DECODER_H_FOOTER % values)
-
-def _generate_decoder_state_class(decoder, values, out):
-  # Generate a field for each type of decoder in the decoder.
-  out.write(DECODER_STATE_HEADER % values)
-  out.write(DECODER_STATE_FIELD_COMMENTS);
-  for d in decoder.action_filter(['baseline']).decoders():
-    values['decoder'] = d.baseline
-    values['rule'] = ''
-    out.write(DECODER_STATE_FIELD % values)
-  # Now generate one for each decoder that has a rule associated with it.
-  for d in decoder.action_filter(['baseline', 'rule']).rules():
-    values['decoder'] = d.baseline
-    values['rule'] = d.rule
-    out.write(DECODER_STATE_FIELD % values)
-  out.write(DECODER_STATE_PRIVATE);
-  out.write(DECODER_STATE_DECODER_COMMENTS)
-  for table in decoder.tables():
-    values['table'] = table.name
-    out.write(DECODER_STATE_DECODER % values)
-  out.write(DECODER_STATE_FOOTER % values)
 
 # Defines the source for DECODER_named.cc
 NAMED_CC_HEADER="""%(FILE_HEADER)s
@@ -408,16 +431,8 @@ using nacl_arm_dec::ClassDecoder;
 using nacl_arm_dec::Instruction;
 
 namespace nacl_arm_test {
-"""
 
-PARSE_CONSTRUCT_HEADER="""
 Named%(decoder_name)s::Named%(decoder_name)s()
-  : nacl_arm_dec::DecoderState()"""
-
-PARSE_CONSTRUCT_FIELDS="""
-  , %(rule)s%(decoder)s_instance_()"""
-
-PARSE_CONSTRUCT_FOOTER="""
 {}
 
 Named%(decoder_name)s::~Named%(decoder_name)s() {}
@@ -442,7 +457,7 @@ PARSE_TABLE_METHOD_FOOTER="""
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: %(table_name)s could not parse %%08X",
           insn.bits(31,0));
-  return Forbidden_instance_;
+  return %(forbidden)s;
 }
 
 """
@@ -480,24 +495,10 @@ def generate_named_cc(decoder, decoder_name, filename, out):
         'decoder_name': decoder_name,
         'entry_table_name': decoder.primary.name,
         }
+    _install_forbidden(values)
     out.write(NAMED_CC_HEADER % values)
-    _generate_decoder_constructors(decoder, values, out)
     _generate_decoder_method_bodies(decoder, values, out)
     out.write(NAMED_CC_FOOTER % values)
-
-def _generate_decoder_constructors(decoder, values, out):
-  out.write(PARSE_CONSTRUCT_HEADER % values)
-  # Initialize each type of decoder in the decoder.
-  for d in decoder.action_filter(['baseline']).decoders():
-    values['decoder'] = d.baseline
-    values['rule'] = ''
-    out.write(PARSE_CONSTRUCT_FIELDS % values)
-  # Now initialize fields for each decoder with a rule.
-  for d in decoder.action_filter(['baseline', 'rule']).rules():
-    values['decoder'] = d.baseline
-    values['rule'] = d.rule
-    out.write(PARSE_CONSTRUCT_FIELDS % values)
-  out.write(PARSE_CONSTRUCT_FOOTER % values)
 
 def _generate_decoder_method_bodies(decoder, values, out):
   for table in decoder.tables():
@@ -522,9 +523,8 @@ def _generate_decoder_method_bodies(decoder, values, out):
 
     for row in opt_rows:
       if row.action.__class__.__name__ == 'DecoderAction':
-        values['decoder'] = row.action.baseline
-        values['rule'] = row.action.rule if row.action.rule else ''
-        action = '%(rule)s%(decoder)s_instance_' % values
+        _install_action(decoder, row.action, values)
+        action = '%(baseline_instance)s' % values
       elif row.action.__class__.__name__ == 'DecoderMethod':
         action = 'decode_%s(insn)' % row.action.name
       else:
@@ -555,18 +555,25 @@ TEST_CC_HEADER="""%(FILE_HEADER)s
 
 #include "gtest/gtest.h"
 #include "native_client/src/trusted/validator_arm/actual_vs_baseline.h"
+#include "native_client/src/trusted/validator_arm/actual_classes.h"
+#include "native_client/src/trusted/validator_arm/baseline_classes.h"
 #include "native_client/src/trusted/validator_arm/inst_classes_testers.h"
 
 namespace nacl_arm_test {
+
+// Generates a derived class decoder tester for each decoder action
+// in the parse tables. This derived class introduces a default
+// constructor that automatically initializes the expected decoder
+// to the corresponding instance in the generated DecoderState.
 """
 
 TESTER_CLASS="""
-class %(rule)s%(decoder)sTester%(constraints)s
-    : public %(decoder)sTester%(constraints)s {
+class %(decoder_tester)s
+    : public %(base_tester)s {
  public:
-  %(rule)s%(decoder)sTester%(constraints)s()
-    : %(decoder)sTester%(constraints)s(
-      state_.%(rule)s%(decoder)s_instance_)
+  %(decoder_tester)s()
+    : %(base_tester)s(
+      state_.%(baseline_instance)s)
   {}
 };
 """
@@ -577,13 +584,15 @@ class %(decoder_name)sTests : public ::testing::Test {
  protected:
   %(decoder_name)sTests() {}
 };
+
+// The following test each pattern specified in parse decoder tables.
 """
 
 TEST_FUNCTION_ACTUAL_VS_BASELINE="""
 TEST_F(%(decoder_name)sTests,
-       %(rule)s%(baseline)s%(constraints)s_%(pattern)s_Test) {
-  %(rule)s%(baseline)sTester%(constraints)s baseline_tester;
-  Named%(actual)s actual;
+       %(decoder_tester)s_%(pattern)s_Test) {
+  %(decoder_tester)s baseline_tester;
+  %(named_actual_class)s actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("%(pattern)s");
 }
@@ -591,12 +600,11 @@ TEST_F(%(decoder_name)sTests,
 
 TEST_FUNCTION_BASELINE="""
 TEST_F(%(decoder_name)sTests,
-       %(rule)s%(baseline)s%(constraints)s_%(pattern)s_Test) {
-  %(rule)s%(baseline)sTester%(constraints)s tester;
+       %(decoder_tester)s_%(pattern)s_Test) {
+  %(decoder_tester)s tester;
   tester.Test("%(pattern)s");
 }
 """
-
 
 TEST_CC_FOOTER="""
 }  // namespace nacl_arm_test
@@ -623,9 +631,7 @@ def generate_tests_cc(decoder, decoder_name, out, tables):
 
 def _generate_rule_testers(decoder, values, out):
   for d in decoder.action_filter(['baseline', 'rule', 'constraints']).rules():
-    values['decoder'] = d.baseline
-    values['rule'] = d.rule
-    values['constraints'] = d.constraints if d.constraints else ''
+    _install_action(decoder, d, values)
     out.write(TESTER_CLASS % values)
 
 def _decoder_restricted_to_tables(decoder, tables):
@@ -639,11 +645,7 @@ def _decoder_restricted_to_tables(decoder, tables):
 def _generate_test_patterns(decoder, values, out):
   for d in decoder.decoders():
     if d.pattern:
-      values['baseline'] = d.baseline
-      values['actual'] = d.actual
-      values['rule'] = d.rule if d.rule else ''
-      values['constraints'] = d.constraints if d.constraints else ''
-      values['pattern'] = d.pattern
+      _install_action(decoder, d, values)
       if d.actual == d.baseline:
         out.write(TEST_FUNCTION_BASELINE % values)
       else:

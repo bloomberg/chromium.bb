@@ -11,11 +11,12 @@ A simple recursive-descent parser for the table file format.
 The grammar implemented here is roughly (taking some liberties with whitespace
 and comment parsing):
 
-table_file ::= table+ eof ;
+table_file ::= classdef* table+ eof ;
 
 action         ::= decoder_action arch | decoder_method | '"'
 arch           ::= '(' word+ ')'
 citation       ::= '(' word+ ')'
+classdef       ::= 'class' word ':' word
 decoder        ::= id ('=>' id)?
 decoder_action ::= '=' decoder (id (word (id)?)?)?
 decoder_method ::= '->' id
@@ -59,6 +60,10 @@ class Parser(object):
   def parse(self, input):
     self.input = input             # The remaining input to parse
     decoder = dgen_core.Decoder()  # The generated decoder of parse tables.
+    # Read the class definitions while there.
+    while self._next_token().kind == 'class':
+      self._classdef(decoder)
+
     # Read tables while there.
     while self._next_token().kind == '+':
       self._table(decoder)
@@ -76,11 +81,11 @@ class Parser(object):
     self._line_no = 0            # The current line being parsed
     self._token = None           # The next token from the input.
     self._reached_eof = False    # True when end of file reached
-    # Punctuation allowed. Must be ordered such that if
+    # Punctuation and keywords allowed. Must be ordered such that if
     # p1 != p2 are in the list, and p1.startswith(p2), then
     # p1 must appear before p2.
-    self._punctuation = ['else', '=>', '->', '-', '+',
-                         '(', ')', '=', ':', '"', '|']
+    self._punctuation = ['class', 'else', '=>', '->', '-', '+', '(', ')',
+                         '=', ':', '"', '|']
 
   def _action(self, last_action, last_arch):
     """ action ::= decoder_action arch | decoder_method | '"' """
@@ -106,11 +111,20 @@ class Parser(object):
     """ citation ::= '(' word+ ')' """
     return ' '.join(self._parenthesized_exp())
 
+  def _classdef(self, decoder):
+    """ classdef       ::= 'class' word ':' word """
+    self._read_token('class')
+    class_name = self._read_token('word').value
+    self._read_token(':');
+    class_superclass = self._read_token('word').value
+    if not decoder.add_class_def(class_name, class_superclass):
+      unexpected('Inconsistent definitions for class %s' % class_name)
+
   def _read_id_or_none(self, read_id):
     if self._next_token().kind in ['|', '+', '(']:
       return None
-    name = self._id() if read_id else self._read_token('word').value
-    return None if name and name == 'None' else name
+    id = self._id() if read_id else self._read_token('word').value
+    return None if id and id == 'None' else id
 
   def _decoder(self):
     """ decoder        ::= id ('=>' id)? """

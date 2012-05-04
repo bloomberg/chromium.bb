@@ -79,6 +79,107 @@ ApplySanityChecks(Instruction inst,
       << "Expected Unpredictable for " << InstContents();
 }
 
+Binary2RegisterImmediateOpTester::Binary2RegisterImmediateOpTester(
+    const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder), apply_rd_is_pc_check_(true) {}
+
+void Binary2RegisterImmediateOpTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary2RegisterImmediateOp expected_decoder;
+
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst) &&
+      (&ExpectedDecoder() != &decoder))
+    return;
+
+  // Check if expected class name found.
+  Arm32DecoderTester::ApplySanityChecks(inst, decoder);
+
+  // Check Registers and flags used in DataProc.
+  EXPECT_EQ(expected_decoder.n.number(inst), inst.bits(19, 16));
+  EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
+  EXPECT_EQ(expected_decoder.flags.is_updated(inst), inst.bit(20));
+  if (expected_decoder.flags.is_updated(inst)) {
+    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterFlags);
+  } else {
+    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterNone);
+  }
+
+  // Check that immediate value is computed correctly.
+  EXPECT_EQ(expected_decoder.imm.value(inst), inst.bits(11, 0));
+
+  // Other NaCl constraints about this instruction.
+  if (apply_rd_is_pc_check_) {
+    EXPECT_NE(expected_decoder.d.number(inst), (uint32_t) 15)
+        << "Expected FORBIDDEN_OPERANDS for " << InstContents();
+  }
+}
+
+// Binary2RegisterImmediateOpTesterNotRdIsPcAndS
+Binary2RegisterImmediateOpTesterNotRdIsPcAndS::
+Binary2RegisterImmediateOpTesterNotRdIsPcAndS(
+    const NamedClassDecoder& decoder)
+    : Binary2RegisterImmediateOpTester(decoder) {}
+
+void Binary2RegisterImmediateOpTesterNotRdIsPcAndS::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary2RegisterImmediateOp expected_decoder;
+
+  // Check that we don't parse when Rd=15 and S=1.
+  if ((expected_decoder.d.reg(inst) == kRegisterPc) &&
+      expected_decoder.flags.is_updated(inst) &&
+      (&ExpectedDecoder() != &decoder))
+    return;
+  Binary2RegisterImmediateOpTester::ApplySanityChecks(inst, decoder);
+}
+
+// Binary2RegisterImmediateOpTesterRdCanBePcAndNotRdIsPcAndS
+Binary2RegisterImmediateOpTesterRdCanBePcAndNotRdIsPcAndS::
+Binary2RegisterImmediateOpTesterRdCanBePcAndNotRdIsPcAndS(
+    const NamedClassDecoder& decoder)
+    : Binary2RegisterImmediateOpTesterNotRdIsPcAndS(decoder) {
+      apply_rd_is_pc_check_ = false;
+}
+
+// BinaryRegisterImmediateTestTester
+BinaryRegisterImmediateTestTester::BinaryRegisterImmediateTestTester(
+    const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
+
+void BinaryRegisterImmediateTestTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::BinaryRegisterImmediateTest expected_decoder;
+
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst) &&
+      (&ExpectedDecoder() != &decoder))
+    return;
+
+  // Check if expected class name found.
+  Arm32DecoderTester::ApplySanityChecks(inst, decoder);
+
+  // Check Registers and flags used in DataProc.
+  EXPECT_EQ(expected_decoder.n.number(inst), inst.bits(19, 16));
+  EXPECT_EQ(expected_decoder.flags.is_updated(inst), inst.bit(20));
+  if (expected_decoder.flags.is_updated(inst)) {
+    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterFlags);
+  } else {
+    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterNone);
+  }
+
+  // Check that immediate value is computed correctly.
+  EXPECT_EQ(expected_decoder.imm.value(inst), inst.bits(11, 0));
+}
+
 // Unary2RegisterOpTester
 Unary2RegisterOpTester::Unary2RegisterOpTester(
     const NamedClassDecoder& decoder)

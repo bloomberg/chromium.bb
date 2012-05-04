@@ -54,6 +54,27 @@ class Unary1RegisterImmediateOpTesterRegsNotPc
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOpTesterRegsNotPc);
 };
 
+// Implements a decoder tester for decoder BinaryRegisterImmediateTest
+// Op(S)<c> Rn, #<const>
+// +--------+--------------+--+--------+--------+------------------------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+--------------+--+--------+--------+------------------------+
+// |  cond  |              | S|   Rn   |        |        imm12           |
+// +--------+--------------+--+--------+--------+------------------------+
+// Definitions:
+//    Rn 0 The operand register.
+//    const = ARMExpandImm_C(imm12, ASPR.C)
+class BinaryRegisterImmediateTestTester : public Arm32DecoderTester {
+ public:
+  explicit BinaryRegisterImmediateTestTester(
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(BinaryRegisterImmediateTestTester);
+};
+
 // Implements a decoder tester for decoder Unary2RegisterOp.
 // Op(S)<c> <Rd>, <Rm>
 // +--------+--------------+--+--------+--------+----------------+--------+
@@ -89,6 +110,61 @@ class Unary2RegisterOpTesterNotRdIsPcAndS : public Unary2RegisterOpTester {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOpTesterNotRdIsPcAndS);
+};
+
+// Implements a decoder tester for decoder Binary2RegisterImmediateOp.
+// Op(S)<c> <Rd>, <Rn>, #<const>
+// +--------+--------------+--+--------+--------+------------------------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+--------------+--+--------+--------+------------------------+
+// |  cond  |              | S|   Rn   |   Rd   |          imm12         |
+// +--------+--------------+--+--------+--------+------------------------+
+// Definitions:
+//    Rd = The destination register.
+//    Rn = The first operand register.
+//    const = The immediate value to be used as the second argument.
+class Binary2RegisterImmediateOpTester : public  Arm32DecoderTester {
+ public:
+  explicit Binary2RegisterImmediateOpTester(
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  // If true, the Rd=15 Nacl Check is applied.
+  bool apply_rd_is_pc_check_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterImmediateOpTester);
+};
+
+// Implements a decoder tester for decoder Binary2RegisterImmediateOp,
+// and should not parse when Rd=15 and S=1.
+class Binary2RegisterImmediateOpTesterNotRdIsPcAndS
+    : public Binary2RegisterImmediateOpTester {
+ public:
+  Binary2RegisterImmediateOpTesterNotRdIsPcAndS(
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterImmediateOpTesterNotRdIsPcAndS);
+};
+
+// Implements a decoder tester for decoder Binary2RegisterImmediateOp,
+// where Rd can be Pc (overriding default NaCl assumptions),
+// and should not parse when Rd=15 and S=1.
+class Binary2RegisterImmediateOpTesterRdCanBePcAndNotRdIsPcAndS
+    : public Binary2RegisterImmediateOpTesterNotRdIsPcAndS {
+ public:
+  Binary2RegisterImmediateOpTesterRdCanBePcAndNotRdIsPcAndS(
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Binary2RegisterImmediateOpTesterRdCanBePcAndNotRdIsPcAndS);
 };
 
 // Implements a decoder tester for decoder Binary3RegisterOp.

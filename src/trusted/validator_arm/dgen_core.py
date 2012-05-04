@@ -443,6 +443,7 @@ class Decoder(object):
     self.primary = None
     self._is_sorted = False
     self._tables = []
+    self._class_defs = {}
 
   def add(self, table):
     """Adds the table to the set of tables. Returns true if successful.
@@ -464,6 +465,19 @@ class Decoder(object):
     self._is_sorted = True
     return self._tables
 
+  def add_class_def(self, cls, supercls):
+    """Adds that cls's superclass is supercls. Returns true if able to add.
+
+       Arguments are:
+         cls - The class (name) being defined.
+         supercls - The class (name) cls is a subclass of.
+    """
+    if cls in self._class_defs:
+      return self._class_defs[cls] == supercls
+    else:
+      self._class_defs[cls] = supercls
+      return True
+
   def action_filter(self, names):
     """Returns a new set of tables with actions reduced to the set of
     field names.
@@ -473,7 +487,18 @@ class Decoder(object):
                              key=lambda(tbl): tbl.name)
     decoder.primary = filter(
         lambda(t): t.name == self.primary.name, self._tables)[0]
+    decoder._class_defs = self._class_defs.copy()
     return decoder
+
+  def base_class(self, cls):
+    """Returns the base-most class of cls (or cls if no base class). """
+    tried = set()
+    while cls in self._class_defs:
+      if cls in tried:
+        raise Exception('Class %s defined circularly' % cls)
+      tried.add(cls)
+      cls = self._class_defs[cls]
+    return cls
 
   def decoders(self):
     """Returns the sorted sequence of DecoderAction's defined in the tables."""

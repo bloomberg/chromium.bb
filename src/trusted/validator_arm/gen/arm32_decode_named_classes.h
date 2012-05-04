@@ -23,250 +23,484 @@
  */
 namespace nacl_arm_dec {
 
-class Cmn_Rule_33_A1_P76Binary2RegisterImmedShiftedTest
+class Binary2RegisterImmedShiftedTest_Cmn_Rule_33_A1_P76
    : public Binary2RegisterImmedShiftedTest {
  public:
-  virtual ~Cmn_Rule_33_A1_P76Binary2RegisterImmedShiftedTest() {}
+  virtual ~Binary2RegisterImmedShiftedTest_Cmn_Rule_33_A1_P76() {}
 };
 
-class Cmp_Rule_36_A1_P82Binary2RegisterImmedShiftedTest
+class Binary2RegisterImmedShiftedTest_Cmp_Rule_36_A1_P82
    : public Binary2RegisterImmedShiftedTest {
  public:
-  virtual ~Cmp_Rule_36_A1_P82Binary2RegisterImmedShiftedTest() {}
+  virtual ~Binary2RegisterImmedShiftedTest_Cmp_Rule_36_A1_P82() {}
 };
 
-class Teq_Rule_228_A1_P450Binary2RegisterImmedShiftedTest
+class Binary2RegisterImmedShiftedTest_Teq_Rule_228_A1_P450
    : public Binary2RegisterImmedShiftedTest {
  public:
-  virtual ~Teq_Rule_228_A1_P450Binary2RegisterImmedShiftedTest() {}
+  virtual ~Binary2RegisterImmedShiftedTest_Teq_Rule_228_A1_P450() {}
 };
 
-class Tst_Rule_231_A1_P456Binary2RegisterImmedShiftedTest
+class Binary2RegisterImmedShiftedTest_Tst_Rule_231_A1_P456
    : public Binary2RegisterImmedShiftedTest {
  public:
-  virtual ~Tst_Rule_231_A1_P456Binary2RegisterImmedShiftedTest() {}
+  virtual ~Binary2RegisterImmedShiftedTest_Tst_Rule_231_A1_P456() {}
 };
 
-class Adc_Rule_2_A1_P16Binary3RegisterImmedShiftedOp
+class Binary3RegisterImmedShiftedOp_Adc_Rule_2_A1_P16
    : public Binary3RegisterImmedShiftedOp {
  public:
-  virtual ~Adc_Rule_2_A1_P16Binary3RegisterImmedShiftedOp() {}
+  virtual ~Binary3RegisterImmedShiftedOp_Adc_Rule_2_A1_P16() {}
 };
 
-class Add_Rule_6_A1_P24Binary3RegisterImmedShiftedOp
+class Binary3RegisterImmedShiftedOp_Add_Rule_6_A1_P24
    : public Binary3RegisterImmedShiftedOp {
  public:
-  virtual ~Add_Rule_6_A1_P24Binary3RegisterImmedShiftedOp() {}
+  virtual ~Binary3RegisterImmedShiftedOp_Add_Rule_6_A1_P24() {}
 };
 
-class And_Rule_7_A1_P36Binary3RegisterImmedShiftedOp
+class Binary3RegisterImmedShiftedOp_And_Rule_7_A1_P36
    : public Binary3RegisterImmedShiftedOp {
  public:
-  virtual ~And_Rule_7_A1_P36Binary3RegisterImmedShiftedOp() {}
+  virtual ~Binary3RegisterImmedShiftedOp_And_Rule_7_A1_P36() {}
 };
 
-class Bic_Rule_20_A1_P52Binary3RegisterImmedShiftedOp
+class Binary3RegisterImmedShiftedOp_Bic_Rule_20_A1_P52
    : public Binary3RegisterImmedShiftedOp {
  public:
-  virtual ~Bic_Rule_20_A1_P52Binary3RegisterImmedShiftedOp() {}
+  virtual ~Binary3RegisterImmedShiftedOp_Bic_Rule_20_A1_P52() {}
 };
 
-class Eor_Rule_45_A1_P96Binary3RegisterImmedShiftedOp
+class Binary3RegisterImmedShiftedOp_Eor_Rule_45_A1_P96
    : public Binary3RegisterImmedShiftedOp {
  public:
-  virtual ~Eor_Rule_45_A1_P96Binary3RegisterImmedShiftedOp() {}
+  virtual ~Binary3RegisterImmedShiftedOp_Eor_Rule_45_A1_P96() {}
 };
 
-class Orr_Rule_114_A1_P230Binary3RegisterImmedShiftedOp
+class Binary3RegisterImmedShiftedOp_Orr_Rule_114_A1_P230
    : public Binary3RegisterImmedShiftedOp {
  public:
-  virtual ~Orr_Rule_114_A1_P230Binary3RegisterImmedShiftedOp() {}
+  virtual ~Binary3RegisterImmedShiftedOp_Orr_Rule_114_A1_P230() {}
 };
 
-class Rsb_Rule_143_P286Binary3RegisterImmedShiftedOp
+class Binary3RegisterImmedShiftedOp_Rsb_Rule_143_P286
    : public Binary3RegisterImmedShiftedOp {
  public:
-  virtual ~Rsb_Rule_143_P286Binary3RegisterImmedShiftedOp() {}
+  virtual ~Binary3RegisterImmedShiftedOp_Rsb_Rule_143_P286() {}
 };
 
-class Rsc_Rule_146_A1_P292Binary3RegisterImmedShiftedOp
+class Binary3RegisterImmedShiftedOp_Rsc_Rule_146_A1_P292
    : public Binary3RegisterImmedShiftedOp {
  public:
-  virtual ~Rsc_Rule_146_A1_P292Binary3RegisterImmedShiftedOp() {}
+  virtual ~Binary3RegisterImmedShiftedOp_Rsc_Rule_146_A1_P292() {}
 };
 
-class Sbc_Rule_152_A1_P304Binary3RegisterImmedShiftedOp
+class Binary3RegisterImmedShiftedOp_Sbc_Rule_152_A1_P304
    : public Binary3RegisterImmedShiftedOp {
  public:
-  virtual ~Sbc_Rule_152_A1_P304Binary3RegisterImmedShiftedOp() {}
+  virtual ~Binary3RegisterImmedShiftedOp_Sbc_Rule_152_A1_P304() {}
 };
 
-class SubRule_213_A1_P422Binary3RegisterImmedShiftedOp
+class Binary3RegisterImmedShiftedOp_SubRule_213_A1_P422
    : public Binary3RegisterImmedShiftedOp {
  public:
-  virtual ~SubRule_213_A1_P422Binary3RegisterImmedShiftedOp() {}
+  virtual ~Binary3RegisterImmedShiftedOp_SubRule_213_A1_P422() {}
 };
 
-class Asr_Rule_15_A1_P42Binary3RegisterOp
+class Binary3RegisterOp_Asr_Rule_15_A1_P42
    : public Binary3RegisterOp {
  public:
-  virtual ~Asr_Rule_15_A1_P42Binary3RegisterOp() {}
+  virtual ~Binary3RegisterOp_Asr_Rule_15_A1_P42() {}
 };
 
-class Lsl_Rule_89_A1_P180Binary3RegisterOp
+class Binary3RegisterOp_Lsl_Rule_89_A1_P180
    : public Binary3RegisterOp {
  public:
-  virtual ~Lsl_Rule_89_A1_P180Binary3RegisterOp() {}
+  virtual ~Binary3RegisterOp_Lsl_Rule_89_A1_P180() {}
 };
 
-class Lsr_Rule_91_A1_P184Binary3RegisterOp
+class Binary3RegisterOp_Lsr_Rule_91_A1_P184
    : public Binary3RegisterOp {
  public:
-  virtual ~Lsr_Rule_91_A1_P184Binary3RegisterOp() {}
+  virtual ~Binary3RegisterOp_Lsr_Rule_91_A1_P184() {}
 };
 
-class Ror_Rule_140_A1_P280Binary3RegisterOp
+class Binary3RegisterOp_Ror_Rule_140_A1_P280
    : public Binary3RegisterOp {
  public:
-  virtual ~Ror_Rule_140_A1_P280Binary3RegisterOp() {}
+  virtual ~Binary3RegisterOp_Ror_Rule_140_A1_P280() {}
 };
 
-class Cmn_Rule_34_A1_P78Binary3RegisterShiftedTest
+class Binary3RegisterShiftedTest_Cmn_Rule_34_A1_P78
    : public Binary3RegisterShiftedTest {
  public:
-  virtual ~Cmn_Rule_34_A1_P78Binary3RegisterShiftedTest() {}
+  virtual ~Binary3RegisterShiftedTest_Cmn_Rule_34_A1_P78() {}
 };
 
-class Cmp_Rule_37_A1_P84Binary3RegisterShiftedTest
+class Binary3RegisterShiftedTest_Cmp_Rule_37_A1_P84
    : public Binary3RegisterShiftedTest {
  public:
-  virtual ~Cmp_Rule_37_A1_P84Binary3RegisterShiftedTest() {}
+  virtual ~Binary3RegisterShiftedTest_Cmp_Rule_37_A1_P84() {}
 };
 
-class Teq_Rule_229_A1_P452Binary3RegisterShiftedTest
+class Binary3RegisterShiftedTest_Teq_Rule_229_A1_P452
    : public Binary3RegisterShiftedTest {
  public:
-  virtual ~Teq_Rule_229_A1_P452Binary3RegisterShiftedTest() {}
+  virtual ~Binary3RegisterShiftedTest_Teq_Rule_229_A1_P452() {}
 };
 
-class Tst_Rule_232_A1_P458Binary3RegisterShiftedTest
+class Binary3RegisterShiftedTest_Tst_Rule_232_A1_P458
    : public Binary3RegisterShiftedTest {
  public:
-  virtual ~Tst_Rule_232_A1_P458Binary3RegisterShiftedTest() {}
+  virtual ~Binary3RegisterShiftedTest_Tst_Rule_232_A1_P458() {}
 };
 
-class Adc_Rule_3_A1_P18Binary4RegisterShiftedOp
+class Binary4RegisterShiftedOp_Adc_Rule_3_A1_P18
    : public Binary4RegisterShiftedOp {
  public:
-  virtual ~Adc_Rule_3_A1_P18Binary4RegisterShiftedOp() {}
+  virtual ~Binary4RegisterShiftedOp_Adc_Rule_3_A1_P18() {}
 };
 
-class Add_Rule_7_A1_P26Binary4RegisterShiftedOp
+class Binary4RegisterShiftedOp_Add_Rule_7_A1_P26
    : public Binary4RegisterShiftedOp {
  public:
-  virtual ~Add_Rule_7_A1_P26Binary4RegisterShiftedOp() {}
+  virtual ~Binary4RegisterShiftedOp_Add_Rule_7_A1_P26() {}
 };
 
-class And_Rule_13_A1_P38Binary4RegisterShiftedOp
+class Binary4RegisterShiftedOp_And_Rule_13_A1_P38
    : public Binary4RegisterShiftedOp {
  public:
-  virtual ~And_Rule_13_A1_P38Binary4RegisterShiftedOp() {}
+  virtual ~Binary4RegisterShiftedOp_And_Rule_13_A1_P38() {}
 };
 
-class Bic_Rule_21_A1_P54Binary4RegisterShiftedOp
+class Binary4RegisterShiftedOp_Bic_Rule_21_A1_P54
    : public Binary4RegisterShiftedOp {
  public:
-  virtual ~Bic_Rule_21_A1_P54Binary4RegisterShiftedOp() {}
+  virtual ~Binary4RegisterShiftedOp_Bic_Rule_21_A1_P54() {}
 };
 
-class Eor_Rule_46_A1_P98Binary4RegisterShiftedOp
+class Binary4RegisterShiftedOp_Eor_Rule_46_A1_P98
    : public Binary4RegisterShiftedOp {
  public:
-  virtual ~Eor_Rule_46_A1_P98Binary4RegisterShiftedOp() {}
+  virtual ~Binary4RegisterShiftedOp_Eor_Rule_46_A1_P98() {}
 };
 
-class Orr_Rule_115_A1_P212Binary4RegisterShiftedOp
+class Binary4RegisterShiftedOp_Orr_Rule_115_A1_P212
    : public Binary4RegisterShiftedOp {
  public:
-  virtual ~Orr_Rule_115_A1_P212Binary4RegisterShiftedOp() {}
+  virtual ~Binary4RegisterShiftedOp_Orr_Rule_115_A1_P212() {}
 };
 
-class Rsb_Rule_144_A1_P288Binary4RegisterShiftedOp
+class Binary4RegisterShiftedOp_Rsb_Rule_144_A1_P288
    : public Binary4RegisterShiftedOp {
  public:
-  virtual ~Rsb_Rule_144_A1_P288Binary4RegisterShiftedOp() {}
+  virtual ~Binary4RegisterShiftedOp_Rsb_Rule_144_A1_P288() {}
 };
 
-class Rsc_Rule_147_A1_P294Binary4RegisterShiftedOp
+class Binary4RegisterShiftedOp_Rsc_Rule_147_A1_P294
    : public Binary4RegisterShiftedOp {
  public:
-  virtual ~Rsc_Rule_147_A1_P294Binary4RegisterShiftedOp() {}
+  virtual ~Binary4RegisterShiftedOp_Rsc_Rule_147_A1_P294() {}
 };
 
-class Sbc_Rule_153_A1_P306Binary4RegisterShiftedOp
+class Binary4RegisterShiftedOp_Sbc_Rule_153_A1_P306
    : public Binary4RegisterShiftedOp {
  public:
-  virtual ~Sbc_Rule_153_A1_P306Binary4RegisterShiftedOp() {}
+  virtual ~Binary4RegisterShiftedOp_Sbc_Rule_153_A1_P306() {}
 };
 
-class Sub_Rule_214_A1_P424Binary4RegisterShiftedOp
+class Binary4RegisterShiftedOp_Sub_Rule_214_A1_P424
    : public Binary4RegisterShiftedOp {
  public:
-  virtual ~Sub_Rule_214_A1_P424Binary4RegisterShiftedOp() {}
+  virtual ~Binary4RegisterShiftedOp_Sub_Rule_214_A1_P424() {}
 };
 
-class Mov_Rule_96_A2_P_194Unary1RegisterImmediateOp
+class Branch_None
+   : public Branch {
+ public:
+  virtual ~Branch_None() {}
+};
+
+class Breakpoint_None
+   : public Breakpoint {
+ public:
+  virtual ~Breakpoint_None() {}
+};
+
+class BxBlx_None
+   : public BxBlx {
+ public:
+  virtual ~BxBlx_None() {}
+};
+
+class CoprocessorOp_None
+   : public CoprocessorOp {
+ public:
+  virtual ~CoprocessorOp_None() {}
+};
+
+class DataProc_None
+   : public DataProc {
+ public:
+  virtual ~DataProc_None() {}
+};
+
+class Deprecated_None
+   : public Deprecated {
+ public:
+  virtual ~Deprecated_None() {}
+};
+
+class EffectiveNoOp_None
+   : public EffectiveNoOp {
+ public:
+  virtual ~EffectiveNoOp_None() {}
+};
+
+class Forbidden_None
+   : public Forbidden {
+ public:
+  virtual ~Forbidden_None() {}
+};
+
+class LoadCoprocessor_None
+   : public LoadCoprocessor {
+ public:
+  virtual ~LoadCoprocessor_None() {}
+};
+
+class LoadDoubleExclusive_None
+   : public LoadDoubleExclusive {
+ public:
+  virtual ~LoadDoubleExclusive_None() {}
+};
+
+class LoadDoubleI_None
+   : public LoadDoubleI {
+ public:
+  virtual ~LoadDoubleI_None() {}
+};
+
+class LoadDoubleR_None
+   : public LoadDoubleR {
+ public:
+  virtual ~LoadDoubleR_None() {}
+};
+
+class LoadExclusive_None
+   : public LoadExclusive {
+ public:
+  virtual ~LoadExclusive_None() {}
+};
+
+class LoadImmediate_None
+   : public LoadImmediate {
+ public:
+  virtual ~LoadImmediate_None() {}
+};
+
+class LoadMultiple_None
+   : public LoadMultiple {
+ public:
+  virtual ~LoadMultiple_None() {}
+};
+
+class LoadRegister_None
+   : public LoadRegister {
+ public:
+  virtual ~LoadRegister_None() {}
+};
+
+class LongMultiply_None
+   : public LongMultiply {
+ public:
+  virtual ~LongMultiply_None() {}
+};
+
+class MaskedBinary2RegisterImmediateOp_Bic_Rule_19_A1_P50
+   : public MaskedBinary2RegisterImmediateOp {
+ public:
+  virtual ~MaskedBinary2RegisterImmediateOp_Bic_Rule_19_A1_P50() {}
+};
+
+class MaskedBinaryRegisterImmediateTest_Tst_Rule_230_A1_P454
+   : public MaskedBinaryRegisterImmediateTest {
+ public:
+  virtual ~MaskedBinaryRegisterImmediateTest_Tst_Rule_230_A1_P454() {}
+};
+
+class MoveDoubleFromCoprocessor_None
+   : public MoveDoubleFromCoprocessor {
+ public:
+  virtual ~MoveDoubleFromCoprocessor_None() {}
+};
+
+class MoveFromCoprocessor_None
+   : public MoveFromCoprocessor {
+ public:
+  virtual ~MoveFromCoprocessor_None() {}
+};
+
+class MoveToStatusRegister_None
+   : public MoveToStatusRegister {
+ public:
+  virtual ~MoveToStatusRegister_None() {}
+};
+
+class Multiply_None
+   : public Multiply {
+ public:
+  virtual ~Multiply_None() {}
+};
+
+class PackSatRev_None
+   : public PackSatRev {
+ public:
+  virtual ~PackSatRev_None() {}
+};
+
+class Roadblock_None
+   : public Roadblock {
+ public:
+  virtual ~Roadblock_None() {}
+};
+
+class SatAddSub_None
+   : public SatAddSub {
+ public:
+  virtual ~SatAddSub_None() {}
+};
+
+class StoreCoprocessor_None
+   : public StoreCoprocessor {
+ public:
+  virtual ~StoreCoprocessor_None() {}
+};
+
+class StoreExclusive_None
+   : public StoreExclusive {
+ public:
+  virtual ~StoreExclusive_None() {}
+};
+
+class StoreImmediate_None
+   : public StoreImmediate {
+ public:
+  virtual ~StoreImmediate_None() {}
+};
+
+class StoreRegister_None
+   : public StoreRegister {
+ public:
+  virtual ~StoreRegister_None() {}
+};
+
+class Test_None
+   : public Test {
+ public:
+  virtual ~Test_None() {}
+};
+
+class Unary1RegisterImmediateOp_Mov_Rule_96_A2_P_194
    : public Unary1RegisterImmediateOp {
  public:
-  virtual ~Mov_Rule_96_A2_P_194Unary1RegisterImmediateOp() {}
+  virtual ~Unary1RegisterImmediateOp_Mov_Rule_96_A2_P_194() {}
 };
 
-class Asr_Rule_14_A1_P40Unary2RegisterImmedShiftedOp
+class Unary2RegisterImmedShiftedOp_Asr_Rule_14_A1_P40
    : public Unary2RegisterImmedShiftedOp {
  public:
-  virtual ~Asr_Rule_14_A1_P40Unary2RegisterImmedShiftedOp() {}
+  virtual ~Unary2RegisterImmedShiftedOp_Asr_Rule_14_A1_P40() {}
 };
 
-class Lsl_Rule_88_A1_P178Unary2RegisterImmedShiftedOp
+class Unary2RegisterImmedShiftedOp_Lsl_Rule_88_A1_P178
    : public Unary2RegisterImmedShiftedOp {
  public:
-  virtual ~Lsl_Rule_88_A1_P178Unary2RegisterImmedShiftedOp() {}
+  virtual ~Unary2RegisterImmedShiftedOp_Lsl_Rule_88_A1_P178() {}
 };
 
-class Lsr_Rule_90_A1_P182Unary2RegisterImmedShiftedOp
+class Unary2RegisterImmedShiftedOp_Lsr_Rule_90_A1_P182
    : public Unary2RegisterImmedShiftedOp {
  public:
-  virtual ~Lsr_Rule_90_A1_P182Unary2RegisterImmedShiftedOp() {}
+  virtual ~Unary2RegisterImmedShiftedOp_Lsr_Rule_90_A1_P182() {}
 };
 
-class Mvn_Rule_107_A1_P216Unary2RegisterImmedShiftedOp
+class Unary2RegisterImmedShiftedOp_Mvn_Rule_107_A1_P216
    : public Unary2RegisterImmedShiftedOp {
  public:
-  virtual ~Mvn_Rule_107_A1_P216Unary2RegisterImmedShiftedOp() {}
+  virtual ~Unary2RegisterImmedShiftedOp_Mvn_Rule_107_A1_P216() {}
 };
 
-class Ror_Rule_139_A1_P278Unary2RegisterImmedShiftedOp
+class Unary2RegisterImmedShiftedOp_Ror_Rule_139_A1_P278
    : public Unary2RegisterImmedShiftedOp {
  public:
-  virtual ~Ror_Rule_139_A1_P278Unary2RegisterImmedShiftedOp() {}
+  virtual ~Unary2RegisterImmedShiftedOp_Ror_Rule_139_A1_P278() {}
 };
 
-class Mov_Rule_97_A1_P196Unary2RegisterOp
+class Unary2RegisterOp_Mov_Rule_97_A1_P196
    : public Unary2RegisterOp {
  public:
-  virtual ~Mov_Rule_97_A1_P196Unary2RegisterOp() {}
+  virtual ~Unary2RegisterOp_Mov_Rule_97_A1_P196() {}
 };
 
-class Rrx_Rule_141_A1_P282Unary2RegisterOp
+class Unary2RegisterOp_Rrx_Rule_141_A1_P282
    : public Unary2RegisterOp {
  public:
-  virtual ~Rrx_Rule_141_A1_P282Unary2RegisterOp() {}
+  virtual ~Unary2RegisterOp_Rrx_Rule_141_A1_P282() {}
 };
 
-class Mvn_Rule_108_A1_P218Unary3RegisterShiftedOp
+class Unary3RegisterShiftedOp_Mvn_Rule_108_A1_P218
    : public Unary3RegisterShiftedOp {
  public:
-  virtual ~Mvn_Rule_108_A1_P218Unary3RegisterShiftedOp() {}
+  virtual ~Unary3RegisterShiftedOp_Mvn_Rule_108_A1_P218() {}
+};
+
+class Undefined_None
+   : public Undefined {
+ public:
+  virtual ~Undefined_None() {}
+};
+
+class Unpredictable_None
+   : public Unpredictable {
+ public:
+  virtual ~Unpredictable_None() {}
+};
+
+class VectorLoad_None
+   : public VectorLoad {
+ public:
+  virtual ~VectorLoad_None() {}
+};
+
+class VectorStore_None
+   : public VectorStore {
+ public:
+  virtual ~VectorStore_None() {}
+};
+
+class Defs12To15RdRnRsRmNotPc_Add_Rule_7_A1_P26
+   : public Defs12To15RdRnRsRmNotPc {
+ public:
+  virtual ~Defs12To15RdRnRsRmNotPc_Add_Rule_7_A1_P26() {}
+};
+
+class Defs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288
+   : public Defs12To15RdRnRsRmNotPc {
+ public:
+  virtual ~Defs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288() {}
+};
+
+class ImmediateBic_Bic_Rule_19_A1_P50
+   : public ImmediateBic {
+ public:
+  virtual ~ImmediateBic_Bic_Rule_19_A1_P50() {}
+};
+
+class TestImmediate_Tst_Rule_230_A1_P454
+   : public TestImmediate {
+ public:
+  virtual ~TestImmediate_Tst_Rule_230_A1_P454() {}
 };
 
 }  // nacl_arm_dec
@@ -284,1122 +518,1044 @@ namespace nacl_arm_test {
  * output of the test code would be nearly impossible
  */
 
-class NamedBinary2RegisterImmedShiftedTest
+class NamedBinary2RegisterImmedShiftedTest_Cmn_Rule_33_A1_P76
     : public NamedClassDecoder {
  public:
-  inline NamedBinary2RegisterImmedShiftedTest()
-    : NamedClassDecoder(decoder_, "Binary2RegisterImmedShiftedTest")
+  inline NamedBinary2RegisterImmedShiftedTest_Cmn_Rule_33_A1_P76()
+    : NamedClassDecoder(decoder_, "Binary2RegisterImmedShiftedTest Cmn_Rule_33_A1_P76")
   {}
-  virtual ~NamedBinary2RegisterImmedShiftedTest() {}
+  virtual ~NamedBinary2RegisterImmedShiftedTest_Cmn_Rule_33_A1_P76() {}
 
  private:
-  nacl_arm_dec::Binary2RegisterImmedShiftedTest decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary2RegisterImmedShiftedTest);
+  nacl_arm_dec::Binary2RegisterImmedShiftedTest_Cmn_Rule_33_A1_P76 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary2RegisterImmedShiftedTest_Cmn_Rule_33_A1_P76);
 };
 
-class NamedBinary3RegisterImmedShiftedOp
+class NamedBinary2RegisterImmedShiftedTest_Cmp_Rule_36_A1_P82
     : public NamedClassDecoder {
  public:
-  inline NamedBinary3RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "Binary3RegisterImmedShiftedOp")
+  inline NamedBinary2RegisterImmedShiftedTest_Cmp_Rule_36_A1_P82()
+    : NamedClassDecoder(decoder_, "Binary2RegisterImmedShiftedTest Cmp_Rule_36_A1_P82")
   {}
-  virtual ~NamedBinary3RegisterImmedShiftedOp() {}
+  virtual ~NamedBinary2RegisterImmedShiftedTest_Cmp_Rule_36_A1_P82() {}
 
  private:
-  nacl_arm_dec::Binary3RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterImmedShiftedOp);
+  nacl_arm_dec::Binary2RegisterImmedShiftedTest_Cmp_Rule_36_A1_P82 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary2RegisterImmedShiftedTest_Cmp_Rule_36_A1_P82);
 };
 
-class NamedBinary3RegisterOp
+class NamedBinary2RegisterImmedShiftedTest_Teq_Rule_228_A1_P450
     : public NamedClassDecoder {
  public:
-  inline NamedBinary3RegisterOp()
-    : NamedClassDecoder(decoder_, "Binary3RegisterOp")
+  inline NamedBinary2RegisterImmedShiftedTest_Teq_Rule_228_A1_P450()
+    : NamedClassDecoder(decoder_, "Binary2RegisterImmedShiftedTest Teq_Rule_228_A1_P450")
   {}
-  virtual ~NamedBinary3RegisterOp() {}
+  virtual ~NamedBinary2RegisterImmedShiftedTest_Teq_Rule_228_A1_P450() {}
 
  private:
-  nacl_arm_dec::Binary3RegisterOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOp);
+  nacl_arm_dec::Binary2RegisterImmedShiftedTest_Teq_Rule_228_A1_P450 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary2RegisterImmedShiftedTest_Teq_Rule_228_A1_P450);
 };
 
-class NamedBinary3RegisterShiftedTest
+class NamedBinary2RegisterImmedShiftedTest_Tst_Rule_231_A1_P456
     : public NamedClassDecoder {
  public:
-  inline NamedBinary3RegisterShiftedTest()
-    : NamedClassDecoder(decoder_, "Binary3RegisterShiftedTest")
+  inline NamedBinary2RegisterImmedShiftedTest_Tst_Rule_231_A1_P456()
+    : NamedClassDecoder(decoder_, "Binary2RegisterImmedShiftedTest Tst_Rule_231_A1_P456")
   {}
-  virtual ~NamedBinary3RegisterShiftedTest() {}
+  virtual ~NamedBinary2RegisterImmedShiftedTest_Tst_Rule_231_A1_P456() {}
 
  private:
-  nacl_arm_dec::Binary3RegisterShiftedTest decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterShiftedTest);
+  nacl_arm_dec::Binary2RegisterImmedShiftedTest_Tst_Rule_231_A1_P456 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary2RegisterImmedShiftedTest_Tst_Rule_231_A1_P456);
 };
 
-class NamedBinary4RegisterShiftedOp
+class NamedBinary3RegisterImmedShiftedOp_Adc_Rule_2_A1_P16
     : public NamedClassDecoder {
  public:
-  inline NamedBinary4RegisterShiftedOp()
-    : NamedClassDecoder(decoder_, "Binary4RegisterShiftedOp")
+  inline NamedBinary3RegisterImmedShiftedOp_Adc_Rule_2_A1_P16()
+    : NamedClassDecoder(decoder_, "Binary3RegisterImmedShiftedOp Adc_Rule_2_A1_P16")
   {}
-  virtual ~NamedBinary4RegisterShiftedOp() {}
+  virtual ~NamedBinary3RegisterImmedShiftedOp_Adc_Rule_2_A1_P16() {}
 
  private:
-  nacl_arm_dec::Binary4RegisterShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterShiftedOp);
+  nacl_arm_dec::Binary3RegisterImmedShiftedOp_Adc_Rule_2_A1_P16 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterImmedShiftedOp_Adc_Rule_2_A1_P16);
 };
 
-class NamedBranch
+class NamedBinary3RegisterImmedShiftedOp_Add_Rule_6_A1_P24
     : public NamedClassDecoder {
  public:
-  inline NamedBranch()
-    : NamedClassDecoder(decoder_, "Branch")
+  inline NamedBinary3RegisterImmedShiftedOp_Add_Rule_6_A1_P24()
+    : NamedClassDecoder(decoder_, "Binary3RegisterImmedShiftedOp Add_Rule_6_A1_P24")
   {}
-  virtual ~NamedBranch() {}
+  virtual ~NamedBinary3RegisterImmedShiftedOp_Add_Rule_6_A1_P24() {}
 
  private:
-  nacl_arm_dec::Branch decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBranch);
+  nacl_arm_dec::Binary3RegisterImmedShiftedOp_Add_Rule_6_A1_P24 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterImmedShiftedOp_Add_Rule_6_A1_P24);
 };
 
-class NamedBreakpoint
+class NamedBinary3RegisterImmedShiftedOp_And_Rule_7_A1_P36
     : public NamedClassDecoder {
  public:
-  inline NamedBreakpoint()
-    : NamedClassDecoder(decoder_, "Breakpoint")
+  inline NamedBinary3RegisterImmedShiftedOp_And_Rule_7_A1_P36()
+    : NamedClassDecoder(decoder_, "Binary3RegisterImmedShiftedOp And_Rule_7_A1_P36")
   {}
-  virtual ~NamedBreakpoint() {}
+  virtual ~NamedBinary3RegisterImmedShiftedOp_And_Rule_7_A1_P36() {}
 
  private:
-  nacl_arm_dec::Breakpoint decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBreakpoint);
+  nacl_arm_dec::Binary3RegisterImmedShiftedOp_And_Rule_7_A1_P36 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterImmedShiftedOp_And_Rule_7_A1_P36);
 };
 
-class NamedBxBlx
+class NamedBinary3RegisterImmedShiftedOp_Bic_Rule_20_A1_P52
     : public NamedClassDecoder {
  public:
-  inline NamedBxBlx()
-    : NamedClassDecoder(decoder_, "BxBlx")
+  inline NamedBinary3RegisterImmedShiftedOp_Bic_Rule_20_A1_P52()
+    : NamedClassDecoder(decoder_, "Binary3RegisterImmedShiftedOp Bic_Rule_20_A1_P52")
   {}
-  virtual ~NamedBxBlx() {}
+  virtual ~NamedBinary3RegisterImmedShiftedOp_Bic_Rule_20_A1_P52() {}
 
  private:
-  nacl_arm_dec::BxBlx decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBxBlx);
+  nacl_arm_dec::Binary3RegisterImmedShiftedOp_Bic_Rule_20_A1_P52 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterImmedShiftedOp_Bic_Rule_20_A1_P52);
 };
 
-class NamedCoprocessorOp
+class NamedBinary3RegisterImmedShiftedOp_Eor_Rule_45_A1_P96
     : public NamedClassDecoder {
  public:
-  inline NamedCoprocessorOp()
-    : NamedClassDecoder(decoder_, "CoprocessorOp")
+  inline NamedBinary3RegisterImmedShiftedOp_Eor_Rule_45_A1_P96()
+    : NamedClassDecoder(decoder_, "Binary3RegisterImmedShiftedOp Eor_Rule_45_A1_P96")
   {}
-  virtual ~NamedCoprocessorOp() {}
+  virtual ~NamedBinary3RegisterImmedShiftedOp_Eor_Rule_45_A1_P96() {}
 
  private:
-  nacl_arm_dec::CoprocessorOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCoprocessorOp);
+  nacl_arm_dec::Binary3RegisterImmedShiftedOp_Eor_Rule_45_A1_P96 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterImmedShiftedOp_Eor_Rule_45_A1_P96);
 };
 
-class NamedDataProc
+class NamedBinary3RegisterImmedShiftedOp_Orr_Rule_114_A1_P230
     : public NamedClassDecoder {
  public:
-  inline NamedDataProc()
-    : NamedClassDecoder(decoder_, "DataProc")
+  inline NamedBinary3RegisterImmedShiftedOp_Orr_Rule_114_A1_P230()
+    : NamedClassDecoder(decoder_, "Binary3RegisterImmedShiftedOp Orr_Rule_114_A1_P230")
   {}
-  virtual ~NamedDataProc() {}
+  virtual ~NamedBinary3RegisterImmedShiftedOp_Orr_Rule_114_A1_P230() {}
 
  private:
-  nacl_arm_dec::DataProc decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDataProc);
+  nacl_arm_dec::Binary3RegisterImmedShiftedOp_Orr_Rule_114_A1_P230 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterImmedShiftedOp_Orr_Rule_114_A1_P230);
 };
 
-class NamedDeprecated
+class NamedBinary3RegisterImmedShiftedOp_Rsb_Rule_143_P286
     : public NamedClassDecoder {
  public:
-  inline NamedDeprecated()
-    : NamedClassDecoder(decoder_, "Deprecated")
+  inline NamedBinary3RegisterImmedShiftedOp_Rsb_Rule_143_P286()
+    : NamedClassDecoder(decoder_, "Binary3RegisterImmedShiftedOp Rsb_Rule_143_P286")
   {}
-  virtual ~NamedDeprecated() {}
+  virtual ~NamedBinary3RegisterImmedShiftedOp_Rsb_Rule_143_P286() {}
 
  private:
-  nacl_arm_dec::Deprecated decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDeprecated);
+  nacl_arm_dec::Binary3RegisterImmedShiftedOp_Rsb_Rule_143_P286 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterImmedShiftedOp_Rsb_Rule_143_P286);
 };
 
-class NamedEffectiveNoOp
+class NamedBinary3RegisterImmedShiftedOp_Rsc_Rule_146_A1_P292
     : public NamedClassDecoder {
  public:
-  inline NamedEffectiveNoOp()
-    : NamedClassDecoder(decoder_, "EffectiveNoOp")
+  inline NamedBinary3RegisterImmedShiftedOp_Rsc_Rule_146_A1_P292()
+    : NamedClassDecoder(decoder_, "Binary3RegisterImmedShiftedOp Rsc_Rule_146_A1_P292")
   {}
-  virtual ~NamedEffectiveNoOp() {}
+  virtual ~NamedBinary3RegisterImmedShiftedOp_Rsc_Rule_146_A1_P292() {}
 
  private:
-  nacl_arm_dec::EffectiveNoOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedEffectiveNoOp);
+  nacl_arm_dec::Binary3RegisterImmedShiftedOp_Rsc_Rule_146_A1_P292 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterImmedShiftedOp_Rsc_Rule_146_A1_P292);
 };
 
-class NamedForbidden
+class NamedBinary3RegisterImmedShiftedOp_Sbc_Rule_152_A1_P304
     : public NamedClassDecoder {
  public:
-  inline NamedForbidden()
-    : NamedClassDecoder(decoder_, "Forbidden")
+  inline NamedBinary3RegisterImmedShiftedOp_Sbc_Rule_152_A1_P304()
+    : NamedClassDecoder(decoder_, "Binary3RegisterImmedShiftedOp Sbc_Rule_152_A1_P304")
   {}
-  virtual ~NamedForbidden() {}
+  virtual ~NamedBinary3RegisterImmedShiftedOp_Sbc_Rule_152_A1_P304() {}
 
  private:
-  nacl_arm_dec::Forbidden decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden);
+  nacl_arm_dec::Binary3RegisterImmedShiftedOp_Sbc_Rule_152_A1_P304 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterImmedShiftedOp_Sbc_Rule_152_A1_P304);
 };
 
-class NamedImmediateBic
+class NamedBinary3RegisterImmedShiftedOp_SubRule_213_A1_P422
     : public NamedClassDecoder {
  public:
-  inline NamedImmediateBic()
-    : NamedClassDecoder(decoder_, "ImmediateBic")
+  inline NamedBinary3RegisterImmedShiftedOp_SubRule_213_A1_P422()
+    : NamedClassDecoder(decoder_, "Binary3RegisterImmedShiftedOp SubRule_213_A1_P422")
   {}
-  virtual ~NamedImmediateBic() {}
+  virtual ~NamedBinary3RegisterImmedShiftedOp_SubRule_213_A1_P422() {}
 
  private:
-  nacl_arm_dec::ImmediateBic decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedImmediateBic);
+  nacl_arm_dec::Binary3RegisterImmedShiftedOp_SubRule_213_A1_P422 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterImmedShiftedOp_SubRule_213_A1_P422);
 };
 
-class NamedLoadCoprocessor
+class NamedBinary3RegisterOp_Asr_Rule_15_A1_P42
     : public NamedClassDecoder {
  public:
-  inline NamedLoadCoprocessor()
-    : NamedClassDecoder(decoder_, "LoadCoprocessor")
+  inline NamedBinary3RegisterOp_Asr_Rule_15_A1_P42()
+    : NamedClassDecoder(decoder_, "Binary3RegisterOp Asr_Rule_15_A1_P42")
   {}
-  virtual ~NamedLoadCoprocessor() {}
+  virtual ~NamedBinary3RegisterOp_Asr_Rule_15_A1_P42() {}
 
  private:
-  nacl_arm_dec::LoadCoprocessor decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadCoprocessor);
+  nacl_arm_dec::Binary3RegisterOp_Asr_Rule_15_A1_P42 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOp_Asr_Rule_15_A1_P42);
 };
 
-class NamedLoadDoubleExclusive
+class NamedBinary3RegisterOp_Lsl_Rule_89_A1_P180
     : public NamedClassDecoder {
  public:
-  inline NamedLoadDoubleExclusive()
-    : NamedClassDecoder(decoder_, "LoadDoubleExclusive")
+  inline NamedBinary3RegisterOp_Lsl_Rule_89_A1_P180()
+    : NamedClassDecoder(decoder_, "Binary3RegisterOp Lsl_Rule_89_A1_P180")
   {}
-  virtual ~NamedLoadDoubleExclusive() {}
+  virtual ~NamedBinary3RegisterOp_Lsl_Rule_89_A1_P180() {}
 
  private:
-  nacl_arm_dec::LoadDoubleExclusive decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadDoubleExclusive);
+  nacl_arm_dec::Binary3RegisterOp_Lsl_Rule_89_A1_P180 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOp_Lsl_Rule_89_A1_P180);
 };
 
-class NamedLoadDoubleI
+class NamedBinary3RegisterOp_Lsr_Rule_91_A1_P184
     : public NamedClassDecoder {
  public:
-  inline NamedLoadDoubleI()
-    : NamedClassDecoder(decoder_, "LoadDoubleI")
+  inline NamedBinary3RegisterOp_Lsr_Rule_91_A1_P184()
+    : NamedClassDecoder(decoder_, "Binary3RegisterOp Lsr_Rule_91_A1_P184")
   {}
-  virtual ~NamedLoadDoubleI() {}
+  virtual ~NamedBinary3RegisterOp_Lsr_Rule_91_A1_P184() {}
 
  private:
-  nacl_arm_dec::LoadDoubleI decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadDoubleI);
+  nacl_arm_dec::Binary3RegisterOp_Lsr_Rule_91_A1_P184 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOp_Lsr_Rule_91_A1_P184);
 };
 
-class NamedLoadDoubleR
+class NamedBinary3RegisterOp_Ror_Rule_140_A1_P280
     : public NamedClassDecoder {
  public:
-  inline NamedLoadDoubleR()
-    : NamedClassDecoder(decoder_, "LoadDoubleR")
+  inline NamedBinary3RegisterOp_Ror_Rule_140_A1_P280()
+    : NamedClassDecoder(decoder_, "Binary3RegisterOp Ror_Rule_140_A1_P280")
   {}
-  virtual ~NamedLoadDoubleR() {}
+  virtual ~NamedBinary3RegisterOp_Ror_Rule_140_A1_P280() {}
 
  private:
-  nacl_arm_dec::LoadDoubleR decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadDoubleR);
+  nacl_arm_dec::Binary3RegisterOp_Ror_Rule_140_A1_P280 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOp_Ror_Rule_140_A1_P280);
 };
 
-class NamedLoadExclusive
+class NamedBinary3RegisterShiftedTest_Cmn_Rule_34_A1_P78
     : public NamedClassDecoder {
  public:
-  inline NamedLoadExclusive()
-    : NamedClassDecoder(decoder_, "LoadExclusive")
+  inline NamedBinary3RegisterShiftedTest_Cmn_Rule_34_A1_P78()
+    : NamedClassDecoder(decoder_, "Binary3RegisterShiftedTest Cmn_Rule_34_A1_P78")
   {}
-  virtual ~NamedLoadExclusive() {}
+  virtual ~NamedBinary3RegisterShiftedTest_Cmn_Rule_34_A1_P78() {}
 
  private:
-  nacl_arm_dec::LoadExclusive decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadExclusive);
+  nacl_arm_dec::Binary3RegisterShiftedTest_Cmn_Rule_34_A1_P78 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterShiftedTest_Cmn_Rule_34_A1_P78);
 };
 
-class NamedLoadImmediate
+class NamedBinary3RegisterShiftedTest_Cmp_Rule_37_A1_P84
     : public NamedClassDecoder {
  public:
-  inline NamedLoadImmediate()
-    : NamedClassDecoder(decoder_, "LoadImmediate")
+  inline NamedBinary3RegisterShiftedTest_Cmp_Rule_37_A1_P84()
+    : NamedClassDecoder(decoder_, "Binary3RegisterShiftedTest Cmp_Rule_37_A1_P84")
   {}
-  virtual ~NamedLoadImmediate() {}
+  virtual ~NamedBinary3RegisterShiftedTest_Cmp_Rule_37_A1_P84() {}
 
  private:
-  nacl_arm_dec::LoadImmediate decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadImmediate);
+  nacl_arm_dec::Binary3RegisterShiftedTest_Cmp_Rule_37_A1_P84 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterShiftedTest_Cmp_Rule_37_A1_P84);
 };
 
-class NamedLoadMultiple
+class NamedBinary3RegisterShiftedTest_Teq_Rule_229_A1_P452
     : public NamedClassDecoder {
  public:
-  inline NamedLoadMultiple()
-    : NamedClassDecoder(decoder_, "LoadMultiple")
+  inline NamedBinary3RegisterShiftedTest_Teq_Rule_229_A1_P452()
+    : NamedClassDecoder(decoder_, "Binary3RegisterShiftedTest Teq_Rule_229_A1_P452")
   {}
-  virtual ~NamedLoadMultiple() {}
+  virtual ~NamedBinary3RegisterShiftedTest_Teq_Rule_229_A1_P452() {}
 
  private:
-  nacl_arm_dec::LoadMultiple decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadMultiple);
+  nacl_arm_dec::Binary3RegisterShiftedTest_Teq_Rule_229_A1_P452 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterShiftedTest_Teq_Rule_229_A1_P452);
 };
 
-class NamedLoadRegister
+class NamedBinary3RegisterShiftedTest_Tst_Rule_232_A1_P458
     : public NamedClassDecoder {
  public:
-  inline NamedLoadRegister()
-    : NamedClassDecoder(decoder_, "LoadRegister")
+  inline NamedBinary3RegisterShiftedTest_Tst_Rule_232_A1_P458()
+    : NamedClassDecoder(decoder_, "Binary3RegisterShiftedTest Tst_Rule_232_A1_P458")
   {}
-  virtual ~NamedLoadRegister() {}
+  virtual ~NamedBinary3RegisterShiftedTest_Tst_Rule_232_A1_P458() {}
 
  private:
-  nacl_arm_dec::LoadRegister decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadRegister);
+  nacl_arm_dec::Binary3RegisterShiftedTest_Tst_Rule_232_A1_P458 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterShiftedTest_Tst_Rule_232_A1_P458);
 };
 
-class NamedLongMultiply
+class NamedBinary4RegisterShiftedOp_Adc_Rule_3_A1_P18
     : public NamedClassDecoder {
  public:
-  inline NamedLongMultiply()
-    : NamedClassDecoder(decoder_, "LongMultiply")
+  inline NamedBinary4RegisterShiftedOp_Adc_Rule_3_A1_P18()
+    : NamedClassDecoder(decoder_, "Binary4RegisterShiftedOp Adc_Rule_3_A1_P18")
   {}
-  virtual ~NamedLongMultiply() {}
+  virtual ~NamedBinary4RegisterShiftedOp_Adc_Rule_3_A1_P18() {}
 
  private:
-  nacl_arm_dec::LongMultiply decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLongMultiply);
+  nacl_arm_dec::Binary4RegisterShiftedOp_Adc_Rule_3_A1_P18 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterShiftedOp_Adc_Rule_3_A1_P18);
 };
 
-class NamedMoveDoubleFromCoprocessor
+class NamedBinary4RegisterShiftedOp_Add_Rule_7_A1_P26
     : public NamedClassDecoder {
  public:
-  inline NamedMoveDoubleFromCoprocessor()
-    : NamedClassDecoder(decoder_, "MoveDoubleFromCoprocessor")
+  inline NamedBinary4RegisterShiftedOp_Add_Rule_7_A1_P26()
+    : NamedClassDecoder(decoder_, "Binary4RegisterShiftedOp Add_Rule_7_A1_P26")
   {}
-  virtual ~NamedMoveDoubleFromCoprocessor() {}
+  virtual ~NamedBinary4RegisterShiftedOp_Add_Rule_7_A1_P26() {}
 
  private:
-  nacl_arm_dec::MoveDoubleFromCoprocessor decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveDoubleFromCoprocessor);
+  nacl_arm_dec::Binary4RegisterShiftedOp_Add_Rule_7_A1_P26 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterShiftedOp_Add_Rule_7_A1_P26);
 };
 
-class NamedMoveFromCoprocessor
+class NamedBinary4RegisterShiftedOp_And_Rule_13_A1_P38
     : public NamedClassDecoder {
  public:
-  inline NamedMoveFromCoprocessor()
-    : NamedClassDecoder(decoder_, "MoveFromCoprocessor")
+  inline NamedBinary4RegisterShiftedOp_And_Rule_13_A1_P38()
+    : NamedClassDecoder(decoder_, "Binary4RegisterShiftedOp And_Rule_13_A1_P38")
   {}
-  virtual ~NamedMoveFromCoprocessor() {}
+  virtual ~NamedBinary4RegisterShiftedOp_And_Rule_13_A1_P38() {}
 
  private:
-  nacl_arm_dec::MoveFromCoprocessor decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveFromCoprocessor);
+  nacl_arm_dec::Binary4RegisterShiftedOp_And_Rule_13_A1_P38 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterShiftedOp_And_Rule_13_A1_P38);
 };
 
-class NamedMoveToStatusRegister
+class NamedBinary4RegisterShiftedOp_Bic_Rule_21_A1_P54
     : public NamedClassDecoder {
  public:
-  inline NamedMoveToStatusRegister()
-    : NamedClassDecoder(decoder_, "MoveToStatusRegister")
+  inline NamedBinary4RegisterShiftedOp_Bic_Rule_21_A1_P54()
+    : NamedClassDecoder(decoder_, "Binary4RegisterShiftedOp Bic_Rule_21_A1_P54")
   {}
-  virtual ~NamedMoveToStatusRegister() {}
+  virtual ~NamedBinary4RegisterShiftedOp_Bic_Rule_21_A1_P54() {}
 
  private:
-  nacl_arm_dec::MoveToStatusRegister decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveToStatusRegister);
+  nacl_arm_dec::Binary4RegisterShiftedOp_Bic_Rule_21_A1_P54 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterShiftedOp_Bic_Rule_21_A1_P54);
 };
 
-class NamedMultiply
+class NamedBinary4RegisterShiftedOp_Eor_Rule_46_A1_P98
     : public NamedClassDecoder {
  public:
-  inline NamedMultiply()
-    : NamedClassDecoder(decoder_, "Multiply")
+  inline NamedBinary4RegisterShiftedOp_Eor_Rule_46_A1_P98()
+    : NamedClassDecoder(decoder_, "Binary4RegisterShiftedOp Eor_Rule_46_A1_P98")
   {}
-  virtual ~NamedMultiply() {}
+  virtual ~NamedBinary4RegisterShiftedOp_Eor_Rule_46_A1_P98() {}
 
  private:
-  nacl_arm_dec::Multiply decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMultiply);
+  nacl_arm_dec::Binary4RegisterShiftedOp_Eor_Rule_46_A1_P98 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterShiftedOp_Eor_Rule_46_A1_P98);
 };
 
-class NamedPackSatRev
+class NamedBinary4RegisterShiftedOp_Orr_Rule_115_A1_P212
     : public NamedClassDecoder {
  public:
-  inline NamedPackSatRev()
-    : NamedClassDecoder(decoder_, "PackSatRev")
+  inline NamedBinary4RegisterShiftedOp_Orr_Rule_115_A1_P212()
+    : NamedClassDecoder(decoder_, "Binary4RegisterShiftedOp Orr_Rule_115_A1_P212")
   {}
-  virtual ~NamedPackSatRev() {}
+  virtual ~NamedBinary4RegisterShiftedOp_Orr_Rule_115_A1_P212() {}
 
  private:
-  nacl_arm_dec::PackSatRev decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedPackSatRev);
+  nacl_arm_dec::Binary4RegisterShiftedOp_Orr_Rule_115_A1_P212 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterShiftedOp_Orr_Rule_115_A1_P212);
 };
 
-class NamedRoadblock
+class NamedBinary4RegisterShiftedOp_Rsb_Rule_144_A1_P288
     : public NamedClassDecoder {
  public:
-  inline NamedRoadblock()
-    : NamedClassDecoder(decoder_, "Roadblock")
+  inline NamedBinary4RegisterShiftedOp_Rsb_Rule_144_A1_P288()
+    : NamedClassDecoder(decoder_, "Binary4RegisterShiftedOp Rsb_Rule_144_A1_P288")
   {}
-  virtual ~NamedRoadblock() {}
+  virtual ~NamedBinary4RegisterShiftedOp_Rsb_Rule_144_A1_P288() {}
 
  private:
-  nacl_arm_dec::Roadblock decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedRoadblock);
+  nacl_arm_dec::Binary4RegisterShiftedOp_Rsb_Rule_144_A1_P288 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterShiftedOp_Rsb_Rule_144_A1_P288);
 };
 
-class NamedSatAddSub
+class NamedBinary4RegisterShiftedOp_Rsc_Rule_147_A1_P294
     : public NamedClassDecoder {
  public:
-  inline NamedSatAddSub()
-    : NamedClassDecoder(decoder_, "SatAddSub")
+  inline NamedBinary4RegisterShiftedOp_Rsc_Rule_147_A1_P294()
+    : NamedClassDecoder(decoder_, "Binary4RegisterShiftedOp Rsc_Rule_147_A1_P294")
   {}
-  virtual ~NamedSatAddSub() {}
+  virtual ~NamedBinary4RegisterShiftedOp_Rsc_Rule_147_A1_P294() {}
 
  private:
-  nacl_arm_dec::SatAddSub decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSatAddSub);
+  nacl_arm_dec::Binary4RegisterShiftedOp_Rsc_Rule_147_A1_P294 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterShiftedOp_Rsc_Rule_147_A1_P294);
 };
 
-class NamedStoreCoprocessor
+class NamedBinary4RegisterShiftedOp_Sbc_Rule_153_A1_P306
     : public NamedClassDecoder {
  public:
-  inline NamedStoreCoprocessor()
-    : NamedClassDecoder(decoder_, "StoreCoprocessor")
+  inline NamedBinary4RegisterShiftedOp_Sbc_Rule_153_A1_P306()
+    : NamedClassDecoder(decoder_, "Binary4RegisterShiftedOp Sbc_Rule_153_A1_P306")
   {}
-  virtual ~NamedStoreCoprocessor() {}
+  virtual ~NamedBinary4RegisterShiftedOp_Sbc_Rule_153_A1_P306() {}
 
  private:
-  nacl_arm_dec::StoreCoprocessor decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreCoprocessor);
+  nacl_arm_dec::Binary4RegisterShiftedOp_Sbc_Rule_153_A1_P306 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterShiftedOp_Sbc_Rule_153_A1_P306);
 };
 
-class NamedStoreExclusive
+class NamedBinary4RegisterShiftedOp_Sub_Rule_214_A1_P424
     : public NamedClassDecoder {
  public:
-  inline NamedStoreExclusive()
-    : NamedClassDecoder(decoder_, "StoreExclusive")
+  inline NamedBinary4RegisterShiftedOp_Sub_Rule_214_A1_P424()
+    : NamedClassDecoder(decoder_, "Binary4RegisterShiftedOp Sub_Rule_214_A1_P424")
   {}
-  virtual ~NamedStoreExclusive() {}
+  virtual ~NamedBinary4RegisterShiftedOp_Sub_Rule_214_A1_P424() {}
 
  private:
-  nacl_arm_dec::StoreExclusive decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreExclusive);
+  nacl_arm_dec::Binary4RegisterShiftedOp_Sub_Rule_214_A1_P424 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterShiftedOp_Sub_Rule_214_A1_P424);
 };
 
-class NamedStoreImmediate
+class NamedBranch_None
     : public NamedClassDecoder {
  public:
-  inline NamedStoreImmediate()
-    : NamedClassDecoder(decoder_, "StoreImmediate")
+  inline NamedBranch_None()
+    : NamedClassDecoder(decoder_, "Branch None")
   {}
-  virtual ~NamedStoreImmediate() {}
+  virtual ~NamedBranch_None() {}
 
  private:
-  nacl_arm_dec::StoreImmediate decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreImmediate);
+  nacl_arm_dec::Branch_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBranch_None);
 };
 
-class NamedStoreRegister
+class NamedBreakpoint_None
     : public NamedClassDecoder {
  public:
-  inline NamedStoreRegister()
-    : NamedClassDecoder(decoder_, "StoreRegister")
+  inline NamedBreakpoint_None()
+    : NamedClassDecoder(decoder_, "Breakpoint None")
   {}
-  virtual ~NamedStoreRegister() {}
+  virtual ~NamedBreakpoint_None() {}
 
  private:
-  nacl_arm_dec::StoreRegister decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreRegister);
+  nacl_arm_dec::Breakpoint_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBreakpoint_None);
 };
 
-class NamedTest
+class NamedBxBlx_None
     : public NamedClassDecoder {
  public:
-  inline NamedTest()
-    : NamedClassDecoder(decoder_, "Test")
+  inline NamedBxBlx_None()
+    : NamedClassDecoder(decoder_, "BxBlx None")
   {}
-  virtual ~NamedTest() {}
+  virtual ~NamedBxBlx_None() {}
 
  private:
-  nacl_arm_dec::Test decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedTest);
+  nacl_arm_dec::BxBlx_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBxBlx_None);
 };
 
-class NamedTestImmediate
+class NamedCoprocessorOp_None
     : public NamedClassDecoder {
  public:
-  inline NamedTestImmediate()
-    : NamedClassDecoder(decoder_, "TestImmediate")
+  inline NamedCoprocessorOp_None()
+    : NamedClassDecoder(decoder_, "CoprocessorOp None")
   {}
-  virtual ~NamedTestImmediate() {}
+  virtual ~NamedCoprocessorOp_None() {}
 
  private:
-  nacl_arm_dec::TestImmediate decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedTestImmediate);
+  nacl_arm_dec::CoprocessorOp_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCoprocessorOp_None);
 };
 
-class NamedUnary1RegisterImmediateOp
+class NamedDataProc_None
     : public NamedClassDecoder {
  public:
-  inline NamedUnary1RegisterImmediateOp()
-    : NamedClassDecoder(decoder_, "Unary1RegisterImmediateOp")
+  inline NamedDataProc_None()
+    : NamedClassDecoder(decoder_, "DataProc None")
   {}
-  virtual ~NamedUnary1RegisterImmediateOp() {}
+  virtual ~NamedDataProc_None() {}
 
  private:
-  nacl_arm_dec::Unary1RegisterImmediateOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary1RegisterImmediateOp);
+  nacl_arm_dec::DataProc_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDataProc_None);
 };
 
-class NamedUnary2RegisterImmedShiftedOp
+class NamedDeprecated_None
     : public NamedClassDecoder {
  public:
-  inline NamedUnary2RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "Unary2RegisterImmedShiftedOp")
+  inline NamedDeprecated_None()
+    : NamedClassDecoder(decoder_, "Deprecated None")
   {}
-  virtual ~NamedUnary2RegisterImmedShiftedOp() {}
+  virtual ~NamedDeprecated_None() {}
 
  private:
-  nacl_arm_dec::Unary2RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary2RegisterImmedShiftedOp);
+  nacl_arm_dec::Deprecated_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDeprecated_None);
 };
 
-class NamedUnary2RegisterOp
+class NamedEffectiveNoOp_None
     : public NamedClassDecoder {
  public:
-  inline NamedUnary2RegisterOp()
-    : NamedClassDecoder(decoder_, "Unary2RegisterOp")
+  inline NamedEffectiveNoOp_None()
+    : NamedClassDecoder(decoder_, "EffectiveNoOp None")
   {}
-  virtual ~NamedUnary2RegisterOp() {}
+  virtual ~NamedEffectiveNoOp_None() {}
 
  private:
-  nacl_arm_dec::Unary2RegisterOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary2RegisterOp);
+  nacl_arm_dec::EffectiveNoOp_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedEffectiveNoOp_None);
 };
 
-class NamedUnary3RegisterShiftedOp
+class NamedForbidden_None
     : public NamedClassDecoder {
  public:
-  inline NamedUnary3RegisterShiftedOp()
-    : NamedClassDecoder(decoder_, "Unary3RegisterShiftedOp")
+  inline NamedForbidden_None()
+    : NamedClassDecoder(decoder_, "Forbidden None")
   {}
-  virtual ~NamedUnary3RegisterShiftedOp() {}
+  virtual ~NamedForbidden_None() {}
 
  private:
-  nacl_arm_dec::Unary3RegisterShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary3RegisterShiftedOp);
+  nacl_arm_dec::Forbidden_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_None);
 };
 
-class NamedUndefined
+class NamedLoadCoprocessor_None
     : public NamedClassDecoder {
  public:
-  inline NamedUndefined()
-    : NamedClassDecoder(decoder_, "Undefined")
+  inline NamedLoadCoprocessor_None()
+    : NamedClassDecoder(decoder_, "LoadCoprocessor None")
   {}
-  virtual ~NamedUndefined() {}
+  virtual ~NamedLoadCoprocessor_None() {}
 
  private:
-  nacl_arm_dec::Undefined decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUndefined);
+  nacl_arm_dec::LoadCoprocessor_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadCoprocessor_None);
 };
 
-class NamedUnpredictable
+class NamedLoadDoubleExclusive_None
     : public NamedClassDecoder {
  public:
-  inline NamedUnpredictable()
-    : NamedClassDecoder(decoder_, "Unpredictable")
+  inline NamedLoadDoubleExclusive_None()
+    : NamedClassDecoder(decoder_, "LoadDoubleExclusive None")
   {}
-  virtual ~NamedUnpredictable() {}
+  virtual ~NamedLoadDoubleExclusive_None() {}
 
  private:
-  nacl_arm_dec::Unpredictable decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnpredictable);
+  nacl_arm_dec::LoadDoubleExclusive_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadDoubleExclusive_None);
 };
 
-class NamedVectorLoad
+class NamedLoadDoubleI_None
     : public NamedClassDecoder {
  public:
-  inline NamedVectorLoad()
-    : NamedClassDecoder(decoder_, "VectorLoad")
+  inline NamedLoadDoubleI_None()
+    : NamedClassDecoder(decoder_, "LoadDoubleI None")
   {}
-  virtual ~NamedVectorLoad() {}
+  virtual ~NamedLoadDoubleI_None() {}
 
  private:
-  nacl_arm_dec::VectorLoad decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoad);
+  nacl_arm_dec::LoadDoubleI_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadDoubleI_None);
 };
 
-class NamedVectorStore
+class NamedLoadDoubleR_None
     : public NamedClassDecoder {
  public:
-  inline NamedVectorStore()
-    : NamedClassDecoder(decoder_, "VectorStore")
+  inline NamedLoadDoubleR_None()
+    : NamedClassDecoder(decoder_, "LoadDoubleR None")
   {}
-  virtual ~NamedVectorStore() {}
+  virtual ~NamedLoadDoubleR_None() {}
 
  private:
-  nacl_arm_dec::VectorStore decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorStore);
+  nacl_arm_dec::LoadDoubleR_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadDoubleR_None);
 };
 
-class NamedDefs12To15RdRnRsRmNotPc
+class NamedLoadExclusive_None
     : public NamedClassDecoder {
  public:
-  inline NamedDefs12To15RdRnRsRmNotPc()
-    : NamedClassDecoder(decoder_, "Defs12To15RdRnRsRmNotPc")
+  inline NamedLoadExclusive_None()
+    : NamedClassDecoder(decoder_, "LoadExclusive None")
   {}
-  virtual ~NamedDefs12To15RdRnRsRmNotPc() {}
+  virtual ~NamedLoadExclusive_None() {}
 
  private:
-  nacl_arm_dec::Defs12To15RdRnRsRmNotPc decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15RdRnRsRmNotPc);
+  nacl_arm_dec::LoadExclusive_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadExclusive_None);
 };
 
-class NamedCmn_Rule_33_A1_P76Binary2RegisterImmedShiftedTest
+class NamedLoadImmediate_None
     : public NamedClassDecoder {
  public:
-  inline NamedCmn_Rule_33_A1_P76Binary2RegisterImmedShiftedTest()
-    : NamedClassDecoder(decoder_, "Cmn_Rule_33_A1_P76Binary2RegisterImmedShiftedTest")
+  inline NamedLoadImmediate_None()
+    : NamedClassDecoder(decoder_, "LoadImmediate None")
   {}
-  virtual ~NamedCmn_Rule_33_A1_P76Binary2RegisterImmedShiftedTest() {}
+  virtual ~NamedLoadImmediate_None() {}
 
  private:
-  nacl_arm_dec::Cmn_Rule_33_A1_P76Binary2RegisterImmedShiftedTest decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCmn_Rule_33_A1_P76Binary2RegisterImmedShiftedTest);
+  nacl_arm_dec::LoadImmediate_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadImmediate_None);
 };
 
-class NamedCmp_Rule_36_A1_P82Binary2RegisterImmedShiftedTest
+class NamedLoadMultiple_None
     : public NamedClassDecoder {
  public:
-  inline NamedCmp_Rule_36_A1_P82Binary2RegisterImmedShiftedTest()
-    : NamedClassDecoder(decoder_, "Cmp_Rule_36_A1_P82Binary2RegisterImmedShiftedTest")
+  inline NamedLoadMultiple_None()
+    : NamedClassDecoder(decoder_, "LoadMultiple None")
   {}
-  virtual ~NamedCmp_Rule_36_A1_P82Binary2RegisterImmedShiftedTest() {}
+  virtual ~NamedLoadMultiple_None() {}
 
  private:
-  nacl_arm_dec::Cmp_Rule_36_A1_P82Binary2RegisterImmedShiftedTest decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCmp_Rule_36_A1_P82Binary2RegisterImmedShiftedTest);
+  nacl_arm_dec::LoadMultiple_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadMultiple_None);
 };
 
-class NamedTeq_Rule_228_A1_P450Binary2RegisterImmedShiftedTest
+class NamedLoadRegister_None
     : public NamedClassDecoder {
  public:
-  inline NamedTeq_Rule_228_A1_P450Binary2RegisterImmedShiftedTest()
-    : NamedClassDecoder(decoder_, "Teq_Rule_228_A1_P450Binary2RegisterImmedShiftedTest")
+  inline NamedLoadRegister_None()
+    : NamedClassDecoder(decoder_, "LoadRegister None")
   {}
-  virtual ~NamedTeq_Rule_228_A1_P450Binary2RegisterImmedShiftedTest() {}
+  virtual ~NamedLoadRegister_None() {}
 
  private:
-  nacl_arm_dec::Teq_Rule_228_A1_P450Binary2RegisterImmedShiftedTest decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedTeq_Rule_228_A1_P450Binary2RegisterImmedShiftedTest);
+  nacl_arm_dec::LoadRegister_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadRegister_None);
 };
 
-class NamedTst_Rule_231_A1_P456Binary2RegisterImmedShiftedTest
+class NamedLongMultiply_None
     : public NamedClassDecoder {
  public:
-  inline NamedTst_Rule_231_A1_P456Binary2RegisterImmedShiftedTest()
-    : NamedClassDecoder(decoder_, "Tst_Rule_231_A1_P456Binary2RegisterImmedShiftedTest")
+  inline NamedLongMultiply_None()
+    : NamedClassDecoder(decoder_, "LongMultiply None")
   {}
-  virtual ~NamedTst_Rule_231_A1_P456Binary2RegisterImmedShiftedTest() {}
+  virtual ~NamedLongMultiply_None() {}
 
  private:
-  nacl_arm_dec::Tst_Rule_231_A1_P456Binary2RegisterImmedShiftedTest decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedTst_Rule_231_A1_P456Binary2RegisterImmedShiftedTest);
+  nacl_arm_dec::LongMultiply_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLongMultiply_None);
 };
 
-class NamedAdc_Rule_2_A1_P16Binary3RegisterImmedShiftedOp
+class NamedMaskedBinary2RegisterImmediateOp_Bic_Rule_19_A1_P50
     : public NamedClassDecoder {
  public:
-  inline NamedAdc_Rule_2_A1_P16Binary3RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "Adc_Rule_2_A1_P16Binary3RegisterImmedShiftedOp")
+  inline NamedMaskedBinary2RegisterImmediateOp_Bic_Rule_19_A1_P50()
+    : NamedClassDecoder(decoder_, "MaskedBinary2RegisterImmediateOp Bic_Rule_19_A1_P50")
   {}
-  virtual ~NamedAdc_Rule_2_A1_P16Binary3RegisterImmedShiftedOp() {}
+  virtual ~NamedMaskedBinary2RegisterImmediateOp_Bic_Rule_19_A1_P50() {}
 
  private:
-  nacl_arm_dec::Adc_Rule_2_A1_P16Binary3RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedAdc_Rule_2_A1_P16Binary3RegisterImmedShiftedOp);
+  nacl_arm_dec::MaskedBinary2RegisterImmediateOp_Bic_Rule_19_A1_P50 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMaskedBinary2RegisterImmediateOp_Bic_Rule_19_A1_P50);
 };
 
-class NamedAdd_Rule_6_A1_P24Binary3RegisterImmedShiftedOp
+class NamedMaskedBinaryRegisterImmediateTest_Tst_Rule_230_A1_P454
     : public NamedClassDecoder {
  public:
-  inline NamedAdd_Rule_6_A1_P24Binary3RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "Add_Rule_6_A1_P24Binary3RegisterImmedShiftedOp")
+  inline NamedMaskedBinaryRegisterImmediateTest_Tst_Rule_230_A1_P454()
+    : NamedClassDecoder(decoder_, "MaskedBinaryRegisterImmediateTest Tst_Rule_230_A1_P454")
   {}
-  virtual ~NamedAdd_Rule_6_A1_P24Binary3RegisterImmedShiftedOp() {}
+  virtual ~NamedMaskedBinaryRegisterImmediateTest_Tst_Rule_230_A1_P454() {}
 
  private:
-  nacl_arm_dec::Add_Rule_6_A1_P24Binary3RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedAdd_Rule_6_A1_P24Binary3RegisterImmedShiftedOp);
+  nacl_arm_dec::MaskedBinaryRegisterImmediateTest_Tst_Rule_230_A1_P454 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMaskedBinaryRegisterImmediateTest_Tst_Rule_230_A1_P454);
 };
 
-class NamedAnd_Rule_7_A1_P36Binary3RegisterImmedShiftedOp
+class NamedMoveDoubleFromCoprocessor_None
     : public NamedClassDecoder {
  public:
-  inline NamedAnd_Rule_7_A1_P36Binary3RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "And_Rule_7_A1_P36Binary3RegisterImmedShiftedOp")
+  inline NamedMoveDoubleFromCoprocessor_None()
+    : NamedClassDecoder(decoder_, "MoveDoubleFromCoprocessor None")
   {}
-  virtual ~NamedAnd_Rule_7_A1_P36Binary3RegisterImmedShiftedOp() {}
+  virtual ~NamedMoveDoubleFromCoprocessor_None() {}
 
  private:
-  nacl_arm_dec::And_Rule_7_A1_P36Binary3RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedAnd_Rule_7_A1_P36Binary3RegisterImmedShiftedOp);
+  nacl_arm_dec::MoveDoubleFromCoprocessor_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveDoubleFromCoprocessor_None);
 };
 
-class NamedBic_Rule_20_A1_P52Binary3RegisterImmedShiftedOp
+class NamedMoveFromCoprocessor_None
     : public NamedClassDecoder {
  public:
-  inline NamedBic_Rule_20_A1_P52Binary3RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "Bic_Rule_20_A1_P52Binary3RegisterImmedShiftedOp")
+  inline NamedMoveFromCoprocessor_None()
+    : NamedClassDecoder(decoder_, "MoveFromCoprocessor None")
   {}
-  virtual ~NamedBic_Rule_20_A1_P52Binary3RegisterImmedShiftedOp() {}
+  virtual ~NamedMoveFromCoprocessor_None() {}
 
  private:
-  nacl_arm_dec::Bic_Rule_20_A1_P52Binary3RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBic_Rule_20_A1_P52Binary3RegisterImmedShiftedOp);
+  nacl_arm_dec::MoveFromCoprocessor_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveFromCoprocessor_None);
 };
 
-class NamedEor_Rule_45_A1_P96Binary3RegisterImmedShiftedOp
+class NamedMoveToStatusRegister_None
     : public NamedClassDecoder {
  public:
-  inline NamedEor_Rule_45_A1_P96Binary3RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "Eor_Rule_45_A1_P96Binary3RegisterImmedShiftedOp")
+  inline NamedMoveToStatusRegister_None()
+    : NamedClassDecoder(decoder_, "MoveToStatusRegister None")
   {}
-  virtual ~NamedEor_Rule_45_A1_P96Binary3RegisterImmedShiftedOp() {}
+  virtual ~NamedMoveToStatusRegister_None() {}
 
  private:
-  nacl_arm_dec::Eor_Rule_45_A1_P96Binary3RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedEor_Rule_45_A1_P96Binary3RegisterImmedShiftedOp);
+  nacl_arm_dec::MoveToStatusRegister_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveToStatusRegister_None);
 };
 
-class NamedOrr_Rule_114_A1_P230Binary3RegisterImmedShiftedOp
+class NamedMultiply_None
     : public NamedClassDecoder {
  public:
-  inline NamedOrr_Rule_114_A1_P230Binary3RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "Orr_Rule_114_A1_P230Binary3RegisterImmedShiftedOp")
+  inline NamedMultiply_None()
+    : NamedClassDecoder(decoder_, "Multiply None")
   {}
-  virtual ~NamedOrr_Rule_114_A1_P230Binary3RegisterImmedShiftedOp() {}
+  virtual ~NamedMultiply_None() {}
 
  private:
-  nacl_arm_dec::Orr_Rule_114_A1_P230Binary3RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedOrr_Rule_114_A1_P230Binary3RegisterImmedShiftedOp);
+  nacl_arm_dec::Multiply_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMultiply_None);
 };
 
-class NamedRsb_Rule_143_P286Binary3RegisterImmedShiftedOp
+class NamedPackSatRev_None
     : public NamedClassDecoder {
  public:
-  inline NamedRsb_Rule_143_P286Binary3RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "Rsb_Rule_143_P286Binary3RegisterImmedShiftedOp")
+  inline NamedPackSatRev_None()
+    : NamedClassDecoder(decoder_, "PackSatRev None")
   {}
-  virtual ~NamedRsb_Rule_143_P286Binary3RegisterImmedShiftedOp() {}
+  virtual ~NamedPackSatRev_None() {}
 
  private:
-  nacl_arm_dec::Rsb_Rule_143_P286Binary3RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedRsb_Rule_143_P286Binary3RegisterImmedShiftedOp);
+  nacl_arm_dec::PackSatRev_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedPackSatRev_None);
 };
 
-class NamedRsc_Rule_146_A1_P292Binary3RegisterImmedShiftedOp
+class NamedRoadblock_None
     : public NamedClassDecoder {
  public:
-  inline NamedRsc_Rule_146_A1_P292Binary3RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "Rsc_Rule_146_A1_P292Binary3RegisterImmedShiftedOp")
+  inline NamedRoadblock_None()
+    : NamedClassDecoder(decoder_, "Roadblock None")
   {}
-  virtual ~NamedRsc_Rule_146_A1_P292Binary3RegisterImmedShiftedOp() {}
+  virtual ~NamedRoadblock_None() {}
 
  private:
-  nacl_arm_dec::Rsc_Rule_146_A1_P292Binary3RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedRsc_Rule_146_A1_P292Binary3RegisterImmedShiftedOp);
+  nacl_arm_dec::Roadblock_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedRoadblock_None);
 };
 
-class NamedSbc_Rule_152_A1_P304Binary3RegisterImmedShiftedOp
+class NamedSatAddSub_None
     : public NamedClassDecoder {
  public:
-  inline NamedSbc_Rule_152_A1_P304Binary3RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "Sbc_Rule_152_A1_P304Binary3RegisterImmedShiftedOp")
+  inline NamedSatAddSub_None()
+    : NamedClassDecoder(decoder_, "SatAddSub None")
   {}
-  virtual ~NamedSbc_Rule_152_A1_P304Binary3RegisterImmedShiftedOp() {}
+  virtual ~NamedSatAddSub_None() {}
 
  private:
-  nacl_arm_dec::Sbc_Rule_152_A1_P304Binary3RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSbc_Rule_152_A1_P304Binary3RegisterImmedShiftedOp);
+  nacl_arm_dec::SatAddSub_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSatAddSub_None);
 };
 
-class NamedSubRule_213_A1_P422Binary3RegisterImmedShiftedOp
+class NamedStoreCoprocessor_None
     : public NamedClassDecoder {
  public:
-  inline NamedSubRule_213_A1_P422Binary3RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "SubRule_213_A1_P422Binary3RegisterImmedShiftedOp")
+  inline NamedStoreCoprocessor_None()
+    : NamedClassDecoder(decoder_, "StoreCoprocessor None")
   {}
-  virtual ~NamedSubRule_213_A1_P422Binary3RegisterImmedShiftedOp() {}
+  virtual ~NamedStoreCoprocessor_None() {}
 
  private:
-  nacl_arm_dec::SubRule_213_A1_P422Binary3RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSubRule_213_A1_P422Binary3RegisterImmedShiftedOp);
+  nacl_arm_dec::StoreCoprocessor_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreCoprocessor_None);
 };
 
-class NamedAsr_Rule_15_A1_P42Binary3RegisterOp
+class NamedStoreExclusive_None
     : public NamedClassDecoder {
  public:
-  inline NamedAsr_Rule_15_A1_P42Binary3RegisterOp()
-    : NamedClassDecoder(decoder_, "Asr_Rule_15_A1_P42Binary3RegisterOp")
+  inline NamedStoreExclusive_None()
+    : NamedClassDecoder(decoder_, "StoreExclusive None")
   {}
-  virtual ~NamedAsr_Rule_15_A1_P42Binary3RegisterOp() {}
+  virtual ~NamedStoreExclusive_None() {}
 
  private:
-  nacl_arm_dec::Asr_Rule_15_A1_P42Binary3RegisterOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedAsr_Rule_15_A1_P42Binary3RegisterOp);
+  nacl_arm_dec::StoreExclusive_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreExclusive_None);
 };
 
-class NamedLsl_Rule_89_A1_P180Binary3RegisterOp
+class NamedStoreImmediate_None
     : public NamedClassDecoder {
  public:
-  inline NamedLsl_Rule_89_A1_P180Binary3RegisterOp()
-    : NamedClassDecoder(decoder_, "Lsl_Rule_89_A1_P180Binary3RegisterOp")
+  inline NamedStoreImmediate_None()
+    : NamedClassDecoder(decoder_, "StoreImmediate None")
   {}
-  virtual ~NamedLsl_Rule_89_A1_P180Binary3RegisterOp() {}
+  virtual ~NamedStoreImmediate_None() {}
 
  private:
-  nacl_arm_dec::Lsl_Rule_89_A1_P180Binary3RegisterOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLsl_Rule_89_A1_P180Binary3RegisterOp);
+  nacl_arm_dec::StoreImmediate_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreImmediate_None);
 };
 
-class NamedLsr_Rule_91_A1_P184Binary3RegisterOp
+class NamedStoreRegister_None
     : public NamedClassDecoder {
  public:
-  inline NamedLsr_Rule_91_A1_P184Binary3RegisterOp()
-    : NamedClassDecoder(decoder_, "Lsr_Rule_91_A1_P184Binary3RegisterOp")
+  inline NamedStoreRegister_None()
+    : NamedClassDecoder(decoder_, "StoreRegister None")
   {}
-  virtual ~NamedLsr_Rule_91_A1_P184Binary3RegisterOp() {}
+  virtual ~NamedStoreRegister_None() {}
 
  private:
-  nacl_arm_dec::Lsr_Rule_91_A1_P184Binary3RegisterOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLsr_Rule_91_A1_P184Binary3RegisterOp);
+  nacl_arm_dec::StoreRegister_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreRegister_None);
 };
 
-class NamedRor_Rule_140_A1_P280Binary3RegisterOp
+class NamedTest_None
     : public NamedClassDecoder {
  public:
-  inline NamedRor_Rule_140_A1_P280Binary3RegisterOp()
-    : NamedClassDecoder(decoder_, "Ror_Rule_140_A1_P280Binary3RegisterOp")
+  inline NamedTest_None()
+    : NamedClassDecoder(decoder_, "Test None")
   {}
-  virtual ~NamedRor_Rule_140_A1_P280Binary3RegisterOp() {}
+  virtual ~NamedTest_None() {}
 
  private:
-  nacl_arm_dec::Ror_Rule_140_A1_P280Binary3RegisterOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedRor_Rule_140_A1_P280Binary3RegisterOp);
+  nacl_arm_dec::Test_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedTest_None);
 };
 
-class NamedCmn_Rule_34_A1_P78Binary3RegisterShiftedTest
+class NamedUnary1RegisterImmediateOp_Mov_Rule_96_A2_P_194
     : public NamedClassDecoder {
  public:
-  inline NamedCmn_Rule_34_A1_P78Binary3RegisterShiftedTest()
-    : NamedClassDecoder(decoder_, "Cmn_Rule_34_A1_P78Binary3RegisterShiftedTest")
+  inline NamedUnary1RegisterImmediateOp_Mov_Rule_96_A2_P_194()
+    : NamedClassDecoder(decoder_, "Unary1RegisterImmediateOp Mov_Rule_96_A2_P_194")
   {}
-  virtual ~NamedCmn_Rule_34_A1_P78Binary3RegisterShiftedTest() {}
+  virtual ~NamedUnary1RegisterImmediateOp_Mov_Rule_96_A2_P_194() {}
 
  private:
-  nacl_arm_dec::Cmn_Rule_34_A1_P78Binary3RegisterShiftedTest decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCmn_Rule_34_A1_P78Binary3RegisterShiftedTest);
+  nacl_arm_dec::Unary1RegisterImmediateOp_Mov_Rule_96_A2_P_194 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary1RegisterImmediateOp_Mov_Rule_96_A2_P_194);
 };
 
-class NamedCmp_Rule_37_A1_P84Binary3RegisterShiftedTest
+class NamedUnary2RegisterImmedShiftedOp_Asr_Rule_14_A1_P40
     : public NamedClassDecoder {
  public:
-  inline NamedCmp_Rule_37_A1_P84Binary3RegisterShiftedTest()
-    : NamedClassDecoder(decoder_, "Cmp_Rule_37_A1_P84Binary3RegisterShiftedTest")
+  inline NamedUnary2RegisterImmedShiftedOp_Asr_Rule_14_A1_P40()
+    : NamedClassDecoder(decoder_, "Unary2RegisterImmedShiftedOp Asr_Rule_14_A1_P40")
   {}
-  virtual ~NamedCmp_Rule_37_A1_P84Binary3RegisterShiftedTest() {}
+  virtual ~NamedUnary2RegisterImmedShiftedOp_Asr_Rule_14_A1_P40() {}
 
  private:
-  nacl_arm_dec::Cmp_Rule_37_A1_P84Binary3RegisterShiftedTest decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCmp_Rule_37_A1_P84Binary3RegisterShiftedTest);
+  nacl_arm_dec::Unary2RegisterImmedShiftedOp_Asr_Rule_14_A1_P40 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary2RegisterImmedShiftedOp_Asr_Rule_14_A1_P40);
 };
 
-class NamedTeq_Rule_229_A1_P452Binary3RegisterShiftedTest
+class NamedUnary2RegisterImmedShiftedOp_Lsl_Rule_88_A1_P178
     : public NamedClassDecoder {
  public:
-  inline NamedTeq_Rule_229_A1_P452Binary3RegisterShiftedTest()
-    : NamedClassDecoder(decoder_, "Teq_Rule_229_A1_P452Binary3RegisterShiftedTest")
+  inline NamedUnary2RegisterImmedShiftedOp_Lsl_Rule_88_A1_P178()
+    : NamedClassDecoder(decoder_, "Unary2RegisterImmedShiftedOp Lsl_Rule_88_A1_P178")
   {}
-  virtual ~NamedTeq_Rule_229_A1_P452Binary3RegisterShiftedTest() {}
+  virtual ~NamedUnary2RegisterImmedShiftedOp_Lsl_Rule_88_A1_P178() {}
 
  private:
-  nacl_arm_dec::Teq_Rule_229_A1_P452Binary3RegisterShiftedTest decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedTeq_Rule_229_A1_P452Binary3RegisterShiftedTest);
+  nacl_arm_dec::Unary2RegisterImmedShiftedOp_Lsl_Rule_88_A1_P178 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary2RegisterImmedShiftedOp_Lsl_Rule_88_A1_P178);
 };
 
-class NamedTst_Rule_232_A1_P458Binary3RegisterShiftedTest
+class NamedUnary2RegisterImmedShiftedOp_Lsr_Rule_90_A1_P182
     : public NamedClassDecoder {
  public:
-  inline NamedTst_Rule_232_A1_P458Binary3RegisterShiftedTest()
-    : NamedClassDecoder(decoder_, "Tst_Rule_232_A1_P458Binary3RegisterShiftedTest")
+  inline NamedUnary2RegisterImmedShiftedOp_Lsr_Rule_90_A1_P182()
+    : NamedClassDecoder(decoder_, "Unary2RegisterImmedShiftedOp Lsr_Rule_90_A1_P182")
   {}
-  virtual ~NamedTst_Rule_232_A1_P458Binary3RegisterShiftedTest() {}
+  virtual ~NamedUnary2RegisterImmedShiftedOp_Lsr_Rule_90_A1_P182() {}
 
  private:
-  nacl_arm_dec::Tst_Rule_232_A1_P458Binary3RegisterShiftedTest decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedTst_Rule_232_A1_P458Binary3RegisterShiftedTest);
+  nacl_arm_dec::Unary2RegisterImmedShiftedOp_Lsr_Rule_90_A1_P182 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary2RegisterImmedShiftedOp_Lsr_Rule_90_A1_P182);
 };
 
-class NamedAdc_Rule_3_A1_P18Binary4RegisterShiftedOp
+class NamedUnary2RegisterImmedShiftedOp_Mvn_Rule_107_A1_P216
     : public NamedClassDecoder {
  public:
-  inline NamedAdc_Rule_3_A1_P18Binary4RegisterShiftedOp()
-    : NamedClassDecoder(decoder_, "Adc_Rule_3_A1_P18Binary4RegisterShiftedOp")
+  inline NamedUnary2RegisterImmedShiftedOp_Mvn_Rule_107_A1_P216()
+    : NamedClassDecoder(decoder_, "Unary2RegisterImmedShiftedOp Mvn_Rule_107_A1_P216")
   {}
-  virtual ~NamedAdc_Rule_3_A1_P18Binary4RegisterShiftedOp() {}
+  virtual ~NamedUnary2RegisterImmedShiftedOp_Mvn_Rule_107_A1_P216() {}
 
  private:
-  nacl_arm_dec::Adc_Rule_3_A1_P18Binary4RegisterShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedAdc_Rule_3_A1_P18Binary4RegisterShiftedOp);
+  nacl_arm_dec::Unary2RegisterImmedShiftedOp_Mvn_Rule_107_A1_P216 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary2RegisterImmedShiftedOp_Mvn_Rule_107_A1_P216);
 };
 
-class NamedAdd_Rule_7_A1_P26Binary4RegisterShiftedOp
+class NamedUnary2RegisterImmedShiftedOp_Ror_Rule_139_A1_P278
     : public NamedClassDecoder {
  public:
-  inline NamedAdd_Rule_7_A1_P26Binary4RegisterShiftedOp()
-    : NamedClassDecoder(decoder_, "Add_Rule_7_A1_P26Binary4RegisterShiftedOp")
+  inline NamedUnary2RegisterImmedShiftedOp_Ror_Rule_139_A1_P278()
+    : NamedClassDecoder(decoder_, "Unary2RegisterImmedShiftedOp Ror_Rule_139_A1_P278")
   {}
-  virtual ~NamedAdd_Rule_7_A1_P26Binary4RegisterShiftedOp() {}
+  virtual ~NamedUnary2RegisterImmedShiftedOp_Ror_Rule_139_A1_P278() {}
 
  private:
-  nacl_arm_dec::Add_Rule_7_A1_P26Binary4RegisterShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedAdd_Rule_7_A1_P26Binary4RegisterShiftedOp);
+  nacl_arm_dec::Unary2RegisterImmedShiftedOp_Ror_Rule_139_A1_P278 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary2RegisterImmedShiftedOp_Ror_Rule_139_A1_P278);
 };
 
-class NamedAnd_Rule_13_A1_P38Binary4RegisterShiftedOp
+class NamedUnary2RegisterOp_Mov_Rule_97_A1_P196
     : public NamedClassDecoder {
  public:
-  inline NamedAnd_Rule_13_A1_P38Binary4RegisterShiftedOp()
-    : NamedClassDecoder(decoder_, "And_Rule_13_A1_P38Binary4RegisterShiftedOp")
+  inline NamedUnary2RegisterOp_Mov_Rule_97_A1_P196()
+    : NamedClassDecoder(decoder_, "Unary2RegisterOp Mov_Rule_97_A1_P196")
   {}
-  virtual ~NamedAnd_Rule_13_A1_P38Binary4RegisterShiftedOp() {}
+  virtual ~NamedUnary2RegisterOp_Mov_Rule_97_A1_P196() {}
 
  private:
-  nacl_arm_dec::And_Rule_13_A1_P38Binary4RegisterShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedAnd_Rule_13_A1_P38Binary4RegisterShiftedOp);
+  nacl_arm_dec::Unary2RegisterOp_Mov_Rule_97_A1_P196 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary2RegisterOp_Mov_Rule_97_A1_P196);
 };
 
-class NamedBic_Rule_21_A1_P54Binary4RegisterShiftedOp
+class NamedUnary2RegisterOp_Rrx_Rule_141_A1_P282
     : public NamedClassDecoder {
  public:
-  inline NamedBic_Rule_21_A1_P54Binary4RegisterShiftedOp()
-    : NamedClassDecoder(decoder_, "Bic_Rule_21_A1_P54Binary4RegisterShiftedOp")
+  inline NamedUnary2RegisterOp_Rrx_Rule_141_A1_P282()
+    : NamedClassDecoder(decoder_, "Unary2RegisterOp Rrx_Rule_141_A1_P282")
   {}
-  virtual ~NamedBic_Rule_21_A1_P54Binary4RegisterShiftedOp() {}
+  virtual ~NamedUnary2RegisterOp_Rrx_Rule_141_A1_P282() {}
 
  private:
-  nacl_arm_dec::Bic_Rule_21_A1_P54Binary4RegisterShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBic_Rule_21_A1_P54Binary4RegisterShiftedOp);
+  nacl_arm_dec::Unary2RegisterOp_Rrx_Rule_141_A1_P282 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary2RegisterOp_Rrx_Rule_141_A1_P282);
 };
 
-class NamedEor_Rule_46_A1_P98Binary4RegisterShiftedOp
+class NamedUnary3RegisterShiftedOp_Mvn_Rule_108_A1_P218
     : public NamedClassDecoder {
  public:
-  inline NamedEor_Rule_46_A1_P98Binary4RegisterShiftedOp()
-    : NamedClassDecoder(decoder_, "Eor_Rule_46_A1_P98Binary4RegisterShiftedOp")
+  inline NamedUnary3RegisterShiftedOp_Mvn_Rule_108_A1_P218()
+    : NamedClassDecoder(decoder_, "Unary3RegisterShiftedOp Mvn_Rule_108_A1_P218")
   {}
-  virtual ~NamedEor_Rule_46_A1_P98Binary4RegisterShiftedOp() {}
+  virtual ~NamedUnary3RegisterShiftedOp_Mvn_Rule_108_A1_P218() {}
 
  private:
-  nacl_arm_dec::Eor_Rule_46_A1_P98Binary4RegisterShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedEor_Rule_46_A1_P98Binary4RegisterShiftedOp);
+  nacl_arm_dec::Unary3RegisterShiftedOp_Mvn_Rule_108_A1_P218 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary3RegisterShiftedOp_Mvn_Rule_108_A1_P218);
 };
 
-class NamedOrr_Rule_115_A1_P212Binary4RegisterShiftedOp
+class NamedUndefined_None
     : public NamedClassDecoder {
  public:
-  inline NamedOrr_Rule_115_A1_P212Binary4RegisterShiftedOp()
-    : NamedClassDecoder(decoder_, "Orr_Rule_115_A1_P212Binary4RegisterShiftedOp")
+  inline NamedUndefined_None()
+    : NamedClassDecoder(decoder_, "Undefined None")
   {}
-  virtual ~NamedOrr_Rule_115_A1_P212Binary4RegisterShiftedOp() {}
+  virtual ~NamedUndefined_None() {}
 
  private:
-  nacl_arm_dec::Orr_Rule_115_A1_P212Binary4RegisterShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedOrr_Rule_115_A1_P212Binary4RegisterShiftedOp);
+  nacl_arm_dec::Undefined_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUndefined_None);
 };
 
-class NamedRsb_Rule_144_A1_P288Binary4RegisterShiftedOp
+class NamedUnpredictable_None
     : public NamedClassDecoder {
  public:
-  inline NamedRsb_Rule_144_A1_P288Binary4RegisterShiftedOp()
-    : NamedClassDecoder(decoder_, "Rsb_Rule_144_A1_P288Binary4RegisterShiftedOp")
+  inline NamedUnpredictable_None()
+    : NamedClassDecoder(decoder_, "Unpredictable None")
   {}
-  virtual ~NamedRsb_Rule_144_A1_P288Binary4RegisterShiftedOp() {}
+  virtual ~NamedUnpredictable_None() {}
 
  private:
-  nacl_arm_dec::Rsb_Rule_144_A1_P288Binary4RegisterShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedRsb_Rule_144_A1_P288Binary4RegisterShiftedOp);
+  nacl_arm_dec::Unpredictable_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnpredictable_None);
 };
 
-class NamedRsc_Rule_147_A1_P294Binary4RegisterShiftedOp
+class NamedVectorLoad_None
     : public NamedClassDecoder {
  public:
-  inline NamedRsc_Rule_147_A1_P294Binary4RegisterShiftedOp()
-    : NamedClassDecoder(decoder_, "Rsc_Rule_147_A1_P294Binary4RegisterShiftedOp")
+  inline NamedVectorLoad_None()
+    : NamedClassDecoder(decoder_, "VectorLoad None")
   {}
-  virtual ~NamedRsc_Rule_147_A1_P294Binary4RegisterShiftedOp() {}
+  virtual ~NamedVectorLoad_None() {}
 
  private:
-  nacl_arm_dec::Rsc_Rule_147_A1_P294Binary4RegisterShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedRsc_Rule_147_A1_P294Binary4RegisterShiftedOp);
+  nacl_arm_dec::VectorLoad_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorLoad_None);
 };
 
-class NamedSbc_Rule_153_A1_P306Binary4RegisterShiftedOp
+class NamedVectorStore_None
     : public NamedClassDecoder {
  public:
-  inline NamedSbc_Rule_153_A1_P306Binary4RegisterShiftedOp()
-    : NamedClassDecoder(decoder_, "Sbc_Rule_153_A1_P306Binary4RegisterShiftedOp")
+  inline NamedVectorStore_None()
+    : NamedClassDecoder(decoder_, "VectorStore None")
   {}
-  virtual ~NamedSbc_Rule_153_A1_P306Binary4RegisterShiftedOp() {}
+  virtual ~NamedVectorStore_None() {}
 
  private:
-  nacl_arm_dec::Sbc_Rule_153_A1_P306Binary4RegisterShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSbc_Rule_153_A1_P306Binary4RegisterShiftedOp);
+  nacl_arm_dec::VectorStore_None decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorStore_None);
 };
 
-class NamedSub_Rule_214_A1_P424Binary4RegisterShiftedOp
+class NamedDefs12To15RdRnRsRmNotPc_Add_Rule_7_A1_P26
     : public NamedClassDecoder {
  public:
-  inline NamedSub_Rule_214_A1_P424Binary4RegisterShiftedOp()
-    : NamedClassDecoder(decoder_, "Sub_Rule_214_A1_P424Binary4RegisterShiftedOp")
+  inline NamedDefs12To15RdRnRsRmNotPc_Add_Rule_7_A1_P26()
+    : NamedClassDecoder(decoder_, "Defs12To15RdRnRsRmNotPc Add_Rule_7_A1_P26")
   {}
-  virtual ~NamedSub_Rule_214_A1_P424Binary4RegisterShiftedOp() {}
+  virtual ~NamedDefs12To15RdRnRsRmNotPc_Add_Rule_7_A1_P26() {}
 
  private:
-  nacl_arm_dec::Sub_Rule_214_A1_P424Binary4RegisterShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedSub_Rule_214_A1_P424Binary4RegisterShiftedOp);
+  nacl_arm_dec::Defs12To15RdRnRsRmNotPc_Add_Rule_7_A1_P26 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15RdRnRsRmNotPc_Add_Rule_7_A1_P26);
 };
 
-class NamedMov_Rule_96_A2_P_194Unary1RegisterImmediateOp
+class NamedDefs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288
     : public NamedClassDecoder {
  public:
-  inline NamedMov_Rule_96_A2_P_194Unary1RegisterImmediateOp()
-    : NamedClassDecoder(decoder_, "Mov_Rule_96_A2_P_194Unary1RegisterImmediateOp")
+  inline NamedDefs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288()
+    : NamedClassDecoder(decoder_, "Defs12To15RdRnRsRmNotPc Rsb_Rule_144_A1_P288")
   {}
-  virtual ~NamedMov_Rule_96_A2_P_194Unary1RegisterImmediateOp() {}
+  virtual ~NamedDefs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288() {}
 
  private:
-  nacl_arm_dec::Mov_Rule_96_A2_P_194Unary1RegisterImmediateOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMov_Rule_96_A2_P_194Unary1RegisterImmediateOp);
+  nacl_arm_dec::Defs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288);
 };
 
-class NamedAsr_Rule_14_A1_P40Unary2RegisterImmedShiftedOp
+class NamedImmediateBic_Bic_Rule_19_A1_P50
     : public NamedClassDecoder {
  public:
-  inline NamedAsr_Rule_14_A1_P40Unary2RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "Asr_Rule_14_A1_P40Unary2RegisterImmedShiftedOp")
+  inline NamedImmediateBic_Bic_Rule_19_A1_P50()
+    : NamedClassDecoder(decoder_, "ImmediateBic Bic_Rule_19_A1_P50")
   {}
-  virtual ~NamedAsr_Rule_14_A1_P40Unary2RegisterImmedShiftedOp() {}
+  virtual ~NamedImmediateBic_Bic_Rule_19_A1_P50() {}
 
  private:
-  nacl_arm_dec::Asr_Rule_14_A1_P40Unary2RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedAsr_Rule_14_A1_P40Unary2RegisterImmedShiftedOp);
+  nacl_arm_dec::ImmediateBic_Bic_Rule_19_A1_P50 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedImmediateBic_Bic_Rule_19_A1_P50);
 };
 
-class NamedLsl_Rule_88_A1_P178Unary2RegisterImmedShiftedOp
+class NamedTestImmediate_Tst_Rule_230_A1_P454
     : public NamedClassDecoder {
  public:
-  inline NamedLsl_Rule_88_A1_P178Unary2RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "Lsl_Rule_88_A1_P178Unary2RegisterImmedShiftedOp")
+  inline NamedTestImmediate_Tst_Rule_230_A1_P454()
+    : NamedClassDecoder(decoder_, "TestImmediate Tst_Rule_230_A1_P454")
   {}
-  virtual ~NamedLsl_Rule_88_A1_P178Unary2RegisterImmedShiftedOp() {}
+  virtual ~NamedTestImmediate_Tst_Rule_230_A1_P454() {}
 
  private:
-  nacl_arm_dec::Lsl_Rule_88_A1_P178Unary2RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLsl_Rule_88_A1_P178Unary2RegisterImmedShiftedOp);
-};
-
-class NamedLsr_Rule_90_A1_P182Unary2RegisterImmedShiftedOp
-    : public NamedClassDecoder {
- public:
-  inline NamedLsr_Rule_90_A1_P182Unary2RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "Lsr_Rule_90_A1_P182Unary2RegisterImmedShiftedOp")
-  {}
-  virtual ~NamedLsr_Rule_90_A1_P182Unary2RegisterImmedShiftedOp() {}
-
- private:
-  nacl_arm_dec::Lsr_Rule_90_A1_P182Unary2RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLsr_Rule_90_A1_P182Unary2RegisterImmedShiftedOp);
-};
-
-class NamedMvn_Rule_107_A1_P216Unary2RegisterImmedShiftedOp
-    : public NamedClassDecoder {
- public:
-  inline NamedMvn_Rule_107_A1_P216Unary2RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "Mvn_Rule_107_A1_P216Unary2RegisterImmedShiftedOp")
-  {}
-  virtual ~NamedMvn_Rule_107_A1_P216Unary2RegisterImmedShiftedOp() {}
-
- private:
-  nacl_arm_dec::Mvn_Rule_107_A1_P216Unary2RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMvn_Rule_107_A1_P216Unary2RegisterImmedShiftedOp);
-};
-
-class NamedRor_Rule_139_A1_P278Unary2RegisterImmedShiftedOp
-    : public NamedClassDecoder {
- public:
-  inline NamedRor_Rule_139_A1_P278Unary2RegisterImmedShiftedOp()
-    : NamedClassDecoder(decoder_, "Ror_Rule_139_A1_P278Unary2RegisterImmedShiftedOp")
-  {}
-  virtual ~NamedRor_Rule_139_A1_P278Unary2RegisterImmedShiftedOp() {}
-
- private:
-  nacl_arm_dec::Ror_Rule_139_A1_P278Unary2RegisterImmedShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedRor_Rule_139_A1_P278Unary2RegisterImmedShiftedOp);
-};
-
-class NamedMov_Rule_97_A1_P196Unary2RegisterOp
-    : public NamedClassDecoder {
- public:
-  inline NamedMov_Rule_97_A1_P196Unary2RegisterOp()
-    : NamedClassDecoder(decoder_, "Mov_Rule_97_A1_P196Unary2RegisterOp")
-  {}
-  virtual ~NamedMov_Rule_97_A1_P196Unary2RegisterOp() {}
-
- private:
-  nacl_arm_dec::Mov_Rule_97_A1_P196Unary2RegisterOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMov_Rule_97_A1_P196Unary2RegisterOp);
-};
-
-class NamedRrx_Rule_141_A1_P282Unary2RegisterOp
-    : public NamedClassDecoder {
- public:
-  inline NamedRrx_Rule_141_A1_P282Unary2RegisterOp()
-    : NamedClassDecoder(decoder_, "Rrx_Rule_141_A1_P282Unary2RegisterOp")
-  {}
-  virtual ~NamedRrx_Rule_141_A1_P282Unary2RegisterOp() {}
-
- private:
-  nacl_arm_dec::Rrx_Rule_141_A1_P282Unary2RegisterOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedRrx_Rule_141_A1_P282Unary2RegisterOp);
-};
-
-class NamedMvn_Rule_108_A1_P218Unary3RegisterShiftedOp
-    : public NamedClassDecoder {
- public:
-  inline NamedMvn_Rule_108_A1_P218Unary3RegisterShiftedOp()
-    : NamedClassDecoder(decoder_, "Mvn_Rule_108_A1_P218Unary3RegisterShiftedOp")
-  {}
-  virtual ~NamedMvn_Rule_108_A1_P218Unary3RegisterShiftedOp() {}
-
- private:
-  nacl_arm_dec::Mvn_Rule_108_A1_P218Unary3RegisterShiftedOp decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMvn_Rule_108_A1_P218Unary3RegisterShiftedOp);
+  nacl_arm_dec::TestImmediate_Tst_Rule_230_A1_P454 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedTestImmediate_Tst_Rule_230_A1_P454);
 };
 
 
