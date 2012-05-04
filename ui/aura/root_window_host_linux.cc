@@ -42,6 +42,7 @@ const char kRootWindowHostLinuxKey[] = "__AURA_ROOT_WINDOW_HOST_LINUX__";
 // The events reported for slave devices can have incorrect information for some
 // fields. This utility function is used to check for such inconsistencies.
 void CheckXEventForConsistency(XEvent* xevent) {
+#if defined(USE_XI2_MT)
   static bool expect_master_event = false;
   static XIDeviceEvent slave_event;
   static gfx::Point slave_location;
@@ -86,6 +87,7 @@ void CheckXEventForConsistency(XEvent* xevent) {
     CHECK_EQ(slave_event.mods.locked, xievent->mods.locked);
     CHECK_EQ(slave_event.mods.effective, xievent->mods.effective);
   }
+#endif  // defined(USE_XI2_MT)
 }
 
 // Returns X font cursor shape from an Aura cursor.
@@ -196,8 +198,7 @@ int CoalescePendingXIMotionEvents(const XEvent* xev, XEvent* last_event) {
     // with one from the master and one from the slave so there will
     // always be at least one pending.
     if (!ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(&next_event)) {
-      // See crbug.com/109884.
-      // CheckXEventForConsistency(&next_event);
+      CheckXEventForConsistency(&next_event);
       XFreeEventData(display, &next_event.xcookie);
       XNextEvent(display, &next_event);
       continue;
@@ -227,8 +228,7 @@ int CoalescePendingXIMotionEvents(const XEvent* xev, XEvent* last_event) {
         // Get the event and its cookie data.
         XNextEvent(display, last_event);
         XGetEventData(display, &last_event->xcookie);
-        // See crbug.com/109884.
-        // CheckXEventForConsistency(last_event);
+        CheckXEventForConsistency(last_event);
         ++num_coalesed;
         continue;
       } else {
@@ -396,8 +396,7 @@ RootWindowHostLinux::~RootWindowHostLinux() {
 bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
   XEvent* xev = event;
 
-  // See crbug.com/109884.
-  // CheckXEventForConsistency(xev);
+  CheckXEventForConsistency(xev);
 
   switch (xev->type) {
     case Expose:
