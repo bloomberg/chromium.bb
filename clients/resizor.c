@@ -178,7 +178,7 @@ show_menu(struct resizor *resizor, struct input *input, uint32_t time)
 static void
 button_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
-	       int button, uint32_t state, void *data)
+	       uint32_t button, uint32_t state, void *data)
 {
 	struct resizor *resizor = data;
 

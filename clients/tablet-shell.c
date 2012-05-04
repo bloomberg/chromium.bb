@@ -217,7 +217,7 @@ lockscreen_draw(struct widget *widget, void *data)
 static void
 lockscreen_button_handler(struct widget *widget,
 			  struct input *input, uint32_t time,
-			  int button, uint32_t state, void *data)
+			  uint32_t button, uint32_t state, void *data)
 {
 	struct lockscreen *lockscreen = data;
 

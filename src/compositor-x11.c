@@ -485,7 +485,7 @@ x11_compositor_deliver_button_event(struct x11_compositor *c,
 {
 	xcb_button_press_event_t *button_event =
 		(xcb_button_press_event_t *) event;
-	int button;
+	uint32_t button;
 
 	switch (button_event->detail) {
 	default:
