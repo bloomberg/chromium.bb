@@ -314,7 +314,7 @@ FileTransferController.prototype = {
     }
     if (domElement && isDirectory && opt_destinationPath) {
       this.navigateTimer_ = setTimeout(function() {
-        this.directoryModel_.changeRoot(opt_destinationPath);
+        this.directoryModel_.changeDirectoryOrRoot(opt_destinationPath);
       }.bind(this), 2000);
     }
   },

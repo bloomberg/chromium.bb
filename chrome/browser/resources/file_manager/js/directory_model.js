@@ -703,8 +703,10 @@ DirectoryModel.prototype.resolveDirectory = function(path, successCallback,
  *
  * @param {string} path New current directory path or new root.
  */
-DirectoryModel.prototype.changeRoot = function(path) {
-  if (this.currentDirByRoot_[path]) {
+DirectoryModel.prototype.changeDirectoryOrRoot = function(path) {
+  if (DirectoryModel.getRootPath(path) == this.getCurrentRootPath()) {
+    this.changeDirectory(path);
+  } else if (this.currentDirByRoot_[path]) {
     this.resolveDirectory(
         this.currentDirByRoot_[path],
         this.changeDirectoryEntry_.bind(this, false),

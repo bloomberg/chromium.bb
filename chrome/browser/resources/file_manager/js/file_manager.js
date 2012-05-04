@@ -144,6 +144,7 @@ FileManager.prototype = {
     fileManager.decorateThumbnail_(li, entry);
   };
 
+
   /**
    * Return a translated string.
    *
@@ -660,13 +661,10 @@ FileManager.prototype = {
     this.rootsList_.selectionModel =
         this.directoryModel_.getRootsListSelectionModel();
 
-    this.rootsList_.selectionModel.addEventListener(
-        'change', this.onRootChange_.bind(this));
-
     // TODO(dgozman): add "Add a drive" item.
     this.rootsList_.dataModel = this.directoryModel_.getRootsList();
     this.directoryModel_.updateRoots(function() {
-      self.rootsList_.endBatchUpdates();
+        self.rootsList_.endBatchUpdates();
     }, false);
   };
 
@@ -1734,23 +1732,20 @@ FileManager.prototype = {
     return path;
   };
 
-  FileManager.prototype.onRootChange_ = function(entry, event) {
-    var newRootDir = this.directoryModel_.getCurrentRootDirEntry();
-    if (newRootDir)
-      this.directoryModel_.changeRoot(newRootDir.fullPath);
+  /**
+   * Handler for root item being clicked.
+   * @private
+   * @param {Entry} entry Entry to navigate to.
+   * @param {Event} event The event.
+   */
+  FileManager.prototype.onRootClick_ = function(entry, event) {
+    this.directoryModel_.changeDirectoryOrRoot(entry.fullPath);
   };
 
   FileManager.prototype.renderRoot_ = function(entry) {
     var li = this.document_.createElement('li');
     li.className = 'root-item';
-    var dm = this.directoryModel_;
-    var handleClick = function() {
-      if (li.selected) {
-        dm.changeDirectory(entry.fullPath);
-      }
-    };
-    li.addEventListener('mousedown', handleClick);
-    li.addEventListener(cr.ui.TouchHandler.EventType.TOUCH_START, handleClick);
+    li.addEventListener('click', this.onRootClick_.bind(this, entry));
 
     var rootType = DirectoryModel.getRootType(entry.fullPath);
 
