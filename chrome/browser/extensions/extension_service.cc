@@ -826,9 +826,7 @@ bool ExtensionService::UninstallExtension(
 
   GURL launch_web_url_origin(extension->launch_web_url());
   launch_web_url_origin = launch_web_url_origin.GetOrigin();
-  bool is_storage_isolated =
-    (extension->is_storage_isolated() &&
-    extension->HasAPIPermission(ExtensionAPIPermission::kExperimental));
+  bool is_storage_isolated = extension->is_storage_isolated();
 
   if (extension->is_hosted_app() &&
       !profile_->GetExtensionSpecialStoragePolicy()->

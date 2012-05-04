@@ -20,10 +20,11 @@ TEST_F(ExtensionManifestTest, PlatformApps) {
 
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
 
-  LoadAndExpectSuccess("init_valid_platform_app.json");
-
   scoped_refptr<Extension> extension =
-      LoadAndExpectSuccess("init_invalid_platform_app_1.json");
+      LoadAndExpectSuccess("init_valid_platform_app.json");
+  EXPECT_TRUE(extension->is_storage_isolated());
+
+  extension = LoadAndExpectSuccess("init_invalid_platform_app_1.json");
   ASSERT_TRUE(extension);
   ASSERT_EQ(1u, extension->install_warnings().size());
   EXPECT_EQ("'app.launch' is not allowed for specified package type "

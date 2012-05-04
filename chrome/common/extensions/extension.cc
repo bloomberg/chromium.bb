@@ -2695,7 +2695,21 @@ bool Extension::LoadContentSecurityPolicy(string16* error) {
   return true;
 }
 
-bool Extension::LoadAppIsolation(string16* error) {
+bool Extension::LoadAppIsolation(
+    const ExtensionAPIPermissionSet& api_permissions, string16* error) {
+  // Platform apps always get isolated storage.
+  if (is_platform_app()) {
+    is_storage_isolated_ = true;
+    return true;
+  }
+
+  // Other apps only get it if it is requested _and_ experimental APIs are
+  // enabled.
+  if (!api_permissions.count(ExtensionAPIPermission::kExperimental) ||
+      !is_app()) {
+    return true;
+  }
+
   Value* temp = NULL;
   if (!manifest_->Get(keys::kIsolation, &temp))
     return true;
@@ -3082,9 +3096,7 @@ bool Extension::InitFromValue(int flags, string16* error) {
     return false;
   }
 
-  // App isolation.
-  if (api_permissions.count(ExtensionAPIPermission::kExperimental) &&
-      is_app() && !LoadAppIsolation(error))
+  if (!LoadAppIsolation(api_permissions, error))
     return false;
 
   if (!LoadSharedFeatures(api_permissions, error))

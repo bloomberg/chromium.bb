@@ -677,7 +677,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool is_platform_app() const;
   bool is_hosted_app() const;
   bool is_packaged_app() const;
-  bool is_storage_isolated() const { return is_app() && is_storage_isolated_; }
+  bool is_storage_isolated() const { return is_storage_isolated_; }
   const URLPatternSet& web_extent() const { return extent_; }
   const std::string& launch_local_path() const { return launch_local_path_; }
   const std::string& launch_web_url() const { return launch_web_url_; }
@@ -751,7 +751,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // extension from the manifest.
 
   bool CheckMinimumChromeVersion(string16* error);
-  bool LoadAppIsolation(string16* error);
+  bool LoadAppIsolation(const ExtensionAPIPermissionSet& api_permissions,
+                        string16* error);
 
   bool LoadRequiredFeatures(string16* error);
   bool LoadName(string16* error);

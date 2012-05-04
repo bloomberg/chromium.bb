@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -178,4 +179,35 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Restrictions) {
 // Tests that platform apps can use the chrome.windows.* API.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApi) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/windows_api")) << message_;
+}
+
+// Tests that platform apps have isolated storage by default.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Isolation) {
+  ASSERT_TRUE(StartTestServer());
+
+  // Load a (non-app) page under the "localhost" origin that sets a cookie.
+  GURL set_cookie_url = test_server()->GetURL(
+      "files/extensions/platform_apps/isolation/set_cookie.html");
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");  // Must stay in scope with replace_host.
+  replace_host.SetHostStr(host_str);
+  set_cookie_url = set_cookie_url.ReplaceComponents(replace_host);
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), set_cookie_url,
+      CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Make sure the cookie is set.
+  int cookie_size;
+  std::string cookie_value;
+  automation_util::GetCookies(
+      set_cookie_url,
+      browser()->GetWebContentsAt(0),
+      &cookie_size,
+      &cookie_value);
+  ASSERT_EQ("testCookie=1", cookie_value);
+
+  // Let the platform app request the same URL, and make sure that it doesn't
+  // see the cookie.
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/isolation")) << message_;
 }

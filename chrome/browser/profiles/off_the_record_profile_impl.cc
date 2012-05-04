@@ -282,9 +282,7 @@ net::URLRequestContextGetter*
   if (GetExtensionService()) {
     const Extension* installed_app = GetExtensionService()->
         GetInstalledAppForRenderer(renderer_child_id);
-    if (installed_app != NULL && installed_app->is_storage_isolated() &&
-        installed_app->HasAPIPermission(
-            ExtensionAPIPermission::kExperimental)) {
+    if (installed_app != NULL && installed_app->is_storage_isolated()) {
       return GetRequestContextForIsolatedApp(installed_app->id());
     }
   }

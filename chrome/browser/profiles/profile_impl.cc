@@ -75,7 +75,6 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -704,9 +703,7 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
   if (extension_service) {
     const Extension* installed_app = extension_service->
         GetInstalledAppForRenderer(renderer_child_id);
-    if (installed_app != NULL && installed_app->is_storage_isolated() &&
-        installed_app->HasAPIPermission(
-            ExtensionAPIPermission::kExperimental)) {
+    if (installed_app != NULL && installed_app->is_storage_isolated()) {
       return GetRequestContextForIsolatedApp(installed_app->id());
     }
   }
