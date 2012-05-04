@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // TODO(sail): Refactor options_page and remove this include.
-<include src="../options/options_page.js"/>
+<include src="../options2/options_page.js"/>
 <include src="../shared/js/util.js"/>
 <include src="../sync_setup_overlay.js"/>
 
