@@ -103,6 +103,17 @@ class WebIntentPickerController : public content::NotificationObserver,
   void OnWebIntentServicesAvailable(
       const std::vector<webkit_glue::WebIntentServiceData>& services);
 
+  // Called when a default service is returned from the WebIntentsRegistry.
+  // (Still called with default_service.service_url empty if there are no
+  // defaults.)
+  void OnWebIntentDefaultsAvailable(
+      const DefaultWebIntentService& default_service);
+
+  // Coordination method which is delegated to by the registry calls to get
+  // services and defaults. Checks whether the picker should be shown or if
+  // default choices allow it to be skipped.
+  void RegistryCallsCompleted();
+
   // Called when WebIntentServiceData is ready for checking extensions
   // when dispatching explicit intents. Gets |services|
   // from the WebIntentsRegistry to check for known urls/extensions and find
@@ -169,6 +180,9 @@ class WebIntentPickerController : public content::NotificationObserver,
 
   // A count of the outstanding asynchronous calls.
   int pending_async_count_;
+
+  // A count of outstanding WebIntentsRegistry calls.
+  int pending_registry_calls_count_;
 
   // Is true if the picker is currently visible.
   // This bool is not equivalent to picker != NULL in a unit test. In that

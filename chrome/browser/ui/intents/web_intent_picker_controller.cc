@@ -138,6 +138,7 @@ WebIntentPickerController::WebIntentPickerController(
       picker_(NULL),
       picker_model_(new WebIntentPickerModel()),
       pending_async_count_(0),
+      pending_registry_calls_count_(0),
       picker_shown_(false),
       intents_dispatcher_(NULL),
       service_tab_(NULL),
@@ -217,11 +218,24 @@ void WebIntentPickerController::ShowDialog(const string16& action,
     }
   }
 
-  pending_async_count_+= 2;
+  pending_async_count_ += 2;
+  pending_registry_calls_count_ += 1;
+
   GetWebIntentsRegistry(wrapper_)->GetIntentServices(
       action, type,
           base::Bind(&WebIntentPickerController::OnWebIntentServicesAvailable,
               weak_ptr_factory_.GetWeakPtr()));
+
+  GURL invoking_url = wrapper_->web_contents()->GetURL();
+  if (invoking_url.is_valid()) {
+    pending_async_count_++;
+    pending_registry_calls_count_++;
+    GetWebIntentsRegistry(wrapper_)->GetDefaultIntentService(
+        action, type, invoking_url,
+        base::Bind(&WebIntentPickerController::OnWebIntentDefaultsAvailable,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
   GetCWSIntentsRegistry(wrapper_)->GetIntentServices(
       action, type,
       base::Bind(&WebIntentPickerController::OnCWSIntentServicesAvailable,
@@ -413,11 +427,8 @@ void WebIntentPickerController::OnWebIntentServicesAvailable(
     favicon_consumer_.SetClientData(favicon_service, handle, i);
   }
 
+  RegistryCallsCompleted();
   AsyncOperationFinished();
-
-  CreatePicker();
-  picker_->SetActionString(GetIntentActionString(
-      UTF16ToUTF8(picker_model_->action())));
 }
 
 void WebIntentPickerController::WebIntentServicesForExplicitIntent(
@@ -443,6 +454,43 @@ void WebIntentPickerController::WebIntentServicesForExplicitIntent(
           "Explicit extension URL is not available."));
 
   AsyncOperationFinished();
+}
+
+void WebIntentPickerController::OnWebIntentDefaultsAvailable(
+    const DefaultWebIntentService& default_service) {
+  if (!default_service.service_url.empty()) {
+    DCHECK(default_service.suppression == 0);
+    picker_model_->set_default_service_url(GURL(default_service.service_url));
+  }
+
+  RegistryCallsCompleted();
+  AsyncOperationFinished();
+}
+
+void WebIntentPickerController::RegistryCallsCompleted() {
+  pending_registry_calls_count_--;
+  if (pending_registry_calls_count_ != 0) return;
+
+  if (picker_model_->default_service_url().is_valid()) {
+    // If there's a default service, dispatch to it immediately
+    // without showing the picker.
+    const WebIntentPickerModel::InstalledService* default_service =
+        picker_model_->GetInstalledServiceWithURL(
+            GURL(picker_model_->default_service_url()));
+
+    if (default_service != NULL) {
+      if (default_service->disposition ==
+          WebIntentPickerModel::DISPOSITION_INLINE)
+        CreatePicker();
+
+      OnServiceChosen(default_service->url, default_service->disposition);
+      return;
+    }
+  }
+
+  CreatePicker();
+  picker_->SetActionString(GetIntentActionString(
+      UTF16ToUTF8(picker_model_->action())));
 }
 
 void WebIntentPickerController::OnFaviconDataAvailable(

@@ -11,9 +11,8 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/intents/web_intents_registry.h"
-#include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
@@ -284,6 +283,16 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
 
     fake_url_fetcher_factory_->SetFakeResponse(icon_url, icon_response_,
                                                true);
+  }
+
+  void SetDefaultService(const string16& action,
+                         const std::string& url) {
+    DefaultWebIntentService default_service;
+    default_service.action = action;
+    default_service.type = kType1;
+    default_service.user_date = 1000000;
+    default_service.service_url = url;
+    web_data_service_->AddDefaultWebIntentService(default_service);
   }
 
   void OnSendReturnMessage(
@@ -561,4 +570,32 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   // num_installed_services_ would be 2 if the intent wasn't explicit.
   EXPECT_EQ(0, picker_.num_installed_services_);
   EXPECT_TRUE(dispatcher.replied_);
+}
+
+IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
+                       DefaultsTest) {
+  AddWebIntentService(kAction1, kServiceURL1);
+  AddWebIntentService(kAction1, kServiceURL2);
+
+  SetDefaultService(kAction1, kServiceURL1.spec());
+
+  webkit_glue::WebIntentData intent;
+  intent.action = kAction1;
+  intent.type = kType1;
+  IntentsDispatcherMock dispatcher(intent);
+  controller_->SetIntentsDispatcher(&dispatcher);
+
+  ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer((
+      content::Source<content::WebContentsDelegate>(browser())));
+  controller_->ShowDialog(kAction1, kType1);
+  new_tab_observer.Wait();
+
+  EXPECT_EQ(2, picker_.num_installed_services_);
+
+  // The tab is shown immediately without needing to call OnServiceChosen.
+  ASSERT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(GURL(kServiceURL1),
+            browser()->GetSelectedWebContents()->GetURL());
+
+  EXPECT_TRUE(dispatcher.dispatched_);
 }

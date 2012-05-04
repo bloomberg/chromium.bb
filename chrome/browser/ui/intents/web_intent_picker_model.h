@@ -83,6 +83,12 @@ class WebIntentPickerModel {
 
   const string16& mimetype() { return mimetype_; }
 
+  void set_default_service_url(const GURL& default_url) {
+    default_service_url_ = default_url;
+  }
+
+  const GURL& default_service_url() { return default_service_url_; }
+
   // Add a new installed service with |title|, |url| and |disposition| to the
   // picker.
   void AddInstalledService(const string16& title,
@@ -163,6 +169,10 @@ class WebIntentPickerModel {
 
   // A cached copy of the mimetype that instantiated the picker.
   string16 mimetype_;
+
+  // The non-empty url of the default service if the WebIntentsRegistry
+  // finds a default service matching the intent being dispatched.
+  GURL default_service_url_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerModel);
 };
