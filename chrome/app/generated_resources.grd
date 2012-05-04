@@ -12389,6 +12389,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_INSTALL_FROM_DMG_ERROR" desc="Error dialog message to be displayed when installation from the disk image fails.  Mac-only.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> couldn't complete installation, but will continue to run from its disk image.
       </message>
+
+      <!-- Mac 10.5 deprecation -->
+      <message name="IDS_MAC_10_5_LEOPARD_DEPRECATED" desc="A message displayed on the New Tab Page warning the user that the OS they are running will not be supported soon.">
+        This computer will no longer receive updates of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> because it's running Mac OS X 10.5.
+      </message>
     </if>
 
     <!-- File Selection Dialog Policy - Infobar -->

@@ -269,6 +269,27 @@ html[dir='rtl'] .login-status-icon {
   min-width: 6em;
 }
 
+/* Mac 10.5 Deprecation Message. **********************************************/
+
+#mac-leopard-deprecation {
+  left: 50%;
+  margin-left: -150px;
+  position: fixed;
+  text-align: center;
+  top: 13px;
+  width: 300px;
+  z-index: 10;
+}
+
+#mac-leopard-box {
+  background-color: rgb(255, 241, 153);
+  border: 1px solid lightGrey;
+  border-radius: 6px;
+  color: black;
+  display: inline-block;
+  padding: 7px 10px;
+}
+
 /* Trash. *********************************************************************/
 
 #trash {

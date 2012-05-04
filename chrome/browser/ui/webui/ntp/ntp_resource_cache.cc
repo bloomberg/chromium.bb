@@ -57,6 +57,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
 #include "chrome/browser/platform_util.h"
 #endif
 
@@ -84,6 +85,10 @@ const char kSyncServiceHelpUrl[] =
 // The URL to be loaded to display Help.
 const char kHelpContentUrl[] =
     "https://www.google.com/support/chrome/";
+
+// The URL for the Mac OS X 10.5 deprecation help center article.
+const char kMacLeopardDeprecationUrl[] =
+    "https://support.google.com/chrome/?p=ui_mac_leopard_support";
 
 string16 GetUrlWithLang(const GURL& url) {
   return ASCIIToUTF16(google_util::AppendGoogleLocaleParam(url).spec());
@@ -388,6 +393,21 @@ void NTPResourceCache::CreateNewTabHTML() {
   // feature is enabled.
   load_time_data.SetBoolean("isSwipeTrackingFromScrollEventsEnabled",
                             is_swipe_tracking_from_scroll_events_enabled_);
+
+  // Warn users of Mac OS X 10.5 that their OS will not be supported in the
+  // near future. Switch this to an infobar in M21 <http://crbug.com/122031>.
+#if defined(OS_MACOSX)
+  load_time_data.SetString("hideMacLeopard",
+      base::mac::IsOSLeopard() ? "" : "hidden");
+  load_time_data.SetString("macLeopardMessage",
+      l10n_util::GetStringFUTF16(IDS_MAC_10_5_LEOPARD_DEPRECATED,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  load_time_data.SetString("macLeopardLink", kMacLeopardDeprecationUrl);
+#else
+  load_time_data.SetString("hideMacLeopard", "hidden");
+  load_time_data.SetString("macLeopardMessage", "");
+  load_time_data.SetString("macLeopardLink", "");
+#endif
 
 #if defined(OS_CHROMEOS)
   load_time_data.SetString("expandMenu",
