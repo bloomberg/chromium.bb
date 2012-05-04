@@ -77,6 +77,12 @@ FileManager.prototype = {
       'https://support.google.com/chromeos/?hl=en&p=filemanager_drive';
 
   /**
+   * Location of the page to buy more storage for Google Drive.
+   */
+  var GOOGLE_DRIVE_BUY_STORAGE =
+      'https://www.google.com/settings/storage';
+
+  /**
    * Location of the help page about connecting to Google Drive.
    */
   var GOOGLE_DRIVE_ERROR_HELP_URL =
@@ -1214,9 +1220,21 @@ FileManager.prototype = {
           break;
 
         case 'FILESYSTEM_ERROR':
-          this.showButterError(
-              strf('PASTE_FILESYSTEM_ERROR',
-                   util.getFileErrorMnemonic(event.error.data.code)));
+          if (event.error.data.toGDrive &&
+              event.error.data.code == FileError.QUOTA_EXCEEDED_ERR) {
+            this.hideButter();
+            this.alert.showHtml(
+                strf('GDATA_SERVER_OUT_OF_SPACE_HEADER',
+                    str('GDATA_PRODUCT_NAME')),
+                strf('GDATA_SERVER_OUT_OF_SPACE_MESSAGE',
+                    str('GDATA_PRODUCT_NAME'),
+                    event.error.data.sourceFileUrl.split('/').pop(),
+                    GOOGLE_DRIVE_BUY_STORAGE));
+          } else {
+            this.showButterError(
+                strf('PASTE_FILESYSTEM_ERROR',
+                     util.getFileErrorMnemonic(event.error.data.code)));
+          }
           break;
 
         default:

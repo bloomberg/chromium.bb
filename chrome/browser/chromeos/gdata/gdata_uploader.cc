@@ -175,7 +175,7 @@ void GDataUploader::OpenCompletionCallback(int upload_id, int result) {
         upload_file_info->num_file_open_tries >= kMaxFileOpenTries;
     upload_file_info->should_retry_file_open = !exceeded_max_attempts;
     if (exceeded_max_attempts)
-      UploadFailed(upload_file_info);
+      UploadFailed(upload_file_info, base::PLATFORM_FILE_ERROR_NOT_FOUND);
 
     return;
   }
@@ -208,7 +208,7 @@ void GDataUploader::OnUploadLocationReceived(
 
   if (code != HTTP_SUCCESS) {
     // TODO(achuith): Handle error codes from Google Docs server.
-    UploadFailed(upload_file_info);
+    UploadFailed(upload_file_info, base::PLATFORM_FILE_ERROR_ABORT);
     return;
   }
 
@@ -323,19 +323,14 @@ void GDataUploader::OnResumeUploadResponseReceived(
     // TODO(achuith): Handle error cases, e.g.
     // - when previously uploaded data wasn't received by Google Docs server,
     //   i.e. when end_range_received < upload_file_info->end_range
-    // - when quota is exceeded, which is 1GB for files not converted to Google
-    //   Docs format; even though the quota-exceeded content length
-    //   is specified in the header when posting request to get upload
-    //   location, the server allows us to upload all chunks of entire file
-    //   successfully, but instead of returning 201 (CREATED) status code after
-    //   receiving the last chunk, it returns 403 (FORBIDDEN); response content
-    //   then will indicate quote exceeded exception.
     LOG(ERROR) << "UploadNextChunk http code=" << response.code
                << ", start_range_received=" << response.start_range_received
                << ", end_range_received=" << response.end_range_received
                << ", expected end range=" << upload_file_info->end_range;
-
-    UploadFailed(upload_file_info);
+    UploadFailed(upload_file_info,
+        response.code == HTTP_FORBIDDEN ?
+            base::PLATFORM_FILE_ERROR_NO_SPACE :
+            base::PLATFORM_FILE_ERROR_ABORT);
     return;
   }
 
@@ -361,11 +356,12 @@ void GDataUploader::MoveFileToCache(UploadFileInfo* upload_file_info) {
   DeleteUpload(upload_file_info);
 }
 
-void GDataUploader::UploadFailed(UploadFileInfo* upload_file_info) {
+void GDataUploader::UploadFailed(UploadFileInfo* upload_file_info,
+                                 base::PlatformFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LOG(ERROR) << "Upload failed " << upload_file_info->DebugString();
   if (!upload_file_info->completion_callback.is_null()) {
-    upload_file_info->completion_callback.Run(base::PLATFORM_FILE_ERROR_ABORT,
+    upload_file_info->completion_callback.Run(error,
                                               upload_file_info);
   }
   DeleteUpload(upload_file_info);

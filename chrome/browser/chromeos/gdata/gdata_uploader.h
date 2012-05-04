@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
+#include "base/platform_file.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/gdata_params.h"
 #include "googleurl/src/gurl.h"
@@ -77,7 +78,8 @@ class GDataUploader {
   void MoveFileToCache(UploadFileInfo* upload_file_info);
 
   // Handle failed uploads.
-  void UploadFailed(UploadFileInfo* upload_file_info);
+  void UploadFailed(UploadFileInfo* upload_file_info,
+                    base::PlatformFileError error);
 
   // Private data.
   GDataFileSystem* file_system_;

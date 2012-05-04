@@ -10751,7 +10751,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_SPACE_HEADER" desc="Message informing the user that there is not enough space to make the selected file(s) available offline.">
         You have run out of space
       </message>
-      <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_SPACE_HEADER_SERVER" desc="Message informing the user that there is not enough space on server side to store a new file.">
+      <message name="IDS_FILE_BROWSER_GDATA_SERVER_OUT_OF_SPACE_HEADER" desc="Message informing the user that there is not enough space on server side to store a new file.">
         You have run out of space in <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph>
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_LOADING" desc="Message informing the user that we are loading content of Google Drive.">
@@ -10771,8 +10771,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <ph name="MARKUP_2">&lt;ul&gt;&lt;li&gt;</ph>unpin files that you no longer need to access offline<ph name="MARKUP_3">&lt;/li&gt;</ph>
         <ph name="MARKUP_4">&lt;li&gt;</ph>delete files from your Downloads folder<ph name="MARKUP_5">&lt;/li&gt;&lt;/ul&gt;</ph>
       </message>
-      <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_ON_SERVER" desc="Message informing the user how to make more space available on Google Drive server side.">
-        You do not have enough space in <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph> to save this file. Please remove files or <ph name="BEGIN_LINK">&lt;a target='_blank' href='$2'&gt;</ph>buy more storage space<ph name="END_LINK">&lt;/a&gt;</ph>.
+      <message name="IDS_FILE_BROWSER_GDATA_SERVER_OUT_OF_SPACE_MESSAGE" desc="Message informing the user how to make more space available on Google Drive server side.">
+        You do not have enough space in <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph> to save "<ph name="FILE_NAME">$2<ex>document.pdf</ex></ph>". Please remove files or <ph name="BEGIN_LINK">&lt;a target='_blank' href='$3'&gt;</ph>buy more storage space<ph name="END_LINK">&lt;/a&gt;</ph>.
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_WELCOME_TITLE" desc="In the Welcome to Google Drive banner, title of banner.">
         Welcome to <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph>!

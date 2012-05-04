@@ -654,7 +654,11 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
           if (chrome.extension.lastError) {
             console.log(
                 'Error copying ' + sourceFileUrl + ' to ' + targetFileUrl);
-            onFilesystemError({code: chrome.extension.lastError.message});
+            onFilesystemError({
+              code: chrome.extension.lastError.message,
+              toGDrive: true,
+              sourceFileUrl: sourceFileUrl
+            });
           } else {
             targetDirEntry.getFile(targetRelativePath, {},
                 onFilesystemCopyComplete.bind(self, sourceEntry),
