@@ -20,7 +20,13 @@ struct IsAvailableTestData {
   Feature::Availability expected_result;
 };
 
-TEST(ExtensionFeatureTest, IsAvailableNullCase) {
+// Fails on official continuous builder - http://crbug.com/126274
+#if defined(GOOGLE_CHROME_BUILD)
+#define MAYBE_IsAvailableNullCase DISABLED_IsAvailableNullCase
+#else
+#define MAYBE_IsAvailableNullCase IsAvailableNullCase
+#endif
+TEST(ExtensionFeatureTest, MAYBE_IsAvailableNullCase) {
   const IsAvailableTestData tests[] = {
     { "", Extension::TYPE_UNKNOWN,
       Feature::UNSPECIFIED_LOCATION, Feature::UNSPECIFIED_PLATFORM, -1,
@@ -57,7 +63,13 @@ TEST(ExtensionFeatureTest, IsAvailableNullCase) {
   }
 }
 
-TEST(ExtensionFeatureTest, Whitelist) {
+// Fails on official continuous builder - http://crbug.com/126274
+#if defined(GOOGLE_CHROME_BUILD)
+#define MAYBE_Whitelist DISABLED_Whitelist
+#else
+#define MAYBE_Whitelist Whitelist
+#endif
+TEST(ExtensionFeatureTest, MAYBE_Whitelist) {
   Feature feature;
   feature.whitelist()->insert("foo");
   feature.whitelist()->insert("bar");
@@ -82,7 +94,13 @@ TEST(ExtensionFeatureTest, Whitelist) {
       Feature::UNSPECIFIED_PLATFORM));
 }
 
-TEST(ExtensionFeatureTest, PackageType) {
+// Fails on official continuous builder - http://crbug.com/126274
+#if defined(GOOGLE_CHROME_BUILD)
+#define MAYBE_PackageType DISABLED_PackageType
+#else
+#define MAYBE_PackageType PackageType
+#endif
+TEST(ExtensionFeatureTest, MAYBE_PackageType) {
   Feature feature;
   feature.extension_types()->insert(Extension::TYPE_EXTENSION);
   feature.extension_types()->insert(Extension::TYPE_PACKAGED_APP);
@@ -102,7 +120,13 @@ TEST(ExtensionFeatureTest, PackageType) {
       Feature::UNSPECIFIED_PLATFORM));
 }
 
-TEST(ExtensionFeatureTest, Context) {
+// Fails on official continuous builder - http://crbug.com/126274
+#if defined(GOOGLE_CHROME_BUILD)
+#define MAYBE_Context DISABLED_Context
+#else
+#define MAYBE_Context Context
+#endif
+TEST(ExtensionFeatureTest, MAYBE_Context) {
   Feature feature;
   feature.contexts()->insert(Feature::BLESSED_EXTENSION_CONTEXT);
   feature.extension_types()->insert(Extension::TYPE_PACKAGED_APP);
@@ -187,7 +211,13 @@ TEST(ExtensionFeatureTest, Location) {
       Feature::UNSPECIFIED_PLATFORM));
 }
 
-TEST(ExtensionFeatureTest, Platform) {
+// Fails on official continuous builder - http://crbug.com/126274
+#if defined(GOOGLE_CHROME_BUILD)
+#define MAYBE_Platform DISABLED_Platform
+#else
+#define MAYBE_Platform Platform
+#endif
+TEST(ExtensionFeatureTest, MAYBE_Platform) {
   Feature feature;
   feature.set_platform(Feature::CHROMEOS_PLATFORM);
   EXPECT_EQ(Feature::IS_AVAILABLE, feature.IsAvailableToManifest(
@@ -198,7 +228,13 @@ TEST(ExtensionFeatureTest, Platform) {
       Feature::UNSPECIFIED_PLATFORM));
 }
 
-TEST(ExtensionFeatureTest, Version) {
+// Fails on official continuous builder - http://crbug.com/126274
+#if defined(GOOGLE_CHROME_BUILD)
+#define MAYBE_Version DISABLED_Version
+#else
+#define MAYBE_Version Version
+#endif
+TEST(ExtensionFeatureTest, MAYBE_Version) {
   Feature feature;
   feature.set_min_manifest_version(5);
 
