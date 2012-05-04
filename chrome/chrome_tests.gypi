@@ -685,78 +685,22 @@
         }],  # OS != "win"
       ],  # conditions
     },
+    # TODO(jam): delete ui_tests target once no tests use this.
     {
       'target_name': 'ui_tests',
       'type': 'executable',
       'dependencies': [
-        'browser',
-        'chrome',
-        'chrome_resources.gyp:chrome_resources',
-        'chrome_resources.gyp:chrome_strings',
-        'common',
-        'test_support_ui',
-        '../base/base.gyp:base',
-        '../net/net.gyp:net',
-        '../net/net.gyp:net_test_support',
-        '../build/temp_gyp/googleurl.gyp:googleurl',
-        '../skia/skia.gyp:skia',
-        '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../third_party/icu/icu.gyp:icui18n',
-        '../third_party/icu/icu.gyp:icuuc',
-        '../third_party/libxml/libxml.gyp:libxml',
-        # run time dependencies
-        '../third_party/mesa/mesa.gyp:osmesa',
-        '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
+        '../base/base.gyp:test_support_base',
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
-        # NOTE: DON'T ADD NEW TESTS HERE!
-        # New tests should be browser_tests. browser_tests are sharded and are
-        # less flakier.
-        'test/automation/automation_proxy_uitest.cc',
-        'test/automation/automation_proxy_uitest.h',
-        'test/base/chrome_process_util_uitest.cc',
-        'test/reliability/automated_ui_test_test.cc',
-        'test/ui/named_interface_uitest.cc',
-        # DON'T ADD NEW FILES! SEE NOTE AT TOP OF SECTION.
+        '../jingle/run_all_unittests.cc',
       ],
       'conditions': [
-        ['toolkit_views==1', {
-          'dependencies': [
-            '../ui/views/views.gyp:views',
-          ],
-        }],
-        ['use_aura==1', {
-          'sources!': [
-            'test/automation/automation_proxy_uitest.cc',
-          ],
-          'dependencies': [
-            '../ui/aura/aura.gyp:aura',
-          ],
-        }],
         ['OS=="win"', {
-          'include_dirs': [
-            '<(DEPTH)/third_party/wtl/include',
-          ],
-          'dependencies': [
-            'test_support_common',
-            '../google_update/google_update.gyp:google_update',
-          ],
-          'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
-          ],
-          'link_settings': {
-            'libraries': [
-              '-lOleAcc.lib',
-            ],
-          },
           'configurations': {
             'Debug_Base': {
               'msvs_settings': {
@@ -767,45 +711,6 @@
             },
           },
         }],
-        ['os_posix == 1 and OS != "mac"', {
-          'conditions': [
-            ['linux_use_tcmalloc==1', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
-        }],
-      ],
-    },
-    {
-      'target_name': 'ui_tests_run',
-      'type': 'none',
-      'dependencies': [
-        'ui_tests',
-      ],
-      'includes': [
-        'ui_tests.isolate',
-      ],
-      'actions': [
-        {
-          'action_name': 'isolate',
-          'inputs': [
-            '<@(isolate_dependency_tracked)',
-          ],
-          'outputs': [
-            '<(PRODUCT_DIR)/ui_tests.results',
-          ],
-          'action': [
-            'python',
-            '../tools/isolate/isolate.py',
-            '--mode', '<(tests_run)',
-            '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
-            '--variable', 'OS', '<(OS)',
-            '--result', '<@(_outputs)',
-            'ui_tests.isolate',
-          ],
-        },
       ],
     },
     {
@@ -3436,7 +3341,7 @@
         }, { # else: use_aura == 0 
           'sources!': [
             'browser/ui/views/frame/app_non_client_frame_view_aura_browsertest.cc',
-          ],
+        ],
         }],
       ],  # conditions
     },  # target browser_tests
@@ -4626,11 +4531,6 @@
             '../remoting/remoting.gyp:remoting_unittests',
             '../sql/sql.gyp:sql_unittests',
             '../content/content.gyp:content_unittests',
-            # ui_tests seem unhappy on both Mac and Win when run under
-            # coverage (all tests fail, often with a
-            # "server_->WaitForInitialLoads()").  TODO(jrg):
-            # investigate why.
-            # 'ui_tests',
             'unit_tests',
             'sync_unit_tests',
           ],  # 'dependencies'
@@ -4645,8 +4545,6 @@
                 ]}],
             ['OS=="linux"', {
               'dependencies': [
-                # Reason for disabling UI tests on non-Linux above.
-                'ui_tests',
                 # Win bot needs to be turned into an interactive bot.
                 'interactive_ui_tests',
                 'browser_tests',
