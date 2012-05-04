@@ -1900,7 +1900,7 @@
         'browser/ui/views/accessibility_event_router_views_unittest.cc',
         'browser/ui/views/ash/app_list/app_list_model_builder_unittest.cc',
         'browser/ui/views/ash/key_rewriter_unittest.cc',
-        'browser/ui/views/ash/launcher/launcher_updater_unittest.cc',
+        'browser/ui/views/ash/launcher/browser_launcher_item_controller_unittest.cc',
         'browser/ui/views/ash/window_positioner_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_context_menu_test.cc',
         'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',

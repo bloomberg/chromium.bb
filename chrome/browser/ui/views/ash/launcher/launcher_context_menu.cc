@@ -7,20 +7,20 @@
 #include "ash/launcher/launcher_context_menu.h"
 #include "ash/shell.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
+#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-LauncherContextMenu::LauncherContextMenu(ChromeLauncherDelegate* delegate,
+LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
                                          const ash::LauncherItem* item)
     : ui::SimpleMenuModel(NULL),
-      delegate_(delegate),
+      controller_(controller),
       item_(item ? *item : ash::LauncherItem()) {
   set_delegate(this);
 
   if (is_valid_item()) {
     if (item_.type == ash::TYPE_APP_SHORTCUT) {
-      DCHECK(delegate->IsPinned(item_.id));
+      DCHECK(controller->IsPinned(item_.id));
       AddItem(
           MENU_PIN,
           l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_UNPIN));
@@ -42,13 +42,13 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherDelegate* delegate,
     } else if (item_.type == ash::TYPE_BROWSER_SHORTCUT) {
       AddItem(MENU_NEW_WINDOW,
               l10n_util::GetStringUTF16(IDS_LAUNCHER_NEW_WINDOW));
-      if (!delegate_->IsLoggedInAsGuest()) {
+      if (!controller_->IsLoggedInAsGuest()) {
         AddItem(MENU_NEW_INCOGNITO_WINDOW,
                 l10n_util::GetStringUTF16(IDS_LAUNCHER_NEW_INCOGNITO_WINDOW));
       }
     } else {
-      AddItem(MENU_OPEN, delegate->GetTitle(item_));
-      if (delegate->IsOpen(item_.id)) {
+      AddItem(MENU_OPEN, controller->GetTitle(item_));
+      if (controller->IsOpen(item_.id)) {
         AddItem(MENU_CLOSE,
                 l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
       }
@@ -65,16 +65,16 @@ LauncherContextMenu::~LauncherContextMenu() {
 bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
     case LAUNCH_TYPE_PINNED_TAB:
-      return delegate_->GetLaunchType(item_.id) ==
+      return controller_->GetLaunchType(item_.id) ==
           ExtensionPrefs::LAUNCH_PINNED;
     case LAUNCH_TYPE_REGULAR_TAB:
-      return delegate_->GetLaunchType(item_.id) ==
+      return controller_->GetLaunchType(item_.id) ==
           ExtensionPrefs::LAUNCH_REGULAR;
     case LAUNCH_TYPE_WINDOW:
-      return delegate_->GetLaunchType(item_.id) ==
+      return controller_->GetLaunchType(item_.id) ==
           ExtensionPrefs::LAUNCH_WINDOW;
     case LAUNCH_TYPE_FULLSCREEN:
-      return delegate_->GetLaunchType(item_.id) ==
+      return controller_->GetLaunchType(item_.id) ==
           ExtensionPrefs::LAUNCH_FULLSCREEN;
     case MENU_AUTO_HIDE:
       return ash::LauncherContextMenu::IsAutoHideMenuHideChecked();
@@ -96,35 +96,35 @@ bool LauncherContextMenu::GetAcceleratorForCommandId(
 void LauncherContextMenu::ExecuteCommand(int command_id) {
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_OPEN:
-      delegate_->Open(item_.id);
+      controller_->Open(item_.id);
       break;
     case MENU_CLOSE:
-      delegate_->Close(item_.id);
+      controller_->Close(item_.id);
       break;
     case MENU_PIN:
-      delegate_->TogglePinned(item_.id);
+      controller_->TogglePinned(item_.id);
       break;
     case LAUNCH_TYPE_PINNED_TAB:
-      delegate_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_PINNED);
+      controller_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_PINNED);
       break;
     case LAUNCH_TYPE_REGULAR_TAB:
-      delegate_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_REGULAR);
+      controller_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_REGULAR);
       break;
     case LAUNCH_TYPE_WINDOW:
-      delegate_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_WINDOW);
+      controller_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_WINDOW);
       break;
     case LAUNCH_TYPE_FULLSCREEN:
-      delegate_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_FULLSCREEN);
+      controller_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_FULLSCREEN);
       break;
     case MENU_AUTO_HIDE:
-      delegate_->SetAutoHideBehavior(
+      controller_->SetAutoHideBehavior(
           ash::LauncherContextMenu::GetToggledAutoHideBehavior());
       break;
     case MENU_NEW_WINDOW:
-      delegate_->CreateNewWindow();
+      controller_->CreateNewWindow();
       break;
     case MENU_NEW_INCOGNITO_WINDOW:
-      delegate_->CreateNewIncognitoWindow();
+      controller_->CreateNewIncognitoWindow();
       break;
   }
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/launcher/launcher_updater.h"
+#include "chrome/browser/ui/views/ash/launcher/browser_launcher_item_controller.h"
 
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
@@ -16,21 +16,22 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
+#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 
-LauncherUpdater::LauncherUpdater(aura::Window* window,
-                                 TabStripModel* tab_model,
-                                 ChromeLauncherDelegate* delegate,
-                                 Type type,
-                                 const std::string& app_id)
+BrowserLauncherItemController::BrowserLauncherItemController(
+    aura::Window* window,
+    TabStripModel* tab_model,
+    ChromeLauncherController* launcher_controller,
+    Type type,
+    const std::string& app_id)
     : window_(window),
       tab_model_(tab_model),
-      launcher_delegate_(delegate),
+      launcher_controller_(launcher_controller),
       type_(type),
       app_id_(app_id),
       is_incognito_(tab_model->profile()->GetOriginalProfile() !=
@@ -38,25 +39,25 @@ LauncherUpdater::LauncherUpdater(aura::Window* window,
       item_id_(-1) {
 }
 
-LauncherUpdater::~LauncherUpdater() {
+BrowserLauncherItemController::~BrowserLauncherItemController() {
   tab_model_->RemoveObserver(this);
   if (item_id_ != -1)
-    launcher_delegate_->LauncherItemClosed(item_id_);
+    launcher_controller_->LauncherItemClosed(item_id_);
 }
 
-void LauncherUpdater::Init() {
+void BrowserLauncherItemController::Init() {
   tab_model_->AddObserver(this);
   ash::LauncherItemStatus app_status =
       ash::wm::IsActiveWindow(window_) ?
           ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
   if (type_ != TYPE_TABBED) {
-    item_id_ = launcher_delegate_->CreateAppLauncherItem(
+    item_id_ = launcher_controller_->CreateAppLauncherItem(
         this, app_id_, app_status);
   } else {
-    item_id_ = launcher_delegate_->CreateTabbedLauncherItem(
+    item_id_ = launcher_controller_->CreateTabbedLauncherItem(
         this,
-        is_incognito_ ? ChromeLauncherDelegate::STATE_INCOGNITO :
-                        ChromeLauncherDelegate::STATE_NOT_INCOGNITO,
+        is_incognito_ ? ChromeLauncherController::STATE_INCOGNITO :
+                        ChromeLauncherController::STATE_NOT_INCOGNITO,
         app_status);
   }
   // In testing scenarios we can get tab strips with no active contents.
@@ -65,7 +66,8 @@ void LauncherUpdater::Init() {
 }
 
 // static
-LauncherUpdater* LauncherUpdater::Create(Browser* browser) {
+BrowserLauncherItemController* BrowserLauncherItemController::Create(
+    Browser* browser) {
   Type type;
   std::string app_id;
   if (browser->type() == Browser::TYPE_TABBED ||
@@ -84,29 +86,31 @@ LauncherUpdater* LauncherUpdater::Create(Browser* browser) {
   } else {
     return NULL;
   }
-  LauncherUpdater* icon_updater = new LauncherUpdater(
-      browser->window()->GetNativeHandle(), browser->tabstrip_model(),
-      ChromeLauncherDelegate::instance(), type, app_id);
+  BrowserLauncherItemController* icon_updater =
+      new BrowserLauncherItemController(
+          browser->window()->GetNativeHandle(), browser->tabstrip_model(),
+          ChromeLauncherController::instance(), type, app_id);
   icon_updater->Init();
   return icon_updater;
 }
 
-void LauncherUpdater::BrowserActivationStateChanged() {
-  launcher_delegate_->SetItemStatus(
+void BrowserLauncherItemController::BrowserActivationStateChanged() {
+  launcher_controller_->SetItemStatus(
       item_id_,
       ash::wm::IsActiveWindow(window_) ?
           ash::STATUS_ACTIVE : ash::STATUS_RUNNING);
 }
 
-void LauncherUpdater::ActiveTabChanged(TabContentsWrapper* old_contents,
-                                       TabContentsWrapper* new_contents,
-                                       int index,
-                                       bool user_gesture) {
+void BrowserLauncherItemController::ActiveTabChanged(
+    TabContentsWrapper* old_contents,
+    TabContentsWrapper* new_contents,
+    int index,
+    bool user_gesture) {
   // Update immediately on a tab change.
   UpdateLauncher(new_contents);
 }
 
-void LauncherUpdater::TabChangedAt(
+void BrowserLauncherItemController::TabChangedAt(
     TabContentsWrapper* tab,
     int index,
     TabStripModelObserver::TabChangeType change_type) {
@@ -130,13 +134,13 @@ void LauncherUpdater::TabChangedAt(
   }
 }
 
-void LauncherUpdater::FaviconUpdated() {
+void BrowserLauncherItemController::FaviconUpdated() {
   UpdateLauncher(tab_model_->GetActiveTabContents());
 }
 
-void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
+void BrowserLauncherItemController::UpdateLauncher(TabContentsWrapper* tab) {
   if (type_ == TYPE_APP_PANEL)
-    return;  // Maintained entirely by ChromeLauncherDelegate.
+    return;  // Maintained entirely by ChromeLauncherController.
 
   if (!tab)
     return;  // Assume the window is going to be closed if there are no tabs.
@@ -177,6 +181,6 @@ void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
   launcher_model()->Set(item_index, item);
 }
 
-ash::LauncherModel* LauncherUpdater::launcher_model() {
-  return launcher_delegate_->model();
+ash::LauncherModel* BrowserLauncherItemController::launcher_model() {
+  return launcher_controller_->model();
 }

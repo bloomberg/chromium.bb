@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
+#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "grit/chromium_strings.h"
@@ -111,15 +111,15 @@ bool IsExtensionEnabled(Profile* profile, const std::string& extension_id) {
 }
 
 bool IsAppPinned(const std::string& extension_id) {
-  return ChromeLauncherDelegate::instance()->IsAppPinned(extension_id);
+  return ChromeLauncherController::instance()->IsAppPinned(extension_id);
 }
 
 void PinApp(const std::string& extension_id) {
-  ChromeLauncherDelegate::instance()->PinAppWithID(extension_id);
+  ChromeLauncherController::instance()->PinAppWithID(extension_id);
 }
 
 void UnpinApp(const std::string& extension_id) {
-  return ChromeLauncherDelegate::instance()->UnpinAppsWithID(extension_id);
+  return ChromeLauncherController::instance()->UnpinAppsWithID(extension_id);
 }
 
 }  // namespace

@@ -56,7 +56,7 @@ class JumpList;
 #endif
 
 #if defined(USE_AURA)
-class LauncherUpdater;
+class BrowserLauncherItemController;
 #endif
 
 namespace views {
@@ -205,7 +205,9 @@ class BrowserView : public BrowserWindow,
   void RestoreFocus();
 
 #if defined(USE_ASH)
-  LauncherUpdater* icon_updater() const { return icon_updater_.get(); }
+  BrowserLauncherItemController* launcher_item_controller() const {
+    return launcher_item_controller_.get();
+  }
 #endif
 
   // Overridden from BrowserWindow:
@@ -654,7 +656,7 @@ class BrowserView : public BrowserWindow,
 #endif
 
 #if defined(USE_ASH)
-  scoped_ptr<LauncherUpdater> icon_updater_;
+  scoped_ptr<BrowserLauncherItemController> launcher_item_controller_;
 #endif
 
   // The timer used to update frames for the Loading Animation.

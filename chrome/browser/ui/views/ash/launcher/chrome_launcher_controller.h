@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_CHROME_LAUNCHER_DELEGATE_H_
-#define CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_CHROME_LAUNCHER_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_H_
+#define CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_H_
 #pragma once
 
 #include <map>
@@ -25,19 +25,17 @@ namespace ash {
 class LauncherModel;
 }
 
-class LauncherUpdater;
-class LauncherUpdaterTest;
+class BrowserLauncherItemController;
+class BrowserLauncherItemControllerTest;
 class PrefService;
 class Profile;
 class TabContentsWrapper;
 
-// ChromeLauncherDelegate manages the launcher items needed for tabbed browsers
-// and apps. It does this by way of LauncherUpdaters.
-// TODO: rename this. ChromeLauncherDelegate is a poor name for what it actually
-// does.
-class ChromeLauncherDelegate : public ash::LauncherDelegate,
-                               public ash::LauncherModelObserver,
-                               public content::NotificationObserver {
+// ChromeLauncherController manages the launcher items needed for tabbed
+// browsers (BrowserLauncherItemController) and browser shortcuts.
+class ChromeLauncherController : public ash::LauncherDelegate,
+                                 public ash::LauncherModelObserver,
+                                 public content::NotificationObserver {
  public:
   // Indicates if a launcher item is incognito or not.
   enum IncognitoState {
@@ -64,28 +62,30 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
     virtual void FetchImage(const std::string& id) = 0;
   };
 
-  ChromeLauncherDelegate(Profile* profile, ash::LauncherModel* model);
-  virtual ~ChromeLauncherDelegate();
+  ChromeLauncherController(Profile* profile, ash::LauncherModel* model);
+  virtual ~ChromeLauncherController();
 
-  // Initializes this ChromeLauncherDelegate.
+  // Initializes this ChromeLauncherController.
   void Init();
 
-  // Returns the single ChromeLauncherDelegate instnace.
-  static ChromeLauncherDelegate* instance() { return instance_; }
+  // Returns the single ChromeLauncherController instnace.
+  static ChromeLauncherController* instance() { return instance_; }
 
-  // Registers the prefs used by ChromeLauncherDelegate.
+  // Registers the prefs used by ChromeLauncherController.
   static void RegisterUserPrefs(PrefService* user_prefs);
 
   // Creates a new tabbed item on the launcher for |updater|.
-  ash::LauncherID CreateTabbedLauncherItem(LauncherUpdater* updater,
-                                           IncognitoState is_incognito,
-                                           ash::LauncherItemStatus status);
+  ash::LauncherID CreateTabbedLauncherItem(
+      BrowserLauncherItemController* controller,
+      IncognitoState is_incognito,
+      ash::LauncherItemStatus status);
 
   // Creates a new app item on the launcher for |updater|. If there is an
   // existing pinned app that isn't running on the launcher, its id is returned.
-  ash::LauncherID CreateAppLauncherItem(LauncherUpdater* updater,
-                                        const std::string& app_id,
-                                        ash::LauncherItemStatus status);
+  ash::LauncherID CreateAppLauncherItem(
+      BrowserLauncherItemController* controller,
+      const std::string& app_id,
+      ash::LauncherItemStatus status);
 
   // Updates the running status of an item.
   void SetItemStatus(ash::LauncherID id, ash::LauncherItemStatus status);
@@ -177,7 +177,7 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
  private:
-  friend class LauncherUpdaterTest;
+  friend class BrowserLauncherItemControllerTest;
 
   enum ItemType {
     TYPE_APP,
@@ -189,7 +189,7 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
     Item();
     ~Item();
 
-    bool is_pinned() const { return updater == NULL; }
+    bool is_pinned() const { return controller == NULL; }
 
     // Type of item.
     ItemType item_type;
@@ -197,8 +197,9 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
     // ID of the app.
     std::string app_id;
 
-    // The LauncherUpdater this item came from. NULL if a shortcut.
-    LauncherUpdater* updater;
+    // The BrowserLauncherItemController this item came from. NULL if a
+    // shortcut.
+    BrowserLauncherItemController* controller;
   };
 
   typedef std::map<ash::LauncherID, Item> IDToItemMap;
@@ -220,7 +221,7 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   // beginning to the end and stops the iteration when hitting a not-ready app.
   void ProcessPendingPinnedApps();
 
-  static ChromeLauncherDelegate* instance_;
+  static ChromeLauncherController* instance_;
 
   ash::LauncherModel* model_;
 
@@ -241,7 +242,7 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
 
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherController);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_CHROME_LAUNCHER_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_H_

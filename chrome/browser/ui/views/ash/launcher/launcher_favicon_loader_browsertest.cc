@@ -7,8 +7,8 @@
 #include "base/file_path.h"
 #include "base/time.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/ash/launcher/browser_launcher_item_controller.h"
 #include "chrome/browser/ui/views/ash/launcher/launcher_favicon_loader.h"
-#include "chrome/browser/ui/views/ash/launcher/launcher_updater.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/favicon_url.h"
 #include "chrome/common/icon_messages.h"
@@ -93,11 +93,13 @@ class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
 
   LauncherFaviconLoader* GetFaviconLoader(Browser* browser) {
     BrowserView* browser_view = static_cast<BrowserView*>(browser->window());
-    LauncherUpdater* launcher_updater = browser_view->icon_updater();
-    if (!launcher_updater)
+    BrowserLauncherItemController* launcher_item_controller =
+        browser_view->launcher_item_controller();
+    if (!launcher_item_controller)
       return NULL;
-    EXPECT_EQ(LauncherUpdater::TYPE_EXTENSION_PANEL, launcher_updater->type());
-    LauncherFaviconLoader* loader = launcher_updater->favicon_loader();
+    EXPECT_EQ(BrowserLauncherItemController::TYPE_EXTENSION_PANEL,
+              launcher_item_controller->type());
+    LauncherFaviconLoader* loader = launcher_item_controller->favicon_loader();
     return loader;
   }
 

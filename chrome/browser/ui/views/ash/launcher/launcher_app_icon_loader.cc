@@ -11,10 +11,11 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/web_contents.h"
 
-LauncherAppIconLoader::LauncherAppIconLoader(Profile* profile,
-                                             ChromeLauncherDelegate* delegate)
+LauncherAppIconLoader::LauncherAppIconLoader(
+    Profile* profile,
+    ChromeLauncherController* controller)
     : profile_(profile),
-      host_(delegate) {
+      host_(controller) {
 }
 
 LauncherAppIconLoader::~LauncherAppIconLoader() {

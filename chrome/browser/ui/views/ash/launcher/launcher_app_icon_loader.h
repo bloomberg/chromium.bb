@@ -11,17 +11,17 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
+#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 
 class Extension;
 class Profile;
 
 // Default implementation of LauncherUpdater::AppIconLoader that interacts
 // with the ExtensionService and ImageLoadingTracker to load images.
-class LauncherAppIconLoader : public ChromeLauncherDelegate::AppIconLoader,
+class LauncherAppIconLoader : public ChromeLauncherController::AppIconLoader,
                               public ImageLoadingTracker::Observer {
  public:
-  LauncherAppIconLoader(Profile* profile, ChromeLauncherDelegate* host);
+  LauncherAppIconLoader(Profile* profile, ChromeLauncherController* host);
   virtual ~LauncherAppIconLoader();
 
   // AppIconLoader:
@@ -45,8 +45,8 @@ class LauncherAppIconLoader : public ChromeLauncherDelegate::AppIconLoader,
 
   Profile* profile_;
 
-  // ChromeLauncherDelegate we're associated with (and owned by).
-  ChromeLauncherDelegate* host_;
+  // ChromeLauncherController we're associated with (and owned by).
+  ChromeLauncherController* host_;
 
   // Used to load images.
   scoped_ptr<ImageLoadingTracker> image_loader_;

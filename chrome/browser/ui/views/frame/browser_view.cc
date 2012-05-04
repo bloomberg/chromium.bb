@@ -106,7 +106,7 @@
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
-#include "chrome/browser/ui/views/ash/launcher/launcher_updater.h"
+#include "chrome/browser/ui/views/ash/launcher/browser_launcher_item_controller.h"
 #include "chrome/browser/ui/views/ash/window_positioner.h"
 #elif defined(OS_WIN) && !defined(USE_AURA)
 #include "base/win/metro.h"
@@ -354,9 +354,9 @@ BrowserView::BrowserView(Browser* browser)
 
 BrowserView::~BrowserView() {
 #if defined(USE_ASH)
-  // Destroy LauncherUpdater early on as it listens to the TabstripModel, which
-  // is destroyed by the browser.
-  icon_updater_.reset();
+  // Destroy BrowserLauncherItemController early on as it listens to the
+  // TabstripModel, which is destroyed by the browser.
+  launcher_item_controller_.reset();
 #endif
 
   browser_->tabstrip_model()->RemoveObserver(this);
@@ -1595,8 +1595,8 @@ views::ClientView* BrowserView::CreateClientView(views::Widget* widget) {
 void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
                                             bool active) {
 #if defined(USE_ASH)
-  if (icon_updater_.get())
-    icon_updater_->BrowserActivationStateChanged();
+  if (launcher_item_controller_.get())
+    launcher_item_controller_->BrowserActivationStateChanged();
 #endif
 
   if (active) {
@@ -2421,8 +2421,10 @@ void BrowserView::SetToolbar(ToolbarView* toolbar) {
 
 void BrowserView::CreateLauncherIcon() {
 #if defined(USE_ASH)
-  if (!icon_updater_.get())
-    icon_updater_.reset(LauncherUpdater::Create(browser_.get()));
+  if (!launcher_item_controller_.get()) {
+    launcher_item_controller_.reset(
+        BrowserLauncherItemController::Create(browser_.get()));
+  }
 #endif  // defined(USE_AURA)
 }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_UPDATER_H_
-#define CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_UPDATER_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_BROWSER_LAUNCHER_ITEM_CONTROLLER_H_
+#define CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_BROWSER_LAUNCHER_ITEM_CONTROLLER_H_
 #pragma once
 
 #include <string>
@@ -17,7 +17,7 @@
 #include "ash/launcher/launcher_types.h"
 
 class Browser;
-class ChromeLauncherDelegate;
+class ChromeLauncherController;
 class LauncherFaviconLoader;
 class TabContentsWrapper;
 
@@ -29,23 +29,23 @@ namespace aura {
 class Window;
 }
 
-// LauncherUpdater is responsible for keeping the launcher representation of a
-// window up to date as the tab strip changes.
-class LauncherUpdater : public TabStripModelObserver,
-                        public LauncherFaviconLoader::Delegate {
+// BrowserLauncherItemController is responsible for keeping the launcher
+// representation of a window up to date as the active tab changes.
+class BrowserLauncherItemController : public TabStripModelObserver,
+                                      public LauncherFaviconLoader::Delegate {
  public:
   // This API is to be used as part of testing only.
   class TestApi {
    public:
-    explicit TestApi(LauncherUpdater* launcher_updater)
-        : launcher_updater_(launcher_updater) {}
-    virtual ~TestApi() {}
+    explicit TestApi(BrowserLauncherItemController* controller)
+        : controller_(controller) {}
+    ~TestApi() {}
 
     // Returns the launcher id for the browser window.
-    ash::LauncherID item_id() const { return launcher_updater_->item_id_; }
+    ash::LauncherID item_id() const { return controller_->item_id_; }
 
    private:
-    LauncherUpdater* launcher_updater_;
+    BrowserLauncherItemController* controller_;
   };
 
   enum Type {
@@ -54,19 +54,20 @@ class LauncherUpdater : public TabStripModelObserver,
     TYPE_TABBED
   };
 
-  LauncherUpdater(aura::Window* window,
+  BrowserLauncherItemController(aura::Window* window,
                   TabStripModel* tab_model,
-                  ChromeLauncherDelegate* launcher_delegate,
+                  ChromeLauncherController* launcher_controller,
                   Type type,
                   const std::string& app_id);
-  virtual ~LauncherUpdater();
+  virtual ~BrowserLauncherItemController();
 
-  // Sets up this LauncherUpdater.
+  // Sets up this BrowserLauncherItemController.
   void Init();
 
-  // Creates and returns a new LauncherUpdater for |browser|. This returns
-  // NULL if a LauncherUpdater is not needed for the specified browser.
-  static LauncherUpdater* Create(Browser* browser);
+  // Creates and returns a new BrowserLauncherItemController for |browser|. This
+  // returns NULL if a BrowserLauncherItemController is not needed for the
+  // specified browser.
+  static BrowserLauncherItemController* Create(Browser* browser);
 
   aura::Window* window() { return window_; }
 
@@ -96,7 +97,7 @@ class LauncherUpdater : public TabStripModelObserver,
   virtual void FaviconUpdated() OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(LauncherUpdaterTest, PanelItem);
+  FRIEND_TEST_ALL_PREFIXES(BrowserLauncherItemControllerTest, PanelItem);
 
   // Used to identify what an update corresponds to.
   enum UpdateType {
@@ -115,7 +116,7 @@ class LauncherUpdater : public TabStripModelObserver,
 
   TabStripModel* tab_model_;
 
-  ChromeLauncherDelegate* launcher_delegate_;
+  ChromeLauncherController* launcher_controller_;
 
   // Whether this corresponds to an app or tabbed browser.
   const Type type_;
@@ -131,7 +132,7 @@ class LauncherUpdater : public TabStripModelObserver,
   // Loads launcher sized favicons for panels.
   scoped_ptr<LauncherFaviconLoader> favicon_loader_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherUpdater);
+  DISALLOW_COPY_AND_ASSIGN(BrowserLauncherItemController);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_UPDATER_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_BROWSER_LAUNCHER_ITEM_CONTROLLER_H_

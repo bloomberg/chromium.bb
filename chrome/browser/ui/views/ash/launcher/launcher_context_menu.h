@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "ui/base/models/simple_menu_model.h"
 
-class ChromeLauncherDelegate;
+class ChromeLauncherController;
 
 // Context menu shown for a launcher item.
 class LauncherContextMenu : public ui::SimpleMenuModel,
@@ -18,7 +18,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
  public:
   // |item| is NULL if the context menu is for the launcher (the user right
   // |clicked on an area with no icons).
-  LauncherContextMenu(ChromeLauncherDelegate* delegate,
+  LauncherContextMenu(ChromeLauncherController* controller,
                       const ash::LauncherItem* item);
   virtual ~LauncherContextMenu();
 
@@ -51,7 +51,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   // details on why it may not be valid.
   bool is_valid_item() const { return item_.id != 0; }
 
-  ChromeLauncherDelegate* delegate_;
+  ChromeLauncherController* controller_;
   ash::LauncherItem item_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenu);

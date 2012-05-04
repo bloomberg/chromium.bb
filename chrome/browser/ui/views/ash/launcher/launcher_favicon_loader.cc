@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/ash/launcher/launcher_favicon_loader.h"
 
 #include "base/logging.h"
-#include "chrome/browser/ui/views/ash/launcher/launcher_updater.h"
+#include "chrome/browser/ui/views/ash/launcher/browser_launcher_item_controller.h"
 #include "chrome/common/favicon_url.h"
 #include "chrome/common/icon_messages.h"
 #include "content/public/browser/render_view_host.h"

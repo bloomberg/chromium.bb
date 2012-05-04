@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/ash/app_list/extension_app_item.h"
-#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
+#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
@@ -40,11 +40,11 @@ class ChromeAppItem : public ChromeAppListItem {
  private:
   // Overridden from ChromeAppListItem:
   virtual void Activate(int event_flags) OVERRIDE {
-    ChromeLauncherDelegate* delegate = ChromeLauncherDelegate::instance();
+    ChromeLauncherController* controller = ChromeLauncherController::instance();
     if (event_flags & ui::EF_CONTROL_DOWN)
-      delegate->CreateNewWindow();
+      controller->CreateNewWindow();
     else
-      delegate->CreateNewTab();
+      controller->CreateNewTab();
   }
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppItem);

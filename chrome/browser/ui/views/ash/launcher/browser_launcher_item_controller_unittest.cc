@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/launcher/launcher_updater.h"
+#include "chrome/browser/ui/views/ash/launcher/browser_launcher_item_controller.h"
 
 #include <map>
 #include <string>
@@ -10,7 +10,7 @@
 #include "ash/launcher/launcher_model.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
+#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -28,7 +28,7 @@
 namespace {
 
 // Test implementation of AppIconLoader.
-class AppIconLoaderImpl : public ChromeLauncherDelegate::AppIconLoader {
+class AppIconLoaderImpl : public ChromeLauncherController::AppIconLoader {
  public:
   AppIconLoaderImpl() : fetch_count_(0) {}
   virtual ~AppIconLoaderImpl() {}
@@ -83,9 +83,10 @@ class AppIconLoaderImpl : public ChromeLauncherDelegate::AppIconLoader {
 
 }  // namespace
 
-class LauncherUpdaterTest : public ChromeRenderViewHostTestHarness {
+class BrowserLauncherItemControllerTest :
+    public ChromeRenderViewHostTestHarness {
  public:
-  LauncherUpdaterTest()
+  BrowserLauncherItemControllerTest()
       : browser_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
@@ -96,19 +97,19 @@ class LauncherUpdaterTest : public ChromeRenderViewHostTestHarness {
         new aura::test::TestActivationClient(root_window()));
     launcher_model_.reset(new ash::LauncherModel);
     launcher_delegate_.reset(
-        new ChromeLauncherDelegate(profile(), launcher_model_.get()));
+        new ChromeLauncherController(profile(), launcher_model_.get()));
     app_icon_loader_ = new AppIconLoaderImpl;
     launcher_delegate_->SetAppIconLoaderForTest(app_icon_loader_);
     launcher_delegate_->Init();
   }
 
  protected:
-  // Contains all the objects needed to create a LauncherUpdater.
+  // Contains all the objects needed to create a BrowserLauncherItemController.
   struct State : public aura::client::ActivationDelegate {
    public:
-    State(LauncherUpdaterTest* test,
+    State(BrowserLauncherItemControllerTest* test,
           const std::string& app_id,
-          LauncherUpdater::Type launcher_type)
+          BrowserLauncherItemController::Type launcher_type)
         : launcher_test(test),
           window(NULL),
           tab_strip(&tab_strip_delegate, test->profile()),
@@ -126,7 +127,7 @@ class LauncherUpdaterTest : public ChromeRenderViewHostTestHarness {
 
     ash::LauncherItem GetUpdaterItem() {
       ash::LauncherID launcher_id =
-          LauncherUpdater::TestApi(&updater).item_id();
+          BrowserLauncherItemController::TestApi(&updater).item_id();
       int index = launcher_test->launcher_model_->ItemIndexByID(launcher_id);
       return launcher_test->launcher_model_->items()[index];
     }
@@ -142,19 +143,15 @@ class LauncherUpdaterTest : public ChromeRenderViewHostTestHarness {
       updater.BrowserActivationStateChanged();
     }
 
-    LauncherUpdaterTest* launcher_test;
+    BrowserLauncherItemControllerTest* launcher_test;
     aura::Window window;
     TestTabStripModelDelegate tab_strip_delegate;
     TabStripModel tab_strip;
-    LauncherUpdater updater;
+    BrowserLauncherItemController updater;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(State);
   };
-
-  LauncherUpdater* GetUpdaterByID(ash::LauncherID id) const {
-    return launcher_delegate_->id_to_item_map_[id].updater;
-  }
 
   const std::string& GetAppID(ash::LauncherID id) const {
     return launcher_delegate_->id_to_item_map_[id].app_id;
@@ -168,16 +165,16 @@ class LauncherUpdaterTest : public ChromeRenderViewHostTestHarness {
     launcher_delegate_->UnpinAppsWithID(app_id);
   }
 
-  const ash::LauncherItem& GetItem(LauncherUpdater* updater) {
+  const ash::LauncherItem& GetItem(BrowserLauncherItemController* updater) {
     int index = launcher_model_->ItemIndexByID(
-        LauncherUpdater::TestApi(updater).item_id());
+        BrowserLauncherItemController::TestApi(updater).item_id());
     return launcher_model_->items()[index];
   }
 
   scoped_ptr<ash::LauncherModel> launcher_model_;
-  scoped_ptr<ChromeLauncherDelegate> launcher_delegate_;
+  scoped_ptr<ChromeLauncherController> launcher_delegate_;
 
-  // Owned by LauncherUpdater.
+  // Owned by BrowserLauncherItemController.
   AppIconLoaderImpl* app_icon_loader_;
 
   scoped_ptr<aura::test::TestActivationClient> activation_client_;
@@ -186,15 +183,16 @@ class LauncherUpdaterTest : public ChromeRenderViewHostTestHarness {
   content::TestBrowserThread browser_thread_;
   std::vector<State*> states;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherUpdaterTest);
+  DISALLOW_COPY_AND_ASSIGN(BrowserLauncherItemControllerTest);
 };
 
 // Verifies a new launcher item is added for TYPE_TABBED.
-TEST_F(LauncherUpdaterTest, TabbedSetup) {
+TEST_F(BrowserLauncherItemControllerTest, TabbedSetup) {
   size_t initial_size = launcher_model_->items().size();
   {
     TabContentsWrapper wrapper(CreateTestWebContents());
-    State state(this, std::string(), LauncherUpdater::TYPE_TABBED);
+    State state(this, std::string(),
+                BrowserLauncherItemController::TYPE_TABBED);
 
     // There should be one more item.
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
@@ -202,7 +200,7 @@ TEST_F(LauncherUpdaterTest, TabbedSetup) {
     EXPECT_EQ(ash::TYPE_TABBED, state.GetUpdaterItem().type);
   }
 
-  // Deleting the LauncherUpdater should have removed the item.
+  // Deleting the BrowserLauncherItemController should have removed the item.
   ASSERT_EQ(initial_size, launcher_model_->items().size());
 
   // Do the same, but this time add the tab first.
@@ -215,8 +213,9 @@ TEST_F(LauncherUpdaterTest, TabbedSetup) {
     aura::Window window(NULL);
     window.Init(ui::LAYER_NOT_DRAWN);
     root_window()->AddChild(&window);
-    LauncherUpdater updater(&window, &tab_strip, launcher_delegate_.get(),
-                            LauncherUpdater::TYPE_TABBED, std::string());
+    BrowserLauncherItemController updater(
+        &window, &tab_strip, launcher_delegate_.get(),
+        BrowserLauncherItemController::TYPE_TABBED, std::string());
     updater.Init();
 
     // There should be one more item.
@@ -227,7 +226,7 @@ TEST_F(LauncherUpdaterTest, TabbedSetup) {
 }
 
 // Verifies Panels items work.
-TEST_F(LauncherUpdaterTest, PanelItem) {
+TEST_F(BrowserLauncherItemControllerTest, PanelItem) {
   size_t initial_size = launcher_model_->items().size();
 
   // Add an App panel.
@@ -238,8 +237,9 @@ TEST_F(LauncherUpdaterTest, PanelItem) {
     TabContentsWrapper panel_tab(CreateTestWebContents());
     app_icon_loader_->SetAppID(&panel_tab, "1");  // Panels are apps.
     tab_strip.InsertTabContentsAt(0, &panel_tab, TabStripModel::ADD_ACTIVE);
-    LauncherUpdater updater(&window, &tab_strip, launcher_delegate_.get(),
-                            LauncherUpdater::TYPE_APP_PANEL, std::string());
+    BrowserLauncherItemController updater(
+        &window, &tab_strip, launcher_delegate_.get(),
+        BrowserLauncherItemController::TYPE_APP_PANEL, std::string());
     updater.Init();
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
     EXPECT_EQ(ash::TYPE_APP_PANEL, GetItem(&updater).type);
@@ -254,9 +254,9 @@ TEST_F(LauncherUpdaterTest, PanelItem) {
     TabContentsWrapper panel_tab(CreateTestWebContents());
     app_icon_loader_->SetAppID(&panel_tab, "1");  // Panels are apps.
     tab_strip.InsertTabContentsAt(0, &panel_tab, TabStripModel::ADD_ACTIVE);
-    LauncherUpdater updater(&window, &tab_strip, launcher_delegate_.get(),
-                            LauncherUpdater::TYPE_EXTENSION_PANEL,
-                            std::string());
+    BrowserLauncherItemController updater(
+        &window, &tab_strip, launcher_delegate_.get(),
+        BrowserLauncherItemController::TYPE_EXTENSION_PANEL, std::string());
     updater.Init();
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
     EXPECT_EQ(ash::TYPE_APP_PANEL, GetItem(&updater).type);
@@ -265,7 +265,7 @@ TEST_F(LauncherUpdaterTest, PanelItem) {
 }
 
 // Verifies pinned apps are persisted and restored.
-TEST_F(LauncherUpdaterTest, PersistPinned) {
+TEST_F(BrowserLauncherItemControllerTest, PersistPinned) {
   size_t initial_size = launcher_model_->items().size();
   TabContentsWrapper tab1(CreateTestWebContents());
 
@@ -281,7 +281,7 @@ TEST_F(LauncherUpdaterTest, PersistPinned) {
   EXPECT_EQ(initial_size + 1, launcher_model_->items().size());
 
   launcher_delegate_.reset(
-      new ChromeLauncherDelegate(profile(), launcher_model_.get()));
+      new ChromeLauncherController(profile(), launcher_model_.get()));
   app_icon_loader_ = new AppIconLoaderImpl;
   app_icon_loader_->SetAppID(&tab1, "1");
   ResetAppIconLoader();
@@ -298,15 +298,16 @@ TEST_F(LauncherUpdaterTest, PersistPinned) {
 }
 
 // Confirm that tabbed browsers handle activation correctly.
-TEST_F(LauncherUpdaterTest, ActivateBrowsers) {
-  State state1(this, std::string(), LauncherUpdater::TYPE_TABBED);
+TEST_F(BrowserLauncherItemControllerTest, ActivateBrowsers) {
+  State state1(this, std::string(), BrowserLauncherItemController::TYPE_TABBED);
 
   // First browser is active.
   EXPECT_EQ(ash::STATUS_ACTIVE, state1.GetUpdaterItem().status);
 
   {
     // Both running.
-    State state2(this, std::string(), LauncherUpdater::TYPE_TABBED);
+    State state2(this, std::string(),
+                 BrowserLauncherItemController::TYPE_TABBED);
     EXPECT_EQ(ash::STATUS_ACTIVE, state2.GetUpdaterItem().status);
     EXPECT_EQ(ash::STATUS_RUNNING, state1.GetUpdaterItem().status);
 
@@ -326,12 +327,14 @@ TEST_F(LauncherUpdaterTest, ActivateBrowsers) {
 }
 
 // Confirm that window activation works through the model.
-TEST_F(LauncherUpdaterTest, SwitchDirectlyToApp) {
-  State state1(this, std::string(), LauncherUpdater::TYPE_TABBED);
+TEST_F(BrowserLauncherItemControllerTest, SwitchDirectlyToApp) {
+  State state1(this, std::string(),
+               BrowserLauncherItemController::TYPE_TABBED);
   int index1 = launcher_model_->ItemIndexByID(state1.GetUpdaterItem().id);
 
   // Second app is active and first is inactive.
-  State state2(this, std::string(), LauncherUpdater::TYPE_TABBED);
+  State state2(this, std::string(),
+               BrowserLauncherItemController::TYPE_TABBED);
   int index2 = launcher_model_->ItemIndexByID(state2.GetUpdaterItem().id);
 
   EXPECT_EQ(ash::STATUS_RUNNING, state1.GetUpdaterItem().status);
