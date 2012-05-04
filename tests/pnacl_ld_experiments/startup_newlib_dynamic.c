@@ -11,6 +11,9 @@
 
 extern int main(int argc, char **argv, char **envp);
 
+extern void __libc_init_array(void);
+extern void __libc_fini_array(void);
+
 /*
  * This is the true entry point for untrusted code.
  * See nacl_startup.h for the layout at the argument pointer.
@@ -31,13 +34,13 @@ extern int main(int argc, char **argv, char **envp);
     * function here.  For static linking, this is always NULL.
     */
 
-   /* if (fini != NULL) atexit(fini); */
+   if (fini != NULL) atexit(fini);
 
-   /* atexit(&__libc_fini_array); */
+   atexit(&__libc_fini_array);
 
    /* __pthread_initialize(); */
 
-   /* __libc_init_array(); */
+    __libc_init_array();
 
    exit(main(argc, argv, envp));
 

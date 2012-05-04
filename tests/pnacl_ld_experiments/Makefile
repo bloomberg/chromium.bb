@@ -16,6 +16,8 @@ LOADER=$(ROOT)/scons-out/opt-linux-x86-32/staging/sel_ldr
 IRT=$(ROOT)/scons-out/nacl_irt-x86-32/staging/irt.nexe
 LDSO=$(ROOT)/toolchain/pnacl_linux_x86_64/lib-x86-32/runnable-ld.so
 LIBPATH_SHARED=$(ROOT)/toolchain/pnacl_linux_x86_64/lib-x86-32
+LIBPATH_NEWLIB=$(ROOT)/toolchain/pnacl_linux_x86_64/newlib/usr/lib
+LIBPATH_SDK=$(ROOT)/scons-out/nacl-x86-32-pnacl-pic-clang/lib
 PATH_CRT=$(ROOT)/toolchain/pnacl_linux_x86_64/glibc/lib
 PATH_CRT_SRC=$(ROOT)/pnacl/support
 
@@ -35,6 +37,7 @@ hello1.bc:  hello1.c
 fortytwo.bc:  fortytwo.c
 	$(PNACL_CC)  -c $(PNACL_CC_FLAGS) -o $@ $^
 
+# NOTE: mimicking the glibc stuff, these are identical for shared/dynamic
 crtbegin.bc:  $(PATH_CRT_SRC)/crtbegin.c
 	$(PNACL_CC)  -c  $(PNACL_CC_FLAGS) -o $@ $^
 
@@ -44,10 +47,9 @@ crtend.bc:  $(PATH_CRT_SRC)/crtend.c
 startup_newlib_dynamic.bc: startup_newlib_dynamic.c
 	$(PNACL_CC)  -c  $(PNACL_CC_FLAGS) -o $@ $^
 
-nacl_irt.bc: $(ROOT)/src/untrusted/nacl/nacl_irt.c
-	$(PNACL_CC)  -c  $(PNACL_CC_FLAGS) -o $@ $^
-
 # misc stuff we expect to be available
+# NOTE: this is not quite complete and it may be necessary
+#       to run pnac/build.sh sdk
 prereqs:
 	cd ../../ ; ./scons bitcode=1 platform=x86-32 \
           irt nacl_helper_bootstrap sel_ldr
@@ -73,7 +75,7 @@ LD_FLAGS_NATIVE = --pnacl-allow-native -arch x86-32
 # NOTE: the duplication of crtbegin.bc.
 # The one here was build from $(PATH_CRT_SRC)/bitcode
 # The one above from $(PATH_CRT_SRC)
-INIT = crtbegin.bc startup_newlib_dynamic.bc nacl_irt.bc\
+INIT = crtbegin.bc startup_newlib_dynamic.bc \
        $(PATH_CRT)/crti.bc $(PATH_CRT)/crtbegin.bc
 
 FINI = crtend.bc
@@ -83,7 +85,13 @@ FINI = crtend.bc
 # because of special handling of -l:ld-2.9.so which gets passed through as
 # --add-extra-dt-needed=ld-nacl-x86-32.so.1 which does not trigger the
 # a dynamic image
-LIBS = -L $(LIBPATH_SHARED)  -l:ld-2.9.so  -L . -l:libsimple.pso -l:keep_alive.x
+LIBS = -L $(LIBPATH_SHARED)  -l:ld-2.9.so  \
+       -L . -l:libsimple.pso -l:keep_alive.x \
+       -Wl,--start-group \
+       -L $(LIBPATH_NEWLIB)  -l:libc.a \
+       -L $(LIBPATH_SDK) -l:libnacl.a \
+       -Wl,--end-group
+
 hello1.x86-32.nexe.dummy: hello1.bc $(INIT) $(FINI) libsimple.pso
 	$(PNACL_CC) $(COMMON_FLAGS) $(LD_FLAGS_NATIVE) -nodefaultlibs -nostdlib \
         $(INIT) hello1.bc $(LIBS) $(FINI)  -o $@
@@ -96,7 +104,9 @@ hello1.x86-32.nexe.dummy: hello1.bc $(INIT) $(FINI) libsimple.pso
 # NOTE: followed by "hello1.x86-32.nexe"
 # NOTE:
 MAGIC_OBJ = hello1.x86-32.nexe.dummy---linked.o
-LIBS2 = -L $(LIBPATH_SHARED)  -l:ld-2.9.so  -L . -l:libsimple.so
+LIBS2 = -L $(LIBPATH_SHARED)  -l:ld-2.9.so  \
+        -L . -l:libsimple.so \
+        -l:libgcc.a
 
 hello1.x86-32.nexe: libsimple.so
 	$(PNACL_LD) $(COMMON_FLAGS) -arch x86-32 $(MAGIC_OBJ) $(LIBS2)  -o $@

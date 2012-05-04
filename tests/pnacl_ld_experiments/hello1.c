@@ -11,6 +11,7 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <bits/nacl_syscalls.h>
 
 /* ====================================================================== */
@@ -37,10 +38,6 @@ extern REGPARM(2) void _dl_get_tls_static_info(int *static_tls_size,
                                                int *static_tls_align);
 
 extern void _dl_debug_state();
-
-extern int __tls_get_addr();
-
-extern int ___tls_get_addr();
 
 extern int fortytwo();
 
@@ -77,27 +74,7 @@ ssize_t mywrite(int fd, const void* buf, size_t n)  {
   return NACL_SYSCALL(write)(fd, buf, n);
 }
 
-/* This is needed by nacl_irt until we have newlib available */
-ssize_t write(int fd, const void* buf, size_t n)  {
-  return mywrite(fd, buf, n);
-}
-
-void _exit(int n)  {
-  exit(n);
-}
-
-size_t strlen(const char* s) {
-  return mystrlen(s);
-}
-
-
 #define myprint(s) mywrite(1, s, mystrlen(s))
-
-
-
-void exit(int ret) {
-  NACL_SYSCALL(exit)(ret);
-}
 
 void __deregister_frame_info(const void *begin) {
   myprint("DUMMY __deregister_frame_info\n");
@@ -112,6 +89,15 @@ int main(int argc, char** argv, char** envp) {
   myprint("hello world\n");
   char buffer[9];
 
+  /* ======================================== */
+  /* this is usually called by either
+   * src/untrusted/nacl/pthread_initialize_minimal.c
+   * but we do not want any of the tls setup which goes with it
+   */
+  __newlib_thread_init();
+  puts("libc call\n");
+  printf("another libc call %p\n", buffer);
+  printf("another libc call %p\n", &tdata1);
   /* ======================================== */
   /* tls initialization test */
   myhextochar(tdata1, buffer);
