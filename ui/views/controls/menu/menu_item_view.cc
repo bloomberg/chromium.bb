@@ -748,12 +748,12 @@ gfx::Size MenuItemView::CalculatePreferredSize() {
   }
 
   const gfx::Font& font = GetFont();
-  int height = font.GetHeight();
+  int menu_item_height = std::max(font.GetHeight(), child_size.height()) +
+                             GetBottomMargin() + GetTopMargin();
   return gfx::Size(
       font.GetStringWidth(title_) + label_start_ +
           item_right_margin_ + child_size.width(),
-      std::max(height, child_size.height()) + GetBottomMargin() +
-          GetTopMargin());
+      std::max(menu_item_height, MenuConfig::instance().item_min_height));
 }
 
 string16 MenuItemView::GetAcceleratorText() {

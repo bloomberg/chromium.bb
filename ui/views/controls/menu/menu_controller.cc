@@ -16,6 +16,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller_delegate.h"
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
@@ -1596,7 +1597,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
         x = item_loc.x() + item->width() - kSubmenuHorizontalInset;
       }
     }
-    y = item_loc.y() - SubmenuView::kSubmenuBorderSize;
+    y = item_loc.y() - MenuConfig::instance().submenu_vertical_margin_size;
     if (state_.monitor_bounds.width() != 0) {
       pref.set_height(std::min(pref.height(), state_.monitor_bounds.height()));
       if (y + pref.height() > state_.monitor_bounds.bottom())

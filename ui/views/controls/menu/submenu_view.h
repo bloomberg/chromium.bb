@@ -148,9 +148,6 @@ class VIEWS_EXPORT SubmenuView : public View,
     resize_open_menu_ = resize_open_menu;
   }
 
-  // Padding around the edges of the submenu.
-  static const int kSubmenuBorderSize;
-
  protected:
   // View override.
   virtual std::string GetClassName() const OVERRIDE;

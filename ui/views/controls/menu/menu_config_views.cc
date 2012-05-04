@@ -17,6 +17,8 @@ MenuConfig* MenuConfig::Create() {
   MenuConfig* config = new MenuConfig();
   config->text_color = gfx::NativeTheme::instance()->GetSystemColor(
       gfx::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
+  config->submenu_horizontal_margin_size = 0;
+  config->submenu_vertical_margin_size = 2;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   config->font = rb.GetFont(ResourceBundle::BaseFont);
   config->arrow_width = rb.GetImageNamed(IDR_MENU_ARROW).ToSkBitmap()->width();
@@ -24,6 +26,7 @@ MenuConfig* MenuConfig::Create() {
   // Add 4 to force some padding between check and label.
   config->check_width = check->width() + 4;
   config->check_height = check->height();
+  config->item_min_height = 30;
 
   return config;
 }

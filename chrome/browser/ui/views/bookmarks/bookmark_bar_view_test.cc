@@ -75,6 +75,14 @@ using content::WebContents;
 
 namespace {
 
+void MoveMouseAndPress(const gfx::Point& screen_pos,
+                       ui_controls::MouseButton button,
+                       int state,
+                       const base::Closure& closure) {
+  ui_controls::SendMouseMove(screen_pos.x(), screen_pos.y());
+  ui_controls::SendMouseEventsNotifyWhenDone(button, state, closure);
+}
+
 class ViewsDelegateImpl : public views::ViewsDelegate {
  public:
   ViewsDelegateImpl() {}
@@ -1467,8 +1475,15 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
     views::MenuItemView* child_menu = menu->GetSubmenu()->GetMenuItemAt(1);
     ASSERT_TRUE(child_menu != NULL);
 
+    // The context menu and child_menu can be overlapped, calculate the
+    // non-intersected Rect of the child menu and click on its center to make
+    // sure the click is always on the child menu.
+    gfx::Rect context_rect = context_menu->GetSubmenu()->GetScreenBounds();
+    gfx::Rect child_menu_rect = child_menu->GetScreenBounds();
+    gfx::Rect clickable_rect = child_menu_rect.Subtract(context_rect);
+    ASSERT_FALSE(clickable_rect.IsEmpty());
     observer_.set_task(CreateEventTask(this, &BookmarkBarViewTest17::Step4));
-    ui_test_utils::MoveMouseToCenterAndPress(child_menu, ui_controls::RIGHT,
+    MoveMouseAndPress(clickable_rect.CenterPoint(), ui_controls::RIGHT,
         ui_controls::DOWN | ui_controls::UP, base::Closure());
     // Step4 will be invoked by ContextMenuNotificationObserver.
   }
