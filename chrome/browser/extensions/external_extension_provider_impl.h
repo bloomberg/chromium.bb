@@ -63,12 +63,12 @@ class ExternalExtensionProviderImpl
                                    scoped_ptr<Version>* version) const OVERRIDE;
 
   virtual bool IsReady() const OVERRIDE;
-  virtual int GetCreationFlags() const OVERRIDE;
 
   static const char kExternalCrx[];
   static const char kExternalVersion[];
   static const char kExternalUpdateUrl[];
   static const char kSupportedLocales[];
+  static const char kIsBookmarkApp[];
 
   void set_auto_acknowledge(bool auto_acknowledge) {
     auto_acknowledge_ = auto_acknowledge;

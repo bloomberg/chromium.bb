@@ -152,20 +152,7 @@ class MockExtensionProvider : public ExternalExtensionProviderInterface {
   MockExtensionProvider(
       VisitorInterface* visitor,
       Extension::Location location)
-    : location_(location),
-      visitor_(visitor),
-      visit_count_(0),
-      creation_flags_(Extension::NO_FLAGS) {
-  }
-
-  MockExtensionProvider(
-      VisitorInterface* visitor,
-      Extension::Location location,
-      int creation_flags)
-  : location_(location),
-    visitor_(visitor),
-    visit_count_(0),
-    creation_flags_(creation_flags) {
+    : location_(location), visitor_(visitor), visit_count_(0) {
   }
 
   virtual ~MockExtensionProvider() {}
@@ -190,7 +177,7 @@ class MockExtensionProvider : public ExternalExtensionProviderInterface {
 
       visitor_->OnExternalExtensionFileFound(
           i->first, version.get(), i->second.second, location_,
-          creation_flags_, false);
+          Extension::NO_FLAGS, false);
     }
     visitor_->OnExternalProviderReady(this);
   }
@@ -220,10 +207,6 @@ class MockExtensionProvider : public ExternalExtensionProviderInterface {
     return true;
   }
 
-  virtual int GetCreationFlags() const OVERRIDE {
-    return creation_flags_;
-  }
-
   virtual void ServiceShutdown() OVERRIDE {
   }
 
@@ -244,8 +227,6 @@ class MockExtensionProvider : public ExternalExtensionProviderInterface {
   // from the class being mocked.
   mutable int visit_count_;
 
-  int creation_flags_;
-
   DISALLOW_COPY_AND_ASSIGN(MockExtensionProvider);
 };
 
@@ -258,7 +239,14 @@ class MockProviderVisitor
   // and without an empty path using this parameter.
   explicit MockProviderVisitor(FilePath fake_base_path)
       : ids_found_(0),
-        fake_base_path_(fake_base_path) {
+        fake_base_path_(fake_base_path),
+        expected_creation_flags_(Extension::NO_FLAGS) {
+  }
+
+  MockProviderVisitor(FilePath fake_base_path, int expected_creation_flags)
+      : ids_found_(0),
+        fake_base_path_(fake_base_path),
+        expected_creation_flags_(expected_creation_flags) {
   }
 
   int Visit(const std::string& json_data) {
@@ -298,7 +286,7 @@ class MockProviderVisitor
                                             Extension::Location unused,
                                             int creation_flags,
                                             bool mark_acknowledged) {
-    EXPECT_EQ(Extension::NO_FLAGS, creation_flags);
+    EXPECT_EQ(expected_creation_flags_, creation_flags);
 
     ++ids_found_;
     DictionaryValue* pref;
@@ -372,6 +360,7 @@ class MockProviderVisitor
  private:
   int ids_found_;
   FilePath fake_base_path_;
+  int expected_creation_flags_;
   scoped_ptr<ExternalExtensionProviderImpl> provider_;
   scoped_ptr<DictionaryValue> prefs_;
 
@@ -1262,14 +1251,14 @@ TEST_F(ExtensionServiceTest, InstallingExternalExtensionWithFlags) {
   set_extensions_enabled(true);
 
   // Register and install an external extension.
-  MockExtensionProvider* provider =
-      new MockExtensionProvider(service_,
-                                Extension::EXTERNAL_POLICY_DOWNLOAD,
-                                Extension::FROM_BOOKMARK);
-  AddMockExternalProvider(provider);
-  provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
-                                 data_dir_.AppendASCII("good.crx"));
-  service_->CheckForExternalUpdates();
+  scoped_ptr<Version> version(Version::GetVersionFromString("1.0.0.0"));
+  service_->OnExternalExtensionFileFound(
+      good_crx,
+      version.get(),
+      path,
+      Extension::EXTERNAL_PREF,
+      Extension::FROM_BOOKMARK,
+      false /* mark_acknowledged */);
   loop_.RunAllPending();
 
   const Extension* extension = service_->GetExtensionById(good_crx, false);
@@ -1279,23 +1268,6 @@ TEST_F(ExtensionServiceTest, InstallingExternalExtensionWithFlags) {
 
   // Upgrade to version 2.0, the flag should be preserved.
   path = data_dir_.AppendASCII("good2.crx");
-  UpdateExtension(good_crx, path, ENABLED);
-  ValidateBooleanPref(good_crx, kPrefFromBookmark, true);
-  extension = service_->GetExtensionById(good_crx, false);
-  ASSERT_TRUE(extension);
-  ASSERT_TRUE(extension->from_bookmark());
-
-  // Somehow, the "from bookmark pref" gets reset (simulating
-  // http://crbug.com/109791).
-  SetPrefBool(extension->id(), kPrefFromBookmark, false);
-  service_->ReloadExtensions();
-  extension = service_->GetExtensionById(good_crx, false);
-  ASSERT_TRUE(extension);
-  ASSERT_FALSE(extension->from_bookmark());
-  ValidateBooleanPref(good_crx, kPrefFromBookmark, false);
-
-  // If the app gets updated again, we'll reset the "from bookmark" pref if
-  // the external extension provider is still serving that extension.
   UpdateExtension(good_crx, path, ENABLED);
   ValidateBooleanPref(good_crx, kPrefFromBookmark, true);
   extension = service_->GetExtensionById(good_crx, false);
@@ -2903,7 +2875,7 @@ TEST_F(ExtensionServiceTest, ExternalExtensionAutoAcknowledgement) {
   {
     // Register and install an external extension.
     MockExtensionProvider* provider =
-        new MockExtensionProvider(service_, Extension::EXTERNAL_PREF, 0);
+        new MockExtensionProvider(service_, Extension::EXTERNAL_PREF);
     AddMockExternalProvider(provider);
     provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
                                    data_dir_.AppendASCII("good.crx"));
@@ -3785,6 +3757,19 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
     ScopedBrowserLocale guard("en-US");
     EXPECT_EQ(2, visitor.Visit(json_data));
   }
+
+  // Test is_bookmark_app.
+  MockProviderVisitor from_bookmark_visitor(
+      base_path, Extension::FROM_BOOKMARK);
+  json_data =
+      "{"
+      "  \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\": {"
+      "    \"external_crx\": \"RandomExtension.crx\","
+      "    \"external_version\": \"1.0\","
+      "    \"is_bookmark_app\": true"
+      "  }"
+      "}";
+  EXPECT_EQ(1, from_bookmark_visitor.Visit(json_data));
 }
 
 // Test loading good extensions from the profile directory.
@@ -4922,9 +4907,7 @@ TEST_F(ExtensionServiceTest, AlertableExtensionHappyPath) {
   scoped_ptr<ExtensionGlobalError> extension_global_error(
       new ExtensionGlobalError(service_));
   MockExtensionProvider* provider =
-      new MockExtensionProvider(service_,
-                                Extension::EXTERNAL_PREF,
-                                0);
+      new MockExtensionProvider(service_, Extension::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
 
   // Should return false, meaning there aren't any extensions that the user

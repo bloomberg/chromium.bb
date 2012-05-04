@@ -678,21 +678,6 @@ bool ExtensionService::UpdateExtension(
   if (extension && extension->from_bookmark())
     creation_flags |= Extension::FROM_BOOKMARK;
 
-  if (extension) {
-    // Additionally, if the extension is an external extension, we preserve the
-    // creation flags (usually from_bookmark), even if the current pref values
-    // don't reflect them. This is to fix http://crbug.com/109791 for users that
-    // had default apps updated and lost the from_bookmark bit.
-    ProviderCollection::const_iterator i;
-    for (i = external_extension_providers_.begin();
-        i != external_extension_providers_.end(); ++i) {
-      ExternalExtensionProviderInterface* provider = i->get();
-      if (provider->HasExtension(extension->id())) {
-        creation_flags |= provider->GetCreationFlags();
-        break;
-      }
-    }
-  }
   installer->set_creation_flags(creation_flags);
 
   installer->set_delete_source(true);

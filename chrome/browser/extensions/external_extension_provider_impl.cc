@@ -49,6 +49,8 @@ const char ExternalExtensionProviderImpl::kExternalUpdateUrl[] =
     "external_update_url";
 const char ExternalExtensionProviderImpl::kSupportedLocales[] =
     "supported_locales";
+const char ExternalExtensionProviderImpl::kIsBookmarkApp[] =
+    "is_bookmark_app";
 
 ExternalExtensionProviderImpl::ExternalExtensionProviderImpl(
     VisitorInterface* service,
@@ -168,6 +170,13 @@ void ExternalExtensionProviderImpl::SetPrefs(DictionaryValue* prefs) {
       }
     }
 
+    int creation_flags = creation_flags_;
+    bool is_bookmark_app;
+    if (extension->GetBoolean(kIsBookmarkApp, &is_bookmark_app) &&
+        is_bookmark_app) {
+      creation_flags |= Extension::FROM_BOOKMARK;
+    }
+
     if (has_external_crx) {
       if (crx_location_ == Extension::INVALID) {
         LOG(WARNING) << "This provider does not support installing external "
@@ -203,7 +212,7 @@ void ExternalExtensionProviderImpl::SetPrefs(DictionaryValue* prefs) {
         continue;
       }
       service_->OnExternalExtensionFileFound(extension_id, version.get(), path,
-                                             crx_location_, creation_flags_,
+                                             crx_location_, creation_flags,
                                              auto_acknowledge_);
     } else { // if (has_external_update_url)
       CHECK(has_external_update_url);  // Checking of keys above ensures this.
@@ -241,10 +250,6 @@ void ExternalExtensionProviderImpl::ServiceShutdown() {
 
 bool ExternalExtensionProviderImpl::IsReady() const {
   return ready_;
-}
-
-int ExternalExtensionProviderImpl::GetCreationFlags() const {
-  return creation_flags_;
 }
 
 bool ExternalExtensionProviderImpl::HasExtension(
@@ -388,7 +393,7 @@ void ExternalExtensionProviderImpl::CreateExternalProviders(
                   ExternalPrefExtensionLoader::NONE),
               Extension::EXTERNAL_PREF,
               Extension::INVALID,
-              Extension::FROM_BOOKMARK)));
+              Extension::FROM_WEBSTORE)));
 #endif
 
 #if defined(OS_CHROMEOS)
