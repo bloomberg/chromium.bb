@@ -22,8 +22,15 @@ namespace {
 
 // Constants used in multiple tests.
 const char kTestServerUrl[] = "https://www.geolocation.test/service";
-const char kTestJson[] = "?browser=chromium&sensor=true";
-const char kTestBrowser[] = "browser=chromium";
+
+#if defined(GOOGLE_CHROME_BUILD)
+  const char kTestJson[] = "?browser=googlechrome&sensor=true";
+  const char kTestBrowser[] = "browser=googlechrome";
+#else
+  const char kTestJson[] = "?browser=chromium&sensor=true";
+  const char kTestBrowser[] = "browser=chromium";
+#endif
+
 const char kTestSensor[] = "sensor=true";
 // Using #define so we can easily paste this into various other strings.
 #define REFERENCE_ACCESS_TOKEN "2:k7j3G6LaL6u_lafw:4iXOeOpTh1glSXe"
