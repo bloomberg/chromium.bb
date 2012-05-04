@@ -178,9 +178,11 @@ FileTransferController.prototype = {
     };
 
     if (!toMove || operationInfo.sourceDir != destinationPath) {
+      var targetOnGData = DirectoryModel.getRootType(destinationPath) ==
+          DirectoryModel.RootType.GDATA;
       this.copyManager_.paste(operationInfo,
                               destinationPath,
-                              this.isOnGData);
+                              targetOnGData);
     } else {
       console.log('Ignore move into the same folder');
     }

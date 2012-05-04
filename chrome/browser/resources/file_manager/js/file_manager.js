@@ -850,7 +850,6 @@ FileManager.prototype = {
           actions.removeChild(actions.firstChild);
         for (var label in opt_options.actions) {
           var link = this.document_.createElement('a');
-          link.setAttribute('href', 'javascript://' + label);
           link.addEventListener('click', function() {
               opt_options.actions[label]();
               return false;
