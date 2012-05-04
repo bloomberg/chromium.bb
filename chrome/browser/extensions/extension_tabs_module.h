@@ -27,6 +27,9 @@ class DictionaryValue;
 namespace content {
 class WebContents;
 }  // namespace content
+namespace skia {
+class PlatformCanvas;
+}  // namespace skia
 
 // Windows
 class GetWindowFunction : public SyncExtensionFunction {
@@ -180,6 +183,10 @@ class CaptureVisibleTabFunction : public AsyncExtensionFunction,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
   void SendResultFromBitmap(const SkBitmap& screen_capture);
+
+ private:
+  void CopyFromBackingStoreComplete(skia::PlatformCanvas* canvas,
+                                    bool succeeded);
 
   content::NotificationRegistrar registrar_;
 

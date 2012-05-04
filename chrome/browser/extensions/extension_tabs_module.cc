@@ -57,6 +57,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/url_constants.h"
@@ -1662,28 +1663,45 @@ bool CaptureVisibleTabFunction::RunImpl() {
     return false;
 
   RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
+  content::RenderWidgetHostView* view = render_view_host->GetView();
+  if (!view) {
+    error_ = keys::kInternalVisibleTabCaptureError;
+    return false;
+  }
+  skia::PlatformCanvas* temp_canvas = new skia::PlatformCanvas;
+  render_view_host->AsyncCopyFromBackingStore(
+      gfx::Rect(),
+      view->GetViewBounds().size(),
+      temp_canvas,
+      base::Bind(&CaptureVisibleTabFunction::CopyFromBackingStoreComplete,
+                 this,
+                 base::Owned(temp_canvas)));
+  return true;
+}
 
-  // If a backing store is cached for the tab we want to capture,
-  // and it can be copied into a bitmap, then use it to generate the image.
-  // For example, some uncommon X11 visual modes are not supported by
-  // CopyFromBackingStore().
-  skia::PlatformCanvas temp_canvas;
-  if (render_view_host->CopyFromBackingStore(
-          gfx::Rect(), gfx::Size(), &temp_canvas)) {
+void CaptureVisibleTabFunction::CopyFromBackingStoreComplete(
+    skia::PlatformCanvas* canvas,
+    bool succeeded) {
+  if (succeeded) {
     VLOG(1) << "captureVisibleTab() got image from backing store.";
-    SendResultFromBitmap(skia::GetTopDevice(temp_canvas)->accessBitmap(false));
-    return true;
+    SendResultFromBitmap(skia::GetTopDevice(*canvas)->accessBitmap(false));
+    return;
+  }
+
+  WebContents* web_contents = NULL;
+  TabContentsWrapper* wrapper = NULL;
+  if (!GetTabToCapture(&web_contents, &wrapper)) {
+    error_ = keys::kInternalVisibleTabCaptureError;
+    SendResponse(false);
+    return;
   }
 
   // Ask the renderer for a snapshot of the tab.
-  wrapper->snapshot_tab_helper()->CaptureSnapshot();
   registrar_.Add(this,
                  chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
-                 content::Source<WebContents>(wrapper->web_contents()));
+                 content::Source<WebContents>(web_contents));
   AddRef();  // Balanced in CaptureVisibleTabFunction::Observe().
   wrapper->snapshot_tab_helper()->CaptureSnapshot();
-
-  return true;
 }
 
 // If a backing store was not available in CaptureVisibleTabFunction::RunImpl,
