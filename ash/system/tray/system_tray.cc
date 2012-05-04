@@ -773,6 +773,15 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
   PreferredSizeChanged();
 }
 
+bool SystemTray::CloseBubbleForTest() const {
+  if (!bubble_.get())
+    return false;
+  bubble_->Close();
+  return true;
+}
+
+// Private methods.
+
 void SystemTray::RemoveBubble(internal::SystemTrayBubble* bubble) {
   CHECK_EQ(bubble_.get(), bubble);
   bubble_.reset();
