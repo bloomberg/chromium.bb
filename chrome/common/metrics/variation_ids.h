@@ -45,6 +45,13 @@ enum ID {
   // use. Please do not use values in this range.
   kMinimumID = 3300000,
 
+  kUniformity1PercentBase  = kMinimumID,
+  kUniformity5PercentBase  = kUniformity1PercentBase + 100,
+  kUniformity10PercentBase = kUniformity5PercentBase + 20,
+  kUniformity20PercentBase = kUniformity10PercentBase + 10,
+  kUniformity50PercentBase = kUniformity20PercentBase + 5,
+  kUniformityTrialsMax     = 3300136,
+
   // Some values reserved for unit and integration tests.
   kTestValueA = 3300200,
   kTestValueB = 3300201,

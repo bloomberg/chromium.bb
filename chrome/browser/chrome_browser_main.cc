@@ -93,6 +93,7 @@
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/common/metrics/experiments_helper.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
@@ -1044,6 +1045,17 @@ void ChromeBrowserMainParts::SetupUniformityFieldTrials() {
   // group. Each group will have a probability of 1/|trial_sizes[i]|.
   const int trial_sizes[] = { 100, 20, 10, 5, 2 };
 
+  // Declare our variation ID bases along side this array so we can loop over it
+  // and assign the IDs appropriately. So for example, the 1 percent experiments
+  // should have a size of 100 (100/100 = 1).
+  const chrome_variations::ID trial_base_ids[] = {
+      chrome_variations::kUniformity1PercentBase,
+      chrome_variations::kUniformity5PercentBase,
+      chrome_variations::kUniformity10PercentBase,
+      chrome_variations::kUniformity20PercentBase,
+      chrome_variations::kUniformity50PercentBase
+  };
+
   // Probability per group remains constant for all uniformity trials, what
   // changes is the probability divisor.
   static const base::FieldTrial::Probability kProbabilityPerGroup = 1;
@@ -1059,12 +1071,16 @@ void ChromeBrowserMainParts::SetupUniformityFieldTrials() {
     scoped_refptr<base::FieldTrial> trial(
         base::FieldTrialList::FactoryGetFieldTrial(
             trial_name, divisor, "default", 2015, 1, 1, NULL));
+    experiments_helper::AssociateGoogleExperimentID(trial_name, "default",
+        trial_base_ids[i]);
     // Loop starts with group 1 because the field trial automatically creates a
     // default group, which would be group 0.
     for (int group_number = 1; group_number < trial_sizes[i]; ++group_number) {
       const std::string group_name = StringPrintf("group_%02d", group_number);
       DVLOG(1) << "    Group name = " << group_name;
       trial->AppendGroup(group_name, kProbabilityPerGroup);
+      experiments_helper::AssociateGoogleExperimentID(trial_name, group_name,
+          static_cast<chrome_variations::ID>(trial_base_ids[i] + group_number));
     }
   }
 }
