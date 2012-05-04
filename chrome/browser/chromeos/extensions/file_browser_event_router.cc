@@ -89,12 +89,16 @@ FileBrowserEventRouter::FileBrowserEventRouter(
       notifications_(new FileBrowserNotifications(profile)),
       profile_(profile),
       num_remote_update_requests_(0) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 FileBrowserEventRouter::~FileBrowserEventRouter() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void FileBrowserEventRouter::ShutdownOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   DCHECK(file_watchers_.empty());
   STLDeleteValues(&file_watchers_);
   if (!profile_) {
@@ -142,6 +146,8 @@ bool FileBrowserEventRouter::AddFileWatch(
     const FilePath& local_path,
     const FilePath& virtual_path,
     const std::string& extension_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
   base::AutoLock lock(lock_);
   FilePath watch_path = local_path;
   bool is_remote_watch = false;
@@ -177,6 +183,8 @@ bool FileBrowserEventRouter::AddFileWatch(
 void FileBrowserEventRouter::RemoveFileWatch(
     const FilePath& local_path,
     const std::string& extension_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
   base::AutoLock lock(lock_);
   FilePath watch_path = local_path;
   // Tweak watch path for remote sources - we need to drop leading /special
@@ -222,6 +230,8 @@ void FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread(bool start) {
 void FileBrowserEventRouter::DiskChanged(
     DiskMountManagerEventType event,
     const DiskMountManager::Disk* disk) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // Disregard hidden devices.
   if (disk->is_hidden())
     return;
@@ -235,6 +245,8 @@ void FileBrowserEventRouter::DiskChanged(
 void FileBrowserEventRouter::DeviceChanged(
     DiskMountManagerEventType event,
     const std::string& device_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (event == chromeos::disks::MOUNT_DEVICE_ADDED) {
     OnDeviceAdded(device_path);
   } else if (event == chromeos::disks::MOUNT_DEVICE_REMOVED) {
@@ -261,6 +273,8 @@ void FileBrowserEventRouter::MountCompleted(
     DiskMountManager::MountEvent event_type,
     chromeos::MountError error_code,
     const DiskMountManager::MountPointInfo& mount_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   DispatchMountCompletedEvent(event_type, error_code, mount_info);
 
   if (mount_info.mount_type == chromeos::MOUNT_TYPE_DEVICE &&
@@ -293,6 +307,8 @@ void FileBrowserEventRouter::MountCompleted(
 
 void FileBrowserEventRouter::OnProgressUpdate(
     const std::vector<gdata::GDataOperationRegistry::ProgressStatus>& list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   scoped_ptr<ListValue> event_list(
       file_manager_util::ProgressStatusVectorToListValue(
           profile_,
@@ -445,6 +461,8 @@ void FileBrowserEventRouter::DispatchMountCompletedEvent(
 
 void FileBrowserEventRouter::OnDiskAdded(
     const DiskMountManager::Disk* disk) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   VLOG(1) << "Disk added: " << disk->device_path();
   if (disk->device_path().empty()) {
     VLOG(1) << "Empty system path for " << disk->device_path();
@@ -470,6 +488,8 @@ void FileBrowserEventRouter::OnDiskAdded(
 
 void FileBrowserEventRouter::OnDiskRemoved(
     const DiskMountManager::Disk* disk) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   VLOG(1) << "Disk removed: " << disk->device_path();
 
   if (!disk->mount_path().empty()) {
@@ -480,6 +500,8 @@ void FileBrowserEventRouter::OnDiskRemoved(
 
 void FileBrowserEventRouter::OnDeviceAdded(
     const std::string& device_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   VLOG(1) << "Device added : " << device_path;
 
   notifications_->RegisterDevice(device_path);
@@ -490,6 +512,8 @@ void FileBrowserEventRouter::OnDeviceAdded(
 
 void FileBrowserEventRouter::OnDeviceRemoved(
     const std::string& device_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   VLOG(1) << "Device removed : " << device_path;
   notifications_->HideNotification(FileBrowserNotifications::DEVICE,
                                    device_path);
@@ -500,11 +524,14 @@ void FileBrowserEventRouter::OnDeviceRemoved(
 
 void FileBrowserEventRouter::OnDeviceScanned(
     const std::string& device_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Device scanned : " << device_path;
 }
 
 void FileBrowserEventRouter::OnFormattingStarted(
     const std::string& device_path, bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (success) {
     notifications_->ShowNotification(FileBrowserNotifications::FORMAT_START,
                                      device_path);
@@ -516,6 +543,8 @@ void FileBrowserEventRouter::OnFormattingStarted(
 
 void FileBrowserEventRouter::OnFormattingFinished(
     const std::string& device_path, bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (success) {
     notifications_->HideNotification(FileBrowserNotifications::FORMAT_START,
                                      device_path);
