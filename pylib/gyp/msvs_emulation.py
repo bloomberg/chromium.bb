@@ -26,11 +26,6 @@ def QuoteForRspFile(arg):
   # works more or less because most programs (including the compiler, etc.)
   # use that function to handle command line arguments.
 
-  # If the string ends in a \, then it will be interpreted as an escaper for
-  # the trailing ", so we need to pre-escape that.
-  if arg and arg[-1] == '\\':
-    arg = arg + '\\'
-
   # For a literal quote, CommandLineToArgvW requires 2n+1 backslashes
   # preceding it, and results in n backslashes + the quote. So we substitute
   # in 2* what we match, +1 more, plus the quote.

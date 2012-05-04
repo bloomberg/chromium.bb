@@ -5,16 +5,23 @@
 {
  'targets': [
     {
-      'target_name': 'test_slash',
+      'target_name': 'test_slash_trailing',
       'type': 'none',
       'msvs_cygwin_shell': '0',
       'actions': [
         {
           'action_name': 'root',
           'inputs': [],
-          'outputs': ['out'],
-          'action': ['python', 'test_exists.py', '$(VCInstallDir)', 'out']
+          'outputs': ['out1'],
+          'action': ['python', 'test_exists.py', '$(VCInstallDir)', 'out1']
         },
+      ],
+    },
+    {
+      'target_name': 'test_slash_dir',
+      'type': 'none',
+      'msvs_cygwin_shell': '0',
+      'actions': [
         {
           'action_name': 'bin',
           'inputs': [],
