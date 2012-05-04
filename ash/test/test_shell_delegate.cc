@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/test_launcher_delegate.h"
+#include "content/test/test_browser_context.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/window.h"
 
@@ -57,6 +58,10 @@ void TestShellDelegate::OpenCrosh() {
 }
 
 void TestShellDelegate::OpenMobileSetup() {
+}
+
+content::BrowserContext* TestShellDelegate::GetCurrentBrowserContext() {
+  return new TestBrowserContext();
 }
 
 void TestShellDelegate::ToggleSpokenFeedback() {

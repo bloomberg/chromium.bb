@@ -191,6 +191,10 @@ void ChromeShellDelegate::OpenMobileSetup() {
 #endif
 }
 
+content::BrowserContext* ChromeShellDelegate::GetCurrentBrowserContext() {
+  return ProfileManager::GetDefaultProfile();
+}
+
 void ChromeShellDelegate::ToggleSpokenFeedback() {
 #if defined(OS_CHROMEOS)
   content::WebUI* login_screen_web_ui = NULL;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
 
+#include "ash/screensaver/screensaver_view.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/lazy_instance.h"
@@ -11,7 +12,7 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/ui/screensaver_extension_dialog.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -173,7 +174,11 @@ void KioskModeScreensaver::SetupScreensaver(
   chromeos::DBusThreadManager::Get()->
       GetPowerManagerClient()->RequestActiveNotification();
 
-  browser::ShowScreensaverDialog(extension);
+  // Add the extension to the extension service and display the screensaver.
+  Profile* default_profile = ProfileManager::GetDefaultProfile();
+  default_profile->GetExtensionService()->AddExtension(extension);
+
+  ash::ShowScreensaver(extension->GetFullLaunchURL());
 }
 
 // NotificationObserver overrides:
@@ -188,7 +193,7 @@ void KioskModeScreensaver::Observe(
   if (power_manager->HasObserver(this))
     power_manager->RemoveObserver(this);
 
-  browser::CloseScreensaverDialog();
+  ash::CloseScreensaver();
   ShutdownKioskModeScreensaver();
 }
 
@@ -203,7 +208,7 @@ void KioskModeScreensaver::ActiveNotify() {
   } else {
     // Remove the screensaver so the user can at least use the underlying
     // login screen to be able to log in.
-    browser::CloseScreensaverDialog();
+    ash::CloseScreensaver();
   }
 }
 

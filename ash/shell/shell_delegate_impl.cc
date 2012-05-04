@@ -75,6 +75,10 @@ void ShellDelegateImpl::OpenCrosh() {
 void ShellDelegateImpl::OpenMobileSetup() {
 }
 
+content::BrowserContext* ShellDelegateImpl::GetCurrentBrowserContext() {
+  return Shell::GetInstance()->browser_context();
+}
+
 void ShellDelegateImpl::ToggleSpokenFeedback() {
 }
 
