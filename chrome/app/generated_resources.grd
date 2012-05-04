@@ -10739,6 +10739,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_HOSTED_OFFLINE_MESSAGE_PLURAL" desc="Message informing the user that the selected files are only available online.">
         You must be online to access these files.
       </message>
+      <message name="IDS_FILE_BROWSER_CONFIRM_MOBILE_DATA_USE" desc="Message informing the user that opening the file from Google Drive will use mobile data.">
+        Fetching this file will use approximately <ph name="FILE_SIZE">$1<ex>44 MB</ex></ph> of mobile data.
+      </message>
+      <message name="IDS_FILE_BROWSER_CONFIRM_MOBILE_DATA_USE_PLURAL" desc="Message informing the user that opening several files from Google Drive will use mobile data.">
+        Fetching these files will use approximately <ph name="FILE_SIZE">$1<ex>44 MB</ex></ph> of mobile data.
+      </message>
       <message name="IDS_FILE_BROWSER_GDATA_PRODUCT_NAME" desc="Google Drive product name." translateable="false">
         Google Drive
       </message>
@@ -10756,6 +10762,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_LOADING" desc="Message informing the user that we are loading content of Google Drive.">
         Hang with us. We’re fetching your files.
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_LOADING_PROGRESS" desc="The progress message displayed when loading content of Google Drive. Never displayed for file count below 10 so no pluralization issue should arise.">
+        <ph name="FILE_COUNT">$1<ex>100</ex></ph> files fetched
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_CANNOT_REACH" desc="Message informing the user that Google Drive can not be reached at this moment.">
         <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph> cannot be reached at this time.
@@ -10867,6 +10876,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_FOLDER" desc="Folder entry type">
         Folder
       </message>
+      <message name="IDS_FILE_BROWSER_GENERIC_FILE_TYPE" desc="An entry type for a file with an extension that the File Manager does not recognize.">
+        <ph name="FILE_TYPE">$1<ex>ABC</ex></ph> file
+      </message>
+      <message name="IDS_FILE_BROWSER_NO_EXTENSION_FILE_TYPE" desc="An entry type for a file without an extension">
+        File
+      </message>
       <message name="IDS_FILE_BROWSER_DEVICE" desc="Mounted external device volume entry type">
         Device
       </message>
@@ -10941,6 +10956,48 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
       <message name="IDS_FILE_BROWSER_AUDIO_PLAYER_TITLE" desc="Title of the Audio Player window.">
         Audio Player
+      </message>
+
+      <message name="IDS_FILE_BROWSER_FILE_ERROR_GENERIC" desc="In the File Manager, the error message when the file operation failed.">
+        An error occurred (code: <ph name="ERROR_CODE">$1<ex>ABORT_ERR</ex></ph>).
+      </message>
+      <message name="IDS_FILE_BROWSER_FILE_ERROR_NOT_FOUND" desc="In the File Manager, the error message when the file could not be found.">
+        The file could not be found.
+      </message>
+      <message name="IDS_FILE_BROWSER_FILE_ERROR_SECURITY" desc="In the File Manager, the error message when the file could not be accessed for security reasons.">
+        The file could not be accessed for security reasons.
+      </message>
+      <message name="IDS_FILE_BROWSER_FILE_ERROR_NOT_READABLE" desc="In the File Manager, the error message when the file could not be read.">
+        The file could not be read.
+      </message>
+      <message name="IDS_FILE_BROWSER_FILE_ERROR_NO_MODIFICATION_ALLOWED" desc="In the File Manager, the error message when the file could not be modified.">
+        The file could not be modified.
+      </message>
+      <message name="IDS_FILE_BROWSER_FILE_ERROR_INVALID_STATE" desc="In the File Manager, the error message when the file is no longer usable.">
+        The file is no longer usable.
+      </message>
+      <message name="IDS_FILE_BROWSER_FILE_ERROR_INVALID_MODIFICATION" desc="In the File Manager, the error message when the file could not be modified.">
+        The file could not be modified.
+      </message>
+      <message name="IDS_FILE_BROWSER_FILE_ERROR_PATH_EXISTS" desc="In the File Manager, the error message when the a file or a directory with the same name already exists.">
+        A file or a directory with the same name already exists.
+      </message>
+
+      <message name="IDS_FILE_BROWSER_SEARCH_NO_MATCHING_FILES" desc="In the File Manager, the message informing the user that the search did not match any files.">
+        No files match "<ph name="SEARCH_STRING">$1<ex>abc</ex></ph>"
+      </message>
+      <message name="IDS_FILE_BROWSER_SEARCH_EXPAND" desc="In the File Manager, the text on the link to expand search when no matching files were found.">
+        Search all <ph name="DRIVE_NAME">$1<ex>Downloads</ex></ph>
+      </message>
+
+      <message name="IDS_FILE_BROWSER_CHANGE_DEFAULT_MENU_ITEM" desc="In the File Manager, the text in the menu item to change the default action for a particular file type.">
+        Change default...
+      </message>
+      <message name="IDS_FILE_BROWSER_CHANGE_DEFAULT_CAPTION" desc="In the File Manager, the caption on the dialog box that chooses the default action for a particular file type.">
+        Choose the default app for <ph name="FILE_TYPE">$1<ex>PNG</ex></ph> files:
+      </message>
+      <message name="IDS_FILE_BROWSER_DEFAULT_ACTION_LABEL" desc="In the File Manager actions menu, the text next to the default action name.">
+        (default)
       </message>
 
       <!-- Bookmark manager -->
