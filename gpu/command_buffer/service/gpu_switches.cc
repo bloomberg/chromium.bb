@@ -10,6 +10,9 @@ namespace switches {
 // Turn on Calling GL Error after every command.
 const char kCompileShaderAlwaysSucceeds[]   = "compile-shader-always-succeeds";
 
+// Disable the GL error log limit.
+const char kDisableGLErrorLimit[]           = "disable-gl-error-limit";
+
 // Disable the GLSL translator.
 const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
 
@@ -24,6 +27,7 @@ const char kEnforceGLMinimums[]             = "enforce-gl-minimums";
 
 const char* kGpuSwitches[] = {
   kCompileShaderAlwaysSucceeds,
+  kDisableGLErrorLimit,
   kDisableGLSLTranslator,
   kEnableGPUCommandLogging,
   kEnableGPUDebugging,

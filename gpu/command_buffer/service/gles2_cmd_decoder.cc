@@ -460,6 +460,8 @@ bool GLES2Decoder::IsAngle() {
 class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
                          public GLES2Decoder {
  public:
+  static const int kMaxLogErrors = 256;
+
   explicit GLES2DecoderImpl(ContextGroup* group);
   ~GLES2DecoderImpl();
 
@@ -1474,6 +1476,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // The last error message set.
   std::string last_error_;
 
+  int error_count_;
+
   // The current decoder error.
   error::Error current_decoder_error_;
 
@@ -1905,6 +1909,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       back_buffer_has_stencil_(false),
       teximage2d_faster_than_texsubimage2d_(true),
       bufferdata_faster_than_buffersubdata_(true),
+      error_count_(0),
       current_decoder_error_(error::kNoError),
       use_shader_translator_(true),
       validators_(group_->feature_info()->validators()),
@@ -4845,13 +4850,25 @@ GLenum GLES2DecoderImpl::PeekGLError() {
 void GLES2DecoderImpl::SetGLError(GLenum error, const char* msg) {
   if (msg) {
     last_error_ = msg;
-    // LOG this unless logging is turned off as any chromium code that generates
-    // these errors probably has a bug.
-    if (log_synthesized_gl_errors()) {
-      LOG(ERROR) << last_error_;
-    }
-    if (!msg_callback_.is_null()) {
-      msg_callback_.Run(0, GLES2Util::GetStringEnum(error) + " : " + msg);
+    if (error_count_ < kMaxLogErrors ||
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableGLErrorLimit)) {
+      ++error_count_;
+      // LOG this unless logging is turned off as any chromium code that
+      // generates these errors probably has a bug.
+      if (log_synthesized_gl_errors()) {
+        LOG(ERROR) << last_error_;
+      }
+      if (!msg_callback_.is_null()) {
+        msg_callback_.Run(0, GLES2Util::GetStringEnum(error) + " : " + msg);
+      }
+    } else {
+      if (error_count_ == kMaxLogErrors) {
+        ++error_count_;
+        LOG(ERROR)
+            << "Too many GL errors, not reporting any more for this context."
+            << " use --disable-gl-error-limit to see all errors.";
+      }
     }
   }
   error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
