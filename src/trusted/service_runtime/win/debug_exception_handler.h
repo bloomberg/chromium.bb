@@ -15,23 +15,6 @@ EXTERN_C_BEGIN
 
 struct NaClApp;
 
-#define DEBUG_EXCEPTION_HANDLER_UNDER_DEBUGGER 0
-#define DEBUG_EXCEPTION_HANDLER_SUCCESS 1
-#define DEBUG_EXCEPTION_HANDLER_ERROR -1
-#define DEBUG_EXCEPTION_HANDLER_NOT_SUPPORTED -2
-
-/*
- * Runs debug loop until process exits or error occurs.
- * In case of error during debugging returns DEBUG_EXCEPTION_HANDLER_ERROR.
- * On Windows 64-bit returns DEBUG_EXCEPTION_HANDLER_NOT_SUPPORTED.
- * Otherwise returns DEBUG_EXCEPTION_HANDLER_SUCCESS and fills exit_code.
- *
- * TODO(mseaborn): Remove this function.  It is provided because
- * Chromium is currently using it, but Chromium will be switched over
- * to using NaClDebugExceptionHandlerRun().
- */
-int NaClDebugLoop(HANDLE process_handle, DWORD *exit_code);
-
 /*
  * This runs the debug exception handler in the current thread.  The
  * current thread should already have attached to the target process

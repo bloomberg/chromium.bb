@@ -491,28 +491,3 @@ int NaClDebugExceptionHandlerEnsureAttached(struct NaClApp *nap) {
   return (nap->debug_exception_handler_state
           == NACL_DEBUG_EXCEPTION_HANDLER_STARTED);
 }
-
-/*
- * TODO(mseaborn): Remove this function.  It is provided because
- * Chromium is currently using it, but Chromium will be switched over
- * to using NaClDebugExceptionHandlerRun().
- */
-int NaClDebugLoop(HANDLE process_handle, DWORD *exit_code) {
-  /*
-   * This assumes that nacl_thread (a global array) is at the same
-   * address in the debuggee process as in this debugger process.
-   * This assumption is not always true, which is why this function is
-   * scheduled to be removed!
-   */
-  struct StartupInfo info;
-  info.nacl_thread = nacl_thread;
-  info.nacl_thread_ids = nacl_thread_ids;
-
-  NaClDebugExceptionHandlerRun(process_handle, &info, sizeof(info));
-  /*
-   * Chromium does not look at *exit_code and the return value.  We
-   * provide dummy values here.
-   */
-  *exit_code = 0;
-  return DEBUG_EXCEPTION_HANDLER_SUCCESS;
-}
