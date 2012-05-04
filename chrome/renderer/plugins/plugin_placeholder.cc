@@ -46,6 +46,7 @@
 using content::RenderThread;
 using content::RenderView;
 using WebKit::WebContextMenuData;
+using WebKit::WebDocument;
 using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebMenuItemInfo;
@@ -361,8 +362,12 @@ void PluginPlaceholder::PluginListChanged() {
   webkit::WebPluginInfo plugin_info;
   std::string mime_type(plugin_params_.mimeType.utf8());
   std::string actual_mime_type;
+  WebDocument document = frame_->top()->document();
+  if (document.isNull())
+    return;
+
   render_view()->Send(new ChromeViewHostMsg_GetPluginInfo(
-      routing_id(), GURL(plugin_params_.url), frame_->top()->document().url(),
+      routing_id(), GURL(plugin_params_.url), document.url(),
       mime_type, &status, &plugin_info, &actual_mime_type));
   if (status.value == status_->value)
     return;
