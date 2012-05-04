@@ -13,6 +13,7 @@
 #include "base/sys_byteorder.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/metrics/variation_ids.h"
 
 namespace {
 
@@ -28,25 +29,25 @@ class GroupMapAccessor {
   ~GroupMapAccessor() {}
 
   void AssociateID(const experiments_helper::SelectedGroupId& group_identifier,
-                   experiments_helper::GoogleExperimentID id) {
+                   chrome_variations::ID id) {
     base::AutoLock scoped_lock(lock_);
     DCHECK(group_to_id_map_.find(group_identifier) == group_to_id_map_.end()) <<
-        "You can associate a group with a GoogleExperimentID only once.";
+        "You can associate a group with a chrome_variations::ID only once.";
     group_to_id_map_[group_identifier] = id;
   }
 
-  experiments_helper::GoogleExperimentID GetID(
+  chrome_variations::ID GetID(
       const experiments_helper::SelectedGroupId& group_identifier) {
     base::AutoLock scoped_lock(lock_);
     GroupToIDMap::const_iterator it = group_to_id_map_.find(group_identifier);
     if (it == group_to_id_map_.end())
-      return experiments_helper::kEmptyGoogleExperimentID;
+      return chrome_variations::kEmptyID;
     return it->second;
   }
 
  private:
   typedef std::map<experiments_helper::SelectedGroupId,
-      experiments_helper::GoogleExperimentID,
+      chrome_variations::ID,
       experiments_helper::SelectedGroupIdCompare> GroupToIDMap;
 
   base::Lock lock_;
@@ -94,8 +95,6 @@ void GetFieldTrialSelectedGroupIdsForSelectedGroups(
 
 namespace experiments_helper {
 
-const GoogleExperimentID kEmptyGoogleExperimentID = 0;
-
 void GetFieldTrialSelectedGroupIds(
     std::vector<SelectedGroupId>* name_group_ids) {
   DCHECK(name_group_ids->empty());
@@ -110,13 +109,13 @@ void GetFieldTrialSelectedGroupIds(
 
 void AssociateGoogleExperimentID(const std::string& trial_name,
                                  const std::string& group_name,
-                                 GoogleExperimentID id) {
+                                 chrome_variations::ID id) {
   GroupMapAccessor::GetInstance()->AssociateID(
       MakeSelectedGroupId(trial_name, group_name), id);
 }
 
-GoogleExperimentID GetGoogleExperimentID(const std::string& trial_name,
-                                         const std::string& group_name) {
+chrome_variations::ID GetGoogleExperimentID(const std::string& trial_name,
+                                            const std::string& group_name) {
   return GroupMapAccessor::GetInstance()->GetID(
       MakeSelectedGroupId(trial_name, group_name));
 }

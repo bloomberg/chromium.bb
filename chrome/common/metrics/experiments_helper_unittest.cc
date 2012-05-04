@@ -16,9 +16,9 @@
 
 namespace {
 
-// Convenience helper to retrieve the GoogleExperimentID for a FieldTrial. Note
-// that this will do the group assignment in |trial| if not already done.
-experiments_helper::GoogleExperimentID GetIDForTrial(base::FieldTrial* trial) {
+// Convenience helper to retrieve the chrome_variations::ID for a FieldTrial.
+// Note that this will do the group assignment in |trial| if not already done.
+chrome_variations::ID GetIDForTrial(base::FieldTrial* trial) {
   return experiments_helper::GetGoogleExperimentID(trial->name(),
                                                    trial->group_name());
 }
@@ -123,8 +123,7 @@ TEST_F(ExperimentsHelperTest, DisableImmediately) {
   trial->Disable();
 
   ASSERT_EQ(default_group_number, trial->group());
-  ASSERT_EQ(experiments_helper::kEmptyGoogleExperimentID,
-            GetIDForTrial(trial.get()));
+  ASSERT_EQ(chrome_variations::kEmptyID, GetIDForTrial(trial.get()));
 }
 
 // Test that successfully associating the FieldTrial with some ID, and then
@@ -139,14 +138,14 @@ TEST_F(ExperimentsHelperTest, DisableAfterInitialization) {
                                                  next_year_, 12, 12, NULL));
   trial->AppendGroup(non_default_name, 100);
   experiments_helper::AssociateGoogleExperimentID(
-      trial->name(), default_name, 123);
+      trial->name(), default_name, chrome_variations::kTestValueA);
   experiments_helper::AssociateGoogleExperimentID(
-      trial->name(), non_default_name, 456);
+      trial->name(), non_default_name, chrome_variations::kTestValueB);
   ASSERT_EQ(non_default_name, trial->group_name());
-  ASSERT_EQ(456U, GetIDForTrial(trial.get()));
+  ASSERT_EQ(chrome_variations::kTestValueB, GetIDForTrial(trial.get()));
   trial->Disable();
   ASSERT_EQ(default_name, trial->group_name());
-  ASSERT_EQ(123U, GetIDForTrial(trial.get()));
+  ASSERT_EQ(chrome_variations::kTestValueA, GetIDForTrial(trial.get()));
 }
 
 // Test various successful association cases.
@@ -160,13 +159,13 @@ TEST_F(ExperimentsHelperTest, AssociateGoogleExperimentID) {
 
   // Set GoogleExperimentIDs so we can verify that they were chosen correctly.
   experiments_helper::AssociateGoogleExperimentID(
-      trial_true->name(), default_name1, 123);
+      trial_true->name(), default_name1, chrome_variations::kTestValueA);
   experiments_helper::AssociateGoogleExperimentID(
-      trial_true->name(), winner, 456);
+      trial_true->name(), winner, chrome_variations::kTestValueB);
 
   EXPECT_EQ(winner_group, trial_true->group());
   EXPECT_EQ(winner, trial_true->group_name());
-  EXPECT_EQ(456U, GetIDForTrial(trial_true.get()));
+  EXPECT_EQ(chrome_variations::kTestValueB, GetIDForTrial(trial_true.get()));
 
   const std::string default_name2 = "default2";
   scoped_refptr<base::FieldTrial> trial_false(
@@ -176,12 +175,12 @@ TEST_F(ExperimentsHelperTest, AssociateGoogleExperimentID) {
   int loser_group = trial_false->AppendGroup(loser, 0);
 
   experiments_helper::AssociateGoogleExperimentID(
-      trial_false->name(), default_name2, 123);
+      trial_false->name(), default_name2, chrome_variations::kTestValueA);
   experiments_helper::AssociateGoogleExperimentID(
-      trial_false->name(), loser, 456);
+      trial_false->name(), loser, chrome_variations::kTestValueB);
 
   EXPECT_NE(loser_group, trial_false->group());
-  EXPECT_EQ(123U, GetIDForTrial(trial_false.get()));
+  EXPECT_EQ(chrome_variations::kTestValueA, GetIDForTrial(trial_false.get()));
 }
 
 // Test that not associating a FieldTrial with any IDs ensure that the empty ID
@@ -195,9 +194,8 @@ TEST_F(ExperimentsHelperTest, NoAssociation) {
   int winner_group = no_id_trial->AppendGroup(winner, 10);
 
   // Ensure that despite the fact that a normal winner is elected, it does not
-  // have a valid GoogleExperimentID associated with it.
+  // have a valid chrome_variations::ID associated with it.
   EXPECT_EQ(winner_group, no_id_trial->group());
   EXPECT_EQ(winner, no_id_trial->group_name());
-  EXPECT_EQ(experiments_helper::kEmptyGoogleExperimentID,
-            GetIDForTrial(no_id_trial.get()));
+  EXPECT_EQ(chrome_variations::kEmptyID, GetIDForTrial(no_id_trial.get()));
 }
