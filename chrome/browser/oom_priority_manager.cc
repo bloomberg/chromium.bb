@@ -118,7 +118,7 @@ void OomMemoryDetails::OnDetailsAvailable() {
   TimeDelta delta = TimeTicks::Now() - start_time_;
   // These logs are collected by user feedback reports.  We want them to help
   // diagnose user-reported problems with frequently discarded tabs.
-  LOG(INFO) << "OOM details (" << delta.InMilliseconds() << " ms):\n"
+  LOG(WARNING) << "OOM details (" << delta.InMilliseconds() << " ms):\n"
       << ToLogString();
   if (g_browser_process && g_browser_process->oom_priority_manager())
     g_browser_process->oom_priority_manager()->DiscardTab();
