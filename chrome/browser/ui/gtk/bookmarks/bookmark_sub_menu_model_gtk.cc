@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "grit/generated_resources.h"
+#include "ui/base/gtk/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/linux_util.h"
 
 using content::OpenURLParams;
 using content::PageNavigator;
@@ -75,7 +75,7 @@ void BookmarkNodeMenuModel::PopulateMenu() {
       // Ironically the label will end up getting converted back to UTF8 later.
       // We need to escape any Windows-style "&" characters since they will be
       // converted in MenuGtk outside of our control here.
-      const string16 label = UTF8ToUTF16(gfx::EscapeWindowsStyleAccelerators(
+      const string16 label = UTF8ToUTF16(ui::EscapeWindowsStyleAccelerators(
           bookmark_utils::BuildMenuLabelFor(child)));
       // No command id. We override ActivatedAt below to handle activations.
       AddItem(kBookmarkItemCommandId, label);
@@ -93,7 +93,7 @@ void BookmarkNodeMenuModel::AddSubMenuForNode(const BookmarkNode* node) {
   // Ironically the label will end up getting converted back to UTF8 later.
   // We need to escape any Windows-style "&" characters since they will be
   // converted in MenuGtk outside of our control here.
-  const string16 label = UTF8ToUTF16(gfx::EscapeWindowsStyleAccelerators(
+  const string16 label = UTF8ToUTF16(ui::EscapeWindowsStyleAccelerators(
       bookmark_utils::BuildMenuLabelFor(node)));
   // Don't pass in the delegate, if any. Bookmark submenus don't need one.
   BookmarkNodeMenuModel* submenu =

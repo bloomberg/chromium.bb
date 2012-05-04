@@ -22,9 +22,9 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_tree.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -32,12 +32,12 @@
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
+#include "ui/base/gtk/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/linux_util.h"
 
 namespace {
 
@@ -453,7 +453,7 @@ void TaskManagerGtk::Init() {
   }
 
   gtk_dialog_add_button(GTK_DIALOG(dialog_),
-      gfx::ConvertAcceleratorsFromWindowsStyle(
+      ui::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_TASK_MANAGER_KILL)).c_str(),
       kTaskManagerResponseKill);
 

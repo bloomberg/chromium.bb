@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/linux_util.h"
+#include "ui/base/gtk/menu_label_accelerator_util.h"
 
 #include "base/string_util.h"
 
@@ -39,7 +39,7 @@ std::string ConvertAmpersandsTo(const std::string& label,
 
 }  // namespace
 
-namespace gfx {
+namespace ui {
 
 std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label) {
   return ConvertAmpersandsTo(label, "_");
@@ -59,4 +59,4 @@ std::string EscapeWindowsStyleAccelerators(const std::string& label) {
   return ret;
 }
 
-}  // namespace gfx
+}  // namespace ui

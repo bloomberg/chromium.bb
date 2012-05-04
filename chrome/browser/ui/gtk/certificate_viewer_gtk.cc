@@ -19,8 +19,8 @@
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
+#include "ui/base/gtk/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/linux_util.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace {
@@ -170,7 +170,7 @@ CertificateViewer::CertificateViewer(
       GTK_NOTEBOOK(notebook_),
       general_page_vbox_,
       gtk_label_new_with_mnemonic(
-          gfx::ConvertAcceleratorsFromWindowsStyle(
+          ui::ConvertAcceleratorsFromWindowsStyle(
               l10n_util::GetStringUTF8(
                   IDS_CERT_INFO_GENERAL_TAB_LABEL)).c_str()));
 
@@ -178,7 +178,7 @@ CertificateViewer::CertificateViewer(
       GTK_NOTEBOOK(notebook_),
       details_page_vbox_,
       gtk_label_new_with_mnemonic(
-          gfx::ConvertAcceleratorsFromWindowsStyle(
+          ui::ConvertAcceleratorsFromWindowsStyle(
               l10n_util::GetStringUTF8(
                   IDS_CERT_INFO_DETAILS_TAB_LABEL)).c_str()));
 
@@ -640,7 +640,7 @@ void CertificateViewer::InitDetailsPage() {
   gtk_box_pack_start(GTK_BOX(details_page_vbox_), export_hbox,
                      FALSE, FALSE, 0);
   export_button_ = gtk_button_new_with_mnemonic(
-      gfx::ConvertAcceleratorsFromWindowsStyle(
+      ui::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(
               IDS_CERT_DETAILS_EXPORT_CERTIFICATE)).c_str());
   g_signal_connect(export_button_, "clicked",

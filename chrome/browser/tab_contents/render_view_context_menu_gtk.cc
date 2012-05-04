@@ -14,8 +14,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
 #include "grit/generated_resources.h"
+#include "ui/base/gtk/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/linux_util.h"
 
 using content::WebContents;
 
@@ -101,7 +101,7 @@ void RenderViewContextMenuGtk::PlatformInit() {
       if (!show_input_method_menu)
         return;
 
-      std::string label = gfx::ConvertAcceleratorsFromWindowsStyle(
+      std::string label = ui::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU));
       GtkWidget* menuitem = gtk_menu_item_new_with_mnemonic(label.c_str());
       GtkWidget* submenu = rwhv->BuildInputMethodsGtkMenu();

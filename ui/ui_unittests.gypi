@@ -61,6 +61,7 @@
         'base/cocoa/focus_tracker_unittest.mm',
         'base/gtk/gtk_expanded_container_unittest.cc',
         'base/gtk/gtk_im_context_util_unittest.cc',
+        'base/gtk/menu_label_accelerator_util_unittest.cc',
         'base/l10n/l10n_util_mac_unittest.mm',
         'base/l10n/l10n_util_unittest.cc',
         'base/models/list_model_unittest.cc',
@@ -140,7 +141,6 @@
         ['OS == "linux"', {
           'sources': [
             'gfx/platform_font_pango_unittest.cc',
-            'gfx/linux_util_unittest.cc',
           ],
         }],
         ['OS == "linux" and toolkit_views==1', {

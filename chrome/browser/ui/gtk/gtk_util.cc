@@ -38,13 +38,13 @@
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_screen_util.h"
+#include "ui/base/gtk/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/linux_util.h"
 
 // These conflict with base/tracked_objects.h, so need to come last.
 #include <gdk/gdkx.h>  // NOLINT
@@ -662,7 +662,7 @@ GtkWidget* AddButtonToDialog(GtkWidget* dialog, const gchar* text,
 GtkWidget* BuildDialogButton(GtkWidget* dialog, int ids_id,
                              const gchar* stock_id) {
   GtkWidget* button = gtk_button_new_with_mnemonic(
-      gfx::ConvertAcceleratorsFromWindowsStyle(
+      ui::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(ids_id)).c_str());
   gtk_button_set_image(GTK_BUTTON(button),
                        gtk_image_new_from_stock(stock_id,

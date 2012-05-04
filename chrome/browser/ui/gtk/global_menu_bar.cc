@@ -20,8 +20,8 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
+#include "ui/base/gtk/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/linux_util.h"
 
 struct GlobalMenuBarCommand {
   int str_id;
@@ -225,7 +225,7 @@ void GlobalMenuBar::BuildGtkMenuFrom(
   gtk_widget_show(menu);
 
   GtkWidget* menu_item = gtk_menu_item_new_with_mnemonic(
-      gfx::RemoveWindowsStyleAccelerators(
+      ui::RemoveWindowsStyleAccelerators(
           l10n_util::GetStringUTF8(menu_str_id)).c_str());
 
   // Give the owner a chance to sink the reference before we add it to the menu
@@ -248,9 +248,8 @@ GtkWidget* GlobalMenuBar::BuildMenuItem(
   if (string_id == MENU_SEPARATOR) {
     menu_item = gtk_separator_menu_item_new();
   } else {
-    std::string label =
-        gfx::ConvertAcceleratorsFromWindowsStyle(
-            l10n_util::GetStringUTF8(string_id));
+    std::string label = ui::ConvertAcceleratorsFromWindowsStyle(
+        l10n_util::GetStringUTF8(string_id));
 
     if (command_id == IDC_SHOW_BOOKMARK_BAR)
       menu_item = gtk_check_menu_item_new_with_mnemonic(label.c_str());

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/linux_util.h"
+#include "ui/base/gtk/menu_label_accelerator_util.h"
 
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace gfx {
+namespace ui {
 
-TEST(LinuxUtilTest, ConvertAcceleratorsFromWindowsStyle) {
+TEST(MenuLabelAcceleratorTest, ConvertAcceleratorsFromWindowsStyle) {
   static const struct {
     const char* input;
     const char* output;
@@ -28,7 +28,7 @@ TEST(LinuxUtilTest, ConvertAcceleratorsFromWindowsStyle) {
   }
 }
 
-TEST(LinuxUtilTest, RemoveWindowsStyleAccelerators) {
+TEST(MenuLabelAcceleratorTest, RemoveWindowsStyleAccelerators) {
   static const struct {
     const char* input;
     const char* output;
@@ -47,7 +47,7 @@ TEST(LinuxUtilTest, RemoveWindowsStyleAccelerators) {
   }
 }
 
-TEST(LinuxUtilTest, EscapeWindowsStyleAccelerators) {
+TEST(MenuLabelAcceleratorTest, EscapeWindowsStyleAccelerators) {
   static const struct {
     const char* input;
     const char* output;
@@ -72,4 +72,4 @@ TEST(LinuxUtilTest, EscapeWindowsStyleAccelerators) {
   }
 }
 
-}  // namespace gfx
+}  // namespace ui
