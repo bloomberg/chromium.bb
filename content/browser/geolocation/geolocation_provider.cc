@@ -16,26 +16,6 @@
 
 using content::BrowserThread;
 
-GeolocationProvider* GeolocationProvider::GetInstance() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return Singleton<GeolocationProvider>::get();
-}
-
-GeolocationProvider::GeolocationProvider()
-    : base::Thread("Geolocation"),
-      is_permission_granted_(false),
-      ignore_location_updates_(false),
-      arbitrator_(NULL) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-}
-
-GeolocationProvider::~GeolocationProvider() {
-  // All observers should have unregistered before this singleton is destructed.
-  DCHECK(observers_.empty());
-  Stop();
-  DCHECK(!arbitrator_);
-}
-
 void GeolocationProvider::AddObserver(GeolocationObserver* observer,
     const GeolocationObserverOptions& update_options) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -60,6 +40,63 @@ void GeolocationProvider::RequestCallback(
   callbacks_.push_back(callback);
   OnClientsChanged();
   OnPermissionGranted();
+}
+
+void GeolocationProvider::OnPermissionGranted() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  bool was_permission_granted = is_permission_granted_;
+  is_permission_granted_ = true;
+  if (IsRunning() && !was_permission_granted)
+    InformProvidersPermissionGranted();
+}
+
+bool GeolocationProvider::HasPermissionBeenGranted() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return is_permission_granted_;
+}
+
+void GeolocationProvider::OnLocationUpdate(
+    const content::Geoposition& position) {
+  DCHECK(OnGeolocationThread());
+  // Will be true only in testing.
+  if (ignore_location_updates_)
+    return;
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&GeolocationProvider::NotifyClients,
+                                     base::Unretained(this), position));
+}
+
+void GeolocationProvider::OverrideLocationForTesting(
+    const content::Geoposition& position) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  position_ = position;
+  ignore_location_updates_ = true;
+  NotifyClients(position);
+}
+
+GeolocationProvider* GeolocationProvider::GetInstance() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return Singleton<GeolocationProvider>::get();
+}
+
+GeolocationProvider::GeolocationProvider()
+    : base::Thread("Geolocation"),
+      is_permission_granted_(false),
+      ignore_location_updates_(false),
+      arbitrator_(NULL) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+}
+
+GeolocationProvider::~GeolocationProvider() {
+  // All observers should have unregistered before this singleton is destructed.
+  DCHECK(observers_.empty());
+  Stop();
+  DCHECK(!arbitrator_);
+}
+
+bool GeolocationProvider::OnGeolocationThread() const {
+  return MessageLoop::current() == message_loop();
 }
 
 void GeolocationProvider::OnClientsChanged() {
@@ -91,6 +128,33 @@ void GeolocationProvider::OnClientsChanged() {
   message_loop()->PostTask(FROM_HERE, task);
 }
 
+void GeolocationProvider::StopProviders() {
+  DCHECK(OnGeolocationThread());
+  DCHECK(arbitrator_);
+  arbitrator_->StopProviders();
+}
+
+void GeolocationProvider::StartProviders(
+    const GeolocationObserverOptions& options) {
+  DCHECK(OnGeolocationThread());
+  DCHECK(arbitrator_);
+  arbitrator_->StartProviders(options);
+}
+
+void GeolocationProvider::InformProvidersPermissionGranted() {
+  DCHECK(IsRunning());
+  if (!OnGeolocationThread()) {
+    message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&GeolocationProvider::InformProvidersPermissionGranted,
+                   base::Unretained(this)));
+    return;
+  }
+  DCHECK(OnGeolocationThread());
+  DCHECK(arbitrator_);
+  arbitrator_->OnPermissionGranted();
+}
+
 void GeolocationProvider::NotifyClients(const content::Geoposition& position) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(position.Validate() ||
@@ -117,41 +181,6 @@ void GeolocationProvider::NotifyClients(const content::Geoposition& position) {
   }
 }
 
-void GeolocationProvider::StartProviders(
-    const GeolocationObserverOptions& options) {
-  DCHECK(OnGeolocationThread());
-  DCHECK(arbitrator_);
-  arbitrator_->StartProviders(options);
-}
-
-void GeolocationProvider::StopProviders() {
-  DCHECK(OnGeolocationThread());
-  DCHECK(arbitrator_);
-  arbitrator_->StopProviders();
-}
-
-void GeolocationProvider::OnPermissionGranted() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  bool was_permission_granted = is_permission_granted_;
-  is_permission_granted_ = true;
-  if (IsRunning() && !was_permission_granted)
-    InformProvidersPermissionGranted();
-}
-
-void GeolocationProvider::InformProvidersPermissionGranted() {
-  DCHECK(IsRunning());
-  if (!OnGeolocationThread()) {
-    message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&GeolocationProvider::InformProvidersPermissionGranted,
-                   base::Unretained(this)));
-    return;
-  }
-  DCHECK(OnGeolocationThread());
-  DCHECK(arbitrator_);
-  arbitrator_->OnPermissionGranted();
-}
-
 void GeolocationProvider::Init() {
   DCHECK(OnGeolocationThread());
   DCHECK(!arbitrator_);
@@ -162,33 +191,4 @@ void GeolocationProvider::CleanUp() {
   DCHECK(OnGeolocationThread());
   delete arbitrator_;
   arbitrator_ = NULL;
-}
-
-void GeolocationProvider::OnLocationUpdate(
-    const content::Geoposition& position) {
-  DCHECK(OnGeolocationThread());
-  // Will be true only in testing.
-  if (ignore_location_updates_)
-    return;
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&GeolocationProvider::NotifyClients,
-                                     base::Unretained(this), position));
-}
-
-void GeolocationProvider::OverrideLocationForTesting(
-    const content::Geoposition& position) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  position_ = position;
-  ignore_location_updates_ = true;
-  NotifyClients(position);
-}
-
-bool GeolocationProvider::HasPermissionBeenGranted() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return is_permission_granted_;
-}
-
-bool GeolocationProvider::OnGeolocationThread() const {
-  return MessageLoop::current() == message_loop();
 }
