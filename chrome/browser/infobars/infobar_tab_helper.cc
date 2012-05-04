@@ -32,10 +32,10 @@ InfoBarTabHelper::~InfoBarTabHelper() {
   RemoveAllInfoBars(false);
 }
 
-void InfoBarTabHelper::AddInfoBar(InfoBarDelegate* delegate) {
+bool InfoBarTabHelper::AddInfoBar(InfoBarDelegate* delegate) {
   if (!infobars_enabled_) {
     delegate->InfoBarClosed();
-    return;
+    return false;
   }
 
   for (InfoBars::const_iterator i(infobars_.begin()); i != infobars_.end();
@@ -43,7 +43,7 @@ void InfoBarTabHelper::AddInfoBar(InfoBarDelegate* delegate) {
     if ((*i)->EqualsDelegate(delegate)) {
       DCHECK_NE(*i, delegate);
       delegate->InfoBarClosed();
-      return;
+      return false;
     }
   }
 
@@ -64,18 +64,17 @@ void InfoBarTabHelper::AddInfoBar(InfoBarDelegate* delegate) {
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
       content::Source<InfoBarTabHelper>(this),
       content::Details<InfoBarAddedDetails>(delegate));
+  return true;
 }
 
 void InfoBarTabHelper::RemoveInfoBar(InfoBarDelegate* delegate) {
   RemoveInfoBarInternal(delegate, true);
 }
 
-void InfoBarTabHelper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
+bool InfoBarTabHelper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
                                       InfoBarDelegate* new_delegate) {
-  if (!infobars_enabled_) {
-    AddInfoBar(new_delegate);  // Deletes the delegate.
-    return;
-  }
+  if (!infobars_enabled_)
+    return AddInfoBar(new_delegate);  // Deletes the delegate.
 
   InfoBars::iterator i(std::find(infobars_.begin(), infobars_.end(),
                                  old_delegate));
@@ -92,6 +91,7 @@ void InfoBarTabHelper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
       content::Source<InfoBarTabHelper>(this),
       content::Details<InfoBarReplacedDetails>(&replaced_details));
+  return true;
 }
 
 InfoBarDelegate* InfoBarTabHelper::GetInfoBarDelegateAt(size_t index) {

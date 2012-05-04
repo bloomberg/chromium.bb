@@ -25,7 +25,9 @@ class InfoBarTabHelper : public content::WebContentsObserver,
   // If infobars are disabled for this tab or the tab already has a delegate
   // which returns true for InfoBarDelegate::EqualsDelegate(delegate),
   // |delegate| is closed immediately without being added.
-  void AddInfoBar(InfoBarDelegate* delegate);
+  //
+  // Returns whether |delegate| was successfully added.
+  bool AddInfoBar(InfoBarDelegate* delegate);
 
   // Removes the InfoBar for the specified |delegate|.
   //
@@ -39,8 +41,10 @@ class InfoBarTabHelper : public content::WebContentsObserver,
   // If infobars are disabled for this tab, |new_delegate| is closed immediately
   // without being added, and nothing else happens.
   //
+  // Returns whether |new_delegate| was successfully added.
+  //
   // NOTE: This does not perform any EqualsDelegate() checks like AddInfoBar().
-  void ReplaceInfoBar(InfoBarDelegate* old_delegate,
+  bool ReplaceInfoBar(InfoBarDelegate* old_delegate,
                       InfoBarDelegate* new_delegate);
 
   // Enumeration and access functions.
