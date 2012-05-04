@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
+#include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/prefs/pref_notifier.h"
@@ -161,6 +162,9 @@ const char kRegisteredEvents[] = "events";
 // A list of alarms that this extension has set.
 const char kRegisteredAlarms[] = "alarms";
 const char kAlarmScheduledRunTime[] = "scheduled_run_time";
+
+// Persisted value for omnibox.setDefaultSuggestion.
+const char kOmniboxDefaultSuggestion[] = "omnibox_default_suggestion";
 
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
@@ -999,6 +1003,25 @@ void ExtensionPrefs::SetRegisteredAlarms(
     list->Append(alarm.release());
   }
   UpdateExtensionPref(extension_id, kRegisteredAlarms, list);
+}
+
+extensions::ExtensionOmniboxSuggestion
+ExtensionPrefs::GetOmniboxDefaultSuggestion(const std::string& extension_id) {
+  extensions::ExtensionOmniboxSuggestion suggestion;
+
+  const base::DictionaryValue* extension = GetExtensionPref(extension_id);
+  base::DictionaryValue* dict = NULL;
+  if (extension && extension->GetDictionary(kOmniboxDefaultSuggestion, &dict))
+    suggestion.Populate(*dict, false);
+
+  return suggestion;
+}
+
+void ExtensionPrefs::SetOmniboxDefaultSuggestion(
+    const std::string& extension_id,
+    const extensions::ExtensionOmniboxSuggestion& suggestion) {
+  scoped_ptr<base::DictionaryValue> dict = suggestion.ToValue().Pass();
+  UpdateExtensionPref(extension_id, kOmniboxDefaultSuggestion, dict.release());
 }
 
 bool ExtensionPrefs::IsIncognitoEnabled(const std::string& extension_id) {

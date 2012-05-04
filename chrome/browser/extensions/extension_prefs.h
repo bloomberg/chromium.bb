@@ -26,6 +26,7 @@ class URLPatternSet;
 
 namespace extensions {
 struct AlarmPref;
+struct ExtensionOmniboxSuggestion;
 }
 
 // Class for managing global and per-extension preferences.
@@ -270,6 +271,13 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer,
       const std::string& extension_id);
   void SetRegisteredAlarms(const std::string& extension_id,
                            const std::vector<extensions::AlarmPref>& alarms);
+
+  // Controls the omnibox default suggestion as set by the extension.
+  extensions::ExtensionOmniboxSuggestion GetOmniboxDefaultSuggestion(
+      const std::string& extension_id);
+  void SetOmniboxDefaultSuggestion(
+      const std::string& extension_id,
+      const extensions::ExtensionOmniboxSuggestion& suggestion);
 
   // Returns true if the user enabled this extension to be loaded in incognito
   // mode.

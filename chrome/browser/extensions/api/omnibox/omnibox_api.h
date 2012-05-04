@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/extensions/extension_function.h"
@@ -76,9 +77,17 @@ struct ExtensionOmniboxSuggestion {
   ExtensionOmniboxSuggestion();
   ~ExtensionOmniboxSuggestion();
 
+  // Populate a suggestion value from a DictionaryValue. If |require_content|
+  // is false, then we won't fail if |content| is missing, to support
+  // default suggestions.
+  bool Populate(const base::DictionaryValue& value, bool require_content);
+
   // Converts a list of style ranges from the extension into the format expected
   // by the autocomplete system.
   bool ReadStylesFromValue(const base::ListValue& value);
+
+  // Converts this structure to a DictionaryValue suitable for saving to disk.
+  scoped_ptr<base::DictionaryValue> ToValue() const;
 
   // The text that gets put in the edit box.
   string16 content;
