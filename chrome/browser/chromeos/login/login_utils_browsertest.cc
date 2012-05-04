@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
@@ -89,10 +90,9 @@ ACTION_P(MockSessionManagerClientStorePolicyCallback, success) {
   arg1.Run(success);
 }
 
-template<typename TESTBASE>
-class LoginUtilsTestBase : public TESTBASE,
-                           public LoginUtils::Delegate,
-                           public LoginStatusConsumer {
+class LoginUtilsTest : public testing::Test,
+                       public LoginUtils::Delegate,
+                       public LoginStatusConsumer {
  public:
   // Initialization here is important. The UI thread gets the test's
   // message loop, as does the file thread (which never actually gets
@@ -102,7 +102,7 @@ class LoginUtilsTestBase : public TESTBASE,
   // bits of initialization that get posted to the IO thread.  We do
   // however, at one point in the test, temporarily set the message
   // loop for the IO thread.
-  LoginUtilsTestBase()
+  LoginUtilsTest()
       : loop_(MessageLoop::TYPE_IO),
         browser_process_(
             static_cast<TestingBrowserProcess*>(g_browser_process)),
@@ -211,14 +211,14 @@ class LoginUtilsTestBase : public TESTBASE,
     connector_ = browser_process_->browser_policy_connector();
     connector_->Init();
 
-    loop_.RunAllPending();
+    RunAllPending();
   }
 
   virtual void TearDown() OVERRIDE {
     cryptohome::AsyncMethodCaller::Shutdown();
     mock_async_method_caller_ = NULL;
 
-    loop_.RunAllPending();
+    RunAllPending();
     {
       // chrome_browser_net::Predictor usually skips its shutdown routines on
       // unit_tests, but does the full thing when
@@ -227,13 +227,13 @@ class LoginUtilsTestBase : public TESTBASE,
       // these routines.
       //
       // It is important to not have a fake message loop on the IO
-      // thread for the whole test, see comment on LoginUtilsTestBase
+      // thread for the whole test, see comment on LoginUtilsTest
       // constructor for details.
       io_thread_.DeprecatedSetMessageLoop(&loop_);
       loop_.PostTask(FROM_HERE,
-                     base::Bind(&LoginUtilsTestBase::TearDownOnIO,
+                     base::Bind(&LoginUtilsTest::TearDownOnIO,
                                 base::Unretained(this)));
-      loop_.RunAllPending();
+      RunAllPending();
       io_thread_.DeprecatedSetMessageLoop(NULL);
     }
 
@@ -242,7 +242,7 @@ class LoginUtilsTestBase : public TESTBASE,
     connector_ = NULL;
     browser_process_->SetBrowserPolicyConnector(NULL);
     browser_process_->SetProfileManager(NULL);
-    loop_.RunAllPending();
+    RunAllPending();
   }
 
   void TearDownOnIO() {
@@ -256,6 +256,12 @@ class LoginUtilsTestBase : public TESTBASE,
         predictor->Shutdown();
       }
     }
+  }
+
+  void RunAllPending() {
+    loop_.RunAllPending();
+    BrowserThread::GetBlockingPool()->FlushForTesting();
+    loop_.RunAllPending();
   }
 
   virtual void OnProfilePrepared(Profile* profile) OVERRIDE {
@@ -284,7 +290,7 @@ class LoginUtilsTestBase : public TESTBASE,
     device_data_store->set_device_id(kDeviceId);
     EXPECT_EQ(policy::EnterpriseInstallAttributes::LOCK_SUCCESS,
               connector_->LockDevice(username));
-    loop_.RunAllPending();
+    RunAllPending();
   }
 
   void PrepareProfile(const std::string& username) {
@@ -304,7 +310,7 @@ class LoginUtilsTestBase : public TESTBASE,
 
     LoginUtils::Get()->PrepareProfile(username, std::string(), "password",
                                       false, true, false, this);
-    loop_.RunAllPending();
+    RunAllPending();
   }
 
   TestURLFetcher* PrepareOAuthFetcher(const std::string& expected_url) {
@@ -382,15 +388,12 @@ class LoginUtilsTestBase : public TESTBASE,
   std::string device_policy_;
   std::string user_policy_;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginUtilsTestBase);
-};
-
-class LoginUtilsTest : public LoginUtilsTestBase<testing::Test> {
+  DISALLOW_COPY_AND_ASSIGN(LoginUtilsTest);
 };
 
 class LoginUtilsBlockingLoginTest
-    : public LoginUtilsTestBase<testing::TestWithParam<int> > {
-};
+    : public LoginUtilsTest,
+      public testing::WithParamInterface<int> {};
 
 TEST_F(LoginUtilsTest, NormalLoginDoesntBlock) {
   UserManager* user_manager = UserManager::Get();
@@ -488,13 +491,13 @@ TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
 
     // The cloud policy subsystem is now ready to fetch the dmtoken and the user
     // policy.
-    loop_.RunAllPending();
+    RunAllPending();
     if (steps < 4) break;
 
     fetcher = PrepareDMRegisterFetcher();
     fetcher->delegate()->OnURLFetchComplete(fetcher);
     // The policy fetch job has now been scheduled, run it:
-    loop_.RunAllPending();
+    RunAllPending();
     if (steps < 5) break;
 
     // Verify that there is no profile prepared just before the policy fetch.
