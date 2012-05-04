@@ -88,6 +88,11 @@ AC_ARG_ENABLE(omap-experimental-api,
 	      [Enable support for OMAP's experimental API (default: disabled)]),
 	      [OMAP=$enableval], [OMAP=no])
 
+AC_ARG_ENABLE(exynos-experimental-api,
+	      AS_HELP_STRING([--enable-exynos-experimental-api],
+	      [Enable support for EXYNOS's experimental API (default: disabled)]),
+	      [EXYNOS=$enableval], [EXYNOS=no])
+
 dnl ===========================================================================
 dnl check compiler flags
 AC_DEFUN([LIBDRM_CC_TRY_FLAG], [
@@ -189,6 +194,11 @@ fi
 AM_CONDITIONAL(HAVE_OMAP, [test "x$OMAP" = xyes])
 if test "x$OMAP" = xyes; then
 	AC_DEFINE(HAVE_OMAP, 1, [Have OMAP support])
+fi
+
+AM_CONDITIONAL(HAVE_EXYNOS, [test "x$EXYNOS" = xyes])
+if test "x$EXYNOS" = xyes; then
+	AC_DEFINE(HAVE_EXYNOS, 1, [Have EXYNOS support])
 fi
 
 PKG_CHECK_MODULES(CAIRO, cairo, [HAVE_CAIRO=yes], [HAVE_CAIRO=no])
@@ -313,6 +323,8 @@ AC_CONFIG_FILES([
 	nouveau/libdrm_nouveau.pc
 	omap/Makefile
 	omap/libdrm_omap.pc
+	exynos/Makefile
+	exynos/libdrm_exynos.pc
 	tests/Makefile
 	tests/modeprint/Makefile
 	tests/modetest/Makefile
@@ -333,4 +345,5 @@ echo "  vmwgfx API     $VMWGFX"
 echo "  Radeon API     $RADEON"
 echo "  Nouveau API    $NOUVEAU"
 echo "  OMAP API       $OMAP"
+echo "  EXYNOS API     $EXYNOS"
 echo ""

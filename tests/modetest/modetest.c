@@ -1099,7 +1099,7 @@ int main(int argc, char **argv)
 	int c;
 	int encoders = 0, connectors = 0, crtcs = 0, planes = 0, framebuffers = 0;
 	int test_vsync = 0;
-	char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "omapdrm" };
+	char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "omapdrm", "exynos" };
 	unsigned int i;
 	int count = 0, plane_count = 0;
 	struct connector con_args[2];
