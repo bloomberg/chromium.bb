@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,8 @@ class LoginTestBase : public CrosInProcessBrowserTest {
     mock_network_library_ = cros_mock_->mock_network_library();
     EXPECT_CALL(*mock_cryptohome_library_, IsMounted())
         .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_cryptohome_library_, GetSystemSalt())
+        .WillRepeatedly(Return(std::string("stub_system_salt")));
     EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
         .Times(AnyNumber());
   }

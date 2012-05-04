@@ -93,16 +93,31 @@ namespace system {
 
 void ToggleDrm(bool enable) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UserManager* user_manager = UserManager::Get();
+  if (!user_manager)
+    return;
 
-  // Never generate the file in Guest mode.
-  if (UserManager::Get()->IsLoggedInAsGuest() ||
-      UserManager::Get()->IsLoggedInAsDemoUser())
+  // This preference is only meant to be called when a user
+  // is logged in.
+  if (!user_manager->IsUserLoggedIn()) {
+    LOG(WARNING) << "Called without a logged in user!";
+    return;
+  }
+
+  // Don't generate files as a guest, demo user, or a stub.
+  if (user_manager->IsLoggedInAsGuest() ||
+      user_manager->IsLoggedInAsDemoUser() ||
+      user_manager->IsLoggedInAsStub())
     return;
 
   // The user email address is included in the hash to keep the identifier
   // from being the same across users.
-  std::string email = UserManager::Get()->GetLoggedInUser().email();
-  DCHECK(email.length() == 0);
+  std::string email = user_manager->GetLoggedInUser().email();
+  // If there is no real user then there's nothing to do here.
+  if (email.length() == 0) {
+    LOG(WARNING) << "Unexpected 0 length user email.";
+    return;
+  }
 
   // Generate a DRM identifier on the FILE thread.
   // The DRM identifier is a per-user, per-OS-install identifier that is used
