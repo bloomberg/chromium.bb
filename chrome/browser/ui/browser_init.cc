@@ -1027,7 +1027,8 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
     RecordCmdLineAppHistogram();
     WebContents* tab_in_app_window = Browser::OpenApplication(
         profile, extension, launch_container, GURL(), NEW_WINDOW);
-    return (tab_in_app_window != NULL);
+    // Platform apps fire off a launch event which may or may not open a window.
+    return (tab_in_app_window != NULL || extension->is_platform_app());
   }
 
   if (url_string.empty())
