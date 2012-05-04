@@ -6,20 +6,17 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_PROTOCOL_HANDLER_H_
 #pragma once
 
-#include <string>
-
-namespace net {
-class URLRequest;
-class URLRequestJob;
-}
+#include "net/url_request/url_request_job_factory.h"
 
 namespace gdata {
 
-class GDataProtocolHandler {
+class GDataProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  // Creates URLRequestJob-extended job to handle gdata:// requests.
-  static net::URLRequestJob* CreateJob(net::URLRequest* request,
-                                       const std::string& scheme);
+  GDataProtocolHandler();
+  virtual ~GDataProtocolHandler();
+  // Creates URLRequestJobs for drive:// URLs.
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request) const OVERRIDE;
 };
 
 }  // namespace gdata

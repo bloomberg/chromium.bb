@@ -948,11 +948,6 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
 void GDataFileSystem::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  net::URLRequestFilter::GetInstance()->AddHostnameHandler(
-      chrome::kGDataScheme,
-      util::kGDataViewFileHostnameUrl,
-      &GDataProtocolHandler::CreateJob);
-
   FilePath cache_base_path;
   chrome::GetUserCacheDirectory(profile_->GetPath(), &cache_base_path);
   gdata_cache_path_ = cache_base_path.Append(chrome::kGDataCacheDirname);

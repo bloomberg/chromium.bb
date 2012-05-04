@@ -182,7 +182,6 @@ GDataEntry* GDataFile::FromDocumentEntry(GDataDirectory* parent,
   }
   file->kind_ = doc->kind();
   const Link* edit_link = doc->GetLinkByType(Link::EDIT);
-  DCHECK(edit_link) << "No edit link for file " << file->title_;
   if (edit_link)
     file->edit_url_ = edit_link->href();
   file->content_url_ = doc->content_url();

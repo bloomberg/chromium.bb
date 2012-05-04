@@ -58,6 +58,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/browser/chromeos/gdata/gdata_protocol_handler.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #endif  // defined(OS_CHROMEOS)
@@ -296,6 +297,7 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
     chrome::kChromeDevToolsScheme,
 #if defined(OS_CHROMEOS)
     chrome::kMetadataScheme,
+    chrome::kDriveScheme,
 #endif  // defined(OS_CHROMEOS)
     chrome::kBlobScheme,
     chrome::kFileSystemScheme,
@@ -520,13 +522,20 @@ void ProfileIOData::LazyInitialize() const {
       chrome::kChromeDevToolsScheme,
       CreateDevToolsProtocolHandler(chrome_url_data_manager_backend_.get()));
   DCHECK(set_protocol);
-#if defined(OS_CHROMEOS) && !defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
+  if (!is_incognito()) {
+    set_protocol = job_factory_->SetProtocolHandler(
+        chrome::kDriveScheme, new gdata::GDataProtocolHandler());
+    DCHECK(set_protocol);
+  }
+#if !defined(GOOGLE_CHROME_BUILD)
   // Install the GView request interceptor that will redirect requests
   // of compatible documents (PDF, etc) to the GView document viewer.
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   if (parsed_command_line.HasSwitch(switches::kEnableGView))
     job_factory_->AddInterceptor(new chromeos::GViewRequestInterceptor);
-#endif  // defined(OS_CHROMEOS) && !defined(GOOGLE_CHROME_BUILD)
+#endif  // !defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_CHROMEOS)
 
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;

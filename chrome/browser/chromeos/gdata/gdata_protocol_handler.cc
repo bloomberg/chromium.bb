@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -67,23 +68,19 @@ void GetFileSizeOnIOThreadPool(const FilePath& file_path,
     *file_size = 0;
 }
 
-// Helper function that parsers gdata://viewfile/<resource_id>/<file_name> into
-// its components.
-bool ParseGDataUrlPath(const std::string& path,
-                       std::string* resource_id,
-                       std::string* file_name) {
-  std::vector<std::string> components;
-  FilePath url_path= FilePath::FromUTF8Unsafe(path);
-  url_path.GetComponents(&components);
-  if (components.size() != 4 ||
-      components[1] != gdata::util::kGDataViewFileHostnameUrl) {
-    LOG(WARNING) << "Invalid path: " << url_path.value();
+// Helper function that extracts and unescapes resource_id from drive urls
+// (drive:<resource_id>).
+bool ParseDriveUrl(const std::string& path, std::string* resource_id) {
+  static const std::string drive_schema(chrome::kDriveScheme +
+                                        std::string(":"));
+  if (!StartsWithASCII(path, drive_schema, false) ||
+      path.size() <= drive_schema.size()) {
     return false;
   }
 
-  *resource_id = net::UnescapeURLComponent(components[2], kUrlPathUnescapeMask);
-  *file_name = net::UnescapeURLComponent(components[3], kUrlPathUnescapeMask);
-  return true;
+  std::string id = path.substr(drive_schema.size());
+  *resource_id = net::UnescapeURLComponent(id, kUrlPathUnescapeMask);
+  return resource_id->size();
 }
 
 }  // namespace
@@ -133,9 +130,9 @@ class GetFileInfoDelegate : public gdata::FindEntryDelegate {
   int64 initial_file_size_;
 };
 
-// GDataURLRequesetJob is the gateway between network-level gdata://viewfile/
+// GDataURLRequesetJob is the gateway between network-level drive://...
 // requests for gdata resources and GDataFileSytem.  It exposes content URLs
-// formatted as gdata://viewfile/<resource-id>/<file_name>.
+// formatted as drive://<resource-id>.
 class GDataURLRequestJob : public net::URLRequestJob {
  public:
   explicit GDataURLRequestJob(net::URLRequest* request);
@@ -355,8 +352,7 @@ bool GDataURLRequestJob::GetMimeType(std::string* mime_type) const {
 
   std::string resource_id;
   std::string unused_file_name;
-  if (!ParseGDataUrlPath(request_->url().spec(), &resource_id,
-                         &unused_file_name)) {
+  if (!ParseDriveUrl(request_->url().spec(), &resource_id)) {
     return false;
   }
 
@@ -505,8 +501,7 @@ void GDataURLRequestJob::StartAsync(GDataFileSystem** file_system) {
   }
 
   std::string resource_id;
-  std::string file_name;
-  if (!ParseGDataUrlPath(request_->url().spec(), &resource_id, &file_name)) {
+  if (!ParseDriveUrl(request_->url().spec(), &resource_id)) {
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                            net::ERR_INVALID_URL));
     return;
@@ -515,13 +510,6 @@ void GDataURLRequestJob::StartAsync(GDataFileSystem** file_system) {
   // First, check if file metadata is matching our expectations.
   GetFileInfoDelegate delegate;
   file_system_->FindEntryByResourceIdSync(resource_id, &delegate);
-  if (delegate.file_name() != file_name) {
-    LOG(WARNING) << "Failed to start request: "
-                 << "filename in request url and file system are different";
-    NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                           net::ERR_FILE_NOT_FOUND));
-    return;
-  }
 
   mime_type_ = delegate.mime_type();
   gdata_file_path_ = delegate.gdata_file_path();
@@ -924,9 +912,17 @@ void GDataURLRequestJob::HeadersCompleted(int status_code,
   NotifyHeadersComplete();
 }
 
-// static
-net::URLRequestJob* GDataProtocolHandler::CreateJob(net::URLRequest* request,
-                                                    const std::string& scheme) {
+///////////////////////////////////////////////////////////////////////////////
+// GDataProtocolHandler class
+
+GDataProtocolHandler::GDataProtocolHandler() {
+}
+
+GDataProtocolHandler::~GDataProtocolHandler() {
+}
+
+net::URLRequestJob* GDataProtocolHandler::MaybeCreateJob(
+    net::URLRequest* request) const {
   DVLOG(1) << "Handling url: " << request->url().spec();
   return new GDataURLRequestJob(request);
 }

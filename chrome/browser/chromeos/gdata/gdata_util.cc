@@ -130,12 +130,11 @@ const FilePath& GetSpecialRemoteRootPath() {
 
 GURL GetFileResourceUrl(const std::string& resource_id,
                         const std::string& file_name) {
-  return GURL(base::StringPrintf(
-      "%s://%s/%s/%s",
-      chrome::kGDataScheme,
-      kGDataViewFileHostnameUrl,
-      net::EscapePath(resource_id).c_str(),
-      net::EscapePath(file_name).c_str()));
+  std::string url(base::StringPrintf(
+      "%s:%s",
+      chrome::kDriveScheme,
+      net::EscapePath(resource_id).c_str()));
+  return GURL(url);
 }
 
 void ModifyGDataFileResourceUrl(Profile* profile,

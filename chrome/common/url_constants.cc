@@ -10,7 +10,7 @@ namespace chrome {
 
 #if defined(OS_CHROMEOS)
 const char kCrosScheme[] = "cros";
-const char kGDataScheme[] = "gdata";
+const char kDriveScheme[] = "drive";
 #endif
 
 const char kAboutPluginsURL[] = "about:plugins";
