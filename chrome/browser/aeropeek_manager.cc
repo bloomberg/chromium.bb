@@ -7,6 +7,7 @@
 #include <dwmapi.h>
 #include <shobjidl.h>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/scoped_native_library.h"
 #include "base/synchronization/waitable_event.h"
@@ -27,6 +28,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
@@ -102,6 +104,11 @@ HRESULT CallDwmInvalidateIconicBitmaps(HWND window) {
     return E_FAIL;
 
   return dwm_invalidate_iconic_bitmaps(window);
+}
+
+void CopyFromBackingStoreComplete(bool* result, bool* done, bool succeeded) {
+  *result = succeeded;
+  *done = true;
 }
 
 }  // namespace
@@ -994,12 +1001,28 @@ bool AeroPeekManager::GetTabPreview(int tab_id, SkBitmap* preview) {
   content::RenderViewHost* render_view_host = contents->GetRenderViewHost();
   if (!render_view_host)
     return false;
+  content::RenderWidgetHostView* view = render_view_host->GetView();
+  if (!view)
+    return false;
 
   // Create a copy of this BackingStore image.
   // This code is just copied from "thumbnail_generator.cc".
   skia::PlatformCanvas canvas;
-  if (!render_view_host->CopyFromBackingStore(
-          gfx::Rect(), gfx::Size(), &canvas))
+  bool result = false;
+  bool done = false;
+  render_view_host->AsyncCopyFromBackingStore(
+      gfx::Rect(),
+      view->GetViewBounds().size(),
+      &canvas,
+      base::Bind(&CopyFromBackingStoreComplete,
+                 &result,
+                 &done));
+  // RenderWidgetHost::AyncCopyFromBackingStore is currently implemented to run
+  // synchronously.
+  // TODO(mazda): Fix this so that it does not need to be synchronous
+  // (http://crbug.com/126203).
+  DCHECK(done);
+  if (!result)
     return false;
 
   const SkBitmap& bitmap = skia::GetTopDevice(canvas)->accessBitmap(false);

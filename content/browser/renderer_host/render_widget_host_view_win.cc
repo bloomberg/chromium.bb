@@ -926,9 +926,7 @@ void RenderWidgetHostViewWin::AsyncCopyFromCompositingSurface(
     const gfx::Size& size,
     skia::PlatformCanvas* output,
     base::Callback<void(bool)> callback) {
-  // TODO(mazda): Implement this.
-  NOTIMPLEMENTED();
-  callback.Run(false);
+  callback.Run(CopyFromCompositingSurface(size, output));
 }
 
 void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
