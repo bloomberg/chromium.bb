@@ -71,8 +71,7 @@ void GetFileSizeOnIOThreadPool(const FilePath& file_path,
 // Helper function that extracts and unescapes resource_id from drive urls
 // (drive:<resource_id>).
 bool ParseDriveUrl(const std::string& path, std::string* resource_id) {
-  static const std::string drive_schema(chrome::kDriveScheme +
-                                        std::string(":"));
+  const std::string drive_schema(chrome::kDriveScheme + std::string(":"));
   if (!StartsWithASCII(path, drive_schema, false) ||
       path.size() <= drive_schema.size()) {
     return false;
