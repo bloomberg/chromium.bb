@@ -177,15 +177,12 @@ class TestRunCommand(unittest.TestCase):
     """Test RunCommand() properly sets/restores sigint.  Normal case."""
     self.testReturnCodeZeroWithArrayCmd(ignore_sigint=True)
 
-
   def testReturnCodeZeroWithArrayCmdEnterChroot(self):
     """--enter_chroot=True and --cmd is an array of strings."""
     self.proc_mock.returncode = 0
     cmd_list = ['foo', 'bar', 'roger']
     real_cmd = ['cros_sdk', '--'] + cmd_list
     self._TestCmd(cmd_list, real_cmd, rc_kv=dict(enter_chroot=True))
-
-
 
   def testCommandFailureRaisesError(self, ignore_sigint=False):
     """Verify error raised by communicate() is caught.
@@ -315,17 +312,10 @@ class TestRunCommand(unittest.TestCase):
     e_diff_cmd = cros_build_lib.RunCommandError('Message 1', c2)
     e_diff_code = cros_build_lib.RunCommandError('Message 1', c3)
 
-    self.assertTrue(e1 == e2)
-    self.assertFalse(e1 != e2)
-
-    self.assertFalse(e1 == e_diff_msg)
-    self.assertTrue(e1 != e_diff_msg)
-
-    self.assertFalse(e1 == e_diff_cmd)
-    self.assertTrue(e1 != e_diff_cmd)
-
-    self.assertFalse(e1 == e_diff_code)
-    self.assertTrue(e1 != e_diff_code)
+    self.assertEqual(e1, e2)
+    self.assertNotEqual(e1, e_diff_msg)
+    self.assertNotEqual(e1, e_diff_cmd)
+    self.assertNotEqual(e1, e_diff_code)
 
   def testSudoRunCommand(self):
     """Test SudoRunCommand(...) works."""
@@ -366,6 +356,46 @@ class TestRunCommand(unittest.TestCase):
     self.proc_mock.returncode = 0
     self._TestCmd(cmd, sudo_list, sudo=True,
                   rc_kv=dict(user='MMMMMonster', shell=True))
+
+
+class TestRunCommandLogging(cros_test_lib.TempDirMixin, unittest.TestCase):
+
+  def testLogStdoutToFile(self):
+    # Make mox happy.
+    log = os.path.join(self.tempdir, 'output')
+    ret = cros_build_lib.RunCommand(
+        ['python', '-c', 'print "monkeys"'], log_stdout_to_file=log)
+    with open(log) as f:
+      self.assertEqual(f.read(), 'monkeys\n')
+    self.assertTrue(ret.output is None)
+    self.assertTrue(ret.error is None)
+
+    # Validate dumb api usage.
+    ret = cros_build_lib.RunCommand(
+        ['python', '-c', 'import sys;print "monkeys2"'],
+        log_stdout_to_file=log, redirect_stdout=True)
+    self.assertTrue(ret.output is None)
+    with open(log) as f:
+      self.assertEqual(f.read(), 'monkeys2\n')
+
+    os.unlink(log)
+    ret = cros_build_lib.RunCommand(
+        ['python', '-c', 'import sys;print >> sys.stderr, "monkeys3"'],
+        log_stdout_to_file=log, redirect_stderr=True)
+    self.assertEqual(ret.error, 'monkeys3\n')
+    self.assertTrue(os.path.exists(log))
+    self.assertEqual(os.stat(log).st_size, 0)
+
+    os.unlink(log)
+    ret = cros_build_lib.RunCommand(
+        ['python', '-u', '-c',
+         'import sys;print "monkeys4"\nprint >> sys.stderr, "monkeys5"\n'],
+        log_stdout_to_file=log, combine_stdout_stderr=True)
+    self.assertTrue(ret.output is None)
+    self.assertTrue(ret.error is None)
+
+    with open(log) as f:
+      self.assertEqual(f.read(), 'monkeys4\nmonkeys5\n')
 
 
 class TestRunCommandWithRetries(unittest.TestCase):

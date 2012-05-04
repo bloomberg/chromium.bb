@@ -11,6 +11,7 @@ import re
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 import xml.sax
 import functools
@@ -282,7 +283,6 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   stdout = None
   stderr = None
   stdin = None
-  file_handle = None
   cmd_result = CommandResult()
 
   mute_output = logger.getEffectiveLevel() > debug_level
@@ -292,34 +292,36 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   kill_timeout = float(kill_timeout)
 
   # Modify defaults based on parameters.
+  # Note that tempfiles must be unbuffered else attempts to read
+  # what a separate process did to that file can result in a bad
+  # view of the file.
   if log_stdout_to_file:
-    file_handle = open(log_stdout_to_file, 'w+')
-    stdout = file_handle
-    if combine_stdout_stderr:
-      stderr = file_handle
-    elif redirect_stderr or mute_output:
-      stderr = subprocess.PIPE
-  else:
-    if redirect_stdout or mute_output: stdout = subprocess.PIPE
-    if redirect_stderr or mute_output: stderr = subprocess.PIPE
-    if combine_stdout_stderr: stderr = subprocess.STDOUT
+    stdout = open(log_stdout_to_file, 'w+')
+  elif redirect_stdout or mute_output:
+    stdout = tempfile.TemporaryFile(bufsize=0)
 
-    # Work around broken buffering usage in cbuildbot and consumers via
-    # forcing the current buffer to be flushed.  Without this, any leading
-    # info/error/whatever messages describing this invocation may be left
-    # sitting in the buffer, while the invoked program than writes straight
-    # to the duped fd; end result, any header we output can land after the
-    # actual invocation.  As such, just flush to work around broken code
-    # elsewhere.
-    if stdout != subprocess.PIPE:
-      sys.stdout.flush()
-    if stderr != subprocess.PIPE:
-      sys.stderr.flush()
+  if combine_stdout_stderr:
+    stderr = subprocess.STDOUT
+  elif redirect_stderr or mute_output:
+    stderr = tempfile.TemporaryFile(bufsize=0)
+
+  # Work around broken buffering usage in cbuildbot and consumers via
+  # forcing the current buffer to be flushed.  Without this, any leading
+  # info/error/whatever messages describing this invocation may be left
+  # sitting in the buffer, while the invoked program than writes straight
+  # to the duped fd; end result, any header we output can land after the
+  # actual invocation.  As such, just flush to work around broken code
+  # elsewhere.
+  if stdout is not None:
+    sys.stdout.flush()
+  if stderr is not None:
+    sys.stderr.flush()
 
 
   # TODO(sosa): gpylint complains about redefining built-in 'input'.
   #   Can we rename this variable?
-  if input: stdin = subprocess.PIPE
+  if input:
+    stdin = subprocess.PIPE
 
   if isinstance(cmd, basestring):
     if not shell:
@@ -390,6 +392,16 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
         signal.signal(signal.SIGINT, old_sigint)
         signal.signal(signal.SIGTERM, old_sigterm)
 
+      if stdout and not log_stdout_to_file:
+        stdout.seek(0)
+        cmd_result.output = stdout.read()
+        stdout.close()
+
+      if stderr and stderr != subprocess.STDOUT:
+        stderr.seek(0)
+        cmd_result.error = stderr.read()
+        stderr.close()
+
     cmd_result.returncode = proc.returncode
 
     if not error_ok and not error_code_ok and proc.returncode:
@@ -412,9 +424,6 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     if proc is not None:
       # Ensure the process is dead.
       _KillChildProcess(proc, kill_timeout, cmd, None, None, None)
-
-    if file_handle:
-      file_handle.close()
 
   return cmd_result
 
