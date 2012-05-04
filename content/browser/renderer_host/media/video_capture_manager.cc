@@ -154,6 +154,7 @@ void VideoCaptureManager::OnOpen(int capture_session_id,
                                  const StreamDeviceInfo& device) {
   DCHECK(IsOnCaptureDeviceThread());
   DCHECK(devices_.find(capture_session_id) == devices_.end());
+  DVLOG(1) << "VideoCaptureManager::OnOpen, id " << capture_session_id;
 
   // Check if another session has already opened this device. If so, just
   // use that opened device.
@@ -186,6 +187,7 @@ void VideoCaptureManager::OnOpen(int capture_session_id,
 
 void VideoCaptureManager::OnClose(int capture_session_id) {
   DCHECK(IsOnCaptureDeviceThread());
+  DVLOG(1) << "VideoCaptureManager::OnClose, id " << capture_session_id;
 
   media::VideoCaptureDevice* video_capture_device = NULL;
   VideoCaptureDevices::iterator device_it = devices_.find(capture_session_id);
@@ -203,6 +205,14 @@ void VideoCaptureManager::OnClose(int capture_session_id) {
         controllers_.erase(cit);
       }
       delete video_capture_device;
+    } else {
+      Controllers::iterator cit = controllers_.find(video_capture_device);
+      if (cit != controllers_.end()) {
+        BrowserThread::PostTask(
+            BrowserThread::IO, FROM_HERE,
+            base::Bind(&VideoCaptureController::StopSession,
+                       cit->second->controller, capture_session_id));
+      }
     }
   }
   PostOnClosed(capture_session_id);
@@ -213,6 +223,11 @@ void VideoCaptureManager::OnStart(
     media::VideoCaptureDevice::EventHandler* video_capture_receiver) {
   DCHECK(IsOnCaptureDeviceThread());
   DCHECK(video_capture_receiver != NULL);
+  DVLOG(1) << "VideoCaptureManager::OnStart, (" << capture_params.width
+           << ", " << capture_params.height
+           << ", " << capture_params.frame_per_second
+           << ", " << capture_params.session_id
+           << ")";
 
   media::VideoCaptureDevice* video_capture_device =
       GetDeviceInternal(capture_params.session_id);
@@ -238,6 +253,7 @@ void VideoCaptureManager::OnStop(
     const media::VideoCaptureSessionId capture_session_id,
     base::Closure stopped_cb) {
   DCHECK(IsOnCaptureDeviceThread());
+  DVLOG(1) << "VideoCaptureManager::OnStop, id " << capture_session_id;
 
   VideoCaptureDevices::iterator it = devices_.find(capture_session_id);
   if (it != devices_.end()) {
@@ -318,9 +334,9 @@ void VideoCaptureManager::PostOnOpened(int capture_session_id) {
 void VideoCaptureManager::PostOnClosed(int capture_session_id) {
   DCHECK(IsOnCaptureDeviceThread());
   BrowserThread::PostTask(BrowserThread::IO,
-                            FROM_HERE,
-                            base::Bind(&VideoCaptureManager::OnClosed, this,
-                                       capture_session_id));
+                          FROM_HERE,
+                          base::Bind(&VideoCaptureManager::OnClosed, this,
+                                     capture_session_id));
 }
 
 void VideoCaptureManager::PostOnDevicesEnumerated(

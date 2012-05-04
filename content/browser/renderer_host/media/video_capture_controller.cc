@@ -27,6 +27,7 @@ struct VideoCaptureController::ControllerClient {
         event_handler(handler),
         render_process_handle(render_process),
         parameters(params),
+        session_closed(false),
         report_ready_to_delete(false) {
   }
 
@@ -42,6 +43,9 @@ struct VideoCaptureController::ControllerClient {
 
   // Buffers used by this client.
   std::list<int> buffers;
+
+  // State of capture session, controlled by VideoCaptureManager directly.
+  bool session_closed;
 
   // Record client's status when it has called StopCapture, but haven't
   // returned all buffers.
@@ -79,6 +83,13 @@ void VideoCaptureController::StartCapture(
     base::ProcessHandle render_process,
     const media::VideoCaptureParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DVLOG(1) << "VideoCaptureController::StartCapture, id " << id.device_id
+           << ", (" << params.width
+           << ", " << params.height
+           << ", " << params.frame_per_second
+           << ", " << params.session_id
+           << ")";
+
   // Signal error in case device is already in error state.
   if (state_ == video_capture::kError) {
     event_handler->OnError(id);
@@ -136,6 +147,7 @@ void VideoCaptureController::StopCapture(
     VideoCaptureControllerEventHandler* event_handler,
     bool force_buffer_return) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DVLOG(1) << "VideoCaptureController::StopCapture, id " << id.device_id;
 
   ControllerClient* client = FindClient(id, event_handler, pending_clients_);
   // If the client is still in pending queue, just remove it.
@@ -191,6 +203,19 @@ void VideoCaptureController::StopCapture(
     frame_info_available_ = false;
     state_ = video_capture::kStopping;
   }
+}
+
+void VideoCaptureController::StopSession(
+    int session_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DVLOG(1) << "VideoCaptureController::StopSession, id " << session_id;
+
+  ControllerClient* client = FindClient(session_id, pending_clients_);
+  if (!client)
+    client = FindClient(session_id, controller_clients_);
+
+  if (client)
+    client->session_closed = true;
 }
 
 void VideoCaptureController::ReturnBuffer(
@@ -376,7 +401,8 @@ void VideoCaptureController::DoIncomingCapturedFrameOnIOThread(
   if (state_ == video_capture::kStarted) {
     for (ControllerClients::iterator client_it = controller_clients_.begin();
          client_it != controller_clients_.end(); client_it++) {
-      if ((*client_it)->report_ready_to_delete)
+      if ((*client_it)->report_ready_to_delete ||
+          (*client_it)->session_closed)
         continue;
 
       (*client_it)->event_handler->OnBufferReady((*client_it)->controller_id,
@@ -480,6 +506,19 @@ VideoCaptureController::FindClient(
        client_it != clients.end(); client_it++) {
     if ((*client_it)->controller_id == id &&
         (*client_it)->event_handler == handler) {
+      return *client_it;
+    }
+  }
+  return NULL;
+}
+
+VideoCaptureController::ControllerClient*
+VideoCaptureController::FindClient(
+    int session_id,
+    const ControllerClients& clients) {
+  for (ControllerClients::const_iterator client_it = clients.begin();
+       client_it != clients.end(); client_it++) {
+    if ((*client_it)->parameters.session_id == session_id) {
       return *client_it;
     }
   }

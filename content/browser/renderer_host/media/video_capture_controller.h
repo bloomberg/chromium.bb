@@ -59,6 +59,10 @@ class VideoCaptureController
                    VideoCaptureControllerEventHandler* event_handler,
                    bool force_buffer_return);
 
+  // API called directly by VideoCaptureManager in case the device is
+  // prematurely closed.
+  void StopSession(int session_id);
+
   // Return a buffer previously given in
   // VideoCaptureControllerEventHandler::OnBufferReady.
   void ReturnBuffer(const VideoCaptureControllerID& id,
@@ -99,6 +103,10 @@ class VideoCaptureController
   ControllerClient* FindClient(
       const VideoCaptureControllerID& id,
       VideoCaptureControllerEventHandler* handler,
+      const ControllerClients& clients);
+  // Find a client of |session_id| in |clients|.
+  ControllerClient* FindClient(
+      int session_id,
       const ControllerClients& clients);
   // Decide what to do after kStopping state. Dependent on events, controller
   // can stay in kStopping state, or go to kStopped, or restart capture.

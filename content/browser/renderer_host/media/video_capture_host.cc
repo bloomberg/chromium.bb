@@ -177,6 +177,12 @@ bool VideoCaptureHost::OnMessageReceived(const IPC::Message& message,
 void VideoCaptureHost::OnStartCapture(int device_id,
                                       const media::VideoCaptureParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DVLOG(1) << "VideoCaptureHost::OnStartCapture, device_id " << device_id
+           << ", (" << params.width
+           << ", " << params.height
+           << ", " << params.frame_per_second
+           << ", " << params.session_id
+           << ")";
   VideoCaptureControllerID controller_id(device_id);
   DCHECK(entries_.find(controller_id) == entries_.end());
 
@@ -223,6 +229,8 @@ void VideoCaptureHost::DoControllerAddedOnIOThread(
 
 void VideoCaptureHost::OnStopCapture(int device_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DVLOG(1) << "VideoCaptureHost::OnStopCapture, device_id " << device_id;
+
   VideoCaptureControllerID controller_id(device_id);
   EntryMap::iterator it = entries_.find(controller_id);
 
