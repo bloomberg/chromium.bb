@@ -187,6 +187,11 @@ static void EmitAllowKillSelf(int signal,
   EmitAllowSyscallArgN(__NR_kill, 2, signal, program);
 }
 
+static void EmitAllowGettime(std::vector<struct sock_filter>* program) {
+  EmitAllowSyscall(__NR_clock_gettime, program);
+  EmitAllowSyscall(__NR_gettimeofday, program);
+}
+
 static void ApplyGPUPolicy(std::vector<struct sock_filter>* program) {
   // "Hot" syscalls go first.
   EmitAllowSyscall(__NR_read, program);
@@ -197,9 +202,10 @@ static void ApplyGPUPolicy(std::vector<struct sock_filter>* program) {
   EmitAllowSyscall(__NR_write, program);
   EmitAllowSyscall(__NR_writev, program);
   EmitAllowSyscall(__NR_gettid, program);
+  EmitAllowSyscall(__NR_sched_yield, program);  // Nvidia binary driver.
+  EmitAllowGettime(program);
 
   // Less hot syscalls.
-  EmitAllowSyscall(__NR_clock_gettime, program);
   EmitAllowSyscall(__NR_futex, program);
   EmitAllowSyscall(__NR_madvise, program);
   EmitAllowSyscall(__NR_sendmsg, program);
@@ -231,8 +237,9 @@ static void ApplyGPUPolicy(std::vector<struct sock_filter>* program) {
   EmitAllowSyscall(__NR_munlock, program);
   EmitAllowSyscall(__NR_exit, program);
   EmitAllowSyscall(__NR_exit_group, program);
-  EmitAllowSyscall(__NR_getpid, program);  // Seen in Nvidia binary driver.
-  EmitAllowSyscall(__NR_getppid, program);  // Seen in ATI binary driver.
+  EmitAllowSyscall(__NR_getpid, program);  // Nvidia binary driver.
+  EmitAllowSyscall(__NR_getppid, program);  // ATI binary driver.
+  EmitAllowSyscall(__NR_lseek, program);  // Nvidia binary driver.
   EmitAllowKillSelf(SIGTERM, program);  // GPU watchdog.
 
   // Generally, filename-based syscalls will fail with ENOENT to behave
@@ -252,7 +259,7 @@ static void ApplyFlashPolicy(std::vector<struct sock_filter>* program) {
   EmitAllowSyscall(__NR_times, program);
 
   // Less hot syscalls.
-  EmitAllowSyscall(__NR_gettimeofday, program);
+  EmitAllowGettime(program);
   EmitAllowSyscall(__NR_clone, program);
   EmitAllowSyscall(__NR_set_robust_list, program);
   EmitAllowSyscall(__NR_getuid, program);
