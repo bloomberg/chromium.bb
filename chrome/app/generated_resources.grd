@@ -12632,13 +12632,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Passphrase iteration count is too large.
       </message>
       <message name="IDS_NETWORK_ENROLLMENT_HANDLER_TITLE" desc="Title of the window for generating a new network certificate.">
-        Obtain Network Certificate
+        Obtain network certificate
       </message>
-      <message name="IDS_NETWORK_ENROLLMENT_HANDLER_EMBEDDED_ENROLL" desc="Title of the window for generating a new network certificate.">
-        The network you are attempting to connect to requires a security certificate that is not yet installed or is no longer valid.  Obtain a new certificate below to continue connecting.
+      <message name="IDS_NETWORK_ENROLLMENT_HANDLER_INSTRUCTIONS" desc="Text in the window used for generating a new network certificate.">
+        The certificate required by network "<ph name="network_name">$1<ex>My Wireless</ex></ph>" is either not installed or is no longer valid.  Please get a new certificate and try connecting again.
       </message>
-      <message name="IDS_NETWORK_ENROLLMENT_HANDLER_TAB_ENROLL" desc="Text in the window used for generating a new network certificate.">
-        The network you are attempting to connect to requires a security certificate that is not yet installed or is no longer valid.  Click the OK button to visit a website used to obtain a new certificate.  When you have obtained the new certificate, try connecting again.
+      <message name="IDS_NETWORK_ENROLLMENT_HANDLER_BUTTON" desc="Text of the accept button for generating a new network certificate.">
+        Get new certificate
       </message>
       <message name="IDS_NETWORK_PURCHASE_MORE_MESSAGE" desc="Message for purchase more link on notification when there is no cellular plan">
         Buy plan...

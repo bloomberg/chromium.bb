@@ -80,6 +80,10 @@ class InternetOptionsHandler
   void HandleVPNButtonClick(const std::string& service_path,
                             const std::string& command);
 
+  // Used to finish up async connection to the |network|.  |network| cannot
+  // be NULL.
+  void DoConnect(chromeos::Network* network);
+
   // Initiates cellular plan data refresh. The results from libcros will be
   // passed through CellularDataPlanChanged() callback method.
   // |args| will be [ service_path ]
@@ -160,6 +164,11 @@ class InternetOptionsHandler
   chromeos::NetworkLibrary* cros_;
 
   content::NotificationRegistrar registrar_;
+
+  // Weak pointer factory so we can start connections at a later time
+  // without worrying that they will actually try to happen after the lifetime
+  // of this object.
+  base::WeakPtrFactory<InternetOptionsHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InternetOptionsHandler);
 };

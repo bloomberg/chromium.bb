@@ -730,6 +730,7 @@ bool WifiConfigView::Login() {
     bool share_default = (wifi->profile_type() != PROFILE_USER);
     wifi->SetEnrollmentDelegate(
         CreateEnrollmentDelegate(GetWidget()->GetNativeWindow(),
+                                 wifi->name(),
                                  ProfileManager::GetLastUsedProfile()));
     cros->ConnectToWifiNetwork(wifi, GetShareNetwork(share_default));
     // Connection failures are responsible for updating the UI, including

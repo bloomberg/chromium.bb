@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/onc_constants.h"
 #include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
@@ -247,7 +248,8 @@ DictionaryValue* NetworkInfoDictionary::BuildDictionary() {
 
 namespace options2 {
 
-InternetOptionsHandler::InternetOptionsHandler() {
+InternetOptionsHandler::InternetOptionsHandler()
+  : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   registrar_.Add(this, chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED,
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_ENTER_PIN_ENDED,
@@ -1114,12 +1116,12 @@ void InternetOptionsHandler::HandleWifiButtonClick(
     CreateModalPopup(new chromeos::NetworkConfigView(chromeos::TYPE_WIFI));
   } else if ((wifi = cros_->FindWifiNetworkByPath(service_path))) {
     if (command == "connect") {
-      // Connect to wifi here. Open password page if appropriate.
-      if (wifi->IsPassphraseRequired()) {
-        CreateModalPopup(new chromeos::NetworkConfigView(wifi));
-      } else {
-        cros_->ConnectToWifiNetwork(wifi);
-      }
+      wifi->SetEnrollmentDelegate(
+          chromeos::CreateEnrollmentDelegate(GetNativeWindow(), wifi->name(),
+              ProfileManager::GetLastUsedProfile()));
+      wifi->AttemptConnection(base::Bind(&InternetOptionsHandler::DoConnect,
+                                         weak_factory_.GetWeakPtr(),
+                                         wifi));
     } else if (command == "disconnect") {
       cros_->DisconnectFromNetwork(wifi);
     } else if (command == "options") {
@@ -1159,16 +1161,43 @@ void InternetOptionsHandler::HandleVPNButtonClick(
     CreateModalPopup(new chromeos::NetworkConfigView(chromeos::TYPE_VPN));
   } else if ((network = cros_->FindVirtualNetworkByPath(service_path))) {
     if (command == "connect") {
-      // Connect to VPN here. Open password page if appropriate.
-      if (network->NeedMoreInfoToConnect()) {
-        CreateModalPopup(new chromeos::NetworkConfigView(network));
-      } else {
-        cros_->ConnectToVirtualNetwork(network);
-      }
+      network->SetEnrollmentDelegate(
+          chromeos::CreateEnrollmentDelegate(
+              GetNativeWindow(),
+              network->name(),
+              ProfileManager::GetLastUsedProfile()));
+      network->AttemptConnection(base::Bind(&InternetOptionsHandler::DoConnect,
+                                            weak_factory_.GetWeakPtr(),
+                                            network));
     } else if (command == "disconnect") {
       cros_->DisconnectFromNetwork(network);
     } else if (command == "options") {
       PopulateDictionaryDetails(network);
+    }
+  }
+}
+
+void InternetOptionsHandler::DoConnect(chromeos::Network* network) {
+  if (network->type() == chromeos::TYPE_VPN) {
+    chromeos::VirtualNetwork* vpn =
+        static_cast<chromeos::VirtualNetwork*>(network);
+    if (vpn->NeedMoreInfoToConnect()) {
+      CreateModalPopup(new chromeos::NetworkConfigView(network));
+    } else {
+      cros_->ConnectToVirtualNetwork(vpn);
+      // Connection failures are responsible for updating the UI, including
+      // reopening dialogs.
+    }
+  }
+  if (network->type() == chromeos::TYPE_WIFI) {
+    chromeos::WifiNetwork* wifi = static_cast<chromeos::WifiNetwork*>(network);
+    if (wifi->IsPassphraseRequired()) {
+      // Show the connection UI if we require a passphrase.
+      CreateModalPopup(new chromeos::NetworkConfigView(wifi));
+    } else {
+      cros_->ConnectToWifiNetwork(wifi);
+      // Connection failures are responsible for updating the UI, including
+      // reopening dialogs.
     }
   }
 }

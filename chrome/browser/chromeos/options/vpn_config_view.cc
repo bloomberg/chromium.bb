@@ -352,6 +352,7 @@ bool VPNConfigView::Login() {
     }
     vpn->SetEnrollmentDelegate(
         CreateEnrollmentDelegate(GetWidget()->GetNativeWindow(),
+                                 vpn->name(),
                                  ProfileManager::GetLastUsedProfile()));
     cros->ConnectToVirtualNetwork(vpn);
   }

@@ -19,6 +19,8 @@ namespace chromeos {
 class EnrollmentDelegate;
 
 EnrollmentDelegate* CreateEnrollmentDelegate(gfx::NativeWindow owning_window,
+                                             const std::string& network_name,
+
                                              Profile* profile);
 
 }  // namespace chromeos
