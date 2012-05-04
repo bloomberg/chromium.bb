@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ GenericInfoView::GenericInfoView(
 }
 
 void GenericInfoView::SetNameByStringId(int row, int name_string_id) {
-  SetName(row, UTF16ToWide(l10n_util::GetStringUTF16(name_string_id)));
+  SetName(row, l10n_util::GetStringUTF16(name_string_id));
 }
 
 void GenericInfoView::SetName(int row, const string16& name) {

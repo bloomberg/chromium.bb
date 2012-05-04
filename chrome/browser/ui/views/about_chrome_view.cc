@@ -666,14 +666,13 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
     case UPGRADE_STARTED:
       content::RecordAction(UserMetricsAction("Upgrade_Started"));
       show_throbber = true;
-      update_label_.SetText(
-          UTF16ToWide(l10n_util::GetStringUTF16(IDS_UPGRADE_STARTED)));
+      update_label_.SetText(l10n_util::GetStringUTF16(IDS_UPGRADE_STARTED));
       break;
     case UPGRADE_CHECK_STARTED:
       content::RecordAction(UserMetricsAction("UpgradeCheck_Started"));
       show_throbber = true;
       update_label_.SetText(
-          UTF16ToWide(l10n_util::GetStringUTF16(IDS_UPGRADE_CHECK_STARTED)));
+          l10n_util::GetStringUTF16(IDS_UPGRADE_CHECK_STARTED));
       break;
     case UPGRADE_IS_AVAILABLE:
       content::RecordAction(
@@ -731,9 +730,8 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       else
         content::RecordAction(UserMetricsAction("UpgradeCheck_Upgraded"));
       restart_button_visible_ = true;
-      const string16& update_string = UTF16ToWide(
+      update_label_.SetText(
           l10n_util::GetStringUTF16(IDS_OLD_UPGRADE_SUCCESSFUL_RELAUNCH));
-      update_label_.SetText(update_string);
       show_success_indicator = true;
       break;
     }

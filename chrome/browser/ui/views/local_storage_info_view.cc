@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ LocalStorageInfoView::~LocalStorageInfoView() {
 void LocalStorageInfoView::SetLocalStorageInfo(
     const BrowsingDataLocalStorageHelper::LocalStorageInfo&
     local_storage_info) {
-  origin_value_field_->SetText(UTF8ToWide(local_storage_info.origin));
+  origin_value_field_->SetText(UTF8ToUTF16(local_storage_info.origin));
   size_value_field_->SetText(ui::FormatBytes(local_storage_info.size));
   last_modified_value_field_->SetText(
       base::TimeFormatFriendlyDateAndTime(local_storage_info.last_modified));
@@ -49,8 +49,8 @@ void LocalStorageInfoView::EnableLocalStorageDisplay(bool enabled) {
 }
 
 void LocalStorageInfoView::ClearLocalStorageDisplay() {
-  std::wstring no_cookie_string =
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NONESELECTED));
+  const string16 no_cookie_string =
+      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NONESELECTED);
   origin_value_field_->SetText(no_cookie_string);
   size_value_field_->SetText(no_cookie_string);
   last_modified_value_field_->SetText(no_cookie_string);

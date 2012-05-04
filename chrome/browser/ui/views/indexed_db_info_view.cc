@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ IndexedDBInfoView::~IndexedDBInfoView() {
 
 void IndexedDBInfoView::SetIndexedDBInfo(
     const BrowsingDataIndexedDBHelper::IndexedDBInfo& indexed_db_info) {
-  origin_value_field_->SetText(UTF8ToWide(indexed_db_info.origin.spec()));
+  origin_value_field_->SetText(UTF8ToUTF16(indexed_db_info.origin.spec()));
   size_value_field_->SetText(ui::FormatBytes(indexed_db_info.size));
   last_modified_value_field_->SetText(
       base::TimeFormatFriendlyDateAndTime(indexed_db_info.last_modified));
@@ -48,8 +48,8 @@ void IndexedDBInfoView::EnableIndexedDBDisplay(bool enabled) {
 }
 
 void IndexedDBInfoView::ClearIndexedDBDisplay() {
-  std::wstring no_cookie_string =
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NONESELECTED));
+  const string16 no_cookie_string =
+      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NONESELECTED);
   origin_value_field_->SetText(no_cookie_string);
   size_value_field_->SetText(no_cookie_string);
   last_modified_value_field_->SetText(no_cookie_string);

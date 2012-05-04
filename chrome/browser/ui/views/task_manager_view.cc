@@ -354,7 +354,7 @@ class TaskManagerView : public views::ButtonListener,
   bool highlight_background_resources_;
 
   // We need to own the text of the menu, the Windows API does not copy it.
-  std::wstring always_on_top_menu_text_;
+  string16 always_on_top_menu_text_;
 
   // An open Task manager window. There can only be one open at a time. This
   // is reset to NULL when the window is closed.
@@ -460,10 +460,10 @@ void TaskManagerView::Init() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kPurgeMemoryButton)) {
     purge_memory_button_ = new views::NativeTextButton(this,
-        UTF16ToWide(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_PURGE_MEMORY)));
+        l10n_util::GetStringUTF16(IDS_TASK_MANAGER_PURGE_MEMORY));
   }
   kill_button_ = new views::NativeTextButton(
-      this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL)));
+      this, l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
   kill_button_->AddAccelerator(ui::Accelerator(ui::VKEY_E, false, false,
                                                false));
   kill_button_->SetAccessibleKeyboardShortcut(L"E");
@@ -747,8 +747,7 @@ void TaskManagerView::ActivateFocusedTab() {
 void TaskManagerView::AddAlwaysOnTopSystemMenuItem() {
 #if defined(OS_WIN) && !defined(USE_AURA)
   // The Win32 API requires that we own the text.
-  always_on_top_menu_text_ =
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ALWAYS_ON_TOP));
+  always_on_top_menu_text_ = l10n_util::GetStringUTF16(IDS_ALWAYS_ON_TOP);
 
   // Let's insert a menu to the window.
   HMENU system_menu = ::GetSystemMenu(GetWidget()->GetNativeWindow(), FALSE);

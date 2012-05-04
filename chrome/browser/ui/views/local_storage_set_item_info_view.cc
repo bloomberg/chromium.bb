@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,7 @@ LocalStorageSetItemInfoView::~LocalStorageSetItemInfoView() {
 void LocalStorageSetItemInfoView::SetFields(const std::string& host,
                                             const string16& key,
                                             const string16& value) {
-  host_value_field_->SetText(UTF8ToWide(host));
+  host_value_field_->SetText(UTF8ToUTF16(host));
   key_value_field_->SetText(key);
   value_value_field_->SetText(value);
   EnableLocalStorageDisplay(true);
@@ -46,8 +46,8 @@ void LocalStorageSetItemInfoView::EnableLocalStorageDisplay(bool enabled) {
 }
 
 void LocalStorageSetItemInfoView::ClearLocalStorageDisplay() {
-  std::wstring no_cookie_string =
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NONESELECTED));
+  const string16 no_cookie_string =
+      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NONESELECTED);
   host_value_field_->SetText(no_cookie_string);
   key_value_field_->SetText(no_cookie_string);
   value_value_field_->SetText(no_cookie_string);
@@ -57,8 +57,9 @@ void LocalStorageSetItemInfoView::ClearLocalStorageDisplay() {
 ///////////////////////////////////////////////////////////////////////////////
 // LocalStorageSetItemInfoView, views::View overrides:
 
-void LocalStorageSetItemInfoView::ViewHierarchyChanged(
-    bool is_add, views::View* parent, views::View* child) {
+void LocalStorageSetItemInfoView::ViewHierarchyChanged(bool is_add,
+                                                       views::View* parent,
+                                                       views::View* child) {
   if (is_add && child == this)
     Init();
 }
