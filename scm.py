@@ -621,13 +621,15 @@ class SVN(object):
     return SVN.CaptureLocalInfo([], cwd).get('Revision')
 
   @staticmethod
-  def CaptureStatus(files, cwd):
+  def CaptureStatus(files, cwd, no_ignore=False):
     """Returns the svn 1.5 svn status emulated output.
 
     @files can be a string (one file) or a list of files.
 
     Returns an array of (status, file) tuples."""
     command = ["status", "--xml"]
+    if no_ignore:
+      command.append('--no-ignore')
     if not files:
       pass
     elif isinstance(files, basestring):
@@ -1007,7 +1009,7 @@ class SVN(object):
     return (True, cls.current_version)
 
   @staticmethod
-  def Revert(cwd, callback=None, ignore_externals=False):
+  def Revert(cwd, callback=None, ignore_externals=False, no_ignore=False):
     """Reverts all svn modifications in cwd, including properties.
 
     Deletes any modified files or directory.
@@ -1015,7 +1017,7 @@ class SVN(object):
     A "svn update --revision BASE" call is required after to revive deleted
     files.
     """
-    for file_status in SVN.CaptureStatus(None, cwd):
+    for file_status in SVN.CaptureStatus(None, cwd, no_ignore=no_ignore):
       file_path = os.path.join(cwd, file_status[1])
       if (ignore_externals and
           file_status[0][0] == 'X' and

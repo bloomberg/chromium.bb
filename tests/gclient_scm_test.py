@@ -239,7 +239,8 @@ class SVNWrapperTestCase(BaseTestCase):
     options = self.Options(verbose=True)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.isdir(join(self.base_path, '.svn')).AndReturn(True)
-    gclient_scm.scm.SVN.CaptureStatus(None, self.base_path).AndReturn([])
+    gclient_scm.scm.SVN.CaptureStatus(
+        None, self.base_path, no_ignore=False).AndReturn([])
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
@@ -260,7 +261,8 @@ class SVNWrapperTestCase(BaseTestCase):
     items = [
       ('~      ', 'a'),
     ]
-    gclient_scm.scm.SVN.CaptureStatus(None, self.base_path).AndReturn(items)
+    gclient_scm.scm.SVN.CaptureStatus(
+        None, self.base_path, no_ignore=False).AndReturn(items)
     file_path = join(self.base_path, 'a')
     gclient_scm.os.path.exists(file_path).AndReturn(True)
     gclient_scm.os.path.isfile(file_path).AndReturn(False)
@@ -289,7 +291,8 @@ class SVNWrapperTestCase(BaseTestCase):
     items = [
       ('~      ', '.'),
     ]
-    gclient_scm.scm.SVN.CaptureStatus(None, self.base_path).AndReturn(items)
+    gclient_scm.scm.SVN.CaptureStatus(
+        None, self.base_path, no_ignore=False).AndReturn(items)
     # RemoveDirectory() doesn't work on path ending with '.', like 'foo/.'.
     file_path = self.base_path
     gclient_scm.os.path.exists(file_path).AndReturn(True)

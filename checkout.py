@@ -393,7 +393,7 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
       self._check_call_svn(
           ['checkout', self.svn_url, self.project_path] + flags, cwd=None)
     else:
-      scm.SVN.Revert(self.project_path)
+      scm.SVN.Revert(self.project_path, no_ignore=True)
       # Revive files that were deleted in scm.SVN.Revert().
       self._check_call_svn(['update', '--force'] + flags)
     return self._get_revision()
