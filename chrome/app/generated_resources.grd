@@ -2550,9 +2550,17 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
          desc="Message shown to the user to validate the download when the download content is classified as uncommon by safebrowsing.">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is not commonly downloaded and could be dangerous.
       </message>
+      <message name="IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE"
+               desc="Title for the confirmation dialog asking whether the user really meant to keep a dangerous download">
+        Confirm Download
+      </message>
       <message name="IDS_PROMPT_CONFIRM_KEEP_DANGEROUS_DOWNLOAD"
-               desc="Text for the native UI prompt to confirm that a user really meant to keep a dangerous download">
+               desc="Prompt text for the confirmation dialog asking whether the user really meant to keep a dangerous download">
         This might hurt. Don't say we didn't warn you...
+      </message>
+      <message name="IDS_CONFIRM_DOWNLOAD_AGAIN"
+               desc="Text for the button used to confirm the dialog asking whether the user really meant to keep dangerous download.">
+        Keep anyway
       </message>
       <message name="IDS_CONFIRM_DOWNLOAD"
                desc="Text for the button used to validate the downloading of a dangerous download.">

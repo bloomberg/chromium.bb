@@ -102,7 +102,7 @@ void DownloadDangerPromptImpl::OnDownloadOpened(
 }
 
 string16 DownloadDangerPromptImpl::GetTitle() {
-  return string16();
+  return l10n_util::GetStringUTF16(IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE);
 }
 
 string16 DownloadDangerPromptImpl::GetMessage() {
@@ -110,7 +110,7 @@ string16 DownloadDangerPromptImpl::GetMessage() {
 }
 
 string16 DownloadDangerPromptImpl::GetAcceptButtonTitle() {
-  return l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD);
+  return l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD_AGAIN);
 }
 
 void DownloadDangerPromptImpl::OnAccepted() {
