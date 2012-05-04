@@ -430,7 +430,7 @@ class ChromiumEnv : public Env {
     }
 
     virtual void Logv(const char* format, va_list ap) {
-      VLOG(5) << "LevelDB: " << filename_ << " " << StringPrintf(format, ap);
+      VLOG(5) << "LevelDB: " << filename_ << " " << base::StringPrintV(format, ap);
     }
 
    private:
