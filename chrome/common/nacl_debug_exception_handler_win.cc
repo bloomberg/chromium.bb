@@ -28,7 +28,8 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
     // In the Windows API, the set of processes being debugged is
     // thread-local, so we have to attach to the process (using
     // DebugActiveProcess()) on the same thread on which
-    // NaClDebugLoop() receives debug events for the process.
+    // NaClDebugExceptionHandlerRun() receives debug events for the
+    // process.
     bool attached = false;
     int pid = GetProcessId(nacl_process_);
     if (pid == 0) {
