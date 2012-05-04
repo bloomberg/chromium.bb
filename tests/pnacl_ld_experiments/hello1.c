@@ -48,8 +48,8 @@ extern int fortytwo();
  */
 #define EXPORT __attribute__ ((visibility("default"),externally_visible))
 /* ====================================================================== */
-int mystrlen(const char* s) {
-   int count = 0;
+size_t mystrlen(const char* s) {
+   unsigned int count = 0;
    while (*s++) ++count;
    return count;
 }
@@ -73,9 +73,23 @@ __thread int tdata1 = 1;
 __thread int tdata2 = 3;
 
 
-int mywrite(int fd, const void* buf, int n)  {
+ssize_t mywrite(int fd, const void* buf, size_t n)  {
   return NACL_SYSCALL(write)(fd, buf, n);
 }
+
+/* This is needed by nacl_irt until we have newlib available */
+ssize_t write(int fd, const void* buf, size_t n)  {
+  return mywrite(fd, buf, n);
+}
+
+void _exit(int n)  {
+  exit(n);
+}
+
+size_t strlen(const char* s) {
+  return mystrlen(s);
+}
+
 
 #define myprint(s) mywrite(1, s, mystrlen(s))
 
@@ -132,27 +146,7 @@ int main(int argc, char** argv, char** envp) {
   myprint(buffer);
   myprint("\n");
 
+  myprint("exit\n");
   return 0;
 }
 
-char message_init[] = "init\n";
-
-int __libc_csu_init (int argc, char **argv, char **envp) {
-  mywrite(1, message_init, sizeof(message_init));
-  return 0;
-}
-
-char message_fini[] = "fini\n";
-void __libc_csu_fini (void) {
-  mywrite(1, message_fini, sizeof(message_fini));
-}
-
-void __libc_start_main (int (*main) (int argc, char **argv, char **envp),
-                        int argc, char **argv,
-                        int (*init) (int argc, char **argv, char **envp),
-                        void (*fini) (void),
-                        void (*rtld_fini) (void),
-                        void *stack_end) {
-
-  exit(main(0, 0, 0));
-}
