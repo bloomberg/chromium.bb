@@ -4920,6 +4920,17 @@ getTable (const char *tableList)
   return NULL;
 }
 
+char *
+getLastTableList ()
+{
+  if (lastTrans == NULL)
+    return NULL;
+  strncpy (scratchBuf, lastTrans->tableList, 
+    lastTrans->tableListLength);
+  scratchBuf[lastTrans->tableListLength] = 0;
+  return scratchBuf;
+}
+
 void *EXPORT_CALL
 lou_getTable (const char *tableList)
 {

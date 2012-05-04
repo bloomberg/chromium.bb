@@ -548,6 +548,7 @@ extern "C"
   int other_charToDots (const char *trantab, const widechar
 			* inbuf, widechar * outbuf, int length, int mode);
 
+  char * getLastTableList();
   void debugHook ();
 /* Can be inserted in code to be ulsed as a breakpoint in gdb */
 

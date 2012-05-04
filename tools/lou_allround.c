@@ -256,6 +256,7 @@ getCommands (void)
 int
 main (int argc, char **argv)
 {
+  char *charbuf;
   widechar inbuf[BUFSIZE];
   widechar transbuf[BUFSIZE];
   widechar outbuf[BUFSIZE];
@@ -324,16 +325,20 @@ main (int argc, char **argv)
 	      break;
 	    transbuf[translen] = 0;
 	    printf ("Translation:\n");
-	    printf ("%s", showString (transbuf, translen));
-	    printf ("\n");
+	    charbuf = showString (transbuf, translen);
+	    k = strlen (charbuf) - 1;
+	    charbuf[k] = 0;
+	    printf ("%s\n", &charbuf[1]);
 	    if (showSizes)
 	      printf ("input length = %d; output length = %d\n", inlen,
 		      translen);
 	    lou_backTranslateString (table, transbuf, &translen, outbuf,
 				     &outlen, NULL, NULL, 0);
 	    printf ("Back-translation:\n");
-	    printf ("%s", showString (outbuf, outlen));
-	    printf ("\n");
+	    charbuf = showString (outbuf, outlen);
+	    k = strlen (charbuf) - 1;
+	    charbuf[k] = 0;
+	    printf ("%s\n", &charbuf[1]);
 	    if (showSizes)
 	      printf ("input length = %d; output length = %d.\n", translen,
 		      outlen);
@@ -382,8 +387,10 @@ main (int argc, char **argv)
 		else
 		  {
 		    printf ("Translation:\n");
-		    printf ("%s", showString (transbuf, translen));
-		    printf ("\n");
+		    charbuf = showString (transbuf, translen);
+		    k = strlen (charbuf) - 1;
+		    charbuf[k] = 0;
+		    printf ("%s\n", &charbuf[1]);
 		    if (showSizes)
 		      printf ("input length = %d; output length = %d\n",
 			      inlen, translen);
@@ -414,8 +421,10 @@ main (int argc, char **argv)
 					&inputPos[0], &cursorPos, mode))
 		  break;
 		printf ("Back-translation:\n");
-		printf ("%s", showString (outbuf, outlen));
-		printf ("\n");
+		charbuf = showString (outbuf, outlen);		k = 
+		strlen (charbuf) - 1;
+		charbuf[k] = 0;
+		printf ("%s\n", &charbuf[1]);
 		if (showSizes)
 		  printf ("input length = %d; output length = %d\n",
 			  translen, outlen);
