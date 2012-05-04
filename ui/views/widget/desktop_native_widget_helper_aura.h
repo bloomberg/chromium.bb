@@ -56,6 +56,11 @@ class VIEWS_EXPORT DesktopNativeWidgetHelperAura
   // Optionally, a RootWindow that we attach ourselves to.
   scoped_ptr<aura::RootWindow> root_window_;
 
+  // We want some windows (omnibox, status bar) to have their own
+  // NativeWidgetAura, but still act as if they're screen bounded toplevel
+  // windows.
+  bool is_embedded_window_;
+
 #if defined(OS_WIN)
   scoped_ptr<ui::HWNDSubclass> subclass_;
 #endif

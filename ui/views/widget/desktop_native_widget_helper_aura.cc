@@ -20,13 +20,27 @@ namespace views {
 
 DesktopNativeWidgetHelperAura::DesktopNativeWidgetHelperAura(
     NativeWidgetAura* widget)
-    : widget_(widget) {
+    : widget_(widget),
+      is_embedded_window_(false) {
 }
 
 DesktopNativeWidgetHelperAura::~DesktopNativeWidgetHelperAura() {}
 
 void DesktopNativeWidgetHelperAura::PreInitialize(
     const Widget::InitParams& params) {
+  // We don't want the status bubble or the omnibox to get their own root
+  // window on the desktop; on Linux
+  //
+  // TODO(erg): This doesn't map perfectly to what I want to do. TYPE_POPUP is
+  // used for lots of stuff, like dragged tabs, and I only want this to trigger
+  // for the status bubble and the omnibox.
+  if (params.type == Widget::InitParams::TYPE_POPUP) {
+    is_embedded_window_ = true;
+    return;
+  } else if (params.type == Widget::InitParams::TYPE_CONTROL) {
+    return;
+  }
+
   gfx::Rect bounds = params.bounds;
   if (bounds.IsEmpty()) {
     // We must pass some non-zero value when we initialize a RootWindow. This
@@ -70,6 +84,15 @@ gfx::Rect DesktopNativeWidgetHelperAura::ModifyAndSetBounds(
     root_window_->SetHostBounds(out_bounds);
     out_bounds.set_x(0);
     out_bounds.set_y(0);
+  } else if (is_embedded_window_) {
+    // The caller expects windows we consider "embedded" to be placed in the
+    // screen coordinate system. So we need to offset the root window's
+    // position (which is in screen coordinates) from these bounds.
+    aura::RootWindow* root =
+        widget_->GetNativeWindow()->GetRootWindow()->GetRootWindow();
+    gfx::Point point = root->GetHostOrigin();
+    out_bounds.set_x(out_bounds.x() - point.x());
+    out_bounds.set_y(out_bounds.y() - point.y());
   }
 
   return out_bounds;
@@ -78,8 +101,13 @@ gfx::Rect DesktopNativeWidgetHelperAura::ModifyAndSetBounds(
 gfx::Rect DesktopNativeWidgetHelperAura::ChangeRootWindowBoundsToScreenBounds(
     const gfx::Rect& bounds) {
   gfx::Rect out_bounds = bounds;
-  if (root_window_.get())
+  if (root_window_.get()) {
     out_bounds.Offset(root_window_->GetHostOrigin());
+  } else if (is_embedded_window_) {
+    aura::RootWindow* root =
+        widget_->GetNativeWindow()->GetRootWindow()->GetRootWindow();
+    out_bounds.Offset(root->GetHostOrigin());
+  }
   return out_bounds;
 }
 
