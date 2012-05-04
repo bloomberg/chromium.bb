@@ -1250,6 +1250,20 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   master_prefs_.reset(new first_run::MasterPrefs);
   browser_init_.reset(new BrowserInit);
 
+#if !defined(OS_ANDROID)
+  // Convert active labs into switches. This needs to be done before
+  // ResourceBundle::InitSharedInstanceWithLocale as some loaded resources are
+  // affected by experiment flags (--touch-optimized-ui in particular). Not
+  // needed on Android as there aren't experimental flags.
+  about_flags::ConvertFlagsToSwitches(local_state_,
+                                      CommandLine::ForCurrentProcess());
+#endif
+  local_state_->UpdateCommandLinePrefStore(CommandLine::ForCurrentProcess());
+
+  // Reset the command line in the crash report details, since we may have
+  // just changed it to include experiments.
+  child_process_logging::SetCommandLine(CommandLine::ForCurrentProcess());
+
   // If we're running tests (ui_task is non-null), then the ResourceBundle
   // has already been initialized.
   if (parameters().ui_task) {
@@ -1337,18 +1351,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // TODO(viettrungluu): why don't we run this earlier?
   if (!parsed_command_line().HasSwitch(switches::kNoErrorDialogs))
     WarnAboutMinimumSystemRequirements();
-
-#if !defined(OS_ANDROID)
-  // Convert active labs into switches. Modifies the current command line. Not
-  // needed on Android as there aren't experimental flags.
-  about_flags::ConvertFlagsToSwitches(local_state_,
-                                      CommandLine::ForCurrentProcess());
-#endif
-  local_state_->UpdateCommandLinePrefStore(CommandLine::ForCurrentProcess());
-
-  // Reset the command line in the crash report details, since we may have
-  // just changed it to include experiments.
-  child_process_logging::SetCommandLine(CommandLine::ForCurrentProcess());
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_MACOSX)
   // Set the product channel for crash reports.
