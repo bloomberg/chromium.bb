@@ -4,7 +4,7 @@
 
 [
   {
-    "namespace": "input.ime",
+    "namespace": "experimental.input.ime",
     "platforms": ["chromeos"],
     "types": [
       {
