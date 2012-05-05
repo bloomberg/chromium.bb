@@ -366,7 +366,6 @@
         'monitor/multi_monitor_manager_unittest.cc',
         'screensaver/screensaver_view_unittest.cc',
         'shell_unittest.cc',
-        'system/tray/system_tray_unittest.cc',
         'test/ash_test_base.cc',
         'test/ash_test_base.h',
         'test/ash_unittests.cc',
