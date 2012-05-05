@@ -216,9 +216,6 @@
       # Fails on chrome-mac-10_7-qa only: crbug.com/124886
       '-fullscreen_mouselock.FullscreenMouselockTest.testPrefsForFullscreenExit',
       '-fullscreen_mouselock.FullscreenMouselockTest.testNoMouseLockWhenCancelFS',
-      # crbug.com/119110
-      '-https.SSLTest.testSSLCertAuthorityOK',
-      '-https.SSLTest.testSSLCertOK',
       # crbug.com/114244
       '-imports.ImportsTest.testImportSafariDataTwice',
       # Test fails due to keychain popup: crbug.com/124913
@@ -289,9 +286,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/119110
-      '-https.SSLTest.testSSLCertAuthorityOK',
-      '-https.SSLTest.testSSLCertOK',
       # crbug.com/85310
       '-instant',
       # crbug.com/91033
