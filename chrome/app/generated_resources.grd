@@ -15125,7 +15125,7 @@ Battery full
         Open address in new tab
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_OPEN_FILE_MANAGER" desc="The text in the keyboard overlay to explain the shortcut.">
-        Open file manager
+        Open Files app
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_PAGE_DOWN" desc="The text in the keyboard overlay to explain the shortcut.">
         Page Down

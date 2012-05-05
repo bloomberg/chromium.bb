@@ -1,7 +1,7 @@
 {
   // chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/
   "key": "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQDlhpGghtnNJ7pluQN0RDwbUxwwi99oM35ZEaFYvxPLrf0fIEC18cfDdJi6u4aJ+UoSpgzK731L0P/k4LvK2Rz9kVKOy0+IvuRrWkT7lbrLfA1UEBh02OA1AAshjmyRg4IxCqgl8ia8XWq6HKegS1y1KXZYGgb4qp7Bh9VC4cIzswIBIw==",
-  "name": "File Manager",
+  "name": "Files",
   "version": "0.1",
   "description": "File Manager",
   "incognito" : "split",
