@@ -122,19 +122,19 @@ $(OBJD)/validator-test.o: validator-test.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OBJD)/validator-x86_64.o: $(OBJD)/validator-x86_64.c
-	if [ -e nacl_irt_x86_32.nexe ] && [-e nacl_irt_x86_64.nexe ]; then \
+	if [ -e nacl_irt_x86_32.nexe ] && [ -e nacl_irt_x86_64.nexe ]; then \
 	  $(CC) $(CFLAGS) -I. -I$(OBJD) -fprofile-generate -c $< -o $@-pf && \
 	  $(CC) $(CFLAGS) -I. -I$(OBJD) -fprofile-generate -c \
-	    $(OBJD)/validator-x86_64.c -o $(OBJD)/validator-x86_64.o-pf && \
+	    $(OBJD)/validator-x86_32.c -o $(OBJD)/validator-x86_32.o-pf && \
 	  $(CC) $(CFLAGS) -fprofile-generate $@-pf \
-	    $(OBJD)/validator-x86_64.o-pf validator-test.c \
+	    $(OBJD)/validator-x86_32.o-pf validator-test.c \
 	    -o $(OBJD)/ncval_train && \
 	  $(OBJD)/ncval_train nacl_irt_x86_32.nexe && \
 	  $(OBJD)/ncval_train nacl_irt_x86_64.nexe && \
 	  rm validator-test.gcda && \
 	  $(CC) $(CFLAGS) -I. -I$(OBJD) -fprofile-use -c $< -o $@ && \
 	  $(CC) $(CFLAGS) -I. -I$(OBJD) -fprofile-use -c \
-	    $(OBJD)/validator-x86_64.c -o $(OBJD)/validator-x86_64.o ; \
+	    $(OBJD)/validator-x86_32.c -o $(OBJD)/validator-x86_32.o ; \
 	else \
 	  $(CC) $(CFLAGS) -I. -I$(OBJD) -c $< -o $@ ; \
 	fi

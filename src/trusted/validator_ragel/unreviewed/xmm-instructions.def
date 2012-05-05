@@ -7,1154 +7,1154 @@
 ################################################################################
 # File format: see general-purpose-instructions.def
 ######## ADDPD/VADDPD ##########################################################
-addpd Wpd Vpd, 0x66 0x0f 0x58, Fn0000_0001_EDX_SSE2
-vaddpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x58, Fn0000_0001_ECX_AVX
+addpd Wpd Vpd, 0x66 0x0f 0x58, CPUFeature_SSE2
+vaddpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x58, CPUFeature_AVX
 ######## ADDPS/VADDPS ##########################################################
-addps Wps Vps, 0xf 0x58, Fn0000_0001_EDX_SSE1
-vaddps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x58, Fn0000_0001_ECX_AVX
+addps Wps Vps, 0xf 0x58, CPUFeature_SSE
+vaddps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x58, CPUFeature_AVX
 ######## ADDSD/VADDSD ##########################################################
-addsd Wsd Vsd, 0xf2 0x0f 0x58, Fn0000_0001_EDX_SSE2
-vaddsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x58, Fn0000_0001_ECX_AVX
+addsd Wsd Vsd, 0xf2 0x0f 0x58, CPUFeature_SSE2
+vaddsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x58, CPUFeature_AVX
 ######## ADDSS/VADDSS ##########################################################
-addss Wss Vss, 0xf3 0x0f 0x58, Fn0000_0001_EDX_SSE1
-vaddss Wss Hss Vss, 0xc4 RXB.00001 x.src.x.10 0x58, Fn0000_0001_ECX_AVX
+addss Wss Vss, 0xf3 0x0f 0x58, CPUFeature_SSE
+vaddss Wss Hss Vss, 0xc4 RXB.00001 x.src.x.10 0x58, CPUFeature_AVX
 ######## ADDSUBPD/VADDSUBPD ####################################################
-addsubpd Wpd Vpd, 0x66 0x0f 0xd0, Fn0000_0001_EDX_SSE2
-vaddsubpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0xd0, Fn0000_0001_ECX_AVX
+addsubpd Wpd Vpd, 0x66 0x0f 0xd0, CPUFeature_SSE2
+vaddsubpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0xd0, CPUFeature_AVX
 ######## ADDSUBPS/VADDSUBPS ####################################################
-addsubps Wps Vps, 0xf2 0x0f 0xd0, Fn0000_0001_EDX_SSE1
-vaddsubps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.11 0xd0, Fn0000_0001_ECX_AVX
+addsubps Wps Vps, 0xf2 0x0f 0xd0, CPUFeature_SSE
+vaddsubps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.11 0xd0, CPUFeature_AVX
 ######## AESDEC/VAESDEC ########################################################
-aesdec Wo Vo, 0x66 0x0f 0x38 0xde, Fn0000_0001_ECX_AES
-vaesdec Wo Ho Vo, 0xc4 RXB.00010 x.src.0.01 0xde, Fn0000_0001_ECX_AESAVX
+aesdec Wo Vo, 0x66 0x0f 0x38 0xde, CPUFeature_AES
+vaesdec Wo Ho Vo, 0xc4 RXB.00010 x.src.0.01 0xde, CPUFeature_AESAVX
 ######## AESDECLAST/VAESDECLAST ################################################
-aesdeclast Wo Vo, 0x66 0x0f 0x38 0xdf, Fn0000_0001_ECX_AES
-vaesdeclast Wo Ho Vo, 0xc4 RXB.00010 x.src.0.01 0xdf, Fn0000_0001_ECX_AESAVX
+aesdeclast Wo Vo, 0x66 0x0f 0x38 0xdf, CPUFeature_AES
+vaesdeclast Wo Ho Vo, 0xc4 RXB.00010 x.src.0.01 0xdf, CPUFeature_AESAVX
 ######## AESENC/VAESENC ########################################################
-aesenc Wo Vo, 0x66 0x0f 0x38 0xdc, Fn0000_0001_ECX_AES
-vaesenc Wo Ho Vo, 0xc4 RXB.00010 x.src.0.01 0xdc, Fn0000_0001_ECX_AESAVX
+aesenc Wo Vo, 0x66 0x0f 0x38 0xdc, CPUFeature_AES
+vaesenc Wo Ho Vo, 0xc4 RXB.00010 x.src.0.01 0xdc, CPUFeature_AESAVX
 ######## AESENCLAST/VAESENCLAST ################################################
-aesenclast Wo Vo, 0x66 0x0f 0x38 0xdd, Fn0000_0001_ECX_AES
-vaesenclast Wo Ho Vo, 0xc4 RXB.00010 x.src.0.01 0xdd, Fn0000_0001_ECX_AESAVX
+aesenclast Wo Vo, 0x66 0x0f 0x38 0xdd, CPUFeature_AES
+vaesenclast Wo Ho Vo, 0xc4 RXB.00010 x.src.0.01 0xdd, CPUFeature_AESAVX
 ######## AESIMC/VAESIMC ########################################################
-aesimc Wo Vo, 0x66 0x0f 0x38 0xdb, Fn0000_0001_ECX_AES
-vaesimc Wo Vo, 0xc4 RXB.00010 x.src.0.01 0xdb, Fn0000_0001_ECX_AESAVX
+aesimc Wo Vo, 0x66 0x0f 0x38 0xdb, CPUFeature_AES
+vaesimc Wo Vo, 0xc4 RXB.00010 x.src.0.01 0xdb, CPUFeature_AESAVX
 ######## AESKEYGENASSIST/VAESKEYGENASSIST ######################################
-aeskeygenassist Ib Wo Vo, 0x66 0x0f 0x3a 0xdf, Fn0000_0001_ECX_AES
-vaeskeygenassist Ib Wo Vo, 0xc4 RXB.00011 x.src.0.01 0xdf, Fn0000_0001_ECX_AESAVX
+aeskeygenassist Ib Wo Vo, 0x66 0x0f 0x3a 0xdf, CPUFeature_AES
+vaeskeygenassist Ib Wo Vo, 0xc4 RXB.00011 x.src.0.01 0xdf, CPUFeature_AESAVX
 ######## ANDNPD/VANDNPD ########################################################
-andnpd Wpd Vpd, 0x66 0x0f 0x55, Fn0000_0001_EDX_SSE2
-vandnpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x55, Fn0000_0001_ECX_AVX
+andnpd Wpd Vpd, 0x66 0x0f 0x55, CPUFeature_SSE2
+vandnpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x55, CPUFeature_AVX
 ######## ANDNPS/VANDNPS ########################################################
-andnps Wps Vps, 0x0f 0x55, Fn0000_0001_EDX_SSE1
-vandnps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x55, Fn0000_0001_ECX_AVX
+andnps Wps Vps, 0x0f 0x55, CPUFeature_SSE
+vandnps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x55, CPUFeature_AVX
 ######## ANDPD/VANDPD ##########################################################
-andpd Wpd Vpd, 0x66 0x0f 0x54, Fn0000_0001_EDX_SSE2
-vandpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x54, Fn0000_0001_ECX_AVX
+andpd Wpd Vpd, 0x66 0x0f 0x54, CPUFeature_SSE2
+vandpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x54, CPUFeature_AVX
 ######## ANDPS/VANDPS ##########################################################
-andps Wpd Vpd, 0x0f 0x54, Fn0000_0001_EDX_SSE1
-vandps Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.00 0x54, Fn0000_0001_ECX_AVX
+andps Wpd Vpd, 0x0f 0x54, CPUFeature_SSE
+vandps Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.00 0x54, CPUFeature_AVX
 ######## BLENDPD/VBLENDPD ######################################################
-blendpd Ib Wpd Vpd, 0x66 0x0f 0x3a 0x0d, Fn0000_0001_ECX_SSE41
-vblendpd Ib Wpdx Hpdx Vpdx, 0xc4 RXB.00011 x.src.L.01 0x0d, Fn0000_0001_ECX_AVX
+blendpd Ib Wpd Vpd, 0x66 0x0f 0x3a 0x0d, CPUFeature_SSE41
+vblendpd Ib Wpdx Hpdx Vpdx, 0xc4 RXB.00011 x.src.L.01 0x0d, CPUFeature_AVX
 ######## BLENDPS/VBLENDPS ######################################################
-blendps Ib Wps Vps, 0x66 0x0f 0x3a 0x0c, Fn0000_0001_ECX_SSE41
-vblendps Ib Wpsx Hpsx Vpsx, 0xc4 RXB.00011 x.src.L.01 0x0c, Fn0000_0001_ECX_AVX
+blendps Ib Wps Vps, 0x66 0x0f 0x3a 0x0c, CPUFeature_SSE41
+vblendps Ib Wpsx Hpsx Vpsx, 0xc4 RXB.00011 x.src.L.01 0x0c, CPUFeature_AVX
 ######## BLENDVPD/VBLENDVPD ####################################################
-blendvpd apd Wpd Vpd, 0x66 0x0f 0x38 0x15, Fn0000_0001_ECX_SSE41
-vblendvpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 x.src.L.01 0x4b, Fn0000_0001_ECX_AVX
+blendvpd apd Wpd Vpd, 0x66 0x0f 0x38 0x15, CPUFeature_SSE41
+vblendvpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 x.src.L.01 0x4b, CPUFeature_AVX
 ######## BLENDVPS/VBLENDVPS ####################################################
-blendvps aps Wps Vps, 0x66 0x0f 0x38 0x14, Fn0000_0001_ECX_SSE41
-vblendvps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 x.src.L.01 0x4a, Fn0000_0001_ECX_AVX
+blendvps aps Wps Vps, 0x66 0x0f 0x38 0x14, CPUFeature_SSE41
+vblendvps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 x.src.L.01 0x4a, CPUFeature_AVX
 ######## CMPPD/CMPPD ###########################################################
-cmppd Ib Wpd Vpd, 0x66 0x0f 0xc2, Fn0000_0001_EDX_SSE2
-vcmppd Ib Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0xc2, Fn0000_0001_ECX_AVX
+cmppd Ib Wpd Vpd, 0x66 0x0f 0xc2, CPUFeature_SSE2
+vcmppd Ib Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0xc2, CPUFeature_AVX
 ######## CMPPS/CMPPS ###########################################################
-cmpps Ib Wps Vps, 0x0f 0xc2, Fn0000_0001_EDX_SSE1
-vcmpps Ib Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0xc2, Fn0000_0001_ECX_AVX
+cmpps Ib Wps Vps, 0x0f 0xc2, CPUFeature_SSE
+vcmpps Ib Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0xc2, CPUFeature_AVX
 ######## CMPSD/CMPSD ###########################################################
-cmpsd Ib Wsd Vsd, 0xf2 0x0f 0xc2, Fn0000_0001_EDX_SSE2
-vcmpsd Ib Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0xc2, Fn0000_0001_ECX_AVX
+cmpsd Ib Wsd Vsd, 0xf2 0x0f 0xc2, CPUFeature_SSE2
+vcmpsd Ib Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0xc2, CPUFeature_AVX
 ######## CMPSS/CMPSS ###########################################################
-cmpss Ib Wss Vss, 0xf3 0x0f 0xc2, Fn0000_0001_EDX_SSE1
-vcmpss Ib Wss Hss Vss, 0xc4 RXB.00001 x.src.x.10 0xc2, Fn0000_0001_ECX_AVX
+cmpss Ib Wss Vss, 0xf3 0x0f 0xc2, CPUFeature_SSE
+vcmpss Ib Wss Hss Vss, 0xc4 RXB.00001 x.src.x.10 0xc2, CPUFeature_AVX
 ######## COMISD/VCOMISD ########################################################
-comisd Wsd Vsd, 0x66 0x0f 0x2f, Fn0000_0001_EDX_SSE2
-vcomisd Wsd Vsd, 0xc4 RXB.00001 x.src.x.01 0x2f, Fn0000_0001_ECX_AVX
+comisd Wsd Vsd, 0x66 0x0f 0x2f, CPUFeature_SSE2
+vcomisd Wsd Vsd, 0xc4 RXB.00001 x.src.x.01 0x2f, CPUFeature_AVX
 ######## COMISS/VCOMISS ########################################################
-comiss Wsd Vsd, 0x0f 0x2f, Fn0000_0001_EDX_SSE1
-vcomiss Wsd Vsd, 0xc4 RXB.00001 x.src.x.00 0x2f, Fn0000_0001_ECX_AVX
+comiss Wsd Vsd, 0x0f 0x2f, CPUFeature_SSE
+vcomiss Wsd Vsd, 0xc4 RXB.00001 x.src.x.00 0x2f, CPUFeature_AVX
 ######## CVTDQ2PD/VCVTDQ2PD ####################################################
-cvtdq2pd Wpj Vpd, 0xf3 0x0f 0xe6, Fn0000_0001_EDX_SSE2
-vcvtdq2pd Wpj Vpdx, 0xc4 RXB.00001 x.1111.L.10 0xe6, Fn0000_0001_ECX_AVX
+cvtdq2pd Wpj Vpd, 0xf3 0x0f 0xe6, CPUFeature_SSE2
+vcvtdq2pd Wpj Vpdx, 0xc4 RXB.00001 x.1111.L.10 0xe6, CPUFeature_AVX
 ######## CVTDQ2PS/VCVTDQ2PS ####################################################
-cvtdq2ps Wpj Vps, 0x0f 0x5b, Fn0000_0001_EDX_SSE2
-vcvtdq2ps Wpjx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x5b, Fn0000_0001_ECX_AVX
+cvtdq2ps Wpj Vps, 0x0f 0x5b, CPUFeature_SSE2
+vcvtdq2ps Wpjx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x5b, CPUFeature_AVX
 ######## CVTPD2DQ/VCVTPD2DQ ####################################################
-cvtpd2dq Wpd Vpj, 0xf2 0x0f 0xe6, Fn0000_0001_EDX_SSE2
-vcvtpd2dq Wpdx Vpj, 0xc4 RXB.00001 x.1111.L.11 0xe6, Fn0000_0001_ECX_AVX
+cvtpd2dq Wpd Vpj, 0xf2 0x0f 0xe6, CPUFeature_SSE2
+vcvtpd2dq Wpdx Vpj, 0xc4 RXB.00001 x.1111.L.11 0xe6, CPUFeature_AVX
 ######## CVTPD2PS/VCVTPD2PS ####################################################
-cvtpd2ps Wpd Vps, 0x66 0x0f 0x5a, Fn0000_0001_EDX_SSE2
-vcvtpd2ps Wpdx Vps, 0xc4 RXB.00001 x.1111.L.01 0x5a, Fn0000_0001_ECX_AVX
+cvtpd2ps Wpd Vps, 0x66 0x0f 0x5a, CPUFeature_SSE2
+vcvtpd2ps Wpdx Vps, 0xc4 RXB.00001 x.1111.L.01 0x5a, CPUFeature_AVX
 ######## CVTPS2DQ/VCVTPS2DQ ####################################################
-cvtps2dq Wps Vpj, 0x66 0x0f 0x5b, Fn0000_0001_EDX_SSE2
-vcvtps2dq Wpsx Vpjx, 0xc4 RXB.00001 x.1111.L.01 0x5b, Fn0000_0001_ECX_AVX
+cvtps2dq Wps Vpj, 0x66 0x0f 0x5b, CPUFeature_SSE2
+vcvtps2dq Wpsx Vpjx, 0xc4 RXB.00001 x.1111.L.01 0x5b, CPUFeature_AVX
 ######## CVTPS2PD/VCVTPS2PD ####################################################
-cvtps2pd Wps Vpd, 0x0f 0x5a, Fn0000_0001_EDX_SSE2
-vcvtps2pd Wps Vpdx, 0xc4 RXB.00001 x.1111.L.00 0x5a, Fn0000_0001_ECX_AVX
+cvtps2pd Wps Vpd, 0x0f 0x5a, CPUFeature_SSE2
+vcvtps2pd Wps Vpdx, 0xc4 RXB.00001 x.1111.L.00 0x5a, CPUFeature_AVX
 ######## CVTSD2SI/VCVTSD2SI ####################################################
-cvtsd2si Wsd Gy, 0xf2 0x0f 0x2d, Fn0000_0001_EDX_SSE2
-vcvtsd2si Wsd Gy, 0xc4 RXB.00001 W.1111.x.11 0x2d, Fn0000_0001_ECX_AVX
+cvtsd2si Wsd Gy, 0xf2 0x0f 0x2d, CPUFeature_SSE2
+vcvtsd2si Wsd Gy, 0xc4 RXB.00001 W.1111.x.11 0x2d, CPUFeature_AVX
 ######## CVTSD2SS/VCVTSD2SS ####################################################
-cvtsd2ss Wsd Vss, 0xf2 0x0f 0x5a, Fn0000_0001_EDX_SSE2
-vcvtsd2ss Wsd Ho Vo, 0xc4 RXB.00001 x.src.x.11 0x5a, Fn0000_0001_ECX_AVX
+cvtsd2ss Wsd Vss, 0xf2 0x0f 0x5a, CPUFeature_SSE2
+vcvtsd2ss Wsd Ho Vo, 0xc4 RXB.00001 x.src.x.11 0x5a, CPUFeature_AVX
 ######## CVTSI2SD/VCVTSI2SD ####################################################
-cvtsi2sd Ey Vsd, 0xf2 0x0f 0x2a, Fn0000_0001_EDX_SSE2
-vcvtsi2sd Ey Ho Vo, 0xc4 RXB.00001 W.src.x.11 0x2a, Fn0000_0001_ECX_AVX
+cvtsi2sd Ey Vsd, 0xf2 0x0f 0x2a, CPUFeature_SSE2
+vcvtsi2sd Ey Ho Vo, 0xc4 RXB.00001 W.src.x.11 0x2a, CPUFeature_AVX
 ######## CVTSI2SS/VCVTSI2SS ####################################################
-cvtsi2ss Ey Vss, 0xf3 0x0f 0x2a, Fn0000_0001_EDX_SSE1
-vcvtsi2ss Ey Ho Vo, 0xc4 RXB.00001 W.src.x.10 0x2a, Fn0000_0001_ECX_AVX
+cvtsi2ss Ey Vss, 0xf3 0x0f 0x2a, CPUFeature_SSE
+vcvtsi2ss Ey Ho Vo, 0xc4 RXB.00001 W.src.x.10 0x2a, CPUFeature_AVX
 ######## CVTSS2SD/VCVTSS2SD ####################################################
-cvtss2sd Wss Vsd, 0xf3 0x0f 0x5a, Fn0000_0001_EDX_SSE2
-vcvtss2sd Wss Ho Vo, 0xc4 RXB.00001 x.src.x.10 0x5a, Fn0000_0001_ECX_AVX
+cvtss2sd Wss Vsd, 0xf3 0x0f 0x5a, CPUFeature_SSE2
+vcvtss2sd Wss Ho Vo, 0xc4 RXB.00001 x.src.x.10 0x5a, CPUFeature_AVX
 ######## CVTSS2SI/VCVTSS2SI ####################################################
-cvtss2si Wss Gy, 0xf3 0x0f 0x2d, Fn0000_0001_EDX_SSE1
-vcvtss2si Wss Gy, 0xc4 RXB.00001 W.1111.x.10 0x2d, Fn0000_0001_ECX_AVX
+cvtss2si Wss Gy, 0xf3 0x0f 0x2d, CPUFeature_SSE
+vcvtss2si Wss Gy, 0xc4 RXB.00001 W.1111.x.10 0x2d, CPUFeature_AVX
 ######## CVTTPD2DQ/VCVTTPD2DQ ##################################################
-cvttpd2dq Wpd Vpj, 0x66 0x0f 0xe6, Fn0000_0001_EDX_SSE2
-vcvttpd2dq Wpdx Vpj, 0xc4 RXB.00001 x.1111.L.01 0xe6, Fn0000_0001_ECX_AVX
+cvttpd2dq Wpd Vpj, 0x66 0x0f 0xe6, CPUFeature_SSE2
+vcvttpd2dq Wpdx Vpj, 0xc4 RXB.00001 x.1111.L.01 0xe6, CPUFeature_AVX
 ######## CVTTPS2DQ/VCVTTPS2DQ ##################################################
-cvttps2dq Wps Vpj, 0xf3 0x0f 0x5b, Fn0000_0001_EDX_SSE2
-vcvttps2dq Wpsx Vpjx, 0xc4 RXB.00001 x.1111.L.10 0x5b, Fn0000_0001_ECX_AVX
+cvttps2dq Wps Vpj, 0xf3 0x0f 0x5b, CPUFeature_SSE2
+vcvttps2dq Wpsx Vpjx, 0xc4 RXB.00001 x.1111.L.10 0x5b, CPUFeature_AVX
 ######## CVTTSD2SI/VCVTTSD2SI ##################################################
-cvttsd2si Wsd Gy, 0xf2 0x0f 0x2c, Fn0000_0001_EDX_SSE2
-vcvttsd2si Wsd Gy, 0xc4 RXB.00001 W.1111.x.11 0x2c, Fn0000_0001_ECX_AVX
+cvttsd2si Wsd Gy, 0xf2 0x0f 0x2c, CPUFeature_SSE2
+vcvttsd2si Wsd Gy, 0xc4 RXB.00001 W.1111.x.11 0x2c, CPUFeature_AVX
 ######## CVTTSS2SI/VCVTTSS2SI ##################################################
-cvttss2si Wss Gy, 0xf3 0x0f 0x2c, Fn0000_0001_EDX_SSE1
-vcvttss2si Wss Gy, 0xc4 RXB.00001 W.1111.x.10 0x2c, Fn0000_0001_ECX_AVX
+cvttss2si Wss Gy, 0xf3 0x0f 0x2c, CPUFeature_SSE
+vcvttss2si Wss Gy, 0xc4 RXB.00001 W.1111.x.10 0x2c, CPUFeature_AVX
 ######## DIVPD/VDIVPD ##########################################################
-divpd Wpd Vpd, 0x66 0x0f 0x5e, Fn0000_0001_EDX_SSE2
-vdivpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x5e, Fn0000_0001_ECX_AVX
+divpd Wpd Vpd, 0x66 0x0f 0x5e, CPUFeature_SSE2
+vdivpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x5e, CPUFeature_AVX
 ######## DIVPS/VDIVPS ##########################################################
-divps Wps Vps, 0x0f 0x5e, Fn0000_0001_EDX_SSE1
-vdivps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5e, Fn0000_0001_ECX_AVX
+divps Wps Vps, 0x0f 0x5e, CPUFeature_SSE
+vdivps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5e, CPUFeature_AVX
 ######## DIVSD/VDIVSD ##########################################################
-divsd Wsd Vsd, 0xf2 0x0f 0x5e, Fn0000_0001_EDX_SSE2
-vdivsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x5e, Fn0000_0001_ECX_AVX
+divsd Wsd Vsd, 0xf2 0x0f 0x5e, CPUFeature_SSE2
+vdivsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x5e, CPUFeature_AVX
 ######## DIVSS/VDIVSS ##########################################################
-divss Wss Vss, 0xf3 0x0f 0x5e, Fn0000_0001_EDX_SSE1
-vdivss Wss Hss Vsd, 0xc4 RXB.00001 x.src.x.10 0x5e, Fn0000_0001_ECX_AVX
+divss Wss Vss, 0xf3 0x0f 0x5e, CPUFeature_SSE
+vdivss Wss Hss Vsd, 0xc4 RXB.00001 x.src.x.10 0x5e, CPUFeature_AVX
 ######## DPPD/DPPD #############################################################
-dppd Ib Wpd Vpd, 0x66 0x0f 0x3a 0x41, Fn0000_0001_ECX_SSE41
-vdppd Ib Wpd Hpd Vpd, 0xc4 RXB.00011 x.src.0.01 0x41, Fn0000_0001_ECX_AVX
+dppd Ib Wpd Vpd, 0x66 0x0f 0x3a 0x41, CPUFeature_SSE41
+vdppd Ib Wpd Hpd Vpd, 0xc4 RXB.00011 x.src.0.01 0x41, CPUFeature_AVX
 ######## DPPS/DPPS #############################################################
-dpps Ib Wps Vps, 0x66 0x0f 0x3a 0x40, Fn0000_0001_ECX_SSE41
-vdpps Ib Wpsx Hpsx Vpsx, 0xc4 RXB.00011 x.src.L.01 0x40, Fn0000_0001_ECX_AVX
+dpps Ib Wps Vps, 0x66 0x0f 0x3a 0x40, CPUFeature_SSE41
+vdpps Ib Wpsx Hpsx Vpsx, 0xc4 RXB.00011 x.src.L.01 0x40, CPUFeature_AVX
 ######## EXTRACTPS/VEXTRACTPS ##################################################
-extractps Ib Vps Md, 0x66 0x0f 0x3a 0x17, Fn0000_0001_ECX_SSE41
-extractps Ib Vps Ry, 0x66 0x0f 0x3a 0x17, Fn0000_0001_ECX_SSE41
-vextractps Ib Vps Mss, 0xc4 RXB.00011 x.1111.0.01 0x17, Fn0000_0001_ECX_AVX
+extractps Ib Vps Md, 0x66 0x0f 0x3a 0x17, CPUFeature_SSE41
+extractps Ib Vps Ry, 0x66 0x0f 0x3a 0x17, CPUFeature_SSE41
+vextractps Ib Vps Mss, 0xc4 RXB.00011 x.1111.0.01 0x17, CPUFeature_AVX
 ######## EXTRQ #################################################################
 # This instruction is perfectly safe but it's disallowed because xed does not
 # know it
-extrq ib Ib Uq, 0x66 0x0f 0x78 /0, nacl-forbidden Fn8000_0001_ECX_SSE4A
-extrq Uq Vq, 0x66 0x0f 0x79, Fn8000_0001_ECX_SSE4A
+extrq ib Ib Uq, 0x66 0x0f 0x78 /0, nacl-forbidden CPUFeature_SSE4A
+extrq Uq Vq, 0x66 0x0f 0x79, CPUFeature_SSE4A
 ######## HADDPD/VHADDPD ########################################################
-haddpd Wpd Vpd, 0x66 0x0f 0x7c, Fn0000_0001_ECX_SSE3
-vhaddpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x7c, Fn0000_0001_ECX_AVX
+haddpd Wpd Vpd, 0x66 0x0f 0x7c, CPUFeature_SSE3
+vhaddpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x7c, CPUFeature_AVX
 ######## HADDPS/VHADDPS ########################################################
-haddps Wps Vps, 0xf2 0x0f 0x7c, Fn0000_0001_ECX_SSE3
-vhaddps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.11 0x7c, Fn0000_0001_ECX_AVX
+haddps Wps Vps, 0xf2 0x0f 0x7c, CPUFeature_SSE3
+vhaddps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.11 0x7c, CPUFeature_AVX
 ######## HSUBPD/VHSUBPD ########################################################
-hsubpd Wpd Vpd, 0x66 0x0f 0x7d, Fn0000_0001_ECX_SSE3
-vhsubpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x7d, Fn0000_0001_ECX_AVX
+hsubpd Wpd Vpd, 0x66 0x0f 0x7d, CPUFeature_SSE3
+vhsubpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x7d, CPUFeature_AVX
 ######## HSUBPS/VHSUBPS ########################################################
-hsubps Wps Vps, 0xf2 0x0f 0x7d, Fn0000_0001_ECX_SSE3
-vhsubps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.11 0x7d, Fn0000_0001_ECX_AVX
+hsubps Wps Vps, 0xf2 0x0f 0x7d, CPUFeature_SSE3
+vhsubps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.11 0x7d, CPUFeature_AVX
 ######## INSERTPS/VINSERTPS ####################################################
-insertps Ib Md Vps, 0x66 0x0f 0x3a 0x21, Fn0000_0001_ECX_SSE41
-insertps Ib Uo Vps, 0x66 0x0f 0x3a 0x21, Fn0000_0001_ECX_SSE41
-vinsertps Ib Md Ho Vo, 0xc4 RXB.00011 x.src.0.01 0x21, Fn0000_0001_ECX_AVX
-vinsertps Ib Uo Ho Vo, 0xc4 RXB.00011 x.src.0.01 0x21, Fn0000_0001_ECX_AVX
+insertps Ib Md Vps, 0x66 0x0f 0x3a 0x21, CPUFeature_SSE41
+insertps Ib Uo Vps, 0x66 0x0f 0x3a 0x21, CPUFeature_SSE41
+vinsertps Ib Md Ho Vo, 0xc4 RXB.00011 x.src.0.01 0x21, CPUFeature_AVX
+vinsertps Ib Uo Ho Vo, 0xc4 RXB.00011 x.src.0.01 0x21, CPUFeature_AVX
 ######## INSERTQ ###############################################################
-insertq ib Ib Uq Vq, 0xf2 0x0f 0x78, Fn8000_0001_ECX_SSE4A
-insertq Uq Vq, 0xf2 0x0f 0x79, Fn8000_0001_ECX_SSE4A
+insertq ib Ib Uq Vq, 0xf2 0x0f 0x78, CPUFeature_SSE4A
+insertq Uq Vq, 0xf2 0x0f 0x79, CPUFeature_SSE4A
 ######## LDDQU/VLDDQU ##########################################################
-lddqu Mdq Vpd, 0xf2 0x0f 0xf0, Fn0000_0001_ECX_SSE3
-vlddqu Mo Vo, 0xc4 RXB.00001 x.1111.0.11 0x0f0, Fn0000_0001_ECX_AVX
-vlddqu Mdo Vdo, 0xc4 RXB.00001 x.1111.1.11 0x0f0, Fn0000_0001_ECX_AVX
+lddqu Mdq Vpd, 0xf2 0x0f 0xf0, CPUFeature_SSE3
+vlddqu Mo Vo, 0xc4 RXB.00001 x.1111.0.11 0x0f0, CPUFeature_AVX
+vlddqu Mdo Vdo, 0xc4 RXB.00001 x.1111.1.11 0x0f0, CPUFeature_AVX
 ######## LDMXCSR/VLDMXCSR ######################################################
-ldmxcsr Md, 0x0f 0xae /2, Fn0000_0001_EDX_SSE1
-vldmxcsr Md, 0xc4 RXB.00001 x.1111.0.00 0xae /2, Fn0000_0001_ECX_AVX
+ldmxcsr Md, 0x0f 0xae /2, CPUFeature_SSE
+vldmxcsr Md, 0xc4 RXB.00001 x.1111.0.00 0xae /2, CPUFeature_AVX
 ######## MASKMOVDQU/VMASKMOVDQU ################################################
-maskmovdqu Upb Vpb, 0x66 0x0f 0xf7, Fn0000_0001_EDX_SSE2
-vmaskmovdqu Upb Vpb, 0xc4 RXB.00001 x.1111.0.01 0xf7, Fn0000_0001_ECX_AVX
+maskmovdqu Upb Vpb, 0x66 0x0f 0xf7, CPUFeature_SSE2
+vmaskmovdqu Upb Vpb, 0xc4 RXB.00001 x.1111.0.01 0xf7, CPUFeature_AVX
 ######## MAXPD/VMAXPD ##########################################################
-maxpd Wpd Vpd, 0x66 0x0f 0x5f, Fn0000_0001_EDX_SSE2
-vmaxpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x5f, Fn0000_0001_ECX_AVX
+maxpd Wpd Vpd, 0x66 0x0f 0x5f, CPUFeature_SSE2
+vmaxpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x5f, CPUFeature_AVX
 ######## MAXPS/VMAXPS ##########################################################
-maxps Wps Vps, 0x0f 0x5f, Fn0000_0001_EDX_SSE1
-vmaxps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5f, Fn0000_0001_ECX_AVX
+maxps Wps Vps, 0x0f 0x5f, CPUFeature_SSE
+vmaxps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5f, CPUFeature_AVX
 ######## MAXSD/VMAXSD ##########################################################
-maxsd Wsd Vsd, 0xf2 0x0f 0x5f, Fn0000_0001_EDX_SSE2
-vmaxsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x5f, Fn0000_0001_ECX_AVX
+maxsd Wsd Vsd, 0xf2 0x0f 0x5f, CPUFeature_SSE2
+vmaxsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x5f, CPUFeature_AVX
 ######## MAXSS/VMAXSS ##########################################################
-maxss Wss Vss, 0xf3 0x0f 0x5f, Fn0000_0001_EDX_SSE1
-vmaxss Wss Hss Vss, 0xc4 RXB.00001 x.src.x.10 0x5f, Fn0000_0001_ECX_AVX
+maxss Wss Vss, 0xf3 0x0f 0x5f, CPUFeature_SSE
+vmaxss Wss Hss Vss, 0xc4 RXB.00001 x.src.x.10 0x5f, CPUFeature_AVX
 ######## MINPD/VMINPD ##########################################################
-minpd Wpd Vpd, 0x66 0x0f 0x5d, Fn0000_0001_EDX_SSE2
-vminpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x5d, Fn0000_0001_ECX_AVX
+minpd Wpd Vpd, 0x66 0x0f 0x5d, CPUFeature_SSE2
+vminpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x5d, CPUFeature_AVX
 ######## MINPS/VMINPS ##########################################################
-minps Wps Vps, 0x0f 0x5d, Fn0000_0001_EDX_SSE1
-vminps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5d, Fn0000_0001_ECX_AVX
+minps Wps Vps, 0x0f 0x5d, CPUFeature_SSE
+vminps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5d, CPUFeature_AVX
 ######## MINSD/VMINSD ##########################################################
-minsd Wsd Vsd, 0xf2 0x0f 0x5d, Fn0000_0001_EDX_SSE2
-vminsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x5d, Fn0000_0001_ECX_AVX
+minsd Wsd Vsd, 0xf2 0x0f 0x5d, CPUFeature_SSE2
+vminsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x5d, CPUFeature_AVX
 ######## MINSS/VMINSS ##########################################################
-minss Wss Vss, 0xf3 0x0f 0x5d, Fn0000_0001_EDX_SSE1
-vminss Wss Hss Vss, 0xc4 RXB.00001 x.src.x.10 0x5d, Fn0000_0001_ECX_AVX
+minss Wss Vss, 0xf3 0x0f 0x5d, CPUFeature_SSE
+vminss Wss Hss Vss, 0xc4 RXB.00001 x.src.x.10 0x5d, CPUFeature_AVX
 ######## MOVAPD/VMOVAPD ########################################################
-movapd Wpd Vpd, 0x66 0x0f 0x28, Fn0000_0001_EDX_SSE2
-movapd Vpd Wpd, 0x66 0x0f 0x29, Fn0000_0001_EDX_SSE2
-vmovapd Wpdx Vpdx, 0xc4 RXB.00001 x.1111.L.01 0x28, Fn0000_0001_ECX_AVX
-vmovapd Vpdx Wpdx, 0xc4 RXB.00001 x.1111.L.01 0x29, Fn0000_0001_ECX_AVX
+movapd Wpd Vpd, 0x66 0x0f 0x28, CPUFeature_SSE2
+movapd Vpd Wpd, 0x66 0x0f 0x29, CPUFeature_SSE2
+vmovapd Wpdx Vpdx, 0xc4 RXB.00001 x.1111.L.01 0x28, CPUFeature_AVX
+vmovapd Vpdx Wpdx, 0xc4 RXB.00001 x.1111.L.01 0x29, CPUFeature_AVX
 ######## MOVAPS/VMOVAPS ########################################################
-movaps Wps Vps, 0x0f 0x28, Fn0000_0001_EDX_SSE1
-movaps Vps Wps, 0x0f 0x29, Fn0000_0001_EDX_SSE1
-vmovaps Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x28, Fn0000_0001_ECX_AVX
-vmovaps Vpsx Wpsx, 0xc4 RXB.00001 x.1111.L.00 0x29, Fn0000_0001_ECX_AVX
+movaps Wps Vps, 0x0f 0x28, CPUFeature_SSE
+movaps Vps Wps, 0x0f 0x29, CPUFeature_SSE
+vmovaps Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x28, CPUFeature_AVX
+vmovaps Vpsx Wpsx, 0xc4 RXB.00001 x.1111.L.00 0x29, CPUFeature_AVX
 ######## MOVD/VMOVD ############################################################
 # This is description according to AMD/Intel manual.
-#  movd Ey Vy, 0x66 0x0f 0x6e, Fn0000_0001_EDX_SSE2
-#  movd Vy Ey, 0x66 0x0f 0x7e, Fn0000_0001_EDX_SSE2
-#  vmovd Ey Vo, 0xc4 RXB.00001 W.1111.0.01 0x6e, Fn0000_0001_ECX_AVX
-#  vmovd Vo Ey, 0xc4 RXB.00001 W.1111.1.01 0x7e, Fn0000_0001_ECX_AVX
+#  movd Ey Vy, 0x66 0x0f 0x6e, CPUFeature_SSE2
+#  movd Vy Ey, 0x66 0x0f 0x7e, CPUFeature_SSE2
+#  vmovd Ey Vo, 0xc4 RXB.00001 W.1111.0.01 0x6e, CPUFeature_AVX
+#  vmovd Vo Ey, 0xc4 RXB.00001 W.1111.1.01 0x7e, CPUFeature_AVX
 # Objdump names 64bit version not “movd” but “movq”.  We describe 32bit version
 # and 64bit version separately.
-movd Ed Vq, 0x66 0x0f 0x6e, Fn0000_0001_EDX_SSE2
-movd Vq Ed, 0x66 0x0f 0x7e, Fn0000_0001_EDX_SSE2
-movq Eq Vq, 0x66 rexw 0x0f 0x6e, amd64 Fn0000_0001_EDX_SSE2
-movq Vq Eq, 0x66 rexw 0x0f 0x7e, amd64 Fn0000_0001_EDX_SSE2
-vmovd Ed Vo, 0xc4 RXB.00001 0.1111.0.01 0x6e, Fn0000_0001_ECX_AVX
-vmovd Vo Ed, 0xc4 RXB.00001 0.1111.1.01 0x7e, Fn0000_0001_ECX_AVX
-vmovq Eq Vo, 0xc4 RXB.00001 1.1111.0.01 0x6e, amd64 Fn0000_0001_ECX_AVX
-vmovq Vo Eq, 0xc4 RXB.00001 1.1111.1.01 0x7e, amd64 Fn0000_0001_ECX_AVX
+movd Ed Vq, 0x66 0x0f 0x6e, CPUFeature_SSE2
+movd Vq Ed, 0x66 0x0f 0x7e, CPUFeature_SSE2
+movq Eq Vq, 0x66 rexw 0x0f 0x6e, amd64 CPUFeature_SSE2
+movq Vq Eq, 0x66 rexw 0x0f 0x7e, amd64 CPUFeature_SSE2
+vmovd Ed Vo, 0xc4 RXB.00001 0.1111.0.01 0x6e, CPUFeature_AVX
+vmovd Vo Ed, 0xc4 RXB.00001 0.1111.1.01 0x7e, CPUFeature_AVX
+vmovq Eq Vo, 0xc4 RXB.00001 1.1111.0.01 0x6e, amd64 CPUFeature_AVX
+vmovq Vo Eq, 0xc4 RXB.00001 1.1111.1.01 0x7e, amd64 CPUFeature_AVX
 ######## MOVDDUP/VMOVDDUP ######################################################
-movddup Wsd Vsd, 0xf2 0x0f 0x12, Fn0000_0001_ECX_SSE3
-vmovddup Wsd Vo, 0xc4 RXB.00001 x.1111.0.11 0x12, Fn0000_0001_ECX_AVX
-vmovddup Wdo Vdo, 0xc4 RXB.00001 x.1111.1.11 0x12, Fn0000_0001_ECX_AVX
+movddup Wsd Vsd, 0xf2 0x0f 0x12, CPUFeature_SSE3
+vmovddup Wsd Vo, 0xc4 RXB.00001 x.1111.0.11 0x12, CPUFeature_AVX
+vmovddup Wdo Vdo, 0xc4 RXB.00001 x.1111.1.11 0x12, CPUFeature_AVX
 ######## MOVDQA/VMOVDQA ########################################################
-movdqa Wdq Vdq, 0x66 0x0f 0x6f, Fn0000_0001_EDX_SSE2
-movdqa Vdq Wdq, 0x66 0x0f 0x7f, Fn0000_0001_EDX_SSE2
-vmovdqa Wdq Vdq, 0xc4 RXB.00001 x.1111.0.01 0x6f, Fn0000_0001_ECX_AVX
-vmovdqa Vdq Wdq, 0xc4 RXB.00001 x.1111.0.01 0x7f, Fn0000_0001_ECX_AVX
-vmovdqa Wfq Vfq, 0xc4 RXB.00001 x.1111.1.01 0x7f, Fn0000_0001_ECX_AVX
-vmovdqa Vfq Wfq, 0xc4 RXB.00001 x.1111.1.01 0x7f, Fn0000_0001_ECX_AVX
+movdqa Wdq Vdq, 0x66 0x0f 0x6f, CPUFeature_SSE2
+movdqa Vdq Wdq, 0x66 0x0f 0x7f, CPUFeature_SSE2
+vmovdqa Wdq Vdq, 0xc4 RXB.00001 x.1111.0.01 0x6f, CPUFeature_AVX
+vmovdqa Vdq Wdq, 0xc4 RXB.00001 x.1111.0.01 0x7f, CPUFeature_AVX
+vmovdqa Wfq Vfq, 0xc4 RXB.00001 x.1111.1.01 0x7f, CPUFeature_AVX
+vmovdqa Vfq Wfq, 0xc4 RXB.00001 x.1111.1.01 0x7f, CPUFeature_AVX
 ######## MOVDQU/VMOVDQU ########################################################
-movdqu Wdq Vdq, 0xf3 0x0f 0x6f, Fn0000_0001_EDX_SSE2
-movdqu Vdq Wdq, 0xf3 0x0f 0x7f, Fn0000_0001_EDX_SSE2
-vmovdqu Wdq Vdq, 0xc4 RXB.00001 x.1111.0.10 0x6f, Fn0000_0001_ECX_AVX
-vmovdqu Vdq Wdq, 0xc4 RXB.00001 x.1111.0.10 0x7f, Fn0000_0001_ECX_AVX
-vmovdqu Wfq Vfq, 0xc4 RXB.00001 x.1111.1.10 0x7f, Fn0000_0001_ECX_AVX
-vmovdqu Vfq Wfq, 0xc4 RXB.00001 x.1111.1.10 0x7f, Fn0000_0001_ECX_AVX
+movdqu Wdq Vdq, 0xf3 0x0f 0x6f, CPUFeature_SSE2
+movdqu Vdq Wdq, 0xf3 0x0f 0x7f, CPUFeature_SSE2
+vmovdqu Wdq Vdq, 0xc4 RXB.00001 x.1111.0.10 0x6f, CPUFeature_AVX
+vmovdqu Vdq Wdq, 0xc4 RXB.00001 x.1111.0.10 0x7f, CPUFeature_AVX
+vmovdqu Wfq Vfq, 0xc4 RXB.00001 x.1111.1.10 0x7f, CPUFeature_AVX
+vmovdqu Vfq Wfq, 0xc4 RXB.00001 x.1111.1.10 0x7f, CPUFeature_AVX
 ######## MOVHLPS/VMOVHLPS ######################################################
-movhlps Ups Vps, 0x0f 0x12 /r, Fn0000_0001_EDX_SSE1
-vmovhlps Ups Hps Vps, 0xc4 RXB.00001 x.src.0.00 0x12 /r, Fn0000_0001_ECX_AVX
+movhlps Ups Vps, 0x0f 0x12 /r, CPUFeature_SSE
+vmovhlps Ups Hps Vps, 0xc4 RXB.00001 x.src.0.00 0x12 /r, CPUFeature_AVX
 ######## MOVHPD/VMOVHPD ########################################################
-movhpd Mq Vsd, 0x66 0x0f 0x16, Fn0000_0001_EDX_SSE2
-movhpd Vsd Mq, 0x66 0x0f 0x17, Fn0000_0001_EDX_SSE2
-vmovhpd Mq Hpd Vpd, 0xc4 RXB.00001 x.src.0.01 0x16, Fn0000_0001_ECX_AVX
-vmovhpd Vpd Mq, 0xc4 RXB.00001 x.src.0.01 0x17, Fn0000_0001_ECX_AVX
+movhpd Mq Vsd, 0x66 0x0f 0x16, CPUFeature_SSE2
+movhpd Vsd Mq, 0x66 0x0f 0x17, CPUFeature_SSE2
+vmovhpd Mq Hpd Vpd, 0xc4 RXB.00001 x.src.0.01 0x16, CPUFeature_AVX
+vmovhpd Vpd Mq, 0xc4 RXB.00001 x.src.0.01 0x17, CPUFeature_AVX
 ######## MOVHPS/VMOVHPS ########################################################
-movhps Mq Vps, 0x0f 0x16 /m, Fn0000_0001_EDX_SSE1
-movhps Vps Mq, 0x0f 0x17, Fn0000_0001_EDX_SSE1
-vmovhps Mq Hps Vps, 0xc4 RXB.00001 x.src.0.00 0x16 /m, Fn0000_0001_ECX_AVX
-vmovhps Vps Mq, 0xc4 RXB.00001 x.src.0.00 0x17, Fn0000_0001_ECX_AVX
+movhps Mq Vps, 0x0f 0x16 /m, CPUFeature_SSE
+movhps Vps Mq, 0x0f 0x17, CPUFeature_SSE
+vmovhps Mq Hps Vps, 0xc4 RXB.00001 x.src.0.00 0x16 /m, CPUFeature_AVX
+vmovhps Vps Mq, 0xc4 RXB.00001 x.src.0.00 0x17, CPUFeature_AVX
 ######## MOVLHPS/VMOVLHPS ######################################################
-movlhps Uq Vps, 0x0f 0x16 /r, Fn0000_0001_EDX_SSE1
-vmovlhps Ups Hps Vps, 0xc4 RXB.00001 x.src.0.00 0x16 /r, Fn0000_0001_ECX_AVX
+movlhps Uq Vps, 0x0f 0x16 /r, CPUFeature_SSE
+vmovlhps Ups Hps Vps, 0xc4 RXB.00001 x.src.0.00 0x16 /r, CPUFeature_AVX
 ######## MOVLPD/VMOVLPD ########################################################
-movlpd Mq Vsd, 0x66 0x0f 0x12, Fn0000_0001_EDX_SSE2
-movlpd Vsd Mq, 0x66 0x0f 0x13, Fn0000_0001_EDX_SSE2
-vmovlpd Mq Ho Vo, 0xc4 RXB.00001 x.src.0.01 0x12, Fn0000_0001_ECX_AVX
-vmovlpd Vo Mo, 0xc4 RXB.00001 x.1111.0.01 0x13, Fn0000_0001_ECX_AVX
+movlpd Mq Vsd, 0x66 0x0f 0x12, CPUFeature_SSE2
+movlpd Vsd Mq, 0x66 0x0f 0x13, CPUFeature_SSE2
+vmovlpd Mq Ho Vo, 0xc4 RXB.00001 x.src.0.01 0x12, CPUFeature_AVX
+vmovlpd Vo Mo, 0xc4 RXB.00001 x.1111.0.01 0x13, CPUFeature_AVX
 ######## MOVLPS/VMOVLPS ########################################################
-movlps Mq Vq, 0x0f 0x12 /m, Fn0000_0001_EDX_SSE1
-movlps Vq Mq, 0x0f 0x13, Fn0000_0001_EDX_SSE1
-vmovlps Mq Hps Vps, 0xc4 RXB.00001 x.src.0.00 0x12 /m, Fn0000_0001_ECX_AVX
-vmovlps Vps Mq, 0xc4 RXB.00001 x.1111.0.00 0x13, Fn0000_0001_ECX_AVX
+movlps Mq Vq, 0x0f 0x12 /m, CPUFeature_SSE
+movlps Vq Mq, 0x0f 0x13, CPUFeature_SSE
+vmovlps Mq Hps Vps, 0xc4 RXB.00001 x.src.0.00 0x12 /m, CPUFeature_AVX
+vmovlps Vps Mq, 0xc4 RXB.00001 x.1111.0.00 0x13, CPUFeature_AVX
 ######## MOVMSKPD/VMOVMSKPD ####################################################
-movmskpd Upd Gd, 0x66 0x0f 0x50, Fn0000_0001_EDX_SSE2
-vmovmskpd Updx Gd, 0xc4 RXB.00001 x.1111.L.01 0x50, Fn0000_0001_ECX_AVX
+movmskpd Upd Gd, 0x66 0x0f 0x50, CPUFeature_SSE2
+vmovmskpd Updx Gd, 0xc4 RXB.00001 x.1111.L.01 0x50, CPUFeature_AVX
 ######## MOVMSKPS/VMOVMSKPS ####################################################
-movmskps Ups Gd, 0x0f 0x50, Fn0000_0001_EDX_SSE1
-vmovmskps Upsx Gd, 0xc4 RXB.00001 x.1111.L.00 0x50, Fn0000_0001_ECX_AVX
+movmskps Ups Gd, 0x0f 0x50, CPUFeature_SSE
+vmovmskps Upsx Gd, 0xc4 RXB.00001 x.1111.L.00 0x50, CPUFeature_AVX
 ######## MOVNTDQ/VMOVNTDQ ######################################################
-movntdq Vdq Mdq, 0x66 0x0f 0xe7, Fn0000_0001_EDX_SSE2
-vmovntdq Vo Mo, 0xc4 RXB.00001 x.1111.0.01 0xe7, Fn0000_0001_ECX_AVX
-vmovntdq Vdo Mdo, 0xc4 RXB.00001 x.1111.1.01 0xe7, Fn0000_0001_ECX_AVX
+movntdq Vdq Mdq, 0x66 0x0f 0xe7, CPUFeature_SSE2
+vmovntdq Vo Mo, 0xc4 RXB.00001 x.1111.0.01 0xe7, CPUFeature_AVX
+vmovntdq Vdo Mdo, 0xc4 RXB.00001 x.1111.1.01 0xe7, CPUFeature_AVX
 ######## MOVNTDQA/VMOVNTDQA ####################################################
-movntdqa Mo Vo, 0x66 0x0f 0x38 0x2a, Fn0000_0001_ECX_SSE41
-vmovntdqa Mo Vo, 0xc4 RXB.00010 x.1111.0.01 0x2a, Fn0000_0001_ECX_AVX
+movntdqa Mo Vo, 0x66 0x0f 0x38 0x2a, CPUFeature_SSE41
+vmovntdqa Mo Vo, 0xc4 RXB.00010 x.1111.0.01 0x2a, CPUFeature_AVX
 ######## MOVNTPD/VMOVNTPD ######################################################
-movntpd Vpd Mpd, 0x66 0x0f 0x2b, Fn0000_0001_EDX_SSE2
-vmovntpd Vpdx Mpdx, 0xc4 RXB.00001 x.1111.L.01 0x2b, Fn0000_0001_ECX_AVX
+movntpd Vpd Mpd, 0x66 0x0f 0x2b, CPUFeature_SSE2
+vmovntpd Vpdx Mpdx, 0xc4 RXB.00001 x.1111.L.01 0x2b, CPUFeature_AVX
 ######## MOVNTPS/VMOVNTPS ######################################################
-movntps Vps Mps, 0x0f 0x2b, Fn0000_0001_EDX_SSE1
-vmovntps Vpsx Mpsx, 0xc4 RXB.00001 x.1111.L.00 0x2b, Fn0000_0001_ECX_AVX
+movntps Vps Mps, 0x0f 0x2b, CPUFeature_SSE
+vmovntps Vpsx Mpsx, 0xc4 RXB.00001 x.1111.L.00 0x2b, CPUFeature_AVX
 ######## MOVNTSD ###############################################################
-movntsd Vsd Mq, 0xf2 0x0f 0x2b, Fn8000_0001_ECX_SSE4A
+movntsd Vsd Mq, 0xf2 0x0f 0x2b, CPUFeature_SSE4A
 ######## MOVNTSS ###############################################################
-movntss Vss Md, 0xf3 0x0f 0x2b, Fn8000_0001_ECX_SSE4A
+movntss Vss Md, 0xf3 0x0f 0x2b, CPUFeature_SSE4A
 ######## MOVQ/VMOVQ ############################################################
-movq Wq Vq, 0xf3 0x0f 0x7e, Fn0000_0001_EDX_SSE2
-movq Vq Wq, 0x66 0x0f 0xd6, Fn0000_0001_EDX_SSE2
-vmovq Mq Vo, 0xc4 RXB.00001 x.1111.0.10 0x7e, Fn0000_0001_ECX_AVX
-vmovq Uq Vo, 0xc4 RXB.00001 x.1111.0.10 0x7e, Fn0000_0001_ECX_AVX
-vmovq Vq Wq, 0xc4 RXB.00001 x.1111.1.01 0xd6, Fn0000_0001_ECX_AVX
+movq Wq Vq, 0xf3 0x0f 0x7e, CPUFeature_SSE2
+movq Vq Wq, 0x66 0x0f 0xd6, CPUFeature_SSE2
+vmovq Mq Vo, 0xc4 RXB.00001 x.1111.0.10 0x7e, CPUFeature_AVX
+vmovq Uq Vo, 0xc4 RXB.00001 x.1111.0.10 0x7e, CPUFeature_AVX
+vmovq Vq Wq, 0xc4 RXB.00001 x.1111.1.01 0xd6, CPUFeature_AVX
 ######## MOVSD/VMOVSD ##########################################################
-movsd Wsd Vsd, 0xf2 0x0f 0x10, Fn0000_0001_EDX_SSE2
-movsd Vsd Wsd, 0xf2 0x0f 0x11, Fn0000_0001_EDX_SSE2
-vmovsd Mq Vsd, 0xc4 RXB.00001 x.1111.0.11 0x10, Fn0000_0001_ECX_AVX
-vmovsd Vsd Mq, 0xc4 RXB.00001 x.1111.0.11 0x11, Fn0000_0001_ECX_AVX
-vmovsd Usd Hsd Vsd, 0xc4 RXB.00001 x.src.1.11 0x10, Fn0000_0001_ECX_AVX
-vmovsd Vsd Hsd Usd, 0xc4 RXB.00001 x.src.1.11 0x11, Fn0000_0001_ECX_AVX
+movsd Wsd Vsd, 0xf2 0x0f 0x10, CPUFeature_SSE2
+movsd Vsd Wsd, 0xf2 0x0f 0x11, CPUFeature_SSE2
+vmovsd Mq Vsd, 0xc4 RXB.00001 x.1111.0.11 0x10, CPUFeature_AVX
+vmovsd Vsd Mq, 0xc4 RXB.00001 x.1111.0.11 0x11, CPUFeature_AVX
+vmovsd Usd Hsd Vsd, 0xc4 RXB.00001 x.src.1.11 0x10, CPUFeature_AVX
+vmovsd Vsd Hsd Usd, 0xc4 RXB.00001 x.src.1.11 0x11, CPUFeature_AVX
 ######## MOVSHDUP/VMOVSSDUP ####################################################
-movshdup Wps Vps, 0xf3 0x0f 0x16, Fn0000_0001_ECX_SSE3
-vmovshdup Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.10 0x16, Fn0000_0001_ECX_AVX
+movshdup Wps Vps, 0xf3 0x0f 0x16, CPUFeature_SSE3
+vmovshdup Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.10 0x16, CPUFeature_AVX
 ######## MOVSLDUP/VMOVSLDUP ####################################################
-movsldup Wps Vps, 0xf3 0x0f 0x12, Fn0000_0001_ECX_SSE3
-vmovsldup Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.10 0x12, Fn0000_0001_ECX_AVX
+movsldup Wps Vps, 0xf3 0x0f 0x12, CPUFeature_SSE3
+vmovsldup Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.10 0x12, CPUFeature_AVX
 ######## MOVSS/VMOVSS ##########################################################
-movss Wss Vss, 0xf3 0x0f 0x10, Fn0000_0001_EDX_SSE1
-movss Vss Wss, 0xf3 0x0f 0x11, Fn0000_0001_EDX_SSE1
-vmovss Md Vss, 0xc4 RXB.00001 x.1111.0.10 0x10, Fn0000_0001_ECX_AVX
-vmovss Vss Md, 0xc4 RXB.00001 x.1111.0.10 0x11, Fn0000_0001_ECX_AVX
-vmovss Uss Hss Vsd, 0xc4 RXB.00001 x.src.1.10 0x10, Fn0000_0001_ECX_AVX
-vmovss Vss Hss Usd, 0xc4 RXB.00001 x.src.1.10 0x11, Fn0000_0001_ECX_AVX
+movss Wss Vss, 0xf3 0x0f 0x10, CPUFeature_SSE
+movss Vss Wss, 0xf3 0x0f 0x11, CPUFeature_SSE
+vmovss Md Vss, 0xc4 RXB.00001 x.1111.0.10 0x10, CPUFeature_AVX
+vmovss Vss Md, 0xc4 RXB.00001 x.1111.0.10 0x11, CPUFeature_AVX
+vmovss Uss Hss Vsd, 0xc4 RXB.00001 x.src.1.10 0x10, CPUFeature_AVX
+vmovss Vss Hss Usd, 0xc4 RXB.00001 x.src.1.10 0x11, CPUFeature_AVX
 ######## MOVUPD/VMOVUPD ########################################################
-movupd Wpd Vpd, 0x66 0x0f 0x10, Fn0000_0001_EDX_SSE2
-movupd Vpd Wpd, 0x66 0x0f 0x11, Fn0000_0001_EDX_SSE2
-vmovupd Wpdx Vpdx, 0xc4 RXB.00001 x.1111.L.01 0x10, Fn0000_0001_ECX_AVX
-vmovupd Vpdx Wpdx, 0xc4 RXB.00001 x.1111.L.01 0x11, Fn0000_0001_ECX_AVX
+movupd Wpd Vpd, 0x66 0x0f 0x10, CPUFeature_SSE2
+movupd Vpd Wpd, 0x66 0x0f 0x11, CPUFeature_SSE2
+vmovupd Wpdx Vpdx, 0xc4 RXB.00001 x.1111.L.01 0x10, CPUFeature_AVX
+vmovupd Vpdx Wpdx, 0xc4 RXB.00001 x.1111.L.01 0x11, CPUFeature_AVX
 ######## MOVUPS/VMOVUPS ########################################################
-movups Wsd Vsd, 0x0f 0x10, Fn0000_0001_EDX_SSE1
-movups Vsd Wsd, 0x0f 0x11, Fn0000_0001_EDX_SSE1
-vmovups Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x10, Fn0000_0001_ECX_AVX
-vmovups Vpsx Wpsx, 0xc4 RXB.00001 x.1111.L.00 0x11, Fn0000_0001_ECX_AVX
+movups Wsd Vsd, 0x0f 0x10, CPUFeature_SSE
+movups Vsd Wsd, 0x0f 0x11, CPUFeature_SSE
+vmovups Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x10, CPUFeature_AVX
+vmovups Vpsx Wpsx, 0xc4 RXB.00001 x.1111.L.00 0x11, CPUFeature_AVX
 ######## MPSADBW/VMPSADBW ######################################################
-mpsadbw Ib Wpk Vpk, 0x66 0x0f 0x3a 0x42, Fn0000_0001_ECX_SSE41
-vmpsadbw Ib Wpk Hpk Vpi, 0xc4 RXB.00011 x.src.0.01 0x42, Fn0000_0001_ECX_AVX
+mpsadbw Ib Wpk Vpk, 0x66 0x0f 0x3a 0x42, CPUFeature_SSE41
+vmpsadbw Ib Wpk Hpk Vpi, 0xc4 RXB.00011 x.src.0.01 0x42, CPUFeature_AVX
 ######## MULPD/VMULPD ##########################################################
-mulpd Wpd Vpd, 0x66 0x0f 0x59, Fn0000_0001_EDX_SSE2
-vmulpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x59, Fn0000_0001_ECX_AVX
+mulpd Wpd Vpd, 0x66 0x0f 0x59, CPUFeature_SSE2
+vmulpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x59, CPUFeature_AVX
 ######## MULPS/VMULPS ##########################################################
-mulps Wps Vps, 0x0f 0x59, Fn0000_0001_EDX_SSE1
-vmulps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x59, Fn0000_0001_ECX_AVX
+mulps Wps Vps, 0x0f 0x59, CPUFeature_SSE
+vmulps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x59, CPUFeature_AVX
 ######## MULSD/VMULSD ##########################################################
-mulsd Wsd Vsd, 0xf2 0x0f 0x59, Fn0000_0001_EDX_SSE2
-vmulsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x59, Fn0000_0001_ECX_AVX
+mulsd Wsd Vsd, 0xf2 0x0f 0x59, CPUFeature_SSE2
+vmulsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x59, CPUFeature_AVX
 ######## MULSS/VMULSS ##########################################################
-mulss Wps Vss, 0xf3 0x0f 0x59, Fn0000_0001_EDX_SSE1
-vmulss Wss Hss Vss, 0xc4 RXB.00001 x.src.x.10 0x59, Fn0000_0001_ECX_AVX
+mulss Wps Vss, 0xf3 0x0f 0x59, CPUFeature_SSE
+vmulss Wss Hss Vss, 0xc4 RXB.00001 x.src.x.10 0x59, CPUFeature_AVX
 ######## ORPD/VORPD ############################################################
-orpd Wpd Vpd, 0x66 0x0f 0x56, Fn0000_0001_EDX_SSE2
-vorpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x56, Fn0000_0001_ECX_AVX
+orpd Wpd Vpd, 0x66 0x0f 0x56, CPUFeature_SSE2
+vorpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x56, CPUFeature_AVX
 ######## ORPS/VORPS ############################################################
-orps Wpd Vpd, 0x0f 0x56, Fn0000_0001_EDX_SSE1
-vorps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x56, Fn0000_0001_ECX_AVX
+orps Wpd Vpd, 0x0f 0x56, CPUFeature_SSE
+vorps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x56, CPUFeature_AVX
 ######## PABSB/VPABSB ##########################################################
-pabsb Wpk Vpk, 0x66 0x0f 0x38 0x1c, Fn0000_0001_ECX_SSSE3
-vpabsb Wpk Vpk, 0xc4 RXB.00010 x.1111.0.01 0x1c, Fn0000_0001_ECX_AVX
+pabsb Wpk Vpk, 0x66 0x0f 0x38 0x1c, CPUFeature_SSSE3
+vpabsb Wpk Vpk, 0xc4 RXB.00010 x.1111.0.01 0x1c, CPUFeature_AVX
 ######## PABSD/VPABSD ##########################################################
-pabsd Wpj Vpj, 0x66 0x0f 0x38 0x1e, Fn0000_0001_ECX_SSSE3
-vpabsd Wpj Vpj, 0xc4 RXB.00010 x.1111.0.01 0x1e, Fn0000_0001_ECX_AVX
+pabsd Wpj Vpj, 0x66 0x0f 0x38 0x1e, CPUFeature_SSSE3
+vpabsd Wpj Vpj, 0xc4 RXB.00010 x.1111.0.01 0x1e, CPUFeature_AVX
 ######## PABSW/VPABSW ##########################################################
-pabsw Wpi Vpi, 0x66 0x0f 0x38 0x1d, Fn0000_0001_ECX_SSSE3
-vpabsw Wpi Vpi, 0xc4 RXB.00010 x.1111.0.01 0x1d, Fn0000_0001_ECX_AVX
+pabsw Wpi Vpi, 0x66 0x0f 0x38 0x1d, CPUFeature_SSSE3
+vpabsw Wpi Vpi, 0xc4 RXB.00010 x.1111.0.01 0x1d, CPUFeature_AVX
 ######## PACKSSDW/VPACKSSDW ####################################################
-packssdw Wdq Vdq, 0x66 0x0f 0x6b, Fn0000_0001_EDX_SSE2
-vpackssdw Wpj Hpj Vpi, 0xc4 RXB.00001 0.src1.0.01 0x6b, Fn0000_0001_ECX_AVX
+packssdw Wdq Vdq, 0x66 0x0f 0x6b, CPUFeature_SSE2
+vpackssdw Wpj Hpj Vpi, 0xc4 RXB.00001 0.src1.0.01 0x6b, CPUFeature_AVX
 ######## PACKSSWB/VPACKSSWB ####################################################
-packsswb Wdq Vdq, 0x66 0x0f 0x63, Fn0000_0001_EDX_SSE2
-vpacksswb Wpi Hpi Vpk, 0xc4 RXB.00001 x.src.0.01 0x63, Fn0000_0001_ECX_AVX
+packsswb Wdq Vdq, 0x66 0x0f 0x63, CPUFeature_SSE2
+vpacksswb Wpi Hpi Vpk, 0xc4 RXB.00001 x.src.0.01 0x63, CPUFeature_AVX
 ######## PACKUSDW/VPACKUSDW ####################################################
-packusdw Wpj Vpi, 0x66 0x0f 0x38 0x2b, Fn0000_0001_ECX_SSE41
-vpackusdw Wpj Hpj Vpi, 0xc4 RXB.00010 x.src.0.01 0x2b, Fn0000_0001_ECX_AVX
+packusdw Wpj Vpi, 0x66 0x0f 0x38 0x2b, CPUFeature_SSE41
+vpackusdw Wpj Hpj Vpi, 0xc4 RXB.00010 x.src.0.01 0x2b, CPUFeature_AVX
 ######## PACKUSWB/VPACKUSWB ####################################################
-packuswb Wdq Vdq, 0x66 0x0f 0x67, Fn0000_0001_EDX_SSE2
-vpackuswb Wpi Hpi Vpk, 0xc4 RXB.00001 x.src.0.01 0x67, Fn0000_0001_ECX_AVX
+packuswb Wdq Vdq, 0x66 0x0f 0x67, CPUFeature_SSE2
+vpackuswb Wpi Hpi Vpk, 0xc4 RXB.00001 x.src.0.01 0x67, CPUFeature_AVX
 ######## PADDB/VPADDB ##########################################################
-paddb Wpk Vpk, 0x66 0x0f 0xfc, Fn0000_0001_EDX_SSE2
-vpaddb Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xfc, Fn0000_0001_ECX_AVX
+paddb Wpk Vpk, 0x66 0x0f 0xfc, CPUFeature_SSE2
+vpaddb Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xfc, CPUFeature_AVX
 ######## PADDD/VPADDD ##########################################################
-paddd Wpj Vpj, 0x66 0x0f 0xfe, Fn0000_0001_EDX_SSE2
-vpaddd Wpj Hpj Vpj, 0xc4 RXB.00001 x.src.0.01 0xfe, Fn0000_0001_ECX_AVX
+paddd Wpj Vpj, 0x66 0x0f 0xfe, CPUFeature_SSE2
+vpaddd Wpj Hpj Vpj, 0xc4 RXB.00001 x.src.0.01 0xfe, CPUFeature_AVX
 ######## PADDQ/VPADDQ ##########################################################
-paddq Wdq Vdq, 0x66 0x0f 0xd4, Fn0000_0001_EDX_SSE2
-vpaddq Wpq Hpq Vpq, 0xc4 RXB.00001 x.src.0.01 0xd4, Fn0000_0001_ECX_AVX
+paddq Wdq Vdq, 0x66 0x0f 0xd4, CPUFeature_SSE2
+vpaddq Wpq Hpq Vpq, 0xc4 RXB.00001 x.src.0.01 0xd4, CPUFeature_AVX
 ######## PADDSB/VPADDSB ########################################################
-paddsb Wpk Vpk, 0x66 0x0f 0xec, Fn0000_0001_EDX_SSE2
-vpaddsb Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xec, Fn0000_0001_ECX_AVX
+paddsb Wpk Vpk, 0x66 0x0f 0xec, CPUFeature_SSE2
+vpaddsb Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xec, CPUFeature_AVX
 ######## PADDSW/VPADDSW ########################################################
-paddsw Wpi Vpi, 0x66 0x0f 0xed, Fn0000_0001_EDX_SSE2
-vpaddsw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xed, Fn0000_0001_ECX_AVX
+paddsw Wpi Vpi, 0x66 0x0f 0xed, CPUFeature_SSE2
+vpaddsw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xed, CPUFeature_AVX
 ######## PADDUSB/VPADDUSB ######################################################
-paddusb Wpk Vpk, 0x66 0x0f 0xdc, Fn0000_0001_EDX_SSE2
-vpaddusb Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xdc, Fn0000_0001_ECX_AVX
+paddusb Wpk Vpk, 0x66 0x0f 0xdc, CPUFeature_SSE2
+vpaddusb Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xdc, CPUFeature_AVX
 ######## PADDUSW/VPADDUSW ######################################################
-paddusw Wpi Vpi, 0x66 0x0f 0xdd, Fn0000_0001_EDX_SSE2
-vpaddusw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xdd, Fn0000_0001_ECX_AVX
+paddusw Wpi Vpi, 0x66 0x0f 0xdd, CPUFeature_SSE2
+vpaddusw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xdd, CPUFeature_AVX
 ######## PADDW/VPADDW ##########################################################
-paddw Wpi Vpi, 0x66 0x0f 0xfd, Fn0000_0001_EDX_SSE2
-vpaddw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xfd, Fn0000_0001_ECX_AVX
+paddw Wpi Vpi, 0x66 0x0f 0xfd, CPUFeature_SSE2
+vpaddw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xfd, CPUFeature_AVX
 ######## PALIGNR/VPALIGNR ######################################################
-palignr Ib Wpb Vpb, 0x66 0x0f 0x3a 0x0f, Fn0000_0001_ECX_SSSE3
-vpalignr Ib Wpb Hpb Vpb, 0xc4 RXB.00011 x.src.0.01 0x0f, Fn0000_0001_ECX_AVX
+palignr Ib Wpb Vpb, 0x66 0x0f 0x3a 0x0f, CPUFeature_SSSE3
+vpalignr Ib Wpb Hpb Vpb, 0xc4 RXB.00011 x.src.0.01 0x0f, CPUFeature_AVX
 ######## PAND/VPAND ############################################################
-pand Wo Vo, 0x66 0x0f 0xdb, Fn0000_0001_EDX_SSE2
-vpand Wo Ho Vo, 0xc4 RXB.00001 x.src.0.01 0xdb, Fn0000_0001_ECX_AVX
+pand Wo Vo, 0x66 0x0f 0xdb, CPUFeature_SSE2
+vpand Wo Ho Vo, 0xc4 RXB.00001 x.src.0.01 0xdb, CPUFeature_AVX
 ######## PANDN/VPANDN ##########################################################
-pandn Wo Vo, 0x66 0x0f 0xdf, Fn0000_0001_EDX_SSE2
-vpandn Wo Ho Vo, 0xc4 RXB.00001 x.src.0.01 0xdf, Fn0000_0001_ECX_AVX
+pandn Wo Vo, 0x66 0x0f 0xdf, CPUFeature_SSE2
+vpandn Wo Ho Vo, 0xc4 RXB.00001 x.src.0.01 0xdf, CPUFeature_AVX
 ######## PAVGB/VPAVGB ##########################################################
-pavgb Wpk Vpk, 0x66 0x0f 0xe0, Fn0000_0001_EDX_SSE2
-vpavgb Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xe0, Fn0000_0001_ECX_AVX
+pavgb Wpk Vpk, 0x66 0x0f 0xe0, CPUFeature_SSE2
+vpavgb Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xe0, CPUFeature_AVX
 ######## PAVGW/VPAVGW ##########################################################
-pavgw Wpi Vpi, 0x66 0x0f 0xe3, Fn0000_0001_EDX_SSE2
-vpavgw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xe3, Fn0000_0001_ECX_AVX
+pavgw Wpi Vpi, 0x66 0x0f 0xe3, CPUFeature_SSE2
+vpavgw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xe3, CPUFeature_AVX
 ######## PBLENDVB/VPBLENDVB ####################################################
-pblendvb apb Wpb Vpb, 0x66 0x0f 0x38 0x10, Fn0000_0001_ECX_SSE41
-vpblendvb Lpb Wpb Hpb Vpb, 0xc4 RXB.00011 0.src.0.01 0x4c, Fn0000_0001_ECX_AVX
+pblendvb apb Wpb Vpb, 0x66 0x0f 0x38 0x10, CPUFeature_SSE41
+vpblendvb Lpb Wpb Hpb Vpb, 0xc4 RXB.00011 0.src.0.01 0x4c, CPUFeature_AVX
 ######## PBLENDW/VPBLENDW ######################################################
-pblendw Ib Wpw Vpw, 0x66 0x0f 0x3a 0x0e, Fn0000_0001_ECX_SSE41
-vpblendw Ib Wpw Hpw Vpw, 0xc4 RXB.00011 x.src.0.01 0x0e, Fn0000_0001_ECX_AVX
+pblendw Ib Wpw Vpw, 0x66 0x0f 0x3a 0x0e, CPUFeature_SSE41
+vpblendw Ib Wpw Hpw Vpw, 0xc4 RXB.00011 x.src.0.01 0x0e, CPUFeature_AVX
 ######## PCLMULQDQ/VPCLMULQDQ ##################################################
-pclmulqdq Ib Wpq Vpq, 0x66 0x0f 0x3a 0x44, Fn0000_0001_ECX_PCLMULQDQ
-vpclmulqdq Ib Wpq Hpq Vo, 0xc4 RXB.00011 x.src.0.01 0x44, Fn0000_0001_ECX_PCLMULQDQAVX
+pclmulqdq Ib Wpq Vpq, 0x66 0x0f 0x3a 0x44, CPUFeature_CLMUL
+vpclmulqdq Ib Wpq Hpq Vo, 0xc4 RXB.00011 x.src.0.01 0x44, CPUFeature_CLMULAVX
 ######## PCMPEQB/VPCMPEQB ######################################################
-pcmpeqb Wpk Vpb, 0x66 0x0f 0x74, Fn0000_0001_EDX_SSE2
-vpcmpeqb Wpk Hpk Vpb, 0xc4 RXB.00001 x.src.0.01 0x74, Fn0000_0001_ECX_AVX
+pcmpeqb Wpk Vpb, 0x66 0x0f 0x74, CPUFeature_SSE2
+vpcmpeqb Wpk Hpk Vpb, 0xc4 RXB.00001 x.src.0.01 0x74, CPUFeature_AVX
 ######## PCMPEQD/VPCMPEQD ######################################################
-pcmpeqd Wpj Vpw, 0x66 0x0f 0x76, Fn0000_0001_EDX_SSE2
-vpcmpeqd Wpj Hpj Vpw, 0xc4 RXB.00001 x.src.0.01 0x76, Fn0000_0001_ECX_AVX
+pcmpeqd Wpj Vpw, 0x66 0x0f 0x76, CPUFeature_SSE2
+vpcmpeqd Wpj Hpj Vpw, 0xc4 RXB.00001 x.src.0.01 0x76, CPUFeature_AVX
 ######## PCMPEQQ/VPCMPEQQ ######################################################
-pcmpeqq Wpq Vpq, 0x66 0x0f 0x38 0x29, Fn0000_0001_ECX_SSE41
-vpcmpeqq Wpq Hpq Vpq, 0xc4 RXB.00010 x.src.0.01 0x29, Fn0000_0001_ECX_AVX
+pcmpeqq Wpq Vpq, 0x66 0x0f 0x38 0x29, CPUFeature_SSE41
+vpcmpeqq Wpq Hpq Vpq, 0xc4 RXB.00010 x.src.0.01 0x29, CPUFeature_AVX
 ######## PCMPEQW/VPCMPEQW ######################################################
-pcmpeqw Wpi Vpw, 0x66 0x0f 0x75, Fn0000_0001_EDX_SSE2
-vpcmpeqw Wpi Hpi Vpw, 0xc4 RXB.00001 x.src.0.01 0x75, Fn0000_0001_ECX_AVX
+pcmpeqw Wpi Vpw, 0x66 0x0f 0x75, CPUFeature_SSE2
+vpcmpeqw Wpi Hpi Vpw, 0xc4 RXB.00001 x.src.0.01 0x75, CPUFeature_AVX
 ######## PCMPESTRI/VPCMPESTRI ##################################################
-pcmpestri Ib Wo Vo, 0x66 0x0f 0x3a 0x61, Fn0000_0001_ECX_SSE42
-vpcmpestri Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x61, Fn0000_0001_ECX_AVX
+pcmpestri Ib Wo Vo, 0x66 0x0f 0x3a 0x61, CPUFeature_SSE42
+vpcmpestri Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x61, CPUFeature_AVX
 ######## PCMPESTRM/VPCMPESTRM ##################################################
-pcmpestrm Ib Wo Vo, 0x66 0x0f 0x3a 0x60, Fn0000_0001_ECX_SSE42
-vpcmpestrm Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x60, Fn0000_0001_ECX_AVX
+pcmpestrm Ib Wo Vo, 0x66 0x0f 0x3a 0x60, CPUFeature_SSE42
+vpcmpestrm Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x60, CPUFeature_AVX
 ######## PCMPGTB/VPCMPGTB ######################################################
-pcmpgtb Wdq Vdq, 0x66 0x0f 0x64, Fn0000_0001_EDX_SSE2
-vpcmpgtb Wpk Hpk Vpb, 0xc4 RXB.00001 x.src.0.01 0x64, Fn0000_0001_ECX_AVX
+pcmpgtb Wdq Vdq, 0x66 0x0f 0x64, CPUFeature_SSE2
+vpcmpgtb Wpk Hpk Vpb, 0xc4 RXB.00001 x.src.0.01 0x64, CPUFeature_AVX
 ######## PCMPGTD/VPCMPGTD ######################################################
-pcmpgtd Wdq Vdq, 0x66 0x0f 0x66, Fn0000_0001_EDX_SSE2
-vpcmpgtd Wpj Hpj Vpw, 0xc4 RXB.00001 x.src.0.01 0x66, Fn0000_0001_ECX_AVX
+pcmpgtd Wdq Vdq, 0x66 0x0f 0x66, CPUFeature_SSE2
+vpcmpgtd Wpj Hpj Vpw, 0xc4 RXB.00001 x.src.0.01 0x66, CPUFeature_AVX
 ######## PCMPGTQ/VPCMPGTQ ######################################################
-pcmpgtq Wpq Vpq, 0x66 0x0f 0x38 0x37, Fn0000_0001_ECX_SSE42
-vpcmpgtq Wpq Hpq Vpq, 0xc4 RXB.00010 x.src.0.01 0x37, Fn0000_0001_ECX_AVX
+pcmpgtq Wpq Vpq, 0x66 0x0f 0x38 0x37, CPUFeature_SSE42
+vpcmpgtq Wpq Hpq Vpq, 0xc4 RXB.00010 x.src.0.01 0x37, CPUFeature_AVX
 ######## PCMPGTW/VPCMPGTW ######################################################
-pcmpgtw Wdq Vdq, 0x66 0x0f 0x65, Fn0000_0001_EDX_SSE2
-vpcmpgtw Wpi Hpi Vpw, 0xc4 RXB.00001 x.src.0.01 0x65, Fn0000_0001_ECX_AVX
+pcmpgtw Wdq Vdq, 0x66 0x0f 0x65, CPUFeature_SSE2
+vpcmpgtw Wpi Hpi Vpw, 0xc4 RXB.00001 x.src.0.01 0x65, CPUFeature_AVX
 ######## PCMPISTRI/VPCMPISTRI ##################################################
-pcmpistri Ib Wo Vo, 0x66 0x0f 0x3a 0x63, Fn0000_0001_ECX_SSE42
-vpcmpistri Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x63, Fn0000_0001_ECX_AVX
+pcmpistri Ib Wo Vo, 0x66 0x0f 0x3a 0x63, CPUFeature_SSE42
+vpcmpistri Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x63, CPUFeature_AVX
 ######## PCMPISTRM/VPCMPISTRM ##################################################
-pcmpistrm Ib Wo Vo, 0x66 0x0f 0x3a 0x62, Fn0000_0001_ECX_SSE42
-vpcmpistrm Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x62, Fn0000_0001_ECX_AVX
+pcmpistrm Ib Wo Vo, 0x66 0x0f 0x3a 0x62, CPUFeature_SSE42
+vpcmpistrm Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x62, CPUFeature_AVX
 ######## PEXTRB/VPEXTRB ########################################################
 # This is description according to AMD/Intel manual.
-#  pextrb Ib Vpk Ry, 0x66 0x0f 0x3a 0x14 /r, Fn0000_0001_ECX_SSE41
-#  vpextrb Ib Vpb Ry, 0xc4 RXB.00011 x.1111.0.01 0x14 /r, Fn0000_0001_ECX_AVX
+#  pextrb Ib Vpk Ry, 0x66 0x0f 0x3a 0x14 /r, CPUFeature_SSE41
+#  vpextrb Ib Vpb Ry, 0xc4 RXB.00011 x.1111.0.01 0x14 /r, CPUFeature_AVX
 # GNU as accepts this descriotion, but objdump decodes last operand as “Rd”.
 # Technically it makes no difference: “pextrb”/“vpextrb” clears everything
 # except least significant byte and this operation produces precisely idential
 # output for “Rd” and “Ry” operands.  We'll use objdump's description.
-pextrb Ib Vpk Mb, 0x66 0x0f 0x3a 0x14 /m, Fn0000_0001_ECX_SSE41
-pextrb Ib Vpk Rd, 0x66 0x0f 0x3a 0x14 /r, Fn0000_0001_ECX_SSE41
-vpextrb Ib Vpb Mb, 0xc4 RXB.00011 x.1111.0.01 0x14 /m, Fn0000_0001_ECX_AVX
-vpextrb Ib Vpb Rd, 0xc4 RXB.00011 x.1111.0.01 0x14 /r, Fn0000_0001_ECX_AVX
+pextrb Ib Vpk Mb, 0x66 0x0f 0x3a 0x14 /m, CPUFeature_SSE41
+pextrb Ib Vpk Rd, 0x66 0x0f 0x3a 0x14 /r, CPUFeature_SSE41
+vpextrb Ib Vpb Mb, 0xc4 RXB.00011 x.1111.0.01 0x14 /m, CPUFeature_AVX
+vpextrb Ib Vpb Rd, 0xc4 RXB.00011 x.1111.0.01 0x14 /r, CPUFeature_AVX
 ######## PEXTRD/VPEXTRD ########################################################
-pextrd Ib Vpk Ed, 0x66 0x0f 0x3a 0x16 /r, Fn0000_0001_ECX_SSE41
-vpextrd Ib Vpj Ed, 0xc4 RXB.00011 0.1111.0.01 0x16, Fn0000_0001_ECX_AVX
+pextrd Ib Vpk Ed, 0x66 0x0f 0x3a 0x16 /r, CPUFeature_SSE41
+vpextrd Ib Vpj Ed, 0xc4 RXB.00011 0.1111.0.01 0x16, CPUFeature_AVX
 ######## PEXTRQ/VPEXTRQ ########################################################
-pextrq Ib Vpq Eq, 0x66 rexw 0x0f 0x3a 0x16, amd64 Fn0000_0001_ECX_SSE41
-vpextrq Ib Vpqw Eq, 0xc4 RXB.00011 1.1111.0.01 0x16, amd64 Fn0000_0001_ECX_AVX
+pextrq Ib Vpq Eq, 0x66 rexw 0x0f 0x3a 0x16, amd64 CPUFeature_SSE41
+vpextrq Ib Vpqw Eq, 0xc4 RXB.00011 1.1111.0.01 0x16, amd64 CPUFeature_AVX
 ######## PEXTRW/VPEXTRW ########################################################
 # This is description according to AMD/Intel manual.
-#  pextrw Ib Udq Gy, 0x66 0x0f 0xc5, Fn0000_0001_EDX_SSE2
-#  vpextrw Ib Upw Gy, 0xc4 RXB.00001 x.1111.0.01 0xc5, Fn0000_0001_ECX_AVX
-#  vpextrw Ib Vpw Ry, 0xc4 RXB.00011 x.1111.0.01 0x15 /r, Fn0000_0001_ECX_AVX
+#  pextrw Ib Udq Gy, 0x66 0x0f 0xc5, CPUFeature_SSE2
+#  vpextrw Ib Upw Gy, 0xc4 RXB.00001 x.1111.0.01 0xc5, CPUFeature_AVX
+#  vpextrw Ib Vpw Ry, 0xc4 RXB.00011 x.1111.0.01 0x15 /r, CPUFeature_AVX
 # GNU as accepts this descriotion, but objdump decodes last operand as “Rd”.
 # Technically it makes no difference: “pextrw”/“vpextrw” clears everything
 # except least significant byte and this operation produces precisely idential
 # output for “Rd” and “Ry” operands.  We'll use objdump's description.
-pextrw Ib Udq Gd, 0x66 0x0f 0xc5, Fn0000_0001_EDX_SSE2
-pextrw Ib Vpw Mw, 0x66 0x0f 0x3a 0x15 /m, Fn0000_0001_ECX_SSE41
-pextrw Ib Vpw Ry, 0x66 0x0f 0x3a 0x15 /r, Fn0000_0001_ECX_SSE41
-vpextrw Ib Upw Gd, 0xc4 RXB.00001 x.1111.0.01 0xc5, Fn0000_0001_ECX_AVX
-vpextrw Ib Vpw Mw, 0xc4 RXB.00011 x.1111.0.01 0x15 /m, Fn0000_0001_ECX_AVX
-vpextrw Ib Vpw Rd, 0xc4 RXB.00011 x.1111.0.01 0x15 /r, Fn0000_0001_ECX_AVX
+pextrw Ib Udq Gd, 0x66 0x0f 0xc5, CPUFeature_SSE2
+pextrw Ib Vpw Mw, 0x66 0x0f 0x3a 0x15 /m, CPUFeature_SSE41
+pextrw Ib Vpw Ry, 0x66 0x0f 0x3a 0x15 /r, CPUFeature_SSE41
+vpextrw Ib Upw Gd, 0xc4 RXB.00001 x.1111.0.01 0xc5, CPUFeature_AVX
+vpextrw Ib Vpw Mw, 0xc4 RXB.00011 x.1111.0.01 0x15 /m, CPUFeature_AVX
+vpextrw Ib Vpw Rd, 0xc4 RXB.00011 x.1111.0.01 0x15 /r, CPUFeature_AVX
 ######## PHADDD/VPHADDD ########################################################
-phaddd Wpj Vpj, 0x66 0x0f 0x38 0x02, Fn0000_0001_ECX_SSSE3
-vphaddd Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x02, Fn0000_0001_ECX_AVX
+phaddd Wpj Vpj, 0x66 0x0f 0x38 0x02, CPUFeature_SSSE3
+vphaddd Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x02, CPUFeature_AVX
 ######## PHADDSW/VPHADDSW ######################################################
-phaddsw Wpi Vpi, 0x66 0x0f 0x38 0x03, Fn0000_0001_ECX_SSSE3
-vphaddsw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x03, Fn0000_0001_ECX_AVX
+phaddsw Wpi Vpi, 0x66 0x0f 0x38 0x03, CPUFeature_SSSE3
+vphaddsw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x03, CPUFeature_AVX
 ######## PHADDW/VPHADDW ########################################################
-phaddw Wpi Vpi, 0x66 0x0f 0x38 0x01, Fn0000_0001_ECX_SSSE3
-vphaddw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x01, Fn0000_0001_ECX_AVX
+phaddw Wpi Vpi, 0x66 0x0f 0x38 0x01, CPUFeature_SSSE3
+vphaddw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x01, CPUFeature_AVX
 ######## PHMINPOSUW/VPHMINPOSUW ################################################
-phminposuw Wpi Vpi, 0x66 0x0f 0x38 0x41, Fn0000_0001_ECX_SSE41
-vphminposuw Wpi Vo, 0xc4 RXB.00010 x.1111.0.01 0x41, Fn0000_0001_ECX_AVX
+phminposuw Wpi Vpi, 0x66 0x0f 0x38 0x41, CPUFeature_SSE41
+vphminposuw Wpi Vo, 0xc4 RXB.00010 x.1111.0.01 0x41, CPUFeature_AVX
 ######## PHSUBD/VPHSUBD ########################################################
-phsubd Wpj Vpj, 0x66 0x0f 0x38 0x06, Fn0000_0001_ECX_SSSE3
-vphsubd Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x06, Fn0000_0001_ECX_AVX
+phsubd Wpj Vpj, 0x66 0x0f 0x38 0x06, CPUFeature_SSSE3
+vphsubd Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x06, CPUFeature_AVX
 ######## PHSUBSW/VPHSUBSW ######################################################
-phsubsw Wpi Vpi, 0x66 0x0f 0x38 0x07, Fn0000_0001_ECX_SSSE3
-vphsubsw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x07, Fn0000_0001_ECX_AVX
+phsubsw Wpi Vpi, 0x66 0x0f 0x38 0x07, CPUFeature_SSSE3
+vphsubsw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x07, CPUFeature_AVX
 ######## PHSUBW/VPHSUBW ########################################################
-phsubw Wpi Vpi, 0x66 0x0f 0x38 0x05, Fn0000_0001_ECX_SSSE3
-vphsubw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x05, Fn0000_0001_ECX_AVX
+phsubw Wpi Vpi, 0x66 0x0f 0x38 0x05, CPUFeature_SSSE3
+vphsubw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x05, CPUFeature_AVX
 ######## PINSRB/VPINSRB ########################################################
-pinsrb Ib Mb Vpk, 0x66 0x0f 0x3a 0x20 /m, Fn0000_0001_ECX_SSE41
-pinsrb Ib Rd Vpk, 0x66 0x0f 0x3a 0x20 /r, Fn0000_0001_ECX_SSE41
-vpinsrb Ib Mb Hpb Vpb, 0xc4 RXB.00011 x.1111.0.01 0x20 /m, Fn0000_0001_ECX_AVX
-vpinsrb Ib Rd Hpb Vpb, 0xc4 RXB.00011 x.1111.0.01 0x20 /r, Fn0000_0001_ECX_AVX
+pinsrb Ib Mb Vpk, 0x66 0x0f 0x3a 0x20 /m, CPUFeature_SSE41
+pinsrb Ib Rd Vpk, 0x66 0x0f 0x3a 0x20 /r, CPUFeature_SSE41
+vpinsrb Ib Mb Hpb Vpb, 0xc4 RXB.00011 x.1111.0.01 0x20 /m, CPUFeature_AVX
+vpinsrb Ib Rd Hpb Vpb, 0xc4 RXB.00011 x.1111.0.01 0x20 /r, CPUFeature_AVX
 ######## PINSRD/VPINSRD ########################################################
-pinsrd Ib Ed Vpj, 0x66 0x0f 0x3a 0x22, Fn0000_0001_ECX_SSE41
-vpinsrd Ib Ed Hpdw Vpdw, 0xc4 RXB.00011 0.1111.0.01 0x22, Fn0000_0001_ECX_AVX
+pinsrd Ib Ed Vpj, 0x66 0x0f 0x3a 0x22, CPUFeature_SSE41
+vpinsrd Ib Ed Hpdw Vpdw, 0xc4 RXB.00011 0.1111.0.01 0x22, CPUFeature_AVX
 ######## PINSRQ/VPINSRQ ########################################################
-pinsrq Ib Eq Vpq, 0x66 rexw 0x0f 0x3a 0x22, amd64 Fn0000_0001_ECX_SSE41
-vpinsrq Ib Eq Ho Vo, 0xc4 RXB.00011 1.1111.0.01 0x22, amd64 Fn0000_0001_ECX_AVX
+pinsrq Ib Eq Vpq, 0x66 rexw 0x0f 0x3a 0x22, amd64 CPUFeature_SSE41
+vpinsrq Ib Eq Ho Vo, 0xc4 RXB.00011 1.1111.0.01 0x22, amd64 CPUFeature_AVX
 ######## PINSRW/VPINSRW ########################################################
 # This is description according to AMD/Intel manual.
-#  pinsrw Ib Ew Vdq, 0x66 0x0f 0xc4, Fn0000_0001_EDX_SSE1
+#  pinsrw Ib Ew Vdq, 0x66 0x0f 0xc4, CPUFeature_SSE
 # GNU as accepts this descriotion, but objdump decodes last operand as “Rd”.
 # Technically it makes no difference: “pinsrw”/“vpinsrw” clears everything
 # except least significant word and this operation produces precisely idential
 # output for “Ry” and “Rd” operands.  We'll use objdump's description.
-pinsrw Ib Mw Vdq, 0x66 0x0f 0xc4 /m, Fn0000_0001_EDX_SSE1
-pinsrw Ib Rd Vdq, 0x66 0x0f 0xc4 /r, Fn0000_0001_EDX_SSE1
-vpinsrw Ib Mw Hpw Vpw, 0xc4 RXB.00001 x.1111.0.01 0xc4 /m, Fn0000_0001_ECX_AVX
-vpinsrw Ib Rd Hpw Vpw, 0xc4 RXB.00001 x.1111.0.01 0xc4 /r, Fn0000_0001_ECX_AVX
+pinsrw Ib Mw Vdq, 0x66 0x0f 0xc4 /m, CPUFeature_SSE
+pinsrw Ib Rd Vdq, 0x66 0x0f 0xc4 /r, CPUFeature_SSE
+vpinsrw Ib Mw Hpw Vpw, 0xc4 RXB.00001 x.1111.0.01 0xc4 /m, CPUFeature_AVX
+vpinsrw Ib Rd Hpw Vpw, 0xc4 RXB.00001 x.1111.0.01 0xc4 /r, CPUFeature_AVX
 ######## PMADDUBSW/VPMADDUBSW ##################################################
-pmaddubsw Wpk Vpk, 0x66 0x0f 0x38 0x04, Fn0000_0001_ECX_SSSE3
-vpmaddubsw Wpk Hpk Vpi, 0xc4 RXB.00010 x.src.0.01 0x04, Fn0000_0001_ECX_AVX
+pmaddubsw Wpk Vpk, 0x66 0x0f 0x38 0x04, CPUFeature_SSSE3
+vpmaddubsw Wpk Hpk Vpi, 0xc4 RXB.00010 x.src.0.01 0x04, CPUFeature_AVX
 ######## PMADDWD/VPMADDWD ######################################################
-pmaddwd Wdq Vdq, 0x66 0x0f 0xf5, Fn0000_0001_EDX_SSE2
-vpmaddwd Wpi Hpi Vpj, 0xc4 RXB.00001 x.src.0.01 0xf5, Fn0000_0001_ECX_AVX
+pmaddwd Wdq Vdq, 0x66 0x0f 0xf5, CPUFeature_SSE2
+vpmaddwd Wpi Hpi Vpj, 0xc4 RXB.00001 x.src.0.01 0xf5, CPUFeature_AVX
 ######## PMAXSB/VPMAXSB ########################################################
-pmaxsb Wpk Vpk, 0x66 0x0f 0x38 0x3c, Fn0000_0001_ECX_SSE41
-vpmaxsb Wpk Hpk Vpk, 0xc4 RXB.00010 x.src.0.01 0x3c, Fn0000_0001_ECX_AVX
+pmaxsb Wpk Vpk, 0x66 0x0f 0x38 0x3c, CPUFeature_SSE41
+vpmaxsb Wpk Hpk Vpk, 0xc4 RXB.00010 x.src.0.01 0x3c, CPUFeature_AVX
 ######## PMAXSD/VPMAXSD ########################################################
-pmaxsd Wpj Vpj, 0x66 0x0f 0x38 0x3d, Fn0000_0001_ECX_SSE41
-vpmaxsd Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x3d, Fn0000_0001_ECX_AVX
+pmaxsd Wpj Vpj, 0x66 0x0f 0x38 0x3d, CPUFeature_SSE41
+vpmaxsd Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x3d, CPUFeature_AVX
 ######## PMAXSW/VPMAXSW ########################################################
-pmaxsw Wpi Vpi, 0x66 0x0f 0xee, Fn0000_0001_EDX_SSE2
-vpmaxsw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xee, Fn0000_0001_ECX_AVX
+pmaxsw Wpi Vpi, 0x66 0x0f 0xee, CPUFeature_SSE2
+vpmaxsw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xee, CPUFeature_AVX
 ######## PMAXUB/VPMAXUB ########################################################
-pmaxub Wpk Vpk, 0x66 0x0f 0xde, Fn0000_0001_EDX_SSE2
-vpmaxub Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xde, Fn0000_0001_ECX_AVX
+pmaxub Wpk Vpk, 0x66 0x0f 0xde, CPUFeature_SSE2
+vpmaxub Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xde, CPUFeature_AVX
 ######## PMAXUD/VPMAXUD ########################################################
-pmaxud Wpj Vpj, 0x66 0x0f 0x38 0x3f, Fn0000_0001_ECX_SSE41
-vpmaxud Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x3f, Fn0000_0001_ECX_AVX
+pmaxud Wpj Vpj, 0x66 0x0f 0x38 0x3f, CPUFeature_SSE41
+vpmaxud Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x3f, CPUFeature_AVX
 ######## PMAXUW/VPMAXUW ########################################################
-pmaxuw Wpi Vpi, 0x66 0x0f 0x38 0x3e, Fn0000_0001_ECX_SSE41
-vpmaxuw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x3e, Fn0000_0001_ECX_AVX
+pmaxuw Wpi Vpi, 0x66 0x0f 0x38 0x3e, CPUFeature_SSE41
+vpmaxuw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x3e, CPUFeature_AVX
 ######## PMINSB/VPMINSB ########################################################
-pminsb Wpk Vpk, 0x66 0x0f 0x38 0x38, Fn0000_0001_ECX_SSE41
-vpminsb Wpk Hpk Vpk, 0xc4 RXB.00010 x.src.0.01 0x38, Fn0000_0001_ECX_AVX
+pminsb Wpk Vpk, 0x66 0x0f 0x38 0x38, CPUFeature_SSE41
+vpminsb Wpk Hpk Vpk, 0xc4 RXB.00010 x.src.0.01 0x38, CPUFeature_AVX
 ######## PMINSD/VPMINSD ########################################################
-pminsd Wpj Vpj, 0x66 0x0f 0x38 0x39, Fn0000_0001_ECX_SSE41
-vpminsd Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x39, Fn0000_0001_ECX_AVX
+pminsd Wpj Vpj, 0x66 0x0f 0x38 0x39, CPUFeature_SSE41
+vpminsd Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x39, CPUFeature_AVX
 ######## PMINSW/VPMINSW ########################################################
-pminsw Wpi Vpi, 0x66 0x0f 0xea, Fn0000_0001_EDX_SSE2
-vpminsw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xea, Fn0000_0001_ECX_AVX
+pminsw Wpi Vpi, 0x66 0x0f 0xea, CPUFeature_SSE2
+vpminsw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xea, CPUFeature_AVX
 ######## PMINUB/VPMINUB ########################################################
-pminub Wpk Vpk, 0x66 0x0f 0xda, Fn0000_0001_EDX_SSE2
-vpminub Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xda, Fn0000_0001_ECX_AVX
+pminub Wpk Vpk, 0x66 0x0f 0xda, CPUFeature_SSE2
+vpminub Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xda, CPUFeature_AVX
 ######## PMINUD/VPMINUD ########################################################
-pminud Wpj Vpj, 0x66 0x0f 0x38 0x3b, Fn0000_0001_ECX_SSE41
-vpminud Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x3b, Fn0000_0001_ECX_AVX
+pminud Wpj Vpj, 0x66 0x0f 0x38 0x3b, CPUFeature_SSE41
+vpminud Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x3b, CPUFeature_AVX
 ######## PMINUW/VPMINUW ########################################################
-pminuw Wpi Vpi, 0x66 0x0f 0x38 0x3a, Fn0000_0001_ECX_SSE41
-vpminuw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x3a, Fn0000_0001_ECX_AVX
+pminuw Wpi Vpi, 0x66 0x0f 0x38 0x3a, CPUFeature_SSE41
+vpminuw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x3a, CPUFeature_AVX
 ######## PMOVMSKB/PMOVMSKB #####################################################
 # This is description according to AMD/Intel manual.
-#  vpmovmskb Upb Gy, 0xc4 RXB.00001 x.1111.0.01 0xd7, Fn0000_0001_ECX_AVX
+#  vpmovmskb Upb Gy, 0xc4 RXB.00001 x.1111.0.01 0xd7, CPUFeature_AVX
 # GNU as accepts this descriotion, but objdump decodes last operand as “Gd”.
 # Technically it makes no difference: “vpmovmskb” clears everything except least
 # significant word and this operation produces precisely idential output for “Gy”
 # and “Gd” operands.  We'll use objdump's description.
-pmovmskb Udq Gd, 0x66 0x0f 0xd7, Fn0000_0001_EDX_SSE2
-vpmovmskb Upb Gd, 0xc4 RXB.00001 x.1111.0.01 0xd7, Fn0000_0001_ECX_AVX
+pmovmskb Udq Gd, 0x66 0x0f 0xd7, CPUFeature_SSE2
+vpmovmskb Upb Gd, 0xc4 RXB.00001 x.1111.0.01 0xd7, CPUFeature_AVX
 ######## PMOVSXBD/VPMOVSXBD ####################################################
-pmovsxbd Wpk Vpj, 0x66 0x0f 0x38 0x21, Fn0000_0001_ECX_SSE41
-vpmovsxbd Wpk Vpj, 0xc4 RXB.00010 x.1111.0.01 0x21, Fn0000_0001_ECX_AVX
+pmovsxbd Wpk Vpj, 0x66 0x0f 0x38 0x21, CPUFeature_SSE41
+vpmovsxbd Wpk Vpj, 0xc4 RXB.00010 x.1111.0.01 0x21, CPUFeature_AVX
 ######## PMOVSXBQ/VPMOVSXBQ ####################################################
-pmovsxbq Wpk Vpq, 0x66 0x0f 0x38 0x22, Fn0000_0001_ECX_SSE41
-vpmovsxbq Wpk Vpq, 0xc4 RXB.00010 x.1111.0.01 0x22, Fn0000_0001_ECX_AVX
+pmovsxbq Wpk Vpq, 0x66 0x0f 0x38 0x22, CPUFeature_SSE41
+vpmovsxbq Wpk Vpq, 0xc4 RXB.00010 x.1111.0.01 0x22, CPUFeature_AVX
 ######## PMOVSXBW/VPMOVSXBW ####################################################
-pmovsxbw Wpk Vpi, 0x66 0x0f 0x38 0x20, Fn0000_0001_ECX_SSE41
-vpmovsxbw Wpk Vpi, 0xc4 RXB.00010 x.1111.0.01 0x20, Fn0000_0001_ECX_AVX
+pmovsxbw Wpk Vpi, 0x66 0x0f 0x38 0x20, CPUFeature_SSE41
+vpmovsxbw Wpk Vpi, 0xc4 RXB.00010 x.1111.0.01 0x20, CPUFeature_AVX
 ######## PMOVSXDQ/VPMOVSXDQ ####################################################
-pmovsxdq Wpj Vpq, 0x66 0x0f 0x38 0x25, Fn0000_0001_ECX_SSE41
-vpmovsxdq Wpj Vpq, 0xc4 RXB.00010 x.1111.0.01 0x25, Fn0000_0001_ECX_AVX
+pmovsxdq Wpj Vpq, 0x66 0x0f 0x38 0x25, CPUFeature_SSE41
+vpmovsxdq Wpj Vpq, 0xc4 RXB.00010 x.1111.0.01 0x25, CPUFeature_AVX
 ######## PMOVSXWD/VPMOVSXWD ####################################################
-pmovsxwd Wpi Vpj, 0x66 0x0f 0x38 0x23, Fn0000_0001_ECX_SSE41
-vpmovsxwd Wpi Vpj, 0xc4 RXB.00010 x.1111.0.01 0x23, Fn0000_0001_ECX_AVX
+pmovsxwd Wpi Vpj, 0x66 0x0f 0x38 0x23, CPUFeature_SSE41
+vpmovsxwd Wpi Vpj, 0xc4 RXB.00010 x.1111.0.01 0x23, CPUFeature_AVX
 ######## PMOVSXWQ/VPMOVSXWQ ####################################################
-pmovsxwq Wpi Vpq, 0x66 0x0f 0x38 0x24, Fn0000_0001_ECX_SSE41
-vpmovsxwq Wpi Vpq, 0xc4 RXB.00010 x.1111.0.01 0x24, Fn0000_0001_ECX_AVX
+pmovsxwq Wpi Vpq, 0x66 0x0f 0x38 0x24, CPUFeature_SSE41
+vpmovsxwq Wpi Vpq, 0xc4 RXB.00010 x.1111.0.01 0x24, CPUFeature_AVX
 ######## PMOVZXBD/VPMOVZXBD ####################################################
-pmovzxbd Wpk Vpj, 0x66 0x0f 0x38 0x31, Fn0000_0001_ECX_SSE41
-vpmovzxbd Wpk Vpj, 0xc4 RXB.00010 x.1111.0.01 0x31, Fn0000_0001_ECX_AVX
+pmovzxbd Wpk Vpj, 0x66 0x0f 0x38 0x31, CPUFeature_SSE41
+vpmovzxbd Wpk Vpj, 0xc4 RXB.00010 x.1111.0.01 0x31, CPUFeature_AVX
 ######## PMOVZXBQ/VPMOVZXBQ ####################################################
-pmovzxbq Wpk Vpq, 0x66 0x0f 0x38 0x32, Fn0000_0001_ECX_SSE41
-vpmovzxbq Wpk Vpq, 0xc4 RXB.00010 x.1111.0.01 0x32, Fn0000_0001_ECX_AVX
+pmovzxbq Wpk Vpq, 0x66 0x0f 0x38 0x32, CPUFeature_SSE41
+vpmovzxbq Wpk Vpq, 0xc4 RXB.00010 x.1111.0.01 0x32, CPUFeature_AVX
 ######## PMOVZXBW/VPMOVZXBW ####################################################
-pmovzxbw Wpk Vpi, 0x66 0x0f 0x38 0x30, Fn0000_0001_ECX_SSE41
-vpmovzxbw Wpk Vpi, 0xc4 RXB.00010 x.1111.0.01 0x30, Fn0000_0001_ECX_AVX
+pmovzxbw Wpk Vpi, 0x66 0x0f 0x38 0x30, CPUFeature_SSE41
+vpmovzxbw Wpk Vpi, 0xc4 RXB.00010 x.1111.0.01 0x30, CPUFeature_AVX
 ######## PMOVZXDQ/VPMOVZXDQ ####################################################
-pmovzxdq Wpj Vpq, 0x66 0x0f 0x38 0x35, Fn0000_0001_ECX_SSE41
-vpmovzxdq Wpj Vpq, 0xc4 RXB.00010 x.1111.0.01 0x35, Fn0000_0001_ECX_AVX
+pmovzxdq Wpj Vpq, 0x66 0x0f 0x38 0x35, CPUFeature_SSE41
+vpmovzxdq Wpj Vpq, 0xc4 RXB.00010 x.1111.0.01 0x35, CPUFeature_AVX
 ######## PMOVZXWD/VPMOVZXWD ####################################################
-pmovzxwd Wpi Vpj, 0x66 0x0f 0x38 0x33, Fn0000_0001_ECX_SSE41
-vpmovzxwd Wpi Vpj, 0xc4 RXB.00010 x.1111.0.01 0x33, Fn0000_0001_ECX_AVX
+pmovzxwd Wpi Vpj, 0x66 0x0f 0x38 0x33, CPUFeature_SSE41
+vpmovzxwd Wpi Vpj, 0xc4 RXB.00010 x.1111.0.01 0x33, CPUFeature_AVX
 ######## PMOVZXWQ/VPMOVZXWQ ####################################################
-pmovzxwq Wpi Vpq, 0x66 0x0f 0x38 0x34, Fn0000_0001_ECX_SSE41
-vpmovzxwq Wpi Vpq, 0xc4 RXB.00010 x.1111.0.01 0x34, Fn0000_0001_ECX_AVX
+pmovzxwq Wpi Vpq, 0x66 0x0f 0x38 0x34, CPUFeature_SSE41
+vpmovzxwq Wpi Vpq, 0xc4 RXB.00010 x.1111.0.01 0x34, CPUFeature_AVX
 ######## PMULDQ/VPMULDQ ########################################################
-pmuldq Wpj Vpq, 0x66 0x0f 0x38 0x28, Fn0000_0001_ECX_SSE41
-vpmuldq Wpj Hpj Vpq, 0xc4 RXB.00010 x.src.0.01 0x28, Fn0000_0001_ECX_AVX
+pmuldq Wpj Vpq, 0x66 0x0f 0x38 0x28, CPUFeature_SSE41
+vpmuldq Wpj Hpj Vpq, 0xc4 RXB.00010 x.src.0.01 0x28, CPUFeature_AVX
 ######## PMULHRSW/VPMULHRSW ####################################################
-pmulhrsw Wpi Vpi, 0x66 0x0f 0x38 0x0b, Fn0000_0001_ECX_SSSE3
-vpmulhrsw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x0b, Fn0000_0001_ECX_AVX
+pmulhrsw Wpi Vpi, 0x66 0x0f 0x38 0x0b, CPUFeature_SSSE3
+vpmulhrsw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x0b, CPUFeature_AVX
 ######## PMULHUW/VPMULHUW ######################################################
-pmulhuw Wdq Vdq, 0x66 0x0f 0xe4, Fn0000_0001_EDX_SSE2
-vpmulhuw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xe4, Fn0000_0001_ECX_AVX
+pmulhuw Wdq Vdq, 0x66 0x0f 0xe4, CPUFeature_SSE2
+vpmulhuw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xe4, CPUFeature_AVX
 ######## PMULHW/VPMULHW ########################################################
-pmulhw Wdq Vdq, 0x66 0x0f 0xe5, Fn0000_0001_EDX_SSE2
-vpmulhw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xe5, Fn0000_0001_ECX_AVX
+pmulhw Wdq Vdq, 0x66 0x0f 0xe5, CPUFeature_SSE2
+vpmulhw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xe5, CPUFeature_AVX
 ######## PMULLD/VPMULLD ########################################################
-pmulld Wpj Vpj, 0x66 0x0f 0x38 0x40, Fn0000_0001_ECX_SSE41
-vpmulld Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x40, Fn0000_0001_ECX_AVX
+pmulld Wpj Vpj, 0x66 0x0f 0x38 0x40, CPUFeature_SSE41
+vpmulld Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x40, CPUFeature_AVX
 ######## PMULLW/VPMULLW ########################################################
-pmullw Wdq Vdq, 0x66 0x0f 0xd5, Fn0000_0001_EDX_SSE2
-vpmullw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xd5, Fn0000_0001_ECX_AVX
+pmullw Wdq Vdq, 0x66 0x0f 0xd5, CPUFeature_SSE2
+vpmullw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xd5, CPUFeature_AVX
 ######## PMULUDQ/VPMULUDQ ######################################################
-pmuludq Wdq Vdq, 0x66 0x0f 0xf4, Fn0000_0001_EDX_SSE2
-vpmuludq Wpj Hpj Vpq, 0xc4 RXB.00001 x.src.0.01 0xf4, Fn0000_0001_ECX_AVX
+pmuludq Wdq Vdq, 0x66 0x0f 0xf4, CPUFeature_SSE2
+vpmuludq Wpj Hpj Vpq, 0xc4 RXB.00001 x.src.0.01 0xf4, CPUFeature_AVX
 ######## POR/VPOR ##############################################################
-por Wdq Vdq, 0x66 0x0f 0xeb, Fn0000_0001_EDX_SSE2
-vpor Wo Ho Vo, 0xc4 RXB.00001 x.src.0.01 0xeb, Fn0000_0001_ECX_AVX
+por Wdq Vdq, 0x66 0x0f 0xeb, CPUFeature_SSE2
+vpor Wo Ho Vo, 0xc4 RXB.00001 x.src.0.01 0xeb, CPUFeature_AVX
 ######## PSADBW/VPSADBW ########################################################
-psadbw Wdq Vdq, 0x66 0x0f 0xf6, Fn0000_0001_EDX_SSE2
-vpsadbw Wpk Hpk Vpi, 0xc4 RXB.00001 x.src.0.01 0xf6, Fn0000_0001_ECX_AVX
+psadbw Wdq Vdq, 0x66 0x0f 0xf6, CPUFeature_SSE2
+vpsadbw Wpk Hpk Vpi, 0xc4 RXB.00001 x.src.0.01 0xf6, CPUFeature_AVX
 ######## PSHUFB/VPSHUFB ########################################################
-pshufb Wpb Vpb, 0x66 0x0f 0x38 0x00, Fn0000_0001_ECX_SSSE3
-vpshufb Wpb Hpb Vpb, 0xc4 RXB.00010 x.src.0.01 0x00, Fn0000_0001_ECX_AVX
+pshufb Wpb Vpb, 0x66 0x0f 0x38 0x00, CPUFeature_SSSE3
+vpshufb Wpb Hpb Vpb, 0xc4 RXB.00010 x.src.0.01 0x00, CPUFeature_AVX
 ######## PSHUFD/VPSHUFD ########################################################
-pshufd Ib Wdq Vdq, 0x66 0x0f 0x70, Fn0000_0001_EDX_SSE2
-vpshufd Ib Wpdw Vpdw, 0xc4 RXB.00001 x.1111.0.01 0x70, Fn0000_0001_ECX_AVX
+pshufd Ib Wdq Vdq, 0x66 0x0f 0x70, CPUFeature_SSE2
+vpshufd Ib Wpdw Vpdw, 0xc4 RXB.00001 x.1111.0.01 0x70, CPUFeature_AVX
 ######## PSHUFHW/VPSHUFHW ######################################################
-pshufhw Ib Wq Vq, 0xf3 0x0f 0x70, Fn0000_0001_EDX_SSE2
-vpshufhw Ib Wpw Vpw, 0xc4 RXB.00001 x.1111.0.10 0x70, Fn0000_0001_ECX_AVX
+pshufhw Ib Wq Vq, 0xf3 0x0f 0x70, CPUFeature_SSE2
+vpshufhw Ib Wpw Vpw, 0xc4 RXB.00001 x.1111.0.10 0x70, CPUFeature_AVX
 ######## PSHUFLW/VPSHUFLW ######################################################
-pshuflw Ib Wq Vq, 0xf2 0x0f 0x70, Fn0000_0001_EDX_SSE2
-vpshuflw Ib Wpw Vpw, 0xc4 RXB.00001 x.1111.0.11 0x70, Fn0000_0001_ECX_AVX
+pshuflw Ib Wq Vq, 0xf2 0x0f 0x70, CPUFeature_SSE2
+vpshuflw Ib Wpw Vpw, 0xc4 RXB.00001 x.1111.0.11 0x70, CPUFeature_AVX
 ######## PSIGNB/VPSIGNB ########################################################
-psignb Wpk Vpk, 0x66 0x0f 0x38 0x08, Fn0000_0001_ECX_SSSE3
-vpsignb Wpk Hpk Vpk, 0xc4 RXB.00010 x.src.0.01 0x08, Fn0000_0001_ECX_AVX
+psignb Wpk Vpk, 0x66 0x0f 0x38 0x08, CPUFeature_SSSE3
+vpsignb Wpk Hpk Vpk, 0xc4 RXB.00010 x.src.0.01 0x08, CPUFeature_AVX
 ######## PSIGND/VPSIGND ########################################################
-psignd Wpj Vpj, 0x66 0x0f 0x38 0x0a, Fn0000_0001_ECX_SSSE3
-vpsignd Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x0a, Fn0000_0001_ECX_AVX
+psignd Wpj Vpj, 0x66 0x0f 0x38 0x0a, CPUFeature_SSSE3
+vpsignd Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x0a, CPUFeature_AVX
 ######## PSIGND/VPSIGND ########################################################
-psignw Wpi Vpi, 0x66 0x0f 0x38 0x09, Fn0000_0001_ECX_SSSE3
-vpsignw Wpi Hpi Vpj, 0xc4 RXB.00010 x.src.0.01 0x09, Fn0000_0001_ECX_AVX
+psignw Wpi Vpi, 0x66 0x0f 0x38 0x09, CPUFeature_SSSE3
+vpsignw Wpi Hpi Vpj, 0xc4 RXB.00010 x.src.0.01 0x09, CPUFeature_AVX
 ######## PSLLD/VPSLLD ##########################################################
-pslld Wdq Vdq, 0x66 0x0f 0xf2, Fn0000_0001_EDX_SSE2
-pslld Ib Udq, 0x66 0x0f 0x72 /6, Fn0000_0001_EDX_SSE2
-vpslld Wo Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0xf2, Fn0000_0001_ECX_AVX
-vpslld Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x72 /6, Fn0000_0001_ECX_AVX
+pslld Wdq Vdq, 0x66 0x0f 0xf2, CPUFeature_SSE2
+pslld Ib Udq, 0x66 0x0f 0x72 /6, CPUFeature_SSE2
+vpslld Wo Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0xf2, CPUFeature_AVX
+vpslld Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x72 /6, CPUFeature_AVX
 ######## PSLLDQ/VPSLLDQ ########################################################
-pslldq Ib Udq, 0x66 0x0f 0x73 /7, Fn0000_0001_EDX_SSE2
-vpslldq Ib Udq Hdq, 0xc4 RXB.00001 0.dest.0.01 0x73 /7, Fn0000_0001_ECX_AVX
+pslldq Ib Udq, 0x66 0x0f 0x73 /7, CPUFeature_SSE2
+vpslldq Ib Udq Hdq, 0xc4 RXB.00001 0.dest.0.01 0x73 /7, CPUFeature_AVX
 ######## PSLLQ/VPSLLQ ##########################################################
-psllq Wdq Vdq, 0x66 0x0f 0xf3, Fn0000_0001_EDX_SSE2
-psllq Ib Udq, 0x66 0x0f 0x73 /6, Fn0000_0001_EDX_SSE2
-vpsllq Wo Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0xf3, Fn0000_0001_ECX_AVX
-vpsllq Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x73 /6, Fn0000_0001_ECX_AVX
+psllq Wdq Vdq, 0x66 0x0f 0xf3, CPUFeature_SSE2
+psllq Ib Udq, 0x66 0x0f 0x73 /6, CPUFeature_SSE2
+vpsllq Wo Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0xf3, CPUFeature_AVX
+vpsllq Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x73 /6, CPUFeature_AVX
 ######## PSLLW/VPSLLW ##########################################################
-psllw Wdq Vdq, 0x66 0x0f 0xf1, Fn0000_0001_EDX_SSE2
-psllw Ib Udq, 0x66 0x0f 0x71 /6, Fn0000_0001_EDX_SSE2
-vpsllw Wo Hpw Vpw, 0xc4 RXB.00001 x.src.0.01 0xf1, Fn0000_0001_ECX_AVX
-vpsllw Ib Upw Hpw, 0xc4 RXB.00001 x.dest.0.01 0x71 /6, Fn0000_0001_ECX_AVX
+psllw Wdq Vdq, 0x66 0x0f 0xf1, CPUFeature_SSE2
+psllw Ib Udq, 0x66 0x0f 0x71 /6, CPUFeature_SSE2
+vpsllw Wo Hpw Vpw, 0xc4 RXB.00001 x.src.0.01 0xf1, CPUFeature_AVX
+vpsllw Ib Upw Hpw, 0xc4 RXB.00001 x.dest.0.01 0x71 /6, CPUFeature_AVX
 ######## PSRAD/VPSRAD ##########################################################
-psrad Wdq Vdq, 0x66 0x0f 0xe2, Fn0000_0001_EDX_SSE2
-psrad Ib Udq, 0x66 0x0f 0x72 /4, Fn0000_0001_EDX_SSE2
-vpsrad Wo Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0xe2, Fn0000_0001_ECX_AVX
-vpsrad Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x72 /4, Fn0000_0001_ECX_AVX
+psrad Wdq Vdq, 0x66 0x0f 0xe2, CPUFeature_SSE2
+psrad Ib Udq, 0x66 0x0f 0x72 /4, CPUFeature_SSE2
+vpsrad Wo Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0xe2, CPUFeature_AVX
+vpsrad Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x72 /4, CPUFeature_AVX
 ######## PSRAW/VPSRAW ##########################################################
-psraw Wdq Vdq, 0x66 0x0f 0xe1, Fn0000_0001_EDX_SSE2
-psraw Ib Udq, 0x66 0x0f 0x71 /4, Fn0000_0001_EDX_SSE2
-vpsraw Wo Hpw Vpw, 0xc4 RXB.00001 x.src.0.01 0xe1, Fn0000_0001_ECX_AVX
-vpsraw Ib Upw Hpw, 0xc4 RXB.00001 x.dest.0.01 0x71 /4, Fn0000_0001_ECX_AVX
+psraw Wdq Vdq, 0x66 0x0f 0xe1, CPUFeature_SSE2
+psraw Ib Udq, 0x66 0x0f 0x71 /4, CPUFeature_SSE2
+vpsraw Wo Hpw Vpw, 0xc4 RXB.00001 x.src.0.01 0xe1, CPUFeature_AVX
+vpsraw Ib Upw Hpw, 0xc4 RXB.00001 x.dest.0.01 0x71 /4, CPUFeature_AVX
 ######## PSRLD/VPSRLD ##########################################################
-psrld Wdq Vdq, 0x66 0x0f 0xd2, Fn0000_0001_EDX_SSE2
-psrld Ib Udq, 0x66 0x0f 0x72 /2, Fn0000_0001_EDX_SSE2
-vpsrld Wo Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0xd2, Fn0000_0001_ECX_AVX
-vpsrld Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x72 /2, Fn0000_0001_ECX_AVX
+psrld Wdq Vdq, 0x66 0x0f 0xd2, CPUFeature_SSE2
+psrld Ib Udq, 0x66 0x0f 0x72 /2, CPUFeature_SSE2
+vpsrld Wo Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0xd2, CPUFeature_AVX
+vpsrld Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x72 /2, CPUFeature_AVX
 ######## PSRLDQ/VPSRLDQ ########################################################
-psrldq Ib Udq, 0x66 0x0f 0x73 /3, Fn0000_0001_EDX_SSE2
-vpsrldq Ib Udq Hdq, 0xc4 RXB.00001 0.dest.0.01 0x73 /3, Fn0000_0001_ECX_AVX
+psrldq Ib Udq, 0x66 0x0f 0x73 /3, CPUFeature_SSE2
+vpsrldq Ib Udq Hdq, 0xc4 RXB.00001 0.dest.0.01 0x73 /3, CPUFeature_AVX
 ######## PSRLQ/VPSRLQ ##########################################################
-psrlq Wdq Vdq, 0x66 0x0f 0xd3, Fn0000_0001_EDX_SSE2
-psrlq Ib Udq, 0x66 0x0f 0x73 /2, Fn0000_0001_EDX_SSE2
-vpsrlq Wo Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0xd3, Fn0000_0001_ECX_AVX
-vpsrlq Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x73 /2, Fn0000_0001_ECX_AVX
+psrlq Wdq Vdq, 0x66 0x0f 0xd3, CPUFeature_SSE2
+psrlq Ib Udq, 0x66 0x0f 0x73 /2, CPUFeature_SSE2
+vpsrlq Wo Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0xd3, CPUFeature_AVX
+vpsrlq Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x73 /2, CPUFeature_AVX
 ######## PSRLW/VPSRLW ##########################################################
-psrlw Wdq Vdq, 0x66 0x0f 0xd1, Fn0000_0001_EDX_SSE2
-psrlw Ib Udq, 0x66 0x0f 0x71 /2, Fn0000_0001_EDX_SSE2
-vpsrlw Wo Hpw Vpw, 0xc4 RXB.00001 x.src.0.01 0xd1, Fn0000_0001_ECX_AVX
-vpsrlw Ib Upw Hpw, 0xc4 RXB.00001 x.dest.0.01 0x71 /2, Fn0000_0001_ECX_AVX
+psrlw Wdq Vdq, 0x66 0x0f 0xd1, CPUFeature_SSE2
+psrlw Ib Udq, 0x66 0x0f 0x71 /2, CPUFeature_SSE2
+vpsrlw Wo Hpw Vpw, 0xc4 RXB.00001 x.src.0.01 0xd1, CPUFeature_AVX
+vpsrlw Ib Upw Hpw, 0xc4 RXB.00001 x.dest.0.01 0x71 /2, CPUFeature_AVX
 ######## PSUBB/VPSUBB ##########################################################
-psubb Wpk Vpk, 0x66 0x0f 0xf8, Fn0000_0001_EDX_SSE2
-vpsubb Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xf8, Fn0000_0001_ECX_AVX
+psubb Wpk Vpk, 0x66 0x0f 0xf8, CPUFeature_SSE2
+vpsubb Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xf8, CPUFeature_AVX
 ######## PSUBD/VPSUBD ##########################################################
-psubd Wpj Vpj, 0x66 0x0f 0xfa, Fn0000_0001_EDX_SSE2
-vpsubd Wpj Hpj Vpj, 0xc4 RXB.00001 x.src.0.01 0xfa, Fn0000_0001_ECX_AVX
+psubd Wpj Vpj, 0x66 0x0f 0xfa, CPUFeature_SSE2
+vpsubd Wpj Hpj Vpj, 0xc4 RXB.00001 x.src.0.01 0xfa, CPUFeature_AVX
 ######## PSUBQ/VPSUBQ ##########################################################
-psubq Wdq Vdq, 0x66 0x0f 0xfb, Fn0000_0001_EDX_SSE2
-vpsubq Wpq Hpq Vpq, 0xc4 RXB.00001 x.src.0.01 0xfb, Fn0000_0001_ECX_AVX
+psubq Wdq Vdq, 0x66 0x0f 0xfb, CPUFeature_SSE2
+vpsubq Wpq Hpq Vpq, 0xc4 RXB.00001 x.src.0.01 0xfb, CPUFeature_AVX
 ######## PSUBSB/VPSUBSB ########################################################
-psubsb Wpk Vpk, 0x66 0x0f 0xe8, Fn0000_0001_EDX_SSE2
-vpsubsb Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xe8, Fn0000_0001_ECX_AVX
+psubsb Wpk Vpk, 0x66 0x0f 0xe8, CPUFeature_SSE2
+vpsubsb Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xe8, CPUFeature_AVX
 ######## PSUBSW/VPSUBSW ########################################################
-psubsw Wpi Vpi, 0x66 0x0f 0xe9, Fn0000_0001_EDX_SSE2
-vpsubsw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xe9, Fn0000_0001_ECX_AVX
+psubsw Wpi Vpi, 0x66 0x0f 0xe9, CPUFeature_SSE2
+vpsubsw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xe9, CPUFeature_AVX
 ######## PSUBUSB/VPSUBUSB ######################################################
-psubusb Wpk Vpk, 0x66 0x0f 0xd8, Fn0000_0001_EDX_SSE2
-vpsubusb Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xd8, Fn0000_0001_ECX_AVX
+psubusb Wpk Vpk, 0x66 0x0f 0xd8, CPUFeature_SSE2
+vpsubusb Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xd8, CPUFeature_AVX
 ######## PSUBUSW/VPSUBUSW ######################################################
-psubusw Wpi Vpi, 0x66 0x0f 0xd9, Fn0000_0001_EDX_SSE2
-vpsubusw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xd9, Fn0000_0001_ECX_AVX
+psubusw Wpi Vpi, 0x66 0x0f 0xd9, CPUFeature_SSE2
+vpsubusw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xd9, CPUFeature_AVX
 ######## PSUBW/VPSUBW ##########################################################
-psubw Wpi Vpi, 0x66 0x0f 0xf9, Fn0000_0001_EDX_SSE2
-vpsubw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xf9, Fn0000_0001_ECX_AVX
+psubw Wpi Vpi, 0x66 0x0f 0xf9, CPUFeature_SSE2
+vpsubw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xf9, CPUFeature_AVX
 ######## PTEST/VPTEST ##########################################################
-ptest Wo Vo, 0x66 0x0f 0x38 0x17, Fn0000_0001_ECX_SSE41
-vptest Wo Vo, 0xc4 RXB.00010 x.1111.0.01 0x17, Fn0000_0001_ECX_AVX
-vptest Wdo Vdo, 0xc4 RXB.00010 x.1111.1.01 0x17, Fn0000_0001_ECX_AVX
+ptest Wo Vo, 0x66 0x0f 0x38 0x17, CPUFeature_SSE41
+vptest Wo Vo, 0xc4 RXB.00010 x.1111.0.01 0x17, CPUFeature_AVX
+vptest Wdo Vdo, 0xc4 RXB.00010 x.1111.1.01 0x17, CPUFeature_AVX
 ######## PUNPCKHBW/VPUNPCKHBW ##################################################
-punpckhbw Wq Vdq, 0x66 0x0f 0x68, Fn0000_0001_EDX_SSE2
-vpunpckhbw Wpb Hpb Vpb, 0xc4 RXB.00001 x.src.0.01 0x68, Fn0000_0001_ECX_AVX
+punpckhbw Wq Vdq, 0x66 0x0f 0x68, CPUFeature_SSE2
+vpunpckhbw Wpb Hpb Vpb, 0xc4 RXB.00001 x.src.0.01 0x68, CPUFeature_AVX
 ######## PUNPCKHDQ/VPUNPCKHDQ ##################################################
-punpckhdq Wq Vdq, 0x66 0x0f 0x6a, Fn0000_0001_EDX_SSE2
-vpunpckhdq Wpdw Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0x6a, Fn0000_0001_ECX_AVX
+punpckhdq Wq Vdq, 0x66 0x0f 0x6a, CPUFeature_SSE2
+vpunpckhdq Wpdw Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0x6a, CPUFeature_AVX
 ######## PUNPCKHQDQ/VPUNPCKHQDQ ################################################
-punpckhqdq Wq Vdq, 0x66 0x0f 0x6d, Fn0000_0001_EDX_SSE2
-vpunpckhqdq Wpqw Hpqw Vpqw, 0xc4 RXB.00001 x.src.0.01 0x6d, Fn0000_0001_ECX_AVX
+punpckhqdq Wq Vdq, 0x66 0x0f 0x6d, CPUFeature_SSE2
+vpunpckhqdq Wpqw Hpqw Vpqw, 0xc4 RXB.00001 x.src.0.01 0x6d, CPUFeature_AVX
 ######## PUNPCKHWD/VPUNPCKHWD ##################################################
-punpckhwd Wq Vdq, 0x66 0x0f 0x69, Fn0000_0001_EDX_SSE2
-vpunpckhwd Wpw Hpw Vpw, 0xc4 RXB.00001 x.src.0.01 0x69, Fn0000_0001_ECX_AVX
+punpckhwd Wq Vdq, 0x66 0x0f 0x69, CPUFeature_SSE2
+vpunpckhwd Wpw Hpw Vpw, 0xc4 RXB.00001 x.src.0.01 0x69, CPUFeature_AVX
 ######## PUNPCKLBW/VPUNPCKLBW ##################################################
-punpcklbw Wq Vdq, 0x66 0x0f 0x60, Fn0000_0001_EDX_SSE2
-vpunpcklbw Wpb Hpb Vpb, 0xc4 RXB.00001 x.src.0.01 0x60, Fn0000_0001_ECX_AVX
+punpcklbw Wq Vdq, 0x66 0x0f 0x60, CPUFeature_SSE2
+vpunpcklbw Wpb Hpb Vpb, 0xc4 RXB.00001 x.src.0.01 0x60, CPUFeature_AVX
 ######## PUNPCKLDQ/VPUNPCKLDQ ##################################################
-punpckldq Wq Vdq, 0x66 0x0f 0x62, Fn0000_0001_EDX_SSE2
-vpunpckldq Wpdw Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0x62, Fn0000_0001_ECX_AVX
+punpckldq Wq Vdq, 0x66 0x0f 0x62, CPUFeature_SSE2
+vpunpckldq Wpdw Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0x62, CPUFeature_AVX
 ######## PUNPCKLQDQ/VPUNPCKLQDQ ################################################
-punpcklqdq Wq Vdq, 0x66 0x0f 0x6c, Fn0000_0001_EDX_SSE2
-vpunpcklqdq Wpqw Hpqw Vpqw, 0xc4 RXB.00001 x.src.0.01 0x6c, Fn0000_0001_ECX_AVX
+punpcklqdq Wq Vdq, 0x66 0x0f 0x6c, CPUFeature_SSE2
+vpunpcklqdq Wpqw Hpqw Vpqw, 0xc4 RXB.00001 x.src.0.01 0x6c, CPUFeature_AVX
 ######## PUNPCKLWD/VPUNPCKLWD ##################################################
-punpcklwd Wq Vdq, 0x66 0x0f 0x61, Fn0000_0001_EDX_SSE2
-vpunpcklwd Wpw Hpw Vpw, 0xc4 RXB.00001 x.src.0.01 0x61, Fn0000_0001_ECX_AVX
+punpcklwd Wq Vdq, 0x66 0x0f 0x61, CPUFeature_SSE2
+vpunpcklwd Wpw Hpw Vpw, 0xc4 RXB.00001 x.src.0.01 0x61, CPUFeature_AVX
 ######## PXOR/VPXOR ############################################################
-pxor Wdq Vdq, 0x66 0x0f 0xef, Fn0000_0001_EDX_SSE2
-vpxor Wo Ho Vo, 0xc4 RXB.00001 x.src.0.01 0xef, Fn0000_0001_ECX_AVX
+pxor Wdq Vdq, 0x66 0x0f 0xef, CPUFeature_SSE2
+vpxor Wo Ho Vo, 0xc4 RXB.00001 x.src.0.01 0xef, CPUFeature_AVX
 ######## RCPPS/VRCPPS ##########################################################
-rcpps Wps Vps, 0x0f 0x53, Fn0000_0001_EDX_SSE1
-vrcpps Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x53, Fn0000_0001_ECX_AVX
+rcpps Wps Vps, 0x0f 0x53, CPUFeature_SSE
+vrcpps Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x53, CPUFeature_AVX
 ######## RCPSS/VRCPSS ##########################################################
-rcpss Wss Vss, 0xf3 0x0f 0x53, Fn0000_0001_EDX_SSE1
-vrcpss Wss Ho Vo, 0xc4 RXB.00001 x.src.x.10 0x53, Fn0000_0001_ECX_AVX
+rcpss Wss Vss, 0xf3 0x0f 0x53, CPUFeature_SSE
+vrcpss Wss Ho Vo, 0xc4 RXB.00001 x.src.x.10 0x53, CPUFeature_AVX
 ######## ROUNDPD/VROUNDPD ######################################################
-roundpd Ib Wpd Vpd, 0x66 0x0f 0x3a 0x09, Fn0000_0001_ECX_SSE41
-vroundpd Ib Wpdx Vpdx, 0xc4 RXB.00011 x.src.L.01 0x09, Fn0000_0001_ECX_AVX
+roundpd Ib Wpd Vpd, 0x66 0x0f 0x3a 0x09, CPUFeature_SSE41
+vroundpd Ib Wpdx Vpdx, 0xc4 RXB.00011 x.src.L.01 0x09, CPUFeature_AVX
 ######## ROUNDPS/VROUNDPS ######################################################
-roundps Ib Wps Vps, 0x66 0x0f 0x3a 0x08, Fn0000_0001_ECX_SSE41
-vroundps Ib Wpsx Vpsx, 0xc4 RXB.00011 x.src.L.01 0x08, Fn0000_0001_ECX_AVX
+roundps Ib Wps Vps, 0x66 0x0f 0x3a 0x08, CPUFeature_SSE41
+vroundps Ib Wpsx Vpsx, 0xc4 RXB.00011 x.src.L.01 0x08, CPUFeature_AVX
 ######## ROUNDSD/VROUNDSD ######################################################
-roundsd Ib Wsd Vsd, 0x66 0x0f 0x3a 0x0b, Fn0000_0001_ECX_SSE41
-vroundsd Ib Wsd Ho Vo, 0xc4 RXB.00011 x.src.x.01 0x0b, Fn0000_0001_ECX_AVX
+roundsd Ib Wsd Vsd, 0x66 0x0f 0x3a 0x0b, CPUFeature_SSE41
+vroundsd Ib Wsd Ho Vo, 0xc4 RXB.00011 x.src.x.01 0x0b, CPUFeature_AVX
 ######## ROUNDSS/VROUNDSS ######################################################
-roundss Ib Wss Vss, 0x66 0x0f 0x3a 0x0a, Fn0000_0001_ECX_SSE41
-vroundss Ib Wss Ho Vo, 0xc4 RXB.00011 x.src.x.01 0x0a, Fn0000_0001_ECX_AVX
+roundss Ib Wss Vss, 0x66 0x0f 0x3a 0x0a, CPUFeature_SSE41
+vroundss Ib Wss Ho Vo, 0xc4 RXB.00011 x.src.x.01 0x0a, CPUFeature_AVX
 ######## RSQRTPS/VRSQRTPS ######################################################
-rsqrtps Wps Vps, 0x0f 0x52, Fn0000_0001_EDX_SSE1
-vrsqrtps Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x52, Fn0000_0001_ECX_AVX
+rsqrtps Wps Vps, 0x0f 0x52, CPUFeature_SSE
+vrsqrtps Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x52, CPUFeature_AVX
 ######## RSQRTSS/VRSQRTSS ######################################################
-rsqrtss Wss Vss, 0xf3 0x0f 0x52, Fn0000_0001_EDX_SSE1
-vrsqrtss Wss Ho Vo, 0xc4 RXB.00001 x.1111.0.10 0x52, Fn0000_0001_ECX_AVX
+rsqrtss Wss Vss, 0xf3 0x0f 0x52, CPUFeature_SSE
+vrsqrtss Wss Ho Vo, 0xc4 RXB.00001 x.1111.0.10 0x52, CPUFeature_AVX
 ######## SHUFPD/VSHUFPD ########################################################
-shufpd Ib Wpd Vpd, 0x66 0x0f 0xc6, Fn0000_0001_EDX_SSE2
-vshufpd Ib Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0xc6, Fn0000_0001_ECX_AVX
+shufpd Ib Wpd Vpd, 0x66 0x0f 0xc6, CPUFeature_SSE2
+vshufpd Ib Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0xc6, CPUFeature_AVX
 ######## SHUFPS/VSHUFPS ########################################################
-shufps Ib Wps Vps, 0x0f 0xc6, Fn0000_0001_EDX_SSE1
-vshufps Ib Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0xc6, Fn0000_0001_ECX_AVX
+shufps Ib Wps Vps, 0x0f 0xc6, CPUFeature_SSE
+vshufps Ib Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0xc6, CPUFeature_AVX
 ######## SQRTPD/VSQRTPD ########################################################
-sqrtpd Wpd Vpd, 0x66 0x0f 0x51, Fn0000_0001_EDX_SSE2
-vsqrtpd Wpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x51, Fn0000_0001_ECX_AVX
+sqrtpd Wpd Vpd, 0x66 0x0f 0x51, CPUFeature_SSE2
+vsqrtpd Wpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x51, CPUFeature_AVX
 ######## SQRTPS/VSQRTPS ########################################################
-sqrtps Wps Vps, 0x0f 0x51, Fn0000_0001_EDX_SSE1
-vsqrtps Wpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x51, Fn0000_0001_ECX_AVX
+sqrtps Wps Vps, 0x0f 0x51, CPUFeature_SSE
+vsqrtps Wpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x51, CPUFeature_AVX
 ######## SQRTSD/VSQRTSD ########################################################
-sqrtsd Wsd Vsd, 0xf2 0x0f 0x51, Fn0000_0001_EDX_SSE2
-vsqrtsd Wsd Ho Vo, 0xc4 RXB.00001 x.src.x.11 0x51, Fn0000_0001_ECX_AVX
+sqrtsd Wsd Vsd, 0xf2 0x0f 0x51, CPUFeature_SSE2
+vsqrtsd Wsd Ho Vo, 0xc4 RXB.00001 x.src.x.11 0x51, CPUFeature_AVX
 ######## SQRTSS/VSQRTSS ########################################################
-sqrtss Wss Vss, 0xf3 0x0f 0x51, Fn0000_0001_EDX_SSE1
-vsqrtss Wss Ho Vo, 0xc4 RXB.00001 x.src.x.10 0x51, Fn0000_0001_ECX_AVX
+sqrtss Wss Vss, 0xf3 0x0f 0x51, CPUFeature_SSE
+vsqrtss Wss Ho Vo, 0xc4 RXB.00001 x.src.x.10 0x51, CPUFeature_AVX
 ######## LDMXCSR/VLDMXCSR ######################################################
-stmxcsr Md, 0x0f 0xae /3, Fn0000_0001_EDX_SSE1
-vstmxcsr Md, 0xc4 RXB.00001 x.1111.0.00 0xae /3, Fn0000_0001_ECX_AVX
+stmxcsr Md, 0x0f 0xae /3, CPUFeature_SSE
+vstmxcsr Md, 0xc4 RXB.00001 x.1111.0.00 0xae /3, CPUFeature_AVX
 ######## SUBPD/VSUBPD ##########################################################
-subpd Wpd Vpd, 0x66 0x0f 0x5c, Fn0000_0001_EDX_SSE2
-vsubpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x5c, Fn0000_0001_ECX_AVX
+subpd Wpd Vpd, 0x66 0x0f 0x5c, CPUFeature_SSE2
+vsubpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x5c, CPUFeature_AVX
 ######## SUBPS/VSUBPS ##########################################################
-subps Wps Vps, 0xf 0x5c, Fn0000_0001_EDX_SSE1
-vsubps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5c, Fn0000_0001_ECX_AVX
+subps Wps Vps, 0xf 0x5c, CPUFeature_SSE
+vsubps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x5c, CPUFeature_AVX
 ######## SUBSD/VSUBSD ##########################################################
-subsd Wsd Vsd, 0xf2 0x0f 0x5c, Fn0000_0001_EDX_SSE2
-vsubsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x5c, Fn0000_0001_ECX_AVX
+subsd Wsd Vsd, 0xf2 0x0f 0x5c, CPUFeature_SSE2
+vsubsd Wsd Hsd Vsd, 0xc4 RXB.00001 x.src.x.11 0x5c, CPUFeature_AVX
 ######## SUBSS/VSUBSS ##########################################################
-subss Wss Vss, 0xf3 0x0f 0x5c, Fn0000_0001_EDX_SSE1
-vsubss Wss Hss Vss, 0xc4 RXB.00001 x.src.x.10 0x5c, Fn0000_0001_ECX_AVX
+subss Wss Vss, 0xf3 0x0f 0x5c, CPUFeature_SSE
+vsubss Wss Hss Vss, 0xc4 RXB.00001 x.src.x.10 0x5c, CPUFeature_AVX
 ######## UCOMISD/VUCOMISD ######################################################
-ucomisd Wsd Vsd, 0x66 0x0f 0x2e, Fn0000_0001_EDX_SSE2
-vucomisd Wsd Vsd, 0xc4 RXB.00001 x.src.x.01 0x2e, Fn0000_0001_ECX_AVX
+ucomisd Wsd Vsd, 0x66 0x0f 0x2e, CPUFeature_SSE2
+vucomisd Wsd Vsd, 0xc4 RXB.00001 x.src.x.01 0x2e, CPUFeature_AVX
 ######## UCOMISS/VUCOMISS ######################################################
-ucomiss Wsd Vsd, 0x0f 0x2e, Fn0000_0001_EDX_SSE1
-vucomiss Wsd Vsd, 0xc4 RXB.00001 x.src.x.00 0x2e, Fn0000_0001_ECX_AVX
+ucomiss Wsd Vsd, 0x0f 0x2e, CPUFeature_SSE
+vucomiss Wsd Vsd, 0xc4 RXB.00001 x.src.x.00 0x2e, CPUFeature_AVX
 ######## UNPCKHPD/VUNPCKHPD ####################################################
-unpckhpd Wq Vpd, 0x66 0x0f 0x15, Fn0000_0001_EDX_SSE2
-vunpckhpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x15, Fn0000_0001_ECX_AVX
+unpckhpd Wq Vpd, 0x66 0x0f 0x15, CPUFeature_SSE2
+vunpckhpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x15, CPUFeature_AVX
 ######## UNPCKHPS/VUNPCKHPS ####################################################
-unpckhps Wps Vps, 0x0f 0x15, Fn0000_0001_EDX_SSE1
-vunpckhps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x15, Fn0000_0001_ECX_AVX
+unpckhps Wps Vps, 0x0f 0x15, CPUFeature_SSE
+vunpckhps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x15, CPUFeature_AVX
 ######## UNPCKLPD/VUNPCKLPD ####################################################
-unpcklpd Wq Vpd, 0x66 0x0f 0x14, Fn0000_0001_EDX_SSE2
-vunpcklpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x14, Fn0000_0001_ECX_AVX
+unpcklpd Wq Vpd, 0x66 0x0f 0x14, CPUFeature_SSE2
+vunpcklpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x14, CPUFeature_AVX
 ######## UNPCKLPS/VUNPCKLPS ####################################################
-unpcklps Wps Vps, 0x0f 0x14, Fn0000_0001_EDX_SSE1
-vunpcklps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x14, Fn0000_0001_ECX_AVX
+unpcklps Wps Vps, 0x0f 0x14, CPUFeature_SSE
+vunpcklps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x14, CPUFeature_AVX
 ######## VBROADCASTF128 ########################################################
-vbroadcastf128 Mo Vdo, 0xc4 RXB.00010 0.1111.1.01 0x1a, Fn0000_0001_ECX_AVX
+vbroadcastf128 Mo Vdo, 0xc4 RXB.00010 0.1111.1.01 0x1a, CPUFeature_AVX
 ######## VBROADCASTSD ##########################################################
-vbroadcastsd Msd Vdo, 0xc4 RXB.00010 0.1111.1.01 0x19, Fn0000_0001_ECX_AVX
+vbroadcastsd Msd Vdo, 0xc4 RXB.00010 0.1111.1.01 0x19, CPUFeature_AVX
 ######## VBROADCASTSS ##########################################################
-vbroadcastss Mss Vpsx, 0xc4 RXB.00010 0.1111.L.01 0x18, Fn0000_0001_ECX_AVX
+vbroadcastss Mss Vpsx, 0xc4 RXB.00010 0.1111.L.01 0x18, CPUFeature_AVX
 ######## VCVTPH2PS #############################################################
-vcvtph2ps Wph Vpsx, 0xc4 RXB.02 0.1111.L.01 0x13, Fn0000_0001_ECX_CVT16
+vcvtph2ps Wph Vpsx, 0xc4 RXB.02 0.1111.L.01 0x13, CPUFeature_F16C
 ######## VCVTPS2PH #############################################################
-vcvtps2ph Ib Vpsx Wph, 0xc4 RXB.03 0.1111.L.01 0x1d, Fn0000_0001_ECX_CVT16
+vcvtps2ph Ib Vpsx Wph, 0xc4 RXB.03 0.1111.L.01 0x1d, CPUFeature_F16C
 ######## VEXTRACTF128 ##########################################################
-vextractf128 Ib Vdo Wo, 0xc4 RXB.00011 0.1111.1.01 0x19, Fn0000_0001_ECX_AVX
+vextractf128 Ib Vdo Wo, 0xc4 RXB.00011 0.1111.1.01 0x19, CPUFeature_AVX
 ######## VFMADDPD/VFMADD132PD/VFMADD213PD/VFMADD231PD ##########################
-vfmaddpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x69, Fn8000_0001_ECX_FMA4
-vfmaddpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x69, Fn8000_0001_ECX_FMA4
-vfmadd132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x98, Fn8000_0001_ECX_FMA
-vfmadd213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xa8, Fn8000_0001_ECX_FMA
-vfmadd231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xb8, Fn8000_0001_ECX_FMA
+vfmaddpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x69, CPUFeature_FMA4
+vfmaddpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x69, CPUFeature_FMA4
+vfmadd132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x98, CPUFeature_FMA
+vfmadd213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xa8, CPUFeature_FMA
+vfmadd231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xb8, CPUFeature_FMA
 ######## VFMADDPS/VFMADD132PS/VFMADD213PS/VFMADD231PS ##########################
-vfmaddps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x68, Fn8000_0001_ECX_FMA4
-vfmaddps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x68, Fn8000_0001_ECX_FMA4
-vfmadd132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x98, Fn8000_0001_ECX_FMA
-vfmadd213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xa8, Fn8000_0001_ECX_FMA
-vfmadd231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xb8, Fn8000_0001_ECX_FMA
+vfmaddps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x68, CPUFeature_FMA4
+vfmaddps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x68, CPUFeature_FMA4
+vfmadd132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x98, CPUFeature_FMA
+vfmadd213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xa8, CPUFeature_FMA
+vfmadd231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xb8, CPUFeature_FMA
 ######## VFMADDSD/VFMADD132SD/VFMADD213SD/VFMADD231SD ##########################
-vfmaddsd Lsd Wsd Hsd Vsd, 0xc4 RXB.00011 0.src.x.01 0x6b, Fn8000_0001_ECX_FMA4
-vfmaddsd Wsd Lsd Hsd Vsd, 0xc4 RXB.00011 1.src.x.01 0x6b, Fn8000_0001_ECX_FMA4
-vfmadd132sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0x99, Fn8000_0001_ECX_FMA
-vfmadd213sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xa9, Fn8000_0001_ECX_FMA
-vfmadd231sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xb9, Fn8000_0001_ECX_FMA
+vfmaddsd Lsd Wsd Hsd Vsd, 0xc4 RXB.00011 0.src.x.01 0x6b, CPUFeature_FMA4
+vfmaddsd Wsd Lsd Hsd Vsd, 0xc4 RXB.00011 1.src.x.01 0x6b, CPUFeature_FMA4
+vfmadd132sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0x99, CPUFeature_FMA
+vfmadd213sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xa9, CPUFeature_FMA
+vfmadd231sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xb9, CPUFeature_FMA
 ######## VFMADDSS/VFMADD132SS/VFMADD213SS/VFMADD231SS ##########################
-vfmaddss Lss Wss Hss Vss, 0xc4 RXB.00011 0.src.x.01 0x6a, Fn8000_0001_ECX_FMA4
-vfmaddss Wss Lss Hss Vss, 0xc4 RXB.00011 1.src.x.01 0x6a, Fn8000_0001_ECX_FMA4
-vfmadd132ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0x99, Fn8000_0001_ECX_FMA
-vfmadd213ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xa9, Fn8000_0001_ECX_FMA
-vfmadd231ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xb9, Fn8000_0001_ECX_FMA
+vfmaddss Lss Wss Hss Vss, 0xc4 RXB.00011 0.src.x.01 0x6a, CPUFeature_FMA4
+vfmaddss Wss Lss Hss Vss, 0xc4 RXB.00011 1.src.x.01 0x6a, CPUFeature_FMA4
+vfmadd132ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0x99, CPUFeature_FMA
+vfmadd213ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xa9, CPUFeature_FMA
+vfmadd231ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xb9, CPUFeature_FMA
 ######## VFMADDSUBPD/VFMADDSUB132PD/VFMADDSUB213PD/VFMADDSUB231PD ##############
-vfmaddsubpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x5d, Fn8000_0001_ECX_FMA4
-vfmaddsubpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x5d, Fn8000_0001_ECX_FMA4
-vfmaddsub132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x96, Fn8000_0001_ECX_FMA
-vfmaddsub213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xa6, Fn8000_0001_ECX_FMA
-vfmaddsub231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xb6, Fn8000_0001_ECX_FMA
+vfmaddsubpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x5d, CPUFeature_FMA4
+vfmaddsubpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x5d, CPUFeature_FMA4
+vfmaddsub132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x96, CPUFeature_FMA
+vfmaddsub213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xa6, CPUFeature_FMA
+vfmaddsub231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xb6, CPUFeature_FMA
 ######## VFMADDSUBPS/VFMADDSUB132PS/VFMADDSUB213PS/VFMADDSUB231PS ##############
-vfmaddsubps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x5c, Fn8000_0001_ECX_FMA4
-vfmaddsubps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x5c, Fn8000_0001_ECX_FMA4
-vfmaddsub132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x96, Fn8000_0001_ECX_FMA
-vfmaddsub213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xa6, Fn8000_0001_ECX_FMA
-vfmaddsub231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xb6, Fn8000_0001_ECX_FMA
+vfmaddsubps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x5c, CPUFeature_FMA4
+vfmaddsubps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x5c, CPUFeature_FMA4
+vfmaddsub132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x96, CPUFeature_FMA
+vfmaddsub213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xa6, CPUFeature_FMA
+vfmaddsub231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xb6, CPUFeature_FMA
 ######## VFMSUBADDPD/VFMSUBADD132PD/VFMSUBADD213PD/VFMSUBADD231PD ##############
-vfmsubaddpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x5f, Fn8000_0001_ECX_FMA4
-vfmsubaddpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x5f, Fn8000_0001_ECX_FMA4
-vfmsubadd132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x97, Fn8000_0001_ECX_FMA
-vfmsubadd213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xa7, Fn8000_0001_ECX_FMA
-vfmsubadd231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xb7, Fn8000_0001_ECX_FMA
+vfmsubaddpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x5f, CPUFeature_FMA4
+vfmsubaddpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x5f, CPUFeature_FMA4
+vfmsubadd132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x97, CPUFeature_FMA
+vfmsubadd213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xa7, CPUFeature_FMA
+vfmsubadd231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xb7, CPUFeature_FMA
 ######## VFMSUBADDPS/VFMSUBADD132PS/VFMSUBADD213PS/VFMSUBADD231PS ##############
-vfmsubaddps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x5e, Fn8000_0001_ECX_FMA4
-vfmsubaddps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x5e, Fn8000_0001_ECX_FMA4
-vfmsubadd132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x97, Fn8000_0001_ECX_FMA
-vfmsubadd213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xa7, Fn8000_0001_ECX_FMA
-vfmsubadd231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xb7, Fn8000_0001_ECX_FMA
+vfmsubaddps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x5e, CPUFeature_FMA4
+vfmsubaddps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x5e, CPUFeature_FMA4
+vfmsubadd132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x97, CPUFeature_FMA
+vfmsubadd213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xa7, CPUFeature_FMA
+vfmsubadd231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xb7, CPUFeature_FMA
 ######## VFMSUBPD/VFMSUB132PD/VFMSUB213PD/VFMSUB231PD ##########################
-vfmsubpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x6d, Fn8000_0001_ECX_FMA4
-vfmsubpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x6d, Fn8000_0001_ECX_FMA4
-vfmsub132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x9a, Fn8000_0001_ECX_FMA
-vfmsub213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xaa, Fn8000_0001_ECX_FMA
-vfmsub231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xba, Fn8000_0001_ECX_FMA
+vfmsubpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x6d, CPUFeature_FMA4
+vfmsubpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x6d, CPUFeature_FMA4
+vfmsub132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x9a, CPUFeature_FMA
+vfmsub213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xaa, CPUFeature_FMA
+vfmsub231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xba, CPUFeature_FMA
 ######## VFMSUBPS/VFMSUB132PS/VFMSUB213PS/VFMSUB231PS ##########################
-vfmsubps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x6c, Fn8000_0001_ECX_FMA4
-vfmsubps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x6c, Fn8000_0001_ECX_FMA4
-vfmsub132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x9a, Fn8000_0001_ECX_FMA
-vfmsub213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xaa, Fn8000_0001_ECX_FMA
-vfmsub231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xba, Fn8000_0001_ECX_FMA
+vfmsubps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x6c, CPUFeature_FMA4
+vfmsubps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x6c, CPUFeature_FMA4
+vfmsub132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x9a, CPUFeature_FMA
+vfmsub213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xaa, CPUFeature_FMA
+vfmsub231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xba, CPUFeature_FMA
 ######## VFMSUBSD/VFMSUB132SD/VFMSUB213SD/VFMSUB231SD ##########################
-vfmsubsd Lsd Wsd Hsd Vsd, 0xc4 RXB.00011 0.src.x.01 0x6f, Fn8000_0001_ECX_FMA4
-vfmsubsd Wsd Lsd Hsd Vsd, 0xc4 RXB.00011 1.src.x.01 0x6f, Fn8000_0001_ECX_FMA4
-vfmsub132sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0x9b, Fn8000_0001_ECX_FMA
-vfmsub213sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xab, Fn8000_0001_ECX_FMA
-vfmsub231sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xbb, Fn8000_0001_ECX_FMA
+vfmsubsd Lsd Wsd Hsd Vsd, 0xc4 RXB.00011 0.src.x.01 0x6f, CPUFeature_FMA4
+vfmsubsd Wsd Lsd Hsd Vsd, 0xc4 RXB.00011 1.src.x.01 0x6f, CPUFeature_FMA4
+vfmsub132sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0x9b, CPUFeature_FMA
+vfmsub213sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xab, CPUFeature_FMA
+vfmsub231sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xbb, CPUFeature_FMA
 ######## VFMSUBSS/VFMSUB132SS/VFMSUB213SS/VFMSUB231SS ##########################
-vfmsubss Lss Wss Hss Vss, 0xc4 RXB.00011 0.src.x.01 0x6e, Fn8000_0001_ECX_FMA4
-vfmsubss Wss Lss Hss Vss, 0xc4 RXB.00011 1.src.x.01 0x6e, Fn8000_0001_ECX_FMA4
-vfmsub132ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0x9b, Fn8000_0001_ECX_FMA
-vfmsub213ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xab, Fn8000_0001_ECX_FMA
-vfmsub231ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xbb, Fn8000_0001_ECX_FMA
+vfmsubss Lss Wss Hss Vss, 0xc4 RXB.00011 0.src.x.01 0x6e, CPUFeature_FMA4
+vfmsubss Wss Lss Hss Vss, 0xc4 RXB.00011 1.src.x.01 0x6e, CPUFeature_FMA4
+vfmsub132ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0x9b, CPUFeature_FMA
+vfmsub213ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xab, CPUFeature_FMA
+vfmsub231ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xbb, CPUFeature_FMA
 ######## VFNMADDPD/VFNMADD132PD/VFNMADD213PD/VFNMADD231PD ######################
-vfnmaddpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x79, Fn8000_0001_ECX_FMA4
-vfnmaddpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x79, Fn8000_0001_ECX_FMA4
-vfnmadd132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x9c, Fn8000_0001_ECX_FMA
-vfnmadd213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xac, Fn8000_0001_ECX_FMA
-vfnmadd231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xbc, Fn8000_0001_ECX_FMA
+vfnmaddpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x79, CPUFeature_FMA4
+vfnmaddpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x79, CPUFeature_FMA4
+vfnmadd132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x9c, CPUFeature_FMA
+vfnmadd213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xac, CPUFeature_FMA
+vfnmadd231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xbc, CPUFeature_FMA
 ######## VFNMADDPS/VFNMADD132PS/VFNMADD213PS/VFNMADD231PS ######################
-vfnmaddps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x78, Fn8000_0001_ECX_FMA4
-vfnmaddps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x78, Fn8000_0001_ECX_FMA4
-vfnmadd132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x9c, Fn8000_0001_ECX_FMA
-vfnmadd213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xac, Fn8000_0001_ECX_FMA
-vfnmadd231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xbc, Fn8000_0001_ECX_FMA
-######## VFNMADDSD/VFNMADD132SD/VFNMADD213SD/VFNMADD231SD ##########################
-vfnmaddsd Lsd Wsd Hsd Vsd, 0xc4 RXB.00011 0.src.x.01 0x7b, Fn8000_0001_ECX_FMA4
-vfnmaddsd Wsd Lsd Hsd Vsd, 0xc4 RXB.00011 1.src.x.01 0x7b, Fn8000_0001_ECX_FMA4
-vfnmadd132sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0x9d, Fn8000_0001_ECX_FMA
-vfnmadd213sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xad, Fn8000_0001_ECX_FMA
-vfnmadd231sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xbd, Fn8000_0001_ECX_FMA
+vfnmaddps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x78, CPUFeature_FMA4
+vfnmaddps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x78, CPUFeature_FMA4
+vfnmadd132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x9c, CPUFeature_FMA
+vfnmadd213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xac, CPUFeature_FMA
+vfnmadd231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xbc, CPUFeature_FMA
+######## VFNMADDSD/VFNMADD132SD/VFNMADD213SD/VFNMADD231SD ######################
+vfnmaddsd Lsd Wsd Hsd Vsd, 0xc4 RXB.00011 0.src.x.01 0x7b, CPUFeature_FMA4
+vfnmaddsd Wsd Lsd Hsd Vsd, 0xc4 RXB.00011 1.src.x.01 0x7b, CPUFeature_FMA4
+vfnmadd132sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0x9d, CPUFeature_FMA
+vfnmadd213sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xad, CPUFeature_FMA
+vfnmadd231sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xbd, CPUFeature_FMA
 ######## VFMADDSS/VFMADD132SS/VFMADD213SS/VFMADD231SS ##########################
-vfnmaddss Lss Wss Hss Vss, 0xc4 RXB.00011 0.src.x.01 0x7a, Fn8000_0001_ECX_FMA4
-vfnmaddss Wss Lss Hss Vss, 0xc4 RXB.00011 1.src.x.01 0x7a, Fn8000_0001_ECX_FMA4
-vfnmadd132ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0x9d, Fn8000_0001_ECX_FMA
-vfnmadd213ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xad, Fn8000_0001_ECX_FMA
-vfnmadd231ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xbd, Fn8000_0001_ECX_FMA
+vfnmaddss Lss Wss Hss Vss, 0xc4 RXB.00011 0.src.x.01 0x7a, CPUFeature_FMA4
+vfnmaddss Wss Lss Hss Vss, 0xc4 RXB.00011 1.src.x.01 0x7a, CPUFeature_FMA4
+vfnmadd132ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0x9d, CPUFeature_FMA
+vfnmadd213ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xad, CPUFeature_FMA
+vfnmadd231ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xbd, CPUFeature_FMA
 ######## VFNMSUBPD/VFNMSUB132PD/VFNMSUB213PD/VFNMSUB231PD ######################
-vfnmsubpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x7d, Fn8000_0001_ECX_FMA4
-vfnmsubpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x7d, Fn8000_0001_ECX_FMA4
-vfnmsub132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x9e, Fn8000_0001_ECX_FMA
-vfnmsub213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xae, Fn8000_0001_ECX_FMA
-vfnmsub231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xbe, Fn8000_0001_ECX_FMA
+vfnmsubpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x7d, CPUFeature_FMA4
+vfnmsubpd Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x7d, CPUFeature_FMA4
+vfnmsub132pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0x9e, CPUFeature_FMA
+vfnmsub213pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xae, CPUFeature_FMA
+vfnmsub231pd Wpdx Hpdx Vpdx, 0xc4 RXB.00010 1.src.L.01 0xbe, CPUFeature_FMA
 ######## VFNMSUBPS/VFNMSUB132PS/VFNMSUB213PS/VFNMSUB231PS ######################
-vfnmsubps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x7c, Fn8000_0001_ECX_FMA4
-vfnmsubps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x7c, Fn8000_0001_ECX_FMA4
-vfnmsub132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x9e, Fn8000_0001_ECX_FMA
-vfnmsub213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xae, Fn8000_0001_ECX_FMA
-vfnmsub231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xbe, Fn8000_0001_ECX_FMA
-######## VFNMSUBSD/VFNMSUB132SD/VFNMSUB213SD/VFNMSUB231SD ##########################
-vfnmsubsd Lsd Wsd Hsd Vsd, 0xc4 RXB.00011 0.src.x.01 0x7f, Fn8000_0001_ECX_FMA4
-vfnmsubsd Wsd Lsd Hsd Vsd, 0xc4 RXB.00011 1.src.x.01 0x7f, Fn8000_0001_ECX_FMA4
-vfnmsub132sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0x9f, Fn8000_0001_ECX_FMA
-vfnmsub213sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xaf, Fn8000_0001_ECX_FMA
-vfnmsub231sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xbf, Fn8000_0001_ECX_FMA
+vfnmsubps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x7c, CPUFeature_FMA4
+vfnmsubps Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x7c, CPUFeature_FMA4
+vfnmsub132ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x9e, CPUFeature_FMA
+vfnmsub213ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xae, CPUFeature_FMA
+vfnmsub231ps Wpsx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0xbe, CPUFeature_FMA
+######## VFNMSUBSD/VFNMSUB132SD/VFNMSUB213SD/VFNMSUB231SD ######################
+vfnmsubsd Lsd Wsd Hsd Vsd, 0xc4 RXB.00011 0.src.x.01 0x7f, CPUFeature_FMA4
+vfnmsubsd Wsd Lsd Hsd Vsd, 0xc4 RXB.00011 1.src.x.01 0x7f, CPUFeature_FMA4
+vfnmsub132sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0x9f, CPUFeature_FMA
+vfnmsub213sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xaf, CPUFeature_FMA
+vfnmsub231sd Wsd Hsd Vsd, 0xc4 RXB.00010 1.src.x.01 0xbf, CPUFeature_FMA
 ######## VFMSUBSS/VFMSUB132SS/VFMSUB213SS/VFMSUB231SS ##########################
-vfnmsubss Lss Wss Hss Vss, 0xc4 RXB.00011 0.src.x.01 0x7e, Fn8000_0001_ECX_FMA4
-vfnmsubss Wss Lss Hss Vss, 0xc4 RXB.00011 1.src.x.01 0x7e, Fn8000_0001_ECX_FMA4
-vfnmsub132ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0x9f, Fn8000_0001_ECX_FMA
-vfnmsub213ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xaf, Fn8000_0001_ECX_FMA
-vfnmsub231ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xbf, Fn8000_0001_ECX_FMA
+vfnmsubss Lss Wss Hss Vss, 0xc4 RXB.00011 0.src.x.01 0x7e, CPUFeature_FMA4
+vfnmsubss Wss Lss Hss Vss, 0xc4 RXB.00011 1.src.x.01 0x7e, CPUFeature_FMA4
+vfnmsub132ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0x9f, CPUFeature_FMA
+vfnmsub213ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xaf, CPUFeature_FMA
+vfnmsub231ss Wss Hss Vss, 0xc4 RXB.00010 0.src.x.01 0xbf, CPUFeature_FMA
 ######## VFRCZPD ###############################################################
-vfrczpd Wpdx Vpdx, 0x8f RXB.01001 0.1111.L.00 0x81, Fn8000_0001_ECX_XOP
+vfrczpd Wpdx Vpdx, 0x8f RXB.01001 0.1111.L.00 0x81, CPUFeature_XOP
 ######## VFRCZPS ###############################################################
-vfrczps Wpsx Vpsx, 0x8f RXB.01001 0.1111.L.00 0x80, Fn8000_0001_ECX_XOP
+vfrczps Wpsx Vpsx, 0x8f RXB.01001 0.1111.L.00 0x80, CPUFeature_XOP
 ######## VFRCZSD ###############################################################
-vfrczsd Wsd Vsd, 0x8f RXB.01001 0.1111.0.00 0x83, Fn8000_0001_ECX_XOP
+vfrczsd Wsd Vsd, 0x8f RXB.01001 0.1111.0.00 0x83, CPUFeature_XOP
 ######## VFRCZSS ###############################################################
-vfrczss Wss Vss, 0x8f RXB.01001 0.1111.0.00 0x82, Fn8000_0001_ECX_XOP
-######## VINSERTF128 ##########################################################
-vinsertf128 Ib Wo Hdo Vdo, 0xc4 RXB.00011 0.1111.1.01 0x18, Fn0000_0001_ECX_AVX
-######## VMASKMOVPD ###########################################################
-vmaskmovpd Mpdx Hx Vpdx, 0xc4 RXB.00010 0.src.L.01 0x2d, Fn0000_0001_ECX_AVX
-vmaskmovpd Vpdx Hx Mpdx, 0xc4 RXB.00010 0.src.L.01 0x2f, Fn0000_0001_ECX_AVX
-######## VMASKMOVPS ###########################################################
-vmaskmovps Mpdx Hx Vpdx, 0xc4 RXB.00010 0.src.L.01 0x2c, Fn0000_0001_ECX_AVX
-vmaskmovps Vpdx Hx Mpdx, 0xc4 RXB.00010 0.src.L.01 0x2e, Fn0000_0001_ECX_AVX
+vfrczss Wss Vss, 0x8f RXB.01001 0.1111.0.00 0x82, CPUFeature_XOP
+######## VINSERTF128 ###########################################################
+vinsertf128 Ib Wo Hdo Vdo, 0xc4 RXB.00011 0.1111.1.01 0x18, CPUFeature_AVX
+######## VMASKMOVPD ############################################################
+vmaskmovpd Mpdx Hx Vpdx, 0xc4 RXB.00010 0.src.L.01 0x2d, CPUFeature_AVX
+vmaskmovpd Vpdx Hx Mpdx, 0xc4 RXB.00010 0.src.L.01 0x2f, CPUFeature_AVX
+######## VMASKMOVPS ############################################################
+vmaskmovps Mpdx Hx Vpdx, 0xc4 RXB.00010 0.src.L.01 0x2c, CPUFeature_AVX
+vmaskmovps Vpdx Hx Mpdx, 0xc4 RXB.00010 0.src.L.01 0x2e, CPUFeature_AVX
 ######## VPCMOV ################################################################
-vpcmov Lx Wx Hx Vx, 0x8f RXB.01000 0.src.L.00 0xa2, Fn8000_0001_ECX_XOP
-vpcmov Wx Lx Hx Vx, 0x8f RXB.01000 1.src.L.00 0xa2, Fn8000_0001_ECX_XOP
+vpcmov Lx Wx Hx Vx, 0x8f RXB.01000 0.src.L.00 0xa2, CPUFeature_XOP
+vpcmov Wx Lx Hx Vx, 0x8f RXB.01000 1.src.L.00 0xa2, CPUFeature_XOP
 ######## VPCOMB ################################################################
-vpcomb Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xcc, Fn8000_0001_ECX_XOP
+vpcomb Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xcc, CPUFeature_XOP
 ######## VPCOMD ################################################################
-vpcomd Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xce, Fn8000_0001_ECX_XOP
+vpcomd Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xce, CPUFeature_XOP
 ######## VPCOMQ ################################################################
-vpcomq Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xcf, Fn8000_0001_ECX_XOP
+vpcomq Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xcf, CPUFeature_XOP
 ######## VPCOMUB ###############################################################
-vpcomub Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xec, Fn8000_0001_ECX_XOP
+vpcomub Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xec, CPUFeature_XOP
 ######## VPCOMUD ###############################################################
-vpcomud Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xee, Fn8000_0001_ECX_XOP
+vpcomud Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xee, CPUFeature_XOP
 ######## VPCOMUQ ###############################################################
-vpcomuq Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xef, Fn8000_0001_ECX_XOP
+vpcomuq Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xef, CPUFeature_XOP
 ######## VPCOMUW ###############################################################
-vpcomuw Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xed, Fn8000_0001_ECX_XOP
+vpcomuw Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xed, CPUFeature_XOP
 ######## VPCOMW ################################################################
-vpcomw Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xcd, Fn8000_0001_ECX_XOP
+vpcomw Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xcd, CPUFeature_XOP
 ######## VPERM2F128 ############################################################
-vperm2f128 Ib Wdo Hdo Vdo, 0xc4 RXB.00011 0.src.1.01 0x06, Fn0000_0001_ECX_AVX
+vperm2f128 Ib Wdo Hdo Vdo, 0xc4 RXB.00011 0.src.1.01 0x06, CPUFeature_AVX
 ######## VPERMIL2PD ############################################################
-vpermil2pd I2 Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x49, Fn8000_0001_ECX_XOP
-vpermil2pd I2 Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x49, Fn8000_0001_ECX_XOP
+vpermil2pd I2 Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x49, CPUFeature_XOP
+vpermil2pd I2 Wpdx Lpdx Hpdx Vpdx, 0xc4 RXB.00011 1.src.L.01 0x49, CPUFeature_XOP
 ######## VPERMIL2PS ############################################################
-vpermil2ps I2 Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x48, Fn8000_0001_ECX_XOP
-vpermil2ps I2 Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x48, Fn8000_0001_ECX_XOP
+vpermil2ps I2 Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 0.src.L.01 0x48, CPUFeature_XOP
+vpermil2ps I2 Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x48, CPUFeature_XOP
 ######## VPERMILPD #############################################################
-vpermilpd Wpqwx Hpdx Vpdx, 0xc4 RXB.00010 0.src.L.01 0x0d, Fn0000_0001_ECX_AVX
-vpermilpd Ib Wpdx Vpdx, 0xc4 RXB.00011 0.1111.L.01 0x05, Fn0000_0001_ECX_AVX
+vpermilpd Wpqwx Hpdx Vpdx, 0xc4 RXB.00010 0.src.L.01 0x0d, CPUFeature_AVX
+vpermilpd Ib Wpdx Vpdx, 0xc4 RXB.00011 0.1111.L.01 0x05, CPUFeature_AVX
 ######## VPERMILPS #############################################################
-vpermilps Wpdwx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x0c, Fn0000_0001_ECX_AVX
-vpermilps Ib Wpsx Vpsx, 0xc4 RXB.00011 0.1111.L.01 0x04, Fn0000_0001_ECX_AVX
+vpermilps Wpdwx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x0c, CPUFeature_AVX
+vpermilps Ib Wpsx Vpsx, 0xc4 RXB.00011 0.1111.L.01 0x04, CPUFeature_AVX
 ######## VPHADDBD ##############################################################
-vphaddbd Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xc2, Fn8000_0001_ECX_XOP
+vphaddbd Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xc2, CPUFeature_XOP
 ######## VPHADDBQ ##############################################################
-vphaddbq Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xc3, Fn8000_0001_ECX_XOP
+vphaddbq Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xc3, CPUFeature_XOP
 ######## VPHADDBW ##############################################################
-vphaddbw Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xc1, Fn8000_0001_ECX_XOP
+vphaddbw Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xc1, CPUFeature_XOP
 ######## VPHADDDQ ##############################################################
-vphadddq Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xcb, Fn8000_0001_ECX_XOP
+vphadddq Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xcb, CPUFeature_XOP
 ######## VPHADDUBD #############################################################
-vphaddubd Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xd2, Fn8000_0001_ECX_XOP
+vphaddubd Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xd2, CPUFeature_XOP
 ######## VPHADDUBQ #############################################################
-vphaddubq Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xd3, Fn8000_0001_ECX_XOP
+vphaddubq Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xd3, CPUFeature_XOP
 ######## VPHADDUBW #############################################################
-vphaddubw Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xd1, Fn8000_0001_ECX_XOP
+vphaddubw Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xd1, CPUFeature_XOP
 ######## VPHADDUDQ #############################################################
-vphaddudq Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xdb, Fn8000_0001_ECX_XOP
+vphaddudq Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xdb, CPUFeature_XOP
 ######## VPHADDUWD #############################################################
-vphadduwd Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xd6, Fn8000_0001_ECX_XOP
+vphadduwd Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xd6, CPUFeature_XOP
 ######## VPHADDUWQ #############################################################
-vphadduwq Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xd7, Fn8000_0001_ECX_XOP
+vphadduwq Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xd7, CPUFeature_XOP
 ######## VPHADDWD ##############################################################
-vphaddwd Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xc6, Fn8000_0001_ECX_XOP
+vphaddwd Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xc6, CPUFeature_XOP
 ######## VPHADDWQ ##############################################################
-vphaddwq Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xc7, Fn8000_0001_ECX_XOP
+vphaddwq Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xc7, CPUFeature_XOP
 ######## VPHSUBBW ##############################################################
-vphsubbw Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xe1, Fn8000_0001_ECX_XOP
+vphsubbw Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xe1, CPUFeature_XOP
 ######## VPHSUBDQ ##############################################################
-vphsubdq Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xe3, Fn8000_0001_ECX_XOP
+vphsubdq Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xe3, CPUFeature_XOP
 ######## VPHSUBWD ##############################################################
-vphsubwd Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xe2, Fn8000_0001_ECX_XOP
+vphsubwd Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xe2, CPUFeature_XOP
 ######## VPMACSDD ##############################################################
-vpmacsdd Lpj Wpj Hpj Vpj, 0x8f RXB.01000 0.src.0.00 0x9e, Fn8000_0001_ECX_XOP
+vpmacsdd Lpj Wpj Hpj Vpj, 0x8f RXB.01000 0.src.0.00 0x9e, CPUFeature_XOP
 ######## VPMACSDQH #############################################################
-vpmacsdqh Lo Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0x9f, Fn8000_0001_ECX_XOP
+vpmacsdqh Lo Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0x9f, CPUFeature_XOP
 ######## VPMACSDQL #############################################################
-vpmacsdql Lo Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0x97, Fn8000_0001_ECX_XOP
+vpmacsdql Lo Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0x97, CPUFeature_XOP
 ######## VPMACSSDD #############################################################
-vpmacssdd Lpj Wpj Hpj Vpj, 0x8f RXB.01000 0.src.0.00 0x8e, Fn8000_0001_ECX_XOP
+vpmacssdd Lpj Wpj Hpj Vpj, 0x8f RXB.01000 0.src.0.00 0x8e, CPUFeature_XOP
 ######## VPMACSSDQH ############################################################
-vpmacssdqh Lo Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0x8f, Fn8000_0001_ECX_XOP
+vpmacssdqh Lo Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0x8f, CPUFeature_XOP
 ######## VPMACSSDQL ############################################################
-vpmacssdql Lo Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0x87, Fn8000_0001_ECX_XOP
+vpmacssdql Lo Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0x87, CPUFeature_XOP
 ######## VPMACSSWD #############################################################
-vpmacsswd Lo Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0x86, Fn8000_0001_ECX_XOP
+vpmacsswd Lo Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0x86, CPUFeature_XOP
 ######## VPMACSSWW #############################################################
-vpmacssww Lpi Wpi Hpi Vpi, 0x8f RXB.01000 0.src.0.00 0x85, Fn8000_0001_ECX_XOP
+vpmacssww Lpi Wpi Hpi Vpi, 0x8f RXB.01000 0.src.0.00 0x85, CPUFeature_XOP
 ######## VPMACSWD ##############################################################
-vpmacswd Lo Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0x96, Fn8000_0001_ECX_XOP
+vpmacswd Lo Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0x96, CPUFeature_XOP
 ######## VPMACSWW ##############################################################
-vpmacsww Lpi Wpi Hpi Vpi, 0x8f RXB.01000 0.src.0.00 0x95, Fn8000_0001_ECX_XOP
+vpmacsww Lpi Wpi Hpi Vpi, 0x8f RXB.01000 0.src.0.00 0x95, CPUFeature_XOP
 ######## VPMADCSSWD ############################################################
-vpmadcsswd Lo Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xa6, Fn8000_0001_ECX_XOP
+vpmadcsswd Lo Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xa6, CPUFeature_XOP
 ######## VPMADCSWD #############################################################
-vpmadcswd Lo Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xb6, Fn8000_0001_ECX_XOP
+vpmadcswd Lo Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xb6, CPUFeature_XOP
 ######## VPPERM ################################################################
-vpperm Lpb Wpb Hpb Vpb, 0x8f RXB.01000 0.src.0.00 0xa3, Fn8000_0001_ECX_XOP
-vpperm Wpb Lpb Hpb Vpb, 0x8f RXB.01000 1.src.0.00 0xa3, Fn8000_0001_ECX_XOP
+vpperm Lpb Wpb Hpb Vpb, 0x8f RXB.01000 0.src.0.00 0xa3, CPUFeature_XOP
+vpperm Wpb Lpb Hpb Vpb, 0x8f RXB.01000 1.src.0.00 0xa3, CPUFeature_XOP
 ######## VPROTB ################################################################
-vprotb Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x90, Fn8000_0001_ECX_XOP
-vprotb Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x90, Fn8000_0001_ECX_XOP
-vprotb Ib Wo Vo, 0x8f RXB.01000 0.1111.0.00 0xc0, Fn8000_0001_ECX_XOP
+vprotb Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x90, CPUFeature_XOP
+vprotb Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x90, CPUFeature_XOP
+vprotb Ib Wo Vo, 0x8f RXB.01000 0.1111.0.00 0xc0, CPUFeature_XOP
 ######## VPROTD ################################################################
-vprotd Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x92, Fn8000_0001_ECX_XOP
-vprotd Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x92, Fn8000_0001_ECX_XOP
-vprotd Ib Wo Vo, 0x8f RXB.01000 0.1111.0.00 0xc2, Fn8000_0001_ECX_XOP
+vprotd Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x92, CPUFeature_XOP
+vprotd Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x92, CPUFeature_XOP
+vprotd Ib Wo Vo, 0x8f RXB.01000 0.1111.0.00 0xc2, CPUFeature_XOP
 ######## VPROTQ ################################################################
-vprotq Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x93, Fn8000_0001_ECX_XOP
-vprotq Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x93, Fn8000_0001_ECX_XOP
-vprotq Ib Wo Vo, 0x8f RXB.01000 0.1111.0.00 0xc3, Fn8000_0001_ECX_XOP
+vprotq Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x93, CPUFeature_XOP
+vprotq Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x93, CPUFeature_XOP
+vprotq Ib Wo Vo, 0x8f RXB.01000 0.1111.0.00 0xc3, CPUFeature_XOP
 ######## VPROTW ################################################################
-vprotw Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x91, Fn8000_0001_ECX_XOP
-vprotw Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x91, Fn8000_0001_ECX_XOP
-vprotw Ib Wo Vo, 0x8f RXB.01000 0.1111.0.00 0xc1, Fn8000_0001_ECX_XOP
+vprotw Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x91, CPUFeature_XOP
+vprotw Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x91, CPUFeature_XOP
+vprotw Ib Wo Vo, 0x8f RXB.01000 0.1111.0.00 0xc1, CPUFeature_XOP
 ######## VPSHAB ################################################################
-vpshab Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x98, Fn8000_0001_ECX_XOP
-vpshab Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x98, Fn8000_0001_ECX_XOP
+vpshab Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x98, CPUFeature_XOP
+vpshab Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x98, CPUFeature_XOP
 ######## VPSHAD ################################################################
-vpshad Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x9a, Fn8000_0001_ECX_XOP
-vpshad Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x9a, Fn8000_0001_ECX_XOP
+vpshad Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x9a, CPUFeature_XOP
+vpshad Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x9a, CPUFeature_XOP
 ######## VPSHAQ ################################################################
-vpshaq Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x9b, Fn8000_0001_ECX_XOP
-vpshaq Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x9b, Fn8000_0001_ECX_XOP
+vpshaq Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x9b, CPUFeature_XOP
+vpshaq Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x9b, CPUFeature_XOP
 ######## VPSHAW ################################################################
-vpshaw Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x99, Fn8000_0001_ECX_XOP
-vpshaw Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x99, Fn8000_0001_ECX_XOP
+vpshaw Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x99, CPUFeature_XOP
+vpshaw Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x99, CPUFeature_XOP
 ######## VPSHLB ################################################################
-vpshlb Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x94, Fn8000_0001_ECX_XOP
-vpshlb Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x94, Fn8000_0001_ECX_XOP
+vpshlb Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x94, CPUFeature_XOP
+vpshlb Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x94, CPUFeature_XOP
 ######## VPSHLD ################################################################
-vpshld Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x96, Fn8000_0001_ECX_XOP
-vpshld Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x96, Fn8000_0001_ECX_XOP
+vpshld Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x96, CPUFeature_XOP
+vpshld Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x96, CPUFeature_XOP
 ######## VPSHLQ ################################################################
-vpshlq Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x97, Fn8000_0001_ECX_XOP
-vpshlq Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x97, Fn8000_0001_ECX_XOP
+vpshlq Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x97, CPUFeature_XOP
+vpshlq Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x97, CPUFeature_XOP
 ######## VPSHLW ################################################################
-vpshlw Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x95, Fn8000_0001_ECX_XOP
-vpshlw Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x95, Fn8000_0001_ECX_XOP
+vpshlw Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x95, CPUFeature_XOP
+vpshlw Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x95, CPUFeature_XOP
 ######## VTESTPD ###############################################################
-vtestpd Wpdx Vpdx, 0xc4 RXB.00010 0.1111.L.01 0x0f, Fn0000_0001_ECX_AVX
+vtestpd Wpdx Vpdx, 0xc4 RXB.00010 0.1111.L.01 0x0f, CPUFeature_AVX
 ######## VTESTPS ###############################################################
-vtestps Wpsx Vpsx, 0xc4 RXB.00010 0.1111.L.01 0x0e, Fn0000_0001_ECX_AVX
+vtestps Wpsx Vpsx, 0xc4 RXB.00010 0.1111.L.01 0x0e, CPUFeature_AVX
 ######## VZEROALL ##############################################################
-vzeroall, 0xc4 RXB.00001 x.1111.1.00 0x77, Fn0000_0001_ECX_AVX
+vzeroall, 0xc4 RXB.00001 x.1111.1.00 0x77, CPUFeature_AVX
 ######## VZEROUPPER ############################################################
-vzeroupper, 0xc4 RXB.00001 x.1111.0.00 0x77, Fn0000_0001_ECX_AVX
+vzeroupper, 0xc4 RXB.00001 x.1111.0.00 0x77, CPUFeature_AVX
 ######## XORPD/VXORPD ##########################################################
-xorpd Wpd Vpd, 0x66 0x0f 0x57, Fn0000_0001_EDX_SSE2
-vxorpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x57, Fn0000_0001_ECX_AVX
+xorpd Wpd Vpd, 0x66 0x0f 0x57, CPUFeature_SSE2
+vxorpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x57, CPUFeature_AVX
 ######## XORPS/VXORPS ##########################################################
-xorps Wpd Vpd, 0x0f 0x57, Fn0000_0001_EDX_SSE1
-vxorps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x57, Fn0000_0001_ECX_AVX
+xorps Wpd Vpd, 0x0f 0x57, CPUFeature_SSE
+vxorps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x57, CPUFeature_AVX
 ######## XGETBV ################################################################
-xgetbv, 0x0f 0x01 0xd0, Fn0000_0001_ECX_XSAVE
+xgetbv, 0x0f 0x01 0xd0, CPUFeature_FXSR
 ######## XRSTOR ################################################################
-xrstor Msx, 0x0f 0xae /5, Fn0000_0001_ECX_XSAVE
+xrstor Msx, 0x0f 0xae /5, CPUFeature_FXSR
 ######## XSAVE #################################################################
-xsave Msx, 0x0f 0xae /4, Fn0000_0001_ECX_XSAVE
+xsave Msx, 0x0f 0xae /4, CPUFeature_FXSR
 ######## XSAVEOPT ##############################################################
-xsaveopt Msx, 0x0f 0xae /6, Fn0000_0001_ECX_XSAVE
+xsaveopt Msx, 0x0f 0xae /6, CPUFeature_FXSR
 ######## XSETBV ################################################################
-xsetbv, 0x0f 0x01 0xd1, Fn0000_0001_ECX_XSAVE
+xsetbv, 0x0f 0x01 0xd1, CPUFeature_FXSR
 ################################################################################

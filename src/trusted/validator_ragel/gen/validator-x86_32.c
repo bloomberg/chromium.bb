@@ -36,11 +36,11 @@
 
 
 #line 39 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-static const int x86_64_decoder_start = 239;
-static const int x86_64_decoder_first_final = 239;
+static const int x86_64_decoder_start = 247;
+static const int x86_64_decoder_first_final = 247;
 static const int x86_64_decoder_error = 0;
 
-static const int x86_64_decoder_en_main = 239;
+static const int x86_64_decoder_en_main = 247;
 
 
 #line 99 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
@@ -56,6 +56,54 @@ static const int x86_64_decoder_en_main = 239;
 #define SET_BRANCH_NOT_TAKEN(S)
 #define SET_DISP_TYPE(T)
 #define SET_DISP_PTR(P)
+#define SET_CPU_FEATURE(F) \
+  if (!(F)) { \
+    printf("offset 0x%"NACL_PRIxS": CPU Feature not found", \
+           (uintptr_t)(begin - data)); \
+    result = 1; \
+    goto error_detected; \
+  }
+#define CPUFeature_3DNOW    cpu_features->data[NaClCPUFeature_3DNOW]
+#define CPUFeature_3DPRFTCH CPUFeature_3DNOW || CPUFeature_PRE || CPUFeature_LM
+#define CPUFeature_AES      cpu_features->data[NaClCPUFeature_AES]
+#define CPUFeature_AESAVX   CPUFeature_AES && CPUFeature_AVX
+#define CPUFeature_AVX      cpu_features->data[NaClCPUFeature_AVX]
+#define CPUFeature_BMI1     cpu_features->data[NaClCPUFeature_BMI1]
+#define CPUFeature_CLFLUSH  cpu_features->data[NaClCPUFeature_CLFLUSH]
+#define CPUFeature_CLMUL    cpu_features->data[NaClCPUFeature_CLMUL]
+#define CPUFeature_CLMULAVX CPUFeature_CLMUL && CPUFeature_AVX
+#define CPUFeature_CMOV     cpu_features->data[NaClCPUFeature_CMOV]
+#define CPUFeature_CMOVx87  CPUFeature_CMOV && CPUFeature_x87
+#define CPUFeature_CX16     cpu_features->data[NaClCPUFeature_CX16]
+#define CPUFeature_CX8      cpu_features->data[NaClCPUFeature_CX8]
+#define CPUFeature_E3DNOW   cpu_features->data[NaClCPUFeature_E3DNOW]
+#define CPUFeature_EMMX     cpu_features->data[NaClCPUFeature_EMMX]
+#define CPUFeature_EMMXSSE  CPUFeature_EMMX || CPUFeature_SSE
+#define CPUFeature_F16C     cpu_features->data[NaClCPUFeature_F16C]
+#define CPUFeature_FMA      cpu_features->data[NaClCPUFeature_FMA]
+#define CPUFeature_FMA4     cpu_features->data[NaClCPUFeature_FMA4]
+#define CPUFeature_FXSR     cpu_features->data[NaClCPUFeature_FXSR]
+#define CPUFeature_LAHF     cpu_features->data[NaClCPUFeature_LAHF]
+#define CPUFeature_LM       cpu_features->data[NaClCPUFeature_LM]
+#define CPUFeature_LWP      cpu_features->data[NaClCPUFeature_LWP]
+#define CPUFeature_LZCNT    cpu_features->data[NaClCPUFeature_LZCNT]
+#define CPUFeature_MMX      cpu_features->data[NaClCPUFeature_MMX]
+#define CPUFeature_MON      cpu_features->data[NaClCPUFeature_MON]
+#define CPUFeature_MOVBE    cpu_features->data[NaClCPUFeature_MOVBE]
+#define CPUFeature_OSXSAVE  cpu_features->data[NaClCPUFeature_OSXSAVE]
+#define CPUFeature_POPCNT   cpu_features->data[NaClCPUFeature_POPCNT]
+#define CPUFeature_PRE      cpu_features->data[NaClCPUFeature_PRE]
+#define CPUFeature_SSE      cpu_features->data[NaClCPUFeature_SSE]
+#define CPUFeature_SSE2     cpu_features->data[NaClCPUFeature_SSE2]
+#define CPUFeature_SSE3     cpu_features->data[NaClCPUFeature_SSE3]
+#define CPUFeature_SSE41    cpu_features->data[NaClCPUFeature_SSE41]
+#define CPUFeature_SSE42    cpu_features->data[NaClCPUFeature_SSE42]
+#define CPUFeature_SSE4A    cpu_features->data[NaClCPUFeature_SSE4A]
+#define CPUFeature_SSSE3    cpu_features->data[NaClCPUFeature_SSSE3]
+#define CPUFeature_TBM      cpu_features->data[NaClCPUFeature_TBM]
+#define CPUFeature_TSC      cpu_features->data[NaClCPUFeature_TSC]
+#define CPUFeature_x87      cpu_features->data[NaClCPUFeature_x87]
+#define CPUFeature_XOP      cpu_features->data[NaClCPUFeature_XOP]
 
 static const int kBitsPerByte = 8;
 
@@ -95,6 +143,7 @@ static int CheckJumpTargets(uint8_t *valid_targets, uint8_t *jump_dests,
 }
 
 int ValidateChunkIA32(const uint8_t *data, size_t size,
+                      const NaClCPUFeaturesX86 *cpu_features,
                       process_validation_error_func process_error,
                       void *userdata) {
   const size_t bundle_size = 32;
@@ -116,14 +165,14 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
     int cs;
 
     
-#line 120 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 169 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	{
 	cs = x86_64_decoder_start;
 	}
 
-#line 171 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 220 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
     
-#line 127 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 176 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -137,7 +186,7 @@ tr0:
         * causing error.  */
        begin = p + 1;
      }
-	goto st239;
+	goto st247;
 tr9:
 #line 46 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
@@ -151,7 +200,7 @@ tr9:
         * causing error.  */
        begin = p + 1;
      }
-	goto st239;
+	goto st247;
 tr10:
 #line 42 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
@@ -165,7 +214,7 @@ tr10:
         * causing error.  */
        begin = p + 1;
      }
-	goto st239;
+	goto st247;
 tr11:
 #line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
@@ -176,7 +225,7 @@ tr11:
         * causing error.  */
        begin = p + 1;
      }
-	goto st239;
+	goto st247;
 tr15:
 #line 55 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
@@ -187,8 +236,112 @@ tr15:
         * causing error.  */
        begin = p + 1;
      }
-	goto st239;
-tr58:
+	goto st247;
+tr21:
+#line 189 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_3DNOW);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr29:
+#line 312 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_TSC);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr36:
+#line 261 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_MMX);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr48:
+#line 264 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_MON);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr49:
+#line 249 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_FXSR);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr50:
+#line 192 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr62:
+#line 231 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_E3DNOW);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr68:
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr89:
 #line 43 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     int32_t offset =
@@ -203,8 +356,60 @@ tr58:
         * causing error.  */
        begin = p + 1;
      }
-	goto st239;
-tr61:
+	goto st247;
+tr92:
+#line 210 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_CLFLUSH);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr101:
+#line 285 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE2);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr102:
+#line 237 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr103:
+#line 228 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_CX8);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr111:
 #line 35 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     int8_t offset = (uint8_t) (p[0]);
@@ -218,8 +423,8 @@ tr61:
         * causing error.  */
        begin = p + 1;
      }
-	goto st239;
-tr82:
+	goto st247;
+tr132:
 #line 54 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
 #line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
@@ -229,8 +434,8 @@ tr82:
         * causing error.  */
        begin = p + 1;
      }
-	goto st239;
-tr108:
+	goto st247;
+tr178:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(FALSE);
@@ -242,8 +447,60 @@ tr108:
         * causing error.  */
        begin = p + 1;
      }
-	goto st239;
-tr228:
+	goto st247;
+tr257:
+#line 309 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_TBM);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr264:
+#line 255 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_LWP);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr298:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr325:
+#line 207 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_BMI1);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr351:
 #line 52 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
 #line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
@@ -253,8 +510,34 @@ tr228:
         * causing error.  */
        begin = p + 1;
      }
-	goto st239;
-tr267:
+	goto st247;
+tr377:
+#line 321 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_x87);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr383:
+#line 222 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_CMOVx87);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+tr403:
 #line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_REPZ_PREFIX(FALSE);
@@ -266,8 +549,8 @@ tr267:
         * causing error.  */
        begin = p + 1;
      }
-	goto st239;
-tr271:
+	goto st247;
+tr411:
 #line 73 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
       BitmapClearBit(valid_targets, (p - data) - 1);
@@ -279,8 +562,8 @@ tr271:
         * causing error.  */
        begin = p + 1;
      }
-	goto st239;
-tr285:
+	goto st247;
+tr425:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -293,72 +576,90 @@ tr285:
         * causing error.  */
        begin = p + 1;
      }
-	goto st239;
-st239:
+	goto st247;
+tr434:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
+#line 321 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_x87);
+  }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st247;
+st247:
 	if ( ++p == pe )
-		goto _test_eof239;
-case 239:
-#line 302 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof247;
+case 247:
+#line 603 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto tr280;
-		case 5u: goto tr281;
-		case 12u: goto tr280;
-		case 13u: goto tr281;
+		case 4u: goto tr420;
+		case 5u: goto tr421;
+		case 12u: goto tr420;
+		case 13u: goto tr421;
 		case 14u: goto tr19;
-		case 15u: goto tr282;
-		case 20u: goto tr280;
-		case 21u: goto tr281;
-		case 28u: goto tr280;
-		case 29u: goto tr281;
-		case 36u: goto tr280;
-		case 37u: goto tr281;
-		case 44u: goto tr280;
-		case 45u: goto tr281;
-		case 46u: goto tr283;
+		case 15u: goto tr422;
+		case 20u: goto tr420;
+		case 21u: goto tr421;
+		case 28u: goto tr420;
+		case 29u: goto tr421;
+		case 36u: goto tr420;
+		case 37u: goto tr421;
+		case 44u: goto tr420;
+		case 45u: goto tr421;
+		case 46u: goto tr423;
 		case 47u: goto tr19;
-		case 52u: goto tr280;
-		case 53u: goto tr281;
-		case 60u: goto tr280;
-		case 61u: goto tr281;
-		case 62u: goto tr284;
+		case 52u: goto tr420;
+		case 53u: goto tr421;
+		case 60u: goto tr420;
+		case 61u: goto tr421;
+		case 62u: goto tr424;
 		case 63u: goto tr19;
-		case 101u: goto tr286;
-		case 102u: goto tr287;
-		case 104u: goto tr281;
-		case 105u: goto tr288;
-		case 106u: goto tr280;
-		case 107u: goto tr289;
-		case 128u: goto tr289;
-		case 129u: goto tr288;
+		case 101u: goto tr426;
+		case 102u: goto tr427;
+		case 104u: goto tr421;
+		case 105u: goto tr428;
+		case 106u: goto tr420;
+		case 107u: goto tr429;
+		case 128u: goto tr429;
+		case 129u: goto tr428;
 		case 130u: goto tr19;
-		case 131u: goto tr291;
-		case 141u: goto tr292;
-		case 143u: goto tr293;
-		case 154u: goto tr19;
-		case 168u: goto tr280;
-		case 169u: goto tr281;
-		case 196u: goto tr296;
-		case 197u: goto tr297;
-		case 198u: goto tr298;
-		case 199u: goto tr299;
-		case 200u: goto tr300;
-		case 202u: goto tr301;
-		case 216u: goto tr279;
-		case 217u: goto tr303;
-		case 218u: goto tr304;
-		case 219u: goto tr305;
-		case 220u: goto tr306;
-		case 221u: goto tr307;
-		case 222u: goto tr308;
-		case 223u: goto tr309;
-		case 235u: goto tr290;
-		case 240u: goto tr311;
-		case 242u: goto tr312;
-		case 243u: goto tr313;
-		case 246u: goto tr314;
-		case 247u: goto tr315;
-		case 254u: goto tr316;
-		case 255u: goto tr317;
+		case 131u: goto tr431;
+		case 141u: goto tr432;
+		case 143u: goto tr433;
+		case 155u: goto tr434;
+		case 168u: goto tr420;
+		case 169u: goto tr421;
+		case 196u: goto tr437;
+		case 197u: goto tr438;
+		case 198u: goto tr439;
+		case 199u: goto tr440;
+		case 200u: goto tr441;
+		case 202u: goto tr442;
+		case 216u: goto tr444;
+		case 217u: goto tr445;
+		case 218u: goto tr446;
+		case 219u: goto tr447;
+		case 220u: goto tr448;
+		case 221u: goto tr449;
+		case 222u: goto tr450;
+		case 223u: goto tr451;
+		case 235u: goto tr430;
+		case 240u: goto tr453;
+		case 242u: goto tr454;
+		case 243u: goto tr455;
+		case 246u: goto tr456;
+		case 247u: goto tr457;
+		case 254u: goto tr458;
+		case 255u: goto tr459;
 	}
 	if ( (*p) < 132u ) {
 		if ( (*p) < 32u ) {
@@ -367,7 +668,7 @@ case 239:
 					if ( 6u <= (*p) && (*p) <= 7u )
 						goto tr19;
 				} else
-					goto tr279;
+					goto tr419;
 			} else if ( (*p) > 19u ) {
 				if ( (*p) < 24u ) {
 					if ( 22u <= (*p) && (*p) <= 23u )
@@ -376,59 +677,59 @@ case 239:
 					if ( 30u <= (*p) && (*p) <= 31u )
 						goto tr19;
 				} else
-					goto tr279;
+					goto tr419;
 			} else
-				goto tr279;
+				goto tr419;
 		} else if ( (*p) > 35u ) {
 			if ( (*p) < 54u ) {
 				if ( (*p) > 39u ) {
 					if ( 40u <= (*p) && (*p) <= 51u )
-						goto tr279;
+						goto tr419;
 				} else if ( (*p) >= 38u )
 					goto tr19;
 			} else if ( (*p) > 55u ) {
 				if ( (*p) < 96u ) {
 					if ( 56u <= (*p) && (*p) <= 59u )
-						goto tr279;
+						goto tr419;
 				} else if ( (*p) > 111u ) {
 					if ( 112u <= (*p) && (*p) <= 127u )
-						goto tr290;
+						goto tr430;
 				} else
 					goto tr19;
 			} else
 				goto tr19;
 		} else
-			goto tr279;
+			goto tr419;
 	} else if ( (*p) > 139u ) {
 		if ( (*p) < 194u ) {
 			if ( (*p) < 160u ) {
 				if ( (*p) > 142u ) {
-					if ( 156u <= (*p) && (*p) <= 157u )
+					if ( 154u <= (*p) && (*p) <= 157u )
 						goto tr19;
 				} else if ( (*p) >= 140u )
 					goto tr19;
 			} else if ( (*p) > 163u ) {
 				if ( (*p) < 184u ) {
 					if ( 176u <= (*p) && (*p) <= 183u )
-						goto tr280;
+						goto tr420;
 				} else if ( (*p) > 191u ) {
 					if ( 192u <= (*p) && (*p) <= 193u )
-						goto tr295;
+						goto tr436;
 				} else
-					goto tr281;
+					goto tr421;
 			} else
-				goto tr294;
+				goto tr435;
 		} else if ( (*p) > 195u ) {
 			if ( (*p) < 212u ) {
 				if ( (*p) > 207u ) {
 					if ( 208u <= (*p) && (*p) <= 211u )
-						goto tr302;
+						goto tr443;
 				} else if ( (*p) >= 204u )
 					goto tr19;
 			} else if ( (*p) > 231u ) {
 				if ( (*p) < 234u ) {
 					if ( 232u <= (*p) && (*p) <= 233u )
-						goto tr310;
+						goto tr452;
 				} else if ( (*p) > 241u ) {
 					if ( 250u <= (*p) && (*p) <= 251u )
 						goto tr19;
@@ -439,27 +740,235 @@ case 239:
 		} else
 			goto tr19;
 	} else
-		goto tr279;
-	goto tr285;
-tr85:
+		goto tr419;
+	goto tr425;
+tr23:
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st1;
+tr28:
+#line 285 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE2);
+  }
+	goto st1;
+tr30:
+#line 219 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_CMOV);
+  }
+	goto st1;
+tr32:
+#line 261 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_MMX);
+  }
+	goto st1;
+tr46:
+#line 237 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
+  }
+	goto st1;
+tr135:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(FALSE);
   }
+#line 285 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE2);
+  }
 	goto st1;
-tr134:
+tr144:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 288 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE3);
+  }
+	goto st1;
+tr147:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 300 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSSE3);
+  }
+	goto st1;
+tr148:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 291 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE41);
+  }
+	goto st1;
+tr150:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 294 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE42);
+  }
+	goto st1;
+tr151:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 195 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AES);
+  }
+	goto st1;
+tr205:
 #line 36 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
+#line 294 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE42);
+  }
 	goto st1;
-tr136:
+tr207:
 #line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_REPZ_PREFIX(FALSE);
   }
+#line 270 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_POPCNT);
+  }
 	goto st1;
-tr279:
+tr208:
+#line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_REPZ_PREFIX(FALSE);
+  }
+#line 207 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_BMI1);
+  }
+	goto st1;
+tr209:
+#line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_REPZ_PREFIX(FALSE);
+  }
+#line 258 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_LZCNT);
+  }
+	goto st1;
+tr256:
+#line 318 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_XOP);
+  }
+	goto st1;
+tr323:
+#line 207 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_BMI1);
+  }
+	goto st1;
+tr295:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
+	goto st1;
+tr331:
+#line 243 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_FMA);
+  }
+	goto st1;
+tr332:
+#line 198 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AESAVX);
+  }
+	goto st1;
+tr333:
+#line 240 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_F16C);
+  }
+	goto st1;
+tr389:
+#line 36 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_REPNZ_PREFIX(FALSE);
+  }
+#line 285 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE2);
+  }
+	goto st1;
+tr390:
+#line 36 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_REPNZ_PREFIX(FALSE);
+  }
+#line 288 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE3);
+  }
+	goto st1;
+tr396:
+#line 36 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_REPNZ_PREFIX(FALSE);
+  }
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st1;
+tr404:
+#line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_REPZ_PREFIX(FALSE);
+  }
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st1;
+tr405:
+#line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_REPZ_PREFIX(FALSE);
+  }
+#line 288 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE3);
+  }
+	goto st1;
+tr407:
+#line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_REPZ_PREFIX(FALSE);
+  }
+#line 285 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE2);
+  }
+	goto st1;
+tr419:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -470,7 +979,7 @@ st1:
 	if ( ++p == pe )
 		goto _test_eof1;
 case 1:
-#line 474 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 983 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -511,17 +1020,71 @@ case 1:
 	} else if ( (*p) >= 64u )
 		goto st7;
 	goto tr0;
-tr123:
+tr69:
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st2;
+tr51:
+#line 192 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
+  }
+	goto st2;
+tr90:
+#line 249 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_FXSR);
+  }
+	goto st2;
+tr93:
+#line 210 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_CLFLUSH);
+  }
+	goto st2;
+tr104:
+#line 228 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_CX8);
+  }
+	goto st2;
+tr193:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(FALSE);
+  }
+	goto st2;
+tr258:
+#line 309 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_TBM);
+  }
+	goto st2;
+tr326:
+#line 207 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_BMI1);
+  }
+	goto st2;
+tr299:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
+	goto st2;
+tr378:
+#line 321 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_x87);
   }
 	goto st2;
 st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 525 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1088 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 5u: goto st3;
 		case 13u: goto st3;
@@ -557,13 +1120,67 @@ case 2:
 		case 253u: goto st3;
 	}
 	goto tr0;
-tr124:
+tr70:
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st3;
+tr52:
+#line 192 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
+  }
+	goto st3;
+tr91:
+#line 249 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_FXSR);
+  }
+	goto st3;
+tr94:
+#line 210 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_CLFLUSH);
+  }
+	goto st3;
+tr105:
+#line 228 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_CX8);
+  }
+	goto st3;
+tr194:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(FALSE);
   }
 	goto st3;
-tr294:
+tr259:
+#line 309 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_TBM);
+  }
+	goto st3;
+tr327:
+#line 207 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_BMI1);
+  }
+	goto st3;
+tr300:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
+	goto st3;
+tr379:
+#line 321 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_x87);
+  }
+	goto st3;
+tr435:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -574,7 +1191,7 @@ st3:
 	if ( ++p == pe )
 		goto _test_eof3;
 case 3:
-#line 578 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1195 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st4;
 st4:
 	if ( ++p == pe )
@@ -591,71 +1208,269 @@ st6:
 		goto _test_eof6;
 case 6:
 	goto tr9;
-tr125:
+tr71:
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st7;
+tr53:
+#line 192 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
+  }
+	goto st7;
+tr95:
+#line 249 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_FXSR);
+  }
+	goto st7;
+tr97:
+#line 210 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_CLFLUSH);
+  }
+	goto st7;
+tr106:
+#line 228 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_CX8);
+  }
+	goto st7;
+tr195:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(FALSE);
+  }
+	goto st7;
+tr260:
+#line 309 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_TBM);
+  }
+	goto st7;
+tr328:
+#line 207 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_BMI1);
+  }
+	goto st7;
+tr301:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
+	goto st7;
+tr380:
+#line 321 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_x87);
   }
 	goto st7;
 st7:
 	if ( ++p == pe )
 		goto _test_eof7;
 case 7:
-#line 605 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1276 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto tr10;
-tr126:
+tr72:
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st8;
+tr54:
+#line 192 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
+  }
+	goto st8;
+tr96:
+#line 249 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_FXSR);
+  }
+	goto st8;
+tr98:
+#line 210 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_CLFLUSH);
+  }
+	goto st8;
+tr107:
+#line 228 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_CX8);
+  }
+	goto st8;
+tr196:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(FALSE);
+  }
+	goto st8;
+tr261:
+#line 309 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_TBM);
+  }
+	goto st8;
+tr329:
+#line 207 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_BMI1);
+  }
+	goto st8;
+tr302:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
+	goto st8;
+tr381:
+#line 321 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_x87);
   }
 	goto st8;
 st8:
 	if ( ++p == pe )
 		goto _test_eof8;
 case 8:
-#line 617 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1342 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st7;
-tr127:
+tr73:
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st9;
+tr55:
+#line 192 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
+  }
+	goto st9;
+tr99:
+#line 249 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_FXSR);
+  }
+	goto st9;
+tr100:
+#line 210 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_CLFLUSH);
+  }
+	goto st9;
+tr108:
+#line 228 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_CX8);
+  }
+	goto st9;
+tr197:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(FALSE);
+  }
+	goto st9;
+tr262:
+#line 309 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_TBM);
+  }
+	goto st9;
+tr330:
+#line 207 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_BMI1);
+  }
+	goto st9;
+tr303:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
+	goto st9;
+tr382:
+#line 321 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_x87);
   }
 	goto st9;
 st9:
 	if ( ++p == pe )
 		goto _test_eof9;
 case 9:
-#line 629 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1408 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st3;
-tr53:
+tr85:
+#line 261 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_MMX);
+  }
+	goto st10;
+tr83:
 #line 46 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(p - 3);
   }
 	goto st10;
-tr54:
+tr84:
 #line 42 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(p);
   }
 	goto st10;
-tr95:
+tr164:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(FALSE);
   }
+#line 285 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE2);
+  }
 	goto st10;
-tr252:
+tr158:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 291 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE41);
+  }
+	goto st10;
+tr165:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st10;
+tr306:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
+	goto st10;
+tr376:
 #line 58 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
 	goto st10;
-tr264:
+tr400:
 #line 57 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
 	goto st10;
-tr280:
+tr420:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -666,23 +1481,29 @@ st10:
 	if ( ++p == pe )
 		goto _test_eof10;
 case 10:
-#line 670 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1485 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto tr11;
-tr146:
+tr219:
 #line 46 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(p - 3);
   }
 	goto st11;
-tr147:
+tr220:
 #line 42 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(p);
   }
 	goto st11;
-tr281:
+tr268:
+#line 255 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_LWP);
+  }
+	goto st11;
+tr421:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -693,7 +1514,7 @@ st11:
 	if ( ++p == pe )
 		goto _test_eof11;
 case 11:
-#line 697 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1518 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st12;
 st12:
 	if ( ++p == pe )
@@ -718,11 +1539,11 @@ tr19:
         goto error_detected;
     }
 	goto st0;
-#line 722 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1543 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 st0:
 cs = 0;
 	goto _out;
-tr282:
+tr422:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -733,81 +1554,130 @@ st15:
 	if ( ++p == pe )
 		goto _test_eof15;
 case 15:
-#line 737 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1558 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 0u: goto st16;
 		case 1u: goto st17;
 		case 11u: goto tr0;
 		case 13u: goto st18;
-		case 14u: goto tr0;
+		case 14u: goto tr21;
 		case 15u: goto st19;
-		case 19u: goto st29;
-		case 23u: goto st29;
-		case 24u: goto st30;
-		case 31u: goto st31;
-		case 43u: goto st29;
-		case 49u: goto tr0;
-		case 80u: goto st32;
-		case 112u: goto st33;
-		case 115u: goto st43;
-		case 119u: goto tr0;
+		case 18u: goto st29;
+		case 19u: goto tr25;
+		case 22u: goto st29;
+		case 23u: goto tr25;
+		case 24u: goto st31;
+		case 31u: goto st32;
+		case 43u: goto tr25;
+		case 49u: goto tr29;
+		case 80u: goto tr31;
+		case 112u: goto tr33;
+		case 115u: goto st44;
+		case 119u: goto tr36;
 		case 162u: goto tr0;
-		case 164u: goto st33;
-		case 172u: goto st33;
-		case 174u: goto st48;
-		case 179u: goto tr19;
-		case 195u: goto st29;
-		case 197u: goto st49;
-		case 199u: goto st50;
-		case 208u: goto tr19;
-		case 214u: goto tr19;
-		case 215u: goto st32;
-		case 240u: goto tr19;
-		case 247u: goto st32;
-		case 255u: goto tr19;
+		case 164u: goto st34;
+		case 165u: goto st1;
+		case 172u: goto st34;
+		case 174u: goto st49;
+		case 178u: goto st30;
+		case 195u: goto tr42;
+		case 196u: goto tr33;
+		case 197u: goto tr43;
+		case 199u: goto st51;
+		case 212u: goto tr28;
+		case 215u: goto tr45;
+		case 218u: goto tr46;
+		case 222u: goto tr46;
+		case 224u: goto tr46;
+		case 229u: goto tr32;
+		case 234u: goto tr46;
+		case 238u: goto tr46;
+		case 244u: goto tr28;
+		case 246u: goto tr46;
+		case 247u: goto tr47;
+		case 251u: goto tr28;
 	}
-	if ( (*p) < 128u ) {
-		if ( (*p) < 48u ) {
-			if ( (*p) > 12u ) {
-				if ( 25u <= (*p) && (*p) <= 39u )
-					goto tr19;
-			} else if ( (*p) >= 4u )
-				goto tr19;
-		} else if ( (*p) > 63u ) {
-			if ( (*p) < 113u ) {
-				if ( 108u <= (*p) && (*p) <= 109u )
-					goto tr19;
-			} else if ( (*p) > 114u ) {
-				if ( 120u <= (*p) && (*p) <= 125u )
-					goto tr19;
+	if ( (*p) < 126u ) {
+		if ( (*p) < 81u ) {
+			if ( (*p) < 40u ) {
+				if ( (*p) > 3u ) {
+					if ( 16u <= (*p) && (*p) <= 21u )
+						goto tr23;
+				} else if ( (*p) >= 2u )
+					goto st1;
+			} else if ( (*p) > 41u ) {
+				if ( (*p) < 46u ) {
+					if ( 42u <= (*p) && (*p) <= 45u )
+						goto tr28;
+				} else if ( (*p) > 47u ) {
+					if ( 64u <= (*p) && (*p) <= 79u )
+						goto tr30;
+				} else
+					goto tr23;
 			} else
-				goto st42;
+				goto tr23;
+		} else if ( (*p) > 89u ) {
+			if ( (*p) < 96u ) {
+				if ( (*p) > 91u ) {
+					if ( 92u <= (*p) && (*p) <= 95u )
+						goto tr23;
+				} else if ( (*p) >= 90u )
+					goto tr28;
+			} else if ( (*p) > 107u ) {
+				if ( (*p) < 113u ) {
+					if ( 110u <= (*p) && (*p) <= 111u )
+						goto tr32;
+				} else if ( (*p) > 114u ) {
+					if ( 116u <= (*p) && (*p) <= 118u )
+						goto tr32;
+				} else
+					goto st43;
+			} else
+				goto tr32;
 		} else
-			goto tr19;
-	} else if ( (*p) > 143u ) {
-		if ( (*p) < 184u ) {
-			if ( (*p) < 166u ) {
-				if ( 160u <= (*p) && (*p) <= 163u )
-					goto tr19;
-			} else if ( (*p) > 171u ) {
-				if ( 178u <= (*p) && (*p) <= 181u )
-					goto st29;
+			goto tr23;
+	} else if ( (*p) > 127u ) {
+		if ( (*p) < 194u ) {
+			if ( (*p) < 173u ) {
+				if ( (*p) > 143u ) {
+					if ( 144u <= (*p) && (*p) <= 159u )
+						goto tr30;
+				} else if ( (*p) >= 128u )
+					goto st45;
+			} else if ( (*p) > 177u ) {
+				if ( (*p) < 182u ) {
+					if ( 180u <= (*p) && (*p) <= 181u )
+						goto st30;
+				} else if ( (*p) > 183u ) {
+					if ( 188u <= (*p) && (*p) <= 193u )
+						goto st1;
+				} else
+					goto st1;
 			} else
-				goto tr19;
-		} else if ( (*p) > 187u ) {
-			if ( (*p) < 200u ) {
-				if ( 194u <= (*p) && (*p) <= 198u )
-					goto st33;
-			} else if ( (*p) > 207u ) {
-				if ( 230u <= (*p) && (*p) <= 231u )
-					goto tr19;
+				goto st1;
+		} else if ( (*p) > 198u ) {
+			if ( (*p) < 216u ) {
+				if ( (*p) > 207u ) {
+					if ( 209u <= (*p) && (*p) <= 213u )
+						goto tr32;
+				} else if ( (*p) >= 200u )
+					goto tr0;
+			} else if ( (*p) > 226u ) {
+				if ( (*p) < 232u ) {
+					if ( 227u <= (*p) && (*p) <= 228u )
+						goto tr46;
+				} else if ( (*p) > 239u ) {
+					if ( 241u <= (*p) && (*p) <= 254u )
+						goto tr32;
+				} else
+					goto tr32;
 			} else
-				goto tr0;
+				goto tr32;
 		} else
-			goto tr19;
+			goto tr41;
 	} else
-		goto st44;
-	goto st1;
+		goto tr32;
+	goto tr19;
 st16:
 	if ( ++p == pe )
 		goto _test_eof16;
@@ -888,7 +1758,7 @@ case 17:
 		if ( (*p) < 208u ) {
 			if ( (*p) > 191u ) {
 				if ( 200u <= (*p) && (*p) <= 201u )
-					goto tr0;
+					goto tr48;
 			} else if ( (*p) >= 176u )
 				goto st3;
 		} else if ( (*p) > 209u ) {
@@ -898,7 +1768,7 @@ case 17:
 			} else if ( (*p) >= 224u )
 				goto tr0;
 		} else
-			goto tr0;
+			goto tr49;
 	} else
 		goto st3;
 	goto tr19;
@@ -907,23 +1777,23 @@ st18:
 		goto _test_eof18;
 case 18:
 	switch( (*p) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
+		case 4u: goto tr51;
+		case 5u: goto tr52;
+		case 12u: goto tr51;
+		case 13u: goto tr52;
+		case 68u: goto tr54;
+		case 76u: goto tr54;
+		case 132u: goto tr55;
+		case 140u: goto tr55;
 	}
 	if ( (*p) < 64u ) {
 		if ( (*p) <= 15u )
-			goto tr0;
+			goto tr50;
 	} else if ( (*p) > 79u ) {
 		if ( 128u <= (*p) && (*p) <= 143u )
-			goto st3;
+			goto tr52;
 	} else
-		goto st7;
+		goto tr53;
 	goto tr19;
 st19:
 	if ( ++p == pe )
@@ -969,14 +1839,14 @@ case 19:
 	} else if ( (*p) >= 64u )
 		goto st26;
 	goto st20;
-tr42:
+tr66:
 #line 46 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(p - 3);
   }
 	goto st20;
-tr43:
+tr67:
 #line 42 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DISP_TYPE(DISP8);
@@ -987,37 +1857,35 @@ st20:
 	if ( ++p == pe )
 		goto _test_eof20;
 case 20:
-#line 991 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1861 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 138u: goto tr0;
-		case 142u: goto tr0;
-		case 144u: goto tr0;
-		case 148u: goto tr0;
-		case 154u: goto tr0;
-		case 158u: goto tr0;
-		case 160u: goto tr0;
-		case 164u: goto tr0;
-		case 170u: goto tr0;
-		case 174u: goto tr0;
-		case 176u: goto tr0;
-		case 180u: goto tr0;
-		case 187u: goto tr0;
-		case 191u: goto tr0;
+		case 12u: goto tr62;
+		case 13u: goto tr21;
+		case 28u: goto tr62;
+		case 29u: goto tr21;
+		case 138u: goto tr62;
+		case 142u: goto tr62;
+		case 144u: goto tr21;
+		case 148u: goto tr21;
+		case 154u: goto tr21;
+		case 158u: goto tr21;
+		case 160u: goto tr21;
+		case 164u: goto tr21;
+		case 170u: goto tr21;
+		case 174u: goto tr21;
+		case 176u: goto tr21;
+		case 180u: goto tr21;
+		case 187u: goto tr62;
+		case 191u: goto tr21;
 	}
-	if ( (*p) < 150u ) {
-		if ( (*p) > 13u ) {
-			if ( 28u <= (*p) && (*p) <= 29u )
-				goto tr0;
-		} else if ( (*p) >= 12u )
-			goto tr0;
-	} else if ( (*p) > 151u ) {
-		if ( (*p) > 167u ) {
-			if ( 182u <= (*p) && (*p) <= 183u )
-				goto tr0;
-		} else if ( (*p) >= 166u )
-			goto tr0;
+	if ( (*p) < 166u ) {
+		if ( 150u <= (*p) && (*p) <= 151u )
+			goto tr21;
+	} else if ( (*p) > 167u ) {
+		if ( 182u <= (*p) && (*p) <= 183u )
+			goto tr21;
 	} else
-		goto tr0;
+		goto tr21;
 	goto tr19;
 st21:
 	if ( ++p == pe )
@@ -1077,12 +1945,12 @@ st25:
 	if ( ++p == pe )
 		goto _test_eof25;
 case 25:
-	goto tr42;
+	goto tr66;
 st26:
 	if ( ++p == pe )
 		goto _test_eof26;
 case 26:
-	goto tr43;
+	goto tr67;
 st27:
 	if ( ++p == pe )
 		goto _test_eof27;
@@ -1093,36 +1961,130 @@ st28:
 		goto _test_eof28;
 case 28:
 	goto st22;
-tr86:
+st29:
+	if ( ++p == pe )
+		goto _test_eof29;
+case 29:
+	switch( (*p) ) {
+		case 4u: goto tr69;
+		case 5u: goto tr70;
+		case 12u: goto tr69;
+		case 13u: goto tr70;
+		case 20u: goto tr69;
+		case 21u: goto tr70;
+		case 28u: goto tr69;
+		case 29u: goto tr70;
+		case 36u: goto tr69;
+		case 37u: goto tr70;
+		case 44u: goto tr69;
+		case 45u: goto tr70;
+		case 52u: goto tr69;
+		case 53u: goto tr70;
+		case 60u: goto tr69;
+		case 61u: goto tr70;
+		case 68u: goto tr72;
+		case 76u: goto tr72;
+		case 84u: goto tr72;
+		case 92u: goto tr72;
+		case 100u: goto tr72;
+		case 108u: goto tr72;
+		case 116u: goto tr72;
+		case 124u: goto tr72;
+		case 132u: goto tr73;
+		case 140u: goto tr73;
+		case 148u: goto tr73;
+		case 156u: goto tr73;
+		case 164u: goto tr73;
+		case 172u: goto tr73;
+		case 180u: goto tr73;
+		case 188u: goto tr73;
+	}
+	if ( (*p) > 127u ) {
+		if ( 128u <= (*p) && (*p) <= 191u )
+			goto tr70;
+	} else if ( (*p) >= 64u )
+		goto tr71;
+	goto tr68;
+tr25:
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st30;
+tr42:
+#line 285 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE2);
+  }
+	goto st30;
+tr136:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	goto st29;
-tr258:
+#line 285 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE2);
+  }
+	goto st30;
+tr149:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 291 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE41);
+  }
+	goto st30;
+tr296:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
+	goto st30;
+tr398:
 #line 36 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	goto st29;
-tr268:
+#line 288 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE3);
+  }
+	goto st30;
+tr391:
+#line 36 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_REPNZ_PREFIX(FALSE);
+  }
+#line 297 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE4A);
+  }
+	goto st30;
+tr406:
 #line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	goto st29;
-tr292:
+#line 297 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE4A);
+  }
+	goto st30;
+tr432:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
      }
-	goto st29;
-st29:
+	goto st30;
+st30:
 	if ( ++p == pe )
-		goto _test_eof29;
-case 29:
-#line 1126 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof30;
+case 30:
+#line 2088 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -1166,10 +2128,10 @@ case 29:
 	} else
 		goto st7;
 	goto tr19;
-st30:
+st31:
 	if ( ++p == pe )
-		goto _test_eof30;
-case 30:
+		goto _test_eof31;
+case 31:
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -1197,10 +2159,10 @@ case 30:
 	} else
 		goto st7;
 	goto tr19;
-st31:
+st32:
 	if ( ++p == pe )
-		goto _test_eof31;
-case 31:
+		goto _test_eof32;
+case 32:
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -1219,164 +2181,369 @@ case 31:
 	} else
 		goto st7;
 	goto tr19;
-tr89:
+tr31:
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st33;
+tr45:
+#line 237 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
+  }
+	goto st33;
+tr47:
+#line 234 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_EMMX);
+  }
+	goto st33;
+tr139:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	goto st32;
-tr262:
-#line 36 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 285 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    SET_REPNZ_PREFIX(FALSE);
+    SET_CPU_FEATURE(CPUFeature_SSE2);
   }
-	goto st32;
-tr270:
-#line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_REPZ_PREFIX(FALSE);
-  }
-	goto st32;
-st32:
-	if ( ++p == pe )
-		goto _test_eof32;
-case 32:
-#line 1245 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	if ( 192u <= (*p) )
-		goto tr0;
-	goto tr19;
-tr90:
+	goto st33;
+tr143:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(FALSE);
   }
+#line 297 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE4A);
+  }
 	goto st33;
-tr260:
+tr307:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
+	goto st33;
+tr397:
 #line 36 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
+#line 285 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE2);
+  }
 	goto st33;
-tr269:
+tr395:
+#line 36 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_REPNZ_PREFIX(FALSE);
+  }
+#line 297 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE4A);
+  }
+	goto st33;
+tr410:
 #line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	goto st33;
-tr289:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 285 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-        begin = p;
-        BitmapSetBit(valid_targets, p - data);
-     }
+    SET_CPU_FEATURE(CPUFeature_SSE2);
+  }
 	goto st33;
 st33:
 	if ( ++p == pe )
 		goto _test_eof33;
 case 33:
-#line 1278 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 4u: goto st34;
-		case 5u: goto st35;
-		case 12u: goto st34;
-		case 13u: goto st35;
-		case 20u: goto st34;
-		case 21u: goto st35;
-		case 28u: goto st34;
-		case 29u: goto st35;
-		case 36u: goto st34;
-		case 37u: goto st35;
-		case 44u: goto st34;
-		case 45u: goto st35;
-		case 52u: goto st34;
-		case 53u: goto st35;
-		case 60u: goto st34;
-		case 61u: goto st35;
-		case 68u: goto st40;
-		case 76u: goto st40;
-		case 84u: goto st40;
-		case 92u: goto st40;
-		case 100u: goto st40;
-		case 108u: goto st40;
-		case 116u: goto st40;
-		case 124u: goto st40;
-		case 132u: goto st41;
-		case 140u: goto st41;
-		case 148u: goto st41;
-		case 156u: goto st41;
-		case 164u: goto st41;
-		case 172u: goto st41;
-		case 180u: goto st41;
-		case 188u: goto st41;
-	}
-	if ( (*p) > 127u ) {
-		if ( 128u <= (*p) && (*p) <= 191u )
-			goto st35;
-	} else if ( (*p) >= 64u )
-		goto st39;
-	goto st10;
-tr96:
+#line 2263 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	if ( 192u <= (*p) )
+		goto tr0;
+	goto tr19;
+tr41:
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st34;
+tr33:
+#line 237 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
+  }
+	goto st34;
+tr140:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(FALSE);
   }
+#line 285 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE2);
+  }
+	goto st34;
+tr153:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 300 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSSE3);
+  }
+	goto st34;
+tr152:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 291 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE41);
+  }
+	goto st34;
+tr156:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 294 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE42);
+  }
+	goto st34;
+tr157:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 195 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AES);
+  }
+	goto st34;
+tr155:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 213 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_CLMUL);
+  }
+	goto st34;
+tr238:
+#line 318 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_XOP);
+  }
+	goto st34;
+tr297:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
+	goto st34;
+tr344:
+#line 198 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AESAVX);
+  }
+	goto st34;
+tr358:
+#line 240 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_F16C);
+  }
+	goto st34;
+tr340:
+#line 216 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_CLMULAVX);
+  }
+	goto st34;
+tr393:
+#line 36 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_REPNZ_PREFIX(FALSE);
+  }
+#line 285 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE2);
+  }
+	goto st34;
+tr409:
+#line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_REPZ_PREFIX(FALSE);
+  }
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st34;
+tr408:
+#line 39 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_REPZ_PREFIX(FALSE);
+  }
+#line 285 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE2);
+  }
+	goto st34;
+tr429:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
 	goto st34;
 st34:
 	if ( ++p == pe )
 		goto _test_eof34;
 case 34:
-#line 1329 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2410 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 5u: goto st35;
-		case 13u: goto st35;
-		case 21u: goto st35;
-		case 29u: goto st35;
-		case 37u: goto st35;
-		case 45u: goto st35;
-		case 53u: goto st35;
-		case 61u: goto st35;
-		case 69u: goto st35;
-		case 77u: goto st35;
-		case 85u: goto st35;
-		case 93u: goto st35;
-		case 101u: goto st35;
-		case 109u: goto st35;
-		case 117u: goto st35;
-		case 125u: goto st35;
-		case 133u: goto st35;
-		case 141u: goto st35;
-		case 149u: goto st35;
-		case 157u: goto st35;
-		case 165u: goto st35;
-		case 173u: goto st35;
-		case 181u: goto st35;
-		case 189u: goto st35;
-		case 197u: goto st35;
-		case 205u: goto st35;
-		case 213u: goto st35;
-		case 221u: goto st35;
-		case 229u: goto st35;
-		case 237u: goto st35;
-		case 245u: goto st35;
-		case 253u: goto st35;
+		case 4u: goto st35;
+		case 5u: goto st36;
+		case 12u: goto st35;
+		case 13u: goto st36;
+		case 20u: goto st35;
+		case 21u: goto st36;
+		case 28u: goto st35;
+		case 29u: goto st36;
+		case 36u: goto st35;
+		case 37u: goto st36;
+		case 44u: goto st35;
+		case 45u: goto st36;
+		case 52u: goto st35;
+		case 53u: goto st36;
+		case 60u: goto st35;
+		case 61u: goto st36;
+		case 68u: goto st41;
+		case 76u: goto st41;
+		case 84u: goto st41;
+		case 92u: goto st41;
+		case 100u: goto st41;
+		case 108u: goto st41;
+		case 116u: goto st41;
+		case 124u: goto st41;
+		case 132u: goto st42;
+		case 140u: goto st42;
+		case 148u: goto st42;
+		case 156u: goto st42;
+		case 164u: goto st42;
+		case 172u: goto st42;
+		case 180u: goto st42;
+		case 188u: goto st42;
 	}
+	if ( (*p) > 127u ) {
+		if ( 128u <= (*p) && (*p) <= 191u )
+			goto st36;
+	} else if ( (*p) >= 64u )
+		goto st40;
 	goto st10;
-tr97:
+tr159:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(FALSE);
+  }
+#line 291 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE41);
+  }
+	goto st35;
+tr166:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st35;
+tr311:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st35;
 st35:
 	if ( ++p == pe )
 		goto _test_eof35;
 case 35:
-#line 1375 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2481 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 5u: goto st36;
+		case 13u: goto st36;
+		case 21u: goto st36;
+		case 29u: goto st36;
+		case 37u: goto st36;
+		case 45u: goto st36;
+		case 53u: goto st36;
+		case 61u: goto st36;
+		case 69u: goto st36;
+		case 77u: goto st36;
+		case 85u: goto st36;
+		case 93u: goto st36;
+		case 101u: goto st36;
+		case 109u: goto st36;
+		case 117u: goto st36;
+		case 125u: goto st36;
+		case 133u: goto st36;
+		case 141u: goto st36;
+		case 149u: goto st36;
+		case 157u: goto st36;
+		case 165u: goto st36;
+		case 173u: goto st36;
+		case 181u: goto st36;
+		case 189u: goto st36;
+		case 197u: goto st36;
+		case 205u: goto st36;
+		case 213u: goto st36;
+		case 221u: goto st36;
+		case 229u: goto st36;
+		case 237u: goto st36;
+		case 245u: goto st36;
+		case 253u: goto st36;
+	}
+	goto st10;
+tr160:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 291 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE41);
+  }
+	goto st36;
+tr167:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st36;
+tr312:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
 	goto st36;
 st36:
 	if ( ++p == pe )
 		goto _test_eof36;
 case 36:
+#line 2547 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st37;
 st37:
 	if ( ++p == pe )
@@ -1387,83 +2554,143 @@ st38:
 	if ( ++p == pe )
 		goto _test_eof38;
 case 38:
-	goto tr53;
-tr98:
-#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_DATA16_PREFIX(FALSE);
-  }
 	goto st39;
 st39:
 	if ( ++p == pe )
 		goto _test_eof39;
 case 39:
-#line 1402 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	goto tr54;
-tr99:
+	goto tr83;
+tr161:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(FALSE);
+  }
+#line 291 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE41);
+  }
+	goto st40;
+tr168:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st40;
+tr313:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st40;
 st40:
 	if ( ++p == pe )
 		goto _test_eof40;
 case 40:
-#line 1414 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	goto st39;
-tr100:
+#line 2594 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	goto tr84;
+tr162:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(FALSE);
+  }
+#line 291 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE41);
+  }
+	goto st41;
+tr169:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st41;
+tr314:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st41;
 st41:
 	if ( ++p == pe )
 		goto _test_eof41;
 case 41:
-#line 1426 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	goto st35;
+#line 2626 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	goto st40;
+tr163:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 291 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE41);
+  }
+	goto st42;
+tr170:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	goto st42;
+tr315:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
+	goto st42;
 st42:
 	if ( ++p == pe )
 		goto _test_eof42;
 case 42:
-	if ( (*p) < 224u ) {
-		if ( 208u <= (*p) && (*p) <= 215u )
-			goto st10;
-	} else if ( (*p) > 231u ) {
-		if ( 240u <= (*p) && (*p) <= 247u )
-			goto st10;
-	} else
-		goto st10;
-	goto tr19;
+#line 2658 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	goto st36;
 st43:
 	if ( ++p == pe )
 		goto _test_eof43;
 case 43:
+	if ( (*p) < 224u ) {
+		if ( 208u <= (*p) && (*p) <= 215u )
+			goto tr85;
+	} else if ( (*p) > 231u ) {
+		if ( 240u <= (*p) && (*p) <= 247u )
+			goto tr85;
+	} else
+		goto tr85;
+	goto tr19;
+st44:
+	if ( ++p == pe )
+		goto _test_eof44;
+case 44:
 	if ( (*p) > 215u ) {
 		if ( 240u <= (*p) && (*p) <= 247u )
-			goto st10;
+			goto tr85;
 	} else if ( (*p) >= 208u )
-		goto st10;
+		goto tr85;
 	goto tr19;
-tr310:
+tr452:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
      }
-	goto st44;
-st44:
-	if ( ++p == pe )
-		goto _test_eof44;
-case 44:
-#line 1462 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st45;
 st45:
 	if ( ++p == pe )
 		goto _test_eof45;
 case 45:
+#line 2694 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st46;
 st46:
 	if ( ++p == pe )
@@ -1474,83 +2701,122 @@ st47:
 	if ( ++p == pe )
 		goto _test_eof47;
 case 47:
-	goto tr58;
+	goto st48;
 st48:
 	if ( ++p == pe )
 		goto _test_eof48;
 case 48:
-	switch( (*p) ) {
-		case 20u: goto st2;
-		case 21u: goto st3;
-		case 28u: goto st2;
-		case 29u: goto st3;
-		case 36u: goto st2;
-		case 37u: goto st3;
-		case 44u: goto st2;
-		case 45u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 60u: goto st2;
-		case 61u: goto st3;
-		case 84u: goto st8;
-		case 92u: goto st8;
-		case 100u: goto st8;
-		case 108u: goto st8;
-		case 116u: goto st8;
-		case 124u: goto st8;
-		case 148u: goto st9;
-		case 156u: goto st9;
-		case 164u: goto st9;
-		case 172u: goto st9;
-		case 180u: goto st9;
-		case 188u: goto st9;
-		case 232u: goto tr0;
-		case 240u: goto tr0;
-		case 248u: goto tr0;
-	}
-	if ( (*p) < 80u ) {
-		if ( 16u <= (*p) && (*p) <= 63u )
-			goto tr0;
-	} else if ( (*p) > 127u ) {
-		if ( 144u <= (*p) && (*p) <= 191u )
-			goto st3;
-	} else
-		goto st7;
-	goto tr19;
-tr94:
-#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	goto st49;
+	goto tr89;
 st49:
 	if ( ++p == pe )
 		goto _test_eof49;
 case 49:
-#line 1531 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	if ( 192u <= (*p) )
-		goto st10;
+	switch( (*p) ) {
+		case 20u: goto tr69;
+		case 21u: goto tr70;
+		case 28u: goto tr69;
+		case 29u: goto tr70;
+		case 36u: goto tr90;
+		case 37u: goto tr91;
+		case 44u: goto tr90;
+		case 45u: goto tr91;
+		case 52u: goto tr90;
+		case 53u: goto tr91;
+		case 60u: goto tr93;
+		case 61u: goto tr94;
+		case 84u: goto tr72;
+		case 92u: goto tr72;
+		case 100u: goto tr96;
+		case 108u: goto tr96;
+		case 116u: goto tr96;
+		case 124u: goto tr98;
+		case 148u: goto tr73;
+		case 156u: goto tr73;
+		case 164u: goto tr99;
+		case 172u: goto tr99;
+		case 180u: goto tr99;
+		case 188u: goto tr100;
+		case 232u: goto tr101;
+		case 240u: goto tr101;
+		case 248u: goto tr102;
+	}
+	if ( (*p) < 96u ) {
+		if ( (*p) < 32u ) {
+			if ( 16u <= (*p) && (*p) <= 31u )
+				goto tr68;
+		} else if ( (*p) > 55u ) {
+			if ( (*p) > 63u ) {
+				if ( 80u <= (*p) && (*p) <= 95u )
+					goto tr71;
+			} else if ( (*p) >= 56u )
+				goto tr92;
+		} else
+			goto tr49;
+	} else if ( (*p) > 119u ) {
+		if ( (*p) < 144u ) {
+			if ( 120u <= (*p) && (*p) <= 127u )
+				goto tr97;
+		} else if ( (*p) > 159u ) {
+			if ( (*p) > 183u ) {
+				if ( 184u <= (*p) && (*p) <= 191u )
+					goto tr94;
+			} else if ( (*p) >= 160u )
+				goto tr91;
+		} else
+			goto tr70;
+	} else
+		goto tr95;
 	goto tr19;
+tr43:
+#line 237 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
+  }
+	goto st50;
+tr146:
+#line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(FALSE);
+  }
+#line 285 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE2);
+  }
+	goto st50;
+tr310:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
+	goto st50;
 st50:
 	if ( ++p == pe )
 		goto _test_eof50;
 case 50:
+#line 2797 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	if ( 192u <= (*p) )
+		goto st10;
+	goto tr19;
+st51:
+	if ( ++p == pe )
+		goto _test_eof51;
+case 51:
 	switch( (*p) ) {
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 76u: goto st8;
-		case 140u: goto st9;
+		case 12u: goto tr104;
+		case 13u: goto tr105;
+		case 76u: goto tr107;
+		case 140u: goto tr108;
 	}
 	if ( (*p) < 72u ) {
 		if ( 8u <= (*p) && (*p) <= 15u )
-			goto tr0;
+			goto tr103;
 	} else if ( (*p) > 79u ) {
 		if ( 136u <= (*p) && (*p) <= 143u )
-			goto st3;
+			goto tr105;
 	} else
-		goto st7;
+		goto tr106;
 	goto tr19;
-tr283:
+tr423:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -1560,8 +2826,8 @@ tr283:
 	{
     SET_BRANCH_NOT_TAKEN(TRUE);
   }
-	goto st51;
-tr284:
+	goto st52;
+tr424:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -1571,38 +2837,25 @@ tr284:
 	{
     SET_BRANCH_TAKEN(TRUE);
   }
-	goto st51;
-st51:
-	if ( ++p == pe )
-		goto _test_eof51;
-case 51:
-#line 1580 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	if ( (*p) == 15u )
-		goto st52;
-	if ( 112u <= (*p) && (*p) <= 127u )
-		goto st53;
-	goto tr19;
+	goto st52;
 st52:
 	if ( ++p == pe )
 		goto _test_eof52;
 case 52:
-	if ( 128u <= (*p) && (*p) <= 143u )
-		goto st44;
+#line 2846 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	if ( (*p) == 15u )
+		goto st53;
+	if ( 112u <= (*p) && (*p) <= 127u )
+		goto st54;
 	goto tr19;
-tr290:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-        begin = p;
-        BitmapSetBit(valid_targets, p - data);
-     }
-	goto st53;
 st53:
 	if ( ++p == pe )
 		goto _test_eof53;
 case 53:
-#line 1604 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	goto tr61;
-tr286:
+	if ( 128u <= (*p) && (*p) <= 143u )
+		goto st45;
+	goto tr19;
+tr430:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -1613,33 +2866,39 @@ st54:
 	if ( ++p == pe )
 		goto _test_eof54;
 case 54:
-#line 1617 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 139u: goto st55;
-		case 161u: goto st56;
-	}
-	goto tr19;
+#line 2870 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	goto tr111;
+tr426:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
+	goto st55;
 st55:
 	if ( ++p == pe )
 		goto _test_eof55;
 case 55:
+#line 2883 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 5u: goto st56;
-		case 13u: goto st56;
-		case 21u: goto st56;
-		case 29u: goto st56;
-		case 37u: goto st56;
-		case 45u: goto st56;
-		case 53u: goto st56;
-		case 61u: goto st56;
+		case 139u: goto st56;
+		case 161u: goto st57;
 	}
 	goto tr19;
 st56:
 	if ( ++p == pe )
 		goto _test_eof56;
 case 56:
-	if ( (*p) == 0u )
-		goto st57;
+	switch( (*p) ) {
+		case 5u: goto st57;
+		case 13u: goto st57;
+		case 21u: goto st57;
+		case 29u: goto st57;
+		case 37u: goto st57;
+		case 45u: goto st57;
+		case 53u: goto st57;
+		case 61u: goto st57;
+	}
 	goto tr19;
 st57:
 	if ( ++p == pe )
@@ -1660,9 +2919,16 @@ st59:
 		goto _test_eof59;
 case 59:
 	if ( (*p) == 0u )
+		goto st60;
+	goto tr19;
+st60:
+	if ( ++p == pe )
+		goto _test_eof60;
+case 60:
+	if ( (*p) == 0u )
 		goto tr0;
 	goto tr19;
-tr287:
+tr427:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -1672,68 +2938,68 @@ tr287:
 	{
     SET_DATA16_PREFIX(TRUE);
   }
-	goto st60;
-st60:
+	goto st61;
+st61:
 	if ( ++p == pe )
-		goto _test_eof60;
-case 60:
-#line 1681 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof61;
+case 61:
+#line 2947 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 1u: goto st1;
 		case 3u: goto st1;
-		case 5u: goto st61;
+		case 5u: goto st62;
 		case 9u: goto st1;
 		case 11u: goto st1;
-		case 13u: goto st61;
-		case 15u: goto st63;
+		case 13u: goto st62;
+		case 15u: goto st64;
 		case 17u: goto st1;
 		case 19u: goto st1;
-		case 21u: goto st61;
+		case 21u: goto st62;
 		case 25u: goto st1;
 		case 27u: goto st1;
-		case 29u: goto st61;
+		case 29u: goto st62;
 		case 33u: goto st1;
 		case 35u: goto st1;
-		case 37u: goto st61;
+		case 37u: goto st62;
 		case 41u: goto st1;
 		case 43u: goto st1;
-		case 45u: goto st61;
-		case 46u: goto st71;
+		case 45u: goto st62;
+		case 46u: goto st73;
 		case 49u: goto st1;
 		case 51u: goto st1;
-		case 53u: goto st61;
+		case 53u: goto st62;
 		case 57u: goto st1;
 		case 59u: goto st1;
-		case 61u: goto st61;
-		case 102u: goto st79;
-		case 104u: goto st61;
-		case 105u: goto st84;
-		case 107u: goto st33;
-		case 129u: goto st84;
-		case 131u: goto st33;
+		case 61u: goto st62;
+		case 102u: goto st81;
+		case 104u: goto st62;
+		case 105u: goto st86;
+		case 107u: goto st34;
+		case 129u: goto st86;
+		case 131u: goto st34;
 		case 133u: goto st1;
 		case 135u: goto st1;
 		case 137u: goto st1;
 		case 139u: goto st1;
-		case 141u: goto st29;
-		case 143u: goto st93;
+		case 141u: goto st30;
+		case 143u: goto st95;
 		case 161u: goto st3;
 		case 163u: goto st3;
 		case 165u: goto tr0;
 		case 167u: goto tr0;
-		case 169u: goto st61;
+		case 169u: goto st62;
 		case 171u: goto tr0;
 		case 173u: goto tr0;
 		case 175u: goto tr0;
-		case 193u: goto st94;
-		case 199u: goto st95;
-		case 209u: goto st96;
-		case 211u: goto st96;
-		case 240u: goto tr76;
-		case 242u: goto tr77;
-		case 243u: goto tr78;
-		case 247u: goto st107;
-		case 255u: goto st108;
+		case 193u: goto st96;
+		case 199u: goto st97;
+		case 209u: goto st98;
+		case 211u: goto st98;
+		case 240u: goto tr126;
+		case 242u: goto tr127;
+		case 243u: goto tr128;
+		case 247u: goto st110;
+		case 255u: goto st111;
 	}
 	if ( (*p) < 144u ) {
 		if ( 64u <= (*p) && (*p) <= 79u )
@@ -1741,76 +3007,76 @@ case 60:
 	} else if ( (*p) > 153u ) {
 		if ( (*p) > 157u ) {
 			if ( 184u <= (*p) && (*p) <= 191u )
-				goto st61;
+				goto st62;
 		} else if ( (*p) >= 156u )
 			goto tr0;
 	} else
 		goto tr0;
 	goto tr19;
-tr121:
+tr191:
 #line 46 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(p - 3);
   }
-	goto st61;
-tr122:
+	goto st62;
+tr192:
 #line 42 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(p);
   }
-	goto st61;
-tr301:
+	goto st62;
+tr442:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
      }
-	goto st61;
-st61:
-	if ( ++p == pe )
-		goto _test_eof61;
-case 61:
-#line 1776 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st62;
 st62:
 	if ( ++p == pe )
 		goto _test_eof62;
 case 62:
-	goto tr82;
+#line 3042 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	goto st63;
 st63:
 	if ( ++p == pe )
 		goto _test_eof63;
 case 63:
+	goto tr132;
+st64:
+	if ( ++p == pe )
+		goto _test_eof64;
+case 64:
 	switch( (*p) ) {
-		case 0u: goto st64;
-		case 1u: goto st65;
-		case 31u: goto st31;
-		case 43u: goto tr86;
-		case 56u: goto st66;
-		case 58u: goto st67;
-		case 80u: goto tr89;
-		case 81u: goto tr85;
-		case 112u: goto tr90;
-		case 115u: goto st70;
-		case 121u: goto tr89;
-		case 164u: goto st33;
+		case 0u: goto st65;
+		case 1u: goto st66;
+		case 31u: goto st32;
+		case 43u: goto tr136;
+		case 56u: goto st67;
+		case 58u: goto st68;
+		case 80u: goto tr139;
+		case 81u: goto tr135;
+		case 112u: goto tr140;
+		case 115u: goto st71;
+		case 121u: goto tr143;
+		case 164u: goto st34;
 		case 165u: goto st1;
-		case 172u: goto st33;
+		case 172u: goto st34;
 		case 173u: goto st1;
 		case 175u: goto st1;
 		case 177u: goto st1;
-		case 178u: goto st29;
+		case 178u: goto st30;
 		case 182u: goto st1;
 		case 193u: goto st1;
-		case 194u: goto tr90;
-		case 196u: goto st68;
-		case 197u: goto tr94;
-		case 198u: goto tr90;
-		case 215u: goto tr89;
-		case 231u: goto tr86;
-		case 247u: goto tr89;
+		case 194u: goto tr140;
+		case 196u: goto st72;
+		case 197u: goto tr146;
+		case 198u: goto tr140;
+		case 215u: goto tr139;
+		case 231u: goto tr136;
+		case 247u: goto tr139;
 	}
 	if ( (*p) < 84u ) {
 		if ( (*p) < 20u ) {
@@ -1819,216 +3085,251 @@ case 63:
 					goto st1;
 			} else if ( (*p) > 17u ) {
 				if ( 18u <= (*p) && (*p) <= 19u )
-					goto tr86;
+					goto tr136;
 			} else
-				goto tr85;
+				goto tr135;
 		} else if ( (*p) > 21u ) {
 			if ( (*p) < 40u ) {
 				if ( 22u <= (*p) && (*p) <= 23u )
-					goto tr86;
+					goto tr136;
 			} else if ( (*p) > 47u ) {
 				if ( 64u <= (*p) && (*p) <= 79u )
-					goto st1;
+					goto tr30;
 			} else
-				goto tr85;
+				goto tr135;
 		} else
-			goto tr85;
+			goto tr135;
 	} else if ( (*p) > 111u ) {
-		if ( (*p) < 180u ) {
+		if ( (*p) < 126u ) {
 			if ( (*p) < 116u ) {
 				if ( 113u <= (*p) && (*p) <= 114u )
-					goto st69;
+					goto st70;
 			} else if ( (*p) > 118u ) {
-				if ( 124u <= (*p) && (*p) <= 127u )
-					goto tr85;
+				if ( 124u <= (*p) && (*p) <= 125u )
+					goto tr144;
 			} else
-				goto tr85;
-		} else if ( (*p) > 181u ) {
-			if ( (*p) < 208u ) {
-				if ( 188u <= (*p) && (*p) <= 190u )
-					goto st1;
-			} else if ( (*p) > 239u ) {
-				if ( 241u <= (*p) && (*p) <= 254u )
-					goto tr85;
+				goto tr135;
+		} else if ( (*p) > 127u ) {
+			if ( (*p) < 188u ) {
+				if ( 180u <= (*p) && (*p) <= 181u )
+					goto st30;
+			} else if ( (*p) > 190u ) {
+				if ( (*p) > 239u ) {
+					if ( 241u <= (*p) && (*p) <= 254u )
+						goto tr135;
+				} else if ( (*p) >= 208u )
+					goto tr135;
 			} else
-				goto tr85;
+				goto st1;
 		} else
-			goto st29;
+			goto tr135;
 	} else
-		goto tr85;
-	goto tr19;
-st64:
-	if ( ++p == pe )
-		goto _test_eof64;
-case 64:
-	if ( 200u <= (*p) && (*p) <= 207u )
-		goto tr0;
+		goto tr135;
 	goto tr19;
 st65:
 	if ( ++p == pe )
 		goto _test_eof65;
 case 65:
-	if ( 224u <= (*p) && (*p) <= 231u )
+	if ( 200u <= (*p) && (*p) <= 207u )
 		goto tr0;
 	goto tr19;
 st66:
 	if ( ++p == pe )
 		goto _test_eof66;
 case 66:
-	switch( (*p) ) {
-		case 16u: goto tr85;
-		case 23u: goto tr85;
-		case 42u: goto tr86;
-	}
-	if ( (*p) < 32u ) {
-		if ( (*p) < 20u ) {
-			if ( (*p) <= 11u )
-				goto tr85;
-		} else if ( (*p) > 21u ) {
-			if ( 28u <= (*p) && (*p) <= 30u )
-				goto tr85;
-		} else
-			goto tr85;
-	} else if ( (*p) > 37u ) {
-		if ( (*p) < 48u ) {
-			if ( 40u <= (*p) && (*p) <= 43u )
-				goto tr85;
-		} else if ( (*p) > 53u ) {
-			if ( (*p) > 65u ) {
-				if ( 219u <= (*p) && (*p) <= 223u )
-					goto tr85;
-			} else if ( (*p) >= 55u )
-				goto tr85;
-		} else
-			goto tr85;
-	} else
-		goto tr85;
+	if ( 224u <= (*p) && (*p) <= 231u )
+		goto tr0;
 	goto tr19;
 st67:
 	if ( ++p == pe )
 		goto _test_eof67;
 case 67:
 	switch( (*p) ) {
-		case 23u: goto tr90;
-		case 32u: goto st68;
-		case 68u: goto tr90;
-		case 223u: goto tr90;
+		case 16u: goto tr148;
+		case 23u: goto tr148;
+		case 42u: goto tr149;
+		case 55u: goto tr150;
 	}
-	if ( (*p) < 33u ) {
-		if ( (*p) > 15u ) {
-			if ( 20u <= (*p) && (*p) <= 22u )
-				goto st68;
-		} else if ( (*p) >= 8u )
-			goto tr90;
-	} else if ( (*p) > 34u ) {
-		if ( (*p) > 66u ) {
-			if ( 96u <= (*p) && (*p) <= 99u )
-				goto tr90;
-		} else if ( (*p) >= 64u )
-			goto tr90;
+	if ( (*p) < 32u ) {
+		if ( (*p) < 20u ) {
+			if ( (*p) <= 11u )
+				goto tr147;
+		} else if ( (*p) > 21u ) {
+			if ( 28u <= (*p) && (*p) <= 30u )
+				goto tr147;
+		} else
+			goto tr148;
+	} else if ( (*p) > 37u ) {
+		if ( (*p) < 48u ) {
+			if ( 40u <= (*p) && (*p) <= 43u )
+				goto tr148;
+		} else if ( (*p) > 53u ) {
+			if ( (*p) > 65u ) {
+				if ( 219u <= (*p) && (*p) <= 223u )
+					goto tr151;
+			} else if ( (*p) >= 56u )
+				goto tr148;
+		} else
+			goto tr148;
 	} else
-		goto tr90;
+		goto tr148;
 	goto tr19;
 st68:
 	if ( ++p == pe )
 		goto _test_eof68;
 case 68:
 	switch( (*p) ) {
-		case 4u: goto tr96;
-		case 5u: goto tr97;
-		case 12u: goto tr96;
-		case 13u: goto tr97;
-		case 20u: goto tr96;
-		case 21u: goto tr97;
-		case 28u: goto tr96;
-		case 29u: goto tr97;
-		case 36u: goto tr96;
-		case 37u: goto tr97;
-		case 44u: goto tr96;
-		case 45u: goto tr97;
-		case 52u: goto tr96;
-		case 53u: goto tr97;
-		case 60u: goto tr96;
-		case 61u: goto tr97;
-		case 68u: goto tr99;
-		case 76u: goto tr99;
-		case 84u: goto tr99;
-		case 92u: goto tr99;
-		case 100u: goto tr99;
-		case 108u: goto tr99;
-		case 116u: goto tr99;
-		case 124u: goto tr99;
-		case 132u: goto tr100;
-		case 140u: goto tr100;
-		case 148u: goto tr100;
-		case 156u: goto tr100;
-		case 164u: goto tr100;
-		case 172u: goto tr100;
-		case 180u: goto tr100;
-		case 188u: goto tr100;
+		case 15u: goto tr153;
+		case 23u: goto tr152;
+		case 32u: goto st69;
+		case 68u: goto tr155;
+		case 223u: goto tr157;
 	}
-	if ( (*p) > 127u ) {
-		if ( 128u <= (*p) && (*p) <= 191u )
-			goto tr97;
-	} else if ( (*p) >= 64u )
-		goto tr98;
-	goto tr95;
+	if ( (*p) < 33u ) {
+		if ( (*p) > 14u ) {
+			if ( 20u <= (*p) && (*p) <= 22u )
+				goto st69;
+		} else if ( (*p) >= 8u )
+			goto tr152;
+	} else if ( (*p) > 34u ) {
+		if ( (*p) > 66u ) {
+			if ( 96u <= (*p) && (*p) <= 99u )
+				goto tr156;
+		} else if ( (*p) >= 64u )
+			goto tr152;
+	} else
+		goto tr152;
+	goto tr19;
 st69:
 	if ( ++p == pe )
 		goto _test_eof69;
 case 69:
-	if ( (*p) < 224u ) {
-		if ( 208u <= (*p) && (*p) <= 215u )
-			goto tr95;
-	} else if ( (*p) > 231u ) {
-		if ( 240u <= (*p) && (*p) <= 247u )
-			goto tr95;
-	} else
-		goto tr95;
-	goto tr19;
+	switch( (*p) ) {
+		case 4u: goto tr159;
+		case 5u: goto tr160;
+		case 12u: goto tr159;
+		case 13u: goto tr160;
+		case 20u: goto tr159;
+		case 21u: goto tr160;
+		case 28u: goto tr159;
+		case 29u: goto tr160;
+		case 36u: goto tr159;
+		case 37u: goto tr160;
+		case 44u: goto tr159;
+		case 45u: goto tr160;
+		case 52u: goto tr159;
+		case 53u: goto tr160;
+		case 60u: goto tr159;
+		case 61u: goto tr160;
+		case 68u: goto tr162;
+		case 76u: goto tr162;
+		case 84u: goto tr162;
+		case 92u: goto tr162;
+		case 100u: goto tr162;
+		case 108u: goto tr162;
+		case 116u: goto tr162;
+		case 124u: goto tr162;
+		case 132u: goto tr163;
+		case 140u: goto tr163;
+		case 148u: goto tr163;
+		case 156u: goto tr163;
+		case 164u: goto tr163;
+		case 172u: goto tr163;
+		case 180u: goto tr163;
+		case 188u: goto tr163;
+	}
+	if ( (*p) > 127u ) {
+		if ( 128u <= (*p) && (*p) <= 191u )
+			goto tr160;
+	} else if ( (*p) >= 64u )
+		goto tr161;
+	goto tr158;
 st70:
 	if ( ++p == pe )
 		goto _test_eof70;
 case 70:
-	if ( (*p) > 223u ) {
-		if ( 240u <= (*p) )
-			goto tr95;
-	} else if ( (*p) >= 208u )
-		goto tr95;
+	if ( (*p) < 224u ) {
+		if ( 208u <= (*p) && (*p) <= 215u )
+			goto tr164;
+	} else if ( (*p) > 231u ) {
+		if ( 240u <= (*p) && (*p) <= 247u )
+			goto tr164;
+	} else
+		goto tr164;
 	goto tr19;
 st71:
 	if ( ++p == pe )
 		goto _test_eof71;
 case 71:
-	if ( (*p) == 15u )
-		goto st72;
+	if ( (*p) > 223u ) {
+		if ( 240u <= (*p) )
+			goto tr164;
+	} else if ( (*p) >= 208u )
+		goto tr164;
 	goto tr19;
 st72:
 	if ( ++p == pe )
 		goto _test_eof72;
 case 72:
-	if ( (*p) == 31u )
-		goto st73;
-	goto tr19;
+	switch( (*p) ) {
+		case 4u: goto tr166;
+		case 5u: goto tr167;
+		case 12u: goto tr166;
+		case 13u: goto tr167;
+		case 20u: goto tr166;
+		case 21u: goto tr167;
+		case 28u: goto tr166;
+		case 29u: goto tr167;
+		case 36u: goto tr166;
+		case 37u: goto tr167;
+		case 44u: goto tr166;
+		case 45u: goto tr167;
+		case 52u: goto tr166;
+		case 53u: goto tr167;
+		case 60u: goto tr166;
+		case 61u: goto tr167;
+		case 68u: goto tr169;
+		case 76u: goto tr169;
+		case 84u: goto tr169;
+		case 92u: goto tr169;
+		case 100u: goto tr169;
+		case 108u: goto tr169;
+		case 116u: goto tr169;
+		case 124u: goto tr169;
+		case 132u: goto tr170;
+		case 140u: goto tr170;
+		case 148u: goto tr170;
+		case 156u: goto tr170;
+		case 164u: goto tr170;
+		case 172u: goto tr170;
+		case 180u: goto tr170;
+		case 188u: goto tr170;
+	}
+	if ( (*p) > 127u ) {
+		if ( 128u <= (*p) && (*p) <= 191u )
+			goto tr167;
+	} else if ( (*p) >= 64u )
+		goto tr168;
+	goto tr165;
 st73:
 	if ( ++p == pe )
 		goto _test_eof73;
 case 73:
-	if ( (*p) == 132u )
+	if ( (*p) == 15u )
 		goto st74;
 	goto tr19;
 st74:
 	if ( ++p == pe )
 		goto _test_eof74;
 case 74:
-	if ( (*p) == 0u )
+	if ( (*p) == 31u )
 		goto st75;
 	goto tr19;
 st75:
 	if ( ++p == pe )
 		goto _test_eof75;
 case 75:
-	if ( (*p) == 0u )
+	if ( (*p) == 132u )
 		goto st76;
 	goto tr19;
 st76:
@@ -2050,32 +3351,28 @@ st78:
 		goto _test_eof78;
 case 78:
 	if ( (*p) == 0u )
-		goto tr108;
+		goto st79;
 	goto tr19;
 st79:
 	if ( ++p == pe )
 		goto _test_eof79;
 case 79:
-	switch( (*p) ) {
-		case 46u: goto st71;
-		case 102u: goto st80;
-	}
+	if ( (*p) == 0u )
+		goto st80;
 	goto tr19;
 st80:
 	if ( ++p == pe )
 		goto _test_eof80;
 case 80:
-	switch( (*p) ) {
-		case 46u: goto st71;
-		case 102u: goto st81;
-	}
+	if ( (*p) == 0u )
+		goto tr178;
 	goto tr19;
 st81:
 	if ( ++p == pe )
 		goto _test_eof81;
 case 81:
 	switch( (*p) ) {
-		case 46u: goto st71;
+		case 46u: goto st73;
 		case 102u: goto st82;
 	}
 	goto tr19;
@@ -2084,7 +3381,7 @@ st82:
 		goto _test_eof82;
 case 82:
 	switch( (*p) ) {
-		case 46u: goto st71;
+		case 46u: goto st73;
 		case 102u: goto st83;
 	}
 	goto tr19;
@@ -2092,102 +3389,110 @@ st83:
 	if ( ++p == pe )
 		goto _test_eof83;
 case 83:
-	if ( (*p) == 46u )
-		goto st71;
+	switch( (*p) ) {
+		case 46u: goto st73;
+		case 102u: goto st84;
+	}
 	goto tr19;
 st84:
 	if ( ++p == pe )
 		goto _test_eof84;
 case 84:
 	switch( (*p) ) {
-		case 4u: goto st85;
-		case 5u: goto st86;
-		case 12u: goto st85;
-		case 13u: goto st86;
-		case 20u: goto st85;
-		case 21u: goto st86;
-		case 28u: goto st85;
-		case 29u: goto st86;
-		case 36u: goto st85;
-		case 37u: goto st86;
-		case 44u: goto st85;
-		case 45u: goto st86;
-		case 52u: goto st85;
-		case 53u: goto st86;
-		case 60u: goto st85;
-		case 61u: goto st86;
-		case 68u: goto st91;
-		case 76u: goto st91;
-		case 84u: goto st91;
-		case 92u: goto st91;
-		case 100u: goto st91;
-		case 108u: goto st91;
-		case 116u: goto st91;
-		case 124u: goto st91;
-		case 132u: goto st92;
-		case 140u: goto st92;
-		case 148u: goto st92;
-		case 156u: goto st92;
-		case 164u: goto st92;
-		case 172u: goto st92;
-		case 180u: goto st92;
-		case 188u: goto st92;
+		case 46u: goto st73;
+		case 102u: goto st85;
 	}
-	if ( (*p) > 127u ) {
-		if ( 128u <= (*p) && (*p) <= 191u )
-			goto st86;
-	} else if ( (*p) >= 64u )
-		goto st90;
-	goto st61;
+	goto tr19;
 st85:
 	if ( ++p == pe )
 		goto _test_eof85;
 case 85:
-	switch( (*p) ) {
-		case 5u: goto st86;
-		case 13u: goto st86;
-		case 21u: goto st86;
-		case 29u: goto st86;
-		case 37u: goto st86;
-		case 45u: goto st86;
-		case 53u: goto st86;
-		case 61u: goto st86;
-		case 69u: goto st86;
-		case 77u: goto st86;
-		case 85u: goto st86;
-		case 93u: goto st86;
-		case 101u: goto st86;
-		case 109u: goto st86;
-		case 117u: goto st86;
-		case 125u: goto st86;
-		case 133u: goto st86;
-		case 141u: goto st86;
-		case 149u: goto st86;
-		case 157u: goto st86;
-		case 165u: goto st86;
-		case 173u: goto st86;
-		case 181u: goto st86;
-		case 189u: goto st86;
-		case 197u: goto st86;
-		case 205u: goto st86;
-		case 213u: goto st86;
-		case 221u: goto st86;
-		case 229u: goto st86;
-		case 237u: goto st86;
-		case 245u: goto st86;
-		case 253u: goto st86;
-	}
-	goto st61;
+	if ( (*p) == 46u )
+		goto st73;
+	goto tr19;
 st86:
 	if ( ++p == pe )
 		goto _test_eof86;
 case 86:
-	goto st87;
+	switch( (*p) ) {
+		case 4u: goto st87;
+		case 5u: goto st88;
+		case 12u: goto st87;
+		case 13u: goto st88;
+		case 20u: goto st87;
+		case 21u: goto st88;
+		case 28u: goto st87;
+		case 29u: goto st88;
+		case 36u: goto st87;
+		case 37u: goto st88;
+		case 44u: goto st87;
+		case 45u: goto st88;
+		case 52u: goto st87;
+		case 53u: goto st88;
+		case 60u: goto st87;
+		case 61u: goto st88;
+		case 68u: goto st93;
+		case 76u: goto st93;
+		case 84u: goto st93;
+		case 92u: goto st93;
+		case 100u: goto st93;
+		case 108u: goto st93;
+		case 116u: goto st93;
+		case 124u: goto st93;
+		case 132u: goto st94;
+		case 140u: goto st94;
+		case 148u: goto st94;
+		case 156u: goto st94;
+		case 164u: goto st94;
+		case 172u: goto st94;
+		case 180u: goto st94;
+		case 188u: goto st94;
+	}
+	if ( (*p) > 127u ) {
+		if ( 128u <= (*p) && (*p) <= 191u )
+			goto st88;
+	} else if ( (*p) >= 64u )
+		goto st92;
+	goto st62;
 st87:
 	if ( ++p == pe )
 		goto _test_eof87;
 case 87:
-	goto st88;
+	switch( (*p) ) {
+		case 5u: goto st88;
+		case 13u: goto st88;
+		case 21u: goto st88;
+		case 29u: goto st88;
+		case 37u: goto st88;
+		case 45u: goto st88;
+		case 53u: goto st88;
+		case 61u: goto st88;
+		case 69u: goto st88;
+		case 77u: goto st88;
+		case 85u: goto st88;
+		case 93u: goto st88;
+		case 101u: goto st88;
+		case 109u: goto st88;
+		case 117u: goto st88;
+		case 125u: goto st88;
+		case 133u: goto st88;
+		case 141u: goto st88;
+		case 149u: goto st88;
+		case 157u: goto st88;
+		case 165u: goto st88;
+		case 173u: goto st88;
+		case 181u: goto st88;
+		case 189u: goto st88;
+		case 197u: goto st88;
+		case 205u: goto st88;
+		case 213u: goto st88;
+		case 221u: goto st88;
+		case 229u: goto st88;
+		case 237u: goto st88;
+		case 245u: goto st88;
+		case 253u: goto st88;
+	}
+	goto st62;
 st88:
 	if ( ++p == pe )
 		goto _test_eof88;
@@ -2197,133 +3502,55 @@ st89:
 	if ( ++p == pe )
 		goto _test_eof89;
 case 89:
-	goto tr121;
+	goto st90;
 st90:
 	if ( ++p == pe )
 		goto _test_eof90;
 case 90:
-	goto tr122;
+	goto st91;
 st91:
 	if ( ++p == pe )
 		goto _test_eof91;
 case 91:
-	goto st90;
+	goto tr191;
 st92:
 	if ( ++p == pe )
 		goto _test_eof92;
 case 92:
-	goto st86;
+	goto tr192;
 st93:
 	if ( ++p == pe )
 		goto _test_eof93;
 case 93:
-	switch( (*p) ) {
-		case 4u: goto tr123;
-		case 5u: goto tr124;
-		case 68u: goto tr126;
-		case 132u: goto tr127;
-	}
-	if ( (*p) < 64u ) {
-		if ( (*p) <= 7u )
-			goto tr108;
-	} else if ( (*p) > 71u ) {
-		if ( (*p) > 135u ) {
-			if ( 192u <= (*p) && (*p) <= 199u )
-				goto tr108;
-		} else if ( (*p) >= 128u )
-			goto tr124;
-	} else
-		goto tr125;
-	goto tr19;
-tr295:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-        begin = p;
-        BitmapSetBit(valid_targets, p - data);
-     }
-	goto st94;
+	goto st92;
 st94:
 	if ( ++p == pe )
 		goto _test_eof94;
 case 94:
-#line 2250 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 4u: goto st34;
-		case 5u: goto st35;
-		case 12u: goto st34;
-		case 13u: goto st35;
-		case 20u: goto st34;
-		case 21u: goto st35;
-		case 28u: goto st34;
-		case 29u: goto st35;
-		case 36u: goto st34;
-		case 37u: goto st35;
-		case 44u: goto st34;
-		case 45u: goto st35;
-		case 60u: goto st34;
-		case 61u: goto st35;
-		case 68u: goto st40;
-		case 76u: goto st40;
-		case 84u: goto st40;
-		case 92u: goto st40;
-		case 100u: goto st40;
-		case 108u: goto st40;
-		case 124u: goto st40;
-		case 132u: goto st41;
-		case 140u: goto st41;
-		case 148u: goto st41;
-		case 156u: goto st41;
-		case 164u: goto st41;
-		case 172u: goto st41;
-		case 188u: goto st41;
-	}
-	if ( (*p) < 120u ) {
-		if ( (*p) < 64u ) {
-			if ( 48u <= (*p) && (*p) <= 55u )
-				goto tr19;
-		} else if ( (*p) > 111u ) {
-			if ( 112u <= (*p) && (*p) <= 119u )
-				goto tr19;
-		} else
-			goto st39;
-	} else if ( (*p) > 127u ) {
-		if ( (*p) < 176u ) {
-			if ( 128u <= (*p) && (*p) <= 175u )
-				goto st35;
-		} else if ( (*p) > 183u ) {
-			if ( (*p) > 191u ) {
-				if ( 240u <= (*p) && (*p) <= 247u )
-					goto tr19;
-			} else if ( (*p) >= 184u )
-				goto st35;
-		} else
-			goto tr19;
-	} else
-		goto st39;
-	goto st10;
+	goto st88;
 st95:
 	if ( ++p == pe )
 		goto _test_eof95;
 case 95:
 	switch( (*p) ) {
-		case 4u: goto st85;
-		case 5u: goto st86;
-		case 68u: goto st91;
-		case 132u: goto st92;
+		case 4u: goto tr193;
+		case 5u: goto tr194;
+		case 68u: goto tr196;
+		case 132u: goto tr197;
 	}
 	if ( (*p) < 64u ) {
 		if ( (*p) <= 7u )
-			goto st61;
+			goto tr178;
 	} else if ( (*p) > 71u ) {
 		if ( (*p) > 135u ) {
 			if ( 192u <= (*p) && (*p) <= 199u )
-				goto st61;
+				goto tr178;
 		} else if ( (*p) >= 128u )
-			goto st86;
+			goto tr194;
 	} else
-		goto st90;
+		goto tr195;
 	goto tr19;
-tr302:
+tr436:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -2334,7 +3561,95 @@ st96:
 	if ( ++p == pe )
 		goto _test_eof96;
 case 96:
-#line 2338 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3565 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto st35;
+		case 5u: goto st36;
+		case 12u: goto st35;
+		case 13u: goto st36;
+		case 20u: goto st35;
+		case 21u: goto st36;
+		case 28u: goto st35;
+		case 29u: goto st36;
+		case 36u: goto st35;
+		case 37u: goto st36;
+		case 44u: goto st35;
+		case 45u: goto st36;
+		case 60u: goto st35;
+		case 61u: goto st36;
+		case 68u: goto st41;
+		case 76u: goto st41;
+		case 84u: goto st41;
+		case 92u: goto st41;
+		case 100u: goto st41;
+		case 108u: goto st41;
+		case 124u: goto st41;
+		case 132u: goto st42;
+		case 140u: goto st42;
+		case 148u: goto st42;
+		case 156u: goto st42;
+		case 164u: goto st42;
+		case 172u: goto st42;
+		case 188u: goto st42;
+	}
+	if ( (*p) < 120u ) {
+		if ( (*p) < 64u ) {
+			if ( 48u <= (*p) && (*p) <= 55u )
+				goto tr19;
+		} else if ( (*p) > 111u ) {
+			if ( 112u <= (*p) && (*p) <= 119u )
+				goto tr19;
+		} else
+			goto st40;
+	} else if ( (*p) > 127u ) {
+		if ( (*p) < 176u ) {
+			if ( 128u <= (*p) && (*p) <= 175u )
+				goto st36;
+		} else if ( (*p) > 183u ) {
+			if ( (*p) > 191u ) {
+				if ( 240u <= (*p) && (*p) <= 247u )
+					goto tr19;
+			} else if ( (*p) >= 184u )
+				goto st36;
+		} else
+			goto tr19;
+	} else
+		goto st40;
+	goto st10;
+st97:
+	if ( ++p == pe )
+		goto _test_eof97;
+case 97:
+	switch( (*p) ) {
+		case 4u: goto st87;
+		case 5u: goto st88;
+		case 68u: goto st93;
+		case 132u: goto st94;
+	}
+	if ( (*p) < 64u ) {
+		if ( (*p) <= 7u )
+			goto st62;
+	} else if ( (*p) > 71u ) {
+		if ( (*p) > 135u ) {
+			if ( 192u <= (*p) && (*p) <= 199u )
+				goto st62;
+		} else if ( (*p) >= 128u )
+			goto st88;
+	} else
+		goto st92;
+	goto tr19;
+tr443:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
+	goto st98;
+st98:
+	if ( ++p == pe )
+		goto _test_eof98;
+case 98:
+#line 3653 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -2389,145 +3704,145 @@ case 96:
 	} else
 		goto st7;
 	goto tr0;
-tr76:
+tr126:
 #line 13 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_LOCK_PREFIX(TRUE);
   }
-	goto st97;
-tr254:
+	goto st99;
+tr385:
 #line 10 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(TRUE);
   }
-	goto st97;
-st97:
-	if ( ++p == pe )
-		goto _test_eof97;
-case 97:
-#line 2409 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 1u: goto st29;
-		case 3u: goto st29;
-		case 9u: goto st29;
-		case 11u: goto st29;
-		case 15u: goto st98;
-		case 17u: goto st29;
-		case 19u: goto st29;
-		case 25u: goto st29;
-		case 27u: goto st29;
-		case 33u: goto st29;
-		case 35u: goto st29;
-		case 41u: goto st29;
-		case 43u: goto st29;
-		case 49u: goto st29;
-		case 51u: goto st29;
-		case 129u: goto st99;
-		case 131u: goto st100;
-		case 135u: goto st29;
-		case 247u: goto st101;
-		case 255u: goto st18;
-	}
-	goto tr19;
-st98:
-	if ( ++p == pe )
-		goto _test_eof98;
-case 98:
-	switch( (*p) ) {
-		case 177u: goto st29;
-		case 193u: goto st29;
-	}
-	goto tr19;
+	goto st99;
 st99:
 	if ( ++p == pe )
 		goto _test_eof99;
 case 99:
+#line 3724 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto st85;
-		case 5u: goto st86;
-		case 12u: goto st85;
-		case 13u: goto st86;
-		case 20u: goto st85;
-		case 21u: goto st86;
-		case 28u: goto st85;
-		case 29u: goto st86;
-		case 36u: goto st85;
-		case 37u: goto st86;
-		case 44u: goto st85;
-		case 45u: goto st86;
-		case 52u: goto st85;
-		case 53u: goto st86;
-		case 68u: goto st91;
-		case 76u: goto st91;
-		case 84u: goto st91;
-		case 92u: goto st91;
-		case 100u: goto st91;
-		case 108u: goto st91;
-		case 116u: goto st91;
-		case 132u: goto st92;
-		case 140u: goto st92;
-		case 148u: goto st92;
-		case 156u: goto st92;
-		case 164u: goto st92;
-		case 172u: goto st92;
-		case 180u: goto st92;
+		case 1u: goto st30;
+		case 3u: goto st30;
+		case 9u: goto st30;
+		case 11u: goto st30;
+		case 15u: goto st100;
+		case 17u: goto st30;
+		case 19u: goto st30;
+		case 25u: goto st30;
+		case 27u: goto st30;
+		case 33u: goto st30;
+		case 35u: goto st30;
+		case 41u: goto st30;
+		case 43u: goto st30;
+		case 49u: goto st30;
+		case 51u: goto st30;
+		case 129u: goto st101;
+		case 131u: goto st102;
+		case 135u: goto st30;
+		case 247u: goto st103;
+		case 255u: goto st104;
 	}
-	if ( (*p) < 64u ) {
-		if ( (*p) <= 55u )
-			goto st61;
-	} else if ( (*p) > 119u ) {
-		if ( 128u <= (*p) && (*p) <= 183u )
-			goto st86;
-	} else
-		goto st90;
 	goto tr19;
 st100:
 	if ( ++p == pe )
 		goto _test_eof100;
 case 100:
 	switch( (*p) ) {
-		case 4u: goto st34;
-		case 5u: goto st35;
-		case 12u: goto st34;
-		case 13u: goto st35;
-		case 20u: goto st34;
-		case 21u: goto st35;
-		case 28u: goto st34;
-		case 29u: goto st35;
-		case 36u: goto st34;
-		case 37u: goto st35;
-		case 44u: goto st34;
-		case 45u: goto st35;
-		case 52u: goto st34;
-		case 53u: goto st35;
-		case 68u: goto st40;
-		case 76u: goto st40;
-		case 84u: goto st40;
-		case 92u: goto st40;
-		case 100u: goto st40;
-		case 108u: goto st40;
-		case 116u: goto st40;
-		case 132u: goto st41;
-		case 140u: goto st41;
-		case 148u: goto st41;
-		case 156u: goto st41;
-		case 164u: goto st41;
-		case 172u: goto st41;
-		case 180u: goto st41;
+		case 177u: goto st30;
+		case 193u: goto st30;
+	}
+	goto tr19;
+st101:
+	if ( ++p == pe )
+		goto _test_eof101;
+case 101:
+	switch( (*p) ) {
+		case 4u: goto st87;
+		case 5u: goto st88;
+		case 12u: goto st87;
+		case 13u: goto st88;
+		case 20u: goto st87;
+		case 21u: goto st88;
+		case 28u: goto st87;
+		case 29u: goto st88;
+		case 36u: goto st87;
+		case 37u: goto st88;
+		case 44u: goto st87;
+		case 45u: goto st88;
+		case 52u: goto st87;
+		case 53u: goto st88;
+		case 68u: goto st93;
+		case 76u: goto st93;
+		case 84u: goto st93;
+		case 92u: goto st93;
+		case 100u: goto st93;
+		case 108u: goto st93;
+		case 116u: goto st93;
+		case 132u: goto st94;
+		case 140u: goto st94;
+		case 148u: goto st94;
+		case 156u: goto st94;
+		case 164u: goto st94;
+		case 172u: goto st94;
+		case 180u: goto st94;
+	}
+	if ( (*p) < 64u ) {
+		if ( (*p) <= 55u )
+			goto st62;
+	} else if ( (*p) > 119u ) {
+		if ( 128u <= (*p) && (*p) <= 183u )
+			goto st88;
+	} else
+		goto st92;
+	goto tr19;
+st102:
+	if ( ++p == pe )
+		goto _test_eof102;
+case 102:
+	switch( (*p) ) {
+		case 4u: goto st35;
+		case 5u: goto st36;
+		case 12u: goto st35;
+		case 13u: goto st36;
+		case 20u: goto st35;
+		case 21u: goto st36;
+		case 28u: goto st35;
+		case 29u: goto st36;
+		case 36u: goto st35;
+		case 37u: goto st36;
+		case 44u: goto st35;
+		case 45u: goto st36;
+		case 52u: goto st35;
+		case 53u: goto st36;
+		case 68u: goto st41;
+		case 76u: goto st41;
+		case 84u: goto st41;
+		case 92u: goto st41;
+		case 100u: goto st41;
+		case 108u: goto st41;
+		case 116u: goto st41;
+		case 132u: goto st42;
+		case 140u: goto st42;
+		case 148u: goto st42;
+		case 156u: goto st42;
+		case 164u: goto st42;
+		case 172u: goto st42;
+		case 180u: goto st42;
 	}
 	if ( (*p) < 64u ) {
 		if ( (*p) <= 55u )
 			goto st10;
 	} else if ( (*p) > 119u ) {
 		if ( 128u <= (*p) && (*p) <= 183u )
-			goto st35;
+			goto st36;
 	} else
-		goto st39;
+		goto st40;
 	goto tr19;
-st101:
+st103:
 	if ( ++p == pe )
-		goto _test_eof101;
-case 101:
+		goto _test_eof103;
+case 103:
 	switch( (*p) ) {
 		case 20u: goto st2;
 		case 21u: goto st3;
@@ -2547,54 +3862,36 @@ case 101:
 	} else
 		goto st7;
 	goto tr19;
-tr77:
-#line 22 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_REPNZ_PREFIX(TRUE);
-  }
-	goto st102;
-tr257:
-#line 10 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_DATA16_PREFIX(TRUE);
-  }
-	goto st102;
-st102:
-	if ( ++p == pe )
-		goto _test_eof102;
-case 102:
-#line 2567 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 15u: goto st103;
-		case 167u: goto tr0;
-		case 175u: goto tr0;
-	}
-	goto tr19;
-st103:
-	if ( ++p == pe )
-		goto _test_eof103;
-case 103:
-	if ( (*p) == 56u )
-		goto st104;
-	goto tr19;
 st104:
 	if ( ++p == pe )
 		goto _test_eof104;
 case 104:
-	if ( (*p) == 241u )
-		goto tr134;
+	switch( (*p) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+	}
+	if ( (*p) < 64u ) {
+		if ( (*p) <= 15u )
+			goto tr0;
+	} else if ( (*p) > 79u ) {
+		if ( 128u <= (*p) && (*p) <= 143u )
+			goto st3;
+	} else
+		goto st7;
 	goto tr19;
-tr78:
-#line 19 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+tr127:
+#line 22 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    SET_REPZ_PREFIX(TRUE);
-  }
-#line 16 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_REPZ_PREFIX(TRUE);
+    SET_REPNZ_PREFIX(TRUE);
   }
 	goto st105;
-tr266:
+tr388:
 #line 10 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DATA16_PREFIX(TRUE);
@@ -2604,13 +3901,10 @@ st105:
 	if ( ++p == pe )
 		goto _test_eof105;
 case 105:
-#line 2608 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3905 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 15u: goto st106;
-		case 165u: goto tr0;
 		case 167u: goto tr0;
-		case 171u: goto tr0;
-		case 173u: goto tr0;
 		case 175u: goto tr0;
 	}
 	goto tr19;
@@ -2618,18 +3912,63 @@ st106:
 	if ( ++p == pe )
 		goto _test_eof106;
 case 106:
-	if ( (*p) == 184u )
-		goto tr136;
-	if ( 188u <= (*p) && (*p) <= 189u )
-		goto tr136;
+	if ( (*p) == 56u )
+		goto st107;
 	goto tr19;
 st107:
 	if ( ++p == pe )
 		goto _test_eof107;
 case 107:
+	if ( (*p) == 241u )
+		goto tr205;
+	goto tr19;
+tr128:
+#line 19 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_REPZ_PREFIX(TRUE);
+  }
+#line 16 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_REPZ_PREFIX(TRUE);
+  }
+	goto st108;
+tr402:
+#line 10 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DATA16_PREFIX(TRUE);
+  }
+	goto st108;
+st108:
+	if ( ++p == pe )
+		goto _test_eof108;
+case 108:
+#line 3946 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto st85;
-		case 5u: goto st86;
+		case 15u: goto st109;
+		case 165u: goto tr0;
+		case 167u: goto tr0;
+		case 171u: goto tr0;
+		case 173u: goto tr0;
+		case 175u: goto tr0;
+	}
+	goto tr19;
+st109:
+	if ( ++p == pe )
+		goto _test_eof109;
+case 109:
+	switch( (*p) ) {
+		case 184u: goto tr207;
+		case 188u: goto tr208;
+		case 189u: goto tr209;
+	}
+	goto tr19;
+st110:
+	if ( ++p == pe )
+		goto _test_eof110;
+case 110:
+	switch( (*p) ) {
+		case 4u: goto st87;
+		case 5u: goto st88;
 		case 20u: goto st2;
 		case 21u: goto st3;
 		case 28u: goto st2;
@@ -2642,14 +3981,14 @@ case 107:
 		case 53u: goto st3;
 		case 60u: goto st2;
 		case 61u: goto st3;
-		case 68u: goto st91;
+		case 68u: goto st93;
 		case 84u: goto st8;
 		case 92u: goto st8;
 		case 100u: goto st8;
 		case 108u: goto st8;
 		case 116u: goto st8;
 		case 124u: goto st8;
-		case 132u: goto st92;
+		case 132u: goto st94;
 		case 148u: goto st9;
 		case 156u: goto st9;
 		case 164u: goto st9;
@@ -2660,13 +3999,13 @@ case 107:
 	if ( (*p) < 80u ) {
 		if ( (*p) < 8u ) {
 			if ( (*p) <= 7u )
-				goto st61;
+				goto st62;
 		} else if ( (*p) > 15u ) {
 			if ( (*p) > 71u ) {
 				if ( 72u <= (*p) && (*p) <= 79u )
 					goto tr19;
 			} else if ( (*p) >= 64u )
-				goto st90;
+				goto st92;
 		} else
 			goto tr19;
 	} else if ( (*p) > 127u ) {
@@ -2675,35 +4014,35 @@ case 107:
 				if ( 136u <= (*p) && (*p) <= 143u )
 					goto tr19;
 			} else if ( (*p) >= 128u )
-				goto st86;
+				goto st88;
 		} else if ( (*p) > 191u ) {
 			if ( (*p) > 199u ) {
 				if ( 200u <= (*p) && (*p) <= 207u )
 					goto tr19;
 			} else if ( (*p) >= 192u )
-				goto st61;
+				goto st62;
 		} else
 			goto st3;
 	} else
 		goto st7;
 	goto tr0;
-st108:
+st111:
 	if ( ++p == pe )
-		goto _test_eof108;
-case 108:
+		goto _test_eof111;
+case 111:
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
 		case 12u: goto st2;
 		case 13u: goto st3;
-		case 52u: goto tr123;
-		case 53u: goto tr124;
+		case 52u: goto tr193;
+		case 53u: goto tr194;
 		case 68u: goto st8;
 		case 76u: goto st8;
-		case 116u: goto tr126;
+		case 116u: goto tr196;
 		case 132u: goto st9;
 		case 140u: goto st9;
-		case 180u: goto tr127;
+		case 180u: goto tr197;
 	}
 	if ( (*p) < 112u ) {
 		if ( (*p) < 48u ) {
@@ -2713,7 +4052,7 @@ case 108:
 			if ( 64u <= (*p) && (*p) <= 79u )
 				goto st7;
 		} else
-			goto tr108;
+			goto tr178;
 	} else if ( (*p) > 119u ) {
 		if ( (*p) < 176u ) {
 			if ( 128u <= (*p) && (*p) <= 143u )
@@ -2721,208 +4060,249 @@ case 108:
 		} else if ( (*p) > 183u ) {
 			if ( (*p) > 207u ) {
 				if ( 240u <= (*p) && (*p) <= 247u )
-					goto tr108;
+					goto tr178;
 			} else if ( (*p) >= 192u )
 				goto tr0;
 		} else
-			goto tr124;
+			goto tr194;
 	} else
-		goto tr125;
+		goto tr195;
 	goto tr19;
-tr288:
+tr274:
+#line 207 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_BMI1);
+  }
+	goto st112;
+tr428:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
      }
-	goto st109;
-st109:
-	if ( ++p == pe )
-		goto _test_eof109;
-case 109:
-#line 2744 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 4u: goto st110;
-		case 5u: goto st111;
-		case 12u: goto st110;
-		case 13u: goto st111;
-		case 20u: goto st110;
-		case 21u: goto st111;
-		case 28u: goto st110;
-		case 29u: goto st111;
-		case 36u: goto st110;
-		case 37u: goto st111;
-		case 44u: goto st110;
-		case 45u: goto st111;
-		case 52u: goto st110;
-		case 53u: goto st111;
-		case 60u: goto st110;
-		case 61u: goto st111;
-		case 68u: goto st116;
-		case 76u: goto st116;
-		case 84u: goto st116;
-		case 92u: goto st116;
-		case 100u: goto st116;
-		case 108u: goto st116;
-		case 116u: goto st116;
-		case 124u: goto st116;
-		case 132u: goto st117;
-		case 140u: goto st117;
-		case 148u: goto st117;
-		case 156u: goto st117;
-		case 164u: goto st117;
-		case 172u: goto st117;
-		case 180u: goto st117;
-		case 188u: goto st117;
-	}
-	if ( (*p) > 127u ) {
-		if ( 128u <= (*p) && (*p) <= 191u )
-			goto st111;
-	} else if ( (*p) >= 64u )
-		goto st115;
-	goto st11;
-st110:
-	if ( ++p == pe )
-		goto _test_eof110;
-case 110:
-	switch( (*p) ) {
-		case 5u: goto st111;
-		case 13u: goto st111;
-		case 21u: goto st111;
-		case 29u: goto st111;
-		case 37u: goto st111;
-		case 45u: goto st111;
-		case 53u: goto st111;
-		case 61u: goto st111;
-		case 69u: goto st111;
-		case 77u: goto st111;
-		case 85u: goto st111;
-		case 93u: goto st111;
-		case 101u: goto st111;
-		case 109u: goto st111;
-		case 117u: goto st111;
-		case 125u: goto st111;
-		case 133u: goto st111;
-		case 141u: goto st111;
-		case 149u: goto st111;
-		case 157u: goto st111;
-		case 165u: goto st111;
-		case 173u: goto st111;
-		case 181u: goto st111;
-		case 189u: goto st111;
-		case 197u: goto st111;
-		case 205u: goto st111;
-		case 213u: goto st111;
-		case 221u: goto st111;
-		case 229u: goto st111;
-		case 237u: goto st111;
-		case 245u: goto st111;
-		case 253u: goto st111;
-	}
-	goto st11;
-st111:
-	if ( ++p == pe )
-		goto _test_eof111;
-case 111:
 	goto st112;
 st112:
 	if ( ++p == pe )
 		goto _test_eof112;
 case 112:
+#line 4089 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto st113;
+		case 5u: goto st114;
+		case 12u: goto st113;
+		case 13u: goto st114;
+		case 20u: goto st113;
+		case 21u: goto st114;
+		case 28u: goto st113;
+		case 29u: goto st114;
+		case 36u: goto st113;
+		case 37u: goto st114;
+		case 44u: goto st113;
+		case 45u: goto st114;
+		case 52u: goto st113;
+		case 53u: goto st114;
+		case 60u: goto st113;
+		case 61u: goto st114;
+		case 68u: goto st119;
+		case 76u: goto st119;
+		case 84u: goto st119;
+		case 92u: goto st119;
+		case 100u: goto st119;
+		case 108u: goto st119;
+		case 116u: goto st119;
+		case 124u: goto st119;
+		case 132u: goto st120;
+		case 140u: goto st120;
+		case 148u: goto st120;
+		case 156u: goto st120;
+		case 164u: goto st120;
+		case 172u: goto st120;
+		case 180u: goto st120;
+		case 188u: goto st120;
+	}
+	if ( (*p) > 127u ) {
+		if ( 128u <= (*p) && (*p) <= 191u )
+			goto st114;
+	} else if ( (*p) >= 64u )
+		goto st118;
+	goto st11;
+tr269:
+#line 255 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_LWP);
+  }
 	goto st113;
 st113:
 	if ( ++p == pe )
 		goto _test_eof113;
 case 113:
+#line 4140 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 5u: goto st114;
+		case 13u: goto st114;
+		case 21u: goto st114;
+		case 29u: goto st114;
+		case 37u: goto st114;
+		case 45u: goto st114;
+		case 53u: goto st114;
+		case 61u: goto st114;
+		case 69u: goto st114;
+		case 77u: goto st114;
+		case 85u: goto st114;
+		case 93u: goto st114;
+		case 101u: goto st114;
+		case 109u: goto st114;
+		case 117u: goto st114;
+		case 125u: goto st114;
+		case 133u: goto st114;
+		case 141u: goto st114;
+		case 149u: goto st114;
+		case 157u: goto st114;
+		case 165u: goto st114;
+		case 173u: goto st114;
+		case 181u: goto st114;
+		case 189u: goto st114;
+		case 197u: goto st114;
+		case 205u: goto st114;
+		case 213u: goto st114;
+		case 221u: goto st114;
+		case 229u: goto st114;
+		case 237u: goto st114;
+		case 245u: goto st114;
+		case 253u: goto st114;
+	}
+	goto st11;
+tr270:
+#line 255 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_LWP);
+  }
 	goto st114;
 st114:
 	if ( ++p == pe )
 		goto _test_eof114;
 case 114:
-	goto tr146;
+#line 4186 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	goto st115;
 st115:
 	if ( ++p == pe )
 		goto _test_eof115;
 case 115:
-	goto tr147;
+	goto st116;
 st116:
 	if ( ++p == pe )
 		goto _test_eof116;
 case 116:
-	goto st115;
+	goto st117;
 st117:
 	if ( ++p == pe )
 		goto _test_eof117;
 case 117:
-	goto st111;
-tr291:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	goto tr219;
+tr271:
+#line 255 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-        begin = p;
-        BitmapSetBit(valid_targets, p - data);
-     }
+    SET_CPU_FEATURE(CPUFeature_LWP);
+  }
 	goto st118;
 st118:
 	if ( ++p == pe )
 		goto _test_eof118;
 case 118:
-#line 2870 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 4u: goto st34;
-		case 5u: goto st35;
-		case 12u: goto st34;
-		case 13u: goto st35;
-		case 20u: goto st34;
-		case 21u: goto st35;
-		case 28u: goto st34;
-		case 29u: goto st35;
-		case 36u: goto st34;
-		case 37u: goto st35;
-		case 44u: goto st34;
-		case 45u: goto st35;
-		case 52u: goto st34;
-		case 53u: goto st35;
-		case 60u: goto st34;
-		case 61u: goto st35;
-		case 68u: goto st40;
-		case 76u: goto st40;
-		case 84u: goto st40;
-		case 92u: goto st40;
-		case 100u: goto st40;
-		case 108u: goto st40;
-		case 116u: goto st40;
-		case 124u: goto st40;
-		case 132u: goto st41;
-		case 140u: goto st41;
-		case 148u: goto st41;
-		case 156u: goto st41;
-		case 164u: goto st41;
-		case 172u: goto st41;
-		case 180u: goto st41;
-		case 188u: goto st41;
-		case 224u: goto st119;
-		case 225u: goto st224;
-		case 226u: goto st226;
-		case 227u: goto st228;
-		case 228u: goto st230;
-		case 229u: goto st232;
-		case 230u: goto st234;
-		case 231u: goto st236;
-	}
-	if ( (*p) > 127u ) {
-		if ( 128u <= (*p) && (*p) <= 191u )
-			goto st35;
-	} else if ( (*p) >= 64u )
-		goto st39;
-	goto st10;
+#line 4213 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	goto tr220;
+tr272:
+#line 255 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_LWP);
+  }
+	goto st119;
 st119:
 	if ( ++p == pe )
 		goto _test_eof119;
 case 119:
+#line 4225 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	goto st118;
+tr273:
+#line 255 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_LWP);
+  }
+	goto st120;
+st120:
+	if ( ++p == pe )
+		goto _test_eof120;
+case 120:
+#line 4237 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	goto st114;
+tr431:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
+	goto st121;
+st121:
+	if ( ++p == pe )
+		goto _test_eof121;
+case 121:
+#line 4250 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto st35;
+		case 5u: goto st36;
+		case 12u: goto st35;
+		case 13u: goto st36;
+		case 20u: goto st35;
+		case 21u: goto st36;
+		case 28u: goto st35;
+		case 29u: goto st36;
+		case 36u: goto st35;
+		case 37u: goto st36;
+		case 44u: goto st35;
+		case 45u: goto st36;
+		case 52u: goto st35;
+		case 53u: goto st36;
+		case 60u: goto st35;
+		case 61u: goto st36;
+		case 68u: goto st41;
+		case 76u: goto st41;
+		case 84u: goto st41;
+		case 92u: goto st41;
+		case 100u: goto st41;
+		case 108u: goto st41;
+		case 116u: goto st41;
+		case 124u: goto st41;
+		case 132u: goto st42;
+		case 140u: goto st42;
+		case 148u: goto st42;
+		case 156u: goto st42;
+		case 164u: goto st42;
+		case 172u: goto st42;
+		case 180u: goto st42;
+		case 188u: goto st42;
+		case 224u: goto st122;
+		case 225u: goto st232;
+		case 226u: goto st234;
+		case 227u: goto st236;
+		case 228u: goto st238;
+		case 229u: goto st240;
+		case 230u: goto st242;
+		case 231u: goto st244;
+	}
+	if ( (*p) > 127u ) {
+		if ( 128u <= (*p) && (*p) <= 191u )
+			goto st36;
+	} else if ( (*p) >= 64u )
+		goto st40;
+	goto st10;
+st122:
+	if ( ++p == pe )
+		goto _test_eof122;
+case 122:
 	if ( (*p) == 224u )
-		goto tr156;
+		goto tr229;
 	goto tr11;
-tr156:
+tr229:
 #line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
 #line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
@@ -2932,72 +4312,72 @@ tr156:
         * causing error.  */
        begin = p + 1;
      }
-	goto st240;
-st240:
+	goto st248;
+st248:
 	if ( ++p == pe )
-		goto _test_eof240;
-case 240:
-#line 2941 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof248;
+case 248:
+#line 4321 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto tr280;
-		case 5u: goto tr281;
-		case 12u: goto tr280;
-		case 13u: goto tr281;
+		case 4u: goto tr420;
+		case 5u: goto tr421;
+		case 12u: goto tr420;
+		case 13u: goto tr421;
 		case 14u: goto tr19;
-		case 15u: goto tr282;
-		case 20u: goto tr280;
-		case 21u: goto tr281;
-		case 28u: goto tr280;
-		case 29u: goto tr281;
-		case 36u: goto tr280;
-		case 37u: goto tr281;
-		case 44u: goto tr280;
-		case 45u: goto tr281;
-		case 46u: goto tr283;
+		case 15u: goto tr422;
+		case 20u: goto tr420;
+		case 21u: goto tr421;
+		case 28u: goto tr420;
+		case 29u: goto tr421;
+		case 36u: goto tr420;
+		case 37u: goto tr421;
+		case 44u: goto tr420;
+		case 45u: goto tr421;
+		case 46u: goto tr423;
 		case 47u: goto tr19;
-		case 52u: goto tr280;
-		case 53u: goto tr281;
-		case 60u: goto tr280;
-		case 61u: goto tr281;
-		case 62u: goto tr284;
+		case 52u: goto tr420;
+		case 53u: goto tr421;
+		case 60u: goto tr420;
+		case 61u: goto tr421;
+		case 62u: goto tr424;
 		case 63u: goto tr19;
-		case 101u: goto tr286;
-		case 102u: goto tr287;
-		case 104u: goto tr281;
-		case 105u: goto tr288;
-		case 106u: goto tr280;
-		case 107u: goto tr289;
-		case 128u: goto tr289;
-		case 129u: goto tr288;
+		case 101u: goto tr426;
+		case 102u: goto tr427;
+		case 104u: goto tr421;
+		case 105u: goto tr428;
+		case 106u: goto tr420;
+		case 107u: goto tr429;
+		case 128u: goto tr429;
+		case 129u: goto tr428;
 		case 130u: goto tr19;
-		case 131u: goto tr291;
-		case 141u: goto tr292;
-		case 143u: goto tr293;
-		case 154u: goto tr19;
-		case 168u: goto tr280;
-		case 169u: goto tr281;
-		case 196u: goto tr296;
-		case 197u: goto tr297;
-		case 198u: goto tr298;
-		case 199u: goto tr299;
-		case 200u: goto tr300;
-		case 202u: goto tr301;
-		case 216u: goto tr279;
-		case 217u: goto tr303;
-		case 218u: goto tr304;
-		case 219u: goto tr305;
-		case 220u: goto tr306;
-		case 221u: goto tr307;
-		case 222u: goto tr308;
-		case 223u: goto tr309;
-		case 235u: goto tr290;
-		case 240u: goto tr311;
-		case 242u: goto tr312;
-		case 243u: goto tr313;
-		case 246u: goto tr314;
-		case 247u: goto tr315;
-		case 254u: goto tr316;
-		case 255u: goto tr318;
+		case 131u: goto tr431;
+		case 141u: goto tr432;
+		case 143u: goto tr433;
+		case 155u: goto tr434;
+		case 168u: goto tr420;
+		case 169u: goto tr421;
+		case 196u: goto tr437;
+		case 197u: goto tr438;
+		case 198u: goto tr439;
+		case 199u: goto tr440;
+		case 200u: goto tr441;
+		case 202u: goto tr442;
+		case 216u: goto tr444;
+		case 217u: goto tr445;
+		case 218u: goto tr446;
+		case 219u: goto tr447;
+		case 220u: goto tr448;
+		case 221u: goto tr449;
+		case 222u: goto tr450;
+		case 223u: goto tr451;
+		case 235u: goto tr430;
+		case 240u: goto tr453;
+		case 242u: goto tr454;
+		case 243u: goto tr455;
+		case 246u: goto tr456;
+		case 247u: goto tr457;
+		case 254u: goto tr458;
+		case 255u: goto tr460;
 	}
 	if ( (*p) < 132u ) {
 		if ( (*p) < 32u ) {
@@ -3006,7 +4386,7 @@ case 240:
 					if ( 6u <= (*p) && (*p) <= 7u )
 						goto tr19;
 				} else
-					goto tr279;
+					goto tr419;
 			} else if ( (*p) > 19u ) {
 				if ( (*p) < 24u ) {
 					if ( 22u <= (*p) && (*p) <= 23u )
@@ -3015,59 +4395,59 @@ case 240:
 					if ( 30u <= (*p) && (*p) <= 31u )
 						goto tr19;
 				} else
-					goto tr279;
+					goto tr419;
 			} else
-				goto tr279;
+				goto tr419;
 		} else if ( (*p) > 35u ) {
 			if ( (*p) < 54u ) {
 				if ( (*p) > 39u ) {
 					if ( 40u <= (*p) && (*p) <= 51u )
-						goto tr279;
+						goto tr419;
 				} else if ( (*p) >= 38u )
 					goto tr19;
 			} else if ( (*p) > 55u ) {
 				if ( (*p) < 96u ) {
 					if ( 56u <= (*p) && (*p) <= 59u )
-						goto tr279;
+						goto tr419;
 				} else if ( (*p) > 111u ) {
 					if ( 112u <= (*p) && (*p) <= 127u )
-						goto tr290;
+						goto tr430;
 				} else
 					goto tr19;
 			} else
 				goto tr19;
 		} else
-			goto tr279;
+			goto tr419;
 	} else if ( (*p) > 139u ) {
 		if ( (*p) < 194u ) {
 			if ( (*p) < 160u ) {
 				if ( (*p) > 142u ) {
-					if ( 156u <= (*p) && (*p) <= 157u )
+					if ( 154u <= (*p) && (*p) <= 157u )
 						goto tr19;
 				} else if ( (*p) >= 140u )
 					goto tr19;
 			} else if ( (*p) > 163u ) {
 				if ( (*p) < 184u ) {
 					if ( 176u <= (*p) && (*p) <= 183u )
-						goto tr280;
+						goto tr420;
 				} else if ( (*p) > 191u ) {
 					if ( 192u <= (*p) && (*p) <= 193u )
-						goto tr295;
+						goto tr436;
 				} else
-					goto tr281;
+					goto tr421;
 			} else
-				goto tr294;
+				goto tr435;
 		} else if ( (*p) > 195u ) {
 			if ( (*p) < 212u ) {
 				if ( (*p) > 207u ) {
 					if ( 208u <= (*p) && (*p) <= 211u )
-						goto tr302;
+						goto tr443;
 				} else if ( (*p) >= 204u )
 					goto tr19;
 			} else if ( (*p) > 231u ) {
 				if ( (*p) < 234u ) {
 					if ( 232u <= (*p) && (*p) <= 233u )
-						goto tr310;
+						goto tr452;
 				} else if ( (*p) > 241u ) {
 					if ( 250u <= (*p) && (*p) <= 251u )
 						goto tr19;
@@ -3078,28 +4458,28 @@ case 240:
 		} else
 			goto tr19;
 	} else
-		goto tr279;
-	goto tr285;
-tr293:
+		goto tr419;
+	goto tr425;
+tr433:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
      }
-	goto st120;
-st120:
+	goto st123;
+st123:
 	if ( ++p == pe )
-		goto _test_eof120;
-case 120:
-#line 3095 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof123;
+case 123:
+#line 4475 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
 		case 68u: goto st8;
 		case 132u: goto st9;
-		case 232u: goto st121;
-		case 233u: goto st136;
-		case 234u: goto st144;
+		case 232u: goto st124;
+		case 233u: goto st139;
+		case 234u: goto st147;
 	}
 	if ( (*p) < 64u ) {
 		if ( (*p) <= 7u )
@@ -3113,144 +4493,163 @@ case 120:
 	} else
 		goto st7;
 	goto tr19;
-st121:
+st124:
 	if ( ++p == pe )
-		goto _test_eof121;
-case 121:
+		goto _test_eof124;
+case 124:
 	switch( (*p) ) {
-		case 64u: goto tr160;
-		case 68u: goto tr161;
-		case 72u: goto tr160;
-		case 76u: goto tr161;
-		case 80u: goto tr160;
-		case 84u: goto tr161;
-		case 88u: goto tr160;
-		case 92u: goto tr161;
-		case 96u: goto tr160;
-		case 100u: goto tr161;
-		case 104u: goto tr160;
-		case 108u: goto tr161;
-		case 112u: goto tr160;
-		case 116u: goto tr161;
-		case 120u: goto tr162;
-		case 124u: goto tr161;
-		case 192u: goto tr163;
-		case 196u: goto tr161;
-		case 200u: goto tr163;
-		case 204u: goto tr161;
-		case 208u: goto tr163;
-		case 212u: goto tr161;
-		case 216u: goto tr163;
-		case 220u: goto tr161;
-		case 224u: goto tr163;
-		case 228u: goto tr161;
-		case 232u: goto tr163;
-		case 236u: goto tr161;
-		case 240u: goto tr163;
-		case 244u: goto tr161;
-		case 248u: goto tr163;
-		case 252u: goto tr161;
+		case 64u: goto tr233;
+		case 68u: goto tr234;
+		case 72u: goto tr233;
+		case 76u: goto tr234;
+		case 80u: goto tr233;
+		case 84u: goto tr234;
+		case 88u: goto tr233;
+		case 92u: goto tr234;
+		case 96u: goto tr233;
+		case 100u: goto tr234;
+		case 104u: goto tr233;
+		case 108u: goto tr234;
+		case 112u: goto tr233;
+		case 116u: goto tr234;
+		case 120u: goto tr235;
+		case 124u: goto tr234;
+		case 192u: goto tr236;
+		case 196u: goto tr234;
+		case 200u: goto tr236;
+		case 204u: goto tr234;
+		case 208u: goto tr236;
+		case 212u: goto tr234;
+		case 216u: goto tr236;
+		case 220u: goto tr234;
+		case 224u: goto tr236;
+		case 228u: goto tr234;
+		case 232u: goto tr236;
+		case 236u: goto tr234;
+		case 240u: goto tr236;
+		case 244u: goto tr234;
+		case 248u: goto tr236;
+		case 252u: goto tr234;
 	}
 	goto tr19;
-tr160:
+tr233:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
   }
-	goto st122;
-st122:
+	goto st125;
+st125:
 	if ( ++p == pe )
-		goto _test_eof122;
-case 122:
-#line 3166 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof125;
+case 125:
+#line 4546 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 166u: goto st123;
-		case 182u: goto st123;
+		case 166u: goto tr237;
+		case 182u: goto tr237;
 	}
 	if ( (*p) < 158u ) {
 		if ( (*p) < 142u ) {
 			if ( 133u <= (*p) && (*p) <= 135u )
-				goto st123;
+				goto tr237;
 		} else if ( (*p) > 143u ) {
 			if ( 149u <= (*p) && (*p) <= 151u )
-				goto st123;
+				goto tr237;
 		} else
-			goto st123;
+			goto tr237;
 	} else if ( (*p) > 159u ) {
 		if ( (*p) < 204u ) {
 			if ( 162u <= (*p) && (*p) <= 163u )
-				goto st123;
+				goto tr237;
 		} else if ( (*p) > 207u ) {
 			if ( 236u <= (*p) && (*p) <= 239u )
-				goto st33;
+				goto tr238;
 		} else
-			goto st33;
+			goto tr238;
 	} else
-		goto st123;
+		goto tr237;
 	goto tr19;
-st123:
+tr237:
+#line 318 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_XOP);
+  }
+	goto st126;
+tr342:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_AVX);
+  }
+	goto st126;
+tr343:
+#line 246 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_FMA4);
+  }
+	goto st126;
+st126:
 	if ( ++p == pe )
-		goto _test_eof123;
-case 123:
+		goto _test_eof126;
+case 126:
+#line 4594 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto st125;
-		case 5u: goto st126;
-		case 12u: goto st125;
-		case 13u: goto st126;
-		case 20u: goto st125;
-		case 21u: goto st126;
-		case 28u: goto st125;
-		case 29u: goto st126;
-		case 36u: goto st125;
-		case 37u: goto st126;
-		case 44u: goto st125;
-		case 45u: goto st126;
-		case 52u: goto st125;
-		case 53u: goto st126;
-		case 60u: goto st125;
-		case 61u: goto st126;
-		case 68u: goto st131;
-		case 76u: goto st131;
-		case 84u: goto st131;
-		case 92u: goto st131;
-		case 100u: goto st131;
-		case 108u: goto st131;
-		case 116u: goto st131;
-		case 124u: goto st131;
-		case 132u: goto st132;
-		case 140u: goto st132;
-		case 148u: goto st132;
-		case 156u: goto st132;
-		case 164u: goto st132;
-		case 172u: goto st132;
-		case 180u: goto st132;
-		case 188u: goto st132;
+		case 4u: goto st128;
+		case 5u: goto st129;
+		case 12u: goto st128;
+		case 13u: goto st129;
+		case 20u: goto st128;
+		case 21u: goto st129;
+		case 28u: goto st128;
+		case 29u: goto st129;
+		case 36u: goto st128;
+		case 37u: goto st129;
+		case 44u: goto st128;
+		case 45u: goto st129;
+		case 52u: goto st128;
+		case 53u: goto st129;
+		case 60u: goto st128;
+		case 61u: goto st129;
+		case 68u: goto st134;
+		case 76u: goto st134;
+		case 84u: goto st134;
+		case 92u: goto st134;
+		case 100u: goto st134;
+		case 108u: goto st134;
+		case 116u: goto st134;
+		case 124u: goto st134;
+		case 132u: goto st135;
+		case 140u: goto st135;
+		case 148u: goto st135;
+		case 156u: goto st135;
+		case 164u: goto st135;
+		case 172u: goto st135;
+		case 180u: goto st135;
+		case 188u: goto st135;
 	}
 	if ( (*p) > 127u ) {
 		if ( 128u <= (*p) && (*p) <= 191u )
-			goto st126;
+			goto st129;
 	} else if ( (*p) >= 64u )
-		goto st130;
-	goto st124;
-tr174:
+		goto st133;
+	goto st127;
+tr248:
 #line 46 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(p - 3);
   }
-	goto st124;
-tr175:
+	goto st127;
+tr249:
 #line 42 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(p);
   }
-	goto st124;
-st124:
+	goto st127;
+st127:
 	if ( ++p == pe )
-		goto _test_eof124;
-case 124:
-#line 3254 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof127;
+case 127:
+#line 4653 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 0u: goto tr0;
 		case 16u: goto tr0;
@@ -3262,172 +4661,95 @@ case 124:
 		case 112u: goto tr0;
 	}
 	goto tr19;
-st125:
-	if ( ++p == pe )
-		goto _test_eof125;
-case 125:
-	switch( (*p) ) {
-		case 5u: goto st126;
-		case 13u: goto st126;
-		case 21u: goto st126;
-		case 29u: goto st126;
-		case 37u: goto st126;
-		case 45u: goto st126;
-		case 53u: goto st126;
-		case 61u: goto st126;
-		case 69u: goto st126;
-		case 77u: goto st126;
-		case 85u: goto st126;
-		case 93u: goto st126;
-		case 101u: goto st126;
-		case 109u: goto st126;
-		case 117u: goto st126;
-		case 125u: goto st126;
-		case 133u: goto st126;
-		case 141u: goto st126;
-		case 149u: goto st126;
-		case 157u: goto st126;
-		case 165u: goto st126;
-		case 173u: goto st126;
-		case 181u: goto st126;
-		case 189u: goto st126;
-		case 197u: goto st126;
-		case 205u: goto st126;
-		case 213u: goto st126;
-		case 221u: goto st126;
-		case 229u: goto st126;
-		case 237u: goto st126;
-		case 245u: goto st126;
-		case 253u: goto st126;
-	}
-	goto st124;
-st126:
-	if ( ++p == pe )
-		goto _test_eof126;
-case 126:
-	goto st127;
-st127:
-	if ( ++p == pe )
-		goto _test_eof127;
-case 127:
-	goto st128;
 st128:
 	if ( ++p == pe )
 		goto _test_eof128;
 case 128:
-	goto st129;
+	switch( (*p) ) {
+		case 5u: goto st129;
+		case 13u: goto st129;
+		case 21u: goto st129;
+		case 29u: goto st129;
+		case 37u: goto st129;
+		case 45u: goto st129;
+		case 53u: goto st129;
+		case 61u: goto st129;
+		case 69u: goto st129;
+		case 77u: goto st129;
+		case 85u: goto st129;
+		case 93u: goto st129;
+		case 101u: goto st129;
+		case 109u: goto st129;
+		case 117u: goto st129;
+		case 125u: goto st129;
+		case 133u: goto st129;
+		case 141u: goto st129;
+		case 149u: goto st129;
+		case 157u: goto st129;
+		case 165u: goto st129;
+		case 173u: goto st129;
+		case 181u: goto st129;
+		case 189u: goto st129;
+		case 197u: goto st129;
+		case 205u: goto st129;
+		case 213u: goto st129;
+		case 221u: goto st129;
+		case 229u: goto st129;
+		case 237u: goto st129;
+		case 245u: goto st129;
+		case 253u: goto st129;
+	}
+	goto st127;
 st129:
 	if ( ++p == pe )
 		goto _test_eof129;
 case 129:
-	goto tr174;
+	goto st130;
 st130:
 	if ( ++p == pe )
 		goto _test_eof130;
 case 130:
-	goto tr175;
+	goto st131;
 st131:
 	if ( ++p == pe )
 		goto _test_eof131;
 case 131:
-	goto st130;
+	goto st132;
 st132:
 	if ( ++p == pe )
 		goto _test_eof132;
 case 132:
-	goto st126;
-tr161:
-#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st133;
+	goto tr248;
 st133:
 	if ( ++p == pe )
 		goto _test_eof133;
 case 133:
-#line 3350 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	if ( (*p) == 162u )
-		goto st123;
-	goto tr19;
-tr162:
-#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st134;
+	goto tr249;
 st134:
 	if ( ++p == pe )
 		goto _test_eof134;
 case 134:
-#line 3364 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 166u: goto st123;
-		case 182u: goto st123;
-	}
-	if ( (*p) < 158u ) {
-		if ( (*p) < 142u ) {
-			if ( 133u <= (*p) && (*p) <= 135u )
-				goto st123;
-		} else if ( (*p) > 143u ) {
-			if ( 149u <= (*p) && (*p) <= 151u )
-				goto st123;
-		} else
-			goto st123;
-	} else if ( (*p) > 159u ) {
-		if ( (*p) < 192u ) {
-			if ( 162u <= (*p) && (*p) <= 163u )
-				goto st123;
-		} else if ( (*p) > 195u ) {
-			if ( (*p) > 207u ) {
-				if ( 236u <= (*p) && (*p) <= 239u )
-					goto st33;
-			} else if ( (*p) >= 204u )
-				goto st33;
-		} else
-			goto st33;
-	} else
-		goto st123;
-	goto tr19;
-tr163:
-#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st135;
+	goto st133;
 st135:
 	if ( ++p == pe )
 		goto _test_eof135;
 case 135:
-#line 3403 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	if ( 162u <= (*p) && (*p) <= 163u )
-		goto st123;
-	goto tr19;
+	goto st129;
+tr234:
+#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_VEX_PREFIX3(*p);
+  }
+	goto st136;
 st136:
 	if ( ++p == pe )
 		goto _test_eof136;
 case 136:
-	switch( (*p) ) {
-		case 64u: goto tr176;
-		case 72u: goto tr176;
-		case 80u: goto tr176;
-		case 88u: goto tr176;
-		case 96u: goto tr176;
-		case 104u: goto tr176;
-		case 112u: goto tr176;
-		case 120u: goto tr177;
-		case 124u: goto tr178;
-		case 192u: goto tr179;
-		case 200u: goto tr179;
-		case 208u: goto tr179;
-		case 216u: goto tr179;
-		case 224u: goto tr179;
-		case 232u: goto tr179;
-		case 240u: goto tr179;
-		case 248u: goto tr179;
-	}
+#line 4749 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	if ( (*p) == 162u )
+		goto tr237;
 	goto tr19;
-tr176:
+tr235:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
@@ -3437,47 +4759,124 @@ st137:
 	if ( ++p == pe )
 		goto _test_eof137;
 case 137:
-#line 3441 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4763 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 1u: goto st138;
-		case 2u: goto st139;
+		case 166u: goto tr237;
+		case 182u: goto tr237;
 	}
-	if ( 144u <= (*p) && (*p) <= 155u )
-		goto st1;
+	if ( (*p) < 158u ) {
+		if ( (*p) < 142u ) {
+			if ( 133u <= (*p) && (*p) <= 135u )
+				goto tr237;
+		} else if ( (*p) > 143u ) {
+			if ( 149u <= (*p) && (*p) <= 151u )
+				goto tr237;
+		} else
+			goto tr237;
+	} else if ( (*p) > 159u ) {
+		if ( (*p) < 192u ) {
+			if ( 162u <= (*p) && (*p) <= 163u )
+				goto tr237;
+		} else if ( (*p) > 195u ) {
+			if ( (*p) > 207u ) {
+				if ( 236u <= (*p) && (*p) <= 239u )
+					goto tr238;
+			} else if ( (*p) >= 204u )
+				goto tr238;
+		} else
+			goto tr238;
+	} else
+		goto tr237;
 	goto tr19;
+tr236:
+#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_VEX_PREFIX3(*p);
+  }
+	goto st138;
 st138:
 	if ( ++p == pe )
 		goto _test_eof138;
 case 138:
+#line 4802 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	if ( 162u <= (*p) && (*p) <= 163u )
+		goto tr237;
+	goto tr19;
+st139:
+	if ( ++p == pe )
+		goto _test_eof139;
+case 139:
 	switch( (*p) ) {
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 20u: goto st2;
-		case 21u: goto st3;
-		case 28u: goto st2;
-		case 29u: goto st3;
-		case 36u: goto st2;
-		case 37u: goto st3;
-		case 44u: goto st2;
-		case 45u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 60u: goto st2;
-		case 61u: goto st3;
-		case 76u: goto st8;
-		case 84u: goto st8;
-		case 92u: goto st8;
-		case 100u: goto st8;
-		case 108u: goto st8;
-		case 116u: goto st8;
-		case 124u: goto st8;
-		case 140u: goto st9;
-		case 148u: goto st9;
-		case 156u: goto st9;
-		case 164u: goto st9;
-		case 172u: goto st9;
-		case 180u: goto st9;
-		case 188u: goto st9;
+		case 64u: goto tr250;
+		case 72u: goto tr250;
+		case 80u: goto tr250;
+		case 88u: goto tr250;
+		case 96u: goto tr250;
+		case 104u: goto tr250;
+		case 112u: goto tr250;
+		case 120u: goto tr251;
+		case 124u: goto tr252;
+		case 192u: goto tr253;
+		case 200u: goto tr253;
+		case 208u: goto tr253;
+		case 216u: goto tr253;
+		case 224u: goto tr253;
+		case 232u: goto tr253;
+		case 240u: goto tr253;
+		case 248u: goto tr253;
+	}
+	goto tr19;
+tr250:
+#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_VEX_PREFIX3(*p);
+  }
+	goto st140;
+st140:
+	if ( ++p == pe )
+		goto _test_eof140;
+case 140:
+#line 4840 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 1u: goto st141;
+		case 2u: goto st142;
+	}
+	if ( 144u <= (*p) && (*p) <= 155u )
+		goto tr256;
+	goto tr19;
+st141:
+	if ( ++p == pe )
+		goto _test_eof141;
+case 141:
+	switch( (*p) ) {
+		case 12u: goto tr258;
+		case 13u: goto tr259;
+		case 20u: goto tr258;
+		case 21u: goto tr259;
+		case 28u: goto tr258;
+		case 29u: goto tr259;
+		case 36u: goto tr258;
+		case 37u: goto tr259;
+		case 44u: goto tr258;
+		case 45u: goto tr259;
+		case 52u: goto tr258;
+		case 53u: goto tr259;
+		case 60u: goto tr258;
+		case 61u: goto tr259;
+		case 76u: goto tr261;
+		case 84u: goto tr261;
+		case 92u: goto tr261;
+		case 100u: goto tr261;
+		case 108u: goto tr261;
+		case 116u: goto tr261;
+		case 124u: goto tr261;
+		case 140u: goto tr262;
+		case 148u: goto tr262;
+		case 156u: goto tr262;
+		case 164u: goto tr262;
+		case 172u: goto tr262;
+		case 180u: goto tr262;
+		case 188u: goto tr262;
 	}
 	if ( (*p) < 72u ) {
 		if ( (*p) > 7u ) {
@@ -3493,109 +4892,49 @@ case 138:
 			if ( 192u <= (*p) && (*p) <= 199u )
 				goto tr19;
 		} else
-			goto st3;
+			goto tr259;
 	} else
-		goto st7;
-	goto tr0;
-st139:
-	if ( ++p == pe )
-		goto _test_eof139;
-case 139:
-	switch( (*p) ) {
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 140u: goto st9;
-		case 180u: goto st9;
-	}
-	if ( (*p) < 112u ) {
-		if ( (*p) < 48u ) {
-			if ( 8u <= (*p) && (*p) <= 15u )
-				goto tr0;
-		} else if ( (*p) > 55u ) {
-			if ( 72u <= (*p) && (*p) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*p) > 119u ) {
-		if ( (*p) < 176u ) {
-			if ( 136u <= (*p) && (*p) <= 143u )
-				goto st3;
-		} else if ( (*p) > 183u ) {
-			if ( (*p) > 207u ) {
-				if ( 240u <= (*p) && (*p) <= 247u )
-					goto tr0;
-			} else if ( (*p) >= 200u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr19;
-tr177:
-#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st140;
-st140:
-	if ( ++p == pe )
-		goto _test_eof140;
-case 140:
-#line 3549 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 1u: goto st138;
-		case 2u: goto st139;
-		case 18u: goto st141;
-		case 203u: goto st1;
-		case 219u: goto st1;
-	}
-	if ( (*p) < 198u ) {
-		if ( (*p) < 144u ) {
-			if ( 128u <= (*p) && (*p) <= 131u )
-				goto st1;
-		} else if ( (*p) > 155u ) {
-			if ( 193u <= (*p) && (*p) <= 195u )
-				goto st1;
-		} else
-			goto st1;
-	} else if ( (*p) > 199u ) {
-		if ( (*p) < 214u ) {
-			if ( 209u <= (*p) && (*p) <= 211u )
-				goto st1;
-		} else if ( (*p) > 215u ) {
-			if ( 225u <= (*p) && (*p) <= 227u )
-				goto st1;
-		} else
-			goto st1;
-	} else
-		goto st1;
-	goto tr19;
-st141:
-	if ( ++p == pe )
-		goto _test_eof141;
-case 141:
-	if ( 192u <= (*p) && (*p) <= 207u )
-		goto tr0;
-	goto tr19;
-tr178:
-#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st142;
+		goto tr260;
+	goto tr257;
 st142:
 	if ( ++p == pe )
 		goto _test_eof142;
 case 142:
-#line 3595 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	if ( 128u <= (*p) && (*p) <= 129u )
-		goto st1;
+	switch( (*p) ) {
+		case 12u: goto tr258;
+		case 13u: goto tr259;
+		case 52u: goto tr258;
+		case 53u: goto tr259;
+		case 76u: goto tr261;
+		case 116u: goto tr261;
+		case 140u: goto tr262;
+		case 180u: goto tr262;
+	}
+	if ( (*p) < 112u ) {
+		if ( (*p) < 48u ) {
+			if ( 8u <= (*p) && (*p) <= 15u )
+				goto tr257;
+		} else if ( (*p) > 55u ) {
+			if ( 72u <= (*p) && (*p) <= 79u )
+				goto tr260;
+		} else
+			goto tr257;
+	} else if ( (*p) > 119u ) {
+		if ( (*p) < 176u ) {
+			if ( 136u <= (*p) && (*p) <= 143u )
+				goto tr259;
+		} else if ( (*p) > 183u ) {
+			if ( (*p) > 207u ) {
+				if ( 240u <= (*p) && (*p) <= 247u )
+					goto tr257;
+			} else if ( (*p) >= 200u )
+				goto tr257;
+		} else
+			goto tr259;
+	} else
+		goto tr260;
 	goto tr19;
-tr179:
+tr251:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
@@ -3605,26 +4944,43 @@ st143:
 	if ( ++p == pe )
 		goto _test_eof143;
 case 143:
-#line 3609 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	if ( 144u <= (*p) && (*p) <= 155u )
-		goto st1;
+#line 4948 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 1u: goto st141;
+		case 2u: goto st142;
+		case 18u: goto st144;
+		case 203u: goto tr256;
+		case 219u: goto tr256;
+	}
+	if ( (*p) < 198u ) {
+		if ( (*p) < 144u ) {
+			if ( 128u <= (*p) && (*p) <= 131u )
+				goto tr256;
+		} else if ( (*p) > 155u ) {
+			if ( 193u <= (*p) && (*p) <= 195u )
+				goto tr256;
+		} else
+			goto tr256;
+	} else if ( (*p) > 199u ) {
+		if ( (*p) < 214u ) {
+			if ( 209u <= (*p) && (*p) <= 211u )
+				goto tr256;
+		} else if ( (*p) > 215u ) {
+			if ( 225u <= (*p) && (*p) <= 227u )
+				goto tr256;
+		} else
+			goto tr256;
+	} else
+		goto tr256;
 	goto tr19;
 st144:
 	if ( ++p == pe )
 		goto _test_eof144;
 case 144:
-	switch( (*p) ) {
-		case 64u: goto tr183;
-		case 72u: goto tr183;
-		case 80u: goto tr183;
-		case 88u: goto tr183;
-		case 96u: goto tr183;
-		case 104u: goto tr183;
-		case 112u: goto tr183;
-		case 120u: goto tr184;
-	}
+	if ( 192u <= (*p) && (*p) <= 207u )
+		goto tr264;
 	goto tr19;
-tr183:
+tr252:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
@@ -3634,303 +4990,268 @@ st145:
 	if ( ++p == pe )
 		goto _test_eof145;
 case 145:
-#line 3638 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	if ( (*p) == 18u )
-		goto st146;
+#line 4994 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	if ( 128u <= (*p) && (*p) <= 129u )
+		goto tr256;
 	goto tr19;
-st146:
-	if ( ++p == pe )
-		goto _test_eof146;
-case 146:
-	switch( (*p) ) {
-		case 4u: goto st110;
-		case 5u: goto st111;
-		case 12u: goto st110;
-		case 13u: goto st111;
-		case 68u: goto st116;
-		case 76u: goto st116;
-		case 132u: goto st117;
-		case 140u: goto st117;
-	}
-	if ( (*p) < 64u ) {
-		if ( (*p) <= 15u )
-			goto st11;
-	} else if ( (*p) > 79u ) {
-		if ( (*p) > 143u ) {
-			if ( 192u <= (*p) && (*p) <= 207u )
-				goto st11;
-		} else if ( (*p) >= 128u )
-			goto st111;
-	} else
-		goto st115;
-	goto tr19;
-tr184:
+tr253:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
   }
-	goto st147;
+	goto st146;
+st146:
+	if ( ++p == pe )
+		goto _test_eof146;
+case 146:
+#line 5008 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	if ( 144u <= (*p) && (*p) <= 155u )
+		goto tr256;
+	goto tr19;
 st147:
 	if ( ++p == pe )
 		goto _test_eof147;
 case 147:
-#line 3678 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 16u: goto st109;
-		case 18u: goto st146;
+		case 64u: goto tr265;
+		case 72u: goto tr265;
+		case 80u: goto tr265;
+		case 88u: goto tr265;
+		case 96u: goto tr265;
+		case 104u: goto tr265;
+		case 112u: goto tr265;
+		case 120u: goto tr266;
 	}
 	goto tr19;
-tr296:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+tr265:
+#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-        begin = p;
-        BitmapSetBit(valid_targets, p - data);
-     }
+    SET_VEX_PREFIX3(*p);
+  }
 	goto st148;
 st148:
 	if ( ++p == pe )
 		goto _test_eof148;
 case 148:
-#line 3695 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 225u: goto st149;
-		case 226u: goto st167;
-		case 227u: goto st176;
-	}
+#line 5037 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	if ( (*p) == 18u )
+		goto st149;
 	goto tr19;
 st149:
 	if ( ++p == pe )
 		goto _test_eof149;
 case 149:
 	switch( (*p) ) {
-		case 65u: goto tr191;
-		case 66u: goto tr192;
-		case 67u: goto tr193;
-		case 68u: goto tr194;
-		case 69u: goto tr195;
-		case 70u: goto tr196;
-		case 71u: goto tr197;
-		case 73u: goto tr191;
-		case 74u: goto tr192;
-		case 75u: goto tr193;
-		case 76u: goto tr194;
-		case 77u: goto tr195;
-		case 78u: goto tr196;
-		case 79u: goto tr197;
-		case 81u: goto tr191;
-		case 82u: goto tr192;
-		case 83u: goto tr193;
-		case 84u: goto tr194;
-		case 85u: goto tr195;
-		case 86u: goto tr196;
-		case 87u: goto tr197;
-		case 89u: goto tr191;
-		case 90u: goto tr192;
-		case 91u: goto tr193;
-		case 92u: goto tr194;
-		case 93u: goto tr195;
-		case 94u: goto tr196;
-		case 95u: goto tr197;
-		case 97u: goto tr191;
-		case 98u: goto tr192;
-		case 99u: goto tr193;
-		case 100u: goto tr194;
-		case 101u: goto tr195;
-		case 102u: goto tr196;
-		case 103u: goto tr197;
-		case 105u: goto tr191;
-		case 106u: goto tr192;
-		case 107u: goto tr193;
-		case 108u: goto tr194;
-		case 109u: goto tr195;
-		case 110u: goto tr196;
-		case 111u: goto tr197;
-		case 113u: goto tr191;
-		case 114u: goto tr192;
-		case 115u: goto tr193;
-		case 116u: goto tr194;
-		case 117u: goto tr195;
-		case 118u: goto tr196;
-		case 119u: goto tr197;
-		case 120u: goto tr198;
-		case 121u: goto tr199;
-		case 122u: goto tr200;
-		case 123u: goto tr201;
-		case 124u: goto tr202;
-		case 125u: goto tr203;
-		case 126u: goto tr204;
-		case 127u: goto tr205;
+		case 4u: goto tr269;
+		case 5u: goto tr270;
+		case 12u: goto tr269;
+		case 13u: goto tr270;
+		case 68u: goto tr272;
+		case 76u: goto tr272;
+		case 132u: goto tr273;
+		case 140u: goto tr273;
 	}
-	if ( 64u <= (*p) && (*p) <= 112u )
-		goto tr190;
+	if ( (*p) < 64u ) {
+		if ( (*p) <= 15u )
+			goto tr268;
+	} else if ( (*p) > 79u ) {
+		if ( (*p) > 143u ) {
+			if ( 192u <= (*p) && (*p) <= 207u )
+				goto tr268;
+		} else if ( (*p) >= 128u )
+			goto tr270;
+	} else
+		goto tr271;
 	goto tr19;
-tr190:
+tr266:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
-  }
-	goto st150;
-tr235:
-#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st150;
 st150:
 	if ( ++p == pe )
 		goto _test_eof150;
 case 150:
-#line 3785 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5077 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 18u: goto st1;
-		case 23u: goto st29;
-		case 81u: goto st1;
-		case 194u: goto st33;
-		case 198u: goto st33;
+		case 16u: goto tr274;
+		case 18u: goto st149;
 	}
-	if ( (*p) < 46u ) {
-		if ( 20u <= (*p) && (*p) <= 22u )
-			goto st1;
-	} else if ( (*p) > 47u ) {
-		if ( (*p) > 89u ) {
-			if ( 92u <= (*p) && (*p) <= 95u )
-				goto st1;
-		} else if ( (*p) >= 84u )
-			goto st1;
-	} else
-		goto st1;
 	goto tr19;
-tr191:
-#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+tr437:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st151;
-tr236:
-#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3(p[0] & 0x7f);
-  }
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
 	goto st151;
 st151:
 	if ( ++p == pe )
 		goto _test_eof151;
 case 151:
-#line 3822 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5094 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 18u: goto st29;
-		case 81u: goto st1;
-		case 115u: goto st152;
-		case 194u: goto st33;
-		case 198u: goto st33;
+		case 225u: goto st152;
+		case 226u: goto st174;
+		case 227u: goto st183;
 	}
-	if ( (*p) < 116u ) {
-		if ( (*p) < 46u ) {
-			if ( (*p) > 21u ) {
-				if ( 22u <= (*p) && (*p) <= 23u )
-					goto st29;
-			} else if ( (*p) >= 20u )
-				goto st1;
-		} else if ( (*p) > 47u ) {
-			if ( (*p) < 92u ) {
-				if ( 84u <= (*p) && (*p) <= 89u )
-					goto st1;
-			} else if ( (*p) > 109u ) {
-				if ( 113u <= (*p) && (*p) <= 114u )
-					goto st42;
-			} else
-				goto st1;
-		} else
-			goto st1;
-	} else if ( (*p) > 118u ) {
-		if ( (*p) < 216u ) {
-			if ( (*p) > 125u ) {
-				if ( 208u <= (*p) && (*p) <= 213u )
-					goto st1;
-			} else if ( (*p) >= 124u )
-				goto st1;
-		} else if ( (*p) > 229u ) {
-			if ( (*p) < 241u ) {
-				if ( 232u <= (*p) && (*p) <= 239u )
-					goto st1;
-			} else if ( (*p) > 246u ) {
-				if ( 248u <= (*p) && (*p) <= 254u )
-					goto st1;
-			} else
-				goto st1;
-		} else
-			goto st1;
-	} else
-		goto st1;
 	goto tr19;
 st152:
 	if ( ++p == pe )
 		goto _test_eof152;
 case 152:
-	if ( (*p) > 223u ) {
-		if ( 240u <= (*p) )
-			goto st10;
-	} else if ( (*p) >= 208u )
-		goto st10;
+	switch( (*p) ) {
+		case 65u: goto tr279;
+		case 66u: goto tr280;
+		case 67u: goto tr281;
+		case 68u: goto tr282;
+		case 69u: goto tr283;
+		case 70u: goto tr284;
+		case 71u: goto tr285;
+		case 73u: goto tr279;
+		case 74u: goto tr280;
+		case 75u: goto tr281;
+		case 76u: goto tr282;
+		case 77u: goto tr283;
+		case 78u: goto tr284;
+		case 79u: goto tr285;
+		case 81u: goto tr279;
+		case 82u: goto tr280;
+		case 83u: goto tr281;
+		case 84u: goto tr282;
+		case 85u: goto tr283;
+		case 86u: goto tr284;
+		case 87u: goto tr285;
+		case 89u: goto tr279;
+		case 90u: goto tr280;
+		case 91u: goto tr281;
+		case 92u: goto tr282;
+		case 93u: goto tr283;
+		case 94u: goto tr284;
+		case 95u: goto tr285;
+		case 97u: goto tr279;
+		case 98u: goto tr280;
+		case 99u: goto tr281;
+		case 100u: goto tr282;
+		case 101u: goto tr283;
+		case 102u: goto tr284;
+		case 103u: goto tr285;
+		case 105u: goto tr279;
+		case 106u: goto tr280;
+		case 107u: goto tr281;
+		case 108u: goto tr282;
+		case 109u: goto tr283;
+		case 110u: goto tr284;
+		case 111u: goto tr285;
+		case 113u: goto tr279;
+		case 114u: goto tr280;
+		case 115u: goto tr281;
+		case 116u: goto tr282;
+		case 117u: goto tr283;
+		case 118u: goto tr284;
+		case 119u: goto tr285;
+		case 120u: goto tr286;
+		case 121u: goto tr287;
+		case 122u: goto tr288;
+		case 123u: goto tr289;
+		case 124u: goto tr290;
+		case 125u: goto tr291;
+		case 126u: goto tr292;
+		case 127u: goto tr293;
+	}
+	if ( 64u <= (*p) && (*p) <= 112u )
+		goto tr278;
 	goto tr19;
-tr192:
+tr278:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
+  }
+	goto st153;
+tr359:
+#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st153;
 st153:
 	if ( ++p == pe )
 		goto _test_eof153;
 case 153:
-#line 3889 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5184 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 42u: goto st1;
-		case 81u: goto st1;
-		case 83u: goto st1;
-		case 194u: goto st33;
+		case 18u: goto st154;
+		case 22u: goto st154;
+		case 23u: goto tr296;
+		case 81u: goto tr295;
+		case 194u: goto tr297;
+		case 198u: goto tr297;
 	}
-	if ( (*p) > 90u ) {
-		if ( 92u <= (*p) && (*p) <= 95u )
-			goto st1;
-	} else if ( (*p) >= 88u )
-		goto st1;
+	if ( (*p) < 46u ) {
+		if ( 20u <= (*p) && (*p) <= 21u )
+			goto tr295;
+	} else if ( (*p) > 47u ) {
+		if ( (*p) > 89u ) {
+			if ( 92u <= (*p) && (*p) <= 95u )
+				goto tr295;
+		} else if ( (*p) >= 84u )
+			goto tr295;
+	} else
+		goto tr295;
 	goto tr19;
-tr193:
-#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st154;
 st154:
 	if ( ++p == pe )
 		goto _test_eof154;
 case 154:
-#line 3912 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 42u: goto st1;
-		case 81u: goto st1;
-		case 194u: goto st33;
-		case 208u: goto st1;
+		case 4u: goto tr299;
+		case 5u: goto tr300;
+		case 12u: goto tr299;
+		case 13u: goto tr300;
+		case 20u: goto tr299;
+		case 21u: goto tr300;
+		case 28u: goto tr299;
+		case 29u: goto tr300;
+		case 36u: goto tr299;
+		case 37u: goto tr300;
+		case 44u: goto tr299;
+		case 45u: goto tr300;
+		case 52u: goto tr299;
+		case 53u: goto tr300;
+		case 60u: goto tr299;
+		case 61u: goto tr300;
+		case 68u: goto tr302;
+		case 76u: goto tr302;
+		case 84u: goto tr302;
+		case 92u: goto tr302;
+		case 100u: goto tr302;
+		case 108u: goto tr302;
+		case 116u: goto tr302;
+		case 124u: goto tr302;
+		case 132u: goto tr303;
+		case 140u: goto tr303;
+		case 148u: goto tr303;
+		case 156u: goto tr303;
+		case 164u: goto tr303;
+		case 172u: goto tr303;
+		case 180u: goto tr303;
+		case 188u: goto tr303;
 	}
-	if ( (*p) < 92u ) {
-		if ( 88u <= (*p) && (*p) <= 90u )
-			goto st1;
-	} else if ( (*p) > 95u ) {
-		if ( 124u <= (*p) && (*p) <= 125u )
-			goto st1;
-	} else
-		goto st1;
-	goto tr19;
-tr194:
+	if ( (*p) > 127u ) {
+		if ( 128u <= (*p) && (*p) <= 191u )
+			goto tr300;
+	} else if ( (*p) >= 64u )
+		goto tr301;
+	goto tr298;
+tr279:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st155;
-tr239:
+tr360:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
@@ -3941,151 +5262,132 @@ st155:
 	if ( ++p == pe )
 		goto _test_eof155;
 case 155:
-#line 3945 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5266 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 81u: goto st1;
-		case 194u: goto st33;
-		case 198u: goto st33;
+		case 18u: goto tr296;
+		case 81u: goto tr295;
+		case 115u: goto st157;
+		case 194u: goto tr297;
+		case 198u: goto tr297;
 	}
-	if ( (*p) < 84u ) {
-		if ( 20u <= (*p) && (*p) <= 21u )
-			goto st1;
-	} else if ( (*p) > 89u ) {
-		if ( 92u <= (*p) && (*p) <= 95u )
-			goto st1;
+	if ( (*p) < 116u ) {
+		if ( (*p) < 46u ) {
+			if ( (*p) > 21u ) {
+				if ( 22u <= (*p) && (*p) <= 23u )
+					goto tr296;
+			} else if ( (*p) >= 20u )
+				goto tr295;
+		} else if ( (*p) > 47u ) {
+			if ( (*p) < 92u ) {
+				if ( 84u <= (*p) && (*p) <= 89u )
+					goto tr295;
+			} else if ( (*p) > 109u ) {
+				if ( 113u <= (*p) && (*p) <= 114u )
+					goto st156;
+			} else
+				goto tr295;
+		} else
+			goto tr295;
+	} else if ( (*p) > 118u ) {
+		if ( (*p) < 216u ) {
+			if ( (*p) > 125u ) {
+				if ( 208u <= (*p) && (*p) <= 213u )
+					goto tr295;
+			} else if ( (*p) >= 124u )
+				goto tr295;
+		} else if ( (*p) > 229u ) {
+			if ( (*p) < 241u ) {
+				if ( 232u <= (*p) && (*p) <= 239u )
+					goto tr295;
+			} else if ( (*p) > 246u ) {
+				if ( 248u <= (*p) && (*p) <= 254u )
+					goto tr295;
+			} else
+				goto tr295;
+		} else
+			goto tr295;
 	} else
-		goto st1;
+		goto tr295;
 	goto tr19;
-tr195:
-#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st156;
-tr240:
-#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3(p[0] & 0x7f);
-  }
-	goto st156;
 st156:
 	if ( ++p == pe )
 		goto _test_eof156;
 case 156:
-#line 3977 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 81u: goto st1;
-		case 194u: goto st33;
-		case 198u: goto st33;
-		case 208u: goto st1;
-	}
-	if ( (*p) < 84u ) {
-		if ( 20u <= (*p) && (*p) <= 21u )
-			goto st1;
-	} else if ( (*p) > 89u ) {
-		if ( (*p) > 95u ) {
-			if ( 124u <= (*p) && (*p) <= 125u )
-				goto st1;
-		} else if ( (*p) >= 92u )
-			goto st1;
+	if ( (*p) < 224u ) {
+		if ( 208u <= (*p) && (*p) <= 215u )
+			goto tr306;
+	} else if ( (*p) > 231u ) {
+		if ( 240u <= (*p) && (*p) <= 247u )
+			goto tr306;
 	} else
-		goto st1;
+		goto tr306;
 	goto tr19;
-tr196:
-#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st157;
-tr241:
-#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3(p[0] & 0x7f);
-  }
-	goto st157;
 st157:
 	if ( ++p == pe )
 		goto _test_eof157;
 case 157:
-#line 4013 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	if ( 16u <= (*p) && (*p) <= 17u )
-		goto st32;
+	if ( (*p) > 223u ) {
+		if ( 240u <= (*p) )
+			goto tr306;
+	} else if ( (*p) >= 208u )
+		goto tr306;
 	goto tr19;
-tr197:
+tr280:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
-  }
-	goto st158;
-tr242:
-#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st158;
 st158:
 	if ( ++p == pe )
 		goto _test_eof158;
 case 158:
-#line 4034 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	if ( (*p) == 208u )
-		goto st1;
-	if ( (*p) > 17u ) {
-		if ( 124u <= (*p) && (*p) <= 125u )
-			goto st1;
-	} else if ( (*p) >= 16u )
-		goto st32;
+#line 5346 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 42u: goto tr295;
+		case 81u: goto tr295;
+		case 83u: goto tr295;
+		case 194u: goto tr297;
+	}
+	if ( (*p) > 90u ) {
+		if ( 92u <= (*p) && (*p) <= 95u )
+			goto tr295;
+	} else if ( (*p) >= 88u )
+		goto tr295;
 	goto tr19;
-tr198:
+tr281:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
-  }
-	goto st159;
-tr243:
-#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st159;
 st159:
 	if ( ++p == pe )
 		goto _test_eof159;
 case 159:
-#line 4060 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5369 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 19u: goto st29;
-		case 23u: goto st29;
-		case 43u: goto st29;
-		case 80u: goto st32;
-		case 119u: goto tr0;
-		case 174u: goto st101;
-		case 194u: goto st33;
-		case 198u: goto st33;
+		case 42u: goto tr295;
+		case 81u: goto tr295;
+		case 194u: goto tr297;
+		case 208u: goto tr295;
 	}
-	if ( (*p) < 40u ) {
-		if ( 16u <= (*p) && (*p) <= 22u )
-			goto st1;
-	} else if ( (*p) > 41u ) {
-		if ( (*p) > 47u ) {
-			if ( 81u <= (*p) && (*p) <= 95u )
-				goto st1;
-		} else if ( (*p) >= 46u )
-			goto st1;
+	if ( (*p) < 92u ) {
+		if ( 88u <= (*p) && (*p) <= 90u )
+			goto tr295;
+	} else if ( (*p) > 95u ) {
+		if ( 124u <= (*p) && (*p) <= 125u )
+			goto tr295;
 	} else
-		goto st1;
+		goto tr295;
 	goto tr19;
-tr199:
+tr282:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st160;
-tr244:
+tr363:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
@@ -4096,140 +5398,85 @@ st160:
 	if ( ++p == pe )
 		goto _test_eof160;
 case 160:
-#line 4100 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5402 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 43u: goto st29;
-		case 80u: goto st32;
-		case 81u: goto st1;
-		case 112u: goto st33;
-		case 115u: goto st152;
-		case 127u: goto st1;
-		case 194u: goto st33;
-		case 197u: goto st49;
-		case 215u: goto st32;
-		case 231u: goto st29;
-		case 247u: goto st32;
+		case 81u: goto tr295;
+		case 194u: goto tr297;
+		case 198u: goto tr297;
 	}
 	if ( (*p) < 84u ) {
-		if ( (*p) < 20u ) {
-			if ( (*p) > 17u ) {
-				if ( 18u <= (*p) && (*p) <= 19u )
-					goto st29;
-			} else if ( (*p) >= 16u )
-				goto st1;
-		} else if ( (*p) > 21u ) {
-			if ( (*p) < 40u ) {
-				if ( 22u <= (*p) && (*p) <= 23u )
-					goto st29;
-			} else if ( (*p) > 41u ) {
-				if ( 46u <= (*p) && (*p) <= 47u )
-					goto st1;
-			} else
-				goto st1;
-		} else
-			goto st1;
-	} else if ( (*p) > 111u ) {
-		if ( (*p) < 196u ) {
-			if ( (*p) < 116u ) {
-				if ( 113u <= (*p) && (*p) <= 114u )
-					goto st42;
-			} else if ( (*p) > 118u ) {
-				if ( 124u <= (*p) && (*p) <= 125u )
-					goto st1;
-			} else
-				goto st1;
-		} else if ( (*p) > 198u ) {
-			if ( (*p) < 216u ) {
-				if ( 208u <= (*p) && (*p) <= 213u )
-					goto st1;
-			} else if ( (*p) > 239u ) {
-				if ( 241u <= (*p) && (*p) <= 254u )
-					goto st1;
-			} else
-				goto st1;
-		} else
-			goto st33;
+		if ( 20u <= (*p) && (*p) <= 21u )
+			goto tr295;
+	} else if ( (*p) > 89u ) {
+		if ( 92u <= (*p) && (*p) <= 95u )
+			goto tr295;
 	} else
-		goto st1;
+		goto tr295;
 	goto tr19;
-tr200:
+tr283:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
+  }
+	goto st161;
+tr364:
+#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st161;
 st161:
 	if ( ++p == pe )
 		goto _test_eof161;
 case 161:
-#line 4166 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5434 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 18u: goto st1;
-		case 22u: goto st1;
-		case 42u: goto st1;
-		case 111u: goto st1;
-		case 112u: goto st33;
-		case 194u: goto st33;
-		case 230u: goto st1;
+		case 81u: goto tr295;
+		case 194u: goto tr297;
+		case 198u: goto tr297;
+		case 208u: goto tr295;
 	}
-	if ( (*p) < 81u ) {
-		if ( (*p) > 17u ) {
-			if ( 44u <= (*p) && (*p) <= 45u )
-				goto st1;
-		} else if ( (*p) >= 16u )
-			goto st29;
-	} else if ( (*p) > 83u ) {
+	if ( (*p) < 84u ) {
+		if ( 20u <= (*p) && (*p) <= 21u )
+			goto tr295;
+	} else if ( (*p) > 89u ) {
 		if ( (*p) > 95u ) {
-			if ( 126u <= (*p) && (*p) <= 127u )
-				goto st1;
-		} else if ( (*p) >= 88u )
-			goto st1;
+			if ( 124u <= (*p) && (*p) <= 125u )
+				goto tr295;
+		} else if ( (*p) >= 92u )
+			goto tr295;
 	} else
-		goto st1;
+		goto tr295;
 	goto tr19;
-tr201:
+tr284:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
+  }
+	goto st162;
+tr365:
+#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st162;
 st162:
 	if ( ++p == pe )
 		goto _test_eof162;
 case 162:
-#line 4201 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 18u: goto st1;
-		case 42u: goto st1;
-		case 81u: goto st1;
-		case 112u: goto st33;
-		case 194u: goto st33;
-		case 208u: goto st1;
-		case 230u: goto st1;
-		case 240u: goto st29;
-	}
-	if ( (*p) < 88u ) {
-		if ( (*p) > 17u ) {
-			if ( 44u <= (*p) && (*p) <= 45u )
-				goto st1;
-		} else if ( (*p) >= 16u )
-			goto st29;
-	} else if ( (*p) > 90u ) {
-		if ( (*p) > 95u ) {
-			if ( 124u <= (*p) && (*p) <= 125u )
-				goto st1;
-		} else if ( (*p) >= 92u )
-			goto st1;
-	} else
-		goto st1;
+#line 5470 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	if ( 16u <= (*p) && (*p) <= 17u )
+		goto tr307;
 	goto tr19;
-tr202:
+tr285:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st163;
-tr247:
+tr366:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
@@ -4240,33 +5487,22 @@ st163:
 	if ( ++p == pe )
 		goto _test_eof163;
 case 163:
-#line 4244 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 43u: goto st29;
-		case 80u: goto st32;
-		case 119u: goto tr0;
-		case 194u: goto st33;
-		case 198u: goto st33;
-	}
-	if ( (*p) < 20u ) {
-		if ( 16u <= (*p) && (*p) <= 17u )
-			goto st1;
-	} else if ( (*p) > 21u ) {
-		if ( (*p) > 41u ) {
-			if ( 81u <= (*p) && (*p) <= 95u )
-				goto st1;
-		} else if ( (*p) >= 40u )
-			goto st1;
-	} else
-		goto st1;
+#line 5491 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	if ( (*p) == 208u )
+		goto tr295;
+	if ( (*p) > 17u ) {
+		if ( 124u <= (*p) && (*p) <= 125u )
+			goto tr295;
+	} else if ( (*p) >= 16u )
+		goto tr307;
 	goto tr19;
-tr203:
+tr286:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st164;
-tr248:
+tr367:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
@@ -4277,68 +5513,61 @@ st164:
 	if ( ++p == pe )
 		goto _test_eof164;
 case 164:
-#line 4281 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5517 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 43u: goto st29;
-		case 80u: goto st32;
-		case 81u: goto st1;
-		case 194u: goto st33;
-		case 198u: goto st33;
-		case 208u: goto st1;
-		case 214u: goto st1;
-		case 230u: goto st1;
-		case 231u: goto st29;
+		case 18u: goto st154;
+		case 19u: goto tr296;
+		case 22u: goto st154;
+		case 23u: goto tr296;
+		case 43u: goto tr296;
+		case 80u: goto tr307;
+		case 119u: goto tr298;
+		case 174u: goto st165;
+		case 194u: goto tr297;
+		case 198u: goto tr297;
 	}
 	if ( (*p) < 40u ) {
-		if ( (*p) > 17u ) {
-			if ( 20u <= (*p) && (*p) <= 21u )
-				goto st1;
-		} else if ( (*p) >= 16u )
-			goto st1;
+		if ( 16u <= (*p) && (*p) <= 21u )
+			goto tr295;
 	} else if ( (*p) > 41u ) {
-		if ( (*p) > 95u ) {
-			if ( 124u <= (*p) && (*p) <= 127u )
-				goto st1;
-		} else if ( (*p) >= 84u )
-			goto st1;
+		if ( (*p) > 47u ) {
+			if ( 81u <= (*p) && (*p) <= 95u )
+				goto tr295;
+		} else if ( (*p) >= 46u )
+			goto tr295;
 	} else
-		goto st1;
+		goto tr295;
 	goto tr19;
-tr204:
-#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st165;
-tr249:
-#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3(p[0] & 0x7f);
-  }
-	goto st165;
 st165:
 	if ( ++p == pe )
 		goto _test_eof165;
 case 165:
-#line 4325 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 18u: goto st1;
-		case 22u: goto st1;
-		case 91u: goto st1;
-		case 127u: goto st1;
-		case 230u: goto st1;
+		case 20u: goto tr299;
+		case 21u: goto tr300;
+		case 28u: goto tr299;
+		case 29u: goto tr300;
+		case 84u: goto tr302;
+		case 92u: goto tr302;
+		case 148u: goto tr303;
+		case 156u: goto tr303;
 	}
-	if ( 16u <= (*p) && (*p) <= 17u )
-		goto st32;
+	if ( (*p) < 80u ) {
+		if ( 16u <= (*p) && (*p) <= 31u )
+			goto tr298;
+	} else if ( (*p) > 95u ) {
+		if ( 144u <= (*p) && (*p) <= 159u )
+			goto tr300;
+	} else
+		goto tr301;
 	goto tr19;
-tr205:
+tr287:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st166;
-tr250:
+tr368:
 #line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     /* VEX.R is not used in ia32 mode.  */
@@ -4349,67 +5578,106 @@ st166:
 	if ( ++p == pe )
 		goto _test_eof166;
 case 166:
-#line 4353 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5582 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 18u: goto st1;
-		case 208u: goto st1;
-		case 230u: goto st1;
-		case 240u: goto st29;
+		case 43u: goto tr296;
+		case 80u: goto tr307;
+		case 81u: goto tr295;
+		case 112u: goto tr297;
+		case 115u: goto st157;
+		case 127u: goto tr295;
+		case 194u: goto tr297;
+		case 196u: goto st167;
+		case 197u: goto tr310;
+		case 198u: goto tr297;
+		case 215u: goto tr307;
+		case 231u: goto tr296;
+		case 247u: goto tr307;
 	}
-	if ( (*p) > 17u ) {
-		if ( 124u <= (*p) && (*p) <= 125u )
-			goto st1;
-	} else if ( (*p) >= 16u )
-		goto st32;
+	if ( (*p) < 84u ) {
+		if ( (*p) < 20u ) {
+			if ( (*p) > 17u ) {
+				if ( 18u <= (*p) && (*p) <= 19u )
+					goto tr296;
+			} else if ( (*p) >= 16u )
+				goto tr295;
+		} else if ( (*p) > 21u ) {
+			if ( (*p) < 40u ) {
+				if ( 22u <= (*p) && (*p) <= 23u )
+					goto tr296;
+			} else if ( (*p) > 41u ) {
+				if ( 46u <= (*p) && (*p) <= 47u )
+					goto tr295;
+			} else
+				goto tr295;
+		} else
+			goto tr295;
+	} else if ( (*p) > 111u ) {
+		if ( (*p) < 124u ) {
+			if ( (*p) > 114u ) {
+				if ( 116u <= (*p) && (*p) <= 118u )
+					goto tr295;
+			} else if ( (*p) >= 113u )
+				goto st156;
+		} else if ( (*p) > 125u ) {
+			if ( (*p) < 216u ) {
+				if ( 208u <= (*p) && (*p) <= 213u )
+					goto tr295;
+			} else if ( (*p) > 239u ) {
+				if ( 241u <= (*p) && (*p) <= 254u )
+					goto tr295;
+			} else
+				goto tr295;
+		} else
+			goto tr295;
+	} else
+		goto tr295;
 	goto tr19;
 st167:
 	if ( ++p == pe )
 		goto _test_eof167;
 case 167:
 	switch( (*p) ) {
-		case 64u: goto tr207;
-		case 65u: goto tr208;
-		case 69u: goto tr209;
-		case 72u: goto tr207;
-		case 73u: goto tr208;
-		case 77u: goto tr209;
-		case 80u: goto tr207;
-		case 81u: goto tr208;
-		case 85u: goto tr209;
-		case 88u: goto tr207;
-		case 89u: goto tr208;
-		case 93u: goto tr209;
-		case 96u: goto tr207;
-		case 97u: goto tr208;
-		case 101u: goto tr209;
-		case 104u: goto tr207;
-		case 105u: goto tr208;
-		case 109u: goto tr209;
-		case 112u: goto tr207;
-		case 113u: goto tr208;
-		case 117u: goto tr209;
-		case 120u: goto tr207;
-		case 121u: goto tr210;
-		case 125u: goto tr211;
-		case 193u: goto tr212;
-		case 197u: goto tr213;
-		case 201u: goto tr212;
-		case 205u: goto tr213;
-		case 209u: goto tr212;
-		case 213u: goto tr213;
-		case 217u: goto tr212;
-		case 221u: goto tr213;
-		case 225u: goto tr212;
-		case 229u: goto tr213;
-		case 233u: goto tr212;
-		case 237u: goto tr213;
-		case 241u: goto tr212;
-		case 245u: goto tr213;
-		case 249u: goto tr212;
-		case 253u: goto tr213;
+		case 4u: goto tr311;
+		case 5u: goto tr312;
+		case 12u: goto tr311;
+		case 13u: goto tr312;
+		case 20u: goto tr311;
+		case 21u: goto tr312;
+		case 28u: goto tr311;
+		case 29u: goto tr312;
+		case 36u: goto tr311;
+		case 37u: goto tr312;
+		case 44u: goto tr311;
+		case 45u: goto tr312;
+		case 52u: goto tr311;
+		case 53u: goto tr312;
+		case 60u: goto tr311;
+		case 61u: goto tr312;
+		case 68u: goto tr314;
+		case 76u: goto tr314;
+		case 84u: goto tr314;
+		case 92u: goto tr314;
+		case 100u: goto tr314;
+		case 108u: goto tr314;
+		case 116u: goto tr314;
+		case 124u: goto tr314;
+		case 132u: goto tr315;
+		case 140u: goto tr315;
+		case 148u: goto tr315;
+		case 156u: goto tr315;
+		case 164u: goto tr315;
+		case 172u: goto tr315;
+		case 180u: goto tr315;
+		case 188u: goto tr315;
 	}
-	goto tr19;
-tr207:
+	if ( (*p) > 127u ) {
+		if ( 128u <= (*p) && (*p) <= 191u )
+			goto tr312;
+	} else if ( (*p) >= 64u )
+		goto tr313;
+	goto tr306;
+tr288:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
@@ -4419,230 +5687,254 @@ st168:
 	if ( ++p == pe )
 		goto _test_eof168;
 case 168:
-#line 4423 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5691 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 242u: goto st1;
-		case 243u: goto st169;
-		case 247u: goto st1;
+		case 18u: goto tr295;
+		case 22u: goto tr295;
+		case 42u: goto tr295;
+		case 111u: goto tr295;
+		case 112u: goto tr297;
+		case 194u: goto tr297;
+		case 230u: goto tr295;
 	}
+	if ( (*p) < 81u ) {
+		if ( (*p) > 17u ) {
+			if ( 44u <= (*p) && (*p) <= 45u )
+				goto tr295;
+		} else if ( (*p) >= 16u )
+			goto tr296;
+	} else if ( (*p) > 83u ) {
+		if ( (*p) > 95u ) {
+			if ( 126u <= (*p) && (*p) <= 127u )
+				goto tr295;
+		} else if ( (*p) >= 88u )
+			goto tr295;
+	} else
+		goto tr295;
 	goto tr19;
+tr289:
+#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_VEX_PREFIX3(*p);
+  }
+	goto st169;
 st169:
 	if ( ++p == pe )
 		goto _test_eof169;
 case 169:
+#line 5726 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 20u: goto st2;
-		case 21u: goto st3;
-		case 28u: goto st2;
-		case 29u: goto st3;
-		case 76u: goto st8;
-		case 84u: goto st8;
-		case 92u: goto st8;
-		case 140u: goto st9;
-		case 148u: goto st9;
-		case 156u: goto st9;
+		case 18u: goto tr295;
+		case 42u: goto tr295;
+		case 81u: goto tr295;
+		case 112u: goto tr297;
+		case 194u: goto tr297;
+		case 208u: goto tr295;
+		case 230u: goto tr295;
+		case 240u: goto tr296;
 	}
-	if ( (*p) < 72u ) {
-		if ( 8u <= (*p) && (*p) <= 31u )
-			goto tr0;
-	} else if ( (*p) > 95u ) {
-		if ( (*p) > 159u ) {
-			if ( 200u <= (*p) && (*p) <= 223u )
-				goto tr0;
-		} else if ( (*p) >= 136u )
-			goto st3;
+	if ( (*p) < 88u ) {
+		if ( (*p) > 17u ) {
+			if ( 44u <= (*p) && (*p) <= 45u )
+				goto tr295;
+		} else if ( (*p) >= 16u )
+			goto tr296;
+	} else if ( (*p) > 90u ) {
+		if ( (*p) > 95u ) {
+			if ( 124u <= (*p) && (*p) <= 125u )
+				goto tr295;
+		} else if ( (*p) >= 92u )
+			goto tr295;
 	} else
-		goto st7;
+		goto tr295;
 	goto tr19;
-tr208:
+tr290:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
+  }
+	goto st170;
+tr371:
+#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st170;
 st170:
 	if ( ++p == pe )
 		goto _test_eof170;
 case 170:
-#line 4470 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	if ( (*p) == 43u )
-		goto st1;
-	if ( (*p) < 55u ) {
-		if ( (*p) < 40u ) {
-			if ( (*p) <= 13u )
-				goto st1;
-		} else if ( (*p) > 41u ) {
-			if ( 44u <= (*p) && (*p) <= 47u )
-				goto st29;
-		} else
-			goto st1;
-	} else if ( (*p) > 64u ) {
-		if ( (*p) < 166u ) {
-			if ( 150u <= (*p) && (*p) <= 159u )
-				goto st1;
-		} else if ( (*p) > 175u ) {
-			if ( (*p) > 191u ) {
-				if ( 219u <= (*p) && (*p) <= 223u )
-					goto st1;
-			} else if ( (*p) >= 182u )
-				goto st1;
-		} else
-			goto st1;
+#line 5769 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 43u: goto tr296;
+		case 80u: goto tr307;
+		case 119u: goto tr298;
+		case 194u: goto tr297;
+		case 198u: goto tr297;
+	}
+	if ( (*p) < 20u ) {
+		if ( 16u <= (*p) && (*p) <= 17u )
+			goto tr295;
+	} else if ( (*p) > 21u ) {
+		if ( (*p) > 41u ) {
+			if ( 81u <= (*p) && (*p) <= 95u )
+				goto tr295;
+		} else if ( (*p) >= 40u )
+			goto tr295;
 	} else
-		goto st1;
+		goto tr295;
 	goto tr19;
-tr209:
+tr291:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
+  }
+	goto st171;
+tr372:
+#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st171;
 st171:
 	if ( ++p == pe )
 		goto _test_eof171;
 case 171:
-#line 4507 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5806 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 154u: goto st1;
-		case 156u: goto st1;
-		case 158u: goto st1;
-		case 170u: goto st1;
-		case 172u: goto st1;
-		case 174u: goto st1;
-		case 186u: goto st1;
-		case 188u: goto st1;
-		case 190u: goto st1;
+		case 43u: goto tr296;
+		case 80u: goto tr307;
+		case 81u: goto tr295;
+		case 194u: goto tr297;
+		case 198u: goto tr297;
+		case 208u: goto tr295;
+		case 214u: goto tr295;
+		case 230u: goto tr295;
+		case 231u: goto tr296;
 	}
-	if ( (*p) < 150u ) {
-		if ( (*p) > 13u ) {
-			if ( 44u <= (*p) && (*p) <= 47u )
-				goto st29;
-		} else if ( (*p) >= 12u )
-			goto st1;
-	} else if ( (*p) > 152u ) {
-		if ( (*p) > 168u ) {
-			if ( 182u <= (*p) && (*p) <= 184u )
-				goto st1;
-		} else if ( (*p) >= 166u )
-			goto st1;
+	if ( (*p) < 40u ) {
+		if ( (*p) > 17u ) {
+			if ( 20u <= (*p) && (*p) <= 21u )
+				goto tr295;
+		} else if ( (*p) >= 16u )
+			goto tr295;
+	} else if ( (*p) > 41u ) {
+		if ( (*p) > 95u ) {
+			if ( 124u <= (*p) && (*p) <= 127u )
+				goto tr295;
+		} else if ( (*p) >= 84u )
+			goto tr295;
 	} else
-		goto st1;
+		goto tr295;
 	goto tr19;
-tr210:
+tr292:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
+  }
+	goto st172;
+tr373:
+#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st172;
 st172:
 	if ( ++p == pe )
 		goto _test_eof172;
 case 172:
-#line 4544 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5850 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 19u: goto st1;
-		case 23u: goto st1;
-		case 24u: goto st29;
-		case 42u: goto st29;
+		case 18u: goto tr295;
+		case 22u: goto tr295;
+		case 91u: goto tr295;
+		case 127u: goto tr295;
+		case 230u: goto tr295;
 	}
-	if ( (*p) < 48u ) {
-		if ( (*p) < 32u ) {
-			if ( (*p) > 15u ) {
-				if ( 28u <= (*p) && (*p) <= 30u )
-					goto st1;
-			} else
-				goto st1;
-		} else if ( (*p) > 37u ) {
-			if ( (*p) > 43u ) {
-				if ( 44u <= (*p) && (*p) <= 47u )
-					goto st29;
-			} else if ( (*p) >= 40u )
-				goto st1;
-		} else
-			goto st1;
-	} else if ( (*p) > 53u ) {
-		if ( (*p) < 166u ) {
-			if ( (*p) > 65u ) {
-				if ( 150u <= (*p) && (*p) <= 159u )
-					goto st1;
-			} else if ( (*p) >= 55u )
-				goto st1;
-		} else if ( (*p) > 175u ) {
-			if ( (*p) > 191u ) {
-				if ( 219u <= (*p) && (*p) <= 223u )
-					goto st1;
-			} else if ( (*p) >= 182u )
-				goto st1;
-		} else
-			goto st1;
-	} else
-		goto st1;
+	if ( 16u <= (*p) && (*p) <= 17u )
+		goto tr307;
 	goto tr19;
-tr211:
+tr293:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
+  }
+	goto st173;
+tr374:
+#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3(p[0] & 0x7f);
   }
 	goto st173;
 st173:
 	if ( ++p == pe )
 		goto _test_eof173;
 case 173:
-#line 4594 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5878 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 19u: goto st1;
-		case 23u: goto st1;
-		case 154u: goto st1;
-		case 156u: goto st1;
-		case 158u: goto st1;
-		case 170u: goto st1;
-		case 172u: goto st1;
-		case 174u: goto st1;
-		case 186u: goto st1;
-		case 188u: goto st1;
-		case 190u: goto st1;
+		case 18u: goto tr295;
+		case 208u: goto tr295;
+		case 230u: goto tr295;
+		case 240u: goto tr296;
 	}
-	if ( (*p) < 44u ) {
-		if ( (*p) > 15u ) {
-			if ( 24u <= (*p) && (*p) <= 26u )
-				goto st29;
-		} else if ( (*p) >= 12u )
-			goto st1;
-	} else if ( (*p) > 47u ) {
-		if ( (*p) < 166u ) {
-			if ( 150u <= (*p) && (*p) <= 152u )
-				goto st1;
-		} else if ( (*p) > 168u ) {
-			if ( 182u <= (*p) && (*p) <= 184u )
-				goto st1;
-		} else
-			goto st1;
-	} else
-		goto st29;
+	if ( (*p) > 17u ) {
+		if ( 124u <= (*p) && (*p) <= 125u )
+			goto tr295;
+	} else if ( (*p) >= 16u )
+		goto tr307;
 	goto tr19;
-tr212:
-#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st174;
 st174:
 	if ( ++p == pe )
 		goto _test_eof174;
 case 174:
-#line 4636 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	if ( (*p) < 166u ) {
-		if ( 150u <= (*p) && (*p) <= 159u )
-			goto st1;
-	} else if ( (*p) > 175u ) {
-		if ( 182u <= (*p) && (*p) <= 191u )
-			goto st1;
-	} else
-		goto st1;
+	switch( (*p) ) {
+		case 64u: goto tr316;
+		case 65u: goto tr317;
+		case 69u: goto tr318;
+		case 72u: goto tr316;
+		case 73u: goto tr317;
+		case 77u: goto tr318;
+		case 80u: goto tr316;
+		case 81u: goto tr317;
+		case 85u: goto tr318;
+		case 88u: goto tr316;
+		case 89u: goto tr317;
+		case 93u: goto tr318;
+		case 96u: goto tr316;
+		case 97u: goto tr317;
+		case 101u: goto tr318;
+		case 104u: goto tr316;
+		case 105u: goto tr317;
+		case 109u: goto tr318;
+		case 112u: goto tr316;
+		case 113u: goto tr317;
+		case 117u: goto tr318;
+		case 120u: goto tr316;
+		case 121u: goto tr319;
+		case 125u: goto tr320;
+		case 193u: goto tr321;
+		case 197u: goto tr322;
+		case 201u: goto tr321;
+		case 205u: goto tr322;
+		case 209u: goto tr321;
+		case 213u: goto tr322;
+		case 217u: goto tr321;
+		case 221u: goto tr322;
+		case 225u: goto tr321;
+		case 229u: goto tr322;
+		case 233u: goto tr321;
+		case 237u: goto tr322;
+		case 241u: goto tr321;
+		case 245u: goto tr322;
+		case 249u: goto tr321;
+		case 253u: goto tr322;
+	}
 	goto tr19;
-tr213:
+tr316:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
@@ -4652,67 +5944,44 @@ st175:
 	if ( ++p == pe )
 		goto _test_eof175;
 case 175:
-#line 4656 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5948 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 154u: goto st1;
-		case 156u: goto st1;
-		case 158u: goto st1;
-		case 170u: goto st1;
-		case 172u: goto st1;
-		case 174u: goto st1;
-		case 186u: goto st1;
-		case 188u: goto st1;
-		case 190u: goto st1;
+		case 242u: goto tr323;
+		case 243u: goto st176;
+		case 247u: goto tr323;
 	}
-	if ( (*p) < 166u ) {
-		if ( 150u <= (*p) && (*p) <= 152u )
-			goto st1;
-	} else if ( (*p) > 168u ) {
-		if ( 182u <= (*p) && (*p) <= 184u )
-			goto st1;
-	} else
-		goto st1;
 	goto tr19;
 st176:
 	if ( ++p == pe )
 		goto _test_eof176;
 case 176:
 	switch( (*p) ) {
-		case 65u: goto tr215;
-		case 69u: goto tr216;
-		case 73u: goto tr215;
-		case 77u: goto tr216;
-		case 81u: goto tr215;
-		case 85u: goto tr216;
-		case 89u: goto tr215;
-		case 93u: goto tr216;
-		case 97u: goto tr215;
-		case 101u: goto tr216;
-		case 105u: goto tr215;
-		case 109u: goto tr216;
-		case 113u: goto tr215;
-		case 117u: goto tr216;
-		case 121u: goto tr217;
-		case 125u: goto tr218;
-		case 193u: goto tr219;
-		case 197u: goto tr220;
-		case 201u: goto tr219;
-		case 205u: goto tr220;
-		case 209u: goto tr219;
-		case 213u: goto tr220;
-		case 217u: goto tr219;
-		case 221u: goto tr220;
-		case 225u: goto tr219;
-		case 229u: goto tr220;
-		case 233u: goto tr219;
-		case 237u: goto tr220;
-		case 241u: goto tr219;
-		case 245u: goto tr220;
-		case 249u: goto tr219;
-		case 253u: goto tr220;
+		case 12u: goto tr326;
+		case 13u: goto tr327;
+		case 20u: goto tr326;
+		case 21u: goto tr327;
+		case 28u: goto tr326;
+		case 29u: goto tr327;
+		case 76u: goto tr329;
+		case 84u: goto tr329;
+		case 92u: goto tr329;
+		case 140u: goto tr330;
+		case 148u: goto tr330;
+		case 156u: goto tr330;
 	}
+	if ( (*p) < 72u ) {
+		if ( 8u <= (*p) && (*p) <= 31u )
+			goto tr325;
+	} else if ( (*p) > 95u ) {
+		if ( (*p) > 159u ) {
+			if ( 200u <= (*p) && (*p) <= 223u )
+				goto tr325;
+		} else if ( (*p) >= 136u )
+			goto tr327;
+	} else
+		goto tr328;
 	goto tr19;
-tr215:
+tr317:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_VEX_PREFIX3(*p);
@@ -4722,698 +5991,706 @@ st177:
 	if ( ++p == pe )
 		goto _test_eof177;
 case 177:
-#line 4726 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 33u: goto st33;
-		case 68u: goto st33;
-		case 223u: goto st33;
-	}
-	if ( (*p) < 74u ) {
-		if ( (*p) < 64u ) {
-			if ( 8u <= (*p) && (*p) <= 15u )
-				goto st33;
-		} else if ( (*p) > 66u ) {
-			if ( 72u <= (*p) && (*p) <= 73u )
-				goto st178;
+#line 5995 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	if ( (*p) == 43u )
+		goto tr295;
+	if ( (*p) < 55u ) {
+		if ( (*p) < 40u ) {
+			if ( (*p) <= 13u )
+				goto tr295;
+		} else if ( (*p) > 41u ) {
+			if ( 44u <= (*p) && (*p) <= 47u )
+				goto tr296;
 		} else
-			goto st33;
-	} else if ( (*p) > 76u ) {
-		if ( (*p) < 104u ) {
-			if ( 92u <= (*p) && (*p) <= 95u )
-				goto st123;
-		} else if ( (*p) > 111u ) {
-			if ( 120u <= (*p) && (*p) <= 127u )
-				goto st123;
+			goto tr295;
+	} else if ( (*p) > 64u ) {
+		if ( (*p) < 166u ) {
+			if ( 150u <= (*p) && (*p) <= 159u )
+				goto tr331;
+		} else if ( (*p) > 175u ) {
+			if ( (*p) > 191u ) {
+				if ( 219u <= (*p) && (*p) <= 223u )
+					goto tr332;
+			} else if ( (*p) >= 182u )
+				goto tr331;
 		} else
-			goto st123;
+			goto tr331;
 	} else
-		goto st123;
+		goto tr295;
 	goto tr19;
+tr318:
+#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_VEX_PREFIX3(*p);
+  }
+	goto st178;
 st178:
 	if ( ++p == pe )
 		goto _test_eof178;
 case 178:
+#line 6032 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto st180;
-		case 5u: goto st181;
-		case 12u: goto st180;
-		case 13u: goto st181;
-		case 20u: goto st180;
-		case 21u: goto st181;
-		case 28u: goto st180;
-		case 29u: goto st181;
-		case 36u: goto st180;
-		case 37u: goto st181;
-		case 44u: goto st180;
-		case 45u: goto st181;
-		case 52u: goto st180;
-		case 53u: goto st181;
-		case 60u: goto st180;
-		case 61u: goto st181;
-		case 68u: goto st186;
-		case 76u: goto st186;
-		case 84u: goto st186;
-		case 92u: goto st186;
-		case 100u: goto st186;
-		case 108u: goto st186;
-		case 116u: goto st186;
-		case 124u: goto st186;
-		case 132u: goto st187;
-		case 140u: goto st187;
-		case 148u: goto st187;
-		case 156u: goto st187;
-		case 164u: goto st187;
-		case 172u: goto st187;
-		case 180u: goto st187;
-		case 188u: goto st187;
+		case 154u: goto tr331;
+		case 156u: goto tr331;
+		case 158u: goto tr331;
+		case 170u: goto tr331;
+		case 172u: goto tr331;
+		case 174u: goto tr331;
+		case 186u: goto tr331;
+		case 188u: goto tr331;
+		case 190u: goto tr331;
 	}
-	if ( (*p) > 127u ) {
-		if ( 128u <= (*p) && (*p) <= 191u )
-			goto st181;
-	} else if ( (*p) >= 64u )
-		goto st185;
-	goto st179;
-tr232:
-#line 46 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	if ( (*p) < 150u ) {
+		if ( (*p) > 13u ) {
+			if ( 44u <= (*p) && (*p) <= 47u )
+				goto tr296;
+		} else if ( (*p) >= 12u )
+			goto tr295;
+	} else if ( (*p) > 152u ) {
+		if ( (*p) > 168u ) {
+			if ( 182u <= (*p) && (*p) <= 184u )
+				goto tr331;
+		} else if ( (*p) >= 166u )
+			goto tr331;
+	} else
+		goto tr331;
+	goto tr19;
+tr319:
+#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    SET_DISP_TYPE(DISP32);
-    SET_DISP_PTR(p - 3);
-  }
-	goto st179;
-tr233:
-#line 42 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_DISP_TYPE(DISP8);
-    SET_DISP_PTR(p);
+    SET_VEX_PREFIX3(*p);
   }
 	goto st179;
 st179:
 	if ( ++p == pe )
 		goto _test_eof179;
 case 179:
-#line 4815 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6069 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 19u: goto tr333;
+		case 23u: goto tr295;
+		case 24u: goto tr296;
+		case 42u: goto tr296;
+	}
 	if ( (*p) < 48u ) {
-		if ( (*p) < 16u ) {
-			if ( (*p) <= 3u )
-				goto tr228;
-		} else if ( (*p) > 19u ) {
-			if ( 32u <= (*p) && (*p) <= 35u )
-				goto tr228;
+		if ( (*p) < 32u ) {
+			if ( (*p) > 15u ) {
+				if ( 28u <= (*p) && (*p) <= 30u )
+					goto tr295;
+			} else
+				goto tr295;
+		} else if ( (*p) > 37u ) {
+			if ( (*p) > 43u ) {
+				if ( 44u <= (*p) && (*p) <= 47u )
+					goto tr296;
+			} else if ( (*p) >= 40u )
+				goto tr295;
 		} else
-			goto tr228;
-	} else if ( (*p) > 51u ) {
-		if ( (*p) < 80u ) {
-			if ( 64u <= (*p) && (*p) <= 67u )
-				goto tr228;
-		} else if ( (*p) > 83u ) {
-			if ( (*p) > 99u ) {
-				if ( 112u <= (*p) && (*p) <= 115u )
-					goto tr228;
-			} else if ( (*p) >= 96u )
-				goto tr228;
+			goto tr295;
+	} else if ( (*p) > 53u ) {
+		if ( (*p) < 166u ) {
+			if ( (*p) > 65u ) {
+				if ( 150u <= (*p) && (*p) <= 159u )
+					goto tr331;
+			} else if ( (*p) >= 55u )
+				goto tr295;
+		} else if ( (*p) > 175u ) {
+			if ( (*p) > 191u ) {
+				if ( 219u <= (*p) && (*p) <= 223u )
+					goto tr332;
+			} else if ( (*p) >= 182u )
+				goto tr331;
 		} else
-			goto tr228;
+			goto tr331;
 	} else
-		goto tr228;
+		goto tr295;
 	goto tr19;
+tr320:
+#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_VEX_PREFIX3(*p);
+  }
+	goto st180;
 st180:
 	if ( ++p == pe )
 		goto _test_eof180;
 case 180:
+#line 6119 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 5u: goto st181;
-		case 13u: goto st181;
-		case 21u: goto st181;
-		case 29u: goto st181;
-		case 37u: goto st181;
-		case 45u: goto st181;
-		case 53u: goto st181;
-		case 61u: goto st181;
-		case 69u: goto st181;
-		case 77u: goto st181;
-		case 85u: goto st181;
-		case 93u: goto st181;
-		case 101u: goto st181;
-		case 109u: goto st181;
-		case 117u: goto st181;
-		case 125u: goto st181;
-		case 133u: goto st181;
-		case 141u: goto st181;
-		case 149u: goto st181;
-		case 157u: goto st181;
-		case 165u: goto st181;
-		case 173u: goto st181;
-		case 181u: goto st181;
-		case 189u: goto st181;
-		case 197u: goto st181;
-		case 205u: goto st181;
-		case 213u: goto st181;
-		case 221u: goto st181;
-		case 229u: goto st181;
-		case 237u: goto st181;
-		case 245u: goto st181;
-		case 253u: goto st181;
+		case 19u: goto tr333;
+		case 23u: goto tr295;
+		case 154u: goto tr331;
+		case 156u: goto tr331;
+		case 158u: goto tr331;
+		case 170u: goto tr331;
+		case 172u: goto tr331;
+		case 174u: goto tr331;
+		case 186u: goto tr331;
+		case 188u: goto tr331;
+		case 190u: goto tr331;
 	}
-	goto st179;
+	if ( (*p) < 44u ) {
+		if ( (*p) > 15u ) {
+			if ( 24u <= (*p) && (*p) <= 26u )
+				goto tr296;
+		} else if ( (*p) >= 12u )
+			goto tr295;
+	} else if ( (*p) > 47u ) {
+		if ( (*p) < 166u ) {
+			if ( 150u <= (*p) && (*p) <= 152u )
+				goto tr331;
+		} else if ( (*p) > 168u ) {
+			if ( 182u <= (*p) && (*p) <= 184u )
+				goto tr331;
+		} else
+			goto tr331;
+	} else
+		goto tr296;
+	goto tr19;
+tr321:
+#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_VEX_PREFIX3(*p);
+  }
+	goto st181;
 st181:
 	if ( ++p == pe )
 		goto _test_eof181;
 case 181:
+#line 6161 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	if ( (*p) < 166u ) {
+		if ( 150u <= (*p) && (*p) <= 159u )
+			goto tr331;
+	} else if ( (*p) > 175u ) {
+		if ( 182u <= (*p) && (*p) <= 191u )
+			goto tr331;
+	} else
+		goto tr331;
+	goto tr19;
+tr322:
+#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_VEX_PREFIX3(*p);
+  }
 	goto st182;
 st182:
 	if ( ++p == pe )
 		goto _test_eof182;
 case 182:
-	goto st183;
+#line 6181 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 154u: goto tr331;
+		case 156u: goto tr331;
+		case 158u: goto tr331;
+		case 170u: goto tr331;
+		case 172u: goto tr331;
+		case 174u: goto tr331;
+		case 186u: goto tr331;
+		case 188u: goto tr331;
+		case 190u: goto tr331;
+	}
+	if ( (*p) < 166u ) {
+		if ( 150u <= (*p) && (*p) <= 152u )
+			goto tr331;
+	} else if ( (*p) > 168u ) {
+		if ( 182u <= (*p) && (*p) <= 184u )
+			goto tr331;
+	} else
+		goto tr331;
+	goto tr19;
 st183:
 	if ( ++p == pe )
 		goto _test_eof183;
 case 183:
+	switch( (*p) ) {
+		case 65u: goto tr334;
+		case 69u: goto tr335;
+		case 73u: goto tr334;
+		case 77u: goto tr335;
+		case 81u: goto tr334;
+		case 85u: goto tr335;
+		case 89u: goto tr334;
+		case 93u: goto tr335;
+		case 97u: goto tr334;
+		case 101u: goto tr335;
+		case 105u: goto tr334;
+		case 109u: goto tr335;
+		case 113u: goto tr334;
+		case 117u: goto tr335;
+		case 121u: goto tr336;
+		case 125u: goto tr337;
+		case 193u: goto tr338;
+		case 197u: goto tr339;
+		case 201u: goto tr338;
+		case 205u: goto tr339;
+		case 209u: goto tr338;
+		case 213u: goto tr339;
+		case 217u: goto tr338;
+		case 221u: goto tr339;
+		case 225u: goto tr338;
+		case 229u: goto tr339;
+		case 233u: goto tr338;
+		case 237u: goto tr339;
+		case 241u: goto tr338;
+		case 245u: goto tr339;
+		case 249u: goto tr338;
+		case 253u: goto tr339;
+	}
+	goto tr19;
+tr334:
+#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_VEX_PREFIX3(*p);
+  }
 	goto st184;
 st184:
 	if ( ++p == pe )
 		goto _test_eof184;
 case 184:
-	goto tr232;
+#line 6251 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 33u: goto tr297;
+		case 68u: goto tr340;
+		case 223u: goto tr344;
+	}
+	if ( (*p) < 74u ) {
+		if ( (*p) < 64u ) {
+			if ( 8u <= (*p) && (*p) <= 15u )
+				goto tr297;
+		} else if ( (*p) > 66u ) {
+			if ( 72u <= (*p) && (*p) <= 73u )
+				goto tr341;
+		} else
+			goto tr297;
+	} else if ( (*p) > 76u ) {
+		if ( (*p) < 104u ) {
+			if ( 92u <= (*p) && (*p) <= 95u )
+				goto tr343;
+		} else if ( (*p) > 111u ) {
+			if ( 120u <= (*p) && (*p) <= 127u )
+				goto tr343;
+		} else
+			goto tr343;
+	} else
+		goto tr342;
+	goto tr19;
+tr341:
+#line 318 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_XOP);
+  }
+	goto st185;
 st185:
 	if ( ++p == pe )
 		goto _test_eof185;
 case 185:
-	goto tr233;
+#line 6288 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto st187;
+		case 5u: goto st188;
+		case 12u: goto st187;
+		case 13u: goto st188;
+		case 20u: goto st187;
+		case 21u: goto st188;
+		case 28u: goto st187;
+		case 29u: goto st188;
+		case 36u: goto st187;
+		case 37u: goto st188;
+		case 44u: goto st187;
+		case 45u: goto st188;
+		case 52u: goto st187;
+		case 53u: goto st188;
+		case 60u: goto st187;
+		case 61u: goto st188;
+		case 68u: goto st193;
+		case 76u: goto st193;
+		case 84u: goto st193;
+		case 92u: goto st193;
+		case 100u: goto st193;
+		case 108u: goto st193;
+		case 116u: goto st193;
+		case 124u: goto st193;
+		case 132u: goto st194;
+		case 140u: goto st194;
+		case 148u: goto st194;
+		case 156u: goto st194;
+		case 164u: goto st194;
+		case 172u: goto st194;
+		case 180u: goto st194;
+		case 188u: goto st194;
+	}
+	if ( (*p) > 127u ) {
+		if ( 128u <= (*p) && (*p) <= 191u )
+			goto st188;
+	} else if ( (*p) >= 64u )
+		goto st192;
+	goto st186;
+tr355:
+#line 46 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DISP_TYPE(DISP32);
+    SET_DISP_PTR(p - 3);
+  }
+	goto st186;
+tr356:
+#line 42 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_DISP_TYPE(DISP8);
+    SET_DISP_PTR(p);
+  }
+	goto st186;
 st186:
 	if ( ++p == pe )
 		goto _test_eof186;
 case 186:
-	goto st185;
+#line 6347 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	if ( (*p) < 48u ) {
+		if ( (*p) < 16u ) {
+			if ( (*p) <= 3u )
+				goto tr351;
+		} else if ( (*p) > 19u ) {
+			if ( 32u <= (*p) && (*p) <= 35u )
+				goto tr351;
+		} else
+			goto tr351;
+	} else if ( (*p) > 51u ) {
+		if ( (*p) < 80u ) {
+			if ( 64u <= (*p) && (*p) <= 67u )
+				goto tr351;
+		} else if ( (*p) > 83u ) {
+			if ( (*p) > 99u ) {
+				if ( 112u <= (*p) && (*p) <= 115u )
+					goto tr351;
+			} else if ( (*p) >= 96u )
+				goto tr351;
+		} else
+			goto tr351;
+	} else
+		goto tr351;
+	goto tr19;
 st187:
 	if ( ++p == pe )
 		goto _test_eof187;
 case 187:
-	goto st181;
-tr216:
-#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st188;
+	switch( (*p) ) {
+		case 5u: goto st188;
+		case 13u: goto st188;
+		case 21u: goto st188;
+		case 29u: goto st188;
+		case 37u: goto st188;
+		case 45u: goto st188;
+		case 53u: goto st188;
+		case 61u: goto st188;
+		case 69u: goto st188;
+		case 77u: goto st188;
+		case 85u: goto st188;
+		case 93u: goto st188;
+		case 101u: goto st188;
+		case 109u: goto st188;
+		case 117u: goto st188;
+		case 125u: goto st188;
+		case 133u: goto st188;
+		case 141u: goto st188;
+		case 149u: goto st188;
+		case 157u: goto st188;
+		case 165u: goto st188;
+		case 173u: goto st188;
+		case 181u: goto st188;
+		case 189u: goto st188;
+		case 197u: goto st188;
+		case 205u: goto st188;
+		case 213u: goto st188;
+		case 221u: goto st188;
+		case 229u: goto st188;
+		case 237u: goto st188;
+		case 245u: goto st188;
+		case 253u: goto st188;
+	}
+	goto st186;
 st188:
 	if ( ++p == pe )
 		goto _test_eof188;
 case 188:
-#line 4924 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 6u: goto st33;
-		case 64u: goto st33;
-	}
-	if ( (*p) < 92u ) {
-		if ( (*p) < 12u ) {
-			if ( 8u <= (*p) && (*p) <= 9u )
-				goto st33;
-		} else if ( (*p) > 13u ) {
-			if ( (*p) > 73u ) {
-				if ( 74u <= (*p) && (*p) <= 75u )
-					goto st123;
-			} else if ( (*p) >= 72u )
-				goto st178;
-		} else
-			goto st33;
-	} else if ( (*p) > 95u ) {
-		if ( (*p) < 108u ) {
-			if ( 104u <= (*p) && (*p) <= 105u )
-				goto st123;
-		} else if ( (*p) > 109u ) {
-			if ( (*p) > 121u ) {
-				if ( 124u <= (*p) && (*p) <= 125u )
-					goto st123;
-			} else if ( (*p) >= 120u )
-				goto st123;
-		} else
-			goto st123;
-	} else
-		goto st123;
-	goto tr19;
-tr217:
-#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_VEX_PREFIX3(*p);
-  }
 	goto st189;
 st189:
 	if ( ++p == pe )
 		goto _test_eof189;
 case 189:
-#line 4966 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 23u: goto st190;
-		case 29u: goto st33;
-		case 68u: goto st33;
-		case 223u: goto st33;
-	}
-	if ( (*p) < 72u ) {
-		if ( (*p) < 20u ) {
-			if ( (*p) > 5u ) {
-				if ( 8u <= (*p) && (*p) <= 15u )
-					goto st33;
-			} else if ( (*p) >= 4u )
-				goto st33;
-		} else if ( (*p) > 22u ) {
-			if ( (*p) > 34u ) {
-				if ( 64u <= (*p) && (*p) <= 66u )
-					goto st33;
-			} else if ( (*p) >= 32u )
-				goto st33;
-		} else
-			goto st33;
-	} else if ( (*p) > 73u ) {
-		if ( (*p) < 96u ) {
-			if ( (*p) > 76u ) {
-				if ( 92u <= (*p) && (*p) <= 95u )
-					goto st123;
-			} else if ( (*p) >= 74u )
-				goto st123;
-		} else if ( (*p) > 99u ) {
-			if ( (*p) > 111u ) {
-				if ( 120u <= (*p) && (*p) <= 127u )
-					goto st123;
-			} else if ( (*p) >= 104u )
-				goto st123;
-		} else
-			goto st33;
-	} else
-		goto st178;
-	goto tr19;
+	goto st190;
 st190:
 	if ( ++p == pe )
 		goto _test_eof190;
 case 190:
-	switch( (*p) ) {
-		case 4u: goto st34;
-		case 12u: goto st34;
-		case 20u: goto st34;
-		case 28u: goto st34;
-		case 36u: goto st34;
-		case 44u: goto st34;
-		case 52u: goto st34;
-		case 60u: goto st34;
-		case 68u: goto st40;
-		case 76u: goto st40;
-		case 84u: goto st40;
-		case 92u: goto st40;
-		case 100u: goto st40;
-		case 108u: goto st40;
-		case 116u: goto st40;
-		case 124u: goto st40;
-		case 132u: goto st41;
-		case 140u: goto st41;
-		case 148u: goto st41;
-		case 156u: goto st41;
-		case 164u: goto st41;
-		case 172u: goto st41;
-		case 180u: goto st41;
-		case 188u: goto st41;
-	}
-	if ( (*p) < 38u ) {
-		if ( (*p) < 14u ) {
-			if ( (*p) > 3u ) {
-				if ( 6u <= (*p) && (*p) <= 11u )
-					goto st10;
-			} else
-				goto st10;
-		} else if ( (*p) > 19u ) {
-			if ( (*p) > 27u ) {
-				if ( 30u <= (*p) && (*p) <= 35u )
-					goto st10;
-			} else if ( (*p) >= 22u )
-				goto st10;
-		} else
-			goto st10;
-	} else if ( (*p) > 43u ) {
-		if ( (*p) < 62u ) {
-			if ( (*p) > 51u ) {
-				if ( 54u <= (*p) && (*p) <= 59u )
-					goto st10;
-			} else if ( (*p) >= 46u )
-				goto st10;
-		} else if ( (*p) > 63u ) {
-			if ( (*p) > 127u ) {
-				if ( 192u <= (*p) )
-					goto tr19;
-			} else if ( (*p) >= 64u )
-				goto st39;
-		} else
-			goto st10;
-	} else
-		goto st10;
-	goto st35;
-tr218:
-#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_VEX_PREFIX3(*p);
-  }
 	goto st191;
 st191:
 	if ( ++p == pe )
 		goto _test_eof191;
 case 191:
-#line 5079 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 29u: goto st33;
-		case 64u: goto st33;
-	}
-	if ( (*p) < 74u ) {
-		if ( (*p) < 12u ) {
-			if ( (*p) > 6u ) {
-				if ( 8u <= (*p) && (*p) <= 9u )
-					goto st33;
-			} else if ( (*p) >= 4u )
-				goto st33;
-		} else if ( (*p) > 13u ) {
-			if ( (*p) > 25u ) {
-				if ( 72u <= (*p) && (*p) <= 73u )
-					goto st178;
-			} else if ( (*p) >= 24u )
-				goto st33;
-		} else
-			goto st33;
-	} else if ( (*p) > 75u ) {
-		if ( (*p) < 108u ) {
-			if ( (*p) > 95u ) {
-				if ( 104u <= (*p) && (*p) <= 105u )
-					goto st123;
-			} else if ( (*p) >= 92u )
-				goto st123;
-		} else if ( (*p) > 109u ) {
-			if ( (*p) > 121u ) {
-				if ( 124u <= (*p) && (*p) <= 125u )
-					goto st123;
-			} else if ( (*p) >= 120u )
-				goto st123;
-		} else
-			goto st123;
-	} else
-		goto st123;
-	goto tr19;
-tr219:
-#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st192;
+	goto tr355;
 st192:
 	if ( ++p == pe )
 		goto _test_eof192;
 case 192:
-#line 5127 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	if ( (*p) < 92u ) {
-		if ( 72u <= (*p) && (*p) <= 73u )
-			goto st178;
-	} else if ( (*p) > 95u ) {
-		if ( (*p) > 111u ) {
-			if ( 120u <= (*p) && (*p) <= 127u )
-				goto st123;
-		} else if ( (*p) >= 104u )
-			goto st123;
-	} else
-		goto st123;
-	goto tr19;
-tr220:
-#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st193;
+	goto tr356;
 st193:
 	if ( ++p == pe )
 		goto _test_eof193;
 case 193:
-#line 5150 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	if ( (*p) < 104u ) {
-		if ( (*p) > 73u ) {
-			if ( 92u <= (*p) && (*p) <= 95u )
-				goto st123;
-		} else if ( (*p) >= 72u )
-			goto st178;
-	} else if ( (*p) > 105u ) {
-		if ( (*p) < 120u ) {
-			if ( 108u <= (*p) && (*p) <= 109u )
-				goto st123;
-		} else if ( (*p) > 121u ) {
-			if ( 124u <= (*p) && (*p) <= 125u )
-				goto st123;
-		} else
-			goto st123;
-	} else
-		goto st123;
-	goto tr19;
-tr297:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-        begin = p;
-        BitmapSetBit(valid_targets, p - data);
-     }
-	goto st194;
+	goto st192;
 st194:
 	if ( ++p == pe )
 		goto _test_eof194;
 case 194:
-#line 5180 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 193u: goto tr236;
-		case 194u: goto tr237;
-		case 195u: goto tr238;
-		case 196u: goto tr239;
-		case 197u: goto tr240;
-		case 198u: goto tr241;
-		case 199u: goto tr242;
-		case 201u: goto tr236;
-		case 202u: goto tr237;
-		case 203u: goto tr238;
-		case 204u: goto tr239;
-		case 205u: goto tr240;
-		case 206u: goto tr241;
-		case 207u: goto tr242;
-		case 209u: goto tr236;
-		case 210u: goto tr237;
-		case 211u: goto tr238;
-		case 212u: goto tr239;
-		case 213u: goto tr240;
-		case 214u: goto tr241;
-		case 215u: goto tr242;
-		case 217u: goto tr236;
-		case 218u: goto tr237;
-		case 219u: goto tr238;
-		case 220u: goto tr239;
-		case 221u: goto tr240;
-		case 222u: goto tr241;
-		case 223u: goto tr242;
-		case 225u: goto tr236;
-		case 226u: goto tr237;
-		case 227u: goto tr238;
-		case 228u: goto tr239;
-		case 229u: goto tr240;
-		case 230u: goto tr241;
-		case 231u: goto tr242;
-		case 233u: goto tr236;
-		case 234u: goto tr237;
-		case 235u: goto tr238;
-		case 236u: goto tr239;
-		case 237u: goto tr240;
-		case 238u: goto tr241;
-		case 239u: goto tr242;
-		case 241u: goto tr236;
-		case 242u: goto tr237;
-		case 243u: goto tr238;
-		case 244u: goto tr239;
-		case 245u: goto tr240;
-		case 246u: goto tr241;
-		case 247u: goto tr242;
-		case 248u: goto tr243;
-		case 249u: goto tr244;
-		case 250u: goto tr245;
-		case 251u: goto tr246;
-		case 252u: goto tr247;
-		case 253u: goto tr248;
-		case 254u: goto tr249;
-		case 255u: goto tr250;
-	}
-	if ( 192u <= (*p) && (*p) <= 240u )
-		goto tr235;
-	goto tr19;
-tr237:
-#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	goto st188;
+tr335:
+#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3(p[0] & 0x7f);
+    SET_VEX_PREFIX3(*p);
   }
 	goto st195;
 st195:
 	if ( ++p == pe )
 		goto _test_eof195;
 case 195:
-#line 5254 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6456 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 81u: goto st1;
-		case 83u: goto st1;
-		case 194u: goto st33;
+		case 6u: goto tr297;
+		case 64u: goto tr297;
 	}
-	if ( (*p) > 90u ) {
-		if ( 92u <= (*p) && (*p) <= 95u )
-			goto st1;
-	} else if ( (*p) >= 88u )
-		goto st1;
+	if ( (*p) < 92u ) {
+		if ( (*p) < 12u ) {
+			if ( 8u <= (*p) && (*p) <= 9u )
+				goto tr297;
+		} else if ( (*p) > 13u ) {
+			if ( (*p) > 73u ) {
+				if ( 74u <= (*p) && (*p) <= 75u )
+					goto tr342;
+			} else if ( (*p) >= 72u )
+				goto tr341;
+		} else
+			goto tr297;
+	} else if ( (*p) > 95u ) {
+		if ( (*p) < 108u ) {
+			if ( 104u <= (*p) && (*p) <= 105u )
+				goto tr343;
+		} else if ( (*p) > 109u ) {
+			if ( (*p) > 121u ) {
+				if ( 124u <= (*p) && (*p) <= 125u )
+					goto tr343;
+			} else if ( (*p) >= 120u )
+				goto tr343;
+		} else
+			goto tr343;
+	} else
+		goto tr343;
 	goto tr19;
-tr238:
-#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+tr336:
+#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3(p[0] & 0x7f);
+    SET_VEX_PREFIX3(*p);
   }
 	goto st196;
 st196:
 	if ( ++p == pe )
 		goto _test_eof196;
 case 196:
-#line 5277 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6498 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 81u: goto st1;
-		case 194u: goto st33;
-		case 208u: goto st1;
+		case 22u: goto tr297;
+		case 23u: goto tr357;
+		case 29u: goto tr358;
+		case 32u: goto st167;
+		case 68u: goto tr340;
+		case 223u: goto tr344;
 	}
-	if ( (*p) < 92u ) {
-		if ( 88u <= (*p) && (*p) <= 90u )
-			goto st1;
-	} else if ( (*p) > 95u ) {
-		if ( 124u <= (*p) && (*p) <= 125u )
-			goto st1;
+	if ( (*p) < 72u ) {
+		if ( (*p) < 20u ) {
+			if ( (*p) > 5u ) {
+				if ( 8u <= (*p) && (*p) <= 15u )
+					goto tr297;
+			} else if ( (*p) >= 4u )
+				goto tr297;
+		} else if ( (*p) > 21u ) {
+			if ( (*p) > 34u ) {
+				if ( 64u <= (*p) && (*p) <= 66u )
+					goto tr297;
+			} else if ( (*p) >= 33u )
+				goto tr297;
+		} else
+			goto st167;
+	} else if ( (*p) > 73u ) {
+		if ( (*p) < 96u ) {
+			if ( (*p) > 76u ) {
+				if ( 92u <= (*p) && (*p) <= 95u )
+					goto tr343;
+			} else if ( (*p) >= 74u )
+				goto tr342;
+		} else if ( (*p) > 99u ) {
+			if ( (*p) > 111u ) {
+				if ( 120u <= (*p) && (*p) <= 127u )
+					goto tr343;
+			} else if ( (*p) >= 104u )
+				goto tr343;
+		} else
+			goto tr297;
 	} else
-		goto st1;
+		goto tr341;
 	goto tr19;
-tr245:
-#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+tr357:
+#line 204 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3(p[0] & 0x7f);
+    SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st197;
 st197:
 	if ( ++p == pe )
 		goto _test_eof197;
 case 197:
-#line 5303 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6550 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 18u: goto st1;
-		case 22u: goto st1;
-		case 111u: goto st1;
-		case 112u: goto st33;
-		case 194u: goto st33;
-		case 230u: goto st1;
+		case 4u: goto st35;
+		case 5u: goto st36;
+		case 12u: goto st35;
+		case 13u: goto st36;
+		case 20u: goto st35;
+		case 21u: goto st36;
+		case 28u: goto st35;
+		case 29u: goto st36;
+		case 36u: goto st35;
+		case 37u: goto st36;
+		case 44u: goto st35;
+		case 45u: goto st36;
+		case 52u: goto st35;
+		case 53u: goto st36;
+		case 60u: goto st35;
+		case 61u: goto st36;
+		case 68u: goto st41;
+		case 76u: goto st41;
+		case 84u: goto st41;
+		case 92u: goto st41;
+		case 100u: goto st41;
+		case 108u: goto st41;
+		case 116u: goto st41;
+		case 124u: goto st41;
+		case 132u: goto st42;
+		case 140u: goto st42;
+		case 148u: goto st42;
+		case 156u: goto st42;
+		case 164u: goto st42;
+		case 172u: goto st42;
+		case 180u: goto st42;
+		case 188u: goto st42;
 	}
-	if ( (*p) < 81u ) {
-		if ( 16u <= (*p) && (*p) <= 17u )
-			goto st29;
-	} else if ( (*p) > 83u ) {
-		if ( (*p) > 95u ) {
-			if ( 126u <= (*p) && (*p) <= 127u )
-				goto st1;
-		} else if ( (*p) >= 88u )
-			goto st1;
+	if ( (*p) < 64u ) {
+		if ( (*p) <= 63u )
+			goto st10;
+	} else if ( (*p) > 127u ) {
+		if ( 128u <= (*p) && (*p) <= 191u )
+			goto st36;
 	} else
-		goto st1;
+		goto st40;
 	goto tr19;
-tr246:
-#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+tr337:
+#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-    /* VEX.R is not used in ia32 mode.  */
-    SET_VEX_PREFIX3(p[0] & 0x7f);
+    SET_VEX_PREFIX3(*p);
   }
 	goto st198;
 st198:
 	if ( ++p == pe )
 		goto _test_eof198;
 case 198:
-#line 5335 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6604 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 18u: goto st1;
-		case 81u: goto st1;
-		case 112u: goto st33;
-		case 194u: goto st33;
-		case 208u: goto st1;
-		case 230u: goto st1;
-		case 240u: goto st29;
+		case 29u: goto tr358;
+		case 64u: goto tr297;
 	}
-	if ( (*p) < 88u ) {
-		if ( 16u <= (*p) && (*p) <= 17u )
-			goto st29;
-	} else if ( (*p) > 90u ) {
-		if ( (*p) > 95u ) {
-			if ( 124u <= (*p) && (*p) <= 125u )
-				goto st1;
-		} else if ( (*p) >= 92u )
-			goto st1;
+	if ( (*p) < 74u ) {
+		if ( (*p) < 12u ) {
+			if ( (*p) > 6u ) {
+				if ( 8u <= (*p) && (*p) <= 9u )
+					goto tr297;
+			} else if ( (*p) >= 4u )
+				goto tr297;
+		} else if ( (*p) > 13u ) {
+			if ( (*p) > 25u ) {
+				if ( 72u <= (*p) && (*p) <= 73u )
+					goto tr341;
+			} else if ( (*p) >= 24u )
+				goto tr297;
+		} else
+			goto tr297;
+	} else if ( (*p) > 75u ) {
+		if ( (*p) < 108u ) {
+			if ( (*p) > 95u ) {
+				if ( 104u <= (*p) && (*p) <= 105u )
+					goto tr343;
+			} else if ( (*p) >= 92u )
+				goto tr343;
+		} else if ( (*p) > 109u ) {
+			if ( (*p) > 121u ) {
+				if ( 124u <= (*p) && (*p) <= 125u )
+					goto tr343;
+			} else if ( (*p) >= 120u )
+				goto tr343;
+		} else
+			goto tr343;
 	} else
-		goto st1;
+		goto tr342;
 	goto tr19;
-tr298:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+tr338:
+#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-        begin = p;
-        BitmapSetBit(valid_targets, p - data);
-     }
+    SET_VEX_PREFIX3(*p);
+  }
 	goto st199;
 st199:
 	if ( ++p == pe )
 		goto _test_eof199;
 case 199:
-#line 5368 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 4u: goto st34;
-		case 5u: goto st35;
-		case 68u: goto st40;
-		case 132u: goto st41;
-	}
-	if ( (*p) < 64u ) {
-		if ( (*p) <= 7u )
-			goto st10;
-	} else if ( (*p) > 71u ) {
-		if ( (*p) > 135u ) {
-			if ( 192u <= (*p) && (*p) <= 199u )
-				goto st10;
-		} else if ( (*p) >= 128u )
-			goto st35;
+#line 6652 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	if ( (*p) < 92u ) {
+		if ( 72u <= (*p) && (*p) <= 73u )
+			goto tr341;
+	} else if ( (*p) > 95u ) {
+		if ( (*p) > 111u ) {
+			if ( 120u <= (*p) && (*p) <= 127u )
+				goto tr343;
+		} else if ( (*p) >= 104u )
+			goto tr343;
 	} else
-		goto st39;
+		goto tr343;
 	goto tr19;
-tr299:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+tr339:
+#line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-        begin = p;
-        BitmapSetBit(valid_targets, p - data);
-     }
+    SET_VEX_PREFIX3(*p);
+  }
 	goto st200;
 st200:
 	if ( ++p == pe )
 		goto _test_eof200;
 case 200:
-#line 5398 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 4u: goto st110;
-		case 5u: goto st111;
-		case 68u: goto st116;
-		case 132u: goto st117;
-	}
-	if ( (*p) < 64u ) {
-		if ( (*p) <= 7u )
-			goto st11;
-	} else if ( (*p) > 71u ) {
-		if ( (*p) > 135u ) {
-			if ( 192u <= (*p) && (*p) <= 199u )
-				goto st11;
-		} else if ( (*p) >= 128u )
-			goto st111;
+#line 6675 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	if ( (*p) < 104u ) {
+		if ( (*p) > 73u ) {
+			if ( 92u <= (*p) && (*p) <= 95u )
+				goto tr343;
+		} else if ( (*p) >= 72u )
+			goto tr341;
+	} else if ( (*p) > 105u ) {
+		if ( (*p) < 120u ) {
+			if ( 108u <= (*p) && (*p) <= 109u )
+				goto tr343;
+		} else if ( (*p) > 121u ) {
+			if ( 124u <= (*p) && (*p) <= 125u )
+				goto tr343;
+		} else
+			goto tr343;
 	} else
-		goto st115;
+		goto tr343;
 	goto tr19;
-tr300:
+tr438:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -5424,228 +6701,184 @@ st201:
 	if ( ++p == pe )
 		goto _test_eof201;
 case 201:
-#line 5428 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6705 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 193u: goto tr360;
+		case 194u: goto tr361;
+		case 195u: goto tr362;
+		case 196u: goto tr363;
+		case 197u: goto tr364;
+		case 198u: goto tr365;
+		case 199u: goto tr366;
+		case 201u: goto tr360;
+		case 202u: goto tr361;
+		case 203u: goto tr362;
+		case 204u: goto tr363;
+		case 205u: goto tr364;
+		case 206u: goto tr365;
+		case 207u: goto tr366;
+		case 209u: goto tr360;
+		case 210u: goto tr361;
+		case 211u: goto tr362;
+		case 212u: goto tr363;
+		case 213u: goto tr364;
+		case 214u: goto tr365;
+		case 215u: goto tr366;
+		case 217u: goto tr360;
+		case 218u: goto tr361;
+		case 219u: goto tr362;
+		case 220u: goto tr363;
+		case 221u: goto tr364;
+		case 222u: goto tr365;
+		case 223u: goto tr366;
+		case 225u: goto tr360;
+		case 226u: goto tr361;
+		case 227u: goto tr362;
+		case 228u: goto tr363;
+		case 229u: goto tr364;
+		case 230u: goto tr365;
+		case 231u: goto tr366;
+		case 233u: goto tr360;
+		case 234u: goto tr361;
+		case 235u: goto tr362;
+		case 236u: goto tr363;
+		case 237u: goto tr364;
+		case 238u: goto tr365;
+		case 239u: goto tr366;
+		case 241u: goto tr360;
+		case 242u: goto tr361;
+		case 243u: goto tr362;
+		case 244u: goto tr363;
+		case 245u: goto tr364;
+		case 246u: goto tr365;
+		case 247u: goto tr366;
+		case 248u: goto tr367;
+		case 249u: goto tr368;
+		case 250u: goto tr369;
+		case 251u: goto tr370;
+		case 252u: goto tr371;
+		case 253u: goto tr372;
+		case 254u: goto tr373;
+		case 255u: goto tr374;
+	}
+	if ( 192u <= (*p) && (*p) <= 240u )
+		goto tr359;
+	goto tr19;
+tr361:
+#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3(p[0] & 0x7f);
+  }
 	goto st202;
 st202:
 	if ( ++p == pe )
 		goto _test_eof202;
 case 202:
-	goto tr252;
-tr303:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 6779 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 81u: goto tr295;
+		case 83u: goto tr295;
+		case 194u: goto tr297;
+	}
+	if ( (*p) > 90u ) {
+		if ( 92u <= (*p) && (*p) <= 95u )
+			goto tr295;
+	} else if ( (*p) >= 88u )
+		goto tr295;
+	goto tr19;
+tr362:
+#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-        begin = p;
-        BitmapSetBit(valid_targets, p - data);
-     }
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3(p[0] & 0x7f);
+  }
 	goto st203;
 st203:
 	if ( ++p == pe )
 		goto _test_eof203;
 case 203:
-#line 5446 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6802 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 20u: goto st2;
-		case 21u: goto st3;
-		case 28u: goto st2;
-		case 29u: goto st3;
-		case 36u: goto st2;
-		case 37u: goto st3;
-		case 44u: goto st2;
-		case 45u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 60u: goto st2;
-		case 61u: goto st3;
-		case 68u: goto st8;
-		case 84u: goto st8;
-		case 92u: goto st8;
-		case 100u: goto st8;
-		case 108u: goto st8;
-		case 116u: goto st8;
-		case 124u: goto st8;
-		case 132u: goto st9;
-		case 148u: goto st9;
-		case 156u: goto st9;
-		case 164u: goto st9;
-		case 172u: goto st9;
-		case 180u: goto st9;
-		case 188u: goto st9;
-		case 239u: goto tr19;
+		case 81u: goto tr295;
+		case 194u: goto tr297;
+		case 208u: goto tr295;
 	}
-	if ( (*p) < 128u ) {
-		if ( (*p) < 64u ) {
-			if ( 8u <= (*p) && (*p) <= 15u )
-				goto tr19;
-		} else if ( (*p) > 71u ) {
-			if ( (*p) > 79u ) {
-				if ( 80u <= (*p) && (*p) <= 127u )
-					goto st7;
-			} else if ( (*p) >= 72u )
-				goto tr19;
-		} else
-			goto st7;
-	} else if ( (*p) > 135u ) {
-		if ( (*p) < 209u ) {
-			if ( (*p) > 143u ) {
-				if ( 144u <= (*p) && (*p) <= 191u )
-					goto st3;
-			} else if ( (*p) >= 136u )
-				goto tr19;
-		} else if ( (*p) > 223u ) {
-			if ( (*p) > 227u ) {
-				if ( 230u <= (*p) && (*p) <= 231u )
-					goto tr19;
-			} else if ( (*p) >= 226u )
-				goto tr19;
-		} else
-			goto tr19;
+	if ( (*p) < 92u ) {
+		if ( 88u <= (*p) && (*p) <= 90u )
+			goto tr295;
+	} else if ( (*p) > 95u ) {
+		if ( 124u <= (*p) && (*p) <= 125u )
+			goto tr295;
 	} else
-		goto st3;
-	goto tr0;
-tr304:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+		goto tr295;
+	goto tr19;
+tr369:
+#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-        begin = p;
-        BitmapSetBit(valid_targets, p - data);
-     }
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3(p[0] & 0x7f);
+  }
 	goto st204;
 st204:
 	if ( ++p == pe )
 		goto _test_eof204;
 case 204:
-#line 5519 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6828 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 20u: goto st2;
-		case 21u: goto st3;
-		case 28u: goto st2;
-		case 29u: goto st3;
-		case 36u: goto st2;
-		case 37u: goto st3;
-		case 44u: goto st2;
-		case 45u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 60u: goto st2;
-		case 61u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 84u: goto st8;
-		case 92u: goto st8;
-		case 100u: goto st8;
-		case 108u: goto st8;
-		case 116u: goto st8;
-		case 124u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 148u: goto st9;
-		case 156u: goto st9;
-		case 164u: goto st9;
-		case 172u: goto st9;
-		case 180u: goto st9;
-		case 188u: goto st9;
+		case 18u: goto tr295;
+		case 22u: goto tr295;
+		case 111u: goto tr295;
+		case 112u: goto tr297;
+		case 194u: goto tr297;
+		case 230u: goto tr295;
 	}
-	if ( (*p) < 128u ) {
-		if ( 64u <= (*p) && (*p) <= 127u )
-			goto st7;
-	} else if ( (*p) > 191u ) {
-		if ( (*p) > 232u ) {
-			if ( 234u <= (*p) )
-				goto tr19;
-		} else if ( (*p) >= 224u )
-			goto tr19;
+	if ( (*p) < 81u ) {
+		if ( 16u <= (*p) && (*p) <= 17u )
+			goto tr296;
+	} else if ( (*p) > 83u ) {
+		if ( (*p) > 95u ) {
+			if ( 126u <= (*p) && (*p) <= 127u )
+				goto tr295;
+		} else if ( (*p) >= 88u )
+			goto tr295;
 	} else
-		goto st3;
-	goto tr0;
-tr305:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+		goto tr295;
+	goto tr19;
+tr370:
+#line 165 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
-        begin = p;
-        BitmapSetBit(valid_targets, p - data);
-     }
+    /* VEX.R is not used in ia32 mode.  */
+    SET_VEX_PREFIX3(p[0] & 0x7f);
+  }
 	goto st205;
 st205:
 	if ( ++p == pe )
 		goto _test_eof205;
 case 205:
-#line 5577 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6860 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 20u: goto st2;
-		case 21u: goto st3;
-		case 28u: goto st2;
-		case 29u: goto st3;
-		case 44u: goto st2;
-		case 45u: goto st3;
-		case 60u: goto st2;
-		case 61u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 84u: goto st8;
-		case 92u: goto st8;
-		case 108u: goto st8;
-		case 124u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 148u: goto st9;
-		case 156u: goto st9;
-		case 172u: goto st9;
-		case 188u: goto st9;
+		case 18u: goto tr295;
+		case 81u: goto tr295;
+		case 112u: goto tr297;
+		case 194u: goto tr297;
+		case 208u: goto tr295;
+		case 230u: goto tr295;
+		case 240u: goto tr296;
 	}
-	if ( (*p) < 128u ) {
-		if ( (*p) < 96u ) {
-			if ( (*p) < 48u ) {
-				if ( 32u <= (*p) && (*p) <= 39u )
-					goto tr19;
-			} else if ( (*p) > 55u ) {
-				if ( 64u <= (*p) && (*p) <= 95u )
-					goto st7;
-			} else
-				goto tr19;
-		} else if ( (*p) > 103u ) {
-			if ( (*p) < 112u ) {
-				if ( 104u <= (*p) && (*p) <= 111u )
-					goto st7;
-			} else if ( (*p) > 119u ) {
-				if ( 120u <= (*p) && (*p) <= 127u )
-					goto st7;
-			} else
-				goto tr19;
-		} else
-			goto tr19;
-	} else if ( (*p) > 159u ) {
-		if ( (*p) < 184u ) {
-			if ( (*p) < 168u ) {
-				if ( 160u <= (*p) && (*p) <= 167u )
-					goto tr19;
-			} else if ( (*p) > 175u ) {
-				if ( 176u <= (*p) && (*p) <= 183u )
-					goto tr19;
-			} else
-				goto st3;
-		} else if ( (*p) > 191u ) {
-			if ( (*p) < 228u ) {
-				if ( 224u <= (*p) && (*p) <= 225u )
-					goto tr19;
-			} else if ( (*p) > 231u ) {
-				if ( 248u <= (*p) )
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto st3;
+	if ( (*p) < 88u ) {
+		if ( 16u <= (*p) && (*p) <= 17u )
+			goto tr296;
+	} else if ( (*p) > 90u ) {
+		if ( (*p) > 95u ) {
+			if ( 124u <= (*p) && (*p) <= 125u )
+				goto tr295;
+		} else if ( (*p) >= 92u )
+			goto tr295;
 	} else
-		goto st3;
-	goto tr0;
-tr306:
+		goto tr295;
+	goto tr19;
+tr439:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -5656,51 +6889,26 @@ st206:
 	if ( ++p == pe )
 		goto _test_eof206;
 case 206:
-#line 5660 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6893 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 20u: goto st2;
-		case 21u: goto st3;
-		case 28u: goto st2;
-		case 29u: goto st3;
-		case 36u: goto st2;
-		case 37u: goto st3;
-		case 44u: goto st2;
-		case 45u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 60u: goto st2;
-		case 61u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 84u: goto st8;
-		case 92u: goto st8;
-		case 100u: goto st8;
-		case 108u: goto st8;
-		case 116u: goto st8;
-		case 124u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 148u: goto st9;
-		case 156u: goto st9;
-		case 164u: goto st9;
-		case 172u: goto st9;
-		case 180u: goto st9;
-		case 188u: goto st9;
+		case 4u: goto st35;
+		case 5u: goto st36;
+		case 68u: goto st41;
+		case 132u: goto st42;
 	}
-	if ( (*p) < 128u ) {
-		if ( 64u <= (*p) && (*p) <= 127u )
-			goto st7;
-	} else if ( (*p) > 191u ) {
-		if ( 208u <= (*p) && (*p) <= 223u )
-			goto tr19;
+	if ( (*p) < 64u ) {
+		if ( (*p) <= 7u )
+			goto st10;
+	} else if ( (*p) > 71u ) {
+		if ( (*p) > 135u ) {
+			if ( 192u <= (*p) && (*p) <= 199u )
+				goto st10;
+		} else if ( (*p) >= 128u )
+			goto st36;
 	} else
-		goto st3;
-	goto tr0;
-tr307:
+		goto st40;
+	goto tr19;
+tr440:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -5711,36 +6919,422 @@ st207:
 	if ( ++p == pe )
 		goto _test_eof207;
 case 207:
-#line 5715 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6923 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 20u: goto st2;
-		case 21u: goto st3;
-		case 28u: goto st2;
-		case 29u: goto st3;
-		case 36u: goto st2;
-		case 37u: goto st3;
+		case 4u: goto st113;
+		case 5u: goto st114;
+		case 68u: goto st119;
+		case 132u: goto st120;
+	}
+	if ( (*p) < 64u ) {
+		if ( (*p) <= 7u )
+			goto st11;
+	} else if ( (*p) > 71u ) {
+		if ( (*p) > 135u ) {
+			if ( 192u <= (*p) && (*p) <= 199u )
+				goto st11;
+		} else if ( (*p) >= 128u )
+			goto st114;
+	} else
+		goto st118;
+	goto tr19;
+tr441:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
+	goto st208;
+st208:
+	if ( ++p == pe )
+		goto _test_eof208;
+case 208:
+#line 6953 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	goto st209;
+st209:
+	if ( ++p == pe )
+		goto _test_eof209;
+case 209:
+	goto tr376;
+tr444:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
+	goto st210;
+st210:
+	if ( ++p == pe )
+		goto _test_eof210;
+case 210:
+#line 6971 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto tr378;
+		case 5u: goto tr379;
+		case 12u: goto tr378;
+		case 13u: goto tr379;
+		case 20u: goto tr378;
+		case 21u: goto tr379;
+		case 28u: goto tr378;
+		case 29u: goto tr379;
+		case 36u: goto tr378;
+		case 37u: goto tr379;
+		case 44u: goto tr378;
+		case 45u: goto tr379;
+		case 52u: goto tr378;
+		case 53u: goto tr379;
+		case 60u: goto tr378;
+		case 61u: goto tr379;
+		case 68u: goto tr381;
+		case 76u: goto tr381;
+		case 84u: goto tr381;
+		case 92u: goto tr381;
+		case 100u: goto tr381;
+		case 108u: goto tr381;
+		case 116u: goto tr381;
+		case 124u: goto tr381;
+		case 132u: goto tr382;
+		case 140u: goto tr382;
+		case 148u: goto tr382;
+		case 156u: goto tr382;
+		case 164u: goto tr382;
+		case 172u: goto tr382;
+		case 180u: goto tr382;
+		case 188u: goto tr382;
+	}
+	if ( (*p) > 127u ) {
+		if ( 128u <= (*p) && (*p) <= 191u )
+			goto tr379;
+	} else if ( (*p) >= 64u )
+		goto tr380;
+	goto tr377;
+tr445:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
+	goto st211;
+st211:
+	if ( ++p == pe )
+		goto _test_eof211;
+case 211:
+#line 7023 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto tr378;
+		case 5u: goto tr379;
+		case 20u: goto tr378;
+		case 21u: goto tr379;
+		case 28u: goto tr378;
+		case 29u: goto tr379;
+		case 36u: goto tr378;
+		case 37u: goto tr379;
+		case 44u: goto tr378;
+		case 45u: goto tr379;
 		case 52u: goto st2;
 		case 53u: goto st3;
 		case 60u: goto st2;
 		case 61u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 84u: goto st8;
-		case 92u: goto st8;
-		case 100u: goto st8;
+		case 68u: goto tr381;
+		case 84u: goto tr381;
+		case 92u: goto tr381;
+		case 100u: goto tr381;
+		case 108u: goto tr381;
 		case 116u: goto st8;
 		case 124u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 148u: goto st9;
-		case 156u: goto st9;
-		case 164u: goto st9;
+		case 132u: goto tr382;
+		case 148u: goto tr382;
+		case 156u: goto tr382;
+		case 164u: goto tr382;
+		case 172u: goto tr382;
 		case 180u: goto st9;
 		case 188u: goto st9;
+		case 239u: goto tr19;
+	}
+	if ( (*p) < 128u ) {
+		if ( (*p) < 64u ) {
+			if ( (*p) > 15u ) {
+				if ( 48u <= (*p) && (*p) <= 63u )
+					goto tr0;
+			} else if ( (*p) >= 8u )
+				goto tr19;
+		} else if ( (*p) > 71u ) {
+			if ( (*p) < 80u ) {
+				if ( 72u <= (*p) && (*p) <= 79u )
+					goto tr19;
+			} else if ( (*p) > 111u ) {
+				if ( 112u <= (*p) && (*p) <= 127u )
+					goto st7;
+			} else
+				goto tr380;
+		} else
+			goto tr380;
+	} else if ( (*p) > 135u ) {
+		if ( (*p) < 176u ) {
+			if ( (*p) > 143u ) {
+				if ( 144u <= (*p) && (*p) <= 175u )
+					goto tr379;
+			} else if ( (*p) >= 136u )
+				goto tr19;
+		} else if ( (*p) > 191u ) {
+			if ( (*p) < 226u ) {
+				if ( 209u <= (*p) && (*p) <= 223u )
+					goto tr19;
+			} else if ( (*p) > 227u ) {
+				if ( 230u <= (*p) && (*p) <= 231u )
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto st3;
+	} else
+		goto tr379;
+	goto tr377;
+tr446:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
+	goto st212;
+st212:
+	if ( ++p == pe )
+		goto _test_eof212;
+case 212:
+#line 7105 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto tr378;
+		case 12u: goto tr378;
+		case 20u: goto tr378;
+		case 28u: goto tr378;
+		case 36u: goto tr378;
+		case 44u: goto tr378;
+		case 52u: goto tr378;
+		case 60u: goto tr378;
+		case 68u: goto tr381;
+		case 76u: goto tr381;
+		case 84u: goto tr381;
+		case 92u: goto tr381;
+		case 100u: goto tr381;
+		case 108u: goto tr381;
+		case 116u: goto tr381;
+		case 124u: goto tr381;
+		case 132u: goto tr382;
+		case 140u: goto tr382;
+		case 148u: goto tr382;
+		case 156u: goto tr382;
+		case 164u: goto tr382;
+		case 172u: goto tr382;
+		case 180u: goto tr382;
+		case 188u: goto tr382;
+		case 233u: goto tr377;
+	}
+	if ( (*p) < 38u ) {
+		if ( (*p) < 14u ) {
+			if ( (*p) > 3u ) {
+				if ( 6u <= (*p) && (*p) <= 11u )
+					goto tr377;
+			} else
+				goto tr377;
+		} else if ( (*p) > 19u ) {
+			if ( (*p) > 27u ) {
+				if ( 30u <= (*p) && (*p) <= 35u )
+					goto tr377;
+			} else if ( (*p) >= 22u )
+				goto tr377;
+		} else
+			goto tr377;
+	} else if ( (*p) > 43u ) {
+		if ( (*p) < 62u ) {
+			if ( (*p) > 51u ) {
+				if ( 54u <= (*p) && (*p) <= 59u )
+					goto tr377;
+			} else if ( (*p) >= 46u )
+				goto tr377;
+		} else if ( (*p) > 63u ) {
+			if ( (*p) < 192u ) {
+				if ( 64u <= (*p) && (*p) <= 127u )
+					goto tr380;
+			} else if ( (*p) > 223u ) {
+				if ( 224u <= (*p) )
+					goto tr19;
+			} else
+				goto tr383;
+		} else
+			goto tr377;
+	} else
+		goto tr377;
+	goto tr379;
+tr447:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
+	goto st213;
+st213:
+	if ( ++p == pe )
+		goto _test_eof213;
+case 213:
+#line 7180 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto tr378;
+		case 5u: goto tr379;
+		case 12u: goto tr378;
+		case 13u: goto tr379;
+		case 20u: goto tr378;
+		case 21u: goto tr379;
+		case 28u: goto tr378;
+		case 29u: goto tr379;
+		case 44u: goto tr378;
+		case 45u: goto tr379;
+		case 60u: goto tr378;
+		case 61u: goto tr379;
+		case 68u: goto tr381;
+		case 76u: goto tr381;
+		case 84u: goto tr381;
+		case 92u: goto tr381;
+		case 108u: goto tr381;
+		case 124u: goto tr381;
+		case 132u: goto tr382;
+		case 140u: goto tr382;
+		case 148u: goto tr382;
+		case 156u: goto tr382;
+		case 172u: goto tr382;
+		case 188u: goto tr382;
+	}
+	if ( (*p) < 120u ) {
+		if ( (*p) < 56u ) {
+			if ( (*p) > 31u ) {
+				if ( 40u <= (*p) && (*p) <= 47u )
+					goto tr377;
+			} else
+				goto tr377;
+		} else if ( (*p) > 63u ) {
+			if ( (*p) > 95u ) {
+				if ( 104u <= (*p) && (*p) <= 111u )
+					goto tr380;
+			} else if ( (*p) >= 64u )
+				goto tr380;
+		} else
+			goto tr377;
+	} else if ( (*p) > 127u ) {
+		if ( (*p) < 184u ) {
+			if ( (*p) > 159u ) {
+				if ( 168u <= (*p) && (*p) <= 175u )
+					goto tr379;
+			} else if ( (*p) >= 128u )
+				goto tr379;
+		} else if ( (*p) > 191u ) {
+			if ( (*p) < 226u ) {
+				if ( 192u <= (*p) && (*p) <= 223u )
+					goto tr383;
+			} else if ( (*p) > 227u ) {
+				if ( 232u <= (*p) && (*p) <= 247u )
+					goto tr377;
+			} else
+				goto tr377;
+		} else
+			goto tr379;
+	} else
+		goto tr380;
+	goto tr19;
+tr448:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
+	goto st214;
+st214:
+	if ( ++p == pe )
+		goto _test_eof214;
+case 214:
+#line 7254 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto tr378;
+		case 5u: goto tr379;
+		case 12u: goto tr378;
+		case 13u: goto tr379;
+		case 20u: goto tr378;
+		case 21u: goto tr379;
+		case 28u: goto tr378;
+		case 29u: goto tr379;
+		case 36u: goto tr378;
+		case 37u: goto tr379;
+		case 44u: goto tr378;
+		case 45u: goto tr379;
+		case 52u: goto tr378;
+		case 53u: goto tr379;
+		case 60u: goto tr378;
+		case 61u: goto tr379;
+		case 68u: goto tr381;
+		case 76u: goto tr381;
+		case 84u: goto tr381;
+		case 92u: goto tr381;
+		case 100u: goto tr381;
+		case 108u: goto tr381;
+		case 116u: goto tr381;
+		case 124u: goto tr381;
+		case 132u: goto tr382;
+		case 140u: goto tr382;
+		case 148u: goto tr382;
+		case 156u: goto tr382;
+		case 164u: goto tr382;
+		case 172u: goto tr382;
+		case 180u: goto tr382;
+		case 188u: goto tr382;
+	}
+	if ( (*p) < 128u ) {
+		if ( 64u <= (*p) && (*p) <= 127u )
+			goto tr380;
+	} else if ( (*p) > 191u ) {
+		if ( 208u <= (*p) && (*p) <= 223u )
+			goto tr19;
+	} else
+		goto tr379;
+	goto tr377;
+tr449:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
+	goto st215;
+st215:
+	if ( ++p == pe )
+		goto _test_eof215;
+case 215:
+#line 7309 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto tr378;
+		case 5u: goto tr379;
+		case 12u: goto tr378;
+		case 13u: goto tr379;
+		case 20u: goto tr378;
+		case 21u: goto tr379;
+		case 28u: goto tr378;
+		case 29u: goto tr379;
+		case 36u: goto tr378;
+		case 37u: goto tr379;
+		case 52u: goto tr378;
+		case 53u: goto tr379;
+		case 60u: goto tr378;
+		case 61u: goto tr379;
+		case 68u: goto tr381;
+		case 76u: goto tr381;
+		case 84u: goto tr381;
+		case 92u: goto tr381;
+		case 100u: goto tr381;
+		case 116u: goto tr381;
+		case 124u: goto tr381;
+		case 132u: goto tr382;
+		case 140u: goto tr382;
+		case 148u: goto tr382;
+		case 156u: goto tr382;
+		case 164u: goto tr382;
+		case 180u: goto tr382;
+		case 188u: goto tr382;
 	}
 	if ( (*p) < 128u ) {
 		if ( (*p) < 64u ) {
@@ -5749,11 +7343,11 @@ case 207:
 		} else if ( (*p) > 103u ) {
 			if ( (*p) > 111u ) {
 				if ( 112u <= (*p) && (*p) <= 127u )
-					goto st7;
+					goto tr380;
 			} else if ( (*p) >= 104u )
 				goto tr19;
 		} else
-			goto st7;
+			goto tr380;
 	} else if ( (*p) > 167u ) {
 		if ( (*p) < 176u ) {
 			if ( 168u <= (*p) && (*p) <= 175u )
@@ -5765,59 +7359,59 @@ case 207:
 			} else if ( (*p) >= 200u )
 				goto tr19;
 		} else
-			goto st3;
+			goto tr379;
 	} else
-		goto st3;
-	goto tr0;
-tr308:
+		goto tr379;
+	goto tr377;
+tr450:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
      }
-	goto st208;
-st208:
+	goto st216;
+st216:
 	if ( ++p == pe )
-		goto _test_eof208;
-case 208:
-#line 5784 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof216;
+case 216:
+#line 7378 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 20u: goto st2;
-		case 21u: goto st3;
-		case 28u: goto st2;
-		case 29u: goto st3;
-		case 36u: goto st2;
-		case 37u: goto st3;
-		case 44u: goto st2;
-		case 45u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 60u: goto st2;
-		case 61u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 84u: goto st8;
-		case 92u: goto st8;
-		case 100u: goto st8;
-		case 108u: goto st8;
-		case 116u: goto st8;
-		case 124u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 148u: goto st9;
-		case 156u: goto st9;
-		case 164u: goto st9;
-		case 172u: goto st9;
-		case 180u: goto st9;
-		case 188u: goto st9;
+		case 4u: goto tr378;
+		case 5u: goto tr379;
+		case 12u: goto tr378;
+		case 13u: goto tr379;
+		case 20u: goto tr378;
+		case 21u: goto tr379;
+		case 28u: goto tr378;
+		case 29u: goto tr379;
+		case 36u: goto tr378;
+		case 37u: goto tr379;
+		case 44u: goto tr378;
+		case 45u: goto tr379;
+		case 52u: goto tr378;
+		case 53u: goto tr379;
+		case 60u: goto tr378;
+		case 61u: goto tr379;
+		case 68u: goto tr381;
+		case 76u: goto tr381;
+		case 84u: goto tr381;
+		case 92u: goto tr381;
+		case 100u: goto tr381;
+		case 108u: goto tr381;
+		case 116u: goto tr381;
+		case 124u: goto tr381;
+		case 132u: goto tr382;
+		case 140u: goto tr382;
+		case 148u: goto tr382;
+		case 156u: goto tr382;
+		case 164u: goto tr382;
+		case 172u: goto tr382;
+		case 180u: goto tr382;
+		case 188u: goto tr382;
 	}
 	if ( (*p) < 128u ) {
 		if ( 64u <= (*p) && (*p) <= 127u )
-			goto st7;
+			goto tr380;
 	} else if ( (*p) > 191u ) {
 		if ( (*p) > 216u ) {
 			if ( 218u <= (*p) && (*p) <= 223u )
@@ -5825,60 +7419,60 @@ case 208:
 		} else if ( (*p) >= 208u )
 			goto tr19;
 	} else
-		goto st3;
-	goto tr0;
-tr309:
+		goto tr379;
+	goto tr377;
+tr451:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
      }
-	goto st209;
-st209:
+	goto st217;
+st217:
 	if ( ++p == pe )
-		goto _test_eof209;
-case 209:
-#line 5842 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof217;
+case 217:
+#line 7436 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 20u: goto st2;
-		case 21u: goto st3;
-		case 28u: goto st2;
-		case 29u: goto st3;
-		case 36u: goto st2;
-		case 37u: goto st3;
-		case 44u: goto st2;
-		case 45u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 60u: goto st2;
-		case 61u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 84u: goto st8;
-		case 92u: goto st8;
-		case 100u: goto st8;
-		case 108u: goto st8;
-		case 116u: goto st8;
-		case 124u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 148u: goto st9;
-		case 156u: goto st9;
-		case 164u: goto st9;
-		case 172u: goto st9;
-		case 180u: goto st9;
-		case 188u: goto st9;
+		case 4u: goto tr378;
+		case 5u: goto tr379;
+		case 12u: goto tr378;
+		case 13u: goto tr379;
+		case 20u: goto tr378;
+		case 21u: goto tr379;
+		case 28u: goto tr378;
+		case 29u: goto tr379;
+		case 36u: goto tr378;
+		case 37u: goto tr379;
+		case 44u: goto tr378;
+		case 45u: goto tr379;
+		case 52u: goto tr378;
+		case 53u: goto tr379;
+		case 60u: goto tr378;
+		case 61u: goto tr379;
+		case 68u: goto tr381;
+		case 76u: goto tr381;
+		case 84u: goto tr381;
+		case 92u: goto tr381;
+		case 100u: goto tr381;
+		case 108u: goto tr381;
+		case 116u: goto tr381;
+		case 124u: goto tr381;
+		case 132u: goto tr382;
+		case 140u: goto tr382;
+		case 148u: goto tr382;
+		case 156u: goto tr382;
+		case 164u: goto tr382;
+		case 172u: goto tr382;
+		case 180u: goto tr382;
+		case 188u: goto tr382;
 	}
 	if ( (*p) < 192u ) {
 		if ( (*p) > 127u ) {
 			if ( 128u <= (*p) && (*p) <= 191u )
-				goto st3;
+				goto tr379;
 		} else if ( (*p) >= 64u )
-			goto st7;
+			goto tr380;
 	} else if ( (*p) > 223u ) {
 		if ( (*p) > 231u ) {
 			if ( 248u <= (*p) )
@@ -5887,8 +7481,8 @@ case 209:
 			goto tr19;
 	} else
 		goto tr19;
-	goto tr0;
-tr311:
+	goto tr377;
+tr453:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -5898,105 +7492,105 @@ tr311:
 	{
     SET_LOCK_PREFIX(TRUE);
   }
-	goto st210;
-st210:
+	goto st218;
+st218:
 	if ( ++p == pe )
-		goto _test_eof210;
-case 210:
-#line 5907 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof218;
+case 218:
+#line 7501 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 15u: goto st211;
-		case 102u: goto tr254;
-		case 128u: goto st100;
-		case 129u: goto st212;
-		case 131u: goto st100;
+		case 15u: goto st219;
+		case 102u: goto tr385;
+		case 128u: goto st102;
+		case 129u: goto st220;
+		case 131u: goto st102;
 	}
 	if ( (*p) < 32u ) {
 		if ( (*p) < 8u ) {
 			if ( (*p) <= 3u )
-				goto st29;
+				goto st30;
 		} else if ( (*p) > 11u ) {
 			if ( (*p) > 19u ) {
 				if ( 24u <= (*p) && (*p) <= 27u )
-					goto st29;
+					goto st30;
 			} else if ( (*p) >= 16u )
-				goto st29;
+				goto st30;
 		} else
-			goto st29;
+			goto st30;
 	} else if ( (*p) > 35u ) {
 		if ( (*p) < 134u ) {
 			if ( (*p) > 43u ) {
 				if ( 48u <= (*p) && (*p) <= 51u )
-					goto st29;
+					goto st30;
 			} else if ( (*p) >= 40u )
-				goto st29;
+				goto st30;
 		} else if ( (*p) > 135u ) {
 			if ( (*p) > 247u ) {
 				if ( 254u <= (*p) )
-					goto st18;
+					goto st104;
 			} else if ( (*p) >= 246u )
-				goto st101;
+				goto st103;
 		} else
-			goto st29;
+			goto st30;
 	} else
-		goto st29;
+		goto st30;
 	goto tr19;
-st211:
+st219:
 	if ( ++p == pe )
-		goto _test_eof211;
-case 211:
+		goto _test_eof219;
+case 219:
 	if ( (*p) == 199u )
-		goto st50;
+		goto st51;
 	if ( (*p) > 177u ) {
 		if ( 192u <= (*p) && (*p) <= 193u )
-			goto st29;
+			goto st30;
 	} else if ( (*p) >= 176u )
-		goto st29;
+		goto st30;
 	goto tr19;
-st212:
+st220:
 	if ( ++p == pe )
-		goto _test_eof212;
-case 212:
+		goto _test_eof220;
+case 220:
 	switch( (*p) ) {
-		case 4u: goto st110;
-		case 5u: goto st111;
-		case 12u: goto st110;
-		case 13u: goto st111;
-		case 20u: goto st110;
-		case 21u: goto st111;
-		case 28u: goto st110;
-		case 29u: goto st111;
-		case 36u: goto st110;
-		case 37u: goto st111;
-		case 44u: goto st110;
-		case 45u: goto st111;
-		case 52u: goto st110;
-		case 53u: goto st111;
-		case 68u: goto st116;
-		case 76u: goto st116;
-		case 84u: goto st116;
-		case 92u: goto st116;
-		case 100u: goto st116;
-		case 108u: goto st116;
-		case 116u: goto st116;
-		case 132u: goto st117;
-		case 140u: goto st117;
-		case 148u: goto st117;
-		case 156u: goto st117;
-		case 164u: goto st117;
-		case 172u: goto st117;
-		case 180u: goto st117;
+		case 4u: goto st113;
+		case 5u: goto st114;
+		case 12u: goto st113;
+		case 13u: goto st114;
+		case 20u: goto st113;
+		case 21u: goto st114;
+		case 28u: goto st113;
+		case 29u: goto st114;
+		case 36u: goto st113;
+		case 37u: goto st114;
+		case 44u: goto st113;
+		case 45u: goto st114;
+		case 52u: goto st113;
+		case 53u: goto st114;
+		case 68u: goto st119;
+		case 76u: goto st119;
+		case 84u: goto st119;
+		case 92u: goto st119;
+		case 100u: goto st119;
+		case 108u: goto st119;
+		case 116u: goto st119;
+		case 132u: goto st120;
+		case 140u: goto st120;
+		case 148u: goto st120;
+		case 156u: goto st120;
+		case 164u: goto st120;
+		case 172u: goto st120;
+		case 180u: goto st120;
 	}
 	if ( (*p) < 64u ) {
 		if ( (*p) <= 55u )
 			goto st11;
 	} else if ( (*p) > 119u ) {
 		if ( 128u <= (*p) && (*p) <= 183u )
-			goto st111;
+			goto st114;
 	} else
-		goto st115;
+		goto st118;
 	goto tr19;
-tr312:
+tr454:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -6006,15 +7600,15 @@ tr312:
 	{
     SET_REPNZ_PREFIX(TRUE);
   }
-	goto st213;
-st213:
+	goto st221;
+st221:
 	if ( ++p == pe )
-		goto _test_eof213;
-case 213:
-#line 6015 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof221;
+case 221:
+#line 7609 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 15u: goto st214;
-		case 102u: goto tr257;
+		case 15u: goto st222;
+		case 102u: goto tr388;
 	}
 	if ( (*p) > 167u ) {
 		if ( 174u <= (*p) && (*p) <= 175u )
@@ -6022,65 +7616,70 @@ case 213:
 	} else if ( (*p) >= 166u )
 		goto tr0;
 	goto tr19;
-st214:
+st222:
 	if ( ++p == pe )
-		goto _test_eof214;
-case 214:
+		goto _test_eof222;
+case 222:
 	switch( (*p) ) {
-		case 43u: goto tr258;
-		case 56u: goto st215;
-		case 81u: goto tr134;
-		case 112u: goto tr260;
-		case 120u: goto tr261;
-		case 121u: goto tr262;
-		case 194u: goto tr260;
-		case 208u: goto tr134;
-		case 214u: goto tr262;
-		case 230u: goto tr134;
-		case 240u: goto tr258;
+		case 18u: goto tr390;
+		case 43u: goto tr391;
+		case 56u: goto st223;
+		case 81u: goto tr389;
+		case 112u: goto tr393;
+		case 120u: goto tr394;
+		case 121u: goto tr395;
+		case 194u: goto tr393;
+		case 208u: goto tr396;
+		case 214u: goto tr397;
+		case 230u: goto tr389;
+		case 240u: goto tr398;
 	}
 	if ( (*p) < 88u ) {
-		if ( (*p) > 18u ) {
+		if ( (*p) > 17u ) {
 			if ( 42u <= (*p) && (*p) <= 45u )
-				goto tr134;
+				goto tr389;
 		} else if ( (*p) >= 16u )
-			goto tr134;
+			goto tr389;
 	} else if ( (*p) > 90u ) {
 		if ( (*p) > 95u ) {
 			if ( 124u <= (*p) && (*p) <= 125u )
-				goto tr134;
+				goto tr390;
 		} else if ( (*p) >= 92u )
-			goto tr134;
+			goto tr389;
 	} else
-		goto tr134;
+		goto tr389;
 	goto tr19;
-st215:
+st223:
 	if ( ++p == pe )
-		goto _test_eof215;
-case 215:
+		goto _test_eof223;
+case 223:
 	if ( 240u <= (*p) && (*p) <= 241u )
-		goto tr134;
+		goto tr205;
 	goto tr19;
-tr261:
+tr394:
 #line 36 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	goto st216;
-st216:
+#line 297 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+    SET_CPU_FEATURE(CPUFeature_SSE4A);
+  }
+	goto st224;
+st224:
 	if ( ++p == pe )
-		goto _test_eof216;
-case 216:
-#line 6075 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof224;
+case 224:
+#line 7674 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( 192u <= (*p) )
-		goto st217;
+		goto st225;
 	goto tr19;
-st217:
+st225:
 	if ( ++p == pe )
-		goto _test_eof217;
-case 217:
-	goto tr264;
-tr313:
+		goto _test_eof225;
+case 225:
+	goto tr400;
+tr455:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -6094,16 +7693,16 @@ tr313:
 	{
     SET_REPZ_PREFIX(TRUE);
   }
-	goto st218;
-st218:
+	goto st226;
+st226:
 	if ( ++p == pe )
-		goto _test_eof218;
-case 218:
-#line 6103 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof226;
+case 226:
+#line 7702 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 15u: goto st219;
-		case 102u: goto tr266;
-		case 144u: goto tr267;
+		case 15u: goto st227;
+		case 102u: goto tr402;
+		case 144u: goto tr403;
 	}
 	if ( (*p) > 167u ) {
 		if ( 170u <= (*p) && (*p) <= 175u )
@@ -6111,53 +7710,59 @@ case 218:
 	} else if ( (*p) >= 164u )
 		goto tr0;
 	goto tr19;
-st219:
+st227:
 	if ( ++p == pe )
-		goto _test_eof219;
-case 219:
+		goto _test_eof227;
+case 227:
 	switch( (*p) ) {
-		case 22u: goto tr136;
-		case 43u: goto tr268;
-		case 111u: goto tr136;
-		case 112u: goto tr269;
-		case 184u: goto tr136;
-		case 194u: goto tr269;
-		case 214u: goto tr270;
-		case 230u: goto tr136;
+		case 18u: goto tr405;
+		case 22u: goto tr405;
+		case 43u: goto tr406;
+		case 111u: goto tr407;
+		case 112u: goto tr408;
+		case 184u: goto tr207;
+		case 188u: goto tr208;
+		case 189u: goto tr209;
+		case 194u: goto tr409;
+		case 214u: goto tr410;
+		case 230u: goto tr407;
 	}
-	if ( (*p) < 81u ) {
-		if ( (*p) > 18u ) {
-			if ( 42u <= (*p) && (*p) <= 45u )
-				goto tr136;
-		} else if ( (*p) >= 16u )
-			goto tr136;
-	} else if ( (*p) > 83u ) {
-		if ( (*p) < 126u ) {
-			if ( 88u <= (*p) && (*p) <= 95u )
-				goto tr136;
-		} else if ( (*p) > 127u ) {
-			if ( 188u <= (*p) && (*p) <= 189u )
-				goto tr136;
+	if ( (*p) < 88u ) {
+		if ( (*p) < 42u ) {
+			if ( 16u <= (*p) && (*p) <= 17u )
+				goto tr404;
+		} else if ( (*p) > 45u ) {
+			if ( 81u <= (*p) && (*p) <= 83u )
+				goto tr404;
 		} else
-			goto tr136;
+			goto tr404;
+	} else if ( (*p) > 89u ) {
+		if ( (*p) < 92u ) {
+			if ( 90u <= (*p) && (*p) <= 91u )
+				goto tr407;
+		} else if ( (*p) > 95u ) {
+			if ( 126u <= (*p) && (*p) <= 127u )
+				goto tr407;
+		} else
+			goto tr404;
 	} else
-		goto tr136;
+		goto tr404;
 	goto tr19;
-tr314:
+tr456:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
      }
-	goto st220;
-st220:
+	goto st228;
+st228:
 	if ( ++p == pe )
-		goto _test_eof220;
-case 220:
-#line 6158 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof228;
+case 228:
+#line 7763 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto st34;
-		case 5u: goto st35;
+		case 4u: goto st35;
+		case 5u: goto st36;
 		case 20u: goto st2;
 		case 21u: goto st3;
 		case 28u: goto st2;
@@ -6170,14 +7775,14 @@ case 220:
 		case 53u: goto st3;
 		case 60u: goto st2;
 		case 61u: goto st3;
-		case 68u: goto st40;
+		case 68u: goto st41;
 		case 84u: goto st8;
 		case 92u: goto st8;
 		case 100u: goto st8;
 		case 108u: goto st8;
 		case 116u: goto st8;
 		case 124u: goto st8;
-		case 132u: goto st41;
+		case 132u: goto st42;
 		case 148u: goto st9;
 		case 156u: goto st9;
 		case 164u: goto st9;
@@ -6194,7 +7799,7 @@ case 220:
 				if ( 72u <= (*p) && (*p) <= 79u )
 					goto tr19;
 			} else if ( (*p) >= 64u )
-				goto st39;
+				goto st40;
 		} else
 			goto tr19;
 	} else if ( (*p) > 127u ) {
@@ -6203,7 +7808,7 @@ case 220:
 				if ( 136u <= (*p) && (*p) <= 143u )
 					goto tr19;
 			} else if ( (*p) >= 128u )
-				goto st35;
+				goto st36;
 		} else if ( (*p) > 191u ) {
 			if ( (*p) > 199u ) {
 				if ( 200u <= (*p) && (*p) <= 207u )
@@ -6215,21 +7820,21 @@ case 220:
 	} else
 		goto st7;
 	goto tr0;
-tr315:
+tr457:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
      }
-	goto st221;
-st221:
+	goto st229;
+st229:
 	if ( ++p == pe )
-		goto _test_eof221;
-case 221:
-#line 6230 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof229;
+case 229:
+#line 7835 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto st110;
-		case 5u: goto st111;
+		case 4u: goto st113;
+		case 5u: goto st114;
 		case 20u: goto st2;
 		case 21u: goto st3;
 		case 28u: goto st2;
@@ -6242,14 +7847,14 @@ case 221:
 		case 53u: goto st3;
 		case 60u: goto st2;
 		case 61u: goto st3;
-		case 68u: goto st116;
+		case 68u: goto st119;
 		case 84u: goto st8;
 		case 92u: goto st8;
 		case 100u: goto st8;
 		case 108u: goto st8;
 		case 116u: goto st8;
 		case 124u: goto st8;
-		case 132u: goto st117;
+		case 132u: goto st120;
 		case 148u: goto st9;
 		case 156u: goto st9;
 		case 164u: goto st9;
@@ -6266,7 +7871,7 @@ case 221:
 				if ( 72u <= (*p) && (*p) <= 79u )
 					goto tr19;
 			} else if ( (*p) >= 64u )
-				goto st115;
+				goto st118;
 		} else
 			goto tr19;
 	} else if ( (*p) > 127u ) {
@@ -6275,7 +7880,7 @@ case 221:
 				if ( 136u <= (*p) && (*p) <= 143u )
 					goto tr19;
 			} else if ( (*p) >= 128u )
-				goto st111;
+				goto st114;
 		} else if ( (*p) > 191u ) {
 			if ( (*p) > 199u ) {
 				if ( 200u <= (*p) && (*p) <= 207u )
@@ -6287,18 +7892,18 @@ case 221:
 	} else
 		goto st7;
 	goto tr0;
-tr316:
+tr458:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
      }
-	goto st222;
-st222:
+	goto st230;
+st230:
 	if ( ++p == pe )
-		goto _test_eof222;
-case 222:
-#line 6302 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof230;
+case 230:
+#line 7907 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -6321,875 +7926,7 @@ case 222:
 	} else
 		goto st7;
 	goto tr19;
-tr318:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-        begin = p;
-        BitmapSetBit(valid_targets, p - data);
-     }
-	goto st223;
-st223:
-	if ( ++p == pe )
-		goto _test_eof223;
-case 223:
-#line 6336 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 180u: goto st9;
-		case 208u: goto tr271;
-		case 224u: goto tr271;
-	}
-	if ( (*p) < 112u ) {
-		if ( (*p) < 48u ) {
-			if ( (*p) <= 15u )
-				goto tr0;
-		} else if ( (*p) > 55u ) {
-			if ( 64u <= (*p) && (*p) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*p) > 119u ) {
-		if ( (*p) < 176u ) {
-			if ( 128u <= (*p) && (*p) <= 143u )
-				goto st3;
-		} else if ( (*p) > 183u ) {
-			if ( (*p) > 207u ) {
-				if ( 240u <= (*p) && (*p) <= 247u )
-					goto tr0;
-			} else if ( (*p) >= 192u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr19;
-st224:
-	if ( ++p == pe )
-		goto _test_eof224;
-case 224:
-	if ( (*p) == 224u )
-		goto tr272;
-	goto tr11;
-tr272:
-#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{ }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       begin = p + 1;
-     }
-	goto st241;
-st241:
-	if ( ++p == pe )
-		goto _test_eof241;
-case 241:
-#line 6399 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 4u: goto tr280;
-		case 5u: goto tr281;
-		case 12u: goto tr280;
-		case 13u: goto tr281;
-		case 14u: goto tr19;
-		case 15u: goto tr282;
-		case 20u: goto tr280;
-		case 21u: goto tr281;
-		case 28u: goto tr280;
-		case 29u: goto tr281;
-		case 36u: goto tr280;
-		case 37u: goto tr281;
-		case 44u: goto tr280;
-		case 45u: goto tr281;
-		case 46u: goto tr283;
-		case 47u: goto tr19;
-		case 52u: goto tr280;
-		case 53u: goto tr281;
-		case 60u: goto tr280;
-		case 61u: goto tr281;
-		case 62u: goto tr284;
-		case 63u: goto tr19;
-		case 101u: goto tr286;
-		case 102u: goto tr287;
-		case 104u: goto tr281;
-		case 105u: goto tr288;
-		case 106u: goto tr280;
-		case 107u: goto tr289;
-		case 128u: goto tr289;
-		case 129u: goto tr288;
-		case 130u: goto tr19;
-		case 131u: goto tr291;
-		case 141u: goto tr292;
-		case 143u: goto tr293;
-		case 154u: goto tr19;
-		case 168u: goto tr280;
-		case 169u: goto tr281;
-		case 196u: goto tr296;
-		case 197u: goto tr297;
-		case 198u: goto tr298;
-		case 199u: goto tr299;
-		case 200u: goto tr300;
-		case 202u: goto tr301;
-		case 216u: goto tr279;
-		case 217u: goto tr303;
-		case 218u: goto tr304;
-		case 219u: goto tr305;
-		case 220u: goto tr306;
-		case 221u: goto tr307;
-		case 222u: goto tr308;
-		case 223u: goto tr309;
-		case 235u: goto tr290;
-		case 240u: goto tr311;
-		case 242u: goto tr312;
-		case 243u: goto tr313;
-		case 246u: goto tr314;
-		case 247u: goto tr315;
-		case 254u: goto tr316;
-		case 255u: goto tr319;
-	}
-	if ( (*p) < 132u ) {
-		if ( (*p) < 32u ) {
-			if ( (*p) < 8u ) {
-				if ( (*p) > 3u ) {
-					if ( 6u <= (*p) && (*p) <= 7u )
-						goto tr19;
-				} else
-					goto tr279;
-			} else if ( (*p) > 19u ) {
-				if ( (*p) < 24u ) {
-					if ( 22u <= (*p) && (*p) <= 23u )
-						goto tr19;
-				} else if ( (*p) > 27u ) {
-					if ( 30u <= (*p) && (*p) <= 31u )
-						goto tr19;
-				} else
-					goto tr279;
-			} else
-				goto tr279;
-		} else if ( (*p) > 35u ) {
-			if ( (*p) < 54u ) {
-				if ( (*p) > 39u ) {
-					if ( 40u <= (*p) && (*p) <= 51u )
-						goto tr279;
-				} else if ( (*p) >= 38u )
-					goto tr19;
-			} else if ( (*p) > 55u ) {
-				if ( (*p) < 96u ) {
-					if ( 56u <= (*p) && (*p) <= 59u )
-						goto tr279;
-				} else if ( (*p) > 111u ) {
-					if ( 112u <= (*p) && (*p) <= 127u )
-						goto tr290;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr279;
-	} else if ( (*p) > 139u ) {
-		if ( (*p) < 194u ) {
-			if ( (*p) < 160u ) {
-				if ( (*p) > 142u ) {
-					if ( 156u <= (*p) && (*p) <= 157u )
-						goto tr19;
-				} else if ( (*p) >= 140u )
-					goto tr19;
-			} else if ( (*p) > 163u ) {
-				if ( (*p) < 184u ) {
-					if ( 176u <= (*p) && (*p) <= 183u )
-						goto tr280;
-				} else if ( (*p) > 191u ) {
-					if ( 192u <= (*p) && (*p) <= 193u )
-						goto tr295;
-				} else
-					goto tr281;
-			} else
-				goto tr294;
-		} else if ( (*p) > 195u ) {
-			if ( (*p) < 212u ) {
-				if ( (*p) > 207u ) {
-					if ( 208u <= (*p) && (*p) <= 211u )
-						goto tr302;
-				} else if ( (*p) >= 204u )
-					goto tr19;
-			} else if ( (*p) > 231u ) {
-				if ( (*p) < 234u ) {
-					if ( 232u <= (*p) && (*p) <= 233u )
-						goto tr310;
-				} else if ( (*p) > 241u ) {
-					if ( 250u <= (*p) && (*p) <= 251u )
-						goto tr19;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr19;
-	} else
-		goto tr279;
-	goto tr285;
-tr319:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-        begin = p;
-        BitmapSetBit(valid_targets, p - data);
-     }
-	goto st225;
-st225:
-	if ( ++p == pe )
-		goto _test_eof225;
-case 225:
-#line 6553 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 180u: goto st9;
-		case 209u: goto tr271;
-		case 225u: goto tr271;
-	}
-	if ( (*p) < 112u ) {
-		if ( (*p) < 48u ) {
-			if ( (*p) <= 15u )
-				goto tr0;
-		} else if ( (*p) > 55u ) {
-			if ( 64u <= (*p) && (*p) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*p) > 119u ) {
-		if ( (*p) < 176u ) {
-			if ( 128u <= (*p) && (*p) <= 143u )
-				goto st3;
-		} else if ( (*p) > 183u ) {
-			if ( (*p) > 207u ) {
-				if ( 240u <= (*p) && (*p) <= 247u )
-					goto tr0;
-			} else if ( (*p) >= 192u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr19;
-st226:
-	if ( ++p == pe )
-		goto _test_eof226;
-case 226:
-	if ( (*p) == 224u )
-		goto tr273;
-	goto tr11;
-tr273:
-#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{ }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       begin = p + 1;
-     }
-	goto st242;
-st242:
-	if ( ++p == pe )
-		goto _test_eof242;
-case 242:
-#line 6616 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 4u: goto tr280;
-		case 5u: goto tr281;
-		case 12u: goto tr280;
-		case 13u: goto tr281;
-		case 14u: goto tr19;
-		case 15u: goto tr282;
-		case 20u: goto tr280;
-		case 21u: goto tr281;
-		case 28u: goto tr280;
-		case 29u: goto tr281;
-		case 36u: goto tr280;
-		case 37u: goto tr281;
-		case 44u: goto tr280;
-		case 45u: goto tr281;
-		case 46u: goto tr283;
-		case 47u: goto tr19;
-		case 52u: goto tr280;
-		case 53u: goto tr281;
-		case 60u: goto tr280;
-		case 61u: goto tr281;
-		case 62u: goto tr284;
-		case 63u: goto tr19;
-		case 101u: goto tr286;
-		case 102u: goto tr287;
-		case 104u: goto tr281;
-		case 105u: goto tr288;
-		case 106u: goto tr280;
-		case 107u: goto tr289;
-		case 128u: goto tr289;
-		case 129u: goto tr288;
-		case 130u: goto tr19;
-		case 131u: goto tr291;
-		case 141u: goto tr292;
-		case 143u: goto tr293;
-		case 154u: goto tr19;
-		case 168u: goto tr280;
-		case 169u: goto tr281;
-		case 196u: goto tr296;
-		case 197u: goto tr297;
-		case 198u: goto tr298;
-		case 199u: goto tr299;
-		case 200u: goto tr300;
-		case 202u: goto tr301;
-		case 216u: goto tr279;
-		case 217u: goto tr303;
-		case 218u: goto tr304;
-		case 219u: goto tr305;
-		case 220u: goto tr306;
-		case 221u: goto tr307;
-		case 222u: goto tr308;
-		case 223u: goto tr309;
-		case 235u: goto tr290;
-		case 240u: goto tr311;
-		case 242u: goto tr312;
-		case 243u: goto tr313;
-		case 246u: goto tr314;
-		case 247u: goto tr315;
-		case 254u: goto tr316;
-		case 255u: goto tr320;
-	}
-	if ( (*p) < 132u ) {
-		if ( (*p) < 32u ) {
-			if ( (*p) < 8u ) {
-				if ( (*p) > 3u ) {
-					if ( 6u <= (*p) && (*p) <= 7u )
-						goto tr19;
-				} else
-					goto tr279;
-			} else if ( (*p) > 19u ) {
-				if ( (*p) < 24u ) {
-					if ( 22u <= (*p) && (*p) <= 23u )
-						goto tr19;
-				} else if ( (*p) > 27u ) {
-					if ( 30u <= (*p) && (*p) <= 31u )
-						goto tr19;
-				} else
-					goto tr279;
-			} else
-				goto tr279;
-		} else if ( (*p) > 35u ) {
-			if ( (*p) < 54u ) {
-				if ( (*p) > 39u ) {
-					if ( 40u <= (*p) && (*p) <= 51u )
-						goto tr279;
-				} else if ( (*p) >= 38u )
-					goto tr19;
-			} else if ( (*p) > 55u ) {
-				if ( (*p) < 96u ) {
-					if ( 56u <= (*p) && (*p) <= 59u )
-						goto tr279;
-				} else if ( (*p) > 111u ) {
-					if ( 112u <= (*p) && (*p) <= 127u )
-						goto tr290;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr279;
-	} else if ( (*p) > 139u ) {
-		if ( (*p) < 194u ) {
-			if ( (*p) < 160u ) {
-				if ( (*p) > 142u ) {
-					if ( 156u <= (*p) && (*p) <= 157u )
-						goto tr19;
-				} else if ( (*p) >= 140u )
-					goto tr19;
-			} else if ( (*p) > 163u ) {
-				if ( (*p) < 184u ) {
-					if ( 176u <= (*p) && (*p) <= 183u )
-						goto tr280;
-				} else if ( (*p) > 191u ) {
-					if ( 192u <= (*p) && (*p) <= 193u )
-						goto tr295;
-				} else
-					goto tr281;
-			} else
-				goto tr294;
-		} else if ( (*p) > 195u ) {
-			if ( (*p) < 212u ) {
-				if ( (*p) > 207u ) {
-					if ( 208u <= (*p) && (*p) <= 211u )
-						goto tr302;
-				} else if ( (*p) >= 204u )
-					goto tr19;
-			} else if ( (*p) > 231u ) {
-				if ( (*p) < 234u ) {
-					if ( 232u <= (*p) && (*p) <= 233u )
-						goto tr310;
-				} else if ( (*p) > 241u ) {
-					if ( 250u <= (*p) && (*p) <= 251u )
-						goto tr19;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr19;
-	} else
-		goto tr279;
-	goto tr285;
-tr320:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-        begin = p;
-        BitmapSetBit(valid_targets, p - data);
-     }
-	goto st227;
-st227:
-	if ( ++p == pe )
-		goto _test_eof227;
-case 227:
-#line 6770 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 180u: goto st9;
-		case 210u: goto tr271;
-		case 226u: goto tr271;
-	}
-	if ( (*p) < 112u ) {
-		if ( (*p) < 48u ) {
-			if ( (*p) <= 15u )
-				goto tr0;
-		} else if ( (*p) > 55u ) {
-			if ( 64u <= (*p) && (*p) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*p) > 119u ) {
-		if ( (*p) < 176u ) {
-			if ( 128u <= (*p) && (*p) <= 143u )
-				goto st3;
-		} else if ( (*p) > 183u ) {
-			if ( (*p) > 207u ) {
-				if ( 240u <= (*p) && (*p) <= 247u )
-					goto tr0;
-			} else if ( (*p) >= 192u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr19;
-st228:
-	if ( ++p == pe )
-		goto _test_eof228;
-case 228:
-	if ( (*p) == 224u )
-		goto tr274;
-	goto tr11;
-tr274:
-#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{ }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       begin = p + 1;
-     }
-	goto st243;
-st243:
-	if ( ++p == pe )
-		goto _test_eof243;
-case 243:
-#line 6833 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 4u: goto tr280;
-		case 5u: goto tr281;
-		case 12u: goto tr280;
-		case 13u: goto tr281;
-		case 14u: goto tr19;
-		case 15u: goto tr282;
-		case 20u: goto tr280;
-		case 21u: goto tr281;
-		case 28u: goto tr280;
-		case 29u: goto tr281;
-		case 36u: goto tr280;
-		case 37u: goto tr281;
-		case 44u: goto tr280;
-		case 45u: goto tr281;
-		case 46u: goto tr283;
-		case 47u: goto tr19;
-		case 52u: goto tr280;
-		case 53u: goto tr281;
-		case 60u: goto tr280;
-		case 61u: goto tr281;
-		case 62u: goto tr284;
-		case 63u: goto tr19;
-		case 101u: goto tr286;
-		case 102u: goto tr287;
-		case 104u: goto tr281;
-		case 105u: goto tr288;
-		case 106u: goto tr280;
-		case 107u: goto tr289;
-		case 128u: goto tr289;
-		case 129u: goto tr288;
-		case 130u: goto tr19;
-		case 131u: goto tr291;
-		case 141u: goto tr292;
-		case 143u: goto tr293;
-		case 154u: goto tr19;
-		case 168u: goto tr280;
-		case 169u: goto tr281;
-		case 196u: goto tr296;
-		case 197u: goto tr297;
-		case 198u: goto tr298;
-		case 199u: goto tr299;
-		case 200u: goto tr300;
-		case 202u: goto tr301;
-		case 216u: goto tr279;
-		case 217u: goto tr303;
-		case 218u: goto tr304;
-		case 219u: goto tr305;
-		case 220u: goto tr306;
-		case 221u: goto tr307;
-		case 222u: goto tr308;
-		case 223u: goto tr309;
-		case 235u: goto tr290;
-		case 240u: goto tr311;
-		case 242u: goto tr312;
-		case 243u: goto tr313;
-		case 246u: goto tr314;
-		case 247u: goto tr315;
-		case 254u: goto tr316;
-		case 255u: goto tr321;
-	}
-	if ( (*p) < 132u ) {
-		if ( (*p) < 32u ) {
-			if ( (*p) < 8u ) {
-				if ( (*p) > 3u ) {
-					if ( 6u <= (*p) && (*p) <= 7u )
-						goto tr19;
-				} else
-					goto tr279;
-			} else if ( (*p) > 19u ) {
-				if ( (*p) < 24u ) {
-					if ( 22u <= (*p) && (*p) <= 23u )
-						goto tr19;
-				} else if ( (*p) > 27u ) {
-					if ( 30u <= (*p) && (*p) <= 31u )
-						goto tr19;
-				} else
-					goto tr279;
-			} else
-				goto tr279;
-		} else if ( (*p) > 35u ) {
-			if ( (*p) < 54u ) {
-				if ( (*p) > 39u ) {
-					if ( 40u <= (*p) && (*p) <= 51u )
-						goto tr279;
-				} else if ( (*p) >= 38u )
-					goto tr19;
-			} else if ( (*p) > 55u ) {
-				if ( (*p) < 96u ) {
-					if ( 56u <= (*p) && (*p) <= 59u )
-						goto tr279;
-				} else if ( (*p) > 111u ) {
-					if ( 112u <= (*p) && (*p) <= 127u )
-						goto tr290;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr279;
-	} else if ( (*p) > 139u ) {
-		if ( (*p) < 194u ) {
-			if ( (*p) < 160u ) {
-				if ( (*p) > 142u ) {
-					if ( 156u <= (*p) && (*p) <= 157u )
-						goto tr19;
-				} else if ( (*p) >= 140u )
-					goto tr19;
-			} else if ( (*p) > 163u ) {
-				if ( (*p) < 184u ) {
-					if ( 176u <= (*p) && (*p) <= 183u )
-						goto tr280;
-				} else if ( (*p) > 191u ) {
-					if ( 192u <= (*p) && (*p) <= 193u )
-						goto tr295;
-				} else
-					goto tr281;
-			} else
-				goto tr294;
-		} else if ( (*p) > 195u ) {
-			if ( (*p) < 212u ) {
-				if ( (*p) > 207u ) {
-					if ( 208u <= (*p) && (*p) <= 211u )
-						goto tr302;
-				} else if ( (*p) >= 204u )
-					goto tr19;
-			} else if ( (*p) > 231u ) {
-				if ( (*p) < 234u ) {
-					if ( 232u <= (*p) && (*p) <= 233u )
-						goto tr310;
-				} else if ( (*p) > 241u ) {
-					if ( 250u <= (*p) && (*p) <= 251u )
-						goto tr19;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr19;
-	} else
-		goto tr279;
-	goto tr285;
-tr321:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-        begin = p;
-        BitmapSetBit(valid_targets, p - data);
-     }
-	goto st229;
-st229:
-	if ( ++p == pe )
-		goto _test_eof229;
-case 229:
-#line 6987 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 4u: goto st2;
-		case 5u: goto st3;
-		case 12u: goto st2;
-		case 13u: goto st3;
-		case 52u: goto st2;
-		case 53u: goto st3;
-		case 68u: goto st8;
-		case 76u: goto st8;
-		case 116u: goto st8;
-		case 132u: goto st9;
-		case 140u: goto st9;
-		case 180u: goto st9;
-		case 211u: goto tr271;
-		case 227u: goto tr271;
-	}
-	if ( (*p) < 112u ) {
-		if ( (*p) < 48u ) {
-			if ( (*p) <= 15u )
-				goto tr0;
-		} else if ( (*p) > 55u ) {
-			if ( 64u <= (*p) && (*p) <= 79u )
-				goto st7;
-		} else
-			goto tr0;
-	} else if ( (*p) > 119u ) {
-		if ( (*p) < 176u ) {
-			if ( 128u <= (*p) && (*p) <= 143u )
-				goto st3;
-		} else if ( (*p) > 183u ) {
-			if ( (*p) > 207u ) {
-				if ( 240u <= (*p) && (*p) <= 247u )
-					goto tr0;
-			} else if ( (*p) >= 192u )
-				goto tr0;
-		} else
-			goto st3;
-	} else
-		goto st7;
-	goto tr19;
-st230:
-	if ( ++p == pe )
-		goto _test_eof230;
-case 230:
-	if ( (*p) == 224u )
-		goto tr275;
-	goto tr11;
-tr275:
-#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{ }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
-	{
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       begin = p + 1;
-     }
-	goto st244;
-st244:
-	if ( ++p == pe )
-		goto _test_eof244;
-case 244:
-#line 7050 "src/trusted/validator_ragel/gen/validator-x86_32.c"
-	switch( (*p) ) {
-		case 4u: goto tr280;
-		case 5u: goto tr281;
-		case 12u: goto tr280;
-		case 13u: goto tr281;
-		case 14u: goto tr19;
-		case 15u: goto tr282;
-		case 20u: goto tr280;
-		case 21u: goto tr281;
-		case 28u: goto tr280;
-		case 29u: goto tr281;
-		case 36u: goto tr280;
-		case 37u: goto tr281;
-		case 44u: goto tr280;
-		case 45u: goto tr281;
-		case 46u: goto tr283;
-		case 47u: goto tr19;
-		case 52u: goto tr280;
-		case 53u: goto tr281;
-		case 60u: goto tr280;
-		case 61u: goto tr281;
-		case 62u: goto tr284;
-		case 63u: goto tr19;
-		case 101u: goto tr286;
-		case 102u: goto tr287;
-		case 104u: goto tr281;
-		case 105u: goto tr288;
-		case 106u: goto tr280;
-		case 107u: goto tr289;
-		case 128u: goto tr289;
-		case 129u: goto tr288;
-		case 130u: goto tr19;
-		case 131u: goto tr291;
-		case 141u: goto tr292;
-		case 143u: goto tr293;
-		case 154u: goto tr19;
-		case 168u: goto tr280;
-		case 169u: goto tr281;
-		case 196u: goto tr296;
-		case 197u: goto tr297;
-		case 198u: goto tr298;
-		case 199u: goto tr299;
-		case 200u: goto tr300;
-		case 202u: goto tr301;
-		case 216u: goto tr279;
-		case 217u: goto tr303;
-		case 218u: goto tr304;
-		case 219u: goto tr305;
-		case 220u: goto tr306;
-		case 221u: goto tr307;
-		case 222u: goto tr308;
-		case 223u: goto tr309;
-		case 235u: goto tr290;
-		case 240u: goto tr311;
-		case 242u: goto tr312;
-		case 243u: goto tr313;
-		case 246u: goto tr314;
-		case 247u: goto tr315;
-		case 254u: goto tr316;
-		case 255u: goto tr322;
-	}
-	if ( (*p) < 132u ) {
-		if ( (*p) < 32u ) {
-			if ( (*p) < 8u ) {
-				if ( (*p) > 3u ) {
-					if ( 6u <= (*p) && (*p) <= 7u )
-						goto tr19;
-				} else
-					goto tr279;
-			} else if ( (*p) > 19u ) {
-				if ( (*p) < 24u ) {
-					if ( 22u <= (*p) && (*p) <= 23u )
-						goto tr19;
-				} else if ( (*p) > 27u ) {
-					if ( 30u <= (*p) && (*p) <= 31u )
-						goto tr19;
-				} else
-					goto tr279;
-			} else
-				goto tr279;
-		} else if ( (*p) > 35u ) {
-			if ( (*p) < 54u ) {
-				if ( (*p) > 39u ) {
-					if ( 40u <= (*p) && (*p) <= 51u )
-						goto tr279;
-				} else if ( (*p) >= 38u )
-					goto tr19;
-			} else if ( (*p) > 55u ) {
-				if ( (*p) < 96u ) {
-					if ( 56u <= (*p) && (*p) <= 59u )
-						goto tr279;
-				} else if ( (*p) > 111u ) {
-					if ( 112u <= (*p) && (*p) <= 127u )
-						goto tr290;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr279;
-	} else if ( (*p) > 139u ) {
-		if ( (*p) < 194u ) {
-			if ( (*p) < 160u ) {
-				if ( (*p) > 142u ) {
-					if ( 156u <= (*p) && (*p) <= 157u )
-						goto tr19;
-				} else if ( (*p) >= 140u )
-					goto tr19;
-			} else if ( (*p) > 163u ) {
-				if ( (*p) < 184u ) {
-					if ( 176u <= (*p) && (*p) <= 183u )
-						goto tr280;
-				} else if ( (*p) > 191u ) {
-					if ( 192u <= (*p) && (*p) <= 193u )
-						goto tr295;
-				} else
-					goto tr281;
-			} else
-				goto tr294;
-		} else if ( (*p) > 195u ) {
-			if ( (*p) < 212u ) {
-				if ( (*p) > 207u ) {
-					if ( 208u <= (*p) && (*p) <= 211u )
-						goto tr302;
-				} else if ( (*p) >= 204u )
-					goto tr19;
-			} else if ( (*p) > 231u ) {
-				if ( (*p) < 234u ) {
-					if ( 232u <= (*p) && (*p) <= 233u )
-						goto tr310;
-				} else if ( (*p) > 241u ) {
-					if ( 250u <= (*p) && (*p) <= 251u )
-						goto tr19;
-				} else
-					goto tr19;
-			} else
-				goto tr19;
-		} else
-			goto tr19;
-	} else
-		goto tr279;
-	goto tr285;
-tr322:
+tr460:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -7200,7 +7937,7 @@ st231:
 	if ( ++p == pe )
 		goto _test_eof231;
 case 231:
-#line 7204 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7941 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -7214,8 +7951,8 @@ case 231:
 		case 132u: goto st9;
 		case 140u: goto st9;
 		case 180u: goto st9;
-		case 212u: goto tr271;
-		case 228u: goto tr271;
+		case 208u: goto tr411;
+		case 224u: goto tr411;
 	}
 	if ( (*p) < 112u ) {
 		if ( (*p) < 48u ) {
@@ -7246,9 +7983,9 @@ st232:
 		goto _test_eof232;
 case 232:
 	if ( (*p) == 224u )
-		goto tr276;
+		goto tr412;
 	goto tr11;
-tr276:
+tr412:
 #line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
 #line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
@@ -7258,72 +7995,72 @@ tr276:
         * causing error.  */
        begin = p + 1;
      }
-	goto st245;
-st245:
+	goto st249;
+st249:
 	if ( ++p == pe )
-		goto _test_eof245;
-case 245:
-#line 7267 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof249;
+case 249:
+#line 8004 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto tr280;
-		case 5u: goto tr281;
-		case 12u: goto tr280;
-		case 13u: goto tr281;
+		case 4u: goto tr420;
+		case 5u: goto tr421;
+		case 12u: goto tr420;
+		case 13u: goto tr421;
 		case 14u: goto tr19;
-		case 15u: goto tr282;
-		case 20u: goto tr280;
-		case 21u: goto tr281;
-		case 28u: goto tr280;
-		case 29u: goto tr281;
-		case 36u: goto tr280;
-		case 37u: goto tr281;
-		case 44u: goto tr280;
-		case 45u: goto tr281;
-		case 46u: goto tr283;
+		case 15u: goto tr422;
+		case 20u: goto tr420;
+		case 21u: goto tr421;
+		case 28u: goto tr420;
+		case 29u: goto tr421;
+		case 36u: goto tr420;
+		case 37u: goto tr421;
+		case 44u: goto tr420;
+		case 45u: goto tr421;
+		case 46u: goto tr423;
 		case 47u: goto tr19;
-		case 52u: goto tr280;
-		case 53u: goto tr281;
-		case 60u: goto tr280;
-		case 61u: goto tr281;
-		case 62u: goto tr284;
+		case 52u: goto tr420;
+		case 53u: goto tr421;
+		case 60u: goto tr420;
+		case 61u: goto tr421;
+		case 62u: goto tr424;
 		case 63u: goto tr19;
-		case 101u: goto tr286;
-		case 102u: goto tr287;
-		case 104u: goto tr281;
-		case 105u: goto tr288;
-		case 106u: goto tr280;
-		case 107u: goto tr289;
-		case 128u: goto tr289;
-		case 129u: goto tr288;
+		case 101u: goto tr426;
+		case 102u: goto tr427;
+		case 104u: goto tr421;
+		case 105u: goto tr428;
+		case 106u: goto tr420;
+		case 107u: goto tr429;
+		case 128u: goto tr429;
+		case 129u: goto tr428;
 		case 130u: goto tr19;
-		case 131u: goto tr291;
-		case 141u: goto tr292;
-		case 143u: goto tr293;
-		case 154u: goto tr19;
-		case 168u: goto tr280;
-		case 169u: goto tr281;
-		case 196u: goto tr296;
-		case 197u: goto tr297;
-		case 198u: goto tr298;
-		case 199u: goto tr299;
-		case 200u: goto tr300;
-		case 202u: goto tr301;
-		case 216u: goto tr279;
-		case 217u: goto tr303;
-		case 218u: goto tr304;
-		case 219u: goto tr305;
-		case 220u: goto tr306;
-		case 221u: goto tr307;
-		case 222u: goto tr308;
-		case 223u: goto tr309;
-		case 235u: goto tr290;
-		case 240u: goto tr311;
-		case 242u: goto tr312;
-		case 243u: goto tr313;
-		case 246u: goto tr314;
-		case 247u: goto tr315;
-		case 254u: goto tr316;
-		case 255u: goto tr323;
+		case 131u: goto tr431;
+		case 141u: goto tr432;
+		case 143u: goto tr433;
+		case 155u: goto tr434;
+		case 168u: goto tr420;
+		case 169u: goto tr421;
+		case 196u: goto tr437;
+		case 197u: goto tr438;
+		case 198u: goto tr439;
+		case 199u: goto tr440;
+		case 200u: goto tr441;
+		case 202u: goto tr442;
+		case 216u: goto tr444;
+		case 217u: goto tr445;
+		case 218u: goto tr446;
+		case 219u: goto tr447;
+		case 220u: goto tr448;
+		case 221u: goto tr449;
+		case 222u: goto tr450;
+		case 223u: goto tr451;
+		case 235u: goto tr430;
+		case 240u: goto tr453;
+		case 242u: goto tr454;
+		case 243u: goto tr455;
+		case 246u: goto tr456;
+		case 247u: goto tr457;
+		case 254u: goto tr458;
+		case 255u: goto tr461;
 	}
 	if ( (*p) < 132u ) {
 		if ( (*p) < 32u ) {
@@ -7332,7 +8069,7 @@ case 245:
 					if ( 6u <= (*p) && (*p) <= 7u )
 						goto tr19;
 				} else
-					goto tr279;
+					goto tr419;
 			} else if ( (*p) > 19u ) {
 				if ( (*p) < 24u ) {
 					if ( 22u <= (*p) && (*p) <= 23u )
@@ -7341,59 +8078,59 @@ case 245:
 					if ( 30u <= (*p) && (*p) <= 31u )
 						goto tr19;
 				} else
-					goto tr279;
+					goto tr419;
 			} else
-				goto tr279;
+				goto tr419;
 		} else if ( (*p) > 35u ) {
 			if ( (*p) < 54u ) {
 				if ( (*p) > 39u ) {
 					if ( 40u <= (*p) && (*p) <= 51u )
-						goto tr279;
+						goto tr419;
 				} else if ( (*p) >= 38u )
 					goto tr19;
 			} else if ( (*p) > 55u ) {
 				if ( (*p) < 96u ) {
 					if ( 56u <= (*p) && (*p) <= 59u )
-						goto tr279;
+						goto tr419;
 				} else if ( (*p) > 111u ) {
 					if ( 112u <= (*p) && (*p) <= 127u )
-						goto tr290;
+						goto tr430;
 				} else
 					goto tr19;
 			} else
 				goto tr19;
 		} else
-			goto tr279;
+			goto tr419;
 	} else if ( (*p) > 139u ) {
 		if ( (*p) < 194u ) {
 			if ( (*p) < 160u ) {
 				if ( (*p) > 142u ) {
-					if ( 156u <= (*p) && (*p) <= 157u )
+					if ( 154u <= (*p) && (*p) <= 157u )
 						goto tr19;
 				} else if ( (*p) >= 140u )
 					goto tr19;
 			} else if ( (*p) > 163u ) {
 				if ( (*p) < 184u ) {
 					if ( 176u <= (*p) && (*p) <= 183u )
-						goto tr280;
+						goto tr420;
 				} else if ( (*p) > 191u ) {
 					if ( 192u <= (*p) && (*p) <= 193u )
-						goto tr295;
+						goto tr436;
 				} else
-					goto tr281;
+					goto tr421;
 			} else
-				goto tr294;
+				goto tr435;
 		} else if ( (*p) > 195u ) {
 			if ( (*p) < 212u ) {
 				if ( (*p) > 207u ) {
 					if ( 208u <= (*p) && (*p) <= 211u )
-						goto tr302;
+						goto tr443;
 				} else if ( (*p) >= 204u )
 					goto tr19;
 			} else if ( (*p) > 231u ) {
 				if ( (*p) < 234u ) {
 					if ( 232u <= (*p) && (*p) <= 233u )
-						goto tr310;
+						goto tr452;
 				} else if ( (*p) > 241u ) {
 					if ( 250u <= (*p) && (*p) <= 251u )
 						goto tr19;
@@ -7404,9 +8141,9 @@ case 245:
 		} else
 			goto tr19;
 	} else
-		goto tr279;
-	goto tr285;
-tr323:
+		goto tr419;
+	goto tr425;
+tr461:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -7417,7 +8154,7 @@ st233:
 	if ( ++p == pe )
 		goto _test_eof233;
 case 233:
-#line 7421 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 8158 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -7431,8 +8168,8 @@ case 233:
 		case 132u: goto st9;
 		case 140u: goto st9;
 		case 180u: goto st9;
-		case 213u: goto tr271;
-		case 229u: goto tr271;
+		case 209u: goto tr411;
+		case 225u: goto tr411;
 	}
 	if ( (*p) < 112u ) {
 		if ( (*p) < 48u ) {
@@ -7463,9 +8200,9 @@ st234:
 		goto _test_eof234;
 case 234:
 	if ( (*p) == 224u )
-		goto tr277;
+		goto tr413;
 	goto tr11;
-tr277:
+tr413:
 #line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
 #line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
@@ -7475,72 +8212,72 @@ tr277:
         * causing error.  */
        begin = p + 1;
      }
-	goto st246;
-st246:
+	goto st250;
+st250:
 	if ( ++p == pe )
-		goto _test_eof246;
-case 246:
-#line 7484 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof250;
+case 250:
+#line 8221 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto tr280;
-		case 5u: goto tr281;
-		case 12u: goto tr280;
-		case 13u: goto tr281;
+		case 4u: goto tr420;
+		case 5u: goto tr421;
+		case 12u: goto tr420;
+		case 13u: goto tr421;
 		case 14u: goto tr19;
-		case 15u: goto tr282;
-		case 20u: goto tr280;
-		case 21u: goto tr281;
-		case 28u: goto tr280;
-		case 29u: goto tr281;
-		case 36u: goto tr280;
-		case 37u: goto tr281;
-		case 44u: goto tr280;
-		case 45u: goto tr281;
-		case 46u: goto tr283;
+		case 15u: goto tr422;
+		case 20u: goto tr420;
+		case 21u: goto tr421;
+		case 28u: goto tr420;
+		case 29u: goto tr421;
+		case 36u: goto tr420;
+		case 37u: goto tr421;
+		case 44u: goto tr420;
+		case 45u: goto tr421;
+		case 46u: goto tr423;
 		case 47u: goto tr19;
-		case 52u: goto tr280;
-		case 53u: goto tr281;
-		case 60u: goto tr280;
-		case 61u: goto tr281;
-		case 62u: goto tr284;
+		case 52u: goto tr420;
+		case 53u: goto tr421;
+		case 60u: goto tr420;
+		case 61u: goto tr421;
+		case 62u: goto tr424;
 		case 63u: goto tr19;
-		case 101u: goto tr286;
-		case 102u: goto tr287;
-		case 104u: goto tr281;
-		case 105u: goto tr288;
-		case 106u: goto tr280;
-		case 107u: goto tr289;
-		case 128u: goto tr289;
-		case 129u: goto tr288;
+		case 101u: goto tr426;
+		case 102u: goto tr427;
+		case 104u: goto tr421;
+		case 105u: goto tr428;
+		case 106u: goto tr420;
+		case 107u: goto tr429;
+		case 128u: goto tr429;
+		case 129u: goto tr428;
 		case 130u: goto tr19;
-		case 131u: goto tr291;
-		case 141u: goto tr292;
-		case 143u: goto tr293;
-		case 154u: goto tr19;
-		case 168u: goto tr280;
-		case 169u: goto tr281;
-		case 196u: goto tr296;
-		case 197u: goto tr297;
-		case 198u: goto tr298;
-		case 199u: goto tr299;
-		case 200u: goto tr300;
-		case 202u: goto tr301;
-		case 216u: goto tr279;
-		case 217u: goto tr303;
-		case 218u: goto tr304;
-		case 219u: goto tr305;
-		case 220u: goto tr306;
-		case 221u: goto tr307;
-		case 222u: goto tr308;
-		case 223u: goto tr309;
-		case 235u: goto tr290;
-		case 240u: goto tr311;
-		case 242u: goto tr312;
-		case 243u: goto tr313;
-		case 246u: goto tr314;
-		case 247u: goto tr315;
-		case 254u: goto tr316;
-		case 255u: goto tr324;
+		case 131u: goto tr431;
+		case 141u: goto tr432;
+		case 143u: goto tr433;
+		case 155u: goto tr434;
+		case 168u: goto tr420;
+		case 169u: goto tr421;
+		case 196u: goto tr437;
+		case 197u: goto tr438;
+		case 198u: goto tr439;
+		case 199u: goto tr440;
+		case 200u: goto tr441;
+		case 202u: goto tr442;
+		case 216u: goto tr444;
+		case 217u: goto tr445;
+		case 218u: goto tr446;
+		case 219u: goto tr447;
+		case 220u: goto tr448;
+		case 221u: goto tr449;
+		case 222u: goto tr450;
+		case 223u: goto tr451;
+		case 235u: goto tr430;
+		case 240u: goto tr453;
+		case 242u: goto tr454;
+		case 243u: goto tr455;
+		case 246u: goto tr456;
+		case 247u: goto tr457;
+		case 254u: goto tr458;
+		case 255u: goto tr462;
 	}
 	if ( (*p) < 132u ) {
 		if ( (*p) < 32u ) {
@@ -7549,7 +8286,7 @@ case 246:
 					if ( 6u <= (*p) && (*p) <= 7u )
 						goto tr19;
 				} else
-					goto tr279;
+					goto tr419;
 			} else if ( (*p) > 19u ) {
 				if ( (*p) < 24u ) {
 					if ( 22u <= (*p) && (*p) <= 23u )
@@ -7558,59 +8295,59 @@ case 246:
 					if ( 30u <= (*p) && (*p) <= 31u )
 						goto tr19;
 				} else
-					goto tr279;
+					goto tr419;
 			} else
-				goto tr279;
+				goto tr419;
 		} else if ( (*p) > 35u ) {
 			if ( (*p) < 54u ) {
 				if ( (*p) > 39u ) {
 					if ( 40u <= (*p) && (*p) <= 51u )
-						goto tr279;
+						goto tr419;
 				} else if ( (*p) >= 38u )
 					goto tr19;
 			} else if ( (*p) > 55u ) {
 				if ( (*p) < 96u ) {
 					if ( 56u <= (*p) && (*p) <= 59u )
-						goto tr279;
+						goto tr419;
 				} else if ( (*p) > 111u ) {
 					if ( 112u <= (*p) && (*p) <= 127u )
-						goto tr290;
+						goto tr430;
 				} else
 					goto tr19;
 			} else
 				goto tr19;
 		} else
-			goto tr279;
+			goto tr419;
 	} else if ( (*p) > 139u ) {
 		if ( (*p) < 194u ) {
 			if ( (*p) < 160u ) {
 				if ( (*p) > 142u ) {
-					if ( 156u <= (*p) && (*p) <= 157u )
+					if ( 154u <= (*p) && (*p) <= 157u )
 						goto tr19;
 				} else if ( (*p) >= 140u )
 					goto tr19;
 			} else if ( (*p) > 163u ) {
 				if ( (*p) < 184u ) {
 					if ( 176u <= (*p) && (*p) <= 183u )
-						goto tr280;
+						goto tr420;
 				} else if ( (*p) > 191u ) {
 					if ( 192u <= (*p) && (*p) <= 193u )
-						goto tr295;
+						goto tr436;
 				} else
-					goto tr281;
+					goto tr421;
 			} else
-				goto tr294;
+				goto tr435;
 		} else if ( (*p) > 195u ) {
 			if ( (*p) < 212u ) {
 				if ( (*p) > 207u ) {
 					if ( 208u <= (*p) && (*p) <= 211u )
-						goto tr302;
+						goto tr443;
 				} else if ( (*p) >= 204u )
 					goto tr19;
 			} else if ( (*p) > 231u ) {
 				if ( (*p) < 234u ) {
 					if ( 232u <= (*p) && (*p) <= 233u )
-						goto tr310;
+						goto tr452;
 				} else if ( (*p) > 241u ) {
 					if ( 250u <= (*p) && (*p) <= 251u )
 						goto tr19;
@@ -7621,9 +8358,9 @@ case 246:
 		} else
 			goto tr19;
 	} else
-		goto tr279;
-	goto tr285;
-tr324:
+		goto tr419;
+	goto tr425;
+tr462:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -7634,7 +8371,7 @@ st235:
 	if ( ++p == pe )
 		goto _test_eof235;
 case 235:
-#line 7638 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 8375 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -7648,8 +8385,8 @@ case 235:
 		case 132u: goto st9;
 		case 140u: goto st9;
 		case 180u: goto st9;
-		case 214u: goto tr271;
-		case 230u: goto tr271;
+		case 210u: goto tr411;
+		case 226u: goto tr411;
 	}
 	if ( (*p) < 112u ) {
 		if ( (*p) < 48u ) {
@@ -7680,9 +8417,9 @@ st236:
 		goto _test_eof236;
 case 236:
 	if ( (*p) == 224u )
-		goto tr278;
+		goto tr414;
 	goto tr11;
-tr278:
+tr414:
 #line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
 #line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
@@ -7692,72 +8429,72 @@ tr278:
         * causing error.  */
        begin = p + 1;
      }
-	goto st247;
-st247:
+	goto st251;
+st251:
 	if ( ++p == pe )
-		goto _test_eof247;
-case 247:
-#line 7701 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof251;
+case 251:
+#line 8438 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
-		case 4u: goto tr280;
-		case 5u: goto tr281;
-		case 12u: goto tr280;
-		case 13u: goto tr281;
+		case 4u: goto tr420;
+		case 5u: goto tr421;
+		case 12u: goto tr420;
+		case 13u: goto tr421;
 		case 14u: goto tr19;
-		case 15u: goto tr282;
-		case 20u: goto tr280;
-		case 21u: goto tr281;
-		case 28u: goto tr280;
-		case 29u: goto tr281;
-		case 36u: goto tr280;
-		case 37u: goto tr281;
-		case 44u: goto tr280;
-		case 45u: goto tr281;
-		case 46u: goto tr283;
+		case 15u: goto tr422;
+		case 20u: goto tr420;
+		case 21u: goto tr421;
+		case 28u: goto tr420;
+		case 29u: goto tr421;
+		case 36u: goto tr420;
+		case 37u: goto tr421;
+		case 44u: goto tr420;
+		case 45u: goto tr421;
+		case 46u: goto tr423;
 		case 47u: goto tr19;
-		case 52u: goto tr280;
-		case 53u: goto tr281;
-		case 60u: goto tr280;
-		case 61u: goto tr281;
-		case 62u: goto tr284;
+		case 52u: goto tr420;
+		case 53u: goto tr421;
+		case 60u: goto tr420;
+		case 61u: goto tr421;
+		case 62u: goto tr424;
 		case 63u: goto tr19;
-		case 101u: goto tr286;
-		case 102u: goto tr287;
-		case 104u: goto tr281;
-		case 105u: goto tr288;
-		case 106u: goto tr280;
-		case 107u: goto tr289;
-		case 128u: goto tr289;
-		case 129u: goto tr288;
+		case 101u: goto tr426;
+		case 102u: goto tr427;
+		case 104u: goto tr421;
+		case 105u: goto tr428;
+		case 106u: goto tr420;
+		case 107u: goto tr429;
+		case 128u: goto tr429;
+		case 129u: goto tr428;
 		case 130u: goto tr19;
-		case 131u: goto tr291;
-		case 141u: goto tr292;
-		case 143u: goto tr293;
-		case 154u: goto tr19;
-		case 168u: goto tr280;
-		case 169u: goto tr281;
-		case 196u: goto tr296;
-		case 197u: goto tr297;
-		case 198u: goto tr298;
-		case 199u: goto tr299;
-		case 200u: goto tr300;
-		case 202u: goto tr301;
-		case 216u: goto tr279;
-		case 217u: goto tr303;
-		case 218u: goto tr304;
-		case 219u: goto tr305;
-		case 220u: goto tr306;
-		case 221u: goto tr307;
-		case 222u: goto tr308;
-		case 223u: goto tr309;
-		case 235u: goto tr290;
-		case 240u: goto tr311;
-		case 242u: goto tr312;
-		case 243u: goto tr313;
-		case 246u: goto tr314;
-		case 247u: goto tr315;
-		case 254u: goto tr316;
-		case 255u: goto tr325;
+		case 131u: goto tr431;
+		case 141u: goto tr432;
+		case 143u: goto tr433;
+		case 155u: goto tr434;
+		case 168u: goto tr420;
+		case 169u: goto tr421;
+		case 196u: goto tr437;
+		case 197u: goto tr438;
+		case 198u: goto tr439;
+		case 199u: goto tr440;
+		case 200u: goto tr441;
+		case 202u: goto tr442;
+		case 216u: goto tr444;
+		case 217u: goto tr445;
+		case 218u: goto tr446;
+		case 219u: goto tr447;
+		case 220u: goto tr448;
+		case 221u: goto tr449;
+		case 222u: goto tr450;
+		case 223u: goto tr451;
+		case 235u: goto tr430;
+		case 240u: goto tr453;
+		case 242u: goto tr454;
+		case 243u: goto tr455;
+		case 246u: goto tr456;
+		case 247u: goto tr457;
+		case 254u: goto tr458;
+		case 255u: goto tr463;
 	}
 	if ( (*p) < 132u ) {
 		if ( (*p) < 32u ) {
@@ -7766,7 +8503,7 @@ case 247:
 					if ( 6u <= (*p) && (*p) <= 7u )
 						goto tr19;
 				} else
-					goto tr279;
+					goto tr419;
 			} else if ( (*p) > 19u ) {
 				if ( (*p) < 24u ) {
 					if ( 22u <= (*p) && (*p) <= 23u )
@@ -7775,59 +8512,59 @@ case 247:
 					if ( 30u <= (*p) && (*p) <= 31u )
 						goto tr19;
 				} else
-					goto tr279;
+					goto tr419;
 			} else
-				goto tr279;
+				goto tr419;
 		} else if ( (*p) > 35u ) {
 			if ( (*p) < 54u ) {
 				if ( (*p) > 39u ) {
 					if ( 40u <= (*p) && (*p) <= 51u )
-						goto tr279;
+						goto tr419;
 				} else if ( (*p) >= 38u )
 					goto tr19;
 			} else if ( (*p) > 55u ) {
 				if ( (*p) < 96u ) {
 					if ( 56u <= (*p) && (*p) <= 59u )
-						goto tr279;
+						goto tr419;
 				} else if ( (*p) > 111u ) {
 					if ( 112u <= (*p) && (*p) <= 127u )
-						goto tr290;
+						goto tr430;
 				} else
 					goto tr19;
 			} else
 				goto tr19;
 		} else
-			goto tr279;
+			goto tr419;
 	} else if ( (*p) > 139u ) {
 		if ( (*p) < 194u ) {
 			if ( (*p) < 160u ) {
 				if ( (*p) > 142u ) {
-					if ( 156u <= (*p) && (*p) <= 157u )
+					if ( 154u <= (*p) && (*p) <= 157u )
 						goto tr19;
 				} else if ( (*p) >= 140u )
 					goto tr19;
 			} else if ( (*p) > 163u ) {
 				if ( (*p) < 184u ) {
 					if ( 176u <= (*p) && (*p) <= 183u )
-						goto tr280;
+						goto tr420;
 				} else if ( (*p) > 191u ) {
 					if ( 192u <= (*p) && (*p) <= 193u )
-						goto tr295;
+						goto tr436;
 				} else
-					goto tr281;
+					goto tr421;
 			} else
-				goto tr294;
+				goto tr435;
 		} else if ( (*p) > 195u ) {
 			if ( (*p) < 212u ) {
 				if ( (*p) > 207u ) {
 					if ( 208u <= (*p) && (*p) <= 211u )
-						goto tr302;
+						goto tr443;
 				} else if ( (*p) >= 204u )
 					goto tr19;
 			} else if ( (*p) > 231u ) {
 				if ( (*p) < 234u ) {
 					if ( 232u <= (*p) && (*p) <= 233u )
-						goto tr310;
+						goto tr452;
 				} else if ( (*p) > 241u ) {
 					if ( 250u <= (*p) && (*p) <= 251u )
 						goto tr19;
@@ -7838,9 +8575,9 @@ case 247:
 		} else
 			goto tr19;
 	} else
-		goto tr279;
-	goto tr285;
-tr325:
+		goto tr419;
+	goto tr425;
+tr463:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
@@ -7851,7 +8588,7 @@ st237:
 	if ( ++p == pe )
 		goto _test_eof237;
 case 237:
-#line 7855 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 8592 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -7865,8 +8602,8 @@ case 237:
 		case 132u: goto st9;
 		case 140u: goto st9;
 		case 180u: goto st9;
-		case 215u: goto tr271;
-		case 231u: goto tr271;
+		case 211u: goto tr411;
+		case 227u: goto tr411;
 	}
 	if ( (*p) < 112u ) {
 		if ( (*p) < 48u ) {
@@ -7892,18 +8629,886 @@ case 237:
 	} else
 		goto st7;
 	goto tr19;
-tr317:
+st238:
+	if ( ++p == pe )
+		goto _test_eof238;
+case 238:
+	if ( (*p) == 224u )
+		goto tr415;
+	goto tr11;
+tr415:
+#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{ }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st252;
+st252:
+	if ( ++p == pe )
+		goto _test_eof252;
+case 252:
+#line 8655 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto tr420;
+		case 5u: goto tr421;
+		case 12u: goto tr420;
+		case 13u: goto tr421;
+		case 14u: goto tr19;
+		case 15u: goto tr422;
+		case 20u: goto tr420;
+		case 21u: goto tr421;
+		case 28u: goto tr420;
+		case 29u: goto tr421;
+		case 36u: goto tr420;
+		case 37u: goto tr421;
+		case 44u: goto tr420;
+		case 45u: goto tr421;
+		case 46u: goto tr423;
+		case 47u: goto tr19;
+		case 52u: goto tr420;
+		case 53u: goto tr421;
+		case 60u: goto tr420;
+		case 61u: goto tr421;
+		case 62u: goto tr424;
+		case 63u: goto tr19;
+		case 101u: goto tr426;
+		case 102u: goto tr427;
+		case 104u: goto tr421;
+		case 105u: goto tr428;
+		case 106u: goto tr420;
+		case 107u: goto tr429;
+		case 128u: goto tr429;
+		case 129u: goto tr428;
+		case 130u: goto tr19;
+		case 131u: goto tr431;
+		case 141u: goto tr432;
+		case 143u: goto tr433;
+		case 155u: goto tr434;
+		case 168u: goto tr420;
+		case 169u: goto tr421;
+		case 196u: goto tr437;
+		case 197u: goto tr438;
+		case 198u: goto tr439;
+		case 199u: goto tr440;
+		case 200u: goto tr441;
+		case 202u: goto tr442;
+		case 216u: goto tr444;
+		case 217u: goto tr445;
+		case 218u: goto tr446;
+		case 219u: goto tr447;
+		case 220u: goto tr448;
+		case 221u: goto tr449;
+		case 222u: goto tr450;
+		case 223u: goto tr451;
+		case 235u: goto tr430;
+		case 240u: goto tr453;
+		case 242u: goto tr454;
+		case 243u: goto tr455;
+		case 246u: goto tr456;
+		case 247u: goto tr457;
+		case 254u: goto tr458;
+		case 255u: goto tr464;
+	}
+	if ( (*p) < 132u ) {
+		if ( (*p) < 32u ) {
+			if ( (*p) < 8u ) {
+				if ( (*p) > 3u ) {
+					if ( 6u <= (*p) && (*p) <= 7u )
+						goto tr19;
+				} else
+					goto tr419;
+			} else if ( (*p) > 19u ) {
+				if ( (*p) < 24u ) {
+					if ( 22u <= (*p) && (*p) <= 23u )
+						goto tr19;
+				} else if ( (*p) > 27u ) {
+					if ( 30u <= (*p) && (*p) <= 31u )
+						goto tr19;
+				} else
+					goto tr419;
+			} else
+				goto tr419;
+		} else if ( (*p) > 35u ) {
+			if ( (*p) < 54u ) {
+				if ( (*p) > 39u ) {
+					if ( 40u <= (*p) && (*p) <= 51u )
+						goto tr419;
+				} else if ( (*p) >= 38u )
+					goto tr19;
+			} else if ( (*p) > 55u ) {
+				if ( (*p) < 96u ) {
+					if ( 56u <= (*p) && (*p) <= 59u )
+						goto tr419;
+				} else if ( (*p) > 111u ) {
+					if ( 112u <= (*p) && (*p) <= 127u )
+						goto tr430;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr419;
+	} else if ( (*p) > 139u ) {
+		if ( (*p) < 194u ) {
+			if ( (*p) < 160u ) {
+				if ( (*p) > 142u ) {
+					if ( 154u <= (*p) && (*p) <= 157u )
+						goto tr19;
+				} else if ( (*p) >= 140u )
+					goto tr19;
+			} else if ( (*p) > 163u ) {
+				if ( (*p) < 184u ) {
+					if ( 176u <= (*p) && (*p) <= 183u )
+						goto tr420;
+				} else if ( (*p) > 191u ) {
+					if ( 192u <= (*p) && (*p) <= 193u )
+						goto tr436;
+				} else
+					goto tr421;
+			} else
+				goto tr435;
+		} else if ( (*p) > 195u ) {
+			if ( (*p) < 212u ) {
+				if ( (*p) > 207u ) {
+					if ( 208u <= (*p) && (*p) <= 211u )
+						goto tr443;
+				} else if ( (*p) >= 204u )
+					goto tr19;
+			} else if ( (*p) > 231u ) {
+				if ( (*p) < 234u ) {
+					if ( 232u <= (*p) && (*p) <= 233u )
+						goto tr452;
+				} else if ( (*p) > 241u ) {
+					if ( 250u <= (*p) && (*p) <= 251u )
+						goto tr19;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr19;
+	} else
+		goto tr419;
+	goto tr425;
+tr464:
 #line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
      }
-	goto st238;
-st238:
+	goto st239;
+st239:
 	if ( ++p == pe )
-		goto _test_eof238;
-case 238:
-#line 7907 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+		goto _test_eof239;
+case 239:
+#line 8809 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 52u: goto st2;
+		case 53u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 116u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+		case 180u: goto st9;
+		case 212u: goto tr411;
+		case 228u: goto tr411;
+	}
+	if ( (*p) < 112u ) {
+		if ( (*p) < 48u ) {
+			if ( (*p) <= 15u )
+				goto tr0;
+		} else if ( (*p) > 55u ) {
+			if ( 64u <= (*p) && (*p) <= 79u )
+				goto st7;
+		} else
+			goto tr0;
+	} else if ( (*p) > 119u ) {
+		if ( (*p) < 176u ) {
+			if ( 128u <= (*p) && (*p) <= 143u )
+				goto st3;
+		} else if ( (*p) > 183u ) {
+			if ( (*p) > 207u ) {
+				if ( 240u <= (*p) && (*p) <= 247u )
+					goto tr0;
+			} else if ( (*p) >= 192u )
+				goto tr0;
+		} else
+			goto st3;
+	} else
+		goto st7;
+	goto tr19;
+st240:
+	if ( ++p == pe )
+		goto _test_eof240;
+case 240:
+	if ( (*p) == 224u )
+		goto tr416;
+	goto tr11;
+tr416:
+#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{ }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st253;
+st253:
+	if ( ++p == pe )
+		goto _test_eof253;
+case 253:
+#line 8872 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto tr420;
+		case 5u: goto tr421;
+		case 12u: goto tr420;
+		case 13u: goto tr421;
+		case 14u: goto tr19;
+		case 15u: goto tr422;
+		case 20u: goto tr420;
+		case 21u: goto tr421;
+		case 28u: goto tr420;
+		case 29u: goto tr421;
+		case 36u: goto tr420;
+		case 37u: goto tr421;
+		case 44u: goto tr420;
+		case 45u: goto tr421;
+		case 46u: goto tr423;
+		case 47u: goto tr19;
+		case 52u: goto tr420;
+		case 53u: goto tr421;
+		case 60u: goto tr420;
+		case 61u: goto tr421;
+		case 62u: goto tr424;
+		case 63u: goto tr19;
+		case 101u: goto tr426;
+		case 102u: goto tr427;
+		case 104u: goto tr421;
+		case 105u: goto tr428;
+		case 106u: goto tr420;
+		case 107u: goto tr429;
+		case 128u: goto tr429;
+		case 129u: goto tr428;
+		case 130u: goto tr19;
+		case 131u: goto tr431;
+		case 141u: goto tr432;
+		case 143u: goto tr433;
+		case 155u: goto tr434;
+		case 168u: goto tr420;
+		case 169u: goto tr421;
+		case 196u: goto tr437;
+		case 197u: goto tr438;
+		case 198u: goto tr439;
+		case 199u: goto tr440;
+		case 200u: goto tr441;
+		case 202u: goto tr442;
+		case 216u: goto tr444;
+		case 217u: goto tr445;
+		case 218u: goto tr446;
+		case 219u: goto tr447;
+		case 220u: goto tr448;
+		case 221u: goto tr449;
+		case 222u: goto tr450;
+		case 223u: goto tr451;
+		case 235u: goto tr430;
+		case 240u: goto tr453;
+		case 242u: goto tr454;
+		case 243u: goto tr455;
+		case 246u: goto tr456;
+		case 247u: goto tr457;
+		case 254u: goto tr458;
+		case 255u: goto tr465;
+	}
+	if ( (*p) < 132u ) {
+		if ( (*p) < 32u ) {
+			if ( (*p) < 8u ) {
+				if ( (*p) > 3u ) {
+					if ( 6u <= (*p) && (*p) <= 7u )
+						goto tr19;
+				} else
+					goto tr419;
+			} else if ( (*p) > 19u ) {
+				if ( (*p) < 24u ) {
+					if ( 22u <= (*p) && (*p) <= 23u )
+						goto tr19;
+				} else if ( (*p) > 27u ) {
+					if ( 30u <= (*p) && (*p) <= 31u )
+						goto tr19;
+				} else
+					goto tr419;
+			} else
+				goto tr419;
+		} else if ( (*p) > 35u ) {
+			if ( (*p) < 54u ) {
+				if ( (*p) > 39u ) {
+					if ( 40u <= (*p) && (*p) <= 51u )
+						goto tr419;
+				} else if ( (*p) >= 38u )
+					goto tr19;
+			} else if ( (*p) > 55u ) {
+				if ( (*p) < 96u ) {
+					if ( 56u <= (*p) && (*p) <= 59u )
+						goto tr419;
+				} else if ( (*p) > 111u ) {
+					if ( 112u <= (*p) && (*p) <= 127u )
+						goto tr430;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr419;
+	} else if ( (*p) > 139u ) {
+		if ( (*p) < 194u ) {
+			if ( (*p) < 160u ) {
+				if ( (*p) > 142u ) {
+					if ( 154u <= (*p) && (*p) <= 157u )
+						goto tr19;
+				} else if ( (*p) >= 140u )
+					goto tr19;
+			} else if ( (*p) > 163u ) {
+				if ( (*p) < 184u ) {
+					if ( 176u <= (*p) && (*p) <= 183u )
+						goto tr420;
+				} else if ( (*p) > 191u ) {
+					if ( 192u <= (*p) && (*p) <= 193u )
+						goto tr436;
+				} else
+					goto tr421;
+			} else
+				goto tr435;
+		} else if ( (*p) > 195u ) {
+			if ( (*p) < 212u ) {
+				if ( (*p) > 207u ) {
+					if ( 208u <= (*p) && (*p) <= 211u )
+						goto tr443;
+				} else if ( (*p) >= 204u )
+					goto tr19;
+			} else if ( (*p) > 231u ) {
+				if ( (*p) < 234u ) {
+					if ( 232u <= (*p) && (*p) <= 233u )
+						goto tr452;
+				} else if ( (*p) > 241u ) {
+					if ( 250u <= (*p) && (*p) <= 251u )
+						goto tr19;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr19;
+	} else
+		goto tr419;
+	goto tr425;
+tr465:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
+	goto st241;
+st241:
+	if ( ++p == pe )
+		goto _test_eof241;
+case 241:
+#line 9026 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 52u: goto st2;
+		case 53u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 116u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+		case 180u: goto st9;
+		case 213u: goto tr411;
+		case 229u: goto tr411;
+	}
+	if ( (*p) < 112u ) {
+		if ( (*p) < 48u ) {
+			if ( (*p) <= 15u )
+				goto tr0;
+		} else if ( (*p) > 55u ) {
+			if ( 64u <= (*p) && (*p) <= 79u )
+				goto st7;
+		} else
+			goto tr0;
+	} else if ( (*p) > 119u ) {
+		if ( (*p) < 176u ) {
+			if ( 128u <= (*p) && (*p) <= 143u )
+				goto st3;
+		} else if ( (*p) > 183u ) {
+			if ( (*p) > 207u ) {
+				if ( 240u <= (*p) && (*p) <= 247u )
+					goto tr0;
+			} else if ( (*p) >= 192u )
+				goto tr0;
+		} else
+			goto st3;
+	} else
+		goto st7;
+	goto tr19;
+st242:
+	if ( ++p == pe )
+		goto _test_eof242;
+case 242:
+	if ( (*p) == 224u )
+		goto tr417;
+	goto tr11;
+tr417:
+#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{ }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st254;
+st254:
+	if ( ++p == pe )
+		goto _test_eof254;
+case 254:
+#line 9089 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto tr420;
+		case 5u: goto tr421;
+		case 12u: goto tr420;
+		case 13u: goto tr421;
+		case 14u: goto tr19;
+		case 15u: goto tr422;
+		case 20u: goto tr420;
+		case 21u: goto tr421;
+		case 28u: goto tr420;
+		case 29u: goto tr421;
+		case 36u: goto tr420;
+		case 37u: goto tr421;
+		case 44u: goto tr420;
+		case 45u: goto tr421;
+		case 46u: goto tr423;
+		case 47u: goto tr19;
+		case 52u: goto tr420;
+		case 53u: goto tr421;
+		case 60u: goto tr420;
+		case 61u: goto tr421;
+		case 62u: goto tr424;
+		case 63u: goto tr19;
+		case 101u: goto tr426;
+		case 102u: goto tr427;
+		case 104u: goto tr421;
+		case 105u: goto tr428;
+		case 106u: goto tr420;
+		case 107u: goto tr429;
+		case 128u: goto tr429;
+		case 129u: goto tr428;
+		case 130u: goto tr19;
+		case 131u: goto tr431;
+		case 141u: goto tr432;
+		case 143u: goto tr433;
+		case 155u: goto tr434;
+		case 168u: goto tr420;
+		case 169u: goto tr421;
+		case 196u: goto tr437;
+		case 197u: goto tr438;
+		case 198u: goto tr439;
+		case 199u: goto tr440;
+		case 200u: goto tr441;
+		case 202u: goto tr442;
+		case 216u: goto tr444;
+		case 217u: goto tr445;
+		case 218u: goto tr446;
+		case 219u: goto tr447;
+		case 220u: goto tr448;
+		case 221u: goto tr449;
+		case 222u: goto tr450;
+		case 223u: goto tr451;
+		case 235u: goto tr430;
+		case 240u: goto tr453;
+		case 242u: goto tr454;
+		case 243u: goto tr455;
+		case 246u: goto tr456;
+		case 247u: goto tr457;
+		case 254u: goto tr458;
+		case 255u: goto tr466;
+	}
+	if ( (*p) < 132u ) {
+		if ( (*p) < 32u ) {
+			if ( (*p) < 8u ) {
+				if ( (*p) > 3u ) {
+					if ( 6u <= (*p) && (*p) <= 7u )
+						goto tr19;
+				} else
+					goto tr419;
+			} else if ( (*p) > 19u ) {
+				if ( (*p) < 24u ) {
+					if ( 22u <= (*p) && (*p) <= 23u )
+						goto tr19;
+				} else if ( (*p) > 27u ) {
+					if ( 30u <= (*p) && (*p) <= 31u )
+						goto tr19;
+				} else
+					goto tr419;
+			} else
+				goto tr419;
+		} else if ( (*p) > 35u ) {
+			if ( (*p) < 54u ) {
+				if ( (*p) > 39u ) {
+					if ( 40u <= (*p) && (*p) <= 51u )
+						goto tr419;
+				} else if ( (*p) >= 38u )
+					goto tr19;
+			} else if ( (*p) > 55u ) {
+				if ( (*p) < 96u ) {
+					if ( 56u <= (*p) && (*p) <= 59u )
+						goto tr419;
+				} else if ( (*p) > 111u ) {
+					if ( 112u <= (*p) && (*p) <= 127u )
+						goto tr430;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr419;
+	} else if ( (*p) > 139u ) {
+		if ( (*p) < 194u ) {
+			if ( (*p) < 160u ) {
+				if ( (*p) > 142u ) {
+					if ( 154u <= (*p) && (*p) <= 157u )
+						goto tr19;
+				} else if ( (*p) >= 140u )
+					goto tr19;
+			} else if ( (*p) > 163u ) {
+				if ( (*p) < 184u ) {
+					if ( 176u <= (*p) && (*p) <= 183u )
+						goto tr420;
+				} else if ( (*p) > 191u ) {
+					if ( 192u <= (*p) && (*p) <= 193u )
+						goto tr436;
+				} else
+					goto tr421;
+			} else
+				goto tr435;
+		} else if ( (*p) > 195u ) {
+			if ( (*p) < 212u ) {
+				if ( (*p) > 207u ) {
+					if ( 208u <= (*p) && (*p) <= 211u )
+						goto tr443;
+				} else if ( (*p) >= 204u )
+					goto tr19;
+			} else if ( (*p) > 231u ) {
+				if ( (*p) < 234u ) {
+					if ( 232u <= (*p) && (*p) <= 233u )
+						goto tr452;
+				} else if ( (*p) > 241u ) {
+					if ( 250u <= (*p) && (*p) <= 251u )
+						goto tr19;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr19;
+	} else
+		goto tr419;
+	goto tr425;
+tr466:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
+	goto st243;
+st243:
+	if ( ++p == pe )
+		goto _test_eof243;
+case 243:
+#line 9243 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 52u: goto st2;
+		case 53u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 116u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+		case 180u: goto st9;
+		case 214u: goto tr411;
+		case 230u: goto tr411;
+	}
+	if ( (*p) < 112u ) {
+		if ( (*p) < 48u ) {
+			if ( (*p) <= 15u )
+				goto tr0;
+		} else if ( (*p) > 55u ) {
+			if ( 64u <= (*p) && (*p) <= 79u )
+				goto st7;
+		} else
+			goto tr0;
+	} else if ( (*p) > 119u ) {
+		if ( (*p) < 176u ) {
+			if ( 128u <= (*p) && (*p) <= 143u )
+				goto st3;
+		} else if ( (*p) > 183u ) {
+			if ( (*p) > 207u ) {
+				if ( 240u <= (*p) && (*p) <= 247u )
+					goto tr0;
+			} else if ( (*p) >= 192u )
+				goto tr0;
+		} else
+			goto st3;
+	} else
+		goto st7;
+	goto tr19;
+st244:
+	if ( ++p == pe )
+		goto _test_eof244;
+case 244:
+	if ( (*p) == 224u )
+		goto tr418;
+	goto tr11;
+tr418:
+#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{ }
+#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st255;
+st255:
+	if ( ++p == pe )
+		goto _test_eof255;
+case 255:
+#line 9306 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto tr420;
+		case 5u: goto tr421;
+		case 12u: goto tr420;
+		case 13u: goto tr421;
+		case 14u: goto tr19;
+		case 15u: goto tr422;
+		case 20u: goto tr420;
+		case 21u: goto tr421;
+		case 28u: goto tr420;
+		case 29u: goto tr421;
+		case 36u: goto tr420;
+		case 37u: goto tr421;
+		case 44u: goto tr420;
+		case 45u: goto tr421;
+		case 46u: goto tr423;
+		case 47u: goto tr19;
+		case 52u: goto tr420;
+		case 53u: goto tr421;
+		case 60u: goto tr420;
+		case 61u: goto tr421;
+		case 62u: goto tr424;
+		case 63u: goto tr19;
+		case 101u: goto tr426;
+		case 102u: goto tr427;
+		case 104u: goto tr421;
+		case 105u: goto tr428;
+		case 106u: goto tr420;
+		case 107u: goto tr429;
+		case 128u: goto tr429;
+		case 129u: goto tr428;
+		case 130u: goto tr19;
+		case 131u: goto tr431;
+		case 141u: goto tr432;
+		case 143u: goto tr433;
+		case 155u: goto tr434;
+		case 168u: goto tr420;
+		case 169u: goto tr421;
+		case 196u: goto tr437;
+		case 197u: goto tr438;
+		case 198u: goto tr439;
+		case 199u: goto tr440;
+		case 200u: goto tr441;
+		case 202u: goto tr442;
+		case 216u: goto tr444;
+		case 217u: goto tr445;
+		case 218u: goto tr446;
+		case 219u: goto tr447;
+		case 220u: goto tr448;
+		case 221u: goto tr449;
+		case 222u: goto tr450;
+		case 223u: goto tr451;
+		case 235u: goto tr430;
+		case 240u: goto tr453;
+		case 242u: goto tr454;
+		case 243u: goto tr455;
+		case 246u: goto tr456;
+		case 247u: goto tr457;
+		case 254u: goto tr458;
+		case 255u: goto tr467;
+	}
+	if ( (*p) < 132u ) {
+		if ( (*p) < 32u ) {
+			if ( (*p) < 8u ) {
+				if ( (*p) > 3u ) {
+					if ( 6u <= (*p) && (*p) <= 7u )
+						goto tr19;
+				} else
+					goto tr419;
+			} else if ( (*p) > 19u ) {
+				if ( (*p) < 24u ) {
+					if ( 22u <= (*p) && (*p) <= 23u )
+						goto tr19;
+				} else if ( (*p) > 27u ) {
+					if ( 30u <= (*p) && (*p) <= 31u )
+						goto tr19;
+				} else
+					goto tr419;
+			} else
+				goto tr419;
+		} else if ( (*p) > 35u ) {
+			if ( (*p) < 54u ) {
+				if ( (*p) > 39u ) {
+					if ( 40u <= (*p) && (*p) <= 51u )
+						goto tr419;
+				} else if ( (*p) >= 38u )
+					goto tr19;
+			} else if ( (*p) > 55u ) {
+				if ( (*p) < 96u ) {
+					if ( 56u <= (*p) && (*p) <= 59u )
+						goto tr419;
+				} else if ( (*p) > 111u ) {
+					if ( 112u <= (*p) && (*p) <= 127u )
+						goto tr430;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr419;
+	} else if ( (*p) > 139u ) {
+		if ( (*p) < 194u ) {
+			if ( (*p) < 160u ) {
+				if ( (*p) > 142u ) {
+					if ( 154u <= (*p) && (*p) <= 157u )
+						goto tr19;
+				} else if ( (*p) >= 140u )
+					goto tr19;
+			} else if ( (*p) > 163u ) {
+				if ( (*p) < 184u ) {
+					if ( 176u <= (*p) && (*p) <= 183u )
+						goto tr420;
+				} else if ( (*p) > 191u ) {
+					if ( 192u <= (*p) && (*p) <= 193u )
+						goto tr436;
+				} else
+					goto tr421;
+			} else
+				goto tr435;
+		} else if ( (*p) > 195u ) {
+			if ( (*p) < 212u ) {
+				if ( (*p) > 207u ) {
+					if ( 208u <= (*p) && (*p) <= 211u )
+						goto tr443;
+				} else if ( (*p) >= 204u )
+					goto tr19;
+			} else if ( (*p) > 231u ) {
+				if ( (*p) < 234u ) {
+					if ( 232u <= (*p) && (*p) <= 233u )
+						goto tr452;
+				} else if ( (*p) > 241u ) {
+					if ( 250u <= (*p) && (*p) <= 251u )
+						goto tr19;
+				} else
+					goto tr19;
+			} else
+				goto tr19;
+		} else
+			goto tr19;
+	} else
+		goto tr419;
+	goto tr425;
+tr467:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
+	goto st245;
+st245:
+	if ( ++p == pe )
+		goto _test_eof245;
+case 245:
+#line 9460 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+	switch( (*p) ) {
+		case 4u: goto st2;
+		case 5u: goto st3;
+		case 12u: goto st2;
+		case 13u: goto st3;
+		case 52u: goto st2;
+		case 53u: goto st3;
+		case 68u: goto st8;
+		case 76u: goto st8;
+		case 116u: goto st8;
+		case 132u: goto st9;
+		case 140u: goto st9;
+		case 180u: goto st9;
+		case 215u: goto tr411;
+		case 231u: goto tr411;
+	}
+	if ( (*p) < 112u ) {
+		if ( (*p) < 48u ) {
+			if ( (*p) <= 15u )
+				goto tr0;
+		} else if ( (*p) > 55u ) {
+			if ( 64u <= (*p) && (*p) <= 79u )
+				goto st7;
+		} else
+			goto tr0;
+	} else if ( (*p) > 119u ) {
+		if ( (*p) < 176u ) {
+			if ( 128u <= (*p) && (*p) <= 143u )
+				goto st3;
+		} else if ( (*p) > 183u ) {
+			if ( (*p) > 207u ) {
+				if ( 240u <= (*p) && (*p) <= 247u )
+					goto tr0;
+			} else if ( (*p) >= 192u )
+				goto tr0;
+		} else
+			goto st3;
+	} else
+		goto st7;
+	goto tr19;
+tr459:
+#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+	{
+        begin = p;
+        BitmapSetBit(valid_targets, p - data);
+     }
+	goto st246;
+st246:
+	if ( ++p == pe )
+		goto _test_eof246;
+case 246:
+#line 9512 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -7943,7 +9548,7 @@ case 238:
 		goto st7;
 	goto tr19;
 	}
-	_test_eof239: cs = 239; goto _test_eof; 
+	_test_eof247: cs = 247; goto _test_eof; 
 	_test_eof1: cs = 1; goto _test_eof; 
 	_test_eof2: cs = 2; goto _test_eof; 
 	_test_eof3: cs = 3; goto _test_eof; 
@@ -8063,10 +9668,10 @@ case 238:
 	_test_eof117: cs = 117; goto _test_eof; 
 	_test_eof118: cs = 118; goto _test_eof; 
 	_test_eof119: cs = 119; goto _test_eof; 
-	_test_eof240: cs = 240; goto _test_eof; 
 	_test_eof120: cs = 120; goto _test_eof; 
 	_test_eof121: cs = 121; goto _test_eof; 
 	_test_eof122: cs = 122; goto _test_eof; 
+	_test_eof248: cs = 248; goto _test_eof; 
 	_test_eof123: cs = 123; goto _test_eof; 
 	_test_eof124: cs = 124; goto _test_eof; 
 	_test_eof125: cs = 125; goto _test_eof; 
@@ -8169,27 +9774,35 @@ case 238:
 	_test_eof222: cs = 222; goto _test_eof; 
 	_test_eof223: cs = 223; goto _test_eof; 
 	_test_eof224: cs = 224; goto _test_eof; 
-	_test_eof241: cs = 241; goto _test_eof; 
 	_test_eof225: cs = 225; goto _test_eof; 
 	_test_eof226: cs = 226; goto _test_eof; 
-	_test_eof242: cs = 242; goto _test_eof; 
 	_test_eof227: cs = 227; goto _test_eof; 
 	_test_eof228: cs = 228; goto _test_eof; 
-	_test_eof243: cs = 243; goto _test_eof; 
 	_test_eof229: cs = 229; goto _test_eof; 
 	_test_eof230: cs = 230; goto _test_eof; 
-	_test_eof244: cs = 244; goto _test_eof; 
 	_test_eof231: cs = 231; goto _test_eof; 
 	_test_eof232: cs = 232; goto _test_eof; 
-	_test_eof245: cs = 245; goto _test_eof; 
+	_test_eof249: cs = 249; goto _test_eof; 
 	_test_eof233: cs = 233; goto _test_eof; 
 	_test_eof234: cs = 234; goto _test_eof; 
-	_test_eof246: cs = 246; goto _test_eof; 
+	_test_eof250: cs = 250; goto _test_eof; 
 	_test_eof235: cs = 235; goto _test_eof; 
 	_test_eof236: cs = 236; goto _test_eof; 
-	_test_eof247: cs = 247; goto _test_eof; 
+	_test_eof251: cs = 251; goto _test_eof; 
 	_test_eof237: cs = 237; goto _test_eof; 
 	_test_eof238: cs = 238; goto _test_eof; 
+	_test_eof252: cs = 252; goto _test_eof; 
+	_test_eof239: cs = 239; goto _test_eof; 
+	_test_eof240: cs = 240; goto _test_eof; 
+	_test_eof253: cs = 253; goto _test_eof; 
+	_test_eof241: cs = 241; goto _test_eof; 
+	_test_eof242: cs = 242; goto _test_eof; 
+	_test_eof254: cs = 254; goto _test_eof; 
+	_test_eof243: cs = 243; goto _test_eof; 
+	_test_eof244: cs = 244; goto _test_eof; 
+	_test_eof255: cs = 255; goto _test_eof; 
+	_test_eof245: cs = 245; goto _test_eof; 
+	_test_eof246: cs = 246; goto _test_eof; 
 
 	_test_eof: {}
 	if ( p == eof )
@@ -8433,6 +10046,14 @@ case 238:
 	case 236: 
 	case 237: 
 	case 238: 
+	case 239: 
+	case 240: 
+	case 241: 
+	case 242: 
+	case 243: 
+	case 244: 
+	case 245: 
+	case 246: 
 #line 90 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         process_error(begin, userdata);
@@ -8440,14 +10061,14 @@ case 238:
         goto error_detected;
     }
 	break;
-#line 8444 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 10065 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 172 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 221 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
   }
 
   if (CheckJumpTargets(valid_targets, jump_dests, size)) {

@@ -1503,7 +1503,7 @@ int main(int argc, char **argv) {
     printf("%s: no input files\n", argv[0]);
     exit(1);
   }
-  if (!strcmp(argv[1],"--repeat"))
+  if (!strcmp(argv[1], "--repeat"))
     repeat_count = atoi(argv[2]),
     initial_index += 2;
   for (index = initial_index; index < argc; ++index) {

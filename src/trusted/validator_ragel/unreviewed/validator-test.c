@@ -31,6 +31,86 @@ void NaClLog_Function(int detail_level, char const  *fmt, ...) {
   exit(1);
 }
 
+/* Emulate features of old validator to simplify testing */
+NaClCPUFeaturesX86 old_validator_features = { { 1, 1 }, {
+  1, /* NaClCPUFeature_3DNOW */  /* AMD-specific */
+  0, /* NaClCPUFeature_AES */
+  0, /* NaClCPUFeature_AVX */
+  0, /* NaClCPUFeature_BMI1 */
+  1, /* NaClCPUFeature_CLFLUSH */
+  0, /* NaClCPUFeature_CLMUL */
+  1, /* NaClCPUFeature_CMOV */
+  1, /* NaClCPUFeature_CX16 */
+  1, /* NaClCPUFeature_CX8 */
+  1, /* NaClCPUFeature_E3DNOW */ /* AMD-specific */
+  1, /* NaClCPUFeature_EMMX */   /* AMD-specific */
+  0, /* NaClCPUFeature_F16C */
+  0, /* NaClCPUFeature_FMA */
+  0, /* NaClCPUFeature_FMA4 */ /* AMD-specific */
+  1, /* NaClCPUFeature_FXSR */
+  0, /* NaClCPUFeature_LAHF */
+  0, /* NaClCPUFeature_LM */
+  0, /* NaClCPUFeature_LWP */ /* AMD-specific */
+  1, /* NaClCPUFeature_LZCNT */  /* AMD-specific */
+  1, /* NaClCPUFeature_MMX */
+  1, /* NaClCPUFeature_MON */
+  1, /* NaClCPUFeature_MOVBE */
+  1, /* NaClCPUFeature_OSXSAVE */
+  1, /* NaClCPUFeature_POPCNT */
+  0, /* NaClCPUFeature_PRE */ /* AMD-specific */
+  1, /* NaClCPUFeature_SSE */
+  1, /* NaClCPUFeature_SSE2 */
+  1, /* NaClCPUFeature_SSE3 */
+  1, /* NaClCPUFeature_SSE41 */
+  1, /* NaClCPUFeature_SSE42 */
+  1, /* NaClCPUFeature_SSE4A */  /* AMD-specific */
+  1, /* NaClCPUFeature_SSSE3 */
+  0, /* NaClCPUFeature_TBM */ /* AMD-specific */
+  1, /* NaClCPUFeature_TSC */
+  1, /* NaClCPUFeature_x87 */
+  0  /* NaClCPUFeature_XOP */ /* AMD-specific */
+} };
+
+/* Emulate features of old validator to simplify testing */
+NaClCPUFeaturesX86 full_validator_features = { { 1, 1 }, {
+  1, /* NaClCPUFeature_3DNOW */  /* AMD-specific */
+  1, /* NaClCPUFeature_AES */
+  1, /* NaClCPUFeature_AVX */
+  1, /* NaClCPUFeature_BMI1 */
+  1, /* NaClCPUFeature_CLFLUSH */
+  1, /* NaClCPUFeature_CLMUL */
+  1, /* NaClCPUFeature_CMOV */
+  1, /* NaClCPUFeature_CX16 */
+  1, /* NaClCPUFeature_CX8 */
+  1, /* NaClCPUFeature_E3DNOW */ /* AMD-specific */
+  1, /* NaClCPUFeature_EMMX */   /* AMD-specific */
+  1, /* NaClCPUFeature_F16C */
+  1, /* NaClCPUFeature_FMA */
+  1, /* NaClCPUFeature_FMA4 */ /* AMD-specific */
+  1, /* NaClCPUFeature_FXSR */
+  1, /* NaClCPUFeature_LAHF */
+  1, /* NaClCPUFeature_LM */
+  1, /* NaClCPUFeature_LWP */ /* AMD-specific */
+  1, /* NaClCPUFeature_LZCNT */  /* AMD-specific */
+  1, /* NaClCPUFeature_MMX */
+  1, /* NaClCPUFeature_MON */
+  1, /* NaClCPUFeature_MOVBE */
+  1, /* NaClCPUFeature_OSXSAVE */
+  1, /* NaClCPUFeature_POPCNT */
+  1, /* NaClCPUFeature_PRE */ /* AMD-specific */
+  1, /* NaClCPUFeature_SSE */
+  1, /* NaClCPUFeature_SSE2 */
+  1, /* NaClCPUFeature_SSE3 */
+  1, /* NaClCPUFeature_SSE41 */
+  1, /* NaClCPUFeature_SSE42 */
+  1, /* NaClCPUFeature_SSE4A */  /* AMD-specific */
+  1, /* NaClCPUFeature_SSSE3 */
+  1, /* NaClCPUFeature_TBM */ /* AMD-specific */
+  1, /* NaClCPUFeature_TSC */
+  1, /* NaClCPUFeature_x87 */
+  1  /* NaClCPUFeature_XOP */ /* AMD-specific */
+} };
+
 static void CheckBounds(unsigned char *data, size_t data_size,
                         void *ptr, size_t inside_size) {
   CHECK(data <= (unsigned char *) ptr);
@@ -80,7 +160,8 @@ void ProcessError (const uint8_t *ptr, void *userdata) {
                   (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
 }
 
-int ValidateFile(const char *filename, int repeat_count) {
+int ValidateFile(const char *filename, int repeat_count,
+                 const NaClCPUFeaturesX86 *cpu_features) {
   size_t data_size;
   uint8_t *data;
   int count;
@@ -115,8 +196,8 @@ int ValidateFile(const char *filename, int repeat_count) {
           }
           CheckBounds(data, data_size,
                       data + section->sh_offset, section->sh_size);
-          res = ValidateChunkIA32(data + section->sh_offset,
-                                        section->sh_size, ProcessError, &state);
+          res = ValidateChunkIA32(data + section->sh_offset, section->sh_size,
+                                  cpu_features, ProcessError, &state);
           if (res != 0) {
             return res;
           }
@@ -155,7 +236,7 @@ int ValidateFile(const char *filename, int repeat_count) {
                       data + section->sh_offset, (size_t)section->sh_size);
           res = ValidateChunkAMD64(data + section->sh_offset,
                                    (size_t)section->sh_size,
-                                   ProcessError, &state);
+                                   cpu_features, ProcessError, &state);
           if (res != 0) {
             return res;
           }
@@ -171,15 +252,30 @@ int ValidateFile(const char *filename, int repeat_count) {
 
 int main(int argc, char **argv) {
   int index, initial_index = 1, repeat_count = 1;
+  int use_old_features = 0;
   if (argc == 1) {
     printf("%s: no input files\n", argv[0]);
   }
-  if (!strcmp(argv[1],"--repeat"))
-    repeat_count = atoi(argv[2]),
-    initial_index += 2;
+  for (;;) {
+    if (!strcmp(argv[initial_index], "--repeat")) {
+      repeat_count = atoi(argv[initial_index + 1]);
+      initial_index += 2;
+      if (initial_index < argc)
+        continue;
+    }
+    if (!strcmp(argv[initial_index], "--compatible")) {
+      use_old_features = 1;
+      ++initial_index;
+      if (initial_index < argc)
+        continue;
+    }
+    break;
+  }
   for (index = initial_index; index < argc; ++index) {
     const char *filename = argv[index];
-    int rc = ValidateFile(filename, repeat_count);
+    int rc = ValidateFile(filename, repeat_count,
+                          use_old_features ? &old_validator_features :
+                                             &full_validator_features);
     if (rc != 0) {
       printf("file '%s' can not be fully validated\n", filename);
       return 1;

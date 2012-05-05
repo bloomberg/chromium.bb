@@ -410,6 +410,55 @@ enum operand_kind {
 #define SET_IMM2_TYPE(T)
 #define SET_IMM2_PTR(P)
 
+#define SET_CPU_FEATURE(F) \
+  if (!(F)) { \
+    printf("offset 0x%"NACL_PRIxS": CPU Feature not found", \
+           (uintptr_t)(begin - data)); \
+    result = 1; \
+    goto error_detected; \
+  }
+#define CPUFeature_3DNOW    cpu_features->data[NaClCPUFeature_3DNOW]
+#define CPUFeature_3DPRFTCH CPUFeature_3DNOW || CPUFeature_PRE || CPUFeature_LM
+#define CPUFeature_AES      cpu_features->data[NaClCPUFeature_AES]
+#define CPUFeature_AESAVX   CPUFeature_AES && CPUFeature_AVX
+#define CPUFeature_AVX      cpu_features->data[NaClCPUFeature_AVX]
+#define CPUFeature_BMI1     cpu_features->data[NaClCPUFeature_BMI1]
+#define CPUFeature_CLFLUSH  cpu_features->data[NaClCPUFeature_CLFLUSH]
+#define CPUFeature_CLMUL    cpu_features->data[NaClCPUFeature_CLMUL]
+#define CPUFeature_CLMULAVX CPUFeature_CLMUL && CPUFeature_AVX
+#define CPUFeature_CMOV     cpu_features->data[NaClCPUFeature_CMOV]
+#define CPUFeature_CMOVx87  CPUFeature_CMOV && CPUFeature_x87
+#define CPUFeature_CX16     cpu_features->data[NaClCPUFeature_CX16]
+#define CPUFeature_CX8      cpu_features->data[NaClCPUFeature_CX8]
+#define CPUFeature_E3DNOW   cpu_features->data[NaClCPUFeature_E3DNOW]
+#define CPUFeature_EMMX     cpu_features->data[NaClCPUFeature_EMMX]
+#define CPUFeature_EMMXSSE  CPUFeature_EMMX || CPUFeature_SSE
+#define CPUFeature_F16C     cpu_features->data[NaClCPUFeature_F16C]
+#define CPUFeature_FMA      cpu_features->data[NaClCPUFeature_FMA]
+#define CPUFeature_FMA4     cpu_features->data[NaClCPUFeature_FMA4]
+#define CPUFeature_FXSR     cpu_features->data[NaClCPUFeature_FXSR]
+#define CPUFeature_LAHF     cpu_features->data[NaClCPUFeature_LAHF]
+#define CPUFeature_LM       cpu_features->data[NaClCPUFeature_LM]
+#define CPUFeature_LWP      cpu_features->data[NaClCPUFeature_LWP]
+#define CPUFeature_LZCNT    cpu_features->data[NaClCPUFeature_LZCNT]
+#define CPUFeature_MMX      cpu_features->data[NaClCPUFeature_MMX]
+#define CPUFeature_MON      cpu_features->data[NaClCPUFeature_MON]
+#define CPUFeature_MOVBE    cpu_features->data[NaClCPUFeature_MOVBE]
+#define CPUFeature_OSXSAVE  cpu_features->data[NaClCPUFeature_OSXSAVE]
+#define CPUFeature_POPCNT   cpu_features->data[NaClCPUFeature_POPCNT]
+#define CPUFeature_PRE      cpu_features->data[NaClCPUFeature_PRE]
+#define CPUFeature_SSE      cpu_features->data[NaClCPUFeature_SSE]
+#define CPUFeature_SSE2     cpu_features->data[NaClCPUFeature_SSE2]
+#define CPUFeature_SSE3     cpu_features->data[NaClCPUFeature_SSE3]
+#define CPUFeature_SSE41    cpu_features->data[NaClCPUFeature_SSE41]
+#define CPUFeature_SSE42    cpu_features->data[NaClCPUFeature_SSE42]
+#define CPUFeature_SSE4A    cpu_features->data[NaClCPUFeature_SSE4A]
+#define CPUFeature_SSSE3    cpu_features->data[NaClCPUFeature_SSSE3]
+#define CPUFeature_TBM      cpu_features->data[NaClCPUFeature_TBM]
+#define CPUFeature_TSC      cpu_features->data[NaClCPUFeature_TSC]
+#define CPUFeature_x87      cpu_features->data[NaClCPUFeature_x87]
+#define CPUFeature_XOP      cpu_features->data[NaClCPUFeature_XOP]
+
 enum {
   REX_B = 1,
   REX_X = 2,
@@ -455,6 +504,7 @@ static int CheckJumpTargets(uint8_t *valid_targets, uint8_t *jump_dests,
 }
 
 int ValidateChunkAMD64(const uint8_t *data, size_t size,
+                       const NaClCPUFeaturesX86 *cpu_features,
                        process_validation_error_func process_error,
                        void *userdata) {
   const size_t bundle_size = 32;

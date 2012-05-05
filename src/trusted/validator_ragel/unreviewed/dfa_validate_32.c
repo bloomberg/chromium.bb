@@ -43,7 +43,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyDfaValidator, x86, 32) (
   if (!NaClArchSupported(cpu_features)) {
     return NaClValidationFailedCpuNotSupported;
   }
-  if (ValidateChunkIA32(data, size, ProcessError, 0) == 0) {
+  if (ValidateChunkIA32(data, size, cpu_features, ProcessError, 0) == 0) {
     return NaClValidationSucceeded;
   }
   return NaClValidationFailed;

@@ -9,162 +9,162 @@
 # File format: see general-purpose-instructions.def
 ######## F2XM1 #################################################################
 nop, 0x90
-f2xm1, 0xd9 0xf0, Fn0000_0001_EDX_X87
+f2xm1, 0xd9 0xf0, CPUFeature_x87
 ######## FABS ##################################################################
-fabs, 0xd9 0xe1, Fn0000_0001_EDX_X87
+fabs, 0xd9 0xe1, CPUFeature_x87
 ######## FADD/FADDP/FIADD ######################################################
-fadd r7 t7, 0xd8 0xc0, Fn0000_0001_EDX_X87
-fadd t7 r7, 0xdc 0xc0, Fn0000_0001_EDX_X87
-fadd Mss, 0xd8 /0, Fn0000_0001_EDX_X87
-fadd Msd, 0xdc /0, Fn0000_0001_EDX_X87
-faddp t7 r7, 0xde 0xc0, Fn0000_0001_EDX_X87
-fiadd Msw, 0xde /0, Fn0000_0001_EDX_X87
-fiadd Msi, 0xda /0, Fn0000_0001_EDX_X87
+fadd r7 t7, 0xd8 0xc0, CPUFeature_x87
+fadd t7 r7, 0xdc 0xc0, CPUFeature_x87
+fadd Mss, 0xd8 /0, CPUFeature_x87
+fadd Msd, 0xdc /0, CPUFeature_x87
+faddp t7 r7, 0xde 0xc0, CPUFeature_x87
+fiadd Msw, 0xde /0, CPUFeature_x87
+fiadd Msi, 0xda /0, CPUFeature_x87
 ######## FBLD ##################################################################
-fbld Msb, 0xdf /4, Fn0000_0001_EDX_X87
+fbld Msb, 0xdf /4, CPUFeature_x87
 ######## FBSTP #################################################################
-fbstp Msb, 0xdf /6, Fn0000_0001_EDX_X87
+fbstp Msb, 0xdf /6, CPUFeature_x87
 ######## FCHS ##################################################################
-fchs, 0xd9 0xe0, Fn0000_0001_EDX_X87
+fchs, 0xd9 0xe0, CPUFeature_x87
 ######## FCLEX #################################################################
-fnclex, 0xdb 0xe2, Fn0000_0001_EDX_X87
-fclex, 0x9b 0xdb 0xe2, Fn0000_0001_EDX_X87
+fnclex, 0xdb 0xe2, CPUFeature_x87
+fclex, 0x9b 0xdb 0xe2, CPUFeature_x87
 ######## FCMOVcc ###############################################################
-fcmovb r7 t7, 0xda 0xc0, Fn0000_0001_EDX_X87 Fn0000_0001_EDX_CMOV
-fcmovbe r7 t7, 0xda 0xD0, Fn0000_0001_EDX_X87 Fn0000_0001_EDX_CMOV
-fcmove r7 t7, 0xda 0xc8, Fn0000_0001_EDX_X87 Fn0000_0001_EDX_CMOV
-fcmovnb r7 t7, 0xdb 0xc0, Fn0000_0001_EDX_X87 Fn0000_0001_EDX_CMOV
-fcmovnbe r7 t7, 0xdb 0xd0, Fn0000_0001_EDX_X87 Fn0000_0001_EDX_CMOV
-fcmovne r7 t7, 0xdb 0xc8, Fn0000_0001_EDX_X87 Fn0000_0001_EDX_CMOV
-fcmovnu r7 t7, 0xdb 0xd8, Fn0000_0001_EDX_X87 Fn0000_0001_EDX_CMOV
-fcmovu r7 t7, 0xda 0xd8, Fn0000_0001_EDX_X87 Fn0000_0001_EDX_CMOV
+fcmovb r7 t7, 0xda 0xc0, CPUFeature_CMOVx87
+fcmovbe r7 t7, 0xda 0xD0, CPUFeature_CMOVx87
+fcmove r7 t7, 0xda 0xc8, CPUFeature_CMOVx87
+fcmovnb r7 t7, 0xdb 0xc0, CPUFeature_CMOVx87
+fcmovnbe r7 t7, 0xdb 0xd0, CPUFeature_CMOVx87
+fcmovne r7 t7, 0xdb 0xc8, CPUFeature_CMOVx87
+fcmovnu r7 t7, 0xdb 0xd8, CPUFeature_CMOVx87
+fcmovu r7 t7, 0xda 0xd8, CPUFeature_CMOVx87
 ######## FCOM/FCOMP/FCOMPP #####################################################
-fcom r7, 0xd8 0xd0, Fn0000_0001_EDX_X87
-fcom Mss, 0xd8 /2, Fn0000_0001_EDX_X87
-fcom Msd, 0xdc /2, Fn0000_0001_EDX_X87
-fcomp r7, 0xd8 0xd8, Fn0000_0001_EDX_X87
-fcomp Mss, 0xd8 /3, Fn0000_0001_EDX_X87
-fcomp Msd, 0xdc /3, Fn0000_0001_EDX_X87
-fcompp, 0xde 0xd9, Fn0000_0001_EDX_X87
+fcom r7, 0xd8 0xd0, CPUFeature_x87
+fcom Mss, 0xd8 /2, CPUFeature_x87
+fcom Msd, 0xdc /2, CPUFeature_x87
+fcomp r7, 0xd8 0xd8, CPUFeature_x87
+fcomp Mss, 0xd8 /3, CPUFeature_x87
+fcomp Msd, 0xdc /3, CPUFeature_x87
+fcompp, 0xde 0xd9, CPUFeature_x87
 ######## FCOMI/FCOMIP ##########################################################
-fcomi r7 t7, 0xdb 0xf0, Fn0000_0001_EDX_X87
-fcomip r7 t7, 0xdf 0xf0, Fn0000_0001_EDX_X87
+fcomi r7 t7, 0xdb 0xf0, CPUFeature_x87
+fcomip r7 t7, 0xdf 0xf0, CPUFeature_x87
 ######## FCOS ##################################################################
-fcos, 0xd9 0xff, Fn0000_0001_EDX_X87
+fcos, 0xd9 0xff, CPUFeature_x87
 ######## FDECSTP ###############################################################
-fdecstp, 0xd9 0xf6, Fn0000_0001_EDX_X87
+fdecstp, 0xd9 0xf6, CPUFeature_x87
 ######## FDIV/FDIVP/FIDIV ######################################################
 # “fdiv” and “fdivr” are swapped for some operands in objdump.  This is known
 # issue, but it can not be fixed because of compatibility concerns.  Here we use
 # objdump-compatible names.
-fdiv r7 t7, 0xd8 0xf0, Fn0000_0001_EDX_X87
-fdivr t7 r7, 0xdc 0xf8, Fn0000_0001_EDX_X87
-fdiv Mss, 0xd8 /6, Fn0000_0001_EDX_X87
-fdiv Msd, 0xdc /6, Fn0000_0001_EDX_X87
-fdivrp t7 r7, 0xde 0xf8, Fn0000_0001_EDX_X87
-fidiv Msw, 0xde /6, Fn0000_0001_EDX_X87
-fidiv Msi, 0xda /6, Fn0000_0001_EDX_X87
+fdiv r7 t7, 0xd8 0xf0, CPUFeature_x87
+fdivr t7 r7, 0xdc 0xf8, CPUFeature_x87
+fdiv Mss, 0xd8 /6, CPUFeature_x87
+fdiv Msd, 0xdc /6, CPUFeature_x87
+fdivrp t7 r7, 0xde 0xf8, CPUFeature_x87
+fidiv Msw, 0xde /6, CPUFeature_x87
+fidiv Msi, 0xda /6, CPUFeature_x87
 ######## FDIVR/FDIVRP/FIDIVR ###################################################
 # “fdivr” and “fdiv” are swapped for some operands in objdump.  This is known
 # issue, but it can not be fixed because of compatibility concerns.  Here we use
 # objdump-compatible names.
-fdivr r7 t7, 0xd8 0xf8, Fn0000_0001_EDX_X87
-fdiv t7 r7, 0xdc 0xf0, Fn0000_0001_EDX_X87
-fdivr Mss, 0xd8 /7, Fn0000_0001_EDX_X87
-fdivr Msd, 0xdc /7, Fn0000_0001_EDX_X87
-fdivp t7 r7, 0xde 0xf0, Fn0000_0001_EDX_X87
-fidivr Msw, 0xde /7, Fn0000_0001_EDX_X87
-fidivr Msi, 0xda /7, Fn0000_0001_EDX_X87
+fdivr r7 t7, 0xd8 0xf8, CPUFeature_x87
+fdiv t7 r7, 0xdc 0xf0, CPUFeature_x87
+fdivr Mss, 0xd8 /7, CPUFeature_x87
+fdivr Msd, 0xdc /7, CPUFeature_x87
+fdivp t7 r7, 0xde 0xf0, CPUFeature_x87
+fidivr Msw, 0xde /7, CPUFeature_x87
+fidivr Msi, 0xda /7, CPUFeature_x87
 ######## FFREE #################################################################
-ffree r7, 0xdd 0xc0, Fn0000_0001_EDX_X87
+ffree r7, 0xdd 0xc0, CPUFeature_x87
 ######## FICOM/FICOMP ##########################################################
-ficom Msw, 0xde /2, Fn0000_0001_EDX_X87
-ficom Msi, 0xda /2, Fn0000_0001_EDX_X87
-ficomp Msw, 0xde /3, Fn0000_0001_EDX_X87
-ficomp Msi, 0xda /3, Fn0000_0001_EDX_X87
+ficom Msw, 0xde /2, CPUFeature_x87
+ficom Msi, 0xda /2, CPUFeature_x87
+ficomp Msw, 0xde /3, CPUFeature_x87
+ficomp Msi, 0xda /3, CPUFeature_x87
 ######## FILD ##################################################################
-fild Msw, 0xdf /0, Fn0000_0001_EDX_X87
-fild Msd, 0xdb /0, Fn0000_0001_EDX_X87
-fild Msq, 0xdf /5, Fn0000_0001_EDX_X87
+fild Msw, 0xdf /0, CPUFeature_x87
+fild Msd, 0xdb /0, CPUFeature_x87
+fild Msq, 0xdf /5, CPUFeature_x87
 ######## FINCSTP ###############################################################
-fincstp, 0xd9 0xf7, Fn0000_0001_EDX_X87
+fincstp, 0xd9 0xf7, CPUFeature_x87
 ######## FINIT/FNINIT ##########################################################
-fninit, 0xdb 0xe3, Fn0000_0001_EDX_X87
-finit, 0x9b 0xdb 0xe3, Fn0000_0001_EDX_X87
+fninit, 0xdb 0xe3, CPUFeature_x87
+finit, 0x9b 0xdb 0xe3, CPUFeature_x87
 ######## FIST/FISTP ############################################################
-fist Msw, 0xdf /2, Fn0000_0001_EDX_X87
-fist Msi, 0xdb /2, Fn0000_0001_EDX_X87
-fistp Msw, 0xdf /3, Fn0000_0001_EDX_X87
-fistp Msi, 0xdb /3, Fn0000_0001_EDX_X87
-fistp Msq, 0xdf /7, Fn0000_0001_EDX_X87
+fist Msw, 0xdf /2, CPUFeature_x87
+fist Msi, 0xdb /2, CPUFeature_x87
+fistp Msw, 0xdf /3, CPUFeature_x87
+fistp Msi, 0xdb /3, CPUFeature_x87
+fistp Msq, 0xdf /7, CPUFeature_x87
 ######## FISTTP ################################################################
-fisttp Msw, 0xdf /1, Fn0000_0001_EDX_X87
-fisttp Msi, 0xdb /1, Fn0000_0001_EDX_X87
-fisttp Msq, 0xdd /1, Fn0000_0001_EDX_X87
+fisttp Msw, 0xdf /1, CPUFeature_x87
+fisttp Msi, 0xdb /1, CPUFeature_x87
+fisttp Msq, 0xdd /1, CPUFeature_x87
 ######## FLD ###################################################################
-fld r7, 0xd9 0xc0, Fn0000_0001_EDX_X87
-fld Mss, 0xd9 /0, Fn0000_0001_EDX_X87
-fld Msd, 0xdd /0, Fn0000_0001_EDX_X87
-fld Mst, 0xdb /5, Fn0000_0001_EDX_X87
+fld r7, 0xd9 0xc0, CPUFeature_x87
+fld Mss, 0xd9 /0, CPUFeature_x87
+fld Msd, 0xdd /0, CPUFeature_x87
+fld Mst, 0xdb /5, CPUFeature_x87
 ######## FLD1 ##################################################################
-fld1, 0xd9 0xe8, Fn0000_0001_EDX_X87
+fld1, 0xd9 0xe8, CPUFeature_x87
 ######## FLDCW #################################################################
-fldcw Msw, 0xd9 /5, Fn0000_0001_EDX_X87
+fldcw Msw, 0xd9 /5, CPUFeature_x87
 ######## FLDENV ################################################################
-fldenv Mse, 0xd9 /4, Fn0000_0001_EDX_X87
+fldenv Mse, 0xd9 /4, CPUFeature_x87
 ######## FLDL2E ################################################################
-fldl2e, 0xd9 0xea, Fn0000_0001_EDX_X87
+fldl2e, 0xd9 0xea, CPUFeature_x87
 ######## FLDL2T ################################################################
-fldl2t, 0xd9 0xe9, Fn0000_0001_EDX_X87
+fldl2t, 0xd9 0xe9, CPUFeature_x87
 ######## FLDLG2 ################################################################
-fldlg2, 0xd9 0xec, Fn0000_0001_EDX_X87
+fldlg2, 0xd9 0xec, CPUFeature_x87
 ######## FLDLN2 ################################################################
-fldln2, 0xd9 0xed, Fn0000_0001_EDX_X87
+fldln2, 0xd9 0xed, CPUFeature_x87
 ######## FLDPI #################################################################
-fldpi, 0xd9 0xeb, Fn0000_0001_EDX_X87
+fldpi, 0xd9 0xeb, CPUFeature_x87
 ######## FLDZ ##################################################################
-fldz, 0xd9 0xee, Fn0000_0001_EDX_X87
+fldz, 0xd9 0xee, CPUFeature_x87
 ######## FMUL/FMULP/FIMUL ######################################################
-fmul r7 t7, 0xd8 0xc8, Fn0000_0001_EDX_X87
-fmul t7 r7, 0xdc 0xc8, Fn0000_0001_EDX_X87
-fmul Mss, 0xd8 /1, Fn0000_0001_EDX_X87
-fmul Msd, 0xdc /1, Fn0000_0001_EDX_X87
-fmulp t7 r7, 0xde 0xc8, Fn0000_0001_EDX_X87
-fimul Msw, 0xde /1, Fn0000_0001_EDX_X87
-fimul Msi, 0xda /1, Fn0000_0001_EDX_X87
+fmul r7 t7, 0xd8 0xc8, CPUFeature_x87
+fmul t7 r7, 0xdc 0xc8, CPUFeature_x87
+fmul Mss, 0xd8 /1, CPUFeature_x87
+fmul Msd, 0xdc /1, CPUFeature_x87
+fmulp t7 r7, 0xde 0xc8, CPUFeature_x87
+fimul Msw, 0xde /1, CPUFeature_x87
+fimul Msi, 0xda /1, CPUFeature_x87
 ######## FNOP ##################################################################
-fnop, 0xd9 0xd0, Fn0000_0001_EDX_X87
+fnop, 0xd9 0xd0, CPUFeature_x87
 ######## FPATAN ################################################################
-fpatan, 0xd9 0xf3, Fn0000_0001_EDX_X87
+fpatan, 0xd9 0xf3, CPUFeature_x87
 ######## FPREM #################################################################
-fprem, 0xd9 0xf8, Fn0000_0001_EDX_X87
+fprem, 0xd9 0xf8, CPUFeature_x87
 ######## FPREM1 ################################################################
-fprem1, 0xd9 0xf5, Fn0000_0001_EDX_X87
+fprem1, 0xd9 0xf5, CPUFeature_x87
 ######## FPTAN #################################################################
-fptan, 0xd9 0xf2, Fn0000_0001_EDX_X87
+fptan, 0xd9 0xf2, CPUFeature_x87
 ######## FRNDINT ###############################################################
-frndint, 0xd9 0xfc, Fn0000_0001_EDX_X87
+frndint, 0xd9 0xfc, CPUFeature_x87
 ######## FRSTOR ################################################################
-frstor Msr, 0xdd /4, Fn0000_0001_EDX_X87
+frstor Msr, 0xdd /4, CPUFeature_x87
 ######## FSAVE/FNSAVE ##########################################################
-fnsave Msr, 0xdd /6, Fn0000_0001_EDX_X87
-fsave Msr, 0x9b 0xdd /6, Fn0000_0001_EDX_X87
+fnsave Msr, 0xdd /6, CPUFeature_x87
+fsave Msr, 0x9b 0xdd /6, CPUFeature_x87
 ######## FSCALE ################################################################
-fscale, 0xd9 0xfd, Fn0000_0001_EDX_X87
+fscale, 0xd9 0xfd, CPUFeature_x87
 ######## FSIN ##################################################################
-fsin, 0xd9 0xfe, Fn0000_0001_EDX_X87
+fsin, 0xd9 0xfe, CPUFeature_x87
 ######## FSINCOS ###############################################################
-fsincos, 0xd9 0xfb, Fn0000_0001_EDX_X87, nacl-forbidden
+fsincos, 0xd9 0xfb, CPUFeature_x87, nacl-forbidden
 ######## FSQRT #################################################################
-fsqrt, 0xd9 0xfa, Fn0000_0001_EDX_X87
+fsqrt, 0xd9 0xfa, CPUFeature_x87
 ######## FST/FSTP ##############################################################
-fst r7, 0xdd 0xd0, Fn0000_0001_EDX_X87
-fst Mss, 0xd9 /2, Fn0000_0001_EDX_X87
-fst Msd, 0xdd /2, Fn0000_0001_EDX_X87
-fstp r7, 0xdd 0xd8, Fn0000_0001_EDX_X87
-fstp Mss, 0xd9 /3, Fn0000_0001_EDX_X87
-fstp Msd, 0xdd /3, Fn0000_0001_EDX_X87
-fstp Mst, 0xdb /7, Fn0000_0001_EDX_X87
+fst r7, 0xdd 0xd0, CPUFeature_x87
+fst Mss, 0xd9 /2, CPUFeature_x87
+fst Msd, 0xdd /2, CPUFeature_x87
+fstp r7, 0xdd 0xd8, CPUFeature_x87
+fstp Mss, 0xd9 /3, CPUFeature_x87
+fstp Msd, 0xdd /3, CPUFeature_x87
+fstp Mst, 0xdb /7, CPUFeature_x87
 ######## FSTCW/FNSTCW ##########################################################
 fnstcw Msw, 0xd9 /7
 fstcw Msw, 0x9b 0xd9 /7
@@ -172,55 +172,55 @@ fstcw Msw, 0x9b 0xd9 /7
 fnstenv Mse, 0xd9 /6
 fstenv Mse, 0x9b 0xd9 /6
 ######## FSTSW/FNSTSW ##########################################################
-fnstsw aw, 0xdf 0xe0, Fn0000_0001_EDX_X87
-fnsts Mw, 0xdd /7, Fn0000_0001_EDX_X87
-fstsw aw, 0x9b 0xdf 0xe0, Fn0000_0001_EDX_X87
-fsts Mw, 0x9b 0xdd /7, Fn0000_0001_EDX_X87
+fnstsw aw, 0xdf 0xe0, CPUFeature_x87
+fnsts Mw, 0xdd /7, CPUFeature_x87
+fstsw aw, 0x9b 0xdf 0xe0, CPUFeature_x87
+fsts Mw, 0x9b 0xdd /7, CPUFeature_x87
 ######## FSUB/FSUBP/FISUB ######################################################
 # “fsub” and “fsubr” are swapped for some operands in objdump.  This is known
 # issue, but it can not be fixed because of compatibility concerns.  Here we use
 # objdump-compatible names.
-fsub r7 t7, 0xd8 0xe0, Fn0000_0001_EDX_X87
-fsubr t7 r7, 0xdc 0xe8, Fn0000_0001_EDX_X87
-fsub Mss, 0xd8 /4, Fn0000_0001_EDX_X87
-fsub Msd, 0xdc /4, Fn0000_0001_EDX_X87
-fsubrp t7 r7, 0xde 0xe8, Fn0000_0001_EDX_X87
-fisub Msw, 0xde /4, Fn0000_0001_EDX_X87
-fisub Msi, 0xda /4, Fn0000_0001_EDX_X87
+fsub r7 t7, 0xd8 0xe0, CPUFeature_x87
+fsubr t7 r7, 0xdc 0xe8, CPUFeature_x87
+fsub Mss, 0xd8 /4, CPUFeature_x87
+fsub Msd, 0xdc /4, CPUFeature_x87
+fsubrp t7 r7, 0xde 0xe8, CPUFeature_x87
+fisub Msw, 0xde /4, CPUFeature_x87
+fisub Msi, 0xda /4, CPUFeature_x87
 ######## FSUBR/FSUBRP/FISUBR ###################################################
 # “fsub” and “fsubr” are swapped for some operands in objdump.  This is known
 # issue, but it can not be fixed because of compatibility concerns.  Here we use
 # objdump-compatible names.
-fsubr r7 t7, 0xd8 0xe8, Fn0000_0001_EDX_X87
-fsub t7 r7, 0xdc 0xe0, Fn0000_0001_EDX_X87
-fsubr Mss, 0xd8 /5, Fn0000_0001_EDX_X87
-fsubr Msd, 0xdc /5, Fn0000_0001_EDX_X87
-fsubp t7 r7, 0xde 0xe0, Fn0000_0001_EDX_X87
-fisubr Msw, 0xde /5, Fn0000_0001_EDX_X87
-fisubr Msi, 0xda /5, Fn0000_0001_EDX_X87
+fsubr r7 t7, 0xd8 0xe8, CPUFeature_x87
+fsub t7 r7, 0xdc 0xe0, CPUFeature_x87
+fsubr Mss, 0xd8 /5, CPUFeature_x87
+fsubr Msd, 0xdc /5, CPUFeature_x87
+fsubp t7 r7, 0xde 0xe0, CPUFeature_x87
+fisubr Msw, 0xde /5, CPUFeature_x87
+fisubr Msi, 0xda /5, CPUFeature_x87
 ######## FTST ##################################################################
-ftst, 0xd9 0xe4, Fn0000_0001_EDX_X87
+ftst, 0xd9 0xe4, CPUFeature_x87
 ######## FUCOM/FUCOMP/FUCOMPP ##################################################
-fucom r7, 0xdd 0xe0, Fn0000_0001_EDX_X87
-fucomp r7, 0xdd 0xe8, Fn0000_0001_EDX_X87
-fucompp, 0xda 0xe9, Fn0000_0001_EDX_X87
+fucom r7, 0xdd 0xe0, CPUFeature_x87
+fucomp r7, 0xdd 0xe8, CPUFeature_x87
+fucompp, 0xda 0xe9, CPUFeature_x87
 ######## FUCOMI/FUCOMIP ########################################################
-fucomi r7 t7, 0xdb 0xe8, Fn0000_0001_EDX_X87
-fucomip r7 t7, 0xdf 0xe8, Fn0000_0001_EDX_X87
+fucomi r7 t7, 0xdb 0xe8, CPUFeature_x87
+fucomip r7 t7, 0xdf 0xe8, CPUFeature_x87
 ######## FWAIT #################################################################
-fwait, 0x9b, Fn0000_0001_EDX_X87
+fwait, 0x9b, CPUFeature_x87
 ######## FXAM ##################################################################
-fxam, 0xd9 0xe5, Fn0000_0001_EDX_X87
+fxam, 0xd9 0xe5, CPUFeature_x87
 ######## FXCH ##################################################################
-fxch r7, 0xd9 0xc8, Fn0000_0001_EDX_X87
+fxch r7, 0xd9 0xc8, CPUFeature_x87
 ######## FXRSTOR ###############################################################
-fxrstor Msx, 0x0f 0xae /1, nacl-forbidden Fn0000_0001_ECX_XSAVE
+fxrstor Msx, 0x0f 0xae /1, nacl-forbidden CPUFeature_FXSR
 ######## FXSAVE ################################################################
-fxsave Msx, 0x0f 0xae /0, nacl-forbidden Fn0000_0001_ECX_XSAVE
+fxsave Msx, 0x0f 0xae /0, nacl-forbidden CPUFeature_FXSR
 ######## FXTRACT ###############################################################
-fxtract, 0xd9 0xf4, Fn0000_0001_EDX_X87
+fxtract, 0xd9 0xf4, CPUFeature_x87
 ######## FYL2X #################################################################
-fyl2x, 0xd9 0xf1, Fn0000_0001_EDX_X87
+fyl2x, 0xd9 0xf1, CPUFeature_x87
 ######## FYL2XP1 ###############################################################
-fyl2xp1, 0xd9 0xf9, Fn0000_0001_EDX_X87
+fyl2xp1, 0xd9 0xf9, CPUFeature_x87
 ################################################################################

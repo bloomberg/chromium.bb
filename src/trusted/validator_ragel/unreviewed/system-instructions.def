@@ -8,7 +8,7 @@
 ################################################################################
 # File format: see general-purpose-instructions.def
 ######## CLGI ##################################################################
-clgi, 0x0f 0x01 0xdd, nacl-forbidden Fn8000_0001_ECX_SVM
+clgi, 0x0f 0x01 0xdd, nacl-forbidden CPUFeature_SVM
 ######## CLI ###################################################################
 cli, 0xfa, nacl-forbidden
 ######## CLTS ##################################################################
@@ -27,7 +27,7 @@ invd, 0x0f 0x08, nacl-forbidden
 ######## INVLPG ################################################################
 invlpg Mb, 0x0f 0x01 /7
 ######## INVLPGA ###############################################################
-invlpga, 0x0f 0x01 0xdf, nacl-forbidden Fn8000_0001_ECX_SVM
+invlpga, 0x0f 0x01 0xdf, nacl-forbidden CPUFeature_SVM
 ######## IRET/IRETD/IRETQ ######################################################
 # Note: objdump always uses name iret in all modes: 16bit, 32bit, and 64bit
 iret, 0xcf, nacl-forbidden
@@ -48,27 +48,27 @@ lsl Ew Gv, 0x0f 0x03
 ######## LTR ###################################################################
 ltr Ew, 0x0f 0x00 /3
 ######## MONITOR ###############################################################
-monitor ar cr dr, 0x0f 0x01 0xc8, Fn0000_0001_ECX_Monitor
+monitor ar cr dr, 0x0f 0x01 0xc8, CPUFeature_MON
 ######## MOV (CRn) #############################################################
 mov Rr Cr, 0x0f 0x22, nacl-forbidden
 mov Cr Rr, 0x0f 0x20, nacl-forbidden
-mov Rr Cr, 0xf0 0x0f 0x22, nacl-forbidden Fn8000_0001_ECX_AltMovCr8
-mov Cr Rr, 0xf0 0x0f 0x20, nacl-forbidden Fn8000_0001_ECX_AltMovCr8
+mov Rr Cr, 0xf0 0x0f 0x22, nacl-forbidden CPUFeature_ALTMOVCR8
+mov Cr Rr, 0xf0 0x0f 0x20, nacl-forbidden CPUFeature_ALTMOVCR8
 ######## MOV (DRn) #############################################################
 mov Dr Rr, 0x0f 0x21, nacl-forbidden
 mov Rr Dr, 0x0f 0x23, nacl-forbidden
 ######## MWAIT #################################################################
-mwait ar cr, 0x0f 0x01 0xc9, Fn0000_0001_ECX_Monitor
+mwait ar cr, 0x0f 0x01 0xc9, CPUFeature_MON
 ######## RDMSR #################################################################
-rdmsr, 0x0f 0x32, nacl-forbidden
+rdmsr, 0x0f 0x32, nacl-forbidden CPUFeature_MSR
 ######## RDPMC #################################################################
 rdpmc, 0x0f 0x33, nacl-forbidden
 ######## RDTSC #################################################################
-rdtsc, 0x0f 0x31, Fn0000_0001_EDX_RDTSC
+rdtsc, 0x0f 0x31, CPUFeature_TSC
 ######## RDTSCP ################################################################
-rdtscp, 0x0f 0x01 0xf9, nacl-forbidden Fn8000_0001_EDX_RDTSCP
+rdtscp, 0x0f 0x01 0xf9, nacl-forbidden CPUFeature_TSCP
 ######## RSM ###################################################################
-rsm, 0x0f 0xaa, nacl-forbidden Fn8000_0001_ECX_SVM
+rsm, 0x0f 0xaa, nacl-forbidden CPUFeature_SVM
 ######## SGDT ##################################################################
 sgdtl Ms, 0x0f 0x01 /0, ia32 nacl-forbidden
 sgdt Ms, 0x0f 0x01 /0, amd64 nacl-forbidden
@@ -76,7 +76,7 @@ sgdt Ms, 0x0f 0x01 /0, amd64 nacl-forbidden
 sidtl Ms, 0x0f 0x01 /1, ia32 nacl-forbidden
 sidt Ms, 0x0f 0x01 /1, amd64 nacl-forbidden
 ######## SKINIT ################################################################
-skinit, 0x0f 0x01 0xde, nacl-forbidden Fn8000_0001_ECX_SKINIT
+skinit, 0x0f 0x01 0xde, nacl-forbidden CPUFeature_SKINIT
 ######## SLDT ##################################################################
 sldt Mw, 0x0f 0x00 /0, nacl-forbidden
 sldt Rv, 0x0f 0x00 /0, nacl-forbidden
@@ -84,7 +84,7 @@ sldt Rv, 0x0f 0x00 /0, nacl-forbidden
 smsw Mw, 0x0f 0x01 /4
 smsw Rv, 0x0f 0x01 /4
 ######## STGI ##################################################################
-stgi, 0x0f 0x01 0xdc, nacl-forbidden Fn8000_0001_ECX_SKINIT
+stgi, 0x0f 0x01 0xdc, nacl-forbidden CPUFeature_SKINIT
 ######## STI ###################################################################
 sti, 0xfb, nacl-forbidden
 ######## STR ###################################################################
@@ -93,11 +93,11 @@ str Rv, 0x0f 0x00 /1
 ######## SWAPGS ################################################################
 swapgs, 0x0f 0x01 0xf8, amd64 nacl-forbidden
 ######## SYSCALL ###############################################################
-syscall, 0x0f 0x05, nacl-forbidden Fn8000_0001_EDX_SYSCALL
+syscall, 0x0f 0x05, nacl-forbidden CPUFeature_SYSCALL
 ######## SYSENTER ##############################################################
-sysenter, 0x0f 0x34, nacl-forbidden Fn0000_0001_EDX_SYSENTER
+sysenter, 0x0f 0x34, nacl-forbidden CPUFeature_SEP
 ######## SYSEXIT ###############################################################
-sysexit, 0x0f 0x35, nacl-forbidden Fn0000_0001_EDX_SYSENTER
+sysexit, 0x0f 0x35, nacl-forbidden CPUFeature_SEP
 ######## SYSRET ################################################################
 sysret, 0x0f 0x07, nacl-forbidden
 ######## UD2 ###################################################################
@@ -107,15 +107,15 @@ verr Ew, 0x0f 0x00 /4
 ######## VERW ##################################################################
 verw Ew, 0x0f 0x00 /5
 ######## VMLOAD ################################################################
-vmload, 0x0f 0x01 0xda, nacl-forbidden Fn8000_0001_ECX_SVM
+vmload, 0x0f 0x01 0xda, nacl-forbidden CPUFeature_SVM
 ######## VMMCALL ###############################################################
-vmmcall, 0x0f 0x01 0xd9, nacl-forbidden Fn8000_0001_ECX_SVM
+vmmcall, 0x0f 0x01 0xd9, nacl-forbidden CPUFeature_SVM
 ######## VMRUN #################################################################
-vmrun, 0x0f 0x01 0xd8, nacl-forbidden Fn8000_0001_ECX_SVM
+vmrun, 0x0f 0x01 0xd8, nacl-forbidden CPUFeature_SVM
 ######## VMSAVE ################################################################
-vmsave, 0x0f 0x01 0xdb, nacl-forbidden Fn8000_0001_ECX_SVM
+vmsave, 0x0f 0x01 0xdb, nacl-forbidden CPUFeature_SVM
 ######## WBINVD ################################################################
 wbinvd, 0x0f 0x09, nacl-forbidden
 ######## WRMSR #################################################################
-wrmsr, 0x0f 0x30, nacl-forbidden
+wrmsr, 0x0f 0x30, nacl-forbidden CPUFeature_MSR
 ################################################################################

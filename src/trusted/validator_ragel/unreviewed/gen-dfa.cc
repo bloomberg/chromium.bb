@@ -184,48 +184,51 @@ namespace {
     "rep",
 
     /* CPUID flags. */
-    "Fn8000_0001_EDX_3DNow",
-    "Fn8000_0001_EDX_3DNowExt",
-    "Fn8000_0001_ECX_3DNowPrefetch",
-    "Fn0000_0001_ECX_AES",
-    "Fn0000_0001_ECX_AESAVX",
-    "Fn8000_0001_ECX_AltMovCr8",
-    "Fn0000_0001_ECX_AVX",
-    "Fn0000_0007_EBX_x0_BMI",
-    "Fn0000_0001_EDX_CLFSH",
-    "Fn0000_0001_EDX_CMOV",
-    "Fn0000_0001_EDX_CMPXCHG8B",
-    "Fn0000_0001_ECX_CMPXCHG16B",
-    "Fn0000_0001_ECX_CVT16",
-    "Fn8000_0001_ECX_FMA",
-    "Fn8000_0001_ECX_FMA4",
-    "Fn8000_0001_ECX_LahfSahf",
-    "Fn8000_0001_ECX_LWP",
-    "Fn0000_0001_EDX_MMX",
-    "Fn8000_0001_EDX_MmxExt",
-    "Fn8000_0001_EDX_MmxExtOrSSE",
-    "Fn0000_0001_ECX_Monitor",
-    "Fn0000_0001_ECX_PCLMULQDQ",
-    "Fn0000_0001_ECX_PCLMULQDQAVX",
-    "Fn0000_0001_ECX_POPCNT",
-    "Fn0000_0001_EDX_RDTSC",
-    "Fn8000_0001_EDX_RDTSCP",
-    "Fn0000_0001_EDX_SFENCE",
-    "Fn8000_0001_ECX_SKINIT",
-    "Fn0000_0001_EDX_SSE1",
-    "Fn0000_0001_EDX_SSE2",
-    "Fn0000_0001_ECX_SSE3",
-    "Fn0000_0001_ECX_SSE41",
-    "Fn0000_0001_ECX_SSE42",
-    "Fn8000_0001_ECX_SSE4A",
-    "Fn0000_0001_ECX_SSSE3",
-    "Fn8000_0001_EDX_SYSCALL",
-    "Fn0000_0001_EDX_SYSENTER",
-    "Fn8000_0001_ECX_SVM",
-    "Fn8000_0001_ECX_TBM",
-    "Fn0000_0001_EDX_X87",
-    "Fn8000_0001_ECX_XOP",
-    "Fn0000_0001_ECX_XSAVE",
+    "CPUFeature_3DNOW",
+    "CPUFeature_3DPRFTCH",
+    "CPUFeature_AES",
+    "CPUFeature_AESAVX",
+    "CPUFeature_ALTMOVCR8",
+    "CPUFeature_AVX",
+    "CPUFeature_BMI1",
+    "CPUFeature_CLFLUSH",
+    "CPUFeature_CLMUL",
+    "CPUFeature_CLMULAVX",
+    "CPUFeature_CMOV",
+    "CPUFeature_CMOVx87",
+    "CPUFeature_CX16",
+    "CPUFeature_CX8",
+    "CPUFeature_E3DNOW",
+    "CPUFeature_EMMX",
+    "CPUFeature_EMMXSSE",
+    "CPUFeature_F16C",
+    "CPUFeature_FMA",
+    "CPUFeature_FMA4",
+    "CPUFeature_FXSR",
+    "CPUFeature_LAHF",
+    "CPUFeature_LWP",
+    "CPUFeature_LZCNT",
+    "CPUFeature_MMX",
+    "CPUFeature_MON",
+    "CPUFeature_MSR",
+    "CPUFeature_POPCNT",
+    "CPUFeature_SEP",
+    "CPUFeature_SFENCE",
+    "CPUFeature_SKINIT",
+    "CPUFeature_SSE",
+    "CPUFeature_SSE2",
+    "CPUFeature_SSE3",
+    "CPUFeature_SSE41",
+    "CPUFeature_SSE42",
+    "CPUFeature_SSE4A",
+    "CPUFeature_SSSE3",
+    "CPUFeature_SVM",
+    "CPUFeature_SYSCALL",
+    "CPUFeature_TBM",
+    "CPUFeature_TSC",
+    "CPUFeature_TSCP",
+    "CPUFeature_x87",
+    "CPUFeature_XOP",
 
      /* Flags for enabling/disabling based on architecture and validity.  */
      "ia32",
@@ -1221,6 +1224,16 @@ namespace {
 "", i);
       }
     }
+    for (auto flag_it = all_instruction_flags.begin();
+         flag_it != all_instruction_flags.end(); ++flag_it) {
+      auto &flag = *flag_it;
+      if (!strncmp(flag.c_str(), "CPUFeature_", 11)) {
+        fprintf(out_file, "  action %1$s {\n"
+"    SET_CPU_FEATURE(%1$s);\n"
+"  }\n"
+"", flag.c_str());
+      }
+    }
   }
 
   void print_name_actions(void) {
@@ -2149,6 +2162,12 @@ namespace {
       }
       if (enabled(Actions::kInstructionName)) {
         fprintf(out_file, " @instruction_%s", c_identifier(name).c_str());
+      }
+      for (auto flag_it = flags.begin(); flag_it != flags.end(); ++flag_it) {
+        auto &flag = *flag_it;
+        if (!strncmp(flag.c_str(), "CPUFeature_", 11)) {
+          fprintf(out_file, " @%s", flag.c_str());
+        }
       }
       if (enabled(Actions::kParseOperands)) {
         if (enabled(Actions::kParseOperandPositions)) {

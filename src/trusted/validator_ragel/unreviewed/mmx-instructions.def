@@ -8,222 +8,222 @@
 ################################################################################
 # File format: see general-purpose-instructions.def
 ######## CVTPD2PI ##############################################################
-cvtpd2pi Wpd Pq, 0x66 0x0f 0x2d, Fn0000_0001_EDX_SSE2
+cvtpd2pi Wpd Pq, 0x66 0x0f 0x2d, CPUFeature_SSE2
 ######## CVTPI2PD ##############################################################
-cvtpi2pd Qq Vpd, 0x66 0x0f 0x2a, Fn0000_0001_EDX_SSE2
+cvtpi2pd Qq Vpd, 0x66 0x0f 0x2a, CPUFeature_SSE2
 ######## CVTPI2PS ##############################################################
-cvtpi2ps Qq Vps, 0x0f 0x2a, Fn0000_0001_EDX_SSE2
+cvtpi2ps Qq Vps, 0x0f 0x2a, CPUFeature_SSE2
 ######## CVTPS2PI ##############################################################
-cvtps2pi Wps Pq, 0x0f 0x2d, Fn0000_0001_EDX_SSE2
+cvtps2pi Wps Pq, 0x0f 0x2d, CPUFeature_SSE2
 ######## CVTTPD2PI #############################################################
-cvttpd2pi Wpd Pq, 0x66 0x0f 0x2c, Fn0000_0001_EDX_SSE2
+cvttpd2pi Wpd Pq, 0x66 0x0f 0x2c, CPUFeature_SSE2
 ######## CVTTPS2PI #############################################################
-cvttps2pi Wps Pq, 0x0f 0x2c, Fn0000_0001_EDX_SSE2
+cvttps2pi Wps Pq, 0x0f 0x2c, CPUFeature_SSE2
 ######## EMMS ##################################################################
-emms, 0x0f 0x77, Fn0000_0001_EDX_MMX
+emms, 0x0f 0x77, CPUFeature_MMX
 ######## FEMMS #################################################################
-femms, 0xf 0x0e, Fn8000_0001_EDX_3DNow
+femms, 0xf 0x0e, CPUFeature_3DNOW
 ######## FRSTOR ################################################################
-frstor Msr, 0xdd /4, Fn0000_0001_EDX_X87
+frstor Msr, 0xdd /4, CPUFeature_x87
 ######## FSAVE/FNSAVE ##########################################################
-fnsave Msr, 0xdd /6, Fn0000_0001_EDX_X87
-fsave Msr, 0x9b 0xdd /6, Fn0000_0001_EDX_X87
+fnsave Msr, 0xdd /6, CPUFeature_x87
+fsave Msr, 0x9b 0xdd /6, CPUFeature_x87
 ######## FXRSTOR ###############################################################
-fxrstor Msx, 0x0f 0xae /1, nacl-forbidden Fn0000_0001_ECX_XSAVE
+fxrstor Msx, 0x0f 0xae /1, nacl-forbidden CPUFeature_FXSR
 ######## FXSAVE ################################################################
-fxsave Msx, 0x0f 0xae /0, nacl-forbidden Fn0000_0001_ECX_XSAVE
+fxsave Msx, 0x0f 0xae /0, nacl-forbidden CPUFeature_FXSR
 ######## MASKMOVQ ##############################################################
-maskmovq Nq Pq, 0x0f 0xf7, Fn8000_0001_EDX_MmxExt
+maskmovq Nq Pq, 0x0f 0xf7, CPUFeature_EMMX
 ######## MOVD ##################################################################
 # This is description according to AMD/Intel manual.
-# movd Ey Py, 0x0f 0x6e, Fn0000_0001_EDX_MMX
-# movd Py Ey, 0x0f 0x7e, Fn0000_0001_EDX_MMX
+# movd Ey Py, 0x0f 0x6e, CPUFeature_MMX
+# movd Py Ey, 0x0f 0x7e, CPUFeature_MMX
 # Objdump names 64bit version not “movd” but movq”.  We describe 32bit version
 # and 64bit separately.
-movd Ed Pq, 0x0f 0x6e, Fn0000_0001_EDX_MMX
-movd Pq Ed, 0x0f 0x7e, Fn0000_0001_EDX_MMX
-movq Eq Pq, rexw 0x0f 0x6e, amd64 Fn0000_0001_EDX_MMX
-movq Pq Eq, rexw 0x0f 0x7e, amd64 Fn0000_0001_EDX_MMX
+movd Ed Pq, 0x0f 0x6e, CPUFeature_MMX
+movd Pq Ed, 0x0f 0x7e, CPUFeature_MMX
+movq Eq Pq, rexw 0x0f 0x6e, amd64 CPUFeature_MMX
+movq Pq Eq, rexw 0x0f 0x7e, amd64 CPUFeature_MMX
 ######## MOVQ ##################################################################
-movq Qq Pq, 0x0f 0x6f, Fn0000_0001_EDX_MMX
-movq Pq Qq, 0x0f 0x7f, Fn0000_0001_EDX_MMX
+movq Qq Pq, 0x0f 0x6f, CPUFeature_MMX
+movq Pq Qq, 0x0f 0x7f, CPUFeature_MMX
 ######## MOVDQ2Q ###############################################################
-movdq2q Uq Pq, 0xf2 0x0f 0xd6, Fn0000_0001_EDX_SSE2
+movdq2q Uq Pq, 0xf2 0x0f 0xd6, CPUFeature_SSE2
 ######## MOVQ2DQ ###############################################################
-movq2dq Nq Vdq, 0xf3 0x0f 0xd6, Fn0000_0001_EDX_SSE2
+movq2dq Nq Vdq, 0xf3 0x0f 0xd6, CPUFeature_SSE2
 ######## PACKSSDW ##############################################################
-packssdw Qq Pq, 0x0f 0x6b, Fn0000_0001_EDX_MMX
+packssdw Qq Pq, 0x0f 0x6b, CPUFeature_MMX
 ######## PASKSSWB ##############################################################
-packsswb Qq Pq, 0x0f 0x63, Fn0000_0001_EDX_MMX
+packsswb Qq Pq, 0x0f 0x63, CPUFeature_MMX
 ######## PACKUSWB ##############################################################
-packuswb Qq Pq, 0x0f 0x67, Fn0000_0001_EDX_MMX
+packuswb Qq Pq, 0x0f 0x67, CPUFeature_MMX
 ######## PADDB #################################################################
-paddb Qq Pq, 0x0f 0xfc, Fn0000_0001_EDX_MMX
+paddb Qq Pq, 0x0f 0xfc, CPUFeature_MMX
 ######## PADDD #################################################################
-paddd Qq Pq, 0x0f 0xfe, Fn0000_0001_EDX_MMX
+paddd Qq Pq, 0x0f 0xfe, CPUFeature_MMX
 ######## PADDQ #################################################################
-paddq Qq Pq, 0x0f 0xd4, Fn0000_0001_EDX_SSE2
+paddq Qq Pq, 0x0f 0xd4, CPUFeature_SSE2
 ######## PADDSB ################################################################
-paddsb Qq Pq, 0x0f 0xec, Fn0000_0001_EDX_MMX
+paddsb Qq Pq, 0x0f 0xec, CPUFeature_MMX
 ######## PADDSW ################################################################
-paddsw Qq Pq, 0x0f 0xed, Fn0000_0001_EDX_MMX
+paddsw Qq Pq, 0x0f 0xed, CPUFeature_MMX
 ######## PADDUSB ###############################################################
-paddusb Qq Pq, 0x0f 0xdc, Fn0000_0001_EDX_MMX
+paddusb Qq Pq, 0x0f 0xdc, CPUFeature_MMX
 ######## PADDUSW ###############################################################
-paddusw Qq Pq, 0x0f 0xdd, Fn0000_0001_EDX_MMX
+paddusw Qq Pq, 0x0f 0xdd, CPUFeature_MMX
 ######## PADDW #################################################################
-paddw Qq Pq, 0x0f 0xfd, Fn0000_0001_EDX_MMX
+paddw Qq Pq, 0x0f 0xfd, CPUFeature_MMX
 ######## PAND ##################################################################
-pand Qq Pq, 0x0f 0xdb, Fn0000_0001_EDX_MMX
+pand Qq Pq, 0x0f 0xdb, CPUFeature_MMX
 ######## PANDN #################################################################
-pandn Qq Pq, 0x0f 0xdf, Fn0000_0001_EDX_MMX
+pandn Qq Pq, 0x0f 0xdf, CPUFeature_MMX
 ######## PAVGB #################################################################
-pavgb Qq Pq, 0x0f 0xe0, Fn8000_0001_EDX_MmxExtOrSSE
+pavgb Qq Pq, 0x0f 0xe0, CPUFeature_EMMXSSE
 ######## PAVGUSB ###############################################################
-pavgusb Qq Pq, 0x0f 0x0f / 0xbf, Fn8000_0001_EDX_3DNow
+pavgusb Qq Pq, 0x0f 0x0f / 0xbf, CPUFeature_3DNOW
 ######## PAVGW #################################################################
-pavgw Qq Pq, 0x0f 0xe3, Fn8000_0001_EDX_MmxExtOrSSE
+pavgw Qq Pq, 0x0f 0xe3, CPUFeature_EMMXSSE
 ######## PCMPEQB ###############################################################
-pcmpeqb Qq Pq, 0x0f 0x74, Fn0000_0001_EDX_MMX
+pcmpeqb Qq Pq, 0x0f 0x74, CPUFeature_MMX
 ######## PCMPEQD ###############################################################
-pcmpeqd Qq Pq, 0x0f 0x76, Fn0000_0001_EDX_MMX
+pcmpeqd Qq Pq, 0x0f 0x76, CPUFeature_MMX
 ######## PCMPEQW ###############################################################
-pcmpeqw Qq Pq, 0x0f 0x75, Fn0000_0001_EDX_MMX
+pcmpeqw Qq Pq, 0x0f 0x75, CPUFeature_MMX
 ######## PCMPGTB ###############################################################
-pcmpgtb Qq Pq, 0x0f 0x64, Fn0000_0001_EDX_MMX
+pcmpgtb Qq Pq, 0x0f 0x64, CPUFeature_MMX
 ######## PCMPGTD ###############################################################
-pcmpgtd Qq Pq, 0x0f 0x66, Fn0000_0001_EDX_MMX
+pcmpgtd Qq Pq, 0x0f 0x66, CPUFeature_MMX
 ######## PCMPGTW ###############################################################
-pcmpgtw Qq Pq, 0x0f 0x65, Fn0000_0001_EDX_MMX
+pcmpgtw Qq Pq, 0x0f 0x65, CPUFeature_MMX
 ######## PEXTRW ################################################################
-pextrw Ib Nq Gd, 0x0f 0xc5, Fn8000_0001_EDX_MmxExtOrSSE
+pextrw Ib Nq Gd, 0x0f 0xc5, CPUFeature_EMMXSSE
 ######## PF2ID #################################################################
-pf2id Qq Pq, 0x0f 0x0f / 0x1d, Fn8000_0001_EDX_3DNow
+pf2id Qq Pq, 0x0f 0x0f / 0x1d, CPUFeature_3DNOW
 ######## PF2IW #################################################################
-pf2iw Qq Pq, 0x0f 0x0f / 0x1c, Fn8000_0001_EDX_3DNowExt
+pf2iw Qq Pq, 0x0f 0x0f / 0x1c, CPUFeature_E3DNOW
 ######## PFACC #################################################################
-pfacc Qq Pq, 0x0f 0x0f / 0xae, Fn8000_0001_EDX_3DNow
+pfacc Qq Pq, 0x0f 0x0f / 0xae, CPUFeature_3DNOW
 ######## PFADD #################################################################
-pfadd Qq Pq, 0x0f 0x0f / 0x9e, Fn8000_0001_EDX_3DNow
+pfadd Qq Pq, 0x0f 0x0f / 0x9e, CPUFeature_3DNOW
 ######## PFCMPEQ ###############################################################
-pfcmpeq Qq Pq, 0x0f 0x0f / 0xb0, Fn8000_0001_EDX_3DNow
+pfcmpeq Qq Pq, 0x0f 0x0f / 0xb0, CPUFeature_3DNOW
 ######## PFCMPGE ###############################################################
-pfcmpge Qq Pq, 0x0f 0x0f / 0x90, Fn8000_0001_EDX_3DNow
+pfcmpge Qq Pq, 0x0f 0x0f / 0x90, CPUFeature_3DNOW
 ######## PFCMPGT ###############################################################
-pfcmpgt Qq Pq, 0x0f 0x0f / 0xa0, Fn8000_0001_EDX_3DNow
+pfcmpgt Qq Pq, 0x0f 0x0f / 0xa0, CPUFeature_3DNOW
 ######## PFMAX #################################################################
-pfmax Qq Pq, 0x0f 0x0f / 0xa4, Fn8000_0001_EDX_3DNow
+pfmax Qq Pq, 0x0f 0x0f / 0xa4, CPUFeature_3DNOW
 ######## PFMIN #################################################################
-pfmin Qq Pq, 0x0f 0x0f / 0x94, Fn8000_0001_EDX_3DNow
+pfmin Qq Pq, 0x0f 0x0f / 0x94, CPUFeature_3DNOW
 ######## PFMUL #################################################################
-pfmul Qq Pq, 0x0f 0x0f / 0xb4, Fn8000_0001_EDX_3DNow
+pfmul Qq Pq, 0x0f 0x0f / 0xb4, CPUFeature_3DNOW
 ######## PFNACC ################################################################
-pfnacc Qq Pq, 0x0f 0x0f / 0x8a, Fn8000_0001_EDX_3DNowExt
+pfnacc Qq Pq, 0x0f 0x0f / 0x8a, CPUFeature_E3DNOW
 ######## PFPNACC ###############################################################
-pfpnacc Qq Pq, 0x0f 0x0f / 0x8e, Fn8000_0001_EDX_3DNowExt
+pfpnacc Qq Pq, 0x0f 0x0f / 0x8e, CPUFeature_E3DNOW
 ######## PFRCP #################################################################
-pfrcp Qq Pq, 0x0f 0x0f / 0x96, Fn8000_0001_EDX_3DNow
+pfrcp Qq Pq, 0x0f 0x0f / 0x96, CPUFeature_3DNOW
 ######## PFRCPIT1 ##############################################################
-pfrcpit1 Qq Pq, 0x0f 0x0f / 0xa6, Fn8000_0001_EDX_3DNow
+pfrcpit1 Qq Pq, 0x0f 0x0f / 0xa6, CPUFeature_3DNOW
 ######## PFRCPIT2 ##############################################################
-pfrcpit2 Qq Pq, 0x0f 0x0f / 0xb6, Fn8000_0001_EDX_3DNow
+pfrcpit2 Qq Pq, 0x0f 0x0f / 0xb6, CPUFeature_3DNOW
 ######## PFRSQIT1 ##############################################################
-pfrsqit1 Qq Pq, 0x0f 0x0f / 0xa7, Fn8000_0001_EDX_3DNow
+pfrsqit1 Qq Pq, 0x0f 0x0f / 0xa7, CPUFeature_3DNOW
 ######## PFRSQRT ###############################################################
-pfrsqrt Qq Pq, 0x0f 0x0f / 0x97, Fn8000_0001_EDX_3DNow
+pfrsqrt Qq Pq, 0x0f 0x0f / 0x97, CPUFeature_3DNOW
 ######## PFSUB #################################################################
-pfsub Qq Pq, 0x0f 0x0f / 0x9a, Fn8000_0001_EDX_3DNow
+pfsub Qq Pq, 0x0f 0x0f / 0x9a, CPUFeature_3DNOW
 ######## PFSUBR ################################################################
-pfsubr Qq Pq, 0x0f 0x0f / 0xaa, Fn8000_0001_EDX_3DNow
+pfsubr Qq Pq, 0x0f 0x0f / 0xaa, CPUFeature_3DNOW
 ######## PI2FD #################################################################
-pi2fd Qq Pq, 0x0f 0x0f / 0x0d, Fn8000_0001_EDX_3DNow
+pi2fd Qq Pq, 0x0f 0x0f / 0x0d, CPUFeature_3DNOW
 ######## PI2FW #################################################################
-pi2fw Qq Pq, 0x0f 0x0f / 0x0c, Fn8000_0001_EDX_3DNowExt
+pi2fw Qq Pq, 0x0f 0x0f / 0x0c, CPUFeature_E3DNOW
 ######## PINSTRW ###############################################################
-pinsrw Ib Mw Pq, 0x0f 0xc4, Fn8000_0001_EDX_MmxExtOrSSE
-pinsrw Ib Rd Pq, 0x0f 0xc4, Fn8000_0001_EDX_MmxExtOrSSE
+pinsrw Ib Mw Pq, 0x0f 0xc4, CPUFeature_EMMXSSE
+pinsrw Ib Rd Pq, 0x0f 0xc4, CPUFeature_EMMXSSE
 ######## PMADDWD ###############################################################
-pmaddwd Qq Pq, 0x0f 0xf5, Fn0000_0001_EDX_MMX
+pmaddwd Qq Pq, 0x0f 0xf5, CPUFeature_MMX
 ######## PMAXSW ################################################################
-pmaxsw Qq Pq, 0x0f 0xee, Fn8000_0001_EDX_MmxExtOrSSE
+pmaxsw Qq Pq, 0x0f 0xee, CPUFeature_EMMXSSE
 ######## PMAXUB ################################################################
-pmaxub Qq Pq, 0x0f 0xde, Fn8000_0001_EDX_MmxExtOrSSE
+pmaxub Qq Pq, 0x0f 0xde, CPUFeature_EMMXSSE
 ######## PMINSW ################################################################
-pminsw Qq Pq, 0x0f 0xea, Fn8000_0001_EDX_MmxExtOrSSE
+pminsw Qq Pq, 0x0f 0xea, CPUFeature_EMMXSSE
 ######## PMINUB ################################################################
-pminub Qq Pq, 0x0f 0xda, Fn8000_0001_EDX_MmxExtOrSSE
+pminub Qq Pq, 0x0f 0xda, CPUFeature_EMMXSSE
 ######## PMOVMSKB ##############################################################
-pmovmskb Nq Gd, 0x0f 0xd7, Fn8000_0001_EDX_MmxExtOrSSE
+pmovmskb Nq Gd, 0x0f 0xd7, CPUFeature_EMMXSSE
 ######## PMULHRW ###############################################################
-pmulhrw Qq Pq, 0x0f 0x0f / 0xb7, Fn8000_0001_EDX_3DNow
+pmulhrw Qq Pq, 0x0f 0x0f / 0xb7, CPUFeature_3DNOW
 ######## PMULHUW ###############################################################
-pmulhuw Qq Pq, 0x0f 0xe4, Fn8000_0001_EDX_MmxExtOrSSE
+pmulhuw Qq Pq, 0x0f 0xe4, CPUFeature_EMMXSSE
 ######## PMULHW ################################################################
-pmulhw Qq Pq, 0x0f 0xe5, Fn0000_0001_EDX_MMX
+pmulhw Qq Pq, 0x0f 0xe5, CPUFeature_MMX
 ######## PMULLW ################################################################
-pmullw Qq Pq, 0x0f 0xd5, Fn0000_0001_EDX_MMX
+pmullw Qq Pq, 0x0f 0xd5, CPUFeature_MMX
 ######## PMULUDQ ###############################################################
-pmuludq Qq Pq, 0x0f 0xf4, Fn0000_0001_EDX_SSE2
+pmuludq Qq Pq, 0x0f 0xf4, CPUFeature_SSE2
 ######## POR ###################################################################
-por Qq Pq, 0x0f 0xeb, Fn0000_0001_EDX_MMX
+por Qq Pq, 0x0f 0xeb, CPUFeature_MMX
 ######## PSADBW ################################################################
-psadbw Qq Pq, 0x0f 0xf6, Fn8000_0001_EDX_MmxExtOrSSE
+psadbw Qq Pq, 0x0f 0xf6, CPUFeature_EMMXSSE
 ######## PSHUFW ################################################################
-pshufw Ib Qq Pq, 0x0f 0x70, Fn8000_0001_EDX_MmxExtOrSSE
+pshufw Ib Qq Pq, 0x0f 0x70, CPUFeature_EMMXSSE
 ######## PSLLD #################################################################
-pslld Qq Pq, 0x0f 0xf2, Fn0000_0001_EDX_MMX
-pslld Ib Nq, 0x0f 0x72 /6, Fn0000_0001_EDX_MMX
+pslld Qq Pq, 0x0f 0xf2, CPUFeature_MMX
+pslld Ib Nq, 0x0f 0x72 /6, CPUFeature_MMX
 ######## PSLLQ #################################################################
-psllq Qq Pq, 0x0f 0xf3, Fn0000_0001_EDX_MMX
-psllq Ib Nq, 0x0f 0x73 /6, Fn0000_0001_EDX_MMX
+psllq Qq Pq, 0x0f 0xf3, CPUFeature_MMX
+psllq Ib Nq, 0x0f 0x73 /6, CPUFeature_MMX
 ######## PSLLW #################################################################
-psllw Qq Pq, 0x0f 0xf1, Fn0000_0001_EDX_MMX
-psllw Ib Nq, 0x0f 0x71 /6, Fn0000_0001_EDX_MMX
+psllw Qq Pq, 0x0f 0xf1, CPUFeature_MMX
+psllw Ib Nq, 0x0f 0x71 /6, CPUFeature_MMX
 ######## PSRAD #################################################################
-psrad Qq Pq, 0x0f 0xe2, Fn0000_0001_EDX_MMX
-psrad Ib Nq, 0x0f 0x72 /4, Fn0000_0001_EDX_MMX
+psrad Qq Pq, 0x0f 0xe2, CPUFeature_MMX
+psrad Ib Nq, 0x0f 0x72 /4, CPUFeature_MMX
 ######## PSRAW #################################################################
-psraw Qq Pq, 0x0f 0xe1, Fn0000_0001_EDX_MMX
-psraw Ib Nq, 0x0f 0x71 /4, Fn0000_0001_EDX_MMX
+psraw Qq Pq, 0x0f 0xe1, CPUFeature_MMX
+psraw Ib Nq, 0x0f 0x71 /4, CPUFeature_MMX
 ######## PSRLD #################################################################
-psrld Qq Pq, 0x0f 0xd2, Fn0000_0001_EDX_MMX
-psrld Ib Nq, 0x0f 0x72 /2, Fn0000_0001_EDX_MMX
+psrld Qq Pq, 0x0f 0xd2, CPUFeature_MMX
+psrld Ib Nq, 0x0f 0x72 /2, CPUFeature_MMX
 ######## PSRLQ #################################################################
-psrlq Qq Pq, 0x0f 0xd3, Fn0000_0001_EDX_MMX
-psrlq Ib Nq, 0x0f 0x73 /2, Fn0000_0001_EDX_MMX
+psrlq Qq Pq, 0x0f 0xd3, CPUFeature_MMX
+psrlq Ib Nq, 0x0f 0x73 /2, CPUFeature_MMX
 ######## PSRLW #################################################################
-psrlw Qq Pq, 0x0f 0xd1, Fn0000_0001_EDX_MMX
-psrlw Ib Nq, 0x0f 0x71 /2, Fn0000_0001_EDX_MMX
+psrlw Qq Pq, 0x0f 0xd1, CPUFeature_MMX
+psrlw Ib Nq, 0x0f 0x71 /2, CPUFeature_MMX
 ######## PSUBB #################################################################
-psubb Qq Pq, 0x0f 0xf8, Fn0000_0001_EDX_MMX
+psubb Qq Pq, 0x0f 0xf8, CPUFeature_MMX
 ######## PSUBD #################################################################
-psubd Qq Pq, 0x0f 0xfa, Fn0000_0001_EDX_MMX
+psubd Qq Pq, 0x0f 0xfa, CPUFeature_MMX
 ######## PSUBQ #################################################################
-psubq Qq Pq, 0x0f 0xfb, Fn0000_0001_EDX_SSE2
+psubq Qq Pq, 0x0f 0xfb, CPUFeature_SSE2
 ######## PSUBSB ################################################################
-psubsb Qq Pq, 0x0f 0xe8, Fn0000_0001_EDX_MMX
+psubsb Qq Pq, 0x0f 0xe8, CPUFeature_MMX
 ######## PSUBSW ################################################################
-psubsw Qq Pq, 0x0f 0xe9, Fn0000_0001_EDX_MMX
+psubsw Qq Pq, 0x0f 0xe9, CPUFeature_MMX
 ######## PSUBUSB ###############################################################
-psubusb Qq Pq, 0x0f 0xd8, Fn0000_0001_EDX_MMX
+psubusb Qq Pq, 0x0f 0xd8, CPUFeature_MMX
 ######## PSUBUSW ###############################################################
-psubusw Qq Pq, 0x0f 0xd9, Fn0000_0001_EDX_MMX
+psubusw Qq Pq, 0x0f 0xd9, CPUFeature_MMX
 ######## PSUBW #################################################################
-psubw Qq Pq, 0x0f 0xf9, Fn0000_0001_EDX_MMX
+psubw Qq Pq, 0x0f 0xf9, CPUFeature_MMX
 ######## PSWAPD ################################################################
-pswapd Qq Pq, 0x0f 0x0f / 0xbb, Fn8000_0001_EDX_3DNowExt
+pswapd Qq Pq, 0x0f 0x0f / 0xbb, CPUFeature_E3DNOW
 ######## PUNPCKHBW #############################################################
-punpckhbw Qq Pq, 0x0f 0x68, Fn0000_0001_EDX_MMX
+punpckhbw Qq Pq, 0x0f 0x68, CPUFeature_MMX
 ######## PUNPCKHDQ #############################################################
-punpckhdq Qq Pq, 0x0f 0x6a, Fn0000_0001_EDX_MMX
+punpckhdq Qq Pq, 0x0f 0x6a, CPUFeature_MMX
 ######## PUNPCKHWD #############################################################
-punpckhwd Qq Pq, 0x0f 0x69, Fn0000_0001_EDX_MMX
+punpckhwd Qq Pq, 0x0f 0x69, CPUFeature_MMX
 ######## PUNPCKLBW #############################################################
-punpcklbw Qq Pq, 0x0f 0x60, Fn0000_0001_EDX_MMX
+punpcklbw Qq Pq, 0x0f 0x60, CPUFeature_MMX
 ######## PUNPCKLDQ #############################################################
-punpckldq Qq Pq, 0x0f 0x62, Fn0000_0001_EDX_MMX
+punpckldq Qq Pq, 0x0f 0x62, CPUFeature_MMX
 ######## PUNPCKLWD #############################################################
-punpcklwd Qq Pq, 0x0f 0x61, Fn0000_0001_EDX_MMX
+punpcklwd Qq Pq, 0x0f 0x61, CPUFeature_MMX
 ######## PXOR ##################################################################
-pxor Qq Pq, 0x0f 0xef, Fn0000_0001_EDX_MMX
+pxor Qq Pq, 0x0f 0xef, CPUFeature_MMX
 ################################################################################

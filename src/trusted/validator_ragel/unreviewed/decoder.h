@@ -4,15 +4,12 @@
  * found in the LICENSE file.
  */
 
-#ifndef _DECODER_X86_64_H_
-#define _DECODER_X86_64_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODER_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODER_H_
 
-#include "native_client/src/shared/utils/types.h"
-#include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 enum operand_type {
   OperandSize2bit,       /* See VPERMIL2Px instruction for description.       */
@@ -127,8 +124,6 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
                     process_instruction_func process_instruction,
                     process_decoding_error_func process_error, void *userdata);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
-#endif
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_RAGEL_DECODER_H_ */

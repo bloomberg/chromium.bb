@@ -171,54 +171,57 @@
 #         nop, prefetch* instructions…
 #
 #     Possible CPUID values:
-#       Fn0000_0001_ECX_AES: Fn0000_0001_ECX[AES]
-#       Fn0000_0001_ECX_AESAVX: Fn0000_0001_ECX[AES] && Fn0000_0001_ECX[AVX]
-#       Fn0000_0001_ECX_AVX: Fn0000_0001_ECX[AVX]
-#       Fn0000_0001_ECX_CMPXCHG16B: Fn0000_0001_ECX[CMPXCHG16B]
-#       Fn0000_0001_ECX_CVT16: Fn0000_0001_ECX[F16C]
-#       Fn0000_0001_ECX_Monitor: Fn0000_0001_ECX[Monitor]
-#       Fn0000_0001_ECX_PCLMULQDQ: Fn0000_0001_ECX[PCLMULQDQ]
-#       Fn0000_0001_ECX_PCLMULQDQAVX: Fn0000_0001_ECX[PCLMULQDQ] &&
-#                                     Fn0000_0001_ECX[AVX]
-#       Fn0000_0001_ECX_POPCNT: Fn0000_0001_ECX[POPCNT]
-#       Fn0000_0001_ECX_SSE3: Fn0000_00001_ECX[SSE3]
-#       Fn0000_0001_ECX_SSE41: Fn0000_0001_ECX[SSE41]
-#       Fn0000_0001_ECX_SSE42: Fn0000_0001_ECX[SSE42]
-#       Fn0000_0001_ECX_SSSE3: Fn0000_00001_ECX[SSSE3]
-#       Fn0000_0001_ECX_XSAVE: Fn0000_0001_ECX[XSAVE]
-#       Fn0000_0001_EDX_X87: Fn0000_0001_EDX[x87]
-#       Fn0000_0001_EDX_CLFSH: Fn0000_0001_EDX[CLFSH]
-#       Fn0000_0001_EDX_CMOV: Fn0000_0001_EDX[CMOV] || Fn8000_0001_EDX[CMOV]
-#       Fn0000_0001_EDX_CMPXCHG8B: Fn0000_0001_EDX[CMPXCHG8B] ||
-#                                  Fn8000_0001_EDX[CMPXCHG8B]
-#       Fn0000_0001_EDX_MMX: Fn0000_0001_EDX[MMX]
-#       Fn0000_0001_EDX_RDTSC: Fn0000_0001_EDX[RDTSC] || Fn8000_0001_EDX[RDTSC]
-#       Fn0000_0001_EDX_SFENCE: Fn0000_0001_EDX[SSE] ||
-#                               Fn8000_0001_EDX[MmxExt]
-#       Fn0000_0001_EDX_SSE1: Fn0000_0001_EDX[SSE]
-#       Fn0000_0001_EDX_SSE2: Fn0000_0001_EDX[SSE2]
-#       Fn0000_0001_EDX_SYSENTER: Fn0000_0001_EDX[SYSENTER]
-#       Fn0000_0007_EBX_x0_BMI: Fn0000_0007_EBX_x0[BMI]
-#       Fn8000_0001_ECX_3DNowPrefetch: Fn8000_0001_ECX[3DNowPrefetch] ||
-#                                      Fn8000_0001_EDX[LM] ||
-#                                      Fn8000_0001_EDX[3DNow]
-#       Fn8000_0001_ECX_AltMovCr8: Fn8000_0001_ECX[AltMovCr8]
-#       Fn8000_0001_ECX_FMA: Fn8000_0001_ECX[FMA]
-#       Fn8000_0001_ECX_FMA4: Fn8000_0001_ECX[FMA4]
-#       Fn8000_0001_ECX_LahfSahf: Fn8000_0001_ECX[LahfSahf]
-#       Fn8000_0001_ECX_LWP: Fn8000_0001_ECX[LWP]
-#       Fn8000_0001_ECX_SVM: Fn8000_0001_ECX[SVM] && EFER.SVME
-#       Fn8000_0001_ECX_SKINIT: (Fn8000_0001_ECX[SVM] && EFER.SVME) ||
-#                               Fn8000_0001_ECX[SKINIT]
-#       Fn8000_0001_ECX_SSE4A: Fn8000_0001_ECX[SSE4A]
-#       Fn8000_0001_ECX_TBM: Fn8000_0001_ECX[TBM]
-#       Fn8000_0001_ECX_XOP: Fn8000_0001_ECX[XOP]
-#       Fn8000_0001_EDX_3DNow: Fn8000_0001_EDX[3DNow]
-#       Fn8000_0001_EDX_MmxExt: Fn8000_0001_EDX[MmxExt]
-#       Fn8000_0001_EDX_MmxExtOrSSE: Fn8000_0001_EDX[MmxExt] ||
-#                                    Fn0000_0001_EDX[SSE]
-#       Fn8000_0001_EDX_RDTSCP: Fn8000_0001_EDX[RDTSCP]
-#       Fn8000_0001_EDX_SYSCALL: Fn8000_0001_EDX[SYSCALL]
+#       CPUFeature_3DNOW:     Fn8000_0001_EDX[3DNOW]
+#       CPUFeature_3DPRFTCH:  Fn8000_0001_ECX[3DNowPrefetch] ||
+#                             Fn8000_0001_EDX[LM] ||
+#                             Fn8000_0001_EDX[3DNow]
+#       CPUFeature_AES:       Fn0000_0001_ECX[AES]
+#       CPUFeature_AESAVX:    Fn0000_0001_ECX[AES] && Fn0000_0001_ECX[AVX]
+#       CPUFeature_ALTMOVCR8: Fn8000_0001_ECX[ALTMOVCR8] || Fn8000_0001_EDX[LM]
+#       CPUFeature_AVX:       Fn0000_0001_ECX[AVX]
+#       CPUFeature_BMI1:      Fn0000_0007_EBX_x0[BMI1]
+#       CPUFeature_CLFLUSH:   Fn0000_0001_EDX[CLFSH]
+#       CPUFeature_CLMUL:     Fn0000_0001_ECX[PCLMULQDQ]
+#       CPUFeature_CLMULAVX:  Fn0000_0001_ECX[PCLMULQDQ] &&
+#                             Fn0000_0001_ECX[AVX]
+#       CPUFeature_CMOV:      Fn0000_0001_EDX[CMOV] || Fn8000_0001_EDX[CMOV]
+#       CPUFeature_CMOVx87:  (Fn0000_0001_EDX[CMOV] || Fn8000_0001_EDX[CMOV]) &&
+#                             Fn0000_0001_EDX[x87]
+#       CPUFeature_CX16:      Fn0000_0001_ECX[CMPXCHG16B]
+#       CPUFeature_CX8:       Fn0000_0001_EDX[CMPXCHG8B] ||
+#                             Fn8000_0001_EDX[CMPXCHG8B]
+#       CPUFeature_E3DNOW:    Fn8000_0001_EDX[E3DNOW]
+#       CPUFeature_EMMX:      Fn8000_0001_EDX[EMMX]
+#       CPUFeature_EMMXSSE:   Fn8000_0001_EDX[EMMX] ||
+#                             Fn0000_0001_EDX[SSE]
+#       CPUFeature_F16C:      Fn0000_0001_ECX[F16C]
+#       CPUFeature_FMA:       Fn0000_0001_ECX[FMA]
+#       CPUFeature_FMA4:      Fn8000_0001_ECX[FMA4]
+#       CPUFeature_FXSR:      Fn0000_0001_ECX[XSAVE]
+#       CPUFeature_LAHF:      Fn8000_0001_ECX[LahfSahf]
+#       CPUFeature_LWP:       Fn8000_0001_ECX[LWP]
+#       CPUFeature_LZCNT:     Fn8000_0001_EXC[ABM]
+#       CPUFeature_MMX:       Fn0000_0001_EDX[MMX]
+#       CPUFeature_MON:       Fn0000_0001_ECX[Monitor]
+#       CPUFeature_MSR:       Fn0000_0001_EDX[MSR]
+#       CPUFeature_POPCNT:    Fn0000_0001_ECX[POPCNT]
+#       CPUFeature_SEP:       Fn0000_0001_EDX[SYSENTER]
+#       CPUFeature_SSE:       Fn0000_0001_EDX[SSE]
+#       CPUFeature_SSE2:      Fn0000_0001_EDX[SSE2]
+#       CPUFeature_SSE3:      Fn0000_00001_ECX[SSE3]
+#       CPUFeature_SSE41:     Fn0000_0001_ECX[SSE41]
+#       CPUFeature_SSE42:     Fn0000_0001_ECX[SSE42]
+#       CPUFeature_SSE4A:     Fn8000_0001_ECX[SSE4A]
+#       CPUFeature_SSSE3:     Fn0000_00001_ECX[SSSE3]
+#       CPUFeature_SKINIT:   (Fn8000_0001_ECX[SVM] && EFER.SVME) ||
+#                             Fn8000_0001_ECX[SKINIT]
+#       CPUFeature_SVM:       Fn8000_0001_ECX[SVM] && EFER.SVME
+#       CPUFeature_SYSCALL:   Fn8000_0001_EDX[SYSCALL]
+#       CPUFeature_TBM:       Fn8000_0001_ECX[TBM]
+#       CPUFeature_TSC:       Fn0000_0001_EDX[RDTSC] || Fn8000_0001_EDX[RDTSC]
+#       CPUFeature_TSCP:      Fn8000_0001_EDX[RDTSCP]
+#       CPUFeature_x87:       Fn0000_0001_EDX[x87]
+#       CPUFeature_XOP:       Fn8000_0001_ECX[XOP]
 ######## ADC ###################################################################
 adc I a, 0x14
 adc I E, 0x80 /2, lock
@@ -238,30 +241,30 @@ and Ib Ev, 0x83 /4, lock
 and G E, 0x20, lock
 and E G, 0x22, lock
 ######## ANDN ##################################################################
-andn Ey By Gy, 0xc4 RXB.02 W.src1.0.00 0xf2, Fn0000_0007_EBX_x0_BMI
+andn Ey By Gy, 0xc4 RXB.02 W.src1.0.00 0xf2, CPUFeature_BMI1
 ######## BEXTR #################################################################
-bextr By Ey Gy, 0xc4 RXB.02 W.cntl.0.00 0xf7, Fn0000_0007_EBX_x0_BMI
-bextr Id Ey Gy, 0x8f RXB.0A W.1111.0.00 0x10, Fn0000_0007_EBX_x0_BMI
+bextr By Ey Gy, 0xc4 RXB.02 W.cntl.0.00 0xf7, CPUFeature_BMI1
+bextr Id Ey Gy, 0x8f RXB.0A W.1111.0.00 0x10, CPUFeature_BMI1
 ######## BLCFILL ###############################################################
-blcfill Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /1, Fn8000_0001_ECX_TBM
+blcfill Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /1, CPUFeature_TBM
 ######## BLCI ##################################################################
-blci Ey By, 0x8f RXB.09 W.dest.0.00 0x02 /6, Fn8000_0001_ECX_TBM
+blci Ey By, 0x8f RXB.09 W.dest.0.00 0x02 /6, CPUFeature_TBM
 ######## BLCIC #################################################################
-blcic Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /5, Fn8000_0001_ECX_TBM
+blcic Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /5, CPUFeature_TBM
 ######## BLCMSK ################################################################
-blcmsk Ey By, 0x8f RXB.09 W.dest.0.00 0x02 /1, Fn8000_0001_ECX_TBM
+blcmsk Ey By, 0x8f RXB.09 W.dest.0.00 0x02 /1, CPUFeature_TBM
 ######## BLCS ##################################################################
-blcs Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /3, Fn8000_0001_ECX_TBM
+blcs Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /3, CPUFeature_TBM
 ######## BLSFILL ###############################################################
-blsfill Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /2, Fn8000_0001_ECX_TBM
+blsfill Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /2, CPUFeature_TBM
 ######## BLSI ##################################################################
-blsi Ey By, 0xc4 RXB.02 W.dest.0.00 0xf3 /3, Fn0000_0007_EBX_x0_BMI
+blsi Ey By, 0xc4 RXB.02 W.dest.0.00 0xf3 /3, CPUFeature_BMI1
 ######## BLSIC #################################################################
-blsic Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /6, Fn8000_0001_ECX_TBM
+blsic Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /6, CPUFeature_TBM
 ######## BLSMSK ################################################################
-blsmsk Ey By, 0xc4 RXB.02 W.dest.0.00 0xf3 /2, Fn0000_0007_EBX_x0_BMI
+blsmsk Ey By, 0xc4 RXB.02 W.dest.0.00 0xf3 /2, CPUFeature_BMI1
 ######## BLSSR #################################################################
-blsr Ey By, 0xc4 RXB.02 W.dest.0.00 0xf3 /1, Fn0000_0007_EBX_x0_BMI
+blsr Ey By, 0xc4 RXB.02 W.dest.0.00 0xf3 /1, CPUFeature_BMI1
 ######## BSF ###################################################################
 bsf Ev Gv, 0x0f 0xbc
 ######## BSR ###################################################################
@@ -301,36 +304,36 @@ lcallq Mp, 0xff /3, amd64 nacl-forbidden
 ######## CBW/CWDE/CDQE #########################################################
 cbtw, data16 0x98
 cwtl, 0x98
-cltq, REXW_NONE 0x98, amd64
+cltq, rexw 0x98, amd64
 ######## CWD/CDQ/CQO ###########################################################
 cltd, 0x99
 cwtd, data16 0x99
-cqto, REXW_NONE 0x99, amd64
+cqto, rexw 0x99, amd64
 ######## CLC ###################################################################
 clc, 0xf8
 ######## CLD ###################################################################
 cld, 0xfc
 ######## CLFLUSH ###############################################################
-clflush Mb, 0x0f 0xae /7, Fn0000_0001_EDX_CLFSH
+clflush Mb, 0x0f 0xae /7, CPUFeature_CLFLUSH
 ######## CMC ###################################################################
 cmc, 0xf5
 ######## CMOVCC ################################################################
-cmova Ev Gv, 0x0f 0x47, Fn0000_0001_EDX_CMOV
-cmovae Ev Gv, 0x0f 0x43, Fn0000_0001_EDX_CMOV
-cmovbe Ev Gv, 0x0f 0x46, Fn0000_0001_EDX_CMOV
-cmovb Ev Gv, 0x0f 0x42, Fn0000_0001_EDX_CMOV
-cmove Ev Gv, 0x0f 0x44, Fn0000_0001_EDX_CMOV
-cmovg Ev Gv, 0x0f 0x4f, Fn0000_0001_EDX_CMOV
-cmovge Ev Gv, 0x0f 0x4d, Fn0000_0001_EDX_CMOV
-cmovle Ev Gv, 0x0f 0x4e, Fn0000_0001_EDX_CMOV
-cmovl Ev Gv, 0x0f 0x4c, Fn0000_0001_EDX_CMOV
-cmovne Ev Gv, 0x0f 0x45, Fn0000_0001_EDX_CMOV
-cmovno Ev Gv, 0x0f 0x41, Fn0000_0001_EDX_CMOV
-cmovnp Ev Gv, 0x0f 0x4b, Fn0000_0001_EDX_CMOV
-cmovns Ev Gv, 0x0f 0x49, Fn0000_0001_EDX_CMOV
-cmovo Ev Gv, 0x0f 0x40, Fn0000_0001_EDX_CMOV
-cmovp Ev Gv, 0x0f 0x4a, Fn0000_0001_EDX_CMOV
-cmovs Ev Gv, 0x0f 0x48, Fn0000_0001_EDX_CMOV
+cmova Ev Gv, 0x0f 0x47, CPUFeature_CMOV
+cmovae Ev Gv, 0x0f 0x43, CPUFeature_CMOV
+cmovbe Ev Gv, 0x0f 0x46, CPUFeature_CMOV
+cmovb Ev Gv, 0x0f 0x42, CPUFeature_CMOV
+cmove Ev Gv, 0x0f 0x44, CPUFeature_CMOV
+cmovg Ev Gv, 0x0f 0x4f, CPUFeature_CMOV
+cmovge Ev Gv, 0x0f 0x4d, CPUFeature_CMOV
+cmovle Ev Gv, 0x0f 0x4e, CPUFeature_CMOV
+cmovl Ev Gv, 0x0f 0x4c, CPUFeature_CMOV
+cmovne Ev Gv, 0x0f 0x45, CPUFeature_CMOV
+cmovno Ev Gv, 0x0f 0x41, CPUFeature_CMOV
+cmovnp Ev Gv, 0x0f 0x4b, CPUFeature_CMOV
+cmovns Ev Gv, 0x0f 0x49, CPUFeature_CMOV
+cmovo Ev Gv, 0x0f 0x40, CPUFeature_CMOV
+cmovp Ev Gv, 0x0f 0x4a, CPUFeature_CMOV
+cmovs Ev Gv, 0x0f 0x48, CPUFeature_CMOV
 ######## CMP ###################################################################
 cmp I =a, 0x3c
 cmp I =E, 0x80 /7
@@ -342,12 +345,12 @@ cmps Y X, 0xa6, condrep nacl-amd64-forbidden
 ######## CMPXCHG ###############################################################
 cmpxchg G E, 0x0f 0xb0, lock
 ######## CMPXCHG8B/CMPXCHG16B ##################################################
-cmpxchg8b Mq, 0x0f 0xc7 /1, lock Fn0000_0001_EDX_CMPXCHG8B
-cmpxchg16b Mo, rexw 0x0f 0xc7 /1, amd64 lock Fn0000_0001_ECX_CMPXCHG16B
+cmpxchg8b Mq, 0x0f 0xc7 /1, lock CPUFeature_CX8
+cmpxchg16b Mo, rexw 0x0f 0xc7 /1, amd64 lock CPUFeature_CX16
 ######## CPUID #################################################################
 cpuid, 0x0f 0xa2
 ######## CRC32 #################################################################
-crc32 E Gy, 0xf2 0x0f 0x38 0xf0, Fn0000_0001_ECX_SSE42
+crc32 E Gy, 0xf2 0x0f 0x38 0xf0, CPUFeature_SSE42
 ######## DEC ###################################################################
 dec E, 0xfe /1, lock
 dec rz, 0x48, ia32
@@ -449,7 +452,7 @@ ljmpq Mp, 0xff /5, amd64 nacl-forbidden
 ######## LAHF ##################################################################
 # LAHF is always available in 16bit/32bit mode, but not always in 64bit mode
 lahf, 0x9f, ia32
-lahf, 0x9f, amd64 Fn8000_0001_ECX_LahfSahf nacl-forbidden
+lahf, 0x9f, amd64 CPUFeature_LAHF nacl-forbidden
 ######## LDS/LES/LFS/LGS/LSS (AMD version) #####################################
 # AMD manual says “executing LFS, LGS, or LSS with a 64-bit operand size only
 # loads a 32-bit general purpose register and the specified segment register”.
@@ -469,9 +472,9 @@ lea 'Mv !Gv, 0x8d, no_memory_access
 leave, 0xc9, ia32
 leaveq, 0xc9, amd64 nacl-forbidden
 ######## LFENCE ################################################################
-lfence, 0x0f 0xae 0xe8, Fn0000_0001_EDX_SSE2
+lfence, 0x0f 0xae 0xe8, CPUFeature_SSE2
 ######## LLWPCB ################################################################
-llwpcb Ry, 0x8f RXB.09 W.1111.0.00 0x12 /0, Fn8000_0001_ECX_LWP
+llwpcb Ry, 0x8f RXB.09 W.1111.0.00 0x12 /0, CPUFeature_LWP
 ######## LODS/LODSB/LODSW/LODSD/LODSQ ##########################################
 lods X a, 0xac, rep nacl-amd64-forbidden
 ######## LOOP/LOOPE/LOOPNE/LOOPNZ/LOOPZ ########################################
@@ -479,13 +482,13 @@ loop Jb, 0xe2, nacl-forbidden
 loope Jb, 0xe1, nacl-forbidden
 loopne Jb, 0xe0, nacl-forbidden
 ######## LWPINS ################################################################
-lwpins Id Ed By, 0x8f RXB.0A W.src1.0.00 0x12 /0, Fn8000_0001_ECX_LWP
+lwpins Id Ed By, 0x8f RXB.0A W.src1.0.00 0x12 /0, CPUFeature_LWP
 ######## LWPVAL ################################################################
-lwpval Id Ed By, 0x8f RXB.0A W.src1.0.00 0x12 /1, Fn8000_0001_ECX_LWP
+lwpval Id Ed By, 0x8f RXB.0A W.src1.0.00 0x12 /1, CPUFeature_LWP
 ######## LZCNT #################################################################
-lzcnt Ev Gv, 0xf3 0x0f 0xbd, Fn0000_0007_EBX_x0_BMI
+lzcnt Ev Gv, 0xf3 0x0f 0xbd, CPUFeature_LZCNT
 ######## MFENCE ################################################################
-mfence, 0x0f 0xae 0xf0, Fn0000_0001_EDX_SSE2
+mfence, 0x0f 0xae 0xf0, CPUFeature_SSE2
 ######## MOV ###################################################################
 mov G E, 0x88
 mov E G, 0x8a
@@ -505,26 +508,26 @@ movabs ab Ob, 0xa2, amd64 nacl-forbidden
 movabs av Ov, 0xa3, amd64 nacl-forbidden
 ######## MOVD ##################################################################
 # This is description according to AMD/Intel manual.
-# movd Ey Vy, 0x66 0x0f 0x6e, Fn0000_0001_EDX_SSE2
-# movd Vy Ey, 0x66 0x0f 0x7e, Fn0000_0001_EDX_SSE2
-# movd Ey Py, 0x0f 0x6e, Fn0000_0001_EDX_MMX
-# movd Py Ey, 0x0f 0x7e, Fn0000_0001_EDX_MMX
+# movd Ey Vy, 0x66 0x0f 0x6e, CPUFeature_SSE2
+# movd Vy Ey, 0x66 0x0f 0x7e, CPUFeature_SSE2
+# movd Ey Py, 0x0f 0x6e, CPUFeature_MMX
+# movd Py Ey, 0x0f 0x7e, CPUFeature_MMX
 # Objdump names 64bit version not “movd” but movq”.  We describe 32bit version
 # and 64bit version separately.
-movd Ed Vq, 0x66 0x0f 0x6e, Fn0000_0001_EDX_SSE2
-movd Vq Ed, 0x66 0x0f 0x7e, Fn0000_0001_EDX_SSE2
-movd Ed Pq, 0x0f 0x6e, Fn0000_0001_EDX_MMX
-movd Pq Ed, 0x0f 0x7e, Fn0000_0001_EDX_MMX
-movq Eq Vq, 0x66 rexw 0x0f 0x6e, amd64 Fn0000_0001_EDX_SSE2
-movq Vq Eq, 0x66 rexw 0x0f 0x7e, amd64 Fn0000_0001_EDX_SSE2
-movq Eq Pq, rexw 0x0f 0x6e, amd64 Fn0000_0001_EDX_MMX
-movq Pq Eq, rexw 0x0f 0x7e, amd64 Fn0000_0001_EDX_MMX
+movd Ed Vq, 0x66 0x0f 0x6e, CPUFeature_SSE2
+movd Vq Ed, 0x66 0x0f 0x7e, CPUFeature_SSE2
+movd Ed Pq, 0x0f 0x6e, CPUFeature_MMX
+movd Pq Ed, 0x0f 0x7e, CPUFeature_MMX
+movq Eq Vq, 0x66 rexw 0x0f 0x6e, amd64 CPUFeature_SSE2
+movq Vq Eq, 0x66 rexw 0x0f 0x7e, amd64 CPUFeature_SSE2
+movq Eq Pq, rexw 0x0f 0x6e, amd64 CPUFeature_MMX
+movq Pq Eq, rexw 0x0f 0x7e, amd64 CPUFeature_MMX
 ######## MOVMSKPD ##############################################################
-movmskpd Upd Gd, 0x66 0x0f 0x50, Fn0000_0001_EDX_SSE2
+movmskpd Upd Gd, 0x66 0x0f 0x50, CPUFeature_SSE2
 ######## MOVMSKPS ##############################################################
-movmskps Ups Gd, 0x0f 0x50, Fn0000_0001_EDX_SSE1
+movmskps Ups Gd, 0x0f 0x50, CPUFeature_SSE
 ######## MOVNTI ################################################################
-movnti Gy My, 0x0f 0xc3, Fn0000_0001_EDX_SSE2
+movnti Gy My, 0x0f 0xc3, CPUFeature_SSE2
 ######## MOVS/MOVSB/MOVSW/MOVSD/MOVSQ ##########################################
 movs X Y, 0xa4, rep nacl-amd64-forbidden
 ######## MOVSX #################################################################
@@ -592,14 +595,14 @@ pop rr, 0x58
 "popq   %fs", 0x0f 0xa1, amd64 nacl-forbidden
 "popq   %gs", 0x0f 0xa9, amd64 nacl-forbidden
 ######## POPCNT ################################################################
-popcnt Ev Gv, 0xf3 0x0f 0xb8, Fn0000_0001_ECX_POPCNT
+popcnt Ev Gv, 0xf3 0x0f 0xb8, CPUFeature_POPCNT
 ######## POPF/POPFD/POPFQ ######################################################
 popfw, data16 0x9d
 popf, 0x9d, ia32 nacl-forbidden
 popfq, 0x9d, amd64 nacl-forbidden
 ######## PREFETCH/PREFETCHW ####################################################
-prefetch Mb, 0x0f 0x0d /0, Fn8000_0001_ECX_3DNowPrefetch no_memory_access
-prefetchw Mb, 0x0f 0x0d /1, Fn8000_0001_ECX_3DNowPrefetch no_memory_access
+prefetch Mb, 0x0f 0x0d /0, CPUFeature_3DPRFTCH no_memory_access
+prefetchw Mb, 0x0f 0x0d /1, CPUFeature_3DPRFTCH no_memory_access
 ######## PREFETCHlevel #########################################################
 prefetchnta Mb, 0x0f 0x18 /0, no_memory_access
 prefetcht0 Mb, 0x0f 0x18 /1, no_memory_access
@@ -652,7 +655,7 @@ ror cb E, 0xd2 /1
 ######## SAHF ##################################################################
 # SAHF is always awailable in 16bit/32bit mode, but not always in 64bit mode
 sahf, 0x9e, ia32
-sahf, 0x9e, amd64 Fn8000_0001_ECX_LahfSahf nacl-forbidden
+sahf, 0x9e, amd64 CPUFeature_LAHF nacl-forbidden
 ######## SAL ###################################################################
 # AMD manual claims this opcode works identically to shl.  Intel manual
 # says it's reserved.  Objdump does not like it.
@@ -676,24 +679,24 @@ sbb E G, 0x1a, lock
 ######## SCAS/SCASB/SCASW/SCASD/SCASQ ##########################################
 scas Y a, 0xae, condrep nacl-amd64-forbidden
 ######## SETcc #################################################################
-seta Eb, 0x0f 0x97, Fn0000_0001_EDX_CMOV
-setae Eb, 0x0f 0x93, Fn0000_0001_EDX_CMOV
-setbe Eb, 0x0f 0x96, Fn0000_0001_EDX_CMOV
-setb Eb, 0x0f 0x92, Fn0000_0001_EDX_CMOV
-sete Eb, 0x0f 0x94, Fn0000_0001_EDX_CMOV
-setg Eb, 0x0f 0x9f, Fn0000_0001_EDX_CMOV
-setge Eb, 0x0f 0x9d, Fn0000_0001_EDX_CMOV
-setle Eb, 0x0f 0x9e, Fn0000_0001_EDX_CMOV
-setl Eb, 0x0f 0x9c, Fn0000_0001_EDX_CMOV
-setne Eb, 0x0f 0x95, Fn0000_0001_EDX_CMOV
-setno Eb, 0x0f 0x91, Fn0000_0001_EDX_CMOV
-setnp Eb, 0x0f 0x9b, Fn0000_0001_EDX_CMOV
-setns Eb, 0x0f 0x99, Fn0000_0001_EDX_CMOV
-seto Eb, 0x0f 0x90, Fn0000_0001_EDX_CMOV
-setp Eb, 0x0f 0x9a, Fn0000_0001_EDX_CMOV
-sets Eb, 0x0f 0x98, Fn0000_0001_EDX_CMOV
+seta Eb, 0x0f 0x97, CPUFeature_CMOV
+setae Eb, 0x0f 0x93, CPUFeature_CMOV
+setbe Eb, 0x0f 0x96, CPUFeature_CMOV
+setb Eb, 0x0f 0x92, CPUFeature_CMOV
+sete Eb, 0x0f 0x94, CPUFeature_CMOV
+setg Eb, 0x0f 0x9f, CPUFeature_CMOV
+setge Eb, 0x0f 0x9d, CPUFeature_CMOV
+setle Eb, 0x0f 0x9e, CPUFeature_CMOV
+setl Eb, 0x0f 0x9c, CPUFeature_CMOV
+setne Eb, 0x0f 0x95, CPUFeature_CMOV
+setno Eb, 0x0f 0x91, CPUFeature_CMOV
+setnp Eb, 0x0f 0x9b, CPUFeature_CMOV
+setns Eb, 0x0f 0x99, CPUFeature_CMOV
+seto Eb, 0x0f 0x90, CPUFeature_CMOV
+setp Eb, 0x0f 0x9a, CPUFeature_CMOV
+sets Eb, 0x0f 0x98, CPUFeature_CMOV
 ######## SFENCE ################################################################
-sfence, 0x0f 0xae 0xf8, Fn0000_0001_EDX_SFENCE
+sfence, 0x0f 0xae 0xf8, CPUFeature_EMMXSSE
 ######## SHLD ##################################################################
 shld Ib Gv Ev, 0x0f 0xa4
 shld cb Gv Ev, 0x0f 0xa5
@@ -705,7 +708,7 @@ shr Ib E, 0xc0 /5
 shrd Ib Gv Ev, 0x0f 0xac
 shrd cb Gv Ev, 0x0f 0xad
 ######## SLWPCB ################################################################
-slwpcb Ry, 0x8f RXB.09 W.1111.0.00 0x12 /1, Fn8000_0001_ECX_LWP
+slwpcb Ry, 0x8f RXB.09 W.1111.0.00 0x12 /1, CPUFeature_LWP
 ######## STC ###################################################################
 stc, 0xf9
 ######## STD ###################################################################
@@ -719,7 +722,7 @@ sub Ib Ev, 0x83 /5, lock
 sub G E, 0x28, lock
 sub E G, 0x2a, lock
 ######## T1MSKC ################################################################
-t1mskc Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /7, Fn8000_0001_ECX_TBM
+t1mskc Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /7, CPUFeature_TBM
 ######## TEST ##################################################################
 test I a, 0xa8
 test I E, 0xf6 /0
@@ -728,9 +731,9 @@ test I E, 0xf6 /0
 # test I E, 0xf6 /1
 test G E, 0x84
 ######## TZCNT #################################################################
-tzcnt Ev Gv, 0xf3 0x0f 0xbc, Fn0000_0007_EBX_x0_BMI
+tzcnt Ev Gv, 0xf3 0x0f 0xbc, CPUFeature_BMI1
 ######## TZMSK #################################################################
-tzmsk Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /4, Fn8000_0001_ECX_TBM
+tzmsk Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /4, CPUFeature_TBM
 ######## XADD ##################################################################
 xadd G E, 0x0f 0xc0, lock
 ######## XCHG ##################################################################

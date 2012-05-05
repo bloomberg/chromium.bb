@@ -100,6 +100,7 @@
 #define SET_IMM_PTR(P) imm = (P)
 #define SET_IMM2_TYPE(T) imm2_operand = (T)
 #define SET_IMM2_PTR(P) imm2 = (P)
+#define SET_CPU_FEATURE(F)
 
 enum {
   REX_B = 1,
