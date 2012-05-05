@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/authentication_method.h"
 
+#include "base/base64.h"
 #include "base/logging.h"
 #include "crypto/hmac.h"
 #include "remoting/protocol/auth_util.h"
@@ -98,6 +99,27 @@ bool AuthenticationMethod::operator ==(
   if (!other.is_valid())
     return false;
   return hash_function_ == other.hash_function_;
+}
+
+bool SharedSecretHash::Parse(const std::string& as_string) {
+  size_t separator = as_string.find(':');
+  if (separator == std::string::npos)
+    return false;
+
+  std::string function_name = as_string.substr(0, separator);
+  if (function_name == "plain") {
+    hash_function = AuthenticationMethod::NONE;
+  } else if (function_name == "hmac") {
+    hash_function = AuthenticationMethod::HMAC_SHA256;
+  } else {
+    return false;
+  }
+
+  if (!base::Base64Decode(as_string.substr(separator + 1), &value)) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace protocol

@@ -57,27 +57,6 @@ class RejectingAuthenticator : public Authenticator {
 
 }  // namespace
 
-bool SharedSecretHash::Parse(const std::string& as_string) {
-  size_t separator = as_string.find(':');
-  if (separator == std::string::npos)
-    return false;
-
-  std::string function_name = as_string.substr(0, separator);
-  if (function_name == "plain") {
-    hash_function = AuthenticationMethod::NONE;
-  } else if (function_name == "hmac") {
-    hash_function = AuthenticationMethod::HMAC_SHA256;
-  } else {
-    return false;
-  }
-
-  if (!base::Base64Decode(as_string.substr(separator + 1), &value)) {
-    return false;
-  }
-
-  return true;
-}
-
 Me2MeHostAuthenticatorFactory::Me2MeHostAuthenticatorFactory(
     const std::string& local_jid,
     const std::string& local_cert,
