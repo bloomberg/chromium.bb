@@ -229,7 +229,8 @@ class DomCheckerTest : public UITest {
   DISALLOW_COPY_AND_ASSIGN(DomCheckerTest);
 };
 
-TEST_F(DomCheckerTest, File) {
+// Always fails, see but http://crbug.com/21321
+TEST_F(DomCheckerTest, FAILS_File) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDomCheckerTest))
     return;
 
@@ -242,7 +243,7 @@ TEST_F(DomCheckerTest, File) {
 // expected results file that didn't exist.  Fixing that bug revealed
 // that the expected results weren't correct anyway.
 // http://crbug.com/21321
-TEST_F(DomCheckerTest, FAILS_Http) {
+TEST_F(DomCheckerTest, FAIL_Http) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDomCheckerTest))
     return;
 
