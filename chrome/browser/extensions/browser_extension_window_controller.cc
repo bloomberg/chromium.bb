@@ -48,12 +48,11 @@ BrowserExtensionWindowController::CreateWindowValueWithTabs() const {
   return result;
 }
 
-bool BrowserExtensionWindowController::CanClose(
-    ExtensionWindowController::Reason* reason) const {
+bool BrowserExtensionWindowController::CanClose(Reason* reason) const {
   // Don't let an extension remove the window if the user is dragging tabs
   // in that window.
   if (!browser_->IsTabStripEditable()) {
-    *reason = ExtensionWindowController::REASON_TAB_STRIP_NOT_EDITABLE;
+    *reason = ExtensionWindowController::REASON_NOT_EDITABLE;
     return false;
   }
   return true;
@@ -64,4 +63,8 @@ void BrowserExtensionWindowController::SetFullscreenMode(
     const GURL& extension_url) const {
   if (browser_->window()->IsFullscreen() != is_fullscreen)
     browser_->ToggleFullscreenModeWithExtension(extension_url);
+}
+
+Browser* BrowserExtensionWindowController::GetBrowser() const {
+  return browser_;
 }

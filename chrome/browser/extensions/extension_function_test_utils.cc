@@ -28,8 +28,9 @@ class TestFunctionDispatcherDelegate
   virtual ~TestFunctionDispatcherDelegate() {}
 
  private:
-  virtual Browser* GetBrowser() OVERRIDE {
-    return browser_;
+  virtual ExtensionWindowController* GetExtensionWindowController()
+      const OVERRIDE {
+    return browser_->extension_window_controller();
   }
 
   virtual WebContents* GetAssociatedWebContents() const OVERRIDE {

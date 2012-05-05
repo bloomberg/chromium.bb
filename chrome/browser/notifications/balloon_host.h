@@ -37,7 +37,8 @@ class BalloonHost : public content::WebContentsDelegate,
   void Shutdown();
 
   // ExtensionFunctionDispatcher::Delegate overrides.
-  virtual Browser* GetBrowser() OVERRIDE;
+  virtual ExtensionWindowController* GetExtensionWindowController()
+      const OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
   const string16& GetSource() const;

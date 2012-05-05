@@ -54,7 +54,8 @@ class PanelHost : public content::WebContentsDelegate,
   Profile* profile() const { return profile_; }
 
   // ExtensionFunctionDispatcher::Delegate overrides.
-  virtual Browser* GetBrowser() OVERRIDE;
+  virtual ExtensionWindowController* GetExtensionWindowController()
+      const OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
   // content::WebContentsDelegate implementation:
@@ -111,8 +112,8 @@ void PanelHost::Init(const GURL& url) {
       url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
 }
 
-Browser* PanelHost::GetBrowser() {
-  return NULL;
+ExtensionWindowController* PanelHost::GetExtensionWindowController() const {
+  return panel_view_->extension_window_controller();
 }
 
 content::WebContents* PanelHost::GetAssociatedWebContents() const {

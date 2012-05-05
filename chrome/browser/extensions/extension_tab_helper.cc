@@ -320,12 +320,13 @@ void ExtensionTabHelper::OnImageLoaded(const gfx::Image& image,
   }
 }
 
-Browser* ExtensionTabHelper::GetBrowser() {
+ExtensionWindowController*
+ExtensionTabHelper::GetExtensionWindowController() const  {
   content::WebContents* contents = web_contents();
   TabContentsIterator tab_iterator;
   for (; !tab_iterator.done(); ++tab_iterator) {
     if (contents == (*tab_iterator)->web_contents())
-      return tab_iterator.browser();
+      return tab_iterator.browser()->extension_window_controller();
   }
 
   return NULL;

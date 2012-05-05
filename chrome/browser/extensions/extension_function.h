@@ -27,6 +27,7 @@ class Browser;
 class ChromeRenderMessageFilter;
 class ExtensionFunction;
 class ExtensionFunctionDispatcher;
+class ExtensionWindowController;
 class UIThreadExtensionFunction;
 class IOThreadExtensionFunction;
 class Profile;
@@ -277,7 +278,12 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   // This method can return NULL if there is no matching browser, which can
   // happen if only incognito windows are open, or early in startup or shutdown
   // shutdown when there are no active windows.
+  //
+  // TODO(stevenjb): Replace this with GetExtensionWindowController().
   Browser* GetCurrentBrowser();
+
+  // Same as above but uses ExtensionWindowList instead of BrowserList.
+  ExtensionWindowController* GetExtensionWindowController();
 
  protected:
   friend struct content::BrowserThread::DeleteOnThread<

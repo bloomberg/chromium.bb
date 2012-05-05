@@ -48,8 +48,8 @@ void BalloonHost::Shutdown() {
   web_contents_.reset();
 }
 
-Browser* BalloonHost::GetBrowser() {
-  // Notifications aren't associated with a particular browser.
+ExtensionWindowController* BalloonHost::GetExtensionWindowController() const {
+  // Notifications don't have a window controller.
   return NULL;
 }
 

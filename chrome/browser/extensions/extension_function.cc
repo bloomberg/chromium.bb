@@ -8,8 +8,11 @@
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_window_controller.h"
+#include "chrome/browser/extensions/extension_window_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -178,8 +181,49 @@ void UIThreadExtensionFunction::SetRenderViewHost(
       new RenderViewHostTracker(this, render_view_host) : NULL);
 }
 
+// TODO(stevenjb): Replace this with GetExtensionWindowController().
 Browser* UIThreadExtensionFunction::GetCurrentBrowser() {
-  return dispatcher()->GetCurrentBrowser(render_view_host_, include_incognito_);
+  // If the delegate has an associated browser, return it.
+  ExtensionWindowController* window_controller =
+      dispatcher()->delegate()->GetExtensionWindowController();
+  if (window_controller) {
+    Browser* browser = window_controller->GetBrowser();
+    if (browser)
+      return browser;
+  }
+
+  // Otherwise, try to default to a reasonable browser. If |include_incognito_|
+  // is true, we will also search browsers in the incognito version of this
+  // profile. Note that the profile may already be incognito, in which case
+  // we will search the incognito version only, regardless of the value of
+  // |include_incognito|.
+  Profile* profile = Profile::FromBrowserContext(
+      render_view_host_->GetProcess()->GetBrowserContext());
+  Browser* browser = BrowserList::FindAnyBrowser(profile, include_incognito_);
+
+  // NOTE(rafaelw): This can return NULL in some circumstances. In particular,
+  // a background_page onload chrome.tabs api call can make it into here
+  // before the browser is sufficiently initialized to return here.
+  // A similar situation may arise during shutdown.
+  // TODO(rafaelw): Delay creation of background_page until the browser
+  // is available. http://code.google.com/p/chromium/issues/detail?id=13284
+  return browser;
+}
+
+ExtensionWindowController*
+UIThreadExtensionFunction::GetExtensionWindowController() {
+  // If the delegate has an associated window controller, return it.
+  ExtensionWindowController* window_controller =
+      dispatcher()->delegate()->GetExtensionWindowController();
+  if (window_controller)
+    return window_controller;
+
+  Profile* profile = Profile::FromBrowserContext(
+      render_view_host_->GetProcess()->GetBrowserContext());
+  ExtensionWindowList::ProfileMatchType match_type = include_incognito_
+      ? ExtensionWindowController::MATCH_INCOGNITO
+      : ExtensionWindowController::MATCH_NORMAL_ONLY;
+  return ExtensionWindowList::GetInstance()->CurrentWindow(profile, match_type);
 }
 
 void UIThreadExtensionFunction::SendResponse(bool success) {

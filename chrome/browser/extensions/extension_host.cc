@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_window_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/browser.h"
@@ -231,12 +232,9 @@ void ExtensionHost::CreateRenderViewNow() {
   }
 }
 
-const Browser* ExtensionHost::GetBrowser() const {
-  return view() ? view()->browser() : NULL;
-}
-
-Browser* ExtensionHost::GetBrowser() {
-  return view() ? view()->browser() : NULL;
+ExtensionWindowController* ExtensionHost::GetExtensionWindowController() const {
+  return view() && view()->browser() ?
+      view()->browser()->extension_window_controller() : NULL;
 }
 
 const GURL& ExtensionHost::GetURL() const {
@@ -440,7 +438,7 @@ WebContents* ExtensionHost::OpenURLFromTab(WebContents* source,
     case OFF_THE_RECORD: {
       // Only allow these from hosts that are bound to a browser (e.g. popups).
       // Otherwise they are not driven by a user gesture.
-      Browser* browser = GetBrowser();
+      Browser* browser = view() ? view()->browser() : NULL;
       return browser ? browser->OpenURL(params) : NULL;
     }
     default:
@@ -515,14 +513,12 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   if (view_.get())
     view_->RenderViewCreated();
 
-  // If the host is bound to a browser, then extract its window id.
-  // Extensions hosted in ExternalTabContainer objects may not have
-  // an associated browser.
-  const Browser* browser = GetBrowser();
-  if (browser) {
+  // If the host is bound to a window, then extract its id. Extensions hosted
+  // in ExternalTabContainer objects may not have an associated window.
+  ExtensionWindowController* window = GetExtensionWindowController();
+  if (window) {
     render_view_host->Send(new ExtensionMsg_UpdateBrowserWindowId(
-        render_view_host->GetRoutingID(),
-        ExtensionTabUtil::GetWindowId(browser)));
+        render_view_host->GetRoutingID(), window->GetWindowId()));
   }
 }
 

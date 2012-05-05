@@ -102,7 +102,8 @@ class ExtensionTabHelper
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // ExtensionFunctionDispatcher::Delegate overrides.
-  virtual Browser* GetBrowser() OVERRIDE;
+  virtual ExtensionWindowController* GetExtensionWindowController()
+      const OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
   // Message handlers.

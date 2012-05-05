@@ -34,6 +34,10 @@ bool ExtensionWindowController::MatchesProfile(
             match_profile->GetOffTheRecordProfile() == profile_)));
 }
 
+Browser* ExtensionWindowController::GetBrowser() const {
+  return NULL;
+}
+
 namespace keys = extension_tabs_module_constants;
 
 base::DictionaryValue* ExtensionWindowController::CreateWindowValue() const {

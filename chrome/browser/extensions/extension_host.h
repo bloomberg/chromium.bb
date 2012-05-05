@@ -32,6 +32,7 @@
 
 class Browser;
 class Extension;
+class ExtensionWindowController;
 class PrefsTabHelper;
 
 namespace content {
@@ -180,11 +181,9 @@ class ExtensionHost : public content::WebContentsDelegate,
   // Closes this host (results in deletion).
   void Close();
 
-  // Const version of below function.
-  const Browser* GetBrowser() const;
-
   // ExtensionFunctionDispatcher::Delegate
-  virtual Browser* GetBrowser() OVERRIDE;
+  virtual ExtensionWindowController* GetExtensionWindowController()
+      const OVERRIDE;
 
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);

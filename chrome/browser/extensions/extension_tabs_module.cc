@@ -148,10 +148,11 @@ bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
                            int window_id,
                            ExtensionWindowController** controller) {
   if (window_id == extension_misc::kCurrentWindowId) {
-    Browser* browser = function->dispatcher()->delegate()->GetBrowser();
-    // If there is a windowed browser associated with this extension, use that.
-    if (browser && browser->extension_window_controller()) {
-      *controller = browser->extension_window_controller();
+    ExtensionWindowController* extension_window_controller =
+        function->dispatcher()->delegate()->GetExtensionWindowController();
+    // If there is a window controller associated with this extension, use that.
+    if (extension_window_controller) {
+      *controller = extension_window_controller;
     } else {
       // Otherwise get the focused or most recently added window.
       *controller = ExtensionWindowList::GetInstance()->CurrentWindow(
@@ -796,7 +797,7 @@ bool RemoveWindowFunction::RunImpl() {
 
   ExtensionWindowController::Reason reason;
   if (!controller->CanClose(&reason)) {
-    if (reason == ExtensionWindowController::REASON_TAB_STRIP_NOT_EDITABLE)
+    if (reason == ExtensionWindowController::REASON_NOT_EDITABLE)
       error_ = keys::kTabStripNotEditableError;
     return false;
   }

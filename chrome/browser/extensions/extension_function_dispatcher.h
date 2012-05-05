@@ -14,10 +14,10 @@
 #include "ipc/ipc_message.h"
 #include "googleurl/src/gurl.h"
 
-class Browser;
 class ChromeRenderMessageFilter;
 class Extension;
 class ExtensionFunction;
+class ExtensionWindowController;
 class ExtensionInfoMap;
 class Profile;
 struct ExtensionHostMsg_Request_Params;
@@ -53,9 +53,9 @@ class ExtensionFunctionDispatcher
  public:
   class Delegate {
    public:
-    // Returns the browser that this delegate is associated with, if any.
-    // Returns NULL otherwise.
-    virtual Browser* GetBrowser() = 0;
+    // Returns the ExtensionWindowController associated with this delegate,
+    // or NULL if no window is associated with the delegate.
+    virtual ExtensionWindowController* GetExtensionWindowController() const = 0;
 
     // Asks the delegate for any relevant WebContents associated with this
     // context. For example, the WebbContents in which an infobar or
@@ -105,15 +105,6 @@ class ExtensionFunctionDispatcher
   // Called when an ExtensionFunction is done executing, after it has sent
   // a response (if any) to the extension.
   void OnExtensionFunctionCompleted(const Extension* extension);
-
-  // Returns the current browser. Callers should generally prefer
-  // ExtensionFunction::GetCurrentBrowser() over this method, as that one
-  // provides the correct value for |include_incognito|.
-  //
-  // See the comments for ExtensionFunction::GetCurrentBrowser() for more
-  // details.
-  Browser* GetCurrentBrowser(content::RenderViewHost* render_view_host,
-                             bool include_incognito);
 
   // The profile that this dispatcher is associated with.
   Profile* profile() { return profile_; }
