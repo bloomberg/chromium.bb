@@ -905,7 +905,7 @@ def _GenerateMSVSProject(project, options, version, generator_flags):
 
   _AddToolFilesToMSVS(p, spec)
   _HandlePreCompiledHeaders(p, sources, spec)
-  _AddActions(actions_to_add, spec, relative_path_of_gyp_file)
+  _AddActions(actions_to_add, spec, relative_path_of_gyp_file, project.path)
   _AddCopies(actions_to_add, spec)
   _WriteMSVSUserFile(project.path, version, spec)
 
@@ -1441,13 +1441,33 @@ def _HandlePreCompiledHeaders(p, sources, spec):
     DisableForSourceTree(sources)
 
 
-def _AddActions(actions_to_add, spec, relative_path_of_gyp_file):
+def _WriteFileIfChanged(filename, data):
+  if os.path.exists(filename):
+    fh = open(filename, 'r')
+    old_data = fh.read()
+    fh.close()
+    if old_data == data:
+      return
+  fh = open(filename, 'w')
+  fh.write(data)
+  fh.close()
+
+
+def _AddActions(actions_to_add, spec, relative_path_of_gyp_file, vcproj_file):
   # Add actions.
   actions = spec.get('actions', [])
   for a in actions:
     cmd = _BuildCommandLineForRule(spec, a, has_input_path=False)
     # Attach actions to the gyp file if nothing else is there.
     inputs = a.get('inputs') or [relative_path_of_gyp_file]
+    if vcproj_file:
+      # Additionally, on MSVS 2008, we record the command in a file
+      # and add this as a dependency so that when the command changes,
+      # the action gets re-run.  This is not necessary on MSVS 2010
+      # which tracks command changes for us.
+      command_file = '%s_%s.gypcmd' % (vcproj_file, a['action_name'])
+      _WriteFileIfChanged(command_file, cmd)
+      inputs = inputs + [os.path.basename(command_file)]
     # Add the action.
     _AddActionStep(actions_to_add,
                    inputs=inputs,
@@ -2892,9 +2912,6 @@ def _GenerateMSBuildProject(project, options, version, generator_flags):
   if msbuildproj_dir and not os.path.exists(msbuildproj_dir):
     os.makedirs(msbuildproj_dir)
   # Prepare list of sources and excluded sources.
-  gyp_path = _NormalizedSource(project.build_file)
-  relative_path_of_gyp_file = gyp.common.RelativePath(gyp_path, project_dir)
-
   gyp_file = os.path.split(project.build_file)[1]
   sources, excluded_sources = _PrepareListOfSources(spec, gyp_file)
   # Add rules.
@@ -2912,7 +2929,7 @@ def _GenerateMSBuildProject(project, options, version, generator_flags):
                                                 project_dir, sources,
                                                 excluded_sources,
                                                 list_excluded))
-  _AddActions(actions_to_add, spec, project.build_file)
+  _AddActions(actions_to_add, spec, project.build_file, None)
   _AddCopies(actions_to_add, spec)
 
   # NOTE: this stanza must appear after all actions have been decided.
