@@ -3520,6 +3520,29 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     else:
       logging.warn('Heap-profiling is not supported in this OS.')
 
+  def AppendSwitchASCIIToCommandLine(self, switch, value):
+    """Appends --switch=value to the command line.
+
+    NOTE: This doesn't change the startup commandline, i.e., flags used to
+    launch the browser. Use ExtraChromeFlags() if you want to do that. Instead,
+    use this if you want to alter flags dynamically, say to affect a feature
+    that looks at the flags everytime, instead of only at program startup.
+
+    Note that although this appends the switch, CommandLine::Get*() methods
+    generally return only the most recently added value, so this effectively
+    overrides any existing switch with the same name.
+
+    Args:
+      switch: the name of the switch to be set.
+      value: the value to be set for the switch.
+    """
+    cmd_dict = {
+      'command': 'AppendSwitchASCIIToCommandLine',
+      'switch': switch,
+      'value': value,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
   def GetNTPThumbnails(self):
     """Return a list of info about the sites in the NTP most visited section.
     SAMPLE:

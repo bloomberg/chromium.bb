@@ -19,6 +19,7 @@ class InstantSettingsTest(pyauto.PyUITest):
     self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kInstantEnabled),
                      msg='Instant is enabled by default.')
     # Enable instant.
+    self.AppendSwitchASCIIToCommandLine('instant-field-trial', 'instant');
     self.SetPrefs(pyauto.kInstantEnabled, True)
     self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kInstantEnabled),
                     msg='Instant is not enabled.')
@@ -29,6 +30,7 @@ class InstantSettingsTest(pyauto.PyUITest):
     title = self.GetInstantInfo()['title']
     self.assertEqual('Google', title, msg='Instant did not load.')
     # Disable Instant.
+    self.AppendSwitchASCIIToCommandLine('instant-field-trial', 'disabled');
     self.SetPrefs(pyauto.kInstantEnabled, False)
     self.assertFalse(self.GetInstantInfo()['enabled'],
                      msg='Instant is not disabled.')
@@ -39,6 +41,7 @@ class InstantTest(pyauto.PyUITest):
 
   def setUp(self):
     pyauto.PyUITest.setUp(self)
+    self.AppendSwitchASCIIToCommandLine('instant-field-trial', 'instant');
     self.SetPrefs(pyauto.kInstantEnabled, True)
 
   def _DoneLoading(self):
@@ -120,21 +123,21 @@ class InstantTest(pyauto.PyUITest):
     """Test that instant is disabled for non-search URLs."""
     self.SetOmniboxText('http://www.google.com/')
     self.WaitUntilOmniboxQueryDone()
-    self.assertFalse(self.GetInstantInfo()['active'],
+    self.assertFalse(self.GetInstantInfo()['current'],
                      'Instant enabled for non-search URLs.')
     self.SetOmniboxText('google.es')
     self.WaitUntilOmniboxQueryDone()
-    self.assertFalse(self.GetInstantInfo()['active'],
+    self.assertFalse(self.GetInstantInfo()['current'],
                      'Instant enabled for non-search URLs.')
     self.SetOmniboxText(self.GetFileURLForDataPath('title2.html'))
     self.WaitUntilOmniboxQueryDone()
-    self.assertFalse(self.GetInstantInfo()['active'],
+    self.assertFalse(self.GetInstantInfo()['current'],
                      'Instant enabled for non-search URLs.')
 
   def testInstantDisabledForJavaScript(self):
     """Test that instant is disabled for javascript URLs."""
     self.SetOmniboxText('javascript:')
-    self.assertFalse(self.GetInstantInfo()['active'],
+    self.assertFalse(self.GetInstantInfo()['current'],
                      'Instant enabled for javascript URL.')
 
   def testInstantLoadsFor100CharsLongQuery(self):

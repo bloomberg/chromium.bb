@@ -99,19 +99,6 @@
       '-indexeddb.IndexedDBTest.testIndexedDBNullKeyPathPersistence',
       # crbug.com/126311
       '-infobars.OneClickInfobarTest.testDisplayOneClickInfobarPerProfile',
-      # crbug.com/126261
-      '-instant.InstantSettingsTest.testEnableDisableInstant',
-      '-instant.InstantTest.testExtnPageCanDismissInstant',
-      '-instant.InstantTest.testFindInCanDismissInstant',
-      '-instant.InstantTest.testInstantDisabledForJavaScript',
-      '-instant.InstantTest.testInstantDisabledForURLs',
-      '-instant.InstantTest.testInstantDisabledInIncognito',
-      '-instant.InstantTest.testInstantLoadsFor100CharsLongQuery',
-      '-instant.InstantTest.testInstantNavigation',
-      '-instant.InstantTest.testInstantWithSearchEngineOtherThanGoogle',
-      '-instant.InstantTest.testNTPCanDismissInstant',
-      '-instant.InstantTest.testNewWindowCanDismissInstant',
-      '-instant.InstantTest.testPreFetchInstantURLNotInHistory',
       # crbug.com/126311
       '-multiprofile.MultiprofileTest.test20NewProfiles',
       '-multiprofile.MultiprofileTest.testBasic',

@@ -699,6 +699,11 @@ class TestingAutomationProvider : public AutomationProvider,
   void OverrideGeoposition(base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
+  // Append a command-line switch.
+  // Uses the JSON interface for input/output.
+  void AppendSwitchASCIIToCommandLine(base::DictionaryValue* args,
+                                      IPC::Message* reply_message);
+
   // Responds to the Find request and returns the match count.
   void FindInPage(Browser* browser,
                   base::DictionaryValue* args,

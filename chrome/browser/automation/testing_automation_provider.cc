@@ -2284,6 +2284,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
 #endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
   handler_map["OverrideGeoposition"] =
       &TestingAutomationProvider::OverrideGeoposition;
+  handler_map["AppendSwitchASCIIToCommandLine"] =
+      &TestingAutomationProvider::AppendSwitchASCIIToCommandLine;
 
 #if defined(OS_CHROMEOS)
   handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
@@ -4939,6 +4941,24 @@ void TestingAutomationProvider::OverrideGeoposition(
   content::OverrideLocationForTesting(
       position,
       base::Bind(&SendSuccessIfAlive, AsWeakPtr(), reply_message));
+}
+
+// Sample json input:
+// { "command": "AppendSwitchASCIIToCommandLine",
+//   "switch": "instant-field-trial",
+//   "value": "disabled" }
+void TestingAutomationProvider::AppendSwitchASCIIToCommandLine(
+         DictionaryValue* args, IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  std::string switch_name, switch_value;
+  if (!args->GetString("switch", &switch_name) ||
+      !args->GetString("value", &switch_value)) {
+    reply.SendError("Missing or invalid command line switch");
+    return;
+  }
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switch_name,
+                                                      switch_value);
+  reply.SendSuccess(NULL);
 }
 
 // Sample json input:
