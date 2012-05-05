@@ -4099,6 +4099,38 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
   }
 }
 
+TEST_F(ExtensionServiceTest, SyncForUninstalledExternalExtension) {
+  InitializeEmptyExtensionService();
+  InstallCRXWithLocation(data_dir_.AppendASCII("good.crx"),
+                         Extension::EXTERNAL_PREF, INSTALL_NEW);
+  const Extension* extension = service_->GetInstalledExtension(good_crx);
+  ASSERT_TRUE(extension);
+
+  TestSyncProcessorStub processor;
+  service_->MergeDataAndStartSyncing(syncable::EXTENSIONS, SyncDataList(),
+      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
+
+  UninstallExtension(good_crx, false);
+  EXPECT_TRUE(service_->IsExternalExtensionUninstalled(good_crx));
+
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::AppSpecifics* app_specifics = specifics.mutable_app();
+  sync_pb::ExtensionSpecifics* extension_specifics =
+      app_specifics->mutable_extension();
+  extension_specifics->set_id(good_crx);
+  extension_specifics->set_version("1.0");
+  extension_specifics->set_enabled(true);
+
+  SyncData sync_data = SyncData::CreateLocalData(good_crx, "Name", specifics);
+  SyncChange sync_change(SyncChange::ACTION_UPDATE, sync_data);
+  SyncChangeList list(1);
+  list[0] = sync_change;
+
+  service_->ProcessSyncChanges(FROM_HERE, list);
+  EXPECT_TRUE(service_->IsExternalExtensionUninstalled(good_crx));
+}
+
 TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
   InitializeEmptyExtensionService();
   const Extension* app =
