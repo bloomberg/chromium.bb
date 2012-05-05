@@ -204,6 +204,16 @@ html[dir='rtl'] .extension-list-item {
   display: none;
 }
 
+#dropTargetOverlay {
+  color: rgb(48, 57, 66);
+  font-size: 18px;
+  text-align: center;
+}
+
+#dropTargetOverlay div {
+  margin: 1em;
+}
+
 /* Trash */
 
 #extension-settings .trash {

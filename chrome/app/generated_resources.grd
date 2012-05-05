@@ -4525,6 +4525,9 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY" desc="Text on next line after IDS_EXTENSIONS_NONE_INSTALLED that suggests the user look in the gallery for extensions to install.">
         Want to <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>browse the gallery<ph name="END_LINK">&lt;/a&gt;</ph> instead?
       </message>
+      <message name="IDS_EXTENSIONS_INSTALL_DROP_TARGET" desc="Text on drop target for installing extensions.">
+        Drop to install
+      </message>
       <message name="IDS_EXTENSIONS_CRASHED_EXTENSION" desc="Text that signifies that the extension process was terminated, usually because it has crashed.">
         (Crashed)
       </message>

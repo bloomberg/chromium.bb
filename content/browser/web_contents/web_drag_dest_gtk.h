@@ -29,6 +29,8 @@ class CONTENT_EXPORT WebDragDestGtk {
   WebDragDestGtk(WebContents* web_contents, GtkWidget* widget);
   ~WebDragDestGtk();
 
+  WebDropData* current_drop_data() const { return drop_data_.get(); }
+
   // This is called when the renderer responds to a drag motion event. We must
   // update the system drag cursor.
   void UpdateDragStatus(WebKit::WebDragOperation operation);
