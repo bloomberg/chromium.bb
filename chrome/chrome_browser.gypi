@@ -1,4 +1,5 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
+#
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -216,8 +217,9 @@
         'browser/auto_launch_trial.h',
         'browser/automation/automation_browser_tracker.cc',
         'browser/automation/automation_browser_tracker.h',
-        'browser/automation/automation_event_observer.cc',
-        'browser/automation/automation_event_observer.h',
+        'browser/automation/automation_event_observers.cc',
+        'browser/automation/automation_event_observers.h',
+        'browser/automation/automation_event_observers_chromeos.cc',
         'browser/automation/automation_event_queue.cc',
         'browser/automation/automation_event_queue.h',
         'browser/automation/automation_provider.cc',

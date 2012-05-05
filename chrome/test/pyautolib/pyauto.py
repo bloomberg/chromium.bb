@@ -3078,6 +3078,23 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     except JSONInterfaceError:
       raise JSONInterfaceError(msg)
 
+  def _AddLoginEventObserver(self):
+    """Adds a LoginEventObserver associated with the AutomationEventQueue.
+
+    The LoginEventObserver will generate an event when login completes.
+
+    Returns:
+      The id of the created observer, which can be used with GetNextEvent(id)
+      and RemoveEventObserver(id).
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'AddLoginEventObserver',
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)['observer_id']
+
   def GetNextEvent(self, observer_id=-1, blocking=True, timeout=-1):
     """Waits for an observed event to occur.
 
@@ -4060,9 +4077,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Waits until logged in and browser is ready.
     Should be displaying the login screen to work.
 
-    Note that in case of webui auth-extension-based login, gaia auth errors
-    will not be noticed here, because the browser has no knowledge of it.
-
     Returns:
       An error string if an error occured.
       None otherwise.
@@ -4070,13 +4084,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
-    cmd_dict = {
-        'command': 'Login',
-        'username': username,
-        'password': password,
-    }
-    result = self._GetResultFromJSONRequest(cmd_dict, windex=None)
-    return result.get('error_string')
+    observer_id = self._AddLoginEventObserver()
+    ret = self.ExecuteJavascriptInOOBEWebUI("""
+        chrome.send("completeLogin", ["%s", "%s"] );
+        window.domAutomationController.send("success");""" %
+        (username, password));
+    return self.GetNextEvent(observer_id).get('error_string')
 
   def Logout(self):
     """Log out from ChromeOS and wait for session_manager to come up.

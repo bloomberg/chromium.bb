@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/automation/automation_event_observer.h"
+#include "chrome/browser/automation/automation_event_observers.h"
 #include "chrome/browser/automation/automation_event_queue.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_provider_json.h"
@@ -1443,7 +1443,8 @@ class TestingAutomationProvider : public AutomationProvider,
 
   void LoginAsGuest(base::DictionaryValue* args, IPC::Message* reply_message);
 
-  void Login(base::DictionaryValue* args, IPC::Message* reply_message);
+  void AddLoginEventObserver(DictionaryValue* args,
+                             IPC::Message* reply_message);
 
   // Executes javascript in the specified frame in the OOBE WebUI on chromeos.
   // Waits for a result from the |DOMAutomationController|. The javascript must

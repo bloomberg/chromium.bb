@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-#include "chrome/browser/automation/automation_event_observer.h"
+#include "chrome/browser/automation/automation_event_observers.h"
 #include "chrome/browser/automation/automation_event_queue.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "content/public/browser/notification_service.h"

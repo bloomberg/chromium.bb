@@ -2,15 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOMATION_AUTOMATION_EVENT_OBSERVER_H_
-#define CHROME_BROWSER_AUTOMATION_AUTOMATION_EVENT_OBSERVER_H_
+#ifndef CHROME_BROWSER_AUTOMATION_AUTOMATION_EVENT_OBSERVERS_H_
+#define CHROME_BROWSER_AUTOMATION_AUTOMATION_EVENT_OBSERVERS_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
 #include "chrome/browser/automation/automation_event_queue.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/login_status_consumer.h"
+#endif  // defined(OS_CHROMEOS)
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+class ExistingUserController;
+}
+#endif  // defined(OS_CHROMEOS)
 
 // AutomationEventObserver watches for a specific event, and pushes an
 // AutomationEvent into the AutomationEventQueue for each occurance.
@@ -50,7 +59,7 @@ class DomEventObserver
                    bool recurring);
   virtual ~DomEventObserver();
 
-  virtual void Init(int observer_id);
+  virtual void Init(int observer_id) OVERRIDE;
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -68,4 +77,30 @@ class DomEventObserver
   DISALLOW_COPY_AND_ASSIGN(DomEventObserver);
 };
 
-#endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_EVENT_OBSERVER_H_
+#if defined(OS_CHROMEOS)
+
+// Event observer that listens for the completion of login.
+class LoginEventObserver
+    : public AutomationEventObserver, public chromeos::LoginStatusConsumer {
+ public:
+  LoginEventObserver(AutomationEventQueue* event_queue,
+                     chromeos::ExistingUserController* controller);
+  virtual ~LoginEventObserver();
+
+  virtual void OnLoginFailure(const chromeos::LoginFailure& error) OVERRIDE;
+
+  virtual void OnLoginSuccess(const std::string& username,
+                              const std::string& password,
+                              bool pending_requests, bool using_oauth) OVERRIDE;
+
+ private:
+  chromeos::ExistingUserController* controller_;
+
+  void _NotifyLoginEvent(const std::string& error_string);
+
+  DISALLOW_COPY_AND_ASSIGN(LoginEventObserver);
+};
+
+#endif  // defined(OS_CHROMEOS)
+
+#endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_EVENT_OBSERVERS_H_
