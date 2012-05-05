@@ -6255,6 +6255,7 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
                        "glPixelSTore: param GL_INVALID_VALUE");
             return error::kNoError;
         }
+        break;
     case GL_UNPACK_FLIP_Y_CHROMIUM:
         unpack_flip_y_ = (param != 0);
         return error::kNoError;
