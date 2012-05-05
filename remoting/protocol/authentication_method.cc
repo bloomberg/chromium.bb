@@ -7,8 +7,6 @@
 #include "base/logging.h"
 #include "crypto/hmac.h"
 #include "remoting/protocol/auth_util.h"
-#include "remoting/protocol/v1_authenticator.h"
-#include "remoting/protocol/v2_authenticator.h"
 
 namespace remoting {
 namespace protocol {
