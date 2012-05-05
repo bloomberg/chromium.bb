@@ -26,8 +26,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/compositor/compositor_setup.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/compositor/compositor_setup.h"
 #include "ui/gfx/gl/gl_switches.h"
 #include "ui/gfx/size.h"
 

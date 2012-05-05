@@ -10,7 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/gfx/compositor/test/compositor_test_support.h"
+#include "ui/compositor/test/compositor_test_support.h"
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"

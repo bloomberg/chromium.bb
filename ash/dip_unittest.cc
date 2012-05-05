@@ -17,7 +17,7 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/compositor/layer.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/monitor.h"
 #include "ui/gfx/screen.h"

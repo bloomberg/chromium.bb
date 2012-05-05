@@ -283,7 +283,7 @@
       'filepath': 'tools/emacs/.*',
     },
     'browser_compositor': {
-      'filepath': 'ui/gfx/compositor/.*'
+      'filepath': 'ui/compositor/.*'
     },
     'browser_gl': {
       'filepath': 'ui/gfx/gl/.*'

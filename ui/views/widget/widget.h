@@ -14,7 +14,7 @@
 #include "base/observer_list.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/compositor/layer_type.h"
+#include "ui/compositor/layer_type.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/focus/focus_manager.h"

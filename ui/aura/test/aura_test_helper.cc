@@ -6,7 +6,7 @@
 
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
-#include "ui/gfx/compositor/layer_animator.h"
+#include "ui/compositor/layer_animator.h"
 
 namespace aura {
 namespace test {

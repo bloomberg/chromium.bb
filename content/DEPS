@@ -52,6 +52,7 @@ include_rules = [
   # Aura is analogous to Win32 or a Gtk, so it is allowed.
   "+ui/aura",
   "+ui/base",
+  "+ui/compositor",
   "+ui/gfx",
   "+ui/surface",
   # Content knows about grd files, but the specifics of how to get a resource
@@ -63,9 +64,9 @@ include_rules = [
 
   # Content shouldn't depend on views. While we technically don't need this
   # line, since the top level DEPS doesn't allow it, we add it to make this
-  # explicit. 
+  # explicit.
   "-views",
-  
+
   # Aura Shell consumes views, so it too is banned.
   "-ui/aura_shell",
 

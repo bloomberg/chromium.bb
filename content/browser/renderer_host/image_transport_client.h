@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "ui/gfx/compositor/compositor.h"
+#include "ui/compositor/compositor.h"
 #include "ui/surface/transport_dib.h"
 
 namespace gfx {

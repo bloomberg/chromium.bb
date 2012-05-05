@@ -12,9 +12,9 @@
 #include "base/logging.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/compositor/layer.h"
-#include "ui/gfx/image/image.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {

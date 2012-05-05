@@ -11,7 +11,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/gfx/compositor/layer_animator.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/gfx/monitor.h"
 #include "ui/gfx/screen.h"
 

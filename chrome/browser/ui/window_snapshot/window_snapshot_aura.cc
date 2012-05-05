@@ -7,9 +7,9 @@
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/compositor.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/compositor/compositor.h"
-#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/rect.h"
 
 namespace browser {

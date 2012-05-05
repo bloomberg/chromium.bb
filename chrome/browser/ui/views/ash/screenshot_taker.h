@@ -9,7 +9,7 @@
 #include "ash/screenshot_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/gfx/compositor/layer.h"
+#include "ui/compositor/layer.h"
 
 namespace aura {
 class Window;

@@ -10,27 +10,27 @@
 #include "ash/wm/key_rewriter_event_filter.h"
 #include "ash/wm/property_util.h"
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/ash/caps_lock_handler.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/ash/key_rewriter.h"
 #include "chrome/browser/ui/views/ash/screenshot_taker.h"
 #include "chrome/browser/ui/views/ash/user_gesture_handler.h"
-#include "ui/aura/env.h"
+#include "chrome/common/chrome_switches.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/client/user_gesture_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/gfx/compositor/compositor_setup.h"
+#include "ui/compositor/compositor_setup.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/ui/views/ash/brightness_controller_chromeos.h"
 #include "chrome/browser/ui/views/ash/ime_controller_chromeos.h"
 #include "chrome/browser/ui/views/ash/volume_controller_chromeos.h"
-#include "chrome/browser/chromeos/input_method/input_method_manager.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
 ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh()

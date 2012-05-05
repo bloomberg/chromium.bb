@@ -5,8 +5,8 @@
 #include "base/test/test_suite.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gfx/compositor/compositor_setup.h"
-#include "ui/gfx/compositor/test/compositor_test_support.h"
+#include "ui/compositor/compositor_setup.h"
+#include "ui/compositor/test/compositor_test_support.h"
 #include "ui/views/view.h"
 
 class ViewTestSuite : public base::TestSuite {

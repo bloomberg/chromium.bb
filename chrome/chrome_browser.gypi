@@ -4325,7 +4325,7 @@
           ],
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
-            '../ui/gfx/compositor/compositor.gyp:compositor',
+            '../ui/compositor/compositor.gyp:compositor',
           ],
         }],
         ['ui_compositor_image_transport==1', {

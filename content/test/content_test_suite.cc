@@ -17,7 +17,7 @@
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
-#include "ui/gfx/compositor/compositor_setup.h"
+#include "ui/compositor/compositor_setup.h"
 
 
 namespace {

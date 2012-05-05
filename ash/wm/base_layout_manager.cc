@@ -15,7 +15,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/compositor/layer.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/screen.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ui::WindowShowState)

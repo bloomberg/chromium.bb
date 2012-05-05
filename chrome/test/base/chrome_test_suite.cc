@@ -39,7 +39,7 @@
 #include "base/shared_memory.h"
 #endif
 
-#include "ui/gfx/compositor/compositor_setup.h"
+#include "ui/compositor/compositor_setup.h"
 
 namespace {
 

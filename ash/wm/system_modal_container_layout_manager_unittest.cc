@@ -14,7 +14,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/compositor/layer.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/events/event.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"

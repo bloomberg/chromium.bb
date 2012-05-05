@@ -5,7 +5,7 @@
 #include "ash/system/tray/tray_item_view.h"
 
 #include "ui/base/animation/slide_animation.h"
-#include "ui/gfx/compositor/layer.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"

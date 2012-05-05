@@ -16,7 +16,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/compositor/layer.h"
+#include "ui/compositor/layer.h"
 
 using std::make_pair;
 

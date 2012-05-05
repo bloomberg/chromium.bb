@@ -851,7 +851,7 @@
     ['use_aura==1', {
       'dependencies': [
         '../ui/aura/aura.gyp:aura',
-        '../ui/gfx/compositor/compositor.gyp:compositor',
+        '../ui/compositor/compositor.gyp:compositor',
       ],
       'sources/': [
         ['exclude', '^browser/accessibility/browser_accessibility_manager_win.cc'],

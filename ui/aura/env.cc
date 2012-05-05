@@ -7,7 +7,7 @@
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/compositor/compositor.h"
+#include "ui/compositor/compositor.h"
 
 #if defined(USE_X11)
 #include "ui/aura/monitor_change_observer_x11.h"

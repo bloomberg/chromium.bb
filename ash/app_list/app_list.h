@@ -11,7 +11,7 @@
 #include "base/timer.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window_observer.h"
-#include "ui/gfx/compositor/layer_animation_observer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {

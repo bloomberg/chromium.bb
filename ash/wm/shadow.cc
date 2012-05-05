@@ -7,7 +7,7 @@
 #include "ash/wm/image_grid.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 
 namespace {
 

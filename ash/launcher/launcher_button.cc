@@ -9,12 +9,12 @@
 #include "ash/launcher/launcher_button_host.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/compositor/layer.h"
-#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skbitmap_operations.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/image_view.h"
 
 namespace {

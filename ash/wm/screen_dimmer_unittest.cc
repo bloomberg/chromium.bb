@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window.h"
-#include "ui/gfx/compositor/layer.h"
+#include "ui/compositor/layer.h"
 
 namespace ash {
 namespace test {

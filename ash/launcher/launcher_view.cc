@@ -21,7 +21,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/compositor/layer.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/button/image_button.h"

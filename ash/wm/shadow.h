@@ -6,10 +6,10 @@
 #define ASH_WM_SHADOW_H_
 #pragma once
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ash/ash_export.h"
-#include "ui/gfx/compositor/layer_animation_observer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {
@@ -47,7 +47,7 @@ class ASH_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   // |window| is a possibly-arbitrary window that is drawn at the same DPI
   // (i.e. on the same monitor) as this shadow. The actual bounds for the
   // shadow still has to be provided through |SetContentBounds()|.
-  // TODO(oshima): move scale factor to gfx/compositor and remove this.
+  // TODO(oshima): move scale factor to ui/compositor/ and remove this.
   void Init(aura::Window* window, Style style);
 
   // Returns |image_grid_|'s ui::Layer.  This is exposed so it can be added to

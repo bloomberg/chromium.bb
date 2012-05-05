@@ -13,7 +13,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events.h"
-#include "ui/gfx/compositor/layer_animation_observer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/point.h"
 
 namespace aura {

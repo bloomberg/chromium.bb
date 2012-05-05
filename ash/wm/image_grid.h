@@ -6,12 +6,12 @@
 #define ASH_WM_IMAGE_GRID_H_
 #pragma once
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "ash/ash_export.h"
-#include "ui/gfx/compositor/layer.h"
-#include "ui/gfx/compositor/layer_delegate.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/layer_delegate.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -169,7 +169,7 @@ class ASH_EXPORT ImageGrid {
 
   // A possibly-arbitrary window that is drawn at the same DPI
   // (i.e. on the same monitor) as this grid.
-  // TODO(oshima): move scale factor to gfx/compositor and remove this.
+  // TODO(oshima): move scale factor to ui/compositor/ and remove this.
   aura::Window* window_;
 
   // Layer that contains all of the image layers.

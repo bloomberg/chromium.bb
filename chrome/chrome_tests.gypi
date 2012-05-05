@@ -65,7 +65,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        '../ui/gfx/compositor/compositor.gyp:compositor_test_support',
+        '../ui/compositor/compositor.gyp:compositor_test_support',
       ],
       'export_dependent_settings': [
         'renderer',

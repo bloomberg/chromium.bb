@@ -11,15 +11,15 @@
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
-#include "ui/aura/single_monitor_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/single_monitor_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/compositor/test/compositor_test_support.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/compositor/test/compositor_test_support.h"
 #include "ui/gfx/rect.h"
 
 #if defined(USE_X11)

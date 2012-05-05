@@ -9,8 +9,8 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/animation/animation_container_element.h"
-#include "ui/gfx/compositor/layer_animator.h"
-#include "ui/gfx/compositor/layer.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
 
 namespace ash {
 namespace internal {

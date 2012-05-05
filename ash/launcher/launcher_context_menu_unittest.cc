@@ -11,7 +11,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/compositor/layer.h"
+#include "ui/compositor/layer.h"
 
 namespace ash {
 

@@ -26,9 +26,8 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/touch/touch_factory.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/base/view_prop.h"
-#include "ui/gfx/compositor/layer.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/image/image.h"
 
 using std::max;

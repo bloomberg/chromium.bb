@@ -50,7 +50,7 @@
           'conditions': [
             ['use_aura==1', {
               'dependencies': [
-                '../ui/gfx/compositor/compositor.gyp:compositor',
+                '../ui/compositor/compositor.gyp:compositor',
               ],
             }],
             ['OS=="win"', {

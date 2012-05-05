@@ -19,9 +19,9 @@
 #include "ui/base/events.h"
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/gestures/gesture_types.h"
-#include "ui/gfx/compositor/compositor.h"
-#include "ui/gfx/compositor/compositor_observer.h"
-#include "ui/gfx/compositor/layer_animation_observer.h"
+#include "ui/compositor/compositor.h"
+#include "ui/compositor/compositor_observer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 

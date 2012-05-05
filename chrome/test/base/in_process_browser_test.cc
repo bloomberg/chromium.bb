@@ -39,7 +39,7 @@
 #include "content/test/test_launcher.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
-#include "ui/gfx/compositor/compositor_switches.h"
+#include "ui/compositor/compositor_switches.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/audio/audio_handler.h"

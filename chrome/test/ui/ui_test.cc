@@ -57,7 +57,7 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/gfx/compositor/compositor_switches.h"
+#include "ui/compositor/compositor_switches.h"
 #endif
 
 using base::Time;

@@ -35,7 +35,7 @@
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
         '../base/strings/ui_strings.gyp:ui_strings',
-        '../gfx/compositor/compositor.gyp:compositor',
+        '../compositor/compositor.gyp:compositor',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
         '../ui.gyp:ui_resources_standard',
@@ -493,8 +493,8 @@
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
         '../base/strings/ui_strings.gyp:ui_strings',
-        '../gfx/compositor/compositor.gyp:compositor',
-        '../gfx/compositor/compositor.gyp:compositor_test_support',
+        '../compositor/compositor.gyp:compositor',
+        '../compositor/compositor.gyp:compositor_test_support',
         '../ui.gyp:gfx_resources',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
@@ -727,8 +727,8 @@
         }],
         ['use_aura==1', {
           'dependencies': [
-            '../gfx/compositor/compositor.gyp:compositor',
-            '../gfx/compositor/compositor.gyp:compositor_test_support',
+            '../compositor/compositor.gyp:compositor',
+            '../compositor/compositor.gyp:compositor_test_support',
           ],
         }],
         ['OS=="win"', {

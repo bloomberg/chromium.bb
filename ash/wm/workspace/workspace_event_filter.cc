@@ -14,7 +14,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
-#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
 
 namespace {

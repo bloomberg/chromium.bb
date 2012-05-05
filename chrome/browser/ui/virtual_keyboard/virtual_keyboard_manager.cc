@@ -25,7 +25,7 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/gfx/compositor/layer.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/ime/text_input_type_tracker.h"

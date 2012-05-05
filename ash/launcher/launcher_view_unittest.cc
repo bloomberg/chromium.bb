@@ -6,8 +6,8 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_button.h"
-#include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_icon_observer.h"
+#include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/launcher_view_test_api.h"
@@ -15,9 +15,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/window.h"
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/gfx/compositor/layer.h"
+#include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 

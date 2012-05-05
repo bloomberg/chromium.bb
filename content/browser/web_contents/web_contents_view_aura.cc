@@ -24,7 +24,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 #include "ui/base/hit_test.h"
-#include "ui/gfx/compositor/layer.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/screen.h"
 #include "webkit/glue/webdropdata.h"
 

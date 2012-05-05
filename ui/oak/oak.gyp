@@ -17,7 +17,7 @@
         '../../build/temp_gyp/googleurl.gyp:googleurl',
         '../../skia/skia.gyp:skia',
         '../aura/aura.gyp:aura',
-        '../gfx/compositor/compositor.gyp:compositor',
+        '../compositor/compositor.gyp:compositor',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
         '../ui.gyp:ui_resources_standard',
