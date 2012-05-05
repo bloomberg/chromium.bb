@@ -95,6 +95,8 @@
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # crbug.com/123396
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
+      # crbug.com/126388
+      '-indexeddb.IndexedDBTest.testIndexedDBNullKeyPathPersistence',
       # crbug.com/126311
       '-infobars.OneClickInfobarTest.testDisplayOneClickInfobarPerProfile',
       # crbug.com/126261
