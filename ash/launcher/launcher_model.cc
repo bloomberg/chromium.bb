@@ -61,11 +61,6 @@ void LauncherModel::Set(int index, const LauncherItem& item) {
                     LauncherItemChanged(index, old_item));
 }
 
-void LauncherModel::SetPendingUpdate(int index) {
-  FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
-                    LauncherItemWillChange(index));
-}
-
 int LauncherModel::ItemIndexByID(LauncherID id) {
   LauncherItems::const_iterator i = ItemByID(id);
   return i == items_.end() ? -1 : static_cast<int>(i - items_.begin());

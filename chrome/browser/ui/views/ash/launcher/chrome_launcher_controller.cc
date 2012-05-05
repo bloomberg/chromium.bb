@@ -537,9 +537,6 @@ void ChromeLauncherController::LauncherItemChanged(
   }
 }
 
-void ChromeLauncherController::LauncherItemWillChange(int index) {
-}
-
 void ChromeLauncherController::Observe(
     int type,
     const content::NotificationSource& source,

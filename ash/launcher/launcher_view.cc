@@ -774,13 +774,6 @@ void LauncherView::LauncherItemMoved(int start_index, int target_index) {
                     OnLauncherIconPositionsChanged());
 }
 
-void LauncherView::LauncherItemWillChange(int index) {
-  const LauncherItem& item(model_->items()[index]);
-  views::View* view = view_model_->view_at(index);
-  if (item.type == TYPE_TABBED)
-    static_cast<TabbedLauncherButton*>(view)->PrepareForImageChange();
-}
-
 void LauncherView::MousePressedOnButton(views::View* view,
                                         const views::MouseEvent& event) {
   if (view_model_->GetIndexOfView(view) == -1 || view_model_->view_size() <= 1)

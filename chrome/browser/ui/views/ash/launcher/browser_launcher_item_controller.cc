@@ -125,12 +125,12 @@ void BrowserLauncherItemController::TabChangedAt(
     // We have the favicon, update immediately.
     UpdateLauncher(tab);
   } else {
-    // Let the model know we're waiting. We delay updating as otherwise the user
-    // sees flicker as we fetch the favicon.
     int item_index = launcher_model()->ItemIndexByID(item_id_);
     if (item_index == -1)
       return;
-    launcher_model()->SetPendingUpdate(item_index);
+    ash::LauncherItem item = launcher_model()->items()[item_index];
+    item.image = SkBitmap();
+    launcher_model()->Set(item_index, item);
   }
 }
 

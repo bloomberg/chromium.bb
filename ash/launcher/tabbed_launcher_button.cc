@@ -21,8 +21,7 @@ namespace internal {
 
 TabbedLauncherButton::IconView::IconView(
     TabbedLauncherButton* host)
-    : host_(host),
-      show_image_(true) {
+    : host_(host) {
   if (!browser_image_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
@@ -49,9 +48,7 @@ TabbedLauncherButton::IconView::~IconView() {
 void TabbedLauncherButton::IconView::AnimationEnded(
     const ui::Animation* animation) {
   AnimationProgressed(animation);
-  // Hide the image when the animation is done. We'll show it again the next
-  // time SetImages is invoked.
-  show_image_ = false;
+  animating_image_ = SkBitmap();
 }
 
 void TabbedLauncherButton::IconView::AnimationProgressed(
@@ -60,45 +57,47 @@ void TabbedLauncherButton::IconView::AnimationProgressed(
     SchedulePaint();
 }
 
-void TabbedLauncherButton::IconView::PrepareForImageChange() {
-  if (!show_image_ || (animation_.get() && animation_->is_animating()))
-    return;
-
-  // Pause for 500ms, then ease out for 200ms.
-  ui::MultiAnimation::Parts animation_parts;
-  animation_parts.push_back(ui::MultiAnimation::Part(500, ui::Tween::ZERO));
-  animation_parts.push_back(ui::MultiAnimation::Part(200, ui::Tween::EASE_OUT));
-  animation_.reset(new ui::MultiAnimation(animation_parts));
-  animation_->set_continuous(false);
-  animation_->set_delegate(this);
-  animation_->Start();
-}
-
 void TabbedLauncherButton::IconView::SetTabImage(const SkBitmap& image) {
-  animation_.reset();
-  // Only non incognito icons show the tab image.
-  show_image_ = host_->is_incognito() == STATE_NOT_INCOGNITO;
-  image_ = image;
-  SchedulePaint();
+  if (image.empty()) {
+    if (!image_.empty()) {
+      // Pause for 500ms, then ease out for 200ms.
+      ui::MultiAnimation::Parts animation_parts;
+      animation_parts.push_back(ui::MultiAnimation::Part(500, ui::Tween::ZERO));
+      animation_parts.push_back(
+          ui::MultiAnimation::Part(200, ui::Tween::EASE_OUT));
+      animation_.reset(new ui::MultiAnimation(animation_parts));
+      animation_->set_continuous(false);
+      animation_->set_delegate(this);
+      animation_->Start();
+      animating_image_ = image_;
+      image_ = image;
+    }
+  } else {
+    animation_.reset();
+    SchedulePaint();
+    image_ = image;
+  }
 }
 
 void TabbedLauncherButton::IconView::OnPaint(gfx::Canvas* canvas) {
   LauncherButton::IconView::OnPaint(canvas);
 
-  if (image_.empty() || !show_image_)
+  // Only non incognito icons show the tab image.
+  if (host_->is_incognito() != STATE_NOT_INCOGNITO)
     return;
 
-  bool save_layer = (animation_.get() && animation_->is_animating() &&
-                     animation_->current_part_index() == 1);
-  if (save_layer)
+  if ((animation_.get() && animation_->is_animating() &&
+      animation_->current_part_index() == 1)) {
+    int x = (width() - animating_image_.width()) / 2;
+    int y = (height() - animating_image_.height()) / 2;
     canvas->SaveLayerAlpha(animation_->CurrentValueBetween(255, 0));
-
-  int x = (width() - image_.width()) / 2;
-  int y = (height() - image_.height()) / 2;
-  canvas->DrawBitmapInt(image_, x, y);
-
-  if (save_layer)
+    canvas->DrawBitmapInt(animating_image_, x, y);
     canvas->Restore();
+  } else {
+    int x = (width() - image_.width()) / 2;
+    int y = (height() - image_.height()) / 2;
+    canvas->DrawBitmapInt(image_, x, y);
+  }
 }
 
 // static
@@ -126,10 +125,6 @@ TabbedLauncherButton::TabbedLauncherButton(views::ButtonListener* listener,
 }
 
 TabbedLauncherButton::~TabbedLauncherButton() {
-}
-
-void TabbedLauncherButton::PrepareForImageChange() {
-  tabbed_icon_view()->PrepareForImageChange();
 }
 
 void TabbedLauncherButton::SetTabImage(const SkBitmap& image) {

@@ -170,7 +170,6 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE;
   virtual void LauncherItemChanged(int index,
                                    const ash::LauncherItem& old_item) OVERRIDE;
-  virtual void LauncherItemWillChange(int index) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

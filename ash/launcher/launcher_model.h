@@ -40,10 +40,6 @@ class ASH_EXPORT LauncherModel {
   // id and type.
   void Set(int index, const LauncherItem& item);
 
-  // Sends LauncherItemWillChange() to the observers. Used when the images are
-  // going to change for an item, but not for a while.
-  void SetPendingUpdate(int index);
-
   // Returns the index of the item by id.
   int ItemIndexByID(int id);
 

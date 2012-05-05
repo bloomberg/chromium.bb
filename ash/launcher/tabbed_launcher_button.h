@@ -37,9 +37,6 @@ class TabbedLauncherButton : public LauncherButton {
                                       IncognitoState is_incognito);
   virtual ~TabbedLauncherButton();
 
-  // Notification that the images are about to change. Kicks off an animation.
-  void PrepareForImageChange();
-
   // Sets the images to display for this entry.
   void SetTabImage(const SkBitmap& image);
 
@@ -68,9 +65,6 @@ class TabbedLauncherButton : public LauncherButton {
     virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
     virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
-    // Notification that the images are about to change. Kicks off an animation.
-    void PrepareForImageChange();
-
     // Sets the image to display for this entry.
     void SetTabImage(const SkBitmap& image);
 
@@ -81,14 +75,10 @@ class TabbedLauncherButton : public LauncherButton {
    private:
     TabbedLauncherButton* host_;
     SkBitmap image_;
+    SkBitmap animating_image_;
 
     // Used to animate image.
     scoped_ptr<ui::MultiAnimation> animation_;
-
-    // Should |image_| be shown? This is set to false soon after
-    // PrepareForImageChange() is invoked without a following call to
-    // SetImages().
-    bool show_image_;
 
     // Background images. Which one is chosen depends on the type of the window.
     static SkBitmap* browser_image_;

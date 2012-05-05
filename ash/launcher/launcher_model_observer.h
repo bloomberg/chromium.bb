@@ -30,9 +30,6 @@ class ASH_EXPORT LauncherModelObserver {
   // before the change.
   virtual void LauncherItemChanged(int index, const LauncherItem& old_item) = 0;
 
-  // Signals that LauncherItemChanged() is going to be sent in the near future.
-  virtual void LauncherItemWillChange(int index) = 0;
-
  protected:
   virtual ~LauncherModelObserver() {}
 };

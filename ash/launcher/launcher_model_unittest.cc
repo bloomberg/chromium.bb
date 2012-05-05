@@ -48,8 +48,6 @@ class TestLauncherModelObserver : public LauncherModelObserver {
   virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE {
     moved_count_++;
   }
-  virtual void LauncherItemWillChange(int index) OVERRIDE {
-  }
 
  private:
   void AddToResult(const std::string& format, int count, std::string* result) {
