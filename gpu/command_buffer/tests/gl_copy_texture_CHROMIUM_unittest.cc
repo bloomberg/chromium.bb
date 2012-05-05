@@ -122,9 +122,10 @@ TEST_F(GLCopyTextureCHROMIUMTest, FlipYAndPremultiplyAlpha) {
   uint8 pixels[2][2][4];
   for (int x = 0; x < 2; ++x) {
     for (int y = 0; y < 2; ++y) {
-      pixels[y][x][0] = x + y;
-      pixels[y][x][1] = x + y;
-      pixels[y][x][2] = x + y;
+      uint8 color = 16 * x + 16 * y;
+      pixels[y][x][0] = color;
+      pixels[y][x][1] = color;
+      pixels[y][x][2] = color;
       pixels[y][x][3] = 128u;
     }
   }
