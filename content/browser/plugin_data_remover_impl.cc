@@ -39,22 +39,21 @@ PluginDataRemover* PluginDataRemover::Create(BrowserContext* browser_context) {
 }
 
 // static
-bool PluginDataRemover::IsSupported(webkit::WebPluginInfo* plugin) {
+void PluginDataRemover::GetSupportedPlugins(
+    std::vector<webkit::WebPluginInfo>* supported_plugins) {
   bool allow_wildcard = false;
   std::vector<webkit::WebPluginInfo> plugins;
   PluginService::GetInstance()->GetPluginInfoArray(
       GURL(), kFlashMimeType, allow_wildcard, &plugins, NULL);
-  std::vector<webkit::WebPluginInfo>::iterator plugin_it = plugins.begin();
-  if (plugin_it == plugins.end())
-    return false;
-  scoped_ptr<Version> version(
-      webkit::npapi::PluginGroup::CreateVersionFromString(plugin_it->version));
   scoped_ptr<Version> min_version(
       Version::GetVersionFromString(kMinFlashVersion));
-  bool rv = version.get() && min_version->CompareTo(*version) == -1;
-  if (rv)
-    *plugin = *plugin_it;
-  return rv;
+  for (std::vector<webkit::WebPluginInfo>::iterator it = plugins.begin();
+       it != plugins.end(); ++it) {
+    scoped_ptr<Version> version(
+        webkit::npapi::PluginGroup::CreateVersionFromString(it->version));
+    if (version.get() && min_version->CompareTo(*version) == -1)
+      supported_plugins->push_back(*it);
+  }
 }
 
 class PluginDataRemoverImpl::Context

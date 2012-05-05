@@ -39,9 +39,14 @@ void PluginDataRemoverHelper::Init(const char* pref_name,
 
 // static
 bool PluginDataRemoverHelper::IsSupported(PluginPrefs* plugin_prefs) {
-  webkit::WebPluginInfo plugin;
-  return content::PluginDataRemover::IsSupported(&plugin) &&
-      plugin_prefs->IsPluginEnabled(plugin);
+  std::vector<webkit::WebPluginInfo> plugins;
+  content::PluginDataRemover::GetSupportedPlugins(&plugins);
+  for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
+       it != plugins.end(); ++it) {
+    if (plugin_prefs->IsPluginEnabled(*it))
+      return true;
+  }
+  return false;
 }
 
 void PluginDataRemoverHelper::Observe(
