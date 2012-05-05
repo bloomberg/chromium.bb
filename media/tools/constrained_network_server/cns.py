@@ -201,9 +201,8 @@ class ConstrainedNetworkServer(object):
       new_port: whether to use a new port for this request or not.
       no_cache: Set reponse's cache-control to no-cache.
     """
-    cherrypy.log('Got request for %s, bandwidth=%s, latency=%s, loss=%s, '
-                 'new_port=%s, no_cache=%s, kwargs=%s' %
-                 (f, bandwidth, latency, loss, new_port, no_cache, kwargs))
+    cherrypy.log('Got request string: %s' % cherrypy.request.request_line)
+
     if no_cache:
       response = cherrypy.response
       response.headers['Pragma'] = 'no-cache'
@@ -358,8 +357,9 @@ def Main():
     cherrypy.log(e.msg)
     return
 
-  cherrypy.config.update(
-      {'server.socket_host': '::', 'server.socket_port': options.port})
+  cherrypy.config.update({'server.socket_host': '::',
+                          'server.socket_port': options.port,
+                          'server.socket_timeout': 1000})
 
   if options.threads:
     cherrypy.config.update({'server.thread_pool': options.threads})
