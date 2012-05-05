@@ -5,6 +5,8 @@
 #include "chrome/browser/history/android/favicon_sql_handler.h"
 
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/history/thumbnail_database.h"
 
 using base::Time;
@@ -37,7 +39,7 @@ bool FaviconSQLHandler::Update(const HistoryAndBookmarkRow& row,
     if (!favicon_id)
       return false;
 
-    scoped_refptr<RefCountedMemory> image_data =
+    scoped_refptr<base::RefCountedMemory> image_data =
         new base::RefCountedBytes(row.favicon());
     if (!thumbnail_db_->SetFavicon(favicon_id, image_data, Time::Now()))
       return false;
@@ -113,7 +115,7 @@ bool FaviconSQLHandler::Insert(HistoryAndBookmarkRow* row) {
   if (!id)
     return false;
 
-  scoped_refptr<RefCountedMemory> image_data =
+  scoped_refptr<base::RefCountedMemory> image_data =
       new base::RefCountedBytes(row->favicon());
   if (!thumbnail_db_->SetFavicon(id, image_data, Time::Now()))
     return false;
