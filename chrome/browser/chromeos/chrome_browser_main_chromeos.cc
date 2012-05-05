@@ -51,6 +51,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/low_memory_observer.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/oom_priority_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -340,7 +341,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // TODO(abarth): Should this move to InitializeNetworkOptions()?
   // Allow access to file:// on ChromeOS for tests.
   if (parsed_command_line().HasSwitch(switches::kAllowFileAccess))
-    net::URLRequest::AllowFileAccess();
+    ChromeNetworkDelegate::AllowAccessToAllFiles();
 
   // There are two use cases for kLoginUser:
   //   1) if passed in tandem with kLoginPassword, to drive a "StubLogin"

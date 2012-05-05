@@ -149,29 +149,32 @@ class TestShellNetworkDelegate : public net::NetworkDelegate {
       net::AuthCredentials* credentials) OVERRIDE {
     return AUTH_REQUIRED_RESPONSE_NO_ACTION;
   }
-  virtual bool CanGetCookies(
-      const net::URLRequest* request,
-      const net::CookieList& cookie_list) OVERRIDE {
+  virtual bool OnCanGetCookies(const net::URLRequest& request,
+                               const net::CookieList& cookie_list) OVERRIDE {
     StaticCookiePolicy::Type policy_type = g_accept_all_cookies ?
         StaticCookiePolicy::ALLOW_ALL_COOKIES :
         StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES;
 
     StaticCookiePolicy policy(policy_type);
     int rv = policy.CanGetCookies(
-        request->url(), request->first_party_for_cookies());
+        request.url(), request.first_party_for_cookies());
     return rv == net::OK;
   }
-  virtual bool CanSetCookie(const net::URLRequest* request,
-                            const std::string& cookie_line,
-                            net::CookieOptions* options) OVERRIDE {
+  virtual bool OnCanSetCookie(const net::URLRequest& request,
+                              const std::string& cookie_line,
+                              net::CookieOptions* options) OVERRIDE {
     StaticCookiePolicy::Type policy_type = g_accept_all_cookies ?
         StaticCookiePolicy::ALLOW_ALL_COOKIES :
         StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES;
 
     StaticCookiePolicy policy(policy_type);
     int rv = policy.CanSetCookie(
-        request->url(), request->first_party_for_cookies());
+        request.url(), request.first_party_for_cookies());
     return rv == net::OK;
+  }
+  virtual bool OnCanAccessFile(const net::URLRequest& request,
+                               const FilePath& path) const OVERRIDE {
+    return true;
   }
 };
 

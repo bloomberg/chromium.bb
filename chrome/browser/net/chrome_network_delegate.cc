@@ -29,6 +29,10 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/chromeos/chromeos_version.h"
+#endif
+
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/url_blacklist_manager.h"
 #endif
@@ -36,6 +40,14 @@
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::ResourceRequestInfo;
+
+// By default we don't allow access to all file:// urls on ChromeOS but we do on
+// other platforms.
+#if defined(OS_CHROMEOS)
+bool ChromeNetworkDelegate::g_allow_file_access_ = false;
+#else
+bool ChromeNetworkDelegate::g_allow_file_access_ = true;
+#endif
 
 namespace {
 
@@ -132,6 +144,11 @@ void ChromeNetworkDelegate::InitializeReferrersEnabled(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   enable_referrers->Init(prefs::kEnableReferrers, pref_service, NULL);
   enable_referrers->MoveToThread(BrowserThread::IO);
+}
+
+// static
+void ChromeNetworkDelegate::AllowAccessToAllFiles() {
+  g_allow_file_access_ = true;
 }
 
 int ChromeNetworkDelegate::OnBeforeURLRequest(
@@ -251,56 +268,92 @@ ChromeNetworkDelegate::OnAuthRequired(
       callback, credentials);
 }
 
-bool ChromeNetworkDelegate::CanGetCookies(
-    const net::URLRequest* request,
+bool ChromeNetworkDelegate::OnCanGetCookies(
+    const net::URLRequest& request,
     const net::CookieList& cookie_list) {
   // NULL during tests, or when we're running in the system context.
   if (!cookie_settings_)
     return true;
 
   bool allow = cookie_settings_->IsReadingCookieAllowed(
-      request->url(), request->first_party_for_cookies());
+      request.url(), request.first_party_for_cookies());
 
   int render_process_id = -1;
   int render_view_id = -1;
   if (content::ResourceRequestInfo::GetRenderViewForRequest(
-          request, &render_process_id, &render_view_id)) {
+          &request, &render_process_id, &render_view_id)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&TabSpecificContentSettings::CookiesRead,
                    render_process_id, render_view_id,
-                   request->url(), request->first_party_for_cookies(),
+                   request.url(), request.first_party_for_cookies(),
                    cookie_list, !allow));
   }
 
   return allow;
 }
 
-bool ChromeNetworkDelegate::CanSetCookie(
-    const net::URLRequest* request,
-    const std::string& cookie_line,
-    net::CookieOptions* options) {
+bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
+                                           const std::string& cookie_line,
+                                           net::CookieOptions* options) {
   // NULL during tests, or when we're running in the system context.
   if (!cookie_settings_)
     return true;
 
   bool allow = cookie_settings_->IsSettingCookieAllowed(
-      request->url(), request->first_party_for_cookies());
+      request.url(), request.first_party_for_cookies());
 
-  if (cookie_settings_->IsCookieSessionOnly(request->url()))
+  if (cookie_settings_->IsCookieSessionOnly(request.url()))
     options->set_force_session();
 
   int render_process_id = -1;
   int render_view_id = -1;
   if (content::ResourceRequestInfo::GetRenderViewForRequest(
-          request, &render_process_id, &render_view_id)) {
+          &request, &render_process_id, &render_view_id)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&TabSpecificContentSettings::CookieChanged,
                    render_process_id, render_view_id,
-                   request->url(), request->first_party_for_cookies(),
+                   request.url(), request.first_party_for_cookies(),
                    cookie_line, *options, !allow));
   }
 
   return allow;
+}
+
+bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
+                                            const FilePath& path) const {
+  if (g_allow_file_access_)
+    return true;
+
+#if defined(OS_CHROMEOS)
+  // ChromeOS uses a whitelist to only allow access to files residing in the
+  // list of directories below.
+  static const char* const kLocalAccessWhiteList[] = {
+      "/home/chronos/user/Downloads",
+      "/home/chronos/user/log",
+      "/media",
+      "/opt/oem",
+      "/usr/share/chromeos-assets",
+      "/tmp",
+      "/var/log",
+  };
+
+  // If we're running Chrome for ChromeOS on Linux, we want to allow file
+  // access.
+  if (!base::chromeos::IsRunningOnChromeOS())
+    return true;
+
+  for (size_t i = 0; i < arraysize(kLocalAccessWhiteList); ++i) {
+    const FilePath white_listed_path(kLocalAccessWhiteList[i]);
+    // FilePath::operator== should probably handle trailing separators.
+    if (white_listed_path == path.StripTrailingSeparators() ||
+        white_listed_path.IsParent(path)) {
+      return true;
+    }
+  }
+  return false;
+#else
+  return true;
+#endif  // defined(OS_CHROMEOS)
 }

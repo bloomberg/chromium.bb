@@ -70,15 +70,19 @@ ShellNetworkDelegate::AuthRequiredResponse ShellNetworkDelegate::OnAuthRequired(
   return AUTH_REQUIRED_RESPONSE_NO_ACTION;
 }
 
-bool ShellNetworkDelegate::CanGetCookies(
-    const net::URLRequest* request,
-    const net::CookieList& cookie_list) {
+bool ShellNetworkDelegate::OnCanGetCookies(const net::URLRequest& request,
+                                           const net::CookieList& cookie_list) {
   return true;
 }
 
-bool ShellNetworkDelegate::CanSetCookie(const net::URLRequest* request,
-                                        const std::string& cookie_line,
-                                        net::CookieOptions* options) {
+bool ShellNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
+                                          const std::string& cookie_line,
+                                          net::CookieOptions* options) {
+  return true;
+}
+
+bool ShellNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
+                                           const FilePath& path) const {
   return true;
 }
 
