@@ -38,6 +38,9 @@ struct ProcessMemoryInformation {
   ProcessMemoryInformation();
   ~ProcessMemoryInformation();
 
+  // Default ordering is by private memory consumption.
+  bool operator<(const ProcessMemoryInformation& rhs) const;
+
   // The process id.
   base::ProcessId pid;
   // The working set information.

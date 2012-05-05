@@ -88,6 +88,11 @@ ProcessMemoryInformation::ProcessMemoryInformation()
 
 ProcessMemoryInformation::~ProcessMemoryInformation() {}
 
+bool ProcessMemoryInformation::operator<(
+    const ProcessMemoryInformation& rhs) const {
+  return working_set.priv < rhs.working_set.priv;
+}
+
 ProcessData::ProcessData() {}
 
 ProcessData::ProcessData(const ProcessData& rhs)
@@ -135,10 +140,14 @@ MemoryDetails::~MemoryDetails() {}
 std::string MemoryDetails::ToLogString() {
   std::string log;
   log.reserve(4096);
-  const ProcessData& chrome = *ChromeBrowser();
-  for (ProcessMemoryInformationList::const_iterator iter1 =
-           chrome.processes.begin();
-       iter1 != chrome.processes.end(); ++iter1) {
+  ProcessMemoryInformationList processes = ChromeBrowser()->processes;
+  // Sort by memory consumption, low to high.
+  std::sort(processes.begin(), processes.end());
+  // Print from high to low.
+  for (ProcessMemoryInformationList::reverse_iterator iter1 =
+          processes.rbegin();
+       iter1 != processes.rend();
+       ++iter1) {
     log += ProcessMemoryInformation::GetFullTypeNameInEnglish(
             iter1->type, iter1->renderer_type);
     if (!iter1->titles.empty()) {

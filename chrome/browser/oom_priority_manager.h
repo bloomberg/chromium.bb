@@ -38,6 +38,9 @@ class OomPriorityManager : public content::NotificationObserver {
   OomPriorityManager();
   virtual ~OomPriorityManager();
 
+  // Number of discard events since Chrome started.
+  int discard_count() const { return discard_count_; }
+
   void Start();
   void Stop();
 
@@ -63,9 +66,10 @@ class OomPriorityManager : public content::NotificationObserver {
     ~TabStats();
     bool is_pinned;
     bool is_selected;
+    bool is_discarded;
+    bool sudden_termination_allowed;
     base::TimeTicks last_selected;
     base::ProcessHandle renderer_handle;
-    bool sudden_termination_allowed;
     string16 title;
     int64 tab_contents_id;  // unique ID per WebContents
   };

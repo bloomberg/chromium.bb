@@ -62,12 +62,6 @@ const char kExperiment[] = "LowMemoryMargin";
           base::FieldTrial::MakeName(name, kExperiment),                   \
           sample, min, max, buckets);
 
-// Record a time in seconds, over a potential interval of about a day. Must be a
-// macro and not a function because the histograms system requires a unique
-// static variable at the site of each call.
-#define EXPERIMENT_HISTOGRAM_SECONDS(name, sample)                         \
-    EXPERIMENT_CUSTOM_COUNTS(name, sample, 1, 10000, 50)
-
 // Record a size in megabytes, over a potential interval up to 32 GB.
 #define EXPERIMENT_HISTOGRAM_MEGABYTES(name, sample)                       \
     EXPERIMENT_CUSTOM_COUNTS(name, sample, 1, 32768, 50)
@@ -135,8 +129,9 @@ void OomMemoryDetails::OnDetailsAvailable() {
 OomPriorityManager::TabStats::TabStats()
   : is_pinned(false),
     is_selected(false),
-    renderer_handle(0),
+    is_discarded(false),
     sudden_termination_allowed(false),
+    renderer_handle(0),
     tab_contents_id(0) {
 }
 
@@ -190,12 +185,15 @@ std::vector<string16> OomPriorityManager::GetTabTitles() {
   titles.reserve(stats.size());
   TabStatsList::iterator it = stats.begin();
   for ( ; it != stats.end(); ++it) {
-    string16 str = it->title;
+    string16 str;
+    str.reserve(4096);
+    str += it->title;
     str += ASCIIToUTF16(" (");
     int score = pid_to_oom_score_[it->renderer_handle];
     str += base::IntToString16(score);
-    str += ASCIIToUTF16(") ");
-    str += ASCIIToUTF16(it->sudden_termination_allowed ? "*" : "-");
+    str += ASCIIToUTF16(")");
+    str += ASCIIToUTF16(it->sudden_termination_allowed ? " sudden_ok " : "");
+    str += ASCIIToUTF16(it->is_discarded ? " discarded" : "");
     titles.push_back(str);
   }
   return titles;
@@ -205,6 +203,7 @@ std::vector<string16> OomPriorityManager::GetTabTitles() {
 // such as tabs created with JavaScript window.open().  We might want to
 // discard the entire set together, or use that in the priority computation.
 bool OomPriorityManager::DiscardTab() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TabStatsList stats = GetTabStatsOnUIThread();
   if (stats.empty())
     return false;
@@ -220,6 +219,7 @@ bool OomPriorityManager::DiscardTab() {
 }
 
 void OomPriorityManager::LogMemoryAndDiscardTab() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Deletes itself upon completion.
   OomMemoryDetails* details = new OomMemoryDetails();
   details->StartFetch(MemoryDetails::SKIP_USER_METRICS);
@@ -266,12 +266,17 @@ void OomPriorityManager::RecordDiscardStatistics() {
     // This is the first discard this session.
     TimeDelta interval = TimeTicks::Now() - start_time_;
     int interval_seconds = static_cast<int>(interval.InSeconds());
-    EXPERIMENT_HISTOGRAM_SECONDS("Tabs.Discard.InitialTime", interval_seconds);
+    // Record time in seconds over an interval of approximately 1 day.
+    EXPERIMENT_CUSTOM_COUNTS(
+        "Tabs.Discard.InitialTime2", interval_seconds, 1, 100000, 50);
   } else {
     // Not the first discard, so compute time since last discard.
     TimeDelta interval = TimeTicks::Now() - last_discard_time_;
-    int interval_seconds = static_cast<int>(interval.InSeconds());
-    EXPERIMENT_HISTOGRAM_SECONDS("Tabs.Discard.IntervalTime", interval_seconds);
+    int interval_ms = static_cast<int>(interval.InMilliseconds());
+    // Record time in milliseconds over an interval of approximately 1 day.
+    // Start at 100 ms to get extra resolution in the target 750 ms range.
+    EXPERIMENT_CUSTOM_COUNTS(
+        "Tabs.Discard.IntervalTime2", interval_ms, 100, 100000 * 1000, 50);
   }
   // Record Chrome's concept of system memory usage at the time of the discard.
   base::SystemMemoryInfoKB memory;
@@ -436,10 +441,11 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
         TabStats stats;
         stats.is_pinned = model->IsTabPinned(i);
         stats.is_selected = model->IsTabSelected(i);
-        stats.last_selected = contents->GetLastSelectedTime();
-        stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
+        stats.is_discarded = model->IsTabDiscarded(i);
         stats.sudden_termination_allowed =
             contents->GetRenderProcessHost()->SuddenTerminationAllowed();
+        stats.last_selected = contents->GetLastSelectedTime();
+        stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
         stats.title = contents->GetTitle();
         stats.tab_contents_id = IdFromTabContents(contents);
         stats_list.push_back(stats);
