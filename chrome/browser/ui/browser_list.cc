@@ -241,24 +241,8 @@ void NotifyAppTerminating() {
 }
 
 #if defined(OS_CHROMEOS)
-
 // Whether a session manager requested to shutdown.
 bool g_session_manager_requested_shutdown = true;
-
-// Fast shutdown for ChromeOS. It tells session manager to start
-// shutdown process when closing browser windows won't be canceled.
-// Returns true if fast shutdown is successfully started.
-bool FastShutdown() {
-  if (AreAllBrowsersCloseable()) {
-    BrowserList::NotifyAndTerminate(true);
-    return true;
-  }
-  return false;
-}
-
-void NotifyWindowManagerAboutSignout() {
-}
-
 #endif
 
 }  // namespace
@@ -326,7 +310,6 @@ void BrowserList::NotifyAndTerminate(bool fast_path) {
     NotifyAppTerminating();
 
 #if defined(OS_CHROMEOS)
-  NotifyWindowManagerAboutSignout();
   if (base::chromeos::IsRunningOnChromeOS()) {
     // If we're on a ChromeOS device, reboot if an update has been applied,
     // or else signal the session manager to log out.
@@ -510,15 +493,16 @@ void BrowserList::AttemptUserExit() {
     }
   }
   g_session_manager_requested_shutdown = false;
-  if (FastShutdown())
-    return;
+  // On ChromeOS, always terminate the browser, regardless of the result of
+  // AreAllBrowsersCloseable(). See crbug.com/123107.
+  BrowserList::NotifyAndTerminate(true);
 #else
   // Reset the restart bit that might have been set in cancelled restart
   // request.
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, false);
-#endif
   AttemptExitInternal();
+#endif
 }
 
 // static
