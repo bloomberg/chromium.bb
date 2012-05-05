@@ -16,14 +16,22 @@ import pyauto
 import pyauto_paths
 
 # List of commonly used network constraints settings.
-LowHighMedium = ('LowHighMedium', [256, 180, 2])
-LowMediumNone = ('LowMediumNone', [256, 105, 0])
-MediumMediumNone = ('MediumMediumNone', [2000, 105, 0])
-HighMediumNone = ('HighMediumNone', [5000, 105, 0])
-HighLowNone = ('HighLowNone', [5000, 43, 0])
-Wifi = ('Wifi_1Mbps_60ms', [1024, 60, 0])
-DSL = ('DSL_1.5Mbps_50ms', [1541, 50, 0])
-Cable = ('Cable_5Mbps_28ms', [5120, 28, 0])
+# Each setting is a tuppe of the form:
+#    ('TEST_NAME', [BANDWIDTH_Kbps, LATENCY_ms, PACKET_LOSS_%])
+#
+# Note: The test name should satisfy the regex [\w\.-]+ (check
+# tools/perf_expectations/tests/perf_expectations_unittest.py for details). It
+# is used to name the result graphs on the dashboards.
+#
+# The WiFi, DSL, and Cable settings were taken from webpagetest.org as
+# approximations of their respective real world networks. The settings were
+# based on 2011 FCC Broadband Data report (http://www.fcc.gov/document/
+# measuring-broadband-america-report-consumer-broadband-performance-us).
+DialUp = ('DialUp', [56, 120, 5])
+Slow = ('Slow', [256, 105, 1])
+Wifi = ('Wifi', [1024, 60, 0])
+DSL = ('DSL', [1541, 50, 0])
+Cable = ('Cable', [5120, 28, 0])
 NoConstraints = ('NoConstraints', [0, 0, 0])
 
 # Path to CNS executable relative to source root.

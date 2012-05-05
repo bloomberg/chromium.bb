@@ -27,34 +27,16 @@ import pyauto_utils
 import cns_test_base
 import worker_thread
 
-# The list of tests to run. Each entry is of the form:
-#    'TEST_NAME' : [BANDWIDTH_Kbps, LATENCY_ms, PACKET_LOSS_%]
-#
-# The first five tests were manually selected to cover a range of bad network
-# constraints to good ones. Those tests resulted in stable results and are
-# suitable for regression testing.
-#
-# The WiFi, DSL, and Cable settings were taken from webpagetest.org as
-# approximations of their respective real world networks. The settings were
-# based on 2011 FCC Broadband Data report (http://www.fcc.gov/document/
-# measuring-broadband-america-report-consumer-broadband-performance-us).
-#
-# Previous tests with 2% and 5% packet loss resulted in unstable data. Thus
-# packet loss is not used often for perf graphs. Tests with very low bandwidth,
+# Previous tests with 2% and 5% packet loss resulted in inconsistent data. Thus
+# packet loss is not used often in perf tests. Tests with very low bandwidth,
 # such as 56K Dial-up resulted in very slow tests (about 8 mins to run each
 # test iteration). In addition, metrics for Dial-up would be out of range of the
 # other tests metrics, making the graphs hard to read.
-#
-# Note: The test name should satisfy the regex [\w\.-]+ (check
-# tools/perf_expectations/tests/perf_expectations_unittest.py for details).
-#
-# TODO(shadi): After recording metrics and getting stable results, remove the
-# first 5 settings if the last five are enough for regression testing.
+
 _TESTS_TO_RUN = [cns_test_base.Cable,
                  cns_test_base.Wifi,
                  cns_test_base.DSL,
-                 cns_test_base.LowHighMedium,
-                 cns_test_base.LowMediumNone,
+                 cns_test_base.Slow,
                  cns_test_base.NoConstraints]
 
 # HTML test path; relative to src/chrome/test/data.  Loads a test video and
