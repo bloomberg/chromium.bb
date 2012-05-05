@@ -125,11 +125,6 @@ class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
     return user_observer_;
   }
 
-  // Accessors for testing.
-
-  // Returns true if the bubble exists.
-  bool CloseBubbleForTest() const;
-
  private:
   friend class internal::SystemTrayBubble;
 
