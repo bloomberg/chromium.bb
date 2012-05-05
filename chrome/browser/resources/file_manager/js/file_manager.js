@@ -173,6 +173,23 @@ FileManager.prototype = {
   }
 
   /**
+   * @param {number} code File error code (from FileError object).
+   * @return {string} Translated file error string.
+   */
+  function getFileErrorString(code) {
+    for (var key in FileError) {
+      var match = /(.*)_ERR$/.exec(key);
+      if (match && FileError[key] == code) {
+        // This would convert 1 to 'NOT_FOUND'.
+        code = match[1];
+        break;
+      }
+    }
+    return localStrings.getString('FILE_ERROR_' + code) ||
+        localStrings.getStringF('FILE_ERROR_GENERIC', code);
+  }
+
+  /**
    * Checks if |parent_path| is parent file path of |child_path|.
    *
    * @param {string} parent_path The parent path.
@@ -1230,7 +1247,7 @@ FileManager.prototype = {
           } else {
             this.showButterError(
                 strf('PASTE_FILESYSTEM_ERROR',
-                     util.getFileErrorMnemonic(event.error.data.code)));
+                      getFileErrorString(event.error.data.code)));
           }
           break;
 
@@ -3581,7 +3598,7 @@ FileManager.prototype = {
     function onError(err) {
       nameNode.textContent = entry.name;
       this.alert.show(strf('ERROR_RENAMING', entry.name,
-                           util.getFileErrorMnemonic(err.code)));
+                           getFileErrorString(err.code)));
     }
 
     this.cancelRename_();
@@ -3703,7 +3720,7 @@ FileManager.prototype = {
 
     function onError(error) {
       self.alert.show(strf('ERROR_CREATING_FOLDER', current(),
-                           util.getFileErrorMnemonic(error.code)));
+                           getFileErrorString(error.code)));
     }
 
     tryCreate();

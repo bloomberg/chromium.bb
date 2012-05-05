@@ -10448,7 +10448,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <message name="IDS_FILE_BROWSER_ERROR_CREATING_FOLDER" desc="Message displayed when we can't create a folder.">
-        Unable to create folder "$1": $2
+        Unable to create folder "<ph name="FOLDER_NAME">$1<ex>Documents</ex></ph>". <ph name="ERROR_MESSAGE">$2<ex>An error occurred (code: ABORT)</ex></ph>
       </message>
       <message name="IDS_FILE_BROWSER_ERROR_INVALID_CHARACTER" desc="Error message displayed when the user enters an invalid character in a file or directory name.">
         Invalid character: $1
@@ -10601,7 +10601,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         The folder named "$1" already exists. Please choose a different name.
       </message>
       <message name="IDS_FILE_BROWSER_ERROR_RENAMING" desc="Error message.">
-        Unable to rename "$1": $2
+        Unable to rename "<ph name="FILE_NAME">$1<ex>document.pdf</ex></ph>". <ph name="ERROR_MESSAGE">$2<ex>An error occurred (code: ABORT)</ex></ph>
       </message>
       <message name="IDS_FILE_BROWSER_RENAME_PROMPT" desc="Dialog Prompt.">
         Enter a new name
@@ -10611,22 +10611,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <message name="IDS_FILE_BROWSER_ERROR_DELETING" desc="Error Message.">
-        Unable to delete "$1": $2
+        Unable to delete "<ph name="FILE_NAME">$1<ex>document.pdf</ex></ph>". <ph name="ERROR_MESSAGE">$2<ex>An error occurred (code: ABORT)</ex></ph>
       </message>
       <message name="IDS_FILE_BROWSER_DELETE_BUTTON_LABEL" desc="Button Label.">
         Delete
       </message>
 
-      <message name="IDS_FILE_BROWSER_ERROR_MOVING" desc="Error Message.">
-        Unable to move "$1": $2
-      </message>
-      <message name="IDS_FILE_BROWSER_MOVE_BUTTON_LABEL" desc="Button Label.">
-        Move
-      </message>
-
-      <message name="IDS_FILE_BROWSER_ERROR_PASTING" desc="Error Message.">
-        Unable to paste "$1": $2
-      </message>
       <message name="IDS_FILE_BROWSER_PASTE_BUTTON_LABEL" desc="Button Label.">
         Paste
       </message>
@@ -10648,7 +10638,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Paste failed, item exists: $1
       </message>
       <message name="IDS_FILE_BROWSER_PASTE_FILESYSTEM_ERROR" desc="File picker status message.">
-        Paste failed, file system error: $1
+        Paste failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
       </message>
       <message name="IDS_FILE_BROWSER_PASTE_UNEXPECTED_ERROR" desc="File picker status message.">
         Paste failed, unexpected error: $1
@@ -10957,7 +10947,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <message name="IDS_FILE_BROWSER_FILE_ERROR_GENERIC" desc="In the File Manager, the error message when the file operation failed.">
-        An error occurred (code: <ph name="ERROR_CODE">$1<ex>ABORT_ERR</ex></ph>).
+        An error occurred (code: <ph name="ERROR_CODE">$1<ex>ABORT</ex></ph>).
       </message>
       <message name="IDS_FILE_BROWSER_FILE_ERROR_NOT_FOUND" desc="In the File Manager, the error message when the file could not be found.">
         The file could not be found.

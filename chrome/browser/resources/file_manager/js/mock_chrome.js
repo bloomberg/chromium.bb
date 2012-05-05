@@ -377,7 +377,7 @@ chrome.fileBrowserPrivate = {
       PREVIEW_COLUMN_LABEL: 'Preview',
       OFFILE_COLUMN_LABEL: 'Available offline',
 
-      ERROR_CREATING_FOLDER: 'Unable to create folder "$1": $2',
+      ERROR_CREATING_FOLDER: 'Unable to create folder "$1". $2',
       ERROR_INVALID_CHARACTER: 'Invalid character: $1',
       ERROR_RESERVED_NAME: 'This name may not be used as a file of folder name',
       ERROR_WHITESPACE_NAME: 'Invalid name',
@@ -434,17 +434,13 @@ chrome.fileBrowserPrivate = {
       CONFIRM_OVERWRITE_FILE: 'A file named "$1" already exists. Do you want to replace it?',
       FILE_ALREADY_EXISTS: 'The file named "$1" already exists. Please choose a different name.',
       DIRECTORY_ALREADY_EXISTS: 'The folder named "$1" already exists. Please choose a different name.',
-      ERROR_RENAMING: 'Unable to rename "$1": $2',
+      ERROR_RENAMING: 'Unable to rename "$1". $2',
       RENAME_PROMPT: 'Enter a new name',
       RENAME_BUTTON_LABEL: 'Rename',
 
-      ERROR_DELETING: 'Unable to delete "$1": $2',
+      ERROR_DELETING: 'Unable to delete "$1". $2',
       DELETE_BUTTON_LABEL: 'Delete',
 
-      ERROR_MOVING: 'Unable to move "$1": $2',
-      MOVE_BUTTON_LABEL: 'Move',
-
-      ERROR_PASTING: 'Unable to paste "$1": $2',
       PASTE_BUTTON_LABEL: 'Paste',
 
       COPY_BUTTON_LABEL: 'Copy',
