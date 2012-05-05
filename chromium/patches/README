@@ -3,8 +3,18 @@ Current Status as of Apr 23, 2012
 
 Upstream cherry-picks:
 
-None.
-
+45a7b06 oggvorbis: fix the first 2 packets timestamps matching issue
+16db88a vorbis_parser: fix blocksize
+441dce2 oggvorbis: move handling of first packets ts from parser to muxer.
+b18c9f1 oggtheora: Port changes from oggvorbis timestamp handling.
+fe5c5bc oggvorbisdec: Apply timestamp calculation always when timestamps arent known.
+1f95ad4 oggvorbisdec: redesign special handling of first frames timestamp.
+63eb01d oggvorbis: Try to fix pts off by 1 issue.
+231d32c oggtheora: Fix initial pts
+ef32fba oggdec: fix off by one error on pos_limit
+96fb233 oggdec: reset lastpts so that justins vorbis duration correction is not skiped
+5f9f78d oggdec: pass avformat context to ogg_reset()
+8b97ae6 avf: fix faulty check in has_duration
 
 Current patches:
 
