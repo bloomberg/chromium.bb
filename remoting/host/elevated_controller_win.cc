@@ -17,14 +17,23 @@
 #include "base/values.h"
 #include "base/win/scoped_handle.h"
 #include "remoting/host/branding.h"
-#include "remoting/host/daemon_controller_common_win.h"
 #include "remoting/host/elevated_controller_resource.h"
 #include "remoting/host/verify_config_window_win.h"
 
 namespace {
 
+// The maximum size of the configuration file. "1MB ought to be enough" for any
+// reasonable configuration we will ever need. 1MB is low enough to make
+// the probability of out of memory situation fairly low. OOM is still possible
+// and we will crash if it occurs.
+const size_t kMaxConfigFileSize = 1024 * 1024;
+
 // The host configuration file name.
 const FilePath::CharType kConfigFileName[] = FILE_PATH_LITERAL("host.json");
+
+// The unprivileged configuration file name.
+const FilePath::CharType kUnprivilegedConfigFileName[] =
+    FILE_PATH_LITERAL("host_unprivileged.json");
 
 // The extension for the temporary file.
 const FilePath::CharType kTempFileExtension[] = FILE_PATH_LITERAL("json~");
@@ -48,8 +57,6 @@ const char* const kReadonlyKeys[] = { kHostId, kXmppLogin };
 // The configuration keys whose values may be read by GetConfig().
 const char* const kUnprivilegedConfigKeys[] = { kHostId, kXmppLogin };
 
-// TODO(simonmorris): Remove this routine: the plugin implements GetConfig(),
-// so it's no longer used.
 // Reads and parses the configuration file up to |kMaxConfigFileSize| in
 // size.
 HRESULT ReadConfig(const FilePath& filename,
@@ -72,8 +79,8 @@ HRESULT ReadConfig(const FilePath& filename,
     return HRESULT_FROM_WIN32(error);
   }
 
-  scoped_array<char> buffer(new char[remoting::kMaxConfigFileSize]);
-  DWORD size = remoting::kMaxConfigFileSize;
+  scoped_array<char> buffer(new char[kMaxConfigFileSize]);
+  DWORD size = kMaxConfigFileSize;
   if (!::ReadFile(file, &buffer[0], size, &size, NULL)) {
     DWORD error = GetLastError();
     LOG_GETLASTERROR(ERROR)
@@ -173,7 +180,7 @@ HRESULT MoveConfigFileFromTemp(const FilePath& filename) {
 
 // Writes the configuration file up to |kMaxConfigFileSize| in size.
 HRESULT WriteConfig(const char* content, size_t length, HWND owner_window) {
-  if (length > remoting::kMaxConfigFileSize) {
+  if (length > kMaxConfigFileSize) {
       return E_FAIL;
   }
 
@@ -224,7 +231,7 @@ HRESULT WriteConfig(const char* content, size_t length, HWND owner_window) {
 
   // Write the unprivileged configuration file to a temporary location.
   FilePath unprivileged_config_file_path =
-      remoting::GetConfigDir().Append(remoting::kUnprivilegedConfigFileName);
+      remoting::GetConfigDir().Append(kUnprivilegedConfigFileName);
   hr = WriteConfigFileToTemp(unprivileged_config_file_path,
                              kUnprivilegedConfigFileSecurityDescriptor,
                              unprivileged_config_str.data(),
@@ -262,9 +269,27 @@ HRESULT ElevatedControllerWin::FinalConstruct() {
 void ElevatedControllerWin::FinalRelease() {
 }
 
-STDMETHODIMP ElevatedControllerWin::GetConfig(BSTR* config) {
-  // Deprecated.
-  return E_NOTIMPL;
+STDMETHODIMP ElevatedControllerWin::GetConfig(BSTR* config_out) {
+  FilePath config_dir = remoting::GetConfigDir();
+
+  // Read the unprivileged part of host configuration.
+  scoped_ptr<base::DictionaryValue> config;
+  HRESULT hr = ReadConfig(config_dir.Append(kUnprivilegedConfigFileName),
+                          &config);
+  if (FAILED(hr)) {
+    return hr;
+  }
+
+  // Convert the config back to a string and return it to the caller.
+  std::string file_content;
+  base::JSONWriter::Write(config.get(), &file_content);
+
+  *config_out = ::SysAllocString(UTF8ToUTF16(file_content).c_str());
+  if (config_out == NULL) {
+    return E_OUTOFMEMORY;
+  }
+
+  return S_OK;
 }
 
 STDMETHODIMP ElevatedControllerWin::SetConfig(BSTR config) {

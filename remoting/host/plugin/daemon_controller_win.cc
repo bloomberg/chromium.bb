@@ -26,7 +26,6 @@
 #include "base/win/scoped_comptr.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/host/branding.h"
-#include "remoting/host/daemon_controller_common_win.h"
 #include "remoting/host/plugin/daemon_installer_win.h"
 
 // MIDL-generated declarations and definitions.
@@ -38,6 +37,10 @@ using base::win::ScopedComPtr;
 namespace remoting {
 
 namespace {
+
+// ProgID of the daemon controller.
+const char16 kDaemonController[] =
+    TO_L_STRING("ChromotingElevatedController.ElevatedController");
 
 // The COM elevation moniker for the Elevated Controller.
 const char16 kDaemonControllerElevationMoniker[] =
@@ -80,11 +83,14 @@ class DaemonControllerWin : public remoting::DaemonController {
   virtual void SetWindow(void* window_handle) OVERRIDE;
 
  private:
-  // Activates an elevated instance of the controller and caches it.
+  // Activates an unprivileged instance of the daemon controller and caches it.
+  HRESULT ActivateController();
+
+  // Activates an elevated instance of the daemon controller and caches it.
   HRESULT ActivateElevatedController();
 
-  // Releases the cached instance of the elevated controller.
-  void ReleaseElevatedController();
+  // Releases the cached instance of the controller.
+  void ReleaseController();
 
   // Procedes with the daemon configuration if the installation succeeded,
   // otherwise reports the error.
@@ -117,8 +123,14 @@ class DaemonControllerWin : public remoting::DaemonController {
   void DoStop(const CompletionCallback& done_callback);
   void DoSetWindow(void* window_handle);
 
+  // |control_| and |control_ui_| hold references to an instance of the daemon
+  // controller to prevent a UAC prompt on every operation.
   ScopedComPtr<IDaemonControl> control_;
   ScopedComPtr<IDaemonControlUi> control_ui_;
+
+  // True if |control_| holds a reference to an elevated instance of the daemon
+  // controller.
+  bool control_is_elevated_;
 
   // This timer is used to release |control_| after a timeout.
   scoped_ptr<base::OneShotTimer<DaemonControllerWin> > release_timer_;
@@ -152,7 +164,8 @@ void ComThread::CleanUp() {
 }
 
 DaemonControllerWin::DaemonControllerWin()
-    : window_handle_(NULL),
+    : control_is_elevated_(false),
+      window_handle_(NULL),
       worker_thread_(kDaemonControllerThreadName) {
   if (!worker_thread_.Start()) {
     LOG(FATAL) << "Failed to start the Daemon Controller worker thread.";
@@ -163,7 +176,7 @@ DaemonControllerWin::~DaemonControllerWin() {
   // Clean up resources allocated on the worker thread.
   worker_thread_.message_loop_proxy()->PostTask(
       FROM_HERE,
-      base::Bind(&DaemonControllerWin::ReleaseElevatedController,
+      base::Bind(&DaemonControllerWin::ReleaseController,
                  base::Unretained(this)));
   worker_thread_.Stop();
 }
@@ -233,11 +246,34 @@ void DaemonControllerWin::SetWindow(void* window_handle) {
           window_handle));
 }
 
+HRESULT DaemonControllerWin::ActivateController() {
+  DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
+
+  if (control_.get() == NULL) {
+    CLSID class_id;
+    HRESULT hr = CLSIDFromProgID(kDaemonController, &class_id);
+    if (FAILED(hr)) {
+      return hr;
+    }
+
+    hr = CoCreateInstance(class_id, NULL, CLSCTX_LOCAL_SERVER,
+                          IID_IDaemonControl, control_.ReceiveVoid());
+    if (FAILED(hr)) {
+      return hr;
+    }
+  }
+
+  return S_OK;
+}
+
 HRESULT DaemonControllerWin::ActivateElevatedController() {
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
-  // Cache an instance of the Elevated Controller to prevent a UAC prompt on
-  // every operation.
+  // Release an unprivileged instance of the daemon controller if any.
+  if (!control_is_elevated_) {
+    ReleaseController();
+  }
+
   if (control_.get() == NULL) {
     BIND_OPTS3 bind_options;
     memset(&bind_options, 0, sizeof(bind_options));
@@ -254,12 +290,15 @@ HRESULT DaemonControllerWin::ActivateElevatedController() {
       return hr;
     }
 
+    // Note that we hold a reference to an elevated instance now.
+    control_is_elevated_ = true;
+
     // Release |control_| upon expiration of the timeout.
     release_timer_.reset(new base::OneShotTimer<DaemonControllerWin>());
     release_timer_->Start(FROM_HERE,
                           base::TimeDelta::FromSeconds(kUacTimeoutSec),
                           this,
-                          &DaemonControllerWin::ReleaseElevatedController);
+                          &DaemonControllerWin::ReleaseController);
 
     // Ignore the error. IID_IDaemonControlUi is optional.
     control_.QueryInterface(IID_IDaemonControlUi, control_ui_.ReceiveVoid());
@@ -268,12 +307,13 @@ HRESULT DaemonControllerWin::ActivateElevatedController() {
   return S_OK;
 }
 
-void DaemonControllerWin::ReleaseElevatedController() {
+void DaemonControllerWin::ReleaseController() {
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   control_.Release();
   control_ui_.Release();
   release_timer_.reset();
+  control_is_elevated_ = false;
 }
 
 void DaemonControllerWin::OnInstallationComplete(
@@ -370,51 +410,35 @@ void DaemonControllerWin::DoGetConfig(const GetConfigCallback& callback) {
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   scoped_ptr<base::DictionaryValue> dictionary_null(NULL);
-    // Get the name of the configuration file.
-  FilePath dir = remoting::GetConfigDir();
-  FilePath filename = dir.Append(kUnprivilegedConfigFileName);
 
-  // Read raw data from the configuration file.
-  base::win::ScopedHandle file(
-      CreateFileW(filename.value().c_str(),
-                  GENERIC_READ,
-                  FILE_SHARE_READ | FILE_SHARE_WRITE,
-                  NULL,
-                  OPEN_EXISTING,
-                  FILE_FLAG_SEQUENTIAL_SCAN,
-                  NULL));
-
-  if (!file.IsValid()) {
-    DWORD error = GetLastError();
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to open '" << filename.value() << "'";
+  // Configure and start the Daemon Controller if it is installed already.
+  HRESULT hr = ActivateController();
+  if (FAILED(hr)) {
     callback.Run(dictionary_null.Pass());
     return;
   }
 
-  scoped_array<char> buffer(new char[kMaxConfigFileSize]);
-  DWORD size = kMaxConfigFileSize;
-  if (!::ReadFile(file, &buffer[0], size, &size, NULL)) {
-    DWORD error = GetLastError();
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to read '" << filename.value() << "'";
+  // Get the host configuration.
+  ScopedBstr host_config;
+  hr = control_->GetConfig(host_config.Receive());
+  if (FAILED(hr)) {
     callback.Run(dictionary_null.Pass());
     return;
   }
 
-  // Parse the JSON configuration, expecting it to contain a dictionary.
-  std::string file_content(buffer.get(), size);
-  scoped_ptr<base::Value> value(
-      base::JSONReader::Read(file_content, base::JSON_ALLOW_TRAILING_COMMAS));
+  // Parse the string into a dictionary.
+  string16 file_content(static_cast<BSTR>(host_config), host_config.Length());
+  scoped_ptr<base::Value> config(
+      base::JSONReader::Read(UTF16ToUTF8(file_content),
+          base::JSON_ALLOW_TRAILING_COMMAS));
 
-  base::DictionaryValue* dictionary = NULL;
-  if (value.get() == NULL || !value->GetAsDictionary(&dictionary)) {
-    LOG(ERROR) << "Failed to read '" << filename.value() << "'";
+  base::DictionaryValue* dictionary;
+  if (config.get() == NULL || !config->GetAsDictionary(&dictionary)) {
     callback.Run(dictionary_null.Pass());
     return;
   }
-  // Release value, because dictionary points to the same object.
-  value.release();
+  // Release |config|, because dictionary points to the same object.
+  config.release();
 
   callback.Run(scoped_ptr<base::DictionaryValue>(dictionary));
 }

@@ -14,7 +14,10 @@ import "ocidl.idl";
   pointer_default(unique)
 ]
 interface IDaemonControl: IDispatch {
-  [ id(1), helpstring("Deprecated.") ]
+  [ id(1), helpstring("Returns a filtered copy of the daemon's configuration. "
+                      "Only 'host_id' and 'xmpp_login' values are returned, "
+                      "because any other values may contain security-sensitive "
+                      "information.") ]
   HRESULT GetConfig([out, retval] BSTR* config_out);
 
   [ id(2), helpstring("Replaces the existing daemon's configuration with "
