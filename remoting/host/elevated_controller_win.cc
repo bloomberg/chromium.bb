@@ -57,6 +57,36 @@ const char* const kReadonlyKeys[] = { kHostId, kXmppLogin };
 // The configuration keys whose values may be read by GetConfig().
 const char* const kUnprivilegedConfigKeys[] = { kHostId, kXmppLogin };
 
+// Determines if the client runs in the security context that allows performing
+// administrative tasks (i.e. the user belongs to the adminstrators group and
+// the client runs elevated).
+bool IsClientAdmin() {
+  HRESULT hr = CoImpersonateClient();
+  if (FAILED(hr)) {
+    return false;
+  }
+
+  SID_IDENTIFIER_AUTHORITY nt_authority = SECURITY_NT_AUTHORITY;
+  PSID administrators_group = NULL;
+  BOOL result = AllocateAndInitializeSid(&nt_authority,
+                                         2,
+                                         SECURITY_BUILTIN_DOMAIN_RID,
+                                         DOMAIN_ALIAS_RID_ADMINS,
+                                         0, 0, 0, 0, 0, 0,
+                                         &administrators_group);
+  if (result) {
+    if (!CheckTokenMembership(NULL, administrators_group, &result)) {
+      result = false;
+    }
+    FreeSid(administrators_group);
+  }
+
+  hr = CoRevertToSelf();
+  CHECK(SUCCEEDED(hr));
+
+  return !!result;
+}
+
 // Reads and parses the configuration file up to |kMaxConfigFileSize| in
 // size.
 HRESULT ReadConfig(const FilePath& filename,
@@ -200,10 +230,14 @@ HRESULT WriteConfig(const char* content, size_t length, HWND owner_window) {
     return E_FAIL;
   }
 
-  // Ask the user to verify the configuration.
-  remoting::VerifyConfigWindowWin verify_win(email, host_id, host_secret_hash);
-  if (verify_win.DoModal(owner_window) != IDOK) {
-    return E_FAIL;
+  // Ask the user to verify the configuration (unless the client is admin
+  // already).
+  if (!IsClientAdmin()) {
+    remoting::VerifyConfigWindowWin verify_win(email, host_id,
+                                               host_secret_hash);
+    if (verify_win.DoModal(owner_window) != IDOK) {
+      return E_FAIL;
+    }
   }
 
   // Extract the unprivileged fields from the configuration.
