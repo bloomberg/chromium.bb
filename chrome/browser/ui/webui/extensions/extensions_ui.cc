@@ -7,13 +7,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
-#include "chrome/browser/ui/webui/extensions/install_extension_handler.h"
 #include "chrome/browser/ui/webui/extensions/pack_extension_handler.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/shared_resources_data_source.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
+
+using content::WebContents;
 
 namespace {
 
@@ -44,11 +46,6 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   PackExtensionHandler* pack_handler = new PackExtensionHandler();
   pack_handler->GetLocalizedValues(source->localized_strings());
   web_ui->AddMessageHandler(pack_handler);
-
-  InstallExtensionHandler* install_extension_handler =
-      new InstallExtensionHandler();
-  install_extension_handler->GetLocalizedValues(source->localized_strings());
-  web_ui->AddMessageHandler(install_extension_handler);
 }
 
 ExtensionsUI::~ExtensionsUI() {

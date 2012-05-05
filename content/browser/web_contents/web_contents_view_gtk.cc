@@ -239,10 +239,6 @@ bool WebContentsViewGtk::IsDoingDrag() const {
 void WebContentsViewGtk::CancelDragAndCloseTab() {
 }
 
-WebDropData* WebContentsViewGtk::GetDropData() const {
-  return drag_dest_->current_drop_data();
-}
-
 bool WebContentsViewGtk::IsEventTracking() const {
   return false;
 }

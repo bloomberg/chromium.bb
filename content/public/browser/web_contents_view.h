@@ -15,8 +15,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-struct WebDropData;
-
 namespace content {
 
 class RenderViewHost;
@@ -108,9 +106,6 @@ class CONTENT_EXPORT WebContentsView
   // postpone the tab closing.
   virtual bool IsDoingDrag() const = 0;
   virtual void CancelDragAndCloseTab() = 0;
-
-  // Returns the current drop data, if any.
-  virtual WebDropData* GetDropData() const = 0;
 
   // If we close the tab while a UI control is in an event-tracking
   // loop, the control may message freed objects and crash.

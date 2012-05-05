@@ -3656,8 +3656,6 @@
         'browser/ui/webui/extensions/extension_settings_handler.h',
         'browser/ui/webui/extensions/extensions_ui.cc',
         'browser/ui/webui/extensions/extensions_ui.h',
-        'browser/ui/webui/extensions/install_extension_handler.cc',
-        'browser/ui/webui/extensions/install_extension_handler.h',
         'browser/ui/webui/extensions/pack_extension_handler.cc',
         'browser/ui/webui/extensions/pack_extension_handler.h',
         'browser/ui/webui/favicon_source.cc',

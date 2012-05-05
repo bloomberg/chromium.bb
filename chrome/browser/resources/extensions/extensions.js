@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-<include src="../shared/js/cr/ui/drag_wrapper.js"></include>
 <include src="../uber/uber_utils.js"></include>
 <include src="extension_list.js"></include>
 <include src="pack_extension_overlay.js"></include>
@@ -13,45 +12,6 @@ var webui_responded_ = false;
 
 cr.define('extensions', function() {
   var ExtensionsList = options.ExtensionsList;
-
-  // Implements the DragWrapper handler interface.
-  var dragWrapperHandler = {
-    // @inheritdoc
-    shouldAcceptDrag: function(e) {
-      // We can't access filenames during the 'dragenter' event, so we have to
-      // wait until 'drop' to decide whether to do something with the file or
-      // not.
-      // See: http://www.w3.org/TR/2011/WD-html5-20110113/dnd.html#concept-dnd-p
-      return e.dataTransfer.types.indexOf('Files') > -1;
-    },
-    // @inheritdoc
-    doDragEnter: function() {
-      chrome.send('startDrag');
-      ExtensionSettings.showOverlay(null);
-      ExtensionSettings.showOverlay($('dropTargetOverlay'));
-    },
-    // @inheritdoc
-    doDragLeave: function() {
-      ExtensionSettings.showOverlay(null);
-      chrome.send('stopDrag');
-    },
-    // @inheritdoc
-    doDragOver: function(e) {
-    },
-    // @inheritdoc
-    doDrop: function(e) {
-      // Only process files that look like extensions. Other files should
-      // navigate the browser normally.
-      if (!e.dataTransfer.files.length ||
-          !/\.crx$/.test(e.dataTransfer.files[0].name)) {
-        return;
-      }
-
-      chrome.send('installDroppedFile');
-      ExtensionSettings.showOverlay(null);
-      e.preventDefault();
-    }
-  };
 
   /**
    * ExtensionSettings class
@@ -93,15 +53,8 @@ cr.define('extensions', function() {
       $('update-extensions-now').addEventListener('click',
           this.handleUpdateExtensionNow_.bind(this));
 
-      if (!loadTimeData.getBoolean('offStoreInstallEnabled')) {
-        this.dragWrapper_ =
-            new cr.ui.DragWrapper(document.body, dragWrapperHandler);
-      }
-
       var packExtensionOverlay = extensions.PackExtensionOverlay.getInstance();
       packExtensionOverlay.initializePage();
-
-      cr.ui.overlay.setupOverlay($('dropTargetOverlay'));
     },
 
     /**

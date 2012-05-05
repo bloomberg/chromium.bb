@@ -120,10 +120,6 @@ bool TestWebContentsView::IsDoingDrag() const {
 void TestWebContentsView::CancelDragAndCloseTab() {
 }
 
-WebDropData* TestWebContentsView::GetDropData() const {
-  return NULL;
-}
-
 bool TestWebContentsView::IsEventTracking() const {
   return false;
 }
