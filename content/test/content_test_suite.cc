@@ -11,6 +11,7 @@
 #include "content/test/test_content_client.h"
 #include "content/test/test_content_client_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
 #if defined(OS_MACOSX)
@@ -71,5 +72,10 @@ void ContentTestSuite::Initialize() {
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new TestInitializationListener);
+  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US");
 }
 
+void ContentTestSuite::Shutdown() {
+  ui::ResourceBundle::CleanupSharedInstance();
+  base::TestSuite::Shutdown();
+}

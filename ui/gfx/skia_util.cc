@@ -8,6 +8,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "third_party/skia/include/core/SkUnPreMultiply.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/rect.h"
 
@@ -99,6 +100,30 @@ string16 RemoveAcceleratorChar(const string16& s,
     *accelerated_char_span = last_char_span;
 
   return accelerator_removed;
+}
+
+void ConvertSkiaToRGBA(const unsigned char* skia,
+                       int pixel_width,
+                       unsigned char* rgba) {
+  int total_length = pixel_width * 4;
+  for (int i = 0; i < total_length; i += 4) {
+    const uint32_t pixel_in = *reinterpret_cast<const uint32_t*>(&skia[i]);
+
+    // Pack the components here.
+    int alpha = SkGetPackedA32(pixel_in);
+    if (alpha != 0 && alpha != 255) {
+      SkColor unmultiplied = SkUnPreMultiply::PMColorToColor(pixel_in);
+      rgba[i + 0] = SkColorGetR(unmultiplied);
+      rgba[i + 1] = SkColorGetG(unmultiplied);
+      rgba[i + 2] = SkColorGetB(unmultiplied);
+      rgba[i + 3] = alpha;
+    } else {
+      rgba[i + 0] = SkGetPackedR32(pixel_in);
+      rgba[i + 1] = SkGetPackedG32(pixel_in);
+      rgba[i + 2] = SkGetPackedB32(pixel_in);
+      rgba[i + 3] = alpha;
+    }
+  }
 }
 
 }  // namespace gfx

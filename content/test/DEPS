@@ -3,5 +3,7 @@ include_rules = [
   # Testing utilities can access anything in content/
   "+content",
   "+media/base",  # For ChannelLayout in WebRTC tests.
-  "+ui/base/resource/data_pack.h"
+  "+ui/base/resource/data_pack.h",
+  # TODO(varunjain): remove this
+  "+ui/base/resource/resource_bundle.h",
 ]

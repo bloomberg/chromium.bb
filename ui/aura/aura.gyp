@@ -19,6 +19,8 @@
         '../ui.gyp:gfx_resources',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
+        '../ui.gyp:ui_resources_2x',
+        '../ui.gyp:ui_resources_standard',
       ],
       'defines': [
         'AURA_IMPLEMENTATION',
