@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/rtl.h"
@@ -18,6 +19,7 @@
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -26,6 +28,10 @@
 #include "ui/base/ui_base_paths.h"
 #include "unicode/rbbi.h"
 #include "unicode/uloc.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/locale_utils.h"
+#endif
 
 #if defined(OS_LINUX)
 #include <glib.h>
@@ -479,19 +485,38 @@ string16 GetDisplayNameForLocale(const std::string& locale,
   else if (locale_code == "zh-TW")
     locale_code = "zh-Hant";
 
-  UErrorCode error = U_ZERO_ERROR;
-  const int kBufferSize = 1024;
-
   string16 display_name;
-  int actual_size = uloc_getDisplayName(locale_code.c_str(),
-      display_locale.c_str(),
-      WriteInto(&display_name, kBufferSize), kBufferSize - 1, &error);
-  DCHECK(U_SUCCESS(error));
-  display_name.resize(actual_size);
+#if defined(OS_ANDROID)
+  // Use Java API to get locale display name so that we can remove most of
+  // the lang data from icu data to reduce binary size, except for zh-Hans and
+  // zh-Hant because the current Android Java API doesn't support scripts.
+  // TODO(wangxianzhu): remove the special handling of zh-Hans and zh-Hant once
+  // Android Java API supports scripts.
+  if (!StartsWithASCII(locale_code, "zh-Han", true)) {
+    display_name = base::android::GetDisplayNameForLocale(locale_code,
+                                                          display_locale);
+  } else
+#endif
+  {
+    UErrorCode error = U_ZERO_ERROR;
+    const int kBufferSize = 1024;
+
+    int actual_size = uloc_getDisplayName(
+        locale_code.c_str(), display_locale.c_str(),
+        WriteInto(&display_name, kBufferSize), kBufferSize - 1, &error);
+    DCHECK(U_SUCCESS(error));
+    display_name.resize(actual_size);
+  }
+
   // Add an RTL mark so parentheses are properly placed.
   if (is_for_ui && base::i18n::IsRTL())
     display_name.push_back(static_cast<char16>(base::i18n::kRightToLeftMark));
   return display_name;
+}
+
+string16 GetDisplayNameForCountry(const std::string& country_code,
+                                  const std::string& display_locale) {
+  return GetDisplayNameForLocale("_" + country_code, display_locale, false);
 }
 
 std::string NormalizeLocale(const std::string& locale) {

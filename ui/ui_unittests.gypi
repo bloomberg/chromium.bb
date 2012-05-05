@@ -29,7 +29,7 @@
     },
     {
       'target_name': 'ui_unittests',
-      'type': 'executable',
+      'type': '<(gtest_target_type)',
       'includes': [
         'base/ime/ime_unittests.gypi',
       ],
@@ -154,6 +154,11 @@
             'gfx/interpolated_transform_unittest.cc',
           ],
         }],
+        ['OS=="android" and "<(gtest_target_type)"=="shared_library"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
         ['use_glib == 1', {
           'dependencies': [
             '../build/linux/system.gyp:pangocairo',
@@ -205,5 +210,50 @@
         }],
       ],
     },
+  ],
+  'conditions': [
+    # Special target to wrap a <(gtest_target_type)==shared_library
+    # ui_unittests into an android apk for execution.
+    # See base.gyp for TODO(jrg)s about this strategy.
+    ['OS=="android" and "<(gtest_target_type)"=="shared_library"', {
+      'targets': [
+        {
+          'target_name': 'ui_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            'ui_unittests',
+          ],
+          'actions': [
+            {
+              # Generate apk files (including source and antfile) from
+              # a template, and builds them.
+              'action_name': 'generate_and_build',
+              'inputs': [
+                '../testing/android/generate_native_test.py',
+                '<(PRODUCT_DIR)/lib.target/libui_unittests.so',
+                '<(PRODUCT_DIR)/chromium_base.jar',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/ChromeNativeTests_ui_unittests-debug.apk',
+              ],
+              'action': [
+                '../testing/android/generate_native_test.py',
+                '--native_library',
+                '<(PRODUCT_DIR)/lib.target/libui_unittests.so',
+                # TODO(jrg): find a better way to specify jar
+                # dependencies.  Hard coding seems fragile.
+                '--jar',
+                '<(PRODUCT_DIR)/chromium_base.jar',
+                '--output',
+                '<(PRODUCT_DIR)/ui_unittests_apk',
+                '--ant-args',
+                '-DPRODUCT_DIR=<(PRODUCT_DIR)',
+                '--ant-compile'
+              ],
+            },
+          ]
+        },
+      ],
+    }],
   ],
 }

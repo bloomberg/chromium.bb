@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -303,7 +303,7 @@ TEST_F(L10nUtilTest, SortStringsUsingFunction) {
   STLDeleteElements(&strings);
 }
 
-TEST_F(L10nUtilTest, LocaleDisplayName) {
+TEST_F(L10nUtilTest, GetDisplayNameForLocale) {
   // TODO(jungshik): Make this test more extensive.
   // Test zh-CN and zh-TW are treated as zh-Hans and zh-Hant.
   string16 result = l10n_util::GetDisplayNameForLocale("zh-CN", "en", false);
@@ -317,6 +317,12 @@ TEST_F(L10nUtilTest, LocaleDisplayName) {
 
   result = l10n_util::GetDisplayNameForLocale("es-419", "en", false);
   EXPECT_EQ(ASCIIToUTF16("Spanish (Latin America)"), result);
+
+  result = l10n_util::GetDisplayNameForLocale("-BR", "en", false);
+  EXPECT_EQ(ASCIIToUTF16("Brazil"), result);
+
+  result = l10n_util::GetDisplayNameForLocale("xyz-xyz", "en", false);
+  EXPECT_EQ(ASCIIToUTF16("xyz (XYZ)"), result);
 
   // ToUpper and ToLower should work with embedded NULLs.
   const size_t length_with_null = 4;
@@ -332,6 +338,17 @@ TEST_F(L10nUtilTest, LocaleDisplayName) {
   ASSERT_EQ(length_with_null, upper_with_null.size());
   EXPECT_TRUE(lower_with_null[0] == 0 && lower_with_null[1] == 'a' &&
               lower_with_null[2] == 0 && lower_with_null[3] == 'b');
+}
+
+TEST_F(L10nUtilTest, GetDisplayNameForCountry) {
+  string16 result = l10n_util::GetDisplayNameForCountry("BR", "en");
+  EXPECT_EQ(ASCIIToUTF16("Brazil"), result);
+
+  result = l10n_util::GetDisplayNameForCountry("419", "en");
+  EXPECT_EQ(ASCIIToUTF16("Latin America"), result);
+
+  result = l10n_util::GetDisplayNameForCountry("xyz", "en");
+  EXPECT_EQ(ASCIIToUTF16("XYZ"), result);
 }
 
 TEST_F(L10nUtilTest, GetParentLocales) {
