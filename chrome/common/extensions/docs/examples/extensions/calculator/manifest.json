@@ -4,8 +4,7 @@
   "manifest_version": 2,
   "version": "1.0",
   "background": {
-    "scripts": ["main.js"],
-    "transient": true
+    "scripts": ["main.js"]
   },
   "platform_app": true,
   "icons": {
