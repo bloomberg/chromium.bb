@@ -95,6 +95,13 @@ class UserManager {
   // Indicates that a user just logged in as ephemeral.
   virtual void EphemeralUserLoggedIn(const std::string& email) = 0;
 
+  // Called when browser session is started i.e. after
+  // browser_init.LaunchBrowser(...) was called after user sign in.
+  // When user is at the image screen IsUserLoggedIn() will return true
+  // but SessionStarted() will return false.
+  // Fires NOTIFICATION_SESSION_STARTED.
+  virtual void SessionStarted() = 0;
+
   // Removes the user from the device. Note, it will verify that the given user
   // isn't the owner, so calling this method for the owner will take no effect.
   // Note, |delegate| can be NULL.
@@ -195,8 +202,13 @@ class UserManager {
   // Returns true if we're logged in as a Guest.
   virtual bool IsLoggedInAsGuest() const = 0;
 
-  // Returns true if we're logged in as the stub userused for testing on linux.
+  // Returns true if we're logged in as the stub user used for testing on Linux.
   virtual bool IsLoggedInAsStub() const = 0;
+
+  // Returns true if we're logged in and browser has been started i.e.
+  // browser_init.LaunchBrowser(...) was called after sign in
+  // or restart after crash.
+  virtual bool IsSessionStarted() const = 0;
 
   virtual void AddObserver(Observer* obs) = 0;
   virtual void RemoveObserver(Observer* obs) = 0;

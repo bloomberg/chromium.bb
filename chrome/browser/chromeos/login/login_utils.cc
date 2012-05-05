@@ -731,11 +731,8 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
   // browser before it is dereferenced by the login host.
   if (login_host) {
     login_host->OnSessionStart();
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_SESSION_STARTED,
-        content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
   }
+  UserManager::Get()->SessionStarted();
 }
 
 void LoginUtilsImpl::PrepareProfile(

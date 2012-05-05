@@ -275,7 +275,10 @@ void WizardController::ShowUserImageScreen() {
     return;
   }
   VLOG(1) << "Showing user image screen.";
-  SetStatusAreaVisible(false);
+  // Status area has been already shown at sign in screen so it
+  // doesn't make sense to hide it here and then show again at user session as
+  // this produces undesired UX transitions.
+  SetStatusAreaVisible(true);
   SetCurrentScreen(GetUserImageScreen());
   host_->SetShutdownButtonEnabled(false);
 }

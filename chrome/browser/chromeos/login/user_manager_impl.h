@@ -47,6 +47,7 @@ class UserManagerImpl : public UserManager,
   virtual void DemoUserLoggedIn() OVERRIDE;
   virtual void GuestUserLoggedIn() OVERRIDE;
   virtual void EphemeralUserLoggedIn(const std::string& email) OVERRIDE;
+  virtual void SessionStarted() OVERRIDE;
   virtual void RemoveUser(const std::string& email,
                           RemoveUserDelegate* delegate) OVERRIDE;
   virtual void RemoveUserFromList(const std::string& email) OVERRIDE;
@@ -82,6 +83,7 @@ class UserManagerImpl : public UserManager,
   virtual bool IsLoggedInAsDemoUser() const OVERRIDE;
   virtual bool IsLoggedInAsGuest() const OVERRIDE;
   virtual bool IsLoggedInAsStub() const OVERRIDE;
+  virtual bool IsSessionStarted() const OVERRIDE;
   virtual void AddObserver(Observer* obs) OVERRIDE;
   virtual void RemoveObserver(Observer* obs) OVERRIDE;
   virtual void NotifyLocalStateChanged() OVERRIDE;
@@ -214,6 +216,9 @@ class UserManagerImpl : public UserManager,
   // ephemeral user instance. In test paths without login points to the
   // |stub_user_| instance.
   User* logged_in_user_;
+
+  // True if SessionStarted() has been called.
+  bool session_started_;
 
   // Cached flag of whether currently logged-in user is owner or not.
   // May be accessed on different threads, requires locking.

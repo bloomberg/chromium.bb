@@ -361,10 +361,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     // initialization code sees policy settings.
     g_browser_process->browser_policy_connector()->InitializeUserPolicy(
         username, false  /* wait_for_policy_fetch */);
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_SESSION_STARTED,
-        content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
+    chromeos::UserManager::Get()->SessionStarted();
   }
 
   // In Aura builds this will initialize ash::Shell.

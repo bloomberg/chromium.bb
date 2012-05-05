@@ -286,6 +286,7 @@ void RealTPMTokenInfoDelegate::OnPkcs11GetTpmTokenInfo(
 UserManagerImpl::UserManagerImpl()
     : ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_(new UserImageLoader)),
       logged_in_user_(NULL),
+      session_started_(false),
       is_current_user_owner_(false),
       is_current_user_new_(false),
       is_current_user_ephemeral_(false),
@@ -446,6 +447,14 @@ void UserManagerImpl::StubUserLoggedIn() {
   logged_in_user_ = new User(kStubUser, false);
   logged_in_user_->SetImage(GetDefaultImage(kStubDefaultImageIndex),
                             kStubDefaultImageIndex);
+}
+
+void UserManagerImpl::SessionStarted() {
+  session_started_ = true;
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 }
 
 void UserManagerImpl::RemoveUser(const std::string& email,
@@ -696,6 +705,10 @@ bool UserManagerImpl::IsLoggedInAsGuest() const {
 
 bool UserManagerImpl::IsLoggedInAsStub() const {
   return IsUserLoggedIn() && logged_in_user_->email() == kStubUser;
+}
+
+bool UserManagerImpl::IsSessionStarted() const {
+  return session_started_;
 }
 
 void UserManagerImpl::AddObserver(Observer* obs) {

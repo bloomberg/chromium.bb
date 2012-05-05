@@ -187,9 +187,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
 
     registrar_.Add(this,
-                   chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-                   content::NotificationService::AllSources());
-    registrar_.Add(this,
                    chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
                    content::NotificationService::AllSources());
     registrar_.Add(this,
@@ -250,7 +247,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual ash::user::LoginStatus GetUserLoginStatus() const OVERRIDE {
     UserManager* manager = UserManager::Get();
-    if (!manager->IsUserLoggedIn())
+    // At new user image screen manager->IsUserLoggedIn() would return true
+    // but there's no browser session available yet so use SessionStarted().
+    if (!manager->IsSessionStarted())
       return ash::user::LOGGED_IN_NONE;
     if (screen_locked_)
       return ash::user::LOGGED_IN_LOCKED;
@@ -891,10 +890,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
-      case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
-        tray_->UpdateAfterLoginStatusChange(GetUserLoginStatus());
-        break;
-      }
       case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
         ash::UpdateObserver* observer = tray_->update_observer();
         if (observer)
@@ -940,6 +935,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         break;
       }
       case chrome::NOTIFICATION_SESSION_STARTED: {
+        tray_->UpdateAfterLoginStatusChange(GetUserLoginStatus());
         SetProfile(ProfileManager::GetDefaultProfile());
         break;
       }

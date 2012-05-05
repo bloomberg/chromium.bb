@@ -91,7 +91,7 @@ void SetMenuMargins(views::MenuItemView* menu_item_view, int top, int bottom) {
 // Activate a cellular network.
 void ActivateCellular(const chromeos::CellularNetwork* cellular) {
   DCHECK(cellular);
-  if (!chromeos::UserManager::Get()->IsUserLoggedIn())
+  if (!chromeos::UserManager::Get()->IsSessionStarted())
     return;
 
   ash::Shell::GetInstance()->delegate()->OpenMobileSetup();
@@ -999,12 +999,11 @@ void NetworkMenu::RunMenu(views::View* source) {
 }
 
 void NetworkMenu::ShowTabbedNetworkSettings(const Network* network) const {
-  if (!UserManager::Get()->IsUserLoggedIn())
+  if (!UserManager::Get()->IsSessionStarted())
     return;
 
   DCHECK(network);
-  Browser* browser = Browser::GetOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
+  Browser* browser = GetAppropriateBrowser();
 
   std::string network_name(network->name());
   if (network_name.empty() && network->type() == chromeos::TYPE_ETHERNET) {
@@ -1067,6 +1066,8 @@ void NetworkMenu::ToggleCellular() {
     cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
   } else if (!cellular->is_sim_locked()) {
     if (cellular->is_sim_absent()) {
+      if (!chromeos::UserManager::Get()->IsSessionStarted())
+        return;
       std::string setup_url;
       MobileConfig* config = MobileConfig::GetInstance();
       if (config->IsReady()) {
@@ -1105,7 +1106,8 @@ bool NetworkMenu::ShouldHighlightNetwork(const Network* network) {
   return ::ShouldHighlightNetwork(network);
 }
 
-Browser* NetworkMenu::GetAppropriateBrowser() {
+Browser* NetworkMenu::GetAppropriateBrowser() const {
+  DCHECK(chromeos::UserManager::Get()->IsSessionStarted());
   return Browser::GetOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord());
 }
