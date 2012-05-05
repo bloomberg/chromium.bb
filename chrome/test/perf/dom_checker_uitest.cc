@@ -230,7 +230,7 @@ class DomCheckerTest : public UITest {
 };
 
 // Always fails, see but http://crbug.com/21321
-TEST_F(DomCheckerTest, FAILS_File) {
+TEST_F(DomCheckerTest, FAIL_File) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDomCheckerTest))
     return;
 
