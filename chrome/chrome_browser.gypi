@@ -4202,23 +4202,23 @@
             '../third_party/mozc/chrome/chromeos/renderer/chromeos_renderer.gyp:mozc_candidates_proto',
             'browser/chromeos/input_method/input_method.gyp:gencode',
           ],
-          'sources!': [
-            'browser/first_run/upgrade_util.cc',
-            'browser/first_run/upgrade_util.h',
-            'browser/first_run/upgrade_util_linux.cc',
-            'browser/icon_loader_linux.cc',
-            'browser/icon_manager_linux.cc',
-            'browser/idle_linux.cc',
-            'browser/password_manager/native_backend_gnome_x.cc',
-            'browser/password_manager/native_backend_gnome_x.h',
-            'browser/password_manager/native_backend_kwallet_x.cc',
-            'browser/password_manager/native_backend_kwallet_x.h',
-            'browser/platform_util_linux.cc',
-            'browser/speech/extension_api/tts_extension_api_linux.cc',
-            'browser/ui/webui/help/version_updater_unimplemented.cc',
-            'browser/ui/webui/help/version_updater_unimplemented.h',
-            'browser/upgrade_detector_impl.cc',
-            'browser/upgrade_detector_impl.h',
+          'sources/': [
+            ['exclude', 'browser/first_run/upgrade_util.cc'],
+            ['exclude', 'browser/first_run/upgrade_util.h'],
+            ['exclude', 'browser/first_run/upgrade_util_linux.cc'],
+            ['exclude', 'browser/icon_loader_linux.cc'],
+            ['exclude', 'browser/icon_manager_linux.cc'],
+            ['exclude', 'browser/idle_linux.cc'],
+            ['exclude', 'browser/password_manager/native_backend_gnome_x.cc'],
+            ['exclude', 'browser/password_manager/native_backend_gnome_x.h'],
+            ['exclude', 'browser/password_manager/native_backend_kwallet_x.cc'],
+            ['exclude', 'browser/password_manager/native_backend_kwallet_x.h'],
+            ['exclude', 'browser/platform_util_linux.cc'],
+            ['exclude', 'browser/speech/extension_api/tts_extension_api_linux.cc'],
+            ['exclude', 'browser/ui/webui/help/version_updater_unimplemented.cc'],
+            ['exclude', 'browser/ui/webui/help/version_updater_unimplemented.h'],
+            ['exclude', 'browser/upgrade_detector_impl.cc'],
+            ['exclude', 'browser/upgrade_detector_impl.h'],
           ],
         }],
         ['file_manager_extension==0', {
@@ -4253,13 +4253,6 @@
           'sources!': [
             'browser/password_manager/native_backend_gnome_x.cc',
             'browser/password_manager/native_backend_gnome_x.h',
-          ],
-        }],
-        # linux/chromeos only status area button.
-        ['OS=="linux" and use_aura==1', {
-          'sources/': [
-            ['include', '^browser/chromeos/status/memory_menu_button.cc'],
-            ['include', '^browser/chromeos/status/memory_menu_button.h'],
           ],
         }],
         ['use_ash==1', {
@@ -4378,14 +4371,6 @@
                 'browser/crash_handler_host_linuxish_stub.cc',
               ],
             }],
-          ],
-        }],
-        ['OS=="linux" and use_aura==1', {
-          'dependencies': [
-            '../build/linux/system.gyp:dbus',
-            '../build/linux/system.gyp:fontconfig',
-            '../build/linux/system.gyp:x11',
-            '../dbus/dbus.gyp:dbus',
           ],
         }],
         ['use_nss==1', {
@@ -4511,17 +4496,16 @@
             'browser/ui/browser_list_stub.cc',
             'browser/ui/browser_navigator.cc',
             'browser/ui/browser_tab_restore_service_delegate.cc',
-            'browser/ui/sync/browser_synced_window_delegate.cc',
-
             'browser/ui/sad_tab_helper.cc',
+            'browser/ui/sync/browser_synced_window_delegate.cc',
             'browser/ui/webui/certificate_viewer_webui.cc',
+            'browser/ui/webui/ntp/app_launcher_handler.cc',
+            'browser/ui/webui/ntp/app_launcher_handler.h',
+            'browser/ui/webui/ntp/ntp_resource_cache.cc',
             'browser/ui/webui/plugins_ui.cc',
             'browser/ui/webui/plugins_ui.h',
             'browser/ui/window_sizer.cc',
             'browser/ui/window_sizer.h',
-            'browser/ui/webui/ntp/app_launcher_handler.cc',
-            'browser/ui/webui/ntp/app_launcher_handler.h',
-            'browser/ui/webui/ntp/ntp_resource_cache.cc',
             'browser/upgrade_detector.cc',
             'browser/upgrade_detector.h',
             'browser/upgrade_detector_impl.cc',
@@ -4777,6 +4761,10 @@
           'conditions': [
             ['use_aura==1',{
               'dependencies': [
+                '../build/linux/system.gyp:dbus',
+                '../build/linux/system.gyp:fontconfig',
+                '../build/linux/system.gyp:x11',
+                '../dbus/dbus.gyp:dbus',
                 '../ui/views/views.gyp:views',
               ],
               'include_dirs': [
@@ -4804,6 +4792,8 @@
                 ['exclude', '^browser/ui/views/theme_helpers.h'],
                 ['exclude', '^browser/ui/views/uninstall_view.cc'],
                 ['exclude', '^browser/ui/views/uninstall_view.h'],
+                ['include', '^browser/chromeos/status/memory_menu_button.cc'],
+                ['include', '^browser/chromeos/status/memory_menu_button.h'],
                 ['include', '^browser/printing/print_dialog_cloud.cc'],
                 ['include', '^browser/printing/print_dialog_cloud.h'],
                 ['include', '^browser/speech/speech_recognition_bubble_views.cc'],
