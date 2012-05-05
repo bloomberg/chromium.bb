@@ -395,6 +395,9 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
   [self disablePopUpMenu:[fromLanguagePopUp_ menu]];
   [self disablePopUpMenu:[toLanguagePopUp_ menu]];
   [self disablePopUpMenu:[optionsPopUp_ menu]];
+  // [super infobarWillClose] clears the owner field which is relied on by the
+  // notification handler, so remove the handler first.
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super infobarWillClose];
 }
 
@@ -488,6 +491,8 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
 }
 
 - (void)dealloc {
+  // Perhaps this was removed as an observer in -infobarWillClose, but there's
+  // no guarantee that that was the case.
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [showOriginalButton_ setTarget:nil];
   [translateMessageButton_ setTarget:nil];
