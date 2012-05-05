@@ -5,6 +5,7 @@
 """Common python commands used by various build scripts."""
 
 import errno
+import hashlib
 import logging
 import os
 import re
@@ -746,6 +747,10 @@ class ManifestHandler(xml.sax.handler.ContentHandler):
     return self.projects[project].get(attribute, self.default.get(attribute))
 
 
+# We cache these results mainly since our calling patterns are fairly
+# inefficient about holding onto previously parsed manifest instances.
+# Longer term, this should be removed.
+_MANIFEST_CACHE = {}
 def ParseFullManifest(buildroot):
   """Parse the full manifest for the specified buildroot.
 
@@ -756,7 +761,14 @@ def ParseFullManifest(buildroot):
     A ManifestHandler object, pointing at the full manifest.
   """
   manifest_path = os.path.join(buildroot, '.repo', 'manifests/full.xml')
-  return ManifestHandler.ParseManifest(manifest_path)
+  with open(manifest_path, 'rb') as f:
+    md5 = hashlib.md5(f.read()).hexdigest()
+
+  obj = _MANIFEST_CACHE.get(md5)
+  if obj is None:
+    obj = _MANIFEST_CACHE[md5] = ManifestHandler.ParseManifest(manifest_path)
+
+  return obj
 
 
 def GetProjectManifestBranch(buildroot, project):
