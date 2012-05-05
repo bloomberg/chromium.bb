@@ -230,7 +230,7 @@ class DomCheckerTest : public UITest {
 };
 
 // Always fails, see but http://crbug.com/21321
-TEST_F(DomCheckerTest, FAIL_File) {
+TEST_F(DomCheckerTest, FAILS_File) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDomCheckerTest))
     return;
 
@@ -243,7 +243,7 @@ TEST_F(DomCheckerTest, FAIL_File) {
 // expected results file that didn't exist.  Fixing that bug revealed
 // that the expected results weren't correct anyway.
 // http://crbug.com/21321
-TEST_F(DomCheckerTest, FAIL_Http) {
+TEST_F(DomCheckerTest, FAILS_Http) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDomCheckerTest))
     return;
 
