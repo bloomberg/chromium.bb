@@ -192,8 +192,8 @@ class VIEWS_EXPORT FocusManager {
   // higher priority.
   // |accelerator| is the accelerator to register.
   // |priority| denotes the priority of the handler.
-  // NOTE: In almost all cases, you should specify kPriorityNormal for this
-  // parameter. Setting it to kPriorityHigh prevents Chrome from sending the
+  // NOTE: In almost all cases, you should specify kNormalPriority for this
+  // parameter. Setting it to kHighPriority prevents Chrome from sending the
   // shortcut to the webpage if the renderer has focus, which is not desirable
   // except for very isolated cases.
   // |target| is the AcceleratorTarget that handles the event once the
