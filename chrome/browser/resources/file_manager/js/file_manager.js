@@ -2822,7 +2822,8 @@ FileManager.prototype = {
         readonlyDirName:
             readonly ?
                 (self.isOnGData() ?
-                    self.getRootLabel_(currentDir.fullPath) :
+                    self.getRootLabel_(
+                        DirectoryModel.getRootPath(currentDir.fullPath)) :
                     self.directoryModel_.getRootName()) :
                 null,
         saveDirEntry: readonly ? downloadsDir : currentDir,

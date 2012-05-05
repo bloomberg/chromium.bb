@@ -10576,7 +10576,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Changes are not saved yet.
       </message>
       <message name="IDS_FILE_BROWSER_GALLERY_READONLY_WARNING" desc="In the Gallery, message informing that directory is readonly, and edited files will be saved to Downloads directory.">
-        $1 is read only. Edited images will be saved in the Downloads folder.
+        Cannot save to $1. Edited images will be saved in the Downloads folder.
       </message>
       <message name="IDS_FILE_BROWSER_GALLERY_IMAGE_ERROR" desc="In the Gallery, message informing that the image failed to load.">
         This file could not be displayed.
