@@ -47,7 +47,7 @@ class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
     alarm_delegate_ = new AlarmDelegate();
     alarm_manager_->set_delegate(alarm_delegate_);
 
-    extension_ = utils::CreateEmptyExtension();
+    extension_ = utils::CreateEmptyExtensionWithLocation(Extension::LOAD);
   }
 
   base::Value* RunFunctionWithExtension(
@@ -101,9 +101,9 @@ class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
     CHECK(num_alarms <= 3);
 
     const char* kCreateArgs[] = {
-      "[null, {\"delayInSeconds\": 1, \"repeating\": true}]",
-      "[\"7\", {\"delayInSeconds\": 7, \"repeating\": true}]",
-      "[\"0\", {\"delayInSeconds\": 0}]"
+      "[null, {\"delayInMinutes\": 0.001, \"repeating\": true}]",
+      "[\"7\", {\"delayInMinutes\": 7, \"repeating\": true}]",
+      "[\"0\", {\"delayInMinutes\": 0}]"
     };
     for (size_t i = 0; i < num_alarms; ++i) {
       scoped_ptr<base::DictionaryValue> result(RunFunctionAndReturnDict(
@@ -122,13 +122,13 @@ class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
 
 TEST_F(ExtensionAlarmsTest, Create) {
   // Create 1 non-repeating alarm.
-  RunFunction(new AlarmsCreateFunction(), "[null, {\"delayInSeconds\": 0}]");
+  RunFunction(new AlarmsCreateFunction(), "[null, {\"delayInMinutes\": 0}]");
 
   const AlarmManager::Alarm* alarm =
       alarm_manager_->GetAlarm(extension_->id(), "");
   ASSERT_TRUE(alarm);
   EXPECT_EQ("", alarm->name);
-  EXPECT_EQ(0, alarm->delay_in_seconds);
+  EXPECT_EQ(0, alarm->delay_in_minutes);
   EXPECT_FALSE(alarm->repeating);
 
   // Now wait for the alarm to fire. Our test delegate will quit the
@@ -148,16 +148,14 @@ TEST_F(ExtensionAlarmsTest, Create) {
 
 TEST_F(ExtensionAlarmsTest, CreateRepeating) {
   // Create 1 repeating alarm.
-  // TODO(mpcmoplete): Use a shorter delay if we switch to allow fractions.
-  // A repeating timer with a 0-second delay fires infinitely.
   RunFunction(new AlarmsCreateFunction(),
-              "[null, {\"delayInSeconds\": 1, \"repeating\": true}]");
+              "[null, {\"delayInMinutes\": 0.001, \"repeating\": true}]");
 
   const AlarmManager::Alarm* alarm =
       alarm_manager_->GetAlarm(extension_->id(), "");
   ASSERT_TRUE(alarm);
   EXPECT_EQ("", alarm->name);
-  EXPECT_EQ(1, alarm->delay_in_seconds);
+  EXPECT_EQ(0.001, alarm->delay_in_minutes);
   EXPECT_TRUE(alarm->repeating);
 
   // Now wait for the alarm to fire. Our test delegate will quit the
@@ -173,16 +171,23 @@ TEST_F(ExtensionAlarmsTest, CreateRepeating) {
 
 TEST_F(ExtensionAlarmsTest, CreateDupe) {
   // Create 2 duplicate alarms. The first should be overridden.
-  RunFunction(new AlarmsCreateFunction(), "[\"dup\", {\"delayInSeconds\": 1}]");
-  RunFunction(new AlarmsCreateFunction(), "[\"dup\", {\"delayInSeconds\": 7}]");
+  RunFunction(new AlarmsCreateFunction(), "[\"dup\", {\"delayInMinutes\": 1}]");
+  RunFunction(new AlarmsCreateFunction(), "[\"dup\", {\"delayInMinutes\": 7}]");
 
   {
     const AlarmManager::AlarmList* alarms =
         alarm_manager_->GetAllAlarms(extension_->id());
     ASSERT_TRUE(alarms);
     EXPECT_EQ(1u, alarms->size());
-    EXPECT_EQ(7, (*alarms)[0]->delay_in_seconds);
+    EXPECT_EQ(7, (*alarms)[0]->delay_in_minutes);
   }
+}
+
+TEST_F(ExtensionAlarmsTest, CreateDelayBelowMinimum) {
+  // Create an alarm with delay below the minimum accepted value.
+  std::string error = RunFunctionAndReturnError(new AlarmsCreateFunction(),
+      "[\"negative\", {\"delayInMinutes\": -0.2}]");
+  EXPECT_FALSE(error.empty());
 }
 
 TEST_F(ExtensionAlarmsTest, Get) {
@@ -197,7 +202,7 @@ TEST_F(ExtensionAlarmsTest, Get) {
     ASSERT_TRUE(result.get());
     EXPECT_TRUE(AlarmManager::Alarm::Populate(*result, &alarm));
     EXPECT_EQ("", alarm.name);
-    EXPECT_EQ(1, alarm.delay_in_seconds);
+    EXPECT_EQ(0.001, alarm.delay_in_minutes);
     EXPECT_TRUE(alarm.repeating);
   }
 
@@ -209,7 +214,7 @@ TEST_F(ExtensionAlarmsTest, Get) {
     ASSERT_TRUE(result.get());
     EXPECT_TRUE(AlarmManager::Alarm::Populate(*result, &alarm));
     EXPECT_EQ("7", alarm.name);
-    EXPECT_EQ(7, alarm.delay_in_seconds);
+    EXPECT_EQ(7, alarm.delay_in_minutes);
     EXPECT_TRUE(alarm.repeating);
   }
 
@@ -244,7 +249,7 @@ TEST_F(ExtensionAlarmsTest, GetAll) {
     if (alarm->name != "7")
       alarm = alarms[1].get();
     EXPECT_EQ("7", alarm->name);
-    EXPECT_EQ(7, alarm->delay_in_seconds);
+    EXPECT_EQ(7, alarm->delay_in_minutes);
     EXPECT_TRUE(alarm->repeating);
   }
 }
@@ -260,7 +265,7 @@ TEST_F(ExtensionAlarmsTest, Clear) {
   // Create 3 alarms.
   CreateAlarms(3);
 
-  // Clear all but the 1-second one.
+  // Clear all but the 0.001-minute alarm.
   {
     RunFunction(new AlarmsClearFunction(), "[\"7\"]");
     RunFunction(new AlarmsClearFunction(), "[\"0\"]");
@@ -269,7 +274,7 @@ TEST_F(ExtensionAlarmsTest, Clear) {
         alarm_manager_->GetAllAlarms(extension_->id());
     ASSERT_TRUE(alarms);
     EXPECT_EQ(1u, alarms->size());
-    EXPECT_EQ(1, (*alarms)[0]->delay_in_seconds);
+    EXPECT_EQ(0.001, (*alarms)[0]->delay_in_minutes);
   }
 
   // Now wait for the alarms to fire, and ensure the cancelled alarms don't
@@ -279,13 +284,13 @@ TEST_F(ExtensionAlarmsTest, Clear) {
   ASSERT_EQ(1u, alarm_delegate_->alarms_seen.size());
   EXPECT_EQ("", alarm_delegate_->alarms_seen[0]);
 
-  // Ensure the 1-second alarm is still there, since its repeating.
+  // Ensure the 0.001-minute alarm is still there, since it's repeating.
   {
     const AlarmManager::AlarmList* alarms =
         alarm_manager_->GetAllAlarms(extension_->id());
     ASSERT_TRUE(alarms);
     EXPECT_EQ(1u, alarms->size());
-    EXPECT_EQ(1, (*alarms)[0]->delay_in_seconds);
+    EXPECT_EQ(0.001, (*alarms)[0]->delay_in_minutes);
   }
 }
 

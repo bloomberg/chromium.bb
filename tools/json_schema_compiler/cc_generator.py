@@ -455,21 +455,16 @@ class CCGenerator(object):
     c = Code()
     c.Sblock('{')
 
-    if check_type and prop.type_ not in (
-        PropertyType.CHOICES, PropertyType.ANY):
-      (c.Append('if (!%(value_var)s->IsType(%(value_type)s))')
-        .Append('  return %(failure_value)s;')
-      )
-
     if self._IsFundamentalOrFundamentalRef(prop):
       if prop.optional:
         (c.Append('%(ctype)s temp;')
-          .Append('if (%s)' %
+          .Append('if (!%s)' %
               cpp_util.GetAsFundamentalValue(
                   self._cpp_type_generator.GetReferencedProperty(prop),
                   value_var,
                   '&temp'))
-          .Append('  %(dst)s->%(name)s.reset(new %(ctype)s(temp));')
+          .Append('  return %(failure_value)s;')
+          .Append('%(dst)s->%(name)s.reset(new %(ctype)s(temp));')
         )
       else:
         (c.Append('if (!%s)' %
@@ -477,7 +472,7 @@ class CCGenerator(object):
                 self._cpp_type_generator.GetReferencedProperty(prop),
                 value_var,
                 '&%s->%s' % (dst, prop.unix_name)))
-          .Append('return %(failure_value)s;')
+          .Append('  return %(failure_value)s;')
         )
     elif self._IsObjectOrObjectRef(prop):
       if prop.optional:
@@ -551,7 +546,9 @@ class CCGenerator(object):
       # This is the same if the property is optional or not. We need a pointer
       # to the BinaryValue to be able to populate it, so a scoped_ptr is used
       # whether it is optional or required.
-      (c.Append('%(dst)s->%(name)s.reset(')
+      (c.Append('if (!%(value_var)s->IsType(%(value_type)s))')
+        .Append('  return %(failure_value)s;')
+        .Append('%(dst)s->%(name)s.reset(')
         .Append('    static_cast<BinaryValue*>(%(value_var)s)->DeepCopy());')
       )
     else:

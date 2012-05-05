@@ -55,8 +55,9 @@ AlarmManager::~AlarmManager() {
 
 void AlarmManager::AddAlarm(const std::string& extension_id,
                             const linked_ptr<Alarm>& alarm) {
-  AddAlarmImpl(extension_id, alarm,
-               base::TimeDelta::FromSeconds(alarm->delay_in_seconds));
+  base::TimeDelta alarm_time = base::TimeDelta::FromMicroseconds(
+      alarm->delay_in_minutes * base::Time::kMicrosecondsPerMinute);
+  AddAlarmImpl(extension_id, alarm, alarm_time);
   WriteToPrefs(extension_id);
 }
 
@@ -141,10 +142,11 @@ void AlarmManager::OnAlarm(const std::string& extension_id,
     // Restart the timer, since it may have been set with a shorter delay
     // initially.
     base::Timer* timer = timers_[alarm].get();
-    timer->Start(FROM_HERE,
-        base::TimeDelta::FromSeconds(alarm->delay_in_seconds),
-        base::Bind(&AlarmManager::OnAlarm, base::Unretained(this),
-                   extension_id, alarm->name));
+    base::TimeDelta alarm_time = base::TimeDelta::FromMicroseconds(
+        alarm->delay_in_minutes * base::Time::kMicrosecondsPerMinute);
+    timer->Start(FROM_HERE, alarm_time,
+                 base::Bind(&AlarmManager::OnAlarm, base::Unretained(this),
+                 extension_id, alarm->name));
   }
 
   WriteToPrefs(extension_id);

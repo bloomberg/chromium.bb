@@ -666,7 +666,7 @@
         "style.css",
         "view.js"
       ],
-      "source_hash": "6317b07927fa12ebf02947b9018af0c9d244fccb",
+      "source_hash": "51200651a807c2c6e365c7b7228373b61ab3230b",
       "zip_path": "examples/extensions/calculator.zip"
     },
     {
@@ -1085,7 +1085,7 @@
         "content.js",
         "manifest.json"
       ],
-      "source_hash": "da33fa65c04b727c11cfab8c46e548f34808aaed",
+      "source_hash": "e9b2ca00aad14c452e444f5972f28124ea67168a",
       "zip_path": "examples/api/eventPage/basic.zip"
     },
     {

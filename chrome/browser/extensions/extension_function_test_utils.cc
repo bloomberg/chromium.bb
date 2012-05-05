@@ -98,13 +98,18 @@ base::ListValue* ToList(base::Value* val) {
 }
 
 scoped_refptr<Extension> CreateEmptyExtension() {
+  return CreateEmptyExtensionWithLocation(Extension::INTERNAL);
+}
+
+scoped_refptr<Extension> CreateEmptyExtensionWithLocation(
+    Extension::Location location) {
   std::string error;
   const FilePath test_extension_path;
   scoped_ptr<base::DictionaryValue> test_extension_value(
       ParseDictionary("{\"name\": \"Test\", \"version\": \"1.0\"}"));
   scoped_refptr<Extension> extension(Extension::Create(
       test_extension_path,
-      Extension::INTERNAL,
+      location,
       *test_extension_value.get(),
       Extension::NO_FLAGS,
       &error));

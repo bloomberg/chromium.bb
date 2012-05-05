@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "chrome/common/extensions/extension.h"
 
 class AsyncExtensionFunction;
 class Browser;
@@ -45,6 +46,11 @@ base::ListValue* ToList(base::Value* val);
 // Creates an extension instance that can be attached to an ExtensionFunction
 // before running it.
 scoped_refptr<Extension> CreateEmptyExtension();
+
+// Creates an extension instance with a specified location that can be attached
+// to an ExtensionFunction before running.
+scoped_refptr<Extension> CreateEmptyExtensionWithLocation(
+    Extension::Location location);
 
 enum RunFunctionFlags {
   NONE = 0,

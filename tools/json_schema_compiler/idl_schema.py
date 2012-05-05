@@ -161,6 +161,8 @@ class Typeref(object):
       properties['type'] = 'string'
     elif self.typeref == 'boolean':
       properties['type'] = 'boolean'
+    elif self.typeref == 'double':
+      properties['type'] = 'number'
     elif self.typeref == 'long':
       properties['type'] = 'integer'
     elif self.typeref == 'any':

@@ -10,10 +10,10 @@ namespace experimental.alarms {
     // Name of this alarm.
     DOMString name;
 
-    // Original length of time in seconds after which the onAlarm event should
+    // Original length of time in minutes after which the onAlarm event should
     // fire.
     // TODO: need minimum=0
-    long delayInSeconds;
+    double delayInMinutes;
 
     // True if the alarm repeatedly fires at regular intervals, false if it
     // only fires once.
@@ -23,12 +23,12 @@ namespace experimental.alarms {
   // TODO(mpcomplete): rename to CreateInfo when http://crbug.com/123073 is
   // fixed.
   dictionary AlarmCreateInfo {
-    // Length of time in seconds after which the onAlarm event should fire.
+    // Length of time in minutes after which the onAlarm event should fire.
     // Note that granularity is not guaranteed: this value is more of a hint to
     // the browser. For performance reasons, alarms may be delayed an arbitrary
     // amount of time before firing.
     // TODO: need minimum=0
-    long delayInSeconds;
+    double delayInMinutes;
 
     // True if the alarm should repeatedly fire at regular intervals. Defaults
     // to false.
