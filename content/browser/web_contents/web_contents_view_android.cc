@@ -86,6 +86,11 @@ void WebContentsViewAndroid::CancelDragAndCloseTab() {
   NOTIMPLEMENTED();
 }
 
+WebDropData* WebContentsViewAndroid::GetDropData() const {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 bool WebContentsViewAndroid::IsEventTracking() const {
   NOTIMPLEMENTED();
   return false;

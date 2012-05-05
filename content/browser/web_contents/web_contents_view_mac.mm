@@ -247,6 +247,10 @@ bool WebContentsViewMac::IsDoingDrag() const {
 void WebContentsViewMac::CancelDragAndCloseTab() {
 }
 
+WebDropData* WebContentsViewMac::GetDropData() const {
+  return NULL;
+}
+
 void WebContentsViewMac::UpdateDragCursor(WebDragOperation operation) {
   [cocoa_view_ setCurrentDragOperation: operation];
 }

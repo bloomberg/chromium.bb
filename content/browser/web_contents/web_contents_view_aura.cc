@@ -338,6 +338,10 @@ void WebContentsViewAura::CancelDragAndCloseTab() {
   close_tab_after_drag_ends_ = true;
 }
 
+WebDropData* WebContentsViewAura::GetDropData() const {
+  return NULL;
+}
+
 bool WebContentsViewAura::IsEventTracking() const {
   return false;
 }

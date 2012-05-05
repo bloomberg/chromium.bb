@@ -211,6 +211,10 @@ void WebContentsViewWin::CancelDragAndCloseTab() {
   close_tab_after_drag_ends_ = true;
 }
 
+WebDropData* WebContentsViewWin::GetDropData() const {
+  return NULL;
+}
+
 bool WebContentsViewWin::IsEventTracking() const {
   return false;
 }

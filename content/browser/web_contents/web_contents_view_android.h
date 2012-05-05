@@ -34,6 +34,7 @@ class WebContentsViewAndroid : public content::WebContentsView {
   virtual void RestoreFocus() OVERRIDE;
   virtual bool IsDoingDrag() const OVERRIDE;
   virtual void CancelDragAndCloseTab() OVERRIDE;
+  virtual WebDropData* GetDropData() const OVERRIDE;
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
