@@ -7,6 +7,7 @@
 import filecmp
 import fileinput
 import logging
+import multiprocessing
 import os
 import re
 import shutil
@@ -572,7 +573,8 @@ def RegenCache(overlay):
     return
 
   # Regen for the whole repo.
-  cros_build_lib.RunCommand(['egencache', '--update', '--repo', repo_name])
+  cros_build_lib.RunCommand(['egencache', '--update', '--repo', repo_name,
+                             '--jobs', str(multiprocessing.cpu_count())])
   # If there was nothing new generated, then let's just bail.
   result = cros_build_lib.RunCommand(['git', 'status', '-s', 'metadata/'],
                                      cwd=overlay, redirect_stdout=True)
