@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
@@ -129,7 +130,7 @@ class WebResourceService::UnpackerClient : public UtilityProcessHostClient {
 
 WebResourceService::WebResourceService(
     PrefService* prefs,
-    const char* web_resource_server,
+    const GURL& web_resource_server,
     bool apply_locale_to_url,
     const char* last_update_time_pref_name,
     int start_fetch_delay_ms,
@@ -201,14 +202,13 @@ void WebResourceService::StartFetch() {
   // Balanced in OnURLFetchComplete.
   AddRef();
 
-  std::string web_resource_server = web_resource_server_;
-  if (apply_locale_to_url_) {
-    std::string locale = g_browser_process->GetApplicationLocale();
-    web_resource_server.append(locale);
-  }
+  GURL web_resource_server = apply_locale_to_url_ ?
+      google_util::AppendGoogleLocaleParam(web_resource_server_) :
+      web_resource_server_;
 
+  DVLOG(1) << "WebResourceService StartFetch " << web_resource_server;
   url_fetcher_.reset(content::URLFetcher::Create(
-      GURL(web_resource_server), content::URLFetcher::GET, this));
+      web_resource_server, content::URLFetcher::GET, this));
   // Do not let url fetcher affect existing state in system context
   // (by setting cookies, for example).
   url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |

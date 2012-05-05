@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/common/url_fetcher_delegate.h"
+#include "googleurl/src/gurl.h"
 
 class PrefService;
 class ResourceDispatcherHost;
@@ -27,7 +28,7 @@ class WebResourceService
       public content::URLFetcherDelegate {
  public:
   WebResourceService(PrefService* prefs,
-                     const char* web_resource_server,
+                     const GURL& web_resource_server,
                      bool apply_locale_to_url_,
                      const char* last_update_time_pref_name,
                      int start_fetch_delay_ms,
@@ -74,7 +75,7 @@ class WebResourceService
   bool in_fetch_;
 
   // URL that hosts the web resource.
-  const char* web_resource_server_;
+  GURL web_resource_server_;
 
   // Indicates whether we should append locale to the web resource server URL.
   bool apply_locale_to_url_;

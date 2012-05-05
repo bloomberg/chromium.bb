@@ -1399,8 +1399,17 @@ const char kNtpPromoClosed[] = "ntp.promo_closed";
 // special promos.
 const char kNtpPromoGroup[] = "ntp.promo_group";
 
+// Number of promo groups (buckets).
+const char kNtpPromoNumGroups[] = "ntp.promo_num_groups";
+
+// Initial segment of the groups to show the promo to.
+const char kNtpPromoInitialSegment[] = "ntp.promo_initial_segment";
+
+// Number of additional segments to show this promo to every time slice.
+const char kNtpPromoIncrement[] = "ntp.promo_increment";
+
 // Amount of time each promo group should be shown a promo that is being slowly
-// rolled out, in hours.
+// rolled out, in seconds.
 const char kNtpPromoGroupTimeSlice[] = "ntp.promo_group_timeslice";
 
 // Number of groups to roll out this promo to.

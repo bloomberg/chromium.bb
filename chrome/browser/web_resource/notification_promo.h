@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "googleurl/src/gurl.h"
 
 namespace base {
 class DictionaryValue;
@@ -38,16 +39,21 @@ class NotificationPromo
   // Static factory for creating new notification promos.
   static NotificationPromo* Create(Profile* profile, Delegate* delegate);
 
+  static GURL PromoServerURL();
+
   // Initialize from json/prefs.
   void InitFromJson(const base::DictionaryValue& json);
   void InitFromPrefs();
+  // TODO(achuith): This legacy method parses json from the tip server.
+  // This code will be deleted very soon. http://crbug.com/126317.
+  void InitFromJsonLegacy(const base::DictionaryValue& json);
 
   // Can this promo be shown?
   bool CanShow() const;
 
   // Calculates promo notification start time with group-based time slice
   // offset.
-  double StartTimeWithOffset() const;
+  double StartTimeForGroup() const;
 
   // Helpers for NewTabPageHandler.
   void HandleClosed();
@@ -64,7 +70,6 @@ class NotificationPromo
   // For testing.
   friend class NotificationPromoTestDelegate;
   FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, GetNextQuestionValueTest);
-  FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, NewGroupTest);
 
   enum PlatformType {
     PLATFORM_NONE = 0,
@@ -74,11 +79,6 @@ class NotificationPromo
     PLATFORM_CHROMEOS = 1 << 3,
     PLATFORM_ALL = (1 << 4) -1,
   };
-
-  // Users are randomly assigned to one of kMaxGroupSize + 1 buckets, in order
-  // to be able to roll out promos slowly, or display different promos to
-  // different groups.
-  static const int kMaxGroupSize = 99;
 
   // Parse the answers array element. Set the data members of this instance
   // and trigger OnNewNotification callback if necessary.
@@ -95,9 +95,6 @@ class NotificationPromo
   // Actions on receiving a new promo notification.
   void OnNewNotification();
 
-  // Create a new promo notification group.
-  static int NewGroup();
-
   // Returns an int converted from the question substring starting at index
   // till the next colon. Sets index to the location right after the colon.
   // Returns 0 if *err is true, and sets *err to true upon error.
@@ -108,6 +105,10 @@ class NotificationPromo
   // Flush data members to prefs for storage.
   void WritePrefs();
 
+  // Tests views_ against max_views_.
+  // When max_views_ is 0, we don't cap the number of views.
+  bool ExceedsMaxViews() const;
+
   // Match our channel with specified build type.
   bool IsBuildAllowed(int builds_allowed) const;
 
@@ -117,26 +118,30 @@ class NotificationPromo
   // Current platform.
   static int CurrentPlatform();
 
-  // For testing.
-  bool operator==(const NotificationPromo& other) const;
-
   Profile* profile_;
   Delegate* delegate_;
   PrefService* prefs_;
 
+  std::string promo_text_;
+
   double start_;
   double end_;
 
-  int build_;
+  int num_groups_;
+  int initial_segment_;
+  int increment_;
   int time_slice_;
   int max_group_;
+
+  // When max_views_ is 0, we don't cap the number of views.
   int max_views_;
-  int platform_;
 
   int group_;
   int views_;
-  std::string text_;
   bool closed_;
+
+  int build_;
+  int platform_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPromo);
 };

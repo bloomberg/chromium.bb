@@ -29,8 +29,8 @@ namespace {
 // Delay on first fetch so we don't interfere with startup.
 static const int kStartResourceFetchDelay = 5000;
 
-// Delay between calls to update the cache (48 hours), and 3 min in debug mode.
-static const int kCacheUpdateDelay = 48 * 60 * 60 * 1000;
+// Delay between calls to update the cache (12 hours), and 3 min in debug mode.
+static const int kCacheUpdateDelay = 12 * 60 * 60 * 1000;
 static const int kTestCacheUpdateDelay = 3 * 60 * 1000;
 
 // The version of the service (used to expire the cache when upgrading Chrome
@@ -44,12 +44,13 @@ static const char kWebStoreButtonProperty[] = "inproduct_target";
 static const char kWebStoreLinkProperty[] = "inproduct";
 static const char kWebStoreExpireProperty[] = "tooltip";
 
-const char* GetPromoResourceURL() {
-  std::string promo_server_url = CommandLine::ForCurrentProcess()->
+GURL GetPromoResourceURL(bool legacy) {
+  const std::string promo_server_url = CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kPromoServerURL);
-  return promo_server_url.empty() ?
-      PromoResourceService::kDefaultPromoResourceServer :
-      promo_server_url.c_str();
+  if (!promo_server_url.empty())
+    return GURL(promo_server_url);
+  return legacy ? GURL(PromoResourceService::kDefaultPromoResourceServer) :
+                  NotificationPromo::PromoServerURL();
 }
 
 bool IsTest() {
@@ -121,7 +122,7 @@ bool PromoResourceService::IsBuildTargeted(chrome::VersionInfo::Channel channel,
 
 PromoResourceService::PromoResourceService(Profile* profile)
     : WebResourceService(profile->GetPrefs(),
-                         GetPromoResourceURL(),
+                         GetPromoResourceURL(false),
                          true,  // append locale to URL
                          prefs::kNtpPromoResourceCacheUpdate,
                          kStartResourceFetchDelay,
