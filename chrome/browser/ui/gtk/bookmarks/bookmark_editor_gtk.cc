@@ -612,26 +612,16 @@ void BookmarkEditorGtk::OnWindowDestroy(GtkWidget* widget) {
 
 void BookmarkEditorGtk::OnEntryChanged(GtkWidget* entry) {
   gboolean can_close = TRUE;
-  if (details_.GetNodeType() == BookmarkNode::FOLDER) {
-    if (GetInputTitle().empty()) {
-      gtk_widget_modify_base(name_entry_, GTK_STATE_NORMAL,
-                             &kErrorColor);
-      can_close = FALSE;
-    } else {
-      gtk_widget_modify_base(name_entry_, GTK_STATE_NORMAL, NULL);
-    }
-  } else {
-    GURL url(GetInputURL());
-    if (!url.is_valid()) {
-      gtk_widget_modify_base(url_entry_, GTK_STATE_NORMAL,
-                             &kErrorColor);
-      can_close = FALSE;
-    } else {
+  if (details_.GetNodeType() != BookmarkNode::FOLDER) {
+    if (GetInputURL().is_valid()) {
       gtk_widget_modify_base(url_entry_, GTK_STATE_NORMAL, NULL);
+    } else {
+      gtk_widget_modify_base(url_entry_, GTK_STATE_NORMAL, &kErrorColor);
+      can_close = FALSE;
     }
   }
-  gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_),
-                                    GTK_RESPONSE_ACCEPT, can_close);
+  gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_), GTK_RESPONSE_ACCEPT,
+                                    can_close);
 }
 
 void BookmarkEditorGtk::OnNewFolderClicked(GtkWidget* button) {

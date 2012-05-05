@@ -95,10 +95,11 @@ string16 BookmarkEditorView::GetDialogButtonLabel(
 
 bool BookmarkEditorView::IsDialogButtonEnabled(ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK) {
-    if (details_.GetNodeType() == BookmarkNode::FOLDER)
-      return !title_tf_->text().empty();
+    if (!bb_model_->IsLoaded())
+      return false;
 
-    return bb_model_->IsLoaded() && GetInputURL().is_valid();
+    if (details_.GetNodeType() != BookmarkNode::FOLDER)
+      return GetInputURL().is_valid();
   }
   return true;
 }
