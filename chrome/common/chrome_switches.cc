@@ -1061,6 +1061,10 @@ const char kProxyServer[]                   = "proxy-server";
 // NOTE: This is only implemented for Views.
 const char kPurgeMemoryButton[]             = "purge-memory-button";
 
+// Capture resource consumption information through page cycling and output the
+// data to the specified file.
+const char kRecordStats[]                   = "record-stats";
+
 // Chrome supports a playback and record mode.  Record mode saves *everything*
 // to the cache.  Playback mode reads data exclusively from the cache.  This
 // allows us to record a session into the cache and then replay it at will.
@@ -1221,6 +1225,12 @@ const char kUserDataDir[]                   = "user-data-dir";
 
 // Prints version information and quits.
 const char kVersion[]                       = "version";
+
+// Cycle through a series of URLs listed in the specified file.
+const char kVisitURLs[]                     = "visit-urls";
+
+// The number of times the PageCycler should iterate through the list of URLs.
+const char kVisitURLsCount[]                = "visit-urls-count";
 
 // Use experimental WebUI task manager dialog.
 const char kWebUITaskManager[]              = "webui-task-manager";

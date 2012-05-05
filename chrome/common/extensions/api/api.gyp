@@ -20,6 +20,7 @@
         'json_schema_files': [
           'browserAction.json',
           'experimental.declarative.json',
+          'experimental.record.json',
           'experimental.fontSettings.json',
           'permissions.json',
           'storage.json',

@@ -169,6 +169,8 @@
     "chrome.experimental.offscreenTabs.sendMouseEvent": "experimental.offscreenTabs.html#method-sendMouseEvent",
     "chrome.experimental.offscreenTabs.toDataUrl": "experimental.offscreenTabs.html#method-toDataUrl",
     "chrome.experimental.offscreenTabs.update": "experimental.offscreenTabs.html#method-update",
+    "chrome.experimental.record.captureURLs": "experimental.record.html#method-captureURLs",
+    "chrome.experimental.record.replayURLs": "experimental.record.html#method-replayURLs",
     "chrome.experimental.runtime.getBackgroundPage": "experimental.runtime.html#method-getBackgroundPage",
     "chrome.experimental.runtime.onBackgroundPageUnloadingSoon": "experimental.runtime.html#event-onBackgroundPageUnloadingSoon",
     "chrome.experimental.runtime.onInstalled": "experimental.runtime.html#event-onInstalled",
@@ -2007,7 +2009,10 @@
       "zip_path": "examples/extensions/benchmark.zip"
     },
     {
-      "api_calls": [],
+      "api_calls": [
+        "chrome.experimental.record.captureURLs",
+        "chrome.experimental.record.replayURLs"
+      ],
       "crx_path": null,
       "description": "Page Cycler UI",
       "features": [
@@ -2019,7 +2024,7 @@
       "packaged_app": true,
       "path": "examples/api/record/page_cycler/",
       "protocols": [],
-      "search_string": "PAGE CYCLER PAGE CYCLER UI EXPERIMENTAL",
+      "search_string": "PAGE CYCLER PAGE CYCLER UI EXPERIMENTAL CHROME.EXPERIMENTAL.RECORD.CAPTUREURLS CHROME.EXPERIMENTAL.RECORD.REPLAYURLS",
       "source_files": [
         "manifest.json",
         "page_cycler.css",

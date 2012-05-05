@@ -38,6 +38,7 @@
 #include "chrome/browser/extensions/extension_page_capture_api.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
+#include "chrome/browser/extensions/extension_record_api.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/extensions/extension_web_socket_proxy_private_api.h"
@@ -209,6 +210,10 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<MetricsRecordTimeFunction>();
   RegisterFunction<MetricsRecordMediumTimeFunction>();
   RegisterFunction<MetricsRecordLongTimeFunction>();
+
+  // Record.
+  RegisterFunction<CaptureURLsFunction>();
+  RegisterFunction<ReplayURLsFunction>();
 
   // RLZ.
 #if defined(OS_WIN) || defined(OS_MACOSX)

@@ -309,6 +309,8 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_OFFSCREENTABS));
   RegisterSchema("experimental.processes", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_PROCESSES));
+  RegisterSchema("experimental.record", ReadFromResource(
+      IDR_EXTENSION_API_JSON_EXPERIMENTAL_RECORD));
   RegisterSchema("experimental.rlz", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ));
   RegisterSchema("experimental.runtime", ReadFromResource(

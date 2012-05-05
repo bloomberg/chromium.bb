@@ -2774,6 +2774,7 @@
         'browser/extensions/extension_page_capture_apitest.cc',
         'browser/extensions/extension_preference_apitest.cc',
         'browser/extensions/extension_processes_apitest.cc',
+        'browser/extensions/extension_record_api_test.cc',
         'browser/extensions/extension_resource_request_policy_apitest.cc',
         'browser/extensions/extension_startup_browsertest.cc',
         'browser/extensions/extension_storage_apitest.cc',

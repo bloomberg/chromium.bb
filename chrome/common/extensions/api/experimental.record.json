@@ -1,0 +1,89 @@
+[
+  {
+    "namespace": "experimental.record",
+    "types": [
+      {
+        "id": "SessionDetails",
+        "type": "object",
+        "description": "",
+        "properties": {
+          "extensionPath": {"type": "string", "optional": true, "description": "A path to an extension to run in the session. Should be an unpacked extension."},
+          "repeatCount": {"type": "integer", "optional": true, "description": "Number of times to repeat sequence. Defaults to 1."}
+        }
+      },
+      {
+        "id": "ReplayURLsResult",
+        "type": "object",
+        "description": "",
+        "properties": {
+          "runTime": {"type": "integer", "description": "Time in milliseconds to complete all runs."},
+          "stats": {"type": "string", "description": "Full multiline dump of output stats."},
+          "errors": {"type": "array", "items": {"type": "string"}, "description": "List of errors during replay."}
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "captureURLs",
+        "description": "",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "array",
+            "items": {"type": "string"},
+            "name": "urls"
+          },
+          {
+            "type": "string",
+            "name": "cacheDirectoryPath"
+          },
+          {
+            "$ref": "SessionDetails",
+            "name": "details",
+            "optional": true
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called when capture has completed.",
+            "optional": true,
+            "parameters": [
+              {
+                "type": "array",
+                "items": {"type": "string"},
+                "name": "errors"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "replayURLs",
+        "description": "",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "array",
+            "items": {"type": "string"},
+            "name": "urls"
+          },
+          {
+            "type": "string",
+            "name": "captureDirectoryPath"
+          },
+          {
+            "$ref": "SessionDetails",
+            "name": "details",
+            "optional": true
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called when playback has completed.",
+            "parameters": [{"$ref": "ReplayURLsResult", "name": "result"}]
+          }
+        ]
+      }
+    ]
+  }
+]
