@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ TEST(ExtensionFromUserScript, Basic) {
       test_file, GURL("http://www.google.com/foo"), &error));
 
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ(ASCIIToUTF16(""), error);
+  EXPECT_EQ(string16(), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
   ScopedTempDir ext_dir;
@@ -82,7 +82,7 @@ TEST(ExtensionFromUserScript, NoMetdata) {
       test_file, GURL("http://www.google.com/foo/bar.user.js?monkey"), &error));
 
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ(ASCIIToUTF16(""), error);
+  EXPECT_EQ(string16(), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
   ScopedTempDir ext_dir;
@@ -139,7 +139,7 @@ TEST(ExtensionFromUserScript, RunAtDocumentStart) {
       test_file, GURL("http://www.google.com/foo"), &error));
 
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ(ASCIIToUTF16(""), error);
+  EXPECT_EQ(string16(), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
   ScopedTempDir ext_dir;
@@ -168,7 +168,7 @@ TEST(ExtensionFromUserScript, RunAtDocumentEnd) {
       test_file, GURL("http://www.google.com/foo"), &error));
 
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ(ASCIIToUTF16(""), error);
+  EXPECT_EQ(string16(), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
   ScopedTempDir ext_dir;
@@ -198,7 +198,7 @@ TEST(ExtensionFromUserScript, RunAtDocumentIdle) {
       test_file, GURL("http://www.google.com/foo"), &error));
 
   ASSERT_TRUE(extension.get());
-  EXPECT_EQ(ASCIIToUTF16(""), error);
+  EXPECT_EQ(string16(), error);
 
   // Use a temp dir so that the extensions dir will clean itself up.
   ScopedTempDir ext_dir;

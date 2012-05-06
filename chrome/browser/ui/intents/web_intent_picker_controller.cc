@@ -183,7 +183,7 @@ void WebIntentPickerController::ShowDialog(const string16& action,
   if (wrapper_->profile()->IsOffTheRecord()) {
     if (intents_dispatcher_) {
       intents_dispatcher_->SendReplyMessage(
-          webkit_glue::WEB_INTENT_REPLY_FAILURE, ASCIIToUTF16(""));
+          webkit_glue::WEB_INTENT_REPLY_FAILURE, string16());
     }
     return;
   }

@@ -847,8 +847,7 @@ TEST_F(SpellCheckTest, SpellCheckParagraphLongSentenceMultipleMisspellings) {
 TEST_F(SpellCheckTest, RequestSpellCheckWithEmptyString) {
   MockTextCheckingCompletion completion;
 
-  const string16 text = ASCIIToUTF16("");
-  spell_check()->RequestTextChecking(text, 0, &completion);
+  spell_check()->RequestTextChecking(string16(), 0, &completion);
 
   MessageLoop::current()->RunAllPending();
 

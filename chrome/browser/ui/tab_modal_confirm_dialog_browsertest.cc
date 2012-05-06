@@ -20,10 +20,10 @@ class MockTabModalConfirmDialogDelegate : public TabModalConfirmDialogDelegate {
       : TabModalConfirmDialogDelegate(web_contents) {}
 
   virtual string16 GetTitle() OVERRIDE {
-    return ASCIIToUTF16("");
+    return string16();
   }
   virtual string16 GetMessage() OVERRIDE {
-    return ASCIIToUTF16("");
+    return string16();
   }
 
   MOCK_METHOD0(OnAccepted, void());
