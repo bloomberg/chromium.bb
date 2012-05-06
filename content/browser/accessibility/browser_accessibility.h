@@ -16,12 +16,10 @@
 #include "webkit/glue/webaccessibility.h"
 
 class BrowserAccessibilityManager;
-#if defined(OS_MACOSX)
-class BrowserAccessibilityMac;
+#if defined(OS_MACOSX) && __OBJC__
+@class BrowserAccessibilityCocoa;
 #elif defined(OS_WIN)
 class BrowserAccessibilityWin;
-#elif defined(TOOLKIT_GTK)
-class BrowserAccessibilityGtk;
 #endif
 
 using webkit_glue::WebAccessibility;
@@ -189,12 +187,10 @@ class CONTENT_EXPORT BrowserAccessibility {
   bool instance_active() const { return instance_active_; }
   int32 ref_count() const { return ref_count_; }
 
-#if defined(OS_MACOSX)
-  virtual BrowserAccessibilityMac* ToBrowserAccessibilityMac();
+#if defined(OS_MACOSX) && __OBJC__
+  BrowserAccessibilityCocoa* toBrowserAccessibilityCocoa();
 #elif defined(OS_WIN)
-  virtual BrowserAccessibilityWin* ToBrowserAccessibilityWin();
-#elif defined(TOOLKIT_GTK)
-  virtual BrowserAccessibilityGtk* ToBrowserAccessibilityGtk();
+  BrowserAccessibilityWin* toBrowserAccessibilityWin();
 #endif
 
   // Retrieve the value of a bool attribute from the bool attribute

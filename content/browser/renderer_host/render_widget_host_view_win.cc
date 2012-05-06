@@ -478,7 +478,7 @@ RenderWidgetHostViewWin::GetNativeViewAccessible() {
   }
 
   return GetBrowserAccessibilityManager()->GetRoot()->
-      ToBrowserAccessibilityWin();
+      toBrowserAccessibilityWin();
 }
 
 void RenderWidgetHostViewWin::MovePluginWindows(

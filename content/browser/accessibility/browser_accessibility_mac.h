@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "content/browser/accessibility/browser_accessibility.h"
-#include "content/common/content_export.h"
 
 @class BrowserAccessibilityCocoa;
 
@@ -24,8 +23,6 @@ class BrowserAccessibilityMac : public BrowserAccessibility {
 
   // Overrides from BrowserAccessibility.
   virtual void DetachTree(std::vector<BrowserAccessibility*>* nodes) OVERRIDE;
-  CONTENT_EXPORT virtual BrowserAccessibilityMac*
-      ToBrowserAccessibilityMac() OVERRIDE;
 
   // The BrowserAccessibilityCocoa associated with us.
   BrowserAccessibilityCocoa* native_view() const {

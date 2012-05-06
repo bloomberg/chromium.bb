@@ -6,7 +6,6 @@
 
 #import "base/logging.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
-#import "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/common/accessibility_messages.h"
 
 // static
@@ -30,13 +29,6 @@ BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
 void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
     int type,
     BrowserAccessibility* node) {
-  BrowserAccessibilityMac* mac_node = node->ToBrowserAccessibilityMac();
-  if (!mac_node)
-    return;
-  BrowserAccessibilityCocoa* native_node = mac_node->native_view();
-  if (!native_node)
-    return;
-
   // Refer to AXObjectCache.mm (webkit).
   NSString* event_id = @"";
   switch (type) {
@@ -106,5 +98,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
       event_id = NSAccessibilityValueChangedNotification;
       break;
   }
+  BrowserAccessibilityCocoa* native_node = node->toBrowserAccessibilityCocoa();
+  DCHECK(native_node);
   NSAccessibilityPostNotification(native_node, event_id);
 }
