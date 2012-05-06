@@ -64,7 +64,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebScreenInfoFactory.h"
 #endif
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/sys_color_change_listener.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webdropdata.h"
@@ -279,10 +278,8 @@ bool RenderViewHostImpl::CreateRenderView(const string16& frame_name,
   // Let our delegate know that we created a RenderView.
   delegate_->RenderViewCreated(this);
 
-  // Invert the color scheme if the operating system's color scheme is
-  // inverted or if a flag is set.
-  if (gfx::IsInvertedColorScheme() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
+  // Invert the color scheme if a flag is set.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kInvertWebContent))
     Send(new ViewMsg_InvertWebContent(GetRoutingID(), true));
 

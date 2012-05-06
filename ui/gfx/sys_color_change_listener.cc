@@ -25,19 +25,16 @@ bool g_is_inverted_color_scheme_initialized = false;
 
 void UpdateInvertedColorScheme() {
 #if defined(OS_WIN)
-  int foreground = color_utils::GetLuminanceForColor(
+  int foreground_luminance = color_utils::GetLuminanceForColor(
       color_utils::GetSysSkColor(COLOR_WINDOWTEXT));
-  int background = color_utils::GetLuminanceForColor(
+  int background_luminance = color_utils::GetLuminanceForColor(
       color_utils::GetSysSkColor(COLOR_WINDOW));
   HIGHCONTRAST high_contrast = {0};
   high_contrast.cbSize = sizeof(HIGHCONTRAST);
-
-  // TODO(dmazzoni): this is temporarily disabled until the color inverting
-  // can be made optional or the need is addressed some other way.
-  // http://crbug.com/112944
-  //g_is_inverted_color_scheme =
-  //    SystemParametersInfo(SPI_GETHIGHCONTRAST, 0, &high_contrast, 0) &&
-  //    ((high_contrast.dwFlags & HCF_HIGHCONTRASTON) != 0);
+  g_is_inverted_color_scheme =
+      SystemParametersInfo(SPI_GETHIGHCONTRAST, 0, &high_contrast, 0) &&
+      ((high_contrast.dwFlags & HCF_HIGHCONTRASTON) != 0) &&
+      foreground_luminance > background_luminance;
   g_is_inverted_color_scheme_initialized = true;
 #endif
 }

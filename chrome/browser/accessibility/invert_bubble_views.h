@@ -16,9 +16,10 @@ class InvertBubble {
  public:
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Show a bubble telling the user that web contents are inverted because
-  // they're using Windows high-constrast mode and their color scheme is
-  // light-on-dark. Only shows the first time we encounter this condition
+  // Show a bubble telling the user that they're using Windows
+  // high-constrast mode with a light-on-dark scheme, so they may be
+  // interested in a high-contrast Chrome extension and a dark theme.
+  // Only shows the first time we encounter this condition
   // for a particular profile.
   static void MaybeShowInvertBubble(Profile* profile,
                                     views::View* anchor_view);

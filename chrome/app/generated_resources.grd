@@ -16118,10 +16118,18 @@ Battery full
       </message>
     </if>
 
-    <!-- Inverting for high-constrast mode. -->
-    <message name="IDS_INVERT_NOTIFICATION"
-             desc="Text that explains that Chrome has inverted (i.e. reversed black and white) all web pages because the user is using Windows High-Constrast mode with an inverted color scheme.">
-      Web pages are displayed inverted because you have High Constrast mode enabled and you're using a light-on-dark color scheme.
+    <!-- High-constrast mode. -->
+    <message name="IDS_HIGH_CONTRAST_NOTIFICATION"
+             desc="Text that explains that the user is using Windows High-Constrast mode, so they may be interested in a high-contrast extension or a dark theme. Note to translators: this is the name of a feature in Windows, so please try to find the correct name of that feature in your region.">
+      You have High Constrast mode enabled. Would you like to install our High Contrast extension and a dark theme?
+    </message>
+    <message name="IDS_HIGH_CONTRAST_EXT"
+             desc="The title of a link that will open the Chrome Web Store with a High Contrast extension the user can install.">
+      High Contrast Extension
+    </message>
+    <message name="IDS_DARK_THEME"
+             desc="The title of a link that will open the Chrome Web Store with a dark theme the user might want to install, if they prefer light text on a dark background.">
+      Dark Theme
     </message>
 
     <message name="IDS_FLAGS_ENABLE_CLIENT_OAUTH_SIGNIN_NAME" desc="Name of about:flag option to turn on ClientOAuth sign in">

@@ -959,9 +959,9 @@ const char kPasswordsUseLocalProfileId[] =
 const char kProfileAvatarIndex[] = "profile.avatar_index";
 const char kProfileName[] = "profile.name";
 
-// Indicates if we've already shown a notification that web contents are
-// inverted because high-contrast mode is on.
-const char kInvertNotificationShown[] = "invert_notification_shown";
+// Indicates if we've already shown a notification that high contrast
+// mode is on, recommending high-contrast extensions and themes.
+const char kInvertNotificationShown[] = "invert_notification_version_2_shown";
 
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
