@@ -60,7 +60,8 @@ void TestLauncherDelegate::CreateNewTab() {
 void TestLauncherDelegate::CreateNewWindow() {
 }
 
-void TestLauncherDelegate::ItemClicked(const ash::LauncherItem& item) {
+void TestLauncherDelegate::ItemClicked(const ash::LauncherItem& item,
+                                       int event_flags) {
   aura::Window* window = GetWindowByID(item.id);
   window->Show();
   ash::wm::ActivateWindow(window);

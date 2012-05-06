@@ -51,7 +51,8 @@ bool HandleCycleWindowMRU(ash::WindowCycleController::Direction direction,
 void ActivateLauncherItem(int index) {
   const ash::LauncherItems& items =
       ash::Shell::GetInstance()->launcher()->model()->items();
-  ash::Shell::GetInstance()->launcher()->delegate()->ItemClicked(items[index]);
+  ash::Shell::GetInstance()->launcher()->delegate()->
+      ItemClicked(items[index], ui::EF_NONE);
 }
 
 // Returns true if accelerator processing should skip the launcher item with

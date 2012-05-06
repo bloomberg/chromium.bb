@@ -106,8 +106,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // be pinned.
   bool IsPinnable(ash::LauncherID id) const;
 
-  // Opens the specified item.
-  void Open(ash::LauncherID id);
+  // Opens the specified item.  |event_flags| holds the flags of the
+  // event which triggered this command.
+  void Open(ash::LauncherID id, int event_flags);
 
   // Closes the specified item.
   void Close(ash::LauncherID id);
@@ -156,7 +157,8 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // ash::LauncherDelegate overrides:
   virtual void CreateNewTab() OVERRIDE;
   virtual void CreateNewWindow() OVERRIDE;
-  virtual void ItemClicked(const ash::LauncherItem& item) OVERRIDE;
+  virtual void ItemClicked(const ash::LauncherItem& item,
+                           int event_flags) OVERRIDE;
   virtual int GetBrowserShortcutResourceId() OVERRIDE;
   virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(

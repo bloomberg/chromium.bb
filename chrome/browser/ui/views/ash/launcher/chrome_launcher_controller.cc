@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/views/ash/extension_utils.h"
 #include "chrome/browser/ui/views/ash/launcher/browser_launcher_item_controller.h"
 #include "chrome/browser/ui/views/ash/launcher/launcher_app_icon_loader.h"
 #include "chrome/browser/ui/views/ash/launcher/launcher_context_menu.h"
@@ -280,7 +281,7 @@ bool ChromeLauncherController::IsPinnable(ash::LauncherID id) const {
   return index != -1 && model_->items()[index].type == ash::TYPE_APP_SHORTCUT;
 }
 
-void ChromeLauncherController::Open(ash::LauncherID id) {
+void ChromeLauncherController::Open(ash::LauncherID id, int event_flags) {
   if (id_to_item_map_.find(id) == id_to_item_map_.end())
     return;  // In case invoked from menu and item closed while menu up.
 
@@ -294,17 +295,7 @@ void ChromeLauncherController::Open(ash::LauncherID id) {
     const Extension* extension =
         profile_->GetExtensionService()->GetInstalledExtension(
             id_to_item_map_[id].app_id);
-    DCHECK(extension);
-
-    extension_misc::LaunchContainer launch_container =
-        profile_->GetExtensionService()->extension_prefs()->GetLaunchContainer(
-            extension, ExtensionPrefs::LAUNCH_DEFAULT);
-
-    Browser::OpenApplication(GetProfileForNewWindows(),
-                             extension,
-                             launch_container,
-                             GURL(),
-                             NEW_FOREGROUND_TAB);
+    extension_utils::OpenExtension(profile_, extension, event_flags);
   }
 }
 
@@ -449,7 +440,8 @@ void ChromeLauncherController::CreateNewWindow() {
   Browser::NewEmptyWindow(GetProfileForNewWindows());
 }
 
-void ChromeLauncherController::ItemClicked(const ash::LauncherItem& item) {
+void ChromeLauncherController::ItemClicked(const ash::LauncherItem& item,
+                                           int event_flags) {
   DCHECK(id_to_item_map_.find(item.id) != id_to_item_map_.end());
   BrowserLauncherItemController* controller =
       id_to_item_map_[item.id].controller;
@@ -462,7 +454,7 @@ void ChromeLauncherController::ItemClicked(const ash::LauncherItem& item) {
     }
     // else case, fall through to show window.
   }
-  Open(item.id);
+  Open(item.id, event_flags);
 }
 
 int ChromeLauncherController::GetBrowserShortcutResourceId() {

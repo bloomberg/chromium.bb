@@ -621,7 +621,7 @@ void LauncherView::ShowOverflowMenu() {
   LauncherItems::const_iterator window_iter = model_->ItemByID(activated_id);
   if (window_iter == model_->items().end())
     return;  // Window was deleted while menu was up.
-  delegate_->ItemClicked(*window_iter);
+  delegate_->ItemClicked(*window_iter, ui::EF_NONE);
 #endif  // !defined(OS_MACOSX)
 }
 
@@ -850,7 +850,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
     case TYPE_TABBED:
     case TYPE_APP_PANEL:
     case TYPE_APP_SHORTCUT:
-      delegate_->ItemClicked(model_->items()[view_index]);
+      delegate_->ItemClicked(model_->items()[view_index], event.flags());
       break;
 
     case TYPE_APP_LIST:

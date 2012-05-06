@@ -96,7 +96,7 @@ bool LauncherContextMenu::GetAcceleratorForCommandId(
 void LauncherContextMenu::ExecuteCommand(int command_id) {
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_OPEN:
-      controller_->Open(item_.id);
+      controller_->Open(item_.id, ui::EF_NONE);
       break;
     case MENU_CLOSE:
       controller_->Close(item_.id);

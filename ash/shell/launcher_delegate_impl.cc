@@ -33,7 +33,8 @@ void LauncherDelegateImpl::CreateNewWindow() {
   ash::shell::ToplevelWindow::CreateToplevelWindow(create_params);
 }
 
-void LauncherDelegateImpl::ItemClicked(const ash::LauncherItem& item) {
+void LauncherDelegateImpl::ItemClicked(const ash::LauncherItem& item,
+                                       int event_flags) {
   aura::Window* window = watcher_->GetWindowByID(item.id);
   window->Show();
   ash::wm::ActivateWindow(window);

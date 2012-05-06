@@ -65,6 +65,7 @@ enum EventType {
 
 // Event flags currently supported
 enum EventFlags {
+  EF_NONE                = 0,       // Used to denote no flags explicitly
   EF_CAPS_LOCK_DOWN      = 1 << 0,
   EF_SHIFT_DOWN          = 1 << 1,
   EF_CONTROL_DOWN        = 1 << 2,

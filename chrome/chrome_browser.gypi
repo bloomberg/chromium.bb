@@ -3229,6 +3229,8 @@
         'browser/ui/views/ash/caps_lock_handler.h',
         'browser/ui/views/ash/chrome_shell_delegate.cc',
         'browser/ui/views/ash/chrome_shell_delegate.h',
+        'browser/ui/views/ash/extension_utils.cc',
+        'browser/ui/views/ash/extension_utils.h',
         'browser/ui/views/ash/ime_controller_chromeos.cc',
         'browser/ui/views/ash/ime_controller_chromeos.h',
         'browser/ui/views/ash/key_rewriter.cc',
