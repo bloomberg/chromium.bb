@@ -444,9 +444,6 @@ const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
 // Enables the Action Box toolbar UI.
 const char kEnableActionBox[]               = "enable-action-box";
 
-// Enables AeroPeek for each tab. (This switch only works on Windows 7).
-const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
-
 // Enables the experimental asynchronous DNS client.
 const char kEnableAsyncDns[]                = "enable-async-dns";
 

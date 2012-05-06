@@ -110,7 +110,6 @@
 #include "chrome/browser/ui/views/ash/window_positioner.h"
 #elif defined(OS_WIN) && !defined(USE_AURA)
 #include "base/win/metro.h"
-#include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist_win.h"
 #include "ui/views/widget/native_widget_win.h"
 #endif
@@ -362,10 +361,6 @@ BrowserView::~BrowserView() {
   browser_->tabstrip_model()->RemoveObserver(this);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-  // Remove this observer.
-  if (aeropeek_manager_.get())
-    browser_->tabstrip_model()->RemoveObserver(aeropeek_manager_.get());
-
   // Stop hung plugin monitoring.
   ticker_.Stop();
   ticker_.UnregisterTickHandler(&hung_window_detector_);
@@ -1735,20 +1730,6 @@ void BrowserView::Layout() {
 
   // The status bubble position requires that all other layout finish first.
   LayoutStatusBubble();
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // Send the margins of the "user-perceived content area" of this
-  // browser window so AeroPeekManager can render a background-tab image in
-  // the area.
-  // TODO(pkasting) correct content inset??
-  if (aeropeek_manager_.get()) {
-    gfx::Insets insets(GetFindBarBoundingBox().y() + 1,
-                       0,
-                       0,
-                       0);
-    aeropeek_manager_->SetContentInsets(insets);
-  }
-#endif
 }
 
 void BrowserView::PaintChildren(gfx::Canvas* canvas) {
@@ -1895,12 +1876,6 @@ void BrowserView::Init() {
   if (JumpList::Enabled()) {
     jumplist_ = new JumpList();
     jumplist_->AddObserver(browser_->profile());
-  }
-
-  if (AeroPeekManager::Enabled()) {
-    aeropeek_manager_.reset(new AeroPeekManager(
-        frame_->GetNativeWindow()));
-    browser_->tabstrip_model()->AddObserver(aeropeek_manager_.get());
   }
 #endif
 

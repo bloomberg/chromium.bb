@@ -51,7 +51,6 @@ class TabStripModel;
 class ToolbarView;
 
 #if defined(OS_WIN)
-class AeroPeekManager;
 class JumpList;
 #endif
 
@@ -650,9 +649,6 @@ class BrowserView : public BrowserWindow,
 
   // The custom JumpList for Windows 7.
   scoped_refptr<JumpList> jumplist_;
-
-  // The custom AeroPeek manager for Windows 7.
-  scoped_ptr<AeroPeekManager> aeropeek_manager_;
 #endif
 
 #if defined(USE_ASH)

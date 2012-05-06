@@ -131,7 +131,6 @@ extern const char kDnsPrefetchDisable[];
 extern const char kDownloadsNewUI[];
 extern const char kDumpHistogramsOnExit[];
 extern const char kEnableActionBox[];
-extern const char kEnableAeroPeekTabs[];
 extern const char kEnableAsyncDns[];
 extern const char kEnableAsynchronousSpellChecking[];
 extern const char kEnableAuthNegotiatePort[];

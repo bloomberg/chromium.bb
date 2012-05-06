@@ -94,8 +94,6 @@
         'browser/accessibility/accessibility_events.h',
         'browser/accessibility/invert_bubble_views.cc',
         'browser/accessibility/invert_bubble_views.h',
-        'browser/aeropeek_manager.cc',
-        'browser/aeropeek_manager.h',
         'browser/alternate_nav_url_fetcher.cc',
         'browser/alternate_nav_url_fetcher.h',
         'browser/app_controller_mac.h',
@@ -4261,7 +4259,6 @@
         }],
         ['use_aura==1', {
           'sources/': [
-            ['exclude', '^browser/aeropeek_manager.cc'],
             ['exclude', '^browser/automation/automation_provider_win.cc'],
             ['exclude', '^browser/automation/chrome_frame_automation_provider.cc'],
             ['exclude', '^browser/automation/chrome_frame_automation_provider.h'],
@@ -4744,8 +4741,6 @@
         }, {  # 'OS!="win"
           'sources/': [
             # Exclude files that should be excluded for all non-Windows platforms.
-            ['exclude', '^browser/aeropeek_manager.cc'],
-            ['exclude', '^browser/aeropeek_manager.h'],
             ['exclude', '^browser/first_run/try_chrome_dialog_view.cc'],
             ['exclude', '^browser/first_run/try_chrome_dialog_view.h'],
             ['exclude', '^browser/google/google_update.cc'],
