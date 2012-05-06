@@ -17,6 +17,23 @@ class Profile;
 namespace gdata {
 namespace util {
 
+// Search path is a path used to display gdata content search results.
+// All results are displayed under virtual directory "gdata/.search", in which
+// each query is given its own directory for displaying results.
+enum GDataSearchPathType {
+  // Not a search path.
+  GDATA_SEARCH_PATH_INVALID,
+  // gdata/.search.
+  GDATA_SEARCH_PATH_ROOT,
+  // Path that defines search query (gdata/.search/foo).
+  GDATA_SEARCH_PATH_QUERY,
+  // Path given to a search result (gdata/.search/foo/foo_found).
+  // The file name will be formatted: "resource_id.file_name".
+  GDATA_SEARCH_PATH_RESULT,
+  // If search result is directory, it may contain some children.
+  GDATA_SEARCH_PATH_RESULT_CHILD
+};
+
 // Returns the GData mount point path, which looks like "/special/gdata".
 const FilePath& GetGDataMountPointPath();
 
@@ -38,6 +55,22 @@ void ModifyGDataFileResourceUrl(Profile* profile,
 
 // Returns true if the given path is under the GData mount point.
 bool IsUnderGDataMountPoint(const FilePath& path);
+
+// Checks if the path is under (virtual) gdata search directory, and returns its
+// search status.
+GDataSearchPathType GetSearchPathStatus(const FilePath& path);
+
+// Checks if the path is under (virtual) gdata earch directory, and returns its
+// search status.
+GDataSearchPathType GetSearchPathStatusForPathComponents(
+    const std::vector<std::string>& path_components);
+
+// Gets resource id and original file name from the search file name.
+// Search file name is formatted as: <resource_id>.<original_file_name>.
+// If the path is not search path, the behaviour is not defined.
+bool ParseSearchFileName(const std::string& search_file_name,
+                         std::string* resource_id,
+                         std::string* original_file_name);
 
 // Extracts the GData path from the given path located under the GData mount
 // point. Returns an empty path if |path| is not under the GData mount point.

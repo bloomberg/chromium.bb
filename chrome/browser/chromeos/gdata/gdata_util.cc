@@ -47,6 +47,10 @@ const FilePath::CharType* kGDataMountPointPathComponents[] = {
   "/", "special", "gdata"
 };
 
+const FilePath::CharType* kGDataSearchPathComponents[] = {
+  "gdata", ".search"
+};
+
 const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
                                      base::PLATFORM_FILE_READ |
                                      base::PLATFORM_FILE_EXCLUSIVE_READ |
@@ -173,6 +177,53 @@ void ModifyGDataFileResourceUrl(Profile* profile,
 bool IsUnderGDataMountPoint(const FilePath& path) {
   return GetGDataMountPointPath() == path ||
          GetGDataMountPointPath().IsParent(path);
+}
+
+GDataSearchPathType GetSearchPathStatus(const FilePath& path) {
+  std::vector<std::string> components;
+  path.GetComponents(&components);
+  return GetSearchPathStatusForPathComponents(components);
+}
+
+GDataSearchPathType GetSearchPathStatusForPathComponents(
+    const std::vector<std::string>& path_components) {
+  if (path_components.size() < arraysize(kGDataSearchPathComponents))
+    return GDATA_SEARCH_PATH_INVALID;
+
+  for (size_t i = 0; i < arraysize(kGDataSearchPathComponents); i++) {
+    if (path_components[i] != kGDataSearchPathComponents[i])
+      return GDATA_SEARCH_PATH_INVALID;
+  }
+
+  switch (path_components.size()) {
+    case 2:
+      return GDATA_SEARCH_PATH_ROOT;
+    case 3:
+      return GDATA_SEARCH_PATH_QUERY;
+    case 4:
+      return GDATA_SEARCH_PATH_RESULT;
+    default:
+      return GDATA_SEARCH_PATH_RESULT_CHILD;
+  }
+}
+
+bool ParseSearchFileName(const std::string& search_file_name,
+                         std::string* resource_id,
+                         std::string* original_file_name) {
+  DCHECK(resource_id);
+  DCHECK(original_file_name);
+
+  *resource_id = "";
+  *original_file_name = "";
+
+  size_t dot_index = search_file_name.find('.');
+  if (dot_index == std::string::npos)
+    return false;
+
+  *resource_id = search_file_name.substr(0, dot_index);
+  if (search_file_name.length() - 1 > dot_index)
+    *original_file_name = search_file_name.substr(dot_index + 1);
+  return (!resource_id->empty() && !original_file_name->empty());
 }
 
 FilePath ExtractGDataPath(const FilePath& path) {

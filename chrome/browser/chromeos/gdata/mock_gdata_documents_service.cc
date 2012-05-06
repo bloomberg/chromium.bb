@@ -44,7 +44,7 @@ static Value* LoadJSONFile(const std::string& filename) {
 MockDocumentsService::MockDocumentsService() {
   ON_CALL(*this, Authenticate(_))
       .WillByDefault(Invoke(this, &MockDocumentsService::AuthenticateStub));
-  ON_CALL(*this, GetDocuments(_, _, _))
+  ON_CALL(*this, GetDocuments(_, _, _, _))
       .WillByDefault(Invoke(this, &MockDocumentsService::GetDocumentsStub));
   ON_CALL(*this, GetAccountMetadata(_))
       .WillByDefault(Invoke(this,
@@ -71,7 +71,8 @@ MockDocumentsService::MockDocumentsService() {
   // Fill in the default values for mock feeds.
   account_metadata_.reset(LoadJSONFile("account_metadata.json"));
   feed_data_.reset(LoadJSONFile("basic_feed.json"));
-  directory_data_.reset(LoadJSONFile("subdir_feed.json"));
+  directory_data_.reset(LoadJSONFile("new_folder_entry.json"));
+  search_result_.reset(LoadJSONFile("search_result_feed.json"));
 }
 
 MockDocumentsService::~MockDocumentsService() {}
@@ -86,10 +87,17 @@ void MockDocumentsService::AuthenticateStub(
 void MockDocumentsService::GetDocumentsStub(
     const GURL& feed_url,
     int start_changestamp,
+    const std::string& search_string,
     const GetDataCallback& callback) {
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, base::Passed(&feed_data_)));
+  if (search_string.empty()) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, HTTP_SUCCESS, base::Passed(&feed_data_)));
+  } else {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, HTTP_SUCCESS, base::Passed(&search_result_)));
+  }
 }
 
 void MockDocumentsService::GetAccountMetadataStub(

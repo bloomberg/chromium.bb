@@ -743,6 +743,17 @@ void CreateDocumentJsonFileOnIOThreadPool(
       temp_file_path->clear();
 }
 
+// Tests if we are allowed to create new directory in the provided directory.
+bool ShouldCreateDirectory(const FilePath& directory_path) {
+  // We allow directory creation for paths that are on gdata file system
+  // (GDATA_SEARCH_PATH_INVALID) and paths that reference actual gdata file
+  // system path (GDATA_SEARCH_PATH_RESULT_CHILD).
+  util::GDataSearchPathType path_type =
+      util::GetSearchPathStatus(directory_path);
+  return path_type == util::GDATA_SEARCH_PATH_INVALID ||
+         path_type == util::GDATA_SEARCH_PATH_RESULT_CHILD;
+}
+
 // Relays the given FindEntryCallback to another thread via |replay_proxy|.
 void RelayFindEntryCallback(scoped_refptr<base::MessageLoopProxy> relay_proxy,
                             const FindEntryCallback& callback,
@@ -869,12 +880,16 @@ GDataFileSystem::GetDocumentsParams::GetDocumentsParams(
     int start_changestamp,
     int root_feed_changestamp,
     std::vector<DocumentFeed*>* feed_list,
+    bool should_fetch_multiple_feeds,
     const FilePath& search_file_path,
+    const std::string& search_query,
     const FindEntryCallback& callback)
     : start_changestamp(start_changestamp),
       root_feed_changestamp(root_feed_changestamp),
       feed_list(feed_list),
+      should_fetch_multiple_feeds(should_fetch_multiple_feeds),
       search_file_path(search_file_path),
+      search_query(search_query),
       callback(callback) {
 }
 
@@ -1147,7 +1162,13 @@ void GDataFileSystem::OnGetAccountMetadata(
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error != base::PLATFORM_FILE_OK) {
     // Get changes starting from the next changestamp from what we have locally.
-    LoadFeedFromServer(local_changestamp + 1, 0, search_file_path, callback);
+    LoadFeedFromServer(local_changestamp + 1, 0,
+                       true,  /* should_fetch_multiple_feeds */
+                       search_file_path,
+                       std::string() /* no search query */,
+                       callback,
+                       base::Bind(&GDataFileSystem::OnFeedFromServerLoaded,
+                                  ui_weak_ptr_));
     return;
   }
 
@@ -1155,7 +1176,13 @@ void GDataFileSystem::OnGetAccountMetadata(
   if (feed_data.get())
       feed = AccountMetadataFeed::CreateFrom(*feed_data);
   if (!feed.get()) {
-    LoadFeedFromServer(local_changestamp + 1, 0, search_file_path, callback);
+    LoadFeedFromServer(local_changestamp + 1, 0,
+                       true,  /* should_fetch_multiple_feeds */
+                       search_file_path,
+                       std::string() /* no search query */,
+                       callback,
+                       base::Bind(&GDataFileSystem::OnFeedFromServerLoaded,
+                                  ui_weak_ptr_));
     return;
   }
 
@@ -1189,15 +1216,22 @@ void GDataFileSystem::OnGetAccountMetadata(
   // Load changes from the server.
   LoadFeedFromServer(local_changestamp > 0 ? local_changestamp + 1 : 0,
                      feed->largest_changestamp(),
+                     true,  /* should_fetch_multiple_feeds */
                      search_file_path,
-                     callback);
+                     std::string() /* no search query */,
+                     callback,
+                     base::Bind(&GDataFileSystem::OnFeedFromServerLoaded,
+                                ui_weak_ptr_));
 }
 
 void GDataFileSystem::LoadFeedFromServer(
     int start_changestamp,
     int root_feed_changestamp,
+    bool should_fetch_multiple_feeds,
     const FilePath& search_file_path,
-    const FindEntryCallback& callback) {
+    const std::string& search_query,
+    const FindEntryCallback& entry_found_callback,
+    const LoadDocumentFeedCallback& feed_load_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // ...then also kick off document feed fetching from the server as well.
@@ -1210,13 +1244,49 @@ void GDataFileSystem::LoadFeedFromServer(
   documents_service_->GetDocuments(
       GURL(),   // root feed start.
       start_changestamp,
+      search_query,
       base::Bind(&GDataFileSystem::OnGetDocuments,
                  ui_weak_ptr_,
+                 feed_load_callback,
                  base::Owned(new GetDocumentsParams(start_changestamp,
                                                     root_feed_changestamp,
                                                     feed_list.release(),
+                                                    should_fetch_multiple_feeds,
                                                     search_file_path,
-                                                    callback))));
+                                                    search_query,
+                                                    entry_found_callback))));
+}
+
+void GDataFileSystem::OnFeedFromServerLoaded(GetDocumentsParams* params,
+                                             base::PlatformFileError error) {
+  if (error != base::PLATFORM_FILE_OK) {
+    params->callback.Run(error, FilePath(),
+                         reinterpret_cast<GDataEntry*>(NULL));
+    return;
+  }
+
+  error = UpdateFromFeed(*params->feed_list,
+                         FROM_SERVER,
+                         params->start_changestamp,
+                         params->root_feed_changestamp);
+
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!params->callback.is_null()) {
+      params->callback.Run(error, FilePath(),
+                           reinterpret_cast<GDataEntry*>(NULL));
+    }
+
+    return;
+  }
+
+  // Save file system metadata to disk.
+  SaveFileSystemAsProto();
+
+  // If we had someone to report this too, then this retrieval was done in a
+  // context of search... so continue search.
+  if (!params->callback.is_null()) {
+    FindEntryByPathSyncOnUIThread(params->search_file_path, params->callback);
+  }
 }
 
 void GDataFileSystem::TransferFile(const FilePath& local_file_path,
@@ -1377,25 +1447,28 @@ void GDataFileSystem::Copy(const FilePath& src_file_path,
   CopyOnUIThread(src_file_path, dest_file_path, callback);
 }
 
-void GDataFileSystem::CopyOnUIThread(const FilePath& src_file_path,
-                                     const FilePath& dest_file_path,
+void GDataFileSystem::CopyOnUIThread(const FilePath& original_src_file_path,
+                                     const FilePath& original_dest_file_path,
                                      const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  FilePath dest_parent_path = dest_file_path.DirName();
+  FilePath dest_parent_path = original_dest_file_path.DirName();
+
+  FilePath src_file_path;
+  FilePath dest_file_path;
 
   std::string src_file_resource_id;
   bool src_file_is_hosted_document = false;
   {
     base::AutoLock lock(lock_);
-    GDataEntry* src_entry = GetGDataEntryByPath(src_file_path);
+    GDataEntry* src_entry = GetGDataEntryByPath(original_src_file_path);
     GDataEntry* dest_parent = GetGDataEntryByPath(dest_parent_path);
     if (!src_entry || !dest_parent) {
       error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
     } else if (!dest_parent->AsGDataDirectory()) {
       error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
-    } else if (!src_entry->AsGDataFile()) {
+    } else if (!src_entry->AsGDataFile() || dest_parent->is_detached()) {
       // TODO(benchan): Implement copy for directories. In the interim,
       // we handle recursive directory copy in the file manager.
       error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
@@ -1403,6 +1476,16 @@ void GDataFileSystem::CopyOnUIThread(const FilePath& src_file_path,
       src_file_resource_id = src_entry->resource_id();
       src_file_is_hosted_document =
           src_entry->AsGDataFile()->is_hosted_document();
+      // |original_src_file_path| and |original_dest_file_path| don't have to
+      // necessary be equal to |src_entry|'s or |dest_entry|'s file path (e.g.
+      // paths used to display gdata content search results).
+      // That's why, instead of using |original_src_file_path| and
+      // |original_dest_file_path|, we will get file paths to use in copy
+      // operation from the entries.
+      src_file_path = src_entry->GetFilePath();
+      dest_parent_path = dest_parent->GetFilePath();
+      dest_file_path = dest_parent_path.Append(
+          original_dest_file_path.BaseName());
     }
   }
 
@@ -1412,6 +1495,9 @@ void GDataFileSystem::CopyOnUIThread(const FilePath& src_file_path,
 
     return;
   }
+
+  DCHECK(!src_file_path.empty());
+  DCHECK(!dest_file_path.empty());
 
   if (src_file_is_hosted_document) {
     CopyDocumentToDirectory(dest_parent_path,
@@ -1553,24 +1639,42 @@ void GDataFileSystem::Move(const FilePath& src_file_path,
   MoveOnUIThread(src_file_path, dest_file_path, callback);
 }
 
-void GDataFileSystem::MoveOnUIThread(const FilePath& src_file_path,
-                                     const FilePath& dest_file_path,
+void GDataFileSystem::MoveOnUIThread(const FilePath& original_src_file_path,
+                                     const FilePath& original_dest_file_path,
                                      const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  FilePath dest_parent_path = dest_file_path.DirName();
+  FilePath dest_parent_path = original_dest_file_path.DirName();
+
+  FilePath src_file_path;
+  FilePath dest_file_path;
+  FilePath dest_name = original_dest_file_path.BaseName();
 
   {
     // This scoped lock needs to be released before calling Rename() below.
     base::AutoLock lock(lock_);
-    GDataEntry* src_entry = GetGDataEntryByPath(src_file_path);
+    GDataEntry* src_entry = GetGDataEntryByPath(original_src_file_path);
     GDataEntry* dest_parent = GetGDataEntryByPath(dest_parent_path);
     if (!src_entry || !dest_parent) {
       error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
-    } else {
-      if (!dest_parent->AsGDataDirectory())
+    } else if (!dest_parent->AsGDataDirectory()) {
         error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+    } else if (dest_parent->is_detached()) {
+      // We allow moving to a directory without file system root only if it's
+      // done as part of renaming (i.e. source and destination parent paths are
+      // the same).
+      if (original_src_file_path.DirName() != dest_parent_path) {
+        error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+      } else {
+        // If we are indeed renaming, we have to strip resource id from the file
+        // name.
+        std::string resource_id;
+        std::string file_name;
+        util::ParseSearchFileName(dest_name.value(), &resource_id, &file_name);
+        if (!file_name.empty())
+          dest_name = FilePath(file_name);
+      }
     }
 
     if (error != base::PLATFORM_FILE_OK) {
@@ -1580,16 +1684,29 @@ void GDataFileSystem::MoveOnUIThread(const FilePath& src_file_path,
       }
       return;
     }
+    // |original_src_file_path| and |original_dest_file_path| don't have to
+    // necessary be equal to |src_entry|'s or |dest_entry|'s file path (e.g.
+    // paths used to display gdata content search results).
+    // That's why, instead of using |original_src_file_path| and
+    // |original_dest_file_path|, we will get file paths to use in move
+    // operation from the entries.
+    src_file_path = src_entry->GetFilePath();
+    if (!dest_parent->is_detached())
+      dest_parent_path = dest_parent->GetFilePath();
+    dest_file_path = dest_parent_path.Append(dest_name);
   }
 
+  DCHECK(!src_file_path.empty());
+  DCHECK(!dest_file_path.empty());
+
   // If the file/directory is moved to the same directory, just rename it.
-  if (src_file_path.DirName() == dest_parent_path) {
+  if (original_src_file_path.DirName() == dest_parent_path) {
     FilePathUpdateCallback final_file_path_update_callback =
         base::Bind(&GDataFileSystem::OnFilePathUpdated,
                    ui_weak_ptr_,
                    callback);
 
-    Rename(src_file_path, dest_file_path.BaseName().value(),
+    Rename(original_src_file_path, dest_name.value(),
            final_file_path_update_callback);
     return;
   }
@@ -1739,7 +1856,7 @@ void GDataFileSystem::RemoveOnUIThread(
       base::Bind(&GDataFileSystem::OnRemovedDocument,
                  ui_weak_ptr_,
                  callback,
-                 file_path));
+                 entry->GetFilePath()));
 }
 
 void GDataFileSystem::CreateDirectory(
@@ -1774,6 +1891,14 @@ void GDataFileSystem::CreateDirectoryOnUIThread(
     bool is_recursive,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!ShouldCreateDirectory(directory_path)) {
+    if (!callback.is_null()) {
+      MessageLoop::current()->PostTask(FROM_HERE,
+          base::Bind(callback, base::PLATFORM_FILE_ERROR_INVALID_OPERATION));
+    }
+    return;
+  }
 
   FilePath last_parent_dir_path;
   FilePath first_missing_path;
@@ -2689,7 +2814,93 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
   }
 }
 
-void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
+void GDataFileSystem::OnSearch(const ReadDirectoryCallback& callback,
+                               GetDocumentsParams* params,
+                               base::PlatformFileError error) {
+  // The search results will be returned using virtual directory.
+  // The directory is not really part of the file system, so it has no parent or
+  // root.
+  scoped_ptr<GDataDirectory> search_dir(new GDataDirectory(NULL, NULL));
+
+  base::AutoLock lock(lock_);
+
+  int delta_feed_changestamp = 0;
+  int num_regular_files = 0;
+  int num_hosted_documents = 0;
+  FileResourceIdMap file_map;
+  if (error == base::PLATFORM_FILE_OK) {
+    error = FeedToFileResourceMap(*params->feed_list,
+                                  &file_map,
+                                  &delta_feed_changestamp,
+                                  &num_regular_files,
+                                  &num_hosted_documents);
+  }
+
+  if (error == base::PLATFORM_FILE_OK) {
+    std::set<FilePath> ignored;
+
+    // Go through all entires generated by the feed and add them to the search
+    // result directory.
+    for (FileResourceIdMap::const_iterator it = file_map.begin();
+         it != file_map.end(); ++it) {
+      scoped_ptr<GDataEntry> entry(it->second);
+      DCHECK_EQ(it->first, entry->resource_id());
+      DCHECK(!entry->is_deleted());
+
+      entry->set_title(entry->resource_id() + "." + entry->title());
+
+      search_dir->AddEntry(entry.release());
+    }
+  }
+
+  scoped_ptr<GDataDirectoryProto> directory_proto(new GDataDirectoryProto);
+  search_dir->ToProto(directory_proto.get());
+
+  if (!callback.is_null()) {
+    callback.Run(error, directory_proto.Pass());
+  }
+}
+
+void GDataFileSystem::SearchAsync(const std::string& search_query,
+                                  const ReadDirectoryCallback& callback) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    const bool posted = BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::SearchAsyncOnUIThread,
+                   ui_weak_ptr_,
+                   search_query,
+                   base::Bind(&RelayReadDirectoryCallback,
+                              base::MessageLoopProxy::current(),
+                              callback)));
+    DCHECK(posted);
+    return;
+  }
+
+  SearchAsyncOnUIThread(search_query, callback);
+}
+
+void GDataFileSystem::SearchAsyncOnUIThread(
+    const std::string& search_query,
+    const ReadDirectoryCallback& callback) {
+  scoped_ptr<std::vector<DocumentFeed*> > feed_list(
+      new std::vector<DocumentFeed*>);
+
+  LoadFeedFromServer(0, 0,  // We don't use change stamps when fetching search
+                            // data; we always fetch the whole result feed.
+                     false,  // Stop fetching search results after first feed
+                             // chunk to avoid displaying huge number of search
+                             // results (especially since we don't cache them).
+                     FilePath(),  // Not used.
+                     search_query,
+                     FindEntryCallback(),  // Not used.
+                     base::Bind(&GDataFileSystem::OnSearch,
+                                ui_weak_ptr_, callback));
+}
+
+void GDataFileSystem::OnGetDocuments(const LoadDocumentFeedCallback& callback,
+                                     GetDocumentsParams* params,
                                      GDataErrorCode status,
                                      scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -2697,14 +2908,12 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error == base::PLATFORM_FILE_OK &&
       (!data.get() || data->GetType() != Value::TYPE_DICTIONARY)) {
-    LOG(WARNING) << "No feed content!";
     error = base::PLATFORM_FILE_ERROR_FAILED;
   }
 
   if (error != base::PLATFORM_FILE_OK) {
-    if (!params->callback.is_null()) {
-      params->callback.Run(error, FilePath(),
-                          reinterpret_cast<GDataEntry*>(NULL));
+    if (!callback.is_null()) {
+      callback.Run(params, error);
     }
 
     return;
@@ -2715,9 +2924,8 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
   GURL next_feed_url;
   scoped_ptr<DocumentFeed> current_feed(DocumentFeed::ExtractAndParse(*data));
   if (!current_feed.get()) {
-    if (!params->callback.is_null()) {
-      params->callback.Run(base::PLATFORM_FILE_ERROR_FAILED, FilePath(),
-                           reinterpret_cast<GDataEntry*>(NULL));
+    if (!callback.is_null()) {
+      callback.Run(params, base::PLATFORM_FILE_ERROR_FAILED);
     }
 
     return;
@@ -2728,44 +2936,30 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
   params->feed_list->push_back(current_feed.release());
 
   // Check if we need to collect more data to complete the directory list.
-  if (has_next_feed_url && !next_feed_url.is_empty()) {
+  if (params->should_fetch_multiple_feeds && has_next_feed_url &&
+      !next_feed_url.is_empty()) {
     // Kick of the remaining part of the feeds.
     documents_service_->GetDocuments(
         next_feed_url,
         params->start_changestamp,
+        params->search_query,
         base::Bind(&GDataFileSystem::OnGetDocuments,
                    ui_weak_ptr_,
+                   callback,
                    base::Owned(
-                       new GetDocumentsParams(params->start_changestamp,
-                                              params->root_feed_changestamp,
-                                              params->feed_list.release(),
-                                              params->search_file_path,
-                                              params->callback))));
+                       new GetDocumentsParams(
+                           params->start_changestamp,
+                           params->root_feed_changestamp,
+                           params->feed_list.release(),
+                           params->should_fetch_multiple_feeds,
+                           params->search_file_path,
+                           params->search_query,
+                           params->callback))));
     return;
   }
 
-  error = UpdateFromFeed(*params->feed_list,
-                         FROM_SERVER,
-                         params->start_changestamp,
-                         params->root_feed_changestamp);
-
-  if (error != base::PLATFORM_FILE_OK) {
-    if (!params->callback.is_null()) {
-      params->callback.Run(error, FilePath(),
-               reinterpret_cast<GDataEntry*>(NULL));
-    }
-
-    return;
-  }
-
-  // Save file system metadata to disk.
-  SaveFileSystemAsProto();
-
-  // If we had someone to report this too, then this retrieval was done in a
-  // context of search... so continue search.
-  if (!params->callback.is_null()) {
-    FindEntryByPathSyncOnUIThread(params->search_file_path, params->callback);
-  }
+  if (!callback.is_null())
+    callback.Run(params, error);
 }
 
 void GDataFileSystem::LoadRootFeedFromCache(
@@ -3529,7 +3723,11 @@ base::PlatformFileError GDataFileSystem::AddNewDirectory(
 
   parent_dir->AddEntry(new_entry);
 
-  NotifyDirectoryChanged(directory_path);
+  // |directory_path| is not necessary same as |entry->GetFilePath()|. It may be
+  // virtual path that references the entry (e.g. path under which content
+  // search result is shown).
+  // We want to dispatch directory changed with the actual entry's path.
+  NotifyDirectoryChanged(entry->GetFilePath());
   return base::PLATFORM_FILE_OK;
 }
 

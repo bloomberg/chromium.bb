@@ -1,0 +1,239 @@
+{
+   "encoding": "UTF-8",
+   "feed": {
+      "author": [ {
+         "email": {
+            "$t": "tester@testing.com"
+         },
+         "name": {
+            "$t": "tester"
+         }
+      } ],
+      "category": [ {
+         "label": "item",
+         "scheme": "http://schemas.google.com/g/2005#kind",
+         "term": "http://schemas.google.com/docs/2007#item"
+      } ],
+      "entry": [  {
+         "app$edited": {
+            "$t": "2011-12-14T00:40:57.162Z",
+            "xmlns$app": "http://www.w3.org/2007/app"
+         },
+         "author": [ {
+            "email": {
+               "$t": "tester@testing.com"
+            },
+            "name": {
+               "$t": "tester"
+            }
+         } ],
+         "category": [ {
+            "label": "audio/mpeg",
+            "scheme": "http://schemas.google.com/g/2005#kind",
+            "term": "http://schemas.google.com/docs/2007#file"
+         } ],
+         "content": {
+            "src": "https://file_content_url/",
+            "type": "audio/mpeg"
+         },
+         "docs$filename": {
+            "$t": "SubDirectory File 1.txt"
+         },
+         "docs$md5Checksum": {
+            "$t": "3b4382ebefec6e743578c76bbd0575ce"
+         },
+         "docs$size": {
+            "$t": "892721"
+         },
+         "docs$suggestedFilename": {
+            "$t": "SubDirectory File 1.txt"
+         },
+         "docs$writersCanInvite": {
+            "value": "true"
+         },
+         "gd$etag": "\"HhMOFgxXHit7ImBr\"",
+         "gd$feedLink": [ {
+            "href": "https://file_feed_link_url",
+            "rel": "http://schemas.google.com/docs/2007/revisions"
+         } ],
+         "gd$lastModifiedBy": {
+            "email": {
+               "$t": "tester@testing.com"
+            },
+            "name": {
+               "$t": "tester"
+            }
+         },
+         "gd$quotaBytesUsed": {
+            "$t": "892721"
+         },
+         "gd$resourceId": {
+            "$t": "file:2_file_resouce_id"
+         },
+         "id": {
+            "$t": "2_file_id"
+         },
+         "link": [ {
+            "href": "https://file_link_alternate",
+            "rel": "alternate",
+            "type": "text/html"
+         }, {
+            "href": "https://file_link_resumable_edit_media",
+            "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
+            "type": "application/atom+xml"
+         }, {
+            "href": "https://dir1_file_link_self/file:2_file_resouce_id",
+            "rel": "self",
+            "type": "application/atom+xml"
+         }, {
+            "href": "https://dir_1_self_link/folder:1_folder_resource_id",
+            "rel": "http://schemas.google.com/docs/2007#parent",
+            "type": "application/atom+xml"
+         }, {
+            "href": "https://dir1_file_link_self/file:2_file_resouce_id",
+            "rel": "edit",
+            "type": "application/atom+xml"
+         }, {
+            "href": "https://file_edit_media",
+            "rel": "edit-media",
+            "type": "audio/mpeg"
+         } ],
+         "published": {
+            "$t": "2011-12-14T00:40:47.330Z"
+         },
+         "title": {
+            "$t": "SubDirectory File 1.txt"
+         },
+         "updated": {
+            "$t": "2011-12-14T00:40:47.330Z"
+         }
+       }, {
+         "app$edited": {
+            "$t": "2011-12-14T00:41:08.287Z",
+            "xmlns$app": "http://www.w3.org/2007/app"
+         },
+         "author": [ {
+            "email": {
+               "$t": "entry_tester@testing.com"
+            },
+            "name": {
+               "$t": "entry_tester"
+            }
+         } ],
+         "category": [ {
+            "label": "viewed",
+            "scheme": "http://schemas.google.com/g/2005/labels",
+            "term": "http://schemas.google.com/g/2005/labels#viewed"
+         }, {
+            "label": "folder",
+            "scheme": "http://schemas.google.com/g/2005#kind",
+            "term": "http://schemas.google.com/docs/2007#folder"
+         } ],
+         "content": {
+            "src": "https://1_folder_content_url",
+            "type": "application/atom+xml;type=feed"
+         },
+         "docs$writersCanInvite": {
+            "value": "true"
+         },
+         "gd$etag": "\"HhMOFgcNHSt7ImBr\"",
+         "gd$feedLink": [ {
+            "href": "https://1_folder_feed_linkurl",
+            "rel": "http://schemas.google.com/acl/2007#accessControlList"
+         } ],
+         "gd$lastModifiedBy": {
+            "email": {
+               "$t": "tester@testing.com"
+            },
+            "name": {
+               "$t": "tester"
+            }
+         },
+         "gd$lastViewed": {
+            "$t": "2011-11-02T04:37:38.469Z"
+         },
+         "gd$quotaBytesUsed": {
+            "$t": "0"
+         },
+         "gd$resourceId": {
+            "$t": "folder:1_folder_resource_id"
+         },
+         "id": {
+            "$t": "https://1_folder_id"
+         },
+         "link": [ {
+            "href": "https://1_folder_alternate_link",
+            "rel": "alternate",
+            "type": "text/html"
+         }, {
+            "href": "https://1_folder_resumable_create_media_link",
+            "rel": "http://schemas.google.com/g/2005#resumable-create-media",
+            "type": "application/atom+xml"
+         }, {
+            "href": "https://dir_1_self_link/folder:1_folder_resource_id",
+            "rel": "self",
+            "type": "application/atom+xml"
+         }, {
+            "href": "https://dir_1_self_link/folder:1_folder_resource_id",
+            "rel": "edit",
+            "type": "application/atom+xml"
+         } ],
+         "published": {
+            "$t": "2010-11-07T05:03:54.719Z"
+         },
+         "title": {
+            "$t": "Directory 1"
+         },
+         "updated": {
+            "$t": "2011-04-01T18:34:08.234Z"
+         }
+      }],
+      "gd$etag": "W/\"DkEEQH8-eSt7ImA9WhRQGE8.\"",
+      "id": {
+         "$t": "https://docs.google.com/feeds/default/private/full"
+      },
+      "link": [ {
+         "href": "http://alternate_link",
+         "rel": "alternate",
+         "type": "text/html"
+      }, {
+         "href": "https://resumable_create_media_link",
+         "rel": "http://schemas.google.com/g/2005#resumable-create-media",
+         "type": "application/atom+xml"
+      }, {
+         "href": "https://docs.google.com/feeds/default/private/full?v=3",
+         "rel": "http://schemas.google.com/g/2005#feed",
+         "type": "application/atom+xml"
+      }, {
+         "href": "https://docs.google.com/feeds/default/private/full?v=3",
+         "rel": "http://schemas.google.com/g/2005#post",
+         "type": "application/atom+xml"
+      }, {
+         "href": "https://docs.google.com/feeds/default/private/full/batch?v=3",
+         "rel": "http://schemas.google.com/g/2005#batch",
+         "type": "application/atom+xml"
+      }, {
+         "href": "https://self_link",
+         "rel": "self",
+         "type": "application/atom+xml"
+      } ],
+      "openSearch$itemsPerPage": {
+         "$t": "1000"
+      },
+      "openSearch$startIndex": {
+         "$t": "1"
+      },
+      "title": {
+         "$t": "Feed title"
+      },
+      "updated": {
+         "$t": "2011-12-14T01:03:21.151Z"
+      },
+      "xmlns": "http://www.w3.org/2005/Atom",
+      "xmlns$batch": "http://schemas.google.com/gdata/batch",
+      "xmlns$docs": "http://schemas.google.com/docs/2007",
+      "xmlns$gd": "http://schemas.google.com/g/2005",
+      "xmlns$openSearch": "http://a9.com/-/spec/opensearch/1.1/"
+   },
+   "version": "1.0"
+}

@@ -8,6 +8,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
@@ -137,6 +138,12 @@ class GDataEntry {
   // True if file was deleted. Used only for instances that are generated from
   // delta feeds.
   bool is_deleted() const { return deleted_; }
+
+  // True if the entry is not bound to any file system (i.e. doesn't have a root
+  // directory set). E.g. |fake_search_directory| below.
+  // NOTE: GDataRootDirectories will return true here, since they have
+  // themselves as root directories.
+  bool is_detached() const { return root_ == NULL; }
 
   // Returns virtual file path representing this file system entry. This path
   // corresponds to file path expected by public methods of GDataFileSyste
@@ -493,8 +500,39 @@ class GDataRootDirectory : public GDataDirectory {
   void ToProto(GDataRootDirectoryProto* proto) const;
 
  private:
+  // Used in |FindEntryByPath| if the path that is being searched for is
+  // pointing to a search result path. The find entry parameters should be
+  // modified to point to the actual file system entry that is referenced by
+  // virtual search path.
+  // Search path is formatted: <search_result_path><search_result_child_path>.
+  // <search_result_child_path> is used when search result is directory, and is
+  // relative to search result path (id references some content inside search
+  // result).
+  // Search result file name will be formatted <resource_id>.<file_name>.
+  // We can define "search result path references gdata entry" for gdata search
+  // results by:
+  // Entry that whose file name is <file_name>, and has the same parent as
+  // the entry with resource id <resource_id>. This definition enables us to
+  // test uniqueness of the proposed name when renaming gdata search result.
+  //
+  // For example, if gdata/.search/foo/res_id.foo_name references
+  // gdata/result_parent/result, and the search path is
+  // gdata/.search/foo/res_ud.foo_name/foo_child, we'll set current dir to the
+  // entry with path reulst_parent, and components to [result_parent, result,
+  // foo_child].
+  bool ModifyFindEntryParamsForSearchPath(
+      const FilePath& file_path,
+      std::vector<FilePath::StringType>* components,
+      GDataDirectory** current_dir,
+      FilePath* directory_path);
+
   ResourceMap resource_map_;
   CacheMap cache_map_;
+
+  // Fake directory that will be returned when searching for content search
+  // paths to make file manager happy when resolving paths. This directory
+  // should never be used for file operations or storing file entries.
+  scoped_ptr<GDataDirectory> fake_search_directory_;
 
   base::Time last_serialized_;
   int largest_changestamp_;

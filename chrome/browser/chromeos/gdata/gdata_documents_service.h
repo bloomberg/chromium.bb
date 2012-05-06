@@ -75,9 +75,13 @@ class DocumentsServiceInterface {
   // URL is empty, the call will fetch the default root or change document feed.
   // |start_changestamp| specifies the starting point from change feeds only.
   // Value different than 0, it would trigger delta feed fetching.
+  // |search_query| specifies search query to be sent to the server. It will be
+  // used only if |start_changestamp| is 0. If empty string is passed,
+  // |search_query| is ignored.
   // Upon completion, invokes |callback| with results on the calling thread.
   virtual void GetDocuments(const GURL& feed_url,
                             int start_changestamp,
+                            const std::string& search_query,
                             const GetDataCallback& callback) = 0;
 
   // Gets the account metadata from the server using the default account
@@ -178,6 +182,7 @@ class DocumentsService
   virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
   virtual void GetDocuments(const GURL& feed_url,
                             int start_changestamp,
+                            const std::string& search_query,
                             const GetDataCallback& callback) OVERRIDE;
   virtual void GetAccountMetadata(const GetDataCallback& callback) OVERRIDE;
   virtual void DeleteDocument(const GURL& document_url,

@@ -31,8 +31,9 @@ class MockDocumentsService : public DocumentsServiceInterface {
   MOCK_CONST_METHOD0(operation_registry, GDataOperationRegistry*());
   MOCK_METHOD0(CancelAll, void(void));
   MOCK_METHOD1(Authenticate, void(const AuthStatusCallback& callback));
-  MOCK_METHOD3(GetDocuments, void(const GURL& feed_url,
+  MOCK_METHOD4(GetDocuments, void(const GURL& feed_url,
                                   int start_changestamp,
+                                  const std::string& search_string,
                                   const GetDataCallback& callback));
   MOCK_METHOD1(GetAccountMetadata, void(const GetDataCallback& callback));
   MOCK_METHOD2(DeleteDocument, void(const GURL& document_url,
@@ -84,6 +85,7 @@ class MockDocumentsService : public DocumentsServiceInterface {
   // value of |feed_data_|.
   void GetDocumentsStub(const GURL& feed_url,
                         int start_changestamp,
+                        const std::string& search_string,
                         const GetDataCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS and a StringValue with the current
@@ -163,6 +165,10 @@ class MockDocumentsService : public DocumentsServiceInterface {
 
   // Feed data to be returned from CopyDocument.
   scoped_ptr<base::Value> document_data_;
+
+  // Feed data to be returned from GetDocuments if the search path is specified.
+  // The feed contains subset of the root_feed.
+  scoped_ptr<base::Value> search_result_;
 };
 
 }  // namespace gdata

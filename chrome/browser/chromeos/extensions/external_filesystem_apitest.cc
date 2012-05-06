@@ -41,7 +41,7 @@ namespace {
 const char kTestFileContents[] = "hello, world";
 
 // Contains a folder entry for the folder 'Folder' that will be 'created'.
-const char kTestDirectory[] = "remote_file_system_apitest_folder_entry.json";
+const char kTestDirectory[] = "new_folder_entry.json";
 
 // Contains a folder named Folder that has a file File.aBc inside of it.
 const char kTestRootFeed[] = "remote_file_system_apitest_root_feed.json";
@@ -116,7 +116,7 @@ ACTION_P2(MockCreateDirectoryCallback, status, value) {
 // Action used to set mock expecteations for GetDocuments.
 ACTION_P2(MockGetDocumentsCallback, status, value) {
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(arg2, status, base::Passed(value)));
+      base::Bind(arg3, status, base::Passed(value)));
 }
 
 // Creates a cache representation of the test file with predetermined content.
@@ -267,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, RemoteMountPoint) {
   // Remote filesystem should first request root feed from gdata server.
   scoped_ptr<base::Value> documents_value(LoadJSONFile(kTestRootFeed));
   EXPECT_CALL(*mock_documents_service_,
-              GetDocuments(_, _, _))
+              GetDocuments(_, _, _, _))
       .WillOnce(MockGetDocumentsCallback(gdata::HTTP_SUCCESS,
                                          &documents_value));
 

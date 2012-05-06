@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 
-#include <vector>
-
 #include "base/utf_string_conversions.h"
 #include "base/platform_file.h"
 #include "base/stringprintf.h"
@@ -13,6 +11,7 @@
 #include "chrome/browser/chromeos/gdata/find_entry_delegate.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "net/base/escape.h"
 
 namespace gdata {
@@ -295,7 +294,9 @@ void GDataDirectory::AddEntry(GDataEntry* entry) {
 
 
   // Add entry to resource map.
-  root_->AddEntryToResourceMap(entry);
+  if (root_)
+    root_->AddEntryToResourceMap(entry);
+
   // Setup child and parent links.
   AddChild(entry);
   entry->SetParent(this);
@@ -374,7 +375,8 @@ bool GDataDirectory::RemoveChild(GDataEntry* entry) {
   DCHECK_EQ(entry, found_entry);
 
   // Remove entry from resource map first.
-  root_->RemoveEntryFromResourceMap(entry);
+  if (root_)
+    root_->RemoveEntryFromResourceMap(entry);
 
   // Then delete it from tree.
   child_files_.erase(file_name);
@@ -387,7 +389,8 @@ void GDataDirectory::RemoveChildren() {
   // Remove child files first.
   for (GDataFileCollection::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
-    root_->RemoveEntryFromResourceMap(iter->second);
+    if (root_)
+      root_->RemoveEntryFromResourceMap(iter->second);
   }
   STLDeleteValues(&child_files_);
   child_files_.clear();
@@ -397,7 +400,8 @@ void GDataDirectory::RemoveChildren() {
     GDataDirectory* dir = iter->second;
     // Remove directories recursively.
     dir->RemoveChildren();
-    root_->RemoveEntryFromResourceMap(dir);
+    if (root_)
+      root_->RemoveEntryFromResourceMap(dir);
   }
   STLDeleteValues(&child_directories_);
   child_directories_.clear();
@@ -424,6 +428,7 @@ std::string GDataRootDirectory::CacheEntry::ToString() const {
 
 GDataRootDirectory::GDataRootDirectory()
     : ALLOW_THIS_IN_INITIALIZER_LIST(GDataDirectory(NULL, this)),
+      fake_search_directory_(new GDataDirectory(NULL, NULL)),
       largest_changestamp_(0), serialized_size_(0) {
   title_ = kGDataRootDirectory;
   SetFileNameFromTitle();
@@ -451,6 +456,54 @@ void GDataRootDirectory::RemoveEntryFromResourceMap(GDataEntry* entry) {
   resource_map_.erase(entry->resource_id());
 }
 
+bool GDataRootDirectory::ModifyFindEntryParamsForSearchPath(
+    const FilePath& file_path,
+    std::vector<FilePath::StringType>* components,
+    GDataDirectory** current_dir,
+    FilePath* directory_path) {
+  DCHECK(current_dir);
+  DCHECK(components);
+  // |components| should contain at least 4 members.
+  // "gdata", ".search", query_name and query_result_name. Additionally,
+  // if query result is a directory, it may contain subdirectories and files,
+  // in which case the number of components may be bigger than 4.
+  DCHECK_GT(components->size(), 3u);
+  DCHECK(components->at(0) == "gdata" && components->at(1) == ".search");
+
+  FilePath::StringType resource_id;
+  FilePath::StringType file_name;
+  if (!util::ParseSearchFileName((*components)[3], &resource_id, &file_name))
+    return false;
+
+  GDataEntry* file_entry = GetEntryByResourceId(resource_id);
+  if (!file_entry)
+    return false;
+
+  // We should continue search from the entry's parent dir (|current_dir|), so
+  // we have to ammend |components| to be relative to the |current_dir|
+  // (including the dir itself).
+  // We continue the search with the entry's parent instead of the entry itself
+  // to make sure that the returned file really has the name |file_name|. Note
+  // that we may end up with finding an entry even if entry with |resource_id|
+  // has a name different from |file_name|. This is intended, and enables us to
+  // test that new file name is unique (in file manager) when renaming the
+  // entry.
+  DCHECK(file_entry->parent());
+  *current_dir = file_entry->parent();
+
+  if ((*current_dir)->parent()) {
+    *directory_path = (*current_dir)->parent()->GetFilePath();
+  } else {
+    *directory_path = FilePath();
+  }
+
+  // Remove "gdata/.search" from path.
+  components->erase(components->begin(), components->begin() + 2);
+  (*components)[0] = (*current_dir)->file_name();
+  (*components)[1] = file_name;
+  return true;
+}
+
 void GDataRootDirectory::FindEntryByPath(
     const FilePath& file_path,
     FindEntryDelegate* delegate) {
@@ -462,16 +515,37 @@ void GDataRootDirectory::FindEntryByPath(
 
   GDataDirectory* current_dir = this;
   FilePath directory_path;
+
+  util::GDataSearchPathType path_type =
+      util::GetSearchPathStatusForPathComponents(components);
+
+  if (path_type == util::GDATA_SEARCH_PATH_ROOT ||
+      path_type == util::GDATA_SEARCH_PATH_QUERY) {
+    delegate->OnDone(base::PLATFORM_FILE_OK, file_path.DirName(),
+                     fake_search_directory_.get());
+    return;
+  }
+
+  // If the path is under search path, we have to modify paremeters for finding
+  // the entry.
+  if (path_type != util::GDATA_SEARCH_PATH_INVALID) {
+    if (!ModifyFindEntryParamsForSearchPath(file_path,
+             &components, &current_dir, &directory_path)) {
+      delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
+      return;
+    }
+  }
+
   for (size_t i = 0; i < components.size() && current_dir; i++) {
     directory_path = directory_path.Append(current_dir->file_name());
 
     // Last element must match, if not last then it must be a directory.
     if (i == components.size() - 1) {
-      if (current_dir->file_name() == components[i])
+      if (current_dir->file_name() == components[i]) {
         delegate->OnDone(base::PLATFORM_FILE_OK, directory_path, current_dir);
-      else
+      } else {
         delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
-
+      }
       return;
     }
 

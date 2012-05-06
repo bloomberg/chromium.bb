@@ -349,6 +349,15 @@ class GDataFileSystemInterface {
       const FilePath& file_path,
       const ReadDirectoryCallback& callback) = 0;
 
+  // Does server side content search for |search_query|. Search results will be
+  // returned as gdata entries in temp directory proto, and their
+  // title/file_name will be formatted as |<resource_id>.<original_file_name>|.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  virtual void SearchAsync(const std::string& search_query,
+                           const ReadDirectoryCallback& callback) = 0;
+
+
   // Finds a file (not a directory) by |file_path| and returns its key
   // |properties|.  Returns true if file was found.
   // TODO(satorux): Remove this: crosbug.com/30066.
@@ -414,6 +423,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
   virtual void FindEntryByResourceIdSync(const std::string& resource_id,
                                          FindEntryDelegate* delegate) OVERRIDE;
+  virtual void SearchAsync(const std::string& search_query,
+                           const ReadDirectoryCallback& callback) OVERRIDE;
   virtual void TransferFile(const FilePath& local_file_path,
                             const FilePath& remote_dest_file_path,
                             const FileOperationCallback& callback) OVERRIDE;
@@ -558,7 +569,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
     GetDocumentsParams(int start_changestamp,
                        int root_feed_changestamp,
                        std::vector<DocumentFeed*>* feed_list,
+                       bool should_fetch_multiple_feeds,
                        const FilePath& search_file_path,
+                       const std::string& search_query,
                        const FindEntryCallback& callback);
     ~GetDocumentsParams();
 
@@ -569,7 +582,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
     int start_changestamp;
     int root_feed_changestamp;
     scoped_ptr<std::vector<DocumentFeed*> > feed_list;
+    // Should we stop after getting first feed chunk, even if there is more
+    // data.
+    bool should_fetch_multiple_feeds;
     FilePath search_file_path;
+    std::string search_query;
     FindEntryCallback callback;
   };
 
@@ -580,6 +597,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
   typedef base::Callback<void(base::PlatformFileError error,
                               const FilePath& file_path)>
       FilePathUpdateCallback;
+
+  // Callback run as a response to LoadFeedFromServer.
+  typedef base::Callback<void(GetDocumentsParams* params,
+                              base::PlatformFileError error)>
+      LoadDocumentFeedCallback;
 
   // Finds entry object by |file_path| and returns the entry object.
   // Returns NULL if it does not find the entry.
@@ -614,6 +636,15 @@ class GDataFileSystem : public GDataFileSystemInterface,
   GDataDirectory* ParseGDataFeed(GDataErrorCode status,
                                  base::Value* data,
                                  base::PlatformFileError *error);
+
+  // Callback passed to |LoadFeedFromServer| from |SearchAsync| method.
+  // |callback| is that should be run with data received from
+  // |LoadFeedFromServer|.
+  // |params| params used for getting document feed for content search.
+  // |error| error code returned by |LoadFeedFromServer|.
+  void OnSearch(const ReadDirectoryCallback& callback,
+                GetDocumentsParams* params,
+                base::PlatformFileError error);
 
   // Initiates transfer of |local_file_path| with |resource_id| to
   // |remote_dest_file_path|. |local_file_path| must be a file from the local
@@ -690,12 +721,10 @@ class GDataFileSystem : public GDataFileSystemInterface,
   base::PlatformFileError RemoveEntryFromGData(const FilePath& file_path,
                                               std::string* resource_id);
 
-  // Callback for handling feed content fetching while searching for file info.
-  // This callback is invoked after async feed fetch operation that was
-  // invoked by StartDirectoryRefresh() completes. This callback will update
-  // the content of the refreshed directory object and continue initially
-  // started FindEntryByPath() request.
-  void OnGetDocuments(GetDocumentsParams* params,
+  // Callback for handling response from |GDataDocumentsService::GetDocuments|.
+  // Invokes |callback| when done.
+  void OnGetDocuments(const LoadDocumentFeedCallback& callback,
+                      GetDocumentsParams* params,
                       GDataErrorCode status,
                       scoped_ptr<base::Value> data);
 
@@ -864,11 +893,29 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // value would trigger delta feed.
   // In the case of loading the root feed we use |root_feed_changestamp| as its
   // initial changestamp value since it does not come with that info.
-  // If successful, it will try to find the file upon retrieval completion.
+  // When done |load_feed_callback| is invoked.
+  // |entry_found_callback| is used only when this is invoked while searching
+  // for file info, and is used in |load_feed_callback|. If successful, it will
+  // try to find the file upon retrieval completion.
+  // |should_fetch_multiple_feeds| is true iff don't want to stop feed loading
+  // after we retrieve first feed chunk.
+  // If invoked as a part of content search, query will be set in
+  // |search_query|.
   void LoadFeedFromServer(int start_changestamp,
                           int root_feed_changestamp,
+                          bool should_fetch_multiple_feeds,
                           const FilePath& search_file_path,
-                          const FindEntryCallback& callback);
+                          const std::string& search_query,
+                          const FindEntryCallback& entry_found_callback,
+                          const LoadDocumentFeedCallback& load_feed_callback);
+
+  // Callback for handling feed content fetching while searching for file info.
+  // This callback is invoked after async feed fetch operation that was
+  // invoked by StartDirectoryRefresh() completes. This callback will update
+  // the content of the refreshed directory object and continue initially
+  // started FindEntryByPath() request.
+  void OnFeedFromServerLoaded(GetDocumentsParams* params,
+                              base::PlatformFileError status);
 
   // Starts root feed load from the cache. If successful, it will try to find
   // the file upon retrieval completion. In addition to that, it will
@@ -1273,6 +1320,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // The following functions are used to forward calls to asynchronous public
   // member functions to UI thread.
+  void SearchAsyncOnUIThread(const std::string& search_query,
+                             const ReadDirectoryCallback& callback);
   void CopyOnUIThread(const FilePath& src_file_path,
                       const FilePath& dest_file_path,
                       const FileOperationCallback& callback);

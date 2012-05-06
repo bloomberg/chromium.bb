@@ -208,6 +208,7 @@ class GetDocumentsOperation : public GetDataOperation {
   GetDocumentsOperation(GDataOperationRegistry* registry,
                         Profile* profile,
                         int start_changestamp,
+                        const std::string& search_string,
                         const GetDataCallback& callback);
   virtual ~GetDocumentsOperation();
 
@@ -222,6 +223,7 @@ class GetDocumentsOperation : public GetDataOperation {
  private:
   GURL override_url_;
   int start_changestamp_;
+  std::string search_string_;
 
   DISALLOW_COPY_AND_ASSIGN(GetDocumentsOperation);
 };

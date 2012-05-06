@@ -107,8 +107,10 @@ GURL AddMetadataUrlParams(const GURL& url) {
 
 // Adds additional parameters for API version, output content type and to show
 // folders in the feed are added to document feed URLs.
-GURL AddFeedUrlParams(const GURL& url, int num_items_to_fetch,
-                      int changestamp) {
+GURL AddFeedUrlParams(const GURL& url,
+                      int num_items_to_fetch,
+                      int changestamp,
+                      const std::string& search_string) {
   GURL result = AddStandardUrlParams(url);
   result = chrome_browser_net::AppendOrReplaceQueryParameter(
       result,
@@ -124,6 +126,11 @@ GURL AddFeedUrlParams(const GURL& url, int num_items_to_fetch,
         result,
         "start-index",
         base::StringPrintf("%d", changestamp));
+  }
+
+  if (!search_string.empty()) {
+    result = chrome_browser_net::AppendOrReplaceQueryParameter(
+        result, "q", search_string);
   }
   return result;
 }
@@ -456,9 +463,11 @@ base::Value* GetDataOperation::ParseResponse(const std::string& data) {
 GetDocumentsOperation::GetDocumentsOperation(GDataOperationRegistry* registry,
                                              Profile* profile,
                                              int start_changestamp,
+                                             const std::string& search_string,
                                              const GetDataCallback& callback)
     : GetDataOperation(registry, profile, callback),
-      start_changestamp_(start_changestamp) {
+      start_changestamp_(start_changestamp),
+      search_string_(search_string) {
 }
 
 GetDocumentsOperation::~GetDocumentsOperation() {}
@@ -469,17 +478,22 @@ void GetDocumentsOperation::SetUrl(const GURL& url) {
 
 GURL GetDocumentsOperation::GetURL() const {
   if (!override_url_.is_empty())
-    return AddFeedUrlParams(override_url_, kMaxDocumentsPerFeed, 0);
+    return AddFeedUrlParams(override_url_,
+                            kMaxDocumentsPerFeed,
+                            0,
+                            std::string());
 
   if (start_changestamp_ == 0) {
     return AddFeedUrlParams(GURL(kGetDocumentListURL),
                             kMaxDocumentsPerFeed,
-                            0);
+                            0,
+                            search_string_);
   }
 
   return AddFeedUrlParams(GURL(kGetChangesListURL),
                           kMaxDocumentsPerFeed,
-                          start_changestamp_);
+                          start_changestamp_,
+                          std::string());
 }
 
 //========================= GetAccountMetadataOperation ========================
