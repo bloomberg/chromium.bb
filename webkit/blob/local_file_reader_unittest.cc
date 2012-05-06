@@ -48,9 +48,8 @@ void ReadFromReader(LocalFileReader* reader,
   }
 }
 
-void NeverCalled(int) {
-  ADD_FAILURE();
-}
+void NeverCalled(int) { ADD_FAILURE(); }
+void EmptyCallback() {}
 
 void QuitLoop() {
   MessageLoop::current()->Quit();
@@ -76,8 +75,7 @@ class LocalFileReaderTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     // Give another chance for deleted streams to perform Close.
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&QuitLoop));
-    MessageLoop::current()->Run();
+    MessageLoop::current()->RunAllPending();
     file_thread_.Stop();
   }
 
@@ -107,9 +105,14 @@ class LocalFileReaderTest : public testing::Test {
 
   FilePath test_dir() const { return dir_.path(); }
   FilePath test_path() const { return dir_.path().AppendASCII("test"); }
-
   base::Time test_file_modification_time() const {
     return test_file_modification_time_;
+  }
+
+  void EnsureFileTaskFinished() {
+    file_task_runner()->PostTaskAndReply(
+        FROM_HERE, base::Bind(&EmptyCallback), base::Bind(&QuitLoop));
+    MessageLoop::current()->Run();
   }
 
  private:
@@ -252,7 +255,7 @@ TEST_F(LocalFileReaderTest, DeleteWithUnfinishedRead) {
   // Delete immediately.
   // Should not crash; nor should NeverCalled be callback.
   reader.reset();
-  MessageLoop::current()->RunAllPending();
+  EnsureFileTaskFinished();
 }
 
 }  // namespace webkit_blob

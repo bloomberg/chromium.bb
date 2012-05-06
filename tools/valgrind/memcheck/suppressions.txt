@@ -5669,31 +5669,6 @@
    fun:_ZN7WebCore21GraphicsLayerChromium16removeFromParentEv
 }
 {
-   bug_123302a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10WorkerPool16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_b
-   fun:_ZN3net15FileStreamPosix5CloseERKN4base8CallbackIFviEEE
-   fun:_ZN3net10FileStream5CloseERKN4base8CallbackIFviEEE
-   fun:_ZN11webkit_blob15LocalFileReaderD1Ev
-   fun:_ZN10scoped_ptrIN11webkit_blob15LocalFileReaderEE5resetEPS1_
-   fun:_ZN7fileapi23FileSystemURLRequestJob4KillEv
-   fun:_ZN7fileapi27FileSystemURLRequestJobTest8TearDownEv
-}
-{
-  bug_123302b
-  Memcheck:Leak
-  fun:_Znw*
-  fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-  fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-  fun:_ZN4base13FileUtilProxy11GetFileInfoEPNS_10TaskRunnerERK8FilePathRKNS_8CallbackIFvNS_17PlatformFileErrorERKNS_16PlatformFileInfoEEEE
-  fun:_ZN11webkit_blob15LocalFileReader9GetLengthERKN4base8CallbackIFvlEEE
-  fun:_ZN11webkit_blob15LocalFileReader4OpenERKN4base8CallbackIFviEEE
-  fun:_ZN11webkit_blob15LocalFileReader4ReadEPN3net8IOBufferEiRKN4base8CallbackIFviEEE
-  fun:_ZN11webkit_blob49LocalFileReaderTest_DeleteWithUnfinishedRead_Test8TestBodyEv
-}
-{
    bug_123307
    Memcheck:Leak
    fun:malloc
