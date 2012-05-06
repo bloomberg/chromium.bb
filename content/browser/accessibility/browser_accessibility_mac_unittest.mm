@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_cocoa.h"
+#include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -77,8 +78,8 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
     delegate_.reset([[MockAccessibilityDelegate alloc] init]);
     manager_.reset(
         BrowserAccessibilityManager::Create(delegate_, root, NULL));
-    accessibility_.reset([manager_->GetRoot()->toBrowserAccessibilityCocoa()
-        retain]);
+    accessibility_.reset([manager_->GetRoot()->ToBrowserAccessibilityMac()->
+        native_view() retain]);
   }
 
  protected:

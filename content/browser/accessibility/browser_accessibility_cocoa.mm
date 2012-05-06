@@ -12,6 +12,7 @@
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/public/common/content_client.h"
 #include "grit/webkit_strings.h"
@@ -343,7 +344,8 @@ NSDictionary* attributeToMethodNameMap = nil;
          index < browserAccessibility_->child_count();
          ++index) {
       BrowserAccessibilityCocoa* child =
-          browserAccessibility_->GetChild(index)->toBrowserAccessibilityCocoa();
+          browserAccessibility_->GetChild(index)->
+              ToBrowserAccessibilityMac()->native_view();
       if ([child isIgnored])
         [children_ addObjectsFromArray:[child children]];
       else
@@ -362,7 +364,7 @@ NSDictionary* attributeToMethodNameMap = nil;
       // a DCHECK in the future.
       if (child) {
         BrowserAccessibilityCocoa* child_cocoa =
-            child->toBrowserAccessibilityCocoa();
+            child->ToBrowserAccessibilityMac()->native_view();
         [children_ addObject:child_cocoa];
       }
     }
@@ -373,9 +375,9 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (void)childrenChanged {
   if (![self isIgnored]) {
     children_.reset();
-  } else {
-    [browserAccessibility_->parent()->toBrowserAccessibilityCocoa()
-       childrenChanged];
+  } else if (browserAccessibility_->parent()) {
+    [browserAccessibility_->parent()->ToBrowserAccessibilityMac()->native_view()
+         childrenChanged];
   }
 }
 
@@ -488,7 +490,8 @@ NSDictionary* attributeToMethodNameMap = nil;
   // A nil parent means we're the root.
   if (browserAccessibility_->parent()) {
     return NSAccessibilityUnignoredAncestor(
-        browserAccessibility_->parent()->toBrowserAccessibilityCocoa());
+        browserAccessibility_->parent()->ToBrowserAccessibilityMac()->
+            native_view());
   } else {
     // Hook back up to RenderWidgetHostViewCocoa.
     return browserAccessibility_->manager()->GetParentView();
@@ -632,7 +635,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     BrowserAccessibility* titleElement =
         browserAccessibility_->manager()->GetFromRendererID(titleElementId);
     if (titleElement)
-      return titleElement->toBrowserAccessibilityCocoa();
+      return titleElement->ToBrowserAccessibilityMac()->native_view();
   }
   return nil;
 }

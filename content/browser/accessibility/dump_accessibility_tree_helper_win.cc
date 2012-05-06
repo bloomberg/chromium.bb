@@ -197,7 +197,7 @@ string16 DumpAccessibilityTreeHelper::ToString(
   if (role_string_map.empty())
     Initialize();
 
-  BrowserAccessibilityWin* acc_obj = node->toBrowserAccessibilityWin();
+  BrowserAccessibilityWin* acc_obj = node->ToBrowserAccessibilityWin();
   string16 state;
   std::map<int32, string16>::iterator it;
 
