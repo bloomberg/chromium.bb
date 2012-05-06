@@ -3214,11 +3214,18 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_MENUBAR;
       break;
     case WebAccessibility::ROLE_MENU_ITEM:
-    case WebAccessibility::ROLE_MENU_LIST_OPTION:
       ia_role_ = ROLE_SYSTEM_MENUITEM;
       break;
     case WebAccessibility::ROLE_MENU_LIST_POPUP:
-      ia_role_ = ROLE_SYSTEM_MENUPOPUP;
+      ia_role_ = ROLE_SYSTEM_CLIENT;
+      break;
+    case WebAccessibility::ROLE_MENU_LIST_OPTION:
+      ia_role_ = ROLE_SYSTEM_LISTITEM;
+      if (ia_state_ & STATE_SYSTEM_SELECTABLE) {
+        ia_state_ |= STATE_SYSTEM_FOCUSABLE;
+        if (HasState(WebAccessibility::STATE_FOCUSED))
+          ia_state_|= STATE_SYSTEM_FOCUSED;
+      }
       break;
     case WebAccessibility::ROLE_NOTE:
       ia_role_ = ROLE_SYSTEM_GROUPING;

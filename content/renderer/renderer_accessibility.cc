@@ -53,6 +53,9 @@ bool WebAccessibilityNotificationToAccessibilityNotification(
     case WebKit::WebAccessibilityNotificationLoadComplete:
       *type = AccessibilityNotificationLoadComplete;
       break;
+    case WebKit::WebAccessibilityNotificationMenuListItemSelected:
+      *type = AccessibilityNotificationMenuListItemSelected;
+      break;
     case WebKit::WebAccessibilityNotificationMenuListValueChanged:
       *type = AccessibilityNotificationMenuListValueChanged;
       break;
@@ -307,6 +310,7 @@ void RendererAccessibility::SendPendingAccessibilityNotifications() {
           break;
         }
       }
+
       if (!is_child_of_parent) {
         obj = parent;
         notification.id = obj.axID();

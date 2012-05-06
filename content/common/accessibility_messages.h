@@ -53,6 +53,9 @@ enum AccessibilityNotification {
   // The document node has loaded.
   AccessibilityNotificationLoadComplete,
 
+  // A menu list selection changed.
+  AccessibilityNotificationMenuListItemSelected,
+
   // A menu list value changed.
   AccessibilityNotificationMenuListValueChanged,
 

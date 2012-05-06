@@ -106,6 +106,9 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     case AccessibilityNotificationAlert:
       event_id = EVENT_SYSTEM_ALERT;
       break;
+    case AccessibilityNotificationMenuListItemSelected:
+      event_id = EVENT_OBJECT_FOCUS;
+      break;
     case AccessibilityNotificationMenuListValueChanged:
       event_id = EVENT_OBJECT_VALUECHANGE;
       break;
