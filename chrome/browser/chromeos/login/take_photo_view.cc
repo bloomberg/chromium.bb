@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,7 @@ class CameraImageView : public views::ImageView {
 
   void SetInitializingState() {
     ShowThrobber();
-    SetMessage(std::wstring());
+    SetMessage(string16());
     SetImage(
         ResourceBundle::GetSharedInstance().GetBitmapNamed(
             IDR_USER_IMAGE_INITIALIZING));
@@ -78,12 +78,12 @@ class CameraImageView : public views::ImageView {
 
   void SetNormalState() {
     HideThrobber();
-    SetMessage(std::wstring());
+    SetMessage(string16());
   }
 
   void SetErrorState() {
     HideThrobber();
-    SetMessage(UTF16ToWide(l10n_util::GetStringUTF16(IDS_USER_IMAGE_NO_VIDEO)));
+    SetMessage(l10n_util::GetStringUTF16(IDS_USER_IMAGE_NO_VIDEO));
     SetImage(
         ResourceBundle::GetSharedInstance().GetBitmapNamed(
             IDR_USER_IMAGE_NO_VIDEO));
@@ -106,9 +106,9 @@ class CameraImageView : public views::ImageView {
     throbber_->SetVisible(false);
   }
 
-  void SetMessage(const std::wstring& message) {
+  void SetMessage(const string16& message) {
     DCHECK(message_);
-    message_->SetText(WideToUTF16Hack(message));
+    message_->SetText(message);
     message_->SetVisible(!message.empty());
     Layout();
   }
