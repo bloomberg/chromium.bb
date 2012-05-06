@@ -72,7 +72,6 @@
       "file_filters": [
         "filesystem:*.htm",
         "filesystem:*.html",
-        "filesystem:*.log",
         "filesystem:*.mht",
         "filesystem:*.mhtml",
         "filesystem:*.txt"
