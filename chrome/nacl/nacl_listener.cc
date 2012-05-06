@@ -84,8 +84,8 @@ int BrokerDuplicateHandle(NaClHandle source_handle,
                                         options);
 }
 
-int AttachDebugExceptionHandler(void* info, size_t info_size) {
-  std::string info_string(reinterpret_cast<char*>(info), info_size);
+int AttachDebugExceptionHandler(const void* info, size_t info_size) {
+  std::string info_string(reinterpret_cast<const char*>(info), info_size);
   bool result = false;
   if (!g_listener->Send(new NaClProcessMsg_AttachDebugExceptionHandler(
            info_string, &result)))

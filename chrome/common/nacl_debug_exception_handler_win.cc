@@ -44,11 +44,9 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
     message_loop_->PostTask(FROM_HERE, base::Bind(on_connected_, attached));
 
     if (attached) {
-      // TODO(mseaborn): Clean up the NaCl side to remove the need for
-      // a const_cast here.
       NaClDebugExceptionHandlerRun(
           nacl_process_,
-          reinterpret_cast<void*>(const_cast<char*>(startup_info_.data())),
+          reinterpret_cast<const void*>(startup_info_.data()),
           startup_info_.size());
     }
     delete this;
