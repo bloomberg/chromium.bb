@@ -19,6 +19,7 @@
 
 #include <set>
 
+#include "base/memory/singleton.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/time.h"

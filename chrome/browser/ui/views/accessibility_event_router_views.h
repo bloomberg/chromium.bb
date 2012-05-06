@@ -10,12 +10,13 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/singleton.h"
 #include "base/string16.h"
 #include "chrome/browser/accessibility/accessibility_events.h"
 #include "ui/base/accessibility/accessibility_types.h"
 
 class Profile;
+
+template <typename T> struct DefaultSingletonTraits;
 
 namespace views {
 class View;
@@ -66,12 +67,13 @@ class AccessibilityEventRouterViews {
                              bool has_submenu);
 
  private:
-  AccessibilityEventRouterViews();
-  virtual ~AccessibilityEventRouterViews();
-
   friend struct DefaultSingletonTraits<AccessibilityEventRouterViews>;
+
   FRIEND_TEST_ALL_PREFIXES(AccessibilityEventRouterViewsTest,
                            TestFocusNotification);
+
+  AccessibilityEventRouterViews();
+  virtual ~AccessibilityEventRouterViews();
 
   // Checks the type of the view and calls one of the more specific
   // Send*Notification methods, below.

@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
