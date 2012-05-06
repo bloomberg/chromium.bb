@@ -107,8 +107,13 @@ function sendRequest(functionName, args, argSchemas, opt_args) {
   if (request.args === undefined)
     request.args = null;
 
-  var sargs = opt_args.noStringify ?
-      request.args : chromeHidden.JSON.stringify(request.args);
+  // TODO(asargent) - convert all optional native functions to accept raw
+  // v8 values instead of expecting JSON strings.
+  var doStringify = false;
+  if (opt_args.nativeFunction && !opt_args.noStringify)
+    doStringify = true;
+  var requestArgs = doStringify ?
+      chromeHidden.JSON.stringify(request.args) : request.args;
   var nativeFunction = opt_args.nativeFunction || natives.StartRequest;
 
   var requestId = natives.GetNextRequestId();
@@ -116,7 +121,7 @@ function sendRequest(functionName, args, argSchemas, opt_args) {
   requests[requestId] = request;
   var hasCallback =
       (request.callback || opt_args.customCallback) ? true : false;
-  return nativeFunction(functionName, sargs, requestId, hasCallback,
+  return nativeFunction(functionName, requestArgs, requestId, hasCallback,
                         opt_args.forIOThread);
 }
 

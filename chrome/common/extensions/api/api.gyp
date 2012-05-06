@@ -31,6 +31,7 @@
           'experimental.alarms.idl',
           'experimental.bluetooth.idl',
           'experimental.dns.idl',
+          'experimental.idltest.idl',
           'experimental.serial.idl',
           'experimental.socket.idl',
           'experimental.usb.idl',

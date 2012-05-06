@@ -2698,6 +2698,7 @@
         'browser/extensions/api/extension_action/page_action_apitest.cc',
         'browser/extensions/api/extension_action/page_as_browser_action_apitest.cc',
         'browser/extensions/api/identity/identity_apitest.cc',
+        'browser/extensions/api/idltest/idltest_apitest.cc',
         'browser/extensions/api/offscreen_tabs/offscreen_tabs_apitest.cc',
         'browser/extensions/api/omnibox/omnibox_apitest.cc',
         'browser/extensions/api/permissions/permissions_apitest.cc',
