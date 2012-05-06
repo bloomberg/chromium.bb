@@ -34,7 +34,7 @@ string16 ExtensionGlobalErrorBadge::MenuItemLabel() {
 
 void ExtensionGlobalErrorBadge::ExecuteMenuItem(Browser* browser) {
   ExtensionService* extension_service =
-      browser->GetProfile()->GetExtensionService();
+      browser->profile()->GetExtensionService();
 
   // Suppress all current warnings in the extension service from triggering
   // a badge on the wrench menu in the future of this session.

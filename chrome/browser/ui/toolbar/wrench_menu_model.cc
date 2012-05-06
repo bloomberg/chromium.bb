@@ -258,12 +258,12 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
     case IDC_SHOW_SYNC_SETUP: {
       ProfileSyncService* service =
           ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-              browser_->GetProfile()->GetOriginalProfile());
+              browser_->profile()->GetOriginalProfile());
       SyncGlobalError* error = service->sync_global_error();
       if (error && error->HasCustomizedSyncMenuItem())
         return error->MenuItemLabel();
       if (service->HasSyncSetupCompleted()) {
-        std::string username = browser_->GetProfile()->GetPrefs()->GetString(
+        std::string username = browser_->profile()->GetPrefs()->GetString(
             prefs::kGoogleServicesUsername);
         if (!username.empty()) {
           return l10n_util::GetStringFUTF16(IDS_SYNC_MENU_SYNCED_LABEL,
@@ -295,7 +295,7 @@ bool WrenchMenuModel::GetIconForCommandId(int command_id,
     case IDC_SHOW_SYNC_SETUP: {
       ProfileSyncService* service =
           ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-              browser_->GetProfile()->GetOriginalProfile());
+              browser_->profile()->GetOriginalProfile());
       SyncGlobalError* error = service->sync_global_error();
       if (error && error->HasCustomizedSyncMenuItem()) {
         int icon_id = error->MenuItemIconResourceID();
@@ -323,7 +323,7 @@ void WrenchMenuModel::ExecuteCommand(int command_id) {
   if (command_id == IDC_SHOW_SYNC_SETUP) {
     ProfileSyncService* service =
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-            browser_->GetProfile()->GetOriginalProfile());
+            browser_->profile()->GetOriginalProfile());
     SyncGlobalError* error = service->sync_global_error();
     if (error && error->HasCustomizedSyncMenuItem()) {
       error->ExecuteMenuItem(browser_);

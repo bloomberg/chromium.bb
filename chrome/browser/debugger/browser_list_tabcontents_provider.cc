@@ -24,7 +24,7 @@ std::string BrowserListTabContentsProvider::GetDiscoveryPageHTML() {
   std::set<Profile*> profiles;
   for (BrowserList::const_iterator it = BrowserList::begin(),
        end = BrowserList::end(); it != end; ++it) {
-    profiles.insert((*it)->GetProfile());
+    profiles.insert((*it)->profile());
   }
   for (std::set<Profile*>::iterator it = profiles.begin();
        it != profiles.end(); ++it) {

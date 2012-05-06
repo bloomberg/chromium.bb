@@ -27,9 +27,8 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
-#include "chrome/browser/tabs/tab_handler.h"
-#include "chrome/browser/tabs/tab_strip_model_delegate.h"  // TODO(beng): remove
-#include "chrome/browser/tabs/tab_strip_model_observer.h"  // TODO(beng): remove
+#include "chrome/browser/tabs/tab_strip_model_delegate.h"
+#include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
@@ -81,7 +80,8 @@ namespace gfx {
 class Point;
 }
 
-class Browser : public TabHandlerDelegate,
+class Browser : public TabStripModelDelegate,
+                public TabStripModelObserver,
                 public content::WebContentsDelegate,
                 public CoreTabHelperDelegate,
                 public SearchEngineTabHelperDelegate,
@@ -413,10 +413,8 @@ class Browser : public TabHandlerDelegate,
 
   // TabStripModel pass-thrus /////////////////////////////////////////////////
 
-  TabStripModel* tabstrip_model() const {
-    // TODO(beng): remove this accessor. It violates google style.
-    return tab_handler_->GetTabStripModel();
-  }
+  // TODO(tfarina): Rename this to tab_strip_model().
+  TabStripModel* tabstrip_model() const { return tab_strip_model_.get(); }
 
   int tab_count() const;
   int active_index() const;
@@ -800,19 +798,16 @@ class Browser : public TabHandlerDelegate,
       const content::WebContents* base_web_contents,
       content::SessionStorageNamespace* session_storage_namespace);
 
-  // Overridden from TabHandlerDelegate:
-  virtual Profile* GetProfile() const OVERRIDE;
-  virtual Browser* AsBrowser() OVERRIDE;
-
   // Overridden from TabStripModelDelegate:
-  virtual TabContentsWrapper* AddBlankTab(bool foreground);
-  virtual TabContentsWrapper* AddBlankTabAt(int index, bool foreground);
+  virtual TabContentsWrapper* AddBlankTab(bool foreground) OVERRIDE;
+  virtual TabContentsWrapper* AddBlankTabAt(int index,
+                                            bool foreground) OVERRIDE;
   virtual Browser* CreateNewStripWithContents(
       TabContentsWrapper* detached_contents,
       const gfx::Rect& window_bounds,
       const DockInfo& dock_info,
-      bool maximize);
-  virtual int GetDragActions() const;
+      bool maximize) OVERRIDE;
+  virtual int GetDragActions() const OVERRIDE;
   // Construct a TabContentsWrapper for a given URL, profile and transition
   // type. If instance is not null, its process will be used to render the tab.
   virtual TabContentsWrapper* CreateTabContentsForURL(
@@ -821,42 +816,44 @@ class Browser : public TabHandlerDelegate,
       Profile* profile,
       content::PageTransition transition,
       bool defer_load,
-      content::SiteInstance* instance) const;
-  virtual bool CanDuplicateContentsAt(int index);
-  virtual void DuplicateContentsAt(int index);
-  virtual void CloseFrameAfterDragSession();
-  virtual void CreateHistoricalTab(TabContentsWrapper* contents);
-  virtual bool RunUnloadListenerBeforeClosing(TabContentsWrapper* contents);
-  virtual bool CanCloseContents(std::vector<int>* indices);
-  virtual bool CanBookmarkAllTabs() const;
-  virtual void BookmarkAllTabs();
-  virtual bool CanCloseTab() const;
-  virtual bool CanRestoreTab();
-  virtual void RestoreTab();
-  virtual bool LargeIconsPermitted() const;
+      content::SiteInstance* instance) const OVERRIDE;
+  virtual bool CanDuplicateContentsAt(int index) OVERRIDE;
+  virtual void DuplicateContentsAt(int index) OVERRIDE;
+  virtual void CloseFrameAfterDragSession() OVERRIDE;
+  virtual void CreateHistoricalTab(TabContentsWrapper* contents) OVERRIDE;
+  virtual bool RunUnloadListenerBeforeClosing(
+      TabContentsWrapper* contents) OVERRIDE;
+  virtual bool CanCloseContents(std::vector<int>* indices) OVERRIDE;
+  virtual bool CanBookmarkAllTabs() const OVERRIDE;
+  virtual void BookmarkAllTabs() OVERRIDE;
+  virtual bool CanCloseTab() const OVERRIDE;
+  virtual bool CanRestoreTab() OVERRIDE;
+  virtual void RestoreTab() OVERRIDE;
+  virtual bool LargeIconsPermitted() const OVERRIDE;
 
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(TabContentsWrapper* contents,
                              int index,
-                             bool foreground);
+                             bool foreground) OVERRIDE;
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
                             TabContentsWrapper* contents,
-                            int index);
-  virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
-  virtual void TabDeactivated(TabContentsWrapper* contents);
+                            int index) OVERRIDE;
+  virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
+  virtual void TabDeactivated(TabContentsWrapper* contents) OVERRIDE;
   virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
                                 TabContentsWrapper* new_contents,
                                 int index,
-                                bool user_gesture);
+                                bool user_gesture) OVERRIDE;
   virtual void TabMoved(TabContentsWrapper* contents,
                         int from_index,
-                        int to_index);
+                        int to_index) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              TabContentsWrapper* old_contents,
                              TabContentsWrapper* new_contents,
-                             int index);
-  virtual void TabPinnedStateChanged(TabContentsWrapper* contents, int index);
-  virtual void TabStripEmpty();
+                             int index) OVERRIDE;
+  virtual void TabPinnedStateChanged(TabContentsWrapper* contents,
+                                     int index) OVERRIDE;
+  virtual void TabStripEmpty() OVERRIDE;
 
   // Fullscreen permission infobar callbacks.
   // TODO(koz): Remove this and have callers call FullscreenController directly.
@@ -1344,8 +1341,7 @@ class Browser : public TabHandlerDelegate,
   // This Browser's window.
   BrowserWindow* window_;
 
-  // This Browser's current TabHandler.
-  scoped_ptr<TabHandler> tab_handler_;
+  scoped_ptr<TabStripModel> tab_strip_model_;
 
   // The CommandUpdater that manages the browser window commands.
   CommandUpdater command_updater_;

@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, ProcessOverflow) {
 
   // Get extension processes.
   ExtensionProcessManager* process_manager =
-    browser()->GetProfile()->GetExtensionProcessManager();
+    browser()->profile()->GetExtensionProcessManager();
   content::RenderProcessHost* extension1_host =
       process_manager->GetSiteInstanceForURL(extension1_url)->GetProcess();
   content::RenderProcessHost* extension2_host =
@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, ExtensionProcessBalancing) {
       CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   std::set<int> process_ids;
-  Profile* profile = browser()->GetProfile();
+  Profile* profile = browser()->profile();
   ExtensionProcessManager* epm = profile->GetExtensionProcessManager();
 
   for (ExtensionProcessManager::const_iterator iter =

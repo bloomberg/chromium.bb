@@ -590,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
   }
 
   SendCommand("\"doReport\"");  // Simulate the user checking the checkbox.
-  EXPECT_TRUE(browser()->GetProfile()->GetPrefs()->GetBoolean(
+  EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
       prefs::kSafeBrowsingReportingEnabled));
 
   SendCommand("\"proceed\"");  // Simulate the user clicking "back"

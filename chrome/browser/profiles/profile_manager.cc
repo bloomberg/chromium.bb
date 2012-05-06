@@ -610,7 +610,7 @@ void ProfileManager::BrowserListObserver::OnBrowserRemoved(
 
 void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(
     const Browser* browser) {
-  Profile* last_active = browser->GetProfile();
+  Profile* last_active = browser->profile();
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
   // Only keep track of profiles that we are managing; tests may create others.

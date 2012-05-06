@@ -658,7 +658,7 @@ void CreateDialogImpl(const FilePath& path_to_file,
       if (web_contents)
         job_title = web_contents->GetTitle();
     }
-    profile = browser->GetProfile();
+    profile = browser->profile();
   } else {
     std::vector<Profile*> loaded_profiles =
         g_browser_process->profile_manager()->GetLoadedProfiles();

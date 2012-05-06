@@ -35,8 +35,7 @@ bool IsWebIntentsEnabledInActiveBrowser() {
     browser = *BrowserList::begin();
   DCHECK(browser);
 
-  Profile* profile = browser->GetProfile();
-  return IsWebIntentsEnabled(profile);
+  return IsWebIntentsEnabled(browser->profile());
 }
 
 }  // namespace web_intents

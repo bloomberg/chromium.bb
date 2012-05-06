@@ -13,8 +13,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -99,7 +99,7 @@ class HistoryBrowserTest : public InProcessBrowserTest {
   }
 
   Profile* GetProfile() {
-    return browser()->GetProfile();
+    return browser()->profile();
   }
 
   HistoryService* GetHistoryService() {

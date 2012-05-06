@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "chrome/browser/ui/panels/docked_panel_strip.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -509,7 +508,7 @@ bool Panel::IsDownloadShelfVisible() const {
 
 DownloadShelf* Panel::GetDownloadShelf() {
   Browser* panel_browser = native_panel_->GetPanelBrowser();
-  Profile* profile = panel_browser->GetProfile();
+  Profile* profile = panel_browser->profile();
   Browser* tabbed_browser = Browser::GetTabbedBrowser(profile, true);
 
   if (!tabbed_browser) {

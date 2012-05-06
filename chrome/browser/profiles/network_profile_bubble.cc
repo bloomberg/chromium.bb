@@ -202,7 +202,7 @@ void NetworkProfileBubble::LinkClicked(views::Link* source, int event_flags) {
     browser->OpenURL(params);
     // If the user interacted with the bubble we don't reduce the number of
     // warnings left.
-    PrefService* prefs = browser->GetProfile()->GetPrefs();
+    PrefService* prefs = browser->profile()->GetPrefs();
     int left_warnings = prefs->GetInteger(prefs::kNetworkProfileWarningsLeft);
     prefs->SetInteger(prefs::kNetworkProfileWarningsLeft, ++left_warnings);
   }
@@ -246,7 +246,7 @@ void NetworkProfileBubble::ShowNotification(const Browser* browser) {
 
   // Mark the time of the last bubble and reduce the number of warnings left
   // before the next silence period starts.
-  PrefService* prefs = browser->GetProfile()->GetPrefs();
+  PrefService* prefs = browser->profile()->GetPrefs();
   prefs->SetInt64(prefs::kNetworkProfileLastWarningTime,
                   base::Time::Now().ToTimeT());
   int left_warnings = prefs->GetInteger(prefs::kNetworkProfileWarningsLeft);
