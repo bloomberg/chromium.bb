@@ -28,4 +28,4 @@ EXPORTS
 	findOpcodeName
 	extParseChars
 	extParseDots
-
+	getLastTableList
