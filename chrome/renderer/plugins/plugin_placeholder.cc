@@ -117,7 +117,6 @@ PluginPlaceholder* PluginPlaceholder::CreateErrorPlugin(
   // |missing_plugin| will destroy itself when its WebViewPlugin is going away.
   PluginPlaceholder* plugin = new PluginPlaceholder(
       render_view, NULL, params, html_data, params.mimeType);
-  plugin->set_allow_loading(true);
 
   return plugin;
 }
@@ -371,14 +370,16 @@ void PluginPlaceholder::OnCancelledDownloadingPlugin() {
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
 void PluginPlaceholder::PluginListChanged() {
-  ChromeViewHostMsg_GetPluginInfo_Status status;
-  webkit::WebPluginInfo plugin_info;
-  std::string mime_type(plugin_params_.mimeType.utf8());
-  std::string actual_mime_type;
+  if (!frame_)
+    return;
   WebDocument document = frame_->top()->document();
   if (document.isNull())
     return;
 
+  ChromeViewHostMsg_GetPluginInfo_Status status;
+  webkit::WebPluginInfo plugin_info;
+  std::string mime_type(plugin_params_.mimeType.utf8());
+  std::string actual_mime_type;
   render_view()->Send(new ChromeViewHostMsg_GetPluginInfo(
       routing_id(), GURL(plugin_params_.url), document.url(),
       mime_type, &status, &plugin_info, &actual_mime_type));
