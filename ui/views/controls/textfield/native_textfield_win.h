@@ -118,6 +118,7 @@ class NativeTextfieldWin
     MSG_WM_CONTEXTMENU(OnContextMenu)
     MSG_WM_COPY(OnCopy)
     MSG_WM_CUT(OnCut)
+    MESSAGE_HANDLER_EX(WM_GETOBJECT, OnGetObject)
     MESSAGE_HANDLER_EX(WM_IME_CHAR, OnImeChar)
     MESSAGE_HANDLER_EX(WM_IME_STARTCOMPOSITION, OnImeStartComposition)
     MESSAGE_HANDLER_EX(WM_IME_COMPOSITION, OnImeComposition)
@@ -179,6 +180,7 @@ class NativeTextfieldWin
   void OnContextMenu(HWND window, const POINT& point);
   void OnCopy();
   void OnCut();
+  LRESULT OnGetObject(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeChar(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeStartComposition(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeComposition(UINT message, WPARAM wparam, LPARAM lparam);

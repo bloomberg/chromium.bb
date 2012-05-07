@@ -340,23 +340,30 @@ bool NativeTextfieldWin::IsIMEComposing() const {
 }
 
 void NativeTextfieldWin::GetSelectedRange(ui::Range* range) const {
-  NOTREACHED();
+  // TODO(tommi): Implement.
+  NOTIMPLEMENTED();
+  range->set_start(0);
+  range->set_end(0);
 }
 
 void NativeTextfieldWin::SelectRange(const ui::Range& range) {
-  NOTREACHED();
+  // TODO(tommi): Implement.
+  NOTIMPLEMENTED();
 }
 
 void NativeTextfieldWin::GetSelectionModel(gfx::SelectionModel* sel) const {
-  NOTREACHED();
+  // TODO(tommi): Implement.
+  NOTIMPLEMENTED();
 }
 
 void NativeTextfieldWin::SelectSelectionModel(const gfx::SelectionModel& sel) {
-  NOTREACHED();
+  // TODO(tommi): Implement.
+  NOTIMPLEMENTED();
 }
 
 size_t NativeTextfieldWin::GetCursorPosition() const {
-  NOTREACHED();
+  // TODO(tommi): Implement.
+  NOTIMPLEMENTED();
   return 0U;
 }
 
@@ -559,6 +566,17 @@ void NativeTextfieldWin::OnCut() {
   // This replace selection will have no effect (even on the undo stack) if the
   // current selection is empty.
   ReplaceSel(L"", true);
+}
+
+LRESULT NativeTextfieldWin::OnGetObject(UINT message,
+                                        WPARAM wparam,
+                                        LPARAM lparam) {
+  LRESULT ret = 0;
+  if (lparam == OBJID_CLIENT) {
+    ret = LresultFromObject(IID_IAccessible, wparam,
+        textfield_->GetNativeViewAccessible());
+  }
+  return ret;
 }
 
 LRESULT NativeTextfieldWin::OnImeChar(UINT message,
