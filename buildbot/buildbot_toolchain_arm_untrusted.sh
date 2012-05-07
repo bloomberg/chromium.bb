@@ -160,7 +160,7 @@ for arch in ${RUN_TESTS} ; do
   # Compensate for the fact that the the *other* script already prints
   # a step message for the browser case.
   # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2768
-  if [[ ${arch} != *-browser* ]]
+  if [[ ${arch} != *-browser* ]] ; then
     echo @@@BUILD_STEP test-${arch}@@@
   fi
   ${PNACL_TEST} test-${arch} -k || { RETCODE=$? && echo @@@STEP_FAILURE@@@; }
