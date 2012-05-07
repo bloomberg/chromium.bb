@@ -248,14 +248,17 @@ void HostDispatcher::OnHostMsgLogWithSource(PP_Instance instance,
 
 // ScopedModuleReference -------------------------------------------------------
 
-ScopedModuleReference::ScopedModuleReference(Dispatcher* dispatcher) {
-  DCHECK(!dispatcher->IsPlugin());
-  dispatcher_ = static_cast<HostDispatcher*>(dispatcher);
-  dispatcher_->ppb_proxy()->AddRefModule(dispatcher_->pp_module());
+ScopedModuleReference::ScopedModuleReference(Dispatcher* dispatcher)
+    : dispatcher_(NULL) {
+  if (!dispatcher->IsPlugin()) {
+    dispatcher_ = static_cast<HostDispatcher*>(dispatcher);
+    dispatcher_->ppb_proxy()->AddRefModule(dispatcher_->pp_module());
+  }
 }
 
 ScopedModuleReference::~ScopedModuleReference() {
-  dispatcher_->ppb_proxy()->ReleaseModule(dispatcher_->pp_module());
+  if (dispatcher_)
+    dispatcher_->ppb_proxy()->ReleaseModule(dispatcher_->pp_module());
 }
 
 }  // namespace proxy
