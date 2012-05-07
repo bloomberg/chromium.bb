@@ -6,6 +6,7 @@
     # 'branding_dir' is set in the 'conditions' section at the bottom.
     'msvs_use_common_release': 0,
     'msvs_use_common_linker_extras': 0,
+    'mini_installer_internal_deps%': 0,
   },
   'includes': [
     '../../build/win_precompile.gypi',
@@ -19,7 +20,6 @@
           '../chrome.gyp:chrome_dll',
           '../chrome.gyp:default_extensions',
           '../chrome.gyp:setup',
-          'mini_installer/support/mini_installer_support.gyp:*',
         ],
         'include_dirs': [
           '../..',
@@ -168,6 +168,13 @@
           }, { # else branding!="Chrome"
             'variables': {
                'branding_dir': '../app/theme/chromium',
+            },
+          }],
+          [ 'mini_installer_internal_deps == 1', {
+            'target_defaults': {
+              'dependencies': [
+                'mini_installer/support/mini_installer_support.gyp:*',
+              ],
             },
           }],
         ],
