@@ -914,7 +914,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
   // Main browser process.
   if (child <= 0)
     return;
-  HANDLE_EINTR(sys_waitpid(child, NULL, 0));
+  (void) HANDLE_EINTR(sys_waitpid(child, NULL, 0));
 }
 
 static bool CrashDone(const char* dump_path,

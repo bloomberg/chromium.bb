@@ -94,8 +94,8 @@ CrashHandlerHostLinux::CrashHandlerHostLinux()
 }
 
 CrashHandlerHostLinux::~CrashHandlerHostLinux() {
-  HANDLE_EINTR(close(process_socket_));
-  HANDLE_EINTR(close(browser_socket_));
+  (void) HANDLE_EINTR(close(process_socket_));
+  (void) HANDLE_EINTR(close(browser_socket_));
 }
 
 void CrashHandlerHostLinux::Init() {
@@ -213,7 +213,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
         LOG(ERROR) << "Death signal contained wrong number of descriptors;"
                    << " num_fds:" << num_fds;
         for (unsigned i = 0; i < num_fds; ++i)
-          HANDLE_EINTR(close(reinterpret_cast<int*>(CMSG_DATA(hdr))[i]));
+          (void) HANDLE_EINTR(close(reinterpret_cast<int*>(CMSG_DATA(hdr))[i]));
         return;
       } else {
         partner_fd = reinterpret_cast<int*>(CMSG_DATA(hdr))[0];
@@ -230,9 +230,9 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
     LOG(ERROR) << "Death signal message didn't contain all expected control"
                << " messages";
     if (partner_fd >= 0)
-      HANDLE_EINTR(close(partner_fd));
+      (void) HANDLE_EINTR(close(partner_fd));
     if (signal_fd >= 0)
-      HANDLE_EINTR(close(signal_fd));
+      (void) HANDLE_EINTR(close(signal_fd));
     return;
   }
 
@@ -250,17 +250,17 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   uint64_t inode_number;
   if (!base::FileDescriptorGetInode(&inode_number, partner_fd)) {
     LOG(WARNING) << "Failed to get inode number for passed socket";
-    HANDLE_EINTR(close(partner_fd));
-    HANDLE_EINTR(close(signal_fd));
+    (void) HANDLE_EINTR(close(partner_fd));
+    (void) HANDLE_EINTR(close(signal_fd));
     return;
   }
-  HANDLE_EINTR(close(partner_fd));
+  (void) HANDLE_EINTR(close(partner_fd));
 
   pid_t actual_crashing_pid = -1;
   if (!base::FindProcessHoldingSocket(&actual_crashing_pid, inode_number)) {
     LOG(WARNING) << "Failed to find process holding other end of crash reply "
                     "socket";
-    HANDLE_EINTR(close(signal_fd));
+    (void) HANDLE_EINTR(close(signal_fd));
     return;
   }
 
@@ -393,8 +393,8 @@ void CrashHandlerHostLinux::QueueCrashDumpTask(BreakpadInfo* info,
   msg.msg_iov = &done_iov;
   msg.msg_iovlen = 1;
 
-  HANDLE_EINTR(sendmsg(signal_fd, &msg, MSG_DONTWAIT | MSG_NOSIGNAL));
-  HANDLE_EINTR(close(signal_fd));
+  (void) HANDLE_EINTR(sendmsg(signal_fd, &msg, MSG_DONTWAIT | MSG_NOSIGNAL));
+  (void) HANDLE_EINTR(close(signal_fd));
 
   uploader_thread_->message_loop()->PostTask(
       FROM_HERE,
