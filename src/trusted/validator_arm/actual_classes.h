@@ -260,12 +260,11 @@ class ImmediateBic : public DataProc {
   inline ImmediateBic() {}
   virtual ~ImmediateBic() {}
 
-  // TODO(karl) Determine why we ever allowed BIC to directly write PC.
   // ImmediateBic is exempted from the writes-r15 check.
-  // virtual SafetyLevel safety(Instruction i) const {
-  //   UNREFERENCED_PARAMETER(i);
-  //   return MAY_BE_SAFE;
-  // }
+  virtual SafetyLevel safety(Instruction i) const {
+    UNREFERENCED_PARAMETER(i);
+    return MAY_BE_SAFE;
+  }
   virtual bool clears_bits(Instruction i, uint32_t mask) const;
 
  private:

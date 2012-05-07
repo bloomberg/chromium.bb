@@ -32,7 +32,7 @@ class Unary1RegisterImmediateOpTester : public Arm32DecoderTester {
  public:
   explicit Unary1RegisterImmediateOpTester(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
                                  const NamedClassDecoder& decoder);
 
  private:
@@ -46,7 +46,7 @@ class Unary1RegisterImmediateOpTesterRegsNotPc
  public:
   explicit Unary1RegisterImmediateOpTesterRegsNotPc(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -68,7 +68,7 @@ class BinaryRegisterImmediateTestTester : public Arm32DecoderTester {
  public:
   explicit BinaryRegisterImmediateTestTester(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
                                  const NamedClassDecoder& decoder);
 
  private:
@@ -90,7 +90,7 @@ class Unary2RegisterOpTester : public Arm32DecoderTester {
  public:
   explicit Unary2RegisterOpTester(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -104,7 +104,7 @@ class Unary2RegisterOpTesterNotRdIsPcAndS : public Unary2RegisterOpTester {
  public:
   explicit Unary2RegisterOpTesterNotRdIsPcAndS(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -127,7 +127,7 @@ class Binary2RegisterImmediateOpTester : public  Arm32DecoderTester {
  public:
   explicit Binary2RegisterImmediateOpTester(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -146,7 +146,7 @@ class Binary2RegisterImmediateOpTesterNotRdIsPcAndS
  public:
   Binary2RegisterImmediateOpTesterNotRdIsPcAndS(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
                                  const NamedClassDecoder& decoder);
 
  private:
@@ -183,7 +183,7 @@ class Binary3RegisterOpTester : public Arm32DecoderTester {
  public:
   explicit Binary3RegisterOpTester(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -198,7 +198,7 @@ class Binary3RegisterOpTesterRegsNotPc
  public:
   explicit Binary3RegisterOpTesterRegsNotPc(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -221,7 +221,7 @@ class Unary2RegisterImmedShiftedOpTester : public Arm32DecoderTester {
  public:
   explicit Unary2RegisterImmedShiftedOpTester(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -236,7 +236,7 @@ class Unary2RegisterImmedShiftedOpTesterImm5NotZero
  public:
   explicit Unary2RegisterImmedShiftedOpTesterImm5NotZero(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -251,7 +251,7 @@ class Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS
  public:
   explicit Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -277,7 +277,7 @@ class Unary3RegisterShiftedOpTester : public Arm32DecoderTester {
  public:
   explicit Unary3RegisterShiftedOpTester(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -292,7 +292,7 @@ class Unary3RegisterShiftedOpTesterRegsNotPc
  public:
   explicit Unary3RegisterShiftedOpTesterRegsNotPc(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -316,7 +316,7 @@ class Binary3RegisterImmedShiftedOpTester : public Arm32DecoderTester {
  public:
   explicit Binary3RegisterImmedShiftedOpTester(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -331,7 +331,7 @@ class Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS
  public:
   explicit Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -347,7 +347,7 @@ class Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndSOrRnIsSp
  public:
   explicit Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndSOrRnIsSp(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -374,7 +374,7 @@ class Binary4RegisterShiftedOpTester : public Arm32DecoderTester {
  public:
   explicit Binary4RegisterShiftedOpTester(
       const NamedClassDecoder &decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -390,7 +390,7 @@ class Binary4RegisterShiftedOpTesterRegsNotPc
  public:
   explicit Binary4RegisterShiftedOpTesterRegsNotPc(
       const NamedClassDecoder &decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -413,7 +413,7 @@ class Binary2RegisterImmedShiftedTestTester : public Arm32DecoderTester {
  public:
   explicit Binary2RegisterImmedShiftedTestTester(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -438,7 +438,7 @@ class Binary3RegisterShiftedTestTester : public Arm32DecoderTester {
  public:
   explicit Binary3RegisterShiftedTestTester(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -453,7 +453,7 @@ class Binary3RegisterShiftedTestTesterRegsNotPc
  public:
   explicit Binary3RegisterShiftedTestTesterRegsNotPc(
       const NamedClassDecoder& decoder);
-  virtual bool ApplySanityChecks(
+  virtual void ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 

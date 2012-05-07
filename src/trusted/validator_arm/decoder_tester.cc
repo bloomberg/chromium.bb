@@ -27,15 +27,12 @@ namespace nacl_arm_test {
 DecoderTester::DecoderTester()
 {}
 
-bool DecoderTester::ApplySanityChecks(Instruction inst,
+void DecoderTester::ApplySanityChecks(Instruction inst,
                                       const NamedClassDecoder& decoder) {
   UNREFERENCED_PARAMETER(inst);
-  bool test = (&decoder == &ExpectedDecoder());
-  EXPECT_TRUE(test)
+  EXPECT_EQ(&decoder, &ExpectedDecoder())
       << "Expected " << ExpectedDecoder().name() << " but found "
       << decoder.name() << " for " << InstContents();
-  NC_PRECOND(test);
-  return true;
 }
 
 void DecoderTester::TestAtIndex(int index) {

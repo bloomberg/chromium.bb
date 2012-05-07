@@ -131,13 +131,6 @@ RegisterList Binary3RegisterImmedShiftedOp::defs(const Instruction i) const {
   return d.reg(i) + flags.reg_if_updated(i);
 }
 
-// Binary3RegisterImmedShiftedOpRnNotSp
-SafetyLevel Binary3RegisterImmedShiftedOpRnNotSp::
-safety(const Instruction i) const {
-  if (n.reg(i) == kRegisterStack) return DEPRECATED;
-  return Binary3RegisterImmedShiftedOp::safety(i);
-}
-
 // Binary4RegisterShiftedOp
 SafetyLevel Binary4RegisterShiftedOp::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).

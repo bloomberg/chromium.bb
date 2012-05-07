@@ -373,17 +373,6 @@ class Binary3RegisterImmedShiftedOp : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterImmedShiftedOp);
 };
 
-// Defines Binary3RegisterImmedShiftedOp instructions where Rn=sp is
-// deprecated.
-class Binary3RegisterImmedShiftedOpRnNotSp
-    : public Binary3RegisterImmedShiftedOp {
- public:
-  inline Binary3RegisterImmedShiftedOpRnNotSp()
-      : Binary3RegisterImmedShiftedOp() {}
-  virtual ~Binary3RegisterImmedShiftedOpRnNotSp() {}
-  virtual SafetyLevel safety(Instruction i) const;
-};
-
 // Models a 4-register-shifted binary operation of the form:
 // Op(S)<c> <Rd>, <Rn>, <Rm>,  <type> <Rs>
 // +--------+--------------+--+--------+--------+--------+--+----+--+--------+
