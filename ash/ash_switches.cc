@@ -28,5 +28,8 @@ const char kAuraWindowAnimationsDisabled[] = "aura-window-animations-disabled";
 // Use Aura to manage windows of type WINDOW_TYPE_PANEL.
 const char kAuraPanelManager[] = "aura-panels";
 
+// Enables applist v2.
+const char kEnableAppListV2[] = "enable-applist-v2";
+
 }  // namespace switches
 }  // namespace ash

@@ -6,17 +6,18 @@
 
 #include "ash/app_list/app_list_view.h"
 #include "ash/app_list/icon_cache.h"
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/transform_util.h"
 
 namespace ash {
@@ -31,13 +32,6 @@ const int kAnimationDurationMs = 130;
 
 // Delayed time of 2nd animation in milliseconds.
 const int kSecondAnimationStartDelay = kAnimationDurationMs - 20;
-
-// Gets preferred bounds of app list window.
-gfx::Rect GetPreferredBounds() {
-  gfx::Point cursor = gfx::Screen::GetCursorScreenPoint();
-  // Use full monitor rect so that the app list shade goes behind the launcher.
-  return gfx::Screen::GetMonitorNearestPoint(cursor).bounds();
-}
 
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
@@ -57,6 +51,12 @@ AppList::~AppList() {
   IconCache::DeleteInstance();
 }
 
+// static
+bool AppList::UseAppListV2() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableAppListV2);
+}
+
 void AppList::SetVisible(bool visible) {
   if (visible == is_visible_)
     return;
@@ -73,8 +73,7 @@ void AppList::SetVisible(bool visible) {
     // AppListModel and AppListViewDelegate are owned by AppListView. They
     // will be released with AppListView on close.
     SetView(new AppListView(
-        Shell::GetInstance()->delegate()->CreateAppListViewDelegate(),
-        GetPreferredBounds()));
+        Shell::GetInstance()->delegate()->CreateAppListViewDelegate()));
   }
 }
 
@@ -132,6 +131,10 @@ void AppList::ScheduleAnimation() {
 
   ScheduleDimmingAnimation();
 
+  // No browser window fading and app list secondary animation for v2.
+  if (UseAppListV2())
+    return;
+
   if (is_visible_) {
     ScheduleBrowserWindowsAnimation();
     second_animation_timer_.Start(
@@ -187,9 +190,12 @@ void AppList::ScheduleDimmingAnimation() {
   ui::Layer* layer = GetLayer(view_->GetWidget());
   layer->GetAnimator()->StopAnimating();
 
+  int duration = UseAppListV2() ?
+      kAnimationDurationMs : 2 * kAnimationDurationMs;
+
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   animation.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(2 * kAnimationDurationMs));
+      base::TimeDelta::FromMilliseconds(duration));
   animation.AddObserver(this);
 
   layer->SetOpacity(is_visible_ ? 1.0 : 0.0);
@@ -236,8 +242,8 @@ ui::GestureStatus AppList::PreHandleGestureEvent(
 // AppList,  ura::RootWindowObserver implementation:
 void AppList::OnRootWindowResized(const aura::RootWindow* root,
                                   const gfx::Size& old_size) {
-  if (view_&& is_visible_)
-    view_->GetWidget()->SetBounds(gfx::Rect(root->bounds().size()));
+  if (view_ && is_visible_)
+    view_->UpdateBounds();
 }
 
 void AppList::OnWindowFocused(aura::Window* window) {

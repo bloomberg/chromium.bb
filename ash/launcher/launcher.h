@@ -6,10 +6,10 @@
 #define ASH_LAUNCHER_LAUNCHER_H_
 #pragma once
 
+#include "ash/ash_export.h"
 #include "ash/launcher/background_animator.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ash/ash_export.h"
 
 namespace aura {
 class Window;
@@ -20,6 +20,7 @@ class Rect;
 }
 
 namespace views {
+class View;
 class Widget;
 }
 
@@ -62,6 +63,8 @@ class ASH_EXPORT Launcher : public internal::BackgroundAnimatorDelegate {
 
   // Returns true if the Launcher is showing a context menu.
   bool IsShowingMenu() const;
+
+  views::View* GetAppListButtonView() const;
 
   // Only to be called for testing. Retrieves the LauncherView.
   // TODO(sky): remove this!

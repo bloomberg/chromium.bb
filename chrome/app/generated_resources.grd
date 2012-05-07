@@ -5616,6 +5616,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ALLOW_NACL_SOCKET_API_DESCRIPTION" desc="Description for the NaCl Socket API feature.">
         Allows applications to use NaCl Socket API. Use only to test NaCl plugins.
       </message>
+      <message name="IDS_FLAGS_ENABLE_APPLIST_V2_NAME" desc="Name of the flag to enable applist v2 in ash.">
+        Enable AppList v2.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_APPLIST_V2_DESCRIPTION" desc="Description of the flag to enable applist v2 in ash.">
+        Enables the bubble-style applist v2.
+      </message>
 
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_NAME" desc="Name for the flag to enable touchpad three finger click as middle button.">

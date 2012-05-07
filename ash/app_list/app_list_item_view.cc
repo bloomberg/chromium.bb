@@ -4,6 +4,7 @@
 
 #include "ash/app_list/app_list_item_view.h"
 
+#include "ash/app_list/app_list.h"
 #include "ash/app_list/app_list_item_model.h"
 #include "ash/app_list/app_list_model_view.h"
 #include "ash/app_list/drop_shadow_label.h"
@@ -33,6 +34,7 @@ const int kTopBottomPadding = 10;
 const int kIconTitleSpacing = 10;
 
 const SkColor kTitleColor = SK_ColorWHITE;
+const SkColor kTitleColorV2 = SkColorSetARGB(0xFF, 0x88, 0x88, 0x88);
 
 // 0.33 black
 const SkColor kHoverAndPushedColor = SkColorSetARGB(0x55, 0x00, 0x00, 0x00);
@@ -185,15 +187,19 @@ AppListItemView::AppListItemView(AppListModelView* list_model_view,
       selected_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(apply_shadow_factory_(this)) {
   title_->SetBackgroundColor(0);
-  title_->SetEnabledColor(kTitleColor);
 
-  const gfx::ShadowValue kTitleShadows[] = {
-    gfx::ShadowValue(gfx::Point(0, 0), 1, SkColorSetARGB(0x66, 0, 0, 0)),
-    gfx::ShadowValue(gfx::Point(0, 0), 10, SkColorSetARGB(0x66, 0, 0, 0)),
-    gfx::ShadowValue(gfx::Point(0, 2), 2, SkColorSetARGB(0x66, 0, 0, 0)),
-    gfx::ShadowValue(gfx::Point(0, 2), 4, SkColorSetARGB(0x66, 0, 0, 0)),
-  };
-  title_->SetTextShadows(arraysize(kTitleShadows), kTitleShadows);
+  if (internal::AppList::UseAppListV2()) {
+    title_->SetEnabledColor(kTitleColorV2);
+  } else {
+    title_->SetEnabledColor(kTitleColor);
+    const gfx::ShadowValue kTitleShadows[] = {
+      gfx::ShadowValue(gfx::Point(0, 0), 1, SkColorSetARGB(0x66, 0, 0, 0)),
+      gfx::ShadowValue(gfx::Point(0, 0), 10, SkColorSetARGB(0x66, 0, 0, 0)),
+      gfx::ShadowValue(gfx::Point(0, 2), 2, SkColorSetARGB(0x66, 0, 0, 0)),
+      gfx::ShadowValue(gfx::Point(0, 2), 4, SkColorSetARGB(0x66, 0, 0, 0)),
+    };
+    title_->SetTextShadows(arraysize(kTitleShadows), kTitleShadows);
+  }
 
   AddChildView(icon_);
   AddChildView(title_);

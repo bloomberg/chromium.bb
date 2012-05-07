@@ -32,6 +32,9 @@ class AppList : public aura::EventFilter,
   AppList();
   virtual ~AppList();
 
+  // Returns true if AppListV2 is enabled.
+  static bool UseAppListV2();
+
   // Show/hide app list window.
   void SetVisible(bool visible);
 

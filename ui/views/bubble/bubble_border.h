@@ -103,8 +103,8 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
   // given the rect to point to and the size of the contained contents.  This
   // depends on the arrow location, so if you change that, you should call this
   // again to find out the new coordinates.
-  gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
-                      const gfx::Size& contents_size) const;
+  virtual gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
+                              const gfx::Size& contents_size) const;
 
   // Sets a fixed offset for the arrow from the beginning of corresponding edge.
   // The arrow will still point to the same location but the bubble will shift

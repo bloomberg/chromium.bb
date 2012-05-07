@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
+#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/widget/widget_delegate.h"
 
 namespace views {
 class View;
@@ -16,28 +16,31 @@ class View;
 
 namespace ash {
 
+class AppListBubbleBorder;
 class AppListModel;
 class AppListModelView;
 class AppListViewDelegate;
+class PaginationModel;
 
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppListModelView and passes AppListModel to it for display.
-class AppListView : public views::WidgetDelegateView,
+class AppListView : public views::BubbleDelegateView,
                     public views::ButtonListener {
  public:
   // Takes ownership of |delegate|.
-  AppListView(AppListViewDelegate* delegate,
-              const gfx::Rect& bounds);
+  explicit AppListView(AppListViewDelegate* delegate);
   virtual ~AppListView();
 
   void AnimateShow(int duration_ms);
   void AnimateHide(int duration_ms);
 
   void Close();
+  void UpdateBounds();
 
  private:
   // Initializes the window.
-  void Init(const gfx::Rect& bounds);
+  void InitAsFullscreenWidget();
+  void InitAsBubble();
 
   // Updates model using query text in search box.
   void UpdateModel();
@@ -54,10 +57,17 @@ class AppListView : public views::WidgetDelegateView,
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
-  scoped_ptr<AppListModel> model_;
+  // Overridden from views::BubbleDelegate:
+  virtual gfx::Rect GetBubbleBounds() OVERRIDE;
 
+  scoped_ptr<AppListModel> model_;
   scoped_ptr<AppListViewDelegate> delegate_;
 
+  // PaginationModel for model view and page switcher.
+  scoped_ptr<PaginationModel> pagination_model_;
+
+  bool bubble_style_;
+  AppListBubbleBorder* bubble_border_;  // Owned by views hierarchy.
   AppListModelView* model_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListView);

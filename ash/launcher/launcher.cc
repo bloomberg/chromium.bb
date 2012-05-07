@@ -198,6 +198,10 @@ bool Launcher::IsShowingMenu() const {
   return launcher_view_->IsShowingMenu();
 }
 
+views::View* Launcher::GetAppListButtonView() const {
+  return launcher_view_->GetAppListButtonView();
+}
+
 internal::LauncherView* Launcher::GetLauncherViewForTest() {
   return launcher_view_;
 }

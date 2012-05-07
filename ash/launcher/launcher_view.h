@@ -61,6 +61,8 @@ class ASH_EXPORT LauncherView : public views::View,
   // Returns true if we're showing a menu.
   bool IsShowingMenu() const;
 
+  views::View* GetAppListButtonView() const;
+
   // Overridden from FocusTraversable:
   virtual views::FocusSearch* GetFocusSearch() OVERRIDE;
   virtual FocusTraversable* GetFocusTraversableParent() OVERRIDE;

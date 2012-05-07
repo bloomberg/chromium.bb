@@ -698,6 +698,15 @@ const Experiment kExperiments[] = {
     kOsMac | kOsWin | kOsLinux,
     SINGLE_VALUE_TYPE(switches::kEnableClientOAuthSignin)
   },
+#if defined(USE_ASH)
+  {
+    "enable-applist-v2",
+    IDS_FLAGS_ENABLE_APPLIST_V2_NAME,
+    IDS_FLAGS_ENABLE_APPLIST_V2_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(ash::switches::kEnableAppListV2),
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

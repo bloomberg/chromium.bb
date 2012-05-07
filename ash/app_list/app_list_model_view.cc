@@ -6,20 +6,35 @@
 
 #include "ash/app_list/app_list_item_view.h"
 #include "ash/app_list/app_list_model.h"
+#include "ash/app_list/pagination_model.h"
 
 namespace ash {
 
-AppListModelView::AppListModelView(views::ButtonListener* listener)
+AppListModelView::AppListModelView(views::ButtonListener* listener,
+                                   PaginationModel* pagination_model)
     : model_(NULL),
       listener_(listener),
-      selected_item_index_(-1),
-      cols_(0) {
+      pagination_model_(pagination_model),
+      fixed_layout_(false),
+      cols_(0),
+      rows_per_page_(0),
+      selected_item_index_(-1) {
   set_focusable(true);
+  pagination_model_->AddObserver(this);
 }
 
 AppListModelView::~AppListModelView() {
   if (model_)
     model_->RemoveObserver(this);
+  pagination_model_->RemoveObserver(this);
+}
+
+void AppListModelView::SetLayout(int icon_size, int cols, int rows_per_page) {
+  fixed_layout_ = true;
+
+  icon_size_.SetSize(icon_size, icon_size);
+  cols_ = cols;
+  rows_per_page_ = rows_per_page;
 }
 
 void AppListModelView::CalculateLayout(const gfx::Size& content_size,
@@ -124,37 +139,71 @@ void AppListModelView::SetSelectedItemByIndex(int index) {
   } else {
     selected_item_index_ = index;
     GetItemViewAtIndex(selected_item_index_)->SetSelected(true);
+
+    if (tiles_per_page())
+      pagination_model_->SelectPage(selected_item_index_ / tiles_per_page());
   }
+}
+
+gfx::Size AppListModelView::GetPreferredSize() {
+  if (!fixed_layout_)
+    return gfx::Size();
+
+  gfx::Size tile_size = AppListItemView::GetPreferredSizeForIconSize(
+      icon_size_);
+  return gfx::Size(tile_size.width() * cols_,
+                   tile_size.height() * rows_per_page_);
 }
 
 void AppListModelView::Layout() {
   gfx::Rect rect(GetContentsBounds());
-  if (rect.IsEmpty() || child_count() == 0) {
-    cols_ = 0;
+  if (rect.IsEmpty() || child_count() == 0)
     return;
+
+  gfx::Size tile_size;
+  if (fixed_layout_) {
+    tile_size = AppListItemView::GetPreferredSizeForIconSize(icon_size_);
+  } else {
+    int rows = 0;
+    CalculateLayout(rect.size(), child_count(), &icon_size_, &rows, &cols_);
+
+    tile_size = AppListItemView::GetPreferredSizeForIconSize(
+        icon_size_);
+    rows_per_page_ = tile_size.height() ?
+        std::max(rect.height() / tile_size.height(), 1) : 1;
+
+    tile_size.set_width(std::max(rect.width() / (cols_ + 1),
+                                 tile_size.width()));
+    tile_size.set_height(std::max(rect.height() / (rows_per_page_ + 1),
+                                  tile_size.height()));
   }
 
-  gfx::Size icon_size;
-  int rows = 0;
-  CalculateLayout(rect.size(), child_count(), &icon_size, &rows, &cols_);
-  if (rows == 0 || cols_ == 0)
+  if (!tiles_per_page())
     return;
 
-  gfx::Size tile_size = AppListItemView::GetPreferredSizeForIconSize(icon_size);
-  tile_size.set_width(std::max(rect.width() / (cols_ + 1),
-                               tile_size.width()));
-  tile_size.set_height(std::max(rect.height() / (rows + 1),
-                                tile_size.height()));
+  pagination_model_->SetTotalPages((child_count() - 1) / tiles_per_page() + 1);
+  if (pagination_model_->selected_page() < 0)
+    pagination_model_->SelectPage(0);
 
-  gfx::Rect grid_rect = rect.Center(gfx::Size(tile_size.width() * cols_,
-                                              tile_size.height() * rows));
+  gfx::Rect grid_rect = rect.Center(
+      gfx::Size(tile_size.width() * cols_,
+                tile_size.height() * rows_per_page_));
   grid_rect = grid_rect.Intersect(rect);
 
   // Layouts items.
+  const int page = pagination_model_->selected_page();
+  const int first_visible_index = page * tiles_per_page();
+  const int last_visible_index = (page + 1) * tiles_per_page() - 1;
   gfx::Rect current_tile(grid_rect.origin(), tile_size);
   for (int i = 0; i < child_count(); ++i) {
     views::View* view = child_at(i);
-    static_cast<AppListItemView*>(view)->SetIconSize(icon_size);
+    static_cast<AppListItemView*>(view)->SetIconSize(icon_size_);
+
+    if (i < first_visible_index || i > last_visible_index) {
+      view->SetVisible(false);
+      continue;
+    }
+
     view->SetBoundsRect(current_tile);
     view->SetVisible(rect.Contains(current_tile));
 
@@ -192,6 +241,21 @@ bool AppListModelView::OnKeyPressed(const views::KeyEvent& event) {
                                           child_count() - 1));
         }
         return true;
+      case ui::VKEY_PRIOR: {
+        SetSelectedItemByIndex(
+            std::max(selected_item_index_ - tiles_per_page(),
+                     0));
+        return true;
+      }
+      case ui::VKEY_NEXT: {
+        if (selected_item_index_ < 0) {
+          SetSelectedItemByIndex(0);
+        } else {
+          SetSelectedItemByIndex(
+              std::min(selected_item_index_ + tiles_per_page(),
+                       child_count() - 1));
+        }
+      }
       default:
         break;
     }
@@ -231,6 +295,13 @@ void AppListModelView::ListItemsRemoved(int start, int count) {
 
 void AppListModelView::ListItemsChanged(int start, int count) {
   NOTREACHED();
+}
+
+void AppListModelView::TotalPagesChanged() {
+}
+
+void AppListModelView::SelectedPageChanged(int old_selected, int new_selected) {
+  Layout();
 }
 
 }  // namespace ash

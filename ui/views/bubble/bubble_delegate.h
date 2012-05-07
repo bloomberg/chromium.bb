@@ -101,6 +101,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   void SetAlignment(BubbleBorder::BubbleAlignment alignment);
 
  protected:
+  // Get bubble bounds from the anchor point and client view's preferred size.
+  virtual gfx::Rect GetBubbleBounds();
+
   // View overrides:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
@@ -128,9 +131,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, NonClientHitTest);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CreateDelegate);
-
-  // Get bubble bounds from the anchor point and client view's preferred size.
-  gfx::Rect GetBubbleBounds();
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Get bounds for the Windows-only widget that hosts the bubble's contents.
