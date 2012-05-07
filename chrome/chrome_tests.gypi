@@ -1401,6 +1401,7 @@
         'browser/policy/cloud_policy_subsystem_unittest.cc',
         'browser/policy/config_dir_policy_provider_unittest.cc',
         'browser/policy/configuration_policy_handler_chromeos_unittest.cc',
+        'browser/policy/configuration_policy_handler_unittest.cc',
         'browser/policy/configuration_policy_pref_store_unittest.cc',
         'browser/policy/configuration_policy_provider_mac_unittest.cc',
         'browser/policy/configuration_policy_provider_test.cc',

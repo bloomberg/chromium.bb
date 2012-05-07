@@ -91,10 +91,6 @@ INSTANTIATE_TEST_CASE_P(
     testing::Values(
         PolicyAndPref(key::kRestoreOnStartupURLs,
                       prefs::kURLsToRestoreOnStartup),
-        PolicyAndPref(key::kExtensionInstallWhitelist,
-                      prefs::kExtensionInstallAllowList),
-        PolicyAndPref(key::kExtensionInstallBlacklist,
-                      prefs::kExtensionInstallDenyList),
         PolicyAndPref(key::kDisabledPlugins,
                       prefs::kPluginsDisabledPlugins),
         PolicyAndPref(key::kDisabledPluginsExceptions,

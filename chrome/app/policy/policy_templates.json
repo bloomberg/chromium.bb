@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 143
+#   For your editing convenience: highest ID currently used: 144
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2636,6 +2636,23 @@
           - if not set or false, users will be able to transfer files to Google Docs via cellular connections.''',
         },
       ],
+    },
+    {
+      'name': 'PinnedLauncherApps',
+      'type': 'list',
+      'supported_on': ['chrome_os:20-' ],
+      'features': {
+        'dynamic_refresh': True,
+        'can_be_recommended': True,
+      },
+      'example_value': ['pjkljhegncpnkpknbcohdijeoejaedia'],
+      'id': 144,
+      'caption': '''List of pinned apps to show in the launcher''',
+      'desc': '''Lists the application identifiers <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shows as pinned apps in the launcher bar.
+
+      If this policy is configured, the set of applications is fixed and can't be changed by the user.
+
+      If this policy is left unset, the user may change the list of pinned apps in the launcher.''',
     },
   ],
   'messages': {

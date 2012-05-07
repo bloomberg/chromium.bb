@@ -99,6 +99,35 @@ class SimplePolicyHandler : public TypeCheckingPolicyHandler {
   DISALLOW_COPY_AND_ASSIGN(SimplePolicyHandler);
 };
 
+// Implements additional checks for policies that are lists of extension IDs.
+class ExtensionListPolicyHandler : public TypeCheckingPolicyHandler {
+ public:
+  ExtensionListPolicyHandler(const char* policy_name,
+                             const char* pref_path,
+                             bool allow_wildcards);
+  virtual ~ExtensionListPolicyHandler();
+
+  // ConfigurationPolicyHandler methods:
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
+                                   PolicyErrorMap* errors) OVERRIDE;
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
+                                   PrefValueMap* prefs) OVERRIDE;
+
+ protected:
+  const char* pref_path() const;
+
+  // Runs sanity checks on the policy value and returns it in |extension_ids|.
+  bool CheckAndGetList(const PolicyMap& policies,
+                       PolicyErrorMap* errors,
+                       const base::ListValue** extension_ids);
+
+ private:
+  const char* pref_path_;
+  bool allow_wildcards_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionListPolicyHandler);
+};
+
 // ConfigurationPolicyHandler for the SyncDisabled policy.
 class SyncPolicyHandler : public TypeCheckingPolicyHandler {
  public:

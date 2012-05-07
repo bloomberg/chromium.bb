@@ -13,7 +13,11 @@
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/prefs/pref_value_map.h"
+#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "policy/policy_constants.h"
 
 namespace policy {
 
@@ -122,6 +126,35 @@ void NetworkConfigurationPolicyHandler::StripSensitiveValues(
       network_dict->Set(kFilteredSettings[i],
                         Value::CreateStringValue(kPlaceholder));
     }
+  }
+}
+
+PinnedLauncherAppsPolicyHandler::PinnedLauncherAppsPolicyHandler()
+    : ExtensionListPolicyHandler(key::kPinnedLauncherApps,
+                                 prefs::kPinnedLauncherApps,
+                                 false) {}
+
+PinnedLauncherAppsPolicyHandler::~PinnedLauncherAppsPolicyHandler() {}
+
+void PinnedLauncherAppsPolicyHandler::ApplyPolicySettings(
+    const PolicyMap& policies,
+    PrefValueMap* prefs) {
+  PolicyErrorMap errors;
+  const base::Value* policy_value = policies.GetValue(policy_name());
+  const base::ListValue* policy_list = NULL;
+  if (policy_value && policy_value->GetAsList(&policy_list) && policy_list) {
+    base::ListValue* pinned_apps_list = new base::ListValue();
+    for (base::ListValue::const_iterator entry(policy_list->begin());
+         entry != policy_list->end(); ++entry) {
+      std::string id;
+      if ((*entry)->GetAsString(&id)) {
+        base::DictionaryValue* app_dict = new base::DictionaryValue();
+        app_dict->SetString(ChromeLauncherController::kPinnedAppsPrefAppIDPath,
+                            id);
+        pinned_apps_list->Append(app_dict);
+      }
+    }
+    prefs->SetValue(pref_path(), pinned_apps_list);
   }
 }
 

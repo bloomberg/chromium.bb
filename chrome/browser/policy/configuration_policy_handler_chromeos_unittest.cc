@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,9 @@
 
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/prefs/pref_value_map.h"
+#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/common/pref_names.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -107,6 +110,34 @@ TEST(NetworkConfigurationPolicyHandlerTest, Sanitization) {
   EXPECT_TRUE(sanitized->GetAsString(&sanitized_onc));
   EXPECT_FALSE(sanitized_onc.empty());
   EXPECT_EQ(std::string::npos, sanitized_onc.find("pass"));
+}
+
+TEST(PinnedLauncherAppsPolicyHandler, PrefTranslation) {
+  base::ListValue list;
+  PolicyMap policy_map;
+  PrefValueMap prefs;
+  base::ListValue expected_pinned_apps;
+  base::Value* value = NULL;
+  PinnedLauncherAppsPolicyHandler handler;
+
+  policy_map.Set(key::kPinnedLauncherApps, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  EXPECT_TRUE(prefs.GetValue(prefs::kPinnedLauncherApps, &value));
+  EXPECT_TRUE(base::Value::Equals(&expected_pinned_apps, value));
+
+  base::StringValue entry1("abcdefghijklmnopabcdefghijklmnop");
+  base::DictionaryValue* entry1_dict = new base::DictionaryValue();
+  entry1_dict->Set(ChromeLauncherController::kPinnedAppsPrefAppIDPath,
+                   entry1.DeepCopy());
+  expected_pinned_apps.Append(entry1_dict);
+  list.Append(entry1.DeepCopy());
+  policy_map.Set(key::kPinnedLauncherApps, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  prefs.Clear();
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  EXPECT_TRUE(prefs.GetValue(prefs::kPinnedLauncherApps, &value));
+  EXPECT_TRUE(base::Value::Equals(&expected_pinned_apps, value));
 }
 
 }  // namespace policy

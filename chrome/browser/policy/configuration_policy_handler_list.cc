@@ -78,12 +78,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kApplicationLocaleValue,
     prefs::kApplicationLocale,
     Value::TYPE_STRING },
-  { key::kExtensionInstallWhitelist,
-    prefs::kExtensionInstallAllowList,
-    Value::TYPE_LIST },
-  { key::kExtensionInstallBlacklist,
-    prefs::kExtensionInstallDenyList,
-    Value::TYPE_LIST },
   { key::kExtensionInstallForcelist,
     prefs::kExtensionInstallForceList,
     Value::TYPE_LIST },
@@ -331,6 +325,15 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
   handlers_.push_back(new RestoreOnStartupPolicyHandler());
   handlers_.push_back(new SyncPolicyHandler());
 
+  handlers_.push_back(
+      new ExtensionListPolicyHandler(key::kExtensionInstallWhitelist,
+                                     prefs::kExtensionInstallAllowList,
+                                     false));
+  handlers_.push_back(
+      new ExtensionListPolicyHandler(key::kExtensionInstallBlacklist,
+                                     prefs::kExtensionInstallDenyList,
+                                     true));
+
 #if !defined(OS_CHROMEOS)
   handlers_.push_back(new DownloadDirPolicyHandler());
 #endif  // !defined(OS_CHROMEOS)
@@ -344,6 +347,7 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
       new NetworkConfigurationPolicyHandler(
           key::kOpenNetworkConfiguration,
           chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY));
+  handlers_.push_back(new PinnedLauncherAppsPolicyHandler());
 #endif  // defined(OS_CHROMEOS)
 }
 

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
@@ -17,24 +18,29 @@ namespace policy {
 struct PolicyErrorMap::PendingError {
   PendingError(const std::string& policy,
                const std::string& subkey,
+               int index,
                int message_id,
                const std::string& replacement)
       : policy(policy),
         subkey(subkey),
+        index(index),
         message_id(message_id),
         has_replacement(true),
         replacement(replacement) {}
 
   PendingError(const std::string& policy,
                const std::string& subkey,
+               int index,
                int message_id)
       : policy(policy),
         subkey(subkey),
+        index(index),
         message_id(message_id),
         has_replacement(false) {}
 
   std::string policy;
   std::string subkey;
+  int index;
   int message_id;
   bool has_replacement;
   std::string replacement;
@@ -51,26 +57,39 @@ bool PolicyErrorMap::IsReady() const {
 }
 
 void PolicyErrorMap::AddError(const std::string& policy, int message_id) {
-  AddError(PendingError(policy, std::string(), message_id));
+  AddError(PendingError(policy, std::string(), -1, message_id));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               const std::string& subkey,
                               int message_id) {
-  AddError(PendingError(policy, subkey, message_id));
+  AddError(PendingError(policy, subkey, -1, message_id));
+}
+
+void PolicyErrorMap::AddError(const std::string& policy,
+                              int index,
+                              int message_id) {
+  AddError(PendingError(policy, std::string(), index, message_id));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               int message_id,
                               const std::string& replacement) {
-  AddError(PendingError(policy, std::string(), message_id, replacement));
+  AddError(PendingError(policy, std::string(), -1, message_id, replacement));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               const std::string& subkey,
                               int message_id,
                               const std::string& replacement) {
-  AddError(PendingError(policy, subkey, message_id, replacement));
+  AddError(PendingError(policy, subkey, -1, message_id, replacement));
+}
+
+void PolicyErrorMap::AddError(const std::string& policy,
+                              int index,
+                              int message_id,
+                              const std::string& replacement) {
+  AddError(PendingError(policy, std::string(), index, message_id, replacement));
 }
 
 string16 PolicyErrorMap::GetErrors(const std::string& policy) {
@@ -127,6 +146,10 @@ void PolicyErrorMap::Convert(const PendingError& error) {
   if (!error.subkey.empty()) {
     message = l10n_util::GetStringFUTF16(IDS_POLICY_SUBKEY_ERROR,
                                          ASCIIToUTF16(error.subkey),
+                                         submessage);
+  } else if (error.index >= 0) {
+    message = l10n_util::GetStringFUTF16(IDS_POLICY_LIST_ENTRY_ERROR,
+                                         base::IntToString16(error.index),
                                          submessage);
   } else {
     message = submessage;

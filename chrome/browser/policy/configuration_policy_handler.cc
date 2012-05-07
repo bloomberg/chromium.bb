@@ -26,6 +26,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
@@ -201,6 +202,80 @@ bool TypeCheckingPolicyHandler::CheckAndGetValue(const PolicyMap& policies,
                      ValueTypeToString(value_type_));
     return false;
   }
+  return true;
+}
+
+// ExtensionListPolicyHandler implementation -----------------------------------
+
+ExtensionListPolicyHandler::ExtensionListPolicyHandler(const char* policy_name,
+                                                       const char* pref_path,
+                                                       bool allow_wildcards)
+    : TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_LIST),
+      pref_path_(pref_path),
+      allow_wildcards_(allow_wildcards) {}
+
+ExtensionListPolicyHandler::~ExtensionListPolicyHandler() {}
+
+bool ExtensionListPolicyHandler::CheckPolicySettings(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors) {
+  return CheckAndGetList(policies, errors, NULL);
+}
+
+void ExtensionListPolicyHandler::ApplyPolicySettings(
+    const PolicyMap& policies,
+    PrefValueMap* prefs) {
+  const Value* value = policies.GetValue(policy_name());
+  if (value)
+    prefs->SetValue(pref_path(), value->DeepCopy());
+}
+
+const char* ExtensionListPolicyHandler::pref_path() const {
+  return pref_path_;
+}
+
+bool ExtensionListPolicyHandler::CheckAndGetList(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors,
+    const base::ListValue** extension_ids) {
+  if (extension_ids)
+    *extension_ids = NULL;
+
+  const base::Value* value = NULL;
+  if (!CheckAndGetValue(policies, errors, &value))
+    return false;
+
+  if (!value)
+    return true;
+
+  const base::ListValue* list_value = NULL;
+  if (!value->GetAsList(&list_value)) {
+    NOTREACHED();
+    return false;
+  }
+
+  // Check that the list contains valid extension ID strings only.
+  for (base::ListValue::const_iterator entry(list_value->begin());
+       entry != list_value->end(); ++entry) {
+    std::string id;
+    if (!(*entry)->GetAsString(&id)) {
+      errors->AddError(policy_name(),
+                       entry - list_value->begin(),
+                       IDS_POLICY_TYPE_ERROR,
+                       ValueTypeToString(base::Value::TYPE_STRING));
+      return false;
+    }
+    if (!(allow_wildcards_ && id == "*") && !Extension::IdIsValid(id)) {
+      errors->AddError(policy_name(),
+                       entry - list_value->begin(),
+                       IDS_POLICY_VALUE_FORMAT_ERROR);
+      return false;
+    }
+  }
+
+  if (extension_ids)
+    *extension_ids = list_value;
+
   return true;
 }
 

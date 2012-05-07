@@ -44,6 +44,20 @@ class NetworkConfigurationPolicyHandler : public TypeCheckingPolicyHandler {
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationPolicyHandler);
 };
 
+// Maps the PinnedLauncherApps policy to the corresponding pref.
+class PinnedLauncherAppsPolicyHandler : public ExtensionListPolicyHandler {
+ public:
+  PinnedLauncherAppsPolicyHandler();
+  virtual ~PinnedLauncherAppsPolicyHandler();
+
+  // ExtensionListPolicyHandler methods:
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
+                                   PrefValueMap* prefs) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PinnedLauncherAppsPolicyHandler);
+};
+
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_HANDLER_CHROMEOS_H_
