@@ -3,8 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-set -u
-set -e
+set -o xtrace
+set -o nounset
+set -o errexit
 
 # On Windows, this script is invoked from a batch file.
 # The inherited PWD environmental variable is a Windows-style path.
@@ -101,8 +102,6 @@ clobber-chrome-profiles() {
   rm -rf /tmp/.org.chromium.Chromium.*
 }
 
-set -x
-
 RETCODE=0
 
 echo @@@BUILD_STEP clobber@@@
@@ -158,7 +157,12 @@ if ${BUILD_32BIT_PLUGIN}; then
 fi
 
 for arch in ${RUN_TESTS} ; do
-  echo @@@BUILD_STEP test-${arch}@@@
+  # Compensate for the fact that the the *other* script already prints
+  # a step message for the browser case.
+  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2768
+  if [[ ${arch} != *-browser* ]]
+    echo @@@BUILD_STEP test-${arch}@@@
+  fi
   ${PNACL_TEST} test-${arch} -k || { RETCODE=$? && echo @@@STEP_FAILURE@@@; }
   # Be sure to free up some /tmp between test stages.
   clobber-chrome-profiles
