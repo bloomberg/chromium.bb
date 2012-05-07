@@ -368,7 +368,7 @@ void GoogleURLTracker::Observe(int type,
       OnNavigationCommittedOrTabClosed(source,
           content::Source<content::WebContents>(contents),
           TabContentsWrapper::GetCurrentWrapperForContents(contents)->
-              infobar_tab_helper(), type);
+              infobar_tab_helper(), true);
       break;
     }
 
@@ -379,7 +379,22 @@ void GoogleURLTracker::Observe(int type,
           content::Source<content::NavigationController>(&contents->
               GetController()), source,
           TabContentsWrapper::GetCurrentWrapperForContents(contents)->
-              infobar_tab_helper(), type);
+              infobar_tab_helper(), false);
+      break;
+    }
+
+    case chrome::NOTIFICATION_INSTANT_COMMITTED: {
+      TabContentsWrapper* wrapper =
+          content::Source<TabContentsWrapper>(source).ptr();
+      content::WebContents* contents = wrapper->web_contents();
+      content::Source<content::NavigationController> source(
+          &contents->GetController());
+      content::Source<content::WebContents> contents_source(contents);
+      InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+      OnNavigationPending(source, contents_source, infobar_helper,
+                          contents->GetURL());
+      OnNavigationCommittedOrTabClosed(source, contents_source, infobar_helper,
+                                       true);
       break;
     }
 
@@ -399,19 +414,23 @@ void GoogleURLTracker::SearchCommitted() {
     // currently in.
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
         content::NotificationService::AllBrowserContextsAndSources());
+    registrar_.Add(this, chrome::NOTIFICATION_INSTANT_COMMITTED,
+        content::NotificationService::AllBrowserContextsAndSources());
   }
 }
 
 void GoogleURLTracker::OnNavigationPending(
-    const content::NotificationSource& source,
-    const content::NotificationSource& contents_source,
+    const content::NotificationSource& navigation_controller_source,
+    const content::NotificationSource& web_contents_source,
     InfoBarTabHelper* infobar_helper,
     const GURL& search_url) {
   registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
       content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(this, chrome::NOTIFICATION_INSTANT_COMMITTED,
+      content::NotificationService::AllBrowserContextsAndSources());
 
   if (registrar_.IsRegistered(this,
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED, contents_source)) {
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED, web_contents_source)) {
     // If the previous load hasn't committed and the user triggers a new load,
     // we don't need to re-register our listeners; just kill the old,
     // never-shown infobar (to be replaced by a new one below).
@@ -423,9 +442,10 @@ void GoogleURLTracker::OnNavigationPending(
     // the tab close command since that means the load will never commit.  Note
     // that in this case we don't need to close any previous infobar for this
     // tab since this navigation will close it.
-    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
+    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+                   navigation_controller_source);
     registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                   contents_source);
+                   web_contents_source);
   }
 
   infobar_map_[infobar_helper] = (*infobar_creator_)(infobar_helper, search_url,
@@ -433,18 +453,19 @@ void GoogleURLTracker::OnNavigationPending(
 }
 
 void GoogleURLTracker::OnNavigationCommittedOrTabClosed(
-    const content::NotificationSource& source,
-    const content::NotificationSource& contents_source,
+    const content::NotificationSource& navigation_controller_source,
+    const content::NotificationSource& web_contents_source,
     const InfoBarTabHelper* infobar_helper,
-    int type) {
-  registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
+    bool navigated) {
+  registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+                    navigation_controller_source);
   registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                    contents_source);
+                    web_contents_source);
 
   InfoBarMap::iterator i(infobar_map_.find(infobar_helper));
   DCHECK(i != infobar_map_.end());
   DCHECK(need_to_prompt_);
-  if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED)
+  if (navigated)
     i->second->Show();
   else
     i->second->Close(false);  // Close manually since it's not added to a tab.

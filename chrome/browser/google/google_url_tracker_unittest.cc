@@ -245,8 +245,7 @@ void GoogleURLTrackerTest::CommitSearch(int unique_id) {
     google_url_tracker_->OnNavigationCommittedOrTabClosed(source,
         content::Source<content::WebContents>(
             reinterpret_cast<content::WebContents*>(unique_id)),
-        reinterpret_cast<InfoBarTabHelper*>(unique_id),
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED);
+        reinterpret_cast<InfoBarTabHelper*>(unique_id), true);
   }
 }
 
@@ -260,7 +259,7 @@ void GoogleURLTrackerTest::CloseTab(int unique_id) {
     google_url_tracker_->OnNavigationCommittedOrTabClosed(
         content::Source<content::NavigationController>(
             reinterpret_cast<content::NavigationController*>(unique_id)),
-        source, infobar_helper, content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
+        source, infobar_helper, false);
   } else {
     // Normally, closing a tab with an infobar showing will close the infobar.
     // Since we don't have real tabs and are just faking things with magic

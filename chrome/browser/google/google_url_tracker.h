@@ -126,16 +126,40 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   // NetworkChangeNotifier::IPAddressObserver
   virtual void OnIPAddressChanged() OVERRIDE;
 
+  // Called each time the user performs a search.  This checks whether we need
+  // to prompt the user about a domain change, and if so, starts listening for
+  // the notifications sent when the actual load is triggered.
   void SearchCommitted();
-  void OnNavigationPending(const content::NotificationSource& source,
-                           const content::NotificationSource& contents_source,
-                           InfoBarTabHelper* infobar_helper,
-                           const GURL& search_url);
+
+  // Called by Observe() after SearchCommitted() registers notification
+  // listeners, to indicate that we've received the "load now pending"
+  // notification.  |navigation_controller_source| and |web_contents_source| are
+  // NotificationSources pointing to the associated NavigationController and
+  // WebContents, respectively, for this load; |infobar_helper| is the
+  // InfoBarTabHelper of the associated tab; and |search_url| is the actual
+  // search performed by the user, which if necessary we'll re-do on a new
+  // domain later.  This function creates a (still-invisible) InfoBarDelegate
+  // for the associated tab and begins listening for the "load committed"
+  // notification that will tell us it's safe to show the infobar.
+  void OnNavigationPending(
+      const content::NotificationSource& navigation_controller_source,
+      const content::NotificationSource& web_contents_source,
+      InfoBarTabHelper* infobar_helper,
+      const GURL& search_url);
+
+  // Called by Observe() once a load we're watching commits, or the associated
+  // tab is closed.  The first three args are the same as for
+  // OnNavigationPending(); |navigated| is true when this call is due to a
+  // successful navigation (indicating that we should show our infobar) as
+  // opposed to tab closue (which means we should delete the infobar).
   void OnNavigationCommittedOrTabClosed(
-      const content::NotificationSource& source,
-      const content::NotificationSource& contents_source,
+      const content::NotificationSource& navigation_controller_source,
+      const content::NotificationSource& web_contents_source,
       const InfoBarTabHelper* infobar_helper,
-      int type);
+      bool navigated);
+
+  // Closes all open infobars.  If |redo_searches| is true, this also triggers
+  // each tab to re-perform the user's search, but on the new Google TLD.
   void CloseAllInfoBars(bool redo_searches);
 
   content::NotificationRegistrar registrar_;
