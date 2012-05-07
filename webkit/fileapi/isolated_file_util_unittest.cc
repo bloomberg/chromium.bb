@@ -63,7 +63,7 @@ class IsolatedFileUtilTest : public testing::Test {
     file_system_context_ = new FileSystemContext(
         base::MessageLoopProxy::current(),
         base::MessageLoopProxy::current(),
-        new quota::MockSpecialStoragePolicy(),
+        make_scoped_refptr(new quota::MockSpecialStoragePolicy()),
         NULL /* quota_manager */,
         data_dir_.path(),
         CreateAllowFileAccessOptions());
