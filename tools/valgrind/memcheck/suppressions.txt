@@ -5573,17 +5573,6 @@
    fun:_ZN7WebCore18MainResourceLoader16didFinishLoadingEd
 }
 {
-   bug_122610
-   Memcheck:Unaddressable
-   fun:_ZN4aura6WindowD0Ev
-   fun:_ZN10scoped_ptrIN4aura6WindowEED1Ev
-   fun:_ZN19WebContentsViewAuraD0Ev
-   fun:_ZN10scoped_ptrIN7content15WebContentsViewEED1Ev
-   fun:_ZN15WebContentsImplD0Ev
-   fun:_ZN10scoped_ptrIN7content11WebContentsEE5resetEPS1_
-   fun:_ZN11BalloonHost8ShutdownEv
-}
-{
    bug_122670
    Memcheck:Leak
    fun:_Znw*

@@ -174,6 +174,9 @@ WebContentsViewAura::WebContentsViewAura(
 }
 
 WebContentsViewAura::~WebContentsViewAura() {
+  // Window needs a valid delegate during its destructor, so we explicitly
+  // delete it here.
+  window_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
