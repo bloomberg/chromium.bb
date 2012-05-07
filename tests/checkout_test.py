@@ -397,7 +397,36 @@ class SvnCheckout(SvnBaseTest):
     self._test_prepare(self._get_co(None))
 
   def testMove(self):
-    self._check_move(self._get_co(None))
+    co = self._get_co(None)
+    self._check_move(co)
+    out = subprocess2.check_output(
+        ['svn', 'status'], cwd=co.project_path)
+    expected = (
+      'A  +    chromeos/views/webui_menu_widget.h\n'
+      'D       chromeos/views/DOMui_menu_widget.h\n')
+    self.assertEquals(expected, out)
+    # Make sure ancestry is what is expected;
+    env = os.environ.copy()
+    env['LANGUAGE'] = 'en_US.UTF-8'
+    out = subprocess2.check_output(
+        ['svn', 'info', 'chromeos/views/webui_menu_widget.h'],
+        cwd=co.project_path,
+        env=env)
+    values = dict(l.split(': ', 1) for l in out.splitlines() if l)
+    expected = {
+      'Checksum': '65837bb3da662c8fa88a4a50940ea7c6',
+      'Copied From Rev': '2',
+      'Copied From URL':
+          '%strunk/chromeos/views/DOMui_menu_widget.h' % self.svn_base,
+      'Name': 'webui_menu_widget.h',
+      'Node Kind': 'file',
+      'Path': 'chromeos/views/webui_menu_widget.h',
+      'Repository Root': '%s' % self.svn_base.rstrip('/'),
+      'Revision': '2',
+      'Schedule': 'add',
+      'URL': '%strunk/chromeos/views/webui_menu_widget.h' % self.svn_base,
+    }
+    self.assertEquals(expected, values)
 
 
 class GitSvnCheckout(SvnBaseTest):

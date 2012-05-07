@@ -313,8 +313,12 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
               if os.path.isfile(filepath):
                 raise PatchApplicationFailed(
                     p.filename, 'File exist but was about to be overwriten')
-              shutil.copy2(
-                  os.path.join(self.project_path, p.source_filename), filepath)
+              self._check_output_svn(
+                  [
+                    'copy',
+                    os.path.join(self.project_path, p.source_filename),
+                    filepath
+                  ])
             if p.diff_hunks:
               cmd = ['patch', '-p%s' % p.patchlevel, '--forward', '--force']
               stdout += subprocess2.check_output(
@@ -323,7 +327,9 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
               # There is only a header. Just create the file if it doesn't
               # exist.
               open(filepath, 'w').close()
-          if p.is_new:
+          if p.is_new and not p.source_filename:
+            # Do not run it if p.source_filename is defined, since svn copy was
+            # using above.
             stdout += self._check_output_svn(
                 ['add', p.filename, '--force'], credentials=False)
           for prop in p.svn_properties:
