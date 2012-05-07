@@ -262,7 +262,7 @@ html {
   cursor: default;
 }
 
-section, #webapp-description {
+section {
   width: 690px;
   margin: 30px auto;
 }
@@ -538,7 +538,8 @@ button {
 }
 
 #webapp-description {
-  opacity: 0.8;
+  color: #666;
+  margin-top: 10px;
 }
 
 #why-is-this-safe {
