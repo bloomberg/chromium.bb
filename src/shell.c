@@ -137,6 +137,10 @@ struct shell_surface {
 	} popup;
 
 	struct {
+		int32_t x, y;
+	} transient;
+
+	struct {
 		enum wl_shell_surface_fullscreen_method type;
 		struct weston_transform transform; /* matrix from x, y */
 		uint32_t framerate;
@@ -744,8 +748,8 @@ set_surface_type(struct shell_surface *shsurf)
 	case SHELL_SURFACE_TRANSIENT:
 		pes = pshsurf->surface;
 		weston_surface_set_position(surface,
-					    pes->geometry.x + shsurf->popup.x,
-					    pes->geometry.y + shsurf->popup.y);
+				pes->geometry.x + shsurf->transient.x,
+				pes->geometry.y + shsurf->transient.y);
 		break;
 
 	case SHELL_SURFACE_MAXIMIZED:
@@ -829,8 +833,8 @@ shell_surface_set_transient(struct wl_client *client,
 
 	/* assign to parents output */
 	shsurf->parent = parent_resource->data;
-	shsurf->popup.x = x;
-	shsurf->popup.y = y;
+	shsurf->transient.x = x;
+	shsurf->transient.y = y;
 	shsurf->next_type = SHELL_SURFACE_TRANSIENT;
 }
 
