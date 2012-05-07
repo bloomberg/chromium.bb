@@ -104,6 +104,9 @@ void CommandBufferProxyImpl::OnConsoleMessage(
 void CommandBufferProxyImpl::SetMemoryAllocationChangedCallback(
     const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
         callback) {
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
   memory_allocation_changed_callback_ = callback;
   Send(new GpuCommandBufferMsg_SetClientHasMemoryAllocationChangedCallback(
       route_id_, !memory_allocation_changed_callback_.is_null()));
