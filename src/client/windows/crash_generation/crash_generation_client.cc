@@ -178,7 +178,7 @@ bool CrashGenerationClient::RequestUpload(DWORD crash_id) {
                       static_cast<MINIDUMP_TYPE>(NULL), NULL, NULL, NULL,
                       custom_info, NULL, NULL, NULL);
   DWORD bytes_count = 0;
-  bool success = WriteFile(pipe, &msg, sizeof(msg), &bytes_count, NULL);
+  bool success = WriteFile(pipe, &msg, sizeof(msg), &bytes_count, NULL) != 0;
 
   CloseHandle(pipe);
   return success;
