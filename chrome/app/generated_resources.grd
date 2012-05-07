@@ -6775,6 +6775,17 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_MOUSE_LOCK_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking all sites ability to disable the mouse cursor.">
         Do not allow any site to disable the mouse cursor
       </message>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_PROTECTED_CONTENT_TAB_LABEL" desc="Label for the Protected Content tab on the Content Settings dialog.">
+          Protected Content
+        </message>
+        <message name="IDS_PROTECTED_CONTENT_INFO" desc="Text that is displayed on the Protected Content tab of the Content Settings dialog. This text explains that enabling protected content may require using a uniquely identifiable machine identifier.">
+          Machine identifiers may be used to uniquely identify you for the purposes of authorizing access to protected content.
+        </message>
+        <message name="IDS_PROTECTED_CONTENT_ENABLE" desc="The label of the checkbox for enabling protected content.">
+          Run protected content
+        </message>
+      </if>
 
       <message name="IDS_EXCEPTIONS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
         Manage exceptions...
