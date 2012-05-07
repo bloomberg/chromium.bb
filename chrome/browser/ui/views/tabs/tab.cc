@@ -76,7 +76,7 @@ int right_padding() {
     switch (ui::GetDisplayLayout()) {
       case ui::LAYOUT_ASH:
       case ui::LAYOUT_DESKTOP:
-        value = 21;
+        value = 19;
         break;
       case ui::LAYOUT_TOUCH:
         value = 23;
