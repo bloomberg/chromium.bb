@@ -8,8 +8,6 @@
 # How to use:
 # -----------
 # make prereq
-# ./scons bitcode=1 platform=x86-32 -j 12 toolchain_tests  (just in case)
-# make mylibc.so
 # make hello1.x86-32.nexe.dummy  (this will fail with undefined symbols
 # make run1
 
@@ -30,8 +28,9 @@ PATH_CRT=$(ROOT)/toolchain/pnacl_linux_x86_64/glibc/lib
 PATH_CRT_SRC=$(ROOT)/pnacl/support
 
 COMMON_FLAGS= --pnacl-driver-verbose -save-temps
+RUNNER_DEBUG= # -E LD_DEBUG=all
 
-RUNNER=$(BOOTER) $(LOADER) -S -E LD_DEBUG=all \
+RUNNER=$(BOOTER) $(LOADER) -S $(RUNNER_DEBUG) \
        --r_debug=0xXXXXXXXXXXXXXXXX -a -B $(IRT) \
        -- $(LDSO) --library-path $(LIBPATH_SHARED):.
 
@@ -60,7 +59,7 @@ startup_newlib_dynamic.bc: startup_newlib_dynamic.c
 #       to run pnac/build.sh sdk
 prereqs:
 	cd ../../ ; ./scons bitcode=1 platform=x86-32 \
-          irt nacl_helper_bootstrap sel_ldr
+          irt nacl_helper_bootstrap sel_ldr libnosys libnacl
 
 # bookends for shared libs
 S_INIT = crtbegin.bc $(PATH_CRT)/crti.bc $(PATH_CRT)/crtbeginS.bc
@@ -128,7 +127,7 @@ LIBS = -L $(LIBPATH_SHARED)  -l:ld-2.9.so  \
        -Wl,--end-group
 
 
-hello1.x86-32.nexe.dummy: hello1.bc $(INIT) $(FINI) libsimple.pso
+hello1.x86-32.nexe.dummy: hello1.bc $(INIT) $(FINI) libsimple.pso mylibc.pso
 	$(PNACL_CC) $(COMMON_FLAGS) $(LD_FLAGS_NATIVE) -nodefaultlibs -nostdlib \
         $(INIT) hello1.bc $(LIBS) $(FINI)  -o $@
 
@@ -144,7 +143,7 @@ LIBS2 = -L $(LIBPATH_SHARED)  -l:ld-2.9.so  \
         -L . -l:libsimple.so -l:mylibc.so \
         -l:libgcc.a
 
-hello1.x86-32.nexe: libsimple.so
+hello1.x86-32.nexe: libsimple.so mylibc.so
 	$(PNACL_LD) $(COMMON_FLAGS) -arch x86-32 $(MAGIC_OBJ) $(LIBS2)  -o $@
 
 

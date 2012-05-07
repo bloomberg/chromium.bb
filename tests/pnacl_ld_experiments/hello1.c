@@ -108,16 +108,6 @@ void __local_lock_release() {
 void __local_lock_release_recursive() {
 }
 
-char* getlogin() {
-  return 0;
-}
-
-void issetugid() {
-}
-
-void sigprocmask() {
-}
-
 /* ====================================================================== */
 __thread int tdata1 = 1;
 __thread int tdata2 = 3;
@@ -179,4 +169,3 @@ int main(int argc, char** argv, char** envp) {
   myprint("exit\n");
   return 0;
 }
-
