@@ -66,6 +66,7 @@
 #include "window.h"
 
 struct cursor;
+struct shm_pool;
 
 struct display {
 	struct wl_display *display;
@@ -95,6 +96,7 @@ struct display {
 	int frame_radius;
 	struct xkb_desc *xkb;
 	struct cursor *cursors;
+	struct shm_pool *cursor_shm_pool;
 
 	PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
 	PFNEGLCREATEIMAGEKHRPROC create_image;
@@ -138,9 +140,7 @@ struct window {
 
 	cairo_surface_t *cairo_surface;
 
-	struct wl_shm_pool *pool;
-	size_t pool_size;
-	void *pool_data;
+	struct shm_pool *pool;
 
 	window_key_handler_t key_handler;
 	window_keyboard_focus_handler_t keyboard_focus_handler;
@@ -229,6 +229,13 @@ struct cursor_image {
 struct cursor {
 	int n_images;
 	struct cursor_image *images;
+};
+
+struct shm_pool {
+	struct wl_shm_pool *pool;
+	size_t size;
+	size_t used;
+	void *data;
 };
 
 enum {
@@ -346,9 +353,11 @@ display_get_buffer_for_surface(struct display *display,
 
 struct shm_surface_data {
 	struct surface_data data;
-	void *map;
-	size_t length;
+	struct shm_pool *pool;
 };
+
+static void
+shm_pool_destroy(struct shm_pool *pool);
 
 static void
 shm_surface_data_destroy(void *p)
@@ -356,8 +365,8 @@ shm_surface_data_destroy(void *p)
 	struct shm_surface_data *data = p;
 
 	wl_buffer_destroy(data->data.buffer);
-	if (data->map)
-		munmap(data->map, data->length);
+	if (data->pool)
+		shm_pool_destroy(data->pool);
 }
 
 static void
@@ -402,17 +411,74 @@ make_shm_pool(struct display *display, int size, void **data)
 	return pool;
 }
 
+static struct shm_pool *
+shm_pool_create(struct display *display, size_t size)
+{
+	struct shm_pool *pool = malloc(sizeof *pool);
+
+	if (!pool)
+		return NULL;
+
+	pool->pool = make_shm_pool(display, size, &pool->data);
+	if (!pool->pool) {
+		free(pool);
+		return NULL;
+	}
+
+	pool->size = size;
+	pool->used = 0;
+
+	return pool;
+}
+
+static void *
+shm_pool_allocate(struct shm_pool *pool, size_t size, int *offset)
+{
+	if (pool->used + size > pool->size)
+		return NULL;
+
+	*offset = pool->used;
+	pool->used += size;
+
+	return (char *) pool->data + *offset;
+}
+
+/* destroy the pool. this does not unmap the memory though */
+static void
+shm_pool_destroy(struct shm_pool *pool)
+{
+	munmap(pool->data, pool->size);
+	wl_shm_pool_destroy(pool->pool);
+	free(pool);
+}
+
+/* Start allocating from the beginning of the pool again */
+static void
+shm_pool_reset(struct shm_pool *pool)
+{
+	pool->used = 0;
+}
+
+static int
+data_length_for_shm_surface(struct rectangle *rect)
+{
+	int stride;
+
+	stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32,
+						rect->width);
+	return stride * rect->height;
+}
+
 static cairo_surface_t *
-display_create_shm_surface(struct display *display,
-			   struct rectangle *rectangle, uint32_t flags,
-			   struct window *window)
+display_create_shm_surface_from_pool(struct display *display,
+				     struct rectangle *rectangle,
+				     uint32_t flags, struct shm_pool *pool)
 {
 	struct shm_surface_data *data;
-	struct wl_shm_pool *pool = NULL;
 	uint32_t format;
 	cairo_surface_t *surface;
+	int stride, length, offset;
 	void *map;
-	int stride;
 
 	data = malloc(sizeof *data);
 	if (data == NULL)
@@ -420,14 +486,13 @@ display_create_shm_surface(struct display *display,
 
 	stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32,
 						rectangle->width);
-	data->length = stride * rectangle->height;
-	if (window && window->pool && data->length < window->pool_size) {
-		pool = window->pool;
-		map = window->pool_data;
-		data->map = NULL;
-	} else {
-		pool = make_shm_pool(display, data->length, &map);
-		data->map = map;
+	length = stride * rectangle->height;
+	data->pool = NULL;
+	map = shm_pool_allocate(pool, length, &offset);
+
+	if (!map) {
+		free(data);
+		return NULL;
 	}
 
 	surface = cairo_image_surface_create_for_data (map,
@@ -444,13 +509,50 @@ display_create_shm_surface(struct display *display,
 	else
 		format = WL_SHM_FORMAT_ARGB8888;
 
-	data->data.buffer = wl_shm_pool_create_buffer(pool, 0,
+	data->data.buffer = wl_shm_pool_create_buffer(pool->pool, offset,
 						      rectangle->width,
 						      rectangle->height,
 						      stride, format);
 
-	if (data->map)
-		wl_shm_pool_destroy(pool);
+	return surface;
+}
+
+static cairo_surface_t *
+display_create_shm_surface(struct display *display,
+			   struct rectangle *rectangle, uint32_t flags,
+			   struct window *window)
+{
+	struct shm_surface_data *data;
+	struct shm_pool *pool;
+	cairo_surface_t *surface;
+
+	if (window && window->pool) {
+		shm_pool_reset(window->pool);
+		surface = display_create_shm_surface_from_pool(display,
+							       rectangle,
+							       flags,
+							       window->pool);
+		if (surface)
+			return surface;
+	}
+
+	pool = shm_pool_create(display,
+			       data_length_for_shm_surface(rectangle));
+	if (!pool)
+		return NULL;
+
+	surface =
+		display_create_shm_surface_from_pool(display, rectangle,
+						     flags, pool);
+
+	if (!surface) {
+		shm_pool_destroy(pool);
+		return NULL;
+	}
+
+	/* make sure we destroy the pool when the surface is destroyed */
+	data = cairo_surface_get_user_data(surface, &surface_data_key);
+	data->pool = pool;
 
 	return surface;
 }
@@ -517,7 +619,8 @@ create_cursor_from_images(struct display *display, struct cursor *cursor,
 		rect.height = image->height;
 
 		cursor->images[i].surface =
-			display_create_shm_surface(display, &rect, 0, NULL);
+			display_create_shm_surface_from_pool(display, &rect, 0,
+							     display->cursor_shm_pool);
 
 		shm_surface_write(cursor->images[i].surface,
 				  (unsigned char *) image->pixels,
@@ -532,30 +635,57 @@ create_cursor_from_images(struct display *display, struct cursor *cursor,
 
 }
 
+static size_t
+data_length_for_cursor_images(XcursorImages *images)
+{
+	int i;
+	size_t length = 0;
+	struct rectangle rect;
+
+	for (i = 0; i < images->nimage; i++) {
+		rect.width = images->images[i]->width;
+		rect.height = images->images[i]->height;
+		length += data_length_for_shm_surface(&rect);
+	}
+
+	return length;
+}
+
 static void
 create_cursors(struct display *display)
 {
 	int i, count;
+	size_t pool_size = 0;
 	struct cursor *cursor;
-	XcursorImages *images;
+	XcursorImages **images;
 
 	count = ARRAY_LENGTH(cursors);
 	display->cursors = malloc(count * sizeof *display->cursors);
-	for (i = 0; i < count; i++) {
-		images = XcursorLibraryLoadImages(cursors[i], NULL, 32);
+	images = malloc(count * sizeof images[0]);
 
+	for (i = 0; i < count; i++) {
+		images[i] = XcursorLibraryLoadImages(cursors[i], NULL, 32);
 		if (!images) {
 			fprintf(stderr, "Error loading cursor: %s\n",
 				cursors[i]);
 			continue;
 		}
-
-		cursor = &display->cursors[i];
-		create_cursor_from_images(display, cursor, images);
-
-		XcursorImagesDestroy(images);
+		pool_size += data_length_for_cursor_images(images[i]);
 	}
 
+	display->cursor_shm_pool = shm_pool_create(display, pool_size);
+
+	for (i = 0; i < count; i++) {
+		if (!images)
+			continue;
+
+		cursor = &display->cursors[i];
+		create_cursor_from_images(display, cursor, images[i]);
+
+		XcursorImagesDestroy(images[i]);
+	}
+
+	free(images);
 }
 
 static void
@@ -579,7 +709,9 @@ destroy_cursors(struct display *display)
 	for (i = 0; i < count; ++i) {
 		destroy_cursor_images(&display->cursors[i]);
 	}
+
 	free(display->cursors);
+	shm_pool_destroy(display->cursor_shm_pool);
 }
 
 cairo_surface_t *
@@ -1258,10 +1390,8 @@ frame_button_handler(struct widget *widget,
 				   pool to create buffers out of while
 				   we resize.  We should probably base
 				   this number on the size of the output. */
-				window->pool_size = 6 * 1024 * 1024;
-				window->pool = make_shm_pool(display,
-							     window->pool_size,
-							     &window->pool_data);
+				window->pool =
+					shm_pool_create(display, 6 * 1024 * 1024);
 			}
 
 			wl_shell_surface_resize(window->shell_surface,
@@ -1486,8 +1616,7 @@ input_handle_pointer_enter(void *data,
 	window = input->pointer_focus;
 
 	if (window->pool) {
-		wl_shm_pool_destroy(window->pool);
-		munmap(window->pool_data, window->pool_size);
+		shm_pool_destroy(window->pool);
 		window->pool = NULL;
 		/* Schedule a redraw to free the pool */
 		window_schedule_redraw(window);
