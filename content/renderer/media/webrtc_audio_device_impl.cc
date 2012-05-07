@@ -25,7 +25,7 @@ static const double kMaxVolumeLevel = 255.0;
 // for its current sample rate (set by the user) on Windows and Mac OS X.
 // The listed rates below adds restrictions and WebRtcAudioDeviceImpl::Init()
 // will fail if the user selects any rate outside these ranges.
-static int kValidInputRates[] = {96000, 48000, 44100, 32000, 16000};
+static int kValidInputRates[] = {96000, 48000, 44100, 32000, 16000, 8000};
 static int kValidOutputRates[] = {96000, 48000, 44100};
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
 // media::GetAudioInput[Output]HardwareSampleRate() is hardcoded to return
@@ -40,6 +40,8 @@ namespace {
 // audio frames. This enumerator covers all supported sizes for all platforms.
 // Example: k480 <=> 480 audio frames <=> 10ms@48kHz.
 // TODO(henrika): can be moved to the media namespace if more clients need it.
+// TODO(henrika): add support for k80 as well. Will be listed as unexpected for
+// now. Very rare case though and most likeley only on Mac OS X.
 enum AudioFramesPerBuffer {
   k160,
   k320,
@@ -62,6 +64,8 @@ enum HistogramDirection {
 
 // Helper method to convert integral values to their respective enum values
 // above, or kUnexpectedAudioBufferSize if no match exists.
+// TODO(henrika): add support for k80 as well given that 8000Hz input now has
+// been added.
 static AudioFramesPerBuffer AsAudioFramesPerBuffer(int frames_per_buffer) {
   switch (frames_per_buffer) {
     case 160: return k160;
