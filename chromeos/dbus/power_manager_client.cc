@@ -433,6 +433,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
   }
 
   void ScreenLockSignalReceived(dbus::Signal* signal) {
+    // TODO(flackr): This warning is actually a signal that things are working
+    // as expected. As per http://crbug.com/126217, this will help determine
+    // if the problem is with dbus or in chrome.
+    LOG(WARNING) << "LockScreen signal received from power manager.";
     FOR_EACH_OBSERVER(Observer, observers_, LockScreen());
   }
 
