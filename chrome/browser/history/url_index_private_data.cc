@@ -1095,7 +1095,7 @@ void URLIndexPrivateData::SaveWordStartsMap(
 void URLIndexPrivateData::RestoreFromFileTask(
     const FilePath& file_path,
     scoped_refptr<URLIndexPrivateData> private_data,
-    std::string languages) {
+    const std::string& languages) {
   private_data = URLIndexPrivateData::RestoreFromFile(file_path, languages);
 }
 

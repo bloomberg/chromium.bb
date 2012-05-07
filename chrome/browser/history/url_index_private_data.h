@@ -141,12 +141,11 @@ class URLIndexPrivateData
 
   // Creates a new URLIndexPrivateData object, populates it from the contents
   // of the cache file stored in |file_path|, and assigns it to |private_data|.
-  // |languages| will be used to break URLs and page titles into words and is
-  // deliberately passed by value.
+  // |languages| will be used to break URLs and page titles into words.
   static void RestoreFromFileTask(
       const FilePath& file_path,
       scoped_refptr<URLIndexPrivateData> private_data,
-      std::string languages);
+      const std::string& languages);
 
   // Constructs a new object by restoring its contents from the file at |path|.
   // Returns the new URLIndexPrivateData which on success will contain the
