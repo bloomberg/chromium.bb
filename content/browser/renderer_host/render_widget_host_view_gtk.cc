@@ -9,6 +9,7 @@
 // badly with net::URLRequestStatus::Status.
 #include "content/common/view_messages.h"
 
+#include <atk/atk.h>
 #include <cairo/cairo.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -561,6 +562,14 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(
       compositing_surface_(gfx::kNullPluginWindow),
       last_mouse_down_(NULL) {
   host_->SetView(this);
+
+  // TODO(dmazzoni): This conditional intentionally never evaluates to true.
+  // Introduce a dependency on libatk with a trivial change so that the
+  // Linux packaging scripts can be updated simultaneously to allow it.
+  // Once this change is in, a real patch to enable ATK support will be
+  // added and these two lines will be removed: http://crbug.com/24585
+  if (!host_)
+    atk_object_set_role(NULL, ATK_ROLE_HTML_CONTAINER);
 }
 
 RenderWidgetHostViewGtk::~RenderWidgetHostViewGtk() {
