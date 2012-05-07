@@ -1481,8 +1481,10 @@ bool Conn::TryConnectDest(const struct sockaddr* addr, socklen_t addrlen) {
         destchan_.write_fd(),
         NULL, &OnDestchanWrite, &OnDestchanError,
         evkey_));
-    net::AddressList addrlist = net::AddressList::CreateFromSockaddr(
-        addr, addrlen, SOCK_STREAM, IPPROTO_TCP);
+    net::IPEndPoint endpoint;
+    if (!endpoint.FromSockAddr(addr, addrlen))
+      return false;
+    net::AddressList addrlist(endpoint);
     net::HostPortPair host_port_pair(destname_, destport_);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE, base::Bind(

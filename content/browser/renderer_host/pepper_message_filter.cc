@@ -574,10 +574,9 @@ void PepperMessageFilter::OnHostResolverResolveLookupFinished(
                                     bound_info.plugin_dispatcher_id,
                                     bound_info.host_resolver_id);
   } else {
-    std::string canonical_name;
-    addresses.GetCanonicalName(&canonical_name);
+    const std::string& canonical_name = addresses.canonical_name();
     scoped_ptr<ppapi::NetAddressList> net_address_list(
-        ppapi::CreateNetAddressListFromAddrInfo(addresses.head()));
+        ppapi::CreateNetAddressListFromAddressList(addresses));
     if (!net_address_list.get()) {
       SendHostResolverResolveACKError(bound_info.routing_id,
                                       bound_info.plugin_dispatcher_id,

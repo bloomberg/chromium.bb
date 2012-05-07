@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <cstring>
 
-#include "net/base/sys_addrinfo.h"
+#include "net/base/address_list.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 #include "ppapi/shared_impl/var.h"
@@ -15,17 +15,15 @@
 
 namespace ppapi {
 
-NetAddressList* CreateNetAddressListFromAddrInfo(const addrinfo* ai) {
+NetAddressList* CreateNetAddressListFromAddressList(
+    const net::AddressList& list) {
   scoped_ptr<NetAddressList> net_address_list(new NetAddressList());
   PP_NetAddress_Private address;
 
-  while (ai != NULL) {
-    if (!NetAddressPrivateImpl::SockaddrToNetAddress(
-            ai->ai_addr, ai->ai_addrlen, &address)) {
+  for (size_t i = 0; i < list.size(); ++i) {
+    if (!NetAddressPrivateImpl::IPEndPointToNetAddress(list[i], &address))
       return NULL;
-    }
     net_address_list->push_back(address);
-    ai = ai->ai_next;
   }
 
   return net_address_list.release();

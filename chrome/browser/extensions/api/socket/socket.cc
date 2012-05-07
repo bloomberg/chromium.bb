@@ -55,16 +55,11 @@ void Socket::IPEndPointToStringAndPort(const net::IPEndPoint& address,
                                        int* port) {
   DCHECK(ip_address_str);
   DCHECK(port);
-  struct sockaddr_storage addr;
-  size_t addr_len = sizeof(addr);
-  if (address.ToSockAddr(reinterpret_cast<struct sockaddr*>(&addr),
-                         &addr_len)) {
-    *ip_address_str = net::NetAddressToString(
-        reinterpret_cast<struct sockaddr*>(&addr), addr_len);
-    *port = address.port();
-  } else {
-    *ip_address_str = "";
+  *ip_address_str = address.ToStringWithoutPort();
+  if (ip_address_str->empty()) {
     *port = 0;
+  } else {
+    *port = address.port();
   }
 }
 

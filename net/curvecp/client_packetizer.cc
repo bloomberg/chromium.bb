@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/base/sys_addrinfo.h"
 #include "net/curvecp/protocol.h"
 #include "net/udp/udp_client_socket.h"
 
@@ -33,7 +32,7 @@ ClientPacketizer::ClientPacketizer()
     : Packetizer(),
       next_state_(NONE),
       listener_(NULL),
-      current_address_(NULL),
+      current_address_index_(-1),
       hello_attempts_(0),
       initiate_sent_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -290,25 +289,17 @@ void ClientPacketizer::DoCallback(int result) {
 int ClientPacketizer::ConnectNextAddress() {
   // TODO(mbelshe): plumb Netlog information
 
-  DCHECK(addresses_.head());
+  DCHECK(!addresses_.empty());
 
   socket_.reset(new UDPClientSocket(DatagramSocket::DEFAULT_BIND,
                                     RandIntCallback(),
                                     NULL,
                                     NetLog::Source()));
 
-  // Rotate to next address in the list.
-  if (current_address_)
-    current_address_ = current_address_->ai_next;
-  if (!current_address_)
-    current_address_ = addresses_.head();
+  // Rotate to next address in the list. Note, this sets it to 0 on first call.
+  current_address_index_ = (current_address_index_ + 1) % addresses_.size();
 
-  IPEndPoint endpoint;
-  if (!endpoint.FromSockAddr(current_address_->ai_addr,
-                             current_address_->ai_addrlen))
-    return ERR_FAILED;
-
-  int rv = socket_->Connect(endpoint);
+  int rv = socket_->Connect(addresses_[current_address_index_]);
   DCHECK_NE(ERR_IO_PENDING, rv);
 
   return rv;

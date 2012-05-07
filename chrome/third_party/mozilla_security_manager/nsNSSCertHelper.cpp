@@ -51,6 +51,7 @@
 #include "chrome/common/net/x509_certificate_model.h"
 #include "crypto/scoped_nss_types.h"
 #include "grit/generated_resources.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
 #include "net/third_party/mozilla_security_manager/nsNSSCertTrust.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -528,26 +529,10 @@ std::string ProcessGeneralName(PRArenaPool* arena,
       break;
     case certIPAddress: {
       key = l10n_util::GetStringUTF8(IDS_CERT_GENERAL_NAME_IP_ADDRESS);
-      struct addrinfo addr = {0};
-      if (current->name.other.len == 4) {
-        struct sockaddr_in addr4 = {0};
-        addr.ai_addr = reinterpret_cast<sockaddr*>(&addr4);
-        addr.ai_addrlen = sizeof(addr4);
-        addr.ai_family = AF_INET;
-        addr4.sin_family = addr.ai_family;
-        memcpy(&addr4.sin_addr, current->name.other.data,
-               current->name.other.len);
-        value = net::NetAddressToString(&addr);
-      } else if (current->name.other.len == 16) {
-        struct sockaddr_in6 addr6 = {0};
-        addr.ai_addr = reinterpret_cast<sockaddr*>(&addr6);
-        addr.ai_addrlen = sizeof(addr6);
-        addr.ai_family = AF_INET6;
-        addr6.sin6_family = addr.ai_family;
-        memcpy(&addr6.sin6_addr, current->name.other.data,
-               current->name.other.len);
-        value = net::NetAddressToString(&addr);
-      }
+      net::IPAddressNumber ip(
+          current->name.other.data,
+          current->name.other.data + current->name.other.len);
+      value = net::IPEndPoint(ip, 0).ToStringWithoutPort();
       if (value.empty()) {
         // Invalid IP address.
         value = ProcessRawBytes(&current->name.other);

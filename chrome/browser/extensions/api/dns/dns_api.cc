@@ -12,7 +12,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 
 using content::BrowserThread;
 using extensions::api::experimental_dns::ResolveCallbackResolveInfo;
@@ -96,10 +95,9 @@ void DnsResolveFunction::OnLookupFinished(int resolve_result) {
       new ResolveCallbackResolveInfo());
   resolve_info->result_code = resolve_result;
   if (resolve_result == net::OK) {
-    const struct addrinfo* head = addresses_->head();
-    DCHECK(head);
+    DCHECK(!addresses_->empty());
     resolve_info->address.reset(
-        new std::string(net::NetAddressToString(head)));
+        new std::string(addresses_->front().ToStringWithoutPort()));
   }
   result_.reset(Resolve::Result::Create(*resolve_info));
   response_ = true;

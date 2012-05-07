@@ -19,7 +19,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/sys_addrinfo.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/udp/udp_client_socket.h"
@@ -622,14 +621,12 @@ bool UDPStatsClient::DoConnect(int result) {
   }
   set_socket(udp_socket);
 
-  const addrinfo* address = GetAddressList().head();
-  if (!address) {
+  if (addresses().empty()) {
     Finish(RESOLVE_FAILED, net::ERR_INVALID_ARGUMENT);
     return false;
   }
 
-  net::IPEndPoint endpoint;
-  endpoint.FromSockAddr(address->ai_addr, address->ai_addrlen);
+  const net::IPEndPoint& endpoint = addresses().front();
   int rv = udp_socket->Connect(endpoint);
   if (rv < 0) {
     Finish(CONNECT_FAILED, rv);
@@ -675,7 +672,7 @@ bool TCPStatsClient::DoConnect(int result) {
   }
 
   net::TCPClientSocket* tcp_socket =
-      new net::TCPClientSocket(GetAddressList(), NULL, net::NetLog::Source());
+      new net::TCPClientSocket(addresses(), NULL, net::NetLog::Source());
   if (!tcp_socket) {
     Finish(SOCKET_CREATE_FAILED, net::ERR_INVALID_ARGUMENT);
     return false;

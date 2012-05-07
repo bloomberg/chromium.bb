@@ -128,8 +128,8 @@ bool WebSocketProxyPrivate::RunImpl() {
 
 void WebSocketProxyPrivate::OnHostResolution(int result) {
 #if defined(OS_CHROMEOS)
-  if (result == 0 && addr_.head() != NULL) {
-    std::string ip = net::NetAddressToString(addr_.head());
+  if (result == 0 && !addr_.empty()) {
+    std::string ip = addr_.front().ToStringWithoutPort();
     if (!ip.empty() && ip.find(':') != std::string::npos && ip[0] != '[')
       ip = '[' + ip + ']';
     map_["addr"] = ip;

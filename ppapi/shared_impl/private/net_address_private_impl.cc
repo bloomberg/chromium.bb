@@ -16,7 +16,6 @@
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
-#include "net/base/sys_addrinfo.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/shared_impl/var.h"
@@ -472,21 +471,18 @@ bool NetAddressPrivateImpl::SockaddrToNetAddress(
 bool NetAddressPrivateImpl::IPEndPointToNetAddress(
     const net::IPEndPoint& ip,
     PP_NetAddress_Private* net_addr) {
-  sockaddr_storage storage = { 0 };
-  size_t length = sizeof(storage);
+  net::SockaddrStorage storage;
 
-  return ip.ToSockAddr(reinterpret_cast<sockaddr*>(&storage), &length) &&
-      SockaddrToNetAddress(reinterpret_cast<const sockaddr*>(&storage), length,
-                           net_addr);
+  return ip.ToSockAddr(storage.addr, &storage.addr_len) &&
+      SockaddrToNetAddress(storage.addr, storage.addr_len, net_addr);
 }
 
 // static
 bool NetAddressPrivateImpl::AddressListToNetAddress(
     const net::AddressList& address_list,
     PP_NetAddress_Private* net_addr) {
-  const addrinfo* head = address_list.head();
-  return head && SockaddrToNetAddress(head->ai_addr, head->ai_addrlen,
-                                      net_addr);
+  return !address_list.empty() && IPEndPointToNetAddress(address_list.front(),
+                                                         net_addr);
 }
 
 // static
@@ -514,8 +510,7 @@ bool NetAddressPrivateImpl::NetAddressToAddressList(
   if (!NetAddressToIPEndPoint(net_addr, &ip_end_point))
     return false;
 
-  *address_list = net::AddressList::CreateFromIPAddress(ip_end_point.address(),
-                                                        ip_end_point.port());
+  *address_list = net::AddressList(ip_end_point);
   return true;
 }
 

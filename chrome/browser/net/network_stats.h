@@ -151,7 +151,7 @@ class NetworkStats {
   base::TimeTicks start_time() const { return start_time_; }
 
   // Returns |addresses_|.
-  net::AddressList GetAddressList() const { return addresses_; }
+  const net::AddressList& addresses() const { return addresses_; }
 
   // Returns packets_received_mask_ (used by unit tests).
   uint32 packets_received_mask() const { return packets_received_mask_; }

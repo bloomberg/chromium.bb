@@ -85,7 +85,7 @@ class ClientPacketizer : public Packetizer {
   Packetizer::Listener* listener_;
   CompletionCallback user_callback_;
   AddressList addresses_;
-  const struct addrinfo* current_address_;
+  int current_address_index_;
   int hello_attempts_;  // Number of attempts to send a Hello Packet.
   bool initiate_sent_;  // Indicates whether the Initiate Packet was sent.
 

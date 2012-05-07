@@ -50,8 +50,7 @@ bool P2PSocketHostTcp::Init(const net::IPEndPoint& local_address,
   remote_address_ = remote_address;
   state_ = STATE_CONNECTING;
   scoped_ptr<net::TCPClientSocket> tcp_socket(new net::TCPClientSocket(
-      net::AddressList::CreateFromIPAddress(
-          remote_address.address(), remote_address.port()),
+      net::AddressList(remote_address),
       NULL, net::NetLog::Source()));
   if (tcp_socket->Bind(local_address) != net::OK) {
     OnError();

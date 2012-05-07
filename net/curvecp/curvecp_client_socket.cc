@@ -4,7 +4,6 @@
 
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/sys_addrinfo.h"
 #include "net/curvecp/curvecp_client_socket.h"
 #include "net/curvecp/messenger.h"
 
@@ -47,17 +46,7 @@ int CurveCPClientSocket::GetPeerAddress(AddressList* address) const {
   int rv = packetizer_.GetPeerAddress(&endpoint);
   if (rv < 0)
     return rv;
-  struct sockaddr_storage sockaddr;
-  size_t sockaddr_length = sizeof(sockaddr);
-  bool success = endpoint.ToSockAddr(
-      reinterpret_cast<struct sockaddr*>(&sockaddr), &sockaddr_length);
-  if (!success)
-    return ERR_FAILED;
-  struct addrinfo ai;
-  memset(&ai, 0, sizeof(ai));
-  memcpy(&ai.ai_addr, &sockaddr, sockaddr_length);
-  ai.ai_addrlen = sockaddr_length;
-  *address = AddressList::CreateByCopying(&ai);
+  *address = AddressList(endpoint);
   return OK;
 }
 

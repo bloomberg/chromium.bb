@@ -23,7 +23,6 @@
 #include "jingle/notifier/communicator/connection_options.h"
 #include "jingle/notifier/communicator/connection_settings.h"
 #include "net/base/net_errors.h"
-#include "net/base/sys_addrinfo.h"
 #include "talk/base/httpcommon-inl.h"
 #include "talk/base/task.h"
 #include "talk/base/thread.h"
@@ -156,17 +155,17 @@ void XmppConnectionGenerator::HandleServerDNSResolved(int status) {
   }
 
   // Slurp the addresses into a vector.
-  std::vector<uint32> ip_list;
-  for (const addrinfo* addr = address_list_.head();
-       addr != NULL; addr = addr->ai_next) {
-    const sockaddr_in& sockaddr =
-        *reinterpret_cast<const sockaddr_in*>(addr->ai_addr);
-    uint32 ip = talk_base::NetworkToHost32(sockaddr.sin_addr.s_addr);
+  std::vector<uint32> ip_list;  // TODO(szym): not IPv6-safe.
+  for (size_t i = 0; i < address_list_.size(); ++i) {
+    const net::IPEndPoint& addr = address_list_[i];
+    DCHECK_EQ(addr.GetFamily(), AF_INET);
+    uint32 ip = talk_base::NetworkToHost32(
+        *reinterpret_cast<const uint32*>(&addr.address()[0]));
     ip_list.push_back(ip);
   }
   successfully_resolved_dns_ = !ip_list.empty();
 
-  for (int i = 0; i < static_cast<int>(ip_list.size()); ++i) {
+  for (size_t i = 0; i < ip_list.size(); ++i) {
     VLOG(1) << "  ip " << i
             << " : " << talk_base::SocketAddress::IPToString(ip_list[i]);
   }

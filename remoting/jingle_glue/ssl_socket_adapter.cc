@@ -13,7 +13,6 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/ssl_config_service.h"
-#include "net/base/sys_addrinfo.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/url_request/url_request_context.h"
 
@@ -220,21 +219,13 @@ bool TransportSocket::IsConnectedAndIdle() const {
 
 int TransportSocket::GetPeerAddress(net::AddressList* address) const {
   talk_base::SocketAddress socket_address = socket_->GetRemoteAddress();
-
-  // libjingle supports only IPv4 addresses.
-  sockaddr_in ipv4addr;
-  socket_address.ToSockAddr(&ipv4addr);
-
-  struct addrinfo ai;
-  memset(&ai, 0, sizeof(ai));
-  ai.ai_family = ipv4addr.sin_family;
-  ai.ai_socktype = SOCK_STREAM;
-  ai.ai_protocol = IPPROTO_TCP;
-  ai.ai_addr = reinterpret_cast<struct sockaddr*>(&ipv4addr);
-  ai.ai_addrlen = sizeof(ipv4addr);
-
-  *address = net::AddressList::CreateByCopyingFirstAddress(&ai);
-  return net::OK;
+  net::IPEndPoint endpoint;
+  if (jingle_glue::SocketAddressToIPEndPoint(socket_address, &endpoint)) {
+    *address = net::AddressList(endpoint);
+    return net::OK;
+  } else {
+    return net::ERR_FAILED;
+  }
 }
 
 int TransportSocket::GetLocalAddress(net::IPEndPoint* address) const {

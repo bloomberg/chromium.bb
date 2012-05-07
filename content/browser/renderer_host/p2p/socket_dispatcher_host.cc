@@ -72,22 +72,15 @@ class P2PSocketDispatcherHost::DnsRequest {
       return;
     }
 
-    if (addresses_.head() == NULL) {
+    // TODO(szym): Redundant check. http://crbug.com/126211
+    if (addresses_.empty()) {
       LOG(ERROR) << "Received 0 addresses when trying to resolve address for "
                  << host_name_;
       done_callback_.Run(net::IPAddressNumber());
       return;
     }
 
-    net::IPEndPoint end_point;
-    if (!end_point.FromSockAddr(addresses_.head()->ai_addr,
-                                addresses_.head()->ai_addrlen)) {
-      LOG(ERROR) << "Received invalid address for " << host_name_;
-      done_callback_.Run(net::IPAddressNumber());
-      return;
-    }
-
-    done_callback_.Run(end_point.address());
+    done_callback_.Run(addresses_.front().address());
   }
 
   int32 routing_id_;

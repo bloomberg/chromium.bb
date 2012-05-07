@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include "base/values.h"
 #include "net/base/net_util.h"
-#include "net/base/sys_addrinfo.h"
 
 namespace net {
 
@@ -18,9 +17,8 @@ Value* AddressListNetLogParam::ToValue() const {
   DictionaryValue* dict = new DictionaryValue();
   ListValue* list = new ListValue();
 
-  for (const addrinfo* head = address_list_.head();
-       head != NULL ; head = head->ai_next) {
-    list->Append(Value::CreateStringValue(NetAddressToStringWithPort(head)));
+  for (size_t i = 0; i < address_list_.size() ; ++i) {
+    list->Append(Value::CreateStringValue(address_list_[i].ToString()));
   }
 
   dict->Set("address_list", list);

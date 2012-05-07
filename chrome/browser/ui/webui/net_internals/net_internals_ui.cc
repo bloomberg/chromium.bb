@@ -58,7 +58,6 @@
 #include "net/base/host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "net/base/sys_addrinfo.h"
 #include "net/base/transport_security_state.h"
 #include "net/base/x509_cert_types.h"
 #include "net/disk_cache/disk_cache.h"
@@ -953,11 +952,9 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
     } else {
       // Append all of the resolved addresses.
       ListValue* address_list = new ListValue();
-      const struct addrinfo* current_address = entry.addrlist.head();
-      while (current_address) {
-        address_list->Append(Value::CreateStringValue(
-            net::NetAddressToStringWithPort(current_address)));
-        current_address = current_address->ai_next;
+      for (size_t i = 0; i < entry.addrlist.size(); ++i) {
+        address_list->Append(
+            Value::CreateStringValue(entry.addrlist[i].ToStringWithoutPort()));
       }
       entry_dict->Set("addresses", address_list);
     }

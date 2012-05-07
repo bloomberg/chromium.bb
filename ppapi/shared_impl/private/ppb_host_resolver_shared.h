@@ -15,7 +15,9 @@
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_host_resolver_private_api.h"
 
-struct addrinfo;
+namespace net {
+class AddressList;
+}
 
 namespace ppapi {
 
@@ -27,7 +29,7 @@ struct HostPortPair {
 typedef std::vector<PP_NetAddress_Private> NetAddressList;
 
 PPAPI_SHARED_EXPORT NetAddressList*
-    CreateNetAddressListFromAddrInfo(const addrinfo* ai);
+    CreateNetAddressListFromAddressList(const net::AddressList& list);
 
 class PPAPI_SHARED_EXPORT PPB_HostResolver_Shared
     : public thunk::PPB_HostResolver_Private_API,
