@@ -364,6 +364,7 @@
           # below into a separate lib and then link both setup.exe and
           # setup_unittests.exe against that.
           'sources': [
+            'installer/mini_installer/chrome.release',  # Move to lib
             'installer/mini_installer/appid.h',
             'installer/mini_installer/chrome_appid.cc',
             'installer/mini_installer/configuration.cc',
@@ -375,16 +376,46 @@
             'installer/mini_installer/mini_string.cc',
             'installer/mini_installer/mini_string.h',
             'installer/mini_installer/mini_string_test.cc',
-            'installer/setup/install_worker.cc',    # Move to lib
-            'installer/setup/install_worker.h',     # Move to lib
+            'installer/setup/install.cc',               # Move to lib
+            'installer/setup/install.h',                # Move to lib
+            'installer/setup/install_unittest.cc',
+            'installer/setup/install_worker.cc',        # Move to lib
+            'installer/setup/install_worker.h',         # Move to lib
             'installer/setup/install_worker_unittest.cc',
             'installer/setup/run_all_unittests.cc',
-            'installer/setup/setup_constants.cc',   # Move to lib
-            'installer/setup/setup_constants.h',    # Move to lib
+            'installer/setup/setup_constants.cc',       # Move to lib
+            'installer/setup/setup_constants.h',        # Move to lib
             'installer/setup/setup_unittests.rc',
             'installer/setup/setup_unittests_resource.h',
             'installer/setup/setup_util.cc',
             'installer/setup/setup_util_unittest.cc',
+          ],
+          'rules': [
+            {
+              'rule_name': 'server_dlls',               # Move to lib
+              'extension': 'release',
+              'variables': {
+                'scan_server_dlls_py' : 'tools/build/win/scan_server_dlls.py',
+                'template_file': 'mini_installer/chrome.release',
+              },
+              'inputs': [
+                '<(scan_server_dlls_py)',
+                '<(template_file)'
+              ],
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/registered_dlls.h',
+              ],
+              'action': [
+                'python',
+                '<(scan_server_dlls_py)',
+                '--output_dir=<(PRODUCT_DIR)',
+                '--input_file=<(RULE_INPUT_PATH)',
+                '--header_output_dir=<(INTERMEDIATE_DIR)',
+                # TODO(sgk):  may just use environment variables
+                #'--distribution=$(CHROMIUM_BUILD)',
+                '--distribution=_google_chrome',
+              ],
+            },
           ],
         },
       ],

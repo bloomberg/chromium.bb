@@ -5,7 +5,6 @@
 [GENERAL]
 chrome.exe: %(ChromeDir)s\
 wow_helper.exe: %(ChromeDir)s\
-Dictionaries\en-US.bdic: %(ChromeDir)s\Dictionaries
 chrome.dll: %(VersionDir)s\
 nacl64.exe: %(VersionDir)s\
 ppGoogleNaClPluginChrome.dll: %(VersionDir)s\
@@ -40,15 +39,18 @@ ui_resources_2x.pak: %(VersionDir)s\
 theme_resources_touch_1x.pak: %(VersionDir)s\
 
 [GOOGLE_CHROME]
-splash-620x300.png: %(ChromeDir)s\
-Logo.png: %(ChromeDir)s\
-SmallLogo.png: %(ChromeDir)s\
-VisualElementsManifest.xml: %(ChromeDir)s\
+FlashPlayerApp.exe: %(VersionDir)s\
+FlashPlayerCPLApp.cpl: %(VersionDir)s\
 delegate_execute.exe: %(VersionDir)s\
 gcswf32.dll: %(VersionDir)s\
 metro_driver.dll: %(VersionDir)s\
 plugin.vch: %(VersionDir)s\
-FlashPlayerApp.exe: %(VersionDir)s\
-FlashPlayerCPLApp.cpl: %(VersionDir)s\
 PepperFlash\pepflashplayer.dll: %(VersionDir)s\PepperFlash\
 PepperFlash\manifest.json: %(VersionDir)s\PepperFlash\
+# All or none of the following 3 files need to be present as the creation of
+# VisualElementsManifest.xml is based on the existence of
+# %(VersionDir)\VisualElements. On a similar note, no other files should be
+# packaged in this directory.
+Logo.png: %(VersionDir)s\VisualElements\
+SmallLogo.png: %(VersionDir)s\VisualElements\
+splash-620x300.png: %(VersionDir)s\VisualElements\

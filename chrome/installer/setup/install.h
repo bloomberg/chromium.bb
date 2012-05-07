@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -22,6 +22,17 @@ namespace installer {
 class InstallationState;
 class InstallerState;
 class MasterPreferences;
+
+// Escape |att_value| as per the XML AttValue production
+// (http://www.w3.org/TR/2008/REC-xml-20081126/#NT-AttValue) for a value in
+// single quotes.
+void EscapeXmlAttributeValueInSingleQuotes(string16* att_value);
+
+// Creates VisualElementsManifest.xml beside chrome.exe in |src_path| if
+// |src_path|\VisualElements exists.
+// Returns true unless the manifest is supposed to be created, but fails to be.
+bool CreateVisualElementsManifest(const FilePath& src_path,
+                                  const Version& version);
 
 // This function installs or updates a new version of Chrome. It returns
 // install status (failed, new_install, updated etc).

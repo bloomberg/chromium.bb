@@ -113,12 +113,13 @@ enum InstallerStage {
   REMOVING_OLD_VERSIONS,       // 14: Deleting old version directories.
   FINISHING,                   // 15: Finishing the install.
   CONFIGURE_AUTO_LAUNCH,       // 16: Configuring Chrome to auto-launch.
-  NUM_STAGES                   // 17: The number of stages.
+  CREATING_VISUAL_MANIFEST,    // 17: Creating VisualElementsManifest.xml
+  NUM_STAGES                   // 18: The number of stages.
 };
 
 // When we start reporting the numerical values from the enum, the order
 // above MUST be preserved.
-COMPILE_ASSERT(CONFIGURE_AUTO_LAUNCH == 16,
+COMPILE_ASSERT(CREATING_VISUAL_MANIFEST == 17,
                never_ever_ever_change_InstallerStage_values_bang);
 
 namespace switches {

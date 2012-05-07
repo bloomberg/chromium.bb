@@ -6,7 +6,6 @@
 
 #include <shlobj.h>
 #include <time.h>
-#include <vector>
 
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -14,7 +13,9 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/string16.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
@@ -31,10 +32,8 @@
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
-#include "chrome/installer/util/product.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
 #include "chrome/installer/util/shell_util.h"
-#include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
 
 // Build-time generated include file.
@@ -353,6 +352,73 @@ installer::InstallStatus InstallNewVersion(
 
 namespace installer {
 
+void EscapeXmlAttributeValueInSingleQuotes(string16* att_value) {
+  ReplaceChars(*att_value, L"&", L"&amp;", att_value);
+  ReplaceChars(*att_value, L"'", L"&apos;", att_value);
+  ReplaceChars(*att_value, L"<", L"&lt;", att_value);
+}
+
+bool CreateVisualElementsManifest(const FilePath& src_path,
+                                  const Version& version) {
+  // Construct the relative path to the versioned VisualElements directory.
+  string16 elements_dir(ASCIIToUTF16(version.GetString()));
+  elements_dir.push_back(FilePath::kSeparators[0]);
+  elements_dir.append(installer::kVisualElements);
+
+  // Some distributions of Chromium may not include visual elements. Only
+  // proceed if this distribution does.
+  if (!file_util::PathExists(src_path.Append(elements_dir))) {
+    VLOG(1) << "No visual elements found, not writing "
+            << installer::kVisualElementsManifest << " to " << src_path.value();
+    return true;
+  } else {
+    // A printf_p-style format string for generating the visual elements
+    // manifest. Required arguments, in order, are:
+    //   - Localized display name for the product.
+    //   - Relative path to the VisualElements directory.
+    static const char kManifestTemplate[] =
+        "<Application>\r\n"
+        "  <VisualElements\r\n"
+        "      DisplayName='%1$ls'\r\n"
+        "      Logo='%2$ls\\Logo.png'\r\n"
+        "      SmallLogo='%2$ls\\SmallLogo.png'\r\n"
+        "      ForegroundText='light'\r\n"
+        "      BackgroundColor='white'>\r\n"
+        "    <DefaultTile ShowName='allLogos'/>\r\n"
+        "    <SplashScreen Image='%2$ls\\splash-620x300.png'/>\r\n"
+        "  </VisualElements>\r\n"
+        "</Application>";
+
+    const string16 manifest_template(ASCIIToUTF16(kManifestTemplate));
+
+    BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
+        BrowserDistribution::CHROME_BROWSER);
+    // TODO(grt): http://crbug.com/75152 Write a reference to a localized
+    // resource for |display_name|.
+    string16 display_name(dist->GetAppShortCutName());
+    EscapeXmlAttributeValueInSingleQuotes(&display_name);
+
+    // Fill the manifest with the desired values.
+    string16 manifest16(base::StringPrintf(manifest_template.c_str(),
+                                           display_name.c_str(),
+                                           elements_dir.c_str()));
+
+    // Write the manifest to |src_path|.
+    const std::string manifest(UTF16ToUTF8(manifest16));
+    if (file_util::WriteFile(
+            src_path.Append(installer::kVisualElementsManifest),
+            manifest.c_str(), manifest.size())) {
+      VLOG(1) << "Successfully wrote " << installer::kVisualElementsManifest
+              << " to " << src_path.value();
+      return true;
+    } else {
+      PLOG(ERROR) << "Error writing " << installer::kVisualElementsManifest
+                  << " to " << src_path.value();
+      return false;
+    }
+  }
+}
+
 InstallStatus InstallOrUpdateProduct(
     const InstallationState& original_state,
     const InstallerState& installer_state,
@@ -376,6 +442,12 @@ InstallStatus InstallOrUpdateProduct(
       LOG(ERROR) << "Error accessing pending moves value.";
     }
   }
+
+  // Create VisualElementManifest.xml in |src_path| (if required) so that it
+  // looks as if it had been extracted from the archive when calling
+  // InstallNewVersion() below.
+  installer_state.UpdateStage(installer::CREATING_VISUAL_MANIFEST);
+  CreateVisualElementsManifest(src_path, new_version);
 
   scoped_ptr<Version> existing_version;
   InstallStatus result = InstallNewVersion(original_state, installer_state,

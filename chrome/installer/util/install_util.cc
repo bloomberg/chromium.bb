@@ -52,6 +52,7 @@ const wchar_t kStageRollingback[] = L"rollingback";
 const wchar_t kStageUncompressing[] = L"uncompressing";
 const wchar_t kStageUnpacking[] = L"unpacking";
 const wchar_t kStageUpdatingChannels[] = L"updating_channels";
+const wchar_t kStageCreatingVisualManifest[] = L"creating_visual_manifest";
 
 const wchar_t* const kStages[] = {
   NULL,
@@ -71,6 +72,7 @@ const wchar_t* const kStages[] = {
   kStageRemovingOldVersions,
   kStageFinishing,
   kStageConfiguringAutoLaunch,
+  kStageCreatingVisualManifest,
 };
 
 COMPILE_ASSERT(installer::NUM_STAGES == arraysize(kStages),

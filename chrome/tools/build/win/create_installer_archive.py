@@ -117,9 +117,10 @@ def CopySectionFilesToStagingDir(config, section, staging_dir, build_dir):
       continue
 
     dst = os.path.join(staging_dir, config.get(section, option))
-    if not os.path.exists(dst):
+    files = glob.glob(os.path.join(build_dir, option))
+    if len(files) > 0 and not os.path.exists(dst):
       os.makedirs(dst)
-    for file in glob.glob(os.path.join(build_dir, option)):
+    for file in files:
       dst_file = os.path.join(dst, os.path.basename(file))
       if not os.path.exists(dst_file):
         shutil.copy(file, dst)
