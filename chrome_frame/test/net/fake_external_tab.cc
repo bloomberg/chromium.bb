@@ -44,6 +44,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/logging/win/file_logger.h"
 #include "chrome/test/logging/win/log_file_printer.h"
 #include "chrome/test/logging/win/test_log_collector.h"
@@ -704,6 +705,11 @@ void CFUrlRequestUnittestRunner::StartInitializationTimeout() {
 
 void CFUrlRequestUnittestRunner::OnInitializationTimeout() {
   LOG(ERROR) << "Failed to start Chrome Frame in the host browser.";
+
+  FilePath snapshot;
+  if (ui_test_utils::SaveScreenSnapshotToDesktop(&snapshot))
+    LOG(ERROR) << "Screen snapshot saved to " << snapshot.value();
+
   StopFileLogger(true);
 
   if (launch_browser_) {
