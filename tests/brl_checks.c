@@ -49,10 +49,10 @@ check_translation(const char *tableList, const char *str,
       typeformbuf = malloc(outlen);
       strcpy(typeformbuf, typeform);
     }
-
-  for (i = 0; i < inlen; i++)
+  if (!extParseChars(str, inbuf))
     {
-      inbuf[i] = str[i];
+      printf("Cannot parse input string.\n");
+      return 1;
     }
   if (!lou_translate(tableList, inbuf, &inlen, outbuf, &outlen,
 		     typeformbuf, NULL, NULL, NULL, NULL, 0))

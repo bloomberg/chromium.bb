@@ -1,3 +1,15 @@
+2012-05-07  Christian Egli  <christian.egli@sbs.ch>
+
+	* tests/brl_checks.c (check_translation): Enhance to be able to
+	handle \xhhhh encoded strings like the rest of liblouis. This is
+	to support unicode based test cases.
+
+	* tests/uplow_with_unicode.c:
+	* tests/tables/uplow_with_unicode.ctb:
+	* tests/tables/lowercase_with_unicode.ctb:
+	* tests/Makefile.am (uplow_with_unicode_SOURCES): Add a test for
+	the problem with lowercase and unicode.
+
 2012-04-20  Christian Egli  <christian.egli@sbs.ch>
 
 	* tables/nl-BE.dis:

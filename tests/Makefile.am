@@ -49,9 +49,15 @@ letterDefTest_SOURCES = 	\
 	brl_checks.h		\
 	letterDefTest.c
 
+uplow_with_unicode_SOURCES = 	\
+	brl_checks.c		\
+	brl_checks.h		\
+	uplow_with_unicode.c
+
 check_PROGRAMS =			\
 	pass2				\
 	pass2_inpos			\
+	uplow_with_unicode		\
 	present_progressive		\
 	capitalized_word		\
 	capitalized_with_sentance	\
