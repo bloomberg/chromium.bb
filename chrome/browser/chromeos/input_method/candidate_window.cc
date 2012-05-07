@@ -486,10 +486,10 @@ class InfolistView : public views::View {
   void Init();
 
   // Sets title text to the given text.
-  void SetTitleText(const std::wstring& text);
+  void SetTitleText(const string16& text);
 
   // Sets description text to the given text.
-  void SetDescriptionText(const std::wstring& text);
+  void SetDescriptionText(const string16& text);
 
   // Selects the infolist row. Changes the appearance to make it look
   // like a selected candidate.
@@ -1301,12 +1301,12 @@ void InfolistView::Init() {
 }
 
 
-void InfolistView::SetTitleText(const std::wstring& text) {
-  title_label_->SetText(WideToUTF16Hack(text));
+void InfolistView::SetTitleText(const string16& text) {
+  title_label_->SetText(text);
 }
 
-void InfolistView::SetDescriptionText(const std::wstring& text) {
-  description_label_->SetText(WideToUTF16Hack(text));
+void InfolistView::SetDescriptionText(const string16& text) {
+  description_label_->SetText(text);
 }
 
 void InfolistView::Select() {
@@ -1458,9 +1458,9 @@ void InfolistWindowView::UpdateCandidates(
     InfolistView* infolist_row = new InfolistView(this);
     infolist_row->Init();
     infolist_row->SetTitleText(
-        UTF8ToWide(usages.information(i).title()));
+        UTF8ToUTF16(usages.information(i).title()));
     infolist_row->SetDescriptionText(
-        UTF8ToWide(usages.information(i).description()));
+        UTF8ToUTF16(usages.information(i).description()));
     if (usages.has_focused_index() &&
         (static_cast<int>(usages.focused_index()) == i)) {
       infolist_row->Select();
