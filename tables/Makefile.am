@@ -108,6 +108,8 @@ table_files = \
 	hi.ctb \
 	hi-in-g1.utb \
 	hr.ctb \
+	hu-chardefs.cti \
+	hu-exceptionwords.cti \
 	hu1.ctb \
 	hu.ctb \
 	hy.ctb \
