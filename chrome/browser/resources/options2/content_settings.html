@@ -257,6 +257,24 @@
         </label>
       </div>
     </section>
+<if expr="pp_ifdef('chromeos')">
+    <!-- Protected Content filter -->
+    <section guest-visibility="disabled">
+      <h3 i18n-content="protected_content_tab_label"
+          class="content-settings-header"></h3>
+      <div>
+        <div class="settings-row">
+          <span i18n-content="protected_content_info"></span>
+        </div>
+        <div class="checkbox">
+          <label>
+            <input pref="settings.privacy.drm_enabled" type="checkbox">
+            <span i18n-content="protected_content_enable"></span>
+          </label>
+        </div>
+      </div>
+    </section>
+</if>
   </div>
   <div class="action-area">
     <div class="button-strip">

@@ -275,6 +275,12 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "mouselock_allow", IDS_MOUSE_LOCK_ALLOW_RADIO },
     { "mouselock_ask", IDS_MOUSE_LOCK_ASK_RADIO },
     { "mouselock_block", IDS_MOUSE_LOCK_BLOCK_RADIO },
+    // Protected Content filter
+#if defined(OS_CHROMEOS)
+    { "protected_content_tab_label", IDS_PROTECTED_CONTENT_TAB_LABEL },
+    { "protected_content_info", IDS_PROTECTED_CONTENT_INFO },
+    { "protected_content_enable", IDS_PROTECTED_CONTENT_ENABLE},
+#endif  // defined(OS_CHROMEOS)
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
