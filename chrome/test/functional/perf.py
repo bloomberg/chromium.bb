@@ -1971,7 +1971,7 @@ class MemoryTest(BasePerfTest):
       'http://www.google.com/youtube',
       'http://www.nytimes.com',
       'http://www.cnn.com',
-      'http://www.facebook.com',
+      'http://www.facebook.com/zuck',
       'http://www.techcrunch.com',
       'http://www.theverge.com',
       'http://www.yahoo.com',
