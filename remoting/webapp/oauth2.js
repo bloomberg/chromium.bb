@@ -383,8 +383,10 @@ remoting.OAuth2.prototype.getEmail = function(setEmail) {
     if (xhr.status == 200) {
       // TODO(ajwong): See if we can't find a JSON endpoint.
       that.email = xhr.responseText.split('&')[0].split('=')[1];
+      window.localStorage.setItem(that.KEY_EMAIL_, that.email);
+    } else {
+      console.error('Unable to get email address:', xhr.status, xhr);
     }
-    window.localStorage.setItem(that.KEY_EMAIL_, that.email);
     setEmail(that.email);
   };
 
@@ -396,6 +398,7 @@ remoting.OAuth2.prototype.getEmail = function(setEmail) {
       remoting.xhr.get('https://www.googleapis.com/userinfo/email',
                        onResponse, '', headers);
     } else {
+      console.error('Unable to get email address: no access token');
       setEmail(null);
     }
   };

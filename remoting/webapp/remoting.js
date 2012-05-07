@@ -231,8 +231,10 @@ function setEmail_(email) {
   if (email) {
     document.getElementById('current-email').innerText = email;
   } else {
-    // TODO(ajwong): Have a better way of showing an error.
-    document.getElementById('current-email').innerText = '???';
+    var e = document.getElementById('auth-error-message');
+    e.innerText = chrome.i18n.getMessage(remoting.Error.SERVICE_UNAVAILABLE);
+    e.classList.add('error-state');
+    remoting.setMode(remoting.AppMode.UNAUTHENTICATED);
   }
 }
 
