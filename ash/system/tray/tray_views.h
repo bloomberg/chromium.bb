@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_TRAY_TRAY_VIEWS_H_
 #pragma once
 
+#include "ash/ash_export.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/button/image_button.h"
@@ -42,8 +43,8 @@ class FixedSizedImageView : public views::ImageView {
 };
 
 // A focusable view that performs an action when user clicks on it, or presses
-// enter or space when focused.
-class ActionableView : public views::View {
+// enter or space when focused. Exported for SystemTray.
+class ASH_EXPORT ActionableView : public views::View {
  public:
   ActionableView();
 

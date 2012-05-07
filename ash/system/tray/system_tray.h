@@ -40,8 +40,7 @@ class SystemTrayBackground;
 class SystemTrayBubble;
 }
 
-class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
-                                  public internal::ActionableView),
+class ASH_EXPORT SystemTray : public internal::ActionableView,
                               public internal::BackgroundAnimatorDelegate {
  public:
   SystemTray();
@@ -124,6 +123,11 @@ class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
   UserObserver* user_observer() const {
     return user_observer_;
   }
+
+  // Accessors for testing.
+
+  // Returns true if the bubble exists.
+  bool CloseBubbleForTest() const;
 
  private:
   friend class internal::SystemTrayBubble;
