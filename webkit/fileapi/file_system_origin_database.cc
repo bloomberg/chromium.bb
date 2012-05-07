@@ -83,6 +83,9 @@ bool FileSystemOriginDatabase::Init(RecoveryOption recovery_option) {
   }
   HandleError(FROM_HERE, status);
 
+  if (!status.IsCorruption())
+    return false;
+
   switch (recovery_option) {
     case FAIL_ON_CORRUPTION:
       return false;
