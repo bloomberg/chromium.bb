@@ -311,6 +311,7 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
       // root window.
       target = this;
     } else {
+      // We only come here when the first contact was within the root window.
       if (!target)
         target = GetEventHandlerForPoint(event->location());
       if (!target)
@@ -659,7 +660,10 @@ ui::TouchStatus RootWindow::ProcessTouchEvent(Window* target,
     return ui::TOUCH_STATUS_UNKNOWN;
 
   EventFilters filters;
-  GetEventFiltersToNotify(target->parent(), &filters);
+  if (target == this)
+    GetEventFiltersToNotify(target, &filters);
+  else
+    GetEventFiltersToNotify(target->parent(), &filters);
   for (EventFilters::const_reverse_iterator it = filters.rbegin(),
            rend = filters.rend();
        it != rend; ++it) {
@@ -668,7 +672,10 @@ ui::TouchStatus RootWindow::ProcessTouchEvent(Window* target,
       return status;
   }
 
-  return target->delegate()->OnTouchEvent(event);
+  if (target->delegate())
+    return target->delegate()->OnTouchEvent(event);
+
+  return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,

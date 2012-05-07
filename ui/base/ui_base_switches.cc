@@ -8,7 +8,10 @@ namespace switches {
 
 // The default device scale factor to apply to the browser UI and
 // the contents in the absence of a viewport meta tag.
-const char kDefaultDeviceScaleFactor[] = "default-device-scale-factor";
+const char kDefaultDeviceScaleFactor[]      = "default-device-scale-factor";
+
+// Enable touch screen calibration.
+const char kDisableTouchCalibration[]       = "disable-touch-calibration";
 
 // Enable support for touch events.
 const char kEnableTouchEvents[]             = "enable-touch-events";
@@ -27,6 +30,7 @@ const char kNoMessageBox[]                  = "no-message-box";
 
 // Enables UI changes that make it easier to use with a touchscreen.
 const char kTouchOptimizedUI[]              = "touch-optimized-ui";
+
 
 #if defined(OS_MACOSX)
 const char kDisableCompositedCoreAnimationPlugins[] =

@@ -14,6 +14,7 @@
 namespace switches {
 
 UI_EXPORT extern const char kDefaultDeviceScaleFactor[];
+UI_EXPORT extern const char kDisableTouchCalibration[];
 UI_EXPORT extern const char kEnableTouchEvents[];
 UI_EXPORT extern const char kLang[];
 UI_EXPORT extern const char kLocalePak[];

@@ -9,12 +9,17 @@
 #include <X11/extensions/XInput2.h>
 #include <string.h>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_pump_x.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/monitor.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/screen.h"
 
 // Copied from xserver-properties.h
 #define AXIS_LABEL_PROP_REL_HWHEEL "Rel Horiz Wheel"
@@ -511,6 +516,61 @@ Atom GetNoopEventAtom() {
       "noop", False);
 }
 
+#if defined(USE_XI2_MT)
+gfx::Point CalibrateTouchCoordinates(
+    const XIDeviceEvent* xievent) {
+  int x = static_cast<int>(xievent->event_x);
+  int y = static_cast<int>(xievent->event_y);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableTouchCalibration))
+    return gfx::Point(x, y);
+  // TODO(skuhne): Find a new home for these hardware dependent touch
+  // constants.
+  // Note: These values have been found to be correct for the device I was
+  // testing with. I have the feeling that the DPI resolution of the bezel is
+  // less then the dpi resolution over the visible part - which would explain
+  // why the small value (50) is so wide compared to the entire area.
+  gfx::Rect bounds = gfx::Screen::GetPrimaryMonitor().bounds_in_pixel();
+  const int kLeftBorder = 50;
+  const int kRightBorder = 50;
+  const int kBottomBorder = 50;
+  const int kTopBorder = 0;
+  const int resolution_x = bounds.width();
+  const int resolution_y = bounds.height();
+  // The "grace area" (10% in this case) is to make it easier for the user to
+  // navigate to the corner.
+  const double kGraceAreaFraction = 0.1;
+  // Offset the x position to the real
+  x -= kLeftBorder;
+  // Check if we are in the grace area of the left side.
+  // Note: We might not want to do this when the gesture is locked?
+  if (x < 0 && x > -kLeftBorder * kGraceAreaFraction)
+    x = 0;
+  // Check if we are in the grace area of the right side.
+  // Note: We might not want to do this when the gesture is locked?
+  if (x > resolution_x - kLeftBorder &&
+      x < resolution_x - kLeftBorder + kRightBorder * kGraceAreaFraction)
+    x = resolution_x - kLeftBorder;
+  // Scale the screen area back to the full resolution of the screen.
+  x = (x * resolution_x) / (resolution_x - (kRightBorder + kLeftBorder));
+  // Offset the y position to the real
+  y -= kTopBorder;
+  // Check if we are in the grace area of the left side.
+  // Note: We might not want to do this when the gesture is locked?
+  if (y < 0 && y > -kTopBorder * kGraceAreaFraction)
+    y = 0;
+  // Check if we are in the grace area of the right side.
+  // Note: We might not want to do this when the gesture is locked?
+  if (y > resolution_y - kTopBorder &&
+      y < resolution_y - kTopBorder + kBottomBorder * kGraceAreaFraction)
+    y = resolution_y - kTopBorder;
+  // Scale the screen area back to the full resolution of the screen.
+  y = (y * resolution_y) / (resolution_y - (kBottomBorder + kTopBorder));
+  // Set the modified coordinate back to the event.
+  return gfx::Point(x, y);
+}
+#endif // defined(USE_XI2_MT)
+
 }  // namespace
 
 namespace ui {
@@ -692,8 +752,8 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
       if (xievent->evtype == XI_TouchBegin ||
           xievent->evtype == XI_TouchUpdate ||
           xievent->evtype == XI_TouchEnd)
-        return gfx::Point(static_cast<int>(xievent->event_x),
-                          static_cast<int>(xievent->event_y));
+        // Note: Touch events are always touch screen events.
+        return CalibrateTouchCoordinates(xievent);
 #endif
       // Read the position from the valuators, because the location reported in
       // event_x/event_y seems to be different (and doesn't match for events
