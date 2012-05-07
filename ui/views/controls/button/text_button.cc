@@ -352,8 +352,8 @@ void TextButtonBase::ClearEmbellishing() {
 void TextButtonBase::SetMultiLine(bool multi_line) {
   if (multi_line != multi_line_) {
     multi_line_ = multi_line;
+    max_text_size_.SetSize(0, 0);
     UpdateTextSize();
-    PreferredSizeChanged();
     SchedulePaint();
   }
 }
@@ -362,8 +362,12 @@ gfx::Size TextButtonBase::GetPreferredSize() {
   gfx::Insets insets = GetInsets();
 
   // Use the max size to set the button boundaries.
-  gfx::Size prefsize(max_text_size_.width() + insets.width(),
-                     max_text_size_.height() + insets.height());
+  // In multiline mode max size can be undefined while
+  // width() is 0, so max it out with current text size.
+  gfx::Size prefsize(std::max(max_text_size_.width(),
+                              text_size_.width()) + insets.width(),
+                     std::max(max_text_size_.height(),
+                              text_size_.height()) + insets.height());
 
   if (max_width_ > 0)
     prefsize.set_width(std::min(max_width_, prefsize.width()));
@@ -387,6 +391,11 @@ void TextButtonBase::OnPaint(gfx::Canvas* canvas) {
   PaintButton(canvas, PB_NORMAL);
 }
 
+void TextButtonBase::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (multi_line_)
+    UpdateTextSize();
+}
+
 const ui::Animation* TextButtonBase::GetAnimation() const {
   return hover_animation_.get();
 }
@@ -397,10 +406,15 @@ void TextButtonBase::UpdateColor() {
 
 void TextButtonBase::UpdateTextSize() {
   CalculateTextSize(&text_size_, width());
-  max_text_size_.SetSize(std::max(max_text_size_.width(), text_size_.width()),
-                         std::max(max_text_size_.height(),
-                                  text_size_.height()));
-  PreferredSizeChanged();
+  // Before layout width() is 0, and multiline text will be treated as one line.
+  // Do not store max_text_size in this case. UpdateTextSize will be called
+  // again once width() changes.
+  if (!multi_line_ || width() != 0) {
+    max_text_size_.SetSize(std::max(max_text_size_.width(), text_size_.width()),
+                           std::max(max_text_size_.height(),
+                                    text_size_.height()));
+    PreferredSizeChanged();
+  }
 }
 
 void TextButtonBase::CalculateTextSize(gfx::Size* text_size, int max_width) {

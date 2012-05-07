@@ -206,8 +206,7 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   virtual int GetHeightForWidth(int w) OVERRIDE;
   virtual void OnEnabledChanged() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-
-  // Returns views/TextButton.
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
 
  protected:
