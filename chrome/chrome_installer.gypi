@@ -302,7 +302,7 @@
               'extension': 'release',
               'variables': {
                 'scan_server_dlls_py' : 'tools/build/win/scan_server_dlls.py',
-                'template_file': 'mini_installer/chrome.release',
+                'template_file': 'installer/mini_installer/chrome.release',
               },
               'inputs': [
                 '<(scan_server_dlls_py)',
@@ -396,7 +396,7 @@
               'extension': 'release',
               'variables': {
                 'scan_server_dlls_py' : 'tools/build/win/scan_server_dlls.py',
-                'template_file': 'mini_installer/chrome.release',
+                'template_file': 'installer/mini_installer/chrome.release',
               },
               'inputs': [
                 '<(scan_server_dlls_py)',
