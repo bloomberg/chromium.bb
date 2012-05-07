@@ -1086,6 +1086,12 @@ void ChromeBrowserMainParts::SetupUniformityFieldTrials() {
       experiments_helper::AssociateGoogleExperimentID(trial_name, group_name,
           static_cast<chrome_variations::ID>(trial_base_ids[i] + group_number));
     }
+
+    // Now that all groups have been appended, call group() on the trial to
+    // ensure that our trial is registered. This resolves an off-by-one issue
+    // where the default group never gets chosen if we don't "use" the trial.
+    int chosen_group = trial->group();
+    DVLOG(1) << "Chosen Group: " << chosen_group;
   }
 }
 
