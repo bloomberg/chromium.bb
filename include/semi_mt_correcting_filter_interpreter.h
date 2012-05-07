@@ -63,6 +63,7 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, TrackingIdMappingTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, CorrectFingerPositionTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, FingerCrossOverTest);
+  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, ClipNonLinearAreaTest);
 
  public:
   SemiMtCorrectingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
@@ -118,6 +119,11 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   // Set the position variable from finger's position in HardwareState.
   void SetPosition(FingerPosition* pos, HardwareState* hwstate);
 
+  // As the active area is not linear on the edges of Cr48, We need to clip
+  // finger positions which are in those non-linear area in order to avoid
+  // cursor or scroll jumps.
+  void ClipNonLinearFingerPosition(HardwareState* hwstate);
+
   // Update all active fingers based on previous finger positions. The main
   // entry of the finger correction method. The method is to manipulate the
   // reported fingers to reflect the real finger positions as the semi_mt with
@@ -169,6 +175,16 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
 
   // The speed threshold for detecting if a finger is moving.
   DoubleProperty speed_threshold_;
+
+  // True if the touchpad has non-linear edges.
+  BoolProperty clip_non_linear_edge_;
+
+  // Non-linear area boundary.
+  DoubleProperty non_linear_top_;
+  DoubleProperty non_linear_bottom_;
+  DoubleProperty non_linear_left_;
+  DoubleProperty non_linear_right_;
+
   scoped_ptr<Interpreter> next_;
 };
 

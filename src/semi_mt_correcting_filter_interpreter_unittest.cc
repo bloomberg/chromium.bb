@@ -309,4 +309,63 @@ TEST(SemiMtCorrectingFilterInterpreterTest, FingerCrossOverTest) {
   base_interpreter->expected_coordinates_.push_back(result);
   interpreter.SyncInterpret(&hs[hwstate_index_finger_crossed + 2], NULL);
 }
+
+TEST(SemiMtCorrectingFilterInterpreterTest, ClipNonLinearAreaTest) {
+  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
+      new SemiMtCorrectingFilterInterpreterTestInterpreter;
+  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    { 0, 0, 0, 0, 60, 0, 1240, 3088, 1481, 0},
+    { 0, 0, 0, 0, 60, 0, 5570, 3088, 1481, 0},
+    { 0, 0, 0, 0, 60, 0, 4118, 1210, 1481, 0},
+    { 0, 0, 0, 0, 60, 0, 4118, 4580, 1481, 0},
+  };
+  HardwareState hs[] = {
+    { 0.00, 0, 1, 1, &fs[0] },
+    { 0.02, 0, 1, 1, &fs[1] },
+    { 0.04, 0, 1, 1, &fs[2] },
+    { 0.06, 0, 1, 1, &fs[3] },
+  };
+
+  HardwareProperties hwprops = {
+    1217, 5733, 1061, 4798,  // left, top, right, bottom
+    1.0, 1.0, 133, 133,  // x res, y res, x DPI, y DPI
+    2, 3, 0, 1, 1  // max_fingers, max_touch, t5r2, semi_mt, is_button_pad
+  };
+
+  interpreter.SetHardwareProperties(hwprops);
+  interpreter.interpreter_enabled_.val_ = true;
+
+  float non_linear_left = interpreter.non_linear_left_.val_;
+  float non_linear_right = interpreter.non_linear_right_.val_;
+  float non_linear_top = interpreter.non_linear_top_.val_;
+  float non_linear_bottom = interpreter.non_linear_bottom_.val_;
+
+  // Test if finger positions are corrected when a finger is located
+  // in the non-linear clipping area.
+  vector<FingerPosition> result;
+  FingerPosition finger_position1 = { non_linear_left, 3088 };
+  result.push_back(finger_position1);
+  base_interpreter->expected_coordinates_.push_back(result);
+  interpreter.SyncInterpret(&hs[0], NULL);
+
+  result.clear();
+  FingerPosition finger_position2 = { non_linear_right, 3088 };
+  result.push_back(finger_position2);
+  base_interpreter->expected_coordinates_.push_back(result);
+  interpreter.SyncInterpret(&hs[1], NULL);
+
+  result.clear();
+  FingerPosition finger_position3 = { 4118, non_linear_top };
+  result.push_back(finger_position3);
+  base_interpreter->expected_coordinates_.push_back(result);
+  interpreter.SyncInterpret(&hs[2], NULL);
+
+  result.clear();
+  FingerPosition finger_position4 = { 4118, non_linear_bottom };
+  result.push_back(finger_position4);
+  base_interpreter->expected_coordinates_.push_back(result);
+  interpreter.SyncInterpret(&hs[3], NULL);
+}
 }  // namespace gestures

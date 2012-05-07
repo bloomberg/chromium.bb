@@ -23,7 +23,12 @@ SemiMtCorrectingFilterInterpreter::SemiMtCorrectingFilterInterpreter(
       hysteresis_pressure_(prop_reg, "SemiMT Hysteresis Pressure", 25),
       transfer_factor_(prop_reg, "SemiMT Velocity Accumulation Factor", 0.5),
       speed_ratio_(prop_reg, "SemiMT Speed Ratio", 2.5),
-      speed_threshold_(prop_reg, "SemiMT Speed Threshold", 20.0) {
+      speed_threshold_(prop_reg, "SemiMT Speed Threshold", 20.0),
+      clip_non_linear_edge_(prop_reg, "SemiMT Clip Non Linear Area", 1),
+      non_linear_top_(prop_reg, "SemiMT Non Linear Area Top", 1250.0),
+      non_linear_bottom_(prop_reg, "SemiMT Non Linear Area Bottom", 4570.0),
+      non_linear_left_(prop_reg, "SemiMT Non Linear Area Left", 1360.0),
+      non_linear_right_(prop_reg, "SemiMT Non Linear Area Right", 5560.0) {
   memset(&prev_hwstate_, 0, sizeof(prev_hwstate_));
   next_.reset(next);
 }
@@ -35,6 +40,8 @@ Gesture* SemiMtCorrectingFilterInterpreter::SyncInterpret(
     if (interpreter_enabled_.val_) {
       LowPressureFilter(hwstate);
       AssignTrackingId(hwstate);
+      if (clip_non_linear_edge_.val_)
+        ClipNonLinearFingerPosition(hwstate);
       CorrectFingerPosition(hwstate);
       prev_hwstate_ = *hwstate;
       std::copy(hwstate->fingers, hwstate->fingers + kMaxSemiMtFingers,
@@ -239,6 +246,22 @@ void SemiMtCorrectingFilterInterpreter::SetPosition(
   for (size_t i = 0; i < hwstate->finger_cnt; i++) {
     pos[i].x = hwstate->fingers[i].position_x;
     pos[i].y = hwstate->fingers[i].position_y;
+  }
+}
+
+void SemiMtCorrectingFilterInterpreter::ClipNonLinearFingerPosition(
+    HardwareState* hwstate) {
+  for (size_t i = 0; i < hwstate->finger_cnt; i++) {
+    struct FingerState* finger = &hwstate->fingers[i];
+    float non_linear_left = non_linear_left_.val_;
+    float non_linear_right = non_linear_right_.val_;
+    float non_linear_top = non_linear_top_.val_;
+    float non_linear_bottom = non_linear_bottom_.val_;
+
+    finger->position_x = std::min(non_linear_right,
+        std::max(finger->position_x, non_linear_left));
+    finger->position_y = std::min(non_linear_bottom,
+        std::max(finger->position_y, non_linear_top));
   }
 }
 
