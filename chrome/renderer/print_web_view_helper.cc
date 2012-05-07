@@ -49,6 +49,10 @@
 #include "skia/ext/vector_canvas.h"
 #include "skia/ext/vector_platform_device_skia.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#if defined(OS_WIN)  // Currently Windows only
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/render_text.h"
+#endif  // USE_SKIA && defined(OS_WIN)
 #elif defined(OS_MACOSX)
 #include <CoreGraphics/CGContext.h>
 
@@ -394,6 +398,65 @@ SkPoint GetHeaderFooterPosition(
   return point;
 }
 
+#if defined(USE_SKIA) && defined(OS_WIN)
+void PrintHeaderFooterByRenderText(
+    const string16& text,
+    WebKit::WebCanvas* canvas,
+    HeaderFooterPaint paint,
+    float webkit_scale_factor,
+    const PageSizeMargins& page_layout,
+    printing::HorizontalHeaderFooterPosition horizontal_position,
+    printing::VerticalHeaderFooterPosition vertical_position,
+    double offset_to_baseline) {
+  // TODO(arthurhsu): Following code works on Windows only so far.
+  // See crbug.com/108599 and its blockers for more information.
+  scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateRenderText());
+  render_text->SetText(text);
+  int font_size = printing::kSettingHeaderFooterFontSize / webkit_scale_factor;
+  render_text->SetFontSize(font_size);
+  gfx::Size text_size = render_text->GetStringSize();
+  int text_height = text_size.height();
+  int y_offset = text_height - font_size;
+  SkScalar margin_left = page_layout.margin_left / webkit_scale_factor;
+  SkScalar margin_top = page_layout.margin_top / webkit_scale_factor;
+  SkScalar content_height = page_layout.content_height / webkit_scale_factor;
+
+  int text_width = text_size.width();
+  SkPoint point = GetHeaderFooterPosition(webkit_scale_factor, page_layout,
+                                          horizontal_position,
+                                          vertical_position, offset_to_baseline,
+                                          SkScalarToDouble(text_width));
+  point.set(point.x() + margin_left, point.y() + margin_top);
+  // Workaround clipping issue of RenderText by adjusting the y_offset to make
+  // sure that display rect overlaps with content area.
+  if (vertical_position == printing::TOP) {
+    // Bottom of display rect must overlap with content.
+    int display_rect_y = point.y() - y_offset + text_height;
+    int content_y = margin_top + 1;
+    if (display_rect_y < content_y) {
+      y_offset = point.y() + text_height - content_y;
+    }
+  } else {  // BOTTOM
+    // Top of display rect must overlap with content.
+    int display_rect_y = point.y() - y_offset;
+    int content_y = margin_top + content_height - 1;
+    if (display_rect_y > content_y) {
+      y_offset = point.y() - content_y;
+    }
+  }
+
+  gfx::Rect rect(point.x(), point.y() - y_offset, text_width, text_height);
+  render_text->SetDisplayRect(rect);
+  int save_count = canvas->save();
+  canvas->translate(-margin_left, -margin_top);
+  {
+    gfx::Canvas gfx_canvas(canvas);
+    render_text->Draw(&gfx_canvas);
+  }
+  canvas->restoreToCount(save_count);
+}
+#endif
+
 // Given a text, the positions, and the paint object, this method gets the
 // coordinates and prints the text at those coordinates on the canvas.
 void PrintHeaderFooterText(
@@ -406,6 +469,12 @@ void PrintHeaderFooterText(
     printing::VerticalHeaderFooterPosition vertical_position,
     double offset_to_baseline) {
 #if defined(USE_SKIA)
+#if defined(OS_WIN)
+  PrintHeaderFooterByRenderText(text, canvas, paint, webkit_scale_factor,
+      page_layout, horizontal_position, vertical_position, offset_to_baseline);
+#else
+  // TODO(arthurhsu): following code has issues with i18n BiDi, see
+  //                  crbug.com/108599.
   size_t text_byte_length = text.length() * sizeof(char16);
   double text_width_in_points = SkScalarToDouble(paint.measureText(
       text.c_str(), text_byte_length));
@@ -417,6 +486,7 @@ void PrintHeaderFooterText(
       paint.getTextSize() / webkit_scale_factor));
   canvas->drawText(text.c_str(), text_byte_length, point.x(), point.y(),
                    paint);
+#endif  // USE_SKIA && OS_WIN
 #elif defined(OS_MACOSX)
   ScopedCFTypeRef<CFStringRef> cf_text(base::SysUTF16ToCFStringRef(text));
   ScopedCFTypeRef<CFAttributedStringRef> cf_attr_text(
