@@ -3048,4 +3048,91 @@ TEST(ImmediateInterpreterTest, AvoidAccidentalZoomTest) {
   }
 }
 
+TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest) {
+  ImmediateInterpreter ii(NULL);
+
+  HardwareProperties old_hwprops = {
+    0,  // left edge
+    0,  // top edge
+    90.404251,  // right edge
+    48.953846,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    133,  // screen DPI x
+    133,  // screen DPI y
+    2,  // max fingers
+    3,  // max touch
+    0,  // t5r2
+    1,  // semi-mt
+    true  // is button pad
+  };
+
+  FingerState old_finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
+    { 0, 0, 0, 0, 14, 0, 50, 8, 11, 3 },
+    { 0, 0, 0, 0, 33, 0, 50, 8, 11, 3 },
+    { 0, 0, 0, 0, 37, 0, 50, 8, 11, 3 },
+    { 0, 0, 0, 0, 39, 0, 50, 8, 11, 3 },
+  };
+
+  HardwareState old_hardware_states[] = {
+    // time, buttons down, finger count, touch count, finger states pointer
+    { 0.05, 0, 1, 1, &old_finger_states[0] },
+    { 0.10, 0, 1, 1, &old_finger_states[1] },
+    { 0.15, 0, 1, 1, &old_finger_states[2] },
+    { 0.20, 0, 1, 1, &old_finger_states[3] },
+  };
+
+  ii.SetHardwareProperties(old_hwprops);
+  ii.tap_enable_.val_ = true;
+
+  // The finger will not change the tap_to_click_state_ at all.
+  for (size_t idx = 0; idx < arraysize(old_hardware_states); ++idx) {
+    ii.SyncInterpret(&old_hardware_states[idx], NULL);
+    EXPECT_EQ(ii.kTtcIdle, ii.tap_to_click_state_);
+  }
+
+  HardwareProperties new_hwprops = {
+    0,  // left edge
+    0,  // top edge
+    96.085106,  // right edge
+    57.492310,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    133,  // screen DPI x
+    133,  // screen DPI y
+    2,  // max fingers
+    3,  // max touch
+    0,  // t5r2
+    1,  // semi-mt
+    true  // is button pad
+  };
+
+  FingerState new_finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
+    { 0, 0, 0, 0, 14, 0, 55, 12, 7, 3 },
+    { 0, 0, 0, 0, 33, 0, 55, 12, 7, 3 },
+    { 0, 0, 0, 0, 37, 0, 55, 12, 7, 3 },
+    { 0, 0, 0, 0, 39, 0, 55, 12, 7, 3 },
+  };
+
+  HardwareState new_hardware_states[] = {
+    // time, buttons down, finger count, touch count, finger states pointer
+    { 0.05, 0, 1, 1, &new_finger_states[0] },
+    { 0.10, 0, 1, 1, &new_finger_states[1] },
+    { 0.15, 0, 1, 1, &new_finger_states[2] },
+    { 0.20, 0, 1, 1, &new_finger_states[3] },
+  };
+
+  ii.SetHardwareProperties(new_hwprops);
+  ii.tap_enable_.val_ = true;
+
+  // With new active area, the finger changes the tap_to_click_state_ to
+  // FirstTapBegan.
+  for (size_t idx = 0; idx < arraysize(new_hardware_states); ++idx) {
+    ii.SyncInterpret(&new_hardware_states[idx], NULL);
+    EXPECT_EQ(ii.kTtcFirstTapBegan, ii.tap_to_click_state_);
+  }
+}
+
 }  // namespace gestures
