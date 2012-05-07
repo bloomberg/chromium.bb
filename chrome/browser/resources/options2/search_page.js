@@ -297,8 +297,7 @@ cr.define('options', function() {
         page = pagesToSearch[key];
         var elements = page.pageDiv.querySelectorAll('section');
         for (var i = 0, node; node = elements[i]; i++) {
-          if (!node.hidden)
-            node.classList.add('search-hidden');
+          node.classList.add('search-hidden');
         }
       }
 
@@ -311,11 +310,10 @@ cr.define('options', function() {
           var elements =
               page.pageDiv.querySelectorAll('section');
           for (var i = 0, node; node = elements[i]; i++) {
-            if (!node.hidden) {
-              if (this.performReplace_(regEx, replaceString, node)) {
-                node.classList.remove('search-hidden');
+            if (this.performReplace_(regEx, replaceString, node)) {
+              node.classList.remove('search-hidden');
+              if (!node.hidden)
                 foundMatches = true;
-              }
             }
           }
         }
