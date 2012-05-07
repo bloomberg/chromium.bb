@@ -17,7 +17,7 @@
 #include "webkit/fileapi/file_system_quota_util.h"
 
 namespace base {
-class MessageLoopProxy;
+class SequencedTaskRunner;
 }
 
 namespace quota {
@@ -61,8 +61,10 @@ class SandboxMountPointProvider
   // Where we move the old filesystem directory if migration fails.
   static const FilePath::CharType kRenamedOldFileSystemDirectory[];
 
+  // |file_task_runner| is used to validate the root directory and delete the
+  // obfuscated file util.
   SandboxMountPointProvider(
-      scoped_refptr<base::MessageLoopProxy> file_message_loop,
+      base::SequencedTaskRunner* file_task_runner,
       const FilePath& profile_path,
       const FileSystemOptions& file_system_options);
   virtual ~SandboxMountPointProvider();
@@ -91,12 +93,10 @@ class SandboxMountPointProvider
       const GURL& origin_url,
       FileSystemType file_system_type,
       const FilePath& virtual_path,
-      base::MessageLoopProxy* file_proxy,
       FileSystemContext* context) const OVERRIDE;
   virtual webkit_blob::FileReader* CreateFileReader(
     const GURL& url,
     int64 offset,
-    base::MessageLoopProxy* file_proxy,
     FileSystemContext* context) const OVERRIDE;
 
   FilePath old_base_path() const;
@@ -173,7 +173,7 @@ class SandboxMountPointProvider
   friend class SandboxMountPointProviderMigrationTest;
   friend class SandboxMountPointProviderOriginEnumeratorTest;
 
-  scoped_refptr<base::MessageLoopProxy> file_message_loop_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   const FilePath profile_path_;
 

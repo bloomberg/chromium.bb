@@ -39,11 +39,9 @@ static FilePath GetRelativePath(const GURL& url) {
 }
 
 FileSystemDirURLRequestJob::FileSystemDirURLRequestJob(
-    URLRequest* request, FileSystemContext* file_system_context,
-    scoped_refptr<base::MessageLoopProxy> file_thread_proxy)
+    URLRequest* request, FileSystemContext* file_system_context)
     : URLRequestJob(request),
       file_system_context_(file_system_context),
-      file_thread_proxy_(file_thread_proxy),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
@@ -141,9 +139,7 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
 
 FileSystemOperationInterface*
 FileSystemDirURLRequestJob::GetNewOperation(const GURL& url) {
-  return file_system_context_->CreateFileSystemOperation(
-      url,
-      file_thread_proxy_);
+  return file_system_context_->CreateFileSystemOperation(url);
 }
 
 }  // namespace fileapi

@@ -86,7 +86,7 @@ class SimpleFileWriter::IOThreadProxy
   virtual ~IOThreadProxy() {}
 
   FileSystemOperationInterface* GetNewOperation(const GURL& path) {
-    return file_system_context_->CreateFileSystemOperation(path, io_thread_);
+    return file_system_context_->CreateFileSystemOperation(path);
   }
 
   void DidSucceedOnMainThread() {

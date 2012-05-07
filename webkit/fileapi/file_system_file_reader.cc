@@ -5,8 +5,8 @@
 #include "webkit/fileapi/file_system_file_reader.h"
 
 #include "base/file_util_proxy.h"
-#include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
+#include "base/sequenced_task_runner.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -33,12 +33,10 @@ void ReadAdapter(base::WeakPtr<FileSystemFileReader> reader,
 }
 
 FileSystemFileReader::FileSystemFileReader(
-    base::MessageLoopProxy* file_thread_proxy,
     FileSystemContext* file_system_context,
     const GURL& url,
     int64 initial_offset)
-    : file_thread_proxy_(file_thread_proxy),
-      file_system_context_(file_system_context),
+    : file_system_context_(file_system_context),
       url_(url),
       initial_offset_(initial_offset),
       has_pending_create_snapshot_(false),
@@ -55,8 +53,7 @@ int FileSystemFileReader::Read(
     return local_file_reader_->Read(buf, buf_len, callback);
   DCHECK(!has_pending_create_snapshot_);
   FileSystemOperationInterface* operation =
-      file_system_context_->CreateFileSystemOperation(
-          url_, file_thread_proxy_);
+      file_system_context_->CreateFileSystemOperation(url_);
   if (!operation)
     return net::ERR_INVALID_URL;
   has_pending_create_snapshot_ = true;
@@ -90,7 +87,7 @@ void FileSystemFileReader::DidCreateSnapshot(
   snapshot_ref_ = file_ref;
 
   local_file_reader_.reset(
-      new LocalFileReader(file_thread_proxy_,
+      new LocalFileReader(file_system_context_->file_task_runner(),
                           platform_path,
                           initial_offset_,
                           base::Time()));

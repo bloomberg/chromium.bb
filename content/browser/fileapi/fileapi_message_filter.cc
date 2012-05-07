@@ -432,10 +432,7 @@ void FileAPIMessageFilter::OnSyncGetPlatformPath(
   // TODO(kinuko): this hack should go away once appropriate upload-stream
   // handling based on element types is supported.
   FileSystemOperation* operation =
-      context_->CreateFileSystemOperation(
-          path,
-          BrowserThread::GetMessageLoopProxyForThread(
-              BrowserThread::FILE))->AsFileSystemOperation();
+      context_->CreateFileSystemOperation(path)->AsFileSystemOperation();
   DCHECK(operation);
   operation->SyncGetPlatformPath(path, platform_path);
 }
@@ -670,9 +667,7 @@ FileSystemOperationInterface* FileAPIMessageFilter::GetNewOperation(
     const GURL& target_path,
     int request_id) {
   FileSystemOperationInterface* operation =
-      context_->CreateFileSystemOperation(
-          target_path,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+      context_->CreateFileSystemOperation(target_path);
   DCHECK(operation);
   operations_.AddWithID(operation, request_id);
   return operation;

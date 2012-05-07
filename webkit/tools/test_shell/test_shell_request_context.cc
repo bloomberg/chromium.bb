@@ -127,9 +127,7 @@ void TestShellRequestContext::Init(
           SimpleResourceLoaderBridge::GetIoThread()));
   job_factory->SetProtocolHandler(
       "filesystem",
-      fileapi::CreateFileSystemProtocolHandler(
-          file_system_context_.get(),
-          SimpleResourceLoaderBridge::GetIoThread()));
+      fileapi::CreateFileSystemProtocolHandler(file_system_context_.get()));
   storage_.set_job_factory(job_factory);
 }
 

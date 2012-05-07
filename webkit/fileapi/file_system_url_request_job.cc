@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
@@ -53,11 +54,9 @@ static net::HttpResponseHeaders* CreateHttpResponseHeaders() {
 }
 
 FileSystemURLRequestJob::FileSystemURLRequestJob(
-    URLRequest* request, FileSystemContext* file_system_context,
-    scoped_refptr<base::MessageLoopProxy> file_thread_proxy)
+    URLRequest* request, FileSystemContext* file_system_context)
     : URLRequestJob(request),
       file_system_context_(file_system_context),
-      file_thread_proxy_(file_thread_proxy),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       is_directory_(false),
       remaining_bytes_(0) {
@@ -158,9 +157,7 @@ void FileSystemURLRequestJob::StartAsync() {
     return;
   DCHECK(!reader_.get());
   FileSystemOperationInterface* operation =
-      file_system_context_->CreateFileSystemOperation(
-          request_->url(),
-          file_thread_proxy_);
+      file_system_context_->CreateFileSystemOperation(request_->url());
   if (!operation) {
     NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
                                 net::ERR_INVALID_URL));
@@ -206,8 +203,7 @@ void FileSystemURLRequestJob::DidGetMetadata(
   reader_.reset(
       file_system_context_->CreateFileReader(
           request_->url(),
-          byte_range_.first_byte_position(),
-          file_thread_proxy_));
+          byte_range_.first_byte_position()));
 
   set_expected_content_size(remaining_bytes_);
   response_info_.reset(new net::HttpResponseInfo());

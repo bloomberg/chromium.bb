@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ class ClientUsageTracker::GatherUsageTaskBase : public QuotaTask {
 
   // Get total usage for the given |origins|.
   void GetUsageForOrigins(const std::set<GURL>& origins, StorageType type) {
-    DCHECK(original_message_loop()->BelongsToCurrentThread());
+    DCHECK(original_task_runner()->BelongsToCurrentThread());
     // We do not get usage for origins for which we have valid usage cache.
     std::vector<GURL> origins_to_gather;
     std::set<GURL> cached_origins;
@@ -91,7 +91,7 @@ class ClientUsageTracker::GatherUsageTaskBase : public QuotaTask {
 
  private:
   void DidGetUsage(int64 usage) {
-    DCHECK(original_message_loop()->BelongsToCurrentThread());
+    DCHECK(original_task_runner()->BelongsToCurrentThread());
     DCHECK(!pending_origins_.empty());
     DCHECK(client_tracker_);
 

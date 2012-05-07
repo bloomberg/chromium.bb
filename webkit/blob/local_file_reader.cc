@@ -8,8 +8,8 @@
 #include "base/file_util_proxy.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
+#include "base/task_runner.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -48,11 +48,11 @@ int LocalFileReader::PlatformFileErrorToNetError(
 }
 
 LocalFileReader::LocalFileReader(
-    base::MessageLoopProxy* file_thread_proxy,
+    base::TaskRunner* task_runner,
     const FilePath& file_path,
     int64 initial_offset,
     const base::Time& expected_modification_time)
-    : file_thread_proxy_(file_thread_proxy),
+    : task_runner_(task_runner),
       file_path_(file_path),
       initial_offset_(initial_offset),
       expected_modification_time_(expected_modification_time),
@@ -74,7 +74,7 @@ int LocalFileReader::Read(net::IOBuffer* buf, int buf_len,
 
 int LocalFileReader::GetLength(const net::Int64CompletionCallback& callback) {
   const bool posted = base::FileUtilProxy::GetFileInfo(
-      file_thread_proxy_, file_path_,
+      task_runner_, file_path_,
       base::Bind(&LocalFileReader::DidGetFileInfoForGetLength,
                  weak_factory_.GetWeakPtr(), callback));
   DCHECK(posted);

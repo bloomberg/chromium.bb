@@ -15,4 +15,9 @@ FileSystemOperationContext::FileSystemOperationContext(
 
 FileSystemOperationContext::~FileSystemOperationContext() {}
 
+base::SequencedTaskRunner*
+FileSystemOperationContext::file_task_runner() const {
+  return file_system_context_->file_task_runner();
+}
+
 }  // namespace fileapi

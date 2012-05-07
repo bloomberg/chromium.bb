@@ -122,8 +122,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     ASSERT_TRUE(!job_);
     job_ = new FileSystemURLRequestJob(
         request_.get(),
-        file_system_context_.get(),
-        base::MessageLoopProxy::current());
+        file_system_context_.get());
     pending_job_ = job_;
 
     request_->Start();

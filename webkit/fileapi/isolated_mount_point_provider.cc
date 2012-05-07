@@ -10,9 +10,11 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
+#include "base/sequenced_task_runner.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/blob/local_file_reader.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
+#include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_reader.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -95,15 +97,13 @@ IsolatedMountPointProvider::CreateFileSystemOperation(
     const GURL& origin_url,
     FileSystemType file_system_type,
     const FilePath& virtual_path,
-    base::MessageLoopProxy* file_proxy,
     FileSystemContext* context) const {
-  return new FileSystemOperation(file_proxy, context);
+  return new FileSystemOperation(context);
 }
 
 webkit_blob::FileReader* IsolatedMountPointProvider::CreateFileReader(
     const GURL& url,
     int64 offset,
-    base::MessageLoopProxy* file_proxy,
     FileSystemContext* context) const {
   GURL origin_url;
   FileSystemType file_system_type = kFileSystemTypeUnknown;
@@ -117,7 +117,7 @@ webkit_blob::FileReader* IsolatedMountPointProvider::CreateFileReader(
   if (path.empty())
     return NULL;
   return new webkit_blob::LocalFileReader(
-      file_proxy, path, offset, base::Time());
+      context->file_task_runner(), path, offset, base::Time());
 }
 
 IsolatedContext* IsolatedMountPointProvider::isolated_context() const {

@@ -162,8 +162,7 @@ void InitializeRequestContext(
   set_protocol = job_factory->SetProtocolHandler(
       chrome::kFileSystemScheme,
       CreateFileSystemProtocolHandler(
-          GetFileSystemContextForResourceContext(resource_context),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+          GetFileSystemContextForResourceContext(resource_context)));
   DCHECK(set_protocol);
 
   job_factory->AddInterceptor(new DeveloperProtocolHandler(

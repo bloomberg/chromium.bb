@@ -15,7 +15,7 @@
 class FilePath;
 
 namespace base {
-class MessageLoopProxy;
+class SequencedTaskRunner;
 }
 
 namespace webkit_blob {
@@ -34,8 +34,7 @@ class FileSystemContext;
 class FileSystemFileReader : public webkit_blob::FileReader {
  public:
   // Creates a new FileReader for a filesystem URL |url| form |initial_offset|.
-  FileSystemFileReader(base::MessageLoopProxy* file_thread_proxy,
-                       FileSystemContext* file_system_context,
+  FileSystemFileReader(FileSystemContext* file_system_context,
                        const GURL& url,
                        int64 initial_offset);
   virtual ~FileSystemFileReader();
@@ -53,7 +52,6 @@ class FileSystemFileReader : public webkit_blob::FileReader {
       const FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
-  scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   scoped_refptr<FileSystemContext> file_system_context_;
   const GURL url_;
   const int64 initial_offset_;

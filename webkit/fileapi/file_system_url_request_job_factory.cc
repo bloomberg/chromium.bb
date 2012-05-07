@@ -19,9 +19,7 @@ namespace {
 class FileSystemProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  explicit FileSystemProtocolHandler(
-      FileSystemContext* context,
-      base::MessageLoopProxy* loop_proxy);
+  explicit FileSystemProtocolHandler(FileSystemContext* context);
   virtual ~FileSystemProtocolHandler();
 
   virtual net::URLRequestJob* MaybeCreateJob(
@@ -31,18 +29,14 @@ class FileSystemProtocolHandler
   // No scoped_refptr because |file_system_context_| is owned by the
   // ProfileIOData, which also owns this ProtocolHandler.
   FileSystemContext* const file_system_context_;
-  const scoped_refptr<base::MessageLoopProxy> file_loop_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemProtocolHandler);
 };
 
 FileSystemProtocolHandler::FileSystemProtocolHandler(
-    FileSystemContext* context,
-    base::MessageLoopProxy* file_loop_proxy)
-    : file_system_context_(context),
-      file_loop_proxy_(file_loop_proxy) {
+    FileSystemContext* context)
+    : file_system_context_(context) {
   DCHECK(file_system_context_);
-  DCHECK(file_loop_proxy_);
 }
 
 FileSystemProtocolHandler::~FileSystemProtocolHandler() {}
@@ -55,21 +49,17 @@ net::URLRequestJob* FileSystemProtocolHandler::MaybeCreateJob(
   // to a directory and gets dispatched to FileSystemURLRequestJob, that class
   // redirects back here, by adding a / to the URL.
   if (!path.empty() && path[path.size() - 1] == '/') {
-    return new FileSystemDirURLRequestJob(
-        request, file_system_context_, file_loop_proxy_);
+    return new FileSystemDirURLRequestJob(request, file_system_context_);
   }
-  return new FileSystemURLRequestJob(
-      request, file_system_context_, file_loop_proxy_);
+  return new FileSystemURLRequestJob(request, file_system_context_);
 }
 
 }  // anonymous namespace
 
 net::URLRequestJobFactory::ProtocolHandler*
-CreateFileSystemProtocolHandler(FileSystemContext* context,
-                                base::MessageLoopProxy* loop_proxy) {
+CreateFileSystemProtocolHandler(FileSystemContext* context) {
   DCHECK(context);
-  DCHECK(loop_proxy);
-  return new FileSystemProtocolHandler(context, loop_proxy);
+  return new FileSystemProtocolHandler(context);
 }
 
 }  // namespace fileapi

@@ -11,7 +11,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop_proxy.h"
+#include "base/sequenced_task_runner.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -19,7 +19,7 @@
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
 
-using base::MessageLoopProxy;
+using base::SequencedTaskRunner;
 using quota::QuotaThreadTask;
 using quota::StorageType;
 
@@ -29,10 +29,9 @@ class FileSystemQuotaClient::GetOriginUsageTask : public QuotaThreadTask {
  public:
   GetOriginUsageTask(
       FileSystemQuotaClient* quota_client,
-      scoped_refptr<MessageLoopProxy> file_message_loop,
       const GURL& origin_url,
       FileSystemType type)
-      : QuotaThreadTask(quota_client, file_message_loop),
+      : QuotaThreadTask(quota_client, quota_client->file_task_runner()),
         quota_client_(quota_client),
         origin_url_(origin_url),
         type_(type),
@@ -66,9 +65,8 @@ class FileSystemQuotaClient::GetOriginsForTypeTask : public QuotaThreadTask {
  public:
   GetOriginsForTypeTask(
       FileSystemQuotaClient* quota_client,
-      scoped_refptr<MessageLoopProxy> file_message_loop,
       FileSystemType type)
-      : QuotaThreadTask(quota_client, file_message_loop),
+      : QuotaThreadTask(quota_client, quota_client->file_task_runner()),
         quota_client_(quota_client),
         type_(type) {
     DCHECK(quota_client_);
@@ -100,10 +98,9 @@ class FileSystemQuotaClient::GetOriginsForHostTask : public QuotaThreadTask {
  public:
   GetOriginsForHostTask(
       FileSystemQuotaClient* quota_client,
-      scoped_refptr<MessageLoopProxy> file_message_loop,
       FileSystemType type,
       const std::string& host)
-      : QuotaThreadTask(quota_client, file_message_loop),
+      : QuotaThreadTask(quota_client, quota_client->file_task_runner()),
         quota_client_(quota_client),
         type_(type),
         host_(host) {
@@ -138,11 +135,10 @@ class FileSystemQuotaClient::DeleteOriginTask
  public:
   DeleteOriginTask(
       FileSystemQuotaClient* quota_client,
-      scoped_refptr<MessageLoopProxy> file_message_loop,
       const GURL& origin,
       FileSystemType type,
       const DeletionCallback& callback)
-      : QuotaThreadTask(quota_client, file_message_loop),
+      : QuotaThreadTask(quota_client, quota_client->file_task_runner()),
         file_system_context_(quota_client->file_system_context_),
         origin_(origin),
         type_(type),
@@ -175,13 +171,10 @@ class FileSystemQuotaClient::DeleteOriginTask
 };
 
 FileSystemQuotaClient::FileSystemQuotaClient(
-    scoped_refptr<base::MessageLoopProxy> file_message_loop,
     FileSystemContext* file_system_context,
     bool is_incognito)
-    : file_message_loop_(file_message_loop),
-      file_system_context_(file_system_context),
+    : file_system_context_(file_system_context),
       is_incognito_(is_incognito) {
-  DCHECK(file_message_loop);
 }
 
 FileSystemQuotaClient::~FileSystemQuotaClient() {}
@@ -212,7 +205,7 @@ void FileSystemQuotaClient::GetOriginUsage(
   if (pending_usage_callbacks_.Add(
           std::make_pair(type, origin_url.spec()), callback)) {
     scoped_refptr<GetOriginUsageTask> task(
-        new GetOriginUsageTask(this, file_message_loop_, origin_url, type));
+        new GetOriginUsageTask(this, origin_url, type));
     task->Start();
   }
 }
@@ -234,7 +227,7 @@ void FileSystemQuotaClient::GetOriginsForType(
 
   if (pending_origins_for_type_callbacks_.Add(type, callback)) {
     scoped_refptr<GetOriginsForTypeTask> task(
-        new GetOriginsForTypeTask(this, file_message_loop_, type));
+        new GetOriginsForTypeTask(this, type));
     task->Start();
   }
 }
@@ -258,8 +251,7 @@ void FileSystemQuotaClient::GetOriginsForHost(
   if (pending_origins_for_host_callbacks_.Add(
           std::make_pair(type, host), callback)) {
     scoped_refptr<GetOriginsForHostTask> task(
-        new GetOriginsForHostTask(this, file_message_loop_,
-                                  type, host));
+        new GetOriginsForHostTask(this, type, host));
     task->Start();
   }
 }
@@ -270,8 +262,7 @@ void FileSystemQuotaClient::DeleteOriginData(const GURL& origin,
   FileSystemType fs_type = QuotaStorageTypeToFileSystemType(type);
   DCHECK(fs_type != kFileSystemTypeUnknown);
   scoped_refptr<DeleteOriginTask> task(
-      new DeleteOriginTask(this, file_message_loop_,
-                           origin, fs_type, callback));
+      new DeleteOriginTask(this, origin, fs_type, callback));
   task->Start();
 }
 
@@ -295,6 +286,10 @@ void FileSystemQuotaClient::DidGetOriginsForHost(
   DCHECK(pending_origins_for_host_callbacks_.HasCallbacks(type_and_host));
   pending_origins_for_host_callbacks_.Run(type_and_host, origins,
       FileSystemTypeToQuotaStorageType(type_and_host.first));
+}
+
+base::SequencedTaskRunner* FileSystemQuotaClient::file_task_runner() const {
+  return file_system_context_->file_task_runner();
 }
 
 }  // namespace fileapi

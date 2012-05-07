@@ -5,6 +5,7 @@
 #include "webkit/fileapi/file_system_operation.h"
 
 #include "base/bind.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
@@ -82,7 +83,7 @@ FileSystemOperation::~FileSystemOperation() {
     FileSystemOperationContext* c =
         new FileSystemOperationContext(operation_context_);
     base::FileUtilProxy::RelayClose(
-        proxy_,
+        file_system_context()->file_task_runner(),
         base::Bind(&FileSystemFileUtil::Close,
                    base::Unretained(src_util_),
                    base::Owned(c)),
@@ -190,7 +191,7 @@ void FileSystemOperation::DirectoryExists(const GURL& path_url,
   }
 
   FileSystemFileUtilProxy::GetFileInfo(
-      proxy_, &operation_context_, src_util_, src_path_,
+      &operation_context_, src_util_, src_path_,
       base::Bind(&FileSystemOperation::DidDirectoryExists,
                  base::Owned(this), callback));
 }
@@ -208,7 +209,7 @@ void FileSystemOperation::FileExists(const GURL& path_url,
   }
 
   FileSystemFileUtilProxy::GetFileInfo(
-      proxy_, &operation_context_, src_util_, src_path_,
+      &operation_context_, src_util_, src_path_,
       base::Bind(&FileSystemOperation::DidFileExists,
                  base::Owned(this), callback));
 }
@@ -226,7 +227,7 @@ void FileSystemOperation::GetMetadata(const GURL& path_url,
   }
 
   FileSystemFileUtilProxy::GetFileInfo(
-      proxy_, &operation_context_, src_util_, src_path_,
+      &operation_context_, src_util_, src_path_,
       base::Bind(&FileSystemOperation::DidGetMetadata,
                  base::Owned(this), callback));
 }
@@ -244,7 +245,7 @@ void FileSystemOperation::ReadDirectory(const GURL& path_url,
   }
 
   FileSystemFileUtilProxy::ReadDirectory(
-      proxy_, &operation_context_, src_util_, src_path_,
+      &operation_context_, src_util_, src_path_,
       base::Bind(&FileSystemOperation::DidReadDirectory,
                  base::Owned(this), callback));
 }
@@ -265,7 +266,7 @@ void FileSystemOperation::Remove(const GURL& path_url, bool recursive,
       file_system_context(), src_path_.origin(), src_path_.type()));
 
   FileSystemFileUtilProxy::Delete(
-      proxy_, &operation_context_, src_util_, src_path_, recursive,
+      &operation_context_, src_util_, src_path_, recursive,
       base::Bind(&FileSystemOperation::DidFinishFileOperation,
                  base::Owned(this), callback));
 }
@@ -287,7 +288,7 @@ void FileSystemOperation::Write(
   }
   DCHECK(blob_url.is_valid());
   file_writer_delegate_.reset(new FileWriterDelegate(
-          this, src_path_, offset, proxy_));
+          this, src_path_, offset));
   set_write_callback(callback);
   blob_request_.reset(
       new net::URLRequest(blob_url, file_writer_delegate_.get()));
@@ -332,7 +333,7 @@ void FileSystemOperation::TouchFile(const GURL& path_url,
   }
 
   FileSystemFileUtilProxy::Touch(
-      proxy_, &operation_context_, src_util_, src_path_,
+      &operation_context_, src_util_, src_path_,
       last_access_time, last_modified_time,
       base::Bind(&FileSystemOperation::DidTouchFile,
                  base::Owned(this), callback));
@@ -444,10 +445,8 @@ void FileSystemOperation::CreateSnapshotFile(
 }
 
 FileSystemOperation::FileSystemOperation(
-    scoped_refptr<base::MessageLoopProxy> proxy,
     FileSystemContext* file_system_context)
-    : proxy_(proxy),
-      operation_context_(file_system_context),
+    : operation_context_(file_system_context),
       src_util_(NULL),
       dest_util_(NULL),
       peer_handle_(base::kNullProcessHandle),
@@ -505,7 +504,8 @@ void FileSystemOperation::DoCreateFile(
     const StatusCallback& callback,
     bool exclusive) {
   FileSystemFileUtilProxy::EnsureFileExists(
-      proxy_, &operation_context_, src_util_, src_path_,
+      &operation_context_,
+      src_util_, src_path_,
       base::Bind(
           exclusive ? &FileSystemOperation::DidEnsureFileExistsExclusive
                     : &FileSystemOperation::DidEnsureFileExistsNonExclusive,
@@ -516,14 +516,15 @@ void FileSystemOperation::DoCreateDirectory(
     const StatusCallback& callback,
     bool exclusive, bool recursive) {
   FileSystemFileUtilProxy::CreateDirectory(
-      proxy_, &operation_context_, src_util_, src_path_, exclusive, recursive,
+      &operation_context_,
+      src_util_, src_path_, exclusive, recursive,
       base::Bind(&FileSystemOperation::DidFinishFileOperation,
                  base::Owned(this), callback));
 }
 
 void FileSystemOperation::DoCopy(const StatusCallback& callback) {
   FileSystemFileUtilProxy::Copy(
-      proxy_, &operation_context_,
+      &operation_context_,
       src_util_, dest_util_,
       src_path_, dest_path_,
       base::Bind(&FileSystemOperation::DidFinishFileOperation,
@@ -532,7 +533,7 @@ void FileSystemOperation::DoCopy(const StatusCallback& callback) {
 
 void FileSystemOperation::DoMove(const StatusCallback& callback) {
   FileSystemFileUtilProxy::Move(
-      proxy_, &operation_context_,
+      &operation_context_,
       src_util_, dest_util_,
       src_path_, dest_path_,
       base::Bind(&FileSystemOperation::DidFinishFileOperation,
@@ -545,7 +546,7 @@ void FileSystemOperation::DoWrite() {
                    base::PLATFORM_FILE_ASYNC;
 
   FileSystemFileUtilProxy::CreateOrOpen(
-      proxy_, &operation_context_, src_util_, src_path_, file_flags,
+      &operation_context_, src_util_, src_path_, file_flags,
       base::Bind(&FileSystemOperation::OnFileOpenedForWrite,
                  base::Unretained(this)));
 }
@@ -553,7 +554,7 @@ void FileSystemOperation::DoWrite() {
 void FileSystemOperation::DoTruncate(const StatusCallback& callback,
                                      int64 length) {
   FileSystemFileUtilProxy::Truncate(
-      proxy_, &operation_context_, src_util_, src_path_, length,
+      &operation_context_, src_util_, src_path_, length,
       base::Bind(&FileSystemOperation::DidFinishFileOperation,
                  base::Owned(this), callback));
 }
@@ -561,7 +562,7 @@ void FileSystemOperation::DoTruncate(const StatusCallback& callback,
 void FileSystemOperation::DoOpenFile(const OpenFileCallback& callback,
                                      int file_flags) {
   FileSystemFileUtilProxy::CreateOrOpen(
-      proxy_, &operation_context_, src_util_, src_path_, file_flags,
+      &operation_context_, src_util_, src_path_, file_flags,
       base::Bind(&FileSystemOperation::DidOpenFile,
                  base::Owned(this), callback));
 }

@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
@@ -31,8 +30,7 @@ class FileSystemURLRequestJob : public net::URLRequestJob {
  public:
   FileSystemURLRequestJob(
       net::URLRequest* request,
-      FileSystemContext* file_system_context,
-      scoped_refptr<base::MessageLoopProxy> file_thread_proxy);
+      FileSystemContext* file_system_context);
 
   // URLRequestJob methods:
   virtual void Start() OVERRIDE;
@@ -64,7 +62,6 @@ class FileSystemURLRequestJob : public net::URLRequestJob {
   void NotifyFailed(int rv);
 
   FileSystemContext* file_system_context_;
-  scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   base::WeakPtrFactory<FileSystemURLRequestJob> weak_factory_;
   scoped_ptr<webkit_blob::FileReader> reader_;
   bool is_directory_;

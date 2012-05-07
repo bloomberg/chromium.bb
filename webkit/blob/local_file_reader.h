@@ -16,7 +16,7 @@
 #include "webkit/blob/file_reader.h"
 
 namespace base {
-class MessageLoopProxy;
+class TaskRunner;
 }
 
 namespace webkit_blob {
@@ -38,8 +38,7 @@ class BLOB_EXPORT LocalFileReader : public FileReader {
   // actual modification time to see if the file has been modified, and if
   // it does any succeeding read operations should fail with
   // ERR_UPLOAD_FILE_CHANGED error.
-  // TODO(kinuko): Consider using SequencedWorkerPool.
-  LocalFileReader(base::MessageLoopProxy* file_thread_proxy,
+  LocalFileReader(base::TaskRunner* task_runner,
                   const FilePath& file_path,
                   int64 initial_offset,
                   const base::Time& expected_modification_time);
@@ -76,7 +75,7 @@ class BLOB_EXPORT LocalFileReader : public FileReader {
                                   base::PlatformFileError error,
                                   const base::PlatformFileInfo& file_info);
 
-  scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
+  scoped_refptr<base::TaskRunner> task_runner_;
   scoped_ptr<net::FileStream> stream_impl_;
   const FilePath file_path_;
   const int64 initial_offset_;

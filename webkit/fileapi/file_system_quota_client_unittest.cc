@@ -66,7 +66,6 @@ class FileSystemQuotaClientTest : public testing::Test {
  protected:
   FileSystemQuotaClient* NewQuotaClient(bool is_incognito) {
     return new FileSystemQuotaClient(
-        base::MessageLoopProxy::current(),
         file_system_context_, is_incognito);
   }
 

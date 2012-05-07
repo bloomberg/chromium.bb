@@ -8,7 +8,6 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/time.h"
 #include "net/base/file_stream.h"
@@ -27,8 +26,7 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   FileWriterDelegate(
       FileSystemOperation* write_operation,
       const FileSystemPath& path,
-      int64 offset,
-      scoped_refptr<base::MessageLoopProxy> proxy);
+      int64 offset);
   virtual ~FileWriterDelegate();
 
   void Start(base::PlatformFile file,
@@ -71,7 +69,6 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   FileSystemPath path_;
   int64 size_;
   int64 offset_;
-  scoped_refptr<base::MessageLoopProxy> proxy_;
   base::Time last_progress_event_time_;
   int bytes_written_backlog_;
   int bytes_written_;

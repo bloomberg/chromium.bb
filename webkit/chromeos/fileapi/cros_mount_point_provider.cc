@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/utf_string_conversions.h"
@@ -244,24 +243,22 @@ CrosMountPointProvider::CreateFileSystemOperation(
     const GURL& origin_url,
     fileapi::FileSystemType file_system_type,
     const FilePath& virtual_path,
-    base::MessageLoopProxy* file_proxy,
     fileapi::FileSystemContext* context) const {
   const MountPoint* mount_point = GetMountPoint(virtual_path);
   if (mount_point && mount_point->location == REMOTE)
     return new chromeos::RemoteFileSystemOperation(mount_point->remote_proxy);
 
-  return new fileapi::FileSystemOperation(file_proxy, context);
+  return new fileapi::FileSystemOperation(context);
 }
 
 webkit_blob::FileReader* CrosMountPointProvider::CreateFileReader(
     const GURL& url,
     int64 offset,
-    base::MessageLoopProxy* file_proxy,
     fileapi::FileSystemContext* context) const {
   // For now we return a generic Reader implementation which utilizes
   // CreateSnapshotFile internally (i.e. will download everything first).
   // TODO(satorux,zel): implement more efficient reader for remote cases.
-  return new fileapi::FileSystemFileReader(file_proxy, context, url, offset);
+  return new fileapi::FileSystemFileReader(context, url, offset);
 }
 
 bool CrosMountPointProvider::GetVirtualPath(const FilePath& filesystem_path,

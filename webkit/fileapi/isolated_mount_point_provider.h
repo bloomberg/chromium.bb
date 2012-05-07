@@ -45,12 +45,10 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
       const GURL& origin_url,
       FileSystemType file_system_type,
       const FilePath& virtual_path,
-      base::MessageLoopProxy* file_proxy,
       FileSystemContext* context) const OVERRIDE;
   virtual webkit_blob::FileReader* CreateFileReader(
     const GURL& url,
     int64 offset,
-    base::MessageLoopProxy* file_proxy,
     FileSystemContext* context) const OVERRIDE;
 
  private:

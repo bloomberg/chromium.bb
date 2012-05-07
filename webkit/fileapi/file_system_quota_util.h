@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 #include "webkit/fileapi/file_system_types.h"
 
 namespace base {
-class MessageLoopProxy;
+class SequencedTaskRunner;
 }
 
 namespace quota {
@@ -46,11 +46,11 @@ class FileSystemQuotaUtil {
     friend class FileSystemQuotaUtil;
     friend class base::RefCountedThreadSafe<Proxy>;
     Proxy(FileSystemQuotaUtil* quota_handler,
-          base::MessageLoopProxy* file_thread);
+          base::SequencedTaskRunner* file_task_runner);
     ~Proxy();
 
     FileSystemQuotaUtil* quota_util_;  // Accessed only on the FILE thread.
-    scoped_refptr<base::MessageLoopProxy> file_thread_;
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
     DISALLOW_COPY_AND_ASSIGN(Proxy);
   };
 
@@ -97,7 +97,7 @@ class FileSystemQuotaUtil {
   Proxy* proxy() { return proxy_.get(); }
 
  protected:
-  explicit FileSystemQuotaUtil(base::MessageLoopProxy* file_thread);
+  explicit FileSystemQuotaUtil(base::SequencedTaskRunner* file_task_runner);
   virtual ~FileSystemQuotaUtil();
 
  private:

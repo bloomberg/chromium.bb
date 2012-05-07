@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/process.h"
 #include "googleurl/src/gurl.h"
@@ -130,8 +129,7 @@ class FileSystemOperation : public FileSystemOperationInterface {
   friend class FileSystemTestOriginHelper;
   friend class FileSystemQuotaTest;
 
-  FileSystemOperation(scoped_refptr<base::MessageLoopProxy> proxy,
-                      FileSystemContext* file_system_context);
+  FileSystemOperation(FileSystemContext* file_system_context);
 
   FileSystemContext* file_system_context() const {
     return operation_context_.file_system_context();
@@ -235,9 +233,6 @@ class FileSystemOperation : public FileSystemOperationInterface {
   // Used only for internal assertions.
   // Returns false if there's another inflight pending operation.
   bool SetPendingOperationType(OperationType type);
-
-  // Proxy for calling file_util_proxy methods.
-  scoped_refptr<base::MessageLoopProxy> proxy_;
 
   FileSystemOperationContext operation_context_;
   FileSystemPath src_path_;

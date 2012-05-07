@@ -19,7 +19,8 @@ class FilePath;
 class GURL;
 
 namespace base {
-class MessageLoopProxy;
+class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 }
 
 namespace quota {
@@ -50,21 +51,29 @@ class FileSystemContext
     : public base::RefCountedThreadSafe<FileSystemContext,
                                         DefaultContextDeleter> {
  public:
+  // |file_task_runner| is used for all file operations and file related
+  // meta operations.
+  // The code assumes that file_task_runner->RunsTasksOnCurrentThread() returns
+  // false if the current task is not running on the thread that allows
+  // blocking file operations (like SequencedWorkerPool implementation does).
   FileSystemContext(
-      scoped_refptr<base::MessageLoopProxy> file_message_loop,
-      scoped_refptr<base::MessageLoopProxy> io_message_loop,
-      scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
+      base::SequencedTaskRunner* file_task_runner,
+      base::SingleThreadTaskRunner* io_task_runner,
+      quota::SpecialStoragePolicy* special_storage_policy,
       quota::QuotaManagerProxy* quota_manager_proxy,
       const FilePath& profile_path,
       const FileSystemOptions& options);
 
-  // This method can be called on any thread.
   bool DeleteDataForOriginOnFileThread(const GURL& origin_url);
   bool DeleteDataForOriginAndTypeOnFileThread(const GURL& origin_url,
                                               FileSystemType type);
 
   quota::QuotaManagerProxy* quota_manager_proxy() const {
     return quota_manager_proxy_.get();
+  }
+
+  base::SequencedTaskRunner* file_task_runner() const {
+    return file_task_runner_.get();
   }
 
   // Returns a quota util for a given filesystem type.  This may
@@ -114,9 +123,7 @@ class FileSystemContext
   // and calling the provider's corresponding CreateFileSystemOperation method.
   // The resolved MountPointProvider could perform further specialization
   // depending on the filesystem type pointed by the |url|.
-  FileSystemOperationInterface* CreateFileSystemOperation(
-      const GURL& url,
-      base::MessageLoopProxy* file_proxy);
+  FileSystemOperationInterface* CreateFileSystemOperation(const GURL& url);
 
   // Creates new FileReader instance to read a file pointed by the given
   // filesystem URL |url| starting from |offset|.
@@ -126,8 +133,7 @@ class FileSystemContext
   // depending on the filesystem type pointed by the |url|.
   webkit_blob::FileReader* CreateFileReader(
       const GURL& url,
-      int64 offset,
-      base::MessageLoopProxy* file_proxy);
+      int64 offset);
 
  private:
   friend struct DefaultContextDeleter;
@@ -136,8 +142,8 @@ class FileSystemContext
 
   void DeleteOnCorrectThread() const;
 
-  scoped_refptr<base::MessageLoopProxy> file_message_loop_;
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
 

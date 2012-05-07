@@ -14,13 +14,8 @@
 #include "base/platform_file.h"
 #include "base/tracked_objects.h"
 
-namespace base {
-class MessageLoopProxy;
-}
-
 namespace fileapi {
 
-using base::MessageLoopProxy;
 using base::PlatformFile;
 using base::PlatformFileError;
 using base::PlatformFileInfo;
@@ -50,10 +45,9 @@ class FileSystemFileUtilProxy {
                               const std::vector<Entry>&,
                               bool has_more)> ReadDirectoryCallback;
 
-  // Deletes a file or a directory on the given |message_loop_proxy|.
+  // Deletes a file or a directory on the given context's file_task_runner.
   // It is an error to delete a non-empty directory with recursive=false.
   static bool Delete(
-      MessageLoopProxy* message_loop_proxy,
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
       const FileSystemPath& path,
@@ -61,9 +55,8 @@ class FileSystemFileUtilProxy {
       const StatusCallback& callback);
 
   // Creates or opens a file with the given flags by calling |file_util|'s
-  // CreateOrOpen method on the given |message_loop_proxy|.
+  // CreateOrOpen method on the given context's file_task_runner.
   static bool CreateOrOpen(
-      MessageLoopProxy* message_loop_proxy,
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
       const FileSystemPath& path,
@@ -71,7 +64,8 @@ class FileSystemFileUtilProxy {
       const CreateOrOpenCallback& callback);
 
   // Copies a file or a directory from |src_path| to |dest_path| by calling
-  // FileSystemFileUtil's following methods on the given |message_loop_proxy|.
+  // FileSystemFileUtil's following methods on the given context's
+  // file_task_runner.
   // - CopyOrMoveFile() for same-filesystem operations
   // - CopyInForeignFile() for (limited) cross-filesystem operations
   //
@@ -83,7 +77,6 @@ class FileSystemFileUtilProxy {
   // If source doesn't exist.
   // If source and dest are the same path in the same filesystem.
   static bool Copy(
-      MessageLoopProxy* message_loop_proxy,
       FileSystemOperationContext* context,
       FileSystemFileUtil* src_util,
       FileSystemFileUtil* dest_util,
@@ -92,13 +85,13 @@ class FileSystemFileUtilProxy {
       const StatusCallback& callback);
 
   // Moves a file or a directory from |src_path| to |dest_path| by calling
-  // FileSystemFileUtil's following methods on the given |message_loop_proxy|.
+  // FileSystemFileUtil's following methods on the given context's
+  // file_task_runner.
   // - CopyOrMoveFile() for same-filesystem operations
   // - CopyInForeignFile() for (limited) cross-filesystem operations
   //
   // This method returns an error on the same error cases with Copy.
   static bool Move(
-      MessageLoopProxy* message_loop_proxy,
       FileSystemOperationContext* context,
       FileSystemFileUtil* src_util,
       FileSystemFileUtil* dest_util,
@@ -107,18 +100,16 @@ class FileSystemFileUtilProxy {
       const StatusCallback& callback);
 
   // Ensures that the given |path| exist by calling |file_util|'s
-  // EnsureFileExists method on the given |message_loop_proxy|.
+  // EnsureFileExists method on the given context's file_task_runner.
   static bool EnsureFileExists(
-      MessageLoopProxy* message_loop_proxy,
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
       const FileSystemPath& path,
       const EnsureFileExistsCallback& callback);
 
   // Creates directory at a given path by calling |file_util|'s
-  // CreateDirectory method on the given |message_loop_proxy|.
+  // CreateDirectory method on the given context's file_task_runner.
   static bool CreateDirectory(
-      MessageLoopProxy* message_loop_proxy,
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
       const FileSystemPath& path,
@@ -127,28 +118,25 @@ class FileSystemFileUtilProxy {
       const StatusCallback& callback);
 
   // Retrieves the information about a file by calling |file_util|'s
-  // GetFileInfo method on the given |message_loop_proxy|.
+  // GetFileInfo method on the given context's file_task_runner.
   static bool GetFileInfo(
-      MessageLoopProxy* message_loop_proxy,
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
       const FileSystemPath& path,
       const GetFileInfoCallback& callback);
 
   // Reads the filenames in |path| by calling |file_util|'s
-  // ReadDirectory method on the given |message_loop_proxy|.
+  // ReadDirectory method on the given context's file_task_runner.
   // TODO: this should support returning entries in multiple chunks.
   static bool ReadDirectory(
-      MessageLoopProxy* message_loop_proxy,
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
       const FileSystemPath& path,
       const ReadDirectoryCallback& callback);
 
   // Touches a file by calling |file_util|'s Touch method
-  // on the given |message_loop_proxy|.
+  // on the given context's file_task_runner.
   static bool Touch(
-      MessageLoopProxy* message_loop_proxy,
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
       const FileSystemPath& path,
@@ -157,9 +145,8 @@ class FileSystemFileUtilProxy {
       const StatusCallback& callback);
 
   // Truncates a file to the given length by calling |file_util|'s
-  // Truncate method on the given |message_loop_proxy|.
+  // Truncate method on the given context's file_task_runner.
   static bool Truncate(
-      MessageLoopProxy* message_loop_proxy,
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,
       const FileSystemPath& path,

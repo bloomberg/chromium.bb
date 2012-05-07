@@ -8,6 +8,8 @@
 #include "base/callback.h"
 #include "base/file_util_proxy.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/net_errors.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -33,8 +35,7 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
       const FileSystemPath& path,
       FileSystemOperationContext* context,
       const InitializeTaskCallback& callback)
-      : origin_message_loop_proxy_(
-            base::MessageLoopProxy::current()),
+      : original_loop_(base::MessageLoopProxy::current()),
         error_code_(base::PLATFORM_FILE_OK),
         file_(file),
         path_(path),
@@ -43,9 +44,9 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
     DCHECK_EQ(false, callback.is_null());
   }
 
-  bool Start(scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
+  bool Start(base::SequencedTaskRunner* task_runner,
              const tracked_objects::Location& from_here) {
-    return message_loop_proxy->PostTask(
+    return task_runner->PostTask(
         from_here,
         base::Bind(&InitializeTask::ProcessOnTargetThread, this));
   }
@@ -68,12 +69,12 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
     }
     if (!base::GetPlatformFileInfo(file_, &file_info_))
       error_code_ = base::PLATFORM_FILE_ERROR_FAILED;
-    origin_message_loop_proxy_->PostTask(
+    original_loop_->PostTask(
         FROM_HERE,
         base::Bind(&InitializeTask::RunCallback, this));
   }
 
-  scoped_refptr<base::MessageLoopProxy> origin_message_loop_proxy_;
+  scoped_refptr<base::MessageLoopProxy> original_loop_;
   base::PlatformFileError error_code_;
 
   base::PlatformFile file_;
@@ -89,13 +90,11 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
 FileWriterDelegate::FileWriterDelegate(
     FileSystemOperation* file_system_operation,
     const FileSystemPath& path,
-    int64 offset,
-    scoped_refptr<base::MessageLoopProxy> proxy)
+    int64 offset)
     : file_system_operation_(file_system_operation),
       file_(base::kInvalidPlatformFileValue),
       path_(path),
       offset_(offset),
-      proxy_(proxy),
       bytes_written_backlog_(0),
       bytes_written_(0),
       bytes_read_(0),
@@ -142,7 +141,7 @@ void FileWriterDelegate::Start(base::PlatformFile file,
       file_system_operation_context(),
       base::Bind(&FileWriterDelegate::OnGetFileInfoAndCallStartUpdate,
                  weak_factory_.GetWeakPtr()));
-  relay->Start(proxy_, FROM_HERE);
+  relay->Start(file_system_operation_context()->file_task_runner(), FROM_HERE);
 }
 
 void FileWriterDelegate::OnReceivedRedirect(net::URLRequest* request,

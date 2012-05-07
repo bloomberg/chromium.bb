@@ -17,6 +17,10 @@
 #include "webkit/quota/quota_client.h"
 #include "webkit/quota/quota_task.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace fileapi {
 
 class FileSystemContext;
@@ -30,7 +34,6 @@ class FileSystemQuotaClient : public quota::QuotaClient,
                               public quota::QuotaTaskObserver {
  public:
   FileSystemQuotaClient(
-      scoped_refptr<base::MessageLoopProxy> file_message_loop,
       FileSystemContext* file_system_context,
       bool is_incognito);
   virtual ~FileSystemQuotaClient();
@@ -83,7 +86,8 @@ class FileSystemQuotaClient : public quota::QuotaClient,
   void DidGetOriginsForHost(const TypeAndHostOrOrigin& type_and_host,
                             const std::set<GURL>& origins);
 
-  scoped_refptr<base::MessageLoopProxy> file_message_loop_;
+  base::SequencedTaskRunner* file_task_runner() const;
+
   scoped_refptr<FileSystemContext> file_system_context_;
 
   bool is_incognito_;

@@ -16,10 +16,6 @@
 
 class GURL;
 
-namespace base {
-class MessageLoopProxy;
-}
-
 namespace webkit_blob {
 class FileReader;
 }
@@ -92,7 +88,6 @@ class FileSystemMountPointProvider {
       const GURL& origin_url,
       FileSystemType file_system_type,
       const FilePath& virtual_path,
-      base::MessageLoopProxy* file_proxy,
       FileSystemContext* context) const = 0;
 
   // Creates a new file reader for a given filesystem URL |url| with a offset
@@ -103,7 +98,6 @@ class FileSystemMountPointProvider {
   virtual webkit_blob::FileReader* CreateFileReader(
     const GURL& url,
     int64 offset,
-    base::MessageLoopProxy* file_proxy,
     FileSystemContext* context) const = 0;
 };
 

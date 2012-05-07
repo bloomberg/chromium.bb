@@ -25,8 +25,7 @@ class FileSystemDirURLRequestJob : public net::URLRequestJob {
  public:
   FileSystemDirURLRequestJob(
       net::URLRequest* request,
-      FileSystemContext* file_system_context,
-      scoped_refptr<base::MessageLoopProxy> file_thread_proxy);
+      FileSystemContext* file_system_context);
 
   // URLRequestJob methods:
   virtual void Start() OVERRIDE;
@@ -54,7 +53,6 @@ class FileSystemDirURLRequestJob : public net::URLRequestJob {
 
   std::string data_;
   FileSystemContext* file_system_context_;
-  scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   base::WeakPtrFactory<FileSystemDirURLRequestJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemDirURLRequestJob);

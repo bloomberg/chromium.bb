@@ -199,9 +199,7 @@ void SimpleFileSystem::CleanupOnIOThread() {
 
 FileSystemOperationInterface* SimpleFileSystem::GetNewOperation(
     const WebURL& url) {
-  return file_system_context_->CreateFileSystemOperation(
-      GURL(url),
-      base::MessageLoopProxy::current());
+  return file_system_context_->CreateFileSystemOperation(GURL(url));
 }
 
 FileSystemOperationInterface::StatusCallback

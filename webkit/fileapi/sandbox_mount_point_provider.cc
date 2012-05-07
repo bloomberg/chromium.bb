@@ -8,12 +8,11 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/rand_util.h"
+#include "base/sequenced_task_runner.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/metrics/histogram.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "webkit/fileapi/file_system_file_reader.h"
@@ -306,11 +305,11 @@ const FilePath::CharType
         FILE_PATH_LITERAL("FS.old");
 
 SandboxMountPointProvider::SandboxMountPointProvider(
-    scoped_refptr<base::MessageLoopProxy> file_message_loop,
+    base::SequencedTaskRunner* file_task_runner,
     const FilePath& profile_path,
     const FileSystemOptions& file_system_options)
-    : FileSystemQuotaUtil(file_message_loop),
-      file_message_loop_(file_message_loop),
+    : FileSystemQuotaUtil(file_task_runner),
+      file_task_runner_(file_task_runner),
       profile_path_(profile_path),
       file_system_options_(file_system_options),
       sandbox_file_util_(
@@ -320,9 +319,9 @@ SandboxMountPointProvider::SandboxMountPointProvider(
 }
 
 SandboxMountPointProvider::~SandboxMountPointProvider() {
-  if (!file_message_loop_->BelongsToCurrentThread()) {
+  if (!file_task_runner_->RunsTasksOnCurrentThread()) {
     ObfuscatedFileUtil* sandbox_file_util = sandbox_file_util_.release();
-    if (!file_message_loop_->ReleaseSoon(FROM_HERE, sandbox_file_util))
+    if (!file_task_runner_->ReleaseSoon(FROM_HERE, sandbox_file_util))
       sandbox_file_util->Release();
   }
 }
@@ -348,7 +347,7 @@ void SandboxMountPointProvider::ValidateFileSystemRoot(
   }
 
   base::PlatformFileError* error_ptr = new base::PlatformFileError;
-  file_message_loop_->PostTaskAndReply(
+  file_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&ValidateRootOnFileThread,
                  sandbox_file_util_,
@@ -429,17 +428,15 @@ SandboxMountPointProvider::CreateFileSystemOperation(
     const GURL& origin_url,
     FileSystemType file_system_type,
     const FilePath& virtual_path,
-    base::MessageLoopProxy* file_proxy,
     FileSystemContext* context) const {
-  return new FileSystemOperation(file_proxy, context);
+  return new FileSystemOperation(context);
 }
 
 webkit_blob::FileReader* SandboxMountPointProvider::CreateFileReader(
     const GURL& url,
     int64 offset,
-    base::MessageLoopProxy* file_proxy,
     FileSystemContext* context) const {
-  return new FileSystemFileReader(file_proxy, context, url, offset);
+  return new FileSystemFileReader(context, url, offset);
 }
 
 FilePath SandboxMountPointProvider::old_base_path() const {

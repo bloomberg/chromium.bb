@@ -12,7 +12,8 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/message_loop_proxy.h"
+#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/sys_info.h"
@@ -1181,8 +1182,8 @@ class QuotaManager::DumpOriginInfoTableTask
 
 QuotaManager::QuotaManager(bool is_incognito,
                            const FilePath& profile_path,
-                           base::MessageLoopProxy* io_thread,
-                           base::MessageLoopProxy* db_thread,
+                           base::SingleThreadTaskRunner* io_thread,
+                           base::SequencedTaskRunner* db_thread,
                            SpecialStoragePolicy* special_storage_policy)
   : is_incognito_(is_incognito),
     profile_path_(profile_path),
@@ -1823,7 +1824,7 @@ QuotaManager* QuotaManagerProxy::quota_manager() const {
 }
 
 QuotaManagerProxy::QuotaManagerProxy(
-    QuotaManager* manager, base::MessageLoopProxy* io_thread)
+    QuotaManager* manager, base::SingleThreadTaskRunner* io_thread)
     : manager_(manager), io_thread_(io_thread) {
 }
 

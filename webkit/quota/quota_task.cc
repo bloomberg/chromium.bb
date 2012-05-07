@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,12 @@
 #include <functional>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 
-using base::MessageLoopProxy;
+using base::TaskRunner;
 
 namespace quota {
 
@@ -28,11 +30,11 @@ void QuotaTask::Start() {
 
 QuotaTask::QuotaTask(QuotaTaskObserver* observer)
     : observer_(observer),
-      original_message_loop_(MessageLoopProxy::current()) {
+      original_task_runner_(base::MessageLoopProxy::current()) {
 }
 
 void QuotaTask::CallCompleted() {
-  DCHECK(original_message_loop_->BelongsToCurrentThread());
+  DCHECK(original_task_runner_->BelongsToCurrentThread());
   if (observer_) {
     observer_->UnregisterTask(this);
     Completed();
@@ -40,7 +42,7 @@ void QuotaTask::CallCompleted() {
 }
 
 void QuotaTask::Abort() {
-  DCHECK(original_message_loop_->BelongsToCurrentThread());
+  DCHECK(original_task_runner_->BelongsToCurrentThread());
   observer_ = NULL;
   Aborted();
 }
@@ -53,24 +55,24 @@ void QuotaTask::DeleteSoon() {
 
 QuotaThreadTask::QuotaThreadTask(
     QuotaTaskObserver* observer,
-    scoped_refptr<MessageLoopProxy> target_message_loop)
+    TaskRunner* target_task_runner)
     : QuotaTask(observer),
-      target_message_loop_(target_message_loop) {
+      target_task_runner_(target_task_runner) {
 }
 
 QuotaThreadTask::~QuotaThreadTask() {
 }
 
 void QuotaThreadTask::Run() {
-  target_message_loop_->PostTask(
+  target_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&QuotaThreadTask::CallRunOnTargetThread, this));
 }
 
 void QuotaThreadTask::CallRunOnTargetThread() {
-  DCHECK(target_message_loop_->BelongsToCurrentThread());
+  DCHECK(target_task_runner_->RunsTasksOnCurrentThread());
   if (RunOnTargetThreadAsync())
-    original_message_loop()->PostTask(
+    original_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&QuotaThreadTask::CallCompleted, this));
 }

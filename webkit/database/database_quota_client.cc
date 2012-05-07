@@ -192,7 +192,7 @@ class DatabaseQuotaClient::DeleteOriginTask : public HelperTask {
   void OnCompletionCallback(int rv) {
     if (rv == net::OK)
       result_ = quota::kQuotaStatusOk;
-    original_message_loop()->PostTask(
+    original_task_runner()->PostTask(
         FROM_HERE, base::Bind(&DeleteOriginTask::CallCompleted, this));
     Release();  // balanced in RunOnTargetThreadAsync
   }

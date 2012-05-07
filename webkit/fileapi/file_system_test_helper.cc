@@ -175,8 +175,7 @@ FileSystemOperation* FileSystemTestOriginHelper::NewOperation() {
   DCHECK(file_system_context_.get());
   DCHECK(file_util_);
   FileSystemOperation* operation =
-    new FileSystemOperation(base::MessageLoopProxy::current(),
-                            file_system_context_.get());
+    new FileSystemOperation(file_system_context_.get());
   operation->set_override_file_util(file_util_);
   return operation;
 }

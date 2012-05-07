@@ -19,8 +19,7 @@ class FileSystemContext;
 // Currently, this is only used by ProfileIOData which owns |context| and the
 // ProtocolHandler.
 net::URLRequestJobFactory::ProtocolHandler*
-CreateFileSystemProtocolHandler(FileSystemContext* context,
-                                base::MessageLoopProxy* file_loop_proxy);
+CreateFileSystemProtocolHandler(FileSystemContext* context);
 
 }  // namespace fileapi
 

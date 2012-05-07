@@ -11,6 +11,10 @@
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_types.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace fileapi {
 
 class FileSystemContext;
@@ -28,6 +32,8 @@ class FileSystemOperationContext {
     allowed_bytes_growth_ = allowed_bytes_growth;
   }
   int64 allowed_bytes_growth() const { return allowed_bytes_growth_; }
+
+  base::SequencedTaskRunner* file_task_runner() const;
 
  private:
   scoped_refptr<FileSystemContext> file_system_context_;
