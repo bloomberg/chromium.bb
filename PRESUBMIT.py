@@ -328,10 +328,7 @@ def GetPreferredTrySlaves(project, change):
   only_objc_files = all(f.endswith(('.mm', '.m')) for f in affected_files)
   if only_objc_files:
     return ['mac_rel']
-  preferred = ['win_rel', 'linux_rel', 'mac_rel']
-  preferred = ['win_rel', 'linux_rel', 'mac_rel', 'linux_clang']
-  if any(f.endswith(('.h', '.cc', '.cpp', '.cxx')) for f in affected_files):
-    preferred.append('linux_clang')
+  preferred = ['win_rel', 'linux_rel', 'mac_rel', 'linux_clang:compile']
   aura_re = '_aura[^/]*[.][^/]*'
   if any(re.search(aura_re, f) for f in affected_files):
     preferred.append('linux_chromeos')
