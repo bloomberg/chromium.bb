@@ -278,6 +278,7 @@ void TestingAutomationProvider::OnBrowserAdded(const Browser* browser) {
 }
 
 void TestingAutomationProvider::OnBrowserRemoved(const Browser* browser) {
+#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
   // For backwards compatibility with the testing automation interface, we
   // want the automation provider (and hence the process) to go away when the
   // last browser goes away.
@@ -289,6 +290,7 @@ void TestingAutomationProvider::OnBrowserRemoved(const Browser* browser) {
         FROM_HERE,
         base::Bind(&TestingAutomationProvider::OnRemoveProvider, this));
   }
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
 }
 
 void TestingAutomationProvider::OnSourceProfilesLoaded() {
