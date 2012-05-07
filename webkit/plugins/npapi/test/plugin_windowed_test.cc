@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,8 @@ NPError WindowedPluginTest::SetWindow(NPWindow* pNPWindow) {
   }
 
   if ((test_name() == "create_instance_in_paint" && test_id() == "1") ||
-      test_name() == "alert_in_window_message") {
+      test_name() == "alert_in_window_message" ||
+      test_name() == "invoke_js_function_on_create") {
     static ATOM window_class = 0;
     if (!window_class) {
       WNDCLASSEX wcex;
@@ -133,6 +134,11 @@ LRESULT CALLBACK WindowedPluginTest::WindowProc(
       // and verify that we don't hang the browser.
       CallJSFunction(this_ptr, "CallAlert");
       CallJSFunction(this_ptr, "CallAlert");
+    } else if (this_ptr->test_name() ==
+                  "invoke_js_function_on_create" &&
+               message == WM_PAINT) {
+      this_ptr->done_ = true;
+      CallJSFunction(this_ptr, "PluginCreated");
     }
 
     if (this_ptr->done_) {

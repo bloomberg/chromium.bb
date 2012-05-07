@@ -1,18 +1,24 @@
 <html>
 <head>
 <script>
-var count = 0;
-function PluginCreated() {
-  count++;
-  document.title = count.toString();
+function onSuccess(name, id) {
+  setTimeout(onFinished, 0, name, id, "OK");
+}
+
+function onFailure(name, id, status) {
+  setTimeout(onFinished, 0, name, id, status);
+}
+
+function onFinished(name, id, result) {
+  var cookie = name + "." + id + ".status=" + result + "; path=/";
+  document.cookie = cookie;
 }
 
 var id = 1;
 function inject() {
   var child = document.createElement("div");
   child.innerHTML = '<embed type="application/vnd.npapi-test" src="foo" '+
-                           'name="invoke_js_function_on_create" ' +
-                           'id="' + id + '" mode="np_embed">';
+                           'name="setup" id="'+id+'" mode="np_embed">';
   document.getElementById("content").appendChild(child);
   id++;
 }

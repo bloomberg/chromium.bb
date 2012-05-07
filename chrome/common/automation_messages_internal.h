@@ -1423,7 +1423,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_WaitForAutocompleteEditFocu
                             bool /* success */)
 
 // Loads all blocked plug-ins on the page.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_LoadBlockedPlugins,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_LoadBlockedPlugins,
                             int /* tab handle */,
                             bool /* success */)
 

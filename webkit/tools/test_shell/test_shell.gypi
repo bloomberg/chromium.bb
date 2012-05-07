@@ -615,8 +615,6 @@
             '../../plugins/npapi/test/plugin_delete_plugin_in_deallocate_test.h',
             '../../plugins/npapi/test/plugin_delete_plugin_in_stream_test.cc',
             '../../plugins/npapi/test/plugin_delete_plugin_in_stream_test.h',
-            '../../plugins/npapi/test/plugin_execute_stream_javascript.cc',
-            '../../plugins/npapi/test/plugin_execute_stream_javascript.h',
             '../../plugins/npapi/test/plugin_get_javascript_url_test.cc',
             '../../plugins/npapi/test/plugin_get_javascript_url_test.h',
             '../../plugins/npapi/test/plugin_get_javascript_url2_test.cc',
@@ -681,6 +679,12 @@
                   '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
                 ],
               },
+            }],
+            ['os_posix == 1 and OS != "mac"', {
+              'sources!': [
+                # Needs simple event record type porting
+                '../../plugins/npapi/test/plugin_windowless_test.cc',
+              ],
             }],
             ['os_posix == 1 and OS != "mac" and (target_arch == "x64" or target_arch == "arm")', {
               # Shared libraries need -fPIC on x86-64

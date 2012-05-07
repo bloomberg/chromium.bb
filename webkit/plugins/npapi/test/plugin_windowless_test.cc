@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,9 +30,14 @@ static bool IsPaintEvent(NPEvent* np_event) {
   return WM_PAINT == np_event->event;
 #elif defined(OS_MACOSX)
   return np_event->what == updateEvt;
-#else
-  NOTIMPLEMENTED();
-  return false;
+#endif
+}
+
+static bool IsMouseMoveEvent(NPEvent* np_event) {
+#if defined(OS_WIN)
+  return WM_MOUSEMOVE == np_event->event;
+#elif defined(OS_MACOSX)
+  return np_event->what == nullEvent;
 #endif
 }
 
@@ -41,9 +46,6 @@ static bool IsMouseUpEvent(NPEvent* np_event) {
   return WM_LBUTTONUP == np_event->event;
 #elif defined(OS_MACOSX)
   return np_event->what == mouseUp;
-#else
-  NOTIMPLEMENTED();
-  return false;
 #endif
 }
 
@@ -57,20 +59,6 @@ bool WindowlessPluginTest::IsWindowless() const {
   return true;
 }
 
-NPError WindowlessPluginTest::New(uint16 mode, int16 argc,
-                                 const char* argn[], const char* argv[],
-                                 NPSavedData* saved) {
-  NPError error = PluginTest::New(mode, argc, argn, argv, saved);
-
-  if (test_name() == "invoke_js_function_on_create") {
-    ExecuteScript(
-        NPAPIClient::PluginClient::HostFunctions(), g_other_instance->id(),
-        "PluginCreated();", NULL);
-  }
-
-  return error;
-}
-
 int16 WindowlessPluginTest::HandleEvent(void* event) {
 
   NPNetscapeFuncs* browser = NPAPIClient::PluginClient::HostFunctions();
@@ -78,7 +66,7 @@ int16 WindowlessPluginTest::HandleEvent(void* event) {
   NPBool supports_windowless = 0;
   NPError result = browser->getvalue(id(), NPNVSupportsWindowless,
                                      &supports_windowless);
-  if ((result != NPERR_NO_ERROR) || (!supports_windowless)) {
+  if ((result != NPERR_NO_ERROR) || (supports_windowless != TRUE)) {
     SetError("Failed to read NPNVSupportsWindowless value");
     SignalTestCompleted();
     return PluginTest::HandleEvent(event);
