@@ -145,6 +145,7 @@ void ExtensionFunction::HandleBadMessage(base::ProcessHandle process) {
     // In single process mode it is better if we don't suicide but just crash.
     CHECK(false);
   } else {
+    NOTREACHED();
     content::RecordAction(UserMetricsAction("BadMessageTerminate_EFD"));
     if (process)
       base::KillProcess(process, content::RESULT_CODE_KILLED_BAD_MESSAGE,
