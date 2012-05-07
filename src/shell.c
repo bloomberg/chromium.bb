@@ -2154,7 +2154,7 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 {
 	struct shell_surface *shsurf = get_shell_surface(es);
 	struct desktop_shell *shell = shsurf->shell;
-	int type_changed;
+	int type_changed = 0;
 
 	if (shsurf->next_type != SHELL_SURFACE_NONE &&
 	    shsurf->type != shsurf->next_type) {
