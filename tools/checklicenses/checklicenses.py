@@ -261,6 +261,39 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    # The package has a compatible COPYING file and most source files conform,
+    # but there are several exceptions.
+    # TODO(posciak,fischman): remove this exception once upstream makes all
+    # their files conform.  https://bugs.freedesktop.org/show_bug.cgi?id=49588
+    # http://crbug.com/126466
+    'third_party/libva/va/va_x11.h': [
+        'UNKNOWN',
+    ],
+    'third_party/libva/va/va_android.h': [
+        'UNKNOWN',
+    ],
+    'third_party/libva/va/x11/va_dricommon.h': [
+        'UNKNOWN',
+    ],
+    'third_party/libva/va/x11/va_dri2tokens.h': [
+        'UNKNOWN',
+    ],
+    'third_party/libva/va/x11/va_dri2str.h': [
+        'UNKNOWN',
+    ],
+    'third_party/libva/va/x11/va_dri2.h': [
+        'UNKNOWN',
+    ],
+    'third_party/libva/va/va_egl.h': [
+        'UNKNOWN',
+    ],
+    'third_party/libva/va/egl/va_egl_impl.h': [
+        'UNKNOWN',
+    ],
+    'third_party/libva/va/egl/va_egl_private.h': [
+        'UNKNOWN',
+    ],
+
     'third_party/libvpx/source': [  # http://crbug.com/98319
         'UNKNOWN',
     ],
