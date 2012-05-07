@@ -11,7 +11,8 @@ label Chrome {
   M17 = 12.0,
   M19 = 12.1,
   M20_0 = 12.2,
-  M20_1 = 12.3
+  M20_1 = 12.3,
+  M20_2 = 12.4
 };
 
 [assert_size(4)]
@@ -167,6 +168,17 @@ interface PPB_Flash {
    */
   [version=12.3]
   int32_t GetSettingInt(PP_Instance instance, PP_FlashSetting setting);
+
+  /**
+   * Indicates whether simply killing the renderer as a means of "fast shutdown"
+   * is acceptable. The initial state is that fast shutdown is allowed. Used
+   * when the plugin has shutdown actions that depend on a live renderer to
+   * complete.
+   */
+  [version=12.4]
+  void SetAllowSuddenTermination(
+      [in] PP_Instance instance,
+      [in] PP_Bool allowed);
 };
 
 #inline c

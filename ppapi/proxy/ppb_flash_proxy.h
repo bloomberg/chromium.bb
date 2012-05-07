@@ -111,6 +111,8 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
                                      PP_Bool fullscreen) OVERRIDE;
   virtual PP_Bool FlashGetScreenSize(PP_Instance instance,
                                      PP_Size* size) OVERRIDE;
+  virtual void SetAllowSuddenTermination(PP_Instance instance,
+                                         PP_Bool allowed) OVERRIDE;
 
   static const ApiID kApiID = API_ID_PPB_FLASH;
 
@@ -142,6 +144,8 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
   void OnHostMsgFlashGetScreenSize(PP_Instance instance,
                                    PP_Bool* result,
                                    PP_Size* size);
+  void OnHostMsgFlashSetAllowSuddenTermination(PP_Instance instance,
+                                               PP_Bool allowed);
   void OnHostMsgIsClipboardFormatAvailable(PP_Instance instance,
                                            int clipboard_type,
                                            int format,

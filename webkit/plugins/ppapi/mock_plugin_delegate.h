@@ -27,6 +27,7 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void PluginCrashed(PluginInstance* instance);
   virtual void InstanceCreated(PluginInstance* instance);
   virtual void InstanceDeleted(PluginInstance* instance);
+  virtual void SetAllowSuddenTermination(bool allowed);
   virtual SkBitmap* GetSadPluginBitmap();
   virtual WebKit::WebPlugin* CreatePluginReplacement(const FilePath& file_path);
   virtual PlatformImage2D* CreateImage2D(int width, int height);

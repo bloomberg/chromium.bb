@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash.idl modified Tue May 01 16:01:19 2012. */
+/* From private/ppb_flash.idl modified Fri May  4 10:14:01 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_H_
@@ -25,7 +25,8 @@
 #define PPB_FLASH_INTERFACE_12_1 "PPB_Flash;12.1"
 #define PPB_FLASH_INTERFACE_12_2 "PPB_Flash;12.2"
 #define PPB_FLASH_INTERFACE_12_3 "PPB_Flash;12.3"
-#define PPB_FLASH_INTERFACE PPB_FLASH_INTERFACE_12_3
+#define PPB_FLASH_INTERFACE_12_4 "PPB_Flash;12.4"
+#define PPB_FLASH_INTERFACE PPB_FLASH_INTERFACE_12_4
 
 /**
  * @file
@@ -70,7 +71,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FlashSetting, 4);
  * The <code>PPB_Flash</code> interface contains pointers to various functions
  * that are only needed to support Pepper Flash.
  */
-struct PPB_Flash_12_3 {
+struct PPB_Flash_12_4 {
   /**
    * Sets or clears the rendering hint that the given plugin instance is always
    * on top of page content. Somewhat more optimized painting can be used in
@@ -162,9 +163,16 @@ struct PPB_Flash_12_3 {
    * result in -1 return value.
    */
   int32_t (*GetSettingInt)(PP_Instance instance, PP_FlashSetting setting);
+  /**
+   * Indicates whether simply killing the renderer as a means of "fast shutdown"
+   * is acceptable. The initial state is that fast shutdown is allowed. Used
+   * when the plugin has shutdown actions that depend on a live renderer to
+   * complete.
+   */
+  void (*SetAllowSuddenTermination)(PP_Instance instance, PP_Bool allowed);
 };
 
-typedef struct PPB_Flash_12_3 PPB_Flash;
+typedef struct PPB_Flash_12_4 PPB_Flash;
 
 struct PPB_Flash_12_0 {
   void (*SetInstanceAlwaysOnTop)(PP_Instance instance, PP_Bool on_top);
@@ -243,6 +251,35 @@ struct PPB_Flash_12_2 {
   int32_t (*InvokePrinting)(PP_Instance instance);
   void (*UpdateActivity)(PP_Instance instance);
   struct PP_Var (*GetDeviceID)(PP_Instance instance);
+};
+
+struct PPB_Flash_12_3 {
+  void (*SetInstanceAlwaysOnTop)(PP_Instance instance, PP_Bool on_top);
+  PP_Bool (*DrawGlyphs)(PP_Instance instance,
+                        PP_Resource pp_image_data,
+                        const struct PP_FontDescription_Dev* font_desc,
+                        uint32_t color,
+                        const struct PP_Point* position,
+                        const struct PP_Rect* clip,
+                        const float transformation[3][3],
+                        PP_Bool allow_subpixel_aa,
+                        uint32_t glyph_count,
+                        const uint16_t glyph_indices[],
+                        const struct PP_Point glyph_advances[]);
+  struct PP_Var (*GetProxyForURL)(PP_Instance instance, const char* url);
+  int32_t (*Navigate)(PP_Resource request_info,
+                      const char* target,
+                      PP_Bool from_user_action);
+  void (*RunMessageLoop)(PP_Instance instance);
+  void (*QuitMessageLoop)(PP_Instance instance);
+  double (*GetLocalTimeZoneOffset)(PP_Instance instance, PP_Time t);
+  struct PP_Var (*GetCommandLineArgs)(PP_Module module);
+  void (*PreloadFontWin)(const void* logfontw);
+  PP_Bool (*IsRectTopmost)(PP_Instance instance, const struct PP_Rect* rect);
+  int32_t (*InvokePrinting)(PP_Instance instance);
+  void (*UpdateActivity)(PP_Instance instance);
+  struct PP_Var (*GetDeviceID)(PP_Instance instance);
+  int32_t (*GetSettingInt)(PP_Instance instance, PP_FlashSetting setting);
 };
 /**
  * @}

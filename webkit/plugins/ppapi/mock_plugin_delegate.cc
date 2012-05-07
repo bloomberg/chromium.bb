@@ -46,6 +46,9 @@ void MockPluginDelegate::InstanceCreated(PluginInstance* instance) {
 void MockPluginDelegate::InstanceDeleted(PluginInstance* instance) {
 }
 
+void MockPluginDelegate::SetAllowSuddenTermination(bool allowed) {
+}
+
 SkBitmap* MockPluginDelegate::GetSadPluginBitmap() {
   return NULL;
 }

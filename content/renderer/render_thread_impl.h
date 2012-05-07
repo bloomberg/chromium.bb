@@ -200,6 +200,8 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   // not sent for at least one notification delay.
   void PostponeIdleNotification();
 
+  void SetAllowSuddenTermination(bool allowed);
+
  private:
   virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
 

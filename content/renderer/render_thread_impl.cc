@@ -697,6 +697,10 @@ void RenderThreadImpl::PostponeIdleNotification() {
   idle_notifications_to_skip_ = 2;
 }
 
+void RenderThreadImpl::SetAllowSuddenTermination(bool allowed) {
+  webkit_platform_support_->suddenTerminationChanged(allowed);
+}
+
 #if defined(OS_WIN)
 void RenderThreadImpl::PreCacheFont(const LOGFONT& log_font) {
   Send(new ChildProcessHostMsg_PreCacheFont(log_font));

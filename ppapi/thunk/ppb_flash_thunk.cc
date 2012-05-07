@@ -139,6 +139,14 @@ int32_t GetSettingInt(PP_Instance instance, PP_FlashSetting setting) {
   return enter.functions()->GetFlashAPI()->GetSettingInt(instance, setting);
 }
 
+void SetAllowSuddenTermination(PP_Instance instance, PP_Bool allowed) {
+  EnterInstance enter(instance);
+  if (enter.succeeded()) {
+    enter.functions()->GetFlashAPI()->SetAllowSuddenTermination(instance,
+                                                                allowed);
+  }
+}
+
 const PPB_Flash_12_0 g_ppb_flash_12_0_thunk = {
   &SetInstanceAlwaysOnTop,
   &DrawGlyphs,
@@ -199,6 +207,23 @@ const PPB_Flash_12_3 g_ppb_flash_12_3_thunk = {
   &GetSettingInt
 };
 
+const PPB_Flash_12_4 g_ppb_flash_12_4_thunk = {
+  &SetInstanceAlwaysOnTop,
+  &DrawGlyphs,
+  &GetProxyForURL,
+  &Navigate,
+  &RunMessageLoop,
+  &QuitMessageLoop,
+  &GetLocalTimeZoneOffset,
+  &GetCommandLineArgs,
+  &PreLoadFontWin,
+  &IsRectTopmost,
+  &InvokePrinting,
+  &UpdateActivity,
+  &GetDeviceID,
+  &GetSettingInt,
+  &SetAllowSuddenTermination
+};
 }  // namespace
 
 const PPB_Flash_12_0* GetPPB_Flash_12_0_Thunk() {
@@ -217,5 +242,8 @@ const PPB_Flash_12_3* GetPPB_Flash_12_3_Thunk() {
   return &g_ppb_flash_12_3_thunk;
 }
 
+const PPB_Flash_12_4* GetPPB_Flash_12_4_Thunk() {
+  return &g_ppb_flash_12_4_thunk;
+}
 }  // namespace thunk
 }  // namespace ppapi

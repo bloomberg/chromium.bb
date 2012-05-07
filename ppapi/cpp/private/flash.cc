@@ -24,6 +24,10 @@ namespace pp {
 
 namespace {
 
+template <> const char* interface_name<PPB_Flash_12_4>() {
+  return PPB_FLASH_INTERFACE_12_4;
+}
+
 template <> const char* interface_name<PPB_Flash_12_3>() {
   return PPB_FLASH_INTERFACE_12_3;
 }
@@ -57,7 +61,10 @@ PPB_Flash flash_12_combined_interface;
 void InitializeCombinedInterface() {
   if (initialized_combined_interface)
     return;
-  if (has_interface<PPB_Flash_12_3>()) {
+  if (has_interface<PPB_Flash_12_4>()) {
+    memcpy(&flash_12_combined_interface, get_interface<PPB_Flash_12_4>(),
+           sizeof(PPB_Flash_12_4));
+  } else if (has_interface<PPB_Flash_12_3>()) {
     memcpy(&flash_12_combined_interface, get_interface<PPB_Flash_12_3>(),
            sizeof(PPB_Flash_12_3));
   } else if (has_interface<PPB_Flash_12_2>()) {
@@ -79,7 +86,8 @@ namespace flash {
 
 // static
 bool Flash::IsAvailable() {
-  return has_interface<PPB_Flash_12_3>() ||
+  return has_interface<PPB_Flash_12_4>() ||
+         has_interface<PPB_Flash_12_3>() ||
          has_interface<PPB_Flash_12_2>() ||
          has_interface<PPB_Flash_12_1>() ||
          has_interface<PPB_Flash_12_0>() ||
@@ -230,6 +238,16 @@ int32_t Flash::GetSettingInt(const InstanceHandle& instance,
                                                      setting);
   }
   return -1;
+}
+
+// static
+void Flash::SetAllowSuddenTermination(const InstanceHandle& instance,
+                                      bool allowed) {
+  InitializeCombinedInterface();
+  if (flash_12_combined_interface.SetAllowSuddenTermination) {
+    flash_12_combined_interface.SetAllowSuddenTermination(
+        instance.pp_instance(), PP_FromBool(allowed));
+  }
 }
 
 // static

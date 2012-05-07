@@ -402,6 +402,8 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgFlashSetFullscreen)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_FlashGetScreenSize,
                         OnHostMsgFlashGetScreenSize)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_SetAllowSuddenTermination,
+                        OnHostMsgFlashSetAllowSuddenTermination)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_IsClipboardFormatAvailable,
                         OnHostMsgIsClipboardFormatAvailable)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_ReadClipboardData,
@@ -805,6 +807,12 @@ PP_Bool PPB_Flash_Proxy::FlashGetScreenSize(PP_Instance instance,
   return result;
 }
 
+void PPB_Flash_Proxy::SetAllowSuddenTermination(PP_Instance instance,
+                                                PP_Bool allowed) {
+  dispatcher()->Send(new PpapiHostMsg_PPBFlash_SetAllowSuddenTermination(
+      API_ID_PPB_FLASH, instance, allowed));
+}
+
 void PPB_Flash_Proxy::OnHostMsgSetInstanceAlwaysOnTop(PP_Instance instance,
                                                       PP_Bool on_top) {
   EnterInstanceNoLock enter(instance);
@@ -950,6 +958,15 @@ void PPB_Flash_Proxy::OnHostMsgFlashGetScreenSize(PP_Instance instance,
   } else {
     size->width = 0;
     size->height = 0;
+  }
+}
+
+void PPB_Flash_Proxy::OnHostMsgFlashSetAllowSuddenTermination(
+    PP_Instance instance, PP_Bool allowed) {
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded()) {
+    enter.functions()->GetFlashAPI()->SetAllowSuddenTermination(instance,
+                                                                allowed);
   }
 }
 
