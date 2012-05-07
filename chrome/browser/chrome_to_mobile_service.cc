@@ -121,7 +121,7 @@ GURL GetSubmitURL(const GURL& service_url,
 }
 
 // A callback to continue snapshot generation after creating the temp file.
-typedef base::Callback<void(FilePath path, bool success)>
+typedef base::Callback<void(const FilePath& path, bool success)>
     CreateSnapshotFileCallback;
 
 // Create a temp file and post the callback on the UI thread with the results.
@@ -164,7 +164,7 @@ void SubmitSnapshotFile(content::URLFetcher* request,
 
 // Delete the snapshot file; DCHECK, but really ignore the result of the delete.
 // Call this as a BlockingPoolSequencedTask [after posting SubmitSnapshotFile].
-void DeleteSnapshotFile(const FilePath snapshot) {
+void DeleteSnapshotFile(const FilePath& snapshot) {
   bool success = file_util::Delete(snapshot, false);
   DCHECK(success);
 }
@@ -325,7 +325,7 @@ void ChromeToMobileService::OnGetTokenFailure(
 
 void ChromeToMobileService::SnapshotFileCreated(
     base::WeakPtr<Observer> observer,
-    const FilePath path,
+    const FilePath& path,
     bool success) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // Track the set of temporary files to be deleted later.

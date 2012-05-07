@@ -137,7 +137,7 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Handle the attempted creation of a temporary file for snapshot generation.
   // Alert the observer of failure or generate MHTML with an observer callback.
   void SnapshotFileCreated(base::WeakPtr<Observer> observer,
-                           const FilePath path,
+                           const FilePath& path,
                            bool success);
 
   // Utility function to create URLFetcher requests.
