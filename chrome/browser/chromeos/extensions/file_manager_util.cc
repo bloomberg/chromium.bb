@@ -436,7 +436,9 @@ void OpenFileBrowser(const FilePath& path,
   if (FileManageTabExists(path, mode))
     return;
 
-  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  Browser* last_active = BrowserList::GetLastActive();
+  Profile* profile = last_active ? last_active->profile() :
+      ProfileManager::GetDefaultProfileOrOffTheRecord();
 
   std::string url = chrome::kChromeUIFileManagerURL;
   if (flag_name.size()) {
