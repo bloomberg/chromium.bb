@@ -12,8 +12,17 @@
 
   <property environment="env"/>
   <property name="sdk.dir" location="${env.ANDROID_SDK_ROOT}"/>
+  <property name="toolchain.dir" location="${env.ANDROID_TOOLCHAIN}"/>
   <property name="source.dir" location="java"/>
   <property name="target" value="android-14"/>
+  <property name="out.dir" location="${PRODUCT_DIR}/content_shell"/>
+  <property name="resource.absolute.dir" value="res"/>
+  <property name="gen.absolute.dir" value="${out.dir}/gen"/>
+  <property name="jar.libs.dir" value="${out.dir}/java/libs"/>
+  <path id="native.libs.gdbserver">
+    <fileset file="${toolchain.dir}/../../gdbserver"/>
+  </path>
+  <property name="native.libs.absolute.dir" location="${out.dir}/libs" />
 
   <!-- We expect PRODUCT_DIR to be set like the gyp var
        (e.g. $ROOT/out/Debug) -->
@@ -29,13 +38,25 @@
       </else>
     </if>
   </target>
-
-  <property name="out.dir" location="${PRODUCT_DIR}/content_shell"/>
-
-  <property name="resource.absolute.dir" value="res"/>
-  <property name="gen.absolute.dir" value="${out.dir}/gen"/>
-  <property name="jar.libs.dir" value="${out.dir}/java/libs"/>
-  <property name="native.libs.absolute.dir" location="${out.dir}/libs" />
+  
+  <target name="-post-compile">
+    <!-- copy gdbserver to main libs directory if building debug.
+      TODO(jrg): for now, Chrome on Android always builds native code
+      as Release and java/ant as Debug, which means we always install
+      gdbserver.  Resolve this discrepancy, possibly by making this
+      Release Official build java/ant as Release. -->
+    <if>
+      <condition>
+        <equals arg1="${build.target}" arg2="debug" />
+      </condition>
+      <then>
+        <echo message="Copying gdbserver to the apk to enable native debugging"/>
+        <copy todir="${out.dir}/libs/armeabi">
+          <path refid="native.libs.gdbserver"/>
+        </copy>
+      </then>
+    </if>
+  </target>
 
   <import file="${sdk.dir}/tools/ant/build.xml" />
 

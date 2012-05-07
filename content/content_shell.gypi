@@ -534,10 +534,16 @@
               'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
             },
             {
-              'action_name': 'copy_content_shell_content_view',
+              'action_name': 'copy_and_strip_so',
               'inputs': ['<(SHARED_LIB_DIR)/libcontent_shell_content_view.so'],
               'outputs': ['<(PRODUCT_DIR)/content_shell/libs/armeabi/libcontent_shell_content_view.so'],
-              'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
+              'action': [
+                '<!(/bin/echo -n $STRIP)',
+                '--strip-unneeded',  # All symbols not needed for relocation.
+                '<@(_inputs)',
+                '-o',
+                '<@(_outputs)' 
+              ],
             },
             {
               'action_name': 'content_shell_apk',
