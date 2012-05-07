@@ -769,8 +769,14 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
   missing_directories = owners_db.directories_not_covered_by(affected_files,
       reviewers_plus_owner)
   if missing_directories:
-    return [output('Missing %s for files in these directories:\n    %s%s' %
-                   (needed, '\n    '.join(missing_directories), message))]
+    output_list = [
+        output('Missing %s for files in these directories:\n    %s%s' %
+               (needed, '\n    '.join(missing_directories), message))]
+    if not input_api.is_committing:
+      suggested_owners = owners_db.reviewers_for(affected_files)
+      output_list.append(output('Suggested OWNERS:\n    %s' %
+                                ('\n    '.join(suggested_owners))))
+    return output_list
 
   if input_api.is_committing and not reviewers:
     return [output('Missing LGTM from someone other than %s' % owner_email)]

@@ -136,10 +136,10 @@ class OwnersDatabaseTest(unittest.TestCase):
 
   def test_reviewers_for__basic_functionality(self):
     self.assert_reviewers_for(['chrome/gpu/gpu_channel.h'],
-                             [ken, ben, brett, owners.EVERYONE])
+                             [brett])
 
   def test_reviewers_for__set_noparent_works(self):
-    self.assert_reviewers_for(['content/content.gyp'], [john, darin])
+    self.assert_reviewers_for(['content/content.gyp'], [darin])
 
   def test_reviewers_for__valid_inputs(self):
     db = self.db()

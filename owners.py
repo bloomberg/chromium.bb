@@ -165,15 +165,56 @@ class Database(object):
              'or an email address: "%s"' % line))
 
   def _covering_set_of_owners_for(self, files):
-    # TODO(dpranke): implement the greedy algorithm for covering sets, and
-    # consider returning multiple options in case there are several equally
-    # short combinations of owners.
-    every_owner = set()
+    # Get the set of directories from the files.
+    dirs = set()
     for f in files:
-      dirname = self.os_path.dirname(f)
+      dirs.add(self.os_path.dirname(f))
+
+    owned_dirs = {}
+    dir_owners = {}
+
+    for current_dir in dirs:
+      # Get the list of owners for each directory.
+      current_owners = set()
+      dirname = current_dir
       while dirname in self.owners_for:
-        every_owner |= self.owners_for[dirname]
+        for owner in self.owners_for[dirname]:
+          current_owners.add(owner)
         if self._stop_looking(dirname):
           break
         dirname = self.os_path.dirname(dirname)
-    return every_owner
+
+      # Map each directory to a list of its owners.
+      dir_owners[current_dir] = current_owners
+
+      # Add the directory to the list of each owner.
+      for owner in current_owners:
+        if not owner in owned_dirs:
+          owned_dirs[owner] = set()
+        owned_dirs[owner].add(current_dir)
+
+    final_owners = set()
+    while dirs:
+      # Find the owner that has the most directories.
+      max_count = 0
+      max_owner = None
+      owner_count = {}
+      for dirname in dirs:
+        for owner in dir_owners[dirname]:
+          count = owner_count.get(owner, 0) + 1
+          owner_count[owner] = count
+          if count >= max_count:
+            max_owner = owner
+
+      # If no more directories have OWNERS, we're done.
+      if not max_owner:
+        break
+
+      final_owners.add(max_owner)
+
+      # Remove all directories owned by the current owner from the remaining
+      # list.
+      for dirname in owned_dirs[max_owner]:
+        dirs.remove(dirname)
+
+    return final_owners

@@ -2229,6 +2229,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
       fake_db.directories_not_covered_by(set(['foo/xyz.cc']),
           people).AndReturn(uncovered_dirs)
+      if not is_committing and uncovered_dirs:
+        fake_db.reviewers_for(set(['foo/xyz.cc'])).AndReturn(owner_email)
 
     self.mox.ReplayAll()
     output = presubmit.PresubmitOutput()
