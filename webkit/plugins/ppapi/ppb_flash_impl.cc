@@ -232,11 +232,6 @@ PP_Bool PPB_Flash_Impl::IsRectTopmost(PP_Instance instance,
                 rect->size.width, rect->size.height)));
 }
 
-int32_t PPB_Flash_Impl::InvokePrinting(PP_Instance instance) {
-  // TODO(viettrungluu): Implement me.
-  return PP_ERROR_NOTSUPPORTED;
-}
-
 void PPB_Flash_Impl::UpdateActivity(PP_Instance pp_instance) {
   // Not supported in-process.
 }

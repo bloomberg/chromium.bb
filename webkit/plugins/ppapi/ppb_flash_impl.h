@@ -52,7 +52,6 @@ class PPB_Flash_Impl : public ::ppapi::PPB_Flash_Shared {
                                         PP_Time t) OVERRIDE;
   virtual PP_Bool IsRectTopmost(PP_Instance instance,
                                 const PP_Rect* rect) OVERRIDE;
-  virtual int32_t InvokePrinting(PP_Instance instance) OVERRIDE;
   virtual void UpdateActivity(PP_Instance instance) OVERRIDE;
   virtual PP_Var GetDeviceID(PP_Instance instance) OVERRIDE;
   virtual int32_t GetSettingInt(PP_Instance instance,

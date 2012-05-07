@@ -112,10 +112,8 @@ PP_Bool IsRectTopmost(PP_Instance instance, const PP_Rect* rect) {
 }
 
 int32_t InvokePrinting(PP_Instance instance) {
-  EnterInstance enter(instance);
-  if (enter.failed())
-    return PP_ERROR_BADARGUMENT;
-  return enter.functions()->GetFlashAPI()->InvokePrinting(instance);
+  // This function is no longer supported, use PPB_Flash_Print instead.
+  return PP_ERROR_NOTSUPPORTED;
 }
 
 void UpdateActivity(PP_Instance instance) {

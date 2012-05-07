@@ -1240,6 +1240,8 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlash_QueryFileRef,
                            ppapi::HostResource /* file_ref */,
                            PP_FileInfo /* info */,
                            int32_t /* result */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBFlash_InvokePrinting,
+                    PP_Instance /* instance */)
 
 // PPB_Flash_Menu
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlashMenu_Create,

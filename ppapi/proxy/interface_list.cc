@@ -55,6 +55,7 @@
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/c/private/ppb_flash_message_loop.h"
+#include "ppapi/c/private/ppb_flash_print.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/c/private/ppb_network_list_private.h"
@@ -207,6 +208,8 @@ InterfaceList::InterfaceList() {
          PPB_OpenGLES2_Shared::GetChromiumMapSubInterface());
   AddPPB(PPB_OPENGLES2_QUERY_INTERFACE_1_0, API_ID_NONE,
          PPB_OpenGLES2_Shared::GetQueryInterface());
+  AddPPB(PPB_FLASH_PRINT_INTERFACE_1_0, API_ID_PPB_FLASH,
+         PPB_Flash_Proxy::GetFlashPrintInterface());
 #endif
   AddPPB(PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0, API_ID_NONE,
          PPB_Var_Shared::GetVarArrayBufferInterface1_0());

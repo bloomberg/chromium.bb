@@ -20,6 +20,8 @@
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/ppb_flash_shared.h"
 
+struct PPB_Flash_Print_1_0;
+
 namespace ppapi {
 
 struct PPB_URLRequestInfo_Data;
@@ -34,6 +36,11 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
  public:
   explicit PPB_Flash_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Flash_Proxy();
+
+  // This flash proxy also proxies the PPB_Flash_Print interface. This one
+  // doesn't use the regular thunk system because the _impl side is actually in
+  // Chrome rather than with the rest of the interface implementations.
+  static const PPB_Flash_Print_1_0* GetFlashPrintInterface();
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -63,7 +70,6 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
                                         PP_Time t) OVERRIDE;
   virtual PP_Bool IsRectTopmost(PP_Instance instance,
                                 const PP_Rect* rect) OVERRIDE;
-  virtual int32_t InvokePrinting(PP_Instance instance) OVERRIDE;
   virtual void UpdateActivity(PP_Instance instance) OVERRIDE;
   virtual PP_Var GetDeviceID(PP_Instance instance) OVERRIDE;
   virtual int32_t GetSettingInt(PP_Instance instance,
@@ -193,6 +199,7 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
                              int32_t* result);
   void OnHostMsgGetDeviceID(PP_Instance instance,
                             SerializedVarReturnValue id);
+  void OnHostMsgInvokePrinting(PP_Instance instance);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Flash_Proxy);
 };

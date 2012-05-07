@@ -18,6 +18,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/c/private/ppb_flash_print.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
@@ -364,6 +365,18 @@ void ModuleLocalThreadAdapter::OnModuleLocalMessageFailedLocked(
   found->second->done_event->Signal();
 }
 
+void InvokePrinting(PP_Instance instance) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (dispatcher) {
+    dispatcher->Send(new PpapiHostMsg_PPBFlash_InvokePrinting(
+        API_ID_PPB_FLASH, instance));
+  }
+}
+
+const PPB_Flash_Print_1_0 g_flash_print_interface = {
+  &InvokePrinting
+};
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -373,6 +386,11 @@ PPB_Flash_Proxy::PPB_Flash_Proxy(Dispatcher* dispatcher)
 }
 
 PPB_Flash_Proxy::~PPB_Flash_Proxy() {
+}
+
+// static
+const PPB_Flash_Print_1_0* PPB_Flash_Proxy::GetFlashPrintInterface() {
+  return &g_flash_print_interface;
 }
 
 bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
@@ -428,6 +446,8 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgQueryFileRef)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetDeviceID,
                         OnHostMsgGetDeviceID)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_InvokePrinting,
+                        OnHostMsgInvokePrinting)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw) handle bad messages!
@@ -541,10 +561,6 @@ PP_Bool PPB_Flash_Proxy::IsRectTopmost(PP_Instance instance,
   dispatcher()->Send(new PpapiHostMsg_PPBFlash_IsRectTopmost(
       API_ID_PPB_FLASH, instance, *rect, &result));
   return result;
-}
-
-int32_t PPB_Flash_Proxy::InvokePrinting(PP_Instance instance) {
-  return PP_ERROR_NOTSUPPORTED;
 }
 
 void PPB_Flash_Proxy::UpdateActivity(PP_Instance instance) {
@@ -1168,6 +1184,16 @@ void PPB_Flash_Proxy::OnHostMsgGetDeviceID(PP_Instance instance,
   } else {
     id.Return(dispatcher(), PP_MakeUndefined());
   }
+}
+
+void PPB_Flash_Proxy::OnHostMsgInvokePrinting(PP_Instance instance) {
+  // This function is actually implemented in the PPB_Flash_Print interface.
+  // It's rarely used enough that we just request this interface when needed.
+  const PPB_Flash_Print_1_0* print_interface =
+      static_cast<const PPB_Flash_Print_1_0*>(
+          dispatcher()->local_get_interface()(PPB_FLASH_PRINT_INTERFACE_1_0));
+  if (print_interface)
+    print_interface->InvokePrinting(instance);
 }
 
 }  // namespace proxy
