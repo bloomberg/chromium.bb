@@ -311,6 +311,8 @@
       'tests/arch_dependent_sizes_32.h',
       'tests/arch_dependent_sizes_64.h',
       'tests/pp_thread.h',
+      'tests/test_audio.cc',
+      'tests/test_audio.h',
       'tests/test_audio_config.cc',
       'tests/test_audio_config.h',
       'tests/test_case.cc',
@@ -386,8 +388,6 @@
     #
     'test_trusted_source_files': [
       # Test cases (PLEASE KEEP THIS SECTION IN ALPHABETICAL ORDER)
-      'tests/test_audio.cc',
-      'tests/test_audio.h',
       'tests/test_broker.cc',
       'tests/test_broker.h',
       'tests/test_browser_font.cc',

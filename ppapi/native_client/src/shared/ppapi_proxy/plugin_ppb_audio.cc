@@ -174,6 +174,9 @@ PP_Resource Create(PP_Instance instance,
   DebugPrintf("PPB_Audio::Create: instance=%"NACL_PRId32" config=%"NACL_PRId32
               " user_callback=%p user_data=%p\n",
               instance, config, user_callback, user_data);
+  if (NULL == user_callback) {
+    return kInvalidResourceId;
+  }
   PP_Resource audio_resource;
   // Proxy to browser Create, get audio PP_Resource
   NaClSrpcError srpc_result = PpbAudioRpcClient::PPB_Audio_Create(
