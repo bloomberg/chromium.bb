@@ -114,6 +114,14 @@ message AppPackProto {
   repeated AppPackEntryProto app_pack = 1;
 }
 
+// This is a special policy for kiosk/retail mode that specifies what apps
+// should be pinned to the launcher. For regular accounts, pinned apps are
+// controlled through user policy.
+message PinnedAppsProto {
+  // App IDs for the apps to pin.
+  repeated string app_id = 1;
+}
+
 message ForcedLogoutTimeoutsProto {
   // All timeouts are specified in milliseconds.
 
@@ -201,4 +209,5 @@ message ChromeDeviceSettingsProto {
   optional ScreenSaverProto login_screen_saver = 16;
   optional AutoUpdateSettingsProto auto_update_settings = 17;
   optional StartUpUrlsProto start_up_urls = 18;
+  optional PinnedAppsProto pinned_apps = 19;
 }

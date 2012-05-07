@@ -89,7 +89,8 @@ class DevicePolicyCache : public CloudPolicyCacheBase {
       PolicyMap* policies);
   static void DecodeKioskPolicies(
       const enterprise_management::ChromeDeviceSettingsProto& policy,
-      PolicyMap* policies);
+      PolicyMap* policies,
+      EnterpriseInstallAttributes* install_attributes);
   static void DecodeNetworkPolicies(
       const enterprise_management::ChromeDeviceSettingsProto& policy,
       PolicyMap* policies,

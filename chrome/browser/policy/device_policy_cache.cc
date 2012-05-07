@@ -352,7 +352,7 @@ void DevicePolicyCache::DecodeDevicePolicy(
     PolicyMap* policies) {
   // Decode the various groups of policies.
   DecodeLoginPolicies(policy, policies);
-  DecodeKioskPolicies(policy, policies);
+  DecodeKioskPolicies(policy, policies, install_attributes_);
   DecodeNetworkPolicies(policy, policies, install_attributes_);
   DecodeReportingPolicies(policy, policies);
   DecodeGenericPolicies(policy, policies);
@@ -425,7 +425,12 @@ void DevicePolicyCache::DecodeLoginPolicies(
 // static
 void DevicePolicyCache::DecodeKioskPolicies(
     const em::ChromeDeviceSettingsProto& policy,
-    PolicyMap* policies) {
+    PolicyMap* policies,
+    EnterpriseInstallAttributes* install_attributes) {
+  // No policies if this is not KIOSK.
+  if (install_attributes->GetMode() != DEVICE_MODE_KIOSK)
+    return;
+
   if (policy.has_forced_logout_timeouts()) {
     const em::ForcedLogoutTimeoutsProto& container(
         policy.forced_logout_timeouts());
@@ -478,6 +483,18 @@ void DevicePolicyCache::DecodeKioskPolicies(
                   POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_MACHINE,
                   app_pack_list);
+  }
+
+  if (policy.has_pinned_apps()) {
+    const em::PinnedAppsProto& container(policy.pinned_apps());
+    base::ListValue* pinned_apps_list = new base::ListValue();
+    for (int i = 0; i < container.app_id_size(); ++i)
+      pinned_apps_list->Append(Value::CreateStringValue(container.app_id(i)));
+
+    policies->Set(key::kPinnedLauncherApps,
+                  POLICY_LEVEL_RECOMMENDED,
+                  POLICY_SCOPE_MACHINE,
+                  pinned_apps_list);
   }
 }
 
