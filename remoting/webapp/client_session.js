@@ -69,7 +69,10 @@ remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
   /** @type {function():void} @private */
   this.callPluginGotFocus_ = function() { that.pluginGotFocus_(); };
   /** @type {function():void} @private */
-  this.callEnableShrink_ = function() { that.setScaleToFit(true); };
+  this.callEnableShrink_ = function() {
+    that.setScaleToFit(true);
+    that.scroll_(0, 0);  // Reset bump-scroll offsets.
+  };
   /** @type {function():void} @private */
   this.callDisableShrink_ = function() { that.setScaleToFit(false); };
   /** @type {function():void} @private */
