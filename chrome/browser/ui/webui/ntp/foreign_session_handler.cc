@@ -197,6 +197,8 @@ void ForeignSessionHandler::HandleOpenForeignSession(const ListValue* args) {
   }
 
   SessionModelAssociator* associator = GetModelAssociator();
+  if (!associator)
+    return;
 
   Profile* profile = Profile::FromWebUI(web_ui());
   if (tab_id != kInvalidId) {
