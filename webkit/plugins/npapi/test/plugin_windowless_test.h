@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,8 @@ class WindowlessPluginTest : public PluginTest {
   virtual bool IsWindowless() const OVERRIDE;
 
   // NPAPI HandleEvent handler
+  virtual NPError New(uint16 mode, int16 argc, const char* argn[],
+                      const char* argv[], NPSavedData* saved) OVERRIDE;
   virtual int16 HandleEvent(void* event) OVERRIDE;
 
  protected:

@@ -633,15 +633,6 @@ bool TabProxy::OverrideEncoding(const std::string& encoding) {
   return succeeded;
 }
 
-bool TabProxy::LoadBlockedPlugins() {
-  if (!is_valid())
-    return false;
-
-  bool succeeded = false;
-  sender_->Send(new AutomationMsg_LoadBlockedPlugins(handle_, &succeeded));
-  return succeeded;
-}
-
 bool TabProxy::CaptureEntirePageAsPNG(const FilePath& path) {
   if (!is_valid())
     return false;

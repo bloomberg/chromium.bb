@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,16 +43,18 @@ PluginTest* CreatePluginTest(const std::string& test_name,
     new_test = new NPObjectIdentityTest(instance, host_functions);
   } else if (test_name == "npobject_proxy") {
     new_test = new NPObjectProxyTest(instance, host_functions);
+  } else if (test_name == "invoke_js_function_on_create"
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  // TODO(port): plugin_windowless_test.*.
-  } else if (test_name == "execute_script_delete_in_paint" ||
+          // TODO(port): plugin_windowless_test.*.
+          || test_name == "execute_script_delete_in_paint" ||
              test_name == "execute_script_delete_in_mouse_up" ||
              test_name == "delete_frame_test" ||
              test_name == "multiple_instances_sync_calls" ||
              test_name == "no_hang_if_init_crashes" ||
-             test_name == "convert_point") {
-    new_test = new WindowlessPluginTest(instance, host_functions);
+             test_name == "convert_point"
 #endif
+             ) {
+    new_test = new WindowlessPluginTest(instance, host_functions);
   } else if (test_name == "getjavascripturl") {
     new_test = new ExecuteGetJavascriptUrlTest(instance, host_functions);
   } else if (test_name == "getjavascripturl2") {
@@ -93,8 +95,7 @@ PluginTest* CreatePluginTest(const std::string& test_name,
   } else if (test_name == "hidden_plugin" ||
              test_name == "create_instance_in_paint" ||
              test_name == "alert_in_window_message" ||
-             test_name == "ensure_scripting_works_in_destroy" ||
-             test_name == "invoke_js_function_on_create") {
+             test_name == "ensure_scripting_works_in_destroy") {
     new_test = new WindowedPluginTest(instance, host_functions);
 #endif
   } else if (test_name == "setup") {

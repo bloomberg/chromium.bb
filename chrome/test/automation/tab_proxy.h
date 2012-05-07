@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -301,9 +301,6 @@ class TabProxy : public AutomationResourceProxy,
 
   // Uses the specified encoding to override encoding of the page in the tab.
   bool OverrideEncoding(const std::string& encoding) WARN_UNUSED_RESULT;
-
-  // Loads all blocked plug-ins on the page.
-  bool LoadBlockedPlugins() WARN_UNUSED_RESULT;
 
   // Captures the entire page and saves as a PNG at the given path. Returns
   // true on success.
