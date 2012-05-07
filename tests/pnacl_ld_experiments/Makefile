@@ -59,13 +59,15 @@ startup_newlib_dynamic.bc: startup_newlib_dynamic.c
 #       to run pnac/build.sh sdk
 prereqs:
 	cd ../../ ; ./scons bitcode=1 platform=x86-32 \
-          irt nacl_helper_bootstrap sel_ldr libnosys libnacl
+            irt nacl_helper_bootstrap sel_ldr libnosys libnacl
 
+######################################################################
 # bookends for shared libs
 S_INIT = crtbegin.bc $(PATH_CRT)/crti.bc $(PATH_CRT)/crtbeginS.bc
 
 S_FINI = crtend.bc
 
+######################################################################
 # NOTE: without -nostdlib a gratuitous libc dep is added
 libsimple.pso: $(S_INIT) fortytwo.bc $(S_FINI)
 	$(PNACL_CC) $(COMMON_FLAGS) -nostdlib -shared -fPIC \
@@ -75,10 +77,23 @@ libsimple.pso: $(S_INIT) fortytwo.bc $(S_FINI)
 libsimple.so: libsimple.pso
 	$(PNACL_TRANS) $(COMMON_FLAGS) -arch x86-32 -nostdlib -shared -fPIC -o $@ $^
 
+# build a shared version of libnosys from the bitcode archive
+mylibnosys.pso: $(S_INIT) $(S_FINI)
+	$(PNACL_CC) $(COMMON_FLAGS) -nostdlib -shared -fPIC \
+              $(S_INIT) \
+              -Wl,--whole-archive \
+              $(LIBPATH_SDK)/libnosys.a \
+              -Wl,--no-whole-archive \
+              $(S_FINI) \
+              -Wl,--soname=mylibnosys.so -o $@
+
+mylibnosys.so: mylibnosys.pso
+	$(PNACL_TRANS) $(COMMON_FLAGS) -arch x86-32 -nostdlib -shared -fPIC -o $@ $^
+
 # build a shared version of newlib from the bitcode archive
 # work around some hacks that introduced a common symbol in the
 # disabled malloc/free portions
-mylibc.pso: $(S_INIT)  $(S_FINI)
+mylibc.pso: $(S_INIT)  $(S_FINI) mylibnosys.pso
 	rm -rf /tmp/mylibc
 	mkdir -p /tmp/mylibc
 	cd /tmp/mylibc; \
@@ -98,7 +113,7 @@ mylibc.pso: $(S_INIT)  $(S_FINI)
 	rm /tmp/mylibc/lib_a-pvallocr.o
 	$(PNACL_CC) $(COMMON_FLAGS) -nostdlib -shared -fPIC \
               $(S_INIT) /tmp/mylibc/*.o  $(S_FINI) \
-        -Wl,--soname=mylibc.so -o $@
+              -Wl,--soname=mylibc.so -L . -l:mylibnosys.pso -o $@
 
 mylibc.so: mylibc.pso
 	$(PNACL_TRANS) $(COMMON_FLAGS) -arch x86-32 -nostdlib -shared -fPIC -o $@ $^
@@ -123,7 +138,7 @@ FINI = crtend.bc
 LIBS = -L $(LIBPATH_SHARED)  -l:ld-2.9.so  \
        -L . -l:libsimple.pso -l:keep_alive.x -l:mylibc.pso \
        -Wl,--start-group \
-       -L $(LIBPATH_SDK) -l:libnacl.a -l:libnosys.a \
+       -L $(LIBPATH_SDK) -l:libnacl.a \
        -Wl,--end-group
 
 
@@ -140,10 +155,10 @@ hello1.x86-32.nexe.dummy: hello1.bc $(INIT) $(FINI) libsimple.pso mylibc.pso
 # NOTE:
 MAGIC_OBJ = hello1.x86-32.nexe.dummy---linked.o
 LIBS2 = -L $(LIBPATH_SHARED)  -l:ld-2.9.so  \
-        -L . -l:libsimple.so -l:mylibc.so \
+        -L . -l:libsimple.so -l:mylibnosys.so -l:mylibc.so \
         -l:libgcc.a
 
-hello1.x86-32.nexe: libsimple.so mylibc.so
+hello1.x86-32.nexe: libsimple.so mylibc.so mylibnosys.so
 	$(PNACL_LD) $(COMMON_FLAGS) -arch x86-32 $(MAGIC_OBJ) $(LIBS2)  -o $@
 
 

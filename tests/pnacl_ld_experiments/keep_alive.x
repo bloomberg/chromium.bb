@@ -4,9 +4,10 @@
  * found in the LICENSE file.
  */
 
+/* for everything from libgcc_eh */
 EXTERN (__deregister_frame_info __register_frame_info mywrite )
 
-/* for mylibc */
+/* for mylibc from libnacl */
 EXTERN (
 _calloc_r
 _execve
@@ -14,42 +15,26 @@ _exit
 _free_r
 _malloc_r
 _realloc_r
+)
+
+/* for mylibc from libnacl */
+EXTERN (
+getpid
 close
 dup2
-fcntl
-fork
-forkfstat
 fstat
 getdents
-getlogin
-getpid
-getpwnam
-getpwuid
 gettimeofday
-getuid
-issetugid
-issetugid
-kill
-link
 lseek
-lstat
-mkdir
 nanosleep
 open
-pipe
 read
 sbrk
-sigprocmask
 stat
-times
-unlink
-vfork
-wait
-waitpid
 write
 )
 
-/* also for mylibc */
+/* also for mylibc from pthreads */
 EXTERN (
 __local_lock_acquire
 __local_lock_acquire_recursive
