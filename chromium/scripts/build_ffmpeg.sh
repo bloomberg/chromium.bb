@@ -109,6 +109,19 @@ if ld --version | grep -q gold; then
   exit 1
 fi
 
+# We want to use a sufficiently recent version of yasm on Windows.
+if [ "$TARGET_OS" == "win" ]; then
+  if !(which yasm 2>&1 > /dev/null); then
+    echo "Could not find yasm in \$PATH"
+    exit 1
+  fi
+
+  if (yasm --version | head -1 | grep -q "^yasm 0\."); then
+    echo "Must have yasm 1.0 or higher installed"
+    exit 1
+  fi
+fi
+
 # Returns the Dynamic Shared Object name given the module name and version.
 function dso_name { dso_name_${TARGET_OS} $1 $2; }
 function dso_name_win { echo "${1}-${2}.dll"; }
