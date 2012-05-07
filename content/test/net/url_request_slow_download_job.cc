@@ -184,6 +184,7 @@ void URLRequestSlowDownloadJob::CheckDoneStatus() {
     int bytes_written = 0;
     ReadStatus status = FillBufferHelper(buffer_, buffer_size_, &bytes_written);
     DCHECK_EQ(BUFFER_FILLED, status);
+    buffer_ = NULL;                     // Release the reference.
     SetStatus(net::URLRequestStatus());
     NotifyReadComplete(bytes_written);
   } else {
