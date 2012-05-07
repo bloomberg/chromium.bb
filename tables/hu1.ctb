@@ -101,7 +101,7 @@ always zzs 345-345	General need replacing zs letters with a combined dot combina
 prepunc " 236
 postpunc " 356
 always ( 2346
-always ) 1367
+always ) 1356
 prepunc \x00ab 236
 postpunc \x00bb 356
 prepunc \x2018 236
