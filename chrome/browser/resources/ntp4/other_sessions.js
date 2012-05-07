@@ -262,6 +262,9 @@ cr.define('ntp', function() {
       this.menu = menu;
       this.hideItem_ = this.appendMenuItem_('hideSessionMenuItemText');
       this.hideItem_.addEventListener('activate', this.onHide_.bind(this));
+      this.openAllItem_ = this.appendMenuItem_('restoreSessionMenuItemText');
+      this.openAllItem_.addEventListener('activate',
+                                         this.onOpenAll_.bind(this));
     },
 
     /**
@@ -285,6 +288,15 @@ cr.define('ntp', function() {
     onHide_: function(e) {
       chrome.send('deleteForeignSession', [this.sessionTag_]);
       chrome.send('getForeignSessions');  // Refresh the list.
+    },
+
+    /**
+     * Handler for the 'Open all' menu item.
+     * @param {Event} e The activation event.
+     * @private
+     */
+    onOpenAll_: function(e) {
+      chrome.send('openForeignSession', [this.sessionTag_]);
     },
 
     /**

@@ -9549,6 +9549,10 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_NEW_TAB_OTHER_SESSIONS_LEARN_MORE_URL" desc="URL of help center page explaining what the 'Other Sessions' menu is.">
         http://support.google.com/chrome/bin/answer.py?answer=185277&amp;hl=[GRITLANGCODE]
       </message>
+      <message name="IDS_NEW_TAB_OTHER_SESSIONS_OPEN_ALL"
+               desc="In the 'Other Sessions' menu on the New Tab Page, the label for the command to open all tabs and windows from a session.">
+        Open all
+      </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_NEW_TAB_OTR_MESSAGE_MOBILE"
                  desc="Mobile: Used when a person opens an OTR tab">

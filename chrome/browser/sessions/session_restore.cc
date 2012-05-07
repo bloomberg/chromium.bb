@@ -136,7 +136,7 @@ class TabLoader : public content::NotificationObserver,
   // NULL otherwise.
   static RenderWidgetHost* GetRenderWidgetHost(NavigationController* tab);
 
-  // Register for necessary notificaitons on a tab navigation controller.
+  // Register for necessary notifications on a tab navigation controller.
   void RegisterForNotifications(NavigationController* controller);
 
   // Called when a tab goes away or a load completes.
@@ -538,8 +538,11 @@ class SessionRestoreImpl : public content::NotificationObserver {
           (*i)->app_name);
 
       // Restore and show the browser.
-      const int initial_tab_count = browser->tab_count();
-      int selected_tab_index = (*i)->selected_tab_index;
+      const int initial_tab_count = 0;
+      int selected_tab_index = std::max(
+          0,
+          std::min((*i)->selected_tab_index,
+                   static_cast<int>((*i)->tabs.size()) - 1));
       RestoreTabsToBrowser(*(*i), browser, selected_tab_index);
       ShowBrowser(browser, initial_tab_count, selected_tab_index);
       tab_loader_->TabIsLoading(
@@ -832,15 +835,12 @@ class SessionRestoreImpl : public content::NotificationObserver {
                             int selected_tab_index) {
     DCHECK(!window.tabs.empty());
     int initial_tab_count = browser->tab_count();
-    for (std::vector<SessionTab*>::const_iterator i = window.tabs.begin();
-         i != window.tabs.end(); ++i) {
-      const SessionTab& tab = *(*i);
-      const int tab_index = static_cast<int>(i - window.tabs.begin()) +
-          initial_tab_count;
+    for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {
+      const SessionTab& tab = *(window.tabs[i]);
       // Don't schedule a load for the selected tab, as ShowBrowser() will
       // already have done that.
-      RestoreTab(tab, tab_index, browser,
-                 tab_index != (selected_tab_index + initial_tab_count));
+      bool schedule_load = i != selected_tab_index;
+      RestoreTab(tab, i + initial_tab_count, browser, schedule_load);
     }
   }
 

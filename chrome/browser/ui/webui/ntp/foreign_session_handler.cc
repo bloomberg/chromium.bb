@@ -160,12 +160,12 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
 
 void ForeignSessionHandler::HandleOpenForeignSession(const ListValue* args) {
   size_t num_args = args->GetSize();
-  // Expect either 2 or 8 args. For restoring an entire window, only
-  // two arguments are required -- the session tag and the window id.
-  // To restore a tab, the additional args required are the tab id,
+  // Expect either 1 or 8 args. For restoring an entire session, only
+  // one argument is required -- the session tag. To restore a tab,
+  // the additional args required are the window id, the tab id,
   // and 4 properties of the event object (button, altKey, ctrlKey,
   // metaKey, shiftKey) for determining how to open the tab.
-  if (num_args != 8U && num_args != 2U) {
+  if (num_args != 8U && num_args != 1U) {
     LOG(ERROR) << "openForeignSession called with " << args->GetSize()
                << " arguments.";
     return;
@@ -178,7 +178,7 @@ void ForeignSessionHandler::HandleOpenForeignSession(const ListValue* args) {
     return;
   }
 
-  // Extract window number (always provided).
+  // Extract window number.
   std::string window_num_str;
   int window_num = kInvalidId;
   if (num_args >= 2 && (!args->GetString(1, &window_num_str) ||

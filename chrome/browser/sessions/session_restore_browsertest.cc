@@ -427,6 +427,50 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
       new_browser->GetWebContentsAt(0)->GetController(), url1, url2);
 }
 
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
+  Profile* profile = browser()->profile();
+
+  GURL url1("http://google.com");
+  GURL url2("http://google2.com");
+  TabNavigation nav1(0, url1, content::Referrer(), ASCIIToUTF16("one"),
+        std::string(), content::PAGE_TRANSITION_TYPED);
+  TabNavigation nav2(0, url2, content::Referrer(), ASCIIToUTF16("two"),
+        std::string(), content::PAGE_TRANSITION_TYPED);
+
+  // Set up the restore data -- one window with two tabs.
+  std::vector<const SessionWindow*> session;
+  SessionWindow window;
+  SessionTab tab1;
+  tab1.tab_visual_index = 0;
+  tab1.current_navigation_index = 0;
+  tab1.pinned = true;
+  tab1.navigations.push_back(nav1);
+  window.tabs.push_back(&tab1);
+
+  SessionTab tab2;
+  tab2.tab_visual_index = 1;
+  tab2.current_navigation_index = 0;
+  tab2.pinned = false;
+  tab2.navigations.push_back(nav2);
+  window.tabs.push_back(&tab2);
+
+  session.push_back(static_cast<const SessionWindow*>(&window));
+  ui_test_utils::BrowserAddedObserver window_observer;
+  SessionRestore::RestoreForeignSessionWindows(
+      profile, session.begin(), session.end());
+  Browser* new_browser = window_observer.WaitForSingleNewBrowser();
+  ASSERT_TRUE(new_browser);
+  ASSERT_EQ(2u, BrowserList::size());
+  ASSERT_EQ(2, new_browser->tab_count());
+
+  ASSERT_EQ(url1, new_browser->GetWebContentsAt(0)->GetURL());
+  ASSERT_EQ(url2, new_browser->GetWebContentsAt(1)->GetURL());
+
+  // The SessionWindow destructor deletes the tabs, so we have to clear them
+  // here to avoid a crash.
+  window.tabs.clear();
+}
+
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, Basic) {
   ui_test_utils::NavigateToURL(browser(), url1_);
   ui_test_utils::NavigateToURL(browser(), url2_);

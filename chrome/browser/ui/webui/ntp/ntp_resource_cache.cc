@@ -385,6 +385,8 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetBoolean("showApps", NewTabUI::ShouldShowApps());
   load_time_data.SetString("hideSessionMenuItemText",
       l10n_util::GetStringUTF16(IDS_POLICY_HIDE));
+  load_time_data.SetString("restoreSessionMenuItemText",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_OPEN_ALL));
   load_time_data.SetString("learn_more",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
 
