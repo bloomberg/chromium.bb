@@ -794,11 +794,12 @@ bool AndroidProviderBackend::UpdateSearchTermTable() {
     string16 term = statement.ColumnString16(0);
     Time last_visit_time = Time::FromInternalValue(statement.ColumnInt64(1));
     SearchTermRow search_term_row;
-    if (history_db_->GetSearchTerm(term, &search_term_row) &&
-        search_term_row.last_visit_time != last_visit_time) {
-      search_term_row.last_visit_time = last_visit_time;
-      if (!history_db_->UpdateSearchTerm(search_term_row.id, search_term_row))
-        return false;
+    if (history_db_->GetSearchTerm(term, &search_term_row)) {
+      if (search_term_row.last_visit_time != last_visit_time) {
+        search_term_row.last_visit_time = last_visit_time;
+        if (!history_db_->UpdateSearchTerm(search_term_row.id, search_term_row))
+          return false;
+      }
     } else {
       if (!history_db_->AddSearchTerm(term, last_visit_time))
         return false;
