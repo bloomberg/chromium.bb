@@ -550,7 +550,7 @@ class ValidationPool(object):
     # First we filter to only Chromium OS repositories.
     changes = [c for c in changes if IsCrosReview(c)]
 
-    handler = cros_build_lib.ParseFullManifest(buildroot)
+    handler = cros_build_lib.ManifestCheckout.Cached(buildroot)
     projects = handler.projects
 
     changes_in_manifest = []

@@ -117,6 +117,7 @@ class LKGMCandidateInfoTest(mox.MoxTestBase):
     self.assertTrue(info4 > info3)
 
   def tearDown(self):
+    mox.MoxTestBase.tearDown(self)
     shutil.rmtree(self.tmpdir)
 
 
@@ -509,7 +510,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_lib, 'PrintBuildbotLink')
 
     fake_revision = '1234567890'
-    fake_project_handler = self.mox.CreateMock(cros_lib.ManifestHandler)
+    fake_project_handler = self.mox.CreateMock(cros_lib.Manifest)
     fake_project_handler.projects = { 'fake/repo': { 'name': 'fake/repo',
                                                      'path': 'fake/path',
                                                      'revision': fake_revision,
@@ -518,9 +519,9 @@ class LKGMManagerTest(mox.MoxTestBase):
     fake_result = self.mox.CreateMock(cros_lib.CommandResult)
     fake_result.output = fake_git_log
 
-    self.mox.StubOutWithMock(cros_lib.ManifestHandler, 'ParseManifest')
+    self.mox.StubOutWithMock(cros_lib, 'Manifest', use_mock_anything=True)
 
-    cros_lib.ManifestHandler.ParseManifest(
+    cros_lib.Manifest(
         self.tmpmandir + '/LKGM/lkgm.xml').AndReturn(fake_project_handler)
     os.path.exists(mox.StrContains('fake/path')).AndReturn(True)
     cros_lib.RunCommand(['git', 'log', '--pretty=full',
@@ -619,6 +620,7 @@ class LKGMManagerTest(mox.MoxTestBase):
 
 
   def tearDown(self):
+    mox.MoxTestBase.tearDown(self)
     if os.path.exists(self.tmpdir): shutil.rmtree(self.tmpdir)
     shutil.rmtree(self.tmpmandir)
 

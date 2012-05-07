@@ -19,17 +19,24 @@ import xml.sax
 import functools
 import contextlib
 
-# TODO(build, ferringb): Fix this.
+# TODO(build): Fix this.
 # This should be absolute import, but that requires fixing all
 # relative imports first.
-import signals
+_path = os.path.realpath(__file__)
+_path = os.path.normpath(os.path.join(os.path.dirname(_path), '..', '..'))
+sys.path.insert(0, _path)
+from chromite.lib import signals
+from chromite.buildbot import constants
+# Now restore it so that relative scripts don't get cranky.
+sys.path.pop(0)
+del _path
 
 STRICT_SUDO = False
 
 _STDOUT_IS_TTY = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
 YES = 'yes'
 NO = 'no'
-GERRIT_SSH_REMOTE = 'gerrit'
+EXTERNAL_GERRIT_SSH_REMOTE = 'gerrit'
 
 
 logger = logging.getLogger('chromite')
@@ -219,6 +226,7 @@ class _Popen(subprocess.Popen):
         raise
 
 
+#pylint: disable=W0622
 def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                redirect_stdout=False, redirect_stderr=False,
                cwd=None, input=None, enter_chroot=False, shell=False,
@@ -453,6 +461,7 @@ def Error(message, *args, **kwargs):
   logger.error(message, *args, **kwargs)
 
 
+#pylint: disable=W0622
 def Warning(message, *args, **kwargs):
   """Emits a warning message using the logging module."""
   logger.warn(message, *args, **kwargs)
@@ -600,8 +609,7 @@ def FindRepoCheckoutRoot(path=None):
 
 def IsProjectInternal(cwd, project):
   """Checks if project is internal."""
-  build_root = FindRepoCheckoutRoot(cwd)
-  handler = ParseFullManifest(build_root)
+  handler = ManifestCheckout.Cached(cwd)
   remote = handler.GetAttributeForProject(project, 'remote')
   if not remote:
     raise Exception('Project %s has no remotes specified in manifest!'
@@ -613,18 +621,6 @@ def IsProjectInternal(cwd, project):
   return remote == 'cros-internal'
 
 
-def DoesProjectExist(cwd, project):
-  """Returns whether the project exists in the repository.
-
-  Args:
-    cwd: a directory within a repo-managed checkout.
-    project: the name of the project
-  """
-  build_root = FindRepoCheckoutRoot(cwd)
-  handler = ParseFullManifest(build_root)
-  return project in handler.projects
-
-
 def GetProjectDir(cwd, project):
   """Returns the absolute path to a project.
 
@@ -632,21 +628,12 @@ def GetProjectDir(cwd, project):
     cwd: a directory within a repo-managed checkout.
     project: the name of the project to get the path for.
   """
-  build_root = FindRepoCheckoutRoot(cwd)
-  handler = ParseFullManifest(build_root)
-  return os.path.join(build_root, handler.projects[project]['path'])
+  return ManifestCheckout.Cached(cwd).GetProjectPath(project, True)
 
 
 def IsDirectoryAGitRepoRoot(cwd):
   """Checks if there's a git repo rooted at a directory."""
   return os.path.isdir(os.path.join(cwd, '.git'))
-
-
-def IsProjectManagedByRepo(cwd):
-  """Checks if the git repo rooted at a directory is managed by 'repo'"""
-  repo_dir = os.path.realpath(FindRepoDir(cwd))
-  git_object_dir = os.path.realpath(os.path.join(cwd, '.git/objects'))
-  return git_object_dir.startswith(repo_dir)
 
 
 def ReinterpretPathForChroot(path):
@@ -675,9 +662,7 @@ def GetGitRepoRevision(cwd, branch='HEAD'):
 
   Defaults to current branch.
   """
-  result = RunCommand(['git', 'rev-parse', branch], cwd=cwd,
-                      redirect_stdout=True)
-  return result.output.strip()
+  return RunGitCommand(cwd, ['rev-parse', branch]).output.strip()
 
 
 def DoesCommitExistInRepo(cwd, commit_hash):
@@ -687,9 +672,8 @@ def DoesCommitExistInRepo(cwd, commit_hash):
     cwd: A directory within the project repo.
     commit_hash: The hash of the commit object to look for.
   """
-  result = RunCommand(['git', 'log', '-n1', commit_hash], error_code_ok=True,
-                      cwd=cwd)
-  return result.returncode == 0
+  return 0 == RunGitCommand(cwd, ['rev-list', '-n1', commit_hash],
+      error_code_ok=True).returncode
 
 
 def DoesLocalBranchExist(repo_dir, branch):
@@ -699,30 +683,35 @@ def DoesLocalBranchExist(repo_dir, branch):
     repo_dir: Directory of the git repository to check.
     branch: The name of the branch to test for.
   """
-  return branch in os.listdir(os.path.join(repo_dir, '.git/refs/heads'))
+  return os.path.isfile(
+      os.path.join(repo_dir, '.git/refs/heads',
+                   branch.lstrip('/')))
 
 
 def GetCurrentBranch(cwd):
   """Returns current branch of a repo, and None if repo is on detached HEAD."""
   try:
-    current_branch = RunCommand(['git', 'symbolic-ref', '-q', 'HEAD'], cwd=cwd,
-                                redirect_stdout=True,
-                                print_cmd=False).output.strip()
-    current_branch = current_branch.replace('refs/heads/', '')
-  except RunCommandError:
+    ret = RunGitCommand(cwd, ['symbolic-ref', '-q', 'HEAD'])
+    return StripLeadingRefsHeads(ret.output.strip(), False)
+  except RunCommandError, e:
+    if e.result.returncode != 1:
+      raise
     return None
-  return current_branch
 
 
-def StripLeadingRefsHeads(ref):
-  """Remove leading 'refs/heads' from a ref name."""
-  if not ref.startswith('refs/heads/'):
+def StripLeadingRefsHeads(ref, strict=True):
+  """Remove leading 'refs/heads/' from a ref name.
+
+  If strict is True, an Exception is thrown if the ref doesn't start with
+  refs/heads.  If strict is False, the original ref is returned.
+  """
+  if not ref.startswith('refs/heads/') and strict:
     raise Exception('Ref name %s does not start with refs/heads/' % ref)
 
   return ref.replace('refs/heads/', '')
 
 
-class ManifestHandler(xml.sax.handler.ContentHandler):
+class Manifest(object):
   """SAX handler that parses the manifest document.
 
   Properties:
@@ -730,190 +719,469 @@ class ManifestHandler(xml.sax.handler.ContentHandler):
     projects: a dictionary keyed by project name containing the attributes of
               each <project> tag.
   """
-  def __init__(self):
+
+  _instance_cache = {}
+
+  def __init__(self, source):
+    """Initialize this instance.
+
+    Args:
+      source: The path to the manifest to parse.  May be a file handle.
+    """
+
     self.default = None
     self.projects = {}
+    self.remotes = {}
+    self._RunParser(source)
 
-  @classmethod
-  def ParseManifest(cls, manifest_path):
-    """Returns a handler with the parsed results of the manifest."""
+  def _RunParser(self, source):
     parser = xml.sax.make_parser()
-    handler = cls()
+    handler = xml.sax.handler.ContentHandler()
+    handler.startElement = self._ProcessElement
     parser.setContentHandler(handler)
-    parser.parse(manifest_path)
-    return handler
+    parser.parse(source)
+    # Rewrite projects mixing defaults in and adding our attributes.
+    for data in self.projects.itervalues():
+      self._FinalizeProjectData(data)
 
-  def startElement(self, name, attributes):
+  def _ProcessElement(self, name, attrs):
     """Stores the default manifest properties and per-project overrides."""
+    attrs = dict(attrs.items())
     if name == 'default':
-      self.default = attributes
-    if name == 'project':
-      self.projects[attributes['name']] = attributes
+      self.default = attrs
+    elif name == 'remote':
+      self.remotes[attrs['name']] = attrs
+    elif name == 'project':
+      self.projects[attrs['name']] = attrs
+
+  def ProjectExists(self, project):
+    """Returns True if a project is in this manifest."""
+    return os.path.normpath(project) in self.projects
+
+  def GetProjectPath(self, project):
+    """Returns the relative path for a project.
+
+    Raises:
+      KeyError if the project isn't known."""
+    return self.projects[os.path.normpath(project)]['path']
+
+  def _FinalizeProjectData(self, attrs):
+    for key in ('remote', 'revision'):
+      attrs.setdefault(key, self.default.get(key))
+
+    remote = attrs['remote']
+    assert remote in self.remotes
+
+    local_rev = rev = attrs['revision']
+    if rev.startswith('refs/heads/'):
+      local_rev = 'refs/remotes/%s/%s' % (remote, StripLeadingRefsHeads(rev))
+
+    attrs['local_revision'] = local_rev
+
+    internal = False
+    if remote == 'cros':
+      attrs['push_remote'] = EXTERNAL_GERRIT_SSH_REMOTE
+      attrs['push_remote_url'] = constants.GERRIT_SSH_URL
+      if rev.startswith('refs/heads/'):
+        attrs['push_remote_local'] = 'refs/remotes/%s/%s' % (
+            EXTERNAL_GERRIT_SSH_REMOTE, StripLeadingRefsHeads(rev))
+      else:
+        attrs['push_remote_local'] = rev
+    elif remote == 'cros-internal':
+      # For cros-internal, it's already accessing gerrit directly; thus
+      # just use that.
+      attrs['push_remote'] = attrs['remote']
+      attrs['push_remote_url'] = constants.GERRIT_INT_SSH_URL
+      attrs['push_remote_local'] = attrs['local_revision']
+      internal = True
+
+    attrs['push_url'] = '%s/%s' % (attrs['push_remote_url'], attrs['name'])
+    attrs['internal'] = internal
+
+    # Compute the local ref space.
+    # Sanitize a couple path fragments to simplify assumptions in this
+    # class, and in consuming code.
+    attrs.setdefault('path', attrs['name'])
+    for key in ('name', 'path'):
+      attrs[key] = os.path.normpath(attrs[key])
 
   def GetAttributeForProject(self, project, attribute):
     """Gets an attribute for a project, falling back to defaults if needed."""
-    return self.projects[project].get(attribute, self.default.get(attribute))
+    return self.projects[project].get(attribute)
+
+  def GetRevisionForProject(self, project):
+    """Returns the upstream defined revspec for a project."""
+    return self.GetAttributeForProject(project, 'local_revision')
+
+  @staticmethod
+  def _GetManifestHash(source):
+    if isinstance(source, basestring):
+      with open(source, 'rb') as f:
+        # pylint: disable=E1101
+        return hashlib.md5(f.read()).hexdigest()
+    source.seek(0)
+    # pylint: disable=E1101
+    md5 = hashlib.md5(source.read()).hexdigest()
+    source.seek(0)
+    return md5
+
+  @classmethod
+  def Cached(cls, source):
+    """Return an instance, reusing an existing one if possible.
+
+    May be a seekable filehandle, or a filepath."""
+
+    md5 = cls._GetManifestHash(source)
+
+    obj = cls._instance_cache.get(md5)
+    if obj is None:
+      obj = cls._instance_cache[md5] = cls(source)
+    return obj
 
 
-# We cache these results mainly since our calling patterns are fairly
-# inefficient about holding onto previously parsed manifest instances.
-# Longer term, this should be removed.
-_MANIFEST_CACHE = {}
-def ParseFullManifest(buildroot):
-  """Parse the full manifest for the specified buildroot.
+class ManifestCheckout(Manifest):
+  """A Manifest Handler for a specific manifest checkout."""
+
+  _instance_cache = {}
+
+  # pylint: disable=W0221
+  def __init__(self, path, manifest_path=None):
+    """Initialize this instance.
+
+    Args:
+      path: Path into a manifest checkout (doesn't have to be the root).
+      manifest_path: If supplied, the manifest to use.  Else the manifest
+        in the root of the checkout is used.  May be a seekable file handle.
+    """
+    self.root, manifest_path = self._NormalizeArgs(path, manifest_path)
+    self.manifest_branch = self._GetManifestsBranch(self.root)
+    self.default_branch = 'refs/remotes/m/%s' % self.manifest_branch
+    Manifest.__init__(self, manifest_path)
+
+  @staticmethod
+  def _NormalizeArgs(path, manifest_path=None):
+    root = FindRepoCheckoutRoot(path)
+    if root is None:
+      raise OSError(errno.ENOENT, "Couldn't find repo root: %s" % (path,))
+    root = os.path.normpath(os.path.realpath(root))
+    if manifest_path is None:
+      manifest_path = os.path.join(root, '.repo', 'manifest.xml')
+    return root, manifest_path
+
+  def FindProjectFromPath(self, path):
+    """Find the associated projects for a given pathway.
+
+    The pathway can either be to the root of a project, or within the
+    project itself (chromite/buildbot for example).  It may be relative
+    to the repo root, or an absolute path.  If it is absolute path,
+    it's the callers responsibility to ensure the pathway intersects
+    the root of the checkout.
+
+    Returns:
+      None if no project is found, else the project."""
+    # Realpath everything sans the target to keep people happy about
+    # how symlinks are handled; exempt the final node since following
+    # through that is unlikely even remotely desired.
+    tmp = os.path.join(self.root, os.path.dirname(path))
+    path = os.path.join(os.path.realpath(tmp), os.path.basename(path))
+    path = os.path.normpath(path) + '/'
+    candidates = [(x['path'], name) for name, x in self.projects.iteritems()
+                  if path.startswith(x['local_path'] + '/')]
+    if not candidates:
+      return None
+    # That which has the greatest common path prefix is the owner of
+    # the given pathway, thus we return that.
+    return sorted(candidates)[-1][1]
+
+  def _FinalizeProjectData(self, attrs):
+    Manifest._FinalizeProjectData(self, attrs)
+    attrs['local_path'] = os.path.join(self.root, attrs['path'])
+    attrs['tracking_branch'] = self.default_branch
+
+  def GetRevisionForProject(self, project):
+    """Returns the upstream defined revspec for a project."""
+    return self.GetAttributeForProject(project, 'tracking_branch')
+
+  @staticmethod
+  def _GetManifestsBranch(root):
+    """Get the tracking branch of the manifest repository.
+
+    Returns:
+      The branch name.
+    """
+    # Suppress the normal "if it ain't refs/heads, we don't want none o' that"
+    # check for the merge target; repo writes the ambigious form of the branch
+    # target for `repo init -u url -b some-branch` usages (aka, 'master'
+    # instead of 'refs/heads/master').
+    _remote, branch = GetTrackingBranchViaGitConfig(
+        os.path.join(root, '.repo', 'manifests'), 'default',
+        allow_broken_merge_settings=True, for_checkout=False)
+    return StripLeadingRefsHeads(branch, False)
+
+  def GetProjectPath(self, project, absolute=False):
+    """Returns the path for a project.
+
+    Args:
+      project: Project to get the path for.
+      absolute:  If True, return an absolute pathway.  If False,
+        relative pathway.
+
+    Raises:
+      KeyError if the project isn't known."""
+    path = Manifest.GetProjectPath(self, project)
+    if absolute:
+      return os.path.join(self.root, path)
+    return path
+
+  # pylint: disable=W0221
+  @classmethod
+  def Cached(cls, path, manifest_path=None):
+    """Return an instance, reusing an existing one if possible.
+
+    Args:
+      path: The pathway into a checkout; the root will be found automatically.
+      manifest_path: if given, the manifest.xml to use instead of the
+        checkouts internal manifest.  Use with care.
+    """
+    root, manifest_path = cls._NormalizeArgs(path, manifest_path)
+
+    md5 = cls._GetManifestHash(manifest_path)
+
+    obj = cls._instance_cache.get((root, md5))
+    if obj is None:
+      obj = cls._instance_cache[(root, md5)] = cls(root, manifest_path)
+    return obj
+
+
+def RunGitCommand(git_repo, cmd, **kwds):
+  """RunCommandCaptureOutput wrapper for git commands.
+
+  This suppresses print_cmd, and suppresses output by default.  Git
+  functionality w/in this module should use this unless otherwise
+  warranted, to standardize git output (primarily, keeping it quiet
+  and being able to throw useful errors for it).
 
   Args:
-    buildroot: The root directory of the repo-managed checkout.
-
+    git_repo: Pathway to the git repo to operate on.
+    cmd: A sequence of the git subcommand to run.  The 'git' prefix is
+      added automatically.  If you wished to run 'git remote update',
+      this would be ['remote', 'update'] for example.
+    kwds: Any RunCommand options/overrides to use.
   Returns:
-    A ManifestHandler object, pointing at the full manifest.
-  """
-  manifest_path = os.path.join(buildroot, '.repo', 'manifests/full.xml')
-  with open(manifest_path, 'rb') as f:
-    md5 = hashlib.md5(f.read()).hexdigest()
-
-  obj = _MANIFEST_CACHE.get(md5)
-  if obj is None:
-    obj = _MANIFEST_CACHE[md5] = ManifestHandler.ParseManifest(manifest_path)
-
-  return obj
+    A CommandResult object."""
+  kwds.setdefault('print_cmd', False)
+  Debug("RunGitCommand(%r, %r, **%r)", git_repo, cmd, kwds)
+  return RunCommandCaptureOutput(['git'] + cmd, cwd=git_repo, **kwds)
 
 
-def GetProjectManifestBranch(buildroot, project):
-  """Return the branch specified in the manifest for a project.
-
-  Args:
-    buildroot: The root directory of the repo-managed checkout.
-    project: The name of the project.
-
-  Returns:
-    A tuple of the remote and ref name specified in the manifest - i.e.,
-    ('cros', 'refs/heads/master').
-  """
-  handler = ParseFullManifest(buildroot)
-  return tuple(handler.GetAttributeForProject(project, key)
-               for key in ['remote', 'revision'])
-
-
-def GetProjectUserEmail(cwd, quiet=False):
+def GetProjectUserEmail(git_repo):
   """Get the email configured for the project ."""
-  output = RunCommand(['git', 'var', 'GIT_COMMITTER_IDENT'],
-                      redirect_stdout=True, print_cmd=(not quiet),
-                      cwd=cwd).output.strip()
-  m = re.search('<([^>]*)>', output)
+  output = RunGitCommand(git_repo, ['var', 'GIT_COMMITTER_IDENT']).output
+  m = re.search('<([^>]*)>', output.strip())
   return m.group(1) if m else None
 
 
+def GetTrackingBranchViaGitConfig(git_repo, branch, for_checkout=True,
+                                  allow_broken_merge_settings=False):
+  """Pull the remote and upstream branch of a local branch
 
-def GetManifestDefaultBranch(cwd):
-  """Gets the manifest checkout branch from the manifest."""
-  manifest = RunCommand(['repo', 'manifest', '-o', '-'], print_cmd=False,
-                        redirect_stdout=True, cwd=cwd).output
-  m = re.search(r'<default[^>]*revision="(refs/heads/[^"]*)"', manifest)
-  assert m, "Can't find default revision in manifest"
-  ref = m.group(1)
-  return StripLeadingRefsHeads(ref)
-
-
-class NoTrackingBranchException(Exception):
-  """Raised by GetTrackingBranch."""
-  pass
-
-
-def GetTrackingBranch(branch, cwd):
-  """Get the tracking branch of a branch.
+  Args:
+    git_repo: The git repository to operate upon.
+    branch: The branch to inspect.
+    for_checkout: Whether to return localized refspecs, or the remote's
+      view of it.
+    allow_broken_merge_settings: Repo in a couple of spots writes invalid
+      branch.mybranch.merge settings; if these are encountered, they're
+      normally treated as an error and this function returns None.  If
+      this option is set to True, it suppresses this check.
 
   Returns:
-    A tuple of the remote and the ref name of the tracking branch.
-
-  Raises:
-    NoTrackingBranchException if the passed in branch is not tracking anything.
+    A tuple of the remote and the ref name of the tracking branch, or
+    None if it couldn't be found.
   """
-  KEY_NOT_FOUND_ERROR_CODE = 1
-  info = {}
   try:
-    for key in ('remote', 'merge'):
-      cmd = ['git', 'config', 'branch.%s.%s' % (branch, key)]
-      info[key] = RunCommand(cmd, redirect_stdout=True, cwd=cwd).output.strip()
+    cmd = ['config', '--get-regexp',
+           r'branch\.%s\.(remote|merge)' % re.escape(branch)]
+    data = RunGitCommand(git_repo, cmd).output.splitlines()
+
+    if len(data) != 2:
+      return None
+
+    # Remember, m comes before r; we want remote, then branch.
+    remote, rev = [x.split(' ', 1)[1] for x in sorted(data, reverse=True)]
+    # Suppress non branches; repo likes to write revisions and tags here,
+    # which is wrong (git hates it, nor will it honor it).
+    if rev.startswith('refs/remotes/'):
+      if for_checkout:
+        return remote, rev
+      # We can't backtrack from here, or at least don't want to.
+      # This is likely refs/remotes/m/ which repo writes when dealing
+      # with a revision locked manifest.
+      return None
+    if not rev.startswith('refs/heads/'):
+      # We explicitly don't allow pushing to tags, nor can one push
+      # to a sha1 remotely (makes no sense).
+      if not allow_broken_merge_settings:
+        return None
+    elif for_checkout:
+      rev = 'refs/remotes/%s/%s' % (remote, StripLeadingRefsHeads(rev))
+    return remote, rev
   except RunCommandError as e:
-    if e.result.returncode == KEY_NOT_FOUND_ERROR_CODE:
-      raise NoTrackingBranchException()
+    # 1 is the retcode for no matches.
+    if e.result.returncode != 1:
+      raise
+  return None
+
+
+def GetTrackingBranchViaManifest(git_repo, for_checkout=True, for_push=False,
+                                 manifest=None):
+  """Gets the appropriate push branch via the manifest if possible.
+
+  Args:
+    git_repo: The git repo to operate upon.
+    for_checkout: Whether to return localized refspecs, or the remote's
+      view of it.  Note that depending on the remote, the remote may differ
+      if for_push is True or set to False.
+    for_push: Controls whether the remote and refspec returned is explicitly
+      for pushing.
+    manifest: A Manifest instance if one is available, else a
+      ManifestCheckout is created and used.
+
+  Returns:
+    A tuple of a git target repo and the remote ref to push to, or
+    None if it couldnt be found.  If for_checkout, then it returns
+    the localized version of it.
+  """
+  try:
+    if manifest is None:
+      manifest = ManifestCheckout.Cached(git_repo)
+    project = manifest.FindProjectFromPath(git_repo)
+    if project is None:
+      return None
+
+    data = manifest.projects[project]
+    if for_push:
+      remote = data.get('push_remote', EXTERNAL_GERRIT_SSH_REMOTE)
     else:
-      raise e
+      remote = data['remote']
 
-  return info['remote'], info['merge']
+    if for_checkout:
+      revision = (data['push_remote_local'] if for_push
+                  else data['local_revision'])
+    else:
+      revision = data['revision']
+      if not revision.startswith("refs/heads/"):
+        return None
+
+    return remote, revision
+  except EnvironmentError, e:
+    if e.errno != errno.ENOENT:
+      raise
+  return None
 
 
-def GetPushBranch(cwd):
+def GetTrackingBranch(git_repo, branch=None, for_checkout=True, fallback=True,
+                      manifest=None, for_push=False):
   """Gets the appropriate push branch for the specified directory.
 
   This function works on both repo projects and regular git checkouts.
 
   Assumptions:
-   1. For repo checkouts, we assume that the gerrit remote is already set up.
-      For cbuildbot checkouts, the sync stage sets up the gerrit remote.
-   2. For non-repo checkouts, we assume that you have checked out from
-      origin/master.
+   1. We assume the manifest defined upstream is desirable.
+   2. No manifest?  Assume tracking if configured is accurate.
+   3. If none of the above apply, you get 'origin', 'master' or None,
+      depending on fallback.
 
   Args:
-    cwd: Directory to look in.
+    git_repo: Git repository to operate upon.
+    for_checkout: Whether to return localized refspecs, or the remotes
+      view of it.
+    fallback: If true and no remote/branch could be discerned, return
+      'origin', 'master'.  If False, you get None.
+      Note that depending on the remote, the remote may differ
+      if for_push is True or set to False.
+    for_push: Controls whether the remote and refspec returned is explicitly
+      for pushing.
+    manifest: A Manifest instance if one is available, else a
+      ManifestCheckout is created and used.
+
+  Returns:
+    A tuple of a git target repo and the remote ref to push to.
   """
-  try:
-    # For valid repo projects, we push to the 'gerrit' remote which uses SSH.
-    output = RunCommand(['repo', 'forall', '.', '-c', 'echo $REPO_PROJECT'],
-                        print_cmd=False, redirect_stdout=True,
-                        redirect_stderr=True, cwd=cwd).output
-  except RunCommandError:
-    # For other repositories, we push to origin/master.
-    return 'origin', 'master'
 
-  repo_root = FindRepoCheckoutRoot(cwd)
-  remote_branch = GetProjectManifestBranch(repo_root, output.rstrip())[1]
-  return GERRIT_SSH_REMOTE, StripLeadingRefsHeads(remote_branch)
+  result = GetTrackingBranchViaManifest(git_repo, for_checkout=for_checkout,
+                                        manifest=manifest, for_push=for_push)
+  if result is not None:
+    return result
+
+  if branch is None:
+    branch = GetCurrentBranch(git_repo)
+  if branch:
+    result = GetTrackingBranchViaGitConfig(git_repo, branch,
+                                           for_checkout=for_checkout)
+    if result is not None:
+      if (result[1].startswith('refs/heads/') or
+          result[1].startswith('refs/remotes/')):
+        return result
+
+  if not fallback:
+    return None
+  if for_checkout:
+    return 'origin', 'refs/remotes/origin/master'
+  return 'origin', 'master'
 
 
-def CreatePushBranch(branch, cwd, sync=True, remote_push_branch=None):
+def CreatePushBranch(branch, git_repo, sync=True, remote_push_branch=None):
   """Create a local branch for pushing changes inside a repo repository.
 
     Args:
       branch: Local branch to create.
-      cwd: Directory to create the branch in.
+      git_repo: Git repository to create the branch in.
       sync: Update remote before creating push branch.
       remote_push_branch: A tuple of the (remote, branch) to push to. i.e.,
                           ('cros', 'master').  By default it tries to
                           automatically determine which tracking branch to use
-                          (see GetPushBranch()).
+                          (see GetTrackingBranch()).
   """
   if not remote_push_branch:
-    remote, push_branch = GetPushBranch(cwd)
+    remote, push_branch = GetTrackingBranch(git_repo, for_push=True)
   else:
     remote, push_branch = remote_push_branch
 
   if sync:
-    RunCommand(['git', 'remote', 'update', remote], cwd=cwd)
-  RunCommand(['git', 'checkout', '-B', branch, '-t',
-              '%s/%s' % (remote, push_branch)], cwd=cwd)
+    RunGitCommand(git_repo, ['remote', 'update', remote])
+
+  RunGitCommand(git_repo, ['checkout', '-B', branch, '-t', push_branch])
 
 
-def SyncPushBranch(cwd, remote, push_branch):
-  """Sync a push branch to the latest remote version.
+def SyncPushBranch(git_repo, remote, rebase_target):
+  """Sync and rebase a local push branch to the latest remote version.
 
     Args:
-      cwd: Directory to rebase in.
-      remote: The remote returned by GetPushBranch()
-      push_branch: The branch name returned by GetPushBranch().
+      git_repo: Git repository to rebase in.
+      remote: The remote returned by GetTrackingBranch(for_push=True)
+      rebase_target: The branch name returned by GetTrackingBranch().  Must
+        start with refs/remotes/ (specifically must be a proper remote
+        target rather than an ambiguous name).
   """
-  RunCommand(['git', 'remote', 'update', remote], cwd=cwd)
+  if not rebase_target.startswith("refs/remotes/"):
+    raise Exception(
+        "Was asked to rebase to a non branch target w/in the push pathways.  "
+        "This is highly indicative of an internal bug.  remote %s, rebase %s"
+        % (remote, rebase_target))
+
+  RunGitCommand(git_repo, ['remote', 'update', remote])
+
   try:
-    RunCommand(['git', 'rebase', '%s/%s' % (remote, push_branch)], cwd=cwd)
+    RunGitCommand(git_repo, ['rebase', rebase_target])
   except RunCommandError:
     # Looks like our change conflicts with upstream. Cleanup our failed
     # rebase.
-    RunCommand(['git', 'rebase', '--abort'], error_ok=True, cwd=cwd)
+    RunGitCommand(git_repo, ['rebase', '--abort'], error_ok=True)
     raise
 
 
-def GitPushWithRetry(branch, cwd, dryrun=False, retries=5):
+def GitPushWithRetry(branch, git_repo, dryrun=False, retries=5):
   """General method to push local git changes.
 
     This method only works with branches created via the CreatePushBranch
@@ -923,30 +1191,60 @@ def GitPushWithRetry(branch, cwd, dryrun=False, retries=5):
       branch: Local branch to push.  Branch should have already been created
         with a local change committed ready to push to the remote branch.  Must
         also already be checked out to that branch.
-      cwd: Directory to push in.
+      git_repo: Git repository to push from.
       dryrun: Git push --dry-run if set to True.
       retries: The number of times to retry before giving up, default: 5
 
     Raises:
       GitPushFailed if push was unsuccessful after retries
   """
-  remote, ref = GetTrackingBranch(branch, cwd)
-  push_branch = StripLeadingRefsHeads(ref)
+  remote, ref = GetTrackingBranch(git_repo, branch, for_checkout=False,
+                                  for_push=True)
+  # Don't like invoking this twice, but there is a bit of API
+  # impedence here; cros_mark_as_stable
+  _, local_ref = GetTrackingBranch(git_repo, branch, for_push=True)
 
+  if not ref.startswith("refs/heads/"):
+    raise Exception("Was asked to push to a non branch namespace: %s" % (ref,))
+
+  push_command = ['push', remote, '%s:%s' % (branch, ref)]
+  Debug("Trying to push %s to %s:%s", git_repo, branch, ref)
+
+  if dryrun:
+    push_command.append('--dry-run')
   for retry in range(1, retries + 1):
-    SyncPushBranch(cwd, remote, push_branch)
-    push_command = ['git', 'push', remote, '%s:%s' % (branch, push_branch)]
-    if dryrun:
-      push_command.append('--dry-run')
+    SyncPushBranch(git_repo, remote, local_ref)
     try:
-      RunCommand(push_command, cwd=cwd)
+      RunGitCommand(git_repo, push_command)
       break
     except RunCommandError:
       if retry < retries:
-        print 'Error pushing changes trying again (%s/%s)' % (retry, retries)
+        Warning('Error pushing changes trying again (%s/%s)', retry, retries)
         time.sleep(5 * retry)
-      else:
-        raise
+        continue
+      raise
+
+  Info("Successfully pushed %s to %s:%s", git_repo, branch, ref)
+
+
+def GitCleanAndCheckoutUpstream(git_repo, refresh_upstream=True):
+  """Remove all local changes and checkout the latest origin.
+
+  All local changes in the supplied repo will be removed. The branch will
+  also be switched to a detached head pointing at the latest origin.
+
+  Args:
+    git_repo: Directory of git repository.
+    refresh_upstream: If True, run a remote update prior to checking it out.
+  """
+  remote, local_upstream = GetTrackingBranch(git_repo)
+  RunGitCommand(git_repo, ['am', '--abort'], error_code_ok=True)
+  RunGitCommand(git_repo, ['rebase', '--abort'], error_code_ok=True)
+  if refresh_upstream:
+    RunGitCommand(git_repo, ['remote', 'update', remote])
+  RunGitCommand(git_repo, ['clean', '-df'])
+  RunGitCommand(git_repo, ['reset', '--hard', 'HEAD'])
+  RunGitCommand(git_repo, ['checkout', local_upstream])
 
 
 def GetHostName(fully_qualified=False):
@@ -1315,6 +1613,7 @@ class ContextManagerStack(object):
       try:
         if handler.__exit__(exc_type, exc, traceback):
           exc_type = exc = traceback = None
+      # pylint: disable=W0702
       except:
         exc_type, exc, traceback = sys.exc_info()
     if all(x is None for x in (exc_type, exc, traceback)):

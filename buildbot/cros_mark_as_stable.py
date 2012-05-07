@@ -77,16 +77,13 @@ def CleanStalePackages(boards, package_atoms):
 # TODO(build): This code needs to be gutted and rebased to cros_build_lib.
 def _DoWeHaveLocalCommits(stable_branch, tracking_branch, cwd):
   """Returns true if there are local commits."""
-  current_branch = cros_build_lib.RunCommandCaptureOutput(
-      'git branch | grep \*', shell=True, cwd=cwd).output.split()[1]
-  if current_branch == stable_branch:
-    current_commit_id = cros_build_lib.RunCommandCaptureOutput(
-        ['git', 'rev-parse', 'HEAD'], cwd=cwd).output
-    tracking_commit_id = cros_build_lib.RunCommandCaptureOutput(
-        ['git', 'rev-parse', tracking_branch], cwd=cwd).output
-    return current_commit_id != tracking_commit_id
-  else:
+  current_branch = cros_build_lib.GetCurrentBranch(cwd)
+
+  if current_branch != stable_branch:
     return False
+  output = cros_build_lib.RunGitCommand(
+      cwd, ['rev-parse', 'HEAD', tracking_branch]).output.split()
+  return output[0] == output[1]
 
 
 def _CheckSaneArguments(package_list, command, options):
@@ -138,33 +135,30 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
       OSError: Error occurred while pushing.
   """
   if not _DoWeHaveLocalCommits(stable_branch, tracking_branch, cwd):
-    cros_build_lib.Info('No work found to push.  Exiting')
+    cros_build_lib.Info('No work found to push in %s.  Exiting', cwd)
     return
 
   # For the commit queue, our local branch may contain commits that were
   # just tested and pushed during the CommitQueueCompletion stage. Sync
   # and rebase our local branch on top of the remote commits.
-  remote, push_branch = cros_build_lib.GetPushBranch(cwd)
+  remote, push_branch = cros_build_lib.GetTrackingBranch(cwd, for_push=True)
   cros_build_lib.SyncPushBranch(cwd, remote, push_branch)
 
   # Check whether any local changes remain after the sync.
-  if not _DoWeHaveLocalCommits(stable_branch, '%s/%s' % (remote, push_branch),
-                               cwd):
-    cros_build_lib.Info('All changes already pushed. Exiting')
+  if not _DoWeHaveLocalCommits(stable_branch, push_branch, cwd):
+    cros_build_lib.Info('All changes already pushed for %s. Exiting', cwd)
     return
 
   description = cros_build_lib.RunCommandCaptureOutput(
-      ['git', 'log', '--format=format:%s%n%n%b', '%s/%s..%s' % (
-       remote, push_branch, stable_branch)], cwd=cwd).output
+      ['git', 'log', '--format=format:%s%n%n%b', '%s..%s' % (
+       push_branch, stable_branch)], cwd=cwd).output
   description = 'Marking set of ebuilds as stable\n\n%s' % description
-  cros_build_lib.Info('Using description %s' % description)
+  cros_build_lib.Info('For %s, using description %s', cwd, description)
   cros_build_lib.CreatePushBranch(constants.MERGE_BRANCH, cwd)
-  cros_build_lib.RunCommand(['git', 'merge', '--squash', stable_branch],
-                            cwd=cwd)
-  cros_build_lib.RunCommand(['git', 'commit', '-m', description], cwd=cwd)
-  cros_build_lib.RunCommand(['git', 'config', 'push.default', 'tracking'],
-                            cwd=cwd)
-  cros_build_lib.GitPushWithRetry(constants.MERGE_BRANCH, cwd=cwd,
+  cros_build_lib.RunGitCommand(cwd, ['merge', '--squash', stable_branch])
+  cros_build_lib.RunGitCommand(cwd, ['commit', '-m', description])
+  cros_build_lib.RunGitCommand(cwd, ['config', 'push.default', 'tracking'])
+  cros_build_lib.GitPushWithRetry(constants.MERGE_BRANCH, cwd,
                                   dryrun=dryrun)
 
 
@@ -252,8 +246,7 @@ def main(argv):
     portage_utilities.BuildEBuildDictionary(
       overlays, options.all, package_list)
 
-  tracking_branch = cros_build_lib.GetManifestDefaultBranch(options.srcroot)
-  tracking_branch = 'remotes/m/' + tracking_branch
+  manifest = cros_build_lib.ManifestCheckout.Cached(options.srcroot)
 
   # Contains the array of packages we actually revved.
   revved_packages = []
@@ -287,6 +280,9 @@ def main(argv):
       if not os.path.isdir(overlay):
         cros_build_lib.Warning("Skipping %s" % overlay)
         continue
+
+      tracking_branch = cros_build_lib.GetTrackingBranchViaManifest(
+          overlay, manifest=manifest, for_push=True)[1]
 
       if command == 'push':
         PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch,

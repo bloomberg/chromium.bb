@@ -122,7 +122,7 @@ class VersionInfoTest(mox.MoxTestBase):
     message = 'Incrementing cuz I sed so'
     self.mox.StubOutWithMock(cros_lib, 'CreatePushBranch')
     self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
-    self.mox.StubOutWithMock(manifest_version, '_GitCleanAndCheckoutOrigin')
+    self.mox.StubOutWithMock(cros_lib, 'GitCleanAndCheckoutUpstream')
 
     cros_lib.CreatePushBranch(manifest_version.PUSH_BRANCH, self.tmpdir)
 
@@ -130,7 +130,7 @@ class VersionInfoTest(mox.MoxTestBase):
 
     manifest_version._PushGitChanges(self.tmpdir, message, dry_run=False)
 
-    manifest_version._GitCleanAndCheckoutOrigin(self.tmpdir)
+    cros_lib.GitCleanAndCheckoutUpstream(self.tmpdir)
     self.mox.ReplayAll()
     info = manifest_version.VersionInfo(version_file=version_file,
                                         incr_type=incr_type)

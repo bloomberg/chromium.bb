@@ -150,17 +150,17 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST', dryrun=False):
   """
   prebuilt_branch = 'prebuilt_branch'
   cwd = os.path.abspath(os.path.dirname(filename))
-  commit = cros_build_lib.RunCommand(['git', 'rev-parse', 'HEAD'], cwd=cwd,
-                                     redirect_stdout=True).output.rstrip()
+  commit = cros_build_lib.RunGitCommand(
+      cwd, ['rev-parse', 'HEAD']).output.rstrip()
   description = 'Update %s="%s" in %s' % (key, value, filename)
   print description
 
   try:
     cros_build_lib.CreatePushBranch(prebuilt_branch, cwd)
     UpdateLocalFile(filename, value, key)
-    cros_build_lib.RunCommand(['git', 'add', filename], cwd=cwd)
-    cros_build_lib.RunCommand(['git', 'commit', '-m', description], cwd=cwd)
-    cros_build_lib.GitPushWithRetry(prebuilt_branch, cwd=cwd, dryrun=dryrun,
+    cros_build_lib.RunGitCommand(cwd, ['add', filename])
+    cros_build_lib.RunGitCommand(cwd, ['commit', '-m', description])
+    cros_build_lib.GitPushWithRetry(prebuilt_branch, cwd, dryrun=dryrun,
                                     retries=retries)
   finally:
     cros_build_lib.RunCommand(['git', 'checkout', commit], cwd=cwd)

@@ -87,46 +87,43 @@ def BuildRootGitCleanup(buildroot, debug_run):
     debug_run: whether the job is running with the --debug flag.  i.e., whether
                it is not a production run.
   """
-  manifest_branch = 'remotes/m/' + cros_lib.GetManifestDefaultBranch(buildroot)
-  tasks = [
-    (False, [['git', 'am', '--abort'],
-             ['git', 'rebase', '--abort']]),
-    (True, [['git', 'reset', '--hard', 'HEAD'],
-             ['git', 'checkout', manifest_branch],
-             ['git', 'clean', '-f', '-d']]),
-    (False, [['git', 'branch', '-D', b] for b in constants.CREATED_BRANCHES])
-  ]
   lock_path = os.path.join(buildroot, '.clean_lock')
 
   def RunCleanupCommands(cwd):
     with locking.FileLock(lock_path, verbose=False).read_lock() as lock:
-      if not os.path.isdir(cwd): return
-      for check_returncode, cmds in tasks:
-        for cmd in cmds:
-          result = cros_lib.RunCommandCaptureOutput(
-              cmd, cwd=cwd, error_code_ok=True, print_cmd=False)
-          if check_returncode and result.returncode != 0:
-            logging.info(result.output)
-            logging.warn('Deleting %s because %s failed', cwd, cmd)
-            lock.write_lock()
-            if os.path.isdir(cwd):
-              shutil.rmtree(cwd)
-            # Delete the backing store as well for production jobs, because we
-            # want to make sure any corruption is wiped.  Don't do it for
-            # tryjobs so the error is visible and can be debugged.
-            if not debug_run:
-              relpath = os.path.relpath(cwd, buildroot)
-              projects_dir = os.path.join(buildroot, '.repo', 'projects')
-              repo_store = '%s.git' % os.path.join(projects_dir, relpath)
-              logging.warn('Deleting %s as well', repo_store)
-              if os.path.isdir(repo_store):
-                shutil.rmtree(repo_store)
-            print '@@@STEP_WARNINGS@@@'
-            return
+      if not os.path.isdir(cwd):
+        return
+
+      try:
+        cros_lib.GitCleanAndCheckoutUpstream(cwd, False)
+      except cros_lib.RunCommandError, e:
+        result = e.result
+        logging.info(result.output)
+        print '@@@STEP_WARNINGS@@@'
+        logging.warn('Deleting %s because %s failed', cwd,  e.result.cmd)
+        lock.write_lock()
+        if os.path.isdir(cwd):
+          shutil.rmtree(cwd)
+        # Delete the backing store as well for production jobs, because we
+        # want to make sure any corruption is wiped.  Don't do it for
+        # tryjobs so the error is visible and can be debugged.
+        if not debug_run:
+          relpath = os.path.relpath(cwd, buildroot)
+          projects_dir = os.path.join(buildroot, '.repo', 'projects')
+          repo_store = '%s.git' % os.path.join(projects_dir, relpath)
+          logging.warn('Deleting %s as well', repo_store)
+          if os.path.isdir(repo_store):
+            shutil.rmtree(repo_store)
+        print '@@@STEP_WARNINGS@@@'
+        return
+
+      cros_lib.RunGitCommand(
+          cwd, ['branch', '-D'] + list(constants.CREATED_BRANCHES),
+          error_code_ok=True)
 
   # Cleanup all of the directories.
   dirs = [[os.path.join(buildroot, attrs['path'])] for attrs in
-          cros_lib.ParseFullManifest(buildroot).projects.values()]
+          cros_lib.ManifestCheckout.Cached(buildroot).projects.values()]
   background.RunTasksInProcessPool(RunCleanupCommands, dirs)
 
 

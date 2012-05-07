@@ -479,7 +479,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                    'for this build type.')
       return
 
-    handler = cros_lib.ManifestHandler.ParseManifest(self.lkgm_path)
+    handler = cros_lib.Manifest(self.lkgm_path)
     reviewed_on_re = re.compile('\s*Reviewed-on:\s*(\S+)')
     author_re = re.compile('\s*Author:.*<(\S+)@\S+>\s*')
     committer_re = re.compile('\s*Commit:.*<(\S+)@\S+>\s*')

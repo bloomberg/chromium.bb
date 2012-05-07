@@ -250,9 +250,12 @@ class GitRepoPatch(object):
 
   def _GetUpstreamBranch(self, buildroot):
     """Get the branch specified in the manifest for this patch."""
-    remote, ref = cros_lib.GetProjectManifestBranch(
-        buildroot, self.project)
-    return '%s/%s' % (remote, cros_lib.StripLeadingRefsHeads(ref))
+    # TODO(ferringb): remove this via cherry-picking; it's broken
+    # now since it assumes the tracking_branch (which is local
+    # to the originating repo) is what should be used for rebasing
+    # this patch into the current tree).
+    manifest = cros_lib.ManifestCheckout.Cached(buildroot)
+    return manifest.GetRevisionForProject(self.project)
 
   def ApplyIntoGitRepo(self, project_dir, upstream, trivial=False):
     """Apply patch into a standalone git repo.
@@ -266,7 +269,8 @@ class GitRepoPatch(object):
     """
     # Check that the patch is based on the same branch as project we are
     # patching into.
-    # TODO(rcui): move this outside of the apply flow.
+    # TODO(ferringb): remove this when cherry-pick lands; has questionable
+    # value now, has no relevance/value once cherry-picking is in.
     branch_base = os.path.basename(upstream)
     if self.tracking_branch != branch_base:
       raise PatchException('branch %s for project %s is not tracking %s'
@@ -275,9 +279,8 @@ class GitRepoPatch(object):
     rev = self.Fetch(project_dir)
 
     if not cros_lib.DoesLocalBranchExist(project_dir, constants.PATCH_BRANCH):
-      cros_lib.RunCommandCaptureOutput(
-          ['git', 'checkout', '-b', constants.PATCH_BRANCH, '-t', upstream],
-          cwd=project_dir, print_cmd=False)
+      cmd = ['checkout', '-b', constants.PATCH_BRANCH, '-t', upstream]
+      cros_lib.RunGitCommand(project_dir, cmd)
 
     self._RebasePatch(upstream, project_dir, rev, trivial)
 
@@ -429,11 +432,9 @@ class GitRepoPatch(object):
 class LocalPatch(GitRepoPatch):
   """Represents patch coming from an on-disk git repo."""
 
-  def __init__(self, project_url, project, ref, tracking_branch, sha1,
-               sourceroot):
+  def __init__(self, project_url, project, ref, tracking_branch, sha1):
     GitRepoPatch.__init__(self, project_url, project, ref, tracking_branch,
                           sha1=sha1)
-    self.sourceroot = sourceroot
 
   def Sha1Hash(self):
     """Get the Sha1 of the branch."""
@@ -450,7 +451,6 @@ class LocalPatch(GitRepoPatch):
     Returns:
       The sha1 of the new commit object.
     """
-    project_dir = self.ProjectDir(self.sourceroot)
     hash_fields = [('tree_hash', '%T'), ('parent_hash', '%P')]
     transfer_fields = [('GIT_AUTHOR_NAME', '%an'),
                        ('GIT_AUTHOR_EMAIL', '%ae'),
@@ -461,9 +461,9 @@ class LocalPatch(GitRepoPatch):
     fields = hash_fields + transfer_fields
 
     format_string = '%n'.join([code for _, code in fields] + ['%B'])
-    result = cros_lib.RunCommand(['git', 'log', '--format=%s' % format_string,
-                                  '-z', '-n1', self.sha1],
-                                  cwd=project_dir, redirect_stdout=True)
+    result = cros_lib.RunGitCommand(
+        self.project_url,
+        ['log', '--format=%s' % format_string, '-z', '-n1', self.sha1])
     lines = result.output.splitlines()
     field_value = dict(zip([name for name, _ in fields],
                            [line.strip() for line in lines]))
@@ -483,27 +483,27 @@ class LocalPatch(GitRepoPatch):
     extra_env['GIT_COMMITTER_DATE'] = str(
         int(extra_env["GIT_COMMITER_DATE"]) - 1)
 
-    result = cros_lib.RunCommand(['git', 'commit-tree',
-                                  field_value['tree_hash'], '-p',
-                                  field_value['parent_hash']], cwd=project_dir,
-                                  redirect_stdout=True, extra_env=extra_env,
-                                  input=commit_body)
+    result = cros_lib.RunGitCommand(
+        self.project_url,
+        ['commit-tree', field_value['tree_hash'], '-p',
+         field_value['parent_hash']],
+        extra_env=extra_env, input=commit_body)
 
     new_sha1 = result.output.strip()
     if new_sha1 == self.sha1:
-      raise PatchException('Internal error!  Carbon copy of %s is the same as '
-                           'original!' % self.sha1)
+      raise PatchException(
+          'Internal error!  Carbon copy of %s is the same as original!'
+          % self.sha1)
 
     return new_sha1
 
-  def Upload(self, remote_ref, dryrun=False, push_url=None):
+  def Upload(self, push_url, remote_ref, dryrun=False):
     """Upload the patch to a remote git branch.
 
     Arguments:
+      push_url: Which url to push to.
       remote_ref: The ref on the remote host to push to.
       dryrun: Do the git push with --dry-run
-      push_url: Which url to push to.  If unspecified, defaults to deciding
-        between external gerrit or internal gerrit.
     """
     if push_url is None:
       push_url = constants.GERRIT_SSH_URL
@@ -512,11 +512,11 @@ class LocalPatch(GitRepoPatch):
       push_url = os.path.join(push_url, self.project)
 
     carbon_copy = self._GetCarbonCopy()
-    cmd = ['git', 'push', push_url, '%s:%s' % (carbon_copy, remote_ref)]
+    cmd = ['push', push_url, '%s:%s' % (carbon_copy, remote_ref)]
     if dryrun:
       cmd.append('--dry-run')
 
-    cros_lib.RunCommand(cmd, cwd=self.ProjectDir(self.sourceroot))
+    cros_lib.RunGitCommand(self.project_url, cmd)
 
 
 class UploadedLocalPatch(GitRepoPatch):
@@ -639,17 +639,8 @@ class GerritPatch(GitRepoPatch):
     return self.id == other.id
 
 
-def _GetRemoteTrackingBranch(project_dir, branch):
-  """Get the remote tracking branch of a local branch.
 
-  Raises:
-    cros_lib.NoTrackingBranchException if branch does not track anything.
-  """
-  (remote, ref) = cros_lib.GetTrackingBranch(branch, project_dir)
-  return '%s/%s' % (remote, cros_lib.StripLeadingRefsHeads(ref))
-
-
-def PrepareLocalPatches(sourceroot, patches, manifest_branch):
+def PrepareLocalPatches(manifest, patches):
   """Finish validation of parameters, and save patches to a temp folder.
 
   Args:
@@ -664,26 +655,19 @@ def PrepareLocalPatches(sourceroot, patches, manifest_branch):
   patch_info = []
   for patch in patches:
     project, branch = patch.split(':')
-    project_dir = cros_lib.GetProjectDir(sourceroot, project)
+    project_dir = manifest.GetProjectPath(project, True)
+    tracking_branch = manifest.GetRevisionForProject(project)
 
-    cmd = ['git', 'rev-list', '-n1', '%s..%s'
-           % ('m/' + manifest_branch, branch)]
+    cmd = ['git', 'rev-list', '-n1', '%s..%s' % (tracking_branch, branch)]
     result = cros_lib.RunCommand(cmd, redirect_stdout=True, cwd=project_dir)
     sha1 = result.output.strip()
 
     if not sha1:
       raise PatchException('No changes found in %s:%s' % (project, branch))
 
-    # Store remote tracking branch for verification during patch stage.
-    try:
-      tracking_branch = _GetRemoteTrackingBranch(project_dir, branch)
-    except cros_lib.NoTrackingBranchException:
-      raise PatchException('%s:%s needs to track a remote branch!'
-                           % (project, branch))
-
     patch_info.append(LocalPatch(os.path.join(project_dir, '.git'),
                                         project, branch, tracking_branch,
-                                        sha1, sourceroot))
+                                        sha1))
 
   return patch_info
 

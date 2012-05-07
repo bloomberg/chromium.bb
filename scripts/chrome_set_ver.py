@@ -112,6 +112,18 @@ class ProjectException(Exception):
   pass
 
 
+def _IsGitStoreInRepo(path):
+  """Checks if the git repo rooted at a directory is in repo's storage.
+
+  Note that just because a pathway is in .repo, does *not* mean that
+  repo can actually use it (the git repo must be in the manifest for
+  that to be true).
+  """
+  repo_dir = os.path.realpath(cros_lib.FindRepoDir(path))
+  git_objects_dir = os.path.realpath(os.path.join(path, '.git/objects'))
+  return git_objects_dir.startswith(repo_dir)
+
+
 class Project(object):
   """Encapsulates functionality to pin a project to a specific commit."""
   def __init__(self, repo_root, project_url, rel_path):
@@ -148,7 +160,7 @@ class Project(object):
 
   def _PrepareProject(self):
     """Make sure the project is synced properly and is ready for pinning."""
-    handler = cros_lib.ParseFullManifest(self.repo_root)
+    handler = cros_lib.ManifestCheckout.Cached(self.repo_root)
     path_to_project_dict = dict(([attrs['path'], project]) for project, attrs
                                 in handler.projects.iteritems())
 
@@ -169,7 +181,7 @@ class Project(object):
         cros_lib.RunCommand(['git', 'checkout',
                             cros_lib.GetGitRepoRevision(self.abs_path)],
                             cwd=self.abs_path)
-    elif not cros_lib.IsProjectManagedByRepo(self.abs_path):
+    elif not _IsGitStoreInRepo(self.abs_path):
       if self.manifest_rel_path in path_to_project_dict:
         # If path is now in the manifest, tell user to manually delete our
         # managed checkout and re-sync.

@@ -38,23 +38,6 @@ class GenerateBuildSpecException(Exception):
   pass
 
 
-def _GitCleanAndCheckoutOrigin(git_repo):
-  """Remove all local changes and checkout the latest origin.
-
-  All local changes in the supplied repo will be removed. The branch will
-  also be switched to a detached head pointing at the latest origin.
-
-  Args:
-    git_repo: Directory of git repository.
-  """
-  remote, push_branch = cros_lib.GetPushBranch(git_repo)
-  cros_lib.RunCommand(['git', 'remote', 'update', remote], cwd=git_repo)
-  cros_lib.RunCommand(['git', 'clean', '-d', '-f'], cwd=git_repo)
-  cros_lib.RunCommand(['git', 'reset', '--hard', 'HEAD'], cwd=git_repo)
-  cros_lib.RunCommand(['git', 'checkout', '%s/%s' % (remote, push_branch)],
-                      cwd=git_repo)
-
-
 def RefreshManifestCheckout(manifest_dir, manifest_repo):
   """Checks out manifest-versions into the manifest directory.
 
@@ -70,7 +53,7 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
         result.output.rstrip() == manifest_repo):
       logging.info('Updating manifest-versions checkout.')
       try:
-        _GitCleanAndCheckoutOrigin(manifest_dir)
+        cros_lib.GitCleanAndCheckoutUpstream(manifest_dir)
       except cros_lib.RunCommandError:
         logging.warning('Could not update manifest-versions checkout.')
       else:
@@ -90,23 +73,24 @@ def _PushGitChanges(git_repo, message, dry_run=True):
     message: Commit message
     dry_run: If true, don't actually push changes to the server
   """
-  remote, push_branch = cros_lib.GetPushBranch(git_repo)
-  cros_lib.RunCommand(['git', 'add', '-A'], cwd=git_repo)
+  remote, push_branch = cros_lib.GetTrackingBranch(
+      git_repo, for_checkout=False, for_push=True)
+  cros_lib.RunGitCommand(git_repo, ['add', '-A'])
 
   # It's possible that while we are running on dry_run, someone has already
   # committed our change.
   try:
-    cros_lib.RunCommand(['git', 'commit', '-m', message], cwd=git_repo)
+    cros_lib.RunGitCommand(git_repo, ['commit', '-m', message])
   except cros_lib.RunCommandError:
     if dry_run:
       return
     raise
 
-  push_cmd = ['git', 'push', remote, '%s:%s' % (PUSH_BRANCH, push_branch)]
+  push_cmd = ['push', remote, '%s:%s' % (PUSH_BRANCH, push_branch)]
   if dry_run:
     push_cmd.extend(['--dry-run', '--force'])
 
-  cros_lib.RunCommand(push_cmd, cwd=git_repo)
+  cros_lib.RunGitCommand(git_repo, push_cmd)
 
 
 def _RemoveDirs(dir_name):
@@ -290,7 +274,7 @@ class VersionInfo(object):
     finally:
       # Update to the remote version that contains our changes. This is needed
       # to ensure that we don't build a release using a local commit.
-      _GitCleanAndCheckoutOrigin(repo_dir)
+      cros_lib.GitCleanAndCheckoutUpstream(repo_dir)
 
     return self.VersionString()
 

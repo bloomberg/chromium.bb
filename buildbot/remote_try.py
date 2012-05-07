@@ -43,6 +43,7 @@ class RemoteTryJob(object):
     self.user = getpass.getuser()
     cwd = os.path.dirname(os.path.realpath(__file__))
     self.user_email = cros_lib.GetProjectUserEmail(cwd)
+    cros_lib.Info('Using email:%s', self.user_email)
     # Name of the job that appears on the waterfall.
     patch_list = options.gerrit_patches + options.local_patches
     self.name = ','.join(patch_list)
@@ -57,9 +58,11 @@ class RemoteTryJob(object):
     self.tryjob_repo = None
     self.local_patches = local_patches
     self.ssh_url = self.EXT_SSH_URL
-    if (repository.IsARepoRoot(options.sourceroot)
-        and repository.IsInternalRepoCheckout(options.sourceroot)):
-      self.ssh_url = self.INT_SSH_URL
+    self.manifest = None
+    if repository.IsARepoRoot(options.sourceroot):
+      self.manifest = cros_lib.ManifestCheckout.Cached(options.sourceroot)
+      if repository.IsInternalRepoCheckout(options.sourceroot):
+        self.ssh_url = self.INT_SSH_URL
 
   @property
   def values(self):
@@ -78,19 +81,21 @@ class RemoteTryJob(object):
     ref_base = os.path.join('refs/tryjobs', self.user, current_time)
     for patch in self.local_patches:
       sha1 = patch.Sha1Hash()[:8]
-      local_branch = os.path.basename(patch.ref)
+      # Isolate the name; if it's a tag or a remote, let through.
+      # Else if it's a branch, get the full branch name minus refs/heads.
+      local_branch = cros_lib.StripLeadingRefsHeads(patch.ref, False)
       ref_final = os.path.join(ref_base, local_branch, sha1)
-      patch.Upload(ref_final, dryrun=dryrun)
-      internal = cros_lib.IsProjectInternal(self.options.sourceroot,
-                                            patch.project)
 
-      internal_external_tag = constants.EXTERNAL_PATCH_TAG
-      if internal:
-        internal_external_tag = constants.INTERNAL_PATCH_TAG
+      data = self.manifest.projects[patch.project]
+
+      patch.Upload(data['push_url'], ref_final, dryrun=dryrun)
+
+      tag = (constants.INTERNAL_PATCH_TAG if data['internal']
+             else constants.EXTERNAL_PATCH_TAG)
 
       self.extra_args.append('--remote-patches=%s:%s:%s:%s:%s'
                              % (patch.project, local_branch, ref_final,
-                                patch.tracking_branch, internal_external_tag))
+                                patch.tracking_branch, tag))
 
     # TODO(rcui): convert to shallow clone when that's available.
     repository.CloneGitRepo(self.tryjob_repo, self.ssh_url)

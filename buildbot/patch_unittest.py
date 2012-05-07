@@ -316,12 +316,11 @@ class TestLocalPatchGit(TestGitRepoPatch):
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
     return self.patch_kls(source, 'chromiumos/chromite', ref,
-                          'origin/master', sha1, self.sourceroot,
+                          'origin/master', sha1,
                           **kwds)
 
   def testUpload(self):
     def ProjectDirMock(sourceroot):
-      self.assertEqual(sourceroot, self.sourceroot)
       return git1
 
     git1, git2, patch = self._CommonGitSetup()
@@ -333,14 +332,14 @@ class TestLocalPatchGit(TestGitRepoPatch):
     # plain works.
     sha1 = patch.sha1
     patch._GetCarbonCopy = lambda: sha1
-    patch.Upload('refs/testing/test1', push_url=git2)
+    patch.Upload(git2, 'refs/testing/test1')
     self.assertEqual(self._GetSha1(git2, 'refs/testing/test1'),
                      patch.sha1)
 
     # Enable CarbonCopy behaviour; verify it lands a different
     # sha1.  Additionally verify it didn't corrupt the patch's sha1 locally.
     del patch._GetCarbonCopy
-    patch.Upload('refs/testing/test2', push_url=git2)
+    patch.Upload(git2, 'refs/testing/test2')
     self.assertNotEqual(self._GetSha1(git2, 'refs/testing/test2'),
                         patch.sha1)
     self.assertEqual(patch.sha1, sha1)
@@ -460,53 +459,45 @@ class TestGerritPatch(TestGitRepoPatch):
     return copy.deepcopy(FAKE_PATCH_JSON)
 
 
-class PrepareLocalPatchesTests(cros_test_lib.TempDirMixin, mox.MoxTestBase):
+class PrepareLocalPatchesTests(mox.MoxTestBase):
 
   def setUp(self):
-    cros_test_lib.TempDirMixin.setUp(self)
     mox.MoxTestBase.setUp(self)
 
-    self.sourceroot = self.tempdir
     self.patches = ['my/project:mybranch']
 
     self.mox.StubOutWithMock(cros_lib, 'GetProjectDir')
-    self.mox.StubOutWithMock(cros_patch, '_GetRemoteTrackingBranch')
+    self.mox.StubOutWithMock(cros_lib, 'GetCurrentBranch')
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-
-  def tearDown(self):
-    cros_test_lib.TempDirMixin.tearDown(self)
-    mox.MoxTestBase.tearDown(self)
+    self.manifest = self.mox.CreateMock(cros_lib.ManifestCheckout)
 
   def VerifyPatchInfo(self, patch_info, project, branch, tracking_branch):
     """Check the returned GitRepoPatchInfo against golden values."""
     self.assertEquals(patch_info.project, project)
     self.assertEquals(patch_info.ref, branch)
     self.assertEquals(patch_info.tracking_branch, tracking_branch)
-    self.assertEquals(patch_info.sourceroot, self.sourceroot)
 
   def testBranchSpecifiedSuccessRun(self):
     """Test success with branch specified by user."""
     output_obj = self.mox.CreateMock(cros_lib.CommandResult)
     output_obj.output= '12345'
-    cros_lib.GetProjectDir(mox.IgnoreArg(), 'my/project').AndReturn('mydir')
-    cros_lib.RunCommand(mox.In('m/master..mybranch'),
+    self.manifest.GetProjectPath('my/project', True).AndReturn('mydir')
+    self.manifest.GetRevisionForProject('my/project').AndReturn('m/kernel')
+    cros_lib.RunCommand(mox.In('m/kernel..mybranch'),
                         redirect_stdout=mox.IgnoreArg(),
                         cwd='mydir').AndReturn(output_obj)
-    cros_patch._GetRemoteTrackingBranch('mydir',
-                                 'mybranch').AndReturn('tracking_branch')
     self.mox.ReplayAll()
 
-    patch_info = cros_patch.PrepareLocalPatches(self.sourceroot,
-                                                self.patches, 'master')
-    self.VerifyPatchInfo(patch_info[0], 'my/project', 'mybranch',
-                         'tracking_branch')
+    patch_info = cros_patch.PrepareLocalPatches(self.manifest, self.patches)
+    self.VerifyPatchInfo(patch_info[0], 'my/project', 'mybranch', 'kernel')
     self.mox.VerifyAll()
 
   def testBranchSpecifiedNoChanges(self):
     """Test when no changes on the branch specified by user."""
     output_obj = self.mox.CreateMock(cros_lib.CommandResult)
     output_obj.output=''
-    cros_lib.GetProjectDir(mox.IgnoreArg(), 'my/project').AndReturn('mydir')
+    self.manifest.GetProjectPath('my/project', True).AndReturn('mydir')
+    self.manifest.GetRevisionForProject('my/project').AndReturn('m/master')
     cros_lib.RunCommand(mox.In('m/master..mybranch'),
                         redirect_stdout=mox.IgnoreArg(),
                         cwd='mydir').AndReturn(output_obj)
@@ -515,27 +506,7 @@ class PrepareLocalPatchesTests(cros_test_lib.TempDirMixin, mox.MoxTestBase):
     self.assertRaises(
         cros_patch.PatchException,
         cros_patch.PrepareLocalPatches,
-        self.sourceroot,
-        self.patches,
-        'master')
-    self.mox.VerifyAll()
-
-  def testNoTrackingBranch(self):
-    """Test when project branch does not track a remote branch."""
-    output_obj = self.mox.CreateMock(cros_lib.CommandResult)
-    output_obj.output= '12345'
-    cros_lib.GetProjectDir(mox.IgnoreArg(), 'my/project').AndReturn('mydir')
-    cros_lib.RunCommand(mox.In('m/master..mybranch'),
-                        redirect_stdout=mox.IgnoreArg(),
-                        cwd='mydir').AndReturn(output_obj)
-    cros_patch._GetRemoteTrackingBranch(
-        'mydir',
-        'mybranch').AndRaise(cros_lib.NoTrackingBranchException('error'))
-    self.mox.ReplayAll()
-
-    self.assertRaises(cros_patch.PatchException, cros_patch.PrepareLocalPatches,
-                      self.sourceroot, self.patches, 'master')
-    self.mox.VerifyAll()
+        self.manifest, self.patches)
 
 
 class ApplyLocalPatchesTests(mox.MoxTestBase):

@@ -56,8 +56,9 @@ def IsARepoRoot(directory):
   # Check for the underlying git-repo checkout.  If it exists, it's
   # definitely the repo root.  If it doesn't, it may be an aborted
   # checkout- either way it isn't usable.
-  repo_dir = os.path.join(directory, '.repo', 'repo')
-  return os.path.isdir(repo_dir)
+  repo_dir = os.path.join(directory, '.repo')
+  return (os.path.isdir(os.path.join(repo_dir, 'repo')) and
+          os.path.isdir(os.path.join(repo_dir, 'manifests')))
 
 
 def IsInternalRepoCheckout(root):

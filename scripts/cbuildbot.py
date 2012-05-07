@@ -103,17 +103,31 @@ def _GetConfig(config_name):
 def _GetChromiteTrackingBranch():
   """Returns the remote branch associated with chromite."""
   cwd = os.path.dirname(os.path.realpath(__file__))
-  branch = cros_lib.GetCurrentBranch(cwd)
-  if branch:
-    tracking_branch = cros_lib.GetTrackingBranch(branch, cwd)[1]
-    if tracking_branch.startswith('refs/heads/'):
-      return tracking_branch.replace('refs/heads/', '')
-  # If we are not on a branch, or if the tracking branch is a revision,
-  # use the push branch. For repo repositories, this will be the manifest
-  # branch configured for this project. For other repositories, we'll just
-  # guess 'master', since there's no easy way to find out what branch
-  # we're on.
-  return cros_lib.GetPushBranch(cwd)[1]
+  result = cros_lib.GetTrackingBranch(cwd, for_checkout=False, fallback=False)
+  if result is not None:
+    remote, branch = result
+    if branch.startswith("refs/heads/"):
+      # Normal scenario.
+      return cros_lib.StripLeadingRefsHeads(branch)
+    # Reaching here means it was refs/remotes/m/blah, or just plain invalid,
+    # or that we're on a detached head in a repo not managed by chromite.
+
+  # Manually try the manifest next.
+  try:
+    manifest = cros_lib.ManifestCheckout.Cached(cwd)
+    # Ensure the manifest knows of this checkout.
+    if manifest.FindProjectFromPath(cwd) is not None:
+      return manifest.manifest_branch
+  except EnvironmentError, e:
+    if e.errno != errno.ENOENT:
+      raise
+  # Not a manifest checkout.
+  cros_lib.Warning(
+      "Chromite checkout at %s isn't controlled by repo, nor is it on a "
+      "branch (or if it is, the tracking configuration is missing or broken).  "
+      "Falling back to assuming the chromite checkout is derived from "
+      "'master'; this *may* result in breakage." % cwd)
+  return 'master'
 
 
 def AcquirePoolFromOptions(options):
@@ -140,10 +154,9 @@ def AcquirePoolFromOptions(options):
         cros_lib.Warning('Patch %s has already been merged.' % str(patch))
 
   if options.local_patches:
-    local_patches = cros_patch.PrepareLocalPatches(
-        options.sourceroot,
-        options.local_patches,
-        options.branch)
+    manifest = cros_lib.ManifestCheckout.Cached(options.sourceroot)
+    local_patches = cros_patch.PrepareLocalPatches(manifest,
+                                                   options.local_patches)
 
   if options.remote_patches:
     remote_patches = cros_patch.PrepareRemotePatches(
@@ -608,34 +621,32 @@ def _CheckLocalPatches(sourceroot, local_patches):
     sourceroot: The checkout where patches are coming from.
   """
   verified_patches = []
+  manifest = cros_lib.ManifestCheckout.Cached(sourceroot)
   for patch in local_patches:
     components = patch.split(':')
     if len(components) > 2:
-      msg = 'Specify local patches in project[:branch] format.'
-      raise optparse.OptionValueError(msg)
+      cros_lib.Die('Specify local patches in project[:branch] format.  Got %s'
+                   % patch)
 
     # validate project
     project = components[0]
-    if not cros_lib.DoesProjectExist(sourceroot, project):
-      raise optparse.OptionValueError('Project %s does not exist.' % project)
 
-    project_dir = cros_lib.GetProjectDir(sourceroot, project)
+    try:
+      project_dir = manifest.GetProjectPath(project, True)
+    except KeyError:
+      cros_lib.Die('Project %s does not exist.' % project)
 
     # If no branch was specified, we use the project's current branch.
     if len(components) == 1:
       branch = cros_lib.GetCurrentBranch(project_dir)
       if not branch:
-        raise optparse.OptionValueError('project %s is not on a branch!'
-                                        % project)
-      # Append branch information to patch
-      patch = '%s:%s' % (project, branch)
+        cros_lib.Die('Project %s is not on a branch!' % project)
     else:
       branch = components[1]
       if not cros_lib.DoesLocalBranchExist(project_dir, branch):
-        raise optparse.OptionValueError('Project %s does not have branch %s'
-                                        % (project, branch))
+        cros_lib.Die('Project %s does not have branch %s' % (project, branch))
 
-    verified_patches.append(patch)
+    verified_patches.append('%s:%s' % (project, branch))
 
   return verified_patches
 
@@ -995,14 +1006,9 @@ def _PostParseCheck(options, args):
     raise Exception('Could not find repo checkout at %s!'
                     % options.sourceroot)
 
-  try:
-    # TODO(rcui): Split this into two stages, one that parses, another that
-    # validates.  Parsing step will be called by _FinishParsing().
+  if options.local_patches:
     options.local_patches = _CheckLocalPatches(
-        options.sourceroot,
-        options.local_patches)
-  except optparse.OptionValueError as e:
-    cros_lib.Die(str(e))
+        options.sourceroot, options.local_patches)
 
   default = os.environ.get('CBUILDBOT_DEFAULT_MODE')
   if (default and not any([options.local, options.buildbot,
