@@ -87,10 +87,10 @@ class AnalyzerResultMap:
       a string in HTML format (with colors) to show difference between two
           analyzer results.
     """
-    diff = len(diff_map_element[0]) - len(diff_map_element[1])
-    if diff == 0:
+    if not diff_map_element[0] and not diff_map_element[1]:
       return 'No Change'
     color = ''
+    diff = len(diff_map_element[0]) - len(diff_map_element[1])
     if diff > 0 and type_str != 'whole':
       color = 'red'
     else:
@@ -98,7 +98,10 @@ class AnalyzerResultMap:
     diff_sign = ''
     if diff > 0:
       diff_sign = '+'
-    whole_str = '<font color="%s">%s%d</font>' % (color, diff_sign, diff)
+    if not diff:
+      whole_str = 'No Change'
+    else:
+      whole_str = '<font color="%s">%s%d</font>' % (color, diff_sign, diff)
     colors = ['red', 'green']
     if type_str == 'whole':
       # Bug 107773 - when we increase the number of tests,
