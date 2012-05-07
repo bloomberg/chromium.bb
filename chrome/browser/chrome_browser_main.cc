@@ -56,6 +56,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
+#include "chrome/browser/metrics/variations_service.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/predictor.h"
@@ -591,6 +592,9 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
                   " list specified.";
   }
 #endif  // NDEBUG
+
+  VariationsService* variations_service = VariationsService::GetInstance();
+  variations_service->LoadVariationsSeed(browser_process_->local_state());
 
   SetupFieldTrials(metrics->recording_active(),
                    local_state_->IsManagedPreference(
@@ -1865,6 +1869,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
         translate_manager_->FetchLanguageListFromTranslateServer(
             profile_->GetPrefs());
       }
+
+      // Request new variations seed information from server.
+      VariationsService::GetInstance()->StartFetchingVariationsSeed();
 #endif
 
       run_message_loop_ = true;
