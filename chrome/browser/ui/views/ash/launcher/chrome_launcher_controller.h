@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_H_
 #pragma once
 
-#include <map>
 #include <deque>
+#include <map>
 #include <string>
 
 #include "ash/launcher/launcher_delegate.h"
@@ -18,6 +18,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -37,6 +38,10 @@ class ChromeLauncherController : public ash::LauncherDelegate,
                                  public ash::LauncherModelObserver,
                                  public content::NotificationObserver {
  public:
+  // Path within the dictionary entries in the prefs::kPinnedLauncherApps list
+  // specifying the extension ID of the app to be pinned by that entry.
+  static const char kPinnedAppsPrefAppIDPath[];
+
   // Indicates if a launcher item is incognito or not.
   enum IncognitoState {
     STATE_INCOGNITO,
@@ -148,6 +153,10 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // incognito window.
   void CreateNewIncognitoWindow();
 
+  // Checks whether the user is allowed to pin apps. Pinning may be disallowed
+  // by policy in case there is a pre-defined set of pinned apps.
+  bool CanPin() const;
+
   ash::LauncherModel* model() { return model_; }
 
   Profile* profile() { return profile_; }
@@ -165,6 +174,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
       const ash::LauncherItem& item) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenuForLauncher() OVERRIDE;
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
+  virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE;
 
   // ash::LauncherModelObserver overrides:
   virtual void LauncherItemAdded(int index) OVERRIDE;
@@ -222,6 +232,14 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // beginning to the end and stops the iteration when hitting a not-ready app.
   void ProcessPendingPinnedApps();
 
+  // Internal helpers for pinning and unpinning that handle both
+  // client-triggered and internal pinning operations.
+  void DoPinAppWithID(const std::string& app_id);
+  void DoUnpinAppsWithID(const std::string& app_id);
+
+  // Creates app launchers as specified in prefs::kPinnedLauncherApps.
+  void CreateAppLaunchersFromPref();
+
   static ChromeLauncherController* instance_;
 
   ash::LauncherModel* model_;
@@ -241,7 +259,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // list reflects the original order in pinned app list.
   std::deque<Item> pending_pinned_apps_;
 
-  content::NotificationRegistrar registrar_;
+  content::NotificationRegistrar notification_registrar_;
+
+  PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherController);
 };

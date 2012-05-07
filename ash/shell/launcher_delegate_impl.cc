@@ -61,5 +61,9 @@ ash::LauncherID LauncherDelegateImpl::GetIDByWindow(aura::Window* window) {
   return watcher_->GetIDByWindow(window);
 }
 
+bool LauncherDelegateImpl::IsDraggable(const ash::LauncherItem& item) {
+  return true;
+}
+
 }  // namespace shell
 }  // namespace ash

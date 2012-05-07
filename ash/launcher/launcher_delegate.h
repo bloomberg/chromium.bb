@@ -52,6 +52,9 @@ class ASH_EXPORT LauncherDelegate {
   // Returns the id of the item associated with the specified window, or 0 if
   // there isn't one.
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) = 0;
+
+  // Whether the given launcher item is draggable.
+  virtual bool IsDraggable(const ash::LauncherItem& item) = 0;
 };
 
 }  // namespace ash

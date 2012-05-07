@@ -36,6 +36,7 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
       const ash::LauncherItem& item) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenuForLauncher() OVERRIDE;
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
+  virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE;
 
  private:
   // Used to update Launcher. Owned by main.

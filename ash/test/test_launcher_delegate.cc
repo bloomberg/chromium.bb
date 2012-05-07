@@ -101,5 +101,9 @@ aura::Window* TestLauncherDelegate::GetWindowByID(ash::LauncherID id) {
   return NULL;
 }
 
+bool TestLauncherDelegate::IsDraggable(const ash::LauncherItem& item) {
+  return true;
+}
+
 }  // namespace test
 }  // namespace ash

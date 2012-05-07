@@ -9,19 +9,19 @@
 
 #include "ash/launcher/launcher_model.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/tabs/test_tab_strip_model_delegate.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/activation_delegate.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_window_delegate.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 
@@ -101,6 +101,11 @@ class BrowserLauncherItemControllerTest :
     app_icon_loader_ = new AppIconLoaderImpl;
     launcher_delegate_->SetAppIconLoaderForTest(app_icon_loader_);
     launcher_delegate_->Init();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    launcher_delegate_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
  protected:
