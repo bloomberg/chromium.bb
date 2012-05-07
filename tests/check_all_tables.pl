@@ -6,6 +6,8 @@ $|++;
 # Test all tables with lou_checktable.
 #
 # Copyright (C) 2010 by Swiss Library for the Blind, Visually Impaired and Print Disabled
+# Copyright (C) 2012 Mesar Hameed <mhameed @ src.gnome.org>
+# 
 #
 # Copying and distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided the copyright
@@ -23,7 +25,7 @@ my $tablesdir = (split(',', $ENV{LOUIS_TABLEPATH}))[0];
 # get all the tables from the tables directory
 my @tables = glob("$tablesdir/*.[cu]tb $tablesdir/*.cti $tablesdir/*.dis");
 # filter tables that only work when included inside others
-@tables = grep(!/countries.cti|compress.ctb|corrections.ctb|core.[cu]tb|-translation.ctb/, @tables);
+@tables = grep(!/countries.cti|compress.ctb|corrections.ctb|hu-exceptionwords.cti|core.[cu]tb|-translation.ctb/, @tables);
 
 foreach my $table (@tables) {
     if (my $pid = fork) {
