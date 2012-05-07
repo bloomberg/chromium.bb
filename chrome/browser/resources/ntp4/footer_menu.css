@@ -75,10 +75,9 @@
   background-size: 16px 16px;
   box-sizing: border-box;
   display: block;
-  font-size: 1.2em;
-  line-height: 20px;
-  margin-bottom: 8px;
-  margin-top: 8px;
+  line-height: 1.5em;
+  margin-bottom: 0.5em;
+  margin-top: 0.5em;
   max-width: 450px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -90,11 +89,11 @@
 }
 
 .footer-menu-item:first-of-type {
-  margin-top: 4px;
+  margin-top: 0.25em;
 }
 
 .footer-menu-item:last-of-type {
-  margin-bottom: 4px;
+  margin-bottom: 0.25em;
 }
 
 .footer-menu section {
@@ -103,12 +102,13 @@
 
 .footer-menu section h3 {
   color: black;
+  font-size: 1em;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 0.5em;
 }
 
 .footer-menu section h3:first-of-type {
-  margin-top: 4px;
+  margin-top: 0.25em;
 }
 
 /* Used to add additional details to a section header */
