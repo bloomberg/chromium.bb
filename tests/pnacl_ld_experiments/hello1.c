@@ -12,6 +12,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
+
 #include <bits/nacl_syscalls.h>
 
 /* ====================================================================== */
@@ -45,6 +47,8 @@ extern int fortytwo();
  */
 #define EXPORT __attribute__ ((visibility("default"),externally_visible))
 /* ====================================================================== */
+/* poor man's io */
+/* ====================================================================== */
 size_t mystrlen(const char* s) {
    unsigned int count = 0;
    while (*s++) ++count;
@@ -66,23 +70,57 @@ void myhextochar(int n, char buffer[9]) {
   }
 }
 
-__thread int tdata1 = 1;
-__thread int tdata2 = 3;
-
-
 ssize_t mywrite(int fd, const void* buf, size_t n)  {
   return NACL_SYSCALL(write)(fd, buf, n);
 }
 
 #define myprint(s) mywrite(1, s, mystrlen(s))
 
+/* ====================================================================== */
+/* stub functions */
+/* ====================================================================== */
 void __deregister_frame_info(const void *begin) {
-  myprint("DUMMY __deregister_frame_info\n");
+  myprint("STUB __deregister_frame_info\n");
 }
 
 void __register_frame_info(void *begin, void *ob) {
-  myprint("DUMMY __register_frame_info\n");
+  myprint("STUB __register_frame_info\n");
 }
+
+/* ====================================================================== */
+/* dummy functions */
+/* ====================================================================== */
+void __local_lock_acquire() {
+}
+
+void __local_lock_acquire_recursive() {
+}
+
+void __local_lock_close_recursive() {
+}
+
+void __local_lock_init_recursive() {
+}
+
+void __local_lock_release() {
+}
+
+void __local_lock_release_recursive() {
+}
+
+char* getlogin() {
+  return 0;
+}
+
+void issetugid() {
+}
+
+void sigprocmask() {
+}
+
+/* ====================================================================== */
+__thread int tdata1 = 1;
+__thread int tdata2 = 3;
 
 
 int main(int argc, char** argv, char** envp) {
@@ -98,6 +136,12 @@ int main(int argc, char** argv, char** envp) {
   puts("libc call\n");
   printf("another libc call %p\n", buffer);
   printf("another libc call %p\n", &tdata1);
+
+  time_t rawtime;
+  time(&rawtime);
+  printf("The current local time is: %s\n", ctime(&rawtime));
+
+
   /* ======================================== */
   /* tls initialization test */
   myhextochar(tdata1, buffer);

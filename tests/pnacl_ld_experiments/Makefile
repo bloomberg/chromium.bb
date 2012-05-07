@@ -4,6 +4,14 @@
 
 # simple example(s) for builing shared images with the pnacl TC
 # which do not require glibc
+#
+# How to use:
+# -----------
+# make prereq
+# ./scons bitcode=1 platform=x86-32 -j 12 toolchain_tests  (just in case)
+# make mylibc.so
+# make hello1.x86-32.nexe.dummy  (this will fail with undefined symbols
+# make run1
 
 ROOT=$(shell readlink -f ../../)
 TC_ROOT=$(ROOT)/toolchain/pnacl_linux_x86_64/glibc
@@ -17,7 +25,7 @@ IRT=$(ROOT)/scons-out/nacl_irt-x86-32/staging/irt.nexe
 LDSO=$(ROOT)/toolchain/pnacl_linux_x86_64/lib-x86-32/runnable-ld.so
 LIBPATH_SHARED=$(ROOT)/toolchain/pnacl_linux_x86_64/lib-x86-32
 LIBPATH_NEWLIB=$(ROOT)/toolchain/pnacl_linux_x86_64/newlib/usr/lib
-LIBPATH_SDK=$(ROOT)/scons-out/nacl-x86-32-pnacl-pic-clang/lib
+LIBPATH_SDK=$(ROOT)/scons-out/nacl-x86-32-pnacl-pexe-clang/lib
 PATH_CRT=$(ROOT)/toolchain/pnacl_linux_x86_64/glibc/lib
 PATH_CRT_SRC=$(ROOT)/pnacl/support
 
@@ -68,6 +76,34 @@ libsimple.pso: $(S_INIT) fortytwo.bc $(S_FINI)
 libsimple.so: libsimple.pso
 	$(PNACL_TRANS) $(COMMON_FLAGS) -arch x86-32 -nostdlib -shared -fPIC -o $@ $^
 
+# build a shared version of newlib from the bitcode archive
+# work around some hacks that introduced a common symbol in the
+# disabled malloc/free portions
+mylibc.pso: $(S_INIT)  $(S_FINI)
+	rm -rf /tmp/mylibc
+	mkdir -p /tmp/mylibc
+	cd /tmp/mylibc; \
+           ar xv $(ROOT)/toolchain/pnacl_linux_x86_64/newlib/usr/lib/libc.a
+	rm /tmp/mylibc/lib_a-callocr.o
+	rm /tmp/mylibc/lib_a-calloc.o
+	rm /tmp/mylibc/lib_a-cfreer.o
+	rm /tmp/mylibc/lib_a-freer.o
+	rm /tmp/mylibc/lib_a-mallocr.o
+	rm /tmp/mylibc/lib_a-malignr.o
+	rm /tmp/mylibc/lib_a-msizer.o
+	rm /tmp/mylibc/lib_a-mallinfor.o
+	rm /tmp/mylibc/lib_a-mallstatsr.o
+	rm /tmp/mylibc/lib_a-malloptr.o
+	rm /tmp/mylibc/lib_a-reallocr.o
+	rm /tmp/mylibc/lib_a-vallocr.o
+	rm /tmp/mylibc/lib_a-pvallocr.o
+	$(PNACL_CC) $(COMMON_FLAGS) -nostdlib -shared -fPIC \
+              $(S_INIT) /tmp/mylibc/*.o  $(S_FINI) \
+        -Wl,--soname=mylibc.so -o $@
+
+mylibc.so: mylibc.pso
+	$(PNACL_TRANS) $(COMMON_FLAGS) -arch x86-32 -nostdlib -shared -fPIC -o $@ $^
+
 
 LD_FLAGS_NATIVE = --pnacl-allow-native -arch x86-32
 
@@ -86,11 +122,11 @@ FINI = crtend.bc
 # --add-extra-dt-needed=ld-nacl-x86-32.so.1 which does not trigger the
 # a dynamic image
 LIBS = -L $(LIBPATH_SHARED)  -l:ld-2.9.so  \
-       -L . -l:libsimple.pso -l:keep_alive.x \
+       -L . -l:libsimple.pso -l:keep_alive.x -l:mylibc.pso \
        -Wl,--start-group \
-       -L $(LIBPATH_NEWLIB)  -l:libc.a \
-       -L $(LIBPATH_SDK) -l:libnacl.a \
+       -L $(LIBPATH_SDK) -l:libnacl.a -l:libnosys.a \
        -Wl,--end-group
+
 
 hello1.x86-32.nexe.dummy: hello1.bc $(INIT) $(FINI) libsimple.pso
 	$(PNACL_CC) $(COMMON_FLAGS) $(LD_FLAGS_NATIVE) -nodefaultlibs -nostdlib \
@@ -105,7 +141,7 @@ hello1.x86-32.nexe.dummy: hello1.bc $(INIT) $(FINI) libsimple.pso
 # NOTE:
 MAGIC_OBJ = hello1.x86-32.nexe.dummy---linked.o
 LIBS2 = -L $(LIBPATH_SHARED)  -l:ld-2.9.so  \
-        -L . -l:libsimple.so \
+        -L . -l:libsimple.so -l:mylibc.so \
         -l:libgcc.a
 
 hello1.x86-32.nexe: libsimple.so
