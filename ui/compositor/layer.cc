@@ -421,11 +421,14 @@ void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
 
   bool was_move = bounds_.size() == bounds.size();
   bounds_ = bounds;
-  if (IsDrawn()) {
-    if (was_move)
+  if (was_move) {
+    // Don't schedule a draw if we're invisible. We'll schedule one
+    // automatically when we get visible.
+    if (IsDrawn())
       ScheduleDraw();
-    else
-      SchedulePaint(gfx::Rect(bounds.size()));
+  } else {
+    // Always schedule a paint, even if we're invisible.
+    SchedulePaint(gfx::Rect(bounds.size()));
   }
 
   RecomputeTransform();
