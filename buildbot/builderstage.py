@@ -28,7 +28,7 @@ class BuilderStage(object):
   push_overlays = None
 
   # Class variable that stores the branch to build and test
-  _tracking_branch = None
+  _target_manifest_branch = None
 
   # Class should set this if they have a corresponding no<stage> option that
   # skips their stage.
@@ -39,8 +39,8 @@ class BuilderStage(object):
   config_name = None
 
   @staticmethod
-  def SetTrackingBranch(tracking_branch):
-    BuilderStage._tracking_branch = tracking_branch
+  def SetManifestBranch(branch):
+    BuilderStage._target_manifest_branch = branch
 
   def __init__(self, options, build_config, suffix=None):
     self._bot_id = build_config['name']

@@ -193,7 +193,7 @@ class SyncStage(bs.BuilderStage):
       git_url = self._build_config['git_url']
 
     kwds.setdefault('referenced_repo', self._options.reference_repo)
-    kwds.setdefault('branch', self._tracking_branch)
+    kwds.setdefault('branch', self._target_manifest_branch)
 
     self.repo = repository.RepoRepository(git_url, build_root, **kwds)
 
@@ -273,7 +273,8 @@ class ManifestVersionedSyncStage(SyncStage):
 
   def Initialize(self):
     """Initializes a manager that manages manifests for associated stages."""
-    increment = 'build' if self._tracking_branch == 'master' else 'branch'
+    increment = ('build' if self._target_manifest_branch == 'master'
+                 else 'branch')
 
     dry_run = self._options.debug
 
@@ -333,7 +334,8 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
 
   def _GetInitializedManager(self, internal):
     """Returns an initialized lkgm manager."""
-    increment = 'build' if self._tracking_branch == 'master' else 'branch'
+    increment = ('build' if self._target_manifest_branch == 'master'
+                 else 'branch')
     return lkgm_manager.LKGMManager(
         source_repo=self.repo,
         manifest_repo=cbuildbot_config.GetManifestVersionsRepoUrl(
@@ -543,7 +545,8 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   def HandleSuccess(self):
     # We only promote for the pfq, not chrome pfq.
     if (cbuildbot_config.IsPFQType(self._build_config['build_type']) and
-        self._build_config['master'] and self._tracking_branch == 'master' and
+        self._build_config['master'] and
+        self._target_manifest_branch == 'master' and
         ManifestVersionedSyncStage.manifest_manager != None and
         self._build_config['build_type'] != constants.CHROME_PFQ_TYPE):
       ManifestVersionedSyncStage.manifest_manager.PromoteCandidate()
@@ -683,7 +686,7 @@ class UprevStage(bs.BuilderStage):
     chrome_atom_to_build = None
     if self._chrome_rev:
       chrome_atom_to_build = commands.MarkChromeAsStable(
-          self._build_root, self._tracking_branch,
+          self._build_root, self._target_manifest_branch,
           self._chrome_rev, self._boards,
           chrome_root=self._options.chrome_root,
           chrome_version=self._options.chrome_version)

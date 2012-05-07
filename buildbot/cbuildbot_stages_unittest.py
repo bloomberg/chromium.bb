@@ -39,7 +39,7 @@ class AbstractStageTest(mox.MoxTestBase):
   default values for testing BuilderStage and its derivatives.
   """
 
-  TRACKING_BRANCH = 'ooga_booga'
+  TARGET_MANIFEST_BRANCH = 'ooga_booga'
 
   def ConstructStage(self):
     """Returns an instance of the stage to be tested.
@@ -72,7 +72,7 @@ class AbstractStageTest(mox.MoxTestBase):
     self.overlay = os.path.join(self.build_root,
                                 'src/third_party/chromiumos-overlay')
 
-    bs.BuilderStage.SetTrackingBranch(self.TRACKING_BRANCH)
+    bs.BuilderStage.SetManifestBranch(self.TARGET_MANIFEST_BRANCH)
     portage_utilities._OVERLAY_LIST_CMD = '/bin/true'
 
   def RunStage(self):
@@ -706,7 +706,7 @@ class UprevStageTest(AbstractStageTest):
 
     commands.MarkChromeAsStable(
         self.build_root,
-        self.TRACKING_BRANCH,
+        self.TARGET_MANIFEST_BRANCH,
         self.options.chrome_rev,
         self._boards,
         chrome_root=None,
@@ -722,7 +722,7 @@ class UprevStageTest(AbstractStageTest):
 
     commands.MarkChromeAsStable(
         self.build_root,
-        self.TRACKING_BRANCH,
+        self.TARGET_MANIFEST_BRANCH,
         self.options.chrome_rev,
         self._boards,
         chrome_root=None,
@@ -763,7 +763,7 @@ class UprevStageTest(AbstractStageTest):
 
     commands.MarkChromeAsStable(
         self.build_root,
-        self.TRACKING_BRANCH,
+        self.TARGET_MANIFEST_BRANCH,
         self.options.chrome_rev,
         self._boards,
         chrome_root=None,

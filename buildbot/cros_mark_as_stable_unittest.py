@@ -25,7 +25,7 @@ class NonClassTests(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_mark_as_stable, '_SimpleRunCommand')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self._branch = 'test_branch'
-    self._tracking_branch = 'cros/master'
+    self._target_manifest_branch = 'cros/master'
 
   def testPushChange(self):
     git_log = 'Marking test_one as stable\nMarking test_two as stable\n'
@@ -39,7 +39,7 @@ class NonClassTests(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_build_lib, 'CreatePushBranch')
 
     cros_mark_as_stable._DoWeHaveLocalCommits(
-        self._branch, self._tracking_branch).AndReturn(True)
+        self._branch, self._target_manifest_branch).AndReturn(True)
     cros_build_lib.GetPushBranch('.').AndReturn(['gerrit', 'master'])
     cros_build_lib.SyncPushBranch('.', 'gerrit', 'master')
     cros_mark_as_stable._DoWeHaveLocalCommits(
@@ -53,7 +53,8 @@ class NonClassTests(mox.MoxTestBase):
     cros_mark_as_stable._SimpleRunCommand('git config push.default tracking')
     cros_build_lib.GitPushWithRetry('merge_branch', cwd='.', dryrun=False)
     self.mox.ReplayAll()
-    cros_mark_as_stable.PushChange(self._branch, self._tracking_branch, False)
+    cros_mark_as_stable.PushChange(self._branch,
+                                   self._target_manifest_branch, False)
     self.mox.VerifyAll()
 
 
@@ -66,8 +67,8 @@ class GitBranchTest(mox.MoxTestBase):
     self._branch = self.mox.CreateMock(cros_mark_as_stable.GitBranch)
     self._branch_name = 'test_branch'
     self._branch.branch_name = self._branch_name
-    self._tracking_branch = 'cros/test'
-    self._branch.tracking_branch = self._tracking_branch
+    self._target_manifest_branch = 'cros/test'
+    self._branch.tracking_branch = self._target_manifest_branch
 
   def testCheckoutCreate(self):
     # Test init with no previous branch existing.
@@ -90,7 +91,7 @@ class GitBranchTest(mox.MoxTestBase):
   def testDelete(self):
     self.mox.StubOutWithMock(cros_mark_as_stable.GitBranch, 'Checkout')
     branch = cros_mark_as_stable.GitBranch(self._branch_name,
-                                           self._tracking_branch)
+                                           self._target_manifest_branch)
     cros_mark_as_stable.GitBranch.Checkout(mox.IgnoreArg())
     cros_mark_as_stable._SimpleRunCommand('repo abandon ' + self._branch_name)
     self.mox.ReplayAll()
@@ -99,7 +100,7 @@ class GitBranchTest(mox.MoxTestBase):
 
   def testExists(self):
     branch = cros_mark_as_stable.GitBranch(self._branch_name,
-                                           self._tracking_branch)
+                                           self._target_manifest_branch)
     # Test if branch exists that is created
     cros_mark_as_stable._SimpleRunCommand('git branch').AndReturn(
         '%s' % self._branch_name)

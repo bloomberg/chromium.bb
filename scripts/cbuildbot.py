@@ -185,7 +185,7 @@ class Builder(object):
     self.archive_stages = {}
     self.archive_urls = {}
     self.release_tag = None
-    self.tracking_branch = _GetChromiteTrackingBranch()
+    self.target_manifest_branch = _GetChromiteTrackingBranch()
     self.gerrit_patches = None
     self.local_patches = None
 
@@ -201,11 +201,11 @@ class Builder(object):
       self.gerrit_patches, self.local_patches = _PreProcessPatches(
           self.options.gerrit_patches, self.options.local_patches)
 
-    bs.BuilderStage.SetTrackingBranch(self.tracking_branch)
+    bs.BuilderStage.SetManifestBranch(self.target_manifest_branch)
 
     # Check branch matching early.
     if _IsIncrementalBuild(self.options.buildroot, self.options.clobber):
-      _CheckBuildRootBranch(self.options.buildroot, self.tracking_branch)
+      _CheckBuildRootBranch(self.options.buildroot, self.target_manifest_branch)
 
     self._RunStage(stages.CleanUpStage)
 
