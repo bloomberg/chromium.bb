@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
 #include "net/base/io_buffer.h"
-#include "net/base/ip_endpoint.h"
 
 #include <string>
 
@@ -22,13 +21,19 @@ extern const char kBytesWrittenKey[];
 extern const char kSocketIdKey[];
 extern const char kUdpSocketType[];
 
+class SocketExtensionFunction : public AsyncIOAPIFunction {
+ public:
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
+};
+
 // Many of these socket functions are synchronous in the sense that
 // they don't involve blocking operations, but we've made them all
 // AsyncExtensionFunctions because the underlying UDPClientSocket
 // library wants all operations to happen on the same thread as the
 // one that created the socket. Too bad.
 
-class SocketCreateFunction : public AsyncIOAPIFunction {
+class SocketCreateFunction : public SocketExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.create")
 
@@ -40,7 +45,6 @@ class SocketCreateFunction : public AsyncIOAPIFunction {
   // AsyncIOAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
 
  private:
   enum SocketType {
@@ -54,7 +58,7 @@ class SocketCreateFunction : public AsyncIOAPIFunction {
   APIResourceEventNotifier* event_notifier_;
 };
 
-class SocketDestroyFunction : public AsyncIOAPIFunction {
+class SocketDestroyFunction : public SocketExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.destroy")
 
@@ -64,23 +68,23 @@ class SocketDestroyFunction : public AsyncIOAPIFunction {
   // AsyncIOAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
 
  private:
   int socket_id_;
 };
 
-class SocketConnectFunction : public AsyncIOAPIFunction {
+class SocketConnectFunction : public SocketExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.connect")
+
+  void OnCompleted(int result);
 
  protected:
   virtual ~SocketConnectFunction() {}
 
   // AsyncIOAPIFunction:
   virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
 
  private:
   int socket_id_;
@@ -88,7 +92,7 @@ class SocketConnectFunction : public AsyncIOAPIFunction {
   int port_;
 };
 
-class SocketDisconnectFunction : public AsyncIOAPIFunction {
+class SocketDisconnectFunction : public SocketExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.disconnect")
 
@@ -98,17 +102,15 @@ class SocketDisconnectFunction : public AsyncIOAPIFunction {
   // AsyncIOAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
 
  private:
   int socket_id_;
 };
 
-class SocketBindFunction : public AsyncIOAPIFunction {
+class SocketBindFunction : public SocketExtensionFunction {
  protected:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
 
  private:
   int socket_id_;
@@ -118,59 +120,63 @@ class SocketBindFunction : public AsyncIOAPIFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.bind")
 };
 
-class SocketReadFunction : public AsyncIOAPIFunction {
+class SocketReadFunction : public SocketExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.read")
+
+  void OnCompleted(int result, scoped_refptr<net::IOBuffer> io_buffer);
 
  protected:
   virtual ~SocketReadFunction() {}
 
   // AsyncIOAPIFunction:
   virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
 
  private:
   int socket_id_;
 };
 
-class SocketWriteFunction : public AsyncIOAPIFunction {
+class SocketWriteFunction : public SocketExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.write")
 
   SocketWriteFunction();
+  void OnCompleted(int result);
 
  protected:
   virtual ~SocketWriteFunction();
 
   // AsyncIOAPIFunction:
   virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
 
  private:
   int socket_id_;
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
 };
 
-class SocketRecvFromFunction : public AsyncIOAPIFunction {
+class SocketRecvFromFunction : public SocketExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.recvFrom")
+
+  void OnCompleted(int result,
+                   scoped_refptr<net::IOBuffer> io_buffer,
+                   const std::string& address,
+                   int port);
 
  protected:
   virtual ~SocketRecvFromFunction();
 
   // AsyncIOAPIFunction
   virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
 
  private:
   int socket_id_;
-  net::IPEndPoint address_;
 };
 
-class SocketSendToFunction : public AsyncIOAPIFunction {
+class SocketSendToFunction : public SocketExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.sendTo")
 
@@ -178,11 +184,11 @@ class SocketSendToFunction : public AsyncIOAPIFunction {
 
  protected:
   virtual ~SocketSendToFunction();
+  void OnCompleted(int result);
 
   // AsyncIOAPIFunction:
   virtual bool Prepare() OVERRIDE;
-  virtual void Work() OVERRIDE;
-  virtual bool Respond() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
 
  private:
   int socket_id_;

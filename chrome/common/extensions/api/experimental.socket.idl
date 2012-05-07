@@ -5,39 +5,11 @@
 // File-level comment to appease parser. Eventually this will not be necessary.
 
 [nodoc] namespace experimental.socket {
-
-  // A socket event.
-  dictionary SocketEvent {
-    // A connectComplete event reports the result of a connect that blocked. A
-    // writeComplete event reports the result of a write that blocked. A
-    // dataRead event reports bytes that have arrived following a read call
-    // that blocked.
-    DOMString type;
-
-    // The result code, if the event type is dataRead or writeComplete. The
-    // result code description matches the resultCode field in the immediate
-    // callback for the call that led to this event.
-    long? resultCode;
-
-    // The data read, if the event type is dataRead.
-    // TODO(miket): [instanceOf=ArrayBuffer]object? data;
-    long[]? data;
-
-    // Whether this is the final event that this socket will send.
-    [nodoc] boolean isFinalEvent;
-
-    // An ID unique to the calling function's context so that events can get
-    // routed back to the correct callback.
-    [nodoc] long? srcId;
-  };
-
-  callback OnEventCallback = void (SocketEvent event);
-
   // The socket options.
   dictionary CreateOptions {
-    // This function is called with events that occur during the lifetime of
-    // the socket.
-    OnEventCallback? onEvent;
+    // The schema generator does not support dictionaries without any fields.
+    // Ignore this field.
+    [nodoc] long? dummyValue;
   };
 
   dictionary CreateInfo {
@@ -169,12 +141,6 @@
                        DOMString address,
                        long port,
                        SendToCallback callback);
-  };
-
-  interface Events {
-    // Used to pass events back to the socket creator.
-    // |event| : The event indicating socket status.
-    static void onEvent(SocketEvent event);
   };
 
 };

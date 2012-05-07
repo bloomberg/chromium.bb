@@ -25,9 +25,18 @@ const char kTCPOption[] = "tcp";
 const char kUDPOption[] = "udp";
 
 const char kSocketNotFoundError[] = "Socket not found";
+const char kSocketTypeInvalidError[] = "Socket type is not supported";
+
+void SocketExtensionFunction::Work() {
+}
+
+bool SocketExtensionFunction::Respond() {
+  return error_.empty();
+}
 
 SocketCreateFunction::SocketCreateFunction()
-    : src_id_(-1),
+    : socket_type_(kSocketTypeInvalid),
+      src_id_(-1),
       event_notifier_(NULL) {
 }
 
@@ -36,12 +45,14 @@ SocketCreateFunction::~SocketCreateFunction() {}
 bool SocketCreateFunction::Prepare() {
   std::string socket_type_string;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &socket_type_string));
-  if (socket_type_string == kTCPOption)
+  if (socket_type_string == kTCPOption) {
     socket_type_ = kSocketTypeTCP;
-  else if (socket_type_string == kUDPOption)
+  } else if (socket_type_string == kUDPOption) {
     socket_type_ = kSocketTypeUDP;
-  else
+  } else {
+    error_ = kSocketTypeInvalidError;
     return false;
+  }
 
   src_id_ = ExtractSrcId(1);
   event_notifier_ = CreateEventNotifier(src_id_);
@@ -53,19 +64,14 @@ void SocketCreateFunction::Work() {
   Socket* socket = NULL;
   if (socket_type_ == kSocketTypeTCP) {
     socket = new TCPSocket(event_notifier_);
-  } else {
+  } else if (socket_type_== kSocketTypeUDP) {
     socket = new UDPSocket(event_notifier_);
   }
   DCHECK(socket);
 
   DictionaryValue* result = new DictionaryValue();
-
   result->SetInteger(kSocketIdKey, controller()->AddAPIResource(socket));
   result_.reset(result);
-}
-
-bool SocketCreateFunction::Respond() {
-  return true;
 }
 
 bool SocketDestroyFunction::Prepare() {
@@ -74,11 +80,8 @@ bool SocketDestroyFunction::Prepare() {
 }
 
 void SocketDestroyFunction::Work() {
-  controller()->RemoveAPIResource(socket_id_);
-}
-
-bool SocketDestroyFunction::Respond() {
-  return true;
+  if (!controller()->RemoveAPIResource(socket_id_))
+    error_ = kSocketNotFoundError;
 }
 
 bool SocketConnectFunction::Prepare() {
@@ -88,18 +91,21 @@ bool SocketConnectFunction::Prepare() {
   return true;
 }
 
-void SocketConnectFunction::Work() {
-  int result = -1;
+void SocketConnectFunction::AsyncWorkStart() {
   Socket* socket = controller()->GetSocket(socket_id_);
-  if (socket)
-    result = socket->Connect(address_, port_);
-  else
+  if (!socket) {
     error_ = kSocketNotFoundError;
-  result_.reset(Value::CreateIntegerValue(result));
+    OnCompleted(-1);
+    return;
+  }
+
+  socket->Connect(address_, port_,
+      base::Bind(&SocketConnectFunction::OnCompleted, this));
 }
 
-bool SocketConnectFunction::Respond() {
-  return true;
+void SocketConnectFunction::OnCompleted(int result) {
+  result_.reset(Value::CreateIntegerValue(result));
+  AsyncWorkCompleted();
 }
 
 bool SocketDisconnectFunction::Prepare() {
@@ -115,11 +121,6 @@ void SocketDisconnectFunction::Work() {
     error_ = kSocketNotFoundError;
   result_.reset(Value::CreateNullValue());
 }
-
-bool SocketDisconnectFunction::Respond() {
-  return true;
-}
-
 
 bool SocketBindFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
@@ -139,25 +140,29 @@ void SocketBindFunction::Work() {
   result_.reset(Value::CreateIntegerValue(result));
 }
 
-bool SocketBindFunction::Respond() {
-  return true;
-}
-
 bool SocketReadFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
   return true;
 }
 
-void SocketReadFunction::Work() {
+void SocketReadFunction::AsyncWorkStart() {
+  Socket* socket = controller()->GetSocket(socket_id_);
+
+  if (!socket) {
+    error_ = kSocketNotFoundError;
+    OnCompleted(-1, NULL);
+    return;
+  }
+
   // TODO(miket): this is an arbitrary number. Can we come up with one that
   // makes sense?
   const int buffer_len = 2048;
-  scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(buffer_len));
-  Socket* socket = controller()->GetSocket(socket_id_);
-  int bytes_read = -1;
-  if (socket)
-    bytes_read = socket->Read(io_buffer, buffer_len);
+  socket->Read(buffer_len,
+      base::Bind(&SocketReadFunction::OnCompleted, this));
+}
 
+void SocketReadFunction::OnCompleted(int bytes_read,
+                                     scoped_refptr<net::IOBuffer> io_buffer) {
   // TODO(miket): the buffer-to-array functionality appears twice, once here
   // and once in socket.cc. When serial etc. is converted over, it'll appear
   // there, too. What's a good single place for it to live? Keep in mind that
@@ -174,10 +179,8 @@ void SocketReadFunction::Work() {
   result->SetInteger(kResultCodeKey, bytes_read);
   result->Set(kDataKey, data_value);
   result_.reset(result);
-}
 
-bool SocketReadFunction::Respond() {
-  return true;
+  AsyncWorkCompleted();
 }
 
 SocketWriteFunction::SocketWriteFunction()
@@ -209,21 +212,25 @@ bool SocketWriteFunction::Prepare() {
   return true;
 }
 
-void SocketWriteFunction::Work() {
-  int bytes_written = -1;
+void SocketWriteFunction::AsyncWorkStart() {
   Socket* socket = controller()->GetSocket(socket_id_);
-  if (socket)
-    bytes_written = socket->Write(io_buffer_, io_buffer_->size());
-   else
-    error_ = kSocketNotFoundError;
 
+  if (!socket) {
+    error_ = kSocketNotFoundError;
+    OnCompleted(-1);
+    return;
+  }
+
+  socket->Write(io_buffer_, io_buffer_->size(),
+      base::Bind(&SocketWriteFunction::OnCompleted, this));
+}
+
+void SocketWriteFunction::OnCompleted(int bytes_written) {
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(kBytesWrittenKey, bytes_written);
   result_.reset(result);
-}
 
-bool SocketWriteFunction::Respond() {
-  return true;
+  AsyncWorkCompleted();
 }
 
 SocketRecvFromFunction::~SocketRecvFromFunction() {}
@@ -233,19 +240,25 @@ bool SocketRecvFromFunction::Prepare() {
   return true;
 }
 
-void SocketRecvFromFunction::Work() {
+void SocketRecvFromFunction::AsyncWorkStart() {
+  Socket* socket = controller()->GetSocket(socket_id_);
   // TODO(miket): this is an arbitrary number. Can we come up with one that
   // makes sense?
-  const int buffer_len = 2048;
-  scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(buffer_len));
-  Socket* socket = controller()->GetSocket(socket_id_);
-  int bytes_read = -1;
-  std::string ip_address_str;
-  int port = 0;
-  if (socket) {
-    bytes_read = socket->RecvFrom(io_buffer, buffer_len, &address_);
+  if (!socket) {
+    error_ = kSocketNotFoundError;
+    OnCompleted(-1, NULL, std::string(), 0);
+    return;
   }
 
+  const int buffer_len = 2048;
+  socket->RecvFrom(buffer_len,
+      base::Bind(&SocketRecvFromFunction::OnCompleted, this));
+}
+
+void SocketRecvFromFunction::OnCompleted(int bytes_read,
+                                         scoped_refptr<net::IOBuffer> io_buffer,
+                                         const std::string& address,
+                                         int port) {
   // TODO(miket): the buffer-to-array functionality appears twice, once here
   // and once in socket.cc. When serial etc. is converted over, it'll appear
   // there, too. What's a good single place for it to live? Keep in mind that
@@ -253,7 +266,6 @@ void SocketRecvFromFunction::Work() {
   DictionaryValue* result = new DictionaryValue();
   ListValue* data_value = new ListValue();
   if (bytes_read > 0) {
-    Socket::IPEndPointToStringAndPort(address_, &ip_address_str, &port);
     size_t bytes_size = static_cast<size_t>(bytes_read);
     const char* io_buffer_start = io_buffer->data();
     for (size_t i = 0; i < bytes_size; ++i) {
@@ -263,13 +275,11 @@ void SocketRecvFromFunction::Work() {
 
   result->SetInteger(kResultCodeKey, bytes_read);
   result->Set(kDataKey, data_value);
-  result->SetString(kAddressKey, ip_address_str);
+  result->SetString(kAddressKey, address);
   result->SetInteger(kPortKey, port);
   result_.reset(result);
-}
 
-bool SocketRecvFromFunction::Respond() {
-  return true;
+  AsyncWorkCompleted();
 }
 
 SocketSendToFunction::SocketSendToFunction()
@@ -303,23 +313,24 @@ bool SocketSendToFunction::Prepare() {
   return true;
 }
 
-void SocketSendToFunction::Work() {
-  int bytes_written = -1;
+void SocketSendToFunction::AsyncWorkStart() {
   Socket* socket = controller()->GetSocket(socket_id_);
-  if (socket) {
-    bytes_written = socket->SendTo(io_buffer_, io_buffer_->size(), address_,
-        port_);
-  } else {
+  if (!socket) {
     error_ = kSocketNotFoundError;
+    OnCompleted(-1);
+    return;
   }
 
+  socket->SendTo(io_buffer_, io_buffer_->size(), address_, port_,
+      base::Bind(&SocketSendToFunction::OnCompleted, this));
+}
+
+void SocketSendToFunction::OnCompleted(int bytes_written) {
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(kBytesWrittenKey, bytes_written);
   result_.reset(result);
-}
 
-bool SocketSendToFunction::Respond() {
-  return true;
+  AsyncWorkCompleted();
 }
 
 }  // namespace extensions

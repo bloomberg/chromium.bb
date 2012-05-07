@@ -23,7 +23,6 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/context_menus_custom_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/experimental.socket_custom_bindings.h"
 #include "chrome/renderer/extensions/experimental.usb_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_groups.h"
@@ -70,7 +69,6 @@ using WebKit::WebView;
 using content::RenderThread;
 using extensions::ApiDefinitionsNatives;
 using extensions::ContextMenusCustomBindings;
-using extensions::ExperimentalSocketCustomBindings;
 using extensions::ExperimentalUsbCustomBindings;
 using extensions::ExtensionAPI;
 using extensions::ExtensionCustomBindings;
@@ -471,8 +469,6 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler("extension",
       scoped_ptr<NativeHandler>(
           new ExtensionCustomBindings(this)));
-  module_system->RegisterNativeHandler("experimental_socket",
-      scoped_ptr<NativeHandler>(new ExperimentalSocketCustomBindings()));
   module_system->RegisterNativeHandler("experimental_usb",
       scoped_ptr<NativeHandler>(new ExperimentalUsbCustomBindings()));
   module_system->RegisterNativeHandler("file_browser_handler",
@@ -524,8 +520,6 @@ void ExtensionDispatcher::PopulateSourceMap() {
                              IDR_EXPERIMENTAL_OFFSCREENTABS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.runtime",
                              IDR_EXPERIMENTAL_RUNTIME_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("experimental.socket",
-                             IDR_EXPERIMENTAL_SOCKET_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.usb",
                              IDR_EXPERIMENTAL_USB_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.webRequest",

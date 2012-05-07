@@ -72,7 +72,7 @@ var testSocketCreation = function() {
     chrome.test.succeed();
   }
 
-  socket.create(protocol, {onEvent: function(e) {}}, onCreate);
+  socket.create(protocol, {}, onCreate);
 };
 
 function onDataRead(readInfo) {
@@ -88,7 +88,6 @@ function onDataRead(readInfo) {
         chrome.test.succeed();
       }
     });
-  // Blocked. Wait for onEvent.
 }
 
 function onWriteOrSendToComplete(writeInfo) {
@@ -99,7 +98,6 @@ function onWriteOrSendToComplete(writeInfo) {
     else
       socket.recvFrom(socketId, onDataRead);
   }
-  // Blocked. Wait for onEvent.
 }
 
 function onConnectOrBindComplete(connectResult) {
@@ -113,7 +111,6 @@ function onConnectOrBindComplete(connectResult) {
               onWriteOrSendToComplete);
       });
   }
-  // Blocked. Wait for onEvent.
 }
 
 function onCreate(socketInfo) {
@@ -124,18 +121,6 @@ function onCreate(socketInfo) {
   else
     socket.bind(socketId, "0.0.0.0", 0, onConnectOrBindComplete);
 }
-
-function onEvent(socketEvent) {
-  if (socketEvent.type == "connectComplete") {
-    onConnectOrBindComplete(socketEvent.resultCode);
-  } else if (socketEvent.type == "dataRead") {
-    onDataRead({resultCode: socketEvent.resultCode, data: socketEvent.data});
-  } else if (socketEvent.type == "writeComplete") {
-    onWriteOnSendToComplete(socketEvent.resultCode);
-  } else {
-    console.log("Received unhandled socketEvent of type " + socketEvent.type);
-  }
-};
 
 function waitForBlockingOperation() {
   if (++waitCount < 10) {
@@ -153,7 +138,7 @@ var testSending = function() {
   waitCount = 0;
 
   setTimeout(waitForBlockingOperation, 1000);
-  socket.create(protocol, {onEvent: onEvent}, onCreate);
+  socket.create(protocol, {}, onCreate);
 };
 
 var onMessageReply = function(message) {

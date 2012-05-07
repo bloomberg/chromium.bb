@@ -15,6 +15,49 @@ using content::BrowserThread;
 
 namespace extensions {
 
+bool AsyncIOAPIFunction::RunImpl() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  extension_service_ = profile()->GetExtensionService();
+
+  if (!Prepare()) {
+    return false;
+  }
+  bool rv = BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&AsyncIOAPIFunction::WorkOnIOThread, this));
+  DCHECK(rv);
+  return true;
+}
+
+void AsyncIOAPIFunction::Work() {
+}
+
+void AsyncIOAPIFunction::AsyncWorkStart() {
+  Work();
+  AsyncWorkCompleted();
+}
+
+void AsyncIOAPIFunction::AsyncWorkCompleted() {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    bool rv = BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&AsyncIOAPIFunction::RespondOnUIThread, this));
+    DCHECK(rv);
+  } else {
+    SendResponse(Respond());
+  }
+}
+
+void AsyncIOAPIFunction::WorkOnIOThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  AsyncWorkStart();
+}
+
+void AsyncIOAPIFunction::RespondOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  SendResponse(Respond());
+}
+
 int AsyncIOAPIFunction::ExtractSrcId(size_t argument_position) {
   scoped_ptr<DictionaryValue> options(new DictionaryValue());
   if (args_->GetSize() > argument_position) {
@@ -45,34 +88,6 @@ APIResourceController* AsyncIOAPIFunction::controller() {
   // this code is reached, so it's safe to access it on either the IO or UI
   // thread.
   return extension_service_->api_resource_controller();
-}
-
-bool AsyncIOAPIFunction::RunImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  extension_service_ = profile()->GetExtensionService();
-
-  if (!Prepare()) {
-    return false;
-  }
-  bool rv = BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&AsyncIOAPIFunction::WorkOnIOThread, this));
-  DCHECK(rv);
-  return true;
-}
-
-void AsyncIOAPIFunction::WorkOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  Work();
-  bool rv = BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&AsyncIOAPIFunction::RespondOnUIThread, this));
-  DCHECK(rv);
-}
-
-void AsyncIOAPIFunction::RespondOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SendResponse(Respond());
 }
 
 }  // namespace extensions

@@ -40,7 +40,6 @@ without changes to the corresponding grd file. fb9 -->
         <include name="IDR_EXPERIMENTAL_DECLARATIVE_CUSTOM_BINDINGS_JS" file="resources\extensions\experimental.declarative_custom_bindings.js" type="BINDATA" />
         <include name="IDR_EXPERIMENTAL_OFFSCREENTABS_CUSTOM_BINDINGS_JS" file="resources\extensions\experimental.offscreenTabs_custom_bindings.js" type="BINDATA" />
         <include name="IDR_EXPERIMENTAL_RUNTIME_CUSTOM_BINDINGS_JS" file="resources\extensions\experimental.runtime_custom_bindings.js" type="BINDATA" />
-        <include name="IDR_EXPERIMENTAL_SOCKET_CUSTOM_BINDINGS_JS" file="resources\extensions\experimental.socket_custom_bindings.js" type="BINDATA" />
         <include name="IDR_EXPERIMENTAL_USB_CUSTOM_BINDINGS_JS" file="resources\extensions\experimental.usb_custom_bindings.js" type="BINDATA" />
         <include name="IDR_EXPERIMENTAL_WEBREQUEST_CUSTOM_BINDINGS_JS" file="resources\extensions\experimental.webrequest_custom_bindings.js" type="BINDATA" />
         <include name="IDR_EXTENSION_CUSTOM_BINDINGS_JS" file="resources\extensions\extension_custom_bindings.js" type="BINDATA" />

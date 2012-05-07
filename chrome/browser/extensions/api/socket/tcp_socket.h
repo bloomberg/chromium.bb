@@ -27,32 +27,44 @@ class TCPSocket : public Socket {
   explicit TCPSocket(APIResourceEventNotifier* event_notifier);
   virtual ~TCPSocket();
 
-  virtual int Connect(const std::string& address, int port) OVERRIDE;
+  virtual void Connect(const std::string& address,
+                       int port,
+                       const CompletionCallback& callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual int Bind(const std::string& address, int port) OVERRIDE;
-  virtual int Read(scoped_refptr<net::IOBuffer> io_buffer,
-                   int io_buffer_size) OVERRIDE;
-  virtual int Write(scoped_refptr<net::IOBuffer> io_buffer,
-                    int bytes) OVERRIDE;
-  virtual int RecvFrom(scoped_refptr<net::IOBuffer> io_buffer,
-                       int io_buffer_size,
-                       net::IPEndPoint *address) OVERRIDE;
-  virtual int SendTo(scoped_refptr<net::IOBuffer> io_buffer,
-                     int byte_count,
-                     const std::string& address,
-                     int port) OVERRIDE;
-
-  virtual void OnConnect(int result);
+  virtual void Read(int count,
+                    const ReadCompletionCallback& callback) OVERRIDE;
+  virtual void Write(scoped_refptr<net::IOBuffer> io_buffer,
+                     int bytes,
+                     const CompletionCallback& callback) OVERRIDE;
+  virtual void RecvFrom(int count,
+                        const RecvFromCompletionCallback& callback) OVERRIDE;
+  virtual void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
+                      int byte_count,
+                      const std::string& address,
+                      int port,
+                      const CompletionCallback& callback) OVERRIDE;
 
   static TCPSocket* CreateSocketForTesting(
       net::TCPClientSocket* tcp_client_socket,
       APIResourceEventNotifier* event_notifier);
 
  private:
+  virtual void OnConnectComplete(int result);
+  virtual void OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer,
+                              int result);
+  virtual void OnWriteComplete(int result);
+
   TCPSocket(net::TCPClientSocket* tcp_client_socket,
             APIResourceEventNotifier* event_notifier);
 
   scoped_ptr<net::TCPClientSocket> socket_;
+
+  CompletionCallback connect_callback_;
+
+  ReadCompletionCallback read_callback_;
+
+  CompletionCallback write_callback_;
 };
 
 }  //  namespace extensions

@@ -25,30 +25,6 @@ Socket::~Socket() {
   DCHECK(!is_connected_);
 }
 
-void Socket::OnDataRead(scoped_refptr<net::IOBuffer> io_buffer,
-                        net::IPEndPoint* address,
-                        int result) {
-  // OnDataRead will take ownership of data_value.
-  ListValue* data_value = new ListValue();
-  if (result >= 0) {
-    size_t bytes_size = static_cast<size_t>(result);
-    const char* io_buffer_start = io_buffer->data();
-    for (size_t i = 0; i < bytes_size; ++i) {
-      data_value->Set(i, Value::CreateIntegerValue(io_buffer_start[i]));
-    }
-  }
-
-  std::string ip_address_str;
-  int port = 0;
-  if (address)
-    IPEndPointToStringAndPort(*address, &ip_address_str, &port);
-  event_notifier()->OnDataRead(result, data_value, ip_address_str, port);
-}
-
-void Socket::OnWriteComplete(int result) {
-  event_notifier()->OnWriteComplete(result);
-}
-
 // static
 bool Socket::StringAndPortToIPEndPoint(const std::string& ip_address_str,
                                        int port,

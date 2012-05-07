@@ -27,7 +27,13 @@ class AsyncIOAPIFunction : public AsyncExtensionFunction {
   virtual bool Prepare() = 0;
 
   // Do actual work. Guaranteed to happen on IO thread.
-  virtual void Work() = 0;
+  virtual void Work();
+
+  // Start the asynchronous work. Guraranteed to happen on IO thread.
+  virtual void AsyncWorkStart();
+
+  // Notify AsyncIOAPIFunction that the work is completed
+  void AsyncWorkCompleted();
 
   // Respond. Guaranteed to happen on UI thread.
   virtual bool Respond() = 0;
