@@ -25,7 +25,7 @@ punctuation , 2						# 44
 punctuation - 36					# 45
 punctuation . 3						# 46
 math / 34									# 47
-include digit6Dots.uti
+include digits6Dots.uti
 punctuation : 25				colon													x003A
 punctuation ; 23				semicolon											x003B
 math < 56								less-than sign								x003C

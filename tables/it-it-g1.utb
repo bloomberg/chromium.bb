@@ -23,7 +23,7 @@ punctuation ­ 36					45  the hyphen-minus
 punctuation . 256						46
 sign / 256								47
 
-include digit6Dots.uti
+include digits6Dots.uti
 
 punctuation : 25			colon					58		x003A
 punctuation ;	23			semicolon			59		x003B

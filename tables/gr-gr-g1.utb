@@ -35,7 +35,7 @@ punctuation - 36			hyphen-minus									002D
 punctuation . 256			point													002E
 math / 34							solidus												002F
 
-include digit6Dots.uti
+include digits6Dots.uti
 
 punctuation : 25				colon									x003A
 punctuation ; 26				semicolon							x003B
