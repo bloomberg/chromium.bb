@@ -183,6 +183,10 @@ void WebUILoginDisplay::CreateAccount() {
     delegate_->CreateAccount();
 }
 
+void WebUILoginDisplay::UserSelected(const std::string& username) {
+  UserManager::Get()->UserSelected(username);
+}
+
 void WebUILoginDisplay::RemoveUser(const std::string& username) {
   UserManager::Get()->RemoveUser(username, this);
 }

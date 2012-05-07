@@ -199,7 +199,7 @@ bool HandleToggleDesktopBackgroundMode() {
       ash::DesktopBackgroundController::BACKGROUND_IMAGE)
     desktop_background_controller->SetDesktopBackgroundSolidColorMode();
   else
-    desktop_background_controller->SetDesktopBackgroundImageMode();
+    desktop_background_controller->SetLoggedInUserWallpaper();
   return true;
 }
 

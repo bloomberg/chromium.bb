@@ -384,6 +384,7 @@ void UserManagerImpl::UserLoggedIn(const std::string& email) {
 
   if (is_current_user_new_) {
     SetInitialUserImage(email);
+    SetInitialUserWallpaper(email);
   } else {
     // Download profile image if it's user image and see if it has changed.
     int image_index = logged_in_user_->image_index();
@@ -447,6 +448,13 @@ void UserManagerImpl::StubUserLoggedIn() {
   logged_in_user_ = new User(kStubUser, false);
   logged_in_user_->SetImage(GetDefaultImage(kStubDefaultImageIndex),
                             kStubDefaultImageIndex);
+}
+
+void UserManagerImpl::UserSelected(const std::string& email) {
+  if (IsKnownUser(email)) {
+    ash::Shell::GetInstance()->desktop_background_controller()->
+        SetDefaultWallpaper(FindUserWallpaperIndex(email));
+  }
 }
 
 void UserManagerImpl::SessionStarted() {
@@ -895,6 +903,20 @@ const User* UserManagerImpl::FindUserInList(const std::string& email) const {
   return NULL;
 }
 
+int UserManagerImpl::FindUserWallpaperIndex(const std::string& email) {
+  PrefService* local_state = g_browser_process->local_state();
+  const DictionaryValue* user_wallpapers =
+      local_state->GetDictionary(UserManager::kUserWallpapers);
+  int index;
+  if (!user_wallpapers->GetIntegerWithoutPathExpansion(email, &index))
+    index = current_user_wallpaper_index_;
+  if (index < 0 || index >= ash::GetWallpaperCount()) {
+      index = ash::GetDefaultWallpaperIndex();
+      SaveUserWallpaperIndex(index);
+  }
+  return index;
+}
+
 void UserManagerImpl::NotifyOnLogin() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::NotificationService::current()->Notify(
@@ -943,12 +965,22 @@ void UserManagerImpl::SetInitialUserImage(const std::string& username) {
   SaveUserDefaultImageIndex(username, image_id);
 }
 
+void UserManagerImpl::SetInitialUserWallpaper(const std::string& username) {
+  // TODO(bshe): Ideally, wallpaper should start to load as soon as user click
+  // "Add user".
+  if (username == kGuestUser)
+    current_user_wallpaper_index_ = ash::GetGuestWallpaperIndex();
+  else
+    current_user_wallpaper_index_ = ash::GetDefaultWallpaperIndex();
+  SaveUserWallpaperIndex(current_user_wallpaper_index_);
+}
+
 int UserManagerImpl::GetUserWallpaperIndex() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If at login screen, use an invalid index to prevent any wallpaper
   // operation.
-  if (!IsUserLoggedIn())
+  if (!IsUserLoggedIn() || IsLoggedInAsStub())
     return ash::GetInvalidWallpaperIndex();
   // If logged in as other ephemeral users (Demo/Stub/Normal user with
   // ephemeral policy enabled/Guest), use the index in memory.
@@ -958,19 +990,7 @@ int UserManagerImpl::GetUserWallpaperIndex() {
   const chromeos::User& user = GetLoggedInUser();
   std::string username = user.email();
   DCHECK(!username.empty());
-
-  PrefService* local_state = g_browser_process->local_state();
-  const DictionaryValue* user_wallpapers =
-      local_state->GetDictionary(UserManager::kUserWallpapers);
-  int index;
-  if (!user_wallpapers->GetIntegerWithoutPathExpansion(username, &index))
-    index = current_user_wallpaper_index_;
-
-  if (index < 0 || index >= ash::GetWallpaperCount()) {
-    index = ash::GetDefaultWallpaperIndex();
-    SaveUserWallpaperIndex(index);
-  }
-  return index;
+  return FindUserWallpaperIndex(username);
 }
 
 void UserManagerImpl::SaveUserWallpaperIndex(int wallpaper_index) {

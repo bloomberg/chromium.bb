@@ -7,14 +7,26 @@
  */
 
 cr.define('login', function() {
-  // Pod width. 170px Pod + 10px padding + 10px margin on both sides.
-  const POD_WIDTH = 170 + 2 * (10 + 10);
+  /**
+   * Pod width. 170px Pod + 10px padding + 10px margin on both sides.
+   * @type {number}
+   * @const
+   */
+  var POD_WIDTH = 170 + 2 * (10 + 10);
+
+  /**
+   * Wallpaper load delay in milliseconds.
+   * @type {number}
+   * @const
+   */
+  var WALLPAPER_LOAD_DELAY_MS = 800;
 
   /**
    * Oauth token status. These must match UserManager::OAuthTokenStatus.
    * @enum {number}
+   * @const
    */
-  const OAuthTokenStatus = {
+  var OAuthTokenStatus = {
     UNKNOWN: 0,
     INVALID: 1,
     VALID: 2
@@ -23,8 +35,9 @@ cr.define('login', function() {
   /**
    * Tab order for user pods.  Update these when adding new controls.
    * @enum {number}
+   * @const
    */
-  const UserPodTabOrder = {
+  var UserPodTabOrder = {
     POD_INPUT: 1,    // Password input fields (and whole pods themselves).
     HEADER_BAR: 2,   // Buttons on the header bar (Shutdown, Add User).
     REMOVE_USER: 3   // Remove ('X') buttons.
@@ -79,7 +92,7 @@ cr.define('login', function() {
       this.signinButtonElement.addEventListener('click',
           this.activate.bind(this));
 
-      this.removeUserButtonElement.addEventListener('mousedown', function (e) {
+      this.removeUserButtonElement.addEventListener('mousedown', function(e) {
         // Prevent default so that we don't trigger a 'focus' event.
         e.preventDefault();
         // Prevent the 'mousedown' event for the whole pod, which could result
@@ -452,10 +465,14 @@ cr.define('login', function() {
     __proto__: HTMLDivElement.prototype,
 
     // Focused pod.
-    focusedPod_ : undefined,
+    focusedPod_: undefined,
 
     // Activated pod, i.e. the pod of current login attempt.
     activatedPod_: undefined,
+
+    // When moving through users quickly at login screen, set a timeout to
+    // prevent loading intermediate wallpapers.
+    loadWallpaperTimeout_: null,
 
     // Pods whose initial images haven't been loaded yet.
     podsWithPendingImages_: [],
@@ -499,7 +516,7 @@ cr.define('login', function() {
      * True if the the pod row is disabled (handles no user interaction).
      * @type {boolean}
      */
-    disabled_ : false,
+    disabled_: false,
     get disabled() {
       return this.disabled_;
     },
@@ -632,6 +649,7 @@ cr.define('login', function() {
       if (this.focusedPod_ == podToFocus && !opt_force)
         return;
 
+      clearTimeout(this.loadWallpaperTimeout_);
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
         pod.activeRemoveButton = false;
         if (pod != podToFocus) {
@@ -647,6 +665,9 @@ cr.define('login', function() {
         podToFocus.classList.add('focused');
         podToFocus.reset(true);  // Reset and give focus.
         this.scrollPodIntoView(podToFocus);
+        this.loadWallpaperTimeout_ = window.setTimeout(function() {
+          chrome.send('userSelectedDelayed', [podToFocus.user.username]);
+        }, WALLPAPER_LOAD_DELAY_MS);
       }
     },
 
@@ -696,7 +717,6 @@ cr.define('login', function() {
     /**
      * Updates current image of a user.
      * @param {string} username User for which to update the image.
-     * @public
      */
     updateUserImage: function(username) {
       var pod = this.getPodWithUsername_(username);
@@ -707,7 +727,6 @@ cr.define('login', function() {
     /**
     * Resets OAuth token status (invalidates it).
     * @param {string} username User for which to reset the status.
-    * @public
     */
     resetUserOAuthTokenStatus: function(username) {
       var pod = this.getPodWithUsername_(username);
@@ -773,7 +792,6 @@ cr.define('login', function() {
     /**
      * Handler of keydown event.
      * @param {Event} e KeyDown Event object.
-     * @public
      */
     handleKeyDown: function(e) {
       if (this.disabled)

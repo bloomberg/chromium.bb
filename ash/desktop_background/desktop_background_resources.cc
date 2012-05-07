@@ -231,7 +231,10 @@ const int kInvalidWallpaperIndex = -1;
 const int kDefaultWallpaperIndex = 16; // IDR_AURA_WALLPAPERS_3_URBAN0
 const int kGuestWallpaperIndex = 26;   // IDR_AURA_WALLPAPERS_5_GRADIENT6
 #else
-const int kDefaultWallpaperIndex = 0;
+// Set default wallpaper to the grey background for faster wallpaper loading
+// time in browser tests. Otherwise, some of the tests will finish before
+// wallpaper loaded and cause crashes.
+const int kDefaultWallpaperIndex = 6;  // IDR_AURA_WALLPAPERS_5_GRADIENT5
 const int kGuestWallpaperIndex = kDefaultWallpaperIndex;
 #endif
 
@@ -257,13 +260,8 @@ int GetWallpaperCount() {
   return kDefaultWallpaperCount;
 }
 
-const SkBitmap& GetWallpaper(int index) {
-  DCHECK(index >= 0 && index < kDefaultWallpaperCount);
-  return *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      kDefaultWallpapers[index].id).ToSkBitmap();
-}
-
 const WallpaperInfo& GetWallpaperInfo(int index) {
+  DCHECK(index >= 0 && index < kDefaultWallpaperCount);
   return kDefaultWallpapers[index];
 }
 

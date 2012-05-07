@@ -24,6 +24,7 @@ class MockUserManager : public UserManager {
   MOCK_METHOD0(DemoUserLoggedIn, void(void));
   MOCK_METHOD0(GuestUserLoggedIn, void(void));
   MOCK_METHOD1(EphemeralUserLoggedIn, void(const std::string&));
+  MOCK_METHOD1(UserSelected, void(const std::string&));
   MOCK_METHOD0(SessionStarted, void(void));
   MOCK_METHOD2(RemoveUser, void(const std::string&, RemoveUserDelegate*));
   MOCK_METHOD1(RemoveUserFromList, void(const std::string&));
@@ -34,7 +35,6 @@ class MockUserManager : public UserManager {
                                          User::OAuthTokenStatus));
   MOCK_METHOD2(SaveUserDisplayEmail, void(const std::string&,
                                           const std::string&));
-  MOCK_METHOD0(GetUserWallpaperIndex, int(void));
   MOCK_METHOD1(SaveUserWallpaperIndex, void(int));
   MOCK_CONST_METHOD1(GetUserDisplayEmail, std::string(const std::string&));
   MOCK_METHOD2(SaveUserDefaultImageIndex, void(const std::string&, int));
@@ -67,6 +67,11 @@ class MockUserManager : public UserManager {
 
   // Sets a new User instance.
   void SetLoggedInUser(const std::string& email, bool guest);
+
+  // Return an invalid user wallpaper index. No need to load a real wallpaper.
+  // When loading wallpaper asynchronously, it may actually cause a crash if
+  // test finished before wallpaper loaded.
+  virtual int GetUserWallpaperIndex() OVERRIDE;
 
   User* user_;
 };

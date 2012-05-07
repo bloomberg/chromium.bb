@@ -77,6 +77,10 @@ class SigninScreenHandlerDelegate {
   // Create a new Google account.
   virtual void CreateAccount() = 0;
 
+  // Called when user pod with |username| is selected at login screen.
+  // |username| is the email address of the selected user.
+  virtual void UserSelected(const std::string& username) = 0;
+
   // Attempts to remove given user.
   virtual void RemoveUser(const std::string& username) = 0;
 
@@ -190,6 +194,7 @@ class SigninScreenHandler : public BaseScreenHandler,
   void HandleHideCaptivePortal(const base::ListValue* args);
   void HandleOfflineLogin(const base::ListValue* args);
   void HandleShutdownSystem(const base::ListValue* args);
+  void HandleUserSelected(const base::ListValue* args);
   void HandleRemoveUser(const base::ListValue* args);
   void HandleShowAddUser(const base::ListValue* args);
   void HandleToggleEnrollmentScreen(const base::ListValue* args);

@@ -407,8 +407,6 @@ void ExistingUserController::LoginAsDemoUser() {
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_DEMOUSER));
 }
 
-
-
 void ExistingUserController::LoginAsGuest() {
   // Disable clicking on other windows.
   login_display_->SetUIEnabled(false);

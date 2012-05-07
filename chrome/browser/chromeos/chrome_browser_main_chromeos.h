@@ -10,7 +10,6 @@
 
 namespace chromeos {
 class BrightnessObserver;
-class DesktopBackgroundObserver;
 class PowerButtonObserver;
 class PowerStateOverride;
 class ResumeObserver;
@@ -49,7 +48,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<chromeos::ResumeObserver> resume_observer_;
   scoped_ptr<chromeos::ScreenLockObserver> screen_lock_observer_;
   scoped_ptr<chromeos::SessionManagerObserver> session_manager_observer_;
-  scoped_ptr<chromeos::DesktopBackgroundObserver> desktop_background_observer_;
   scoped_ptr<chromeos::PowerButtonObserver> power_button_observer_;
   scoped_ptr<chromeos::PowerStateOverride> power_state_override_;
   scoped_ptr<chromeos::VideoPropertyWriter> video_property_writer_;

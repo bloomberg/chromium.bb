@@ -47,6 +47,7 @@ class UserManagerImpl : public UserManager,
   virtual void DemoUserLoggedIn() OVERRIDE;
   virtual void GuestUserLoggedIn() OVERRIDE;
   virtual void EphemeralUserLoggedIn(const std::string& email) OVERRIDE;
+  virtual void UserSelected(const std::string& email) OVERRIDE;
   virtual void SessionStarted() OVERRIDE;
   virtual void RemoveUser(const std::string& email,
                           RemoveUserDelegate* delegate) OVERRIDE;
@@ -128,6 +129,8 @@ class UserManagerImpl : public UserManager,
   // list. Returns |NULL| otherwise.
   const User* FindUserInList(const std::string& email) const;
 
+  int FindUserWallpaperIndex(const std::string& email);
+
   // Makes stub user the current logged-in user (for test paths).
   void StubUserLoggedIn();
 
@@ -143,6 +146,10 @@ class UserManagerImpl : public UserManager,
   // setting in local state.
   // Does not send LOGIN_USER_IMAGE_CHANGED notification.
   void SetInitialUserImage(const std::string& username);
+
+  // Sets one of the default wallpapers for the specified user and saves this
+  // settings in local state.
+  void SetInitialUserWallpaper(const std::string& username);
 
   // Sets image for user |username| and sends LOGIN_USER_IMAGE_CHANGED
   // notification unless this is a new user and image is set for the first time.

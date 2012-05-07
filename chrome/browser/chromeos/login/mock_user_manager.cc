@@ -20,6 +20,10 @@ User& MockUserManager::GetLoggedInUser() {
   return *user_;
 }
 
+int MockUserManager::GetUserWallpaperIndex() {
+  return -1;
+}
+
 // Creates a new User instance.
 void MockUserManager::SetLoggedInUser(const std::string& email, bool guest) {
   delete user_;

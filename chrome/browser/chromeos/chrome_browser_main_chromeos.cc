@@ -14,7 +14,6 @@
 #include "base/string_split.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
-#include "chrome/browser/chromeos/background/desktop_background_observer.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cryptohome/async_method_caller.h"
@@ -367,10 +366,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // In Aura builds this will initialize ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
-
-  // Initialize desktop background observer so that it can receive
-  // LOGIN_USER_CHANGED notification from UserManager.
-  desktop_background_observer_.reset(new chromeos::DesktopBackgroundObserver);
 }
 
 void ChromeBrowserMainPartsChromeos::PostProfileInit() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/background/desktop_background_observer.h"
+#include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
 
 #include "ash/shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
@@ -49,30 +49,6 @@ class UserWallpaperDelegate: public ash::UserWallpaperDelegate {
 
 ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() {
   return new chromeos::UserWallpaperDelegate();
-}
-
-DesktopBackgroundObserver::DesktopBackgroundObserver() {
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-      content::NotificationService::AllSources());
-}
-
-DesktopBackgroundObserver::~DesktopBackgroundObserver() {
-}
-
-void DesktopBackgroundObserver::Observe(int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
-      ash::Shell::GetInstance()->desktop_background_controller()->
-          SetDesktopBackgroundImageMode();
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
 }
 
 }  // namespace chromeos

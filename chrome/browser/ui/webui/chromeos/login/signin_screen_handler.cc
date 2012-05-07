@@ -452,6 +452,9 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("shutdownSystem",
       base::Bind(&SigninScreenHandler::HandleShutdownSystem,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("userSelectedDelayed",
+      base::Bind(&SigninScreenHandler::HandleUserSelected,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("removeUser",
       base::Bind(&SigninScreenHandler::HandleRemoveUser,
                  base::Unretained(this)));
@@ -771,6 +774,19 @@ void SigninScreenHandler::HandleShutdownSystem(const base::ListValue* args) {
 #else
   DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown();
 #endif
+}
+
+void SigninScreenHandler::HandleUserSelected(const base::ListValue* args) {
+  if (!delegate_)
+    return;
+
+  std::string email;
+  if (!args->GetString(0, &email)) {
+    NOTREACHED();
+    return;
+  }
+
+  delegate_->UserSelected(email);
 }
 
 void SigninScreenHandler::HandleRemoveUser(const base::ListValue* args) {

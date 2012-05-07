@@ -95,6 +95,9 @@ class UserManager {
   // Indicates that a user just logged in as ephemeral.
   virtual void EphemeralUserLoggedIn(const std::string& email) = 0;
 
+  // Called when user pod with |email| is selected.
+  virtual void UserSelected(const std::string& email) = 0;
+
   // Called when browser session is started i.e. after
   // browser_init.LaunchBrowser(...) was called after user sign in.
   // When user is at the image screen IsUserLoggedIn() will return true

@@ -30,7 +30,7 @@
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
-#include "chrome/browser/chromeos/background/desktop_background_observer.h"
+#include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
