@@ -16,9 +16,9 @@
 #include "base/timer.h"
 
 namespace base {
-class SequencedTaskRunner;
+class MessageLoopProxy;
 class Thread;
-}  // namespace base
+}
 
 // Helper to ensure that a file won't be corrupted by the write (for example on
 // application crash). Consider a naive way to save an important file F:
@@ -56,7 +56,7 @@ class ImportantFileWriter : public base::NonThreadSafe {
   // file I/O can be done.
   // All non-const methods, ctor and dtor must be called on the same thread.
   ImportantFileWriter(const FilePath& path,
-                      base::SequencedTaskRunner* blocking_task_runner);
+                      base::MessageLoopProxy* file_message_loop_proxy);
 
   // You have to ensure that there are no pending writes at the moment
   // of destruction.
@@ -95,8 +95,8 @@ class ImportantFileWriter : public base::NonThreadSafe {
   // Path being written to.
   const FilePath path_;
 
-  // SequencedTaskRunner for blocking I/O operations.
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  // MessageLoopProxy for the thread on which file I/O can be done.
+  scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy_;
 
   // Timer used to schedule commit after ScheduleWrite.
   base::OneShotTimer<ImportantFileWriter> timer_;

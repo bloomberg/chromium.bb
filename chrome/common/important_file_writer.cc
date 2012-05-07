@@ -89,15 +89,14 @@ void WriteToDiskTask(const FilePath& path, const std::string& data) {
 }  // namespace
 
 ImportantFileWriter::ImportantFileWriter(
-    const FilePath& path,
-    base::SequencedTaskRunner* blocking_task_runner)
-    : path_(path),
-      blocking_task_runner_(blocking_task_runner),
-      serializer_(NULL),
-      commit_interval_(TimeDelta::FromMilliseconds(
-          kDefaultCommitIntervalMs)) {
+    const FilePath& path, base::MessageLoopProxy* file_message_loop_proxy)
+        : path_(path),
+          file_message_loop_proxy_(file_message_loop_proxy),
+          serializer_(NULL),
+          commit_interval_(TimeDelta::FromMilliseconds(
+              kDefaultCommitIntervalMs)) {
   DCHECK(CalledOnValidThread());
-  DCHECK(blocking_task_runner_.get());
+  DCHECK(file_message_loop_proxy_.get());
 }
 
 ImportantFileWriter::~ImportantFileWriter() {
@@ -122,7 +121,7 @@ void ImportantFileWriter::WriteNow(const std::string& data) {
   if (HasPendingWrite())
     timer_.Stop();
 
-  if (!blocking_task_runner_->PostTask(
+  if (!file_message_loop_proxy_->PostTask(
       FROM_HERE, base::Bind(&WriteToDiskTask, path_, data))) {
     // Posting the task to background message loop is not expected
     // to fail, but if it does, avoid losing data and just hit the disk

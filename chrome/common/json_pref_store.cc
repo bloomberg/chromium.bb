@@ -13,7 +13,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
-#include "base/sequenced_task_runner.h"
 #include "base/values.h"
 
 namespace {
@@ -27,17 +26,17 @@ class FileThreadDeserializer
     : public base::RefCountedThreadSafe<FileThreadDeserializer> {
  public:
   FileThreadDeserializer(JsonPrefStore* delegate,
-                         base::SequencedTaskRunner* blocking_task_runner)
+                         base::MessageLoopProxy* file_loop_proxy)
       : no_dir_(false),
         error_(PersistentPrefStore::PREF_READ_ERROR_NONE),
         delegate_(delegate),
-        blocking_task_runner_(blocking_task_runner),
+        file_loop_proxy_(file_loop_proxy),
         origin_loop_proxy_(base::MessageLoopProxy::current()) {
   }
 
   void Start(const FilePath& path) {
     DCHECK(origin_loop_proxy_->BelongsToCurrentThread());
-    blocking_task_runner_->PostTask(
+    file_loop_proxy_->PostTask(
         FROM_HERE,
         base::Bind(&FileThreadDeserializer::ReadFileAndReport,
                    this, path));
@@ -45,6 +44,8 @@ class FileThreadDeserializer
 
   // Deserializes JSON on the file thread.
   void ReadFileAndReport(const FilePath& path) {
+    DCHECK(file_loop_proxy_->BelongsToCurrentThread());
+
     value_.reset(DoReading(path, &error_, &no_dir_));
 
     origin_loop_proxy_->PostTask(
@@ -84,7 +85,7 @@ class FileThreadDeserializer
   PersistentPrefStore::PrefReadError error_;
   scoped_ptr<Value> value_;
   scoped_refptr<JsonPrefStore> delegate_;
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  scoped_refptr<base::MessageLoopProxy> file_loop_proxy_;
   scoped_refptr<base::MessageLoopProxy> origin_loop_proxy_;
 };
 
@@ -137,12 +138,12 @@ void FileThreadDeserializer::HandleErrors(
 }  // namespace
 
 JsonPrefStore::JsonPrefStore(const FilePath& filename,
-                             base::SequencedTaskRunner* blocking_task_runner)
+                             base::MessageLoopProxy* file_message_loop_proxy)
     : path_(filename),
-      blocking_task_runner_(blocking_task_runner),
+      file_message_loop_proxy_(file_message_loop_proxy),
       prefs_(new DictionaryValue()),
       read_only_(false),
-      writer_(filename, blocking_task_runner),
+      writer_(filename, file_message_loop_proxy),
       error_delegate_(NULL),
       initialized_(false),
       read_error_(PREF_READ_ERROR_OTHER) {
@@ -244,7 +245,7 @@ void JsonPrefStore::ReadPrefsAsync(ReadErrorDelegate *error_delegate) {
   // Start async reading of the preferences file. It will delete itself
   // in the end.
   scoped_refptr<FileThreadDeserializer> deserializer(
-      new FileThreadDeserializer(this, blocking_task_runner_));
+      new FileThreadDeserializer(this, file_message_loop_proxy_.get()));
   deserializer->Start(path_);
 }
 

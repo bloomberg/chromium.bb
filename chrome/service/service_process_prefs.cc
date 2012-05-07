@@ -8,8 +8,8 @@
 
 ServiceProcessPrefs::ServiceProcessPrefs(
     const FilePath& pref_filename,
-    base::SequencedTaskRunner* blocking_task_runner)
-    : prefs_(new JsonPrefStore(pref_filename, blocking_task_runner)) {
+    base::MessageLoopProxy* file_message_loop_proxy)
+    : prefs_(new JsonPrefStore(pref_filename, file_message_loop_proxy)) {
 }
 
 ServiceProcessPrefs::~ServiceProcessPrefs() {}
