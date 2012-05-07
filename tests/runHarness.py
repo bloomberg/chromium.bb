@@ -73,7 +73,7 @@ def reportFailure(text, actualBRL, expectedBRL, cursorPos, actualBRLCursorPos, e
                         showCurPos(len(actualBRL), actualBRLCursorPos, pos2=expectedBRLCursorPos))
         ])
     report.append("--- end ---")
-    print "\n".join(report)
+    print "\n".join(report).encode("utf-8")
 
 total_failed = 0
 harness_dir = "harness"
