@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/history/history_types.h"
@@ -314,6 +315,9 @@ class SearchProvider : public AutocompleteProvider,
   // A timer to start a query to the suggest server after the user has stopped
   // typing for long enough.
   base::OneShotTimer<SearchProvider> timer_;
+
+  // The time at which we sent a query to the suggest server.
+  base::TimeTicks time_suggest_request_sent_;
 
   // The fetcher that retrieves suggest results for the keyword from the server.
   scoped_ptr<content::URLFetcher> keyword_fetcher_;

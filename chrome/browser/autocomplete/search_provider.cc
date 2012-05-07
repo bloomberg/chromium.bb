@@ -26,6 +26,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/history/in_memory_database.h"
+#include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -246,6 +247,7 @@ void SearchProvider::Run() {
   // Start a new request with the current input.
   DCHECK(!done_);
   suggest_results_pending_ = 0;
+  time_suggest_request_sent_ = base::TimeTicks::Now();
   if (providers_.valid_suggest_for_default_provider()) {
     suggest_results_pending_++;
     default_fetcher_.reset(CreateSuggestFetcher(kDefaultProviderURLFetcherID,
@@ -295,6 +297,8 @@ void SearchProvider::OnURLFetchComplete(const content::URLFetcher* source) {
   SuggestResults* suggest_results = is_keyword_results ?
       &keyword_suggest_results_ : &default_suggest_results_;
 
+  std::string histogram_name =
+      "Omnibox.SuggestRequest.Failure.GoogleResponseTime";
   if (source->GetStatus().is_success() && source->GetResponseCode() == 200) {
     JSONStringValueSerializer deserializer(json_data);
     deserializer.set_allow_trailing_comma(true);
@@ -305,6 +309,17 @@ void SearchProvider::OnURLFetchComplete(const content::URLFetcher* source) {
         root_val.get() &&
         ParseSuggestResults(root_val.get(), is_keyword_results, input_text,
                             suggest_results);
+    histogram_name = "Omnibox.SuggestRequest.Success.GoogleResponseTime";
+  }
+
+  // Record response time for suggest requests sent to Google.  We care
+  // only about the common case: the Google default provider used in
+  // non-keyword mode.
+  if (!is_keyword_results && providers_.valid_default_provider() &&
+      (providers_.default_provider()->prepopulate_id() ==
+       SEARCH_ENGINE_GOOGLE)) {
+    UMA_HISTOGRAM_TIMES(histogram_name,
+                        base::TimeTicks::Now() - time_suggest_request_sent_);
   }
 
   ConvertResultsToAutocompleteMatches();
