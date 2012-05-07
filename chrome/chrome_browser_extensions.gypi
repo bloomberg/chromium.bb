@@ -118,8 +118,6 @@
         'browser/extensions/api/extension_action/extension_page_actions_api.h',
         'browser/extensions/api/extension_action/extension_page_actions_api_constants.cc',
         'browser/extensions/api/extension_action/extension_page_actions_api_constants.h',
-        'browser/extensions/api/idltest/idltest_api.cc',
-        'browser/extensions/api/idltest/idltest_api.h',
         'browser/extensions/api/identity/identity_api.cc',
         'browser/extensions/api/identity/identity_api.h',
         'browser/extensions/api/offscreen_tabs/offscreen_tabs_api.cc',

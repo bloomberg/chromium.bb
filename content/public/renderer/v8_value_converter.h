@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,10 +18,8 @@ namespace content {
 // values (from base/values.h). Lists and dictionaries are converted
 // recursively.
 //
-// The JSON types (null, boolean, string, number, array, and object) as well as
-// binary values are supported. For binary values, we convert to WebKit
-// ArrayBuffers, and support converting from an ArrayBuffer or any of the
-// ArrayBufferView subclasses (Uint8Array, etc.).
+// Only the JSON types (null, boolean, string, number, array, and object) are
+// supported.
 class CONTENT_EXPORT V8ValueConverter {
  public:
   static V8ValueConverter* create();

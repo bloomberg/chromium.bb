@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include "content/public/renderer/v8_value_converter.h"
 
 namespace base {
-class BinaryValue;
 class DictionaryValue;
 class ListValue;
 class Value;
@@ -44,16 +43,9 @@ class CONTENT_EXPORT V8ValueConverterImpl : public content::V8ValueConverter {
   v8::Handle<v8::Value> ToV8Array(const base::ListValue* list) const;
   v8::Handle<v8::Value> ToV8Object(
       const base::DictionaryValue* dictionary) const;
-  v8::Handle<v8::Value> ToArrayBuffer(const base::BinaryValue* value) const;
 
   base::Value* FromV8ValueImpl(v8::Handle<v8::Value> value) const;
   base::ListValue* FromV8Array(v8::Handle<v8::Array> array) const;
-
-  // This will convert objects of type ArrayBuffer or any of the
-  // ArrayBufferView subclasses. The return value will be NULL if |value| is
-  // not one of these types.
-  base::BinaryValue* FromV8Buffer(v8::Handle<v8::Value> value) const;
-
   base::DictionaryValue* FromV8Object(v8::Handle<v8::Object> object) const;
 
   // If true, we will convert undefined JavaScript values to null.
