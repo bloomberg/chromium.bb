@@ -510,8 +510,9 @@ def _generate_decoder_method_bodies(decoder, values, out):
   for table in decoder.tables():
     # Add the default row as the last in the optimized row, so that
     # it is applied if all other rows do not.
-    opt_rows = dgen_opt.optimize_rows(
-        table.action_filter(['baseline', 'rule']).rows(False))
+    opt_rows = sorted(
+        dgen_opt.optimize_rows(
+            table.action_filter(['baseline', 'rule']).rows(False)))
     if table.default_row:
       opt_rows.append(table.default_row)
 
