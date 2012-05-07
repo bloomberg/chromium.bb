@@ -447,10 +447,16 @@ const NamedClassDecoder& Named%(decoder_name)s::decode_%(table_name)s(
      const nacl_arm_dec::Instruction insn) const {
 """
 
+METHOD_DISPATCH_BEGIN="""
+  if (%s"""
+
+METHOD_DISPATCH_CONTINUE=""" &&
+      %s"""
+
+METHOD_DISPATCH_END=")"""
+
 PARSE_TABLE_METHOD_ROW="""
-  if (%(tests)s) {
    return %(action)s;
-  }
 """
 
 PARSE_TABLE_METHOD_FOOTER="""
@@ -509,6 +515,7 @@ def _generate_decoder_method_bodies(decoder, values, out):
     if table.default_row:
       opt_rows.append(table.default_row)
 
+    opt_rows = table.add_column_to_rows(opt_rows)
     print ("Table %s: %d rows minimized to %d"
            % (table.name, len(table.rows()), len(opt_rows)))
 
@@ -543,8 +550,10 @@ def _generate_decoder_method_bodies(decoder, values, out):
       #
       #    ((insn & 0x0F000000) != 0x0C000000) &&
       #    ((insn & 0x0000000F) != 0x00000005)
-      values['tests'] = ' && '.join(['(%s)' % p.to_c_expr('insn')
-                                     for p in row.patterns])
+      out.write(METHOD_DISPATCH_BEGIN % row.patterns[0].to_c_expr('insn'))
+      for p in row.patterns[1:]:
+        out.write(METHOD_DISPATCH_CONTINUE % p.to_c_expr('insn'))
+      out.write(METHOD_DISPATCH_END)
       values['action'] = action
       out.write(PARSE_TABLE_METHOD_ROW % values)
     out.write(PARSE_TABLE_METHOD_FOOTER % values)

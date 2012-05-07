@@ -10,10 +10,12 @@ The core object model for the Decoder Generator.  The dg_input and dg_output
 modules both operate in terms of these classes.
 """
 
+NUM_INST_BITS = 32
+
 def _popcount(int):
     """Returns the number of 1 bits in the input."""
     count = 0
-    for bit in range(0, 32):
+    for bit in range(0, NUM_INST_BITS):
         count = count + ((int >> bit) & 1)
     return count
 
@@ -93,7 +95,7 @@ class BitPattern(object):
             print "Error: %s" % ex
             return None
 
-    def __init__(self, mask, value, op):
+    def __init__(self, mask, value, op, column=None):
         """Initializes a BitPattern.
 
         Args:
@@ -102,11 +104,14 @@ class BitPattern(object):
             value: an integer that would match our pattern, subject to the mask.
             op: either '==' or '!=', if the pattern is positive or negative,
                 respectively.
+            column: If specified, the corresponding column information for
+                the bit pattern.
         """
         self.mask = mask
         self.value = value
         self.op = op
         self.significant_bits = _popcount(mask)
+        self.column = column
 
     def conflicts(self, other):
         """Returns an integer with a 1 in each bit position that conflicts
@@ -153,11 +158,25 @@ class BitPattern(object):
         Returns:
             A string containing a C expression.
         """
+        # Generate expression corresponding to bit pattern.
         if self.mask == 0:
-            return 'true'
+            value = 'true'
         else:
-            return ('(%s & 0x%08X) %s 0x%08X'
-                % (input, self.mask, self.op, self.value))
+            value = ('(%s & 0x%08X) %s 0x%08X'
+                     % (input, self.mask, self.op, self.value))
+        if self.column:
+          # Add comment describing test if column is known.
+          bits = self._bits_repr()
+          bits = bits[self.column[2]:self.column[1]+1]
+          bits.reverse()
+          return ("%s /* %s(%s:%s) == %s%s */"
+                  % (value,
+                     self.column[0],
+                     self.column[1],
+                     self.column[2],
+                     '' if self.op == '==' else '~',
+                     ''.join(bits)))
+        return value
 
     def __cmp__(self, other):
         """Compares two patterns for sorting purposes.  We sort by
@@ -173,17 +192,47 @@ class BitPattern(object):
             or cmp(self.value, other.value)
             or cmp(self.op, other.op))
 
-    def __repr__(self):
+
+    def first_bit(self):
+      """Returns the index of the first 0/1 bit in the pattern. or
+         None if no significant bits exist for the pattern.
+      """
+      for i in range(0, NUM_INST_BITS):
+        if (self.mask >> i) & 1:
+          return i
+      return None
+
+    def add_column_info(self, columns):
+      """If the bit pattern doesn't have column information, add
+         it based on the columns passed in. Otherwise return self.
+      """
+      if self.column: return self
+      for (name, hi_bit, lo_bit) in columns:
+        index = self.first_bit()
+        if not index: break
+        if index >= lo_bit and index <= hi_bit:
+          return BitPattern(self.mask, self.value, self.op,
+                            (name, hi_bit, lo_bit))
+      return self
+
+    def _bits_repr(self):
+        """Returns the 0/1/x's of the bit pattern as a list (indexed
+           by bit position).
+        """
         pat = []
-        for i in range(0, 32):
+        for i in range(0, NUM_INST_BITS):
             if (self.mask >> i) & 1:
                 pat.append(`(self.value >> i) & 1`)
             else:
                 pat.append('x')
-        if self.op == '!=':
-            pat.append('~')
-        return ''.join(reversed(pat))
+        return pat
 
+    def __repr__(self):
+        """Returns the printable string for the bit pattern."""
+        repr = ''.join(reversed(self._bits_repr()))
+        if self.op == '!=':
+          repr = '~' + repr
+        return repr
 
 class Table(object):
     """A table in the instruction set definition.  Each table contains 1+
@@ -201,6 +250,9 @@ class Table(object):
         self.default_row = None
         self._rows = []
         self._columns = []
+
+    def columns(self):
+      return self._columns[:]
 
     def add_column(self, name, hi_bit, lo_bit):
         """Adds a column to the table.
@@ -264,6 +316,18 @@ class Table(object):
           table.add_default_row(self.default_row.action.action_filter(names),
                                 self.default_row.arch)
         return table
+
+    def add_column_to_rows(self, rows):
+      """Add column information to each row, returning a copy of the rows
+         with column information added.
+      """
+      new_rows = []
+      for r in rows:
+        new_patterns = []
+        for p in r.patterns:
+          new_patterns.append(p.add_column_info(self._columns))
+        new_rows.append(Row(new_patterns, r.action, r.arch))
+      return new_rows
 
     def methods(self):
       """Returns the (sorted) list of methods called by the table."""

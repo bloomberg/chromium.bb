@@ -159,9 +159,13 @@ const ClassDecoder& %(decoder_name)s::decode_%(table_name)s(
 {
 """
 
-METHOD_DISPATCH="""
-  if (%(tests)s)
-"""
+METHOD_DISPATCH_BEGIN="""
+  if (%s"""
+
+METHOD_DISPATCH_CONTINUE=""" &&
+      %s"""
+
+METHOD_DISPATCH_END=")"""
 
 METHOD_DISPATCH_CLASS_DECODER="""
     return %(decoder)s_instance_;
@@ -231,6 +235,7 @@ def _generate_methods(decoder, values, out):
     if table.default_row:
       opt_rows.append(table.default_row)
 
+    opt_rows = table.add_column_to_rows(opt_rows)
     print ("Table %s: %d rows minimized to %d"
            % (table.name, len(table.rows()), len(opt_rows)))
 
@@ -261,7 +266,10 @@ def _generate_methods(decoder, values, out):
       #    ((insn & 0x0000000F) != 0x00000005)
       values['tests'] = ' && '.join(["(%s)" % p.to_c_expr('insn')
                                      for p in row.patterns])
-      out.write(METHOD_DISPATCH % values)
+      out.write(METHOD_DISPATCH_BEGIN % row.patterns[0].to_c_expr('insn'))
+      for p in row.patterns[1:]:
+        out.write(METHOD_DISPATCH_CONTINUE % p.to_c_expr('insn'))
+      out.write(METHOD_DISPATCH_END)
       if row.action.__class__.__name__ == 'DecoderAction':
         values['decoder'] = row.action.actual
         out.write(METHOD_DISPATCH_CLASS_DECODER % values)
