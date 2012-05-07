@@ -115,16 +115,21 @@ def BuildRootGitCleanup(buildroot):
 
 def CleanUpMountPoints(buildroot):
   """Cleans up any stale mount points from previous runs."""
-  mount_result = cros_lib.RunCommandCaptureOutput(['mount'], print_cmd=False)
+  # Scrape it from /proc/mounts since it's easily accessible;
+  # additionally, unmount in reverse order of what's listed there
+  # rather than trying a reverse sorting; it's possible for
+  # mount /z /foon
+  # mount /foon/blah -o loop /a
+  # which reverse sorting cannot handle.
+  buildroot = os.path.realpath(buildroot).rstrip('/') + '/'
+  mounts = []
+  with open("/proc/mounts", 'rt') as f:
+    for line in f:
+      path = line.split()[1]
+      if path.startswith(buildroot):
+        mounts.append(path)
 
-  mount_lines = [x for x in mount_result.output.splitlines() if buildroot in x]
-
-  mount_lines = [x.rpartition(' type ')[0].partition(' on ')[2]
-                 for x in mount_lines]
-
-  mount_lines.sort(reverse=True)
-
-  for mount_pt in mount_lines:
+  for mount_pt in reversed(mounts):
     cros_lib.SudoRunCommand(['umount', '-l', mount_pt])
 
 
