@@ -170,13 +170,6 @@
                'branding_dir': '../app/theme/chromium',
             },
           }],
-          [ 'mini_installer_internal_deps == 1', {
-            'target_defaults': {
-              'dependencies': [
-                'mini_installer/support/mini_installer_support.gyp:*',
-              ],
-            },
-          }],
         ],
       },
       'targets': [
@@ -261,6 +254,13 @@
           ],
         },
       ],
+    }],
+    [ 'mini_installer_internal_deps == 1', {
+      'target_defaults': {
+        'dependencies': [
+          'mini_installer/support/mini_installer_support.gyp:*',
+        ],
+      },
     }],
     [ 'branding == "Chrome"', {
       'variables': {
