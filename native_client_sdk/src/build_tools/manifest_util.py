@@ -185,25 +185,33 @@ class Bundle(dict):
 
     Merges dict in |bundle| with this one in such a way that keys are not
     duplicated: the values of the keys in |bundle| take precedence in the
-    returned dictionary.
+    resulting dictionary.
 
-    Any keys in either the symlink or links dictionaries that also exist in
-    either of the files or dicts sets are removed from the latter, meaning that
-    symlinks or links which overlap file or directory entries take precedence.
+    Archives in |bundle| will be appended to archives in self. Archives in
+    |bundle| will override archives in self with the same host_os.
 
     Args:
       bundle: The other bundle.  Must be a dict.
-    Returns:
-      A dict which is the result of merging the two Bundles.
     """
-    return Bundle(self.items() + bundle.items())
+    for k, v in bundle.iteritems():
+      if k == ARCHIVES_KEY:
+        for archive in v:
+          self.RemoveArchive(archive['host_os'])
+          self.get(k, []).append(archive)
+      else:
+        self[k] = v
 
-  def ToJSON(self):
-    """Convert this bundle to a JSON-formatted string."""
+  def GetDataAsString(self):
+    """Returns the JSON bundle object, pretty-printed"""
     return DictToJSON(self)
 
-  def FromJSON(self, json_string):
-    """Parse and load bundle data from a JSON-formatted string."""
+  def LoadDataFromString(self, json_string):
+    """Load a JSON bundle string. Raises an exception if json_string
+       is not well-formed JSON.
+
+    Args:
+      json_string: a JSON-formatted string containing the bundle
+    """
     self.CopyFrom(json.loads(json_string))
 
   def CopyFrom(self, dict):
@@ -277,10 +285,21 @@ class Bundle(dict):
     """Returns all the archives in this bundle"""
     return self[ARCHIVES_KEY]
 
+  def RemoveArchive(self, host_os_name):
+    """Remove an archive from this Bundle."""
+    for i, archive in enumerate(self[ARCHIVES_KEY]):
+      if archive.host_os == host_os_name:
+        del self[ARCHIVES_KEY][i]
+
   @property
   def name(self):
     """Returns the name of this bundle"""
     return self[NAME_KEY]
+
+  @name.setter
+  def name(self, name):
+    """Set the name of this bundle"""
+    self[NAME_KEY] = name
 
   @property
   def version(self):
@@ -296,6 +315,21 @@ class Bundle(dict):
   def recommended(self):
     """Returns whether this bundle is recommended"""
     return self['recommended']
+
+  @recommended.setter
+  def recommended(self, value):
+    """Sets whether this bundle is recommended"""
+    self['recommended'] = value
+
+  @property
+  def stability(self):
+    """Returns the stability of this bundle"""
+    return self['stability']
+  
+  @stability.setter
+  def stability(self, value):
+    """Sets the stability of this bundle"""
+    self['stability'] = value
 
 
 class SDKManifest(object):
@@ -397,7 +431,7 @@ class SDKManifest(object):
       if not allow_existing:
         raise Error('cannot merge manifest bundle \'%s\', it already exists'
                     % bundle.name)
-      self.SetBundle(local_bundle.MergeWithBundle(bundle))
+      local_bundle.MergeWithBundle(bundle)
 
   def MergeManifest(self, manifest):
     '''Merge another manifest into this manifest, disallowing overiding.

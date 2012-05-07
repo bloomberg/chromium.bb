@@ -714,7 +714,7 @@ def main(args):
               build_utils.ChromeVersion(), tarname)
       manifest_snippet_file = os.path.join(OUT_DIR, tarname + '.json')
       with open(manifest_snippet_file, 'wb') as manifest_snippet_stream:
-        manifest_snippet_stream.write(bundle.ToJSON())
+        manifest_snippet_stream.write(bundle.GetDataAsString())
 
       buildbot_common.Archive(tarname + '.json', bucket_path, OUT_DIR,
                               step_link=False)
