@@ -40,6 +40,7 @@
       'bookmarks',
       'browser',
       'browsing_data',
+      'chromoting_basic',
       'codesign',
       'content',
       'cookies',
@@ -318,6 +319,8 @@
       # ===========================
       # You cannot resize the browser window on ChromeOS.
       '-browser.BrowserTest.testWindowResize',
+      # ChromeOS doesn't yet support the chromoting host.
+      '-chromoting_basic',
       # No codesign verification on ChromeOS.
       '-codesign',
       # Import tests are invalid on ChromeOS since Chrome is the only browser.
