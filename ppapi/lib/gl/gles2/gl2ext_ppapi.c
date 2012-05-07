@@ -26,17 +26,17 @@
 // TODO(alokp): This will need to be thread-safe if we build gles2 as a
 // shared library.
 static const struct PPB_OpenGLES2* g_gles2_interface = NULL;
-static const struct PPB_OpenGLES2InstancedArrays_Dev*
+static const struct PPB_OpenGLES2InstancedArrays*
     g_gles2_instanced_arrays_interface = NULL;
-static const struct PPB_OpenGLES2FramebufferBlit_Dev*
+static const struct PPB_OpenGLES2FramebufferBlit*
     g_gles2_framebuffer_blit_interface = NULL;
-static const struct PPB_OpenGLES2FramebufferMultisample_Dev*
+static const struct PPB_OpenGLES2FramebufferMultisample*
     g_gles2_framebuffer_multisample_interface = NULL;
-static const struct PPB_OpenGLES2ChromiumEnableFeature_Dev*
+static const struct PPB_OpenGLES2ChromiumEnableFeature*
     g_gles2_chromium_enable_feature_interface = NULL;
-static const struct PPB_OpenGLES2ChromiumMapSub_Dev*
+static const struct PPB_OpenGLES2ChromiumMapSub*
     g_gles2_chromium_map_sub_interface = NULL;
-static const struct PPB_OpenGLES2Query_Dev*
+static const struct PPB_OpenGLES2Query*
     g_gles2_query_interface = NULL;
 
 // TODO(alokp): Make sure PP_TLS works on all supported platforms.
@@ -49,29 +49,29 @@ GLboolean GL_APIENTRY glInitializePPAPI(
   }
   if (!g_gles2_instanced_arrays_interface) {
     g_gles2_instanced_arrays_interface =
-        get_browser_interface(PPB_OPENGLES2_INSTANCEDARRAYS_DEV_INTERFACE);
+        get_browser_interface(PPB_OPENGLES2_INSTANCEDARRAYS_INTERFACE);
   }
   if (!g_gles2_framebuffer_blit_interface) {
     g_gles2_framebuffer_blit_interface =
-        get_browser_interface(PPB_OPENGLES2_FRAMEBUFFERBLIT_DEV_INTERFACE);
+        get_browser_interface(PPB_OPENGLES2_FRAMEBUFFERBLIT_INTERFACE);
   }
   if (!g_gles2_framebuffer_multisample_interface) {
     g_gles2_framebuffer_multisample_interface =
         get_browser_interface(
-            PPB_OPENGLES2_FRAMEBUFFERMULTISAMPLE_DEV_INTERFACE);
+            PPB_OPENGLES2_FRAMEBUFFERMULTISAMPLE_INTERFACE);
   }
   if (!g_gles2_chromium_enable_feature_interface) {
     g_gles2_chromium_enable_feature_interface =
         get_browser_interface(
-            PPB_OPENGLES2_CHROMIUMENABLEFEATURE_DEV_INTERFACE);
+            PPB_OPENGLES2_CHROMIUMENABLEFEATURE_INTERFACE);
   }
   if (!g_gles2_chromium_map_sub_interface) {
     g_gles2_chromium_map_sub_interface =
-        get_browser_interface(PPB_OPENGLES2_CHROMIUMMAPSUB_DEV_INTERFACE);
+        get_browser_interface(PPB_OPENGLES2_CHROMIUMMAPSUB_INTERFACE);
   }
   if (!g_gles2_query_interface) {
     g_gles2_query_interface =
-        get_browser_interface(PPB_OPENGLES2_QUERY_DEV_INTERFACE);
+        get_browser_interface(PPB_OPENGLES2_QUERY_INTERFACE);
   }
   return g_gles2_interface ? GL_TRUE : GL_FALSE;
 }
@@ -93,32 +93,32 @@ const struct PPB_OpenGLES2* GL_APIENTRY glGetInterfacePPAPI() {
   return g_gles2_interface;
 }
 
-const struct PPB_OpenGLES2InstancedArrays_Dev* GL_APIENTRY
+const struct PPB_OpenGLES2InstancedArrays* GL_APIENTRY
     glGetInstancedArraysInterfacePPAPI() {
   return g_gles2_instanced_arrays_interface;
 }
 
-const struct PPB_OpenGLES2FramebufferBlit_Dev* GL_APIENTRY
+const struct PPB_OpenGLES2FramebufferBlit* GL_APIENTRY
     glGetFramebufferBlitInterfacePPAPI() {
   return g_gles2_framebuffer_blit_interface;
 }
 
-const struct PPB_OpenGLES2FramebufferMultisample_Dev* GL_APIENTRY
+const struct PPB_OpenGLES2FramebufferMultisample* GL_APIENTRY
     glGetFramebufferMultisampleInterfacePPAPI() {
   return g_gles2_framebuffer_multisample_interface;
 }
 
-const struct PPB_OpenGLES2ChromiumEnableFeature_Dev* GL_APIENTRY
+const struct PPB_OpenGLES2ChromiumEnableFeature* GL_APIENTRY
     glGetChromiumEnableFeatureInterfacePPAPI() {
   return g_gles2_chromium_enable_feature_interface;
 }
 
-const struct PPB_OpenGLES2ChromiumMapSub_Dev* GL_APIENTRY
+const struct PPB_OpenGLES2ChromiumMapSub* GL_APIENTRY
     glGetChromiumMapSubInterfacePPAPI() {
   return g_gles2_chromium_map_sub_interface;
 }
 
-const struct PPB_OpenGLES2Query_Dev* GL_APIENTRY
+const struct PPB_OpenGLES2Query* GL_APIENTRY
     glGetQueryInterfacePPAPI() {
   return g_gles2_query_interface;
 }

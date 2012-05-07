@@ -14,14 +14,14 @@ namespace ppapi {
 class PPAPI_SHARED_EXPORT PPB_OpenGLES2_Shared {
  public:
   static const PPB_OpenGLES2* GetInterface();
-  static const PPB_OpenGLES2InstancedArrays_Dev* GetInstancedArraysInterface();
-  static const PPB_OpenGLES2FramebufferBlit_Dev* GetFramebufferBlitInterface();
-  static const PPB_OpenGLES2FramebufferMultisample_Dev*
+  static const PPB_OpenGLES2InstancedArrays* GetInstancedArraysInterface();
+  static const PPB_OpenGLES2FramebufferBlit* GetFramebufferBlitInterface();
+  static const PPB_OpenGLES2FramebufferMultisample*
       GetFramebufferMultisampleInterface();
-  static const PPB_OpenGLES2ChromiumEnableFeature_Dev*
+  static const PPB_OpenGLES2ChromiumEnableFeature*
       GetChromiumEnableFeatureInterface();
-  static const PPB_OpenGLES2ChromiumMapSub_Dev* GetChromiumMapSubInterface();
-  static const PPB_OpenGLES2Query_Dev* GetQueryInterface();
+  static const PPB_OpenGLES2ChromiumMapSub* GetChromiumMapSubInterface();
+  static const PPB_OpenGLES2Query* GetQueryInterface();
 };
 
 }  // namespace ppapi

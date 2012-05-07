@@ -863,34 +863,34 @@ const PPB_OpenGLES2* PluginGraphics3D::GetOpenGLESInterface() {
   };
   return &ppb_opengles;
 }
-const PPB_OpenGLES2InstancedArrays_Dev* PluginGraphics3D::GetOpenGLESInstancedArraysInterface() {  // NOLINT
-  const static struct PPB_OpenGLES2InstancedArrays_Dev ppb_opengles = {
+const PPB_OpenGLES2InstancedArrays* PluginGraphics3D::GetOpenGLESInstancedArraysInterface() {  // NOLINT
+  const static struct PPB_OpenGLES2InstancedArrays ppb_opengles = {
     &DrawArraysInstancedANGLE,
     &DrawElementsInstancedANGLE,
     &VertexAttribDivisorANGLE
   };
   return &ppb_opengles;
 }
-const PPB_OpenGLES2FramebufferBlit_Dev* PluginGraphics3D::GetOpenGLESFramebufferBlitInterface() {  // NOLINT
-  const static struct PPB_OpenGLES2FramebufferBlit_Dev ppb_opengles = {
+const PPB_OpenGLES2FramebufferBlit* PluginGraphics3D::GetOpenGLESFramebufferBlitInterface() {  // NOLINT
+  const static struct PPB_OpenGLES2FramebufferBlit ppb_opengles = {
     &BlitFramebufferEXT
   };
   return &ppb_opengles;
 }
-const PPB_OpenGLES2FramebufferMultisample_Dev* PluginGraphics3D::GetOpenGLESFramebufferMultisampleInterface() {  // NOLINT
-  const static struct PPB_OpenGLES2FramebufferMultisample_Dev ppb_opengles = {
+const PPB_OpenGLES2FramebufferMultisample* PluginGraphics3D::GetOpenGLESFramebufferMultisampleInterface() {  // NOLINT
+  const static struct PPB_OpenGLES2FramebufferMultisample ppb_opengles = {
     &RenderbufferStorageMultisampleEXT
   };
   return &ppb_opengles;
 }
-const PPB_OpenGLES2ChromiumEnableFeature_Dev* PluginGraphics3D::GetOpenGLESChromiumEnableFeatureInterface() {  // NOLINT
-  const static struct PPB_OpenGLES2ChromiumEnableFeature_Dev ppb_opengles = {
+const PPB_OpenGLES2ChromiumEnableFeature* PluginGraphics3D::GetOpenGLESChromiumEnableFeatureInterface() {  // NOLINT
+  const static struct PPB_OpenGLES2ChromiumEnableFeature ppb_opengles = {
     &EnableFeatureCHROMIUM
   };
   return &ppb_opengles;
 }
-const PPB_OpenGLES2ChromiumMapSub_Dev* PluginGraphics3D::GetOpenGLESChromiumMapSubInterface() {  // NOLINT
-  const static struct PPB_OpenGLES2ChromiumMapSub_Dev ppb_opengles = {
+const PPB_OpenGLES2ChromiumMapSub* PluginGraphics3D::GetOpenGLESChromiumMapSubInterface() {  // NOLINT
+  const static struct PPB_OpenGLES2ChromiumMapSub ppb_opengles = {
     &MapBufferSubDataCHROMIUM,
     &UnmapBufferSubDataCHROMIUM,
     &MapTexSubImage2DCHROMIUM,
@@ -898,8 +898,8 @@ const PPB_OpenGLES2ChromiumMapSub_Dev* PluginGraphics3D::GetOpenGLESChromiumMapS
   };
   return &ppb_opengles;
 }
-const PPB_OpenGLES2Query_Dev* PluginGraphics3D::GetOpenGLESQueryInterface() {
-  const static struct PPB_OpenGLES2Query_Dev ppb_opengles = {
+const PPB_OpenGLES2Query* PluginGraphics3D::GetOpenGLESQueryInterface() {
+  const static struct PPB_OpenGLES2Query ppb_opengles = {
     &GenQueriesEXT,
     &DeleteQueriesEXT,
     &IsQueryEXT,

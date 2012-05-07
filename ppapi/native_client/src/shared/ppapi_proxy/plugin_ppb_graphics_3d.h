@@ -33,17 +33,17 @@ class PluginGraphics3D : public PluginResource {
 
   static const PPB_Graphics3D* GetInterface();
   static const PPB_OpenGLES2* GetOpenGLESInterface();
-  static const PPB_OpenGLES2InstancedArrays_Dev*
+  static const PPB_OpenGLES2InstancedArrays*
       GetOpenGLESInstancedArraysInterface();
-  static const PPB_OpenGLES2FramebufferBlit_Dev*
+  static const PPB_OpenGLES2FramebufferBlit*
       GetOpenGLESFramebufferBlitInterface();
-  static const PPB_OpenGLES2FramebufferMultisample_Dev*
+  static const PPB_OpenGLES2FramebufferMultisample*
       GetOpenGLESFramebufferMultisampleInterface();
-  static const PPB_OpenGLES2ChromiumEnableFeature_Dev*
+  static const PPB_OpenGLES2ChromiumEnableFeature*
       GetOpenGLESChromiumEnableFeatureInterface();
-  static const PPB_OpenGLES2ChromiumMapSub_Dev*
+  static const PPB_OpenGLES2ChromiumMapSub*
       GetOpenGLESChromiumMapSubInterface();
-  static const PPB_OpenGLES2Query_Dev*
+  static const PPB_OpenGLES2Query*
       GetOpenGLESQueryInterface();
 
   virtual bool InitFromBrowserResource(PP_Resource graphics3d_id);

@@ -758,12 +758,12 @@ _ENUM_LISTS = {
 # GL commands. 'dev' is true if it's a dev interface.
 _PEPPER_INTERFACES = [
   {'name': '', 'dev': False},
-  {'name': 'InstancedArrays', 'dev': True},
-  {'name': 'FramebufferBlit', 'dev': True},
-  {'name': 'FramebufferMultisample', 'dev': True},
-  {'name': 'ChromiumEnableFeature', 'dev': True},
-  {'name': 'ChromiumMapSub', 'dev': True},
-  {'name': 'Query', 'dev': True},
+  {'name': 'InstancedArrays', 'dev': False},
+  {'name': 'FramebufferBlit', 'dev': False},
+  {'name': 'FramebufferMultisample', 'dev': False},
+  {'name': 'ChromiumEnableFeature', 'dev': False},
+  {'name': 'ChromiumMapSub', 'dev': False},
+  {'name': 'Query', 'dev': False},
 ]
 
 # This table specifies types and other special data for the commands that

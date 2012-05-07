@@ -37,17 +37,17 @@ GL_APICALL PP_Resource GL_APIENTRY glGetCurrentContextPPAPI();
 
 // Returns OpenGL ES 2.0 interface.
 GL_APICALL const struct PPB_OpenGLES2* GL_APIENTRY glGetInterfacePPAPI();
-GL_APICALL const struct PPB_OpenGLES2InstancedArrays_Dev* GL_APIENTRY
+GL_APICALL const struct PPB_OpenGLES2InstancedArrays* GL_APIENTRY
     glGetInstancedArraysInterfacePPAPI();
-GL_APICALL const struct PPB_OpenGLES2FramebufferBlit_Dev* GL_APIENTRY
+GL_APICALL const struct PPB_OpenGLES2FramebufferBlit* GL_APIENTRY
     glGetFramebufferBlitInterfacePPAPI();
-GL_APICALL const struct PPB_OpenGLES2FramebufferMultisample_Dev* GL_APIENTRY
+GL_APICALL const struct PPB_OpenGLES2FramebufferMultisample* GL_APIENTRY
     glGetFramebufferMultisampleInterfacePPAPI();
-GL_APICALL const struct PPB_OpenGLES2ChromiumEnableFeature_Dev* GL_APIENTRY
+GL_APICALL const struct PPB_OpenGLES2ChromiumEnableFeature* GL_APIENTRY
     glGetChromiumEnableFeatureInterfacePPAPI();
-GL_APICALL const struct PPB_OpenGLES2ChromiumMapSub_Dev* GL_APIENTRY
+GL_APICALL const struct PPB_OpenGLES2ChromiumMapSub* GL_APIENTRY
     glGetChromiumMapSubInterfacePPAPI();
-GL_APICALL const struct PPB_OpenGLES2Query_Dev* GL_APIENTRY
+GL_APICALL const struct PPB_OpenGLES2Query* GL_APIENTRY
     glGetQueryInterfacePPAPI();
 
 #ifdef __cplusplus

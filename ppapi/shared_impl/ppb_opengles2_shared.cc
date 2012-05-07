@@ -988,34 +988,34 @@ const PPB_OpenGLES2* PPB_OpenGLES2_Shared::GetInterface() {
   };
   return &ppb_opengles2;
 }
-const PPB_OpenGLES2InstancedArrays_Dev* PPB_OpenGLES2_Shared::GetInstancedArraysInterface() {  // NOLINT
-  static const struct PPB_OpenGLES2InstancedArrays_Dev ppb_opengles2 = {
+const PPB_OpenGLES2InstancedArrays* PPB_OpenGLES2_Shared::GetInstancedArraysInterface() {  // NOLINT
+  static const struct PPB_OpenGLES2InstancedArrays ppb_opengles2 = {
     &DrawArraysInstancedANGLE,
     &DrawElementsInstancedANGLE,
     &VertexAttribDivisorANGLE
   };
   return &ppb_opengles2;
 }
-const PPB_OpenGLES2FramebufferBlit_Dev* PPB_OpenGLES2_Shared::GetFramebufferBlitInterface() {  // NOLINT
-  static const struct PPB_OpenGLES2FramebufferBlit_Dev ppb_opengles2 = {
+const PPB_OpenGLES2FramebufferBlit* PPB_OpenGLES2_Shared::GetFramebufferBlitInterface() {  // NOLINT
+  static const struct PPB_OpenGLES2FramebufferBlit ppb_opengles2 = {
     &BlitFramebufferEXT
   };
   return &ppb_opengles2;
 }
-const PPB_OpenGLES2FramebufferMultisample_Dev* PPB_OpenGLES2_Shared::GetFramebufferMultisampleInterface() {  // NOLINT
-  static const struct PPB_OpenGLES2FramebufferMultisample_Dev ppb_opengles2 = {
+const PPB_OpenGLES2FramebufferMultisample* PPB_OpenGLES2_Shared::GetFramebufferMultisampleInterface() {  // NOLINT
+  static const struct PPB_OpenGLES2FramebufferMultisample ppb_opengles2 = {
     &RenderbufferStorageMultisampleEXT
   };
   return &ppb_opengles2;
 }
-const PPB_OpenGLES2ChromiumEnableFeature_Dev* PPB_OpenGLES2_Shared::GetChromiumEnableFeatureInterface() {  // NOLINT
-  static const struct PPB_OpenGLES2ChromiumEnableFeature_Dev ppb_opengles2 = {
+const PPB_OpenGLES2ChromiumEnableFeature* PPB_OpenGLES2_Shared::GetChromiumEnableFeatureInterface() {  // NOLINT
+  static const struct PPB_OpenGLES2ChromiumEnableFeature ppb_opengles2 = {
     &EnableFeatureCHROMIUM
   };
   return &ppb_opengles2;
 }
-const PPB_OpenGLES2ChromiumMapSub_Dev* PPB_OpenGLES2_Shared::GetChromiumMapSubInterface() {  // NOLINT
-  static const struct PPB_OpenGLES2ChromiumMapSub_Dev ppb_opengles2 = {
+const PPB_OpenGLES2ChromiumMapSub* PPB_OpenGLES2_Shared::GetChromiumMapSubInterface() {  // NOLINT
+  static const struct PPB_OpenGLES2ChromiumMapSub ppb_opengles2 = {
     &MapBufferSubDataCHROMIUM,
     &UnmapBufferSubDataCHROMIUM,
     &MapTexSubImage2DCHROMIUM,
@@ -1023,8 +1023,8 @@ const PPB_OpenGLES2ChromiumMapSub_Dev* PPB_OpenGLES2_Shared::GetChromiumMapSubIn
   };
   return &ppb_opengles2;
 }
-const PPB_OpenGLES2Query_Dev* PPB_OpenGLES2_Shared::GetQueryInterface() {
-  static const struct PPB_OpenGLES2Query_Dev ppb_opengles2 = {
+const PPB_OpenGLES2Query* PPB_OpenGLES2_Shared::GetQueryInterface() {
+  static const struct PPB_OpenGLES2Query ppb_opengles2 = {
     &GenQueriesEXT,
     &DeleteQueriesEXT,
     &IsQueryEXT,
