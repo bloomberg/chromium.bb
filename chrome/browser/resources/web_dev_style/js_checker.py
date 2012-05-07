@@ -157,6 +157,7 @@ class JSChecker(object):
             errors.JSDOC_ILLEGAL_QUESTION_WITH_PIPE,
             errors.JSDOC_TAG_DESCRIPTION_ENDS_WITH_INVALID_CHARACTER,
             errors.LINE_TOO_LONG,
+            errors.MISSING_JSDOC_TAG_THIS,
         ]
 
     results = []
