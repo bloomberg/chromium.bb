@@ -28,6 +28,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/time_format.h"
@@ -73,7 +74,6 @@
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/base/dragdrop/drag_source.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #endif
