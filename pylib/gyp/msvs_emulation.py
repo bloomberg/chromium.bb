@@ -245,10 +245,11 @@ class MsvsSettings(object):
     cflags.extend(['/wd' + w for w in self.msvs_disabled_warnings[config]])
     cl = self._GetWrapper(self, self.msvs_settings[config],
                           'VCCLCompilerTool', append=cflags)
-    cl('Optimization', map={'0': 'd', '2': 's'}, prefix='/O')
+    cl('Optimization',
+       map={'0': 'd', '1': '1', '2': '2', '3': 'x'}, prefix='/O')
     cl('InlineFunctionExpansion', prefix='/Ob')
     cl('OmitFramePointers', map={'false': '-', 'true': ''}, prefix='/Oy')
-    cl('FavorSizeOrSpeed', map={'1': 's', '2': 't'}, prefix='/O')
+    cl('FavorSizeOrSpeed', map={'1': 't', '2': 's'}, prefix='/O')
     cl('WholeProgramOptimization', map={'true': '/GL'})
     cl('WarningLevel', prefix='/W')
     cl('WarnAsError', map={'true': '/WX'})

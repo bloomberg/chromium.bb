@@ -25,13 +25,20 @@ if sys.platform == 'win32':
   ninja_file = test.built_file_path('obj/test_opt_off.ninja', chdir=CHDIR)
   test.must_contain(ninja_file, 'cflags = /Od')
 
-  ninja_file = test.built_file_path('obj/test_opt_level_s.ninja', chdir=CHDIR)
-  test.must_contain(ninja_file, 'cflags = /Os')
+  ninja_file = test.built_file_path('obj/test_opt_lev_size.ninja', chdir=CHDIR)
+  test.must_contain(ninja_file, 'cflags = /O1')
+
+  ninja_file = test.built_file_path('obj/test_opt_lev_speed.ninja', chdir=CHDIR)
+  test.must_contain(ninja_file, 'cflags = /O2')
+
+  ninja_file = test.built_file_path('obj/test_opt_lev_max.ninja', chdir=CHDIR)
+  test.must_contain(ninja_file, 'cflags = /Ox')
 
   ninja_file = test.built_file_path('obj/test_opt_unset.ninja', chdir=CHDIR)
-  test.must_not_contain(ninja_file, '/Os')
-  test.must_not_contain(ninja_file, '/Ox')
   test.must_not_contain(ninja_file, '/Od')
+  test.must_not_contain(ninja_file, '/O1')
+  test.must_not_contain(ninja_file, '/O2')
+  test.must_not_contain(ninja_file, '/Ox')
 
   ninja_file = test.built_file_path('obj/test_opt_fpo.ninja', chdir=CHDIR)
   test.must_contain(ninja_file, '/Oy')
@@ -51,6 +58,11 @@ if sys.platform == 'win32':
   ninja_file = test.built_file_path('obj/test_opt_inline_auto.ninja',
       chdir=CHDIR)
   test.must_contain(ninja_file, '/Ob2')
+
+  ninja_file = test.built_file_path('obj/test_opt_neither.ninja',
+      chdir=CHDIR)
+  test.must_not_contain(ninja_file, '/Os')
+  test.must_not_contain(ninja_file, '/Ot')
 
   ninja_file = test.built_file_path('obj/test_opt_size.ninja',
       chdir=CHDIR)

@@ -15,11 +15,31 @@
       'sources': ['hello.cc'],
     },
     {
-      'target_name': 'test_opt_level_s',
+      'target_name': 'test_opt_lev_size',
+      'type': 'executable',
+      'msvs_settings': {
+        'VCCLCompilerTool': {
+          'Optimization': '1'
+        }
+      },
+      'sources': ['hello.cc'],
+    },
+    {
+      'target_name': 'test_opt_lev_speed',
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
           'Optimization': '2'
+        }
+      },
+      'sources': ['hello.cc'],
+    },
+    {
+      'target_name': 'test_opt_lev_max',
+      'type': 'executable',
+      'msvs_settings': {
+        'VCCLCompilerTool': {
+          'Optimization': '3'
         }
       },
       'sources': ['hello.cc'],
@@ -84,7 +104,17 @@
       'sources': ['hello.cc'],
     },
     {
-      'target_name': 'test_opt_size',
+      'target_name': 'test_opt_neither',
+      'type': 'executable',
+      'msvs_settings': {
+        'VCCLCompilerTool': {
+          'FavorSizeOrSpeed': '0'
+        }
+      },
+      'sources': ['hello.cc'],
+    },
+    {
+      'target_name': 'test_opt_speed',
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
@@ -94,7 +124,7 @@
       'sources': ['hello.cc'],
     },
     {
-      'target_name': 'test_opt_speed',
+      'target_name': 'test_opt_size',
       'type': 'executable',
       'msvs_settings': {
         'VCCLCompilerTool': {
