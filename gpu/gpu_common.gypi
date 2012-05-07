@@ -207,6 +207,7 @@
       ],
       'defines': [
         'GLES2_C_LIB_IMPLEMENTATION',
+        'GL_GLEXT_PROTOTYPES',
       ],
       'sources': [
         'command_buffer/tests/gl_test_utils.cc',
@@ -245,7 +246,6 @@
         'command_buffer/tests/gl_manager.cc',
         'command_buffer/tests/gl_manager.h',
         'command_buffer/tests/gl_tests_main.cc',
-        'command_buffer/tests/gl_unittests.cc',
       ],
     },
     {
