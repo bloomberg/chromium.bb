@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef UI_OAK_OAK_PRETTY_PRINT_H_
+#define UI_OAK_OAK_PRETTY_PRINT_H_
+#pragma once
+
 #include "base/string16.h"
 
 namespace gfx {
@@ -23,3 +27,5 @@ string16 PropertyWithInsets(const std::string& prefix,
 
 }  // namespace internal
 }  // namespace oak
+
+#endif  // UI_OAK_OAK_PRETTY_PRINT_H_
