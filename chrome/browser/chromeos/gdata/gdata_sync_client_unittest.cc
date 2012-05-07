@@ -46,6 +46,10 @@ class GDataSyncClientTest : public testing::Test {
     mock_network_library_ = new chromeos::MockNetworkLibrary;
     chromeos::CrosLibrary::Get()->GetTestApi()->SetNetworkLibrary(
         mock_network_library_, true);
+    EXPECT_CALL(*mock_network_library_, AddNetworkManagerObserver(
+        sync_client_.get())).Times(1);
+    EXPECT_CALL(*mock_network_library_, RemoveNetworkManagerObserver(
+        sync_client_.get())).Times(1);
 
     // Create a temporary directory.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -59,6 +63,9 @@ class GDataSyncClientTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
+    // The sync client should be deleted before NetworkLibrary, as the sync
+    // client registers itself as observer of NetworkLibrary.
+    sync_client_.reset();
     chromeos::CrosLibrary::Shutdown();
   }
 
@@ -70,6 +77,10 @@ class GDataSyncClientTest : public testing::Test {
         .Times(AnyNumber())
         .WillRepeatedly((Return(active_network_.get())));
     chromeos::Network::TestApi(active_network_.get()).SetConnected(true);
+    // Notify the sync client that the network is changed. This is done via
+    // NetworkLibrary in production, but here, we simulate the behavior by
+    // directly calling OnNetworkManagerChanged().
+    sync_client_->OnNetworkManagerChanged(mock_network_library_);
   }
 
   // Sets up MockNetworkLibrary as if it's connected to cellular network.
@@ -80,6 +91,7 @@ class GDataSyncClientTest : public testing::Test {
         .Times(AnyNumber())
         .WillRepeatedly((Return(active_network_.get())));
     chromeos::Network::TestApi(active_network_.get()).SetConnected(true);
+    sync_client_->OnNetworkManagerChanged(mock_network_library_);
   }
 
   // Sets up MockNetworkLibrary as if it's disconnected.
@@ -91,6 +103,7 @@ class GDataSyncClientTest : public testing::Test {
         .WillRepeatedly((Return(active_network_.get())));
     // Here false is passed to make it disconnected.
     chromeos::Network::TestApi(active_network_.get()).SetConnected(false);
+    sync_client_->OnNetworkManagerChanged(mock_network_library_);
   }
 
   // Sets up test files in the temporary directory.
@@ -224,7 +237,7 @@ TEST_F(GDataSyncClientTest, StartFetchLoop_Offline) {
 
 TEST_F(GDataSyncClientTest, StartFetchLoop_CelluarDisabled) {
   SetUpTestFiles();
-  ConnectToCellular();
+  ConnectToWifi();  // First connect to Wifi.
 
   sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
   sync_client_->AddResourceIdForTesting("resource_id_not_fetched_bar");
@@ -234,12 +247,14 @@ TEST_F(GDataSyncClientTest, StartFetchLoop_CelluarDisabled) {
   // fetching over cellular network is disabled by default.
   EXPECT_CALL(*mock_file_system_, GetFileByResourceId(_, _, _)).Times(0);
 
-  sync_client_->StartFetchLoop();
+  // Then connect to cellular. This will kick off StartFetchLoop().
+  ConnectToCellular();
 }
 
 TEST_F(GDataSyncClientTest, StartFetchLoop_CelluarEnabled) {
   SetUpTestFiles();
-  ConnectToCellular();
+  ConnectToWifi();  // First connect to Wifi.
+
   // Enable fetching over cellular network.
   profile_->GetPrefs()->SetBoolean(prefs::kDisableGDataOverCellular, false);
 
@@ -271,7 +286,8 @@ TEST_F(GDataSyncClientTest, StartFetchLoop_CelluarEnabled) {
           std::string("mime_type_does_not_matter"),
           REGULAR_FILE));
 
-  sync_client_->StartFetchLoop();
+  // Then connect to cellular. This will kick off StartFetchLoop().
+  ConnectToCellular();
 }
 
 TEST_F(GDataSyncClientTest, StartFetchLoop_GDataDisabled) {

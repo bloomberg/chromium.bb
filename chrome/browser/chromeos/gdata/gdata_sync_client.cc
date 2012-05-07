@@ -84,12 +84,24 @@ GDataSyncClient::~GDataSyncClient() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (file_system_)
     file_system_->RemoveObserver(this);
+
+  chromeos::NetworkLibrary* network_library =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  if (network_library)
+    network_library->RemoveNetworkManagerObserver(this);
 }
 
 void GDataSyncClient::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_system_->AddObserver(this);
+
+  chromeos::NetworkLibrary* network_library =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  if (network_library)
+    network_library->AddNetworkManagerObserver(this);
+  else
+    LOG(ERROR) << "NetworkLibrary is not present";
 
   registrar_->Init(profile_->GetPrefs());
   registrar_->Add(prefs::kDisableGData, this);
@@ -235,15 +247,15 @@ void GDataSyncClient::OnFetchFileComplete(const std::string& resource_id,
   DoFetchLoop();
 }
 
-void GDataSyncClient::OnNetworkChanged(
-    chromeos::NetworkLibrary* network_library,
-    const chromeos::Network* network) {
+void GDataSyncClient::OnNetworkManagerChanged(
+    chromeos::NetworkLibrary* network_library) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Resume the fetch loop if the network is back online. Note that we don't
   // need to check the type of the network as it will be checked in
   // ShouldStopFetchLoop() as soon as the loop is resumed.
-  if (network->online())
+  const chromeos::Network* active_network = network_library->active_network();
+  if (active_network && active_network->online())
     StartFetchLoop();
 }
 

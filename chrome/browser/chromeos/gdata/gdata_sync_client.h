@@ -52,10 +52,11 @@ class GDataSyncClientInterface {
 };
 
 // The production implementation of GDataSyncClientInterface.
-class GDataSyncClient : public GDataSyncClientInterface,
-                        public GDataFileSystem::Observer,
-                        public chromeos::NetworkLibrary::NetworkObserver,
-                        public content::NotificationObserver {
+class GDataSyncClient
+    : public GDataSyncClientInterface,
+      public GDataFileSystem::Observer,
+      public chromeos::NetworkLibrary::NetworkManagerObserver,
+      public content::NotificationObserver {
  public:
   // |profile| is used to access user preferences.
   // |file_system| is used access the
@@ -93,6 +94,8 @@ class GDataSyncClient : public GDataSyncClientInterface,
   void StartFetchLoop();
 
  private:
+  friend class GDataSyncClientTest;
+
   // Runs the fetch loop that fetches files in |queue_|. One file is fetched
   // at a time, rather than in parallel. The loop ends when the queue becomes
   // empty.
@@ -115,9 +118,9 @@ class GDataSyncClient : public GDataSyncClientInterface,
                            const std::string& ununsed_mime_type,
                            GDataFileType file_type);
 
-  // chromeos::NetworkLibrary::NetworkObserver override.
-  virtual void OnNetworkChanged(chromeos::NetworkLibrary* network_library,
-                                const chromeos::Network* network) OVERRIDE;
+  // chromeos::NetworkLibrary::NetworkManagerObserver override.
+  virtual void OnNetworkManagerChanged(
+      chromeos::NetworkLibrary* network_library) OVERRIDE;
 
   // content::NotificationObserver override.
   virtual void Observe(int type,
