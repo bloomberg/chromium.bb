@@ -460,6 +460,6 @@
   },
   "WHY_IS_THIS_SAFE": {
     "message": "Why is this safe?",
-    "description": "Help link displayed when the user enables the host on this computer. Clicking this link opens a page that explains why this operation is safe."
+    "description": "Help link displayed when the user enables the host on this computer. Clicking this link opens a page that explains why this operation is safe. This string appears in a UI with limited horizontal space. Please try to keep translations no more than about 30 characters."
   }
 }
