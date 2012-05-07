@@ -598,6 +598,10 @@ cpfq_arm.add_config('arm-tegra2-tot-chrome-pfq-informational',
   boards=['tegra2'],
 )
 
+cpfq_arm.add_config('daisy-tot-chrome-pfq-informational',
+  boards=['daisy'],
+)
+
 chromium_pfq_info.add_config('amd64-corei7-tot-chrome-pfq-informational',
   amd64,
   boards=['amd64-corei7'],
