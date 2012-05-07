@@ -384,6 +384,7 @@ void InMemoryURLIndexTest::ExpectPrivateDataEqual(
   EXPECT_EQ(expected.history_id_word_map_.size(),
             actual.history_id_word_map_.size());
   EXPECT_EQ(expected.history_info_map_.size(), actual.history_info_map_.size());
+  EXPECT_EQ(expected.word_starts_map_.size(), actual.word_starts_map_.size());
   // WordList must be index-by-index equal.
   size_t count = expected.word_list_.size();
   for (size_t i = 0; i < count; ++i)
@@ -972,6 +973,7 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   EXPECT_FALSE(private_data.word_id_history_map_.empty());
   EXPECT_FALSE(private_data.history_id_word_map_.empty());
   EXPECT_FALSE(private_data.history_info_map_.empty());
+  EXPECT_FALSE(private_data.word_starts_map_.empty());
 
   // Capture the current private data for later comparison to restored data.
   scoped_refptr<URLIndexPrivateData> old_data(private_data.Duplicate());
@@ -992,6 +994,7 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   EXPECT_TRUE(private_data.word_id_history_map_.empty());
   EXPECT_TRUE(private_data.history_id_word_map_.empty());
   EXPECT_TRUE(private_data.history_info_map_.empty());
+  EXPECT_TRUE(private_data.word_starts_map_.empty());
 
   CacheFileReaderObserver read_observer(&message_loop_);
   url_index_->set_restore_cache_observer(&read_observer);
@@ -1002,40 +1005,7 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   URLIndexPrivateData& new_data(*GetPrivateData());
 
   // Compare the captured and restored for equality.
-  EXPECT_EQ(old_data->word_list_.size(), new_data.word_list_.size());
-  EXPECT_EQ(old_data->word_map_.size(), new_data.word_map_.size());
-  EXPECT_EQ(old_data->char_word_map_.size(), new_data.char_word_map_.size());
-  EXPECT_EQ(old_data->word_id_history_map_.size(),
-            new_data.word_id_history_map_.size());
-  EXPECT_EQ(old_data->history_id_word_map_.size(),
-            new_data.history_id_word_map_.size());
-  EXPECT_EQ(old_data->history_info_map_.size(),
-            new_data.history_info_map_.size());
-  // WordList must be index-by-index equal.
-  size_t count = old_data->word_list_.size();
-  for (size_t i = 0; i < count; ++i)
-    EXPECT_EQ(old_data->word_list_[i], new_data.word_list_[i]);
-
-  ExpectMapOfContainersIdentical(old_data->char_word_map_,
-                                 new_data.char_word_map_);
-  ExpectMapOfContainersIdentical(old_data->word_id_history_map_,
-                                 new_data.word_id_history_map_);
-  ExpectMapOfContainersIdentical(old_data->history_id_word_map_,
-                                 new_data.history_id_word_map_);
-
-  for (HistoryInfoMap::const_iterator expected =
-       old_data->history_info_map_.begin();
-       expected != old_data->history_info_map_.end(); ++expected) {
-    HistoryInfoMap::const_iterator actual =
-        new_data.history_info_map_.find(expected->first);
-    ASSERT_FALSE(new_data.history_info_map_.end() == actual);
-    const URLRow& expected_row(expected->second);
-    const URLRow& actual_row(actual->second);
-    EXPECT_EQ(expected_row.visit_count(), actual_row.visit_count());
-    EXPECT_EQ(expected_row.typed_count(), actual_row.typed_count());
-    EXPECT_EQ(expected_row.last_visit(), actual_row.last_visit());
-    EXPECT_EQ(expected_row.url(), actual_row.url());
-  }
+  ExpectPrivateDataEqual(*old_data, new_data);
 }
 
 class InMemoryURLIndexCacheTest : public testing::Test {

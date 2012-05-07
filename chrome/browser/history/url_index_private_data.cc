@@ -154,6 +154,7 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::Duplicate() const {
   data_copy->word_id_history_map_ = word_id_history_map_;
   data_copy->history_id_word_map_ = history_id_word_map_;
   data_copy->history_info_map_ = history_info_map_;
+  data_copy->word_starts_map_ = word_starts_map_;
   return data_copy;
   // Not copied:
   //    search_term_cache_
