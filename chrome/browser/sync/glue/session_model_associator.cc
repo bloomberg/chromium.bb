@@ -510,6 +510,15 @@ void SessionModelAssociator::AssociateTabContents(
         // over navigations, so the subsequent navigation entries may need their
         // old timestamps preserved.
         ++prev_nav_iter;
+      } else if (current_index != i &&
+                 prev_tab->synced_tab_navigations.empty()) {
+        // If this is a new tab, and has more than one navigation, we don't
+        // actually want to assign the current timestamp to other navigations.
+        // Override the timestamp to 0 in that case.
+        // Note: this is primarily to handle restoring sessions at restart,
+        // opening recently closed tabs, or opening tabs from other devices.
+        // Only the current navigation should have a timestamp in those cases.
+        sync_nav->set_timestamp(0);
       }
     }
   }

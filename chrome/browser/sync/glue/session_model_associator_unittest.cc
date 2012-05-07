@@ -561,7 +561,8 @@ TEST_F(SyncSessionModelAssociatorTest, FaviconCleanup) {
   EXPECT_EQ(0U, NumFavicons());
 }
 
-// Ensure new tabs have all new timestamps set.
+// Ensure new tabs have the current timestamp set for the current navigation,
+// while other navigations have timestamp zero.
 TEST_F(SyncSessionModelAssociatorTest, AssociateNewTab) {
   NiceMock<SyncedWindowDelegateMock> window_mock;
   EXPECT_CALL(window_mock, IsTabPinned(_)).WillRepeatedly(Return(false));
@@ -606,8 +607,8 @@ TEST_F(SyncSessionModelAssociatorTest, AssociateNewTab) {
   EXPECT_EQ(entry3->GetVirtualURL().spec(),
             sync_tab.navigation(2).virtual_url());
   EXPECT_EQ(2, sync_tab.current_navigation_index());
-  EXPECT_LE(now, sync_tab.navigation(0).timestamp());
-  EXPECT_LE(now, sync_tab.navigation(1).timestamp());
+  EXPECT_LE(0, sync_tab.navigation(0).timestamp());
+  EXPECT_LE(0, sync_tab.navigation(1).timestamp());
   EXPECT_LE(now, sync_tab.navigation(2).timestamp());
 }
 
