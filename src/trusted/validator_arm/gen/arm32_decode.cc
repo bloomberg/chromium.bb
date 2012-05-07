@@ -17,6 +17,7 @@ namespace nacl_arm_dec {
 Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Binary2RegisterImmedShiftedTest_instance_()
   , Binary3RegisterImmedShiftedOp_instance_()
+  , Binary3RegisterImmedShiftedOpRnNotSp_instance_()
   , Binary3RegisterOp_instance_()
   , Binary3RegisterShiftedTest_instance_()
   , Binary4RegisterShiftedOp_instance_()
@@ -259,6 +260,26 @@ const ClassDecoder& Arm32DecoderState::decode_dp_reg(
      const Instruction insn) const
 {
   UNREFERENCED_PARAMETER(insn);
+  if ((insn & 0x01E00000) == 0x00400000 /* op1(24:20) == 0010x */ &&
+      true &&
+      true)
+    return Binary3RegisterImmedShiftedOpRnNotSp_instance_;
+
+  if ((insn & 0x01E00000) == 0x00800000 /* op1(24:20) == 0100x */ &&
+      true &&
+      true)
+    return Binary3RegisterImmedShiftedOpRnNotSp_instance_;
+
+  if ((insn & 0x01E00000) == 0x00A00000 /* op1(24:20) == 0101x */ &&
+      true &&
+      true)
+    return Binary3RegisterImmedShiftedOp_instance_;
+
+  if ((insn & 0x01E00000) == 0x01800000 /* op1(24:20) == 1100x */ &&
+      true &&
+      true)
+    return Binary3RegisterImmedShiftedOp_instance_;
+
   if ((insn & 0x01E00000) == 0x01A00000 /* op1(24:20) == 1101x */ &&
       (insn & 0x00000F80) != 0x00000000 /* op2(11:7) == ~00000 */ &&
       (insn & 0x00000060) == 0x00000000 /* op3(6:5) == 00 */)
@@ -294,17 +315,22 @@ const ClassDecoder& Arm32DecoderState::decode_dp_reg(
       true)
     return Unary2RegisterImmedShiftedOp_instance_;
 
+  if ((insn & 0x00E00000) == 0x00C00000 /* op1(24:20) == x110x */ &&
+      true &&
+      true)
+    return Binary3RegisterImmedShiftedOp_instance_;
+
+  if ((insn & 0x01600000) == 0x00600000 /* op1(24:20) == 0x11x */ &&
+      true &&
+      true)
+    return Binary3RegisterImmedShiftedOp_instance_;
+
   if ((insn & 0x01900000) == 0x01100000 /* op1(24:20) == 10xx1 */ &&
       true &&
       true)
     return Binary2RegisterImmedShiftedTest_instance_;
 
-  if ((insn & 0x01A00000) == 0x01800000 /* op1(24:20) == 11x0x */ &&
-      true &&
-      true)
-    return Binary3RegisterImmedShiftedOp_instance_;
-
-  if ((insn & 0x01000000) == 0x00000000 /* op1(24:20) == 0xxxx */ &&
+  if ((insn & 0x01C00000) == 0x00000000 /* op1(24:20) == 000xx */ &&
       true &&
       true)
     return Binary3RegisterImmedShiftedOp_instance_;

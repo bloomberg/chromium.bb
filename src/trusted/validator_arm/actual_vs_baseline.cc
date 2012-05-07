@@ -44,12 +44,13 @@ void ActualVsBaselineTester::ProcessMatch() {
   CheckSetsZIfBitsClear();
 }
 
-void ActualVsBaselineTester::ApplySanityChecks(
+bool ActualVsBaselineTester::ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder) {
   UNREFERENCED_PARAMETER(inst);
   UNREFERENCED_PARAMETER(decoder);
-  GTEST_FAIL() << "Sanity Checks shouldn't be applied!";
+  EXPECT_TRUE(false) << "Sanity Checks shouldn't be applied!";
+  return false;
 }
 
 const NamedClassDecoder& ActualVsBaselineTester::ExpectedDecoder() const {

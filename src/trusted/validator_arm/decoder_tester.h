@@ -50,9 +50,12 @@ class DecoderTester {
 
   // Once an instruction is decoded, this method is called to apply
   // sanity checks on the matched decoder. The default checks that the
-  // expected class name matches the name of the decoder, and that
-  // the safety level MAY_BE_SAFE.
-  virtual void ApplySanityChecks(
+  // expected class name matches the name of the decoder, and that the
+  // safety level is MAY_BE_SAFE. Returns whether further checking of
+  // the instruction should be performed. In particular, false is returned
+  // if there is some unencoded assumption that isn't put into the
+  // test patterns, and hence, should not be checked.
+  virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
@@ -112,6 +115,21 @@ class DecoderTester {
   // length times.
   void FillBitRange(int index, int length, bool value);
 };
+
+// Helper macro for testing if preconditions are met within the
+// ApplySanityChecks method of a DecoderTester. That is, if the
+// precondition is not met, exit the routine and return false.
+// Otherwise, the precondition of the remaining code has been met,
+// and execution continues.
+#define NC_PRECOND(test) \
+  { if (!(test)) return false; }
+
+// Helper macro for testing if an (error) precondition a != b is met
+// within the ApplySanityChecks method of a DecoderTester. That is,
+// if a == b, generate a gtest error and then stop the application
+// from doing further checks for the given instruction.
+#define NC_EXPECT_NE_PRECOND(a, b) \
+  { EXPECT_NE(a, b) << InstContents(); NC_PRECOND((a) == (b)); }
 
 // Defines a decoder tester that enumerates an Arm32 instruction pattern,
 // and tests that all of the decoded patterns match the expected class

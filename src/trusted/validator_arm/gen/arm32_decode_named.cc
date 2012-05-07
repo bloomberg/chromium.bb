@@ -261,7 +261,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg(
   if ((insn & 0x01E00000) == 0x00400000 /* op1(24:20) == 0010x */ &&
       true &&
       true)
-   return Binary3RegisterImmedShiftedOp_SubRule_213_A1_P422_instance_;
+   return Binary3RegisterImmedShiftedOpRnNotSp_SubRule_213_A1_P422_instance_;
 
   if ((insn & 0x01E00000) == 0x00600000 /* op1(24:20) == 0011x */ &&
       true &&
@@ -271,7 +271,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg(
   if ((insn & 0x01E00000) == 0x00800000 /* op1(24:20) == 0100x */ &&
       true &&
       true)
-   return Binary3RegisterImmedShiftedOp_Add_Rule_6_A1_P24_instance_;
+   return Binary3RegisterImmedShiftedOpRnNotSp_Add_Rule_6_A1_P24_instance_;
 
   if ((insn & 0x01E00000) == 0x00A00000 /* op1(24:20) == 0101x */ &&
       true &&

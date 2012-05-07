@@ -79,6 +79,7 @@
 
 class MaskedBinary2RegisterImmediateOp : Binary2RegisterImmediateOp
 class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
+class Binary3RegisterImmedShiftedOpRnNotSp : Binary3RegisterImmedShiftedOp
 
 ##############################################################
 # The following define decoder tables.
@@ -127,7 +128,7 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
                                      Eor_Rule_45_A1_P96
                                      cccc0000001unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
-| 0010x      -         -        = Binary3RegisterImmedShiftedOp
+| 0010x      -         -        = Binary3RegisterImmedShiftedOpRnNotSp
                                      SubRule_213_A1_P422
                                      cccc0000010unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndSOrRnIsSp
@@ -135,7 +136,7 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
                                      Rsb_Rule_143_P286
                                      cccc0000011unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
-| 0100x      -         -        = Binary3RegisterImmedShiftedOp
+| 0100x      -         -        = Binary3RegisterImmedShiftedOpRnNotSp
                                      Add_Rule_6_A1_P24
                                      cccc0000100unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndSOrRnIsSp
@@ -275,7 +276,7 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
 | 1110x      -        = MaskedBinary2RegisterImmediateOp => ImmediateBic
                            Bic_Rule_19_A1_P50
                            cccc0011110unnnnddddiiiiiiiiiiii
-                           RdCanBePcAndNotRdIsPcAndS
+                           NotRdIsPcAndS
 | 1111x      -        =DataProc  # MVN(immediate)
 +--
 
