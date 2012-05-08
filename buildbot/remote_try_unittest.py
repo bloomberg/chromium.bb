@@ -18,19 +18,25 @@ from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import cros_test_lib as test_lib
 from chromite.buildbot import remote_try
 from chromite.buildbot import repository
+from chromite.scripts import cbuildbot
 
 # pylint: disable=W0212,R0904,E1101
 class RemoteTryTests(mox.MoxTestBase):
 
-  PATCHES = ['5555', '6666']
-  BOTS = ['x86-generic-paladin', 'arm-generic-paladin']
+  PATCHES = ('5555', '6666')
+  BOTS = ('x86-generic-paladin', 'arm-generic-paladin')
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    self.parser = cbuildbot._CreateParser()
+    args = ['-r', '/tmp/test_build1', '-g', '5555', '-g',
+            '6666', '--remote']
+    args.extend(self.BOTS)
+    self.options, args = cbuildbot._ParseCommandLine(self.parser, args)
 
   @test_lib.tempdir_decorator
   def testSimpleTryJob(self):
     """Test that a tryjob spec file is created and pushed properly."""
-    options = mox.MockAnything()
-    options.gerrit_patches = self.PATCHES
-    options.local_patches = []
     self.mox.StubOutWithMock(repository, 'IsARepoRoot')
     repository.IsARepoRoot(mox.IgnoreArg()).AndReturn(True)
     self.mox.StubOutWithMock(repository, 'IsInternalRepoCheckout')
@@ -39,7 +45,7 @@ class RemoteTryTests(mox.MoxTestBase):
     self.mox.StubOutWithMock(time, 'time')
     time.time().AndReturn(0)
     self.mox.ReplayAll()
-    job = remote_try.RemoteTryJob(options, self.BOTS, [])
+    job = remote_try.RemoteTryJob(self.options, self.BOTS, [])
     job.Submit(workdir=self.tempdir, dryrun=True)
     # Get the file that was just created.
     created_file = os.path.join(self.tempdir, job.user, '%s.0' % job.user)
@@ -49,11 +55,10 @@ class RemoteTryTests(mox.MoxTestBase):
     self.assertFalse(re.search('\@google\.com', values['email'][0]) is None and
                      re.search('\@chromium\.org', values['email'][0]) is None)
 
-    for arg in values['extra_args']:
-      if self.PATCHES[0] in arg and self.PATCHES[1] in arg:
-        break
-    else:
-      self.assertTrue(False, "Patches couldn't be found in extra_args...")
+    for patch in self.PATCHES:
+      self.assertTrue(patch in values['extra_args'],
+                      msg="expected patch %s in args %s" %
+                          (patch, values['extra_args']))
 
     self.assertTrue(set(self.BOTS).issubset(values['bot']))
 
@@ -65,16 +70,13 @@ class RemoteTryTests(mox.MoxTestBase):
   @test_lib.tempdir_decorator
   def testInternalTryJob(self):
     """Verify internal tryjobs are pushed properly."""
-    options = mox.MockAnything()
-    options.gerrit_patches = self.PATCHES
-    options.local_patches = []
     self.mox.StubOutWithMock(repository, 'IsARepoRoot')
     repository.IsARepoRoot(mox.IgnoreArg()).AndReturn(True)
     self.mox.StubOutWithMock(repository, 'IsInternalRepoCheckout')
     repository.IsInternalRepoCheckout(mox.IgnoreArg()).AndReturn(True)
 
     self.mox.ReplayAll()
-    job = remote_try.RemoteTryJob(options, self.BOTS, [])
+    job = remote_try.RemoteTryJob(self.options, self.BOTS, [])
     job.Submit(workdir=self.tempdir, dryrun=True)
 
     remote_url = cros_lib.RunCommand(['git', 'config', 'remote.origin.url'],
@@ -84,15 +86,12 @@ class RemoteTryTests(mox.MoxTestBase):
 
   def testBareTryJob(self):
     """Verify submitting a tryjob from just a chromite checkout works."""
-    options = mox.MockAnything()
-    options.gerrit_patches = self.PATCHES
-    options.local_patches = []
     self.mox.StubOutWithMock(repository, 'IsARepoRoot')
     repository.IsARepoRoot(mox.IgnoreArg()).AndReturn(False)
     self.mox.StubOutWithMock(repository, 'IsInternalRepoCheckout')
 
     self.mox.ReplayAll()
-    job = remote_try.RemoteTryJob(options, self.BOTS, [])
+    job = remote_try.RemoteTryJob(self.options, self.BOTS, [])
     self.assertTrue(job.ssh_url == remote_try.RemoteTryJob.EXT_SSH_URL)
 
 
