@@ -18,7 +18,7 @@ function highlightIfChanged(node, oldVal, newVal) {
   }
 }
 
-(function () {
+(function() {
 // Contains the latest snapshot of sync about info.
 chrome.sync.aboutInfo = {};
 
@@ -26,7 +26,7 @@ chrome.sync.aboutInfo = {};
 // like_this.
 function refreshAboutInfo(aboutInfo) {
   chrome.sync.aboutInfo = aboutInfo;
-  var aboutInfoDiv = document.getElementById('aboutInfo');
+  var aboutInfoDiv = $('aboutInfo');
   jstProcess(new JsEvalContext(aboutInfo), aboutInfoDiv);
 }
 
@@ -38,5 +38,5 @@ function onLoad() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", onLoad, false);
+document.addEventListener('DOMContentLoaded', onLoad, false);
 })();

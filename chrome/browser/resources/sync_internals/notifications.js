@@ -1,14 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function () {
+(function() {
 
 // TODO(akalin): Use table.js.
 
 function updateNotificationsEnabledInfo(notificationsEnabled) {
-  var notificationsEnabledInfo =
-    document.getElementById('notificationsEnabledInfo');
+  var notificationsEnabledInfo = $('notificationsEnabledInfo');
   jstProcess(
       new JsEvalContext({ 'notificationsEnabled': notificationsEnabled }),
       notificationsEnabledInfo);
@@ -62,8 +61,7 @@ function incrementSessionNotificationCount(changedType) {
 }
 
 function updateNotificationInfoTable() {
-  var notificationInfoTable =
-      document.getElementById('notificationInfo');
+  var notificationInfoTable = $('notificationInfo');
   var infos = [];
   for (var k in chrome.sync.notifications) {
     infos.push(chrome.sync.notifications[k]);
@@ -95,5 +93,5 @@ function onLoad() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", onLoad, false);
+document.addEventListener('DOMContentLoaded', onLoad, false);
 })();

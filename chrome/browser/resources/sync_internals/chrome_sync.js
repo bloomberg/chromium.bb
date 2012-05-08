@@ -94,7 +94,7 @@ chrome.sync.events = {
     'onClearServerDataFailed',
     'onEncryptedTypesChanged',
     'onEncryptionComplete',
-    'onActionableError'
+    'onActionableError',
   ],
 
   'transaction': [
