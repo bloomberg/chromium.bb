@@ -1408,9 +1408,16 @@ bool PepperPluginDelegateImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void PepperPluginDelegateImpl::OnDestruct() {
-  // Nothing to do here. Default implementation in RenderViewObserver does
-  // 'delete this' but it's not suitable for PepperPluginDelegateImpl because
-  // it's non-pointer member in RenderViewImpl.
+  // This method may be called as part of an abbreviated shutdown by
+  // RenderViewImpl::OnShouldClose() as well as part of a full cleanup.
+  // Default implementation in RenderViewObserver does 'delete this' but it's
+  // not suitable for PepperPluginDelegateImpl because it's non-pointer member
+  // in RenderViewImpl.
+  while (active_instances_.begin() != active_instances_.end()) {
+    webkit::ppapi::PluginInstance* instance = *active_instances_.begin();
+    instance->Delete();
+    active_instances_.erase(instance);
+  }
 }
 
 void PepperPluginDelegateImpl::OnTCPSocketConnectACK(

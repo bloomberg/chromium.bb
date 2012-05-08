@@ -124,7 +124,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // Does some pre-destructor cleanup on the instance. This is necessary
   // because some cleanup depends on the plugin instance still existing (like
   // calling the plugin's DidDestroy function). This function is called from
-  // the WebPlugin implementation when WebKit is about to remove the plugin.
+  // the WebPlugin implementation when WebKit is about to remove the plugin,
+  // and may also be called directly by RenderViewImpl when a clean wekbit
+  // shutdown is being skipped.
   void Delete();
 
   // Paints the current backing store to the web page.
