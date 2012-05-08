@@ -489,6 +489,13 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
     case ConfigureNotify: {
       DCHECK_EQ(xwindow_, xev->xconfigure.window);
       DCHECK_EQ(xwindow_, xev->xconfigure.event);
+      // It's possible that the X window may be resized by some other means than
+      // from within aura (e.g. the X window manager can change the size). Make
+      // sure the root window size is maintained properly.
+      gfx::Rect bounds(xev->xconfigure.x, xev->xconfigure.y,
+                       xev->xconfigure.width, xev->xconfigure.height);
+      bool size_changed = bounds_.size() != bounds.size();
+      bounds_ = bounds;
       // Update barrier and mouse location when the root window has
       // moved/resized.
       if (pointer_barriers_.get()) {
@@ -497,13 +504,6 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
         XWarpPointer(xdisplay_, None,  xwindow_, 0, 0, 0, 0, p.x(), p.y());
         ConfineCursorToRootWindow();
       }
-      // It's possible that the X window may be resized by some other means than
-      // from within aura (e.g. the X window manager can change the size). Make
-      // sure the root window size is maintained properly.
-      gfx::Rect bounds(xev->xconfigure.x, xev->xconfigure.y,
-                       xev->xconfigure.width, xev->xconfigure.height);
-      bool size_changed = bounds_.size() != bounds.size();
-      bounds_ = bounds;
       if (size_changed)
         root_window_->OnHostResized(bounds.size());
       break;
