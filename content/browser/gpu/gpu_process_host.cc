@@ -724,7 +724,6 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   static const char* const kSwitchNames[] = {
     switches::kDisableBreakpad,
     switches::kDisableGLMultisampling,
-    switches::kDisableGpuDriverBugWorkarounds,
     switches::kDisableGpuSandbox,
     switches::kReduceGpuSandbox,
     switches::kDisableSeccompFilterSandbox,

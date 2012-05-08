@@ -16,6 +16,10 @@ const char kDisableGLErrorLimit[]           = "disable-gl-error-limit";
 // Disable the GLSL translator.
 const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
 
+// Disable workarounds for various GPU driver bugs.
+const char kDisableGpuDriverBugWorkarounds[] =
+    "disable-gpu-driver-bug-workarounds";
+
 // Turn on Logging GPU commands.
 const char kEnableGPUCommandLogging[]       = "enable-gpu-command-logging";
 
@@ -29,6 +33,7 @@ const char* kGpuSwitches[] = {
   kCompileShaderAlwaysSucceeds,
   kDisableGLErrorLimit,
   kDisableGLSLTranslator,
+  kDisableGpuDriverBugWorkarounds,
   kEnableGPUCommandLogging,
   kEnableGPUDebugging,
   kEnforceGLMinimums,

@@ -1515,6 +1515,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   bool compile_shader_always_succeeds_;
 
+  bool disable_workarounds_;
+
 #if defined(OS_MACOSX)
   typedef std::map<GLuint, CFTypeRef> TextureToIOSurfaceMap;
   TextureToIOSurfaceMap texture_to_io_surface_map_;
@@ -1926,6 +1928,9 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       force_webgl_glsl_validation_(false),
       derivatives_explicitly_enabled_(false),
       compile_shader_always_succeeds_(false),
+      disable_workarounds_(
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableGpuDriverBugWorkarounds)),
       viewport_x_(0),
       viewport_y_(0),
       viewport_width_(0),
@@ -2224,7 +2229,7 @@ bool GLES2DecoderImpl::Initialize(
 
   has_arb_robustness_ = context->HasExtension("GL_ARB_robustness");
 
-  if (!disallowed_features_.driver_bug_workarounds) {
+  if (!disable_workarounds_) {
 #if defined(OS_MACOSX)
     const char* vendor_str = reinterpret_cast<const char*>(
         glGetString(GL_VENDOR));
@@ -3476,9 +3481,13 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
   // to be that if the filtering mode is set to something that doesn't require
   // mipmaps for rendering, or is never set to something other than the default,
   // then glGenerateMipmap misbehaves.
-  glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+  if (!disable_workarounds_) {
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+  }
   glGenerateMipmapEXT(target);
-  glTexParameteri(target, GL_TEXTURE_MIN_FILTER, info->min_filter());
+  if (!disable_workarounds_) {
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, info->min_filter());
+  }
 }
 
 bool GLES2DecoderImpl::GetHelper(
@@ -6194,7 +6203,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
 
     GLenum read_format = GetBoundReadFrameBufferInternalFormat();
     uint32 channels_exist = GLES2Util::GetChannelsForFormat(read_format);
-    if ((channels_exist & 0x0008) == 0) {
+    if ((channels_exist & 0x0008) == 0 && !disable_workarounds_) {
       // Set the alpha to 255 because some drivers are buggy in this regard.
       uint32 temp_size;
 

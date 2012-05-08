@@ -8,12 +8,14 @@
 #include <set>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 
 namespace gpu {
 namespace gles2 {
@@ -682,7 +684,10 @@ static int uniform_random_offset_ = 3;
 ProgramManager::ProgramManager()
     : uniform_swizzle_(uniform_random_offset_++ % 15),
       program_info_count_(0),
-      have_context_(true) {
+      have_context_(true),
+      disable_workarounds_(
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableGpuDriverBugWorkarounds)) {
 }
 
 ProgramManager::~ProgramManager() {
@@ -786,7 +791,9 @@ void ProgramManager::UnuseProgram(
 
 void ProgramManager::ClearUniforms(ProgramManager::ProgramInfo* info) {
   DCHECK(info);
-  info->ClearUniforms(&zero_);
+  if (!disable_workarounds_) {
+    info->ClearUniforms(&zero_);
+  }
 }
 
 // Swizzles the locations to prevent developers from assuming they

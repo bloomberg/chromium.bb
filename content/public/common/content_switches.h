@@ -43,7 +43,6 @@ CONTENT_EXPORT extern const char kBlacklistWebGL[];
 extern const char kDisableFileSystem[];
 extern const char kDisableGeolocation[];
 CONTENT_EXPORT extern const char kDisableGLMultisampling[];
-extern const char kDisableGpuDriverBugWorkarounds[];
 extern const char kDisableGpuSandbox[];
 extern const char kReduceGpuSandbox[];
 extern const char kDisableGpuWatchdog[];

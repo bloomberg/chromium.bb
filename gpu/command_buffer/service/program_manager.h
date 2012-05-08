@@ -342,6 +342,8 @@ class GPU_EXPORT ProgramManager {
 
   bool have_context_;
 
+  bool disable_workarounds_;
+
   // Used to clear uniforms.
   std::vector<uint8> zero_;
 
