@@ -20,7 +20,7 @@ User& MockUserManager::GetLoggedInUser() {
   return *user_;
 }
 
-int MockUserManager::GetUserWallpaperIndex() {
+int MockUserManager::GetLoggedInUserWallpaperIndex() {
   return -1;
 }
 

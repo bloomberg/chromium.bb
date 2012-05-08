@@ -229,12 +229,14 @@ const int kInvalidWallpaperIndex = -1;
 // of the array are really hacky.
 #if defined(GOOGLE_CHROME_BUILD)
 const int kDefaultWallpaperIndex = 16; // IDR_AURA_WALLPAPERS_3_URBAN0
+const int kLastRandomWallpaperIndex = 19; // The first 20 are random.
 const int kGuestWallpaperIndex = 26;   // IDR_AURA_WALLPAPERS_5_GRADIENT6
 #else
 // Set default wallpaper to the grey background for faster wallpaper loading
 // time in browser tests. Otherwise, some of the tests will finish before
 // wallpaper loaded and cause crashes.
 const int kDefaultWallpaperIndex = 6;  // IDR_AURA_WALLPAPERS_5_GRADIENT5
+const int kLastRandomWallpaperIndex = 8;
 const int kGuestWallpaperIndex = kDefaultWallpaperIndex;
 #endif
 
@@ -254,6 +256,12 @@ int GetDefaultWallpaperIndex() {
 int GetGuestWallpaperIndex() {
   DCHECK(kGuestWallpaperIndex < kDefaultWallpaperCount);
   return std::min(kGuestWallpaperIndex, kDefaultWallpaperCount - 1);
+}
+
+int GetRandomWallpaperIndex() {
+  DCHECK(kLastRandomWallpaperIndex < kDefaultWallpaperCount);
+  return base::RandInt(0,
+      std::min(kLastRandomWallpaperIndex, kDefaultWallpaperCount - 1));
 }
 
 int GetWallpaperCount() {

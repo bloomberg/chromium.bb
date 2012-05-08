@@ -21,8 +21,12 @@
   width: 128px;
 }
 
+.grayout img {
+  -webkit-filter: opacity(50%);
+}
+
 .bottom-bar {
-  -webkit-box-orient: horizontal;
+  -webkit-box-orient: vertical;
   display: -webkit-box;
 }
 
@@ -31,10 +35,16 @@
 }
 
 .image-attr {
+  -webkit-padding-start: 34px;
   line-height: 26px;
-  padding: 14px 0 14px 34px;
+  padding-top: 14px;
 }
 
 #author-website {
   -webkit-padding-start: 5px;
+}
+
+#wallpaper-action-area {
+  -webkit-padding-start: 34px;
+  padding-top: 0;
 }
