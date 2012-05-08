@@ -79,7 +79,9 @@ PepperMessageFilter::PepperMessageFilter(
       next_socket_id_(1) {
   DCHECK(type == RENDERER);
   DCHECK(browser_context);
+  // Keep BrowserContext data in FILE-thread friendly storage.
   browser_path_ = browser_context->GetPath();
+  incognito_ = browser_context->IsOffTheRecord();
   DCHECK(resource_context_);
 }
 
@@ -660,6 +662,10 @@ void PepperMessageFilter::OnGetDeviceID(std::string* id) {
     LOG(ERROR) << "GetDeviceID requested from outside the RENDERER context.";
     return;
   }
+
+  // Return an empty value when off the record.
+  if (incognito_)
+    return;
 
   // TODO(wad,brettw) Add OffTheRecord() enforcement here.
   // Normally this is left for the plugin to do, but in the
