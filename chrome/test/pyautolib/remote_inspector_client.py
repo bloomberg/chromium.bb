@@ -25,9 +25,9 @@ For example, to take v8 heap snapshots from a pyauto test:
 
 import remote_inspector_client
 my_client = remote_inspector_client.RemoteInspectorClient()
-snapshot_info = my_client.HeapSnapshot()
+snapshot_info = my_client.HeapSnapshot(include_summary=True)
 // Do some stuff...
-new_snapshot_info = my_client.HeapSnapshot()
+new_snapshot_info = my_client.HeapSnapshot(include_summary=True)
 my_client.Stop()
 
 It is expected that a test will only use one instance of RemoteInspectorClient
@@ -715,16 +715,19 @@ class RemoteInspectorClient(object):
       self._remote_inspector_driver_thread.join()
       self._remote_inspector_driver_thread = None
 
-  def HeapSnapshot(self):
+  def HeapSnapshot(self, include_summary=False):
     """Takes a v8 heap snapshot.
 
     Returns:
-      A dictionary containing the summarized information for a single v8 heap
-      snapshot that was taken:
+      A dictionary containing information for a single v8 heap
+      snapshot that was taken.
       {
         'url': string,  # URL of the webpage that was snapshotted.
+        'raw_data': string, # The raw data as JSON string.
         'total_v8_node_count': integer,  # Total number of nodes in the v8 heap.
+                                         # Only if |include_summary| is True.
         'total_heap_size': integer,  # Total v8 heap size (number of bytes).
+                                     # Only if |include_summary| is True.
       }
     """
     HEAP_SNAPSHOT_MESSAGES = [
@@ -768,24 +771,23 @@ class RemoteInspectorClient(object):
           # TODO(dennisjeffrey): Parse the heap snapshot on-the-fly as the data
           # is coming in over the wire, so we can avoid storing the entire
           # snapshot string in memory.
-          self._logger.debug('Now analyzing heap snapshot...')
-          parser = _V8HeapSnapshotParser()
-          time_start = time.time()
           raw_snapshot_data = ''.join(self._current_heap_snapshot)
-          self._logger.debug('Raw snapshot data size: %.2f MB',
-                             len(raw_snapshot_data) / (1024.0 * 1024.0))
-          result = parser.ParseSnapshotData(raw_snapshot_data)
-          self._logger.debug('Time to parse data: %.2f sec',
-                             time.time() - time_start)
-          num_nodes = result['total_v8_node_count']
-          total_size = result['total_shallow_size']
-          total_size_str = self._ConvertByteCountToHumanReadableString(
-              total_size)
-
           self._collected_heap_snapshot_data = {
               'url': self._url,
-              'total_v8_node_count': num_nodes,
-              'total_heap_size': total_size}
+              'raw_data': raw_snapshot_data}
+          if include_summary:
+            self._logger.debug('Now analyzing heap snapshot...')
+            parser = _V8HeapSnapshotParser()
+            time_start = time.time()
+            self._logger.debug('Raw snapshot data size: %.2f MB',
+                               len(raw_snapshot_data) / (1024.0 * 1024.0))
+            result = parser.ParseSnapshotData(raw_snapshot_data)
+            self._logger.debug('Time to parse data: %.2f sec',
+                               time.time() - time_start)
+            count = result['total_v8_node_count']
+            self._collected_heap_snapshot_data['total_v8_node_count'] = count
+            total_size = result['total_shallow_size']
+            self._collected_heap_snapshot_data['total_heap_size'] = total_size
 
     # Tell the remote inspector to take a v8 heap snapshot, then wait until
     # the snapshot information is available to return.
