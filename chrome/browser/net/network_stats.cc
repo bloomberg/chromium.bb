@@ -86,7 +86,7 @@ static uint32 g_packet_number_ = 0;
 
 // Maximum number of packets that can be sent to the server for packet loss
 // testing.
-static const uint32 kMaximumPackets = 4;
+static const uint32 kMaximumPackets = 6;
 
 // NetworkStats methods and members.
 NetworkStats::NetworkStats()
@@ -547,7 +547,7 @@ void NetworkStats::GetHistogramNames(const ProtocolValue& protocol,
   // name. Total number of histograms are 5 (because we do this test for UDP
   // only).
   *packet_loss_histogram_name =  base::StringPrintf(
-      "NetConnectivity.%s.PacketLoss.%d.%s",
+      "NetConnectivity.%s.PacketLoss6.%d.%s",
       protocol_string,
       kPorts[port],
       load_size_string);
