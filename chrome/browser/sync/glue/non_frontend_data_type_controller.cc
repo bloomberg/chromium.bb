@@ -80,6 +80,8 @@ void NonFrontendDataTypeController::StopWhileAssociating() {
     abort_association_ = true;
     if (model_associator_.get())
       model_associator_->AbortAssociation();
+    if (!start_association_called_.IsSignaled())
+      return; // There is nothing more for us to do.
   }
 
   // Wait for the model association to abort.
@@ -410,7 +412,6 @@ void NonFrontendDataTypeController::set_change_processor(
 
 void NonFrontendDataTypeController::StartAssociation() {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  start_association_called_.Signal();
   DCHECK_EQ(state_, ASSOCIATING);
   {
     base::AutoLock lock(abort_association_lock_);
@@ -418,6 +419,7 @@ void NonFrontendDataTypeController::StartAssociation() {
       abort_association_complete_.Signal();
       return;
     }
+    start_association_called_.Signal();
     CreateSyncComponents();
   }
 
