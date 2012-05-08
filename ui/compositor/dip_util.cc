@@ -5,6 +5,7 @@
 #include "ui/compositor/dip_util.h"
 
 #include "base/command_line.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer.h"
@@ -32,8 +33,10 @@ ScopedDIPEnablerForTest::~ScopedDIPEnablerForTest() {
 }  // namespace test
 
 bool IsDIPEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   static const bool dip_enabled =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kUIEnableDIP);
+      command_line.HasSwitch(switches::kUIEnableDIP) ||
+      command_line.HasSwitch(switches::kDefaultDeviceScaleFactor);
   return dip_enabled || dip_enabled_for_test;
 }
 

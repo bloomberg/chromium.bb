@@ -258,6 +258,9 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
   window_->SetName("RenderWidgetHostViewAura");
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   window_->SetParent(NULL);
+  // Don't scale the canvas on high density screen because
+  // the renderer takes care of it.
+  window_->layer()->set_scale_canvas(false);
   Show();
   Focus();
 }

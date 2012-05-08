@@ -21,6 +21,14 @@ namespace aura {
 namespace internal {
 
 namespace {
+
+// The DPI threshold to detect high density screen.
+// Higher DPI than this will use device_scale_factor=2.
+const unsigned int kHighDensityDIPThreshold = 160;
+
+// 1 inch in mm.
+const float kInchInMm = 25.4f;
+
 XRRModeInfo* FindMode(XRRScreenResources* screen_resources, XID current_mode) {
   for (int m = 0; m < screen_resources->nmode; m++) {
     XRRModeInfo *mode = &screen_resources->modes[m];
@@ -101,6 +109,14 @@ void MonitorChangeObserverX11::NotifyMonitorChange() {
     monitors.push_back(gfx::Monitor(
         0,
         gfx::Rect(crtc_info->x, crtc_info->y, mode->width, mode->height)));
+
+    float device_scale_factor = 1.0f;
+    if (output_info->mm_width > 0 &&
+        (kInchInMm * mode->width / output_info->mm_width) >
+        kHighDensityDIPThreshold) {
+      device_scale_factor = 2.0f;
+    }
+    monitors.back().set_device_scale_factor(device_scale_factor);
     y_coords.insert(crtc_info->y);
     XRRFreeOutputInfo(output_info);
   }
