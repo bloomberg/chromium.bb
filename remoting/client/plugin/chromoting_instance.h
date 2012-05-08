@@ -28,6 +28,7 @@
 #include "remoting/base/scoped_thread_proxy.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/key_event_mapper.h"
+#include "remoting/client/plugin/mac_key_event_processor.h"
 #include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
@@ -206,6 +207,9 @@ class ChromotingInstance :
 
   scoped_ptr<protocol::MouseInputFilter> mouse_input_filter_;
   scoped_ptr<protocol::InputEventTracker> input_tracker_;
+#if defined(OS_MACOSX)
+  scoped_ptr<MacKeyEventProcessor> mac_key_event_processor_;
+#endif
   KeyEventMapper key_mapper_;
   scoped_ptr<PepperInputHandler> input_handler_;
   scoped_ptr<ChromotingClient> client_;

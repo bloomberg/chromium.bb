@@ -408,7 +408,16 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   mouse_input_filter_->set_input_size(view_->get_view_size());
   input_tracker_.reset(
       new protocol::InputEventTracker(mouse_input_filter_.get()));
+
+#if defined(OS_MACOSX)
+  // On Mac we need an extra filter to inject missing keyup events.
+  // See remoting/client/plugin/mac_key_event_processor.h for more details.
+  mac_key_event_processor_.reset(
+      new MacKeyEventProcessor(input_tracker_.get()));
+  key_mapper_.set_input_stub(mac_key_event_processor_.get());
+#else
   key_mapper_.set_input_stub(input_tracker_.get());
+#endif
   input_handler_.reset(
       new PepperInputHandler(&key_mapper_));
 
