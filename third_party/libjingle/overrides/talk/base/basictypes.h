@@ -19,11 +19,15 @@ typedef __int64 int64;
 #endif /* COMPILER_MSVC */
 
 #ifdef COMPILER_MSVC
+#if _MSC_VER < 1600
 typedef unsigned __int64 uint64;
 typedef __int64 int64;
 #define INT64_C(x) x ## I64
 #define UINT64_C(x) x ## UI64
 #define INT64_F "I64"
+#else
+#include <stdint.h>
+#endif
 #else
 #ifndef INT64_C
 #define INT64_C(x) x ## LL

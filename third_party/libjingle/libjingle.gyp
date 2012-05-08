@@ -372,6 +372,8 @@
             'source/talk/base/winping.cc',
             'source/talk/base/winping.h',
           ],
+          # Suppress warnings about WIN32_LEAN_AND_MEAN.
+          'msvs_disabled_warnings': [ 4005 ],
         }],
         ['os_posix == 1', {
           'sources': [
