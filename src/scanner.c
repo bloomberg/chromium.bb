@@ -157,29 +157,23 @@ static const char *indent(int n)
 static void
 desc_dump(char *src, int startcol)
 {
-	int i, col = startcol, line = 0;
+	int i, j, col = startcol;
 
-	/* Strip leading space */
-	for (i = 0; isspace(src[i]); i++)
-		;
-
-	for (; src[i]; i++) {
-		/* Collapse multiple spaces into 1 */
-		if (isspace(src[i]) && isspace(src[i + 1]))
+	for (i = 0; src[i]; i++) {
+		if (isspace(src[i]))
 		    continue;
 
-		if (isspace(src[i]))
-			src[i] = ' ';
+		j = i;
+		while (src[i] && !isspace(src[i]))
+			i++;
 
-		if (col > 72 && isspace(src[i])) {
-			if (src[i+1])
-				printf("\n%s* ", indent(startcol + 1));
-			line++;
+		if (col + i - j > 72) {
+			printf("\n%s * ", indent(startcol));
 			col = startcol;
-		} else {
-			putchar(src[i]);
-			col++;
 		}
+
+		col += printf("%s%.*s",
+			      col > startcol ? " " : "", i - j, &src[j]);
 	}
 }
 
