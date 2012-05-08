@@ -819,16 +819,6 @@ InstalledApp::InstalledApp() : supports_create_(false) {
 InstalledApp::~InstalledApp() {
 }
 
-GURL InstalledApp::GetProductUrl() const {
-  for (ScopedVector<Link>::const_iterator it = links_->begin();
-       it != links_.end(); ++it) {
-    const Link* link = *it;
-    if (link->type() == Link::PRODUCT)
-      return link->href();
-  }
-  return GURL();
-}
-
 // static
 bool InstalledApp::GetValueString(const base::Value* value,
                                   std::string* result) {

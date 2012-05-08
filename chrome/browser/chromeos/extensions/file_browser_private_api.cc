@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
-#include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
@@ -1634,27 +1633,6 @@ void GetGDataFilePropertiesFunction::OnGetFileInfo(
 
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
-
-  // Get drive WebApps that can accept this file.
-  ScopedVector<gdata::DriveWebAppInfo> web_apps;
-  system_service->webapps_registry()->GetWebAppsForFile(
-          file_path, file_proto->content_mime_type(), &web_apps);
-  if (!web_apps.empty()) {
-    ListValue* apps = new ListValue();
-    property_dict->Set("driveApps", apps);
-    for (ScopedVector<gdata::DriveWebAppInfo>::const_iterator it =
-             web_apps.begin();
-         it != web_apps.end(); ++it) {
-      const gdata::DriveWebAppInfo* webapp_info = *it;
-      DictionaryValue* app = new DictionaryValue();
-      app->SetString("appId", webapp_info->app_id);
-      app->SetString("appName", webapp_info->app_name);
-      app->SetString("objectType", webapp_info->object_type);
-      app->SetBoolean("isPrimary", webapp_info->is_primary_selector);
-      apps->Append(app);
-    }
-  }
-
   system_service->file_system()->GetCacheState(
       file_proto->gdata_entry().resource_id(),
       file_proto->file_md5(),
