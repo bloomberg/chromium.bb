@@ -160,27 +160,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // updates changed_time_ to |now|.
   void ResetSameFingersState(stime_t now);
 
-  // Part of palm detection. Returns true if the finger indicated by
-  // |finger_idx| is near another finger, which must not be a palm, in the
-  // hwstate.
-  bool FingerNearOtherFinger(const HardwareState& hwstate,
-                             size_t finger_idx);
-
-  // Part of palm detection. Returns true if the finger is in the ambiguous edge
-  // around the outside of the touchpad.
-  bool FingerInPalmEdgeZone(const FingerState& fs);
-
-  // Returns true iff fs represents a contact that may be a palm. It's a palm
-  // if it's in the edge of the pad with sufficiently large pressure. The
-  // pressure required depends on exactly how close to the edge the contact is.
-  bool FingerInPalmEnvelope(const FingerState& fs);
-
-  // Updates *palm_, pointing_ below.
-  void UpdatePalmState(const HardwareState& hwstate);
-
-  // Returns the length of time the contact has been on the pad. Returns -1
-  // on error.
-  stime_t FingerAge(short finger_id, stime_t now) const;
+  // Sets pointing_.
+  void UpdatePointingFingers(const HardwareState& hwstate);
 
   // Returns the square of the distance that this contact has travelled since
   // fingers changed.
@@ -339,18 +320,6 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Map: Finger ID -> (x, y) coordinate
   map<short, Point, kMaxFingers> start_positions_;
 
-  // Time when a contact arrived. Persists even when fingers change.
-  map<short, stime_t, kMaxFingers> origin_timestamps_;
-  // FingerStates from when a contact first arrived. Persists even when fingers
-  // change.
-  map<short, FingerState, kMaxFingers> origin_fingerstates_;
-
-  // Same fingers state. This state is accumulated as fingers remain the same
-  // and it's reset when fingers change.
-  set<short, kMaxFingers> palm_;  // tracking ids of known palms
-  // These contacts have moved significantly and shouldn't be considered
-  // stationary palms:
-  set<short, kMaxFingers> non_stationary_palm_;
   // tracking ids of known fingers that are not palms, nor thumbs.
   set<short, kMaxFingers> pointing_;
   // tracking ids of known non-palms. But might be thumbs.
@@ -436,25 +405,6 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // If T5R2 should support three-finger click/tap, which can in some situations
   // be unreliable.
   BoolProperty t5r2_three_finger_click_enable_;
-  // Maximum pressure above which a finger is considered a palm
-  DoubleProperty palm_pressure_;
-  // The smaller of two widths around the edge for palm detection. Any contact
-  // in this edge zone may be a palm, regardless of pressure
-  DoubleProperty palm_edge_min_width_;
-  // The larger of the two widths. Palms between this and the previous are
-  // expected to have pressure linearly increase from 0 to palm_pressure_
-  // as they approach this border.
-  DoubleProperty palm_edge_width_;
-  // Palms in edge are allowed to point if they move fast enough
-  DoubleProperty palm_edge_point_speed_;
-  // A finger can be added to the palm envelope (and thus not point) after
-  // it touches down and until palm_eval_timeout_ [s] time.
-  DoubleProperty palm_eval_timeout_;
-  // A potential palm (ambiguous contact in the edge of the pad) will be marked
-  // a palm if it travels less than palm_stationary_distance_ mm after it's
-  // been on the pad for palm_stationary_time_ seconds.
-  DoubleProperty palm_stationary_time_;
-  DoubleProperty palm_stationary_distance_;
   // Distance [mm] a finger must move after fingers change to count as real
   // motion
   DoubleProperty change_move_distance_;

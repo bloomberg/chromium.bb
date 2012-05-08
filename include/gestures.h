@@ -49,10 +49,12 @@ struct HardwareProperties {
 // the finger may have moved, it should not cause any motion in that direction.
 // This may occur is some situations where we thought a finger was in one place,
 // but then we realized later it was actually in another place.
-#define GESTURES_FINGER_WARP_X (1 << 0)
-#define GESTURES_FINGER_WARP_Y (1 << 1)
+#define GESTURES_FINGER_WARP_X        (1 << 0)
+#define GESTURES_FINGER_WARP_Y        (1 << 1)
 // If a finger has notap set, it shouldn't begin a tap gesture.
-#define GESTURES_FINGER_NO_TAP (1 << 2)
+#define GESTURES_FINGER_NO_TAP        (1 << 2)
+#define GESTURES_FINGER_POSSIBLE_PALM (1 << 3)
+#define GESTURES_FINGER_PALM          (1 << 4)
 
 struct FingerState {
   float touch_major, touch_minor;

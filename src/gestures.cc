@@ -18,6 +18,7 @@
 #include "gestures/include/logging.h"
 #include "gestures/include/logging_filter_interpreter.h"
 #include "gestures/include/lookahead_filter_interpreter.h"
+#include "gestures/include/palm_classifying_filter_interpreter.h"
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/scaling_filter_interpreter.h"
 #include "gestures/include/semi_mt_correcting_filter_interpreter.h"
@@ -207,6 +208,8 @@ GestureInterpreter::GestureInterpreter(int version)
   Interpreter* temp = new ImmediateInterpreter(prop_reg_.get(),
                                                finger_metrics_.get());
   temp = new ClickWiggleFilterInterpreter(prop_reg_.get(), temp);
+  temp = new PalmClassifyingFilterInterpreter(prop_reg_.get(), temp,
+                                              finger_metrics_.get());
   temp = new IirFilterInterpreter(prop_reg_.get(), temp);
   temp = new LookaheadFilterInterpreter(prop_reg_.get(), temp);
   temp = new BoxFilterInterpreter(prop_reg_.get(), temp);
