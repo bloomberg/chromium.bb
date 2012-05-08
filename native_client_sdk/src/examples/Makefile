@@ -7,10 +7,12 @@
 #   http://www.gnu.org/software/make/manual/make.html
 #
 
-PROJECTS:=dlopen file_histogram fullscreen_tumbler gamepad geturl
-PROJECTS:=hello_world_glibc hello_world_interactive hello_world_newlib
-PROJECTS:=input_events load_progress mouselock multithreaded_input_events
-PROJECTS:=pi_generator pong sine_synth tumbler websocket
+# =SNIP=
+# This Makefile is used as a template to generate the real Makefile that is
+# included in the SDK distribution. The toolchain-specific project lists can be
+# found in build_tools/build_sdk.py.
+$(error MISSING PROJECTS)
+# =SNIP=
 
 # Define the default target
 all:

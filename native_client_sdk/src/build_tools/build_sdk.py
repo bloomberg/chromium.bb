@@ -433,6 +433,40 @@ EXAMPLE_MAP = {
   ],
 }
 
+def GenerateExamplesMakefile(in_path, out_path, examples):
+  """Generate a Makefile that includes only the examples supported by this
+  SDK."""
+  # Line wrap the PROJECTS variable
+  wrap_width = 80
+  projects_text = ''
+  projects_line = 'PROJECTS:='
+  for example in examples:
+    if len(projects_line + example + ' ') > wrap_width:
+      projects_text += projects_line + '\n'
+      projects_line = 'PROJECTS+='
+    projects_line += example + ' '
+
+  # Add the last unwrapped line
+  projects_text += projects_line + '\n'
+
+  out_makefile_text = ''
+  wrote_projects_text = False
+  snipping = False
+  for line in open(in_path, 'r'):
+    if line.startswith('# =SNIP='):
+      snipping = not snipping
+      continue
+
+    if snipping:
+      if not wrote_projects_text:
+        out_makefile_text += projects_text
+      wrote_projects_text = True
+    else:
+      out_makefile_text += line
+
+  open(out_path, 'w').write(out_makefile_text)
+
+
 def CopyExamples(pepperdir, toolchains):
   buildbot_common.BuildStep('Copy examples')
 
@@ -447,7 +481,7 @@ def CopyExamples(pepperdir, toolchains):
   AddMakeBat(pepperdir, exampledir)
 
   # Copy individual files
-  files = ['favicon.ico', 'httpd.cmd', 'httpd.py', 'index.html', 'Makefile']
+  files = ['favicon.ico', 'httpd.cmd', 'httpd.py', 'index.html']
   for filename in files:
     oshelpers.Copy(['-v', os.path.join(SDK_EXAMPLE_DIR, filename), exampledir])
 
@@ -458,6 +492,12 @@ def CopyExamples(pepperdir, toolchains):
   for example in examples:
     buildbot_common.CopyDir(os.path.join(SDK_EXAMPLE_DIR, example), exampledir)
     AddMakeBat(pepperdir, os.path.join(exampledir, example))
+
+  # Generate a root Makefile that only includes supported examples
+  out_makefile = os.path.join(exampledir, 'Makefile')
+  print 'Generating %s' % (out_makefile,)
+  GenerateExamplesMakefile(os.path.join(SDK_EXAMPLE_DIR, 'Makefile'),
+      out_makefile, examples)
 
 UPDATER_FILES = [
   # launch scripts
@@ -682,14 +722,12 @@ def main(args):
   # build examples.
   if not skip_examples:
     buildbot_common.BuildStep('Test Build Examples')
-    filelist = os.listdir(os.path.join(pepperdir, 'examples'))
-    for filenode in filelist:
-      dirnode = os.path.join(pepperdir, 'examples', filenode)
-      makefile = os.path.join(dirnode, 'Makefile')
-      if os.path.isfile(makefile):
-        print "\n\nMake: " + dirnode
-        buildbot_common.Run(['make', 'all', '-j8'],
-                            cwd=os.path.abspath(dirnode), shell=True)
+    example_dir = os.path.join(pepperdir, 'examples')
+    makefile = os.path.join(example_dir, 'Makefile')
+    if os.path.isfile(makefile):
+      print "\n\nMake: " + example_dir
+      buildbot_common.Run(['make', '-j8'],
+                          cwd=os.path.abspath(example_dir), shell=True)
 
   # Archive on non-trybots.
   buildername = os.environ.get('BUILDBOT_BUILDERNAME', '')
