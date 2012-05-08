@@ -20,19 +20,19 @@ relevant() {
   for i in "$@" ; do
     case $i in
       nacl_pic=1)
-        echo $i
+        echo -n "pic "
         ;;
       use_sandboxed_translator=1)
-        echo $i
+        echo -n "sbtc "
         ;;
       do_not_run_tests=1)
-        echo $i
+        echo -n "no_tests "
         ;;
-      pnacl_generate_pexe=1)
-        echo $i
+      pnacl_generate_pexe=0)
+        echo -n "no_pexe "
         ;;
       --nacl_glibc)
-        echo $i
+        echo -n "glibc "
         ;;
     esac
   done
@@ -54,12 +54,6 @@ clobber() {
   rm -rf scons-out ../xcodebuild ../sconsbuild ../out
   # Try to clobber /tmp/ contents to clear temporary chrome files.
   rm -rf /tmp/.org.chromium.Chromium.*
-}
-
-# This is the first thing you want to run on the bots to install the toolchains
-install-lkgr-toolchains() {
-  echo "@@@BUILD_STEP install_toolchains@@@"
-  gclient runhooks --force
 }
 
 # Generate filenames for arm bot uploads and downloads
@@ -193,20 +187,6 @@ scons-stage() {
   ${SCONS_COMMON} ${extra} platform=${platform} ${test} || handle-error
 }
 
-# Do separate stages with parallel build and sequential test. Callers should
-# pass -jN as part of $extra
-scons-build-test() {
-  local platform=$1
-  local extra=$2
-  local test=$3
-  echo "@@@BUILD_STEP scons [${platform}] [${test}] \
-[$(relevant ${extra})]@@@"
-  ${SCONS_COMMON} ${extra} do_not_run_tests=1 platform=${platform} \
-    ${test} || handle-error
-  # -j1 overrides any -jM in extra
-  ${SCONS_COMMON} ${extra} -j1 platform=${platform} ${test} || handle-error
-}
-
 single-browser-test() {
   local platform=$1
   local extra=$2
@@ -214,7 +194,9 @@ single-browser-test() {
   # Build in parallel (assume -jN specified in extra), but run sequentially.
   # If we do not run tests sequentially, some may fail. E.g.,
   # http://code.google.com/p/nativeclient/issues/detail?id=2019
-  scons-build-test ${platform} "${extra} browser_headless=1 SILENT=1" \
+  scons-stage ${platform} \
+    "${extra} browser_headless=1 SILENT=1 do_not_run_tests=1" ${test}
+  scons-stage ${platform} "${extra} browser_headless=1 SILENT=1 -j1" \
       ${test}
 }
 
@@ -240,26 +222,33 @@ mode-buildbot-x86() {
   local bits=$1
   FAIL_FAST=false
   clobber
-  install-lkgr-toolchains
 
-  # For now, just build what we want to test, until pexe nmf issues are solved
-  scons-build-test "x86-${bits}" "--mode=opt-host,nacl -j8 -k" "smoke_tests"
+  # Normal pexe tests. Build all targets, then run (-j4 is a compromise to try
+  # to reduce cycle times without making output too difficult to follow)
+  scons-stage "x86-${bits}" "--mode=opt-host,nacl -j8 -k" ""
+  scons-stage "x86-${bits}" "--mode=opt-host,nacl -j4 -k" \
+    "small_tests medium_tests large_tests"
 
-  # Build and run non-pexe tests
-  # For now, build everything until nmf dependency issues are resolved
+  # non-pexe tests (Do the build-everything step just to make sure it all still
+  # builds as non-pexe)
   scons-stage "x86-${bits}" "--mode=opt-host,nacl -j8 -k pnacl_generate_pexe=0"\
     ""
-  scons-stage "x86-${bits}" "--mode=opt-host,nacl -k pnacl_generate_pexe=0" \
+  scons-stage "x86-${bits}" "--mode=opt-host,nacl -j4 -k pnacl_generate_pexe=0"\
     "nonpexe_tests"
 
-  scons-build-test "x86-${bits}" \
-    "--mode=opt-host,nacl -k pnacl_generate_pexe=0 nacl_pic=1" \
+  # PIC
+  scons-stage "x86-${bits}" \
+    "--mode=opt-host,nacl -j8 -k nacl_pic=1 pnacl_generate_pexe=0" ""
+  scons-stage "x86-${bits}" \
+    "--mode=opt-host,nacl -j4 -k nacl_pic=1 pnacl_generate_pexe=0" \
     "small_tests medium_tests large_tests"
 
   # sandboxed translation
   build-sbtc-prerequisites x86-${bits}
-  scons-build-test "x86-${bits}" "--mode=opt-host,nacl -j8 -k \
-    use_sandboxed_translator=1" "smoke_tests"
+  scons-stage "x86-${bits}" "--mode=opt-host,nacl -j8 -k \
+    use_sandboxed_translator=1" ""
+  scons-stage "x86-${bits}" "--mode=opt-host,nacl -j4 -k \
+    use_sandboxed_translator=1" "small_tests medium_tests large_tests"
 
   browser-tests "x86-${bits}" "--mode=opt-host,nacl -j8 -k"
 }
@@ -269,30 +258,38 @@ mode-buildbot-x86() {
 mode-buildbot-arm() {
   FAIL_FAST=false
   local mode=$1
-  local qemuflags="${mode} -j8 -k"
+  local qemuflags="${mode} -j8 -k do_not_run_tests=1"
 
   clobber
-  install-lkgr-toolchains
 
   gyp-arm-build Release
 
-  scons-build-test "arm" "${qemuflags}" "small_tests medium_tests large_tests"
-  scons-build-test "arm" "${qemuflags} pnacl_generate_pexe=0 nacl_pic=1" \
+  # Sanity check
+  scons-stage "arm" "${mode}" "run_hello_world_test"
+
+  # Don't run the rest of the tests on qemu, only build them.
+  # QEMU is too flaky for the main waterfall
+
+  # Normal pexe mode tests
+  scons-stage "arm" "${qemuflags}" ""
+  # This extra step is required to translate the pexes (because translation
+  # happens as part of CommandSelLdrTestNacl and not part of the
+  # build-everything step)
+  scons-stage "arm" "${qemuflags}" "small_tests medium_tests large_tests"
+
+  # PIC
+  # Don't bother to build everything here, just the tests we want to run
+  scons-stage "arm" "${qemuflags} nacl_pic=1 pnacl_generate_pexe=0" \
     "small_tests medium_tests large_tests"
 
-  # non-pexe tests
-  scons-stage "arm" "${mode} ${qemuflags} pnacl_generate_pexe=0" "nonpexe_tests"
+  # non-pexe-mode tests
+  scons-stage "arm" "${qemuflags} pnacl_generate_pexe=0" "nonpexe_tests"
 
-  # Full test suite of translator for ARM is too flaky on QEMU
-  # http://code.google.com/p/nativeclient/issues/detail?id=2581
-  # Run a subset here.
-  # For now just do toolchain_tests as we have been.
-  # TODO(dschuff): Enable more sandboxed tests on hardware
   build-sbtc-prerequisites "arm"
 
   scons-stage "arm" \
-    "${qemuflags} use_sandboxed_translator=1 translate_in_build_step=0 \
-    do_not_run_tests=1" "toolchain_tests"
+    "${qemuflags} use_sandboxed_translator=1 translate_in_build_step=0" \
+    "toolchain_tests"
 
   browser-tests "arm" "${mode}"
   # Disabled for now as it broke when we switched to gold for final
@@ -307,20 +304,33 @@ mode-buildbot-arm-hw() {
   local hwflags="${mode} -j2 -k naclsdk_validate=0 built_elsewhere=1"
 
   scons-stage "arm" "${hwflags}" "small_tests medium_tests large_tests"
+  scons-stage "arm" "${hwflags} nacl_pic=1 pnacl_generate_pexe=0" \
+    "small_tests medium_tests large_tests"
   scons-stage "arm" "${hwflags} pnacl_generate_pexe=0" "nonpexe_tests"
   scons-stage "arm" \
     "${hwflags} use_sandboxed_translator=1 translate_in_build_step=0" \
     "toolchain_tests"
-  # TODO(dschuff): consider running pic tests here as well
   browser-tests "arm" "${hwflags}"
 }
 
 mode-trybot-qemu() {
-  # For now, just run the qemu build but don't upload anything.
-  # TODO(dschuff) split the try functionality such that the uploading
-  # bot will not run (many) tests, and the non-uploading bot will run
-  # tests under qemu. This should hopefully reduce cycle time.
-  mode-buildbot-arm "--mode=opt-host,nacl"
+  # Build and actually run the arm tests under qemu, except
+  # sandboxed translation. Hopefully that's a good tradeoff between
+  # flakiness and cycle time.
+  FAIL_FAST=false
+  local qemuflags="--mode=opt-host,nacl -j4 -k"
+  clobber
+  gyp-arm-build Release
+
+  scons-stage "arm" "${qemuflags}" ""
+  scons-stage "arm" "${qemuflags} -j1" "small_tests medium_tests large_tests"
+
+  scons-stage "arm" "${qemuflags} nacl_pic=1 pnacl_generate_pexe=0" ""
+  scons-stage "arm" "${qemuflags} -j1 nacl_pic=1 pnacl_generate_pexe=0" \
+    "small_tests medium_tests large_tests"
+
+  # non-pexe tests
+  scons-stage "arm" "${qemuflags} pnacl_generate_pexe=0" "nonpexe_tests"
 }
 
 mode-buildbot-arm-dbg() {
