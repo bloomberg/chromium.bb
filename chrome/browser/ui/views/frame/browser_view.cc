@@ -1157,13 +1157,16 @@ void BrowserView::ShowAppMenu() {
 
 bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                          bool* is_keyboard_shortcut) {
-  if (event.type != WebKit::WebInputEvent::RawKeyDown)
+  if ((event.type != WebKit::WebInputEvent::RawKeyDown) &&
+      (event.type != WebKit::WebInputEvent::KeyUp)) {
     return false;
+  }
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // As Alt+F4 is the close-app keyboard shortcut, it needs processing
   // immediately.
   if (event.windowsKeyCode == ui::VKEY_F4 &&
+      event.type == WebKit::WebInputEvent::RawKeyDown &&
       event.modifiers == NativeWebKeyboardEvent::AltKey) {
     DefWindowProc(event.os_event.hwnd, event.os_event.message,
                   event.os_event.wParam, event.os_event.lParam);
@@ -1182,16 +1185,25 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
           NativeWebKeyboardEvent::ControlKey,
       (event.modifiers & NativeWebKeyboardEvent::AltKey) ==
           NativeWebKeyboardEvent::AltKey);
+  if (event.type == WebKit::WebInputEvent::KeyUp)
+    accelerator.set_type(ui::ET_KEY_RELEASED);
 
-  // We first find out the browser command associated to the |event|.
-  // Then if the command is a reserved one, and should be processed
-  // immediately according to the |event|, the command will be executed
-  // immediately. Otherwise we just set |*is_keyboard_shortcut| properly and
-  // return false.
+  // What we have to do here is as follows:
+  // - If the |browser_| is for an app, do nothing.
+  // - If the |browser_| is not for an app, and the |accelerator| is not
+  //   associated with the browser (e.g. an Ash shortcut), process it.
+  // - If the |browser_| is not for an app, and the |accelerator| is associated
+  //   with the browser, and it is a reserved one (e.g. Ctrl-t), process it.
+  // - If the |browser_| is not for an app, and the |accelerator| is associated
+  //   with the browser, and it is not a reserved one, do nothing.
 
-  // This piece of code is based on the fact that accelerators registered
-  // into the |focus_manager| may only trigger a browser command execution.
-  //
+  const bool is_registered =
+      (focus_manager->GetCurrentTargetForAccelerator(accelerator) != NULL);
+  if (browser_->is_app()) {
+    *is_keyboard_shortcut = is_registered;
+    return false;
+  }
+
   // Here we need to retrieve the command id (if any) associated to the
   // keyboard event. Instead of looking up the command id in the
   // |accelerator_table_| by ourselves, we block the command execution of
@@ -1199,12 +1211,12 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   // |focus_manager| as if we are activating an accelerator key.
   // Then we can retrieve the command id from the |browser_| object.
   browser_->SetBlockCommandExecution(true);
+  // If the |accelerator| is a non-browser shortcut, the command execution
+  // cannot be blocked. However, it is okay as long as is_app() is false. See
+  // comments in this function.
   focus_manager->ProcessAccelerator(accelerator);
   int id = browser_->GetLastBlockedCommand(NULL);
   browser_->SetBlockCommandExecution(false);
-
-  if (id == -1)
-    return false;
 
   // Executing the command may cause |this| object to be destroyed.
   if (browser_->IsReservedCommandOrKey(id, event)) {
@@ -1212,8 +1224,15 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
     return browser_->ExecuteCommandIfEnabled(id);
   }
 
-  DCHECK(is_keyboard_shortcut != NULL);
-  *is_keyboard_shortcut = true;
+  if (is_registered) {
+    if (id == -1) {
+      // |accelerator| is a non-browser shortcut.
+      return true;
+    } else {
+      // |accelerator| is a non-reserved browser shortcut.
+      *is_keyboard_shortcut = true;
+    }
+  }
 
   return false;
 }
