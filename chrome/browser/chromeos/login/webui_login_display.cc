@@ -120,10 +120,13 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
         l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_CAPS_LOCK_HINT);
   }
 
-  // Display a hint to switch keyboards if there are other active input methods.
-  if (ime_manager->GetNumActiveInputMethods() > 1)
+  // Display a hint to switch keyboards if there are other active input methods
+  // and error is authentication-related.
+  if (ime_manager->GetNumActiveInputMethods() > 1 &&
+      error_msg_id != IDS_LOGIN_ERROR_WHITELIST) {
     error_text += "\n" +
         l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
+  }
 
   std::string help_link;
   switch (error_msg_id) {

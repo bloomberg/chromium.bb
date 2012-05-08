@@ -188,6 +188,8 @@ cr.define('login', function() {
                     ', network=' + network + ', reason=' + reason +
                     ', isUnderCaptivePortal=' + isUnderCaptivePortal);
 
+        // Clear any error messages that might still be around.
+        Oobe.clearErrors();
 
         offlineMessage.onBeforeShow(lastNetworkType);
 

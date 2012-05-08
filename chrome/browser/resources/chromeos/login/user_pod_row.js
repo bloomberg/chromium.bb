@@ -710,6 +710,8 @@ cr.define('login', function() {
      * @param {string} email Email for signin UI.
      */
     showSigninUI: function(email) {
+      // Clear any error messages that might still be around.
+      Oobe.clearErrors();
       this.disabled = true;
       Oobe.showSigninUI(email);
     },
