@@ -3135,13 +3135,10 @@ int GetDataVersion(PrefService* prefs) {
   // Increment this if you change the above data in ways that mean users with
   // existing data should get a new version.
   const int kCurrentDataVersion = 39;
-  if (!prefs)
-    return kCurrentDataVersion;
-  // If a version number exist in the preferences file, it overrides the
-  // version of the built-in data.
-  int version =
-    prefs->GetInteger(prefs::kSearchProviderOverridesVersion);
-  return (version >= 0) ? version : kCurrentDataVersion;
+  // Allow tests to override the local version.
+  return (prefs && prefs->HasPrefPath(prefs::kSearchProviderOverridesVersion)) ?
+      prefs->GetInteger(prefs::kSearchProviderOverridesVersion) :
+      kCurrentDataVersion;
 }
 
 TemplateURL* MakePrepopulatedTemplateURL(Profile* profile,
