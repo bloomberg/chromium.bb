@@ -139,7 +139,7 @@ signal_callback(int signal_number, void *data)
 	return 1;
 }
 
-TEST(signal_test)
+TEST(event_loop_signal)
 {
 	struct wl_event_loop *loop = wl_event_loop_create();
 	struct wl_event_source *source;
@@ -147,8 +147,38 @@ TEST(signal_test)
 
 	source = wl_event_loop_add_signal(loop, SIGUSR1,
 					  signal_callback, &got_it);
+	wl_event_loop_dispatch(loop, 0);
+	assert(!got_it);
 	kill(getpid(), SIGUSR1);
 	wl_event_loop_dispatch(loop, 0);
+	assert(got_it);
+
+	wl_event_source_remove(source);
+	wl_event_loop_destroy(loop);
+}
+
+
+static int
+timer_callback(void *data)
+{
+	int *got_it = data;
+
+	*got_it = 1;
+
+	return 1;
+}
+
+TEST(event_loop_timer)
+{
+	struct wl_event_loop *loop = wl_event_loop_create();
+	struct wl_event_source *source;
+	int got_it = 0;
+
+	source = wl_event_loop_add_timer(loop, timer_callback, &got_it);
+	wl_event_source_timer_update(source, 10);
+	wl_event_loop_dispatch(loop, 0);
+	assert(!got_it);
+	wl_event_loop_dispatch(loop, 20);
 	assert(got_it);
 
 	wl_event_source_remove(source);
