@@ -233,7 +233,7 @@ panel_redraw_handler(struct widget *widget, void *data)
 
 static int
 panel_launcher_enter_handler(struct widget *widget, struct input *input,
-			     int32_t x, int32_t y, void *data)
+			     GLfloat x, GLfloat y, void *data)
 {
 	struct panel_launcher *launcher = data;
 
@@ -504,7 +504,7 @@ unlock_dialog_keyboard_focus_handler(struct window *window,
 static int
 unlock_dialog_widget_enter_handler(struct widget *widget,
 				   struct input *input,
-				   int32_t x, int32_t y, void *data)
+				   GLfloat x, GLfloat y, void *data)
 {
 	struct unlock_dialog *dialog = data;
 

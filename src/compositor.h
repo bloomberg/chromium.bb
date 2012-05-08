@@ -421,7 +421,7 @@ weston_surface_draw(struct weston_surface *es,
 
 void
 notify_motion(struct wl_input_device *device,
-	      uint32_t time, int x, int y);
+	      uint32_t time, GLfloat x, GLfloat y);
 void
 notify_button(struct wl_input_device *device,
 	      uint32_t time, int32_t button, uint32_t state);
@@ -435,14 +435,14 @@ notify_key(struct wl_input_device *device,
 void
 notify_pointer_focus(struct wl_input_device *device,
 		     struct weston_output *output,
-		     int32_t x, int32_t y);
+		     GLfloat x, GLfloat y);
 
 void
 notify_keyboard_focus(struct wl_input_device *device, struct wl_array *keys);
 
 void
 notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
-	     int x, int y, int touch_type);
+	     GLfloat x, GLfloat y, int touch_type);
 
 void
 weston_layer_init(struct weston_layer *layer, struct wl_list *below);

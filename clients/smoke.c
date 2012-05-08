@@ -230,7 +230,7 @@ redraw_handler(struct widget *widget, void *data)
 
 static int
 smoke_motion_handler(struct widget *widget, struct input *input,
-		     uint32_t time, int32_t x, int32_t y, void *data)
+		     uint32_t time, GLfloat x, GLfloat y, void *data)
 {
 	struct smoke *smoke = data;
 	int i, i0, i1, j, j0, j1, k, d = 5;

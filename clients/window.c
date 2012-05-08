@@ -178,7 +178,7 @@ struct input {
 	int current_cursor;
 	uint32_t modifiers;
 	uint32_t pointer_enter_serial;
-	int32_t sx, sy;
+	GLfloat sx, sy;
 	struct wl_list link;
 
 	struct widget *focus_widget;
@@ -1336,7 +1336,7 @@ window_show_frame_menu(struct window *window,
 
 static int
 frame_enter_handler(struct widget *widget,
-		    struct input *input, int32_t x, int32_t y, void *data)
+		    struct input *input, GLfloat x, GLfloat y, void *data)
 {
 	return frame_get_pointer_image_for_location(data, input);
 }
@@ -1344,7 +1344,7 @@ frame_enter_handler(struct widget *widget,
 static int
 frame_motion_handler(struct widget *widget,
 		     struct input *input, uint32_t time,
-		     int32_t x, int32_t y, void *data)
+		     GLfloat x, GLfloat y, void *data)
 {
 	return frame_get_pointer_image_for_location(data, input);
 }
@@ -1439,7 +1439,7 @@ frame_destroy(struct frame *frame)
 
 static void
 input_set_focus_widget(struct input *input, struct widget *focus,
-		       int32_t x, int32_t y)
+		       GLfloat x, GLfloat y)
 {
 	struct widget *old, *widget;
 	int pointer = POINTER_LEFT_PTR;
@@ -2458,7 +2458,7 @@ menu_set_item(struct menu *menu, int sy)
 static int
 menu_motion_handler(struct widget *widget,
 		    struct input *input, uint32_t time,
-		    int32_t x, int32_t y, void *data)
+		    GLfloat x, GLfloat y, void *data)
 {
 	struct menu *menu = data;
 
@@ -2470,7 +2470,7 @@ menu_motion_handler(struct widget *widget,
 
 static int
 menu_enter_handler(struct widget *widget,
-		   struct input *input, int32_t x, int32_t y, void *data)
+		   struct input *input, GLfloat x, GLfloat y, void *data)
 {
 	struct menu *menu = data;
 

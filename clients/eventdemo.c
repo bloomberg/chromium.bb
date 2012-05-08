@@ -238,12 +238,12 @@ button_handler(struct widget *widget, struct input *input, uint32_t time,
  */
 static int
 motion_handler(struct widget *widget, struct input *input, uint32_t time,
-	       int32_t x, int32_t y, void *data)
+	       GLfloat x, GLfloat y, void *data)
 {
 	struct eventdemo *e = data;
 
 	if (log_motion) {
-		printf("motion time: %d, x: %d, y: %d\n", time, x, y);
+		printf("motion time: %d, x: %f, y: %f\n", time, x, y);
 	}
 
 	if (x > e->x && x < e->x + e->w)

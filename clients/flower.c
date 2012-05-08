@@ -134,7 +134,7 @@ redraw_handler(struct widget *widget, void *data)
 
 static int
 motion_handler(struct widget *widget, struct input *input,
-	       uint32_t time, int32_t x, int32_t y, void *data)
+	       uint32_t time, GLfloat x, GLfloat y, void *data)
 {
 	return POINTER_HAND1;
 }

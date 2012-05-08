@@ -450,7 +450,7 @@ lookup_cursor(struct dnd *dnd, int x, int y)
 
 static int
 dnd_enter_handler(struct widget *widget,
-		  struct input *input, int32_t x, int32_t y, void *data)
+		  struct input *input, GLfloat x, GLfloat y, void *data)
 {
 	return lookup_cursor(data, x, y);
 }
@@ -458,7 +458,7 @@ dnd_enter_handler(struct widget *widget,
 static int
 dnd_motion_handler(struct widget *widget,
 		   struct input *input, uint32_t time,
-		   int32_t x, int32_t y, void *data)
+		   GLfloat x, GLfloat y, void *data)
 {
 	return lookup_cursor(data, x, y);
 }
@@ -466,7 +466,7 @@ dnd_motion_handler(struct widget *widget,
 static void
 dnd_data_handler(struct window *window,
 		 struct input *input,
-		 int32_t x, int32_t y, const char **types, void *data)
+		 GLfloat x, GLfloat y, const char **types, void *data)
 {
 	struct dnd *dnd = data;
 

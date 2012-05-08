@@ -27,6 +27,7 @@
 #include <assert.h>
 #include <poll.h>
 #include <wayland-client.h>
+#include <GLES2/gl2.h> /* needed for GLfloat */
 
 struct display {
 	struct wl_display *display;
@@ -37,7 +38,7 @@ struct display {
 
 struct input {
 	struct wl_input_device *input_device;
-	int32_t x, y;
+	GLfloat x, y;
 	uint32_t button_mask;
 	struct surface *pointer_focus;
 	struct surface *keyboard_focus;

@@ -223,7 +223,7 @@ static const struct wl_callback_listener listener = {
 
 static int
 motion_handler(struct widget *widget, struct input *input,
-		uint32_t time, int32_t x, int32_t y, void *data)
+		uint32_t time, GLfloat x, GLfloat y, void *data)
 {
 	struct gears *gears = data;
 	int offset_x, offset_y;

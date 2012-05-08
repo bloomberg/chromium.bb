@@ -23,6 +23,7 @@
 #ifndef _WINDOW_H_
 #define _WINDOW_H_
 
+#include <GLES2/gl2.h>
 #include <xkbcommon/xkbcommon.h>
 #include <wayland-client.h>
 #include <cairo.h>
@@ -165,7 +166,7 @@ typedef void (*window_keyboard_focus_handler_t)(struct window *window,
 
 typedef void (*window_data_handler_t)(struct window *window,
 				      struct input *input,
-				      int32_t x, int32_t y,
+				      GLfloat x, GLfloat y,
 				      const char **types,
 				      void *data);
 
@@ -182,12 +183,12 @@ typedef void (*widget_redraw_handler_t)(struct widget *widget, void *data);
 
 typedef int (*widget_enter_handler_t)(struct widget *widget,
 				      struct input *input,
-				      int32_t x, int32_t y, void *data);
+				      GLfloat x, GLfloat y, void *data);
 typedef void (*widget_leave_handler_t)(struct widget *widget,
 				       struct input *input, void *data);
 typedef int (*widget_motion_handler_t)(struct widget *widget,
 				       struct input *input, uint32_t time,
-				       int32_t x, int32_t y, void *data);
+				       GLfloat x, GLfloat y, void *data);
 typedef void (*widget_button_handler_t)(struct widget *widget,
 					struct input *input, uint32_t time,
 					uint32_t button, uint32_t state,

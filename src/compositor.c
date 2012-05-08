@@ -1553,7 +1553,7 @@ weston_input_update_drag_surface(struct wl_input_device *input_device,
 				 int dx, int dy);
 
 WL_EXPORT void
-notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
+notify_motion(struct wl_input_device *device, uint32_t time, GLfloat x, GLfloat y)
 {
 	struct weston_output *output;
 	const struct wl_pointer_grab_interface *interface;
@@ -1769,7 +1769,7 @@ notify_key(struct wl_input_device *device,
 
 WL_EXPORT void
 notify_pointer_focus(struct wl_input_device *device,
-		     struct weston_output *output, int32_t x, int32_t y)
+		     struct weston_output *output, GLfloat x, GLfloat y)
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *compositor = wd->compositor;
@@ -1917,7 +1917,7 @@ touch_set_focus(struct weston_input_device *device,
  */
 WL_EXPORT void
 notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
-             int x, int y, int touch_type)
+             GLfloat x, GLfloat y, int touch_type)
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *ec = wd->compositor;
