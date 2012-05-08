@@ -360,6 +360,10 @@ input_set_pointer_image(struct input *input, uint32_t time, int pointer);
 void
 input_get_position(struct input *input, int32_t *x, int32_t *y);
 
+#define MOD_SHIFT_MASK		0x01
+#define MOD_ALT_MASK		0x02
+#define MOD_CONTROL_MASK	0x04
+
 uint32_t
 input_get_modifiers(struct input *input);
 

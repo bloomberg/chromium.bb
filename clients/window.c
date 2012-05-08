@@ -56,6 +56,7 @@
 #endif
 
 #include <xkbcommon/xkbcommon.h>
+#include <X11/keysym.h>
 #include <X11/X.h>
 #include <X11/Xcursor/Xcursor.h>
 
@@ -94,7 +95,17 @@ struct display {
 	struct wl_list output_list;
 	cairo_surface_t *active_frame, *inactive_frame, *shadow;
 	int frame_radius;
-	struct xkb_desc *xkb;
+
+	struct {
+		struct xkb_rule_names names;
+		struct xkb_keymap *keymap;
+		struct xkb_state *state;
+		struct xkb_context *context;
+		xkb_mod_mask_t control_mask;
+		xkb_mod_mask_t alt_mask;
+		xkb_mod_mask_t shift_mask;
+	} xkb;
+
 	struct cursor *cursors;
 	struct shm_pool *cursor_shm_pool;
 
@@ -1559,30 +1570,42 @@ input_handle_key(void *data, struct wl_input_device *input_device,
 	struct input *input = data;
 	struct window *window = input->keyboard_focus;
 	struct display *d = input->display;
-	uint32_t code, sym, level;
+	uint32_t code, num_syms;
+	const xkb_keysym_t *syms;
+	xkb_keysym_t sym;
+	xkb_mod_mask_t mask;
 
 	input->display->serial = serial;
 	code = key + 8;
 	if (!window || window->keyboard_device != input)
 		return;
 
-	level = 0;
-	if (input->modifiers & XKB_COMMON_SHIFT_MASK &&
-	    XkbKeyGroupWidth(d->xkb, code, 0) > 1)
-		level = 1;
+	num_syms = xkb_key_get_syms(d->xkb.state, code, &syms);
+	xkb_state_update_key(d->xkb.state, code,
+			     state ? XKB_KEY_DOWN : XKB_KEY_UP);
 
-	sym = XkbKeySymEntry(d->xkb, code, level, 0);
+	mask = xkb_state_serialise_mods(d->xkb.state, 
+					XKB_STATE_DEPRESSED | 
+					XKB_STATE_LATCHED);
+	input->modifiers = 0;
+	if (mask & input->display->xkb.control_mask)
+		input->modifiers |= MOD_CONTROL_MASK;
+	if (mask & input->display->xkb.alt_mask)
+		input->modifiers |= MOD_ALT_MASK;
+	if (mask & input->display->xkb.shift_mask)
+		input->modifiers |= MOD_SHIFT_MASK;
 
-	if (state)
-		input->modifiers |= d->xkb->map->modmap[code];
-	else
-		input->modifiers &= ~d->xkb->map->modmap[code];
-
-	if (key == KEY_F5 && input->modifiers == Mod4Mask) {
+	if (num_syms == 1 && syms[0] == XK_F5 &&
+	    input->modifiers == MOD_ALT_MASK) {
 		if (state)
 			window_set_maximized(window,
 					     window->type != TYPE_MAXIMIZED);
 	} else if (window->key_handler) {
+		if (num_syms == 1)
+			sym = syms[0];
+		else
+			sym = NoSymbol;
+
 		(*window->key_handler)(window, input, time, key,
 				       sym, state, window->user_data);
 	}
@@ -1669,16 +1692,9 @@ input_handle_keyboard_enter(void *data,
 {
 	struct input *input = data;
 	struct window *window;
-	struct display *d = input->display;
-	uint32_t *k, *end;
 
 	input->display->serial = serial;
 	input->keyboard_focus = wl_surface_get_user_data(surface);
-
-	end = keys->data + keys->size;
-	input->modifiers = 0;
-	for (k = keys->data; k < end; k++)
-		input->modifiers |= d->xkb->map->modmap[*k];
 
 	window = input->keyboard_focus;
 	window->keyboard_device = input;
@@ -2842,25 +2858,46 @@ display_render_frame(struct display *d)
 static void
 init_xkb(struct display *d)
 {
-	struct xkb_rule_names names;
+	d->xkb.names.rules = "evdev";
+	d->xkb.names.model = "pc105";
+	d->xkb.names.layout = (char *) option_xkb_layout;
+	d->xkb.names.variant = (char *) option_xkb_variant;
+	d->xkb.names.options = (char *) option_xkb_options;
 
-	names.rules = "evdev";
-	names.model = "pc105";
-	names.layout = option_xkb_layout;
-	names.variant = option_xkb_variant;
-	names.options = option_xkb_options;
+	d->xkb.context = xkb_context_new();
+	if (!d->xkb.context) {
+		fprintf(stderr, "Failed to create XKB context\n");
+		exit(1);
+	}
 
-	d->xkb = xkb_compile_keymap_from_rules(&names);
-	if (!d->xkb) {
+	d->xkb.keymap =
+		xkb_map_new_from_names(d->xkb.context, &d->xkb.names);
+	if (!d->xkb.keymap) {
 		fprintf(stderr, "Failed to compile keymap\n");
 		exit(1);
 	}
+
+	d->xkb.state = xkb_state_new(d->xkb.keymap);
+	if (!d->xkb.state) {
+		fprintf(stderr, "Failed to create XKB state\n");
+		exit(1);
+	}
+
+	d->xkb.control_mask =
+		1 << xkb_map_mod_get_index(d->xkb.keymap, "Control");
+	d->xkb.alt_mask =
+		1 << xkb_map_mod_get_index(d->xkb.keymap, "Mod1");
+	d->xkb.shift_mask =
+		1 << xkb_map_mod_get_index(d->xkb.keymap, "Shift");
+
 }
 
 static void
 fini_xkb(struct display *display)
 {
-	xkb_free_keymap(display->xkb);
+	xkb_state_unref(display->xkb.state);
+	xkb_map_unref(display->xkb.keymap);
+	xkb_context_unref(display->xkb.context);
 }
 
 #ifdef HAVE_CAIRO_EGL
