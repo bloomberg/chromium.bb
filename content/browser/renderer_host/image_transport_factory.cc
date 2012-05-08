@@ -14,6 +14,7 @@
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/image_transport_client.h"
+#include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
@@ -30,6 +31,7 @@
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
 using content::BrowserGpuChannelHostFactory;
+using content::GLHelper;
 
 namespace {
 
@@ -56,14 +58,13 @@ class DefaultTransportFactory
       gfx::GLSurfaceHandle surface) OVERRIDE {
   }
 
-  virtual WebKit::WebGraphicsContext3D* GetSharedContext(
-      ui::Compositor* compositor) OVERRIDE {
-    return NULL;
-  }
-
   virtual scoped_refptr<ImageTransportClient> CreateTransportClient(
       const gfx::Size& size,
       uint64* transport_handle) OVERRIDE {
+    return NULL;
+  }
+
+  virtual GLHelper* GetGLHelper(ui::Compositor* compositor) OVERRIDE {
     return NULL;
   }
 
@@ -141,12 +142,6 @@ class InProcessTransportFactory : public DefaultTransportFactory {
     return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, true);
   }
 
-  virtual WebKit::WebGraphicsContext3D* GetSharedContext(
-      ui::Compositor* compositor) OVERRIDE {
-    // TODO(mazda): Implement this (http://crbug.com/118546).
-    return NULL;
-  }
-
   virtual scoped_refptr<ImageTransportClient> CreateTransportClient(
       const gfx::Size& size,
       uint64* transport_handle) OVERRIDE {
@@ -157,6 +152,11 @@ class InProcessTransportFactory : public DefaultTransportFactory {
       return NULL;
     }
     return surface;
+  }
+
+  virtual GLHelper* GetGLHelper(ui::Compositor* compositor) OVERRIDE {
+    // TODO(mazda): Implement this (http://crbug.com/118546).
+    return NULL;
   }
 
   // We don't generate lost context events, so we don't need to keep track of
@@ -308,15 +308,6 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
     }
   }
 
-  virtual WebKit::WebGraphicsContext3D* GetSharedContext(
-      ui::Compositor* compositor) OVERRIDE {
-    PerCompositorDataMap::const_iterator itr =
-        per_compositor_data_.find(compositor);
-    if (itr == per_compositor_data_.end())
-      return NULL;
-    return itr->second->shared_context.get();
-  }
-
   virtual scoped_refptr<ImageTransportClient> CreateTransportClient(
       const gfx::Size& size,
       uint64* transport_handle) {
@@ -324,6 +315,21 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
         new ImageTransportClientTexture(size));
     image->Initialize(transport_handle);
     return image;
+  }
+
+  virtual GLHelper* GetGLHelper(ui::Compositor* compositor) {
+    PerCompositorData* data = per_compositor_data_[compositor];
+    if (!data)
+      data = CreatePerCompositorData(compositor);
+    if (!data->gl_helper.get()) {
+      WebKit::WebGraphicsContext3D* context_for_thread =
+          CreateContextCommon(compositor, true);
+      if (!context_for_thread)
+        return NULL;
+      data->gl_helper.reset(new GLHelper(data->shared_context.get(),
+                                         context_for_thread));
+    }
+    return data->gl_helper.get();
   }
 
   virtual gfx::ScopedMakeCurrent* GetScopedMakeCurrent() { return NULL; }
@@ -341,6 +347,12 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
     PerCompositorData* data = per_compositor_data_[compositor];
     DCHECK(data);
 
+    // Keep old resources around while we call the observers, but ensure that
+    // new resources are created if needed.
+    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> old_shared_context(
+        data->shared_context.release());
+    scoped_ptr<GLHelper> old_helper(data->gl_helper.release());
+
     // Note: this has the effect of recreating the swap_client, which means we
     // won't get more reports of lost context from the same gpu process. It's a
     // good thing.
@@ -357,6 +369,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
     int surface_id;
     scoped_ptr<CompositorSwapClient> swap_client;
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> shared_context;
+    scoped_ptr<GLHelper> gl_helper;
   };
 
   PerCompositorData* CreatePerCompositorData(ui::Compositor* compositor) {

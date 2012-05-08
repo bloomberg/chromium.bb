@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "content/browser/renderer_host/backing_store_skia.h"
 #include "content/browser/renderer_host/image_transport_client.h"
@@ -102,18 +103,6 @@ bool CanRendererHandleEvent(const aura::MouseEvent* event) {
   }
 #endif
   return true;
-}
-
-// Creates a content::GLHelper for the given compositor.
-content::GLHelper* CreateGLHelper(ui::Compositor* compositor) {
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  WebKit::WebGraphicsContext3D* context =
-      factory->GetSharedContext(compositor);
-  DCHECK(context);
-  WebKit::WebGraphicsContext3D* context_for_thread =
-      factory->AsContextFactory()->CreateOffscreenContext(compositor);
-  DCHECK(context_for_thread);
-  return new content::GLHelper(context, context_for_thread);
 }
 
 void GetScreenInfoForWindow(WebKit::WebScreenInfo* results,
@@ -449,15 +438,17 @@ bool RenderWidgetHostViewAura::CopyFromCompositingSurface(
   if (!output->initialize(size.width(), size.height(), true))
     return false;
 
-  if (!gl_helper_.get())
-    gl_helper_.reset(CreateGLHelper(compositor));
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  content::GLHelper* gl_helper = factory->GetGLHelper(compositor);
+  if (!gl_helper)
+    return false;
 
   unsigned char* addr = static_cast<unsigned char*>(
       output->getTopDevice()->accessBitmap(true).getPixels());
-  return gl_helper_->CopyTextureTo(container->texture_id(),
-                                   container->size(),
-                                   size,
-                                   addr);
+  return gl_helper->CopyTextureTo(container->texture_id(),
+                                  container->size(),
+                                  size,
+                                  addr);
 }
 
 void RenderWidgetHostViewAura::AsyncCopyFromCompositingSurface(
@@ -476,17 +467,19 @@ void RenderWidgetHostViewAura::AsyncCopyFromCompositingSurface(
   if (!output->initialize(size.width(), size.height(), true))
     return;
 
-  if (!gl_helper_.get())
-    gl_helper_.reset(CreateGLHelper(compositor));
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  content::GLHelper* gl_helper = factory->GetGLHelper(compositor);
+  if (!gl_helper)
+    return;
 
   scoped_callback_runner.Release();
   unsigned char* addr = static_cast<unsigned char*>(
       output->getTopDevice()->accessBitmap(true).getPixels());
-  gl_helper_->AsyncCopyTextureTo(container->texture_id(),
-                                 container->size(),
-                                 size,
-                                 addr,
-                                 callback);
+  gl_helper->AsyncCopyTextureTo(container->texture_id(),
+                                container->size(),
+                                size,
+                                addr,
+                                callback);
 }
 
 void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
@@ -1178,13 +1171,6 @@ void RenderWidgetHostViewAura::OnLostResources(ui::Compositor* compositor) {
   shared_surface_handle_ = factory->CreateSharedSurfaceHandle(compositor);
   host_->CompositingSurfaceUpdated();
   host_->ScheduleComposite();
-
-  if (gl_helper_.get()) {
-    // Detach the resources to avoid deleting them using the invalid context.
-    // They've been released anyway when the GPU process died.
-    gl_helper_->Detach();
-    gl_helper_.reset(CreateGLHelper(compositor));
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

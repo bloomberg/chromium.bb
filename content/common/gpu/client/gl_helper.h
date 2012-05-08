@@ -28,9 +28,6 @@ class GLHelper {
 
   WebKit::WebGraphicsContext3D* context() const;
 
-  // Detaches all the resources GLHelper manages.
-  void Detach();
-
   // Copies the contents of |src_texture| with the size of |src_size| into
   // |out|. The contents is transformed so that it fits in |dst_size|.
   bool CopyTextureTo(WebKit::WebGLId src_texture,
