@@ -69,11 +69,11 @@ class Binary2RegisterImmediateOpTester_Adc_Rule_6_A1_P14_NotRdIsPcAndS
   {}
 };
 
-class Binary2RegisterImmediateOpTester_Add_Rule_5_A1_P22_NotRdIsPcAndSOrRnValues
-    : public Binary2RegisterImmediateOpTesterNotRdIsPcAndSOrRnValues {
+class Binary2RegisterImmediateOpTester_Add_Rule_5_A1_P22_NotRdIsPcAndS
+    : public Binary2RegisterImmediateOpTesterNotRdIsPcAndS {
  public:
-  Binary2RegisterImmediateOpTester_Add_Rule_5_A1_P22_NotRdIsPcAndSOrRnValues()
-    : Binary2RegisterImmediateOpTesterNotRdIsPcAndSOrRnValues(
+  Binary2RegisterImmediateOpTester_Add_Rule_5_A1_P22_NotRdIsPcAndS()
+    : Binary2RegisterImmediateOpTesterNotRdIsPcAndS(
       state_.Binary2RegisterImmediateOp_Add_Rule_5_A1_P22_instance_)
   {}
 };
@@ -132,11 +132,11 @@ class Binary2RegisterImmediateOpTester_Sbc_Rule_151_A1_P302_NotRdIsPcAndS
   {}
 };
 
-class Binary2RegisterImmediateOpTester_Sub_Rule_212_A1_P420_NotRdIsPcAndSOrRnValues
-    : public Binary2RegisterImmediateOpTesterNotRdIsPcAndSOrRnValues {
+class Binary2RegisterImmediateOpTester_Sub_Rule_212_A1_P420_NotRdIsPcAndS
+    : public Binary2RegisterImmediateOpTesterNotRdIsPcAndS {
  public:
-  Binary2RegisterImmediateOpTester_Sub_Rule_212_A1_P420_NotRdIsPcAndSOrRnValues()
-    : Binary2RegisterImmediateOpTesterNotRdIsPcAndSOrRnValues(
+  Binary2RegisterImmediateOpTester_Sub_Rule_212_A1_P420_NotRdIsPcAndS()
+    : Binary2RegisterImmediateOpTesterNotRdIsPcAndS(
       state_.Binary2RegisterImmediateOp_Sub_Rule_212_A1_P420_instance_)
   {}
 };
@@ -150,11 +150,11 @@ class Binary3RegisterImmedShiftedOpTester_Adc_Rule_2_A1_P16_NotRdIsPcAndS
   {}
 };
 
-class Binary3RegisterImmedShiftedOpTester_Add_Rule_6_A1_P24_NotRdIsPcAndSOrRnIsSp
-    : public Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndSOrRnIsSp {
+class Binary3RegisterImmedShiftedOpTester_Add_Rule_6_A1_P24_NotRdIsPcAndS
+    : public Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS {
  public:
-  Binary3RegisterImmedShiftedOpTester_Add_Rule_6_A1_P24_NotRdIsPcAndSOrRnIsSp()
-    : Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndSOrRnIsSp(
+  Binary3RegisterImmedShiftedOpTester_Add_Rule_6_A1_P24_NotRdIsPcAndS()
+    : Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS(
       state_.Binary3RegisterImmedShiftedOp_Add_Rule_6_A1_P24_instance_)
   {}
 };
@@ -222,11 +222,11 @@ class Binary3RegisterImmedShiftedOpTester_Sbc_Rule_152_A1_P304_NotRdIsPcAndS
   {}
 };
 
-class Binary3RegisterImmedShiftedOpTester_SubRule_213_A1_P422_NotRdIsPcAndSOrRnIsSp
-    : public Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndSOrRnIsSp {
+class Binary3RegisterImmedShiftedOpTester_SubRule_213_A1_P422_NotRdIsPcAndS
+    : public Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS {
  public:
-  Binary3RegisterImmedShiftedOpTester_SubRule_213_A1_P422_NotRdIsPcAndSOrRnIsSp()
-    : Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndSOrRnIsSp(
+  Binary3RegisterImmedShiftedOpTester_SubRule_213_A1_P422_NotRdIsPcAndS()
+    : Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS(
       state_.Binary3RegisterImmedShiftedOp_SubRule_213_A1_P422_instance_)
   {}
 };
@@ -594,8 +594,8 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary2RegisterImmediateOpTester_Add_Rule_5_A1_P22_NotRdIsPcAndSOrRnValues_cccc0010100unnnnddddiiiiiiiiiiii_Test) {
-  Binary2RegisterImmediateOpTester_Add_Rule_5_A1_P22_NotRdIsPcAndSOrRnValues tester;
+       Binary2RegisterImmediateOpTester_Add_Rule_5_A1_P22_NotRdIsPcAndS_cccc0010100unnnnddddiiiiiiiiiiii_Test) {
+  Binary2RegisterImmediateOpTester_Add_Rule_5_A1_P22_NotRdIsPcAndS tester;
   tester.Test("cccc0010100unnnnddddiiiiiiiiiiii");
 }
 
@@ -636,8 +636,8 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary2RegisterImmediateOpTester_Sub_Rule_212_A1_P420_NotRdIsPcAndSOrRnValues_cccc0010010unnnnddddiiiiiiiiiiii_Test) {
-  Binary2RegisterImmediateOpTester_Sub_Rule_212_A1_P420_NotRdIsPcAndSOrRnValues tester;
+       Binary2RegisterImmediateOpTester_Sub_Rule_212_A1_P420_NotRdIsPcAndS_cccc0010010unnnnddddiiiiiiiiiiii_Test) {
+  Binary2RegisterImmediateOpTester_Sub_Rule_212_A1_P420_NotRdIsPcAndS tester;
   tester.Test("cccc0010010unnnnddddiiiiiiiiiiii");
 }
 
@@ -648,8 +648,8 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterImmedShiftedOpTester_Add_Rule_6_A1_P24_NotRdIsPcAndSOrRnIsSp_cccc0000100unnnnddddiiiiitt0mmmm_Test) {
-  Binary3RegisterImmedShiftedOpTester_Add_Rule_6_A1_P24_NotRdIsPcAndSOrRnIsSp tester;
+       Binary3RegisterImmedShiftedOpTester_Add_Rule_6_A1_P24_NotRdIsPcAndS_cccc0000100unnnnddddiiiiitt0mmmm_Test) {
+  Binary3RegisterImmedShiftedOpTester_Add_Rule_6_A1_P24_NotRdIsPcAndS tester;
   tester.Test("cccc0000100unnnnddddiiiiitt0mmmm");
 }
 
@@ -696,8 +696,8 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Binary3RegisterImmedShiftedOpTester_SubRule_213_A1_P422_NotRdIsPcAndSOrRnIsSp_cccc0000010unnnnddddiiiiitt0mmmm_Test) {
-  Binary3RegisterImmedShiftedOpTester_SubRule_213_A1_P422_NotRdIsPcAndSOrRnIsSp tester;
+       Binary3RegisterImmedShiftedOpTester_SubRule_213_A1_P422_NotRdIsPcAndS_cccc0000010unnnnddddiiiiitt0mmmm_Test) {
+  Binary3RegisterImmedShiftedOpTester_SubRule_213_A1_P422_NotRdIsPcAndS tester;
   tester.Test("cccc0000010unnnnddddiiiiitt0mmmm");
 }
 

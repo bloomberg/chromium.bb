@@ -35,7 +35,7 @@ class ActualVsBaselineTester : public Arm32DecoderTester {
   // virtuals of actual and baseline match.
   virtual void ProcessMatch();
   virtual const NamedClassDecoder& ExpectedDecoder() const;
-  virtual void ApplySanityChecks(
+  virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 

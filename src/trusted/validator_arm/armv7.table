@@ -60,7 +60,6 @@
 # Constraints identifiers used are:
 #    Imm5NotZero - The immediate (5-bit) value must not be zero.
 #    NotRdIsPcAndS - Rd not Pc (R15) and S=1 (updates register bit).
-#    NotRdIsPcAndSOrRnIsSp = not (Rd=15 & S=1) or not Rn=13.
 #    NotRdIsPcAndSOrRnValues - not (Rd=15 & S=1), or not Rn=13, or
 #                not (Rn=15 and S=0).
 #    RegsNotPc - All register defined by instruction are not Pc (R15).
@@ -130,17 +129,21 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
                                      cccc0000001unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
 | 0010x      -         -        = Binary3RegisterImmedShiftedOp
+# Note: For arm, the case where Rn=SP is NOT a special case (only in thumb2).
+# Hence, parse restriction does not apply (See Sub_Rule_216_P428 in manual).
                                      SubRule_213_A1_P422
                                      cccc0000010unnnnddddiiiiitt0mmmm
-                                     NotRdIsPcAndSOrRnIsSp
+                                     NotRdIsPcAndS
 | 0011x      -         -        = Binary3RegisterImmedShiftedOp
                                      Rsb_Rule_143_P286
                                      cccc0000011unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
 | 0100x      -         -        = Binary3RegisterImmedShiftedOp
+# Note: For arm, the case where Rn=SP is NOT a special case (only in thumb2).
+# Hence, parse restriction does not apply (See Add_Rule_8_A1_P28 in manual).
                                      Add_Rule_6_A1_P24
                                      cccc0000100unnnnddddiiiiitt0mmmm
-                                     NotRdIsPcAndSOrRnIsSp
+                                     NotRdIsPcAndS
 | 0101x      -         -        = Binary3RegisterImmedShiftedOp
                                      Adc_Rule_2_A1_P16
                                      cccc0000101unnnnddddiiiiitt0mmmm
@@ -257,7 +260,7 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
                            cccc0010001unnnnddddiiiiiiiiiiii NotRdIsPcAndS
 | 0010x      ~1111    = Binary2RegisterImmediateOp Sub_Rule_212_A1_P420
                            cccc0010010unnnnddddiiiiiiiiiiii
-                           NotRdIsPcAndSOrRnValues
+                           NotRdIsPcAndS
                         # Note: Table says that op=0010x for ADR, but
                         # patterns for ADR do not match (page A8-32).
                         # Causes parsing conflicts with SUB (previous
@@ -275,12 +278,12 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
                         # (page A8-420). Assuming SUB should be recognized.
 | 00101      1111     = Binary2RegisterImmediateOp Sub_Rule_212_A1_P420
                            cccc0010010unnnnddddiiiiiiiiiiii
-                           NotRdIsPcAndSOrRnValues
+                           NotRdIsPcAndS
 | 0011x      -        = Binary2RegisterImmediateOp Rsb_Rule_142_A1_P284
                            cccc0010011unnnnddddiiiiiiiiiiii NotRdIsPcAndS
 | 0100x      ~1111    = Binary2RegisterImmediateOp Add_Rule_5_A1_P22
                            cccc0010100unnnnddddiiiiiiiiiiii 
-                           NotRdIsPcAndSOrRnValues
+                           NotRdIsPcAndS
                         # Note: Table says that op=0100x for ADR, but
                         # patterns for ADR do not match (page A8-32).
                         # Causes parsing conflicts with ADD (previous
@@ -298,7 +301,7 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
                         # (page A8-22). Assuming ADD should be recognized.
 | 01001      1111     = Binary2RegisterImmediateOp Add_Rule_5_A1_P22
                            cccc0010100unnnnddddiiiiiiiiiiii 
-                           NotRdIsPcAndSOrRnValues
+                           NotRdIsPcAndS
 | 0101x      -        = Binary2RegisterImmediateOp Adc_Rule_6_A1_P14
                            cccc0010101unnnnddddiiiiiiiiiiii NotRdIsPcAndS
 | 0110x      -        = Binary2RegisterImmediateOp Sbc_Rule_151_A1_P302
