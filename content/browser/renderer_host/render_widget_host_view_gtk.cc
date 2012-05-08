@@ -968,14 +968,19 @@ void RenderWidgetHostViewGtk::DoPopupOrFullscreenInit(GtkWindow* window,
                           std::min(bounds.height(), kMaxWindowHeight));
   host_->WasResized();
 
-  gtk_widget_set_size_request(
-      view_.get(), requested_size_.width(), requested_size_.height());
+  // Don't set the size when we're going fullscreen. This can confuse the
+  // window manager into thinking we're resizing a fullscreen window and
+  // therefore not fullscreen anymore.
+  if (!is_fullscreen_) {
+    gtk_widget_set_size_request(
+        view_.get(), requested_size_.width(), requested_size_.height());
 
-  // Don't allow the window to be resized. This also forces the window to
-  // shrink down to the size of its child contents.
-  gtk_window_set_resizable(window, FALSE);
-  gtk_window_set_default_size(window, -1, -1);
-  gtk_window_move(window, bounds.x(), bounds.y());
+    // Don't allow the window to be resized. This also forces the window to
+    // shrink down to the size of its child contents.
+    gtk_window_set_resizable(window, FALSE);
+    gtk_window_set_default_size(window, -1, -1);
+    gtk_window_move(window, bounds.x(), bounds.y());
+  }
 
   gtk_widget_show_all(GTK_WIDGET(window));
 }
