@@ -86,6 +86,11 @@ extern const int kInfoBarBorderPaddingVertical;
 // Last character display for passwords.
 extern const bool kPasswordEchoEnabled;
 
+// Changes how browser is initialized when executed in app mode.
+// If true after app window is opened continue with regular startup path
+// i.e. session restore, load URLs from cmd line plus focus app window.
+extern const bool kAppRestoreSession;
+
 //=============================================================================
 // Runtime "const" - set only once after parsing command line option and should
 // never be modified after that.

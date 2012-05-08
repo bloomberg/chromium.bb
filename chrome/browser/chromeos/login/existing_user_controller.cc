@@ -42,6 +42,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -740,6 +741,9 @@ void ExistingUserController::InitializeStartUrls() const {
   if (!guide_url.empty()) {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kApp,
                                                         guide_url);
+    // NTP would open in the background, app window with GSG would be focused
+    // so that user won't have an empty desktop after GSG is closed.
+    CommandLine::ForCurrentProcess()->AppendArg(chrome::kChromeUINewTabURL);
   } else {
     // We should not be adding any start URLs if guide
     // is defined as it launches as a standalone app window.
@@ -819,9 +823,8 @@ void ExistingUserController::OptionallyShowReleaseNotes(
   if (current_version.components()[0] > prev_version.components()[0]) {
     std::string release_notes_url = GetGettingStartedGuideURL();
     if (!release_notes_url.empty()) {
-      // TODO(nkostylev): Ideally we'd want to show this in app window
-      // but passing --app=<url> would ignore session restore.
-      CommandLine::ForCurrentProcess()->AppendArg(release_notes_url);
+      CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kApp,
+                                                          release_notes_url);
       prefs->SetString(prefs::kChromeOSReleaseNotesVersion,
                        current_version.GetString());
     }

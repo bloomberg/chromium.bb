@@ -104,6 +104,12 @@ const bool kPasswordEchoEnabled = true;
 const bool kPasswordEchoEnabled = false;
 #endif
 
+#if defined(OS_CHROMEOS)
+const bool kAppRestoreSession = true;
+#else
+const bool kAppRestoreSession = false;
+#endif
+
 bool bookmarks_enabled = true;
 
 bool enable_help_app = true;

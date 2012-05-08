@@ -898,9 +898,16 @@ bool BrowserInit::LaunchWithProfile::Launch(
   // opened an app shortcut.  Don't restore tabs or open initial
   // URLs in that case. The user should see the window as an app,
   // not as chrome.
-  if (OpenApplicationWindow(profile)) {
+  // Special case is when app switches are passed but we do want to restore
+  // session. In that case open app window + focus it after session is restored.
+  if (OpenApplicationWindow(profile) && !browser_defaults::kAppRestoreSession) {
     RecordLaunchModeHistogram(LM_AS_WEBAPP);
   } else {
+    Browser* browser_to_focus = NULL;
+    // In case of app mode + session restore we want to focus that app.
+    if (browser_defaults::kAppRestoreSession)
+      browser_to_focus = BrowserList::GetLastActive();
+
     RecordLaunchModeHistogram(urls_to_open.empty()?
                               LM_TO_BE_DECIDED : LM_WITH_URLS);
 
@@ -913,6 +920,9 @@ bool BrowserInit::LaunchWithProfile::Launch(
     // If this is an app launch, but we didn't open an app window, it may
     // be an app tab.
     OpenApplicationTab(profile);
+
+    if (browser_to_focus)
+      browser_to_focus->GetSelectedWebContents()->GetView()->SetInitialFocus();
 
     if (process_startup) {
       if (browser_defaults::kOSSupportsOtherBrowsers &&
