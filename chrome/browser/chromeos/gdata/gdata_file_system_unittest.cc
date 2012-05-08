@@ -22,6 +22,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
@@ -170,6 +171,7 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
+    chromeos::CrosLibrary::Initialize(true /* use_stub */);
     io_thread_.StartIOThread();
 
     profile_.reset(new TestingProfile);
@@ -212,6 +214,9 @@ class GDataFileSystemTest : public testing::Test {
     // the 2nd callback of PostTaskAndReply) will be canceled, as these are
     // bound to weak pointers, which are invalidated in ShutdownOnUIThread().
     message_loop_.RunAllPending();
+
+    profile_.reset(NULL);
+    chromeos::CrosLibrary::Shutdown();
   }
 
   // Loads test json file as root ("/gdata") element.
@@ -1159,7 +1164,10 @@ class GDataFileSystemTest : public testing::Test {
   bool expect_outgoing_symlink_;
   std::string expected_file_extension_;
   int root_feed_changestamp_;
+  static bool cros_initialized_;
 };
+
+bool GDataFileSystemTest::cros_initialized_ = false;
 
 void AsyncInitializationCallback(
     int* counter,

@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
@@ -27,7 +28,8 @@ GDataSystemService::GDataSystemService(Profile* profile)
       file_system_(new GDataFileSystem(profile, new DocumentsService)),
       uploader_(new GDataUploader(file_system_.get())),
       download_observer_(new GDataDownloadObserver),
-      sync_client_(new GDataSyncClient(profile, file_system_.get())) {
+      sync_client_(new GDataSyncClient(profile, file_system_.get())),
+      webapps_registry_(new DriveWebAppsRegistry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -60,6 +62,7 @@ void GDataSystemService::Shutdown() {
   sync_client_.reset();
   download_observer_.reset();
   uploader_.reset();
+  webapps_registry_.reset();
 
   file_system_.reset();
 }

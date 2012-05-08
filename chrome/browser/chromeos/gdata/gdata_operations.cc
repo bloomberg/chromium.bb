@@ -120,6 +120,8 @@ GURL AddFeedUrlParams(const GURL& url,
       result,
       "max-results",
       base::StringPrintf("%d", num_items_to_fetch));
+  result = chrome_browser_net::AppendOrReplaceQueryParameter(
+      result, "include-installed-apps", "true");
 
   if (changestamp) {
     result = chrome_browser_net::AppendQueryParameter(
