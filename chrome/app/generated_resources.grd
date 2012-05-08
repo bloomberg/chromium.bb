@@ -11767,6 +11767,28 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
       </if>
 
+      <if expr="pp_ifdef('chromeos')">
+        <!-- The URL for the Google mailto service. -->
+        <message name="IDS_GOOGLE_MAILTO_HANDLER_URL">
+          https:////mail.google.com//mail//?extsrc=mailto&amp;url=%s
+        </message>
+	
+        <!-- The name for the Google mailto service. -->
+        <message name="IDS_GOOGLE_MAILTO_HANDLER_NAME">
+          Google.com Mail
+        </message>
+	
+        <!-- The URL for the Google webcal service. -->
+        <message name="IDS_GOOGLE_WEBCAL_HANDLER_URL">
+          https:////www.google.com//calendar//render?cid=%s
+        </message>
+	
+        <!-- The name for the Google webcal service. -->
+        <message name="IDS_GOOGLE_WEBCAL_HANDLER_NAME">
+          Google Calendar
+        </message>
+      </if>
+     
       <!-- Sync promo page chrome://signin -->
       <message name="IDS_SYNC_PROMO_TAB_TITLE" desc="The title of the sync promo tab.">
         Sign in

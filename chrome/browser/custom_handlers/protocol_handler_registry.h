@@ -191,6 +191,10 @@ class ProtocolHandlerRegistry
 
   bool enabled() const { return enabled_; }
 
+  // Add a predefined protocol handler. This has to be called before the first
+  // load command was issued, otherwise the command will be ignored.
+  void AddPredefinedHandler(const ProtocolHandler& handler);
+
  private:
   friend class base::DeleteHelper<ProtocolHandlerRegistry>;
   friend struct content::BrowserThread::DeleteOnThread<
@@ -279,6 +283,10 @@ class ProtocolHandlerRegistry
 
   // Whether or not we are loading.
   bool is_loading_;
+
+  // When the table gets loaded this flag will be set and any further calls to
+  // AddPredefinedHandler will be rejected.
+  bool is_loaded_;
 
   DefaultClientObserverList default_client_observers_;
 

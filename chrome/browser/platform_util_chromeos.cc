@@ -55,6 +55,15 @@ void OpenItem(const FilePath& full_path) {
 }
 
 void OpenExternal(const GURL& url) {
+  // This code should be obsolete since we have default handlers in ChromeOS
+  // which should handle this. However - there are two things which make it
+  // necessary to keep it in:
+  // a.) The user might have deleted the default handler in this session.
+  //     In this case we would need to have this in place.
+  // b.) There are several code paths which are not clear if they would call
+  //     this function directly and which would therefore break (e.g.
+  //     "Browser::EmailPageLocation" (to name only one).
+  // As such we should keep this code here.
   if (url.SchemeIs("mailto")) {
     std::string string_url = kGmailComposeUrl;
     string_url.append(url.spec());

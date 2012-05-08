@@ -229,6 +229,16 @@ class ProtocolHandlerRegistryTest : public testing::Test {
     registry_->Load();
   }
 
+  void ReloadProtocolHandlerRegistryAndInstallDefaultHandler() {
+    delegate_ = new FakeDelegate();
+    registry_->Finalize();
+    registry_ = NULL;
+    registry_ = new ProtocolHandlerRegistry(profile(), delegate());
+    registry_->AddPredefinedHandler(CreateProtocolHandler(
+        "test", GURL("http://test.com/%s"), "Test"));
+    registry_->Load();
+  }
+
   virtual void SetUp() {
     ui_message_loop_.reset(new MessageLoopForUI());
     ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
@@ -795,4 +805,11 @@ TEST_F(ProtocolHandlerRegistryTest, TestIsSameOrigin) {
       ph2.IsSameOrigin(ph3));
   ASSERT_EQ(ph3.url().GetOrigin() == ph2.url().GetOrigin(),
       ph3.IsSameOrigin(ph2));
+}
+
+TEST_F(ProtocolHandlerRegistryTest, TestInstallDefaultHandler) {
+  ReloadProtocolHandlerRegistryAndInstallDefaultHandler();
+  std::vector<std::string> protocols;
+  registry()->GetRegisteredProtocols(&protocols);
+  ASSERT_EQ(static_cast<size_t>(1), protocols.size());
 }

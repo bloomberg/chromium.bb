@@ -151,7 +151,8 @@ ProtocolHandlerRegistry::ProtocolHandlerRegistry(Profile* profile,
       delegate_(delegate),
       enabled_(true),
       enabled_io_(enabled_),
-      is_loading_(false) {
+      is_loading_(false),
+      is_loaded_(false) {
 }
 
 bool ProtocolHandlerRegistry::SilentlyHandleRegisterHandlerRequest(
@@ -247,6 +248,8 @@ bool ProtocolHandlerRegistry::IsDefault(
 }
 
 void ProtocolHandlerRegistry::Load() {
+  // Any further default additions to the table will get rejected from now on.
+  is_loaded_ = true;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   is_loading_ = true;
   PrefService* prefs = profile_->GetPrefs();
@@ -708,3 +711,13 @@ void ProtocolHandlerRegistry::IgnoreProtocolHandler(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ignored_protocol_handlers_.push_back(handler);
 }
+
+void ProtocolHandlerRegistry::AddPredefinedHandler(
+    const ProtocolHandler& handler) {
+  // If called after the load command was issued this function will fail.
+  DCHECK(!is_loaded_);
+  RegisterProtocolHandler(handler);
+  SetDefault(handler);
+}
+
+

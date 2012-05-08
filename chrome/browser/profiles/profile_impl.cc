@@ -82,6 +82,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
@@ -441,7 +442,26 @@ void ProfileImpl::InitRegisteredProtocolHandlers() {
     return;
   protocol_handler_registry_ = new ProtocolHandlerRegistry(this,
       new ProtocolHandlerRegistry::Delegate());
+
+  // Install predefined protocol handlers.
+  InstallDefaultProtocolHandlers();
+
   protocol_handler_registry_->Load();
+}
+
+void ProfileImpl::InstallDefaultProtocolHandlers() {
+#if defined(OS_CHROMEOS)
+  protocol_handler_registry_->AddPredefinedHandler(
+      ProtocolHandler::CreateProtocolHandler(
+          "mailto",
+          GURL(l10n_util::GetStringUTF8(IDS_GOOGLE_MAILTO_HANDLER_URL)),
+          l10n_util::GetStringUTF16(IDS_GOOGLE_MAILTO_HANDLER_NAME)));
+  protocol_handler_registry_->AddPredefinedHandler(
+      ProtocolHandler::CreateProtocolHandler(
+          "webcal",
+          GURL(l10n_util::GetStringUTF8(IDS_GOOGLE_WEBCAL_HANDLER_URL)),
+          l10n_util::GetStringUTF16(IDS_GOOGLE_WEBCAL_HANDLER_NAME)));
+#endif
 }
 
 FilePath ProfileImpl::last_selected_directory() {
