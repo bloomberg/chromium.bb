@@ -216,7 +216,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   else
     SetBounds(params.bounds);
   window_->set_ignore_events(!params.accept_events);
-  can_activate_ = params.can_activate;
+  can_activate_ =
+      params.can_activate && params.type != Widget::InitParams::TYPE_CONTROL;
   DCHECK(GetWidget()->GetRootView());
 #if !defined(OS_MACOSX)
   if (params.type != Widget::InitParams::TYPE_TOOLTIP)

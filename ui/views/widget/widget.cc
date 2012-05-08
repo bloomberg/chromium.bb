@@ -130,8 +130,7 @@ Widget::InitParams::InitParams(Type type)
                   ViewsDelegate::views_delegate &&
                   ViewsDelegate::views_delegate->UseTransparentWindows()),
       accept_events(true),
-      can_activate(
-          type != TYPE_POPUP && type != TYPE_MENU && type != TYPE_CONTROL),
+      can_activate(type != TYPE_POPUP && type != TYPE_MENU),
       keep_on_top(type == TYPE_MENU),
       ownership(NATIVE_WIDGET_OWNS_WIDGET),
       mirror_origin_in_rtl(false),
