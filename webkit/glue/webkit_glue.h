@@ -18,11 +18,16 @@
 #include "base/platform_file.h"
 #include "base/string16.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 class GURL;
 class SkBitmap;
+
+namespace net {
+class URLRequest;
+}
 
 namespace skia {
 class PlatformCanvas;
@@ -153,6 +158,10 @@ std::string GetInspectorProtocolVersion();
 // Tells caller whether the given protocol version is supported by the.
 WEBKIT_GLUE_EXPORT bool IsInspectorProtocolVersionSupported(
     const std::string& version);
+
+// Configures the URLRequest according to the referrer policy.
+WEBKIT_GLUE_EXPORT void ConfigureURLRequestForReferrerPolicy(
+    net::URLRequest* request, WebKit::WebReferrerPolicy referrer_policy);
 
 }  // namespace webkit_glue
 

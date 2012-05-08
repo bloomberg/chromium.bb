@@ -83,6 +83,7 @@
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/shareable_file_reference.h"
+#include "webkit/glue/webkit_glue.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -813,6 +814,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
     request->set_method(request_data.method);
     request->set_first_party_for_cookies(request_data.first_party_for_cookies);
     request->set_referrer(referrer.url.spec());
+    webkit_glue::ConfigureURLRequestForReferrerPolicy(request, referrer.policy);
     net::HttpRequestHeaders headers;
     headers.AddHeadersFromString(request_data.headers);
     request->SetExtraRequestHeaders(headers);
