@@ -352,7 +352,8 @@ class NetworkIcon {
       case TYPE_WIFI: {
         const WifiNetwork* wifi =
             static_cast<const WifiNetwork*>(network);
-        if (wifi->encrypted() && !is_status_bar_)
+        if (wifi->encrypted() &&
+            resource_color_theme_ == NetworkMenuIcon::COLOR_DARK)
           bottom_right_badge_ = rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE);
         break;
       }
