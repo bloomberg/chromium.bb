@@ -127,11 +127,11 @@ typedef struct {
 } GestureSwipe;
 
 typedef struct {
-  // Relative zoom factor starting with 1.0 = no zoom
-  // <1.0 for zooming out
-  // >1.0 for zooming in
+  // Relative pinch factor starting with 1.0 = no pinch
+  // <1.0 for outwards pinch
+  // >1.0 for inwards pinch
   float dz;
-} GestureZoom;
+} GesturePinch;
 
 enum GestureType {
 #ifdef GESTURES_INTERNAL
@@ -143,7 +143,7 @@ enum GestureType {
   kGestureTypeButtonsChange,
   kGestureTypeFling,
   kGestureTypeSwipe,
-  kGestureTypeZoom
+  kGestureTypePinch
 };
 
 #ifdef __cplusplus
@@ -153,7 +153,7 @@ extern const GestureScroll kGestureScroll;
 extern const GestureButtonsChange kGestureButtonsChange;
 extern const GestureFling kGestureFling;
 extern const GestureSwipe kGestureSwipe;
-extern const GestureZoom kGestureZoom;
+extern const GesturePinch kGesturePinch;
 #endif  // __cplusplus
 
 struct Gesture {
@@ -196,12 +196,12 @@ struct Gesture {
         type(kGestureTypeSwipe) {
     details.swipe.dx = dx;
   }
-  Gesture(const GestureZoom&,
+  Gesture(const GesturePinch&,
           stime_t start, stime_t end, float dz)
       : start_time(start),
         end_time(end),
-        type(kGestureTypeZoom) {
-    details.zoom.dz = dz;
+        type(kGestureTypePinch) {
+    details.pinch.dz = dz;
   }
 #endif  // __cplusplus
 
@@ -213,7 +213,7 @@ struct Gesture {
     GestureButtonsChange buttons;
     GestureFling fling;
     GestureSwipe swipe;
-    GestureZoom zoom;
+    GesturePinch pinch;
   } details;
 };
 

@@ -2820,20 +2820,20 @@ TEST(ImmediateInterpreterTest, SwipeTest) {
 // Tests that fingers that have been present a while, but are stationary,
 // can be evaluated multiple times when they start moving.
 
-enum ZoomTestExpectedResult {
-  kZoom,
-  kNoZoom,
+enum PinchTestExpectedResult {
+  kPinch,
+  kNoPinch,
   kAny
 };
 
-struct ZoomTestInput {
+struct PinchTestInput {
   HardwareState hs;
-  ZoomTestExpectedResult expected_result;
+  PinchTestExpectedResult expected_result;
 };
 
-TEST(ImmediateInterpreterTest, ZoomTests) {
+TEST(ImmediateInterpreterTest, PinchTests) {
   ImmediateInterpreter ii(NULL);
-  ii.zoom_enable_.val_ = 1;
+  ii.pinch_enable_.val_ = 1;
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -2893,7 +2893,7 @@ TEST(ImmediateInterpreterTest, ZoomTests) {
     {0, 0, 0, 0, 20, 0, 90, 90, 2, 0},
   };
 
-  ZoomTestInput input_states[] = {
+  PinchTestInput input_states[] = {
     // time, buttons, finger count, touch count, finger states pointer
     {{ 0.00, 0, 0, 0, NULL }, kAny},
 
@@ -2901,7 +2901,7 @@ TEST(ImmediateInterpreterTest, ZoomTests) {
     {{ 0.11, 0, 2, 2, &finger_states[0] }, kAny},
     {{ 0.12, 0, 2, 2, &finger_states[4] }, kAny},
     {{ 0.13, 0, 2, 2, &finger_states[8] }, kAny},
-    {{ 0.14, 0, 2, 2, &finger_states[10] }, kZoom},
+    {{ 0.14, 0, 2, 2, &finger_states[10] }, kPinch},
     {{ 0.15, 0, 0, 0, NULL }, kAny},
 
     // slow pinch
@@ -2916,14 +2916,14 @@ TEST(ImmediateInterpreterTest, ZoomTests) {
     {{ 1.09, 0, 2, 2, &finger_states[8] }, kAny},
     {{ 1.10, 0, 2, 2, &finger_states[8] }, kAny},
     {{ 1.11, 0, 2, 2, &finger_states[10] }, kAny},
-    {{ 1.12, 0, 2, 2, &finger_states[10] }, kZoom},
+    {{ 1.12, 0, 2, 2, &finger_states[10] }, kPinch},
     {{ 1.13, 0, 0, 0, NULL }, kAny},
 
     // single finger pinch
     {{ 2.01, 0, 2, 2, &finger_states[22] }, kAny},
     {{ 2.02, 0, 2, 2, &finger_states[26] }, kAny},
     {{ 2.03, 0, 2, 2, &finger_states[30] }, kAny},
-    {{ 2.04, 0, 2, 2, &finger_states[32] }, kNoZoom},
+    {{ 2.04, 0, 2, 2, &finger_states[32] }, kNoPinch},
     {{ 2.05, 0, 0, 0, NULL }, kAny},
 
 
@@ -2932,14 +2932,14 @@ TEST(ImmediateInterpreterTest, ZoomTests) {
     {{ 3.02, 0, 2, 2, &finger_states[24] }, kAny},
     {{ 3.03, 0, 2, 2, &finger_states[6] }, kAny},
     {{ 3.04, 0, 2, 2, &finger_states[8] }, kAny},
-    {{ 3.05, 0, 2, 2, &finger_states[10] }, kZoom},
+    {{ 3.05, 0, 2, 2, &finger_states[10] }, kPinch},
     {{ 3.06, 0, 0, 0, NULL }, kAny},
 
     // fast pinch inwards
     {{ 4.01, 0, 2, 2, &finger_states[10] }, kAny},
     {{ 4.02, 0, 2, 2, &finger_states[8] }, kAny},
     {{ 4.03, 0, 2, 2, &finger_states[4] }, kAny},
-    {{ 4.04, 0, 2, 2, &finger_states[0] }, kZoom},
+    {{ 4.04, 0, 2, 2, &finger_states[0] }, kPinch},
     {{ 4.05, 0, 0, 0, NULL }, kAny},
   };
 
@@ -2947,21 +2947,21 @@ TEST(ImmediateInterpreterTest, ZoomTests) {
 
   for (size_t idx = 0; idx < arraysize(input_states); ++idx) {
     Gesture* gs = ii.SyncInterpret(&input_states[idx].hs, NULL);
-    // assert zoom detection
-    if (input_states[idx].expected_result == kZoom) {
+    // assert pinch detected
+    if (input_states[idx].expected_result == kPinch) {
       ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
-      EXPECT_EQ(kGestureTypeZoom, gs->type);
+      EXPECT_EQ(kGestureTypePinch, gs->type);
     }
-    // assert zoom not detected
-    if (input_states[idx].expected_result == kNoZoom) {
+    // assert pinch not detected
+    if (input_states[idx].expected_result == kNoPinch) {
       if (gs != NULL) {
-        EXPECT_NE(kGestureTypeZoom, gs->type);
+        EXPECT_NE(kGestureTypePinch, gs->type);
       }
     }
   }
 }
 
-struct AvoidAccidentalZoomTestInput {
+struct AvoidAccidentalPinchTestInput {
   TestCaseStartOrContinueFlag flag;
   stime_t now;
   float x0, y0, p0, x1, y1, p1;  // (x, y) coordinate + pressure per finger
@@ -2969,8 +2969,8 @@ struct AvoidAccidentalZoomTestInput {
 };
 
 // These data are from real logs where a move with resting thumb was appempted,
-// but zoom code prevented it.
-TEST(ImmediateInterpreterTest, AvoidAccidentalZoomTest) {
+// but pinch code prevented it.
+TEST(ImmediateInterpreterTest, AvoidAccidentalPinchTest) {
   scoped_ptr<ImmediateInterpreter> ii;
   HardwareProperties hwprops = {
     0,  // left edge
@@ -2991,7 +2991,7 @@ TEST(ImmediateInterpreterTest, AvoidAccidentalZoomTest) {
   const GestureType kMov = kGestureTypeMove;
   const GestureType kAny = kGestureTypeNull;
 
-  AvoidAccidentalZoomTestInput inputs[] = {
+  AvoidAccidentalPinchTestInput inputs[] = {
     { kS, 0.97697, 44.08, 64.30, 118.20, 35.91, 27.70, 44.46, kAny },
     { kC, 0.98755, 44.08, 64.30, 118.20, 35.91, 27.70, 50.28, kMov },
     { kC, 0.99816, 44.08, 64.30, 118.20, 35.91, 27.70, 54.16, kMov },
@@ -3096,10 +3096,10 @@ TEST(ImmediateInterpreterTest, AvoidAccidentalZoomTest) {
   };
 
   for (size_t i = 0; i < arraysize(inputs); i++) {
-    const AvoidAccidentalZoomTestInput& input = inputs[i];
+    const AvoidAccidentalPinchTestInput& input = inputs[i];
     if (input.flag == kS) {
       ii.reset(new ImmediateInterpreter(NULL));
-      ii->zoom_enable_.val_ = true;
+      ii->pinch_enable_.val_ = true;
       ii->SetHardwareProperties(hwprops);
     }
     // Prep inputs

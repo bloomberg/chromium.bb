@@ -111,9 +111,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickStateMachineTest);
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest);
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainTest);
-  FRIEND_TEST(ImmediateInterpreterTest, ZoomTests);
   FRIEND_TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest);
-  FRIEND_TEST(ImmediateInterpreterTest, AvoidAccidentalZoomTest);
+  FRIEND_TEST(ImmediateInterpreterTest, PinchTests);
+  FRIEND_TEST(ImmediateInterpreterTest, AvoidAccidentalPinchTest);
   friend class TapRecord;
 
  public:
@@ -221,9 +221,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   GestureType GetTwoFingerGestureType(const FingerState& finger1,
                                       const FingerState& finger2);
 
-  // In case no other gesture has been detected,
-  // UpdatePinchStateMachine will check for a zoom gesture
-  // and return the updated gesture type.
+  // Check for a pinch gesture and update the state machine for detection.
+  // If a pinch was detected it will return true. False otherwise.
+  // To reset the state machine call with reset=true
   bool UpdatePinchState(const HardwareState& hwstate, bool reset);
 
   // Returns the current three-finger gesture, or kGestureTypeNull if no gesture
@@ -361,7 +361,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // If we are currently pointing, scrolling, etc.
   GestureType current_gesture_type_;
 
-  // Cache for distance between fingers at start of zoom gesture
+  // Cache for distance between fingers at start of pinch gesture
   float two_finger_start_distance_;
 
   // If the last time we were called, we did a scroll, it contains the ids
@@ -486,6 +486,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // are the slopes for the two lines.
   DoubleProperty vertical_scroll_snap_slope_;
   DoubleProperty horizontal_scroll_snap_slope_;
+
   // Ratio between finger movement that indicates not-a-pinch gesture
   DoubleProperty no_pinch_guess_ratio_;
   // Ratio between finger movement that certainly indicates not-a-pinch gesture
@@ -496,8 +497,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty pinch_guess_min_movement_;
   // Minimal distance [mm] fingers have to move to lock a pinch gesture.
   DoubleProperty pinch_certain_min_movement_;
-  // Temporary flag to turn Zoom on/off while we tune it.
-  BoolProperty zoom_enable_;
+  // Temporary flag to turn pinch on/off while we tune it.
+  BoolProperty pinch_enable_;
 };
 
 }  // namespace gestures

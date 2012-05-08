@@ -330,7 +330,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       pinch_guess_min_movement_(prop_reg, "Pinch Guess Minimal Movement", 4.0),
       pinch_certain_min_movement_(prop_reg,
           "Pinch Certain Minimal Movement", 8.0),
-      zoom_enable_(prop_reg, "Zoom Enable", 1.0) {
+      pinch_enable_(prop_reg, "Pinch Enable", 1.0) {
   memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
@@ -701,15 +701,15 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
 
       if ((current_gesture_type_ == kGestureTypeMove ||
            current_gesture_type_ == kGestureTypeNull) &&
-          zoom_enable_.val_) {
+           pinch_enable_.val_) {
         bool do_pinch = UpdatePinchState(hwstate, false);
         if(do_pinch) {
-          current_gesture_type_ = kGestureTypeZoom;
+          current_gesture_type_ = kGestureTypePinch;
         }
       }
       break;
 
-    case kGestureTypeZoom:
+    case kGestureTypePinch:
       if (fingers_.size() == 2) {
         return;
       } else {
@@ -1756,9 +1756,9 @@ void ImmediateInterpreter::FillResultGesture(
       break;
     }
 
-    case kGestureTypeZoom: {
+    case kGestureTypePinch: {
       float current_dist = sqrtf(TwoFingerDistanceSq(hwstate));
-      result_ = Gesture(kGestureZoom, changed_time_, hwstate.timestamp,
+      result_ = Gesture(kGesturePinch, changed_time_, hwstate.timestamp,
                         current_dist / two_finger_start_distance_);
       break;
     }

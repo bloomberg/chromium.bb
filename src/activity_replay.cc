@@ -316,8 +316,8 @@ bool ActivityReplay::ParseGesture(DictionaryValue* entry) {
   } else if (gesture_type == ActivityLog::kValueGestureTypeScroll) {
     if (!ParseGestureScroll(entry, &gs))
       return false;
-  } else if (gesture_type == ActivityLog::kValueGestureTypeZoom) {
-    if (!ParseGestureZoom(entry, &gs))
+  } else if (gesture_type == ActivityLog::kValueGestureTypePinch) {
+    if (!ParseGesturePinch(entry, &gs))
       return false;
   } else if (gesture_type == ActivityLog::kValueGestureTypeButtonsChange) {
     if (!ParseGestureButtonsChange(entry, &gs))
@@ -365,15 +365,15 @@ bool ActivityReplay::ParseGestureScroll(DictionaryValue* entry,
   return true;
 }
 
-bool ActivityReplay::ParseGestureZoom(DictionaryValue* entry,
+bool ActivityReplay::ParseGesturePinch(DictionaryValue* entry,
                                         Gesture* out_gs) {
-  out_gs->type = kGestureTypeZoom;
+  out_gs->type = kGestureTypePinch;
   double dbl;
-  if (!entry->GetDouble(ActivityLog::kKeyGestureZoomDZ, &dbl)) {
-    Err("can't parse zoom dz");
+  if (!entry->GetDouble(ActivityLog::kKeyGesturePinchDZ, &dbl)) {
+    Err("can't parse pinch dz");
     return false;
   }
-  out_gs->details.zoom.dz = dbl;
+  out_gs->details.pinch.dz = dbl;
   return true;
 }
 
