@@ -26,9 +26,8 @@ void NetworkListObserverPrivate::NetworkListCallbackHandler(
     PP_Resource list_resource) {
   NetworkListObserverPrivate* object =
       static_cast<NetworkListObserverPrivate*>(user_data);
-  NetworkListPrivate list(list_resource);
+  NetworkListPrivate list(PASS_REF, list_resource);
   object->OnNetworkListChanged(list);
-  Module::Get()->core()->ReleaseResource(list_resource);
 }
 
 }  // namespace pp

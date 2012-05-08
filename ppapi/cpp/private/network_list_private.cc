@@ -20,8 +20,8 @@ template <> const char* interface_name<PPB_NetworkList_Private>() {
 NetworkListPrivate::NetworkListPrivate() {
 }
 
-NetworkListPrivate::NetworkListPrivate(PP_Resource resource)
-    : Resource(resource) {
+NetworkListPrivate::NetworkListPrivate(PassRef, PP_Resource resource)
+    : Resource(PASS_REF, resource) {
 }
 
 // static

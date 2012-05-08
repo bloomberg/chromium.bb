@@ -44,9 +44,8 @@ void PepperNetworkManager::OnNetworkListCallbackHandler(
     void* user_data,
     PP_Resource list_resource) {
   PepperNetworkManager* object = static_cast<PepperNetworkManager*>(user_data);
-  pp::NetworkListPrivate list(list_resource);
+  pp::NetworkListPrivate list(pp::PASS_REF, list_resource);
   object->OnNetworkList(list);
-  pp::Module::Get()->core()->ReleaseResource(list_resource);
 }
 
 void PepperNetworkManager::OnNetworkList(const pp::NetworkListPrivate& list) {

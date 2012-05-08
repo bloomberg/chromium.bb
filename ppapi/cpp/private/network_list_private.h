@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ppapi/c/private/ppb_network_list_private.h"
+#include "ppapi/cpp/pass_ref.h"
 #include "ppapi/cpp/resource.h"
 
 namespace pp {
@@ -16,7 +17,7 @@ namespace pp {
 class NetworkListPrivate : public Resource {
  public:
   NetworkListPrivate();
-  explicit NetworkListPrivate(PP_Resource resource);
+  NetworkListPrivate(PassRef, PP_Resource resource);
 
   /// Returns true if the required interface is available.
   static bool IsAvailable();
