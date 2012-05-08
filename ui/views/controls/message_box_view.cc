@@ -40,23 +40,53 @@ bool IsParagraphSeparator(char16 c) {
            c == 0x001E || c == 0x0085 || c == 0x2029);
 }
 
-// Splits |str| into a vector of paragraphs. Append the results into |r|. Each
-// paragraph separator is not included in the split result. If several
-// paragraph separators are contiguous, or if |str| begins with or ends with
-// paragraph separator, then an empty string is inserted.
+// Splits |str| into a vector of paragraphs. Append the results into |r|.
+// Given an example "\nabc\ndef\n\n\nhij\n", the split results should be:
+// "\n", "abc", "\n", "def", "\n\n\n", "hij", and "\n".
+//
+// Note: To work around the trim of the last '\n' in ui::ElideRectangleText
+// described below, the split results actually are (with an extra '\n' in both
+// leading and trailing results):
+// "\n\n", "abc", "\n", "def", "\n\n\n", "hij", and "\n\n".
+
+// Note: canvas::SizeStringInt() returns the same height for text "abc" and
+// "abc\n" if flag is MULTI_LINE. The last '\n' is trimmed in
+// ui::ElideRectangleText. If we change the trimming (such as not trim the last
+// '\n' or trim all the trailing '\n'), we will need to update this code as
+// well. Please refer to crbug.com/126297 for detail.
 void SplitStringIntoParagraphs(const string16& str,
                                std::vector<string16>* r) {
   size_t str_len = str.length();
-  for (size_t i = 0, start = 0; i < str_len; ++i) {
+  if (str_len == 0)
+    return;
+
+  bool previous_is_separator = false;
+  bool first = true;
+  size_t start = 0;
+  for (size_t i = 0; i < str_len; ++i) {
     bool paragraph_separator = IsParagraphSeparator(str[i]);
-    if (paragraph_separator || i == str_len - 1) {
-      size_t len = i - start;
-      if (!paragraph_separator)
-        ++len;
-      r->push_back(str.substr(start, len));
-      start = i + 1;
+    if (paragraph_separator != previous_is_separator && i != start) {
+      string16 paragraph = str.substr(start, i - start);
+
+      // Work around crbug.com/126297.
+      if (first && previous_is_separator)
+        paragraph.push_back('\n');
+
+      r->push_back(paragraph);
+      start = i;
+      first = false;
     }
+    previous_is_separator = paragraph_separator;
   }
+
+  size_t len = str_len - start;
+  string16 last = str.substr(start, len);
+
+  // Work around crbug.com/126297.
+  if (len != 0 && last[len - 1] == '\n')
+    last.push_back('\n');
+
+  r->push_back(last);
 }
 
 }  // namespace
