@@ -14,6 +14,8 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
@@ -49,6 +52,12 @@ bool SortSessionsByRecency(const SyncedSession* s1, const SyncedSession* s2) {
 ForeignSessionHandler::ForeignSessionHandler() {
 }
 
+// static
+void ForeignSessionHandler::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterDictionaryPref(prefs::kNtpCollapsedForeignSessions,
+                                PrefService::UNSYNCABLE_PREF);
+}
+
 void ForeignSessionHandler::RegisterMessages() {
   Init();
   web_ui()->RegisterMessageCallback("getForeignSessions",
@@ -57,8 +66,8 @@ void ForeignSessionHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("openForeignSession",
       base::Bind(&ForeignSessionHandler::HandleOpenForeignSession,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("deleteForeignSession",
-      base::Bind(&ForeignSessionHandler::HandleDeleteForeignSession,
+  web_ui()->RegisterMessageCallback("setForeignSessionCollapsed",
+      base::Bind(&ForeignSessionHandler::HandleSetForeignSessionCollapsed,
                  base::Unretained(this)));
 }
 
@@ -84,10 +93,15 @@ void ForeignSessionHandler::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   ListValue list_value;
+
   switch (type) {
+    case chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED:
+      // Tab sync is disabled, so clean up data about collapsed sessions.
+      Profile::FromWebUI(web_ui())->GetPrefs()->ClearPref(
+          prefs::kNtpCollapsedForeignSessions);
+      // Fall through.
     case chrome::NOTIFICATION_SYNC_CONFIGURE_DONE:
     case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
-    case chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED:
       HandleGetForeignSessions(&list_value);
       break;
     default:
@@ -99,15 +113,12 @@ SessionModelAssociator* ForeignSessionHandler::GetModelAssociator() {
   Profile* profile = Profile::FromWebUI(web_ui());
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  if (service == NULL)
-    return NULL;
 
   // Only return the associator if it exists and it is done syncing sessions.
-  SessionModelAssociator* model_associator =
-      service->GetSessionModelAssociator();
-  if (!service->ShouldPushChanges())
-    return NULL;
-  return model_associator;
+  if (service && service->ShouldPushChanges())
+    return service->GetSessionModelAssociator();
+
+  return NULL;
 }
 
 bool ForeignSessionHandler::IsTabSyncEnabled() {
@@ -131,14 +142,31 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
     // Sort sessions from most recent to least recent.
     std::sort(sessions.begin(), sessions.end(), SortSessionsByRecency);
 
+    // Use a pref to keep track of sessions that were collapsed by the user.
+    // To prevent the pref from accumulating stale sessions, clear it each time
+    // and only add back sessions that are still current.
+    DictionaryPrefUpdate pref_update(Profile::FromWebUI(web_ui())->GetPrefs(),
+                                     prefs::kNtpCollapsedForeignSessions);
+    DictionaryValue* current_collapsed_sessions = pref_update.Get();
+    scoped_ptr<DictionaryValue> collapsed_sessions(
+        current_collapsed_sessions->DeepCopy());
+    current_collapsed_sessions->Clear();
+
     // Note: we don't own the SyncedSessions themselves.
     for (size_t i = 0; i < sessions.size() && i < kMaxSessionsToShow; ++i) {
       const SyncedSession* session = sessions[i];
+      const std::string& session_tag = session->session_tag;
       scoped_ptr<DictionaryValue> session_data(new DictionaryValue());
-      session_data->SetString("tag", session->session_tag);
+      session_data->SetString("tag", session_tag);
       session_data->SetString("name", session->session_name);
       session_data->SetString("modifiedTime",
                               FormatSessionTime(session->modified_time));
+
+      bool is_collapsed = collapsed_sessions->HasKey(session_tag);
+      session_data->SetBoolean("collapsed", is_collapsed);
+      if (is_collapsed)
+        current_collapsed_sessions->SetBoolean(session_tag, true);
+
       scoped_ptr<ListValue> window_list(new ListValue());
       for (SyncedSession::SyncedWindowMap::const_iterator it =
            session->windows.begin(); it != session->windows.end(); ++it) {
@@ -230,18 +258,34 @@ void ForeignSessionHandler::HandleOpenForeignSession(const ListValue* args) {
   }
 }
 
-void ForeignSessionHandler::HandleDeleteForeignSession(const ListValue* args) {
-  if (args->GetSize() != 1U) {
-    LOG(ERROR) << "Wrong number of args to deleteForeignSession";
+void ForeignSessionHandler::HandleSetForeignSessionCollapsed(
+    const ListValue* args) {
+  if (args->GetSize() != 2U) {
+    LOG(ERROR) << "Wrong number of args to setForeignSessionCollapsed";
     return;
   }
 
   // Get the session tag argument (required).
-  std::string session_tag = UTF16ToUTF8(ExtractStringValue(args));
+  std::string session_tag;
+  if (!args->GetString(0, &session_tag)) {
+    LOG(ERROR) << "Unable to extract session tag";
+    return;
+  }
 
-  SessionModelAssociator* associator = GetModelAssociator();
-  if (associator)
-    associator->DeleteForeignSession(session_tag);
+  bool is_collapsed;
+  if (!args->GetBoolean(1, &is_collapsed)) {
+    LOG(ERROR) << "Unable to extract boolean argument";
+    return;
+  }
+
+  // Store session tags for collapsed sessions in a preference so that the
+  // collapsed state persists.
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  DictionaryPrefUpdate update(prefs, prefs::kNtpCollapsedForeignSessions);
+  if (is_collapsed)
+    update.Get()->SetBoolean(session_tag, true);
+  else
+    update.Get()->Remove(session_tag, NULL);
 }
 
 bool ForeignSessionHandler::SessionTabToValue(

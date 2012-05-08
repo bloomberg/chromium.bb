@@ -282,6 +282,7 @@ void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
   MostVisitedHandler::RegisterUserPrefs(prefs);
   if (NewTabUI::IsSuggestionsPageEnabled())
     SuggestionsHandler::RegisterUserPrefs(prefs);
+  browser_sync::ForeignSessionHandler::RegisterUserPrefs(prefs);
 }
 
 // static

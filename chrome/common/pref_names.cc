@@ -1343,6 +1343,9 @@ const char kNextExtensionsUpdateCheck[] = "extensions.autoupdate.next_check";
 const char kExtensionBlacklistUpdateVersion[] =
     "extensions.blacklistupdate.version";
 
+// Keeps track of which sessions are collapsed in the Other Devices menu.
+const char kNtpCollapsedForeignSessions[] = "ntp.collapsed_foreign_sessions";
+
 // Number of times the NTP4 informational bubble has been shown.
 const char kNtp4IntroDisplayCount[] = "ntp.intro_display_count";
 

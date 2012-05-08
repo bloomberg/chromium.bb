@@ -489,6 +489,7 @@ extern const char kExtensionBlacklistUpdateVersion[];
 extern const char kNtpTipsResourceServer[];
 
 extern const char kNtp4IntroDisplayCount[];
+extern const char kNtpCollapsedForeignSessions[];
 extern const char kNtpMostVisitedURLsBlacklist[];
 extern const char kNtpPromoResourceCache[];
 extern const char kNtpPromoResourceCacheUpdate[];

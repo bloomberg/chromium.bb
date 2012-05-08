@@ -107,7 +107,7 @@
   margin-bottom: 0.5em;
 }
 
-.footer-menu section h3:first-of-type {
+.footer-menu section:first-of-type h3 {
   margin-top: 0.25em;
 }
 
