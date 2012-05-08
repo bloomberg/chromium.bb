@@ -4,6 +4,8 @@
 
 #include "ui/views/examples/content_client/examples_main_delegate.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
@@ -44,7 +46,7 @@ int ExamplesBrowserMain(
   return exit_code;
 }
 
-}
+}  // namespace
 
 ExamplesMainDelegate::ExamplesMainDelegate() {
 }

@@ -19,14 +19,14 @@
 #include "net/base/net_module.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/views/examples/examples_window.h"
-#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/focus/accelerator_handler.h"
+#include "ui/views/test/test_views_delegate.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/single_monitor_manager.h"
 #include "ui/aura/desktop/desktop_screen.h"
 #include "ui/aura/desktop/desktop_stacking_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/single_monitor_manager.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/desktop_native_widget_helper_aura.h"
 #include "ui/views/widget/native_widget_aura.h"

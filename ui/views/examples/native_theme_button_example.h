@@ -6,6 +6,8 @@
 #define UI_VIEWS_EXAMPLES_NATIVE_THEME_BUTTON_EXAMPLE_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_theme.h"

@@ -8,7 +8,6 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/tree/tree_view.h"
-#include "ui/views/controls/tree/tree_view.h"
 #include "ui/views/layout/grid_layout.h"
 
 namespace views {

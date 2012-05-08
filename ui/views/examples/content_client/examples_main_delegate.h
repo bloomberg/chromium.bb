@@ -6,10 +6,13 @@
 #define UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_MAIN_DELEGATE_H_
 #pragma once
 
+#include <string>
+
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/shell/shell_content_client.h"
 #include "content/public/app/content_main_delegate.h"
+#include "content/shell/shell_content_client.h"
 
 namespace content {
 class ShellContentRendererClient;

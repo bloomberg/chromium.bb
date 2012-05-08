@@ -4,12 +4,9 @@
 
 #include "ui/views/examples/examples_window.h"
 
-#include "base/at_exit.h"
-#include "base/command_line.h"
-#include "base/i18n/icu_util.h"
+#include <string>
+
 #include "base/memory/scoped_vector.h"
-#include "base/process_util.h"
-#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "ui/base/models/combobox_model.h"

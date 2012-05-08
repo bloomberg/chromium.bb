@@ -4,13 +4,9 @@
 
 #include "ui/views/examples/webview_example.h"
 
-#include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/navigation_controller.h"
-#include "grit/ui_resources.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/layout/fill_layout.h"
 
 namespace views {
 namespace examples {

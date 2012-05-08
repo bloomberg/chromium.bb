@@ -69,7 +69,7 @@ void ButtonExample::ButtonPressed(Button* sender, const Event& event) {
           text_button_->SetText(ASCIIToUTF16("Button"));
         }
       } else {
-        switch(text_button_->icon_placement()) {
+        switch (text_button_->icon_placement()) {
           case TextButton::ICON_ON_LEFT:
             text_button_->set_icon_placement(TextButton::ICON_ON_RIGHT);
             break;
@@ -84,7 +84,7 @@ void ButtonExample::ButtonPressed(Button* sender, const Event& event) {
       else
         text_button_->SetIcon(*icon_);
     } else {
-      switch(alignment_) {
+      switch (alignment_) {
         case TextButton::ALIGN_LEFT:
           alignment_ = TextButton::ALIGN_CENTER;
           break;
