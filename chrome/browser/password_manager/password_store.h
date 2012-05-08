@@ -146,7 +146,7 @@ class PasswordStore
       const GetLoginsCallback& callback);
 
   // Schedule the given |task| to be run in the PasswordStore's own thread.
-  virtual void ScheduleTask(const base::Closure& task);
+  virtual bool ScheduleTask(const base::Closure& task);
 
   // These will be run in PasswordStore's own thread.
   // Synchronous implementation that reports usage metrics.

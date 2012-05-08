@@ -93,8 +93,8 @@ PasswordStore::GetLoginsRequest* PasswordStore::NewGetLoginsRequest(
   return new GetLoginsRequest(callback);
 }
 
-void PasswordStore::ScheduleTask(const base::Closure& task) {
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, task);
+bool PasswordStore::ScheduleTask(const base::Closure& task) {
+  return BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, task);
 }
 
 void PasswordStore::ForwardLoginsResult(GetLoginsRequest* request) {

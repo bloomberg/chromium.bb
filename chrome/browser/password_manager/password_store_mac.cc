@@ -762,10 +762,12 @@ bool PasswordStoreMac::Init() {
 void PasswordStoreMac::ShutdownOnUIThread() {
 }
 
-void PasswordStoreMac::ScheduleTask(const base::Closure& task) {
+bool PasswordStoreMac::ScheduleTask(const base::Closure& task) {
   if (thread_.get()) {
     thread_->message_loop()->PostTask(FROM_HERE, task);
+    return true;
   }
+  return false;
 }
 
 void PasswordStoreMac::ReportMetricsImpl() {

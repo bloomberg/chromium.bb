@@ -44,8 +44,7 @@ bool PasswordDataTypeController::PostTaskOnBackendThread(
       const base::Closure& task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(password_store_.get());
-  password_store_->ScheduleTask(task);
-  return true;
+  return password_store_->ScheduleTask(task);
 }
 
 bool PasswordDataTypeController::StartModels() {
