@@ -773,6 +773,16 @@ SyncError SessionModelAssociator::AssociateModels() {
             model_type());
       }
       write_node.SetTitle(UTF8ToWide(current_machine_tag_));
+
+      // Write the initial values to the specifics so that in case of a crash or
+      // error we don't persist a half-written node.
+      sync_pb::SessionSpecifics base_specifics;
+      base_specifics.set_session_tag(current_machine_tag_);
+      sync_pb::SessionHeader* header_s = base_specifics.mutable_header();
+      header_s->set_client_name(current_session_name_);
+      header_s->set_device_type(GetLocalDeviceType());
+      write_node.SetSessionSpecifics(base_specifics);
+
       local_session_syncid_ = write_node.GetId();
     }
   }
