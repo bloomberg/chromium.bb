@@ -725,6 +725,8 @@
     'test/net/url_request_slow_download_job.h',
     'test/net/url_request_slow_http_job.cc',
     'test/net/url_request_slow_http_job.h',
+    'zygote/zygote_linux.cc',
+    'zygote/zygote_linux.h',
     'zygote/zygote_main_linux.cc',
     '<(SHARED_INTERMEDIATE_DIR)/webkit/grit/devtools_resources.h',
     '<(SHARED_INTERMEDIATE_DIR)/webkit/grit/devtools_resources_map.cc',
