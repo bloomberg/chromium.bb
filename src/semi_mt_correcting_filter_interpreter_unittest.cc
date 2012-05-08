@@ -212,17 +212,20 @@ TEST(SemiMtCorrectingFilterInterpreterTest, CorrectFingerPositionTest) {
 
   // Test if both finger positions are corrected.
   vector<FingerPosition>  result;
-  result.push_back((FingerPosition) { 4000.0, 3300.0 });  // first finger
-  result.push_back((FingerPosition) { 2900.0, 2700.0 });  // second finger
+  FingerPosition first_finger_position1 = { 4000, 3300 };
+  result.push_back(first_finger_position1);  // first finger
+  FingerPosition second_finger_position1 = { 2900, 2700 };
+  result.push_back(second_finger_position1);  // second finger
   base_interpreter->expected_coordinates_.push_back(result);
   interpreter.SyncInterpret(&hs[1], NULL);
 
   result.clear();
-  result.push_back((FingerPosition) { 4050.0, 3200.0 });  // first finger
-  result.push_back((FingerPosition) { 2950.0, 2750.0 });  // second finger
+  FingerPosition first_finger_position2 = { 4050, 3200 };
+  result.push_back(first_finger_position2);  // first finger
+  FingerPosition second_finger_position2 = { 2950, 2750 };
+  result.push_back(second_finger_position2);  // second finger
   base_interpreter->expected_coordinates_.push_back(result);
   interpreter.SyncInterpret(&hs[2], NULL);
-
 }
 
 TEST(SemiMtCorrectingFilterInterpreterTest, FingerCrossOverTest) {
@@ -230,37 +233,45 @@ TEST(SemiMtCorrectingFilterInterpreterTest, FingerCrossOverTest) {
       new SemiMtCorrectingFilterInterpreterTestInterpreter;
   SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
   FingerState fs[] = {
-    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
-    { 0, 0, 0, 0, 60, 0, 2969.000000, 3088.000000, 1481, 0},
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
+    { 0, 0, 0, 0, 60, 0, 2969, 3088, 1481, 0},
 
     // Test if we reflect the pattern change for one-finger vertical
-    // scroll, the starting finger pattern is left-bottom-right-top
-    { 0, 0, 0, 0, 60, 0, 2969.000000, 3088.000000, 1481, 0},
-    { 0, 0, 0, 0, 60, 0, 4121.000000, 1938.000000, 1482, 0},
+    // scroll, the starting finger pattern is left-bottom-right-top.
+    // index 1
+    { 0, 0, 0, 0, 60, 0, 2969, 3088, 1481, 0},
+    { 0, 0, 0, 0, 60, 0, 4121, 1938, 1482, 0},
 
-    { 0, 0, 0, 0, 60, 0, 2969.000000, 2978.000000, 1481, 0},
-    { 0, 0, 0, 0, 60, 0, 4121.000000, 2421.000000, 1482, 0},
+    // index 3
+    { 0, 0, 0, 0, 60, 0, 2969, 2978, 1481, 0},
+    { 0, 0, 0, 0, 60, 0, 4121, 2421, 1482, 0},
 
-    { 0, 0, 0, 0, 60, 0, 2969.000000, 3038.000000, 1481, 0},
-    { 0, 0, 0, 0, 60, 0, 4121.000000, 3001.000000, 1482, 0},
+    // index 5
+    { 0, 0, 0, 0, 60, 0, 2969, 3038, 1481, 0},
+    { 0, 0, 0, 0, 60, 0, 4121, 3001, 1482, 0},
 
-    { 0, 0, 0, 0, 60, 0, 2969.000000, 3056.000000, 1481, 0},
-    { 0, 0, 0, 0, 60, 0, 4120.000000, 3043.000000, 1482, 0},
+    // index 7
+    { 0, 0, 0, 0, 60, 0, 2969, 3056, 1481, 0},
+    { 0, 0, 0, 0, 60, 0, 4120, 3043, 1482, 0},
 
-    { 0, 0, 0, 0, 60, 0, 2969.000000, 3082.000000, 1481, 0},
-    { 0, 0, 0, 0, 60, 0, 4118.000000, 3076.000000, 1482, 0},
+    // index 9
+    { 0, 0, 0, 0, 60, 0, 2969, 3082, 1481, 0},
+    { 0, 0, 0, 0, 60, 0, 4118, 3076, 1482, 0},
 
     // finger with tid 1481 crosses the finger 1482 vertically
     // we should see the position_y swapped in the results, i.e.
-    // finger pattern is left-top-right-bottom
-    { 0, 0, 0, 0, 60, 0, 2969.000000, 3117.000000, 1481, 0},
-    { 0, 0, 0, 0, 60, 0, 4118.000000, 3096.000000, 1482, 0},
+    // finger pattern is left-top-right-bottom.
+    // index 11
+    { 0, 0, 0, 0, 60, 0, 2969, 3117, 1481, 0},
+    { 0, 0, 0, 0, 60, 0, 4118, 3096, 1482, 0},
 
-    { 0, 0, 0, 0, 60, 0, 2969.000000, 3153.000000, 1481, 0},
-    { 0, 0, 0, 0, 60, 0, 4118.000000, 3114.000000, 1482, 0},
+    // index 13
+    { 0, 0, 0, 0, 60, 0, 2969, 3153, 1481, 0},
+    { 0, 0, 0, 0, 60, 0, 4118, 3114, 1482, 0},
 
-    { 0, 0, 0, 0, 60, 0, 2969.000000, 3198.000000, 1481, 0},
-    { 0, 0, 0, 0, 60, 0, 4118.000000, 3130.000000, 1482, 0},
+    // index 15
+    { 0, 0, 0, 0, 60, 0, 2969, 3198, 1481, 0},
+    { 0, 0, 0, 0, 60, 0, 4118, 3130, 1482, 0},
   };
   HardwareState hs[] = {
     { 0.000, 0, 1, 1, &fs[0] },
@@ -269,9 +280,9 @@ TEST(SemiMtCorrectingFilterInterpreterTest, FingerCrossOverTest) {
     { 0.020, 0, 2, 2, &fs[5] },
     { 0.030, 0, 2, 2, &fs[7] },
     { 0.040, 0, 2, 2, &fs[9] },
-    { 0.050, 0, 2, 2, &fs[11] }, // the finger pattern will be swapped
-    { 0.060, 0, 2, 2, &fs[13] }, // to left-top-right-bottom and should
-    { 0.060, 0, 2, 2, &fs[15] }, // applied for the following reports
+    { 0.050, 0, 2, 2, &fs[11] },  // the finger pattern will be swapped
+    { 0.060, 0, 2, 2, &fs[13] },  // to left-top-right-bottom and should
+    { 0.060, 0, 2, 2, &fs[15] },  // applied for the following reports
   };
 
   HardwareProperties hwprops = {
@@ -292,20 +303,26 @@ TEST(SemiMtCorrectingFilterInterpreterTest, FingerCrossOverTest) {
   // Test if both finger positions are corrected with the new pattern
   // by examining the swapped position_y values.
   vector<FingerPosition>  result;
-  result.push_back((FingerPosition) { 2969.0, 3096.0 });  // first finger
-  result.push_back((FingerPosition) { 4118.0, 3117.0 });  // second finger
+  FingerPosition first_finger_position1 = { 2969, 3096 };
+  result.push_back(first_finger_position1);  // first finger
+  FingerPosition second_finger_position1 = { 4118, 3117 };
+  result.push_back(second_finger_position1);  // second finger
   base_interpreter->expected_coordinates_.push_back(result);
   interpreter.SyncInterpret(&hs[hwstate_index_finger_crossed], NULL);
 
   result.clear();
-  result.push_back((FingerPosition) { 2969.0, 3114.0 });  // first finger
-  result.push_back((FingerPosition) { 4118.0, 3153.0 });  // second finger
+  FingerPosition first_finger_position2 = { 2969, 3114 };
+  result.push_back(first_finger_position2);  // first finger
+  FingerPosition second_finger_position2 = { 4118, 3153 };
+  result.push_back(second_finger_position2);  // second finger
   base_interpreter->expected_coordinates_.push_back(result);
   interpreter.SyncInterpret(&hs[hwstate_index_finger_crossed + 1], NULL);
 
   result.clear();
-  result.push_back((FingerPosition) { 2969.0, 3130.0 });  // first finger
-  result.push_back((FingerPosition) { 4118.0, 3198.0 });  // second finger
+  FingerPosition first_finger_position3 = { 2969, 3130 };
+  result.push_back(first_finger_position3);  // first finger
+  FingerPosition second_finger_position3 =  { 4118, 3198 };
+  result.push_back(second_finger_position3);  // second finger
   base_interpreter->expected_coordinates_.push_back(result);
   interpreter.SyncInterpret(&hs[hwstate_index_finger_crossed + 2], NULL);
 }
