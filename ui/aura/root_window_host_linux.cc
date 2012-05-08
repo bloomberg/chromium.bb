@@ -5,7 +5,6 @@
 #include "ui/aura/root_window_host_linux.h"
 
 #include <X11/Xatom.h>
-#include <X11/Xcursor/Xcursor.h>
 #include <X11/cursorfont.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/Xfixes.h>
@@ -15,8 +14,6 @@
 #include "base/message_pump_x.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
-#include "grit/ui_resources_standard.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/user_gesture_client.h"
 #include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
@@ -24,12 +21,10 @@
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/compositor/layer.h"
-#include "ui/gfx/image/image.h"
 
 using std::max;
 using std::min;
@@ -297,51 +292,6 @@ const char* kAtomList[] = {
 
 }  // namespace
 
-// A utility class that provides X Cursor for NativeCursors for which we have
-// image resources.
-class RootWindowHostLinux::ImageCursors {
- public:
-  ImageCursors() {
-    LoadImageCursor(ui::kCursorNoDrop, IDR_AURA_CURSOR_NO_DROP);
-    LoadImageCursor(ui::kCursorCopy, IDR_AURA_CURSOR_COPY);
-    // TODO (varunjain): add more cursors once we have assets.
-  }
-
-  ~ImageCursors() {
-    std::map<int, Cursor>::const_iterator it;
-    for (it = cursors_.begin(); it != cursors_.end(); ++it)
-      ui::UnrefCustomXCursor(it->second);
-  }
-
-  // Returns true if we have an image resource loaded for the |native_cursor|.
-  bool IsImageCursor(gfx::NativeCursor native_cursor) {
-    return cursors_.find(native_cursor.native_type()) != cursors_.end();
-  }
-
-  // Gets the X Cursor corresponding to the |native_cursor|.
-  ::Cursor ImageCursorFromNative(gfx::NativeCursor native_cursor) {
-    DCHECK(cursors_.find(native_cursor.native_type()) != cursors_.end());
-    return cursors_[native_cursor.native_type()];
-  }
-
- private:
-  // Creates an X Cursor from an image resource and puts it in the cursor map.
-  void LoadImageCursor(int id, int resource_id) {
-    const SkBitmap* bitmap =
-        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            resource_id).ToSkBitmap();
-
-    XcursorImage* image = ui::SkBitmapToXcursorImage(bitmap, gfx::Point(0, 0));
-    cursors_[id] = ui::CreateReffedCustomXCursor(image);
-    // |bitmap| is owned by the resource bundle. So we do not need to free it.
-  }
-
-  // A map to hold all image cursors. It maps the cursor ID to the X Cursor.
-  std::map<int, Cursor> cursors_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageCursors);
-};
-
 RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
     : root_window_(NULL),
       xdisplay_(base::MessagePumpX::GetDefaultXDisplay()),
@@ -351,8 +301,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       cursor_shown_(true),
       bounds_(bounds),
       focus_when_shown_(false),
-      pointer_barriers_(NULL),
-      image_cursors_(new ImageCursors) {
+      pointer_barriers_(NULL) {
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = None;
@@ -845,8 +794,6 @@ bool RootWindowHostLinux::IsWindowManagerPresent() {
 
 void RootWindowHostLinux::SetCursorInternal(gfx::NativeCursor cursor) {
   ::Cursor xcursor =
-      image_cursors_->IsImageCursor(cursor) ?
-      image_cursors_->ImageCursorFromNative(cursor) :
       cursor == ui::kCursorNone ?
       invisible_cursor_ :
       cursor == ui::kCursorCustom ?
