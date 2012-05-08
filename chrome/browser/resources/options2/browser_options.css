@@ -151,9 +151,9 @@ list:not([disabled]) > .network-group[selected] {
 .network-icon {
   background-position: left top;
   display: -webkit-box;
-  height: 23px;
+  height: 25px;
   margin-right: 8px;
-  width: 23px;
+  width: 25px;
 }
 
 @-webkit-keyframes connecting-animation {
