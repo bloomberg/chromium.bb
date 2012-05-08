@@ -64,7 +64,7 @@ def QuoteShellArgument(arg, flavor):
   by the shell."""
   # Rather than attempting to enumerate the bad shell characters, just
   # whitelist common OK ones and quote anything else.
-  if re.match(r'^[a-zA-Z0-9_=-]+$', arg):
+  if re.match(r'^[a-zA-Z0-9_=.\\/-]+$', arg):
     return arg  # No quoting necessary.
   if flavor == 'win':
     return gyp.msvs_emulation.QuoteForRspFile(arg)
