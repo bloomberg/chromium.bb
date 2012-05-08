@@ -98,7 +98,7 @@ PiGenerator::~PiGenerator() {
 
 void PiGenerator::DidChangeView(const pp::View& view) {
   pp::Rect position = view.GetRect();
-  if (position.size() == pixel_buffer_->size())
+  if (pixel_buffer_ && position.size() == pixel_buffer_->size())
     return;  // Size didn't change, no need to update anything.
 
   // Create a new device context with the new size.
