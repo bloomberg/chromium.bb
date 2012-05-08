@@ -39,13 +39,6 @@ class User {
   static const int kProfileImageIndex = -2;
   static const int kInvalidImageIndex = -3;
 
-  enum WallpaperType {
-    RANDOM = 0,
-    CUSTOMIZED = 1,
-    DEFAULT = 2,
-    UNKNOWN = 3
-  };
-
   // The email the user used to log in.
   const std::string& email() const { return email_; }
 

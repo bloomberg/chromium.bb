@@ -65,11 +65,8 @@ class UserManagerImpl : public UserManager,
                                     const std::string& display_email) OVERRIDE;
   virtual std::string GetUserDisplayEmail(
       const std::string& username) const OVERRIDE;
-  virtual int GetLoggedInUserWallpaperIndex() OVERRIDE;
-  virtual void GetLoggedInUserWallpaperProperties(User::WallpaperType& type,
-                                                  int& index) OVERRIDE;
-  virtual void SaveLoggedInUserWallpaperProperties(User::WallpaperType type,
-                                                   int index) OVERRIDE;
+  virtual int GetUserWallpaperIndex() OVERRIDE;
+  virtual void SaveUserWallpaperIndex(int wallpaper_index) OVERRIDE;
   virtual void SaveUserDefaultImageIndex(const std::string& username,
                                          int image_index) OVERRIDE;
   virtual void SaveUserImage(const std::string& username,
@@ -132,6 +129,8 @@ class UserManagerImpl : public UserManager,
   // list. Returns |NULL| otherwise.
   const User* FindUserInList(const std::string& email) const;
 
+  int FindUserWallpaperIndex(const std::string& email);
+
   // Makes stub user the current logged-in user (for test paths).
   void StubUserLoggedIn();
 
@@ -152,25 +151,12 @@ class UserManagerImpl : public UserManager,
   // settings in local state.
   void SetInitialUserWallpaper(const std::string& username);
 
-  // Migrate the old wallpaper index to a new wallpaper structure.
-  // The new wallpaper structure is:
-  // { WallpaperType: RANDOM|CUSTOMIZED|DEFAULT,
-  //   index: index of the default wallpapers }
-  void MigrateWallpaperData();
-
   // Sets image for user |username| and sends LOGIN_USER_IMAGE_CHANGED
   // notification unless this is a new user and image is set for the first time.
   // If |image| is empty, sets a stub image for the user.
   void SetUserImage(const std::string& username,
                     int image_index,
                     const SkBitmap& image);
-
-  void GetUserWallpaperProperties(const std::string& username,
-                                 User::WallpaperType& type,
-                                 int& index);
-  void SaveUserWallpaperProperties(const std::string& username,
-                                   User::WallpaperType type,
-                                   int index);
 
   // Saves image to file, updates local state preferences to given image index
   // and sends LOGIN_USER_IMAGE_CHANGED notification.
@@ -256,8 +242,7 @@ class UserManagerImpl : public UserManager,
   // mounting their cryptohomes using tmpfs.
   bool is_current_user_ephemeral_;
 
-  User::WallpaperType current_user_wallpaper_type_;
-
+  // Cache current user selected index in memory.
   int current_user_wallpaper_index_;
 
   // The key store for the current user has been loaded. This flag is needed to

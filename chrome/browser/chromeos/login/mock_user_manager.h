@@ -35,10 +35,7 @@ class MockUserManager : public UserManager {
                                          User::OAuthTokenStatus));
   MOCK_METHOD2(SaveUserDisplayEmail, void(const std::string&,
                                           const std::string&));
-  MOCK_METHOD2(GetLoggedInUserWallpaperProperties, void(User::WallpaperType&,
-                                                        int&));
-  MOCK_METHOD2(SaveLoggedInUserWallpaperProperties, void(User::WallpaperType,
-                                                         int));
+  MOCK_METHOD1(SaveUserWallpaperIndex, void(int));
   MOCK_CONST_METHOD1(GetUserDisplayEmail, std::string(const std::string&));
   MOCK_METHOD2(SaveUserDefaultImageIndex, void(const std::string&, int));
   MOCK_METHOD2(SaveUserImage, void(const std::string&, const SkBitmap&));
@@ -74,7 +71,7 @@ class MockUserManager : public UserManager {
   // Return an invalid user wallpaper index. No need to load a real wallpaper.
   // When loading wallpaper asynchronously, it may actually cause a crash if
   // test finished before wallpaper loaded.
-  virtual int GetLoggedInUserWallpaperIndex() OVERRIDE;
+  virtual int GetUserWallpaperIndex() OVERRIDE;
 
   User* user_;
 };

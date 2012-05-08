@@ -45,7 +45,6 @@ cr.define('options', function() {
       wallpaperGrid.addEventListener('activate',
                                      function() { OptionsPage.closeOverlay() });
 
-      $('use-random-wallpaper').onclick = this.handleCheckboxClick_.bind(this);
       $('set-wallpaper-overlay-confirm').onclick = function() {
         OptionsPage.closeOverlay();
       };
@@ -104,7 +103,7 @@ cr.define('options', function() {
       if (url &&
           !wallpaperGrid.inProgramSelection) {
         this.setWallpaperAttribution_(url);
-        chrome.send('selectDefaultWallpaper', [url]);
+        chrome.send('selectWallpaper', [url]);
       }
     },
 
@@ -113,51 +112,19 @@ cr.define('options', function() {
      * @param {Event} e Double click Event.
      */
     handleImageDblClick_: function(e) {
-      var wallpaperGrid = $('wallpaper-grid');
-      if (wallpaperGrid.disabled)
-        return;
       // Close page unless the click target is the grid itself.
       if (e.target instanceof HTMLImageElement)
         OptionsPage.closeOverlay();
     },
 
     /**
-     * Handles click on the "I'm feeling lucky" checkbox.
-     * @private
-     */
-    handleCheckboxClick_: function() {
-      var wallpaperGrid = $('wallpaper-grid');
-      if ($('use-random-wallpaper').checked) {
-        wallpaperGrid.disabled = true;
-        chrome.send('selectRandomWallpaper');
-        wallpaperGrid.classList.add('grayout');
-      } else {
-        wallpaperGrid.disabled = false;
-        wallpaperGrid.classList.remove('grayout');
-        // Set the wallpaper type to User::DEFAULT.
-        this.handleImageSelected_();
-      }
-    },
-
-    /**
-     * Selects corresponding wallpaper thumbnail with the given URL and toggle
-     * the "I'm feeling lucky" checkbox.
+     * Selects corresponding wallpaper thumbnail with the given URL.
      * @param {string} url URL of the wallpaper thumbnail to select.
-     * @param {boolean} isRandom True if user checked "I'm feeling lucky"
-     * checkbox.
      * @private
      */
-    setSelectedImage_: function(url, isRandom) {
-      var wallpaperGrid = $('wallpaper-grid');
-      wallpaperGrid.selectedItemUrl = url;
+    setSelectedImage_: function(url) {
+      $('wallpaper-grid').selectedItemUrl = url;
       this.setWallpaperAttribution_(url);
-      if (isRandom) {
-        // Do not call chrome.send('selectRandomWallpaper'), it is not
-        // neccessary to generate a new random index here.
-        $('use-random-wallpaper').checked = true;
-        wallpaperGrid.disabled = true;
-        wallpaperGrid.classList.add('grayout');
-      }
     },
 
     /**

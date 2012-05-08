@@ -31,7 +31,6 @@ struct ASH_EXPORT WallpaperInfo {
 ASH_EXPORT int GetInvalidWallpaperIndex();
 ASH_EXPORT int GetDefaultWallpaperIndex();
 ASH_EXPORT int GetGuestWallpaperIndex();
-ASH_EXPORT int GetRandomWallpaperIndex();
 ASH_EXPORT int GetWallpaperCount();
 ASH_EXPORT const WallpaperInfo& GetWallpaperInfo(int index);
 

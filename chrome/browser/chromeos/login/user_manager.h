@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "ash/desktop_background/desktop_background_resources.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/login/user.h"
 
@@ -39,11 +38,7 @@ class UserManager {
   static const char kLoggedInUsers[];
 
   // A dictionary that maps usernames to file paths to their wallpapers.
-  // Deprecated. Will remove this const char after done migration.
   static const char kUserWallpapers[];
-
-  // A dictionary that maps usernames to wallpaper properties.
-  static const char kUserWallpapersProperties[];
 
   // A dictionary that maps usernames to file paths to their images.
   static const char kUserImages[];
@@ -153,17 +148,12 @@ class UserManager {
 
   // Returns the index of the default wallpapers saved in local state for login
   // user if it is known (was previousely set by |SaveWallpaperToLocalState|
-  // call). Otherwise, returns the default wallpaper index.
-  virtual int GetLoggedInUserWallpaperIndex() = 0;
+  // call). Otherwise, returns a randomly generated index.
+  virtual int GetUserWallpaperIndex() = 0;
 
-  // Set |type| and |index| to the value saved in local state for logged in
-  // user.
-  virtual void GetLoggedInUserWallpaperProperties(User::WallpaperType& type,
-                                                  int& index) = 0;
-
-  // Save |type| and |index| chose by logged in user to Local State.
-  virtual void SaveLoggedInUserWallpaperProperties(User::WallpaperType type,
-                                                   int index) = 0;
+  // Save the index |wallpaper_index| of the default wallpapers selected by
+  // current user to Local State.
+  virtual void SaveUserWallpaperIndex(int wallpaper_index) = 0;
 
   // Sets user image to the default image with index |image_index|, sends
   // LOGIN_USER_IMAGE_CHANGED notification and updates Local State.

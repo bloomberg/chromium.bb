@@ -40,11 +40,8 @@ class SetWallpaperOptionsHandler : public ::options2::OptionsPageUIHandler{
   // Handles page shown event.
   void HandlePageShown(const base::ListValue* args);
 
-  // Selects one of the available default wallpapers.
-  void HandleDefaultWallpaper(const base::ListValue* args);
-
-  // Sets user wallpaper to a random one from the default wallpapers.
-  void HandleRandomWallpaper(const base::ListValue* args);
+  // Selects one of the available images.
+  void HandleSelectImage(const base::ListValue* args);
 
   // Returns handle to browser window or NULL if it can't be found.
   gfx::NativeWindow GetBrowserWindow() const;

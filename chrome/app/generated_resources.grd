@@ -13264,8 +13264,14 @@ Press any key to continue exploring.
       <message name="IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT" desc="Author label.">
         Photo by
       </message>
-      <message name="IDS_OPTIONS_SET_WALLPAPER_RANDOM" desc="Label for option to randomly choose wallpaper at login.">
-        I'm feeling lucky
+      <message name="IDS_OPTIONS_SET_WALLPAPER_RANDOM1" desc="Label for option to randomly choose wallpaper at login.">
+        Random
+      </message>
+      <message name="IDS_OPTIONS_SET_WALLPAPER_RANDOM2" desc="Alternate label for option to randomly choose wallpaper at login.">
+        Random Wallpaper
+      </message>
+      <message name="IDS_OPTIONS_SET_WALLPAPER_RANDOM3" desc="Alternate label for option to randomly choose wallpaper at login.">
+        Choose one randomly
       </message>
       <message name="IDS_OPTIONS_CHANGE_PICTURE" desc="In the settings tab, the text on the button to change picture for the current user.">
         Change picture...

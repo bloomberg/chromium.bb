@@ -14,8 +14,6 @@ namespace chromeos {
 // static
 const char UserManager::kLoggedInUsers[] = "LoggedInUsers";
 const char UserManager::kUserWallpapers[] = "UserWallpapers";
-const char UserManager::kUserWallpapersProperties[] =
-    "UserWallpapersProperties";
 const char UserManager::kUserImages[] = "UserImages";
 const char UserManager::kUserDisplayEmail[] = "UserDisplayEmail";
 const char UserManager::kUserOAuthTokenStatus[] = "OAuthTokenStatus";
@@ -79,8 +77,6 @@ UserManager* UserManager::Set(UserManager* mock) {
 void UserManager::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterListPref(kLoggedInUsers, PrefService::UNSYNCABLE_PREF);
   local_state->RegisterDictionaryPref(kUserWallpapers,
-                                      PrefService::UNSYNCABLE_PREF);
-  local_state->RegisterDictionaryPref(kUserWallpapersProperties,
                                       PrefService::UNSYNCABLE_PREF);
   local_state->RegisterDictionaryPref(kUserImages,
                                       PrefService::UNSYNCABLE_PREF);
