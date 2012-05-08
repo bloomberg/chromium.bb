@@ -525,28 +525,31 @@ scoped_ptr<std::set<std::string> > ExtensionAPI::GetAPIsForContext(
       break;
 
     case Feature::BLESSED_EXTENSION_CONTEXT:
-      // Availability is determined by the permissions of the extension.
-      CHECK(extension);
-      GetAllowedAPIs(extension, &temp_result);
-      ResolveDependencies(&temp_result);
+      if (extension) {
+        // Availability is determined by the permissions of the extension.
+        GetAllowedAPIs(extension, &temp_result);
+        ResolveDependencies(&temp_result);
+      }
       break;
 
     case Feature::UNBLESSED_EXTENSION_CONTEXT:
     case Feature::CONTENT_SCRIPT_CONTEXT:
-      // Same as BLESSED_EXTENSION_CONTEXT, but only those APIs that are
-      // unprivileged.
-      CHECK(extension);
-      GetAllowedAPIs(extension, &temp_result);
-      // Resolving dependencies before removing unprivileged APIs means that
-      // some unprivileged APIs may have unrealised dependencies. Too bad!
-      ResolveDependencies(&temp_result);
-      RemovePrivilegedAPIs(&temp_result);
+      if (extension) {
+        // Same as BLESSED_EXTENSION_CONTEXT, but only those APIs that are
+        // unprivileged.
+        GetAllowedAPIs(extension, &temp_result);
+        // Resolving dependencies before removing unprivileged APIs means that
+        // some unprivileged APIs may have unrealised dependencies. Too bad!
+        ResolveDependencies(&temp_result);
+        RemovePrivilegedAPIs(&temp_result);
+      }
       break;
 
     case Feature::WEB_PAGE_CONTEXT:
-      // Availablility is determined by the url.
-      CHECK(url.is_valid());
-      GetAPIsMatchingURL(url, &temp_result);
+      if (url.is_valid()) {
+        // Availablility is determined by the url.
+        GetAPIsMatchingURL(url, &temp_result);
+      }
       break;
   }
 
