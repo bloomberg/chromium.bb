@@ -215,6 +215,7 @@ class Database(object):
       # Remove all directories owned by the current owner from the remaining
       # list.
       for dirname in owned_dirs[max_owner]:
-        dirs.remove(dirname)
+        if dirname in dirs:
+          dirs.remove(dirname)
 
     return final_owners
