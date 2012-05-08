@@ -6,7 +6,10 @@
 // WebKit-specific properties and methods. It is used only with JSCompiler
 // to verify the type-correctness of our code.
 
-/** @type Array.<HTMLElement> */
+/** @type {HTMLElement} */
+Document.prototype.activeElement;
+
+/** @type {Array.<HTMLElement>} */
 Document.prototype.all;
 
 /** @type {function(string): void} */

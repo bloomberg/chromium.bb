@@ -82,18 +82,20 @@ remoting.HostTableEntry.prototype.create = function(host, onRename, onDelete) {
   // Create the host rename cell.
   var editButton = /** @type {HTMLElement} */ document.createElement('img');
   editButton.title = chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_RENAME');
+  editButton.src = 'icon_pencil.png';
+  editButton.tabIndex = 0;
   editButton.classList.add('clickable');
   editButton.classList.add('host-list-edit');
-  editButton.src = 'icon_pencil.png';
   editButton.classList.add('host-list-rename-icon');
   tableRow.appendChild(editButton);
   // Create the host delete cell.
   var deleteButton = /** @type {HTMLElement} */ document.createElement('img');
   deleteButton.title = chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_DELETE');
+  deleteButton.src = 'icon_cross.png';
+  deleteButton.tabIndex = 0;
   deleteButton.classList.add('clickable');
   deleteButton.classList.add('host-list-edit');
   deleteButton.classList.add('host-list-remove-icon');
-  deleteButton.src = 'icon_cross.png';
   tableRow.appendChild(deleteButton);
 
   this.init(host, tableRow, hostNameCell, editButton, onRename,
@@ -131,19 +133,38 @@ remoting.HostTableEntry.prototype.init = function(
 
   /** @type {remoting.HostTableEntry} */
   var that = this;
+
   /** @param {Event} event The click event. */
   var beginRename = function(event) {
     that.beginRename_();
     event.stopPropagation();
   };
+  /** @param {Event} event The keyup event. */
+  var beginRenameKeyboard = function(event) {
+    if (event.which == 13 || event.which == 32) {
+      that.beginRename_();
+      event.stopPropagation();
+    }
+  };
   editButton.addEventListener('click', beginRename, true);
+  editButton.addEventListener('keyup', beginRenameKeyboard, true);
+  this.registerFocusHandlers_(editButton);
+
   if (opt_deleteButton) {
     /** @param {Event} event The click event. */
     var confirmDelete = function(event) {
       that.showDeleteConfirmation_();
       event.stopPropagation();
     };
+    /** @param {Event} event The keyup event. */
+    var confirmDeleteKeyboard = function(event) {
+      if (event.which == 13 || event.which == 32) {
+        that.showDeleteConfirmation_();
+      }
+    };
     opt_deleteButton.addEventListener('click', confirmDelete, false);
+    opt_deleteButton.addEventListener('keyup', confirmDeleteKeyboard, false);
+    this.registerFocusHandlers_(opt_deleteButton);
   }
   this.updateStatus();
 };
@@ -303,7 +324,7 @@ remoting.HostTableEntry.prototype.removeEditBox_ = function() {
 };
 
 /**
- * Create the DOM nodes for the hostname part of the table entry.
+ * Create the DOM nodes and event handlers for the hostname cell.
  * @return {void} Nothing.
  * @private
  */
@@ -311,6 +332,18 @@ remoting.HostTableEntry.prototype.setHostName_ = function() {
   var hostNameNode = /** @type {HTMLElement} */ document.createElement('span');
   if (this.host.status == 'ONLINE') {
     hostNameNode.innerText = this.host.hostName;
+    hostNameNode.tabIndex = 0;
+    this.registerFocusHandlers_(hostNameNode);
+    /** @type {remoting.HostTableEntry} */
+    var that = this;
+    /** @param {Event} event */
+    var onKeyDown = function(event) {
+      if (that.onConnectReference_ &&
+          (event.which == 13 || event.which == 32)) {
+        that.onConnectReference_();
+      }
+    };
+    hostNameNode.addEventListener('keydown', onKeyDown, false);
   } else {
     hostNameNode.innerText = chrome.i18n.getMessage(/*i18n-content*/'OFFLINE',
                                                     this.host.hostName);
@@ -332,4 +365,39 @@ remoting.HostTableEntry.prototype.onKeydown_ = function(event) {
   } else if (event.which == 13) {  // Enter
     this.commitRename_();
   }
+};
+
+/**
+ * Register focus and blur handlers to cause the parent node to be highlighted
+ * whenever a child link has keyboard focus. Note that this is only necessary
+ * because Chrome does not yet support the draft CSS Selectors 4 specification
+ * (http://www.w3.org/TR/selectors4/#subject), which provides a more elegant
+ * solution to this problem.
+ *
+ * @param {HTMLElement} e The element on which to register the event handlers.
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.HostTableEntry.prototype.registerFocusHandlers_ = function(e) {
+  /** @type {remoting.HostTableEntry} */
+  var that = this;
+  e.addEventListener('focus', function() { that.onFocusChange_(); }, false);
+  e.addEventListener('blur', function() { that.onFocusChange_(); }, false);
+};
+
+/**
+ * Handle a focus change event within this table row.
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.HostTableEntry.prototype.onFocusChange_ = function() {
+  var element = document.activeElement;
+  while (element) {
+    if (element == this.tableRow) {
+      this.tableRow.classList.add('child-focused');
+      return;
+    }
+    element = element.parentNode;
+  }
+  this.tableRow.classList.remove('child-focused');
 };
