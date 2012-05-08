@@ -251,11 +251,13 @@ void Flash::SetAllowSuddenTermination(const InstanceHandle& instance,
 }
 
 // static
-void Flash::InvokePrinting(const InstanceHandle& instance) {
+bool Flash::InvokePrinting(const InstanceHandle& instance) {
   if (has_interface<PPB_Flash_Print_1_0>()) {
     get_interface<PPB_Flash_Print_1_0>()->InvokePrinting(
         instance.pp_instance());
+    return true;
   }
+  return false;
 }
 
 }  // namespace flash

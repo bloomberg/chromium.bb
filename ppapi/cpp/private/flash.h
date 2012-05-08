@@ -63,7 +63,7 @@ class Flash {
   static void SetAllowSuddenTermination(const InstanceHandle& instance,
                                         bool allowed);
   // PPB_Flash_Print.
-  static void InvokePrinting(const InstanceHandle& instance);
+  static bool InvokePrinting(const InstanceHandle& instance);
 };
 
 }  // namespace flash
