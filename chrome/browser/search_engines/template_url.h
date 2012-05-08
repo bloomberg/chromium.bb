@@ -333,10 +333,6 @@ class TemplateURL {
   // |profile| may be NULL.  This will affect the results of e.g. calling
   // ReplaceSearchTerms() on the member TemplateURLRefs.
   TemplateURL(Profile* profile, const TemplateURLData& data);
-
-  TemplateURL(const TemplateURL& other);
-  TemplateURL& operator=(const TemplateURL& other);
-
   ~TemplateURL();
 
   // Generates a favicon URL from the specified url.
@@ -411,6 +407,8 @@ class TemplateURL {
  private:
   friend class TemplateURLService;
 
+  void CopyFrom(const TemplateURL& other);
+
   void SetURL(const std::string& url);
   void SetPrepopulateId(int id);
 
@@ -431,6 +429,8 @@ class TemplateURL {
   TemplateURLRef instant_url_ref_;
 
   // TODO(sky): Add date last parsed OSD file.
+
+  DISALLOW_COPY_AND_ASSIGN(TemplateURL);
 };
 
 #endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_H_

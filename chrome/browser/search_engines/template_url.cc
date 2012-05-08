@@ -570,30 +570,6 @@ TemplateURL::TemplateURL(Profile* profile, const TemplateURLData& data)
   SetPrepopulateId(data_.prepopulate_id);
 }
 
-TemplateURL::TemplateURL(const TemplateURL& other)
-    : profile_(other.profile_),
-      data_(other.data_),
-      url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this), TemplateURLRef::SEARCH),
-      suggestions_url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                           TemplateURLRef::SUGGEST),
-      instant_url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                       TemplateURLRef::INSTANT) {
-  SetPrepopulateId(data_.prepopulate_id);
-}
-
-TemplateURL& TemplateURL::operator=(const TemplateURL& other) {
-  if (this == &other)
-    return *this;
-
-  profile_ = other.profile_;
-  data_ = other.data_;
-  url_ref_.InvalidateCachedValues();
-  suggestions_url_ref_.InvalidateCachedValues();
-  instant_url_ref_.InvalidateCachedValues();
-  SetPrepopulateId(data_.prepopulate_id);
-  return *this;
-}
-
 TemplateURL::~TemplateURL() {
 }
 
@@ -652,6 +628,18 @@ std::string TemplateURL::GetExtensionId() const {
 
 bool TemplateURL::IsExtensionKeyword() const {
   return GURL(data_.url()).SchemeIs(chrome::kExtensionScheme);
+}
+
+void TemplateURL::CopyFrom(const TemplateURL& other) {
+  if (this == &other)
+    return;
+
+  profile_ = other.profile_;
+  data_ = other.data_;
+  url_ref_.InvalidateCachedValues();
+  suggestions_url_ref_.InvalidateCachedValues();
+  instant_url_ref_.InvalidateCachedValues();
+  SetPrepopulateId(other.data_.prepopulate_id);
 }
 
 void TemplateURL::SetURL(const std::string& url) {

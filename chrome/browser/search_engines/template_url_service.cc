@@ -1539,7 +1539,7 @@ bool TemplateURLService::UpdateNoNotify(TemplateURL* existing_turl,
 
   provider_map_->Remove(existing_turl);
   TemplateURLID previous_id = existing_turl->id();
-  *existing_turl = new_values;
+  existing_turl->CopyFrom(new_values);
   existing_turl->data_.id = previous_id;
   UIThreadSearchTermsData search_terms_data;
   provider_map_->Add(existing_turl, search_terms_data);
