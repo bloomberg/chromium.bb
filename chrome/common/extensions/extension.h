@@ -543,7 +543,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const Version* version() const { return version_.get(); }
   const std::string VersionString() const;
   const std::string& name() const { return name_; }
-  const std::string& non_localized_name() const { return non_localized_name_; }
   const std::string public_key() const { return public_key_; }
   const std::string& description() const { return description_; }
   int manifest_version() const { return manifest_version_; }
@@ -855,10 +854,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // displayed correctly in RTL context.
   // NOTE: Name is UTF-8 and may contain non-ascii characters.
   std::string name_;
-
-  // A non-localized version of the extension's name. This is useful for
-  // debug output.
-  std::string non_localized_name_;
 
   // The version of this extension's manifest. We increase the manifest
   // version when making breaking changes to the extension system.

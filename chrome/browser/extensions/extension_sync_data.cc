@@ -43,7 +43,7 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
       incognito_enabled_(incognito_enabled),
       version_(*extension.version()),
       update_url_(extension.update_url()),
-      name_(extension.non_localized_name()) {
+      name_(extension.name()) {
 }
 
 ExtensionSyncData::~ExtensionSyncData() {}
