@@ -8,6 +8,7 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/api/api_resource.h"
+#include "content/public/browser/browser_thread.h"
 
 class ExtensionService;
 
@@ -16,11 +17,12 @@ namespace extensions {
 class APIResourceController;
 class APIResourceEventNotifier;
 
-// AsyncIOAPIFunction provides convenient thread management for APIs that
-// need to do essentially all their work on the IO thread.
-class AsyncIOAPIFunction : public AsyncExtensionFunction {
+// AsyncAPIFunction provides convenient thread management for APIs that need to
+// do essentially all their work on the IO or FILE thread.
+class AsyncAPIFunction : public AsyncExtensionFunction {
  protected:
-  virtual ~AsyncIOAPIFunction() {}
+  AsyncAPIFunction();
+  virtual ~AsyncAPIFunction() {}
 
   // Set up for work (e.g., validate arguments). Guaranteed to happen on UI
   // thread.
@@ -48,11 +50,16 @@ class AsyncIOAPIFunction : public AsyncExtensionFunction {
   // Access to the controller singleton.
   APIResourceController* controller();
 
-  // ExtensionFunction:
+  // ExtensionFunction::RunImpl()
   virtual bool RunImpl() OVERRIDE;
 
+ protected:
+  // If you don't want your Work() method to happen on the IO thread, then set
+  // this to the thread that you do want, preferably in Prepare().
+  content::BrowserThread::ID work_thread_id_;
+
  private:
-  void WorkOnIOThread();
+  void WorkOnWorkThread();
   void RespondOnUIThread();
 
   ExtensionService* extension_service_;

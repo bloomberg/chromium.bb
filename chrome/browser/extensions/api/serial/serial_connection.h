@@ -44,11 +44,9 @@ class SerialConnection : public APIResource {
   static bool DoesPortExist(const StringSet& port_patterns,
                             const std::string& port_name);
 
- private:
-  // TODO(miket): expose this functionality via API. Otherwise developers have
-  // to guess at valid names.
   static StringSet GenerateValidSerialPortNames();
 
+ private:
   // Returns a StringSet of patterns to be used with MatchPattern.
   static StringSet GenerateValidPatterns();
 

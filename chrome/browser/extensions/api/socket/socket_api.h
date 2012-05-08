@@ -21,7 +21,7 @@ extern const char kBytesWrittenKey[];
 extern const char kSocketIdKey[];
 extern const char kUdpSocketType[];
 
-class SocketExtensionFunction : public AsyncIOAPIFunction {
+class SocketExtensionFunction : public AsyncAPIFunction {
  public:
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
@@ -42,7 +42,7 @@ class SocketCreateFunction : public SocketExtensionFunction {
  protected:
   virtual ~SocketCreateFunction();
 
-  // AsyncIOAPIFunction:
+  // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
 
@@ -65,7 +65,7 @@ class SocketDestroyFunction : public SocketExtensionFunction {
  protected:
   virtual ~SocketDestroyFunction() {}
 
-  // AsyncIOAPIFunction:
+  // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
 
@@ -82,7 +82,7 @@ class SocketConnectFunction : public SocketExtensionFunction {
  protected:
   virtual ~SocketConnectFunction() {}
 
-  // AsyncIOAPIFunction:
+  // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
 
@@ -99,7 +99,7 @@ class SocketDisconnectFunction : public SocketExtensionFunction {
  protected:
   virtual ~SocketDisconnectFunction() {}
 
-  // AsyncIOAPIFunction:
+  // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
 
@@ -129,7 +129,7 @@ class SocketReadFunction : public SocketExtensionFunction {
  protected:
   virtual ~SocketReadFunction() {}
 
-  // AsyncIOAPIFunction:
+  // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
 
@@ -147,7 +147,7 @@ class SocketWriteFunction : public SocketExtensionFunction {
  protected:
   virtual ~SocketWriteFunction();
 
-  // AsyncIOAPIFunction:
+  // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
 
@@ -168,7 +168,7 @@ class SocketRecvFromFunction : public SocketExtensionFunction {
  protected:
   virtual ~SocketRecvFromFunction();
 
-  // AsyncIOAPIFunction
+  // AsyncAPIFunction
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
 
@@ -186,7 +186,7 @@ class SocketSendToFunction : public SocketExtensionFunction {
   virtual ~SocketSendToFunction();
   void OnCompleted(int result);
 
-  // AsyncIOAPIFunction:
+  // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
 

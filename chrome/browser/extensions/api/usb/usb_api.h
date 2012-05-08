@@ -15,7 +15,7 @@ namespace extensions {
 
 class APIResourceEventNotifier;
 
-class UsbFindDeviceFunction : public AsyncIOAPIFunction {
+class UsbFindDeviceFunction : public AsyncAPIFunction {
  public:
   UsbFindDeviceFunction();
   virtual ~UsbFindDeviceFunction();
@@ -32,7 +32,7 @@ class UsbFindDeviceFunction : public AsyncIOAPIFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.findDevice");
 };
 
-class UsbCloseDeviceFunction : public AsyncIOAPIFunction {
+class UsbCloseDeviceFunction : public AsyncAPIFunction {
  public:
   UsbCloseDeviceFunction();
   virtual ~UsbCloseDeviceFunction();
@@ -49,7 +49,7 @@ class UsbCloseDeviceFunction : public AsyncIOAPIFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.closeDevice");
 };
 
-class UsbControlTransferFunction : public AsyncIOAPIFunction {
+class UsbControlTransferFunction : public AsyncAPIFunction {
  public:
   UsbControlTransferFunction();
   virtual ~UsbControlTransferFunction();
@@ -66,7 +66,7 @@ class UsbControlTransferFunction : public AsyncIOAPIFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.controlTransfer");
 };
 
-class UsbBulkTransferFunction : public AsyncIOAPIFunction {
+class UsbBulkTransferFunction : public AsyncAPIFunction {
  public:
   UsbBulkTransferFunction();
   virtual ~UsbBulkTransferFunction();
@@ -83,7 +83,7 @@ class UsbBulkTransferFunction : public AsyncIOAPIFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.bulkTransfer");
 };
 
-class UsbInterruptTransferFunction : public AsyncIOAPIFunction {
+class UsbInterruptTransferFunction : public AsyncAPIFunction {
  public:
   UsbInterruptTransferFunction();
   virtual ~UsbInterruptTransferFunction();

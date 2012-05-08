@@ -6,6 +6,8 @@
 
 [nodoc] namespace experimental.serial {
 
+  callback GetPortsCallback = void (DOMString[] ports);
+
   dictionary OpenInfo {
     // The id of the opened connection.
     long connectionId;
@@ -35,6 +37,13 @@
   callback WriteCallback = void (WriteInfo writeInfo);
 
   interface Functions {
+    // Returns names of valid ports on this machine, each of which is likely to
+    // be valid to pass as the port argument to open(). The list is regenerated
+    // each time this method is called, as port validity is dynamic.
+    //
+    // |callback| : Called with the list of ports.
+    static void getPorts(GetPortsCallback callback);
+
     // Opens a connection to the given serial port.
     // |port| : The name of the serial port to open.
     // |callback| : Called when the connection has been opened.

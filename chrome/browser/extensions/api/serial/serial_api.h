@@ -16,7 +16,22 @@ namespace extensions {
 
 extern const char kConnectionIdKey[];
 
-class SerialOpenFunction : public AsyncIOAPIFunction {
+class SerialGetPortsFunction : public AsyncAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.getPorts")
+
+  SerialGetPortsFunction();
+
+ protected:
+  virtual ~SerialGetPortsFunction() {}
+
+  // AsyncAPIFunction:
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
+};
+
+class SerialOpenFunction : public AsyncAPIFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.open")
 
@@ -25,7 +40,7 @@ class SerialOpenFunction : public AsyncIOAPIFunction {
  protected:
   virtual ~SerialOpenFunction() {}
 
-  // AsyncIOAPIFunction:
+  // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
@@ -35,14 +50,14 @@ class SerialOpenFunction : public AsyncIOAPIFunction {
   std::string port_;
 };
 
-class SerialCloseFunction : public AsyncIOAPIFunction {
+class SerialCloseFunction : public AsyncAPIFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.close")
 
  protected:
   virtual ~SerialCloseFunction() {}
 
-  // AsyncIOAPIFunction:
+  // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
@@ -51,14 +66,14 @@ class SerialCloseFunction : public AsyncIOAPIFunction {
   int connection_id_;
 };
 
-class SerialReadFunction : public AsyncIOAPIFunction {
+class SerialReadFunction : public AsyncAPIFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.read")
 
  protected:
   virtual ~SerialReadFunction() {}
 
-  // AsyncIOAPIFunction:
+  // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
@@ -67,7 +82,7 @@ class SerialReadFunction : public AsyncIOAPIFunction {
   int connection_id_;
 };
 
-class SerialWriteFunction : public AsyncIOAPIFunction {
+class SerialWriteFunction : public AsyncAPIFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.write")
 
@@ -76,7 +91,7 @@ class SerialWriteFunction : public AsyncIOAPIFunction {
  protected:
   virtual ~SerialWriteFunction();
 
-  // AsyncIOAPIFunction:
+  // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;

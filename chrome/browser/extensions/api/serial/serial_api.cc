@@ -9,13 +9,42 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/api_resource_controller.h"
 #include "chrome/browser/extensions/api/serial/serial_connection.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace extensions {
 
 const char kConnectionIdKey[] = "connectionId";
+const char kPortsKey[] = "ports";
 const char kDataKey[] = "data";
 const char kBytesReadKey[] = "bytesRead";
 const char kBytesWrittenKey[] = "bytesWritten";
+
+SerialGetPortsFunction::SerialGetPortsFunction() {}
+
+bool SerialGetPortsFunction::Prepare() {
+  work_thread_id_ = BrowserThread::FILE;
+  return true;
+}
+
+void SerialGetPortsFunction::Work() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  ListValue* ports = new ListValue();
+  SerialConnection::StringSet port_names =
+      SerialConnection::GenerateValidSerialPortNames();
+  SerialConnection::StringSet::const_iterator i = port_names.begin();
+  while (i != port_names.end()) {
+    ports->Append(Value::CreateStringValue(*i++));
+  }
+
+  result_.reset(ports);
+}
+
+bool SerialGetPortsFunction::Respond() {
+  return true;
+}
 
 SerialOpenFunction::SerialOpenFunction() : src_id_(-1) {}
 

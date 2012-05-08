@@ -14,6 +14,9 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace extensions {
 
@@ -105,6 +108,7 @@ SerialConnection::StringSet SerialConnection::GenerateValidPatterns() {
 // TODO(miket): this might be refactorable into serial_connection.cc, if
 // Windows serial-port enumeration also entails looking through a directory.
 SerialConnection::StringSet SerialConnection::GenerateValidSerialPortNames() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   const FilePath DEV_ROOT("/dev");
   const file_util::FileEnumerator::FileType FILES_AND_SYM_LINKS =
       static_cast<file_util::FileEnumerator::FileType>(
