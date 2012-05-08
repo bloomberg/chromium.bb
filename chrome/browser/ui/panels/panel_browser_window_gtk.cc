@@ -373,7 +373,7 @@ void PanelBrowserWindowGtk::SetBoundsInternal(const gfx::Rect& bounds,
     // continue the animation with new target bounds.
     if (!IsAnimatingBounds())
       gdk_window_move_resize(gtk_widget_get_window(GTK_WIDGET(window())),
-                             bounds_.x(), bounds.y(),
+                             bounds.x(), bounds.y(),
                              bounds.width(), bounds.height());
   } else if (!frame_size_.IsEmpty()) {
     StartBoundsAnimation(bounds_, bounds);

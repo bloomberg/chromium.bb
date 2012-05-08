@@ -31,8 +31,17 @@ namespace {
 const int kPanelStripLeftMargin = 6;
 const int kPanelStripRightMargin = 24;
 
-// Height of panel strip is based on the factor of the working area.
-const double kPanelStripHeightFactor = 0.5;
+// Maxmium width of a panel is based on a factor of the working area.
+#if defined(OS_CHROMEOS)
+// ChromeOS device screens are relatively small and limiting the width
+// interferes with some apps (e.g. http://crbug.com/111121).
+const double kPanelMaxWidthFactor = 0.80;
+#else
+const double kPanelMaxWidthFactor = 0.35;
+#endif
+
+// Maxmium height of a panel is based on a factor of the working area.
+const double kPanelMaxHeightFactor = 0.5;
 }  // namespace
 
 // static
@@ -96,19 +105,29 @@ PanelManager::~PanelManager() {
 }
 
 void PanelManager::OnDisplayAreaChanged(const gfx::Rect& display_area) {
-  int height =
-      static_cast<int>(display_area.height() * kPanelStripHeightFactor);
-  gfx::Rect docked_strip_bounds;
+  if (display_area == display_area_)
+    return;
+  display_area_ = display_area;
+
+  gfx::Rect docked_strip_bounds = display_area;
   docked_strip_bounds.set_x(display_area.x() + kPanelStripLeftMargin);
-  docked_strip_bounds.set_y(display_area.bottom() - height);
   docked_strip_bounds.set_width(display_area.width() -
                                 kPanelStripLeftMargin - kPanelStripRightMargin);
-  docked_strip_bounds.set_height(height);
   docked_strip_->SetDisplayArea(docked_strip_bounds);
+
+  detached_strip_->SetDisplayArea(display_area);
 }
 
 void PanelManager::OnFullScreenModeChanged(bool is_full_screen) {
   docked_strip_->OnFullScreenModeChanged(is_full_screen);
+}
+
+int PanelManager::GetMaxPanelWidth() const {
+  return static_cast<int>(display_area_.width() * kPanelMaxWidthFactor);
+}
+
+int PanelManager::GetMaxPanelHeight() const {
+  return display_area_.height() * kPanelMaxHeightFactor;
 }
 
 Panel* PanelManager::CreatePanel(Browser* browser) {
@@ -213,7 +232,6 @@ void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
 void PanelManager::OnPanelResizedByMouse(Panel* panel,
                                          const gfx::Rect& new_bounds) {
   panel->panel_strip()->OnPanelResizedByMouse(panel, new_bounds);
-  panel->SetAutoResizable(false);
 }
 
 void PanelManager::MovePanelToStrip(

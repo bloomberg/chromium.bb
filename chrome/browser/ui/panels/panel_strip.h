@@ -35,8 +35,9 @@ class PanelStrip {
 
   Type type() const { return type_; }
 
-  // Sets the bounds of the panel strip.
+  // Gets/Sets the bounds of the panel strip.
   // |display_area| is in screen coordinates.
+  virtual gfx::Rect GetDisplayArea() const = 0;
   virtual void SetDisplayArea(const gfx::Rect& display_area) = 0;
 
   // Updates the positioning of all panels in the collection, usually as

@@ -33,6 +33,7 @@ class DockedPanelStrip : public PanelStrip,
   virtual ~DockedPanelStrip();
 
   // PanelStrip OVERRIDES:
+  virtual gfx::Rect GetDisplayArea() const OVERRIDE;
   virtual void SetDisplayArea(const gfx::Rect& display_area) OVERRIDE;
 
   // Rearranges the positions of the panels in the strip
@@ -109,8 +110,6 @@ class DockedPanelStrip : public PanelStrip,
 
   gfx::Rect display_area() const { return display_area_; }
 
-  int GetMaxPanelWidth() const;
-  int GetMaxPanelHeight() const;
   int StartingRightPosition() const;
 
   void OnFullScreenModeChanged(bool is_full_screen);

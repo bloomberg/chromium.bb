@@ -24,15 +24,6 @@ namespace {
 // when only one value is provided.
 const double kPanelDefaultWidthToHeightRatio = 1.62;  // golden ratio
 
-// Maxmium width of a panel is based on a factor of the entire panel strip.
-#if defined(OS_CHROMEOS)
-// ChromeOS device screens are relatively small and limiting the width
-// interferes with some apps (e.g. http://crbug.com/111121).
-const double kPanelMaxWidthFactor = 0.80;
-#else
-const double kPanelMaxWidthFactor = 0.35;
-#endif
-
 // Occasionally some system, like Windows, might not bring up or down the bottom
 // bar when the mouse enters or leaves the bottom screen area. This is the
 // maximum time we will wait for the bottom bar visibility change notification.
@@ -84,6 +75,10 @@ DockedPanelStrip::~DockedPanelStrip() {
   panel_manager_->display_settings_provider()->RemoveDesktopBarObserver(this);
 }
 
+gfx::Rect DockedPanelStrip::GetDisplayArea() const  {
+  return display_area_;
+}
+
 void DockedPanelStrip::SetDisplayArea(const gfx::Rect& display_area) {
   if (display_area_ == display_area)
     return;
@@ -93,6 +88,11 @@ void DockedPanelStrip::SetDisplayArea(const gfx::Rect& display_area) {
 
   if (panels_.empty())
     return;
+
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); ++iter) {
+    (*iter)->LimitSizeToDisplayArea(display_area_);
+  }
 
   RefreshLayout();
 }
@@ -150,8 +150,8 @@ gfx::Point DockedPanelStrip::GetDefaultPositionForPanel(
 void DockedPanelStrip::InsertNewlyCreatedPanel(Panel* panel) {
   DCHECK(!panel->initialized());
 
-  int max_panel_width = GetMaxPanelWidth();
-  int max_panel_height = GetMaxPanelHeight();
+  int max_panel_width = panel_manager_->GetMaxPanelWidth();
+  int max_panel_height = panel_manager_->GetMaxPanelHeight();
   gfx::Size full_size = panel->full_size();
   int height = full_size.height();
   int width = full_size.width();
@@ -211,14 +211,6 @@ void DockedPanelStrip::InsertExistingPanelAtDefaultPosition(Panel* panel) {
   panel->SetPanelBounds(gfx::Rect(pt, full_size));
 
   panels_.push_back(panel);
-}
-
-int DockedPanelStrip::GetMaxPanelWidth() const {
-  return static_cast<int>(display_area_.width() * kPanelMaxWidthFactor);
-}
-
-int DockedPanelStrip::GetMaxPanelHeight() const {
-  return display_area_.height();
 }
 
 int DockedPanelStrip::StartingRightPosition() const {
@@ -897,15 +889,6 @@ void DockedPanelStrip::CloseAll() {
 }
 
 void DockedPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
-  // Update limits if the panel is still autosizable, in case the limit has
-  // changed. If the panel is not autoresizable, then it was resized
-  // by the user or by the app via API.
-  if (panel->auto_resizable()) {
-    int max_panel_width = GetMaxPanelWidth();
-    int max_panel_height = GetMaxPanelHeight();
-    panel->SetSizeRange(gfx::Size(kPanelMinWidth, kPanelMinHeight),
-                        gfx::Size(max_panel_width, max_panel_height));
-  }
   panel->set_attention_mode(Panel::USE_PANEL_ATTENTION);
   panel->SetAlwaysOnTop(true);
   panel->EnableResizeByMouse(true);

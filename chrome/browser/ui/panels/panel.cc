@@ -35,6 +35,7 @@ Panel::Panel(Browser* browser, const gfx::Size& requested_size)
       panel_strip_(NULL),
       initialized_(false),
       full_size_(requested_size),
+      max_size_policy_(DEFAULT_MAX_SIZE),
       auto_resizable_(false),
       always_on_top_(false),
       in_preview_mode_(false),
@@ -100,6 +101,27 @@ void Panel::SetPanelBoundsInstantly(const gfx::Rect& bounds) {
       content::NotificationService::NoDetails());
 }
 
+void Panel::LimitSizeToDisplayArea(const gfx::Rect& display_area) {
+  int max_width = manager()->GetMaxPanelWidth();
+  int max_height = manager()->GetMaxPanelHeight();
+
+  // If the panel has been user-resized, ensure that max size does not exceed
+  // the display area.
+  if (max_size_policy_ == CUSTOM_MAX_SIZE) {
+    int current_max_width = max_size_.width();
+    if (current_max_width > max_width)
+      max_width = std::min(current_max_width, display_area.width());
+    int current_max_height = max_size_.height();
+    if (current_max_height > max_height)
+      max_height = std::min(current_max_height, display_area.height());
+  }
+
+  SetSizeRange(min_size_, gfx::Size(max_width, max_height));
+
+  // Ensure that full size does not exceed max size.
+  full_size_ = ClampSize(full_size_);
+}
+
 void Panel::SetAutoResizable(bool resizable) {
   if (auto_resizable_ == resizable)
     return;
@@ -146,7 +168,6 @@ void Panel::IncreaseMaxSize(const gfx::Size& desired_panel_size) {
 }
 
 gfx::Size Panel::ClampSize(const gfx::Size& size) const {
-
   // The panel width:
   // * cannot grow or shrink to go beyond [min_width, max_width]
   int new_width = size.width();
@@ -768,6 +789,16 @@ void Panel::OnRestoreButtonClicked(panel::ClickModifier modifier) {
     panel_strip_->RestoreAll();
   else
     Restore();
+}
+
+void Panel::OnPanelStartUserResizing() {
+  SetAutoResizable(false);
+  SetPreviewMode(true);
+  max_size_policy_ = CUSTOM_MAX_SIZE;
+}
+
+void Panel::OnPanelEndUserResizing() {
+  SetPreviewMode(false);
 }
 
 void Panel::DestroyBrowser() {

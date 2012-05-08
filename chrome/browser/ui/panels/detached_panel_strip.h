@@ -25,6 +25,7 @@ class DetachedPanelStrip : public PanelStrip {
   virtual ~DetachedPanelStrip();
 
   // PanelStrip OVERRIDES:
+  virtual gfx::Rect GetDisplayArea() const OVERRIDE;
   virtual void SetDisplayArea(const gfx::Rect& display_area) OVERRIDE;
   virtual void RefreshLayout() OVERRIDE;
   virtual void AddPanel(Panel* panel,

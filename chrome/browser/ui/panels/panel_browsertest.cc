@@ -1500,6 +1500,62 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, TightAutosizeAroundSingleLine) {
   panel->Close();
 }
 
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
+                       DefaultMaxSizeOnDisplaySettingsChange) {
+  Panel* panel = CreatePanelWithBounds("1", gfx::Rect(0, 0, 240, 220));
+
+  gfx::Size old_max_size = panel->max_size();
+  gfx::Size old_full_size = panel->full_size();
+
+  // Shrink the work area. Expect max size and full size become smaller.
+  gfx::Size smaller_work_area_size = gfx::Size(500, 300);
+  SetTestingWorkArea(gfx::Rect(gfx::Point(0, 0), smaller_work_area_size));
+  EXPECT_GT(old_max_size.width(), panel->max_size().width());
+  EXPECT_GT(old_max_size.height(), panel->max_size().height());
+  EXPECT_GT(smaller_work_area_size.width(), panel->max_size().width());
+  EXPECT_GT(smaller_work_area_size.height(), panel->max_size().height());
+  EXPECT_GT(old_full_size.width(), panel->full_size().width());
+  EXPECT_GT(old_full_size.height(), panel->full_size().height());
+  EXPECT_GE(panel->max_size().width(), panel->full_size().width());
+  EXPECT_GE(panel->max_size().height(), panel->full_size().height());
+
+  panel->Close();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
+                       CustomMaxSizeOnDisplaySettingsChange) {
+  Panel* panel = CreatePanelWithBounds("1", gfx::Rect(0, 0, 240, 220));
+
+  // Simulate user resizing.
+  gfx::Size bigger_size = gfx::Size(550, 400);
+  panel->IncreaseMaxSize(bigger_size);
+  gfx::Rect bounds = panel->GetBounds();
+  bounds.set_size(bigger_size);
+  panel->OnPanelStartUserResizing();
+  panel->panel_strip()->OnPanelResizedByMouse(panel, bounds);
+  panel->OnPanelEndUserResizing();
+
+  gfx::Size old_max_size = panel->max_size();
+  EXPECT_EQ(bigger_size, old_max_size);
+  gfx::Size old_full_size = panel->full_size();
+  EXPECT_EQ(bigger_size, old_full_size);
+
+  // Shrink the work area. Expect max size and full size become smaller.
+  gfx::Size smaller_work_area_size = gfx::Size(500, 300);
+  SetTestingWorkArea(gfx::Rect(gfx::Point(0, 0), smaller_work_area_size));
+  EXPECT_GT(old_max_size.width(), panel->max_size().width());
+  EXPECT_GT(old_max_size.height(), panel->max_size().height());
+  EXPECT_GE(smaller_work_area_size.width(), panel->max_size().width());
+  EXPECT_EQ(smaller_work_area_size.height(), panel->max_size().height());
+  EXPECT_GT(old_full_size.width(), panel->full_size().width());
+  EXPECT_GT(old_full_size.height(), panel->full_size().height());
+  EXPECT_GE(panel->max_size().width(), panel->full_size().width());
+  EXPECT_GE(panel->max_size().height(), panel->full_size().height());
+  EXPECT_EQ(smaller_work_area_size.height(), panel->full_size().height());
+
+  panel->Close();
+}
+
 class PanelDownloadTest : public PanelBrowserTest {
  public:
   PanelDownloadTest() : PanelBrowserTest() { }

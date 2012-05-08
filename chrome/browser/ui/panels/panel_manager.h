@@ -43,6 +43,11 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   // Asynchronous confirmation of panel having been closed.
   void OnPanelClosed(Panel* panel);
 
+  // Returns the maximum size that panel can be auto-resized or resized by the
+  // API.
+  int GetMaxPanelWidth() const;
+  int GetMaxPanelHeight() const;
+
   // Drags the given panel.
   // |mouse_location| is in screen coordinate system.
   void StartDragging(Panel* panel, const gfx::Point& mouse_location);
@@ -183,6 +188,8 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   scoped_ptr<PanelMouseWatcher> panel_mouse_watcher_;
 
   scoped_ptr<DisplaySettingsProvider> display_settings_provider_;
+
+  gfx::Rect display_area_;
 
   // Whether or not bounds will be updated when the preferred content size is
   // changed. The testing code could set this flag to false so that other tests

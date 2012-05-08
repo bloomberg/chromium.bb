@@ -58,7 +58,7 @@ void PanelResizeController::StartResizing(Panel* panel,
   bounds_at_start_ = panel->GetBounds();
   sides_resized_ = sides;
   resizing_panel_ = panel;
-  resizing_panel_->SetPreviewMode(true);
+  resizing_panel_->OnPanelStartUserResizing();
 }
 
 void PanelResizeController::Resize(const gfx::Point& mouse_location) {
@@ -111,13 +111,11 @@ void PanelResizeController::Resize(const gfx::Point& mouse_location) {
 Panel* PanelResizeController::EndResizing(bool cancelled) {
   DCHECK(IsResizing());
 
-  if (cancelled) {
-    panel_manager_->OnPanelResizedByMouse(resizing_panel_,
-                                          bounds_at_start_);
-  }
+  if (cancelled)
+    panel_manager_->OnPanelResizedByMouse(resizing_panel_, bounds_at_start_);
 
   // Do a thorough cleanup.
-  resizing_panel_->SetPreviewMode(false);
+  resizing_panel_->OnPanelEndUserResizing();
   Panel* resized_panel = resizing_panel_;
   resizing_panel_ = NULL;
   sides_resized_ = panel::RESIZE_NONE;

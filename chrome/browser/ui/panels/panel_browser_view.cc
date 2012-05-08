@@ -239,18 +239,15 @@ bool PanelBrowserView::WillProcessWorkAreaChange() const {
 }
 
 void PanelBrowserView::OnWindowBeginUserBoundsChange() {
-  // On Windows, the user resizing is handled by the system, instead of by
-  // our platform-independent resizing framework. Thus we need to turn off the
-  // auto-resizing explicitly here.
-  panel_->SetAutoResizable(false);
-  panel_->SetPreviewMode(true);
+  panel_->OnPanelStartUserResizing();
 }
 
 void PanelBrowserView::OnWindowEndUserBoundsChange() {
   bounds_ = GetBounds();
   panel_->IncreaseMaxSize(bounds_.size());
   panel_->set_full_size(bounds_.size());
-  panel_->SetPreviewMode(false);
+
+  panel_->OnPanelEndUserResizing();
   panel_->panel_strip()->RefreshLayout();
 }
 

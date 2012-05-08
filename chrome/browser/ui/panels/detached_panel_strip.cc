@@ -18,15 +18,41 @@ DetachedPanelStrip::~DetachedPanelStrip() {
   DCHECK(panels_.empty());
 }
 
+gfx::Rect DetachedPanelStrip::GetDisplayArea() const  {
+  return display_area_;
+}
+
 void DetachedPanelStrip::SetDisplayArea(const gfx::Rect& display_area) {
   if (display_area_ == display_area)
     return;
+  gfx::Rect old_display_area = display_area_;
   display_area_ = display_area;
 
   if (panels_.empty())
     return;
 
-  RefreshLayout();
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); ++iter) {
+    Panel* panel = *iter;
+
+    // If the detached panel is outside the main display area, don't change it.
+    if (!old_display_area.Intersects(panel->GetBounds()))
+      continue;
+
+    // Update size if needed.
+    panel->LimitSizeToDisplayArea(display_area_);
+
+    // Update bounds if needed.
+    gfx::Rect bounds = panel->GetBounds();
+    if (panel->full_size() != bounds.size()) {
+      bounds.set_size(panel->full_size());
+      if (bounds.right() > display_area_.right())
+        bounds.set_x(display_area_.right() - bounds.width());
+      if (bounds.bottom() > display_area_.bottom())
+        bounds.set_y(display_area_.bottom() - bounds.height());
+      panel->SetPanelBoundsInstantly(bounds);
+    }
+  }
 }
 
 void DetachedPanelStrip::RefreshLayout() {

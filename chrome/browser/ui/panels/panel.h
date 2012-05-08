@@ -277,6 +277,13 @@ class Panel : public BrowserWindow,
   // Updates the panel bounds instantly without any animation.
   void SetPanelBoundsInstantly(const gfx::Rect& bounds);
 
+  // Ensures that the panel's size does not exceed the display area by
+  // updating maximum and full size of the panel. This is called each time
+  // when display settings are changed. Note that bounds are not updated here
+  // and the call of setting bounds or refreshing layout should be called after
+  // this.
+  void LimitSizeToDisplayArea(const gfx::Rect& display_area);
+
   // Sets whether the panel will auto resize according to its content.
   void SetAutoResizable(bool resizable);
 
@@ -312,6 +319,10 @@ class Panel : public BrowserWindow,
   // |active| is true if panel became active.
   void OnActiveStateChanged(bool active);
 
+  // Called when the panel starts/ends the user resizing.
+  void OnPanelStartUserResizing();
+  void OnPanelEndUserResizing();
+
  protected:
   virtual void DestroyBrowser() OVERRIDE;
 
@@ -319,6 +330,13 @@ class Panel : public BrowserWindow,
   friend class PanelManager;
   friend class PanelBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserTest, RestoredBounds);
+
+  enum MAX_SIZE_POLICY {
+    // Default maximum size is propontial to the work area.
+    DEFAULT_MAX_SIZE,
+    // Custom maximum size is used when the panel is resized by the user.
+    CUSTOM_MAX_SIZE
+  };
 
   // Panel can only be created using PanelManager::CreatePanel().
   // |requested_size| is the desired size for the panel, but actual
@@ -350,6 +368,8 @@ class Panel : public BrowserWindow,
   // This is the size beyond which the panel is not going to grow to accomodate
   // the growing content and WebKit would add the scrollbars in such case.
   gfx::Size max_size_;
+
+  MAX_SIZE_POLICY max_size_policy_;
 
   // True if this panel auto resizes based on content.
   bool auto_resizable_;
