@@ -45,12 +45,16 @@ EXTRA_ENV = {
   'CRTEND'   : '${SHARED ? -l:crtendS.o : -l:crtend.o}',
   'LIBGCC_EH': '${STATIC ? -l:libgcc_eh.a : -l:libgcc_s.so.1}',
 
-  'LD_ARGS_nostdlib': '-nostdlib ${ld_inputs}',
+  # List of user requested libraries (according to bitcode metadata).
+  'NEEDED_LIBRARIES': '',   # Set by ApplyBitcodeConfig.
+
+  'LD_ARGS_nostdlib': '-nostdlib ${ld_inputs} ${NEEDED_LIBRARIES}',
 
   # These are just the dependencies in the native link.
   'LD_ARGS_normal':
     '${CRTBEGIN} ${ld_inputs} ' +
     '${USE_IRT_SHIM ? ${LD_ARGS_IRT_SHIM}} ' +
+    '${NEEDED_LIBRARIES} ' +
     '${STATIC ? --start-group} ' +
     '${USE_DEFAULTLIBS ? ${DEFAULTLIBS}} ' +
     '${STATIC ? --end-group} ' +
@@ -59,23 +63,13 @@ EXTRA_ENV = {
   # TODO(pdox): To simplify translation, reduce from 3 to 2 cases.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
   'DEFAULTLIBS':
-    '${LINKER_HACK} ${LIBGCC_EH} -l:libgcc.a ${MISC_LIBS}',
+    '${LIBGCC_EH} -l:libgcc.a ${MISC_LIBS}',
 
   'MISC_LIBS':
     # TODO(pdox):
     # Move libcrt_platform into the __pnacl namespace,
     # with stubs to access it from newlib.
-    '${LIBMODE_NEWLIB ? -l:libcrt_platform.a} ' +
-    # This is needed because the ld.so sonames don't match
-    # between X86-32 and X86-64.
-    # TODO(pdox): Unify the names.
-    '${LIBMODE_GLIBC && !STATIC ? -l:ld-2.9.so}',
-
-  # Because our bitcode linker doesn't record symbol resolution information,
-  # some libraries still need to be included directly in the native link.
-  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=577
-  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2089
-  'LINKER_HACK': '', # Populated in function ApplyBitcodeConfig().
+    '${LIBMODE_NEWLIB ? -l:libcrt_platform.a} ',
 
   # Intermediate variable LLCVAR is used for delaying evaluation.
   'LLCVAR'        : '${SANDBOXED ? LLC_SB : LLVM_LLC}',
@@ -315,30 +309,28 @@ def ApplyBitcodeConfig(metadata, bctype):
   # For the under-construction gold final linker, it expects to have
   # the needed libraries on the commandline as "-llib1 -llib2", which actually
   # refer to the stub metadata file.
-  # TODO(jvoung): replace "LINKER_HACK" with just LD_FLAGS once that is
-  # the expected behavior.
   for needed in metadata['NeedsLibrary']:
     # Specify the ld-nacl-${arch}.so as the --dynamic-linker to set PT_INTERP.
     # Also, the original libc.so linker script had it listed as --as-needed,
     # so let's do that.
     if needed.startswith('ld-nacl-'):
-      env.append('LINKER_HACK', '--dynamic-linker=' + needed)
-      env.append('LINKER_HACK',
+      env.append('NEEDED_LIBRARIES', '--dynamic-linker=' + needed)
+      env.append('NEEDED_LIBRARIES',
                  '--as-needed',
                  # We normally would have a symlink between
                  # ld-2.9 <-> ld-nacl-${arch}.so, but our native lib directory
                  # has no symlinks (to make windows + cygwin happy).
-                 # So, specify it as ld-2.9.so for now...
+                 # Link to ld-2.9.so instead for now.
                  '-l:ld-2.9.so',
                  '--no-as-needed')
     else:
-      env.append('LINKER_HACK', '-l:' + needed)
+      env.append('NEEDED_LIBRARIES', '-l:' + needed)
     # libc and libpthread may need the nonshared components too.
     # Normally these are enclosed in --start-group and --end-group...
     if needed.startswith('libc.so'):
-      env.append('LINKER_HACK', '-l:libc_nonshared.a')
+      env.append('NEEDED_LIBRARIES', '-l:libc_nonshared.a')
     elif needed.startswith('libpthread.so'):
-      env.append('LINKER_HACK', '-l:libpthread_nonshared.a')
+      env.append('NEEDED_LIBRARIES', '-l:libpthread_nonshared.a')
 
 
 def RunAS(infile, outfile):

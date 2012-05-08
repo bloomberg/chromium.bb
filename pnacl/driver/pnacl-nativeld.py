@@ -83,6 +83,7 @@ EXTRA_ENV = {
   # This may contain the metadata file, which is passed to LD with --metadata.
   # It must be passed at the end of the link line.
   'METADATA_FILE': '',
+  'NEEDED_LIBRARIES': '',
 
   'EMITMODE'         : '${RELOCATABLE ? relocatable : ' +
                        '${STATIC ? static : ' +
@@ -149,7 +150,7 @@ LDPatterns = [
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
 
-  ( ('(--add-extra-dt-needed=.*)'), PassThrough),
+  ( ('(--add-extra-dt-needed=.*)'), "env.append('NEEDED_LIBRARIES', $0)"),
   ( ('--metadata', '(.+)'),         "env.set('METADATA_FILE', $0)"),
 
   ( '-shared',         "env.set('SHARED', '1')"),
@@ -339,7 +340,7 @@ def MakeSelUniversalScriptForLD(ld_flags,
     # We don't have the bitcode file here anymore, so we assume that
     # pnacl-translate passed along the relevant information via commandline.
     soname = env.getone('SONAME')
-    needed = GetNeededLibrariesString()
+    needed = env.get('NEEDED_LIBRARIES')
     emit_mode = env.getone('EMITMODE')
     if emit_mode == 'shared':
       is_shared_library = 1
@@ -393,19 +394,6 @@ def LinkerFiles(args):
         Log.Fatal("Unable to open '%s'", pathtools.touser(f))
       ret.append(f)
   return ret
-
-# Pull metadata passed into pnacl-nativeld from pnacl-translate via
-#  commandline options. This can be removed if we have a more direct
-# mechanism for transferring metadata from LLC -> LD.
-def GetNeededLibrariesString():
-  libs = []
-  prefix = '--add-extra-dt-needed='
-  for flag in env.get('LD_FLAGS'):
-    if flag.startswith(prefix):
-      libs.append(flag[len(prefix):])
-  # This delimiter must be the same between LLC, this and LD.
-  delim = '\\n'
-  return delim.join(libs)
 
 def LocateLinkerScript():
   ld_script = env.getone('LD_SCRIPT')
