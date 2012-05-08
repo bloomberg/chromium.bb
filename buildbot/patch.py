@@ -206,14 +206,14 @@ class GitRepoPatch(object):
                           cwd=project_dir, print_cmd=False, error_code_ok=True)
       raise
 
-  def _RebasePatch(self, buildroot, project_dir, rev, trivial):
+  def _RebasePatch(self, upstream, project_dir, rev, trivial):
     """Rebase patch fetched from gerrit onto constants.PATCH_BRANCH.
 
     When the function completes, the constants.PATCH_BRANCH branch will be
     pointing to the rebased change.
 
     Arguments:
-      buildroot: The buildroot.
+      upstream: The upstream branch to base patch on.
       project_dir: Directory of the project that is being patched.
       rev: The rev we're rebasing into the tree.
       trivial: Use trivial logic that only allows trivial merges.  Note:
@@ -222,9 +222,6 @@ class GitRepoPatch(object):
     Raises:
       ApplyPatchException: If the patch failed to apply.
     """
-
-    upstream = self._GetUpstreamBranch(buildroot)
-
     try:
       self._RebaseOnto(constants.PATCH_BRANCH, upstream, project_dir, rev,
                        trivial)
@@ -258,6 +255,33 @@ class GitRepoPatch(object):
         buildroot, self.project)
     return '%s/%s' % (remote, cros_lib.StripLeadingRefsHeads(ref))
 
+  def ApplyIntoGitRepo(self, project_dir, upstream, trivial=False):
+    """Apply patch into a standalone git repo.
+
+    The git repo does not need to be part of a repo checkout.
+
+    Arguments:
+      project_dir: The directory of the project.
+      upstream: The branch to base the patch on.
+      trivial: Only allow trivial merges when applying change.
+    """
+    # Check that the patch is based on the same branch as project we are
+    # patching into.
+    # TODO(rcui): move this outside of the apply flow.
+    branch_base = os.path.basename(upstream)
+    if self.tracking_branch != branch_base:
+      raise PatchException('branch %s for project %s is not tracking %s'
+                           % (self.ref, self.project, branch_base))
+
+    rev = self.Fetch(project_dir)
+
+    if not cros_lib.DoesLocalBranchExist(project_dir, constants.PATCH_BRANCH):
+      cros_lib.RunCommandCaptureOutput(
+          ['git', 'checkout', '-b', constants.PATCH_BRANCH, '-t', upstream],
+          cwd=project_dir, print_cmd=False)
+
+    self._RebasePatch(upstream, project_dir, rev, trivial)
+
   def Apply(self, buildroot, trivial=False):
     """Applies the patch to specified buildroot.
 
@@ -269,21 +293,8 @@ class GitRepoPatch(object):
     """
     logging.info('Attempting to apply change %s', self)
     manifest_branch = self._GetUpstreamBranch(buildroot)
-    manifest_branch_base = os.path.basename(manifest_branch)
-    if self.tracking_branch != manifest_branch_base:
-      raise PatchException('branch %s for project %s is not tracking %s'
-                           % (self.ref, self.project,
-                              manifest_branch_base))
-
     project_dir = self.ProjectDir(buildroot)
-
-    rev = self.Fetch(project_dir)
-
-    if not cros_lib.DoesLocalBranchExist(project_dir, constants.PATCH_BRANCH):
-      cros_lib.RunCommand(['git', 'checkout', '-b', constants.PATCH_BRANCH,
-                           '-t', manifest_branch], cwd=project_dir,
-                          print_cmd=False)
-    self._RebasePatch(buildroot, project_dir, rev, trivial)
+    self.ApplyIntoGitRepo(project_dir, manifest_branch, trivial)
 
   def GerritDependencies(self, buildroot):
     """Returns an ordered list of dependencies from Gerrit.

@@ -508,17 +508,8 @@ class ApplyLocalPatchesTests(mox.MoxTestBase):
     patch = cros_patch.GitRepoPatch('/path/to/my/project.git',
                                     'my/project', 'mybranch',
                                     'master')
-    buildroot = '/b'
-    self.mox.StubOutWithMock(patch, '_GetUpstreamBranch')
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-
-    patch._GetUpstreamBranch(buildroot).AndReturn('different_branch')
-    self.mox.ReplayAll()
-
-    self.assertRaises(cros_patch.PatchException, patch.Apply, buildroot)
-
-    self.mox.VerifyAll()
-
+    self.assertRaises(cros_patch.PatchException, patch.ApplyIntoGitRepo,
+                      '/tmp/notadirectory', 'origin/R19')
 
 if __name__ == '__main__':
   logging_format = '%(asctime)s - %(filename)s - %(levelname)-8s: %(message)s'
