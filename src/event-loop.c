@@ -309,10 +309,14 @@ wl_event_source_remove(struct wl_event_source *source)
 {
 	struct wl_event_loop *loop = source->loop;
 
-	if (source->fd >= 0)
+	/* We need to explicitly remove the fd, since closing the fd
+	 * isn't enough in case we've dup'ed the fd. */
+	if (source->fd >= 0) {
+		epoll_ctl(loop->epoll_fd, EPOLL_CTL_DEL, source->fd, NULL);
 		close(source->fd);
+		source->fd = -1;
+	}
 
-	source->fd = -1;
 	wl_list_remove(&source->link);
 	wl_list_insert(&loop->destroy_list, &source->link);
 
