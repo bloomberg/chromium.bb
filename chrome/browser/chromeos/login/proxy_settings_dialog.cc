@@ -41,12 +41,11 @@ int ProxySettingsDialog::instance_count_ = 0;
 
 ProxySettingsDialog::ProxySettingsDialog(LoginWebDialog::Delegate* delegate,
                                          gfx::NativeWindow window)
-    : LoginWebDialog(
-          delegate,
-          window,
-          std::wstring(),
-          GURL(chrome::kChromeUIProxySettingsURL),
-          LoginWebDialog::STYLE_BUBBLE) {
+    : LoginWebDialog(delegate,
+                     window,
+                     string16(),
+                     GURL(chrome::kChromeUIProxySettingsURL),
+                     LoginWebDialog::STYLE_BUBBLE) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   ++instance_count_;
 

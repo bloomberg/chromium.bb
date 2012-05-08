@@ -12,9 +12,9 @@
 #include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "googleurl/src/gurl.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
-#include "googleurl/src/gurl.h"
 
 namespace chromeos {
 
@@ -41,7 +41,7 @@ class LoginWebDialog : public WebDialogDelegate,
 
   LoginWebDialog(Delegate* delegate,
                  gfx::NativeWindow parent_window,
-                 const std::wstring& title,
+                 const string16& title,
                  const GURL& url,
                  Style style);
   virtual ~LoginWebDialog();

@@ -58,8 +58,7 @@ void HelpAppLauncher::ShowHelpTopicDialog(const GURL& topic_url) {
   dialog_.reset(new LoginWebDialog(
       this,
       parent_window_,
-      UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE)),
+      l10n_util::GetStringUTF16(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE),
       topic_url,
       LoginWebDialog::STYLE_BUBBLE));
   dialog_->Show();
