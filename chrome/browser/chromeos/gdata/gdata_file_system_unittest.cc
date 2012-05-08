@@ -22,6 +22,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
@@ -167,6 +168,10 @@ class GDataFileSystemTest : public testing::Test {
         expected_sub_dir_type_(GDataRootDirectory::CACHE_TYPE_META),
         expect_outgoing_symlink_(false),
         root_feed_changestamp_(0) {
+    if (!cros_initialized_) {
+      chromeos::CrosLibrary::Initialize(true /* use_stub */);
+      cros_initialized_ = true;
+    }
   }
 
   virtual void SetUp() OVERRIDE {
@@ -1159,7 +1164,10 @@ class GDataFileSystemTest : public testing::Test {
   bool expect_outgoing_symlink_;
   std::string expected_file_extension_;
   int root_feed_changestamp_;
+  static bool cros_initialized_;
 };
+
+bool GDataFileSystemTest::cros_initialized_ = false;
 
 void AsyncInitializationCallback(
     int* counter,

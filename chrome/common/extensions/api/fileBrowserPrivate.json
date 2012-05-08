@@ -55,6 +55,29 @@
         }
       },
       {
+        "id": "DriveWebApp",
+        "type": "object",
+        "description": "GData WebApp properties.",
+        "properties": {
+          "appId": {
+            "type": "string",
+            "description": "WebApp ID."
+          },
+          "appName": {
+            "type": "string",
+            "description": "WebApp name."
+          },
+          "objectType": {
+            "type": "string",
+            "description": "Object (file) type description."
+          },
+          "isPrimary": {
+            "type": "boolean",
+            "description": "True if this WebApp is the primary (default) open action for this file."
+          }
+        }
+      },
+      {
         "id": "GDataFileProperties",
         "type": "object",
         "description": "GData file properties.",
@@ -108,6 +131,12 @@
             "type": "integer",
             "optional": true,
             "description": "The error code (from base::PlatformFileError) if fetching the properties for this file had an error."
+          },
+          "driveApps" : {
+            "type": "array",
+            "optional": true,
+            "items": {"$ref": "DriveWebApp"},
+            "description": "An array of WebApps capable of opening this file."
           }
         }
       },

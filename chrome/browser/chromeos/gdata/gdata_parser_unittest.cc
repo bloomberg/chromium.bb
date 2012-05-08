@@ -256,9 +256,11 @@ TEST_F(GDataParserTest, AccountMetadataFeedParser) {
   const InstalledApp* first_app = feed->installed_apps()[0];
   const InstalledApp* second_app = feed->installed_apps()[1];
 
-  EXPECT_EQ("Drive App 1", first_app->app_name());
-  EXPECT_EQ("Drive App Object 1", first_app->object_type());
+  EXPECT_EQ("Drive App 1", UTF16ToUTF8(first_app->app_name()));
+  EXPECT_EQ("Drive App Object 1", UTF16ToUTF8(first_app->object_type()));
   EXPECT_TRUE(first_app->supports_create());
+  EXPECT_EQ("https://chrome.google.com/webstore/detail/11111111",
+            first_app->GetProductUrl().spec());
   ASSERT_EQ(2U, first_app->primary_mimetypes()->size());
   EXPECT_EQ("application/test_type_1",
             *first_app->primary_mimetypes()->at(0));
@@ -267,13 +269,15 @@ TEST_F(GDataParserTest, AccountMetadataFeedParser) {
   ASSERT_EQ(1U, first_app->secondary_mimetypes()->size());
   EXPECT_EQ("image/jpeg", *first_app->secondary_mimetypes()->at(0));
   ASSERT_EQ(2U, first_app->primary_extensions()->size());
-  EXPECT_EQ("p1_ext_1", *first_app->primary_extensions()->at(0));
-  EXPECT_EQ("p1_ext_2", *first_app->primary_extensions()->at(1));
+  EXPECT_EQ("ext_1", *first_app->primary_extensions()->at(0));
+  EXPECT_EQ("ext_2", *first_app->primary_extensions()->at(1));
   ASSERT_EQ(1U, first_app->secondary_extensions()->size());
-  EXPECT_EQ("s1_ext_1", *first_app->secondary_extensions()->at(0));
+  EXPECT_EQ("ext_3", *first_app->secondary_extensions()->at(0));
 
-  EXPECT_EQ("Drive App 2", second_app->app_name());
-  EXPECT_EQ("Drive App Object 2", second_app->object_type());
+  EXPECT_EQ("Drive App 2", UTF16ToUTF8(second_app->app_name()));
+  EXPECT_EQ("Drive App Object 2", UTF16ToUTF8(second_app->object_type()));
+  EXPECT_EQ("https://chrome.google.com/webstore/detail/22222222",
+            second_app->GetProductUrl().spec());
   EXPECT_FALSE(second_app->supports_create());
   EXPECT_EQ(2U, second_app->primary_mimetypes()->size());
   EXPECT_EQ(0U, second_app->secondary_mimetypes()->size());

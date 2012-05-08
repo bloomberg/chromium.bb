@@ -300,15 +300,15 @@
                ],
                "docs$installedAppPrimaryFileExtension": [
                      {
-                      "$t": "p1_ext_1"
+                      "$t": "ext_1"
                      },
                      {
-                      "$t": "p1_ext_2"
+                      "$t": "ext_2"
                      }
                ],
                "docs$installedAppSecondaryFileExtension": [
                      {
-                      "$t": "s1_ext_1"
+                      "$t": "ext_3"
                      }
                ]
              },
@@ -333,7 +333,7 @@
                ],
                "docs$installedAppPrimaryFileExtension": [
                      {
-                      "$t": "p2_ext_1"
+                      "$t": "ext_3"
                      }
                ]
             }

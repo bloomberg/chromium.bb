@@ -27,6 +27,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
@@ -1197,10 +1198,11 @@ void GDataFileSystem::OnGetAccountMetadata(
     return;
   }
 
-  scoped_ptr<AccountMetadataFeed> feed;
+  scoped_ptr<AccountMetadataFeed> account_metadata;
   if (feed_data.get())
-      feed = AccountMetadataFeed::CreateFrom(*feed_data);
-  if (!feed.get()) {
+    account_metadata = AccountMetadataFeed::CreateFrom(*feed_data);
+
+  if (!account_metadata.get()) {
     LoadFeedFromServer(local_changestamp + 1, 0,
                        true,  /* should_fetch_multiple_feeds */
                        search_file_path,
@@ -1211,13 +1213,17 @@ void GDataFileSystem::OnGetAccountMetadata(
     return;
   }
 
+  GDataSystemService* service =
+      GDataSystemServiceFactory::GetForProfile(profile_);
+  service->webapps_registry()->UpdateFromFeed(account_metadata.get());
+
   bool changes_detected = true;
-  if (local_changestamp >= feed->largest_changestamp()) {
-    if (local_changestamp > feed->largest_changestamp()) {
+  if (local_changestamp >= account_metadata->largest_changestamp()) {
+    if (local_changestamp > account_metadata->largest_changestamp()) {
       LOG(WARNING) << "Cached client feed is fresher than server, client = "
                    << local_changestamp
                    << ", server = "
-                   << feed->largest_changestamp();
+                   << account_metadata->largest_changestamp();
     }
     {
       base::AutoLock lock(lock_);
@@ -1240,7 +1246,7 @@ void GDataFileSystem::OnGetAccountMetadata(
 
   // Load changes from the server.
   LoadFeedFromServer(local_changestamp > 0 ? local_changestamp + 1 : 0,
-                     feed->largest_changestamp(),
+                     account_metadata->largest_changestamp(),
                      true,  /* should_fetch_multiple_feeds */
                      search_file_path,
                      std::string() /* no search query */,
@@ -1285,8 +1291,10 @@ void GDataFileSystem::LoadFeedFromServer(
 void GDataFileSystem::OnFeedFromServerLoaded(GetDocumentsParams* params,
                                              base::PlatformFileError error) {
   if (error != base::PLATFORM_FILE_OK) {
-    params->callback.Run(error, FilePath(),
-                         reinterpret_cast<GDataEntry*>(NULL));
+    if (!params->callback.is_null()) {
+      params->callback.Run(error, FilePath(),
+                           reinterpret_cast<GDataEntry*>(NULL));
+    }
     return;
   }
 
@@ -3005,6 +3013,14 @@ void GDataFileSystem::OnGetDocuments(const LoadDocumentFeedCallback& callback,
     return;
   }
   const bool has_next_feed_url = current_feed->GetNextFeedURL(&next_feed_url);
+
+#ifndef NDEBUG
+  // Save initial root feed for analysis.
+  std::string file_name =
+      base::StringPrintf("DEBUG_feed_%d.json",
+                         params->start_changestamp);
+  SaveFeed(data.Pass(), FilePath(file_name));
+#endif
 
   // Add the current feed to the list of collected feeds for this directory.
   params->feed_list->push_back(current_feed.release());

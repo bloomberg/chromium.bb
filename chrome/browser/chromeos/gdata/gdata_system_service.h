@@ -13,6 +13,7 @@
 
 namespace gdata {
 
+class DriveWebAppsRegistry;
 class GDataDownloadObserver;
 class GDataFileSystem;
 class GDataSyncClient;
@@ -32,6 +33,9 @@ class GDataSystemService : public ProfileKeyedService  {
   // Returns the uploader instance.
   GDataUploader* uploader() { return uploader_.get(); }
 
+  // Returns the file system instance.
+  DriveWebAppsRegistry* webapps_registry() { return webapps_registry_.get(); }
+
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
 
@@ -50,6 +54,7 @@ class GDataSystemService : public ProfileKeyedService  {
   scoped_ptr<GDataUploader> uploader_;
   scoped_ptr<GDataDownloadObserver> download_observer_;
   scoped_ptr<GDataSyncClient> sync_client_;
+  scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataSystemService);
 };
