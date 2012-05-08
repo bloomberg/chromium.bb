@@ -5,6 +5,8 @@
 #include "chrome/browser/metrics/variations_service.h"
 
 #include "base/base64.h"
+#include "base/build_time.h"
+#include "base/version.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
@@ -21,6 +23,25 @@ namespace {
 // Default server of Variations seed info.
 const char kDefaultVariationsServer[] =
     "https://clients4.google.com/chrome-variations/seed";
+
+// Maps chrome_variations::Study_Channel enum values to corresponding
+// chrome::VersionInfo::Channel enum values.
+chrome::VersionInfo::Channel ConvertStudyChannelToVersionChannel(
+    chrome_variations::Study_Channel study_channel) {
+  switch (study_channel) {
+    case chrome_variations::Study_Channel_CANARY:
+      return chrome::VersionInfo::CHANNEL_CANARY;
+    case chrome_variations::Study_Channel_DEV:
+      return chrome::VersionInfo::CHANNEL_DEV;
+    case chrome_variations::Study_Channel_BETA:
+      return chrome::VersionInfo::CHANNEL_BETA;
+    case chrome_variations::Study_Channel_STABLE:
+      return chrome::VersionInfo::CHANNEL_STABLE;
+  }
+  // All enum values of |study_channel| were handled above.
+  NOTREACHED();
+  return chrome::VersionInfo::CHANNEL_UNKNOWN;
+}
 
 }  // namespace
 
@@ -94,3 +115,90 @@ void VariationsService::StoreSeedData(const std::string& seed_data,
 
 VariationsService::VariationsService() {}
 VariationsService::~VariationsService() {}
+
+// static
+bool VariationsService::ShouldAddStudy(const chrome_variations::Study& study) {
+  const chrome::VersionInfo current_version_info;
+  if (!current_version_info.is_valid())
+    return false;
+
+  if (!CheckStudyChannel(study, chrome::VersionInfo::GetChannel())) {
+    DVLOG(1) << "Filtered out study " << study.name() << " due to version.";
+    return false;
+  }
+
+  if (!CheckStudyVersion(study, current_version_info.Version())) {
+    DVLOG(1) << "Filtered out study " << study.name() << " due to version.";
+    return false;
+  }
+
+  // Use build time and not system time to match what is done in field_trial.cc.
+  if (!CheckStudyDate(study, base::GetBuildTime())) {
+    DVLOG(1) << "Filtered out study " << study.name() << " due to date.";
+    return false;
+  }
+
+  DVLOG(1) << "Kept study " << study.name() << ".";
+  return true;
+}
+
+// static
+bool VariationsService::CheckStudyChannel(
+    const chrome_variations::Study& study,
+    chrome::VersionInfo::Channel channel) {
+  for (int i = 0; i < study.channel_size(); ++i) {
+    if (ConvertStudyChannelToVersionChannel(study.channel(i)) == channel)
+      return true;
+  }
+  return false;
+}
+
+// static
+bool VariationsService::CheckStudyVersion(const chrome_variations::Study& study,
+                                          const std::string& version_string) {
+  const Version current_version(version_string);
+  if (!current_version.IsValid()) {
+    DCHECK(false);
+    return false;
+  }
+
+  if (study.has_min_version()) {
+    const Version min_version(study.min_version());
+    if (!min_version.IsValid())
+      return false;
+    if (current_version.CompareTo(min_version) < 0)
+      return false;
+  }
+
+  if (study.has_max_version()) {
+    const Version max_version(study.max_version());
+    if (!max_version.IsValid())
+      return false;
+    if (current_version.CompareTo(max_version) > 0)
+      return false;
+  }
+
+  return true;
+}
+
+// static
+bool VariationsService::CheckStudyDate(const chrome_variations::Study& study,
+                                       const base::Time& date_time) {
+  const base::Time epoch = base::Time::UnixEpoch();
+
+  if (study.has_start_date()) {
+    const base::Time start_date =
+        epoch + base::TimeDelta::FromMilliseconds(study.start_date());
+    if (date_time < start_date)
+      return false;
+  }
+
+  if (study.has_expiry_date()) {
+    const base::Time expiry_date =
+        epoch + base::TimeDelta::FromMilliseconds(study.expiry_date());
+    if (date_time >= expiry_date)
+      return false;
+  }
+
+  return true;
+}
