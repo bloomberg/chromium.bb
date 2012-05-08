@@ -57,6 +57,7 @@
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_init.h"
+#include "chrome/browser/ui/browser_view_prefs.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
@@ -82,7 +83,6 @@
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
 #include "chrome/browser/accessibility/invert_bubble_views.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #endif
 
 #if defined(TOOLKIT_GTK)
@@ -143,7 +143,7 @@ void RegisterLocalState(PrefService* local_state) {
 #endif  // defined(ENABLE_TASK_MANAGER)
 
 #if defined(TOOLKIT_VIEWS)
-  BrowserView::RegisterBrowserViewPrefs(local_state);
+  browser::RegisterBrowserViewPrefs(local_state);
 #endif
 
 #if !defined(OS_ANDROID)

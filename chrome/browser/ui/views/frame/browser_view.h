@@ -185,9 +185,6 @@ class BrowserView : public BrowserWindow,
     return browser_->is_type_tabbed();
   }
 
-  // Register local state preferences specific to this view.
-  static void RegisterBrowserViewPrefs(PrefService* prefs);
-
   // Returns true if the specified point(BrowserView coordinates) is in
   // in the window caption area of the browser window.
   bool IsPositionInWindowCaption(const gfx::Point& point);

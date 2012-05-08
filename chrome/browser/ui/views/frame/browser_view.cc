@@ -144,8 +144,6 @@ const int kStatusBubbleHeight = 20;
 // The name of a key to store on the window handle so that other code can
 // locate this object using just the handle.
 const char* const kBrowserViewKey = "__BROWSER_VIEW__";
-// How frequently we check for hung plugin windows.
-const int kDefaultHungPluginDetectFrequency = 2000;
 
 // Minimal height of devtools pane or content pane when devtools are docked
 // to the browser window.
@@ -153,8 +151,6 @@ const int kMinDevToolsHeight = 50;
 const int kMinDevToolsWidth = 150;
 const int kMinContentsSize = 50;
 
-// How long do we wait before we consider a window hung (in ms).
-const int kDefaultPluginMessageResponseTimeout = 30000;
 // The number of milliseconds between loading animation frames.
 const int kLoadingAnimationFrameTimeMs = 30;
 // The amount of space we expect the window border to take up.
@@ -527,14 +523,6 @@ SkBitmap BrowserView::GetOTRAvatarIcon() const {
   const SkBitmap* otr_avatar =
       rb.GetNativeImageNamed(IDR_OTR_ICON).ToSkBitmap();
   return *otr_avatar;
-}
-
-// static
-void BrowserView::RegisterBrowserViewPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kPluginMessageResponseTimeout,
-                             kDefaultPluginMessageResponseTimeout);
-  prefs->RegisterIntegerPref(prefs::kHungPluginDetectFrequency,
-                             kDefaultHungPluginDetectFrequency);
 }
 
 bool BrowserView::IsPositionInWindowCaption(const gfx::Point& point) {
