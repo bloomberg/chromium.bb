@@ -667,6 +667,7 @@ cr.define('options.network', function() {
     /** @inheritDoc */
     decorate: function() {
       List.prototype.decorate.call(this);
+      this.autoExpand = true;
       this.addEventListener('blur', this.onBlur_);
       this.dataModel = new ArrayDataModel([]);
 
@@ -736,6 +737,7 @@ cr.define('options.network', function() {
      * @param {Object.<string,string>} data Description of the entry.
      */
     update: function(data) {
+      this.startBatchUpdates();
       var index = this.indexOf(data.key);
       if (index == undefined) {
         // Find reference position for adding the element.  We cannot hide
@@ -770,6 +772,7 @@ cr.define('options.network', function() {
         data.sortIndex = entry.sortIndex;
         this.dataModel.splice(index, 1, data);
       }
+      this.endBatchUpdates();
     },
 
     /** @inheritDoc */
@@ -883,9 +886,6 @@ cr.define('options.network', function() {
     else
       networkList.deleteItem('vpn');
     networkList.updateToggleControl('airplaneMode', data.airplaneMode);
-
-    networkList.invalidate();
-    networkList.redraw();
   };
 
   /**
