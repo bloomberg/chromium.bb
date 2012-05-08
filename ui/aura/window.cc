@@ -13,7 +13,6 @@
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/visibility_client.h"
-#include "ui/aura/dip_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
@@ -212,10 +211,6 @@ gfx::Rect Window::GetBoundsInRootWindow() const {
   return gfx::Rect(origin, bounds().size());
 }
 
-const gfx::Rect& Window::GetBoundsInPixel() const {
-  return layer_->bounds();
-}
-
 void Window::SetTransform(const ui::Transform& transform) {
   RootWindow* root_window = GetRootWindow();
   bool contained_mouse = IsVisible() && root_window &&
@@ -247,22 +242,17 @@ void Window::SetBounds(const gfx::Rect& new_bounds) {
 }
 
 gfx::Rect Window::GetTargetBounds() const {
-  return ConvertRectToDIP(this, layer_->GetTargetBounds());
+  return layer_->GetTargetBounds();
 }
 
-gfx::Rect Window::bounds() const {
-#if defined(ENABLE_DIP)
-  return ConvertRectToDIP(this, layer_->bounds());
-#else
+const gfx::Rect& Window::bounds() const {
   return layer_->bounds();
-#endif
 }
 
-void Window::SchedulePaintInRect(const gfx::Rect& rect_in_dip) {
-  gfx::Rect rect = ConvertRectToPixel(this, rect_in_dip);
+void Window::SchedulePaintInRect(const gfx::Rect& rect) {
   if (layer_->SchedulePaint(rect)) {
     FOR_EACH_OBSERVER(
-        WindowObserver, observers_, OnWindowPaintScheduled(this, rect_in_dip));
+        WindowObserver, observers_, OnWindowPaintScheduled(this, rect));
   }
 }
 
@@ -384,14 +374,7 @@ void Window::ConvertPointToWindow(const Window* source,
                                   gfx::Point* point) {
   if (!source)
     return;
-  // TODO(oshima): We probably need to handle source's root != target's root
-  // case under multi monitor environment.
-  *point = ConvertPointToPixel(source, *point);
   ui::Layer::ConvertPointToLayer(source->layer(), target->layer(), point);
-  if (target)
-    *point = ConvertPointToDIP(target, *point);
-  else
-    *point = ConvertPointToDIP(source, *point);
 }
 
 gfx::NativeCursor Window::GetCursor(const gfx::Point& point) const {
@@ -595,7 +578,7 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
 
   // Always need to set the layer's bounds -- even if it is to the same thing.
   // This may cause important side effects such as stopping animation.
-  layer_->SetBounds(ConvertRectToPixel(this, actual_new_bounds));
+  layer_->SetBounds(actual_new_bounds);
 
   // If we're not changing the effective bounds, then we can bail early and skip
   // notifying our listeners.
@@ -809,16 +792,8 @@ void Window::NotifyAddedToRootWindow() {
 }
 
 void Window::OnPaintLayer(gfx::Canvas* canvas) {
-  if (delegate_) {
-#if defined(ENABLE_DIP)
-    float scale = GetMonitorScaleFactor(this);
-    canvas->sk_canvas()->scale(SkFloatToScalar(scale), SkFloatToScalar(scale));
-#endif
+  if (delegate_)
     delegate_->OnPaint(canvas);
-#if defined(ENABLE_DIP)
-    canvas->Restore();
-#endif
-  }
 }
 
 void Window::UpdateLayerName(const std::string& name) {

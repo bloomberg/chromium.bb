@@ -104,8 +104,9 @@ const AcceleratorData kAcceleratorData[] = {
   // For testing on systems where Alt-Tab is already mapped.
   { true, ui::VKEY_W, false, false, true, CYCLE_FORWARD_MRU },
   { true, ui::VKEY_W, true, false, true, CYCLE_BACKWARD_MRU },
-  { true, ui::VKEY_F4, false, true, false, ADD_REMOVE_MONITOR },
-  { true, ui::VKEY_F4, true, true, false, CYCLE_MONITOR },
+  { true, ui::VKEY_F4, false, true, false, MONITOR_ADD_REMOVE },
+  { true, ui::VKEY_F4, true, true, false, MONITOR_CYCLE },
+  { true, ui::VKEY_HOME, true, true, false, MONITOR_TOGGLE_SCALE },
 #endif
   // trigger_on_press, KeyboardCode, shift, control, alt, AcceleratorAction
 };

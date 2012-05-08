@@ -17,80 +17,55 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/monitor.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(ENABLE_DIP)
-#define MAYBE_Shadow FAILS_Shadow
-#define MAYBE_WorkArea FAILS_WorkArea
-#else
-#define MAYBE_Shadow DISABLED_Shadow
-#define MAYBE_WorkArea DISABLED_WorkArea
-#endif
-
 namespace ash {
 
 typedef ash::test::AshTestBase DIPTest;
 
-// Test if the shadow works correctly under different density
-TEST_F(DIPTest, MAYBE_Shadow) {
-  const gfx::Rect kBoundsInDIP(20, 30, 400, 300);
-
-  scoped_ptr<aura::Window> window(new aura::Window(NULL));
-  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
-  window->Init(ui::LAYER_TEXTURED);
-  window->SetParent(NULL);
-  window->SetBounds(kBoundsInDIP);
-
-  internal::ShadowController::TestApi api(
-      Shell::GetInstance()->shadow_controller());
-  const internal::Shadow* shadow = api.GetShadowForWindow(window.get());
-  window->Show();
-
-  const gfx::Rect layer_bounds_copy = shadow->layer()->bounds();
-  window.reset();
-
-  ChangeMonitorConfig(2.0f, gfx::Rect(0, 0, 1000, 1000));
-
-  window.reset(new aura::Window(NULL));
-  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
-  window->Init(ui::LAYER_TEXTURED);
-  window->SetParent(NULL);
-  window->SetBounds(kBoundsInDIP);
-  shadow = api.GetShadowForWindow(window.get());
-  window->Show();
-  EXPECT_EQ("40,60 800x600", window->GetBoundsInPixel().ToString());
-  EXPECT_EQ(layer_bounds_copy.Scale(2.0f).ToString(),
-            shadow->layer()->bounds().ToString());
-}
+#if defined(OS_WIN)
+// Windows/Aura doesn't have DIP support in monitor yet.
+#define MAYBE_WorkArea DISABLED_WorkArea
+#else
+#define MAYBE_WorkArea WorkArea
+#endif
 
 // Test if the WM sets correct work area under different density.
 TEST_F(DIPTest, MAYBE_WorkArea) {
+  ui::test::ScopedDIPEnablerForTest enable;
   ChangeMonitorConfig(1.0f, gfx::Rect(0, 0, 1000, 900));
 
   aura::RootWindow* root = Shell::GetRootWindow();
   const gfx::Monitor monitor = gfx::Screen::GetMonitorNearestWindow(root);
 
   EXPECT_EQ("0,0 1000x900", monitor.bounds().ToString());
-  const gfx::Rect work_area = monitor.work_area();
-  const gfx::Insets insets = monitor.bounds().InsetsFrom(work_area);
-  EXPECT_EQ("0,0,48,0", insets.ToString());
+  gfx::Rect work_area = monitor.work_area();
+  EXPECT_EQ("0,0 1000x852", work_area.ToString());
+  EXPECT_EQ("0,0,48,0", monitor.bounds().InsetsFrom(work_area).ToString());
 
   ChangeMonitorConfig(2.0f, gfx::Rect(0, 0, 2000, 1800));
 
   const gfx::Monitor monitor_2x = gfx::Screen::GetMonitorNearestWindow(root);
 
+  // The |bounds_in_pixel()| should report bounds in pixel coordinate.
   EXPECT_EQ("0,0 2000x1800", monitor_2x.bounds_in_pixel().ToString());
+
+  // Aura and views coordinates are in DIP, so they their bounds do not change.
   EXPECT_EQ("0,0 1000x900", monitor_2x.bounds().ToString());
+  work_area = monitor_2x.work_area();
+  EXPECT_EQ("0,0 1000x852", work_area.ToString());
+  EXPECT_EQ("0,0,48,0", monitor_2x.bounds().InsetsFrom(work_area).ToString());
 
-  EXPECT_EQ(work_area.ToString(), monitor_2x.work_area().ToString());
-
+  // Sanity check if the workarea's inset hight is same as
+  // the launcher's height.
   Launcher* launcher = Shell::GetInstance()->launcher();
   EXPECT_EQ(
-      monitor_2x.bounds().InsetsFrom(work_area).height() * 2,
+      monitor_2x.bounds().InsetsFrom(work_area).height(),
       launcher->widget()->GetNativeView()->layer()->bounds().height());
 }
 

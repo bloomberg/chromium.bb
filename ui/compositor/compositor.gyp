@@ -34,6 +34,8 @@
         'compositor_switches.h',
         'debug_utils.cc',
         'debug_utils.h',
+        'dip_util.cc',
+        'dip_util.h',
         'layer.cc',
         'layer.h',
         'layer_animation_delegate.h',

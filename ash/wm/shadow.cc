@@ -44,9 +44,9 @@ Shadow::Shadow() : style_(STYLE_ACTIVE) {
 Shadow::~Shadow() {
 }
 
-void Shadow::Init(aura::Window* window, Style style) {
+void Shadow::Init(Style style) {
   style_ = style;
-  image_grid_.reset(new ImageGrid(window));
+  image_grid_.reset(new ImageGrid);
   UpdateImagesForStyle();
   image_grid_->layer()->set_name("Shadow");
   image_grid_->layer()->SetOpacity(GetOpacityForStyle(style_));

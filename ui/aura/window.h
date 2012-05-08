@@ -112,8 +112,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   WindowDelegate* delegate() { return delegate_; }
 
-  // TODO(oshima): Rename this to GetBounds().
-  gfx::Rect bounds() const;
+  const gfx::Rect& bounds() const;
 
   Window* parent() { return parent_; }
   const Window* parent() const { return parent_; }
@@ -143,9 +142,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // TODO(oshima): Fix this to return screen's coordinate for multi-monitor
   // support.
   gfx::Rect GetBoundsInRootWindow() const;
-
-  // Returns the bounds in pixel coordinates.
-  const gfx::Rect& GetBoundsInPixel() const;
 
   virtual void SetTransform(const ui::Transform& transform);
 

@@ -14,7 +14,6 @@
 #include "base/stl_util.h"
 #include "base/time.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/dip_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_property.h"
@@ -236,7 +235,7 @@ void AnimateShowWindow_Drop(aura::Window* window) {
   ui::Transform transform;
   transform.ConcatScale(kWindowAnimation_ScaleFactor,
                         kWindowAnimation_ScaleFactor);
-  gfx::Rect bounds = window->GetBoundsInPixel();
+  gfx::Rect bounds = window->bounds();
   transform.ConcatTranslate(
       kWindowAnimation_TranslateFactor * bounds.width(),
       kWindowAnimation_TranslateFactor * bounds.height());
@@ -247,7 +246,7 @@ void AnimateHideWindow_Drop(aura::Window* window) {
   ui::Transform transform;
   transform.ConcatScale(kWindowAnimation_ScaleFactor,
                         kWindowAnimation_ScaleFactor);
-  gfx::Rect bounds = window->GetBoundsInPixel();
+  gfx::Rect bounds = window->bounds();
   transform.ConcatTranslate(
       kWindowAnimation_TranslateFactor * bounds.width(),
       kWindowAnimation_TranslateFactor * bounds.height());
@@ -281,8 +280,8 @@ void AnimateHideWindow_Fade(aura::Window* window) {
 ui::Transform BuildWorkspaceSwitchTransform(aura::Window* window) {
   // Animations for transitioning workspaces scale all windows. To give the
   // effect of scaling from the center of the screen the windows are translated.
-  gfx::Rect bounds = window->GetBoundsInPixel();
-  gfx::Rect parent_bounds(window->parent()->GetBoundsInPixel());
+  gfx::Rect bounds = window->bounds();
+  gfx::Rect parent_bounds(window->parent()->bounds());
 
   float mid_x = static_cast<float>(parent_bounds.width()) / 2.0f;
   float initial_x =
@@ -366,9 +365,8 @@ gfx::Rect GetMinimizeRectForWindow(aura::Window* window) {
 void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   // Recalculate the transform at restore time since the launcher item may have
   // moved while the window was minimized.
-  gfx::Rect bounds = window->GetBoundsInPixel();
-  gfx::Rect target_bounds =
-      aura::ConvertRectToPixel(window, GetMinimizeRectForWindow(window));
+  gfx::Rect bounds = window->bounds();
+  gfx::Rect target_bounds = GetMinimizeRectForWindow(window);
 
   float scale_x = static_cast<float>(target_bounds.height()) / bounds.width();
   float scale_y = static_cast<float>(target_bounds.width()) / bounds.height();

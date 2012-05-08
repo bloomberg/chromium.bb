@@ -11,10 +11,6 @@
 #include "build/build_config.h"
 #include "ui/base/ui_export.h"
 
-#if !defined(ENABLE_DIP)
-#error "This class should be used only when DIP feature is enabled"
-#endif
-
 namespace gfx {
 
 // A floating versino of gfx::Insets. This is copied, instead of using

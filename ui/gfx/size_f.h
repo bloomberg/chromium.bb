@@ -12,10 +12,6 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/size_base.h"
 
-#if !defined(ENABLE_DIP)
-#error "This class should be used only when DIP feature is enabled"
-#endif
-
 namespace gfx {
 
 // A floating version of gfx::Size.

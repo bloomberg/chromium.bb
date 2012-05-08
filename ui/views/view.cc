@@ -38,11 +38,6 @@
 #include "ui/views/accessibility/native_view_accessibility_win.h"
 #endif
 
-#if defined(ENABLE_DIP)
-#include "ui/gfx/monitor.h"
-#include "ui/gfx/screen.h"
-#endif
-
 namespace {
 
 // Whether to use accelerated compositing when necessary (e.g. when a view has a
@@ -83,23 +78,6 @@ const views::View* GetHierarchyRoot(const views::View* view) {
   while (root && root->parent())
     root = root->parent();
   return root;
-}
-
-// Converts the rect in DIP coordinates in DIP to pixel coordinates.
-gfx::Rect ConvertRectToPixel(const views::View* view,
-                             const gfx::Rect& rect_in_dip) {
-#if defined(ENABLE_DIP)
-  // If we don't know in which monitor the window is in, just assume
-  // it's in normal density for now.
-  // TODO(oshima): Re-compute layer_'s bounds when the window is
-  // attached to root window.
-  if (view->GetWidget() && view->GetWidget()->GetNativeView()) {
-    gfx::Monitor monitor = gfx::Screen::GetMonitorNearestWindow(
-        view->GetWidget()->GetNativeView());
-    return gfx::Rect(rect_in_dip.Scale(monitor.device_scale_factor()));
-  }
-#endif
-  return rect_in_dip;
 }
 
 }  // namespace
@@ -710,16 +688,16 @@ void View::SchedulePaint() {
   SchedulePaintInRect(GetLocalBounds());
 }
 
-void View::SchedulePaintInRect(const gfx::Rect& rect_in_dip) {
+void View::SchedulePaintInRect(const gfx::Rect& rect) {
   if (!visible_ || !painting_enabled_)
     return;
 
   if (layer()) {
-    layer()->SchedulePaint(ConvertRectToPixel(this, rect_in_dip));
+    layer()->SchedulePaint(rect);
   } else if (parent_) {
     // Translate the requested paint rect to the parent's coordinate system
     // then pass this notification up to the parent.
-    parent_->SchedulePaintInRect(ConvertRectToParent(rect_in_dip));
+    parent_->SchedulePaintInRect(ConvertRectToParent(rect));
   }
 }
 
@@ -1257,17 +1235,6 @@ void View::UpdateChildLayerBounds(const gfx::Point& offset) {
 }
 
 void View::OnPaintLayer(gfx::Canvas* canvas) {
-#if defined(ENABLE_DIP)
-  scoped_ptr<ScopedCanvas> scoped_canvas;
-  if (layer() && GetWidget() && GetWidget()->GetNativeView()) {
-    scoped_canvas.reset(new ScopedCanvas(canvas));
-    float scale =
-        gfx::Screen::GetMonitorNearestWindow(GetWidget()->GetNativeView()).
-        device_scale_factor();
-    canvas->sk_canvas()->scale(SkFloatToScalar(scale), SkFloatToScalar(scale));
-  }
-#endif
-
   if (!layer() || !layer()->fills_bounds_opaquely())
     canvas->DrawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
   PaintCommon(canvas);
@@ -1768,8 +1735,8 @@ void View::RemoveDescendantToNotify(View* view) {
     descendants_to_notify_.reset();
 }
 
-void View::SetLayerBounds(const gfx::Rect& bounds_in_dip) {
-  layer()->SetBounds(ConvertRectToPixel(this, bounds_in_dip));
+void View::SetLayerBounds(const gfx::Rect& bounds) {
+  layer()->SetBounds(bounds);
 }
 
 // Transformations -------------------------------------------------------------

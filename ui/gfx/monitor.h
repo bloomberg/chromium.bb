@@ -14,10 +14,9 @@
 namespace gfx {
 
 // Note: The screen and monitor currently uses pixel coordinate
-// system. With ENABLE_DIP macro (which is enabled with enable_dip=1
-// gyp flag), |bounds()| and |work_area| will return values in DIP
-// coordinate system, not in backing pixels.
-// TODO(oshima): Update the comment when ENABLE_DIP macro is removed.
+// system. For platforms that support DIP (density independent pixel),
+// |bounds()| and |work_area| will return values in DIP coordinate
+// system, not in backing pixels.
 class UI_EXPORT Monitor {
  public:
   // Returns the default value for the device scale factor, which is

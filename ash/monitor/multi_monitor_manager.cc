@@ -57,6 +57,12 @@ void MultiMonitorManager::CycleMonitor() {
   manager->CycleMonitorImpl();
 }
 
+  void MultiMonitorManager::ToggleMonitorScale() {
+  MultiMonitorManager* manager = static_cast<MultiMonitorManager*>(
+      aura::Env::GetInstance()->monitor_manager());
+  manager->ScaleMonitorImpl();
+}
+
 void MultiMonitorManager::OnNativeMonitorsChanged(
     const std::vector<Monitor>& new_monitors) {
   size_t min = std::min(monitors_.size(), new_monitors.size());
@@ -200,6 +206,22 @@ void MultiMonitorManager::CycleMonitorImpl() {
       new_monitors.push_back(monitor);
     }
     new_monitors.push_back(monitors_.front());
+    OnNativeMonitorsChanged(new_monitors);
+  }
+}
+
+void MultiMonitorManager::ScaleMonitorImpl() {
+  if (monitors_.size() > 0) {
+    std::vector<Monitor> new_monitors;
+    for (Monitors::const_iterator iter = monitors_.begin();
+         iter != monitors_.end(); ++iter) {
+      gfx::Monitor monitor = *iter;
+      float factor = monitor.device_scale_factor() == 1.0f ? 2.0f : 1.0f;
+      monitor.SetScaleAndBounds(
+          factor, gfx::Rect(monitor.bounds_in_pixel().origin(),
+                            monitor.size().Scale(factor)));
+      new_monitors.push_back(monitor);
+    }
     OnNativeMonitorsChanged(new_monitors);
   }
 }

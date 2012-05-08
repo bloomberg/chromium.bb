@@ -103,7 +103,7 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
   const std::vector<aura::Window*> windows =
       ash::WindowCycleController::BuildWindowList();
 
-  std::vector<gfx::Rect> regions;
+  std::vector<const gfx::Rect*> regions;
   // Process the window list and check if we can bail immediately.
   for (size_t i = 0; i < windows.size(); i++) {
     // We only include opaque and visible windows.
@@ -115,7 +115,7 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
           ash::wm::IsWindowFullscreen(windows[i]))
         return gfx::Rect(0, 0, 0, 0);
       if (ash::wm::IsWindowNormal(windows[i]))
-        regions.push_back(windows[i]->bounds());
+        regions.push_back(&windows[i]->bounds());
     }
   }
 
@@ -150,9 +150,9 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
       while (y + h <= work_area.height()) {
         size_t i;
         for (i = 0; i < regions.size(); i++) {
-          if (regions[i].Intersects(gfx::Rect(x + work_area.x(),
+          if (regions[i]->Intersects(gfx::Rect(x + work_area.x(),
                                                y + work_area.y(), w, h))) {
-            y = regions[i].bottom() - work_area.y();
+            y = regions[i]->bottom() - work_area.y();
             if (grid > 1) {
               // Align to the (next) grid step.
               y = ash::WindowResizer::AlignToGridRoundUp(y, grid);

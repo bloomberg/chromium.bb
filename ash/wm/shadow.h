@@ -12,10 +12,6 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/rect.h"
 
-namespace aura {
-class Window;
-}  // namespace aura
-
 namespace ui {
 class Layer;
 }  // namespace ui
@@ -44,11 +40,7 @@ class ASH_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   Shadow();
   virtual ~Shadow();
 
-  // |window| is a possibly-arbitrary window that is drawn at the same DPI
-  // (i.e. on the same monitor) as this shadow. The actual bounds for the
-  // shadow still has to be provided through |SetContentBounds()|.
-  // TODO(oshima): move scale factor to ui/compositor/ and remove this.
-  void Init(aura::Window* window, Style style);
+  void Init(Style style);
 
   // Returns |image_grid_|'s ui::Layer.  This is exposed so it can be added to
   // the same layer as the content and stacked below it.  SetContentBounds()

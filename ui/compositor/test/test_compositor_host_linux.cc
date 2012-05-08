@@ -75,7 +75,8 @@ void TestCompositorHostLinux::Show() {
     if (event.type == MapNotify && event.xmap.window == window_)
       break;
   }
-  compositor_.reset(new ui::Compositor(this, window_, bounds_.size()));
+  compositor_.reset(new ui::Compositor(this, window_));
+  compositor_->SetScaleAndSize(1.0f, bounds_.size());
 }
 
 ui::Compositor* TestCompositorHostLinux::GetCompositor() {

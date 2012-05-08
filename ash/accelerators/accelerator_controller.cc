@@ -513,11 +513,14 @@ bool AcceleratorController::AcceleratorPressed(
       return HandlePrintLayerHierarchy();
     case PRINT_WINDOW_HIERARCHY:
       return HandlePrintWindowHierarchy();
-    case ADD_REMOVE_MONITOR:
+    case MONITOR_ADD_REMOVE:
       internal::MultiMonitorManager::AddRemoveMonitor();
       return true;
-    case CYCLE_MONITOR:
+    case MONITOR_CYCLE:
       internal::MultiMonitorManager::CycleMonitor();
+      return true;
+    case MONITOR_TOGGLE_SCALE:
+      internal::MultiMonitorManager::ToggleMonitorScale();
       return true;
 #endif
     default:

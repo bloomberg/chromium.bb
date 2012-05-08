@@ -69,12 +69,8 @@ void Monitor::SetScaleAndBounds(
   // TODO(oshima): For m19, work area/monitor bounds that chrome/webapps sees
   // has (0, 0) origin because it's simpler and enough. Fix this when
   // real multi monitor support is implemented.
-#if defined(ENABLE_DIP)
   bounds_ = gfx::Rect(
       bounds_in_pixel.size().Scale(1.0f / device_scale_factor_));
-#else
-  bounds_ = gfx::Rect(bounds_in_pixel.size());
-#endif
   UpdateWorkAreaFromInsets(insets);
 }
 

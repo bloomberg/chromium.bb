@@ -19,14 +19,12 @@ Path::Path(const Point* points, size_t count) {
     lineTo(SkIntToScalar(points[i].x), SkIntToScalar(points[i].y));
 }
 
-#if defined(ENABLE_DIP)
 Path::Path(const PointF* points, size_t count) {
   DCHECK(count > 1);
   moveTo(SkFloatToScalar(points[0].x), SkFloatToScalar(points[0].y));
   for (size_t i = 1; i < count; ++i)
     lineTo(SkFloatToScalar(points[i].x), SkFloatToScalar(points[i].y));
 }
-#endif
 
 Path::~Path() {
 }

@@ -37,7 +37,7 @@ TEST_F(ImageGridTest, Basic) {
   scoped_ptr<gfx::Image> image_Bx1(CreateImage(gfx::Size(kBorder, 1)));
   scoped_ptr<gfx::Image> image_BxB(CreateImage(gfx::Size(kBorder, kBorder)));
 
-  ImageGrid grid(NULL);
+  ImageGrid grid;
   grid.SetImages(image_BxB.get(), image_1xB.get(), image_BxB.get(),
                  image_Bx1.get(), image_1x1.get(), image_Bx1.get(),
                  image_BxB.get(), image_1xB.get(), image_BxB.get());
@@ -129,7 +129,7 @@ TEST_F(ImageGridTest, SetContentBounds) {
   scoped_ptr<gfx::Image> image_Bx1(CreateImage(gfx::Size(kBorder, 1)));
   scoped_ptr<gfx::Image> image_BxB(CreateImage(gfx::Size(kBorder, kBorder)));
 
-  ImageGrid grid(NULL);
+  ImageGrid grid;
   grid.SetImages(image_BxB.get(), image_1xB.get(), image_BxB.get(),
                  image_Bx1.get(), image_1x1.get(), image_Bx1.get(),
                  image_BxB.get(), image_1xB.get(), image_BxB.get());
@@ -154,7 +154,7 @@ TEST_F(ImageGridTest, SingleImage) {
   const int kBorder = 1;
   scoped_ptr<gfx::Image> image(CreateImage(gfx::Size(kBorder, kBorder)));
 
-  ImageGrid grid(NULL);
+  ImageGrid grid;
   grid.SetImages(NULL, image.get(), NULL,
                  NULL, NULL, NULL,
                  NULL, NULL, NULL);
@@ -186,7 +186,7 @@ TEST_F(ImageGridTest, ResetImages) {
   const int kBorder = 1;
   scoped_ptr<gfx::Image> image(CreateImage(gfx::Size(kBorder, kBorder)));
 
-  ImageGrid grid(NULL);
+  ImageGrid grid;
   grid.SetImages(NULL, image.get(), NULL,
                  NULL, NULL, NULL,
                  NULL, NULL, NULL);
@@ -234,7 +234,7 @@ TEST_F(ImageGridTest, SmallerSides) {
   scoped_ptr<gfx::Image> left_image(CreateImage(gfx::Size(kEdge, kEdge)));
   scoped_ptr<gfx::Image> right_image(CreateImage(gfx::Size(kEdge, kEdge)));
 
-  ImageGrid grid(NULL);
+  ImageGrid grid;
   grid.SetImages(top_left_image.get(), top_image.get(), top_right_image.get(),
                  left_image.get(), NULL, right_image.get(),
                  NULL, NULL, NULL);
@@ -287,7 +287,7 @@ TEST_F(ImageGridTest, TooSmall) {
   scoped_ptr<gfx::Image> bottom_right_image(
       CreateImage(gfx::Size(kCorner, kCorner)));
 
-  ImageGrid grid(NULL);
+  ImageGrid grid;
   grid.SetImages(
       top_left_image.get(), top_image.get(), top_right_image.get(),
       left_image.get(), center_image.get(), right_image.get(),

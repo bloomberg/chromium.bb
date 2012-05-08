@@ -9,8 +9,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "ui/compositor/compositor_observer.h"
+#include "ui/compositor/compositor_setup.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/test/test_compositor_host.h"
@@ -18,8 +22,6 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gfx/skia_util.h"
-
-#include "ui/compositor/compositor_setup.h"
 
 namespace ui {
 
@@ -220,18 +222,27 @@ class TestLayerDelegate : public LayerDelegate {
   const gfx::Size& paint_size() const { return paint_size_; }
   int color_index() const { return color_index_; }
 
+  std::string ToScaleString() const {
+    return StringPrintf("%.1f %.1f", scale_x_, scale_y_);
+  }
+
   // Overridden from LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
     SkBitmap contents = canvas->ExtractBitmap();
     paint_size_ = gfx::Size(contents.width(), contents.height());
     canvas->FillRect(gfx::Rect(paint_size_), colors_[color_index_]);
     color_index_ = (color_index_ + 1) % static_cast<int>(colors_.size());
+    const SkMatrix& matrix = canvas->sk_canvas()->getTotalMatrix();
+    scale_x_ = matrix.getScaleX();
+    scale_y_ = matrix.getScaleY();
   }
 
  private:
   std::vector<SkColor> colors_;
   int color_index_;
   gfx::Size paint_size_;
+  float scale_x_;
+  float scale_y_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLayerDelegate);
 };
@@ -315,6 +326,9 @@ class TestCompositorObserver : public CompositorObserver {
 #define MAYBE_CompositorObservers DISABLED_CompositorObservers
 #define MAYBE_ModifyHierarchy DISABLED_ModifyHierarchy
 #define MAYBE_Opacity DISABLED_Opacity
+#define MAYBE_ScaleUpDown DISABLED_ScaleUpDown
+#define MAYBE_ScaleReparent DISABLED_ScaleReparent
+#define MAYBE_NoScaleCanvas DISABLED_NoScaleCanvas
 #else
 #define MAYBE_Delegate DISABLED_Delegate
 #define MAYBE_Draw Draw
@@ -326,6 +340,9 @@ class TestCompositorObserver : public CompositorObserver {
 #define MAYBE_CompositorObservers DISABLED_CompositorObservers
 #define MAYBE_ModifyHierarchy ModifyHierarchy
 #define MAYBE_Opacity Opacity
+#define MAYBE_ScaleUpDown ScaleUpDown
+#define MAYBE_ScaleReparent ScaleReparent
+#define MAYBE_NoScaleCanvas NoScaleCanvas
 #endif
 
 TEST_F(LayerWithRealCompositorTest, MAYBE_Draw) {
@@ -366,7 +383,8 @@ class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
   virtual void SetUp() OVERRIDE {
     ui::SetupTestCompositor();
     compositor_.reset(new Compositor(
-          this, gfx::kNullAcceleratedWidget, gfx::Size(1000, 1000)));
+        this, gfx::kNullAcceleratedWidget));
+    compositor_->SetScaleAndSize(1.0f, gfx::Size(1000, 1000));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -857,7 +875,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_CompositorObservers) {
 
 // Checks that modifying the hierarchy correctly affects final composite.
 TEST_F(LayerWithRealCompositorTest, MAYBE_ModifyHierarchy) {
-  GetCompositor()->WidgetSizeChanged(gfx::Size(50, 50));
+  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(50, 50));
 
   // l0
   //  +-l11
@@ -917,7 +935,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ModifyHierarchy) {
 // Opacity is rendered correctly.
 // Checks that modifying the hierarchy correctly affects final composite.
 TEST_F(LayerWithRealCompositorTest, MAYBE_Opacity) {
-  GetCompositor()->WidgetSizeChanged(gfx::Size(50, 50));
+  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(50, 50));
 
   // l0
   //  +-l11
@@ -1019,6 +1037,146 @@ TEST_F(LayerWithDelegateTest, SchedulePaintFromOnPaintLayer) {
   EXPECT_EQ(1, child_delegate.GetPaintCountAndClear());
   EXPECT_TRUE(child_delegate.last_clip_rect().Contains(
                   gfx::Rect(10, 10, 30, 30)));
+}
+
+TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleUpDown) {
+  test::ScopedDIPEnablerForTest enable;
+
+  scoped_ptr<Layer> root(CreateColorLayer(SK_ColorWHITE,
+                                          gfx::Rect(10, 20, 200, 220)));
+  TestLayerDelegate root_delegate;
+  root_delegate.AddColor(SK_ColorWHITE);
+  root->set_delegate(&root_delegate);
+
+  scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorWHITE,
+                                        gfx::Rect(10, 20, 140, 180)));
+  TestLayerDelegate l1_delegate;
+  l1_delegate.AddColor(SK_ColorWHITE);
+  l1->set_delegate(&l1_delegate);
+
+  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(500, 500));
+  GetCompositor()->SetRootLayer(root.get());
+  root->Add(l1.get());
+  RunPendingMessages();
+
+  EXPECT_EQ("10,20 200x220", root->bounds().ToString());
+  EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
+  gfx::Size size_in_pixel = root->web_layer().bounds();
+  EXPECT_EQ("200x220", size_in_pixel.ToString());
+  size_in_pixel = l1->web_layer().bounds();
+  EXPECT_EQ("140x180", size_in_pixel.ToString());
+
+  SchedulePaintForLayer(root.get());
+  SchedulePaintForLayer(l1.get());
+  RunPendingMessages();
+
+  EXPECT_EQ("200x220", root_delegate.paint_size().ToString());
+  EXPECT_EQ("140x180", l1_delegate.paint_size().ToString());
+
+  // Scale up to 2.0. Changing scale doesn't change the bounds in DIP.
+  GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(500, 500));
+  EXPECT_EQ("10,20 200x220", root->bounds().ToString());
+  EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
+  // Pixel size must have been scaled up.
+  size_in_pixel = root->web_layer().bounds();
+  EXPECT_EQ("400x440", size_in_pixel.ToString());
+  size_in_pixel = l1->web_layer().bounds();
+  EXPECT_EQ("280x360", size_in_pixel.ToString());
+
+  // Canvas size must have been scaled down up.
+  SchedulePaintForLayer(root.get());
+  SchedulePaintForLayer(l1.get());
+  RunPendingMessages();
+  EXPECT_EQ("400x440", root_delegate.paint_size().ToString());
+  EXPECT_EQ("2.0 2.0", root_delegate.ToScaleString());
+  EXPECT_EQ("280x360", l1_delegate.paint_size().ToString());
+  EXPECT_EQ("2.0 2.0", l1_delegate.ToScaleString());
+
+  // Scale down back to 1.0f.
+  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(500, 500));
+  EXPECT_EQ("10,20 200x220", root->bounds().ToString());
+  EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
+  // Pixel size must have been scaled down.
+  size_in_pixel = root->web_layer().bounds();
+  EXPECT_EQ("200x220", size_in_pixel.ToString());
+  size_in_pixel = l1->web_layer().bounds();
+  EXPECT_EQ("140x180", size_in_pixel.ToString());
+
+  // Canvas size must have been scaled down too.
+  SchedulePaintForLayer(root.get());
+  SchedulePaintForLayer(l1.get());
+  RunPendingMessages();
+  EXPECT_EQ("200x220", root_delegate.paint_size().ToString());
+  EXPECT_EQ("1.0 1.0", root_delegate.ToScaleString());
+  EXPECT_EQ("140x180", l1_delegate.paint_size().ToString());
+  EXPECT_EQ("1.0 1.0", l1_delegate.ToScaleString());
+}
+
+TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleReparent) {
+  test::ScopedDIPEnablerForTest enable;
+  scoped_ptr<Layer> root(CreateColorLayer(SK_ColorWHITE,
+                                          gfx::Rect(10, 20, 200, 220)));
+  scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorWHITE,
+                                        gfx::Rect(10, 20, 140, 180)));
+  TestLayerDelegate l1_delegate;
+  l1_delegate.AddColor(SK_ColorWHITE);
+  l1->set_delegate(&l1_delegate);
+
+  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(500, 500));
+  GetCompositor()->SetRootLayer(root.get());
+  RunPendingMessages();
+
+  root->Add(l1.get());
+  EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
+  gfx::Size size_in_pixel = l1->web_layer().bounds();
+  EXPECT_EQ("140x180", size_in_pixel.ToString());
+
+  SchedulePaintForLayer(l1.get());
+  RunPendingMessages();
+  EXPECT_EQ("140x180", l1_delegate.paint_size().ToString());
+  EXPECT_EQ("1.0 1.0", l1_delegate.ToScaleString());
+
+  // Remove l1 from root and change the scale.
+  root->Remove(l1.get());
+  EXPECT_EQ(NULL, l1->parent());
+  EXPECT_EQ(NULL, l1->GetCompositor());
+  GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(500, 500));
+  // Sanity check on root and l1.
+  EXPECT_EQ("10,20 200x220", root->bounds().ToString());
+  size_in_pixel = l1->web_layer().bounds();
+  EXPECT_EQ("140x180", size_in_pixel.ToString());
+
+
+  root->Add(l1.get());
+  EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
+  size_in_pixel = l1->web_layer().bounds();
+  EXPECT_EQ("280x360", size_in_pixel.ToString());
+  SchedulePaintForLayer(l1.get());
+  RunPendingMessages();
+  EXPECT_EQ("280x360", l1_delegate.paint_size().ToString());
+  EXPECT_EQ("2.0 2.0", l1_delegate.ToScaleString());
+}
+
+// Tests layer::set_scale_canvas(false).
+TEST_F(LayerWithRealCompositorTest, MAYBE_NoScaleCanvas) {
+  test::ScopedDIPEnablerForTest enable;
+  scoped_ptr<Layer> root(CreateColorLayer(SK_ColorWHITE,
+                                          gfx::Rect(10, 20, 200, 220)));
+  scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorWHITE,
+                                        gfx::Rect(10, 20, 140, 180)));
+  l1->set_scale_canvas(false);
+  root->Add(l1.get());
+  TestLayerDelegate l1_delegate;
+  l1_delegate.AddColor(SK_ColorWHITE);
+  l1->set_delegate(&l1_delegate);
+
+  GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(500, 500));
+  GetCompositor()->SetRootLayer(root.get());
+
+  SchedulePaintForLayer(l1.get());
+  RunPendingMessages();
+  EXPECT_EQ("280x360", l1_delegate.paint_size().ToString());
+  EXPECT_EQ("1.0 1.0", l1_delegate.ToScaleString());
 }
 
 } // namespace ui

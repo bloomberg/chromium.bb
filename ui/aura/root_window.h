@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "ui/aura/aura_export.h"
-#include "ui/aura/dip_util.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
@@ -105,11 +104,11 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void ShowRootWindow();
 
   // Sets the size of the root window.
-  void SetHostSize(const gfx::Size& size);
+  void SetHostSize(const gfx::Size& size_in_pixel);
   gfx::Size GetHostSize() const;
 
   // Sets the bounds of the host window.
-  void SetHostBounds(const gfx::Rect& size);
+  void SetHostBounds(const gfx::Rect& size_in_pixel);
 
   // Returns where the RootWindow is on screen.
   gfx::Point GetHostOrigin() const;
@@ -155,7 +154,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   bool DispatchGestureEvent(GestureEvent* event);
 
   // Called when the host changes size.
-  void OnHostResized(const gfx::Size& size);
+  void OnHostResized(const gfx::Size& size_in_pixel);
 
   // Invoked when |window| is being destroyed.
   void OnWindowDestroying(Window* window);

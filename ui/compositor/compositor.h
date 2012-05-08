@@ -111,7 +111,7 @@ class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
 
   unsigned int texture_id_;
   bool flipped_;
-  gfx::Size size_;
+  gfx::Size size_;  // in pixel
 
   DISALLOW_COPY_AND_ASSIGN(Texture);
 };
@@ -135,8 +135,7 @@ class COMPOSITOR_EXPORT Compositor
     : NON_EXPORTED_BASE(public WebKit::WebLayerTreeViewClient) {
  public:
   Compositor(CompositorDelegate* delegate,
-             gfx::AcceleratedWidget widget,
-             const gfx::Size& size);
+             gfx::AcceleratedWidget widget);
   virtual ~Compositor();
 
   static void Initialize(bool useThread);
@@ -154,6 +153,10 @@ class COMPOSITOR_EXPORT Compositor
   Layer* root_layer() { return root_layer_; }
   void SetRootLayer(Layer* root_layer);
 
+  // The scale factor of the device that this compositor is
+  // compositing layers on.
+  float device_scale_factor() const { return device_scale_factor_; }
+
   // Draws the scene created by the layer tree and any visual effects. If
   // |force_clear| is true, this will cause the compositor to clear before
   // compositing.
@@ -164,16 +167,15 @@ class COMPOSITOR_EXPORT Compositor
   // the whole frame needs to be drawn.
   void ScheduleFullDraw();
 
-  // Reads the region |bounds| of the contents of the last rendered frame
-  // into the given bitmap.
+  // Reads the region |bounds_in_pixel| of the contents of the last rendered
+  // frame into the given bitmap.
   // Returns false if the pixels could not be read.
-  bool ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds);
+  bool ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds_in_pixel);
 
-  // Notifies the compositor that the size of the widget that it is
-  // drawing to has changed.
-  void WidgetSizeChanged(const gfx::Size& size);
+  // Sets the compositor's device scale factor and size.
+  void SetScaleAndSize(float scale, const gfx::Size& size_in_pixel);
 
-  // Returns the size of the widget that is being drawn to.
+  // Returns the size of the widget that is being drawn to in pixel coordinates.
   const gfx::Size& size() const { return size_; }
 
   // Returns the widget for this compositor.
@@ -238,6 +240,10 @@ class COMPOSITOR_EXPORT Compositor
   // This is set to true when the swap buffers has been posted and we're waiting
   // for completion.
   bool swap_posted_;
+
+  // The device scale factor of the monitor that this compositor is compositing
+  // layers on.
+  float device_scale_factor_;
 };
 
 }  // namespace ui

@@ -49,7 +49,7 @@ ResizeShadow::~ResizeShadow() {}
 void ResizeShadow::Init(aura::Window* window) {
   // Set up our image grid and images.
   ResourceBundle& res = ResourceBundle::GetSharedInstance();
-  image_grid_.reset(new ImageGrid(window));
+  image_grid_.reset(new ImageGrid);
   image_grid_->SetImages(
       &res.GetImageNamed(IDR_AURA_RESIZE_SHADOW_TOP_LEFT),
       &res.GetImageNamed(IDR_AURA_RESIZE_SHADOW_TOP),

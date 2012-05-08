@@ -29,7 +29,6 @@ TEST(MonitorTest, WorkArea) {
   EXPECT_EQ("4,3 190x192", monitor.work_area().ToString());
 }
 
-#if defined(ENABLE_DIP)
 TEST(MonitorTest, Scale) {
   gfx::Monitor monitor(0, gfx::Rect(0, 0, 100, 100));
   monitor.set_work_area(gfx::Rect(10, 10, 80, 80));
@@ -46,6 +45,5 @@ TEST(MonitorTest, Scale) {
   EXPECT_EQ("0,0 100x100", monitor.bounds().ToString());
   EXPECT_EQ("10,10 80x80", monitor.work_area().ToString());
 }
-#endif
 
 }

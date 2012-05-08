@@ -20,10 +20,12 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSolidColorLayer.h"
 #include "ui/base/animation/animation.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/point3.h"
+#include "ui/gfx/monitor.h"
 
 namespace {
 
@@ -50,7 +52,9 @@ Layer::Layer()
       fills_bounds_opaquely_(true),
       layer_updated_externally_(false),
       opacity_(1.0f),
-      delegate_(NULL) {
+      delegate_(NULL),
+      scale_canvas_(true),
+      device_scale_factor_(1.0f) {
   CreateWebLayer();
 }
 
@@ -62,7 +66,9 @@ Layer::Layer(LayerType type)
       fills_bounds_opaquely_(true),
       layer_updated_externally_(false),
       opacity_(1.0f),
-      delegate_(NULL) {
+      delegate_(NULL),
+      scale_canvas_(true),
+      device_scale_factor_(1.0f) {
   CreateWebLayer();
 }
 
@@ -91,6 +97,8 @@ void Layer::SetCompositor(Compositor* compositor) {
   DCHECK(!compositor || compositor->root_layer() == this);
   DCHECK(!parent_);
   compositor_ = compositor;
+  if (IsDIPEnabled() && compositor)
+    OnDeviceScaleFactorChanged(compositor->device_scale_factor());
 }
 
 void Layer::Add(Layer* child) {
@@ -100,6 +108,8 @@ void Layer::Add(Layer* child) {
   child->parent_ = this;
   children_.push_back(child);
   web_layer_.addChild(child->web_layer_);
+  if (IsDIPEnabled())
+    child->OnDeviceScaleFactorChanged(device_scale_factor_);
 }
 
 void Layer::Remove(Layer* child) {
@@ -234,6 +244,8 @@ void Layer::ConvertPointToLayer(const Layer* source,
   const Layer* root_layer = GetRoot(source);
   CHECK_EQ(root_layer, GetRoot(target));
 
+  // TODO(oshima): We probably need to handle source's root != target's root
+  // case under multi monitor environment.
   if (source != root_layer)
     source->ConvertPointForAncestor(root_layer, point);
   if (target != root_layer)
@@ -297,10 +309,11 @@ void Layer::SetColor(SkColor color) {
 bool Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
   if (type_ == LAYER_SOLID_COLOR || !delegate_)
     return false;
-  damaged_region_.op(invalid_rect.x(),
-                     invalid_rect.y(),
-                     invalid_rect.right(),
-                     invalid_rect.bottom(),
+  gfx::Rect invalid_rect_in_pixel = ConvertRectToPixel(this, invalid_rect);
+  damaged_region_.op(invalid_rect_in_pixel.x(),
+                     invalid_rect_in_pixel.y(),
+                     invalid_rect_in_pixel.right(),
+                     invalid_rect_in_pixel.bottom(),
                      SkRegion::kUnion_Op);
   ScheduleDraw();
   return true;
@@ -342,12 +355,30 @@ void Layer::SuppressPaint() {
     children_[i]->SuppressPaint();
 }
 
+void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
+  CHECK(IsDIPEnabled());
+  if (device_scale_factor_ == device_scale_factor)
+    return;
+  device_scale_factor_ = device_scale_factor;
+  RecomputeTransform();
+  RecomputeDrawsContentAndUVRect();
+  for (size_t i = 0; i < children_.size(); ++i)
+    children_[i]->OnDeviceScaleFactorChanged(device_scale_factor);
+}
+
 void Layer::paintContents(WebKit::WebCanvas* web_canvas,
                           const WebKit::WebRect& clip) {
   TRACE_EVENT0("ui", "Layer::paintContents");
   gfx::Canvas canvas(web_canvas);
+  bool scale_canvas = IsDIPEnabled() && scale_canvas_;
+  if (scale_canvas) {
+    canvas.sk_canvas()->scale(SkFloatToScalar(device_scale_factor_),
+                              SkFloatToScalar(device_scale_factor_));
+  }
   if (delegate_)
     delegate_->OnPaintLayer(&canvas);
+  if (scale_canvas)
+    canvas.Restore();
 }
 
 float Layer::GetCombinedOpacity() const {
@@ -508,14 +539,28 @@ void Layer::CreateWebLayer() {
   show_debug_borders_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUIShowLayerBorders);
   web_layer_.setDebugBorderWidth(show_debug_borders_ ? 2 : 0);
-  RecomputeDrawsContentAndUVRect();
-  RecomputeDebugBorderColor();
 }
 
 void Layer::RecomputeTransform() {
-  ui::Transform transform = transform_;
-  transform.ConcatTranslate(bounds_.x(), bounds_.y());
-  web_layer_.setTransform(transform.matrix());
+  if (IsDIPEnabled()) {
+    ui::Transform scale_translate;
+    scale_translate.matrix().set3x3(device_scale_factor_, 0, 0,
+                                    0, device_scale_factor_, 0,
+                                    0, 0, 1);
+    // Start with the inverse matrix of above.
+    Transform transform;
+    transform.matrix().set3x3(1.0f / device_scale_factor_, 0, 0,
+                              0, 1.0f / device_scale_factor_, 0,
+                              0, 0, 1);
+    transform.ConcatTransform(transform_);
+    transform.ConcatTranslate(bounds_.x(), bounds_.y());
+    transform.ConcatTransform(scale_translate);
+    web_layer_.setTransform(transform.matrix());
+  } else {
+    Transform t = transform_;
+    t.ConcatTranslate(bounds_.x(), bounds_.y());
+    web_layer_.setTransform(t.matrix());
+  }
 }
 
 void Layer::RecomputeDrawsContentAndUVRect() {
@@ -524,16 +569,17 @@ void Layer::RecomputeDrawsContentAndUVRect() {
   if (!web_layer_is_accelerated_) {
     if (type_ != LAYER_SOLID_COLOR)
       web_layer_.to<WebKit::WebContentLayer>().setDrawsContent(should_draw);
-    web_layer_.setBounds(bounds_.size());
+    web_layer_.setBounds(ConvertSizeToPixel(this, bounds_.size()));
   } else {
     DCHECK(texture_);
     unsigned int texture_id = texture_->texture_id();
     WebKit::WebExternalTextureLayer texture_layer =
         web_layer_.to<WebKit::WebExternalTextureLayer>();
     texture_layer.setTextureId(should_draw ? texture_id : 0);
+    gfx::Rect bounds_in_pixel = ConvertRectToPixel(this, bounds());
     gfx::Size texture_size = texture_->size();
-    gfx::Size size(std::min(bounds_.width(), texture_size.width()),
-                   std::min(bounds_.height(), texture_size.height()));
+    gfx::Size size(std::min(bounds_in_pixel.width(), texture_size.width()),
+                   std::min(bounds_in_pixel.height(), texture_size.height()));
     WebKit::WebFloatRect rect(
         0,
         0,

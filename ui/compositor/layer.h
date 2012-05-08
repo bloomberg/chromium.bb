@@ -36,6 +36,8 @@ class Texture;
 // has enabled layers ends up creating a Layer to manage the texture.
 // A Layer can also be created without a texture, in which case it renders
 // nothing and is simply used as a node in a hierarchy of layers.
+// Coordinate system used in layers is DIP (Density Independent Pixel)
+// coordinates unless explicitly mentioned as pixel coordinates.
 //
 // NOTE: unlike Views, each Layer does *not* own its children views. If you
 // delete a Layer and it has children, the parent of each child layer is set to
@@ -193,6 +195,14 @@ class COMPOSITOR_EXPORT Layer :
   // new paint requests.
   void SuppressPaint();
 
+  // Notifies the layer that the device scale factor has changed.
+  void OnDeviceScaleFactorChanged(float device_scale_factor);
+
+  // Sets if the layer should scale the canvas before passing to
+  // |LayerDelegate::OnLayerPaint|. Set to false if the delegate
+  // handles scaling.
+  void set_scale_canvas(bool scale_canvas) { scale_canvas_ = scale_canvas; }
+
   // Sometimes the Layer is being updated by something other than SetCanvas
   // (e.g. the GPU process on UI_COMPOSITOR_IMAGE_TRANSPORT).
   bool layer_updated_externally() const { return layer_updated_externally_; }
@@ -201,6 +211,8 @@ class COMPOSITOR_EXPORT Layer :
   virtual void paintContents(WebKit::WebCanvas*, const WebKit::WebRect& clip);
 
   WebKit::WebLayer web_layer() { return web_layer_; }
+
+  float device_scale_factor() const { return device_scale_factor_; }
 
  private:
   struct LayerProperties {
@@ -276,8 +288,8 @@ class COMPOSITOR_EXPORT Layer :
   // If true the layer is always up to date.
   bool layer_updated_externally_;
 
-  // Union of damaged rects to be used when compositor is ready to
-  // paint the content.
+  // Union of damaged rects, in pixel coordinates, to be used when
+  // compositor is ready to paint the content.
   SkRegion damaged_region_;
 
   float opacity_;
@@ -292,6 +304,13 @@ class COMPOSITOR_EXPORT Layer :
   WebKit::WebLayer web_layer_;
   bool web_layer_is_accelerated_;
   bool show_debug_borders_;
+
+  // If true, the layer scales the canvas using device scale factor
+  // before passing to LayerDelegate::OnLayerPaint.
+  bool scale_canvas_;
+
+  // A cached copy of |Compositor::device_scale_factor()|.
+  float device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

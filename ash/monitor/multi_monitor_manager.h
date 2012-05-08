@@ -37,6 +37,7 @@ class ASH_EXPORT MultiMonitorManager : public aura::MonitorManager,
   // of on a device.
   static void AddRemoveMonitor();
   static void CycleMonitor();
+  static void ToggleMonitorScale();
 
   bool UpdateWorkAreaOfMonitorNearestWindow(const aura::Window* window,
                                             const gfx::Insets& insets);
@@ -64,6 +65,7 @@ class ASH_EXPORT MultiMonitorManager : public aura::MonitorManager,
   void Init();
   void AddRemoveMonitorImpl();
   void CycleMonitorImpl();
+  void ScaleMonitorImpl();
   gfx::Monitor& FindMonitorById(int id);
 
   Monitors monitors_;

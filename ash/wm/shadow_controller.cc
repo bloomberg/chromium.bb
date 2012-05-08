@@ -162,8 +162,7 @@ void ShadowController::CreateShadowForWindow(aura::Window* window) {
   linked_ptr<Shadow> shadow(new Shadow());
   window_shadows_.insert(make_pair(window, shadow));
 
-  shadow->Init(window,
-               ShouldUseSmallShadowForWindow(window) ?
+  shadow->Init(ShouldUseSmallShadowForWindow(window) ?
                Shadow::STYLE_SMALL : Shadow::STYLE_ACTIVE);
   shadow->SetContentBounds(gfx::Rect(window->bounds().size()));
   shadow->layer()->SetVisible(ShouldShowShadowForWindow(window));

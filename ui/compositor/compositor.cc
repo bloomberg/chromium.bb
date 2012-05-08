@@ -14,6 +14,7 @@
 #include "third_party/skia/include/images/SkImageEncoder.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test_web_graphics_context_3d.h"
 #include "ui/gfx/gl/gl_context.h"
@@ -119,14 +120,13 @@ Texture::~Texture() {
 }
 
 Compositor::Compositor(CompositorDelegate* delegate,
-                       gfx::AcceleratedWidget widget,
-                       const gfx::Size& size)
+                       gfx::AcceleratedWidget widget)
     : delegate_(delegate),
-      size_(size),
       root_layer_(NULL),
       widget_(widget),
       root_web_layer_(WebKit::WebLayer::create()),
-      swap_posted_(false) {
+      swap_posted_(false),
+      device_scale_factor_(0.0f) {
   WebKit::WebLayerTreeView::Settings settings;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   settings.showFPSCounter =
@@ -142,7 +142,6 @@ Compositor::Compositor(CompositorDelegate* delegate,
 
   host_.initialize(this, root_web_layer_, settings);
   root_web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
-  WidgetSizeChanged(size_);
 }
 
 Compositor::~Compositor() {
@@ -210,32 +209,42 @@ void Compositor::ScheduleFullDraw() {
   host_.setNeedsRedraw();
 }
 
-bool Compositor::ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds) {
-  if (bounds.right() > size().width() || bounds.bottom() > size().height())
+bool Compositor::ReadPixels(SkBitmap* bitmap,
+                            const gfx::Rect& bounds_in_pixel) {
+  if (bounds_in_pixel.right() > size().width() ||
+      bounds_in_pixel.bottom() > size().height())
     return false;
   // Convert to OpenGL coordinates.
-  gfx::Point new_origin(bounds.x(),
-                        size().height() - bounds.height() - bounds.y());
+  gfx::Point new_origin(
+      bounds_in_pixel.x(),
+      size().height() - bounds_in_pixel.height() - bounds_in_pixel.y());
 
   bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                    bounds.width(), bounds.height());
+                    bounds_in_pixel.width(), bounds_in_pixel.height());
   bitmap->allocPixels();
   SkAutoLockPixels lock_image(*bitmap);
   unsigned char* pixels = static_cast<unsigned char*>(bitmap->getPixels());
-  if (host_.compositeAndReadback(pixels,
-                                 gfx::Rect(new_origin, bounds.size()))) {
-    SwizzleRGBAToBGRAAndFlip(pixels, bounds.size());
+  if (host_.compositeAndReadback(
+          pixels, gfx::Rect(new_origin, bounds_in_pixel.size()))) {
+    SwizzleRGBAToBGRAAndFlip(pixels, bounds_in_pixel.size());
     return true;
   }
   return false;
 }
 
-void Compositor::WidgetSizeChanged(const gfx::Size& size) {
-  if (size.IsEmpty())
+void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
+  DCHECK(scale > 0);
+  if (size_in_pixel.IsEmpty() || scale <= 0)
     return;
-  size_ = size;
-  host_.setViewportSize(size_);
-  root_web_layer_.setBounds(size_);
+  size_ = size_in_pixel;
+  host_.setViewportSize(size_in_pixel);
+  root_web_layer_.setBounds(size_in_pixel);
+
+  if (device_scale_factor_ != scale && IsDIPEnabled()) {
+    device_scale_factor_ = scale;
+    if (root_layer_)
+      root_layer_->OnDeviceScaleFactorChanged(scale);
+  }
 }
 
 void Compositor::AddObserver(CompositorObserver* observer) {

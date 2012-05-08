@@ -8,6 +8,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/rect.h"
@@ -25,6 +26,8 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
   // the desktop.
   read_pixels_bounds.set_origin(
       snapshot_bounds.origin().Add(window->bounds().origin()));
+  read_pixels_bounds =
+      ui::ConvertRectToPixel(window->layer(), read_pixels_bounds);
 
   DCHECK_GE(compositor->size().width(), read_pixels_bounds.right());
   DCHECK_GE(compositor->size().height(), read_pixels_bounds.bottom());
