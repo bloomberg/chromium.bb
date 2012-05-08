@@ -238,24 +238,9 @@ struct TemplateURLData {
   // shows this when the user selects a substituting match.
   string16 short_name;
 
-  // The shortcut for this TemplateURL.  May be empty.
+  // The shortcut for this TemplateURL.  |keyword| must be non-empty.
   void SetKeyword(const string16& keyword);
-  const string16& keyword(TemplateURL* t_url) const;
-  // TODO(pkasting): This should only be necessary until we eliminate keyword
-  // autogeneration.
-  const string16& raw_keyword() const { return keyword_; }
-
-  // Whether to autogenerate a keyword in TemplateURL::GetKeyword().  Most
-  // consumers should not need this.
-  // NOTE: Calling SetKeyword() turns this back off.  Manual and automatic
-  // keywords are mutually exclusive.
-  void SetAutogenerateKeyword(bool autogenerate_keyword);
-  bool autogenerate_keyword() const { return autogenerate_keyword_; }
-
-  // Ensures that the keyword is generated.  Most consumers should not need this
-  // because it is done automatically.  Use this method on the UI thread, so
-  // the keyword may be accessed on another thread.
-  void EnsureKeyword(TemplateURL* t_url) const;
+  const string16& keyword() const { return keyword_; }
 
   // The raw URL for the TemplateURL, which may not be valid as-is (e.g. because
   // it requires substitutions first).  This must be non-empty.
@@ -325,15 +310,8 @@ struct TemplateURLData {
  private:
   // Private so we can enforce using the setters and thus enforce that these
   // fields are never empty.
-  // TODO(pkasting): |keyword_| is temporarily still allowed to be empty.
-  mutable string16 keyword_;
+  string16 keyword_;
   std::string url_;
-
-  // TODO(pkasting): These fields will go away soon.
-  bool autogenerate_keyword_;
-  // True if the keyword was generated. This is used to avoid multiple attempts
-  // if generating a keyword failed.
-  mutable bool keyword_generated_;
 };
 
 
@@ -372,18 +350,7 @@ class TemplateURL {
   // displayed even if it is LTR and the UI is RTL.
   string16 AdjustedShortNameForLocaleDirection() const;
 
-  const string16& keyword() const {
-    // TODO(pkasting): See comment on EnsureKeyword() below.
-    return data_.keyword(const_cast<TemplateURL*>(this));
-  }
-  bool autogenerate_keyword() const {
-    return data_.autogenerate_keyword();
-  }
-  void EnsureKeyword() const {
-    // TODO(pkasting): EnsureKeyword() will die soon so it's not worth jumping
-    // through hoops to fix this const_cast<>().
-    data_.EnsureKeyword(const_cast<TemplateURL*>(this));
-  }
+  const string16& keyword() const { return data_.keyword(); }
 
   const std::string& url() const { return data_.url(); }
   const std::string& suggestions_url() const { return data_.suggestions_url; }
@@ -429,6 +396,15 @@ class TemplateURL {
   bool SupportsReplacementUsingTermsData(
       const SearchTermsData& search_terms_data) const;
 
+  // Returns true if this TemplateURL uses Google base URLs and has a keyword
+  // of "google.TLD".  We use this to decide whether we can automatically
+  // update the keyword to reflect the current Google base URL TLD.
+  bool IsGoogleSearchURLWithReplaceableKeyword() const;
+
+  // Returns true if the keywords match or if
+  // IsGoogleSearchURLWithReplaceableKeyword() is true for both TemplateURLs.
+  bool HasSameKeywordAs(const TemplateURL& other) const;
+
   std::string GetExtensionId() const;
   bool IsExtensionKeyword() const;
 
@@ -437,6 +413,13 @@ class TemplateURL {
 
   void SetURL(const std::string& url);
   void SetPrepopulateId(int id);
+
+  // Resets the keyword if IsGoogleSearchURLWithReplaceableKeyword() or |force|.
+  // The |force| parameter is useful when the existing keyword is known to be
+  // a placeholder.  The resulting keyword is generated using
+  // TemplateURLService::GenerateSearchURL() and
+  // TemplateURLService::GenerateKeyword().
+  void ResetKeywordIfNecessary(bool force);
 
   // Invalidates cached values on this object and its child TemplateURLRefs.
   void InvalidateCachedValues();

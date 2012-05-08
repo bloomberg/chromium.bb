@@ -491,20 +491,6 @@ TEST_F(TemplateURLTest, GoogleBaseSuggestURL) {
     CheckSuggestBaseURL(data[i].base_url, data[i].base_suggest_url);
 }
 
-TEST_F(TemplateURLTest, Keyword) {
-  TemplateURLData data;
-  data.SetURL("http://www.google.com/search");
-  EXPECT_FALSE(data.autogenerate_keyword());
-  data.SetKeyword(ASCIIToUTF16("foo"));
-  EXPECT_EQ(ASCIIToUTF16("foo"), TemplateURL(NULL, data).keyword());
-  data.SetAutogenerateKeyword(true);
-  EXPECT_TRUE(data.autogenerate_keyword());
-  EXPECT_EQ(ASCIIToUTF16("google.com"), TemplateURL(NULL, data).keyword());
-  data.SetKeyword(ASCIIToUTF16("foo"));
-  EXPECT_FALSE(data.autogenerate_keyword());
-  EXPECT_EQ(ASCIIToUTF16("foo"), TemplateURL(NULL, data).keyword());
-}
-
 TEST_F(TemplateURLTest, ParseParameterKnown) {
   std::string parsed_url("{searchTerms}");
   TemplateURLData data;

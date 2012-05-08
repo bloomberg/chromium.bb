@@ -586,7 +586,7 @@ void IEImporter::ImportSearchEngines() {
       if (gurl.is_valid()) {
         TemplateURLData data;
         data.short_name = name;
-        data.SetKeyword(TemplateURLService::GenerateKeyword(gurl, false));
+        data.SetKeyword(TemplateURLService::GenerateKeyword(gurl));
         data.SetURL(url);
         data.show_in_default_list = true;
         t_iter = search_engines_map.insert(std::make_pair(url,

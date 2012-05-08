@@ -309,9 +309,7 @@ TemplateURL* TemplateURLParsingContext::GetTemplateURL(
   if (suggestion_method_ == TemplateURLParsingContext::POST)
     data_.suggestions_url.clear();
 
-  string16 keyword(TemplateURLService::GenerateKeyword(url, false));
-  DCHECK(!keyword.empty());
-  data_.SetKeyword(keyword);
+  data_.SetKeyword(TemplateURLService::GenerateKeyword(url));
   data_.show_in_default_list = show_in_default_list;
   return new TemplateURL(profile, data_);
 }

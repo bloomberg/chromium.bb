@@ -75,10 +75,7 @@ class DefaultSearchProviderChangeTest : public InProcessBrowserTest {
                                const std::string& url) {
     TemplateURLData data;
     data.short_name = short_name;
-    if (keyword.empty())
-      data.SetAutogenerateKeyword(true);
-    else
-      data.SetKeyword(keyword);
+    data.SetKeyword(keyword);
     data.SetURL(url);
     return new TemplateURL(browser()->profile(), data);
   }

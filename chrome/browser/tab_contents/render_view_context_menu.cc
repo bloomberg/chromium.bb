@@ -1831,8 +1831,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       if (tab_contents_wrapper &&
           tab_contents_wrapper->search_engine_tab_helper() &&
           tab_contents_wrapper->search_engine_tab_helper()->delegate()) {
-        string16 keyword(TemplateURLService::GenerateKeyword(params_.page_url,
-                                                             false));
+        string16 keyword(TemplateURLService::GenerateKeyword(params_.page_url));
         TemplateURLData data;
         data.short_name = keyword;
         data.SetKeyword(keyword);
@@ -1871,7 +1870,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 }
 
 ProtocolHandlerRegistry::ProtocolHandlerList
-RenderViewContextMenu::GetHandlersForLinkUrl() {
+    RenderViewContextMenu::GetHandlersForLinkUrl() {
   ProtocolHandlerRegistry::ProtocolHandlerList handlers =
       protocol_handler_registry_->GetHandlersFor(params_.link_url.scheme());
   std::sort(handlers.begin(), handlers.end());

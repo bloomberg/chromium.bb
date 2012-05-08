@@ -195,8 +195,7 @@ struct ParamTraits<TemplateURLData> {
   typedef TemplateURLData param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.short_name);
-    WriteParam(m, p.raw_keyword());
-    WriteParam(m, p.autogenerate_keyword());
+    WriteParam(m, p.keyword());
     WriteParam(m, p.url());
     WriteParam(m, p.suggestions_url);
     WriteParam(m, p.instant_url);
@@ -215,11 +214,9 @@ struct ParamTraits<TemplateURLData> {
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
     string16 keyword;
-    bool autogenerate_keyword;
     std::string url;
     if (!ReadParam(m, iter, &p->short_name) ||
         !ReadParam(m, iter, &keyword) ||
-        !ReadParam(m, iter, &autogenerate_keyword) ||
         !ReadParam(m, iter, &url) ||
         !ReadParam(m, iter, &p->suggestions_url) ||
         !ReadParam(m, iter, &p->instant_url) ||
@@ -237,7 +234,6 @@ struct ParamTraits<TemplateURLData> {
         !ReadParam(m, iter, &p->sync_guid))
       return false;
     p->SetKeyword(keyword);
-    p->SetAutogenerateKeyword(autogenerate_keyword);
     p->SetURL(url);
     return true;
   }

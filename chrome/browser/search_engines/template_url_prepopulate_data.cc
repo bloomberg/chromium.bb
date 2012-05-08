@@ -44,9 +44,6 @@ namespace {
 
 struct PrepopulatedEngine {
   const wchar_t* const name;
-  // If empty, we'll autogenerate a keyword based on the search_url every time
-  // someone asks.  Only entries which need keywords to auto-track a dynamically
-  // generated search URL should use this.
   const wchar_t* const keyword;
   const char* const favicon_url;  // If NULL, there is no favicon.
   const char* const search_url;
@@ -1085,7 +1082,7 @@ const PrepopulatedEngine goo = {
 
 const PrepopulatedEngine google = {
   L"Google",
-  L"",
+  L"google.com",  // This will be dynamically updated by the TemplateURL system.
   "http://www.google.com/favicon.ico",
   "{google:baseURL}search?{google:RLZ}{google:acceptedSuggestion}"
       "{google:originalQueryForSuggestion}{google:searchFieldtrialParameter}"
@@ -3158,10 +3155,7 @@ TemplateURL* MakePrepopulatedTemplateURL(Profile* profile,
                                          int id) {
   TemplateURLData data;
   data.short_name = name;
-  if (keyword.empty())
-    data.SetAutogenerateKeyword(true);
-  else
-    data.SetKeyword(keyword);
+  data.SetKeyword(keyword);
   data.SetURL(search_url.as_string());
   data.suggestions_url = suggest_url.as_string();
   data.instant_url = instant_url.as_string();
@@ -3208,8 +3202,8 @@ void GetPrepopulatedTemplateFromPrefs(Profile* profile,
         engine->Get("encoding", &val) && val->GetAsString(&encoding) &&
         engine->Get("id", &val) && val->GetAsInteger(&id)) {
       // These next fields are not allowed to be empty.
-      if (name.empty() || search_url.empty() || favicon_url.empty() ||
-          encoding.empty())
+      if (name.empty() || keyword.empty() || search_url.empty() ||
+          favicon_url.empty() || encoding.empty())
         return;
     } else {
       // Got a parsing error. No big deal.

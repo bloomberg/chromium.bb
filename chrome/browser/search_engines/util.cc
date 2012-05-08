@@ -130,18 +130,17 @@ void MergeEnginesFromPrepopulateData(
       if (!existing_url->safe_for_autoreplace()) {
         data.safe_for_autoreplace = false;
         data.SetKeyword(existing_url->keyword());
-        data.SetAutogenerateKeyword(existing_url->autogenerate_keyword());
         data.short_name = existing_url->short_name();
       }
       data.id = existing_url->id();
-      url_in_vector = new TemplateURL(profile, data);
       if (service)
-        service->UpdateKeyword(*url_in_vector);
+        service->UpdateKeyword(data);
 
       // Replace the entry in |template_urls| with the updated one.
       std::vector<TemplateURL*>::iterator j = std::find(template_urls->begin(),
           template_urls->end(), existing_url.get());
-      *j = url_in_vector;
+      *j = new TemplateURL(profile, data);
+      url_in_vector = *j;
       if (*default_search_provider == existing_url.get())
         *default_search_provider = url_in_vector;
     } else {

@@ -12,6 +12,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search_engines/template_url_fetcher_ui_callbacks.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -45,7 +46,16 @@ string16 GenerateKeywordFromNavigationEntry(const NavigationEntry* entry) {
       return string16();
   }
 
-  return TemplateURLService::GenerateKeyword(url, true);
+  // Don't autogenerate keywords for referrers that are anything other than HTTP
+  // or have a path.
+  //
+  // If we relax the path constraint, we need to be sure to sanitize the path
+  // elements and update AutocompletePopup to look for keywords using the path.
+  // See http://b/issue?id=863583.
+  if (!url.SchemeIs(chrome::kHttpScheme) || (url.path().length() > 1))
+    return string16();
+
+  return TemplateURLService::GenerateKeyword(url);
 }
 
 }  // namespace

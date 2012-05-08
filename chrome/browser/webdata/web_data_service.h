@@ -335,9 +335,9 @@ class WebDataService
   // the caller (TemplateURLService) does not need to know when the request is
   // done.
 
-  void AddKeyword(const TemplateURL& url);
+  void AddKeyword(const TemplateURLData& data);
   void RemoveKeyword(TemplateURLID id);
-  void UpdateKeyword(const TemplateURL& url);
+  void UpdateKeyword(const TemplateURLData& data);
 
   // Fetches the keywords.
   // On success, consumer is notified with WDResult<KeywordTable::Keywords>.
@@ -597,9 +597,9 @@ class WebDataService
   // Keywords.
   //
   //////////////////////////////////////////////////////////////////////////////
-  void AddKeywordImpl(GenericRequest<TemplateURL>* request);
+  void AddKeywordImpl(GenericRequest<TemplateURLData>* request);
   void RemoveKeywordImpl(GenericRequest<TemplateURLID>* request);
-  void UpdateKeywordImpl(GenericRequest<TemplateURL>* request);
+  void UpdateKeywordImpl(GenericRequest<TemplateURLData>* request);
   void GetKeywordsImpl(WebDataRequest* request);
   void SetDefaultSearchProviderImpl(GenericRequest<TemplateURLID>* r);
   void SetBuiltinKeywordVersionImpl(GenericRequest<int>* r);

@@ -13,6 +13,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_field_trial.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/guid.h"
@@ -535,41 +536,19 @@ TemplateURLData::TemplateURLData()
       usage_count(0),
       prepopulate_id(0),
       sync_guid(guid::GenerateGUID()),
-      url_("x"),
-      autogenerate_keyword_(false),
-      keyword_generated_(false) {
+      keyword_(ASCIIToUTF16("dummy")),
+      url_("x") {
 }
 
 TemplateURLData::~TemplateURLData() {
 }
 
 void TemplateURLData::SetKeyword(const string16& keyword) {
+  DCHECK(!keyword.empty());
+
   // Case sensitive keyword matching is confusing. As such, we force all
   // keywords to be lower case.
   keyword_ = base::i18n::ToLower(keyword);
-  autogenerate_keyword_ = false;
-}
-
-const string16& TemplateURLData::keyword(TemplateURL* t_url) const {
-  EnsureKeyword(t_url);
-  return keyword_;
-}
-
-void TemplateURLData::SetAutogenerateKeyword(bool autogenerate_keyword) {
-  autogenerate_keyword_ = autogenerate_keyword;
-  if (autogenerate_keyword_) {
-    keyword_.clear();
-    keyword_generated_ = false;
-  }
-}
-
-void TemplateURLData::EnsureKeyword(TemplateURL* t_url) const {
-  if (autogenerate_keyword_ && !keyword_generated_) {
-    // Generate a keyword and cache it.
-    keyword_ = base::i18n::ToLower(TemplateURLService::GenerateKeyword(
-        TemplateURLService::GenerateSearchURL(t_url).GetWithEmptyPath(), true));
-    keyword_generated_ = true;
-  }
 }
 
 void TemplateURLData::SetURL(const std::string& url) {
@@ -654,6 +633,18 @@ bool TemplateURL::SupportsReplacementUsingTermsData(
   return url_ref_.SupportsReplacementUsingTermsData(search_terms_data);
 }
 
+bool TemplateURL::IsGoogleSearchURLWithReplaceableKeyword() const {
+  return !IsExtensionKeyword() && url_ref_.HasGoogleBaseURLs() &&
+      google_util::IsGoogleHostname(UTF16ToUTF8(data_.keyword()),
+                                    google_util::DISALLOW_SUBDOMAIN);
+}
+
+bool TemplateURL::HasSameKeywordAs(const TemplateURL& other) const {
+  return (data_.keyword() == other.data_.keyword()) ||
+      (IsGoogleSearchURLWithReplaceableKeyword() &&
+       other.IsGoogleSearchURLWithReplaceableKeyword());
+}
+
 std::string TemplateURL::GetExtensionId() const {
   DCHECK(IsExtensionKeyword());
   return GURL(data_.url()).host();
@@ -676,9 +667,18 @@ void TemplateURL::SetPrepopulateId(int id) {
   instant_url_ref_.prepopulated_ = prepopulated;
 }
 
+void TemplateURL::ResetKeywordIfNecessary(bool force) {
+  if (IsGoogleSearchURLWithReplaceableKeyword() || force) {
+    DCHECK(!IsExtensionKeyword());
+    GURL url(TemplateURLService::GenerateSearchURL(this));
+    if (url.is_valid())
+      data_.SetKeyword(TemplateURLService::GenerateKeyword(url));
+  }
+}
+
 void TemplateURL::InvalidateCachedValues() {
   url_ref_.InvalidateCachedValues();
   suggestions_url_ref_.InvalidateCachedValues();
   instant_url_ref_.InvalidateCachedValues();
-  data_.SetAutogenerateKeyword(data_.autogenerate_keyword());
+  ResetKeywordIfNecessary(false);
 }

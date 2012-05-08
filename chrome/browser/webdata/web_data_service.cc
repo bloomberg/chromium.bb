@@ -147,12 +147,10 @@ WebDatabase* WebDataService::GetDatabase() {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-void WebDataService::AddKeyword(const TemplateURL& url) {
-  // Ensure that the keyword is already generated (and cached) before caching
-  // the TemplateURL for use on another keyword.
-  url.EnsureKeyword();
-  GenericRequest<TemplateURL>* request =
-      new GenericRequest<TemplateURL>(this, GetNextRequestHandle(), NULL, url);
+void WebDataService::AddKeyword(const TemplateURLData& data) {
+  GenericRequest<TemplateURLData>* request =
+      new GenericRequest<TemplateURLData>(this, GetNextRequestHandle(), NULL,
+                                          data);
   RegisterRequest(request);
   ScheduleTask(FROM_HERE, Bind(&WebDataService::AddKeywordImpl, this, request));
 }
@@ -165,12 +163,10 @@ void WebDataService::RemoveKeyword(TemplateURLID id) {
                Bind(&WebDataService::RemoveKeywordImpl, this, request));
 }
 
-void WebDataService::UpdateKeyword(const TemplateURL& url) {
-  // Ensure that the keyword is already generated (and cached) before caching
-  // the TemplateURL for use on another keyword.
-  url.EnsureKeyword();
-  GenericRequest<TemplateURL>* request =
-      new GenericRequest<TemplateURL>(this, GetNextRequestHandle(), NULL, url);
+void WebDataService::UpdateKeyword(const TemplateURLData& data) {
+  GenericRequest<TemplateURLData>* request =
+      new GenericRequest<TemplateURLData>(this, GetNextRequestHandle(), NULL,
+                                          data);
   RegisterRequest(request);
   ScheduleTask(FROM_HERE,
                Bind(&WebDataService::UpdateKeywordImpl, this, request));
@@ -739,7 +735,7 @@ int WebDataService::GetNextRequestHandle() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-void WebDataService::AddKeywordImpl(GenericRequest<TemplateURL>* request) {
+void WebDataService::AddKeywordImpl(GenericRequest<TemplateURLData>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled(NULL)) {
     db_->GetKeywordTable()->AddKeyword(request->arg());
@@ -758,7 +754,8 @@ void WebDataService::RemoveKeywordImpl(GenericRequest<TemplateURLID>* request) {
   request->RequestComplete();
 }
 
-void WebDataService::UpdateKeywordImpl(GenericRequest<TemplateURL>* request) {
+void WebDataService::UpdateKeywordImpl(
+    GenericRequest<TemplateURLData>* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled(NULL)) {
     if (!db_->GetKeywordTable()->UpdateKeyword(request->arg())) {

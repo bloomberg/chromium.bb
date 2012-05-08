@@ -15,7 +15,6 @@
 #include "chrome/browser/webdata/web_database_table.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 
-class TemplateURL;
 struct TemplateURLData;
 
 namespace sql {
@@ -46,7 +45,6 @@ class Statement;
 //   suggest_url
 //   prepopulate_id         See TemplateURLData::prepopulate_id.
 //   autogenerate_keyword
-//   logo_id                Deprecated, to be removed; see crbug.com/113248.
 //   created_by_policy      See TemplateURLData::created_by_policy.  This was
 //                          added in version 26.
 //   instant_url            See TemplateURLData::instant_url.  This was added in
@@ -104,7 +102,7 @@ class KeywordTable : public WebDatabaseTable {
 
   // Adds a new keyword, updating the id field on success.
   // Returns true if successful.
-  bool AddKeyword(const TemplateURL& url);
+  bool AddKeyword(const TemplateURLData& data);
 
   // Removes the specified keyword.
   // Returns true if successful.
@@ -117,7 +115,7 @@ class KeywordTable : public WebDatabaseTable {
 
   // Updates the database values for the specified url.
   // Returns true on success.
-  bool UpdateKeyword(const TemplateURL& url);
+  bool UpdateKeyword(const TemplateURLData& data);
 
   // ID (TemplateURLData->id) of the default search provider.
   bool SetDefaultSearchProviderID(int64 id);
@@ -145,12 +143,14 @@ class KeywordTable : public WebDatabaseTable {
   bool MigrateToVersion38AddLastModifiedColumn();
   bool MigrateToVersion39AddSyncGUIDColumn();
   bool MigrateToVersion44AddDefaultSearchProviderBackup();
+  bool MigrateToVersion45RemoveLogoIDAndAutogenerateColumns();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, DefaultSearchProviderBackup);
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContents);
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContentsOrdering);
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, SanitizeURLs);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseMigrationTest, MigrateVersion44ToCurrent);
 
   // NOTE: Since the table columns have changed in different versions, many
   // functions below take a |table_version| argument which dictates which
@@ -165,19 +165,25 @@ class KeywordTable : public WebDatabaseTable {
   // Returns contents of |keywords_backup| table and default search provider
   // id backup as a string through |data|. Return value is true on success,
   // false otherwise.
-  bool GetSignatureData(std::string* data);
+  bool GetSignatureData(int table_version, std::string* data);
 
   // Returns contents of selected table as a string in |contents| parameter.
   // Returns true on success, false otherwise.
-  bool GetTableContents(const char* table_name, std::string* contents);
+  bool GetTableContents(const char* table_name,
+                        int table_version,
+                        std::string* contents);
 
   // Updates settings backup, signs it and stores the signature in the
   // database. Returns true on success.
-  bool UpdateBackupSignature();
+  bool UpdateBackupSignature(int table_version);
+
+  // Signs the backup table.  This is a subset of what UpdateBackupSignature()
+  // does.
+  bool SignBackup(int table_version);
 
   // Checks the signature for the current settings backup. Returns true
   // if signature is valid, false otherwise.
-  bool IsBackupSignatureValid();
+  bool IsBackupSignatureValid(int table_version);
 
   // Gets a string representation for keyword with id specified.
   // Used to store its result in |meta| table or to compare with another
@@ -189,6 +195,10 @@ class KeywordTable : public WebDatabaseTable {
   // Updates default search provider id backup in |meta| table. Returns
   // true on success. The id is returned back via |id| parameter.
   bool UpdateDefaultSearchProviderIDBackup(TemplateURLID* id);
+
+  // Migrates table |name| (which should be either "keywords" or
+  // "keywords_backup" from version 44 to version 45.
+  bool MigrateKeywordsTableForVersion45(const std::string& name);
 
   DISALLOW_COPY_AND_ASSIGN(KeywordTable);
 };

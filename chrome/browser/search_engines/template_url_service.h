@@ -83,12 +83,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   TemplateURLService(const Initializer* initializers, const int count);
   virtual ~TemplateURLService();
 
-  // Generates a suitable keyword for the specified url.  Returns an empty
-  // string if a keyword couldn't be generated.  If |autodetected| is true, we
-  // don't generate keywords for a variety of situations where we would probably
-  // not want to auto-add keywords, such as keywords for searches on pages that
-  // themselves come from form submissions.
-  static string16 GenerateKeyword(const GURL& url, bool autodetected);
+  // Generates a suitable keyword for the specified url, which must be valid.
+  // This is guaranteed not to return an empty string, since TemplateURLs should
+  // never have an empty keyword.
+  static string16 GenerateKeyword(const GURL& url);
 
   // Removes any unnecessary characters from a user input keyword.
   // This removes the leading scheme, "www." and any trailing slash.
@@ -101,8 +99,9 @@ class TemplateURLService : public WebDataServiceConsumer,
   static GURL GenerateSearchURL(TemplateURL* t_url);
 
   // Just like GenerateSearchURL except that it takes SearchTermsData to supply
-  // the data for some search terms. Most of the time GenerateSearchURL should
-  // be called.
+  // the data for some search terms, e.g. so this can be used on threads other
+  // than the UI thread.  See the various TemplateURLRef::XXXUsingTermsData()
+  // functions.
   static GURL GenerateSearchURLUsingTermsData(
       const TemplateURL* t_url,
       const SearchTermsData& search_terms_data);
@@ -140,7 +139,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   // or NULL if there are no such TemplateURLs
   TemplateURL* GetTemplateURLForHost(const std::string& host);
 
-  // Takes ownership of |template_url| and adds it to this model.
+  // Takes ownership of |template_url| and adds it to this model.  For obvious
+  // reasons, it is illegal to Add() the same |template_url| pointer twice.
   void Add(TemplateURL* template_url);
 
   // Like Add(), but overwrites the |template_url|'s values with the provided
@@ -413,12 +413,17 @@ class TemplateURLService : public WebDataServiceConsumer,
   // in the default list and is marked as safe_for_autoreplace.
   bool CanReplace(const TemplateURL* t_url);
 
+  // Like GetTemplateURLForKeyword(), but ignores extension-provided keywords.
+  TemplateURL* FindNonExtensionTemplateURLForKeyword(const string16& keyword);
+
   // Updates the information in |existing_turl| using the information from
-  // |new_values|, but the ID for |existing_turl| is retained.
-  // Notifying observers is the responsibility of the caller.
+  // |new_values|, but the ID for |existing_turl| is retained.  Notifying
+  // observers is the responsibility of the caller.  Returns whether
+  // |existing_turl| was found in |template_urls_| and thus could be updated.
+  //
   // NOTE: This should not be called with an extension keyword as there are no
   // updates needed in that case.
-  void UpdateNoNotify(TemplateURL* existing_turl,
+  bool UpdateNoNotify(TemplateURL* existing_turl,
                       const TemplateURL& new_values);
 
   // Returns the preferences we use.
@@ -451,16 +456,21 @@ class TemplateURLService : public WebDataServiceConsumer,
   void UpdateDefaultSearch();
 
   // Set the default search provider even if it is managed. |url| may be null.
-  // Caller is responsible for notifying observers.
-  void SetDefaultSearchProviderNoNotify(TemplateURL* url);
+  // Caller is responsible for notifying observers.  Returns whether |url| was
+  // found in |template_urls_| and thus could be made default.
+  bool SetDefaultSearchProviderNoNotify(TemplateURL* url);
 
   // Adds a new TemplateURL to this model. TemplateURLService will own the
   // reference, and delete it when the TemplateURL is removed.
   // If |newly_adding| is false, we assume that this TemplateURL was already
   // part of the model in the past, and therefore we don't need to do things
   // like assign it an ID or notify sync.
-  // Caller is responsible for notifying observers.
-  void AddNoNotify(TemplateURL* template_url, bool newly_adding);
+  // This function guarantees that on return the model will not have two
+  // non-extension TemplateURLs with the same keyword.  If that means that it
+  // cannot add the provided argument, it will delete it and return false.
+  // Caller is responsible for notifying observers if this function returns
+  // true.
+  bool AddNoNotify(TemplateURL* template_url, bool newly_adding);
 
   // Removes the keyword from the model. This deletes the supplied TemplateURL.
   // This fails if the supplied template_url is the default search provider.
@@ -491,15 +501,14 @@ class TemplateURLService : public WebDataServiceConsumer,
   // it is unique to the Service.
   string16 UniquifyKeyword(const TemplateURL& turl);
 
-  // Given a TemplateURL from Sync (cloud), resolves any keyword conflicts by
-  // checking the local keywords and uniquifying either the cloud keyword or a
-  // conflicting local keyword (whichever is older). If the cloud TURL is
-  // changed, then an appropriate SyncChange is appended to |change_list|. If
-  // a local TURL is changed, the service is updated with the new keyword. If
-  // there was no conflict to begin with, this does nothing. In the case of tied
-  // last_modified dates, |sync_turl| wins. Returns true iff there was a
-  // conflict.
-  bool ResolveSyncKeywordConflict(TemplateURL* sync_turl,
+  // Given a TemplateURL from Sync (cloud) and a local TemplateURL with the same
+  // keyword, resolves the conflict by uniquifying either the cloud keyword or
+  // the local keyword (whichever is older). If the cloud TURL is changed, then
+  // an appropriate SyncChange is appended to |change_list|. If a local TURL is
+  // changed, the service is updated with the new keyword. In the case of tied
+  // last_modified dates, |sync_turl| wins.
+  void ResolveSyncKeywordConflict(TemplateURL* sync_turl,
+                                  TemplateURL* local_turl,
                                   SyncChangeList* change_list);
 
   // Returns a TemplateURL from the service that has the same keyword and search
