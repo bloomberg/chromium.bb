@@ -54,6 +54,7 @@
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
+#include "webkit/glue/weburlrequest_extradata_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/media/webmediaplayer_impl.h"
@@ -628,6 +629,11 @@ WebKit::WebURLError CreateCancelledError(const WebKit::WebURLRequest& request) {
   error.reason = net::ERR_ABORTED;
   error.unreachableURL = request.url();
   return error;
+}
+
+WebKit::WebURLRequest::ExtraData* CreateWebURLRequestExtraData(
+    WebKit::WebReferrerPolicy referrer_policy) {
+  return new webkit_glue::WebURLRequestExtraDataImpl(referrer_policy);
 }
 
 // Bridge for SimpleDatabaseSystem
