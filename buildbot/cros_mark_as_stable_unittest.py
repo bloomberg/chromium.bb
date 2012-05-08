@@ -22,8 +22,8 @@ from chromite.buildbot import cros_mark_as_stable
 class NonClassTests(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
-    self.mox.StubOutWithMock(cros_mark_as_stable, '_SimpleRunCommand')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommandCaptureOutput')
     self._branch = 'test_branch'
     self._target_manifest_branch = 'cros/master'
 
@@ -44,13 +44,14 @@ class NonClassTests(mox.MoxTestBase):
     cros_build_lib.SyncPushBranch('.', 'gerrit', 'master')
     cros_mark_as_stable._DoWeHaveLocalCommits(
         self._branch, 'gerrit/master').AndReturn(True)
-    cros_mark_as_stable._SimpleRunCommand('git log --format=format:%s%n%n%b ' +
-        'gerrit/master..%s' % self._branch).AndReturn(git_log)
+    result = cros_build_lib.CommandResult(output=git_log)
+    cros_build_lib.RunCommandCaptureOutput(
+        ['git', 'log', '--format=format:%s%n%n%b',
+         'gerrit/master..%s' % self._branch]).AndReturn(result)
     cros_build_lib.CreatePushBranch('merge_branch', '.')
-    cros_mark_as_stable._SimpleRunCommand('git merge --squash %s' %
-                                          self._branch)
+    cros_build_lib.RunCommand(['git', 'merge', '--squash', self._branch])
     cros_build_lib.RunCommand(['git', 'commit', '-m', fake_description])
-    cros_mark_as_stable._SimpleRunCommand('git config push.default tracking')
+    cros_build_lib.RunCommand(['git', 'config', 'push.default', 'tracking'])
     cros_build_lib.GitPushWithRetry('merge_branch', cwd='.', dryrun=False)
     self.mox.ReplayAll()
     cros_mark_as_stable.PushChange(self._branch,
@@ -63,7 +64,8 @@ class GitBranchTest(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     # Always stub RunCommmand out as we use it in every method.
-    self.mox.StubOutWithMock(cros_mark_as_stable, '_SimpleRunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommandCaptureOutput')
     self._branch = self.mox.CreateMock(cros_mark_as_stable.GitBranch)
     self._branch_name = 'test_branch'
     self._branch.branch_name = self._branch_name
@@ -73,8 +75,8 @@ class GitBranchTest(mox.MoxTestBase):
   def testCheckoutCreate(self):
     # Test init with no previous branch existing.
     self._branch.Exists().AndReturn(False)
-    cros_mark_as_stable._SimpleRunCommand(
-        'repo start %s .' % self._branch_name)
+    cros_build_lib.RunCommandCaptureOutput(['repo', 'start', self._branch_name,
+                                            '.'], print_cmd=False)
     self.mox.ReplayAll()
     cros_mark_as_stable.GitBranch.Checkout(self._branch)
     self.mox.VerifyAll()
@@ -82,8 +84,8 @@ class GitBranchTest(mox.MoxTestBase):
   def testCheckoutNoCreate(self):
     # Test init with previous branch existing.
     self._branch.Exists().AndReturn(True)
-    cros_mark_as_stable._SimpleRunCommand('git checkout %s -f' % (
-        self._branch_name))
+    cros_build_lib.RunCommandCaptureOutput(['git', 'checkout', '-f',
+                                            self._branch_name], print_cmd=False)
     self.mox.ReplayAll()
     cros_mark_as_stable.GitBranch.Checkout(self._branch)
     self.mox.VerifyAll()
@@ -93,7 +95,7 @@ class GitBranchTest(mox.MoxTestBase):
     branch = cros_mark_as_stable.GitBranch(self._branch_name,
                                            self._target_manifest_branch)
     cros_mark_as_stable.GitBranch.Checkout(mox.IgnoreArg())
-    cros_mark_as_stable._SimpleRunCommand('repo abandon ' + self._branch_name)
+    cros_build_lib.RunCommand(['repo', 'abandon', self._branch_name])
     self.mox.ReplayAll()
     branch.Delete()
     self.mox.VerifyAll()
@@ -102,8 +104,9 @@ class GitBranchTest(mox.MoxTestBase):
     branch = cros_mark_as_stable.GitBranch(self._branch_name,
                                            self._target_manifest_branch)
     # Test if branch exists that is created
-    cros_mark_as_stable._SimpleRunCommand('git branch').AndReturn(
-        '%s' % self._branch_name)
+    result = cros_build_lib.CommandResult(output=self._branch_name + '\n')
+    cros_build_lib.RunCommandCaptureOutput(['git', 'branch'],
+                                           print_cmd=False).AndReturn(result)
     self.mox.ReplayAll()
     self.assertTrue(branch.Exists())
     self.mox.VerifyAll()

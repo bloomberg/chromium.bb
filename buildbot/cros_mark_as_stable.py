@@ -9,7 +9,6 @@
 import multiprocessing
 import optparse
 import os
-import subprocess
 import sys
 
 import constants
@@ -77,10 +76,13 @@ def CleanStalePackages(boards, package_atoms):
 
 def _DoWeHaveLocalCommits(stable_branch, tracking_branch):
   """Returns true if there are local commits."""
-  current_branch = _SimpleRunCommand('git branch | grep \*').split()[1]
+  current_branch = cros_build_lib.RunCommandCaptureOutput(
+      'git branch | grep \*', shell=True).output.split()[1]
   if current_branch == stable_branch:
-    current_commit_id = _SimpleRunCommand('git rev-parse HEAD')
-    tracking_commit_id = _SimpleRunCommand('git rev-parse %s' % tracking_branch)
+    current_commit_id = cros_build_lib.RunCommandCaptureOutput(
+        ['git', 'rev-parse', 'HEAD']).output
+    tracking_commit_id = cros_build_lib.RunCommandCaptureOutput(
+        ['git', 'rev-parse', tracking_branch]).output
     return current_commit_id != tracking_commit_id
   else:
     return False
@@ -113,18 +115,6 @@ def _PrintUsageAndDie(error_message=''):
     cros_build_lib.Die(error_message)
   else:
     sys.exit(1)
-
-
-def _SimpleRunCommand(command):
-  """Runs a shell command and returns stdout back to caller."""
-  _Print('  + %s' % command)
-  proc_handle = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-  stdout = proc_handle.communicate()[0]
-  retcode = proc_handle.wait()
-  if retcode != 0:
-    _Print(stdout)
-    raise subprocess.CalledProcessError(retcode, command)
-  return stdout
 
 
 # ======================= End Global Helper Functions ========================
@@ -160,14 +150,15 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd='.'):
     cros_build_lib.Info('All changes already pushed. Exiting')
     return
 
-  description = _SimpleRunCommand('git log --format=format:%s%n%n%b ' +
-      '%s/%s..%s' % (remote, push_branch, stable_branch))
+  description = cros_build_lib.RunCommandCaptureOutput(
+      ['git', 'log', '--format=format:%s%n%n%b', '%s/%s..%s' % (
+       remote, push_branch, stable_branch)]).output
   description = 'Marking set of ebuilds as stable\n\n%s' % description
   cros_build_lib.Info('Using description %s' % description)
   cros_build_lib.CreatePushBranch(constants.MERGE_BRANCH, cwd)
-  _SimpleRunCommand('git merge --squash %s' % stable_branch)
+  cros_build_lib.RunCommand(['git', 'merge', '--squash', stable_branch])
   cros_build_lib.RunCommand(['git', 'commit', '-m', description])
-  _SimpleRunCommand('git config push.default tracking')
+  cros_build_lib.RunCommand(['git', 'config', 'push.default', 'tracking'])
   cros_build_lib.GitPushWithRetry(constants.MERGE_BRANCH, cwd=cwd,
                                   dryrun=dryrun)
 
@@ -187,15 +178,15 @@ class GitBranch(object):
   def Checkout(cls, target):
     """Function used to check out to another GitBranch."""
     if target.branch_name == target.tracking_branch or target.Exists():
-      git_cmd = 'git checkout %s -f' % target.branch_name
+      git_cmd = ['git', 'checkout', '-f', target.branch_name]
     else:
-      git_cmd = 'repo start %s .' % target.branch_name
-    _SimpleRunCommand(git_cmd)
+      git_cmd = ['repo', 'start', target.branch_name, '.']
+    cros_build_lib.RunCommandCaptureOutput(git_cmd, print_cmd=False)
 
   def Exists(self):
     """Returns True if the branch exists."""
-    branch_cmd = 'git branch'
-    branches = _SimpleRunCommand(branch_cmd)
+    branches = cros_build_lib.RunCommandCaptureOutput(['git', 'branch'],
+                                                      print_cmd=False).output
     return self.branch_name in branches.split()
 
   def Delete(self):
@@ -205,8 +196,7 @@ class GitBranch(object):
     """
     tracking_branch = GitBranch(self.tracking_branch, self.tracking_branch)
     GitBranch.Checkout(tracking_branch)
-    delete_cmd = 'repo abandon %s' % self.branch_name
-    _SimpleRunCommand(delete_cmd)
+    cros_build_lib.RunCommand(['repo', 'abandon', self.branch_name])
 
 
 def main():
@@ -308,7 +298,8 @@ def main():
         # In the case of uprevving overlays that have patches applied to them,
         # include the patched changes in the stabilizing branch.
         if existing_branch:
-          _SimpleRunCommand('git rebase %s' % existing_branch)
+          cros_build_lib.RunCommand(['git', 'rebase', existing_branch],
+                                    print_cmd=False)
 
         for ebuild in ebuilds:
           try:
