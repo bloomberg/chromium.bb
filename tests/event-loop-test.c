@@ -38,7 +38,7 @@ fd_dispatch(int fd, uint32_t mask, void *data)
 	return 0;
 }
 
-TEST(post_dispatch_check)
+TEST(event_loop_post_dispatch_check)
 {
 	struct wl_event_loop *loop = wl_event_loop_create();
 	struct wl_event_source *source;
@@ -82,7 +82,7 @@ free_source_callback(int fd, uint32_t mask, void *data)
 	return 1;
 }
 
-TEST(free_source_with_data)
+TEST(event_loop_free_source_with_data)
 {
 	struct wl_event_loop *loop = wl_event_loop_create();
 	struct free_source_context context;
