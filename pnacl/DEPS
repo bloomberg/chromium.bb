@@ -2,7 +2,7 @@ vars = {
   "pnacl_gcc_rev": "a8b45d06c8fdf36cfdb7c996393940077097d988",
 
   "glibc_rev": "9e33f48e2ff5d4cfcdae4fb146cc726b37616394",
-  "newlib_rev": "9b1b657bbaab62e1a3d2ebdd9cb8cde2f141bb70",
+  "newlib_rev": "67e351079b71e78eaad782a19ffa9f3ff2c1d78d",
   "pnacl_llvm_testsuite_rev": "fe59b29a5837b4c83b631624f1cffc1118bbfddb",
   "nacl_base_readonly": "http://git.chromium.org/native_client",
   "nacl_base_readwrite": "ssh://gerrit.chromium.org:29418/native_client",
