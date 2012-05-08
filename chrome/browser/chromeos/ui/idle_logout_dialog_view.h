@@ -73,7 +73,6 @@ class IdleLogoutDialogView : public views::DialogDelegateView {
   static void set_settings_provider(IdleLogoutSettingsProvider* provider);
 
   views::Label* restart_label_;
-  views::Label* warning_label_;
 
   // Time at which the countdown is over and we should close the dialog.
   base::Time countdown_end_time_;

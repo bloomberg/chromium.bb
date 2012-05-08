@@ -12449,17 +12449,16 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_IDLE_LOGOUT_TITLE" desc="Dialog title for the idle logout dialog">
         Are you still there?
       </message>
-      <message name="IDS_IDLE_LOGOUT_WARNING" desc="Warning for the idle logout dialog">
-        This computer is now idle and will be logged out, clearing all user data. Press any key to continue exploring.
-      </message>
       <message name="IDS_IDLE_LOGOUT_WARNING_RESTART" desc="Restart label for the idle logout dialog">
-        Logging out in <ph name="LOGOUT_TIME_LEFT">$1<ex>20</ex></ph> seconds.
+        This computer will reset in <ph name="LOGOUT_TIME_LEFT">$1<ex>20</ex></ph> seconds.
+Press any key to continue exploring.
       </message>
       <message name="IDS_IDLE_LOGOUT_WARNING_RESTART_1S" desc="Restart label for the idle logout dialog at 1 second left">
-        Logging out in 1 second.
+        This computer will reset in 1 second.
+Press any key to continue exploring.
       </message>
       <message name="IDS_IDLE_LOGOUT_WARNING_RESTART_NOW" desc="Restart label for the idle logout dialog with no time left">
-        Logging out now.
+        Going.. Going... Gone.
       </message>
     </if>
 

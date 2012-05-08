@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/time.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -27,7 +28,7 @@ namespace {
 // Global singleton instance of our dialog class.
 chromeos::IdleLogoutDialogView* g_instance = NULL;
 
-const int kIdleLogoutDialogMaxWidth = 400;
+const int kIdleLogoutDialogMaxWidth = 300;
 const int kCountdownUpdateIntervalMs = 1000;
 
 }  // namespace
@@ -99,7 +100,6 @@ views::View* IdleLogoutDialogView::GetContentsView() {
 // IdleLogoutDialog private methods
 IdleLogoutDialogView::IdleLogoutDialogView()
     : restart_label_(NULL),
-      warning_label_(NULL),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   if (!IdleLogoutDialogView::provider_)
     IdleLogoutDialogView::provider_ = new IdleLogoutSettingsProvider();
@@ -121,30 +121,24 @@ void IdleLogoutDialogView::InitAndShow() {
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  warning_label_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_IDLE_LOGOUT_WARNING));
-  warning_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  warning_label_->SetMultiLine(true);
-  warning_label_->SetFont(rb.GetFont(ui::ResourceBundle::BaseFont));
-  warning_label_->SizeToFit(kIdleLogoutDialogMaxWidth);
-
   restart_label_ = new views::Label();
   restart_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  restart_label_->SetFont(rb.GetFont(ui::ResourceBundle::BoldFont));
+  restart_label_->SetMultiLine(true);
+  restart_label_->SetFont(rb.GetFont(ui::ResourceBundle::BaseFont));
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::FIXED, kIdleLogoutDialogMaxWidth, 0);
   layout->StartRow(0, 0);
-  layout->AddView(warning_label_);
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlHorizontalSpacing);
   layout->StartRow(0, 0);
   layout->AddView(restart_label_);
+  layout->AddPaddingRow(0, views::kRelatedControlHorizontalSpacing);
 
-  // We're initialized, can safely show the dialog now.
+  // We're initialized, show the dialog.
   Show();
 }
 
