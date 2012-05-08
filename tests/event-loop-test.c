@@ -32,6 +32,7 @@ fd_dispatch(int fd, uint32_t mask, void *data)
 {
 	int *p = data;
 
+	assert(mask == 0);
 	*p = 1;
 
 	return 0;
