@@ -51,48 +51,40 @@ bool IsSpoofedUserAgent(const std::string& user_agent) {
 }
 
 TEST_F(WebkitGlueUserAgentTest, UserAgentSpoofingHack) {
-  const char* urls[] = {
-      "http://wwww.google.com",
-      "http://www.microsoft.com/getsilverlight",
-      "http://headlines.yahoo.co.jp/videonews/",
-      "http://downloads.yahoo.co.jp/docs/silverlight/",
-      "http://gyao.yahoo.co.jp/",
-      "http://weather.yahoo.co.jp/weather/zoomradar/",
-      "http://promotion.shopping.yahoo.co.jp/"};
+  enum Platform {
+    NONE = 0,
+    MACOSX = 1,
+    WIN = 2,
+    OTHER = 4,
+  };
+
+  struct Expected {
+    const char* url;
+    int os_mask;
+  };
+
+  Expected expected[] = {
+      { "http://wwww.google.com", NONE },
+      { "http://www.microsoft.com/getsilverlight", MACOSX },
+      { "http://headlines.yahoo.co.jp/videonews/", MACOSX | WIN },
+      { "http://downloads.yahoo.co.jp/docs/silverlight/", MACOSX },
+      { "http://gyao.yahoo.co.jp/", MACOSX },
+      { "http://weather.yahoo.co.jp/weather/zoomradar/", WIN },
+      { "http://promotion.shopping.yahoo.co.jp/", WIN },
+      { "http://pokemon.kids.yahoo.co.jp", WIN },
+  };
 #if defined(OS_MACOSX)
-  bool spoofed[] = {
-      false,
-      true,
-      true,
-      true,
-      true,
-      false,
-      false};
+  int os_bit = MACOSX;
 #elif defined(OS_WIN)
-  bool spoofed[] = {
-      false,
-      false,
-      true,
-      false,
-      false,
-      true,
-      true};
+  int os_bit = WIN;
 #else
-  bool spoofed[] = {
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false};
+  int os_bit = OTHER;
 #endif
 
-  ASSERT_EQ(arraysize(urls), arraysize(spoofed));
-
-  for (size_t i = 0; i < arraysize(urls); i++) {
-    EXPECT_EQ(spoofed[i],
-              IsSpoofedUserAgent(webkit_glue::GetUserAgent(GURL(urls[i]))));
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(expected); ++i) {
+    EXPECT_EQ((expected[i].os_mask & os_bit) != 0,
+              IsSpoofedUserAgent(
+                  webkit_glue::GetUserAgent(GURL(expected[i].url))));
   }
 }
 

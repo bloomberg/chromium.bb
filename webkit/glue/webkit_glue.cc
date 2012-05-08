@@ -418,7 +418,8 @@ bool IsYahooSiteThatNeedsSpoofingForSilverlight(const GURL& url) {
 #elif defined(OS_WIN)
   if ((url.host() == "weather.yahoo.co.jp" &&
         StartsWithASCII(url.path(), "/weather/zoomradar/", true)) ||
-      url.host() == "promotion.shopping.yahoo.co.jp") {
+      url.host() == "promotion.shopping.yahoo.co.jp" ||
+      url.host() == "pokemon.kids.yahoo.co.jp") {
     return true;
   }
 #endif
