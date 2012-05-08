@@ -214,15 +214,26 @@ class GDataFileSystemInterface {
   virtual void FindEntryByResourceIdSync(const std::string& resource_id,
                                          FindEntryDelegate* delegate) = 0;
 
-  // Initiates transfer of |local_file_path| to |remote_dest_file_path|.
-  // |local_file_path| must be a file from the local file system,
+  // Initiates transfer of |remote_src_file_path| to |local_dest_file_path|.
+  // |remote_src_file_path| is the virtual source path on the gdata file system.
+  // |local_dest_file_path| is the destination path on the local file system.
+  //
+  // Must be called from *UI* thread. |callback| is run on the calling thread.
+  virtual void TransferFileFromRemoteToLocal(
+      const FilePath& remote_src_file_path,
+      const FilePath& local_dest_file_path,
+      const FileOperationCallback& callback) = 0;
+
+  // Initiates transfer of |local_src_file_path| to |remote_dest_file_path|.
+  // |local_src_file_path| must be a file from the local file system.
   // |remote_dest_file_path| is the virtual destination path within gdata file
   // system.
   //
   // Must be called from *UI* thread. |callback| is run on the calling thread.
-  virtual void TransferFile(const FilePath& local_file_path,
-                            const FilePath& remote_dest_file_path,
-                            const FileOperationCallback& callback) = 0;
+  virtual void TransferFileFromLocalToRemote(
+      const FilePath& local_src_file_path,
+      const FilePath& remote_dest_file_path,
+      const FileOperationCallback& callback) = 0;
 
   // Copies |src_file_path| to |dest_file_path| on the file system.
   // |src_file_path| can be a hosted document (see limitations below).
@@ -426,9 +437,14 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                          FindEntryDelegate* delegate) OVERRIDE;
   virtual void SearchAsync(const std::string& search_query,
                            const ReadDirectoryCallback& callback) OVERRIDE;
-  virtual void TransferFile(const FilePath& local_file_path,
-                            const FilePath& remote_dest_file_path,
-                            const FileOperationCallback& callback) OVERRIDE;
+  virtual void TransferFileFromRemoteToLocal(
+      const FilePath& remote_src_file_path,
+      const FilePath& local_dest_file_path,
+      const FileOperationCallback& callback) OVERRIDE;
+  virtual void TransferFileFromLocalToRemote(
+      const FilePath& local_src_file_path,
+      const FilePath& remote_dest_file_path,
+      const FileOperationCallback& callback) OVERRIDE;
   virtual void Copy(const FilePath& src_file_path,
                     const FilePath& dest_file_path,
                     const FileOperationCallback& callback) OVERRIDE;
@@ -681,6 +697,19 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                 const FilePath& local_file_path,
                                 const std::string& unused_mime_type,
                                 GDataFileType file_type);
+
+  // Invoked upon completion of GetFileByPath initiated by
+  // TransferFileFromRemoteToLocal. If GetFileByPath reports no error, calls
+  // CopyLocalFileOnIOThreadPoll to copy |local_file_path| to
+  // |local_dest_file_path|.
+  //
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  void OnGetFileCompleteForTransferFile(const FilePath& local_dest_file_path,
+                                        const FileOperationCallback& callback,
+                                        base::PlatformFileError error,
+                                        const FilePath& local_file_path,
+                                        const std::string& unused_mime_type,
+                                        GDataFileType file_type);
 
   // Copies a document with |resource_id| to the directory at |dir_path|
   // and names the copied document as |new_name|.

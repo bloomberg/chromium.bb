@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -1046,6 +1047,28 @@ class GDataFileSystemTest : public testing::Test {
         serialized_proto.data(), file_size), file_size);
   }
 
+  // Verifies that |file_path| is a valid JSON file for the hosted document
+  // associated with |entry| (i.e. |url| and |resource_id| match).
+  void VerifyHostedDocumentJSONFile(const GDataFile* gdata_file,
+                                    const FilePath& file_path) {
+    ASSERT_TRUE(gdata_file != NULL);
+
+    std::string error;
+    JSONFileValueSerializer serializer(file_path);
+    scoped_ptr<Value> value(serializer.Deserialize(NULL, &error));
+    ASSERT_TRUE(value.get()) << "Parse error " << file_path.value()
+                             << ": " << error;
+    DictionaryValue* dict_value = NULL;
+    ASSERT_TRUE(value->GetAsDictionary(&dict_value));
+
+    std::string edit_url, resource_id;
+    EXPECT_TRUE(dict_value->GetString("url", &edit_url));
+    EXPECT_TRUE(dict_value->GetString("resource_id", &resource_id));
+
+    EXPECT_EQ(gdata_file->alternate_url().spec(), edit_url);
+    EXPECT_EQ(gdata_file->resource_id(), resource_id);
+  }
+
   // This is used as a helper for registering callbacks that need to be
   // RefCountedThreadSafe, and a place where we can fetch results from various
   // operations.
@@ -1505,6 +1528,82 @@ TEST_F(GDataFileSystemTest, CachedFeedLoading) {
   FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Dir1/File2")));
   FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Dir1/SubDir2")));
   FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Dir1/SubDir2/File3")));
+}
+
+TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
+  LoadRootFeedDocument("root_feed.json");
+
+  FileOperationCallback callback =
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get());
+
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath local_dest_file_path = temp_dir.path().Append("local_copy.txt");
+
+  FilePath remote_src_file_path(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  GDataEntry* entry = FindEntry(remote_src_file_path);
+  GDataFile* file = entry->AsGDataFile();
+  FilePath cache_file = GetCachePathForFile(file);
+  const int64 file_size = entry->file_info().size;
+
+  // Pretend we have enough space.
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(2).WillRepeatedly(Return(file_size + kMinFreeSpace));
+
+  const std::string remote_src_file_data = "Test file data";
+  mock_doc_service_->set_file_data(new std::string(remote_src_file_data));
+  // The file is obtained with the mock DocumentsService.
+  EXPECT_CALL(*mock_doc_service_,
+              DownloadFile(remote_src_file_path,
+                           cache_file,
+                           GURL("https://file_content_url/"),
+                           _, _))
+      .Times(1);
+
+  file_system_->TransferFileFromRemoteToLocal(
+      remote_src_file_path, local_dest_file_path, callback);
+  RunAllPendingForIO();  // Try to get from the cache.
+  RunAllPendingForIO();  // Check if we have space before downloading.
+  RunAllPendingForIO();  // Check if we have space after downloading.
+  RunAllPendingForIO();  // Copy downloaded file from cache to destination.
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
+
+  std::string cache_file_data;
+  EXPECT_TRUE(file_util::ReadFileToString(cache_file, &cache_file_data));
+  EXPECT_EQ(remote_src_file_data, cache_file_data);
+
+  std::string local_dest_file_data;
+  EXPECT_TRUE(file_util::ReadFileToString(local_dest_file_path,
+                                          &local_dest_file_data));
+  EXPECT_EQ(remote_src_file_data, local_dest_file_data);
+}
+
+TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
+  LoadRootFeedDocument("root_feed.json");
+
+  FileOperationCallback callback =
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get());
+
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath local_dest_file_path = temp_dir.path().Append("local_copy.txt");
+  FilePath remote_src_file_path(FILE_PATH_LITERAL("gdata/Document 1.gdoc"));
+  file_system_->TransferFileFromRemoteToLocal(
+      remote_src_file_path, local_dest_file_path, callback);
+  RunAllPendingForIO();  // Try to get from the cache.
+  RunAllPendingForIO();  // Copy downloaded file from cache to destination.
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
+
+  GDataEntry* entry = FindEntry(remote_src_file_path);
+  VerifyHostedDocumentJSONFile(entry->AsGDataFile(), local_dest_file_path);
 }
 
 TEST_F(GDataFileSystemTest, CopyNotExistingFile) {
@@ -3017,21 +3116,8 @@ TEST_F(GDataFileSystemTest, GetFileByPath_HostedDocument) {
   EXPECT_EQ(HOSTED_DOCUMENT, callback_helper_->file_type_);
   EXPECT_FALSE(callback_helper_->download_path_.empty());
 
-  std::string error;
-  JSONFileValueSerializer serializer(callback_helper_->download_path_);
-  scoped_ptr<Value> value(serializer.Deserialize(NULL, &error));
-  ASSERT_TRUE(value.get()) << "Parse error "
-                           << callback_helper_->download_path_.value()
-                           << ": " << error;
-  DictionaryValue* dict_value = NULL;
-  ASSERT_TRUE(value->GetAsDictionary(&dict_value));
-
-  std::string edit_url, resource_id;
-  EXPECT_TRUE(dict_value->GetString("url", &edit_url));
-  EXPECT_TRUE(dict_value->GetString("resource_id", &resource_id));
-
-  EXPECT_EQ(entry->AsGDataFile()->alternate_url().spec(), edit_url);
-  EXPECT_EQ(entry->resource_id(), resource_id);
+  VerifyHostedDocumentJSONFile(entry->AsGDataFile(),
+                               callback_helper_->download_path_);
 }
 
 TEST_F(GDataFileSystemTest, GetFileByResourceId) {

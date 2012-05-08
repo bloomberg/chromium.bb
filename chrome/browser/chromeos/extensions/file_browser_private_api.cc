@@ -1951,16 +1951,6 @@ void TransferFileFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
-  const FilePath& local_source_file = files[0].path;
-  FilePath remote_destination_file = files[1].path;
-  if (gdata::util::IsUnderGDataMountPoint(local_source_file) ||
-      !gdata::util::IsUnderGDataMountPoint(remote_destination_file)) {
-    SendResponse(false);
-    return;
-  }
-  remote_destination_file =
-      gdata::util::ExtractGDataPath(remote_destination_file);
-
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
   if (!system_service) {
@@ -1968,15 +1958,37 @@ void TransferFileFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
-  system_service->file_system()->TransferFile(
-      local_source_file,
-      remote_destination_file,
-      base::Bind(&TransferFileFunction::OnTransferCompleted,
-                 this));
+  FilePath source_file = files[0].path;
+  FilePath destination_file = files[1].path;
+
+  bool source_file_under_gdata =
+      gdata::util::IsUnderGDataMountPoint(source_file);
+  bool destination_file_under_gdata =
+      gdata::util::IsUnderGDataMountPoint(destination_file);
+
+  if (source_file_under_gdata && !destination_file_under_gdata) {
+    // Transfer a file from gdata to local file system.
+    source_file = gdata::util::ExtractGDataPath(source_file);
+    system_service->file_system()->TransferFileFromRemoteToLocal(
+        source_file,
+        destination_file,
+        base::Bind(&TransferFileFunction::OnTransferCompleted, this));
+  } else if (!source_file_under_gdata && destination_file_under_gdata) {
+    // Transfer a file from local to gdata file system
+    destination_file = gdata::util::ExtractGDataPath(destination_file);
+    system_service->file_system()->TransferFileFromLocalToRemote(
+        source_file,
+        destination_file,
+        base::Bind(&TransferFileFunction::OnTransferCompleted, this));
+  } else {
+    // Local-to-local or gdata-to-gdata file transfers should be done via
+    // FileEntry.copyTo in the File API and are thus not supported here.
+    NOTREACHED();
+    SendResponse(false);
+  }
 }
 
-void TransferFileFunction::OnTransferCompleted(
-    base::PlatformFileError error) {
+void TransferFileFunction::OnTransferCompleted(base::PlatformFileError error) {
   if (error == base::PLATFORM_FILE_OK) {
     SendResponse(true);
   } else {

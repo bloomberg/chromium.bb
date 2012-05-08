@@ -178,10 +178,16 @@ void MockDocumentsService::DownloadFileStub(
     const GURL& content_url,
     const DownloadActionCallback& download_action_callback,
     const GetDownloadDataCallback& get_download_data_callback) {
+  GDataErrorCode error = HTTP_SUCCESS;
+  if (file_data_.get()) {
+    int file_data_size = static_cast<int>(file_data_->size());
+    ASSERT_EQ(file_data_size,
+              file_util::WriteFile(local_tmp_path, file_data_->data(),
+                                   file_data_size));
+  }
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(download_action_callback, HTTP_SUCCESS, content_url,
-                 local_tmp_path));
+      base::Bind(download_action_callback, error, content_url, local_tmp_path));
 }
 
 }  // namespace gdata

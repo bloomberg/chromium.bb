@@ -29,9 +29,14 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
                                                FindEntryDelegate* delegate));
   MOCK_METHOD2(SearchAsync, void(const std::string& search_query,
                                 const ReadDirectoryCallback& callback));
-  MOCK_METHOD3(TransferFile, void(const FilePath& local_file_path,
-                                  const FilePath& remote_dest_file_path,
-                                  const FileOperationCallback& callback));
+  MOCK_METHOD3(TransferFileFromRemoteToLocal,
+               void(const FilePath& local_src_file_path,
+                    const FilePath& remote_dest_file_path,
+                    const FileOperationCallback& callback));
+  MOCK_METHOD3(TransferFileFromLocalToRemote,
+               void(const FilePath& local_src_file_path,
+                    const FilePath& remote_dest_file_path,
+                    const FileOperationCallback& callback));
   MOCK_METHOD3(Copy, void(const FilePath& src_file_path,
                           const FilePath& dest_file_path,
                           const FileOperationCallback& callback));
@@ -47,15 +52,13 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
                     bool is_recursive,
                     const FileOperationCallback& callback));
   MOCK_METHOD3(GetFileByPath,
-               void(
-                   const FilePath& file_path,
-                   const GetFileCallback& get_file_callback,
-                   const GetDownloadDataCallback& get_download_data_callback));
+               void(const FilePath& file_path,
+                    const GetFileCallback& get_file_callback,
+                    const GetDownloadDataCallback& get_download_data_callback));
   MOCK_METHOD3(GetFileByResourceId,
-               void(
-                   const std::string& resource_id,
-                   const GetFileCallback& get_file_callback,
-                   const GetDownloadDataCallback& get_download_data_callback));
+               void(const std::string& resource_id,
+                    const GetFileCallback& get_file_callback,
+                    const GetDownloadDataCallback& get_download_data_callback));
   MOCK_METHOD0(GetOperationRegistry, GDataOperationRegistry*());
   MOCK_METHOD3(GetCacheState, void(const std::string& resource_id,
                                    const std::string& md5,

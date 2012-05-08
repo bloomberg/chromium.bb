@@ -487,6 +487,16 @@ void RunGetFileCallbackHelper(const GetFileCallback& callback,
     callback.Run(*error, *file_path, *mime_type, *file_type);
 }
 
+// Ditto for FileOperationCallback
+void RunFileOperationCallbackHelper(
+    const FileOperationCallback& callback,
+    base::PlatformFileError* error) {
+  DCHECK(error);
+
+  if (!callback.is_null())
+    callback.Run(*error);
+}
+
 // Ditto for CacheOperationCallback.
 void RunCacheOperationCallbackHelper(
     const CacheOperationCallback& callback,
@@ -752,6 +762,20 @@ bool ShouldCreateDirectory(const FilePath& directory_path) {
       util::GetSearchPathStatus(directory_path);
   return path_type == util::GDATA_SEARCH_PATH_INVALID ||
          path_type == util::GDATA_SEARCH_PATH_RESULT_CHILD;
+}
+
+// Copies a file from |src_file_path| to |dest_file_path| on the local
+// file system using file_util::CopyFile. |error| is set to
+// base::PLATFORM_FILE_OK on success or base::PLATFORM_FILE_ERROR_FAILED
+// otherwise.
+void CopyLocalFileOnIOThreadPool(
+    const FilePath& src_file_path,
+    const FilePath& dest_file_path,
+    base::PlatformFileError* error) {
+  DCHECK(error);
+
+  *error = file_util::CopyFile(src_file_path, dest_file_path) ?
+      base::PLATFORM_FILE_OK : base::PLATFORM_FILE_ERROR_FAILED;
 }
 
 // Relays the given FindEntryCallback to another thread via |replay_proxy|.
@@ -1290,9 +1314,24 @@ void GDataFileSystem::OnFeedFromServerLoaded(GetDocumentsParams* params,
   }
 }
 
-void GDataFileSystem::TransferFile(const FilePath& local_file_path,
-                                   const FilePath& remote_dest_file_path,
-                                   const FileOperationCallback& callback) {
+void GDataFileSystem::TransferFileFromRemoteToLocal(
+    const FilePath& remote_src_file_path,
+    const FilePath& local_dest_file_path,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GetFileByPath(remote_src_file_path,
+      base::Bind(&GDataFileSystem::OnGetFileCompleteForTransferFile,
+                 ui_weak_ptr_,
+                 local_dest_file_path,
+                 callback),
+      GetDownloadDataCallback());
+}
+
+void GDataFileSystem::TransferFileFromLocalToRemote(
+    const FilePath& local_src_file_path,
+    const FilePath& remote_dest_file_path,
+    const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::AutoLock lock(lock_);
@@ -1310,11 +1349,11 @@ void GDataFileSystem::TransferFile(const FilePath& local_file_path,
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
       base::Bind(&GetDocumentResourceIdOnIOThreadPool,
-                 local_file_path,
+                 local_src_file_path,
                  resource_id),
       base::Bind(&GDataFileSystem::TransferFileForResourceId,
                  ui_weak_ptr_,
-                 local_file_path,
+                 local_src_file_path,
                  remote_dest_file_path,
                  callback,
                  base::Owned(resource_id)));
@@ -1552,6 +1591,38 @@ void GDataFileSystem::OnGetFileCompleteForCopy(
                  base::Bind(OnTransferRegularFileCompleteForCopy,
                             callback,
                             base::MessageLoopProxy::current())));
+}
+
+void GDataFileSystem::OnGetFileCompleteForTransferFile(
+    const FilePath& local_dest_file_path,
+    const FileOperationCallback& callback,
+    base::PlatformFileError error,
+    const FilePath& local_file_path,
+    const std::string& unused_mime_type,
+    GDataFileType file_type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(error);
+
+    return;
+  }
+
+  // GetFileByPath downloads the file from gdata to a local cache, which is then
+  // copied to the actual destination path on the local file system using
+  // CopyLocalFileOnIOThreadPool.
+  base::PlatformFileError* copy_file_error =
+      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  PostBlockingPoolSequencedTaskAndReply(
+      FROM_HERE,
+      base::Bind(&CopyLocalFileOnIOThreadPool,
+                 local_file_path,
+                 local_dest_file_path,
+                 copy_file_error),
+      base::Bind(&RunFileOperationCallbackHelper,
+                 callback,
+                 base::Owned(copy_file_error)));
 }
 
 void GDataFileSystem::CopyDocumentToDirectory(

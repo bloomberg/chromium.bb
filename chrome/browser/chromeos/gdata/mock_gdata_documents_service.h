@@ -133,7 +133,8 @@ class MockDocumentsService : public DocumentsServiceInterface {
                            const GetDataCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS, the given URL, and the host+path
-  // portion of the URL as the temporary file path.
+  // portion of the URL as the temporary file path. If |file_data_| is not null,
+  // |file_data_| is written to the temporary file.
   void DownloadFileStub(
       const FilePath& virtual_path,
       const FilePath& local_tmp_path,
@@ -153,6 +154,10 @@ class MockDocumentsService : public DocumentsServiceInterface {
     directory_data_.reset(directory_data);
   }
 
+  void set_file_data(std::string* file_data) {
+    file_data_.reset(file_data);
+  }
+
  private:
   // Account meta data to be returned from GetAccountMetadata.
   scoped_ptr<base::Value> account_metadata_;
@@ -169,6 +174,10 @@ class MockDocumentsService : public DocumentsServiceInterface {
   // Feed data to be returned from GetDocuments if the search path is specified.
   // The feed contains subset of the root_feed.
   scoped_ptr<base::Value> search_result_;
+
+  // File data to be written to the local temporary file when
+  // DownloadDocumentStub is called.
+  scoped_ptr<std::string> file_data_;
 };
 
 }  // namespace gdata

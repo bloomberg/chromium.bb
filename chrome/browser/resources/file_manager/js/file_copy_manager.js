@@ -44,7 +44,7 @@ FileCopyManager.Task = function(sourceDirEntry, targetDirEntry) {
   // For example, if 'dir' was copied as 'dir (1)', then 'dir\file.txt' should
   // become 'dir (1)\file.txt'.
   this.renamedDirectories_ = [];
-}
+};
 
 FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
   var self = this;
@@ -61,7 +61,7 @@ FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
   // and target are on GData. There is no need to recurse into directories.
   var recurse = !this.move;
   util.recurseAndResolveEntries(entries, recurse, onEntriesRecursed);
-}
+};
 
 FileCopyManager.Task.prototype.getNextEntry = function() {
   // We should keep the file in pending list and remove it after complete.
@@ -125,7 +125,7 @@ FileCopyManager.Error = function(reason, data) {
   this.reason = reason;
   this.code = FileCopyManager.Error[reason];
   this.data = data;
-}
+};
 
 FileCopyManager.Error.CANCELLED = 0;
 FileCopyManager.Error.UNEXPECTED_SOURCE_FILE = 1;
@@ -255,7 +255,7 @@ FileCopyManager.prototype.maybeCancel_ = function() {
 
   this.doCancel_();
   return true;
-}
+};
 
 /**
  * Convert string in clipboard to entries and kick off pasting.
@@ -330,7 +330,7 @@ FileCopyManager.prototype.paste = function(clipboard, targetPath,
                           {create: false},
                           onSourceEntryFound,
                           onPathError);
-}
+};
 
 /**
  * Initiate a file copy.
@@ -463,7 +463,7 @@ FileCopyManager.prototype.serviceNextTask_ = function(
   }
 
   this.serviceNextTaskEntry_(task, onEntryServiced, errorCallback);
-}
+};
 
 /**
  * Service the next entry in a given task.
@@ -642,10 +642,9 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
       }
     }
 
-    // TODO(benchan): Until GDataFileSystem supports FileWriter, we use
-    // the transferFile API to copy file from a non-gdata file system to a
-    // gdata file system.
-    if (sourceEntry.isFile && task.targetOnGData) {
+    // TODO(benchan): Until GDataFileSystem supports FileWriter, we use the
+    // transferFile API to copy files into or out from a gdata file system.
+    if (sourceEntry.isFile && (task.sourceOnGData || task.targetOnGData)) {
       var sourceFileUrl = sourceEntry.toURL();
       var targetFileUrl = targetDirEntry.toURL() + '/' + targetRelativePath;
       chrome.fileBrowserPrivate.transferFile(
@@ -656,7 +655,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
                 'Error copying ' + sourceFileUrl + ' to ' + targetFileUrl);
             onFilesystemError({
               code: chrome.extension.lastError.message,
-              toGDrive: true,
+              toGDrive: task.targetOnGData,
               sourceFileUrl: sourceFileUrl
             });
           } else {
@@ -723,7 +722,7 @@ FileCopyManager.prototype.copyEntry_ = function(
         errorCallback('FILESYSTEM_ERROR', err);
       };
       writer.onwriteend = function() {
-        successCallback(targetEntry, file.size)
+        successCallback(targetEntry, file.size);
       };
       writer.write(file);
     }
