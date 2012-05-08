@@ -718,7 +718,8 @@ void MenuController::SetSelection(MenuItemView* menu_item,
   size_t current_size = current_path.size();
   size_t new_size = new_path.size();
 
-  if (pending_state_.item != menu_item && pending_state_.item) {
+  bool pending_item_changed = pending_state_.item != menu_item;
+  if (pending_item_changed && pending_state_.item) {
     View* current_hot_view = GetFirstHotTrackedView(pending_state_.item);
     if (current_hot_view)
       current_hot_view->SetHotTracked(false);
@@ -749,12 +750,14 @@ void MenuController::SetSelection(MenuItemView* menu_item,
   pending_state_.submenu_open = (selection_types & SELECTION_OPEN_SUBMENU) != 0;
 
   // Stop timers.
-  StopShowTimer();
   StopCancelAllTimer();
+  // Resets show timer only when pending menu item is changed.
+  if (pending_item_changed)
+    StopShowTimer();
 
   if (selection_types & SELECTION_UPDATE_IMMEDIATELY)
     CommitPendingSelection();
-  else
+  else if (pending_item_changed)
     StartShowTimer();
 
   // Notify an accessibility focus event on all menu items except for the root.
