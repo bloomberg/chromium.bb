@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>  // for FRIEND_TEST
 
+#include "gestures/include/finger_metrics.h"
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
 #include "gestures/include/prop_registry.h"
@@ -18,10 +19,6 @@ namespace gestures {
 // This interpreter keeps some memory of the past and, for each incoming
 // frame of hardware state, immediately determines the gestures to the best
 // of its abilities.
-
-static const size_t kMaxFingers = 5;
-static const size_t kMaxGesturingFingers = 3;
-static const size_t kMaxTapFingers = 5;
 
 class ImmediateInterpreter;
 
@@ -144,7 +141,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
     kTtcDragRetouch
   };
 
-  explicit ImmediateInterpreter(PropRegistry* prop_reg);
+  ImmediateInterpreter(PropRegistry* prop_reg, FingerMetrics* finger_metrics);
   virtual ~ImmediateInterpreter();
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate,
@@ -162,11 +159,6 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Reset the member variables corresponding to same-finger state and
   // updates changed_time_ to |now|.
   void ResetSameFingersState(stime_t now);
-
-  // Returns true if the two fingers are near each other enough to do a multi
-  // finger gesture together.
-  bool FingersCloseEnoughToGesture(const FingerState& finger_a,
-                                   const FingerState& finger_b) const;
 
   // Part of palm detection. Returns true if the finger indicated by
   // |finger_idx| is near another finger, which must not be a palm, in the
@@ -403,6 +395,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // when a normal scroll goes through.
   bool prev_result_high_pressure_change_;
 
+  FingerMetrics* finger_metrics_;
+  scoped_ptr<FingerMetrics> test_finger_metrics_;
+
   // When guessing a pinch gesture. Do we guess pinch (true) or no-pinch?
   bool pinch_guess_;
   // Time when pinch guess was made. -1 if no guess has been made yet.
@@ -481,11 +476,6 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // This much time after fingers change, stop allowing contacts classified
   // as thumb to be classified as non-thumb.
   DoubleProperty thumb_eval_timeout_;
-  // Maximum distance [mm] two fingers may be separated and still be eligible
-  // for a two-finger gesture (e.g., scroll / tap / click). These define an
-  // ellipse with horizontal and vertical axes lengths (think: radii).
-  DoubleProperty two_finger_close_horizontal_distance_thresh_;
-  DoubleProperty two_finger_close_vertical_distance_thresh_;
   // Consider scroll vs pointing if finger moves at least this distance [mm]
   DoubleProperty two_finger_scroll_distance_thresh_;
   // Maximum distance [mm] between the outermost fingers while performing a

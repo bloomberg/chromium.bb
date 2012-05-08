@@ -10,6 +10,7 @@ OBJECTS=\
 	$(OBJDIR)/activity_replay.o \
 	$(OBJDIR)/box_filter_interpreter.o \
 	$(OBJDIR)/click_wiggle_filter_interpreter.o \
+	$(OBJDIR)/finger_metrics.o \
 	$(OBJDIR)/gestures.o \
 	$(OBJDIR)/iir_filter_interpreter.o \
 	$(OBJDIR)/immediate_interpreter.o \

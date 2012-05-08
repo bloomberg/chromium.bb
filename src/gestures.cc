@@ -11,6 +11,7 @@
 #include "gestures/include/accel_filter_interpreter.h"
 #include "gestures/include/box_filter_interpreter.h"
 #include "gestures/include/click_wiggle_filter_interpreter.h"
+#include "gestures/include/finger_metrics.h"
 #include "gestures/include/iir_filter_interpreter.h"
 #include "gestures/include/immediate_interpreter.h"
 #include "gestures/include/integral_gesture_filter_interpreter.h"
@@ -202,7 +203,9 @@ GestureInterpreter::GestureInterpreter(int version)
       prop_provider_(NULL),
       prop_provider_data_(NULL) {
   prop_reg_.reset(new PropRegistry);
-  Interpreter* temp = new ImmediateInterpreter(prop_reg_.get());
+  finger_metrics_.reset(new FingerMetrics(prop_reg_.get()));
+  Interpreter* temp = new ImmediateInterpreter(prop_reg_.get(),
+                                               finger_metrics_.get());
   temp = new ClickWiggleFilterInterpreter(prop_reg_.get(), temp);
   temp = new IirFilterInterpreter(prop_reg_.get(), temp);
   temp = new LookaheadFilterInterpreter(prop_reg_.get(), temp);

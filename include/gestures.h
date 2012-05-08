@@ -318,6 +318,7 @@ typedef struct GesturesPropProvider {
 
 namespace gestures {
 
+class FingerMetrics;
 class Interpreter;
 class PropRegistry;
 
@@ -346,6 +347,7 @@ struct GestureInterpreter {
   void* callback_data_;
 
   scoped_ptr<PropRegistry> prop_reg_;
+  scoped_ptr<FingerMetrics> finger_metrics_;
   scoped_ptr<Interpreter> interpreter_;
 
   GesturesTimerProvider* timer_provider_;

@@ -5,8 +5,8 @@
 #include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>  // for FRIEND_TEST
 
+#include "gestures/include/finger_metrics.h"
 #include "gestures/include/gestures.h"
-#include "gestures/include/immediate_interpreter.h"
 #include "gestures/include/interpreter.h"
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/set.h"
