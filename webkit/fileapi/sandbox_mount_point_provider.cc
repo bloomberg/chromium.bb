@@ -43,11 +43,18 @@ const size_t kOldFileSystemUniqueDirectoryNameLength =
     kOldFileSystemUniqueLength + arraysize(kOldFileSystemUniqueNamePrefix) - 1;
 
 const char kOpenFileSystemLabel[] = "FileSystem.OpenFileSystem";
+const char kOpenFileSystemDetailLabel[] = "FileSystem.OpenFileSystemDetail";
+const char kOpenFileSystemDetailNonThrottledLabel[] =
+    "FileSystem.OpenFileSystemDetailNonthrottled";
+int64 kMinimumStatsCollectionIntervalHours = 1;
+
 enum FileSystemError {
   kOK = 0,
   kIncognito,
-  kInvalidScheme,
+  kInvalidSchemeError,
   kCreateDirectoryError,
+  kNotFound,
+  kUnknownError,
   kFileSystemErrorMax,
 };
 
@@ -267,25 +274,34 @@ void PassPointerErrorByValue(
   callback.Run(*error_ptr);
 }
 
-void ValidateRootOnFileThread(ObfuscatedFileUtil* file_util,
-                              const GURL& origin_url,
-                              FileSystemType type,
-                              const FilePath& old_base_path,
-                              bool create,
-                              base::PlatformFileError* error_ptr) {
+void DidValidateFileSystemRoot(
+    base::WeakPtr<SandboxMountPointProvider> mount_point_provider,
+    const base::Callback<void(PlatformFileError)>& callback,
+    base::PlatformFileError* error) {
+  if (mount_point_provider.get())
+    mount_point_provider.get()->CollectOpenFileSystemMetrics(*error);
+  callback.Run(*error);
+}
+
+void ValidateRootOnFileThread(
+    ObfuscatedFileUtil* file_util,
+    const GURL& origin_url,
+    FileSystemType type,
+    const FilePath& old_base_path,
+    bool create,
+    base::PlatformFileError* error_ptr) {
   DCHECK(error_ptr);
   MigrateIfNeeded(file_util, old_base_path);
+
   FilePath root_path =
-      file_util->GetDirectoryForOriginAndType(origin_url, type, create);
+      file_util->GetDirectoryForOriginAndType(
+          origin_url, type, create, error_ptr);
   if (root_path.empty()) {
     UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel,
                               kCreateDirectoryError,
                               kFileSystemErrorMax);
-    // TODO(kinuko): We should return appropriate error code.
-    *error_ptr = base::PLATFORM_FILE_ERROR_FAILED;
   } else {
     UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel, kOK, kFileSystemErrorMax);
-    *error_ptr = base::PLATFORM_FILE_OK;
   }
   // The reference of file_util will be derefed on the FILE thread
   // when the storage of this callback gets deleted regardless of whether
@@ -315,7 +331,8 @@ SandboxMountPointProvider::SandboxMountPointProvider(
       sandbox_file_util_(
           new ObfuscatedFileUtil(
               profile_path.Append(kNewFileSystemDirectory),
-              QuotaFileUtil::CreateDefault())) {
+              QuotaFileUtil::CreateDefault())),
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 SandboxMountPointProvider::~SandboxMountPointProvider() {
@@ -341,7 +358,7 @@ void SandboxMountPointProvider::ValidateFileSystemRoot(
   if (!IsAllowedScheme(origin_url)) {
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
     UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel,
-                              kInvalidScheme,
+                              kInvalidSchemeError,
                               kFileSystemErrorMax);
     return;
   }
@@ -353,8 +370,9 @@ void SandboxMountPointProvider::ValidateFileSystemRoot(
                  sandbox_file_util_,
                  origin_url, type, old_base_path(), create,
                  base::Unretained(error_ptr)),
-      base::Bind(base::Bind(&PassPointerErrorByValue, callback),
-                 base::Owned(error_ptr)));
+      base::Bind(&DidValidateFileSystemRoot,
+                 weak_factory_.GetWeakPtr(),
+                 callback, base::Owned(error_ptr)));
 };
 
 FilePath
@@ -671,6 +689,43 @@ bool SandboxMountPointProvider::IsAllowedScheme(const GURL& url) const {
       return true;
   }
   return false;
+}
+
+void SandboxMountPointProvider::CollectOpenFileSystemMetrics(
+    base::PlatformFileError error_code) {
+  base::Time now = base::Time::Now();
+  bool throttled = now < next_release_time_for_open_filesystem_stat_;
+  if (!throttled) {
+    next_release_time_for_open_filesystem_stat_ =
+        now + base::TimeDelta::FromHours(kMinimumStatsCollectionIntervalHours);
+  }
+
+#define REPORT(report_value)                                            \
+  UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemDetailLabel,                 \
+                            (report_value),                             \
+                            kFileSystemErrorMax);                       \
+  if (!throttled) {                                                     \
+    UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemDetailNonThrottledLabel,   \
+                              (report_value),                           \
+                              kFileSystemErrorMax);                     \
+  }
+
+  switch (error_code) {
+    case base::PLATFORM_FILE_OK:
+      REPORT(kOK);
+      break;
+    case base::PLATFORM_FILE_ERROR_INVALID_URL:
+      REPORT(kInvalidSchemeError);
+      break;
+    case base::PLATFORM_FILE_ERROR_NOT_FOUND:
+      REPORT(kNotFound);
+      break;
+    case base::PLATFORM_FILE_ERROR_FAILED:
+    default:
+      REPORT(kUnknownError);
+      break;
+  }
+#undef REPORT
 }
 
 }  // namespace fileapi

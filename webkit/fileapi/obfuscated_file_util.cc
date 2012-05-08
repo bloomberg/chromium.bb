@@ -12,6 +12,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -834,19 +835,34 @@ PlatformFileError ObfuscatedFileUtil::DeleteSingleDirectory(
 }
 
 FilePath ObfuscatedFileUtil::GetDirectoryForOriginAndType(
-    const GURL& origin, FileSystemType type, bool create) {
-  FilePath origin_dir = GetDirectoryForOrigin(origin, create);
+    const GURL& origin,
+    FileSystemType type,
+    bool create,
+    base::PlatformFileError* error_code) {
+  FilePath origin_dir = GetDirectoryForOrigin(origin, create, error_code);
   if (origin_dir.empty())
     return FilePath();
   FilePath::StringType type_string = GetDirectoryNameForType(type);
   if (type_string.empty()) {
     LOG(WARNING) << "Unknown filesystem type requested:" << type;
+
+    if (error_code)
+      *error_code = base::PLATFORM_FILE_ERROR_INVALID_URL;
     return FilePath();
   }
   FilePath path = origin_dir.Append(type_string);
   if (!file_util::DirectoryExists(path) &&
-      (!create || !file_util::CreateDirectory(path)))
+      (!create || !file_util::CreateDirectory(path))) {
+    if (error_code) {
+      *error_code = create ?
+          base::PLATFORM_FILE_ERROR_FAILED :
+          base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    }
     return FilePath();
+  }
+
+  if (error_code)
+    *error_code = base::PLATFORM_FILE_OK;
   return path;
 }
 
@@ -865,7 +881,8 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
     return false;
 
   FilePath origin_path = origin_type_path.DirName();
-  DCHECK_EQ(origin_path.value(), GetDirectoryForOrigin(origin, false).value());
+  DCHECK_EQ(origin_path.value(),
+            GetDirectoryForOrigin(origin, false, NULL).value());
 
   // Delete the origin directory if the deleted one was the last remaining
   // type for the origin.
@@ -1212,30 +1229,53 @@ FileSystemDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
 }
 
 FilePath ObfuscatedFileUtil::GetDirectoryForOrigin(
-    const GURL& origin, bool create) {
-  if (!InitOriginDatabase(create))
+    const GURL& origin, bool create, base::PlatformFileError* error_code) {
+  if (!InitOriginDatabase(create)) {
+    if (error_code) {
+      *error_code = create ?
+          base::PLATFORM_FILE_ERROR_FAILED :
+          base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    }
     return FilePath();
+  }
   FilePath directory_name;
   std::string id = GetOriginIdentifierFromURL(origin);
 
   bool exists_in_db = origin_database_->HasOriginPath(id);
-  if (!exists_in_db && !create)
+  if (!exists_in_db && !create) {
+    if (error_code)
+      *error_code = base::PLATFORM_FILE_ERROR_NOT_FOUND;
     return FilePath();
-  if (!origin_database_->GetPathForOrigin(id, &directory_name))
+  }
+  if (!origin_database_->GetPathForOrigin(id, &directory_name)) {
+    if (error_code)
+      *error_code = base::PLATFORM_FILE_ERROR_FAILED;
     return FilePath();
+  }
 
   FilePath path = file_system_directory_.Append(directory_name);
   bool exists_in_fs = file_util::DirectoryExists(path);
   if (!exists_in_db && exists_in_fs) {
-    if (!file_util::Delete(path, true))
+    if (!file_util::Delete(path, true)) {
+      if (error_code)
+        *error_code = base::PLATFORM_FILE_ERROR_FAILED;
       return FilePath();
+    }
     exists_in_fs = false;
   }
 
   if (!exists_in_fs) {
-    if (!create || !file_util::CreateDirectory(path))
+    if (!create || !file_util::CreateDirectory(path)) {
+      if (error_code)
+        *error_code = create ?
+            base::PLATFORM_FILE_ERROR_FAILED :
+            base::PLATFORM_FILE_ERROR_NOT_FOUND;
       return FilePath();
+    }
   }
+
+  if (error_code)
+    *error_code = base::PLATFORM_FILE_OK;
 
   return path;
 }

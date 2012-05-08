@@ -11,6 +11,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_options.h"
@@ -155,6 +156,7 @@ class SandboxMountPointProvider
                                     FileSystemType type) OVERRIDE;
 
   FileSystemQuotaUtil* quota_util() { return this; }
+  void CollectOpenFileSystemMetrics(base::PlatformFileError error_code);
 
  private:
   // Returns a path to the usage cache file.
@@ -183,6 +185,10 @@ class SandboxMountPointProvider
 
   // Acccessed only on the file thread.
   std::set<GURL> visited_origins_;
+
+  base::Time next_release_time_for_open_filesystem_stat_;
+
+  base::WeakPtrFactory<SandboxMountPointProvider> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxMountPointProvider);
 };

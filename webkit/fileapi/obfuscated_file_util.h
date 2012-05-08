@@ -43,9 +43,9 @@ class FileSystemOperationContext;
 // SandboxMountPointProvider [and the task it uses to drop the reference] and
 // SandboxMountPointProvider::GetFileSystemRootPathTask.  Without that last one,
 // we wouldn't need ref counting.
-class ObfuscatedFileUtil :
-    public FileSystemFileUtil,
-    public base::RefCountedThreadSafe<ObfuscatedFileUtil> {
+class ObfuscatedFileUtil
+    : public FileSystemFileUtil,
+      public base::RefCountedThreadSafe<ObfuscatedFileUtil> {
  public:
   // Origin enumerator interface.
   // An instance of this interface is assumed to be called on the file thread.
@@ -146,7 +146,17 @@ class ObfuscatedFileUtil :
   // contain both the directory database's files and all the backing file
   // subdirectories.
   FilePath GetDirectoryForOriginAndType(
-      const GURL& origin, FileSystemType type, bool create);
+      const GURL& origin,
+      FileSystemType type,
+      bool create,
+      base::PlatformFileError* error_code);
+
+  FilePath GetDirectoryForOriginAndType(
+      const GURL& origin,
+      FileSystemType type,
+      bool create) {
+    return GetDirectoryForOriginAndType(origin, type, create, NULL);
+  }
 
   // Deletes the topmost directory specific to this origin and type.  This will
   // delete its directory database.
@@ -248,7 +258,9 @@ class ObfuscatedFileUtil :
 
   // Gets the topmost directory specific to this origin.  This will
   // contain both the filesystem type subdirectories.
-  FilePath GetDirectoryForOrigin(const GURL& origin, bool create);
+  FilePath GetDirectoryForOrigin(const GURL& origin,
+                                 bool create,
+                                 base::PlatformFileError* error_code);
 
   void MarkUsed();
   void DropDatabases();
