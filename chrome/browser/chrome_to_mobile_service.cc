@@ -40,7 +40,7 @@
 namespace {
 
 // The default enabled/disabled state of the Chrome To Mobile feature.
-const bool kChromeToMobileEnabled = false;
+const bool kChromeToMobileEnabled = true;
 
 // The maximum number of retries for the URLFetcher requests.
 const size_t kMaxRetries = 1;

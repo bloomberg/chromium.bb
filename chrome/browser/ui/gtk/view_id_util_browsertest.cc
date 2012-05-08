@@ -47,10 +47,6 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Basic) {
       continue;
     }
 
-    // Chrome To Mobile is disabled by default.
-    if (i == VIEW_ID_CHROME_TO_MOBILE_BUTTON)
-      continue;
-
     CheckViewID(static_cast<ViewID>(i), true);
   }
 
