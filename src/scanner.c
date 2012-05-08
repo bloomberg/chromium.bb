@@ -22,6 +22,7 @@
  */
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
@@ -155,26 +156,59 @@ static const char *indent(int n)
 }
 
 static void
-desc_dump(char *src, int startcol)
+desc_dump(const char *fmt, ...)
 {
-	int i, j, col = startcol;
+	va_list ap;
+	char buf[128], *desc, hang;
+	int col, i, j, k, startcol;
 
-	for (i = 0; src[i]; i++) {
-		if (isspace(src[i]))
-		    continue;
+	va_start(ap, fmt);
+	vsnprintf(buf, sizeof buf, fmt, ap);
+	desc = va_arg(ap, char *);
+	va_end(ap);
+
+	for (i = 0, col = 0; buf[i] != '*'; i++) {
+		if (buf[i] == '\t')
+			col = (col + 8) & ~7;
+		else
+			col++;
+	}
+
+	printf("%s", buf);
+
+	if (!desc) {
+		printf("(none)\n");
+		return;
+	}
+
+	startcol = col;
+	col += strlen(&buf[i]);
+	if (col - startcol > 2)
+		hang = '\t';
+	else
+		hang = ' ';
+
+	for (i = 0; desc[i]; ) {
+		k = i;
+		while (desc[i] && isspace(desc[i]))
+			i++;
+		if (!desc[i])
+			break;
 
 		j = i;
-		while (src[i] && !isspace(src[i]))
+		while (desc[i] && !isspace(desc[i]))
 			i++;
 
 		if (col + i - j > 72) {
-			printf("\n%s * ", indent(startcol));
+			printf("\n%s*%c", indent(startcol), hang);
 			col = startcol;
 		}
 
-		col += printf("%s%.*s",
-			      col > startcol ? " " : "", i - j, &src[j]);
+		if (col > startcol && k > 0)
+			col += printf(" ");
+		col += printf("%.*s", i - j, &desc[j]);
 	}
+	putchar('\n');
 }
 
 static void
@@ -638,20 +672,19 @@ emit_enumerations(struct interface *interface)
 		       interface->uppercase_name, e->uppercase_name);
 
 		if (desc) {
-			printf("/**\n"
-			       " * %s_%s - %s\n", interface->name,
-			       e->name, desc->summary);
+			printf("/**\n");
+			desc_dump(" * %s_%s - ",
+				  interface->name, e->name, desc->summary);
 			wl_list_for_each(entry, &e->entry_list, link) {
-				printf(" * @%s_%s_%s: %s\n",
-				       interface->uppercase_name,
-				       e->uppercase_name,
-				       entry->uppercase_name,
-				       entry->summary);
+				desc_dump(" * @%s_%s_%s: ",
+					  interface->uppercase_name,
+					  e->uppercase_name,
+					  entry->uppercase_name,
+					  entry->summary);
 			}
 			if (desc->text) {
-				printf(" *\n"
-				       " * ");
-				desc_dump(desc->text, 0);
+				printf(" *\n");
+				desc_dump(" * ", desc->text);
 			}
 			printf(" */\n");
 		}
@@ -680,16 +713,15 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 	is_interface = message_list == &interface->request_list;
 	if (interface->description) {
 		struct description *desc = interface->description;
-		printf("/**\n"
-		       " * %s - %s\n", interface->name, desc->summary);
+		printf("/**\n");
+		desc_dump(" * %s - ", interface->name, desc->summary);
 		wl_list_for_each(m, message_list, link) {
 			struct description *mdesc = m->description;
-			printf(" * @%s: %s\n", m->name, mdesc ? mdesc->summary :
-			       "(none)");
+			desc_dump(" * @%s: ",
+				  m->name, mdesc ? mdesc->summary : "(none)");
 		}
-		printf(" *\n"
-		       " * ");
-		desc_dump(desc->text, 0);
+		printf(" *\n");
+		desc_dump(" * ", desc->text);
 		printf(" */\n");
 	}
 	printf("struct %s_%s {\n", interface->name,
@@ -699,16 +731,15 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 		struct description *mdesc = m->description;
 
 		printf("\t/**\n");
-		printf("\t * %s - %s\n", m->name, mdesc ? mdesc->summary :
-		       "(none)");
+		desc_dump("\t * %s - ",
+			  m->name, mdesc ? mdesc->summary : "(none)");
 		wl_list_for_each(a, &m->arg_list, link) {
-			printf("\t * @%s: %s\n", a->name, a->summary ?
-			       a->summary : "(none)");
+			desc_dump("\t * @%s: ",
+				  a->name, a->summary ? a->summary : "(none)");
 		}
 		if (mdesc) {
-			printf("\t * ");
-			desc_dump(mdesc->text, 8);
-			printf("\n");
+			printf("\t *\n");
+			desc_dump("\t * ", mdesc->text, 8, 0);
 		}
 		if (m->since > 1) {
 			printf("\t * @since: %d\n", m->since);
