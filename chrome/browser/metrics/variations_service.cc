@@ -9,6 +9,7 @@
 #include "base/version.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -50,18 +51,15 @@ VariationsService* VariationsService::GetInstance() {
   return Singleton<VariationsService>::get();
 }
 
-void VariationsService::LoadVariationsSeed(PrefService* local_prefs) {
-  std::string base64_seed_data = local_prefs->GetString(prefs::kVariationsSeed);
-  std::string seed_data;
+bool VariationsService::CreateTrialsFromSeed(PrefService* local_prefs) {
+  chrome_variations::TrialsSeed seed;
+  if (!LoadTrialsSeedFromPref(local_prefs, &seed))
+      return false;
 
-  // If the decode process fails, assume the pref value is corrupt, and clear
-  // it.
-  if (!base::Base64Decode(base64_seed_data, &seed_data) ||
-      !variations_seed_.ParseFromString(seed_data)) {
-    VLOG(1) << "Variations Seed data in local pref is corrupt, clearing the "
-            << "pref.";
-    local_prefs->ClearPref(prefs::kVariationsSeed);
-  }
+  for (int i = 0; i < seed.study_size(); ++i)
+    CreateTrialFromStudy(seed.study(i));
+
+  return true;
 }
 
 void VariationsService::StartFetchingVariationsSeed() {
@@ -71,6 +69,7 @@ void VariationsService::StartFetchingVariationsSeed() {
                                       net::LOAD_DO_NOT_SAVE_COOKIES);
   pending_seed_request_->SetRequestContext(
       g_browser_process->system_request_context());
+  // TODO(jwd): pull max retries into a contsant
   pending_seed_request_->SetMaxRetries(5);
   pending_seed_request_->Start();
 }
@@ -146,6 +145,11 @@ bool VariationsService::ShouldAddStudy(const chrome_variations::Study& study) {
 bool VariationsService::CheckStudyChannel(
     const chrome_variations::Study& study,
     chrome::VersionInfo::Channel channel) {
+  if (study.channel_size() == 0) {
+    // An empty channel list matches all channels.
+    return true;
+  }
+
   for (int i = 0; i < study.channel_size(); ++i) {
     if (ConvertStudyChannelToVersionChannel(study.channel(i)) == channel)
       return true;
@@ -188,17 +192,90 @@ bool VariationsService::CheckStudyDate(const chrome_variations::Study& study,
 
   if (study.has_start_date()) {
     const base::Time start_date =
-        epoch + base::TimeDelta::FromMilliseconds(study.start_date());
+        epoch + base::TimeDelta::FromSeconds(study.start_date());
     if (date_time < start_date)
       return false;
   }
 
   if (study.has_expiry_date()) {
     const base::Time expiry_date =
-        epoch + base::TimeDelta::FromMilliseconds(study.expiry_date());
+        epoch + base::TimeDelta::FromSeconds(study.expiry_date());
     if (date_time >= expiry_date)
       return false;
   }
 
   return true;
+}
+
+bool VariationsService::LoadTrialsSeedFromPref(
+    PrefService* local_prefs,
+    chrome_variations::TrialsSeed* seed) {
+  std::string base64_seed_data = local_prefs->GetString(prefs::kVariationsSeed);
+  std::string seed_data;
+
+  // If the decode process fails, assume the pref value is corrupt, and clear
+  // it.
+  if (!base::Base64Decode(base64_seed_data, &seed_data) ||
+      !seed->ParseFromString(seed_data)) {
+    VLOG(1) << "Variations Seed data in local pref is corrupt, clearing the "
+            << "pref.";
+    local_prefs->ClearPref(prefs::kVariationsSeed);
+    return false;
+  }
+  return true;
+}
+
+void VariationsService::CreateTrialFromStudy(
+    const chrome_variations::Study& study) {
+  if (!ShouldAddStudy(study))
+    return;
+
+  // At the moment, a missing default_experiment_name makes the study invalid.
+  if (!study.has_default_experiment_name()) {
+    DVLOG(1) << study.name() << " has no default experiment defined.";
+    return;
+  }
+
+  const std::string& default_group_name = study.default_experiment_name();
+  base::FieldTrial::Probability divisor = 0;
+
+  bool found_default_group = false;
+  for (int i = 0; i < study.experiment_size(); ++i) {
+    divisor += study.experiment(i).probability_weight();
+    if (study.experiment(i).name() == default_group_name)
+      found_default_group = true;
+  }
+  if (!found_default_group) {
+    DVLOG(1) << study.name() << " is missing default experiment in it's "
+             << "experiment list";
+    // The default group was not found in the list of groups. This study is not
+    // valid.
+    return;
+  }
+
+  const base::Time epoch = base::Time::UnixEpoch();
+  const base::Time expiry_date =
+      epoch + base::TimeDelta::FromSeconds(study.expiry_date());
+  base::Time::Exploded exploded_end_date;
+  expiry_date.UTCExplode(&exploded_end_date);
+
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+          study.name(), divisor, default_group_name, exploded_end_date.year,
+          exploded_end_date.month, exploded_end_date.day_of_month, NULL));
+
+  if (study.has_consistency() &&
+      study.consistency() == chrome_variations::Study_Consistency_PERMANENT) {
+    trial->UseOneTimeRandomization();
+  }
+
+  for (int i = 0; i < study.experiment_size(); ++i) {
+    if (study.experiment(i).name() != default_group_name) {
+      trial->AppendGroup(study.experiment(i).name(),
+                         study.experiment(i).probability_weight());
+    }
+  }
+
+  // TODO(jwd): Add experiment_id association code.
+  trial->SetForced();
 }

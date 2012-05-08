@@ -11,7 +11,7 @@ namespace {
 
 // Converts |time| to chrome_variations::Study proto format.
 int64 TimeToProtoTime(const base::Time& time) {
-  return (time - base::Time::UnixEpoch()).InMilliseconds();
+  return (time - base::Time::UnixEpoch()).InSeconds();
 }
 
 }  // namespace
@@ -39,7 +39,7 @@ TEST(VariationsServiceTest, CheckStudyChannel) {
   // instead of < so that the result of adding the last channel gets checked.
   for (size_t i = 0; i <= arraysize(study_channels); ++i) {
     for (size_t j = 0; j < arraysize(channels); ++j) {
-      const bool expected = channel_added[j];
+      const bool expected = channel_added[j] || study.channel_size() == 0;
       const bool result = VariationsService::CheckStudyChannel(study,
                                                                channels[j]);
       EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
@@ -57,7 +57,7 @@ TEST(VariationsServiceTest, CheckStudyChannel) {
   memset(&channel_added, 0, sizeof(channel_added));
   for (size_t i = 0; i <= arraysize(study_channels); ++i) {
     for (size_t j = 0; j < arraysize(channels); ++j) {
-      const bool expected = channel_added[j];
+      const bool expected = channel_added[j] || study.channel_size() == 0;
       const bool result = VariationsService::CheckStudyChannel(study,
                                                                channels[j]);
       EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";

@@ -594,7 +594,7 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
 #endif  // NDEBUG
 
   VariationsService* variations_service = VariationsService::GetInstance();
-  variations_service->LoadVariationsSeed(browser_process_->local_state());
+  variations_service->CreateTrialsFromSeed(browser_process_->local_state());
 
   SetupFieldTrials(metrics->recording_active(),
                    local_state_->IsManagedPreference(

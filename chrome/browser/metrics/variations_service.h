@@ -27,9 +27,10 @@ class VariationsService : public content::URLFetcherDelegate {
   // Returns the singleton instance;
   static VariationsService* GetInstance();
 
-  // Loads the Variations seed data from the given local prefs. If there is a
-  // problem with loading, the pref value is cleared.
-  void LoadVariationsSeed(PrefService* local_prefs);
+  // Creates field trials based on Variations Seed loaded from local prefs. If
+  // there is a problem loading the seed data, all trials specified by the seed
+  // may not be created.
+  bool CreateTrialsFromSeed(PrefService* local_prefs);
 
   // Starts the fetching process, where |OnURLFetchComplete| is called with the
   // response.
@@ -73,6 +74,15 @@ class VariationsService : public content::URLFetcherDelegate {
   // Checks whether |study| is applicable for the given date/time.
   static bool CheckStudyDate(const chrome_variations::Study& study,
                              const base::Time& date_time);
+
+  // Loads the Variations seed data from the given local prefs into |seed|. If
+  // there is a problem with loading, the pref value is cleared and false is
+  // returned. If successful, |seed| will contain the loaded data and true is
+  // returned.
+  bool LoadTrialsSeedFromPref(PrefService* local_prefs,
+                              chrome_variations::TrialsSeed* seed);
+
+  void CreateTrialFromStudy(const chrome_variations::Study& study);
 
   // Contains the current seed request. Will only have a value while a request
   // is pending, and will be reset by |OnURLFetchComplete|.
