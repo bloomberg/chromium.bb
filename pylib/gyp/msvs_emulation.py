@@ -134,6 +134,10 @@ class MsvsSettings(object):
     self.vs_version = GetVSVersion(generator_flags)
     self.dxsdk_dir = _FindDirectXInstallation()
 
+    # Try to find an installation location for the Windows DDK by checking
+    # the WDK_DIR environment variable, may be None.
+    self.wdk_dir = os.environ.get('WDK_DIR')
+
     supported_fields = [
         ('msvs_configuration_attributes', dict),
         ('msvs_settings', dict),
@@ -166,6 +170,7 @@ class MsvsSettings(object):
     # by typical end-user installation of the SDK. If it's not set, we don't
     # want to leave the unexpanded variable in the path, so simply strip it.
     replacements['$(DXSDK_DIR)'] = self.dxsdk_dir if self.dxsdk_dir else ''
+    replacements['$(WDK_DIR)'] = self.wdk_dir if self.wdk_dir else ''
     return replacements
 
   def ConvertVSMacros(self, s, base_to_build=None):
