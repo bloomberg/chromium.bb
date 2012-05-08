@@ -53,6 +53,11 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   virtual void OnWindowPosChanged(WINDOWPOS* window_pos) OVERRIDE;
   virtual void OnScreenReaderDetected() OVERRIDE;
   virtual bool ShouldUseNativeFrame() const OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void ShowMaximizedWithBounds(
+      const gfx::Rect& restored_bounds) OVERRIDE;
+  virtual void ShowWithWindowState(ui::WindowShowState show_state) OVERRIDE;
+  virtual void Close() OVERRIDE;
 
   // Overridden from NativeBrowserFrame:
   virtual views::NativeWidget* AsNativeWidget() OVERRIDE;
@@ -82,6 +87,13 @@ class BrowserFrameWin : public views::NativeWidgetWin,
 
   // Returns information about the currently displayed tab in metro mode.
   void GetMetroCurrentTabInfo(WPARAM w_param);
+
+  // Ensures that the window frame follows the Windows 8 metro app guidelines,
+  // i.e. no system menu, etc.
+  void AdjustFrameForImmersiveMode();
+
+  // Called when the frame is closed. Only applies to Windows 8 metro mode.
+  void CloseImmersiveFrame();
 
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;

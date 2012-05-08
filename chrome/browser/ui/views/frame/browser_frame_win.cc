@@ -56,6 +56,13 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
 
+#if !defined(USE_AURA)
+extern "C" {
+typedef void (*SetFrameWindow)(HWND window);
+typedef void (*CloseFrameWindow)(HWND window);
+}
+#endif  // USE_AURA
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameWin, public:
 
@@ -75,6 +82,33 @@ BrowserFrameWin::~BrowserFrameWin() {
 void BrowserFrameWin::SetShowState(int state) {
   explicit_show_state = state;
 }
+
+void BrowserFrameWin::AdjustFrameForImmersiveMode() {
+#if defined(USE_AURA)
+  return;
+#endif  // USE_AURA
+  HMODULE metro = base::win::GetMetroModule();
+  if (!metro)
+    return;
+  // We are in metro mode.
+  browser_frame_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
+  SetFrameWindow set_frame_window = reinterpret_cast<SetFrameWindow>(
+      ::GetProcAddress(metro, "SetFrameWindow"));
+  set_frame_window(browser_frame_->GetNativeWindow());
+}
+
+void BrowserFrameWin::CloseImmersiveFrame() {
+#if defined(USE_AURA)
+  return;
+#endif  // USE_AURA
+  HMODULE metro = base::win::GetMetroModule();
+  if (!metro)
+    return;
+  CloseFrameWindow close_frame_window = reinterpret_cast<CloseFrameWindow>(
+      ::GetProcAddress(metro, "CloseFrameWindow"));
+  close_frame_window(browser_frame_->GetNativeWindow());
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameWin, views::NativeWidgetWin overrides:
@@ -166,6 +200,27 @@ bool BrowserFrameWin::ShouldUseNativeFrame() const {
   // Otherwise, we use the native frame when we're told we should by the theme
   // provider (e.g. no custom theme is active).
   return GetWidget()->GetThemeProvider()->ShouldUseNativeFrame();
+}
+
+void BrowserFrameWin::Show() {
+  AdjustFrameForImmersiveMode();
+  views::NativeWidgetWin::Show();
+}
+
+void BrowserFrameWin::ShowMaximizedWithBounds(
+    const gfx::Rect& restored_bounds) {
+  AdjustFrameForImmersiveMode();
+  views::NativeWidgetWin::ShowMaximizedWithBounds(restored_bounds);
+}
+
+void BrowserFrameWin::ShowWithWindowState(ui::WindowShowState show_state) {
+  AdjustFrameForImmersiveMode();
+  views::NativeWidgetWin::ShowWithWindowState(show_state);
+}
+
+void BrowserFrameWin::Close() {
+  CloseImmersiveFrame();
+  views::NativeWidgetWin::Close();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
