@@ -281,6 +281,7 @@ struct wl_input_device {
  * The variable arguments' types are:
  * - type=uint: 	uint32_t
  * - type=int:		int32_t
+ * - type=fixed:	wl_fixed_t
  * - type=string:	(const char *) to a nil-terminated string
  * - type=array:	(struct wl_array *)
  * - type=fd:		int, that is an open file descriptor

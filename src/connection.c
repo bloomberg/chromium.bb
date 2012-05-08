@@ -22,6 +22,7 @@
 
 #define _GNU_SOURCE
 
+#include <math.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -428,6 +429,13 @@ wl_closure_vmarshal(struct wl_closure *closure,
 
 	for (i = 2; i < count; i++) {
 		switch (message->signature[i - 2]) {
+		case 'f':
+			closure->types[i] = &ffi_type_sint32;
+			closure->args[i] = p;
+			if (end - p < 1)
+				goto err;
+			*p++ = va_arg(ap, wl_fixed_t);
+			break;
 		case 'u':
 			closure->types[i] = &ffi_type_uint32;
 			closure->args[i] = p;
@@ -608,6 +616,10 @@ wl_connection_demarshal(struct wl_connection *connection,
 			closure->args[i] = p++;
 			break;
 		case 'i':
+			closure->types[i] = &ffi_type_sint32;
+			closure->args[i] = p++;
+			break;
+		case 'f':
 			closure->types[i] = &ffi_type_sint32;
 			closure->args[i] = p++;
 			break;
@@ -812,6 +824,7 @@ void
 wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 {
 	union wl_value *value;
+	int32_t si;
 	int i;
 	struct timespec tp;
 	unsigned int time;
@@ -835,7 +848,12 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 			fprintf(stderr, "%u", value->uint32);
 			break;
 		case 'i':
-			fprintf(stderr, "%d", value->uint32);
+			si = (int32_t) value->uint32;
+			fprintf(stderr, "%d", si);
+			break;
+		case 'f':
+			si = (int32_t) value->uint32;
+			fprintf(stderr, "%f", (double) si / 256.0);
 			break;
 		case 's':
 			fprintf(stderr, "\"%s\"", value->string);

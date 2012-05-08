@@ -83,6 +83,7 @@ enum arg_type {
 	NEW_ID,
 	INT,
 	UNSIGNED,
+	FIXED,
 	STRING,
 	OBJECT,
 	ARRAY,
@@ -334,6 +335,8 @@ start_element(void *data, const char *element_name, const char **atts)
 			arg->type = INT;
 		else if (strcmp(type, "uint") == 0)
 			arg->type = UNSIGNED;
+		else if (strcmp(type, "fixed") == 0)
+			arg->type = FIXED;
 		else if (strcmp(type, "string") == 0)
 			arg->type = STRING;
 		else if (strcmp(type, "array") == 0)
@@ -483,6 +486,9 @@ emit_type(struct arg *a)
 	case NEW_ID:
 	case UNSIGNED:
 		printf("uint32_t ");
+		break;
+	case FIXED:
+		printf("wl_fixed_t ");
 		break;
 	case STRING:
 		printf("const char *");
@@ -971,6 +977,9 @@ emit_messages(struct wl_list *message_list,
 				break;
 			case UNSIGNED:
 				printf("u");
+				break;
+			case FIXED:
+				printf("f");
 				break;
 			case STRING:
 				printf("s");

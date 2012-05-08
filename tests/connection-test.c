@@ -20,6 +20,7 @@
  * OF THIS SOFTWARE.
  */
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -288,6 +289,13 @@ validate_demarshal_h(struct marshal_data *data,
 }
 
 static void
+validate_demarshal_f(struct marshal_data *data,
+		     struct wl_object *object, wl_fixed_t f)
+{
+	assert(data->value.i == f);
+}
+
+static void
 demarshal(struct marshal_data *data, const char *format,
 	  uint32_t *msg, void (*func)(void))
 {
@@ -334,6 +342,12 @@ TEST(connection_demarshal)
 	msg[2] = 10;
 	memcpy(&msg[3], data.value.s, msg[2]);
 	demarshal(&data, "s", msg, (void *) validate_demarshal_s);
+
+	data.value.i = wl_fixed_from_double(-90000.2390);
+	msg[0] = 400200;
+	msg[1] = 12;
+	msg[2] = data.value.i;
+	demarshal(&data, "f", msg, (void *) validate_demarshal_f);
 
 	release_marshal_data(&data);
 }
@@ -399,6 +413,18 @@ TEST(connection_marshal_demarshal)
 	assert(data.value.h >= 0);
 	marshal_demarshal(&data, (void *) validate_demarshal_h,
 			  8, "h", data.value.h);
+
+	data.value.i = wl_fixed_from_double(1234.5678);
+	marshal_demarshal(&data, (void *) validate_demarshal_f,
+	                  12, "f", data.value.i);
+
+	data.value.i = wl_fixed_from_double(-90000.2390);
+	marshal_demarshal(&data, (void *) validate_demarshal_f,
+	                  12, "f", data.value.i);
+
+	data.value.i = wl_fixed_from_double((1 << 23) - 1 + 0.0941);
+	marshal_demarshal(&data, (void *) validate_demarshal_f,
+	                  12, "f", data.value.i);
 
 	release_marshal_data(&data);
 }
