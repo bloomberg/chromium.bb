@@ -30,7 +30,7 @@ bool PolicyServiceStub::IsInitializationComplete() const {
   return true;
 }
 
-void RefreshPolicies(const base::Closure& callback) {
+void PolicyServiceStub::RefreshPolicies(const base::Closure& callback) {
   if (!callback.is_null())
     callback.Run();
 }

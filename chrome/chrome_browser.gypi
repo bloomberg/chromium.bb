@@ -4093,6 +4093,8 @@
         }, {  # configuration_policy==0
           'sources/': [
             ['exclude', '^browser/policy/'],
+            ['exclude', 'browser/ui/webui/policy_ui.cc'],
+            ['exclude', 'browser/ui/webui/policy_ui.h'],
             ['include', 'browser/policy/policy_service.cc'],
             ['include', 'browser/policy/policy_service.h'],
             ['include', 'browser/policy/policy_service_stub.cc'],

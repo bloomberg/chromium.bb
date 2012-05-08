@@ -2088,6 +2088,7 @@
         ['configuration_policy==0', {
           'sources!': [
             'browser/prefs/proxy_policy_unittest.cc',
+            'browser/ui/webui/policy_ui_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/policy/'],
