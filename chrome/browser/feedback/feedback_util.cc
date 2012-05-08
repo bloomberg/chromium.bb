@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/memory/singleton.h"
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"

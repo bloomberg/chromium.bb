@@ -15,16 +15,14 @@
 
 #include "base/basictypes.h"
 #include "base/debug/stack_trace.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
-#include "ipc/ipc_message.h"
 
 class ChromeNetLog;
 class ChromeResourceDispatcherHostDelegate;
@@ -60,7 +58,7 @@ class BrowserProcessImpl : public BrowserProcess,
   void StartTearDown();
   void PostDestroyThreads();
 
-  // BrowserProcess methods
+  // BrowserProcess implementation.
   virtual void ResourceDispatcherHostCreated() OVERRIDE;
   virtual void EndSession() OVERRIDE;
   virtual MetricsService* metrics_service() OVERRIDE;
@@ -108,11 +106,6 @@ class BrowserProcessImpl : public BrowserProcess,
       safe_browsing_detection_service() OVERRIDE;
   virtual bool plugin_finder_disabled() const OVERRIDE;
 
-  // content::NotificationObserver methods
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   virtual void StartAutoupdateTimer() OVERRIDE;
 #endif
@@ -121,6 +114,11 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual prerender::PrerenderTracker* prerender_tracker() OVERRIDE;
   virtual ComponentUpdateService* component_updater() OVERRIDE;
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   void CreateMetricsService();
@@ -252,13 +250,11 @@ class BrowserProcessImpl : public BrowserProcess,
   void OnAutoupdateTimer();
   bool CanAutorestartForUpdate() const;
   void RestartBackgroundInstance();
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
+#endif  // defined(OS_WIN) || defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<browser::OomPriorityManager> oom_priority_manager_;
-#endif
-
-#if !defined(OS_CHROMEOS)
+#else
   scoped_ptr<ComponentUpdateService> component_updater_;
 
   scoped_refptr<CRLSetFetcher> crl_set_fetcher_;

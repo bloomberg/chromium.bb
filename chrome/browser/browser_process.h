@@ -12,11 +12,8 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
-#include "ipc/ipc_message.h"
 
 class AutomationProviderList;
 class BackgroundModeManager;
@@ -51,6 +48,11 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace policy {
+class BrowserPolicyConnector;
+class PolicyService;
+}
+
 namespace prerender {
 class PrerenderTracker;
 }
@@ -59,11 +61,6 @@ namespace printing {
 class BackgroundPrintingManager;
 class PrintJobManager;
 class PrintPreviewTabController;
-}
-
-namespace policy {
-class BrowserPolicyConnector;
-class PolicyService;
 }
 
 namespace safe_browsing {
