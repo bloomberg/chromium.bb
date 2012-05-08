@@ -70,18 +70,14 @@ shell_safe_path() {
   fi
 }
 
-verify_empty_dir() {
+verify_clean_dir() {
   local dir="${1}"
   if [[ ! -d "${dir}" ]]; then
     mkdir "${dir}"
   fi
 
-  shopt -s nullglob dotglob
-  local dir_contents=("${dir}"/*)
-  shopt -u nullglob dotglob
-
-  if [[ ${#dir_contents[@]} -ne 0 ]]; then
-    err "Output directory must be empty"
+  if [[ -e "${output_dir}/${DMG_FILE_NAME}" ]]; then
+    err "Output directory is dirty from previous build."
     exit 1
   fi
 }
@@ -158,7 +154,7 @@ main() {
   local codesign_keychain="$(shell_safe_path "${3}")"
   local codesign_id="${4}"
 
-  verify_empty_dir "${output_dir}"
+  verify_clean_dir "${output_dir}"
 
   sign_binaries "${input_dir}" "${codesign_keychain}" "${codesign_id}"
   build_packages "${input_dir}"
