@@ -6,8 +6,6 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
-#include "chrome/browser/chromeos/ui/brightness_bubble.h"
-#include "chrome/browser/chromeos/ui/volume_bubble.h"
 #include "chrome/browser/extensions/system/system_api.h"
 #include "content/public/browser/user_metrics.h"
 
@@ -20,14 +18,6 @@ const double kStepPercentage = 4.0;
 // while we're muted and have the volume set to 0.  See
 // http://crosbug.com/13618.
 const double kVolumePercentOnVolumeUpWhileMuted = 25.0;
-
-void ShowVolumeBubble() {
-  chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
-  chromeos::VolumeBubble::GetInstance()->ShowBubble(
-      audio_handler->GetVolumePercent(),
-      !audio_handler->IsMuted());
-  chromeos::BrightnessBubble::GetInstance()->HideBubble();
-}
 
 }  // namespace
 
@@ -43,7 +33,6 @@ bool VolumeController::HandleVolumeMute(const ui::Accelerator& accelerator) {
 
   extensions::DispatchVolumeChangedEvent(audio_handler->GetVolumePercent(),
                                          audio_handler->IsMuted());
-  ShowVolumeBubble();
   return true;
 }
 
@@ -59,7 +48,6 @@ bool VolumeController::HandleVolumeDown(const ui::Accelerator& accelerator) {
 
   extensions::DispatchVolumeChangedEvent(audio_handler->GetVolumePercent(),
                                          audio_handler->IsMuted());
-  ShowVolumeBubble();
   return true;
 }
 
@@ -78,6 +66,5 @@ bool VolumeController::HandleVolumeUp(const ui::Accelerator& accelerator) {
 
   extensions::DispatchVolumeChangedEvent(audio_handler->GetVolumePercent(),
                                          audio_handler->IsMuted());
-  ShowVolumeBubble();
   return true;
 }

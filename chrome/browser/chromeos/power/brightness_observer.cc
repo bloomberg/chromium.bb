@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/power/brightness_observer.h"
 
-#include "chrome/browser/chromeos/ui/brightness_bubble.h"
-#include "chrome/browser/chromeos/ui/volume_bubble.h"
 #include "chrome/browser/extensions/system/system_api.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
@@ -20,14 +18,7 @@ BrightnessObserver::~BrightnessObserver() {
 }
 
 void BrightnessObserver::BrightnessChanged(int level, bool user_initiated) {
-  if (user_initiated)
-    BrightnessBubble::GetInstance()->ShowBubble(level, true);
-  else
-    BrightnessBubble::GetInstance()->UpdateWithoutShowingBubble(level, true);
-
   extensions::DispatchBrightnessChangedEvent(level, user_initiated);
-
-  VolumeBubble::GetInstance()->HideBubble();
 }
 
 }  // namespace chromeos
