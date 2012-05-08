@@ -676,7 +676,7 @@ create_cursors(struct display *display)
 
 	for (i = 0; i < count; i++) {
 		images[i] = XcursorLibraryLoadImages(cursors[i], NULL, 32);
-		if (!images) {
+		if (!images[i]) {
 			fprintf(stderr, "Error loading cursor: %s\n",
 				cursors[i]);
 			continue;
@@ -687,7 +687,7 @@ create_cursors(struct display *display)
 	display->cursor_shm_pool = shm_pool_create(display, pool_size);
 
 	for (i = 0; i < count; i++) {
-		if (!images)
+		if (!images[i])
 			continue;
 
 		cursor = &display->cursors[i];
