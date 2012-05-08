@@ -286,8 +286,9 @@
           'target_name': 'remoting_me2me_host_archive',
           'type': 'none',
           'dependencies': [
-            'remoting_me2me_host',
+            'remoting_host_prefpane',
             'remoting_host_uninstaller',
+            'remoting_me2me_host',
           ],
           'sources': [
             'host/installer/build-installer-archive.py',
@@ -318,10 +319,12 @@
               'temp_dir': '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting-me2me-host',
               'zip_path': '<(PRODUCT_DIR)/remoting-me2me-host-<(OS).zip',
               'generated_files': [
+                '<(PRODUCT_DIR)/remoting_host_prefpane.prefPane',
                 '<(PRODUCT_DIR)/remoting_me2me_host',
                 '<(PRODUCT_DIR)/remoting_host_uninstaller.app',
               ],
               'generated_files_dst': [
+                'PreferencePanes/org.chromium.chromoting.prefPane',
                 'PrivilegedHelperTools/org.chromium.chromoting.me2me_host',
                 'Applications/<(host_uninstaller_name).app',
               ],
@@ -372,6 +375,60 @@
             },
           ],  # actions
         }, # end of target 'remoting_me2me_host_archive'
+
+        {
+          'target_name': 'remoting_host_prefpane',
+          'type': 'loadable_module',
+          'mac_bundle': 1,
+          'product_extension': 'prefPane',
+          'dependencies': [
+            'remoting_base',
+            'remoting_host',
+          ],
+          'sources': [
+            'host/me2me_preference_pane.h',
+            'host/me2me_preference_pane.mm',
+          ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/PreferencePanes.framework',
+            ],
+          },
+          'xcode_settings': {
+            'INFOPLIST_FILE': 'host/me2me_preference_pane-Info.plist',
+            'INFOPLIST_PREPROCESS': 'YES',
+            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_NAME="<(bundle_name)" BUNDLE_ID="<(bundle_id)" COPYRIGHT_BY="<(copyright_by)"',
+          },
+          'mac_bundle_resources': [
+            'host/me2me_preference_pane.xib',
+            'host/me2me_preference_pane-Info.plist',
+            'resources/chromoting128.png',
+          ],
+          'mac_bundle_resources!': [
+            'host/me2me_preference_pane-Info.plist',
+          ],
+          'conditions': [
+            ['mac_breakpad==1', {
+              'variables': {
+                # A real .dSYM is needed for dump_syms to operate on.
+                'mac_real_dsym': 1,
+              },
+            }],
+            ['branding == "Chrome"', {
+              'variables': {
+                'copyright_by': 'Google Inc.',
+                'bundle_id': 'com.google.chromeremotedesktop.preferences',
+                'bundle_name': 'Chrome Remote Desktop Host Preferences',
+              },
+            }, { # else branding!="Chrome"
+              'variables': {
+                'copyright_by': 'The Chromium Authors.',
+                'bundle_id': 'org.chromium.remoting.preferences',
+                'bundle_name': 'Chromoting Host Preferences',
+              },
+            }],
+          ],  # conditions
+        },  # end of target 'remoting_host_prefpane'
       ],  # end of 'targets'
     }],  # 'OS=="mac"'
     

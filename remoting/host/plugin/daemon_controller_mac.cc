@@ -10,15 +10,14 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/eintr_wrapper.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/mac/authorization_util.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/launchd.h"
 #include "base/mac/mac_logging.h"
-#include "base/mac/scoped_authorizationref.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_launch_data.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
@@ -28,6 +27,12 @@
 namespace remoting {
 
 namespace {
+
+// The NSSystemDirectories.h header has a conflicting definition of
+// NSSearchPathDirectory with the one in base/mac/foundation_util.h.
+// Foundation.h would work, but it can only be included from Objective-C files.
+// Therefore, we define the needed constants here.
+const int NSLibraryDirectory = 5;
 
 // The name of the Remoting Host service that is registered with launchd.
 #define kServiceName "org.chromium.chromoting"
@@ -72,13 +77,8 @@ class DaemonControllerMac : public remoting::DaemonController {
   void NotifyWhenStopped(const CompletionCallback& done_callback,
                          int tries_remaining,
                          const base::TimeDelta& sleep);
+  bool ShowPreferencePane(const std::string& config_data);
 
-  bool RunToolScriptAsRoot(const char* command, const std::string& input_data);
-  bool SendJobControlMessage(const char* launchKey);
-
-  // The API for gaining root privileges is blocking (it prompts the user for
-  // a password). Since Start() and Stop() must not block the main thread, they
-  // need to post their tasks to a separate thread.
   base::Thread auth_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerMac);
@@ -90,12 +90,6 @@ DaemonControllerMac::DaemonControllerMac()
 }
 
 DaemonControllerMac::~DaemonControllerMac() {
-  // This will block if the thread is waiting on a root password prompt.  There
-  // doesn't seem to be an easy solution for this, other than to spawn a
-  // separate process to do the root elevation.
-
-  // TODO(lambroslambrou): Improve this, either by finding a way to terminate
-  // the thread, or by moving to a separate process.
   auth_thread_.Stop();
 }
 
@@ -167,13 +161,11 @@ void DaemonControllerMac::DoGetConfig(const GetConfigCallback& callback) {
 void DaemonControllerMac::DoSetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
     const CompletionCallback& done_callback) {
-  std::string file_content;
-  base::JSONWriter::Write(config.get(), &file_content);
-  if (!RunToolScriptAsRoot("--enable", file_content)) {
-    done_callback.Run(RESULT_FAILED);
-    return;
-  }
-  bool result = SendJobControlMessage(LAUNCH_KEY_STARTJOB);
+  std::string config_data;
+  base::JSONWriter::Write(config.get(), &config_data);
+
+  bool result = ShowPreferencePane(config_data);
+
   done_callback.Run(result ? RESULT_OK : RESULT_FAILED);
 }
 
@@ -197,36 +189,65 @@ void DaemonControllerMac::DoUpdateConfig(
     config_file.SetString(*key, value);
   }
 
-  std::string file_content = config_file.GetSerializedData();
-  if (!RunToolScriptAsRoot("--save-config", file_content)) {
-      done_callback.Run(RESULT_FAILED);
-      return;
+  std::string config_data = config_file.GetSerializedData();
+  bool success = ShowPreferencePane(config_data);
+
+  done_callback.Run(success ? RESULT_OK : RESULT_FAILED);
+}
+
+bool DaemonControllerMac::ShowPreferencePane(const std::string& config_data) {
+  if (!config_data.empty()) {
+    FilePath config_path;
+    if (!file_util::GetTempDir(&config_path)) {
+      LOG(ERROR) << "Failed to get filename for saving configuration data.";
+      return false;
+    }
+    config_path = config_path.Append(kServiceName ".json");
+
+    int written = file_util::WriteFile(config_path, config_data.data(),
+                                       config_data.size());
+    if (written != static_cast<int>(config_data.size())) {
+      LOG(ERROR) << "Failed to save configuration data to: "
+                 << config_path.value();
+      return false;
+    }
   }
 
-  done_callback.Run(RESULT_OK);
-  pid_t job_pid = base::mac::PIDForJob(kServiceName);
-  if (job_pid > 0) {
-    kill(job_pid, SIGHUP);
+  FilePath pane_path;
+  // TODO(lambroslambrou): Use NSPreferencePanesDirectory once we start
+  // building against SDK 10.6.
+  if (!base::mac::GetLocalDirectory(NSLibraryDirectory, &pane_path)) {
+    LOG(ERROR) << "Failed to get directory for local preference panes.";
+    return false;
   }
+  pane_path = pane_path.Append("PreferencePanes")
+      .Append(kServiceName ".prefPane");
+
+  FSRef pane_path_ref;
+  if (!base::mac::FSRefFromPath(pane_path.value(), &pane_path_ref)) {
+    LOG(ERROR) << "Failed to create FSRef";
+    return false;
+  }
+  OSStatus status = LSOpenFSRef(&pane_path_ref, NULL);
+  if (status != noErr) {
+    OSSTATUS_LOG(ERROR, status) << "LSOpenFSRef failed for path: "
+                                << pane_path.value();
+    return false;
+  }
+
+  CFNotificationCenterRef center =
+      CFNotificationCenterGetDistributedCenter();
+  CFNotificationCenterPostNotification(center, CFSTR(kServiceName), NULL, NULL,
+                                       TRUE);
+  return true;
 }
 
 void DaemonControllerMac::DoStop(const CompletionCallback& done_callback) {
-  if (!RunToolScriptAsRoot("--disable", "")) {
+  if (!ShowPreferencePane("")) {
     done_callback.Run(RESULT_FAILED);
     return;
   }
 
-  // Deleting the trigger file does not cause launchd to stop the service.
-  // Since the service is running for the local user's desktop (not as root),
-  // it has to be stopped for that user.  This cannot easily be done in the
-  // shell-script running as root, so it is done here instead.
-  if (!SendJobControlMessage(LAUNCH_KEY_STOPJOB)) {
-    done_callback.Run(RESULT_FAILED);
-    return;
-  }
-
-  // SendJobControlMessage does not wait for the stop to take effect, so we
-  // can't return immediately. Instead, we wait up to 10s.
   NotifyWhenStopped(done_callback,
                     kStopWaitRetryLimit,
                     base::TimeDelta::FromMilliseconds(kStopWaitTimeout));
@@ -250,91 +271,6 @@ void DaemonControllerMac::NotifyWhenStopped(
                    sleep),
         sleep);
   }
-}
-
-bool DaemonControllerMac::RunToolScriptAsRoot(const char* command,
-                                              const std::string& input_data) {
-  // TODO(lambroslambrou): Supply a localized prompt string here.
-  base::mac::ScopedAuthorizationRef authorization(
-      base::mac::AuthorizationCreateToRunAsRoot(CFSTR("")));
-  if (!authorization) {
-    LOG(ERROR) << "Failed to get root privileges.";
-    return false;
-  }
-
-  if (!file_util::VerifyPathControlledByAdmin(FilePath(kStartStopTool))) {
-    LOG(ERROR) << "Security check failed for: " << kStartStopTool;
-    return false;
-  }
-
-  // TODO(lambroslambrou): Use sandbox-exec to minimize exposure -
-  // http://crbug.com/120903
-  const char* arguments[] = { command, NULL };
-  FILE* pipe = NULL;
-  pid_t pid;
-  OSStatus status = base::mac::ExecuteWithPrivilegesAndGetPID(
-      authorization.get(),
-      kStartStopTool,
-      kAuthorizationFlagDefaults,
-      arguments,
-      &pipe,
-      &pid);
-  if (status != errAuthorizationSuccess) {
-    OSSTATUS_LOG(ERROR, status) << "AuthorizationExecuteWithPrivileges";
-    return false;
-  }
-  if (pid == -1) {
-    LOG(ERROR) << "Failed to get child PID";
-    return false;
-  }
-
-  DCHECK(pipe);
-  if (!input_data.empty()) {
-    size_t bytes_written = fwrite(input_data.data(), sizeof(char),
-                                  input_data.size(), pipe);
-    // According to the fwrite manpage, a partial count is returned only if a
-    // write error has occurred.
-    if (bytes_written != input_data.size()) {
-      LOG(ERROR) << "Failed to write data to child process";
-    }
-    // Need to close, since the child waits for EOF on its stdin.
-    if (fclose(pipe) != 0) {
-      PLOG(ERROR) << "fclose";
-    }
-  }
-
-  int exit_status;
-  pid_t wait_result = HANDLE_EINTR(waitpid(pid, &exit_status, 0));
-  if (wait_result != pid) {
-    PLOG(ERROR) << "waitpid";
-    return false;
-  }
-  if (WIFEXITED(exit_status) && WEXITSTATUS(exit_status) == 0) {
-    return true;
-  } else {
-    LOG(ERROR) << kStartStopTool << " failed with exit status " << exit_status;
-    return false;
-  }
-}
-
-bool DaemonControllerMac::SendJobControlMessage(const char* launchKey) {
-  base::mac::ScopedLaunchData response(
-      base::mac::MessageForJob(kServiceName, launchKey));
-  if (!response) {
-    LOG(ERROR) << "Failed to send message to launchd";
-    return false;
-  }
-
-  // Got a response, so check if launchd sent a non-zero error code, otherwise
-  // assume the command was successful.
-  if (launch_data_get_type(response.get()) == LAUNCH_DATA_ERRNO) {
-    int error = launch_data_get_errno(response.get());
-    if (error) {
-      LOG(ERROR) << "launchd returned error " << error;
-      return false;
-    }
-  }
-  return true;
 }
 
 }  // namespace
