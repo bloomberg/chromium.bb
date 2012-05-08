@@ -836,10 +836,11 @@ void RelayGetEntryInfoCallback(
     scoped_refptr<base::MessageLoopProxy> relay_proxy,
     const GetEntryInfoCallback& callback,
     base::PlatformFileError error,
+    const FilePath& entry_path,
     scoped_ptr<GDataEntryProto> entry_proto) {
   relay_proxy->PostTask(
       FROM_HERE,
-      base::Bind(callback, error, base::Passed(&entry_proto)));
+      base::Bind(callback, error, entry_path, base::Passed(&entry_proto)));
 }
 
 // Ditto for GetFileInfoCallback.
@@ -2311,7 +2312,7 @@ void GDataFileSystem::OnGetEntryInfo(const GetEntryInfoCallback& callback,
 
   if (error != base::PLATFORM_FILE_OK) {
     if (!callback.is_null())
-      callback.Run(error, scoped_ptr<GDataEntryProto>());
+      callback.Run(error, FilePath(), scoped_ptr<GDataEntryProto>());
     return;
   }
   DCHECK(entry);
@@ -2320,7 +2321,9 @@ void GDataFileSystem::OnGetEntryInfo(const GetEntryInfoCallback& callback,
   entry->ToProto(entry_proto.get());
 
   if (!callback.is_null())
-    callback.Run(base::PLATFORM_FILE_OK, entry_proto.Pass());
+    callback.Run(base::PLATFORM_FILE_OK,
+                 entry->GetFilePath(),
+                 entry_proto.Pass());
 }
 
 void GDataFileSystem::GetFileInfoByPathAsync(

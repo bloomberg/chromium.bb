@@ -2023,3 +2023,33 @@ bool SetGDataPreferencesFunction::RunImpl() {
 
   return true;
 }
+
+bool GetPathForDriveSearchResultFunction::RunImpl() {
+  std::string file_url_as_string;
+  if (!args_->GetString(0, &file_url_as_string))
+    return false;
+
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  if (!system_service || !system_service->file_system())
+    return false;
+
+  FilePath entry_path =  GetVirtualPathFromURL(GURL(file_url_as_string));
+  system_service->file_system()->GetEntryInfoByPathAsync(
+      entry_path,
+      base::Bind(&GetPathForDriveSearchResultFunction::OnEntryFound, this));
+  return true;
+}
+
+void GetPathForDriveSearchResultFunction::OnEntryFound(
+    base::PlatformFileError error,
+    const FilePath& entry_path,
+    scoped_ptr<gdata::GDataEntryProto> entry_proto) {
+  if (error != base::PLATFORM_FILE_OK) {
+    SendResponse(false);
+    return;
+  }
+
+  result_.reset(Value::CreateStringValue(entry_path.value()));
+  SendResponse(true);
+}

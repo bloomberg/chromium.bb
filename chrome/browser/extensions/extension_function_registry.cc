@@ -377,6 +377,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<TransferFileFunction>();
   RegisterFunction<GetGDataPreferencesFunction>();
   RegisterFunction<SetGDataPreferencesFunction>();
+  RegisterFunction<GetPathForDriveSearchResultFunction>();
 
   // Mediaplayer
   RegisterFunction<PlayMediaplayerFunction>();

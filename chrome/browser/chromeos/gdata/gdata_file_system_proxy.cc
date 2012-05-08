@@ -242,6 +242,7 @@ void GDataFileSystemProxy::OnGetMetadata(
     const FilePath& file_path,
     const FileSystemOperationInterface::GetMetadataCallback& callback,
     base::PlatformFileError error,
+    const FilePath& entry_path,
     scoped_ptr<gdata::GDataEntryProto> entry_proto) {
   if (error != base::PLATFORM_FILE_OK) {
     callback.Run(error, base::PlatformFileInfo(), FilePath());

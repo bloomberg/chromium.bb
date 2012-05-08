@@ -860,6 +860,28 @@
             }
           }
         ]
+      },
+      {
+        "name": "getPathForDriveSearchResult",
+        "description": "Gets file path for a given drive search result filesystem url.",
+        "parameters": [
+          {
+            "name": "fileURL",
+            "type": "string",
+            "description": "Url of the drive search result"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "filePath",
+                "type": "string",
+                "description": "File path of the search result"
+              }  
+            ]
+          }
+        ]
       }
     ],
     "events": [

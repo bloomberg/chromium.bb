@@ -79,6 +79,7 @@ typedef base::Callback<void(base::PlatformFileError error,
 // Used to get entry info from the file system.
 // If |error| is not PLATFORM_FILE_OK, |entry_info| is set to NULL.
 typedef base::Callback<void(base::PlatformFileError error,
+                            const FilePath& entry_path,
                             scoped_ptr<GDataEntryProto> entry_proto)>
     GetEntryInfoCallback;
 

@@ -591,4 +591,17 @@ class SetGDataPreferencesFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.setGDataPreferences");
 };
 
+class GetPathForDriveSearchResultFunction : public AsyncExtensionFunction {
+ protected:
+  virtual bool RunImpl() OVERRIDE;
+
+  void OnEntryFound(base::PlatformFileError error,
+                    const FilePath& entry_path,
+                    scoped_ptr<gdata::GDataEntryProto> entry_proto);
+
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "fileBrowserPrivate.getPathForDriveSearchResult");
+};
+
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_PRIVATE_API_H_
