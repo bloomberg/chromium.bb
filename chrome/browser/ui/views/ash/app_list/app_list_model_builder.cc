@@ -185,11 +185,15 @@ void AppListModelBuilder::CreateSpecialItems() {
 
   model_->AddItem(new ChromeAppItem());
 
+  bool is_guest_session = Profile::IsGuestSession();
   ExtensionService* service = profile_->GetExtensionService();
   DCHECK(service);
   for (size_t i = 0; i < arraysize(kSpecialApps); ++i) {
-    const Extension* extension =
-        service->GetInstalledExtension(kSpecialApps[i]);
+    const std::string extension_id(kSpecialApps[i]);
+    if (is_guest_session && extension_id == extension_misc::kWebStoreAppId)
+      continue;
+
+    const Extension* extension = service->GetInstalledExtension(extension_id);
     DCHECK(extension);
 
     model_->AddItem(new ExtensionAppItem(profile_, extension));
