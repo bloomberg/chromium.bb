@@ -1473,12 +1473,14 @@ input_set_focus_widget(struct input *input, struct widget *focus,
 
 static void
 input_handle_motion(void *data, struct wl_input_device *input_device,
-		    uint32_t time, int32_t sx, int32_t sy)
+		    uint32_t time, wl_fixed_t sx_w, wl_fixed_t sy_w)
 {
 	struct input *input = data;
 	struct window *window = input->pointer_focus;
 	struct widget *widget;
 	int pointer = POINTER_LEFT_PTR;
+	GLfloat sx = wl_fixed_to_double(sx_w);
+	GLfloat sy = wl_fixed_to_double(sy_w);
 
 	input->sx = sx;
 	input->sy = sy;
@@ -1604,11 +1606,13 @@ static void
 input_handle_pointer_enter(void *data,
 			   struct wl_input_device *input_device,
 			   uint32_t serial, struct wl_surface *surface,
-			   int32_t sx, int32_t sy)
+			   wl_fixed_t sx_w, wl_fixed_t sy_w)
 {
 	struct input *input = data;
 	struct window *window;
 	struct widget *widget;
+	GLfloat sx = wl_fixed_to_double(sx_w);
+	GLfloat sy = wl_fixed_to_double(sy_w);
 
 	input->display->serial = serial;
 	input->pointer_enter_serial = serial;
@@ -1701,7 +1705,7 @@ input_handle_touch_down(void *data,
 			struct wl_input_device *wl_input_device,
 			uint32_t serial, uint32_t time,
 			struct wl_surface *surface,
-			int32_t id, int32_t x, int32_t y)
+			int32_t id, wl_fixed_t x, wl_fixed_t y)
 {
 }
 
@@ -1715,7 +1719,8 @@ input_handle_touch_up(void *data,
 static void
 input_handle_touch_motion(void *data,
 			  struct wl_input_device *wl_input_device,
-			  uint32_t time, int32_t id, int32_t x, int32_t y)
+			  uint32_t time, int32_t id,
+			  wl_fixed_t x, wl_fixed_t y)
 {
 }
 
@@ -1838,10 +1843,13 @@ data_device_data_offer(void *data,
 static void
 data_device_enter(void *data, struct wl_data_device *data_device,
 		  uint32_t serial, struct wl_surface *surface,
-		  int32_t x, int32_t y, struct wl_data_offer *offer)
+		  wl_fixed_t x_w, wl_fixed_t y_w,
+		  struct wl_data_offer *offer)
 {
 	struct input *input = data;
 	struct window *window;
+	GLfloat x = wl_fixed_to_double(x_w);
+	GLfloat y = wl_fixed_to_double(y_w);
 	char **p;
 
 	input->pointer_enter_serial = serial;
@@ -1870,10 +1878,12 @@ data_device_leave(void *data, struct wl_data_device *data_device)
 
 static void
 data_device_motion(void *data, struct wl_data_device *data_device,
-		   uint32_t time, int32_t x, int32_t y)
+		   uint32_t time, wl_fixed_t x_w, wl_fixed_t y_w)
 {
 	struct input *input = data;
 	struct window *window = input->pointer_focus;
+	GLfloat x = wl_fixed_to_double(x_w);
+	GLfloat y = wl_fixed_to_double(y_w);
 
 	input->sx = x;
 	input->sy = y;

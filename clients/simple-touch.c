@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
+#include <GLES2/gl2.h>
 #include <wayland-client.h>
 #include <wayland-egl.h>
 
@@ -103,7 +104,9 @@ struct wl_shm_listener shm_listenter = {
 
 static void
 input_device_handle_motion(void *data, struct wl_input_device *input_device,
-			   uint32_t time, int32_t sx, int32_t sy)
+			   uint32_t time,
+			   wl_fixed_t sx_w,
+			   wl_fixed_t sy_w)
 {
 }
 
@@ -132,7 +135,7 @@ static void
 input_device_handle_pointer_enter(void *data,
 				  struct wl_input_device *input_device,
 				  uint32_t serial, struct wl_surface *surface,
-				  int32_t sx, int32_t sy)
+				  wl_fixed_t sx_w, wl_fixed_t sy_w)
 {
 }
 
@@ -197,9 +200,13 @@ input_device_handle_touch_down(void *data,
 			       struct wl_input_device *wl_input_device,
 			       uint32_t serial, uint32_t time,
 			       struct wl_surface *surface,
-			       int32_t id, int32_t x, int32_t y)
+			       int32_t id,
+			       wl_fixed_t x_w,
+			       wl_fixed_t y_w)
 {
 	struct touch *touch = data;
+	GLfloat x = wl_fixed_to_double(x_w);
+	GLfloat y = wl_fixed_to_double(y_w);
 
 	touch_paint(touch, x, y, id);
 }
@@ -215,9 +222,13 @@ static void
 input_device_handle_touch_motion(void *data,
 				 struct wl_input_device *wl_input_device,
 				 uint32_t time,
-				 int32_t id, int32_t x, int32_t y)
+				 int32_t id,
+				 wl_fixed_t x_w,
+				 wl_fixed_t y_w)
 {
 	struct touch *touch = data;
+	GLfloat x = wl_fixed_to_double(x_w);
+	GLfloat y = wl_fixed_to_double(y_w);
 
 	touch_paint(touch, x, y, id);
 }

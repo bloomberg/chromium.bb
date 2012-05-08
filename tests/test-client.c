@@ -57,12 +57,12 @@ struct surface {
 
 static void
 input_handle_motion(void *data, struct wl_input_device *input_device,
-		    uint32_t time, int32_t x, int32_t y)
+		    uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
 	struct input *input = data;
 
-	input->x = x;
-	input->y = y;
+	input->x = wl_fixed_to_double(x);
+	input->y = wl_fixed_to_double(y);
 }
 
 static void
@@ -97,13 +97,13 @@ static void
 input_handle_pointer_enter(void *data,
 			   struct wl_input_device *input_device,
 			   uint32_t serial, struct wl_surface *surface,
-			   int32_t x, int32_t y)
+			   wl_fixed_t x, wl_fixed_t y)
 {
 	struct input *input = data;
 
 	input->pointer_focus = wl_surface_get_user_data(surface);
-	input->x = x;
-	input->y = y;
+	input->x = wl_fixed_to_double(x);
+	input->y = wl_fixed_to_double(y);
 }
 
 static void
@@ -144,7 +144,7 @@ input_handle_touch_down(void *data,
 			struct wl_input_device *wl_input_device,
 			uint32_t serial, uint32_t time,
 			struct wl_surface *surface,
-			int32_t id, int32_t x, int32_t y)
+			int32_t id, wl_fixed_t x, wl_fixed_t y)
 {
 }
 
@@ -158,7 +158,8 @@ input_handle_touch_up(void *data,
 static void
 input_handle_touch_motion(void *data,
 			  struct wl_input_device *wl_input_device,
-			  uint32_t time, int32_t id, int32_t x, int32_t y)
+			  uint32_t time, int32_t id,
+			  wl_fixed_t x, wl_fixed_t y)
 {
 }
 

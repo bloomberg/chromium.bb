@@ -169,7 +169,7 @@ struct shell_grab {
 
 struct weston_move_grab {
 	struct shell_grab base;
-	int32_t dx, dy;
+	wl_fixed_t dx, dy;
 };
 
 struct rotate_grab {
@@ -304,28 +304,28 @@ shell_configuration(struct desktop_shell *shell)
 
 static void
 noop_grab_focus(struct wl_pointer_grab *grab,
-		struct wl_surface *surface, int32_t x, int32_t y)
+		struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y)
 {
 	grab->focus = NULL;
 }
 
 static void
 move_grab_motion(struct wl_pointer_grab *grab,
-		 uint32_t time, int32_t x, int32_t y)
+		 uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
 	struct weston_move_grab *move = (struct weston_move_grab *) grab;
 	struct wl_input_device *device = grab->input_device;
 	struct shell_surface *shsurf = move->base.shsurf;
 	struct weston_surface *es;
+	int dx = wl_fixed_to_int(device->x + move->dx);
+	int dy = wl_fixed_to_int(device->y + move->dy);
 
 	if (!shsurf)
 		return;
 
 	es = shsurf->surface;
 
-	weston_surface_configure(es,
-				 device->x + move->dx,
-				 device->y + move->dy,
+	weston_surface_configure(es, dx, dy,
 				 es->geometry.width, es->geometry.height);
 }
 
@@ -517,13 +517,15 @@ weston_surface_move(struct weston_surface *es,
 
 	shell_grab_init(&move->base, &move_grab_interface, shsurf);
 
-	move->dx = es->geometry.x - wd->input_device.grab_x;
-	move->dy = es->geometry.y - wd->input_device.grab_y;
+	move->dx = wl_fixed_from_double(es->geometry.x) - wd->input_device.grab_x;
+	move->dy = wl_fixed_from_double(es->geometry.y) - wd->input_device.grab_y;
 
 	wl_input_device_start_pointer_grab(&wd->input_device,
 					   &move->base.grab);
 
-	wl_input_device_set_pointer_focus(&wd->input_device, NULL, 0, 0);
+	wl_input_device_set_pointer_focus(&wd->input_device, NULL,
+	                                  wl_fixed_from_int(0),
+					  wl_fixed_from_int(0));
 
 	return 0;
 }
@@ -552,37 +554,35 @@ struct weston_resize_grab {
 
 static void
 resize_grab_motion(struct wl_pointer_grab *grab,
-		   uint32_t time, int32_t x, int32_t y)
+		   uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
 	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
 	struct wl_input_device *device = grab->input_device;
 	int32_t width, height;
-	int32_t from_x, from_y;
-	int32_t to_x, to_y;
+	wl_fixed_t from_x, from_y;
+	wl_fixed_t to_x, to_y;
 
 	if (!resize->base.shsurf)
 		return;
 
-	weston_surface_from_global(resize->base.shsurf->surface,
-				   device->grab_x, device->grab_y,
-				   &from_x, &from_y);
-	weston_surface_from_global(resize->base.shsurf->surface,
-				   device->x, device->y, &to_x, &to_y);
+	weston_surface_from_global_fixed(resize->base.shsurf->surface,
+				         device->grab_x, device->grab_y,
+				         &from_x, &from_y);
+	weston_surface_from_global_fixed(resize->base.shsurf->surface,
+				         device->x, device->y, &to_x, &to_y);
 
+	width = resize->width;
 	if (resize->edges & WL_SHELL_SURFACE_RESIZE_LEFT) {
-		width = resize->width + from_x - to_x;
+		width += wl_fixed_to_int(from_x - to_x);
 	} else if (resize->edges & WL_SHELL_SURFACE_RESIZE_RIGHT) {
-		width = resize->width + to_x - from_x;
-	} else {
-		width = resize->width;
+		width += wl_fixed_to_int(to_x - from_x);
 	}
 
+	height = resize->height;
 	if (resize->edges & WL_SHELL_SURFACE_RESIZE_TOP) {
-		height = resize->height + from_y - to_y;
+		height += wl_fixed_to_int(from_y - to_y);
 	} else if (resize->edges & WL_SHELL_SURFACE_RESIZE_BOTTOM) {
-		height = resize->height + to_y - from_y;
-	} else {
-		height = resize->height;
+		height += wl_fixed_to_int(to_y - from_y);
 	}
 
 	wl_shell_surface_send_configure(&resize->base.shsurf->resource,
@@ -635,7 +635,9 @@ weston_surface_resize(struct shell_surface *shsurf,
 	wl_input_device_start_pointer_grab(&wd->input_device,
 					   &resize->base.grab);
 
-	wl_input_device_set_pointer_focus(&wd->input_device, NULL, 0, 0);
+	wl_input_device_set_pointer_focus(&wd->input_device, NULL,
+	                                  wl_fixed_from_int(0),
+					  wl_fixed_from_int(0));
 
 	return 0;
 }
@@ -1037,7 +1039,9 @@ shell_surface_set_fullscreen(struct wl_client *client,
 
 static void
 popup_grab_focus(struct wl_pointer_grab *grab,
-		 struct wl_surface *surface, int32_t x, int32_t y)
+		 struct wl_surface *surface,
+		 wl_fixed_t x,
+		 wl_fixed_t y)
 {
 	struct wl_input_device *device = grab->input_device;
 	struct shell_surface *priv =
@@ -1048,14 +1052,16 @@ popup_grab_focus(struct wl_pointer_grab *grab,
 		wl_input_device_set_pointer_focus(device, surface, x, y);
 		grab->focus = surface;
 	} else {
-		wl_input_device_set_pointer_focus(device, NULL, 0, 0);
+		wl_input_device_set_pointer_focus(device, NULL,
+		                                  wl_fixed_from_int(0),
+						  wl_fixed_from_int(0));
 		grab->focus = NULL;
 	}
 }
 
 static void
 popup_grab_motion(struct wl_pointer_grab *grab,
-		  uint32_t time, int32_t sx, int32_t sy)
+		  uint32_t time, wl_fixed_t sx, wl_fixed_t sy)
 {
 	struct wl_resource *resource;
 
@@ -1554,7 +1560,9 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 	}
 
 	weston_surface_from_global(surface,
-				   device->grab_x, device->grab_y, &x, &y);
+				   wl_fixed_to_int(device->grab_x),
+				   wl_fixed_to_int(device->grab_y),
+				   &x, &y);
 
 	if (x < surface->geometry.width / 3)
 		edges |= WL_SHELL_SURFACE_RESIZE_LEFT;
@@ -1621,7 +1629,9 @@ zoom_binding(struct wl_input_device *device, uint32_t time,
 
 	wl_list_for_each(output, &compositor->output_list, link) {
 		if (pixman_region32_contains_point(&output->region,
-						device->x, device->y, NULL)) {
+						   wl_fixed_to_double(device->x),
+						   wl_fixed_to_double(device->y),
+						   NULL)) {
 			output->zoom.active = 1;
 			output->zoom.level += output->zoom.increment * -value;
 
@@ -1633,7 +1643,9 @@ zoom_binding(struct wl_input_device *device, uint32_t time,
 			if (output->zoom.level < output->zoom.increment)
 				output->zoom.level = output->zoom.increment;
 
-			weston_output_update_zoom(output, device->x, device->y);
+			weston_output_update_zoom(output,
+			                          wl_fixed_to_int(device->x),
+						  wl_fixed_to_int(device->y));
 		}
 	}
 }
@@ -1650,7 +1662,7 @@ terminate_binding(struct wl_input_device *device, uint32_t time,
 
 static void
 rotate_grab_motion(struct wl_pointer_grab *grab,
-		 uint32_t time, int32_t x, int32_t y)
+		   uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
 	struct rotate_grab *rotate =
 		container_of(grab, struct rotate_grab, base.grab);
@@ -1667,8 +1679,8 @@ rotate_grab_motion(struct wl_pointer_grab *grab,
 	cx = 0.5f * surface->geometry.width;
 	cy = 0.5f * surface->geometry.height;
 
-	dx = device->x - rotate->center.x;
-	dy = device->y - rotate->center.y;
+	dx = wl_fixed_to_double(device->x) - rotate->center.x;
+	dy = wl_fixed_to_double(device->y) - rotate->center.y;
 	r = sqrtf(dx * dx + dy * dy);
 
 	wl_list_remove(&shsurf->rotation.transform.link);
@@ -1784,8 +1796,8 @@ rotate_binding(struct wl_input_device *device, uint32_t time,
 
 	wl_input_device_start_pointer_grab(device, &rotate->base.grab);
 
-	dx = device->x - rotate->center.x;
-	dy = device->y - rotate->center.y;
+	dx = wl_fixed_to_double(device->x) - rotate->center.x;
+	dy = wl_fixed_to_double(device->y) - rotate->center.y;
 	r = sqrtf(dx * dx + dy * dy);
 	if (r > 20.0f) {
 		struct weston_matrix inverse;
@@ -1807,7 +1819,9 @@ rotate_binding(struct wl_input_device *device, uint32_t time,
 		weston_matrix_init(&rotate->rotation);
 	}
 
-	wl_input_device_set_pointer_focus(device, NULL, 0, 0);
+	wl_input_device_set_pointer_focus(device, NULL,
+	                                  wl_fixed_from_int(0),
+					  wl_fixed_from_int(0));
 }
 
 static void
