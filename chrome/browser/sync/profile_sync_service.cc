@@ -439,6 +439,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   // before we Stop the data type manager.  This is to avoid a late sync cycle
   // applying changes to the sync db that wouldn't get applied via
   // ChangeProcessors, leading to back-from-the-dead bugs.
+  base::Time shutdown_start_time = base::Time::Now();
   if (backend_.get())
     backend_->StopSyncingForShutdown();
 
@@ -479,6 +480,8 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
 
     doomed_backend.reset();
   }
+  base::TimeDelta shutdown_time = base::Time::Now() - shutdown_start_time;
+  UMA_HISTOGRAM_TIMES("Sync.Shutdown.BackendDestroyedTime", shutdown_time);
 
   weak_factory_.InvalidateWeakPtrs();
 

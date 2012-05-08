@@ -15,6 +15,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/location.h"
+#include "base/metrics/histogram.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer.h"
@@ -488,8 +489,13 @@ void SyncBackendHost::StopSyncingForShutdown() {
     // give us the green light that it is not depending on the frontend_loop_
     // to process any more tasks. Stop() blocks until this termination
     // condition is true.
+    base::Time stop_registrar_start_time = base::Time::Now();
     if (registrar_.get())
       registrar_->StopOnUIThread();
+    base::TimeDelta stop_registrar_time = base::Time::Now() -
+        stop_registrar_start_time;
+    UMA_HISTOGRAM_TIMES("Sync.Shutdown.StopRegistrarTime",
+                        stop_registrar_time);
   } else {
     // If the sync thread isn't running, then the syncer is effectively
     // stopped.  Moreover, it implies that we never attempted initialization,
@@ -518,10 +524,15 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   // Since we are blocking the UI thread here, we need to turn ourselves in
   // with the ThreadRestriction police.  For sentencing and how we plan to fix
   // this, see bug 19757.
+  base::Time stop_thread_start_time = base::Time::Now();
   {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     sync_thread_.Stop();
   }
+  base::TimeDelta stop_sync_thread_time = base::Time::Now() -
+      stop_thread_start_time;
+  UMA_HISTOGRAM_TIMES("Sync.Shutdown.StopSyncThreadTime",
+                      stop_sync_thread_time);
 
   registrar_.reset();
   frontend_ = NULL;
