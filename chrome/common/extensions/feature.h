@@ -70,9 +70,18 @@ class Feature {
   Feature(const Feature& other);
   virtual ~Feature();
 
-  // Sets the Channel to for all Features to compare against. This is usually
-  // chrome::VersionInfo::GetChannel(), but for tests all this to be overridden.
+  // (Re)Sets whether checking against "channel" should be done. This must only
+  // be called on the browser process, since the check involves accessing the
+  // filesystem.
+  // See http://crbug.com/126535.
+  static void SetChannelCheckingEnabled(bool enabled);
+  static void ResetChannelCheckingEnabled();
+
+  // (Re)Sets the Channel to for all Features to compare against. This is
+  // usually chrome::VersionInfo::GetChannel(), but for tests allow this to be
+  // overridden.
   static void SetChannelForTesting(chrome::VersionInfo::Channel channel);
+  static void ResetChannelForTesting();
 
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }

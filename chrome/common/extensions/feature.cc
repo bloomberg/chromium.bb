@@ -61,10 +61,27 @@ std::string GetChannelName(VersionInfo::Channel channel) {
   return "unknown";
 }
 
-struct Channel {
-  Channel() : channel(VersionInfo::GetChannel()) {}
+static bool g_channel_checking_enabled = false;
 
-  chrome::VersionInfo::Channel channel;
+class Channel {
+ public:
+  VersionInfo::Channel GetChannel() {
+    CHECK(g_channel_checking_enabled);
+    if (channel_for_testing_.get())
+      return *channel_for_testing_;
+    return VersionInfo::GetChannel();
+  }
+
+  void SetChannelForTesting(VersionInfo::Channel channel_for_testing) {
+    channel_for_testing_.reset(new VersionInfo::Channel(channel_for_testing));
+  }
+
+  void ResetChannelForTesting() {
+    channel_for_testing_.reset();
+  }
+
+ private:
+  scoped_ptr<VersionInfo::Channel> channel_for_testing_;
 };
 
 static base::LazyInstance<Channel> g_channel = LAZY_INSTANCE_INITIALIZER;
@@ -251,10 +268,9 @@ std::string Feature::GetErrorMessage(Feature::Availability result) {
           name().c_str());
     case UNSUPPORTED_CHANNEL:
       return base::StringPrintf(
-          "'%s' requires Google Chrome %s channel or newer but current is %s.",
+          "'%s' requires Google Chrome %s channel or newer.",
           name().c_str(),
-          GetChannelName(channel_).c_str(),
-          GetChannelName(g_channel.Get().channel).c_str());
+          GetChannelName(channel_).c_str());
   }
 
   return "";
@@ -303,8 +319,10 @@ Feature::Availability Feature::IsAvailableToManifest(
   if (max_manifest_version_ != 0 && manifest_version > max_manifest_version_)
     return INVALID_MAX_MANIFEST_VERSION;
 
-  if (channel_ < g_channel.Get().channel)
-    return UNSUPPORTED_CHANNEL;
+  if (g_channel_checking_enabled) {
+    if (channel_ < g_channel.Get().GetChannel())
+      return UNSUPPORTED_CHANNEL;
+  }
 
   return IS_AVAILABLE;
 }
@@ -331,8 +349,23 @@ Feature::Availability Feature::IsAvailableToContext(
 }
 
 // static
+void Feature::SetChannelCheckingEnabled(bool enabled) {
+  g_channel_checking_enabled = enabled;
+}
+
+// static
+void Feature::ResetChannelCheckingEnabled() {
+  g_channel_checking_enabled = false;
+}
+
+// static
 void Feature::SetChannelForTesting(VersionInfo::Channel channel) {
-  g_channel.Get().channel = channel;
+  g_channel.Get().SetChannelForTesting(channel);
+}
+
+// static
+void Feature::ResetChannelForTesting() {
+  g_channel.Get().ResetChannelForTesting();
 }
 
 }  // namespace

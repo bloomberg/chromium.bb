@@ -453,6 +453,7 @@ TEST(ExtensionFeatureTest, Equals) {
 
 Feature::Availability IsAvailableInChannel(
     const std::string& channel, VersionInfo::Channel channel_for_testing) {
+  Feature::SetChannelCheckingEnabled(true);
   Feature::SetChannelForTesting(channel_for_testing);
 
   Feature feature;
@@ -462,11 +463,15 @@ Feature::Availability IsAvailableInChannel(
     feature.Parse(&feature_value);
   }
 
-  return feature.IsAvailableToManifest(
+  Feature::Availability availability = feature.IsAvailableToManifest(
       "random-extension",
       Extension::TYPE_UNKNOWN,
       Feature::UNSPECIFIED_LOCATION,
       -1);
+
+  Feature::ResetChannelForTesting();
+  Feature::ResetChannelCheckingEnabled();
+  return availability;
 }
 
 TEST(ExtensionFeatureTest, SupportedChannel) {
@@ -541,8 +546,6 @@ TEST(ExtensionFeatureTest, SupportedChannel) {
       IsAvailableInChannel("", VersionInfo::CHANNEL_BETA));
   EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
       IsAvailableInChannel("", VersionInfo::CHANNEL_STABLE));
-
-  Feature::SetChannelForTesting(VersionInfo::CHANNEL_UNKNOWN);
 }
 
 }  // namespace

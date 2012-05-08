@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/feature.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -45,6 +46,10 @@ using content::BrowserThread;
 //
 
 ExtensionSystem::ExtensionSystem() {
+  // In lieu of a way for Feature to check whether it's running on the browser
+  // process, tell it.
+  // See http://crbug.com/126535.
+  extensions::Feature::SetChannelCheckingEnabled(true);
 }
 
 ExtensionSystem::~ExtensionSystem() {
