@@ -37,6 +37,11 @@ struct VIEWS_EXPORT MenuConfig {
   // Submenu vertical margin size.
   int submenu_vertical_margin_size;
 
+  // Submenu horizontal inset with parent menu. This is the horizontal overlap
+  // between the submenu and its parent menu, not including the borders of
+  // submenu and parent menu.
+  int submenu_horizontal_inset;
+
   // Margins between the top of the item and the label.
   int item_top_margin;
 
@@ -99,6 +104,12 @@ struct VIEWS_EXPORT MenuConfig {
 
   // Whether the keyboard accelerators are visible.
   bool show_accelerators;
+
+  // True if icon to label padding is always added with or without icon.
+  bool always_use_icon_to_label_padding;
+
+  // True if submenu arrow and shortcut right edge should be aligned.
+  bool align_arrow_and_shortcut;
 
  private:
   // Creates and configures a new MenuConfig as appropriate for the current

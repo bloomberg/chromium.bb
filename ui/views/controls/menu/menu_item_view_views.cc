@@ -97,8 +97,8 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
 
   // Render the submenu indicator (arrow).
   if (HasSubmenu()) {
-    gfx::Rect arrow_bounds(this->width() - item_right_margin_ +
-                           config.label_to_arrow_padding,
+    gfx::Rect arrow_bounds(this->width() - config.arrow_width -
+                               config.arrow_to_edge_padding,
                            top_margin + (available_height -
                                          config.arrow_width) / 2,
                            config.arrow_width, height());

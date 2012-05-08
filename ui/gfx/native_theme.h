@@ -231,6 +231,7 @@ class UI_EXPORT NativeTheme {
     kColorId_EnabledMenuItemForegroundColor,
     kColorId_DisabledMenuItemForegroundColor,
     kColorId_FocusedMenuItemBackgroundColor,
+    kColorId_MenuSeparatorColor,
     // Label
     kColorId_LabelEnabledColor,
     kColorId_LabelDisabledColor,

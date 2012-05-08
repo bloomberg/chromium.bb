@@ -45,9 +45,6 @@ static const int kShowDelay = 400;
 // Amount of time from when the drop exits the menu and the menu is hidden.
 static const int kCloseOnExitTime = 1200;
 
-// Amount to inset submenus.
-static const int kSubmenuHorizontalInset = 3;
-
 namespace views {
 
 namespace {
@@ -1576,25 +1573,27 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     bool layout_is_rtl = base::i18n::IsRTL();
     bool create_on_the_right = (prefer_leading && !layout_is_rtl) ||
                                (!prefer_leading && layout_is_rtl);
+    int submenu_horizontal_inset =
+            MenuConfig::instance().submenu_horizontal_inset;
 
     if (create_on_the_right) {
-      x = item_loc.x() + item->width() - kSubmenuHorizontalInset;
+      x = item_loc.x() + item->width() - submenu_horizontal_inset;
       if (state_.monitor_bounds.width() != 0 &&
           x + pref.width() > state_.monitor_bounds.right()) {
         if (layout_is_rtl)
           *is_leading = true;
         else
           *is_leading = false;
-        x = item_loc.x() - pref.width() + kSubmenuHorizontalInset;
+        x = item_loc.x() - pref.width() + submenu_horizontal_inset;
       }
     } else {
-      x = item_loc.x() - pref.width() + kSubmenuHorizontalInset;
+      x = item_loc.x() - pref.width() + submenu_horizontal_inset;
       if (state_.monitor_bounds.width() != 0 && x < state_.monitor_bounds.x()) {
         if (layout_is_rtl)
           *is_leading = false;
         else
           *is_leading = true;
-        x = item_loc.x() + item->width() - kSubmenuHorizontalInset;
+        x = item_loc.x() + item->width() - submenu_horizontal_inset;
       }
     }
     y = item_loc.y() - MenuConfig::instance().submenu_vertical_margin_size;

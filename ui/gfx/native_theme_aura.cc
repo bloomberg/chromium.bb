@@ -32,6 +32,7 @@ const SkColor kTextButtonHoverColor = kTextButtonEnabledColor;
 const SkColor kEnabledMenuItemForegroundColor = kTextButtonEnabledColor;
 const SkColor kDisabledMenuItemForegroundColor = kTextButtonDisabledColor;
 const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(0xF1, 0xF1, 0xF1);
+const SkColor kMenuSeparatorColor = SkColorSetRGB(0xDA, 0xDA, 0xDA);
 // Label:
 const SkColor kLabelEnabledColor = kTextButtonEnabledColor;
 const SkColor kLabelDisabledColor = kTextButtonDisabledColor;
@@ -102,6 +103,8 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
       return kDisabledMenuItemForegroundColor;
     case kColorId_FocusedMenuItemBackgroundColor:
       return kFocusedMenuItemBackgroundColor;
+    case kColorId_MenuSeparatorColor:
+      return kMenuSeparatorColor;
 
     // Label
     case kColorId_LabelEnabledColor:

@@ -537,17 +537,21 @@ void MenuItemView::UpdateMenuPartSizes(bool has_icons) {
   MenuConfig::Reset();
   const MenuConfig& config = MenuConfig::instance();
 
-  item_right_margin_ = config.label_to_arrow_padding + config.arrow_width +
-      config.arrow_to_edge_padding;
+  if (config.align_arrow_and_shortcut)
+    item_right_margin_ = config.arrow_to_edge_padding;
+  else
+    item_right_margin_ = config.label_to_arrow_padding + config.arrow_width +
+                         config.arrow_to_edge_padding;
 
-  if (has_icons) {
+  if (config.always_use_icon_to_label_padding)
     label_start_ = config.item_left_margin + config.check_width +
                    config.icon_to_label_padding;
-  } else {
+  else
     // If there are no icons don't pad by the icon to label padding. This
     // makes us look close to system menus.
-    label_start_ = config.item_left_margin + config.check_width;
-  }
+    label_start_ = config.item_left_margin + config.check_width +
+                   (has_icons ? config.icon_to_label_padding : 0);
+
   if (config.render_gutter)
     label_start_ += config.gutter_width + config.gutter_to_label;
 

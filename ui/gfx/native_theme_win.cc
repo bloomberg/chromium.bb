@@ -46,6 +46,7 @@ const SkColor kTextButtonHoverColor = kTextButtonEnabledColor;
 const SkColor kEnabledMenuItemForegroundColor = kTextButtonEnabledColor;
 const SkColor kDisabledMenuItemForegroundColor = kTextButtonDisabledColor;
 const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(246, 249, 253);
+const SkColor kMenuSeparatorColor = SkColorSetARGB(50, 0, 0, 0);
 // Label:
 const SkColor kLabelEnabledColor = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
 const SkColor kLabelDisabledColor = color_utils::GetSysSkColor(COLOR_GRAYTEXT);
@@ -403,6 +404,8 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       return kDisabledMenuItemForegroundColor;
     case kColorId_FocusedMenuItemBackgroundColor:
       return kFocusedMenuItemBackgroundColor;
+    case kColorId_MenuSeparatorColor:
+      return kMenuSeparatorColor;
 
     // Label
     case kColorId_LabelEnabledColor:
