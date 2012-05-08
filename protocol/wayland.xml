@@ -345,8 +345,8 @@
     <event name="enter">
       <arg name="serial" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
+      <arg name="x" type="fixed"/>
+      <arg name="y" type="fixed"/>
       <arg name="id" type="object" interface="wl_data_offer"/>
     </event>
 
@@ -354,8 +354,8 @@
 
     <event name="motion">
       <arg name="time" type="uint"/>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
+      <arg name="x" type="fixed"/>
+      <arg name="y" type="fixed"/>
     </event>
 
     <event name="drop"/>
@@ -725,8 +725,8 @@
       </description>
 
       <arg name="time" type="uint"/>
-      <arg name="surface_x" type="int"/>
-      <arg name="surface_y" type="int"/>
+      <arg name="surface_x" type="fixed"/>
+      <arg name="surface_y" type="fixed"/>
     </event>
 
     <event name="button">
@@ -778,8 +778,8 @@
 
       <arg name="serial" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="surface_x" type="int"/>
-      <arg name="surface_y" type="int"/>
+      <arg name="surface_x" type="fixed"/>
+      <arg name="surface_y" type="fixed"/>
     </event>
 
     <event name="pointer_leave">
@@ -805,8 +805,8 @@
       <arg name="time" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="id" type="int" />
-      <arg name="x" type="int" />
-      <arg name="y" type="int" />
+      <arg name="x" type="fixed" />
+      <arg name="y" type="fixed" />
     </event>
 
     <event name="touch_up">
@@ -818,8 +818,8 @@
     <event name="touch_motion">
       <arg name="time" type="uint"/>
       <arg name="id" type="int" />
-      <arg name="x" type="int" />
-      <arg name="y" type="int" />
+      <arg name="x" type="fixed" />
+      <arg name="y" type="fixed" />
     </event>
 
     <event name="touch_frame">

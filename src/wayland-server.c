@@ -472,7 +472,7 @@ lose_keyboard_focus(struct wl_listener *listener, void *data)
 
 static void
 default_grab_focus(struct wl_pointer_grab *grab,
-		   struct wl_surface *surface, int32_t x, int32_t y)
+		   struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y)
 {
 	struct wl_input_device *device = grab->input_device;
 
@@ -484,7 +484,7 @@ default_grab_focus(struct wl_pointer_grab *grab,
 
 static void
 default_grab_motion(struct wl_pointer_grab *grab,
-		    uint32_t time, int32_t x, int32_t y)
+		    uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
 	struct wl_resource *resource;
 
@@ -564,8 +564,8 @@ wl_input_device_init(struct wl_input_device *device)
 	wl_signal_init(&device->selection_signal);
 	wl_signal_init(&device->drag_icon_signal);
 
-	device->x = 100;
-	device->y = 100;
+	device->x = wl_fixed_from_int(100);
+	device->y = wl_fixed_from_int(100);
 }
 
 WL_EXPORT void
@@ -601,7 +601,7 @@ find_resource_for_surface(struct wl_list *list, struct wl_surface *surface)
 WL_EXPORT void
 wl_input_device_set_pointer_focus(struct wl_input_device *device,
 				  struct wl_surface *surface,
-				  int32_t sx, int32_t sy)
+				  wl_fixed_t sx, wl_fixed_t sy)
 {
 	struct wl_resource *resource;
 	uint32_t serial;

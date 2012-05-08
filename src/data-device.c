@@ -178,7 +178,7 @@ destroy_drag_focus(struct wl_listener *listener, void *data)
 
 static void
 drag_grab_focus(struct wl_pointer_grab *grab,
-		struct wl_surface *surface, int32_t x, int32_t y)
+		struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y)
 {
 	struct wl_input_device *device =
 		container_of(grab, struct wl_input_device, drag_grab);
@@ -217,7 +217,7 @@ drag_grab_focus(struct wl_pointer_grab *grab,
 
 static void
 drag_grab_motion(struct wl_pointer_grab *grab,
-		 uint32_t time, int32_t x, int32_t y)
+		 uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
 	struct wl_input_device *device =
 		container_of(grab, struct wl_input_device, drag_grab);
@@ -243,7 +243,8 @@ data_device_end_drag_grab(struct wl_input_device *device)
 		wl_list_remove(&device->drag_icon_listener.link);
 	}
 
-	drag_grab_focus(&device->drag_grab, NULL, 0, 0);
+	drag_grab_focus(&device->drag_grab, NULL,
+	                wl_fixed_from_int(0), wl_fixed_from_int(0));
 
 	wl_input_device_end_pointer_grab(device);
 
@@ -324,7 +325,9 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		wl_signal_emit(&device->drag_icon_signal, icon_resource);
 	}
 
-	wl_input_device_set_pointer_focus(device, NULL, 0, 0);
+	wl_input_device_set_pointer_focus(device, NULL,
+	                                  wl_fixed_from_int(0),
+					  wl_fixed_from_int(0));
 
 	wl_input_device_start_pointer_grab(device, &device->drag_grab);
 }
