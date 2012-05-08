@@ -46,6 +46,7 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 - (id)initWithWebContentsViewMac:(WebContentsViewMac*)w;
 - (void)registerDragTypes;
 - (void)setCurrentDragOperation:(NSDragOperation)operation;
+- (WebDropData*)dropData;
 - (void)startDragWithDropData:(const WebDropData&)dropData
             dragOperationMask:(NSDragOperation)operationMask
                         image:(NSImage*)image
@@ -248,7 +249,7 @@ void WebContentsViewMac::CancelDragAndCloseTab() {
 }
 
 WebDropData* WebContentsViewMac::GetDropData() const {
-  return NULL;
+  return [cocoa_view_ dropData];
 }
 
 void WebContentsViewMac::UpdateDragCursor(WebDragOperation operation) {
@@ -440,6 +441,10 @@ void WebContentsViewMac::CloseTab() {
 
 - (void)setCurrentDragOperation:(NSDragOperation)operation {
   [dragDest_ setCurrentOperation:operation];
+}
+
+- (WebDropData*)dropData {
+  return [dragDest_ currentDropData];
 }
 
 - (WebContentsImpl*)webContents {

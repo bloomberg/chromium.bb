@@ -94,8 +94,8 @@ cr.define('extensions', function() {
           this.handleUpdateExtensionNow_.bind(this));
 
       if (!loadTimeData.getBoolean('offStoreInstallEnabled')) {
-        this.dragWrapper_ =
-            new cr.ui.DragWrapper(document.body, dragWrapperHandler);
+        this.dragWrapper_ = new cr.ui.DragWrapper(document.documentElement,
+                                                  dragWrapperHandler);
       }
 
       var packExtensionOverlay = extensions.PackExtensionOverlay.getInstance();

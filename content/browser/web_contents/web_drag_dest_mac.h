@@ -4,10 +4,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "webkit/glue/webdropdata.h"
 
 class WebContentsImpl;
-struct WebDropData;
 
 namespace content {
 class RenderViewHost;
@@ -31,17 +32,22 @@ typedef content::RenderViewHost* RenderViewHostIdentifier;
 
   // Updated asynchronously during a drag to tell us whether or not we should
   // allow the drop.
-  NSDragOperation current_operation_;
+  NSDragOperation currentOperation_;
 
   // Keep track of the render view host we're dragging over.  If it changes
   // during a drag, we need to re-send the DragEnter message.
   RenderViewHostIdentifier currentRVH_;
+
+  // The data for the current drag, or NULL if none is in progress.
+  scoped_ptr<WebDropData> dropData_;
 }
 
 // |contents| is the WebContentsImpl representing this tab, used to communicate
 // drag&drop messages to WebCore and handle navigation on a successful drop
 // (if necessary).
 - (id)initWithWebContentsImpl:(WebContentsImpl*)contents;
+
+- (WebDropData*)currentDropData;
 
 - (void)setDragDelegate:(content::WebDragDestDelegate*)delegate;
 

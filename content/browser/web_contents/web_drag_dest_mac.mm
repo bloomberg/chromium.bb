@@ -30,6 +30,10 @@ using content::Referrer;
   return self;
 }
 
+- (WebDropData*)currentDropData {
+  return dropData_.get();
+}
+
 - (void)setDragDelegate:(content::WebDragDestDelegate*)delegate {
   delegate_ = delegate;
 }
@@ -37,7 +41,7 @@ using content::Referrer;
 // Call to set whether or not we should allow the drop. Takes effect the
 // next time |-draggingUpdated:| is called.
 - (void)setCurrentOperation:(NSDragOperation)operation {
-  current_operation_ = operation;
+  currentOperation_ = operation;
 }
 
 // Given a point in window coordinates and a view in that window, return a
@@ -93,8 +97,9 @@ using content::Referrer;
   }
 
   // Fill out a WebDropData from pasteboard.
-  WebDropData data;
-  [self populateWebDropData:&data fromPasteboard:[info draggingPasteboard]];
+  dropData_.reset(new WebDropData());
+  [self populateWebDropData:dropData_.get()
+             fromPasteboard:[info draggingPasteboard]];
 
   // Create the appropriate mouse locations for WebCore. The draggingLocation
   // is in window coordinates. Both need to be flipped.
@@ -103,15 +108,15 @@ using content::Referrer;
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
   NSDragOperation mask = [info draggingSourceOperationMask];
   webContents_->GetRenderViewHost()->DragTargetDragEnter(
-      data,
+      *dropData_,
       gfx::Point(viewPoint.x, viewPoint.y),
       gfx::Point(screenPoint.x, screenPoint.y),
       static_cast<WebDragOperationsMask>(mask));
 
   // We won't know the true operation (whether the drag is allowed) until we
   // hear back from the renderer. For now, be optimistic:
-  current_operation_ = NSDragOperationCopy;
-  return current_operation_;
+  currentOperation_ = NSDragOperationCopy;
+  return currentOperation_;
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)info {
@@ -125,6 +130,7 @@ using content::Referrer;
     delegate_->OnDragLeave();
 
   webContents_->GetRenderViewHost()->DragTargetDragLeave();
+  dropData_.reset();
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)info
@@ -153,7 +159,7 @@ using content::Referrer;
   if (delegate_)
     delegate_->OnDragOver();
 
-  return current_operation_;
+  return currentOperation_;
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)info
@@ -162,6 +168,7 @@ using content::Referrer;
     [self draggingEntered:info view:view];
 
   // Check if we only allow navigation and navigate to a url on the pasteboard.
+  BOOL result = YES;
   if ([self onlyAllowsNavigation]) {
     NSPasteboard* pboard = [info draggingPasteboard];
     if ([pboard containsURLData]) {
@@ -170,13 +177,13 @@ using content::Referrer;
       webContents_->OpenURL(OpenURLParams(
           url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_AUTO_BOOKMARK,
           false));
-      return YES;
+    } else {
+      result = NO;
     }
-    return NO;
+  } else {
+    if (delegate_)
+      delegate_->OnDrop();
   }
-
-  if (delegate_)
-    delegate_->OnDrop();
 
   currentRVH_ = NULL;
 
@@ -189,7 +196,9 @@ using content::Referrer;
       gfx::Point(viewPoint.x, viewPoint.y),
       gfx::Point(screenPoint.x, screenPoint.y));
 
-  return YES;
+  dropData_.reset();
+
+  return result;
 }
 
 // Given |data|, which should not be nil, fill it in using the contents of the

@@ -73,6 +73,8 @@ void WebDragDestGtk::DragLeave() {
 
   if (delegate())
     delegate()->OnDragLeave();
+
+  drop_data_.reset();
 }
 
 gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
@@ -240,7 +242,7 @@ void WebDragDestGtk::OnDragLeave(GtkWidget* sender, GdkDragContext* context,
   // Set |context_| to NULL to make sure we will recognize the next DragMotion
   // as an enter.
   context_ = NULL;
-  drop_data_.reset();
+
   // When GTK sends us a drag-drop signal, it is shortly (and synchronously)
   // preceded by a drag-leave. The renderer doesn't like getting the signals
   // in this order so delay telling it about the drag-leave till we are sure
