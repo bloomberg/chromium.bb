@@ -173,7 +173,7 @@ bool SasInjectorWin::InjectSas() {
 }
 
 scoped_ptr<SasInjector> SasInjector::Create() {
-  if (base::win::OSInfo::GetInstance()->version() >= base::win::VERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     return scoped_ptr<SasInjector>(new SasInjectorWin());
   }
 
