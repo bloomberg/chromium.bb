@@ -338,7 +338,7 @@ void WebIntentPickerController::OnSuggestionsLinkClicked() {
   browser::Navigate(&params);
 }
 
-void WebIntentPickerController::OnCancelled() {
+void WebIntentPickerController::OnPickerClosed() {
   if (!intents_dispatcher_)
     return;
 
@@ -351,6 +351,13 @@ void WebIntentPickerController::OnCancelled() {
   }
 
   ClosePicker();
+}
+
+void WebIntentPickerController::OnChooseAnotherService() {
+  DCHECK(intents_dispatcher_);
+  DCHECK(!service_tab_);  // Can only be invoked from inline disposition.
+
+ intents_dispatcher_->ResetDispatch();
 }
 
 void WebIntentPickerController::OnClosing() {

@@ -72,7 +72,8 @@ class WebIntentPickerController : public content::NotificationObserver,
   virtual void OnExtensionInstallRequested(const std::string& id) OVERRIDE;
   virtual void OnExtensionLinkClicked(const std::string& id) OVERRIDE;
   virtual void OnSuggestionsLinkClicked() OVERRIDE;
-  virtual void OnCancelled() OVERRIDE;
+  virtual void OnPickerClosed() OVERRIDE;
+  virtual void OnChooseAnotherService() OVERRIDE;
   virtual void OnClosing() OVERRIDE;
 
   // WebstoreInstaller::Delegate implementation.

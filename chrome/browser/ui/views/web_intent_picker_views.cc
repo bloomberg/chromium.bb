@@ -711,6 +711,9 @@ class WebIntentPickerViews : public views::ButtonListener,
   // non-NULL.
   void InitContents();
 
+  // Restore the contents of the picker to the initial contents.
+  void ResetContents();
+
   // Resize the constrained window to the size of its contents.
   void SizeToContents();
 
@@ -727,15 +730,19 @@ class WebIntentPickerViews : public views::ButtonListener,
   WebIntentPickerModel* model_;
 
   // A weak pointer to the service button view.
+  // Created locally, owned by Views.
   ServiceButtonsView* service_buttons_;
 
   // A weak pointer to the action string label.
+  // Created locally, owned by Views.
   views::Label* action_label_;
 
   // A weak pointer to the header label for the extension suggestions.
+  // Created locally, owned by Views.
   views::Label* suggestions_label_;
 
   // A weak pointer to the extensions view.
+  // Created locally, owned by Views.
   SuggestedExtensionsView* extensions_;
 
   // Delegate for inline disposition tab contents.
@@ -745,23 +752,31 @@ class WebIntentPickerViews : public views::ButtonListener,
   TabContentsWrapper* wrapper_;
 
   // A weak pointer to the WebView that hosts the WebContents being displayed.
+  // Created locally, owned by Views.
   views::WebView* webview_;
 
   // A weak pointer to the view that contains all other views in the picker.
+  // Created locally, owned by Views.
   views::View* contents_;
 
   // A weak pointer to the constrained window.
+  // Created locally, owned by Views.
   ConstrainedWindowViews* window_;
 
   // A weak pointer to the more suggestions link.
+  // Created locally, owned by Views.
   views::Link* more_suggestions_link_;
 
   // A weak pointer to the choose another service link.
+  // Created locally, owned by Views.
   views::Link* choose_another_service_link_;
 
   // Set to true when displaying the inline disposition web contents. Used to
   // prevent laying out the inline disposition widgets twice.
   bool displaying_web_contents_;
+
+  // The text for the current action.
+  string16 action_text_;
 
   // Ownership of the WebContents we are displaying in the inline disposition.
   scoped_ptr<WebContents> inline_web_contents_;
@@ -809,7 +824,7 @@ WebIntentPickerViews::~WebIntentPickerViews() {
 void WebIntentPickerViews::ButtonPressed(views::Button* sender,
                                          const views::Event& event) {
 #if defined(USE_CLOSE_BUTTON)
-  delegate_->OnCancelled();
+  delegate_->OnPickerCancelled();
 #endif
 }
 
@@ -841,7 +856,9 @@ void WebIntentPickerViews::LinkClicked(views::Link* source, int event_flags) {
   if (source == more_suggestions_link_) {
     delegate_->OnSuggestionsLinkClicked();
   } else if (source == choose_another_service_link_) {
-    // TODO(binji): Notify the controller that the user wants to pick again.
+    // Signal cancellation of inline disposition.
+    delegate_->OnChooseAnotherService();
+    ResetContents();
   } else {
     NOTREACHED();
   }
@@ -852,6 +869,7 @@ void WebIntentPickerViews::Close() {
 }
 
 void WebIntentPickerViews::SetActionString(const string16& action) {
+  action_text_ = action;
   action_label_->SetText(action);
 }
 
@@ -874,6 +892,7 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
 
   // Replace the picker with the inline disposition.
   contents_->RemoveAllChildViews(true);
+  more_suggestions_link_ = NULL;
 
   views::GridLayout* grid_layout = new views::GridLayout(contents_);
   contents_->SetLayoutManager(grid_layout);
@@ -916,6 +935,7 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
   choose_another_service_link_ = new views::Link(
       l10n_util::GetStringUTF16(IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE));
   grid_layout->AddView(choose_another_service_link_);
+  choose_another_service_link_->set_listener(this);
 
 #if defined(USE_CLOSE_BUTTON)
   grid_layout->AddView(CreateCloseButton());
@@ -962,6 +982,9 @@ void WebIntentPickerViews::OnExtensionIconChanged(
 
 void WebIntentPickerViews::OnInlineDisposition(
     WebIntentPickerModel* model, const GURL& url) {
+  if (!webview_)
+    webview_ = new views::WebView(wrapper_->profile());
+
   inline_web_contents_.reset(WebContents::Create(
       wrapper_->profile(),
       tab_util::GetSiteInstanceForNewTab(wrapper_->profile(), url),
@@ -1021,7 +1044,13 @@ void WebIntentPickerViews::InitContents() {
     kIndentedFullWidthColumnSet,  // Single full-width column, indented.
   };
 
-  contents_ = new views::View();
+  if (contents_) {
+    // Replace the picker with the inline disposition.
+    contents_->RemoveAllChildViews(true);
+    displaying_web_contents_ = false;
+  } else {
+    contents_ = new views::View();
+  }
   views::GridLayout* grid_layout = new views::GridLayout(contents_);
   contents_->SetLayoutManager(grid_layout);
 
@@ -1095,6 +1124,24 @@ void WebIntentPickerViews::InitContents() {
   more_suggestions_link_->set_listener(this);
   grid_layout->AddView(more_suggestions_link_, 1, 1, GridLayout::LEADING,
                        GridLayout::CENTER);
+}
+
+void WebIntentPickerViews::ResetContents() {
+  // Abandon both web contents and webview.
+  webview_->SetWebContents(NULL);
+  inline_web_contents_.reset();
+  webview_ = NULL;
+
+  // Re-initialize the UI.
+  InitContents();
+
+  // Restore previous state.
+  service_buttons_->Update();
+  extensions_->Update();
+  action_label_->SetText(action_text_);
+  contents_->Layout();
+  SizeToContents();
+
 }
 
 void WebIntentPickerViews::SizeToContents() {

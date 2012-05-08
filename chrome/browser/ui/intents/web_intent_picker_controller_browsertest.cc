@@ -305,7 +305,7 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
   }
 
   void OnCancelled() {
-    controller_->OnCancelled();
+    controller_->OnPickerClosed();
   }
 
   void OnExtensionInstallRequested(const std::string& extension_id) {

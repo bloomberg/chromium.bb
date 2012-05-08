@@ -318,7 +318,7 @@ void WebIntentPickerGtk::OnDestroy(GtkWidget* button) {
 }
 
 void WebIntentPickerGtk::OnCloseButtonClick(GtkWidget* button) {
-  delegate_->OnCancelled();
+  delegate_->OnPickerClosed();
 }
 
 void WebIntentPickerGtk::OnExtensionLinkClick(GtkWidget* link) {

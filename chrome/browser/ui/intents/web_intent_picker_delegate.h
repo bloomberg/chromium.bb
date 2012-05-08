@@ -39,9 +39,12 @@ class WebIntentPickerDelegate {
   // Called when the user chooses to get more suggestions from CWS.
   virtual void OnSuggestionsLinkClicked() = 0;
 
-  // Called when the user cancels out of the dialog, whether by closing it
-  // manually or otherwise purposefully.
-  virtual void OnCancelled() = 0;
+  // Called when the user cancels out of the dialog.
+  virtual void OnPickerClosed() = 0;
+
+  // Called when the user wants to pick another service from within inline
+  // disposition.
+  virtual void OnChooseAnotherService() = 0;
 
   // Called when the dialog stops showing.
   virtual void OnClosing() = 0;
