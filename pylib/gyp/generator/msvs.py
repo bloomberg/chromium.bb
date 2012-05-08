@@ -1985,6 +1985,7 @@ class MSBuildRule(object):
     depends_on: The name of the DependsOn element.
     compute_output: The name of the ComputeOutput element.
     dirs_to_make: The name of the DirsToMake element.
+    inputs: The name of the _inputs element.
     tlog: The name of the _tlog element.
     extension: The extension this rule applies to.
     description: The message displayed when this rule is invoked.
@@ -2006,6 +2007,7 @@ class MSBuildRule(object):
     self.depends_on = self.rule_name + 'DependsOn'
     self.compute_output = 'Compute%sOutput' % self.rule_name
     self.dirs_to_make = self.rule_name + 'DirsToMake'
+    self.inputs = self.rule_name + '_inputs'
     self.tlog = self.rule_name + '_tlog'
     self.extension = rule['extension']
     if not self.extension.startswith('.'):
@@ -2104,6 +2106,10 @@ def _GenerateMSBuildRuleTargetsFile(targets_path, msbuild_rules):
          }
         ]
     ]
+    inputs_section = [
+        'ItemGroup',
+        [rule.inputs, {'Include': '%%(%s.AdditionalDependencies)' % rule_name}]
+    ]
     logging_section = [
         'ItemGroup',
         [rule.tlog,
@@ -2113,6 +2119,7 @@ def _GenerateMSBuildRuleTargetsFile(targets_path, msbuild_rules):
                         (rule_name, rule_name))
          },
          ['Source', "@(%s, '|')" % rule_name],
+         ['Inputs', "@(%s -> '%%(Fullpath)', ';')" % rule.inputs],
         ],
     ]
     message_section = [
@@ -2121,13 +2128,21 @@ def _GenerateMSBuildRuleTargetsFile(targets_path, msbuild_rules):
          'Text': '%%(%s.ExecutionDescription)' % rule_name
         }
     ]
-    write_lines_section = [
+    write_tlog_section = [
         'WriteLinesToFile',
         {'Condition': "'@(%s)' != '' and '%%(%s.ExcludedFromBuild)' != "
          "'true'" % (rule.tlog, rule.tlog),
          'File': '$(IntDir)$(ProjectName).write.1.tlog',
          'Lines': "^%%(%s.Source);@(%s->'%%(Fullpath)')" % (rule.tlog,
                                                             rule.tlog)
+        }
+    ]
+    read_tlog_section = [
+        'WriteLinesToFile',
+        {'Condition': "'@(%s)' != '' and '%%(%s.ExcludedFromBuild)' != "
+         "'true'" % (rule.tlog, rule.tlog),
+         'File': '$(IntDir)$(ProjectName).read.1.tlog',
+         'Lines': "^%%(%s.Source);%%(%s.Inputs)" % (rule.tlog, rule.tlog)
         }
     ]
     command_and_input_section = [
@@ -2151,9 +2166,11 @@ def _GenerateMSBuildRuleTargetsFile(targets_path, msbuild_rules):
           'Inputs': target_inputs
          },
          remove_section,
+         inputs_section,
          logging_section,
          message_section,
-         write_lines_section,
+         write_tlog_section,
+         read_tlog_section,
          command_and_input_section,
         ],
         ['PropertyGroup',
