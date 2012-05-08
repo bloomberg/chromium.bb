@@ -27,14 +27,6 @@ Core wayland protocol
    is something in the protocol/architecute that makes it harder than
    it should be.
 
- - Reconsider data types for coordinates in events.  double, floats or
-   fixed point.  Transformed and/or accelerated input generates
-   sub-pixel positions.  24.8 fixed point could work.  Need to think
-   about the range of coordinates we need.  Different from X problem,
-   since we don't have sub-windows, which is where X hits the 16 bit
-   limitations.  Monitor and window sizes haven't yet out-grown the 16
-   bit range.
-
  - Key events need a bit more work/thinking/redesign. As it is we need
    a mechanism to change and synchronize keymaps, repeat rates.  But
    as we started talking, we decided that we needed to go back and
