@@ -2168,10 +2168,8 @@ gfx::GLSurfaceHandle RenderWidgetHostViewWin::GetCompositingSurface() {
 
   gfx::GLSurfaceHandle surface_handle(compositor_host_window_, true);
 
-  base::win::OSInfo *os_info = base::win::OSInfo::GetInstance();
-  if (os_info->version() >= base::win::VERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
     accelerated_surface_.reset(new AcceleratedSurface(compositor_host_window_));
-  }
 
   return surface_handle;
 }
