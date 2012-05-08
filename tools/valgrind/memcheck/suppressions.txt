@@ -5772,6 +5772,27 @@
    fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
    fun:_ZN30ChromeBrowserMainExtraPartsAsh14PreProfileInitEv
 }
+{
+   bug_127236
+   Memcheck:Uninitialized
+   fun:_ZN7WebCore6Region5Shape13compareShapesINS1_24CompareContainsOperationEEEbRKS1_S5_
+   fun:_ZNK7WebCore6Region8containsERKS0_
+   fun:_ZN7WebCoreL23testContentRectOccludedERKNS_7IntRectERKNS_20TransformationMatrixES2_RKNS_6RegionE
+   fun:_ZNK7WebCore22CCOcclusionTrackerBaseINS_13LayerChromiumENS_21RenderSurfaceChromiumEE8occludedEPKS1_RKNS_7IntRectE
+   fun:_ZN7WebCore18TiledLayerChromium11updateTilesEbiiiiRNS_16CCTextureUpdaterEPKNS_22CCOcclusionTrackerBaseINS_13LayerChromiumENS_21RenderSurfaceChromiumEEE
+   fun:_ZN7WebCore18TiledLayerChromium15updateLayerRectERNS_16CCTextureUpdaterERKNS_7IntRectEPKNS_22CCOcclusionTrackerBaseINS_13LayerChromiumENS_21RenderSurfaceChromiumEEE
+   fun:_ZN7WebCore20ContentLayerChromium6updateERNS_16CCTextureUpdaterEPKNS_22CCOcclusionTrackerBaseINS_13LayerChromiumENS_21RenderSurfaceChromiumEEE
+   fun:_ZN7WebCore15CCLayerTreeHost6updateEPNS_13LayerChromiumENS0_9PaintTypeERNS_16CCTextureUpdaterEPKNS_22CCOcclusionTrackerBaseIS1_NS_21RenderSurfaceChromiumEEE
+   fun:_ZN7WebCore15CCLayerTreeHost18paintLayerContentsERKN3WTF6VectorINS1_6RefPtrINS_13LayerChromiumEEELm0EEENS0_9PaintTypeERNS_16CCTextureUpdaterE
+   fun:_ZN7WebCore15CCLayerTreeHost12updateLayersEPNS_13LayerChromiumERNS_16CCTextureUpdaterE
+   fun:_ZN7WebCore15CCLayerTreeHost12updateLayersERNS_16CCTextureUpdaterE
+   fun:_ZN7WebCore19CCSingleThreadProxy18commitAndCompositeEv
+   fun:_ZN7WebCore19CCSingleThreadProxy20compositeImmediatelyEv
+   fun:_ZN7WebCore15CCLayerTreeHost9compositeEv
+   fun:_ZN6WebKit16WebLayerTreeView9compositeEv
+   fun:_ZN2ui10Compositor4DrawEb
+   fun:_ZN5views46ViewLayerTest_DontPaintChildrenWithLayers_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
