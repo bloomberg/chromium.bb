@@ -1837,3 +1837,10 @@
    ...
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
+{
+   bug_127237
+   Heapcheck:Leak
+   fun:MessageLoop::MessageLoop
+   fun:base::Thread::ThreadMain
+   fun:base::::ThreadFunc
+}
