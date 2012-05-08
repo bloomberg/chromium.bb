@@ -113,7 +113,7 @@ class Rietveld(object):
       # If not status, just assume it's a 'M'. Rietveld often gets it wrong and
       # just has status: null. Oh well.
       status = state.get('status') or 'M'
-      if status[0] not in ('A', 'D', 'M'):
+      if status[0] not in ('A', 'D', 'M', 'R'):
         raise patch.UnsupportedPatchFormat(
             filename, 'Change with status \'%s\' is not supported.' % status)
 
