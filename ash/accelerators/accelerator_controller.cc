@@ -427,13 +427,8 @@ bool AcceleratorController::AcceleratorPressed(
         oak::ShowOakWindow();
       break;
     case NEXT_IME:
-      if (ime_control_delegate_.get()) {
-        ime_control_delegate_->HandleNextIme();
-        // We shouldn't consume Shift+Alt. crbug.com/123720
-        // TODO(yusukes): We might be able to remove the hack when issue 123856
-        // is fixed.
-        return false;
-      }
+      if (ime_control_delegate_.get())
+        return ime_control_delegate_->HandleNextIme();
       break;
     case PREVIOUS_IME:
       if (ime_control_delegate_.get())
