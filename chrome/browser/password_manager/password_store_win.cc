@@ -165,6 +165,10 @@ void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
   if (ie7_form)
     request->value.push_back(ie7_form);
 
+  // Since we aren't using ForwardLoginsResult(), we must call
+  // ApplyIgnoreLoginsCutoff() manually here as is done in
+  // PasswordStore::ForwardLoginsResult().
+  request->ApplyIgnoreLoginsCutoff();
   request->ForwardResult(request->handle(), request->value);
 }
 

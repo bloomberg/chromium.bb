@@ -52,21 +52,26 @@ class PasswordStore
   // PasswordForm vector elements are meant to be owned by the
   // PasswordStoreConsumer. However, if the request is canceled after the
   // allocation, then the request must take care of the deletion.
-  // TODO(scr) If we can convert vector<PasswordForm*> to
-  // ScopedVector<PasswordForm>, then we can move the following class to merely
-  // a typedef. At the moment, a subclass of CancelableRequest1 is required to
-  // provide a destructor, which cleans up after canceled requests by deleting
-  // vector elements.
   class GetLoginsRequest
       : public CancelableRequest1<GetLoginsCallback,
                                   std::vector<webkit::forms::PasswordForm*> > {
    public:
     explicit GetLoginsRequest(const GetLoginsCallback& callback);
 
+    void set_ignore_logins_cutoff(const base::Time& cutoff) {
+      ignore_logins_cutoff_ = cutoff;
+    }
+
+    // Removes any logins in the result list that were saved before the cutoff.
+    void ApplyIgnoreLoginsCutoff();
+
    protected:
     virtual ~GetLoginsRequest();
 
    private:
+    // See GetLogins(). Logins older than this will be removed from the reply.
+    base::Time ignore_logins_cutoff_;
+
     DISALLOW_COPY_AND_ASSIGN(GetLoginsRequest);
   };
 
@@ -178,22 +183,23 @@ class PasswordStore
       std::vector<webkit::forms::PasswordForm*>* forms) = 0;
 
   // Dispatches the result to the PasswordStoreConsumer on the original caller's
-  // thread so the callback can be executed there.  This should be the UI
-  // thread.
+  // thread so the callback can be executed there. This should be the UI thread.
   virtual void ForwardLoginsResult(GetLoginsRequest* request);
 
+ private:
   // Schedule the given |func| to be run in the PasswordStore's own thread with
   // responses delivered to |consumer| on the current thread.
   template<typename BackendFunc>
   Handle Schedule(BackendFunc func, PasswordStoreConsumer* consumer);
 
   // Schedule the given |func| to be run in the PasswordStore's own thread with
-  // argument |a| and responses delivered to |consumer| on the current thread.
-  template<typename BackendFunc, typename ArgA>
+  // form |form| and responses delivered to |consumer| on the current thread.
+  // See GetLogins() for more information on |ignore_logins_cutoff|.
+  template<typename BackendFunc>
   Handle Schedule(BackendFunc func, PasswordStoreConsumer* consumer,
-                  const ArgA& a);
+                  const webkit::forms::PasswordForm& form,
+                  const base::Time& ignore_logins_cutoff);
 
- private:
   // Wrapper method called on the destination thread (DB for non-mac) that
   // invokes |task| and then calls back into the source thread to notify
   // observers that the password store may have been modified via

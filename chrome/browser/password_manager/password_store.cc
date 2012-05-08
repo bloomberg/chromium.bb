@@ -22,6 +22,21 @@ PasswordStore::GetLoginsRequest::GetLoginsRequest(
                          std::vector<PasswordForm*> >(callback) {
 }
 
+void PasswordStore::GetLoginsRequest::ApplyIgnoreLoginsCutoff() {
+  if (!ignore_logins_cutoff_.is_null()) {
+    // Count down rather than up since we may be deleting elements.
+    // Note that in principle it could be more efficient to copy the whole array
+    // since that's worst-case linear time, but we expect that elements will be
+    // deleted rarely and lists will be small, so this avoids the copies.
+    for (size_t i = value.size(); i > 0; --i) {
+      if (value[i - 1]->date_created < ignore_logins_cutoff_) {
+        delete value[i - 1];
+        value.erase(value.begin() + (i - 1));
+      }
+    }
+  }
+}
+
 PasswordStore::GetLoginsRequest::~GetLoginsRequest() {
   if (canceled()) {
     STLDeleteElements(&value);
@@ -61,7 +76,25 @@ void PasswordStore::RemoveLoginsCreatedBetween(const base::Time& delete_begin,
 
 CancelableRequestProvider::Handle PasswordStore::GetLogins(
     const PasswordForm& form, PasswordStoreConsumer* consumer) {
-  return Schedule(&PasswordStore::GetLoginsImpl, consumer, form);
+  // Per http://crbug.com/121738, we deliberately ignore saved logins for
+  // http*://www.google.com/ that were stored prior to 2012. (Google now uses
+  // https://accounts.google.com/ for all login forms, so these should be
+  // unused.) We don't delete them just yet, and they'll still be visible in the
+  // password manager, but we won't use them to autofill any forms. This is a
+  // security feature to help minimize damage that can be done by XSS attacks.
+  // TODO(mdm): actually delete them at some point, say M24 or so.
+  base::Time ignore_logins_cutoff;  // the null time
+  if (form.scheme == PasswordForm::SCHEME_HTML &&
+      (form.signon_realm == "http://www.google.com" ||
+       form.signon_realm == "http://www.google.com/" ||
+       form.signon_realm == "https://www.google.com" ||
+       form.signon_realm == "https://www.google.com/")) {
+    static const base::Time::Exploded exploded_cutoff =
+        { 2012, 1, 0, 1, 0, 0, 0, 0 };  // 00:00 Jan 1 2012
+    ignore_logins_cutoff = base::Time::FromUTCExploded(exploded_cutoff);
+  }
+  return Schedule(&PasswordStore::GetLoginsImpl, consumer, form,
+                  ignore_logins_cutoff);
 }
 
 CancelableRequestProvider::Handle PasswordStore::GetAutofillableLogins(
@@ -98,6 +131,7 @@ bool PasswordStore::ScheduleTask(const base::Closure& task) {
 }
 
 void PasswordStore::ForwardLoginsResult(GetLoginsRequest* request) {
+  request->ApplyIgnoreLoginsCutoff();
   request->ForwardResult(request->handle(), request->value);
 }
 
@@ -112,14 +146,16 @@ CancelableRequestProvider::Handle PasswordStore::Schedule(
   return request->handle();
 }
 
-template<typename BackendFunc, typename ArgA>
+template<typename BackendFunc>
 CancelableRequestProvider::Handle PasswordStore::Schedule(
-    BackendFunc func, PasswordStoreConsumer* consumer, const ArgA& a) {
+    BackendFunc func, PasswordStoreConsumer* consumer,
+    const PasswordForm& form, const base::Time& ignore_logins_cutoff) {
   scoped_refptr<GetLoginsRequest> request(NewGetLoginsRequest(
       base::Bind(&PasswordStoreConsumer::OnPasswordStoreRequestDone,
                  base::Unretained(consumer))));
+  request->set_ignore_logins_cutoff(ignore_logins_cutoff);
   AddRequest(request, consumer->cancelable_consumer());
-  ScheduleTask(base::Bind(func, this, request, a));
+  ScheduleTask(base::Bind(func, this, request, form));
   return request->handle();
 }
 
@@ -135,7 +171,6 @@ void PasswordStore::PostNotifyLoginsChanged() {
 #if !defined(OS_MACOSX)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 #endif  // !defined(OS_MACOSX)
-
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PasswordStore::NotifyLoginsChanged, this));

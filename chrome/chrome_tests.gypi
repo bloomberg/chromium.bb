@@ -1387,6 +1387,7 @@
         'browser/password_manager/password_form_data.cc',
         'browser/password_manager/password_form_manager_unittest.cc',
         'browser/password_manager/password_manager_unittest.cc',
+        'browser/password_manager/password_store_unittest.cc',
         'browser/password_manager/password_store_default_unittest.cc',
         'browser/password_manager/password_store_mac_unittest.cc',
         'browser/password_manager/password_store_win_unittest.cc',

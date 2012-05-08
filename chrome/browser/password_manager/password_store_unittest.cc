@@ -4,19 +4,14 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_form_data.h"
-#include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/password_manager/password_store_default.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
@@ -30,9 +25,6 @@ using base::WaitableEvent;
 using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
-using testing::ElementsAreArray;
-using testing::Pointee;
-using testing::Property;
 using testing::WithArg;
 using webkit::forms::PasswordForm;
 
@@ -91,9 +83,9 @@ class DBThreadObserverHelper
 
 }  // anonymous namespace
 
-class PasswordStoreDefaultTest : public testing::Test {
+class PasswordStoreTest : public testing::Test {
  protected:
-  PasswordStoreDefaultTest()
+  PasswordStoreTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB) {
   }
@@ -116,7 +108,7 @@ class PasswordStoreDefaultTest : public testing::Test {
 
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
-  // PasswordStore, WDS schedule work on this thread.
+  // PasswordStore schedules work on this thread.
   content::TestBrowserThread db_thread_;
 
   scoped_ptr<LoginDatabase> login_db_;
@@ -132,30 +124,78 @@ ACTION(QuitUIMessageLoop) {
   MessageLoop::current()->Quit();
 }
 
-TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
+TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   scoped_refptr<PasswordStoreDefault> store(
       new PasswordStoreDefault(login_db_.release(), profile_.get()));
   store->Init();
 
-  // Some non-ASCII password form data.
+  const time_t cutoff = 1325376000;  // 00:00 Jan 1 2012 UTC
+  // The passwords are all empty because PasswordStoreDefault doesn't store the
+  // actual passwords on OS X (they're stored in the Keychain instead). We could
+  // special-case it, but it's easier to just have empty passwords.
   static const PasswordFormData form_data[] = {
+    // A form on https://www.google.com/ older than the cutoff. Will be ignored.
     { PasswordForm::SCHEME_HTML,
-      "http://foo.example.com",
-      "http://foo.example.com/origin",
-      "http://foo.example.com/action",
-      L"มีสีสัน",
-      L"お元気ですか?",
-      L"盆栽",
-      L"أحب كرة",
-      L"£éä국수çà",
-      true, false, 1 },
+      "https://www.google.com",
+      "https://www.google.com/origin",
+      "https://www.google.com/action",
+      L"submit_element",
+      L"username_element",
+      L"password_element",
+      L"username_value_1",
+      L"",
+      true, true, cutoff - 1 },
+    // A form on https://www.google.com/ older than the cutoff. Will be ignored.
+    { PasswordForm::SCHEME_HTML,
+      "https://www.google.com/",
+      "https://www.google.com/origin",
+      "https://www.google.com/action",
+      L"submit_element",
+      L"username_element",
+      L"password_element",
+      L"username_value_2",
+      L"",
+      true, true, cutoff - 1 },
+    // A form on https://www.google.com/ newer than the cutoff.
+    { PasswordForm::SCHEME_HTML,
+      "https://www.google.com",
+      "https://www.google.com/origin",
+      "https://www.google.com/action",
+      L"submit_element",
+      L"username_element",
+      L"password_element",
+      L"username_value_3",
+      L"",
+      true, true, cutoff + 1 },
+    // A form on https://accounts.google.com/ older than the cutoff.
+    { PasswordForm::SCHEME_HTML,
+      "https://accounts.google.com",
+      "https://accounts.google.com/origin",
+      "https://accounts.google.com/action",
+      L"submit_element",
+      L"username_element",
+      L"password_element",
+      L"username_value",
+      L"",
+      true, true, cutoff - 1 },
+    // A form on http://bar.example.com/ older than the cutoff.
+    { PasswordForm::SCHEME_HTML,
+      "http://bar.example.com",
+      "http://bar.example.com/origin",
+      "http://bar.example.com/action",
+      L"submit_element",
+      L"username_element",
+      L"password_element",
+      L"username_value",
+      L"",
+      true, false, cutoff - 1 },
   };
 
-  // Build the expected forms vector and add the forms to the store.
-  std::vector<PasswordForm*> expected_forms;
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(form_data); ++i) {
+  // Build the forms vector and add the forms to the store.
+  std::vector<PasswordForm*> all_forms;
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(form_data); ++i) {
     PasswordForm* form = CreatePasswordFormFromData(form_data[i]);
-    expected_forms.push_back(form);
+    all_forms.push_back(form);
     store->AddLogin(*form);
   }
 
@@ -168,106 +208,58 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
       base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
+  // We expect to get back only the "recent" www.google.com login.
+  // Theoretically these should never actually exist since there are no longer
+  // any login forms on www.google.com to save, but we technically allow them.
+  // We should not get back the older saved password though.
+  PasswordForm www_google;
+  www_google.scheme = PasswordForm::SCHEME_HTML;
+  www_google.signon_realm = "https://www.google.com";
+  std::vector<PasswordForm*> www_google_expected;
+  www_google_expected.push_back(all_forms[2]);
+
+  // We should still get the accounts.google.com login even though it's older
+  // than our cutoff - this is the new location of all Google login forms.
+  PasswordForm accounts_google;
+  accounts_google.scheme = PasswordForm::SCHEME_HTML;
+  accounts_google.signon_realm = "https://accounts.google.com";
+  std::vector<PasswordForm*> accounts_google_expected;
+  accounts_google_expected.push_back(all_forms[3]);
+
+  // Same thing for a generic saved login.
+  PasswordForm bar_example;
+  bar_example.scheme = PasswordForm::SCHEME_HTML;
+  bar_example.signon_realm = "http://bar.example.com";
+  std::vector<PasswordForm*> bar_example_expected;
+  bar_example_expected.push_back(all_forms[4]);
+
   MockPasswordStoreConsumer consumer;
 
   // Make sure we quit the MessageLoop even if the test fails.
   ON_CALL(consumer, OnPasswordStoreRequestDone(_, _))
       .WillByDefault(QuitUIMessageLoop());
 
-  // We expect to get the same data back, even though it's not all ASCII.
+  // Expect the appropriate replies, as above, in reverse order than we will
+  // issue the queries. Each retires on saturation to avoid matcher spew, except
+  // the last which quits the message loop.
   EXPECT_CALL(consumer,
       OnPasswordStoreRequestDone(_,
-          ContainsAllPasswordForms(expected_forms)))
+          ContainsAllPasswordForms(bar_example_expected)))
       .WillOnce(DoAll(WithArg<1>(STLDeleteElements0()), QuitUIMessageLoop()));
+  EXPECT_CALL(consumer,
+      OnPasswordStoreRequestDone(_,
+          ContainsAllPasswordForms(accounts_google_expected)))
+      .WillOnce(WithArg<1>(STLDeleteElements0())).RetiresOnSaturation();
+  EXPECT_CALL(consumer,
+      OnPasswordStoreRequestDone(_,
+          ContainsAllPasswordForms(www_google_expected)))
+      .WillOnce(WithArg<1>(STLDeleteElements0())).RetiresOnSaturation();
 
-  store->GetAutofillableLogins(&consumer);
+  store->GetLogins(www_google, &consumer);
+  store->GetLogins(accounts_google, &consumer);
+  store->GetLogins(bar_example, &consumer);
+
   MessageLoop::current()->Run();
 
-  STLDeleteElements(&expected_forms);
-}
-
-TEST_F(PasswordStoreDefaultTest, Notifications) {
-  scoped_refptr<PasswordStore> store(
-      new PasswordStoreDefault(login_db_.release(), profile_.get()));
-  store->Init();
-
-  PasswordFormData form_data =
-  { PasswordForm::SCHEME_HTML,
-    "http://bar.example.com",
-    "http://bar.example.com/origin",
-    "http://bar.example.com/action",
-    L"submit_element",
-    L"username_element",
-    L"password_element",
-    L"username_value",
-    L"password_value",
-    true, false, 1 };
-  scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(form_data));
-
-  scoped_refptr<DBThreadObserverHelper> helper = new DBThreadObserverHelper;
-  helper->Init(store);
-
-  const PasswordStoreChange expected_add_changes[] = {
-    PasswordStoreChange(PasswordStoreChange::ADD, *form),
-  };
-
-  EXPECT_CALL(helper->observer(),
-      Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
-          content::Source<PasswordStore>(store),
-          Property(&content::Details<const PasswordStoreChangeList>::ptr,
-                   Pointee(ElementsAreArray(
-                       expected_add_changes)))));
-
-  // Adding a login should trigger a notification.
-  store->AddLogin(*form);
-
-  // The PasswordStore schedules tasks to run on the DB thread so we schedule
-  // yet another task to notify us that it's safe to carry on with the test.
-  WaitableEvent done(false, false);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
-
-  // Change the password.
-  form->password_value = WideToUTF16(L"a different password");
-
-  const PasswordStoreChange expected_update_changes[] = {
-    PasswordStoreChange(PasswordStoreChange::UPDATE, *form),
-  };
-
-  EXPECT_CALL(helper->observer(),
-      Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
-              content::Source<PasswordStore>(store),
-              Property(&content::Details<const PasswordStoreChangeList>::ptr,
-                       Pointee(ElementsAreArray(
-                           expected_update_changes)))));
-
-  // Updating the login with the new password should trigger a notification.
-  store->UpdateLogin(*form);
-
-  // Wait for PasswordStore to send the notification.
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
-
-  const PasswordStoreChange expected_delete_changes[] = {
-    PasswordStoreChange(PasswordStoreChange::REMOVE, *form),
-  };
-
-  EXPECT_CALL(helper->observer(),
-      Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
-              content::Source<PasswordStore>(store),
-              Property(&content::Details<const PasswordStoreChangeList>::ptr,
-                       Pointee(ElementsAreArray(
-                           expected_delete_changes)))));
-
-  // Deleting the login should trigger a notification.
-  store->RemoveLogin(*form);
-
-  // Wait for PasswordStore to send the notification.
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
-
-  store->ShutdownOnUIThread();
+  STLDeleteElements(&all_forms);
 }
