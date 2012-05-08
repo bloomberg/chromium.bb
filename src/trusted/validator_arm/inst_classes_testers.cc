@@ -79,6 +79,27 @@ ApplySanityChecks(Instruction inst,
       << "Expected Unpredictable for " << InstContents();
 }
 
+// Unary1RegisterImmediateOpTesterNotRdIsPcAndS
+Unary1RegisterImmediateOpTesterNotRdIsPcAndS::
+Unary1RegisterImmediateOpTesterNotRdIsPcAndS(
+    const NamedClassDecoder& decoder)
+    : Unary1RegisterImmediateOpTester(decoder) {}
+
+void Unary1RegisterImmediateOpTesterNotRdIsPcAndS::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Unary1RegisterImmediateOp expected_decoder;
+
+  // Check that we don't parse when Rd=15 and S=1.
+  if ((expected_decoder.d.reg(inst) == kRegisterPc) &&
+      expected_decoder.flags.is_updated(inst) &&
+      (&ExpectedDecoder() != &decoder))
+    return;
+
+  Unary1RegisterImmediateOpTester::ApplySanityChecks(inst, decoder);
+}
+
+// Binary2RegisterImmediateOpTester
 Binary2RegisterImmediateOpTester::Binary2RegisterImmediateOpTester(
     const NamedClassDecoder& decoder)
     : Arm32DecoderTester(decoder), apply_rd_is_pc_check_(true) {}
@@ -144,6 +165,32 @@ Binary2RegisterImmediateOpTesterRdCanBePcAndNotRdIsPcAndS(
     const NamedClassDecoder& decoder)
     : Binary2RegisterImmediateOpTesterNotRdIsPcAndS(decoder) {
       apply_rd_is_pc_check_ = false;
+}
+
+// Binary2RegisterImmediateOpTesterNotRdIsPcAndSOrRnValues
+Binary2RegisterImmediateOpTesterNotRdIsPcAndSOrRnValues::
+Binary2RegisterImmediateOpTesterNotRdIsPcAndSOrRnValues(
+    const NamedClassDecoder& decoder)
+    : Binary2RegisterImmediateOpTesterNotRdIsPcAndS(decoder) {}
+
+void Binary2RegisterImmediateOpTesterNotRdIsPcAndSOrRnValues::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary2RegisterImmediateOp expected_decoder;
+
+  // Check that we don't parse when Rn=13
+  if ((expected_decoder.n.reg(inst) == kRegisterStack) &&
+      (&ExpectedDecoder() != &decoder))
+    return;
+
+  // Check that we don't parse when Rn=15 and S=0
+  if ((expected_decoder.n.reg(inst) == kRegisterPc) &&
+      !expected_decoder.flags.is_updated(inst) &&
+      (&ExpectedDecoder() != &decoder))
+    return;
+
+  Binary2RegisterImmediateOpTesterNotRdIsPcAndS::
+      ApplySanityChecks(inst, decoder);
 }
 
 // BinaryRegisterImmediateTestTester

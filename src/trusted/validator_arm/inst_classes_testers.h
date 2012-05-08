@@ -54,6 +54,21 @@ class Unary1RegisterImmediateOpTesterRegsNotPc
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOpTesterRegsNotPc);
 };
 
+// Implements a decoder tester for decoder Unary1RegisterImmediateOp,
+// and should not parse when Rd=15 and S=1.
+class Unary1RegisterImmediateOpTesterNotRdIsPcAndS
+    : public Unary1RegisterImmediateOpTester {
+ public:
+  Unary1RegisterImmediateOpTesterNotRdIsPcAndS(
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOpTesterNotRdIsPcAndS);
+};
+
 // Implements a decoder tester for decoder BinaryRegisterImmediateTest
 // Op(S)<c> Rn, #<const>
 // +--------+--------------+--+--------+--------+------------------------+
@@ -165,6 +180,21 @@ class Binary2RegisterImmediateOpTesterRdCanBePcAndNotRdIsPcAndS
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Binary2RegisterImmediateOpTesterRdCanBePcAndNotRdIsPcAndS);
+};
+
+// Implements a decoder tester for decoder Binary2RegisterImmediateOp, where
+// not (Rd=15 & S=1), or not Rn=13, or not (Rn=15 and S=0).
+class Binary2RegisterImmediateOpTesterNotRdIsPcAndSOrRnValues
+    : public Binary2RegisterImmediateOpTesterNotRdIsPcAndS {
+ public:
+  Binary2RegisterImmediateOpTesterNotRdIsPcAndSOrRnValues(
+      const NamedClassDecoder& decoder);
+  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Binary2RegisterImmediateOpTesterNotRdIsPcAndSOrRnValues);
 };
 
 // Implements a decoder tester for decoder Binary3RegisterOp.

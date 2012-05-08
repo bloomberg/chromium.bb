@@ -106,29 +106,85 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_branch_block_xfer(
 const NamedClassDecoder& NamedArm32DecoderState::decode_dp_immed(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
-  if ((insn & 0x01F00000) == 0x01100000 /* op(24:20) == 10001 */)
+  if ((insn & 0x01F00000) == 0x00400000 /* op(24:20) == 00100 */ &&
+      (insn & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
+   return Unary1RegisterImmediateOp_Adr_Rule_10_A2_P32_instance_;
+
+  if ((insn & 0x01F00000) == 0x00500000 /* op(24:20) == 00101 */ &&
+      (insn & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
+   return Binary2RegisterImmediateOp_Sub_Rule_212_A1_P420_instance_;
+
+  if ((insn & 0x01F00000) == 0x00800000 /* op(24:20) == 01000 */ &&
+      (insn & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
+   return Unary1RegisterImmediateOp_Adr_Rule_10_A1_P32_instance_;
+
+  if ((insn & 0x01F00000) == 0x00900000 /* op(24:20) == 01001 */ &&
+      (insn & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
+   return Binary2RegisterImmediateOp_Add_Rule_5_A1_P22_instance_;
+
+  if ((insn & 0x01F00000) == 0x01100000 /* op(24:20) == 10001 */ &&
+      true)
    return MaskedBinaryRegisterImmediateTest_Tst_Rule_230_A1_P454_instance_;
 
-  if ((insn & 0x01F00000) == 0x01500000 /* op(24:20) == 10101 */)
-   return Test_None_instance_;
+  if ((insn & 0x01F00000) == 0x01300000 /* op(24:20) == 10011 */ &&
+      true)
+   return BinaryRegisterImmediateTest_Teq_Rule_227_A1_P448_instance_;
 
-  if ((insn & 0x01B00000) == 0x01300000 /* op(24:20) == 10x11 */)
-   return Test_None_instance_;
+  if ((insn & 0x01F00000) == 0x01500000 /* op(24:20) == 10101 */ &&
+      true)
+   return BinaryRegisterImmediateTest_Cmp_Rule_35_A1_P80_instance_;
 
-  if ((insn & 0x01E00000) == 0x01C00000 /* op(24:20) == 1110x */)
+  if ((insn & 0x01F00000) == 0x01700000 /* op(24:20) == 10111 */ &&
+      true)
+   return BinaryRegisterImmediateTest_Cmn_Rule_32_A1_P74_instance_;
+
+  if ((insn & 0x01E00000) == 0x00000000 /* op(24:20) == 0000x */ &&
+      true)
+   return Binary2RegisterImmediateOp_And_Rule_11_A1_P34_instance_;
+
+  if ((insn & 0x01E00000) == 0x00200000 /* op(24:20) == 0001x */ &&
+      true)
+   return Binary2RegisterImmediateOp_Eor_Rule_44_A1_P94_instance_;
+
+  if ((insn & 0x01E00000) == 0x00400000 /* op(24:20) == 0010x */ &&
+      (insn & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
+   return Binary2RegisterImmediateOp_Sub_Rule_212_A1_P420_instance_;
+
+  if ((insn & 0x01E00000) == 0x00600000 /* op(24:20) == 0011x */ &&
+      true)
+   return Binary2RegisterImmediateOp_Rsb_Rule_142_A1_P284_instance_;
+
+  if ((insn & 0x01E00000) == 0x00800000 /* op(24:20) == 0100x */ &&
+      (insn & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
+   return Binary2RegisterImmediateOp_Add_Rule_5_A1_P22_instance_;
+
+  if ((insn & 0x01E00000) == 0x00A00000 /* op(24:20) == 0101x */ &&
+      true)
+   return Binary2RegisterImmediateOp_Adc_Rule_6_A1_P14_instance_;
+
+  if ((insn & 0x01E00000) == 0x00C00000 /* op(24:20) == 0110x */ &&
+      true)
+   return Binary2RegisterImmediateOp_Sbc_Rule_151_A1_P302_instance_;
+
+  if ((insn & 0x01E00000) == 0x00E00000 /* op(24:20) == 0111x */ &&
+      true)
+   return Binary2RegisterImmediateOp_Rsc_Rule_145_A1_P290_instance_;
+
+  if ((insn & 0x01E00000) == 0x01800000 /* op(24:20) == 1100x */ &&
+      true)
+   return Binary2RegisterImmediateOp_Orr_Rule_113_A1_P228_instance_;
+
+  if ((insn & 0x01E00000) == 0x01A00000 /* op(24:20) == 1101x */ &&
+      true)
+   return Unary1RegisterImmediateOp_Mov_Rule_96_A1_P194_instance_;
+
+  if ((insn & 0x01E00000) == 0x01C00000 /* op(24:20) == 1110x */ &&
+      true)
    return MaskedBinary2RegisterImmediateOp_Bic_Rule_19_A1_P50_instance_;
 
-  if ((insn & 0x01E00000) == 0x01E00000 /* op(24:20) == 1111x */)
-   return DataProc_None_instance_;
-
-  if ((insn & 0x01C00000) == 0x00000000 /* op(24:20) == 000xx */)
-   return DataProc_None_instance_;
-
-  if ((insn & 0x00C00000) == 0x00800000 /* op(24:20) == x10xx */)
-   return DataProc_None_instance_;
-
-  if ((insn & 0x01400000) == 0x00400000 /* op(24:20) == 0x1xx */)
-   return DataProc_None_instance_;
+  if ((insn & 0x01E00000) == 0x01E00000 /* op(24:20) == 1111x */ &&
+      true)
+   return Unary1RegisterImmediateOp_Mvn_Rule_106_A1_P214_instance_;
 
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: dp_immed could not parse %08X",

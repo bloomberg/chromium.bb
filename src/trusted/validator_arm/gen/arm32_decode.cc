@@ -16,10 +16,12 @@ namespace nacl_arm_dec {
 
 Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Binary2RegisterImmedShiftedTest_instance_()
+  , Binary2RegisterImmediateOp_instance_()
   , Binary3RegisterImmedShiftedOp_instance_()
   , Binary3RegisterOp_instance_()
   , Binary3RegisterShiftedTest_instance_()
   , Binary4RegisterShiftedOp_instance_()
+  , BinaryRegisterImmediateTest_instance_()
   , Branch_instance_()
   , Breakpoint_instance_()
   , BxBlx_instance_()
@@ -50,7 +52,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , StoreExclusive_instance_()
   , StoreImmediate_instance_()
   , StoreRegister_instance_()
-  , Test_instance_()
   , TestImmediate_instance_()
   , Unary1RegisterImmediateOp_instance_()
   , Unary2RegisterImmedShiftedOp_instance_()
@@ -141,29 +142,69 @@ const ClassDecoder& Arm32DecoderState::decode_dp_immed(
      const Instruction insn) const
 {
   UNREFERENCED_PARAMETER(insn);
-  if ((insn & 0x01F00000) == 0x01100000 /* op(24:20) == 10001 */)
+  if ((insn & 0x01F00000) == 0x00400000 /* op(24:20) == 00100 */ &&
+      (insn & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
+    return Unary1RegisterImmediateOp_instance_;
+
+  if ((insn & 0x01F00000) == 0x00500000 /* op(24:20) == 00101 */ &&
+      (insn & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
+    return Binary2RegisterImmediateOp_instance_;
+
+  if ((insn & 0x01F00000) == 0x00800000 /* op(24:20) == 01000 */ &&
+      (insn & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
+    return Unary1RegisterImmediateOp_instance_;
+
+  if ((insn & 0x01F00000) == 0x00900000 /* op(24:20) == 01001 */ &&
+      (insn & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
+    return Binary2RegisterImmediateOp_instance_;
+
+  if ((insn & 0x01F00000) == 0x01100000 /* op(24:20) == 10001 */ &&
+      true)
     return TestImmediate_instance_;
 
-  if ((insn & 0x01F00000) == 0x01500000 /* op(24:20) == 10101 */)
-    return Test_instance_;
+  if ((insn & 0x01F00000) == 0x01500000 /* op(24:20) == 10101 */ &&
+      true)
+    return BinaryRegisterImmediateTest_instance_;
 
-  if ((insn & 0x01B00000) == 0x01300000 /* op(24:20) == 10x11 */)
-    return Test_instance_;
+  if ((insn & 0x01B00000) == 0x01300000 /* op(24:20) == 10x11 */ &&
+      true)
+    return BinaryRegisterImmediateTest_instance_;
 
-  if ((insn & 0x01E00000) == 0x01C00000 /* op(24:20) == 1110x */)
+  if ((insn & 0x01E00000) == 0x00400000 /* op(24:20) == 0010x */ &&
+      (insn & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
+    return Binary2RegisterImmediateOp_instance_;
+
+  if ((insn & 0x01E00000) == 0x00800000 /* op(24:20) == 0100x */ &&
+      (insn & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
+    return Binary2RegisterImmediateOp_instance_;
+
+  if ((insn & 0x01E00000) == 0x00A00000 /* op(24:20) == 0101x */ &&
+      true)
+    return Binary2RegisterImmediateOp_instance_;
+
+  if ((insn & 0x01E00000) == 0x00C00000 /* op(24:20) == 0110x */ &&
+      true)
+    return Binary2RegisterImmediateOp_instance_;
+
+  if ((insn & 0x01E00000) == 0x01800000 /* op(24:20) == 1100x */ &&
+      true)
+    return Binary2RegisterImmediateOp_instance_;
+
+  if ((insn & 0x01E00000) == 0x01C00000 /* op(24:20) == 1110x */ &&
+      true)
     return ImmediateBic_instance_;
 
-  if ((insn & 0x01E00000) == 0x01E00000 /* op(24:20) == 1111x */)
-    return DataProc_instance_;
+  if ((insn & 0x01600000) == 0x00600000 /* op(24:20) == 0x11x */ &&
+      true)
+    return Binary2RegisterImmediateOp_instance_;
 
-  if ((insn & 0x01C00000) == 0x00000000 /* op(24:20) == 000xx */)
-    return DataProc_instance_;
+  if ((insn & 0x01A00000) == 0x01A00000 /* op(24:20) == 11x1x */ &&
+      true)
+    return Unary1RegisterImmediateOp_instance_;
 
-  if ((insn & 0x00C00000) == 0x00800000 /* op(24:20) == x10xx */)
-    return DataProc_instance_;
-
-  if ((insn & 0x01400000) == 0x00400000 /* op(24:20) == 0x1xx */)
-    return DataProc_instance_;
+  if ((insn & 0x01C00000) == 0x00000000 /* op(24:20) == 000xx */ &&
+      true)
+    return Binary2RegisterImmediateOp_instance_;
 
   // Catch any attempt to fall though ...
   fprintf(stderr, "TABLE IS INCOMPLETE: dp_immed could not parse %08X",

@@ -58,10 +58,12 @@
 #   'u'    - Bit defining whether register flags is updated.
 #
 # Constraints identifiers used are:
-#    RegsNotPc - All register defined by instruction are not Pc (R15).
 #    Imm5NotZero - The immediate (5-bit) value must not be zero.
 #    NotRdIsPcAndS - Rd not Pc (R15) and S=1 (updates register bit).
 #    NotRdIsPcAndSOrRnIsSp = not (Rd=15 & S=1) or not Rn=13.
+#    NotRdIsPcAndSOrRnValues - not (Rd=15 & S=1), or not Rn=13, or
+#                not (Rn=15 and S=0).
+#    RegsNotPc - All register defined by instruction are not Pc (R15).
 #    RdCanBePc - Overrides Nacl Constraint that Rd!=Pc.
 #    RdCanBePcAndNotRdIsPcAndS - Overrides Nacl Constraint that Rd!=Pc,
 #         and adds constraint Rd not Pc (R15) and S=1 (updates
@@ -249,34 +251,83 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
 # and ImmediateBic. These two instructions are the ones that we
 # allow testing/setting of bits to mask data addresses appropriately.
 | op(24:20) Rn(19:16)
-| 0000x      -        =DataProc  # AND(immediate)
-| 0001x      -        =DataProc  # EOR(immediate)
-| 0010x      ~1111    =DataProc  # SUB(immediate)
-| "          1111     =DataProc  # ADR
-| 0011x      -        =DataProc  # RSB(immediate)
-| 0100x      ~1111    =DataProc  # ADD(immediate)
-| "          1111     =DataProc  # ADR
-| 0101x      -        =DataProc  # ADC(immediate)
-| 0110x      -        =DataProc  # SBC(immediate)
-| 0111x      -        =DataProc  # RSC(immediate)
+| 0000x      -        = Binary2RegisterImmediateOp And_Rule_11_A1_P34
+                           cccc0010000unnnnddddiiiiiiiiiiii NotRdIsPcAndS
+| 0001x      -        = Binary2RegisterImmediateOp Eor_Rule_44_A1_P94
+                           cccc0010001unnnnddddiiiiiiiiiiii NotRdIsPcAndS
+| 0010x      ~1111    = Binary2RegisterImmediateOp Sub_Rule_212_A1_P420
+                           cccc0010010unnnnddddiiiiiiiiiiii
+                           NotRdIsPcAndSOrRnValues
+                        # Note: Table says that op=0010x for ADR, but
+                        # patterns for ADR do not match (page A8-32).
+                        # Causes parsing conflicts with SUB (previous
+                        # row). Added restriction to ADR that bit 20
+                        # (updates flags register) must be 0 (rather than
+                        # x), to match what is on A8.6.10 (page A8-32).
+                        # Note that this also matches restrictions of
+                        # A8.6.212 (page A8-420).
+| 00100      1111     = Unary1RegisterImmediateOp Adr_Rule_10_A2_P32
+                           cccc001001001111ddddiiiiiiiiiiii
+                        # Note: Table says that op=0010x should be ADR,
+                        # but patterns for ADR do not match (page A8-32).
+                        # Causes conflicts with SUB (two rows up). However,
+                        # this case matches the patterns for SUB in A8.6.212
+                        # (page A8-420). Assuming SUB should be recognized.
+| 00101      1111     = Binary2RegisterImmediateOp Sub_Rule_212_A1_P420
+                           cccc0010010unnnnddddiiiiiiiiiiii
+                           NotRdIsPcAndSOrRnValues
+| 0011x      -        = Binary2RegisterImmediateOp Rsb_Rule_142_A1_P284
+                           cccc0010011unnnnddddiiiiiiiiiiii NotRdIsPcAndS
+| 0100x      ~1111    = Binary2RegisterImmediateOp Add_Rule_5_A1_P22
+                           cccc0010100unnnnddddiiiiiiiiiiii 
+                           NotRdIsPcAndSOrRnValues
+                        # Note: Table says that op=0100x for ADR, but
+                        # patterns for ADR do not match (page A8-32).
+                        # Causes parsing conflicts with ADD (previous
+                        # row). Added restriction to ADR that bit 20
+                        # (updates flags register) must be 0 (rather than
+                        # x), to match what is on A8.6.10 (page A8-32).
+                        # Note that this also matches restrictions of
+                        # A8.6.5 (page A8-22).
+| 01000      1111     = Unary1RegisterImmediateOp Adr_Rule_10_A1_P32
+                          cccc001010001111ddddiiiiiiiiiiii
+                        # Note: Table says that op=0100x should be ADR,
+                        # but patterns for ADR do not match (page A8-32).
+                        # Causes conflicts with Add (two rows up). However,
+                        # this case matches the patterns for ADD in A8.6.5
+                        # (page A8-22). Assuming ADD should be recognized.
+| 01001      1111     = Binary2RegisterImmediateOp Add_Rule_5_A1_P22
+                           cccc0010100unnnnddddiiiiiiiiiiii 
+                           NotRdIsPcAndSOrRnValues
+| 0101x      -        = Binary2RegisterImmediateOp Adc_Rule_6_A1_P14
+                           cccc0010101unnnnddddiiiiiiiiiiii NotRdIsPcAndS
+| 0110x      -        = Binary2RegisterImmediateOp Sbc_Rule_151_A1_P302
+                           cccc0010110unnnnddddiiiiiiiiiiii NotRdIsPcAndS
+| 0111x      -        = Binary2RegisterImmediateOp Rsc_Rule_145_A1_P290
+                           cccc0010111unnnnddddiiiiiiiiiiii NotRdIsPcAndS
                         # Note: Following instruction is used to test
                         # if the immediate value appropriately (data address)
                         # masks the value in Rn.
 | 10001      -        = MaskedBinaryRegisterImmediateTest => TestImmediate
                            Tst_Rule_230_A1_P454
                            cccc00110001nnnn0000iiiiiiiiiiii
-| 10011      -        =Test      # TEQ(immediate)
-| 10101      -        =Test      # CMP(immediate)
-| 10111      -        =Test      # CMN(immediate)
-| 1100x      -        =DataProc  # ORR(immediate)
-| 1101x      -        =DataProc  # MOV(immediate)
+| 10011      -        = BinaryRegisterImmediateTest Teq_Rule_227_A1_P448
+                           cccc00110011nnnn0000iiiiiiiiiiii
+| 10101      -        = BinaryRegisterImmediateTest Cmp_Rule_35_A1_P80
+                           cccc00110101nnnn0000iiiiiiiiiiii
+| 10111      -        = BinaryRegisterImmediateTest Cmn_Rule_32_A1_P74
+                           cccc00110111nnnn0000iiiiiiiiiiii
+| 1100x      -        = Binary2RegisterImmediateOp Orr_Rule_113_A1_P228
+                           cccc0011100unnnnddddiiiiiiiiiiii NotRdIsPcAndS
+| 1101x      -        = Unary1RegisterImmediateOp Mov_Rule_96_A1_P194
+                           cccc0011101u0000ddddiiiiiiiiiiii NotRdIsPcAndS
                         # Note: The following instruction is used to mask
                         # memory addresses.
 | 1110x      -        = MaskedBinary2RegisterImmediateOp => ImmediateBic
                            Bic_Rule_19_A1_P50
-                           cccc0011110unnnnddddiiiiiiiiiiii
-                           RdCanBePcAndNotRdIsPcAndS
-| 1111x      -        =DataProc  # MVN(immediate)
+                           cccc0011110unnnnddddiiiiiiiiiiii NotRdIsPcAndS
+| 1111x      -        = Unary1RegisterImmediateOp Mvn_Rule_106_A1_P214
+                           cccc0011111u0000ddddiiiiiiiiiiii NotRdIsPcAndS
 +--
 
 +-- mult (See Section A5.2.5)
