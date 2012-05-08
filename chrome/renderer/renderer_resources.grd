@@ -11,6 +11,9 @@ without changes to the corresponding grd file. fb9 -->
   </outputs>
   <release seq="1">
     <includes>
+      <if expr="pp_ifdef('android')">
+        <include name="IDR_MOBILE_YOUTUBE_PLUGIN_HTML" file="resources\mobile_youtube_plugin.html" flattenhtml="true" type="BINDATA" />
+      </if>
       <include name="IDR_BLOCKED_PLUGIN_HTML" file="resources\blocked_plugin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_CLICK_TO_PLAY_PLUGIN_HTML" file="resources\click_to_play_plugin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_DISABLED_PLUGIN_HTML" file="resources\disabled_plugin.html" flattenhtml="true" type="BINDATA" />

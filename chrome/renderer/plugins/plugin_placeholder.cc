@@ -67,8 +67,29 @@ using webkit::WebViewPlugin;
 const char* const kPluginPlaceholderDataURL =
     "chrome://pluginplaceholderdata/";
 
+#if defined(ENABLE_MOBILE_YOUTUBE_PLUGIN)
+// Strings we used to parse the youtube plugin url.
+const char* const kSlashVSlash = "/v/";
+const char* const kSlashESlash = "/e/";
+#endif
+
 namespace {
 const PluginPlaceholder* g_last_active_menu = NULL;
+
+#if defined(ENABLE_MOBILE_YOUTUBE_PLUGIN)
+// Helper function to get the youtube id from plugin params for old style
+// embedded youtube video.
+std::string GetYoutubeVideoId(const WebPluginParams& params) {
+  GURL url(params.url);
+  std::string video_id = url.path().substr(strlen(kSlashVSlash));
+
+  // Extract just the video id
+  size_t video_id_end = video_id.find('&');
+  if (video_id_end != std::string::npos)
+    video_id = video_id.substr(0, video_id_end);
+  return video_id;
+}
+#endif
 }
 
 // static
@@ -152,6 +173,28 @@ PluginPlaceholder* PluginPlaceholder::CreateBlockedPlugin(
   return blocked_plugin;
 }
 
+#if defined(ENABLE_MOBILE_YOUTUBE_PLUGIN)
+// static
+PluginPlaceholder* PluginPlaceholder::CreateMobileYoutubePlugin(
+    content::RenderView* render_view,
+    WebFrame* frame,
+    const WebPluginParams& params) {
+  const base::StringPiece template_html(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_YOUTUBE_PLUGIN_HTML));
+
+  DictionaryValue values;
+  values.SetString("video_id", GetYoutubeVideoId(params));
+  std::string html_data = jstemplate_builder::GetI18nTemplateHtml(
+      template_html, &values);
+
+  // |youtube_plugin| will destroy itself when its WebViewPlugin is going away.
+  PluginPlaceholder* youtube_plugin = new PluginPlaceholder(
+      render_view, frame, params, html_data, params.mimeType);
+  return youtube_plugin;
+}
+#endif
+
 PluginPlaceholder::PluginPlaceholder(content::RenderView* render_view,
                                      WebFrame* frame,
                                      const WebPluginParams& params,
@@ -215,6 +258,11 @@ void PluginPlaceholder::BindWebFrame(WebFrame* frame) {
   BindCallback("didFinishLoading",
                base::Bind(&PluginPlaceholder::DidFinishLoadingCallback,
                base::Unretained(this)));
+#if defined(ENABLE_MOBILE_YOUTUBE_PLUGIN)
+  BindCallback("openYoutubeURL",
+               base::Bind(&PluginPlaceholder::OpenYoutubeUrlCallback,
+               base::Unretained(this)));
+#endif
 }
 
 bool PluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
@@ -528,3 +576,51 @@ void PluginPlaceholder::DidFinishLoadingCallback(const CppArgumentList& args,
   if (message_.length() > 0)
     UpdateMessage();
 }
+
+#if defined(ENABLE_MOBILE_YOUTUBE_PLUGIN)
+void PluginPlaceholder::OpenYoutubeUrlCallback(const CppArgumentList& args,
+                                               CppVariant* result) {
+  std::string youtube("vnd.youtube:");
+  GURL url(youtube.append(GetYoutubeVideoId(plugin_params_)));
+  WebURLRequest request;
+  request.initialize();
+  request.setURL(url);
+  render_view()->LoadURLExternally(
+      frame_, request, WebKit::WebNavigationPolicyCurrentTab);
+}
+
+bool PluginPlaceholder::IsValidYouTubeVideo(const std::string& path) {
+  unsigned len = strlen(kSlashVSlash);
+
+  // check for more than just /v/ or /e/.
+  if (path.length() <= len)
+    return false;
+
+  std::string str = StringToLowerASCII(path);
+  // Youtube flash url can start with /v/ or /e/.
+  if (strncmp(str.data(), kSlashVSlash, len) != 0 &&
+      strncmp(str.data(), kSlashESlash, len) != 0)
+    return false;
+
+  // Start after /v/
+  for (unsigned i = len; i < path.length(); i++) {
+    char c = str[i];
+    if (isalpha(c) || isdigit(c) || c == '_' || c == '-')
+      continue;
+    // The url can have more parameters such as &hl=en after the video id.
+    // Once we start seeing extra parameters we can return true.
+    return c == '&' && i > len;
+  }
+  return true;
+}
+
+bool PluginPlaceholder::IsYouTubeURL(const GURL& url,
+                                       const std::string& mime_type) {
+  std::string host = url.host();
+  bool is_youtube = EndsWith(host, "youtube.com", true) ||
+      EndsWith(host, "youtube-nocookie.com", true);
+
+  return is_youtube && IsValidYouTubeVideo(url.path()) &&
+      LowerCaseEqualsASCII(mime_type, "application/x-shockwave-flash");
+}
+#endif

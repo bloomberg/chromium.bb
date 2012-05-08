@@ -48,6 +48,18 @@ class PluginPlaceholder : public content::RenderViewObserver,
       int resource_id,
       int message_id);
 
+#if defined(ENABLE_MOBILE_YOUTUBE_PLUGIN)
+  // Placeholder for old style embedded youtube video on mobile device. For old
+  // style embedded youtube video, it has a url in the form of
+  // http://www.youtube.com/v/VIDEO_ID. This placeholder replaces the url with a
+  // simple html page and clicking the play image redirects the user to the
+  // mobile youtube app.
+  static PluginPlaceholder* CreateMobileYoutubePlugin(
+       content::RenderView* render_view,
+       WebKit::WebFrame* frame,
+       const WebKit::WebPluginParams& params);
+#endif
+
   webkit::WebViewPlugin* plugin() { return plugin_; }
 
   void set_blocked_for_prerendering(bool blocked_for_prerendering) {
@@ -60,6 +72,11 @@ class PluginPlaceholder : public content::RenderViewObserver,
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   int32 CreateRoutingId();
+#endif
+
+#if defined(ENABLE_MOBILE_YOUTUBE_PLUGIN)
+  // Whether this is a youtube url.
+  static bool IsYouTubeURL(const GURL& url, const std::string& mime_type);
 #endif
 
  private:
@@ -121,6 +138,14 @@ class PluginPlaceholder : public content::RenderViewObserver,
   void OnFinishedDownloadingPlugin();
   void OnErrorDownloadingPlugin(const std::string& error);
   void OnCancelledDownloadingPlugin();
+#endif
+
+#if defined(ENABLE_MOBILE_YOUTUBE_PLUGIN)
+ // Check whether the url is valid.
+  static bool IsValidYouTubeVideo(const std::string& path);
+
+  // Opens a youtube app in the current tab.
+  void OpenYoutubeUrlCallback(const CppArgumentList& args, CppVariant* result);
 #endif
 
   void SetMessage(const string16& message);

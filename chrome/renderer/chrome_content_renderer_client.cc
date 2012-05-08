@@ -340,6 +340,11 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   std::string orig_mime_type = original_params.mimeType.utf8();
   PluginPlaceholder* placeholder = NULL;
   if (status_value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound) {
+#if defined(ENABLE_MOBILE_YOUTUBE_PLUGIN)
+    if (PluginPlaceholder::IsYouTubeURL(url, orig_mime_type))
+      return PluginPlaceholder::CreateMobileYoutubePlugin(render_view, frame,
+          original_params)->plugin();
+#endif
     MissingPluginReporter::GetInstance()->ReportPluginMissing(
         orig_mime_type, url);
     placeholder = PluginPlaceholder::CreateMissingPlugin(
