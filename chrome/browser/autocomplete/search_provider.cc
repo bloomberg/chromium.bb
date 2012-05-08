@@ -65,17 +65,18 @@ bool HasMultipleWords(const string16& text) {
 
 // SearchProvider::Providers --------------------------------------------------
 
-void SearchProvider::Providers::Set(const TemplateURL* default_provider,
-                                    const TemplateURL* keyword_provider) {
-  // TODO(pkasting): http://b/1162970  We shouldn't need to structure-copy
-  // this. Nor should we need |default_provider_| and |keyword_provider_|
-  // just to know whether the provider changed.
-  default_provider_ = default_provider;
-  if (default_provider)
-    cached_default_provider_ = *default_provider;
-  keyword_provider_ = keyword_provider;
-  if (keyword_provider)
-    cached_keyword_provider_ = *keyword_provider;
+SearchProvider::Providers::Providers(TemplateURLService* template_url_service)
+    : template_url_service_(template_url_service) {
+}
+
+const TemplateURL* SearchProvider::Providers::GetDefaultProviderURL() const {
+  return default_provider_.empty() ? NULL :
+      template_url_service_->GetTemplateURLForKeyword(default_provider_);
+}
+
+const TemplateURL* SearchProvider::Providers::GetKeywordProviderURL() const {
+  return keyword_provider_.empty() ? NULL :
+      template_url_service_->GetTemplateURLForKeyword(keyword_provider_);
 }
 
 
@@ -90,7 +91,7 @@ bool SearchProvider::query_suggest_immediately_ = false;
 
 SearchProvider::SearchProvider(ACProviderListener* listener, Profile* profile)
     : AutocompleteProvider(listener, profile, "Search"),
-      providers_(profile),
+      providers_(TemplateURLServiceFactory::GetForProfile(profile)),
       suggest_results_pending_(0),
       have_suggest_results_(false),
       instant_finalized_(false) {
@@ -185,9 +186,10 @@ void SearchProvider::Start(const AutocompleteInput& input,
   if (keyword_input_text_.empty())
     keyword_provider = NULL;
 
-  const TemplateURL* default_provider =
-      TemplateURLServiceFactory::GetForProfile(profile_)->
-      GetDefaultSearchProvider();
+  TemplateURLService* model = providers_.template_url_service();
+  DCHECK(model);
+  model->Load();
+  const TemplateURL* default_provider = model->GetDefaultSearchProvider();
   if (default_provider && !default_provider->SupportsReplacement())
     default_provider = NULL;
 
@@ -202,15 +204,19 @@ void SearchProvider::Start(const AutocompleteInput& input,
 
   // If we're still running an old query but have since changed the query text
   // or the providers, abort the query.
+  string16 default_provider_keyword(default_provider ?
+      default_provider->keyword() : string16());
+  string16 keyword_provider_keyword(keyword_provider ?
+      keyword_provider->keyword() : string16());
   if (!minimal_changes ||
-      !providers_.equals(default_provider, keyword_provider)) {
+      !providers_.equal(default_provider_keyword, keyword_provider_keyword)) {
     if (done_)
       default_provider_suggest_text_.clear();
     else
       Stop();
   }
 
-  providers_.Set(default_provider, keyword_provider);
+  providers_.set(default_provider_keyword, keyword_provider_keyword);
 
   if (input.text().empty()) {
     // User typed "?" alone.  Give them a placeholder result indicating what
@@ -221,7 +227,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
       match.contents.assign(l10n_util::GetStringUTF16(IDS_EMPTY_KEYWORD_VALUE));
       match.contents_class.push_back(
           ACMatchClassification(0, ACMatchClassification::NONE));
-      match.template_url = providers_.default_provider();
+      match.keyword = providers_.default_provider();
       matches_.push_back(match);
     }
     Stop();
@@ -248,20 +254,27 @@ void SearchProvider::Run() {
   DCHECK(!done_);
   suggest_results_pending_ = 0;
   time_suggest_request_sent_ = base::TimeTicks::Now();
-  if (providers_.valid_suggest_for_default_provider()) {
+  const TemplateURL* default_url = providers_.GetDefaultProviderURL();
+  if (default_url && !default_url->suggestions_url().empty()) {
     suggest_results_pending_++;
     default_fetcher_.reset(CreateSuggestFetcher(kDefaultProviderURLFetcherID,
-        providers_.default_provider()->suggestions_url_ref(), input_.text()));
+        default_url->suggestions_url_ref(), input_.text()));
   }
-  if (providers_.valid_suggest_for_keyword_provider()) {
+  const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
+  if (keyword_url && !keyword_url->suggestions_url().empty()) {
     suggest_results_pending_++;
     keyword_fetcher_.reset(CreateSuggestFetcher(kKeywordProviderURLFetcherID,
-        providers_.keyword_provider()->suggestions_url_ref(),
-        keyword_input_text_));
+        keyword_url->suggestions_url_ref(), keyword_input_text_));
   }
-  // We should only get here if we have a suggest url for the keyword or default
-  // providers.
-  DCHECK_GT(suggest_results_pending_, 0);
+
+  // Both the above can fail if the providers have been modified or deleted
+  // since the query began.
+  if (suggest_results_pending_ == 0) {
+    UpdateDone();
+    // We only need to update the listener if we're actually done.
+    if (done_)
+      listener_->OnProviderUpdate(false);
+  }
 }
 
 void SearchProvider::Stop() {
@@ -315,9 +328,9 @@ void SearchProvider::OnURLFetchComplete(const content::URLFetcher* source) {
   // Record response time for suggest requests sent to Google.  We care
   // only about the common case: the Google default provider used in
   // non-keyword mode.
-  if (!is_keyword_results && providers_.valid_default_provider() &&
-      (providers_.default_provider()->prepopulate_id() ==
-       SEARCH_ENGINE_GOOGLE)) {
+  const TemplateURL* default_url = providers_.GetDefaultProviderURL();
+  if (!is_keyword_results && default_url &&
+      (default_url->prepopulate_id() == SEARCH_ENGINE_GOOGLE)) {
     UMA_HISTOGRAM_TIMES(histogram_name,
                         base::TimeTicks::Now() - time_suggest_request_sent_);
   }
@@ -355,12 +368,14 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
   // require multiple searches and tracking of "single- vs. multi-word" in the
   // database.
   int num_matches = kMaxMatches * 5;
-  if (providers_.valid_default_provider()) {
-    url_db->GetMostRecentKeywordSearchTerms(providers_.default_provider()->id(),
-        input_.text(), num_matches, &default_history_results_);
+  const TemplateURL* default_url = providers_.GetDefaultProviderURL();
+  if (default_url) {
+    url_db->GetMostRecentKeywordSearchTerms(default_url->id(), input_.text(),
+        num_matches, &default_history_results_);
   }
-  if (providers_.valid_keyword_provider()) {
-    url_db->GetMostRecentKeywordSearchTerms(providers_.keyword_provider()->id(),
+  const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
+  if (keyword_url) {
+    url_db->GetMostRecentKeywordSearchTerms(keyword_url->id(),
         keyword_input_text_, num_matches, &keyword_history_results_);
   }
 }
@@ -408,9 +423,11 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
 bool SearchProvider::IsQuerySuitableForSuggest() const {
   // Don't run Suggest in incognito mode, if the engine doesn't support it, or
   // if the user has disabled it.
+  const TemplateURL* default_url = providers_.GetDefaultProviderURL();
+  const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
   if (profile_->IsOffTheRecord() ||
-      (!providers_.valid_suggest_for_default_provider() &&
-       !providers_.valid_suggest_for_keyword_provider()) ||
+      ((!default_url || default_url->suggestions_url().empty()) &&
+       (!keyword_url || keyword_url->suggestions_url().empty())) ||
       !profile_->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled))
     return false;
 
@@ -591,19 +608,17 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   int did_not_accept_default_suggestion = default_suggest_results_.empty() ?
         TemplateURLRef::NO_SUGGESTIONS_AVAILABLE :
         TemplateURLRef::NO_SUGGESTION_CHOSEN;
-  if (providers_.valid_default_provider()) {
-    AddMatchToMap(input_.text(), input_.text(),
-                  CalculateRelevanceForWhatYouTyped(),
-                  AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+  AddMatchToMap(input_.text(), input_.text(),
+                CalculateRelevanceForWhatYouTyped(),
+                AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+                did_not_accept_default_suggestion, false,
+                input_.prevent_inline_autocomplete(), &map);
+  if (!default_provider_suggest_text_.empty()) {
+    AddMatchToMap(input_.text() + default_provider_suggest_text_,
+                  input_.text(), CalculateRelevanceForWhatYouTyped() + 1,
+                  AutocompleteMatch::SEARCH_SUGGEST,
                   did_not_accept_default_suggestion, false,
                   input_.prevent_inline_autocomplete(), &map);
-    if (!default_provider_suggest_text_.empty()) {
-      AddMatchToMap(input_.text() + default_provider_suggest_text_,
-                    input_.text(), CalculateRelevanceForWhatYouTyped() + 1,
-                    AutocompleteMatch::SEARCH_SUGGEST,
-                    did_not_accept_default_suggestion, false,
-                    input_.prevent_inline_autocomplete(), &map);
-    }
   }
 
   AddHistoryResultsToMap(keyword_history_results_, true,
@@ -767,7 +782,7 @@ void SearchProvider::AddSuggestResultsToMap(
 }
 
 int SearchProvider::CalculateRelevanceForWhatYouTyped() const {
-  if (providers_.valid_keyword_provider())
+  if (!providers_.keyword_provider().empty())
     return 250;
 
   switch (input_.type()) {
@@ -856,9 +871,13 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
                                    MatchMap* map) {
   AutocompleteMatch match(this, relevance, false, type);
   std::vector<size_t> content_param_offsets;
-  TemplateURL* provider = is_keyword ?
+  // Bail out now if we don't actually have a valid provider.
+  match.keyword = is_keyword ?
       providers_.keyword_provider() : providers_.default_provider();
-  match.template_url = provider;
+  const TemplateURL* provider_url = match.GetTemplateURL(profile_);
+  if (provider_url == NULL)
+    return;
+
   match.contents.assign(query_string);
   // We do intra-string highlighting for suggestions - the suggested segment
   // will be highlighted, e.g. for input_text = "you" the suggestion may be
@@ -908,7 +927,6 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
     ++search_start;
   }
   if (is_keyword) {
-    match.keyword = providers_.keyword_provider()->keyword();
     match.fill_into_edit.append(match.keyword + char16(' '));
     search_start += match.keyword.length() + 1;
   }
@@ -919,7 +937,7 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
                                    input_text))
     match.inline_autocomplete_offset = search_start + input_text.length();
 
-  const TemplateURLRef& search_url = provider->url_ref();
+  const TemplateURLRef& search_url = provider_url->url_ref();
   DCHECK(search_url.SupportsReplacement());
   match.destination_url = GURL(search_url.ReplaceSearchTerms(query_string,
       accepted_suggestion, input_text));

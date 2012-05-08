@@ -116,8 +116,7 @@ void OmniboxUIHandler::AddResultToDictionary(const std::string& prefix,
                        it->is_history_what_you_typed_match);
     output->SetString(item_prefix + ".type",
                       AutocompleteMatch::TypeToString(it->type));
-    if (it->template_url != NULL)
-      output->SetString(item_prefix + ".template_url", it->template_url->url());
+    output->SetString(item_prefix + ".keyword", it->keyword);
     output->SetBoolean(item_prefix + ".starred", it->starred);
     output->SetBoolean(item_prefix + ".from_previous", it->from_previous);
   }

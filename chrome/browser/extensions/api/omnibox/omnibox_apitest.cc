@@ -108,9 +108,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, FLAKY_Basic) {
     EXPECT_FALSE(match.deletable);
 
     match = result.match_at(1);
-    ASSERT_TRUE(match.template_url);
-    EXPECT_TRUE(match.template_url->IsExtensionKeyword());
-    EXPECT_EQ(ASCIIToUTF16("keyword"), match.template_url->keyword());
+    EXPECT_EQ(ASCIIToUTF16("keyword"), match.keyword);
   }
 
   // Test that our extension can send suggestions back to us.
@@ -128,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, FLAKY_Basic) {
     const AutocompleteResult& result = autocomplete_controller->result();
     ASSERT_EQ(5U, result.size()) << AutocompleteResultAsString(result);
 
-    ASSERT_TRUE(result.match_at(0).template_url);
+    ASSERT_FALSE(result.match_at(0).keyword.empty());
     EXPECT_EQ(ASCIIToUTF16("keyword suggestio"),
               result.match_at(0).fill_into_edit);
     EXPECT_EQ(ASCIIToUTF16("keyword suggestion1"),
@@ -272,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
     // should be to search for what we typed.
     const AutocompleteResult& result = autocomplete_controller->result();
     ASSERT_EQ(5U, result.size()) << AutocompleteResultAsString(result);
-    ASSERT_TRUE(result.match_at(0).template_url);
+    ASSERT_FALSE(result.match_at(0).keyword.empty());
     EXPECT_EQ(ASCIIToUTF16("keyword suggestion3 incognito"),
               result.match_at(3).fill_into_edit);
   }

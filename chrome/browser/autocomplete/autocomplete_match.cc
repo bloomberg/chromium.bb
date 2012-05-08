@@ -7,6 +7,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "grit/theme_resources.h"
 
 // AutocompleteMatch ----------------------------------------------------------
@@ -27,7 +29,6 @@ AutocompleteMatch::AutocompleteMatch()
       transition(content::PAGE_TRANSITION_GENERATED),
       is_history_what_you_typed_match(false),
       type(SEARCH_WHAT_YOU_TYPED),
-      template_url(NULL),
       starred(false),
       from_previous(false) {
 }
@@ -43,7 +44,6 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
       transition(content::PAGE_TRANSITION_TYPED),
       is_history_what_you_typed_match(false),
       type(type),
-      template_url(NULL),
       starred(false),
       from_previous(false) {
 }
@@ -64,7 +64,6 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       is_history_what_you_typed_match(match.is_history_what_you_typed_match),
       type(match.type),
       keyword(match.keyword),
-      template_url(match.template_url),
       starred(match.starred),
       from_previous(match.from_previous) {
   if (match.associated_keyword.get())
@@ -96,7 +95,6 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   associated_keyword.reset(match.associated_keyword.get() ?
       new AutocompleteMatch(*match.associated_keyword) : NULL);
   keyword = match.keyword;
-  template_url = match.template_url;
   starred = match.starred;
   from_previous = match.from_previous;
 
@@ -288,22 +286,27 @@ void AutocompleteMatch::ComputeStrippedDestinationURL() {
   }
 }
 
-void AutocompleteMatch::GetKeywordUIState(string16* keyword,
+void AutocompleteMatch::GetKeywordUIState(Profile* profile,
+                                          string16* keyword,
                                           bool* is_keyword_hint) const {
   *is_keyword_hint = associated_keyword.get() != NULL;
   keyword->assign(*is_keyword_hint ? associated_keyword->keyword :
-      GetSubstitutingExplicitlyInvokedKeyword());
+      GetSubstitutingExplicitlyInvokedKeyword(profile));
 }
 
-string16 AutocompleteMatch::GetSubstitutingExplicitlyInvokedKeyword() const {
+string16 AutocompleteMatch::GetSubstitutingExplicitlyInvokedKeyword(
+    Profile* profile) const {
   if (transition != content::PAGE_TRANSITION_KEYWORD)
     return string16();
-  const TemplateURL* t_url = GetTemplateURL();
+  const TemplateURL* t_url = GetTemplateURL(profile);
   return (t_url && t_url->SupportsReplacement()) ? keyword : string16();
 }
 
-TemplateURL* AutocompleteMatch::GetTemplateURL() const {
-  return template_url;
+TemplateURL* AutocompleteMatch::GetTemplateURL(Profile* profile) const {
+  DCHECK(profile);
+  return keyword.empty() ? NULL :
+      TemplateURLServiceFactory::GetForProfile(profile)->
+          GetTemplateURLForKeyword(keyword);
 }
 
 #ifndef NDEBUG

@@ -54,14 +54,6 @@
 
 using base::TimeDelta;
 
-static bool AreTemplateURLsEqual(const TemplateURL* a,
-                                 const TemplateURL* b) {
-  // We can't use equality of the pointers because SearchProvider copies the
-  // TemplateURLs. Instead we compare based on ID.
-  // a may be NULL, but never b, so we don't handle the case of a==b==NULL.
-  return a && b && (a->id() == b->id());
-}
-
 // AutocompleteInput ----------------------------------------------------------
 
 AutocompleteInput::AutocompleteInput()
@@ -1046,7 +1038,7 @@ void AutocompleteController::UpdateAssociatedKeywords(
   std::set<string16> keywords;
   for (ACMatches::iterator match(result->begin()); match != result->end();
        ++match) {
-    string16 keyword(match->GetSubstitutingExplicitlyInvokedKeyword());
+    string16 keyword(match->GetSubstitutingExplicitlyInvokedKeyword(profile_));
     if (!keyword.empty()) {
       keywords.insert(keyword);
     } else {
@@ -1072,27 +1064,30 @@ void AutocompleteController::UpdateAssociatedKeywords(
 
 void AutocompleteController::UpdateKeywordDescriptions(
     AutocompleteResult* result) {
-  const TemplateURL* last_template_url = NULL;
+  string16 last_keyword;
   for (AutocompleteResult::iterator i = result->begin(); i != result->end();
        ++i) {
-    if (((i->provider == keyword_provider_) && i->template_url) ||
+    if (((i->provider == keyword_provider_) && !i->keyword.empty()) ||
         ((i->provider == search_provider_) &&
          (i->type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
           i->type == AutocompleteMatch::SEARCH_HISTORY ||
           i->type == AutocompleteMatch::SEARCH_SUGGEST))) {
       i->description.clear();
       i->description_class.clear();
-      DCHECK(i->template_url);
-      if (!AreTemplateURLsEqual(last_template_url, i->template_url)) {
-        i->description = l10n_util::GetStringFUTF16(
-            IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION,
-            i->template_url->AdjustedShortNameForLocaleDirection());
-        i->description_class.push_back(
-            ACMatchClassification(0, ACMatchClassification::DIM));
+      DCHECK(!i->keyword.empty());
+      if (i->keyword != last_keyword) {
+        const TemplateURL* template_url = i->GetTemplateURL(profile_);
+        if (template_url) {
+          i->description = l10n_util::GetStringFUTF16(
+              IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION,
+              template_url->AdjustedShortNameForLocaleDirection());
+          i->description_class.push_back(
+              ACMatchClassification(0, ACMatchClassification::DIM));
+        }
+        last_keyword = i->keyword;
       }
-      last_template_url = i->template_url;
     } else {
-      last_template_url = NULL;
+      last_keyword.clear();
     }
   }
 }

@@ -496,7 +496,7 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
     match.transition = content::PAGE_TRANSITION_LINK;
   }
 
-  const TemplateURL* template_url = match.GetTemplateURL();
+  const TemplateURL* template_url = match.GetTemplateURL(profile_);
   if (template_url && template_url->url_ref().HasGoogleBaseURLs())
     GoogleURLTracker::GoogleURLSearchCommitted();
 
@@ -542,7 +542,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
         content::Details<AutocompleteLog>(&log));
   }
 
-  TemplateURL* template_url = match.GetTemplateURL();
+  TemplateURL* template_url = match.GetTemplateURL(profile_);
   if (template_url) {
     if (match.transition == content::PAGE_TRANSITION_KEYWORD) {
       // The user is using a non-substituting keyword or is explicitly in
@@ -559,7 +559,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
                 current_match : result().match_at(index);
 
         // Strip the keyword + leading space off the input.
-        size_t prefix_length = match.template_url->keyword().length() + 1;
+        size_t prefix_length = match.keyword.length() + 1;
         extensions::ExtensionOmniboxEventRouter::OnInputEntered(profile_,
             template_url->GetExtensionId(),
             UTF16ToUTF8(match.fill_into_edit.substr(prefix_length)));
@@ -923,7 +923,7 @@ void AutocompleteEditModel::OnResultChanged(bool default_match_changed) {
       // can be many of these as a user types an initial series of characters,
       // the OS DNS cache could suffer eviction problems for minimal gain.
 
-      match->GetKeywordUIState(&keyword, &is_keyword_hint);
+      match->GetKeywordUIState(profile_, &keyword, &is_keyword_hint);
     }
 
     popup_->OnResultChanged();

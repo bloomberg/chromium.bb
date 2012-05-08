@@ -133,7 +133,8 @@ bool InstantController::Update(TabContentsWrapper* tab_contents,
   last_url_ = match.destination_url;
   last_user_text_ = user_text;
 
-  const TemplateURL* template_url = match.GetTemplateURL();
+  const TemplateURL* template_url =
+      match.GetTemplateURL(tab_contents_->profile());
   const TemplateURL* default_t_url =
       template_url_service_->GetDefaultSearchProvider();
   if (!IsValidInstantTemplateURL(template_url) || !default_t_url ||

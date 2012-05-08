@@ -472,10 +472,7 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
   // into keyword templates.
   FillInURLAndContents(profile_, remaining_input, element, &match);
 
-  if (supports_replacement) {
-    match.template_url = element;
-    match.keyword = keyword;
-  }
+  match.keyword = keyword;
   match.transition = content::PAGE_TRANSITION_KEYWORD;
 
   return match;

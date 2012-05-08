@@ -108,7 +108,7 @@ void AutocompletePopupModel::SetSelectedLine(size_t line,
   // eliminated and just become a call to the observer on the edit.
   string16 keyword;
   bool is_keyword_hint;
-  match.GetKeywordUIState(&keyword, &is_keyword_hint);
+  match.GetKeywordUIState(edit_model_->profile(), &keyword, &is_keyword_hint);
 
   if (reset_to_default) {
     string16 inline_autocomplete_text;
@@ -197,7 +197,7 @@ void AutocompletePopupModel::TryDeletingCurrentItem() {
 const SkBitmap* AutocompletePopupModel::GetIconIfExtensionMatch(
     const AutocompleteMatch& match) const {
   Profile* profile = edit_model_->profile();
-  const TemplateURL* template_url = match.GetTemplateURL();
+  const TemplateURL* template_url = match.GetTemplateURL(profile);
   return (template_url && template_url->IsExtensionKeyword()) ?
       &profile->GetExtensionService()->GetOmniboxPopupIcon(
           template_url->GetExtensionId()) : NULL;

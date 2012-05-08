@@ -340,8 +340,8 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
   AutocompleteMatch match;
   EXPECT_TRUE(FindMatchWithDestination(keyword_url_, &match));
 
-  // The match should have a TemplateURL.
-  EXPECT_TRUE(match.template_url);
+  // The match should have an associated keyword.
+  EXPECT_FALSE(match.keyword.empty());
 
   // The fill into edit should contain the keyword.
   EXPECT_EQ(keyword_t_url_->keyword() + char16(' ') + keyword_term_,
@@ -632,10 +632,9 @@ TEST_F(SearchProviderTest, UpdateKeywordDescriptions) {
   // There should be two matches, one for the keyword one for what you typed.
   ASSERT_EQ(2u, result.size());
 
-  EXPECT_TRUE(result.match_at(0).template_url != NULL);
-  EXPECT_TRUE(result.match_at(1).template_url != NULL);
-  EXPECT_NE(result.match_at(0).template_url,
-            result.match_at(1).template_url);
+  EXPECT_FALSE(result.match_at(0).keyword.empty());
+  EXPECT_FALSE(result.match_at(1).keyword.empty());
+  EXPECT_NE(result.match_at(0).keyword, result.match_at(1).keyword);
 
   EXPECT_FALSE(result.match_at(0).description.empty());
   EXPECT_FALSE(result.match_at(1).description.empty());
@@ -666,5 +665,5 @@ TEST_F(SearchProviderTest, NoTemplateURLForNavsuggest) {
   // Make sure there is a match for 'a.com' and it doesn't have a template_url.
   AutocompleteMatch nav_match;
   EXPECT_TRUE(FindMatchWithDestination(GURL("http://a.com"), &nav_match));
-  EXPECT_FALSE(nav_match.template_url);
+  EXPECT_TRUE(nav_match.keyword.empty());
 }

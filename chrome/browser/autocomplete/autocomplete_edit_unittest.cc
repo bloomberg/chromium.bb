@@ -156,6 +156,9 @@ TEST_F(AutocompleteEditTest, AdjustTextForCopy) {
   TestingOmniboxView view;
   TestingAutocompleteEditController controller;
   TestingProfile profile;
+  // NOTE: The TemplateURLService must be created before the
+  // AutocompleteClassifier so that the SearchProvider gets a non-NULL
+  // TemplateURLService at construction time.
   profile.CreateTemplateURLService();
   profile.CreateAutocompleteClassifier();
   AutocompleteEditModel model(&view, &controller, &profile);

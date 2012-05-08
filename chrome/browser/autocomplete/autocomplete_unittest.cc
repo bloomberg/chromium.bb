@@ -264,15 +264,11 @@ void AutocompleteProviderTest::RunRedundantKeywordTest(
     const KeywordTestData* match_data,
     size_t size) {
   ACMatches matches;
-  TemplateURLService* turl_model =
-      TemplateURLServiceFactory::GetForProfile(&profile_);
   for (size_t i = 0; i < size; ++i) {
     AutocompleteMatch match;
     match.fill_into_edit = match_data[i].fill_into_edit;
     match.transition = content::PAGE_TRANSITION_KEYWORD;
     match.keyword = match_data[i].keyword;
-    if (!match.keyword.empty())
-      match.template_url = turl_model->GetTemplateURLForKeyword(match.keyword);
     matches.push_back(match);
   }
 
