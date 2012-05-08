@@ -62,6 +62,11 @@ html[dir=rtl] #signin-right {
   top: 0;
 }
 
+#gaia-loading .spinner {
+  height: 32px;
+  width: 32px;
+}
+
 /* Position to be aligned with the login box in iframe  */
 #login-box {
   height: 31px;
