@@ -70,6 +70,7 @@ readonly QEMU_TOOL="${ARM_TRUSTED_TC}/qemu_tool.sh"
 
 readonly PNACL_TC=\
 "${TC_ROOT}/pnacl_${BUILD_PLATFORM}_${BUILD_ARCH}/${PNACL_LIBMODE}"
+readonly ARM_LLC_NEXE=${TC_ROOT}/pnacl_translator/armv7/bin/llc.nexe
 
 readonly NNACL_TC="${TC_ROOT}/${SCONS_BUILD_PLATFORM}_x86"
 readonly RUNNABLE_LD_X8632="${NNACL_TC}/x86_64-nacl/lib32/runnable-ld.so"
@@ -496,6 +497,14 @@ SetupSelLdr() {
   IRT_IMAGE="${SCONS_OUT}/nacl_irt-${arch}/staging/irt_core.nexe"
   CheckFileBuilt "IRT image" "${IRT_IMAGE}"
 
+  local validator_bin="ncval"
+  if [[ ${arch} = "arm" ]]; then
+    validator_bin="arm-ncval-core"
+  fi
+  VALIDATOR="${staging}/${validator_bin}"
+  # We don't CheckFileBuilt for VALIDATOR because we currently don't build
+  # or use it on x86
+
   PREFIX="${prefix} ${SEL_LDR_BOOTSTRAP} \
 ${SEL_LDR} --r_debug=0xXXXXXXXXXXXXXXXX \
 -B ${IRT_IMAGE} -a ${extra_flags} -f ${preload}"
@@ -647,6 +656,32 @@ RunTimedBenchmarks() {
   done
 }
 
+TimeValidation() {
+  local setup_func=$1
+  "${setup_func}"
+  shift
+  local list=$(GetBenchmarkList "$@")
+  for i in ${list}; do
+    SubBanner "Validating: $i"
+    pushd $i
+    local benchname=${i#*.}
+    local target_file=./${benchname}.${SUFFIX}
+    local time_file=${target_file}.validation_time
+    rm -f "${time_file}"
+    for ((i=0; i<${SPEC_RUN_REPETITIONS}; i++))
+    do
+      TimedRunCmd ${time_file} "${VALIDATOR}" ${target_file}
+    done
+    "${PERF_LOGGER}" LogUserSysTime "${time_file}" "validationtime" \
+      ${benchname} ${SUFFIX}
+    popd
+  done
+  if [ setup_func ~= "arm" ]; then
+    TimedRunCmd llc.validation_time "${VALIDATOR}" "${LLC_NEXE}"
+    "${PERF_LOGGER}" LogUserSysTime llc.validation_time "validationtime" \
+      "llc" ${SUFFIX}
+  fi
+}
 
 #@
 #@ BuildAndRunBenchmarks <setup> [ref|train] <benchmark>*
@@ -755,11 +790,11 @@ PopulateFromSpecHarness() {
 BuildPrerequisites() {
   local platforms=$1
   local bitcode=$2
-  shift 2
+  local extrabuild="${3-}"
   # Sel universal is only used for the pnacl sandboxed translator,
   # but prepare it just in case.
   # IRT is used both to run the tests and to run the pnacl sandboxed translator.
-  build-runtime "${platforms}" "sel_ldr sel_universal irt_core"
+  build-runtime "${platforms}" "sel_ldr sel_universal irt_core ${extrabuild}"
   if [ ${bitcode} == "bitcode" ] ; then
      build-libs-pnacl
   else

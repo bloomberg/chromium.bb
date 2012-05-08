@@ -150,7 +150,7 @@ pnacl-trybot-arm-qemu() {
 
 pnacl-trybot-arm-buildonly() {
   clobber
-  build-prerequisites "arm" "bitcode"
+  build-prerequisites "arm" "bitcode" "arm-ncval-core"
   ${BUILDBOT_PNACL} archive-for-hw-bots "${NAME_ARM_TRY_UPLOAD}" try
   build-tests SetupPnaclPexeOpt "${TRYBOT_TESTS}" 0 1
   upload-test-binaries "${TRYBOT_TESTS}" try
@@ -162,6 +162,8 @@ pnacl-trybot-arm-hw() {
   download-test-binaries try
   build-tests SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" 0 1
   run-tests SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" 0 1
+  (cd ${SPEC_BASE}; \
+    ./run_all.sh TimeValidation SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}")
 }
 
 pnacl-trybot-x8632() {
