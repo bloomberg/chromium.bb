@@ -138,10 +138,26 @@ uppercase_dup(const char *src)
 	return u;
 }
 
+static const char *indent(int n)
+{
+	const char *whitespace[] = {
+		"\t\t\t\t\t\t\t\t\t\t\t\t",
+		"\t\t\t\t\t\t\t\t\t\t\t\t ",
+		"\t\t\t\t\t\t\t\t\t\t\t\t  ",
+		"\t\t\t\t\t\t\t\t\t\t\t\t   ",
+		"\t\t\t\t\t\t\t\t\t\t\t\t    ",
+		"\t\t\t\t\t\t\t\t\t\t\t\t     ",
+		"\t\t\t\t\t\t\t\t\t\t\t\t      ",
+		"\t\t\t\t\t\t\t\t\t\t\t\t       "
+	};
+
+	return whitespace[n % 8] + 12 - n / 8;
+}
+
 static void
 desc_dump(char *src, int startcol)
 {
-	int i, j = 0, col = startcol, line = 0;
+	int i, col = startcol, line = 0;
 
 	/* Strip leading space */
 	for (i = 0; isspace(src[i]); i++)
@@ -156,14 +172,8 @@ desc_dump(char *src, int startcol)
 			src[i] = ' ';
 
 		if (col > 72 && isspace(src[i])) {
-			if (src[i+1]) {
-				putchar('\n');
-				for (j = 0; j < startcol; j++)
-					putchar(' ');
-				putchar(' ');
-				putchar('*');
-				putchar(' ');
-			}
+			if (src[i+1])
+				printf("\n%s* ", indent(startcol + 1));
 			line++;
 			col = startcol;
 		} else {
@@ -617,22 +627,6 @@ emit_event_wrappers(struct wl_list *message_list, struct interface *interface)
 		printf(");\n");
 		printf("}\n\n");
 	}
-}
-
-static const char *indent(int n)
-{
-	const char *whitespace[] = {
-		"\t\t\t\t\t\t\t\t\t\t\t\t",
-		"\t\t\t\t\t\t\t\t\t\t\t\t ",
-		"\t\t\t\t\t\t\t\t\t\t\t\t  ",
-		"\t\t\t\t\t\t\t\t\t\t\t\t   ",
-		"\t\t\t\t\t\t\t\t\t\t\t\t    ",
-		"\t\t\t\t\t\t\t\t\t\t\t\t     ",
-		"\t\t\t\t\t\t\t\t\t\t\t\t      ",
-		"\t\t\t\t\t\t\t\t\t\t\t\t       "
-	};
-
-	return whitespace[n % 8] + 12 - n / 8;
 }
 
 static void
