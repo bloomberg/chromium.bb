@@ -266,7 +266,7 @@ weston_surface_set_color(struct weston_surface *surface,
 
 static void
 surface_to_global_float(struct weston_surface *surface,
-			int32_t sx, int32_t sy, GLfloat *x, GLfloat *y)
+			GLfloat sx, GLfloat sy, GLfloat *x, GLfloat *y)
 {
 	if (surface->transform.enabled) {
 		struct weston_vector v = { { sx, sy, 0.0f, 1.0f } };
@@ -436,11 +436,26 @@ weston_surface_update_transform(struct weston_surface *surface)
 
 WL_EXPORT void
 weston_surface_to_global_float(struct weston_surface *surface,
-			       int32_t sx, int32_t sy, GLfloat *x, GLfloat *y)
+			       GLfloat sx, GLfloat sy, GLfloat *x, GLfloat *y)
 {
 	weston_surface_update_transform(surface);
 
 	surface_to_global_float(surface, sx, sy, x, y);
+}
+
+WL_EXPORT void
+weston_surface_to_global_fixed(struct weston_surface *surface,
+			       wl_fixed_t sx, wl_fixed_t sy,
+			       wl_fixed_t *x, wl_fixed_t *y)
+{
+	GLfloat xf, yf;
+
+	weston_surface_to_global_float(surface,
+	                               wl_fixed_to_double(sx),
+				       wl_fixed_to_double(sy),
+				       &xf, &yf);
+	*x = wl_fixed_from_double(xf);
+	*y = wl_fixed_from_double(yf);
 }
 
 WL_EXPORT void
@@ -456,7 +471,7 @@ weston_surface_to_global(struct weston_surface *surface,
 
 static void
 surface_from_global_float(struct weston_surface *surface,
-			  int32_t x, int32_t y, GLfloat *sx, GLfloat *sy)
+			  GLfloat x, GLfloat y, GLfloat *sx, GLfloat *sy)
 {
 	if (surface->transform.enabled) {
 		struct weston_vector v = { { x, y, 0.0f, 1.0f } };
@@ -478,6 +493,23 @@ surface_from_global_float(struct weston_surface *surface,
 		*sx = x - surface->geometry.x;
 		*sy = y - surface->geometry.y;
 	}
+}
+
+WL_EXPORT void
+weston_surface_from_global_fixed(struct weston_surface *surface,
+			         wl_fixed_t x, wl_fixed_t y,
+			         wl_fixed_t *sx, wl_fixed_t *sy)
+{
+	GLfloat sxf, syf;
+
+	weston_surface_update_transform(surface);
+
+	surface_from_global_float(surface,
+	                          wl_fixed_to_double(x),
+				  wl_fixed_to_double(y),
+				  &sxf, &syf);
+	*sx = wl_fixed_from_double(sxf);
+	*sy = wl_fixed_from_double(syf);
 }
 
 WL_EXPORT void

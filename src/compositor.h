@@ -389,12 +389,20 @@ void
 weston_surface_to_global(struct weston_surface *surface,
 			 int32_t sx, int32_t sy, int32_t *x, int32_t *y);
 void
+weston_surface_to_global_fixed(struct weston_surface *surface,
+			       wl_fixed_t sx, wl_fixed_t sy,
+			       wl_fixed_t *x, wl_fixed_t *y);
+void
 weston_surface_to_global_float(struct weston_surface *surface,
-			       int32_t sx, int32_t sy, GLfloat *x, GLfloat *y);
+			       GLfloat sx, GLfloat sy, GLfloat *x, GLfloat *y);
 
 void
 weston_surface_from_global(struct weston_surface *surface,
 			   int32_t x, int32_t y, int32_t *sx, int32_t *sy);
+void
+weston_surface_from_global_fixed(struct weston_surface *surface,
+			         wl_fixed_t x, wl_fixed_t y,
+			         wl_fixed_t *sx, wl_fixed_t *sy);
 
 void
 weston_spring_init(struct weston_spring *spring,
