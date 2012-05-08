@@ -28,6 +28,7 @@ class WebContentsImpl;
 class WebKeyboardEvent;
 struct NativeWebKeyboardEvent;
 struct ViewHostMsg_CreateWindow_Params;
+struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 struct ViewHostMsg_FrameNavigate_Params;
 struct WebDropData;
 struct WebMenuItem;
@@ -226,6 +227,31 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // The RenderView is going to be deleted. This is called when each
   // RenderView is going to be destroyed
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) {}
+
+  // The RenderView started a provisional load for a given frame.
+  virtual void DidStartProvisionalLoadForFrame(
+      content::RenderViewHost* render_view_host,
+      int64 frame_id,
+      bool main_frame,
+      const GURL& opener_url,
+      const GURL& url) {}
+
+  // The RenderView processed a redirect during a provisional load.
+  //
+  // TODO(creis): Remove this method and have the pre-rendering code listen to
+  // the ResourceDispatcherHost's RESOURCE_RECEIVED_REDIRECT notification
+  // instead.  See http://crbug.com/78512.
+  virtual void DidRedirectProvisionalLoad(
+      content::RenderViewHost* render_view_host,
+      int32 page_id,
+      const GURL& opener_url,
+      const GURL& source_url,
+      const GURL& target_url) {}
+
+  // A provisional load in the RenderView failed.
+  virtual void DidFailProvisionalLoadWithError(
+      content::RenderViewHost* render_view_host,
+      const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params) {}
 
   // The RenderView was navigated to a different page.
   virtual void DidNavigate(RenderViewHost* render_view_host,

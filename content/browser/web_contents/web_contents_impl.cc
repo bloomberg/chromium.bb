@@ -568,12 +568,6 @@ bool WebContentsImpl::OnMessageReceived(const IPC::Message& message) {
                         OnRegisterIntentService)
     IPC_MESSAGE_HANDLER(IntentsHostMsg_WebIntentDispatch,
                         OnWebIntentDispatch)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
-                        OnDidStartProvisionalLoadForFrame)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidRedirectProvisionalLoad,
-                        OnDidRedirectProvisionalLoad)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFailProvisionalLoadWithError,
-                        OnDidFailProvisionalLoadWithError)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidDisplayInsecureContent,
@@ -1488,31 +1482,34 @@ void WebContentsImpl::OnWebIntentDispatch(
   delegate_->WebIntentDispatch(this, intents_dispatcher);
 }
 
-void WebContentsImpl::OnDidStartProvisionalLoadForFrame(int64 frame_id,
-                                                        bool is_main_frame,
-                                                        const GURL& opener_url,
-                                                        const GURL& url) {
+void WebContentsImpl::DidStartProvisionalLoadForFrame(
+    content::RenderViewHost* render_view_host,
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& opener_url,
+    const GURL& url) {
   bool is_error_page = (url.spec() == content::kUnreachableWebDataURL);
   GURL validated_url(url);
   GURL validated_opener_url(opener_url);
-  GetRenderViewHostImpl()->FilterURL(
+  RenderViewHostImpl* render_view_host_impl =
+      static_cast<RenderViewHostImpl*>(render_view_host);
+  content::RenderProcessHost* render_process_host =
+      render_view_host->GetProcess();
+  render_view_host_impl->FilterURL(
       ChildProcessSecurityPolicyImpl::GetInstance(),
-      GetRenderProcessHost()->GetID(),
+      render_process_host->GetID(),
       false,
       &validated_url);
-  GetRenderViewHostImpl()->FilterURL(
+  render_view_host_impl->FilterURL(
       ChildProcessSecurityPolicyImpl::GetInstance(),
-      GetRenderProcessHost()->GetID(),
+      render_process_host->GetID(),
       true,
       &validated_opener_url);
 
-  RenderViewHost* rvh =
-      render_manager_.pending_render_view_host() ?
-          render_manager_.pending_render_view_host() : GetRenderViewHost();
   // Notify observers about the start of the provisional load.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidStartProvisionalLoadForFrame(frame_id, is_main_frame,
-                    validated_url, is_error_page, rvh));
+                    validated_url, is_error_page, render_view_host));
 
   if (is_main_frame) {
     // Notify observers about the provisional change in the main frame URL.
@@ -1522,36 +1519,44 @@ void WebContentsImpl::OnDidStartProvisionalLoadForFrame(int64 frame_id,
   }
 }
 
-void WebContentsImpl::OnDidRedirectProvisionalLoad(int32 page_id,
-                                                   const GURL& opener_url,
-                                                   const GURL& source_url,
-                                                   const GURL& target_url) {
+void WebContentsImpl::DidRedirectProvisionalLoad(
+    content::RenderViewHost* render_view_host,
+    int32 page_id,
+    const GURL& opener_url,
+    const GURL& source_url,
+    const GURL& target_url) {
   // TODO(creis): Remove this method and have the pre-rendering code listen to
   // the ResourceDispatcherHost's RESOURCE_RECEIVED_REDIRECT notification
   // instead.  See http://crbug.com/78512.
   GURL validated_source_url(source_url);
   GURL validated_target_url(target_url);
   GURL validated_opener_url(opener_url);
-  GetRenderViewHostImpl()->FilterURL(
+  RenderViewHostImpl* render_view_host_impl =
+      static_cast<RenderViewHostImpl*>(render_view_host);
+  content::RenderProcessHost* render_process_host =
+      render_view_host->GetProcess();
+  render_view_host_impl->FilterURL(
       ChildProcessSecurityPolicyImpl::GetInstance(),
-      GetRenderProcessHost()->GetID(),
+      render_process_host->GetID(),
       false,
       &validated_source_url);
-  GetRenderViewHostImpl()->FilterURL(
+  render_view_host_impl->FilterURL(
       ChildProcessSecurityPolicyImpl::GetInstance(),
-      GetRenderProcessHost()->GetID(),
+      render_process_host->GetID(),
       false,
       &validated_target_url);
-  GetRenderViewHostImpl()->FilterURL(
+  render_view_host_impl->FilterURL(
       ChildProcessSecurityPolicyImpl::GetInstance(),
-      GetRenderProcessHost()->GetID(),
+      render_process_host->GetID(),
       true,
       &validated_opener_url);
   NavigationEntry* entry;
-  if (page_id == -1)
+  if (page_id == -1) {
     entry = controller_.GetPendingEntry();
-  else
-    entry = controller_.GetEntryWithPageID(GetSiteInstance(), page_id);
+  } else {
+    entry = controller_.GetEntryWithPageID(render_view_host->GetSiteInstance(),
+                                           page_id);
+  }
   if (!entry || entry->GetURL() != validated_source_url)
     return;
 
@@ -1561,7 +1566,8 @@ void WebContentsImpl::OnDidRedirectProvisionalLoad(int32 page_id,
                                                     validated_opener_url));
 }
 
-void WebContentsImpl::OnDidFailProvisionalLoadWithError(
+void WebContentsImpl::DidFailProvisionalLoadWithError(
+    content::RenderViewHost* render_view_host,
     const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params) {
   VLOG(1) << "Failed Provisional Load: " << params.url.possibly_invalid_spec()
           << ", error_code: " << params.error_code
@@ -1571,9 +1577,13 @@ void WebContentsImpl::OnDidFailProvisionalLoadWithError(
             params.showing_repost_interstitial
           << ", frame_id: " << params.frame_id;
   GURL validated_url(params.url);
-  GetRenderViewHostImpl()->FilterURL(
+  RenderViewHostImpl* render_view_host_impl =
+      static_cast<RenderViewHostImpl*>(render_view_host);
+  content::RenderProcessHost* render_process_host =
+      render_view_host->GetProcess();
+  render_view_host_impl->FilterURL(
       ChildProcessSecurityPolicyImpl::GetInstance(),
-      GetRenderProcessHost()->GetID(),
+      render_process_host->GetID(),
       false,
       &validated_url);
 
@@ -1612,7 +1622,7 @@ void WebContentsImpl::OnDidFailProvisionalLoadWithError(
     if (controller_.GetPendingEntry())
       DidCancelLoading();
 
-    render_manager_.RendererAbortedProvisionalLoad(GetRenderViewHost());
+    render_manager_.RendererAbortedProvisionalLoad(render_view_host);
   }
 
   FOR_EACH_OBSERVER(WebContentsObserver,

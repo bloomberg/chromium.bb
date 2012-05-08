@@ -35,6 +35,7 @@ class ViewMsg_Navigate;
 struct AccessibilityHostMsg_NotificationParams;
 struct MediaPlayerAction;
 struct ViewHostMsg_CreateWindow_Params;
+struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 struct ViewHostMsg_ShowPopup_Params;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_StopFinding_Params;
@@ -441,6 +442,16 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnMsgRunModal(IPC::Message* reply_msg);
   void OnMsgRenderViewReady();
   void OnMsgRenderViewGone(int status, int error_code);
+  void OnMsgDidStartProvisionalLoadForFrame(int64 frame_id,
+                                            bool main_frame,
+                                            const GURL& opener_url,
+                                            const GURL& url);
+  void OnMsgDidRedirectProvisionalLoad(int32 page_id,
+                                       const GURL& opener_url,
+                                       const GURL& source_url,
+                                       const GURL& target_url);
+  void OnMsgDidFailProvisionalLoadWithError(
+      const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params);
   void OnMsgNavigate(const IPC::Message& msg);
   void OnMsgUpdateState(int32 page_id,
                         const std::string& state);

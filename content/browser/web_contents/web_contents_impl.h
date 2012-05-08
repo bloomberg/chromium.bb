@@ -35,7 +35,6 @@
 class InterstitialPageImpl;
 class SavePackage;
 class SessionStorageNamespaceImpl;
-struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 
 namespace content {
 class ColorChooser;
@@ -257,6 +256,22 @@ class CONTENT_EXPORT WebContentsImpl
                               int error_code) OVERRIDE;
   virtual void RenderViewDeleted(
       content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DidStartProvisionalLoadForFrame(
+      content::RenderViewHost* render_view_host,
+      int64 frame_id,
+      bool main_frame,
+      const GURL& opener_url,
+      const GURL& url) OVERRIDE;
+  virtual void DidRedirectProvisionalLoad(
+      content::RenderViewHost* render_view_host,
+      int32 page_id,
+      const GURL& opener_url,
+      const GURL& source_url,
+      const GURL& target_url) OVERRIDE;
+  virtual void DidFailProvisionalLoadWithError(
+      content::RenderViewHost* render_view_host,
+      const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params)
+          OVERRIDE;
   virtual void DidNavigate(
       content::RenderViewHost* render_view_host,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
@@ -413,16 +428,6 @@ class CONTENT_EXPORT WebContentsImpl
                                const string16& disposition);
   void OnWebIntentDispatch(const webkit_glue::WebIntentData& intent,
                            int intent_id);
-  void OnDidStartProvisionalLoadForFrame(int64 frame_id,
-                                         bool main_frame,
-                                         const GURL& opener_url,
-                                         const GURL& url);
-  void OnDidRedirectProvisionalLoad(int32 page_id,
-                                    const GURL& opener_url,
-                                    const GURL& source_url,
-                                    const GURL& target_url);
-  void OnDidFailProvisionalLoadWithError(
-      const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params);
   void OnDidLoadResourceFromMemoryCache(const GURL& url,
                                         const std::string& security_info,
                                         const std::string& http_request,

@@ -906,6 +906,12 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunModal, OnMsgRunModal)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnMsgRenderViewReady)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewGone, OnMsgRenderViewGone)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
+                        OnMsgDidStartProvisionalLoadForFrame)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidRedirectProvisionalLoad,
+                        OnMsgDidRedirectProvisionalLoad)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFailProvisionalLoadWithError,
+                        OnMsgDidFailProvisionalLoadWithError)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_FrameNavigate, OnMsgNavigate(msg))
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateState, OnMsgUpdateState)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTitle, OnMsgUpdateTitle)
@@ -1083,6 +1089,29 @@ void RenderViewHostImpl::OnMsgRenderViewGone(int status, int exit_code) {
   delegate_->RenderViewGone(this,
                             static_cast<base::TerminationStatus>(status),
                             exit_code);
+}
+
+void RenderViewHostImpl::OnMsgDidStartProvisionalLoadForFrame(
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& opener_url,
+    const GURL& url) {
+  delegate_->DidStartProvisionalLoadForFrame(
+      this, frame_id, is_main_frame, opener_url, url);
+}
+
+void RenderViewHostImpl::OnMsgDidRedirectProvisionalLoad(
+    int32 page_id,
+    const GURL& opener_url,
+    const GURL& source_url,
+    const GURL& target_url) {
+  delegate_->DidRedirectProvisionalLoad(
+      this, page_id, opener_url, source_url, target_url);
+}
+
+void RenderViewHostImpl::OnMsgDidFailProvisionalLoadWithError(
+    const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params) {
+  delegate_->DidFailProvisionalLoadWithError(this, params);
 }
 
 // Called when the renderer navigates.  For every frame loaded, we'll get this
