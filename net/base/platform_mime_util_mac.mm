@@ -1,15 +1,25 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "net/base/platform_mime_util.h"
 
 #include <CoreServices/CoreServices.h>
+#import <Foundation/Foundation.h>
 
 #include <string>
 
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#import "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
+
+// SPI declaration; see the commentary in GetPlatformExtensionsForMimeType.
+
+@interface NSURLFileTypeMappings : NSObject
++ (NSURLFileTypeMappings*)sharedMappings;
+- (NSArray*)extensionsForMIMEType:(NSString*)mimeType;
+@end
 
 namespace net {
 
@@ -56,6 +66,33 @@ bool PlatformMimeUtil::GetPreferredExtensionForMimeType(
 
   *ext = base::SysCFStringRefToUTF8(ext_ref);
   return true;
+}
+
+void PlatformMimeUtil::GetPlatformExtensionsForMimeType(
+    const std::string& mime_type,
+    base::hash_set<FilePath::StringType>* extensions) const {
+  // There is no API for this that uses UTIs. The WebKitSystemInterface call
+  // WKGetExtensionsForMIMEType() is a thin wrapper around
+  // [[NSURLFileTypeMappings sharedMappings] extensionsForMIMEType:], which is
+  // used by Firefox as well.
+  //
+  // See:
+  // http://mxr.mozilla.org/mozilla-central/search?string=extensionsForMIMEType
+  // http://www.openradar.me/11384153
+  // rdar://11384153
+  NSArray* extensions_list =
+      [[NSURLFileTypeMappings sharedMappings]
+          extensionsForMIMEType:base::SysUTF8ToNSString(mime_type)];
+
+  if (extensions_list) {
+    for (NSString* extension in extensions_list)
+      extensions->insert(base::SysNSStringToUTF8(extension));
+  } else {
+    // Huh? Give up.
+    FilePath::StringType ext;
+    if (GetPreferredExtensionForMimeType(mime_type, &ext))
+      extensions->insert(ext);
+  }
 }
 
 }  // namespace net
