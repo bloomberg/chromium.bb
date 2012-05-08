@@ -97,21 +97,6 @@
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
       # crbug.com/126388
       '-indexeddb.IndexedDBTest.testIndexedDBNullKeyPathPersistence',
-      # crbug.com/126261
-      '-instant.InstantSettingsTest.testEnableDisableInstant',
-      '-instant.InstantTest.testExtnPageCanDismissInstant',
-      '-instant.InstantTest.testFindInCanDismissInstant',
-      '-instant.InstantTest.testInstantCaseSensitivity',
-      '-instant.InstantTest.testInstantDisabledForJavaScript',
-      '-instant.InstantTest.testInstantDisabledForURLs',
-      '-instant.InstantTest.testInstantDisabledInIncognito',
-      '-instant.InstantTest.testInstantLoadsFor100CharsLongQuery',
-      '-instant.InstantTest.testInstantNavigation',
-      '-instant.InstantTest.testInstantOverlayNotStoredInHistory',
-      '-instant.InstantTest.testInstantWithSearchEngineOtherThanGoogle',
-      '-instant.InstantTest.testNTPCanDismissInstant',
-      '-instant.InstantTest.testNewWindowCanDismissInstant',
-      '-instant.InstantTest.testPreFetchInstantURLNotInHistory',
       # crbug.com/100593
       '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',
       # crbug.com/105560

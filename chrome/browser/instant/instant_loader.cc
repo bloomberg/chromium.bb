@@ -700,11 +700,10 @@ bool InstantLoader::Update(TabContentsWrapper* tab_contents,
     DCHECK(template_url_id_ == template_url->id());
     if (!created_preview_contents) {
       if (is_determining_if_page_supports_instant()) {
-        // The page hasn't loaded yet. We'll send the script down when it does.
+        // The page hasn't loaded yet. Note it, but send down the text anyway.
         frame_load_observer_->set_text(user_text_);
         frame_load_observer_->set_verbatim(verbatim);
         preview_tab_contents_delegate_->set_user_typed_before_load();
-        return true;
       }
       // TODO: support real cursor position.
       int text_length = static_cast<int>(user_text_.size());
