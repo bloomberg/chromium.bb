@@ -2173,33 +2173,6 @@ def ValidateSourcesInTarget(target, target_dict, build_file):
     raise KeyError, 'Duplicate basenames in sources section, see list above'
 
 
-def ValidateSourcesInTarget(target, target_dict, build_file):
-  # TODO: Check if MSVC allows this for non-static_library targets.
-  if target_dict.get('type', None) != 'static_library':
-    return
-  sources = target_dict.get('sources', [])
-  basenames = {}
-  for source in sources:
-    name, ext = os.path.splitext(source)
-    is_compiled_file = ext in [
-        '.c', '.cc', '.cpp', '.cxx', '.m', '.mm', '.s', '.S']
-    if not is_compiled_file:
-      continue
-    basename = os.path.basename(name)  # Don't include extension.
-    basenames.setdefault(basename, []).append(source)
-
-  error = ''
-  for basename, files in basenames.iteritems():
-    if len(files) > 1:
-      error += '  %s: %s\n' % (basename, ' '.join(files))
-
-  if error:
-    print ('static library %s has several files with the same basename:\n' %
-           target + error + 'Some build systems, e.g. MSVC08, '
-           'cannot handle that.')
-    raise KeyError, 'Duplicate basenames in sources section, see list above'
-
-
 def ValidateRulesInTarget(target, target_dict, extra_sources_for_rules):
   """Ensures that the rules sections in target_dict are valid and consistent,
   and determines which sources they apply to.
@@ -2285,22 +2258,6 @@ def ValidateRunAsInTarget(target, target_dict, build_file):
     raise Exception("The 'environment' for 'run_as' in target %s "
                     "in file %s should be a dictionary." %
                     (target_name, build_file))
-
-
-def ValidateActionsInTarget(target, target_dict, build_file):
-  '''Validates the inputs to the actions in a target.'''
-  target_name = target_dict.get('target_name')
-  actions = target_dict.get('actions', [])
-  for action in actions:
-    action_name = action.get('action_name')
-    if not action_name:
-      raise Exception("Anonymous action in target %s.  "
-                      "An action must have an 'action_name' field." %
-                      target_name)
-    inputs = action.get('inputs', [])
-    action_command = action.get('action')
-    if action_command and not action_command[0]:
-      raise Exception("Empty action as command in target %s." % target_name)
 
 
 def ValidateActionsInTarget(target, target_dict, build_file):
