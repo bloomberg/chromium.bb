@@ -671,13 +671,13 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, ProfilesLaunchedAfterCrash) {
   EXPECT_EQ(1U, new_browser->GetTabContentsWrapperAt(0)->infobar_tab_helper()->
             infobar_count());
 
-  // The profile which normally opens URLs opens them (in addition to displaying
-  // the crash info bar).
+  // The profile which normally opens URLs displays the new tab page.
   ASSERT_EQ(1u, BrowserList::GetBrowserCount(profile_urls));
   new_browser = FindOneOtherBrowserForProfile(profile_urls, NULL);
   ASSERT_TRUE(new_browser);
   ASSERT_EQ(1, new_browser->tab_count());
-  EXPECT_EQ(urls[0], new_browser->GetWebContentsAt(0)->GetURL());
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+            new_browser->GetWebContentsAt(0)->GetURL());
   EXPECT_EQ(1U, new_browser->GetTabContentsWrapperAt(0)->infobar_tab_helper()->
             infobar_count());
 }

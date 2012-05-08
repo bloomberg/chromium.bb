@@ -1165,10 +1165,13 @@ Browser* BrowserInit::LaunchWithProfile::ProcessSpecifiedURLs(
     const std::vector<GURL>& urls_to_open) {
   SessionStartupPref pref = GetSessionStartupPref(command_line_, profile_);
   std::vector<Tab> tabs;
-  // Pinned tabs should not be displayed when chrome is launched
-  // in incognito mode.
+  // Pinned tabs should not be displayed when chrome is launched in incognito
+  // mode. Also, no pages should be opened automatically if the session
+  // crashed. Otherwise it might trigger another crash, locking the user out of
+  // chrome. The crash infobar is shown in this case.
   if (!IncognitoModePrefs::ShouldLaunchIncognito(command_line_,
-                                                 profile_->GetPrefs())) {
+                                                 profile_->GetPrefs()) &&
+      !HasPendingUncleanExit(profile_)) {
     tabs = PinnedTabCodec::ReadPinnedTabs(profile_);
   }
 
@@ -1177,7 +1180,8 @@ Browser* BrowserInit::LaunchWithProfile::ProcessSpecifiedURLs(
   if (!urls_to_open.empty()) {
     // If urls were specified on the command line, use them.
     UrlsToTabs(urls_to_open, &tabs);
-  } else if (pref.type == SessionStartupPref::URLS && !pref.urls.empty()) {
+  } else if (pref.type == SessionStartupPref::URLS && !pref.urls.empty() &&
+             !HasPendingUncleanExit(profile_)) {
     // Only use the set of urls specified in preferences if nothing was
     // specified on the command line. Filter out any urls that are to be
     // restored by virtue of having been previously pinned.
