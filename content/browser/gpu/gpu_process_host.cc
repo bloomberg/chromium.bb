@@ -630,13 +630,13 @@ void GpuProcessHost::OnAcceleratedSurfaceSuspend(int32 surface_id) {
   TRACE_EVENT0("renderer",
       "GpuProcessHost::OnAcceleratedSurfaceSuspend");
 
-  gfx::GLSurfaceHandle handle = GpuSurfaceTracker::Get()->GetSurfaceHandle(
-      surface_id);
-  if (!handle.handle)
+  gfx::PluginWindowHandle handle =
+      GpuSurfaceTracker::Get()->GetSurfaceWindowHandle(surface_id);
+  if (!handle)
     return;
 
   scoped_refptr<AcceleratedPresenter> presenter(
-      AcceleratedPresenter::GetForWindow(handle.handle));
+      AcceleratedPresenter::GetForWindow(handle));
   if (!presenter)
     return;
 
@@ -648,13 +648,13 @@ void GpuProcessHost::OnAcceleratedSurfaceRelease(
   TRACE_EVENT0("renderer",
       "GpuProcessHost::OnAcceleratedSurfaceRelease");
 
-  gfx::GLSurfaceHandle handle = GpuSurfaceTracker::Get()->GetSurfaceHandle(
-      params.surface_id);
-  if (!handle.handle)
+  gfx::PluginWindowHandle handle =
+      GpuSurfaceTracker::Get()->GetSurfaceWindowHandle(params.surface_id);
+  if (!handle)
     return;
 
   scoped_refptr<AcceleratedPresenter> presenter(
-      AcceleratedPresenter::GetForWindow(handle.handle));
+      AcceleratedPresenter::GetForWindow(handle));
   if (!presenter)
     return;
 
