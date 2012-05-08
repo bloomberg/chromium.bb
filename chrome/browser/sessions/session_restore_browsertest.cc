@@ -101,7 +101,6 @@ class SessionRestoreTest : public InProcessBrowserTest {
   }
 
   Browser* QuitBrowserAndRestore(Browser* browser, int expected_tab_count) {
-    // Create a new popup.
     Profile* profile = browser->profile();
 
     // Close the browser.
@@ -717,4 +716,49 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ShareProcessesOnRestore) {
   ASSERT_EQ(3, new_browser->tab_count());
 
   ASSERT_EQ(expected_process_count, RenderProcessHostCount());
+}
+
+// Regression test for crbug.com/125958. When restoring a pinned selected tab in
+// a setting where there are existing tabs, the selected index computation was
+// wrong, leading to the wrong tab getting selected, DCHECKs firing, and the
+// pinned tab not getting loaded.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
+  // Create a pinned tab.
+  ui_test_utils::NavigateToURL(browser(), url1_);
+  browser()->tabstrip_model()->SetTabPinned(0, true);
+  ASSERT_EQ(0, browser()->active_index());
+  // Create a nonpinned tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2_, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ASSERT_EQ(1, browser()->active_index());
+  // Select the pinned tab.
+  browser()->tabstrip_model()->ActivateTabAt(0, true);
+  ASSERT_EQ(0, browser()->active_index());
+  Profile* profile = browser()->profile();
+
+  // This will also initiate a session restore, but we're not interested in it.
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  ASSERT_EQ(1u, BrowserList::size());
+  ASSERT_EQ(2, new_browser->tab_count());
+  ASSERT_EQ(0, new_browser->active_index());
+  // Close the pinned tab.
+  new_browser->CloseTab();
+  ASSERT_EQ(1, new_browser->tab_count());
+  ASSERT_EQ(0, new_browser->active_index());
+  // Use the existing tab to navigate away, so that we can verify it was really
+  // clobbered.
+  ui_test_utils::NavigateToURL(new_browser, url3_);
+
+  // Restore the session again, globbering the existing tab.
+  SessionRestore::RestoreSession(
+      profile, new_browser,
+      SessionRestore::CLOBBER_CURRENT_TAB | SessionRestore::SYNCHRONOUS,
+      std::vector<GURL>());
+
+  // The pinned tab is the selected tab.
+  ASSERT_EQ(2, new_browser->tab_count());
+  EXPECT_EQ(0, new_browser->active_index());
+  EXPECT_EQ(url1_, new_browser->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(url2_, new_browser->GetWebContentsAt(1)->GetURL());
 }

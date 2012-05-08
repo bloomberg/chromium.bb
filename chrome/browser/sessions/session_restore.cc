@@ -543,8 +543,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
           0,
           std::min((*i)->selected_tab_index,
                    static_cast<int>((*i)->tabs.size()) - 1));
-      RestoreTabsToBrowser(*(*i), browser, selected_tab_index);
-      ShowBrowser(browser, initial_tab_count, selected_tab_index);
+      selected_tab_index =
+          RestoreTabsToBrowser(*(*i), browser, selected_tab_index);
+      ShowBrowser(browser, selected_tab_index);
       tab_loader_->TabIsLoading(
           &browser->GetSelectedWebContents()->GetController());
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
@@ -591,7 +592,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
           tab_index,
           selected_index,
           tab.extension_app_id,
-          false,
+          false,  // selected
           tab.pinned,
           true,
           NULL);
@@ -785,9 +786,13 @@ class SessionRestoreImpl : public content::NotificationObserver {
         last_browser = browser;
       WebContents* active_tab = browser->GetSelectedWebContents();
       int initial_tab_count = browser->tab_count();
-      int selected_tab_index = (*i)->selected_tab_index;
-      RestoreTabsToBrowser(*(*i), browser, selected_tab_index);
-      ShowBrowser(browser, initial_tab_count, selected_tab_index);
+      int selected_tab_index = std::max(
+          0,
+          std::min((*i)->selected_tab_index,
+                   static_cast<int>((*i)->tabs.size()) - 1));
+      selected_tab_index =
+          RestoreTabsToBrowser(*(*i), browser, selected_tab_index);
+      ShowBrowser(browser, selected_tab_index);
       if (clobber_existing_tab_ && i == windows->begin() &&
           (*i)->type == Browser::TYPE_TABBED && active_tab &&
           browser == browser_ && browser->tab_count() > initial_tab_count) {
@@ -830,24 +835,33 @@ class SessionRestoreImpl : public content::NotificationObserver {
     }
   }
 
-  void RestoreTabsToBrowser(const SessionWindow& window,
-                            Browser* browser,
-                            int selected_tab_index) {
+  // Adds the tabs from |window| to |browser|. Returns the final index of the
+  // selected tab.
+  int RestoreTabsToBrowser(const SessionWindow& window,
+                           Browser* browser,
+                           int selected_tab_index) {
     DCHECK(!window.tabs.empty());
-    int initial_tab_count = browser->tab_count();
+    WebContents* selected_web_contents = NULL;
     for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {
       const SessionTab& tab = *(window.tabs[i]);
-      // Don't schedule a load for the selected tab, as ShowBrowser() will
-      // already have done that.
-      bool schedule_load = i != selected_tab_index;
-      RestoreTab(tab, i + initial_tab_count, browser, schedule_load);
+      // Don't schedule a load for the selected tab, as ShowBrowser() will do
+      // that.
+      if (i == selected_tab_index)
+        selected_web_contents = RestoreTab(tab, i, browser, false);
+      else
+        RestoreTab(tab, i, browser, true);
     }
+    if (selected_web_contents) {
+      return browser->GetIndexOfController(
+          &selected_web_contents->GetController());
+    }
+    return 0;
   }
 
-  void RestoreTab(const SessionTab& tab,
-                  const int tab_index,
-                  Browser* browser,
-                  bool schedule_load) {
+  WebContents* RestoreTab(const SessionTab& tab,
+                          const int tab_index,
+                          Browser* browser,
+                          bool schedule_load) {
     DCHECK(!tab.navigations.empty());
     int selected_index = tab.current_navigation_index;
     selected_index = std::max(
@@ -862,7 +876,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                 tab_index,
                                 selected_index,
                                 tab.extension_app_id,
-                                false,
+                                false,  // select
                                 tab.pinned,
                                 true,
                                 NULL);
@@ -889,6 +903,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     if (schedule_load)
       tab_loader_->ScheduleLoad(&web_contents->GetController());
+    return web_contents;
   }
 
   Browser* CreateRestoredBrowser(Browser::Type type,
@@ -903,14 +918,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
     return Browser::CreateWithParams(params);
   }
 
-  void ShowBrowser(Browser* browser,
-                   int initial_tab_count,
-                   int selected_session_index) {
+  void ShowBrowser(Browser* browser, int selected_tab_index) {
     DCHECK(browser);
     DCHECK(browser->tab_count());
-    browser->ActivateTabAt(
-        std::min(initial_tab_count + std::max(0, selected_session_index),
-                 browser->tab_count() - 1), true);
+    browser->ActivateTabAt(selected_tab_index, true);
 
     if (browser_ == browser)
       return;
