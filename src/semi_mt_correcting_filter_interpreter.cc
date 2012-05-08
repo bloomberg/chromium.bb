@@ -18,7 +18,7 @@ const size_t kInvalidFinger = static_cast<size_t>(-1);
 SemiMtCorrectingFilterInterpreter::SemiMtCorrectingFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next)
     : last_id_(0),
-      interpreter_enabled_(prop_reg, "Enable SemiMT Correcting Filter", 0),
+      interpreter_enabled_(prop_reg, "SemiMT Correcting Filter Enable", 0),
       pressure_threshold_(prop_reg, "SemiMT Pressure Threshold", 30),
       hysteresis_pressure_(prop_reg, "SemiMT Hysteresis Pressure", 25),
       transfer_factor_(prop_reg, "SemiMT Velocity Accumulation Factor", 0.5),
