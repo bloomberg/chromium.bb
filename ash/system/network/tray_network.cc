@@ -208,9 +208,7 @@ class NetworkDetailedView : public views::View,
     AppendHeaderEntry();
     AppendHeaderButtons();
     AppendNetworkEntries();
-
-    if (login_ != user::LOGGED_IN_LOCKED)
-      AppendNetworkExtra();
+    AppendNetworkExtra();
 
     Update();
   }
@@ -349,6 +347,9 @@ class NetworkDetailedView : public views::View,
   }
 
   void AppendNetworkExtra() {
+    if (login_ == user::LOGGED_IN_LOCKED)
+      return;
+
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
     TrayPopupTextButtonContainer* bottom_row =
@@ -369,6 +370,9 @@ class NetworkDetailedView : public views::View,
   }
 
   void UpdateNetworkExtra() {
+    if (login_ == user::LOGGED_IN_LOCKED)
+      return;
+
     SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
     other_wifi_->SetEnabled(delegate->GetWifiEnabled());
     other_mobile_->SetVisible(delegate->GetCellularAvailable() &&
