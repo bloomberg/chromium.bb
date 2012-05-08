@@ -95,22 +95,19 @@ const FilePath::CharType* kTitle2File = FILE_PATH_LITERAL("title2.html");
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
 // Given a page title, returns the expected window caption string.
-std::wstring WindowCaptionFromPageTitle(std::wstring page_title) {
+string16 WindowCaptionFromPageTitle(const string16& page_title) {
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   // On Mac or ChromeOS, we don't want to suffix the page title with
   // the application name.
-  if (page_title.empty()) {
-    return UTF16ToWideHack(
-        l10n_util::GetStringUTF16(IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED));
-  }
+  if (page_title.empty())
+    return l10n_util::GetStringUTF16(IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED);
   return page_title;
 #else
   if (page_title.empty())
-    return UTF16ToWideHack(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+    return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 
-  return UTF16ToWideHack(
-      l10n_util::GetStringFUTF16(IDS_BROWSER_WINDOW_TITLE_FORMAT,
-                                 WideToUTF16Hack(page_title)));
+  return l10n_util::GetStringFUTF16(IDS_BROWSER_WINDOW_TITLE_FORMAT,
+                                    page_title);
 #endif
 }
 
@@ -194,9 +191,8 @@ class BrowserTest : public ExtensionBrowserTest {
  protected:
   // In RTL locales wrap the page title with RTL embedding characters so that it
   // matches the value returned by GetWindowTitle().
-  std::wstring LocaleWindowCaptionFromPageTitle(
-      const std::wstring& expected_title) {
-    std::wstring page_title = WindowCaptionFromPageTitle(expected_title);
+  string16 LocaleWindowCaptionFromPageTitle(const string16& expected_title) {
+    string16 page_title = WindowCaptionFromPageTitle(expected_title);
 #if defined(OS_WIN)
     std::string locale = g_browser_process->GetApplicationLocale();
     if (base::i18n::GetTextDirectionForLocale(locale.c_str()) ==
@@ -318,8 +314,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoTitle) {
   ui_test_utils::NavigateToURL(browser(),
       ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                 FilePath(kTitle1File)));
-  EXPECT_EQ(LocaleWindowCaptionFromPageTitle(L"title1.html"),
-            UTF16ToWideHack(browser()->GetWindowTitleForCurrentTab()));
+  EXPECT_EQ(LocaleWindowCaptionFromPageTitle(ASCIIToUTF16("title1.html")),
+            browser()->GetWindowTitleForCurrentTab());
   string16 tab_title;
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &tab_title));
   EXPECT_EQ(ASCIIToUTF16("title1.html"), tab_title);
@@ -331,12 +327,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, Title) {
   ui_test_utils::NavigateToURL(browser(),
       ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                 FilePath(kTitle2File)));
-  const std::wstring test_title(L"Title Of Awesomeness");
+  const string16 test_title(ASCIIToUTF16("Title Of Awesomeness"));
   EXPECT_EQ(LocaleWindowCaptionFromPageTitle(test_title),
-            UTF16ToWideHack(browser()->GetWindowTitleForCurrentTab()));
+            browser()->GetWindowTitleForCurrentTab());
   string16 tab_title;
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &tab_title));
-  EXPECT_EQ(WideToUTF16(test_title), tab_title);
+  EXPECT_EQ(test_title, tab_title);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
