@@ -28,8 +28,8 @@ class WebIntentInlineDispositionBrowserTest
     content::WebContents* contents = content::WebContents::Create(
         browser()->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
     wrapper_.reset(new TabContentsWrapper(contents));
-    delegate_.reset(new WebIntentInlineDispositionDelegate(&mock_));
-    contents->SetDelegate(delegate_.get());
+    delegate_.reset(new WebIntentInlineDispositionDelegate(&mock_,
+        contents, browser()->profile()));
   }
 
  protected:

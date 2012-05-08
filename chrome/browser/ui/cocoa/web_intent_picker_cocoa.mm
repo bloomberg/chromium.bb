@@ -162,8 +162,8 @@ void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model,
       MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
   inline_disposition_delegate_.reset(
-      new WebIntentInlineDispositionDelegate(this));
-  web_contents->SetDelegate(inline_disposition_delegate_.get());
+      new WebIntentInlineDispositionDelegate(this, web_contents,
+                                             wrapper_->profile()));
 
   // Must call this immediately after WebContents creation to avoid race
   // with load.

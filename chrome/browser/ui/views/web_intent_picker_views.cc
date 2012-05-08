@@ -993,9 +993,9 @@ void WebIntentPickerViews::OnInlineDisposition(
   // for the WebContents locally.
   webview_->SetWebContents(inline_web_contents_.get());
   inline_disposition_delegate_.reset(
-      new WebIntentInlineDispositionDelegate(this));
+      new WebIntentInlineDispositionDelegate(this, inline_web_contents_.get(),
+                                             wrapper_->profile()));
   content::WebContents* web_contents = webview_->GetWebContents();
-  web_contents->SetDelegate(inline_disposition_delegate_.get());
 
   const WebIntentPickerModel::InstalledService* service =
       model->GetInstalledServiceWithURL(url);
