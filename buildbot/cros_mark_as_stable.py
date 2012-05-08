@@ -257,18 +257,25 @@ def main():
   revved_packages = []
   new_package_atoms = []
 
-  # Slight optimization hack: process the chromiumos overlay first so we can
-  # background cache generation in it.  A perfect solution would walk all the
-  # overlays, figure out any dependencies between them (with layout.conf), and
-  # then process them in dependency order.  However, this operation isn't slow
-  # enough to warrant that level of complexity, so we'll just special case the
-  # main overlay.
+  # Slight optimization hack: process the chromiumos overlay before any other
+  # cros-workon overlay first so we can do background cache generation in it.
+  # A perfect solution would walk all the overlays, figure out any dependencies
+  # between them (with layout.conf), and then process them in dependency order.
+  # However, this operation isn't slow enough to warrant that level of
+  # complexity, so we'll just special case the main overlay.
+  #
+  # Similarly, generate the cache in the portage-stable tree asap.  We know
+  # we won't have any cros-workon packages in there, so generating the cache
+  # is the only thing it'll be doing.  The chromiumos overlay instead might
+  # have revbumping to do before it can generate the cache.
   keys = overlays.keys()
-  for k in keys:
-    if k.endswith('/third_party/chromiumos-overlay'):
-      keys.remove(k)
-      keys.insert(0, k)
-      break
+  for overlay in ('/third_party/chromiumos-overlay',
+                  '/third_party/portage-stable'):
+    for k in keys:
+      if k.endswith(overlay):
+        keys.remove(k)
+        keys.insert(0, k)
+        break
 
   cache_queue = multiprocessing.Queue()
   with background.BackgroundTaskRunner(cache_queue,
@@ -314,6 +321,7 @@ def main():
                     'and reset the git repo yourself.' % overlay)
             raise
 
+      if command == 'commit':
         # Regenerate caches if need be.  We do this all the time to
         # catch when users make changes without updating cache files.
         cache_queue.put([overlay])

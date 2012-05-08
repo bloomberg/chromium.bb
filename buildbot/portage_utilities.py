@@ -16,6 +16,7 @@ import sys
 from chromite.lib import cros_build_lib
 from chromite.buildbot import gerrit_helper
 
+_CACHE_OVERLAY = '%(build_root)s/src/third_party/portage-stable'
 _PUBLIC_OVERLAY = '%(build_root)s/src/third_party/chromiumos-overlay'
 _OVERLAY_LIST_CMD = '%(build_root)s/src/platform/dev/host/cros_overlay_list'
 
@@ -54,6 +55,7 @@ def FindOverlays(srcroot, overlay_type):
     # TODO(davidjames): cros_overlay_list should include chromiumos-overlay in
     #                   its list of public overlays. But it doesn't yet...
     overlays.append(_PUBLIC_OVERLAY % format_args)
+    overlays.append(_CACHE_OVERLAY % format_args)
   return overlays
 
 
