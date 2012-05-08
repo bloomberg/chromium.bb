@@ -1200,7 +1200,6 @@ class SnapshotTaker {
     snapshot_taken_ = false;
     generator->AskForSnapshot(
         rwh,
-        false,  // don't use backing_store
         base::Bind(&SnapshotTaker::OnSnapshotTaken, base::Unretained(this)),
         page_size,
         desired_size);

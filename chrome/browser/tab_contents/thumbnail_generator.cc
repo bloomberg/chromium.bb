@@ -37,7 +37,7 @@
 // This class provides current thumbnails for tabs. The simplest operation is
 // when a request for a thumbnail comes in, to grab the backing store and make
 // a smaller version of that. Clients of the class can send such a request by
-// GetThumbnailForRenderer() and AskForSnapshot().
+// AskForSnapshot().
 //
 // The class also provides a service for updating thumbnails to be used in
 // "Most visited" section of the new tab page. The service can be started
@@ -151,37 +151,6 @@ SkBitmap CreateThumbnail(
   return result;
 }
 
-// Creates a downsampled thumbnail for the given RenderWidgetHost's backing
-// store. The returned bitmap will be isNull if there was an error creating it.
-SkBitmap GetBitmapForRenderWidgetHost(
-    RenderWidgetHost* render_widget_host,
-    int desired_width,
-    int desired_height,
-    int options,
-    ThumbnailGenerator::ClipResult* clip_result) {
-  // base::TimeTicks begin_compute_thumbnail = base::TimeTicks::Now();
-
-  // Get the bitmap as a Skia object so we can resample it. This is a large
-  // allocation and we can tolerate failure here, so give up if the allocation
-  // fails.
-  skia::PlatformCanvas temp_canvas;
-  content::RenderWidgetHostView* view = render_widget_host->GetView();
-  if (!view)
-    return SkBitmap();
-  const gfx::Size copy_size =
-      GetCopySizeForThumbnail(view->GetViewBounds().size(),
-                              gfx::Size(desired_width, desired_height));
-  if (!render_widget_host->CopyFromBackingStore(
-          gfx::Rect(), copy_size, &temp_canvas))
-    return SkBitmap();
-
-  return CreateThumbnail(skia::GetTopDevice(temp_canvas)->accessBitmap(false),
-                         desired_width,
-                         desired_height,
-                         options,
-                         clip_result);
-}
-
 }  // namespace
 
 struct ThumbnailGenerator::AsyncRequestInfo {
@@ -252,24 +221,9 @@ void ThumbnailGenerator::MonitorRenderer(RenderWidgetHost* renderer,
 }
 
 void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
-                                        bool prefer_backing_store,
                                         const ThumbnailReadyCallback& callback,
                                         gfx::Size page_size,
                                         gfx::Size desired_size) {
-  if (prefer_backing_store) {
-    // We were able to find a non-null backing store for this renderer, so
-    // we'll go with it.
-    SkBitmap first_try = GetBitmapForRenderWidgetHost(
-        renderer, desired_size.width(), desired_size.height(), kNoOptions,
-        NULL);
-    if (!first_try.isNull()) {
-      callback.Run(first_try);
-      return;
-    }
-    // Now, if the backing store didn't exist, we will still try and
-    // render asynchronously.
-  }
-
   // We are going to render the thumbnail asynchronously now, so keep
   // this callback for later lookup when the rendering is done.
   static int sequence_num = 0;
@@ -317,19 +271,6 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
       renderer_dib_handle, sequence_num, page_size, desired_size);
 
 #endif  // defined(USE_X11)
-}
-
-SkBitmap ThumbnailGenerator::GetThumbnailForRenderer(
-    RenderWidgetHost* renderer) const {
-  return GetThumbnailForRendererWithOptions(renderer, kNoOptions, NULL);
-}
-
-SkBitmap ThumbnailGenerator::GetThumbnailForRendererWithOptions(
-    RenderWidgetHost* renderer,
-    int options,
-    ClipResult* clip_result) const {
-  return GetBitmapForRenderWidgetHost(
-      renderer, kThumbnailWidth, kThumbnailHeight, options, clip_result);
 }
 
 void ThumbnailGenerator::WidgetDidReceivePaintAtSizeAck(

@@ -186,7 +186,6 @@ void ThumbnailLoader::LoadThumbnail() {
   // Will send an IPC to the renderer on the IO thread.
   generator->AskForSnapshot(
       rwh_,
-      /*prefer_backing_store=*/false,
       base::Bind(&ThumbnailLoader::DidReceiveBitmap,
                  weak_factory_.GetWeakPtr()),
       page_size,
