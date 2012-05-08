@@ -183,7 +183,6 @@
     "chrome.experimental.socket.create": "experimental.socket.html#method-create",
     "chrome.experimental.socket.destroy": "experimental.socket.html#method-destroy",
     "chrome.experimental.socket.disconnect": "experimental.socket.html#method-disconnect",
-    "chrome.experimental.socket.onEvent": "experimental.socket.html#event-onEvent",
     "chrome.experimental.socket.read": "experimental.socket.html#method-read",
     "chrome.experimental.socket.recvFrom": "experimental.socket.html#method-recvFrom",
     "chrome.experimental.socket.sendTo": "experimental.socket.html#method-sendTo",
@@ -666,7 +665,7 @@
         "style.css",
         "view.js"
       ],
-      "source_hash": "51200651a807c2c6e365c7b7228373b61ab3230b",
+      "source_hash": "6317b07927fa12ebf02947b9018af0c9d244fccb",
       "zip_path": "examples/extensions/calculator.zip"
     },
     {
