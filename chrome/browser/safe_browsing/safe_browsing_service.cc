@@ -1209,6 +1209,9 @@ void SafeBrowsingService::ReportSafeBrowsingHitOnIOThread(
 void SafeBrowsingService::SendSerializedMalwareDetails(
     const std::string& serialized) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!enabled_)
+    return;
+
   if (!serialized.empty()) {
     DVLOG(1) << "Sending serialized malware details.";
     protocol_manager_->ReportMalwareDetails(serialized);
