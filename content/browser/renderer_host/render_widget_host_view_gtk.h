@@ -93,10 +93,7 @@ class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
   virtual void SelectionBoundsChanged(const gfx::Rect& start_rect,
                                       const gfx::Rect& end_rect) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
-  virtual bool CopyFromCompositingSurface(
-      const gfx::Size& size,
-      skia::PlatformCanvas* output) OVERRIDE;
-  virtual void AsyncCopyFromCompositingSurface(
+  virtual void CopyFromCompositingSurface(
       const gfx::Size& size,
       skia::PlatformCanvas* output,
       base::Callback<void(bool)> callback) OVERRIDE;

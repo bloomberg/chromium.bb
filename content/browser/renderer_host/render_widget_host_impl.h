@@ -79,10 +79,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void UpdateTextDirection(WebKit::WebTextDirection direction) OVERRIDE;
   virtual void NotifyTextDirection() OVERRIDE;
   virtual void Blur() OVERRIDE;
-  virtual bool CopyFromBackingStore(const gfx::Rect& src_rect,
-                                    const gfx::Size& accelerated_dest_size,
-                                    skia::PlatformCanvas* output) OVERRIDE;
-  virtual void AsyncCopyFromBackingStore(
+  virtual void CopyFromBackingStore(
       const gfx::Rect& src_rect,
       const gfx::Size& accelerated_dest_size,
       skia::PlatformCanvas* output,

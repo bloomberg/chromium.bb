@@ -198,10 +198,7 @@ class RenderWidgetHostViewWin
   virtual void Destroy() OVERRIDE;
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
-  virtual bool CopyFromCompositingSurface(
-      const gfx::Size& size,
-      skia::PlatformCanvas* output) OVERRIDE;
-  virtual void AsyncCopyFromCompositingSurface(
+  virtual void CopyFromCompositingSurface(
       const gfx::Size& size,
       skia::PlatformCanvas* output,
       base::Callback<void(bool)> callback) OVERRIDE;

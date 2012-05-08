@@ -905,27 +905,24 @@ BackingStore* RenderWidgetHostViewWin::AllocBackingStore(
   return new BackingStoreWin(render_widget_host_, size);
 }
 
-bool RenderWidgetHostViewWin::CopyFromCompositingSurface(
-      const gfx::Size& size,
-      skia::PlatformCanvas* output) {
-  if (!accelerated_surface_.get())
-    return false;
-
-  if (size.IsEmpty())
-    return false;
-
-  if (!output->initialize(size.width(), size.height(), true))
-    return false;
-
-  return accelerated_surface_->CopyTo(
-      size, output->getTopDevice()->accessBitmap(true).getPixels());
-}
-
-void RenderWidgetHostViewWin::AsyncCopyFromCompositingSurface(
+void RenderWidgetHostViewWin::CopyFromCompositingSurface(
     const gfx::Size& size,
     skia::PlatformCanvas* output,
     base::Callback<void(bool)> callback) {
-  callback.Run(CopyFromCompositingSurface(size, output));
+  base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
+  if (!accelerated_surface_.get())
+    return;
+
+  if (size.IsEmpty())
+    return;
+
+  if (!output->initialize(size.width(), size.height(), true))
+    return;
+
+  const bool result = accelerated_surface_->CopyTo(
+      size, output->getTopDevice()->accessBitmap(true).getPixels());
+  scoped_callback_runner.Release();
+  callback.Run(result);
 }
 
 void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {

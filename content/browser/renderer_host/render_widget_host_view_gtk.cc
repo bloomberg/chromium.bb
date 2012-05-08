@@ -988,15 +988,7 @@ BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
                              depth);
 }
 
-bool RenderWidgetHostViewGtk::CopyFromCompositingSurface(
-    const gfx::Size& size,
-    skia::PlatformCanvas* output) {
-  // TODO(mazda): Implement this.
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void RenderWidgetHostViewGtk::AsyncCopyFromCompositingSurface(
+void RenderWidgetHostViewGtk::CopyFromCompositingSurface(
     const gfx::Size& size,
     skia::PlatformCanvas* output,
     base::Callback<void(bool)> callback) {

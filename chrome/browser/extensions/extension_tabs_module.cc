@@ -1670,7 +1670,7 @@ bool CaptureVisibleTabFunction::RunImpl() {
     return false;
   }
   skia::PlatformCanvas* temp_canvas = new skia::PlatformCanvas;
-  render_view_host->AsyncCopyFromBackingStore(
+  render_view_host->CopyFromBackingStore(
       gfx::Rect(),
       view->GetViewBounds().size(),
       temp_canvas,

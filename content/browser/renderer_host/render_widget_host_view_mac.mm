@@ -7,6 +7,7 @@
 #include <QuartzCore/QuartzCore.h>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/mac/closure_blocks_leopard_compat.h"
@@ -789,27 +790,22 @@ BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
   return new BackingStoreMac(render_widget_host_, size);
 }
 
-bool RenderWidgetHostViewMac::CopyFromCompositingSurface(
-      const gfx::Size& size,
-      skia::PlatformCanvas* output) {
-  if (!compositing_iosurface_.get() ||
-      !compositing_iosurface_->HasIOSurface())
-    return false;
-
-  if (!output->initialize(size.width(), size.height(), true))
-    return false;
-
-  return compositing_iosurface_->CopyTo(
-      size, output->getTopDevice()->accessBitmap(true).getPixels());
-}
-
-void RenderWidgetHostViewMac::AsyncCopyFromCompositingSurface(
+void RenderWidgetHostViewMac::CopyFromCompositingSurface(
     const gfx::Size& size,
     skia::PlatformCanvas* output,
     base::Callback<void(bool)> callback) {
-  // TODO(mazda): Implement this.
-  NOTIMPLEMENTED();
-  callback.Run(false);
+  base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
+  if (!compositing_iosurface_.get() ||
+      !compositing_iosurface_->HasIOSurface())
+    return;
+
+  if (!output->initialize(size.width(), size.height(), true))
+    return;
+
+  const bool result = compositing_iosurface_->CopyTo(
+      size, output->getTopDevice()->accessBitmap(true).getPixels());
+  scoped_callback_runner.Release();
+  callback.Run(result);
 }
 
 // Sets whether or not to accept first responder status.

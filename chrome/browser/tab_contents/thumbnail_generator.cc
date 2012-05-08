@@ -491,7 +491,7 @@ void ThumbnailGenerator::AsyncUpdateThumbnail(
   skia::PlatformCanvas* temp_canvas = new skia::PlatformCanvas;
   web_contents_weak_factory_.reset(
       new base::WeakPtrFactory<WebContents>(web_contents));
-  render_widget_host->AsyncCopyFromBackingStore(
+  render_widget_host->CopyFromBackingStore(
       gfx::Rect(), copy_size, temp_canvas,
       base::Bind(&ThumbnailGenerator::AsyncUpdateThumbnailFinish,
                  weak_factory_.GetWeakPtr(),

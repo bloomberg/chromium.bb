@@ -140,17 +140,13 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // Allocate a backing store for this view.
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) = 0;
 
-  // DEPRECATED: Synchronous version of AsyncCopyFromCompositingSurface.
-  // This will be removed once all the caller have been chagned to use the
-  // asynchronous version.
-  virtual bool CopyFromCompositingSurface(const gfx::Size& size,
-                                          skia::PlatformCanvas* output) = 0;
-
-  // Asynchrnously copies the contents of the compositing surface into the given
+  // Copies the contents of the compositing surface into the given
   // (uninitialized) PlatformCanvas if any.
   // |callback| is invoked with true on success, false otherwise. |output| can
   // be initialized even on failure.
-  virtual void AsyncCopyFromCompositingSurface(
+  // NOTE: |callback| is called asynchronously on Aura and synchronously on the
+  // other platforms.
+  virtual void CopyFromCompositingSurface(
       const gfx::Size& size,
       skia::PlatformCanvas* output,
       base::Callback<void(bool)> callback) = 0;

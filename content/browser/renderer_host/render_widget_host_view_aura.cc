@@ -424,34 +424,7 @@ BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
   return new BackingStoreSkia(host_, size);
 }
 
-bool RenderWidgetHostViewAura::CopyFromCompositingSurface(
-    const gfx::Size& size,
-    skia::PlatformCanvas* output) {
-  ui::Compositor* compositor = GetCompositor();
-  if (!compositor)
-    return false;
-
-  ImageTransportClient* container = image_transport_clients_[current_surface_];
-  if (!container)
-    return false;
-
-  if (!output->initialize(size.width(), size.height(), true))
-    return false;
-
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  content::GLHelper* gl_helper = factory->GetGLHelper(compositor);
-  if (!gl_helper)
-    return false;
-
-  unsigned char* addr = static_cast<unsigned char*>(
-      output->getTopDevice()->accessBitmap(true).getPixels());
-  return gl_helper->CopyTextureTo(container->texture_id(),
-                                  container->size(),
-                                  size,
-                                  addr);
-}
-
-void RenderWidgetHostViewAura::AsyncCopyFromCompositingSurface(
+void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     const gfx::Size& size,
     skia::PlatformCanvas* output,
     base::Callback<void(bool)> callback) {
@@ -472,9 +445,9 @@ void RenderWidgetHostViewAura::AsyncCopyFromCompositingSurface(
   if (!gl_helper)
     return;
 
-  scoped_callback_runner.Release();
   unsigned char* addr = static_cast<unsigned char*>(
       output->getTopDevice()->accessBitmap(true).getPixels());
+  scoped_callback_runner.Release();
   gl_helper->AsyncCopyTextureTo(container->texture_id(),
                                 container->size(),
                                 size,

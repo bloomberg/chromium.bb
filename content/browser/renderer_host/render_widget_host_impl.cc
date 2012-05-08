@@ -482,34 +482,7 @@ void RenderWidgetHostImpl::SetIsLoading(bool is_loading) {
   view_->SetIsLoading(is_loading);
 }
 
-bool RenderWidgetHostImpl::CopyFromBackingStore(
-    const gfx::Rect& src_rect,
-    const gfx::Size& accelerated_dest_size,
-    skia::PlatformCanvas* output) {
-  if (view_ && is_accelerated_compositing_active_) {
-    TRACE_EVENT0("browser",
-        "RenderWidgetHostImpl::CopyFromBackingStore::FromCompositingSurface");
-    // TODO(mazda): Support partial copy with |src_rect|
-    // (http://crbug.com/118571).
-    return view_->CopyFromCompositingSurface(accelerated_dest_size, output);
-  }
-
-  BackingStore* backing_store = GetBackingStore(false);
-  if (!backing_store)
-    return false;
-
-  TRACE_EVENT0("browser",
-      "RenderWidgetHostImpl::CopyFromBackingStore::FromBackingStore");
-  const gfx::Size backing_store_size = backing_store->size();
-  gfx::Rect copy_rect = src_rect.IsEmpty() ?
-      gfx::Rect(0, 0, backing_store_size.width(), backing_store_size.height()) :
-      src_rect;
-  // When the result size is equal to the backing store size, copy from the
-  // backing store directly to the output canvas.
-  return backing_store->CopyFromBackingStore(copy_rect, output);
-}
-
-void RenderWidgetHostImpl::AsyncCopyFromBackingStore(
+void RenderWidgetHostImpl::CopyFromBackingStore(
     const gfx::Rect& src_rect,
     const gfx::Size& accelerated_dest_size,
     skia::PlatformCanvas* output,
@@ -519,9 +492,9 @@ void RenderWidgetHostImpl::AsyncCopyFromBackingStore(
         "RenderWidgetHostImpl::CopyFromBackingStore::FromCompositingSurface");
     // TODO(mazda): Support partial copy with |src_rect|
     // (http://crbug.com/118571).
-    view_->AsyncCopyFromCompositingSurface(accelerated_dest_size,
-                                           output,
-                                           callback);
+    view_->CopyFromCompositingSurface(accelerated_dest_size,
+                                      output,
+                                      callback);
     return;
   }
 
