@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/zygote_host_impl_linux.h"
-
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <pthread.h>
@@ -38,9 +36,11 @@
 #include "content/common/seccomp_sandbox.h"
 #include "content/common/set_process_title.h"
 #include "content/common/unix_domain_socket_posix.h"
+#include "content/common/zygote_commands_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/sandbox_linux.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "skia/ext/SkFontHost_fontconfig_control.h"
 #include "unicode/timezone.h"
@@ -59,6 +59,8 @@
 #include <selinux/selinux.h>
 #include <selinux/context.h>
 #endif
+
+namespace content {
 
 // http://code.google.com/p/chromium/wiki/LinuxZygote
 
@@ -98,7 +100,7 @@ static void SELinuxTransitionToTypeOrDie(const char* type) {
 // runs it.
 class Zygote {
  public:
-  Zygote(int sandbox_flags, content::ZygoteForkDelegate* helper)
+  Zygote(int sandbox_flags, ZygoteForkDelegate* helper)
       : sandbox_flags_(sandbox_flags),
         helper_(helper),
         initial_uma_sample_(0),
@@ -126,15 +128,16 @@ class Zygote {
       // Let the ZygoteHost know we are ready to go.
       // The receiving code is in content/browser/zygote_host_linux.cc.
       std::vector<int> empty;
-      bool r = UnixDomainSocket::SendMsg(kBrowserDescriptor, kZygoteMagic,
-                                         sizeof(kZygoteMagic), empty);
+      bool r = UnixDomainSocket::SendMsg(kBrowserDescriptor,
+                                         kZygoteHelloMessage,
+                                         sizeof(kZygoteHelloMessage), empty);
 #if defined(OS_CHROMEOS)
       LOG_IF(WARNING, !r) << "Sending zygote magic failed";
       // Exit normally on chromeos because session manager may send SIGTERM
       // right after the process starts and it may fail to send zygote magic
       // number to browser process.
       if (!r)
-        _exit(content::RESULT_CODE_NORMAL_EXIT);
+        _exit(RESULT_CODE_NORMAL_EXIT);
 #else
       CHECK(r) << "Sending zygote magic failed";
 #endif
@@ -179,21 +182,21 @@ class Zygote {
     int kind;
     if (pickle.ReadInt(&iter, &kind)) {
       switch (kind) {
-        case ZygoteHostImpl::kCmdFork:
+        case kZygoteCommandFork:
           // This function call can return multiple times, once per fork().
           return HandleForkRequest(fd, pickle, iter, fds);
 
-        case ZygoteHostImpl::kCmdReap:
+        case kZygoteCommandReap:
           if (!fds.empty())
             break;
           HandleReapRequest(fd, pickle, iter);
           return false;
-        case ZygoteHostImpl::kCmdGetTerminationStatus:
+        case kZygoteCommandGetTerminationStatus:
           if (!fds.empty())
             break;
           HandleGetTerminationStatus(fd, pickle, iter);
           return false;
-        case ZygoteHostImpl::kCmdGetSandboxStatus:
+        case kZygoteCommandGetSandboxStatus:
           HandleGetSandboxStatus(fd, pickle, iter);
           return false;
         default:
@@ -251,7 +254,7 @@ class Zygote {
       // Assume that if we can't find the child in the sandbox, then
       // it terminated normally.
       status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
-      exit_code = content::RESULT_CODE_NORMAL_EXIT;
+      exit_code = RESULT_CODE_NORMAL_EXIT;
     }
 
     Pickle write_pickle;
@@ -550,7 +553,7 @@ class Zygote {
   ProcessMap real_pids_to_sandbox_pids;
 
   const int sandbox_flags_;
-  content::ZygoteForkDelegate* helper_;
+  ZygoteForkDelegate* helper_;
 
   // These might be set by helper_->InitialUMA.  They supply a UMA
   // enumeration sample we should report on the first fork.
@@ -943,8 +946,8 @@ static bool EnterSandbox() {
 
 #endif  // CHROMIUM_SELINUX
 
-bool ZygoteMain(const content::MainFunctionParams& params,
-                content::ZygoteForkDelegate* forkdelegate) {
+bool ZygoteMain(const MainFunctionParams& params,
+                ZygoteForkDelegate* forkdelegate) {
 #if !defined(CHROMIUM_SELINUX)
   g_am_zygote_or_renderer = true;
 #endif
@@ -980,11 +983,11 @@ bool ZygoteMain(const content::MainFunctionParams& params,
 
   int sandbox_flags = 0;
   if (getenv("SBX_D"))
-    sandbox_flags |= ZygoteHostImpl::kSandboxSUID;
+    sandbox_flags |= kSandboxLinuxSUID;
   if (getenv("SBX_PID_NS"))
-    sandbox_flags |= ZygoteHostImpl::kSandboxPIDNS;
+    sandbox_flags |= kSandboxLinuxPIDNS;
   if (getenv("SBX_NET_NS"))
-    sandbox_flags |= ZygoteHostImpl::kSandboxNetNS;
+    sandbox_flags |= kSandboxLinuxNetNS;
 
 #if defined(SECCOMP_SANDBOX)
   // The seccomp sandbox will be turned on when the renderers start. But we can
@@ -1001,7 +1004,7 @@ bool ZygoteMain(const content::MainFunctionParams& params,
                     "sandboxing disabled.";
     } else {
       VLOG(1) << "Enabling experimental Seccomp sandbox.";
-      sandbox_flags |= ZygoteHostImpl::kSandboxSeccomp;
+      sandbox_flags |= kSandboxLinuxSeccomp;
     }
   }
 #endif  // SECCOMP_SANDBOX
@@ -1010,3 +1013,5 @@ bool ZygoteMain(const content::MainFunctionParams& params,
   // This function call can return multiple times, once per fork().
   return zygote.ProcessRequests();
 }
+
+}  // namespace content

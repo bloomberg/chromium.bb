@@ -80,8 +80,10 @@ extern int RendererMain(const content::MainFunctionParams&);
 extern int WorkerMain(const content::MainFunctionParams&);
 extern int UtilityMain(const content::MainFunctionParams&);
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
+namespace content {
 extern int ZygoteMain(const content::MainFunctionParams&,
                       content::ZygoteForkDelegate* forkdelegate);
+}  // namespace content
 #endif
 
 namespace {
@@ -218,7 +220,7 @@ int RunZygote(const content::MainFunctionParams& main_function_params,
   }
 
   // This function call can return multiple times, once per fork().
-  if (!ZygoteMain(main_function_params, zygote_fork_delegate.get()))
+  if (!content::ZygoteMain(main_function_params, zygote_fork_delegate.get()))
     return 1;
 
   if (delegate) delegate->ZygoteForked();

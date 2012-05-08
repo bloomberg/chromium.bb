@@ -70,9 +70,16 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/webplugininfo.h"
 
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
+#include "content/public/common/sandbox_linux.h"
+#include "content/public/browser/zygote_host_linux.h"
+#endif
+
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"
-#elif defined(OS_CHROMEOS)
+#endif
+
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -82,9 +89,6 @@
 #include "chrome/browser/oom_priority_manager.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "content/public/browser/zygote_host_linux.h"
-#elif defined(OS_LINUX) || defined(OS_OPENBSD)
-#include "content/public/browser/zygote_host_linux.h"
 #endif
 
 #if defined(USE_ASH)
@@ -1048,19 +1052,19 @@ std::string AboutSandbox() {
   data.append("<table>");
 
   AboutSandboxRow(&data, "", IDS_ABOUT_SANDBOX_SUID_SANDBOX,
-                  status & content::ZygoteHost::kSandboxSUID);
+                  status & content::kSandboxLinuxSUID);
   AboutSandboxRow(&data, "&nbsp;&nbsp;", IDS_ABOUT_SANDBOX_PID_NAMESPACES,
-                  status & content::ZygoteHost::kSandboxPIDNS);
+                  status & content::kSandboxLinuxPIDNS);
   AboutSandboxRow(&data, "&nbsp;&nbsp;", IDS_ABOUT_SANDBOX_NET_NAMESPACES,
-                  status & content::ZygoteHost::kSandboxNetNS);
+                  status & content::kSandboxLinuxNetNS);
   AboutSandboxRow(&data, "", IDS_ABOUT_SANDBOX_SECCOMP_SANDBOX,
-                  status & content::ZygoteHost::kSandboxSeccomp);
+                  status & content::kSandboxLinuxSeccomp);
 
   data.append("</table>");
 
-  bool good = ((status & content::ZygoteHost::kSandboxSUID) &&
-               (status & content::ZygoteHost::kSandboxPIDNS)) ||
-              (status & content::ZygoteHost::kSandboxSeccomp);
+  bool good = ((status & content::kSandboxLinuxSUID) &&
+               (status & content::kSandboxLinuxPIDNS)) ||
+              (status & content::kSandboxLinuxSeccomp);
   if (good) {
     data.append("<p style=\"color: green\">");
     data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_OK));

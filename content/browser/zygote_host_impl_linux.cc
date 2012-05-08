@@ -27,6 +27,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #include "content/common/unix_domain_socket_posix.h"
+#include "content/common/zygote_commands_linux.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -181,12 +182,13 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
     // But first, wait for the zygote to tell us it's running.
     // The sending code is in content/browser/zygote_main_linux.cc.
     std::vector<int> fds_vec;
-    const int kExpectedLength = sizeof(kZygoteMagic);
+    const int kExpectedLength = sizeof(content::kZygoteHelloMessage);
     char buf[kExpectedLength];
     const ssize_t len = UnixDomainSocket::RecvMsg(fds[0], buf, sizeof(buf),
                                                   &fds_vec);
     CHECK(len == kExpectedLength) << "Incorrect zygote magic length";
-    CHECK(0 == strcmp(buf, kZygoteMagic)) << "Incorrect zygote magic";
+    CHECK(0 == strcmp(buf, content::kZygoteHelloMessage))
+        << "Incorrect zygote hello";
 
     std::string inode_output;
     ino_t inode = 0;
@@ -219,7 +221,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   control_fd_ = fds[0];
 
   Pickle pickle;
-  pickle.WriteInt(kCmdGetSandboxStatus);
+  pickle.WriteInt(content::kZygoteCommandGetSandboxStatus);
   std::vector<int> empty_fds;
   if (!UnixDomainSocket::SendMsg(control_fd_, pickle.data(), pickle.size(),
                                  empty_fds))
@@ -228,9 +230,9 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
 }
 
 ssize_t ZygoteHostImpl::ReadReply(void* buf, size_t buf_len) {
-  // At startup we send a kCmdGetSandboxStatus request to the zygote, but don't
-  // wait for the reply. Thus, the first time that we read from the zygote, we
-  // get the reply to that request.
+  // At startup we send a kZygoteCommandGetSandboxStatus request to the zygote,
+  // but don't wait for the reply. Thus, the first time that we read from the
+  // zygote, we get the reply to that request.
   if (!have_read_sandbox_status_word_) {
     if (HANDLE_EINTR(read(control_fd_, &sandbox_status_,
                           sizeof(sandbox_status_))) !=
@@ -250,7 +252,7 @@ pid_t ZygoteHostImpl::ForkRequest(
   DCHECK(init_);
   Pickle pickle;
 
-  pickle.WriteInt(kCmdFork);
+  pickle.WriteInt(content::kZygoteCommandFork);
   pickle.WriteString(process_type);
   pickle.WriteInt(argv.size());
   for (std::vector<std::string>::const_iterator
@@ -429,7 +431,7 @@ void ZygoteHostImpl::EnsureProcessTerminated(pid_t process) {
   DCHECK(init_);
   Pickle pickle;
 
-  pickle.WriteInt(kCmdReap);
+  pickle.WriteInt(content::kZygoteCommandReap);
   pickle.WriteInt(process);
 
   if (HANDLE_EINTR(write(control_fd_, pickle.data(), pickle.size())) < 0)
@@ -441,7 +443,7 @@ base::TerminationStatus ZygoteHostImpl::GetTerminationStatus(
     int* exit_code) {
   DCHECK(init_);
   Pickle pickle;
-  pickle.WriteInt(kCmdGetTerminationStatus);
+  pickle.WriteInt(content::kZygoteCommandGetTerminationStatus);
   pickle.WriteInt(handle);
 
   // Set this now to handle the early termination cases.

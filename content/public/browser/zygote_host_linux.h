@@ -22,23 +22,14 @@ class ZygoteHost {
   // Returns the singleton instance.
   CONTENT_EXPORT static ZygoteHost* GetInstance();
 
-  // These form a bitmask which describes the conditions of the sandbox that
-  // the zygote finds itself in.
-  enum {
-    kSandboxSUID = 1 << 0,     // SUID sandbox active
-    kSandboxPIDNS = 1 << 1,    // SUID sandbox is using the PID namespace
-    kSandboxNetNS = 1 << 2,    // SUID sandbox is using the network namespace
-    kSandboxSeccomp = 1 << 3,  // seccomp sandbox active.
-  };
-
   // Returns the pid of the Zygote process.
   virtual pid_t GetPid() const = 0;
 
   // Returns the pid of the Sandbox Helper process.
   virtual pid_t GetSandboxHelperPid() const = 0;
 
-  // Returns an int which is a bitmask of kSandbox* values. Only valid after
-  // the first render has been forked.
+  // Returns an int which is a bitmask of kSandboxLinux* values. Only valid
+  // after the first render has been forked.
   virtual int GetSandboxStatus() const = 0;
 
   // Adjust the OOM score of the given renderer's PID.  The allowed

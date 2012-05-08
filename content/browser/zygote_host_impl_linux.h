@@ -17,8 +17,6 @@
 template<typename Type>
 struct DefaultSingletonTraits;
 
-static const char kZygoteMagic[] = "ZYGOTE_OK";
-
 class CONTENT_EXPORT ZygoteHostImpl : public content::ZygoteHost {
  public:
   // Returns the singleton instance.
@@ -39,15 +37,6 @@ class CONTENT_EXPORT ZygoteHostImpl : public content::ZygoteHost {
   // process. (|exit_code| may be NULL.)
   base::TerminationStatus GetTerminationStatus(base::ProcessHandle handle,
                                                int* exit_code);
-
-  // These are the command codes used on the wire between the browser and the
-  // zygote.
-  enum {
-    kCmdFork = 0,                  // Fork off a new renderer.
-    kCmdReap = 1,                  // Reap a renderer child.
-    kCmdGetTerminationStatus = 2,  // Check what happend to a child process.
-    kCmdGetSandboxStatus = 3,      // Read a bitmask of kSandbox*
-  };
 
   // ZygoteHost implementation:
   virtual pid_t GetPid() const OVERRIDE;
