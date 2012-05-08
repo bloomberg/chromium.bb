@@ -629,5 +629,21 @@
         }],
       ],
     },  # target libjingle_peerconnection
+    {
+      'target_name': 'peerconnection_server',
+      'type': 'executable',
+      'sources': [
+        'source/talk/examples/peerconnection/server/data_socket.cc',
+        'source/talk/examples/peerconnection/server/data_socket.h',
+        'source/talk/examples/peerconnection/server/main.cc',
+        'source/talk/examples/peerconnection/server/peer_channel.cc',
+        'source/talk/examples/peerconnection/server/peer_channel.h',
+        'source/talk/examples/peerconnection/server/utils.cc',
+        'source/talk/examples/peerconnection/server/utils.h',
+      ],
+      'include_dirs': [
+        'source',
+      ],
+    }, # target peerconnection_server
   ],
 }

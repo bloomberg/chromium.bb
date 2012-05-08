@@ -12,23 +12,47 @@ import pyauto_functional
 import pyauto
 
 
+class MissingRequiredBinaryException(Exception):
+  pass
+
+
 class WebRTCCallTest(pyauto.PyUITest):
   """Test we can set up a WebRTC call and disconnect it.
 
-  This test case must run on a machine with a webcam, either fake or real, and
-  with some kind of audio device. The test case will launch a custom binary
+  Prerequisites: This test case must run on a machine with a webcam, either
+  fake or real, and with some kind of audio device. You must make the
+  peerconnection_server target before you run.
+
+  The test case will launch a custom binary
   (peerconnection_server) which will allow two WebRTC clients to find each
   other. For more details, see the source code which is available at the site
   http://code.google.com/p/libjingle/source/browse/ (make sure to browse to
   trunk/talk/examples/peerconnection/server).
   """
 
+  def ExtraChromeFlags(self):
+    """Defines flags passed to Chrome to enable MediaStream and PeerConnection.
+
+    Returns:
+      A list of extra flags to pass to Chrome when it is launched.
+    """
+    extra_flags = ['--enable-media-stream', '--enable-peer-connection']
+    return pyauto.PyUITest.ExtraChromeFlags(self) + extra_flags
+
   def setUp(self):
     pyauto.PyUITest.setUp(self)
 
-    # Start the peerconnection_server. Note: this only works on Linux for now.
-    binary_path = os.path.join(self.DataDir(), 'webrtc', 'linux',
-                               'peerconnection_server')
+    # Start the peerconnection_server. This must be built before running the
+    # test, and we assume the binary ends up next to the Chrome binary.
+    binary_path = os.path.join(self.BrowserPath(), 'peerconnection_server')
+    if self.IsWin():
+      binary_path += '.exe'
+    if not os.path.exists(binary_path):
+      raise MissingRequiredBinaryException(
+        'Could not locate peerconnection_server. Have you built the '
+        'peerconnection_server target? We expect to have a '
+        'peerconnection_server binary next to the chrome binary.')
+
     self._server_process = subprocess.Popen(binary_path)
 
   def tearDown(self):
@@ -53,8 +77,6 @@ class WebRTCCallTest(pyauto.PyUITest):
     the call succeeded, let it run for a while and try to hang up the call
     after that.
     """
-    assert self.IsLinux()
-
     url = self.GetFileURLForDataPath('webrtc', 'webrtc_test.html')
     self.NavigateToURL(url)
     self.AppendTab(pyauto.GURL(url))
@@ -78,8 +100,6 @@ class WebRTCCallTest(pyauto.PyUITest):
 
   def testHandlesNewGetUserMediaRequestSeparately(self):
     """Ensures WebRTC doesn't allow new requests to piggy-back on old ones."""
-    assert self.IsLinux()
-
     url = self.GetFileURLForDataPath('webrtc', 'webrtc_test.html')
     self.NavigateToURL(url)
     self.AppendTab(pyauto.GURL(url))

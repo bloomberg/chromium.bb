@@ -743,8 +743,6 @@
   'WEBRTC': {
     'all': [
       'media_stream_infobar',
-    ],
-    'linux': [
       'webrtc_call',
     ],
   },
