@@ -92,9 +92,9 @@ void TypedUrlChangeProcessor::HandleURLsModified(
   for (history::URLRows::iterator url = details->changed_urls.begin();
        url != details->changed_urls.end(); ++url) {
     if (url->typed_count() > 0) {
-      // Exit if we were unable to update the sync node.
-      if (!CreateOrUpdateSyncNode(*url, &trans))
-        return;
+      // If there were any errors updating the sync node, just ignore them and
+      // continue on to process the next URL.
+      CreateOrUpdateSyncNode(*url, &trans);
     }
   }
 }
@@ -106,8 +106,7 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
   history::VisitVector visit_vector;
   if (!model_associator_->FixupURLAndGetVisits(
           history_backend_, &url, &visit_vector)) {
-    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-        "Could not get the url's visits.");
+    DLOG(ERROR) << "Could not load visits for url: " << url.url();
     return false;
   }
 
