@@ -40,6 +40,8 @@
 using content::NavigationController;
 using content::WebContents;
 
+const std::string kAnchorPage = "anchor.html";
+const std::string kAnchor = "#chapter2";
 const std::string kFramePage = "frames.html";
 const std::string kFrameData = "framedata_general.html";
 const std::string kUserSelectPage = "user-select.html";
@@ -607,6 +609,30 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
 
   EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
   EXPECT_FALSE(fully_visible);
+}
+
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindStayVisibleOnAnchorLoad) {
+  // First we navigate to our special focus tracking page.
+  GURL url = GetURL(kAnchorPage);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  browser()->ShowFindBar();
+
+  gfx::Point position;
+  bool fully_visible = false;
+
+  // Make sure it is open.
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
+  EXPECT_TRUE(fully_visible);
+
+  // Navigate to the same page (but add an anchor/ref/fragment/whatever the kids
+  // are calling it these days).
+  GURL url_with_anchor = url.Resolve(kAnchor);
+  ui_test_utils::NavigateToURL(browser(), url_with_anchor);
+
+  // Make sure it is still open.
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
+  EXPECT_TRUE(fully_visible);
 }
 
 #if defined(OS_MACOSX)
