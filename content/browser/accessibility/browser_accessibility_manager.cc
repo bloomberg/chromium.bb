@@ -153,7 +153,8 @@ void BrowserAccessibilityManager::OnAccessibilityNotifications(
     }
 
     int notification_type = param.notification_type;
-    if (notification_type == AccessibilityNotificationFocusChanged) {
+    if (notification_type == AccessibilityNotificationFocusChanged ||
+        notification_type == AccessibilityNotificationBlur) {
       SetFocus(node, false);
 
       // Don't send a native focus event if the window itself doesn't
