@@ -6,8 +6,12 @@
 
 #include <windows.h>
 
+#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/native_library.h"
+#include "base/string16.h"
+#include "base/stringize_macros.h"
 #include "remoting/host/capturer_helper.h"
 #include "remoting/host/desktop_win.h"
 #include "remoting/host/differ.h"
@@ -16,6 +20,14 @@
 namespace remoting {
 
 namespace {
+
+// Constants from dwmapi.h.
+const UINT DWM_EC_DISABLECOMPOSITION = 0;
+const UINT DWM_EC_ENABLECOMPOSITION = 1;
+
+typedef HRESULT (WINAPI * DwmEnableCompositionFunc)(UINT);
+
+const char16 kDwmapiLibraryName[] = TO_L_STRING("dwmapi");
 
 // CapturerGdi captures 32bit RGB using GDI.
 //
@@ -109,6 +121,9 @@ class CapturerGdi : public Capturer {
   // Class to calculate the difference between two screen bitmaps.
   scoped_ptr<Differ> differ_;
 
+  base::NativeLibrary dwmapi_library_;
+  DwmEnableCompositionFunc composition_func_;
+
   DISALLOW_COPY_AND_ASSIGN(CapturerGdi);
 };
 
@@ -123,7 +138,9 @@ CapturerGdi::CapturerGdi()
       memory_dc_(NULL),
       dc_size_(SkISize::Make(0, 0)),
       current_buffer_(0),
-      pixel_format_(media::VideoFrame::RGB32) {
+      pixel_format_(media::VideoFrame::RGB32),
+      dwmapi_library_(NULL),
+      composition_func_(NULL) {
   memset(target_bitmap_, 0, sizeof(target_bitmap_));
   memset(buffers_, 0, sizeof(buffers_));
   ScreenConfigurationChanged();
@@ -131,6 +148,10 @@ CapturerGdi::CapturerGdi()
 
 CapturerGdi::~CapturerGdi() {
   ReleaseBuffers();
+
+  if (dwmapi_library_ != NULL) {
+    base::UnloadNativeLibrary(dwmapi_library_);
+  }
 }
 
 media::VideoFrame::Format CapturerGdi::pixel_format() const {
@@ -194,9 +215,32 @@ void CapturerGdi::ReleaseBuffers() {
 }
 
 void CapturerGdi::Start() {
+  // Load dwmapi.dll dynamically since it is not available on XP.
+  if (dwmapi_library_ == NULL) {
+    std::string error;
+    dwmapi_library_ = base::LoadNativeLibrary(
+        FilePath(base::GetNativeLibraryName(kDwmapiLibraryName)), &error);
+  }
+
+  if (dwmapi_library_ != NULL && composition_func_ == NULL) {
+    composition_func_ = reinterpret_cast<DwmEnableCompositionFunc>(
+        base::GetFunctionPointerFromNativeLibrary(dwmapi_library_,
+                                                  "DwmEnableComposition"));
+  }
+
+  // Vote to disable Aero composited desktop effects while capturing. Windows
+  // will restore Aero automatically if the process exits. This has no effect
+  // under Windows 8 or higher.  See crbug.com/124018.
+  if (composition_func_ != NULL) {
+    (*composition_func_)(DWM_EC_DISABLECOMPOSITION);
+  }
 }
 
 void CapturerGdi::Stop() {
+  // Restore Aero.
+  if (composition_func_ != NULL) {
+    (*composition_func_)(DWM_EC_ENABLECOMPOSITION);
+  }
 }
 
 void CapturerGdi::ScreenConfigurationChanged() {
