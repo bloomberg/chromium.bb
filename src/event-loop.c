@@ -26,6 +26,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/epoll.h>
@@ -46,7 +47,6 @@ struct wl_event_loop {
 struct wl_event_source_interface {
 	int (*dispatch)(struct wl_event_source *source,
 			struct epoll_event *ep);
-	int (*remove)(struct wl_event_source *source);
 };
 
 struct wl_event_source {
@@ -60,6 +60,7 @@ struct wl_event_source {
 struct wl_event_source_fd {
 	struct wl_event_source base;
 	wl_event_loop_fd_func_t func;
+	int fd;
 };
 
 static int
@@ -75,41 +76,28 @@ wl_event_source_fd_dispatch(struct wl_event_source *source,
 	if (ep->events & EPOLLOUT)
 		mask |= WL_EVENT_WRITABLE;
 
-	return fd_source->func(source->fd, mask, source->data);
-}
-
-static int
-wl_event_source_fd_remove(struct wl_event_source *source)
-{
-	struct wl_event_loop *loop = source->loop;
-
-	return epoll_ctl(loop->epoll_fd, EPOLL_CTL_DEL, source->fd, NULL);
+	return fd_source->func(fd_source->fd, mask, source->data);
 }
 
 struct wl_event_source_interface fd_source_interface = {
 	wl_event_source_fd_dispatch,
-	wl_event_source_fd_remove
 };
 
-WL_EXPORT struct wl_event_source *
-wl_event_loop_add_fd(struct wl_event_loop *loop,
-		     int fd, uint32_t mask,
-		     wl_event_loop_fd_func_t func,
-		     void *data)
+static struct wl_event_source *
+add_source(struct wl_event_loop *loop,
+	   struct wl_event_source *source, uint32_t mask, void *data)
 {
-	struct wl_event_source_fd *source;
 	struct epoll_event ep;
 
-	source = malloc(sizeof *source);
-	if (source == NULL)
+	if (source->fd < 0) {
+		fprintf(stderr, "could not add source\n: %m");
+		free(source);
 		return NULL;
+	}
 
-	source->base.interface = &fd_source_interface;
-	source->base.loop = loop;
-	wl_list_init(&source->base.link);
-	source->base.fd = fd;
-	source->func = func;
-	source->base.data = data;
+	source->loop = loop;
+	source->data = data;
+	wl_list_init(&source->link);
 
 	memset(&ep, 0, sizeof ep);
 	if (mask & WL_EVENT_READABLE)
@@ -118,12 +106,33 @@ wl_event_loop_add_fd(struct wl_event_loop *loop,
 		ep.events |= EPOLLOUT;
 	ep.data.ptr = source;
 
-	if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_ADD, fd, &ep) < 0) {
+	if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_ADD, source->fd, &ep) < 0) {
+		close(source->fd);
 		free(source);
 		return NULL;
 	}
 
-	return &source->base;
+	return source;
+}
+
+WL_EXPORT struct wl_event_source *
+wl_event_loop_add_fd(struct wl_event_loop *loop,
+		     int fd, uint32_t mask,
+		     wl_event_loop_fd_func_t func,
+		     void *data)
+{
+	struct wl_event_source_fd *source;
+
+	source = malloc(sizeof *source);
+	if (source == NULL)
+		return NULL;
+
+	source->base.interface = &fd_source_interface;
+	source->base.fd = fcntl(fd, F_DUPFD_CLOEXEC, 0);
+	source->func = func;
+	source->fd = fd;
+
+	return add_source(loop, &source->base, mask, data);
 }
 
 WL_EXPORT int
@@ -164,16 +173,8 @@ wl_event_source_timer_dispatch(struct wl_event_source *source,
 	return timer_source->func(timer_source->base.data);
 }
 
-static int
-wl_event_source_timer_remove(struct wl_event_source *source)
-{
-	close(source->fd);
-	return 0;
-}
-
 struct wl_event_source_interface timer_source_interface = {
 	wl_event_source_timer_dispatch,
-	wl_event_source_timer_remove
 };
 
 WL_EXPORT struct wl_event_source *
@@ -182,39 +183,16 @@ wl_event_loop_add_timer(struct wl_event_loop *loop,
 			void *data)
 {
 	struct wl_event_source_timer *source;
-	struct epoll_event ep;
-	int fd;
 
 	source = malloc(sizeof *source);
 	if (source == NULL)
 		return NULL;
 
 	source->base.interface = &timer_source_interface;
-	source->base.loop = loop;
-	wl_list_init(&source->base.link);
-
-	fd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC);
-	if (fd < 0) {
-		fprintf(stderr, "could not create timerfd\n: %m");
-		free(source);
-		return NULL;
-	}
-	source->base.fd = fd;
-
+	source->base.fd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC);
 	source->func = func;
-	source->base.data = data;
 
-	memset(&ep, 0, sizeof ep);
-	ep.events = EPOLLIN;
-	ep.data.ptr = source;
-
-	if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_ADD, fd, &ep) < 0) {
-		close(source->base.fd);
-		free(source);
-		return NULL;
-	}
-
-	return &source->base;
+	return add_source(loop, &source->base, WL_EVENT_READABLE, data);
 }
 
 WL_EXPORT int
@@ -258,16 +236,8 @@ wl_event_source_signal_dispatch(struct wl_event_source *source,
 				   signal_source->base.data);
 }
 
-static int
-wl_event_source_signal_remove(struct wl_event_source *source)
-{
-	close(source->fd);
-	return 0;
-}
-
 struct wl_event_source_interface signal_source_interface = {
 	wl_event_source_signal_dispatch,
-	wl_event_source_signal_remove
 };
 
 WL_EXPORT struct wl_event_source *
@@ -277,44 +247,23 @@ wl_event_loop_add_signal(struct wl_event_loop *loop,
 			void *data)
 {
 	struct wl_event_source_signal *source;
-	struct epoll_event ep;
 	sigset_t mask;
-	int fd;
 
 	source = malloc(sizeof *source);
 	if (source == NULL)
 		return NULL;
 
 	source->base.interface = &signal_source_interface;
-	source->base.loop = loop;
-	wl_list_init(&source->base.link);
 	source->signal_number = signal_number;
 
 	sigemptyset(&mask);
 	sigaddset(&mask, signal_number);
-	fd = signalfd(-1, &mask, SFD_CLOEXEC);
-	if (fd < 0) {
-		fprintf(stderr, "could not create fd to watch signal\n: %m");
-		free(source);
-		return NULL;
-	}
-	source->base.fd = fd;
+	source->base.fd = signalfd(-1, &mask, SFD_CLOEXEC);
 	sigprocmask(SIG_BLOCK, &mask, NULL);
 
 	source->func = func;
-	source->base.data = data;
 
-	memset(&ep, 0, sizeof ep);
-	ep.events = EPOLLIN;
-	ep.data.ptr = source;
-
-	if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_ADD, fd, &ep) < 0) {
-		close(fd);
-		free(source);
-		return NULL;
-	}
-
-	return &source->base;
+	return add_source(loop, &source->base, WL_EVENT_READABLE, data);
 }
 
 struct wl_event_source_idle {
@@ -324,7 +273,6 @@ struct wl_event_source_idle {
 
 struct wl_event_source_interface idle_source_interface = {
 	NULL,
-	NULL
 };
 
 WL_EXPORT struct wl_event_source *
@@ -340,7 +288,7 @@ wl_event_loop_add_idle(struct wl_event_loop *loop,
 
 	source->base.interface = &idle_source_interface;
 	source->base.loop = loop;
-	source->base.fd = 0;
+	source->base.fd = -1;
 
 	source->func = func;
 	source->base.data = data;
@@ -361,13 +309,11 @@ wl_event_source_remove(struct wl_event_source *source)
 {
 	struct wl_event_loop *loop = source->loop;
 
-	if (!wl_list_empty(&source->link))
-		wl_list_remove(&source->link);
-
-	if (source->interface->remove)
-		source->interface->remove(source);
+	if (source->fd >= 0)
+		close(source->fd);
 
 	source->fd = -1;
+	wl_list_remove(&source->link);
 	wl_list_insert(&loop->destroy_list, &source->link);
 
 	return 0;
