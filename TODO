@@ -1,8 +1,5 @@
 Core wayland protocol
 
- - scanner: wl_* prefix removal: split it out into a namespace part so
-   we can call variables "surface" instead of "wl_surface"?
-
  - We need rotation information in the output (multiples of 90
    degress) and we'll need a way for a client to communicate that it
    has rendered it's buffer according to the output rotation.  The
