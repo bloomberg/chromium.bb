@@ -113,6 +113,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainTest);
   FRIEND_TEST(ImmediateInterpreterTest, ZoomTests);
   FRIEND_TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest);
+  FRIEND_TEST(ImmediateInterpreterTest, AvoidAccidentalZoomTest);
   friend class TapRecord;
 
  public:
@@ -221,10 +222,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
                                       const FingerState& finger2);
 
   // In case no other gesture has been detected,
-  // DeterminePotentialZoomGestureType will check for a zoom gesture
+  // UpdatePinchStateMachine will check for a zoom gesture
   // and return the updated gesture type.
-  GestureType DeterminePotentialZoomGestureType(
-      const HardwareState& hwstate) const;
+  bool UpdatePinchState(const HardwareState& hwstate, bool reset);
 
   // Returns the current three-finger gesture, or kGestureTypeNull if no gesture
   // should be produced.
@@ -369,6 +369,13 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   set<short, kMaxGesturingFingers> prev_scroll_fingers_;
   ScrollEventBuffer scroll_buffer_;
 
+  // When guessing a pinch gesture. Do we guess pinch (true) or no-pinch?
+  bool pinch_guess_;
+  // Time when pinch guess was made. -1 if no guess has been made yet.
+  stime_t pinch_guess_start_;
+  // True when the pinch decision has been locked.
+  bool pinch_locked_;
+
   // Properties
 
   // Is Tap-To-Click enabled
@@ -479,13 +486,16 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // are the slopes for the two lines.
   DoubleProperty vertical_scroll_snap_slope_;
   DoubleProperty horizontal_scroll_snap_slope_;
-
-  // Minimal distance [mm] of movement per finger
-  // before a zoom gesture is considered.
-  DoubleProperty zoom_min_movement_;
-  // Minimal distance [mm] of movement per finger
-  // before the zoom gesture is locked in.
-  DoubleProperty zoom_lock_min_movement_;
+  // Ratio between finger movement that indicates not-a-pinch gesture
+  DoubleProperty no_pinch_guess_ratio_;
+  // Ratio between finger movement that certainly indicates not-a-pinch gesture
+  DoubleProperty no_pinch_certain_ratio_;
+  // Movement [mm] that is considered as noise during pinch detection
+  DoubleProperty pinch_noise_level_;
+  // Minimal distance [mm] fingers have to move to indicate a pinch gesture.
+  DoubleProperty pinch_guess_min_movement_;
+  // Minimal distance [mm] fingers have to move to lock a pinch gesture.
+  DoubleProperty pinch_certain_min_movement_;
   // Temporary flag to turn Zoom on/off while we tune it.
   BoolProperty zoom_enable_;
 };

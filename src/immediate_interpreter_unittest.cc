@@ -2898,11 +2898,11 @@ TEST(ImmediateInterpreterTest, ZoomTests) {
     {{ 0.00, 0, 0, 0, NULL }, kAny},
 
     // fast pinch outwards
-    {{ 0.01, 0, 2, 2, &finger_states[0] }, kAny},
-    {{ 0.02, 0, 2, 2, &finger_states[4] }, kAny},
-    {{ 0.03, 0, 2, 2, &finger_states[8] }, kAny},
-    {{ 0.04, 0, 2, 2, &finger_states[10] }, kZoom},
-    {{ 0.05, 0, 0, 0, NULL }, kAny},
+    {{ 0.11, 0, 2, 2, &finger_states[0] }, kAny},
+    {{ 0.12, 0, 2, 2, &finger_states[4] }, kAny},
+    {{ 0.13, 0, 2, 2, &finger_states[8] }, kAny},
+    {{ 0.14, 0, 2, 2, &finger_states[10] }, kZoom},
+    {{ 0.15, 0, 0, 0, NULL }, kAny},
 
     // slow pinch
     {{ 1.01, 0, 2, 2, &finger_states[0] }, kAny},
@@ -3099,6 +3099,7 @@ TEST(ImmediateInterpreterTest, AvoidAccidentalZoomTest) {
     const AvoidAccidentalZoomTestInput& input = inputs[i];
     if (input.flag == kS) {
       ii.reset(new ImmediateInterpreter(NULL));
+      ii->zoom_enable_.val_ = true;
       ii->SetHardwareProperties(hwprops);
     }
     // Prep inputs
