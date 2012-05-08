@@ -2,21 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PROFILES_NETWORK_PROFILE_BUBBLE_H_
-#define CHROME_BROWSER_PROFILES_NETWORK_PROFILE_BUBBLE_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_NETWORK_PROFILE_BUBBLE_H_
+#define CHROME_BROWSER_UI_VIEWS_NETWORK_PROFILE_BUBBLE_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 
 class PrefService;
-
-namespace views {
-class Link;
-class View;
-}  // namespace views
 
 // This class will try to detect if the profile is on a network share and if
 // this is the case notify the user with an info bubble.
@@ -77,4 +74,4 @@ class NetworkProfileBubble : public views::BubbleDelegateView,
   DISALLOW_COPY_AND_ASSIGN(NetworkProfileBubble);
 };
 
-#endif  // CHROME_BROWSER_PROFILES_NETWORK_PROFILE_BUBBLE_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_NETWORK_PROFILE_BUBBLE_H_

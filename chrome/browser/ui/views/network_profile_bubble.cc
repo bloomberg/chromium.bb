@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/profiles/network_profile_bubble.h"
+#include "chrome/browser/ui/views/network_profile_bubble.h"
 
 #include <wtsapi32.h>
 // Make sure we link the wtsapi lib file in.

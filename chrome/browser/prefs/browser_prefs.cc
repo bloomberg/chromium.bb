@@ -76,7 +76,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/browser/profiles/network_profile_bubble.h"
+#include "chrome/browser/ui/views/network_profile_bubble.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
