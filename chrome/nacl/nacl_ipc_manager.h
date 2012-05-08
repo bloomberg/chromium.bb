@@ -9,8 +9,12 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
-#include "ipc/ipc_channel_handle.h"
+
+namespace IPC {
+struct ChannelHandle;
+}
 
 class NaClIPCAdapter;
 
@@ -24,6 +28,9 @@ class NaClIPCManager {
  public:
   NaClIPCManager();
   ~NaClIPCManager();
+
+  // Init must be called before creating any channels.
+  void Init(scoped_refptr<base::MessageLoopProxy> io_thread_proxy);
 
   // Creates a nacl channel associated with the given channel handle (normally
   // this will come from the browser process). Returns the handle that should
@@ -45,6 +52,8 @@ class NaClIPCManager {
   // Looks up the adapter if given a handle. The pointer wil be null on
   // failures.
   scoped_refptr<NaClIPCAdapter> GetAdapter(void* handle);
+
+  scoped_refptr<base::MessageLoopProxy> io_thread_proxy_;
 
   // Lock around all data below.
   base::Lock lock_;

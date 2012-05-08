@@ -13,10 +13,15 @@ NaClIPCManager::NaClIPCManager() {
 NaClIPCManager::~NaClIPCManager() {
 }
 
+void NaClIPCManager::Init(
+    scoped_refptr<base::MessageLoopProxy> io_thread_proxy) {
+  io_thread_proxy_ = io_thread_proxy;
+}
+
 void* NaClIPCManager::CreateChannel(const IPC::ChannelHandle& handle) {
+  DCHECK(io_thread_proxy_.get());
   scoped_refptr<NaClIPCAdapter> adapter(
-      new NaClIPCAdapter(handle,
-                         ChildProcess::current()->io_message_loop_proxy()));
+      new NaClIPCAdapter(handle, io_thread_proxy_.get()));
 
   // Use the object's address as the handle given to nacl. We just need a
   // unique void* to give to nacl for us to look it up when we get calls on

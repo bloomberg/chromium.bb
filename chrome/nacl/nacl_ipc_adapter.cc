@@ -116,8 +116,8 @@ NaClIPCAdapter::NaClIPCAdapter(const IPC::ChannelHandle& handle,
       cond_var_(&lock_),
       task_runner_(runner),
       locked_data_() {
-  io_thread_data_.channel_.reset(
-      new IPC::Channel(handle, IPC::Channel::MODE_SERVER, this));
+  task_runner_->PostTask(FROM_HERE,
+      base::Bind(&NaClIPCAdapter::CreateChannelOnIOThread, this, handle));
 }
 
 NaClIPCAdapter::NaClIPCAdapter(scoped_ptr<IPC::Channel> channel,
@@ -325,6 +325,14 @@ void NaClIPCAdapter::ClearToBeSent() {
   // Don't let the string keep its buffer behind our back.
   std::string empty;
   locked_data_.to_be_sent_.swap(empty);
+}
+
+void NaClIPCAdapter::CreateChannelOnIOThread(
+    const IPC::ChannelHandle& handle) {
+  io_thread_data_.channel_.reset(
+      new IPC::Channel(handle, IPC::Channel::MODE_SERVER, this));
+  if (!io_thread_data_.channel_->Connect())
+    NOTREACHED();
 }
 
 void NaClIPCAdapter::CloseChannelOnIOThread() {

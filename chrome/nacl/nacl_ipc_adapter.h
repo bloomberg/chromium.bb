@@ -125,6 +125,7 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
   // for future use which we don't want.
   void ClearToBeSent();
 
+  void CreateChannelOnIOThread(const IPC::ChannelHandle& handle);
   void CloseChannelOnIOThread();
   void SendMessageOnIOThread(scoped_ptr<IPC::Message> message);
 
