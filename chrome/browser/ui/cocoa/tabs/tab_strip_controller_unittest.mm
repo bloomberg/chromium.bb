@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "chrome/browser/tabs/test_tab_strip_model_delegate.h"
 #import "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
@@ -55,60 +56,6 @@ using content::WebContents;
 
 namespace {
 
-// Stub model delegate
-class TestTabStripDelegate : public TabStripModelDelegate {
- public:
-  virtual TabContentsWrapper* AddBlankTab(bool foreground) {
-    return NULL;
-  }
-  virtual TabContentsWrapper* AddBlankTabAt(int index, bool foreground) {
-    return NULL;
-  }
-  virtual Browser* CreateNewStripWithContents(TabContentsWrapper* contents,
-                                              const gfx::Rect& window_bounds,
-                                              const DockInfo& dock_info,
-                                              bool maximize) {
-    return NULL;
-  }
-  virtual void ContinueDraggingDetachedTab(TabContentsWrapper* contents,
-                                           const gfx::Rect& window_bounds,
-                                           const gfx::Rect& tab_bounds) {
-  }
-  virtual int GetDragActions() const {
-    return 0;
-  }
-  virtual TabContentsWrapper* CreateTabContentsForURL(
-      const GURL& url,
-      const content::Referrer& referrer,
-      Profile* profile,
-      content::PageTransition transition,
-      bool defer_load,
-      SiteInstance* instance) const {
-    return NULL;
-  }
-  virtual bool CanDuplicateContentsAt(int index) { return true; }
-  virtual void DuplicateContentsAt(int index) { }
-  virtual void CloseFrameAfterDragSession() { }
-  virtual void CreateHistoricalTab(TabContentsWrapper* contents) { }
-  virtual bool RunUnloadListenerBeforeClosing(TabContentsWrapper* contents) {
-    return true;
-  }
-  virtual bool CanRestoreTab() {
-    return true;
-  }
-  virtual void RestoreTab() {}
-
-  virtual bool CanCloseContents(std::vector<int>* indices) { return true; }
-
-  virtual bool CanBookmarkAllTabs() const { return false; }
-
-  virtual bool CanCloseTab() const { return true; }
-
-  virtual void BookmarkAllTabs() {}
-
-  virtual bool LargeIconsPermitted() const { return true; }
-};
-
 class TabStripControllerTest : public CocoaProfileTest {
  public:
   virtual void SetUp() {
@@ -140,7 +87,7 @@ class TabStripControllerTest : public CocoaProfileTest {
     [tab_strip_ addSubview:new_tab_button.get()];
     [tab_strip_ setNewTabButton:new_tab_button.get()];
 
-    delegate_.reset(new TestTabStripDelegate());
+    delegate_.reset(new TestTabStripModelDelegate());
     model_ = browser()->tabstrip_model();
     controller_delegate_.reset([TestTabStripControllerDelegate alloc]);
     controller_.reset([[TabStripController alloc]
@@ -158,7 +105,7 @@ class TabStripControllerTest : public CocoaProfileTest {
     CocoaProfileTest::TearDown();
   }
 
-  scoped_ptr<TestTabStripDelegate> delegate_;
+  scoped_ptr<TestTabStripModelDelegate> delegate_;
   TabStripModel* model_;
   scoped_nsobject<TestTabStripControllerDelegate> controller_delegate_;
   scoped_nsobject<TabStripController> controller_;
