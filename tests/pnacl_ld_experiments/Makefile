@@ -8,7 +8,6 @@
 # How to use:
 # -----------
 # make prereq
-# make hello1.x86-32.nexe.dummy  (this will fail with undefined symbols
 # make run1
 
 ROOT=$(shell readlink -f ../../)
@@ -30,9 +29,9 @@ PATH_CRT_SRC=$(ROOT)/pnacl/support
 COMMON_FLAGS= --pnacl-driver-verbose -save-temps
 RUNNER_DEBUG= # -E LD_DEBUG=all
 
-RUNNER=$(BOOTER) $(LOADER) -S $(RUNNER_DEBUG) \
+RUNNER_X8632=$(BOOTER) $(LOADER) -S $(RUNNER_DEBUG) \
        --r_debug=0xXXXXXXXXXXXXXXXX -a -B $(IRT) \
-       -- $(LDSO) --library-path $(LIBPATH_SHARED):.
+       -- $(LDSO) --library-path $(LIBPATH_SHARED):x8632
 
 
 ######################################################################
@@ -58,6 +57,7 @@ startup_newlib_dynamic.bc: startup_newlib_dynamic.c
 # NOTE: this is not quite complete and it may be necessary
 #       to run pnac/build.sh sdk
 prereqs:
+	mkdir x8632
 	cd ../../ ; ./scons bitcode=1 platform=x86-32 \
             irt nacl_helper_bootstrap sel_ldr libnosys libnacl
 
@@ -74,7 +74,7 @@ libsimple.pso: $(S_INIT) fortytwo.bc $(S_FINI)
         $(S_INIT) fortytwo.bc $(S_FINI) \
         -Wl,--soname=libsimple.so -o $@
 
-libsimple.so: libsimple.pso
+x8632/libsimple.so: libsimple.pso
 	$(PNACL_TRANS) $(COMMON_FLAGS) -arch x86-32 -nostdlib -shared -fPIC -o $@ $^
 
 # build a shared version of libnosys from the bitcode archive
@@ -87,7 +87,7 @@ mylibnosys.pso: $(S_INIT) $(S_FINI)
               $(S_FINI) \
               -Wl,--soname=mylibnosys.so -o $@
 
-mylibnosys.so: mylibnosys.pso
+x8632/mylibnosys.so: mylibnosys.pso
 	$(PNACL_TRANS) $(COMMON_FLAGS) -arch x86-32 -nostdlib -shared -fPIC -o $@ $^
 
 # build a shared version of newlib from the bitcode archive
@@ -115,12 +115,10 @@ mylibc.pso: $(S_INIT)  $(S_FINI) mylibnosys.pso
               $(S_INIT) /tmp/mylibc/*.o  $(S_FINI) \
               -Wl,--soname=mylibc.so -L . -l:mylibnosys.pso -o $@
 
-mylibc.so: mylibc.pso
+x8632/mylibc.so: mylibc.pso
 	$(PNACL_TRANS) $(COMMON_FLAGS) -arch x86-32 -nostdlib -shared -fPIC -o $@ $^
 
-
-LD_FLAGS_NATIVE = --pnacl-allow-native -arch x86-32
-
+######################################################################
 # bookends for dynamic images
 # NOTE: the duplication of crtbegin.bc.
 # The one here was build from $(PATH_CRT_SRC)/bitcode
@@ -130,44 +128,25 @@ INIT = crtbegin.bc startup_newlib_dynamic.bc \
 
 FINI = crtend.bc
 
-# we run this to steal the .o file
-# the nexe produced by this is unfortunately not a dynamic image
-# because of special handling of -l:ld-2.9.so which gets passed through as
-# --add-extra-dt-needed=ld-nacl-x86-32.so.1 which does not trigger the
-# a dynamic image
 LIBS = -L $(LIBPATH_SHARED)  -l:ld-2.9.so  \
        -L . -l:libsimple.pso -l:keep_alive.x -l:mylibc.pso \
        -Wl,--start-group \
        -L $(LIBPATH_SDK) -l:libnacl.a \
        -Wl,--end-group
 
-
-hello1.x86-32.nexe.dummy: hello1.bc $(INIT) $(FINI) libsimple.pso mylibc.pso
-	$(PNACL_CC) $(COMMON_FLAGS) $(LD_FLAGS_NATIVE) -nodefaultlibs -nostdlib \
+hello1.pexe: hello1.bc $(INIT) $(FINI) libsimple.pso mylibc.pso mylibnosys.pso
+	$(PNACL_CC) $(COMMON_FLAGS) -nodefaultlibs -nostdlib \
         $(INIT) hello1.bc $(LIBS) $(FINI)  -o $@
 
-
-# We steal this object file from hello1.x86-32.nexe.dummy
-# NOTE:
-# NOTE: the dependency tracking is broken here
-# NOTE: you must run "make hello1.x86-32.nexe.dummy" which fails
-# NOTE: followed by "hello1.x86-32.nexe"
-# NOTE:
-MAGIC_OBJ = hello1.x86-32.nexe.dummy---linked.o
-LIBS2 = -L $(LIBPATH_SHARED)  -l:ld-2.9.so  \
-        -L . -l:libsimple.so -l:mylibnosys.so -l:mylibc.so \
-        -l:libgcc.a
-
-hello1.x86-32.nexe: libsimple.so mylibc.so mylibnosys.so
-	$(PNACL_LD) $(COMMON_FLAGS) -arch x86-32 $(MAGIC_OBJ) $(LIBS2)  -o $@
-
+x8632/hello1.nexe: hello1.pexe x8632/libsimple.so x8632/mylibc.so x8632/mylibnosys.so
+	$(PNACL_TRANS) $(COMMON_FLAGS) -rpath-link=x8632/ -arch x86-32  $^  -o $@
 
 ######################################################################
 
-run1: hello1.x86-32.nexe
-	${RUNNER}  ./hello1.x86-32.nexe
+run1: x8632/hello1.nexe
+	${RUNNER_X8632}  $^
 
 ######################################################################
 
 clean:
-	rm -f *.bc *.o *.ll *.so main *.pso *.raw *.nexe *.pexe *.meta
+	rm -f *.bc *.o *.ll *.so main *.pso *.raw *.nexe *.pexe *.meta x8632/*
