@@ -1386,7 +1386,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, OnBeforeUnloadOnClose) {
   EXPECT_EQ(0, panel_manager->num_panels());
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateWithExistingContents) {
+// http://crbug.com/126381 - should find a better notification to wait
+// for resize completion. Bounds animation could happen for all sorts of
+// reasons.
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CreateWithExistingContents) {
   PanelManager::GetInstance()->enable_auto_sizing(true);
 
   // Load contents into regular tabbed browser.
