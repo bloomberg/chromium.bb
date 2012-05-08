@@ -66,8 +66,6 @@ class BrowserInit {
                                        Profile* profile,
                                        size_t expected_tabs);
 
-  static void RegisterUserPrefs(PrefService* prefs);
-
   // Returns true if we're launching a profile synchronously. In that case, the
   // opened window should not cause a session restore.
   static bool InSynchronousProfileLaunch();
@@ -229,14 +227,6 @@ class BrowserInit {
 
     // Adds additional startup URLs to the specified vector.
     void AddStartupURLs(std::vector<GURL>* startup_urls) const;
-
-    // Checks whether Chrome is still the default browser (unless the user
-    // previously instructed not to do so) and warns the user if it is not.
-    void CheckDefaultBrowser(Profile* profile);
-
-    // Checks whether Chrome should show the 'Chrome was auto-started' infobar.
-    // Returns true if so.
-    bool CheckIfAutoLaunched(Profile* profile);
 
     // Checks whether the Preferences backup is invalid and notifies user in
     // that case.

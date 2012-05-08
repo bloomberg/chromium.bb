@@ -15,7 +15,6 @@
 #include "base/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -70,9 +69,11 @@
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/autolaunch_prompt.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/default_browser_prompt.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_trial.h"
@@ -89,7 +90,6 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/chromium_strings.h"
@@ -129,7 +129,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "chrome/browser/ui/browser_init_win.h"
-#include "chrome/installer/util/auto_launch_util.h"
 #endif
 
 using content::BrowserThread;
@@ -144,278 +143,7 @@ using protector::ProtectorServiceFactory;
 
 namespace {
 
-static const int kMaxInfobarShown = 5;
-
 bool in_synchronous_profile_launch = false;
-
-#if defined(OS_WIN)
-// The delegate for the infobar shown when Chrome was auto-launched.
-class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
-  AutolaunchInfoBarDelegate(InfoBarTabHelper* infobar_helper,
-                            PrefService* prefs,
-                            Profile* profile);
-  virtual ~AutolaunchInfoBarDelegate();
-
- private:
-  void AllowExpiry() { should_expire_ = true; }
-
-  // ConfirmInfoBarDelegate:
-  virtual bool ShouldExpire(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
-  virtual gfx::Image* GetIcon() const OVERRIDE;
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-
-  // The prefs to use.
-  PrefService* prefs_;
-
-  // Whether the user clicked one of the buttons.
-  bool action_taken_;
-
-  // Whether the info-bar should be dismissed on the next navigation.
-  bool should_expire_;
-
-  // Weak pointer to the profile, not owned by us.
-  Profile* profile_;
-
-  // Used to delay the expiration of the info-bar.
-  base::WeakPtrFactory<AutolaunchInfoBarDelegate> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutolaunchInfoBarDelegate);
-};
-
-AutolaunchInfoBarDelegate::AutolaunchInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
-    PrefService* prefs,
-    Profile* profile)
-    : ConfirmInfoBarDelegate(infobar_helper),
-      prefs_(prefs),
-      action_taken_(false),
-      should_expire_(false),
-      profile_(profile),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
-  auto_launch_trial::UpdateInfobarShownMetric();
-
-  int count = prefs_->GetInteger(prefs::kShownAutoLaunchInfobar);
-  prefs_->SetInteger(prefs::kShownAutoLaunchInfobar, count + 1);
-
-  // We want the info-bar to stick-around for a few seconds and then be hidden
-  // on the next navigation after that.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&AutolaunchInfoBarDelegate::AllowExpiry,
-                 weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(8));
-}
-
-AutolaunchInfoBarDelegate::~AutolaunchInfoBarDelegate() {
-  if (!action_taken_) {
-    auto_launch_trial::UpdateInfobarResponseMetric(
-        auto_launch_trial::INFOBAR_IGNORE);
-  }
-}
-
-bool AutolaunchInfoBarDelegate::ShouldExpire(
-    const content::LoadCommittedDetails& details) const {
-  return details.is_navigation_to_different_page() && should_expire_;
-}
-
-gfx::Image* AutolaunchInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_PRODUCT_LOGO_32);
-}
-
-string16 AutolaunchInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_INFOBAR_TEXT);
-}
-
-string16 AutolaunchInfoBarDelegate::GetButtonLabel(
-    InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_AUTO_LAUNCH_OK : IDS_AUTO_LAUNCH_REVERT);
-}
-
-bool AutolaunchInfoBarDelegate::Accept() {
-  action_taken_ = true;
-  auto_launch_trial::UpdateInfobarResponseMetric(
-      auto_launch_trial::INFOBAR_OK);
-  return true;
-}
-
-bool AutolaunchInfoBarDelegate::Cancel() {
-  action_taken_ = true;
-
-  // Track infobar reponse.
-  auto_launch_trial::UpdateInfobarResponseMetric(
-      auto_launch_trial::INFOBAR_CUT_IT_OUT);
-  // Also make sure we keep track of how many disable and how many enable.
-  auto_launch_trial::UpdateToggleAutoLaunchMetric(false);
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&auto_launch_util::DisableForegroundStartAtLogin,
-                 profile_->GetPath().BaseName().value()));
-  return true;
-}
-
-#endif  // OS_WIN
-
-// DefaultBrowserInfoBarDelegate ----------------------------------------------
-
-// The delegate for the infobar shown when Chrome is not the default browser.
-class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
-  explicit DefaultBrowserInfoBarDelegate(InfoBarTabHelper* infobar_helper,
-                                         PrefService* prefs);
-
- private:
-  virtual ~DefaultBrowserInfoBarDelegate();
-
-  void AllowExpiry() { should_expire_ = true; }
-
-  // ConfirmInfoBarDelegate:
-  virtual bool ShouldExpire(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
-  virtual gfx::Image* GetIcon() const OVERRIDE;
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool NeedElevation(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-
-  // The prefs to use.
-  PrefService* prefs_;
-
-  // Whether the user clicked one of the buttons.
-  bool action_taken_;
-
-  // Whether the info-bar should be dismissed on the next navigation.
-  bool should_expire_;
-
-  // Used to delay the expiration of the info-bar.
-  base::WeakPtrFactory<DefaultBrowserInfoBarDelegate> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultBrowserInfoBarDelegate);
-};
-
-DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper,
-    PrefService* prefs)
-    : ConfirmInfoBarDelegate(infobar_helper),
-      prefs_(prefs),
-      action_taken_(false),
-      should_expire_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
-  // We want the info-bar to stick-around for few seconds and then be hidden
-  // on the next navigation after that.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, base::Bind(&DefaultBrowserInfoBarDelegate::AllowExpiry,
-                            weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(8));
-}
-
-DefaultBrowserInfoBarDelegate::~DefaultBrowserInfoBarDelegate() {
-  if (!action_taken_)
-    UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.Ignored", 1);
-}
-
-bool DefaultBrowserInfoBarDelegate::ShouldExpire(
-    const content::LoadCommittedDetails& details) const {
-  return details.is_navigation_to_different_page() && should_expire_;
-}
-
-gfx::Image* DefaultBrowserInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-     IDR_PRODUCT_LOGO_32);
-}
-
-string16 DefaultBrowserInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringUTF16(IDS_DEFAULT_BROWSER_INFOBAR_SHORT_TEXT);
-}
-
-string16 DefaultBrowserInfoBarDelegate::GetButtonLabel(
-    InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_SET_AS_DEFAULT_INFOBAR_BUTTON_LABEL :
-      IDS_DONT_ASK_AGAIN_INFOBAR_BUTTON_LABEL);
-}
-
-bool DefaultBrowserInfoBarDelegate::NeedElevation(InfoBarButton button) const {
-  return button == BUTTON_OK;
-}
-
-bool DefaultBrowserInfoBarDelegate::Accept() {
-  action_taken_ = true;
-  UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefault", 1);
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&ShellIntegration::SetAsDefaultBrowser)));
-  return true;
-}
-
-bool DefaultBrowserInfoBarDelegate::Cancel() {
-  action_taken_ = true;
-  UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.DontSetAsDefault", 1);
-  // User clicked "Don't ask me again", remember that.
-  prefs_->SetBoolean(prefs::kCheckDefaultBrowser, false);
-  return true;
-}
-
-#if defined(OS_WIN)
-void CheckAutoLaunchCallback(Profile* profile) {
-  if (!auto_launch_trial::IsInAutoLaunchGroup())
-    return;
-
-  // We must not use GetLastActive here because this is at Chrome startup and
-  // no window might have been made active yet. We'll settle for any window.
-  Browser* browser = BrowserList::FindAnyBrowser(profile, true);
-  TabContentsWrapper* tab = browser->GetSelectedTabContentsWrapper();
-
-  // Don't show the info-bar if there are already info-bars showing.
-  InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
-  if (infobar_helper->infobar_count() > 0)
-    return;
-
-  infobar_helper->AddInfoBar(
-      new AutolaunchInfoBarDelegate(infobar_helper,
-      tab->profile()->GetPrefs(), tab->profile()));
-}
-#endif
-
-void NotifyNotDefaultBrowserCallback() {
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser)
-    return;  // Reached during ui tests.
-
-  // In ChromeBot tests, there might be a race. This line appears to get
-  // called during shutdown and |tab| can be NULL.
-  TabContentsWrapper* tab = browser->GetSelectedTabContentsWrapper();
-  if (!tab)
-    return;
-
-  // Don't show the info-bar if there are already info-bars showing.
-  InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
-  if (infobar_helper->infobar_count() > 0)
-    return;
-
-  infobar_helper->AddInfoBar(
-      new DefaultBrowserInfoBarDelegate(infobar_helper,
-                                        tab->profile()->GetPrefs()));
-}
-
-void CheckDefaultBrowserCallback() {
-  if (ShellIntegration::IsDefaultBrowser() ||
-      !ShellIntegration::CanSetAsDefaultBrowser()) {
-    return;
-  }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&NotifyNotDefaultBrowserCallback));
-}
-
 
 // SessionCrashedInfoBarDelegate ----------------------------------------------
 
@@ -705,12 +433,6 @@ bool BrowserInit::InSynchronousProfileLaunch() {
   return in_synchronous_profile_launch;
 }
 
-// static
-void BrowserInit::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(
-      prefs::kShownAutoLaunchInfobar, 0, PrefService::UNSYNCABLE_PREF);
-}
-
 bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
                                 Profile* profile,
                                 const FilePath& cur_dir,
@@ -927,10 +649,8 @@ bool BrowserInit::LaunchWithProfile::Launch(
     if (process_startup) {
       if (browser_defaults::kOSSupportsOtherBrowsers &&
           !command_line_.HasSwitch(switches::kNoDefaultBrowserCheck)) {
-        if (!CheckIfAutoLaunched(profile)) {
-          // Check whether we are the default browser.
-          CheckDefaultBrowser(profile);
-        }
+        if (!browser::ShowAutolaunchPrompt(profile))
+          browser::ShowDefaultBrowserPrompt(profile);
       }
 #if defined(OS_MACOSX)
       // Check whether the auto-update system needs to be promoted from user
@@ -1524,63 +1244,6 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
         startup_urls->erase(it);
     }
   }
-}
-
-void BrowserInit::LaunchWithProfile::CheckDefaultBrowser(Profile* profile) {
-  // We do not check if we are the default browser if:
-  // - the user said "don't ask me again" on the infobar earlier.
-  // - this is the first launch after the first run flow.
-  // - There is a policy in control of this setting.
-  if (!profile->GetPrefs()->GetBoolean(prefs::kCheckDefaultBrowser) ||
-      is_first_run_) {
-    return;
-  }
-  if (g_browser_process->local_state()->IsManagedPreference(
-      prefs::kDefaultBrowserSettingEnabled)) {
-    if (g_browser_process->local_state()->GetBoolean(
-        prefs::kDefaultBrowserSettingEnabled)) {
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(
-              base::IgnoreResult(&ShellIntegration::SetAsDefaultBrowser)));
-    } else {
-      // TODO(pastarmovj): We can't really do anything meaningful here yet but
-      // just prevent showing the infobar.
-    }
-    return;
-  }
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&CheckDefaultBrowserCallback));
-}
-
-bool BrowserInit::LaunchWithProfile::CheckIfAutoLaunched(Profile* profile) {
-#if defined(OS_WIN)
-  if (!auto_launch_trial::IsInAutoLaunchGroup())
-    return false;
-
-  // Only supported on the main profile for now.
-  if (profile->GetPath().BaseName().value() !=
-      ASCIIToUTF16(chrome::kInitialProfile)) {
-    return false;
-  }
-
-  int infobar_shown =
-      profile->GetPrefs()->GetInteger(prefs::kShownAutoLaunchInfobar);
-  if (infobar_shown >= kMaxInfobarShown)
-    return false;
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kChromeFrame))
-    return false;
-
-  if (command_line.HasSwitch(switches::kAutoLaunchAtStartup) ||
-      first_run::IsChromeFirstRun()) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&CheckAutoLaunchCallback, profile));
-    return true;
-  }
-#endif
-  return false;
 }
 
 void BrowserInit::LaunchWithProfile::CheckPreferencesBackup(Profile* profile) {

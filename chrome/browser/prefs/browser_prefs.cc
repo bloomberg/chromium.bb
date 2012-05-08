@@ -55,6 +55,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
+#include "chrome/browser/ui/autolaunch_prompt.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_view_prefs.h"
@@ -227,7 +228,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 
 #if !defined(OS_ANDROID)
   Browser::RegisterUserPrefs(user_prefs);
-  BrowserInit::RegisterUserPrefs(user_prefs);
+  browser::RegisterAutolaunchPrefs(user_prefs);
   DevToolsWindow::RegisterUserPrefs(user_prefs);
   PinnedTabCodec::RegisterUserPrefs(user_prefs);
   PluginsUI::RegisterUserPrefs(user_prefs);
