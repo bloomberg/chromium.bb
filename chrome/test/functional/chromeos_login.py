@@ -5,9 +5,14 @@
 
 import os
 import subprocess
+import sys
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+
+
+sys.path.append('/usr/local')  # To make autotest libs importable.
+from autotest.cros import cros_ui
 
 
 class ChromeosLogin(pyauto.PyUITest):
@@ -17,10 +22,8 @@ class ChromeosLogin(pyauto.PyUITest):
 
   def setUp(self):
     # We want a clean session_manager instance for every run,
-    # so restart session_manager now.
-    assert self.WaitForSessionManagerRestart(
-        lambda: subprocess.call(['pkill', 'session_manager'])), \
-        'Timed out waiting for session_manager to start.'
+    # so restart ui now.
+    cros_ui.restart()
     pyauto.PyUITest.setUp(self)
 
   def _ValidCredentials(self, account_type='test_google_account'):
