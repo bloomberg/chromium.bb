@@ -502,7 +502,8 @@ bool IsInspectorProtocolVersionSupported(const std::string& version) {
 
 void ConfigureURLRequestForReferrerPolicy(
     net::URLRequest* request, WebKit::WebReferrerPolicy referrer_policy) {
-  net::URLRequest::ReferrerPolicy net_referrer_policy;
+  net::URLRequest::ReferrerPolicy net_referrer_policy =
+      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
   switch (referrer_policy) {
     case WebKit::WebReferrerPolicyDefault:
       net_referrer_policy =
