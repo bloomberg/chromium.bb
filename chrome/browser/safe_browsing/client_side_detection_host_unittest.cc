@@ -316,8 +316,8 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
   scoped_ptr<content::TestBrowserThread> io_thread_;
 };
 
-#if defined(OS_CHROMEOS)
-// Crashes on linux_chromeos. http://crbug.com/115979
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+// Crashes on linux_chromeos and win_rel http://crbug.com/115979
 #define MAYBE_OnPhishingDetectionDoneInvalidVerdict \
     DISABLED_OnPhishingDetectionDoneInvalidVerdict
 #define MAYBE_OnPhishingDetectionDoneVerdictNotPhishing \
@@ -342,8 +342,8 @@ TEST_F(ClientSideDetectionHostTest,
   EXPECT_TRUE(Mock::VerifyAndClear(mock_extractor));
 }
 
-#if defined(OS_LINUX)
-// Crashes on linux_chromeos. http://crbug.com/115979
+#if defined(OS_LINUX) || defined(OS_WIN)
+// Crashes on linux_chromeos and win_rel. http://crbug.com/115979
 #define MAYBE_OnPhishingDetectionDoneNotPhishing \
     DISABLED_OnPhishingDetectionDoneNotPhishing
 #else
@@ -384,7 +384,8 @@ TEST_F(ClientSideDetectionHostTest,
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+// Crashes on linux_chromeos and win_rel. http://crbug.com/115979
 TEST_F(ClientSideDetectionHostTest, FLAKY_OnPhishingDetectionDoneDisabled) {
 #else
 TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneDisabled) {
