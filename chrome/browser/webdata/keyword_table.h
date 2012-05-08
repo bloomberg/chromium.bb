@@ -44,7 +44,6 @@ class Statement;
 //                          encodings, may be empty.
 //   suggest_url
 //   prepopulate_id         See TemplateURLData::prepopulate_id.
-//   autogenerate_keyword
 //   created_by_policy      See TemplateURLData::created_by_policy.  This was
 //                          added in version 26.
 //   instant_url            See TemplateURLData::instant_url.  This was added in

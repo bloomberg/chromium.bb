@@ -501,12 +501,18 @@ class TemplateURLService : public WebDataServiceConsumer,
   // it is unique to the Service.
   string16 UniquifyKeyword(const TemplateURL& turl);
 
-  // Given a TemplateURL from Sync (cloud) and a local TemplateURL with the same
-  // keyword, resolves the conflict by uniquifying either the cloud keyword or
-  // the local keyword (whichever is older). If the cloud TURL is changed, then
-  // an appropriate SyncChange is appended to |change_list|. If a local TURL is
-  // changed, the service is updated with the new keyword. In the case of tied
-  // last_modified dates, |sync_turl| wins.
+  // Given a TemplateURL from Sync (cloud) and a local, non-extension
+  // TemplateURL with the same keyword, resolves the conflict by uniquifying
+  // either the cloud keyword or the local keyword (whichever is older).  If the
+  // cloud TURL is changed, then an appropriate SyncChange is appended to
+  // |change_list|.  If a local TURL is changed, the service is updated with the
+  // new keyword, and a SyncChange is also appended (though this may be deleted
+  // before being sent to the server; see comments in the implementation).  In
+  // the case of tied last_modified dates, |sync_turl| wins.
+  //
+  // Note that we never call this for conflicts with extension keywords because
+  // other code (e.g. AddToMaps()) is responsible for correctly prioritizing
+  // extension- vs. non-extension-based TemplateURLs with the same keyword.
   void ResolveSyncKeywordConflict(TemplateURL* sync_turl,
                                   TemplateURL* local_turl,
                                   SyncChangeList* change_list);

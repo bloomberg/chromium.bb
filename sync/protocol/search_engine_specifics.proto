@@ -42,7 +42,8 @@ message SearchEngineSpecifics {
   // Set to zero if it was not prepopulated.
   optional int32 prepopulate_id = 11;
   // DEPRECATED: Whether to autogenerate a keyword for the search engine or not.
-  // Do not use this field in the future.
+  // Do not write to this field in the future.  We preserve this for now so we
+  // can read the field in order to migrate existing data that sets this bit.
   optional bool autogenerate_keyword = 12;
   // ID 13 reserved - previously used by |logo_id|, now deprecated.
   // Obsolete field. This used to represent whether or not this search engine
