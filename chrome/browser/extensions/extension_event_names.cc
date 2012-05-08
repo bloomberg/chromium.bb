@@ -33,6 +33,8 @@ const char kOnFileBrowserMountCompleted[] =
     "fileBrowserPrivate.onMountCompleted";
 const char kOnFileTransfersUpdated[] =
     "fileBrowserPrivate.onFileTransfersUpdated";
+const char kOnDocumentFeedFetched[] =
+    "fileBrowserPrivate.onDocumentFeedFetched";
 
 const char kOnInputMethodChanged[] = "inputMethodPrivate.onChanged";
 

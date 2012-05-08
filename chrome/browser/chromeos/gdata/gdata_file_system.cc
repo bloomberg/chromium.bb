@@ -3025,6 +3025,12 @@ void GDataFileSystem::OnGetDocuments(const LoadDocumentFeedCallback& callback,
   // Add the current feed to the list of collected feeds for this directory.
   params->feed_list->push_back(current_feed.release());
 
+  // Compute and notify the number of entries fetched so far.
+  int num_accumulated_entries = 0;
+  for (size_t i = 0; i < params->feed_list->size(); ++i)
+    num_accumulated_entries += params->feed_list->at(i)->entries().size();
+  NotifyDocumentFeedFetched(num_accumulated_entries);
+
   // Check if we need to collect more data to complete the directory list.
   if (params->should_fetch_multiple_feeds && has_next_feed_url &&
       !next_feed_url.is_empty()) {
@@ -3777,6 +3783,23 @@ void GDataFileSystem::NotifyInitialLoadFinished() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Notify the observers that root directory has been initialized.
   FOR_EACH_OBSERVER(Observer, observers_, OnInitialLoadFinished());
+}
+
+void GDataFileSystem::NotifyDocumentFeedFetched(int num_accumulated_entries) {
+  DVLOG(1) << "Document feed fetched: " << num_accumulated_entries;
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::NotifyDocumentFeedFetched,
+                   ui_weak_ptr_,
+                   num_accumulated_entries));
+    return;
+  }
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Notify the observers that a document feed is fetched.
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnDocumentFeedFetched(num_accumulated_entries));
 }
 
 base::PlatformFileError GDataFileSystem::AddNewDirectory(

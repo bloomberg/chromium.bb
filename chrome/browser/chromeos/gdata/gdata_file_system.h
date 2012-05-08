@@ -165,6 +165,10 @@ class GDataFileSystemInterface {
     // Triggered when the file system is initially loaded.
     virtual void OnInitialLoadFinished() {}
 
+    // Triggered when a document feed is fetched. |num_accumulated_entries|
+    // tells the number of entries fetched so far.
+    virtual void OnDocumentFeedFetched(int num_accumulated_entries) {}
+
    protected:
     virtual ~Observer() {}
   };
@@ -978,6 +982,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                           const std::string& md5);
   void NotifyDirectoryChanged(const FilePath& directory_path);
   void NotifyInitialLoadFinished();
+  void NotifyDocumentFeedFetched(int num_accumulated_entries);
 
   // Helper function that completes bookkeeping tasks related to
   // completed file transfer.

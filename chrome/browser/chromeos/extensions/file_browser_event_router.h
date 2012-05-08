@@ -65,6 +65,7 @@ class FileBrowserEventRouter
 
   // gdata::GDataFileSystem::Observer overrides.
   virtual void OnDirectoryChanged(const FilePath& directory_path) OVERRIDE;
+  virtual void OnDocumentFeedFetched(int num_accumulated_entries) OVERRIDE;
 
  private:
   friend class FileBrowserEventRouterFactory;

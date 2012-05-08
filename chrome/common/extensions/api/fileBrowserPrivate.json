@@ -962,6 +962,18 @@
             "description": "File watch event information."
           }
         ]
+      },
+      {
+        "name": "onDocumentFeedFetched",
+        "type": "function",
+        "description": "Fired when a document feed is fetched.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "entriesFetched",
+            "description": "Number of entries fetched so far."
+          }
+        ]
       }
     ]
   }

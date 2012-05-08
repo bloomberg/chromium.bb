@@ -334,6 +334,22 @@ void FileBrowserEventRouter::OnDirectoryChanged(
   HandleFileWatchNotification(directory_path, false);
 }
 
+void FileBrowserEventRouter::OnDocumentFeedFetched(
+    int num_accumulated_entries) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  ListValue args;
+  args.Append(base::Value::CreateIntegerValue(num_accumulated_entries));
+  std::string args_json;
+  base::JSONWriter::Write(&args, &args_json);
+
+  profile_->GetExtensionEventRouter()->DispatchEventToExtension(
+      std::string(kFileBrowserDomain),
+      extension_event_names::kOnDocumentFeedFetched, args_json,
+      NULL, GURL());
+
+}
+
 void FileBrowserEventRouter::HandleFileWatchNotification(
     const FilePath& local_path, bool got_error) {
   base::AutoLock lock(lock_);
