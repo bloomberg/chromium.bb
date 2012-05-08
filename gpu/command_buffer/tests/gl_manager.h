@@ -25,25 +25,46 @@ class GpuScheduler;
 
 namespace gles2 {
 
+class ContextGroup;
 class MailboxManager;
 class GLES2Decoder;
 class GLES2CmdHelper;
 class GLES2Implementation;
+class ShareGroup;
 
 };
 
 class GLManager {
  public:
-  GLManager(gles2::MailboxManager* mailbox_manager,
-            gfx::GLShareGroup* share_group);
+  GLManager();
   ~GLManager();
 
   void Initialize(const gfx::Size& size);
+  void InitializeShared(const gfx::Size& size, GLManager* gl_manager);
+  void InitializeSharedMailbox(const gfx::Size& size, GLManager* gl_manager);
   void Destroy();
 
   void MakeCurrent();
 
+  gles2::MailboxManager* mailbox_manager() const {
+    return mailbox_manager_.get();
+  }
+
+  gfx::GLShareGroup* share_group() const {
+    return share_group_.get();
+  }
+
+  gles2::GLES2Implementation* gles2_implementation() const {
+    return gles2_implementation_.get();
+  }
+
  private:
+  void Setup(
+      const gfx::Size& size,
+      gles2::MailboxManager* mailbox_manager,
+      gfx::GLShareGroup* share_group,
+      gles2::ContextGroup* context_group,
+      gles2::ShareGroup* client_share_group);
   void PumpCommands();
   bool GetBufferChanged(int32 transfer_buffer_id);
 

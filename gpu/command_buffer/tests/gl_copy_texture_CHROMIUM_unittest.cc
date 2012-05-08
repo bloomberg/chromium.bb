@@ -10,6 +10,7 @@
 #include <GLES2/gl2ext.h>
 
 #include "gpu/command_buffer/tests/gl_manager.h"
+#include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,9 +19,6 @@ namespace gpu {
 // A collection of tests that exercise the GL_CHROMIUM_copy_texture extension.
 class GLCopyTextureCHROMIUMTest : public testing::Test {
  protected:
-  GLCopyTextureCHROMIUMTest() : gl_(NULL, NULL) {
-  }
-
   virtual void SetUp() {
     gl_.Initialize(gfx::Size(4, 4));
 
@@ -216,5 +214,71 @@ TEST_F(GLCopyTextureCHROMIUMTest, BasicStatePreservation) {
 
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 };
+
+TEST_F(GLCopyTextureCHROMIUMTest, ProgramStatePreservation) {
+  // unbind the one created in setup.
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  GLManager gl2;
+  gl2.InitializeShared(gfx::Size(16, 16), &gl_);
+  gl_.MakeCurrent();
+
+  static const char* v_shader_str =
+      "attribute vec4 g_Position;\n"
+      "void main()\n"
+      "{\n"
+      "   gl_Position = g_Position;\n"
+      "}\n";
+  static const char* f_shader_str =
+      "precision mediump float;\n"
+      "void main()\n"
+      "{\n"
+      "  gl_FragColor = vec4(0,1,0,1);\n"
+      "}\n";
+
+  GLuint program = GLTestHelper::LoadProgram(v_shader_str, f_shader_str);
+  glUseProgram(program);
+  GLuint position_loc = glGetAttribLocation(program, "g_Position");
+  glFlush();
+
+  // Delete program from other context.
+  gl2.MakeCurrent();
+  glDeleteProgram(program);
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+  glFlush();
+
+  // Program should still be usable on this context.
+  gl_.MakeCurrent();
+
+  GLTestHelper::SetupUnitQuad(position_loc);
+
+  // test using program before
+  uint8 expected[] = { 0, 255, 0, 255, };
+  uint8 zero[] = { 0, 0, 0, 0, };
+  glClear(GL_COLOR_BUFFER_BIT);
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, zero));
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected));
+
+  // Call copyTextureCHROMIUM
+  uint8 pixels[1 * 4] = { 255u, 0u, 0u, 255u };
+  glBindTexture(GL_TEXTURE_2D, textures_[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               pixels);
+  glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0, GL_RGBA);
+
+  // test using program after
+  glClear(GL_COLOR_BUFFER_BIT);
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, zero));
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected));
+
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+  gl2.MakeCurrent();
+  gl2.Destroy();
+  gl_.MakeCurrent();
+}
 
 }  // namespace gpu

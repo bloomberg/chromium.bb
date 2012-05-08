@@ -5,9 +5,11 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#if defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
+#endif
 #include "gpu/command_buffer/client/gles2_lib.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "ui/gfx/gl/gl_surface.h"
 
 #if defined(TOOLKIT_GTK)
@@ -17,6 +19,9 @@
 int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
   CommandLine::Init(argc, argv);
+#if defined(OS_MACOSX)
+  base::mac::ScopedNSAutoreleasePool pool;
+#endif
 #if defined(TOOLKIT_GTK)
     gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
 #endif
@@ -24,8 +29,7 @@ int main(int argc, char** argv) {
   ::gles2::Initialize();
   MessageLoop::Type message_loop_type = MessageLoop::TYPE_UI;
   MessageLoop main_message_loop(message_loop_type);
-  testing::InitGoogleMock(&argc, argv);
-  return RUN_ALL_TESTS();
+  return GLTestHelper::RunTests(argc, argv);
 }
 
 

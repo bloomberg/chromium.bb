@@ -2239,16 +2239,14 @@ bool GLES2DecoderImpl::Initialize(
     return false;
   }
 
-  GLint viewport_params[4];
-  glGetIntegerv(GL_VIEWPORT, viewport_params);
-  viewport_x_ = viewport_params[0];
-  viewport_y_ = viewport_params[1];
-  viewport_width_ = viewport_params[2];
-  viewport_height_ = viewport_params[3];
+  viewport_width_ = size.width();
+  viewport_height_ = size.height();
+  glViewport(viewport_x_, viewport_y_, viewport_width_, viewport_height_);
 
+  GLint viewport_params[4] = { 0 };
   glGetIntegerv(GL_MAX_VIEWPORT_DIMS, viewport_params);
   viewport_max_width_ = viewport_params[0];
-  viewport_max_height_ = viewport_params[0];
+  viewport_max_height_ = viewport_params[1];
 
   return true;
 }

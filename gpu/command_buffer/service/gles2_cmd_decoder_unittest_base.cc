@@ -293,15 +293,9 @@ void GLES2DecoderTestBase::InitDecoder(
       .RetiresOnSaturation();
 #endif
 
-  static GLint viewport_dims[] = {
-    kViewportX,
-    kViewportY,
-    kViewportWidth,
-    kViewportHeight,
-  };
-  EXPECT_CALL(*gl_, GetIntegerv(GL_VIEWPORT, _))
-      .WillOnce(SetArrayArgument<1>(viewport_dims,
-                                    viewport_dims + arraysize(viewport_dims)))
+  EXPECT_CALL(*gl_, Viewport(
+      kViewportX, kViewportY, kViewportWidth, kViewportHeight))
+      .Times(1)
       .RetiresOnSaturation();
 
   static GLint max_viewport_dims[] = {
