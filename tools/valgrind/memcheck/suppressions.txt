@@ -5772,14 +5772,6 @@
    fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
    fun:_ZN30ChromeBrowserMainExtraPartsAsh14PreProfileInitEv
 }
-{
-   bug_125890
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN14TestingProfile20CreateRequestContextEv
-   fun:_ZN12*SpellingServiceClientTestC2Ev
-   fun:_ZN47SpellingServiceClientTest_RequestTextCheck_TestC1Ev
-}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

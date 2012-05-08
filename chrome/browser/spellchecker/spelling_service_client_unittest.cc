@@ -153,9 +153,7 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
 // monitor the class calls the callback with expected results.
 class SpellingServiceClientTest : public testing::Test {
  public:
-  SpellingServiceClientTest() {
-    profile_.CreateRequestContext();
-  }
+  SpellingServiceClientTest() {}
   virtual ~SpellingServiceClientTest() {}
 
   void OnTextCheckComplete(int tag,

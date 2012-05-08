@@ -50,9 +50,6 @@ bool SpellingServiceClient::RequestTextCheck(
     const string16& text,
     const TextCheckCompleteCallback& callback) {
   DCHECK(type == SUGGEST || type == SPELLCHECK);
-  net::URLRequestContextGetter* context = profile->GetRequestContext();
-  if (!context)
-    return false;
   std::string locale = profile->GetPrefs()->GetString(
       prefs::kSpellCheckDictionary);
   char language[ULOC_LANG_CAPACITY] = ULOC_ENGLISH;
@@ -101,7 +98,7 @@ bool SpellingServiceClient::RequestTextCheck(
   static const char kSpellingServiceURL[] = SPELLING_SERVICE_URL;
   GURL url = GURL(kSpellingServiceURL);
   fetcher_.reset(CreateURLFetcher(url));
-  fetcher_->SetRequestContext(context);
+  fetcher_->SetRequestContext(profile->GetRequestContext());
   fetcher_->SetUploadData("application/json", request);
   fetcher_->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
