@@ -293,7 +293,7 @@ wl_event_loop_add_signal(struct wl_event_loop *loop,
 	sigemptyset(&mask);
 	sigaddset(&mask, signal_number);
 	fd = signalfd(-1, &mask, SFD_CLOEXEC);
-	if (source->base.fd < 0) {
+	if (fd < 0) {
 		fprintf(stderr, "could not create fd to watch signal\n: %m");
 		free(source);
 		return NULL;
