@@ -1025,9 +1025,6 @@ const char kMetricsOngoingLogsXml[] =
 const char kMetricsOngoingLogsProto[] =
     "user_experience_metrics.ongoing_logs_as_protobufs";
 
-// String serialized form of variations seed protobuf.
-const char kVariationsSeed[] = "variations_seed";
-
 // Where profile specific metrics are placed.
 const char kProfileMetrics[] = "user_experience_metrics.profiles";
 
