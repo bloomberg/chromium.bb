@@ -58,7 +58,7 @@ chrome.experimental.keybinding.onCommand.addListener(function(command) {
 
 chrome.extension.onMessage.addListener(function(msg, _, sendResponse) {
   if (msg.setAlarm) {
-    chrome.experimental.alarms.create({delayInMinutes: 0.1});
+    chrome.alarms.create({delayInMinutes: 0.1});
   } else if (msg.delayedResponse) {
     // Note: setTimeout itself does NOT keep the page awake. We return true
     // from the onMessage event handler, which keeps the message channel open -
@@ -75,7 +75,7 @@ chrome.extension.onMessage.addListener(function(msg, _, sendResponse) {
   // of whether we called sendResponse.
 });
 
-chrome.experimental.alarms.onAlarm.addListener(function() {
+chrome.alarms.onAlarm.addListener(function() {
   alert("Time's up!");
 });
 

@@ -5,7 +5,7 @@
 // File-level comment to appease parser. Eventually this will not be necessary.
 // TODO(mpcomplete): We need documentation before we can release this.
 
-namespace experimental.alarms {
+namespace alarms {
   dictionary Alarm {
     // Name of this alarm.
     DOMString name;

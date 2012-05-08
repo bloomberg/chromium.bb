@@ -558,6 +558,7 @@ TEST(ExtensionPermissionsTest, PermissionMessages) {
 
   // These are considered "nuisance" or "trivial" permissions that don't need
   // a prompt.
+  skip.insert(ExtensionAPIPermission::kAlarms);
   skip.insert(ExtensionAPIPermission::kAppNotifications);
   skip.insert(ExtensionAPIPermission::kBrowsingData);
   skip.insert(ExtensionAPIPermission::kContextMenus);

@@ -12,7 +12,7 @@
 
 #include "base/timer.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/common/extensions/api/experimental.alarms.h"
+#include "chrome/common/extensions/api/alarms.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -24,7 +24,7 @@ namespace extensions {
 // There is one manager per virtual Profile.
 class AlarmManager : public content::NotificationObserver {
  public:
-  typedef extensions::api::experimental_alarms::Alarm Alarm;
+  typedef extensions::api::alarms::Alarm Alarm;
   typedef std::vector<linked_ptr<Alarm> > AlarmList;
 
   class Delegate {

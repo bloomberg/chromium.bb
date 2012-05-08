@@ -1,5 +1,11 @@
 {
   "api": {
+    "chrome.alarms.clear": "alarms.html#method-clear",
+    "chrome.alarms.clearAll": "alarms.html#method-clearAll",
+    "chrome.alarms.create": "alarms.html#method-create",
+    "chrome.alarms.get": "alarms.html#method-get",
+    "chrome.alarms.getAll": "alarms.html#method-getAll",
+    "chrome.alarms.onAlarm": "alarms.html#event-onAlarm",
     "chrome.bookmarks.create": "bookmarks.html#method-create",
     "chrome.bookmarks.get": "bookmarks.html#method-get",
     "chrome.bookmarks.getChildren": "bookmarks.html#method-getChildren",
@@ -87,12 +93,6 @@
     "chrome.devtools.panels.ExtensionSidebarPane.setPage": "devtools.panels.html#method-ExtensionSidebarPane-setPage",
     "chrome.devtools.panels.create": "devtools.panels.html#method-create",
     "chrome.devtools.panels.setOpenResourceHandler": "devtools.panels.html#method-setOpenResourceHandler",
-    "chrome.experimental.alarms.clear": "experimental.alarms.html#method-clear",
-    "chrome.experimental.alarms.clearAll": "experimental.alarms.html#method-clearAll",
-    "chrome.experimental.alarms.create": "experimental.alarms.html#method-create",
-    "chrome.experimental.alarms.get": "experimental.alarms.html#method-get",
-    "chrome.experimental.alarms.getAll": "experimental.alarms.html#method-getAll",
-    "chrome.experimental.alarms.onAlarm": "experimental.alarms.html#event-onAlarm",
     "chrome.experimental.app.clearAllNotifications": "experimental.app.html#method-clearAllNotifications",
     "chrome.experimental.app.notify": "experimental.app.html#method-notify",
     "chrome.experimental.bluetooth.connect": "experimental.bluetooth.html#method-connect",
@@ -1044,11 +1044,11 @@
     },
     {
       "api_calls": [
+        "chrome.alarms.create",
+        "chrome.alarms.onAlarm",
         "chrome.bookmarks.onRemoved",
         "chrome.browserAction.onClicked",
         "chrome.browserAction.setBadgeText",
-        "chrome.experimental.alarms.create",
-        "chrome.experimental.alarms.onAlarm",
         "chrome.experimental.keybinding.onCommand",
         "chrome.experimental.runtime.onBackgroundPageUnloadingSoon",
         "chrome.experimental.runtime.onInstalled",
@@ -1063,6 +1063,7 @@
       "crx_path": null,
       "description": "Demonstrates usage and features of the event page",
       "features": [
+        "alarms",
         "background_page",
         "bookmarks",
         "browser_action",
@@ -1078,13 +1079,13 @@
       "protocols": [
         "http://"
       ],
-      "search_string": "EVENT PAGE EXAMPLE DEMONSTRATES USAGE AND FEATURES OF THE EVENT PAGE BACKGROUND_PAGE BOOKMARKS BROWSER_ACTION EXPERIMENTAL KEYBINDING TABS CHROME.BOOKMARKS.ONREMOVED CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXPERIMENTAL.ALARMS.CREATE CHROME.EXPERIMENTAL.ALARMS.ONALARM CHROME.EXPERIMENTAL.KEYBINDING.ONCOMMAND CHROME.EXPERIMENTAL.RUNTIME.ONBACKGROUNDPAGEUNLOADINGSOON CHROME.EXPERIMENTAL.RUNTIME.ONINSTALLED CHROME.EXPERIMENTAL.WEBREQUEST.ONREQUEST CHROME.EXTENSION.ONMESSAGE CHROME.EXTENSION.SENDMESSAGE CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.TABS.SENDMESSAGE",
+      "search_string": "EVENT PAGE EXAMPLE DEMONSTRATES USAGE AND FEATURES OF THE EVENT PAGE ALARMS BACKGROUND_PAGE BOOKMARKS BROWSER_ACTION EXPERIMENTAL KEYBINDING TABS CHROME.ALARMS.CREATE CHROME.ALARMS.ONALARM CHROME.BOOKMARKS.ONREMOVED CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXPERIMENTAL.KEYBINDING.ONCOMMAND CHROME.EXPERIMENTAL.RUNTIME.ONBACKGROUNDPAGEUNLOADINGSOON CHROME.EXPERIMENTAL.RUNTIME.ONINSTALLED CHROME.EXPERIMENTAL.WEBREQUEST.ONREQUEST CHROME.EXTENSION.ONMESSAGE CHROME.EXTENSION.SENDMESSAGE CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.TABS.SENDMESSAGE",
       "source_files": [
         "background.js",
         "content.js",
         "manifest.json"
       ],
-      "source_hash": "e9b2ca00aad14c452e444f5972f28124ea67168a",
+      "source_hash": "67edee025b8525206415cb3106471e5d5ba06baf",
       "zip_path": "examples/api/eventPage/basic.zip"
     },
     {

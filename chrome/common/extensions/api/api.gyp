@@ -28,7 +28,7 @@
           'windows.json',
         ],
         'idl_schema_files': [
-          'experimental.alarms.idl',
+          'alarms.idl',
           'experimental.bluetooth.idl',
           'experimental.dns.idl',
           'experimental.serial.idl',

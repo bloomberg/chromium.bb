@@ -20,7 +20,7 @@ namespace extensions {
 
 namespace {
 
-const char kOnAlarmEvent[] = "experimental.alarms.onAlarm";
+const char kOnAlarmEvent[] = "alarms.onAlarm";
 
 class DefaultAlarmDelegate : public AlarmManager::Delegate {
  public:

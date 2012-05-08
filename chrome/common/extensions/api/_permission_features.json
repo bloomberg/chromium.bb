@@ -3,6 +3,11 @@
 // found in the LICENSE file.
 
 {
+  "alarms": {
+    "channel": "dev",
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "min_manifest_version": 2
+  },
   "appNotifications": {
     "channel": "stable",
     "extension_types": ["packaged_app", "hosted_app"]

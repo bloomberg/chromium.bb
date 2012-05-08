@@ -8,10 +8,10 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/common/extensions/api/experimental.alarms.h"
+#include "chrome/common/extensions/api/alarms.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 
-namespace alarms = extensions::api::experimental_alarms;
+namespace alarms = extensions::api::alarms;
 
 namespace extensions {
 

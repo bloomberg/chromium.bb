@@ -205,6 +205,9 @@ void ExtensionAPIPermission::RegisterAllPermissions(
 
   // Register extension permissions.
   info->RegisterPermission(
+      kAlarms, "alarms", 0,
+      ExtensionPermissionMessage::kNone, kFlagNone);
+  info->RegisterPermission(
       kBookmark, "bookmarks", IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS,
       ExtensionPermissionMessage::kBookmarks, kFlagNone);
   info->RegisterPermission(
