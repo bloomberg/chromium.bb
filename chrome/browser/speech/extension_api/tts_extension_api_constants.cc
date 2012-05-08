@@ -22,6 +22,7 @@ const char kDesiredEventTypesKey[] = "desiredEventTypes";
 const char kExtensionIdKey[] = "extensionId";
 const char kSrcIdKey[] = "srcId";
 const char kIsFinalEventKey[] = "isFinalEvent";
+const char kOnEventKey[] = "onEvent";
 
 const char kGenderFemale[] = "female";
 const char kGenderMale[] = "male";

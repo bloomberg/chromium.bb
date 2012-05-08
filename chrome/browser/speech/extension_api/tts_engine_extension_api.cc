@@ -181,6 +181,8 @@ void ExtensionTtsEngineSpeak(Utterance* utterance,
     options->Remove(constants::kSrcIdKey, NULL);
   if (options->HasKey(constants::kIsFinalEventKey))
     options->Remove(constants::kIsFinalEventKey, NULL);
+  if (options->HasKey(constants::kOnEventKey))
+    options->Remove(constants::kOnEventKey, NULL);
 
   args.Set(1, options);
   args.Set(2, Value::CreateIntegerValue(utterance->id()));

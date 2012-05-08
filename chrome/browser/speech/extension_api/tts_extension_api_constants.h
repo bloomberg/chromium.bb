@@ -27,6 +27,7 @@ extern const char kDesiredEventTypesKey[];
 extern const char kExtensionIdKey[];
 extern const char kSrcIdKey[];
 extern const char kIsFinalEventKey[];
+extern const char kOnEventKey[];
 
 extern const char kGenderFemale[];
 extern const char kGenderMale[];
