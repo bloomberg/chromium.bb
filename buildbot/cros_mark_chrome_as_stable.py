@@ -407,13 +407,14 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
                                                 new_ebuild,
                                                 chrome_rev))
 
-  RunCommand(['git', 'add', new_ebuild_path])
+  RunCommand(['git', 'add', new_ebuild_path], cwd=overlay_dir)
   if stable_candidate and not stable_candidate.IsSticky():
-    RunCommand(['git', 'rm', stable_candidate.ebuild_path])
+    RunCommand(['git', 'rm', stable_candidate.ebuild_path], cwd=overlay_dir)
 
   portage_utilities.EBuild.CommitChange(
       _GIT_COMMIT_MESSAGE % {'chrome_rev': chrome_rev,
-                             'chrome_version': chrome_version})
+                             'chrome_version': chrome_version},
+      overlay_dir)
 
   return '%s-%s' % (new_ebuild.package, new_ebuild.version)
 
@@ -491,10 +492,9 @@ def main():
     Info('No stable candidate found.')
 
   tracking_branch = 'remotes/m/%s' % os.path.basename(options.tracking_branch)
-  os.chdir(overlay_dir)
   existing_branch = cros_lib.GetCurrentBranch(overlay_dir)
   work_branch = cros_mark_as_stable.GitBranch(constants.STABLE_EBUILD_BRANCH,
-                                              tracking_branch)
+                                              tracking_branch, overlay_dir)
   work_branch.CreateBranch()
 
   # In the case of uprevving overlays that have patches applied to them,

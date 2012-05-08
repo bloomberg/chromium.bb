@@ -288,10 +288,12 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
     commit = None
     overlay_dir = self.mock_chrome_dir
 
-    cros_mark_chrome_as_stable.RunCommand(['git', 'add', new_ebuild_path])
-    cros_mark_chrome_as_stable.RunCommand(['git', 'rm', old_ebuild_path])
+    cros_mark_chrome_as_stable.RunCommand(['git', 'add', new_ebuild_path],
+                                          cwd=overlay_dir)
+    cros_mark_chrome_as_stable.RunCommand(['git', 'rm', old_ebuild_path],
+                                          cwd=overlay_dir)
     portage_utilities.EBuild.CommitChange(
-        mox.StrContains(commit_string_indicator))
+        mox.StrContains(commit_string_indicator), overlay_dir)
 
     self.mox.ReplayAll()
     cros_mark_chrome_as_stable.MarkChromeEBuildAsStable(
