@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <unistd.h>
+#include <signal.h>
 #include "../src/wayland-server.h"
 #include "test-runner.h"
 
@@ -125,4 +126,31 @@ TEST(free_source_with_data)
 	assert(close(context.p1[1]) == 0);
 	assert(close(context.p2[0]) == 0);
 	assert(close(context.p2[1]) == 0);
+}
+
+static int
+signal_callback(int signal_number, void *data)
+{
+	int *got_it = data;
+
+	assert(signal_number == SIGUSR1);
+	*got_it = 1;
+
+	return 1;
+}
+
+TEST(signal_test)
+{
+	struct wl_event_loop *loop = wl_event_loop_create();
+	struct wl_event_source *source;
+	int got_it = 0;
+
+	source = wl_event_loop_add_signal(loop, SIGUSR1,
+					  signal_callback, &got_it);
+	kill(getpid(), SIGUSR1);
+	wl_event_loop_dispatch(loop, 0);
+	assert(got_it);
+
+	wl_event_source_remove(source);
+	wl_event_loop_destroy(loop);
 }
