@@ -1558,17 +1558,17 @@ static  void
 weston_input_update_drag_surface(struct wl_input_device *input_device,
 				 int dx, int dy);
 
-WL_EXPORT void
-notify_motion(struct wl_input_device *device, uint32_t time, GLfloat x, GLfloat y)
+static void
+clip_pointer_motion(struct weston_compositor *ec,
+		    GLfloat *fx, GLfloat *fy)
 {
 	struct weston_output *output;
-	const struct wl_pointer_grab_interface *interface;
-	struct weston_input_device *wd = (struct weston_input_device *) device;
-	struct weston_compositor *ec = wd->compositor;
+	int32_t x, y;
 	int x_valid = 0, y_valid = 0;
 	int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
 
-	weston_compositor_activity(ec);
+	x = *fx;
+	y = *fy;
 
 	wl_list_for_each(output, &ec->output_list, link) {
 		if (output->x <= x && x < output->x + output->current->width)
@@ -1601,6 +1601,22 @@ notify_motion(struct wl_input_device *device, uint32_t time, GLfloat x, GLfloat 
 		else  if (y >= max_y)
 			y = max_y;
 	}
+
+	*fx = x;
+	*fy = y;
+}
+
+WL_EXPORT void
+notify_motion(struct wl_input_device *device, uint32_t time, GLfloat x, GLfloat y)
+{
+	const struct wl_pointer_grab_interface *interface;
+	struct weston_input_device *wd = (struct weston_input_device *) device;
+	struct weston_compositor *ec = wd->compositor;
+	struct weston_output *output;
+
+	weston_compositor_activity(ec);
+
+	clip_pointer_motion(ec, &x, &y);
 
 	weston_input_update_drag_surface(device,
 					 x - device->x, y - device->y);
