@@ -215,12 +215,6 @@ class COMPOSITOR_EXPORT Layer :
   float device_scale_factor() const { return device_scale_factor_; }
 
  private:
-  struct LayerProperties {
-   public:
-    ui::Layer* layer;
-    ui::Transform transform_relative_to_root;
-  };
-
   // TODO(vollick): Eventually, if a non-leaf node has an opacity of less than
   // 1.0, we'll render to a separate texture, and then apply the alpha.
   // Currently, we multiply our opacity by all our ancestor's opacities and
