@@ -128,6 +128,7 @@ validator_tests = {
   'test_stores': 1,
   'test_vector_stores': 1,
   'test_loads': 1,
+  'test_pcrel': 1,
   'test_vector_loads': 1,
 }
 
