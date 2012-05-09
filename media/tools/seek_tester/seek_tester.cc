@@ -31,7 +31,6 @@ class DemuxerHostImpl : public media::DemuxerHost {
 
   // DemuxerHost implementation.
   virtual void SetDuration(base::TimeDelta duration) OVERRIDE {}
-  virtual void SetBufferedTime(base::TimeDelta buffered_time) OVERRIDE {}
   virtual void SetCurrentReadPosition(int64 offset) OVERRIDE {}
   virtual void OnDemuxerError(media::PipelineStatus error) OVERRIDE {}
 };

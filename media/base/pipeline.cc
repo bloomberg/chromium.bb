@@ -211,10 +211,6 @@ base::TimeDelta Pipeline::GetBufferedTime() {
 
   base::TimeDelta current_time = GetCurrentTime_Locked();
 
-  // If buffered time was set, we report that value directly.
-  if (buffered_time_.ToInternalValue() > 0)
-    return std::max(buffered_time_, current_time);
-
   if (total_bytes_ == 0)
     return base::TimeDelta();
 
@@ -303,7 +299,6 @@ void Pipeline::ResetState() {
   tearing_down_     = false;
   error_caused_teardown_ = false;
   playback_rate_change_pending_ = false;
-  buffered_time_    = kZero;
   buffered_bytes_   = 0;
   streaming_        = false;
   local_source_     = false;
@@ -471,12 +466,6 @@ void Pipeline::SetDuration(base::TimeDelta duration) {
 
   base::AutoLock auto_lock(lock_);
   clock_->SetDuration(duration);
-}
-
-void Pipeline::SetBufferedTime(base::TimeDelta buffered_time) {
-  DCHECK(IsRunning());
-  base::AutoLock auto_lock(lock_);
-  buffered_time_ = buffered_time;
 }
 
 void Pipeline::SetTotalBytes(int64 total_bytes) {
