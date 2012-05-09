@@ -289,6 +289,7 @@ int RunChromeDriver() {
                                     &dispatcher,
                                     options.get());
   if (ctx == NULL) {
+    std::cerr << "Port already in use. Exiting..." << std::endl;
 #if defined(OS_WIN)
     return WSAEADDRINUSE;
 #else
@@ -318,5 +319,5 @@ int RunChromeDriver() {
 
 int main(int argc, char *argv[]) {
   CommandLine::Init(argc, argv);
-  webdriver::RunChromeDriver();
+  return webdriver::RunChromeDriver();
 }
