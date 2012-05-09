@@ -28,7 +28,7 @@ double
 // The number of points used in the linear regression which determines
 // touch velocity. If fewer than this number of points have been seen,
 // velocity is reported as 0.
-int GestureConfiguration::points_buffered_for_velocity_ = 10;
+int GestureConfiguration::points_buffered_for_velocity_ = 3;
 double GestureConfiguration::rail_break_proportion_ = 15;
 double GestureConfiguration::rail_start_proportion_ = 2;
 
