@@ -49,8 +49,8 @@ const char kStartStopTool[] = kConfigDir kServiceName ".me2me.sh";
 // knowledge of which keys belong in which files.
 const char kHostConfigFile[] = kConfigDir kServiceName ".json";
 
-const int kStopWaitRetryLimit = 20;
-const int kStopWaitTimeout = 500;
+const int kPrefPaneWaitRetryLimit = 60;
+const int kPrefPaneWaitTimeout = 1000;
 
 class DaemonControllerMac : public remoting::DaemonController {
  public:
@@ -74,9 +74,10 @@ class DaemonControllerMac : public remoting::DaemonController {
   void DoUpdateConfig(scoped_ptr<base::DictionaryValue> config,
                       const CompletionCallback& done_callback);
   void DoStop(const CompletionCallback& done_callback);
-  void NotifyWhenStopped(const CompletionCallback& done_callback,
-                         int tries_remaining,
-                         const base::TimeDelta& sleep);
+  void NotifyOnState(DaemonController::State state,
+                     const CompletionCallback& done_callback,
+                     int tries_remaining,
+                     const base::TimeDelta& sleep);
   bool ShowPreferencePane(const std::string& config_data);
 
   base::Thread auth_thread_;
@@ -166,7 +167,15 @@ void DaemonControllerMac::DoSetConfigAndStart(
 
   bool result = ShowPreferencePane(config_data);
 
-  done_callback.Run(result ? RESULT_OK : RESULT_FAILED);
+  if (!result) {
+    done_callback.Run(RESULT_FAILED);
+  }
+
+  // TODO(jamiewalch): Replace this with something a bit more robust
+  NotifyOnState(DaemonController::STATE_STARTED,
+                done_callback,
+                kPrefPaneWaitRetryLimit,
+                base::TimeDelta::FromMilliseconds(kPrefPaneWaitTimeout));
 }
 
 void DaemonControllerMac::DoUpdateConfig(
@@ -248,24 +257,28 @@ void DaemonControllerMac::DoStop(const CompletionCallback& done_callback) {
     return;
   }
 
-  NotifyWhenStopped(done_callback,
-                    kStopWaitRetryLimit,
-                    base::TimeDelta::FromMilliseconds(kStopWaitTimeout));
+  // TODO(jamiewalch): Replace this with something a bit more robust
+  NotifyOnState(DaemonController::STATE_STOPPED,
+                done_callback,
+                kPrefPaneWaitRetryLimit,
+                base::TimeDelta::FromMilliseconds(kPrefPaneWaitTimeout));
 }
 
-void DaemonControllerMac::NotifyWhenStopped(
+void DaemonControllerMac::NotifyOnState(
+    DaemonController::State state,
     const CompletionCallback& done_callback,
     int tries_remaining,
     const base::TimeDelta& sleep) {
-  if (GetState() == DaemonController::STATE_STOPPED) {
+  if (GetState() == state) {
     done_callback.Run(RESULT_OK);
   } else if (tries_remaining == 0) {
     done_callback.Run(RESULT_FAILED);
   } else {
     auth_thread_.message_loop_proxy()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&DaemonControllerMac::NotifyWhenStopped,
+        base::Bind(&DaemonControllerMac::NotifyOnState,
                    base::Unretained(this),
+                   state,
                    done_callback,
                    tries_remaining - 1,
                    sleep),
