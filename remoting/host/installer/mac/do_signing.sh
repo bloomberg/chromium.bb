@@ -124,7 +124,7 @@ build_dmg() {
 
   # Create the .dmg.
   echo "Building .dmg..."
-  ./pkg-dmg \
+  "${input_dir}/pkg-dmg" \
       --format UDBZ \
       --tempdir "${DMG_TEMP_DIR}" \
       --source "${DMG_EMPTY_DIR}" \
