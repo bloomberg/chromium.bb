@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_ENGINE_EXTENSION_API_H_
 #define CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_ENGINE_EXTENSION_API_H_
+#pragma once
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SPEECH_CHROME_SPEECH_RECOGNITION_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_SPEECH_CHROME_SPEECH_RECOGNITION_MANAGER_DELEGATE_H_
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"

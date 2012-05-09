@@ -4,6 +4,7 @@
 
 #ifndef CONTENT_BROWSER_SPEECH_INPUT_TAG_SPEECH_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_SPEECH_INPUT_TAG_SPEECH_DISPATCHER_HOST_H_
+#pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"

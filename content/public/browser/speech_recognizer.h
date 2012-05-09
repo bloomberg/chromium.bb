@@ -4,6 +4,7 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNIZER_H_
 #define CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNIZER_H_
+#pragma once
 
 #include <string>
 

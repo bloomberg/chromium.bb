@@ -4,6 +4,7 @@
 
 #ifndef CONTENT_BROWSER_SPEECH_AUDIO_ENCODER_H_
 #define CONTENT_BROWSER_SPEECH_AUDIO_ENCODER_H_
+#pragma once
 
 #include <list>
 #include <string>

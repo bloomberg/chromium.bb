@@ -4,6 +4,7 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_EVENT_LISTENER_H_
 #define CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_EVENT_LISTENER_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"

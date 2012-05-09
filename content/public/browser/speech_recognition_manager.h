@@ -4,6 +4,7 @@
 
 #ifndef CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_MANAGER_H_
 #define CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_MANAGER_H_
+#pragma once
 
 #include "base/string16.h"
 #include "base/callback.h"
