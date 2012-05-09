@@ -20,7 +20,7 @@ this.cr = (function() {
    */
   function enableTouchOptimizedCss() {
     if (cr.isTouchOptimized)
-      doc.documentElement.setAttribute('touch-optimized', '');
+      cr.doc.documentElement.setAttribute('touch-optimized', '');
   }
 
   /**
@@ -331,6 +331,8 @@ this.cr = (function() {
 
     Event.prototype = {__proto__: global.Event.prototype};
 
+    cr.doc = document;
+
     /**
      * Whether we are using a Mac or not.
      */
@@ -379,15 +381,7 @@ this.cr = (function() {
     Event: Event,
     getUid: getUid,
     initialize: initialize,
-    PropertyKind: PropertyKind,
-
-    /**
-     * The document that we are currently using.
-     * @type {!Document}
-     */
-    get doc() {
-      return document;
-    }
+    PropertyKind: PropertyKind
   };
 })();
 
