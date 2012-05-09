@@ -451,11 +451,11 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
   unsigned char* addr = static_cast<unsigned char*>(
       output->getTopDevice()->accessBitmap(true).getPixels());
   scoped_callback_runner.Release();
-  gl_helper->AsyncCopyTextureTo(container->texture_id(),
-                                container->size(),
-                                size,
-                                addr,
-                                callback);
+  gl_helper->CopyTextureTo(container->texture_id(),
+                           container->size(),
+                           size,
+                           addr,
+                           callback);
 }
 
 void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {

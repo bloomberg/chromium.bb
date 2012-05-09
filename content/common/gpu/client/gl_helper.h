@@ -30,18 +30,13 @@ class GLHelper {
 
   // Copies the contents of |src_texture| with the size of |src_size| into
   // |out|. The contents is transformed so that it fits in |dst_size|.
-  bool CopyTextureTo(WebKit::WebGLId src_texture,
+  // |callback| is invoked with the copy result when the copy operation has
+  //  completed.
+  void CopyTextureTo(WebKit::WebGLId src_texture,
                      const gfx::Size& src_size,
                      const gfx::Size& dst_size,
-                     unsigned char* out);
-
-  // Asynchronous version of CopyTextureTo. |callback| is invoked with the copy
-  // result when the copy operation has completed.
-  void AsyncCopyTextureTo(WebKit::WebGLId src_texture,
-                          const gfx::Size& src_size,
-                          const gfx::Size& dst_size,
-                          unsigned char* out,
-                          const base::Callback<void(bool)>& callback);
+                     unsigned char* out,
+                     const base::Callback<void(bool)>& callback);
 
   // Returns the shader compiled from the source.
   WebKit::WebGLId CompileShaderFromSource(const WebKit::WGC3Dchar* source,

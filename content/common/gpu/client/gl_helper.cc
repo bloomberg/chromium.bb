@@ -252,18 +252,13 @@ class GLHelper::CopyTextureToImpl {
   void InitBuffer();
   void InitProgram();
 
-  bool CopyTextureTo(WebGLId src_texture,
+  void CopyTextureTo(WebGLId src_texture,
                      const gfx::Size& src_size,
                      const gfx::Size& dst_size,
-                     unsigned char* out);
-
-  void AsyncCopyTextureTo(WebGLId src_texture,
-                          const gfx::Size& src_size,
-                          const gfx::Size& dst_size,
-                          unsigned char* out,
-                          const base::Callback<void(bool)>& callback);
+                     unsigned char* out,
+                     const base::Callback<void(bool)>& callback);
  private:
-  // A single request to AsyncCopyTextureTo.
+  // A single request to CopyTextureTo.
   // Thread-safety notes: the main thread creates instances of this class. The
   // main thread can cancel the request, before it's handled by the helper
   // thread, by resetting the texture and pixels fields. Alternatively, the
@@ -472,35 +467,7 @@ void GLHelper::CopyTextureToImpl::DeleteContextForThread() {
   context_for_thread_ = NULL;
 }
 
-bool GLHelper::CopyTextureToImpl::CopyTextureTo(
-    WebGLId src_texture,
-    const gfx::Size& src_size,
-    const gfx::Size& dst_size,
-    unsigned char* out) {
-  ScopedFlush flush(context_);
-  ScopedTexture dst_texture(context_,
-                            ScaleTexture(src_texture, src_size, dst_size));
-  ScopedFramebuffer dst_framebuffer(context_, context_->createFramebuffer());
-  {
-    ScopedFramebufferBinder<GL_DRAW_FRAMEBUFFER> framebuffer_binder(
-        context_, dst_framebuffer);
-    ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(
-        context_, dst_framebuffer);
-    context_->framebufferTexture2D(GL_DRAW_FRAMEBUFFER,
-                                   GL_COLOR_ATTACHMENT0,
-                                   GL_TEXTURE_2D,
-                                   dst_texture,
-                                   0);
-  }
-  return context_->readBackFramebuffer(
-      out,
-      4 * dst_size.GetArea(),
-      dst_framebuffer.id(),
-      dst_size.width(),
-      dst_size.height());
-}
-
-void GLHelper::CopyTextureToImpl::AsyncCopyTextureTo(
+void GLHelper::CopyTextureToImpl::CopyTextureTo(
     WebGLId src_texture,
     const gfx::Size& src_size,
     const gfx::Size& dst_size,
@@ -657,39 +624,22 @@ WebGraphicsContext3D* GLHelper::context() const {
   return context_;
 }
 
-bool GLHelper::CopyTextureTo(WebGLId src_texture,
+void GLHelper::CopyTextureTo(WebGLId src_texture,
                              const gfx::Size& src_size,
                              const gfx::Size& dst_size,
-                             unsigned char* out) {
+                             unsigned char* out,
+                             const base::Callback<void(bool)>& callback) {
   // Lazily initialize |copy_texture_to_impl_|
   if (!copy_texture_to_impl_.get())
     copy_texture_to_impl_.reset(new CopyTextureToImpl(context_,
                                                       context_for_thread_,
                                                       this));
 
-  return copy_texture_to_impl_->CopyTextureTo(
-      src_texture,
-      src_size,
-      dst_size,
-      out);
-}
-
-void GLHelper::AsyncCopyTextureTo(WebGLId src_texture,
-                                  const gfx::Size& src_size,
-                                  const gfx::Size& dst_size,
-                                  unsigned char* out,
-                                  const base::Callback<void(bool)>& callback) {
-  // Lazily initialize |copy_texture_to_impl_|
-  if (!copy_texture_to_impl_.get())
-    copy_texture_to_impl_.reset(new CopyTextureToImpl(context_,
-                                                      context_for_thread_,
-                                                      this));
-
-  copy_texture_to_impl_->AsyncCopyTextureTo(src_texture,
-                                            src_size,
-                                            dst_size,
-                                            out,
-                                            callback);
+  copy_texture_to_impl_->CopyTextureTo(src_texture,
+                                       src_size,
+                                       dst_size,
+                                       out,
+                                       callback);
 }
 
 WebGLId GLHelper::CompileShaderFromSource(
