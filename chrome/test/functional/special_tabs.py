@@ -184,16 +184,16 @@ class SpecialTabsTest(pyauto.PyUITest):
     """Confirm about:appcache-internals contains expected content for Caches.
        Also confirms that the about page populates Application Caches."""
     # Navigate to html page to activate DNS prefetching.
-    self.NavigateToURL('http://static.webvm.net/appcache-test/simple.html')
+    self.NavigateToURL('http://futtta.be/html5/offline.php')
     # Wait for page to load and display sucess or fail message.
     self.WaitUntil(
-        lambda: self.GetDOMValue('document.getElementById("result").innerHTML'),
-                                 expect_retval='SUCCESS')
+        lambda: self.GetDOMValue('document.getElementById("status").innerHTML'),
+                                 expect_retval='cached')
     self.GetBrowserWindow(0).GetTab(0).GoBack()
     test_utils.StringContentCheck(
         self, self.GetTabContents(),
         ['Manifest',
-         'http://static.webvm.net/appcache-test/resources/simple.manifest'],
+         'http://futtta.be/html5/manifest.php'],
         [])
 
   def _VerifyAboutDNS(self):
