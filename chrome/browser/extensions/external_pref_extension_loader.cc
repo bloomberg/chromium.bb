@@ -184,9 +184,10 @@ void ExternalPrefExtensionLoader::ReadExternalExtensionPrefFile(
   }
 
   JSONFileValueSerializer serializer(json_file);
-  DictionaryValue * ext_prefs = ExtractExtensionPrefs(&serializer, json_file);
-  if (ext_prefs)
-    prefs->MergeDictionary(ext_prefs);
+  scoped_ptr<DictionaryValue> ext_prefs(
+      ExtractExtensionPrefs(&serializer, json_file));
+  if (ext_prefs.get())
+    prefs->MergeDictionary(ext_prefs.get());
 }
 
 void ExternalPrefExtensionLoader::ReadStandaloneExtensionPrefFiles(
@@ -221,12 +222,11 @@ void ExternalPrefExtensionLoader::ReadStandaloneExtensionPrefFiles(
              << extension_candidate_path.LossyDisplayName().c_str();
 
     JSONFileValueSerializer serializer(extension_candidate_path);
-    DictionaryValue* ext_prefs =
-        ExtractExtensionPrefs(&serializer, extension_candidate_path);
-
-    if (ext_prefs) {
+    scoped_ptr<DictionaryValue> ext_prefs(
+        ExtractExtensionPrefs(&serializer, extension_candidate_path));
+    if (ext_prefs.get()) {
       DVLOG(1) << "Adding extension with id: " << id;
-      prefs->Set(id, ext_prefs);
+      prefs->Set(id, ext_prefs.get());
     }
   }
 }
