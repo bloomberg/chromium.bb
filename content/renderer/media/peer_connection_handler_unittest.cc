@@ -133,8 +133,7 @@ TEST(PeerConnectionHandlerTest, Basic) {
   talk_base::scoped_refptr<webrtc::MockVideoRendererWrapper> renderer(
       new talk_base::RefCountedObject<webrtc::MockVideoRendererWrapper>());
   pc_handler->SetRemoteVideoRenderer(remote_video_track_label, renderer);
-  EXPECT_EQ(renderer, static_cast<webrtc::MockLocalVideoTrack*>(
-      remote_video_track.get())->renderer());
+  EXPECT_EQ(renderer, remote_video_track->GetRenderer());
 
   WebKit::WebVector<WebKit::WebMediaStreamDescriptor> empty_streams(
       static_cast<size_t>(0));

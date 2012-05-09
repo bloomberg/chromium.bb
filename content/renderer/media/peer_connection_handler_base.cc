@@ -110,7 +110,7 @@ webrtc::VideoTrackInterface* PeerConnectionHandlerBase::FindRemoteVideoTrack(
   for (size_t i = 0; i < streams->count(); ++i) {
     webrtc::VideoTracks* track_list =streams->at(i)->video_tracks();
     for (size_t j =0; j < track_list->count(); ++j) {
-      if (track_list->at(i)->label() == source_id) {
+      if (track_list->at(j)->label() == source_id) {
         return track_list->at(j);
       }
     }

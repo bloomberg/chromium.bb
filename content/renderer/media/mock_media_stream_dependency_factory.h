@@ -32,8 +32,6 @@ class MockLocalVideoTrack : public LocalVideoTrackInterface {
   virtual void RegisterObserver(ObserverInterface* observer) OVERRIDE;
   virtual void UnregisterObserver(ObserverInterface* observer) OVERRIDE;
 
-  VideoRendererWrapperInterface* renderer() const { return renderer_; }
-
  protected:
   virtual ~MockLocalVideoTrack() {}
 
