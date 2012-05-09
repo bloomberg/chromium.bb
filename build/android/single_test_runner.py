@@ -271,10 +271,9 @@ class SingleTestRunner(BaseTestRunner):
       logging.info('*' * 80)
       if executed_names == all_tests:
         break
-    self.test_results = TestResults.FromOkAndFailed(list(executed_results -
-                                                         failed_results),
-                                                    list(failed_results),
-                                                    False, False)
+    self.test_results = TestResults.FromRun(
+        ok=list(executed_results - failed_results),
+        failed=list(failed_results))
 
   def RunTests(self):
     """Runs all tests (in rebaseline mode, runs each test in isolation).

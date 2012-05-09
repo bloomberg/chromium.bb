@@ -61,10 +61,12 @@ class TestResults(object):
     self.overall_fail = False
 
   @staticmethod
-  def FromOkAndFailed(ok, failed, timed_out, overall_fail):
+  def FromRun(ok=None, failed=None, crashed=None, timed_out=False,
+              overall_fail=False):
     ret = TestResults()
-    ret.ok = ok
-    ret.failed = failed
+    ret.ok = ok or []
+    ret.failed = failed or []
+    ret.crashed = crashed or []
     ret.timed_out = timed_out
     ret.overall_fail = overall_fail
     return ret

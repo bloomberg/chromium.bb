@@ -129,11 +129,15 @@ class TestPackage(object):
     """
     ok_tests = []
     failed_tests = []
+    crashed_tests = []
     timed_out = False
     overall_fail = False
     re_run = re.compile('\[ RUN      \] ?(.*)\r\n')
     # APK tests rely on the END tag.
     re_end = re.compile('\[ END      \] ?(.*)\r\n')
+    # Signal handlers are installed before starting tests
+    # to output the CRASHED marker when a crash happens.
+    re_crash = re.compile('\[ CRASHED      \](.*)\r\n')
     re_fail = re.compile('\[  FAILED  \] ?(.*)\r\n')
     re_runner_fail = re.compile('\[ RUNNER_FAILED \] ?(.*)\r\n')
     re_ok = re.compile('\[       OK \] ?(.*)\r\n')
@@ -152,16 +156,22 @@ class TestPackage(object):
       if self.dump_debug_info:
         self.dump_debug_info.TakeScreenshot('_Test_Start_Run_')
       full_test_name = p.match.group(1)
-      found = p.expect([re_ok, re_fail, pexpect.EOF, pexpect.TIMEOUT],
+      found = p.expect([re_ok, re_fail, re_crash, pexpect.EOF, pexpect.TIMEOUT],
                        timeout=self.timeout)
       if found == 0:  # re_ok
         ok_tests += [BaseTestResult(full_test_name.replace('\r', ''),
                                     p.before)]
         continue
+      if found == 2: # re_crash
+        crashed_tests += [BaseTestResult(full_test_name.replace('\r', ''),
+                                         p.before)]
+        overall_fail = True
+        break
+      # The test failed.
       failed_tests += [BaseTestResult(full_test_name.replace('\r', ''),
                                       p.before)]
-      if found >= 2:
-        # The test crashed / bailed out (i.e., didn't print OK or FAIL).
+      if found >= 3:
+        # The test bailed out (i.e., didn't print OK or FAIL).
         if found == 3:  # pexpect.TIMEOUT
           logging.error('Test terminated after %d second timeout.',
                         self.timeout)
@@ -177,5 +187,7 @@ class TestPackage(object):
                                         '\npexpect.after: %s'
                                         % (p.before,
                                            p.after))]
-    return TestResults.FromOkAndFailed(ok_tests, failed_tests,
-                                       timed_out, overall_fail)
+    # Create TestResults and return
+    return TestResults.FromRun(ok=ok_tests, failed=failed_tests,
+                               crashed=crashed_tests, timed_out=timed_out,
+                               overall_fail=overall_fail)
