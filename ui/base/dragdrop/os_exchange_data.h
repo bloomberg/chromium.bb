@@ -86,6 +86,17 @@ class UI_EXPORT OSExchangeData {
     scoped_refptr<DownloadFileProvider> downloader;
   };
 
+  // Encapsulates the info about a file.
+  struct UI_EXPORT FileInfo {
+    FileInfo(const FilePath& path, const FilePath& display_name);
+    ~FileInfo();
+
+    // The path of the file.
+    FilePath path;
+    // The display name of the file. This field is optional.
+    FilePath display_name;
+  };
+
   // Provider defines the platform specific part of OSExchangeData that
   // interacts with the native system.
   class UI_EXPORT Provider {
@@ -96,13 +107,15 @@ class UI_EXPORT OSExchangeData {
     virtual void SetString(const string16& data) = 0;
     virtual void SetURL(const GURL& url, const string16& title) = 0;
     virtual void SetFilename(const FilePath& path) = 0;
-    virtual void SetFilenames(const std::vector<FilePath>& paths) = 0;
+    virtual void SetFilenames(
+        const std::vector<FileInfo>& file_names) = 0;
     virtual void SetPickledData(CustomFormat format, const Pickle& data) = 0;
 
     virtual bool GetString(string16* data) const = 0;
     virtual bool GetURLAndTitle(GURL* url, string16* title) const = 0;
     virtual bool GetFilename(FilePath* path) const = 0;
-    virtual bool GetFilenames(std::vector<FilePath>* paths) const = 0;
+    virtual bool GetFilenames(
+        std::vector<FileInfo>* file_names) const = 0;
     virtual bool GetPickledData(CustomFormat format, Pickle* data) const = 0;
 
     virtual bool HasString() const = 0;
@@ -156,8 +169,9 @@ class UI_EXPORT OSExchangeData {
   void SetURL(const GURL& url, const string16& title);
   // A full path to a file.
   void SetFilename(const FilePath& path);
-  // Full path to one or more files.
-  void SetFilenames(const std::vector<FilePath>& paths);
+  // Full path to one or more files. See also SetFilenames() in Provider.
+  void SetFilenames(
+      const std::vector<FileInfo>& file_names);
   // Adds pickled data of the specified format.
   void SetPickledData(CustomFormat format, const Pickle& data);
 
@@ -169,7 +183,8 @@ class UI_EXPORT OSExchangeData {
   bool GetURLAndTitle(GURL* url, string16* title) const;
   // Return the path of a file, if available.
   bool GetFilename(FilePath* path) const;
-  bool GetFilenames(std::vector<FilePath>* paths) const;
+  bool GetFilenames(
+      std::vector<FileInfo>* file_names) const;
   bool GetPickledData(CustomFormat format, Pickle* data) const;
 
   // Test whether or not data of certain types is present, without actually

@@ -62,7 +62,8 @@ class UI_EXPORT OSExchangeDataProviderGtk : public OSExchangeData::Provider {
   virtual void SetString(const string16& data) OVERRIDE;
   virtual void SetURL(const GURL& url, const string16& title) OVERRIDE;
   virtual void SetFilename(const FilePath& path) OVERRIDE;
-  virtual void SetFilenames(const std::vector<FilePath>& path) OVERRIDE {
+  virtual void SetFilenames(
+      const std::vector<OSExchangeData::FileInfo>& filenames) OVERRIDE {
     NOTREACHED();
   }
   virtual void SetPickledData(OSExchangeData::CustomFormat format,
@@ -70,7 +71,8 @@ class UI_EXPORT OSExchangeDataProviderGtk : public OSExchangeData::Provider {
   virtual bool GetString(string16* data) const OVERRIDE;
   virtual bool GetURLAndTitle(GURL* url, string16* title) const OVERRIDE;
   virtual bool GetFilename(FilePath* path) const OVERRIDE;
-  virtual bool GetFilenames(std::vector<FilePath>* paths) const OVERRIDE {
+  virtual bool GetFilenames(
+      std::vector<OSExchangeData::FileInfo>* filenames) const OVERRIDE {
     NOTREACHED();
     return false;
   }

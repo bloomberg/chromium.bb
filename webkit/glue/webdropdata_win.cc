@@ -21,7 +21,10 @@ void WebDropData::PopulateWebDropData(IDataObject* data_object,
     if (test_url.is_valid())
       drop_data->url = test_url;
   }
-  ui::ClipboardUtil::GetFilenames(data_object, &drop_data->filenames);
+  std::vector<string16> filenames;
+  ui::ClipboardUtil::GetFilenames(data_object, &filenames);
+  for (size_t i = 0; i < filenames.size(); ++i)
+    drop_data->filenames.push_back(FileInfo(filenames[i], string16()));
   ui::ClipboardUtil::GetPlainText(data_object, &drop_data->plain_text);
   std::string base_url;
   ui::ClipboardUtil::GetHtml(data_object, &drop_data->text_html, &base_url);

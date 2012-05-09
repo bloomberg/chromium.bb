@@ -152,7 +152,8 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
   virtual void SetString(const string16& data);
   virtual void SetURL(const GURL& url, const string16& title);
   virtual void SetFilename(const FilePath& path);
-  virtual void SetFilenames(const std::vector<FilePath>& paths) {
+  virtual void SetFilenames(
+      const std::vector<OSExchangeData::FileInfo>& filenames) {
     NOTREACHED();
   }
   virtual void SetPickledData(OSExchangeData::CustomFormat format,
@@ -164,7 +165,8 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
   virtual bool GetString(string16* data) const;
   virtual bool GetURLAndTitle(GURL* url, string16* title) const;
   virtual bool GetFilename(FilePath* path) const;
-  virtual bool GetFilenames(std::vector<FilePath>* paths) const {
+  virtual bool GetFilenames(
+      std::vector<OSExchangeData::FileInfo>* filenames) const {
     NOTREACHED();
     return false;
   }

@@ -30,13 +30,13 @@ void OSExchangeDataProviderAura::SetURL(const GURL& url,
 
 void OSExchangeDataProviderAura::SetFilename(const FilePath& path) {
   filenames_.clear();
-  filenames_.push_back(path);
+  filenames_.push_back(OSExchangeData::FileInfo(path, FilePath()));
   formats_ |= OSExchangeData::FILE_NAME;
 }
 
 void OSExchangeDataProviderAura::SetFilenames(
-    const std::vector<FilePath>& paths) {
-  filenames_ = paths;
+    const std::vector<OSExchangeData::FileInfo>& filenames) {
+  filenames_ = filenames;
   formats_ |= OSExchangeData::FILE_NAME;
 }
 
@@ -73,15 +73,15 @@ bool OSExchangeDataProviderAura::GetFilename(FilePath* path) const {
   if ((formats_ & OSExchangeData::FILE_NAME) == 0)
     return false;
   DCHECK(!filenames_.empty());
-  *path = filenames_[0];
+  *path = filenames_[0].path;
   return true;
 }
 
 bool OSExchangeDataProviderAura::GetFilenames(
-    std::vector<FilePath>* paths) const {
+    std::vector<OSExchangeData::FileInfo>* filenames) const {
   if ((formats_ & OSExchangeData::FILE_NAME) == 0)
     return false;
-  *paths = filenames_;
+  *filenames = filenames_;
   return true;
 }
 

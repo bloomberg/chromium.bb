@@ -579,9 +579,10 @@ void RenderViewHostImpl::DragTargetDragEnter(
   // The filenames vector, on the other hand, does represent a capability to
   // access the given files.
   std::set<FilePath> filesets;
-  for (std::vector<string16>::iterator iter(filtered_data.filenames.begin());
+  for (std::vector<WebDropData::FileInfo>::const_iterator iter(
+           filtered_data.filenames.begin());
        iter != filtered_data.filenames.end(); ++iter) {
-    FilePath path = FilePath::FromWStringHack(UTF16ToWideHack(*iter));
+    FilePath path = FilePath::FromUTF8Unsafe(UTF16ToUTF8(iter->path));
     policy->GrantRequestURL(renderer_id, net::FilePathToFileURL(path));
 
     // If the renderer already has permission to read these paths, we don't need
@@ -1384,9 +1385,10 @@ void RenderViewHostImpl::OnMsgStartDragging(
   //    still fire though, which causes read permissions to be granted to the
   //    renderer for any file paths in the drop.
   filtered_data.filenames.clear();
-  for (std::vector<string16>::const_iterator it = drop_data.filenames.begin();
+  for (std::vector<WebDropData::FileInfo>::const_iterator it =
+           drop_data.filenames.begin();
        it != drop_data.filenames.end(); ++it) {
-    FilePath path(FilePath::FromUTF8Unsafe(UTF16ToUTF8(*it)));
+    FilePath path(FilePath::FromUTF8Unsafe(UTF16ToUTF8(it->path)));
     if (policy->CanReadFile(GetProcess()->GetID(), path))
       filtered_data.filenames.push_back(*it);
   }

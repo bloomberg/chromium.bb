@@ -64,7 +64,7 @@ void InstallExtensionHandler::HandleStartDragMessage(const ListValue* args) {
   }
 
   file_to_install_ = FilePath::FromWStringHack(
-      UTF16ToWide(drop_data->filenames.front()));
+      UTF16ToWide(drop_data->filenames.front().path));
 }
 
 void InstallExtensionHandler::HandleStopDragMessage(const ListValue* args) {

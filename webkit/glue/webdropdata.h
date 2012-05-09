@@ -24,6 +24,17 @@ class WebDragData;
 }
 
 struct WEBKIT_GLUE_EXPORT WebDropData {
+  // The struct is used to represent a file in the drop data.
+  struct WEBKIT_GLUE_EXPORT FileInfo {
+    FileInfo();
+    FileInfo(const string16& path, const string16& display_name);
+
+    // The path of the file.
+    string16 path;
+    // The display name of the file. This field is optional.
+    string16 display_name;
+  };
+
   // Construct from a WebDragData object.
   explicit WebDropData(const WebKit::WebDragData&);
 
@@ -39,7 +50,7 @@ struct WEBKIT_GLUE_EXPORT WebDropData {
   string16 download_metadata;
 
   // User is dropping one or more files on the webview.
-  std::vector<string16> filenames;
+  std::vector<FileInfo> filenames;
 
   // Isolated filesystem ID for the files being dragged on the webview.
   string16 filesystem_id;

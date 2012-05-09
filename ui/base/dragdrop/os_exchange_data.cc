@@ -18,6 +18,15 @@ OSExchangeData::DownloadFileInfo::DownloadFileInfo(
 
 OSExchangeData::DownloadFileInfo::~DownloadFileInfo() {}
 
+OSExchangeData::FileInfo::FileInfo(
+    const FilePath& path,
+    const FilePath& display_name)
+    : path(path),
+      display_name(display_name) {
+}
+
+OSExchangeData::FileInfo::~FileInfo() {}
+
 OSExchangeData::OSExchangeData() : provider_(CreateProvider()) {
 }
 
@@ -39,8 +48,9 @@ void OSExchangeData::SetFilename(const FilePath& path) {
   provider_->SetFilename(path);
 }
 
-void OSExchangeData::SetFilenames(const std::vector<FilePath>& paths) {
-  provider_->SetFilenames(paths);
+void OSExchangeData::SetFilenames(
+    const std::vector<FileInfo>& filenames) {
+  provider_->SetFilenames(filenames);
 }
 
 void OSExchangeData::SetPickledData(CustomFormat format, const Pickle& data) {
@@ -59,8 +69,9 @@ bool OSExchangeData::GetFilename(FilePath* path) const {
   return provider_->GetFilename(path);
 }
 
-bool OSExchangeData::GetFilenames(std::vector<FilePath>* paths) const {
-  return provider_->GetFilenames(paths);
+bool OSExchangeData::GetFilenames(
+    std::vector<FileInfo>* filenames) const {
+  return provider_->GetFilenames(filenames);
 }
 
 bool OSExchangeData::GetPickledData(CustomFormat format, Pickle* data) const {

@@ -21,6 +21,15 @@ using WebKit::WebDragData;
 using WebKit::WebString;
 using WebKit::WebVector;
 
+WebDropData::FileInfo::FileInfo() {
+}
+
+WebDropData::FileInfo::FileInfo(const string16& path,
+                                const string16& display_name)
+    : path(path),
+      display_name(display_name) {
+}
+
 WebDropData::WebDropData(const WebDragData& drag_data) {
   const WebVector<WebDragData::Item>& item_list = drag_data.items();
   for (size_t i = 0; i < item_list.size(); ++i) {
@@ -55,7 +64,8 @@ WebDropData::WebDropData(const WebDragData& drag_data) {
         break;
       case WebDragData::Item::StorageTypeFilename:
         // TODO(varunjain): This only works on chromeos. Support win/mac/gtk.
-        filenames.push_back(item.filenameData);
+        filenames.push_back(FileInfo(item.filenameData,
+                                     item.displayNameData));
         break;
     }
   }
@@ -102,12 +112,12 @@ WebDragData WebDropData::ToDragData() const {
     item_list.push_back(item);
   }
 
-  for (std::vector<string16>::const_iterator it = filenames.begin();
-       it != filenames.end();
-       ++it) {
+  for (std::vector<FileInfo>::const_iterator it =
+           filenames.begin(); it != filenames.end(); ++it) {
     WebDragData::Item item;
     item.storageType = WebDragData::Item::StorageTypeFilename;
-    item.filenameData = *it;
+    item.filenameData = it->path;
+    item.displayNameData = it->display_name;
     item_list.push_back(item);
   }
 

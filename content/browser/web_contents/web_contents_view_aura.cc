@@ -86,11 +86,16 @@ void PrepareDragData(const WebDropData& drop_data,
   if (!drop_data.text_html.empty())
     provider->SetHtml(drop_data.text_html, drop_data.html_base_url);
   if (!drop_data.filenames.empty()) {
-    std::vector<FilePath> paths;
-    for (std::vector<string16>::const_iterator it = drop_data.filenames.begin();
-        it != drop_data.filenames.end(); ++it)
-      paths.push_back(FilePath::FromUTF8Unsafe(UTF16ToUTF8(*it)));
-    provider->SetFilenames(paths);
+    std::vector<ui::OSExchangeData::FileInfo> filenames;
+    for (std::vector<WebDropData::FileInfo>::const_iterator it =
+             drop_data.filenames.begin();
+         it != drop_data.filenames.end(); ++it) {
+      filenames.push_back(
+          ui::OSExchangeData::FileInfo(
+              FilePath::FromUTF8Unsafe(UTF16ToUTF8(it->path)),
+              FilePath::FromUTF8Unsafe(UTF16ToUTF8(it->display_name))));
+    }
+    provider->SetFilenames(filenames);
   }
   if (!drop_data.custom_data.empty()) {
     Pickle pickle;
@@ -118,11 +123,15 @@ void PrepareWebDropData(WebDropData* drop_data,
 
   data.GetHtml(&drop_data->text_html, &drop_data->html_base_url);
 
-  std::vector<FilePath> files;
+  std::vector<ui::OSExchangeData::FileInfo> files;
   if (data.GetFilenames(&files) && !files.empty()) {
-    for (std::vector<FilePath>::const_iterator it = files.begin();
-        it != files.end(); ++it)
-      drop_data->filenames.push_back(UTF8ToUTF16(it->AsUTF8Unsafe()));
+    for (std::vector<ui::OSExchangeData::FileInfo>::const_iterator
+             it = files.begin(); it != files.end(); ++it) {
+      drop_data->filenames.push_back(
+          WebDropData::FileInfo(
+              UTF8ToUTF16(it->path.AsUTF8Unsafe()),
+              UTF8ToUTF16(it->display_name.AsUTF8Unsafe())));
+    }
   }
 
   Pickle pickle;

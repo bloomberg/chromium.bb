@@ -1181,7 +1181,8 @@ void TestingAutomationProvider::DragAndDropFilePaths(
       return;
     }
 
-    drop_data.filenames.push_back(path);
+    drop_data.filenames.push_back(
+        WebDropData::FileInfo(path, string16()));
   }
 
   const gfx::Point client(x, y);
