@@ -2578,7 +2578,7 @@ void RenderViewImpl::didCompleteClientRedirect(
     // navigation.
     completed_client_redirect_src_ = Referrer(
         from, ds ? GetReferrerPolicyFromRequest(ds->request()) :
-        frame->referrerPolicy());
+        frame->document().referrerPolicy());
   }
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, DidCompleteClientRedirect(frame, from));
@@ -3118,7 +3118,7 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
   }
 
   request.setExtraData(
-      new RequestExtraData(frame->referrerPolicy(),
+      new RequestExtraData(frame->document().referrerPolicy(),
                            (frame == top_frame),
                            frame->identifier(),
                            frame->parent() == top_frame,

@@ -867,7 +867,8 @@ void TestWebViewDelegate::willSendRequest(
   std::string request_url = url.possibly_invalid_spec();
 
   request.setExtraData(
-      new webkit_glue::WebURLRequestExtraDataImpl(frame->referrerPolicy()));
+      new webkit_glue::WebURLRequestExtraDataImpl(
+          frame->document().referrerPolicy()));
 
   if (!redirect_response.isNull() && block_redirects_) {
     printf("Returning null for this redirect\n");
