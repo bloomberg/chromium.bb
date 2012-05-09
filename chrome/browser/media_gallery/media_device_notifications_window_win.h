@@ -38,6 +38,12 @@ class MediaDeviceNotificationsWindowWin {
                                        WPARAM wparam,
                                        LPARAM lparam);
 
+  // The window class of |window_|.
+  ATOM atom_;
+
+  // The handle of the module that contains the window procedure of |window_|.
+  HMODULE instance_;
+
   HWND window_;
   VolumeNameFunc volume_name_func_;
 

@@ -10,6 +10,7 @@
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/resource_util.h"
+#include "base/win/wrapped_window_proc.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/shell/resource.h"
@@ -46,8 +47,6 @@ namespace content {
 HINSTANCE Shell::instance_handle_;
 
 void Shell::PlatformInitialize() {
-  instance_handle_ = ::GetModuleHandle(NULL);
-
   INITCOMMONCONTROLSEX InitCtrlEx;
   InitCtrlEx.dwSize = sizeof(INITCOMMONCONTROLSEX);
   InitCtrlEx.dwICC  = ICC_STANDARD_CLASSES;
@@ -190,21 +189,21 @@ void Shell::Close() {
 }
 
 ATOM Shell::RegisterWindowClass() {
-  WNDCLASSEX wcex = {
-      sizeof(WNDCLASSEX),
-      CS_HREDRAW | CS_VREDRAW,
-      Shell::WndProc,
-      0,
-      0,
-      instance_handle_,
-      NULL,
-      LoadCursor(NULL, IDC_ARROW),
-      0,
-      MAKEINTRESOURCE(IDC_CONTENTSHELL),
+  WNDCLASSEX window_class;
+  base::win::InitializeWindowClass(
       kWindowClass,
+      &Shell::WndProc,
+      CS_HREDRAW | CS_VREDRAW,
+      0,
+      0,
+      LoadCursor(NULL, IDC_ARROW),
       NULL,
-    };
-  return RegisterClassEx(&wcex);
+      MAKEINTRESOURCE(IDC_CONTENTSHELL),
+      NULL,
+      NULL,
+      &window_class);
+  instance_handle_ = window_class.hInstance;
+  return RegisterClassEx(&window_class);
 }
 
 LRESULT CALLBACK Shell::WndProc(HWND hwnd, UINT message, WPARAM wParam,

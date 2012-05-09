@@ -569,31 +569,33 @@ void RenderWidgetHostViewWin::MovePluginWindows(
 }
 
 HWND RenderWidgetHostViewWin::ReparentWindow(HWND window) {
-  static ATOM window_class = 0;
-  if (!window_class) {
-    WNDCLASSEX wcex;
-    wcex.cbSize         = sizeof(WNDCLASSEX);
-    wcex.style          = CS_DBLCLKS;
-    wcex.lpfnWndProc    = base::win::WrappedWindowProc<PluginWrapperWindowProc>;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = GetModuleHandle(NULL);
-    wcex.hIcon          = 0;
-    wcex.hCursor        = 0;
-    wcex.hbrBackground  = reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = 0;
-    wcex.lpszClassName  = webkit::npapi::kWrapperNativeWindowClassName;
-    wcex.hIconSm        = 0;
-    window_class = RegisterClassEx(&wcex);
+  static ATOM atom = 0;
+  static HMODULE instance = NULL;
+  if (!atom) {
+    WNDCLASSEX window_class;
+    base::win::InitializeWindowClass(
+        webkit::npapi::kWrapperNativeWindowClassName,
+        &base::win::WrappedWindowProc<PluginWrapperWindowProc>,
+        CS_DBLCLKS,
+        0,
+        0,
+        NULL,
+        reinterpret_cast<HBRUSH>(COLOR_WINDOW+1),
+        NULL,
+        NULL,
+        NULL,
+        &window_class);
+    instance = window_class.hInstance;
+    atom = RegisterClassEx(&window_class);
   }
-  DCHECK(window_class);
+  DCHECK(atom);
 
   HWND orig_parent = ::GetParent(window);
   HWND parent = CreateWindowEx(
       WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
-      MAKEINTATOM(window_class), 0,
+      MAKEINTATOM(atom), 0,
       WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
-      0, 0, 0, 0, orig_parent, 0, GetModuleHandle(NULL), 0);
+      0, 0, 0, 0, orig_parent, 0, instance, 0);
   ui::CheckWindowCreated(parent);
   // If UIPI is enabled we need to add message filters for parents with
   // children that cross process boundaries.
@@ -2124,24 +2126,18 @@ gfx::GLSurfaceHandle RenderWidgetHostViewWin::GetCompositingSurface() {
   if (compositor_host_window_)
     return gfx::GLSurfaceHandle(compositor_host_window_, true);
 
-  static ATOM window_class = 0;
-  if (!window_class) {
-    WNDCLASSEX wcex;
-    wcex.cbSize         = sizeof(WNDCLASSEX);
-    wcex.style          = 0;
-    wcex.lpfnWndProc    =
-        base::win::WrappedWindowProc<CompositorHostWindowProc>;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = GetModuleHandle(NULL);
-    wcex.hIcon          = 0;
-    wcex.hCursor        = 0;
-    wcex.hbrBackground  = NULL;
-    wcex.lpszMenuName   = 0;
-    wcex.lpszClassName  = L"CompositorHostWindowClass";
-    wcex.hIconSm        = 0;
-    window_class = RegisterClassEx(&wcex);
-    DCHECK(window_class);
+  static ATOM atom = 0;
+  static HMODULE instance = NULL;
+  if (!atom) {
+    WNDCLASSEX window_class;
+    base::win::InitializeWindowClass(
+        L"CompositorHostWindowClass",
+        &base::win::WrappedWindowProc<CompositorHostWindowProc>,
+        0, 0, 0, NULL, NULL, NULL, NULL, NULL,
+        &window_class);
+    instance = window_class.hInstance;
+    atom = RegisterClassEx(&window_class);
+    DCHECK(atom);
   }
 
   RECT currentRect;
@@ -2156,9 +2152,9 @@ gfx::GLSurfaceHandle RenderWidgetHostViewWin::GetCompositingSurface() {
 
   compositor_host_window_ = CreateWindowEx(
     WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
-    MAKEINTATOM(window_class), 0,
+    MAKEINTATOM(atom), 0,
     WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_DISABLED,
-    0, 0, width, height, m_hWnd, 0, GetModuleHandle(NULL), 0);
+    0, 0, width, height, m_hWnd, 0, instance, 0);
   ui::CheckWindowCreated(compositor_host_window_);
 
   ui::SetWindowUserData(compositor_host_window_, this);

@@ -51,7 +51,7 @@ class ClassRegistrar {
   ~ClassRegistrar() {
     for (RegisteredClasses::iterator i = registered_classes_.begin();
          i != registered_classes_.end(); ++i) {
-      if (!UnregisterClass(i->name.c_str(), NULL)) {
+      if (!UnregisterClass(MAKEINTATOM(i->atom), i->instance)) {
         LOG(ERROR) << "Failed to unregister class " << i->name.c_str()
                    << ". Error = " << GetLastError();
       }
@@ -77,8 +77,10 @@ class ClassRegistrar {
 
   void RegisterClass(const ClassInfo& class_info,
                      const std::wstring& name,
-                     ATOM atom) {
-    registered_classes_.push_back(RegisteredClass(class_info, name, atom));
+                     ATOM atom,
+                     HMODULE instance) {
+    registered_classes_.push_back(
+        RegisteredClass(class_info, name, atom, instance));
   }
 
  private:
@@ -86,20 +88,25 @@ class ClassRegistrar {
   struct RegisteredClass {
     RegisteredClass(const ClassInfo& info,
                     const std::wstring& name,
-                    ATOM atom)
+                    ATOM atom,
+                    HMODULE instance)
         : info(info),
           name(name),
-          atom(atom) {
+          atom(atom),
+          instance(instance) {
     }
 
     // Info used to create the class.
     ClassInfo info;
 
-    // The name given to the window.
+    // The name given to the window class.
     std::wstring name;
 
-    // The ATOM returned from creating the window.
+    // The ATOM returned from registering the window class.
     ATOM atom;
+
+    // The handle of the module containing the window procedure.
+    HMODULE instance;
   };
 
   ClassRegistrar() : registered_count_(0) { }
@@ -241,24 +248,25 @@ std::wstring WindowImpl::GetWindowClassName() {
 
   // No class found, need to register one.
   HBRUSH background = NULL;
-  WNDCLASSEX class_ex = {
-    sizeof(WNDCLASSEX),
-    class_info.style,
-    base::win::WrappedWindowProc<&WindowImpl::WndProc>,
-    0,
-    0,
-    GetModuleHandle(NULL),
-    icon,
-    NULL,
-    reinterpret_cast<HBRUSH>(background + 1),
-    NULL,
-    name.c_str(),
-    icon
-  };
-  ATOM atom = RegisterClassEx(&class_ex);
+  WNDCLASSEX window_class;
+  base::win::InitializeWindowClass(
+      name.c_str(),
+      &base::win::WrappedWindowProc<WindowImpl::WndProc>,
+      class_info.style,
+      0,
+      0,
+      NULL,
+      reinterpret_cast<HBRUSH>(background + 1),
+      NULL,
+      icon,
+      icon,
+      &window_class);
+  HMODULE instance = window_class.hInstance;
+  ATOM atom = RegisterClassEx(&window_class);
   CHECK(atom) << GetLastError();
 
-  ClassRegistrar::GetInstance()->RegisterClass(class_info, name, atom);
+  ClassRegistrar::GetInstance()->RegisterClass(
+      class_info, name, atom, instance);
 
   return name;
 }

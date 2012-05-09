@@ -96,14 +96,21 @@ class NativeMenuWin::MenuHostWindow {
     if (registered)
       return;
 
-    WNDCLASSEX wcex = {0};
-    wcex.cbSize = sizeof(WNDCLASSEX);
-    wcex.style = CS_DBLCLKS;
-    wcex.lpfnWndProc = base::win::WrappedWindowProc<&MenuHostWindowProc>;
-    wcex.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);
-    wcex.lpszClassName = kWindowClassName;
-    ATOM clazz = RegisterClassEx(&wcex);
-    DCHECK(clazz);
+    WNDCLASSEX window_class;
+    base::win::InitializeWindowClass(
+        kWindowClassName,
+        &base::win::WrappedWindowProc<MenuHostWindowProc>,
+        CS_DBLCLKS,
+        0,
+        0,
+        NULL,
+        reinterpret_cast<HBRUSH>(COLOR_WINDOW+1),
+        NULL,
+        NULL,
+        NULL,
+        &window_class);
+    ATOM clazz = RegisterClassEx(&window_class);
+    CHECK(clazz);
     registered = true;
   }
 

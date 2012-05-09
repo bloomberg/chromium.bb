@@ -36,6 +36,7 @@ class CONTENT_EXPORT SystemMessageWindowWin {
     return ::DefWindowProc(hwnd, message, wparam, lparam);
   }
 
+  HMODULE instance_;
   HWND window_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemMessageWindowWin);

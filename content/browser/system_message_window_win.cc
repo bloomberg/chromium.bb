@@ -15,26 +15,25 @@ static const wchar_t* const WindowClassName = L"Chrome_SystemMessageWindow";
 
 
 SystemMessageWindowWin::SystemMessageWindowWin() {
-  HINSTANCE hinst = GetModuleHandle(NULL);
-
-  WNDCLASSEX wc = {0};
-  wc.cbSize = sizeof(wc);
-  wc.lpfnWndProc =
-      base::win::WrappedWindowProc<&SystemMessageWindowWin::WndProcThunk>;
-  wc.hInstance = hinst;
-  wc.lpszClassName = WindowClassName;
-  ATOM clazz = RegisterClassEx(&wc);
+  WNDCLASSEX window_class;
+  base::win::InitializeWindowClass(
+      WindowClassName,
+      &base::win::WrappedWindowProc<SystemMessageWindowWin::WndProcThunk>,
+      0, 0, 0, NULL, NULL, NULL, NULL, NULL,
+      &window_class);
+  instance_ = window_class.hInstance;
+  ATOM clazz = RegisterClassEx(&window_class);
   DCHECK(clazz);
 
   window_ = CreateWindow(WindowClassName,
-                         0, 0, 0, 0, 0, 0, 0, 0, hinst, 0);
+                         0, 0, 0, 0, 0, 0, 0, 0, instance_, 0);
   SetWindowLongPtr(window_, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 }
 
 SystemMessageWindowWin::~SystemMessageWindowWin() {
   if (window_) {
     DestroyWindow(window_);
-    UnregisterClass(WindowClassName, GetModuleHandle(NULL));
+    UnregisterClass(WindowClassName, instance_);
   }
 }
 

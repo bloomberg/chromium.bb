@@ -188,12 +188,13 @@ Clipboard::FormatType Clipboard::FormatType::Deserialize(
 Clipboard::Clipboard() : create_window_(false) {
   if (MessageLoop::current()->type() == MessageLoop::TYPE_UI) {
     // Make a dummy HWND to be the clipboard's owner.
-    WNDCLASSEX wcex = {0};
-    wcex.cbSize = sizeof(WNDCLASSEX);
-    wcex.lpfnWndProc = base::win::WrappedWindowProc<ClipboardOwnerWndProc>;
-    wcex.hInstance = GetModuleHandle(NULL);
-    wcex.lpszClassName = L"ClipboardOwnerWindowClass";
-    ::RegisterClassEx(&wcex);
+    WNDCLASSEX window_class;
+    base::win::InitializeWindowClass(
+        L"ClipboardOwnerWindowClass",
+        &base::win::WrappedWindowProc<ClipboardOwnerWndProc>,
+        0, 0, 0, NULL, NULL, NULL, NULL, NULL,
+        &window_class);
+    ::RegisterClassEx(&window_class);
     create_window_ = true;
   }
 
