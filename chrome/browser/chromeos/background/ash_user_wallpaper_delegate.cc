@@ -28,7 +28,7 @@ class UserWallpaperDelegate: public ash::UserWallpaperDelegate {
   }
 
   virtual const int GetUserWallpaperIndex() OVERRIDE {
-    return chromeos::UserManager::Get()->GetUserWallpaperIndex();
+    return chromeos::UserManager::Get()->GetLoggedInUserWallpaperIndex();
   }
 
   virtual void OpenSetWallpaperPage() OVERRIDE {

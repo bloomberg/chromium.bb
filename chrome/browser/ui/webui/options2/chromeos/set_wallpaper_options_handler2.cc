@@ -46,6 +46,8 @@ void SetWallpaperOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_DIALOG_TEXT));
   localized_strings->SetString("setWallpaperAuthor",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT));
+  localized_strings->SetString("randomCheckbox",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_RANDOM));
 }
 
 void SetWallpaperOptionsHandler::RegisterMessages() {
@@ -55,8 +57,11 @@ void SetWallpaperOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("onSetWallpaperPageShown",
       base::Bind(&SetWallpaperOptionsHandler::HandlePageShown,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("selectWallpaper",
-      base::Bind(&SetWallpaperOptionsHandler::HandleSelectImage,
+  web_ui()->RegisterMessageCallback("selectDefaultWallpaper",
+      base::Bind(&SetWallpaperOptionsHandler::HandleDefaultWallpaper,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("selectRandomWallpaper",
+      base::Bind(&SetWallpaperOptionsHandler::HandleRandomWallpaper,
                  base::Unretained(this)));
 }
 
@@ -86,13 +91,16 @@ void SetWallpaperOptionsHandler::HandlePageInitialized(
 
 void SetWallpaperOptionsHandler::HandlePageShown(const base::ListValue* args) {
   DCHECK(args && args->empty());
-  int index = chromeos::UserManager::Get()->GetUserWallpaperIndex();
+  User::WallpaperType type;
+  int index;
+  UserManager::Get()->GetLoggedInUserWallpaperProperties(type, index);
   base::StringValue image_url(GetDefaultWallpaperThumbnailURL(index));
+  base::FundamentalValue is_random(type == User::RANDOM);
   web_ui()->CallJavascriptFunction("SetWallpaperOptions.setSelectedImage",
-                                   image_url);
+                                   image_url, is_random);
 }
 
-void SetWallpaperOptionsHandler::HandleSelectImage(const ListValue* args) {
+void SetWallpaperOptionsHandler::HandleDefaultWallpaper(const ListValue* args) {
   std::string image_url;
   if (!args ||
       args->GetSize() != 1 ||
@@ -104,10 +112,22 @@ void SetWallpaperOptionsHandler::HandleSelectImage(const ListValue* args) {
 
   int user_image_index;
   if (IsDefaultWallpaperURL(image_url, &user_image_index)) {
-    UserManager::Get()->SaveUserWallpaperIndex(user_image_index);
+    UserManager::Get()->SaveLoggedInUserWallpaperProperties(User::DEFAULT,
+                                                            user_image_index);
     ash::Shell::GetInstance()->desktop_background_controller()->
         SetLoggedInUserWallpaper();
   }
+}
+
+void SetWallpaperOptionsHandler::HandleRandomWallpaper(const ListValue* args) {
+  int index = ash::GetRandomWallpaperIndex();
+  UserManager::Get()->SaveLoggedInUserWallpaperProperties(User::RANDOM, index);
+  ash::Shell::GetInstance()->desktop_background_controller()->
+      SetDefaultWallpaper(index);
+  base::StringValue image_url(GetDefaultWallpaperThumbnailURL(index));
+  base::FundamentalValue is_random(true);
+  web_ui()->CallJavascriptFunction("SetWallpaperOptions.setSelectedImage",
+                                   image_url, is_random);
 }
 
 gfx::NativeWindow SetWallpaperOptionsHandler::GetBrowserWindow() const {
