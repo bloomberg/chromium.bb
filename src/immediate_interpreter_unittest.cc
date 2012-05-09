@@ -1234,28 +1234,22 @@ TEST(ImmediateInterpreterTest, PalmTest) {
     switch (i) {
       case 0:
         EXPECT_TRUE(SetContainsValue(ii.pointing_, 1));
-        EXPECT_FALSE(SetContainsValue(ii.pending_palm_, 1));
         EXPECT_FALSE(SetContainsValue(ii.palm_, 1));
         EXPECT_TRUE(SetContainsValue(ii.pointing_, 2));
-        EXPECT_FALSE(SetContainsValue(ii.pending_palm_, 2));
         EXPECT_FALSE(SetContainsValue(ii.palm_, 2));
         break;
       case 1:  // fallthrough
       case 2:
         EXPECT_TRUE(SetContainsValue(ii.pointing_, 1));
-        EXPECT_FALSE(SetContainsValue(ii.pending_palm_, 1));
         EXPECT_FALSE(SetContainsValue(ii.palm_, 1));
         EXPECT_FALSE(SetContainsValue(ii.pointing_, 2));
-        EXPECT_FALSE(SetContainsValue(ii.pending_palm_, 2));
         EXPECT_TRUE(SetContainsValue(ii.palm_, 2));
         break;
       case 3:  // fallthrough
       case 4:
         EXPECT_TRUE(SetContainsValue(ii.pointing_, 3)) << "i=" << i;
-        EXPECT_FALSE(SetContainsValue(ii.pending_palm_, 3));
         EXPECT_FALSE(SetContainsValue(ii.palm_, 3));
         EXPECT_FALSE(SetContainsValue(ii.pointing_, 4));
-        EXPECT_FALSE(SetContainsValue(ii.pending_palm_, 4));
         EXPECT_TRUE(SetContainsValue(ii.palm_, 4));
         break;
     }
@@ -1263,9 +1257,61 @@ TEST(ImmediateInterpreterTest, PalmTest) {
 
   ii.ResetSameFingersState(0);
   EXPECT_TRUE(ii.pointing_.empty());
-  EXPECT_TRUE(ii.pending_palm_.empty());
   EXPECT_TRUE(SetContainsValue(ii.palm_, 4));
   EXPECT_EQ(1, ii.palm_.size());
+}
+
+TEST(ImmediateInterpreterTest, StationaryPalmTest) {
+  ImmediateInterpreter ii(NULL);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    100,  // right edge
+    100,  // bottom edge
+    1,  // x pixels/TP width
+    1,  // y pixels/TP height
+    1,  // x screen DPI
+    1,  // y screen DPI
+    5,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    1  // is button pad
+  };
+  ii.SetHardwareProperties(hwprops);
+
+  const int kPr = ii.palm_pressure_.val_ / 2;
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    // Palm is id 1, finger id 2
+    {0, 0, 0, 0, kPr, 0,  0, 40, 1, 0},
+    {0, 0, 0, 0, kPr, 0, 30, 37, 2, 0},
+
+    {0, 0, 0, 0, kPr, 0,  0, 40, 1, 0},
+    {0, 0, 0, 0, kPr, 0, 30, 40, 2, 0},
+
+    {0, 0, 0, 0, kPr, 0,  0, 40, 1, 0},
+    {0, 0, 0, 0, kPr, 0, 30, 43, 2, 0},
+  };
+  HardwareState hardware_state[] = {
+    // time, buttons, finger count, touch count, finger states pointer
+    { 0.00, 0, 1, 1, &finger_states[0] },
+    { 4.00, 0, 2, 2, &finger_states[0] },
+    { 5.00, 0, 2, 2, &finger_states[2] },
+    { 5.01, 0, 2, 2, &finger_states[4] },
+  };
+
+  bool got_move = false;
+  for (size_t i = 0; i < arraysize(hardware_state); ++i) {
+    Gesture* gs = ii.SyncInterpret(&hardware_state[i], NULL);
+    if (gs) {
+      EXPECT_EQ(kGestureTypeMove, gs->type);
+      got_move = (kGestureTypeMove == gs->type);
+      EXPECT_GT(gs->details.move.dy, 0.0);
+    }
+  }
+  EXPECT_TRUE(got_move);
 }
 
 TEST(ImmediateInterpreterTest, PalmAtEdgeTest) {

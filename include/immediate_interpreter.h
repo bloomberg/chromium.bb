@@ -97,12 +97,16 @@ class ScrollEventBuffer {
 };
 
 class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
+  FRIEND_TEST(ImmediateInterpreterTest, AvoidAccidentalPinchTest);
   FRIEND_TEST(ImmediateInterpreterTest, ChangeTimeoutTest);
   FRIEND_TEST(ImmediateInterpreterTest, ClickTest);
   FRIEND_TEST(ImmediateInterpreterTest, GetGesturingFingersTest);
   FRIEND_TEST(ImmediateInterpreterTest, PalmAtEdgeTest);
   FRIEND_TEST(ImmediateInterpreterTest, PalmTest);
+  FRIEND_TEST(ImmediateInterpreterTest, PinchTests);
   FRIEND_TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest);
+  FRIEND_TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest);
+  FRIEND_TEST(ImmediateInterpreterTest, StationaryPalmTest);
   FRIEND_TEST(ImmediateInterpreterTest, SwipeTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapRecordTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickEnableTest);
@@ -111,9 +115,6 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickStateMachineTest);
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest);
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainTest);
-  FRIEND_TEST(ImmediateInterpreterTest, SemiMtActiveAreaTest);
-  FRIEND_TEST(ImmediateInterpreterTest, PinchTests);
-  FRIEND_TEST(ImmediateInterpreterTest, AvoidAccidentalPinchTest);
   friend class TapRecord;
 
  public:
@@ -177,6 +178,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   // Updates *palm_, pointing_ below.
   void UpdatePalmState(const HardwareState& hwstate);
+
+  // Returns the length of time the contact has been on the pad. Returns -1
+  // on error.
+  stime_t FingerAge(short finger_id, stime_t now) const;
 
   // Returns the square of the distance that this contact has travelled since
   // fingers changed.
@@ -264,6 +269,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Called when fingers have changed to fill start_positions_.
   void FillStartPositions(const HardwareState& hwstate);
 
+  // Fills the origin_* member variables.
+  void FillOriginInfo(const HardwareState& hwstate);
+
   // Called to detect if fingers have started moving.
   void UpdateStartedMovingTime(
       const HardwareState& hwstate,
@@ -332,10 +340,18 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Map: Finger ID -> (x, y) coordinate
   map<short, Point, kMaxFingers> start_positions_;
 
+  // Time when a contact arrived. Persists even when fingers change.
+  map<short, stime_t, kMaxFingers> origin_timestamps_;
+  // FingerStates from when a contact first arrived. Persists even when fingers
+  // change.
+  map<short, FingerState, kMaxFingers> origin_fingerstates_;
+
   // Same fingers state. This state is accumulated as fingers remain the same
   // and it's reset when fingers change.
   set<short, kMaxFingers> palm_;  // tracking ids of known palms
-  set<short, kMaxFingers> pending_palm_;  // tracking ids of potential palms
+  // These contacts have moved significantly and shouldn't be considered
+  // stationary palms:
+  set<short, kMaxFingers> non_stationary_palm_;
   // tracking ids of known fingers that are not palms, nor thumbs.
   set<short, kMaxFingers> pointing_;
   // tracking ids of known non-palms. But might be thumbs.
@@ -411,6 +427,11 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty palm_edge_width_;
   // Palms in edge are allowed to point if they move fast enough
   DoubleProperty palm_edge_point_speed_;
+  // A potential palm (ambiguous contact in the edge of the pad) will be marked
+  // a palm if it travels less than palm_stationary_distance_ mm after it's
+  // been on the pad for palm_stationary_time_ seconds.
+  DoubleProperty palm_stationary_time_;
+  DoubleProperty palm_stationary_distance_;
   // Distance [mm] a finger must move after fingers change to count as real
   // motion
   DoubleProperty change_move_distance_;

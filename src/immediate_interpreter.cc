@@ -273,6 +273,8 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       palm_edge_min_width_(prop_reg, "Tap Exclusion Border Width", 8.0),
       palm_edge_width_(prop_reg, "Palm Edge Zone Width", 14.0),
       palm_edge_point_speed_(prop_reg, "Palm Edge Zone Min Point Speed", 100.0),
+      palm_stationary_time_(prop_reg, "Palm Stationary Time", 2.0),
+      palm_stationary_distance_(prop_reg, "Palm Stationary Distance", 4.0),
       change_move_distance_(prop_reg, "Change Min Move Distance", 3.0),
       change_timeout_(prop_reg, "Change Timeout", 0.04),
       evaluation_timeout_(prop_reg, "Evaluation Timeout", 0.2),
@@ -357,6 +359,7 @@ Gesture* ImmediateInterpreter::SyncInterpret(HardwareState* hwstate,
     FillStartPositions(*hwstate);
     UpdatePinchState(*hwstate, true);
   }
+  FillOriginInfo(*hwstate);
 
   if (hwstate->finger_cnt < prev_state_.finger_cnt)
     finger_leave_time_ = hwstate->timestamp;
@@ -454,6 +457,7 @@ bool ImmediateInterpreter::FingerInPalmEnvelope(const FingerState& fs) {
 
 void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
   RemoveMissingIdsFromSet(&palm_, hwstate);
+  RemoveMissingIdsFromSet(&non_stationary_palm_, hwstate);
   for (short i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
     // Mark anything over the palm thresh as a palm
@@ -465,20 +469,57 @@ void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
     }
   }
 
+  const float kPalmStationaryDistSq =
+      palm_stationary_distance_.val_ * palm_stationary_distance_.val_;
+
   for (short i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
     bool prev_palm = SetContainsValue(palm_, fs.tracking_id);
     bool prev_pointing = SetContainsValue(pointing_, fs.tracking_id);
 
-    // Lock onto palm/pointing
-    if (prev_palm || prev_pointing)
+    // Lock onto palm
+    if (prev_palm)
       continue;
     // If another finger is close by, let this be pointing
-    if (FingerNearOtherFinger(hwstate, i) || !FingerInPalmEnvelope(fs)) {
+    if (!prev_pointing && (FingerNearOtherFinger(hwstate, i) ||
+                           !FingerInPalmEnvelope(fs))) {
       pointing_.insert(fs.tracking_id);
       fingers_.insert(fs.tracking_id);
     }
+    // However, if the contact has been stationary for a while since it
+    // touched down, it is a palm. We track a potential palm closely for the
+    // first amount of time to see if it fits this pattern.
+    if (FingerAge(fs.tracking_id, prev_state_.timestamp) >
+        palm_stationary_time_.val_ ||
+        SetContainsValue(non_stationary_palm_, fs.tracking_id)) {
+      // Finger is too old to reconsider or is moving a lot
+      continue;
+    }
+    if (DistSq(origin_fingerstates_[fs.tracking_id], fs) >
+        kPalmStationaryDistSq || !FingerInPalmEnvelope(fs)) {
+      // Finger moving a lot or not in palm envelope; not a stationary palm.
+      non_stationary_palm_.insert(fs.tracking_id);
+      continue;
+    }
+    if (FingerAge(fs.tracking_id, prev_state_.timestamp) <=
+        palm_stationary_time_.val_ &&
+        FingerAge(fs.tracking_id, hwstate.timestamp) >
+        palm_stationary_time_.val_ &&
+        !SetContainsValue(non_stationary_palm_, fs.tracking_id)) {
+      // Enough time has passed. Make this stationary contact a palm.
+      palm_.insert(fs.tracking_id);
+      pointing_.erase(fs.tracking_id);
+      fingers_.erase(fs.tracking_id);
+    }
   }
+}
+
+stime_t ImmediateInterpreter::FingerAge(short finger_id, stime_t now) const {
+  if (!MapContainsKey(origin_timestamps_, finger_id)) {
+    Err("Don't have record of finger age for finger %d", finger_id);
+    return -1;
+  }
+  return now - origin_timestamps_[finger_id];
 }
 
 float ImmediateInterpreter::DistanceTravelledSq(const FingerState& fs) const {
@@ -1397,6 +1438,18 @@ void ImmediateInterpreter::FillStartPositions(const HardwareState& hwstate) {
   for (short i = 0; i < hwstate.finger_cnt; i++)
     start_positions_[hwstate.fingers[i].tracking_id] =
         Point(hwstate.fingers[i].position_x, hwstate.fingers[i].position_y);
+}
+
+void ImmediateInterpreter::FillOriginInfo(const HardwareState& hwstate) {
+  RemoveMissingIdsFromMap(&origin_timestamps_, hwstate);
+  RemoveMissingIdsFromMap(&origin_fingerstates_, hwstate);
+  for (size_t i = 0; i < hwstate.finger_cnt; i++) {
+    const FingerState& fs = hwstate.fingers[i];
+    if (MapContainsKey(origin_timestamps_, fs.tracking_id))
+      continue;
+    origin_timestamps_[fs.tracking_id] = hwstate.timestamp;
+    origin_fingerstates_[fs.tracking_id] = fs;
+  }
 }
 
 int ImmediateInterpreter::EvaluateButtonType(
