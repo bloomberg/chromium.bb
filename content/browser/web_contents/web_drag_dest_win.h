@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/base/dragdrop/drop_target.h"
+#include "webkit/glue/webdropdata.h"
 
 class InterstitialDropTarget;
 
@@ -28,6 +29,8 @@ class CONTENT_EXPORT WebDragDest : public ui::DropTarget {
   // WebContents.
   WebDragDest(HWND source_hwnd, content::WebContents* contents);
   virtual ~WebDragDest();
+
+  WebDropData* current_drop_data() const { return drop_data_.get(); }
 
   void set_drag_cursor(WebKit::WebDragOperation op) {
     drag_cursor_ = op;
@@ -74,6 +77,9 @@ class CONTENT_EXPORT WebDragDest : public ui::DropTarget {
 
   // A delegate that can receive drag information about drag events.
   content::WebDragDestDelegate* delegate_;
+
+  // The data for the current drag, or NULL if |context_| is NULL.
+  scoped_ptr<WebDropData> drop_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDragDest);
 };
