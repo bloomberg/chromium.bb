@@ -26,6 +26,8 @@ cr.define('cr.ui', function() {
       this.addEventListener('mouseover', this.handleMouseOver_);
       this.addEventListener('mouseout', this.handleMouseOut_);
 
+      this.hidden = true;  // Hide the menu by default.
+
       // Decorate the children as menu items.
       var children = this.children;
       for (var i = 0, child; child = children[i]; i++) {
