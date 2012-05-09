@@ -214,7 +214,7 @@ void SuggestionsHandler::RegisterMessages() {
 void SuggestionsHandler::HandleGetSuggestions(const ListValue* args) {
 }
 
-void SuggestionsHandler::OnPagesValueReady() {
+void SuggestionsHandler::OnSuggestionsReady() {
 }
 
 void SuggestionsHandler::SendPagesValue() {

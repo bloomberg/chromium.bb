@@ -123,7 +123,7 @@ void SuggestionsHandler::HandleGetSuggestions(const ListValue* args) {
   }
 }
 
-void SuggestionsHandler::OnPagesValueReady() {
+void SuggestionsHandler::OnSuggestionsReady() {
   // If we got the results as a result of a suggestions request initiated by the
   // JavaScript then we send back the page values.
   if (got_first_suggestions_request_)

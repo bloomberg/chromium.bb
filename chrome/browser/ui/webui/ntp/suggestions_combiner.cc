@@ -18,9 +18,9 @@ static const size_t kSuggestionsCount = 8;
 }  // namespace
 
 SuggestionsCombiner::SuggestionsCombiner(
-    SuggestionsHandler* suggestions_handler)
+    SuggestionsCombiner::Delegate* delegate)
     : sources_fetching_count_(0),
-      suggestions_handler_(suggestions_handler),
+      delegate_(delegate),
       suggestions_count_(kSuggestionsCount),
       pages_value_(new base::ListValue()) {
 }
@@ -92,6 +92,6 @@ void SuggestionsCombiner::OnItemsReady() {
   sources_fetching_count_--;
   if (sources_fetching_count_ == 0) {
     FillPagesValue();
-    suggestions_handler_->OnPagesValueReady();
+    delegate_->OnSuggestionsReady();
   }
 }

@@ -10,6 +10,7 @@
 
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/ui/webui/ntp/suggestions_combiner.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -17,7 +18,6 @@
 class GURL;
 class PageUsageData;
 class PrefService;
-class SuggestionsCombiner;
 
 namespace base {
 class ListValue;
@@ -31,7 +31,8 @@ class Value;
 //   is a dictionary for quick access (it associates a dummy boolean to the URL
 //   string).
 class SuggestionsHandler : public content::WebUIMessageHandler,
-                           public content::NotificationObserver {
+                           public content::NotificationObserver,
+                           public SuggestionsCombiner::Delegate {
  public:
   SuggestionsHandler();
   virtual ~SuggestionsHandler();
@@ -62,8 +63,8 @@ class SuggestionsHandler : public content::WebUIMessageHandler,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Called by the suggestions combiner when pages value is ready.
-  void OnPagesValueReady();
+  // SuggestionsCombiner::Delegate implementation
+  virtual void OnSuggestionsReady() OVERRIDE;
 
   static void RegisterUserPrefs(PrefService* prefs);
 

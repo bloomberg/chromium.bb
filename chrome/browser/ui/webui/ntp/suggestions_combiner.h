@@ -23,7 +23,18 @@ namespace base {
 // Combines many different sources of suggestions and generates data from it.
 class SuggestionsCombiner {
  public:
-  explicit SuggestionsCombiner(SuggestionsHandler* suggestions_handler);
+  // Interface to be implemented by classes that will be notified of events from
+  // the SuggestionsCombiner.
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Method that is called when new suggestions are ready from the
+    // SuggestionsCombiner.
+    virtual void OnSuggestionsReady() = 0;
+  };
+
+  explicit SuggestionsCombiner(SuggestionsCombiner::Delegate* delegate);
   virtual ~SuggestionsCombiner();
 
   // Add a new source. The SuggestionsCombiner takes ownership of |source|.
@@ -55,8 +66,8 @@ class SuggestionsCombiner {
   // fetching their data.
   int sources_fetching_count_;
 
-  // The suggestions handler to notify once items are ready.
-  SuggestionsHandler* suggestions_handler_;
+  // The delegate to notify once items are ready.
+  SuggestionsCombiner::Delegate* delegate_;
 
   // Number of suggestions to generate. Used to distribute the suggestions
   // between the various sources.
