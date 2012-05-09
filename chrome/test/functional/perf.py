@@ -972,7 +972,8 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
         ytplayer.setPlaybackQuality('hd720');
         window.domAutomationController.send('');
     """)
-    self.AssertPlayingState()
+    self.AssertPlayerState(state=self.is_playing,
+                           msg='Player did not enter the playing state')
     self.assertTrue(
         self.WaitUntil(self._VerifyVideoTotalBytes, expect_retval=True),
         msg='Failed to get video total bytes information.')
