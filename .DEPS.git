@@ -12,21 +12,21 @@ vars = {
 
 deps = {
     'base':
-        Var('git_url') + '/chromium/src/base.git@e7002cd11a06dd215600cd18e0aadfbd9a2d44cf',
+        Var('git_url') + '/chromium/src/base.git@e16f9e4d1c7221928573e2a857cb8727378a29fc',
     'build':
-        Var('git_url') + '/chromium/src/build.git@f433c669011580c6ba838e13ce937475837c4544',
+        Var('git_url') + '/chromium/src/build.git@f9ca9ef100fc85132d5bd647bb615b0e35708a6c',
     'chrome/test/pyautolib':
-        Var('git_url') + '/chromium/src/chrome/test/pyautolib.git@3eff8039fa78dadf18332b791906c3c79d2337e5',
+        Var('git_url') + '/chromium/src/chrome/test/pyautolib.git@095ab89c96f953f4545a82c12e317fd04249f37e',
     'gpu':
-        Var('git_url') + '/chromium/src/gpu.git@cd08e132879cc9b35ce2c37020905ec65648d710',
+        Var('git_url') + '/chromium/src/gpu.git@c4d265685b64816879e2c25707055f7829844a8b',
     'native_client/tools/perf_expectations':
-        Var('git_url') + '/chromium/src/tools/perf_expectations.git@5eb13a0c566e624c29d0a64af8d32ab0fc7c4d30',
+        Var('git_url') + '/chromium/src/tools/perf_expectations.git@46cbde4e08fd6b82991055e4a5805fe2b25148ab',
     'net/tools/testserver':
         Var('git_url') + '/chromium/src/net/tools/testserver.git@143daa491f898b17c96405fe3173860c63f712d6',
     'ppapi':
-        Var('git_url') + '/chromium/src/ppapi.git@ace75f40fa49852bc21770609215c4050adddc2d',
+        Var('git_url') + '/chromium/src/ppapi.git@cd00d126801d4e96a36274f60f206fd23a3356b3',
     'testing/gtest':
-        Var('git_url') + '/external/googletest.git@a2965825b1953c7b8ad292f726eb5c3f2659d5d3',
+        Var('git_url') + '/external/googletest.git@361c8fbbc15e74730908e28660cb742eba046a83',
     'third_party':
         Var('git_url') + '/native_client/src/third_party.git@3b443384dac8fcd9113cf265e4d6bd8cab63a400',
     'third_party/asan':
@@ -40,7 +40,7 @@ deps = {
     'third_party/jsoncpp/source/src/lib_json':
         Var('git_url') + '/external/jsoncpp/jsoncpp/src/lib_json.git@a8caa51ba2f80971a45880425bf2ae864a786784',
     'third_party/khronos':
-        Var('git_url') + '/chromium/src/third_party/khronos.git@f394f5831bd7e452b098f05f283f07ffd2951dbd',
+        Var('git_url') + '/chromium/src/third_party/khronos.git@298e962a844d6c18a377396b69c4590f10f8b9cd',
     'third_party/lcov':
         Var('git_url') + '/chromium/src/third_party/lcov.git@ba4a791b2b525fc13d169b4cc671dede09bbfb64',
     'third_party/lss':
@@ -56,11 +56,11 @@ deps = {
     'third_party/tlslite':
         Var('git_url') + '/chromium/src/third_party/tlslite.git@03d499491d741c6d638a3dfc9094f30c0cab8961',
     'tools/clang':
-        Var('git_url') + '/chromium/src/tools/clang.git@8fbcaff9686f977a149544dd9c88e40123955daf',
+        Var('git_url') + '/chromium/src/tools/clang.git@b76b9789170c5e80c1e4d4c5b0a5f3f926c99dde',
     'tools/gyp':
-        Var('git_url') + '/external/gyp.git@714d6eaec919fd4e2882b245a066619c02d9be5e',
+        Var('git_url') + '/external/gyp.git@797e23b7c91b2db426a5738811a44299f8a6b31a',
     'tools/valgrind':
-        Var('git_url') + '/chromium/src/tools/valgrind.git@542d93b593cb5eaf21af6aa0c5f86fcadcc16e25',
+        Var('git_url') + '/chromium/src/tools/valgrind.git@5c3cc2824105bb4100db42a8330643adce12a30a',
     'validator_snapshots':
         Var('git_url') + '/native_client/src/validator_snapshots.git@4c1ea6b6ebe020993b0a091fd4e38a6487704b60',
 }
