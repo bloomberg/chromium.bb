@@ -242,7 +242,7 @@ string16 TemplateURLService::CleanUserInputKeyword(const string16& keyword) {
 // static
 GURL TemplateURLService::GenerateSearchURL(TemplateURL* t_url) {
   DCHECK(t_url);
-  UIThreadSearchTermsData search_terms_data;
+  UIThreadSearchTermsData search_terms_data(t_url->profile());
   return GenerateSearchURLUsingTermsData(t_url, search_terms_data);
 }
 
@@ -1178,16 +1178,17 @@ void TemplateURLService::Init(const Initializer* initializers,
     // db, which will mean we no longer need this notification and the history
     // backend can handle automatically adding the search terms as the user
     // navigates.
+    content::Source<Profile> profile_source(profile_->GetOriginalProfile());
     notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
-        content::Source<Profile>(profile_->GetOriginalProfile()));
+                                profile_source);
+    notification_registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
+                                profile_source);
     pref_change_registrar_.Init(GetPrefs());
     pref_change_registrar_.Add(prefs::kSyncedDefaultSearchProviderGUID, this);
   }
   notification_registrar_.Add(this,
       chrome::NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,
       content::NotificationService::AllSources());
-  notification_registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-                              content::NotificationService::AllSources());
 
   if (num_initializers > 0) {
     // This path is only hit by test code and is used to simulate a loaded
@@ -1222,12 +1223,12 @@ void TemplateURLService::Init(const Initializer* initializers,
 
   // Request a server check for the correct Google URL if Google is the
   // default search engine, not in headless mode and not in Chrome Frame.
-  if (initial_default_search_provider_.get() &&
+  if (profile_ && initial_default_search_provider_.get() &&
       initial_default_search_provider_->url_ref().HasGoogleBaseURLs()) {
     scoped_ptr<base::Environment> env(base::Environment::Create());
     if (!env->HasVar(env_vars::kHeadless) &&
         !CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame))
-      GoogleURLTracker::RequestServerCheck();
+      GoogleURLTracker::RequestServerCheck(profile_);
   }
 }
 
@@ -1316,7 +1317,7 @@ void TemplateURLService::AddToMaps(TemplateURL* template_url) {
   if (!template_url->sync_guid().empty())
     guid_to_template_map_[template_url->sync_guid()] = template_url;
   if (loaded_) {
-    UIThreadSearchTermsData search_terms_data;
+    UIThreadSearchTermsData search_terms_data(profile_);
     provider_map_->Add(template_url, search_terms_data);
   }
 }
@@ -1345,7 +1346,7 @@ void TemplateURLService::SetTemplateURLs(const TemplateURLVector& urls) {
 void TemplateURLService::ChangeToLoadedState() {
   DCHECK(!loaded_);
 
-  UIThreadSearchTermsData search_terms_data;
+  UIThreadSearchTermsData search_terms_data(profile_);
   provider_map_->Init(template_urls_, search_terms_data);
   loaded_ = true;
 }
@@ -1541,7 +1542,7 @@ bool TemplateURLService::UpdateNoNotify(TemplateURL* existing_turl,
   TemplateURLID previous_id = existing_turl->id();
   existing_turl->CopyFrom(new_values);
   existing_turl->data_.id = previous_id;
-  UIThreadSearchTermsData search_terms_data;
+  UIThreadSearchTermsData search_terms_data(profile_);
   provider_map_->Add(existing_turl, search_terms_data);
 
   const string16& keyword = existing_turl->keyword();
@@ -1739,7 +1740,7 @@ void TemplateURLService::GoogleBaseURLChanged() {
   }
 
   if (something_changed && loaded_) {
-    UIThreadSearchTermsData search_terms_data;
+    UIThreadSearchTermsData search_terms_data(profile_);
     provider_map_->UpdateGoogleBaseURLs(search_terms_data);
     NotifyObservers();
   }
@@ -1863,7 +1864,7 @@ bool TemplateURLService::SetDefaultSearchProviderNoNotify(TemplateURL* url) {
       service_->UpdateKeyword(url->data());
 
     if (url->url_ref().HasGoogleBaseURLs()) {
-      GoogleURLTracker::RequestServerCheck();
+      GoogleURLTracker::RequestServerCheck(profile_);
 #if defined(ENABLE_RLZ)
       // Needs to be evaluated. See http://crbug.com/62328.
       base::ThreadRestrictions::ScopedAllowIO allow_io;

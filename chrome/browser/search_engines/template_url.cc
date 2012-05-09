@@ -101,7 +101,7 @@ std::string TemplateURLRef::GetURL() const {
 }
 
 bool TemplateURLRef::SupportsReplacement() const {
-  UIThreadSearchTermsData search_terms_data;
+  UIThreadSearchTermsData search_terms_data(owner_->profile());
   return SupportsReplacementUsingTermsData(search_terms_data);
 }
 
@@ -115,8 +115,7 @@ std::string TemplateURLRef::ReplaceSearchTerms(
     const string16& terms,
     int accepted_suggestion,
     const string16& original_query_for_suggestion) const {
-  UIThreadSearchTermsData search_terms_data;
-  search_terms_data.set_profile(owner_->profile());
+  UIThreadSearchTermsData search_terms_data(owner_->profile());
   return ReplaceSearchTermsUsingTermsData(terms, accepted_suggestion,
       original_query_for_suggestion, search_terms_data);
 }
@@ -259,7 +258,7 @@ std::string TemplateURLRef::ReplaceSearchTermsUsingTermsData(
 }
 
 bool TemplateURLRef::IsValid() const {
-  UIThreadSearchTermsData search_terms_data;
+  UIThreadSearchTermsData search_terms_data(owner_->profile());
   return IsValidUsingTermsData(search_terms_data);
 }
 
@@ -454,7 +453,7 @@ std::string TemplateURLRef::ParseURL(const std::string& url,
 }
 
 void TemplateURLRef::ParseIfNecessary() const {
-  UIThreadSearchTermsData search_terms_data;
+  UIThreadSearchTermsData search_terms_data(owner_->profile());
   ParseIfNecessaryUsingTermsData(search_terms_data);
 }
 
@@ -600,7 +599,7 @@ bool TemplateURL::ShowInDefaultList() const {
 }
 
 bool TemplateURL::SupportsReplacement() const {
-  UIThreadSearchTermsData search_terms_data;
+  UIThreadSearchTermsData search_terms_data(profile_);
   return SupportsReplacementUsingTermsData(search_terms_data);
 }
 

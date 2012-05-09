@@ -95,7 +95,8 @@ void GoogleURLChangeNotifier::OnChange(const std::string& google_base_url) {
 // to the SearchProviderInstallData on the I/O thread.
 class GoogleURLObserver : public content::NotificationObserver {
  public:
-  GoogleURLObserver(GoogleURLChangeNotifier* change_notifier,
+  GoogleURLObserver(Profile* profile,
+                    GoogleURLChangeNotifier* change_notifier,
                     int ui_death_notification,
                     const content::NotificationSource& ui_death_source);
 
@@ -114,13 +115,14 @@ class GoogleURLObserver : public content::NotificationObserver {
 };
 
 GoogleURLObserver::GoogleURLObserver(
-      GoogleURLChangeNotifier* change_notifier,
-      int ui_death_notification,
-      const content::NotificationSource& ui_death_source)
+    Profile* profile,
+    GoogleURLChangeNotifier* change_notifier,
+    int ui_death_notification,
+    const content::NotificationSource& ui_death_source)
     : change_notifier_(change_notifier) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-                 content::NotificationService::AllSources());
+                 content::Source<Profile>(profile->GetOriginalProfile()));
   registrar_.Add(this, ui_death_notification, ui_death_source);
 }
 
@@ -130,7 +132,7 @@ void GoogleURLObserver::Observe(int type,
   if (type == chrome::NOTIFICATION_GOOGLE_URL_UPDATED) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         base::Bind(&GoogleURLChangeNotifier::OnChange, change_notifier_.get(),
-                   UIThreadSearchTermsData().GoogleBaseURLValue()));
+                   content::Details<const GURL>(details)->spec()));
   } else {
     // This must be the death notification.
     delete this;
@@ -158,10 +160,10 @@ SearchProviderInstallData::SearchProviderInstallData(
     const content::NotificationSource& ui_death_source)
     : web_service_(profile->GetWebDataService(Profile::EXPLICIT_ACCESS)),
       load_handle_(0),
-      google_base_url_(UIThreadSearchTermsData().GoogleBaseURLValue()) {
+      google_base_url_(UIThreadSearchTermsData(profile).GoogleBaseURLValue()) {
   // GoogleURLObserver is responsible for killing itself when
   // the given notification occurs.
-  new GoogleURLObserver(new GoogleURLChangeNotifier(AsWeakPtr()),
+  new GoogleURLObserver(profile, new GoogleURLChangeNotifier(AsWeakPtr()),
                         ui_death_notification, ui_death_source);
   DetachFromThread();
 }

@@ -43,7 +43,6 @@
 #include "chrome/browser/extensions/extensions_startup.h"
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/google/google_search_counter.h"
-#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/gpu_util.h"
@@ -1701,18 +1700,16 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
 
   // In unittest mode, this will do nothing.  In normal mode, this will create
-  // the global GoogleURLTracker and IntranetRedirectDetector instances, which
-  // will promptly go to sleep for five and seven seconds, respectively (to
-  // avoid slowing startup), and wake up afterwards to see if they should do
-  // anything else.
+  // the global IntranetRedirectDetector instance, which will promptly go to
+  // sleep for seven seconds (to avoid slowing startup), and wake up afterwards
+  // to see if it should do anything else.
   //
   // A simpler way of doing all this would be to have some function which could
-  // give the time elapsed since startup, and simply have these objects check
-  // that when asked to initialize themselves, but this doesn't seem to exist.
+  // give the time elapsed since startup, and simply have this object check that
+  // when asked to initialize itself, but this doesn't seem to exist.
   //
-  // These can't be created in the BrowserProcessImpl constructor because they
-  // need to read prefs that get set after that runs.
-  browser_process_->google_url_tracker();
+  // This can't be created in the BrowserProcessImpl constructor because it
+  // needs to read prefs that get set after that runs.
   browser_process_->intranet_redirect_detector();
   GoogleSearchCounter::RegisterForNotifications();
 

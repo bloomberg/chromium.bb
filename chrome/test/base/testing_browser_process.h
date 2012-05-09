@@ -21,7 +21,6 @@
 class BackgroundModeManager;
 class CRLSetFetcher;
 class IOThread;
-class GoogleURLTracker;
 class MHTMLGenerationManager;
 class NotificationUIManager;
 class PrefService;
@@ -76,7 +75,6 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual ExtensionEventRouterForwarder*
       extension_event_router_forwarder() OVERRIDE;
   virtual NotificationUIManager* notification_ui_manager() OVERRIDE;
-  virtual GoogleURLTracker* google_url_tracker() OVERRIDE;
   virtual IntranetRedirectDetector* intranet_redirect_detector() OVERRIDE;
   virtual AutomationProviderList* GetAutomationProviderList() OVERRIDE;
   virtual void InitDevToolsHttpProtocolHandler(
@@ -110,7 +108,6 @@ class TestingBrowserProcess : public BrowserProcess {
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).
   void SetLocalState(PrefService* local_state);
-  void SetGoogleURLTracker(GoogleURLTracker* google_url_tracker);
   void SetProfileManager(ProfileManager* profile_manager);
   void SetIOThread(IOThread* io_thread);
   void SetBrowserPolicyConnector(policy::BrowserPolicyConnector* connector);
@@ -126,7 +123,6 @@ class TestingBrowserProcess : public BrowserProcess {
   PrefService* local_state_;
   scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
   scoped_ptr<policy::PolicyService> policy_service_;
-  scoped_ptr<GoogleURLTracker> google_url_tracker_;
   scoped_ptr<ProfileManager> profile_manager_;
   scoped_ptr<NotificationUIManager> notification_ui_manager_;
   scoped_ptr<printing::BackgroundPrintingManager> background_printing_manager_;

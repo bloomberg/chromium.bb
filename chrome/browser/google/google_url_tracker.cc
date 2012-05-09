@@ -12,9 +12,11 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -159,11 +161,11 @@ const char GoogleURLTracker::kDefaultGoogleHomepage[] =
 const char GoogleURLTracker::kSearchDomainCheckURL[] =
     "https://www.google.com/searchdomaincheck?format=domain&type=chrome";
 
-GoogleURLTracker::GoogleURLTracker(Mode mode)
-    : infobar_creator_(&CreateInfoBar),
+GoogleURLTracker::GoogleURLTracker(Profile* profile, Mode mode)
+    : profile_(profile),
+      infobar_creator_(&CreateInfoBar),
       google_url_(mode == UNIT_TEST_MODE ? kDefaultGoogleHomepage :
-          g_browser_process->local_state()->GetString(
-              prefs::kLastKnownGoogleURL)),
+          profile->GetPrefs()->GetString(prefs::kLastKnownGoogleURL)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       fetcher_id_(0),
       in_startup_sleep_(true),
@@ -191,55 +193,48 @@ GoogleURLTracker::GoogleURLTracker(Mode mode)
 }
 
 GoogleURLTracker::~GoogleURLTracker() {
-  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
   // We should only reach here after any tabs and their infobars have been torn
   // down.
   DCHECK(infobar_map_.empty());
 }
 
 // static
-GURL GoogleURLTracker::GoogleURL() {
-  const GoogleURLTracker* tracker = g_browser_process->google_url_tracker();
+GURL GoogleURLTracker::GoogleURL(Profile* profile) {
+  const GoogleURLTracker* tracker =
+      GoogleURLTrackerFactory::GetForProfile(profile);
   return tracker ? tracker->google_url_ : GURL(kDefaultGoogleHomepage);
 }
 
 // static
-void GoogleURLTracker::RequestServerCheck() {
-  GoogleURLTracker* tracker = g_browser_process->google_url_tracker();
+void GoogleURLTracker::RequestServerCheck(Profile* profile) {
+  GoogleURLTracker* tracker = GoogleURLTrackerFactory::GetForProfile(profile);
   if (tracker)
     tracker->SetNeedToFetch();
 }
 
 // static
-void GoogleURLTracker::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterStringPref(prefs::kLastKnownGoogleURL,
-                            kDefaultGoogleHomepage);
-  prefs->RegisterStringPref(prefs::kLastPromptedGoogleURL, std::string());
-}
-
-// static
-void GoogleURLTracker::GoogleURLSearchCommitted() {
-  GoogleURLTracker* tracker = g_browser_process->google_url_tracker();
+void GoogleURLTracker::GoogleURLSearchCommitted(Profile* profile) {
+  GoogleURLTracker* tracker = GoogleURLTrackerFactory::GetForProfile(profile);
   if (tracker)
     tracker->SearchCommitted();
 }
 
 void GoogleURLTracker::AcceptGoogleURL(const GURL& new_google_url) {
   google_url_ = new_google_url;
-  PrefService* prefs = g_browser_process->local_state();
+  PrefService* prefs = profile_->GetPrefs();
   prefs->SetString(prefs::kLastKnownGoogleURL, google_url_.spec());
   prefs->SetString(prefs::kLastPromptedGoogleURL, google_url_.spec());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
+      content::Source<Profile>(profile_),
+      content::Details<const GURL>(&new_google_url));
   need_to_prompt_ = false;
   CloseAllInfoBars(true);
 }
 
 void GoogleURLTracker::CancelGoogleURL(const GURL& new_google_url) {
-  g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
-                                              new_google_url.spec());
+  profile_->GetPrefs()->SetString(prefs::kLastPromptedGoogleURL,
+                                  new_google_url.spec());
   need_to_prompt_ = false;
   CloseAllInfoBars(false);
 }
@@ -287,7 +282,7 @@ void GoogleURLTracker::StartFetchIfDesirable() {
   // we alarm the user.
   fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |
                          net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher_->SetRequestContext(g_browser_process->system_request_context());
+  fetcher_->SetRequestContext(profile_->GetRequestContext());
 
   // Configure to max_retries at most kMaxRetries times for 5xx errors.
   static const int kMaxRetries = 5;
@@ -317,8 +312,7 @@ void GoogleURLTracker::OnURLFetchComplete(const content::URLFetcher* source) {
 
   fetched_google_url_ = GURL("http://www" + url_str);
   GURL last_prompted_url(
-      g_browser_process->local_state()->GetString(
-          prefs::kLastPromptedGoogleURL));
+      profile_->GetPrefs()->GetString(prefs::kLastPromptedGoogleURL));
 
   if (last_prompted_url.is_empty()) {
     // On the very first run of Chrome, when we've never looked up the URL at
@@ -406,6 +400,13 @@ void GoogleURLTracker::Observe(int type,
 void GoogleURLTracker::OnIPAddressChanged() {
   already_fetched_ = false;
   StartFetchIfDesirable();
+}
+
+void GoogleURLTracker::Shutdown() {
+  registrar_.RemoveAll();
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  fetcher_.reset();
+  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
 void GoogleURLTracker::SearchCommitted() {

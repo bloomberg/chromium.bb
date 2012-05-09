@@ -1045,6 +1045,8 @@
         'browser/google/google_update_settings_posix.cc',
         'browser/google/google_url_tracker.cc',
         'browser/google/google_url_tracker.h',
+        'browser/google/google_url_tracker_factory.cc',
+        'browser/google/google_url_tracker_factory.h',
         'browser/google/google_util.cc',
         'browser/google/google_util.h',
         'browser/gpu_blacklist.cc',

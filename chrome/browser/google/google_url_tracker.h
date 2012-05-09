@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
@@ -22,6 +23,7 @@
 
 class GoogleURLTrackerInfoBarDelegate;
 class PrefService;
+class Profile;
 
 namespace content {
 class NavigationController;
@@ -43,7 +45,8 @@ class WebContents;
 // RequestServerCheck().
 class GoogleURLTracker : public content::URLFetcherDelegate,
                          public content::NotificationObserver,
-                         public net::NetworkChangeNotifier::IPAddressObserver {
+                         public net::NetworkChangeNotifier::IPAddressObserver,
+                         public ProfileKeyedService {
  public:
   // The constructor does different things depending on which of these values
   // you pass it.  Hopefully these are self-explanatory.
@@ -52,19 +55,18 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
     UNIT_TEST_MODE,
   };
 
-  // Only the main browser process loop and tests should call this, when setting
-  // up g_browser_process->google_url_tracker_.  No code other than the
-  // GoogleURLTracker itself should actually use
-  // g_browser_process->google_url_tracker().
-  explicit GoogleURLTracker(Mode mode);
+  // Only the GoogleURLTrackerFactory and tests should call this.  No code other
+  // than the GoogleURLTracker itself should actually use
+  // GoogleURLTrackerFactory::GetForProfile().
+  GoogleURLTracker(Profile* profile, Mode mode);
 
   virtual ~GoogleURLTracker();
 
-  // Returns the current Google URL.  This will return a valid URL even in
-  // unittest mode.
+  // Returns the current Google URL.  This will return a valid URL even if
+  // |profile| is NULL or a testing profile.
   //
   // This is the only function most code should ever call.
-  static GURL GoogleURL();
+  static GURL GoogleURL(Profile* profile);
 
   // Requests that the tracker perform a server check to update the Google URL
   // as necessary.  This will happen at most once per network change, not
@@ -72,16 +74,16 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   // will occur then; checks requested afterwards will occur immediately, if
   // no other checks have been made during this run).
   //
-  // In unittest mode, this function does nothing.
-  static void RequestServerCheck();
-
-  static void RegisterPrefs(PrefService* prefs);
+  // When |profile| is NULL or a testing profile, this function does nothing.
+  static void RequestServerCheck(Profile* profile);
 
   // Notifies the tracker that the user has started a Google search.
   // If prompting is necessary, we then listen for the subsequent
   // NAV_ENTRY_PENDING notification to get the appropriate NavigationController.
   // When the load commits, we'll show the infobar.
-  static void GoogleURLSearchCommitted();
+  //
+  // When |profile| is NULL or a testing profile, this function does nothing.
+  static void GoogleURLSearchCommitted(Profile* profile);
 
   static const char kDefaultGoogleHomepage[];
   static const char kSearchDomainCheckURL[];
@@ -115,16 +117,19 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   // it and can currently do so.
   void StartFetchIfDesirable();
 
-  // content::URLFetcherDelegate
+  // content::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
-  // content::NotificationObserver
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // NetworkChangeNotifier::IPAddressObserver
+  // NetworkChangeNotifier::IPAddressObserver:
   virtual void OnIPAddressChanged() OVERRIDE;
+
+  // ProfileKeyedService:
+  virtual void Shutdown() OVERRIDE;
 
   // Called each time the user performs a search.  This checks whether we need
   // to prompt the user about a domain change, and if so, starts listening for
@@ -162,6 +167,7 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   // each tab to re-perform the user's search, but on the new Google TLD.
   void CloseAllInfoBars(bool redo_searches);
 
+  Profile* profile_;
   content::NotificationRegistrar registrar_;
   InfoBarCreator infobar_creator_;
   // TODO(ukai): GoogleURLTracker should track google domain (e.g. google.co.uk)

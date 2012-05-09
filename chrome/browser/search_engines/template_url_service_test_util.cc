@@ -224,8 +224,8 @@ void TemplateURLServiceTestUtil::SetGoogleBaseURL(const GURL& base_url) const {
   UIThreadSearchTermsData::SetGoogleBaseURL(base_url.spec());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
+      content::Source<Profile>(profile_.get()),
+      content::Details<const GURL>(&base_url));
 }
 
 void TemplateURLServiceTestUtil::SetManagedDefaultSearchPreferences(

@@ -23,7 +23,6 @@ class ComponentUpdateService;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
 class ExtensionEventRouterForwarder;
-class GoogleURLTracker;
 class IconManager;
 class IntranetRedirectDetector;
 class IOThread;
@@ -148,7 +147,6 @@ class BrowserProcess {
   virtual printing::BackgroundPrintingManager*
       background_printing_manager() = 0;
 
-  virtual GoogleURLTracker* google_url_tracker() = 0;
   virtual IntranetRedirectDetector* intranet_redirect_detector() = 0;
 
   // Returns the locale used by the application.

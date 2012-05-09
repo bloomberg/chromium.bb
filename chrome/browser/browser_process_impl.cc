@@ -30,7 +30,6 @@
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_tab_id_map.h"
 #include "chrome/browser/first_run/upgrade_util.h"
-#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
@@ -185,14 +184,13 @@ void BrowserProcessImpl::StartTearDown() {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&SdchDictionaryFetcher::Shutdown));
 
-  // We need to destroy the MetricsService, GoogleURLTracker,
-  // IntranetRedirectDetector, and SafeBrowsing ClientSideDetectionService
-  // (owned by the SafeBrowsingService) before the io_thread_ gets destroyed,
-  // since their destructors can call the URLFetcher destructor, which does a
-  // PostDelayedTask operation on the IO thread.
-  // (The IO thread will handle that URLFetcher operation before going away.)
+  // We need to destroy the MetricsService, IntranetRedirectDetector, and
+  // SafeBrowsing ClientSideDetectionService (owned by the SafeBrowsingService)
+  // before the io_thread_ gets destroyed, since their destructors can call the
+  // URLFetcher destructor, which does a PostDelayedTask operation on the IO
+  // thread. (The IO thread will handle that URLFetcher operation before going
+  // away.)
   metrics_service_.reset();
-  google_url_tracker_.reset();
   intranet_redirect_detector_.reset();
 #if defined(ENABLE_SAFE_BROWSING)
   if (safe_browsing_service_.get()) {
@@ -513,13 +511,6 @@ printing::BackgroundPrintingManager*
 #endif
 }
 
-GoogleURLTracker* BrowserProcessImpl::google_url_tracker() {
-  DCHECK(CalledOnValidThread());
-  if (!google_url_tracker_.get())
-    CreateGoogleURLTracker();
-  return google_url_tracker_.get();
-}
-
 IntranetRedirectDetector* BrowserProcessImpl::intranet_redirect_detector() {
   DCHECK(CalledOnValidThread());
   if (!intranet_redirect_detector_.get())
@@ -792,13 +783,6 @@ void BrowserProcessImpl::CreateIconManager() {
   DCHECK(!created_icon_manager_ && icon_manager_.get() == NULL);
   created_icon_manager_ = true;
   icon_manager_.reset(new IconManager);
-}
-
-void BrowserProcessImpl::CreateGoogleURLTracker() {
-  DCHECK(google_url_tracker_.get() == NULL);
-  scoped_ptr<GoogleURLTracker> google_url_tracker(
-      new GoogleURLTracker(GoogleURLTracker::NORMAL_MODE));
-  google_url_tracker_.swap(google_url_tracker);
 }
 
 void BrowserProcessImpl::CreateIntranetRedirectDetector() {

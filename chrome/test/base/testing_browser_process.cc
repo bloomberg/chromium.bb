@@ -5,7 +5,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 
 #include "base/string_util.h"
-#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/policy_service_impl.h"
@@ -147,10 +146,6 @@ NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
 #endif
 }
 
-GoogleURLTracker* TestingBrowserProcess::google_url_tracker() {
-  return google_url_tracker_.get();
-}
-
 IntranetRedirectDetector* TestingBrowserProcess::intranet_redirect_detector() {
   return NULL;
 }
@@ -252,11 +247,6 @@ void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
   if (!local_state && notification_ui_manager_.get())
     notification_ui_manager_.reset();  // Used local_state_.
   local_state_ = local_state;
-}
-
-void TestingBrowserProcess::SetGoogleURLTracker(
-    GoogleURLTracker* google_url_tracker) {
-  google_url_tracker_.reset(google_url_tracker);
 }
 
 void TestingBrowserProcess::SetIOThread(IOThread* io_thread) {

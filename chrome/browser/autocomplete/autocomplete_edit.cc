@@ -498,7 +498,7 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
 
   const TemplateURL* template_url = match.GetTemplateURL(profile_);
   if (template_url && template_url->url_ref().HasGoogleBaseURLs())
-    GoogleURLTracker::GoogleURLSearchCommitted();
+    GoogleURLTracker::GoogleURLSearchCommitted(profile_);
 
   view_->OpenMatch(match, disposition, alternate_nav_url,
                    AutocompletePopupModel::kNoMatch);

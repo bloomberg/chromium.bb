@@ -54,21 +54,15 @@ class SearchTermsData {
 // Implementation of SearchTermsData that is only usable on the UI thread.
 class UIThreadSearchTermsData : public SearchTermsData {
  public:
-  UIThreadSearchTermsData();
+  // If |profile_| is NULL, the Google base URL accessors will return default
+  // values, and InstantEnabledParam() will return the empty string.
+  explicit UIThreadSearchTermsData(Profile* profile);
 
-  // Callers who need an accurate answer from InstantEnabledParam() must set the
-  // profile here before calling them.
-  void set_profile(Profile* profile) { profile_ = profile; }
-
-  // Implementation of SearchTermsData.
   virtual std::string GoogleBaseURLValue() const OVERRIDE;
   virtual std::string GetApplicationLocale() const OVERRIDE;
 #if defined(ENABLE_RLZ)
   virtual string16 GetRlzParameterValue() const OVERRIDE;
 #endif
-
-  // This returns the empty string unless set_profile() has been called with a
-  // non-NULL Profile.
   virtual std::string InstantEnabledParam() const OVERRIDE;
 
   // Used by tests to override the value for the Google base URL.  Passing the

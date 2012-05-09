@@ -92,7 +92,6 @@ class BrowserProcessImpl : public BrowserProcess,
       print_preview_tab_controller() OVERRIDE;
   virtual printing::BackgroundPrintingManager*
       background_printing_manager() OVERRIDE;
-  virtual GoogleURLTracker* google_url_tracker() OVERRIDE;
   virtual IntranetRedirectDetector* intranet_redirect_detector() OVERRIDE;
   virtual const std::string& GetApplicationLocale() OVERRIDE;
   virtual void SetApplicationLocale(const std::string& locale) OVERRIDE;
@@ -132,7 +131,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateLocalState();
   void CreateViewedPageTracker();
   void CreateIconManager();
-  void CreateGoogleURLTracker();
   void CreateIntranetRedirectDetector();
   void CreateNotificationUIManager();
   void CreateStatusTrayManager();
@@ -191,7 +189,6 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<AutomationProviderList> automation_provider_list_;
 #endif
 
-  scoped_ptr<GoogleURLTracker> google_url_tracker_;
   scoped_ptr<IntranetRedirectDetector> intranet_redirect_detector_;
 
   scoped_ptr<TabCloseableStateWatcher> tab_closeable_state_watcher_;

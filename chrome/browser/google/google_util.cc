@@ -76,10 +76,10 @@ std::string StringAppendGoogleLocaleParam(const std::string& url) {
   return localized_url.spec();
 }
 
-GURL AppendGoogleTLDParam(const GURL& url) {
+GURL AppendGoogleTLDParam(Profile* profile, const GURL& url) {
   const std::string google_domain(
       net::RegistryControlledDomainService::GetDomainAndRegistry(
-          GoogleURLTracker::GoogleURL()));
+          GoogleURLTracker::GoogleURL(profile)));
   const size_t first_dot = google_domain.find('.');
   if (first_dot == std::string::npos) {
     NOTREACHED();

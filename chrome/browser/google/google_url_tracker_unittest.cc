@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/google/google_url_tracker.h"
-#include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/google/google_url_tracker_factory.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_pref_service.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_fetcher.h"
 #include "content/test/test_browser_thread.h"
@@ -144,17 +145,17 @@ class GoogleURLTrackerTest : public testing::Test {
   // Creating this allows us to call
   // net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests().
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  ScopedTestingLocalState local_state_;
   TestURLFetcherFactory fetcher_factory_;
   content::NotificationRegistrar registrar_;
+  TestingProfile profile_;
   scoped_ptr<GoogleURLTracker> google_url_tracker_;
 };
 
 GoogleURLTrackerTest::GoogleURLTrackerTest()
     : observer_(new TestNotificationObserver),
       message_loop_(MessageLoop::TYPE_IO),
-      io_thread_(content::BrowserThread::IO, &message_loop_),
-      local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)) {
+      io_thread_(content::BrowserThread::IO, &message_loop_) {
+  GoogleURLTrackerFactory::GetInstance()->RegisterUserPrefsOnProfile(&profile_);
 }
 
 GoogleURLTrackerTest::~GoogleURLTrackerTest() {
@@ -163,7 +164,7 @@ GoogleURLTrackerTest::~GoogleURLTrackerTest() {
 void GoogleURLTrackerTest::SetUp() {
   network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
   google_url_tracker_.reset(
-      new GoogleURLTracker(GoogleURLTracker::UNIT_TEST_MODE));
+      new GoogleURLTracker(&profile_, GoogleURLTracker::UNIT_TEST_MODE));
   google_url_tracker_->infobar_creator_ = &CreateTestInfobar;
 }
 
@@ -194,9 +195,9 @@ void GoogleURLTrackerTest::MockSearchDomainCheckResponse(
 void GoogleURLTrackerTest::RequestServerCheck() {
   if (!registrar_.IsRegistered(observer_.get(),
       chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-      content::NotificationService::AllBrowserContextsAndSources())) {
+      content::Source<Profile>(&profile_))) {
     registrar_.Add(observer_.get(), chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-        content::NotificationService::AllBrowserContextsAndSources());
+                   content::Source<Profile>(&profile_));
   }
   google_url_tracker_->SetNeedToFetch();
 }
@@ -213,13 +214,11 @@ void GoogleURLTrackerTest::NotifyIPAddressChanged() {
 }
 
 void GoogleURLTrackerTest::SetLastPromptedGoogleURL(const GURL& url) {
-  g_browser_process->local_state()->SetString(
-      prefs::kLastPromptedGoogleURL, url.spec());
+  profile_.GetPrefs()->SetString(prefs::kLastPromptedGoogleURL, url.spec());
 }
 
 GURL GoogleURLTrackerTest::GetLastPromptedGoogleURL() {
-  return GURL(g_browser_process->local_state()->GetString(
-      prefs::kLastPromptedGoogleURL));
+  return GURL(profile_.GetPrefs()->GetString(prefs::kLastPromptedGoogleURL));
 }
 
 void GoogleURLTrackerTest::SetSearchPending(const GURL& search_url,

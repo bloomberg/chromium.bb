@@ -14,6 +14,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/api/commands/extension_command_service_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -175,8 +176,17 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
     return;
 
   AutocompleteActionPredictorFactory::GetInstance();
+#if defined(ENABLE_BACKGROUND)
+  BackgroundContentsServiceFactory::GetInstance();
+#endif
   ChromeURLDataManagerFactory::GetInstance();
+#if !defined(OS_ANDROID)
+  CloudPrintProxyServiceFactory::GetInstance();
+#endif
   CookieSettings::Factory::GetInstance();
+#if defined(ENABLE_NOTIFICATIONS)
+  DesktopNotificationServiceFactory::GetInstance();
+#endif
   DownloadServiceFactory::GetInstance();
   ExtensionCommandServiceFactory::GetInstance();
   ExtensionSystemFactory::GetInstance();
@@ -185,44 +195,38 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   GesturePrefsObserverFactoryAura::GetInstance();
 #endif
   GlobalErrorServiceFactory::GetInstance();
+  GoogleURLTrackerFactory::GetInstance();
   NTPResourceCacheFactory::GetInstance();
   PasswordStoreFactory::GetInstance();
   PersonalDataManagerFactory::GetInstance();
+#if !defined(OS_ANDROID)
+  PinnedTabServiceFactory::GetInstance();
+#endif
   PluginPrefsFactory::GetInstance();
   prerender::PrerenderManagerFactory::GetInstance();
   ProfileSyncServiceFactory::GetInstance();
-  SigninManagerFactory::GetInstance();
-  SpellCheckFactory::GetInstance();
-  TabRestoreServiceFactory::GetInstance();
-  TemplateURLFetcherFactory::GetInstance();
-  TemplateURLServiceFactory::GetInstance();
-  TokenServiceFactory::GetInstance();
-#if !defined(OS_ANDROID)
-  CloudPrintProxyServiceFactory::GetInstance();
-  PinnedTabServiceFactory::GetInstance();
-#endif
-#if defined(ENABLE_NOTIFICATIONS)
-  DesktopNotificationServiceFactory::GetInstance();
-#endif
 #if defined(ENABLE_PROTECTOR_SERVICE)
   protector::ProtectorServiceFactory::GetInstance();
 #endif
 #if defined(ENABLE_SESSION_SERVICE)
   SessionServiceFactory::GetInstance();
 #endif
+  SigninManagerFactory::GetInstance();
 #if defined(ENABLE_INPUT_SPEECH)
   SpeechInputExtensionManager::InitializeFactory();
 #endif
+  SpellCheckFactory::GetInstance();
+  TabRestoreServiceFactory::GetInstance();
+  TemplateURLFetcherFactory::GetInstance();
+  TemplateURLServiceFactory::GetInstance();
 #if defined(ENABLE_THEMES)
   ThemeServiceFactory::GetInstance();
 #endif
+  TokenServiceFactory::GetInstance();
   UserStyleSheetWatcherFactory::GetInstance();
 #if defined(ENABLE_WEB_INTENTS)
   WebIntentsRegistryFactory::GetInstance();
 #endif
-#if defined(ENABLE_BACKGROUND)
-  BackgroundContentsServiceFactory::GetInstance();
-#endif  // defined(ENABLE_BACKGROUND)
 
   built_factories_ = true;
 }

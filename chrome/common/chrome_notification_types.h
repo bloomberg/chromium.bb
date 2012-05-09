@@ -379,9 +379,15 @@ enum NotificationType {
   // is the profile.
   NOTIFICATION_OMNIBOX_OPENED_URL,
 
-  // Sent when the main Google URL has been updated.  Some services cache
-  // this value and need to update themselves when it changes.  See
-  // google_util::GetGoogleURLAndUpdateIfNecessary().
+  // Sent when the Google URL for a profile has been updated.  Some services
+  // cache this value and need to update themselves when it changes.  See
+  // google_util::GetGoogleURLAndUpdateIfNecessary().  The source is the
+  // Profile, the details the new (const) GURL.
+  //
+  // Note that because incognito mode requests for the GoogleURLTracker are
+  // redirected to the non-incognito profile's copy, this notification will only
+  // ever fire on non-incognito profiles; thus listeners should use
+  // GetOriginalProfile() when constructing a Source to filter against.
   NOTIFICATION_GOOGLE_URL_UPDATED,
 
   // Printing ----------------------------------------------------------------

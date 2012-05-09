@@ -39,7 +39,7 @@ void SearchHostToURLsMapTest::SetUp() {
   template_urls.push_back(t_urls_[1].get());
 
   provider_map_.reset(new SearchHostToURLsMap);
-  UIThreadSearchTermsData search_terms_data;
+  UIThreadSearchTermsData search_terms_data(NULL);
   provider_map_->Init(template_urls, search_terms_data);
 }
 
@@ -48,7 +48,7 @@ TEST_F(SearchHostToURLsMapTest, Add) {
   TemplateURLData data;
   data.SetURL("http://" + new_host + "/");
   TemplateURL new_t_url(NULL, data);
-  UIThreadSearchTermsData search_terms_data;
+  UIThreadSearchTermsData search_terms_data(NULL);
   provider_map_->Add(&new_t_url, search_terms_data);
 
   ASSERT_EQ(&new_t_url, provider_map_->GetTemplateURLForHost(new_host));
@@ -72,7 +72,7 @@ TEST_F(SearchHostToURLsMapTest, Remove) {
 }
 
 TEST_F(SearchHostToURLsMapTest, UpdateGoogleBaseURLs) {
-  UIThreadSearchTermsData search_terms_data;
+  UIThreadSearchTermsData search_terms_data(NULL);
   std::string google_base_url = "google.com";
   search_terms_data.SetGoogleBaseURL("http://" + google_base_url +"/");
 

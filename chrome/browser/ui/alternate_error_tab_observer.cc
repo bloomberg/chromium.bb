@@ -28,7 +28,7 @@ AlternateErrorPageTabObserver::AlternateErrorPageTabObserver(
   }
 
   registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-                 content::NotificationService::AllSources());
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
 }
 
 AlternateErrorPageTabObserver::~AlternateErrorPageTabObserver() {
@@ -76,7 +76,7 @@ GURL AlternateErrorPageTabObserver::GetAlternateErrorPageURL() const {
   if (profile_->GetPrefs()->GetBoolean(prefs::kAlternateErrorPagesEnabled)) {
     url = google_util::AppendGoogleLocaleParam(
         GURL(google_util::kLinkDoctorBaseURL));
-    url = google_util::AppendGoogleTLDParam(url);
+    url = google_util::AppendGoogleTLDParam(profile_, url);
   }
   return url;
 }

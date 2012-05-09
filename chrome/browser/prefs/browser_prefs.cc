@@ -23,6 +23,7 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/geolocation/geolocation_prefs.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/intranet_redirect_detector.h"
@@ -118,7 +119,6 @@ void RegisterLocalState(PrefService* local_state) {
   browser_shutdown::RegisterPrefs(local_state);
   ExternalProtocolHandler::RegisterPrefs(local_state);
   geolocation::RegisterPrefs(local_state);
-  GoogleURLTracker::RegisterPrefs(local_state);
   IntranetRedirectDetector::RegisterPrefs(local_state);
   KeywordEditorController::RegisterPrefs(local_state);
   MetricsLog::RegisterPrefs(local_state);
@@ -255,7 +255,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
 }
 
-void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {
+void MigrateBrowserPrefs(Profile* profile, PrefService* local_state) {
   // Copy pref values which have been migrated to user_prefs from local_state,
   // or remove them from local_state outright, if copying is not required.
   int current_version =
@@ -275,6 +275,7 @@ void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {
                             current_version);
   }
 
+  PrefService* user_prefs = profile->GetPrefs();
   if (!(current_version & WINDOWS_PREFS)) {
     local_state->RegisterIntegerPref(prefs::kDevToolsHSplitLocation, -1);
     if (local_state->HasPrefPath(prefs::kDevToolsHSplitLocation)) {
@@ -293,6 +294,29 @@ void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {
     local_state->ClearPref(prefs::kBrowserWindowPlacement);
 
     current_version |= WINDOWS_PREFS;
+    local_state->SetInteger(prefs::kMultipleProfilePrefMigration,
+                            current_version);
+  }
+
+  if (!(current_version & GOOGLE_URL_TRACKER_PREFS)) {
+    GoogleURLTrackerFactory::GetInstance()->RegisterUserPrefsOnProfile(profile);
+    local_state->RegisterStringPref(prefs::kLastKnownGoogleURL,
+                                    GoogleURLTracker::kDefaultGoogleHomepage);
+    if (local_state->HasPrefPath(prefs::kLastKnownGoogleURL)) {
+      user_prefs->SetString(prefs::kLastKnownGoogleURL,
+          local_state->GetString(prefs::kLastKnownGoogleURL));
+    }
+    local_state->ClearPref(prefs::kLastKnownGoogleURL);
+
+    local_state->RegisterStringPref(prefs::kLastPromptedGoogleURL,
+                                    std::string());
+    if (local_state->HasPrefPath(prefs::kLastPromptedGoogleURL)) {
+      user_prefs->SetString(prefs::kLastPromptedGoogleURL,
+          local_state->GetString(prefs::kLastPromptedGoogleURL));
+    }
+    local_state->ClearPref(prefs::kLastPromptedGoogleURL);
+
+    current_version |= GOOGLE_URL_TRACKER_PREFS;
     local_state->SetInteger(prefs::kMultipleProfilePrefMigration,
                             current_version);
   }
