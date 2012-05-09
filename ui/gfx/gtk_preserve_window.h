@@ -47,14 +47,14 @@ struct _GtkPreserveWindowClass {
   GtkFixedClass parent_class;
 };
 
-GType gtk_preserve_window_get_type() G_GNUC_CONST;
+UI_EXPORT GType gtk_preserve_window_get_type() G_GNUC_CONST;
 UI_EXPORT GtkWidget* gtk_preserve_window_new();
 
 // Whether or not we should preserve associated windows as the widget
 // is realized or unrealized.
-gboolean gtk_preserve_window_get_preserve(GtkPreserveWindow* widget);
-void gtk_preserve_window_set_preserve(GtkPreserveWindow* widget,
-                                      gboolean value);
+UI_EXPORT gboolean gtk_preserve_window_get_preserve(GtkPreserveWindow* widget);
+UI_EXPORT void gtk_preserve_window_set_preserve(GtkPreserveWindow* widget,
+                                                gboolean value);
 
 // Whether or not someone else will gdk_window_resize the GdkWindow associated
 // with this widget (needed by the GPU process to synchronize resizing
@@ -65,7 +65,7 @@ UI_EXPORT void gtk_preserve_window_delegate_resize(GtkPreserveWindow* widget,
 // Provide a function to return an AtkObject* when calls to get_accessible
 // are made on this widget. The parameter |userdata| will be passed to the
 // factory function.
-void gtk_preserve_window_set_accessible_factory(
+UI_EXPORT void gtk_preserve_window_set_accessible_factory(
     GtkPreserveWindow* widget,
     AtkObject* (*factory)(void* userdata),
     gpointer userdata);
