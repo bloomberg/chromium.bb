@@ -134,27 +134,62 @@ class SearchProvider : public AutocompleteProvider,
     DISALLOW_COPY_AND_ASSIGN(Providers);
   };
 
-  struct NavigationResult {
-    NavigationResult(const GURL& url, const string16& site_name)
-        : url(url),
-          site_name(site_name) {
-    }
+  // The Result classes are intermediate representations of AutocompleteMatches,
+  // simply containing relevance-ranked search and navigation suggestions.
+  // They may be cached to provide some synchronous matches while requests for
+  // new suggestions from updated input are in flight.
+  // TODO(msw) Extend these classes to generate their corresponding matches and
+  //           other requisite data, in order to consolidate and simplify the
+  //           highly fragmented SearchProvider logic for each Result type.
+  class Result {
+   public:
+    explicit Result(int relevance);
+    virtual ~Result();
 
-    // The URL.
-    GURL url;
+    int relevance() const { return relevance_; }
+    void set_relevance(int relevance) { relevance_ = relevance; }
 
-    // Name for the site.
-    string16 site_name;
+   private:
+    // The relevance score.
+    int relevance_;
   };
 
-  typedef std::vector<string16> SuggestResults;
+  class SuggestResult : public Result {
+   public:
+    SuggestResult(const string16& suggestion, int relevance);
+    virtual ~SuggestResult();
+
+    const string16& suggestion() const { return suggestion_; }
+
+   private:
+    // The search suggestion string.
+    string16 suggestion_;
+  };
+
+  class NavigationResult : public Result {
+   public:
+    NavigationResult(const GURL& url,
+                     const string16& description,
+                     int relevance);
+    virtual ~NavigationResult();
+
+    const GURL& url() const { return url_; }
+    const string16& description() const { return description_; }
+
+   private:
+    // The suggested url for navigation.
+    GURL url_;
+
+    // The suggested navigational result description; generally the site name.
+    string16 description_;
+  };
+
+  typedef std::vector<SuggestResult> SuggestResults;
   typedef std::vector<NavigationResult> NavigationResults;
   typedef std::vector<history::KeywordSearchTermVisit> HistoryResults;
   typedef std::map<string16, AutocompleteMatch> MatchMap;
-  typedef std::pair<string16, int> ScoredTerm;
-  typedef std::vector<ScoredTerm> ScoredTerms;
 
-  class CompareScoredTerms;
+  class CompareScoredResults;
 
   // Called when timer_ expires.
   void Run();
@@ -177,6 +212,9 @@ class SearchProvider : public AutocompleteProvider,
   // NOTE: This does not update |done_|.  Callers must do so.
   void StopSuggest();
 
+  // Clears the current results.
+  void ClearResults();
+
   // Creates a URLFetcher requesting suggest results from the specified
   // |suggestions_url|. The caller owns the returned URLFetcher.
   content::URLFetcher* CreateSuggestFetcher(
@@ -185,22 +223,21 @@ class SearchProvider : public AutocompleteProvider,
       const string16& text);
 
   // Parses the results from the Suggest server and stores up to kMaxMatches of
-  // them in server_results_.  Returns whether parsing succeeded.
+  // them in |suggest_results|.  Returns whether parsing succeeded.
   bool ParseSuggestResults(base::Value* root_val,
                            bool is_keyword,
                            const string16& input_text,
                            SuggestResults* suggest_results);
 
-  // Converts the parsed server results in server_results_ to a set of
-  // AutocompleteMatches and adds them to |matches_|.  This also sets |done_|
-  // correctly.
+  // Converts the parsed results to a set of AutocompleteMatches and adds them
+  // to |matches_|.  This also sets |done_| correctly.
   void ConvertResultsToAutocompleteMatches();
 
   // Converts the first navigation result in |navigation_results| to an
   // AutocompleteMatch and adds it to |matches_|.
   void AddNavigationResultsToMatches(
-    const NavigationResults& navigation_results,
-    bool is_keyword);
+      const NavigationResults& navigation_results,
+      bool is_keyword);
 
   // Adds a match for each result in |results| to |map|. |is_keyword| indicates
   // whether the results correspond to the keyword provider or default provider.
@@ -210,18 +247,16 @@ class SearchProvider : public AutocompleteProvider,
                               MatchMap* map);
 
   // Calculates relevance scores for all |results|.
-  ScoredTerms ScoreHistoryTerms(const HistoryResults& results,
-                                bool base_prevent_inline_autocomplete,
-                                bool input_multiple_words,
-                                const string16& input_text,
-                                bool is_keyword);
+  SuggestResults ScoreHistoryResults(const HistoryResults& results,
+                                     bool base_prevent_inline_autocomplete,
+                                     bool input_multiple_words,
+                                     const string16& input_text,
+                                     bool is_keyword);
 
-  // Adds a match for each result in |suggest_results| to |map|. |is_keyword|
-  // indicates whether the results correspond to the keyword provider or default
-  // provider.
-  void AddSuggestResultsToMap(const SuggestResults& suggest_results,
+  // Adds matches for |results| to |map|. |is_keyword| indicates whether the
+  // results correspond to the keyword provider or default provider.
+  void AddSuggestResultsToMap(const SuggestResults& results,
                               bool is_keyword,
-                              int did_not_accept_suggestion,
                               MatchMap* map);
 
   // Determines the relevance for a particular match.  We use different scoring
@@ -234,17 +269,12 @@ class SearchProvider : public AutocompleteProvider,
   int CalculateRelevanceForHistory(const base::Time& time,
                                    bool is_keyword,
                                    bool prevent_inline_autocomplete) const;
-  // |result_number| is the index of the suggestion in the result set from the
-  // server; the best suggestion is suggestion number 0.  |is_keyword| is true
-  // if the search is from the keyword provider.
-  int CalculateRelevanceForSuggestion(size_t num_results,
-                                      size_t result_number,
-                                      bool is_keyword) const;
-  // |result_number| is same as above. |is_keyword| is true if the navigation
-  // result was suggested by the keyword provider.
-  int CalculateRelevanceForNavigation(size_t num_results,
-                                      size_t result_number,
-                                      bool is_keyword) const;
+  // Calculate the relevance for search suggestion results. Set |for_keyword| to
+  // true for relevance values applicable to keyword provider results.
+  int CalculateRelevanceForSuggestion(bool for_keyword) const;
+  // Calculate the relevance for navigation results. Set |for_keyword| to true
+  // for relevance values applicable to keyword provider results.
+  int CalculateRelevanceForNavigation(bool for_keyword) const;
 
   // Creates an AutocompleteMatch for "Search <engine> for |query_string|" with
   // the supplied relevance.  Adds this match to |map|; if such a match already
@@ -255,12 +285,10 @@ class SearchProvider : public AutocompleteProvider,
                      AutocompleteMatch::Type type,
                      int accepted_suggestion,
                      bool is_keyword,
-                     bool prevent_inline_autocomplete,
                      MatchMap* map);
 
   // Returns an AutocompleteMatch for a navigational suggestion.
-  AutocompleteMatch NavigationToMatch(const NavigationResult& query_string,
-                                      int relevance,
+  AutocompleteMatch NavigationToMatch(const NavigationResult& navigation,
                                       bool is_keyword);
 
   // Updates the value of |done_| from the internal state.
