@@ -67,7 +67,7 @@ content::BrowserContext* TestShellDelegate::GetCurrentBrowserContext() {
 void TestShellDelegate::ToggleSpokenFeedback() {
 }
 
-AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {
+app_list::AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {
   return NULL;
 }
 

@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/app_list_item_view.h"
+#include "ui/app_list/app_list_item_view.h"
 
-#include "ash/app_list/app_list.h"
-#include "ash/app_list/app_list_item_model.h"
-#include "ash/app_list/app_list_model_view.h"
-#include "ash/app_list/drop_shadow_label.h"
-#include "ash/app_list/icon_cache.h"
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
+#include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_model_view.h"
+#include "ui/app_list/drop_shadow_label.h"
+#include "ui/app_list/icon_cache.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -26,7 +27,7 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
-namespace ash {
+namespace app_list {
 
 namespace {
 
@@ -102,7 +103,7 @@ int g_min_title_width = 0;
 }  // namespace
 
 // static
-const char AppListItemView::kViewClassName[] = "ash/app_list/AppListItemView";
+const char AppListItemView::kViewClassName[] = "ui/app_list/AppListItemView";
 
 // AppListItemView::IconOperation wraps background icon processing.
 class AppListItemView::IconOperation
@@ -188,7 +189,7 @@ AppListItemView::AppListItemView(AppListModelView* list_model_view,
       ALLOW_THIS_IN_INITIALIZER_LIST(apply_shadow_factory_(this)) {
   title_->SetBackgroundColor(0);
 
-  if (internal::AppList::UseAppListV2()) {
+  if (list_model_view_->fixed_layout()) {
     title_->SetEnabledColor(kTitleColorV2);
   } else {
     title_->SetEnabledColor(kTitleColor);
@@ -400,4 +401,4 @@ void AppListItemView::StateChanged() {
   }
 }
 
-}  // namespace ash
+}  // namespace app_list

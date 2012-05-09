@@ -31,7 +31,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual void OpenMobileSetup() OVERRIDE;
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
   virtual void ToggleSpokenFeedback() OVERRIDE;
-  virtual AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
+  virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual void StartPartialScreenshot(
       ScreenshotDelegate* screenshot_delegate) OVERRIDE;
   virtual LauncherDelegate* CreateLauncherDelegate(

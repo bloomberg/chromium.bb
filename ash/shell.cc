@@ -5,8 +5,8 @@
 #include "ash/shell.h"
 
 #include <algorithm>
+#include <string>
 
-#include "ash/app_list/app_list.h"
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_resources.h"
@@ -29,6 +29,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/wm/activation_controller.h"
+#include "ash/wm/app_list_controller.h"
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/dialog_frame_view.h"
@@ -65,7 +66,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/monitor_manager.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/ui_controls_aura.h"
@@ -241,7 +241,7 @@ class DummyUserWallpaperDelegate : public UserWallpaperDelegate {
   }
 
  private:
-   DISALLOW_COPY_AND_ASSIGN(DummyUserWallpaperDelegate);
+  DISALLOW_COPY_AND_ASSIGN(DummyUserWallpaperDelegate);
 };
 
 class DummySystemTrayDelegate : public SystemTrayDelegate {
@@ -258,7 +258,6 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual ~DummySystemTrayDelegate() {}
 
  private:
-
   virtual bool GetTrayVisibilityOnStartup() OVERRIDE { return true; }
 
   // Overridden from SystemTrayDelegate:
@@ -774,17 +773,18 @@ void Shell::ShowBackgroundMenu(views::Widget* widget,
 }
 
 void Shell::ToggleAppList() {
-  if (!app_list_.get())
-    app_list_.reset(new internal::AppList);
-  app_list_->SetVisible(!app_list_->IsVisible());
+  if (!app_list_controller_.get())
+    app_list_controller_.reset(new internal::AppListController);
+  app_list_controller_->SetVisible(!app_list_controller_->IsVisible());
 }
 
 bool Shell::GetAppListTargetVisibility() const {
-  return app_list_.get() && app_list_->GetTargetVisibility();
+  return app_list_controller_.get() &&
+      app_list_controller_->GetTargetVisibility();
 }
 
 aura::Window* Shell::GetAppListWindow() {
-  return app_list_.get() ? app_list_->GetWindow() : NULL;
+  return app_list_controller_.get() ? app_list_controller_->GetWindow() : NULL;
 }
 
 bool Shell::IsScreenLocked() const {

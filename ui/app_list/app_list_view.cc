@@ -2,21 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/app_list_view.h"
+#include "ui/app_list/app_list_view.h"
 
-#include "ash/app_list/app_list.h"
-#include "ash/app_list/app_list_bubble_border.h"
-#include "ash/app_list/app_list_item_view.h"
-#include "ash/app_list/app_list_model.h"
-#include "ash/app_list/app_list_model_view.h"
-#include "ash/app_list/app_list_view_delegate.h"
-#include "ash/app_list/page_switcher.h"
-#include "ash/app_list/pagination_model.h"
-#include "ash/launcher/launcher.h"
-#include "ash/screen_ash.h"
-#include "ash/shell.h"
-#include "ash/shell_window_ids.h"
-#include "ash/wm/shelf_layout_manager.h"
+#include <string>
+
+#include "ui/app_list/app_list_bubble_border.h"
+#include "ui/app_list/app_list_item_view.h"
+#include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_model_view.h"
+#include "ui/app_list/app_list_view_delegate.h"
+#include "ui/app_list/page_switcher.h"
+#include "ui/app_list/pagination_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
@@ -26,7 +22,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
-namespace ash {
+namespace app_list {
 
 namespace {
 
@@ -47,13 +43,6 @@ ui::Transform GetScaleTransform(AppListModelView* model_view) {
   return ui::GetScaleTransform(center, kModelViewAnimationScaleFactor);
 }
 
-// Bounds returned is used for full screen mode. Use full monitor rect so that
-// the app list shade goes behind the launcher.
-gfx::Rect GetFullScreenBounds() {
-  gfx::Point cursor = gfx::Screen::GetCursorScreenPoint();
-  return gfx::Screen::GetMonitorNearestPoint(cursor).bounds();
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -65,16 +54,76 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       bubble_style_(false),
       bubble_border_(NULL),
       model_view_(NULL) {
-  if (internal::AppList::UseAppListV2())
-    InitAsBubble();
-  else
-    InitAsFullscreenWidget();
 }
 
 AppListView::~AppListView() {
   // Model is going away, so set to NULL before superclass deletes child views.
   if (model_view_)
     model_view_->SetModel(NULL);
+}
+
+void AppListView::InitAsFullscreenWidget(gfx::NativeView parent,
+                                         const gfx::Rect& screen_bounds,
+                                         const gfx::Rect& work_area) {
+  bubble_style_ = false;
+  set_background(views::Background::CreateSolidBackground(
+      kWidgetBackgroundColor));
+  work_area_ = work_area;
+
+  model_view_ = new AppListModelView(this, pagination_model_.get());
+  model_view_->SetPaintToLayer(true);
+  model_view_->layer()->SetFillsBoundsOpaquely(false);
+  AddChildView(model_view_);
+
+  views::Widget::InitParams widget_params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  widget_params.delegate = this;
+  widget_params.transparent = true;
+  widget_params.parent = parent;
+
+  views::Widget* widget = new views::Widget;
+  widget->Init(widget_params);
+  widget->SetContentsView(this);
+  widget->SetBounds(screen_bounds);
+
+  // Turns off default animation.
+  widget->SetVisibilityChangedAnimationsEnabled(false);
+
+  // Sets initial transform. AnimateShow changes it back to identity transform.
+  model_view_->SetTransform(GetScaleTransform(model_view_));
+  UpdateModel();
+}
+
+void AppListView::InitAsBubble(gfx::NativeView parent, views::View* anchor) {
+  bubble_style_ = true;
+  set_background(NULL);
+
+  SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical, 0, 0, kModelViewFooterPadding));
+
+  model_view_ = new AppListModelView(this, pagination_model_.get());
+  model_view_->SetLayout(kPreferredIconDimension,
+                         kPreferredCols,
+                         kPreferredRows);
+  AddChildView(model_view_);
+
+  PageSwitcher* page_switcher = new PageSwitcher(pagination_model_.get());
+  AddChildView(page_switcher);
+
+  set_anchor_view(anchor);
+  set_parent_window(parent);
+  set_close_on_deactivate(false);
+  views::BubbleDelegateView::CreateBubble(this);
+
+  // Resets default background since AppListBubbleBorder paints background.
+  GetBubbleFrameView()->set_background(NULL);
+
+  // Overrides border with AppListBubbleBorder.
+  bubble_border_ = new AppListBubbleBorder(this);
+  GetBubbleFrameView()->SetBubbleBorder(bubble_border_);
+  SizeToContents();  // Recalcuates with new border.
+
+  UpdateModel();
 }
 
 void AppListView::AnimateShow(int duration_ms) {
@@ -102,79 +151,20 @@ void AppListView::AnimateHide(int duration_ms) {
 }
 
 void AppListView::Close() {
-  if (GetWidget()->IsVisible())
-    Shell::GetInstance()->ToggleAppList();
-}
-
-void AppListView::UpdateBounds() {
-  if (bubble_style_)
-    SizeToContents();
+  if (delegate_.get())
+    delegate_->Close();
   else
-    GetWidget()->SetBounds(GetFullScreenBounds());
+    GetWidget()->Close();
 }
 
-void AppListView::InitAsFullscreenWidget() {
-  bubble_style_ = false;
-  set_background(views::Background::CreateSolidBackground(
-      kWidgetBackgroundColor));
-
-  model_view_ = new AppListModelView(this, pagination_model_.get());
-  model_view_->SetPaintToLayer(true);
-  model_view_->layer()->SetFillsBoundsOpaquely(false);
-  AddChildView(model_view_);
-
-  views::Widget::InitParams widget_params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  widget_params.delegate = this;
-  widget_params.transparent = true;
-  widget_params.parent = Shell::GetInstance()->GetContainer(
-      internal::kShellWindowId_AppListContainer);
-
-  views::Widget* widget = new views::Widget;
-  widget->Init(widget_params);
-  widget->SetContentsView(this);
-
-  widget->SetBounds(GetFullScreenBounds());
-
-  // Turns off default animation.
-  widget->SetVisibilityChangedAnimationsEnabled(false);
-
-  // Sets initial transform. AnimateShow changes it back to identity transform.
-  model_view_->SetTransform(GetScaleTransform(model_view_));
-  UpdateModel();
-}
-
-void AppListView::InitAsBubble() {
-  bubble_style_ = true;
-  set_background(NULL);
-
-  SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0, kModelViewFooterPadding));
-
-  model_view_ = new AppListModelView(this, pagination_model_.get());
-  model_view_->SetLayout(kPreferredIconDimension,
-                         kPreferredCols,
-                         kPreferredRows);
-  AddChildView(model_view_);
-
-  PageSwitcher* page_switcher = new PageSwitcher(pagination_model_.get());
-  AddChildView(page_switcher);
-
-  set_anchor_view(Shell::GetInstance()->launcher()->GetAppListButtonView());
-  set_parent_window(Shell::GetInstance()->GetContainer(
-      internal::kShellWindowId_AppListContainer));
-  set_close_on_deactivate(false);
-  views::BubbleDelegateView::CreateBubble(this);
-
-  // Resets default background since AppListBubbleBorder paints background.
-  GetBubbleFrameView()->set_background(NULL);
-
-  // Overrides border with AppListBubbleBorder.
-  bubble_border_ = new AppListBubbleBorder(this);
-  GetBubbleFrameView()->SetBubbleBorder(bubble_border_);
-  SizeToContents();  // Recalcuates with new border.
-
-  UpdateModel();
+void AppListView::UpdateBounds(const gfx::Rect& screen_bounds,
+                               const gfx::Rect& work_area) {
+  if (bubble_style_) {
+    SizeToContents();
+  } else {
+    work_area_ = work_area;
+    GetWidget()->SetBounds(screen_bounds);
+  }
 }
 
 void AppListView::UpdateModel() {
@@ -200,10 +190,7 @@ void AppListView::Layout() {
     views::View::Layout();
   } else {
     // Gets work area rect, which is in screen coordinates.
-    gfx::Rect workarea = Shell::GetInstance()->shelf()->IsVisible() ?
-        ScreenAsh::GetUnmaximizedWorkAreaBounds(GetWidget()->GetNativeView()) :
-        gfx::Screen::GetMonitorNearestWindow(
-            GetWidget()->GetNativeView()).work_area();
+    gfx::Rect workarea(work_area_);
 
     // Converts |workarea| into view's coordinates.
     gfx::Point origin(workarea.origin());
@@ -285,4 +272,4 @@ gfx::Rect AppListView::GetBubbleBounds() {
   return bubble_rect;
 }
 
-}  // namespace ash
+}  // namespace app_list

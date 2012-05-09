@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/app_list_model.h"
+#include "ui/app_list/app_list_model.h"
 
-namespace ash {
+namespace app_list {
 
 AppListModel::AppListModel() {
 }
@@ -36,4 +36,4 @@ void AppListModel::RemoveObserver(ui::ListModelObserver* observer) {
   items_.RemoveObserver(observer);
 }
 
-}  // namespace ash
+}  // namespace app_list

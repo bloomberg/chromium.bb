@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_ASH_APP_LIST_EXTENSION_APP_ITEM_H_
 #pragma once
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/views/ash/app_list/chrome_app_list_item.h"

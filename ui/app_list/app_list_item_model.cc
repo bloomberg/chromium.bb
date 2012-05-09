@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_item_model.h"
 
-#include "ash/app_list/app_list_item_model_observer.h"
+#include "ui/app_list/app_list_item_model_observer.h"
 
-namespace ash {
+namespace app_list {
 
 AppListItemModel::AppListItemModel() : highlighted_(false) {
 }
@@ -47,4 +47,4 @@ ui::MenuModel* AppListItemModel::GetContextMenuModel() {
   return NULL;
 }
 
-}  // namespace ash
+}  // namespace app_list

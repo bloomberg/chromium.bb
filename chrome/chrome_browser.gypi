@@ -4262,6 +4262,7 @@
         ['use_ash==1', {
           'dependencies': [
             '../ash/ash.gyp:ash',
+            '../ui/app_list/app_list.gyp:app_list',
           ],
         }],
         ['use_aura==1', {

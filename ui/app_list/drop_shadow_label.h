@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_DROP_SHADOW_LABEL_H_
-#define ASH_APP_LIST_DROP_SHADOW_LABEL_H_
+#ifndef UI_APP_LIST_DROP_SHADOW_LABEL_H_
+#define UI_APP_LIST_DROP_SHADOW_LABEL_H_
 #pragma once
 
 #include <vector>
@@ -11,7 +11,7 @@
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/controls/label.h"
 
-namespace ash {
+namespace app_list {
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -41,6 +41,6 @@ class DropShadowLabel : public views::Label  {
   DISALLOW_COPY_AND_ASSIGN(DropShadowLabel);
 };
 
-}  // namespace ash
+}  // namespace app_list
 
-#endif  // ASH_APP_LIST_DROP_SHADOW_LABEL_H_
+#endif  // UI_APP_LIST_DROP_SHADOW_LABEL_H_

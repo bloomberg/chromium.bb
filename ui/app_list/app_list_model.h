@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_APP_LIST_MODEL_H_
-#define ASH_APP_LIST_APP_LIST_MODEL_H_
+#ifndef UI_APP_LIST_APP_LIST_MODEL_H_
+#define UI_APP_LIST_APP_LIST_MODEL_H_
 #pragma once
 
-#include "ash/app_list/app_list_item_model.h"
-#include "ash/ash_export.h"
 #include "base/basictypes.h"
+#include "ui/app_list/app_list_export.h"
+#include "ui/app_list/app_list_item_model.h"
 #include "ui/base/models/list_model.h"
 
-namespace ash {
+namespace app_list {
 
 class AppListItemModel;
 
 // Model for AppListModelView that owns a list of AppListItemModels.
-class ASH_EXPORT AppListModel {
+class APP_LIST_EXPORT AppListModel {
  public:
   AppListModel();
   virtual ~AppListModel();
@@ -43,6 +43,6 @@ class ASH_EXPORT AppListModel {
   DISALLOW_COPY_AND_ASSIGN(AppListModel);
 };
 
-}  // namespace ash
+}  // namespace app_list
 
-#endif  // ASH_APP_LIST_APP_LIST_MODEL_H_
+#endif  // UI_APP_LIST_APP_LIST_MODEL_H_

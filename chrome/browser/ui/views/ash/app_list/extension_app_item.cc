@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/ash/app_list/extension_app_item.h"
 
-#include "ash/app_list/app_list_item_view.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/app_list/app_list_item_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 

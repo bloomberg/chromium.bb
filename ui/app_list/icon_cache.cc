@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/icon_cache.h"
+#include "ui/app_list/icon_cache.h"
 
 #include "base/logging.h"
 #include "base/md5.h"
@@ -21,7 +21,7 @@ std::string GetKey(const SkBitmap& image, const gfx::Size& size) {
 
 }  // namespace
 
-namespace ash {
+namespace app_list {
 
 // static
 IconCache* IconCache::instance_ = NULL;
@@ -87,4 +87,4 @@ IconCache::IconCache() {
 IconCache::~IconCache() {
 }
 
-}  // namespace ash
+}  // namespace app_list

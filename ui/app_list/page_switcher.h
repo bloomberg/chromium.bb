@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_PAGE_SWITCHER_H_
-#define ASH_APP_LIST_PAGE_SWITCHER_H_
+#ifndef UI_APP_LIST_PAGE_SWITCHER_H_
+#define UI_APP_LIST_PAGE_SWITCHER_H_
 #pragma once
 
-#include "ash/app_list/pagination_model_observer.h"
 #include "base/basictypes.h"
+#include "ui/app_list/pagination_model_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
-namespace ash {
+namespace app_list {
 
 class PaginationModel;
 
@@ -44,6 +44,6 @@ class PageSwitcher : public views::View,
   DISALLOW_COPY_AND_ASSIGN(PageSwitcher);
 };
 
-}  // namespace ash
+}  // namespace app_list
 
-#endif  // ASH_APP_LIST_PAGE_SWITCHER_H_
+#endif  // UI_APP_LIST_PAGE_SWITCHER_H_

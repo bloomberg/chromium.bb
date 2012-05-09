@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_UI_VIEWS_ASH_APP_LIST_CHROME_APP_LIST_ITEM_H_
 #pragma once
 
-#include "ash/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_item_model.h"
 
 // Base class of all chrome app list items. Chrome's AppListViewDelegate assumes
 // all items are derived from this class and calls Activate when an item is
 // activated.
-class ChromeAppListItem : public ash::AppListItemModel {
+class ChromeAppListItem : public app_list::AppListItemModel {
  public:
   enum Type {
     TYPE_APP,

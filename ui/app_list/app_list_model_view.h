@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_APP_LIST_MODEL_VIEW_H_
-#define ASH_APP_LIST_APP_LIST_MODEL_VIEW_H_
+#ifndef UI_APP_LIST_APP_LIST_MODEL_VIEW_H_
+#define UI_APP_LIST_APP_LIST_MODEL_VIEW_H_
 #pragma once
 
-#include "ash/ash_export.h"
-#include "ash/app_list/pagination_model_observer.h"
+#include "ui/app_list/app_list_export.h"
+#include "ui/app_list/pagination_model_observer.h"
 #include "ui/base/models/list_model_observer.h"
 #include "ui/views/view.h"
 
@@ -15,14 +15,14 @@ namespace views {
 class ButtonListener;
 }
 
-namespace ash {
+namespace app_list {
 
 class AppListItemView;
 class AppListModel;
 class PaginationModel;
 
 // AppListModelView displays the UI for an AppListModel.
-class ASH_EXPORT AppListModelView : public views::View,
+class APP_LIST_EXPORT AppListModelView : public views::View,
                                     public ui::ListModelObserver,
                                     public PaginationModelObserver {
  public:
@@ -50,6 +50,10 @@ class ASH_EXPORT AppListModelView : public views::View,
 
   int tiles_per_page() const {
     return cols_ * rows_per_page_;
+  }
+
+  bool fixed_layout() const {
+    return fixed_layout_;
   }
 
  private:
@@ -89,6 +93,6 @@ class ASH_EXPORT AppListModelView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(AppListModelView);
 };
 
-}  // namespace ash
+}  // namespace app_list
 
-#endif  // ASH_APP_LIST_APP_LIST_MODEL_VIEW_H_
+#endif  // UI_APP_LIST_APP_LIST_MODEL_VIEW_H_

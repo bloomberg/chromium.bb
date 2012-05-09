@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_PAGINATION_MODEL_OBSERVER_H_
-#define ASH_APP_LIST_PAGINATION_MODEL_OBSERVER_H_
+#ifndef UI_APP_LIST_PAGINATION_MODEL_OBSERVER_H_
+#define UI_APP_LIST_PAGINATION_MODEL_OBSERVER_H_
 #pragma once
 
-#include "ash/ash_export.h"
+#include "ui/app_list/app_list_export.h"
 
-namespace ash {
+namespace app_list {
 
-class ASH_EXPORT PaginationModelObserver {
+class APP_LIST_EXPORT PaginationModelObserver {
  public:
   // Invoked when the total number of page is changed.
   virtual void TotalPagesChanged() = 0;
@@ -22,6 +22,6 @@ class ASH_EXPORT PaginationModelObserver {
   virtual ~PaginationModelObserver() {}
 };
 
-}  // namespace ash
+}  // namespace app_list
 
-#endif  // ASH_APP_LIST_PAGINATION_MODEL_OBSERVER_H_
+#endif  // UI_APP_LIST_PAGINATION_MODEL_OBSERVER_H_

@@ -6,24 +6,27 @@
 #define CHROME_BROWSER_UI_VIEWS_ASH_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 #pragma once
 
-#include "ash/app_list/app_list_view_delegate.h"
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/app_list/app_list_view_delegate.h"
 
 class AppListModelBuilder;
 
-class AppListViewDelegate : public ash::AppListViewDelegate {
+class AppListViewDelegate : public app_list::AppListViewDelegate {
  public:
   AppListViewDelegate();
   virtual ~AppListViewDelegate();
 
  private:
-  // Overridden from ash::AppListViewDelegate:
-  virtual void SetModel(ash::AppListModel* model) OVERRIDE;
+  // Overridden from app_list::AppListViewDelegate:
+  virtual void SetModel(app_list::AppListModel* model) OVERRIDE;
   virtual void UpdateModel(const std::string& query) OVERRIDE;
-  virtual void OnAppListItemActivated(ash::AppListItemModel* item,
+  virtual void OnAppListItemActivated(app_list::AppListItemModel* item,
                                       int event_flags) OVERRIDE;
+  virtual void Close() OVERRIDE;
 
   scoped_ptr<AppListModelBuilder> model_builder_;
 

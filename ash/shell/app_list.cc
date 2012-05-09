@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/app_list_item_model.h"
-#include "ash/app_list/app_list_item_view.h"
-#include "ash/app_list/app_list_model.h"
-#include "ash/app_list/app_list_view.h"
-#include "ash/app_list/app_list_view_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
 #include "base/basictypes.h"
+#include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_item_view.h"
+#include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_view.h"
+#include "ui/app_list/app_list_view_delegate.h"
 #include "ui/views/examples/examples_window.h"
 
 namespace ash {
@@ -19,7 +19,7 @@ namespace shell {
 
 namespace {
 
-class WindowTypeLauncherItem : public ash::AppListItemModel {
+class WindowTypeLauncherItem : public app_list::AppListItemModel {
  public:
   enum Type {
     TOPLEVEL_WINDOW = 0,
@@ -30,7 +30,7 @@ class WindowTypeLauncherItem : public ash::AppListItemModel {
     LAST_TYPE,
   };
 
-  WindowTypeLauncherItem(Type type) : type_(type) {
+  explicit WindowTypeLauncherItem(Type type) : type_(type) {
     SetIcon(GetIcon(type));
     SetTitle(GetTitle(type));
   }
@@ -108,13 +108,13 @@ class WindowTypeLauncherItem : public ash::AppListItemModel {
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncherItem);
 };
 
-class ExampleAppListViewDelegate : public ash::AppListViewDelegate {
+class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
  public:
   ExampleAppListViewDelegate() : model_(NULL) {}
 
  private:
   // Overridden from ash::AppListViewDelegate:
-  virtual void SetModel(AppListModel* model) OVERRIDE {
+  virtual void SetModel(app_list::AppListModel* model) OVERRIDE {
     model_ = model;
   }
 
@@ -133,19 +133,25 @@ class ExampleAppListViewDelegate : public ash::AppListViewDelegate {
     }
   }
 
-  virtual void OnAppListItemActivated(ash::AppListItemModel* item,
+  virtual void OnAppListItemActivated(app_list::AppListItemModel* item,
                                       int event_flags) OVERRIDE {
     static_cast<WindowTypeLauncherItem*>(item)->Activate(event_flags);
   }
 
-  AppListModel* model_;
+  virtual void Close() OVERRIDE {
+    DCHECK(ash::Shell::HasInstance());
+    if (Shell::GetInstance()->GetAppListTargetVisibility())
+      Shell::GetInstance()->ToggleAppList();
+  }
+
+  app_list::AppListModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleAppListViewDelegate);
 };
 
 }  // namespace
 
-ash::AppListViewDelegate* CreateAppListViewDelegate() {
+app_list::AppListViewDelegate* CreateAppListViewDelegate() {
   return new ExampleAppListViewDelegate;
 }
 

@@ -13,6 +13,10 @@
 #include "base/callback.h"
 #include "base/string16.h"
 
+namespace app_list {
+class AppListViewDelegate;
+}
+
 namespace aura {
 class Window;
 }
@@ -23,7 +27,6 @@ class Widget;
 
 namespace ash {
 
-class AppListViewDelegate;
 class LauncherDelegate;
 class LauncherModel;
 struct LauncherItem;
@@ -80,7 +83,7 @@ class ASH_EXPORT ShellDelegate {
 
   // Invoked to create an AppListViewDelegate. Shell takes the ownership of
   // the created delegate.
-  virtual AppListViewDelegate* CreateAppListViewDelegate() = 0;
+  virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() = 0;
 
   // Invoked to start taking partial screenshot.
   virtual void StartPartialScreenshot(

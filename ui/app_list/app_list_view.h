@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_APP_LIST_VIEW_H_
-#define ASH_APP_LIST_APP_LIST_VIEW_H_
+#ifndef UI_APP_LIST_APP_LIST_VIEW_H_
+#define UI_APP_LIST_APP_LIST_VIEW_H_
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
+#include "ui/app_list/app_list_export.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 
@@ -14,7 +15,7 @@ namespace views {
 class View;
 }
 
-namespace ash {
+namespace app_list {
 
 class AppListBubbleBorder;
 class AppListModel;
@@ -24,24 +25,27 @@ class PaginationModel;
 
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppListModelView and passes AppListModel to it for display.
-class AppListView : public views::BubbleDelegateView,
-                    public views::ButtonListener {
+class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
+                                    public views::ButtonListener {
  public:
   // Takes ownership of |delegate|.
   explicit AppListView(AppListViewDelegate* delegate);
   virtual ~AppListView();
 
+  // Initializes the widget.
+  void InitAsFullscreenWidget(gfx::NativeView parent,
+                              const gfx::Rect& screen_bounds,
+                              const gfx::Rect& work_area);
+  void InitAsBubble(gfx::NativeView parent, views::View* anchor);
+
   void AnimateShow(int duration_ms);
   void AnimateHide(int duration_ms);
 
   void Close();
-  void UpdateBounds();
+  void UpdateBounds(const gfx::Rect& screen_bounds,
+                    const gfx::Rect& work_area);
 
  private:
-  // Initializes the window.
-  void InitAsFullscreenWidget();
-  void InitAsBubble();
-
   // Updates model using query text in search box.
   void UpdateModel();
 
@@ -70,9 +74,13 @@ class AppListView : public views::BubbleDelegateView,
   AppListBubbleBorder* bubble_border_;  // Owned by views hierarchy.
   AppListModelView* model_view_;
 
+  // Work area in screen coordinates to layout app list. This is used for
+  // full screen mode.
+  gfx::Rect work_area_;
+
   DISALLOW_COPY_AND_ASSIGN(AppListView);
 };
 
-}  // namespace ash
+}  // namespace app_list
 
-#endif  // ASH_APP_LIST_APP_LIST_VIEW_H_
+#endif  // UI_APP_LIST_APP_LIST_VIEW_H_

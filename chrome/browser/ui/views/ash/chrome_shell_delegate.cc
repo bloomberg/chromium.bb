@@ -207,7 +207,7 @@ void ChromeShellDelegate::ToggleSpokenFeedback() {
 #endif
 }
 
-ash::AppListViewDelegate*
+app_list::AppListViewDelegate*
     ChromeShellDelegate::CreateAppListViewDelegate() {
   // Shell will own the created delegate.
   return new AppListViewDelegate;

@@ -1,0 +1,6 @@
+include_rules = [
+  "+base",
+  "+ui",
+  "+testing",
+  "+third_party/skia",
+]

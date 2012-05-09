@@ -53,7 +53,7 @@ class ChromeAppItem : public ChromeAppListItem {
 // ModelItemSortData provides a string key to sort with
 // l10n_util::StringComparator.
 struct ModelItemSortData {
-  explicit ModelItemSortData(ash::AppListItemModel* item)
+  explicit ModelItemSortData(app_list::AppListItemModel* item)
       : item(item),
         key(base::i18n::ToLower(UTF8ToUTF16(item->title()))) {
   }
@@ -64,7 +64,7 @@ struct ModelItemSortData {
     return key;
   }
 
-  ash::AppListItemModel* item;
+  app_list::AppListItemModel* item;
   string16 key;
 };
 
@@ -102,7 +102,7 @@ AppListModelBuilder::AppListModelBuilder(Profile* profile)
 AppListModelBuilder::~AppListModelBuilder() {
 }
 
-void AppListModelBuilder::SetModel(ash::AppListModel* model) {
+void AppListModelBuilder::SetModel(app_list::AppListModel* model) {
   model_ = model;
 }
 
@@ -139,7 +139,7 @@ void AppListModelBuilder::SortAndPopulateModel(const Items& items) {
   }
 }
 
-void AppListModelBuilder::InsertItemByTitle(ash::AppListItemModel* item) {
+void AppListModelBuilder::InsertItemByTitle(app_list::AppListItemModel* item) {
   DCHECK(model_);
 
   icu::Locale locale(g_browser_process->GetApplicationLocale().c_str());

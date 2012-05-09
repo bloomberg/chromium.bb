@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_PAGINATION_MODEL_H_
-#define ASH_APP_LIST_PAGINATION_MODEL_H_
+#ifndef UI_APP_LIST_PAGINATION_MODEL_H_
+#define UI_APP_LIST_PAGINATION_MODEL_H_
 #pragma once
 
-#include "ash/ash_export.h"
+#include "ui/app_list/app_list_export.h"
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 
-namespace ash {
+namespace app_list {
 
 class PaginationModelObserver;
 
 // A simple pagination model that consists of two numbers: the total pages and
 // the currently selected page. The model is a single selection model that at
 // the most one page can become selected at any time.
-class ASH_EXPORT PaginationModel {
+class APP_LIST_EXPORT PaginationModel {
  public:
   PaginationModel();
   ~PaginationModel();
@@ -44,6 +44,6 @@ class ASH_EXPORT PaginationModel {
   DISALLOW_COPY_AND_ASSIGN(PaginationModel);
 };
 
-}  // namespace ash
+}  // namespace app_list
 
-#endif  // ASH_APP_LIST_PAGINATION_MODEL_H_
+#endif  // UI_APP_LIST_PAGINATION_MODEL_H_

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/app_list_item_view.h"
-#include "ash/app_list/app_list_model_view.h"
+#include "ui/app_list/app_list_model_view.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/app_list/app_list_item_view.h"
 
 namespace {
 
@@ -18,12 +19,14 @@ struct ModelViewCalculateLayoutCase {
 
 }  // namespace
 
-TEST(AppListTest, ModelViewCalculateLayout) {
+namespace app_list {
+
+TEST(AppListModelViewTest, ModelViewCalculateLayout) {
   // kMinTitleWidth is the average width of 15 chars of default size 12 font in
   // chromeos. Override here to avoid flakiness from different default font on
   // bots.
   const int kMinTitleWidth = 90;
-  ash::AppListItemView::SetMinTitleWidth(kMinTitleWidth);
+  AppListItemView::SetMinTitleWidth(kMinTitleWidth);
 
   const int kLauncherHeight = 50;
   const ModelViewCalculateLayoutCase kCases[] = {
@@ -52,13 +55,15 @@ TEST(AppListTest, ModelViewCalculateLayout) {
     int cols = 0;
     gfx::Size content_size(kCases[i].screen_size.width(),
                            kCases[i].screen_size.height() - kLauncherHeight);
-    ash::AppListModelView::CalculateLayout(content_size,
-                                           kCases[i].num_of_tiles,
-                                           &icon_size,
-                                           &rows,
-                                           &cols);
+    AppListModelView::CalculateLayout(content_size,
+                                      kCases[i].num_of_tiles,
+                                      &icon_size,
+                                      &rows,
+                                      &cols);
     EXPECT_EQ(kCases[i].expected_icon_size, icon_size) << "i=" << i;
     EXPECT_EQ(kCases[i].expected_rows, rows) << "i=" << i;
     EXPECT_EQ(kCases[i].expected_cols, cols) << "i=" << i;
   }
 }
+
+}  // namespace app_list

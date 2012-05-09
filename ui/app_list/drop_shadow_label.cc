@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/drop_shadow_label.h"
+#include "ui/app_list/drop_shadow_label.h"
 
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -13,7 +13,7 @@
 
 using views::Label;
 
-namespace ash {
+namespace app_list {
 
 DropShadowLabel::DropShadowLabel() {
 }
@@ -60,4 +60,4 @@ void DropShadowLabel::PaintText(gfx::Canvas* canvas,
   }
 }
 
-}  // namespace ash
+}  // namespace app_list

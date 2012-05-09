@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_APP_LIST_ITEM_VIEW_H_
-#define ASH_APP_LIST_APP_LIST_ITEM_VIEW_H_
+#ifndef UI_APP_LIST_APP_LIST_ITEM_VIEW_H_
+#define UI_APP_LIST_APP_LIST_ITEM_VIEW_H_
 #pragma once
 
-#include "ash/app_list/app_list_item_model_observer.h"
-#include "ash/ash_export.h"
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/app_list/app_list_export.h"
+#include "ui/app_list/app_list_item_model_observer.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/custom_button.h"
 
@@ -21,15 +23,15 @@ class ImageView;
 class MenuRunner;
 }
 
-namespace ash {
+namespace app_list {
 
 class AppListItemModel;
 class AppListModelView;
 class DropShadowLabel;
 
-class ASH_EXPORT AppListItemView : public views::CustomButton,
-                                   public views::ContextMenuController,
-                                   public AppListItemModelObserver {
+class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
+                                        public views::ContextMenuController,
+                                        public AppListItemModelObserver {
  public:
   AppListItemView(AppListModelView* list_model_view,
                   AppListItemModel* model,
@@ -105,6 +107,6 @@ class ASH_EXPORT AppListItemView : public views::CustomButton,
   DISALLOW_COPY_AND_ASSIGN(AppListItemView);
 };
 
-}  // namespace ash
+}  // namespace app_list
 
-#endif  // ASH_APP_LIST_APP_LIST_ITEM_VIEW_H_
+#endif  // UI_APP_LIST_APP_LIST_ITEM_VIEW_H_

@@ -2,22 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/app_list.h"
+#include "ash/wm/app_list_controller.h"
 
-#include "ash/app_list/app_list_view.h"
-#include "ash/app_list/icon_cache.h"
 #include "ash/ash_switches.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "ui/app_list/app_list_view.h"
+#include "ui/app_list/icon_cache.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/transform_util.h"
 
 namespace ash {
@@ -37,27 +39,44 @@ ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
 
+// Bounds returned is used for full screen app list. Use full monitor rect
+// so that the app list shade goes behind the launcher.
+gfx::Rect GetFullScreenBoundsForWidget(views::Widget* widget) {
+  gfx::NativeView window = widget->GetNativeView();
+  return gfx::Screen::GetMonitorNearestWindow(window).bounds();
+}
+
+// Return work area rect for full screen app list layout. This function is
+// needed to get final work area in one shot instead of waiting for shelf
+// animation to finish.
+gfx::Rect GetWorkAreaBoundsForWidget(views::Widget* widget) {
+  gfx::NativeView window = widget->GetNativeView();
+  return Shell::GetInstance()->shelf()->IsVisible() ?
+      ScreenAsh::GetUnmaximizedWorkAreaBounds(window) :
+      gfx::Screen::GetMonitorNearestWindow(window).work_area();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppList, public:
+// AppListController, public:
 
-AppList::AppList() : is_visible_(false), view_(NULL) {
-  IconCache::CreateInstance();
+AppListController::AppListController() : is_visible_(false), view_(NULL) {
+  app_list::IconCache::CreateInstance();
 }
 
-AppList::~AppList() {
+AppListController::~AppListController() {
   ResetView();
-  IconCache::DeleteInstance();
+  app_list::IconCache::DeleteInstance();
 }
 
 // static
-bool AppList::UseAppListV2() {
+bool AppListController::UseAppListV2() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableAppListV2);
 }
 
-void AppList::SetVisible(bool visible) {
+void AppListController::SetVisible(bool visible) {
   if (visible == is_visible_)
     return;
 
@@ -72,27 +91,40 @@ void AppList::SetVisible(bool visible) {
   } else if (is_visible_) {
     // AppListModel and AppListViewDelegate are owned by AppListView. They
     // will be released with AppListView on close.
-    SetView(new AppListView(
-        Shell::GetInstance()->delegate()->CreateAppListViewDelegate()));
+    app_list::AppListView* view = new app_list::AppListView(
+        Shell::GetInstance()->delegate()->CreateAppListViewDelegate());
+    if (UseAppListV2()) {
+      view->InitAsBubble(
+          Shell::GetInstance()->GetContainer(kShellWindowId_AppListContainer),
+          Shell::GetInstance()->launcher()->GetAppListButtonView());
+    } else {
+      views::Widget* launcher_widget =
+          Shell::GetInstance()->launcher()->widget();
+      view->InitAsFullscreenWidget(Shell::GetInstance()->GetContainer(
+          kShellWindowId_AppListContainer),
+          GetFullScreenBoundsForWidget(launcher_widget),
+          GetWorkAreaBoundsForWidget(launcher_widget));
+    }
+    SetView(view);
   }
 }
 
-bool AppList::IsVisible() {
+bool AppListController::IsVisible() const {
   return view_ && view_->GetWidget()->IsVisible();
 }
 
-aura::Window* AppList::GetWindow() {
+aura::Window* AppListController::GetWindow() {
   return is_visible_ && view_ ? view_->GetWidget()->GetNativeWindow() : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppList, private:
+// AppListController, private:
 
-void AppList::SetView(AppListView* view) {
+void AppListController::SetView(app_list::AppListView* view) {
   DCHECK(view_ == NULL);
 
   if (is_visible_) {
-    IconCache::GetInstance()->MarkAllEntryUnused();
+    app_list::IconCache::GetInstance()->MarkAllEntryUnused();
 
     view_ = view;
     views::Widget* widget = view_->GetWidget();
@@ -109,7 +141,7 @@ void AppList::SetView(AppListView* view) {
   }
 }
 
-void AppList::ResetView() {
+void AppListController::ResetView() {
   if (!view_)
     return;
 
@@ -120,10 +152,10 @@ void AppList::ResetView() {
   widget->GetNativeView()->GetRootWindow()->RemoveRootWindowObserver(this);
   view_ = NULL;
 
-  IconCache::GetInstance()->PurgeAllUnused();
+  app_list::IconCache::GetInstance()->PurgeAllUnused();
 }
 
-void AppList::ScheduleAnimation() {
+void AppListController::ScheduleAnimation() {
   second_animation_timer_.Stop();
 
   // Stop observing previous animation.
@@ -141,19 +173,18 @@ void AppList::ScheduleAnimation() {
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kSecondAnimationStartDelay),
         this,
-        &AppList::ScheduleAppListAnimation);
+        &AppListController::ScheduleAppListAnimation);
   } else {
     ScheduleAppListAnimation();
     second_animation_timer_.Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kSecondAnimationStartDelay),
         this,
-        &AppList::ScheduleBrowserWindowsAnimation);
+        &AppListController::ScheduleBrowserWindowsAnimation);
   }
-
 }
 
-void AppList::ScheduleBrowserWindowsAnimationForContainer(
+void AppListController::ScheduleBrowserWindowsAnimationForContainer(
     aura::Window* container) {
   DCHECK(container);
   ui::Layer* layer = container->layer();
@@ -174,19 +205,19 @@ void AppList::ScheduleBrowserWindowsAnimationForContainer(
       ui::Transform());
 }
 
-void AppList::ScheduleBrowserWindowsAnimation() {
+void AppListController::ScheduleBrowserWindowsAnimation() {
   // Note: containers could be NULL during Shell shutdown.
   aura::Window* default_container = Shell::GetInstance()->GetContainer(
-      internal::kShellWindowId_DefaultContainer);
+      kShellWindowId_DefaultContainer);
   if (default_container)
     ScheduleBrowserWindowsAnimationForContainer(default_container);
-  aura::Window* always_on_top_container = Shell::GetInstance()->GetContainer(
-      internal::kShellWindowId_AlwaysOnTopContainer);
+  aura::Window* always_on_top_container = Shell::GetInstance()->
+      GetContainer(kShellWindowId_AlwaysOnTopContainer);
   if (always_on_top_container)
     ScheduleBrowserWindowsAnimationForContainer(always_on_top_container);
 }
 
-void AppList::ScheduleDimmingAnimation() {
+void AppListController::ScheduleDimmingAnimation() {
   ui::Layer* layer = GetLayer(view_->GetWidget());
   layer->GetAnimator()->StopAnimating();
 
@@ -201,7 +232,7 @@ void AppList::ScheduleDimmingAnimation() {
   layer->SetOpacity(is_visible_ ? 1.0 : 0.0);
 }
 
-void AppList::ScheduleAppListAnimation() {
+void AppListController::ScheduleAppListAnimation() {
   if (is_visible_)
     view_->AnimateShow(kAnimationDurationMs);
   else
@@ -209,15 +240,15 @@ void AppList::ScheduleAppListAnimation() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppList, aura::EventFilter implementation:
+// AppListController, aura::EventFilter implementation:
 
-bool AppList::PreHandleKeyEvent(aura::Window* target,
-                                aura::KeyEvent* event) {
+bool AppListController::PreHandleKeyEvent(aura::Window* target,
+                                          aura::KeyEvent* event) {
   return false;
 }
 
-bool AppList::PreHandleMouseEvent(aura::Window* target,
-                                  aura::MouseEvent* event) {
+bool AppListController::PreHandleMouseEvent(aura::Window* target,
+                                            aura::MouseEvent* event) {
   if (view_ && is_visible_ && event->type() == ui::ET_MOUSE_PRESSED) {
     views::Widget* widget = view_->GetWidget();
     aura::MouseEvent translated(*event, target, widget->GetNativeView());
@@ -227,31 +258,36 @@ bool AppList::PreHandleMouseEvent(aura::Window* target,
   return false;
 }
 
-ui::TouchStatus AppList::PreHandleTouchEvent(aura::Window* target,
-                                             aura::TouchEvent* event) {
+ui::TouchStatus AppListController::PreHandleTouchEvent(
+    aura::Window* target,
+    aura::TouchEvent* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus AppList::PreHandleGestureEvent(
+ui::GestureStatus AppListController::PreHandleGestureEvent(
     aura::Window* target,
     aura::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppList,  ura::RootWindowObserver implementation:
-void AppList::OnRootWindowResized(const aura::RootWindow* root,
-                                  const gfx::Size& old_size) {
-  if (view_ && is_visible_)
-    view_->UpdateBounds();
+// AppListController,  aura::RootWindowObserver implementation:
+void AppListController::OnRootWindowResized(const aura::RootWindow* root,
+                                            const gfx::Size& old_size) {
+  if (view_ && is_visible_) {
+    views::Widget* launcher_widget =
+        Shell::GetInstance()->launcher()->widget();
+    view_->UpdateBounds(GetFullScreenBoundsForWidget(launcher_widget),
+                        GetWorkAreaBoundsForWidget(launcher_widget));
+  }
 }
 
-void AppList::OnWindowFocused(aura::Window* window) {
+void AppListController::OnWindowFocused(aura::Window* window) {
   if (view_ && is_visible_) {
     aura::Window* applist_container = Shell::GetInstance()->GetContainer(
-        internal::kShellWindowId_AppListContainer);
+        kShellWindowId_AppListContainer);
     aura::Window* bubble_container = Shell::GetInstance()->GetContainer(
-        internal::kShellWindowId_SettingBubbleContainer);
+        kShellWindowId_SettingBubbleContainer);
     if (window->parent() != applist_container &&
         window->parent() != bubble_container) {
       SetVisible(false);
@@ -260,9 +296,9 @@ void AppList::OnWindowFocused(aura::Window* window) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppList, ui::ImplicitAnimationObserver implementation:
+// AppListController, ui::ImplicitAnimationObserver implementation:
 
-void AppList::OnImplicitAnimationsCompleted() {
+void AppListController::OnImplicitAnimationsCompleted() {
   if (is_visible_ )
     view_->GetWidget()->Activate();
   else
@@ -270,9 +306,9 @@ void AppList::OnImplicitAnimationsCompleted() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppList, views::Widget::Observer implementation:
+// AppListController, views::Widget::Observer implementation:
 
-void AppList::OnWidgetClosing(views::Widget* widget) {
+void AppListController::OnWidgetClosing(views::Widget* widget) {
   DCHECK(view_->GetWidget() == widget);
   if (is_visible_)
     SetVisible(false);

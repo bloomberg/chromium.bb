@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_APP_LIST_H_
-#define ASH_APP_LIST_APP_LIST_H_
+#ifndef ASH_WM_APP_LIST_CONTROLLER_H_
+#define ASH_WM_APP_LIST_CONTROLLER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -14,23 +14,24 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/widget/widget.h"
 
-namespace ash {
-
+namespace app_list {
 class AppListView;
+}
 
+namespace ash {
 namespace internal {
 
-// AppList is a controller that manages app list UI for shell. To show the UI,
-// it requests app list widget from ShellDelegate and shows it when ready.
+// AppListController is a controller that manages app list UI for shell.
+// It creates AppListView and schedules showing/hiding animation.
 // While the UI is visible, it monitors things such as app list widget's
 // activation state and desktop mouse click to auto dismiss the UI.
-class AppList : public aura::EventFilter,
-                public aura::RootWindowObserver,
-                public ui::ImplicitAnimationObserver,
-                public views::Widget::Observer {
+class AppListController : public aura::EventFilter,
+                          public aura::RootWindowObserver,
+                          public ui::ImplicitAnimationObserver,
+                          public views::Widget::Observer {
  public:
-  AppList();
-  virtual ~AppList();
+  AppListController();
+  virtual ~AppListController();
 
   // Returns true if AppListV2 is enabled.
   static bool UseAppListV2();
@@ -39,7 +40,7 @@ class AppList : public aura::EventFilter,
   void SetVisible(bool visible);
 
   // Whether app list window is visible (shown or being shown).
-  bool IsVisible();
+  bool IsVisible() const;
 
   // Returns target visibility. This differs from IsVisible() if an animation
   // is ongoing.
@@ -51,7 +52,7 @@ class AppList : public aura::EventFilter,
  private:
   // Sets app list view. If we are in visible mode, start showing animation.
   // Otherwise, we just close it.
-  void SetView(AppListView* view);
+  void SetView(app_list::AppListView* view);
 
   // Forgets the view.
   void ResetView();
@@ -98,16 +99,17 @@ class AppList : public aura::EventFilter,
   bool is_visible_;
 
   // The AppListView this class manages, owned by its widget.
-  AppListView* view_;
+  app_list::AppListView* view_;
 
   // Timer to schedule the 2nd step animation, started when the first step
   // animation is scheduled in ScheduleAnimation.
-  base::OneShotTimer<AppList> second_animation_timer_;
+  base::OneShotTimer<AppListController> second_animation_timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppList);
+  DISALLOW_COPY_AND_ASSIGN(AppListController);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  //  ASH_APP_LIST_APP_LIST_H_
+#endif  // ASH_WM_APP_LIST_CONTROLLER_H_
+

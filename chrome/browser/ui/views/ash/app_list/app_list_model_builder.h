@@ -6,11 +6,14 @@
 #define CHROME_BROWSER_UI_VIEWS_ASH_APP_LIST_APP_LIST_MODEL_BUILDER_H_
 #pragma once
 
-#include "ash/app_list/app_list_model.h"
+#include <string>
+#include <vector>
+
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/app_list/app_list_model.h"
 
 class Profile;
 
@@ -19,20 +22,20 @@ class AppListModelBuilder : public content::NotificationObserver {
   explicit AppListModelBuilder(Profile* profile);
   virtual ~AppListModelBuilder();
 
-  void SetModel(ash::AppListModel* model);
+  void SetModel(app_list::AppListModel* model);
 
   // Populates the model.
   void Build(const std::string& query);
 
  private:
-  typedef std::vector<ash::AppListItemModel*> Items;
+  typedef std::vector<app_list::AppListItemModel*> Items;
 
   FRIEND_TEST_ALL_PREFIXES(AppListModelBuilderTest, GetExtensionApps);
   FRIEND_TEST_ALL_PREFIXES(AppListModelBuilderTest, SortAndPopulateModel);
   FRIEND_TEST_ALL_PREFIXES(AppListModelBuilderTest, InsertItemByTitle);
 
   void SortAndPopulateModel(const Items& items);
-  void InsertItemByTitle(ash::AppListItemModel* item);
+  void InsertItemByTitle(app_list::AppListItemModel* item);
 
   void GetExtensionApps(const string16& query, Items* items);
   void CreateSpecialItems();
@@ -57,7 +60,7 @@ class AppListModelBuilder : public content::NotificationObserver {
 
   // The model used by AppListView. It is passed in via SetModel and owned by
   // AppListView.
-  ash::AppListModel* model_;
+  app_list::AppListModel* model_;
 
   // Number of special items in the model. Special items index should be ranged
   // from [0, special_items_count_ - 1].

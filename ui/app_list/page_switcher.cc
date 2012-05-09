@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/page_switcher.h"
+#include "ui/app_list/page_switcher.h"
 
-#include "ash/app_list/pagination_model.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/app_list/pagination_model.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/custom_button.h"
@@ -30,7 +30,7 @@ const SkColor kSelectedColor = SkColorSetARGB(0x55, 0x00, 0x00, 0x00);
 
 class PageSwitcherButton : public views::CustomButton {
  public:
-  PageSwitcherButton(views::ButtonListener* listener)
+  explicit PageSwitcherButton(views::ButtonListener* listener)
       : views::CustomButton(listener),
         selected_(false) {
   }
@@ -97,7 +97,7 @@ PageSwitcherButton* GetButtonByIndex(views::View* buttons, int index) {
 
 }  // namespace
 
-namespace ash {
+namespace app_list {
 
 PageSwitcher::PageSwitcher(PaginationModel* model)
     : model_(model),
@@ -155,4 +155,4 @@ void PageSwitcher::SelectedPageChanged(int old_selected, int new_selected) {
     GetButtonByIndex(buttons_, new_selected)->SetSelected(true);
 }
 
-}  // namespace ash
+}  // namespace app_list

@@ -82,7 +82,7 @@ content::BrowserContext* ShellDelegateImpl::GetCurrentBrowserContext() {
 void ShellDelegateImpl::ToggleSpokenFeedback() {
 }
 
-ash::AppListViewDelegate* ShellDelegateImpl::CreateAppListViewDelegate() {
+app_list::AppListViewDelegate* ShellDelegateImpl::CreateAppListViewDelegate() {
   return ash::shell::CreateAppListViewDelegate();
 }
 

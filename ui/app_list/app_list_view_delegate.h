@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
-#define ASH_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
+#ifndef UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
+#define UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 #pragma once
 
 #include <string>
 
-#include "ash/ash_export.h"
+#include "ui/app_list/app_list_export.h"
 
-namespace ash {
+namespace app_list {
 
 class AppListItemModel;
 class AppListModel;
 
-class ASH_EXPORT AppListViewDelegate {
+class APP_LIST_EXPORT AppListViewDelegate {
  public:
   // AppListView owns the delegate.
   virtual ~AppListViewDelegate() {}
@@ -30,8 +30,11 @@ class ASH_EXPORT AppListViewDelegate {
   // Invoked an AppListeItemModelView is  activated by click or enter key.
   virtual void OnAppListItemActivated(AppListItemModel* item,
                                       int event_flags) = 0;
+
+  // Invoked to close app list.
+  virtual void Close() = 0;
 };
 
-}  // namespace ash
+}  // namespace app_list
 
-#endif  // ASH_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
+#endif  // UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_

@@ -62,9 +62,9 @@ class VideoDetector;
 class WindowCycleController;
 
 namespace internal {
-class ActivationController;
 class AcceleratorFilter;
-class AppList;
+class ActivationController;
+class AppListController;
 class DragDropController;
 class EventClientImpl;
 class FocusCycler;
@@ -323,7 +323,7 @@ class ASH_EXPORT Shell {
 
   scoped_ptr<Launcher> launcher_;
 
-  scoped_ptr<internal::AppList> app_list_;
+  scoped_ptr<internal::AppListController> app_list_controller_;
 
   scoped_ptr<internal::ShellContextMenu> shell_context_menu_;
   scoped_ptr<internal::StackingController> stacking_controller_;

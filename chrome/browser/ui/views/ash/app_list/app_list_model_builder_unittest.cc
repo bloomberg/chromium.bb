@@ -2,18 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/app_list_item_model.h"
+#include "chrome/browser/ui/views/ash/app_list/app_list_model_builder.h"
+
+#include <string>
+
 #include "base/file_util.h"
 #include "base/stl_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/views/ash/app_list/app_list_model_builder.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/app_list/app_list_item_model.h"
 
 namespace {
 
-class TestAppListItemModel : public ash::AppListItemModel {
+class TestAppListItemModel : public app_list::AppListItemModel {
  public:
   explicit TestAppListItemModel(const std::string& title) {
     SetTitle(title);
@@ -24,7 +27,7 @@ class TestAppListItemModel : public ash::AppListItemModel {
 };
 
 // Get a string of all items in |model| joined with ','.
-std::string GetModelContent(ash::AppListModel* model) {
+std::string GetModelContent(app_list::AppListModel* model) {
   std::string content;
   for (int i = 0; i < model->item_count(); ++i) {
     if (i > 0)
@@ -78,7 +81,7 @@ TEST_F(AppListModelBuilderTest, SortAndPopulateModel) {
   };
   const char* kExpected = "a,B,Ca,CB";
 
-  scoped_ptr<ash::AppListModel> model(new ash::AppListModel());
+  scoped_ptr<app_list::AppListModel> model(new app_list::AppListModel());
 
   AppListModelBuilder::Items items;
   for (size_t i = 0; i < arraysize(kInput); ++i)
@@ -92,7 +95,7 @@ TEST_F(AppListModelBuilderTest, SortAndPopulateModel) {
 }
 
 TEST_F(AppListModelBuilderTest, InsertItemByTitle) {
-  scoped_ptr<ash::AppListModel> model(new ash::AppListModel());
+  scoped_ptr<app_list::AppListModel> model(new app_list::AppListModel());
   AppListModelBuilder builder(profile_.get());
   builder.SetModel(model.get());
 

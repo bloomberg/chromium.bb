@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/app_list_model_view.h"
+#include "ui/app_list/app_list_model_view.h"
 
-#include "ash/app_list/app_list_item_view.h"
-#include "ash/app_list/app_list_model.h"
-#include "ash/app_list/pagination_model.h"
+#include <algorithm>
 
-namespace ash {
+#include "ui/app_list/app_list_item_view.h"
+#include "ui/app_list/app_list_model.h"
+#include "ui/app_list/pagination_model.h"
+
+namespace app_list {
 
 AppListModelView::AppListModelView(views::ButtonListener* listener,
                                    PaginationModel* pagination_model)
@@ -304,4 +306,4 @@ void AppListModelView::SelectedPageChanged(int old_selected, int new_selected) {
   Layout();
 }
 
-}  // namespace ash
+}  // namespace app_list

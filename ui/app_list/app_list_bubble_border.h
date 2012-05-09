@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_APP_LIST_BUBBLE_BORDER_H_
-#define ASH_APP_LIST_APP_LIST_BUBBLE_BORDER_H_
+#ifndef UI_APP_LIST_APP_LIST_BUBBLE_BORDER_H_
+#define UI_APP_LIST_APP_LIST_BUBBLE_BORDER_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "ui/views/bubble/bubble_border.h"
 
-namespace ash {
+namespace app_list {
 
 // A class to paint bubble border and background.
 class AppListBubbleBorder : public views::BubbleBorder {
@@ -48,6 +48,6 @@ class AppListBubbleBorder : public views::BubbleBorder {
   DISALLOW_COPY_AND_ASSIGN(AppListBubbleBorder);
 };
 
-}  // namespace ash
+}  // namespace app_list
 
-#endif  // ASH_APP_LIST_APP_LIST_BUBBLE_BORDER_H_
+#endif  // UI_APP_LIST_APP_LIST_BUBBLE_BORDER_H_

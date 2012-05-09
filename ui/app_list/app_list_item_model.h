@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SHELL_APP_LIST_APP_LIST_ITEM_MODEL_H_
-#define UI_AURA_SHELL_APP_LIST_APP_LIST_ITEM_MODEL_H_
+#ifndef UI_APP_LIST_APP_LIST_ITEM_MODEL_H_
+#define UI_APP_LIST_APP_LIST_ITEM_MODEL_H_
 #pragma once
 
 #include <string>
@@ -11,19 +11,19 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ash/ash_export.h"
+#include "ui/app_list/app_list_export.h"
 
 namespace ui {
 class MenuModel;
 }
 
-namespace ash {
+namespace app_list {
 
 class AppListItemModelObserver;
 
 // AppListItemModel provides icon and title to be shown in a AppListItemView
 // and action to be executed when the AppListItemView is activated.
-class ASH_EXPORT AppListItemModel {
+class APP_LIST_EXPORT AppListItemModel {
  public:
   AppListItemModel();
   virtual ~AppListItemModel();
@@ -60,6 +60,6 @@ class ASH_EXPORT AppListItemModel {
   DISALLOW_COPY_AND_ASSIGN(AppListItemModel);
 };
 
-}  // namespace ash
+}  // namespace app_list
 
-#endif  // #define ASH_APP_LIST_APP_LIST_ITEM_MODEL_OBSERVER_H_
+#endif  // UI_APP_LIST_APP_LIST_ITEM_MODEL_H_

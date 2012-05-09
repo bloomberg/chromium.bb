@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/app_list_bubble_border.h"
+#include "ui/app_list/app_list_bubble_border.h"
 
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -85,7 +85,7 @@ void BuildShape(const gfx::Rect& bounds,
 
 }  // namespace
 
-namespace ash {
+namespace app_list {
 
 AppListBubbleBorder::AppListBubbleBorder(views::View* app_list_view)
     : views::BubbleBorder(views::BubbleBorder::BOTTOM_RIGHT,
@@ -210,4 +210,4 @@ void AppListBubbleBorder::Paint(const views::View& view,
   canvas->Restore();
 }
 
-}  // namespace ash
+}  // namespace app_list

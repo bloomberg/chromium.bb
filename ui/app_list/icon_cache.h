@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_ICON_CACHE_H_
-#define ASH_APP_LIST_ICON_CACHE_H_
+#ifndef UI_APP_LIST_ICON_CACHE_H_
+#define UI_APP_LIST_ICON_CACHE_H_
 #pragma once
 
 #include <map>
@@ -11,15 +11,16 @@
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/app_list/app_list_export.h"
 
 namespace gfx {
 class Size;
 }
 
-namespace ash {
+namespace app_list {
 
 // IconCache stores processed image, keyed by the source image and desired size.
-class IconCache {
+class APP_LIST_EXPORT IconCache {
  public:
   static void CreateInstance();
   static void DeleteInstance();
@@ -53,6 +54,6 @@ class IconCache {
   DISALLOW_COPY_AND_ASSIGN(IconCache);
 };
 
-}  // namespace ash
+}  // namespace app_list
 
-#endif  // ASH_APP_LIST_ICON_CACHE_H_
+#endif  // UI_APP_LIST_ICON_CACHE_H_
