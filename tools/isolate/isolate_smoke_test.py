@@ -29,19 +29,26 @@ RELATIVE_CWD = {
   'missing_trailing_slash': '.',
   'no_run': '.',
   'non_existent': '.',
-  'touch_root': 'data/isolate',
+  'touch_root': os.path.join('data', 'isolate'),
   'with_flag': '.',
 }
 DEPENDENCIES = {
   'fail': ['fail.py'],
   'missing_trailing_slash': [],
   'no_run': [
-    'no_run.isolate', 'files1/test_file1.txt', 'files1/test_file2.txt',
+    'no_run.isolate',
+    os.path.join('files1', 'test_file1.txt'),
+    os.path.join('files1', 'test_file2.txt'),
   ],
   'non_existent': [],
-  'touch_root': ['data/isolate/touch_root.py', 'isolate.py'],
+  'touch_root': [
+    os.path.join('data', 'isolate', 'touch_root.py'),
+    'isolate.py',
+  ],
   'with_flag': [
-    'with_flag.py', 'files1/test_file1.txt', 'files1/test_file2.txt',
+    'with_flag.py',
+    os.path.join('files1', 'test_file1.txt'),
+    os.path.join('files1', 'test_file2.txt'),
   ],
 }
 
@@ -69,6 +76,7 @@ class IsolateBase(unittest.TestCase):
     self.tempdir = tempfile.mkdtemp()
     self.result = os.path.join(self.tempdir, 'isolate_smoke_test.result')
     self.outdir = os.path.join(self.tempdir, 'isolated')
+    self.maxDiff = None
 
   def tearDown(self):
     shutil.rmtree(self.tempdir)
@@ -79,9 +87,7 @@ class IsolateBase(unittest.TestCase):
   def _result_tree(self):
     actual = []
     for root, _dirs, files in os.walk(self.outdir):
-      actual.extend(
-          os.path.join(root, f)[len(self.outdir)+1:].replace(os.path.sep, '/')
-          for f in files)
+      actual.extend(os.path.join(root, f)[len(self.outdir)+1:] for f in files)
     return sorted(actual)
 
   def _expected_tree(self):
@@ -121,28 +127,34 @@ class IsolateBase(unittest.TestCase):
         files[filename][u'sha-1'] = unicode(h.hexdigest())
     return files
 
-  def _expected_result(self, args, read_only, extra_vars=None):
+  def _expected_result(self, args, read_only):
     """Verifies self.result contains the expected data."""
-    flavor = isolate.trace_inputs.get_flavor()
     expected = {
       u'files': self._gen_files(read_only),
       u'read_only': read_only,
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
-      u'resultdir': os.path.dirname(self.result),
-      u'resultfile': self.result,
+    }
+    if args:
+      expected[u'command'] = [u'python'] + [unicode(x) for x in args]
+    else:
+      expected[u'command'] = []
+    self.assertEquals(expected, json.load(open(self.result, 'r')))
+
+  def _expected_saved_state(self, extra_vars):
+    flavor = isolate.trace_inputs.get_flavor()
+    expected = {
+      u'isolate_file': unicode(self.filename()),
       u'variables': {
         u'EXECUTABLE_SUFFIX': '.exe' if flavor == 'win' else '',
         u'OS': unicode(flavor),
       },
     }
     expected['variables'].update(extra_vars or {})
-    if args:
-      expected[u'command'] = [u'python'] + [unicode(x) for x in args]
-    else:
-      expected[u'command'] = []
+    self.assertEquals(expected, json.load(open(self.saved_state(), 'r')))
 
-    self.assertEquals(expected, json.load(open(self.result, 'rb')))
-    return expected
+  def _expect_results(self, args, read_only, extra_vars):
+    self._expected_result(args, read_only)
+    self._expected_saved_state(extra_vars)
 
   def _expect_no_result(self):
     self.assertFalse(os.path.exists(self.result))
@@ -208,6 +220,9 @@ class IsolateBase(unittest.TestCase):
     self.assertTrue(os.path.isfile(filename), filename)
     return filename
 
+  def saved_state(self):
+    return isolate.result_to_state(self.result)
+
 
 class Isolate(unittest.TestCase):
   def test_help_modes(self):
@@ -250,7 +265,7 @@ class Isolate_check(IsolateBase):
   def test_fail(self):
     self._execute('check', 'fail.isolate', [], False)
     self._expect_no_tree()
-    self._expected_result(['fail.py'], None)
+    self._expect_results(['fail.py'], None, None)
 
   def test_missing_trailing_slash(self):
     try:
@@ -273,17 +288,18 @@ class Isolate_check(IsolateBase):
   def test_no_run(self):
     self._execute('check', 'no_run.isolate', [], False)
     self._expect_no_tree()
-    self._expected_result([], None)
+    self._expect_results([], None, None)
 
   def test_touch_root(self):
     self._execute('check', 'touch_root.isolate', [], False)
     self._expect_no_tree()
-    self._expected_result(['touch_root.py'], None)
+    self._expect_results(['touch_root.py'], None, None)
 
   def test_with_flag(self):
     self._execute('check', 'with_flag.isolate', ['-V', 'FLAG', 'gyp'], False)
     self._expect_no_tree()
-    self._expected_result(['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'})
+    self._expect_results(
+        ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'})
 
 
 class Isolate_hashtable(IsolateBase):
@@ -297,7 +313,7 @@ class Isolate_hashtable(IsolateBase):
   def test_fail(self):
     self._execute('hashtable', 'fail.isolate', [], False)
     self._expected_hash_tree()
-    self._expected_result(['fail.py'], None)
+    self._expect_results(['fail.py'], None, None)
 
   def test_missing_trailing_slash(self):
     try:
@@ -320,18 +336,19 @@ class Isolate_hashtable(IsolateBase):
   def test_no_run(self):
     self._execute('hashtable', 'no_run.isolate', [], False)
     self._expected_hash_tree()
-    self._expected_result([], None)
+    self._expect_results([], None, None)
 
   def test_touch_root(self):
     self._execute('hashtable', 'touch_root.isolate', [], False)
     self._expected_hash_tree()
-    self._expected_result(['touch_root.py'], None)
+    self._expect_results(['touch_root.py'], None, None)
 
   def test_with_flag(self):
     self._execute(
         'hashtable', 'with_flag.isolate', ['-V', 'FLAG', 'gyp'], False)
     self._expected_hash_tree()
-    self._expected_result(['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'})
+    self._expect_results(
+        ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'})
 
 
 class Isolate_remap(IsolateBase):
@@ -340,7 +357,7 @@ class Isolate_remap(IsolateBase):
   def test_fail(self):
     self._execute('remap', 'fail.isolate', [], False)
     self._expected_tree()
-    self._expected_result(['fail.py'], None)
+    self._expect_results(['fail.py'], None, None)
 
   def test_missing_trailing_slash(self):
     try:
@@ -363,17 +380,18 @@ class Isolate_remap(IsolateBase):
   def test_no_run(self):
     self._execute('remap', 'no_run.isolate', [], False)
     self._expected_tree()
-    self._expected_result([], None)
+    self._expect_results([], None, None)
 
   def test_touch_root(self):
     self._execute('remap', 'touch_root.isolate', [], False)
     self._expected_tree()
-    self._expected_result(['touch_root.py'], None)
+    self._expect_results(['touch_root.py'], None, None)
 
   def test_with_flag(self):
     self._execute('remap', 'with_flag.isolate', ['-V', 'FLAG', 'gyp'], False)
     self._expected_tree()
-    self._expected_result(['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'})
+    self._expect_results(
+        ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'})
 
 
 class Isolate_run(IsolateBase):
@@ -389,7 +407,7 @@ class Isolate_run(IsolateBase):
     except subprocess.CalledProcessError:
       pass
     self._expect_empty_tree()
-    self._expected_result(['fail.py'], None)
+    self._expect_results(['fail.py'], None, None)
 
   def test_missing_trailing_slash(self):
     try:
@@ -416,18 +434,19 @@ class Isolate_run(IsolateBase):
     except subprocess.CalledProcessError:
       pass
     self._expect_empty_tree()
-    self._expected_result([], None)
+    self._expect_results([], None, None)
 
   def test_touch_root(self):
     self._execute('run', 'touch_root.isolate', [], False)
     self._expect_empty_tree()
-    self._expected_result(['touch_root.py'], None)
+    self._expect_results(['touch_root.py'], None, None)
 
   def test_with_flag(self):
     self._execute('run', 'with_flag.isolate', ['-V', 'FLAG', 'run'], False)
     # Not sure about the empty tree, should be deleted.
     self._expect_empty_tree()
-    self._expected_result(['with_flag.py', 'run'], None, {u'FLAG': u'run'})
+    self._expect_results(
+        ['with_flag.py', 'run'], None, {u'FLAG': u'run'})
 
 
 class Isolate_trace(IsolateBase):
@@ -446,7 +465,7 @@ class Isolate_trace(IsolateBase):
     except subprocess.CalledProcessError, e:
       out = e.output
     self._expect_no_tree()
-    self._expected_result(['fail.py'], None)
+    self._expect_results(['fail.py'], None, None)
     # In theory, there should be 2 \n at the end of expected but for an
     # unknown reason there's 3 \n on Windows so just rstrip() and compare the
     # text, that's sufficient for this test.
@@ -461,8 +480,11 @@ class Isolate_trace(IsolateBase):
       out = e.output
     self._expect_no_tree()
     self._expect_no_result()
-    expected = 'Input directory %s must have a trailing slash\n' % os.path.join(
-        ROOT_DIR, 'data', 'isolate', 'files1')
+    expected = (
+      'Usage: isolate.py [options] [.isolate file]\n\n'
+      'isolate.py: error: Input directory %s must have a trailing slash\n' %
+          os.path.join(ROOT_DIR, 'data', 'isolate', 'files1')
+    )
     self.assertEquals(expected, out)
 
   def test_non_existent(self):
@@ -473,8 +495,11 @@ class Isolate_trace(IsolateBase):
       out = e.output
     self._expect_no_tree()
     self._expect_no_result()
-    expected = 'Input file %s doesn\'t exist\n' % os.path.join(
-        ROOT_DIR, 'data', 'isolate', 'A_file_that_do_not_exist')
+    expected = (
+      'Usage: isolate.py [options] [.isolate file]\n\n'
+      'isolate.py: error: Input file %s doesn\'t exist\n' %
+          os.path.join(ROOT_DIR, 'data', 'isolate', 'A_file_that_do_not_exist')
+    )
     self.assertEquals(expected, out)
 
   def test_no_run(self):
@@ -484,14 +509,14 @@ class Isolate_trace(IsolateBase):
     except subprocess.CalledProcessError, e:
       out = e.output
     self._expect_no_tree()
-    self._expected_result([], None)
+    self._expect_results([], None, None)
     expected = 'No command to run\n'
     self.assertEquals(expected, out)
 
   def test_touch_root(self):
     out = self._execute('trace', 'touch_root.isolate', [], True)
     self._expect_no_tree()
-    self._expected_result(['touch_root.py'], None)
+    self._expect_results(['touch_root.py'], None, None)
     expected = {
       'conditions': [
         ['OS=="%s"' % isolate.trace_inputs.get_flavor(), {
@@ -510,7 +535,7 @@ class Isolate_trace(IsolateBase):
     out = self._execute(
         'trace', 'with_flag.isolate', ['-V', 'FLAG', 'trace'], True)
     self._expect_no_tree()
-    self._expected_result(['with_flag.py', 'trace'], None, {u'FLAG': u'trace'})
+    self._expect_results(['with_flag.py', 'trace'], None, {u'FLAG': u'trace'})
     expected = {
       'conditions': [
         ['OS=="%s"' % isolate.trace_inputs.get_flavor(), {
@@ -519,6 +544,7 @@ class Isolate_trace(IsolateBase):
               'with_flag.py',
             ],
             isolate.trace_inputs.KEY_UNTRACKED: [
+              # Note that .isolate format mandates / and not os.path.sep.
               'files1/',
             ],
           },

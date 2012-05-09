@@ -3,11 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
 import logging
 import os
 import sys
-import tempfile
 import unittest
 
 import isolate
@@ -20,39 +18,7 @@ class Isolate(unittest.TestCase):
     # Everything should work even from another directory.
     os.chdir(os.path.dirname(ROOT_DIR))
 
-  def _run_process_options(self, values, variables, more_expected_data):
-    """Runs isolate.process_options() and verify the results."""
-    fd, temp_path = tempfile.mkstemp()
-    try:
-      # Reuse the file descriptor. On windows, it needs to be closed before
-      # process_options() opens it, because mkstemp() opens it without file
-      # sharing enabled.
-      with os.fdopen(fd, 'w') as f:
-        json.dump(values, f)
-      root_dir, infiles, data = isolate.process_options(
-          variables,
-          temp_path,
-          os.path.join('isolate', 'data', 'isolate', 'touch_root.isolate'),
-          self.fail)
-    finally:
-      os.remove(temp_path)
-
-    expected_data = {
-      u'command': ['python', 'touch_root.py'],
-      u'read_only': None,
-      u'relative_cwd': 'data/isolate',
-      u'resultfile': temp_path,
-      u'resultdir': tempfile.gettempdir(),
-      u'variables': {},
-    }
-    expected_data.update(more_expected_data)
-    expected_files = sorted(
-        ('isolate.py', os.path.join('data', 'isolate', 'touch_root.py')))
-    self.assertEquals(ROOT_DIR, root_dir)
-    self.assertEquals(expected_files, sorted(infiles))
-    self.assertEquals(expected_data, data)
-
-  def test_load_empty(self):
+  def test_load_isolate_empty(self):
     content = "{}"
     command, infiles, read_only = isolate.load_isolate(
         content, self.fail)
@@ -60,35 +26,61 @@ class Isolate(unittest.TestCase):
     self.assertEquals([], infiles)
     self.assertEquals(None, read_only)
 
-  def test_process_options_empty(self):
-    # Passing nothing generates nothing unexpected.
-    self._run_process_options({}, {}, {})
+  def test_result_load_empty(self):
+    values = {
+    }
+    expected = {
+      'command': [],
+      'files': {},
+      'read_only': None,
+      'relative_cwd': None,
+    }
+    self.assertEquals(expected, isolate.Result.load(values).flatten())
 
-  def test_process_options(self):
-    # The previous unexpected variables are kept, the 'variables' dictionary is
-    # updated.
+  def test_result_load(self):
     values = {
       'command': 'maybe',
-      'foo': 'bar',
+      'files': {'foo': 42},
       'read_only': 2,
       'relative_cwd': None,
-      'resultdir': '2',
-      'resultfile': [],
-      'variables': {
-        'unexpected': 'seriously',
-        # This value is updated.
-        'expected': 'stale',
-      },
     }
+    expected = {
+      'command': 'maybe',
+      'files': {'foo': 42},
+      'read_only': 2,
+      'relative_cwd': None,
+    }
+    self.assertEquals(expected, isolate.Result.load(values).flatten())
 
-    expected_data = {
-      u'foo': u'bar',
-      u'variables': {
-        'expected': 'very',
-        u'unexpected': u'seriously',
-      },
+  def test_result_load_unexpected(self):
+    values = {
+      'foo': 'bar',
     }
-    self._run_process_options(values, {'expected': 'very'}, expected_data)
+    try:
+      isolate.Result.load(values)
+      self.fail()
+    except AssertionError:
+      pass
+
+  def test_savedstate_load_empty(self):
+    values = {
+    }
+    expected = {
+      'isolate_file': None,
+      'variables': {},
+    }
+    self.assertEquals(expected, isolate.SavedState.load(values).flatten())
+
+  def test_savedstate_load(self):
+    values = {
+      'isolate_file': 'maybe',
+      'variables': {'foo': 42},
+    }
+    expected = {
+      'isolate_file': 'maybe',
+      'variables': {'foo': 42},
+    }
+    self.assertEquals(expected, isolate.SavedState.load(values).flatten())
 
 
 if __name__ == '__main__':
