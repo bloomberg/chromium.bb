@@ -1563,18 +1563,20 @@ clip_pointer_motion(struct weston_compositor *ec,
 		    wl_fixed_t *fx, wl_fixed_t *fy)
 {
 	struct weston_output *output;
-	int32_t x, y;
+	wl_fixed_t x, y;
 	int x_valid = 0, y_valid = 0;
 	int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
 
-	x = wl_fixed_to_int(*fx);
-	y = wl_fixed_to_int(*fy);
+	x = *fx;
+	y = *fy;
 
 	wl_list_for_each(output, &ec->output_list, link) {
-		if (output->x <= x && x < output->x + output->current->width)
+		if (wl_fixed_from_int(output->x) <= x &&
+		    x < wl_fixed_from_int(output->x + output->current->width))
 			x_valid = 1;
 
-		if (output->y <= y && y < output->y + output->current->height)
+		if (wl_fixed_from_int(output->y) <= y &&
+		    y < wl_fixed_from_int(output->y + output->current->height))
 			y_valid = 1;
 
 		/* FIXME: calculate this only on output addition/deletion */
@@ -1590,20 +1592,20 @@ clip_pointer_motion(struct weston_compositor *ec,
 	}
 	
 	if (!x_valid) {
-		if (x < min_x)
-			x = min_x;
-		else if (x >= max_x)
-			x = max_x;
+		if (x < wl_fixed_from_int(min_x))
+			x = wl_fixed_from_int(min_x);
+		else if (x >= wl_fixed_from_int(max_x))
+			x = wl_fixed_from_int(max_x);
 	}
 	if (!y_valid) {
-		if (y < min_y)
-			y = min_y;
+		if (y < wl_fixed_from_int(min_y))
+			y = wl_fixed_from_int(min_y);
 		else  if (y >= max_y)
-			y = max_y;
+			y = wl_fixed_from_int(max_y);
 	}
 
-	*fx = wl_fixed_from_int(x);
-	*fy = wl_fixed_from_int(y);
+	*fx = x;
+	*fy = y;
 }
 
 WL_EXPORT void
