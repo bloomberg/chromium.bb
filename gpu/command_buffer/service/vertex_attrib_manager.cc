@@ -6,6 +6,7 @@
 
 #include <list>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
@@ -13,6 +14,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 
 namespace gpu {
 namespace gles2 {
@@ -71,9 +73,15 @@ void VertexAttribManager::Initialize(uint32 max_vertex_attribs) {
   max_vertex_attribs_ = max_vertex_attribs;
   vertex_attrib_infos_.reset(
       new VertexAttribInfo[max_vertex_attribs]);
+  bool disable_workarounds = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableGpuDriverBugWorkarounds);
+
   for (uint32 vv = 0; vv < max_vertex_attribs; ++vv) {
     vertex_attrib_infos_[vv].set_index(vv);
     vertex_attrib_infos_[vv].SetList(&disabled_vertex_attribs_);
+    if (!disable_workarounds) {
+      glVertexAttrib4f(vv, 0.0f, 0.0f, 0.0f, 1.0f);
+    }
   }
 }
 

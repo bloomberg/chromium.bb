@@ -64,6 +64,14 @@ void GLES2DecoderTestBase::SetUp() {
       true);   // bind generates resource
 }
 
+void GLES2DecoderTestBase::AddExpectationsForVertexAttribManager() {
+  for (GLint ii = 0; ii < kNumVertexAttribs; ++ii) {
+    EXPECT_CALL(*gl_, VertexAttrib4f(ii, 0.0f, 0.0f, 0.0f, 1.0f))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+}
+
 // Setup the expectations required for the inialiazation of the resources
 // used by the GL_CHROMIUM_copy_texture extension.
 void GLES2DecoderTestBase::AddExpectationsForCopyTextureCHROMIUM() {
@@ -204,6 +212,7 @@ void GLES2DecoderTestBase::InitDecoder(
   EXPECT_TRUE(group_->Initialize(DisallowedFeatures(), NULL));
 
   AddExpectationsForCopyTextureCHROMIUM();
+  AddExpectationsForVertexAttribManager();
 
   EXPECT_CALL(*gl_, EnableVertexAttribArray(0))
       .Times(1)

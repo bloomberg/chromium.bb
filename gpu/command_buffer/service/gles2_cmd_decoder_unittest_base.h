@@ -509,6 +509,7 @@ class GLES2DecoderTestBase : public testing::Test {
   };
 
   void AddExpectationsForCopyTextureCHROMIUM();
+  void AddExpectationsForVertexAttribManager();
 
   scoped_ptr< ::testing::StrictMock<MockCommandBufferEngine> > engine_;
   ContextGroup::Ref group_;

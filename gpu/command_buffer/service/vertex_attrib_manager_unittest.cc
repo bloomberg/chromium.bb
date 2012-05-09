@@ -31,6 +31,12 @@ class VertexAttribManagerTest : public testing::Test {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::GLInterface::SetGLInterface(gl_.get());
 
+    for (uint32 ii = 0; ii < kNumVertexAttribs; ++ii) {
+      EXPECT_CALL(*gl_, VertexAttrib4f(ii, 0.0f, 0.0f, 0.0f, 1.0f))
+          .Times(1)
+          .RetiresOnSaturation();
+    }
+
     manager_.reset(new VertexAttribManager());
     manager_->Initialize(kNumVertexAttribs);
   }
