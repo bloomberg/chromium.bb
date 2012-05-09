@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
-#include "chrome/browser/ui/webui/task_manager/task_manager_dialog.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
@@ -318,16 +317,7 @@ void PanelBrowserView::UpdatePanelLoadingAnimations(bool should_animate) {
 }
 
 void PanelBrowserView::ShowTaskManagerForPanel() {
-#if defined(WEBUI_TASK_MANAGER)
-  TaskManagerDialog::Show();
-#else
-  // Uses WebUI TaskManager when swiches is set. It is beta feature.
-  if (TaskManagerDialog::UseWebUITaskManager()) {
-    TaskManagerDialog::Show();
-  } else {
-    ShowTaskManager();
-  }
-#endif  // defined(WEBUI_TASK_MANAGER)
+  ShowTaskManager();
 }
 
 FindBar* PanelBrowserView::CreatePanelFindBar() {
