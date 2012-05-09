@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
@@ -515,6 +516,85 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   scoped_refptr<SiteInstance> revisit_site_instance(
       browser()->GetSelectedWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, revisit_site_instance);
+}
+
+// Test that opening a new window in the same SiteInstance and then navigating
+// both windows to a different SiteInstance allows the first process to exit.
+// See http://crbug.com/126333.
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+                       ProcessExitWithSwappedOutViews) {
+  // Start two servers with different sites.
+  ASSERT_TRUE(test_server()->Start());
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS,
+      net::TestServer::kLocalhost,
+      FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  // Load a page with links that open in a new window.
+  std::string replacement_path;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/click-noreferrer-links.html",
+      https_server.host_port_pair(),
+      &replacement_path));
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server()->GetURL(replacement_path));
+
+  // Get the original SiteInstance for later comparison.
+  scoped_refptr<SiteInstance> orig_site_instance(
+      browser()->GetSelectedWebContents()->GetSiteInstance());
+  EXPECT_TRUE(orig_site_instance != NULL);
+
+  // Test clicking a target=foo link.
+  ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer((
+      content::Source<content::WebContentsDelegate>(browser())));
+  bool success = false;
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(clickSameSiteTargetedLink());",
+      &success));
+  EXPECT_TRUE(success);
+  new_tab_observer.Wait();
+
+  // Opens in new tab.
+  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(1, browser()->active_index());
+
+  // Wait for the navigation in the new tab to finish, if it hasn't.
+  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
+  EXPECT_EQ("/files/navigate_opener.html",
+            browser()->GetSelectedWebContents()->GetURL().path());
+  EXPECT_EQ(1, browser()->active_index());
+
+  // Should have the same SiteInstance.
+  scoped_refptr<SiteInstance> opened_site_instance(
+      browser()->GetSelectedWebContents()->GetSiteInstance());
+  EXPECT_EQ(orig_site_instance, opened_site_instance);
+
+  // Now navigate the opened tab to a different site.
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server.GetURL("files/title1.html"));
+  scoped_refptr<SiteInstance> new_site_instance(
+      browser()->GetSelectedWebContents()->GetSiteInstance());
+  EXPECT_NE(orig_site_instance, new_site_instance);
+
+  // The original process should still be alive, since it is still used in the
+  // first tab.
+  content::RenderProcessHost* orig_process = orig_site_instance->GetProcess();
+  EXPECT_TRUE(orig_process->HasConnection());
+
+  // Navigate the first tab to a different site as well.  The original process
+  // should exit, since all of its views are now swapped out.
+  browser()->ActivateTabAt(0, true);
+  ui_test_utils::WindowedNotificationObserver exit_observer(
+        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+        content::Source<content::RenderProcessHost>(orig_process));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server.GetURL("files/title1.html"));
+  exit_observer.Wait();
+  scoped_refptr<SiteInstance> new_site_instance2(
+      browser()->GetSelectedWebContents()->GetSiteInstance());
+  EXPECT_EQ(new_site_instance, new_site_instance2);
 }
 
 // Test for crbug.com/76666.  A cross-site navigation that fails with a 204

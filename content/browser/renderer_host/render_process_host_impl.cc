@@ -128,6 +128,8 @@ using content::ChildProcessHost;
 using content::ChildProcessHostImpl;
 using content::RenderWidgetHost;
 using content::RenderWidgetHostImpl;
+using content::RenderViewHost;
+using content::RenderViewHostImpl;
 using content::UserMetricsAction;
 using content::WebUIControllerFactory;
 
@@ -1256,9 +1258,30 @@ void RenderProcessHostImpl::ProcessDied(base::ProcessHandle handle,
 }
 
 void RenderProcessHostImpl::OnShutdownRequest() {
-  // Don't shut down if there are more RenderViews than the one asking to
-  // close, or if there are pending RenderViews being swapped back in.
-  if (pending_views_ || render_widget_hosts_.size() > 1)
+  // Don't shut down if there are more active RenderViews than the one asking
+  // to close, or if there are pending RenderViews being swapped back in.
+  int num_active_views = 0;
+  for (RenderWidgetHostsIterator iter = GetRenderWidgetHostsIterator();
+       iter.IsAtEnd();
+       iter.Advance()) {
+    const RenderWidgetHost* widget = iter.GetCurrentValue();
+    DCHECK(widget);
+    if (!widget)
+      continue;
+
+    // All RenderWidgetHosts are swapped in.
+    if (!widget->IsRenderView()) {
+      num_active_views++;
+      continue;
+    }
+
+    // Don't count swapped out views.
+    RenderViewHost* rvh =
+        RenderViewHost::From(const_cast<RenderWidgetHost*>(widget));
+    if (!static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out())
+      num_active_views++;
+  }
+  if (pending_views_ || num_active_views > 1)
     return;
 
   // Notify any contents that might have swapped out renderers from this
