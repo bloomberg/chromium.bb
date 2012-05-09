@@ -142,6 +142,12 @@ class Profile : public content::BrowserContext {
     static net::URLRequestContextGetter* GetDefaultRequestContext() {
       return Profile::GetDefaultRequestContext();
     }
+  public:
+    // TODO(rlp): Please do not use this function. It is a temporary fix
+    // for stable. See crbug.com/125292.
+    static net::URLRequestContextGetter* GetDefaultRequestContextTemporary() {
+      return Profile::GetDefaultRequestContext();
+    }
   };
 
   // Key used to bind profile to the widget with which it is associated.
