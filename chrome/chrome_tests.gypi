@@ -211,8 +211,6 @@
         'test/base/in_process_browser_test.h',
         'test/base/model_test_utils.cc',
         'test/base/model_test_utils.h',
-        'test/base/module_system_test.cc',
-        'test/base/module_system_test.h',
         'test/base/profile_mock.cc',
         'test/base/profile_mock.h',
         'test/base/test_browser_window.cc',
