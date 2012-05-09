@@ -113,7 +113,7 @@ bool GLTestHelper::CheckPixels(
   bool same = true;
   for (GLint yy = 0; yy < height; ++yy) {
     for (GLint xx = 0; xx < width; ++xx) {
-      int offset = ((yy + y) * width + (xx + x)) * 4;
+      int offset = yy * width + xx * 4;
       for (int jj = 0; jj < 4; ++jj) {
         uint8 actual = pixels[offset + jj];
         uint8 expected = color[jj];
@@ -217,5 +217,3 @@ int GLTestHelper::RunTests(int argc, char** argv) {
   testing::InitGoogleMock(&argc, argv);
   return RUN_ALL_TESTS();
 }
-
-

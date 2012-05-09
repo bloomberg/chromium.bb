@@ -1672,7 +1672,7 @@ DELEGATE_TO_GL_3(getQueryObjectuivEXT, GetQueryObjectuivARB,
                  WebGLId, WGC3Denum, WGC3Duint*)
 
 void WebGraphicsContext3DInProcessImpl::copyTextureCHROMIUM(
-    WGC3Denum, WGC3Denum, WGC3Denum, WGC3Dint)
+    WGC3Denum, WebGLId, WebGLId, WGC3Dint, WGC3Denum)
 {
 }
 

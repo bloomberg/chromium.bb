@@ -1595,7 +1595,7 @@ DELEGATE_TO_GL_3(getQueryObjectuivEXT, GetQueryObjectuivEXT,
                  WebGLId, WGC3Denum, WGC3Duint*)
 
 DELEGATE_TO_GL_5(copyTextureCHROMIUM, CopyTextureCHROMIUM, WGC3Denum,
-                 WGC3Denum, WGC3Denum, WGC3Dint, WGC3Dint)
+                 WebGLId, WebGLId, WGC3Dint, WGC3Denum)
 
 #if WEBKIT_USING_SKIA
 GrGLInterface* WebGraphicsContext3DInProcessCommandBufferImpl::

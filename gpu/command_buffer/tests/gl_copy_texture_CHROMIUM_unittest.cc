@@ -215,6 +215,133 @@ TEST_F(GLCopyTextureCHROMIUMTest, BasicStatePreservation) {
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 };
 
+// Verify that invocation of the extension does not modify the bound
+// texture state.
+TEST_F(GLCopyTextureCHROMIUMTest, TextureStatePreserved) {
+  // Setup the texture used for the extension invocation.
+  uint8 pixels[1 * 4] = { 255u, 0u, 0u, 255u };
+  glBindTexture(GL_TEXTURE_2D, textures_[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               pixels);
+
+  GLuint texture_ids[2];
+  glGenTextures(2, texture_ids);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture_ids[0]);
+
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, texture_ids[1]);
+
+  glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0,
+                        GL_RGBA);
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+  GLint active_texture = 0;
+  glGetIntegerv(GL_ACTIVE_TEXTURE, &active_texture);
+  EXPECT_EQ(GL_TEXTURE1, active_texture);
+
+  GLint bound_texture = 0;
+  glGetIntegerv(GL_TEXTURE_BINDING_2D, &bound_texture);
+  EXPECT_EQ(texture_ids[1], static_cast<GLuint>(bound_texture));
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  bound_texture = 0;
+  glActiveTexture(GL_TEXTURE0);
+  glGetIntegerv(GL_TEXTURE_BINDING_2D, &bound_texture);
+  EXPECT_EQ(texture_ids[0], static_cast<GLuint>(bound_texture));
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  glDeleteTextures(2, texture_ids);
+
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+}
+
+// Verify that invocation of the extension does not perturb the currently
+// bound FBO state.
+TEST_F(GLCopyTextureCHROMIUMTest, FBOStatePreserved) {
+  // Setup the texture used for the extension invocation.
+  uint8 pixels[1 * 4] = { 255u, 0u, 0u, 255u };
+  glBindTexture(GL_TEXTURE_2D, textures_[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               pixels);
+
+  GLuint texture_id;
+  glGenTextures(1, &texture_id);
+  glBindTexture(GL_TEXTURE_2D, texture_id);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               0);
+
+  GLuint renderbuffer_id;
+  glGenRenderbuffers(1, &renderbuffer_id);
+  glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer_id);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, 1, 1);
+
+  GLuint framebuffer_id;
+  glGenFramebuffers(1, &framebuffer_id);
+  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         texture_id, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                            GL_RENDERBUFFER, renderbuffer_id);
+  EXPECT_TRUE(
+      GL_FRAMEBUFFER_COMPLETE == glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+  // Test that we can write to the bound framebuffer
+  uint8 expected_color[4] = { 255u, 255u, 0, 255u };
+  glClearColor(1.0, 1.0, 0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color);
+
+  glCopyTextureCHROMIUM(GL_TEXTURE_2D, textures_[0], textures_[1], 0,
+                        GL_RGBA);
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+  EXPECT_TRUE(glIsFramebuffer(framebuffer_id));
+
+  // Ensure that reading from the framebuffer produces correct pixels.
+  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color);
+
+  uint8 expected_color2[4] = { 255u, 0, 255u, 255u };
+  glClearColor(1.0, 0, 1.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+  GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_color2);
+
+  GLint bound_fbo = 0;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &bound_fbo);
+  EXPECT_EQ(framebuffer_id, static_cast<GLuint>(bound_fbo));
+
+  GLint fbo_params = 0;
+  glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                        GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
+                                        &fbo_params);
+  EXPECT_EQ(GL_TEXTURE, fbo_params);
+
+  fbo_params = 0;
+  glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                        GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
+                                        &fbo_params);
+  EXPECT_EQ(texture_id, static_cast<GLuint>(fbo_params));
+
+  fbo_params = 0;
+  glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                        GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
+                                        &fbo_params);
+  EXPECT_EQ(GL_RENDERBUFFER, fbo_params);
+
+  fbo_params = 0;
+  glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                        GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
+                                        &fbo_params);
+  EXPECT_EQ(renderbuffer_id, static_cast<GLuint>(fbo_params));
+
+  glDeleteRenderbuffers(1, &renderbuffer_id);
+  glDeleteTextures(1, &texture_id);
+  glDeleteFramebuffers(1, &framebuffer_id);
+
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+}
+
 TEST_F(GLCopyTextureCHROMIUMTest, ProgramStatePreservation) {
   // unbind the one created in setup.
   glBindFramebuffer(GL_FRAMEBUFFER, 0);

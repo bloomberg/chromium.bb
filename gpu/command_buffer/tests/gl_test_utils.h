@@ -46,4 +46,3 @@ class GLTestHelper {
 };
 
 #endif  // GPU_COMMAND_BUFFER_TESTS_GL_TEST_UTILS_H_
-
