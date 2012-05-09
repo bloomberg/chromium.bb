@@ -1,16 +1,13 @@
 {
   "key": "AAAAB3NzaC1yc2EAAAADAQABAAAAgQDtKfIKWzC4HnQbyAeddk5h78K7LSyrIEnLKDsQCNxhfsavJ+otV9JprDSz3nF7EHZokXiC72SHxdMndt2IlId/aRfhbU4UGidrmFBKg6v1Fs2zey6niB+xLOhJQMe9XtwVNWDpiGXHLmwNhG/FLhj0bBBf1HZDBV18Xp47ymLiuQ==",
   "name": "crosh_builtin",
-  "version": "0.7.6",
+  "manifest_version": 2,
+  "content_security_policy": "script-src 'self'; object-src 'self'",
+  "version": "0.7.9",
   "default_locale": "en",
-  "icons": {
-    "128": "images/vt-128.png",
-    "48": "images/vt-48.png",
-    "32": "images/vt-32.png",
-    "16": "images/vt-16.png"
-  },
   "description": "Built-in terminal for crosh.",
   "offline_enabled": true,
+  "incognito": "split",
   "permissions": [
     "unlimitedStorage",
     "terminalPrivate"
