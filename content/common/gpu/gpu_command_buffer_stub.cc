@@ -519,7 +519,7 @@ void GpuCommandBufferStub::OnGetTransferBuffer(
       content::BrokerDuplicateHandle(buffer.shared_memory->handle(),
           channel_->renderer_pid(), &transfer_buffer, FILE_MAP_READ |
           FILE_MAP_WRITE, 0);
-      CHECK(transfer_buffer != NULL);
+      DCHECK(transfer_buffer != NULL);
 #else
       buffer.shared_memory->ShareToProcess(channel_->renderer_pid(),
                                            &transfer_buffer);
