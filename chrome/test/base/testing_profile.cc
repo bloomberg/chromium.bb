@@ -578,7 +578,7 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContextForMedia() {
 
 net::URLRequestContextGetter* TestingProfile::GetRequestContextForExtensions() {
   if (!extensions_request_context_)
-      extensions_request_context_ = new TestExtensionURLRequestContextGetter();
+    extensions_request_context_ = new TestExtensionURLRequestContextGetter();
   return extensions_request_context_.get();
 }
 

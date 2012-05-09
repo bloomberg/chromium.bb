@@ -593,20 +593,27 @@ void ChromeLauncherController::PersistPinnedState() {
   // from now on.
   profile_->GetPrefs()->SetBoolean(prefs::kUseDefaultPinnedApps, false);
 
-  ListPrefUpdate updater(profile_->GetPrefs(), prefs::kPinnedLauncherApps);
-  updater->Clear();
-  for (size_t i = 0; i < model_->items().size(); ++i) {
-    if (model_->items()[i].type == ash::TYPE_APP_SHORTCUT) {
-      ash::LauncherID id = model_->items()[i].id;
-      if (id_to_item_map_.find(id) != id_to_item_map_.end() &&
-          IsPinned(id)) {
-        base::DictionaryValue* app_value = CreateAppDict(
-            id_to_item_map_[id].app_id);
-        if (app_value)
-          updater->Append(app_value);
+  // Mutating kPinnedLauncherApps is going to notify us and trigger us to
+  // process the change. We don't want that to happen so remove ourselves as a
+  // listener.
+  pref_change_registrar_.Remove(prefs::kPinnedLauncherApps, this);
+  {
+    ListPrefUpdate updater(profile_->GetPrefs(), prefs::kPinnedLauncherApps);
+    updater->Clear();
+    for (size_t i = 0; i < model_->items().size(); ++i) {
+      if (model_->items()[i].type == ash::TYPE_APP_SHORTCUT) {
+        ash::LauncherID id = model_->items()[i].id;
+        if (id_to_item_map_.find(id) != id_to_item_map_.end() &&
+            IsPinned(id)) {
+          base::DictionaryValue* app_value = CreateAppDict(
+              id_to_item_map_[id].app_id);
+          if (app_value)
+            updater->Append(app_value);
+        }
       }
     }
   }
+  pref_change_registrar_.Add(prefs::kPinnedLauncherApps, this);
 }
 
 void ChromeLauncherController::SetAppIconLoaderForTest(AppIconLoader* loader) {
