@@ -181,8 +181,14 @@ class WebMediaPlayerImpl
 
   virtual WebKit::WebAudioSourceProvider* audioSourceProvider();
 
+  // TODO(acolwell): Remove once new sourceAddId() signature is checked into
+  // WebKit.
   virtual AddIdStatus sourceAddId(const WebKit::WebString& id,
                                   const WebKit::WebString& type);
+  virtual AddIdStatus sourceAddId(
+      const WebKit::WebString& id,
+      const WebKit::WebString& type,
+      const WebKit::WebVector<WebKit::WebString>& codecs);
   virtual bool sourceRemoveId(const WebKit::WebString& id);
   virtual WebKit::WebTimeRanges sourceBuffered(const WebKit::WebString& id);
   // TODO(acolwell): Remove non-id version when http://webk.it/83788 fix lands.

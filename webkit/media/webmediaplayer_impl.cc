@@ -650,8 +650,30 @@ WebKit::WebMediaPlayer::AddIdStatus WebMediaPlayerImpl::sourceAddId(
     const WebKit::WebString& id,
     const WebKit::WebString& type) {
     DCHECK_EQ(main_loop_, MessageLoop::current());
-    return static_cast<WebKit::WebMediaPlayer::AddIdStatus>(
-        proxy_->DemuxerAddId(id.utf8().data(), type.utf8().data()));
+
+    WebKit::WebString kDefaultSourceType("video/webm; codecs=\"vp8, vorbis\"");
+
+    if (type != kDefaultSourceType)
+      return WebKit::WebMediaPlayer::AddIdStatusNotSupported;
+
+    WebKit::WebVector<WebKit::WebString> codecs(static_cast<size_t>(2));
+    codecs[0] = "vp8";
+    codecs[1] = "vorbis";
+    return sourceAddId(id, "video/webm", codecs);
+}
+
+WebKit::WebMediaPlayer::AddIdStatus WebMediaPlayerImpl::sourceAddId(
+    const WebKit::WebString& id,
+    const WebKit::WebString& type,
+    const WebKit::WebVector<WebKit::WebString>& codecs) {
+  DCHECK_EQ(main_loop_, MessageLoop::current());
+  std::vector<std::string> new_codecs(codecs.size());
+  for (size_t i = 0; i < codecs.size(); ++i)
+    new_codecs[i] = codecs[i].utf8().data();
+
+  return static_cast<WebKit::WebMediaPlayer::AddIdStatus>(
+      proxy_->DemuxerAddId(id.utf8().data(), type.utf8().data(),
+                           new_codecs));
 }
 
 bool WebMediaPlayerImpl::sourceRemoveId(const WebKit::WebString& id) {

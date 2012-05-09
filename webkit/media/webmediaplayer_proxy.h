@@ -7,6 +7,7 @@
 
 #include <list>
 #include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -93,7 +94,8 @@ class WebMediaPlayerProxy
   // Methods for Demuxer communication.
   void DemuxerFlush();
   media::ChunkDemuxer::Status DemuxerAddId(const std::string& id,
-                                           const std::string& type);
+                                           const std::string& type,
+                                           std::vector<std::string>& codecs);
   void DemuxerRemoveId(const std::string& id);
   bool DemuxerBufferedRange(const std::string& id,
                             media::ChunkDemuxer::Ranges* ranges_out);

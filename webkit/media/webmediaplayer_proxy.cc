@@ -196,8 +196,9 @@ void WebMediaPlayerProxy::DemuxerFlush() {
 
 media::ChunkDemuxer::Status WebMediaPlayerProxy::DemuxerAddId(
     const std::string& id,
-    const std::string& type) {
-  return chunk_demuxer_->AddId(id, type);
+    const std::string& type,
+    std::vector<std::string>& codecs) {
+  return chunk_demuxer_->AddId(id, type, codecs);
 }
 
 void WebMediaPlayerProxy::DemuxerRemoveId(const std::string& id) {
