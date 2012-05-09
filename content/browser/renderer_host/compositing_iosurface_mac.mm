@@ -25,6 +25,84 @@
   } while (0)
 #endif
 
+#define SHADER_STRING_GLSL(shader) #shader
+
+namespace {
+
+static const char* g_vertex_shader_blit_rgb = SHADER_STRING_GLSL(
+    varying vec2 texture_coordinate;
+    void main() {
+      gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+      texture_coordinate = vec2(gl_MultiTexCoord0);
+    });
+
+static const char* g_fragment_shader_blit_rgb = SHADER_STRING_GLSL(
+    varying vec2 texture_coordinate;
+    uniform sampler2DRect texture;
+    void main() {
+      gl_FragColor = vec4(texture2DRect(texture, texture_coordinate).rgb, 1.0);
+    });
+
+static const char* g_vertex_shader_white = SHADER_STRING_GLSL(
+    void main() {
+      gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+    });
+
+static const char* g_fragment_shader_white = SHADER_STRING_GLSL(
+    void main() {
+      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    });
+
+// Create and compile shader, return its ID or 0 on error.
+GLuint CompileShaderGLSL(GLenum type, const char* shader_str) {
+  GLuint shader = glCreateShader(type);
+  glShaderSource(shader, 1, &shader_str, NULL);
+  glCompileShader(shader); CHECK_GL_ERROR();
+  GLint error;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &error);
+  if (error != GL_TRUE) {
+    glDeleteShader(shader);
+    return 0;
+  }
+  return shader;
+}
+
+// Compile the given vertex and shader source strings into a GLSL program.
+GLuint CreateProgramGLSL(const char* vertex_shader_str,
+                         const char* fragment_shader_str) {
+  GLuint vertex_shader =
+      CompileShaderGLSL(GL_VERTEX_SHADER, vertex_shader_str);
+  if (!vertex_shader)
+    return 0;
+
+  GLuint fragment_shader =
+      CompileShaderGLSL(GL_FRAGMENT_SHADER, fragment_shader_str);
+  if (!fragment_shader) {
+    glDeleteShader(vertex_shader);
+    return 0;
+  }
+
+  GLuint program = glCreateProgram(); CHECK_GL_ERROR();
+  glAttachShader(program, vertex_shader);
+  glAttachShader(program, fragment_shader);
+  glLinkProgram(program); CHECK_GL_ERROR();
+
+  // Flag shaders for deletion so that they will be deleted when the program
+  // is deleted. That way we don't have to retain these IDs.
+  glDeleteShader(vertex_shader);
+  glDeleteShader(fragment_shader);
+
+  GLint error;
+  glGetProgramiv(program, GL_LINK_STATUS, &error);
+  if (error != GL_TRUE) {
+    glDeleteProgram(program);
+    return 0;
+  }
+  return program;
+}
+
+}  // namespace
+
 CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create() {
   TRACE_EVENT0("browser", "CompositingIOSurfaceMac::Create");
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
@@ -75,18 +153,44 @@ CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create() {
     swapInterval = 1;
   [glContext setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
 
+  // Build shaders.
+  CGLSetCurrentContext(cglContext);
+  GLuint shader_program_blit_rgb =
+      CreateProgramGLSL(g_vertex_shader_blit_rgb, g_fragment_shader_blit_rgb);
+  GLuint shader_program_white =
+      CreateProgramGLSL(g_vertex_shader_white, g_fragment_shader_white);
+  GLint blit_rgb_sampler_location =
+      glGetUniformLocation(shader_program_blit_rgb, "texture");
+  CGLSetCurrentContext(0);
+
+  if (!shader_program_blit_rgb || !shader_program_white ||
+      blit_rgb_sampler_location == -1) {
+    LOG(ERROR) << "IOSurface shader build error";
+    return NULL;
+  }
+
   return new CompositingIOSurfaceMac(io_surface_support, glContext.release(),
-                                     cglContext);
+                                     cglContext,
+                                     shader_program_blit_rgb,
+                                     blit_rgb_sampler_location,
+                                     shader_program_white);
 }
 
 CompositingIOSurfaceMac::CompositingIOSurfaceMac(
     IOSurfaceSupport* io_surface_support,
     NSOpenGLContext* glContext,
-    CGLContextObj cglContext)
+    CGLContextObj cglContext,
+    GLuint shader_program_blit_rgb,
+    GLint blit_rgb_sampler_location,
+    GLuint shader_program_white)
     : io_surface_support_(io_surface_support),
       glContext_(glContext),
       cglContext_(cglContext),
-      io_surface_handle_(0) {
+      io_surface_handle_(0),
+      texture_(0),
+      shader_program_blit_rgb_(shader_program_blit_rgb),
+      blit_rgb_sampler_location_(blit_rgb_sampler_location),
+      shader_program_white_(shader_program_white) {
 }
 
 CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
@@ -108,39 +212,54 @@ void CompositingIOSurfaceMac::DrawIOSurface(NSView* view) {
                "has_io_surface", has_io_surface);
 
   [glContext_ setView:view];
-  NSSize window_size = [view frame].size;
-  glViewport(0, 0, window_size.width, window_size.height);
+  gfx::Size window_size([view frame].size.width, [view frame].size.height);
+  glViewport(0, 0, window_size.width(), window_size.height());
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(0, window_size.width, window_size.height, 0, -1, 1);
+  glOrtho(0, window_size.width(), window_size.height(), 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_BLEND);
 
-  glColorMask(true, true, true, true);
-  // Should match the clear color of RenderWidgetHostViewMac.
-  glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-  // TODO(jbates): Just clear the right and bottom edges when the size doesn't
-  // match the window. Then use a shader to blit the texture without its alpha
-  // channel.
-  glClear(GL_COLOR_BUFFER_BIT);
-
   if (has_io_surface) {
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    glUseProgram(shader_program_blit_rgb_);
 
-    // Draw only the color channels from the incoming texture.
-    glColorMask(true, true, true, false);
-
-    // Draw the color channels from the incoming texture.
-    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_); CHECK_GL_ERROR();
-    glEnable(GL_TEXTURE_RECTANGLE_ARB); CHECK_GL_ERROR();
+    int texture_unit = 0;
+    glUniform1i(blit_rgb_sampler_location_, texture_unit);
+    glActiveTexture(GL_TEXTURE0 + texture_unit);
+    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
 
     DrawQuad(quad_);
 
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0); CHECK_GL_ERROR();
+
+    // Fill the resize gutters with white.
+    if (window_size.width() > io_surface_size_.width() ||
+        window_size.height() > io_surface_size_.height()) {
+      glUseProgram(shader_program_white_);
+      SurfaceQuad filler_quad;
+      if (window_size.width() > io_surface_size_.width()) {
+        // Draw right-side gutter down to the bottom of the window.
+        filler_quad.set_rect(io_surface_size_.width(), 0.0f,
+                             window_size.width(), window_size.height());
+        DrawQuad(filler_quad);
+      }
+      if (window_size.height() > io_surface_size_.height()) {
+        // Draw bottom gutter to the width of the IOSurface.
+        filler_quad.set_rect(0.0f, io_surface_size_.height(),
+                             io_surface_size_.width(), window_size.height());
+        DrawQuad(filler_quad);
+      }
+    }
+
+    glUseProgram(0); CHECK_GL_ERROR();
+  } else {
+    // Should match the clear color of RenderWidgetHostViewMac.
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
   }
 
   CGLFlushDrawable(cglContext_);
@@ -190,20 +309,19 @@ bool CompositingIOSurfaceMac::CopyTo(const gfx::Size& dst_size, void* out) {
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_BLEND);
 
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+  glUseProgram(shader_program_blit_rgb_);
 
-  // Draw only the color channels from the incoming texture.
-  glColorMask(true, true, true, false);
-
-  // Draw the color channels from the incoming texture.
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_); CHECK_GL_ERROR();
-  glEnable(GL_TEXTURE_RECTANGLE_ARB); CHECK_GL_ERROR();
+  int texture_unit = 0;
+  glUniform1i(blit_rgb_sampler_location_, texture_unit);
+  glActiveTexture(GL_TEXTURE0 + texture_unit);
+  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
 
   SurfaceQuad quad;
   quad.set_size(dst_size, io_surface_size_);
   DrawQuad(quad);
 
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0); CHECK_GL_ERROR();
+  glUseProgram(0);
 
   CGLFlushDrawable(cglContext_);
 

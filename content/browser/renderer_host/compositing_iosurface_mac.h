@@ -64,6 +64,10 @@ class CompositingIOSurfaceMac {
       tx_ = tx;
       ty_ = ty;
     }
+    void set_position(float x, float y) {
+      x_ = x;
+      y_ = y;
+    }
     float x_;
     float y_;
     float tx_;
@@ -84,12 +88,21 @@ class CompositingIOSurfaceMac {
       verts_[2].set(vw, vh, tw, 0.0f);
       verts_[3].set(vw, 0.0f, tw, th);
     }
+    void set_rect(float x1, float y1, float x2, float y2) {
+      verts_[0].set_position(x1, y1);
+      verts_[1].set_position(x1, y2);
+      verts_[2].set_position(x2, y2);
+      verts_[3].set_position(x2, y1);
+    }
     SurfaceVertex verts_[4];
   };
 
   CompositingIOSurfaceMac(IOSurfaceSupport* io_surface_support,
                           NSOpenGLContext* glContext,
-                          CGLContextObj cglContext);
+                          CGLContextObj cglContext,
+                          GLuint shader_program_blit_rgb,
+                          GLint blit_rgb_sampler_location,
+                          GLuint shader_program_white);
 
   // Returns true if IOSurface is ready to render. False otherwise.
   bool MapIOSurfaceToTexture(uint64 io_surface_handle);
@@ -118,6 +131,11 @@ class CompositingIOSurfaceMac {
   // need to do is ensure it is re-bound before attempting to draw
   // with it.
   GLuint texture_;
+
+  // Shader parameters.
+  GLuint shader_program_blit_rgb_;
+  GLint blit_rgb_sampler_location_;
+  GLuint shader_program_white_;
 
   SurfaceQuad quad_;
 };
