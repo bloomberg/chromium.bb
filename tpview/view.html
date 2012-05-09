@@ -97,9 +97,8 @@ function setup() {
 
 function stepBack() {
   var values = $("#slider").slider("option", "values");
-  var range = $("#slider").slider("option", "max");
   if (values[1] > values[0]) {
-    var newValue = finger_view_controller.prevHardwareState();
+    var newValue = finger_view_controller.prevHardwareState(values[1]);
     if (newValue < 0)
       return;
     values[1] = newValue;
@@ -111,7 +110,7 @@ function stepForward() {
   var values = $("#slider").slider("option", "values");
   var maxValue = $("#slider").slider("option", "max");
   if (values[1] < maxValue) {
-    var newValue = finger_view_controller.nextHardwareState();
+    var newValue = finger_view_controller.nextHardwareState(values[1]);
     if (newValue < 0)
       return;
     values[1] = newValue;

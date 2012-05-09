@@ -43,14 +43,14 @@ FingerViewController.prototype = {
     this.inGraph.resetCoordinatesAndZoom();
     this.gs_graph.resetCoordinatesAndZoom();
   },
-  prevHardwareState: function() {
-    for (var i = this.end - 1; i >= 0; i--)
+  prevHardwareState: function(start) {
+    for (var i = start - 1; i >= 0; i--)
       if (this.entries[i].type == 'hardwareState')
         return i;
     return -1;
   },
-  nextHardwareState: function() {
-    for (var i = this.end + 1; i < this.entries.length; i++)
+  nextHardwareState: function(start) {
+    for (var i = start + 1; i < this.entries.length; i++)
       if (this.entries[i].type == 'hardwareState')
         return i;
     return -1;
