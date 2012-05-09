@@ -382,8 +382,10 @@ void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row) {
   bool found_delete_notification = false;
   for (size_t i = 0; i < notifications_.size(); i++) {
     if (notifications_[i].first == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
-      const history::URLRows& rows(reinterpret_cast<URLsDeletedDetails*>(
-          notifications_[i].second)->rows);
+      URLsDeletedDetails* details = reinterpret_cast<URLsDeletedDetails*>(
+          notifications_[i].second);
+      EXPECT_FALSE(details->archived);
+      const history::URLRows& rows(details->rows);
       if (std::find_if(rows.begin(), rows.end(),
           history::URLRow::URLRowHasURL(row.url())) != rows.end()) {
         found_delete_notification = true;

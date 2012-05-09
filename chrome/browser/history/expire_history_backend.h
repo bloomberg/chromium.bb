@@ -195,8 +195,18 @@ class ExpireHistoryBackend {
   // care about favicons so much, so don't want to stop everything if it fails).
   void DeleteFaviconsIfPossible(const std::set<FaviconID>& favicon_id);
 
+  // Enum representing what type of action resulted in the history DB deletion.
+  enum DeletionType {
+    // User initiated the deletion from the History UI.
+    DELETION_USER_INITIATED,
+    // History data was automatically archived due to being more than 90 days
+    // old.
+    DELETION_ARCHIVED
+  };
+
   // Broadcast the URL deleted notification.
-  void BroadcastDeleteNotifications(DeleteDependencies* dependencies);
+  void BroadcastDeleteNotifications(DeleteDependencies* dependencies,
+                                    DeletionType type);
 
   // Schedules a call to DoArchiveIteration.
   void ScheduleArchive();

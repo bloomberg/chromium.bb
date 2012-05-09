@@ -237,7 +237,7 @@ void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
   if (text_db_)
     text_db_->OptimizeChangedDatabases(dependencies.text_db_changes);
 
-  BroadcastDeleteNotifications(&dependencies);
+  BroadcastDeleteNotifications(&dependencies, DELETION_USER_INITIATED);
 }
 
 void ExpireHistoryBackend::ExpireHistoryBetween(
@@ -283,7 +283,7 @@ void ExpireHistoryBackend::ExpireVisits(const VisitVector& visits) {
   DeleteFaviconsIfPossible(dependencies.affected_favicons);
 
   // An is_null begin time means that all history should be deleted.
-  BroadcastDeleteNotifications(&dependencies);
+  BroadcastDeleteNotifications(&dependencies, DELETION_USER_INITIATED);
 
   // Pick up any bits possibly left over.
   ParanoidExpireHistory();
@@ -351,7 +351,7 @@ void ExpireHistoryBackend::DeleteFaviconsIfPossible(
 }
 
 void ExpireHistoryBackend::BroadcastDeleteNotifications(
-    DeleteDependencies* dependencies) {
+    DeleteDependencies* dependencies, DeletionType type) {
   if (!dependencies->deleted_urls.empty()) {
     // Broadcast the URL deleted notification. Note that we also broadcast when
     // we were requested to delete everything even if that was a NOP, since
@@ -359,6 +359,7 @@ void ExpireHistoryBackend::BroadcastDeleteNotifications(
     // determine if they care whether anything was deleted).
     URLsDeletedDetails* deleted_details = new URLsDeletedDetails;
     deleted_details->all_history = false;
+    deleted_details->archived = (type == DELETION_ARCHIVED);
     deleted_details->rows = dependencies->deleted_urls;
     delegate_->BroadcastNotifications(
         chrome::NOTIFICATION_HISTORY_URLS_DELETED, deleted_details);
@@ -665,7 +666,7 @@ bool ExpireHistoryBackend::ArchiveSomeOldHistory(
   // in history views since they were subframes, but they will be in the visited
   // link system, which needs to be updated now. This function is smart enough
   // to not do anything if nothing was deleted.
-  BroadcastDeleteNotifications(&deleted_dependencies);
+  BroadcastDeleteNotifications(&deleted_dependencies, DELETION_ARCHIVED);
 
   return more_to_expire;
 }
