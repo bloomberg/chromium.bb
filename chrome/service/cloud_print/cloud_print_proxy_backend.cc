@@ -262,6 +262,7 @@ CloudPrintProxyBackend::Core::Core(
         cloud_print_server_url_(cloud_print_server_url),
         proxy_id_(proxy_id),
         oauth_client_info_(oauth_client_info),
+        notifications_enabled_(false),
         job_poll_scheduled_(false),
         enable_job_poll_(enable_job_poll) {
   if (print_system_settings) {
