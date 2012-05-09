@@ -92,7 +92,13 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                           icon_.width(),
                           icon_.height());
     icon_bounds.set_x(GetMirroredXForRect(icon_bounds));
-    canvas->DrawBitmapInt(icon_, icon_bounds.x(), icon_bounds.y());
+    if (!enabled()) {
+      SkPaint paint;
+      paint.setAlpha(120);
+      canvas->DrawBitmapInt(icon_, icon_bounds.x(), icon_bounds.y(), paint);
+    } else {
+      canvas->DrawBitmapInt(icon_, icon_bounds.x(), icon_bounds.y());
+    }
   }
 
   // Render the submenu indicator (arrow).
