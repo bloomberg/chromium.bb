@@ -364,14 +364,7 @@ class XcodeSettings(object):
 
     other_ccflags = []
 
-    # TODO(thakis): Remove this once
-    # http://code.google.com/p/webrtc/source/detail?r=2028 is rolled into
-    # chromium.
-    flags = self._Settings().get('OTHER_CPLUSPLUSFLAGS', ['$(inherited)'])
-    if not isinstance(flags, list):
-      flags = [flags]
-
-    for flag in flags:
+    for flag in self._Settings().get('OTHER_CPLUSPLUSFLAGS', ['$(inherited)']):
       # TODO: More general variable expansion. Missing in many other places too.
       if flag in ('$inherited', '$(inherited)', '${inherited}'):
         flag = '$OTHER_CFLAGS'
