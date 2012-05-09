@@ -55,15 +55,6 @@ FingerViewController.prototype = {
         return i;
     return -1;
   },
-  setBeginPoint: function(index) {
-    if (this.begin != index) {
-      this.begin = index;
-      turedraw();
-    }
-  },
-  setEndPoint: function(index) {
-    redraw();
-  },
   setRange: function(begin, end) {
     this.begin = begin;
     this.end = end;
