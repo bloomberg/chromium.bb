@@ -30,6 +30,9 @@ protected:
     command_line->AppendSwitchASCII(switches::kTryChromeAgain, "10001");
   }
 };
-IN_PROC_BROWSER_TEST_F(TryChromeDialogBrowserTest, ToastCrasher) {}
+
+// Marking test TryChromeDialogBrowserTest.ToastCrasher DISABLED since its
+// breaking the win_rel CQ bot. crbug.com/127396
+IN_PROC_BROWSER_TEST_F(TryChromeDialogBrowserTest, DISABLED_ToastCrasher) {}
 
 #endif  // defined(OS_WIN)
