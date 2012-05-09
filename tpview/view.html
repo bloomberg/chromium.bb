@@ -21,11 +21,12 @@ function loadLogObj(obj) {
   finger_view_controller.setEntriesLog(obj);
   var MAX_SIZE = 10000;
   var min = Math.max(0, obj.entries.length - MAX_SIZE);
-  finger_view_controller.setRange(min, obj.entries.length);
+  var max = obj.entries.length - 1;
+  finger_view_controller.setRange(min, max);
   $("#slider").slider({
     min: min,
-    max: obj.entries.length,
-    values: [min, obj.entries.length],
+    max: max,
+    values: [min, max],
     range: true,
     slide: function(event, ui) {
       finger_view_controller.setRange(ui.values[0], ui.values[1]);
@@ -101,7 +102,7 @@ function stepBack() {
     var newValue = finger_view_controller.prevHardwareState();
     if (newValue < 0)
       return;
-    values[1] = newValue + 1;
+    values[1] = newValue;
     $("#slider").slider("option", "values", values);
   }
 }
@@ -113,7 +114,7 @@ function stepForward() {
     var newValue = finger_view_controller.nextHardwareState();
     if (newValue < 0)
       return;
-    values[1] = newValue + 1;
+    values[1] = newValue;
     $("#slider").slider("option", "values", values);
   }
 }

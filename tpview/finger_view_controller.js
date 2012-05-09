@@ -44,13 +44,13 @@ FingerViewController.prototype = {
     this.gs_graph.resetCoordinatesAndZoom();
   },
   prevHardwareState: function() {
-    for (var i = this.end - 2; i >= 0; i--)
+    for (var i = this.end - 1; i >= 0; i--)
       if (this.entries[i].type == 'hardwareState')
         return i;
     return -1;
   },
   nextHardwareState: function() {
-    for (var i = this.end; i < this.entries.length; i++)
+    for (var i = this.end + 1; i < this.entries.length; i++)
       if (this.entries[i].type == 'hardwareState')
         return i;
     return -1;
@@ -95,7 +95,8 @@ FingerViewController.prototype = {
               'color': '#ccc'});
     var lastEntry = null;
     var prevLastEntry = null;
-    for (var i = this.begin; i < Math.min(this.end, this.entries.length); i++) {
+    var end = Math.min(this.end + 1, this.entries.length);
+    for (var i = this.begin; i < end; i++) {
       var entry = this.entries[i];
       if (entry.type != 'hardwareState') {
         continue;
@@ -210,7 +211,8 @@ FingerViewController.prototype = {
     var xMax = Number.NEGATIVE_INFINITY;
     var yMax = Number.NEGATIVE_INFINITY;
     var segs = [];
-    for (var i = this.begin; i < Math.min(this.end, this.entries.length); i++) {
+    var end = Math.min(this.end + 1, this.entries.length);
+    for (var i = this.begin; i < end; i++) {
       var entry = this.entries[i];
       if (entry.type == 'gesture') {
         if (entry.gestureType == 'scroll' || entry.gestureType == 'move' ||
