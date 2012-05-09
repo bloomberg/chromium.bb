@@ -70,10 +70,11 @@ void GLContextWGL::Destroy() {
 }
 
 bool GLContextWGL::MakeCurrent(GLSurface* surface) {
-  TRACE_EVENT0("gpu", "GLContextWGL::MakeCurrent");
   DCHECK(context_);
   if (IsCurrent(surface))
     return true;
+
+  TRACE_EVENT0("gpu", "GLContextWGL::MakeCurrent");
 
   if (!wglMakeCurrent(static_cast<HDC>(surface->GetHandle()), context_)) {
     LOG(ERROR) << "Unable to make gl context current.";

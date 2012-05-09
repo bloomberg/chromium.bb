@@ -84,10 +84,11 @@ void GLContextEGL::Destroy() {
 }
 
 bool GLContextEGL::MakeCurrent(GLSurface* surface) {
-  TRACE_EVENT0("gpu", "GLContextEGL::MakeCurrent");
   DCHECK(context_);
   if (IsCurrent(surface))
       return true;
+
+  TRACE_EVENT0("gpu", "GLContextEGL::MakeCurrent");
 
   if (!eglMakeCurrent(display_,
                       surface->GetHandle(),
