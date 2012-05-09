@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,16 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebArrayBuffer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebArrayBufferView.h"
 #include "v8/include/v8.h"
+
+using base::BinaryValue;
+using base::DictionaryValue;
+using base::ListValue;
+using base::StringValue;
+using base::Value;
+
 
 namespace content {
 
@@ -77,6 +86,9 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(
     case Value::TYPE_DICTIONARY:
       return ToV8Object(static_cast<const DictionaryValue*>(value));
 
+    case Value::TYPE_BINARY:
+      return ToArrayBuffer(static_cast<const BinaryValue*>(value));
+
     default:
       LOG(ERROR) << "Unexpected value type: " << value->GetType();
       return v8::Null();
@@ -127,6 +139,14 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Object(
   return result;
 }
 
+v8::Handle<v8::Value> V8ValueConverterImpl::ToArrayBuffer(
+    const BinaryValue* value) const {
+  WebKit::WebArrayBuffer buffer =
+      WebKit::WebArrayBuffer::create(value->GetSize(), 1);
+  memcpy(buffer.data(), value->GetBuffer(), value->GetSize());
+  return buffer.toV8Value();
+}
+
 Value* V8ValueConverterImpl::FromV8ValueImpl(v8::Handle<v8::Value> val) const {
   CHECK(!val.IsEmpty());
 
@@ -164,9 +184,14 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(v8::Handle<v8::Value> val) const {
   if (val->IsArray())
     return FromV8Array(val.As<v8::Array>());
 
-  if (val->IsObject())
-    return FromV8Object(val->ToObject());
-
+  if (val->IsObject()) {
+    BinaryValue* binary_value = FromV8Buffer(val);
+    if (binary_value) {
+      return binary_value;
+    } else {
+      return FromV8Object(val->ToObject());
+    }
+  }
   LOG(ERROR) << "Unexpected v8 value type encountered.";
   return Value::CreateNullValue();
 }
@@ -192,6 +217,31 @@ ListValue* V8ValueConverterImpl::FromV8Array(v8::Handle<v8::Array> val) const {
     result->Append(child);
   }
   return result;
+}
+
+base::BinaryValue* V8ValueConverterImpl::FromV8Buffer(
+    v8::Handle<v8::Value> val) const {
+  char* data = NULL;
+  size_t length = 0;
+
+  WebKit::WebArrayBuffer* array_buffer =
+      WebKit::WebArrayBuffer::createFromV8Value(val);
+  if (array_buffer) {
+    data = reinterpret_cast<char*>(array_buffer->data());
+    length = array_buffer->byteLength();
+  } else {
+    WebKit::WebArrayBufferView* view =
+        WebKit::WebArrayBufferView::createFromV8Value(val);
+    if (view) {
+      data = reinterpret_cast<char*>(view->baseAddress()) + view->byteOffset();
+      length = view->byteLength();
+    }
+  }
+
+  if (data)
+    return base::BinaryValue::CreateWithCopiedBuffer(data, length);
+  else
+    return NULL;
 }
 
 DictionaryValue* V8ValueConverterImpl::FromV8Object(
