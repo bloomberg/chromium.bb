@@ -20,6 +20,8 @@ class BrowserAccessibilityManager;
 @class BrowserAccessibilityCocoa;
 #elif defined(OS_WIN)
 class BrowserAccessibilityWin;
+#elif defined(TOOLKIT_GTK)
+class BrowserAccessibilityGtk;
 #endif
 
 using webkit_glue::WebAccessibility;
@@ -57,6 +59,10 @@ class CONTENT_EXPORT BrowserAccessibility {
   // have been reset with new values from the renderer process.
   // Child dependent initialization can be done here.
   virtual void PostInitialize() {}
+
+  // Returns true if this is a native platform-specific object, vs a
+  // cross-platform generic object.
+  virtual bool IsNative() const;
 
   // Initialize this object, reading attributes from |src|. Does not
   // recurse into children of |src| and build the whole subtree.
@@ -188,9 +194,11 @@ class CONTENT_EXPORT BrowserAccessibility {
   int32 ref_count() const { return ref_count_; }
 
 #if defined(OS_MACOSX) && __OBJC__
-  BrowserAccessibilityCocoa* toBrowserAccessibilityCocoa();
+  BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa();
 #elif defined(OS_WIN)
-  BrowserAccessibilityWin* toBrowserAccessibilityWin();
+  BrowserAccessibilityWin* ToBrowserAccessibilityWin();
+#elif defined(TOOLKIT_GTK)
+  BrowserAccessibilityGtk* ToBrowserAccessibilityGtk();
 #endif
 
   // Retrieve the value of a bool attribute from the bool attribute

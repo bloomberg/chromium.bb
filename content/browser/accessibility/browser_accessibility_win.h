@@ -13,6 +13,7 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/common/content_export.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
@@ -96,10 +97,11 @@ BrowserAccessibilityWin
   //
   // BrowserAccessibility methods.
   //
-  CONTENT_EXPORT virtual void PreInitialize();
-  CONTENT_EXPORT virtual void PostInitialize();
-  CONTENT_EXPORT virtual void NativeAddReference();
-  CONTENT_EXPORT virtual void NativeReleaseReference();
+  CONTENT_EXPORT virtual void PreInitialize() OVERRIDE;
+  CONTENT_EXPORT virtual void PostInitialize() OVERRIDE;
+  CONTENT_EXPORT virtual void NativeAddReference() OVERRIDE;
+  CONTENT_EXPORT virtual void NativeReleaseReference() OVERRIDE;
+  CONTENT_EXPORT virtual bool IsNative() const OVERRIDE;
 
   //
   // IAccessible methods.

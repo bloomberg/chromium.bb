@@ -77,7 +77,7 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
     delegate_.reset([[MockAccessibilityDelegate alloc] init]);
     manager_.reset(
         BrowserAccessibilityManager::Create(delegate_, root, NULL));
-    accessibility_.reset([manager_->GetRoot()->toBrowserAccessibilityCocoa()
+    accessibility_.reset([manager_->GetRoot()->ToBrowserAccessibilityCocoa()
         retain]);
   }
 

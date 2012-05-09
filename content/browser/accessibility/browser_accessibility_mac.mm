@@ -47,13 +47,17 @@ void BrowserAccessibilityMac::NativeReleaseReference() {
   }
 }
 
+bool BrowserAccessibilityMac::IsNative() const {
+  return true;
+}
+
 void BrowserAccessibilityMac::DetachTree(
     std::vector<BrowserAccessibility*>* nodes) {
   [browser_accessibility_cocoa_ childrenChanged];
   BrowserAccessibility::DetachTree(nodes);
 }
 
-BrowserAccessibilityCocoa* BrowserAccessibility::toBrowserAccessibilityCocoa() {
+BrowserAccessibilityCocoa* BrowserAccessibility::ToBrowserAccessibilityCocoa() {
   return static_cast<BrowserAccessibilityMac*>(this)->
       native_view();
 }

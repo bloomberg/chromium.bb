@@ -15,9 +15,11 @@ typedef WebAccessibility::FloatAttribute FloatAttribute;
 typedef WebAccessibility::IntAttribute IntAttribute;
 typedef WebAccessibility::StringAttribute StringAttribute;
 
-#if (defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(USE_AURA)
-// There's no OS-specific implementation of BrowserAccessibilityManager
-// on Unix, so just instantiate the base class.
+#if !defined(OS_MACOSX) && \
+    !(defined(OS_WIN) && !defined(USE_AURA)) && \
+    !defined(TOOLKIT_GTK)
+// We have subclassess of BrowserAccessibility on Mac, Linux/GTK,
+// and non-Aura Win. For any other platform, instantiate the base class.
 // static
 BrowserAccessibility* BrowserAccessibility::Create() {
   return new BrowserAccessibility();
@@ -77,6 +79,10 @@ void BrowserAccessibility::PreInitialize(
   unique_cell_ids_ = src.unique_cell_ids;
 
   PreInitialize();
+}
+
+bool BrowserAccessibility::IsNative() const {
+  return false;
 }
 
 void BrowserAccessibility::AddChild(BrowserAccessibility* child) {

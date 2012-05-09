@@ -9,7 +9,6 @@
 // badly with net::URLRequestStatus::Status.
 #include "content/common/view_messages.h"
 
-#include <atk/atk.h>
 #include <cairo/cairo.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -28,6 +27,7 @@
 #include "base/time.h"
 #include "base/utf_offset_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/accessibility/browser_accessibility_gtk.h"
 #include "content/browser/renderer_host/backing_store_gtk.h"
 #include "content/browser/renderer_host/gtk_im_context_wrapper.h"
 #include "content/browser/renderer_host/gtk_key_bindings_handler.h"
@@ -112,6 +112,11 @@ using WebKit::WebMouseWheelEvent;
 // static methods.
 class RenderWidgetHostViewGtkWidget {
  public:
+  static AtkObject* GetAccessible(void* userdata) {
+    return (static_cast<RenderWidgetHostViewGtk*>(userdata))->
+        GetAccessible();
+  }
+
   static GtkWidget* CreateNewWidget(RenderWidgetHostViewGtk* host_view) {
     GtkWidget* widget = gtk_preserve_window_new();
     gtk_widget_set_name(widget, "chrome-render-widget-host-view");
@@ -169,6 +174,10 @@ class RenderWidgetHostViewGtkWidget {
     // WebContentsView which handles zoom events.
     g_signal_connect_after(widget, "scroll-event",
                            G_CALLBACK(OnMouseScrollEvent), host_view);
+
+    // Route calls to get_accessible to the view.
+    gtk_preserve_window_set_accessible_factory(
+        GTK_PRESERVE_WINDOW(widget), GetAccessible, host_view);
 
     return widget;
   }
@@ -562,14 +571,6 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(
       compositing_surface_(gfx::kNullPluginWindow),
       last_mouse_down_(NULL) {
   host_->SetView(this);
-
-  // TODO(dmazzoni): This conditional intentionally never evaluates to true.
-  // Introduce a dependency on libatk with a trivial change so that the
-  // Linux packaging scripts can be updated simultaneously to allow it.
-  // Once this change is in, a real patch to enable ATK support will be
-  // added and these two lines will be removed: http://crbug.com/24585
-  if (!host_)
-    atk_object_set_role(NULL, ATK_ROLE_HTML_CONTAINER);
 }
 
 RenderWidgetHostViewGtk::~RenderWidgetHostViewGtk() {
@@ -1411,4 +1412,70 @@ void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
   GdkWindow* gdk_window =
       gdk_display_get_default_group(gdk_display_get_default());
   content::GetScreenInfoFromNativeWindow(gdk_window, results);
+}
+
+void RenderWidgetHostViewGtk::SetAccessibilityFocus(int acc_obj_id) {
+  if (!host_)
+    return;
+
+  host_->AccessibilitySetFocus(acc_obj_id);
+}
+
+void RenderWidgetHostViewGtk::AccessibilityDoDefaultAction(int acc_obj_id) {
+  if (!host_)
+    return;
+
+  host_->AccessibilityDoDefaultAction(acc_obj_id);
+}
+
+void RenderWidgetHostViewGtk::AccessibilityScrollToMakeVisible(
+    int acc_obj_id, gfx::Rect subfocus) {
+  if (!host_)
+    return;
+
+  host_->AccessibilityScrollToMakeVisible(acc_obj_id, subfocus);
+}
+
+void RenderWidgetHostViewGtk::AccessibilityScrollToPoint(
+    int acc_obj_id, gfx::Point point) {
+  if (!host_)
+    return;
+
+  host_->AccessibilityScrollToPoint(acc_obj_id, point);
+}
+
+void RenderWidgetHostViewGtk::AccessibilitySetTextSelection(
+    int acc_obj_id, int start_offset, int end_offset) {
+  if (!host_)
+    return;
+
+  host_->AccessibilitySetTextSelection(acc_obj_id, start_offset, end_offset);
+}
+
+void RenderWidgetHostViewGtk::OnAccessibilityNotifications(
+    const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
+  if (!browser_accessibility_manager_.get()) {
+    GtkWidget* parent = gtk_widget_get_parent(view_.get());
+    browser_accessibility_manager_.reset(
+        BrowserAccessibilityManager::CreateEmptyDocument(
+            parent, static_cast<WebAccessibility::State>(0), this));
+  }
+  browser_accessibility_manager_->OnAccessibilityNotifications(params);
+}
+
+AtkObject* RenderWidgetHostViewGtk::GetAccessible() {
+  RenderWidgetHostImpl::From(GetRenderWidgetHost())->
+      SetAccessibilityMode(AccessibilityModeComplete);
+
+  if (!browser_accessibility_manager_.get()) {
+    GtkWidget* parent = gtk_widget_get_parent(view_.get());
+    browser_accessibility_manager_.reset(
+        BrowserAccessibilityManager::CreateEmptyDocument(
+            parent, static_cast<WebAccessibility::State>(0), this));
+  }
+  BrowserAccessibilityGtk* root =
+      browser_accessibility_manager_->GetRoot()->ToBrowserAccessibilityGtk();
+
+  atk_object_set_role(root->GetAtkObject(), ATK_ROLE_HTML_CONTAINER);
+  return root->GetAtkObject();
 }
