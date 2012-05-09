@@ -2,38 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/callback.h"
+#include "chrome/test/base/module_system_test.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_piece.h"
 #include "chrome/renderer/module_system.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
-#include <map>
-#include <string>
-
-// Native JS functions for doing asserts.
-class AssertNatives : public NativeHandler {
- public:
-  AssertNatives()
-      : assertion_made_(false),
-        failed_(false) {
-    RouteFunction("AssertTrue", base::Bind(&AssertNatives::AssertTrue,
-        base::Unretained(this)));
-  }
-
-  bool assertion_made() { return assertion_made_; }
-  bool failed() { return failed_; }
-
-  v8::Handle<v8::Value> AssertTrue(const v8::Arguments& args) {
-    assertion_made_ = true;
-    failed_ = failed_ || !args[0]->ToBoolean()->Value();
-    return v8::Undefined();
-  }
-
- private:
-  bool assertion_made_;
-  bool failed_;
-};
 
 class CounterNatives : public NativeHandler {
  public:
@@ -57,84 +28,9 @@ class CounterNatives : public NativeHandler {
   int counter_;
 };
 
-class StringSourceMap : public ModuleSystem::SourceMap {
- public:
-  StringSourceMap() {}
-  virtual ~StringSourceMap() {}
-
-  v8::Handle<v8::Value> GetSource(const std::string& name) OVERRIDE {
-    if (source_map_.count(name) == 0)
-      return v8::Undefined();
-    return v8::String::New(source_map_[name].c_str());
-  }
-
-  bool Contains(const std::string& name) OVERRIDE {
-    return source_map_.count(name);
-  }
-
-  void RegisterModule(const std::string& name, const std::string& source) {
-    source_map_[name] = source;
-  }
-
- private:
-  std::map<std::string, std::string> source_map_;
-};
-
-class ModuleSystemTest : public testing::Test {
- public:
-  ModuleSystemTest()
-      : context_(v8::Context::New()),
-        source_map_(new StringSourceMap()),
-        should_assertions_be_made_(true) {
-    context_->Enter();
-    assert_natives_ = new AssertNatives();
-    module_system_.reset(new ModuleSystem(context_, source_map_.get()));
-    module_system_->RegisterNativeHandler("assert", scoped_ptr<NativeHandler>(
-        assert_natives_));
-    RegisterModule("add", "exports.Add = function(x, y) { return x + y; };");
-  }
-
-  ~ModuleSystemTest() {
-    module_system_.reset();
-    context_->Exit();
-    context_.Dispose();
-  }
-
-  void RegisterModule(const std::string& name, const std::string& code) {
-    source_map_->RegisterModule(name, code);
-  }
-
-  virtual void TearDown() {
-    ASSERT_FALSE(try_catch_.HasCaught());
-    // All tests must assert at least once unless otherwise specified.
-    ASSERT_EQ(should_assertions_be_made_,
-              assert_natives_->assertion_made());
-    ASSERT_FALSE(assert_natives_->failed());
-  }
-
-  void ExpectNoAssertionsMade() {
-    should_assertions_be_made_ = false;
-  }
-
-  v8::Handle<v8::Object> CreateGlobal(const std::string& name) {
-    v8::HandleScope handle_scope;
-    v8::Handle<v8::Object> object = v8::Object::New();
-    v8::Context::GetCurrent()->Global()->Set(v8::String::New(name.c_str()),
-                                             object);
-    return handle_scope.Close(object);
-  }
-
-  v8::Persistent<v8::Context> context_;
-  v8::HandleScope handle_scope_;
-  v8::TryCatch try_catch_;
-  AssertNatives* assert_natives_;
-  scoped_ptr<StringSourceMap> source_map_;
-  scoped_ptr<ModuleSystem> module_system_;
-  bool should_assertions_be_made_;
-};
-
 TEST_F(ModuleSystemTest, TestRequire) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  RegisterModule("add", "exports.Add = function(x, y) { return x + y; };");
   RegisterModule("test",
       "var Add = require('add').Add;"
       "requireNative('assert').AssertTrue(Add(3, 5) == 8);");
@@ -143,6 +39,7 @@ TEST_F(ModuleSystemTest, TestRequire) {
 
 TEST_F(ModuleSystemTest, TestNestedRequire) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  RegisterModule("add", "exports.Add = function(x, y) { return x + y; };");
   RegisterModule("double",
       "var Add = require('add').Add;"
       "exports.Double = function(x) { return Add(x, x); };");
