@@ -10,8 +10,8 @@
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
-#include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/net/url_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -138,7 +138,7 @@ void DocumentsService::DownloadDocument(
   DownloadFile(
       virtual_path,
       local_cache_path,
-      chrome_browser_net::AppendQueryParameter(document_url,
+      chrome_common_net::AppendQueryParameter(document_url,
                                                "exportFormat",
                                                GetExportFormatParam(format)),
       callback,

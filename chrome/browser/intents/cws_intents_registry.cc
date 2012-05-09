@@ -11,12 +11,12 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/intents/api_key.h"
-#include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/common/net/url_util.h"
 #include "content/public/common/url_fetcher.h"
-#include "net/base/mime_util.h"
 #include "net/base/load_flags.h"
+#include "net/base/mime_util.h"
 
 namespace {
 
@@ -161,12 +161,12 @@ void CWSIntentsRegistry::GetIntentServices(const string16& action,
 GURL CWSIntentsRegistry::BuildQueryURL(const string16& action,
                                        const string16& type) {
   GURL request(kCWSIntentServiceURL);
-  request = chrome_browser_net::AppendQueryParameter(request, "intent",
+  request = chrome_common_net::AppendQueryParameter(request, "intent",
                                                      UTF16ToUTF8(action));
-  request = chrome_browser_net::AppendQueryParameter(request, "mime_types",
+  request = chrome_common_net::AppendQueryParameter(request, "mime_types",
                                                      UTF16ToUTF8(type));
   if (web_intents::kApiKey[0]) {
-    request = chrome_browser_net::AppendQueryParameter(request, "key",
+    request = chrome_common_net::AppendQueryParameter(request, "key",
                                                        web_intents::kApiKey);
   }
 

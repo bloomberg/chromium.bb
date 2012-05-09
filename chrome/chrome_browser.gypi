@@ -1348,8 +1348,6 @@
         'browser/metrics/tracking_synchronizer.h',
         'browser/metrics/tracking_synchronizer_observer.h',
         'browser/native_window_notification_source.h',
-        'browser/net/browser_url_util.cc',
-        'browser/net/browser_url_util.h',
         'browser/net/chrome_cookie_notification_details.h',
         'browser/net/chrome_fraudulent_certificate_reporter.cc',
         'browser/net/chrome_fraudulent_certificate_reporter.h',

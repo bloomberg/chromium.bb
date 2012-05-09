@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/browser_url_util.h"
+#include "chrome/common/net/url_util.h"
 
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome_browser_net {
+namespace chrome_common_net {
 
-TEST(BrowserUrlUtilTest, AppendQueryParameter) {
+TEST(UrlUtilTest, AppendQueryParameter) {
   // Appending a name-value pair to a URL without a query component.
   EXPECT_EQ("http://example.com/path?name=value",
             AppendQueryParameter(GURL("http://example.com/path"),
@@ -30,7 +30,7 @@ TEST(BrowserUrlUtilTest, AppendQueryParameter) {
 
 }
 
-TEST(BrowserUrlUtilTest, AppendOrReplaceQueryParameter) {
+TEST(UrlUtilTest, AppendOrReplaceQueryParameter) {
   // Appending a name-value pair to a URL without a query component.
   EXPECT_EQ("http://example.com/path?name=value",
             AppendOrReplaceQueryParameter(GURL("http://example.com/path"),
@@ -80,4 +80,4 @@ TEST(BrowserUrlUtilTest, AppendOrReplaceQueryParameter) {
           "name", "new").spec());
 }
 
-}  // namespace chrome_browser_net.
+}  // namespace chrome_common_net.

@@ -32,7 +32,6 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -41,6 +40,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -762,18 +762,18 @@ std::string ExistingUserController::GetGettingStartedGuideURL() const {
   if (!provider->GetMachineStatistic(kMachineInfoBoard, &board))
     LOG(ERROR) << "Failed to get board information";
   if (!board.empty()) {
-    guide_url = chrome_browser_net::AppendQueryParameter(guide_url,
+    guide_url = chrome_common_net::AppendQueryParameter(guide_url,
                                                          kGetStartedBoardParam,
                                                          board);
   }
   if (is_owner_login_) {
-    guide_url = chrome_browser_net::AppendQueryParameter(
+    guide_url = chrome_common_net::AppendQueryParameter(
         guide_url,
         kGetStartedOwnerParam,
         kGetStartedOwnerParamValue);
   }
   guide_url = google_util::AppendGoogleLocaleParam(guide_url);
-  guide_url = chrome_browser_net::AppendQueryParameter(
+  guide_url = chrome_common_net::AppendQueryParameter(
       guide_url,
       kGetStartedInitialLocaleParam,
       WizardController::GetInitialLocale());

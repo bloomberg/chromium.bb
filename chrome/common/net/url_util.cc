@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/browser_url_util.h"
+#include "chrome/common/net/url_util.h"
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -13,7 +13,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
-namespace chrome_browser_net {
+namespace chrome_common_net {
 
 void WriteURLToClipboard(const GURL& url,
                          const std::string& languages,
@@ -91,4 +91,4 @@ GURL AppendOrReplaceQueryParameter(const GURL& url,
   return url.ReplaceComponents(replacements);
 }
 
-}  // namespace chrome_browser_net
+}  // namespace chrome_common_net

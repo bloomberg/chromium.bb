@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros/network_library_impl_cros.h"
 #include "chrome/browser/chromeos/cros/network_library_impl_stub.h"
-#include "chrome/browser/net/browser_url_util.h"
+#include "chrome/common/net/url_util.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
@@ -857,10 +857,10 @@ GURL CellularNetwork::GetAccountInfoUrl() const {
     return GURL(payment_url());
 
   GURL base_url(kRedirectExtensionPage);
-  GURL temp_url = chrome_browser_net::AppendQueryParameter(base_url,
+  GURL temp_url = chrome_common_net::AppendQueryParameter(base_url,
                                                            "post_data",
                                                            post_data_);
-  GURL redir_url = chrome_browser_net::AppendQueryParameter(temp_url,
+  GURL redir_url = chrome_common_net::AppendQueryParameter(temp_url,
                                                             "formUrl",
                                                             payment_url());
   return redir_url;

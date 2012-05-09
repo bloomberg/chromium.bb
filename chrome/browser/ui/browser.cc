@@ -65,7 +65,6 @@
 #include "chrome/browser/instant/instant_unload_handler.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intents_util.h"
-#include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/platform_util.h"
@@ -147,6 +146,7 @@
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
 #include "chrome/common/url_constants.h"
@@ -1757,7 +1757,7 @@ void Browser::WriteCurrentURLToClipboard() {
   if (!toolbar_model_->ShouldDisplayURL())
     return;
 
-  chrome_browser_net::WriteURLToClipboard(
+  chrome_common_net::WriteURLToClipboard(
       contents->GetURL(),
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
       g_browser_process->clipboard());

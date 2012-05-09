@@ -12,11 +12,11 @@
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
@@ -445,11 +445,11 @@ int NotificationPromo::CurrentPlatform() {
 // static
 GURL NotificationPromo::PromoServerURL() {
   GURL url(promo_server_url);
-  url = chrome_browser_net::AppendQueryParameter(
+  url = chrome_common_net::AppendQueryParameter(
       url, "dist", ChannelString());
-  url = chrome_browser_net::AppendQueryParameter(
+  url = chrome_common_net::AppendQueryParameter(
       url, "osname", PlatformString());
-  url = chrome_browser_net::AppendQueryParameter(
+  url = chrome_common_net::AppendQueryParameter(
       url, "branding", chrome::VersionInfo().Version());
   DVLOG(1) << "PromoServerURL=" << url.spec();
   // Note that locale param is added by WebResourceService.

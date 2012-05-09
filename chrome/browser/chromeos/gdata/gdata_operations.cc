@@ -12,10 +12,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
-#include "chrome/browser/net/browser_url_util.h"
 #include "chrome/common/libxml_utils.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "chrome/common/net/url_util.h"
 #include "net/base/escape.h"
 #include "net/http/http_util.h"
 
@@ -90,9 +90,9 @@ const char kUserContentScope[] = "https://docs.googleusercontent.com/";
 // folders in the feed are added to document feed URLs.
 GURL AddStandardUrlParams(const GURL& url) {
   GURL result =
-      chrome_browser_net::AppendOrReplaceQueryParameter(url, "v", "3");
+      chrome_common_net::AppendOrReplaceQueryParameter(url, "v", "3");
   result =
-      chrome_browser_net::AppendOrReplaceQueryParameter(result, "alt", "json");
+      chrome_common_net::AppendOrReplaceQueryParameter(result, "alt", "json");
   return result;
 }
 
@@ -100,7 +100,7 @@ GURL AddStandardUrlParams(const GURL& url) {
 // applications.
 GURL AddMetadataUrlParams(const GURL& url) {
   GURL result = AddStandardUrlParams(url);
-  result = chrome_browser_net::AppendOrReplaceQueryParameter(
+  result = chrome_common_net::AppendOrReplaceQueryParameter(
       result, "include-installed-apps", "true");
   return result;
 }
@@ -112,26 +112,26 @@ GURL AddFeedUrlParams(const GURL& url,
                       int changestamp,
                       const std::string& search_string) {
   GURL result = AddStandardUrlParams(url);
-  result = chrome_browser_net::AppendOrReplaceQueryParameter(
+  result = chrome_common_net::AppendOrReplaceQueryParameter(
       result,
       "showfolders",
       "true");
-  result = chrome_browser_net::AppendOrReplaceQueryParameter(
+  result = chrome_common_net::AppendOrReplaceQueryParameter(
       result,
       "max-results",
       base::StringPrintf("%d", num_items_to_fetch));
-  result = chrome_browser_net::AppendOrReplaceQueryParameter(
+  result = chrome_common_net::AppendOrReplaceQueryParameter(
       result, "include-installed-apps", "true");
 
   if (changestamp) {
-    result = chrome_browser_net::AppendQueryParameter(
+    result = chrome_common_net::AppendQueryParameter(
         result,
         "start-index",
         base::StringPrintf("%d", changestamp));
   }
 
   if (!search_string.empty()) {
-    result = chrome_browser_net::AppendOrReplaceQueryParameter(
+    result = chrome_common_net::AppendOrReplaceQueryParameter(
         result, "q", search_string);
   }
   return result;
@@ -836,7 +836,7 @@ InitiateUploadOperation::InitiateUploadOperation(
                             profile),
       callback_(callback),
       params_(params),
-      initiate_upload_url_(chrome_browser_net::AppendOrReplaceQueryParameter(
+      initiate_upload_url_(chrome_common_net::AppendOrReplaceQueryParameter(
           params.resumable_create_media_link,
           kUploadParamConvertKey,
           kUploadParamConvertValue)) {
