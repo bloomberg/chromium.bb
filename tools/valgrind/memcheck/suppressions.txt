@@ -5793,6 +5793,12 @@
    fun:_ZN2ui10Compositor4DrawEb
    fun:_ZN5views46ViewLayerTest_DontPaintChildrenWithLayers_Test8TestBodyEv
 }
+{
+   bug_127364
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base12_GLOBAL__N_115CreateScopedFooEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
