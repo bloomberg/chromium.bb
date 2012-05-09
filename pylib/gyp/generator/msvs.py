@@ -308,9 +308,6 @@ def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
 
 
 def _BuildCommandLineForRule(spec, rule, has_input_path):
-  # Find path to cygwin.
-  cygwin_dir = _FixPath(spec.get('msvs_cygwin_dirs', ['.'])[0])
-
   # Currently this weird argument munging is used to duplicate the way a
   # python script would need to be run as part of the chrome tree.
   # Eventually we should add some sort of rule_default option to set this
@@ -2422,9 +2419,6 @@ def _GetMSBuildProjectConfigurations(configurations):
 
 
 def _GetMSBuildGlobalProperties(spec, guid, gyp_file_name):
-  prefix = spec.get('product_prefix', '')
-  product_name = spec.get('product_name', '$(ProjectName)')
-  target_name = prefix + product_name
   namespace = os.path.splitext(gyp_file_name)[0]
   return [
       ['PropertyGroup', {'Label': 'Globals'},
