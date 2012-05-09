@@ -3,24 +3,30 @@
  * found in the LICENSE file. */
 
 .autocomplete-results-table {
-  border: 1px solid grey;
   margin-bottom: 1.5em;
 }
 
 .autocomplete-results-table th {
-  border: 1px solid grey;
+  background-color: #C0C0C0;
 }
 
 .autocomplete-results-table td {
-  border: 1px solid grey;
+  background-color: #F0F0F0;
+}
+
+.group-separator {
+  display: block;
+  text-decoration: underline;
 }
 
 .check-mark {
   color: green;
+  text-align: center;
 }
 
 .x-mark {
   color: red;
+  text-align: center;
 }
 
 p {
@@ -29,4 +35,8 @@ p {
 
 .input-section {
   margin-bottom: 1em;
+}
+
+.table-header {
+  white-space: nowrap;
 }

@@ -81,16 +81,16 @@ cr.define('omniboxDebug', function() {
    * @const
    */
   var PROPERTY_OUTPUT_ORDER = [
-    new PresentationInfoRecord('URL', '', 'destination_url', true),
-    new PresentationInfoRecord('Provider Name', '', 'provider_name', true),
+    new PresentationInfoRecord('Provider', '', 'provider_name', true),
     new PresentationInfoRecord('Type', '', 'type', true),
     new PresentationInfoRecord('Relevance', '', 'relevance', true),
+    new PresentationInfoRecord('Contents', '', 'contents', true),
     new PresentationInfoRecord('Starred', '', 'starred', false),
     new PresentationInfoRecord(
         'Is History What You Typed Match', '',
         'is_history_what_you_typed_match', false),
     new PresentationInfoRecord('Description', '', 'description', false),
-    new PresentationInfoRecord('Contents', '', 'contents', false),
+    new PresentationInfoRecord('URL', '', 'destination_url', true),
     new PresentationInfoRecord('Fill Into Edit', '', 'fill_into_edit', false),
     new PresentationInfoRecord(
         'Inline Autocomplete Offset', '', 'inline_autocomplete_offset', false),
@@ -102,7 +102,9 @@ cr.define('omniboxDebug', function() {
         'common/page_transition_types.h&exact_package=chromium&l=24',
         'transition', false),
     new PresentationInfoRecord(
-        'Is This Provider Done', '', 'provider_done', false)
+        'Is This Provider Done', '', 'provider_done', false),
+    new PresentationInfoRecord(
+        'Template URL', '', 'template_url', false)
   ];
 
   /**
@@ -126,6 +128,7 @@ cr.define('omniboxDebug', function() {
         } else {
           // Output header text without a URL.
           headerCell.textContent = PROPERTY_OUTPUT_ORDER[i].header;
+          headerCell.className = 'table-header';
         }
         row.appendChild(headerCell);
       }
@@ -156,9 +159,19 @@ cr.define('omniboxDebug', function() {
           cell.textContent = '✗';
         }
       } else {
-        // All other data types (integer, strings, etc.) display their
-        // normal toString() output.
-        cell.textContent = autocompleteSuggestion[propertyName];
+        var text = String(autocompleteSuggestion[propertyName]);
+        // If it's a URL wrap it in an href.
+        var re = /^(http|https|ftp|chrome|file):\/\//;
+        if (re.test(text)) {
+          var aCell = document.createElement('a');
+          aCell.textContent = text;
+          aCell.href = text;
+          cell.appendChild(aCell);
+        } else {
+          // All other data types (integer, strings, etc.) display their
+          // normal toString() output.
+          cell.textContent = autocompleteSuggestion[propertyName];
+        }
       }
     }  // else: if propertyName is undefined, we leave the cell blank
     return cell;
@@ -237,23 +250,40 @@ cr.define('omniboxDebug', function() {
       output.appendChild(p2);
     }
 
+    // Combined results go after the lines below.
+    var group = document.createElement('a');
+    group.className = 'group-separator';
+    group.textContent = 'Combined results.';
+    output.appendChild(group);
+
+    // Add combined/merged result table.
+    var p = document.createElement('p');
+    p.appendChild(addResultTableToOutput(result.combined_results));
+    output.appendChild(p);
+
+    // Move forward only if you want to display per provider results.
     if (!showPerProviderResults) {
-      // Add combined/merged result table (without label).
-      output.appendChild(addResultTableToOutput(result.combined_results));
-    } else {
-      // Add combined/merged result table with label.
-      var p = document.createElement('p');
-      p.textContent = 'combined results:';
-      p.appendChild(addResultTableToOutput(result.combined_results));
-      output.appendChild(p);
-      // Add the pre-provider result tables with labels.
-      for (var provider in result.results_by_provider) {
-        p = document.createElement('p');
-        p.appendChild(document.createTextNode(provider + ' provider results:'));
-        p.appendChild(addResultTableToOutput(
-            result.results_by_provider[provider]));
-        output.appendChild(p);
+      return;
+    }
+
+    // Individual results go after the lines below.
+    var group = document.createElement('a');
+    group.className = 'group-separator';
+    group.textContent = 'Results for individual providers.';
+    output.appendChild(group);
+
+    // Add the per-provider result tables with labels. We do not append the
+    // combined/merged result table since we already have the per provider
+    // results.
+    for (var provider in result.results_by_provider) {
+      var results = result.results_by_provider[provider];
+      // If we have no results we do not display anything.
+      if (results.num_items == 0) {
+        continue;
       }
+      var p = document.createElement('p');
+      p.appendChild(addResultTableToOutput(results));
+      output.appendChild(p);
     }
   }
 
@@ -261,7 +291,7 @@ cr.define('omniboxDebug', function() {
    * @param {Object} result either the combined_results component of
    *     the structure described in the comment by addResultToOutput()
    *     above or one of the per-provider results in the structure.
-   *     (Both have the same format.)
+   *     (Both have the same format).
    * @return {HTMLTableCellElement} that is a user-readable HTML
    *     representation of this object.
    */
