@@ -107,15 +107,15 @@ void GetFieldTrialSelectedGroupIds(
                                                  name_group_ids);
 }
 
-void AssociateGoogleExperimentID(const std::string& trial_name,
-                                 const std::string& group_name,
-                                 chrome_variations::ID id) {
+void AssociateGoogleVariationID(const std::string& trial_name,
+                                const std::string& group_name,
+                                chrome_variations::ID id) {
   GroupMapAccessor::GetInstance()->AssociateID(
       MakeSelectedGroupId(trial_name, group_name), id);
 }
 
-chrome_variations::ID GetGoogleExperimentID(const std::string& trial_name,
-                                            const std::string& group_name) {
+chrome_variations::ID GetGoogleVariationID(const std::string& trial_name,
+                                           const std::string& group_name) {
   return GroupMapAccessor::GetInstance()->GetID(
       MakeSelectedGroupId(trial_name, group_name));
 }

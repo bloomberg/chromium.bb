@@ -74,7 +74,7 @@ void AutocompleteFieldTrial::Activate() {
     trial->UseOneTimeRandomization();
 
   // Mark this group in suggest requests to Google.
-  experiments_helper::AssociateGoogleExperimentID(
+  experiments_helper::AssociateGoogleVariationID(
       kSuggestFieldTrialName, "0", chrome_variations::kSuggestIDMin);
   DCHECK_EQ(kSuggestFieldTrialNumberOfGroups,
       chrome_variations::kSuggestIDMax - chrome_variations::kSuggestIDMin + 1);
@@ -85,7 +85,7 @@ void AutocompleteFieldTrial::Activate() {
   for (int i = 1; i < kSuggestFieldTrialNumberOfGroups; i++) {
     const std::string group_name = base::IntToString(i);
     trial->AppendGroup(group_name, 1);
-    experiments_helper::AssociateGoogleExperimentID(
+    experiments_helper::AssociateGoogleVariationID(
         kSuggestFieldTrialName, group_name,
         static_cast<chrome_variations::ID>(
             chrome_variations::kSuggestIDMin + i));

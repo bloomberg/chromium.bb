@@ -19,8 +19,8 @@ namespace {
 // Convenience helper to retrieve the chrome_variations::ID for a FieldTrial.
 // Note that this will do the group assignment in |trial| if not already done.
 chrome_variations::ID GetIDForTrial(base::FieldTrial* trial) {
-  return experiments_helper::GetGoogleExperimentID(trial->name(),
-                                                   trial->group_name());
+  return experiments_helper::GetGoogleVariationID(trial->name(),
+                                                  trial->group_name());
 }
 
 }  // namespace
@@ -112,7 +112,7 @@ TEST_F(ExperimentsHelperTest, GetFieldTrialSelectedGroups) {
   EXPECT_EQ(0U, expected_groups.size());
 }
 
-// Test that if the trial is immediately disabled, GetGoogleExperimentID just
+// Test that if the trial is immediately disabled, GetGoogleVariationID just
 // returns the empty ID.
 TEST_F(ExperimentsHelperTest, DisableImmediately) {
   int default_group_number = -1;
@@ -127,7 +127,7 @@ TEST_F(ExperimentsHelperTest, DisableImmediately) {
 }
 
 // Test that successfully associating the FieldTrial with some ID, and then
-// disabling the FieldTrial actually makes GetGoogleExperimentID correctly
+// disabling the FieldTrial actually makes GetGoogleVariationID correctly
 // return the empty ID.
 TEST_F(ExperimentsHelperTest, DisableAfterInitialization) {
   const std::string default_name = "default";
@@ -137,9 +137,9 @@ TEST_F(ExperimentsHelperTest, DisableAfterInitialization) {
       base::FieldTrialList::FactoryGetFieldTrial("trial", 100, default_name,
                                                  next_year_, 12, 12, NULL));
   trial->AppendGroup(non_default_name, 100);
-  experiments_helper::AssociateGoogleExperimentID(
+  experiments_helper::AssociateGoogleVariationID(
       trial->name(), default_name, chrome_variations::kTestValueA);
-  experiments_helper::AssociateGoogleExperimentID(
+  experiments_helper::AssociateGoogleVariationID(
       trial->name(), non_default_name, chrome_variations::kTestValueB);
   ASSERT_EQ(non_default_name, trial->group_name());
   ASSERT_EQ(chrome_variations::kTestValueB, GetIDForTrial(trial.get()));
@@ -149,7 +149,7 @@ TEST_F(ExperimentsHelperTest, DisableAfterInitialization) {
 }
 
 // Test various successful association cases.
-TEST_F(ExperimentsHelperTest, AssociateGoogleExperimentID) {
+TEST_F(ExperimentsHelperTest, AssociateGoogleVariationID) {
   const std::string default_name1 = "default1";
   scoped_refptr<base::FieldTrial> trial_true(
       base::FieldTrialList::FactoryGetFieldTrial("d1", 10, default_name1,
@@ -157,10 +157,10 @@ TEST_F(ExperimentsHelperTest, AssociateGoogleExperimentID) {
   const std::string winner = "TheWinner";
   int winner_group = trial_true->AppendGroup(winner, 10);
 
-  // Set GoogleExperimentIDs so we can verify that they were chosen correctly.
-  experiments_helper::AssociateGoogleExperimentID(
+  // Set GoogleVariationIDs so we can verify that they were chosen correctly.
+  experiments_helper::AssociateGoogleVariationID(
       trial_true->name(), default_name1, chrome_variations::kTestValueA);
-  experiments_helper::AssociateGoogleExperimentID(
+  experiments_helper::AssociateGoogleVariationID(
       trial_true->name(), winner, chrome_variations::kTestValueB);
 
   EXPECT_EQ(winner_group, trial_true->group());
@@ -174,9 +174,9 @@ TEST_F(ExperimentsHelperTest, AssociateGoogleExperimentID) {
   const std::string loser = "ALoser";
   int loser_group = trial_false->AppendGroup(loser, 0);
 
-  experiments_helper::AssociateGoogleExperimentID(
+  experiments_helper::AssociateGoogleVariationID(
       trial_false->name(), default_name2, chrome_variations::kTestValueA);
-  experiments_helper::AssociateGoogleExperimentID(
+  experiments_helper::AssociateGoogleVariationID(
       trial_false->name(), loser, chrome_variations::kTestValueB);
 
   EXPECT_NE(loser_group, trial_false->group());

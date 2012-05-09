@@ -44,15 +44,15 @@ void InstantFieldTrial::Activate() {
   g_silent  = trial->AppendGroup("SILENT",  200);  // 20%
 
   // Mark these groups in requests to Google.
-  experiments_helper::AssociateGoogleExperimentID(
+  experiments_helper::AssociateGoogleVariationID(
       "Instant", "CONTROL", chrome_variations::kInstantIDControl);
-  experiments_helper::AssociateGoogleExperimentID(
+  experiments_helper::AssociateGoogleVariationID(
       "Instant", "SILENT", chrome_variations::kInstantIDSilent);
-  experiments_helper::AssociateGoogleExperimentID(
+  experiments_helper::AssociateGoogleVariationID(
       "Instant", "HIDDEN", chrome_variations::kInstantIDHidden);
-  experiments_helper::AssociateGoogleExperimentID(
+  experiments_helper::AssociateGoogleVariationID(
       "Instant", "SUGGEST", chrome_variations::kInstantIDSuggest);
-  experiments_helper::AssociateGoogleExperimentID(
+  experiments_helper::AssociateGoogleVariationID(
       "Instant", "INSTANT", chrome_variations::kInstantIDInstant);
 }
 

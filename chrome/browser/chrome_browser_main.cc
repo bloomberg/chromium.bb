@@ -1070,7 +1070,7 @@ void ChromeBrowserMainParts::SetupUniformityFieldTrials() {
     scoped_refptr<base::FieldTrial> trial(
         base::FieldTrialList::FactoryGetFieldTrial(
             trial_name, divisor, "default", 2015, 1, 1, NULL));
-    experiments_helper::AssociateGoogleExperimentID(trial_name, "default",
+    experiments_helper::AssociateGoogleVariationID(trial_name, "default",
         trial_base_ids[i]);
     // Loop starts with group 1 because the field trial automatically creates a
     // default group, which would be group 0.
@@ -1078,7 +1078,7 @@ void ChromeBrowserMainParts::SetupUniformityFieldTrials() {
       const std::string group_name = StringPrintf("group_%02d", group_number);
       DVLOG(1) << "    Group name = " << group_name;
       trial->AppendGroup(group_name, kProbabilityPerGroup);
-      experiments_helper::AssociateGoogleExperimentID(trial_name, group_name,
+      experiments_helper::AssociateGoogleVariationID(trial_name, group_name,
           static_cast<chrome_variations::ID>(trial_base_ids[i] + group_number));
     }
 

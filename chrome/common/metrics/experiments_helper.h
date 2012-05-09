@@ -32,17 +32,17 @@
 // const int kLowMemGroup = trial->AppendGroup("LowMem", 20);
 // // All groups are now created. We want to associate chrome_variation::IDs
 // // with them, so do that now.
-// AssociateGoogleExperimentID("trial", "default", chrome_variations::kValueA);
-// AssociateGoogleExperimentID("trial", "HighMem", chrome_variations::kValueB);
-// AssociateGoogleExperimentID("trial", "LowMem",  chrome_variations::kValueC);
+// AssociateGoogleVariationID("trial", "default", chrome_variations::kValueA);
+// AssociateGoogleVariationID("trial", "HighMem", chrome_variations::kValueB);
+// AssociateGoogleVariationID("trial", "LowMem",  chrome_variations::kValueC);
 //
 // // Elsewhere, we are interested in retrieving the chrome_variations::ID
 // // assocaited with |trial|.
-// chrome_variations::ID id = GetGoogleExperimentID(trial->name(),
-//                                                  trial->group_name());
+// chrome_variations::ID id = GetGoogleVariationID(trial->name(),
+//                                                 trial->group_name());
 // // Do stuff with |id|...
 //
-// The AssociateGoogleExperimentID and GetGoogleExperimentID API methods are
+// The AssociateGoogleVariationID and GetGoogleExperimentID API methods are
 // thread safe.
 //
 // TODO(stevet): Rename these methods to AssociateVariationID and GetVariationID
@@ -82,9 +82,9 @@ void GetFieldTrialSelectedGroupIds(
 // prepare a FieldTrial (create the trial and append groups) that needs to have
 // a chrome_variations::ID associated with it so Google servers can recognize
 // the FieldTrial.
-void AssociateGoogleExperimentID(const std::string& trial_name,
-                                 const std::string& group_name,
-                                 chrome_variations::ID id);
+void AssociateGoogleVariationID(const std::string& trial_name,
+                                const std::string& group_name,
+                                chrome_variations::ID id);
 
 // Retrieve the chrome_variations::ID associated with a FieldTrial group. The
 // group is denoted by |trial_name| and |group_name|. This will return
@@ -92,8 +92,8 @@ void AssociateGoogleExperimentID(const std::string& trial_name,
 // named group. This API can be nicely combined with
 // FieldTrial::GetFieldTrialSelectedGroupIds to enumerate the
 // variation IDs for all active FieldTrial groups.
-chrome_variations::ID GetGoogleExperimentID(const std::string& trial_name,
-                                            const std::string& group_name);
+chrome_variations::ID GetGoogleVariationID(const std::string& trial_name,
+                                           const std::string& group_name);
 
 // Get the current set of chosen FieldTrial groups (aka experiments) and send
 // them to the child process logging module so it can save it for crash dumps.
