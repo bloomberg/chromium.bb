@@ -712,7 +712,7 @@ TEST(ExtensionPermissionsTest, GetWarningMessages_ManyHosts) {
   std::vector<string16> warnings =
       extension->GetActivePermissions()->GetWarningMessages();
   ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("Your data on encrypted.google.com and www.google.com",
+  EXPECT_EQ("Access your data on encrypted.google.com and www.google.com",
             UTF16ToUTF8(warnings[0]));
 }
 
@@ -729,7 +729,7 @@ TEST(ExtensionPermissionsTest, GetWarningMessages_Plugins) {
   ASSERT_EQ(0u, warnings.size());
 #else
   ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("All data on your computer and the websites you visit",
+  EXPECT_EQ("Access all data on your computer and the websites you visit",
             UTF16ToUTF8(warnings[0]));
 #endif
 }

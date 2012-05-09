@@ -566,13 +566,13 @@ TEST(ExtensionTest, GetPermissionMessages_ManyApiPermissions) {
   extension = LoadManifest("permissions", "many-apis.json");
   std::vector<string16> warnings = extension->GetPermissionMessageStrings();
   ASSERT_EQ(6u, warnings.size());
-  EXPECT_EQ("Your data on api.flickr.com",
+  EXPECT_EQ("Access your data on api.flickr.com",
             UTF16ToUTF8(warnings[0]));
-  EXPECT_EQ("Your bookmarks", UTF16ToUTF8(warnings[1]));
-  EXPECT_EQ("Your physical location", UTF16ToUTF8(warnings[2]));
-  EXPECT_EQ("Your browsing history", UTF16ToUTF8(warnings[3]));
-  EXPECT_EQ("Your tabs and browsing activity", UTF16ToUTF8(warnings[4]));
-  EXPECT_EQ("Your list of apps, extensions, and themes",
+  EXPECT_EQ("Read and modify your bookmarks", UTF16ToUTF8(warnings[1]));
+  EXPECT_EQ("Detect your physical location", UTF16ToUTF8(warnings[2]));
+  EXPECT_EQ("Read and modify your browsing history", UTF16ToUTF8(warnings[3]));
+  EXPECT_EQ("Access your tabs and browsing activity", UTF16ToUTF8(warnings[4]));
+  EXPECT_EQ("Manage your apps, extensions, and themes",
             UTF16ToUTF8(warnings[5]));
 }
 
@@ -581,7 +581,7 @@ TEST(ExtensionTest, GetPermissionMessages_ManyHosts) {
   extension = LoadManifest("permissions", "many-hosts.json");
   std::vector<string16> warnings = extension->GetPermissionMessageStrings();
   ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("Your data on encrypted.google.com and www.google.com",
+  EXPECT_EQ("Access your data on encrypted.google.com and www.google.com",
             UTF16ToUTF8(warnings[0]));
 }
 
@@ -595,7 +595,7 @@ TEST(ExtensionTest, GetPermissionMessages_Plugins) {
   ASSERT_EQ(0u, warnings.size());
 #else
   ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("All data on your computer and the websites you visit",
+  EXPECT_EQ("Access all data on your computer and the websites you visit",
             UTF16ToUTF8(warnings[0]));
 #endif
 }

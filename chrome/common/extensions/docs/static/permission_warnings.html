@@ -5,7 +5,7 @@
 NOTE: When this doc is updated, the online help should also be updated:
 http://www.google.com/support/chrome_webstore/bin/answer.py?hl=en&answer=186213
 
-We should periodically look at 
+We should periodically look at
 http://src.chromium.org/viewvc/chrome/trunk/src/chrome/app/generated_resources.grd?view=markup
 to make sure that we're covering all messages. Search for
 IDS_EXTENSION_PROMPT_WARNING
@@ -41,7 +41,7 @@ that a user might see when installing an extension:
 
 <img src="images/perms-hw1.png"
   width="410" height="193"
-  alt="Permission warning: 'It can access: Your data on api.flickr.com'"
+  alt="Permission warning: 'It can: Access your data on api.flickr.com'"
   />
 
 <p>
@@ -68,7 +68,7 @@ from a <code>.crx</code> file.
 If you add a permission to the extension when you autoupdate it,
 the user might see a new permission warning.
 For example,
-assume you add a new site and the "tabs" permission 
+assume you add a new site and the "tabs" permission
 to the previous example:
 </p>
 
@@ -100,7 +100,7 @@ brings up the following warning:
 
 <img src="images/perms-hw2.png"
   width="412" height="220"
-  alt="Permission warning: 'It can access: Your data on api.flickr.com and flickr.com; Your browsing history'"
+  alt="Permission warning: 'It can: Access your data on api.flickr.com and flickr.com; Read and modify your browsing history'"
   />
 
 
@@ -142,7 +142,7 @@ that trigger them.
 <tr>
   <td style="font-weight:bold">
     <!-- IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS -->
-    All data on your computer and the websites you visit
+    Access all data on your computer and the websites you visit
   </td>
   <td>
     "plugins"
@@ -156,7 +156,7 @@ that trigger them.
 <tr>
   <td style="font-weight:bold">
     <!-- IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS -->
-    Your bookmarks
+    Read and modify your bookmarks
   </td>
   <td>
     "bookmarks" permission
@@ -170,7 +170,7 @@ that trigger them.
 <tr>
   <td style="font-weight:bold">
     <!-- IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY -->
-    Your browsing history
+    Read and modify your browsing history
   </td>
   <td>
     <!-- HasEffectiveBrowsingHistoryPermission -->
@@ -187,7 +187,7 @@ that trigger them.
 <tr>
   <td style="font-weight:bold">
     <!-- IDS_EXTENSION_PROMPT_WARNING_TABS -->
-    Your tabs and browsing activity
+    Access your tabs and browsing activity
   </td>
   <td>
     <!-- HasEffectiveBrowsingHistoryPermission -->
@@ -200,7 +200,7 @@ that trigger them.
   <td>
     <p>
       The "tabs" permission is required by the
-      <a href="tabs.html"><code>chrome.tabs</code></a> and 
+      <a href="tabs.html"><code>chrome.tabs</code></a> and
       <a href="windows.html"><code>chrome.windows</code></a> modules.
     </p>
     <p>
@@ -213,7 +213,7 @@ that trigger them.
 <tr>
   <td style="font-weight:bold">
     <!-- IDS_EXTENSION_PROMPT_WARNING_CONTENT_SETTINGS -->
-    Settings that specify whether websites can use features such as cookies, JavaScript, and plug-ins
+    Manipulate settings that specify whether websites can use features such as cookies, JavaScript, and plug-ins
   </td>
   <td>
     <!-- HasEffectiveBrowsingHistoryPermission -->
@@ -230,7 +230,7 @@ that trigger them.
 <tr>
   <td style="font-weight:bold">
     <!-- IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS -->
-    Your data on all websites
+    Access your data on all websites
   </td>
   <td>
     <!-- HasEffectiveAccessToAllHosts() -->
@@ -271,7 +271,7 @@ that trigger them.
   <td style="font-weight:bold">
     <!-- IDS_EXTENSION_PROMPT_WARNING_?_HOST -->
     <!-- IDS_EXTENSION_PROMPT_WARNING_4_OR_MORE_HOSTS -->
-    Your data on <em>{list of websites}</em>
+    Access your data on <em>{list of websites}</em>
   </td>
   <td>
     A match pattern in the "permissions" field
@@ -300,19 +300,24 @@ that trigger them.
     </p>
   </td>
 </tr>
+<tr>
+  <td style="font-weight:bold">
+    <!-- IDS_EXTENSION_PROMPT_WARNING_ALL_PAGES_CONTENT -->
+    Access the content of pages you visit
+  </td>
+  <td>
+    "pageCapture" permission
+  </td>
+  <td>
+    The "pageCapture" permission is required by the
+    <a href="pageCapture.html"><code>chrome.pageCapture</code></a> module.
+  </td>
+</tr>
 
 <tr>
   <td style="font-weight:bold">
     <!-- IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT -->
-    Your list of apps, extensions, and themes
-    <br />
-    <span style="font-weight:normal; font-style:italic">or</span>
-    <br />
-    Manage themes, extensions, and apps
-
-    <!-- PENDING: remove "Manage...apps" alternative message
-    once the fix is out on stable channel -->
-    <!-- See http://crbug.com/67859 -->
+    Manage your apps, extensions, and themes
   </td>
   <td>
     "management" permission
@@ -326,7 +331,7 @@ that trigger them.
 <tr>
   <td style="font-weight:bold">
     <!-- IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION -->
-    Your physical location
+    Detect your physical location
   </td>
   <td>
     "geolocation" permission
@@ -341,7 +346,7 @@ that trigger them.
 <tr>
   <td style="font-weight:bold">
     <!-- IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD-->
-    Data you copy and paste
+    Access data you copy and paste
   </td>
   <td>
     "clipboardRead" permission
@@ -359,7 +364,7 @@ that trigger them.
 <tr>
   <td style="font-weight:bold">
     <!-- IDS_EXTENSION_PROMPT_WARNING_PRIVACY-->
-    Privacy-related settings
+    Manipulate privacy-related settings
   </td>
   <td>
     "privacy" permission
@@ -367,6 +372,20 @@ that trigger them.
   <td>
     The "privacy" permission is required by the
     <a href="privacy.html"><code>chrome.privacy</code></a> module.
+  </td>
+</tr>
+
+<tr>
+  <td style="font-weight:bold">
+    <!-- IDS_EXTENSION_PROMPT_WARNING_TTS_ENGINE-->
+    Access all text spoken using synthesized speech
+  </td>
+  <td>
+    "ttsEngine" permission
+  </td>
+  <td>
+    The "ttsEngine" permission is required by the
+    <a href="ttsEngine.html"><code>chrome.ttsEngine</code></a> module.
   </td>
 </tr>
 </table>
@@ -380,6 +399,7 @@ The following permissions don't result in a warning:
 </p>
 
 <ul>
+  <li>"browsingData"</li>
   <li>"chrome://favicon/"</li>
   <li>"clipboardWrite"</li>
   <li>"contextMenus"</li>

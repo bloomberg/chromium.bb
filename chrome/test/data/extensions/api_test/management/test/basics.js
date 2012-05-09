@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,12 +97,14 @@ var tests = [
     chrome.management.getPermissionWarningsByManifest(
         manifest_str, callback(function(warnings) {
       chrome.test.assertEq(5, warnings.length);
-      chrome.test.assertEq("Your data on *.flickr.com and api.flickr.com",
-                           warnings[0]);
-      chrome.test.assertEq("Your bookmarks", warnings[1]);
-      chrome.test.assertEq("Your physical location", warnings[2]);
-      chrome.test.assertEq("Your browsing history", warnings[3]);
-      chrome.test.assertEq("Your tabs and browsing activity", warnings[4]);
+      chrome.test.assertEq(
+        "Access your data on *.flickr.com and api.flickr.com", warnings[0]);
+      chrome.test.assertEq("Read and modify your bookmarks", warnings[1]);
+      chrome.test.assertEq("Detect your physical location", warnings[2]);
+      chrome.test.assertEq("Read and modify your browsing history",
+                           warnings[3]);
+      chrome.test.assertEq("Access your tabs and browsing activity",
+                           warnings[4]);
     }));
 
     chrome.management.getAll(callback(function(items) {
@@ -110,7 +112,7 @@ var tests = [
       chrome.management.getPermissionWarningsById(extension.id,
                                                   callback(function(warnings) {
         chrome.test.assertEq(1, warnings.length);
-        chrome.test.assertEq("Your list of apps, extensions, and themes",
+        chrome.test.assertEq("Manage your apps, extensions, and themes",
                              warnings[0]);
       }));
     }));
