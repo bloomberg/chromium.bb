@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -109,14 +109,4 @@ uint32_t NaClGetEbx(void) {
 
   __asm__("movl %%ebx, %0" : "=r" (ebx) : );
   return ebx;
-}
-
-/*
- * this function is OS-independent as well as all above; however, because of
- * different assembly syntax it must be split into linux and win versions
- */
-tick_t get_ticks() {
-  tick_t  t = 0;
-  __asm__ volatile("rdtsc" : "=A" (t));
-  return t;
 }

@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -97,19 +97,3 @@ uint32_t NaClGetEbx(void) {
   return result;
 }
 #endif
-
-/*
- * this function is OS-independent as well as all above; however, because of
- * different assembly syntax it must be split into linux and win versions
- */
-tick_t get_ticks() {
-  tick_t  t = 0;
-
-  /* TODO: replace rdtsc with a more reliable performance counter,
-   * e.g. QueryPerformanceCounter().
-   * (See msdn.microsoft.com/en-us/library/ee418872(VS.85).aspx#Use_of_RDTSC)
-   */
-  t = __rdtsc();
-
-  return t;
-}
