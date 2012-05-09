@@ -430,6 +430,7 @@ void UserManagerImpl::DemoUserLoggedIn() {
 
 void UserManagerImpl::GuestUserLoggedIn() {
   is_current_user_ephemeral_ = true;
+  SetInitialUserWallpaper(kGuestUser);
   logged_in_user_ = new User(kGuestUser, true);
   NotifyOnLogin();
 }
@@ -1019,6 +1020,7 @@ void UserManagerImpl::GetLoggedInUserWallpaperProperties(
 
   if (!IsUserLoggedIn() || IsLoggedInAsStub()) {
     index = ash::GetInvalidWallpaperIndex();
+    type = User::DEFAULT;
     current_user_wallpaper_index_ = index;
     current_user_wallpaper_type_ = User::DEFAULT;
     return;
