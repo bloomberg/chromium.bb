@@ -11,6 +11,7 @@
 #include "base/debug/trace_event.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/public/browser/browser_thread.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_switches.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
@@ -260,6 +261,29 @@ void CompositingIOSurfaceMac::DrawIOSurface(NSView* view) {
     // Should match the clear color of RenderWidgetHostViewMac.
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+  }
+
+  static bool initialized_workaround = false;
+  static bool use_glfinish_workaround = false;
+
+  if (!initialized_workaround) {
+    use_glfinish_workaround =
+        (strstr(reinterpret_cast<const char*>(
+            glGetString(GL_VENDOR)), "Intel") ||
+         CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kForceGLFinishWorkaround)) &&
+        !CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableGpuDriverBugWorkarounds);
+
+    initialized_workaround = true;
+  }
+
+  if (use_glfinish_workaround) {
+    // http://crbug.com/123409 : work around bugs in graphics driver on
+    // MacBook Air with Intel HD graphics, and possibly on other models,
+    // by forcing the graphics pipeline to be completely drained at this
+    // point.
+    glFinish();
   }
 
   CGLFlushDrawable(cglContext_);

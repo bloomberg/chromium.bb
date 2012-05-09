@@ -19,6 +19,7 @@ GPU_EXPORT extern const char kDisableGpuDriverBugWorkarounds[];
 GPU_EXPORT extern const char kEnableGPUCommandLogging[];
 GPU_EXPORT extern const char kEnableGPUDebugging[];
 GPU_EXPORT extern const char kEnforceGLMinimums[];
+GPU_EXPORT extern const char kForceGLFinishWorkaround[];
 
 GPU_EXPORT extern const char* kGpuSwitches[];
 GPU_EXPORT extern const int kNumGpuSwitches;

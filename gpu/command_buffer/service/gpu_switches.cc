@@ -29,6 +29,11 @@ const char kEnableGPUDebugging[]            = "enable-gpu-debugging";
 // Enforce GL minimums.
 const char kEnforceGLMinimums[]             = "enforce-gl-minimums";
 
+// Force the use of a workaround for graphics hangs seen on certain
+// Mac OS systems. Enabled by default (and can't be disabled) on known
+// affected systems.
+const char kForceGLFinishWorkaround[]       = "force-glfinish-workaround";
+
 const char* kGpuSwitches[] = {
   kCompileShaderAlwaysSucceeds,
   kDisableGLErrorLimit,
@@ -37,6 +42,7 @@ const char* kGpuSwitches[] = {
   kEnableGPUCommandLogging,
   kEnableGPUDebugging,
   kEnforceGLMinimums,
+  kForceGLFinishWorkaround,
 };
 
 const int kNumGpuSwitches = arraysize(kGpuSwitches);
