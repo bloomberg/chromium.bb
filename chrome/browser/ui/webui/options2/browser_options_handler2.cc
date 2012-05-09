@@ -553,7 +553,6 @@ void BrowserOptionsHandler::InitializeHandler() {
   default_browser_policy_.Init(prefs::kDefaultBrowserSettingEnabled,
                                g_browser_process->local_state(),
                                this);
-  UpdateDefaultBrowserState();
 
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                  content::NotificationService::AllSources());
@@ -609,6 +608,7 @@ void BrowserOptionsHandler::InitializePage() {
   OnTemplateURLServiceChanged();
   ObserveThemeChanged();
   OnStateChanged();
+  UpdateDefaultBrowserState();
 
   SetupMetricsReportingCheckbox();
   SetupMetricsReportingSettingVisibility();
