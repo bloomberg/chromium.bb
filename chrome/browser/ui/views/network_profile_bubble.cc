@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/network_profile_bubble_prefs.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
@@ -31,9 +32,6 @@
 #include "ui/views/layout/layout_constants.h"
 
 namespace {
-// The number of warnings to be shown on consequtive starts of Chrome before
-// the silent period starts.
-const int kMaxWarnings = 2;
 
 // The duration of the silent period before we start nagging the user again.
 const int kSilenceDurationDays = 100;
@@ -42,6 +40,7 @@ const int kSilenceDurationDays = 100;
 const int kAnchorVerticalInset = 5;
 const int kInset = 2;
 const int kNotificationBubbleWidth = 250;
+
 }  // namespace
 
 // static
@@ -111,16 +110,6 @@ void NetworkProfileBubble::CheckNetworkProfile(const FilePath& profile_path) {
 }
 
 // static
-void NetworkProfileBubble::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kNetworkProfileWarningsLeft,
-                             kMaxWarnings,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterInt64Pref(prefs::kNetworkProfileLastWarningTime,
-                           0,
-                           PrefService::UNSYNCABLE_PREF);
-}
-
-// static
 bool NetworkProfileBubble::ShouldCheckNetworkProfile(PrefService* prefs) {
   if (prefs->GetInteger(prefs::kNetworkProfileWarningsLeft))
     return !notification_shown_;
@@ -128,7 +117,8 @@ bool NetworkProfileBubble::ShouldCheckNetworkProfile(PrefService* prefs) {
   base::TimeDelta time_since_last_check =
       base::Time::Now() - base::Time::FromTimeT(last_check);
   if (time_since_last_check.InDays() > kSilenceDurationDays) {
-    prefs->SetInteger(prefs::kNetworkProfileWarningsLeft, kMaxWarnings);
+    prefs->SetInteger(prefs::kNetworkProfileWarningsLeft,
+                      browser::kMaxWarnings);
     return !notification_shown_;
   }
   return false;

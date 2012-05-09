@@ -59,6 +59,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_view_prefs.h"
+#include "chrome/browser/ui/network_profile_bubble_prefs.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
@@ -75,10 +76,6 @@
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
 #include "chrome/browser/ui/cocoa/presentation_mode_prefs.h"
-#endif
-
-#if defined(OS_WIN)
-#include "chrome/browser/ui/views/network_profile_bubble.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
@@ -251,7 +248,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
 
 #if defined(OS_WIN)
-  NetworkProfileBubble::RegisterPrefs(user_prefs);
+  browser::RegisterNetworkProfileBubblePrefs(user_prefs);
 #endif
 }
 

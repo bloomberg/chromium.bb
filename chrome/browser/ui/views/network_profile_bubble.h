@@ -25,9 +25,6 @@ class NetworkProfileBubble : public views::BubbleDelegateView,
   // it is shows the warning bubble to the user.
   static void CheckNetworkProfile(const FilePath& profile_path);
 
-  // Register the pref that controls whether the bubble should be shown anymore.
-  static void RegisterPrefs(PrefService* prefs);
-
   // Returns true if the check for network located profile should be done. This
   // test is only performed up to |kMaxWarnings| times in a row and then
   // repeated after a period of silence that lasts |kSilenceDurationDays| days.

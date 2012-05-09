@@ -3077,6 +3077,8 @@
         'browser/ui/login/login_prompt_views.cc',
         'browser/ui/media_stream_infobar_delegate.h',
         'browser/ui/media_stream_infobar_delegate.cc',
+        'browser/ui/network_profile_bubble_prefs.cc',
+        'browser/ui/network_profile_bubble_prefs.h',
         'browser/ui/omnibox/location_bar.h',
         'browser/ui/omnibox/location_bar_util.cc',
         'browser/ui/omnibox/location_bar_util.h',
