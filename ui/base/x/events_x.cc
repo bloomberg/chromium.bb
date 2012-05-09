@@ -125,7 +125,8 @@ class UI_EXPORT CMTEventData {
         cmt_devices_[info->deviceid] = true;
       }
     }
-    XIFreeDeviceInfo(info_list);
+    if (info_list)
+      XIFreeDeviceInfo(info_list);
   }
 
   bool natural_scroll_enabled() const { return natural_scroll_enabled_; }
