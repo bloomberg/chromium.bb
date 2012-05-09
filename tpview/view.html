@@ -136,7 +136,7 @@ $(document).ready(function() {
   
   var inGc = new GraphController($('#fview'));
   
-  finger_view_controller = new FingerViewController(inGc, gc);
+  finger_view_controller = new FingerViewController(inGc, gc, $('#intext'));
   finger_view_controller.setEntriesLog(secret_obj);
   $("#out-resetzoom").button({
     icons: {
@@ -183,6 +183,7 @@ $(document).ready(function() {
 <div class="viewspan">
 <div class="heading">Input:</div>
 <canvas class="view" id="fview" width="480" height="320"></canvas><br/>
+<div id="intext">Time: 123123123.123<br/>Finger Cnt: 2<br/>Touch Cnt: 2</div>
 <button class="button" id="in-resetzoom">Reset Zoom</button><br/>
 </div><div class="viewspan">
 <div class="heading">Output:</div>

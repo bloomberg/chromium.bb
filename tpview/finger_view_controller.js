@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function FingerViewController(inGraph, outGraph) {
+function FingerViewController(inGraph, outGraph, inText) {
   this.entries = [];
   this.begin = -1;
   this.end = -1;
 
   this.gs_graph = outGraph;
   this.inGraph = inGraph;
+  this.inText = inText;
 };
 
 FingerViewController.prototype = {
@@ -102,6 +103,7 @@ FingerViewController.prototype = {
               'type': GraphController.LINE,
               'color': '#ccc'});
     var lastEntry = null;
+    var prevLastEntry = null;
     for (var i = this.begin; i < Math.min(this.end, this.entries.length); i++) {
       var entry = this.entries[i];
       if (entry.type != 'hardwareState') {
@@ -144,13 +146,14 @@ FingerViewController.prototype = {
                       'color': color,
                       'radius': outPressure / 4,
                       'label': fingerState.trackingId + ';' +
-                               fingerState.pressure};
+                      outPressure.toFixed(2)};
         segs.push(circle);
         points.push(circle);
       }
       lastPosDict = newLast;
       lastPoints = points;
       lastLines = lines;
+      prevLastEntry = lastEntry;
       lastEntry = entry;
     }
     for (var i = 0; i < lastPoints.length; i++) {
@@ -160,6 +163,51 @@ FingerViewController.prototype = {
       lastLines[i].color = '#f99';
     }
     this.inGraph.setLineSegments(segs);
+    if (lastEntry) {
+      var dist = "N/A";
+      if (lastEntry.fingers.length == 2) {
+        var dx = (lastEntry.fingers[1].positionX -
+                  lastEntry.fingers[0].positionX) / xRes;
+        var dy = (lastEntry.fingers[1].positionY -
+                  lastEntry.fingers[0].positionY) / yRes;
+        dist = Math.sqrt(dx * dx + dy * dy) + "mm";
+      }
+      var fingerStrings = [];
+      for (var i = 0; i < lastEntry.fingers.length; i++) {
+        var stringEntry = "" + lastEntry.fingers[i].trackingId;
+        var fingerState = lastEntry.fingers[i];
+        var outPressure = fingerState.pressure *
+            this.log.properties['Pressure Calibration Slope'] +
+            this.log.properties['Pressure Calibration Offset'];
+        var xPos = fingerState.positionX / xRes;
+        var yPos = fingerState.positionY / yRes;
+        stringEntry += " (" + xPos.toFixed(2) + ", " + yPos.toFixed(2) + ")";
+        stringEntry += " pr: " + outPressure.toFixed(2);
+        if (prevLastEntry) {
+          var dt = prevLastEntry.timestamp - lastEntry.timestamp;
+          var angles = [];
+          for (var j = 0; j < prevLastEntry.fingers.length; j++) {
+            if (prevLastEntry.fingers[j].trackingId ==
+                lastEntry.fingers[i].trackingId) {
+              var dx = lastEntry.fingers[i].positionX -
+                  prevLastEntry.fingers[j].positionX;
+              var dy = lastEntry.fingers[i].positionY -
+                  prevLastEntry.fingers[j].positionY;
+              dx /= xRes;
+              dy /= yRes;
+              stringEntry += " (dx/dt: " + (dx/dt).toFixed(2) + ", dy/dt: " + (dy/dt).toFixed(2) + " flags: " + lastEntry.fingers[i].flags + ")";
+            }
+          }
+        }
+        fingerStrings.push(stringEntry);
+      }
+      var fingerString = ": " + fingerStrings.join(", ");
+      this.inText[0].innerHTML = "timestamp: " + lastEntry.timestamp +
+      "<br/>" + "fingerCount: " + lastEntry.fingers.length + fingerString +
+      "<br/>" + "touchCount: " + lastEntry.touchCount +
+      "<br/>" + "button: " + (lastEntry.buttonsDown ? "DOWN" : "UP") +
+      "<br/>" + "dist: " + dist;
+    }
   },
   updateGs: function() {
     var xPos = 0;
@@ -174,15 +222,28 @@ FingerViewController.prototype = {
     for (var i = this.begin; i < Math.min(this.end, this.entries.length); i++) {
       var entry = this.entries[i];
       if (entry.type == 'gesture') {
-        if (entry.gestureType == 'scroll' || entry.gestureType == 'move') {
-          var colors = {'scroll': '#00f', 'move': '#f00'};
-          var endPt = {'xPos': (xPos + entry.dx), 'yPos': (yPos + entry.dy)};
+        if (entry.gestureType == 'scroll' || entry.gestureType == 'move' ||
+            entry.gestureType == 'fling') {
+          if (entry.gestureType == 'scroll' || entry.gestureType == 'move') {
+            var dx = entry.dx;
+            var dy = entry.dy;
+          } else {
+            var dt = entry.endTime - entry.startTime;
+            var dx = entry.vx * dt;
+            var dy = entry.vy * dt;
+          }
+          if (entry.gestureType == 'scroll') {
+            if (dy != 0 && dx == 0)
+              dx = 1;
+          }
+          var colors = {'scroll': '#00f', 'move': '#f00', 'fling': '#ff832c'};
+          var endPt = {'xPos': (xPos + dx), 'yPos': (yPos + dy)};
           segs.push({'start': {'xPos': xPos, 'yPos': yPos},
                      'end': endPt,
                      'type': GraphController.LINE,
                      'color': colors[entry.gestureType]});
-          xPos += entry.dx;
-          yPos += entry.dy;
+          xPos += dx;
+          yPos += dy;
         } else if (entry.gestureType == 'buttonsChange') {
           var colors = ['#0f0', '#0a0', '#050'];
           for (var bt = 0; bt < 3; bt++) {
