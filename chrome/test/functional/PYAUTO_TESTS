@@ -92,8 +92,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/83686
-      '-autofill.AutofillTest.testFillProfileCrazyCharacters',
       # crbug.com/102798
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       # crbug.com/99475
