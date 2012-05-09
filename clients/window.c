@@ -687,10 +687,14 @@ create_cursors(struct display *display)
 	display->cursor_shm_pool = shm_pool_create(display, pool_size);
 
 	for (i = 0; i < count; i++) {
-		if (!images[i])
-			continue;
-
 		cursor = &display->cursors[i];
+
+		if (!images[i]) {
+			cursor->n_images = 0;
+			cursor->images = NULL;
+			continue;
+		}
+
 		create_cursor_from_images(display, cursor, images[i]);
 
 		XcursorImagesDestroy(images[i]);
@@ -1956,6 +1960,9 @@ input_set_pointer_image(struct input *input, uint32_t time, int pointer)
 	struct cursor_image *image;
 
 	if (pointer == input->current_cursor)
+		return;
+
+	if (display->cursors[pointer].n_images == 0)
 		return;
 
 	image = &display->cursors[pointer].images[0];
