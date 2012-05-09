@@ -70,7 +70,7 @@ class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
     MailboxName name;
   };
 
-  static bool TargetNameLess(TargetName lhs, TargetName rhs);
+  static bool TargetNameLess(const TargetName& lhs, const TargetName& rhs);
 
   struct OwnedTextureDefinition {
     OwnedTextureDefinition(TextureDefinition* definition,
@@ -83,8 +83,8 @@ class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
   typedef std::map<
       TargetName,
       OwnedTextureDefinition,
-      std::pointer_to_binary_function<TargetName, TargetName, bool> >
-          TextureDefinitionMap;
+      std::pointer_to_binary_function<
+          const TargetName&, const TargetName&, bool> > TextureDefinitionMap;
 
   crypto::HMAC hmac_;
   TextureDefinitionMap textures_;

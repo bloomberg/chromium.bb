@@ -107,8 +107,8 @@ MailboxManager::TargetName::TargetName(unsigned target, const MailboxName& name)
       name(name) {
 }
 
-bool MailboxManager::TargetNameLess(MailboxManager::TargetName lhs,
-                                    MailboxManager::TargetName rhs) {
+bool MailboxManager::TargetNameLess(const MailboxManager::TargetName& lhs,
+                                    const MailboxManager::TargetName& rhs) {
   return memcmp(&lhs, &rhs, sizeof(lhs)) < 0;
 }
 
@@ -121,5 +121,6 @@ MailboxManager::OwnedTextureDefinition::OwnedTextureDefinition(
 
 MailboxManager::OwnedTextureDefinition::~OwnedTextureDefinition() {
 }
+
 }  // namespace gles2
 }  // namespace gpu
