@@ -653,14 +653,8 @@ Error* Session::SwitchToFrameWithNameOrId(const std::string& name_or_id) {
       "  var xpath = '(/html/body//iframe|/html/frameset/frame)';"
       "  var sub = function(s) { return s.replace(/\\$/g, arg); };"
       "  xpath += sub('[@name=\"$\" or @id=\"$\"]');"
-      "  var frame = document.evaluate(xpath, document, null, "
+      "  return document.evaluate(xpath, document, null, "
       "      XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
-      "  if (!frame) { return null; }"
-      "  xpath = frame.tagName == 'IFRAME' ? '/html/body//iframe'"
-      "                                    : '/html/frameset/frame';"
-      "  frame_xpath = xpath + "
-      "      sub('[@' + (frame.id == arg ? 'id' : 'name') + '=\"$\"]');"
-      "  return [frame, frame_xpath];"
       "}";
   return SwitchToFrameWithJavaScriptLocatedFrame(
       script, CreateListValueFrom(name_or_id));
@@ -679,12 +673,8 @@ Error* Session::SwitchToFrameWithIndex(int index) {
       "  var xpathIndex = '[' + (index + 1) + ']';"
       "  var xpath = '(/html/body//iframe|/html/frameset/frame)' + "
       "              xpathIndex;"
-      "  var frame = document.evaluate(xpath, document, null, "
-      "  XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
-      "  if (!frame) { return null; }"
-      "  frame_xpath = ((frame.tagName == 'IFRAME' ? "
-      "      '(/html/body//iframe)' : '/html/frameset/frame') + xpathIndex);"
-      "  return [frame, frame_xpath];"
+      "  return document.evaluate(xpath, document, null, "
+      "      XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
       "}";
   return SwitchToFrameWithJavaScriptLocatedFrame(
       script, CreateListValueFrom(index));
@@ -700,7 +690,7 @@ Error* Session::SwitchToFrameWithElement(const ElementId& element) {
       "  }"
       "  for (var i = 0; i < window.frames.length; i++) {"
       "    if (elem.contentWindow == window.frames[i]) {"
-      "      return [elem, '(//iframe|//frame)[' + (i + 1) + ']'];"
+      "      return elem;"
       "    }"
       "  }"
       "  console.info('Frame is not connected to this DOM tree');"
@@ -1587,8 +1577,8 @@ Error* Session::SwitchToFrameWithJavaScriptLocatedFrame(
   class SwitchFrameValueParser : public ValueParser {
    public:
     SwitchFrameValueParser(
-        bool* found_frame, ElementId* frame, std::string* xpath)
-        : found_frame_(found_frame), frame_(frame), xpath_(xpath) { }
+        bool* found_frame, ElementId* frame)
+        : found_frame_(found_frame), frame_(frame) { }
 
     virtual ~SwitchFrameValueParser() { }
 
@@ -1597,33 +1587,44 @@ Error* Session::SwitchToFrameWithJavaScriptLocatedFrame(
         *found_frame_ = false;
         return true;
       }
-      ListValue* list;
-      if (!value->GetAsList(&list))
+      ElementId id(value);
+      if (!id.is_valid()) {
         return false;
+      }
+      *frame_ = id;
       *found_frame_ = true;
-      return SetFromListValue(list, frame_, xpath_);
+      return true;
     }
 
    private:
     bool* found_frame_;
     ElementId* frame_;
-    std::string* xpath_;
   };
 
   bool found_frame;
   ElementId new_frame_element;
-  std::string xpath;
   Error* error = ExecuteScriptAndParse(
       current_target_, script, "switchFrame", args,
-      new SwitchFrameValueParser(&found_frame, &new_frame_element, &xpath));
+      new SwitchFrameValueParser(&found_frame, &new_frame_element));
   if (error)
     return error;
 
   if (!found_frame)
     return new Error(kNoSuchFrame);
 
+  std::string frame_id = GenerateRandomID();
+  error = ExecuteScriptAndParse(
+      current_target_,
+      "function(elem, id) { elem.setAttribute('wd_frame_id_', id); }",
+      "setFrameId",
+      CreateListValueFrom(new_frame_element, frame_id),
+      CreateDirectValueParser(kSkipParsing));
+  if (error)
+    return error;
+
   frame_elements_.push_back(new_frame_element);
-  current_target_.frame_path = current_target_.frame_path.Append(xpath);
+  current_target_.frame_path = current_target_.frame_path.Append(
+      base::StringPrintf("//*[@wd_frame_id_ = '%s']", frame_id.c_str()));
   return NULL;
 }
 
