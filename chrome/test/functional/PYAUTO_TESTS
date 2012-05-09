@@ -591,8 +591,6 @@
   },
 
   # Performance tests.
-  # TODO(dennisjeffrey): Modify desktopui_PyAutoPerfTests autotest to use this
-  # suite instead of CHROMEOS_PERF.
   'PERFORMANCE': {
     'all': [
       'perf',
@@ -721,15 +719,7 @@
     ],
   },
 
-  # ChromeOS performance tests.
-  'CHROMEOS_PERF': {
-    'chromeos': [
-      'perf',
-      '-perf.GPUPerfTest',
-    ],
-  },
-
-  # Subset of performance tests for seaboard.
+  # Subset of ChromeOS performance tests for seaboard.
   'CHROMEOS_PERF_SEABOARD': {
     'chromeos': [
       'perf.ScrollTest.testBlankPageScroll',
