@@ -300,8 +300,8 @@ evdev_flush_motion(struct evdev_input_device *device, uint32_t time)
 
 	if (device->type & EVDEV_RELATIVE_MOTION) {
 		notify_motion(master, time,
-			      wl_fixed_to_int(master->x) + device->rel.dx,
-			      wl_fixed_to_int(master->y) + device->rel.dy);
+			      master->x + wl_fixed_from_int(device->rel.dx),
+			      master->y + wl_fixed_from_int(device->rel.dy));
 		device->type &= ~EVDEV_RELATIVE_MOTION;
 		device->rel.dx = 0;
 		device->rel.dy = 0;
@@ -309,8 +309,8 @@ evdev_flush_motion(struct evdev_input_device *device, uint32_t time)
 	if (device->type & EVDEV_ABSOLUTE_MT_DOWN) {
 		notify_touch(master, time,
 			     device->mt.slot,
-			     device->mt.x[device->mt.slot],
-			     device->mt.y[device->mt.slot],
+			     wl_fixed_from_int(device->mt.x[device->mt.slot]),
+			     wl_fixed_from_int(device->mt.y[device->mt.slot]),
 			     WL_INPUT_DEVICE_TOUCH_DOWN);
 		device->type &= ~EVDEV_ABSOLUTE_MT_DOWN;
 		device->type &= ~EVDEV_ABSOLUTE_MT_MOTION;
@@ -318,8 +318,8 @@ evdev_flush_motion(struct evdev_input_device *device, uint32_t time)
 	if (device->type & EVDEV_ABSOLUTE_MT_MOTION) {
 		notify_touch(master, time,
 			     device->mt.slot,
-			     device->mt.x[device->mt.slot],
-			     device->mt.y[device->mt.slot],
+			     wl_fixed_from_int(device->mt.x[device->mt.slot]),
+			     wl_fixed_from_int(device->mt.y[device->mt.slot]),
 			     WL_INPUT_DEVICE_TOUCH_MOTION);
 		device->type &= ~EVDEV_ABSOLUTE_MT_DOWN;
 		device->type &= ~EVDEV_ABSOLUTE_MT_MOTION;
@@ -330,7 +330,9 @@ evdev_flush_motion(struct evdev_input_device *device, uint32_t time)
 		device->type &= ~EVDEV_ABSOLUTE_MT_UP;
 	}
 	if (device->type & EVDEV_ABSOLUTE_MOTION) {
-		notify_motion(master, time, device->abs.x, device->abs.y);
+		notify_motion(master, time,
+			      wl_fixed_from_int(device->abs.x),
+			      wl_fixed_from_int(device->abs.y));
 		device->type &= ~EVDEV_ABSOLUTE_MOTION;
 	}
 }

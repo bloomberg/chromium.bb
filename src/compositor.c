@@ -1560,15 +1560,15 @@ weston_input_update_drag_surface(struct wl_input_device *input_device,
 
 static void
 clip_pointer_motion(struct weston_compositor *ec,
-		    GLfloat *fx, GLfloat *fy)
+		    wl_fixed_t *fx, wl_fixed_t *fy)
 {
 	struct weston_output *output;
 	int32_t x, y;
 	int x_valid = 0, y_valid = 0;
 	int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
 
-	x = *fx;
-	y = *fy;
+	x = wl_fixed_to_int(*fx);
+	y = wl_fixed_to_int(*fy);
 
 	wl_list_for_each(output, &ec->output_list, link) {
 		if (output->x <= x && x < output->x + output->current->width)
@@ -1602,17 +1602,19 @@ clip_pointer_motion(struct weston_compositor *ec,
 			y = max_y;
 	}
 
-	*fx = x;
-	*fy = y;
+	*fx = wl_fixed_from_int(x);
+	*fy = wl_fixed_from_int(y);
 }
 
 WL_EXPORT void
-notify_motion(struct wl_input_device *device, uint32_t time, GLfloat x, GLfloat y)
+notify_motion(struct wl_input_device *device,
+	      uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
 	const struct wl_pointer_grab_interface *interface;
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *ec = wd->compositor;
 	struct weston_output *output;
+	int32_t ix, iy;
 
 	weston_compositor_activity(ec);
 
@@ -1621,12 +1623,16 @@ notify_motion(struct wl_input_device *device, uint32_t time, GLfloat x, GLfloat 
 	weston_input_update_drag_surface(device,
 					 x - device->x, y - device->y);
 
-	device->x = wl_fixed_from_double(x);
-	device->y = wl_fixed_from_double(y);
+	device->x = x;
+	device->y = y;
+
+	ix = wl_fixed_to_int(x);
+	iy = wl_fixed_to_int(y);
 
 	wl_list_for_each(output, &ec->output_list, link)
 		if (output->zoom.active &&
-		    pixman_region32_contains_point(&output->region, x, y, NULL))
+		    pixman_region32_contains_point(&output->region,
+						   ix, iy, NULL))
 			weston_output_update_zoom(output, x, y);
 
 	weston_device_repick(device);
@@ -1634,13 +1640,10 @@ notify_motion(struct wl_input_device *device, uint32_t time, GLfloat x, GLfloat 
 	interface->motion(device->pointer_grab, time,
 			  device->pointer_grab->x, device->pointer_grab->y);
 
-	x = wl_fixed_to_double(device->x);
-	y = wl_fixed_to_double(device->y);
-
 	if (wd->sprite) {
 		weston_surface_set_position(wd->sprite,
-					    x - wd->hotspot_x,
-					    y - wd->hotspot_y);
+					    ix - wd->hotspot_x,
+					    iy - wd->hotspot_y);
 		weston_compositor_schedule_repaint(ec);
 	}
 }
@@ -1793,18 +1796,17 @@ notify_key(struct wl_input_device *device,
 
 WL_EXPORT void
 notify_pointer_focus(struct wl_input_device *device,
-		     struct weston_output *output, GLfloat x, GLfloat y)
+		     struct weston_output *output, wl_fixed_t x, wl_fixed_t y)
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *compositor = wd->compositor;
 
 	if (output) {
 		weston_input_update_drag_surface(device,
-		                                 x - wl_fixed_to_double(device->x),
-						 y - wl_fixed_to_double(device->y));
+		                                 x - device->x, y - device->y);
 
-		device->x = wl_fixed_from_double(x);
-		device->y = wl_fixed_from_double(y);
+		device->x = x;
+		device->y = y;
 		compositor->focus = 1;
 		weston_compositor_repick(compositor);
 	} else {
@@ -1942,16 +1944,13 @@ touch_set_focus(struct weston_input_device *device,
  */
 WL_EXPORT void
 notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
-             GLfloat x, GLfloat y, int touch_type)
+             wl_fixed_t x, wl_fixed_t y, int touch_type)
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *ec = wd->compositor;
 	struct weston_surface *es;
-	wl_fixed_t fx, fy, sx, sy;
+	wl_fixed_t sx, sy;
 	uint32_t serial = 0;
-
-	fx = wl_fixed_from_double(x);
-	fy = wl_fixed_from_double(y);
 
 	switch (touch_type) {
 	case WL_INPUT_DEVICE_TOUCH_DOWN:
@@ -1963,11 +1962,11 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 		 * to that surface for the remainder of the touch session i.e.
 		 * until all touch points are up again. */
 		if (wd->num_tp == 1) {
-			es = weston_compositor_pick_surface(ec, fx, fy, &sx, &sy);
+			es = weston_compositor_pick_surface(ec, x, y, &sx, &sy);
 			touch_set_focus(wd, &es->surface);
 		} else if (wd->touch_focus) {
 			es = (struct weston_surface *) wd->touch_focus;
-			weston_surface_from_global_fixed(es, fx, fy, &sx, &sy);
+			weston_surface_from_global_fixed(es, x, y, &sx, &sy);
 		}
 
 		if (wd->touch_focus_resource && wd->touch_focus)
@@ -1981,7 +1980,7 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 		if (!es)
 			break;
 
-		weston_surface_from_global_fixed(es, fx, fy, &sx, &sy);
+		weston_surface_from_global_fixed(es, x, y, &sx, &sy);
 		if (wd->touch_focus_resource)
 			wl_input_device_send_touch_motion(wd->touch_focus_resource,
 							  time, touch_id, sx, sy);
@@ -2228,8 +2227,8 @@ weston_input_update_drag_surface(struct wl_input_device *input_device,
 		return;
 
 	weston_surface_set_position(device->drag_surface,
-				    device->drag_surface->geometry.x + dx,
-				    device->drag_surface->geometry.y + dy);
+				    device->drag_surface->geometry.x + wl_fixed_to_double(dx),
+				    device->drag_surface->geometry.y + wl_fixed_to_double(dy));
 }
 
 WL_EXPORT void

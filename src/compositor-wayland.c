@@ -508,15 +508,14 @@ static const struct wl_output_listener output_listener = {
 /* parent input interface */
 static void
 input_handle_motion(void *data, struct wl_input_device *input_device,
-		    uint32_t time, wl_fixed_t sx_w, wl_fixed_t sy_w)
+		    uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
-	GLfloat sx = wl_fixed_to_double(sx_w);
-	GLfloat sy = wl_fixed_to_double(sy_w);
 
 	notify_motion(c->base.input_device, time,
-		      sx - c->border.left, sy - c->border.top);
+		      x - wl_fixed_from_int(c->border.left),
+		      y - wl_fixed_from_int(c->border.top));
 }
 
 static void
@@ -554,16 +553,14 @@ static void
 input_handle_pointer_enter(void *data,
 			   struct wl_input_device *input_device,
 			   uint32_t time, struct wl_surface *surface,
-			   wl_fixed_t sx_w, wl_fixed_t sy_w)
+			   wl_fixed_t x, wl_fixed_t y)
 {
 	struct wayland_input *input = data;
 	struct wayland_output *output;
 	struct wayland_compositor *c = input->compositor;
-	GLfloat sx = wl_fixed_to_double(sx_w);
-	GLfloat sy = wl_fixed_to_double(sy_w);
 
 	output = wl_surface_get_user_data(surface);
-	notify_pointer_focus(c->base.input_device, &output->base, sx, sy);
+	notify_pointer_focus(c->base.input_device, &output->base, x, y);
 	wl_input_device_attach(input->input_device, time, NULL, 0, 0);
 }
 
