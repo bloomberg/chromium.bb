@@ -9,20 +9,18 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/memory/mru_cache.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/browser/nacl_host/nacl_validation_cache.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -162,29 +160,14 @@ class NaClBrowser {
   // Path to IRT. Available even before IRT is loaded.
   const FilePath& GetIrtFilePath();
 
-  // Get the key used for HMACing validation signatures.  This should be a
-  // string of cryptographically secure random bytes.
-  const std::string& GetValidatorCacheKey() const {
-    return validator_cache_key_;
-  }
-
-  // Is the validation signature in the database?
-  bool QueryKnownToValidate(const std::string& signature);
-
-  // Put the validation signature in the database.
-  void SetKnownToValidate(const std::string& signature);
+  NaClValidationCache validation_cache;
 
  private:
   friend struct DefaultSingletonTraits<NaClBrowser>;
 
   NaClBrowser()
       : irt_platform_file_(base::kInvalidPlatformFileValue),
-        irt_filepath_(),
-        // For the moment, choose an arbitrary cache size.
-        validation_cache_(200),
-        // TODO(ncbray) persist this key along with the cache.
-        // Key size is equal to the block size (not the digest size) of SHA256.
-        validator_cache_key_(base::RandBytesAsString(64)) {
+        irt_filepath_() {
     InitIrtFilePath();
   }
 
@@ -204,11 +187,6 @@ class NaClBrowser {
   base::PlatformFile irt_platform_file_;
 
   FilePath irt_filepath_;
-
-  typedef base::HashingMRUCache<std::string, bool> ValidationCacheType;
-  ValidationCacheType validation_cache_;
-
-  std::string validator_cache_key_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClBrowser);
 };
@@ -233,25 +211,6 @@ bool NaClBrowser::MakeIrtAvailable(const base::Closure& reply) {
 
 const FilePath& NaClBrowser::GetIrtFilePath() {
   return irt_filepath_;
-}
-
-bool NaClBrowser::QueryKnownToValidate(const std::string& signature) {
-  bool result = false;
-  ValidationCacheType::iterator iter = validation_cache_.Get(signature);
-  if (iter != validation_cache_.end()) {
-    result = iter->second;
-  }
-  UMA_HISTOGRAM_ENUMERATION("NaCl.ValidationCache.Query",
-                            result ? 1 : 0, 2);
-  return result;
-}
-
-void NaClBrowser::SetKnownToValidate(const std::string& signature) {
-  validation_cache_.Put(signature, true);
-  // The number of sets should be equal to the number of cache misses, minus
-  // validation failures and successful validations where stubout occurs.
-  // Bucket zero is reserved for future use.
-  UMA_HISTOGRAM_ENUMERATION("NaCl.ValidationCache.Set", 1, 2);
 }
 
 void NaClBrowser::InitIrtFilePath() {
@@ -794,7 +753,8 @@ bool NaClProcessHost::StartNaClExecution() {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
 
   nacl::NaClStartParams params;
-  params.validation_cache_key = nacl_browser->GetValidatorCacheKey();
+  params.validation_cache_key =
+      nacl_browser->validation_cache.GetValidationCacheKey();
   params.version = chrome::VersionInfo().CreateVersionString();
   params.enable_exception_handling = enable_exception_handling_;
 
@@ -871,11 +831,12 @@ bool NaClProcessHost::StartWithLaunchedProcess() {
 
 void NaClProcessHost::OnQueryKnownToValidate(const std::string& signature,
                                              bool* result) {
-  *result = NaClBrowser::GetInstance()->QueryKnownToValidate(signature);
+  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
+  *result = nacl_browser->validation_cache.QueryKnownToValidate(signature);
 }
 
 void NaClProcessHost::OnSetKnownToValidate(const std::string& signature) {
-  NaClBrowser::GetInstance()->SetKnownToValidate(signature);
+  NaClBrowser::GetInstance()->validation_cache.SetKnownToValidate(signature);
 }
 
 #if defined(OS_WIN)

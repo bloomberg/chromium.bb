@@ -4062,6 +4062,8 @@
             'browser/nacl_host/nacl_broker_service_win.h',
             'browser/nacl_host/nacl_process_host.cc',
             'browser/nacl_host/nacl_process_host.h',
+            'browser/nacl_host/nacl_validation_cache.cc',
+            'browser/nacl_host/nacl_validation_cache.h',
             'common/nacl_debug_exception_handler_win.cc',
             'common/nacl_debug_exception_handler_win.h',
           ],
