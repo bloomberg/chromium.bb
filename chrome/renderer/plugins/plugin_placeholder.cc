@@ -150,6 +150,7 @@ PluginPlaceholder* PluginPlaceholder::CreateBlockedPlugin(
     WebFrame* frame,
     const WebPluginParams& params,
     const WebPluginInfo& plugin,
+    const std::string& identifier,
     const string16& name,
     int template_id,
     int message_id) {
@@ -172,6 +173,7 @@ PluginPlaceholder* PluginPlaceholder::CreateBlockedPlugin(
   PluginPlaceholder* blocked_plugin = new PluginPlaceholder(
       render_view, frame, params, html_data, name);
   blocked_plugin->plugin_info_ = plugin;
+  blocked_plugin->identifier_ = identifier;
   return blocked_plugin;
 }
 
@@ -523,7 +525,10 @@ void PluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {
   g_last_active_menu = this;
 }
 
-void PluginPlaceholder::OnLoadBlockedPlugins() {
+void PluginPlaceholder::OnLoadBlockedPlugins(const std::string& identifier) {
+  if (!identifier.empty() && identifier != identifier_)
+    return;
+
   RenderThread::Get()->RecordUserMetrics("Plugin_Load_UI");
   LoadPlugin();
 }

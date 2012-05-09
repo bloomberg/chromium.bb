@@ -229,8 +229,9 @@ IPC_MESSAGE_CONTROL0(ChromeViewMsg_VisitedLink_Reset)
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetContentSettingRules,
                      RendererContentSettingRules /* rules */)
 
-// Tells the render view to load all blocked plugins.
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_LoadBlockedPlugins)
+// Tells the render view to load all blocked plugins with the given identifier.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_LoadBlockedPlugins,
+                    std::string /* identifier */)
 
 // Asks the renderer to send back stats on the WebCore cache broken down by
 // resource types.
@@ -530,8 +531,9 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedOutdatedPlugin,
 
 // Notifies when a plugin couldn't be loaded because it requires
 // user authorization.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
-                    string16 /* name */)
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
+                    string16 /* name */,
+                    std::string /* plug-in group identifier */)
 
 // Provide the browser process with information about the WebCore resource
 // cache and current renderer framerate.

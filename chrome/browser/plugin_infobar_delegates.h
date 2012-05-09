@@ -20,7 +20,9 @@ class PluginObserver;
 // Base class for blocked plug-in infobars.
 class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  PluginInfoBarDelegate(InfoBarTabHelper* infobar_helper, const string16& name);
+  PluginInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+                        const string16& name,
+                        const std::string& identifier);
 
  protected:
   virtual ~PluginInfoBarDelegate();
@@ -39,6 +41,8 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual string16 GetLinkText() const OVERRIDE;
 
+  std::string identifier_;
+
   DISALLOW_COPY_AND_ASSIGN(PluginInfoBarDelegate);
 };
 
@@ -46,8 +50,9 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
 class UnauthorizedPluginInfoBarDelegate : public PluginInfoBarDelegate {
  public:
   UnauthorizedPluginInfoBarDelegate(InfoBarTabHelper* infobar_helper,
-                               HostContentSettingsMap* content_settings,
-                               const string16& name);
+                                    HostContentSettingsMap* content_settings,
+                                    const string16& name,
+                                    const std::string& identifier);
 
  private:
   virtual ~UnauthorizedPluginInfoBarDelegate();

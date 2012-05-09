@@ -385,7 +385,9 @@ class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
     DCHECK(tab_contents());
     content::RenderViewHost* host =
         tab_contents()->web_contents()->GetRenderViewHost();
-    host->Send(new ChromeViewMsg_LoadBlockedPlugins(host->GetRoutingID()));
+    // TODO(bauerb): We should send the identifiers of blocked plug-ins here.
+    host->Send(new ChromeViewMsg_LoadBlockedPlugins(host->GetRoutingID(),
+                                                    std::string()));
     set_custom_link_enabled(false);
     tab_contents()->content_settings()->set_load_plugins_link_enabled(false);
   }

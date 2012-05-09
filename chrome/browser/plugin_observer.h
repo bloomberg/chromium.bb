@@ -41,7 +41,8 @@ class PluginObserver : public content::WebContentsObserver {
  private:
   class PluginPlaceholderHost;
 
-  void OnBlockedUnauthorizedPlugin(const string16& name);
+  void OnBlockedUnauthorizedPlugin(const string16& name,
+                                   const std::string& identifier);
   void OnBlockedOutdatedPlugin(int placeholder_id,
                                const std::string& identifier);
 #if defined(ENABLE_PLUGIN_INSTALLATION)

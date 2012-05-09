@@ -7132,7 +7132,8 @@ void TestingAutomationProvider::LoadBlockedPlugins(int tab_handle,
     if (!contents)
       return;
     RenderViewHost* host = contents->GetRenderViewHost();
-    host->Send(new ChromeViewMsg_LoadBlockedPlugins(host->GetRoutingID()));
+    host->Send(new ChromeViewMsg_LoadBlockedPlugins(host->GetRoutingID(),
+                                                    std::string()));
     *success = true;
   }
 }

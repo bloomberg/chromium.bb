@@ -387,7 +387,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
              ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized ||
          status_value == ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay ||
          status_value == ChromeViewHostMsg_GetPluginInfo_Status::kBlocked) &&
-        observer->plugins_temporarily_allowed()) {
+        observer->IsPluginTemporarilyAllowed(group->identifier())) {
       status_value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
     }
 
@@ -442,7 +442,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
                     "Chrome Web Store can load NaCl modules without enabling "
                     "Native Client in about:flags."));
             placeholder = PluginPlaceholder::CreateBlockedPlugin(
-                render_view, frame, params, plugin, name,
+                render_view, frame, params, plugin, group->identifier(), name,
                 IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED);
             break;
           }
@@ -454,7 +454,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         //                reduce the chance of future regressions.
         if (prerender::PrerenderHelper::IsPrerendering(render_view)) {
           placeholder = PluginPlaceholder::CreateBlockedPlugin(
-              render_view, frame, params, plugin, name,
+              render_view, frame, params, plugin, group->identifier(), name,
               IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD);
           placeholder->set_blocked_for_prerendering(true);
           placeholder->set_allow_loading(true);
@@ -465,14 +465,14 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kDisabled: {
         placeholder = PluginPlaceholder::CreateBlockedPlugin(
-            render_view, frame, params, plugin, name,
+            render_view, frame, params, plugin, group->identifier(), name,
             IDR_DISABLED_PLUGIN_HTML, IDS_PLUGIN_DISABLED);
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked: {
 #if defined(ENABLE_PLUGIN_INSTALLATION)
         placeholder = PluginPlaceholder::CreateBlockedPlugin(
-            render_view, frame, params, plugin, name,
+            render_view, frame, params, plugin, group->identifier(), name,
             IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_OUTDATED);
         placeholder->set_allow_loading(true);
         render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
@@ -485,22 +485,24 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedDisallowed: {
         placeholder = PluginPlaceholder::CreateBlockedPlugin(
-            render_view, frame, params, plugin, name,
+            render_view, frame, params, plugin, group->identifier(), name,
             IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_OUTDATED);
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized: {
         placeholder = PluginPlaceholder::CreateBlockedPlugin(
-            render_view, frame, params, plugin, name,
+            render_view, frame, params, plugin, group->identifier(), name,
             IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_NOT_AUTHORIZED);
         placeholder->set_allow_loading(true);
         render_view->Send(new ChromeViewHostMsg_BlockedUnauthorizedPlugin(
-            render_view->GetRoutingID(), group->GetGroupName()));
+            render_view->GetRoutingID(),
+            group->GetGroupName(),
+            group->identifier()));
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay: {
         placeholder = PluginPlaceholder::CreateBlockedPlugin(
-            render_view, frame, params, plugin, name,
+            render_view, frame, params, plugin, group->identifier(), name,
             IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD);
         placeholder->set_allow_loading(true);
         RenderThread::Get()->RecordUserMetrics("Plugin_ClickToPlay");
@@ -509,7 +511,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kBlocked: {
         placeholder = PluginPlaceholder::CreateBlockedPlugin(
-            render_view, frame, params, plugin, name,
+            render_view, frame, params, plugin, group->identifier(), name,
             IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED);
         placeholder->set_allow_loading(true);
         RenderThread::Get()->RecordUserMetrics("Plugin_Blocked");

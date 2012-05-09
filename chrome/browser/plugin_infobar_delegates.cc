@@ -31,9 +31,11 @@ using content::Referrer;
 using content::UserMetricsAction;
 
 PluginInfoBarDelegate::PluginInfoBarDelegate(InfoBarTabHelper* infobar_helper,
-                                             const string16& name)
+                                             const string16& name,
+                                             const std::string& identifier)
     : ConfirmInfoBarDelegate(infobar_helper),
-      name_(name) {
+      name_(name),
+      identifier_(identifier) {
 }
 
 PluginInfoBarDelegate::~PluginInfoBarDelegate() {
@@ -50,7 +52,8 @@ bool PluginInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
 }
 
 void PluginInfoBarDelegate::LoadBlockedPlugins() {
-  owner()->Send(new ChromeViewMsg_LoadBlockedPlugins(owner()->routing_id()));
+  owner()->Send(
+      new ChromeViewMsg_LoadBlockedPlugins(owner()->routing_id(), identifier_));
 }
 
 gfx::Image* PluginInfoBarDelegate::GetIcon() const {
@@ -67,8 +70,9 @@ string16 PluginInfoBarDelegate::GetLinkText() const {
 UnauthorizedPluginInfoBarDelegate::UnauthorizedPluginInfoBarDelegate(
     InfoBarTabHelper* infobar_helper,
     HostContentSettingsMap* content_settings,
-    const string16& utf16_name)
-    : PluginInfoBarDelegate(infobar_helper, utf16_name),
+    const string16& utf16_name,
+    const std::string& identifier)
+    : PluginInfoBarDelegate(infobar_helper, utf16_name, identifier),
       content_settings_(content_settings) {
   content::RecordAction(UserMetricsAction("BlockedPluginInfobar.Shown"));
   std::string name = UTF16ToUTF8(utf16_name);
@@ -165,7 +169,8 @@ OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
     const string16& message)
     : PluginInfoBarDelegate(
         observer->tab_contents_wrapper()->infobar_tab_helper(),
-        installer->name()),
+        installer->name(),
+        installer->identifier()),
       WeakPluginInstallerObserver(installer),
       observer_(observer),
       message_(message) {

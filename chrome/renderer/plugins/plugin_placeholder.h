@@ -44,6 +44,7 @@ class PluginPlaceholder : public content::RenderViewObserver,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
       const webkit::WebPluginInfo& info,
+      const std::string& identifier,
       const string16& name,
       int resource_id,
       int message_id);
@@ -131,7 +132,7 @@ class PluginPlaceholder : public content::RenderViewObserver,
   void DidFinishLoadingCallback(const webkit_glue::CppArgumentList& args,
                                 webkit_glue::CppVariant* result);
 
-  void OnLoadBlockedPlugins();
+  void OnLoadBlockedPlugins(const std::string& identifier);
   void OnSetIsPrerendering(bool is_prerendering);
   void OnDidNotFindMissingPlugin();
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -181,6 +182,7 @@ class PluginPlaceholder : public content::RenderViewObserver,
   bool has_host_;
   bool finished_loading_;
   string16 plugin_name_;
+  std::string identifier_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginPlaceholder);
 };

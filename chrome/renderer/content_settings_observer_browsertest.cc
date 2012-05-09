@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -150,20 +150,33 @@ TEST_F(ChromeRenderViewTest, PluginsTemporarilyAllowed) {
   // Load some HTML.
   LoadHTML("<html>Foo</html>");
 
-  ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
-  EXPECT_FALSE(observer->plugins_temporarily_allowed());
+  std::string foo_plugin = "foo";
+  std::string bar_plugin = "bar";
 
-  // Temporarily allow plugins.
-  OnMessageReceived(ChromeViewMsg_LoadBlockedPlugins(MSG_ROUTING_NONE));
-  EXPECT_TRUE(observer->plugins_temporarily_allowed());
+  ContentSettingsObserver* observer = ContentSettingsObserver::Get(view_);
+  EXPECT_FALSE(observer->IsPluginTemporarilyAllowed(foo_plugin));
+
+  // Temporarily allow the "foo" plugin.
+  OnMessageReceived(ChromeViewMsg_LoadBlockedPlugins(MSG_ROUTING_NONE,
+                                                     foo_plugin));
+  EXPECT_TRUE(observer->IsPluginTemporarilyAllowed(foo_plugin));
+  EXPECT_FALSE(observer->IsPluginTemporarilyAllowed(bar_plugin));
 
   // Simulate a navigation within the page.
   DidNavigateWithinPage(GetMainFrame(), true);
-  EXPECT_TRUE(observer->plugins_temporarily_allowed());
+  EXPECT_TRUE(observer->IsPluginTemporarilyAllowed(foo_plugin));
+  EXPECT_FALSE(observer->IsPluginTemporarilyAllowed(bar_plugin));
 
   // Navigate to a different page.
   LoadHTML("<html>Bar</html>");
-  EXPECT_FALSE(observer->plugins_temporarily_allowed());
+  EXPECT_FALSE(observer->IsPluginTemporarilyAllowed(foo_plugin));
+  EXPECT_FALSE(observer->IsPluginTemporarilyAllowed(bar_plugin));
+
+  // Temporarily allow all plugins.
+  OnMessageReceived(ChromeViewMsg_LoadBlockedPlugins(MSG_ROUTING_NONE,
+                                                     std::string()));
+  EXPECT_TRUE(observer->IsPluginTemporarilyAllowed(foo_plugin));
+  EXPECT_TRUE(observer->IsPluginTemporarilyAllowed(bar_plugin));
 }
 
 TEST_F(ChromeRenderViewTest, ImagesBlockedByDefault) {

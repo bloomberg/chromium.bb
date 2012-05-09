@@ -209,13 +209,15 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
   return true;
 }
 
-void PluginObserver::OnBlockedUnauthorizedPlugin(const string16& name) {
+void PluginObserver::OnBlockedUnauthorizedPlugin(
+    const string16& name,
+    const std::string& identifier) {
   InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
   infobar_helper->AddInfoBar(
       new UnauthorizedPluginInfoBarDelegate(
           infobar_helper,
           tab_contents_->profile()->GetHostContentSettingsMap(),
-          name));
+          name, identifier));
 }
 
 void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,

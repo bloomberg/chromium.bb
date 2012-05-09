@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,7 +68,6 @@ ContentSettingsObserver::ContentSettingsObserver(
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<ContentSettingsObserver>(render_view),
       content_setting_rules_(NULL),
-      plugins_temporarily_allowed_(false),
       is_interstitial_page_(false) {
   ClearBlockedContentSettings();
 }
@@ -79,6 +78,16 @@ ContentSettingsObserver::~ContentSettingsObserver() {
 void ContentSettingsObserver::SetContentSettingRules(
     const RendererContentSettingRules* content_setting_rules) {
   content_setting_rules_ = content_setting_rules;
+}
+
+bool ContentSettingsObserver::IsPluginTemporarilyAllowed(
+    const std::string& identifier) {
+  // If the empty string is in here, it means all plug-ins are allowed.
+  // TODO(bauerb): Remove this once we only pass in explicit identifiers.
+  return (temporarily_allowed_plugins_.find(identifier) !=
+          temporarily_allowed_plugins_.end()) ||
+         (temporarily_allowed_plugins_.find(std::string()) !=
+          temporarily_allowed_plugins_.end());
 }
 
 void ContentSettingsObserver::DidBlockContentType(
@@ -98,14 +107,19 @@ void ContentSettingsObserver::DidBlockContentType(
 bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ContentSettingsObserver, message)
-    // Don't swallow LoadBlockedPlugins messages, as they're sent to every
-    // blocked plugin.
-    IPC_MESSAGE_HANDLER_GENERIC(ChromeViewMsg_LoadBlockedPlugins,
-                                OnLoadBlockedPlugins(); handled = false)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAsInterstitial, OnSetAsInterstitial)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  return handled;
+  if (handled)
+    return true;
+
+  // Don't swallow LoadBlockedPlugins messages, as they're sent to every
+  // blocked plugin.
+  IPC_BEGIN_MESSAGE_MAP(ContentSettingsObserver, message)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_LoadBlockedPlugins, OnLoadBlockedPlugins)
+  IPC_END_MESSAGE_MAP()
+
+  return false;
 }
 
 void ContentSettingsObserver::DidCommitProvisionalLoad(
@@ -123,7 +137,7 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(
     // correctly detect that a piece of content flipped from "not blocked" to
     // "blocked".
     ClearBlockedContentSettings();
-    plugins_temporarily_allowed_ = false;
+    temporarily_allowed_plugins_.clear();
   }
 
   GURL url = frame->document().url();
@@ -281,8 +295,9 @@ void ContentSettingsObserver::DidNotAllowScript(WebFrame* frame) {
   DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string());
 }
 
-void ContentSettingsObserver::OnLoadBlockedPlugins() {
-  plugins_temporarily_allowed_ = true;
+void ContentSettingsObserver::OnLoadBlockedPlugins(
+    const std::string& identifier) {
+  temporarily_allowed_plugins_.insert(identifier);
 }
 
 void ContentSettingsObserver::OnSetAsInterstitial() {

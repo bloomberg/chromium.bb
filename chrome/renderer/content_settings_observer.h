@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 
 #include "chrome/common/content_settings.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -34,9 +35,7 @@ class ContentSettingsObserver
   void SetContentSettingRules(
       const RendererContentSettingRules* content_setting_rules);
 
-  bool plugins_temporarily_allowed() {
-    return plugins_temporarily_allowed_;
-  }
+  bool IsPluginTemporarilyAllowed(const std::string& identifier);
 
   // Sends an IPC notification that the specified content type was blocked.
   // If the content type requires it, |resource_identifier| names the specific
@@ -76,7 +75,7 @@ class ContentSettingsObserver
                                         bool is_new_navigation) OVERRIDE;
 
   // Message handlers.
-  void OnLoadBlockedPlugins();
+  void OnLoadBlockedPlugins(const std::string& identifier);
   void OnSetAsInterstitial();
 
   // Resets the |content_blocked_| array.
@@ -105,7 +104,7 @@ class ContentSettingsObserver
   // Caches the result of |AllowScript|.
   std::map<WebKit::WebFrame*, bool> cached_script_permissions_;
 
-  bool plugins_temporarily_allowed_;
+  std::set<std::string> temporarily_allowed_plugins_;
   bool is_interstitial_page_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsObserver);
