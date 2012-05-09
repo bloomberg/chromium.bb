@@ -19,6 +19,8 @@ var finger_view_controller;
 
 function update_range(event, ui) {
   finger_view_controller.setRange(ui.values[0], ui.values[1]);
+  var begin_event = finger_view_controller.getEvent(ui.values[0]);
+  $("#begin_event").text(begin_event);
   var end_event = finger_view_controller.getEvent(ui.values[1]);
   $("#end_event").text(end_event);
 }
@@ -98,7 +100,30 @@ function setup() {
     $.event.props = res;
 }());
 
-function stepBack() {
+function begin_stepBack() {
+  var values = $("#slider").slider("option", "values");
+  var minValue = $("#slider").slider("option", "min");
+  if (values[0] > minValue) {
+    var newValue = finger_view_controller.prevHardwareState(values[0]);
+    if (newValue < 0)
+      return;
+    values[0] = newValue;
+    $("#slider").slider("option", "values", values);
+  }
+}
+
+function begin_stepForward() {
+  var values = $("#slider").slider("option", "values");
+  if (values[0] < values[1]) {
+    var newValue = finger_view_controller.nextHardwareState(values[0]);
+    if (newValue < 0)
+      return;
+    values[0] = newValue;
+    $("#slider").slider("option", "values", values);
+  }
+}
+
+function end_stepBack() {
   var values = $("#slider").slider("option", "values");
   if (values[1] > values[0]) {
     var newValue = finger_view_controller.prevHardwareState(values[1]);
@@ -109,7 +134,7 @@ function stepBack() {
   }
 }
 
-function stepForward() {
+function end_stepForward() {
   var values = $("#slider").slider("option", "values");
   var maxValue = $("#slider").slider("option", "max");
   if (values[1] < maxValue) {
@@ -157,24 +182,46 @@ $(document).ready(function() {
     inGc.animResetZoom();
   });
 
-  $("#stepback").button({
+  $("#begin_stepback").button({
     text: false,
     icons: {
       primary: "ui-icon-triangle-1-w"
     }
-  }).click(stepBack);
-  $("#stepforward").button({
+  }).click(begin_stepBack);
+  $("#begin_stepforward").button({
     text: false,
     icons: {
       primary: "ui-icon-triangle-1-e"
     }
-  }).click(stepForward);
+  }).click(begin_stepForward);
+  $("#end_stepback").button({
+    text: false,
+    icons: {
+      primary: "ui-icon-triangle-1-w"
+    }
+  }).click(end_stepBack);
+  $("#end_stepforward").button({
+    text: false,
+    icons: {
+      primary: "ui-icon-triangle-1-e"
+    }
+  }).click(end_stepForward);
 
   $(window).keypress(function (event) {
-    if (event.keyCode == 107)
-      stepBack();
-    else if (event.keyCode == 106)
-      stepForward();
+    switch (event.keyCode) {
+    case 107:  // 'k'
+      end_stepBack();
+      break;
+    case 106:  // 'j'
+      end_stepForward();
+      break;
+    case 103:  // 'g'
+      begin_stepBack();
+      break;
+    case 104:  // 'h'
+      begin_stepForward();
+      break;
+    }
   });
 
   loadLogObj(secret_obj);
@@ -196,8 +243,11 @@ $(document).ready(function() {
 <div id="playbar">
 <button id="playpause">Play</button>
 <div id="sliderdiv"><div id="slider"></div></div>
-<button id="stepback">Step Back</button>
-<button id="stepforward">Step Forward</button>
+<button id="begin_stepback">Begin Step Back</button>
+<button id="begin_stepforward">Begin Step Forward</button>
+<div id="begin_event"></div><br/>
+<button id="end_stepback">End Step Back</button>
+<button id="end_stepforward">End Step Forward</button>
 <div id="end_event"></div><br/>
 </div>
 <div id="textdiv">
