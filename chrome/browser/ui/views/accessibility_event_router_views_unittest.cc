@@ -217,8 +217,6 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
 
   // Put the view in a window.
   views::Widget* window = CreateWindowWithContents(contents);
-  window->Show();
-  window->Activate();
 
   // Set focus to the first button initially.
   button1->RequestFocus();
