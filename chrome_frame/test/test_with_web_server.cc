@@ -726,7 +726,8 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_MultipleCFInstances) {
 const wchar_t kXHRHeaderTestUrl[] =
     L"xmlhttprequest_header_test.html";
 
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRHeaderTest) {
+// Marking as flaky since it occasionally times out. crbug.com/127395.
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_XHRHeaderTest) {
   SimpleBrowserTest(IE, kXHRHeaderTestUrl);
 }
 
