@@ -101,20 +101,20 @@ class PrefsUITest(pyauto.PyUITest):
   def testExceptionsEntryCorrectlyDisplayed(self):
     """Verify the exceptions line entry is correctly displayed in the UI."""
     geo_exception = (
-        {'http://maps.google.com:80/': {'http://maps.google.com': 2}})
-    self.SetPrefs(pyauto.kGeolocationContentSettings, geo_exception)
+        {'http://maps.google.com:80,http://maps.google.com:80': {'geolocation': 2}})
+    self.SetPrefs(pyauto.kContentSettingsPatternPairs, geo_exception)
     self._VerifyContentExceptionUI(
         ContentTypes.GEOLOCATION, 'http://maps.google.com:80',
         Behaviors.BLOCK)
     geo_exception = (
-        {'http://maps.google.com:80/': {'http://maps.google.com:80': 1}})
-    self.SetPrefs(pyauto.kGeolocationContentSettings, geo_exception)
+        {'http://maps.google.com:80,http://maps.google.com:80': {'geolocation': 1}})
+    self.SetPrefs(pyauto.kContentSettingsPatternPairs, geo_exception)
     self._VerifyContentExceptionUI(
         ContentTypes.GEOLOCATION, 'http://maps.google.com:80',
         Behaviors.ALLOW)
     geo_exception = (
-        {'http://maps.google.com:80/': {'http://maps.google.com:80': 3}})
-    self.SetPrefs(pyauto.kGeolocationContentSettings, geo_exception)
+        {'http://maps.google.com:80,http://maps.google.com:80': {'geolocation': 3}})
+    self.SetPrefs(pyauto.kContentSettingsPatternPairs, geo_exception)
     self._VerifyContentExceptionUI(
         ContentTypes.GEOLOCATION, 'http://maps.google.com:80', Behaviors.ASK)
 
