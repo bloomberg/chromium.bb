@@ -36,6 +36,13 @@ write
 
 /* also for mylibc from pthreads */
 EXTERN (
+__libnacl_mandatory_irt_query
+__nacl_read_tp
+__nacl_tls_combined_size
+__nacl_tls_data_bss_initialize_from_template
+__nacl_tls_tdb_start
+__pthread_initialize_minimal
+
 __local_lock_acquire
 __local_lock_acquire_recursive
 __local_lock_close_recursive
