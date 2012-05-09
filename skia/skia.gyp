@@ -781,6 +781,9 @@
         # http://code.google.com/p/skia/source/detail?r=3037 ; enabling that
         # fix will require substantial rebaselining.
         'SK_DRAW_POS_TEXT_IGNORE_SUBPIXEL_LEFT_ALIGN_FIX',
+        
+        # Temporarily ignore fix to antialias coverage, until we can rebaseline
+        'SK_USE_LEGACY_AA_COVERAGE',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
