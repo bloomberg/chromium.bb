@@ -226,7 +226,7 @@ void BasePanelBrowserTest::SetUpOnMainThread() {
 
   // This is needed so the subsequently created panels can be activated.
   // On a Mac, it transforms background-only test process into foreground one.
-  EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 }
 
 void BasePanelBrowserTest::WaitForPanelAdded(Panel* panel) {
