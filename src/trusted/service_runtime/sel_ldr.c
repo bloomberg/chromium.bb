@@ -210,12 +210,9 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   if (!NaClMutexCtor(&nap->threads_mu)) {
     goto cleanup_name_service;
   }
-  if (!NaClCondVarCtor(&nap->threads_cv)) {
-    goto cleanup_threads_mu;
-  }
   nap->num_threads = 0;
   if (!NaClFastMutexCtor(&nap->desc_mu)) {
-    goto cleanup_threads_cv;
+    goto cleanup_threads_mu;
   }
 
   nap->running = 0;
@@ -242,8 +239,6 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
 
  cleanup_desc_mu:
   NaClFastMutexDtor(&nap->desc_mu);
- cleanup_threads_cv:
-  NaClCondVarDtor(&nap->threads_cv);
  cleanup_threads_mu:
   NaClMutexDtor(&nap->threads_mu);
  cleanup_name_service:
@@ -646,7 +641,6 @@ void NaClRemoveThread(struct NaClApp  *nap,
                       int             thread_num) {
   NaClXMutexLock(&nap->threads_mu);
   NaClRemoveThreadMu(nap, thread_num);
-  NaClXCondVarBroadcast(&nap->threads_cv);
   NaClXMutexUnlock(&nap->threads_mu);
 }
 

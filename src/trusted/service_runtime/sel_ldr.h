@@ -340,7 +340,6 @@ struct NaClApp {
    * any per-thread lock (natp->mu).
    */
   struct NaClMutex          threads_mu;
-  struct NaClCondVar        threads_cv;
   struct DynArray           threads;   /* NaClAppThread pointers */
   int                       num_threads;  /* number actually running */
 

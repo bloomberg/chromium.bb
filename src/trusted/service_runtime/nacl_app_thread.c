@@ -139,8 +139,6 @@ void NaClAppThreadTeardown(struct NaClAppThread *natp) {
   NaClRemoveThreadMu(nap, natp->thread_num);
   NaClLog(3, " unlocking thread\n");
   NaClXMutexUnlock(&natp->mu);
-  NaClLog(3, " announcing thread count change\n");
-  NaClXCondVarBroadcast(&nap->threads_cv);
   NaClLog(3, " unlocking thread table\n");
   NaClXMutexUnlock(&nap->threads_mu);
   if (NULL != nap->debug_stub_callbacks) {
