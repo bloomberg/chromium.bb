@@ -7,6 +7,7 @@
 import constants
 import getpass
 import logging
+import multiprocessing
 import os
 import re
 import shutil
@@ -717,7 +718,9 @@ def GenerateBreakpadSymbols(buildroot, board):
   """
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./cros_generate_breakpad_symbols', '--board=%s' % board]
-  cros_lib.RunCommandCaptureOutput(cmd, cwd=cwd, enter_chroot=True)
+  max_procs = max([1, multiprocessing.cpu_count() / 2])
+  cros_lib.RunCommandCaptureOutput(cmd, cwd=cwd, enter_chroot=True,
+                                   extra_env={'NUM_JOBS':str(max_procs)})
 
 
 def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
