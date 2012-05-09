@@ -109,14 +109,13 @@ node = env.PPAPIBrowserTester(
     args=['--debug'],
 #    osenv=['NACLVERBOSITY=4,pp_weak_ref=4,weak_ref=4']
     )
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_pm_pi_manifest_file_chrome_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken() or
+                                 env.Bit('nacl_glibc'))
 
-if not env.Bit('irt'):
-  env.AddNodeToTestSuite(node,
-                         ['chrome_browser_tests'],
-                         'run_pm_pi_manifest_file_chrome_browser_test',
-                         is_broken=env.PPAPIBrowserTesterIsBroken() or
-                                   env.Bit('nacl_glibc'))
-else:
+if env.Bit('irt'):
   # This test cannot be built under irt=0 because it uses __nacl_irt_query,
   # which is not available in the private libraries.
   irt_mf_nexe_name = env.ProgramNameForNmf('irt_manifest_file_test')

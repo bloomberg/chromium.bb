@@ -35,7 +35,7 @@
 #include <sys/nacl_syscalls.h>
 #include <sys/nacl_name_service.h>
 
-#include "native_client/src/shared/srpc/nacl_srpc_ppapi_plugin_internal.h"
+#include "native_client/src/shared/ppapi_proxy/ppruntime.h"
 
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
@@ -43,15 +43,13 @@
 
 std::string *manifest_contents = NULL;
 
-extern "C" void NaClPluginLowLevelInitializationComplete(void) {
+void TestManifestContents() {
   nacl::StringBuffer      sb;
   int                     status = -1;
   int                     manifest;
   struct NaClSrpcChannel  manifest_channel;
   struct NaClSrpcChannel  ns_channel;
 
-  fprintf(stderr, "Entered (replacement)"
-          " NaClPluginLowLevelInitializationComplete\n");
   int ns = -1;
   nacl_nameservice(&ns);
   printf("ns = %d\n", ns);
@@ -170,12 +168,6 @@ extern "C" void NaClPluginLowLevelInitializationComplete(void) {
 
   NaClSrpcDtor(&manifest_channel);
   manifest_contents = new std::string(sb.ToString());
-
-  fprintf(stderr,
-          "Invoking NaClPluginLowLevelInitializationCompleteInternal\n");
-
-  NaClPluginLowLevelInitializationCompleteInternal();
-  fprintf(stderr, "Leaving NaClPluginLowLevelInitializationComplete\n");
 }
 
 class PostStringMessageWrapper
@@ -269,3 +261,9 @@ Module* CreateModule() {
 }
 
 }  // namespace pp
+
+int main() {
+  NaClSrpcModuleInit();
+  TestManifestContents();
+  return PpapiPluginMain();
+}
