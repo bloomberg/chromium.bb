@@ -22,27 +22,36 @@ class ASH_EXPORT SystemTrayItem {
   SystemTrayItem();
   virtual ~SystemTrayItem();
 
+  // Create* functions may return NULL if nothing should be displayed for the
+  // type of view. The default implementations return NULL.
+
   // Returns a view to be displayed in the system tray. If this returns NULL,
   // then this item is not displayed in the tray.
   // NOTE: The returned view should almost always be a TrayItemView, which
   // automatically resizes the widget when the size of the view changes, and
   // adds animation when the visibility of the view changes. If a view wants to
   // avoid these behaviour, then it should not be a TrayItemView.
-  virtual views::View* CreateTrayView(user::LoginStatus status) = 0;
+  virtual views::View* CreateTrayView(user::LoginStatus status);
 
   // Returns a view for the item to be displayed in the list. This view can be
   // displayed with a number of other tray items, so this should not be too
   // big.
-  virtual views::View* CreateDefaultView(user::LoginStatus status) = 0;
+  virtual views::View* CreateDefaultView(user::LoginStatus status);
 
   // Returns a detailed view for the item. This view is displayed standalone.
-  virtual views::View* CreateDetailedView(user::LoginStatus status) = 0;
+  virtual views::View* CreateDetailedView(user::LoginStatus status);
+
+  // Returns a notification view for the item. This view is displayed with
+  // other notifications and should be the same size as default views.
+  virtual views::View* CreateNotificationView(user::LoginStatus status);
 
   // These functions are called when the corresponding view item is about to be
   // removed. An item should do appropriate cleanup in these functions.
-  virtual void DestroyTrayView() = 0;
-  virtual void DestroyDefaultView() = 0;
-  virtual void DestroyDetailedView() = 0;
+  // The default implementation does nothing.
+  virtual void DestroyTrayView();
+  virtual void DestroyDefaultView();
+  virtual void DestroyDetailedView();
+  virtual void DestroyNotificationView();
 
   // Updates the tray view (if applicable) when the user's login status changes.
   // It is not necessary the update the default or detailed view, since the
@@ -60,6 +69,12 @@ class ASH_EXPORT SystemTrayItem {
   // |for_seconds| seconds.  The caller is responsible for checking that the
   // currently-shown view is for this item.
   void SetDetailedViewCloseDelay(int for_seconds);
+
+  // Shows a notification for this item.
+  void ShowNotificationView();
+
+  // Hides the notification for this item.
+  void HideNotificationView();
 
  private:
 

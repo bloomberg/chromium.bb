@@ -38,6 +38,7 @@ class SystemTrayItem;
 namespace internal {
 class SystemTrayBackground;
 class SystemTrayBubble;
+class SystemTrayLayerAnimationObserver;
 }
 
 class ASH_EXPORT SystemTray : public internal::ActionableView,
@@ -70,6 +71,12 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   // Continue showing the existing detailed view, if any, for |close_delay|
   // seconds.
   void SetDetailedViewCloseDelay(int close_delay);
+
+  // Shows the notification view for |item|.
+  void ShowNotificationView(SystemTrayItem* item);
+
+  // Hides the notification view for |item|.
+  void HideNotificationView(SystemTrayItem* item);
 
   // Updates the items when the login status of the system changes.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
@@ -130,6 +137,7 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   bool CloseBubbleForTest() const;
 
  private:
+  friend class internal::SystemTrayLayerAnimationObserver;
   friend class internal::SystemTrayBubble;
 
   // Called when the widget associated with |bubble| closes. |bubble| should
@@ -139,9 +147,17 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
 
   const ScopedVector<SystemTrayItem>& items() const { return items_; }
 
+  // Constructs or re-constructs |bubble_| and populates it with |items|.
   void ShowItems(const std::vector<SystemTrayItem*>& items,
                  bool details,
                  bool activate);
+
+  // Constructs or re-constructs |notification_bubble_| and populates it with
+  // |notification_items_|, or destroys it if there are no notification items.
+  void UpdateNotificationBubble();
+
+  // Called when the anchor (tray or bubble) may have moved or changed.
+  void UpdateNotificationAnchor();
 
   // Overridden from internal::ActionableView.
   virtual bool PerformAction(const views::Event& event) OVERRIDE;
@@ -158,8 +174,10 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
 
   ScopedVector<SystemTrayItem> items_;
 
+  std::vector<SystemTrayItem*> notification_items_;
+
   // The container for all the tray views of the items.
-  views::View* container_;
+  views::View* tray_container_;
 
   // These observers are not owned by the tray.
   AccessibilityObserver* accessibility_observer_;
@@ -178,8 +196,11 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   // The widget hosting the tray.
   views::Widget* widget_;
 
-  // The popup widget and the delegate.
+  // Bubble for default and detailed views.
   scoped_ptr<internal::SystemTrayBubble> bubble_;
+
+  // Buble for notifications.
+  scoped_ptr<internal::SystemTrayBubble> notification_bubble_;
 
   // Owned by the view it's installed on.
   internal::SystemTrayBackground* background_;
@@ -189,6 +210,8 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
 
   internal::BackgroundAnimator hide_background_animator_;
   internal::BackgroundAnimator hover_background_animator_;
+  scoped_ptr<internal::SystemTrayLayerAnimationObserver>
+      layer_animation_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTray);
 };

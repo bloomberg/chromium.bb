@@ -42,6 +42,11 @@ class TestItem : public SystemTrayItem {
     return detailed_view_;
   }
 
+  virtual views::View* CreateNotificationView(user::LoginStatus status) {
+    notification_view_ = new views::View;
+    return notification_view_;
+  }
+
   virtual void DestroyTrayView() {
     tray_view_ = NULL;
   }
@@ -54,17 +59,23 @@ class TestItem : public SystemTrayItem {
     detailed_view_ = NULL;
   }
 
+  virtual void DestroyNotificationView() {
+    notification_view_ = NULL;
+  }
+
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) {
   }
 
   views::View* tray_view() const { return tray_view_; }
   views::View* default_view() const { return default_view_; }
   views::View* detailed_view() const { return detailed_view_; }
+  views::View* notification_view() const { return notification_view_; }
 
  private:
   views::View* tray_view_;
   views::View* default_view_;
   views::View* detailed_view_;
+  views::View* notification_view_;
 };
 
 }  // namespace
@@ -101,17 +112,52 @@ TEST_F(SystemTrayTest, SystemTrayTestItems) {
   ASSERT_TRUE(test_item->default_view() != NULL);
   ASSERT_TRUE(detailed_item->default_view() != NULL);
 
-  // Show the detailed view, ensure its created and the default view destroyed.
+  // Show the detailed view, ensure it's created and the default view destroyed.
   tray->ShowDetailedView(detailed_item, 0, false);
   RunAllPendingInMessageLoop();
   ASSERT_TRUE(test_item->default_view() == NULL);
   ASSERT_TRUE(detailed_item->detailed_view() != NULL);
 
-  // Show the default view, ensure its created and the detailed view destroyed.
+  // Show the default view, ensure it's created and the detailed view destroyed.
   tray->ShowDefaultView();
   RunAllPendingInMessageLoop();
   ASSERT_TRUE(test_item->default_view() != NULL);
   ASSERT_TRUE(detailed_item->detailed_view() == NULL);
+}
+
+TEST_F(SystemTrayTest, SystemTrayNotifications) {
+  scoped_ptr<SystemTray> tray(CreateSystemTray());
+  ASSERT_TRUE(tray->widget());
+
+  TestItem* test_item = new TestItem;
+  TestItem* detailed_item = new TestItem;
+  tray->AddTrayItem(test_item);
+  tray->AddTrayItem(detailed_item);
+
+  // Ensure the tray views are created.
+  ASSERT_TRUE(test_item->tray_view() != NULL);
+  ASSERT_TRUE(detailed_item->tray_view() != NULL);
+
+  // Ensure a notification view is created.
+  tray->ShowNotificationView(test_item);
+  ASSERT_TRUE(test_item->notification_view() != NULL);
+
+  // Show the default view, ensure the notification view is destroyed.
+  tray->ShowDefaultView();
+  RunAllPendingInMessageLoop();
+  ASSERT_TRUE(test_item->notification_view() == NULL);
+
+  // Show the detailed view, ensure the notificaiton view is created again.
+  tray->ShowDetailedView(detailed_item, 0, false);
+  RunAllPendingInMessageLoop();
+  ASSERT_TRUE(detailed_item->detailed_view() != NULL);
+  ASSERT_TRUE(test_item->notification_view() != NULL);
+
+  // Hide the detailed view, ensure the notificaiton view still exists.
+  ASSERT_TRUE(tray->CloseBubbleForTest());
+  RunAllPendingInMessageLoop();
+  ASSERT_TRUE(detailed_item->detailed_view() == NULL);
+  ASSERT_TRUE(test_item->notification_view() != NULL);
 }
 
 }  // namespace test

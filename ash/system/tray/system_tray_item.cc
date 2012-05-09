@@ -16,12 +16,48 @@ SystemTrayItem::SystemTrayItem() {
 SystemTrayItem::~SystemTrayItem() {
 }
 
+views::View* SystemTrayItem::CreateTrayView(user::LoginStatus status) {
+  return NULL;
+}
+
+views::View* SystemTrayItem::CreateDefaultView(user::LoginStatus status) {
+  return NULL;
+}
+
+views::View* SystemTrayItem::CreateDetailedView(user::LoginStatus status) {
+  return NULL;
+}
+
+views::View* SystemTrayItem::CreateNotificationView(user::LoginStatus status) {
+  return NULL;
+}
+
+void SystemTrayItem::DestroyTrayView() {
+}
+
+void SystemTrayItem::DestroyDefaultView() {
+}
+
+void SystemTrayItem::DestroyDetailedView() {
+}
+
+void SystemTrayItem::DestroyNotificationView() {
+}
+
 void SystemTrayItem::PopupDetailedView(int for_seconds, bool activate) {
   Shell::GetInstance()->tray()->ShowDetailedView(this, for_seconds, activate);
 }
 
 void SystemTrayItem::SetDetailedViewCloseDelay(int for_seconds) {
   Shell::GetInstance()->tray()->SetDetailedViewCloseDelay(for_seconds);
+}
+
+void SystemTrayItem::ShowNotificationView() {
+  Shell::GetInstance()->tray()->ShowNotificationView(this);
+}
+
+void SystemTrayItem::HideNotificationView() {
+  Shell::GetInstance()->tray()->HideNotificationView(this);
 }
 
 }  // namespace ash
