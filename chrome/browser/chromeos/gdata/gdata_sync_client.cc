@@ -240,7 +240,7 @@ void GDataSyncClient::OnFetchFileComplete(const std::string& resource_id,
     DVLOG(1) << "Fetched " << resource_id << ": " << local_path.value();
   } else {
     // TODO(satorux): We should re-queue if the error is recoverable.
-    LOG(WARNING) << "Failed to fetch " << resource_id;
+    LOG(WARNING) << "Failed to fetch " << resource_id << ": " << error;
   }
 
   // Continue the loop.
