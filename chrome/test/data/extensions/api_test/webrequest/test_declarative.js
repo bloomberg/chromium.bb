@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var onRequest = chrome.experimental.webRequest.onRequest;
-var RequestMatcher = chrome.experimental.webRequest.RequestMatcher;
-var CancelRequest = chrome.experimental.webRequest.CancelRequest;
-var RedirectRequest = chrome.experimental.webRequest.RedirectRequest;
+var onRequest = chrome.declarativeWebRequest.onRequest;
+var RequestMatcher = chrome.declarativeWebRequest.RequestMatcher;
+var CancelRequest = chrome.declarativeWebRequest.CancelRequest;
+var RedirectRequest = chrome.declarativeWebRequest.RedirectRequest;
 
 function getURLHttpSimple() {
   return getServerURL("files/extensions/api_test/webrequest/simpleLoad/a.html");

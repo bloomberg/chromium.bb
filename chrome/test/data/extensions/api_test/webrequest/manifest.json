@@ -3,8 +3,8 @@
   "version": "1.0",
   "manifest_version": 2,
   "description": "Tests the webRequest API.",
-  "permissions": ["webRequest", "webRequestBlocking", "tabs", "experimental",
-    "http://*.a.com/*"],
+  "permissions": ["webRequest", "webRequestBlocking", "tabs",
+    "declarative", "declarativeWebRequest", "http://*.a.com/*"],
   "web_accessible_resources": [
     "simpleLoad/a.html",
     "complexLoad/a.html",

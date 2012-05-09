@@ -108,6 +108,8 @@ class ExtensionAPIPermission {
     kContextMenus,
     kCookie,
     kDebugger,
+    kDeclarative,
+    kDeclarativeWebRequest,
     kDevtools,
     kExperimental,
     kFileBrowserHandler,

@@ -257,10 +257,7 @@
   // This is defined as a function (rather than a variable) because it isn't
   // accessible until the schema bindings have been generated.
   function getDeclarativeAPI() {
-    if (chromeHidden.internalAPIs.experimental)
-      return chromeHidden.internalAPIs.experimental.declarative;
-    else
-      return undefined;
+    return chromeHidden.internalAPIs.declarative;
   }
 
   chrome.Event.prototype.addRules = function(rules, opt_cb) {

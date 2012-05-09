@@ -1373,6 +1373,9 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
 
   base::Time start = base::Time::Now();
 
+  // TODO(battre): Annotate deltas with extension IDs, so that we can
+  // - Sort deltas by precedence
+  // - Check whether extensions have host permissions.
   std::list<linked_ptr<helpers::EventResponseDelta> > result =
       rules_registry_->CreateDeltas(request, request_stage);
 

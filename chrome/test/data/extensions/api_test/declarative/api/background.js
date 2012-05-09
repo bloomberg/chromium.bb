@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var declarative = chrome.experimental.declarative;
+var declarative = chrome.declarative;
 
-var RequestMatcher = chrome.experimental.webRequest.RequestMatcher;
-var CancelRequest = chrome.experimental.webRequest.CancelRequest;
-var RedirectRequest = chrome.experimental.webRequest.RedirectRequest;
+var RequestMatcher = chrome.declarativeWebRequest.RequestMatcher;
+var CancelRequest = chrome.declarativeWebRequest.CancelRequest;
+var RedirectRequest = chrome.declarativeWebRequest.RedirectRequest;
 
 var inputRule0 = {
   // No 'id', this should be filled by the API.
@@ -61,7 +61,7 @@ var invalidRule1 = {
   actions: [{key: "value"}]
 };
 
-var testEvent = chrome.experimental.webRequest.onRequest;
+var testEvent = chrome.declarativeWebRequest.onRequest;
 
 chrome.test.runTests([
   // Add adding two simple rules and check that their optional fields are set

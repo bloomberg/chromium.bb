@@ -4,8 +4,9 @@
 
 [
   {
-    "namespace": "experimental.declarative",
+    "namespace": "declarative",
     "internal": true,
+    "documentation_permissions_required": ["declarative"],
     "types": [
       {
         "id": "Rule",

@@ -513,17 +513,17 @@ void ExtensionDispatcher::PopulateSourceMap() {
                              IDR_CONTENT_SETTINGS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("contextMenus",
                              IDR_CONTEXT_MENUS_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("declarative",
+                             IDR_DECLARATIVE_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("declarativeWebRequest",
+                             IDR_DECLARATIVE_WEBREQUEST_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("devtools", IDR_DEVTOOLS_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("experimental.declarative",
-                             IDR_EXPERIMENTAL_DECLARATIVE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.offscreen",
                              IDR_EXPERIMENTAL_OFFSCREENTABS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.runtime",
                              IDR_EXPERIMENTAL_RUNTIME_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.usb",
                              IDR_EXPERIMENTAL_USB_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("experimental.webRequest",
-                             IDR_EXPERIMENTAL_WEBREQUEST_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("extension", IDR_EXTENSION_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("fileBrowserHandler",
                              IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS);

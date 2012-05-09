@@ -7,7 +7,7 @@
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
 
-chromeHidden.registerCustomHook('experimental.declarative',
+chromeHidden.registerCustomHook('declarative',
                                 function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
   var apiDefinitions = bindingsAPI.apiDefinitions;

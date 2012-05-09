@@ -66,6 +66,7 @@
     "chrome.debugger.onDetach": "debugger.html#event-onDetach",
     "chrome.debugger.onEvent": "debugger.html#event-onEvent",
     "chrome.debugger.sendCommand": "debugger.html#method-sendCommand",
+    "chrome.declarativeWebRequest.onRequest": "declarativeWebRequest.html#event-onRequest",
     "chrome.devtools.inspectedWindow.Resource.getContent": "devtools.inspectedWindow.html#method-Resource-getContent",
     "chrome.devtools.inspectedWindow.Resource.setContent": "devtools.inspectedWindow.html#method-Resource-setContent",
     "chrome.devtools.inspectedWindow.eval": "devtools.inspectedWindow.html#method-eval",
@@ -175,6 +176,7 @@
     "chrome.experimental.runtime.onBackgroundPageUnloadingSoon": "experimental.runtime.html#event-onBackgroundPageUnloadingSoon",
     "chrome.experimental.runtime.onInstalled": "experimental.runtime.html#event-onInstalled",
     "chrome.experimental.serial.close": "experimental.serial.html#method-close",
+    "chrome.experimental.serial.getPorts": "experimental.serial.html#method-getPorts",
     "chrome.experimental.serial.open": "experimental.serial.html#method-open",
     "chrome.experimental.serial.read": "experimental.serial.html#method-read",
     "chrome.experimental.serial.write": "experimental.serial.html#method-write",
@@ -200,7 +202,6 @@
     "chrome.experimental.usb.findDevice": "experimental.usb.html#method-findDevice",
     "chrome.experimental.usb.interruptTransfer": "experimental.usb.html#method-interruptTransfer",
     "chrome.experimental.usb.onEvent": "experimental.usb.html#event-onEvent",
-    "chrome.experimental.webRequest.onRequest": "experimental.webRequest.html#event-onRequest",
     "chrome.extension.connect": "extension.html#method-connect",
     "chrome.extension.getBackgroundPage": "extension.html#method-getBackgroundPage",
     "chrome.extension.getURL": "extension.html#method-getURL",
@@ -1049,10 +1050,10 @@
         "chrome.bookmarks.onRemoved",
         "chrome.browserAction.onClicked",
         "chrome.browserAction.setBadgeText",
+        "chrome.declarativeWebRequest.onRequest",
         "chrome.experimental.keybinding.onCommand",
         "chrome.experimental.runtime.onBackgroundPageUnloadingSoon",
         "chrome.experimental.runtime.onInstalled",
-        "chrome.experimental.webRequest.onRequest",
         "chrome.extension.onMessage",
         "chrome.extension.sendMessage",
         "chrome.tabs.create",
@@ -1079,13 +1080,13 @@
       "protocols": [
         "http://"
       ],
-      "search_string": "EVENT PAGE EXAMPLE DEMONSTRATES USAGE AND FEATURES OF THE EVENT PAGE ALARMS BACKGROUND_PAGE BOOKMARKS BROWSER_ACTION EXPERIMENTAL KEYBINDING TABS CHROME.ALARMS.CREATE CHROME.ALARMS.ONALARM CHROME.BOOKMARKS.ONREMOVED CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXPERIMENTAL.KEYBINDING.ONCOMMAND CHROME.EXPERIMENTAL.RUNTIME.ONBACKGROUNDPAGEUNLOADINGSOON CHROME.EXPERIMENTAL.RUNTIME.ONINSTALLED CHROME.EXPERIMENTAL.WEBREQUEST.ONREQUEST CHROME.EXTENSION.ONMESSAGE CHROME.EXTENSION.SENDMESSAGE CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.TABS.SENDMESSAGE",
+      "search_string": "EVENT PAGE EXAMPLE DEMONSTRATES USAGE AND FEATURES OF THE EVENT PAGE ALARMS BACKGROUND_PAGE BOOKMARKS BROWSER_ACTION EXPERIMENTAL KEYBINDING TABS CHROME.ALARMS.CREATE CHROME.ALARMS.ONALARM CHROME.BOOKMARKS.ONREMOVED CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGETEXT CHROME.DECLARATIVEWEBREQUEST.ONREQUEST CHROME.EXPERIMENTAL.KEYBINDING.ONCOMMAND CHROME.EXPERIMENTAL.RUNTIME.ONBACKGROUNDPAGEUNLOADINGSOON CHROME.EXPERIMENTAL.RUNTIME.ONINSTALLED CHROME.EXTENSION.ONMESSAGE CHROME.EXTENSION.SENDMESSAGE CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.TABS.SENDMESSAGE",
       "source_files": [
         "background.js",
         "content.js",
         "manifest.json"
       ],
-      "source_hash": "67edee025b8525206415cb3106471e5d5ba06baf",
+      "source_hash": "38978d01b1ba2d4c52e6dcb7b279c921d3c494c1",
       "zip_path": "examples/api/eventPage/basic.zip"
     },
     {

@@ -281,6 +281,10 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_COOKIES));
   RegisterSchema("debugger", ReadFromResource(
       IDR_EXTENSION_API_JSON_DEBUGGER));
+  RegisterSchema("declarative", ReadFromResource(
+      IDR_EXTENSION_API_JSON_DECLARATIVE));
+  RegisterSchema("declarativeWebRequest", ReadFromResource(
+      IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST));
   RegisterSchema("devtools", ReadFromResource(
       IDR_EXTENSION_API_JSON_DEVTOOLS));
   RegisterSchema("experimental.accessibility", ReadFromResource(
@@ -289,8 +293,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP));
   RegisterSchema("experimental.bookmarkManager", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_BOOKMARKMANAGER));
-  RegisterSchema("experimental.declarative", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_DECLARATIVE));
   RegisterSchema("experimental.downloads", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_DOWNLOADS));
   RegisterSchema("experimental.fontSettings", ReadFromResource(
@@ -317,8 +319,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_RUNTIME));
   RegisterSchema("experimental.speechInput", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_SPEECHINPUT));
-  RegisterSchema("experimental.webRequest", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_WEBREQUEST));
   RegisterSchema("extension", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXTENSION));
   RegisterSchema("fileBrowserHandler", ReadFromResource(

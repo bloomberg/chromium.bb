@@ -27,7 +27,7 @@ static extensions::URLMatcherConditionSet::ID g_next_id = 0;
 const char kExpectedDictionary[] = "A condition has to be a dictionary.";
 const char kConditionWithoutInstanceType[] = "A condition had no instanceType";
 const char kExpectedOtherConditionType[] = "Expected a condition of type "
-    "experimental.webRequest.RequestMatcher";
+    "declarativeWebRequest.RequestMatcher";
 const char kUnknownConditionAttribute[] = "Unknown condition attribute '%s'";
 const char kInvalidTypeOfParamter[] = "Attribute '%s' has an invalid type";
 }  // namespace

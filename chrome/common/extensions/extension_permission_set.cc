@@ -185,6 +185,12 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kClipboardWrite, "clipboardWrite",  0,
       ExtensionPermissionMessage::kNone, kFlagNone);
   info->RegisterPermission(
+      kDeclarative, "declarative", 0,
+      ExtensionPermissionMessage::kNone, kFlagNone);
+  info->RegisterPermission(
+      kDeclarativeWebRequest, "declarativeWebRequest", 0,
+      ExtensionPermissionMessage::kNone, kFlagNone);
+  info->RegisterPermission(
       kExperimental, "experimental", 0,
       ExtensionPermissionMessage::kNone, kFlagCannotBeOptional);
   info->RegisterPermission(

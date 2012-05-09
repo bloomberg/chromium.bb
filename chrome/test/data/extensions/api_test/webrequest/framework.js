@@ -321,5 +321,5 @@ function removeListeners() {
 }
 
 function resetDeclarativeRules() {
-  chrome.experimental.webRequest.onRequest.removeRules();
+  chrome.declarativeWebRequest.onRequest.removeRules();
 }

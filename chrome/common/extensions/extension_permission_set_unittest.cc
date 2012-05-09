@@ -562,6 +562,7 @@ TEST(ExtensionPermissionsTest, PermissionMessages) {
   skip.insert(ExtensionAPIPermission::kAppNotifications);
   skip.insert(ExtensionAPIPermission::kBrowsingData);
   skip.insert(ExtensionAPIPermission::kContextMenus);
+  skip.insert(ExtensionAPIPermission::kDeclarative);
   skip.insert(ExtensionAPIPermission::kIdle);
   skip.insert(ExtensionAPIPermission::kNotification);
   skip.insert(ExtensionAPIPermission::kUnlimitedStorage);
@@ -583,6 +584,8 @@ TEST(ExtensionPermissionsTest, PermissionMessages) {
   skip.insert(ExtensionAPIPermission::kProxy);
   skip.insert(ExtensionAPIPermission::kWebRequest);
   skip.insert(ExtensionAPIPermission::kWebRequestBlocking);
+  skip.insert(ExtensionAPIPermission::kDeclarativeWebRequest);
+
 
   // This permission requires explicit user action (context menu handler)
   // so we won't prompt for it for now.

@@ -19,12 +19,13 @@
       <include name="IDR_EXTENSION_API_JSON_CONTEXTMENUS" file="extensions\api\contextMenus.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_COOKIES" file="extensions\api\cookies.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_DEBUGGER" file="extensions\api\debugger.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_DECLARATIVE" file="extensions\api\declarative.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST" file="extensions\api\declarativeWebRequest.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_DEVTOOLS" file="extensions\api\devtools.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_ECHOPRIVATE" file="extensions\api\echoPrivate.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_ACCESSIBILITY" file="extensions\api\experimental.accessibility.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP" file="extensions\api\experimental.app.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_BOOKMARKMANAGER" file="extensions\api\experimental.bookmarkManager.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_DECLARATIVE" file="extensions\api\experimental.declarative.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_DOWNLOADS" file="extensions\api\experimental.downloads.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_FONTSSETTINGS" file="extensions\api\experimental.fontSettings.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_IDENTITY" file="extensions\api\experimental.identity.json" type="BINDATA" />
@@ -38,7 +39,6 @@
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ" file="extensions\api\experimental.rlz.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_RUNTIME" file="extensions\api\experimental.runtime.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_SPEECHINPUT" file="extensions\api\experimental.speechInput.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_WEBREQUEST" file="extensions\api\experimental.webRequest.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXTENSION" file="extensions\api\extension.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER" file="extensions\api\fileBrowserHandler.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_FILEBROWSERPRIVATE" file="extensions\api\fileBrowserPrivate.json" type="BINDATA" />

@@ -8,7 +8,7 @@ namespace extensions {
 namespace declarative_webrequest_constants {
 
 // Signals to which WebRequestRulesRegistries are registered.
-const char kOnRequest[] = "experimental.webRequest.onRequest";
+const char kOnRequest[] = "declarativeWebRequest.onRequest";
 
 // Keys of dictionaries.
 const char kInstanceTypeKey[] = "instanceType";
@@ -17,9 +17,9 @@ const char kResourceTypeKey[] = "resourceType";
 const char kUrlKey[] = "url";
 
 // Values of dictionaries, in particular instance types
-const char kCancelRequestType[] = "experimental.webRequest.CancelRequest";
-const char kRedirectRequestType[] = "experimental.webRequest.RedirectRequest";
-const char kRequestMatcherType[] = "experimental.webRequest.RequestMatcher";
+const char kCancelRequestType[] = "declarativeWebRequest.CancelRequest";
+const char kRedirectRequestType[] = "declarativeWebRequest.RedirectRequest";
+const char kRequestMatcherType[] = "declarativeWebRequest.RequestMatcher";
 
 }  // namespace declarative_webrequest_constants
 }  // namespace extensions
