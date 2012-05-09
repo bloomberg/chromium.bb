@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative/declarative_constants.h"
+#include "chrome/common/extensions/matcher/url_matcher_constants.h"
 
 namespace extensions {
-namespace declarative_constants {
+namespace url_matcher_constants {
 
 // Keys of dictionaries for URL constraints
 const char kPortsKey[] = "ports";
@@ -28,5 +28,5 @@ const char kURLEqualsKey[] = "urlEquals";
 const char kURLPrefixKey[] = "urlPrefix";
 const char kURLSuffixKey[] = "urlSuffix";
 
-}  // namespace declarative_constants
+}  // namespace url_matcher_constants
 }  // namespace extensions

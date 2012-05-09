@@ -11,8 +11,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/browser/extensions/api/declarative/url_matcher.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
+#include "chrome/common/extensions/matcher/url_matcher.h"
 
 namespace extensions {
 

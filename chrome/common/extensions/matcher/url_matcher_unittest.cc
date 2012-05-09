@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative/url_matcher.h"
+#include "chrome/common/extensions/matcher/url_matcher.h"
 
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"

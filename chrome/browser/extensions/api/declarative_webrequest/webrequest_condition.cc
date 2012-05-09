@@ -8,12 +8,12 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/declarative/url_matcher.h"
-#include "chrome/browser/extensions/api/declarative/url_matcher_factory.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
+#include "chrome/common/extensions/matcher/url_matcher.h"
+#include "chrome/common/extensions/matcher/url_matcher_factory.h"
 #include "net/url_request/url_request.h"
 
 namespace keys = extensions::declarative_webrequest_constants;

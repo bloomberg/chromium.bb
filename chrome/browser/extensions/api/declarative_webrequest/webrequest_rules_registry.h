@@ -13,9 +13,9 @@
 
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
-#include "chrome/browser/extensions/api/declarative/url_matcher.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
+#include "chrome/common/extensions/matcher/url_matcher.h"
 
 namespace extension_web_request_api_helpers {
 struct EventResponseDelta;

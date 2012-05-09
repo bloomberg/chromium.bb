@@ -9,7 +9,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/declarative/declarative_constants.h"
+#include "chrome/common/extensions/matcher/url_matcher_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "content/test/test_browser_thread.h"
 #include "net/url_request/url_request_test_util.h"
@@ -25,7 +25,7 @@ const char kRuleId2[] = "rule2";
 namespace extensions {
 
 namespace keys = declarative_webrequest_constants;
-namespace keys2 = declarative_constants;
+namespace keys2 = url_matcher_constants;
 
 class WebRequestRulesRegistryTest : public testing::Test {
  public:

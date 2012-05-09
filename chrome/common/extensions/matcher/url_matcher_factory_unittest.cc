@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative/url_matcher_factory.h"
+#include "chrome/common/extensions/matcher/url_matcher_factory.h"
 
 #include "base/values.h"
-#include "chrome/browser/extensions/api/declarative/declarative_constants.h"
+#include "chrome/common/extensions/matcher/url_matcher_constants.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
-namespace keys = declarative_constants;
+namespace keys = url_matcher_constants;
 
 TEST(URLMatcherFactory, CreateFromURLFilterDictionary) {
   URLMatcher matcher;

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_URL_MATCHER_FACTORY_H_
-#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_URL_MATCHER_FACTORY_H_
+#ifndef CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_FACTORY_H_
+#define CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_FACTORY_H_
 #pragma once
 
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/extensions/api/declarative/url_matcher.h"
+#include "chrome/common/extensions/matcher/url_matcher.h"
 
 namespace base {
 class DictionaryValue;
@@ -55,4 +55,4 @@ class URLMatcherFactory {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_URL_MATCHER_FACTORY_H_
+#endif  // CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_FACTORY_H_

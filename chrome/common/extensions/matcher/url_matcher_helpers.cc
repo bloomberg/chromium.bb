@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative/declarative_helpers.h"
+#include "chrome/common/extensions/matcher/url_matcher_helpers.h"
 
 #include "base/values.h"
 
 namespace extensions {
-namespace declarative_helpers {
+namespace url_matcher_helpers {
 
 // Converts a ValueList |value| of strings into a vector. Returns true if
 // successful.
@@ -27,5 +27,5 @@ bool GetAsStringVector(const base::Value* value,
   return true;
 }
 
-}  // namespace declarative_helpers
+}  // namespace url_matcher_helpers
 }  // namespace extensions

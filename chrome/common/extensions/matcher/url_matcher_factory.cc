@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/declarative/url_matcher_factory.h"
+#include "chrome/common/extensions/matcher/url_matcher_factory.h"
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/declarative/declarative_constants.h"
-#include "chrome/browser/extensions/api/declarative/declarative_helpers.h"
+#include "chrome/common/extensions/matcher/url_matcher_constants.h"
+#include "chrome/common/extensions/matcher/url_matcher_helpers.h"
 
-namespace helpers = extensions::declarative_helpers;
-namespace keys = extensions::declarative_constants;
+namespace helpers = extensions::url_matcher_helpers;
+namespace keys = extensions::url_matcher_constants;
 
 namespace {
 // Error messages:

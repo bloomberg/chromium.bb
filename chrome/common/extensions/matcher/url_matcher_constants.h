@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Constants used for the Declarative API.
+// Constants used for the URLMatcher component of the Declarative API.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_CONSTANTS_H_
-#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_CONSTANTS_H_
+#ifndef CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_CONSTANTS_H_
+#define CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_CONSTANTS_H_
 #pragma once
 
 namespace extensions {
-namespace declarative_constants {
+namespace url_matcher_constants {
 
 // Keys of dictionaries for URL constraints
 extern const char kPortsKey[];
@@ -32,7 +32,7 @@ extern const char kURLEqualsKey[];
 extern const char kURLPrefixKey[];
 extern const char kURLSuffixKey[];
 
-}  // namespace declarative_constants
+}  // namespace url_matcher_constants
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_CONSTANTS_H_
+#endif  // CHROME_COMMON_EXTENSIONS_MATCHER_URL_MATCHER_CONSTANTS_H_
