@@ -8,6 +8,7 @@ import os
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
 import test_utils
+from webdriver_pages import settings
 
 
 class PasswordTest(pyauto.PyUITest):
@@ -208,6 +209,30 @@ class PasswordTest(pyauto.PyUITest):
     self.assertEqual(email_value, '',
                     msg='Email creds displayed %s.' % email_value)
     self.assertEqual(passwd_value, '', msg='Password creds displayed.')
+
+  def testPasswordAutofilledInIncognito(self):
+    """Verify saved password is autofilled in Incognito mode.
+
+    Saved passwords should be autofilled once the username is entered in
+    incognito mode.
+    """
+    self._driver = self.NewWebDriver()
+    username = 'test@google.com'
+    password = 'test.password'
+    password_dict = self._ConstructPasswordDictionary(
+        username, password,
+        'https://www.google.com/', 'https://www.google.com/accounts',
+        'Email', 'Passwd', 'https://www.google.com/accounts')
+    self.AddSavedPassword(password_dict)
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.NavigateToURL(self.URL, 1, 0)
+    # Switch to window 1.
+    self._driver.switch_to_window(self._driver.window_handles[1])
+    self._driver.find_element_by_id('Email').send_keys(username + '\t')
+    incognito_passwd = self.GetDOMValue(
+        'document.getElementById("Passwd").value', tab_index=0, windex=1)
+    self.assertEqual(incognito_passwd, password,
+                    msg='Password creds did not autofill in incognito mode.')
 
   def testInfoBarDisappearByNavigatingPage(self):
     """Test password infobar is dismissed when navigating to different page."""
