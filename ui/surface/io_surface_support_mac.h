@@ -7,6 +7,7 @@
 #pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
+#include <CoreVideo/CoreVideo.h>
 #include <mach/mach.h>
 #include <OpenGL/OpenGL.h>
 
@@ -59,6 +60,9 @@ class SURFACE_EXPORT IOSurfaceSupport {
                                           GLenum type,
                                           CFTypeRef io_surface,
                                           GLuint plane) = 0;
+
+  virtual CFTypeRef CVPixelBufferGetIOSurface(
+      CVPixelBufferRef pixel_buffer) = 0;
 
  protected:
   IOSurfaceSupport();

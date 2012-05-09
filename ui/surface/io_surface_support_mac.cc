@@ -23,6 +23,8 @@ typedef CGLError (*CGLTexImageIOSurface2DProcPtr)(CGLContextObj ctx,
                                                   GLenum type,
                                                   CFTypeRef io_surface,
                                                   GLuint plane);
+typedef CFTypeRef (*CVPixelBufferGetIOSurfaceProcPtr)(
+    CVPixelBufferRef pixel_buffer);
 
 class IOSurfaceSupportImpl : public IOSurfaceSupport {
  public:
@@ -56,12 +58,18 @@ class IOSurfaceSupportImpl : public IOSurfaceSupport {
                                           CFTypeRef io_surface,
                                           GLuint plane);
 
+  virtual CFTypeRef CVPixelBufferGetIOSurface(
+      CVPixelBufferRef pixel_buffer) OVERRIDE;
+
  private:
   IOSurfaceSupportImpl();
   ~IOSurfaceSupportImpl();
 
+  void CloseLibraryHandles();
+
   void* iosurface_handle_;
   void* opengl_handle_;
+  void* core_video_handle_;
   CFStringRef k_io_surface_width_;
   CFStringRef k_io_surface_height_;
   CFStringRef k_io_surface_bytes_per_element_;
@@ -74,6 +82,7 @@ class IOSurfaceSupportImpl : public IOSurfaceSupport {
   IOSurfaceGetWidthPtr io_surface_get_width_;
   IOSurfaceGetHeightPtr io_surface_get_height_;
   CGLTexImageIOSurface2DProcPtr cgl_tex_image_io_surface_2d_;
+  CVPixelBufferGetIOSurfaceProcPtr cv_pixel_buffer_get_io_surface_;
   bool initialized_successfully_;
 
   friend struct DefaultSingletonTraits<IOSurfaceSupportImpl>;
@@ -154,9 +163,15 @@ CGLError IOSurfaceSupportImpl::CGLTexImageIOSurface2D(CGLContextObj ctx,
                                       plane);
 }
 
+CFTypeRef IOSurfaceSupportImpl::CVPixelBufferGetIOSurface(
+      CVPixelBufferRef pixel_buffer) {
+  return cv_pixel_buffer_get_io_surface_(pixel_buffer);
+}
+
 IOSurfaceSupportImpl::IOSurfaceSupportImpl()
     : iosurface_handle_(NULL),
       opengl_handle_(NULL),
+      core_video_handle_(NULL),
       k_io_surface_width_(NULL),
       k_io_surface_height_(NULL),
       k_io_surface_bytes_per_element_(NULL),
@@ -169,18 +184,21 @@ IOSurfaceSupportImpl::IOSurfaceSupportImpl()
       io_surface_get_width_(NULL),
       io_surface_get_height_(NULL),
       cgl_tex_image_io_surface_2d_(NULL),
+      cv_pixel_buffer_get_io_surface_(NULL),
       initialized_successfully_(false) {
   iosurface_handle_ = dlopen(
       "/System/Library/Frameworks/IOSurface.framework/IOSurface",
       RTLD_LAZY | RTLD_LOCAL);
-  if (!iosurface_handle_)
-    return;
   opengl_handle_ = dlopen(
       "/System/Library/Frameworks/OpenGL.framework/OpenGL",
       RTLD_LAZY | RTLD_LOCAL);
-  if (!opengl_handle_) {
-    dlclose(iosurface_handle_);
-    iosurface_handle_ = NULL;
+  core_video_handle_ = dlopen(
+      "/System/Library/Frameworks/CoreVideo.framework/CoreVideo",
+      RTLD_LAZY | RTLD_LOCAL);
+  if (!iosurface_handle_ ||
+      !opengl_handle_ ||
+      !core_video_handle_) {
+    CloseLibraryHandles();
     return;
   }
 
@@ -203,6 +221,8 @@ IOSurfaceSupportImpl::IOSurfaceSupportImpl()
       dlsym(iosurface_handle_, "IOSurfaceGetHeight");
   void* tex_image_io_surface_2d_ptr =
       dlsym(opengl_handle_, "CGLTexImageIOSurface2D");
+  void* cv_pixel_buffer_get_io_surface =
+      dlsym(core_video_handle_, "CVPixelBufferGetIOSurface");
   if (!surface_width_ptr ||
       !surface_height_ptr ||
       !surface_bytes_per_element_ptr ||
@@ -214,11 +234,9 @@ IOSurfaceSupportImpl::IOSurfaceSupportImpl()
       !surface_lookup_from_mach_port_ptr ||
       !io_surface_get_width_ptr ||
       !io_surface_get_height_ptr ||
-      !tex_image_io_surface_2d_ptr) {
-    dlclose(iosurface_handle_);
-    iosurface_handle_ = NULL;
-    dlclose(opengl_handle_);
-    opengl_handle_ = NULL;
+      !tex_image_io_surface_2d_ptr ||
+      !cv_pixel_buffer_get_io_surface) {
+    CloseLibraryHandles();
     return;
   }
 
@@ -248,14 +266,29 @@ IOSurfaceSupportImpl::IOSurfaceSupportImpl()
   cgl_tex_image_io_surface_2d_ =
       reinterpret_cast<CGLTexImageIOSurface2DProcPtr>(
           tex_image_io_surface_2d_ptr);
+  cv_pixel_buffer_get_io_surface_ =
+      reinterpret_cast<CVPixelBufferGetIOSurfaceProcPtr>(
+          cv_pixel_buffer_get_io_surface);
   initialized_successfully_ = true;
 }
 
 IOSurfaceSupportImpl::~IOSurfaceSupportImpl() {
-  if (iosurface_handle_)
+  CloseLibraryHandles();
+}
+
+void IOSurfaceSupportImpl::CloseLibraryHandles() {
+  if (iosurface_handle_) {
     dlclose(iosurface_handle_);
-  if (opengl_handle_)
+    iosurface_handle_ = NULL;
+  }
+  if (opengl_handle_) {
     dlclose(opengl_handle_);
+    opengl_handle_ = NULL;
+  }
+  if (core_video_handle_) {
+    dlclose(core_video_handle_);
+    core_video_handle_ = NULL;
+  }
 }
 
 IOSurfaceSupport* IOSurfaceSupport::Initialize() {
