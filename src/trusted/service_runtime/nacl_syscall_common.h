@@ -270,6 +270,8 @@ int32_t NaClCommonSysException_Clear_Flag(struct NaClAppThread *natp);
 
 int32_t NaClCommonSysTest_InfoLeak(struct NaClAppThread *natp);
 
+int32_t NaClSysTestCrash(struct NaClAppThread *natp, int crash_type);
+
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_NACL_SYSCALL_COMMON_H__ */

@@ -20,6 +20,7 @@
 #include "native_client/src/include/portability_process.h"
 #include "native_client/src/include/portability_string.h"
 
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_clock.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
@@ -53,6 +54,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_test_crash.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 #if NACL_WINDOWS
@@ -2945,6 +2947,31 @@ int32_t NaClCommonSysTest_InfoLeak(struct NaClAppThread *natp) {
   UNREFERENCED_PARAMETER(natp);
 
   return -NACL_ABI_ENOSYS;
+}
+
+/*
+ * This syscall is intended for testing NaCl's support for Breakpad
+ * crash reporting inside Chromium.  When
+ * http://code.google.com/p/nativeclient/issues/detail?id=579 is
+ * addressed, we might put this syscall behind a flag.  Until then,
+ * untrusted code can trigger Breakpad-reported crashes inside
+ * syscalls, so there is no benefit to restricting this syscall.
+ */
+int32_t NaClSysTestCrash(struct NaClAppThread *natp, int crash_type) {
+  UNREFERENCED_PARAMETER(natp);
+
+  switch (crash_type) {
+    case NACL_TEST_CRASH_MEMORY:
+      *(volatile int *) 0 = 0;
+      break;
+    case NACL_TEST_CRASH_LOG_FATAL:
+      NaClLog(LOG_FATAL, "NaClSysTestCrash: This is a test error\n");
+      break;
+    case NACL_TEST_CRASH_CHECK_FAILURE:
+      CHECK(0);
+      break;
+  }
+  return -NACL_ABI_EINVAL;
 }
 
 static int NaClIsValidClockId(int clk_id) {

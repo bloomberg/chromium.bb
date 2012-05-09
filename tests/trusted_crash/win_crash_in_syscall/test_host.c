@@ -10,13 +10,10 @@
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/tests/trusted_crash/win_crash_in_syscall/test_syscalls.h"
 
 /*
  * This test case checks that an exception handler registered via
@@ -28,26 +25,10 @@
  */
 
 
-static int32_t NotImplementedDecoder(struct NaClAppThread *natp) {
-  UNREFERENCED_PARAMETER(natp);
-  printf("Error: entered an unexpected syscall!\n");
-  fflush(stdout);
-  _exit(1);
-}
-
-static int32_t CrashyTestSyscall(struct NaClAppThread *natp) {
-  UNREFERENCED_PARAMETER(natp);
-  printf("Inside custom test 'invoke' syscall\n");
-  fflush(stdout);
-
-  /* Cause a crash.  This should cause ExceptionHandler() to be called. */
-  *(volatile int *) 0 = 0;
-
-  /* Should not reach here. */
-  _exit(1);
-}
-
 #define MAX_SYMBOL_NAME_LENGTH 100
+
+static const char *g_crash_type;
+
 
 static void PrintSymbolForAddress(DWORD64 addr) {
   /*
@@ -182,49 +163,55 @@ static LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS *exc_info) {
   printf("Inside exception handler, as expected\n");
   Backtrace(exc_info->ContextRecord);
   printf("Stack backtrace passed sanity checks\n");
+
+  if (strcmp(g_crash_type, "NACL_TEST_CRASH_MEMORY") == 0) {
+    /*
+     * STATUS_ACCESS_VIOLATION is 0xc0000005 but we deliberately
+     * convert this to a signed number since Python's wrapper for
+     * GetExitCodeProcess() treats the STATUS_* values as negative,
+     * although the unsigned values are used in headers and are more
+     * widely recognised
+     */
+    fprintf(stderr, "** intended_exit_status=%i\n", STATUS_ACCESS_VIOLATION);
+  } else if (strcmp(g_crash_type, "NACL_TEST_CRASH_LOG_FATAL") == 0 ||
+             strcmp(g_crash_type, "NACL_TEST_CRASH_CHECK_FAILURE") == 0) {
+    fprintf(stderr, "** intended_exit_status=sigabrt\n");
+  } else {
+    NaClLog(LOG_FATAL, "Unknown crash type: \"%s\"\n", g_crash_type);
+  }
   /*
    * Continuing is what Breakpad does, but this should cause the
    * process to exit with an exit status that is appropriate for the
    * type of exception.  We want to test that ExceptionHandler() does
    * not get called twice, since that does not work with Chrome's
    * embedding of Breakpad.
-   *
-   * STATUS_ACCESS_VIOLATION is 0xc0000005 but we deliberately convert
-   * this to a signed number since Python's wrapper for
-   * GetExitCodeProcess() treats the STATUS_* values as negative,
-   * although the unsigned values are used in headers and are more
-   * widely recognised
    */
-  fprintf(stderr, "** intended_exit_status=%i\n", STATUS_ACCESS_VIOLATION);
   return EXCEPTION_CONTINUE_SEARCH;
 }
 
 int main(int argc, char **argv) {
   struct NaClApp app;
   struct GioMemoryFileSnapshot gio_file;
-  struct NaClSyscallTableEntry syscall_table[NACL_MAX_SYSCALLS] = {{0}};
-  int index;
-  for (index = 0; index < NACL_MAX_SYSCALLS; index++) {
-    syscall_table[index].handler = NotImplementedDecoder;
-  }
-  syscall_table[CRASHY_TEST_SYSCALL].handler = CrashyTestSyscall;
 
   /* Turn off buffering to aid debugging. */
   setvbuf(stdout, NULL, _IONBF, 0);
   setvbuf(stderr, NULL, _IONBF, 0);
 
-  if (argc != 2) {
-    NaClLog(LOG_FATAL, "Expected 1 argument: executable filename\n");
+  NaClAllModulesInit();
+
+  if (argc != 3) {
+    NaClLog(LOG_FATAL,
+            "Expected 2 arguments: <executable-filename> <crash-type>\n");
   }
 
-  NaClAllModulesInit();
+  g_crash_type = argv[2];
 
   NaClFileNameForValgrind(argv[1]);
   if (GioMemoryFileSnapshotCtor(&gio_file, argv[1]) == 0) {
     NaClLog(LOG_FATAL, "GioMemoryFileSnapshotCtor() failed\n");
   }
 
-  if (!NaClAppWithSyscallTableCtor(&app, syscall_table)) {
+  if (!NaClAppCtor(&app)) {
     NaClLog(LOG_FATAL, "NaClAppCtor() failed\n");
   }
 
@@ -232,19 +219,20 @@ int main(int argc, char **argv) {
     NaClLog(LOG_FATAL, "NaClAppLoadFile() failed\n");
   }
 
+  NaClAppInitialDescriptorHookup(&app);
+
   if (NaClAppPrepareToLaunch(&app) != LOAD_OK) {
     NaClLog(LOG_FATAL, "NaClAppPrepareToLaunch() failed\n");
   }
 
   SetUnhandledExceptionFilter(ExceptionHandler);
 
-  if (!NaClCreateMainThread(&app, 0, NULL, NULL)) {
+  if (!NaClCreateMainThread(&app, argc - 1, argv + 1, NULL)) {
     NaClLog(LOG_FATAL, "NaClCreateMainThread() failed\n");
   }
 
   NaClWaitForMainThreadToExit(&app);
 
-  NaClLog(LOG_FATAL, "The exit syscall is not supposed to be callable\n");
-
+  NaClLog(LOG_ERROR, "We did not expect the test program to exit cleanly\n");
   return 1;
 }

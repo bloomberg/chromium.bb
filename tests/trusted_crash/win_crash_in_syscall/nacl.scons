@@ -7,11 +7,10 @@ Import('env')
 
 
 test_prog = env.ComponentProgram('test_guest', ['test_guest.c'],
-                                 EXTRA_LINKFLAGS=['-nostdlib'])
+                                 EXTRA_LIBS=['${NONIRT_LIBS}'])
 
 # If we are generating a pexe, translate it first
 if env.Bit('pnacl_generate_pexe'):
-  env.Replace(TRANSLATEFLAGS=['-nostdlib'])
   test_prog = env.GetTranslatedNexe(test_prog)
 
 if not env.Bit('host_windows'):
@@ -30,9 +29,16 @@ runner = trusted_env.ComponentProgram(
                 'dbghelp.lib', # Windows library
                 ])
 
-node = env.CommandTest(
-    'windows_crash_in_syscall_test.out', [runner, test_prog],
-    declares_exit_status=True)
-env.AddNodeToTestSuite(node, ['small_tests'],
-                       'run_windows_crash_in_syscall_test',
-                       is_broken=not env.Bit('nacl_static_link'))
+crash_types = [
+    ('run_windows_crash_in_syscall_test',
+     'NACL_TEST_CRASH_MEMORY'),
+    ('run_windows_log_fatal_in_syscall_test',
+     'NACL_TEST_CRASH_LOG_FATAL'),
+    ('run_windows_check_failure_in_syscall_test',
+     'NACL_TEST_CRASH_CHECK_FAILURE'),
+    ]
+for name, arg in crash_types:
+  node = env.CommandTest(
+      '%s.out' % name, [runner, test_prog, arg], declares_exit_status=True)
+  env.AddNodeToTestSuite(node, ['small_tests'], name,
+                         is_broken=not env.Bit('nacl_static_link'))

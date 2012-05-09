@@ -96,7 +96,8 @@
 #define NACL_sys_dyncode_delete         106
 
 #define NACL_sys_test_infoleak          109
+#define NACL_sys_test_crash             110
 
-#define NACL_MAX_SYSCALLS               110
+#define NACL_MAX_SYSCALLS               111
 
 #endif

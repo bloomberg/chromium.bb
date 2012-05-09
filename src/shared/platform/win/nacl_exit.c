@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * be found in the LICENSE file.
  */
@@ -13,7 +13,22 @@
 
 
 void NaClAbort(void) {
-  NaClExit(-SIGABRT);
+  /*
+   * We crash the process with a HLT instruction so that the Breakpad
+   * crash reporter will be invoked when we are running inside Chrome.
+   *
+   * This has the disadvantage that an untrusted-code crash will not
+   * be distinguishable from a trusted-code NaClAbort() based on the
+   * process's exit status alone
+   *
+   * While we could use the INT3 breakpoint instruction to exit (via
+   * __debugbreak()), that does not work if NaCl's debug exception
+   * handler is attached, because that always resumes breakpoints (see
+   * http://code.google.com/p/nativeclient/issues/detail?id=2772).
+   */
+  while (1) {
+    __halt();
+  }
 }
 
 void NaClExit(int err_code) {

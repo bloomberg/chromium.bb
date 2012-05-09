@@ -190,6 +190,7 @@ SYSCALL_LIST = [
      ['uint32_t stack_addr', 'uint32_t stack_size']),
     ('NACL_sys_exception_clear_flag', 'NaClCommonSysException_Clear_Flag', []),
     ('NACL_sys_test_infoleak', 'NaClCommonSysTest_InfoLeak', []),
+    ('NACL_sys_test_crash', 'NaClSysTestCrash', ['int crash_type']),
     ]
 
 

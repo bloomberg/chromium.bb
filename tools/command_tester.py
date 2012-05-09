@@ -208,9 +208,9 @@ status_map = {
     'sigabrt' : {
         'linux2': [-6], # SIGABRT
         'darwin': [-6], # SIGABRT
-        # In Windows, NaClAbort invokes TerminateProcess with -SIGABRT.
-        'win32': [-6],  # simulated SIGABRT
-        'win64': [-6],  # simulated SIGABRT
+        # On Windows, NaClAbort() exits using the HLT instruction.
+        'win32': [MungeWindowsErrorExit(STATUS_PRIVILEGED_INSTRUCTION)],
+        'win64': [MungeWindowsErrorExit(STATUS_PRIVILEGED_INSTRUCTION)],
         },
     'naclabort_coverage' : {
         # This case is here because NaClAbort() behaves differently when

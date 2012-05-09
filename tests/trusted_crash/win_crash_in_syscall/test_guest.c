@@ -4,22 +4,30 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/tests/trusted_crash/win_crash_in_syscall/test_syscalls.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_test_crash.h"
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 
-#define UNTYPED_SYSCALL(s) ((int (*)()) NACL_SYSCALL_ADDR(s))
+int look_up_crash_type(const char *name) {
+#define MAP_NAME(type) if (strcmp(name, #type) == 0) { return type; }
+  MAP_NAME(NACL_TEST_CRASH_MEMORY);
+  MAP_NAME(NACL_TEST_CRASH_LOG_FATAL);
+  MAP_NAME(NACL_TEST_CRASH_CHECK_FAILURE);
+#undef MAP_NAME
 
-
-void SimpleAbort() {
-  while (1) {
-    /* Exit by causing a crash. */
-    *(volatile int *) 0 = 0;
-  }
+  fprintf(stderr, "Unknown crash type: \"%s\"\n", name);
+  exit(1);
 }
 
-void _start() {
-  UNTYPED_SYSCALL(CRASHY_TEST_SYSCALL)();
-  /* Should not reach here. */
-  SimpleAbort();
+int main(int argc, char **argv) {
+  if (argc != 2) {
+    fprintf(stderr, "Usage: %s <crash-type>\n", argv[0]);
+    return 1;
+  }
+  NACL_SYSCALL(test_crash)(look_up_crash_type(argv[1]));
+  return 1;
 }

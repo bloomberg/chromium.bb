@@ -209,6 +209,8 @@ typedef int (*TYPE_nacl_exception_clear_flag) (void);
 
 typedef int (*TYPE_nacl_test_infoleak) (void);
 
+typedef int (*TYPE_nacl_test_crash) (int crash_type);
+
 #if __cplusplus
 }
 #endif
