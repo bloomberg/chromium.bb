@@ -1404,6 +1404,81 @@ TEST(ImmediateInterpreterTest, PalmAtEdgeTest) {
   }
 }
 
+TEST(ImmediateInterpreterTest, AmbiguousPalmCoScrollTest) {
+  ImmediateInterpreter ii(NULL);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    100,  // right edge
+    100,  // bottom edge
+    1,  // x pixels/TP width
+    1,  // y pixels/TP height
+    1,  // x screen DPI
+    1,  // y screen DPI
+    5,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    1  // is button pad
+  };
+  ii.SetHardwareProperties(hwprops);
+
+  const int kPr = ii.palm_pressure_.val_ / 2;
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    // stationary palm - movement
+    {0, 0, 0, 0, kPr, 0,  0, 40, 1, 0},
+    {0, 0, 0, 0, kPr, 0, 30, 35, 2, 0},
+
+    {0, 0, 0, 0, kPr, 0,  0, 40, 1, 0},
+    {0, 0, 0, 0, kPr, 0, 30, 40, 2, 0},
+
+    {0, 0, 0, 0, kPr, 0,  0, 40, 1, 0},
+    {0, 0, 0, 0, kPr, 0, 30, 45, 2, 0},
+
+    // Same, but moving palm - scroll
+    {0, 0, 0, 0, kPr, 0,  0, 35, 3, 0},
+    {0, 0, 0, 0, kPr, 0, 30, 35, 4, 0},
+
+    {0, 0, 0, 0, kPr, 0,  0, 40, 3, 0},
+    {0, 0, 0, 0, kPr, 0, 30, 40, 4, 0},
+
+    {0, 0, 0, 0, kPr, 0,  0, 45, 3, 0},
+    {0, 0, 0, 0, kPr, 0, 30, 45, 4, 0},
+  };
+  HardwareState hardware_state[] = {
+    // time, buttons, finger count, touch count, finger states pointer
+    { 0.0, 0, 2, 2, &finger_states[0] },
+    { 0.1, 0, 2, 2, &finger_states[2] },
+    { 0.2, 0, 2, 2, &finger_states[4] },
+    { 3.0, 0, 2, 2, &finger_states[6] },
+    { 3.1, 0, 2, 2, &finger_states[8] },
+    { 3.2, 0, 2, 2, &finger_states[10] },
+  };
+  GestureType expected_gs[] = {
+    kGestureTypeNull,
+    kGestureTypeMove,
+    kGestureTypeMove,
+    kGestureTypeNull,
+    kGestureTypeScroll,
+    kGestureTypeScroll
+  };
+
+  ASSERT_EQ(arraysize(expected_gs), arraysize(hardware_state));
+
+  for (size_t i = 0; i < arraysize(hardware_state); ++i) {
+    Gesture* gs = ii.SyncInterpret(&hardware_state[i], NULL);
+    if (expected_gs[i] == kGestureTypeNull) {
+      EXPECT_EQ(static_cast<Gesture*>(NULL), gs) << "gs:" << gs->String();
+    } else {
+      ASSERT_NE(static_cast<Gesture*>(NULL), gs);
+      EXPECT_EQ(expected_gs[i], gs->type) << "i=" << i
+                                          << " gs: " << gs->String();
+    }
+  }
+}
+
 TEST(ImmediateInterpreterTest, PressureChangeMoveTest) {
   ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {

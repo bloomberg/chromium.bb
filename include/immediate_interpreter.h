@@ -97,6 +97,7 @@ class ScrollEventBuffer {
 };
 
 class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
+  FRIEND_TEST(ImmediateInterpreterTest, AmbiguousPalmCoScrollTest);
   FRIEND_TEST(ImmediateInterpreterTest, AvoidAccidentalPinchTest);
   FRIEND_TEST(ImmediateInterpreterTest, ChangeTimeoutTest);
   FRIEND_TEST(ImmediateInterpreterTest, ClickTest);

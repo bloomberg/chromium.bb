@@ -950,14 +950,14 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
   float damp_dy = INFINITY;
   float non_damp_dx = 0.0;
   float non_damp_dy = 0.0;
-  if (FingerInDampenedZone(finger1)) {
+  if (FingerInDampenedZone(finger1) || FingerInPalmEnvelope(finger1)) {
     dampened_zone_occupied = true;
     damp_dx = dx1;
     damp_dy = dy1;
     non_damp_dx = dx2;
     non_damp_dy = dy2;
   }
-  if (FingerInDampenedZone(finger2)) {
+  if (FingerInDampenedZone(finger2) || FingerInPalmEnvelope(finger2)) {
     dampened_zone_occupied = true;
     damp_dx = MinMag(damp_dx, dx2);
     damp_dy = MinMag(damp_dy, dy2);
