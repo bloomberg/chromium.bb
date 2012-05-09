@@ -398,71 +398,7 @@ TEST_F(PrefProviderTest, MigrateObsoleteContentSettingsPatternPref) {
       pattern.ToString() + "," +
       ContentSettingsPattern::Wildcard().ToString()));
 
-  provider.ShutdownOnUIThread();
-}
-
-TEST_F(PrefProviderTest, FixOrRemoveMalformedPatternKeysFromObsoletePref) {
-  TestingProfile profile;
-  PrefService* prefs = profile.GetPrefs();
-
-  // Set obsolete preference for content settings pattern.
-  scoped_ptr<DictionaryValue> settings_dictionary(new DictionaryValue());
-  settings_dictionary->SetInteger("cookies", 2);
-  settings_dictionary->SetInteger("images", 2);
-  settings_dictionary->SetInteger("popups", 2);
-  scoped_ptr<DictionaryValue> all_settings_dictionary(new DictionaryValue());
-  // Good pattern key.
-  all_settings_dictionary->SetWithoutPathExpansion(
-      "http://www.example.com", settings_dictionary->DeepCopy());
-  // Bad pattern key that will be ignored since there is already a good pattern
-  // key for the primary patter of the bad pattern key.
-  all_settings_dictionary->SetWithoutPathExpansion(
-      "http://www.example.com,", settings_dictionary->DeepCopy());
-
-  // Bad pattern key that should be removed.
-  all_settings_dictionary->SetWithoutPathExpansion(
-      "http://www.broken.com*", settings_dictionary->DeepCopy());
-
-  all_settings_dictionary->SetWithoutPathExpansion(
-      "http://www.bar.com,", settings_dictionary->DeepCopy());
-
-  // Bad pattern key with a trailing comma that is supposed to be fixed.
-  // A trailing comma means that the secondary pattern string is empty and hence
-  // invalid.
-  all_settings_dictionary->SetWithoutPathExpansion(
-      "http://www.foo.com,", settings_dictionary->DeepCopy());
-  // Bad pattern key with an invalid secondary pattern that should be removed.
-  all_settings_dictionary->SetWithoutPathExpansion(
-      "http://www.foo.com,error*", settings_dictionary->DeepCopy());
-  // Pattern keys with valid pattern pairs.
-  all_settings_dictionary->SetWithoutPathExpansion(
-      "http://www.foo.com,[*.]bar.com", settings_dictionary->DeepCopy());
-  prefs->Set(prefs::kContentSettingsPatterns, *all_settings_dictionary);
-  all_settings_dictionary->SetWithoutPathExpansion(
-      "http://www.example2.com,*", settings_dictionary->DeepCopy());
-  prefs->Set(prefs::kContentSettingsPatterns, *all_settings_dictionary);
-
-  content_settings::PrefProvider provider(prefs, false);
-
-  // Tests that the broken pattern keys got fixed or removed.
-  const DictionaryValue* patterns_dictionary =
-      prefs->GetDictionary(prefs::kContentSettingsPatterns);
-  EXPECT_EQ(4U, patterns_dictionary->size());
-  EXPECT_TRUE(patterns_dictionary->HasKey("http://www.example.com"));
-  EXPECT_TRUE(patterns_dictionary->HasKey("http://www.bar.com"));
-  EXPECT_TRUE(patterns_dictionary->HasKey("http://www.foo.com"));
-  EXPECT_TRUE(patterns_dictionary->HasKey("http://www.example2.com"));
-
-  // Broken pattern keys that should be removed
-  EXPECT_FALSE(patterns_dictionary->HasKey("http://www.bar.com,"));
-  EXPECT_FALSE(patterns_dictionary->HasKey("http://www.foo.com,"));
-  EXPECT_FALSE(patterns_dictionary->HasKey("http://www.foo.com,error*"));
-  EXPECT_FALSE(patterns_dictionary->HasKey(
-      "http://www.foo.com,[*.]bar.com"));
-  EXPECT_FALSE(patterns_dictionary->HasKey("http://www.example2.com,*"));
-
-  EXPECT_FALSE(patterns_dictionary->HasKey("http://www.broken.com*"));
-
+  EXPECT_TRUE(prefs->GetDictionary(prefs::kContentSettingsPatterns)->empty());
   provider.ShutdownOnUIThread();
 }
 
@@ -526,31 +462,8 @@ TEST_F(PrefProviderTest, MigrateObsoleteGeolocationPref) {
       prefs->GetDictionary(prefs::kContentSettingsPatterns);
   EXPECT_TRUE(const_obsolete_patterns_dictionary->empty());
 
-  // Change obsolete preference. This could be triggered by sync if sync is used
-  // with an old version of chrome.
-  secondary_patterns_dictionary = new DictionaryValue();
-  secondary_patterns_dictionary->SetWithoutPathExpansion(
-      secondary_url.spec(),
-      Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
-  geolocation_settings_dictionary.reset(new DictionaryValue());
-  geolocation_settings_dictionary->SetWithoutPathExpansion(
-      primary_url.spec(), secondary_patterns_dictionary);
-  prefs->Set(prefs::kGeolocationContentSettings,
-             *geolocation_settings_dictionary);
-
-  // Test if the changed obsolete preference was migrated correctly.
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, GetContentSetting(
-      &provider,
-      primary_url,
-      secondary_url,
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      "",
-      false));
-  // Check that geolocation settings were not synced to the obsolete content
-  // settings pattern preference.
-  const_obsolete_patterns_dictionary =
-      prefs->GetDictionary(prefs::kContentSettingsPatterns);
-  EXPECT_TRUE(const_obsolete_patterns_dictionary->empty());
+  EXPECT_TRUE(
+      prefs->GetDictionary(prefs::kGeolocationContentSettings)->empty());
 
   provider.ShutdownOnUIThread();
 }
@@ -650,41 +563,11 @@ TEST_F(PrefProviderTest, MigrateObsoleteNotificationsPref) {
       prefs->GetDictionary(prefs::kContentSettingsPatterns);
   EXPECT_TRUE(const_obsolete_patterns_dictionary->empty());
 
-  // Change obsolete preference. This could be triggered by sync if sync is used
-  // with an old version of chrome.
-  allowed_origin_list.reset(new ListValue());
-  allowed_origin_list->AppendIfNotPresent(
-      Value::CreateStringValue(allowed_url2.spec()));
-  prefs->Set(prefs::kDesktopNotificationAllowedOrigins,
-             *allowed_origin_list);
-
-  // Test if the changed obsolete preference was migrated correctly.
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, GetContentSetting(
-      &provider,
-      allowed_url2,
-      allowed_url2,
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      "",
-      false));
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT, GetContentSetting(
-      &provider,
-      allowed_url,
-      allowed_url,
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      "",
-      false));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, GetContentSetting(
-      &provider,
-      denied_url,
-      denied_url,
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      "",
-      false));
-  // Check that geolocation settings were not synced to the obsolete content
-  // settings pattern preference.
-  const_obsolete_patterns_dictionary =
-      prefs->GetDictionary(prefs::kContentSettingsPatterns);
-  EXPECT_TRUE(const_obsolete_patterns_dictionary->empty());
+  // Test that the obsolete notifications settings were cleared.
+  EXPECT_TRUE(
+      prefs->GetList(prefs::kDesktopNotificationAllowedOrigins)->empty());
+  EXPECT_TRUE(
+      prefs->GetList(prefs::kDesktopNotificationDeniedOrigins)->empty());
 
   provider.ShutdownOnUIThread();
 }
