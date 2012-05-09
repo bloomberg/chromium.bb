@@ -12,7 +12,7 @@
 #include "base/synchronization/lock.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
-#include "third_party/libusb/libusb.h"
+#include "third_party/libusb/libusb/libusb.h"
 
 typedef libusb_device* PlatformUsbDevice;
 typedef libusb_device_handle* PlatformUsbDeviceHandle;
