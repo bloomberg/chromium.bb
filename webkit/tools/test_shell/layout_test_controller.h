@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@
 
 class TestShell;
 
-class LayoutTestController : public CppBoundClass {
+class LayoutTestController : public webkit_glue::CppBoundClass {
  public:
   // Builds the property and method lists needed to bind this class to a JS
   // object.
@@ -32,15 +32,18 @@ class LayoutTestController : public CppBoundClass {
 
   // By default, tests end when page load is complete.  These methods are used
   // to delay the completion of the test until notifyDone is called.
-  void waitUntilDone(const CppArgumentList& args, CppVariant* result);
-  void notifyDone(const CppArgumentList& args, CppVariant* result);
+  void waitUntilDone(const webkit_glue::CppArgumentList& args,
+                     webkit_glue::CppVariant* result);
+  void notifyDone(const webkit_glue::CppArgumentList& args,
+                  webkit_glue::CppVariant* result);
 
   // The fallback method is called when a nonexistent method is called on
   // the layout test controller object.
   // It is usefull to catch typos in the JavaScript code (a few layout tests
   // do have typos in them) and it allows the script to continue running in
   // that case (as the Mac does).
-  void fallbackMethod(const CppArgumentList& args, CppVariant* result);
+  void fallbackMethod(const webkit_glue::CppArgumentList& args,
+                      webkit_glue::CppVariant* result);
 
  public:
   // The following methods are not exposed to JavaScript.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,8 @@
 
 #include "webkit/glue/cpp_bound_class.h"
 #include "webkit/glue/webkit_glue_export.h"
+
+namespace webkit_glue {
 
 class CppBindingExample : public CppBoundClass {
  public:
@@ -75,5 +77,7 @@ class CppBindingExample : public CppBoundClass {
   CppVariant my_value;
   CppVariant my_other_value;
 };
+
+}  // namespace webkit_glue
 
 #endif  // CPP_BINDING_EXAMPLE_H__

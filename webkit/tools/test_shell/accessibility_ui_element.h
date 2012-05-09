@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include "webkit/glue/cpp_bound_class.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 
-class AccessibilityUIElement : public CppBoundClass {
+class AccessibilityUIElement : public webkit_glue::CppBoundClass {
  public:
   class Factory {
   public:
@@ -33,74 +33,117 @@ class AccessibilityUIElement : public CppBoundClass {
 
  private:
   // Bound methods and properties.
-  void AllAttributesCallback(const CppArgumentList& args, CppVariant* result);
+  void AllAttributesCallback(
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
   void AttributesOfLinkedUIElementsCallback(
-      const CppArgumentList& args, CppVariant* result);
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
   void AttributesOfDocumentLinksCallback(
-      const CppArgumentList& args, CppVariant* result);
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
   void AttributesOfChildrenCallback(
-      const CppArgumentList& args, CppVariant* result);
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
   void ParametrizedAttributeNamesCallback(
-      const CppArgumentList& args, CppVariant* result);
-  void LineForIndexCallback(const CppArgumentList& args, CppVariant* result);
-  void BoundsForRangeCallback(const CppArgumentList& args, CppVariant* result);
-  void StringForRangeCallback(const CppArgumentList& args, CppVariant* result);
-  void ChildAtIndexCallback(const CppArgumentList& args, CppVariant* result);
-  void ElementAtPointCallback(const CppArgumentList& args, CppVariant* result);
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
+  void LineForIndexCallback(
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
+  void BoundsForRangeCallback(
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
+  void StringForRangeCallback(
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
+  void ChildAtIndexCallback(
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
+  void ElementAtPointCallback(
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
   void AttributesOfColumnHeadersCallback(
-      const CppArgumentList& args, CppVariant* result);
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
   void AttributesOfRowHeadersCallback(
-      const CppArgumentList& args, CppVariant* result);
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
   void AttributesOfColumnsCallback(
-      const CppArgumentList& args, CppVariant* result);
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
   void AttributesOfRowsCallback(
-      const CppArgumentList& args, CppVariant* result);
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
   void AttributesOfVisibleCellsCallback(
-      const CppArgumentList& args, CppVariant* result);
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
   void AttributesOfHeaderCallback(
-      const CppArgumentList& args, CppVariant* result);
-  void IndexInTableCallback(const CppArgumentList& args, CppVariant* result);
-  void RowIndexRangeCallback(const CppArgumentList& args, CppVariant* result);
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
+  void IndexInTableCallback(
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
+  void RowIndexRangeCallback(
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
   void ColumnIndexRangeCallback(
-      const CppArgumentList& args, CppVariant* result);
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
   void CellForColumnAndRowCallback(
-      const CppArgumentList& args, CppVariant* result);
-  void TitleUIElementCallback(const CppArgumentList& args, CppVariant* result);
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
+  void TitleUIElementCallback(
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
   void SetSelectedTextRangeCallback(
-      const CppArgumentList& args, CppVariant* result);
-  void AttributeValueCallback(const CppArgumentList& args, CppVariant* result);
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
+  void AttributeValueCallback(
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
   void IsAttributeSettableCallback(
-      const CppArgumentList& args, CppVariant* result);
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
   void IsActionSupportedCallback(
-      const CppArgumentList& args, CppVariant* result);
-  void ParentElementCallback(const CppArgumentList& args, CppVariant* result);
-  void IncrementCallback(const CppArgumentList& args, CppVariant* result);
-  void DecrementCallback(const CppArgumentList& args, CppVariant* result);
-  void FallbackCallback(const CppArgumentList& args, CppVariant* result);
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
+  void ParentElementCallback(
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
+  void IncrementCallback(
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
+  void DecrementCallback(
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
+  void FallbackCallback(
+      const webkit_glue::CppArgumentList& args,
+      webkit_glue::CppVariant* result);
 
-  void ChildrenCountGetterCallback(CppVariant* result);
-  void DescriptionGetterCallback(CppVariant* result);
-  void IsEnabledGetterCallback(CppVariant* result);
-  void IsSelectedGetterCallback(CppVariant* result);
-  void RoleGetterCallback(CppVariant* result);
-  void TitleGetterCallback(CppVariant* result);
+  void ChildrenCountGetterCallback(webkit_glue::CppVariant* result);
+  void DescriptionGetterCallback(webkit_glue::CppVariant* result);
+  void IsEnabledGetterCallback(webkit_glue::CppVariant* result);
+  void IsSelectedGetterCallback(webkit_glue::CppVariant* result);
+  void RoleGetterCallback(webkit_glue::CppVariant* result);
+  void TitleGetterCallback(webkit_glue::CppVariant* result);
 
-  CppVariant subrole_;
-  CppVariant language_;
-  CppVariant x_;
-  CppVariant y_;
-  CppVariant width_;
-  CppVariant height_;
-  CppVariant click_point_x_;
-  CppVariant click_point_y_;
-  CppVariant int_value_;
-  CppVariant min_value_;
-  CppVariant max_value_;
-  CppVariant children_count_;
-  CppVariant insertion_point_line_number_;
-  CppVariant selected_text_range;
-  CppVariant is_required_;
-  CppVariant value_description_;
+  webkit_glue::CppVariant subrole_;
+  webkit_glue::CppVariant language_;
+  webkit_glue::CppVariant x_;
+  webkit_glue::CppVariant y_;
+  webkit_glue::CppVariant width_;
+  webkit_glue::CppVariant height_;
+  webkit_glue::CppVariant click_point_x_;
+  webkit_glue::CppVariant click_point_y_;
+  webkit_glue::CppVariant int_value_;
+  webkit_glue::CppVariant min_value_;
+  webkit_glue::CppVariant max_value_;
+  webkit_glue::CppVariant children_count_;
+  webkit_glue::CppVariant insertion_point_line_number_;
+  webkit_glue::CppVariant selected_text_range;
+  webkit_glue::CppVariant is_required_;
+  webkit_glue::CppVariant value_description_;
 
   WebKit::WebAccessibilityObject accessibility_object_;
   Factory* factory_;

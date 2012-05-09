@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 // A DOMBoundBrowserObject is a backing for some object bound to the window
 // in JS that knows how to dispatch messages to an associated c++ object living
 // in the browser process.
-class DOMBoundBrowserObject : public CppBoundClass {
+class DOMBoundBrowserObject : public webkit_glue::CppBoundClass {
  public:
   CONTENT_EXPORT DOMBoundBrowserObject();
   CONTENT_EXPORT virtual ~DOMBoundBrowserObject();
@@ -24,7 +24,7 @@ class DOMBoundBrowserObject : public CppBoundClass {
  private:
   // The list of properties that have been set.  We keep track of this so we
   // can free them on destruction.
-  typedef std::vector<CppVariant*> PropertyList;
+  typedef std::vector<webkit_glue::CppVariant*> PropertyList;
   PropertyList properties_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMBoundBrowserObject);
@@ -45,7 +45,8 @@ class WebUIBindings : public DOMBoundBrowserObject {
 
  private:
   // The send() function provided to Javascript.
-  void Send(const CppArgumentList& args, CppVariant* result);
+  void Send(const webkit_glue::CppArgumentList& args,
+            webkit_glue::CppVariant* result);
 
   IPC::Message::Sender* sender_;
   int routing_id_;

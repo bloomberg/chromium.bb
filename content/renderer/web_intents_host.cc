@@ -27,6 +27,9 @@ using WebKit::WebFrame;
 using WebKit::WebIntentRequest;
 using WebKit::WebString;
 using WebKit::WebSerializedScriptValue;
+using webkit_glue::CppArgumentList;
+using webkit_glue::CppBoundClass;
+using webkit_glue::CppVariant;
 
 // This class encapsulates the API the Intent object will expose to Javascript.
 // It is made available to the Javascript runtime in the service page using

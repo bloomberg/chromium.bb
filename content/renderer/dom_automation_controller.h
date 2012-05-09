@@ -74,7 +74,7 @@
 // TODO(vibhor): Add another method-pair like sendLater() and sendNow()
 // sendLater() should keep building a json serializer
 // sendNow() should send the above serializer as a string.
-class DomAutomationController : public CppBoundClass {
+class DomAutomationController : public webkit_glue::CppBoundClass {
  public:
   DomAutomationController();
 
@@ -83,12 +83,14 @@ class DomAutomationController : public CppBoundClass {
   // Number (double casted to int32) or boolean.
   // The function returns true/false based on the result of actual send over
   // IPC. It sets the return value to null on unexpected errors or arguments.
-  void Send(const CppArgumentList& args, CppVariant* result);
+  void Send(const webkit_glue::CppArgumentList& args,
+            webkit_glue::CppVariant* result);
 
   // Makes the renderer send a javascript value to the app.
   // The value must be a NPString and should be properly formed JSON.
   // This function does not modify/escape the returned string in any way.
-  void SendJSON(const CppArgumentList& args, CppVariant* result);
+  void SendJSON(const webkit_glue::CppArgumentList& args,
+                webkit_glue::CppVariant* result);
 
   // Sends a string with a provided Automation Id.
   // Expects two javascript values; the first must be a number type and will be
@@ -96,9 +98,11 @@ class DomAutomationController : public CppBoundClass {
   // The function returns true/false to the javascript based on the success
   // of the send over IPC. It sets the javascript return value to null on
   // unexpected errors or arguments.
-  void SendWithId(const CppArgumentList& args, CppVariant* result);
+  void SendWithId(const webkit_glue::CppArgumentList& args,
+                  webkit_glue::CppVariant* result);
 
-  void SetAutomationId(const CppArgumentList& args, CppVariant* result);
+  void SetAutomationId(const webkit_glue::CppArgumentList& args,
+                       webkit_glue::CppVariant* result);
 
   // TODO(vibhor): Implement later
   // static CppBindingObjectMethod sendLater;

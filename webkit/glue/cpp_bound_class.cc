@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,8 @@
 
 using WebKit::WebBindings;
 using WebKit::WebFrame;
+
+namespace webkit_glue {
 
 namespace {
 
@@ -324,3 +326,5 @@ void CppBoundClass::BindToJavascript(WebFrame* frame,
                             NPVARIANT_TO_OBJECT(*GetAsCppVariant()));
   bound_to_frame_ = true;
 }
+
+}  // namespace webkit_glue

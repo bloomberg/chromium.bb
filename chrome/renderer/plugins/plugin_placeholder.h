@@ -26,7 +26,7 @@ struct WebPluginInfo;
 // (blocked or disabled).
 class PluginPlaceholder : public content::RenderViewObserver,
                           public content::RenderProcessObserver,
-                          public CppBoundClass,
+                          public webkit_glue::CppBoundClass,
                           public webkit::WebViewPlugin::Delegate {
  public:
   // Creates a new WebViewPlugin with a MissingPlugin as a delegate.
@@ -115,19 +115,21 @@ class PluginPlaceholder : public content::RenderViewObserver,
   // Javascript callbacks:
   // Load the blocked plugin by calling LoadPlugin().
   // Takes no arguments, and returns nothing.
-  void LoadCallback(const CppArgumentList& args, CppVariant* result);
+  void LoadCallback(const webkit_glue::CppArgumentList& args,
+                    webkit_glue::CppVariant* result);
 
   // Hide the blocked plugin by calling HidePlugin().
   // Takes no arguments, and returns nothing.
-  void HideCallback(const CppArgumentList& args, CppVariant* result);
+  void HideCallback(const webkit_glue::CppArgumentList& args,
+                    webkit_glue::CppVariant* result);
 
   // Opens chrome://plugins in a new tab.
   // Takes no arguments, and returns nothing.
-  void OpenAboutPluginsCallback(const CppArgumentList& args,
-                                CppVariant* result);
+  void OpenAboutPluginsCallback(const webkit_glue::CppArgumentList& args,
+                                webkit_glue::CppVariant* result);
 
-  void DidFinishLoadingCallback(const CppArgumentList& args,
-                                CppVariant* result);
+  void DidFinishLoadingCallback(const webkit_glue::CppArgumentList& args,
+                                webkit_glue::CppVariant* result);
 
   void OnLoadBlockedPlugins();
   void OnSetIsPrerendering(bool is_prerendering);

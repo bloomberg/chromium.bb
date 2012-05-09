@@ -10,6 +10,9 @@
 #include "base/string_util.h"
 #include "content/common/view_messages.h"
 
+using webkit_glue::CppArgumentList;
+using webkit_glue::CppVariant;
+
 DomAutomationController::DomAutomationController()
     : sender_(NULL),
       routing_id_(MSG_ROUTING_NONE),

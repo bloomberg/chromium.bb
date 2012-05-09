@@ -57,6 +57,8 @@ using WebKit::WebSecurityPolicy;
 using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebURL;
+using webkit_glue::CppArgumentList;
+using webkit_glue::CppVariant;
 
 TestShell* LayoutTestController::shell_ = NULL;
 // Most of these flags need to be cleared in Reset() so that they get turned

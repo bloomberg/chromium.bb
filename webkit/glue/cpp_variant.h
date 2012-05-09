@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,8 @@
 #include "base/basictypes.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "webkit/glue/webkit_glue_export.h"
+
+namespace webkit_glue {
 
 class WEBKIT_GLUE_EXPORT CppVariant : public NPVariant {
  public:
@@ -108,5 +110,7 @@ class WEBKIT_GLUE_EXPORT CppVariant : public NPVariant {
   bool Invoke(const std::string& method, const CppVariant* args,
               uint32 arg_count, CppVariant& result) const;
 };
+
+}  // namespace webkit_glue
 
 #endif  // WEBKIT_GLUE_CPP_VARIANT_H__

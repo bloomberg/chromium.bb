@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 //
 // We expose one function, for sending a message to the external host:
 //  postMessage(String message[, String target]);
-class ExternalHostBindings : public CppBoundClass {
+class ExternalHostBindings : public webkit_glue::CppBoundClass {
  public:
   ExternalHostBindings(IPC::Message::Sender* sender, int routing_id);
   virtual ~ExternalHostBindings();
@@ -35,9 +35,10 @@ class ExternalHostBindings : public CppBoundClass {
   bool CreateMessageEvent(NPObject** message_event);
 
   // The postMessage() function provided to Javascript.
-  void PostMessage(const CppArgumentList& args, CppVariant* result);
+  void PostMessage(const webkit_glue::CppArgumentList& args,
+                   webkit_glue::CppVariant* result);
 
-  CppVariant on_message_handler_;
+  webkit_glue::CppVariant on_message_handler_;
   WebKit::WebFrame* frame_;
   IPC::Message::Sender* sender_;
   int routing_id_;

@@ -63,6 +63,8 @@ using WebKit::WebString;
 using WebKit::WebURLRequest;
 using WebKit::WebVector;
 using webkit::WebViewPlugin;
+using webkit_glue::CppArgumentList;
+using webkit_glue::CppVariant;
 
 const char* const kPluginPlaceholderDataURL =
     "chrome://pluginplaceholderdata/";
