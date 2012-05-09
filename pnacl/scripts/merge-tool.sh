@@ -266,9 +266,12 @@ hg-merge() {
   hg parent
   hg "${HG_CONFIG[@]}" -y merge -r vendor 2>&1 | tee "${MERGE_LOG_FILE}"
   local hgret=${PIPESTATUS[0]}
-  if [ ${hgret} -ne 0 ] ||
-     grep -q "remote deleted\|local deleted\|conflicting flags" \
-             "${MERGE_LOG_FILE}" ; then
+  if [ ${hgret} -ne 0 ]; then
+    echo "==== REMAINING MERGE CONFLICTS (file deletes, etc.) ===="
+    grep "remote deleted\|local deleted\|conflicting flags" \
+      "${MERGE_LOG_FILE}"
+    echo "==== END grep of ${MERGE_LOG_FILE} ===="
+    echo "Please handle these file changes manually."
     Fatal "MERGE FAILED"
   fi
   spopd
