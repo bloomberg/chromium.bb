@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/common/content_switches.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -143,13 +144,22 @@ bool PathProvider(int key, FilePath* result) {
 
   FilePath cur;
   switch (key) {
-    case chrome::DIR_USER_DATA:
+    case chrome::DIR_USER_DATA: {
+      CommandLine *cmd_line = CommandLine::ForCurrentProcess();
+      if (cmd_line) {
+        // In some tests this check might be happening after the CommandLine
+        // object has been destroyed. This is DCHECKED but in release builds
+        // it might lead to a crash here.
+        CHECK(ProcessNeedsProfileDir(cmd_line->GetSwitchValueASCII(
+            switches::kProcessType)));
+      }
       if (!GetDefaultUserDataDirectory(&cur)) {
         NOTREACHED();
         return false;
       }
       create_dir = true;
       break;
+    }
     case chrome::DIR_USER_DOCUMENTS:
       if (!GetUserDocumentsDirectory(&cur))
         return false;
