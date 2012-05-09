@@ -20,6 +20,8 @@ class Profile;
 
 namespace extensions {
 
+class ExtensionAlarmsSchedulingTest;
+
 // Manages the currently pending alarms for every extension in a profile.
 // There is one manager per virtual Profile.
 class AlarmManager : public content::NotificationObserver {
@@ -61,12 +63,24 @@ class AlarmManager : public content::NotificationObserver {
   void RemoveAllAlarms(const std::string& extension_id);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsTest, CreateRepeating);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsTest, Clear);
+  friend class ExtensionAlarmsSchedulingTest;
+  FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsSchedulingTest, PollScheduling);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsSchedulingTest, TimerRunning);
+
   typedef std::string ExtensionId;
   typedef std::map<ExtensionId, AlarmList> AlarmMap;
 
   // Iterator used to identify a particular alarm within the Map/List pair.
   // "Not found" is represented by <alarms_.end(), invalid_iterator>.
   typedef std::pair<AlarmMap::iterator, AlarmList::iterator> AlarmIterator;
+
+  struct AlarmRuntimeInfo {
+    std::string extension_id;
+    base::Time time;
+  };
+  typedef std::map<const Alarm*, AlarmRuntimeInfo> AlarmRuntimeInfoMap;
 
   // Helper to return the iterators within the AlarmMap and AlarmList for the
   // matching alarm, or an iterator to the end of the AlarmMap if none were
@@ -84,11 +98,19 @@ class AlarmManager : public content::NotificationObserver {
   // Internal helper to add an alarm and start the timer with the given delay.
   void AddAlarmImpl(const std::string& extension_id,
                     const linked_ptr<Alarm>& alarm,
-                    base::TimeDelta timer_delay);
+                    base::TimeDelta time_delay);
 
   // Syncs our alarm data for the given extension to/from the prefs file.
   void WriteToPrefs(const std::string& extension_id);
   void ReadFromPrefs(const std::string& extension_id);
+
+  // Schedules the next poll of alarms for when the next soonest alarm runs,
+  // but do not more often than min_period.
+  void ScheduleNextPoll(base::TimeDelta min_period);
+
+  // Polls the alarms, running any that have elapsed. After running them and
+  // rescheduling repeating alarms, schedule the next poll.
+  void PollAlarms();
 
   // NotificationObserver:
   virtual void Observe(int type,
@@ -99,11 +121,18 @@ class AlarmManager : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
   scoped_ptr<Delegate> delegate_;
 
+  // The timer for this alarm manager.
+  base::OneShotTimer<AlarmManager> timer_;
+
   // A map of our pending alarms, per extension.
   AlarmMap alarms_;
 
-  // A map of the timer associated with each alarm.
-  std::map<const Alarm*, linked_ptr<base::Timer> > timers_;
+  // A map of the next scheduled times associated with each alarm.
+  AlarmRuntimeInfoMap scheduled_times_;
+
+  // The previous and next time that alarms were and will be run.
+  base::Time last_poll_time_;
+  base::Time next_poll_time_;
 };
 
 // Contains the data we store in the extension prefs for each alarm.

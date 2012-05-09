@@ -34,6 +34,8 @@ class AlarmDelegate : public AlarmManager::Delegate {
   std::vector<std::string> alarms_seen;
 };
 
+}  // namespace
+
 class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
  public:
   virtual void SetUp() {
@@ -118,8 +120,6 @@ class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
   scoped_refptr<Extension> extension_;
 };
 
-}  // namespace
-
 TEST_F(ExtensionAlarmsTest, Create) {
   // Create 1 non-repeating alarm.
   RunFunction(new AlarmsCreateFunction(), "[null, {\"delayInMinutes\": 0}]");
@@ -163,6 +163,7 @@ TEST_F(ExtensionAlarmsTest, CreateRepeating) {
   MessageLoop::current()->Run();
 
   // Wait again, and ensure the alarm fires again.
+  alarm_manager_->ScheduleNextPoll(base::TimeDelta::FromSeconds(0));
   MessageLoop::current()->Run();
 
   ASSERT_EQ(2u, alarm_delegate_->alarms_seen.size());
@@ -279,6 +280,7 @@ TEST_F(ExtensionAlarmsTest, Clear) {
 
   // Now wait for the alarms to fire, and ensure the cancelled alarms don't
   // fire.
+  alarm_manager_->ScheduleNextPoll(base::TimeDelta::FromSeconds(0));
   MessageLoop::current()->Run();
 
   ASSERT_EQ(1u, alarm_delegate_->alarms_seen.size());
@@ -318,6 +320,74 @@ TEST_F(ExtensionAlarmsTest, ClearAll) {
         alarm_manager_->GetAllAlarms(extension_->id());
     ASSERT_FALSE(alarms);
   }
+}
+
+class ExtensionAlarmsSchedulingTest : public ExtensionAlarmsTest {
+ public:
+  // Get the time that the alarm named is scheduled to run.
+  base::Time GetScheduledTime(const std::string& alarm_name) {
+    const extensions::AlarmManager::Alarm* alarm =
+        alarm_manager_->GetAlarm(extension_->id(), alarm_name);
+    CHECK(alarm);
+    return alarm_manager_->scheduled_times_[alarm].time;
+  }
+};
+
+TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
+  {
+    RunFunction(new AlarmsCreateFunction(),
+                "[\"a\", {\"delayInMinutes\": 6, \"repeating\": true}]");
+    RunFunction(new AlarmsCreateFunction(),
+                "[\"bb\", {\"delayInMinutes\": 8, \"repeating\": true}]");
+    EXPECT_EQ(GetScheduledTime("a"), alarm_manager_->next_poll_time_);
+    alarm_manager_->RemoveAllAlarms(extension_->id());
+  }
+  {
+    RunFunction(new AlarmsCreateFunction(),
+                "[\"a\", {\"delayInMinutes\": 10}]");
+    RunFunction(new AlarmsCreateFunction(),
+                "[\"bb\", {\"delayInMinutes\": 21}]");
+    EXPECT_EQ(GetScheduledTime("a"), alarm_manager_->next_poll_time_);
+    alarm_manager_->RemoveAllAlarms(extension_->id());
+  }
+  {
+    RunFunction(new AlarmsCreateFunction(),
+                "[\"a\", {\"delayInMinutes\": 10, \"repeating\": true}]");
+    linked_ptr<AlarmManager::Alarm> alarm(new AlarmManager::Alarm());
+    alarm->name = "bb";
+    alarm->delay_in_minutes = 30;
+    alarm->repeating = true;
+    alarm_manager_->AddAlarmImpl(extension_->id(), alarm,
+                                 base::TimeDelta::FromMinutes(3));
+    EXPECT_EQ(GetScheduledTime("bb"), alarm_manager_->next_poll_time_);
+    alarm_manager_->RemoveAllAlarms(extension_->id());
+  }
+  {
+    linked_ptr<AlarmManager::Alarm> alarm(new AlarmManager::Alarm());
+    alarm->name = "bb";
+    alarm->delay_in_minutes = 3;
+    alarm->repeating = true;
+    alarm_manager_->AddAlarmImpl(extension_->id(), alarm,
+                                 base::TimeDelta::FromSeconds(0));
+    MessageLoop::current()->Run();
+    // 5 minutes is the default minimum period (kMinPollPeriod).
+    EXPECT_EQ(alarm_manager_->last_poll_time_ + base::TimeDelta::FromMinutes(5),
+              alarm_manager_->next_poll_time_);
+  }
+}
+
+TEST_F(ExtensionAlarmsSchedulingTest, TimerRunning) {
+  EXPECT_FALSE(alarm_manager_->timer_.IsRunning());
+  RunFunction(new AlarmsCreateFunction(),
+              "[\"a\", {\"delayInMinutes\": 0.001}]");
+  EXPECT_TRUE(alarm_manager_->timer_.IsRunning());
+  MessageLoop::current()->Run();
+  EXPECT_FALSE(alarm_manager_->timer_.IsRunning());
+  RunFunction(new AlarmsCreateFunction(),
+              "[\"bb\", {\"delayInMinutes\": 10}]");
+  EXPECT_TRUE(alarm_manager_->timer_.IsRunning());
+  alarm_manager_->RemoveAllAlarms(extension_->id());
+  EXPECT_FALSE(alarm_manager_->timer_.IsRunning());
 }
 
 }  // namespace extensions

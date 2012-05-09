@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -21,6 +22,9 @@ namespace extensions {
 namespace {
 
 const char kOnAlarmEvent[] = "alarms.onAlarm";
+
+// The minimum period between polling for alarms to run.
+const base::TimeDelta kMinPollPeriod = base::TimeDelta::FromMinutes(5);
 
 class DefaultAlarmDelegate : public AlarmManager::Delegate {
  public:
@@ -41,11 +45,20 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
   Profile* profile_;
 };
 
+// Creates a TimeDelta from a delay as specified in the API.
+base::TimeDelta TimeDeltaFromDelay(double delay_in_minutes) {
+  return base::TimeDelta::FromMicroseconds(
+      delay_in_minutes * base::Time::kMicrosecondsPerMinute);
 }
+
+}  // namespace
+
+// AlarmManager
 
 AlarmManager::AlarmManager(Profile* profile)
     : profile_(profile),
-      delegate_(new DefaultAlarmDelegate(profile)) {
+      delegate_(new DefaultAlarmDelegate(profile)),
+      last_poll_time_(base::Time()) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
 }
@@ -118,9 +131,12 @@ void AlarmManager::RemoveAllAlarms(const std::string& extension_id) {
 }
 
 void AlarmManager::RemoveAlarmIterator(const AlarmIterator& iter) {
-  // Cancel the timer first.
-  timers_[iter.second->get()]->Stop();
-  timers_.erase(iter.second->get());
+  // Cancel the timer if there are no more alarms.
+  // We don't need to reschedule the poll otherwise, because in
+  // the worst case we would just poll one extra time.
+  scheduled_times_.erase(iter.second->get());
+  if (scheduled_times_.empty())
+    timer_.Stop();
 
   // Clean up our alarm list.
   AlarmList& list = iter.first->second;
@@ -139,14 +155,9 @@ void AlarmManager::OnAlarm(const std::string& extension_id,
   if (!alarm->repeating) {
     RemoveAlarmIterator(it);
   } else {
-    // Restart the timer, since it may have been set with a shorter delay
-    // initially.
-    base::Timer* timer = timers_[alarm].get();
-    base::TimeDelta alarm_time = base::TimeDelta::FromMicroseconds(
-        alarm->delay_in_minutes * base::Time::kMicrosecondsPerMinute);
-    timer->Start(FROM_HERE, alarm_time,
-                 base::Bind(&AlarmManager::OnAlarm, base::Unretained(this),
-                 extension_id, alarm->name));
+    // Update our scheduled time for the next alarm.
+    scheduled_times_[alarm].time =
+        last_poll_time_ + TimeDeltaFromDelay(alarm->delay_in_minutes);
   }
 
   WriteToPrefs(extension_id);
@@ -154,20 +165,20 @@ void AlarmManager::OnAlarm(const std::string& extension_id,
 
 void AlarmManager::AddAlarmImpl(const std::string& extension_id,
                                 const linked_ptr<Alarm>& alarm,
-                                base::TimeDelta timer_delay) {
+                                base::TimeDelta time_delay) {
   // Override any old alarm with the same name.
   AlarmIterator old_alarm = GetAlarmIterator(extension_id, alarm->name);
   if (old_alarm.first != alarms_.end())
     RemoveAlarmIterator(old_alarm);
 
   alarms_[extension_id].push_back(alarm);
+  AlarmRuntimeInfo info;
+  info.extension_id = extension_id;
+  info.time = base::Time::Now() + time_delay;
+  scheduled_times_[alarm.get()] = info;
 
-  base::Timer* timer = new base::Timer(true, alarm->repeating);
-  timers_[alarm.get()] = make_linked_ptr(timer);
-  timer->Start(FROM_HERE,
-      timer_delay,
-      base::Bind(&AlarmManager::OnAlarm, base::Unretained(this),
-                 extension_id, alarm->name));
+  // TODO(yoz): Is 0 really sane? There could be thrashing.
+  ScheduleNextPoll(base::TimeDelta::FromMinutes(0));
 }
 
 void AlarmManager::WriteToPrefs(const std::string& extension_id) {
@@ -182,12 +193,9 @@ void AlarmManager::WriteToPrefs(const std::string& extension_id) {
   if (list != alarms_.end()) {
     for (AlarmList::iterator it = list->second.begin();
          it != list->second.end(); ++it) {
-      base::Timer* timer = timers_[it->get()].get();
-      base::TimeDelta delay =
-          timer->desired_run_time() - base::TimeTicks::Now();
       AlarmPref pref;
       pref.alarm = *it;
-      pref.scheduled_run_time = base::Time::Now() + delay;
+      pref.scheduled_run_time = scheduled_times_[it->get()].time;
       alarm_prefs.push_back(pref);
     }
   }
@@ -211,6 +219,60 @@ void AlarmManager::ReadFromPrefs(const std::string& extension_id) {
 
     AddAlarmImpl(extension_id, alarm_prefs[i].alarm, delay);
   }
+}
+
+void AlarmManager::ScheduleNextPoll(base::TimeDelta min_period) {
+  // 0. If there are no alarms, stop the timer.
+  if (scheduled_times_.empty()) {
+    timer_.Stop();
+    return;
+  }
+
+  // TODO(yoz): Try not to reschedule every single time if we're adding
+  // a lot of alarms.
+
+  base::Time next_poll(last_poll_time_ + min_period);
+
+  // Find the soonest alarm that is scheduled to run.
+  AlarmRuntimeInfoMap::iterator min_it = scheduled_times_.begin();
+  for (AlarmRuntimeInfoMap::iterator it = min_it;
+           it != scheduled_times_.end(); ++it) {
+    if (it->second.time < min_it->second.time)
+      min_it = it;
+  }
+  base::Time soonest_alarm_time(min_it->second.time);
+
+  // If the next alarm is more than min_period in the future, wait for it.
+  // Otherwise, only poll as often as min_period.
+  if (last_poll_time_.is_null() || next_poll < soonest_alarm_time) {
+    next_poll = soonest_alarm_time;
+  }
+
+  // Schedule the poll.
+  next_poll_time_ = next_poll;
+  base::TimeDelta delay = std::max(base::TimeDelta::FromSeconds(0),
+                                   next_poll - base::Time::Now());
+  timer_.Start(FROM_HERE,
+               delay,
+               this,
+               &AlarmManager::PollAlarms);
+}
+
+void AlarmManager::PollAlarms() {
+  last_poll_time_ = base::Time::Now();
+
+  // Run any alarms scheduled in the past. Note that we could remove alarms
+  // during iteration if they are non-repeating.
+  AlarmRuntimeInfoMap::iterator iter = scheduled_times_.begin();
+  while (iter != scheduled_times_.end()) {
+    AlarmRuntimeInfoMap::iterator it = iter;
+    ++iter;
+    if (it->second.time <= next_poll_time_) {
+      OnAlarm(it->second.extension_id, it->first->name);
+    }
+  }
+
+  ScheduleNextPoll(kMinPollPeriod);
 }
 
 void AlarmManager::Observe(
