@@ -11,12 +11,17 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/aura/window.h"
 
@@ -25,21 +30,56 @@
 #endif
 
 namespace {
-std::string GetScreenshotFileName() {
+bool ShouldUse24HourClock() {
+#if defined(OS_CHROMEOS)
+  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  if (profile) {
+    PrefService* pref_service = profile->GetPrefs();
+    if (pref_service) {
+      return pref_service->GetBoolean(prefs::kUse24HourClock);
+    }
+  }
+#endif
+  return base::GetHourClockType() == base::k24HourClock;
+}
+
+std::string GetScreenshotFileName(bool use_24hour_clock) {
   base::Time::Exploded now;
   base::Time::Now().LocalExplode(&now);
 
-  return base::StringPrintf("screenshot-%d%02d%02d-%02d%02d%02d.png",
-                            now.year, now.month, now.day_of_month,
-                            now.hour, now.minute, now.second);
+  // We don't use base/i18n/time_formatting.h here because it doesn't
+  // support our format.  Don't use ICU either to avoid i18n file names
+  // for non-English locales.
+  // TODO(mukai): integrate this logic somewhere time_formatting.h
+  std::string file_name = base::StringPrintf(
+      "Screenshot_%d-%02d-%02d_", now.year, now.month, now.day_of_month);
+
+  if (use_24hour_clock) {
+    file_name.append(base::StringPrintf(
+        "%02d:%02d:%02d.png", now.hour, now.minute, now.second));
+  } else {
+    int hour = now.hour;
+    if (hour > 12) {
+      hour -= 12;
+    } else if (hour == 0) {
+      hour = 12;
+    }
+    file_name.append(base::StringPrintf(
+        "%02d:%02d:%02d_", hour, now.minute, now.second));
+    file_name.append((now.hour >= 12) ? "PM" : "AM");
+    file_name.append(".png");
+  }
+
+  return file_name;
 }
 
 // |is_logged_in| is used only for ChromeOS.  Otherwise it is always true.
 void SaveScreenshot(bool is_logged_in,
+                    bool use_24hour_clock,
                     scoped_refptr<base::RefCountedBytes> png_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
-  std::string screenshot_filename = GetScreenshotFileName();
+  std::string screenshot_filename = GetScreenshotFileName(use_24hour_clock);
   FilePath screenshot_path;
   if (is_logged_in) {
     screenshot_path = download_util::GetDefaultDownloadDirectory().AppendASCII(
@@ -92,11 +132,13 @@ void ScreenshotTaker::HandleTakePartialScreenshot(
   is_logged_in = chromeos::UserManager::Get()->IsUserLoggedIn();
 #endif
 
+  bool use_24hour_clock = ShouldUse24HourClock();
+
   if (browser::GrabWindowSnapshot(window, &png_data->data(), rect)) {
     DisplayVisualFeedback(rect);
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&SaveScreenshot, is_logged_in, png_data));
+        base::Bind(&SaveScreenshot, is_logged_in, use_24hour_clock, png_data));
   } else {
     LOG(ERROR) << "Failed to grab the window screenshot";
   }
