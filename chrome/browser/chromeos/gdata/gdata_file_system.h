@@ -951,6 +951,15 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void OnFeedFromServerLoaded(GetDocumentsParams* params,
                               base::PlatformFileError status);
 
+  // Callback for handling results of ReloadFeedFromServerIfNeeded() initiated
+  // from CheckForUpdates(). This callback checks whether feed is successfully
+  // reloaded, and in case of failure, restores the content origin of the root
+  // directory.
+  void OnUpdateChecked(ContentOrigin initial_origin,
+                       base::PlatformFileError error,
+                       const FilePath& directory_path,
+                       GDataEntry* entry);
+
   // Starts root feed load from the cache. If successful, it will try to find
   // the file upon retrieval completion. In addition to that, it will
   // initate retrieval of the root feed from the server if

@@ -1009,11 +1009,24 @@ void GDataFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ContentOrigin initial_origin = root_->origin();
   if (initial_origin == FROM_SERVER) {
+    base::AutoLock lock(lock_);
     root_->set_origin(REFRESHING);
     ReloadFeedFromServerIfNeeded(initial_origin,
                                  root_->largest_changestamp(),
                                  root_->GetFilePath(),
-                                 gdata::FindEntryCallback());
+                                 base::Bind(&GDataFileSystem::OnUpdateChecked,
+                                            ui_weak_ptr_,
+                                            initial_origin));
+  }
+}
+
+void GDataFileSystem::OnUpdateChecked(ContentOrigin initial_origin,
+                                      base::PlatformFileError error,
+                                      const FilePath& /* directory_path */,
+                                      GDataEntry* /* entry */) {
+  if (error != base::PLATFORM_FILE_OK) {
+    base::AutoLock lock(lock_);
+    root_->set_origin(initial_origin);
   }
 }
 
