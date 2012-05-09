@@ -140,6 +140,8 @@
         'system/settings/tray_settings.h',
         'system/tray/system_tray.cc',
         'system/tray/system_tray.h',
+        'system/tray/system_tray_bubble.cc',
+        'system/tray/system_tray_bubble.h',
         'system/tray/system_tray_delegate.cc',
         'system/tray/system_tray_delegate.h',
         'system/tray/system_tray_item.cc',

@@ -8,6 +8,9 @@
 
 namespace ash {
 
+const int kPaddingFromRightEdgeOfScreen = 15;
+const int kPaddingFromBottomOfScreen = 10;
+
 const int kTrayPopupAutoCloseDelayInSeconds = 2;
 const int kTrayPopupAutoCloseDelayForTextInSeconds = 5;
 const int kTrayPopupPaddingHorizontal = 18;
