@@ -218,13 +218,6 @@ bool IsSingleThreaded() {
   return base::PlatformThread::CurrentId() == thread_id;
 }
 
-const char kMetricsTypeXml[] = "application/vnd.mozilla.metrics.bz2";
-const char kMetricsTypeProto[] = "application/vnd.chrome.uma";
-
-const char kServerUrlXml[] =
-    "https://clients4.google.com/firefox/metrics/collect";
-const char kServerUrlProto[] = "https://clients4.google.com/uma/v2";
-
 // The delay, in seconds, after starting recording before doing expensive
 // initialization work.
 const int kInitializationDelaySeconds = 30;
@@ -1133,7 +1126,7 @@ void MetricsService::PrepareFetchWithStagedLog() {
       GURL(server_url_xml_), content::URLFetcher::POST, this));
   current_fetch_xml_->SetRequestContext(
       g_browser_process->system_request_context());
-  current_fetch_xml_->SetUploadData(kMetricsTypeXml,
+  current_fetch_xml_->SetUploadData(kMimeTypeXml,
                                     log_manager_.staged_log_text().xml);
   // We already drop cookies server-side, but we might as well strip them out
   // client-side as well.
@@ -1147,7 +1140,7 @@ void MetricsService::PrepareFetchWithStagedLog() {
         GURL(server_url_proto_), content::URLFetcher::POST, this));
     current_fetch_proto_->SetRequestContext(
         g_browser_process->system_request_context());
-    current_fetch_proto_->SetUploadData(kMetricsTypeProto,
+    current_fetch_proto_->SetUploadData(kMimeTypeProto,
                                         log_manager_.staged_log_text().proto);
     // We already drop cookies server-side, but we might as well strip them out
     // client-side as well.

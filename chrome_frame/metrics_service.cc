@@ -71,8 +71,6 @@ using base::Time;
 using base::TimeDelta;
 using base::win::ScopedComPtr;
 
-static const char kMetricsType[] = "application/vnd.mozilla.metrics.bz2";
-
 // The first UMA upload occurs after this interval.
 static const int kInitialUMAUploadTimeoutMilliSeconds = 30000;
 
@@ -106,13 +104,15 @@ class ChromeFrameMetricsDataUploader : public BSCBImpl {
   }
 
   static HRESULT ChromeFrameMetricsDataUploader::UploadDataHelper(
-      const std::string& upload_data) {
+      const std::string& upload_data,
+      const std::string& server_url,
+      const std::string& mime_type) {
     CComObject<ChromeFrameMetricsDataUploader>* data_uploader = NULL;
     CComObject<ChromeFrameMetricsDataUploader>::CreateInstance(&data_uploader);
     DCHECK(data_uploader != NULL);
 
     data_uploader->AddRef();
-    HRESULT hr = data_uploader->UploadData(upload_data);
+    HRESULT hr = data_uploader->UploadData(upload_data, server_url, mime_type);
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to initialize ChromeFrame UMA data uploader: Err"
                   << hr;
@@ -121,7 +121,9 @@ class ChromeFrameMetricsDataUploader : public BSCBImpl {
     return hr;
   }
 
-  HRESULT UploadData(const std::string& upload_data) {
+  HRESULT UploadData(const std::string& upload_data,
+                     const std::string& server_url,
+                     const std::string& mime_type) {
     if (upload_data.empty()) {
       NOTREACHED() << "Invalid upload data";
       return E_INVALIDARG;
@@ -146,10 +148,10 @@ class ChromeFrameMetricsDataUploader : public BSCBImpl {
 
     RewindStream(cache_stream_);
 
-    BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
-        BrowserDistribution::CHROME_FRAME);
-    server_url_ = dist->GetStatsServerURL();
+    server_url_ = ASCIIToWide(server_url);
+    mime_type_ = mime_type;
     DCHECK(!server_url_.empty());
+    DCHECK(!mime_type_.empty());
 
     hr = CreateURLMoniker(NULL, server_url_.c_str(),
                           upload_moniker_.Receive());
@@ -185,7 +187,7 @@ class ChromeFrameMetricsDataUploader : public BSCBImpl {
                      "Content-Type: %s\r\n"
                      "%s\r\n",
                      base::Int64ToString(upload_data_size_).c_str(),
-                     kMetricsType,
+                     mime_type_.c_str(),
                      http_utils::GetDefaultUserAgentHeaderWithCFTag().c_str());
 
     *additional_headers = reinterpret_cast<wchar_t*>(
@@ -230,6 +232,7 @@ class ChromeFrameMetricsDataUploader : public BSCBImpl {
 
  private:
   std::wstring server_url_;
+  std::string mime_type_;
   size_t upload_data_size_;
   ScopedComPtr<IStream> cache_stream_;
   ScopedComPtr<IMoniker> upload_moniker_;
@@ -405,20 +408,13 @@ void MetricsService::MakePendingLog() {
   if (log_manager_.has_staged_log())
     return;
 
-  switch (state_) {
-    case INITIALIZED:  // We should be further along by now.
-      DCHECK(false);
-      return;
-
-    case ACTIVE:
-      StopRecording(true);
-      StartRecording();
-      break;
-
-    default:
-      DCHECK(false);
-      return;
+  if (state_ != ACTIVE) {
+    NOTREACHED();
+    return;
   }
+
+  StopRecording(true);
+  StartRecording();
 }
 
 bool MetricsService::TransmissionPermitted() const {
@@ -427,8 +423,6 @@ bool MetricsService::TransmissionPermitted() const {
   return user_permits_upload_;
 }
 
-// TODO(isherman): Update this to log to the protobuf server as well...
-// http://crbug.com/109817
 bool MetricsService::UploadData() {
   DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
 
@@ -447,7 +441,10 @@ bool MetricsService::UploadData() {
 
   if (log_manager_.has_staged_log()) {
     HRESULT hr = ChromeFrameMetricsDataUploader::UploadDataHelper(
-        log_manager_.staged_log_text().xml);
+        log_manager_.staged_log_text().xml, kServerUrlXml, kMimeTypeXml);
+    DCHECK(SUCCEEDED(hr));
+    hr = ChromeFrameMetricsDataUploader::UploadDataHelper(
+        log_manager_.staged_log_text().proto, kServerUrlProto, kMimeTypeProto);
     DCHECK(SUCCEEDED(hr));
     log_manager_.DiscardStagedLog();
   } else {

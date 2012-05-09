@@ -19,6 +19,14 @@ class MetricsServiceBase : public HistogramSender {
   MetricsServiceBase();
   virtual ~MetricsServiceBase();
 
+  // The metrics servers' URLs, for XML and protobuf uploads.
+  static const char kServerUrlXml[];
+  static const char kServerUrlProto[];
+
+  // The MIME types for the uploaded metrics data, for XML and protobuf uploads.
+  static const char kMimeTypeXml[];
+  static const char kMimeTypeProto[];
+
   // Record complete list of histograms into the current log.
   // Called when we close a log.
   void RecordCurrentHistograms();
