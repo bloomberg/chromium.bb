@@ -15,7 +15,9 @@
 namespace chromeos {
 namespace options2 {
 
-PointerHandler::PointerHandler() {
+PointerHandler::PointerHandler()
+  : has_touchpad_(false),
+    has_mouse_(false) {
 }
 
 PointerHandler::~PointerHandler() {
@@ -25,7 +27,12 @@ void PointerHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-    { "pointerOverlayTitle", IDS_OPTIONS_POINTER_OVERLAY_TITLE },
+    { "pointerOverlayTitleTouchpadOnly",
+        IDS_OPTIONS_POINTER_TOUCHPAD_OVERLAY_TITLE },
+    { "pointerOverlayTitleMouseOnly",
+        IDS_OPTIONS_POINTER_MOUSE_OVERLAY_TITLE },
+    { "pointerOverlayTitleTouchpadMouse",
+        IDS_OPTIONS_POINTER_TOUCHPAD_MOUSE_OVERLAY_TITLE },
     { "pointerOverlaySectionTitleTouchpad",
       IDS_OPTIONS_POINTER_OVERLAY_SECTION_TITLE_TOUCHPAD },
     { "pointerOverlaySectionTitleMouse",
@@ -46,13 +53,29 @@ void PointerHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 
 
 void PointerHandler::TouchpadExists(bool exists) {
+  has_touchpad_ = exists;
   base::FundamentalValue val(exists);
   web_ui()->CallJavascriptFunction("PointerOverlay.showTouchpadControls", val);
+  UpdateTitle();
 }
 
 void PointerHandler::MouseExists(bool exists) {
+  has_mouse_ = exists;
   base::FundamentalValue val(exists);
   web_ui()->CallJavascriptFunction("PointerOverlay.showMouseControls", val);
+  UpdateTitle();
+}
+
+void PointerHandler::UpdateTitle() {
+  std::string label;
+  if (has_touchpad_) {
+    label = has_mouse_ ? "pointerOverlayTitleTouchpadMouse" :
+        "pointerOverlayTitleTouchpadOnly";
+  } else {
+    label = has_mouse_ ? "pointerOverlayTitleMouseOnly" : "";
+  }
+  base::StringValue val(label);
+  web_ui()->CallJavascriptFunction("PointerOverlay.setTitle", val);
 }
 
 }  // namespace options2

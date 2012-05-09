@@ -11,8 +11,10 @@ cr.define('options', function() {
    * @extends {SettingsDialog}
    */
   function PointerOverlay() {
+    // The title is updated dynamically in the setTitle method as pointer
+    // devices are discovered or removed.
     SettingsDialog.call(this, 'pointer-overlay',
-                        templateData.pointerOverlayTitle, 'pointer-overlay',
+                        '', 'pointer-overlay',
                         $('pointer-overlay-confirm'),
                         $('pointer-overlay-cancel'));
   }
@@ -37,7 +39,6 @@ cr.define('options', function() {
    */
   PointerOverlay.showTouchpadControls = function(show) {
     $('pointer-section-touchpad').hidden = !show;
-    if (show) $('pointer-settings-button').hidden = false;
   };
 
   /**
@@ -46,7 +47,31 @@ cr.define('options', function() {
    */
   PointerOverlay.showMouseControls = function(show) {
     $('pointer-section-mouse').hidden = !show;
-    if (show) $('pointer-settings-button').hidden = false;
+  };
+
+  /**
+   * Updates the title of the pointer dialog.  The title is set dynamically
+   * based on whether a touchpad, mouse or both are present.  The label on the
+   * button that activates the overlay is also updated to stay in sync. A
+   * message is displayed in the main settings page if no pointer devices are
+   * available.
+   * @param {String} label i18n key for the overlay title.
+   */
+  PointerOverlay.setTitle = function(label) {
+    var header = $('pointer-overlay-title');
+    var button = $('pointer-settings-button');
+    var noPointersLabel = $('no-pointing-devices');
+    if (label.length > 0) {
+      var title = localStrings.getString(label);
+      header.textContent = title;
+      button.textContent = title;
+      button.hidden = false;
+      noPointersLabel.hidden = true;
+    } else {
+      header.textContent = '';
+      button.hidden = true;
+      noPointersLabel.hidden = false;
+    }
   };
 
   // Export

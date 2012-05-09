@@ -31,6 +31,13 @@ class PointerHandler
   virtual void TouchpadExists(bool exists) OVERRIDE;
   virtual void MouseExists(bool exists) OVERRIDE;
 
+  // Set the title dynamically based on whether a touchpad and/or mouse is
+  // detected.
+  void UpdateTitle();
+
+  bool has_touchpad_;
+  bool has_mouse_;
+
   DISALLOW_COPY_AND_ASSIGN(PointerHandler);
 };
 

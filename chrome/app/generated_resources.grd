@@ -14413,9 +14413,6 @@ Press any key to continue exploring.
                desc="The dropdown list item for 'Customize modifier keys' overlay">
         Caps Lock
       </message>
-      <message name="IDS_OPTIONS_POINTER_OVERLAY_TITLE" desc="The title for 'Pointer settings' overlay.">
-        Pointer settings
-      </message>
       <message name="IDS_OPTIONS_NO_POINTING_DEVICES" desc="Text shown when there is neither a touchpad nor a mouse.">
         No mouse or touchpad was detected.
       </message>
@@ -14426,7 +14423,7 @@ Press any key to continue exploring.
         Touchpad settings
       </message>
       <message name="IDS_OPTIONS_POINTER_TOUCHPAD_MOUSE_OVERLAY_TITLE" desc="The title for 'Pointer settings' overlay for Touchpad and Mouse.">
-        Touchpad/Mouse settings
+        Touchpad and mouse settings
       </message>
       <message name="IDS_OPTIONS_POINTER_OVERLAY_SECTION_TITLE_TOUCHPAD" desc="The title for 'Touchpad' section of the Pointer Settings overlay.">
         Touchpad:
