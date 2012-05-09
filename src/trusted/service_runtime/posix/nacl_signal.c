@@ -281,29 +281,37 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
   NaClSignalContextGetCurrentThread(&sigCtx, &is_untrusted, &natp);
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
-  if (is_untrusted) {
-    /*
-     * On Linux, the kernel does not restore %gs when entering the
-     * signal handler, so we must do that here.  We need to do this
-     * for glibc's TLS to work.  Some builds of glibc fetch a syscall
-     * function pointer from glibc's static TLS area.  If we failed to
-     * restore %gs, this function pointer would be under the control
-     * of untrusted code, and we would have a vulnerability.
-     *
-     * Note that, in comparison, Breakpad tries to avoid using libc
-     * calls at all when a crash occurs.
-     *
-     * On Mac OS X, the kernel *does* restore the original %gs when
-     * entering the signal handler.  Our assignment to %gs here is
-     * therefore not strictly necessary, but not harmful.  However,
-     * this does mean we need to check the original %gs value (from
-     * the signal frame) rather than the current %gs value (from
-     * NaClGetGs()).
-     *
-     * Both systems necessarily restore %cs, %ds, and %ss otherwise
-     * we would have a hard time handling signals in untrusted code
-     * at all.
-     */
+  /*
+   * On Linux, the kernel does not restore %gs when entering the
+   * signal handler, so we must do that here.  We need to do this for
+   * TLS to work and for glibc's syscall wrappers to work, because
+   * some builds of glibc fetch a syscall function pointer from the
+   * static TLS area.  There is the potential for vulnerabilities if
+   * we call glibc without restoring %gs (such as
+   * http://code.google.com/p/nativeclient/issues/detail?id=1607),
+   * although the risk is reduced because the untrusted %gs segment
+   * has an extent of only 4 bytes (see
+   * http://code.google.com/p/nativeclient/issues/detail?id=2176).
+   *
+   * Note that, in comparison, Breakpad tries to avoid using libc
+   * calls at all when a crash occurs.
+   *
+   * On Mac OS X, the kernel *does* restore the original %gs when
+   * entering the signal handler.  Our assignment to %gs here is
+   * therefore not strictly necessary, but not harmful.  However, this
+   * does mean we need to check the original %gs value (from the
+   * signal frame) rather than the current %gs value (from
+   * NaClGetGs()).
+   *
+   * Both systems necessarily restore %cs, %ds, and %ss otherwise we
+   * would have a hard time handling signals in untrusted code at all.
+   *
+   * Note that we check natp (which is based on %gs) rather than
+   * is_untrusted (which is based on %cs) because we need to handle
+   * the case where %gs is set to the untrusted-code value but %cs is
+   * not.
+   */
+  if (natp != NULL) {
     NaClSetGs(natp->sys.gs);
   }
 #endif

@@ -1,0 +1,47 @@
+# -*- python -*-
+# Copyright 2012 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+# step_test_guest.nexe fails to link when Valgrind is enabled because
+# of a problem with the TLS ".tbss" section.
+if env.IsRunningUnderValgrind():
+  Return()
+
+if 'TRUSTED_ENV' not in env:
+  Return()
+trusted_env = env['TRUSTED_ENV']
+
+test_guest = env.ComponentProgram(
+    'step_test_guest', ['step_test_guest.c'],
+    EXTRA_LINKFLAGS=['-nostdlib'])
+if env.Bit('pnacl_generate_pexe'):
+  env.Replace(TRANSLATEFLAGS=['-nostdlib'])
+  test_guest = env.GetTranslatedNexe(test_guest)
+
+# This test uses x86 single-stepping.
+if not env.Bit('build_x86'):
+  Return()
+# This test uses POSIX signal handling so does not build on Windows.
+if env.Bit('host_windows'):
+  Return()
+
+test_host = trusted_env.ComponentProgram(
+    'step_test_host', ['step_test_host.c'],
+    EXTRA_LIBS=['sel', 'sel_debug_dummy'])
+
+test_command = [test_host, test_guest]
+bootstrap, _ = env.GetBootstrap()
+if bootstrap is not None:
+  test_command = [bootstrap] + test_command
+
+node = env.CommandTest('signal_handler_single_step.out', test_command)
+# This test expects that a signal handler will be able to return to
+# untrusted code, and so it does not work on Mac OS X which does not
+# restore %cs to its saved value on return from a signal handler.
+env.AddNodeToTestSuite(node, ['small_tests'],
+                       'run_signal_handler_single_step_test',
+                       is_broken=(not env.Bit('nacl_static_link') or
+                                  env.Bit('host_mac')))

@@ -59,11 +59,11 @@ ssize_t NaClSignalErrorMessage(const char *msg) {
 }
 
 /*
- * Returns (via is_untrusted) whether the signal happened while
- * executing untrusted code.  If the signal was from untrusted code,
- * this function also returns (via result_thread) the NaClAppThread
- * that untrusted code was running in; otherwise *result_thread is
- * undefined.
+ * Returns, via is_untrusted, whether the signal happened while
+ * executing untrusted code.
+ *
+ * Returns, via result_thread, the NaClAppThread that untrusted code
+ * was running in.
  *
  * Note that this should only be called from the thread in which the
  * signal occurred, because on x86-64 it reads a thread-local variable
@@ -75,14 +75,13 @@ void NaClSignalContextGetCurrentThread(const struct NaClSignalContext *sigCtx,
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   /* For x86-32, if %cs does not match, it is untrusted code. */
   *is_untrusted = (NaClGetGlobalCs() != sigCtx->cs);
-  if (*is_untrusted) {
-    *result_thread = nacl_thread[sigCtx->gs >> 3];
-  }
+  *result_thread = nacl_thread[sigCtx->gs >> 3];
 #elif (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64) || \
       NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
   uint32_t current_thread_index = NaClTlsGetIdx();
   if (NACL_TLS_INDEX_INVALID == current_thread_index) {
     *is_untrusted = 0;
+    *result_thread = NULL;
   } else {
     struct NaClAppThread *thread = nacl_thread[current_thread_index];
     /*
