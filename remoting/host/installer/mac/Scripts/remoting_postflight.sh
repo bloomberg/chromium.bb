@@ -32,6 +32,11 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
   chmod +a "$USER:allow:read" "$CONFIG_FILE"
 fi
 
+# If there is a backup _enabled file, re-enable the service.
+if [[ -f "$ENABLED_FILE_BACKUP" ]]; then
+  mv "$ENABLED_FILE_BACKUP" "$ENABLED_FILE"
+fi
+
 # Load the service.
 # The launchctl command we'd like to run:
 #   launchctl load -w -S Aqua $PLIST
@@ -46,14 +51,6 @@ USERNAME=$1
 USERID=$2
 if [[ -n "$USERNAME" && -n "$USERID" ]]; then
   launchctl bsexec "$USERID" sudo -u "$USERNAME" launchctl load -w -S Aqua "$PLIST"
-fi
-
-# If there is a backup _enabled file, re-enable the service.
-if [[ -f "$ENABLED_FILE_BACKUP" ]]; then
-  mv "$ENABLED_FILE_BACKUP" "$ENABLED_FILE"
-  if [[ -n "$USERNAME" && -n "$USERID" ]]; then
-    launchctl bsexec "$USERID" sudo -u "$USERNAME" launchctl start -w -S Aqua "$NAME"
-  fi
 fi
 
 # Register a ticket with Keystone so we're updated.
