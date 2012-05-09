@@ -146,25 +146,12 @@ x8664/mylibpthread.so: mylibpthread.pso
 # work around some hacks that introduced a common symbol in the
 # disabled malloc/free portions
 mylibc.pso: $(S_INIT)  $(S_FINI) mylibnosys.pso
-	rm -rf /tmp/mylibc
-	mkdir -p /tmp/mylibc
-	cd /tmp/mylibc; \
-           ar xv $(ROOT)/toolchain/pnacl_linux_x86_64/newlib/usr/lib/libc.a
-	rm /tmp/mylibc/lib_a-callocr.o
-	rm /tmp/mylibc/lib_a-calloc.o
-	rm /tmp/mylibc/lib_a-cfreer.o
-	rm /tmp/mylibc/lib_a-freer.o
-	rm /tmp/mylibc/lib_a-mallocr.o
-	rm /tmp/mylibc/lib_a-malignr.o
-	rm /tmp/mylibc/lib_a-msizer.o
-	rm /tmp/mylibc/lib_a-mallinfor.o
-	rm /tmp/mylibc/lib_a-mallstatsr.o
-	rm /tmp/mylibc/lib_a-malloptr.o
-	rm /tmp/mylibc/lib_a-reallocr.o
-	rm /tmp/mylibc/lib_a-vallocr.o
-	rm /tmp/mylibc/lib_a-pvallocr.o
 	$(PNACL_CC) $(COMMON_FLAGS) -nostdlib -shared \
-              $(S_INIT) /tmp/mylibc/*.o  $(S_FINI) \
+              $(S_INIT) \
+              -Wl,--whole-archive \
+              $(ROOT)/toolchain/pnacl_linux_x86_64/newlib/usr/lib/libc.a \
+              -Wl,--no-whole-archive \
+              $(S_FINI) \
               -Wl,--soname=mylibc.so -L . -l:mylibnosys.pso -o $@
 
 # NOTE: we are requiring the final .so here - we do not want this!
