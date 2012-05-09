@@ -65,6 +65,10 @@ ICCCM
    it offers (the clipboad manager may only offer a subset of the
    types offered by the original data_source)
 
+   The trouble is that when the clipboard manager sets a new data
+   source, we don't want to renew the timestamp and potentially reject
+   a newer "real" data source.
+
  - mime-type guidelines for data_source (ie, both dnd and selection):
    recommended types for text or images, types that a clipboard
    manager must support, mime-types must be listed in preferred order
@@ -151,26 +155,10 @@ Misc
 
 libxkbcommon
 
-  - pull in actions logic from xserver
-
-  - pull in keycode to keysym logic from libX11
-
-  - expose alloc functions in libxkbcommon, drop xserver funcs?
-
-  - pull the logic to write the xkb file from xkb_desc and names into
-    libxkbcommon and just build up the new xkb_desc instead of
-    dump+parse? (XkbWriteXKBKeymapForNames followed by
-    xkb_compile_keymap_from_string in XkbDDXLoadKeymapByNames)
-
   - pull in keysym defs as XKB_KEY_BackSpace
 
   - figure out what other X headers we can get rid of, make it not
     need X at all (except when we gen the keysyms).
-
-  - Sort out namespace pollution (XkbFoo macros, atom funcs etc).
-
-  - Sort out 32 bit vmods and serialization
-
 
 Clients and ports
 
