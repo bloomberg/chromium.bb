@@ -71,6 +71,10 @@ EXTRA_ENV = {
     # with stubs to access it from newlib.
     '${LIBMODE_NEWLIB ? -l:libcrt_platform.a} ',
 
+  # Determine whether or not to use bitcode metadata to generate .so stubs
+  # for the final link.
+  'USE_META': '0',
+
   # Intermediate variable LLCVAR is used for delaying evaluation.
   'LLCVAR'        : '${SANDBOXED ? LLC_SB : LLVM_LLC}',
   'LLC'           : '${%LLCVAR%}',
@@ -122,7 +126,7 @@ EXTRA_ENV = {
   'LLC_MCPU_X8664'  : 'core2',
 
   'RUN_LLC'       : '${LLC} ${LLC_FLAGS} ${input} -o ${output} ' +
-                    '-metadata-out ${output}.meta',
+                    '-metadata-text ${output}.meta',
   'STREAM_BITCODE' : '0',
 }
 
@@ -151,6 +155,14 @@ TranslatorPatterns = [
   ( '-nodefaultlibs',  "env.set('USE_DEFAULTLIBS', '0')"),
 
   ( '--noirtshim',      "env.set('USE_IRT_SHIM', '0')"),
+
+  # Toggle the use of ELF-stubs / bitcode metadata, which represent real .so
+  # files in the final native link.
+  # There may be cases where this will not work (e.g., when the final link
+  # includes native .o files, where its imports / exports were not known
+  # at bitcode link time, and not added to the bitcode metadata).
+  ( '-usemeta',         "env.set('USE_META', '1')"),
+  ( '-nousemeta',       "env.set('USE_META', '0')"),
 
   ( '-rpath-link=(.+)', "env.append('LD_FLAGS', '-L'+$0)"),
 
@@ -399,7 +411,7 @@ def RunLD(infile, outfile):
   args = env.get('LD_ARGS') + ['-o', outfile]
   args += env.get('LD_FLAGS')
   # If there is bitcode, there is also a metadata file.
-  if infile:
+  if infile and env.getbool('USE_META'):
     args += ['--metadata', '%s.meta' % infile]
   driver_tools.RunDriver('nativeld', args)
 

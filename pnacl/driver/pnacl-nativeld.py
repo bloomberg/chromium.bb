@@ -263,8 +263,8 @@ def main(argv):
   if env.getbool('USE_GOLD'):
     # We need to disable the linker script more elegantly for Gold.
     env.set('LD_SCRIPT', '')
-    # METADATA_FILE needs to switch from ELF blob to Gold format.
-    env.set('METADATA_FILE', '')
+    if GetArch(required=True) == 'X8664':
+      env.append('LD_FLAGS', '--metadata-is64')
 
   if env.getbool('SANDBOXED') and env.getbool('SRPC'):
     RunLDSRPC()
@@ -366,12 +366,11 @@ def MakeSelUniversalScriptForLD(ld_flags,
       basename = pathtools.basename(f)
       command_line = command_line + basename + kTerminator
 
-    # TODO(pdox): Enable this.
     # Add the metadata file
-    #metadata_file = env.getone('METADATA_FILE')
-    #if metadata_file:
-    #  command_line = command_line + '--metadata' + kTerminator
-    #  command_line = command_line + metadata_file + kTerminator
+    metadata_file = env.getone('METADATA_FILE')
+    if metadata_file:
+      command_line = command_line + '--metadata' + kTerminator
+      command_line = command_line + metadata_file + kTerminator
 
     command_line_escaped = command_line.replace(kTerminator, '\\x00')
     # Assume that the commandline captures all necessary metadata for now.
