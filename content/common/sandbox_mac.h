@@ -152,7 +152,7 @@ class CONTENT_EXPORT Sandbox {
 
   FRIEND_TEST_ALL_PREFIXES(MacDirAccessSandboxTest, StringEscape);
   FRIEND_TEST_ALL_PREFIXES(MacDirAccessSandboxTest, RegexEscape);
-  FRIEND_TEST_ALL_PREFIXES(MacDirAccessSandboxTest, DISABLED_SandboxAccess);
+  FRIEND_TEST_ALL_PREFIXES(MacDirAccessSandboxTest, SandboxAccess);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(Sandbox);
 };
