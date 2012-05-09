@@ -1104,10 +1104,9 @@ void UserManagerImpl::GetUserWallpaperProperties(const std::string& username,
   index = ash::GetDefaultWallpaperIndex();
 
   if (user_wallpapers) {
-    base::DictionaryValue* wallpaper_properties;
-    user_wallpapers->GetDictionaryWithoutPathExpansion(username,
-                                                       &wallpaper_properties);
-    if (wallpaper_properties) {
+    base::DictionaryValue* wallpaper_properties = NULL;
+    if (user_wallpapers->GetDictionaryWithoutPathExpansion(
+            username, &wallpaper_properties)) {
       int saved_type = User::UNKNOWN;
       wallpaper_properties->GetInteger(kWallpaperTypeNodeName, &saved_type);
       type = static_cast<User::WallpaperType>(saved_type);
