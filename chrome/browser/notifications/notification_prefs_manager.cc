@@ -11,4 +11,10 @@
 void NotificationPrefsManager::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kDesktopNotificationPosition,
                              BalloonCollection::DEFAULT_POSITION);
+#if defined(OS_CHROMEOS)
+  // Option menu for changing desktop notification position on ChromeOS is
+  // disabled. Force preference to default.
+  prefs->SetInteger(prefs::kDesktopNotificationPosition,
+                    BalloonCollection::DEFAULT_POSITION);
+#endif
 }
