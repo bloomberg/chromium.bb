@@ -164,6 +164,11 @@ class GeolocationProviderTest : public testing::Test {
     GeolocationArbitrator::SetDependencyFactoryForTest(NULL);
   }
 
+  void WaitAndReset() {
+    event_.Wait();
+    event_.Reset();
+  }
+
   MessageLoop message_loop_;
   content::TestBrowserThread io_thread_;
 
@@ -186,14 +191,13 @@ TEST_F(GeolocationProviderTest, StartStop) {
   provider_->AddObserver(&null_observer, options);
   EXPECT_TRUE(provider_->IsRunning());
   // Wait for token load request from the arbitrator to come through.
-  event_.Wait();
+  WaitAndReset();
 
-  event_.Reset();
   EXPECT_EQ(MockLocationProvider::instance_->state_,
             MockLocationProvider::LOW_ACCURACY);
   provider_->RemoveObserver(&null_observer);
-  // Wait for the providers to be stopped.
-  event_.Wait();
+  // Wait for the providers to be stopped now that all clients are gone.
+  WaitAndReset();
   EXPECT_TRUE(provider_->IsRunning());
 }
 
@@ -206,7 +210,12 @@ TEST_F(GeolocationProviderTest, OverrideLocationForTesting) {
   MockGeolocationObserver mock_observer;
   EXPECT_CALL(mock_observer, OnLocationUpdate(GeopositionEq(position)));
   provider_->AddObserver(&mock_observer, GeolocationObserverOptions());
+  // Wait for token load request from the arbitrator to come through.
+  WaitAndReset();
+
   provider_->RemoveObserver(&mock_observer);
+  // Wait for the providers to be stopped now that all clients are gone.
+  WaitAndReset();
 }
 
 TEST_F(GeolocationProviderTest, Callback) {
@@ -214,6 +223,8 @@ TEST_F(GeolocationProviderTest, Callback) {
   provider_->RequestCallback(
       base::Bind(&MockGeolocationCallbackWrapper::Callback,
                  base::Unretained(&callback_wrapper)));
+  // Wait for token load request from the arbitrator to come through.
+  WaitAndReset();
 
   content::Geoposition position;
   position.latitude = 12;
@@ -222,6 +233,8 @@ TEST_F(GeolocationProviderTest, Callback) {
   position.timestamp = base::Time::Now();
   EXPECT_CALL(callback_wrapper, Callback(GeopositionEq(position)));
   provider_->OverrideLocationForTesting(position);
+  // Wait for the providers to be stopped now that all clients are gone.
+  WaitAndReset();
 }
 
 }  // namespace
