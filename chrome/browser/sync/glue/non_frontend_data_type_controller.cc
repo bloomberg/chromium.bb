@@ -80,8 +80,10 @@ void NonFrontendDataTypeController::StopWhileAssociating() {
     abort_association_ = true;
     if (model_associator_.get())
       model_associator_->AbortAssociation();
-    if (!start_association_called_.IsSignaled())
+    if (!start_association_called_.IsSignaled()) {
+      StartDoneImpl(ABORTED, NOT_RUNNING, SyncError());
       return; // There is nothing more for us to do.
+    }
   }
 
   // Wait for the model association to abort.
@@ -172,6 +174,15 @@ void NonFrontendDataTypeController::Stop() {
       } else {
         LOG(INFO) << "Type is unknown";
         StopWhileAssociating();
+      }
+
+      // TODO(sync) : This should be cleaned up. Once we move to the new api
+      // this should not be a problem.
+      if (!start_association_called_.IsSignaled()) {
+        // If datatype's thread has not even picked up executing it is safe
+        // to bail out now. We have no more state cleanups to do.
+        // The risk of waiting is that the datatype thread might not respond.
+        return;
       }
       break;
     case MODEL_STARTING:
@@ -412,7 +423,7 @@ void NonFrontendDataTypeController::set_change_processor(
 
 void NonFrontendDataTypeController::StartAssociation() {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(state_, ASSOCIATING);
+
   {
     base::AutoLock lock(abort_association_lock_);
     if (abort_association_) {
@@ -422,6 +433,8 @@ void NonFrontendDataTypeController::StartAssociation() {
     start_association_called_.Signal();
     CreateSyncComponents();
   }
+
+  DCHECK_EQ(state_, ASSOCIATING);
 
   if (!model_associator_->CryptoReadyIfNecessary()) {
     StartFailed(NEEDS_CRYPTO, SyncError());
