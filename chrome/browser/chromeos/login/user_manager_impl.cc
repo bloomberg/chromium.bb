@@ -423,6 +423,7 @@ void UserManagerImpl::DemoUserLoggedIn() {
   is_current_user_ephemeral_ = true;
   logged_in_user_ = new User(kDemoUser, false);
   SetInitialUserImage(kDemoUser);
+  SetInitialUserWallpaper(kDemoUser);
   NotifyOnLogin();
 }
 
@@ -439,6 +440,7 @@ void UserManagerImpl::EphemeralUserLoggedIn(const std::string& email) {
   is_current_user_ephemeral_ = true;
   logged_in_user_ = CreateUser(email);
   SetInitialUserImage(email);
+  SetInitialUserWallpaper(email);
   NotifyOnLogin();
 }
 
@@ -973,6 +975,13 @@ void UserManagerImpl::SetInitialUserWallpaper(const std::string& username) {
   else
     current_user_wallpaper_index_ = ash::GetDefaultWallpaperIndex();
   SaveUserWallpaperIndex(current_user_wallpaper_index_);
+  // Some browser tests do not have shell instance. And it is not necessary to
+  // create a wallpaper for these tests. Add HasInstance check to prevent tests
+  // crash and speed up the tests by avoid loading wallpaper.
+  if (ash::Shell::HasInstance()) {
+    ash::Shell::GetInstance()->desktop_background_controller()->
+        SetDefaultWallpaper(current_user_wallpaper_index_);
+  }
 }
 
 int UserManagerImpl::GetUserWallpaperIndex() {
