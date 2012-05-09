@@ -1693,8 +1693,9 @@ void PasswordStoreLoginsChangedObserver::Init() {
 
 void PasswordStoreLoginsChangedObserver::RegisterObserversTask() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  registrar_.Add(this, chrome::NOTIFICATION_LOGINS_CHANGED,
-                 content::NotificationService::AllSources());
+  registrar_.reset(new content::NotificationRegistrar);
+  registrar_->Add(this, chrome::NOTIFICATION_LOGINS_CHANGED,
+                  content::NotificationService::AllSources());
   done_event_.Signal();
 }
 
@@ -1704,6 +1705,7 @@ void PasswordStoreLoginsChangedObserver::Observe(
     const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK(type == chrome::NOTIFICATION_LOGINS_CHANGED);
+  registrar_.reset();  // Must be done from the DB thread.
   PasswordStoreChangeList* change_details =
       content::Details<PasswordStoreChangeList>(details).ptr();
   if (change_details->size() != 1 ||
@@ -1717,8 +1719,6 @@ void PasswordStoreLoginsChangedObserver::Observe(
                    error));
     return;
   }
-
-  registrar_.RemoveAll();  // Must be done from the DB thread.
 
   // Notify the UI thread that we're done listening.
   BrowserThread::PostTask(
@@ -2183,10 +2183,11 @@ void AutofillChangedObserver::Init() {
 
 void AutofillChangedObserver::RegisterObserversTask() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  registrar_.Add(this, chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
-                 content::NotificationService::AllSources());
+  registrar_.reset(new content::NotificationRegistrar);
+  registrar_->Add(this, chrome::NOTIFICATION_AUTOFILL_CREDIT_CARD_CHANGED,
+                  content::NotificationService::AllSources());
+  registrar_->Add(this, chrome::NOTIFICATION_AUTOFILL_PROFILE_CHANGED,
+                  content::NotificationService::AllSources());
   done_event_.Signal();
 }
 
@@ -2205,7 +2206,7 @@ void AutofillChangedObserver::Observe(
   }
 
   if (num_profiles_ <= 0 && num_credit_cards_ <= 0) {
-    registrar_.RemoveAll();  // Must be done from the DB thread.
+    registrar_.reset();  // Must be done from the DB thread.
 
     // Notify the UI thread that we're done listening for all relevant
     // autofill notifications.

@@ -1183,7 +1183,6 @@ class PasswordStoreLoginsChangedObserver
                                      IPC::Message* reply_message,
                                      PasswordStoreChange::Type expected_type,
                                      const std::string& result_key);
-  virtual ~PasswordStoreLoginsChangedObserver();
 
   // Schedules a task on the DB thread to register the appropriate observers.
   virtual void Init();
@@ -1196,6 +1195,7 @@ class PasswordStoreLoginsChangedObserver
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
+  ~PasswordStoreLoginsChangedObserver();
   friend class base::DeleteHelper<PasswordStoreLoginsChangedObserver>;
 
   // Registers the appropriate observers.  Called on the DB thread.
@@ -1210,7 +1210,7 @@ class PasswordStoreLoginsChangedObserver
 
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
-  content::NotificationRegistrar registrar_;
+  scoped_ptr<content::NotificationRegistrar> registrar_;
   PasswordStoreChange::Type expected_type_;
   std::string result_key_;
 
@@ -1407,7 +1407,6 @@ class AutofillChangedObserver
                           IPC::Message* reply_message,
                           int num_profiles,
                           int num_credit_cards);
-  virtual ~AutofillChangedObserver();
 
   // Schedules a task on the DB thread to register the appropriate observers.
   virtual void Init();
@@ -1420,6 +1419,7 @@ class AutofillChangedObserver
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
+  ~AutofillChangedObserver();
   friend class base::DeleteHelper<AutofillChangedObserver>;
 
   // Registers the appropriate observers.  Called on the DB thread.
@@ -1431,7 +1431,7 @@ class AutofillChangedObserver
 
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
-  content::NotificationRegistrar registrar_;
+  scoped_ptr<content::NotificationRegistrar> registrar_;
   int num_profiles_;
   int num_credit_cards_;
 
