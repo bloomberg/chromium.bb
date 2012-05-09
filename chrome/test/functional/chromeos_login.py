@@ -23,7 +23,8 @@ class ChromeosLogin(pyauto.PyUITest):
   def setUp(self):
     # We want a clean session_manager instance for every run,
     # so restart ui now.
-    cros_ui.restart()
+    cros_ui.stop(allow_fail=True)
+    cros_ui.start(wait_for_login_prompt=False)
     pyauto.PyUITest.setUp(self)
 
   def _ValidCredentials(self, account_type='test_google_account'):
