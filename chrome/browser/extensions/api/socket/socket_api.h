@@ -135,6 +135,7 @@ class SocketReadFunction : public SocketExtensionFunction {
 
  private:
   int socket_id_;
+  int buffer_size_;
 };
 
 class SocketWriteFunction : public SocketExtensionFunction {
@@ -174,6 +175,7 @@ class SocketRecvFromFunction : public SocketExtensionFunction {
 
  private:
   int socket_id_;
+  int buffer_size_;
 };
 
 class SocketSendToFunction : public SocketExtensionFunction {

@@ -101,9 +101,11 @@
 
     // Reads data from the given socket.
     // |socketId| : The socketId.
+    // |bufferSize| : The read buffer size.
     // |callback| : Delivers data that was available to be read without
     // blocking.
     static void read(long socketId,
+                     optional long bufferSize,
                      ReadCallback callback);
 
     // Writes data on the given socket.
@@ -121,9 +123,11 @@
 
     // Reads data from the given socket.
     // |socketId| : The socketId.
+    // |bufferSize| : The receive buffer size.
     // |callback| : Delivers data that was available to be read without
     // blocking.
     static void recvFrom(long socketId,
+                         optional long bufferSize,
                          RecvFromCallback callback);
 
     // Writes data on the given socket.

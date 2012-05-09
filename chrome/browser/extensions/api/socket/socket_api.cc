@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/api/socket/tcp_socket.h"
 #include "chrome/browser/extensions/api/socket/udp_socket.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/common/extensions/api/experimental.socket.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 
@@ -141,7 +142,11 @@ void SocketBindFunction::Work() {
 }
 
 bool SocketReadFunction::Prepare() {
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
+  scoped_ptr<api::experimental_socket::Read::Params> params(
+      api::experimental_socket::Read::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  socket_id_ = params->socket_id;
+  buffer_size_ = params->buffer_size.get() ? *params->buffer_size : 4096;
   return true;
 }
 
@@ -154,10 +159,7 @@ void SocketReadFunction::AsyncWorkStart() {
     return;
   }
 
-  // TODO(miket): this is an arbitrary number. Can we come up with one that
-  // makes sense?
-  const int buffer_len = 2048;
-  socket->Read(buffer_len,
+  socket->Read(buffer_size_,
       base::Bind(&SocketReadFunction::OnCompleted, this));
 }
 
@@ -236,7 +238,11 @@ void SocketWriteFunction::OnCompleted(int bytes_written) {
 SocketRecvFromFunction::~SocketRecvFromFunction() {}
 
 bool SocketRecvFromFunction::Prepare() {
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
+  scoped_ptr<api::experimental_socket::RecvFrom::Params> params(
+      api::experimental_socket::RecvFrom::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  socket_id_ = params->socket_id;
+  buffer_size_ = params->buffer_size.get() ? *params->buffer_size : 4096;
   return true;
 }
 
@@ -250,8 +256,7 @@ void SocketRecvFromFunction::AsyncWorkStart() {
     return;
   }
 
-  const int buffer_len = 2048;
-  socket->RecvFrom(buffer_len,
+  socket->RecvFrom(buffer_size_,
       base::Bind(&SocketRecvFromFunction::OnCompleted, this));
 }
 
