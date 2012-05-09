@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "chrome/browser/usb/usb_device.h"
-#include "third_party/libusb/libusb/libusb.h"
+#include "third_party/libusb/libusb.h"
 
 UsbService::UsbService() : running_(true), thread_("UsbThread") {
   libusb_init(&context_);
@@ -75,7 +75,10 @@ void UsbService::PostHandleEventTask() {
 }
 
 void UsbService::HandleEvent() {
-  libusb_handle_events_completed(context_, NULL);
+  // TODO(gdk): Once there is a reasonable expectation that platforms will use
+  // libusb >= 1.0.9 this should be changed to handle_events_completed, as the
+  // use of handle_events is deprecated.
+  libusb_handle_events(context_);
   if (running_) {
     PostHandleEventTask();
   }
