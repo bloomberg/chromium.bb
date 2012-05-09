@@ -88,7 +88,7 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
     // TODO(markusheintz): Read preference pref::kApplicationLocale in order
     // to enforce the application locale.
     const std::string loaded_locale =
-        ResourceBundle::InitSharedInstanceWithLocale(std::string());
+        ResourceBundle::InitSharedInstanceWithLocale(std::string(), NULL);
     CHECK(!loaded_locale.empty()) << "Default locale could not be found";
 
     FilePath resources_pack_path;

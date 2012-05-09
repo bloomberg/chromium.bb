@@ -246,7 +246,7 @@ bool IsLocaleAvailable(const std::string& locale) {
   if (!l10n_util::IsLocaleSupportedByOS(locale))
     return false;
 
-  return ResourceBundle::LocaleDataPakExists(locale);
+  return ResourceBundle::GetSharedInstance().LocaleDataPakExists(locale);
 }
 
 bool CheckAndResolveLocale(const std::string& locale,
@@ -451,9 +451,6 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
     base::i18n::SetICUDefaultLocale(fallback_locale);
     return fallback_locale;
   }
-
-  // No locale data file was found; we shouldn't get here.
-  NOTREACHED();
 
   return std::string();
 

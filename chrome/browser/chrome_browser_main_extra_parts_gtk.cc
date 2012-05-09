@@ -34,7 +34,7 @@ void ChromeBrowserMainExtraPartsGtk::DetectRunningAsRoot() {
     // Get just enough of our resource machinery up so we can extract the
     // locale appropriate string. Note that the GTK implementation ignores the
     // passed in parameter and checks the LANG environment variables instead.
-    ResourceBundle::InitSharedInstanceWithLocale("");
+    ResourceBundle::InitSharedInstanceWithLocale(std::string(), NULL);
 
     std::string message = l10n_util::GetStringFUTF8(
             IDS_REFUSE_TO_RUN_AS_ROOT,

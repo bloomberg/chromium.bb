@@ -51,7 +51,7 @@ void UITestSuite::Initialize() {
 
   // Force unittests to run using en-US so if we test against string
   // output, it'll pass regardless of the system language.
-  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US");
+  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
 #if !defined(OS_MACOSX) && defined(OS_POSIX)
   ui::ResourceBundle::GetSharedInstance().AddDataPack(

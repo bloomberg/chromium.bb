@@ -14,7 +14,7 @@ namespace shell {
 void PreMainMessageLoopStart() {
   ui::RegisterPathProvider();
   icu_util::Initialize();
-  ResourceBundle::InitSharedInstanceWithLocale("en-US");
+  ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 }
 
 }  // namespace ash

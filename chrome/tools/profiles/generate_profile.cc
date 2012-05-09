@@ -234,7 +234,7 @@ int main(int argc, const char* argv[]) {
 
   chrome::RegisterPathProvider();
   ui::RegisterPathProvider();
-  ResourceBundle::InitSharedInstanceWithLocale("en-US");
+  ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
   scoped_ptr<content::NotificationService> notification_service(
       content::NotificationService::Create());
   MessageLoopForUI message_loop;

@@ -18,7 +18,7 @@ class ViewTestSuite : public base::TestSuite {
     base::TestSuite::Initialize();
 
     ui::RegisterPathProvider();
-    ui::ResourceBundle::InitSharedInstanceWithLocale("en-US");
+    ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
     ui::CompositorTestSupport::Initialize();
     ui::SetupTestCompositor();

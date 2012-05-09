@@ -17,7 +17,9 @@ FilePath GetResourcesPakFilePath(const std::string& pak_name) {
   FilePath path;
   if (PathService::Get(base::DIR_MODULE, &path))
     return path.AppendASCII(pak_name.c_str());
-  return FilePath();
+
+  // Return just the name of the pack file.
+  return FilePath(pak_name.c_str());
 }
 
 }  // namespace

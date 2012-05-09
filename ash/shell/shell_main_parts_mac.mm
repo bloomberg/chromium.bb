@@ -18,7 +18,7 @@ namespace shell {
 void PreMainMessageLoopStart() {
   ui::RegisterPathProvider();
   icu_util::Initialize();
-  ResourceBundle::InitSharedInstanceWithLocale("en-US");
+  ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
   scoped_nsobject<NSNib>
       nib([[NSNib alloc] initWithNibNamed:@"MainMenu"

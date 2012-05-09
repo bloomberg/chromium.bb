@@ -17,9 +17,11 @@ namespace {
 
 FilePath GetResourcesPakFilePath(const std::string& pak_name) {
   FilePath path;
-  PathService::Get(base::DIR_ANDROID_APP_DATA, &path);
-  DCHECK(!path.empty());
-  return path.AppendASCII("paks").AppendASCII(pak_name.c_str());
+  if (PathService::Get(base::DIR_ANDROID_APP_DATA, &path))
+    return path.AppendASCII("paks").AppendASCII(pak_name.c_str());
+
+  // Return just the name of the pack file.
+  return FilePath(pak_name.c_str());
 }
 
 }  // namespace

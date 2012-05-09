@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/utf_string_conversions.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_data_dll_win.h"
@@ -27,7 +28,9 @@ FilePath GetResourcesPakFilePath(const std::string& pak_name) {
   FilePath path;
   if (PathService::Get(base::DIR_MODULE, &path))
     return path.AppendASCII(pak_name.c_str());
-  return FilePath();
+
+  // Return just the name of the pack file.
+  return FilePath(ASCIIToUTF16(pak_name));
 }
 
 }  // end anonymous namespace
@@ -53,14 +56,14 @@ void ResourceBundle::LoadCommonResources() {
     default:
       if (use_hidpi) {
         AddDataPack(GetResourcesPakFilePath("theme_resources_2x.pak"),
-                  ResourceHandle::kScaleFactor200x);
+                    ResourceHandle::kScaleFactor200x);
         AddDataPack(GetResourcesPakFilePath("ui_resources_2x.pak"),
-                  ResourceHandle::kScaleFactor200x);
+                    ResourceHandle::kScaleFactor200x);
       } else {
         AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"),
-                  ResourceHandle::kScaleFactor100x);
+                    ResourceHandle::kScaleFactor100x);
         AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
-                  ResourceHandle::kScaleFactor100x);
+                    ResourceHandle::kScaleFactor100x);
       }
       break;
   }

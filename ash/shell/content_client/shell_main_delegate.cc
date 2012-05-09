@@ -101,7 +101,7 @@ void ShellMainDelegate::InitializeShellContentClient(
 }
 
 void ShellMainDelegate::InitializeResourceBundle() {
-  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US");
+  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 }
 
 }  // namespace shell

@@ -180,7 +180,7 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
     if (locale.empty())
       locale = kDefaultServiceProcessLocale;
   }
-  ResourceBundle::InitSharedInstanceWithLocale(locale);
+  ResourceBundle::InitSharedInstanceWithLocale(locale, NULL);
 
   PrepareRestartOnCrashEnviroment(command_line);
 

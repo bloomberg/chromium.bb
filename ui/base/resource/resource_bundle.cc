@@ -24,8 +24,6 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/font.h"
-#include "ui/gfx/image/image.h"
 
 namespace ui {
 
@@ -48,9 +46,9 @@ ResourceBundle* ResourceBundle::g_shared_instance_ = NULL;
 
 // static
 std::string ResourceBundle::InitSharedInstanceWithLocale(
-    const std::string& pref_locale) {
+    const std::string& pref_locale, Delegate* delegate) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
-  g_shared_instance_ = new ResourceBundle();
+  g_shared_instance_ = new ResourceBundle(delegate);
 
   g_shared_instance_->LoadCommonResources();
   return g_shared_instance_->LoadLocaleResources(pref_locale);
@@ -59,7 +57,7 @@ std::string ResourceBundle::InitSharedInstanceWithLocale(
 // static
 void ResourceBundle::InitSharedInstanceWithPakFile(const FilePath& path) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
-  g_shared_instance_ = new ResourceBundle();
+  g_shared_instance_ = new ResourceBundle(NULL);
 
   g_shared_instance_->LoadTestResources(path);
 }
@@ -84,39 +82,62 @@ ResourceBundle& ResourceBundle::GetSharedInstance() {
   return *g_shared_instance_;
 }
 
-// static
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
   return !GetLocaleFilePath(locale).empty();
 }
 
 void ResourceBundle::AddDataPack(const FilePath& path, float scale_factor) {
+  // Do not pass an empty |path| value to this method. If the absolute path is
+  // unknown pass just the pack file name.
+  DCHECK(!path.empty());
+
+  FilePath pack_path = path;
+  if (delegate_)
+    pack_path = delegate_->GetPathForResourcePack(pack_path, scale_factor);
+
+  // Don't try to load empty values or values that are not absolute paths.
+  if (pack_path.empty() || !pack_path.IsAbsolute())
+    return;
+
   scoped_ptr<DataPack> data_pack(
       new DataPack(ResourceHandle::kScaleFactor100x));
-  if (data_pack->Load(path)) {
+  if (data_pack->Load(pack_path)) {
     data_packs_.push_back(data_pack.release());
   } else {
-    LOG(ERROR) << "Failed to load " << path.value()
+    LOG(ERROR) << "Failed to load " << pack_path.value()
                << "\nSome features may not be available.";
   }
 }
 
 #if !defined(OS_MACOSX)
-// static
 FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
+  if (app_locale.empty())
+    return FilePath();
+
   FilePath locale_file_path;
+
 #if defined(OS_ANDROID)
   PathService::Get(base::DIR_ANDROID_APP_DATA, &locale_file_path);
   locale_file_path = locale_file_path.Append(FILE_PATH_LITERAL("paks"));
 #else
   PathService::Get(ui::DIR_LOCALES, &locale_file_path);
 #endif
-  if (locale_file_path.empty())
-    return locale_file_path;
-  if (app_locale.empty())
+
+  if (!locale_file_path.empty())
+    locale_file_path = locale_file_path.AppendASCII(app_locale + ".pak");
+
+  if (delegate_) {
+    locale_file_path =
+        delegate_->GetPathForLocalePack(locale_file_path, app_locale);
+  }
+
+  // Don't try to load empty values or values that are not absolute paths.
+  if (locale_file_path.empty() || !locale_file_path.IsAbsolute())
     return FilePath();
-  locale_file_path = locale_file_path.AppendASCII(app_locale + ".pak");
+
   if (!file_util::PathExists(locale_file_path))
     return FilePath();
+
   return locale_file_path;
 }
 #endif
@@ -127,7 +148,7 @@ std::string ResourceBundle::LoadLocaleResources(
   std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
   FilePath locale_file_path = GetOverriddenPakPath();
   if (locale_file_path.empty()) {
-    CommandLine *command_line = CommandLine::ForCurrentProcess();
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kLocalePak)) {
       locale_file_path =
           command_line->GetSwitchValuePath(switches::kLocalePak);
@@ -138,7 +159,6 @@ std::string ResourceBundle::LoadLocaleResources(
 
   if (locale_file_path.empty()) {
     // It's possible that there is no locale.pak.
-    NOTREACHED();
     return std::string();
   }
 
@@ -171,7 +191,113 @@ void ResourceBundle::UnloadLocaleResources() {
   locale_resources_data_.reset();
 }
 
+void ResourceBundle::OverrideLocalePakForTest(const FilePath& pak_path) {
+  overridden_pak_path_ = pak_path;
+}
+
+const FilePath& ResourceBundle::GetOverriddenPakPath() {
+  return overridden_pak_path_;
+}
+
+std::string ResourceBundle::ReloadLocaleResources(
+    const std::string& pref_locale) {
+  base::AutoLock lock_scope(*locale_resources_data_lock_);
+  UnloadLocaleResources();
+  return LoadLocaleResources(pref_locale);
+}
+
+SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
+  const SkBitmap* bitmap = GetImageNamed(resource_id).ToSkBitmap();
+  return const_cast<SkBitmap*>(bitmap);
+}
+
+gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
+  // Check to see if the image is already in the cache.
+  {
+    base::AutoLock lock_scope(*images_and_fonts_lock_);
+    if (images_.count(resource_id))
+      return images_[resource_id];
+  }
+
+  gfx::Image image;
+  if (delegate_)
+    image = delegate_->GetImageNamed(resource_id);
+
+  if (image.IsEmpty()) {
+    DCHECK(!delegate_ && !data_packs_.empty()) <<
+        "Missing call to SetResourcesDataDLL?";
+    ScopedVector<const SkBitmap> bitmaps;
+    for (size_t i = 0; i < data_packs_.size(); ++i) {
+      SkBitmap* bitmap = LoadBitmap(*data_packs_[i], resource_id);
+      if (bitmap)
+        bitmaps.push_back(bitmap);
+    }
+
+    if (bitmaps.empty()) {
+      LOG(WARNING) << "Unable to load image with id " << resource_id;
+      NOTREACHED();  // Want to assert in debug mode.
+      // The load failed to retrieve the image; show a debugging red square.
+      return GetEmptyImage();
+    }
+
+    std::vector<const SkBitmap*> tmp_bitmaps;
+    bitmaps.release(&tmp_bitmaps);
+
+    // Takes ownership of bitmaps.
+    image = gfx::Image(tmp_bitmaps);
+  }
+
+  // The load was successful, so cache the image.
+  base::AutoLock lock_scope(*images_and_fonts_lock_);
+
+  // Another thread raced the load and has already cached the image.
+  if (images_.count(resource_id))
+    return images_[resource_id];
+
+  images_[resource_id] = image;
+  return images_[resource_id];
+}
+
+gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
+  return GetNativeImageNamed(resource_id, RTL_DISABLED);
+}
+
+base::RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
+    int resource_id) const {
+  base::RefCountedStaticMemory* bytes = NULL;
+  if (delegate_)
+    bytes = delegate_->LoadDataResourceBytes(resource_id);
+
+  if (!bytes) {
+    for (size_t i = 0; i < data_packs_.size() && !bytes; ++i)
+      bytes = data_packs_[i]->GetStaticMemory(resource_id);
+  }
+
+  return bytes;
+}
+
+base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
+  base::StringPiece data;
+  if (delegate_ && delegate_->GetRawDataResource(resource_id, &data))
+    return data;
+
+  DCHECK(locale_resources_data_.get());
+  if (locale_resources_data_->GetStringPiece(resource_id, &data))
+    return data;
+
+  for (size_t i = 0; i < data_packs_.size(); ++i) {
+    if (data_packs_[i]->GetStringPiece(resource_id, &data))
+      return data;
+  }
+
+  return base::StringPiece();
+}
+
 string16 ResourceBundle::GetLocalizedString(int message_id) {
+  string16 string;
+  if (delegate_ && delegate_->GetLocalizedString(message_id, &string))
+    return string;
+
   // Ensure that ReloadLocaleResources() doesn't drop the resources while
   // we're using them.
   base::AutoLock lock_scope(*locale_resources_data_lock_);
@@ -211,95 +337,6 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
   return msg;
 }
 
-void ResourceBundle::OverrideLocalePakForTest(const FilePath& pak_path) {
-  overridden_pak_path_ = pak_path;
-}
-
-const FilePath& ResourceBundle::GetOverriddenPakPath() {
-  return overridden_pak_path_;
-}
-
-std::string ResourceBundle::ReloadLocaleResources(
-    const std::string& pref_locale) {
-  base::AutoLock lock_scope(*locale_resources_data_lock_);
-  UnloadLocaleResources();
-  return LoadLocaleResources(pref_locale);
-}
-
-SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
-  const SkBitmap* bitmap = GetImageNamed(resource_id).ToSkBitmap();
-  return const_cast<SkBitmap*>(bitmap);
-}
-
-gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
-  // Check to see if the image is already in the cache.
-  {
-    base::AutoLock lock_scope(*images_and_fonts_lock_);
-    ImageMap::const_iterator found = images_.find(resource_id);
-    if (found != images_.end())
-      return *found->second;
-  }
-
-  DCHECK(!data_packs_.empty()) << "Missing call to SetResourcesDataDLL?";
-  ScopedVector<const SkBitmap> bitmaps;
-  for (size_t i = 0; i < data_packs_.size(); ++i) {
-    SkBitmap* bitmap = LoadBitmap(*data_packs_[i], resource_id);
-    if (bitmap)
-      bitmaps.push_back(bitmap);
-  }
-
-  if (bitmaps.empty()) {
-    LOG(WARNING) << "Unable to load image with id " << resource_id;
-    NOTREACHED();  // Want to assert in debug mode.
-    // The load failed to retrieve the image; show a debugging red square.
-    return *GetEmptyImage();
-  }
-
-  // The load was successful, so cache the image.
-  base::AutoLock lock_scope(*images_and_fonts_lock_);
-
-  // Another thread raced the load and has already cached the image.
-  if (images_.count(resource_id))
-    return *images_[resource_id];
-
-  std::vector<const SkBitmap*> tmp_bitmaps;
-  bitmaps.release(&tmp_bitmaps);
-  // Takes ownership of bitmaps.
-  gfx::Image* image = new gfx::Image(tmp_bitmaps);
-  images_[resource_id] = image;
-  return *image;
-}
-
-gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
-  return GetNativeImageNamed(resource_id, RTL_DISABLED);
-}
-
-base::RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
-    int resource_id) const {
-  for (size_t i = 0; i < data_packs_.size(); ++i) {
-    base::RefCountedStaticMemory* bytes =
-        data_packs_[i]->GetStaticMemory(resource_id);
-    if (bytes)
-      return bytes;
-  }
-
-  return NULL;
-}
-
-base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
-  DCHECK(locale_resources_data_.get());
-  base::StringPiece data;
-  if (locale_resources_data_->GetStringPiece(resource_id, &data))
-    return data;
-
-  for (size_t i = 0; i < data_packs_.size(); ++i) {
-    if (data_packs_[i]->GetStringPiece(resource_id, &data))
-      return data;
-  }
-
-  return base::StringPiece();
-}
-
 const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
   {
     base::AutoLock lock_scope(*images_and_fonts_lock_);
@@ -329,8 +366,9 @@ void ResourceBundle::ReloadFonts() {
   LoadFontsIfNecessary();
 }
 
-ResourceBundle::ResourceBundle()
-    : images_and_fonts_lock_(new base::Lock),
+ResourceBundle::ResourceBundle(Delegate* delegate)
+    : delegate_(delegate),
+      images_and_fonts_lock_(new base::Lock),
       locale_resources_data_lock_(new base::Lock) {
 }
 
@@ -340,38 +378,59 @@ ResourceBundle::~ResourceBundle() {
 }
 
 void ResourceBundle::FreeImages() {
-  STLDeleteContainerPairSecondPointers(images_.begin(),
-                                       images_.end());
   images_.clear();
 }
 
 void ResourceBundle::LoadFontsIfNecessary() {
   images_and_fonts_lock_->AssertAcquired();
   if (!base_font_.get()) {
-    base_font_.reset(new gfx::Font());
+    if (delegate_) {
+      base_font_.reset(delegate_->GetFont(BaseFont).release());
+      bold_font_.reset(delegate_->GetFont(BoldFont).release());
+      small_font_.reset(delegate_->GetFont(SmallFont).release());
+      medium_font_.reset(delegate_->GetFont(MediumFont).release());
+      medium_bold_font_.reset(delegate_->GetFont(MediumBoldFont).release());
+      large_font_.reset(delegate_->GetFont(LargeFont).release());
+      large_bold_font_.reset(delegate_->GetFont(LargeBoldFont).release());
+    }
 
-    bold_font_.reset(new gfx::Font());
-    *bold_font_ =
-        base_font_->DeriveFont(0, base_font_->GetStyle() | gfx::Font::BOLD);
+    if (!base_font_.get())
+      base_font_.reset(new gfx::Font());
 
-    small_font_.reset(new gfx::Font());
-    *small_font_ = base_font_->DeriveFont(kSmallFontSizeDelta);
+    if (!bold_font_.get()) {
+      bold_font_.reset(new gfx::Font());
+      *bold_font_ =
+          base_font_->DeriveFont(0, base_font_->GetStyle() | gfx::Font::BOLD);
+    }
 
-    medium_font_.reset(new gfx::Font());
-    *medium_font_ = base_font_->DeriveFont(kMediumFontSizeDelta);
+    if (!small_font_.get()) {
+      small_font_.reset(new gfx::Font());
+      *small_font_ = base_font_->DeriveFont(kSmallFontSizeDelta);
+    }
 
-    medium_bold_font_.reset(new gfx::Font());
-    *medium_bold_font_ =
-        base_font_->DeriveFont(kMediumFontSizeDelta,
-                               base_font_->GetStyle() | gfx::Font::BOLD);
+    if (!medium_font_.get()) {
+      medium_font_.reset(new gfx::Font());
+      *medium_font_ = base_font_->DeriveFont(kMediumFontSizeDelta);
+    }
 
-    large_font_.reset(new gfx::Font());
-    *large_font_ = base_font_->DeriveFont(kLargeFontSizeDelta);
+    if (!medium_bold_font_.get()) {
+      medium_bold_font_.reset(new gfx::Font());
+      *medium_bold_font_ =
+          base_font_->DeriveFont(kMediumFontSizeDelta,
+                                 base_font_->GetStyle() | gfx::Font::BOLD);
+    }
 
-    large_bold_font_.reset(new gfx::Font());
-    *large_bold_font_ =
-        base_font_->DeriveFont(kLargeFontSizeDelta,
-                               base_font_->GetStyle() | gfx::Font::BOLD);
+    if (!large_font_.get()) {
+      large_font_.reset(new gfx::Font());
+      *large_font_ = base_font_->DeriveFont(kLargeFontSizeDelta);
+    }
+
+    if (!large_bold_font_.get()) {
+       large_bold_font_.reset(new gfx::Font());
+      *large_bold_font_ =
+          base_font_->DeriveFont(kLargeFontSizeDelta,
+                                 base_font_->GetStyle() | gfx::Font::BOLD);
+    }
   }
 }
 
@@ -396,20 +455,18 @@ SkBitmap* ResourceBundle::LoadBitmap(const ResourceHandle& data_handle,
   return NULL;
 }
 
-gfx::Image* ResourceBundle::GetEmptyImage() {
+gfx::Image& ResourceBundle::GetEmptyImage() {
   base::AutoLock lock(*images_and_fonts_lock_);
 
-  static gfx::Image* empty_image = NULL;
-  if (!empty_image) {
+  if (empty_image_.IsEmpty()) {
     // The placeholder bitmap is bright red so people notice the problem.
-    // This bitmap will be leaked, but this code should never be hit.
     SkBitmap* bitmap = new SkBitmap();
     bitmap->setConfig(SkBitmap::kARGB_8888_Config, 32, 32);
     bitmap->allocPixels();
     bitmap->eraseARGB(255, 255, 0, 0);
-    empty_image = new gfx::Image(bitmap);
+    empty_image_ = gfx::Image(bitmap);
   }
-  return empty_image;
+  return empty_image_;
 }
 
 }  // namespace ui

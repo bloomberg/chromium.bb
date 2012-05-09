@@ -125,7 +125,7 @@ void ExamplesMainDelegate::InitializeShellContentClient(
 }
 
 void ExamplesMainDelegate::InitializeResourceBundle() {
-  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US");
+  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 }
 
 }  // namespace examples

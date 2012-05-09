@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/ref_counted_memory.h"
@@ -36,8 +37,12 @@ FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
     resource_path = [base::mac::FrameworkBundle() pathForResource:name
                                                            ofType:@"pak"];
   }
-  if (!resource_path)
-    return FilePath();
+
+  if (!resource_path) {
+    // Return just the name of the pack file.
+    return FilePath(base::SysNSStringToUTF8(name) + ".pak");
+  }
+
   return FilePath([resource_path fileSystemRepresentation]);
 }
 
@@ -56,16 +61,15 @@ void ResourceBundle::LoadCommonResources() {
 #if defined(ENABLE_HIDPI)
   if (base::mac::IsOSLionOrLater()) {
     AddDataPack(GetResourcesPakFilePath(@"theme_resources_2x", nil),
-              ResourceHandle::kScaleFactor200x);
+                ResourceHandle::kScaleFactor200x);
     AddDataPack(GetResourcesPakFilePath(@"theme_resources_standard_2x", nil),
-              ResourceHandle::kScaleFactor200x);
+                ResourceHandle::kScaleFactor200x);
     AddDataPack(GetResourcesPakFilePath(@"ui_resources_standard_2x", nil),
-              ResourceHandle::kScaleFactor200x);
+                ResourceHandle::kScaleFactor200x);
   }
 #endif
 }
 
-// static
 FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
   NSString* mac_locale = base::SysUTF8ToNSString(app_locale);
 
@@ -77,7 +81,21 @@ FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
   if ([mac_locale isEqual:@"en_US"])
     mac_locale = @"en";
 
-  return GetResourcesPakFilePath(@"locale", mac_locale);
+  FilePath locale_file_path = GetResourcesPakFilePath(@"locale", mac_locale);
+
+  if (delegate_) {
+    locale_file_path =
+        delegate_->GetPathForLocalePack(locale_file_path, app_locale);
+  }
+
+  // Don't try to load empty values or values that are not absolute paths.
+  if (locale_file_path.empty() || !locale_file_path.IsAbsolute())
+    return FilePath();
+
+  if (!file_util::PathExists(locale_file_path))
+    return FilePath();
+
+  return locale_file_path;
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
@@ -87,53 +105,58 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
   // Check to see if the image is already in the cache.
   {
     base::AutoLock lock(*images_and_fonts_lock_);
-    ImageMap::const_iterator found = images_.find(resource_id);
-    if (found != images_.end()) {
-      if (!found->second->HasRepresentation(gfx::Image::kImageRepCocoa)) {
+    if (images_.count(resource_id)) {
+      if (!images_[resource_id].HasRepresentation(gfx::Image::kImageRepCocoa)) {
         DLOG(WARNING) << "ResourceBundle::GetNativeImageNamed() is returning a"
           << " cached gfx::Image that isn't backed by an NSImage. The image"
           << " will be converted, rather than going through the NSImage loader."
           << " resource_id = " << resource_id;
       }
-      return *found->second;
+      return images_[resource_id];
     }
   }
 
-  scoped_nsobject<NSImage> ns_image;
-  for (size_t i = 0; i < data_packs_.size(); ++i) {
-    scoped_refptr<base::RefCountedStaticMemory> data(
-        data_packs_[i]->GetStaticMemory(resource_id));
-    if (!data.get())
-      continue;
+  gfx::Image image;
+  if (delegate_)
+    image = delegate_->GetNativeImageNamed(resource_id, rtl);
 
-    scoped_nsobject<NSData> ns_data(
-        [[NSData alloc] initWithBytes:data->front()
-                               length:data->size()]);
+  if (image.IsEmpty()) {
+    scoped_nsobject<NSImage> ns_image;
+    for (size_t i = 0; i < data_packs_.size(); ++i) {
+      scoped_refptr<base::RefCountedStaticMemory> data(
+          data_packs_[i]->GetStaticMemory(resource_id));
+      if (!data.get())
+        continue;
+
+      scoped_nsobject<NSData> ns_data(
+          [[NSData alloc] initWithBytes:data->front()
+                                 length:data->size()]);
+      if (!ns_image.get()) {
+        ns_image.reset([[NSImage alloc] initWithData:ns_data]);
+      } else {
+        NSImageRep* image_rep = [NSBitmapImageRep imageRepWithData:ns_data];
+        if (image_rep)
+          [ns_image addRepresentation:image_rep];
+      }
+    }
+
     if (!ns_image.get()) {
-      ns_image.reset([[NSImage alloc] initWithData:ns_data]);
-    } else {
-      NSImageRep* image_rep = [NSBitmapImageRep imageRepWithData:ns_data];
-      if (image_rep)
-        [ns_image addRepresentation:image_rep];
+      LOG(WARNING) << "Unable to load image with id " << resource_id;
+      NOTREACHED();  // Want to assert in debug mode.
+      return GetEmptyImage();
     }
-  }
 
-  if (!ns_image.get()) {
-    LOG(WARNING) << "Unable to load image with id " << resource_id;
-    NOTREACHED();  // Want to assert in debug mode.
-    return *GetEmptyImage();
+    image = gfx::Image(ns_image.release());
   }
 
   base::AutoLock lock(*images_and_fonts_lock_);
 
   // Another thread raced the load and has already cached the image.
-  if (images_.count(resource_id)) {
-    return *images_[resource_id];
-  }
+  if (images_.count(resource_id))
+    return images_[resource_id];
 
-  gfx::Image* image = new gfx::Image(ns_image.release());
   images_[resource_id] = image;
-  return *image;
+  return images_[resource_id];
 }
 
 }  // namespace ui
