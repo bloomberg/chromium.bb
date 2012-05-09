@@ -278,10 +278,8 @@ TEST_F(SuggestionsCombinerTest, NoSource) {
 }
 
 TEST_F(SuggestionsCombinerTest, SourcesAreNotDoneFetching) {
-  SuggestionsSourceStub source_a(1, "sourceA", 10);
-  SuggestionsSourceStub source_b(1, "sourceB", 10);
-  combiner_->AddSource(&source_a);
-  combiner_->AddSource(&source_b);
+  combiner_->AddSource(new SuggestionsSourceStub(1, "sourceA", 10));
+  combiner_->AddSource(new SuggestionsSourceStub(1, "sourceB", 10));
   combiner_->FetchItems(NULL);
   EXPECT_EQ(0UL, combiner_->GetPagesValue()->GetSize());
 }
@@ -336,10 +334,6 @@ TEST_F(SuggestionsCombinerTest, TestSuite) {
       }
     }
 
-    // Tear down sources.
-    for (size_t j = 0; j < source_count; ++j) {
-      delete sources[j];
-    }
     Reset();
   }
 }

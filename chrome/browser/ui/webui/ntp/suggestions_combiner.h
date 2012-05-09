@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 
 class SuggestionsHandler;
 class SuggestionsSource;
@@ -25,7 +26,7 @@ class SuggestionsCombiner {
   explicit SuggestionsCombiner(SuggestionsHandler* suggestions_handler);
   virtual ~SuggestionsCombiner();
 
-  // Add a new source.
+  // Add a new source. The SuggestionsCombiner takes ownership of |source|.
   void AddSource(SuggestionsSource* source);
 
   // Fetch a new set of items from the various suggestion sources.
@@ -44,7 +45,7 @@ class SuggestionsCombiner {
   // sources have items ready.
   void FillPagesValue();
 
-  typedef std::vector<SuggestionsSource*> SuggestionsSources;
+  typedef ScopedVector<SuggestionsSource> SuggestionsSources;
 
   // List of all the suggestions sources that will be combined to generate a
   // single list of suggestions.

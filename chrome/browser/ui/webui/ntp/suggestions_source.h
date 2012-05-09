@@ -16,9 +16,12 @@ class DictionaryValue;
 // Interface for a source of suggested pages. The various sources will be
 // combined by the SuggestionsCombiner.
 class SuggestionsSource {
+
+ public:
+  virtual ~SuggestionsSource() {}
+
  protected:
   SuggestionsSource() {}
-  virtual ~SuggestionsSource() {}
 
   friend class SuggestionsCombiner;
 
