@@ -129,7 +129,7 @@ class GPU_EXPORT CommandBufferHelper {
   // Common Commands
   void Noop(uint32 skip_count) {
     cmd::Noop* cmd = GetImmediateCmdSpace<cmd::Noop>(
-        skip_count * sizeof(CommandBufferEntry));
+        (skip_count - 1) * sizeof(CommandBufferEntry));
     if (cmd) {
       cmd->Init(skip_count);
     }

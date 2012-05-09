@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -333,6 +333,15 @@ TEST_F(CommandBufferHelperTest, FreeRingBuffer) {
 
   // Check that the commands did happen.
   Mock::VerifyAndClearExpectations(api_mock_.get());
+}
+
+TEST_F(CommandBufferHelperTest, Noop) {
+  for (int ii = 1; ii < 4; ++ii) {
+    CommandBufferOffset put_before = get_helper_put();
+    helper_->Noop(ii);
+    CommandBufferOffset put_after = get_helper_put();
+    EXPECT_EQ(ii, put_after - put_before);
+  }
 }
 
 }  // namespace gpu

@@ -192,6 +192,11 @@ TEST_F(CommonDecoderTest, HandleNoop) {
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(
                 cmd, kSkipCount * kCommandBufferEntrySize));
+  const uint32 kSkipCount2 = 1;
+  cmd.Init(kSkipCount2);
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(
+                cmd, kSkipCount2 * kCommandBufferEntrySize));
 }
 
 TEST_F(CommonDecoderTest, SetToken) {
