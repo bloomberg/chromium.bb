@@ -28,6 +28,7 @@ from chromite.buildbot import repository
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.scripts import cbuildbot
 
 
@@ -1010,7 +1011,7 @@ def _replace_archive_path(functor):
       return functor(self)
     finally:
       stages.BUILDBOT_ARCHIVE_PATH = original
-  return cros_test_lib.tempdir_decorator(f)
+  return osutils.TempDirDecorator(f)
 
 
 class ArchiveStageTest(AbstractStageTest):
@@ -1056,7 +1057,7 @@ class ArchiveStageTest(AbstractStageTest):
     self.RunStage()
     self.mox.VerifyAll()
 
-  @cros_test_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testNoPushImagesForRemoteTrybot(self):
     """Test that remote trybot overrides work to disable push images."""
     argv = ['--remote-trybot', '-r', self.tempdir, '--buildnumber=1234',

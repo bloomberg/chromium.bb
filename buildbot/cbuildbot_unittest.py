@@ -20,7 +20,7 @@ from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config as config
 from chromite.buildbot import cbuildbot_stages as stages
 from chromite.lib import cros_build_lib as cros_lib
-from chromite.lib import cros_test_lib as test_lib
+from chromite.lib import osutils
 from chromite.scripts import cbuildbot
 
 # pylint: disable=W0212,R0904
@@ -142,7 +142,7 @@ class LogTest(mox.MoxTestBase):
                 'w') as f:
         f.write(str(i))
 
-  @test_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testZeroToOneLogs(self):
     """Test beginning corner case."""
     self._generateLogs(0)
@@ -151,7 +151,7 @@ class LogTest(mox.MoxTestBase):
     with open(os.path.join(self.tempdir, 'cbuildbot.log.1')) as f:
       self.assertEquals(f.readline(), '1')
 
-  @test_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testNineToTenLogs(self):
     """Test handling *.log.9 to *.log.10 (correct sorting)."""
     self._generateLogs(9)
@@ -160,7 +160,7 @@ class LogTest(mox.MoxTestBase):
     with open(os.path.join(self.tempdir, 'cbuildbot.log.10')) as f:
       self.assertEquals(f.readline(), '10')
 
-  @test_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testOverLimit(self):
     """Test going over the limit and having to purge old logs."""
     self._generateLogs(25)

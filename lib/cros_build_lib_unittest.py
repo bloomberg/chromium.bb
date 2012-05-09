@@ -14,7 +14,6 @@ import errno
 import mox
 import shutil
 import signal
-import subprocess
 import tempfile
 import time
 import unittest
@@ -398,7 +397,7 @@ class TestRunCommandLogging(cros_test_lib.TempDirMixin, unittest.TestCase):
 
 class TestRunCommandWithRetries(unittest.TestCase):
 
-  @cros_test_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testBasicRetry(self):
     # pylint: disable=E1101
     path = os.path.join(self.tempdir, 'script')

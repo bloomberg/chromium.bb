@@ -10,63 +10,22 @@ from __future__ import print_function
 import cStringIO
 import exceptions
 import mox
-import os
 import re
-import shutil
 import sys
-import tempfile
 import unittest
 
+import osutils
 import terminal
-
-
-# pylint: disable=W0212,R0904,W0702
-def _TempDirSetup(self):
-  self.tempdir = tempfile.mkdtemp()
-  os.chmod(self.tempdir, 0700)
-
-
-# pylint: disable=W0212,R0904,W0702
-def _TempDirTearDown(self):
-  tempdir = getattr(self, 'tempdir', None)
-  if tempdir is not None and os.path.exists(tempdir):
-    shutil.rmtree(tempdir)
-
-
-# pylint: disable=W0212,R0904,W0702
-def tempdir_decorator(func):
-  """Populates self.tempdir with path to a temporary writeable directory."""
-  def f(self, *args, **kwargs):
-    try:
-      _TempDirSetup(self)
-      return func(self, *args, **kwargs)
-    finally:
-      _TempDirTearDown(self)
-
-  f.__name__ = func.__name__
-  return f
-
-
-def tempfile_decorator(func):
-  """Populates self.tempfile with path to a temporary writeable file"""
-  def f(self, *args, **kwargs):
-    tmpfile = tempfile.NamedTemporaryFile(dir=self.tempdir, delete=False)
-    tmpfile.close()
-    self.tempfile = tmpfile.name
-    return func(self, *args, **kwargs)
-
-  f.__name__ = func.__name__
-  return tempdir_decorator(f)
 
 
 class TempDirMixin(object):
   """Mixin used to give each test a tempdir that is cleansed upon finish"""
 
   def setUp(self):
-    _TempDirSetup(self)
+    osutils._TempDirSetup(self)
 
   def tearDown(self):
-    _TempDirTearDown(self)
+    osutils._TempDirTearDown(self)
 
 
 class EasyAttr(dict):

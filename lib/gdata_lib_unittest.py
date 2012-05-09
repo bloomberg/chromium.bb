@@ -16,6 +16,7 @@ import mox
 
 import cros_test_lib as test_lib
 import gdata_lib
+import osutils
 
 # pylint: disable=W0201,W0212,E1101,R0904
 
@@ -97,7 +98,7 @@ class CredsTest(test_lib.MoxTestCase):
   DOCS_TOKEN = 'SomeDocsAuthToken'
   TRACKER_TOKEN = 'SomeTrackerAuthToken'
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testStoreLoadCreds(self):
     # This is the replay script for the test.
     mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
@@ -128,7 +129,7 @@ class CredsTest(test_lib.MoxTestCase):
 
     self.mox.VerifyAll()
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testStoreLoadToken(self):
     # This is the replay script for the test.
     mocked_creds = self.mox.CreateMock(gdata_lib.Creds)

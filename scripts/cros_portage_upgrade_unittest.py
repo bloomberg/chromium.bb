@@ -633,7 +633,7 @@ class CopyUpstreamTest(CpuTestBase):
   # _CopyUpstreamEclass
   #
 
-  @test_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def _TestCopyUpstreamEclass(self, eclass, do_copy,
                               local_copy_identical=None, error=None):
     """Test Upgrader._CopyUpstreamEclass"""
@@ -716,7 +716,7 @@ class CopyUpstreamTest(CpuTestBase):
   # _CopyUpstreamPackage
   #
 
-  @test_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def _TestCopyUpstreamPackage(self, catpkg, verrev, success,
                                existing_files, extra_upstream_files,
                                error=None):
@@ -898,7 +898,7 @@ class CopyUpstreamTest(CpuTestBase):
     self.assertTrue(manifest_lines == expected_manifest_lines, msg=msg)
     self.assertFalse(manifest_lines != expected_manifest_lines, msg=msg)
 
-  @test_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testCreateManifestNew(self):
     """Test case with upstream but no current Manifest."""
 
@@ -933,7 +933,7 @@ class CopyUpstreamTest(CpuTestBase):
     self.mox.VerifyAll()
     self.assertTrue(filecmp.cmp(upstream_manifest, current_manifest))
 
-  @test_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testCreateManifestMerge(self):
     """Test case with upstream but no current Manifest."""
 
@@ -1998,7 +1998,7 @@ class RunBoardTest(CpuTestBase):
       cpu.Upgrader.PrepareToRun(mocked_upgrader)
     self.mox.VerifyAll()
 
-  @test_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testPrepareToRunUpstreamRepoNew(self):
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
@@ -2396,7 +2396,7 @@ class CategoriesRoundtripTest(test_lib.MoxTestCase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
 
-  @test_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def _TestCategoriesRoundtrip(self, categories):
     stable_repo = self.tempdir
     cat_file = cpu.Upgrader.CATEGORIES_FILE
@@ -3352,7 +3352,7 @@ class StabilizeEbuildTest(CpuTestBase):
 
     self._AssertEqualsExcludingComments(gold_content, content_lines)
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testNothingToDo(self):
     arch = 'arm'
     keyword_line = 'KEYWORDS="amd64 arm ~mips x86"'
@@ -3360,7 +3360,7 @@ class StabilizeEbuildTest(CpuTestBase):
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_line, gold_keyword_line)
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testNothingToDoFbsd(self):
     arch = 'x86'
     keyword_line = 'KEYWORDS="amd64 arm ~mips x86 ~x86-fbsd"'
@@ -3368,7 +3368,7 @@ class StabilizeEbuildTest(CpuTestBase):
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_line, gold_keyword_line)
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testSimpleMiddleOfLine(self):
     arch = 'arm'
     keyword_line = 'KEYWORDS="amd64 ~arm ~mips x86"'
@@ -3376,7 +3376,7 @@ class StabilizeEbuildTest(CpuTestBase):
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_line, gold_keyword_line)
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testSimpleMiddleOfLineSpacePrefix(self):
     arch = 'arm'
     keyword_line = '    KEYWORDS="amd64 ~arm ~mips x86"'
@@ -3384,7 +3384,7 @@ class StabilizeEbuildTest(CpuTestBase):
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_line, gold_keyword_line)
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testSimpleStartOfLine(self):
     arch = 'arm'
     keyword_line = 'KEYWORDS="~arm amd64 ~mips x86"'
@@ -3392,7 +3392,7 @@ class StabilizeEbuildTest(CpuTestBase):
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_line, gold_keyword_line)
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testSimpleEndOfLine(self):
     arch = 'arm'
     keyword_line = 'KEYWORDS="amd64 ~mips x86 ~arm"'
@@ -3400,7 +3400,7 @@ class StabilizeEbuildTest(CpuTestBase):
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_line, gold_keyword_line)
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testPreFbsd(self):
     arch = 'x86'
     keyword_line = 'KEYWORDS="amd64 ~arm ~mips ~x86 ~x86-fbsd"'
@@ -3408,7 +3408,7 @@ class StabilizeEbuildTest(CpuTestBase):
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_line, gold_keyword_line)
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testPostFbsd(self):
     arch = 'x86'
     keyword_line = 'KEYWORDS="amd64 ~arm ~mips ~x86-fbsd ~x86"'
@@ -3416,7 +3416,7 @@ class StabilizeEbuildTest(CpuTestBase):
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_line, gold_keyword_line)
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testMultilineKeywordsMiddle(self):
     arch = 'arm'
     keyword_lines = ['KEYWORDS="amd64',
@@ -3432,7 +3432,7 @@ class StabilizeEbuildTest(CpuTestBase):
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_lines, gold_keyword_lines)
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testMultilineKeywordsStart(self):
     arch = 'amd64'
     keyword_lines = ['KEYWORDS="~amd64',
@@ -3448,7 +3448,7 @@ class StabilizeEbuildTest(CpuTestBase):
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_lines, gold_keyword_lines)
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testMultilineKeywordsEnd(self):
     arch = 'x86'
     keyword_lines = ['KEYWORDS="amd64',
@@ -3464,7 +3464,7 @@ class StabilizeEbuildTest(CpuTestBase):
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_lines, gold_keyword_lines)
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testMultipleKeywordLinesOneChange(self):
     arch = 'arm'
     keyword_lines = ['KEYWORDS="amd64 arm mips x86',
@@ -3476,7 +3476,7 @@ class StabilizeEbuildTest(CpuTestBase):
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_lines, gold_keyword_lines)
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testMultipleKeywordLinesMultipleChanges(self):
     arch = 'arm'
     keyword_lines = ['KEYWORDS="amd64 ~arm mips x86',
@@ -3488,7 +3488,7 @@ class StabilizeEbuildTest(CpuTestBase):
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_lines, gold_keyword_lines)
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testMultipleKeywordLinesMultipleChangesSpacePrefix(self):
     arch = 'arm'
     keyword_lines = ['     KEYWORDS="amd64 ~arm mips x86',

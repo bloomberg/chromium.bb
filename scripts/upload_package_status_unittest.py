@@ -7,14 +7,13 @@
 """Unit tests for cros_portage_upgrade.py."""
 
 import exceptions
-import re
-import sys
 import unittest
 
 import mox
 
 from chromite.lib import cros_test_lib as test_lib
 from chromite.lib import gdata_lib
+from chromite.lib import osutils
 from chromite.lib import table as tablelib
 from chromite.scripts import merge_package_status as mps
 from chromite.scripts import upload_package_status as ups
@@ -417,7 +416,7 @@ class MainTest(test_lib.MoxTestCase):
 
     self.mox.VerifyAll()
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testMainCredsFile(self):
     """Verify that running main with creds file follows flow."""
     csv = 'any.csv'
@@ -448,7 +447,7 @@ class MainTest(test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
 
-  @test_lib.tempfile_decorator
+  @osutils.TempFileDecorator
   def testMainTokenFile(self):
     """Verify that running main with token file follows flow."""
     csv = 'any.csv'

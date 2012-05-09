@@ -2,10 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Common file and os related utilities."""
+"""Common file and os related utilities, including tempdir manipulation."""
 
 import errno
 import os
+import shutil
+import tempfile
+
 
 from chromite.lib import cros_build_lib
 
@@ -92,3 +95,45 @@ def SafeMakedirs(path, mode=0775, sudo=False):
       raise
 
   return False
+
+
+# pylint: disable=W0212,R0904,W0702
+def _TempDirSetup(self):
+  self.tempdir = tempfile.mkdtemp()
+  os.chmod(self.tempdir, 0700)
+
+
+# pylint: disable=W0212,R0904,W0702
+def _TempDirTearDown(self):
+  tempdir = getattr(self, 'tempdir', None)
+  if tempdir is not None and os.path.exists(tempdir):
+    shutil.rmtree(tempdir)
+
+
+# pylint: disable=W0212,R0904,W0702
+def TempDirDecorator(func):
+  """Populates self.tempdir with path to a temporary writeable directory."""
+  def f(self, *args, **kwargs):
+    try:
+      _TempDirSetup(self)
+      return func(self, *args, **kwargs)
+    finally:
+      _TempDirTearDown(self)
+
+  f.__name__ = func.__name__
+  f.__doc__ = func.__doc__
+  f.__module__ = func.__module__
+  return f
+
+
+def TempFileDecorator(func):
+  """Populates self.tempfile with path to a temporary writeable file"""
+  def f(self, *args, **kwargs):
+    with tempfile.NamedTemporaryFile(dir=self.tempdir, delete=False) as f:
+      self.tempfile = f.name
+    return func(self, *args, **kwargs)
+
+  f.__name__ = func.__name__
+  f.__doc__ = func.__doc__
+  f.__module__ = func.__module__
+  return TempDirDecorator(f)

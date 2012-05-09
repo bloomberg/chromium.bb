@@ -15,7 +15,7 @@ import unittest
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.lib import cros_build_lib as cros_lib
-from chromite.lib import cros_test_lib as test_lib
+from chromite.lib import osutils
 from chromite.buildbot import remote_try
 from chromite.buildbot import repository
 from chromite.scripts import cbuildbot
@@ -34,7 +34,7 @@ class RemoteTryTests(mox.MoxTestBase):
     args.extend(self.BOTS)
     self.options, args = cbuildbot._ParseCommandLine(self.parser, args)
 
-  @test_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testSimpleTryJob(self):
     """Test that a tryjob spec file is created and pushed properly."""
     self.mox.StubOutWithMock(repository, 'IsARepoRoot')
@@ -67,7 +67,7 @@ class RemoteTryTests(mox.MoxTestBase):
                                      cwd=self.tempdir).output.strip()
     self.assertTrue(remote_url == remote_try.RemoteTryJob.EXT_SSH_URL)
 
-  @test_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testInternalTryJob(self):
     """Verify internal tryjobs are pushed properly."""
     self.mox.StubOutWithMock(repository, 'IsARepoRoot')
