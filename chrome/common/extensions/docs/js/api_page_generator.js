@@ -30,6 +30,7 @@ var MODULE_SCHEMAS = [
   '../api/contextMenus.json',
   '../api/cookies.json',
   '../api/debugger.json',
+  '../api/declarative.json',
   '../api/declarativeWebRequest.json',
   '../api/devtools.json',
   '../api/experimental.accessibility.json',
@@ -489,6 +490,22 @@ function getTypeRef(type) {
   return type['$ref'];
 }
 
+function getTypeByName(typeName) {
+  var module = typeModule[typeName] || {};
+  for (var type in module.types) {
+    if (module.types.hasOwnProperty(type) && type.id === typeName)
+      return type;
+  }
+  return undefined;
+}
+
+function getDescription(typeName) {
+  var type = getTypeByName(typeName);
+  if (!type)
+    return undefined;
+  return type.description;
+}
+
 function getEnumValues(enumList, type) {
   if (type === 'string') {
     enumList = enumList.map(function(e) { return '"' + e + '"'});
@@ -720,7 +737,7 @@ function getSignatureString(parameters) {
   if (!parameters)
     return '';
   var retval = [];
-  parameters.forEach(function(param, i) {
+  filterDocumented(parameters).forEach(function(param, i) {
     retval.push(getTypeName(param) + ' ' + param.name);
   });
 
@@ -744,5 +761,5 @@ function sortByName(a, b) {
 }
 
 function disableDocs(obj) {
-  return !!obj.nodoc || !!obj.internal;
+  return !!obj.nodoc;
 }

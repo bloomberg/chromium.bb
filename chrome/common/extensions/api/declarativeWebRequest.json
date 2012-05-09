@@ -36,7 +36,7 @@
       },
       {
         "id": "RedirectRequest",
-        "description": "Declarative event action that redirects a network request. (TODO: add destination)",
+        "description": "Declarative event action that redirects a network request.",
         "type": "object",
         "properties": {
           "instanceType": { "type": "string", "enum": ["declarativeWebRequest.RedirectRequest"] },

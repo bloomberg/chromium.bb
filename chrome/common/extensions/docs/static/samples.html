@@ -15,7 +15,6 @@
   pageData.api_modules = [];
   schema.forEach(function(mod) {
     if (mod.nodoc ||
-        mod.internal ||
         mod.namespace.indexOf('experimental') != -1) {
       return;
     }

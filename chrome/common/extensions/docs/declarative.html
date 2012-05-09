@@ -18,7 +18,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <meta name="description" content="Documentation for the chrome.storage module, which is part of the Google Chrome  extension APIs."><title>Storage - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.declarative module, which is part of the Google Chrome  extension APIs."><title>chrome.declarative - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
   </div>
@@ -185,47 +185,48 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Storage</h1>
+        <h1 class="page_title">chrome.declarative</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
+              <a href="#notes">Notes</a>
+              <ol>
+              </ol>
+            </li><li>
               <a href="#manifest">Manifest</a>
               <ol>
               </ol>
             </li><li>
-              <a href="#using-sync">Usage</a>
+              <a href="#rules">Rules</a>
               <ol>
               </ol>
             </li><li>
-              <a href="#limits">Storage and throttling limits</a>
+              <a href="#eventobjects">Event objects</a>
               <ol>
-              </ol>
-            </li><li>
-              <a href="#examples">Examples</a>
-              <ol>
+                <li>
+                  <a href="#addingrules">Adding rules</a>
+                </li><li>
+                  <a href="#removingrules">Removing rules</a>
+                </li><li>
+                  <a href="#retrievingrules">Retrieving rules</a>
+                </li>
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.storage</a>
+                <a href="#apiReference">API reference: chrome.declarative</a>
                 <ol>
                   <li>
-            <a href="#properties">Properties</a>
+            <a href="#global-methods">Methods</a>
             <ol>
               <li>
-                <a href="#property-sync">sync</a>
+                <a href="#method-addRules">addRules</a>
               </li><li>
-                <a href="#property-local">local</a>
-              </li>
-            </ol>
-          </li>
-                  <li>
-            <a href="#global-events">Events</a>
-            <ol>
-              <li>
-                <a href="#event-onChanged">onChanged</a>
+                <a href="#method-getRules">getRules</a>
+              </li><li>
+                <a href="#method-removeRules">removeRules</a>
               </li>
             </ol>
           </li>
@@ -233,28 +234,12 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-StorageChange">StorageChange</a>
+                <a href="#type-Rule">Rule</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-StorageArea">StorageArea</a>
+                <a href="#type-UrlFilter">UrlFilter</a>
                 <ol>
-                  <li>
-            <a href="#global-StorageArea-methods">Methods</a>
-            <ol>
-              <li>
-                <a href="#method-StorageArea-clear">clear</a>
-              </li><li>
-                <a href="#method-StorageArea-get">get</a>
-              </li><li>
-                <a href="#method-StorageArea-getBytesInUse">getBytesInUse</a>
-              </li><li>
-                <a href="#method-StorageArea-remove">remove</a>
-              </li><li>
-                <a href="#method-StorageArea-set">set</a>
-              </li>
-            </ol>
-          </li>
                 </ol>
               </li>
             </ol>
@@ -265,606 +250,292 @@
         </div>
         <!-- /TABLE OF CONTENTS -->
         <!-- Standard content lead-in for experimental API pages -->
+        <p class="warning">
+          <!-- Standard content lead-in for APIs that are not yet available on
+          the stable channel. -->
+          <em>Warning:</em> This API is still under development. It is only
+          available for Chrome users on the
+          <span>
+            <strong>dev</strong>
+              <a href="http://www.chromium.org/getting-involved/dev-channel">early
+              release channel</a>.</span>
+          <a href="TODO">Learn more</a>.
+        </p>
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">Storage</div>
-<!-- BEGIN AUTHORED CONTENT -->
-<p id="classSummary">
-Use the <code>chrome.storage</code> module
-to store, retrieve, and track changes to user data.
-This API has been optimized
-to meet the specific storage needs of extensions.
-It provides the same storage capabilities as the
-<a href="https://developer.mozilla.org/en/DOM/Storage#localStorage">localStorage API</a>
-with the following key differences:
+        <div id="static"><!-- BEGIN AUTHORED CONTENT -->
+<h2 id="notes">Notes</h2>
+<p>
+The Declarative API is a framework to define rules consisting of declarative
+conditions and actions. Conditions are evaluated in the browser rather than the
+JavaScript engine which reduces roundtrip latencies and allows for very high
+efficiency.
 </p>
-<ul>
-  <li>User data can be automatically synced with Chrome sync
-  (using <code>storage.sync</code>).</li>
-  <li>Your extension's content scripts can directly access user data
-  without the need for a background page.</li>
-  <li>A user's extension settings can be persisted
-  even when using
-  <a href="http://code.google.com/chrome/extensions/manifest.html#incognito">split incognito behavior</a>.</li>
-  <li>User data can be stored as objects
-  (the <code>localStorage API</code> stores data in strings).</li>
-</ul>
+<p></p>The Declarative API is an abstract foundation for the <a href="declarativeWebRequest.html">Declarative Web Request API</a> and
+possibly further extension APIs in the future. This page describes the
+underlying concepts of all Declarative APIs.
+<p></p>
 <h2 id="manifest">Manifest</h2>
-<p>You must declare the "storage" permission in the <a href="manifest.html">extension manifest</a>
-  to use the storage API.
-  For example:</p>
+<p>
+You must declare the "declarative" permission in your extension's manifest
+to use APIs that are based on this API.
+</p>
 <pre>{
   "name": "My extension",
   ...
-  <b>"permissions": [
-    "storage"
+<b>  "permissions": [
+    "declarative",
   ]</b>,
   ...
 }</pre>
-<h2 id="using-sync">Usage</h2>
+<h2 id="rules">Rules</h2>
+<p>The simplest possible rule consists of one or more conditions and one or more
+actions:</p>
+<pre>var rule = {
+  conditions: [ /* my conditions */ ],
+  actions: [ /* my actions */ ]
+};
+</pre>
+<p>If any of the conditions is fulfilled, all actions are executed.</p>
+<p>In addition to conditions and actions you may give each rule an identifier,
+which simplifies unregistering previously registered rules, and a priority to
+define precedences among rules. Priorities are only considered if rules conflict
+each other or need to be executed in a specific order.</p>
+<pre>var rule = {
+  id: "my rule",  // optional, will be generated if not set.
+  priority: 100,  // optional, defaults to 100.
+  conditions: [ /* my conditions */ ],
+  actions: [ /* my actions */ ]
+};
+</pre>
+<h2 id="eventobjects">Event objects</h2>
 <p>
-To store user data for your extension,
-you can use either
-<code>storage.sync</code> or
-<code>storage.local</code>.
-When using <code>storage.sync</code>,
-the stored data will automatically be persisted
-across any Chrome browser that the user is logged into
-provided the user's has sync enabled.
+<a href="events.html">Event objects</a> may support rules. These event objects
+don't call a callback function when events happer but test whether any
+registered rule has at least one fulfilled condition and execute the actions
+associated with this rule. Event objects supporting the declarative API have
+three relevant methods: <a href="#method-addRules"><code>addRules()</code></a>,
+<a href="#method-removeRules"><code>removeRules()</code></a>, and
+<a href="#method-getRules"><code>getRules()</code></a>.
 </p>
+<h3 id="addingrules">Adding rules</h3>
 <p>
-When Chrome's offline,
-Chrome stores the data locally.
-The next time the browser is online,
-Chrome syncs the data.
-Even if a user disables syncing,
-<code>storage.sync</code> will still work.
-In this case, it will behave identically
-to <code>storage.local</code>.
+To add rules call the <code>addRules()</code> function of the event object. It
+takes an array of rule instances as its first parameter and a callback function
+that is called on completion.
 </p>
-<p class="warning">
-Confidential user information should not be stored!
-The storage area isn't encrypted.
-</p>
-<h2 id="limits">Storage and throttling limits</h2>
-<p>
-Storage space is limited to:
-</p>
-<ul>
-  <li>100kB per extension</li>
-  <li>2kB per item—each item size is the sum
-of its JSON serialization plus its key</li>
-  <li>512 items per extension</li>
-</ul>
-<p>
-The throttling limit for modification calls
-to the Storage API is 1000 operations per hour.
-</p>
-<h2 id="examples">Examples</h2>
-<p>
-Storing user data is
-as simple as calling
-<code>set()</code>.
-The following example checks for
-CSS code saved by a user on a form,
-and if found,
-stores it.
-</p>
-<pre>function saveChanges() {
-  // Get the current CSS snippet from the form.
-  var cssCode = textarea.value;
-  // Check that there's some code there.
-  if (!cssCode) {
-    message('Error: No CSS specified');
-    return;
-  }
-  // Save it using the Chrome extension storage API.
-  chrome.experimental.storage.sync.set({'css': cssCode}, function() {
-    // Notify that we saved.
-    message('Settings saved');
-  });
-}
+<pre>var rule_list = [rule1, rule2, ...];
+function addRules(rule_list, function callback(details) {...});
 </pre>
 <p>
-If you're interested in tracking changes made
-to a data object,
-you can add a listener
-to its <code>onChanged</code> event.
-Whenever anything changes in storage,
-that event fires.
-Here's sample code
-to listen for saved css changes:
+If the rules were inserted successfully, the <code>details</code> parameter
+contains an array of inserted rules appearing in the same order as in the passed
+<code>rule_list</code> where the optional parameters <code>id</code> and
+<code>priority</code> were filled with the generated values. If any rule is
+invalid, e.g., because it contained an invalid condition or action, none of the
+rules are added and the <a href="extension.html#property-lastError">lastError</a> variable is set when
+the callback function is called. Each rule in <code>rule_list</code> must
+contain a unique identifier that is not currently used by another rule or an
+empty identifier.
 </p>
-<pre>chrome.storage.onChanged.addListener(saveChanges);
-saveChanges();
+<h3 id="removingrules">Removing rules</h3>
+<p>
+To remove rules call the <code>removeRules()</code> function. It accepts an
+optional array of rule identifiers as its first parameter and a callback
+function as its second parameter.
+</p>
+<pre>var rule_ids = ["id1", "id2", ...];
+function removeRules(rule_ids, function callback() {...});
 </pre>
 <p>
-You can find examples that use this API on the
-<a href="samples.html#sty">Samples page</a>.
+If <code>rule_ids</code> is an array of identifiers, all rules having
+identifiers listed in the array are removed. If <code>rule_ids</code> lists an
+identifier, that is unknown, this identifier is silently ignored. If
+<code>rule_ids</code> is <code>undefined</code>, all registered rules of this
+extension are removed. The <code>callback()</code> function is called when the
+rules were removed.
+</p>
+<h3 id="retrievingrules">Retrieving rules</h3>
+<p>
+To retrieve a list of currently registered rules, call the
+<code>getRules()</code> function. It accepts an optional array of rule
+identifiers with the same semantics as <code>removeRules</code> and a callback
+function.
+</p><p>
+</p><pre>var rule_ids = ["id1", "id2", ...];
+function getRules(rule_ids, function callback(details) {...});
+</pre>
+<p>
+The <code>details</code> parameter passed to the <code>calback()</code> function
+refers to an array of rules including filled optional parameters.
 </p>
 <!-- END AUTHORED CONTENT -->
 </div>
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.storage</h2>
+        <h2>API reference: chrome.declarative</h2>
           <!-- PROPERTIES -->
-          <div class="apiGroup">
-            <a name="properties"></a>
-            <h3 id="properties">Properties</h3>
-            <div>
-              <a name="property-sync"></a>
-              <h4>sync</h4>
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.storage.</span><span>sync</span>
-              </div>
-              <div>
-          <dt>
-            <var>sync</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="storage.html#type-StorageArea">StorageArea</a>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Items under the "sync" namespace are synced using Chrome Sync.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-          <dt>
-            <var>QUOTA_BYTES</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <code>102,400</code>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The maximum total amount (in bytes) of data that can be stored in sync storage.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>QUOTA_BYTES_PER_ITEM</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <code>2,048</code>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The maximum size (in bytes) of each individual item in sync storage.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>MAX_ITEMS</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <code>512</code>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The maximum number of items that can be stored in sync storage.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>MAX_WRITE_OPERATIONS_PER_HOUR</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <code>1,000</code>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each hour.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <code>10</code>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each minute, sustained over 10 minutes.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div>
-            </dl>
-          </dd>
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-            </div><div>
-              <a name="property-local"></a>
-              <h4>local</h4>
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.storage.</span><span>local</span>
-              </div>
-              <div>
-          <dt>
-            <var>local</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="storage.html#type-StorageArea">StorageArea</a>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Items under the "local" namespace are local to each machine.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-          <dt>
-            <var>QUOTA_BYTES</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <code>5,242,880</code>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The maximum amount (in bytes) of data that can be stored in local storage. This value will be ignored if the extension has the <code>unlimitedStorage</code> permission.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div>
-            </dl>
-          </dd>
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-            </div>
-          </div> <!-- /apiGroup -->
+           <!-- /apiGroup -->
           <!-- METHODS -->
-            <!-- /apiGroup -->
-          <!-- EVENTS -->
-          <div id="eventsTemplate" class="apiGroup">
-            <a name="global-events"></a>
-            <h3>Events</h3>
-            <!-- iterates over all events -->
+          <div id="methodsTemplate" class="apiGroup">
+            <a name="global-methods"></a>
+            <h3>Methods</h3>
+            <!-- iterates over all functions -->
             <div class="apiItem">
-              <a name="event-onChanged"></a>
-              <h4>onChanged</h4>
+              <a name="method-addRules"></a> <!-- method-anchor -->
+              <h4>addRules</h4>
               <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.storage.</span><span>onChanged</span><span class="subdued">.addListener</span>(function(<span>object changes, string namespace</span>) <span class="subdued">{...}</span><span></span>);
-              </div>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.declarative.addRules</span>(<span class="null"><span>array of Rule</span>
+                      <var><span>rules</span></var></span><span class="optional"><span>, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
               <div class="description">
-                <p>Fired when one or more items change.</p>
-                <!-- LISTENER PARAMETERS -->
+                <p>Registers rules to handle events. Note that you cannot call this function as <code>chrome.declarative.addRules(...)</code>. Instead a function of this signature is provided for event objects supporting the declarative API such as <code>chrome.declarativeWebRequest.onRequest</code>.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>rules</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <a href="declarative.html#type-Rule">Rule</a>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Rules to be registered. These do not replace previously registered rules.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Called with registered rules.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
                 <div>
-                  <h4>Listener parameters</h4>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>array of Rule rules</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
           <dt>
-            <var>changes</var>
+            <var>rules</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>object</span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <a href="declarative.html#type-Rule">Rule</a>
+                      </span>
+                    </span></span>
+                        </span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>Object mapping each key that changed to its corresponding <a href="#type-StorageChange">StorageChange</a> for that item.</dd>
+          <dd>Rules that were registered, the optional parameters are filled with values.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
         </div>
-                    </div><div>
-                      <div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-getRules"></a> <!-- method-anchor -->
+              <h4>getRules</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.declarative.getRules</span>(<span class="optional"><span>array of string</span>
+                      <var><span>ruleIdentifiers</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
+              <div class="description">
+                <p>Returns currently registered rules. Note that you cannot call this function as <code>chrome.declarative.getRules(...)</code>. Instead a function of this signature is provided for event objects supporting the declarative API such as <code>chrome.declarativeWebRequest.onRequest</code>.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
           <dt>
-            <var>namespace</var>
+            <var>ruleIdentifiers</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
+                    <span class="optional">optional</span>
                     <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
                       <span>
                         <span>string</span>
                       </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The namespace ("sync" or "local") of the storage area the changes are for.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                    </div>
-                  </dl>
-                </div>
-                <!-- EXTRA PARAMETERS -->
-                <!-- LISTENER RETURN VALUE -->
-                <dl>
-                </dl>
-              </div> <!-- /description -->
-               <!-- /description -->
-            </div> <!-- /apiItem -->
-          </div> <!-- /apiGroup -->
-          <!-- TYPES -->
-          <div class="apiGroup">
-            <a name="types"></a>
-            <h3 id="types">Types</h3>
-            <!-- iterates over all types -->
-            <div class="apiItem">
-              <a name="type-StorageChange"></a>
-              <h4>StorageChange</h4>
-              <div>
-          <dt>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>object</span>
+                    </span></span>
+                        </span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-          <dt>
-            <var>oldValue</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>any</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The old value of the item, if there was an old value.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>newValue</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>any</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The new value of the item, if there is a new value.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div>
-            </dl>
-          </dd>
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-            </div><div class="apiItem">
-              <a name="type-StorageArea"></a>
-              <h4>StorageArea</h4>
-              <div>
-          <dt>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>object</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <dd>
-            <div class="apiGroup">
-            <a name="global-StorageArea-methods"></a>
-            <h3>Methods of StorageArea</h3>
-            <!-- iterates over all functions -->
-            <div class="apiItem">
-              <a name="method-StorageArea-clear"></a> <!-- method-anchor -->
-              <h4>clear</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>storageArea.clear</span>(<span class="optional"><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-              <div class="description">
-                <p>Removes all items from storage.</p>
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Callback on success, or on failure (in which case <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set).</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                  </dl>
-                  </div>
-                </div>
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-StorageArea-get"></a> <!-- method-anchor -->
-              <h4>get</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>storageArea.get</span>(<span class="optional"><span>string or array of string or object</span>
-                      <var><span>keys</span></var></span><span class="null"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-              <div class="description">
-                <p>Gets one or more items from storage.</p>
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>keys</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string or array of string or object</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object).  An empty list or object will return an empty result object.  Pass in <code>null</code> to get the entire contents of storage.</dd>
+          <dd>If an array is passed, only rules with identifiers contained in this array are returned.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -887,7 +558,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>Callback with storage items, or on failure (in which case <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set).</dd>
+          <dd>Called with registered rules.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -907,26 +578,32 @@ You can find examples that use this API on the
                     that looks like this:
                   </p>
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>object items</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>array of Rule rules</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
           <dt>
-            <var>items</var>
+            <var>rules</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>object</span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <a href="declarative.html#type-Rule">Rule</a>
+                      </span>
+                    </span></span>
+                        </span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>Object with items in their key-value mappings.</dd>
+          <dd>Rules that were registered, the optional parameters are filled with values.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -939,22 +616,22 @@ You can find examples that use this API on the
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-StorageArea-getBytesInUse"></a> <!-- method-anchor -->
-              <h4>getBytesInUse</h4>
+              <a name="method-removeRules"></a> <!-- method-anchor -->
+              <h4>removeRules</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>storageArea.getBytesInUse</span>(<span class="optional"><span>string or array of string</span>
-                      <var><span>keys</span></var></span><span class="null"><span>, </span><span>function</span>
+                  <span>chrome.declarative.removeRules</span>(<span class="optional"><span>array of string</span>
+                      <var><span>ruleIdentifiers</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
-                <p>Gets the amount of space (in bytes) being used by one or more items.</p>
+                <p>Unregisters currently registered rules. Note that you cannot call this function as <code>chrome.declarative.removeRules(...)</code>. Instead a function of this signature is provided for event objects supporting the declarative API such as <code>chrome.declarativeWebRequest.onRequest</code>.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
           <dt>
-            <var>keys</var>
+            <var>ruleIdentifiers</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -962,118 +639,20 @@ You can find examples that use this API on the
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>string or array of string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>A single key or list of keys to get the total usage for. An empty list will return 0. Pass in <code>null</code> to get the total usage of all of storage.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
+                        <span>
+                          array of <span><span>
                       <span>
-                        <span>function</span>
+                        <span>string</span>
+                      </span>
+                    </span></span>
+                        </span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>Callback with the amount of space being used by storage, or on failure (in which case <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set).</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>integer bytesInUse</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-          <dt>
-            <var>bytesInUse</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Amount of space being used in storage, in bytes.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-StorageArea-remove"></a> <!-- method-anchor -->
-              <h4>remove</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>storageArea.remove</span>(<span class="null"><span>string or array of string</span>
-                      <var><span>keys</span></var></span><span class="optional"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-              <div class="description">
-                <p>Removes one or more items from storage.</p>
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>keys</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string or array of string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>A single key or a list of keys for items to remove.</dd>
+          <dd>If an array is passed, only rules with identifiers contained in this array are unregistered.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1097,88 +676,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>Callback on success, or on failure (in which case <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set).</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                  </dl>
-                  </div>
-                </div>
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-StorageArea-set"></a> <!-- method-anchor -->
-              <h4>set</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>storageArea.set</span>(<span class="null"><span>object</span>
-                      <var><span>items</span></var></span><span class="optional"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-              <div class="description">
-                <p>Sets multiple items.</p>
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>items</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>object</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Object specifying items to augment storage with. Values that cannot be serialized (functions, etc) will be ignored.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Callback on success, or on failure (in which case <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set).</dd>
+          <dd>Called when rules were unregistered.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1206,8 +704,571 @@ You can find examples that use this API on the
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div>  <!-- /apiItem -->
-          </div>
+          </div>  <!-- /apiGroup -->
+          <!-- EVENTS -->
+           <!-- /apiGroup -->
+          <!-- TYPES -->
+          <div class="apiGroup">
+            <a name="types"></a>
+            <h3 id="types">Types</h3>
+            <!-- iterates over all types -->
+            <div class="apiItem">
+              <a name="type-Rule"></a>
+              <h4>Rule</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Description of a declarative rule for handling events.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>id</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Optional identifier that allows referencing this rule.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>conditions</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>any</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>List of conditions that can trigger the actions.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>actions</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>any</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>List of actions that are triggered if one of the condtions is fulfilled.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>priority</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Optional priority of this rule. Defaults to 100.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
           </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-UrlFilter"></a>
+              <h4>UrlFilter</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Filters URLs for various criteria</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>hostContains</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the host name of the URL contains a specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>hostEquals</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the host name of the URL is equal to a specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>hostPrefix</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the host name of the URL starts with a specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>hostSuffix</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the host name of the URL ends with a specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>pathContains</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the path segment of the URL contains a specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>pathEquals</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the path segment of the URL is equal to a specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>pathPrefix</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the path segment of the URL starts with a specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>pathSuffix</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the path segment of the URL ends with a specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>queryEquals</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the query segment of the URL is equal to a specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>queryPrefix</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the query segment of the URL starts with a specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>querySuffix</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the query segment of the URL ends with a specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>urlSuffix</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the URL ends with a specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>urlEquals</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the URL is equal to a specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>urlPrefix</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the URL starts with a specified string.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>schemes</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the scheme of the URL is equal to any of the schemes specified in the array.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>ports</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>integer or array of integer</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the port of the URL is contained in any of the specified port lists. For example <code>[80, 443, [1000, 1200]]</code> matches all requests on port 80, 443 and in the range 1000-1200.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
         </div>

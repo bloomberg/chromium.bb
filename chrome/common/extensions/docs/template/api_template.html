@@ -103,6 +103,20 @@
 
         </div> <!-- /VALUE -->
 
+        <div id="conditionAndActionTemplate">
+          <dt>
+            <a jsvalues=".href: typeModule[$this].namespace + '.html#type-' + $this"
+               jscontent="$this">condition name</a>
+          </dt>
+          <dd class="todo" jsdisplay="!typeModule[$this].description">
+            Undocumented.
+          </dd>
+          <dd jsdisplay="getDescription($this)"
+              jsvalues=".innerHTML:substituteTypeRefs(getDescription($this))">
+            Description of this parameter from the json schema.
+          </dd>
+        </div>
+
         <div id="functionParametersTemplate" jsdisplay="$this.parameters.length > 0">
           <h5>Parameters</h5>
           <dl>
@@ -400,7 +414,7 @@
 
               <div class="summary"><span jsdisplay="returns" jscontent="getTypeName(returns)">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span jscontent="getFullyQualifiedFunctionName($scope, $this)">chrome.module.methodName</span>(<span jsselect="parameters" jsvalues="class:optional ? 'optional' : ''"><span jsdisplay="$index">, </span><span jscontent="getTypeName($this)"></span>
+                  <span jscontent="getFullyQualifiedFunctionName($scope, $this)">chrome.module.methodName</span>(<span jsselect="filterDocumented(parameters)" jsvalues="class:optional ? 'optional' : ''"><span jsdisplay="$index">, </span><span jscontent="getTypeName($this)"></span>
                       <var><span jscontent="$this.name"></span></var></span>)</div>
 
               <div class="description">
@@ -410,9 +424,9 @@
                 </p>
 
                 <!-- PARAMETERS -->
-                <h4 jsdisplay="$this.parameters && $this.parameters.length > 0">Parameters</h4>
+                <h4 jsdisplay="$this.parameters && filterDocumented($this.parameters).length > 0">Parameters</h4>
                 <dl>
-                  <div jsselect="parameters">
+                  <div jsselect="filterDocumented(parameters)">
                     <div transclude="valueTemplate">
                     </div>
                   </div>
@@ -474,12 +488,12 @@
               <a jsvalues=".name:getAnchorName('event', name, $scope)"></a>
               <h4 jscontent="name">event name</h4>
 
-              <div class="summary">
+              <div class="summary" jsdisplay="!($this.options && $this.options.supportsListeners === false)">
                 <!-- Note: intentionally longer 80 columns -->
                 <span jscontent="(getObjectName($scope) || getModuleName()) + '.'" class="subdued">chrome.bookmarks</span><span jscontent="name">onEvent</span><span class="subdued">.addListener</span>(function(<span jscontent="getSignatureString($this.parameters)">Type param1, Type param2</span>) <span class="subdued">{...}</span><span jscontent="getOptionalSignatureSubstring($this.extraParameters)">, Type opt_param1, Type opt_param2</span>);
               </div>
 
-              <div class="description">
+              <div class="description" jsdisplay="!($this.options && $this.options.supportsListeners === false)">
                 <p class="todo" jsdisplay="!description">Undocumented.</p>
                 <p jsdisplay="description" jsvalues=".innerHTML:description">
                   A description from the json schema def of the event goes here.
@@ -517,6 +531,43 @@
                 </dl>
 
               </div> <!-- /description -->
+
+              <div class="summary" jsdisplay="$this.options && $this.options.supportsRules === true">
+                <span jscontent="(getObjectName($scope) || getModuleName()) + '.'" class="subdued">chrome.bookmarks</span><span jscontent="name">onEvent</span><span class="subdued">.addRules</span>(...);
+              </div>
+
+              <div class="description" jsdisplay="$this.options && $this.options.supportsRules === true">
+                <p class="todo" jsdisplay="!description">Undocumented.</p>
+                <p jsdisplay="description" jsvalues=".innerHTML:description">
+                  A description from the json schema def of the event goes here.
+                </p>
+
+                <p>See <a href="declarative.html#method-addRules"><code>chrome.declarative.addRules()</code></a>.
+                </p>
+
+                <!-- CONDITIONS -->
+                <div jsdisplay="options && options.conditions && options.conditions.length > 0">
+                  <h4>Supported conditions</h4>
+                  <dl>
+                    <div jsselect="options.conditions">
+                      <div transclude="conditionAndActionTemplate">
+                      </div>
+                    </div>
+                  </dl>
+                </div> <!-- /conditions -->
+
+                <!-- ACTIONS -->
+                <div jsdisplay="options && options.actions && options.actions.length > 0">
+                  <h4>Supported actions</h4>
+                  <dl>
+                    <div jsselect="options.actions">
+                      <div transclude="conditionAndActionTemplate">
+                      </div>
+                    </div>
+                  </dl>
+                </div> <!-- /actions -->
+              </div> <!-- /description -->
+
             </div> <!-- /apiItem -->
 
           </div> <!-- /apiGroup -->
