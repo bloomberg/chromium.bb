@@ -490,7 +490,6 @@
         'listener_leak_test.cc',
         'media_leak_test.cc',
         'mock_spellcheck_unittest.cc',
-        'node_leak_test.cc',
         'plugin_tests.cc',
         'run_all_tests.cc',
         'test_shell_test.cc',
