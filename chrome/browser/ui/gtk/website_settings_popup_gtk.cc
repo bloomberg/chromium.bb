@@ -78,6 +78,7 @@ WebsiteSettingsPopupGtk::WebsiteSettingsPopupGtk(
       profile_(profile),
       tab_contents_wrapper_(tab_contents_wrapper),
       browser_(NULL),
+      cert_id_(0),
       header_box_(NULL),
       cookies_section_contents_(NULL),
       permissions_section_contents_(NULL),
@@ -319,6 +320,17 @@ void WebsiteSettingsPopupGtk::SetIdentityInfo(
   GtkWidget* identity_box = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(identity_box), identity_description, FALSE, FALSE,
                      0);
+  if (identity_info.cert_id) {
+    cert_id_ = identity_info.cert_id;
+    GtkWidget* view_cert_link = theme_service_->BuildChromeLinkButton(
+        l10n_util::GetStringUTF8(IDS_PAGEINFO_CERT_INFO_BUTTON));
+    g_signal_connect(view_cert_link, "clicked",
+                     G_CALLBACK(OnViewCertLinkClickedThunk), this);
+    GtkWidget* link_hbox = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(link_hbox), view_cert_link,
+                       FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(identity_box), link_hbox, FALSE, FALSE, 0);
+  }
 
   // Create connection section.
   GtkWidget* connection_description =
@@ -484,4 +496,10 @@ void WebsiteSettingsPopupGtk::OnPermissionChanged(GtkWidget* widget) {
   if (presenter_)
     presenter_->OnSitePermissionChanged(ContentSettingsType(type),
                                        ContentSetting(value));
+}
+
+void WebsiteSettingsPopupGtk::OnViewCertLinkClicked(GtkWidget* widget) {
+  DCHECK_NE(cert_id_, 0);
+  ShowCertificateViewerByID(GTK_WINDOW(parent_), cert_id_);
+  bubble_->Close();
 }

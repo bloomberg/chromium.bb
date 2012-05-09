@@ -79,6 +79,7 @@ WebsiteSettings::WebsiteSettings(
       ui_(ui),
       site_url_(url),
       site_identity_status_(SITE_IDENTITY_STATUS_UNKNOWN),
+      cert_id_(0),
       site_connection_status_(SITE_CONNECTION_STATUS_UNKNOWN),
       cert_store_(cert_store),
       content_settings_(profile->GetHostContentSettingsMap()) {
@@ -178,6 +179,8 @@ void WebsiteSettings::Init(Profile* profile,
     subject_name.assign(
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
   }
+
+  cert_id_ = ssl.cert_id;
 
   if (ssl.cert_id &&
       cert_store_->RetrieveCert(ssl.cert_id, &cert) &&
@@ -441,6 +444,7 @@ void WebsiteSettings::PresentSiteIdentity() {
   info.identity_status = site_identity_status_;
   info.identity_status_description =
       UTF16ToUTF8(site_identity_details_);
+  info.cert_id = cert_id_;
   ui_->SetIdentityInfo(info);
 }
 

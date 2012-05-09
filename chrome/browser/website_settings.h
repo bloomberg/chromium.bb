@@ -148,6 +148,10 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // Status of the website's identity verification check.
   SiteIdentityStatus site_identity_status_;
 
+  // For secure connection |cert_id_| is set to the ID of the server
+  // certificate. For non secure connections |cert_id_| is 0.
+  int cert_id_;
+
   // Status of the connection to the website.
   SiteConnectionStatus site_connection_status_;
 

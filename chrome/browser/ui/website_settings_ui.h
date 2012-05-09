@@ -71,6 +71,8 @@ class WebsiteSettingsUI {
     // Textual description of the site's identity status that is displayed to
     // the user.
     std::string identity_status_description;
+    // The ID is the server certificate of a secure connection or 0.
+    int cert_id;
     // Status of the site's connection.
     WebsiteSettings::SiteConnectionStatus connection_status;
     // Textual description of the site's connection status that is displayed to

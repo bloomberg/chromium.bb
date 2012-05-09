@@ -61,6 +61,7 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
                        OnPermissionsSettingsLinkClicked);
   CHROMEGTK_CALLBACK_1(WebsiteSettingsPopupGtk, void, OnComboBoxShown,
                        GParamSpec*);
+  CHROMEGTK_CALLBACK_0(WebsiteSettingsPopupGtk, void, OnViewCertLinkClicked);
 
   // Parent window.
   GtkWindow* parent_;
@@ -84,6 +85,10 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   // The browser object of the current window. This is needed to open the
   // settings page in a new tab.
   Browser* browser_;
+
+  // For secure connection |cert_id_| is set to the ID of the server
+  // certificate. For non secure connections |cert_id_| is 0.
+  int cert_id_;
 
   // Container for the popup header content.
   GtkWidget* header_box_;
