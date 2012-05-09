@@ -62,7 +62,7 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp) {
 void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
   enum NaClSuspendState old_state;
 
-  NaClMutexLock(&natp->mu);
+  NaClXMutexLock(&natp->mu);
   old_state = natp->suspend_state;
   DCHECK((old_state & NACL_APP_THREAD_SUSPENDING) != 0);
   if (old_state == (NACL_APP_THREAD_UNTRUSTED | NACL_APP_THREAD_SUSPENDING)) {
@@ -73,7 +73,7 @@ void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
   }
   natp->suspend_state = old_state & ~NACL_APP_THREAD_SUSPENDING;
   NaClXCondVarSignal(&natp->cv);
-  NaClMutexUnlock(&natp->mu);
+  NaClXMutexUnlock(&natp->mu);
 }
 
 /*

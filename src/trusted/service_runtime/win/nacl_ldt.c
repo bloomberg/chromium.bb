@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 /* for LDT_ENTRIES */
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
@@ -129,7 +130,7 @@ uint16_t NaClLdtAllocateSelector(int entry_number,
   struct LdtEntry ldt;
 
   retval = 0;
-  NaClMutexLock(&nacl_ldt_mutex);
+  NaClXMutexLock(&nacl_ldt_mutex);
 
   if (-1 == entry_number) {
     entry_number = NaClFindUnusedEntryNumber();
@@ -137,7 +138,7 @@ uint16_t NaClLdtAllocateSelector(int entry_number,
       /*
        * No free entries were available.
        */
-      NaClMutexUnlock(&nacl_ldt_mutex);
+      NaClXMutexUnlock(&nacl_ldt_mutex);
       return 0;
     }
   }
@@ -158,7 +159,7 @@ uint16_t NaClLdtAllocateSelector(int entry_number,
     }
     break;
    default:
-    NaClMutexUnlock(&nacl_ldt_mutex);
+    NaClXMutexUnlock(&nacl_ldt_mutex);
     return 0;
   }
   ldt.descriptor_privilege = 3;
@@ -171,7 +172,7 @@ uint16_t NaClLdtAllocateSelector(int entry_number,
     /*
      * The base address needs to be page aligned.
      */
-    NaClMutexUnlock(&nacl_ldt_mutex);
+    NaClXMutexUnlock(&nacl_ldt_mutex);
     return 0;
   };
   ldt.base_00to15 = ((unsigned long) base_addr) & 0xffff;
@@ -183,7 +184,7 @@ uint16_t NaClLdtAllocateSelector(int entry_number,
      * If the size is in pages, no more than 2**20 pages can be protected.
      * If the size is in bytes, no more than 2**20 bytes can be protected.
      */
-    NaClMutexUnlock(&nacl_ldt_mutex);
+    NaClXMutexUnlock(&nacl_ldt_mutex);
     return 0;
   }
   ldt.limit_00to15 = size_minus_one & 0xffff;
@@ -217,14 +218,14 @@ uint16_t NaClLdtAllocateSelector(int entry_number,
   }
 
   if (0 != retval) {
-    NaClMutexUnlock(&nacl_ldt_mutex);
+    NaClXMutexUnlock(&nacl_ldt_mutex);
     return 0;
   }
 
   /*
    * Return an LDT selector with a requested privilege level of 3.
    */
-  NaClMutexUnlock(&nacl_ldt_mutex);
+  NaClXMutexUnlock(&nacl_ldt_mutex);
   return (uint16_t)((entry_number << 3) | 0x7);
 }
 
@@ -367,7 +368,7 @@ void NaClLdtDeleteSelector(uint16_t selector) {
   u.entry.op_size_32 = 1;
   u.entry.granularity = 1;
 
-  NaClMutexLock(&nacl_ldt_mutex);
+  NaClXMutexLock(&nacl_ldt_mutex);
   if (NULL != set_ldt_entries) {
     retval = (*set_ldt_entries)(selector, u.dwords[0], u.dwords[1], 0, 0, 0);
   }
@@ -379,7 +380,7 @@ void NaClLdtDeleteSelector(uint16_t selector) {
     info.entries[0] = u.entry;
     retval = (*set_information_process)((HANDLE)-1, 10, (void*)&info, 16);
   }
-  NaClMutexUnlock(&nacl_ldt_mutex);
+  NaClXMutexUnlock(&nacl_ldt_mutex);
 }
 
 /*

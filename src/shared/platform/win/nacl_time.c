@@ -20,6 +20,7 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/win/xlate_system_error.h"
 
 #define kMillisecondsPerSecond 1000
@@ -331,7 +332,7 @@ int NaClGetTimeOfDayInternQpc(struct nacl_abi_timeval *tv,
 
   NaClLog(5, "Entered NaClGetTimeOfDayInternQpc\n");
 
-  NaClMutexLock(&ntsp->mu);
+  NaClXMutexLock(&ntsp->mu);
 
   GetSystemTimeAsFileTime(&ft_now);
   QueryPerformanceCounter(&qpc);
@@ -358,7 +359,7 @@ int NaClGetTimeOfDayInternQpc(struct nacl_abi_timeval *tv,
     NaClLog(5, " need recalibration\n");
     if (allow_calibration) {
       NaClCalibrateWindowsClockQpc(ntsp);
-      NaClMutexUnlock(&ntsp->mu);
+      NaClXMutexUnlock(&ntsp->mu);
       return NaClGetTimeOfDayInternQpc(tv, ntsp, 0);
     } else {
       NaClLog(5, " ... but using coarse, system time instead.\n");
@@ -378,11 +379,11 @@ int NaClGetTimeOfDayInternQpc(struct nacl_abi_timeval *tv,
       (drift_ms > kMaxMillsecondDriftBeforeRecalibration)) {
     NaClLog(5, "drift_ms recalibration\n");
     NaClCalibrateWindowsClockQpc(ntsp);
-    NaClMutexUnlock(&ntsp->mu);
+    NaClXMutexUnlock(&ntsp->mu);
     return NaClGetTimeOfDayInternQpc(tv, ntsp, 0);
   }
 
-  NaClMutexUnlock(&ntsp->mu);
+  NaClXMutexUnlock(&ntsp->mu);
 
   /* translate to unix time base */
   qpc_now_mks = qpc_now_mks
@@ -411,7 +412,7 @@ int NaClGetTimeOfDayIntern(struct nacl_abi_timeval *tv,
   ms_counter_now = timeGetTime();
   t_ms = NaClFileTimeToMs(&ft_now);
 
-  NaClMutexLock(&ntsp->mu);
+  NaClXMutexLock(&ntsp->mu);
 
   if (!ntsp->allow_low_resolution) {
     NaClLog(5, "ms_counter_now       %"NACL_PRIu32"\n",
@@ -443,7 +444,7 @@ int NaClGetTimeOfDayIntern(struct nacl_abi_timeval *tv,
 
   unix_time_ms = t_ms - ntsp->epoch_start_ms;
 
-  NaClMutexUnlock(&ntsp->mu);
+  NaClXMutexUnlock(&ntsp->mu);
 
   NaClLog(5, "unix_time_ms  =      %"NACL_PRId64"\n", unix_time_ms);
   /*
