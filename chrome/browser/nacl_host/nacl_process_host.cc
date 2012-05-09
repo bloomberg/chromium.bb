@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -20,7 +19,7 @@
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/nacl_host/nacl_validation_cache.h"
+#include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -66,32 +65,6 @@ bool RunningOnWOW64() {
 }
 #endif
 
-// Determine the name of the IRT file based on the architecture.
-#define NACL_IRT_FILE_NAME(arch_string) \
-  (FILE_PATH_LITERAL("nacl_irt_")       \
-   FILE_PATH_LITERAL(arch_string)       \
-   FILE_PATH_LITERAL(".nexe"))
-
-const FilePath::StringType NaClIrtName() {
-#if defined(ARCH_CPU_X86_FAMILY)
-#if defined(ARCH_CPU_X86_64)
-  bool is64 = true;
-#elif defined(OS_WIN)
-  bool is64 = RunningOnWOW64();
-#else
-  bool is64 = false;
-#endif
-  return is64 ? NACL_IRT_FILE_NAME("x86_64") : NACL_IRT_FILE_NAME("x86_32");
-#elif defined(ARCH_CPU_ARMEL)
-  // TODO(mcgrathr): Eventually we'll need to distinguish arm32 vs thumb2.
-  // That may need to be based on the actual nexe rather than a static
-  // choice, which would require substantial refactoring.
-  return NACL_IRT_FILE_NAME("arm");
-#else
-#error Add support for your architecture to NaCl IRT file selection
-#endif
-}
-
 void SetCloseOnExec(nacl::Handle fd) {
 #if defined(OS_POSIX)
   int flags = fcntl(fd, F_GETFD);
@@ -130,129 +103,6 @@ bool ShareHandleToSelLdr(
   handles_for_sel_ldr->push_back(channel);
 #endif
   return true;
-}
-
-// NaClBrowser -----------------------------------------------------------------
-
-// Represents shared state for all NaClProcessHost objects in the browser.
-// Currently this just handles holding onto the file descriptor for the IRT.
-class NaClBrowser {
- public:
-  static NaClBrowser* GetInstance() {
-    return Singleton<NaClBrowser>::get();
-  }
-
-  bool IrtAvailable() const {
-    return irt_platform_file_ != base::kInvalidPlatformFileValue;
-  }
-
-  base::PlatformFile IrtFile() const {
-    CHECK_NE(irt_platform_file_, base::kInvalidPlatformFileValue);
-    return irt_platform_file_;
-  }
-
-  // Asynchronously attempt to get the IRT open.
-  bool EnsureIrtAvailable();
-
-  // Make sure the IRT gets opened and follow up with the reply when it's ready.
-  bool MakeIrtAvailable(const base::Closure& reply);
-
-  // Path to IRT. Available even before IRT is loaded.
-  const FilePath& GetIrtFilePath();
-
-  NaClValidationCache validation_cache;
-
- private:
-  friend struct DefaultSingletonTraits<NaClBrowser>;
-
-  NaClBrowser()
-      : irt_platform_file_(base::kInvalidPlatformFileValue),
-        irt_filepath_() {
-    InitIrtFilePath();
-  }
-
-  ~NaClBrowser() {
-    if (irt_platform_file_ != base::kInvalidPlatformFileValue)
-      base::ClosePlatformFile(irt_platform_file_);
-  }
-
-  void InitIrtFilePath();
-
-  void OpenIrtLibraryFile();
-
-  static void DoOpenIrtLibraryFile() {
-    GetInstance()->OpenIrtLibraryFile();
-  }
-
-  base::PlatformFile irt_platform_file_;
-
-  FilePath irt_filepath_;
-
-  DISALLOW_COPY_AND_ASSIGN(NaClBrowser);
-};
-
-// Attempt to ensure the IRT will be available when we need it, but don't wait.
-bool NaClBrowser::EnsureIrtAvailable() {
-  if (IrtAvailable())
-    return true;
-
-  return BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&NaClBrowser::DoOpenIrtLibraryFile));
-}
-
-// We really need the IRT to be available now, so make sure that it is.
-// When it's ready, we'll run the reply closure.
-bool NaClBrowser::MakeIrtAvailable(const base::Closure& reply) {
-  return BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&NaClBrowser::DoOpenIrtLibraryFile), reply);
-}
-
-const FilePath& NaClBrowser::GetIrtFilePath() {
-  return irt_filepath_;
-}
-
-void NaClBrowser::InitIrtFilePath() {
-  // Allow the IRT library to be overridden via an environment
-  // variable.  This allows the NaCl/Chromium integration bot to
-  // specify a newly-built IRT rather than using a prebuilt one
-  // downloaded via Chromium's DEPS file.  We use the same environment
-  // variable that the standalone NaCl PPAPI plugin accepts.
-  const char* irt_path_var = getenv("NACL_IRT_LIBRARY");
-  if (irt_path_var != NULL) {
-    FilePath::StringType path_string(
-        irt_path_var, const_cast<const char*>(strchr(irt_path_var, '\0')));
-    irt_filepath_ = FilePath(path_string);
-  } else {
-    FilePath plugin_dir;
-    if (!PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &plugin_dir)) {
-      DLOG(ERROR) << "Failed to locate the plugins directory";
-      return;
-    }
-
-    irt_filepath_ = plugin_dir.Append(NaClIrtName());
-  }
-}
-
-// This only ever runs on the BrowserThread::FILE thread.
-// If multiple tasks are posted, the later ones are no-ops.
-void NaClBrowser::OpenIrtLibraryFile() {
-  if (irt_platform_file_ != base::kInvalidPlatformFileValue)
-    // We've already run.
-    return;
-
-  base::PlatformFileError error_code;
-  irt_platform_file_ = base::CreatePlatformFile(irt_filepath_,
-                                                base::PLATFORM_FILE_OPEN |
-                                                base::PLATFORM_FILE_READ,
-                                                NULL,
-                                                &error_code);
-  if (error_code != base::PLATFORM_FILE_OK) {
-    LOG(ERROR) << "Failed to open NaCl IRT file \""
-               << irt_filepath_.LossyDisplayName()
-               << "\": " << error_code;
-  }
 }
 
 }  // namespace
