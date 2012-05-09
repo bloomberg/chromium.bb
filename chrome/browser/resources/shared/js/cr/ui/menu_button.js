@@ -113,7 +113,7 @@ cr.define('cr.ui', function() {
     showMenu: function() {
       this.hideMenu();
 
-      this.menu.hidden = false;
+      this.menu.style.display = 'block';
       this.setAttribute('menu-shown', '');
 
       // when the menu is shown we steal all keyboard events.
@@ -136,7 +136,7 @@ cr.define('cr.ui', function() {
         return;
 
       this.removeAttribute('menu-shown');
-      this.menu.hidden = true;
+      this.menu.style.display = 'none';
 
       this.showingEvents_.removeAll();
       this.menu.selectedIndex = -1;

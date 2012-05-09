@@ -55,6 +55,7 @@ cr.define('ntp', function() {
       // Create the context menu that appears when the user right clicks
       // on a device name.
       this.deviceContextMenu_ = DeviceContextMenuController.getInstance().menu;
+      this.deviceContextMenu_.style.display = 'none';
       document.body.appendChild(this.deviceContextMenu_);
 
       this.promoMessage_ = $('other-sessions-promo-template').cloneNode(true);
@@ -106,7 +107,7 @@ cr.define('ntp', function() {
      */
     hideMenu: function() {
       // Don't hide if the device context menu is currently showing.
-      if (this.deviceContextMenu_.hidden)
+      if (this.deviceContextMenu_.style.display == 'none')
         MenuButton.prototype.hideMenu.call(this);
     },
 
