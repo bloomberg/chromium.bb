@@ -394,7 +394,6 @@ Gesture* ImmediateInterpreter::HandleTimer(stime_t now, stime_t* timeout) {
 }
 
 void ImmediateInterpreter::ResetSameFingersState(stime_t now) {
-  palm_.clear();
   pointing_.clear();
   fingers_.clear();
   start_positions_.clear();
@@ -454,6 +453,7 @@ bool ImmediateInterpreter::FingerInPalmEnvelope(const FingerState& fs) {
 }
 
 void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
+  RemoveMissingIdsFromSet(&palm_, hwstate);
   for (short i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
     // Mark anything over the palm thresh as a palm

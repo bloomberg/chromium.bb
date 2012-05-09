@@ -1264,7 +1264,8 @@ TEST(ImmediateInterpreterTest, PalmTest) {
   ii.ResetSameFingersState(0);
   EXPECT_TRUE(ii.pointing_.empty());
   EXPECT_TRUE(ii.pending_palm_.empty());
-  EXPECT_TRUE(ii.palm_.empty());
+  EXPECT_TRUE(SetContainsValue(ii.palm_, 4));
+  EXPECT_EQ(1, ii.palm_.size());
 }
 
 TEST(ImmediateInterpreterTest, PalmAtEdgeTest) {
