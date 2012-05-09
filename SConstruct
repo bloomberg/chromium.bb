@@ -1038,11 +1038,6 @@ def CrossToolsBuild(env):
 
 pre_base_env.AddMethod(CrossToolsBuild, 'CrossToolsBuild')
 
-BitFromArgument(pre_base_env, 'irt',
-                default=True,
-                desc='Use the integrated runtime (IRT) untrusted blob library '
-                'when running tests')
-
 # ----------------------------------------------------------
 def HasSuffix(item, suffix):
   if isinstance(item, str):
@@ -1615,8 +1610,8 @@ def PPAPIBrowserTester(env,
     bootstrap, _ = GetBootstrap(env)
     if bootstrap is not None:
       command.extend(['--sel_ldr_bootstrap', bootstrap])
-  if env.Bit('irt') and (not env.Bit('disable_dynamic_plugin_loading') or
-                         env.Bit('override_chrome_irt')):
+  if (not env.Bit('disable_dynamic_plugin_loading') or
+      env.Bit('override_chrome_irt')):
     command.extend(['--irt_library', env.GetIrtNexe()])
   for dep_file in files:
     command.extend(['--file', dep_file])
@@ -1792,8 +1787,8 @@ def PyAutoTester(env, target, test, files=[], nmf_names=[], log_verbosity=2,
     if bootstrap is not None:
       osenv.append('NACL_SEL_LDR_BOOTSTRAP=%s' % bootstrap)
       extra_deps.append(bootstrap)
-  if env.Bit('irt') and (not env.Bit('disable_dynamic_plugin_loading') or
-                         env.Bit('override_chrome_irt')):
+  if (not env.Bit('disable_dynamic_plugin_loading') or
+      env.Bit('override_chrome_irt')):
     osenv.append('NACL_IRT_LIBRARY=%s' % env.GetIrtNexe())
     extra_deps.append(env.GetIrtNexe())
 
@@ -2065,7 +2060,7 @@ def CommandSelLdrTestNacl(env, name, nexe,
     # Enable file access.
     sel_ldr_flags += ['-a']
 
-  if env.Bit('tests_use_irt') or (env.Bit('irt') and uses_ppapi):
+  if env.Bit('tests_use_irt') or uses_ppapi:
     sel_ldr_flags += ['-B', nacl_env.GetIrtNexe()]
 
   if skip_bootstrap:
@@ -2124,7 +2119,7 @@ def GetPerfEnvDescription(env):
                          ('translate_fast', ('fast', '')),
                          ('nacl_glibc', ('glibc', 'newlib')),
                          ('nacl_static_link', ('static', 'dynamic')),
-                         ('irt', ('irt', '')) ]
+                         ]
   for (bit, (descr_yes, descr_no)) in bit_to_description:
     if env.Bit(bit):
       additional = descr_yes
@@ -3122,19 +3117,10 @@ for variant_bit, variant_suffix in target_variant_map:
 if nacl_env.Bit('bitcode'):
   nacl_env['TARGET_VARIANT'] += '-clang'
 
-if nacl_env.Bit('irt'):
-  # Since the default linking layout is compatible with IRT loading now,
-  # we should not need anything special here.
-  nacl_env.Replace(NON_PPAPI_BROWSER_LIBS=[])
-  nacl_env.Replace(PPAPI_LIBS=['ppapi'])
-else:
-  # TODO(mseaborn): This will go away when we only support using PPAPI
-  # via the IRT library, so users of this dependency should not rely
-  # on individual libraries like 'platform' being included by default.
-  nacl_env.Replace(NON_PPAPI_BROWSER_LIBS=['${NONIRT_LIBS}'])
-  nacl_env.Replace(PPAPI_LIBS=['ppruntime', 'srpc', 'imc', 'imc_syscalls',
-                               'platform', 'gio', '${PTHREAD_LIBS}', 'm',
-                               '${NONIRT_LIBS}'])
+# TODO(mseaborn): Inline these now that chrome_browser_tests is only
+# supported when using the IRT.
+nacl_env.Replace(NON_PPAPI_BROWSER_LIBS=[])
+nacl_env.Replace(PPAPI_LIBS=['ppapi'])
 
 # TODO(mseaborn): Make nacl-glibc-based static linking work with just
 # "-static", without specifying a linker script.
@@ -3564,7 +3550,6 @@ nacl_irt_test_env = nacl_env.Clone(
 
     BUILD_SCONSCRIPTS = irt_variant_tests + irt_only_tests,
     )
-nacl_irt_test_env.SetBits('irt')
 nacl_irt_test_env.SetBits('tests_use_irt')
 TestsUsePublicLibs(nacl_irt_test_env)
 

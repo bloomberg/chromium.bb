@@ -117,9 +117,6 @@ def BuildScript(status, context):
   do_integration_tests = (not inside_toolchain and
                           not context['off_trunk'] and
                           not context['asan'])
-  do_dso_tests = (context['use_glibc'] and
-                  not inside_toolchain and
-                  not context['off_trunk'])
 
   # If we're running browser tests on a 64-bit Windows machine, build a 32-bit
   # plugin.
@@ -308,13 +305,6 @@ def BuildScript(status, context):
       SCons(context, browser_test=True,
             mode=context['default_scons_mode'] + ['nacl_irt_test'],
             args=['SILENT=1', 'chrome_browser_tests'])
-
-    # TODO(mcgrathr): Clean up how we organize tests and do this differently.
-    # See http://code.google.com/p/nativeclient/issues/detail?id=1691
-    if not do_dso_tests:
-      with Step('chrome_browser_tests without IRT', status, halt_on_fail=False):
-        SCons(context, browser_test=True,
-              args=['SILENT=1', 'irt=0', 'chrome_browser_tests'])
 
     with Step('pyauto_tests', status, halt_on_fail=False):
       SCons(context, browser_test=True, args=['SILENT=1', 'pyauto_tests'])

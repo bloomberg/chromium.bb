@@ -51,7 +51,7 @@ if env.Bit('tests_use_irt'):
 # Confusingly, chrome_browser_tests are in nacl_env rather than nacl_irt_env,
 # so we check for the IRT being used, but (oddly) not the irt specific env
 # (test_use_irt).
-if env.Bit('irt') and not env.Bit('tests_use_irt'):
+if not env.Bit('tests_use_irt'):
   untrusted_crash_dump_test = env.ComponentProgram(
       'inbrowser_untrusted_crash_dump_test',
       env.ComponentObject(
