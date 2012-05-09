@@ -14,6 +14,9 @@
 
 #define _ATL_NO_AUTOMATIC_NAMESPACE
 
+// Service has no COM objects. http://support.microsoft.com/kb/2480736
+#define _ATL_NO_COM_SUPPORT
+
 // some CString constructors will be explicit
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS
 

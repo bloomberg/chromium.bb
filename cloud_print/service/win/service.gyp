@@ -20,9 +20,13 @@
         'cloud_print_service.rc',
         'resource.h',
       ],
+      'dependencies': [
+        '../../../base/base.gyp:base', 
+      ],
       'msvs_settings': {
         'VCLinkerTool': {
           'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
+          'UACExecutionLevel': '2', # /level='requireAdministrator'
         },
       },
     },
