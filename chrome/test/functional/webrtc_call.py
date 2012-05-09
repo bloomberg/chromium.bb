@@ -31,11 +31,7 @@ class WebRTCCallTest(pyauto.PyUITest):
   """
 
   def ExtraChromeFlags(self):
-    """Defines flags passed to Chrome to enable MediaStream and PeerConnection.
-
-    Returns:
-      A list of extra flags to pass to Chrome when it is launched.
-    """
+    """Adds flags to the Chrome command line."""
     extra_flags = ['--enable-media-stream', '--enable-peer-connection']
     return pyauto.PyUITest.ExtraChromeFlags(self) + extra_flags
 

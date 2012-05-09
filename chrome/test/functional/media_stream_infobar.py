@@ -15,6 +15,12 @@ class MediaStreamInfobarTest(pyauto.PyUITest):
   user if it is OK for the webpage to use the webcam or microphone on the user's
   machine. These tests ensure that the infobar works as intended.
   """
+
+  def ExtraChromeFlags(self):
+    """Adds flags to the Chrome command line."""
+    extra_flags = ['--enable-media-stream']
+    return pyauto.PyUITest.ExtraChromeFlags(self) + extra_flags
+
   def testAllowingUserMedia(self):
     """Test that selecting 'allow' gives us a media stream.
 
