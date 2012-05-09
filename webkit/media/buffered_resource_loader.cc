@@ -109,7 +109,8 @@ BufferedResourceLoader::BufferedResourceLoader(
     int bitrate,
     float playback_rate,
     media::MediaLog* media_log)
-    : defer_strategy_(strategy),
+    : loader_failed_(false),
+      defer_strategy_(strategy),
       range_supported_(false),
       saved_forward_capacity_(0),
       url_(url),
@@ -227,6 +228,12 @@ void BufferedResourceLoader::Read(
   read_position_ = position;
   read_size_ = read_size;
   read_buffer_ = buffer;
+
+  // Reads should immediately fail if the loader also failed.
+  if (loader_failed_) {
+    DoneRead(kFailed, 0);
+    return;
+  }
 
   // If we're attempting to read past the end of the file, return a zero
   // indicating EOF.
@@ -526,6 +533,7 @@ void BufferedResourceLoader::didFail(
   //
   // Keep it alive until we exit this method so that |error| remains valid.
   scoped_ptr<ActiveLoader> active_loader = active_loader_.Pass();
+  loader_failed_ = true;
   NotifyNetworkEvent();
 
   // Don't leave start callbacks hanging around.

@@ -542,6 +542,30 @@ TEST_F(BufferedResourceLoaderTest, RequestFailedWhenRead) {
   loader_->didFail(url_loader_, error);
 }
 
+TEST_F(BufferedResourceLoaderTest, RequestFailedWithNoPendingReads) {
+  Initialize(kHttpUrl, 10, 29);
+  Start();
+  PartialResponse(10, 29, 30);
+
+  uint8 buffer[10];
+  InSequence s;
+
+  // Write enough data so that a read would technically complete had the request
+  // not failed.
+  WriteLoader(10, 20);
+
+  // Fail without a pending read.
+  WebURLError error;
+  error.reason = net::ERR_TIMED_OUT;
+  error.isCancellation = false;
+  EXPECT_CALL(*this, NetworkCallback());
+  loader_->didFail(url_loader_, error);
+
+  // Now we should immediately fail any read even if we have data buffered.
+  EXPECT_CALL(*this, ReadCallback(BufferedResourceLoader::kFailed, 0));
+  ReadLoader(10, 10, buffer);
+}
+
 TEST_F(BufferedResourceLoaderTest, RequestCancelledWhenRead) {
   Initialize(kHttpUrl, 10, 29);
   Start();

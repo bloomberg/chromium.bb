@@ -259,6 +259,10 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // Keeps track of an active WebURLLoader and associated state.
   scoped_ptr<ActiveLoader> active_loader_;
 
+  // Tracks if |active_loader_| failed. If so, then all calls to Read() will
+  // fail.
+  bool loader_failed_;
+
   // Current buffering algorithm in place for resource loading.
   DeferStrategy defer_strategy_;
 
