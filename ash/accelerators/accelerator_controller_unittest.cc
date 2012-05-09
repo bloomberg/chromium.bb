@@ -363,17 +363,6 @@ TEST_F(AcceleratorControllerTest, Process) {
   EXPECT_FALSE(GetController()->Process(accelerator_b));
 }
 
-TEST_F(AcceleratorControllerTest, IsRegistered) {
-  const ui::Accelerator accelerator_a(ui::VKEY_A, false, false, false);
-  const ui::Accelerator accelerator_shift_a(ui::VKEY_A, true, false, false);
-  TestTarget target;
-  GetController()->Register(accelerator_a, &target);
-  EXPECT_TRUE(GetController()->IsRegistered(accelerator_a));
-  EXPECT_FALSE(GetController()->IsRegistered(accelerator_shift_a));
-  GetController()->UnregisterAll(&target);
-  EXPECT_FALSE(GetController()->IsRegistered(accelerator_a));
-}
-
 #if defined(OS_WIN) || defined(USE_X11)
 TEST_F(AcceleratorControllerTest, ProcessOnce) {
   ui::Accelerator accelerator_a(ui::VKEY_A, false, false, false);

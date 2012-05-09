@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/accelerators/focus_manager_factory.h"
 #include "ash/app_list/app_list.h"
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
@@ -77,7 +76,6 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/ui_controls/ui_controls.h"
-#include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 
@@ -545,8 +543,6 @@ Shell::Shell(ShellDelegate* delegate)
 }
 
 Shell::~Shell() {
-  views::FocusManagerFactory::Install(NULL);
-
   RemoveRootWindowEventFilter(key_rewriter_filter_.get());
   RemoveRootWindowEventFilter(partial_screenshot_filter_.get());
   RemoveRootWindowEventFilter(input_method_filter_.get());
@@ -745,8 +741,6 @@ void Shell::Init() {
   window_cycle_controller_.reset(new WindowCycleController);
   monitor_controller_.reset(new internal::MonitorController);
   screen_dimmer_.reset(new internal::ScreenDimmer);
-
-  views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 }
 
 aura::Window* Shell::GetContainer(int container_id) {

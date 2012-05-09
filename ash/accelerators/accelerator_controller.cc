@@ -287,11 +287,6 @@ bool AcceleratorController::Process(const ui::Accelerator& accelerator) {
   return accelerator_manager_->Process(accelerator);
 }
 
-bool AcceleratorController::IsRegistered(
-    const ui::Accelerator& accelerator) const {
-  return accelerator_manager_->GetCurrentTarget(accelerator) != NULL;
-}
-
 void AcceleratorController::SetBrightnessControlDelegate(
     scoped_ptr<BrightnessControlDelegate> brightness_control_delegate) {
   brightness_control_delegate_.swap(brightness_control_delegate);

@@ -502,7 +502,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
   class FocusManagerDtorTracked : public FocusManager {
    public:
     FocusManagerDtorTracked(Widget* widget, DtorTrackVector* dtor_tracker)
-      : FocusManager(widget, NULL /* delegate */),
+      : FocusManager(widget),
         dtor_tracker_(dtor_tracker) {
     }
 

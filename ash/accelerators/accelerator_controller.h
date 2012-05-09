@@ -56,9 +56,6 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // Returns true if an accelerator was activated.
   bool Process(const ui::Accelerator& accelerator);
 
-  // Returns true if the |accelerator| is registered.
-  bool IsRegistered(const ui::Accelerator& accelerator) const;
-
   // Overridden from ui::AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool CanHandleAccelerators() const OVERRIDE;

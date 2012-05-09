@@ -578,7 +578,6 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
       "U 18 0 false false true false" }
   };
 
-#if !defined(USE_ASH)
   static const KeyEventTestData kTestAccess1 = {
     ui::VKEY_1, false, false, true, false,
     false, false, false, false, 4,
@@ -587,7 +586,6 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
       "U 49 0 false false true false",
       "U 18 0 false false true false" }
   };
-#endif
 #endif
 
   ASSERT_TRUE(test_server()->Start());
@@ -647,9 +645,6 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
   EXPECT_NO_FATAL_FAILURE(SetFocusedElement(tab_index, L""));
   // Make sure no element is focused.
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
-#if !defined(USE_ASH)
-  // On Ash, alt-1..9 are assigned as window selection global accelerators, so
-  // they can not be used as accesskeys.
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAccess1));
 #if defined(TOOLKIT_GTK)
   // On GTK, alt-0..9 are assigned as tab selection accelerators, so they can
@@ -657,7 +652,6 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
 #else
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L"1"));
-#endif
 #endif
 }
 
