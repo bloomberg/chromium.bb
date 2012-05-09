@@ -63,7 +63,7 @@ public class BuildInfo {
     String msg = "versionCode not available.";
     try {
       PackageManager pm = context.getPackageManager();
-      PackageInfo pi = pm.getPackageInfo("com.android.chrome", 0);
+      PackageInfo pi = pm.getPackageInfo(context.getPackageName(), 0);
       msg = "" + pi.versionCode;
     } catch (NameNotFoundException e) {
       Log.d(TAG, msg);
@@ -77,7 +77,7 @@ public class BuildInfo {
     String msg = "versionName not available";
     try {
       PackageManager pm = context.getPackageManager();
-      PackageInfo pi = pm.getPackageInfo("com.android.chrome", 0);
+      PackageInfo pi = pm.getPackageInfo(context.getPackageName(), 0);
       msg = pi.versionName;
     } catch (NameNotFoundException e) {
       Log.d(TAG, msg);
