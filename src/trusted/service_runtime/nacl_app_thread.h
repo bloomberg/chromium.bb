@@ -123,16 +123,6 @@ struct NaClAppThread {
 
 void NaClAppThreadTeardown(struct NaClAppThread *natp);
 
-int NaClAppThreadCtor(struct NaClAppThread  *natp,
-                      struct NaClApp        *nap,
-                      uintptr_t             entry,
-                      uintptr_t             stack_ptr,
-                      uint32_t              tls_idx,
-                      uintptr_t             sys_tls,
-                      uint32_t              usr_tls2) NACL_WUR;
-
-void NaClAppThreadDtor(struct NaClAppThread *natp);
-
 /*
  * Low level initialization of thread, with validated values.  The
  * usr_entry and usr_stack_ptr values are directly used to initialize the
@@ -141,12 +131,14 @@ void NaClAppThreadDtor(struct NaClAppThread *natp);
  * responsible for error checking: usr_entry is a valid entry point (0
  * mod N) and sys_tls_base is in the NaClApp's address space.
  */
-int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
-                              struct NaClApp        *nap,
-                              uintptr_t             usr_entry,
-                              uintptr_t             usr_stack_ptr,
-                              uintptr_t             sys_tls_base,
-                              uint32_t              usr_tls2) NACL_WUR;
+int NaClAppThreadCtor(struct NaClAppThread  *natp,
+                      struct NaClApp        *nap,
+                      uintptr_t             usr_entry,
+                      uintptr_t             usr_stack_ptr,
+                      uintptr_t             sys_tls,
+                      uint32_t              usr_tls2) NACL_WUR;
+
+void NaClAppThreadDtor(struct NaClAppThread *natp);
 
 /*
  * This function can be called from the thread hosting the

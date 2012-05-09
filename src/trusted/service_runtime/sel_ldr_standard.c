@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -895,12 +895,12 @@ int NaClCreateMainThread(struct NaClApp     *nap,
           NaClSysToUserStackAddr(nap, stack_ptr));
 
   /* e_entry is user addr */
-  if (!NaClAppThreadAllocSegCtor(natp,
-                                 nap,
-                                 nap->initial_entry_pt,
-                                 NaClSysToUserStackAddr(nap, stack_ptr),
-                                 NaClUserToSys(nap, nap->break_addr),
-                                 0)) {
+  if (!NaClAppThreadCtor(natp,
+                         nap,
+                         nap->initial_entry_pt,
+                         NaClSysToUserStackAddr(nap, stack_ptr),
+                         NaClUserToSys(nap, nap->break_addr),
+                         0)) {
     retval = 0;
     goto cleanup;
   }
@@ -964,12 +964,12 @@ int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
             stack_ptr);
   }
 
-  if (!NaClAppThreadAllocSegCtor(natp,
-                                 nap,
-                                 prog_ctr,
-                                 stack_ptr,
-                                 sys_tls,
-                                 user_tls2)) {
+  if (!NaClAppThreadCtor(natp,
+                         nap,
+                         prog_ctr,
+                         stack_ptr,
+                         sys_tls,
+                         user_tls2)) {
     NaClLog(LOG_WARNING,
             ("NaClCreateAdditionalThread: could not allocate thread index."
              "  Returning EAGAIN per POSIX specs.\n"));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -36,7 +36,7 @@ void NaClTlsFini();
  * On x86 this the value for the gs segment register; on arm
  * it is the value we keep in r9.
  * This is called for the main thread and all subsequent threads
- * being created via NaClAppThreadAllocSegCtor().
+ * being created via NaClAppThreadCtor().
  * On error, returns NACL_TLS_INDEX_INVALID.
  */
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
