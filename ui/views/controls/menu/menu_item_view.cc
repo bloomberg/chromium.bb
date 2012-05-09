@@ -537,11 +537,8 @@ void MenuItemView::UpdateMenuPartSizes(bool has_icons) {
   MenuConfig::Reset();
   const MenuConfig& config = MenuConfig::instance();
 
-  if (config.align_arrow_and_shortcut)
-    item_right_margin_ = config.arrow_to_edge_padding;
-  else
-    item_right_margin_ = config.label_to_arrow_padding + config.arrow_width +
-                         config.arrow_to_edge_padding;
+  item_right_margin_ = config.label_to_arrow_padding + config.arrow_width +
+                       config.arrow_to_edge_padding;
 
   if (config.always_use_icon_to_label_padding)
     label_start_ = config.item_left_margin + config.check_width +
@@ -675,7 +672,10 @@ void MenuItemView::PaintAccelerator(gfx::Canvas* canvas) {
   int available_height = height() - GetTopMargin() - GetBottomMargin();
   int max_accel_width =
       parent_menu_item_->GetSubmenu()->max_accelerator_width();
-  gfx::Rect accel_bounds(width() - item_right_margin_ - max_accel_width,
+  const MenuConfig& config = MenuConfig::instance();
+  int accel_right_margin = config.align_arrow_and_shortcut ?
+                           config.arrow_to_edge_padding :  item_right_margin_;
+  gfx::Rect accel_bounds(width() - accel_right_margin - max_accel_width,
                          GetTopMargin(), max_accel_width, available_height);
   accel_bounds.set_x(GetMirroredXForRect(accel_bounds));
   int flags = GetRootMenuItem()->GetDrawStringFlags() |
