@@ -20,7 +20,7 @@ deps = {
     'src/build/util/support':
         Var('git_url') + '/chromium/support.git@9306628dc48b26b6264fc32a09bd5f926fec7218',
     'src/chrome/browser/resources/software_rendering_list':
-        Var('git_url') + '/chromium/deps/gpu/software_rendering_list.git@575547b122a6275a101d0e4d8e685571976a2fe8',
+        Var('git_url') + '/chromium/deps/gpu/software_rendering_list.git@377a8f24a373aa61e3e3f24c59ac8c292112fd21',
     'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
         Var('git_url') + '/native_client/src/native_client/tests/prebuilt.git@3e17365176c94624f46cace174f61834b7f3c35d',
     'src/chrome/test/data/perf/canvas_bench':
