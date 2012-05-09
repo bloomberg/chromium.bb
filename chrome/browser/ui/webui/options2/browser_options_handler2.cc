@@ -551,7 +551,6 @@ void BrowserOptionsHandler::InitializeHandler() {
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile));
   if (sync_service)
     sync_service->AddObserver(this);
-  OnStateChanged();
 
   // Create our favicon data source.
   ChromeURLDataManager::AddDataSource(profile,
@@ -615,6 +614,7 @@ void BrowserOptionsHandler::InitializeHandler() {
 void BrowserOptionsHandler::InitializePage() {
   OnTemplateURLServiceChanged();
   ObserveThemeChanged();
+  OnStateChanged();
 
   SetupMetricsReportingCheckbox();
   SetupMetricsReportingSettingVisibility();
