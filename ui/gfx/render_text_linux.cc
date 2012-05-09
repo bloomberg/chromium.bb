@@ -242,6 +242,7 @@ void RenderTextLinux::GetGlyphBounds(size_t index,
                                      int* height) {
   PangoRectangle pos;
   pango_layout_index_to_pos(layout_, TextIndexToLayoutIndex(index), &pos);
+  // TODO(derat): Support fractional ranges for subpixel positioning?
   *xspan = ui::Range(PANGO_PIXELS(pos.x), PANGO_PIXELS(pos.x + pos.width));
   *height = PANGO_PIXELS(pos.height);
 }
@@ -430,9 +431,12 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
     for (int i = 0; i < glyph_count; ++i) {
       const PangoGlyphInfo& glyph = run->glyphs->glyphs[i];
       glyphs[i] = static_cast<uint16>(glyph.glyph);
-      pos[i].set(glyph_x + PANGO_PIXELS(glyph.geometry.x_offset),
-                 y + PANGO_PIXELS(glyph.geometry.y_offset));
-      glyph_x += PANGO_PIXELS(glyph.geometry.width);
+      // Use pango_units_to_double() rather than PANGO_PIXELS() here so that
+      // units won't get rounded to the pixel grid if we're using subpixel
+      // positioning.
+      pos[i].set(glyph_x + pango_units_to_double(glyph.geometry.x_offset),
+                 y + pango_units_to_double(glyph.geometry.y_offset));
+      glyph_x += pango_units_to_double(glyph.geometry.width);
 
       // If this glyph is beyond the current style, draw the glyphs so far and
       // advance to the next style.
@@ -532,6 +536,7 @@ std::vector<Rect> RenderTextLinux::CalculateSubstringBounds(ui::Range range) {
 
   std::vector<Rect> bounds;
   for (int i = 0; i < n_ranges; ++i) {
+    // TODO(derat): Support fractional bounds for subpixel positioning?
     int x = PANGO_PIXELS(ranges[2 * i]);
     int width = PANGO_PIXELS(ranges[2 * i + 1]) - x;
     Rect rect(x, y, width, height);

@@ -24,6 +24,9 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include "ui/gfx/gtk_util.h"
+#else
+#include "base/command_line.h"
+#include "ui/base/ui_base_switches.h"
 #endif
 
 #include "ui/gfx/skia_util.h"
@@ -146,8 +149,20 @@ cairo_font_options_t* GetCairoFontOptions() {
   cairo_font_options_set_antialias(cairo_font_options, cairo_antialias);
   cairo_font_options_set_subpixel_order(cairo_font_options,
                                         cairo_subpixel_order);
-  cairo_font_options_set_hint_style(cairo_font_options,
-                                    CAIRO_HINT_STYLE_SLIGHT);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTextSubpixelPositioning)) {
+    // To enable subpixel positioning, we need to disable hinting.
+    cairo_font_options_set_hint_metrics(cairo_font_options,
+                                        CAIRO_HINT_METRICS_OFF);
+    cairo_font_options_set_hint_style(cairo_font_options,
+                                      CAIRO_HINT_STYLE_NONE);
+  } else {
+    cairo_font_options_set_hint_metrics(cairo_font_options,
+                                        CAIRO_HINT_METRICS_ON);
+    cairo_font_options_set_hint_style(cairo_font_options,
+                                      CAIRO_HINT_STYLE_SLIGHT);
+  }
 #endif
 
   return cairo_font_options;
