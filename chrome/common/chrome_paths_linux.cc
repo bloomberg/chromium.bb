@@ -103,4 +103,11 @@ bool GetUserDesktop(FilePath* result) {
   return true;
 }
 
+bool ProcessNeedsProfileDir(const std::string& process_type) {
+  // For now we have no reason to forbid this on Linux as we don't
+  // have the roaming profile troubles there. Moreover the Linux breakpad needs
+  // profile dir access in all process if enabled on Linux.
+  return true;
+}
+
 }  // namespace chrome
