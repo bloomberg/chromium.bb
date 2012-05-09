@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 // GTK requires a X11-level mouse event to open a context menu correctly.
 #if defined(TOOLKIT_GTK)
 #define MAYBE_RealMenu DISABLED_RealMenu
-#elif defined(ADDRESS_SANITIZER)
+#elif defined(OS_CHROMEOS)
 // See http://crbug.com/126360.
 #define MAYBE_RealMenu DISABLED_RealMenu
 #else
