@@ -62,5 +62,20 @@ TEST_F(GLTest, SimpleShader) {
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, expected_draw));
 }
 
+TEST_F(GLTest, GetString) {
+  EXPECT_STREQ(
+      "OpenGL ES 2.0 Chromium",
+      reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+  EXPECT_STREQ(
+      "OpenGL ES GLSL ES 1.0 Chromium",
+      reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION)));
+  EXPECT_STREQ(
+      "Chromium",
+      reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+  EXPECT_STREQ(
+      "Chromium",
+      reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
+}
+
 }  // namespace gpu
 

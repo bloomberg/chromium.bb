@@ -6465,6 +6465,12 @@ error::Error GLES2DecoderImpl::HandleGetString(
     case GL_SHADING_LANGUAGE_VERSION:
       str = "OpenGL ES GLSL ES 1.0 Chromium";
       break;
+    case GL_RENDERER:
+      str = "Chromium";
+      break;
+    case GL_VENDOR:
+      str = "Chromium";
+      break;
     case GL_EXTENSIONS:
       {
         // For WebGL contexts, strip out the OES derivatives extension if it has
