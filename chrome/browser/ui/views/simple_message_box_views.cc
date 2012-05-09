@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/simple_message_box.h"
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/simple_message_box.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
@@ -40,17 +41,23 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
  private:
   friend class base::RefCounted<SimpleMessageBoxViews>;
 
+  enum DialogType {
+    DIALOG_TYPE_WARNING,
+    DIALOG_TYPE_QUESTION,
+  };
+
   // The state of the dialog when closing.
-  enum DispositionType {
+  enum Disposition {
     DISPOSITION_UNKNOWN,
     DISPOSITION_CANCEL,
     DISPOSITION_OK
   };
 
-  enum DialogType {
-    DIALOG_TYPE_WARNING,
-    DIALOG_TYPE_QUESTION,
-  };
+  SimpleMessageBoxViews(gfx::NativeWindow parent_window,
+                        const string16& title,
+                        const string16& message,
+                        DialogType dialog_type);
+  virtual ~SimpleMessageBoxViews();
 
   // Overridden from views::DialogDelegate:
   virtual int GetDialogButtons() const OVERRIDE;
@@ -66,20 +73,12 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
-  SimpleMessageBoxViews(gfx::NativeWindow parent_window,
-                        DialogType dialog_type,
-                        const string16& title,
-                        const string16& message);
-  virtual ~SimpleMessageBoxViews();
-
-  // MessageLoop::Dispatcher implementation.
-  // Dispatcher method. This returns true if the menu was canceled, or
-  // if the message is such that the menu should be closed.
+  // Overridden from MessageLoop::Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
-  const DialogType dialog_type_;
-  DispositionType disposition_;
   const string16 window_title_;
+  const DialogType dialog_type_;
+  Disposition disposition_;
   views::MessageBoxView* message_box_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleMessageBoxViews);
@@ -95,7 +94,7 @@ void SimpleMessageBoxViews::ShowWarningMessageBox(
     const string16& message) {
   // This is a reference counted object so it is given an initial increment
   // in the constructor with a corresponding decrement in DeleteDelegate().
-  new SimpleMessageBoxViews(parent_window, DIALOG_TYPE_WARNING, title, message);
+  new SimpleMessageBoxViews(parent_window, title, message, DIALOG_TYPE_WARNING);
 }
 
 bool SimpleMessageBoxViews::ShowQuestionMessageBox(
@@ -106,7 +105,7 @@ bool SimpleMessageBoxViews::ShowQuestionMessageBox(
   // in the constructor plus an extra one below to ensure the dialog persists
   // until we retrieve the user response..
   scoped_refptr<SimpleMessageBoxViews> dialog = new SimpleMessageBoxViews(
-      parent_window, DIALOG_TYPE_QUESTION, title, message);
+      parent_window, title, message, DIALOG_TYPE_QUESTION);
 
   // Make sure Chrome doesn't attempt to shut down with the dialog up.
   g_browser_process->AddRefModule();
@@ -128,6 +127,24 @@ bool SimpleMessageBoxViews::ShowQuestionMessageBox(
 
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMessageBoxViews, private:
+
+SimpleMessageBoxViews::SimpleMessageBoxViews(gfx::NativeWindow parent_window,
+                                             const string16& title,
+                                             const string16& message,
+                                             DialogType dialog_type)
+    : window_title_(title),
+      dialog_type_(dialog_type),
+      disposition_(DISPOSITION_UNKNOWN),
+      message_box_view_(new views::MessageBoxView(
+          views::MessageBoxView::NO_OPTIONS, message, string16())) {
+  views::Widget::CreateWindowWithParent(this, parent_window)->Show();
+
+  // Add reference to be released in DeleteDelegate().
+  AddRef();
+}
+
+SimpleMessageBoxViews::~SimpleMessageBoxViews() {
+}
 
 int SimpleMessageBoxViews::GetDialogButtons() const {
   if (dialog_type_ == DIALOG_TYPE_WARNING)
@@ -173,24 +190,6 @@ views::Widget* SimpleMessageBoxViews::GetWidget() {
 
 const views::Widget* SimpleMessageBoxViews::GetWidget() const {
   return message_box_view_->GetWidget();
-}
-
-SimpleMessageBoxViews::SimpleMessageBoxViews(gfx::NativeWindow parent_window,
-                                             DialogType dialog_type,
-                                             const string16& title,
-                                             const string16& message)
-    : dialog_type_(dialog_type),
-      disposition_(DISPOSITION_UNKNOWN),
-      window_title_(title),
-      message_box_view_(new views::MessageBoxView(
-          views::MessageBoxView::NO_OPTIONS, message, string16())) {
-  views::Widget::CreateWindowWithParent(this, parent_window)->Show();
-
-  // Add reference to be released in DeleteDelegate().
-  AddRef();
-}
-
-SimpleMessageBoxViews::~SimpleMessageBoxViews() {
 }
 
 bool SimpleMessageBoxViews::Dispatch(const base::NativeEvent& event) {
