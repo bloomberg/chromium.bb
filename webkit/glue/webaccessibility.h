@@ -250,19 +250,31 @@ struct WEBKIT_GLUE_EXPORT WebAccessibility {
     ATTR_CAN_SET_VALUE,
   };
 
+  enum IncludeChildren {
+    NO_CHILDREN,
+    INCLUDE_CHILDREN
+  };
+
+  enum IncludeLineBreaks {
+    NO_LINE_BREAKS,
+    INCLUDE_LINE_BREAKS
+  };
+
   // Empty constructor, for serialization.
   WebAccessibility();
 
   // Construct from a WebAccessibilityObject. Recursively creates child
   // nodes as needed to complete the tree.
   WebAccessibility(const WebKit::WebAccessibilityObject& src,
-                   bool include_children);
+                   IncludeChildren include_children,
+                   IncludeLineBreaks include_line_breaks);
 
   ~WebAccessibility();
 
   // Initialize an already-created struct, same as the constructor above.
   void Init(const WebKit::WebAccessibilityObject& src,
-            bool include_children);
+            IncludeChildren include_children,
+            IncludeLineBreaks include_line_breaks);
 
 #ifndef NDEBUG
   std::string DebugString(bool recursive) const;

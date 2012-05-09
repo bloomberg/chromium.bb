@@ -595,7 +595,10 @@ void RendererAccessibility::RecursiveAddEditableTextNodesToTree(
     const WebAccessibilityObject& src,
     WebAccessibility* dst) {
   if (IsEditableText(src)) {
-    dst->children.push_back(WebAccessibility(src, false));
+    dst->children.push_back(
+        WebAccessibility(src,
+                         WebAccessibility::NO_CHILDREN,
+                         WebAccessibility::NO_LINE_BREAKS));
   } else {
     int child_count = src.childCount();
     std::set<int32> child_ids;
@@ -613,7 +616,11 @@ void RendererAccessibility::BuildAccessibilityTree(
     bool include_children,
     WebAccessibility* dst) {
   if (mode_ == AccessibilityModeComplete) {
-    dst->Init(src, include_children);
+    dst->Init(src,
+              include_children ?
+                  WebAccessibility::INCLUDE_CHILDREN :
+                  WebAccessibility::NO_CHILDREN,
+              WebAccessibility::INCLUDE_LINE_BREAKS);
     return;
   }
 
@@ -621,7 +628,9 @@ void RendererAccessibility::BuildAccessibilityTree(
   // text nodes as direct descendants of the root.
   CHECK_EQ(mode_, AccessibilityModeEditableTextOnly);
   if (IsEditableText(src)) {
-    dst->Init(src, false);
+    dst->Init(src,
+              WebAccessibility::NO_CHILDREN,
+              WebAccessibility::NO_LINE_BREAKS);
     return;
   }
 
@@ -631,7 +640,9 @@ void RendererAccessibility::BuildAccessibilityTree(
   DCHECK_EQ(src.axID(), GetMainDocument().accessibilityObject().axID());
 
   // Initialize the main document node, but don't add any children.
-  dst->Init(src, false);
+  dst->Init(src,
+            WebAccessibility::NO_CHILDREN,
+            WebAccessibility::NO_LINE_BREAKS);
 
   // Find all editable text nodes and add them as children.
   RecursiveAddEditableTextNodesToTree(src, dst);

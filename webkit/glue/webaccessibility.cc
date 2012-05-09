@@ -324,8 +324,9 @@ WebAccessibility::WebAccessibility()
 }
 
 WebAccessibility::WebAccessibility(const WebKit::WebAccessibilityObject& src,
-                                   bool include_children) {
-  Init(src, include_children);
+                                   IncludeChildren include_children,
+                                   IncludeLineBreaks include_line_breaks) {
+  Init(src, include_children, include_line_breaks);
 }
 
 WebAccessibility::~WebAccessibility() {
@@ -700,7 +701,8 @@ std::string WebAccessibility::DebugString(bool recursive) const {
 #endif  // ifndef NDEBUG
 
 void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
-                            bool include_children) {
+                            IncludeChildren include_children,
+                            IncludeLineBreaks include_line_breaks) {
   name = src.title();
   role = ConvertRole(src.roleValue());
   state = ConvertState(src);
@@ -739,7 +741,7 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
     int_attributes[ATTR_HIERARCHICAL_LEVEL] = src.hierarchicalLevel();
 
   if (role == ROLE_SLIDER)
-    include_children = false;
+    include_children = NO_CHILDREN;
 
   // Treat the active list box item as focused.
   if (role == ROLE_LISTBOX_OPTION && src.isSelectedOptionActive())
@@ -768,15 +770,18 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
         role == ROLE_TEXTAREA ||
         role == ROLE_TEXT_FIELD) {
       // Jaws gets confused by children of text fields, so we ignore them.
-      include_children = false;
+      include_children = NO_CHILDREN;
 
       int_attributes[ATTR_TEXT_SEL_START] = src.selectionStart();
       int_attributes[ATTR_TEXT_SEL_END] = src.selectionEnd();
-      WebKit::WebVector<int> src_line_breaks;
-      src.lineBreaks(src_line_breaks);
-      line_breaks.reserve(src_line_breaks.size());
-      for (size_t i = 0; i < src_line_breaks.size(); ++i)
-        line_breaks.push_back(src_line_breaks[i]);
+
+      if (include_line_breaks == INCLUDE_LINE_BREAKS) {
+        WebKit::WebVector<int> src_line_breaks;
+        src.lineBreaks(src_line_breaks);
+        line_breaks.reserve(src_line_breaks.size());
+        for (size_t i = 0; i < src_line_breaks.size(); ++i)
+          line_breaks.push_back(src_line_breaks[i]);
+      }
     }
 
     // ARIA role.
@@ -912,7 +917,7 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
     int_attributes[ATTR_TABLE_CELL_ROW_SPAN] = src.cellRowSpan();
   }
 
-  if (include_children) {
+  if (include_children == INCLUDE_CHILDREN) {
     // Recursively create children.
     int child_count = src.childCount();
     std::set<int32> child_ids;
@@ -943,7 +948,8 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
       // As an exception, also add children of an iframe element.
       // https://bugs.webkit.org/show_bug.cgi?id=57066
       if (is_iframe || IsParentUnignoredOf(src, child)) {
-        children.push_back(WebAccessibility(child, include_children));
+        children.push_back(
+            WebAccessibility(child, include_children, include_line_breaks));
       } else {
         indirect_child_ids.push_back(child_id);
       }
