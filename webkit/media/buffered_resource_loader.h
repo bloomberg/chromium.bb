@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"
+#include "media/base/seekable_buffer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
@@ -254,7 +255,7 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   void Log();
 
   // A sliding window of buffer.
-  scoped_ptr<media::SeekableBuffer> buffer_;
+  media::SeekableBuffer buffer_;
 
   // Keeps track of an active WebURLLoader and associated state.
   scoped_ptr<ActiveLoader> active_loader_;
