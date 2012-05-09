@@ -30,38 +30,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_stack_safety.h"
 
-int NaClArtificialDelay = -1;
-
-
-/*
- * The first syscall is from the NaCl module's main thread, and there
- * are no other user threads yet, so NACLDELAY check and the NACLCLOCK
- * usages are okay; when the NaCl module is multithreaded, the
- * variables they initialize are read-only.
- */
-
-
-void NaClMicroSleep(int microseconds) {
-  static int    initialized = 0;
-  static tick_t cpu_clock = 0;
-  tick_t        now;
-  tick_t        end;
-
-  if (!initialized) {
-    char *env = getenv("NACLCLOCK");
-    if (NULL != env) {
-      cpu_clock = strtoul(env, (char **) NULL, 0);
-    }
-
-    initialized = 1;
-  }
-
-  now = get_ticks();
-  end = now + (cpu_clock * microseconds) / 1000000;
-  NaClLog(5, "Now %"NACL_PRId64".  Waiting until %"NACL_PRId64".\n", now, end);
-  while (get_ticks() < end)
-    ;
-}
 
 NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   struct NaClAppThread      *natp;
@@ -184,18 +152,6 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   NaClLog(4, "return target 0x%08"NACL_PRIxNACL_REG"\n", user_ret);
   NaClLog(4, "user sp %"NACL_PRIxPTR"\n", sp_user);
 #endif
-  if (-1 == NaClArtificialDelay) {
-    char *delay = getenv("NACLDELAY");
-    if (NULL != delay) {
-      NaClArtificialDelay = strtol(delay, (char **) NULL, 0);
-      NaClLog(0, "ARTIFICIAL DELAY %d us\n", NaClArtificialDelay);
-    } else {
-      NaClArtificialDelay = 0;
-    }
-  }
-  if (0 != NaClArtificialDelay) {
-    NaClMicroSleep(NaClArtificialDelay);
-  }
 
   /*
    * before switching back to user module, we need to make sure that the
