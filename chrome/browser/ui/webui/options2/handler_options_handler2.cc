@@ -111,7 +111,6 @@ void HandlerOptionsHandler::GetIgnoredHandlers(ListValue* handlers) {
 }
 
 void HandlerOptionsHandler::UpdateHandlerList() {
-#if defined(ENABLE_REGISTER_PROTOCOL_HANDLER)
   ProtocolHandlerRegistry* registry = GetProtocolHandlerRegistry();
   std::vector<std::string> protocols;
   registry->GetRegisteredProtocols(&protocols);
@@ -129,7 +128,6 @@ void HandlerOptionsHandler::UpdateHandlerList() {
   web_ui()->CallJavascriptFunction("HandlerOptions.setHandlers", handlers);
   web_ui()->CallJavascriptFunction("HandlerOptions.setIgnoredHandlers",
                                    *ignored_handlers);
-#endif // defined(ENABLE_REGISTER_PROTOCOL_HANDLER)
 }
 
 void HandlerOptionsHandler::RemoveHandler(const ListValue* args) {

@@ -87,29 +87,27 @@
       </div>
     </section>
     <!-- Handlers settings -->
-    <if expr="pp_ifdef('enable_register_protocol_handler')">
-      <section id="handlers-section">
-        <h3 i18n-content="handlers_tab_label"></h3>
-        <div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="handlers" value="allow"
-                  class="handler-radio">
-              <span i18n-content="handlers_allow"></span>
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="handlers" value="block"
-                  class="handler-radio">
-              <span i18n-content="handlers_block"></span>
-            </label>
-          </div>
-          <button id="manage-handlers-button" contentType="handlers"
-              i18n-content="manage_handlers"></button>
+    <section id="handlers-section">
+      <h3 i18n-content="handlers_tab_label"></h3>
+      <div>
+        <div class="radio">
+          <label>
+            <input type="radio" name="handlers" value="allow"
+                class="handler-radio">
+            <span i18n-content="handlers_allow"></span>
+          </label>
         </div>
-      </section>
-    </if>
+        <div class="radio">
+          <label>
+            <input type="radio" name="handlers" value="block"
+                class="handler-radio">
+            <span i18n-content="handlers_block"></span>
+          </label>
+        </div>
+        <button id="manage-handlers-button" contentType="handlers"
+            i18n-content="manage_handlers"></button>
+      </div>
+    </section>
     <!-- Plug-ins filter -->
     <section>
       <h3 i18n-content="plugins_tab_label"></h3>

@@ -20,9 +20,7 @@
 <link rel="stylesheet" href="content_settings.css">
 <link rel="stylesheet" href="cookies_view.css">
 <link rel="stylesheet" href="font_settings.css">
-<if expr="pp_ifdef('enable_register_protocol_handler')">
-  <link rel="stylesheet" href="handler_options.css">
-</if>
+<link rel="stylesheet" href="handler_options.css">
 <link rel="stylesheet" href="home_page_overlay.css">
 <link rel="stylesheet" href="import_data_overlay.css">
 <link rel="stylesheet" href="instant_confirm_overlay.css">
@@ -117,6 +115,7 @@
   <include src="autofill_edit_creditcard_overlay.html">
   <include src="content_settings_exceptions_area.html">
   <include src="cookies_view.html">
+  <include src="handler_options.html">
   <include src="language_add_language_overlay.html">
   <if expr="pp_ifdef('chromeos')">
     <include src="chromeos/internet_detail.html">
@@ -128,9 +127,6 @@
   </if>
   <if expr="pp_ifdef('chromeos') and pp_ifdef('use_virtual_keyboard')">
     <include src="chromeos/virtual_keyboard.html">
-  </if>
-  <if expr="pp_ifdef('enable_register_protocol_handler')">
-    <include src="handler_options.html">
   </if>
   <if expr="not is_win and not is_macosx">
     <include src="certificate_restore_overlay.html">

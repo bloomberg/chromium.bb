@@ -441,14 +441,12 @@ std::string ContentSettingsHandler::GetSettingDefaultFromModel(
 }
 
 void ContentSettingsHandler::UpdateHandlersEnabledRadios() {
-#if defined(ENABLE_REGISTER_PROTOCOL_HANDLER)
   base::FundamentalValue handlers_enabled(
       GetProtocolHandlerRegistry()->enabled());
 
   web_ui()->CallJavascriptFunction(
       "ContentSettings.updateHandlersEnabledRadios",
       handlers_enabled);
-#endif  // defined(ENABLE_REGISTER_PROTOCOL_HANDLER)
 }
 
 void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
