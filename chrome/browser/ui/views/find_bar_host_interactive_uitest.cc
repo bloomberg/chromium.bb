@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
                                            VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection);
+      FindBarController::kKeepSelection, false);
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
                                            location_bar_focus_view_id_));
 
@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
   ui_test_utils::FindInPage(browser()->GetSelectedTabContentsWrapper(),
                             ASCIIToUTF16("a"), true, false, NULL);
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection);
+      FindBarController::kKeepSelection, false);
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
 
   // Focus the location bar, open and close the find box, focus should return to
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
                                            VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection);
+      FindBarController::kKeepSelection, false);
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
                                            location_bar_focus_view_id_));
 }

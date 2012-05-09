@@ -371,7 +371,7 @@ void FindBarView::ButtonPressed(
       break;
     case CLOSE_TAG:
       find_bar_host()->GetFindBarController()->EndFindSession(
-          FindBarController::kKeepSelection);
+          FindBarController::kKeepSelection, false);
       break;
     default:
       NOTREACHED() << L"Unknown button";

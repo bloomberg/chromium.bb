@@ -782,14 +782,14 @@ gboolean FindBarGtk::OnKeyPressEvent(GtkWidget* widget, GdkEventKey* event,
     return TRUE;
   } else if (GDK_Escape == event->keyval) {
     find_bar->find_bar_controller_->EndFindSession(
-        FindBarController::kKeepSelection);
+        FindBarController::kKeepSelection, false);
     return TRUE;
   } else if (GDK_Return == event->keyval ||
              GDK_KP_Enter == event->keyval) {
     if ((event->state & gtk_accelerator_get_default_mod_mask()) ==
         GDK_CONTROL_MASK) {
       find_bar->find_bar_controller_->EndFindSession(
-          FindBarController::kActivateSelection);
+          FindBarController::kActivateSelection, false);
       return TRUE;
     }
 
@@ -809,7 +809,8 @@ gboolean FindBarGtk::OnKeyReleaseEvent(GtkWidget* widget, GdkEventKey* event,
 
 void FindBarGtk::OnClicked(GtkWidget* button) {
   if (button == close_button_->widget()) {
-    find_bar_controller_->EndFindSession(FindBarController::kKeepSelection);
+    find_bar_controller_->EndFindSession(FindBarController::kKeepSelection,
+                                         false);
   } else if (button == find_previous_button_->widget() ||
              button == find_next_button_->widget()) {
     FindEntryTextInContents(button == find_next_button_->widget());

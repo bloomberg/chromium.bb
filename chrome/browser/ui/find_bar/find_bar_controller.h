@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,8 +35,10 @@ class FindBarController : public content::NotificationObserver {
   // Shows the find bar. Any previous search string will again be visible.
   void Show();
 
-  // Ends the current session.
-  void EndFindSession(SelectionAction action);
+  // Ends the current session. |action| specifies what to do with the selection
+  // on the page created by the find operation. |force_clear| specifies whether
+  // to clear the ordinal and match count from the Find box UI.
+  void EndFindSession(SelectionAction action, bool force_clear);
 
   // Accessor for the attached TabContentsWrapper.
   TabContentsWrapper* tab_contents() const { return tab_contents_; }

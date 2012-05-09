@@ -103,7 +103,7 @@ const float kRightEdgeOffset = 25;
 - (IBAction)close:(id)sender {
   if (findBarBridge_)
     findBarBridge_->GetFindBarController()->EndFindSession(
-        FindBarController::kKeepSelection);
+        FindBarController::kKeepSelection, false);
 }
 
 - (IBAction)previousResult:(id)sender {
@@ -205,7 +205,7 @@ const float kRightEdgeOffset = 25;
     // Pressing Ctrl-Return
     if (findBarBridge_) {
       findBarBridge_->GetFindBarController()->EndFindSession(
-          FindBarController::kActivateSelection);
+          FindBarController::kActivateSelection, false);
     }
     return YES;
   } else if (command == @selector(pageUp:) ||

@@ -465,6 +465,47 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPage_Issue5132) {
   EXPECT_EQ(3, ordinal);
 }
 
+// Mac doesn't implement GetFindBarText() and GetMatchCountText(), which are
+// needed for this test. See http://crbug.com/127381.
+#if defined(OS_MACOSX)
+#define MAYBE_NavigateClearsOrdinal DISABLED_NavigateClearsOrdinal
+#else
+#define MAYBE_NavigateClearsOrdinal NavigateClearsOrdinal
+#endif
+
+// This tests that the ordinal and match count is cleared after a navigation,
+// as reported in issue http://crbug.com/126468.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NavigateClearsOrdinal) {
+  // First we navigate to our test content.
+  GURL url = GetURL(kSimple);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Open the Find box. In most tests we can just search without opening the
+  // box first, but in this case we are testing functionality triggered by
+  // NOTIFICATION_NAV_ENTRY_COMMITTED in the FindBarController and the observer
+  // for that event isn't setup unless the box is open.
+  EnsureFindBoxOpen();
+
+  // Search for a text that exists within a link on the page.
+  TabContentsWrapper* tab = browser()->GetSelectedTabContentsWrapper();
+  ASSERT_TRUE(NULL != tab);
+  int ordinal = 0;
+  EXPECT_EQ(8, FindInPageWchar(tab,
+                               L"e",
+                               kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(1, ordinal);
+
+  // Then navigate away (to any page).
+  url = GetURL(kLinkPage);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Open the Find box again.
+  EnsureFindBoxOpen();
+
+  EXPECT_EQ(ASCIIToUTF16("e"), GetFindBarText());
+  EXPECT_EQ(ASCIIToUTF16(""), GetMatchCountText());
+}
+
 // Load a page with no selectable text and make sure we don't crash.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindUnselectableText) {
   // First we navigate to our page.
@@ -810,7 +851,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, AcceleratorRestoring) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection);
+      FindBarController::kKeepSelection, false);
 
   // The accelerator for Escape should be back to what it was before.
   EXPECT_EQ(old_target,
@@ -869,7 +910,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
 
   // End the Find session, thereby making the next F3 start afresh.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection);
+      FindBarController::kKeepSelection, false);
 
   // Simulate F3 while Find box is closed. Should have 1 match.
   EXPECT_EQ(1, FindInPageWchar(tab, L"", kFwd, kIgnoreCase, &ordinal));
@@ -904,7 +945,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   // Switch back to first tab.
   browser()->ActivateTabAt(0, false);
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection);
+      FindBarController::kKeepSelection, false);
   // Simulate F3.
   ui_test_utils::FindInPage(tab1, string16(), kFwd, kIgnoreCase, &ordinal);
   EXPECT_EQ(tab1->find_tab_helper()->find_text(), WideToUTF16(L"text"));
@@ -935,7 +976,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateSameTab) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection);
+      FindBarController::kKeepSelection, false);
 
   // Open the Find box again.
   EnsureFindBoxOpen();
@@ -1005,7 +1046,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection);
+      FindBarController::kKeepSelection, false);
 
   // Now create a second tab and load the same page.
   browser()->AddBlankTab(true);
@@ -1029,7 +1070,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection);
+      FindBarController::kKeepSelection, false);
 
   // Re-open the Find box.
   // This is a special case: previous search in WebContents used to get cleared
@@ -1073,7 +1114,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection);
+      FindBarController::kKeepSelection, false);
 
   // Open a new incognito window and navigate to the same page.
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
@@ -1099,7 +1140,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
 
   // Close the Find box.
   incognito_browser->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection);
+      FindBarController::kKeepSelection, false);
 
   // Now open a new tab in the original (non-incognito) browser.
   browser()->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
