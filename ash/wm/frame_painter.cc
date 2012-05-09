@@ -77,6 +77,8 @@ const int kButtonOverlap = 1;
 const int kThemeFrameBitmapOffsetX = 5;
 // Duration of crossfade animation for activating and deactivating frame.
 const int kActivationCrossfadeDurationMs = 200;
+// Alpha/opacity value for fully-opaque headers.
+const int kFullyOpaque = 255;
 
 // Tiles an image into an area, rounding the top corners.  Samples the |bitmap|
 // starting |bitmap_offset_x| pixels from the left of the image.
@@ -306,10 +308,8 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
     crossfade_animation_->Show();
   }
 
-  int opacity = UseSoloWindowHeader() ?
-      kSoloWindowOpacity :
-      (header_mode == ACTIVE ? kActiveWindowOpacity : kInactiveWindowOpacity);
-
+  int opacity =
+      GetHeaderOpacity(header_mode, theme_frame_id, theme_frame_overlay);
   ui::ThemeProvider* theme_provider = frame_->GetThemeProvider();
   SkBitmap* theme_frame = theme_provider->GetBitmapNamed(theme_frame_id);
   header_frame_bounds_ = gfx::Rect(0, 0, view->width(), theme_frame->height());
@@ -569,6 +569,25 @@ int FramePainter::GetTitleOffsetX() const {
   return window_icon_ ?
       window_icon_->bounds().right() + kTitleIconOffsetX :
       kTitleNoIconOffsetX;
+}
+
+int FramePainter::GetHeaderOpacity(HeaderMode header_mode,
+                                   int theme_frame_id,
+                                   const SkBitmap* theme_frame_overlay) {
+  // User-provided themes are painted fully opaque.
+  if (frame_->GetThemeProvider()->HasCustomImage(theme_frame_id))
+    return kFullyOpaque;
+  if (theme_frame_overlay)
+    return kFullyOpaque;
+
+  // Single browser window is very transparent.
+  if (UseSoloWindowHeader())
+    return kSoloWindowOpacity;
+
+  // Otherwise, change transparency based on window activation status.
+  if (header_mode == ACTIVE)
+    return kActiveWindowOpacity;
+  return kInactiveWindowOpacity;
 }
 
 // static

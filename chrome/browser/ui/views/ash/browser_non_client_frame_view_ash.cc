@@ -445,42 +445,24 @@ void BrowserNonClientFrameViewAsh::PaintContentEdge(gfx::Canvas* canvas) {
 
 int BrowserNonClientFrameViewAsh::GetThemeFrameBitmapId() const {
   bool is_incognito = browser_view()->IsOffTheRecord();
-  int resource_id;
   if (browser_view()->IsBrowserTypeNormal()) {
-    ui::ThemeProvider* tp = GetThemeProvider();
+    // Use the standard resource ids to allow users to theme the frames.
     if (ShouldPaintAsActive()) {
-      // Use the standard resource ids to allow users to theme the frames.
-      // TODO(jamescook): If this becomes the only frame we use on Aura, define
-      // the resources to use the standard ids like IDR_THEME_FRAME, etc.
-      if (is_incognito) {
-        return tp->HasCustomImage(IDR_THEME_FRAME_INCOGNITO) ?
-            IDR_THEME_FRAME_INCOGNITO :
-            IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE;
-      }
-      return tp->HasCustomImage(IDR_THEME_FRAME) ?
-          IDR_THEME_FRAME :
-          IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
+      return is_incognito ?
+          IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
     }
-    if (is_incognito) {
-      return tp->HasCustomImage(IDR_THEME_FRAME_INCOGNITO_INACTIVE) ?
-          IDR_THEME_FRAME_INCOGNITO_INACTIVE :
-          IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_INACTIVE;
-    }
-    return tp->HasCustomImage(IDR_THEME_FRAME_INACTIVE) ?
-        IDR_THEME_FRAME_INACTIVE :
-        IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
+    return is_incognito ?
+        IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
   }
   // Never theme app and popup windows.
   if (ShouldPaintAsActive()) {
-    resource_id = is_incognito ?
+    return is_incognito ?
         IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE :
         IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
-  } else {
-    resource_id = is_incognito ?
-        IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_INACTIVE :
-        IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
   }
-  return resource_id;
+  return is_incognito ?
+      IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_INACTIVE :
+      IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
 }
 
 const SkBitmap*

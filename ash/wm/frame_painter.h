@@ -120,6 +120,7 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
  private:
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, Basics);
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, UseSoloWindowHeader);
+  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, GetHeaderOpacity);
 
   // Sets the images for a button base on IDs from the |frame_| theme provider.
   void SetButtonImages(views::ImageButton* button,
@@ -129,6 +130,11 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
 
   // Returns the offset between window left edge and title string.
   int GetTitleOffsetX() const;
+
+  // Returns the opacity value used to paint the header.
+  int GetHeaderOpacity(HeaderMode header_mode,
+                       int theme_frame_id,
+                       const SkBitmap* theme_frame_overlay);
 
   // Returns true if there is exactly one visible, normal-type window using
   // a header painted by this class, in which case we should paint a transparent

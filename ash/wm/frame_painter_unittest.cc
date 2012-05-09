@@ -8,6 +8,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "base/memory/scoped_ptr.h"
+#include "grit/ui_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/root_window.h"
 #include "ui/views/controls/button/image_button.h"
@@ -125,6 +126,49 @@ TEST_F(FramePainterTest, UseSoloWindowHeader) {
   // Close the first window.
   w1.reset();
   EXPECT_FALSE(FramePainter::UseSoloWindowHeader());
+}
+
+TEST_F(FramePainterTest, GetHeaderOpacity) {
+  // Create a widget and a painter for it.
+  scoped_ptr<Widget> w1(CreateTestWidget());
+  FramePainter p1;
+  ImageButton size1(NULL);
+  ImageButton close1(NULL);
+  p1.Init(w1.get(), NULL, &size1, &close1, FramePainter::SIZE_BUTTON_MAXIMIZES);
+  w1->Show();
+
+  // Solo active window has solo window opacity.
+  EXPECT_EQ(FramePainter::kSoloWindowOpacity,
+            p1.GetHeaderOpacity(FramePainter::ACTIVE,
+                                IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
+                                NULL));
+
+  // Create a second widget and painter.
+  scoped_ptr<Widget> w2(CreateTestWidget());
+  FramePainter p2;
+  ImageButton size2(NULL);
+  ImageButton close2(NULL);
+  p2.Init(w2.get(), NULL, &size2, &close2, FramePainter::SIZE_BUTTON_MAXIMIZES);
+  w2->Show();
+
+  // Active window has active window opacity.
+  EXPECT_EQ(FramePainter::kActiveWindowOpacity,
+            p2.GetHeaderOpacity(FramePainter::ACTIVE,
+                                IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
+                                NULL));
+
+  // Inactive window has inactive window opacity.
+  EXPECT_EQ(FramePainter::kInactiveWindowOpacity,
+            p2.GetHeaderOpacity(FramePainter::INACTIVE,
+                                IDR_AURA_WINDOW_HEADER_BASE_INACTIVE,
+                                NULL));
+
+  // Custom overlay image is drawn completely opaque.
+  SkBitmap custom_overlay;
+  EXPECT_EQ(255,
+            p1.GetHeaderOpacity(FramePainter::ACTIVE,
+                                IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
+                                &custom_overlay));
 }
 
 }  // namespace ash
