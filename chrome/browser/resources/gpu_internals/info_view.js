@@ -204,11 +204,11 @@ cr.define('gpu', function() {
 
       // Crash list
       jstProcess(new JsEvalContext({values: browserBridge.crashList}),
-                 document.getElementById('crash-list'));
+                 $('crash-list'));
 
       // Log messages
       jstProcess(new JsEvalContext({values: browserBridge.logMessages}),
-                 document.getElementById('log-messages'));
+                 $('log-messages'));
     },
 
     createProblemEl_: function(problem) {
