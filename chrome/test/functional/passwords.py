@@ -216,7 +216,7 @@ class PasswordTest(pyauto.PyUITest):
     Saved passwords should be autofilled once the username is entered in
     incognito mode.
     """
-    self._driver = self.NewWebDriver()
+    driver = self.NewWebDriver()
     username = 'test@google.com'
     password = 'test.password'
     password_dict = self._ConstructPasswordDictionary(
@@ -227,8 +227,8 @@ class PasswordTest(pyauto.PyUITest):
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     self.NavigateToURL(self.URL, 1, 0)
     # Switch to window 1.
-    self._driver.switch_to_window(self._driver.window_handles[1])
-    self._driver.find_element_by_id('Email').send_keys(username + '\t')
+    driver.switch_to_window(driver.window_handles[1])
+    driver.find_element_by_id('Email').send_keys(username + '\t')
     incognito_passwd = self.GetDOMValue(
         'document.getElementById("Passwd").value', tab_index=0, windex=1)
     self.assertEqual(incognito_passwd, password,
