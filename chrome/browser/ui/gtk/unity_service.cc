@@ -59,6 +59,8 @@ void EnsureMethodsLoaded() {
   if (!unity_lib)
     unity_lib = dlopen("libunity.so.6", RTLD_LAZY);
   if (!unity_lib)
+    unity_lib = dlopen("libunity.so.9", RTLD_LAZY);
+  if (!unity_lib)
     return;
 
   unity_inspector_get_default_func inspector_get_default =
