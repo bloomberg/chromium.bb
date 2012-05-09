@@ -380,6 +380,15 @@
             'browser/accessibility/browser_accessibility_win_unittest.cc',
           ],
         }],
+        ['OS == "android"', {
+          'sources!': [
+            'browser/geolocation/device_data_provider_unittest.cc',
+            'browser/geolocation/gps_location_provider_unittest_linux.cc',
+            'browser/geolocation/network_location_provider_unittest.cc',
+            'browser/geolocation/wifi_data_provider_common_unittest.cc',
+            'browser/geolocation/wifi_data_provider_linux_unittest.cc',
+          ],
+        }],
       ],
     },
     {

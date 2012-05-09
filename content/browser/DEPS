@@ -2,6 +2,7 @@ include_rules = [
   "+content/gpu",  # For gpu_info_collector.h and in-process GPU
   "+content/port/browser",
   "+content/public/browser",
+  "+jni", # For generated JNI includes
   "+media/audio",  # For audio input for speech input feature.
   "+media/base/android",  # For Android JNI registration.
 

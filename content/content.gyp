@@ -200,12 +200,28 @@
    ['OS == "android"', {
      'targets': [
        {
+         'target_name': 'content_jni_headers',
+         'type': 'none',
+         'variables': {
+           'java_sources': [
+              '../content/public/android/java/org/chromium/content/browser/LocationProvider.java',
+           ],
+           'jni_headers': [
+              '<(SHARED_INTERMEDIATE_DIR)/content/jni/location_provider_jni.h',
+           ],
+         },
+         'includes': [ '../build/jni_generator.gypi' ],
+       },
+       {
          'target_name': 'content_java',
          'type': 'none',
          'variables': {
            'package_name': 'content',
            'java_in_dir': '../content/public/android/java',
          },
+         'dependencies': [
+            '../base/base.gyp:base_java',
+          ],
          'includes': [ '../build/java.gypi' ],
        },
      ],

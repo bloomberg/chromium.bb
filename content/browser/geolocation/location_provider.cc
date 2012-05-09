@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,7 @@ void LocationProviderBase::UpdateListeners() {
   }
 }
 
-#if !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_WIN)
+#if !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_WIN) && !defined OS_ANDROID
 LocationProviderBase* NewSystemLocationProvider() {
   return NULL;
 }

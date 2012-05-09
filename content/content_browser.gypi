@@ -337,10 +337,14 @@
     'browser/geolocation/gps_location_provider_linux.h',
     'browser/geolocation/libgps_wrapper_linux.cc',
     'browser/geolocation/libgps_wrapper_linux.h',
+    'browser/geolocation/location_api_adapter_android.cc',
+    'browser/geolocation/location_api_adapter_android.h',
     'browser/geolocation/location_arbitrator.cc',
     'browser/geolocation/location_arbitrator.h',
     'browser/geolocation/location_provider.cc',
     'browser/geolocation/location_provider.h',
+    'browser/geolocation/location_provider_android.cc',
+    'browser/geolocation/location_provider_android.h',
     'browser/geolocation/network_location_provider.cc',
     'browser/geolocation/network_location_provider.h',
     'browser/geolocation/network_location_request.cc',
@@ -814,6 +818,17 @@
       ],
       'dependencies': [
         '../media/media.gyp:media',
+        'content.gyp:content_jni_headers',
+        'content.gyp:content_java',
+      ],
+      'sources!': [
+        'browser/geolocation/network_location_provider.cc',
+        'browser/geolocation/network_location_provider.h',
+        'browser/geolocation/network_location_request.cc',
+        'browser/geolocation/network_location_request.h',
+      ],
+      'include_dirs': [
+        '<(SHARED_INTERMEDIATE_DIR)/content',
       ],
     }],
     ['OS=="mac"', {

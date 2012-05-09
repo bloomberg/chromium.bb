@@ -33,8 +33,13 @@ DefaultGeolocationArbitratorDependencyFactory::NewNetworkLocationProvider(
     net::URLRequestContextGetter* context,
     const GURL& url,
     const string16& access_token) {
+#if defined(OS_ANDROID)
+  // Android uses its own SystemLocationProvider.
+  return NULL;
+#else
   return ::NewNetworkLocationProvider(access_token_store, context,
                                       url, access_token);
+#endif
 }
 
 LocationProviderBase*
