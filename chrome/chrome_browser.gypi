@@ -3503,7 +3503,6 @@
         'browser/ui/views/color_chooser_dialog.h',
         'browser/ui/views/simple_message_box_win.cc',
         'browser/ui/views/simple_message_box_views.cc',
-        'browser/ui/views/simple_message_box_views.h',
         'browser/ui/views/ssl_client_certificate_selector.cc',
         'browser/ui/views/ssl_client_certificate_selector.h',
         'browser/ui/views/status_bubble_views.cc',
@@ -4319,7 +4318,6 @@
             ['exclude', '^browser/ui/window_snapshot/window_snapshot_win.cc'],
             # TODO: (stevenjb/beng): Find a home for these.
             ['include', '^browser/ui/views/simple_message_box_views.cc'],
-            ['include', '^browser/ui/views/simple_message_box_views.h'],
             ['include', '^browser/ui/webui/certificate_viewer_webui.cc'],
             ['include', '^browser/ui/webui/certificate_viewer_webui.h'],
             ['include', '^browser/ui/webui/certificate_viewer_ui.cc'],
@@ -4736,7 +4734,6 @@
             'browser/ui/views/keyboard_overlay_delegate.cc',
             'browser/ui/views/keyboard_overlay_dialog_view.cc',
             'browser/ui/views/simple_message_box_views.cc',
-            'browser/ui/views/simple_message_box_views.h',
             'browser/ui/webui/tab_modal_confirm_dialog_webui.cc',
             'browser/ui/webui/tab_modal_confirm_dialog_webui.h',
           ],
