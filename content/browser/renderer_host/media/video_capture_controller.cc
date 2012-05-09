@@ -140,6 +140,7 @@ void VideoCaptureController::StartCapture(
   // Order the manager to start the actual capture.
   video_capture_manager_->Start(params, this);
   state_ = video_capture::kStarted;
+  device_in_use_ = true;
 }
 
 void VideoCaptureController::StopCapture(
@@ -413,8 +414,10 @@ void VideoCaptureController::DoIncomingCapturedFrameOnIOThread(
   }
 
   base::AutoLock lock(lock_);
-  DCHECK_EQ(owned_dibs_[buffer_id]->references, -1);
-  owned_dibs_[buffer_id]->references = count;
+  if (owned_dibs_.find(buffer_id) != owned_dibs_.end()) {
+    DCHECK_EQ(owned_dibs_[buffer_id]->references, -1);
+    owned_dibs_[buffer_id]->references = count;
+  }
 }
 
 void VideoCaptureController::DoFrameInfoOnIOThread(
@@ -537,9 +540,10 @@ void VideoCaptureController::PostStopping() {
   if (ClientHasDIB() || device_in_use_)
     return;
 
-  // It's safe to free all DIB's on IO thread since device won't send
-  // buffer over.
-  STLDeleteValues(&owned_dibs_);
+  {
+    base::AutoLock lock(lock_);
+    STLDeleteValues(&owned_dibs_);
+  }
 
   // No more client. Therefore the controller is stopped.
   if (controller_clients_.empty() && pending_clients_.empty()) {
@@ -570,6 +574,7 @@ void VideoCaptureController::PostStopping() {
   // Request the manager to start the actual capture.
   video_capture_manager_->Start(current_params_, this);
   state_ = video_capture::kStarted;
+  device_in_use_ = true;
 }
 
 bool VideoCaptureController::ClientHasDIB() {
