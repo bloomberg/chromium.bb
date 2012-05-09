@@ -56,14 +56,17 @@ void RenderViewFakeResourcesTest::SetUp() {
   // to fetch network resources.  These are then served canned content
   // in OnRequestResource().
   content::GetContentClient()->set_renderer(&content_renderer_client_);
-  static const char kThreadName[] = "RenderViewFakeResourcesTest";
-  channel_.reset(new IPC::Channel(kThreadName,
+  // Generate a unique channel id so that multiple instances of the test can
+  // run in parallel.
+  std::string channel_id = IPC::Channel::GenerateVerifiedChannelID(
+      std::string());
+  channel_.reset(new IPC::Channel(channel_id,
                                   IPC::Channel::MODE_SERVER, this));
   ASSERT_TRUE(channel_->Connect());
 
   webkit_glue::SetJavaScriptFlags("--expose-gc");
   mock_process_.reset(new MockRenderProcess);
-  render_thread_ = new RenderThreadImpl(kThreadName);
+  render_thread_ = new RenderThreadImpl(channel_id);
 
   // Tell the renderer to create a view, then wait until it's ready.
   // We can't call View::Create() directly here or else we won't get
