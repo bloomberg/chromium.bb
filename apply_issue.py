@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -69,7 +69,11 @@ def main():
     parser.error('Couldn\'t determine the scm')
 
   # Apply the patch.
-  scm_obj.apply_patch(patchset)
+  try:
+    scm_obj.apply_patch(patchset)
+  except checkout.PatchApplicationFailed, e:
+    print >> sys.stderr, str(e)
+    return 1
   return 0
 
 

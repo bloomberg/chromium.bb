@@ -49,10 +49,23 @@ def get_code_review_setting(path, key,
 
 class PatchApplicationFailed(Exception):
   """Patch failed to be applied."""
-  def __init__(self, filename, status):
-    super(PatchApplicationFailed, self).__init__(filename, status)
-    self.filename = filename
+  def __init__(self, p, status):
+    super(PatchApplicationFailed, self).__init__(p, status)
+    self.patch = p
     self.status = status
+
+  @property
+  def filename(self):
+    if self.patch:
+      return self.patch.filename
+
+  def __str__(self):
+    out = []
+    if self.filename:
+      out.append('Failed to apply patch for %s:' % self.filename)
+    if self.status:
+      out.append(self.status)
+    return '\n'.join(out)
 
 
 class CheckoutBase(object):
@@ -140,12 +153,12 @@ class RawCheckout(CheckoutBase):
             if p.source_filename:
               if not p.is_new:
                 raise PatchApplicationFailed(
-                    p.filename,
+                    p,
                     'File has a source filename specified but is not new')
               # Copy the file first.
               if os.path.isfile(filepath):
                 raise PatchApplicationFailed(
-                    p.filename, 'File exist but was about to be overwriten')
+                    p, 'File exist but was about to be overwriten')
               shutil.copy2(
                   os.path.join(self.project_path, p.source_filename), filepath)
             if p.diff_hunks:
@@ -160,10 +173,10 @@ class RawCheckout(CheckoutBase):
         for post in post_processors:
           post(self, p)
       except OSError, e:
-        raise PatchApplicationFailed(p.filename, '%s%s' % (stdout, e))
+        raise PatchApplicationFailed(p, '%s%s' % (stdout, e))
       except subprocess.CalledProcessError, e:
         raise PatchApplicationFailed(
-            p.filename, '%s%s' % (stdout, getattr(e, 'stdout', None)))
+            p, '%s%s' % (stdout, getattr(e, 'stdout', None)))
 
   def commit(self, commit_message, user):
     """Stubbed out."""
@@ -307,12 +320,12 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
             if p.source_filename:
               if not p.is_new:
                 raise PatchApplicationFailed(
-                    p.filename,
+                    p,
                     'File has a source filename specified but is not new')
               # Copy the file first.
               if os.path.isfile(filepath):
                 raise PatchApplicationFailed(
-                    p.filename, 'File exist but was about to be overwriten')
+                    p, 'File exist but was about to be overwriten')
               self._check_output_svn(
                   [
                     'copy',
@@ -347,10 +360,10 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
         for post in post_processors:
           post(self, p)
       except OSError, e:
-        raise PatchApplicationFailed(p.filename, '%s%s' % (stdout, e))
+        raise PatchApplicationFailed(p, '%s%s' % (stdout, e))
       except subprocess.CalledProcessError, e:
         raise PatchApplicationFailed(
-            p.filename,
+            p,
             'While running %s;\n%s%s' % (
               ' '.join(e.cmd), stdout, getattr(e, 'stdout', '')))
 
@@ -503,10 +516,10 @@ class GitCheckoutBase(CheckoutBase):
         for post in post_processors:
           post(self, p)
       except OSError, e:
-        raise PatchApplicationFailed(p.filename, '%s%s' % (stdout, e))
+        raise PatchApplicationFailed(p, '%s%s' % (stdout, e))
       except subprocess.CalledProcessError, e:
         raise PatchApplicationFailed(
-            p.filename, '%s%s' % (stdout, getattr(e, 'stdout', None)))
+            p, '%s%s' % (stdout, getattr(e, 'stdout', None)))
     # Once all the patches are processed and added to the index, commit the
     # index.
     self._check_call_git(['commit', '-m', 'Committed patch'])
