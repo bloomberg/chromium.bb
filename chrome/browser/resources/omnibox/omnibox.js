@@ -23,14 +23,11 @@ cr.define('omniboxDebug', function() {
    * Register our event handlers.
    */
   function initialize() {
-    document.getElementById('omnibox-input-form').addEventListener(
+    $('omnibox-input-form').addEventListener(
         'submit', startOmniboxQuery, false);
-    document.getElementById('show-details').addEventListener(
-        'change', refresh);
-    document.getElementById('show-incomplete-results').addEventListener(
-        'change', refresh);
-    document.getElementById('show-all-providers').addEventListener(
-        'change', refresh);
+    $('show-details').addEventListener('change', refresh);
+    $('show-incomplete-results').addEventListener('change', refresh);
+    $('show-all-providers').addEventListener('change', refresh);
   }
 
   /**
@@ -50,8 +47,7 @@ cr.define('omniboxDebug', function() {
     // First, clear the results of past calls (if any).
     progressiveAutocompleteResults = [];
     // Then, call chrome with a one-element list: the value in the text box.
-    chrome.send('startOmniboxQuery',
-                [document.getElementById('input-text').value]);
+    chrome.send('startOmniboxQuery', [$('input-text').value]);
     // Cancel the submit action.  i.e., don't submit the form.  (We handle
     // display the results solely with Javascript.)
     event.preventDefault();
@@ -117,7 +113,7 @@ cr.define('omniboxDebug', function() {
    */
   function createAutocompleteResultTableHeader() {
     var row = document.createElement('tr');
-    var inDetailedMode = document.getElementById('show-details').checked;
+    var inDetailedMode = $('show-details').checked;
     for (var i = 0; i < PROPERTY_OUTPUT_ORDER.length; i++) {
       if (inDetailedMode || PROPERTY_OUTPUT_ORDER[i].displayAlways) {
         var headerCell = document.createElement('th');
@@ -222,12 +218,10 @@ cr.define('omniboxDebug', function() {
    * corresponding code in chrome/browser/ui/webui/omnibox_ui.cc
    */
   function addResultToOutput(result) {
-    var output = document.getElementById('omnibox-debug-text');
-    var inDetailedMode = document.getElementById('show-details').checked;
-    var showIncompleteResults =
-        document.getElementById('show-incomplete-results').checked;
-    var showPerProviderResults =
-        document.getElementById('show-all-providers').checked;
+    var output = $('omnibox-debug-text');
+    var inDetailedMode = $('show-details').checked;
+    var showIncompleteResults = $('show-incomplete-results').checked;
+    var showPerProviderResults = $('show-all-providers').checked;
 
     // Output the result-level features in detailed mode and in
     // show incomplete results mode.  We do the latter because without
@@ -272,7 +266,7 @@ cr.define('omniboxDebug', function() {
    *     representation of this object.
    */
   function addResultTableToOutput(result) {
-    var inDetailedMode = document.getElementById('show-details').checked;
+    var inDetailedMode = $('show-details').checked;
     // Create a table to hold all the autocomplete items.
     var table = document.createElement('table');
     table.className = 'autocomplete-results-table';
@@ -324,13 +318,12 @@ cr.define('omniboxDebug', function() {
    */
   function refresh() {
     // Erase whatever is currently being displayed.
-    var output = document.getElementById('omnibox-debug-text');
+    var output = $('omnibox-debug-text');
     output.innerHTML = '';
 
     if (progressiveAutocompleteResults.length > 0) {  // if we have results
       // Display the results.
-      var showIncompleteResults =
-          document.getElementById('show-incomplete-results').checked;
+      var showIncompleteResults = $('show-incomplete-results').checked;
       var startIndex = showIncompleteResults ? 0 :
           progressiveAutocompleteResults.length - 1;
       for (var i = startIndex; i < progressiveAutocompleteResults.length; i++) {
