@@ -32,6 +32,8 @@ using content::InterstitialPage;
 using content::NavigationController;
 using content::WebContents;
 
+namespace {
+
 // A SafeBrowingService class that allows us to inject the malicious URLs.
 class FakeSafeBrowsingService :  public SafeBrowsingService {
  public:
@@ -109,10 +111,13 @@ class FakeMalwareDetails : public MalwareDetails {
   FakeMalwareDetails(SafeBrowsingService* sb_service,
                      WebContents* web_contents,
                      const SafeBrowsingService::UnsafeResource& unsafe_resource)
-      : MalwareDetails(sb_service, web_contents, unsafe_resource) { }
+      : MalwareDetails(sb_service, web_contents, unsafe_resource),
+        got_dom_(false),
+        waiting_(false) { }
 
   virtual void AddDOMDetails(
-      const std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node>& params) {
+      const std::vector<SafeBrowsingHostMsg_MalwareDOMDetails_Node>& params)
+          OVERRIDE {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     MalwareDetails::AddDOMDetails(params);
 
@@ -122,6 +127,22 @@ class FakeMalwareDetails : public MalwareDetails {
                                        this));
   }
 
+  void WaitForDOM() {
+    if (got_dom_) {
+      LOG(INFO) << "Already got the dom details.";
+      return;
+    }
+    // This condition might not trigger normally, but if you add a
+    // sleep(1) in malware_dom_details it triggers :).
+    waiting_ = true;
+    LOG(INFO) << "Waiting for dom details.";
+    ui_test_utils::RunMessageLoop();
+    EXPECT_TRUE(got_dom_);
+  }
+
+ private:
+  virtual ~FakeMalwareDetails() {}
+
   void OnDOMDetailsDone() {
     got_dom_ = true;
     if (waiting_) {
@@ -129,34 +150,10 @@ class FakeMalwareDetails : public MalwareDetails {
     }
   }
 
-  bool got_dom() const {
-    return got_dom_;
-  }
-
-  bool waiting() const {
-    return waiting_;
-  }
-
-  void set_got_dom(bool got_dom) {
-    got_dom_ = got_dom;
-  }
-
-  void set_waiting(bool waiting) {
-    waiting_ = waiting;
-  }
-
-  safe_browsing::ClientMalwareReportRequest* get_report() {
-    return report_.get();
-  }
-
- private:
-  virtual ~FakeMalwareDetails() {}
-
   // Some logic to figure out if we should wait for the dom details or not.
   // These variables should only be accessed in the UI thread.
   bool got_dom_;
   bool waiting_;
-
 };
 
 class TestMalwareDetailsFactory : public MalwareDetailsFactory {
@@ -167,7 +164,7 @@ class TestMalwareDetailsFactory : public MalwareDetailsFactory {
   virtual MalwareDetails* CreateMalwareDetails(
       SafeBrowsingService* sb_service,
       WebContents* web_contents,
-      const SafeBrowsingService::UnsafeResource& unsafe_resource) {
+      const SafeBrowsingService::UnsafeResource& unsafe_resource) OVERRIDE {
     details_ = new FakeMalwareDetails(sb_service, web_contents,
                                       unsafe_resource);
     return details_;
@@ -182,26 +179,29 @@ class TestMalwareDetailsFactory : public MalwareDetailsFactory {
 };
 
 // A SafeBrowingBlockingPage class that lets us wait until it's hidden.
-class TestSafeBrowsingBlockingPage :  public SafeBrowsingBlockingPage {
+class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
  public:
   TestSafeBrowsingBlockingPage(SafeBrowsingService* service,
                                WebContents* web_contents,
                                const UnsafeResourceList& unsafe_resources)
-      : SafeBrowsingBlockingPage(service, web_contents, unsafe_resources) {
+      : SafeBrowsingBlockingPage(service, web_contents, unsafe_resources),
+        wait_for_delete_(false) {
     // Don't wait the whole 3 seconds for the browser test.
     malware_details_proceed_delay_ms_ = 100;
-    wait_for_delete_ = false;
   }
 
   ~TestSafeBrowsingBlockingPage() {
-    if (wait_for_delete_) {
-      // Notify that we are gone
-      MessageLoopForUI::current()->Quit();
-    }
+    if (!wait_for_delete_)
+      return;
+
+    // Notify that we are gone
+    MessageLoopForUI::current()->Quit();
+    wait_for_delete_ = false;
   }
 
-  void set_wait_for_delete() {
+  void WaitForDelete() {
     wait_for_delete_ = true;
+    ui_test_utils::RunMessageLoop();
   }
 
  private:
@@ -217,43 +217,37 @@ class TestSafeBrowsingBlockingPageFactory
   virtual SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
       SafeBrowsingService* service,
       WebContents* web_contents,
-      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources) {
+      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
+          OVERRIDE {
     return new TestSafeBrowsingBlockingPage(service, web_contents,
                                             unsafe_resources);
   }
 };
 
+}  // namespace
+
 // Tests the safe browsing blocking page in a browser.
-class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
-                                     public SafeBrowsingService::Client {
+class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
  public:
   SafeBrowsingBlockingPageTest() {
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     SafeBrowsingService::RegisterFactory(&factory_);
     SafeBrowsingBlockingPage::RegisterFactory(&blocking_page_factory_);
     MalwareDetails::RegisterFactory(&details_factory_);
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     InProcessBrowserTest::TearDown();
     SafeBrowsingBlockingPage::RegisterFactory(NULL);
     SafeBrowsingService::RegisterFactory(NULL);
     MalwareDetails::RegisterFactory(NULL);
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() {
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ASSERT_TRUE(test_server()->Start());
-  }
-
-  // SafeBrowsingService::Client implementation.
-  virtual void OnSafeBrowsingResult(
-      const SafeBrowsingService::SafeBrowsingCheck& check) {
-  }
-
-  virtual void OnBlockingPageComplete(bool proceed) {
   }
 
   void AddURLResult(const GURL& url,
@@ -306,10 +300,10 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
 
     if (contents->ShowingInterstitialPage() && wait_for_delete) {
       // We'll get notified when the interstitial is deleted.
-      static_cast<TestSafeBrowsingBlockingPage*>(
-          contents->GetInterstitialPage()->GetDelegateForTesting())->
-              set_wait_for_delete();
-      ui_test_utils::RunMessageLoop();
+      TestSafeBrowsingBlockingPage* page =
+          static_cast<TestSafeBrowsingBlockingPage*>(
+              contents->GetInterstitialPage()->GetDelegateForTesting());
+      page->WaitForDelete();
     }
 
     // Can't use InterstitialPage::GetInterstitialPage() because that
@@ -352,7 +346,33 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
     EXPECT_TRUE(report.complete());
   }
 
-  void MalwareRedirectCancelAndProceed(const std::string open_function);
+  void MalwareRedirectCancelAndProceed(const std::string open_function) {
+    GURL load_url = test_server()->GetURL(
+        "files/safe_browsing/interstitial_cancel.html");
+    GURL malware_url("http://localhost/files/safe_browsing/malware.html");
+    AddURLResult(malware_url, SafeBrowsingService::URL_MALWARE);
+
+    // Load the test page.
+    ui_test_utils::NavigateToURL(browser(), load_url);
+    // Trigger the safe browsing interstitial page via a redirect in
+    // "openWin()".
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(),
+        GURL("javascript:" + open_function + "()"),
+        CURRENT_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+    WaitForInterstitial();
+    // Cancel the redirect request while interstitial page is open.
+    browser()->ActivateTabAt(0, true);
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(),
+        GURL("javascript:stopWin()"),
+        CURRENT_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    browser()->ActivateTabAt(1, true);
+    // Simulate the user clicking "proceed",  there should be no crash.
+    SendCommand("\"proceed\"");
+  }
 
  protected:
   TestMalwareDetailsFactory details_factory_;
@@ -363,36 +383,6 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageTest);
 };
-
-void SafeBrowsingBlockingPageTest::MalwareRedirectCancelAndProceed(
-    const std::string open_function) {
-  GURL load_url = test_server()->GetURL(
-      "files/safe_browsing/interstitial_cancel.html");
-  GURL malware_url("http://localhost/files/safe_browsing/malware.html");
-  AddURLResult(malware_url, SafeBrowsingService::URL_MALWARE);
-
-  // Load the test page.
-  ui_test_utils::NavigateToURL(browser(), load_url);
-  // Trigger the safe browsing interstitial page via a redirect in "openWin()".
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL("javascript:" + open_function + "()"),
-      CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-  WaitForInterstitial();
-  // Cancel the redirect request while interstitial page is open.
-  browser()->ActivateTabAt(0, true);
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL("javascript:stopWin()"),
-      CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  browser()->ActivateTabAt(1, true);
-  // Simulate the user clicking "proceed",  there should be no crash.
-  SendCommand("\"proceed\"");
-}
-
-namespace {
 
 const char kEmptyPage[] = "files/empty.html";
 const char kMalwarePage[] = "files/safe_browsing/malware.html";
@@ -579,15 +569,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
   ui_test_utils::NavigateToURL(browser(), url);
 
   // If the DOM details from renderer did not already return, wait for them.
-  if (!details_factory_.get_details()->got_dom()) {
-    // This condition might not trigger normally, but if you add a
-    // sleep(1) in malware_dom_details it triggers :).
-    details_factory_.get_details()->set_waiting(true);
-    LOG(INFO) << "Waiting for dom details.";
-    ui_test_utils::RunMessageLoop();
-  } else {
-    LOG(INFO) << "Already got the dom details.";
-  }
+  details_factory_.get_details()->WaitForDOM();
 
   SendCommand("\"doReport\"");  // Simulate the user checking the checkbox.
   EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
@@ -601,5 +583,3 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
       browser()->GetSelectedTabContentsWrapper()->web_contents()->GetURL());
   AssertReportSent();
 }
-
-}  // namespace

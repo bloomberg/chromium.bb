@@ -83,7 +83,6 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
 
  protected:
   friend class SafeBrowsingBlockingPageTest;
-  friend class TestSafeBrowsingBlockingPage;
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
                            ProceedThenDontProceed);
 
@@ -99,6 +98,9 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   // MalwareDetails::FinishCollection() by this much time (in
   // milliseconds), in order to get data from the blocked resource itself.
   int64 malware_details_proceed_delay_ms_;
+  content::InterstitialPage* interstitial_page() const {
+    return interstitial_page_;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest, MalwareReports);

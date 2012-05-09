@@ -29,6 +29,8 @@ static const char* kBadURL = "http://www.badguys.com/";
 static const char* kBadURL2 = "http://www.badguys2.com/";
 static const char* kBadURL3 = "http://www.badguys3.com/";
 
+namespace {
+
 // A SafeBrowingBlockingPage class that does not create windows.
 class TestSafeBrowsingBlockingPage :  public SafeBrowsingBlockingPage {
  public:
@@ -40,9 +42,8 @@ class TestSafeBrowsingBlockingPage :  public SafeBrowsingBlockingPage {
     malware_details_proceed_delay_ms_ = 0;
 
     // Don't create a view.
-    interstitial_page_->DontCreateViewForTesting();
+    interstitial_page()->DontCreateViewForTesting();
   }
-
 };
 
 class TestSafeBrowsingService: public SafeBrowsingService {
@@ -75,6 +76,8 @@ class TestSafeBrowsingBlockingPageFactory
                                             unsafe_resources);
   }
 };
+
+}  // namespace
 
 class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
  public:
