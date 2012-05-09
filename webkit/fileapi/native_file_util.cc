@@ -12,6 +12,29 @@
 
 namespace fileapi {
 
+namespace {
+
+// Sets permissions on directory at |dir_path| based on the target platform.
+// Returns true on success, or false otherwise.
+//
+// TODO(benchan): Find a better place outside webkit to host this function.
+bool SetPlatformSpecificDirectoryPermissions(const FilePath& dir_path) {
+#if defined(OS_CHROMEOS)
+    // System daemons on Chrome OS may run as a user different than the Chrome
+    // process but need to access files under the directories created here.
+    // Because of that, grant the execute permission on the created directory
+    // to group and other users.
+    if (HANDLE_EINTR(chmod(dir_path.value().c_str(),
+                           S_IRWXU | S_IXGRP | S_IXOTH)) != 0) {
+      return false;
+    }
+#endif
+    // Keep the directory permissions unchanged on non-Chrome OS platforms.
+    return true;
+}
+
+}  // namespace
+
 class NativeFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
   NativeFileEnumerator(const FilePath& root_path,
@@ -125,6 +148,10 @@ PlatformFileError NativeFileUtil::CreateDirectory(
 
   if (!file_util::CreateDirectory(path.internal_path()))
     return base::PLATFORM_FILE_ERROR_FAILED;
+
+  if (!SetPlatformSpecificDirectoryPermissions(path.internal_path()))
+    return base::PLATFORM_FILE_ERROR_FAILED;
+
   return base::PLATFORM_FILE_OK;
 }
 
