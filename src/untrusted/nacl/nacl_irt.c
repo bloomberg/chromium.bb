@@ -24,6 +24,46 @@ struct nacl_irt_clock __libnacl_irt_clock;
 TYPE_nacl_irt_query __nacl_irt_query;
 
 /*
+ * Avoid a dependency on libc's strlen function.
+ */
+static size_t my_strlen(const char *s) {
+  size_t len = 0;
+  while (*s++) ++len;
+  return len;
+}
+
+/*
+ * TODO(robertm): make the helper below globally accessible.
+ */
+static void __libnacl_abort(void) {
+  while (1) *(volatile int *) 0;   /* null pointer dereference. */
+}
+
+/*
+ * TODO(robertm): make the helper below globally accessible.
+ */
+static void __libnacl_message(const char *message) {
+   /*
+    * Skip write if fdio is not available.
+    */
+  if (__libnacl_irt_fdio.write == NULL) {
+    return;
+  }
+  size_t dummy_bytes_written;
+  size_t len = my_strlen(message);
+  __libnacl_irt_fdio.write(STDERR_FILENO, message, len, &dummy_bytes_written);
+}
+
+/*
+ * TODO(robertm): make the helper below globally accessible.
+ */
+static void __libnacl_fatal(const char* message) {
+  __libnacl_message(message);
+  __libnacl_abort();
+
+}
+
+/*
  * Scan the auxv for AT_SYSINFO, which is the pointer to the IRT query function.
  * Stash that for later use.
  */
@@ -36,21 +76,13 @@ static void grok_auxv(const Elf32_auxv_t *auxv) {
   }
 }
 
-static void stderr_message(const char *message) {
-  write(2, message, strlen(message));
-}
-
 void __libnacl_mandatory_irt_query(const char *interface,
                                    void *table, size_t table_size) {
   if (NULL == __nacl_irt_query) {
-    stderr_message("No IRT interface query routine!\n");
-    _exit(-1);
+    __libnacl_fatal("No IRT interface query routine!\n");
   }
   if (__nacl_irt_query(interface, table, table_size) != table_size) {
-    stderr_message("IRT interface query failed for essential interface \"");
-    stderr_message(interface);
-    stderr_message("\"!\n");
-    _exit(-1);
+    __libnacl_fatal("IRT interface query failed for essential interface\n");
   }
 }
 
