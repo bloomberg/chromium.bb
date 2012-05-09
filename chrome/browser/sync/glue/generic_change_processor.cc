@@ -205,22 +205,82 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
       sync_node.SetTitle(UTF8ToWide(change.sync_data().GetTitle()));
       sync_node.SetEntitySpecifics(change.sync_data().GetSpecifics());
     } else if (change.change_type() == SyncChange::ACTION_UPDATE) {
-      if (change.sync_data().GetTag() == "" ||
+      // TODO(zea): consider having this logic for all possible changes?
+      sync_api::BaseNode::InitByLookupResult result =
           sync_node.InitByClientTagLookup(change.sync_data().GetDataType(),
-                                          change.sync_data().GetTag()) !=
-              sync_api::BaseNode::INIT_OK) {
-        NOTREACHED();
-        SyncError error(FROM_HERE,
-                        "Failed to update " + type_str + " node.",
+                                          change.sync_data().GetTag());
+      SyncError error;
+      if (result != sync_api::BaseNode::INIT_OK) {
+        if (result == sync_api::BaseNode::INIT_FAILED_PRECONDITION) {
+          error.Reset(FROM_HERE,
+                      "Failed to load entry w/empty tag for " + type_str + ".",
+                      type);
+          NOTREACHED();
+          error_handler()->OnSingleDatatypeUnrecoverableError(
+              error.location(), error.message());
+        } else if (result == sync_api::BaseNode::INIT_FAILED_ENTRY_NOT_GOOD) {
+          error.Reset(FROM_HERE,
+                      "Failed to load bad entry for " + type_str + ".",
+                      type);
+          NOTREACHED();
+          error_handler()->OnSingleDatatypeUnrecoverableError(
+              error.location(), error.message());
+        } else if (result == sync_api::BaseNode::INIT_FAILED_ENTRY_IS_DEL) {
+          error.Reset(FROM_HERE,
+                      "Failed to load deleted entry for " + type_str + ".",
+                      type);
+          NOTREACHED();
+          error_handler()->OnSingleDatatypeUnrecoverableError(
+              error.location(), error.message());
+        } else {
+          Cryptographer* crypto = trans.GetCryptographer();
+          syncable::ModelTypeSet encrypted_types(crypto->GetEncryptedTypes());
+          const sync_pb::EntitySpecifics& specifics =
+              sync_node.GetEntry()->Get(syncable::SPECIFICS);
+          CHECK(specifics.has_encrypted());
+          const bool can_decrypt = crypto->CanDecrypt(specifics.encrypted());
+          const bool agreement = encrypted_types.Has(type);
+          if (!agreement && !can_decrypt) {
+            error.Reset(FROM_HERE,
+                        "Failed to load encrypted entry, missing key and "
+                        "nigori mismatch for " + type_str + ".",
                         type);
-        error_handler()->OnSingleDatatypeUnrecoverableError(error.location(),
-                                                            error.message());
+            NOTREACHED();
+            error_handler()->OnSingleDatatypeUnrecoverableError(
+                error.location(), error.message());
+          } else if (agreement && can_decrypt) {
+            error.Reset(FROM_HERE,
+                        "Failed to load encrypted entry, we have the key "
+                        "and the nigori matches (?!) for " + type_str + ".",
+                        type);
+            NOTREACHED();
+            error_handler()->OnSingleDatatypeUnrecoverableError(
+                error.location(), error.message());
+          } else if (agreement) {
+            error.Reset(FROM_HERE,
+                        "Failed to load encrypted entry, missing key and "
+                        "the nigori matches for " + type_str + ".",
+                        type);
+            NOTREACHED();
+            error_handler()->OnSingleDatatypeUnrecoverableError(
+                error.location(), error.message());
+          } else {
+            error.Reset(FROM_HERE,
+                        "Failed to load encrypted entry, we have the key"
+                        "(?!) and nigori mismatch for " + type_str + ".",
+                        type);
+            NOTREACHED();
+            error_handler()->OnSingleDatatypeUnrecoverableError(
+                error.location(), error.message());
+          }
+        }
         return error;
+      } else {
+        sync_node.SetTitle(UTF8ToWide(change.sync_data().GetTitle()));
+        sync_node.SetEntitySpecifics(change.sync_data().GetSpecifics());
+        // TODO(sync): Support updating other parts of the sync node (title,
+        // successor, parent, etc.).
       }
-      sync_node.SetTitle(UTF8ToWide(change.sync_data().GetTitle()));
-      sync_node.SetEntitySpecifics(change.sync_data().GetSpecifics());
-      // TODO(sync): Support updating other parts of the sync node (title,
-      // successor, parent, etc.).
     } else {
       NOTREACHED();
       SyncError error(FROM_HERE,
