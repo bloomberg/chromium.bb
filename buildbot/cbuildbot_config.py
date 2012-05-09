@@ -258,6 +258,20 @@ _settings = dict(
 #                --list.
   description=None,
 
+# git_sync -- Boolean that enables parameter --git-sync for prebuilt.py.
+  git_sync=False,
+
+# board_specific_configs -- A mapping from boards in the boards array to
+#                           config objects. Only used for config groups (see
+#                           the add_group method).
+  board_specific_configs={},
+
+# grouped -- Whether this config belongs to a config group.
+  grouped=False,
+
+# TODO(sosa): Collapse to one option.
+# ====================== Dev installer prebuilts options =======================
+
 # binhost_bucket -- Upload prebuilts for this build to this bucket. If it equals
 #                   None the default buckets are used.
   binhost_bucket=None,
@@ -273,16 +287,7 @@ _settings = dict(
 # Upload dev installer prebuilts.
   dev_installer_prebuilts=False,
 
-# git_sync -- Boolean that enables parameter --git-sync for prebuilt.py.
-  git_sync=False,
-
-# board_specific_configs -- A mapping from boards in the boards array to
-#                           config objects. Only used for config groups (see
-#                           the add_group method).
-  board_specific_configs={},
-
-# grouped -- Whether this config belongs to a config group.
-  grouped=False,
+# =============================================================================
 )
 
 
