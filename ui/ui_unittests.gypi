@@ -98,6 +98,7 @@
         'gfx/skbitmap_operations_unittest.cc',
         'gfx/skia_util_unittest.cc',
         'gfx/transform_util_unittest.cc',
+        'gfx/video_decode_acceleration_support_mac_unittest.mm',
         'test/run_all_unittests.cc',
         'test/test_suite.cc',
         'test/test_suite.h',
