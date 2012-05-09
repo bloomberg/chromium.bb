@@ -300,8 +300,8 @@ evdev_flush_motion(struct evdev_input_device *device, uint32_t time)
 
 	if (device->type & EVDEV_RELATIVE_MOTION) {
 		notify_motion(master, time,
-			      master->x + device->rel.dx,
-			      master->y + device->rel.dy);
+			      wl_fixed_to_int(master->x) + device->rel.dx,
+			      wl_fixed_to_int(master->y) + device->rel.dy);
 		device->type &= ~EVDEV_RELATIVE_MOTION;
 		device->rel.dx = 0;
 		device->rel.dy = 0;
