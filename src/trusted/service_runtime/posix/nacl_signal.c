@@ -11,6 +11,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -42,19 +43,14 @@
 #define SIGNAL_STACK_SIZE (SIGSTKSZ + 4096)
 #define STACK_GUARD_SIZE NACL_PAGESIZE
 
-#ifdef SIGSTKFLT
-#define SIGNAL_COUNT 8
-static int s_Signals[SIGNAL_COUNT] = {
-  SIGINT, SIGQUIT, SIGILL, SIGTRAP, SIGBUS, SIGFPE, SIGSEGV, SIGSTKFLT
-};
-#else
-#define SIGNAL_COUNT 7
-static int s_Signals[SIGNAL_COUNT] = {
+static int s_Signals[] = {
+#if OS_LINUX
+  SIGSTKFLT,
+#endif
   SIGINT, SIGQUIT, SIGILL, SIGTRAP, SIGBUS, SIGFPE, SIGSEGV
 };
-#endif
 
-static struct sigaction s_OldActions[SIGNAL_COUNT];
+static struct sigaction s_OldActions[NACL_ARRAY_SIZE_UNSAFE(s_Signals)];
 
 int NaClSignalStackAllocate(void **result) {
   /*
@@ -140,10 +136,10 @@ void NaClSignalStackUnregister(void) {
 
 static void FindAndRunHandler(int sig, siginfo_t *info, void *uc) {
   if (NaClSignalHandlerFind(sig, uc) == NACL_SIGNAL_SEARCH) {
-    int a;
+    unsigned int a;
 
     /* If we need to keep searching, try the old signal handler. */
-    for (a = 0; a < SIGNAL_COUNT; a++) {
+    for (a = 0; a < NACL_ARRAY_SIZE(s_Signals); a++) {
       /* If we handle this signal */
       if (s_Signals[a] == sig) {
         /* If this is a real sigaction pointer... */
@@ -326,7 +322,7 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
 
 void NaClSignalHandlerInitPlatform() {
   struct sigaction sa;
-  int a;
+  unsigned int a;
 
   memset(&sa, 0, sizeof(sa));
   sigemptyset(&sa.sa_mask);
@@ -334,12 +330,12 @@ void NaClSignalHandlerInitPlatform() {
   sa.sa_flags = SA_ONSTACK | SA_SIGINFO;
 
   /* Mask all exceptions we catch to prevent re-entry */
-  for (a = 0; a < SIGNAL_COUNT; a++) {
+  for (a = 0; a < NACL_ARRAY_SIZE(s_Signals); a++) {
     sigaddset(&sa.sa_mask, s_Signals[a]);
   }
 
   /* Install all handlers */
-  for (a = 0; a < SIGNAL_COUNT; a++) {
+  for (a = 0; a < NACL_ARRAY_SIZE(s_Signals); a++) {
     if (sigaction(s_Signals[a], &sa, &s_OldActions[a]) != 0) {
       NaClLog(LOG_FATAL, "Failed to install handler for %d.\n\tERR:%s\n",
                           s_Signals[a], strerror(errno));
@@ -348,10 +344,10 @@ void NaClSignalHandlerInitPlatform() {
 }
 
 void NaClSignalHandlerFiniPlatform() {
-  int a;
+  unsigned int a;
 
   /* Remove all handlers */
-  for (a = 0; a < SIGNAL_COUNT; a++) {
+  for (a = 0; a < NACL_ARRAY_SIZE(s_Signals); a++) {
     if (sigaction(s_Signals[a], &s_OldActions[a], NULL) != 0) {
       NaClLog(LOG_FATAL, "Failed to unregister handler for %d.\n\tERR:%s\n",
                           s_Signals[a], strerror(errno));
@@ -367,8 +363,8 @@ void NaClSignalHandlerFiniPlatform() {
  * http://code.google.com/p/nativeclient/issues/detail?id=1607
  */
 void NaClSignalAssertNoHandlers() {
-  int index;
-  for (index = 0; index < SIGNAL_COUNT; index++) {
+  unsigned int index;
+  for (index = 0; index < NACL_ARRAY_SIZE(s_Signals); index++) {
     int signum = s_Signals[index];
     struct sigaction sa;
     if (sigaction(signum, NULL, &sa) != 0) {
