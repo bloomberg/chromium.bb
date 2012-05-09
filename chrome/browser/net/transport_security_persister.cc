@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/transport_security_persister.h"
+#include "chrome/browser/net/transport_security_persister.h"
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -86,7 +86,7 @@ const char kDefault[] = "default";
 const char kPinningOnly[] = "pinning-only";
 const char kCreated[] = "created";
 
-}  // anonymous namespce
+}  // namespace
 
 class TransportSecurityPersister::Loader {
  public:

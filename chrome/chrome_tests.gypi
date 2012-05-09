@@ -1370,6 +1370,7 @@
         'browser/net/sqlite_persistent_cookie_store_unittest.cc',
         'browser/net/sqlite_server_bound_cert_store_unittest.cc',
         'browser/net/ssl_config_service_manager_pref_unittest.cc',
+        'browser/net/transport_security_persister_unittest.cc',
         'browser/net/url_fixer_upper_unittest.cc',
         'browser/net/url_info_unittest.cc',
         'browser/notifications/desktop_notification_service_unittest.cc',
@@ -1612,7 +1613,6 @@
         'browser/task_profiler/task_profiler_data_serializer_unittest.cc',
         'browser/themes/browser_theme_pack_unittest.cc',
         'browser/themes/theme_service_unittest.cc',
-        'browser/transport_security_persister_unittest.cc',
         'browser/ui/browser_list_unittest.cc',
         'browser/ui/browser_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list

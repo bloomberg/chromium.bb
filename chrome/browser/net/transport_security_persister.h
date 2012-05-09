@@ -30,8 +30,8 @@
 //   copies the current state of the TransportSecurityState, serializes
 //   and writes to disk.
 
-#ifndef CHROME_BROWSER_TRANSPORT_SECURITY_PERSISTER_H_
-#define CHROME_BROWSER_TRANSPORT_SECURITY_PERSISTER_H_
+#ifndef CHROME_BROWSER_NET_TRANSPORT_SECURITY_PERSISTER_H_
+#define CHROME_BROWSER_NET_TRANSPORT_SECURITY_PERSISTER_H_
 #pragma once
 
 #include <string>
@@ -128,4 +128,4 @@ class TransportSecurityPersister
   DISALLOW_COPY_AND_ASSIGN(TransportSecurityPersister);
 };
 
-#endif  // CHROME_BROWSER_TRANSPORT_SECURITY_PERSISTER_H_
+#endif  // CHROME_BROWSER_NET_TRANSPORT_SECURITY_PERSISTER_H_
