@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/camera_detector.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
@@ -92,6 +93,10 @@ void ChangePictureOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("profilePhotoLoading",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO));
+
+  localized_strings->SetString("userIsEphemeral",
+      UserManager::Get()->IsCurrentUserEphemeral() ?
+          ASCIIToUTF16("true") : ASCIIToUTF16("false"));
 }
 
 void ChangePictureOptionsHandler::RegisterMessages() {

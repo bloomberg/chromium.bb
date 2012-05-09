@@ -56,15 +56,20 @@ cr.define('options', function() {
       imageGrid.addEventListener('dblclick',
                                  this.handleImageDblClick_.bind(this));
 
-      // Add the "Choose file" button.
-      imageGrid.addItem(ButtonImages.CHOOSE_FILE,
-                        localStrings.getString('chooseFile'),
-                        this.handleChooseFile_.bind(this));
+      // Ephemeral users can choose from the standard pictures only. This is
+      // because a custom image would have to be written to a file outside the
+      // user's cryptohome where its removal on logout could not be guaranteed.
+      if (!this.userIsEphemeral_()) {
+        // Add the "Choose file" button.
+        imageGrid.addItem(ButtonImages.CHOOSE_FILE,
+                          localStrings.getString('chooseFile'),
+                          this.handleChooseFile_.bind(this));
 
-      // Profile image data.
-      this.profileImage_ = imageGrid.addItem(
-          ButtonImages.PROFILE_PICTURE,
-          localStrings.getString('profilePhotoLoading'));
+        // Profile image data.
+        this.profileImage_ = imageGrid.addItem(
+            ButtonImages.PROFILE_PICTURE,
+            localStrings.getString('profilePhotoLoading'));
+      }
 
       // Old user image data (if present).
       this.oldImage_ = null;
@@ -191,13 +196,17 @@ cr.define('options', function() {
      */
     setCameraPresent_: function(present) {
       var imageGrid = $('images-grid');
-      if (present && !this.takePhotoButton_) {
+      // Ephemeral users can choose from the standard pictures only. This is
+      // because a custom image would have to be written to a file outside the
+      // user's cryptohome where its removal on logout could not be guaranteed.
+      var showTakePhotoButton = present && !this.userIsEphemeral_();
+      if (showTakePhotoButton && !this.takePhotoButton_) {
         this.takePhotoButton_ = imageGrid.addItem(
             ButtonImages.TAKE_PHOTO,
             localStrings.getString('takePhoto'),
             this.handleTakePhoto_.bind(this),
             1);
-      } else if (!present && this.takePhotoButton_) {
+      } else if (!showTakePhotoButton && this.takePhotoButton_) {
         imageGrid.removeItem(this.takePhotoButton_);
         this.takePhotoButton_ = null;
       }
@@ -254,6 +263,15 @@ cr.define('options', function() {
       for (var i = 0, url; url = images[i]; i++) {
         imageGrid.addItem(url);
       }
+    },
+
+    /**
+     * Returns whether the user is logged in as ephemeral.
+     * @return {boolean} True if the user is logged in as ephemeral.
+     * @private
+     */
+    userIsEphemeral_: function() {
+      return localStrings.getString('userIsEphemeral') == 'true';
     },
   };
 
