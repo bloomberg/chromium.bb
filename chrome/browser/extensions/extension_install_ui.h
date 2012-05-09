@@ -175,7 +175,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   virtual void ConfirmInlineInstall(Delegate* delegate,
                                     const Extension* extension,
                                     SkBitmap* icon,
-                                    Prompt prompt);
+                                    const Prompt& prompt);
 
   // This is called by the installer to verify whether the installation from
   // the webstore should proceed.

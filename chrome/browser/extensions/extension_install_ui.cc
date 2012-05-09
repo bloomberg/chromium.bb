@@ -282,7 +282,7 @@ void ExtensionInstallUI::ConfirmInlineInstall(
     Delegate* delegate,
     const Extension* extension,
     SkBitmap* icon,
-    ExtensionInstallUI::Prompt prompt) {
+    const ExtensionInstallUI::Prompt& prompt) {
   DCHECK(ui_loop_ == MessageLoop::current());
   extension_ = extension;
   permissions_ = extension->GetActivePermissions();
