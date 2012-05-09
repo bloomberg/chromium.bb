@@ -237,6 +237,12 @@ class TestLayerDelegate : public LayerDelegate {
     scale_y_ = matrix.getScaleY();
   }
 
+  void reset() {
+    color_index_ = 0;
+    paint_size_.SetSize(0, 0);
+    scale_x_ = scale_y_ = 0.0f;
+  }
+
  private:
   std::vector<SkColor> colors_;
   int color_index_;
@@ -1066,10 +1072,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleUpDown) {
   size_in_pixel = l1->web_layer().bounds();
   EXPECT_EQ("140x180", size_in_pixel.ToString());
 
-  SchedulePaintForLayer(root.get());
-  SchedulePaintForLayer(l1.get());
   RunPendingMessages();
-
   EXPECT_EQ("200x220", root_delegate.paint_size().ToString());
   EXPECT_EQ("140x180", l1_delegate.paint_size().ToString());
 
@@ -1084,8 +1087,6 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleUpDown) {
   EXPECT_EQ("280x360", size_in_pixel.ToString());
 
   // Canvas size must have been scaled down up.
-  SchedulePaintForLayer(root.get());
-  SchedulePaintForLayer(l1.get());
   RunPendingMessages();
   EXPECT_EQ("400x440", root_delegate.paint_size().ToString());
   EXPECT_EQ("2.0 2.0", root_delegate.ToScaleString());
@@ -1103,13 +1104,21 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleUpDown) {
   EXPECT_EQ("140x180", size_in_pixel.ToString());
 
   // Canvas size must have been scaled down too.
-  SchedulePaintForLayer(root.get());
-  SchedulePaintForLayer(l1.get());
   RunPendingMessages();
   EXPECT_EQ("200x220", root_delegate.paint_size().ToString());
   EXPECT_EQ("1.0 1.0", root_delegate.ToScaleString());
   EXPECT_EQ("140x180", l1_delegate.paint_size().ToString());
   EXPECT_EQ("1.0 1.0", l1_delegate.ToScaleString());
+
+  root_delegate.reset();
+  l1_delegate.reset();
+  // Just changing the size shouldn't trigger repaint.
+  GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(1000, 1000));
+  RunPendingMessages();
+  EXPECT_EQ("0x0", root_delegate.paint_size().ToString());
+  EXPECT_EQ("0.0 0.0", root_delegate.ToScaleString());
+  EXPECT_EQ("0x0", l1_delegate.paint_size().ToString());
+  EXPECT_EQ("0.0 0.0", l1_delegate.ToScaleString());
 }
 
 TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleReparent) {
@@ -1131,7 +1140,6 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleReparent) {
   gfx::Size size_in_pixel = l1->web_layer().bounds();
   EXPECT_EQ("140x180", size_in_pixel.ToString());
 
-  SchedulePaintForLayer(l1.get());
   RunPendingMessages();
   EXPECT_EQ("140x180", l1_delegate.paint_size().ToString());
   EXPECT_EQ("1.0 1.0", l1_delegate.ToScaleString());
@@ -1151,7 +1159,6 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleReparent) {
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
   size_in_pixel = l1->web_layer().bounds();
   EXPECT_EQ("280x360", size_in_pixel.ToString());
-  SchedulePaintForLayer(l1.get());
   RunPendingMessages();
   EXPECT_EQ("280x360", l1_delegate.paint_size().ToString());
   EXPECT_EQ("2.0 2.0", l1_delegate.ToScaleString());
@@ -1172,8 +1179,6 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_NoScaleCanvas) {
 
   GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(500, 500));
   GetCompositor()->SetRootLayer(root.get());
-
-  SchedulePaintForLayer(l1.get());
   RunPendingMessages();
   EXPECT_EQ("280x360", l1_delegate.paint_size().ToString());
   EXPECT_EQ("1.0 1.0", l1_delegate.ToScaleString());

@@ -362,6 +362,7 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
   device_scale_factor_ = device_scale_factor;
   RecomputeTransform();
   RecomputeDrawsContentAndUVRect();
+  SchedulePaint(gfx::Rect(bounds_.size()));
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->OnDeviceScaleFactorChanged(device_scale_factor);
 }
@@ -452,6 +453,10 @@ void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
 
   bool was_move = bounds_.size() == bounds.size();
   bounds_ = bounds;
+
+  RecomputeTransform();
+  RecomputeDrawsContentAndUVRect();
+
   if (was_move) {
     // Don't schedule a draw if we're invisible. We'll schedule one
     // automatically when we get visible.
@@ -461,9 +466,6 @@ void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
     // Always schedule a paint, even if we're invisible.
     SchedulePaint(gfx::Rect(bounds.size()));
   }
-
-  RecomputeTransform();
-  RecomputeDrawsContentAndUVRect();
 }
 
 void Layer::SetTransformImmediately(const ui::Transform& transform) {
