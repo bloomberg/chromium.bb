@@ -382,39 +382,20 @@ AutocompleteResultView* AutocompletePopupContentsView::CreateResultView(
 // AutocompletePopupContentsView, views::View overrides, protected:
 
 void AutocompletePopupContentsView::OnPaint(gfx::Canvas* canvas) {
-  // We paint our children in an unconventional way.
-  //
-  // Because the border of this view creates an anti-aliased round-rect region
-  // for the contents, we need to render our rectangular result child views into
-  // this round rect region. We can't use a simple clip because clipping is
-  // 1-bit and we get nasty jagged edges.
-  //
-  // Instead, we paint all our children into a second canvas and use that as a
-  // shader to fill a path representing the round-rect clipping region. This
-  // yields a nice anti-aliased edge.
-  gfx::Canvas contents_canvas(size(), true);
-  PaintResultViews(&contents_canvas);
+  gfx::Path path;
+  MakeContentsPath(&path, GetContentsBounds());
+  canvas->Save();
+  canvas->sk_canvas()->clipPath(path,
+                                SkRegion::kIntersect_Op,
+                                true /* doAntialias */);
+  PaintResultViews(canvas);
 
   // We want the contents background to be slightly transparent so we can see
   // the blurry glass effect on DWM systems behind. We do this _after_ we paint
   // the children since they paint text, and GDI will reset this alpha data if
   // we paint text after this call.
-  MakeCanvasTransparent(&contents_canvas);
-
-  // Now paint the contents of the contents canvas into the actual canvas.
-  SkPaint paint;
-  paint.setAntiAlias(true);
-
-  SkShader* shader = SkShader::CreateBitmapShader(
-      contents_canvas.sk_canvas()->getDevice()->accessBitmap(false),
-      SkShader::kClamp_TileMode,
-      SkShader::kClamp_TileMode);
-  paint.setShader(shader);
-  shader->unref();
-
-  gfx::Path path;
-  MakeContentsPath(&path, GetContentsBounds());
-  canvas->DrawPath(path, paint);
+  MakeCanvasTransparent(canvas);
+  canvas->Restore();
 
   // Now we paint the border, so it will be alpha-blended atop the contents.
   // This looks slightly better in the corners than drawing the contents atop
