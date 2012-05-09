@@ -32,8 +32,6 @@
         'backend/print_backend_consts.cc',
         'backend/print_backend_consts.h',
         'backend/print_backend_dummy.cc',
-        'custom_scaling.cc',
-        'custom_scaling.h',
         'emf_win.cc',
         'emf_win.h',
         'image.cc',

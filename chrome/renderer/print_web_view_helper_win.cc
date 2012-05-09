@@ -12,7 +12,6 @@
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "chrome/common/print_messages.h"
-#include "printing/custom_scaling.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
 #include "printing/metafile_skia_wrapper.h"
@@ -118,40 +117,10 @@ void PrintWebViewHelper::PrintPageInternal(
   gfx::Size page_size_in_dpi;
   gfx::Rect content_area_in_dpi;
 
-  // If we are printing PDF, it may not fit into metafile using 72dpi.
-  // (Metafile is based on screen resolution here.)
-  // (See http://code.google.com/p/chromium-os/issues/detail?id=16088)
-  // If PDF plugin encounter this issue it will save custom scale in TLS,
-  // so we can apply the same scaling factor here.
-  // If will do so ONLY if default scaling does not work.
-  // TODO(gene): We should revisit this solution for the next versions.
-  // Two possible solutions:
-  // We can create metafile of the right size (or resizable)
-  // https://code.google.com/p/chromium/issues/detail?id=126037
-  // or
-  // We should return scale factor all the way from the plugin:
-  //   webkit::ppapi::PluginInstance::PrintPDFOutput - scale calculated here
-  //   webkit::ppapi::PluginInstance::PrintPageHelper
-  //   webkit::ppapi::PluginInstance::PrintPage
-  //   webkit::ppapi::WebPluginImpl::printPage
-  //   WebKit::WebPluginContainerImpl::printPage
-  //   WebKit::ChromePluginPrintContext::spoolPage - always return 1.0 scale
-  //   WebKit::WebFrameImpl::printPage
-  //   PrintWebViewHelper::RenderPage
-  //   PrintWebViewHelper::PrintPageInternal
-
-  printing::ClearCustomPrintingPageScale();
-
   // Render page for printing.
   metafile.reset(RenderPage(params.params, page_number, frame, false,
                             metafile.get(), &actual_shrink, &page_size_in_dpi,
                             &content_area_in_dpi));
-
-  double custom_scale;
-  if (printing::GetCustomPrintingPageScale(&custom_scale)) {
-    actual_shrink = custom_scale;
-    printing::ClearCustomPrintingPageScale();
-  }
 
   // Close the device context to retrieve the compiled metafile.
   if (!metafile->FinishDocument())
@@ -286,9 +255,18 @@ Metafile* PrintWebViewHelper::RenderPage(
   if (*actual_shrink <= 0 || webkit_scale_factor <= 0) {
     NOTREACHED() << "Printing page " << page_number << " failed.";
   } else {
-    // Update the dpi adjustment with the "page |actual_shrink|" calculated in
-    // webkit.
-    *actual_shrink /= (webkit_scale_factor * css_scale_factor);
+    // While rendering certain plugins (PDF) to metafile, we might need to
+    // set custom scale factor. Update |actual_shrink| with custom scale
+    // if it is set on canvas.
+    // TODO(gene): We should revisit this solution for the next versions.
+    // Consider creating metafile of the right size (or resizable)
+    // https://code.google.com/p/chromium/issues/detail?id=126037
+    if (!printing::MetafileSkiaWrapper::GetCustomScaleOnCanvas(
+            *canvas, actual_shrink)) {
+      // Update the dpi adjustment with the "page |actual_shrink|" calculated in
+      // webkit.
+      *actual_shrink /= (webkit_scale_factor * css_scale_factor);
+    }
   }
 
   bool result = metafile->FinishPage();

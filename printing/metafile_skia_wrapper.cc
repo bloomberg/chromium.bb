@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@ namespace printing {
 namespace {
 
 const char* kMetafileKey = "CrMetafile";
+const char* kCustomScaleKey = "CrCustomScale";
 
 }  // namespace
 
@@ -36,6 +37,25 @@ Metafile* MetafileSkiaWrapper::GetMetafileFromCanvas(const SkCanvas& canvas) {
     return NULL;
 
   return static_cast<MetafileSkiaWrapper*>(value)->metafile_;
+}
+
+// static
+void MetafileSkiaWrapper::SetCustomScaleOnCanvas(const SkCanvas& canvas,
+                                                 double scale) {
+  SkMetaData& meta = skia::getMetaData(canvas);
+  meta.setScalar(kCustomScaleKey, SkFloatToScalar(scale));
+}
+
+// static
+bool MetafileSkiaWrapper::GetCustomScaleOnCanvas(const SkCanvas& canvas,
+                                                 double* scale) {
+  SkMetaData& meta = skia::getMetaData(canvas);
+  SkScalar value;
+  if (!meta.findScalar(kCustomScaleKey, &value))
+    return false;
+
+  *scale = SkScalarToFloat(value);
+  return true;
 }
 
 MetafileSkiaWrapper::MetafileSkiaWrapper(Metafile* metafile)

@@ -38,7 +38,6 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
-#include "printing/custom_scaling.h"
 #include "printing/units.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -1485,7 +1484,8 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
 
     if (dynamic_scale < page_scale) {
       page_scale = dynamic_scale;
-      printing::SetCustomPrintingPageScale(page_scale);
+      printing::MetafileSkiaWrapper::SetCustomScaleOnCanvas(*canvas,
+                                                            page_scale);
     }
 
     gfx::ScaleDC(dc, page_scale);
