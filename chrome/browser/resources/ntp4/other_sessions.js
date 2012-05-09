@@ -122,6 +122,9 @@ cr.define('ntp', function() {
         chrome.send('getForeignSessions');
       recordUmaEvent_(HISTOGRAM_EVENT.SHOW_MENU);
       MenuButton.prototype.showMenu.call(this);
+
+      // Work around https://bugs.webkit.org/show_bug.cgi?id=85884.
+      this.menu.scrollTop = 0;
     },
 
     /**
