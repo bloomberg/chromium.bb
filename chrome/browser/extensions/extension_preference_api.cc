@@ -48,6 +48,12 @@ struct PrefMappingEntry {
 const char kOnPrefChangeFormat[] = "types.ChromeSetting.%s.onChange";
 
 PrefMappingEntry kPrefMapping[] = {
+#if defined(OS_CHROMEOS)
+  { "protectedContentEnabled",
+    prefs::kEnableCrosDRM,
+    ExtensionAPIPermission::kPrivacy
+  },
+#endif  // defined(OS_CHROMEOS)
   { "alternateErrorPagesEnabled",
     prefs::kAlternateErrorPagesEnabled,
     ExtensionAPIPermission::kPrivacy
