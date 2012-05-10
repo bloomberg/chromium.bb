@@ -45,7 +45,6 @@
 #if defined(OS_CHROMEOS)
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
@@ -82,30 +81,16 @@ bool ScreenshotTimestampComp(const std::string& filepath1,
   return filepath1 > filepath2;
 }
 
-void GetSavedScreenshots(std::vector<std::string>* saved_screenshots,
-                         base::WaitableEvent* done) {
+void GetSavedScreenshots(std::vector<std::string>* saved_screenshots) {
   saved_screenshots->clear();
 
   FilePath fileshelf_path;
   if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
-                        &fileshelf_path)) {
-    done->Signal();
+                        &fileshelf_path))
     return;
-  }
 
   FeedbackUI::GetMostRecentScreenshots(fileshelf_path, saved_screenshots,
                                        kMaxSavedScreenshots);
-  done->Signal();
-}
-
-// This fuction posts a task to the file thread to create/list all the current
-// and saved screenshots.
-void GetScreenshotUrls(std::vector<std::string>* saved_screenshots) {
-  base::WaitableEvent done(true, false);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&GetSavedScreenshots,
-                                     saved_screenshots, &done));
-  done.Wait();
 }
 
 std::string GetUserEmail() {
@@ -115,7 +100,8 @@ std::string GetUserEmail() {
   else
     return manager->GetLoggedInUser().display_email();
 }
-#endif
+
+#endif  // OS_CHROMEOS
 
 // Returns the index of the feedback tab if already open, -1 otherwise
 int GetIndexOfFeedbackTab(Browser* browser) {
@@ -199,6 +185,8 @@ class FeedbackHandler : public WebUIMessageHandler,
   void HandleRefreshCurrentScreenshot(const ListValue* args);
 #if defined(OS_CHROMEOS)
   void HandleRefreshSavedScreenshots(const ListValue* args);
+  void RefreshSavedScreenshotsCallback(
+      std::vector<std::string>* saved_screenshots);
 #endif
   void HandleSendReport(const ListValue* args);
   void HandleCancel(const ListValue* args);
@@ -220,7 +208,7 @@ class FeedbackHandler : public WebUIMessageHandler,
   chromeos::system::SyslogsProvider::Handle syslogs_handle_;
   CancelableRequestConsumer syslogs_consumer_;
 
-  // Timestamp of when the feedback request was initiated
+  // Timestamp of when the feedback request was initiated.
   std::string timestamp_;
 #endif
 
@@ -443,14 +431,22 @@ void FeedbackHandler::HandleRefreshCurrentScreenshot(const ListValue*) {
 
 #if defined(OS_CHROMEOS)
 void FeedbackHandler::HandleRefreshSavedScreenshots(const ListValue*) {
-  std::vector<std::string> saved_screenshots;
-  GetScreenshotUrls(&saved_screenshots);
+  std::vector<std::string>* saved_screenshots = new std::vector<std::string>;
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&GetSavedScreenshots, base::Unretained(saved_screenshots)),
+      base::Bind(&FeedbackHandler::RefreshSavedScreenshotsCallback,
+                 base::Unretained(this), base::Owned(saved_screenshots)));
+}
 
+void FeedbackHandler::RefreshSavedScreenshotsCallback(
+    std::vector<std::string>* saved_screenshots) {
   ListValue screenshots_list;
-  for (size_t i = 0; i < saved_screenshots.size(); ++i)
-    screenshots_list.Append(new StringValue(saved_screenshots[i]));
+  for (size_t i = 0; i < saved_screenshots->size(); ++i)
+    screenshots_list.Append(new StringValue((*saved_screenshots)[i]));
   web_ui()->CallJavascriptFunction("setupSavedScreenshots", screenshots_list);
 }
+
 #endif
 
 
