@@ -35,12 +35,8 @@ class WebPluginImpl : public WebKit::WebPlugin {
       const WebKit::WebPluginParams& params,
       const base::WeakPtr<PluginDelegate>& plugin_delegate);
 
- private:
-  friend class base::DeleteHelper<WebPluginImpl>;
-
-  WEBKIT_PLUGINS_EXPORT virtual ~WebPluginImpl();
-
   // WebKit::WebPlugin implementation.
+  virtual WebKit::WebPluginContainer* container() const;
   virtual bool initialize(WebKit::WebPluginContainer* container);
   virtual void destroy();
   virtual NPObject* scriptableObject();
@@ -85,6 +81,10 @@ class WebPluginImpl : public WebKit::WebPlugin {
   virtual bool canRotateView() OVERRIDE;
   virtual void rotateView(RotationType type) OVERRIDE;
 
+ private:
+  friend class base::DeleteHelper<WebPluginImpl>;
+
+  WEBKIT_PLUGINS_EXPORT virtual ~WebPluginImpl();
   struct InitData;
 
   scoped_ptr<InitData> init_data_;  // Cleared upon successful initialization.
@@ -95,6 +95,7 @@ class WebPluginImpl : public WebKit::WebPlugin {
   scoped_refptr<PPB_URLLoader_Impl> document_loader_;
   gfx::Rect plugin_rect_;
   PP_Var instance_object_;
+  WebKit::WebPluginContainer* container_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginImpl);
 };

@@ -90,6 +90,9 @@ void WebViewPlugin::RestoreTitleText() {
     container_->element().setAttribute("title", old_title_);
 }
 
+WebKit::WebPluginContainer* WebViewPlugin::container() const {
+  return container_;
+}
 
 bool WebViewPlugin::initialize(WebPluginContainer* container) {
   container_ = container;

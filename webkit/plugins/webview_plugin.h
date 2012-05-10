@@ -62,8 +62,6 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
 
   WebKit::WebView* web_view() { return web_view_; }
 
-  WebKit::WebPluginContainer* container() { return container_; }
-
   // When loading a plug-in document (i.e. a full page plug-in not embedded in
   // another page), we save all data that has been received, and replay it with
   // this method on the actual plug-in.
@@ -72,6 +70,7 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   WEBKIT_PLUGINS_EXPORT void RestoreTitleText();
 
   // WebPlugin methods:
+  virtual WebKit::WebPluginContainer* container() const;
   virtual bool initialize(WebKit::WebPluginContainer*);
   virtual void destroy();
 

@@ -54,7 +54,8 @@ WebPluginImpl::WebPluginImpl(
     const base::WeakPtr<PluginDelegate>& plugin_delegate)
     : init_data_(new InitData()),
       full_frame_(params.loadManually),
-      instance_object_(PP_MakeUndefined()) {
+      instance_object_(PP_MakeUndefined()),
+      container_(NULL) {
   DCHECK(plugin_module);
   init_data_->module = plugin_module;
   init_data_->delegate = plugin_delegate;
@@ -66,6 +67,10 @@ WebPluginImpl::WebPluginImpl(
 }
 
 WebPluginImpl::~WebPluginImpl() {
+}
+
+WebKit::WebPluginContainer* WebPluginImpl::container() const {
+  return container_;
 }
 
 bool WebPluginImpl::initialize(WebPluginContainer* container) {
@@ -97,6 +102,7 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   }
 
   init_data_.reset();
+  container_ = container;
   return true;
 }
 
