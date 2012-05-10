@@ -517,8 +517,8 @@
         'browser/ui/views/menu_item_view_test.cc',
         'browser/ui/views/menu_model_adapter_test.cc',
         'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
+        'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h',
-        'browser/ui/views/tabs/tab_drag_controller2_interactive_uitest.cc',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest_win.cc',
         'browser/ui/webui/inspect_ui_browsertest.cc',
         'test/base/chrome_test_launcher.cc',
@@ -535,7 +535,7 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
           'sources!': [
-            'browser/ui/views/tabs/tab_drag_controller2_interactive_uitest.cc',
+            'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
           ],
         }],
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
@@ -570,7 +570,7 @@
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
             'browser/ui/views/menu_item_view_test.cc',
             'browser/ui/views/menu_model_adapter_test.cc',
-            'browser/ui/views/tabs/tab_drag_controller2_interactive_uitest.cc',
+            'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
             'test/base/view_event_test_base.cc',
             'test/base/view_event_test_base.h',
           ],
