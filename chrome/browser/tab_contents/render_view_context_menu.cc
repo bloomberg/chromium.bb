@@ -1888,7 +1888,7 @@ void RenderViewContextMenu::MenuWillShow(ui::SimpleMenuModel* source) {
     view->SetShowingContextMenu(true);
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CONTEXT_MENU_SHOWN,
+      chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN,
       content::Source<RenderViewContextMenu>(this),
       content::NotificationService::NoDetails());
 }
@@ -1906,6 +1906,11 @@ void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
   if (rvh) {
     rvh->NotifyContextMenuClosed(params_.custom_context);
   }
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_CLOSED,
+      content::Source<RenderViewContextMenu>(this),
+      content::NotificationService::NoDetails());
 }
 
 bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {

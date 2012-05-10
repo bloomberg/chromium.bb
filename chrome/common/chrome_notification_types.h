@@ -941,7 +941,10 @@ enum NotificationType {
 
   // Send when a context menu is shown. Used to notify tests that the context
   // menu has been created and shown.
-  NOTIFICATION_CONTEXT_MENU_SHOWN,
+  NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN,
+
+  // Send when a context menu is closed.
+  NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_CLOSED,
 
   // Sent when the tab's closeable state has changed due to increase/decrease
   // in number of tabs in browser or increase/decrease in number of browsers.
