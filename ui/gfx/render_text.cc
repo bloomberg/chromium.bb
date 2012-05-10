@@ -185,6 +185,7 @@ SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
   paint_.setAntiAlias(true);
   paint_.setSubpixelText(true);
   paint_.setLCDRenderText(true);
+  bounds_.setEmpty();
 }
 
 SkiaTextRenderer::~SkiaTextRenderer() {

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -22,11 +23,15 @@
 #include "ui/gfx/selection_model.h"
 
 class SkCanvas;
+class SkDrawLooper;
 struct SkPoint;
+class SkShader;
+class SkTypeface;
 
 namespace gfx {
 
 class Canvas;
+class Font;
 class RenderTextTest;
 class ShadowValue;
 struct StyleRange;
