@@ -16,7 +16,7 @@
 
 #include "base/memory/scoped_ptr.h"
 
-class BreakpadInfo;
+struct BreakpadInfo;
 
 namespace base {
 class Thread;
