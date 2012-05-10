@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <gtk/gtk.h>
+#include <pango/pango-font.h>
 
 #include <algorithm>
 #include <vector>
@@ -304,7 +305,10 @@ void CertificateViewer::FillHierarchyStore(GtkTreeStore* hierarchy_store,
   GtkTreeIter parent;
   GtkTreeIter* parent_ptr = NULL;
   GtkTreeIter iter;
+
   gint index = cert_chain_list_.size() - 1;
+  DCHECK_NE(-1, index);
+
   for (net::X509Certificate::OSCertHandles::const_reverse_iterator i =
           cert_chain_list_.rbegin();
        i != cert_chain_list_.rend(); ++i, --index) {
@@ -320,6 +324,7 @@ void CertificateViewer::FillHierarchyStore(GtkTreeStore* hierarchy_store,
     parent = iter;
     parent_ptr = &parent;
   }
+
   *leaf = iter;
 }
 
