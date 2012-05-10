@@ -20,7 +20,7 @@
 
 using content::NavigationEntry;
 
-typedef BrowserInit::LaunchWithProfile::Tab Tab;
+typedef StartupBrowserCreator::LaunchWithProfile::Tab Tab;
 
 // Key used in dictionaries for the app id.
 static const char kAppID[] = "app_id";

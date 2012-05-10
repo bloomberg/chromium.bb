@@ -37,9 +37,9 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/sync_ui_util_mac.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -95,9 +95,9 @@ NSString* NSPopoverDidCloseNotification = @"NSPopoverDidCloseNotification";
 #endif
 
 // True while AppController is calling Browser::NewEmptyWindow(). We need a
-// global flag here, analogue to BrowserInit::InProcessStartup() because
-// otherwise the SessionService will try to restore sessions when we make a new
-// window while there are no other active windows.
+// global flag here, analogue to StartupBrowserCreator::InProcessStartup()
+// because otherwise the SessionService will try to restore sessions when we
+// make a new window while there are no other active windows.
 bool g_is_opening_new_window = false;
 
 // Activates a browser window having the given profile (the last one active) if
@@ -996,10 +996,11 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   {
     AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
     int return_code;
-    BrowserInit browser_init;
-    browser_init.LaunchBrowser(command_line, [self lastProfile], FilePath(),
-                               BrowserInit::IS_NOT_PROCESS_STARTUP,
-                               BrowserInit::IS_NOT_FIRST_RUN, &return_code);
+    StartupBrowserCreator browser_creator;
+    browser_creator.LaunchBrowser(
+        command_line, [self lastProfile], FilePath(),
+        StartupBrowserCreator::IS_NOT_PROCESS_STARTUP,
+        StartupBrowserCreator::IS_NOT_FIRST_RUN, &return_code);
   }
 
   // We've handled the reopen event, so return NO to tell AppKit not
@@ -1085,9 +1086,9 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 }
 
 // Various methods to open URLs that we get in a native fashion. We use
-// BrowserInit here because on the other platforms, URLs to open come through
-// the ProcessSingleton, and it calls BrowserInit. It's best to bottleneck the
-// openings through that for uniform handling.
+// StartupBrowserCreator here because on the other platforms, URLs to open come
+// through the ProcessSingleton, and it calls StartupBrowserCreator. It's best
+// to bottleneck the openings through that for uniform handling.
 
 - (void)openUrls:(const std::vector<GURL>&)urls {
   // If the browser hasn't started yet, just queue up the URLs.
@@ -1104,9 +1105,10 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   }
 
   CommandLine dummy(CommandLine::NO_PROGRAM);
-  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
-  BrowserInit::LaunchWithProfile launch(FilePath(), dummy, first_run);
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
+  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), dummy, first_run);
   launch.OpenURLsInBrowser(browser, false, urls);
 }
 

@@ -58,7 +58,7 @@
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/browser_init.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -715,16 +715,17 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
   BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);
 
   VLOG(1) << "Launching browser...";
-  BrowserInit browser_init;
+  StartupBrowserCreator browser_creator;
   int return_code;
-  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      BrowserInit::IS_FIRST_RUN: BrowserInit::IS_NOT_FIRST_RUN;
-  browser_init.LaunchBrowser(*CommandLine::ForCurrentProcess(),
-                             profile,
-                             FilePath(),
-                             BrowserInit::IS_PROCESS_STARTUP,
-                             first_run,
-                             &return_code);
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
+  browser_creator.LaunchBrowser(*CommandLine::ForCurrentProcess(),
+                                profile,
+                                FilePath(),
+                                StartupBrowserCreator::IS_PROCESS_STARTUP,
+                                first_run,
+                                &return_code);
 
   // Mark login host for deletion after browser starts.  This
   // guarantees that the message loop will be referenced by the

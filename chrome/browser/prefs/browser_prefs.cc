@@ -56,7 +56,6 @@
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_view_prefs.h"
 #include "chrome/browser/ui/network_profile_bubble_prefs.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"

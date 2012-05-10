@@ -79,7 +79,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_init.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
@@ -208,12 +208,12 @@ void HandleTestParameters(const CommandLine& command_line) {
 #endif
 }
 
-void AddFirstRunNewTabs(BrowserInit* browser_init,
+void AddFirstRunNewTabs(StartupBrowserCreator* browser_creator,
                         const std::vector<GURL>& new_tabs) {
   for (std::vector<GURL>::const_iterator it = new_tabs.begin();
        it != new_tabs.end(); ++it) {
     if (it->is_valid())
-      browser_init->AddFirstRunTab(*it);
+      browser_creator->AddFirstRunTab(*it);
   }
 }
 
@@ -498,7 +498,7 @@ bool ProcessSingletonNotificationCallback(const CommandLine& command_line,
     return true;
   }
 
-  BrowserInit::ProcessCommandLineAlreadyRunning(
+  StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
       command_line, current_directory);
   return true;
 }
@@ -1209,7 +1209,7 @@ int ChromeBrowserMainParts::PreCreateThreads() {
   result_code_ = PreCreateThreadsImpl();
   // These members must be initialized before returning from this function.
   DCHECK(master_prefs_.get());
-  DCHECK(browser_init_.get());
+  DCHECK(browser_creator_.get());
   return result_code_;
 }
 
@@ -1267,7 +1267,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   // These members must be initialized before returning from this function.
   master_prefs_.reset(new first_run::MasterPrefs);
-  browser_init_.reset(new BrowserInit);
+  browser_creator_.reset(new StartupBrowserCreator);
 
 #if !defined(OS_ANDROID)
   // Convert active labs into switches. This needs to be done before
@@ -1352,7 +1352,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   if (is_first_run_) {
     first_run_ui_bypass_ = !first_run::ProcessMasterPreferences(
         user_data_dir_, master_prefs_.get());
-    AddFirstRunNewTabs(browser_init_.get(), master_prefs_->new_tabs);
+    AddFirstRunNewTabs(browser_creator_.get(), master_prefs_->new_tabs);
 
     // If we are running in App mode, we do not want to show the importer
     // (first run) UI.
@@ -1432,7 +1432,7 @@ void ChromeBrowserMainParts::PreMainMessageLoopRun() {
 //   PostProfileInit()
 //   ... additional setup
 //   PreBrowserStart()
-//   ... browser_init_->Start (OR parameters().ui_task->Run())
+//   ... browser_creator_->Start (OR parameters().ui_task->Run())
 //   PostBrowserStart()
 
 void ChromeBrowserMainParts::PreProfileInit() {
@@ -1826,8 +1826,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     std::vector<Profile*> last_opened_profiles =
         g_browser_process->profile_manager()->GetLastOpenedProfiles();
 #endif
-    if (browser_init_->Start(parsed_command_line(), FilePath(),
-                             profile_, last_opened_profiles, &result_code)) {
+    if (browser_creator_->Start(parsed_command_line(), FilePath(),
+                                profile_, last_opened_profiles, &result_code)) {
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
       // Initialize autoupdate timer. Timer callback costs basically nothing
       // when browser is not in persistent mode, so it's OK to let it ride on
@@ -1872,7 +1872,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     } else {
       run_message_loop_ = false;
     }
-  browser_init_.reset();
+  browser_creator_.reset();
 
   PostBrowserStart();
 
