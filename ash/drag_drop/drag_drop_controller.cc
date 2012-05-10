@@ -149,7 +149,7 @@ void DragDropController::Drop(aura::Window* target,
 
   Cleanup();
   if (should_block_during_drag_drop_)
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitNow();
 }
 
 void DragDropController::DragCancel() {
@@ -167,7 +167,7 @@ void DragDropController::DragCancel() {
   drag_operation_ = 0;
   StartCanceledAnimation();
   if (should_block_during_drag_drop_)
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitNow();
 }
 
 bool DragDropController::IsDragDropInProgress() {

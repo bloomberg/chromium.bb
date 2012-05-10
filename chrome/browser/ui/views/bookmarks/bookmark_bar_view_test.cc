@@ -42,37 +42,6 @@ using content::OpenURLParams;
 using content::PageNavigator;
 using content::WebContents;
 
-#if defined(OS_LINUX)
-// See http://crbug.com/40040 for details.
-#define MAYBE_DND DISABLED_DND
-#define MAYBE_DNDToDifferentMenu DISABLED_DNDToDifferentMenu
-#define MAYBE_DNDBackToOriginatingMenu DISABLED_DNDBackToOriginatingMenu
-
-// See http://crbug.com/40039 for details.
-#define MAYBE_KeyEvents DISABLED_KeyEvents
-
-// Two bugs here. http://crbug.com/47089 for general Linux Views, and
-// http://crbug.com/47452 for ChromiumOS.
-#define MAYBE_CloseWithModalDialog DISABLED_CloseWithModalDialog
-// See http://crbug.com/47089 for details.
-#define MAYBE_CloseMenuAfterClosingContextMenu \
-        DISABLED_CloseMenuAfterClosingContextMenu
-
-// See bug http://crbug.com/60444 for details.
-#define MAYBE_ScrollButtonScrolls DISABLED_ScrollButtonScrolls
-#else
-
-#define MAYBE_DND DND
-#define MAYBE_DNDToDifferentMenu DNDToDifferentMenu
-#define MAYBE_DNDBackToOriginatingMenu DNDBackToOriginatingMenu
-#define MAYBE_DNDBackToOriginatingMenu DNDBackToOriginatingMenu
-#define MAYBE_KeyEvents KeyEvents
-#define MAYBE_CloseWithModalDialog CloseWithModalDialog
-#define MAYBE_CloseMenuAfterClosingContextMenu CloseMenuAfterClosingContextMenu
-#define MAYBE_ScrollButtonScrolls ScrollButtonScrolls
-
-#endif
-
 namespace {
 
 void MoveMouseAndPress(const gfx::Point& screen_pos,
@@ -652,7 +621,7 @@ class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
-VIEW_TEST(BookmarkBarViewTest5, MAYBE_DND)
+VIEW_TEST(BookmarkBarViewTest5, DND)
 
 // Tests holding mouse down on overflow button, dragging such that menu pops up
 // then selecting an item.
@@ -731,12 +700,30 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
     gfx::Point loc(other_button->width() / 2, other_button->height() / 2);
     views::View::ConvertPointToScreen(other_button, &loc);
 
+#if defined(USE_AURA)
+    // TODO: fix this. Aura requires an additional mouse event to trigger drag
+    // and drop checking state.
+    ui_controls::SendMouseMoveNotifyWhenDone(loc.x() + 10, loc.y(),
+        base::Bind(&BookmarkBarViewTest7::Step3A, this));
+#else
     // Start a drag.
     ui_controls::SendMouseMoveNotifyWhenDone(loc.x() + 10, loc.y(),
         base::Bind(&BookmarkBarViewTest7::Step4, this));
 
     // See comment above this method as to why we do this.
     ScheduleMouseMoveInBackground(loc.x(), loc.y());
+#endif
+  }
+
+  void Step3A() {
+    // Drag over other button.
+    views::TextButton* other_button =
+        bb_view_->other_bookmarked_button();
+    gfx::Point loc(other_button->width() / 2, other_button->height() / 2);
+    views::View::ConvertPointToScreen(other_button, &loc);
+
+    ui_controls::SendMouseMoveNotifyWhenDone(loc.x(), loc.y(),
+        base::Bind(&BookmarkBarViewTest7::Step4, this));
   }
 
   void Step4() {
@@ -762,7 +749,7 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
-VIEW_TEST(BookmarkBarViewTest7, MAYBE_DNDToDifferentMenu)
+VIEW_TEST(BookmarkBarViewTest7, DNDToDifferentMenu)
 
 // Drags from one menu to next so that original menu closes, then back to
 // original menu.
@@ -805,11 +792,28 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
     views::View::ConvertPointToScreen(other_button, &loc);
 
     // Start a drag.
+#if defined(USE_AURA)
+    // TODO: fix this. Aura requires an additional mouse event to trigger drag
+    // and drop checking state.
+    ui_controls::SendMouseMoveNotifyWhenDone(loc.x() + 10, loc.y(),
+        base::Bind(&BookmarkBarViewTest8::Step3A, this));
+#else
     ui_controls::SendMouseMoveNotifyWhenDone(loc.x() + 10, loc.y(),
         base::Bind(&BookmarkBarViewTest8::Step4, this));
-
     // See comment above this method as to why we do this.
     ScheduleMouseMoveInBackground(loc.x(), loc.y());
+#endif
+  }
+
+  void Step3A() {
+    // Drag over other button.
+    views::TextButton* other_button =
+        bb_view_->other_bookmarked_button();
+    gfx::Point loc(other_button->width() / 2, other_button->height() / 2);
+    views::View::ConvertPointToScreen(other_button, &loc);
+
+    ui_controls::SendMouseMoveNotifyWhenDone(loc.x() + 10, loc.y(),
+        base::Bind(&BookmarkBarViewTest8::Step4, this));
   }
 
   void Step4() {
@@ -849,7 +853,7 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
-VIEW_TEST(BookmarkBarViewTest8, MAYBE_DNDBackToOriginatingMenu)
+VIEW_TEST(BookmarkBarViewTest8, DNDBackToOriginatingMenu)
 
 // Moves the mouse over the scroll button and makes sure we get scrolling.
 class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
@@ -920,7 +924,7 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
   views::MenuItemView* first_menu_;
 };
 
-VIEW_TEST(BookmarkBarViewTest9, MAYBE_ScrollButtonScrolls)
+VIEW_TEST(BookmarkBarViewTest9, ScrollButtonScrolls)
 
 // Tests up/down/left/enter key messages.
 class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
@@ -1026,7 +1030,7 @@ class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest10, MAYBE_KeyEvents)
+VIEW_TEST(BookmarkBarViewTest10, KeyEvents)
 
 // Make sure the menu closes with the following sequence: show menu, show
 // context menu, close context menu (via escape), then click else where. This
@@ -1103,7 +1107,7 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
   ContextMenuNotificationObserver observer_;
 };
 
-VIEW_TEST(BookmarkBarViewTest11, MAYBE_CloseMenuAfterClosingContextMenu)
+VIEW_TEST(BookmarkBarViewTest11, CloseMenuAfterClosingContextMenu)
 
 // Tests showing a modal dialog from a context menu.
 class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
@@ -1185,7 +1189,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest12, MAYBE_CloseWithModalDialog)
+VIEW_TEST(BookmarkBarViewTest12, CloseWithModalDialog)
 
 // Tests clicking on the separator of a context menu (this is for coverage of
 // bug 17862).

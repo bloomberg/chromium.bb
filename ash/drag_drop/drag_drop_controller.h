@@ -39,7 +39,7 @@ class ASH_EXPORT DragDropController
       public aura::EventFilter,
       public ui::ImplicitAnimationObserver,
       public aura::WindowObserver {
-public:
+ public:
   DragDropController();
   virtual ~DragDropController();
 

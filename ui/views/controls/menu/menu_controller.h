@@ -20,11 +20,15 @@
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 
+#if defined(USE_AURA)
+namespace aura {
+class RootWindow;
+}
+#endif
+
 namespace ui {
 class OSExchangeData;
 }
-using ui::OSExchangeData;
-
 namespace views {
 
 class DropTargetEvent;
@@ -110,9 +114,9 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
   bool GetDropFormats(
       SubmenuView* source,
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats);
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats);
   bool AreDropTypesRequired(SubmenuView* source);
-  bool CanDrop(SubmenuView* source, const OSExchangeData& data);
+  bool CanDrop(SubmenuView* source, const ui::OSExchangeData& data);
   void OnDragEntered(SubmenuView* source, const DropTargetEvent& event);
   int OnDragUpdated(SubmenuView* source, const DropTargetEvent& event);
   void OnDragExited(SubmenuView* source);
@@ -494,6 +498,12 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
 
   // Owner of child windows.
   Widget* owner_;
+
+#if defined(USE_AURA)
+  // |owner_|s RootWindow. Cached as at the time we need it |owner_| may have
+  // been deleted.
+  aura::RootWindow* root_window_;
+#endif
 
   // Indicates a possible drag operation.
   bool possible_drag_;

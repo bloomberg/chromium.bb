@@ -27,6 +27,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/client/dispatcher_client.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #endif
@@ -320,9 +321,9 @@ MenuItemView* MenuController::Run(Widget* parent,
   message_loop_depth_++;
   DCHECK_LE(message_loop_depth_, 2);
 #if defined(USE_AURA)
-  aura::client::GetDispatcherClient(
-      parent->GetNativeWindow()->GetRootWindow())->
-          RunWithDispatcher(this, parent->GetNativeWindow(), true);
+  root_window_ = parent->GetNativeWindow()->GetRootWindow();
+  aura::client::GetDispatcherClient(root_window_)->
+      RunWithDispatcher(this, parent->GetNativeWindow(), true);
 #else
   {
     MessageLoopForUI* loop = MessageLoopForUI::current();
@@ -1025,6 +1026,9 @@ MenuController::MenuController(bool blocking,
       drop_target_(NULL),
       drop_position_(MenuDelegate::DROP_UNKNOWN),
       owner_(NULL),
+#if defined(USE_AURA)
+      root_window_(NULL),
+#endif
       possible_drag_(false),
       drag_in_progress_(false),
       valid_drop_coordinates_(false),
@@ -1990,7 +1994,18 @@ void MenuController::SetExitType(ExitType type) {
   //
   // It's safe to invoke QuitNow multiple times, it only effects the current
   // loop.
-  if (exit_type_ != EXIT_NONE && message_loop_depth_)
+  bool quit_now = exit_type_ != EXIT_NONE && message_loop_depth_;
+
+#if defined(USE_AURA)
+  // On aura drag and drop runs a nested messgae loop too. If drag and drop is
+  // active and we quit we would prematurely cancel drag and drop, which we
+  // don't want.
+  if (aura::client::GetDragDropClient(root_window_) &&
+      aura::client::GetDragDropClient(root_window_)->IsDragDropInProgress())
+    quit_now = false;
+#endif
+
+  if (quit_now)
     MessageLoop::current()->QuitNow();
 }
 
