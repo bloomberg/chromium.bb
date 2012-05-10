@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/platform_file.h"
 #include "base/stringprintf.h"
 #include "dbus/object_path.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
@@ -691,13 +690,11 @@ void MessageWriter::AppendVariantOfBasic(int dbus_type, const void* value) {
 void MessageWriter::AppendFileDescriptor(const FileDescriptor& value) {
   CHECK(kDBusTypeUnixFdIsSupported);
 
-  base::PlatformFileInfo info;
-  int fd = value.value();
-  bool ok = base::GetPlatformFileInfo(fd, &info);
-  if (!ok || info.is_directory) {
+  if (!value.is_valid()) {
     // NB: sending a directory potentially enables sandbox escape
     LOG(FATAL) << "Attempt to pass invalid file descriptor";
   }
+  int fd = value.value();
   AppendBasic(DBUS_TYPE_UNIX_FD, &fd);
 }
 
@@ -968,15 +965,8 @@ bool MessageReader::PopFileDescriptor(FileDescriptor* value) {
   if (!success)
     return false;
 
-  base::PlatformFileInfo info;
-  bool ok = base::GetPlatformFileInfo(fd, &info);
-  if (!ok || info.is_directory) {
-    base::ClosePlatformFile(fd);
-    // NB: receiving a directory potentially enables sandbox escape
-    LOG(FATAL) << "Attempt to receive invalid file descriptor";
-    return false;  // NB: not reached
-  }
   value->PutValue(fd);
+  // NB: the caller must check validity before using the value
   return true;
 }
 

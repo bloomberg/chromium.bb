@@ -107,6 +107,11 @@ TEST(MessageTest, AppendAndPopFileDescriptor) {
 
   // Append stdout.
   dbus::FileDescriptor temp(1);
+  // Descriptor should not be valid until checked.
+  ASSERT_FALSE(temp.is_valid());
+  // NB: thread IO requirements not relevant for unit tests.
+  temp.CheckValidity();
+  ASSERT_TRUE(temp.is_valid());
   writer.AppendFileDescriptor(temp);
 
   dbus::FileDescriptor fd_value;
@@ -115,6 +120,10 @@ TEST(MessageTest, AppendAndPopFileDescriptor) {
   ASSERT_TRUE(reader.HasMoreData());
   ASSERT_TRUE(reader.PopFileDescriptor(&fd_value));
   ASSERT_FALSE(reader.HasMoreData());
+  // Descriptor is not valid until explicitly checked.
+  ASSERT_FALSE(fd_value.is_valid());
+  fd_value.CheckValidity();
+  ASSERT_TRUE(fd_value.is_valid());
 
   // Stdout should be returned but we cannot check the descriptor
   // value because stdout will be dup'd.  Instead check st_rdev

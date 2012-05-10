@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/platform_file.h"
 #include "base/string_util.h"
+#include "base/threading/worker_pool.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -152,19 +153,19 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   // DebugDaemonClient override.
   virtual void GetDebugLogs(base::PlatformFile file,
                             const GetDebugLogsCallback& callback) OVERRIDE {
-    dbus::MethodCall method_call(
-        debugd::kDebugdInterface,
-        debugd::kGetDebugLogs);
-    dbus::MessageWriter writer(&method_call);
-    dbus::FileDescriptor fd(file);  // explicit temp for C++ 98
-    writer.AppendFileDescriptor(fd);
 
-    debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnGetDebugLogs,
+    dbus::FileDescriptor* file_descriptor = new dbus::FileDescriptor(file);
+    // Punt descriptor validity check to a worker thread; on return we'll
+    // issue the D-Bus request to stop tracing and collect results.
+    base::WorkerPool::PostTaskAndReply(
+        FROM_HERE,
+        base::Bind(&DebugDaemonClientImpl::CheckValidity,
+                   file_descriptor),
+        base::Bind(&DebugDaemonClientImpl::OnCheckValidityGetDebugLogs,
                    weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+                   base::Owned(file_descriptor),
+                   callback),
+        false);
   }
 
   virtual void SetDebugMode(const std::string& subsystem,
@@ -216,29 +217,46 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       write_fd = pipe_reader_->GetWriteFD();
     }
 
-    callback_ = callback;
-
-    // Issue the dbus request to stop system tracing
-    dbus::MethodCall method_call(
-        debugd::kDebugdInterface,
-        debugd::kSystraceStop);
-    dbus::MessageWriter writer(&method_call);
-    dbus::FileDescriptor temp(write_fd);  // NB: explicit temp for C++98
-    writer.AppendFileDescriptor(temp);
-
-    DVLOG(1) << "Requesting a systrace stop";
-    debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnRequestStopSystemTracing,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    pipe_reader_->CloseWriteFD();  // close our copy of fd after send
+    dbus::FileDescriptor* file_descriptor = new dbus::FileDescriptor(write_fd);
+    // Punt descriptor validity check to a worker thread; on return we'll
+    // issue the D-Bus request to stop tracing and collect results.
+    base::WorkerPool::PostTaskAndReply(
+        FROM_HERE,
+        base::Bind(&DebugDaemonClientImpl::CheckValidity,
+                   file_descriptor),
+        base::Bind(&DebugDaemonClientImpl::OnCheckValidityRequestStopSystem,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Owned(file_descriptor),
+                   callback),
+        false);
 
     return true;
   }
 
  private:
+  // Called to check descriptor validity on a thread where i/o is permitted.
+  static void CheckValidity(dbus::FileDescriptor* file_descriptor) {
+    file_descriptor->CheckValidity();
+  }
+
+  // Called when a CheckValidity response is received.
+  void OnCheckValidityGetDebugLogs(dbus::FileDescriptor* file_descriptor,
+                                   const GetDebugLogsCallback& callback) {
+    // Issue the dbus request to get debug logs.
+    dbus::MethodCall method_call(
+        debugd::kDebugdInterface,
+        debugd::kGetDebugLogs);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendFileDescriptor(*file_descriptor);
+
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnGetDebugLogs,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
   // Called when a response for GetDebugLogs() is received.
   void OnGetDebugLogs(const GetDebugLogsCallback& callback,
                       dbus::Response* response) {
@@ -267,6 +285,29 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       LOG(ERROR) << "Failed to request systrace start";
       return;
     }
+  }
+
+  // Called when a CheckValidity response is received.
+  void OnCheckValidityRequestStopSystem(
+      dbus::FileDescriptor* file_descriptor,
+      const StopSystemTracingCallback& callback) {
+    // Issue the dbus request to stop system tracing
+    dbus::MethodCall method_call(
+        debugd::kDebugdInterface,
+        debugd::kSystraceStop);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendFileDescriptor(*file_descriptor);
+
+    callback_ = callback;
+
+    DVLOG(1) << "Requesting a systrace stop";
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnRequestStopSystemTracing,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    pipe_reader_->CloseWriteFD();  // close our copy of fd after send
   }
 
   // Called when a response for RequestStopSystemTracing() is received.

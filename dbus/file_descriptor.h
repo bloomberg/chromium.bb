@@ -23,33 +23,47 @@ namespace dbus {
 // the descriptor in fd will be closed if the PopUint32 fails.  But
 //   writer.AppendFileDescriptor(dbus::FileDescriptor(1));
 // will not automatically close "1" because it is not owned.
+//
+// Descriptors must be validated before marshalling in a D-Bus message
+// or using them after unmarshalling.  We disallow descriptors to a
+// directory to reduce the security risks.  Splitting out validation
+// also allows the caller to do this work on the File thread to conform
+// with i/o restrictions.
 class FileDescriptor {
  public:
   // Permits initialization without a value for passing to
   // dbus::MessageReader::PopFileDescriptor to fill in and from int values.
-  FileDescriptor() : value_(-1), owner_(false) {}
-  explicit FileDescriptor(int value) : value_(value), owner_(false) {}
+  FileDescriptor() : value_(-1), owner_(false), valid_(false) {}
+  explicit FileDescriptor(int value) : value_(value), owner_(false),
+      valid_(false) {}
 
   virtual ~FileDescriptor();
 
   // Retrieves value as an int without affecting ownership.
-  int value() const { return value_; }
+  int value() const;
+
+  // Retrieves whether or not the descriptor is ok to send/receive.
+  int is_valid() const { return valid_; }
 
   // Sets the value and assign ownership.
   void PutValue(int value) {
     value_ = value;
     owner_ = true;
+    valid_ = false;
   }
 
   // Takes the value and ownership.
-  int TakeValue() {
-    owner_ = false;
-    return value_;
-  }
+  int TakeValue();
+
+  // Checks (and records) validity of the file descriptor.
+  // We disallow directories to avoid potential sandbox escapes.
+  // Note this call must be made on a thread where file i/o is allowed.
+  void CheckValidity();
 
  private:
   int value_;
   bool owner_;
+  bool valid_;
 
   DISALLOW_COPY_AND_ASSIGN(FileDescriptor);
 };
