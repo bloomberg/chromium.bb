@@ -555,7 +555,7 @@ void SwizzleInit() {
     [self removePreviousKeyWindow:window];
     NSWindow* currentKeyWindow = [self keyWindow];
     if (currentKeyWindow != nil && currentKeyWindow != window)
-      previousKeyWindows_.push_back(window);
+      previousKeyWindows_.push_back(currentKeyWindow);
   }
 
   return [super _setKeyWindow:window];
