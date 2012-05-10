@@ -7,7 +7,7 @@
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
 
-chromeHidden.registerCustomType('storage.StorageArea', function() {
+chromeHidden.registerCustomType('StorageArea', function() {
   function extendSchema(schema) {
     var extendedSchema = schema.slice();
     extendedSchema.unshift({'type': 'string'});

@@ -13,7 +13,7 @@
         "description": "Matches network events by various criteria.",
         "properties": {
           "url": {
-            "$ref": "declarative.UrlFilter",
+            "$ref": "UrlFilter",
             "description": "Matches if the condition of the UrlFilter are fulfilled for the URL of the request.",
             "optional": true
           },
@@ -52,11 +52,8 @@
         "options": {
           "supportsListeners": false,
           "supportsRules": true,
-          "conditions": ["declarativeWebRequest.RequestMatcher"],
-          "actions": [
-            "declarativeWebRequest.CancelRequest",
-            "declarativeWebRequest.RedirectRequest"
-          ]
+          "conditions": ["RequestMatcher"],
+          "actions": ["CancelRequest", "RedirectRequest"]
         }
       }
     ]

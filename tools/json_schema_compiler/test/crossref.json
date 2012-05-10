@@ -8,7 +8,7 @@
         "type": "object",
         "properties": {
           "testType": {
-            "$ref": "simple_api.TestType",
+            "$ref": "TestType",
             "optional": true
           }
         }
@@ -22,7 +22,7 @@
         "parameters": [
           {
             "name": "testType",
-            "$ref": "simple_api.TestType",
+            "$ref": "TestType",
             "optional": true
           },
           {
@@ -43,7 +43,7 @@
             "parameters": [
               {
                 "name": "result",
-                "$ref": "simple_api.TestType",
+                "$ref": "TestType",
                 "description": "A TestType."
               }
             ]
@@ -59,7 +59,7 @@
             "name": "paramObject",
             "type": "object",
             "properties": {
-              "testType": {"$ref": "simple_api.TestType", "optional": true},
+              "testType": {"$ref": "TestType", "optional": true},
               "boolean": {"type": "boolean"}
             }
           },

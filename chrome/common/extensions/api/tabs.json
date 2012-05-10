@@ -86,7 +86,7 @@
           }
         ],
         "returns": {
-          "$ref": "extension.Port",
+          "$ref": "Port",
           "description": "A port that can be used to communicate with the content scripts running in the specified tab. The port's <a href='extension.html#type-Port'>onDisconnect</a> event is fired if the tab closes or does not exist. "
         }
       },
@@ -371,7 +371,7 @@
              "parameters": [
                {
                  "name": "window",
-                 "$ref": "windows.Window",
+                 "$ref": "Window",
                  "description": "Contains details about the window whose tabs were highlighted."
                }
              ]

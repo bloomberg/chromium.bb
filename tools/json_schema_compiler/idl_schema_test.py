@@ -33,14 +33,14 @@ class IdlSchemaTest(unittest.TestCase):
     self.assertEquals(expected, getParams(schema, 'function5'))
 
     expected = [{'type':'function', 'name':'Callback3',
-                 'parameters':[{'name':'arg', '$ref':'idl_basics.MyType1'}]}]
+                 'parameters':[{'name':'arg', '$ref':'MyType1'}]}]
     self.assertEquals(expected, getParams(schema, 'function6'))
 
   def testCallbackWithArrayArgument(self):
     schema = self.idl_basics
     expected = [{'type':'function', 'name':'Callback4',
                  'parameters':[{'name':'arg', 'type':'array',
-                                'items':{'$ref':'idl_basics.MyType2'}}]}]
+                                'items':{'$ref':'MyType2'}}]}]
     self.assertEquals(expected, getParams(schema, 'function12'))
 
 

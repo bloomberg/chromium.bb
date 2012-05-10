@@ -13,7 +13,7 @@
         "description": "Settings that influence Chrome's handling of network connections in general.",
         "properties": {
           "networkPredictionEnabled": {
-            "$ref": "types.ChromeSetting",
+            "$ref": "ChromeSetting",
             "value": ["networkPredictionEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome attempts to speed up your web browsing experience by pre-resolving DNS entries, prerendering sites (<code>&lt;link rel='prefetch' ...&gt;</code>), and preemptively opening TCP and SSL connections to servers.  This preference's value is a boolean, defaulting to <code>true</code>."
           }
@@ -25,37 +25,37 @@
         "description": "Settings that enable or disable features that require third-party network services provided by Google and your default search provider.",
         "properties": {
           "alternateErrorPagesEnabled": {
-            "$ref": "types.ChromeSetting",
+            "$ref": "ChromeSetting",
             "value": ["alternateErrorPagesEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome uses a web service to help resolve navigation errors. This preference's value is a boolean, defaulting to <code>true</code>."
           },
           "autofillEnabled": {
-            "$ref": "types.ChromeSetting",
+            "$ref": "ChromeSetting",
             "value": ["autofillEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome offers to automatically fill in forms. This preference's value is a boolean, defaulting to <code>true</code>."
           },
           "instantEnabled": {
-            "$ref": "types.ChromeSetting",
+            "$ref": "ChromeSetting",
             "value": ["instantEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome automatically performs and displays search requests for text you type into the Omnibox as you type it. This preference's value is a boolean, defaulting to <code>true</code>."
           },
           "safeBrowsingEnabled": {
-            "$ref": "types.ChromeSetting",
+            "$ref": "ChromeSetting",
             "value": ["safeBrowsingEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome does its best to protect you from phishing and malware. This preference's value is a boolean, defaulting to <code>true</code>."
           },
           "searchSuggestEnabled": {
-            "$ref": "types.ChromeSetting",
+            "$ref": "ChromeSetting",
             "value": ["searchSuggestEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome sends the text you type into the Omnibox to your default search engine, which provides predictions of websites and searches that are likely completions of what you've typed so far. This preference's value is a boolean, defaulting to <code>true</code>."
           },
           "spellingServiceEnabled": {
-            "$ref": "types.ChromeSetting",
+            "$ref": "ChromeSetting",
             "value": ["spellingServiceEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome uses a web service to help correct spelling errors. This preference's value is a boolean, defaulting to <code>false</code>."
           },
           "translationServiceEnabled": {
-            "$ref": "types.ChromeSetting",
+            "$ref": "ChromeSetting",
             "value": ["translationServiceEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome offers to translate pages that aren't in a language you read. This preference's value is a boolean, defaulting to <code>true</code>."
           }
@@ -67,17 +67,17 @@
         "description": "Settings that determine what information Chrome makes available to websites.",
         "properties": {
           "thirdPartyCookiesAllowed": {
-            "$ref": "types.ChromeSetting",
+            "$ref": "ChromeSetting",
             "value": ["thirdPartyCookiesAllowed", {"type": "boolean"}],
             "description": "If disabled, Chrome blocks third-party sites from setting cookies. The value of this preference is of type boolean, and the default value is <code>true</code>."
           },
           "hyperlinkAuditingEnabled": {
-            "$ref": "types.ChromeSetting",
+            "$ref": "ChromeSetting",
             "value": ["hyperlinkAuditingEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome sends auditing pings when requested by a website (<code>&lt;a ping&gt;</code>). The value of this preference is of type boolean, and the default value is <code>true</code>."
           },
           "referrersEnabled": {
-            "$ref": "types.ChromeSetting",
+            "$ref": "ChromeSetting",
             "value": ["referrersEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome sends <code>referer</code> headers with your requests. Yes, the name of this preference doesn't match the misspelled header. No, we're not going to change it. The value of this preference is of type boolean, and the default value is <code>true</code>."
           },

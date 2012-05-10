@@ -263,7 +263,7 @@
         "parameters": [
           {
             "name": "tab",
-            "$ref": "tabs.Tab"
+            "$ref": "Tab"
           }
         ]
       }

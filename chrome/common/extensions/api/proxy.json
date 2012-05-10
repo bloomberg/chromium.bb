@@ -57,7 +57,7 @@
     ],
     "properties": {
       "settings": {
-        "$ref": "types.ChromeSetting",
+        "$ref": "ChromeSetting",
         "description": "Proxy settings to be used. The value of this setting is a ProxyConfig object.",
         "value": [
           "proxy",

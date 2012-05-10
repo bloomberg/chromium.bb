@@ -11,9 +11,7 @@ chromeHidden.registerCustomHook('declarativeWebRequest', function(api) {
   function getSchema(namespace, typeId) {
     var filterNamespace = function(val) {return val.namespace === namespace;};
     var apiSchema = api.apiDefinitions.filter(filterNamespace)[0];
-    var filterTypeId = function (val) {
-      return val.id === namespace + "." + typeId;
-    };
+    var filterTypeId = function (val) {return val.id === typeId;};
     var resultSchema = apiSchema.types.filter(filterTypeId)[0];
     return resultSchema;
   }

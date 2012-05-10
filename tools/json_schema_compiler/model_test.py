@@ -32,26 +32,25 @@ class ModelTest(unittest.TestCase):
         sorted(self.permissions.functions.keys()))
 
   def testHasTypes(self):
-    self.assertEquals(['tabs.Tab'], self.tabs.types.keys())
-    self.assertEquals(['permissions.Permissions'],
-        self.permissions.types.keys())
-    self.assertEquals(['windows.Window'], self.windows.types.keys())
+    self.assertEquals(['Tab'], self.tabs.types.keys())
+    self.assertEquals(['Permissions'], self.permissions.types.keys())
+    self.assertEquals(['Window'], self.windows.types.keys())
 
   def testHasProperties(self):
     self.assertEquals(["active", "favIconUrl", "highlighted", "id",
         "incognito", "index", "pinned", "selected", "status", "title", "url",
         "windowId"],
-        sorted(self.tabs.types['tabs.Tab'].properties.keys()))
+        sorted(self.tabs.types['Tab'].properties.keys()))
 
   def testProperties(self):
-    string_prop = self.tabs.types['tabs.Tab'].properties['status']
+    string_prop = self.tabs.types['Tab'].properties['status']
     self.assertEquals(model.PropertyType.STRING, string_prop.type_)
-    integer_prop = self.tabs.types['tabs.Tab'].properties['id']
+    integer_prop = self.tabs.types['Tab'].properties['id']
     self.assertEquals(model.PropertyType.INTEGER, integer_prop.type_)
-    array_prop = self.windows.types['windows.Window'].properties['tabs']
+    array_prop = self.windows.types['Window'].properties['tabs']
     self.assertEquals(model.PropertyType.ARRAY, array_prop.type_)
     self.assertEquals(model.PropertyType.REF, array_prop.item_type.type_)
-    self.assertEquals('tabs.Tab', array_prop.item_type.ref_type)
+    self.assertEquals('Tab', array_prop.item_type.ref_type)
     object_prop = self.tabs.functions['query'].params[0]
     self.assertEquals(model.PropertyType.OBJECT, object_prop.type_)
     self.assertEquals(

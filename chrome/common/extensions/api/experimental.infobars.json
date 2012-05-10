@@ -40,7 +40,7 @@
             "optional": true,
             "parameters": [
               {
-                "name": "window", "$ref": "windows.Window", "description": "Contains details about the window in which the infobar was created."
+                "name": "window", "$ref": "Window", "description": "Contains details about the window in which the infobar was created."
               }
             ]
           }

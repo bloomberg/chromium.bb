@@ -13,7 +13,7 @@
         "type": "object",
         "description": "An object containing information about the script context that sent a message or request.",
         "properties": {
-          "tab": {"$ref": "tabs.Tab", "optional": true, "description":"This property will <b>only</b> be present when the connection was opened from a tab or content script."},
+          "tab": {"$ref": "Tab", "optional": true, "description":"This property will <b>only</b> be present when the connection was opened from a tab or content script."},
           "id": {"type": "string", "description": "The extension ID of the extension that opened the connection."}
         }
       },

@@ -7,7 +7,6 @@ from model import PropertyType
 import cpp_util
 import model
 import os
-import schema_util
 
 class HGenerator(object):
   """A .h generator for a namespace.
@@ -157,7 +156,7 @@ class HGenerator(object):
   def _GenerateType(self, type_):
     """Generates a struct for a type.
     """
-    classname = cpp_util.Classname(schema_util.StripSchemaNamespace(type_.name))
+    classname = cpp_util.Classname(type_.name)
     c = Code()
 
     if type_.functions:

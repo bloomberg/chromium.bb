@@ -18,10 +18,10 @@
             "type": "object",
             "properties": {
               "color": {
-                "$ref": "browserAction.ColorArray"
+                "$ref": "ColorArray"
               },
               "scriptCode": {
-                "$ref": "fontSettings.ScriptCode"
+                "$ref": "ScriptCode"
               }
             }
           }

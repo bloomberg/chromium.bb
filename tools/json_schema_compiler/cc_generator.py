@@ -7,7 +7,6 @@ from model import PropertyType
 import any_helper
 import cpp_util
 import model
-import schema_util
 import sys
 import util_cc_helper
 
@@ -72,8 +71,8 @@ class CCGenerator(object):
         .Append()
       )
     for type_ in self._namespace.types.values():
-      (c.Concat(self._GenerateType(
-        schema_util.StripSchemaNamespace(type_.name), type_)).Append()
+      (c.Concat(self._GenerateType(type_.name, type_))
+        .Append()
       )
     if self._namespace.functions:
       (c.Append('//')
@@ -96,7 +95,7 @@ class CCGenerator(object):
   def _GenerateType(self, cpp_namespace, type_):
     """Generates the function definitions for a type.
     """
-    classname = cpp_util.Classname(schema_util.StripSchemaNamespace(type_.name))
+    classname = cpp_util.Classname(type_.name)
     c = Code()
 
     if type_.functions:
@@ -175,7 +174,7 @@ class CCGenerator(object):
 
     E.g for type "Foo", generates Foo::Populate()
     """
-    classname = cpp_util.Classname(schema_util.StripSchemaNamespace(type_.name))
+    classname = cpp_util.Classname(type_.name)
     c = Code()
     (c.Append('// static')
       .Sblock('bool %(namespace)s::Populate'
