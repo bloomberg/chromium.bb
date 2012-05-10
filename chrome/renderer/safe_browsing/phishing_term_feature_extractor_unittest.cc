@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -210,9 +210,9 @@ TEST_F(PhishingTermFeatureExtractorTest, Continuation) {
   }
   page_text.append(ASCIIToUTF16("two"));
 
-  // Advance the clock 15 ms every 10 words processed, 10 ms between chunks.
+  // Advance the clock 3 ms every 5 words processed, 10 ms between chunks.
   // Note that this assumes kClockCheckGranularity = 5 and
-  // kMaxTimePerChunkMs = 20.
+  // kMaxTimePerChunkMs = 10.
   base::TimeTicks now = base::TimeTicks::Now();
   EXPECT_CALL(clock_, Now())
       // Time check at the start of extraction.
@@ -220,22 +220,22 @@ TEST_F(PhishingTermFeatureExtractorTest, Continuation) {
       // Time check at the start of the first chunk of work.
       .WillOnce(Return(now))
       // Time check after the first 5 words.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(7)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(3)))
       // Time check after the next 5 words.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(15)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(6)))
       // Time check after the next 5 words.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(19)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(9)))
       // Time check after the next 5 words.  This is over the chunk
       // time limit, so a continuation task will be posted.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(30)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(12)))
       // Time check at the start of the second chunk of work.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(40)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(22)))
       // Time check after the next 5 words.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(47)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(25)))
       // Time check after the next 5 words.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(55)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(28)))
       // A final check for the histograms.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(56)));
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(30)));
 
   FeatureMap expected_features;
   expected_features.AddBooleanFeature(features::kPageTerm +
@@ -284,10 +284,10 @@ TEST_F(PhishingTermFeatureExtractorTest, PartialExtractionTest) {
       // Time check at the start of the first chunk of work.
       .WillOnce(Return(now))
       // Time check after the first 5 words.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(15)))
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(7)))
       // Time check after the next 5 words. This should be greater than
       // kMaxTimePerChunkMs so that we stop and schedule extraction for later.
-      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(30)));
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(14)));
 
   FeatureMap features;
   // Extract first 10 words then stop.

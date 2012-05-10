@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ namespace safe_browsing {
 
 // This time should be short enough that it doesn't noticeably disrupt the
 // user's interaction with the page.
-const int PhishingDOMFeatureExtractor::kMaxTimePerChunkMs = 20;
+const int PhishingDOMFeatureExtractor::kMaxTimePerChunkMs = 10;
 
 // Experimenting shows that we get a reasonable gain in performance by
 // increasing this up to around 10, but there's not much benefit in
