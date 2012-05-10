@@ -15,6 +15,7 @@ using nacl_arm_dec::ClassDecoder;
 using nacl_arm_dec::Register;
 using nacl_arm_dec::RegisterList;
 using nacl_arm_dec::kRegisterNone;
+using nacl_arm_dec::kRegisterFlags;
 using nacl_arm_dec::kRegisterPc;
 using nacl_arm_dec::kRegisterLink;
 
@@ -69,6 +70,7 @@ static PatternMatch check_loadstore_mask(const SfiValidator &sfi,
 
   if (first.defines(second.base_address_register())
       && first.clears_bits(sfi.data_address_mask())
+      && !first.defs()[kRegisterFlags]
       && first.always_precedes(second)) {
     return PATTERN_SAFE_2;
   }

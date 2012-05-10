@@ -631,6 +631,64 @@ TEST_F(ValidatorTests, PcRelativeFirst2ndBundle) {
                          "pc relative first instruction in 2nd bundle");
 }
 
+TEST_F(ValidatorTests, SafeConditionalBicLdrTest) {
+  // Test if we fixed bug with conditional Bic Loads (issue 2769).
+  static const arm_inst bic_ldr_safe_test[] = {
+    0x03c22103,  // biceq   r2, r2, #-1073741824    ; 0xc0000000
+    0x01920f9f,  // ldrexeq r0, [r2]
+  };
+  validation_should_pass(bic_ldr_safe_test,
+                         NACL_ARRAY_SIZE(bic_ldr_safe_test),
+                         kDefaultBaseAddr,
+                         "Safe conditional bic ldr test");
+}
+
+TEST_F(ValidatorTests, ConditionalBicsLdrTest) {
+  // Test if we fail because Bic updates the flags register, making
+  // the conditional Bic load incorrect (issue 2769).
+  static const arm_inst bics_ldr_unsafe_test[] = {
+    0x03d22103,  // bicseq  r2, r2, #-1073741824    ; 0xc0000000
+    0x01920f9f,  // ldrexeq r0, [r2]
+  };
+  vector<ProblemRecord> problems =
+      validation_should_fail(bics_ldr_unsafe_test,
+                             NACL_ARRAY_SIZE(bics_ldr_unsafe_test),
+                             kDefaultBaseAddr,
+                             "Conditional bics ldr test");
+  EXPECT_EQ(1U, problems.size());
+  if (problems.size() == 0) return;
+
+  ProblemRecord problem = problems[0];
+  EXPECT_EQ(kDefaultBaseAddr + 4, problem.vaddr)
+      << "Problem report should point to the ldr instruction.";
+  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, problem.safety);
+  EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafeLoadStore),
+            problem.problem_code);
+}
+
+TEST_F(ValidatorTests, DifferentConditionsBicLdrTest) {
+  // Test if we fail because the Bic and Ldr instructions have
+  // different conditional flags.
+  static const arm_inst bic_ldr_diff_conds[] = {
+    0x03c22103,  // biceq   r2, r2, #-1073741824    ; 0xc0000000
+    0xc1920f9f,  // ldrexgt r0, [r2]
+  };
+  vector<ProblemRecord> problems=
+      validation_should_fail(bic_ldr_diff_conds,
+                             NACL_ARRAY_SIZE(bic_ldr_diff_conds),
+                             kDefaultBaseAddr,
+                             "Different conditions bic ldr test");
+  EXPECT_EQ(1U, problems.size());
+  if (problems.size() == 0) return;
+
+  ProblemRecord problem = problems[0];
+  EXPECT_EQ(kDefaultBaseAddr + 4, problem.vaddr)
+      << "Problem report should point to the ldr instruction.";
+  EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, problem.safety);
+  EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafeLoadStore),
+            problem.problem_code);
+}
+
 /*
  * Implementation of the ValidatorTests utility methods.  These are documented
  * toward the top of this file.
