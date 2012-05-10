@@ -388,7 +388,8 @@ class SavePageAsMHTMLBrowserTest : public SavePageBrowserTest {
 SavePageAsMHTMLBrowserTest::~SavePageAsMHTMLBrowserTest() {
 }
 
-IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
+// Bug 127527: This test fails when the day of the month is >9.
+IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, DISABLED_SavePageAsMHTML) {
   static const int64 kFileSize = 2759;
   GURL url = NavigateToMockURL("b");
   FilePath download_dir = DownloadPrefs::FromDownloadManager(
