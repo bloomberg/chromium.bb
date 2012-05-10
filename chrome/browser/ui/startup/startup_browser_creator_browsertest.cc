@@ -17,9 +17,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -29,7 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class BrowserInitTest : public ExtensionBrowserTest {
+class StartupBrowserCreatorTest : public ExtensionBrowserTest {
  protected:
   virtual bool SetUpUserDataDirectory() OVERRIDE {
     // Make sure the first run sentinel file exists before running these tests,
@@ -109,9 +109,9 @@ class OpenURLsPopupObserver : public BrowserList::Observer {
 };
 
 // Test that when there is a popup as the active browser any requests to
-// BrowserInit::LaunchWithProfile::OpenURLsInBrowser don't crash because
-// there's no explicit profile given.
-IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
+// StartupBrowserCreator::LaunchWithProfile::OpenURLsInBrowser don't crash
+// because there's no explicit profile given.
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenURLsPopup) {
   std::vector<GURL> urls;
   urls.push_back(GURL("http://localhost"));
 
@@ -129,9 +129,10 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
   ASSERT_EQ(popup, observer.added_browser_);
 
   CommandLine dummy(CommandLine::NO_PROGRAM);
-  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
-  BrowserInit::LaunchWithProfile launch(FilePath(), dummy, first_run);
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
+  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), dummy, first_run);
   // This should create a new window, but re-use the profile from |popup|. If
   // it used a NULL or invalid profile, it would crash.
   launch.OpenURLsInBrowser(popup, false, urls);
@@ -146,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
 // Verify that startup URLs are honored when the process already exists but has
 // no tabbed browser windows (eg. as if the process is running only due to a
 // background application.
-IN_PROC_BROWSER_TEST_F(BrowserInitTest,
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
                        StartupURLsOnNewWindowWithNoTabbedBrowsers) {
   // Use a couple same-site HTTP URLs.
   ASSERT_TRUE(test_server()->Start());
@@ -164,9 +165,10 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest,
 
   // Do a simple non-process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
-  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
-  BrowserInit::LaunchWithProfile launch(FilePath(), dummy, first_run);
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
+  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), dummy, first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
   // This should have created a new browser window.  |browser()| is still
@@ -189,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest,
 // Verify that startup URLs aren't used when the process already exists
 // and has other tabbed browser windows.  This is the common case of starting a
 // new browser.
-IN_PROC_BROWSER_TEST_F(BrowserInitTest,
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
                        StartupURLsOnNewWindow) {
   // Use a couple arbitrary URLs.
   std::vector<GURL> urls;
@@ -207,9 +209,10 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest,
 
   // Do a simple non-process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
-  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
-  BrowserInit::LaunchWithProfile launch(FilePath(), dummy, first_run);
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
+  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), dummy, first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
   // This should have created a new browser window.
@@ -222,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest,
 
 // App shortcuts are not implemented on mac os.
 #if !defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutNoPref) {
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutNoPref) {
   // Load an app with launch.container = 'tab'.
   const Extension* extension_app = NULL;
   ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
@@ -231,9 +234,11 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutNoPref) {
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
 
-  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
-  BrowserInit::LaunchWithProfile launch(FilePath(), command_line, first_run);
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
+  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), command_line,
+                                                  first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
   // No pref was set, so the app should have opened in a window.
@@ -250,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutNoPref) {
       std::string::npos) << new_browser->app_name_;
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutWindowPref) {
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutWindowPref) {
   const Extension* extension_app = NULL;
   ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
 
@@ -259,9 +264,11 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutWindowPref) {
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
-  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
-  BrowserInit::LaunchWithProfile launch(FilePath(), command_line, first_run);
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
+  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), command_line,
+                                                  first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
   // Pref was set to open in a window, so the app should have opened in a
@@ -279,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutWindowPref) {
       std::string::npos) << new_browser->app_name_;
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutTabPref) {
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutTabPref) {
   // Load an app with launch.container = 'tab'.
   const Extension* extension_app = NULL;
   ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
@@ -289,9 +296,11 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutTabPref) {
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
-  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
-  BrowserInit::LaunchWithProfile launch(FilePath(), command_line, first_run);
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
+  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), command_line,
+                                                  first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
   // When an app shortcut is open and the pref indicates a tab should
@@ -311,16 +320,18 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutTabPref) {
       std::string::npos) << new_browser->app_name_;
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutPanel) {
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutPanel) {
   // Load an app with launch.container = 'panel'.
   const Extension* extension_app = NULL;
   ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_panel_container", &extension_app));
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
-  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      BrowserInit::IS_FIRST_RUN : BrowserInit::IS_NOT_FIRST_RUN;
-  BrowserInit::LaunchWithProfile launch(FilePath(), command_line, first_run);
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
+  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), command_line,
+                                                  first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
   // The launch should have created a new browser, with a panel type.
@@ -340,30 +351,32 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutPanel) {
 
 #endif  // !defined(OS_CHROMEOS)
 
-IN_PROC_BROWSER_TEST_F(BrowserInitTest, ReadingWasRestartedAfterRestart) {
-  // Tests that BrowserInit::WasRestarted reads and resets the preference
-  // kWasRestarted correctly.
-  BrowserInit::was_restarted_read_ = false;
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
+                       ReadingWasRestartedAfterRestart) {
+  // Tests that StartupBrowserCreator::WasRestarted reads and resets the
+  // preference kWasRestarted correctly.
+  StartupBrowserCreator::was_restarted_read_ = false;
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kWasRestarted, true);
-  EXPECT_TRUE(BrowserInit::WasRestarted());
+  EXPECT_TRUE(StartupBrowserCreator::WasRestarted());
   EXPECT_FALSE(pref_service->GetBoolean(prefs::kWasRestarted));
-  EXPECT_TRUE(BrowserInit::WasRestarted());
+  EXPECT_TRUE(StartupBrowserCreator::WasRestarted());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserInitTest, ReadingWasRestartedAfterNormalStart) {
-  // Tests that BrowserInit::WasRestarted reads and resets the preference
-  // kWasRestarted correctly.
-  BrowserInit::was_restarted_read_ = false;
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
+                       ReadingWasRestartedAfterNormalStart) {
+  // Tests that StartupBrowserCreator::WasRestarted reads and resets the
+  // preference kWasRestarted correctly.
+  StartupBrowserCreator::was_restarted_read_ = false;
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kWasRestarted, false);
-  EXPECT_FALSE(BrowserInit::WasRestarted());
+  EXPECT_FALSE(StartupBrowserCreator::WasRestarted());
   EXPECT_FALSE(pref_service->GetBoolean(prefs::kWasRestarted));
-  EXPECT_FALSE(BrowserInit::WasRestarted());
+  EXPECT_FALSE(StartupBrowserCreator::WasRestarted());
 }
 
 #if !defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(BrowserInitTest, StartupURLsForTwoProfiles) {
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupURLsForTwoProfiles) {
   Profile* default_profile = browser()->profile();
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -399,12 +412,12 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, StartupURLsForTwoProfiles) {
   CommandLine dummy(CommandLine::NO_PROGRAM);
 
   int return_code;
-  BrowserInit browser_init;
+  StartupBrowserCreator browser_creator;
   std::vector<Profile*> last_opened_profiles;
   last_opened_profiles.push_back(default_profile);
   last_opened_profiles.push_back(other_profile);
-  browser_init.Start(dummy, profile_manager->user_data_dir(), default_profile,
-                     last_opened_profiles, &return_code);
+  browser_creator.Start(dummy, profile_manager->user_data_dir(),
+                        default_profile, last_opened_profiles, &return_code);
 
   // urls1 were opened in a browser for default_profile, and urls2 were opened
   // in a browser for other_profile.
@@ -424,9 +437,9 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, StartupURLsForTwoProfiles) {
   EXPECT_EQ(urls2[0], new_browser->GetWebContentsAt(0)->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserInitTest, UpdateWithTwoProfiles) {
-  // Make BrowserInit::WasRestarted() return true.
-  BrowserInit::was_restarted_read_ = false;
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, UpdateWithTwoProfiles) {
+  // Make StartupBrowserCreator::WasRestarted() return true.
+  StartupBrowserCreator::was_restarted_read_ = false;
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kWasRestarted, true);
 
@@ -464,12 +477,12 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, UpdateWithTwoProfiles) {
   // Simulate a launch after a browser update.
   CommandLine dummy(CommandLine::NO_PROGRAM);
   int return_code;
-  BrowserInit browser_init;
+  StartupBrowserCreator browser_creator;
   std::vector<Profile*> last_opened_profiles;
   last_opened_profiles.push_back(profile1);
   last_opened_profiles.push_back(profile2);
-  browser_init.Start(dummy, profile_manager->user_data_dir(), profile1,
-                     last_opened_profiles, &return_code);
+  browser_creator.Start(dummy, profile_manager->user_data_dir(), profile1,
+                        last_opened_profiles, &return_code);
 
   while (SessionRestore::IsRestoring(profile1) ||
          SessionRestore::IsRestoring(profile2))
@@ -496,7 +509,8 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, UpdateWithTwoProfiles) {
             new_browser->GetWebContentsAt(0)->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserInitTest, ProfilesWithoutPagesNotLaunched) {
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
+                       ProfilesWithoutPagesNotLaunched) {
   Profile* default_profile = browser()->profile();
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -545,14 +559,14 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, ProfilesWithoutPagesNotLaunched) {
   CommandLine dummy(CommandLine::NO_PROGRAM);
 
   int return_code;
-  BrowserInit browser_init;
+  StartupBrowserCreator browser_creator;
   std::vector<Profile*> last_opened_profiles;
   last_opened_profiles.push_back(profile_home1);
   last_opened_profiles.push_back(profile_home2);
   last_opened_profiles.push_back(profile_last);
   last_opened_profiles.push_back(profile_urls);
-  browser_init.Start(dummy, profile_manager->user_data_dir(), profile_home1,
-                     last_opened_profiles, &return_code);
+  browser_creator.Start(dummy, profile_manager->user_data_dir(), profile_home1,
+                        last_opened_profiles, &return_code);
 
 
   while (SessionRestore::IsRestoring(default_profile) ||
@@ -591,7 +605,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, ProfilesWithoutPagesNotLaunched) {
   ASSERT_EQ(0u, BrowserList::GetBrowserCount(profile_home2));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserInitTest, ProfilesLaunchedAfterCrash) {
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   // After an unclean exit, all profiles will be launched. However, they won't
   // open any pages automatically.
 
@@ -636,13 +650,13 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, ProfilesLaunchedAfterCrash) {
 
   CommandLine dummy(CommandLine::NO_PROGRAM);
   int return_code;
-  BrowserInit browser_init;
+  StartupBrowserCreator browser_creator;
   std::vector<Profile*> last_opened_profiles;
   last_opened_profiles.push_back(profile_home);
   last_opened_profiles.push_back(profile_last);
   last_opened_profiles.push_back(profile_urls);
-  browser_init.Start(dummy, profile_manager->user_data_dir(), profile_home,
-                     last_opened_profiles, &return_code);
+  browser_creator.Start(dummy, profile_manager->user_data_dir(), profile_home,
+                        last_opened_profiles, &return_code);
 
   // No profiles are getting restored, since they all display the crash info
   // bar.

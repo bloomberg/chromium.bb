@@ -27,9 +27,9 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -532,7 +532,7 @@ bool SessionService::ShouldNewWindowStartSession() {
     return false;
 #endif
   if (!has_open_trackable_browsers_ &&
-      !BrowserInit::InSynchronousProfileLaunch() &&
+      !StartupBrowserCreator::InSynchronousProfileLaunch() &&
       !SessionRestore::IsRestoring(profile())
 #if defined(OS_MACOSX)
       // On OSX, a new window should not start a new session if it was opened
@@ -555,7 +555,7 @@ bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
       MoveCurrentSessionToLastSession();
       move_on_new_browser_ = false;
     }
-    SessionStartupPref pref = BrowserInit::GetSessionStartupPref(
+    SessionStartupPref pref = StartupBrowserCreator::GetSessionStartupPref(
         *CommandLine::ForCurrentProcess(), profile());
     if (pref.type == SessionStartupPref::LAST) {
       SessionRestore::RestoreSession(

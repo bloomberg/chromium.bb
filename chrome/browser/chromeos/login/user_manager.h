@@ -104,7 +104,7 @@ class UserManager {
   virtual void UserSelected(const std::string& email) = 0;
 
   // Called when browser session is started i.e. after
-  // browser_init.LaunchBrowser(...) was called after user sign in.
+  // browser_creator.LaunchBrowser(...) was called after user sign in.
   // When user is at the image screen IsUserLoggedIn() will return true
   // but SessionStarted() will return false.
   // Fires NOTIFICATION_SESSION_STARTED.
@@ -219,7 +219,7 @@ class UserManager {
   virtual bool IsLoggedInAsStub() const = 0;
 
   // Returns true if we're logged in and browser has been started i.e.
-  // browser_init.LaunchBrowser(...) was called after sign in
+  // browser_creator.LaunchBrowser(...) was called after sign in
   // or restart after crash.
   virtual bool IsSessionStarted() const = 0;
 

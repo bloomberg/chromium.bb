@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/browser_init.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 
 #include <algorithm>   // For max().
 #include <set>
@@ -118,7 +118,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "chrome/browser/ui/browser_init_win.h"
+#include "chrome/browser/ui/startup/startup_browser_creator_win.h"
 #endif
 
 using content::BrowserThread;
@@ -195,10 +195,11 @@ GURL GetWelcomePageURL() {
   return GURL(welcome_url);
 }
 
-void UrlsToTabs(const std::vector<GURL>& urls,
-                std::vector<BrowserInit::LaunchWithProfile::Tab>* tabs) {
+void UrlsToTabs(
+    const std::vector<GURL>& urls,
+    std::vector<StartupBrowserCreator::LaunchWithProfile::Tab>* tabs) {
   for (size_t i = 0; i < urls.size(); ++i) {
-    BrowserInit::LaunchWithProfile::Tab tab;
+    StartupBrowserCreator::LaunchWithProfile::Tab tab;
     tab.is_pinned = false;
     tab.url = urls[i];
     tabs->push_back(tab);
@@ -241,7 +242,8 @@ void RecordCmdLineAppHistogram() {
 void RecordAppLaunches(
     Profile* profile,
     const std::vector<GURL>& cmd_line_urls,
-    const std::vector<BrowserInit::LaunchWithProfile::Tab>& autolaunch_tabs) {
+    const std::vector<StartupBrowserCreator::LaunchWithProfile::Tab>&
+        autolaunch_tabs) {
   ExtensionService* extension_service = profile->GetExtensionService();
   DCHECK(extension_service);
   for (size_t i = 0; i < cmd_line_urls.size(); ++i) {
@@ -333,31 +335,28 @@ bool HasPendingUncleanExit(Profile* profile) {
 
 }  // namespace
 
+StartupBrowserCreator::StartupBrowserCreator() {}
 
-// BrowserInit ----------------------------------------------------------------
-
-BrowserInit::BrowserInit() {}
-
-BrowserInit::~BrowserInit() {}
+StartupBrowserCreator::~StartupBrowserCreator() {}
 
 // static
-bool BrowserInit::was_restarted_read_ = false;
+bool StartupBrowserCreator::was_restarted_read_ = false;
 
-void BrowserInit::AddFirstRunTab(const GURL& url) {
+void StartupBrowserCreator::AddFirstRunTab(const GURL& url) {
   first_run_tabs_.push_back(url);
 }
 
 // static
-bool BrowserInit::InSynchronousProfileLaunch() {
+bool StartupBrowserCreator::InSynchronousProfileLaunch() {
   return in_synchronous_profile_launch;
 }
 
-bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
-                                Profile* profile,
-                                const FilePath& cur_dir,
-                                IsProcessStartup process_startup,
-                                IsFirstRun is_first_run,
-                                int* return_code) {
+bool StartupBrowserCreator::LaunchBrowser(const CommandLine& command_line,
+                                          Profile* profile,
+                                          const FilePath& cur_dir,
+                                          IsProcessStartup process_startup,
+                                          IsFirstRun is_first_run,
+                                          int* return_code) {
   in_synchronous_profile_launch = process_startup == IS_PROCESS_STARTUP;
   DCHECK(profile);
 
@@ -371,9 +370,11 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
                  << "browser session.";
   }
 
-  BrowserInit::LaunchWithProfile lwp(cur_dir, command_line, this, is_first_run);
-  std::vector<GURL> urls_to_launch = BrowserInit::GetURLsFromCommandLine(
-      command_line, cur_dir, profile);
+  StartupBrowserCreator::LaunchWithProfile lwp(cur_dir, command_line, this,
+                                               is_first_run);
+  std::vector<GURL> urls_to_launch =
+      StartupBrowserCreator::GetURLsFromCommandLine(command_line, cur_dir,
+                                                    profile);
   bool launched = lwp.Launch(profile, urls_to_launch,
                              in_synchronous_profile_launch);
   in_synchronous_profile_launch = false;
@@ -393,7 +394,7 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
 }
 
 // static
-bool BrowserInit::WasRestarted() {
+bool StartupBrowserCreator::WasRestarted() {
   // Stores the value of the preference kWasRestarted had when it was read.
   static bool was_restarted = false;
 
@@ -407,7 +408,7 @@ bool BrowserInit::WasRestarted() {
 }
 
 // static
-SessionStartupPref BrowserInit::GetSessionStartupPref(
+SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
     const CommandLine& command_line,
     Profile* profile) {
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(profile);
@@ -417,7 +418,7 @@ SessionStartupPref BrowserInit::GetSessionStartupPref(
     pref.type = SessionStartupPref::DEFAULT;
 
   if (command_line.HasSwitch(switches::kRestoreLastSession) ||
-      BrowserInit::WasRestarted()) {
+      StartupBrowserCreator::WasRestarted()) {
     pref.type = SessionStartupPref::LAST;
   }
   if (pref.type == SessionStartupPref::LAST &&
@@ -432,42 +433,45 @@ SessionStartupPref BrowserInit::GetSessionStartupPref(
 }
 
 
-// BrowserInit::LaunchWithProfile::Tab ----------------------------------------
+// StartupBrowserCreator::LaunchWithProfile::Tab -------------------------------
 
-BrowserInit::LaunchWithProfile::Tab::Tab() : is_app(false), is_pinned(true) {}
+StartupBrowserCreator::LaunchWithProfile::Tab::Tab()
+    : is_app(false),
+      is_pinned(true) {
+}
 
-BrowserInit::LaunchWithProfile::Tab::~Tab() {}
+StartupBrowserCreator::LaunchWithProfile::Tab::~Tab() {
+}
 
+// StartupBrowserCreator::LaunchWithProfile ------------------------------------
 
-// BrowserInit::LaunchWithProfile ---------------------------------------------
-
-BrowserInit::LaunchWithProfile::LaunchWithProfile(
+StartupBrowserCreator::LaunchWithProfile::LaunchWithProfile(
     const FilePath& cur_dir,
     const CommandLine& command_line,
     IsFirstRun is_first_run)
         : cur_dir_(cur_dir),
           command_line_(command_line),
           profile_(NULL),
-          browser_init_(NULL),
+          browser_creator_(NULL),
           is_first_run_(is_first_run == IS_FIRST_RUN) {
 }
 
-BrowserInit::LaunchWithProfile::LaunchWithProfile(
+StartupBrowserCreator::LaunchWithProfile::LaunchWithProfile(
     const FilePath& cur_dir,
     const CommandLine& command_line,
-    BrowserInit* browser_init,
+    StartupBrowserCreator* browser_creator,
     IsFirstRun is_first_run)
         : cur_dir_(cur_dir),
           command_line_(command_line),
           profile_(NULL),
-          browser_init_(browser_init),
+          browser_creator_(browser_creator),
           is_first_run_(is_first_run == IS_FIRST_RUN) {
 }
 
-BrowserInit::LaunchWithProfile::~LaunchWithProfile() {
+StartupBrowserCreator::LaunchWithProfile::~LaunchWithProfile() {
 }
 
-bool BrowserInit::LaunchWithProfile::Launch(
+bool StartupBrowserCreator::LaunchWithProfile::Launch(
     Profile* profile,
     const std::vector<GURL>& urls_to_open,
     bool process_startup) {
@@ -581,8 +585,9 @@ bool BrowserInit::LaunchWithProfile::Launch(
   return true;
 }
 
-bool BrowserInit::LaunchWithProfile::IsAppLaunch(std::string* app_url,
-                                                 std::string* app_id) {
+bool StartupBrowserCreator::LaunchWithProfile::IsAppLaunch(
+    std::string* app_url,
+    std::string* app_id) {
   if (command_line_.HasSwitch(switches::kApp)) {
     if (app_url)
       *app_url = command_line_.GetSwitchValueASCII(switches::kApp);
@@ -596,7 +601,8 @@ bool BrowserInit::LaunchWithProfile::IsAppLaunch(std::string* app_url,
   return false;
 }
 
-bool BrowserInit::LaunchWithProfile::OpenApplicationTab(Profile* profile) {
+bool StartupBrowserCreator::LaunchWithProfile::OpenApplicationTab(
+    Profile* profile) {
   std::string app_id;
   // App shortcuts to URLs always open in an app window.  Because this
   // function will open an app that should be in a tab, there is no need
@@ -621,7 +627,8 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationTab(Profile* profile) {
   return (app_tab != NULL);
 }
 
-bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
+bool StartupBrowserCreator::LaunchWithProfile::OpenApplicationWindow(
+    Profile* profile) {
   std::string url_string, app_id;
   if (!IsAppLaunch(&url_string, &app_id))
     return false;
@@ -681,7 +688,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
   return false;
 }
 
-void BrowserInit::LaunchWithProfile::ProcessLaunchURLs(
+void StartupBrowserCreator::LaunchWithProfile::ProcessLaunchURLs(
     bool process_startup,
     const std::vector<GURL>& urls_to_open) {
   // If we're starting up in "background mode" (no open browser window) then
@@ -738,7 +745,7 @@ void BrowserInit::LaunchWithProfile::ProcessLaunchURLs(
   AddInfoBarsIfNecessary(browser, is_process_startup);
 }
 
-bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
+bool StartupBrowserCreator::LaunchWithProfile::ProcessStartupURLs(
     const std::vector<GURL>& urls_to_open) {
   SessionStartupPref pref = GetSessionStartupPref(command_line_, profile_);
 
@@ -780,7 +787,7 @@ bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
   return true;
 }
 
-Browser* BrowserInit::LaunchWithProfile::ProcessSpecifiedURLs(
+Browser* StartupBrowserCreator::LaunchWithProfile::ProcessSpecifiedURLs(
     const std::vector<GURL>& urls_to_open) {
   SessionStartupPref pref = GetSessionStartupPref(command_line_, profile_);
   std::vector<Tab> tabs;
@@ -823,7 +830,7 @@ Browser* BrowserInit::LaunchWithProfile::ProcessSpecifiedURLs(
   return browser;
 }
 
-void BrowserInit::LaunchWithProfile::AddUniqueURLs(
+void StartupBrowserCreator::LaunchWithProfile::AddUniqueURLs(
     const std::vector<GURL>& urls,
     std::vector<Tab>* tabs) {
   size_t num_existing_tabs = tabs->size();
@@ -836,7 +843,7 @@ void BrowserInit::LaunchWithProfile::AddUniqueURLs(
       }
     }
     if (!in_tabs) {
-      BrowserInit::LaunchWithProfile::Tab tab;
+      StartupBrowserCreator::LaunchWithProfile::Tab tab;
       tab.is_pinned = false;
       tab.url = urls[i];
       tabs->push_back(tab);
@@ -844,7 +851,7 @@ void BrowserInit::LaunchWithProfile::AddUniqueURLs(
   }
 }
 
-Browser* BrowserInit::LaunchWithProfile::OpenURLsInBrowser(
+Browser* StartupBrowserCreator::LaunchWithProfile::OpenURLsInBrowser(
     Browser* browser,
     bool process_startup,
     const std::vector<GURL>& urls) {
@@ -853,7 +860,7 @@ Browser* BrowserInit::LaunchWithProfile::OpenURLsInBrowser(
   return OpenTabsInBrowser(browser, process_startup, tabs);
 }
 
-Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
+Browser* StartupBrowserCreator::LaunchWithProfile::OpenTabsInBrowser(
         Browser* browser,
         bool process_startup,
         const std::vector<Tab>& tabs) {
@@ -928,7 +935,7 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
   return browser;
 }
 
-void BrowserInit::LaunchWithProfile::AddInfoBarsIfNecessary(
+void StartupBrowserCreator::LaunchWithProfile::AddInfoBarsIfNecessary(
     Browser* browser,
     IsProcessStartup is_process_startup) {
   if (!browser || !profile_ || browser->tab_count() == 0)
@@ -948,7 +955,7 @@ void BrowserInit::LaunchWithProfile::AddInfoBarsIfNecessary(
 }
 
 
-void BrowserInit::LaunchWithProfile::AddStartupURLs(
+void StartupBrowserCreator::LaunchWithProfile::AddStartupURLs(
     std::vector<GURL>* startup_urls) const {
   // If we have urls specified beforehand (i.e. from command line) use them
   // and nothing else.
@@ -957,10 +964,11 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
 
   // If we have urls specified by the first run master preferences use them
   // and nothing else.
-  if (browser_init_) {
-    if (!browser_init_->first_run_tabs_.empty()) {
-      std::vector<GURL>::iterator it = browser_init_->first_run_tabs_.begin();
-      while (it != browser_init_->first_run_tabs_.end()) {
+  if (browser_creator_) {
+    if (!browser_creator_->first_run_tabs_.empty()) {
+      std::vector<GURL>::iterator it =
+          browser_creator_->first_run_tabs_.begin();
+      while (it != browser_creator_->first_run_tabs_.end()) {
         // Replace magic names for the actual urls.
         if (it->host() == "new_tab_page") {
           startup_urls->push_back(GURL(chrome::kChromeUINewTabURL));
@@ -971,7 +979,7 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
         }
         ++it;
       }
-      browser_init_->first_run_tabs_.clear();
+      browser_creator_->first_run_tabs_.clear();
     }
   }
 
@@ -1018,7 +1026,8 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
   }
 }
 
-void BrowserInit::LaunchWithProfile::CheckPreferencesBackup(Profile* profile) {
+void StartupBrowserCreator::LaunchWithProfile::CheckPreferencesBackup(
+    Profile* profile) {
   ProtectorService* protector_service =
       ProtectorServiceFactory::GetForProfile(profile);
   ProtectedPrefsWatcher* prefs_watcher = protector_service->GetPrefsWatcher();
@@ -1074,7 +1083,7 @@ void BrowserInit::LaunchWithProfile::CheckPreferencesBackup(Profile* profile) {
   }
 }
 
-std::vector<GURL> BrowserInit::GetURLsFromCommandLine(
+std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     const CommandLine& command_line,
     const FilePath& cur_dir,
     Profile* profile) {
@@ -1139,14 +1148,14 @@ std::vector<GURL> BrowserInit::GetURLsFromCommandLine(
   return urls;
 }
 
-bool BrowserInit::ProcessCmdLineImpl(
+bool StartupBrowserCreator::ProcessCmdLineImpl(
     const CommandLine& command_line,
     const FilePath& cur_dir,
     bool process_startup,
     Profile* last_used_profile,
     const Profiles& last_opened_profiles,
     int* return_code,
-    BrowserInit* browser_init) {
+    StartupBrowserCreator* browser_creator) {
   DCHECK(last_used_profile);
   if (process_startup) {
     if (command_line.HasSwitch(switches::kDisablePromptOnRepost))
@@ -1298,9 +1307,11 @@ bool BrowserInit::ProcessCmdLineImpl(
     // |last_used_profile| is the last used incognito profile. Restoring it will
     // create a browser window for the corresponding original profile.
     if (last_opened_profiles.empty()) {
-      if (!browser_init->LaunchBrowser(command_line, last_used_profile, cur_dir,
-              is_process_startup, is_first_run, return_code))
+      if (!browser_creator->LaunchBrowser(command_line, last_used_profile,
+                                          cur_dir, is_process_startup,
+                                          is_first_run, return_code)) {
         return false;
+      }
     } else {
       // Launch the last used profile with the full command line, and the other
       // opened profiles without the URLs to launch.
@@ -1323,12 +1334,12 @@ bool BrowserInit::ProcessCmdLineImpl(
             startup_pref.type == SessionStartupPref::DEFAULT &&
             !HasPendingUncleanExit(*it))
           continue;
-        if (!browser_init->LaunchBrowser((*it == last_used_profile) ?
+        if (!browser_creator->LaunchBrowser((*it == last_used_profile) ?
             command_line : command_line_without_urls, *it, cur_dir,
             is_process_startup, is_first_run, return_code))
           return false;
         // We've launched at least one browser.
-        is_process_startup = BrowserInit::IS_NOT_PROCESS_STARTUP;
+        is_process_startup = StartupBrowserCreator::IS_NOT_PROCESS_STARTUP;
       }
     }
   }
@@ -1336,9 +1347,10 @@ bool BrowserInit::ProcessCmdLineImpl(
 }
 
 template <class AutomationProviderClass>
-bool BrowserInit::CreateAutomationProvider(const std::string& channel_id,
-                                           Profile* profile,
-                                           size_t expected_tabs) {
+bool StartupBrowserCreator::CreateAutomationProvider(
+    const std::string& channel_id,
+    Profile* profile,
+    size_t expected_tabs) {
 #if defined(ENABLE_AUTOMATION)
   scoped_refptr<AutomationProviderClass> automation =
       new AutomationProviderClass(profile);
@@ -1355,7 +1367,7 @@ bool BrowserInit::CreateAutomationProvider(const std::string& channel_id,
 }
 
 // static
-void BrowserInit::ProcessCommandLineOnProfileCreated(
+void StartupBrowserCreator::ProcessCommandLineOnProfileCreated(
     const CommandLine& cmd_line,
     const FilePath& cur_dir,
     Profile* profile,
@@ -1366,14 +1378,15 @@ void BrowserInit::ProcessCommandLineOnProfileCreated(
 }
 
 // static
-void BrowserInit::ProcessCommandLineAlreadyRunning(const CommandLine& cmd_line,
-                                                   const FilePath& cur_dir) {
+void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
+    const CommandLine& cmd_line,
+    const FilePath& cur_dir) {
   if (cmd_line.HasSwitch(switches::kProfileDirectory)) {
     ProfileManager* profile_manager = g_browser_process->profile_manager();
     FilePath path = cmd_line.GetSwitchValuePath(switches::kProfileDirectory);
     path = profile_manager->user_data_dir().Append(path);
     profile_manager->CreateProfileAsync(path,
-        base::Bind(&BrowserInit::ProcessCommandLineOnProfileCreated,
+        base::Bind(&StartupBrowserCreator::ProcessCommandLineOnProfileCreated,
                    cmd_line, cur_dir));
     return;
   }

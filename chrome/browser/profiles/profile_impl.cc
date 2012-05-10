@@ -63,7 +63,7 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/browser_init.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/visitedlink/visitedlink_event_listener.h"
@@ -363,8 +363,8 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
       SessionStartupPref::GetDefaultStartupType();
 #else
   SessionStartupPref::Type startup_pref_type =
-      BrowserInit::GetSessionStartupPref(*CommandLine::ForCurrentProcess(),
-                                         this).type;
+      StartupBrowserCreator::GetSessionStartupPref(
+          *CommandLine::ForCurrentProcess(), this).type;
 #endif
   bool restore_old_session_cookies =
       session_restore_enabled_ &&

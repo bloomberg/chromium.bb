@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/browser/ui/browser_init.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 
 class PinnedTabTestUtils {
  public:
@@ -18,7 +18,7 @@ class PinnedTabTestUtils {
   // of urls. If the tab is an app, ':app' is appended, and if the tab is
   // pinned, ':pinned' is appended.
   static std::string TabsToString(
-      const std::vector<BrowserInit::LaunchWithProfile::Tab>& values);
+      const std::vector<StartupBrowserCreator::LaunchWithProfile::Tab>& values);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PinnedTabTestUtils);
