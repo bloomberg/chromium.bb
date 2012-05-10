@@ -138,7 +138,7 @@ void TestWebContents::CommitPendingNavigation() {
   // Simulate the SwapOut_ACK that fires if you commit a cross-site navigation
   // without making any network requests.
   if (old_rvh != rvh)
-    static_cast<RenderViewHostImpl*>(old_rvh)->OnSwapOutACK(false);
+    static_cast<RenderViewHostImpl*>(old_rvh)->OnSwapOutACK();
 }
 
 int TestWebContents::GetNumberOfFocusCalls() {

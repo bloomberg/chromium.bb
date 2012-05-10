@@ -429,11 +429,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void SetShouldAutoResize(bool enable);
 
  protected:
-  // Expose increment/decrement of the in-flight event count, so
-  // RenderViewHostImpl can account for in-flight beforeunload/unload events.
-  int increment_in_flight_event_count() { return ++in_flight_event_count_; }
-  int decrement_in_flight_event_count() { return --in_flight_event_count_; }
-
   // The View associated with the RenderViewHost. The lifetime of this object
   // is associated with the lifetime of the Render process. If the Renderer
   // crashes, its View is destroyed and this pointer becomes NULL, even though

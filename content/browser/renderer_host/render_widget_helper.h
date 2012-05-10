@@ -128,7 +128,7 @@ class RenderWidgetHelper
   // corresponding functions in RenderProcessHost. See those declarations
   // for documentation.
   void CancelResourceRequests(int render_widget_id);
-  void SimulateSwapOutACK(const ViewMsg_SwapOut_Params& params);
+  void CrossSiteSwapOutACK(const ViewMsg_SwapOut_Params& params);
   bool WaitForBackingStoreMsg(int render_widget_id,
                               const base::TimeDelta& max_delay,
                               IPC::Message* msg);
@@ -209,9 +209,8 @@ class RenderWidgetHelper
   // Called on the IO thread to cancel resource requests for the render widget.
   void OnCancelResourceRequests(int render_widget_id);
 
-  // Called on the IO thread to resume a cross-site response, if the ack is
-  // not received as expected.
-  void OnSimulateSwapOutACK(const ViewMsg_SwapOut_Params& params);
+  // Called on the IO thread to resume a cross-site response.
+  void OnCrossSiteSwapOutACK(const ViewMsg_SwapOut_Params& params);
 
 #if defined(OS_MACOSX)
   // Called on destruction to release all allocated transport DIBs
