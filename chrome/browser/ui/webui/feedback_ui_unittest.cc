@@ -23,7 +23,7 @@ void CreateFile(const FilePath& filename) {
 }
 
 std::string GetScreenshotFilename(const std::string timestamp) {
-  return std::string("screenshot-") + timestamp + std::string(".png");
+  return std::string("Screenshot_") + timestamp + std::string(".png");
 }
 
 std::string GetScreenshotUrl(const std::string timestamp) {
