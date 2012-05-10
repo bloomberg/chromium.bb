@@ -245,13 +245,12 @@ static void nc_release_basic_data_mu(nc_basic_thread_data_t *basic_data) {
   free(basic_data);
 }
 
-static void nc_release_tls_node(nc_thread_memory_block_t *block) {
+static void nc_release_tls_node(nc_thread_memory_block_t *block,
+                                nc_thread_descriptor_t *tdb) {
   if (block) {
-    nc_thread_descriptor_t* tdb =
-        (nc_thread_descriptor_t *) __nacl_tls_tdb_start(NODE_TO_PAYLOAD(block),
-                                                        TDB_SIZE);
-
-    tdb->basic_data->tdb = NULL;
+    if (NULL != tdb->basic_data) {
+      tdb->basic_data->tdb = NULL;
+    }
     block->is_used = 0;
     nc_free_memory_block_mu(TLS_AND_TDB_MEMORY, block);
   }
@@ -387,8 +386,14 @@ int pthread_create(pthread_t *thread_id,
      * variable stack size).
      */
     new_basic_data = malloc(sizeof(*new_basic_data));
-    if (NULL == new_basic_data)
+    if (NULL == new_basic_data) {
+      /*
+       * The tdb should be zero intialized.
+       * This just re-emphasizes this requirement.
+       */
+      new_tdb->basic_data = NULL;
       break;
+    }
 
     nc_tdb_init(new_tdb, new_basic_data);
     new_tdb->tls_node = tls_node;
@@ -471,7 +476,7 @@ ret:
     /* failed to create a thread */
     pthread_mutex_lock(&__nc_thread_management_lock);
 
-    nc_release_tls_node(tls_node);
+    nc_release_tls_node(tls_node, new_tdb);
     if (new_basic_data) {
       nc_release_basic_data_mu(new_basic_data);
     }
@@ -552,7 +557,7 @@ void pthread_exit (void* retval) {
    * We can release TLS+TDB - thread id and its return value are still
    * kept in basic_data
    */
-  nc_release_tls_node(tdb->tls_node);
+  nc_release_tls_node(tdb->tls_node, tdb);
 
   if (!joinable) {
     nc_release_basic_data_mu(basic_data);
