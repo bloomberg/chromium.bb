@@ -31,7 +31,8 @@ namespace internal {
 #if defined(OS_MACOSX)
 // This is a wrapper around gfx::NSImageToSkBitmap() because this cross-platform
 // file cannot include the [square brackets] of ObjC.
-bool NSImageToSkBitmaps(NSImage* image, std::vector<const SkBitmap*>* bitmaps);
+ImageSkia NSImageToImageSkia(NSImage* image);
+NSImage* ImageSkiaToNSImage(const ImageSkia* image);
 #endif
 
 #if defined(TOOLKIT_GTK)
@@ -97,6 +98,7 @@ class ImageRep {
 
 class ImageRepSkia : public ImageRep {
  public:
+  // Takes ownership of |image|.
   explicit ImageRepSkia(ImageSkia* image)
       : ImageRep(Image::kImageRepSkia),
         image_(image) {
@@ -224,6 +226,13 @@ Image::Image() {
   // |storage_| is NULL for empty Images.
 }
 
+Image::Image(const ImageSkia& image)
+    : storage_(new internal::ImageStorage(Image::kImageRepSkia)) {
+  internal::ImageRepSkia* rep = new internal::ImageRepSkia(
+      new ImageSkia(image));
+  AddRepresentation(rep);
+}
+
 Image::Image(const SkBitmap* bitmap)
     : storage_(new internal::ImageStorage(Image::kImageRepSkia)) {
   internal::ImageRepSkia* rep = new internal::ImageRepSkia(
@@ -235,13 +244,6 @@ Image::Image(const SkBitmap& bitmap)
     : storage_(new internal::ImageStorage(Image::kImageRepSkia)) {
   internal::ImageRepSkia* rep =
       new internal::ImageRepSkia(new ImageSkia(new SkBitmap(bitmap)));
-  AddRepresentation(rep);
-}
-
-Image::Image(const std::vector<const SkBitmap*>& bitmaps)
-    : storage_(new internal::ImageStorage(Image::kImageRepSkia)) {
-  internal::ImageRepSkia* rep = new internal::ImageRepSkia(
-    new ImageSkia(bitmaps));
   AddRepresentation(rep);
 }
 
@@ -274,7 +276,7 @@ Image::~Image() {
 
 const SkBitmap* Image::ToSkBitmap() const {
   internal::ImageRep* rep = GetRepresentation(Image::kImageRepSkia);
-  return rep->AsImageRepSkia()->image()->bitmaps()[0];
+  return rep->AsImageRepSkia()->image()->bitmap();
 }
 
 const ImageSkia* Image::ToImageSkia() const {
@@ -300,6 +302,10 @@ NSImage* Image::ToNSImage() const {
   return rep->AsImageRepCocoa()->image();
 }
 #endif
+
+ImageSkia* Image::CopyImageSkia() const {
+  return new ImageSkia(*ToImageSkia());
+}
 
 SkBitmap* Image::CopySkBitmap() const {
   return new SkBitmap(*ToSkBitmap());
@@ -386,9 +392,8 @@ internal::ImageRep* Image::GetRepresentation(
 #elif defined(OS_MACOSX)
     if (storage_->default_representation_type() == Image::kImageRepCocoa) {
       internal::ImageRepCocoa* nsimage_rep = default_rep->AsImageRepCocoa();
-      std::vector<const SkBitmap*> bitmaps;
-      CHECK(internal::NSImageToSkBitmaps(nsimage_rep->image(), &bitmaps));
-      rep = new internal::ImageRepSkia(new ImageSkia(bitmaps));
+      ImageSkia image_skia = internal::NSImageToImageSkia(nsimage_rep->image());
+      rep = new internal::ImageRepSkia(new ImageSkia(image_skia));
     }
 #endif
     CHECK(rep);
@@ -417,13 +422,13 @@ internal::ImageRep* Image::GetRepresentation(
 #elif defined(TOOLKIT_GTK)
     if (rep_type == Image::kImageRepGdk) {
       GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(
-          default_rep->AsImageRepSkia()->image()->bitmaps()[0]);
+          default_rep->AsImageRepSkia()->image()->bitmap());
       native_rep = new internal::ImageRepGdk(pixbuf);
     }
 #elif defined(OS_MACOSX)
     if (rep_type == Image::kImageRepCocoa) {
-      NSImage* image = gfx::SkBitmapsToNSImage(
-          default_rep->AsImageRepSkia()->image()->bitmaps());
+      NSImage* image = internal::ImageSkiaToNSImage(
+          default_rep->AsImageRepSkia()->image());
       base::mac::NSObjectRetain(image);
       native_rep = new internal::ImageRepCocoa(image);
     }
