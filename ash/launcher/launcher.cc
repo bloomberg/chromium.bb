@@ -7,6 +7,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model.h"
+#include "ash/launcher/launcher_navigator.h"
 #include "ash/launcher/launcher_view.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -184,6 +185,18 @@ gfx::Rect Launcher::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
                    screen_origin.y() + bounds.y(),
                    bounds.width(),
                    bounds.height());
+}
+
+void Launcher::ActivateLauncherItem(int index) {
+  DCHECK(delegate_.get());
+  const ash::LauncherItems& items = model_->items();
+  delegate_->ItemClicked(items[index], ui::EF_NONE);
+}
+
+void Launcher::CycleWindowLinear(CycleDirection direction) {
+  int item_index = GetNextActivatedItemIndex(*model(), direction);
+  if (item_index >= 0)
+    ActivateLauncherItem(item_index);
 }
 
 void Launcher::AddIconObserver(LauncherIconObserver* observer) {

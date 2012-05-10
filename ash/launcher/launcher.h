@@ -8,6 +8,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/launcher/background_animator.h"
+#include "ash/launcher/launcher_types.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -57,6 +58,13 @@ class ASH_EXPORT Launcher : public internal::BackgroundAnimatorDelegate {
   // Returns the screen bounds of the item for the specified window. If there is
   // no item for the specified window an empty rect is returned.
   gfx::Rect GetScreenBoundsOfItemIconForWindow(aura::Window* window);
+
+  // Activates the the launcher item specified by the index in the list
+  // of launcher items.
+  void ActivateLauncherItem(int index);
+
+  // Cycles the window focus linearly over the current launcher items.
+  void CycleWindowLinear(CycleDirection direction);
 
   void AddIconObserver(LauncherIconObserver* observer);
   void RemoveIconObserver(LauncherIconObserver* observer);

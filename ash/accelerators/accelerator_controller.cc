@@ -41,74 +41,14 @@ namespace {
 
 bool HandleCycleWindowMRU(ash::WindowCycleController::Direction direction,
                           bool is_alt_down) {
-  // TODO(mukai): support Apps windows here.
   ash::Shell::GetInstance()->
       window_cycle_controller()->HandleCycleWindow(direction, is_alt_down);
   // Always report we handled the key, even if the window didn't change.
   return true;
 }
 
-void ActivateLauncherItem(int index) {
-  const ash::LauncherItems& items =
-      ash::Shell::GetInstance()->launcher()->model()->items();
-  ash::Shell::GetInstance()->launcher()->delegate()->
-      ItemClicked(items[index], ui::EF_NONE);
-}
-
-// Returns true if accelerator processing should skip the launcher item with
-// the specified type.
-bool ShouldSkip(ash::LauncherItemType type) {
-  return type == ash::TYPE_APP_LIST ||
-         type == ash::TYPE_BROWSER_SHORTCUT ||
-         type == ash::TYPE_APP_SHORTCUT;
-}
-
-void HandleCycleWindowLinear(ash::WindowCycleController::Direction direction) {
-  // TODO(mukai): move this function to somewhere else (probably a new
-  // file launcher_navigator.cc) and write test cases.
-  ash::LauncherModel* model = ash::Shell::GetInstance()->launcher()->model();
-  const ash::LauncherItems& items = model->items();
-  int item_count = model->item_count();
-  int current_index = -1;
-  int first_running = -1;
-
-  for (int i = 0; i < item_count; ++i) {
-    const ash::LauncherItem& item = items[i];
-    if (ShouldSkip(item.type))
-      continue;
-
-    if (item.status == ash::STATUS_RUNNING && first_running < 0)
-      first_running = i;
-
-    if (item.status == ash::STATUS_ACTIVE) {
-      current_index = i;
-      break;
-    }
-  }
-
-  // If nothing is active, try to active the first running item.
-  if (current_index < 0) {
-    if (first_running >= 0)
-      ActivateLauncherItem(first_running);
-    return;
-  }
-
-  int step = (direction == ash::WindowCycleController::FORWARD) ? 1 : -1;
-
-  // Find the next item and activate it.
-  for (int i = (current_index + step + item_count) % item_count;
-       i != current_index; i = (i + step + item_count) % item_count) {
-    const ash::LauncherItem& item = items[i];
-    if (ShouldSkip(item.type))
-      continue;
-
-    // Skip already active item.
-    if (item.status == ash::STATUS_ACTIVE)
-      continue;
-
-    ActivateLauncherItem(i);
-    return;
-  }
+void HandleCycleWindowLinear(ash::CycleDirection direction) {
+  ash::Shell::GetInstance()->launcher()->CycleWindowLinear(direction);
 }
 
 #if defined(OS_CHROMEOS)
@@ -344,10 +284,10 @@ bool AcceleratorController::AcceleratorPressed(
       return HandleCycleWindowMRU(WindowCycleController::FORWARD,
                                   accelerator.IsAltDown());
     case CYCLE_BACKWARD_LINEAR:
-      HandleCycleWindowLinear(WindowCycleController::BACKWARD);
+      HandleCycleWindowLinear(CYCLE_BACKWARD);
       return true;
     case CYCLE_FORWARD_LINEAR:
-      HandleCycleWindowLinear(WindowCycleController::FORWARD);
+      HandleCycleWindowLinear(CYCLE_FORWARD);
       return true;
 #if defined(OS_CHROMEOS)
     case LOCK_SCREEN:
@@ -548,7 +488,7 @@ void AcceleratorController::SwitchToWindow(int window) {
   if (found_index >= 0 && (indexes_left == -1 || window < 0) &&
       items[found_index].status == ash::STATUS_RUNNING) {
     // Then set this one as active.
-    ActivateLauncherItem(found_index);
+    Shell::GetInstance()->launcher()->ActivateLauncherItem(found_index);
   }
 }
 

@@ -71,6 +71,12 @@ struct ASH_EXPORT LauncherItem {
 
 typedef std::vector<LauncherItem> LauncherItems;
 
+// The direction of the focus cycling.
+enum ASH_EXPORT CycleDirection {
+  CYCLE_FORWARD,
+  CYCLE_BACKWARD
+};
+
 }  // namespace ash
 
 #endif  // ASH_LAUNCHER_LAUNCHER_TYPES_H_
