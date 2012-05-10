@@ -292,9 +292,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   // of the parameters.
   void SwapOut(int new_render_process_host_id, int new_request_id);
 
-  // Called by ResourceDispatcherHost after the SwapOutACK is received or the
-  // response times out.
-  void OnSwapOutACK(bool timed_out);
+  // Called by ResourceDispatcherHost after the SwapOutACK is received.
+  void OnSwapOutACK();
 
   // Called to notify the renderer that it has been visibly swapped out and
   // replaced by another RenderViewHost, after an earlier call to SwapOut.
@@ -600,9 +599,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Set to true when there is a pending ViewMsg_Close message.  Also see
   // is_waiting_for_beforeunload_ack_, unload_ack_is_for_cross_site_transition_.
   bool is_waiting_for_unload_ack_;
-
-  // Set to true when waiting for ViewHostMsg_SwapOut_ACK has timed out.
-  bool has_timed_out_on_unload_;
 
   // Valid only when is_waiting_for_beforeunload_ack_ or
   // is_waiting_for_unload_ack_ is true.  This tells us if the unload request

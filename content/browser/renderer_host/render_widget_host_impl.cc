@@ -684,13 +684,9 @@ void RenderWidgetHostImpl::StartHangMonitorTimeout(TimeDelta delay) {
     return;
   }
 
-  // Set time_when_considered_hung_ if it's null. Otherwise, update
-  // time_when_considered_hung_ if the caller's request is sooner than the
-  // existing one. This will have the side effect that the existing timeout will
-  // be forgotten.
+  // Set time_when_considered_hung_ if it's null.
   Time requested_end_time = Time::Now() + delay;
-  if (time_when_considered_hung_.is_null() ||
-      time_when_considered_hung_ > requested_end_time)
+  if (time_when_considered_hung_.is_null())
     time_when_considered_hung_ = requested_end_time;
 
   // If we already have a timer with the same or shorter duration, then we can
@@ -909,7 +905,7 @@ void RenderWidgetHostImpl::ForwardInputEvent(const WebInputEvent& input_event,
   // after this line.
   next_mouse_move_.reset();
 
-  increment_in_flight_event_count();
+  in_flight_event_count_++;
   StartHangMonitorTimeout(
       TimeDelta::FromMilliseconds(hung_renderer_delay_ms_));
 }
@@ -1375,7 +1371,7 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
   UMA_HISTOGRAM_TIMES("MPArch.RWH_InputEventDelta", delta);
 
   // Cancel pending hung renderer checks since the renderer is responsive.
-  if (decrement_in_flight_event_count() == 0)
+  if (--in_flight_event_count_ == 0)
     StopHangMonitorTimeout();
 
   int type = static_cast<int>(event_type);

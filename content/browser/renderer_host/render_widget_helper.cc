@@ -135,11 +135,11 @@ void RenderWidgetHelper::CancelResourceRequests(int render_widget_id) {
                  render_widget_id));
 }
 
-void RenderWidgetHelper::SimulateSwapOutACK(
+void RenderWidgetHelper::CrossSiteSwapOutACK(
     const ViewMsg_SwapOut_Params& params) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&RenderWidgetHelper::OnSimulateSwapOutACK,
+      base::Bind(&RenderWidgetHelper::OnCrossSiteSwapOutACK,
                  this,
                  params));
 }
@@ -246,9 +246,9 @@ void RenderWidgetHelper::OnCancelResourceRequests(
       render_process_id_, render_widget_id);
 }
 
-void RenderWidgetHelper::OnSimulateSwapOutACK(
+void RenderWidgetHelper::OnCrossSiteSwapOutACK(
     const ViewMsg_SwapOut_Params& params) {
-  resource_dispatcher_host_->OnSimulateSwapOutACK(params);
+  resource_dispatcher_host_->OnSwapOutACK(params);
 }
 
 void RenderWidgetHelper::CreateNewWindow(

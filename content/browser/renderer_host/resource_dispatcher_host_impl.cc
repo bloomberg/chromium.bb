@@ -289,13 +289,11 @@ net::RequestPriority DetermineRequestPriority(ResourceType::Type type) {
   }
 }
 
-void OnSwapOutACKHelper(int render_process_id,
-                        int render_view_id,
-                        bool timed_out) {
+void OnSwapOutACKHelper(int render_process_id, int render_view_id) {
   RenderViewHostImpl* rvh = RenderViewHostImpl::FromID(render_process_id,
                                                        render_view_id);
   if (rvh)
-    rvh->OnSwapOutACK(timed_out);
+    rvh->OnSwapOutACK();
 }
 
 net::Error CallbackAndReturn(
@@ -1102,20 +1100,8 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       context);
 }
 
-
 void ResourceDispatcherHostImpl::OnSwapOutACK(
-  const ViewMsg_SwapOut_Params& params) {
-  HandleSwapOutACK(params, false);
-}
-
-void ResourceDispatcherHostImpl::OnSimulateSwapOutACK(
     const ViewMsg_SwapOut_Params& params) {
-  // Call the real implementation with true, which means that we timed out.
-  HandleSwapOutACK(params, true);
-}
-
-void ResourceDispatcherHostImpl::HandleSwapOutACK(
-    const ViewMsg_SwapOut_Params& params, bool timed_out) {
   // Closes for cross-site transitions are handled such that the cross-site
   // transition continues.
   GlobalRequestID global_id(params.new_render_process_host_id,
@@ -1134,8 +1120,7 @@ void ResourceDispatcherHostImpl::HandleSwapOutACK(
       FROM_HERE,
       base::Bind(&OnSwapOutACKHelper,
                  params.closing_process_id,
-                 params.closing_route_id,
-                 timed_out));
+                 params.closing_route_id));
 }
 
 void ResourceDispatcherHostImpl::OnDidLoadResourceFromMemoryCache(
