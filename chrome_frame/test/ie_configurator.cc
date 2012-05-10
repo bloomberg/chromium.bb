@@ -461,6 +461,7 @@ IEConfigurator* CreateConfigurator() {
   switch (GetInstalledIEVersion()) {
     case IE_7:
       configurator = new IE7Configurator();
+      break;
     case IE_9:
       configurator = new IE9Configurator();
       break;

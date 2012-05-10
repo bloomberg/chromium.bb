@@ -518,8 +518,10 @@ void CFUrlRequestUnittestRunner::StartChromeFrameInHostBrowser() {
 
   // Tweak IE settings to make it amenable to testing before launching it.
   ie_configurator_.reset(chrome_frame_test::CreateConfigurator());
-  if (ie_configurator_.get() != NULL)
+  if (ie_configurator_.get() != NULL) {
+    ie_configurator_->Initialize();
     ie_configurator_->ApplySettings();
+  }
 
   test_http_server_.reset(new test_server::SimpleWebServer(kTestServerPort));
   test_http_server_->AddResponse(&chrome_frame_html_);
