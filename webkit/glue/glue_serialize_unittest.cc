@@ -62,13 +62,15 @@ class GlueSerializeTest : public testing::Test {
     item.setScrollOffset(WebPoint(42, -42));
     item.setIsTargetItem(true);
     item.setVisitCount(42*42);
+    item.setPageScaleFactor(2.0f);
+    item.setItemSequenceNumber(123);
+    item.setDocumentSequenceNumber(456);
 
     WebVector<WebString> document_state(size_t(3));
     document_state[0] = WebString::fromUTF8("state1");
     document_state[1] = WebString::fromUTF8("state2");
     document_state[2] = WebString::fromUTF8("state AWESOME");
     item.setDocumentState(document_state);
-    item.setPageScaleFactor(1.0f);
 
     // Form Data
     if (with_form_data) {
@@ -96,14 +98,16 @@ class GlueSerializeTest : public testing::Test {
 
   // Checks that a == b.
   void HistoryItemExpectEqual(const WebHistoryItem& a,
-                              const WebHistoryItem& b) {
-    HistoryItemExpectBaseDataEqual(a, b);
+                              const WebHistoryItem& b,
+                              int version) {
+    HistoryItemExpectBaseDataEqual(a, b, version);
     HistoryItemExpectFormDataEqual(a, b);
     HistoryItemExpectChildrenEqual(a, b);
   }
 
   void HistoryItemExpectBaseDataEqual(const WebHistoryItem& a,
-                                      const WebHistoryItem& b) {
+                                      const WebHistoryItem& b,
+                                      int version) {
     EXPECT_EQ(string16(a.urlString()), string16(b.urlString()));
     EXPECT_EQ(string16(a.originalURLString()), string16(b.originalURLString()));
     EXPECT_EQ(string16(a.target()), string16(b.target()));
@@ -115,7 +119,12 @@ class GlueSerializeTest : public testing::Test {
     EXPECT_EQ(a.isTargetItem(), b.isTargetItem());
     EXPECT_EQ(a.visitCount(), b.visitCount());
     EXPECT_EQ(string16(a.referrer()), string16(b.referrer()));
-    EXPECT_EQ(a.pageScaleFactor(), b.pageScaleFactor());
+    if (version >= 11)
+      EXPECT_EQ(a.pageScaleFactor(), b.pageScaleFactor());
+    if (version >= 9)
+      EXPECT_EQ(a.itemSequenceNumber(), b.itemSequenceNumber());
+    if (version >= 6)
+      EXPECT_EQ(a.documentSequenceNumber(), b.documentSequenceNumber());
 
     const WebVector<WebString>& a_docstate = a.documentState();
     const WebVector<WebString>& b_docstate = b.documentState();
@@ -153,7 +162,8 @@ class GlueSerializeTest : public testing::Test {
     const WebVector<WebHistoryItem>& b_children = b.children();
     EXPECT_EQ(a_children.size(), b_children.size());
     for (size_t i = 0, c = a_children.size(); i < c; ++i)
-      HistoryItemExpectEqual(a_children[i], b_children[i]);
+      HistoryItemExpectEqual(a_children[i], b_children[i],
+                             webkit_glue::HistoryItemCurrentVersion());
   }
 };
 
@@ -162,15 +172,15 @@ class GlueSerializeTest : public testing::Test {
 TEST_F(GlueSerializeTest, BackwardsCompatibleTest) {
   const WebHistoryItem& item = MakeHistoryItem(false, false);
 
-  // Make sure version 12 (current version) can read versions 1 through 11.
-  for (int i = 1; i <= 11; i++) {
+  // Make sure current version can read all previous versions.
+  for (int i = 1; i < webkit_glue::HistoryItemCurrentVersion(); i++) {
     std::string serialized_item;
     webkit_glue::HistoryItemToVersionedString(item, i, &serialized_item);
     const WebHistoryItem& deserialized_item =
         webkit_glue::HistoryItemFromString(serialized_item);
     ASSERT_FALSE(item.isNull());
     ASSERT_FALSE(deserialized_item.isNull());
-    HistoryItemExpectEqual(item, deserialized_item);
+    HistoryItemExpectEqual(item, deserialized_item, i);
   }
 }
 
@@ -184,7 +194,8 @@ TEST_F(GlueSerializeTest, HistoryItemSerializeTest) {
 
   ASSERT_FALSE(item.isNull());
   ASSERT_FALSE(deserialized_item.isNull());
-  HistoryItemExpectEqual(item, deserialized_item);
+  HistoryItemExpectEqual(item, deserialized_item,
+                         webkit_glue::HistoryItemCurrentVersion());
 }
 
 // Checks that broken messages don't take out our process.
@@ -236,7 +247,8 @@ TEST_F(GlueSerializeTest, RemoveFormData) {
   ASSERT_FALSE(item1.isNull());
   ASSERT_FALSE(item2.isNull());
 
-  HistoryItemExpectBaseDataEqual(item1, item2);
+  HistoryItemExpectBaseDataEqual(item1, item2,
+                                 webkit_glue::HistoryItemCurrentVersion());
   HistoryItemExpectChildrenEqual(item1, item2);
 
   // Form data was removed, but the identifier was kept.
@@ -279,7 +291,8 @@ TEST_F(GlueSerializeTest, HistoryItemWithPasswordsSerializeTest) {
 
   ASSERT_FALSE(item.isNull());
   ASSERT_FALSE(deserialized_item.isNull());
-  HistoryItemExpectEqual(item, deserialized_item);
+  HistoryItemExpectEqual(item, deserialized_item,
+                         webkit_glue::HistoryItemCurrentVersion());
 }
 
 TEST_F(GlueSerializeTest, RemovePasswordData) {
@@ -293,7 +306,8 @@ TEST_F(GlueSerializeTest, RemovePasswordData) {
   ASSERT_FALSE(item1.isNull());
   ASSERT_FALSE(item2.isNull());
 
-  HistoryItemExpectBaseDataEqual(item1, item2);
+  HistoryItemExpectBaseDataEqual(item1, item2,
+                                 webkit_glue::HistoryItemCurrentVersion());
   HistoryItemExpectChildrenEqual(item1, item2);
 
   // Form data was removed, but the identifier was kept.
@@ -318,7 +332,8 @@ TEST_F(GlueSerializeTest, RemovePasswordDataWithNoPasswordData) {
   ASSERT_FALSE(item2.isNull());
 
   // Form data was not removed.
-  HistoryItemExpectEqual(item1, item2);
+  HistoryItemExpectEqual(item1, item2,
+                         webkit_glue::HistoryItemCurrentVersion());
 }
 
 }  // namespace

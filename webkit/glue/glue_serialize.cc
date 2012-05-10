@@ -579,4 +579,8 @@ void HistoryItemToVersionedString(const WebHistoryItem& item, int version,
   kVersion = real_version;
 }
 
+int HistoryItemCurrentVersion() {
+  return kVersion;
+}
+
 }  // namespace webkit_glue

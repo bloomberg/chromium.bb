@@ -33,6 +33,7 @@ WEBKIT_GLUE_EXPORT void HistoryItemToVersionedString(
     const WebKit::WebHistoryItem& item,
     int version,
     std::string* serialized_item);
+WEBKIT_GLUE_EXPORT int HistoryItemCurrentVersion();
 
 }  // namespace webkit_glue
 
