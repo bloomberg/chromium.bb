@@ -75,17 +75,9 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
 
   //////////////////////////////////////////////////////////////////////////////
   // Calbacks.
-  static void NetworkStatusChangedHandler(void* object,
-                                          const std::string& path,
-                                          const std::string& key,
-                                          const base::Value& value);
   void UpdateNetworkStatus(
       const std::string& path, const std::string& key, const Value& value);
 
-  static void NetworkDevicePropertyChangedHandler(void* object,
-                                                  const std::string& path,
-                                                  const std::string& key,
-                                                  const base::Value& value);
   void UpdateNetworkDeviceStatus(
       const std::string& path, const std::string& key, const Value& value);
   // Cellular specific updates. Returns false if update was ignored / reverted
@@ -107,41 +99,23 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
                                      NetworkMethodErrorType error,
                                      const char* error_message);
 
-  static void WifiServiceUpdateAndConnect(
-      void* object,
-      const std::string& service_path,
-      const base::DictionaryValue* properties);
-  static void VPNServiceUpdateAndConnect(
-      void* object,
-      const std::string& service_path,
-      const base::DictionaryValue* properties);
-
-  static void NetworkManagerStatusChangedHandler(void* object,
-                                                 const std::string& path,
-                                                 const std::string& key,
-                                                 const base::Value& value);
-  static void NetworkManagerUpdate(void* object,
-                                   const std::string& manager_path,
+  void WifiServiceUpdateAndConnect(const std::string& service_path,
                                    const base::DictionaryValue* properties);
-
-  static void DataPlanUpdateHandler(
-      void* object,
-      const std::string& modem_service_path,
-      CellularDataPlanVector* data_plan_vector);
-
-  static void NetworkServiceUpdate(void* object,
-                                   const std::string& service_path,
-                                   const base::DictionaryValue* properties);
-  static void RememberedNetworkServiceUpdate(
-      void* object,
-      const std::string& service_path,
-      const base::DictionaryValue* properties);
-  static void ProfileUpdate(void* object,
-                            const std::string& profile_path,
-                            const base::DictionaryValue* properties);
-  static void NetworkDeviceUpdate(void* object,
-                                  const std::string& device_path,
+  void VPNServiceUpdateAndConnect(const std::string& service_path,
                                   const base::DictionaryValue* properties);
+
+  void NetworkManagerStatusChangedHandler(const std::string& path,
+                                          const std::string& key,
+                                          const base::Value& value);
+  void NetworkManagerUpdate(const std::string& manager_path,
+                            const base::DictionaryValue* properties);
+
+  void NetworkServiceUpdate(const std::string& service_path,
+                            const base::DictionaryValue* properties);
+  void RememberedNetworkServiceUpdate(const std::string& service_path,
+                                      const base::DictionaryValue* properties);
+  void NetworkDeviceUpdate(const std::string& device_path,
+                           const base::DictionaryValue* properties);
 
  private:
   // This processes all Manager update messages.
@@ -160,8 +134,8 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
 
   void UpdateRememberedNetworks(const ListValue* profiles);
   void RequestRememberedNetworksUpdate();
-  void UpdateRememberedServiceList(const std::string& profile_path,
-                                   const ListValue* profile_entries);
+  void UpdateProfile(const std::string& profile_path,
+                     const DictionaryValue* properties);
   Network* ParseRememberedNetwork(const std::string& service_path,
                                   const DictionaryValue& info);
 
