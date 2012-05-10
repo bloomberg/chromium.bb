@@ -145,6 +145,8 @@ Compositor::Compositor(CompositorDelegate* delegate,
 }
 
 Compositor::~Compositor() {
+  // Don't call |CompositorDelegate::ScheduleDraw| from this point.
+  delegate_ = NULL;
   // There's a cycle between |root_web_layer_| and |host_|, which results in
   // leaking and/or crashing. Explicitly set the root layer to NULL so the cycle
   // is broken.
@@ -175,7 +177,7 @@ void Compositor::ScheduleDraw() {
     // compositeImmediately() directly.
     layout();
     host_.composite();
-  } else {
+  } else if (delegate_) {
     delegate_->ScheduleDraw();
   }
 }
