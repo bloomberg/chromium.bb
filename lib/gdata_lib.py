@@ -363,10 +363,10 @@ class SpreadsheetRow(dict):
 
 
 class SpreadsheetError(RuntimeError):
-  """Base class for spreadsheet communication errors."""
+  """Error class for spreadsheet communication errors."""
 
 def ReadWriteDecorator(func):
-  """Raise SpreadsheetWriteError if appropriate."""
+  """Raise SpreadsheetError if appropriate."""
   def f(self, *args, **kwargs):
     try:
       return func(self, *args, **kwargs)
