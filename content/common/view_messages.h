@@ -1260,8 +1260,7 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowFullscreenWidget,
 
 // This message is sent after ViewHostMsg_ShowView to cause the RenderView
 // to run in a modal fashion until it is closed.
-IPC_SYNC_MESSAGE_ROUTED1_0(ViewHostMsg_RunModal,
-                           int /* opener_id */)
+IPC_SYNC_MESSAGE_ROUTED0_0(ViewHostMsg_RunModal)
 
 // Indicates the renderer is ready in response to a ViewMsg_New or
 // a ViewMsg_CreatingNew_ACK.

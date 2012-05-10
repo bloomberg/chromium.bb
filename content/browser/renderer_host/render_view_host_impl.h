@@ -439,7 +439,7 @@ class CONTENT_EXPORT RenderViewHostImpl
                      bool user_gesture);
   void OnMsgShowWidget(int route_id, const gfx::Rect& initial_pos);
   void OnMsgShowFullscreenWidget(int route_id);
-  void OnMsgRunModal(int opener_id, IPC::Message* reply_msg);
+  void OnMsgRunModal(IPC::Message* reply_msg);
   void OnMsgRenderViewReady();
   void OnMsgRenderViewGone(int status, int error_code);
   void OnMsgDidStartProvisionalLoadForFrame(int64 frame_id,
@@ -589,8 +589,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // If we were asked to RunModal, then this will hold the reply_msg that we
   // must return to the renderer to unblock it.
   IPC::Message* run_modal_reply_msg_;
-  // This will hold the routing id of the RenderView that opened us.
-  int run_modal_opener_id_;
 
   // Set to true when there is a pending ViewMsg_ShouldClose message.  This
   // ensures we don't spam the renderer with multiple beforeunload requests.
