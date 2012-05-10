@@ -471,8 +471,11 @@ void WebGraphicsContext3DCommandBufferImpl::Destroy() {
   delete gles2_helper_;
   gles2_helper_ = NULL;
 
-  if (host_ && command_buffer_) {
-    host_->DestroyCommandBuffer(command_buffer_);
+  if (command_buffer_) {
+    if (host_)
+      host_->DestroyCommandBuffer(command_buffer_);
+    else
+      delete command_buffer_;
     command_buffer_ = NULL;
   }
 
