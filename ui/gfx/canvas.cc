@@ -254,42 +254,42 @@ void Canvas::DrawFocusRect(const gfx::Rect& rect) {
   DrawDashedRect(rect, SK_ColorGRAY);
 }
 
-void Canvas::DrawBitmapInt(const gfx::ImageSkia& image, int x, int y) {
-  SkPaint paint;
-  DrawBitmapInt(image, x, y, paint);
+void Canvas::DrawBitmapInt(const SkBitmap& bitmap, int x, int y) {
+  canvas_->drawBitmap(bitmap, SkIntToScalar(x), SkIntToScalar(y));
 }
 
-void Canvas::DrawBitmapInt(const gfx::ImageSkia& image,
+void Canvas::DrawBitmapInt(const SkBitmap& bitmap,
                            int x, int y,
                            const SkPaint& paint) {
-  float bitmap_scale;
-  const SkBitmap& bitmap = GetBitmapToPaint(image, &bitmap_scale);
-  if (bitmap.isNull())
-    return;
-
-  canvas_->save();
-  canvas_->scale(SkFloatToScalar(1.0f / bitmap_scale),
-                 SkFloatToScalar(1.0f / bitmap_scale));
-  canvas_->drawBitmap(bitmap,
-                      SkFloatToScalar(x * bitmap_scale),
-                      SkFloatToScalar(y * bitmap_scale));
-  canvas_->restore();
+  canvas_->drawBitmap(bitmap, SkIntToScalar(x), SkIntToScalar(y), &paint);
 }
 
-void Canvas::DrawBitmapInt(const gfx::ImageSkia& image,
+void Canvas::DrawBitmapInt(const SkBitmap& bitmap,
                            int src_x, int src_y, int src_w, int src_h,
                            int dest_x, int dest_y, int dest_w, int dest_h,
                            bool filter) {
   SkPaint p;
-  DrawBitmapInt(image, src_x, src_y, src_w, src_h, dest_x, dest_y,
+  DrawBitmapInt(bitmap, src_x, src_y, src_w, src_h, dest_x, dest_y,
                 dest_w, dest_h, filter, p);
 }
 
-void Canvas::DrawBitmapInt(const gfx::ImageSkia& image,
+void Canvas::DrawBitmapInt(const SkBitmap& bitmap,
                            int src_x, int src_y, int src_w, int src_h,
                            int dest_x, int dest_y, int dest_w, int dest_h,
                            bool filter,
                            const SkPaint& paint) {
+  DrawBitmapFloat(bitmap, static_cast<float>(src_x), static_cast<float>(src_y),
+                  static_cast<float>(src_w), static_cast<float>(src_h),
+                  static_cast<float>(dest_x), static_cast<float>(dest_y),
+                  static_cast<float>(dest_w), static_cast<float>(dest_h),
+                  filter, paint);
+}
+
+void Canvas::DrawBitmapFloat(const SkBitmap& bitmap,
+    float src_x, float src_y, float src_w, float src_h,
+    float dest_x, float dest_y, float dest_w, float dest_h,
+    bool filter,
+    const SkPaint& paint) {
   DLOG_ASSERT(src_x + src_w < std::numeric_limits<int16_t>::max() &&
               src_y + src_h < std::numeric_limits<int16_t>::max());
   if (src_w <= 0 || src_h <= 0) {
@@ -300,22 +300,12 @@ void Canvas::DrawBitmapInt(const gfx::ImageSkia& image,
   if (!IntersectsClipRectInt(dest_x, dest_y, dest_w, dest_h))
     return;
 
-  float user_scale_x = static_cast<float>(dest_w) / src_w;
-  float user_scale_y = static_cast<float>(dest_h) / src_h;
+  SkRect dest_rect = { SkFloatToScalar(dest_x),
+                       SkFloatToScalar(dest_y),
+                       SkFloatToScalar(dest_x + dest_w),
+                       SkFloatToScalar(dest_y + dest_h) };
 
-  float bitmap_scale;
-  const SkBitmap& bitmap = GetBitmapToPaint(image, user_scale_x, user_scale_y,
-                                            &bitmap_scale);
-  if (bitmap.isNull())
-    return;
-
-  SkRect dest_rect = { SkIntToScalar(dest_x),
-                       SkIntToScalar(dest_y),
-                       SkIntToScalar(dest_x + dest_w),
-                       SkIntToScalar(dest_y + dest_h) };
-
-  if (src_w == dest_w && src_h == dest_h &&
-      bitmap_scale == 1.0f && bitmap_scale == 1.0f) {
+  if (src_w == dest_w && src_h == dest_h) {
     // Workaround for apparent bug in Skia that causes image to occasionally
     // shift.
     SkIRect src_rect = { src_x, src_y, src_x + src_w, src_y + src_h };
@@ -331,13 +321,10 @@ void Canvas::DrawBitmapInt(const gfx::ImageSkia& image,
                                                   SkShader::kRepeat_TileMode,
                                                   SkShader::kRepeat_TileMode);
   SkMatrix shader_scale;
-  shader_scale.setScale(SkFloatToScalar(user_scale_x),
-                        SkFloatToScalar(user_scale_y));
-  shader_scale.preTranslate(SkFloatToScalar(-src_x * bitmap_scale),
-                            SkFloatToScalar(-src_y * bitmap_scale));
-  shader_scale.postTranslate(SkFloatToScalar(dest_x * bitmap_scale),
-                             SkFloatToScalar(dest_y * bitmap_scale));
-  shader_scale.postScale(1.0f / bitmap_scale, 1.0f / bitmap_scale);
+  shader_scale.setScale(SkFloatToScalar(dest_w / src_w),
+                        SkFloatToScalar(dest_h / src_h));
+  shader_scale.preTranslate(SkFloatToScalar(-src_x), SkFloatToScalar(-src_y));
+  shader_scale.postTranslate(SkFloatToScalar(dest_x), SkFloatToScalar(dest_y));
   shader->setLocalMatrix(shader_scale);
 
   // Set up our paint to use the shader & release our reference (now just owned
@@ -379,20 +366,15 @@ void Canvas::DrawStringInt(const string16& text,
                         std::vector<ShadowValue>());
 }
 
-void Canvas::TileImageInt(const gfx::ImageSkia& image,
+void Canvas::TileImageInt(const SkBitmap& bitmap,
                           int x, int y, int w, int h) {
-  TileImageInt(image, 0, 0, x, y, w, h);
+  TileImageInt(bitmap, 0, 0, x, y, w, h);
 }
 
-void Canvas::TileImageInt(const gfx::ImageSkia& image,
+void Canvas::TileImageInt(const SkBitmap& bitmap,
                           int src_x, int src_y,
                           int dest_x, int dest_y, int w, int h) {
   if (!IntersectsClipRectInt(dest_x, dest_y, w, h))
-    return;
-
-  float bitmap_scale;
-  const SkBitmap& bitmap = GetBitmapToPaint(image, &bitmap_scale);
-  if (bitmap.isNull())
     return;
 
   SkPaint paint;
@@ -410,8 +392,6 @@ void Canvas::TileImageInt(const gfx::ImageSkia& image,
   canvas_->translate(SkIntToScalar(dest_x - src_x),
                      SkIntToScalar(dest_y - src_y));
   ClipRect(gfx::Rect(src_x, src_y, w, h));
-  canvas_->scale(SkFloatToScalar(1.0f / bitmap_scale),
-                 SkFloatToScalar(1.0f / bitmap_scale));
   canvas_->drawPaint(paint);
   canvas_->restore();
 }
@@ -438,31 +418,6 @@ bool Canvas::IntersectsClipRectInt(int x, int y, int w, int h) {
 bool Canvas::IntersectsClipRect(const gfx::Rect& rect) {
   return IntersectsClipRectInt(rect.x(), rect.y(),
                                rect.width(), rect.height());
-}
-
-
-const SkBitmap& Canvas::GetBitmapToPaint(const gfx::ImageSkia& image,
-                                         float* bitmap_scale_factor) const {
-  return GetBitmapToPaint(image, 1.0f, 1.0f, bitmap_scale_factor);
-}
-
-const SkBitmap& Canvas::GetBitmapToPaint(const gfx::ImageSkia& image,
-                                         float user_additional_scale_x,
-                                         float user_additional_scale_y,
-                                         float* bitmap_scale_factor) const {
-  SkMatrix m = canvas_->getTotalMatrix();
-  float scale_x = SkScalarToFloat(SkScalarAbs(m.getScaleX())) *
-      user_additional_scale_x;
-  float scale_y = SkScalarToFloat(SkScalarAbs(m.getScaleY())) *
-      user_additional_scale_y;
-
-  const SkBitmap& bitmap = image.GetBitmapForScale(scale_x, scale_y,
-                                                   bitmap_scale_factor);
-  if (!bitmap.isNull() &&
-      (scale_x < *bitmap_scale_factor || scale_y < *bitmap_scale_factor))
-    const_cast<SkBitmap&>(bitmap).buildMipMap();
-
-  return bitmap;
 }
 
 }  // namespace gfx

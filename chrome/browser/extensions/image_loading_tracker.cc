@@ -18,7 +18,6 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia.h"
 #include "webkit/glue/image_decoder.h"
 
 using content::BrowserThread;
@@ -304,13 +303,13 @@ void ImageLoadingTracker::OnImageLoaded(
     std::string extension_id = info->extension_id;
 
     if (info->bitmaps.size() > 0) {
-      gfx::ImageSkia image_skia;
+      std::vector<const SkBitmap*> bitmaps;
       for (std::vector<SkBitmap>::const_iterator it = info->bitmaps.begin();
            it != info->bitmaps.end(); ++it) {
-        // TODO(pkotwicz): Do something better but ONLY when ENABLE_DIP.
-        image_skia.AddBitmapForScale(*it, 1.0f);
+        // gfx::Image takes ownership of this bitmap.
+        bitmaps.push_back(new SkBitmap(*it));
       }
-      image = gfx::Image(image_skia);
+      image = gfx::Image(bitmaps);
     }
 
     load_map_.erase(load_map_it);

@@ -9,119 +9,80 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/ui_export.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/size.h"
 
 namespace gfx {
 
-namespace internal {
-class ImageSkiaStorage;
-}  // namespace internal
-
 // Container for the same image at different densities, similar to NSImage.
-// Image height and width are in DIP (Device Indepent Pixel) coordinates.
-//
-// ImageSkia should be used whenever possible instead of SkBitmap.
-// Functions that mutate the image should operate on the SkBitmap returned
-// from ImageSkia::GetBitmapForScale, not on ImageSkia.
-//
-// ImageSkia is cheap to copy and intentionally supports copy semantics.
+// Smallest image is assumed to represent 1x density.
+
+// ImageSkia should be used for caching and drawing images of different
+// densities. It should not be used as an SkBitmap wrapper.
 class UI_EXPORT ImageSkia {
  public:
-  // Creates instance with no bitmaps.
-  ImageSkia();
-
-  // Adds ref to passed in bitmap.
-  // DIP width and height are set based on scale factor of 1x.
-  // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
-  // done.
-  ImageSkia(const SkBitmap& bitmap);
-
-  // Adds ref to passed in bitmap.
-  // DIP width and height are set based on |dip_scale_factor|.
-  ImageSkia(const SkBitmap& bitmap, float dip_scale_factor);
-
-  // Takes ownership of passed in bitmap.
-  // Caller should not assume that |bitmap| will be valid after constructor
-  // is called.
-  // DIP width and height are set based on scale factor of 1x.
-  // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
-  // done.
   explicit ImageSkia(const SkBitmap* bitmap);
-
-  // Copies a reference to |other|'s storage.
-  ImageSkia(const ImageSkia& other);
-
-  // Copies a reference to |other|'s storage.
-  ImageSkia& operator=(const ImageSkia& other);
-
-  // Converts from SkBitmap.
-  // Adds ref to passed in bitmap.
-  // DIP width and height are set based on scale factor of 1x.
-  // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
-  // done.
-  ImageSkia& operator=(const SkBitmap& other);
-
-  // Converts to SkBitmap.
-  // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
-  // done.
-  operator SkBitmap&() const;
-
+  explicit ImageSkia(const std::vector<const SkBitmap*>& bitmaps);
   ~ImageSkia();
 
-  // Adds |bitmap| for |dip_scale_factor| to bitmaps contained by this object.
-  // Adds ref to passed in bitmap.
-  // DIP width and height are set based on |dip_scale_factor|.
-  void AddBitmapForScale(const SkBitmap& bitmap, float dip_scale_factor);
+  // Build mipmap at time of next call to |DrawToCanvasInt|.
+  void BuildMipMap();
 
-  // Returns the bitmap whose density best matches |x_scale_factor| and
-  // |y_scale_factor|.
-  // Returns a null bitmap if object contains no bitmaps.
-  // |bitmap_scale_factor| is set to the scale factor of the returned bitmap.
-  const SkBitmap& GetBitmapForScale(float x_scale_factor,
-                                    float y_scale_factor,
-                                    float* bitmap_scale_factor) const;
+  // Draws the image with the origin at the specified location. The upper left
+  // corner of the image is rendered at the specified location.
+  void DrawToCanvasInt(Canvas* canvas, int x, int y);
 
-  // Returns true if object is null or |size_| is empty.
-  bool empty() const;
+  // Draws the image with the origin at the specified location, using the
+  // specified paint. The upper left corner of the image is rendered at the
+  // specified location.
+  void DrawToCanvasInt(Canvas* canvas,
+                       int x, int y,
+                       const SkPaint& paint);
 
-  // Returns true if this is a null object.
-  // TODO(pkotwicz): Merge this function into empty().
-  bool isNull() const { return storage_ == NULL; }
+  // Draws a portion of the image in the specified location. The src parameters
+  // correspond to the region of the image to draw in the region defined
+  // by the dest coordinates.
+  //
+  // If the width or height of the source differs from that of the destination,
+  // the image will be scaled. When scaling down, it is highly recommended
+  // that you call BuildMipMap() on your image to ensure that it has
+  // a mipmap, which will result in much higher-quality output. Set |filter| to
+  // use filtering for bitmaps, otherwise the nearest-neighbor algorithm is used
+  // for resampling.
+  //
+  // An optional custom SkPaint can be provided.
+  void DrawToCanvasInt(Canvas* canvas,
+                       int src_x, int src_y, int src_w, int src_h,
+                       int dest_x, int dest_y, int dest_w, int dest_h,
+                       bool filter);
+  void DrawToCanvasInt(Canvas* canvas,
+                       int src_x, int src_y, int src_w, int src_h,
+                       int dest_x, int dest_y, int dest_w, int dest_h,
+                       bool filter,
+                       const SkPaint& paint);
+
+  // Returns true if |size_| is empty.
+  bool IsZeroSized() const { return size_.IsEmpty(); }
 
   // Width and height of image in DIP coordinate system.
-  int width() const;
-  int height() const;
-
-  // Wrapper function for SkBitmap::extractBitmap.
-  // Operates on bitmap at index 0 if available.
-  // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
-  // done.
-  bool extractSubset(ImageSkia* dst, SkIRect& subset) const;
-
-  // Returns pointer to an SkBitmap contained by this object.
-  // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
-  // done.
-  const SkBitmap* bitmap() const;
+  int width() const { return size_.width(); }
+  int height() const { return size_.height(); }
 
   // Returns a vector with the SkBitmaps contained in this object.
-  const std::vector<SkBitmap> bitmaps() const;
+  const std::vector<const SkBitmap*>& bitmaps() const { return bitmaps_; }
 
  private:
-  // Initialize ImageStorage with passed in parameters.
-  // If |bitmap.isNull()|, ImageStorage is set to NULL.
-  // Scale factor is set based on default scale factor of 1x.
-  // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
-  // done.
-  void Init(const SkBitmap& bitmap);
+  // Returns the bitmap whose density best matches |x_scale_factor| and
+  // |y_scale_factor|.
+  const SkBitmap* GetBitmapForScale(float x_scale_factor,
+                                    float y_scale_factor) const;
 
-  // Initialize ImageStorage with passed in parameters.
-  // If |bitmap.isNull()|, ImageStorage is set to NULL.
-  void Init(const SkBitmap& bitmap, float scale_factor);
+  std::vector<const SkBitmap*> bitmaps_;
+  gfx::Size size_;
+  bool mip_map_build_pending_;
 
-  // A refptr so that ImageRepSkia can be copied cheaply.
-  scoped_refptr<internal::ImageSkiaStorage> storage_;
+  DISALLOW_COPY_AND_ASSIGN(ImageSkia);
 };
 
 }  // namespace gfx

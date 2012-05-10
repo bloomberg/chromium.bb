@@ -218,10 +218,11 @@ TEST_F(ImageLoadingTrackerTest, MultipleImages) {
   EXPECT_EQ(1, image_loaded_count());
 
   // Check that all images were loaded.
-  const std::vector<SkBitmap> bitmaps = image_.ToImageSkia()->bitmaps();
+  const std::vector<const SkBitmap*>& bitmaps =
+      image_.ToImageSkia()->bitmaps();
   ASSERT_EQ(2u, bitmaps.size());
-  const SkBitmap* bmp1 = &bitmaps[0];
-  const SkBitmap* bmp2 = &bitmaps[1];
+  const SkBitmap* bmp1 = bitmaps[0];
+  const SkBitmap* bmp2 = bitmaps[1];
   if (bmp1->width() > bmp2->width()) {
     std::swap(bmp1, bmp2);
   }
