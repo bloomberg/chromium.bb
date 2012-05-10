@@ -22,6 +22,7 @@
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_info_collector.h"
 #include "content/gpu/gpu_process.h"
+#include "crypto/hmac.h"
 #include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/gl/gl_switches.h"
 
@@ -102,6 +103,13 @@ int GpuMain(const content::MainFunctionParams& parameters) {
   // Warm up the random subsystem, which needs to be done pre-sandbox on all
   // platforms.
   (void) base::RandUint64();
+
+  // Warm up the crypto subsystem, which needs to done pre-sandbox on all
+  // platforms.
+  crypto::HMAC hmac(crypto::HMAC::SHA256);
+  unsigned char key = '\0';
+  bool ret = hmac.Init(&key, sizeof(key));
+  (void) ret;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   content::InitializeSandbox();
