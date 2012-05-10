@@ -23,12 +23,12 @@ chrome.test.runTests([
     var fontName = 'Verdana';
 
     chrome.test.listenOnce(fs.onFontChanged, function(details) {
-      chrome.test.assertEq(details, {
+      chrome.test.assertEq({
         script: script,
         genericFamily: genericFamily,
         fontName: fontName,
         levelOfControl: 'controlled_by_this_extension'
-      });
+      }, details);
     });
 
     fs.setFont({
@@ -55,11 +55,11 @@ chrome.test.runTests([
     var genericFamily = 'sansserif';
 
     chrome.test.listenOnce(fs.onFontChanged, function(details) {
-      chrome.test.assertEq(details, {
+      chrome.test.assertEq({
         genericFamily: genericFamily,
         fontName: fontName,
         levelOfControl: 'controlled_by_this_extension'
-      });
+      }, details);
     });
 
     fs.setFont({
@@ -92,10 +92,10 @@ chrome.test.runTests([
   function setDefaultFontSize() {
     var pixelSize = 22;
     chrome.test.listenOnce(fs.onDefaultFontSizeChanged, function(details) {
-      chrome.test.assertEq(details, {
+      chrome.test.assertEq({
         pixelSize: pixelSize,
         levelOfControl: 'controlled_by_this_extension'
-      });
+      }, details);
     });
 
     fs.setDefaultFontSize({
@@ -106,10 +106,10 @@ chrome.test.runTests([
   function setDefaultFixedFontSize() {
     var pixelSize = 42;
     chrome.test.listenOnce(fs.onDefaultFixedFontSizeChanged, function(details) {
-      chrome.test.assertEq(details, {
+      chrome.test.assertEq({
         pixelSize: pixelSize,
         levelOfControl: 'controlled_by_this_extension'
-      });
+      }, details);
     });
 
     fs.setDefaultFixedFontSize({
@@ -120,10 +120,10 @@ chrome.test.runTests([
   function setMinimumFontSize() {
     var pixelSize = 7;
     chrome.test.listenOnce(fs.onMinimumFontSizeChanged, function(details) {
-      chrome.test.assertEq(details, {
+      chrome.test.assertEq({
         pixelSize: pixelSize,
         levelOfControl: 'controlled_by_this_extension'
-      });
+      }, details);
     });
 
     fs.setMinimumFontSize({
@@ -134,10 +134,10 @@ chrome.test.runTests([
   function setDefaultCharacterSet() {
     var charset = 'GBK';
     chrome.test.listenOnce(fs.onDefaultCharacterSetChanged, function(details) {
-      chrome.test.assertEq(details, {
+      chrome.test.assertEq({
         charset: charset,
         levelOfControl: 'controlled_by_this_extension'
-      });
+      }, details);
     });
 
     fs.setDefaultCharacterSet({
@@ -183,12 +183,12 @@ chrome.test.runTests([
     var fontName = 'Tahoma';
 
     chrome.test.listenOnce(fs.onFontChanged, function(details) {
-      chrome.test.assertEq(details, {
+      chrome.test.assertEq({
         script: script,
         genericFamily: genericFamily,
         fontName: fontName,
         levelOfControl: CONTROLLABLE_BY_THIS_EXTENSION
-      });
+      }, details);
     });
 
     fs.clearFont({
@@ -204,11 +204,11 @@ chrome.test.runTests([
     var fontName = 'Arial';
 
     chrome.test.listenOnce(fs.onFontChanged, function(details) {
-      chrome.test.assertEq(details, {
+      chrome.test.assertEq({
         genericFamily: genericFamily,
         fontName: fontName,
         levelOfControl: CONTROLLABLE_BY_THIS_EXTENSION
-      });
+      }, details);
     });
 
     fs.clearFont({
@@ -219,10 +219,10 @@ chrome.test.runTests([
   function clearDefaultFontSize() {
     var pixelSize = 16;
     chrome.test.listenOnce(fs.onDefaultFontSizeChanged, function(details) {
-      chrome.test.assertEq(details, {
+      chrome.test.assertEq({
         pixelSize: pixelSize,
         levelOfControl: CONTROLLABLE_BY_THIS_EXTENSION
-      });
+      }, details);
     });
 
     fs.clearDefaultFontSize({}, chrome.test.callbackPass());
@@ -231,10 +231,10 @@ chrome.test.runTests([
   function clearDefaultFixedFontSize() {
     var pixelSize = 14;
     chrome.test.listenOnce(fs.onDefaultFixedFontSizeChanged, function(details) {
-      chrome.test.assertEq(details, {
+      chrome.test.assertEq({
         pixelSize: pixelSize,
         levelOfControl: CONTROLLABLE_BY_THIS_EXTENSION
-      });
+      }, details);
     });
 
     fs.clearDefaultFixedFontSize({}, chrome.test.callbackPass());
@@ -243,10 +243,10 @@ chrome.test.runTests([
   function clearMinimumFontSize() {
     var pixelSize = 8;
     chrome.test.listenOnce(fs.onMinimumFontSizeChanged, function(details) {
-      chrome.test.assertEq(details, {
+      chrome.test.assertEq({
         pixelSize: pixelSize,
         levelOfControl: CONTROLLABLE_BY_THIS_EXTENSION
-      });
+      }, details);
     });
 
     fs.clearMinimumFontSize({}, chrome.test.callbackPass());
@@ -255,10 +255,10 @@ chrome.test.runTests([
   function clearDefaultCharacterSet() {
     var charset = 'Shift_JIS';
     chrome.test.listenOnce(fs.onDefaultCharacterSetChanged, function(details) {
-      chrome.test.assertEq(details, {
+      chrome.test.assertEq({
         charset: charset,
         levelOfControl: CONTROLLABLE_BY_THIS_EXTENSION
-      });
+      }, details);
     });
 
     fs.clearDefaultCharacterSet({}, chrome.test.callbackPass());
