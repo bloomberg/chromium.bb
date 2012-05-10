@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/url_util.h"
 
 namespace extension_urls {
 std::string GetWebstoreLaunchURL() {
@@ -24,6 +25,18 @@ std::string GetWebstoreLaunchURL() {
 
 std::string GetWebstoreItemDetailURLPrefix() {
   return GetWebstoreLaunchURL() + "/detail/";
+}
+
+GURL GetWebstoreIntentQueryURL(const std::string& action,
+                               const std::string& type) {
+  const char kIntentsCategoryPath[] = "category/collection/webintent_apps";
+
+  GURL url(std::string(kGalleryBrowsePrefix) + "/");
+  url = url.Resolve(kIntentsCategoryPath);
+  url = chrome_common_net::AppendQueryParameter(url, "_wi", action);
+  url = chrome_common_net::AppendQueryParameter(url, "_mt", type);
+
+  return url;
 }
 
 GURL GetWebstoreItemJsonDataURL(const std::string& extension_id) {

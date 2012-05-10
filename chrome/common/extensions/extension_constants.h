@@ -24,6 +24,11 @@ namespace extension_urls {
   // to get the item detail URL.
   std::string GetWebstoreItemDetailURLPrefix();
 
+  // Returns the URL leading to a search page for Web Intents. The search is
+  // specific to intents with the given |action| and |type|.
+  GURL GetWebstoreIntentQueryURL(const std::string& action,
+                                 const std::string& type);
+
   // Returns the URL used to get webstore data (ratings, manifest, icon URL,
   // etc.) about an extension from the webstore as JSON.
   GURL GetWebstoreItemJsonDataURL(const std::string& extension_id);
