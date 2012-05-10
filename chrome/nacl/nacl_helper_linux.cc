@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@
 #include "base/rand_util.h"
 #include "chrome/nacl/nacl_listener.h"
 #include "content/common/unix_domain_socket_posix.h"
+#include "crypto/nss_util.h"
 #include "ipc/ipc_switches.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 
@@ -171,6 +172,19 @@ int main(int argc, char *argv[]) {
   CommandLine::Init(argc, argv);
   base::AtExitManager exit_manager;
   base::RandUint64();  // acquire /dev/urandom fd before sandbox is raised
+#if defined(USE_NSS)
+  // Configure NSS for use inside the NaCl process.
+  // The fork check has not caused problems for NaCl, but this appears to be
+  // best practice (see other places LoadNSSLibraries is called.)
+  crypto::DisableNSSForkCheck();
+  // Without this line on Linux, HMAC::Init will instantiate a singleton that
+  // in turn attempts to open a file.  Disabling this behavior avoids a ~70 ms
+  // stall the first time HMAC is used.
+  crypto::ForceNSSNoDBInit();
+  // Load shared libraries before sandbox is raised.
+  // NSS is needed to perform hashing for validation caching.
+  crypto::LoadNSSLibraries();
+#endif
   std::vector<int> empty; // for SendMsg() calls
 
   check_r_debug(argv[0]);

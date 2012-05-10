@@ -38,6 +38,10 @@ NaClValidationQuery::NaClValidationQuery(NaClValidationDB* db,
   // Without this line on Linux, HMAC::Init will instantiate a singleton that
   // in turn attempts to open a file.  Disabling this behavior avoids a ~70 ms
   // stall the first time HMAC is used.
+  // This function is also called in nacl_helper_linux.cc, but nacl_helper may
+  // not be used in all cases.
+  // TODO(ncbray) remove when nacl_helper becomes the only code path.
+  // http://code.google.com/p/chromium/issues/detail?id=118263
 #if defined(OS_LINUX)
   crypto::ForceNSSNoDBInit();
 #endif
