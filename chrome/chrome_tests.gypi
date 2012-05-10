@@ -2984,6 +2984,7 @@
         'test/data/webui/print_preview.cc',
         'test/data/webui/print_preview.h',
         'test/data/webui/print_preview.js',
+	'test/data/webui/suidsandbox_browsertest.js',
         'test/gpu/gpu_feature_browsertest.cc',
         'test/security_tests/sandbox_browsertest.cc',
         'test/ui/ppapi_uitest.cc',
