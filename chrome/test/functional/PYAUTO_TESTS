@@ -675,8 +675,6 @@
       'chromeos_onc',
       'policy',
       'policy_prefs_ui',
-      # TODO(craigdh): Determine why this test is crashing PyAuto.
-      '-chromeos_onc.ChromeosONC.testAddBacktoBackONC',
       # crbug.com/115427
       '-policy.PolicyTest.testAlwaysAuthorizePlugins',
       # crbug.com/118054
