@@ -317,6 +317,9 @@ Press Shift + Search key to cancel.
 CAPS LOCK is on.
 Press Search key to cancel.
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISABLE_SPOKEN_FEEDBACK" desc="The label used in the tray popup to disable spoken feedback.">
+        Disable spoken feedback
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_FULL" desc="The label in the tray dialog to indicate that the battery is full.">
         Battery full
       </message>

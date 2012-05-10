@@ -345,6 +345,8 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
     return false;
   }
 
+  virtual void SetEnableSpokenFeedback(bool enable) OVERRIDE {}
+
   virtual void ShutDown() OVERRIDE {}
 
   virtual void SignOut() OVERRIDE {

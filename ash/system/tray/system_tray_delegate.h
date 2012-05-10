@@ -168,6 +168,9 @@ class SystemTrayDelegate {
   // Gets whether accessibility mode is turned on.
   virtual bool IsInAccessibilityMode() const = 0;
 
+  // Enables or disables spoken feedback.
+  virtual void SetEnableSpokenFeedback(bool enable) = 0;
+
   // Attempts to shut down the system.
   virtual void ShutDown() = 0;
 

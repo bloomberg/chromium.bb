@@ -25,6 +25,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
@@ -349,6 +350,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual bool IsInAccessibilityMode() const OVERRIDE {
     return accessibility_enabled_.GetValue();
+  }
+
+  virtual void SetEnableSpokenFeedback(bool enable) OVERRIDE {
+    chromeos::accessibility::EnableSpokenFeedback(enable, NULL);
   }
 
   virtual void ShutDown() OVERRIDE {
