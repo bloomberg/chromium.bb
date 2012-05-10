@@ -31,8 +31,10 @@ class KrakenBenchmarkTest : public UIPerfTest {
 
   void RunTest() {
     FilePath test_path;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_path);
-    test_path = test_path.AppendASCII("third_party")
+    PathService::Get(chrome::DIR_APP, &test_path);
+    test_path = test_path.AppendASCII("test")
+        .AppendASCII("data")
+        .AppendASCII("third_party")
         .AppendASCII("kraken")
         .AppendASCII("hosted")
         .AppendASCII("kraken-1.1")

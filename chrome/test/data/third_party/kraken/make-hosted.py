@@ -27,20 +27,29 @@
 from __future__ import with_statement
 import os
 import shutil
+import sys
 
-suites = ["kraken-1.1", "kraken-1.0", "sunspider-0.9.1"]
+suites = ["kraken-1.1"]
+
+def get_tests_path(path):
+  prefix = sys.argv[1] if len(sys.argv) > 1 else '.'
+  return os.path.join(prefix, path)
+
+def get_hosted_path(path):
+  prefix = sys.argv[2] if len(sys.argv) > 2 else '.'
+  return os.path.join(prefix, "hosted", path)
 
 def readTemplate(path):
     with open(path, 'r') as f:
         return f.read()
 
-template = readTemplate("resources/TEMPLATE.html")
-driverTemplate = readTemplate("resources/driver-TEMPLATE.html")
-resultsTemplate = readTemplate("resources/results-TEMPLATE.html")
+template = readTemplate(get_tests_path("resources/TEMPLATE.html"))
+driverTemplate = readTemplate(get_tests_path("resources/driver-TEMPLATE.html"))
+resultsTemplate = readTemplate(get_tests_path("resources/results-TEMPLATE.html"))
 
 def testListForSuite(suite):
     tests = []
-    with open("./tests/%s/LIST" % suite, "r") as f:
+    with open(get_tests_path("tests/%s/LIST" % suite), "r") as f:
         for line in f.readlines():
             tests.append(line.strip())
     return tests
@@ -54,12 +63,12 @@ def categoriesFromTests(tests):
     return categories
 
 def escapeTestContent(test,suite):
-    with open("tests/" + suite + "/" + test + ".js") as f:
+    with open(get_tests_path("tests/" + suite + "/" + test + ".js")) as f:
         script = f.read()
     output = template
     output = output.replace("@NAME@", test)
     output = output.replace("@SCRIPT@", script)
-    dataPath = "tests/" + suite + "/" + test + "-data.js"
+    dataPath = get_tests_path("tests/" + suite + "/" + test + "-data.js")
     if (os.path.exists(dataPath)):
         with open(dataPath) as f:
             datascript = f.read()
@@ -78,13 +87,13 @@ def testContentsFromTests(suite, tests):
 
 def writeTemplate(suite, template, fileName):
     output = template.replace("@SUITE@", suite)
-    with open("hosted/" + suite + "/" + fileName, "w") as f:
+    with open(get_hosted_path(suite + "/" + fileName), "w") as f:
         f.write(output)
 
 for suite in suites:
-    suiteDir = os.path.join("hosted", suite)
+    suiteDir = get_hosted_path(suite)
     if not os.path.exists(suiteDir):
-        os.mkdir(suiteDir)
+        os.makedirs(suiteDir)
     tests = testListForSuite(suite)
     categories = categoriesFromTests(tests)
     testContents = testContentsFromTests(suite, tests)
@@ -93,14 +102,18 @@ for suite in suites:
 
     prefix = "var tests = [ " + ", ".join(['"%s"' % s for s in tests]) + " ];\n"
     prefix += "var categories = [ " + ", ".join(['"%s"' % s for s in categories]) + " ];\n"
-    with open("hosted/" + suite + "/test-prefix.js", "w") as f:
+    with open(get_hosted_path(suite + "/test-prefix.js"), "w") as f:
         f.write(prefix)
 
     contents = "var testContents = [ " + ", ".join(['"%s"' % s for s in testContents]) + " ];\n"
-    with open("hosted/" + suite + "/test-contents.js", "w") as f:
+    with open(get_hosted_path(suite + "/test-contents.js"), "w") as f:
         f.write(contents)
 
-shutil.copyfile("resources/analyze-results.js", "hosted/analyze-results.js")
-shutil.copyfile("resources/compare-results.js", "hosted/compare-results.js")
-
-print("You're awesome!")
+shutil.copyfile(get_tests_path("resources/analyze-results.js"),
+                get_hosted_path("analyze-results.js"))
+shutil.copyfile(get_tests_path("resources/compare-results.js"),
+                get_hosted_path("compare-results.js"))
+shutil.copyfile(get_tests_path("hosted/json2.js"),
+                get_hosted_path("json2.js"))
+shutil.copyfile(get_tests_path("hosted/kraken.css"),
+                get_hosted_path("kraken.css"))

@@ -273,3 +273,4 @@ computeMeans();
 computeStdDevs();
 computeStdErrors();
 printOutput();
+automation.setDone();
