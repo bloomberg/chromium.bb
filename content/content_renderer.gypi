@@ -40,6 +40,8 @@
     'public/renderer/render_view_observer_tracker.h',
     'public/renderer/render_view_visitor.h',
     'public/renderer/v8_value_converter.h',
+    'renderer/android/address_detector.cc',
+    'renderer/android/address_detector.h',
     'renderer/android/content_detector.cc',
     'renderer/android/content_detector.h',
     'renderer/active_notification_tracker.cc',
