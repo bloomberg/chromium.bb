@@ -13,7 +13,7 @@ cr.define('options', function() {
   function SpellingConfirmOverlay() {
     SettingsDialog.call(this,
                         'spellingConfirm',
-                        templateData.spellingConfirmTitle,
+                        loadTimeData.getString('spellingConfirmTitle'),
                         'spelling-confirm-overlay',
                         $('spelling-confirm-ok'),
                         $('spelling-confirm-cancel'));

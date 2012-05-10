@@ -8,7 +8,7 @@ cr.define('options', function() {
   /**
    * Enumeration of possible states during pairing.  The value associated with
    * each state maps to a localized string in the global variable
-   * 'templateData'.
+   * |loadTimeData|.
    * @enum {string}
    */
   var PAIRING = {
@@ -46,7 +46,7 @@ cr.define('options', function() {
   function BluetoothPairing() {
     OptionsPage.call(this,
                      'bluetoothPairing',
-                     templateData.bluetoothOptionsPageTabTitle,
+                     loadTimeData.getString('bluetoothOptionsPageTabTitle'),
                      'bluetooth-pairing');
   }
 
@@ -168,7 +168,7 @@ cr.define('options', function() {
       this.dismissible_ = ('dismissible' in device) ?
         device.dimissible : true;
 
-      var message = templateData[device.pairing];
+      var message = loadTimeData.getString('device.pairing');
       message = message.replace('%1', this.device_.name);
       instructionsEl.textContent = message;
 
@@ -278,7 +278,7 @@ cr.define('options', function() {
       }
       if (this.device_.pairing == PAIRING.REMOTE_PASSKEY) {
         // Add enter key.
-        var label = templateData['bluetoothEnterKey'];
+        var label = loadTimeData.getString('bluetoothEnterKey');
         var keyEl = document.createElement('span');
         keyEl.textContent = label;
         keyEl.className = keyClass;
@@ -306,7 +306,7 @@ cr.define('options', function() {
       }
       if (this.device_.pairing == PAIRING.REMOTE_PIN_CODE) {
         // Add enter key.
-        var label = templateData['bluetoothEnterKey'];
+        var label = loadTimeData.getString('bluetoothEnterKey');
         var keyEl = document.createElement('span');
         keyEl.textContent = label;
         keyEl.className = keyClass;

@@ -94,9 +94,8 @@ void ChangePictureOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO));
 
-  localized_strings->SetString("userIsEphemeral",
-      UserManager::Get()->IsCurrentUserEphemeral() ?
-          ASCIIToUTF16("true") : ASCIIToUTF16("false"));
+  localized_strings->SetBoolean("userIsEphemeral",
+                                UserManager::Get()->IsCurrentUserEphemeral());
 }
 
 void ChangePictureOptionsHandler::RegisterMessages() {

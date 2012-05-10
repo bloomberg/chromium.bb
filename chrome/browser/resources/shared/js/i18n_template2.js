@@ -53,7 +53,7 @@ var i18nTemplate = (function() {
      * @param {LoadTimeData} dictionary The dictionary of strings to draw from.
      */
     'i18n-options': function(select, key, dictionary) {
-      var options = dictionary.getString(key);
+      var options = dictionary.getValue(key);
       options.forEach(function(optionData) {
         var option = typeof optionData == 'string' ?
             new Option(optionData) :

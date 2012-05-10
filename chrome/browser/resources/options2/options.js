@@ -52,8 +52,6 @@ function load() {
   cr.ui.decorate('span.controlled-setting-indicator',
       options.ControlledSettingIndicator);
 
-  localStrings = new LocalStrings();
-
   // Top level pages.
   OptionsPage.register(SearchPage.getInstance());
   OptionsPage.register(BrowserOptions.getInstance());
@@ -139,22 +137,22 @@ function load() {
                                 BrowserOptions.getInstance());
     OptionsPage.registerOverlay(
         new OptionsPage('languageChewing',
-                        templateData.languageChewingPageTabTitle,
+                        loadTimeData.getString('languageChewingPageTabTitle'),
                         'languageChewingPage'),
         LanguageOptions.getInstance());
     OptionsPage.registerOverlay(
         new OptionsPage('languageHangul',
-                        templateData.languageHangulPageTabTitle,
+                        loadTimeData.getString('languageHangulPageTabTitle'),
                         'languageHangulPage'),
         LanguageOptions.getInstance());
     OptionsPage.registerOverlay(
         new OptionsPage('languageMozc',
-                        templateData.languageMozcPageTabTitle,
+                        loadTimeData.getString('languageMozcPageTabTitle'),
                         'languageMozcPage'),
         LanguageOptions.getInstance());
     OptionsPage.registerOverlay(
         new OptionsPage('languagePinyin',
-                        templateData.languagePinyinPageTabTitle,
+                        loadTimeData.getString('languagePinyinPageTabTitle'),
                         'languagePinyinPage'),
         LanguageOptions.getInstance());
     // Only use the VirtualKeyboardManager if the keyboard DOM elements (which

@@ -16,7 +16,7 @@ cr.define('options', function() {
     this.activeNavTab = null;
     OptionsPage.call(this,
                      'handlers',
-                     templateData.handlersPageTabTitle,
+                     loadTimeData.getString('handlersPageTabTitle'),
                      'handler-options');
   }
 

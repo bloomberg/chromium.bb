@@ -13,7 +13,8 @@ cr.define('options', function() {
    * @constructor
    */
   function AccountsOptions(model) {
-    OptionsPage.call(this, 'accounts', templateData.accountsPageTabTitle,
+    OptionsPage.call(this, 'accounts',
+                     loadTimeData.getString('accountsPageTabTitle'),
                      'accountsPage');
     // Whether to show the whitelist.
     this.showWhitelist_ = false;
@@ -135,7 +136,7 @@ cr.define('options', function() {
    * Returns whether the whitelist is managed by policy or not.
    */
   AccountsOptions.whitelistIsManaged = function() {
-    return localStrings.getString('whitelist_is_managed') == 'true';
+    return loadTimeData.getBoolean('whitelist_is_managed');
   };
 
   /**

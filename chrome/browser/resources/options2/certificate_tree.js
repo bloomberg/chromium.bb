@@ -27,7 +27,7 @@ cr.define('options', function() {
     if (data.untrusted) {
       var badge = document.createElement('span');
       badge.classList.add('cert-untrusted');
-      badge.textContent = localStrings.getString('badgeCertUntrusted');
+      badge.textContent = loadTimeData.getString('badgeCertUntrusted');
       treeItem.labelElement.insertBefore(
           badge, treeItem.labelElement.firstChild);
     }

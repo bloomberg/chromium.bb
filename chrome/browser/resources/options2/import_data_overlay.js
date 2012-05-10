@@ -13,7 +13,7 @@ cr.define('options', function() {
   function ImportDataOverlay() {
     OptionsPage.call(this,
                      'importData',
-                     templateData.importDataOverlayTabTitle,
+                     loadTimeData.getString('importDataOverlayTabTitle'),
                      'import-data-overlay');
   }
 
@@ -135,7 +135,7 @@ cr.define('options', function() {
       var browserCount = browsers.length;
 
       if (browserCount == 0) {
-        var option = new Option(templateData.noProfileFound, 0);
+        var option = new Option(loadTimeData.getString('noProfileFound'), 0);
         browserSelect.appendChild(option);
 
         this.setControlsSensitive_(false);

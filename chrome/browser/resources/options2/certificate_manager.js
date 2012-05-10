@@ -95,10 +95,10 @@ cr.define('options', function() {
     this.deleteButton.onclick = function(e) {
       var data = tree.selectedItem.data;
       AlertOverlay.show(
-          localStrings.getStringF(id + 'DeleteConfirm', data.name),
-          localStrings.getString(id + 'DeleteImpact'),
-          localStrings.getString('ok'),
-          localStrings.getString('cancel'),
+          loadTimeData.getStringF(id + 'DeleteConfirm', data.name),
+          loadTimeData.getString(id + 'DeleteImpact'),
+          loadTimeData.getString('ok'),
+          loadTimeData.getString('cancel'),
           function() {
             tree.selectedItem = null;
             chrome.send('deleteCertificate', [data.id]);
@@ -173,7 +173,7 @@ cr.define('options', function() {
    */
   function CertificateManager(model) {
     OptionsPage.call(this, 'certificates',
-                     templateData.certificateManagerPageTabTitle,
+                     loadTimeData.getString('certificateManagerPageTabTitle'),
                      'certificateManagerPage');
   }
 

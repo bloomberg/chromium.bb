@@ -13,7 +13,7 @@ cr.define('options', function() {
   function SearchEngineManager() {
     this.activeNavTab = null;
     OptionsPage.call(this, 'searchEngines',
-                     templateData.searchEngineManagerPageTabTitle,
+                     loadTimeData.getString('searchEngineManagerPageTabTitle'),
                      'search-engine-manager-page');
   }
 

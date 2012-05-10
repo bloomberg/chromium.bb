@@ -144,7 +144,7 @@ cr.define('options.accounts', function() {
       var labelName = this.ownerDocument.createElement('span');
       labelName.className = 'user-name-label';
       labelName.textContent = this.user.owner ?
-          localStrings.getStringF('username_format', this.user.name) :
+          loadTimeData.getStringF('username_format', this.user.name) :
           this.user.name;
 
       var emailNameBlock = this.ownerDocument.createElement('div');
@@ -152,7 +152,7 @@ cr.define('options.accounts', function() {
       emailNameBlock.appendChild(labelEmail);
       emailNameBlock.appendChild(labelName);
       emailNameBlock.title = this.user.owner ?
-          localStrings.getStringF('username_format', this.user.email) :
+          loadTimeData.getStringF('username_format', this.user.email) :
           this.user.email;
 
       this.appendChild(this.icon_);

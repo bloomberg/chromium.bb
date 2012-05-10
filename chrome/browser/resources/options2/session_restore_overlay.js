@@ -7,7 +7,7 @@ cr.define('options', function() {
 
   function SessionRestoreOverlay() {
     OptionsPage.call(this, 'sessionRestoreOverlay',
-                     templateData.sessionRestoreOverlayTitle,
+                     loadTimeData.getString('sessionRestoreOverlayTitle'),
                      'sessionRestoreOverlay');
   };
 
