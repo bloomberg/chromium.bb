@@ -5,7 +5,11 @@ dist_westondata_DATA =				\
 	$(wayland_icon_png)			\
 	pattern.png				\
 	terminal.png				\
-	border.png
+	border.png				\
+	icon_window.png				\
+	sign_close.png				\
+	sign_maximize.png			\
+	sign_minimize.png
 
 if HAVE_RSVG_CONVERT
 wayland_icon_png = wayland.png
