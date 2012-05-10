@@ -275,8 +275,6 @@ class BrowserActionsContainer
   BrowserActionsContainer(Browser* browser, views::View* owner_view);
   virtual ~BrowserActionsContainer();
 
-  static void RegisterUserPrefs(PrefService* prefs);
-
   void Init();
 
   // Get the number of browser actions being displayed.

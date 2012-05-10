@@ -55,11 +55,22 @@
 #include "ui/views/controls/resize_area.h"
 #include "ui/views/metrics.h"
 
+namespace {
+
 // Horizontal spacing between most items in the container, as well as after the
 // last item or chevron (if visible).
-static const int kItemSpacing = ToolbarView::kStandardSpacing;
+const int kItemSpacing = ToolbarView::kStandardSpacing;
+
 // Horizontal spacing before the chevron (if visible).
-static const int kChevronSpacing = kItemSpacing - 2;
+const int kChevronSpacing = kItemSpacing - 2;
+
+void RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterIntegerPref(prefs::kBrowserActionContainerWidth,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
+}
+
+}  // namespace
 
 // static
 bool BrowserActionsContainer::disable_animations_during_testing_ = false;
@@ -425,15 +436,12 @@ BrowserActionsContainer::~BrowserActionsContainer() {
   DeleteBrowserActionViews();
 }
 
-// Static.
-void BrowserActionsContainer::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kBrowserActionContainerWidth,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-}
-
 void BrowserActionsContainer::Init() {
   LoadImages();
+
+  if (!profile_->GetPrefs()->FindPreference(
+          prefs::kBrowserActionContainerWidth))
+    RegisterUserPrefs(profile_->GetPrefs());
 
   // We wait to set the container width until now so that the chevron images
   // will be loaded.  The width calculation needs to know the chevron size.
