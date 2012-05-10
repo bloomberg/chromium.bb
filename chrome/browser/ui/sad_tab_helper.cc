@@ -41,6 +41,10 @@ void SadTabHelper::RenderViewGone(base::TerminationStatus status) {
   if (browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID)
     return;
 
+  // Don't build the sad tab view when the termination status is normal.
+  if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION)
+    return;
+
   if (HasSadTab())
     return;
 
