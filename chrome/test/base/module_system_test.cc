@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "chrome/renderer/native_handler.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #include <map>
 #include <string>
@@ -92,6 +93,19 @@ ModuleSystemTest::~ModuleSystemTest() {
 void ModuleSystemTest::RegisterModule(const std::string& name,
                                       const std::string& code) {
   source_map_->RegisterModule(name, code);
+}
+
+void ModuleSystemTest::RegisterModule(const std::string& name,
+                                      int resource_id) {
+  const std::string& code = ResourceBundle::GetSharedInstance().
+      GetRawDataResource(resource_id).as_string();
+  source_map_->RegisterModule(name, code);
+}
+
+void ModuleSystemTest::OverrideNativeHandler(const std::string& name,
+                                             const std::string& code) {
+  RegisterModule(name, code);
+  module_system_->OverrideNativeHandler(name);
 }
 
 void ModuleSystemTest::TearDown() {

@@ -5,7 +5,6 @@
   var eventBindingsNatives = requireNative('event_bindings');
   var AttachEvent = eventBindingsNatives.AttachEvent;
   var DetachEvent = eventBindingsNatives.DetachEvent;
-  var Print = eventBindingsNatives.Print;
 
   var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
@@ -313,3 +312,5 @@
   chromeHidden.dispatchError = function(msg) {
     console.error(msg);
   };
+
+  exports.Event = chrome.Event;

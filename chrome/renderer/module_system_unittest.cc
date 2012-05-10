@@ -208,3 +208,20 @@ TEST_F(ModuleSystemTest, TestModulesOnlyGetEvaledOnce) {
 
   module_system_->Require("test");
 }
+
+TEST_F(ModuleSystemTest, TestOverrideNativeHandler) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  OverrideNativeHandler("assert", "exports.AssertTrue = function() {};");
+  RegisterModule("test", "requireNative('assert').AssertTrue(true);");
+  ExpectNoAssertionsMade();
+  module_system_->Require("test");
+}
+
+TEST_F(ModuleSystemTest, TestOverrideNonExistentNativeHandler) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system_.get());
+  OverrideNativeHandler("thing", "exports.x = 5;");
+  RegisterModule("test",
+      "var assert = requireNative('assert');"
+      "assert.AssertTrue(requireNative('thing').x == 5);");
+  module_system_->Require("test");
+}

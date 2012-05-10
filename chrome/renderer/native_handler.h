@@ -29,7 +29,7 @@ class NativeHandler {
 
   // Create an object with bindings to the native functions defined through
   // RouteFunction().
-  v8::Handle<v8::Object> NewInstance();
+  virtual v8::Handle<v8::Object> NewInstance();
 
  protected:
   typedef v8::Handle<v8::Value> (*HandlerFunc)(const v8::Arguments&);

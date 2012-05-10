@@ -117,6 +117,10 @@ void ModuleSystem::RegisterNativeHandler(const std::string& name,
       linked_ptr<NativeHandler>(native_handler.release());
 }
 
+void ModuleSystem::OverrideNativeHandler(const std::string& name) {
+  overridden_native_handlers_.insert(name);
+}
+
 void ModuleSystem::RunString(const std::string& code, const std::string& name) {
   v8::HandleScope handle_scope;
   RunString(v8::String::New(code.c_str()), v8::String::New(name.c_str()));
@@ -205,6 +209,8 @@ v8::Handle<v8::Value> ModuleSystem::GetNative(const v8::Arguments& args) {
   if (natives_enabled_ == 0)
     return ThrowException("Natives disabled");
   std::string native_name = *v8::String::AsciiValue(args[0]->ToString());
+  if (overridden_native_handlers_.count(native_name) > 0u)
+    return RequireForJs(args);
   NativeHandlerMap::iterator i = native_handler_map_.find(native_name);
   if (i == native_handler_map_.end())
     return v8::Undefined();

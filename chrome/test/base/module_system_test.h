@@ -18,6 +18,7 @@ class StringSourceMap;
 // Typically tests will look like:
 //
 // TEST_F(MyModuleSystemTest, TestStuff) {
+//   ModuleSystem::NativesEnabledScope natives_enabled(module_system_.get());
 //   RegisterModule("test", "requireNative('assert').AssertTrue(true);");
 //   module_system_->Require("test");
 // }
@@ -31,8 +32,17 @@ class ModuleSystemTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE;
 
+ protected:
   // Register a named JS module in the module system.
   void RegisterModule(const std::string& name, const std::string& code);
+
+  // Register a named JS module with source retrieved from a ResourceBundle.
+  void RegisterModule(const std::string& name, int resource_id);
+
+  // Register a named JS module in the module system and tell the module system
+  // to use it to handle any requireNative() calls for native modules with that
+  // name.
+  void OverrideNativeHandler(const std::string& name, const std::string& code);
 
   // Make the test fail if any asserts are called. By default a test will fail
   // if no asserts are called.
@@ -41,7 +51,6 @@ class ModuleSystemTest : public testing::Test {
   // Create an empty object in the global scope with name |name|.
   v8::Handle<v8::Object> CreateGlobal(const std::string& name);
 
- protected:
   v8::Persistent<v8::Context> context_;
   v8::HandleScope handle_scope_;
   v8::TryCatch try_catch_;

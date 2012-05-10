@@ -13,6 +13,7 @@
 #include "v8/include/v8.h"
 
 #include <map>
+#include <set>
 #include <string>
 
 // A module system for JS similar to node.js' require() function.
@@ -70,6 +71,11 @@ class ModuleSystem : public NativeHandler {
   void RegisterNativeHandler(const std::string& name,
                              scoped_ptr<NativeHandler> native_handler);
 
+  // Causes requireNative(|name|) to look for its module in |source_map_|
+  // instead of using a registered native handler. This can be used in unit
+  // tests to mock out native modules.
+  void OverrideNativeHandler(const std::string& name);
+
   // Executes |code| in the current context with |name| as the filename.
   void RunString(const std::string& code, const std::string& name);
 
@@ -123,6 +129,8 @@ class ModuleSystem : public NativeHandler {
   // When 0, natives are disabled, otherwise indicates how many callers have
   // pinned natives as enabled.
   int natives_enabled_;
+
+  std::set<std::string> overridden_native_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleSystem);
 };
