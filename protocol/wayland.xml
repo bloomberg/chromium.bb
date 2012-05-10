@@ -696,29 +696,15 @@
     </event>
   </interface>
 
-  <interface name="wl_seat" version="1">
-    <description summary="seat">
-      A group of keyboards, pointer (mice, for example) and touch
-      devices . This object is published as a global during start up,
+  <interface name="wl_input_device" version="1">
+    <description summary="input device group">
+      A group of keyboards and pointer devices (mice, for
+      example). This object is published as a global during start up,
       or when such a device is hot plugged.  A input_device group
       typically has a pointer and maintains a keyboard_focus and a
       pointer_focus.
     </description>
 
-    <event name="pointer">
-      <arg name="name" type="uint"/>
-    </event>
-
-    <event name="keyboard">
-      <arg name="name" type="uint"/>
-    </event>
-
-    <event name="touch">
-      <arg name="name" type="uint"/>
-    </event>
-  </interface>
-
-  <interface name="wl_pointer">
     <request name="attach">
       <description summary="set the pointer image">
 	Set the pointer's image.  This request only takes effect if
@@ -731,27 +717,6 @@
       <arg name="hotspot_x" type="int"/>
       <arg name="hotspot_y" type="int"/>
     </request>
-
-    <event name="enter">
-      <description summary="enter event">
-	Notification that this input device's pointer is focused on
-	certain surface. When an input_device enters a surface, the
-	pointer image is undefined and a client should respond to this
-	event by setting an appropriate pointer image.
-      </description>
-
-      <arg name="serial" type="uint"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="surface_x" type="fixed"/>
-      <arg name="surface_y" type="fixed"/>
-    </event>
-
-    <event name="leave">
-      <description summary="leave event">
-      </description>
-      <arg name="serial" type="uint"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
-    </event>
 
     <event name="motion">
       <description summary="pointer motion event">
@@ -791,22 +756,6 @@
       <arg name="axis" type="uint"/>
       <arg name="value" type="int"/>
     </event>
-  </interface>
-
-  <interface name="wl_keyboard" version="1">
-    <description summary="keyboard input device">
-    </description>
-
-    <event name="enter">
-      <arg name="serial" type="uint"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="keys" type="array"/>
-    </event>
-
-    <event name="leave">
-      <arg name="serial" type="uint"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
-    </event>
 
     <event name="key">
       <description summary="key event">
@@ -818,13 +767,40 @@
       <arg name="key" type="uint"/>
       <arg name="state" type="uint"/>
     </event>
-  </interface>
 
-  <interface name="wl_touch" version="1">
-    <description summary="touch screen input device">
-    </description>
+    <event name="pointer_enter">
+      <description summary="pointer enter event">
+	Notification that this input device's pointer is focused on
+	certain surface. When an input_device enters a surface, the
+	pointer image is undefined and a client should respond to this
+	event by setting an appropriate pointer image.
+      </description>
 
-    <event name="down">
+      <arg name="serial" type="uint"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="surface_x" type="fixed"/>
+      <arg name="surface_y" type="fixed"/>
+    </event>
+
+    <event name="pointer_leave">
+      <description summary="pointer leave event">
+      </description>
+      <arg name="serial" type="uint"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </event>
+
+    <event name="keyboard_enter">
+      <arg name="serial" type="uint"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="keys" type="array"/>
+    </event>
+
+    <event name="keyboard_leave">
+      <arg name="serial" type="uint"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </event>
+
+    <event name="touch_down">
       <arg name="serial" type="uint"/>
       <arg name="time" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
@@ -833,26 +809,26 @@
       <arg name="y" type="fixed" />
     </event>
 
-    <event name="up">
+    <event name="touch_up">
       <arg name="serial" type="uint"/>
       <arg name="time" type="uint"/>
       <arg name="id" type="int" />
     </event>
 
-    <event name="motion">
+    <event name="touch_motion">
       <arg name="time" type="uint"/>
       <arg name="id" type="int" />
       <arg name="x" type="fixed" />
       <arg name="y" type="fixed" />
     </event>
 
-    <event name="frame">
+    <event name="touch_frame">
       <description summary="end of touch frame event">
 	Indicates the end of a contact point list.
       </description>
     </event>
 
-    <event name="cancel">
+    <event name="touch_cancel">
       <description summary="touch session cancelled">
 	Sent if the compositor decides the touch stream is a global
 	gesture. No further events are sent to the clients from that
