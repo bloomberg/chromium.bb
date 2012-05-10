@@ -21,7 +21,7 @@ oper = operation.Operation(MODULE)
 # export CROS_BUILD_STATS_SITE="http://localhost:8080"
 
 PAGE = 'upload_command_stats'
-DEFAULT_SITE = 'http://chromiumos-build-stats.appspot.com'
+DEFAULT_SITE = 'https://chromiumos-build-stats.appspot.com'
 SITE = os.environ.get('CROS_BUILD_STATS_SITE', DEFAULT_SITE)
 URL = '%s/%s' % (SITE, PAGE)
 UPLOAD_TIMEOUT = 5
@@ -103,7 +103,7 @@ def UploadConditionsMet():
 
   # Verify that git user email is from chromium.org or google.com.
   cwd = os.path.dirname(os.path.realpath(__file__))
-  git_id = cros_build_lib.GetProjectUserEmail(cwd, quiet=True)
+  git_id = cros_build_lib.GetProjectUserEmail(cwd)
   if not GIT_ID_RE.search(git_id):
     return False
 

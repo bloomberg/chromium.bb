@@ -9,16 +9,16 @@
         This is an admittedly primitive interface to the build command
         statistics gathered every time a build command (currently just
         build_packages) is run in golo.chromium.org or corp.google.com.
-        Submit suggestions for enhancements, <b>using your chromium.org
-        account</b>, at
-        <a href="http://goo.gl/mod/ggVT">this chromium.org dory page</a>.
+        Submit suggestions for enhancements, at
+        <a href="http://goo.gl/mod/plg0">this google.com dory page</a>.
       </p>
       <p>
         Create
         <a href="https://developers.google.com/appengine/docs/python/datastore/gqlreference">GCL queries</a>
         to search the statistics database.  GCL has no SELECT or FROM clauses.  This site
         supports a SQL-like SELECT clause for column filtering, but no FROM clause is
-        needed/supported.
+        needed/supported.  If no SELECT clause is given then default columns are selected
+        (see below).  A default LIMIT 30 is used unless otherwise specified.
       </p>
     </div>
 
@@ -57,5 +57,10 @@
     <div><h3>Database columns available</h3></div>
     Columns selected by default in <b>bold</b>.
     <ul>{{ column_list }}</ul>
+
+    <hr>
+    <div align="center">
+      Signed in as <b>{{ user_email }}</b>
+    </div>
   </body>
 </html>

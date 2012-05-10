@@ -10,6 +10,7 @@ from google.appengine.api import datastore_errors
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
+from google.appengine.api import users
 
 import model
 
@@ -46,6 +47,9 @@ class MainPage(webapp.RequestHandler):
   # Regex to discover ORDER BY columns in order to highlight them in results.
   QUERY_ORDER_RE = re.compile(r'ORDER\s+BY\s+(\S+)', re.IGNORECASE)
 
+  # Regex to discover LIMIT value in query.
+  QUERY_LIMIT_RE = re.compile(r'LIMIT\s+(\d+)', re.IGNORECASE)
+
   # Regex for separating tokens by commas, allowing spaces on either side.
   COMMA_RE = re.compile(r'\s*,\s*')
 
@@ -78,12 +82,15 @@ class MainPage(webapp.RequestHandler):
 
   def get(self):
     """Support GET to stats page."""
+    # Note that google.com authorization is required to access this page, which
+    # is controlled in app.yaml and on appspot admin page.
+
     orig_query = self.request.get('query')
     logging.debug('Received raw query %r', orig_query)
 
-    # If no query was provided, default to a LIMIT of 30 for sanity.
-    if not orig_query:
-      orig_query = 'LIMIT 30'
+    # If no LIMIT was provided, default to a LIMIT of 30 for sanity.
+    if not self.QUERY_LIMIT_RE.search(orig_query):
+      orig_query += ' LIMIT 30'
 
     query = orig_query
 
@@ -119,12 +126,13 @@ class MainPage(webapp.RequestHandler):
                                                self.DEFAULT_COLUMNS)
 
     template_values = {
-      'error_msg': error_msg,
-      'gcl_query': query,
-      'user_query': orig_query,
-      'results_table': results_html_table,
       'column_list': column_html_list,
+      'error_msg': error_msg,
       'example_queries': self.EXAMPLE_QUERIES,
+      'gcl_query': query,
+      'results_table': results_html_table,
+      'user_email': users.get_current_user(),
+      'user_query': orig_query,
       }
 
     path = os.path.join(os.path.dirname(__file__), 'index.html')
