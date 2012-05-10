@@ -92,7 +92,7 @@ void FindTabHelper::StartFinding(string16 search_string,
 
 void FindTabHelper::StopFinding(
     FindBarController::SelectionAction selection_action) {
-  if (selection_action == FindBarController::kClearSelection) {
+  if (selection_action == FindBarController::kClearSelectionOnPage) {
     // kClearSelection means the find string has been cleared by the user, but
     // the UI has not been dismissed. In that case we want to clear the
     // previously remembered search (http://crbug.com/42639).
@@ -108,13 +108,13 @@ void FindTabHelper::StopFinding(
 
   content::StopFindAction action;
   switch (selection_action) {
-    case FindBarController::kClearSelection:
+    case FindBarController::kClearSelectionOnPage:
       action = content::STOP_FIND_ACTION_CLEAR_SELECTION;
       break;
-    case FindBarController::kKeepSelection:
+    case FindBarController::kKeepSelectionOnPage:
       action = content::STOP_FIND_ACTION_KEEP_SELECTION;
       break;
-    case FindBarController::kActivateSelection:
+    case FindBarController::kActivateSelectionOnPage:
       action = content::STOP_FIND_ACTION_ACTIVATE_SELECTION;
       break;
     default:

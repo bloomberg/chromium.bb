@@ -174,15 +174,17 @@ bool FindBarHost::AcceleratorPressed(const ui::Accelerator& accelerator) {
   ui::KeyboardCode key = accelerator.key_code();
   if (key == ui::VKEY_RETURN && accelerator.IsCtrlDown()) {
     // Ctrl+Enter closes the Find session and navigates any link that is active.
-    find_bar_controller_->EndFindSession(FindBarController::kActivateSelection,
-                                         false);
+    find_bar_controller_->EndFindSession(
+        FindBarController::kActivateSelectionOnPage,
+        FindBarController::kClearResultsInFindBox);
     return true;
   } else if (key == ui::VKEY_ESCAPE) {
     // This will end the Find session and hide the window, causing it to loose
     // focus and in the process unregister us as the handler for the Escape
     // accelerator through the OnWillChangeFocus event.
-    find_bar_controller_->EndFindSession(FindBarController::kKeepSelection,
-                                         false);
+    find_bar_controller_->EndFindSession(
+        FindBarController::kKeepSelectionOnPage,
+        FindBarController::kKeepResultsInFindBox);
     return true;
   } else {
     NOTREACHED() << "Unknown accelerator";

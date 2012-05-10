@@ -288,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
 
   // End the find session, which should set focus to the link.
   tab_contents->
-      find_tab_helper()->StopFinding(FindBarController::kKeepSelection);
+      find_tab_helper()->StopFinding(FindBarController::kKeepSelectionOnPage);
 
   // Verify that the link is focused.
   ASSERT_TRUE(FocusedOnPage(tab_contents->web_contents(), &result));
@@ -308,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
 
   // End the find session.
   tab_contents->
-      find_tab_helper()->StopFinding(FindBarController::kKeepSelection);
+      find_tab_helper()->StopFinding(FindBarController::kKeepSelectionOnPage);
 
   // Verify that link2 is not focused.
   ASSERT_TRUE(FocusedOnPage(tab_contents->web_contents(), &result));
@@ -384,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_EQ(3, ordinal);
 
   // End the find session.
-  tab->find_tab_helper()->StopFinding(FindBarController::kKeepSelection);
+  tab->find_tab_helper()->StopFinding(FindBarController::kKeepSelectionOnPage);
 }
 
 // This test loads a page with frames and makes sure the ordinal returned makes
@@ -851,7 +851,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, AcceleratorRestoring) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection, false);
+      FindBarController::kKeepSelectionOnPage,
+      FindBarController::kKeepResultsInFindBox);
 
   // The accelerator for Escape should be back to what it was before.
   EXPECT_EQ(old_target,
@@ -883,7 +884,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
       browser()->GetSelectedTabContentsWrapper()->find_tab_helper();
   // Stop the (non-existing) find operation, and clear the selection (which
   // signals the UI is still active).
-  find_tab_helper->StopFinding(FindBarController::kClearSelection);
+  find_tab_helper->StopFinding(FindBarController::kClearSelectionOnPage);
   // Make sure the Find UI flag hasn't been cleared, it must be so that the UI
   // still responds to browser window resizing.
   ASSERT_TRUE(find_tab_helper->find_ui_active());
@@ -910,7 +911,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
 
   // End the Find session, thereby making the next F3 start afresh.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection, false);
+      FindBarController::kKeepSelectionOnPage,
+      FindBarController::kKeepResultsInFindBox);
 
   // Simulate F3 while Find box is closed. Should have 1 match.
   EXPECT_EQ(1, FindInPageWchar(tab, L"", kFwd, kIgnoreCase, &ordinal));
@@ -945,7 +947,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   // Switch back to first tab.
   browser()->ActivateTabAt(0, false);
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection, false);
+      FindBarController::kKeepSelectionOnPage,
+      FindBarController::kKeepResultsInFindBox);
   // Simulate F3.
   ui_test_utils::FindInPage(tab1, string16(), kFwd, kIgnoreCase, &ordinal);
   EXPECT_EQ(tab1->find_tab_helper()->find_text(), WideToUTF16(L"text"));
@@ -976,7 +979,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateSameTab) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection, false);
+      FindBarController::kKeepSelectionOnPage,
+      FindBarController::kKeepResultsInFindBox);
 
   // Open the Find box again.
   EnsureFindBoxOpen();
@@ -1046,7 +1050,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection, false);
+      FindBarController::kKeepSelectionOnPage,
+      FindBarController::kKeepResultsInFindBox);
 
   // Now create a second tab and load the same page.
   browser()->AddBlankTab(true);
@@ -1070,7 +1075,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection, false);
+      FindBarController::kKeepSelectionOnPage,
+      FindBarController::kKeepResultsInFindBox);
 
   // Re-open the Find box.
   // This is a special case: previous search in WebContents used to get cleared
@@ -1114,7 +1120,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection, false);
+      FindBarController::kKeepSelectionOnPage,
+      FindBarController::kKeepResultsInFindBox);
 
   // Open a new incognito window and navigate to the same page.
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
@@ -1140,7 +1147,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
 
   // Close the Find box.
   incognito_browser->GetFindBarController()->EndFindSession(
-      FindBarController::kKeepSelection, false);
+      FindBarController::kKeepSelectionOnPage,
+      FindBarController::kKeepResultsInFindBox);
 
   // Now open a new tab in the original (non-incognito) browser.
   browser()->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
@@ -1169,7 +1177,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
           &tab->web_contents()->GetController()));
-  tab->find_tab_helper()->StopFinding(FindBarController::kActivateSelection);
+  tab->find_tab_helper()->StopFinding(
+      FindBarController::kActivateSelectionOnPage);
   observer.Wait();
 }
 

@@ -371,7 +371,8 @@ void FindBarView::ButtonPressed(
       break;
     case CLOSE_TAG:
       find_bar_host()->GetFindBarController()->EndFindSession(
-          FindBarController::kKeepSelection, false);
+          FindBarController::kKeepSelectionOnPage,
+          FindBarController::kKeepResultsInFindBox);
       break;
     default:
       NOTREACHED() << L"Unknown button";
@@ -401,7 +402,7 @@ void FindBarView::ContentsChanged(views::Textfield* sender,
     // The last two params here are forward (true) and case sensitive (false).
     find_tab_helper->StartFinding(new_contents, true, false);
   } else {
-    find_tab_helper->StopFinding(FindBarController::kClearSelection);
+    find_tab_helper->StopFinding(FindBarController::kClearSelectionOnPage);
     UpdateForResult(find_tab_helper->find_result(), string16());
     find_bar_host()->MoveWindowIfNecessary(gfx::Rect(), false);
 

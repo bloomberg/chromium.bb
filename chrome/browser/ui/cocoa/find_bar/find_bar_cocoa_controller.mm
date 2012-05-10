@@ -103,7 +103,8 @@ const float kRightEdgeOffset = 25;
 - (IBAction)close:(id)sender {
   if (findBarBridge_)
     findBarBridge_->GetFindBarController()->EndFindSession(
-        FindBarController::kKeepSelection, false);
+        FindBarController::kKeepSelectionOnPage,
+        FindBarController::kKeepResultsInFindBox);
 }
 
 - (IBAction)previousResult:(id)sender {
@@ -181,7 +182,7 @@ const float kRightEdgeOffset = 25;
         StartFinding(base::SysNSStringToUTF16(findText), true, false);
   } else {
     // The textbox is empty so we reset.
-    find_tab_helper->StopFinding(FindBarController::kClearSelection);
+    find_tab_helper->StopFinding(FindBarController::kClearSelectionOnPage);
     [self updateUIForFindResult:find_tab_helper->find_result()
                        withText:string16()];
   }
@@ -205,7 +206,8 @@ const float kRightEdgeOffset = 25;
     // Pressing Ctrl-Return
     if (findBarBridge_) {
       findBarBridge_->GetFindBarController()->EndFindSession(
-          FindBarController::kActivateSelection, false);
+          FindBarController::kActivateSelectionOnPage,
+          FindBarController::kClearResultsInFindBox);
     }
     return YES;
   } else if (command == @selector(pageUp:) ||
@@ -528,7 +530,7 @@ const float kRightEdgeOffset = 25;
         findBarBridge_->GetFindBarController()->tab_contents();
     if (contents) {
       FindTabHelper* find_tab_helper = contents->find_tab_helper();
-      find_tab_helper->StopFinding(FindBarController::kClearSelection);
+      find_tab_helper->StopFinding(FindBarController::kClearSelectionOnPage);
       findBarBridge_->ClearResults(find_tab_helper->find_result());
     }
   }

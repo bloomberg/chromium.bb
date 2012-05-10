@@ -20,11 +20,20 @@ class TabContentsWrapper;
 
 class FindBarController : public content::NotificationObserver {
  public:
-  // An enum listing the possible actions to take on a find-in-page selection.
+  // An enum listing the possible actions to take on a find-in-page selection
+  // in the page when ending the find session.
   enum SelectionAction {
-    kKeepSelection,  // Translate the find selection into a normal selection.
-    kClearSelection,  // Clear the find selection.
-    kActivateSelection  // Focus and click the selected node (for links).
+    kKeepSelectionOnPage,     // Translate the find selection into a normal
+                              // selection.
+    kClearSelectionOnPage,    // Clear the find selection.
+    kActivateSelectionOnPage  // Focus and click the selected node (for links).
+  };
+
+  // An enum listing the possible actions to take on a find-in-page results in
+  // the Find box when ending the find session.
+  enum ResultAction {
+    kClearResultsInFindBox,  // Clear search string, ordinal and match count.
+    kKeepResultsInFindBox,   // Leave the results untouched.
   };
 
   // FindBar takes ownership of |find_bar_view|.
@@ -35,10 +44,11 @@ class FindBarController : public content::NotificationObserver {
   // Shows the find bar. Any previous search string will again be visible.
   void Show();
 
-  // Ends the current session. |action| specifies what to do with the selection
-  // on the page created by the find operation. |force_clear| specifies whether
-  // to clear the ordinal and match count from the Find box UI.
-  void EndFindSession(SelectionAction action, bool force_clear);
+  // Ends the current session. |selection_action| specifies what to do with the
+  // selection on the page created by the find operation. |results_action|
+  // specifies what to do with the contents of the Find box (after ending).
+  void EndFindSession(SelectionAction selection_action,
+                      ResultAction results_action);
 
   // Accessor for the attached TabContentsWrapper.
   TabContentsWrapper* tab_contents() const { return tab_contents_; }
