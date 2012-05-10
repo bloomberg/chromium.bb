@@ -578,17 +578,24 @@ void Layer::RecomputeDrawsContentAndUVRect() {
     WebKit::WebExternalTextureLayer texture_layer =
         web_layer_.to<WebKit::WebExternalTextureLayer>();
     texture_layer.setTextureId(should_draw ? texture_id : 0);
-    gfx::Rect bounds_in_pixel = ConvertRectToPixel(this, bounds());
     gfx::Size texture_size = texture_->size();
-    gfx::Size size(std::min(bounds_in_pixel.width(), texture_size.width()),
-                   std::min(bounds_in_pixel.height(), texture_size.height()));
+
+    // As WebKit does not support DIP, WebKit is told of coordinates in DIP
+    // as if they were pixel coordinates. The texture is scaled here via
+    // the setBounds call.
+    // TODO(pkotwicz): Fix this code to take in account textures with pixel
+    // sizes once WebKit understands DIP. http://crbug.com/127455
+    gfx::Size size(std::min(bounds().width(), texture_size.width()),
+                   std::min(bounds().height(), texture_size.height()));
     WebKit::WebFloatRect rect(
         0,
         0,
         static_cast<float>(size.width())/texture_size.width(),
         static_cast<float>(size.height())/texture_size.height());
     texture_layer.setUVRect(rect);
-    web_layer_.setBounds(size);
+
+    gfx::Size size_in_pixel = ConvertSizeToPixel(this, bounds().size());
+    web_layer_.setBounds(size_in_pixel);
   }
 }
 
