@@ -781,6 +781,23 @@ TEST_F(RenderWidgetHostTest, StopAndStartHangMonitorTimeout) {
   EXPECT_TRUE(host_->unresponsive_timer_fired());
 }
 
+// Test that the hang monitor timer expires properly if it is started, then
+// updated to a shorter duration.
+TEST_F(RenderWidgetHostTest, ShorterDelayHangMonitorTimeout) {
+  // Start with a timeout.
+  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(100));
+
+  // Start it again with shorter delay.
+  EXPECT_FALSE(host_->unresponsive_timer_fired());
+  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(20));
+
+  // Wait long enough for first timeout and see if it fired.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(25));
+  MessageLoop::current()->Run();
+  EXPECT_TRUE(host_->unresponsive_timer_fired());
+}
+
 // Test that the hang monitor catches two input events but only one ack.
 // This can happen if the second input event causes the renderer to hang.
 // This test will catch a regression of crbug.com/111185.

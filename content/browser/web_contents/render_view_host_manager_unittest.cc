@@ -174,7 +174,7 @@ class RenderViewHostManagerTest
     // Simulate the SwapOut_ACK that fires if you commit a cross-site navigation
     // without making any network requests.
     if (old_rvh != active_rvh())
-      old_rvh->OnSwapOutACK();
+      old_rvh->OnSwapOutACK(false);
   }
 
   bool ShouldSwapProcesses(RenderViewHostManager* manager,
@@ -228,7 +228,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   ASSERT_TRUE(dest_rvh2);
   ntp_rvh2->SendShouldCloseACK(true);
   dest_rvh2->SendNavigate(101, kDestUrl);
-  ntp_rvh2->OnSwapOutACK();
+  ntp_rvh2->OnSwapOutACK(false);
 
   // The two RVH's should be different in every way.
   EXPECT_NE(active_rvh()->GetProcess(), dest_rvh2->GetProcess());
@@ -246,7 +246,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   dest_rvh2->SendShouldCloseACK(true);
   static_cast<TestRenderViewHost*>(contents2.GetRenderManagerForTesting()->
      pending_render_view_host())->SendNavigate(102, kNtpUrl);
-  dest_rvh2->OnSwapOutACK();
+  dest_rvh2->OnSwapOutACK(false);
 
   EXPECT_EQ(active_rvh()->GetSiteInstance(),
       contents2.GetRenderViewHost()->GetSiteInstance());
@@ -583,7 +583,7 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
                               host2->GetPendingRequestId());
   EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
       ViewMsg_SwapOut::ID));
-  test_host->OnSwapOutACK();
+  test_host->OnSwapOutACK(false);
 
   EXPECT_EQ(host, manager.current_host());
   EXPECT_FALSE(static_cast<RenderViewHostImpl*>(
@@ -631,7 +631,7 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
                                   host3)->GetPendingRequestId());
   EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
       ViewMsg_SwapOut::ID));
-  test_host->OnSwapOutACK();
+  test_host->OnSwapOutACK(false);
 
   // Commit.
   manager.DidNavigateMainFrame(host3);

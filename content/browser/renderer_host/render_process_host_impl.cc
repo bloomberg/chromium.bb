@@ -555,9 +555,9 @@ void RenderProcessHostImpl::CancelResourceRequests(int render_widget_id) {
   widget_helper_->CancelResourceRequests(render_widget_id);
 }
 
-void RenderProcessHostImpl::CrossSiteSwapOutACK(
+void RenderProcessHostImpl::SimulateSwapOutACK(
     const ViewMsg_SwapOut_Params& params) {
-  widget_helper_->CrossSiteSwapOutACK(params);
+  widget_helper_->SimulateSwapOutACK(params);
 }
 
 bool RenderProcessHostImpl::WaitForBackingStoreMsg(

@@ -74,8 +74,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Message::Sender,
   // ResourceDispatcherHost.  Necessary for a cross-site request, in the case
   // that the original RenderViewHost is not live and thus cannot run an
   // unload handler.
-  virtual void CrossSiteSwapOutACK(
-      const ViewMsg_SwapOut_Params& params) = 0;
+  virtual void SimulateSwapOutACK(const ViewMsg_SwapOut_Params& params) = 0;
 
   // Called to wait for the next UpdateRect message for the specified render
   // widget.  Returns true if successful, and the msg out-param will contain a
