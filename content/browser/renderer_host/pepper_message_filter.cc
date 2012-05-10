@@ -73,8 +73,7 @@ PepperMessageFilter::PepperMessageFilter(
     content::BrowserContext* browser_context)
     : process_type_(type),
       process_id_(process_id),
-      resource_context_(browser_context ?
-          browser_context->GetResourceContext() : NULL),
+      resource_context_(browser_context->GetResourceContext()),
       host_resolver_(NULL),
       next_socket_id_(1) {
   DCHECK(type == RENDERER);
