@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/predictors/autocomplete_action_predictor_database.h"
+#include "chrome/browser/predictors/autocomplete_action_predictor_table.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -23,18 +23,21 @@ struct AutocompleteLog;
 struct AutocompleteMatch;
 class AutocompleteResult;
 class HistoryService;
+class PredictorsHandler;
 class Profile;
 
 namespace history {
 class URLDatabase;
 }
 
+namespace predictors {
+
 // This class is responsible for determining the correct predictive network
 // action to take given for a given AutocompleteMatch and entered text. it uses
-// an AutocompleteActionPredictorDatabase accessed asynchronously on the DB
-// thread to permanently store the data used to make predictions, and keeps
-// local caches of that data to be able to make predictions synchronously on the
-// UI thread where it lives. It can be accessed as a weak pointer so that it can
+// a AutocompleteActionPredictorTable accessed asynchronously on the DB thread
+// to permanently store the data used to make predictions, and keeps local
+// caches of that data to be able to make predictions synchronously on the UI
+// thread where it lives. It can be accessed as a weak pointer so that it can
 // safely use PostTaskAndReply without fear of crashes if it is destroyed before
 // the reply triggers. This is necessary during initialization.
 class AutocompleteActionPredictor
@@ -80,7 +83,7 @@ class AutocompleteActionPredictor
 
  private:
   friend class AutocompleteActionPredictorTest;
-  friend class AutocompleteActionPredictorDOMHandler;
+  friend class ::PredictorsHandler;
 
   struct TransitionalMatch {
     TransitionalMatch();
@@ -114,7 +117,7 @@ class AutocompleteActionPredictor
   };
 
   typedef std::map<DBCacheKey, DBCacheValue> DBCacheMap;
-  typedef std::map<DBCacheKey, AutocompleteActionPredictorDatabase::Row::Id>
+  typedef std::map<DBCacheKey, AutocompleteActionPredictorTable::Row::Id>
       DBIdCacheMap;
 
   static const int kMaximumDaysToKeepEntry;
@@ -123,9 +126,6 @@ class AutocompleteActionPredictor
   // when calculating the confidence. It is currently set by a field trial so is
   // static. Once the field trial ends, this will be a constant value.
   static double hit_weight_;
-
-  // ProfileKeyedService
-  virtual void Shutdown() OVERRIDE;
 
   // NotificationObserver
   virtual void Observe(int type,
@@ -139,7 +139,7 @@ class AutocompleteActionPredictor
   // |id_list| must not be NULL. Every row id deleted will be added to id_list.
   void DeleteOldIdsFromCaches(
       history::URLDatabase* url_db,
-      std::vector<AutocompleteActionPredictorDatabase::Row::Id>* id_list);
+      std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list);
 
   // Called to delete any old or invalid entries from the database. Called after
   // the local caches are created once the history service is available.
@@ -149,7 +149,7 @@ class AutocompleteActionPredictor
   // if the history service is available, or registers for the notification of
   // it becoming available.
   void CreateCaches(
-      std::vector<AutocompleteActionPredictorDatabase::Row>* row_buffer);
+      std::vector<AutocompleteActionPredictorTable::Row>* row_buffer);
 
   // Attempts to call DeleteOldEntries if the in-memory database has been loaded
   // by |service|. Returns success as a boolean.
@@ -166,13 +166,10 @@ class AutocompleteActionPredictor
   // Calculates the confidence for an entry in the DBCacheMap.
   double CalculateConfidenceForDbEntry(DBCacheMap::const_iterator iter) const;
 
-  // Adds a row to the database and caches.
-  void AddRow(const DBCacheKey& key,
-              const AutocompleteActionPredictorDatabase::Row& row);
-
-  // Updates a row in the database and the caches.
-  void UpdateRow(DBCacheMap::iterator it,
-                 const AutocompleteActionPredictorDatabase::Row& row);
+  // Adds and updates rows in the database and caches.
+  void AddAndUpdateRows(
+    const AutocompleteActionPredictorTable::Rows& rows_to_add,
+    const AutocompleteActionPredictorTable::Rows& rows_to_update);
 
   // Removes all rows from the database and caches.
   void DeleteAllRows();
@@ -180,12 +177,8 @@ class AutocompleteActionPredictor
   // Removes rows from the database and caches that contain a URL in |rows|.
   void DeleteRowsWithURLs(const history::URLRows& rows);
 
-  // Used to batch operations on the database.
-  void BeginTransaction();
-  void CommitTransaction();
-
   Profile* profile_;
-  scoped_refptr<AutocompleteActionPredictorDatabase> db_;
+  scoped_refptr<AutocompleteActionPredictorTable> table_;
   content::NotificationRegistrar notification_registrar_;
 
   // This is cleared after every Omnibox navigation.
@@ -202,5 +195,7 @@ class AutocompleteActionPredictor
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteActionPredictor);
 };
+
+}  // namespace predictors
 
 #endif  // CHROME_BROWSER_PREDICTORS_AUTOCOMPLETE_ACTION_PREDICTOR_H_

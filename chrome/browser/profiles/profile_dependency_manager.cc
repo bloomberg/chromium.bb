@@ -20,6 +20,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/plugin_prefs_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
+#include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -175,7 +176,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   if (built_factories_)
     return;
 
-  AutocompleteActionPredictorFactory::GetInstance();
 #if defined(ENABLE_BACKGROUND)
   BackgroundContentsServiceFactory::GetInstance();
 #endif
@@ -203,6 +203,8 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   PinnedTabServiceFactory::GetInstance();
 #endif
   PluginPrefsFactory::GetInstance();
+  predictors::AutocompleteActionPredictorFactory::GetInstance();
+  predictors::PredictorDatabaseFactory::GetInstance();
   prerender::PrerenderManagerFactory::GetInstance();
   ProfileSyncServiceFactory::GetInstance();
 #if defined(ENABLE_PROTECTOR_SERVICE)

@@ -54,6 +54,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using content::UserMetricsAction;
+using predictors::AutocompleteActionPredictor;
+using predictors::AutocompleteActionPredictorFactory;
 
 ///////////////////////////////////////////////////////////////////////////////
 // AutocompleteEditController
@@ -244,7 +246,8 @@ void AutocompleteEditModel::OnChanged() {
         action_predictor->RecommendAction(user_text_, current_match);
   }
 
-  UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.Action", recommended_action,
+  UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.Action",
+                            recommended_action,
                             AutocompleteActionPredictor::LAST_PREDICT_ACTION);
   string16 suggested_text;
 

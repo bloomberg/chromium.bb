@@ -217,9 +217,9 @@ void ConfigureOmniboxPrerender() {
                                    kEightProbability);
   const int group = weighting_trial->group();
   if (group == kOmniboxWeightFourGroup)
-    AutocompleteActionPredictor::set_hit_weight(4.0);
+    predictors::AutocompleteActionPredictor::set_hit_weight(4.0);
   else if (group == kOmniboxWeightEightGroup)
-    AutocompleteActionPredictor::set_hit_weight(8.0);
+    predictors::AutocompleteActionPredictor::set_hit_weight(8.0);
 }
 
 bool IsOmniboxEnabled(Profile* profile) {

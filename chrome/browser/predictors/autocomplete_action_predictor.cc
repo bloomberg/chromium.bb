@@ -19,7 +19,8 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/in_memory_database.h"
-#include "chrome/browser/predictors/autocomplete_action_predictor_database.h"
+#include "chrome/browser/predictors/predictor_database.h"
+#include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -38,12 +39,12 @@ const float kConfidenceCutoff[] = {
   0.5f
 };
 
+COMPILE_ASSERT(arraysize(kConfidenceCutoff) ==
+               predictors::AutocompleteActionPredictor::LAST_PREDICT_ACTION,
+               ConfidenceCutoff_count_mismatch);
+
 const size_t kMinimumUserTextLength = 1;
 const int kMinimumNumberOfHits = 3;
-
-COMPILE_ASSERT(arraysize(kConfidenceCutoff) ==
-               AutocompleteActionPredictor::LAST_PREDICT_ACTION,
-               ConfidenceCutoff_count_mismatch);
 
 enum DatabaseAction {
   DATABASE_ACTION_ADD,
@@ -68,7 +69,9 @@ bool IsAutocompleteMatchSearchType(const AutocompleteMatch& match) {
   }
 }
 
-}
+}  // namespace
+
+namespace predictors {
 
 const int AutocompleteActionPredictor::kMaximumDaysToKeepEntry = 14;
 
@@ -76,11 +79,9 @@ double AutocompleteActionPredictor::hit_weight_ = 1.0;
 
 AutocompleteActionPredictor::AutocompleteActionPredictor(Profile* profile)
     : profile_(profile),
-      db_(new AutocompleteActionPredictorDatabase(profile)),
+      table_(PredictorDatabaseFactory::GetForProfile(
+          profile)->autocomplete_table()),
       initialized_(false) {
-  content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutocompleteActionPredictorDatabase::Initialize, db_));
-
   // Request the in-memory database from the history to force it to load so it's
   // available as soon as possible.
   HistoryService* history_service =
@@ -91,14 +92,15 @@ AutocompleteActionPredictor::AutocompleteActionPredictor(Profile* profile)
   // Create local caches using the database as loaded. We will garbage collect
   // rows from the caches and the database once the history service is
   // available.
-  std::vector<AutocompleteActionPredictorDatabase::Row>* rows =
-      new std::vector<AutocompleteActionPredictorDatabase::Row>();
+  std::vector<AutocompleteActionPredictorTable::Row>* rows =
+      new std::vector<AutocompleteActionPredictorTable::Row>();
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutocompleteActionPredictorDatabase::GetAllRows, db_, rows),
+      base::Bind(&AutocompleteActionPredictorTable::GetAllRows,
+                 table_,
+                 rows),
       base::Bind(&AutocompleteActionPredictor::CreateCaches, AsWeakPtr(),
                  base::Owned(rows)));
-
 }
 
 AutocompleteActionPredictor::~AutocompleteActionPredictor() {
@@ -145,13 +147,13 @@ AutocompleteActionPredictor::Action
   const double confidence = CalculateConfidence(user_text, match, &is_in_db);
   DCHECK(confidence >= 0.0 && confidence <= 1.0);
 
-  UMA_HISTOGRAM_BOOLEAN("NetworkActionPredictor.MatchIsInDb", is_in_db);
+  UMA_HISTOGRAM_BOOLEAN("AutocompleteActionPredictor.MatchIsInDb", is_in_db);
 
   if (is_in_db) {
     // Multiple enties with the same URL are fine as the confidence may be
     // different.
     tracked_urls_.push_back(std::make_pair(match.destination_url, confidence));
-    UMA_HISTOGRAM_COUNTS_100("NetworkActionPredictor.Confidence",
+    UMA_HISTOGRAM_COUNTS_100("AutocompleteActionPredictor.Confidence",
                              confidence * 100);
   }
 
@@ -185,10 +187,6 @@ AutocompleteActionPredictor::Action
 bool AutocompleteActionPredictor::IsPreconnectable(
     const AutocompleteMatch& match) {
   return IsAutocompleteMatchSearchType(match);
-}
-
-void AutocompleteActionPredictor::Shutdown() {
-  db_->OnPredictorDestroyed();
 }
 
 void AutocompleteActionPredictor::Observe(
@@ -262,9 +260,11 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(
 
   const string16 lower_user_text(base::i18n::ToLower(log.text));
 
-  BeginTransaction();
   // Traverse transitional matches for those that have a user_text that is a
   // prefix of |lower_user_text|.
+  std::vector<AutocompleteActionPredictorTable::Row> rows_to_add;
+  std::vector<AutocompleteActionPredictorTable::Row> rows_to_update;
+
   for (std::vector<TransitionalMatch>::const_iterator it =
        transitional_matches_.begin(); it != transitional_matches_.end();
        ++it) {
@@ -278,7 +278,7 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(
       const DBCacheKey key = { it->user_text, *url_it };
       const bool is_hit = (*url_it == opened_url);
 
-      AutocompleteActionPredictorDatabase::Row row;
+      AutocompleteActionPredictorTable::Row row;
       row.user_text = key.user_text;
       row.url = key.url;
 
@@ -288,18 +288,19 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(
         row.number_of_hits = is_hit ? 1 : 0;
         row.number_of_misses = is_hit ? 0 : 1;
 
-        AddRow(key, row);
+        rows_to_add.push_back(row);
       } else {
         DCHECK(db_id_cache_.find(key) != db_id_cache_.end());
         row.id = db_id_cache_.find(key)->second;
         row.number_of_hits = it->second.number_of_hits + (is_hit ? 1 : 0);
         row.number_of_misses = it->second.number_of_misses + (is_hit ? 0 : 1);
 
-        UpdateRow(it, row);
+        rows_to_update.push_back(row);
       }
     }
   }
-  CommitTransaction();
+  if (rows_to_add.size() > 0 || rows_to_update.size() > 0)
+    AddAndUpdateRows(rows_to_add, rows_to_update);
 
   ClearTransitionalMatches();
 
@@ -309,7 +310,7 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(
        tracked_urls_.begin(); it != tracked_urls_.end();
        ++it) {
     if (opened_url == it->first) {
-      UMA_HISTOGRAM_COUNTS_100("NetworkActionPredictor.AccurateCount",
+      UMA_HISTOGRAM_COUNTS_100("AutocompleteActionPredictor.AccurateCount",
                                it->second * 100);
     }
   }
@@ -318,7 +319,7 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(
 
 void AutocompleteActionPredictor::DeleteOldIdsFromCaches(
     history::URLDatabase* url_db,
-    std::vector<AutocompleteActionPredictorDatabase::Row::Id>* id_list) {
+    std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(url_db);
   DCHECK(id_list);
@@ -345,11 +346,12 @@ void AutocompleteActionPredictor::DeleteOldEntries(
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!initialized_);
 
-  std::vector<AutocompleteActionPredictorDatabase::Row::Id> ids_to_delete;
+  std::vector<AutocompleteActionPredictorTable::Row::Id> ids_to_delete;
   DeleteOldIdsFromCaches(url_db, &ids_to_delete);
 
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutocompleteActionPredictorDatabase::DeleteRows, db_,
+      base::Bind(&AutocompleteActionPredictorTable::DeleteRows,
+                 table_,
                  ids_to_delete));
 
   // Register for notifications and set the |initialized_| flag.
@@ -361,14 +363,14 @@ void AutocompleteActionPredictor::DeleteOldEntries(
 }
 
 void AutocompleteActionPredictor::CreateCaches(
-    std::vector<AutocompleteActionPredictorDatabase::Row>* rows) {
+    std::vector<AutocompleteActionPredictorTable::Row>* rows) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!initialized_);
   DCHECK(db_cache_.empty());
   DCHECK(db_id_cache_.empty());
 
-  for (std::vector<AutocompleteActionPredictorDatabase::Row>::const_iterator
-       it = rows->begin(); it != rows->end(); ++it) {
+  for (std::vector<AutocompleteActionPredictorTable::Row>::const_iterator it =
+       rows->begin(); it != rows->end(); ++it) {
     const DBCacheKey key = { it->user_text, it->url };
     const DBCacheValue value = { it->number_of_hits, it->number_of_misses };
     db_cache_[key] = value;
@@ -426,35 +428,43 @@ double AutocompleteActionPredictor::CalculateConfidenceForDbEntry(
   return number_of_hits / (number_of_hits + value.number_of_misses);
 }
 
-void AutocompleteActionPredictor::AddRow(
-    const DBCacheKey& key,
-    const AutocompleteActionPredictorDatabase::Row& row) {
+void AutocompleteActionPredictor::AddAndUpdateRows(
+    const AutocompleteActionPredictorTable::Rows& rows_to_add,
+    const AutocompleteActionPredictorTable::Rows& rows_to_update) {
   if (!initialized_)
     return;
 
-  DBCacheValue value = { row.number_of_hits, row.number_of_misses };
-  db_cache_[key] = value;
-  db_id_cache_[key] = row.id;
+  for (AutocompleteActionPredictorTable::Rows::const_iterator it =
+       rows_to_add.begin(); it != rows_to_add.end(); ++it) {
+    const DBCacheKey key = { it->user_text, it->url };
+    DBCacheValue value = { it->number_of_hits, it->number_of_misses };
+
+    DCHECK(db_cache_.find(key) == db_cache_.end());
+
+    db_cache_[key] = value;
+    db_id_cache_[key] = it->id;
+    UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.DatabaseAction",
+                              DATABASE_ACTION_ADD, DATABASE_ACTION_COUNT);
+  }
+  for (AutocompleteActionPredictorTable::Rows::const_iterator it =
+       rows_to_update.begin(); it != rows_to_update.end(); ++it) {
+    const DBCacheKey key = { it->user_text, it->url };
+
+    DBCacheMap::iterator db_it = db_cache_.find(key);
+    DCHECK(db_it != db_cache_.end());
+    DCHECK(db_id_cache_.find(key) != db_id_cache_.end());
+
+    db_it->second.number_of_hits = it->number_of_hits;
+    db_it->second.number_of_misses = it->number_of_misses;
+    UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.DatabaseAction",
+                              DATABASE_ACTION_UPDATE, DATABASE_ACTION_COUNT);
+  }
+
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutocompleteActionPredictorDatabase::AddRow, db_, row));
-
-  UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.DatabaseAction",
-                            DATABASE_ACTION_ADD, DATABASE_ACTION_COUNT);
-}
-
-void AutocompleteActionPredictor::UpdateRow(
-    DBCacheMap::iterator it,
-    const AutocompleteActionPredictorDatabase::Row& row) {
-  if (!initialized_)
-    return;
-
-  DCHECK(it != db_cache_.end());
-  it->second.number_of_hits = row.number_of_hits;
-  it->second.number_of_misses = row.number_of_misses;
-  content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutocompleteActionPredictorDatabase::UpdateRow, db_, row));
-  UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.DatabaseAction",
-                            DATABASE_ACTION_UPDATE, DATABASE_ACTION_COUNT);
+      base::Bind(&AutocompleteActionPredictorTable::AddAndUpdateRows,
+                 table_,
+                 rows_to_add,
+                 rows_to_update));
 }
 
 void AutocompleteActionPredictor::DeleteAllRows() {
@@ -464,8 +474,9 @@ void AutocompleteActionPredictor::DeleteAllRows() {
   db_cache_.clear();
   db_id_cache_.clear();
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutocompleteActionPredictorDatabase::DeleteAllRows, db_));
-  UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.DatabaseAction",
+      base::Bind(&AutocompleteActionPredictorTable::DeleteAllRows,
+                 table_));
+  UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.DatabaseAction",
                             DATABASE_ACTION_DELETE_ALL, DATABASE_ACTION_COUNT);
 }
 
@@ -474,7 +485,7 @@ void AutocompleteActionPredictor::DeleteRowsWithURLs(
   if (!initialized_)
     return;
 
-  std::vector<AutocompleteActionPredictorDatabase::Row::Id> id_list;
+  std::vector<AutocompleteActionPredictorTable::Row::Id> id_list;
 
   for (DBCacheMap::iterator it = db_cache_.begin(); it != db_cache_.end();) {
     if (std::find_if(rows.begin(), rows.end(),
@@ -490,26 +501,10 @@ void AutocompleteActionPredictor::DeleteRowsWithURLs(
   }
 
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutocompleteActionPredictorDatabase::DeleteRows,
-                 db_, id_list));
-  UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.DatabaseAction",
+      base::Bind(&AutocompleteActionPredictorTable::DeleteRows, table_,
+                 id_list));
+  UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.DatabaseAction",
                             DATABASE_ACTION_DELETE_SOME, DATABASE_ACTION_COUNT);
-}
-
-void AutocompleteActionPredictor::BeginTransaction() {
-  if (!initialized_)
-    return;
-
-  content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutocompleteActionPredictorDatabase::BeginTransaction, db_));
-}
-
-void AutocompleteActionPredictor::CommitTransaction() {
-  if (!initialized_)
-    return;
-
-  content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutocompleteActionPredictorDatabase::CommitTransaction, db_));
 }
 
 AutocompleteActionPredictor::TransitionalMatch::TransitionalMatch() {
@@ -517,3 +512,5 @@ AutocompleteActionPredictor::TransitionalMatch::TransitionalMatch() {
 
 AutocompleteActionPredictor::TransitionalMatch::~TransitionalMatch() {
 }
+
+}  // namespace predictors

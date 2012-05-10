@@ -5,8 +5,11 @@
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
+#include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+
+namespace predictors {
 
 // static
 AutocompleteActionPredictor* AutocompleteActionPredictorFactory::GetForProfile(
@@ -26,6 +29,7 @@ AutocompleteActionPredictorFactory::AutocompleteActionPredictorFactory()
                                  ProfileDependencyManager::GetInstance()) {
   // TODO(erg): When HistoryService is PKSFized, uncomment this.
   //  DependsOn(HistoryServiceFactory::GetInstance());
+  DependsOn(PredictorDatabaseFactory::GetInstance());
 }
 
 AutocompleteActionPredictorFactory::~AutocompleteActionPredictorFactory() {}
@@ -35,3 +39,5 @@ ProfileKeyedService*
         Profile* profile) const {
   return new AutocompleteActionPredictor(profile);
 }
+
+}  // namespace predictors

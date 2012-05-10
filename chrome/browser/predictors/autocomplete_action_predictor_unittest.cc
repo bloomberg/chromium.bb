@@ -22,6 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using predictors::AutocompleteActionPredictor;
 
 namespace {
 
@@ -73,6 +74,8 @@ struct TestUrlInfo {
 };
 
 }  // end namespace
+
+namespace predictors {
 
 class AutocompleteActionPredictorTest : public testing::Test {
  public:
@@ -131,9 +134,9 @@ class AutocompleteActionPredictorTest : public testing::Test {
     return url_db->AddURL(row);
   }
 
-  AutocompleteActionPredictorDatabase::Row CreateRowFromTestUrlInfo(
+  AutocompleteActionPredictorTable::Row CreateRowFromTestUrlInfo(
       const TestUrlInfo& test_row) const {
-    AutocompleteActionPredictorDatabase::Row row;
+    AutocompleteActionPredictorTable::Row row;
     row.id = guid::GenerateGUID();
     row.user_text = test_row.user_text;
     row.url = test_row.url;
@@ -149,21 +152,22 @@ class AutocompleteActionPredictorTest : public testing::Test {
 
   std::string AddRow(const TestUrlInfo& test_row) {
     AutocompleteActionPredictor::DBCacheKey key = { test_row.user_text,
-                                               test_row.url };
-    AutocompleteActionPredictorDatabase::Row row =
+                                                    test_row.url };
+    AutocompleteActionPredictorTable::Row row =
         CreateRowFromTestUrlInfo(test_row);
-    predictor_->AddRow(key, row);
+    predictor_->AddAndUpdateRows(
+        AutocompleteActionPredictorTable::Rows(1, row),
+        AutocompleteActionPredictorTable::Rows());
 
     return row.id;
   }
 
-  void UpdateRow(AutocompleteActionPredictor::DBCacheKey key,
-                 const AutocompleteActionPredictorDatabase::Row& row) {
-    AutocompleteActionPredictor::DBCacheMap::iterator it =
-        db_cache()->find(key);
-    ASSERT_TRUE(it != db_cache()->end());
-
-    predictor_->UpdateRow(it, row);
+  void UpdateRow(const AutocompleteActionPredictorTable::Row& row) {
+    AutocompleteActionPredictor::DBCacheKey key = { row.user_text, row.url };
+    ASSERT_TRUE(db_cache()->find(key) != db_cache()->end());
+    predictor_->AddAndUpdateRows(
+        AutocompleteActionPredictorTable::Rows(),
+        AutocompleteActionPredictorTable::Rows(1, row));
   }
 
   void DeleteAllRows() {
@@ -175,7 +179,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
   }
 
   void DeleteOldIdsFromCaches(
-      std::vector<AutocompleteActionPredictorDatabase::Row::Id>* id_list) {
+      std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list) {
     HistoryService* history_service =
         profile_.GetHistoryService(Profile::EXPLICIT_ACCESS);
     ASSERT_TRUE(history_service);
@@ -238,14 +242,14 @@ TEST_F(AutocompleteActionPredictorTest, UpdateRow) {
   DBIdCacheMap::const_iterator id_it = db_id_cache()->find(key);
   EXPECT_TRUE(id_it != db_id_cache()->end());
 
-  AutocompleteActionPredictorDatabase::Row update_row;
+  AutocompleteActionPredictorTable::Row update_row;
   update_row.id = id_it->second;
   update_row.user_text = key.user_text;
   update_row.url = key.url;
   update_row.number_of_hits = it->second.number_of_hits + 1;
   update_row.number_of_misses = it->second.number_of_misses + 2;
 
-  UpdateRow(key, update_row);
+  UpdateRow(update_row);
 
   // Get the updated version.
   DBCacheMap::const_iterator update_it = db_cache()->find(key);
@@ -297,8 +301,8 @@ TEST_F(AutocompleteActionPredictorTest, DeleteRowsWithURLs) {
 }
 
 TEST_F(AutocompleteActionPredictorTest, DeleteOldIdsFromCaches) {
-  std::vector<AutocompleteActionPredictorDatabase::Row::Id> expected;
-  std::vector<AutocompleteActionPredictorDatabase::Row::Id> all_ids;
+  std::vector<AutocompleteActionPredictorTable::Row::Id> expected;
+  std::vector<AutocompleteActionPredictorTable::Row::Id> all_ids;
 
   for (size_t i = 0; i < arraysize(test_url_db); ++i) {
     std::string row_id = AddRow(test_url_db[i]);
@@ -313,13 +317,13 @@ TEST_F(AutocompleteActionPredictorTest, DeleteOldIdsFromCaches) {
       ASSERT_TRUE(AddRowToHistory(test_url_db[i]));
   }
 
-  std::vector<AutocompleteActionPredictorDatabase::Row::Id> id_list;
+  std::vector<AutocompleteActionPredictorTable::Row::Id> id_list;
   DeleteOldIdsFromCaches(&id_list);
   EXPECT_EQ(expected.size(), id_list.size());
   EXPECT_EQ(all_ids.size() - expected.size(), db_cache()->size());
   EXPECT_EQ(all_ids.size() - expected.size(), db_id_cache()->size());
 
-  for (std::vector<AutocompleteActionPredictorDatabase::Row::Id>::iterator it =
+  for (std::vector<AutocompleteActionPredictorTable::Row::Id>::iterator it =
        all_ids.begin();
        it != all_ids.end(); ++it) {
     bool in_expected =
@@ -362,3 +366,5 @@ TEST_F(AutocompleteActionPredictorTest, RecommendActionSearch) {
         << "Unexpected action for " << match.destination_url;
   }
 }
+
+}  // namespace predictors

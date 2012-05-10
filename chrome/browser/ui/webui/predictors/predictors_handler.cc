@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/predictors/autocomplete_action_predictor_dom_handler.h"
+#include "chrome/browser/ui/webui/predictors/predictors_handler.h"
 
 #include "base/bind.h"
 #include "base/values.h"
@@ -11,27 +11,23 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui.h"
 
-AutocompleteActionPredictorDOMHandler::AutocompleteActionPredictorDOMHandler(
-  Profile* profile) {
+using predictors::AutocompleteActionPredictor;
+
+PredictorsHandler::PredictorsHandler(Profile* profile) {
   autocomplete_action_predictor_ =
-      AutocompleteActionPredictorFactory::GetForProfile(profile);
+      predictors::AutocompleteActionPredictorFactory::GetForProfile(profile);
 }
 
-AutocompleteActionPredictorDOMHandler::~AutocompleteActionPredictorDOMHandler()
-{
-}
+PredictorsHandler::~PredictorsHandler() { }
 
-void AutocompleteActionPredictorDOMHandler::RegisterMessages() {
+void PredictorsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("requestAutocompleteActionPredictorDb",
-      base::Bind(
-          &AutocompleteActionPredictorDOMHandler::
-          RequestAutocompleteActionPredictorDb,
-          base::Unretained(this)));
+      base::Bind(&PredictorsHandler::RequestAutocompleteActionPredictorDb,
+                 base::Unretained(this)));
 }
 
-void
-    AutocompleteActionPredictorDOMHandler::RequestAutocompleteActionPredictorDb(
-        const base::ListValue* args) {
+void PredictorsHandler::RequestAutocompleteActionPredictorDb(
+    const base::ListValue* args) {
   const bool enabled = (autocomplete_action_predictor_ != NULL);
   base::DictionaryValue dict;
   dict.SetBoolean("enabled", enabled);
@@ -52,8 +48,7 @@ void
       db->Append(entry);
     }
     dict.Set("db", db);
-    dict.SetDouble("hit_weight",
-                   AutocompleteActionPredictor::get_hit_weight());
+    dict.SetDouble("hit_weight", AutocompleteActionPredictor::get_hit_weight());
   }
 
   web_ui()->CallJavascriptFunction("updateDatabaseTable", dict);

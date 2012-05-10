@@ -14,6 +14,8 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_util.h"
 
+using predictors::AutocompleteActionPredictor;
+
 namespace prerender {
 
 namespace {

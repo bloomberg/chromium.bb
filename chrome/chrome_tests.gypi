@@ -1431,7 +1431,7 @@
         'browser/policy/testing_policy_url_fetcher_factory.h',
         'browser/policy/url_blacklist_manager_unittest.cc',
         'browser/policy/user_policy_cache_unittest.cc',
-        'browser/predictors/autocomplete_action_predictor_database_unittest.cc',
+        'browser/predictors/autocomplete_action_predictor_table_unittest.cc',
         'browser/predictors/autocomplete_action_predictor_unittest.cc',
         'browser/preferences_mock_mac.cc',
         'browser/preferences_mock_mac.h',

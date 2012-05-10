@@ -76,8 +76,8 @@
       <include name="IDR_KEYBOARD_MANIFEST" file="resources\keyboard\manifest.json" type="BINDATA" />
       <include name="IDR_MEDIA_INTERNALS_HTML" file="resources\media_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_MEDIA_INTERNALS_JS" file="resources\media_internals\media_internals.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_AUTOCOMPLETE_ACTION_PREDICTOR_HTML" file="resources\predictors\autocomplete_action_predictor.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_AUTOCOMPLETE_ACTION_PREDICTOR_JS" file="resources\predictors\autocomplete_action_predictor.js" type="BINDATA" />
+      <include name="IDR_PREDICTORS_HTML" file="resources\predictors\predictors.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_PREDICTORS_JS" file="resources\predictors\predictors.js" type="BINDATA" />
       <include name="IDR_NEW_INCOGNITO_TAB_THEME_CSS" file="resources\new_incognito_tab_theme.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NEW_TAB_4_HTML" file="resources\ntp4\new_tab.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NEW_TAB_4_THEME_CSS" file="resources\ntp4\new_tab_theme.css" flattenhtml="true" type="BINDATA" />
