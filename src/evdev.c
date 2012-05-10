@@ -63,7 +63,7 @@ struct evdev_input_device {
 	struct mtdev *mtdev;
 
 	struct {
-		int dx, dy;
+		wl_fixed_t dx, dy;
 	} rel;
 
 	int type; /* event type flags */
@@ -196,6 +196,7 @@ evdev_process_absolute_motion_touchpad(struct evdev_input_device *device,
 {
 	/* FIXME: Make this configurable somehow. */
 	const int touchpad_speed = 700;
+	int dx, dy;
 
 	switch (e->code) {
 	case ABS_X:
@@ -203,10 +204,11 @@ evdev_process_absolute_motion_touchpad(struct evdev_input_device *device,
 		if (device->abs.reset_x)
 			device->abs.reset_x = 0;
 		else {
-			device->rel.dx =
+			dx =
 				(e->value - device->abs.old_x) *
 				touchpad_speed /
 				(device->abs.max_x - device->abs.min_x);
+			device->rel.dx = wl_fixed_from_int(dx);
 		}
 		device->abs.old_x = e->value;
 		device->type |= EVDEV_RELATIVE_MOTION;
@@ -216,11 +218,12 @@ evdev_process_absolute_motion_touchpad(struct evdev_input_device *device,
 		if (device->abs.reset_y)
 			device->abs.reset_y = 0;
 		else {
-			device->rel.dy =
+			dy =
 				(e->value - device->abs.old_y) *
 				touchpad_speed /
 				/* maybe use x size here to have the same scale? */
 				(device->abs.max_y - device->abs.min_y);
+			device->rel.dy = wl_fixed_from_int(dy);
 		}
 		device->abs.old_y = e->value;
 		device->type |= EVDEV_RELATIVE_MOTION;
@@ -234,11 +237,11 @@ evdev_process_relative(struct evdev_input_device *device,
 {
 	switch (e->code) {
 	case REL_X:
-		device->rel.dx += e->value;
+		device->rel.dx += wl_fixed_from_int(e->value);
 		device->type |= EVDEV_RELATIVE_MOTION;
 		break;
 	case REL_Y:
-		device->rel.dy += e->value;
+		device->rel.dy += wl_fixed_from_int(e->value);
 		device->type |= EVDEV_RELATIVE_MOTION;
 		break;
 	case REL_WHEEL:
@@ -300,8 +303,8 @@ evdev_flush_motion(struct evdev_input_device *device, uint32_t time)
 
 	if (device->type & EVDEV_RELATIVE_MOTION) {
 		notify_motion(master, time,
-			      master->x + wl_fixed_from_int(device->rel.dx),
-			      master->y + wl_fixed_from_int(device->rel.dy));
+			      master->x + device->rel.dx,
+			      master->y + device->rel.dy);
 		device->type &= ~EVDEV_RELATIVE_MOTION;
 		device->rel.dx = 0;
 		device->rel.dy = 0;
