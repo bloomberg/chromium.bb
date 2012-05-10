@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/tabs/tab_drag_controller2.h"
+#include "chrome/browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/tabs/default_tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_switches.h"
@@ -30,9 +31,8 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-namespace {
+namespace test {
 
-// See comments above QuitWhenNotDragging.
 class QuitDraggingObserver : public content::NotificationObserver {
  public:
   QuitDraggingObserver() {
@@ -98,59 +98,70 @@ void QuitWhenNotDragging() {
   new QuitDraggingObserver();  // QuitDraggingObserver deletes itself.
 }
 
+TabStrip* GetTabStripForBrowser(Browser* browser) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  return static_cast<TabStrip*>(browser_view->tabstrip());
 }
 
-class TabDragController2Test : public InProcessBrowserTest {
+}  // namespace test
+
+using test::GetCenterInScreenCoordinates;
+using test::SetID;
+using test::ResetIDs;
+using test::IDString;
+using test::QuitWhenNotDragging;
+using test::GetTabStripForBrowser;
+
+TabDragControllerTest::TabDragControllerTest() {
+}
+
+TabDragControllerTest::~TabDragControllerTest() {
+}
+
+void TabDragControllerTest::StopAnimating(TabStrip* tab_strip) {
+  tab_strip->StopAnimating(true);
+}
+
+void TabDragControllerTest::AddTabAndResetBrowser(Browser* browser) {
+  AddBlankTabAndShow(browser);
+  StopAnimating(GetTabStripForBrowser(browser));
+  ResetIDs(browser->tabstrip_model(), 0);
+}
+
+Browser* TabDragControllerTest::CreateAnotherWindowBrowserAndRelayout() {
+  // Add another tab.
+  AddTabAndResetBrowser(browser());
+
+  // Create another browser.
+  Browser* browser2 = CreateBrowser(browser()->profile());
+  ResetIDs(browser2->tabstrip_model(), 100);
+
+  // Resize the two windows so they're right next to each other.
+  gfx::Rect work_area = gfx::Screen::GetMonitorNearestWindow(
+      browser()->window()->GetNativeHandle()).work_area();
+  gfx::Size half_size =
+      gfx::Size(work_area.width() / 3 - 10, work_area.height() / 2 - 10);
+  browser()->window()->SetBounds(gfx::Rect(work_area.origin(), half_size));
+  browser2->window()->SetBounds(gfx::Rect(
+      work_area.x() + half_size.width(), work_area.y(),
+      half_size.width(), half_size.height()));
+  return browser2;
+}
+
+class DetachToBrowserTabDragControllerTest : public TabDragControllerTest {
  public:
-  TabDragController2Test() {}
-
-  static TabStrip* GetTabStripForBrowser(Browser* browser) {
-    BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-    return static_cast<TabStrip*>(browser_view->tabstrip());
-  }
-
-  void StopAnimating(TabStrip* tab_strip) {
-    tab_strip->StopAnimating(true);
-  }
-
-  void AddTabAndResetBrowser(Browser* browser) {
-    AddBlankTabAndShow(browser);
-    StopAnimating(GetTabStripForBrowser(browser));
-    ResetIDs(browser->tabstrip_model(), 0);
-  }
-
-  // Creates another window and resizes |browser()| and the new browser to
-  // be side by side.
-  Browser* CreateAnotherWindowBrowserAndRelayout() {
-    // Add another tab.
-    AddTabAndResetBrowser(browser());
-
-    // Create another browser.
-    Browser* browser2 = CreateBrowser(browser()->profile());
-    ResetIDs(browser2->tabstrip_model(), 100);
-
-    // Resize the two windows so they're right next to each other.
-    gfx::Rect work_area = gfx::Screen::GetMonitorNearestWindow(
-        browser()->window()->GetNativeHandle()).work_area();
-    gfx::Size half_size =
-        gfx::Size(work_area.width() / 3 - 10, work_area.height() / 2 - 10);
-    browser()->window()->SetBounds(gfx::Rect(work_area.origin(), half_size));
-    browser2->window()->SetBounds(gfx::Rect(
-        work_area.x() + half_size.width(), work_area.y(),
-        half_size.width(), half_size.height()));
-    return browser2;
-  }
+  DetachToBrowserTabDragControllerTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kTabBrowserDragging);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TabDragController2Test);
+  DISALLOW_COPY_AND_ASSIGN(DetachToBrowserTabDragControllerTest);
 };
 
 // Creates a browser with two tabs, drags the second to the first.
-IN_PROC_BROWSER_TEST_F(TabDragController2Test, DragInSameWindow) {
+IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest, DragInSameWindow) {
   AddTabAndResetBrowser(browser());
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -165,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(TabDragController2Test, DragInSameWindow) {
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::UP));
   EXPECT_EQ("1 0", IDString(model));
-  EXPECT_FALSE(TabDragController2::IsActive());
+  EXPECT_FALSE(TabDragController::IsActive());
   EXPECT_FALSE(tab_strip->IsDragSessionActive());
 }
 
@@ -189,7 +200,8 @@ void DragToSeparateWindowStep2(TabStrip* not_attached_tab_strip,
 }  // namespace
 
 // Creates two browsers, drags from first into second.
-IN_PROC_BROWSER_TEST_F(TabDragController2Test, DragToSeparateWindow) {
+IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
+                       DragToSeparateWindow) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Create another browser.
@@ -227,7 +239,8 @@ IN_PROC_BROWSER_TEST_F(TabDragController2Test, DragToSeparateWindow) {
 }
 
 // Drags from browser to separate window and releases mouse.
-IN_PROC_BROWSER_TEST_F(TabDragController2Test, DetachToOwnWindow) {
+IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
+                       DetachToOwnWindow) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -263,7 +276,8 @@ IN_PROC_BROWSER_TEST_F(TabDragController2Test, DetachToOwnWindow) {
 }
 
 // Deletes a tab being dragged before the user moved enough to start a drag.
-IN_PROC_BROWSER_TEST_F(TabDragController2Test, DeleteBeforeStartedDragging) {
+IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
+                       DeleteBeforeStartedDragging) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -289,7 +303,8 @@ IN_PROC_BROWSER_TEST_F(TabDragController2Test, DeleteBeforeStartedDragging) {
 }
 
 // Deletes a tab being dragged while still attached.
-IN_PROC_BROWSER_TEST_F(TabDragController2Test, DeleteTabWhileAttached) {
+IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
+                       DeleteTabWhileAttached) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -327,7 +342,8 @@ void DeleteWhileDetachedStep2(TabContentsWrapper* tab) {
 
 // Deletes a tab being dragged after dragging a tab so that a new window is
 // created.
-IN_PROC_BROWSER_TEST_F(TabDragController2Test, DeleteTabWhileDetached) {
+IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
+                       DeleteTabWhileDetached) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -367,7 +383,8 @@ void DeleteSourceDetachedStep2(TabContentsWrapper* tab) {
 
 // Detaches a tab and while detached deletes a tab from the source so that the
 // source window closes then presses escape to cancel the drag.
-IN_PROC_BROWSER_TEST_F(TabDragController2Test, DeleteSourceDetached) {
+IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
+                       DeleteSourceDetached) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -406,7 +423,7 @@ void PressEscapeWhileDetachedStep2() {
 
 // This is disabled until NativeViewHost::Detach really detaches.
 // Detaches a tab and while detached presses escape to revert the drag.
-IN_PROC_BROWSER_TEST_F(TabDragController2Test,
+IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
                        DISABLED_PressEscapeWhileDetached) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
@@ -448,7 +465,7 @@ void DragAllStep2() {
 }  // namespace
 
 // Selects multiple tabs and starts dragging the window.
-IN_PROC_BROWSER_TEST_F(TabDragController2Test, DragAll) {
+IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest, DragAll) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -500,7 +517,8 @@ void DragAllToSeparateWindowStep2(TabStrip* attached_tab_strip,
 }  // namespace
 
 // Creates two browsers, selects all tabs in first and drags into second.
-IN_PROC_BROWSER_TEST_F(TabDragController2Test, DragAllToSeparateWindow) {
+IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
+                       DragAllToSeparateWindow) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Create another browser.
@@ -560,7 +578,7 @@ void DragAllToSeparateWindowAndCancelStep2(TabStrip* attached_tab_strip,
 
 // Creates two browsers, selects all tabs in first, drags into second, then hits
 // escape.
-IN_PROC_BROWSER_TEST_F(TabDragController2Test,
+IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
                        DragAllToSeparateWindowAndCancel) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 

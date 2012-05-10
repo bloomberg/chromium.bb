@@ -20,8 +20,8 @@
 #include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/tabs/default_tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
-#include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/touch_tab_strip_layout.h"
 #include "chrome/common/chrome_switches.h"
@@ -888,9 +888,10 @@ void TabStrip::MaybeStartDrag(
       (event.type() == ui::ET_TOUCH_PRESSED ||
        (event.type() == ui::ET_MOUSE_PRESSED &&
         event.flags() & ui::EF_CONTROL_DOWN));
-  drag_controller_.reset(TabDragController::Create(
+  drag_controller_.reset(new TabDragController);
+  drag_controller_->Init(
       this, tab, tabs, gfx::Point(x, y), tab->GetMirroredXInView(event.x()),
-      selection_model, move_only));
+      selection_model, move_only);
 }
 
 void TabStrip::ContinueDrag(const views::MouseEvent& event) {
@@ -901,7 +902,7 @@ void TabStrip::ContinueDrag(const views::MouseEvent& event) {
 bool TabStrip::EndDrag(bool canceled) {
   if (!drag_controller_.get())
     return false;
-  bool started_drag = drag_controller_->GetStartedDrag();
+  bool started_drag = drag_controller_->started_drag();
   drag_controller_->EndDrag(canceled);
   return started_drag;
 }

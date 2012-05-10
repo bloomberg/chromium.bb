@@ -1,0 +1,72 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_DRAG_CONTROLLER_INTERACTIVE_UITEST_H_
+#define CHROME_BROWSER_UI_VIEWS_TABS_TAB_DRAG_CONTROLLER_INTERACTIVE_UITEST_H_
+#pragma once
+
+#include <string>
+
+#include "chrome/test/base/in_process_browser_test.h"
+
+class Browser;
+class TabStrip;
+class TabStripModel;
+
+namespace content {
+class WebContents;
+}
+
+namespace gfx {
+class Point;
+}
+
+namespace views {
+class View;
+}
+
+// TabDragControllerTest is the basis for the two tests that exercise
+// TabDragController.
+class TabDragControllerTest : public InProcessBrowserTest {
+ public:
+  TabDragControllerTest();
+  virtual ~TabDragControllerTest();
+
+  // Cover for TabStrip::StopAnimating(true).
+  void StopAnimating(TabStrip* tab_strip);
+
+  // Adds a new blank tab to |browser|, stops animations and resets the ids of
+  // the tabs in |browser|.
+  void AddTabAndResetBrowser(Browser* browser);
+
+  // Creates a new Browser and resizes |browser()| and the new browser to be
+  // side by side.
+  Browser* CreateAnotherWindowBrowserAndRelayout();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TabDragControllerTest);
+};
+
+namespace test {
+
+// Returns the TabStrip for |browser|.
+TabStrip* GetTabStripForBrowser(Browser* browser);
+
+// Returns the center of |view| in screen coordinates.
+gfx::Point GetCenterInScreenCoordinates(const views::View* view);
+
+// Sets the id of |tab_contents| to |id|.
+void SetID(content::WebContents* tab_contents, int id);
+
+// Resets the ids of all the tabs in |model| starting at |start|. That is, the
+// id of the first tab is set to |start|, the second tab |start + 1| ...
+void ResetIDs(TabStripModel* model, int start);
+
+// Returns a string representation of the ids of the tabs in |model|. Each id
+// is separated by a space.
+std::string IDString(TabStripModel* model);
+
+}
+
+#endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_DRAG_CONTROLLER_INTERACTIVE_UITEST_H_

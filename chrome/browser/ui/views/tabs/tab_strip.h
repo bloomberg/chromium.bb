@@ -222,9 +222,8 @@ class TabStrip : public views::View,
 
   class RemoveTabDelegate;
 
-  friend class DefaultTabDragController;
-  friend class TabDragController2;
-  friend class TabDragController2Test;
+  friend class TabDragController;
+  friend class TabDragControllerTest;
 
   // Used during a drop session of a url. Tracks the position of the drop as
   // well as a window used to highlight where the drop occurs.
