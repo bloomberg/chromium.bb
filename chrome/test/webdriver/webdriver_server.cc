@@ -163,6 +163,10 @@ void InitCallbacks(Dispatcher* dispatcher,
   dispatcher->Add<ExtensionsCommand>("/session/*/chrome/extensions");
   dispatcher->Add<ExtensionCommand>("/session/*/chrome/extension/*");
   dispatcher->Add<ViewsCommand>("/session/*/chrome/views");
+#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+  dispatcher->Add<HeapProfilerDumpCommand>(
+      "/session/*/chrome/heapprofilerdump");
+#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
 
   // HTML5 functions.
   dispatcher->Add<HTML5LocationCommand>("/session/*/location");

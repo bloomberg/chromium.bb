@@ -359,6 +359,23 @@ bool SendCaptureEntirePageJSONRequest(
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
 }
 
+#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+bool SendHeapProfilerDumpJSONRequest(
+    AutomationMessageSender* sender,
+    const WebViewLocator& locator,
+    const std::string& reason,
+    Error* error) {
+  DictionaryValue dict;
+  dict.SetString("command", "HeapProfilerDump");
+  dict.SetString("process_type", "renderer");
+  dict.SetString("reason", reason);
+  locator.UpdateDictionary(&dict, "auto_id");
+  DictionaryValue reply_dict;
+
+  return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
+}
+#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+
 bool SendGetCookiesJSONRequest(
     AutomationMessageSender* sender,
     const std::string& url,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,6 +82,21 @@ class ViewsCommand : public WebDriverCommand {
  private:
   DISALLOW_COPY_AND_ASSIGN(ViewsCommand);
 };
+
+#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+class HeapProfilerDumpCommand : public WebDriverCommand {
+ public:
+  HeapProfilerDumpCommand(const std::vector<std::string>& path_segments,
+                          const base::DictionaryValue* const parameters);
+  virtual ~HeapProfilerDumpCommand();
+
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HeapProfilerDumpCommand);
+};
+#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
 
 }  // namespace webdriver
 

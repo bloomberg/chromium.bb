@@ -119,6 +119,12 @@ class Automation {
   void CaptureEntirePageAsPNG(
       const WebViewId& view_id, const FilePath& path, Error** error);
 
+#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+  // Dumps a heap profile of the process of the tab.
+  void HeapProfilerDump(
+      const WebViewId& view_id, const std::string& reason, Error** error);
+#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+
   void NavigateToURL(
       const WebViewId& view_id, const std::string& url, Error** error);
   void NavigateToURLAsync(

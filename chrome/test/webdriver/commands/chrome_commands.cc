@@ -255,4 +255,31 @@ void ViewsCommand::ExecuteGet(Response* const response) {
   response->SetValue(views_list);
 }
 
+#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+HeapProfilerDumpCommand::HeapProfilerDumpCommand(
+    const std::vector<std::string>& ps,
+    const DictionaryValue* const parameters)
+    : WebDriverCommand(ps, parameters) {}
+
+HeapProfilerDumpCommand::~HeapProfilerDumpCommand() {}
+
+bool HeapProfilerDumpCommand::DoesPost() {
+  return true;
+}
+
+void HeapProfilerDumpCommand::ExecutePost(Response* const response) {
+  std::string reason;
+  if (!GetStringParameter("reason", &reason)) {
+    response->SetError(new Error(kBadRequest, "'reason' missing or invalid"));
+    return;
+  }
+
+  Error* error = session_->HeapProfilerDump(reason);
+  if (error) {
+    response->SetError(error);
+    return;
+  }
+}
+#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+
 }  // namespace webdriver

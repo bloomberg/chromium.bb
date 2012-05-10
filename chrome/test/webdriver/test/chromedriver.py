@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -12,6 +12,7 @@ since this module will eventually be moved into the webdriver codebase, the
 code follows WebDriver naming conventions for functions.
 """
 
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 
@@ -38,6 +39,7 @@ class WebDriver(RemoteWebDriver):
   _CHROME_MODIFY_EXTENSION = "chrome.setExtensionState"
   _CHROME_UNINSTALL_EXTENSION = "chrome.uninstallExtension"
   _CHROME_GET_VIEW_HANDLES = "chrome.getViewHandles"
+  _CHROME_DUMP_HEAP_PROFILE = "chrome.dumpHeapProfile"
 
   def __init__(self, url, desired_capabilities={}):
     """Creates a WebDriver that controls Chrome via ChromeDriver.
@@ -64,7 +66,9 @@ class WebDriver(RemoteWebDriver):
     WebDriver._CHROME_UNINSTALL_EXTENSION:
         ('DELETE', '/session/$sessionId/chrome/extension/$id'),
     WebDriver._CHROME_GET_VIEW_HANDLES:
-        ('GET', '/session/$sessionId/chrome/views')
+        ('GET', '/session/$sessionId/chrome/views'),
+    WebDriver._CHROME_DUMP_HEAP_PROFILE:
+        ('POST', '/session/$sessionId/chrome/heapprofilerdump')
     }
     self.command_executor._commands.update(custom_commands)
 
@@ -87,6 +91,28 @@ class WebDriver(RemoteWebDriver):
     id = RemoteWebDriver.execute(
         self, WebDriver._CHROME_INSTALL_EXTENSION, params)['value']
     return Extension(self, id)
+
+  def dump_heap_profile(self, reason):
+    """Dumps a heap profile.  It works only on Linux and ChromeOS.
+
+    We need an environment variable "HEAPPROFILE" set to a directory and a
+    filename prefix, for example, "/tmp/prof".  In a case of this example,
+    heap profiles will be dumped into "/tmp/prof.(pid).0002.heap",
+    "/tmp/prof.(pid).0003.heap", and so on.  Nothing happens when this
+    function is called without the env.
+
+    Args:
+      reason: A string which describes the reason for dumping a heap profile.
+              The reason will be included in the logged message.
+              Examples:
+                'To check memory leaking'
+                'For WebDriver tests'
+    """
+    if self.IsLinux():  # IsLinux() also implies IsChromeOS().
+      params = {'reason': reason}
+      RemoteWebDriver.execute(self, WebDriver._CHROME_DUMP_HEAP_PROFILE, params)
+    else:
+      raise WebDriverException('Heap-profiling is not supported in this OS.')
 
 
 class Extension(object):

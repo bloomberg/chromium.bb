@@ -561,6 +561,23 @@ void Automation::CaptureEntirePageAsPNG(const WebViewId& view_id,
   }
 }
 
+#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+void Automation::HeapProfilerDump(const WebViewId& view_id,
+                                  const std::string& reason,
+                                  Error** error) {
+  WebViewLocator view_locator;
+  *error = ConvertViewIdToLocator(view_id, &view_locator);
+  if (*error)
+    return;
+
+  automation::Error auto_error;
+  if (!SendHeapProfilerDumpJSONRequest(
+          automation(), view_locator, reason, &auto_error)) {
+    *error = Error::FromAutomationError(auto_error);
+  }
+}
+#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+
 void Automation::NavigateToURL(const WebViewId& view_id,
                                const std::string& url,
                                Error** error) {

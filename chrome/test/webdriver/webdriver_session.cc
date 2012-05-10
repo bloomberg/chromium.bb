@@ -1835,6 +1835,20 @@ Error* Session::GetScreenShot(std::string* png) {
   return NULL;
 }
 
+#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+Error* Session::HeapProfilerDump(const std::string& reason) {
+  // TODO(dmikurube): Support browser processes.
+  Error* error = NULL;
+  RunSessionTask(base::Bind(
+      &Automation::HeapProfilerDump,
+      base::Unretained(automation_.get()),
+      current_target_.view_id,
+      reason,
+      &error));
+  return error;
+}
+#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+
 Error* Session::PostBrowserStartInit() {
   Error* error = NULL;
   if (!capabilities_.no_website_testing_defaults)

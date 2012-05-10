@@ -3486,11 +3486,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def HeapProfilerDump(self, process_type, reason, tab_index=0, windex=0):
     """Dumps a heap profile.  It works only on Linux and ChromeOS.
 
-       We need an environment variable "HEAPPROFILE" set to a directory and a
-       filename prefix, for example, "/tmp/prof".  In a case of this example,
-       heap profiles will be dumped into "/tmp/prof.(pid).0002.heap",
-       "/tmp/prof.(pid).0003.heap", and so on.  Nothing happens when this
-       function is called without the env.
+    We need an environment variable "HEAPPROFILE" set to a directory and a
+    filename prefix, for example, "/tmp/prof".  In a case of this example,
+    heap profiles will be dumped into "/tmp/prof.(pid).0002.heap",
+    "/tmp/prof.(pid).0003.heap", and so on.  Nothing happens when this
+    function is called without the env.
 
     Args:
       process_type: A string which is one of 'browser' or 'renderer'.

@@ -248,6 +248,16 @@ bool SendCaptureEntirePageJSONRequest(
     const FilePath& path,
     automation::Error* error) WARN_UNUSED_RESULT;
 
+#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+// Requests a heap profile dump.
+// Returns true on success.
+bool SendHeapProfilerDumpJSONRequest(
+    AutomationMessageSender* sender,
+    const WebViewLocator& locator,
+    const std::string& reason,
+    automation::Error* error) WARN_UNUSED_RESULT;
+#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+
 // Requests all the cookies for the given URL. On success returns true and
 // caller takes ownership of |cookies|, which is a list of all the cookies in
 // dictionary format.

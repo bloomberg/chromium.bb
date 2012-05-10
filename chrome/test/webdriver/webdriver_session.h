@@ -140,6 +140,9 @@ class Session {
   Error* GetURL(std::string* url);
   Error* GetTitle(std::string* tab_title);
   Error* GetScreenShot(std::string* png);
+#if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+  Error* HeapProfilerDump(const std::string& reason);
+#endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
   Error* GetCookies(const std::string& url, base::ListValue** cookies);
   Error* DeleteCookie(const std::string& url, const std::string& cookie_name);
   Error* SetCookie(const std::string& url, base::DictionaryValue* cookie_dict);
