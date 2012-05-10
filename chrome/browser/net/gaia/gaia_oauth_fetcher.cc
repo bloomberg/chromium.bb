@@ -21,6 +21,7 @@
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/gaia/oauth_request_signer.h"
+#include "chrome/common/net/url_util.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/url_fetcher.h"
@@ -685,7 +686,45 @@ void GaiaOAuthFetcher::OnURLFetchComplete(const content::URLFetcher* source) {
                              true)) {
     OnOAuthRevokeTokenFetched(data, status, response_code);
   } else {
-    NOTREACHED();
+    // Invalid cookies cause Gaia to redirect to ServiceLogin. Check if
+    // this is the case and report failure properly.
+    std::string url_no_query = url.GetOrigin().spec() + url.path().substr(1);
+    std::string continue_url;
+    if (url_no_query == gaia_urls->service_login_url() &&
+        chrome_common_net::GetValueForKeyInQuery(url, "continue",
+                                                 &continue_url)) {
+      LOG(ERROR) << "GaiaOAuthFetcher redirected to service login"
+                 << " , url=" << url.spec();
+
+      if (StartsWithASCII(continue_url,
+                          gaia_urls->get_oauth_token_url(),
+                          true)) {
+        consumer_->OnGetOAuthTokenFailure(GoogleServiceAuthError(
+                GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+      } else if (continue_url == gaia_urls->oauth1_login_url()) {
+        consumer_->OnOAuthLoginFailure(GoogleServiceAuthError(
+                GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+      } else if (continue_url == gaia_urls->oauth_get_access_token_url()) {
+        consumer_->OnOAuthGetAccessTokenFailure(GoogleServiceAuthError(
+                GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+      } else if (continue_url == gaia_urls->oauth_wrap_bridge_url()) {
+        consumer_->OnOAuthWrapBridgeFailure(service_scope_,
+            GoogleServiceAuthError(
+                GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+      } else if (continue_url == gaia_urls->oauth_user_info_url()) {
+        consumer_->OnUserInfoFailure(GoogleServiceAuthError(
+                GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+      } else if (StartsWithASCII(continue_url,
+                                 gaia_urls->oauth_revoke_token_url(),
+                                 true)) {
+        consumer_->OnOAuthRevokeTokenFailure(GoogleServiceAuthError(
+                GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+      } else {
+        NOTREACHED();
+      }
+    } else {
+      NOTREACHED() << "GaiaOAuthFetcher unknown url=" << url.spec();
+    }
   }
 }
 

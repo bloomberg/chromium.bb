@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/net/url_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "googleurl/src/url_util.h"
@@ -77,29 +78,6 @@ SyncPromoUIHTMLSource::SyncPromoUIHTMLSource(content::WebUI* web_ui)
   options2::CoreOptionsHandler::GetStaticLocalizedValues(&localized_strings);
   SyncSetupHandler::GetStaticLocalizedValues(&localized_strings, web_ui);
   AddLocalizedStrings(localized_strings);
-}
-
-// Looks for |search_key| in the query portion of |url|. Returns true if the
-// key is found and sets |out_value| to the value for the key. Returns false if
-// the key is not found.
-bool GetValueForKeyInQuery(const GURL& url, const std::string& search_key,
-                           std::string* out_value) {
-  url_parse::Component query = url.parsed_for_possibly_invalid_spec().query;
-  url_parse::Component key, value;
-  while (url_parse::ExtractQueryKeyValue(
-      url.spec().c_str(), &query, &key, &value)) {
-    if (key.is_nonempty()) {
-      std::string key_string = url.spec().substr(key.begin, key.len);
-      if (key_string == search_key) {
-        if (value.is_nonempty())
-          *out_value = url.spec().substr(value.begin, value.len);
-        else
-          *out_value = "";
-        return true;
-      }
-    }
-  }
-  return false;
 }
 
 }  // namespace
@@ -247,12 +225,9 @@ GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page, Source source) {
 // static
 GURL SyncPromoUI::GetNextPageURLForSyncPromoURL(const GURL& url) {
   std::string value;
-  if (GetValueForKeyInQuery(url, kSyncPromoQueryKeyNextPage, &value)) {
-    url_canon::RawCanonOutputT<char16> output;
-    url_util::DecodeURLEscapeSequences(value.c_str(), value.length(), &output);
-    std::string url;
-    UTF16ToUTF8(output.data(), output.length(), &url);
-    return GURL(url);
+  if (chrome_common_net::GetValueForKeyInQuery(
+          url, kSyncPromoQueryKeyNextPage, &value)) {
+    return GURL(value);
   }
   return GURL();
 }
@@ -260,7 +235,8 @@ GURL SyncPromoUI::GetNextPageURLForSyncPromoURL(const GURL& url) {
 // static
 SyncPromoUI::Source SyncPromoUI::GetSourceForSyncPromoURL(const GURL& url) {
   std::string value;
-  if (GetValueForKeyInQuery(url, kSyncPromoQueryKeySource, &value)) {
+  if (chrome_common_net::GetValueForKeyInQuery(
+          url, kSyncPromoQueryKeySource, &value)) {
     int source = 0;
     if (base::StringToInt(value, &source) && source >= SOURCE_START_PAGE &&
         source < SOURCE_UNKNOWN) {

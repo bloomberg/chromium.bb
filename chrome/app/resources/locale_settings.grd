@@ -359,7 +359,7 @@
       </message>
 
       <message name="IDS_SYNC_GET_ACCESS_CODE_URL" translateable="false">
-        https://www.google.com/accounts/IssuedAuthSubTokens?hl=[GRITLANGCODE]
+        https://accounts.google.com/IssuedAuthSubTokens?hl=[GRITLANGCODE]
       </message>
 
       <message name="IDS_SYNC_UNRECOVERABLE_ERROR_HELP_URL" translateable="false">

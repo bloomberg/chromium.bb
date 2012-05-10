@@ -22,11 +22,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
 using ::testing::AnyNumber;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::_;
+using content::BrowserThread;
 
 namespace chromeos {
 
@@ -248,7 +248,7 @@ TEST_F(OnlineAttemptTest, CaptchaErrorOutputted) {
   GoogleServiceAuthError auth_error =
       GoogleServiceAuthError::FromClientLoginCaptchaChallenge(
           "CCTOKEN",
-          GURL("http://www.google.com/accounts/Captcha?ctoken=CCTOKEN"),
+          GURL("http://accounts.google.com/Captcha?ctoken=CCTOKEN"),
           GURL("http://www.google.com/login/captcha"));
   RunFailureTest(auth_error);
 }

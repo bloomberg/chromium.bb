@@ -63,10 +63,11 @@ const char kSyncServerCommandLine[] = "sync-server-command-line";
 
 namespace {
 // The URLs for different calls in the Google Accounts programmatic login API.
-const char kClientLoginUrl[] = "https://www.google.com/accounts/ClientLogin";
-const char kGetUserInfoUrl[] = "https://www.google.com/accounts/GetUserInfo";
+// TODO(rsimha): Use GaiaUrls here.
+const char kClientLoginUrl[] = "https://accounts.google.com/ClientLogin";
+const char kGetUserInfoUrl[] = "https://accounts.google.com/GetUserInfo";
 const char kIssueAuthTokenUrl[] =
-    "https://www.google.com/accounts/IssueAuthToken";
+    "https://accounts.google.com/IssueAuthToken";
 const char kSearchDomainCheckUrl[] =
     "https://www.google.com/searchdomaincheck?format=domain&type=chrome";
 const char kOAuth2LoginTokenValidResponse[] =

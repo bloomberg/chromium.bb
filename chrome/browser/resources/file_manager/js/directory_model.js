@@ -979,7 +979,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback, resolveGData) {
   }
 
   function onGDataError(error) {
-    console.log('GData error: ', error);
+    console.log('GData error: ' + error);
     self.unmountedGDataEntry_ = {
       unmounted: true,  // Clients use this field to distinguish a fake root.
       toURL: function() { return '' },

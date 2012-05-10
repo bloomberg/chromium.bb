@@ -55,8 +55,8 @@ class GoogleServiceAuthError {
 
     // The user needs to satisfy a CAPTCHA challenge to unlock their account.
     // If no other information is available, this can be resolved by visiting
-    // https://www.google.com/accounts/DisplayUnlockCaptcha. Otherwise,
-    // captcha() will provide details about the associated challenge.
+    // https://accounts.google.com/DisplayUnlockCaptcha. Otherwise, captcha()
+    // will provide details about the associated challenge.
     CAPTCHA_REQUIRED = 4,
 
     // The user account has been deleted.

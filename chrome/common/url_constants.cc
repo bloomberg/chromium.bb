@@ -402,7 +402,7 @@ const char kSyncErrorsHelpURL[] =
     "https://support.google.com/chrome/?p=settings_sync_error";
 
 const char kSyncCreateNewAccountURL[] =
-    "https://www.google.com/accounts/NewAccount?service=chromiumsync";
+    "https://accounts.google.com/NewAccount?service=chromiumsync";
 
 #if defined(OS_CHROMEOS)
 const char kNaturalScrollHelpURL[] =

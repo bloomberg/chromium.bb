@@ -16,7 +16,7 @@
 
 const char kDefaultCloudPrintServiceURL[] = "https://www.google.com/cloudprint";
 const char kDefaultCloudPrintSigninURL[] =
-    "https://www.google.com/accounts/ServiceLogin?"
+    "https://accounts.google.com/ServiceLogin?"
     "service=cloudprint&continue=https%3A%2F%2Fwww.google.com%2Fcloudprint";
 
 const char kLearnMoreURL[] =

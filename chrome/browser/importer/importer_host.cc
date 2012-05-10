@@ -168,7 +168,7 @@ void ImporterHost::OnGoogleGAIACookieChecked(bool result) {
         L"",
         MB_OK | MB_TOPMOST);
 
-    GURL url("https://www.google.com/accounts/ServiceLogin");
+    GURL url("https://accounts.google.com/ServiceLogin");
     DCHECK(profile_);
     Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
     if (browser)
