@@ -10,11 +10,10 @@
   'targets': [
     {
       'target_name': 'oak',
-      'type': 'static_library',
+      'type': '<(component)',
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
-        '../../build/temp_gyp/googleurl.gyp:googleurl',
         '../../skia/skia.gyp:skia',
         '../aura/aura.gyp:aura',
         '../compositor/compositor.gyp:compositor',
