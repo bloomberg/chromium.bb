@@ -2417,3 +2417,59 @@
    fun:_ZN8remoting8protocol21AuthenticatorTestBase14RunChannelAuthEb
    fun:_ZN8remoting8protocol52NegotiatingAuthenticatorTest_SuccessfulAuthHmac_Test8TestBodyEv
 }
+{
+   bug_127499_a
+   Memcheck:Uninitialized
+   ...
+   fun:VDADecoderCreate
+   fun:_ZN3gfx30VideoDecodeAccelerationSupport6CreateEiiiPKvm
+   fun:_ZN3gfx46VideoDecodeAccelerationSupportTest_Create_Test8TestBodyEv
+}
+{
+   bug_127499_b
+   Memcheck:Leak
+   ...
+   fun:VDADecoderCreate
+   fun:_ZN3gfx30VideoDecodeAccelerationSupport6CreateEiiiPKvm
+   fun:_ZN3gfx46VideoDecodeAccelerationSupportTest_Create_Test8TestBodyEv
+}
+{
+   bug_127499_c
+   Memcheck:Free
+   ...
+   fun:VTDecompressionSessionInvalidate
+   fun:VDADecoderDestroy
+   fun:_ZN3gfx30VideoDecodeAccelerationSupport7DestroyEv
+   fun:_ZN3gfx46VideoDecodeAccelerationSupportTest_Create_Test8TestBodyEv
+}
+{
+   bug_127499_d
+   Memcheck:Uninitialized
+   ...
+   fun:VTDecompressionSessionInvalidate
+   fun:VDADecoderDestroy
+   fun:_ZN3gfx30VideoDecodeAccelerationSupport7DestroyEv
+   fun:_ZN3gfx46VideoDecodeAccelerationSupportTest_Create_Test8TestBodyEv
+}
+{
+   bug_127499_e
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base17LoadNativeLibraryERK8FilePathPSs
+   fun:_ZN12_GLOBAL__N_117InitializeVdaApisEv
+   fun:_ZN3gfx30VideoDecodeAccelerationSupport6CreateEiiiPKvm
+   fun:_ZN3gfx46VideoDecodeAccelerationSupportTest_Create_Test8TestBodyEv
+}
+{
+   bug_127499_f
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:CFBasicHashCreate
+   fun:__CFDictionaryCreateGeneric
+   fun:CFDictionaryCreate
+   fun:-[__NSPlaceholderDictionary initWithObjects:forKeys:count:]
+   fun:+[NSDictionary dictionaryWithObjectsAndKeys:]
+   fun:_ZN3gfx30VideoDecodeAccelerationSupport6CreateEiiiPKvm
+   fun:_ZN3gfx46VideoDecodeAccelerationSupportTest_Create_Test8TestBodyEv
+}
