@@ -782,7 +782,7 @@ void GtkThemeService::LoadGtkValues() {
   SetThemeColorFromGtk(ThemeService::COLOR_NTP_SECTION_LINK_UNDERLINE,
                        link_color);
 
-  if (link_color && !is_default_link_color)
+  if (!is_default_link_color)
     gdk_color_free(const_cast<GdkColor*>(link_color));
 
   // Generate the colors that we pass to WebKit.
