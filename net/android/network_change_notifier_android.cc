@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/android/network_change_notifier.h"
+#include "net/android/network_change_notifier_android.h"
 
 #include "base/logging.h"
 #include "base/android/jni_android.h"

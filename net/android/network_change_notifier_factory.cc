@@ -4,7 +4,7 @@
 
 #include "net/android/network_change_notifier_factory.h"
 
-#include "net/android/network_change_notifier.h"
+#include "net/android/network_change_notifier_android.h"
 
 namespace net {
 namespace android {
