@@ -126,9 +126,6 @@ class TestPackageExecutable(TestPackage):
     """Strips and copies the executable to the device."""
     if self.tool.NeedsDebugInfo():
       target_name = self.test_suite
-    elif self.test_suite_basename == 'webkit_unit_tests':
-      # webkit_unit_tests has been stripped in build step.
-      target_name = self.test_suite
     else:
       target_name = self.test_suite + '_' + self.device + '_stripped'
       should_strip = True
