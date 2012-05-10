@@ -161,6 +161,11 @@ class SfiValidator {
    *   2. Patterns matched and were safe: the addresses are filled into
    *      'critical' for use by the second pass.
    *   3. Patterns matched and were unsafe: problems get sent to 'out'.
+   *
+   * Note: Can be used to parse both one and two instruction patterns. This
+   * allows precondition checks to be shared. See comments in the implementation
+   * of this (in validator.cc) to see specifics on how to implement both single
+   * instruction and two instruction pattern testers.
    */
   bool apply_patterns(const DecodedInstruction &first,
       const DecodedInstruction &second, AddressSet *critical, ProblemSink *out);

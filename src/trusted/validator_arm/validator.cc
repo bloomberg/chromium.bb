@@ -8,6 +8,8 @@
 #include "native_client/src/trusted/validator_arm/validator.h"
 #include "native_client/src/include/nacl_macros.h"
 
+#include <assert.h>
+
 using nacl_arm_dec::Instruction;
 using nacl_arm_dec::ClassDecoder;
 using nacl_arm_dec::Register;
@@ -31,8 +33,11 @@ namespace nacl_arm_val {
 enum PatternMatch {
   // The pattern does not apply to the instructions it was given.
   NO_MATCH,
-  // The pattern matches, and is safe; do not allow jumps to split it.
+  // The pattern matches a single instruction, and is safe.
   PATTERN_SAFE,
+  // The pattern matches a double instruction, and is safe;
+  // do not allow jumps to split it.
+  PATTERN_SAFE_2,
   // The pattern matches, and has detected a problem.
   PATTERN_UNSAFE
 };
@@ -65,13 +70,13 @@ static PatternMatch check_loadstore_mask(const SfiValidator &sfi,
   if (first.defines(second.base_address_register())
       && first.clears_bits(sfi.data_address_mask())
       && first.always_precedes(second)) {
-    return PATTERN_SAFE;
+    return PATTERN_SAFE_2;
   }
 
   if (first.sets_Z_if_bits_clear(second.base_address_register(),
                                  sfi.data_address_mask())
       && second.is_conditional_on(first)) {
-    return PATTERN_SAFE;
+    return PATTERN_SAFE_2;
   }
 
   out->report_problem(second.addr(), second.safety(), kProblemUnsafeLoadStore);
@@ -92,7 +97,7 @@ static PatternMatch check_branch_mask(const SfiValidator &sfi,
   if (first.defines(second.branch_target_register())
       && first.clears_bits(sfi.code_address_mask())
       && first.always_precedes(second)) {
-    return PATTERN_SAFE;
+    return PATTERN_SAFE_2;
   }
 
   out->report_problem(second.addr(), second.safety(), kProblemUnsafeBranch);
@@ -122,7 +127,7 @@ static PatternMatch check_data_register_update(const SfiValidator &sfi,
   if (second.defines_all(data_addr_defs)
       && second.clears_bits(sfi.data_address_mask())
       && second.always_follows(first)) {
-    return PATTERN_SAFE;
+    return PATTERN_SAFE_2;
   }
 
   out->report_problem(first.addr(), first.safety(), kProblemUnsafeDataWrite);
@@ -359,7 +364,8 @@ bool SfiValidator::validate_branches(const vector<CodeSegment> &segments,
 
 bool SfiValidator::apply_patterns(const DecodedInstruction &inst,
     ProblemSink *out) {
-  // Single-instruction patterns
+  // Single-instruction patterns. Should return PATTERN_SAFE if the
+  // pattern succeeds.
   typedef PatternMatch (*OneInstPattern)(const SfiValidator &,
                                          const DecodedInstruction &,
                                          ProblemSink *out);
@@ -381,6 +387,10 @@ bool SfiValidator::apply_patterns(const DecodedInstruction &inst,
       case PATTERN_UNSAFE:
         complete_success = false;
         break;
+
+      case PATTERN_SAFE_2:
+        assert(false);  // This should not happen. All patterns in the
+                        // list are single instruction patterns.
     }
   }
 
@@ -389,7 +399,15 @@ bool SfiValidator::apply_patterns(const DecodedInstruction &inst,
 
 bool SfiValidator::apply_patterns(const DecodedInstruction &first,
     const DecodedInstruction &second, AddressSet *critical, ProblemSink *out) {
-  // Type for two-instruction pattern functions
+  // Type for two-instruction pattern functions.
+  //
+  // Note: These functions can recognize single instruction patterns,
+  // as well as two instruction patterns. Single instruction patterns
+  // should return PATTERN_SAFE while two instruction patterns should
+  // return PATTERN_SAFE_2. In addition, single instruction patterns
+  // should be applied to the "second" instruction. The main reason for
+  // allowing both pattern lengths is so that precondition tests can
+  // be shared, and hence more efficient.
   typedef PatternMatch (*TwoInstPattern)(const SfiValidator &,
                                          const DecodedInstruction &first,
                                          const DecodedInstruction &second,
@@ -407,6 +425,7 @@ bool SfiValidator::apply_patterns(const DecodedInstruction &first,
   for (uint32_t i = 0; i < NACL_ARRAY_SIZE(two_inst_patterns); i++) {
     PatternMatch r = two_inst_patterns[i](*this, first, second, out);
     switch (r) {
+      case PATTERN_SAFE:
       case NO_MATCH: break;
 
       case PATTERN_UNSAFE:
@@ -414,7 +433,7 @@ bool SfiValidator::apply_patterns(const DecodedInstruction &first,
         complete_success = false;
         break;
 
-      case PATTERN_SAFE:
+      case PATTERN_SAFE_2:
         if (bundle_for_address(first.addr())
             != bundle_for_address(second.addr())) {
           complete_success = false;

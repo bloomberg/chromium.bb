@@ -602,6 +602,34 @@ TEST_F(ValidatorTests, LessScaryUndefinedInstructions) {
   }
 }
 
+TEST_F(ValidatorTests, PcRelativeFirstInst) {
+  // Note: This tests the fix for issue 2771.
+  static const arm_inst pcrel_boundary_tests[] = {
+    0xe59f0000,  // ldr     r0, [pc, #0]
+    0xe320f000,  // nop     {0}
+    0xe320f000,  // nop     {0}
+    0xe320f000,  // nop     {0}"
+  };
+  validation_should_pass(pcrel_boundary_tests,
+                         NACL_ARRAY_SIZE(pcrel_boundary_tests),
+                         kDefaultBaseAddr,
+                         "pc relative first instruction in first bundle");
+}
+
+TEST_F(ValidatorTests, PcRelativeFirst2ndBundle) {
+  // Note: This tests the fix for issue 2771.
+  static const arm_inst pcrel_boundary_tests[] = {
+    0xe320f000,  // nop     {0}
+    0xe320f000,  // nop     {0}
+    0xe320f000,  // nop     {0}
+    0xe320f000,  // nop     {0}
+    0xe59f0000,  // ldr     r0, [pc, #0]
+  };
+  validation_should_pass(pcrel_boundary_tests,
+                         NACL_ARRAY_SIZE(pcrel_boundary_tests),
+                         kDefaultBaseAddr,
+                         "pc relative first instruction in 2nd bundle");
+}
 
 /*
  * Implementation of the ValidatorTests utility methods.  These are documented
