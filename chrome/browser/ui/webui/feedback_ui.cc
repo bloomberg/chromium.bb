@@ -65,7 +65,7 @@ const char kDescriptionParameter[] = "description=";
 
 #if defined(OS_CHROMEOS)
 const char kSavedScreenshotsUrl[] = "chrome://screenshots/saved/";
-const char kScreenshotPattern[] = "screenshot-*.png";
+const char kScreenshotPattern[] = "Screenshot_*.png";
 
 const char kTimestampParameter[] = "timestamp=";
 
