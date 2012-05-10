@@ -15,6 +15,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/monitor_manager.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/gfx/monitor.h"
 
 namespace aura {
@@ -111,7 +112,8 @@ void MonitorChangeObserverX11::NotifyMonitorChange() {
         gfx::Rect(crtc_info->x, crtc_info->y, mode->width, mode->height)));
 
     float device_scale_factor = 1.0f;
-    if (output_info->mm_width > 0 &&
+    if (ui::IsDIPEnabled() &&
+        output_info->mm_width > 0 &&
         (kInchInMm * mode->width / output_info->mm_width) >
         kHighDensityDIPThreshold) {
       device_scale_factor = 2.0f;

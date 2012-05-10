@@ -35,8 +35,9 @@ ScopedDIPEnablerForTest::~ScopedDIPEnablerForTest() {
 bool IsDIPEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   static const bool dip_enabled =
-      command_line.HasSwitch(switches::kUIEnableDIP) ||
-      command_line.HasSwitch(switches::kDefaultDeviceScaleFactor);
+      command_line.HasSwitch(switches::kDefaultDeviceScaleFactor) ||
+      (command_line.HasSwitch(switches::kUIEnableDIP) &&
+       command_line.GetSwitchValueASCII(switches::kUIEnableDIP) != "false");
   return dip_enabled || dip_enabled_for_test;
 }
 
