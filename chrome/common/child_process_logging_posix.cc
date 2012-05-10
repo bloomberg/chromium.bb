@@ -89,8 +89,8 @@ void SetActiveExtensions(const std::set<std::string>& extension_ids) {
 }
 
 void SetGpuInfo(const content::GPUInfo& gpu_info) {
-  snprintf(g_gpu_vendor_id, kGpuStringSize, "0x%04x", gpu_info.vendor_id);
-  snprintf(g_gpu_device_id, kGpuStringSize, "0x%04x", gpu_info.device_id);
+  snprintf(g_gpu_vendor_id, kGpuStringSize, "0x%04x", gpu_info.gpu.vendor_id);
+  snprintf(g_gpu_device_id, kGpuStringSize, "0x%04x", gpu_info.gpu.device_id);
   strncpy(g_gpu_driver_ver,
           gpu_info.driver_version.c_str(),
           kGpuStringSize - 1);

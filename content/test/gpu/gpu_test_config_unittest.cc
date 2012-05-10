@@ -28,20 +28,20 @@ TEST_F(GPUTestConfigTest, EmptyValues) {
 
 TEST_F(GPUTestConfigTest, SetGPUInfo) {
   content::GPUInfo gpu_info;
-  gpu_info.vendor_id = 0x10de;
-  gpu_info.device_id = 0x0640;
+  gpu_info.gpu.vendor_id = 0x10de;
+  gpu_info.gpu.device_id = 0x0640;
   GPUTestBotConfig config;
   EXPECT_TRUE(config.SetGPUInfo(gpu_info));
   EXPECT_EQ(1u, config.gpu_vendor().size());
-  EXPECT_EQ(gpu_info.vendor_id, config.gpu_vendor()[0]);
-  EXPECT_EQ(gpu_info.device_id, config.gpu_device_id());
+  EXPECT_EQ(gpu_info.gpu.vendor_id, config.gpu_vendor()[0]);
+  EXPECT_EQ(gpu_info.gpu.device_id, config.gpu_device_id());
 
-  gpu_info.vendor_id = 0x8086;
-  gpu_info.device_id = 0x0046;
+  gpu_info.gpu.vendor_id = 0x8086;
+  gpu_info.gpu.device_id = 0x0046;
   EXPECT_TRUE(config.SetGPUInfo(gpu_info));
   EXPECT_EQ(1u, config.gpu_vendor().size());
-  EXPECT_EQ(gpu_info.vendor_id, config.gpu_vendor()[0]);
-  EXPECT_EQ(gpu_info.device_id, config.gpu_device_id());
+  EXPECT_EQ(gpu_info.gpu.vendor_id, config.gpu_vendor()[0]);
+  EXPECT_EQ(gpu_info.gpu.device_id, config.gpu_device_id());
 }
 
 TEST_F(GPUTestConfigTest, IsValid) {
@@ -212,8 +212,8 @@ TEST_F(GPUTestConfigTest, OverlapsWith) {
 TEST_F(GPUTestConfigTest, LoadCurrentConfig) {
   GPUTestBotConfig config;
   content::GPUInfo gpu_info;
-  gpu_info.vendor_id = 0x10de;
-  gpu_info.device_id = 0x0640;
+  gpu_info.gpu.vendor_id = 0x10de;
+  gpu_info.gpu.device_id = 0x0640;
   EXPECT_TRUE(config.LoadCurrentConfig(&gpu_info));
   EXPECT_TRUE(config.IsValid());
 }

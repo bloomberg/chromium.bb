@@ -81,15 +81,6 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // If use-gl switch is osmesa or any, return true.
   bool UseGLIsOSMesaOrAny();
 
-  // Merges the second GPUInfo object with the first.
-  // If it's the same GPU, i.e., device id and vendor id are the same, then
-  // copy over the fields that are not set yet and ignore the rest.
-  // If it's a different GPU, then reset and copy over everything.
-  // Return true if something changes that may affect blacklisting; currently
-  // they are device_id, vendor_id, driver_vendor, driver_version, driver_date,
-  // and gl_renderer.
-  static bool Merge(content::GPUInfo* object, const content::GPUInfo& other);
-
   // Try to switch to software rendering, if possible and necessary.
   void EnableSoftwareRenderingIfNecessary();
 

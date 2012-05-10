@@ -128,11 +128,11 @@ void GPUTestBotConfig::AddGPUVendor(uint32 gpu_vendor) {
 }
 
 bool GPUTestBotConfig::SetGPUInfo(const content::GPUInfo& gpu_info) {
-  if (gpu_info.device_id == 0 || gpu_info.vendor_id == 0)
+  if (gpu_info.gpu.device_id == 0 || gpu_info.gpu.vendor_id == 0)
     return false;
   ClearGPUVendor();
-  AddGPUVendor(gpu_info.vendor_id);
-  set_gpu_device_id(gpu_info.device_id);
+  AddGPUVendor(gpu_info.gpu.vendor_id);
+  set_gpu_device_id(gpu_info.gpu.device_id);
   return true;
 }
 

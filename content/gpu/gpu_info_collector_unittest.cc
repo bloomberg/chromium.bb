@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,8 +68,8 @@ class GPUInfoCollectorTest : public testing::Test {
         "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
         "GL_EXT_read_format_bgra";
 #endif
-    test_values_.vendor_id = vendor_id;
-    test_values_.device_id = device_id;
+    test_values_.gpu.vendor_id = vendor_id;
+    test_values_.gpu.device_id = device_id;
     test_values_.driver_vendor = driver_vendor;
     test_values_.driver_version =driver_version;
     test_values_.pixel_shader_version = shader_version;

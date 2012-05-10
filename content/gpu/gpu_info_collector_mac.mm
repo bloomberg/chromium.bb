@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,8 +111,8 @@ bool CollectPCIVideoCardInfo(content::GPUInfo* gpu_info) {
       break;
   }
   if (found < video_card_list.size()) {
-    gpu_info->vendor_id = video_card_list[found].vendor_id;
-    gpu_info->device_id = video_card_list[found].device_id;
+    gpu_info->gpu.vendor_id = video_card_list[found].vendor_id;
+    gpu_info->gpu.device_id = video_card_list[found].device_id;
     return true;
   }
   return false;
@@ -157,8 +157,8 @@ bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
     CFRelease(device_id_ref);
   }
 
-  gpu_info->vendor_id = vendor_id;
-  gpu_info->device_id = device_id;
+  gpu_info->gpu.vendor_id = vendor_id;
+  gpu_info->gpu.device_id = device_id;
   return true;
 }
 

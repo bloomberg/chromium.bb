@@ -336,10 +336,10 @@ void FlashDOMHandler::MaybeRespondToPage() {
   AddPair(list, string16(), "--- GPU driver, more information ---");
   AddPair(list,
           ASCIIToUTF16("Vendor Id"),
-          base::StringPrintf("0x%04x", gpu_info.vendor_id));
+          base::StringPrintf("0x%04x", gpu_info.gpu.vendor_id));
   AddPair(list,
           ASCIIToUTF16("Device Id"),
-          base::StringPrintf("0x%04x", gpu_info.device_id));
+          base::StringPrintf("0x%04x", gpu_info.gpu.device_id));
   AddPair(list, ASCIIToUTF16("Driver vendor"), gpu_info.driver_vendor);
   AddPair(list, ASCIIToUTF16("Driver version"), gpu_info.driver_version);
   AddPair(list, ASCIIToUTF16("Driver date"), gpu_info.driver_date);

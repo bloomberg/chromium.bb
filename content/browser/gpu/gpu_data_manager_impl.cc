@@ -88,14 +88,18 @@ bool GpuDataManagerImpl::IsCompleteGPUInfoAvailable() const {
 void GpuDataManagerImpl::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  complete_gpu_info_available_ =
-      complete_gpu_info_available_ || gpu_info.finalized;
-  complete_gpu_info_already_requested_ =
-      complete_gpu_info_already_requested_ || gpu_info.finalized;
   {
     base::AutoLock auto_lock(gpu_info_lock_);
-    if (!Merge(&gpu_info_, gpu_info))
-      return;
+    if (gpu_info.gpu.vendor_id && gpu_info.gpu.device_id) {
+      gpu_info_ = gpu_info;
+    } else {
+      gpu_info_.gpu_accessible = false;
+      gpu_info_.finalized = true;
+    }
+    complete_gpu_info_available_ =
+        complete_gpu_info_available_ || gpu_info_.finalized;
+    complete_gpu_info_already_requested_ =
+        complete_gpu_info_already_requested_ || gpu_info_.finalized;
     content::GetContentClient()->SetGpuInfo(gpu_info_);
   }
 
@@ -289,71 +293,3 @@ void GpuDataManagerImpl::BlacklistCard() {
   NotifyGpuInfoUpdate();
 }
 
-bool GpuDataManagerImpl::Merge(content::GPUInfo* object,
-                               const content::GPUInfo& other) {
-  if (object->device_id != other.device_id ||
-      object->vendor_id != other.vendor_id) {
-    *object = other;
-    return true;
-  }
-
-  bool changed = false;
-  if (!object->finalized) {
-    object->finalized = other.finalized;
-    object->initialization_time = other.initialization_time;
-    object->optimus |= other.optimus;
-    object->amd_switchable |= other.amd_switchable;
-
-    if (object->driver_vendor.empty()) {
-      changed |= object->driver_vendor != other.driver_vendor;
-      object->driver_vendor = other.driver_vendor;
-    }
-    if (object->driver_version.empty()) {
-      changed |= object->driver_version != other.driver_version;
-      object->driver_version = other.driver_version;
-    }
-    if (object->driver_date.empty()) {
-      changed |= object->driver_date != other.driver_date;
-      object->driver_date = other.driver_date;
-    }
-    if (object->pixel_shader_version.empty()) {
-      changed |= object->pixel_shader_version != other.pixel_shader_version;
-      object->pixel_shader_version = other.pixel_shader_version;
-    }
-    if (object->vertex_shader_version.empty()) {
-      changed |= object->vertex_shader_version != other.vertex_shader_version;
-      object->vertex_shader_version = other.vertex_shader_version;
-    }
-    if (object->gl_version.empty()) {
-      changed |= object->gl_version != other.gl_version;
-      object->gl_version = other.gl_version;
-    }
-    if (object->gl_version_string.empty()) {
-      changed |= object->gl_version_string != other.gl_version_string;
-      object->gl_version_string = other.gl_version_string;
-    }
-    if (object->gl_vendor.empty()) {
-      changed |= object->gl_vendor != other.gl_vendor;
-      object->gl_vendor = other.gl_vendor;
-    }
-    if (object->gl_renderer.empty()) {
-      changed |= object->gl_renderer != other.gl_renderer;
-      object->gl_renderer = other.gl_renderer;
-    }
-    if (object->gl_extensions.empty()) {
-      changed |= object->gl_extensions != other.gl_extensions;
-      object->gl_extensions = other.gl_extensions;
-    }
-    object->can_lose_context = other.can_lose_context;
-    object->software_rendering = other.software_rendering;
-    object->gpu_accessible = other.gpu_accessible;
-#if defined(OS_WIN)
-    if (object->dx_diagnostics.values.size() == 0 &&
-        object->dx_diagnostics.children.size() == 0) {
-      object->dx_diagnostics = other.dx_diagnostics;
-      changed = true;
-    }
-#endif
-  }
-  return changed;
-}

@@ -164,6 +164,10 @@ std::string CollectDriverVersionATI() {
   return "";
 }
 
+const uint32 kVendorIDIntel = 0x8086;
+const uint32 kVendorIDNVidia = 0x10de;
+const uint32 kVendorIDAMD = 0x1002;
+
 }  // namespace anonymous
 
 namespace gpu_info_collector {
@@ -192,12 +196,18 @@ bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
 
   bool rt = CollectVideoCardInfo(gpu_info);
 
-  if (gpu_info->vendor_id == 0x1002) {  // ATI
+  if (gpu_info->gpu.vendor_id == kVendorIDAMD) {
     std::string ati_driver_version = CollectDriverVersionATI();
     if (!ati_driver_version.empty()) {
       gpu_info->driver_vendor = "ATI / AMD";
       gpu_info->driver_version = ati_driver_version;
     }
+  }
+
+  // Disable all GPU features for Optimus on Linux.
+  if (gpu_info->optimus) {
+    gpu_info->gpu_accessible = false;
+    gpu_info->finalized = true;
   }
 
   return rt;
@@ -224,49 +234,36 @@ bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
   DCHECK(access != NULL);
   (interface->pci_init)(access);
   (interface->pci_scan_bus)(access);
-  std::vector<PciDevice*> gpu_list;
-  PciDevice* gpu_active = NULL;
+  bool primary_gpu_identified = false;
   for (PciDevice* device = access->device_list;
        device != NULL; device = device->next) {
     (interface->pci_fill_info)(device, 33);  // Fill the IDs and class fields.
     // TODO(zmo): there might be other classes that qualify as display devices.
-    if (device->device_class == 0x0300) {  // Device class is DISPLAY_VGA.
-      if (gpu_info->vendor_id == 0 || gpu_info->vendor_id == device->vendor_id)
-        gpu_list.push_back(device);
-    }
-  }
-  if (gpu_list.size() == 1) {
-    gpu_active = gpu_list[0];
-  } else {
-    // If more than one graphics card are identified, find the one that matches
-    // gl VENDOR and RENDERER info.
-    std::string gl_vendor_string = gpu_info->gl_vendor;
-    std::string gl_renderer_string = gpu_info->gl_renderer;
+    if (device->device_class != 0x0300)  // Device class is DISPLAY_VGA.
+      continue;
+
+    content::GPUInfo::GPUDevice gpu;
+    gpu.vendor_id = device->vendor_id;
+    gpu.device_id = device->device_id;
+
     const int buffer_size = 255;
     scoped_array<char> buffer(new char[buffer_size]);
-    std::vector<PciDevice*> candidates;
-    for (size_t i = 0; i < gpu_list.size(); ++i) {
-      PciDevice* gpu = gpu_list[i];
-      // The current implementation of pci_lookup_name returns the same pointer
-      // as the passed in upon success, and a different one (NULL or a pointer
-      // to an error message) upon failure.
-      if ((interface->pci_lookup_name)(access,
-                                       buffer.get(),
-                                       buffer_size,
-                                       1,
-                                       gpu->vendor_id) != buffer.get())
-        continue;
-      std::string vendor_string = buffer.get();
-      const bool kCaseSensitive = false;
-      if (!StartsWithASCII(gl_vendor_string, vendor_string, kCaseSensitive))
-        continue;
-      if ((interface->pci_lookup_name)(access,
-                                       buffer.get(),
-                                       buffer_size,
-                                       2,
-                                       gpu->vendor_id,
-                                       gpu->device_id) != buffer.get())
-        continue;
+    // The current implementation of pci_lookup_name returns the same pointer
+    // as the passed in upon success, and a different one (NULL or a pointer
+    // to an error message) upon failure.
+    if ((interface->pci_lookup_name)(access,
+                                     buffer.get(),
+                                     buffer_size,
+                                     1,
+                                     device->vendor_id) == buffer.get()) {
+      gpu.vendor_string = buffer.get();
+    }
+    if ((interface->pci_lookup_name)(access,
+                                     buffer.get(),
+                                     buffer_size,
+                                     2,
+                                     device->vendor_id,
+                                     device->device_id) == buffer.get()) {
       std::string device_string = buffer.get();
       size_t begin = device_string.find_first_of('[');
       size_t end = device_string.find_last_of(']');
@@ -274,25 +271,38 @@ bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
           begin < end) {
         device_string = device_string.substr(begin + 1, end - begin - 1);
       }
-      if (StartsWithASCII(gl_renderer_string, device_string, kCaseSensitive)) {
-        gpu_active = gpu;
-        break;
-      }
-      // If a device's vendor matches gl VENDOR string, we want to consider the
-      // possibility that libpci may not return the exact same name as gl
-      // RENDERER string.
-      candidates.push_back(gpu);
+      gpu.device_string = device_string;
     }
-    if (gpu_active == NULL && candidates.size() == 1)
-      gpu_active = candidates[0];
+
+    if (!primary_gpu_identified) {
+      primary_gpu_identified = true;
+      gpu_info->gpu = gpu;
+    } else {
+      // TODO(zmo): if there are multiple GPUs, we assume the non Intel
+      // one is primary. Revisit this logic because we actually don't know
+      // which GPU we are using at this point.
+      if (gpu_info->gpu.vendor_id == kVendorIDIntel &&
+          gpu.vendor_id != kVendorIDIntel) {
+        gpu_info->secondary_gpus.push_back(gpu_info->gpu);
+        gpu_info->gpu = gpu;
+      } else {
+        gpu_info->secondary_gpus.push_back(gpu);
+      }
+    }
   }
-  if (gpu_active != NULL) {
-    gpu_info->vendor_id =  gpu_active->vendor_id;
-    gpu_info->device_id = gpu_active->device_id;
+
+  // Detect Optimus or AMD Switchable GPU.
+  if (gpu_info->secondary_gpus.size() == 1 &&
+      gpu_info->secondary_gpus[0].vendor_id == kVendorIDIntel) {
+    if (gpu_info->gpu.vendor_id == kVendorIDNVidia)
+      gpu_info->optimus = true;
+    if (gpu_info->gpu.vendor_id == kVendorIDAMD)
+      gpu_info->amd_switchable = true;
   }
+
   (interface->pci_cleanup)(access);
   FinalizeLibPci(&interface);
-  return (gpu_active != NULL);
+  return (primary_gpu_identified);
 }
 
 bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {

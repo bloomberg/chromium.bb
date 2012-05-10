@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,9 @@ TEST(GPUInfoBasicTest, EmptyGPUInfo) {
   content::GPUInfo gpu_info;
   EXPECT_EQ(gpu_info.finalized, false);
   EXPECT_EQ(gpu_info.initialization_time.ToInternalValue(), 0);
-  EXPECT_EQ(gpu_info.vendor_id, 0u);
-  EXPECT_EQ(gpu_info.device_id, 0u);
+  EXPECT_EQ(gpu_info.gpu.vendor_id, 0u);
+  EXPECT_EQ(gpu_info.gpu.device_id, 0u);
+  EXPECT_EQ(gpu_info.secondary_gpus.size(), 0u);
   EXPECT_EQ(gpu_info.driver_vendor, "");
   EXPECT_EQ(gpu_info.driver_version, "");
   EXPECT_EQ(gpu_info.driver_date, "");

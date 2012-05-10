@@ -219,8 +219,8 @@ bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
     std::wstring device_id_string = id.substr(17, 4);
     base::HexStringToInt(WideToASCII(vendor_id_string), &vendor_id);
     base::HexStringToInt(WideToASCII(device_id_string), &device_id);
-    gpu_info->vendor_id = vendor_id;
-    gpu_info->device_id = device_id;
+    gpu_info->gpu.vendor_id = vendor_id;
+    gpu_info->gpu.device_id = device_id;
     // TODO(zmo): we only need to call CollectDriverInfoD3D() if we use ANGLE.
     return CollectDriverInfoD3D(id, gpu_info);
   }

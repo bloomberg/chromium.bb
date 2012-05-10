@@ -155,8 +155,8 @@ void SetGpuInfo(const content::GPUInfo& gpu_info) {
       return;
   }
   (set_gpu_info)(
-      base::StringPrintf(L"0x%04x", gpu_info.vendor_id).c_str(),
-      base::StringPrintf(L"0x%04x", gpu_info.device_id).c_str(),
+      base::StringPrintf(L"0x%04x", gpu_info.gpu.vendor_id).c_str(),
+      base::StringPrintf(L"0x%04x", gpu_info.gpu.device_id).c_str(),
       UTF8ToUTF16(gpu_info.driver_version).c_str(),
       UTF8ToUTF16(gpu_info.pixel_shader_version).c_str(),
       UTF8ToUTF16(gpu_info.vertex_shader_version).c_str());

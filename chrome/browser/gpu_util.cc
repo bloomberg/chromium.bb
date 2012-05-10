@@ -81,6 +81,17 @@ Value* NewStatusValue(const char* name, const char* status) {
   return value;
 }
 
+std::string GPUDeviceToString(const content::GPUInfo::GPUDevice& gpu) {
+  std::string vendor = base::StringPrintf("0x%04x", gpu.vendor_id);
+  if (!gpu.vendor_string.empty())
+    vendor += " [" + gpu.vendor_string + "]";
+  std::string device = base::StringPrintf("0x%04x", gpu.device_id);
+  if (!gpu.device_string.empty())
+    device += " [" + gpu.device_string + "]";
+  return base::StringPrintf(
+      "VENDOR = %s, DEVICE= %s", vendor.c_str(), device.c_str());
+}
+
 #if defined(OS_WIN)
 
 enum WinSubVersion {
@@ -336,9 +347,12 @@ DictionaryValue* GpuInfoAsDictionaryValue() {
       "Initialization time",
       base::Int64ToString(gpu_info.initialization_time.InMilliseconds())));
   basic_info->Append(NewDescriptionValuePair(
-      "Vendor Id", base::StringPrintf("0x%04x", gpu_info.vendor_id)));
-  basic_info->Append(NewDescriptionValuePair(
-      "Device Id", base::StringPrintf("0x%04x", gpu_info.device_id)));
+      "GPU0", GPUDeviceToString(gpu_info.gpu)));
+  for (size_t i = 0; i < gpu_info.secondary_gpus.size(); ++i) {
+    basic_info->Append(NewDescriptionValuePair(
+        base::StringPrintf("GPU%d", static_cast<int>(i + 1)),
+        GPUDeviceToString(gpu_info.secondary_gpus[i])));
+  }
   basic_info->Append(NewDescriptionValuePair(
       "Optimus", Value::CreateBooleanValue(gpu_info.optimus)));
   basic_info->Append(NewDescriptionValuePair(

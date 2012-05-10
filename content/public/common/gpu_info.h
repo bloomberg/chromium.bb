@@ -10,6 +10,7 @@
 // on which chrome is currently running.
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/time.h"
@@ -21,6 +22,24 @@
 namespace content {
 
 struct CONTENT_EXPORT GPUInfo {
+  struct CONTENT_EXPORT GPUDevice {
+    GPUDevice();
+    ~GPUDevice();
+
+    // The DWORD (uint32) representing the graphics card vendor id.
+    uint32 vendor_id;
+
+    // The DWORD (uint32) representing the graphics card device id.
+    // Device ids are unique to vendor, not to one another.
+    uint32 device_id;
+
+    // The strings that describe the GPU.
+    // In Linux these strings are obtained through libpci.
+    // In Win/MacOSX, these two strings are not filled at the moment.
+    std::string vendor_string;
+    std::string device_string;
+  };
+
   GPUInfo();
   ~GPUInfo();
 
@@ -37,12 +56,11 @@ struct CONTENT_EXPORT GPUInfo {
   // Computer has AMD Dynamic Switchable Graphics
   bool amd_switchable;
 
-  // The DWORD (uint32) representing the graphics card vendor id.
-  uint32 vendor_id;
+  // Primary GPU, for exmaple, the discrete GPU in a dual GPU machine.
+  GPUDevice gpu;
 
-  // The DWORD (uint32) representing the graphics card device id.  Device ids
-  // are unique to vendor, not to one another.
-  uint32 device_id;
+  // Secondary GPUs, for example, the integrated GPU in a dual GPU machine.
+  std::vector<GPUDevice> secondary_gpus;
 
   // The vendor of the graphics driver currently installed.
   std::string driver_vendor;

@@ -142,10 +142,10 @@ void SetGpuKeyValue(const char* param_name, const std::string& value_str,
 void SetGpuInfoImpl(const content::GPUInfo& gpu_info,
                     SetCrashKeyValueFuncPtr set_key_func) {
   SetGpuKeyValue(kGPUVendorIdParamName,
-                 base::StringPrintf("0x%04x", gpu_info.vendor_id),
+                 base::StringPrintf("0x%04x", gpu_info.gpu.vendor_id),
                  set_key_func);
   SetGpuKeyValue(kGPUDeviceIdParamName,
-                 base::StringPrintf("0x%04x", gpu_info.device_id),
+                 base::StringPrintf("0x%04x", gpu_info.gpu.device_id),
                  set_key_func);
   SetGpuKeyValue(kGPUDriverVersionParamName,
                  gpu_info.driver_version,

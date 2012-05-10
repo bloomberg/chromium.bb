@@ -33,8 +33,8 @@ class GpuBlacklistTest : public testing::Test {
 
  protected:
   void SetUp() {
-    gpu_info_.vendor_id = 0x10de;
-    gpu_info_.device_id = 0x0640;
+    gpu_info_.gpu.vendor_id = 0x10de;
+    gpu_info_.gpu.device_id = 0x0640;
     gpu_info_.driver_vendor = "NVIDIA";
     gpu_info_.driver_version = "1.6.18";
     gpu_info_.driver_date = "7-14-2009";

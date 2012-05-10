@@ -680,8 +680,8 @@ void MetricsLog::RecordEnvironment(
 
     // Write the XML version.
     // We'll write the protobuf version in RecordEnvironmentProto().
-    WriteIntAttribute("vendorid", gpu_info.vendor_id);
-    WriteIntAttribute("deviceid", gpu_info.device_id);
+    WriteIntAttribute("vendorid", gpu_info.gpu.vendor_id);
+    WriteIntAttribute("deviceid", gpu_info.gpu.device_id);
   }
 
   {
@@ -759,8 +759,8 @@ void MetricsLog::RecordEnvironmentProto(
   const content::GPUInfo& gpu_info =
       GpuDataManager::GetInstance()->GetGPUInfo();
   SystemProfileProto::Hardware::Graphics* gpu = hardware->mutable_gpu();
-  gpu->set_vendor_id(gpu_info.vendor_id);
-  gpu->set_device_id(gpu_info.device_id);
+  gpu->set_vendor_id(gpu_info.gpu.vendor_id);
+  gpu->set_device_id(gpu_info.gpu.device_id);
   gpu->set_driver_version(gpu_info.driver_version);
   gpu->set_driver_date(gpu_info.driver_date);
   SystemProfileProto::Hardware::Graphics::PerformanceStatistics*

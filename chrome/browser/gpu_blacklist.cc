@@ -665,12 +665,12 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
   DCHECK(os_type != kOsAny);
   if (os_info_.get() != NULL && !os_info_->Contains(os_type, os_version))
     return false;
-  if (vendor_id_ != 0 && vendor_id_ != gpu_info.vendor_id)
+  if (vendor_id_ != 0 && vendor_id_ != gpu_info.gpu.vendor_id)
     return false;
   if (device_id_list_.size() > 0) {
     bool found = false;
     for (size_t i = 0; i < device_id_list_.size(); ++i) {
-      if (device_id_list_[i] == gpu_info.device_id) {
+      if (device_id_list_[i] == gpu_info.gpu.device_id) {
         found = true;
         break;
       }
