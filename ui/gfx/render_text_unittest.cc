@@ -943,12 +943,22 @@ TEST_F(RenderTextTest, StringSizeBoldWidth) {
 
   // Apply a bold style and check that the new width is greater.
   StyleRange bold;
-  bold.font_style |= gfx::Font::BOLD;
+  bold.font_style |= Font::BOLD;
   render_text->set_default_style(bold);
   render_text->ApplyDefaultStyle();
 
   const int bold_width = render_text->GetStringSize().width();
   EXPECT_GT(bold_width, plain_width);
+
+  // Now, apply a plain style over the first word only.
+  StyleRange plain;
+  plain.font_style = Font::NORMAL;
+  plain.range = ui::Range(0, 5);
+  render_text->ApplyStyleRange(plain);
+
+  const int plain_bold_width = render_text->GetStringSize().width();
+  EXPECT_GT(plain_bold_width, plain_width);
+  EXPECT_LT(plain_bold_width, bold_width);
 }
 
 TEST_F(RenderTextTest, StringSizeHeight) {
@@ -1022,6 +1032,7 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {
   render_text->MoveCursorTo(SelectionModel(render_text->text().length(),
                                            CURSOR_FORWARD));
   int width = render_text->GetStringSize().width();
+  ASSERT_GT(width, 10);
 
   // Ensure that the cursor is placed at the width of its preceding text.
   render_text->SetDisplayRect(Rect(width + 10, 1));
@@ -1046,6 +1057,7 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {
       L"\x5d8\x5d9\x5da\x5db\x5dc\x5dd\x5de\x5df"));
   render_text->MoveCursorTo(SelectionModel(0, CURSOR_FORWARD));
   width = render_text->GetStringSize().width();
+  ASSERT_GT(width, 10);
 
   // Ensure that the cursor is placed at the width of its preceding text.
   render_text->SetDisplayRect(Rect(width + 10, 1));
@@ -1075,6 +1087,7 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorRTL) {
   render_text->SetText(WideToUTF16(L"abcdefghijklmnopqrstuvwxzyabcdefg"));
   render_text->MoveCursorTo(SelectionModel(0, CURSOR_FORWARD));
   int width = render_text->GetStringSize().width();
+  ASSERT_GT(width, 10);
 
   // Ensure that the cursor is placed at the width of its preceding text.
   render_text->SetDisplayRect(Rect(width + 10, 1));
@@ -1100,6 +1113,7 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorRTL) {
   render_text->MoveCursorTo(SelectionModel(render_text->text().length(),
                                            CURSOR_FORWARD));
   width = render_text->GetStringSize().width();
+  ASSERT_GT(width, 10);
 
   // Ensure that the cursor is placed at the width of its preceding text.
   render_text->SetDisplayRect(Rect(width + 10, 1));
