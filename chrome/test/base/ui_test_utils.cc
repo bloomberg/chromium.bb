@@ -349,16 +349,17 @@ void WaitForNavigations(NavigationController* controller,
 }
 
 void WaitForNewTab(Browser* browser) {
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, chrome::NOTIFICATION_TAB_ADDED,
-                  content::Source<content::WebContentsDelegate>(browser));
+  WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::Source<content::WebContentsDelegate>(browser));
+  observer.Wait();
 }
 
 void WaitForBrowserActionUpdated(ExtensionAction* browser_action) {
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer,
-                  chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-                  content::Source<ExtensionAction>(browser_action));
+  WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
+      content::Source<ExtensionAction>(browser_action));
+  observer.Wait();
 }
 
 void WaitForLoadStop(WebContents* tab) {
@@ -373,14 +374,14 @@ void WaitForLoadStop(WebContents* tab) {
 }
 
 Browser* WaitForNewBrowser() {
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-                   content::NotificationService::AllSources());
+  WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+      content::NotificationService::AllSources());
+  observer.Wait();
   return content::Source<Browser>(observer.source()).ptr();
 }
 
 Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
-  TestNotificationObserver observer;
   Browser* new_browser = GetBrowserNotInSet(excluded_browsers);
   if (new_browser == NULL) {
     new_browser = WaitForNewBrowser();
@@ -591,9 +592,10 @@ GURL GetFileUrlWithQuery(const FilePath& path,
 }
 
 AppModalDialog* WaitForAppModalDialog() {
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
-                  content::NotificationService::AllSources());
+  WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
+      content::NotificationService::AllSources());
+  observer.Wait();
   return content::Source<AppModalDialog>(observer.source()).ptr();
 }
 
@@ -604,10 +606,11 @@ void WaitForAppModalDialogAndCloseIt() {
 
 void CrashTab(WebContents* tab) {
   content::RenderProcessHost* rph = tab->GetRenderProcessHost();
+  WindowedNotificationObserver observer(
+      content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+      content::Source<content::RenderProcessHost>(rph));
   base::KillProcess(rph->GetHandle(), 0, false);
-  TestNotificationObserver observer;
-  RegisterAndWait(&observer, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                  content::Source<content::RenderProcessHost>(rph));
+  observer.Wait();
 }
 
 int FindInPage(TabContentsWrapper* tab_contents, const string16& search_string,
@@ -1003,55 +1006,38 @@ TestWebSocketServer::~TestWebSocketServer() {
 #endif
 }
 
-TestNotificationObserver::TestNotificationObserver()
-    : source_(content::NotificationService::AllSources()) {
-}
-
-TestNotificationObserver::~TestNotificationObserver() {}
-
-void TestNotificationObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  source_ = source;
-  details_ = details;
-  MessageLoopForUI::current()->Quit();
-}
-
 WindowedNotificationObserver::WindowedNotificationObserver(
     int notification_type,
     const content::NotificationSource& source)
     : seen_(false),
       running_(false),
-      waiting_for_(source) {
-  registrar_.Add(this, notification_type, waiting_for_);
+      source_(content::NotificationService::AllSources()) {
+  registrar_.Add(this, notification_type, source);
 }
 
 WindowedNotificationObserver::~WindowedNotificationObserver() {}
 
 void WindowedNotificationObserver::Wait() {
-  if (seen_ || (waiting_for_ == content::NotificationService::AllSources() &&
-                !sources_seen_.empty())) {
+  if (seen_)
     return;
-  }
 
   running_ = true;
   ui_test_utils::RunMessageLoop();
-  running_ = false;
+  EXPECT_TRUE(seen_);
 }
 
 void WindowedNotificationObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (waiting_for_ == source ||
-      (running_ && waiting_for_ == content::NotificationService::AllSources())) {
-    seen_ = true;
-    if (running_)
-      MessageLoopForUI::current()->Quit();
-  } else {
-    sources_seen_.insert(source.map_key());
-  }
+  source_ = source;
+  details_ = details;
+  seen_ = true;
+  if (!running_)
+    return;
+
+  MessageLoopForUI::current()->Quit();
+  running_ = false;
 }
 
 WindowedTabAddedNotificationObserver::WindowedTabAddedNotificationObserver(
@@ -1097,23 +1083,6 @@ void TitleWatcher::AlsoWaitForTitle(const string16& expected_title) {
 TitleWatcher::~TitleWatcher() {
 }
 
-BrowserAddedObserver::BrowserAddedObserver()
-    : notification_observer_(
-          chrome::NOTIFICATION_BROWSER_OPENED,
-          content::NotificationService::AllSources()) {
-  original_browsers_.insert(BrowserList::begin(), BrowserList::end());
-}
-
-BrowserAddedObserver::~BrowserAddedObserver() {
-}
-
-Browser* BrowserAddedObserver::WaitForSingleNewBrowser() {
-  notification_observer_.Wait();
-  // Ensure that only a single new browser has appeared.
-  EXPECT_EQ(original_browsers_.size() + 1, BrowserList::size());
-  return GetBrowserNotInSet(original_browsers_);
-}
-
 const string16& TitleWatcher::WaitAndGetTitle() {
   if (expected_title_observed_)
     return observed_title_;
@@ -1148,7 +1117,24 @@ void TitleWatcher::Observe(int type,
     MessageLoopForUI::current()->Quit();
 }
 
-DOMMessageQueue::DOMMessageQueue() {
+BrowserAddedObserver::BrowserAddedObserver()
+    : notification_observer_(
+          chrome::NOTIFICATION_BROWSER_OPENED,
+          content::NotificationService::AllSources()) {
+  original_browsers_.insert(BrowserList::begin(), BrowserList::end());
+}
+
+BrowserAddedObserver::~BrowserAddedObserver() {
+}
+
+Browser* BrowserAddedObserver::WaitForSingleNewBrowser() {
+  notification_observer_.Wait();
+  // Ensure that only a single new browser has appeared.
+  EXPECT_EQ(original_browsers_.size() + 1, BrowserList::size());
+  return GetBrowserNotInSet(original_browsers_);
+}
+
+DOMMessageQueue::DOMMessageQueue() : waiting_for_message_(false) {
   registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                  content::NotificationService::AllSources());
 }

@@ -105,10 +105,10 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 
 
   GURL WaitForSavePackageToFinish() const {
-    ui_test_utils::TestNotificationObserver observer;
-    ui_test_utils::RegisterAndWait(&observer,
+    ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
         content::NotificationService::AllSources());
+    observer.Wait();
     return content::Details<DownloadItem>(observer.details()).ptr()->
         GetOriginalUrl();
   }

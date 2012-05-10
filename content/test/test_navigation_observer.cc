@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,12 +72,14 @@ TestNavigationObserver::~TestNavigationObserver() {
 void TestNavigationObserver::WaitForObservation(
     const base::Closure& wait_loop_callback,
     const base::Closure& done_callback) {
-  if (!done_) {
-    EXPECT_FALSE(running_);
-    running_ = true;
-    done_callback_ = done_callback;
-    wait_loop_callback.Run();
-  }
+  if (done_)
+    return;
+
+  EXPECT_FALSE(running_);
+  running_ = true;
+  done_callback_ = done_callback;
+  wait_loop_callback.Run();
+  EXPECT_TRUE(done_);
 }
 
 void TestNavigationObserver::Wait() {
