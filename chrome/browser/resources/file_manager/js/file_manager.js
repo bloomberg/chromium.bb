@@ -1239,7 +1239,8 @@ FileManager.prototype = {
                     str('GDATA_PRODUCT_NAME')),
                 strf('GDATA_SERVER_OUT_OF_SPACE_MESSAGE',
                     str('GDATA_PRODUCT_NAME'),
-                    event.error.data.sourceFileUrl.split('/').pop(),
+                    decodeURIComponent(
+                        event.error.data.sourceFileUrl.split('/').pop()),
                     GOOGLE_DRIVE_BUY_STORAGE));
           } else {
             this.showButterError(
