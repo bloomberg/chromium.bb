@@ -832,11 +832,8 @@ FileManager.prototype = {
    * Compare by type first, then by subtype and then by name.
    */
   FileManager.prototype.compareType_ = function(a, b) {
-    var aCachedFilesystem = this.metadataCache_.getCached(a, 'filesystem');
-    var aType = aCachedFilesystem ? aCachedFilesystem.fileType : {};
-
-    var bCachedFilesystem = this.metadataCache_.getCached(b, 'filesystem');
-    var bType = bCachedFilesystem ? bCachedFilesystem.fileType : {};
+    var aType = FileType.getType(a);
+    var bType = FileType.getType(b);
 
 
     // Files of unknown type follows all the others.
@@ -1130,7 +1127,7 @@ FileManager.prototype = {
     var renderFunction = this.table_.getRenderFunction();
     this.table_.setRenderFunction(function(entry, parent) {
       var item = renderFunction(entry, parent);
-      this.displayGDataStyleInItem_(
+      this.updateGDataStyle_(
           item, entry, this.metadataCache_.getCached(entry, 'gdata'));
       return item;
     }.bind(this));
@@ -1701,7 +1698,7 @@ FileManager.prototype = {
 
     li.appendChild(this.renderThumbnailBox_(entry, false));
     li.appendChild(this.renderFileNameLabel_(entry));
-    this.displayGDataStyleInItem_(
+    this.updateGDataStyle_(
         li, entry, this.metadataCache_.getCached(entry, 'gdata'));
   };
 
@@ -1717,10 +1714,7 @@ FileManager.prototype = {
   FileManager.prototype.renderIconType_ = function(entry, columnId, table) {
     var icon = this.document_.createElement('div');
     icon.className = 'detail-icon';
-    this.metadataCache_.get(entry, 'filesystem', function(filesystem) {
-      if (filesystem)
-        icon.setAttribute('iconType', filesystem.icon);
-    });
+    icon.setAttribute('iconType', FileType.getIcon(entry));
     return icon;
   };
 
@@ -1819,7 +1813,7 @@ FileManager.prototype = {
     chrome.fileBrowserPrivate.removeMount(entry.toURL());
   };
 
-  FileManager.prototype.displayGDataStyleInItem_ = function(
+  FileManager.prototype.updateGDataStyle_ = function(
       listItem, entry, gdata) {
     if (!this.isOnGData() || !gdata)
       return;
@@ -1879,26 +1873,23 @@ FileManager.prototype = {
   FileManager.prototype.renderSize_ = function(entry, columnId, table) {
     var div = this.document_.createElement('div');
     div.className = 'size';
-    this.updateSize_(div, entry);
-    return div;
-  };
-
-  FileManager.prototype.updateSize_ = function(div, entry) {
     // Unlike other rtl languages, Herbew use MB and writes the unit to the
     // right of the number. We use css trick to workaround this.
     if (navigator.language == 'he')
       div.className = 'align-end-weakrtl';
-    div.textContent = '...';
-    this.displaySizeInDiv_(
-        div, this.metadataCache_.getCached(entry, 'filesystem'));
+    this.updateSize_(
+        div, entry, this.metadataCache_.getCached(entry, 'filesystem'));
+
+    return div;
   };
 
-  FileManager.prototype.displaySizeInDiv_ = function(div, filesystemProps) {
-    if (!filesystemProps) return;
-    if (filesystemProps.size == -1) {
+  FileManager.prototype.updateSize_ = function(div, entry, filesystemProps) {
+    if (!filesystemProps) {
+      div.textContent = '...';
+    } else if (filesystemProps.size == -1) {
       div.textContent = '--';
     } else if (filesystemProps.size == 0 &&
-               filesystemProps.fileType.type == 'hosted') {
+               FileType.isHosted(entry)) {
       div.textContent = '--';
     } else {
       div.textContent = util.bytesToSi(filesystemProps.size);
@@ -1915,26 +1906,12 @@ FileManager.prototype = {
   FileManager.prototype.renderType_ = function(entry, columnId, table) {
     var div = this.document_.createElement('div');
     div.className = 'type';
-    this.updateType_(div, entry);
+    var fileType = FileType.getType(entry);
+    if (fileType.subtype)
+      div.textContent = strf(fileType.name, fileType.subtype);
+    else
+      div.textContent = str(fileType.name);
     return div;
-  };
-
-  FileManager.prototype.updateType_ = function(div, entry) {
-    this.displayTypeInDiv_(
-        div, this.metadataCache_.getCached(entry, 'filesystem'));
-  };
-
-  FileManager.prototype.displayTypeInDiv_ = function(div, filesystemProps) {
-    if (!filesystemProps) return;
-    var fileType = filesystemProps.fileType;
-    if (fileType.name) {
-      if (fileType.subtype)
-        div.textContent = strf(fileType.name, fileType.subtype);
-      else
-        div.textContent = str(fileType.name);
-    } else {
-      div.textContent = '';
-    }
   };
 
   /**
@@ -1947,19 +1924,16 @@ FileManager.prototype = {
   FileManager.prototype.renderDate_ = function(entry, columnId, table) {
     var div = this.document_.createElement('div');
     div.className = 'date';
-    this.updateDate_(div, entry);
+
+    this.updateDate_(div,
+        this.metadataCache_.getCached(entry, 'filesystem'));
     return div;
   };
 
-  FileManager.prototype.updateDate_ = function(div, entry) {
-    div.textContent = '...';
-    this.displayDateInDiv_(
-        div, this.metadataCache_.getCached(entry, 'filesystem'));
-  };
-
-  FileManager.prototype.displayDateInDiv_ = function(div, filesystemProps) {
-    if (!filesystemProps) return;
-    if (this.directoryModel_.isSystemDirectory() &&
+  FileManager.prototype.updateDate_ = function(div, filesystemProps) {
+    if (!filesystemProps) {
+      div.textContent = '...';
+    } if (this.directoryModel_.isSystemDirectory() &&
         filesystemProps.modificationTime.getTime() == 0) {
       // Mount points for FAT volumes have this time associated with them.
       // We'd rather display nothing than this bogus date.
@@ -1986,13 +1960,13 @@ FileManager.prototype = {
     div.appendChild(checkbox);
 
     if (this.isOnGData()) {
-      this.displayOfflineInDiv_(
+      this.updateOffline_(
           div, this.metadataCache_.getCached(entry, 'gdata'));
     }
     return div;
   };
 
-  FileManager.prototype.displayOfflineInDiv_ = function(div, gdata) {
+  FileManager.prototype.updateOffline_ = function(div, gdata) {
     if (!gdata) return;
     if (gdata.hosted) return;
     var checkbox = div.querySelector('.pin');
@@ -2037,14 +2011,13 @@ FileManager.prototype = {
       var entry = entries[url];
       var props = properties[index];
       if (type == 'filesystem') {
-        this.displayDateInDiv_(listItem.querySelector('.date'), props);
-        this.displaySizeInDiv_(listItem.querySelector('.size'), props);
-        this.displayTypeInDiv_(listItem.querySelector('.type'), props);
+        this.updateDate_(listItem.querySelector('.date'), props);
+        this.updateSize_(listItem.querySelector('.size'), entry, props);
       } else if (type == 'gdata') {
         var offline = listItem.querySelector('.offline');
         if (offline)  // This column is only present in full page mode.
-          this.displayOfflineInDiv_(offline, props);
-        this.displayGDataStyleInItem_(listItem, entry, props);
+          this.updateOffline_(offline, props);
+        this.updateGDataStyle_(listItem, entry, props);
       }
     }
   };
@@ -2072,9 +2045,9 @@ FileManager.prototype = {
 
     var leadListItem = this.findListItemForNode_(this.renameInput_);
     if (this.currentList_ == this.table_.list) {
-      this.updateType_(leadListItem.querySelector('.type'), leadEntry);
-      this.updateDate_(leadListItem.querySelector('.date'), leadEntry);
-      this.updateSize_(leadListItem.querySelector('.size'), leadEntry);
+      var props = this.metadataCache_.getCached(leadEntry, 'filesystem');
+      this.updateDate_(leadListItem.querySelector('.date'), props);
+      this.updateSize_(leadListItem.querySelector('.size'), leadEntry, props);
     }
     this.currentList_.restoreLeadItem(leadListItem);
   };
@@ -2161,8 +2134,17 @@ FileManager.prototype = {
         thumbnails.appendChild(box);
       }
 
+      if (selection.iconType == null) {
+        selection.iconType = FileType.getIcon(entry);
+      } else if (selection.iconType != 'unknown') {
+        var iconType = FileType.getIcon(entry);
+        if (selection.iconType != iconType)
+          selection.iconType = 'unknown';
+      }
+
       if (entry.isFile) {
         selection.fileCount += 1;
+        selection.showBytes |= !FileType.isHosted(entry);
       } else {
         selection.directoryCount += 1;
       }
@@ -2191,20 +2173,10 @@ FileManager.prototype = {
 
     this.metadataCache_.get(selection.entries, 'filesystem', function(props) {
       for (var index = 0; index < selection.entries.length; index++) {
-        var entry = selection.entries[index];
         var filesystem = props[index];
-
-        if (selection.iconType == null) {
-          selection.iconType = filesystem.icon;
-        } else if (selection.iconType != 'unknown') {
-          var iconType = filesystem.icon;
-          if (selection.iconType != iconType)
-            selection.iconType = 'unknown';
-        }
 
         if (entry.isFile) {
           selection.bytes += filesystem.size;
-          selection.showBytes |= filesystem.fileType.type != 'hosted';
         }
       }
 
@@ -2415,7 +2387,7 @@ FileManager.prototype = {
                 chrome.extension.getURL('images/filetype_generic.png');
           } else {
             // Use specific icon.
-            var icon = FileType.getType(selection.urls[0]).icon;
+            var icon = FileType.getIcon(selection.urls[0]);
             task.iconUrl =
                 chrome.extension.getURL('images/filetype_' + icon + '.png');
           }
@@ -3008,30 +2980,29 @@ FileManager.prototype = {
     if (!entry)
       return;
 
-    this.metadataCache_.get(entry, 'filesystem', function(filesystem) {
+    var iconType = FileType.getIcon(entry);
 
-      var iconType = filesystem.icon;
+    function returnStockIcon() {
+      callback(iconType, FileType.getPreviewArt(iconType));
+    }
 
-      function returnStockIcon() {
-        callback(iconType, FileType.getPreviewArt(iconType));
-      }
-
-      this.getMetadataProvider().fetch(entry.toURL(), function(metadata) {
-        if (metadata.thumbnailURL) {
-          callback(iconType, metadata.thumbnailURL,
-                   metadata.thumbnailTransform);
-        } else if (iconType == 'image') {
+    var self = this;
+    this.getMetadataProvider().fetch(entry.toURL(), function(metadata) {
+      if (metadata.thumbnailURL) {
+        callback(iconType, metadata.thumbnailURL,
+                 metadata.thumbnailTransform);
+      } else if (iconType == 'image') {
+        self.metadataCache_.get(entry, 'filesystem', function(filesystem) {
           if (FileType.canUseImageUrlForPreview(metadata, filesystem.size)) {
             callback(iconType, entry.toURL(), metadata.imageTransform);
           } else {
             returnStockIcon();
           }
-        } else {
-          returnStockIcon();
-        }
-      });
-
-    }.bind(this));
+        });
+      } else {
+        returnStockIcon();
+      }
+    });
   };
 
   FileManager.prototype.focusCurrentList_ = function() {

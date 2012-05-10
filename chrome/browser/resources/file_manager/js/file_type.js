@@ -118,17 +118,31 @@ FileType.DIRECTORY = {name: 'FOLDER', type: '.folder', icon: 'folder'};
 /**
  * Get the file type object that matches a given url.
  *
- * @param {string} url Reference to the file.
+ * @param {string|Entry} file Reference to the file.
  * @return {Object} The matching file type object or an empty object.
  */
-FileType.getType = function(url) {
+FileType.getType = function(file) {
+  if (typeof file == 'object') {
+    if (file.isDirectory)
+      return FileType.DIRECTORY;
+    else
+      file = file.name;
+  }
   var types = FileType.types;
   for (var i = 0; i < types.length; i++) {
-    if (types[i].pattern.test(url)) {
+    if (types[i].pattern.test(file)) {
       return types[i];
     }
   }
-  return {};
+  // Unknown file type.
+  var extensionStartIndex = file.lastIndexOf('.');
+  if (extensionStartIndex == -1 || extensionStartIndex == file.length - 1) {
+    return { name: 'NO_EXTENSION_FILE_TYPE', type: 'UNKNOWN', icon: '' };
+  } else {
+    var extension = file.substr(extensionStartIndex + 1).toUpperCase();
+    return { name: 'GENERIC_FILE_TYPE', type: 'UNKNOWN',
+             subtype: extension, icon: '' };
+  }
 };
 
 /**
@@ -178,6 +192,24 @@ FileType.isVideo = function(url) {
 FileType.isImageOrVideo = function(url) {
   var type = FileType.getMediaType(url);
   return type == 'image' || type == 'video';
+};
+
+/**
+ * @param {string|Entry} file Reference to the file.
+ * @return {boolean} Returns true if the file is hosted.
+ */
+FileType.isHosted = function(file) {
+  return FileType.getType(file).type === 'hosted';
+};
+
+/**
+ * @param {string|Entry} file Reference to the file.
+ * @return {string} Returns string that represents the file icon.
+ *                  It refers to a file 'images/filetype_' + icon + '.png'.
+ */
+FileType.getIcon = function(file) {
+  var fileType = FileType.getType(file);
+  return fileType.icon || fileType.type || 'unknown';
 };
 
 /**

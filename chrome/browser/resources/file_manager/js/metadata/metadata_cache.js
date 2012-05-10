@@ -8,7 +8,7 @@
  * at once.
  * Some of the properties:
  * {
- *   filesystem: size, modificationTime, icon, fileType
+ *   filesystem: size, modificationTime, icon
  *   internal: presence
  *   gdata: pinned, present, hosted, editUrl, contentUrl, availableOffline
  *   thumbnail: url, transform
@@ -457,7 +457,6 @@ MetadataProvider2.prototype.fetch = function(url, type, callback, opt_entry) {
  *   size;
  *   modificationTime;
  *   icon - string describing icon type;
- *   fileType - the file type object from file_type.js.
  * }
  * @constructor
  */
@@ -504,15 +503,10 @@ FilesystemProvider.prototype.fetch = function(url, type, callback, opt_entry) {
   }
 
   function onMetadata(entry, metadata) {
-    var fileType = entry.isDirectory ? FileType.DIRECTORY :
-        FileType.getType(url);
-    var icon = fileType.icon || fileType.type;
     callback({
       filesystem: {
         size: entry.isFile ? (metadata.size || 0) : -1,
-        modificationTime: metadata.modificationTime,
-        fileType: fileType,
-        icon: icon
+        modificationTime: metadata.modificationTime
       }
     });
   }
