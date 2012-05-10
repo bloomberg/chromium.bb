@@ -25,6 +25,7 @@
       'sources': [
         'app_list_bubble_border.cc',
         'app_list_bubble_border.h',
+        'app_list_export.h',
         'app_list_item_model.cc',
         'app_list_item_model.h',
         'app_list_item_model_observer.h',
