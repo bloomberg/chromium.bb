@@ -177,6 +177,7 @@ table_files = \
 	pi.ctb \
 	Pl-Pl-g1.utb \
 	printables.cti \
+	pt-pt-comp8.ctb \
 	pt-pt-g1.utb \
 	pt-pt-g2.ctb \
 	ro.ctb \

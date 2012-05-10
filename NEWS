@@ -4,6 +4,7 @@ liblouis NEWS -- history of user-visible changes.
 
 ** New features
    - Estonian grade 0, thanks to Jürgen Dengo.
+   - Portuguese 8 dot Computer braille, Thanks to Rui Fontes
 *** Improvements to the python bindings
     All constants defined in liblouis.h are now exposed in the bindings.
 *** Add a doctest infrastructure
