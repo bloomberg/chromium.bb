@@ -882,26 +882,44 @@
     </enum>
 
     <event name="geometry">
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
-      <arg name="physical_width" type="int"/>
-      <arg name="physical_height" type="int"/>
-      <arg name="subpixel" type="int"/>
-      <arg name="make" type="string"/>
-      <arg name="model" type="string"/>
+      <description summary="properties of the output"/>
+      <arg name="x" type="int"
+	   summary="x position within the global compositor space"/>
+      <arg name="y" type="int"
+	   summary="y position within the global compositor space"/>
+      <arg name="physical_width" type="int"
+	   summary="width in milimeters of the output"/>
+      <arg name="physical_height" type="int"
+	   summary="height in milimeters of the output"/>
+      <arg name="subpixel" type="int"
+	   summary="subpixel orientation of the output"/>
+      <arg name="make" type="string"
+	   summary="textual description of the manufacturer"/>
+      <arg name="model" type="string"
+	   summary="textual description of the model"/>
     </event>
 
     <enum name="mode">
       <description summary="values for the flags bitfield in the mode event"/>
-      <entry name="current" value="0x1"/>
-      <entry name="preferred" value="0x2"/>
+      <entry name="current" value="0x1"
+	     summary="indicates this is the current mode"/>
+      <entry name="preferred" value="0x2"
+	     summary="indicates this is the preferred mode"/>
     </enum>
       
     <event name="mode">
-      <arg name="flags" type="uint"/>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
-      <arg name="refresh" type="int"/>
+      <description summary="advertise available modes for the output">
+	The mode event describes an available mode for the output.
+	The event is sent when binding to the output object and there
+	will always be one mode, the current mode.  The event is sent
+	again if an output changes mode, for the mode that is now
+	current.  In other words, the current mode is always the last
+	mode that was received with the current flag set.
+      </description>
+      <arg name="flags" type="uint" summary="mask of wl_output_mode flags"/>
+      <arg name="width" type="int" summary="width of the mode in pixels"/>
+      <arg name="height" type="int" summary="height of the mode in pixels"/>
+      <arg name="refresh" type="int" summary="vertical refresh rate in mHz"/>
     </event>
   </interface>
 
