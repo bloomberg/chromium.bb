@@ -440,8 +440,7 @@ ping_timeout_handler(void *data)
 static void
 ping_handler(struct weston_surface *surface, uint32_t serial)
 {
-	struct shell_surface *shsurf;
-	shsurf = get_shell_surface(surface);
+	struct shell_surface *shsurf = get_shell_surface(surface);
 	struct wl_event_loop *loop;
 	int ping_timeout = 2500;
 
@@ -2437,7 +2436,7 @@ switcher_key(struct wl_keyboard_grab *grab,
 	} else if (key == KEY_TAB && state) {
 		switcher_next(switcher);
 	}
-};
+}
 
 static const struct wl_keyboard_grab_interface switcher_grab = {
 	switcher_key

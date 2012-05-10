@@ -46,7 +46,7 @@ struct wayland_compositor {
 	struct weston_compositor	 base;
 
 	struct wl_egl_pixmap		*dummy_pixmap;
-	EGLSurface			 dummy_egl_surface;;
+	EGLSurface			 dummy_egl_surface;
 
 	struct {
 		struct wl_display *display;

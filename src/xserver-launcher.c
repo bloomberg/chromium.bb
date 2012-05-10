@@ -796,8 +796,9 @@ weston_wm_send_data(struct weston_wm *wm, xcb_atom_t target, const char *mime_ty
 static void
 weston_wm_send_incr_chunk(struct weston_wm *wm)
 {
-	fprintf(stderr, "property deleted\n");
 	int length;
+
+	fprintf(stderr, "property deleted\n");
 
 	wm->selection_property_set = 0;
 	if (wm->flush_property_on_delete) {

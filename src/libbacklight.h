@@ -10,7 +10,7 @@ extern "C" {
 enum backlight_type {
 	BACKLIGHT_RAW,
 	BACKLIGHT_PLATFORM,
-	BACKLIGHT_FIRMWARE,
+	BACKLIGHT_FIRMWARE
 };
 
 struct backlight {

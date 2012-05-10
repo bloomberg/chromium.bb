@@ -992,14 +992,6 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 		EGL_NONE
 	};
 
-	sysnum = udev_device_get_sysnum(device);
-	if (sysnum)
-		ec->drm.id = atoi(sysnum);
-	if (!sysnum || ec->drm.id < 0) {
-		fprintf(stderr, "cannot get device sysnum\n");
-		return -1;
-	}
-
 	static const EGLint config_attribs[] = {
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 		EGL_RED_SIZE, 1,
@@ -1009,6 +1001,14 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 		EGL_NONE
 	};
+
+	sysnum = udev_device_get_sysnum(device);
+	if (sysnum)
+		ec->drm.id = atoi(sysnum);
+	if (!sysnum || ec->drm.id < 0) {
+		fprintf(stderr, "cannot get device sysnum\n");
+		return -1;
+	}
 
 	filename = udev_device_get_devnode(device);
 	fd = open(filename, O_RDWR | O_CLOEXEC);

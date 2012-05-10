@@ -334,7 +334,7 @@ load_webp(FILE *fp)
 
 
 struct image_loader {
-	char header[4];
+	unsigned char header[4];
 	int header_size;
 	pixman_image_t *(*load)(FILE *fp);
 };
