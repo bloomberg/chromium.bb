@@ -182,7 +182,15 @@
     'browser/accessibility/browser_accessibility_state_impl.h',
     'browser/accessibility/browser_accessibility_win.cc',
     'browser/accessibility/browser_accessibility_win.h',
+    'browser/android/command_line.cc',
+    'browser/android/command_line.h',
+    'browser/android/content_jni_registrar.cc',
+    'browser/android/content_jni_registrar.h',
+    'browser/android/jni_helper.cc',
+    'browser/android/jni_helper.h',
     'browser/android/library_loader_hooks.cc',
+    'browser/android/trace_event_binding.cc',
+    'browser/android/trace_event_binding.h',
     'browser/appcache/appcache_dispatcher_host.cc',
     'browser/appcache/appcache_dispatcher_host.h',
     'browser/appcache/appcache_frontend_proxy.cc',
@@ -821,14 +829,14 @@
         'content.gyp:content_jni_headers',
         'content.gyp:content_java',
       ],
+      'include_dirs': [
+        '<(SHARED_INTERMEDIATE_DIR)/content',
+      ],
       'sources!': [
         'browser/geolocation/network_location_provider.cc',
         'browser/geolocation/network_location_provider.h',
         'browser/geolocation/network_location_request.cc',
         'browser/geolocation/network_location_request.h',
-      ],
-      'include_dirs': [
-        '<(SHARED_INTERMEDIATE_DIR)/content',
       ],
     }],
     ['OS=="mac"', {

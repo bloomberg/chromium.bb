@@ -14,6 +14,8 @@
   <property name="src" location="."/>
   <property name="build" location="build"/>
   <property name="dist"  location="dist"/>
+  <property name="out.dir" location="${PRODUCT_DIR}/lib.java"/>
+  <property name="dest.dir" location="${PRODUCT_DIR}/java/media"/>
 
   <condition property="location.base"
              value="${sdk.dir}"
@@ -25,15 +27,17 @@
     <!-- Create the time stamp -->
     <tstamp/>
     <!-- Create the build directory structure used by compile -->
-    <mkdir dir="${build}"/>
+    <mkdir dir="${out.dir}"/>
+    <mkdir dir="${dest.dir}"/>
   </target>
 
   <target name="compile" depends="init"
           description="compile the source " >
-    <!-- Compile the java code from ${src} into ${build} -->
-    <javac srcdir="${src}" destdir="${build}">
+    <!-- Compile the java code from ${src} into ${dest.dir} -->
+    <javac srcdir="${src}" destdir="${dest.dir}">
       <classpath>
-        <path location="${location.base}/android.jar"/>
+        <pathelement path="${location.base}/android.jar" />
+        <pathelement path="${out.dir}/chromium_base.jar" />
       </classpath>
     </javac>
   </target>
@@ -44,13 +48,13 @@
     <mkdir dir="${dist}/lib"/>
 
     <!-- Put everything in ${build} into the chromium_media.jar file -->
-    <jar jarfile="${dist}/lib/chromium_media.jar" basedir="${build}"/>
+    <jar jarfile="${out.dir}/chromium_media.jar" basedir="${dest.dir}"/>
   </target>
 
   <target name="clean"
           description="clean up" >
-    <!-- Delete the ${build} and ${dist} directory trees -->
-    <delete dir="${build}"/>
+    <!-- Delete the appropriate directory trees -->
+    <delete dir="${dest.dir}"/>
     <delete dir="${dist}"/>
   </target>
 </project>

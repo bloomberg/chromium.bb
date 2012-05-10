@@ -523,13 +523,25 @@
           'actions': [
             {
               'action_name': 'copy_base_jar',
-              'inputs': ['<(PRODUCT_DIR)/chromium_base.jar'],
+              'inputs': ['<(PRODUCT_DIR)/lib.java/chromium_base.jar'],
               'outputs': ['<(PRODUCT_DIR)/content_shell/java/libs/chromium_base.jar'],
               'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
             },
             {
+              'action_name': 'copy_net_jar',
+              'inputs': ['<(PRODUCT_DIR)/lib.java/chromium_net.jar'],
+              'outputs': ['<(PRODUCT_DIR)/content_shell/java/libs/chromium_net.jar'],
+              'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
+            },
+            {
+              'action_name': 'copy_media_jar',
+              'inputs': ['<(PRODUCT_DIR)/lib.java/chromium_media.jar'],
+              'outputs': ['<(PRODUCT_DIR)/content_shell/java/libs/chromium_media.jar'],
+              'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
+            },
+            {
               'action_name': 'copy_content_jar',
-              'inputs': ['<(PRODUCT_DIR)/chromium_content.jar'],
+              'inputs': ['<(PRODUCT_DIR)/lib.java/chromium_content.jar'],
               'outputs': ['<(PRODUCT_DIR)/content_shell/java/libs/chromium_content.jar'],
               'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
             },
@@ -553,6 +565,8 @@
                 '<!@(find shell/android/java -name "*.java")',
                 '<!@(find shell/android/res -name "*")',
                 '<(PRODUCT_DIR)/content_shell/java/libs/chromium_base.jar',
+                '<(PRODUCT_DIR)/content_shell/java/libs/chromium_net.jar',
+                '<(PRODUCT_DIR)/content_shell/java/libs/chromium_media.jar',
                 '<(PRODUCT_DIR)/content_shell/java/libs/chromium_content.jar',
                 '<(PRODUCT_DIR)/content_shell/libs/armeabi/libcontent_shell_content_view.so',
               ],

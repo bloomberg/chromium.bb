@@ -12,10 +12,8 @@
   <property name="sdk.dir" location="${env.ANDROID_SDK_ROOT}"/>
   <property name="sdk.version" value="${env.ANDROID_SDK_VERSION}"/>
   <property name="src" location="."/>
-  <property name="out.dir" location="${PRODUCT_DIR}"/>
+  <property name="out.dir" location="${PRODUCT_DIR}/lib.java"/>
   <property name="classes.dir" location="${out.dir}/java/${PACKAGE_NAME}"/>
-  <!-- TODO(tedchoc): Move out of the main out/ dir ... needs to sync with
-       java.gypi output -->
   <property name="jar.dir" location="${out.dir}"/>
 
   <condition property="location.base"
@@ -39,8 +37,8 @@
     <!-- Compile the java code from ${src} into ${classes.dir} -->
     <javac srcdir="${src}" destdir="${classes.dir}">
       <classpath>
-        <path location="${location.base}/android.jar"/>
-        <path location="${PRODUCT_DIR}/chromium_base.jar"/>
+        <pathelement path="${location.base}/android.jar" />
+        <pathelement path="${jar.dir}/chromium_base.jar" />
       </classpath>
     </javac>
   </target>

@@ -20,9 +20,12 @@
 #elif defined(OS_MACOSX)
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/mac/WebSandboxSupport.h"
 #elif defined(OS_POSIX)
+#if !defined(OS_ANDROID)
 #include "content/common/child_process_sandbox_support_impl_linux.h"
+#endif
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/linux/WebFontFamily.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/linux/WebSandboxSupport.h"
+
 #endif
 
 using WebKit::WebSandboxSupport;
@@ -80,6 +83,24 @@ bool PpapiWebKitPlatformSupportImpl::SandboxSupport::loadFont(
   // RendererWebKitClientImpl does and request that the browser load the font.
   NOTIMPLEMENTED();
   return false;
+}
+
+#elif defined(OS_ANDROID)
+
+// TODO(jrg): resolve (and implement?) PPAPI SandboxSupport for Android.
+
+void
+PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacters(
+    const WebUChar* characters,
+    size_t num_characters,
+    const char* preferred_locale,
+    WebKit::WebFontFamily* family) {
+  NOTIMPLEMENTED();
+}
+
+void PpapiWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(
+    const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out) {
+  NOTIMPLEMENTED();
 }
 
 #elif defined(OS_POSIX)

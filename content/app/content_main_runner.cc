@@ -79,7 +79,7 @@ extern int PpapiBrokerMain(const content::MainFunctionParams&);
 extern int RendererMain(const content::MainFunctionParams&);
 extern int WorkerMain(const content::MainFunctionParams&);
 extern int UtilityMain(const content::MainFunctionParams&);
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 namespace content {
 extern int ZygoteMain(const content::MainFunctionParams&,
                       content::ZygoteForkDelegate* forkdelegate);
@@ -194,7 +194,7 @@ struct MainFunction {
   int (*function)(const content::MainFunctionParams&);
 };
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 // On platforms that use the zygote, we have a special subset of
 // subprocesses that are launched via the zygote.  This function
 // fills in some process-launching bits around ZygoteMain().
@@ -293,7 +293,7 @@ int RunNamedProcessTypeMain(
     }
   }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // Zygote startup is special -- see RunZygote comments above
   // for why we don't use ZygoteMain directly.
   if (process_type == switches::kZygoteProcess)
@@ -352,6 +352,7 @@ static void ReleaseFreeMemoryThunk() {
   virtual int Initialize(int argc,
                          const char** argv,
                          content::ContentMainDelegate* delegate) OVERRIDE {
+
     // NOTE(willchan): One might ask why this call is done here rather than in
     // process_util_linux.cc with the definition of
     // EnableTerminationOnOutOfMemory().  That's because base shouldn't have a
@@ -367,17 +368,24 @@ static void ReleaseFreeMemoryThunk() {
     base::allocator::SetReleaseFreeMemoryFunction(ReleaseFreeMemoryThunk);
 #endif
 
+    // On Android,
+    // - setlocale() is not supported.
+    // - We do not override the signal handlers so that we can get
+    //   stack trace when crashing.
+    // - The ipc_fd is passed through the Java service.
+    // Thus, these are all disabled.
 #if !defined(OS_ANDROID)
     // Set C library locale to make sure CommandLine can parse argument values
     // in correct encoding.
     setlocale(LC_ALL, "");
-#endif
 
     SetupSignalHandlers();
 
     base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
     g_fds->Set(kPrimaryIPCChannel,
                kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
+#endif
+
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
     g_fds->Set(kCrashDumpSignal,
                kCrashDumpSignal + base::GlobalDescriptors::kBaseDescriptor);
@@ -391,8 +399,11 @@ static void ReleaseFreeMemoryThunk() {
     base::EnableTerminationOnHeapCorruption();
     base::EnableTerminationOnOutOfMemory();
 
+    // On Android, AtExitManager is set up when library is loaded.
+#if !defined(OS_ANDROID)
     // The exit manager is in charge of calling the dtors of singleton objects.
     exit_manager_.reset(new base::AtExitManager);
+#endif
 
 #if defined(OS_MACOSX)
     // We need this pool for all the objects created before we get to the
@@ -402,7 +413,11 @@ static void ReleaseFreeMemoryThunk() {
     autorelease_pool_.reset(new base::mac::ScopedNSAutoreleasePool());
 #endif
 
+    // On Android, the command line is initialized when library is loaded.
+    // (But *is* initialized here for content shell bringup)
+#if !defined(OS_ANDROID) || defined(ANDROID_UPSTREAM_BRINGUP)
     CommandLine::Init(argc, argv);
+#endif
 
     int exit_code;
     if (delegate && delegate->BasicStartupComplete(&exit_code))
@@ -473,6 +488,12 @@ static void ReleaseFreeMemoryThunk() {
 
     ui::RegisterPathProvider();
     content::RegisterPathProvider();
+
+    // TODO(jrg): "up to here" is how far we get without crashing on
+    // content shell bringup.
+#if defined(ANDROID_UPSTREAM_BRINGUP)
+    return 0;
+#endif
     content::RegisterContentSchemes(true);
 
     CHECK(icu_util::Initialize());

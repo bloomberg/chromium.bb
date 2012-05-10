@@ -38,7 +38,7 @@
     <javac srcdir="${src}" destdir="${dest.dir}">
       <classpath>
         <path location="${location.base}/android.jar"/>
-        <path location="${PRODUCT_DIR}/chromium_base.jar"/>
+        <path location="${out.dir}/chromium_base.jar"/>
       </classpath>
     </javac>
   </target>

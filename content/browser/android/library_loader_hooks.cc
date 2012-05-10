@@ -5,8 +5,10 @@
 #include "content/public/browser/android_library_loader_hooks.h"
 
 #include "base/android/base_jni_registrar.h"
+#include "base/android/jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/file_path.h"
@@ -16,14 +18,21 @@
 #include "base/string_util.h"
 #include "base/tracked_objects.h"
 #include "content/public/common/content_switches.h"
+#include "content/browser/android/command_line.h"
+#include "content/browser/android/content_jni_registrar.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
 
+namespace {
+base::AtExitManager* g_at_exit_manager = NULL;
+}
+
 jboolean LibraryLoaderEntryHook(JNIEnv* env, jclass clazz,
                                 jobjectArray init_command_line) {
-
-  // TODO(tedchoc): Initialize the native command line from the java array
-  // passed in.
+  // We need the Chrome AtExitManager to be created before we do any tracing or
+  // logging.
+  g_at_exit_manager = new base::AtExitManager();
+  InitNativeCommandLineFromJavaArray(env, init_command_line);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
@@ -54,10 +63,20 @@ jboolean LibraryLoaderEntryHook(JNIEnv* env, jclass clazz,
   if (!net::android::RegisterJni(env))
     return JNI_FALSE;
 
+  if (!content::android::RegisterJni(env))
+    return JNI_FALSE;
+
   if (!media::RegisterJni(env))
     return JNI_FALSE;
 
   return JNI_TRUE;
+}
+
+void LibraryLoaderExitHook() {
+  if (g_at_exit_manager) {
+    delete g_at_exit_manager;
+    g_at_exit_manager = NULL;
+  }
 }
 
 bool RegisterLibraryLoaderEntryHook(JNIEnv* env) {
@@ -67,9 +86,8 @@ bool RegisterLibraryLoaderEntryHook(JNIEnv* env) {
           reinterpret_cast<void*>(LibraryLoaderEntryHook) },
   };
   const int kMethodsSize = arraysize(kMethods);
-  // TODO(tedchoc): Upstream LibraryLoader.java and replace path to make this
-  // work.
-  const char kLibraryLoaderPath[] = "";
+  const char kLibraryLoaderPath[] =
+    "org/chromium/content/browser/LibraryLoader";
   base::android::ScopedJavaLocalRef<jclass> clazz =
       base::android::GetClass(env, kLibraryLoaderPath);
 

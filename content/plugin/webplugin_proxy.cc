@@ -636,6 +636,16 @@ void WebPluginProxy::SetWindowlessBuffers(
   }
 }
 
+#elif defined(OS_ANDROID)
+
+void WebPluginProxy::SetWindowlessBuffers(
+    const TransportDIB::Handle& windowless_buffer0,
+    const TransportDIB::Handle& windowless_buffer1,
+    const TransportDIB::Handle& background_buffer,
+    const gfx::Rect& window_rect) {
+  NOTIMPLEMENTED();
+}
+
 #endif
 
 void WebPluginProxy::CancelDocumentLoad() {

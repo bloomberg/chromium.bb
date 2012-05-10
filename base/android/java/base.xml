@@ -10,7 +10,7 @@
   <property name="sdk.version" value="${env.ANDROID_SDK_VERSION}"/>
   <property name="src" location="."/>
   <property name="dist" location="dist"/>
-  <property name="out.dir" location="${PRODUCT_DIR}"/>
+  <property name="out.dir" location="${PRODUCT_DIR}/lib.java"/>
   <!-- TODO(jrg): establish a standard for the intermediate java
        directories.  Settle on a standard once ant/jar build files
        like this are androidified -->

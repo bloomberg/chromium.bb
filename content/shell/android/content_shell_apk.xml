@@ -23,6 +23,13 @@
     <fileset file="${toolchain.dir}/../../gdbserver"/>
   </path>
   <property name="native.libs.absolute.dir" location="${out.dir}/libs" />
+  <!-- If your app crashes when referencing java from a different .jar
+       (e.g.  java.lang.NoClassDefFoundError:
+       org.chromium.content.browser.CommandLine), And if
+       chromium_content.jar is in fact in your java/libs directory (as
+       placed by a gyp 'cp'), the following line will make sure it
+       gets added to the classes.dex file. -->
+  <property name="out.classes.absolute.dir" location="${jar.libs.dir}" /> 
 
   <!-- We expect PRODUCT_DIR to be set like the gyp var
        (e.g. $ROOT/out/Debug) -->
