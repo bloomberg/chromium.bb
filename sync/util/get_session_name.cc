@@ -11,7 +11,9 @@
 #include "base/sys_info.h"
 #include "base/task_runner.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/system/statistics_provider.h"
+#elif defined(OS_LINUX)
 #include "base/linux_util.h"
 #elif defined(OS_MACOSX)
 #include "sync/util/get_session_name_mac.h"
@@ -28,7 +30,16 @@ namespace {
 std::string GetSessionNameSynchronously() {
   std::string session_name;
 #if defined(OS_CHROMEOS)
-  session_name = "Chromebook";
+  // TODO(kochi): This is very ad hoc and fragile. http://crosbug.com/30619.
+  std::string board;
+  const char kMachineInfoBoard[] = "CHROMEOS_RELEASE_BOARD";
+  chromeos::system::StatisticsProvider* provider =
+      chromeos::system::StatisticsProvider::GetInstance();
+  if (!provider->GetMachineStatistic(kMachineInfoBoard, &board))
+    LOG(ERROR) << "Failed to get board information";
+  // Currently, only "stumpy" type of board is considered Chromebox, and
+  // anything else is Chromebook.
+  session_name = (board == "stumpy") ? "Chromebox" : "Chromebook";
 #elif defined(OS_LINUX)
   session_name = base::GetLinuxDistro();
 #elif defined(OS_MACOSX)

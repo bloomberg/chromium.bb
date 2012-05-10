@@ -612,6 +612,13 @@
             '../base/allocator/allocator.gyp:allocator',
           ],
         }],
+        ['OS=="linux" and chromeos==1', {
+            # TODO(kochi): Remove this once we get rid of dependency from
+            # get_session_name.cc.
+            'dependencies': [
+                '../chrome/chrome.gyp:browser',
+            ],
+        }],
       ],
     },
 

@@ -7,6 +7,9 @@ include_rules = [
   "+base",
   "+build",
   "+testing",
+  # TODO(kochi): Remove this hack after "Chromebox" hack in get_session_name.cc
+  # is gone.
+  "+chrome/browser/chromeos/system",
 
   # Force subdirectories to explicitly define DEPS.
   "-sync",
