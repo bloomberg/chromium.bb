@@ -229,8 +229,8 @@ class ExtensionWebRequestEventRouter {
   // Adds a listener to the given event. |event_name| specifies the event being
   // listened to. |sub_event_name| is an internal event uniquely generated in
   // the extension process to correspond to the given filter and
-  // extra_info_spec.
-  void AddEventListener(
+  // extra_info_spec. It returns true on success, false on failure.
+  bool AddEventListener(
       void* profile,
       const std::string& extension_id,
       const std::string& extension_name,

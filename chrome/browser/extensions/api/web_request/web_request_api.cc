@@ -953,7 +953,7 @@ void ExtensionWebRequestEventRouter::OnEventHandled(
   DecrementBlockCount(profile, extension_id, event_name, request_id, response);
 }
 
-void ExtensionWebRequestEventRouter::AddEventListener(
+bool ExtensionWebRequestEventRouter::AddEventListener(
     void* profile,
     const std::string& extension_id,
     const std::string& extension_name,
@@ -963,7 +963,7 @@ void ExtensionWebRequestEventRouter::AddEventListener(
     int extra_info_spec,
     base::WeakPtr<IPC::Message::Sender> ipc_sender) {
   if (!IsWebRequestEvent(event_name))
-    return;
+    return false;
 
   EventListener listener;
   listener.extension_id = extension_id;
@@ -973,9 +973,13 @@ void ExtensionWebRequestEventRouter::AddEventListener(
   listener.extra_info_spec = extra_info_spec;
   listener.ipc_sender = ipc_sender;
 
-  CHECK_EQ(listeners_[profile][event_name].count(listener), 0u) <<
-      "extension=" << extension_id << " event=" << event_name;
+  if (listeners_[profile][event_name].count(listener) != 0u) {
+    // This is likely an abuse of the API by a malicious extension.
+    NOTREACHED();
+    return false;
+  }
   listeners_[profile][event_name].insert(listener);
+  return true;
 }
 
 void ExtensionWebRequestEventRouter::RemoveEventListener(
@@ -1535,10 +1539,12 @@ bool WebRequestAddEventListener::RunImpl() {
     return false;
   }
 
-  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
-      profile_id(), extension_id(), extension_name,
-      event_name, sub_event_name, filter,
-      extra_info_spec, ipc_sender_weak());
+  bool success =
+      ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+          profile_id(), extension_id(), extension_name,
+          event_name, sub_event_name, filter,
+          extra_info_spec, ipc_sender_weak());
+  EXTENSION_FUNCTION_VALIDATE(success);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&ClearCacheOnNavigationOnUI));
