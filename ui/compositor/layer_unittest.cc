@@ -346,7 +346,8 @@ class TestCompositorObserver : public CompositorObserver {
 #define MAYBE_CompositorObservers DISABLED_CompositorObservers
 #define MAYBE_ModifyHierarchy ModifyHierarchy
 #define MAYBE_Opacity Opacity
-#define MAYBE_ScaleUpDown ScaleUpDown
+// Real bug, see http://crbug.com/127534.
+#define MAYBE_ScaleUpDown DISABLED_ScaleUpDown
 #define MAYBE_ScaleReparent ScaleReparent
 #define MAYBE_NoScaleCanvas NoScaleCanvas
 #endif
