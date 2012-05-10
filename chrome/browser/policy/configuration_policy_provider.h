@@ -44,14 +44,6 @@ class ConfigurationPolicyProvider {
   // need to do asynchronous operations for initialization.
   virtual bool IsInitializationComplete() const;
 
-#if !defined(OFFICIAL_BUILD)
-  // Overrides the policy values that are obtained in calls to |Provide|.
-  // The default behavior is restored if |policies| is NULL.
-  // Takes ownership of |policies|.
-  // This is meant for tests only, and is disabled on official builds.
-  void OverridePolicies(PolicyMap* policies);
-#endif
-
   // Asks the provider to refresh its policies. All the updates caused by this
   // call will be visible on the next call of OnUpdatePolicy on the observers,
   // which are guaranteed to happen even if the refresh fails.
@@ -68,9 +60,7 @@ class ConfigurationPolicyProvider {
   // Sends a policy update notification to observers.
   void NotifyPolicyUpdated();
 
-  // Must be implemented by subclasses to provide their policy values. The
-  // values actually provided by |Provide| can be overridden using
-  // |OverridePolicies|.
+  // Must be implemented by subclasses to provide their policy values.
   virtual bool ProvideInternal(PolicyMap* result) = 0;
 
   const PolicyDefinitionList* policy_definition_list() const {
@@ -87,11 +77,6 @@ class ConfigurationPolicyProvider {
   const PolicyDefinitionList* policy_definition_list_;
 
   ObserverList<Observer, true> observer_list_;
-
-#if !defined(OFFICIAL_BUILD)
-  // Usually NULL, but can be used in tests to override the policies provided.
-  scoped_ptr<PolicyMap> override_policies_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProvider);
 };

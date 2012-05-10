@@ -42,12 +42,6 @@ ConfigurationPolicyProvider::~ConfigurationPolicyProvider() {
 }
 
 bool ConfigurationPolicyProvider::Provide(PolicyMap* result) {
-#if !defined(OFFICIAL_BUILD)
-  if (override_policies_.get()) {
-    result->CopyFrom(*override_policies_);
-    return true;
-  }
-#endif
   if (ProvideInternal(result)) {
     FixDeprecatedPolicies(result);
     return true;
@@ -58,17 +52,6 @@ bool ConfigurationPolicyProvider::Provide(PolicyMap* result) {
 bool ConfigurationPolicyProvider::IsInitializationComplete() const {
   return true;
 }
-
-#if !defined(OFFICIAL_BUILD)
-
-void ConfigurationPolicyProvider::OverridePolicies(PolicyMap* policies) {
-  if (policies)
-    FixDeprecatedPolicies(policies);
-  override_policies_.reset(policies);
-  NotifyPolicyUpdated();
-}
-
-#endif
 
 // static
 void ConfigurationPolicyProvider::FixDeprecatedPolicies(PolicyMap* policies) {
