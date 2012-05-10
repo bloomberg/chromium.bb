@@ -91,7 +91,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   ASSERT_TRUE(result);
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
+// Flaky: Looks like it has a race condition.  http://crbug.com/127599
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, FLAKY_DynamicBrowserAction) {
   ASSERT_TRUE(RunExtensionTest("browser_action/no_icon")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
