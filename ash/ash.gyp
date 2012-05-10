@@ -72,6 +72,8 @@
         'launcher/background_animator.h',
         'launcher/launcher.cc',
         'launcher/launcher.h',
+        'launcher/launcher_alignment_menu.cc',
+        'launcher/launcher_alignment_menu.h',
         'launcher/launcher_button.cc',
         'launcher/launcher_button.h',
         'launcher/launcher_context_menu.cc',

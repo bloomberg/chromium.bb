@@ -45,9 +45,7 @@ static const int kLeadingInset = 8;
 // Minimum distance before drag starts.
 static const int kMinimumDragDistance = 8;
 
-// Size given to the buttons on the launcher.
-static const int kButtonWidth = 48;
-static const int kButtonHeight = 48;
+// Size between the buttons.
 static const int kButtonSpacing = 4;
 
 namespace {
@@ -250,7 +248,8 @@ LauncherView::LauncherView(LauncherModel* model, LauncherDelegate* delegate)
       drag_view_(NULL),
       drag_offset_(0),
       start_drag_index_(-1),
-      context_menu_id_(0) {
+      context_menu_id_(0),
+      alignment_(SHELF_ALIGNMENT_BOTTOM) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
   set_context_menu_controller(this);
@@ -291,6 +290,13 @@ void LauncherView::Init() {
   AddChildView(overflow_button_);
 
   // We'll layout when our bounds change.
+}
+
+void LauncherView::SetAlignment(ShelfAlignment alignment) {
+  if (alignment_ == alignment)
+    return;
+  alignment_ = alignment;
+  LayoutToIdealBounds();
 }
 
 gfx::Rect LauncherView::GetIdealBoundsOfItemIcon(LauncherID id) {
@@ -350,23 +356,24 @@ void LauncherView::LayoutToIdealBounds() {
 }
 
 void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
-  int available_width = width();
-  if (!available_width)
+  int available_size = primary_axis_coordinate(width(), height());
+  if (!available_size)
     return;
 
-  int x = kLeadingInset;
+  int x = primary_axis_coordinate(kLeadingInset, 0);
+  int y = primary_axis_coordinate(0, kLeadingInset);
   for (int i = 0; i < view_model_->view_size(); ++i) {
-    gfx::Size pref(kButtonWidth, kButtonHeight);
     view_model_->set_ideal_bounds(i, gfx::Rect(
-        x, (kLauncherPreferredHeight - pref.height()) / 2, pref.width(),
-        pref.height()));
-    x += pref.width() + kButtonSpacing;
+        x, y, kLauncherPreferredSize, kLauncherPreferredSize));
+    x = primary_axis_coordinate(x + kLauncherPreferredSize + kButtonSpacing, 0);
+    y = primary_axis_coordinate(0, y + kLauncherPreferredSize + kButtonSpacing);
   }
 
-  bounds->overflow_bounds.set_size(gfx::Size(kButtonWidth, kButtonHeight));
+  bounds->overflow_bounds.set_size(
+      gfx::Size(kLauncherPreferredSize, kLauncherPreferredSize));
   last_visible_index_ = DetermineLastVisibleIndex(
-      available_width - kLeadingInset - bounds->overflow_bounds.width() -
-      kButtonSpacing - kButtonWidth);
+      available_size - kLeadingInset - kLauncherPreferredSize -
+      kButtonSpacing - kLauncherPreferredSize);
   int app_list_index = view_model_->view_size() - 1;
   bool show_overflow = (last_visible_index_ + 1 < app_list_index);
 
@@ -378,23 +385,34 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   overflow_button_->SetVisible(show_overflow);
   if (show_overflow) {
     DCHECK_NE(0, view_model_->view_size());
-    // We always want the app list visible.
+    if (last_visible_index_ == -1) {
+      x = primary_axis_coordinate(kLeadingInset, 0);
+      y = primary_axis_coordinate(0, kLeadingInset);
+    } else {
+      x = primary_axis_coordinate(
+          view_model_->ideal_bounds(last_visible_index_).right(), 0);
+      y = primary_axis_coordinate(0,
+          view_model_->ideal_bounds(last_visible_index_).bottom());
+    }
     gfx::Rect app_list_bounds = view_model_->ideal_bounds(app_list_index);
-    x = last_visible_index_ == -1 ?
-        kLeadingInset : view_model_->ideal_bounds(last_visible_index_).right();
     app_list_bounds.set_x(x);
+    app_list_bounds.set_y(y);
     view_model_->set_ideal_bounds(app_list_index, app_list_bounds);
-    x = app_list_bounds.right() + kButtonSpacing;
+    x = primary_axis_coordinate(x + kLauncherPreferredSize + kButtonSpacing, 0);
+    y = primary_axis_coordinate(0, y + kLauncherPreferredSize + kButtonSpacing);
     bounds->overflow_bounds.set_x(x);
-    bounds->overflow_bounds.set_y(
-        (kLauncherPreferredHeight - bounds->overflow_bounds.height()) / 2);
+    bounds->overflow_bounds.set_y(y);
   }
 }
 
-int LauncherView::DetermineLastVisibleIndex(int max_x) {
+int LauncherView::DetermineLastVisibleIndex(int max_value) {
   int index = view_model_->view_size() - 1;
-  while (index >= 0 && view_model_->ideal_bounds(index).right() > max_x)
+  while (index >= 0 &&
+         primary_axis_coordinate(
+             view_model_->ideal_bounds(index).right(),
+             view_model_->ideal_bounds(index).bottom()) > max_value) {
     index--;
+  }
   return index;
 }
 
@@ -511,7 +529,7 @@ void LauncherView::PrepareForDrag(const views::MouseEvent& event) {
 
 void LauncherView::ContinueDrag(const views::MouseEvent& event) {
   // TODO: I don't think this works correctly with RTL.
-  gfx::Point drag_point(event.x(), 0);
+  gfx::Point drag_point(event.location());
   views::View::ConvertPointToView(drag_view_, this, &drag_point);
   int current_index = view_model_->GetIndexOfView(drag_view_);
   DCHECK_NE(-1, current_index);
@@ -523,28 +541,41 @@ void LauncherView::ContinueDrag(const views::MouseEvent& event) {
     return;
   }
 
-  // Constrain the x location to the range of valid indices for the type.
+  // Constrain the location to the range of valid indices for the type.
   std::pair<int,int> indices(GetDragRange(current_index));
-  int x = std::max(view_model_->ideal_bounds(indices.first).x(),
-                   drag_point.x() - drag_offset_);
-  if (view_model_->view_at(indices.second)->visible()) {
-    x = std::min(view_model_->ideal_bounds(indices.second).right() -
+  int last_drag_index = indices.second;
+  // If the last index isn't valid, we're overflowing. Constrain to the app list
+  // (which is the last visible item).
+  if (last_drag_index > last_visible_index_)
+    last_drag_index = last_visible_index_;
+  int x = 0, y = 0;
+  if (is_horizontal_alignment()) {
+    x = std::max(view_model_->ideal_bounds(indices.first).x(),
+                     drag_point.x() - drag_offset_);
+    x = std::min(view_model_->ideal_bounds(last_drag_index).right() -
                  view_model_->ideal_bounds(current_index).width(),
                  x);
+    if (drag_view_->x() == x)
+      return;
+    drag_view_->SetX(x);
   } else {
-    // If the last index isn't valid, we're overflowing. Constrain to the app
-    // list (which is the last visible item).
-    x = std::min(
-        view_model_->ideal_bounds(view_model_->view_size() - 1).right() -
-        view_model_->ideal_bounds(current_index).width(),
-        x);
+    y = std::max(view_model_->ideal_bounds(indices.first).y(),
+                     drag_point.y() - drag_offset_);
+    y = std::min(view_model_->ideal_bounds(last_drag_index).bottom() -
+                 view_model_->ideal_bounds(current_index).height(),
+                 y);
+    if (drag_view_->y() == y)
+      return;
+    drag_view_->SetY(y);
   }
-  if (drag_view_->x() == x)
-    return;
 
-  drag_view_->SetX(x);
   int target_index =
-      views::ViewModelUtils::DetermineMoveIndex(*view_model_, drag_view_, x);
+      views::ViewModelUtils::DetermineMoveIndex(
+          *view_model_, drag_view_,
+          is_horizontal_alignment() ?
+              views::ViewModelUtils::HORIZONTAL :
+              views::ViewModelUtils::VERTICAL,
+          x, y);
   target_index =
       std::min(indices.second, std::max(target_index, indices.first));
   if (target_index == current_index)
@@ -671,13 +702,22 @@ void LauncherView::CancelDrag(views::View* deleted_view) {
 gfx::Size LauncherView::GetPreferredSize() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
+  if (is_horizontal_alignment()) {
+    if (view_model_->view_size() >= 2) {
+      // Should always have two items.
+      return gfx::Size(view_model_->ideal_bounds(1).right() + kLeadingInset,
+                       kLauncherPreferredSize);
+    }
+    return gfx::Size(kLauncherPreferredSize * 2 + kLeadingInset * 2,
+                     kLauncherPreferredSize);
+  }
   if (view_model_->view_size() >= 2) {
     // Should always have two items.
-    return gfx::Size(view_model_->ideal_bounds(1).right() + kLeadingInset,
-                     kLauncherPreferredHeight);
+    return gfx::Size(kLauncherPreferredSize,
+                     view_model_->ideal_bounds(1).bottom() + kLeadingInset);
   }
-  return gfx::Size(kButtonWidth * 2 + kLeadingInset * 2,
-                   kLauncherPreferredHeight);
+  return gfx::Size(kLauncherPreferredSize,
+                   kLauncherPreferredSize * 2 + kLeadingInset * 2);
 }
 
 void LauncherView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -808,14 +848,17 @@ void LauncherView::MousePressedOnButton(views::View* view,
     return;  // View is being deleted or not draggable, ignore request.
 
   drag_view_ = view;
-  drag_offset_ = event.x();
+  drag_offset_ = primary_axis_coordinate(event.x(), event.y());
 }
 
 void LauncherView::MouseDraggedOnButton(views::View* view,
                                         const views::MouseEvent& event) {
   if (!dragging_ && drag_view_ &&
-      abs(event.x() - drag_offset_) >= kMinimumDragDistance)
+      primary_axis_coordinate(abs(event.x() - drag_offset_),
+                              abs(event.y() - drag_offset_)) >=
+      kMinimumDragDistance) {
     PrepareForDrag(event);
+  }
   if (dragging_)
     ContinueDrag(event);
 }
@@ -832,6 +875,10 @@ void LauncherView::MouseReleasedOnButton(views::View* view,
 }
 
 void LauncherView::MouseExitedButton(views::View* view) {
+}
+
+ShelfAlignment LauncherView::GetShelfAlignment() const {
+  return alignment_;
 }
 
 string16 LauncherView::GetAccessibleName(const views::View* view) {

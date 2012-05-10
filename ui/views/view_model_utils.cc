@@ -11,6 +11,17 @@
 
 namespace views {
 
+namespace {
+
+// Used in calculating ideal bounds.
+int primary_axis_coordinate(ViewModelUtils::Alignment alignment,
+                            int x,
+                            int y) {
+  return alignment == ViewModelUtils::HORIZONTAL ? x : y;
+}
+
+}  // namespace
+
 // static
 void ViewModelUtils::SetViewBoundsToIdealBounds(const ViewModel& model) {
   for (int i = 0; i < model.view_size(); ++i)
@@ -30,12 +41,18 @@ bool ViewModelUtils::IsAtIdealBounds(const ViewModel& model) {
 // static
 int ViewModelUtils::DetermineMoveIndex(const ViewModel& model,
                                        View* view,
-                                       int x) {
+                                       Alignment alignment,
+                                       int x,
+                                       int y) {
+  int value = primary_axis_coordinate(alignment, x, y);
   int current_index = model.GetIndexOfView(view);
   DCHECK_NE(-1, current_index);
   for (int i = 0; i < current_index; ++i) {
-    int mid_x = model.ideal_bounds(i).x() + model.ideal_bounds(i).width() / 2;
-    if (x < mid_x)
+    int mid_point = primary_axis_coordinate(
+        alignment,
+        model.ideal_bounds(i).x() + model.ideal_bounds(i).width() / 2,
+        model.ideal_bounds(i).y() + model.ideal_bounds(i).height() / 2);
+    if (value < mid_point)
       return i;
   }
 
@@ -44,12 +61,19 @@ int ViewModelUtils::DetermineMoveIndex(const ViewModel& model,
 
   // For indices after the current index ignore the bounds of the view being
   // dragged. This keeps the view from bouncing around as moved.
-  int delta = model.ideal_bounds(current_index + 1).x() -
-              model.ideal_bounds(current_index).x();
+  int delta = primary_axis_coordinate(
+      alignment,
+      model.ideal_bounds(current_index + 1).x() -
+      model.ideal_bounds(current_index).x(),
+      model.ideal_bounds(current_index + 1).y() -
+      model.ideal_bounds(current_index).y());
   for (int i = current_index + 1; i < model.view_size(); ++i) {
     const gfx::Rect& bounds(model.ideal_bounds(i));
-    int mid_x = bounds.x() + bounds.width() / 2 - delta;
-    if (x < mid_x)
+    int mid_point = primary_axis_coordinate(
+        alignment,
+        bounds.x() + bounds.width() / 2 - delta,
+        bounds.y() + bounds.height() / 2 - delta);
+    if (value < mid_point)
       return i - 1;
   }
   return model.view_size() - 1;

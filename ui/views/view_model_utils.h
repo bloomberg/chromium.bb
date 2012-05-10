@@ -16,16 +16,23 @@ class ViewModel;
 
 class VIEWS_EXPORT ViewModelUtils {
  public:
+  enum Alignment {
+    HORIZONTAL,
+    VERTICAL
+  };
+
   // Sets the bounds of each view to its ideal bounds.
   static void SetViewBoundsToIdealBounds(const ViewModel& model);
 
   // Returns true if the Views in |model| are at their ideal bounds.
   static bool IsAtIdealBounds(const ViewModel& model);
 
-  // Returns the index to move |view| to based on a x-coordinate of |x|.
+  // Returns the index to move |view| to based on a coordinate of |x| and |y|.
   static int DetermineMoveIndex(const ViewModel& model,
                                 View* view,
-                                int x);
+                                Alignment alignment,
+                                int x,
+                                int y);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ViewModelUtils);

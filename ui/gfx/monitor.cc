@@ -58,6 +58,13 @@ Monitor::Monitor(int id, const gfx::Rect& bounds)
 Monitor::~Monitor() {
 }
 
+Insets Monitor::GetWorkAreaInsets() const {
+  return gfx::Insets(work_area_.y() - bounds_.y(),
+                     work_area_.x() - bounds_.x(),
+                     bounds_.bottom() - work_area_.bottom(),
+                     bounds_.right() - work_area_.right());
+}
+
 void Monitor::SetScaleAndBounds(
     float device_scale_factor,
     const gfx::Rect& bounds_in_pixel) {

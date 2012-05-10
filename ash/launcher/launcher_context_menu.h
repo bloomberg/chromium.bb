@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/ash_export.h"
+#include "ash/launcher/launcher_alignment_menu.h"
 #include "ash/wm/shelf_auto_hide_behavior.h"
 #include "base/basictypes.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -40,7 +41,10 @@ class ASH_EXPORT LauncherContextMenu : public ui::SimpleMenuModel,
  private:
   enum MenuItem {
     MENU_AUTO_HIDE,
+    MENU_ALIGNMENT_MENU,
   };
+
+  LauncherAlignmentMenu alignment_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenu);
 };

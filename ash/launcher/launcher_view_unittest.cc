@@ -97,9 +97,10 @@ TEST_F(LauncherViewIconObserverTest, AddRemove) {
 
 TEST_F(LauncherViewIconObserverTest, BoundsChanged) {
   Launcher* launcher = Shell::GetInstance()->launcher();
-  int total_width = launcher->widget()->GetWindowScreenBounds().width();
+  gfx::Size launcher_size = launcher->widget()->GetWindowScreenBounds().size();
+  int total_width = launcher_size.width() / 2;
   ASSERT_GT(total_width, 0);
-  launcher->SetStatusWidth(total_width / 2);
+  launcher->SetStatusSize(gfx::Size(total_width, launcher_size.height()));
   EXPECT_EQ(1, observer()->count());
   observer()->Reset();
 }

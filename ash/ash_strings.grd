@@ -179,6 +179,18 @@ This file contains the strings for ash.
       <message name="IDS_AURA_LAUNCHER_CONTEXT_MENU_AUTO_HIDE_NOT_MAXIMIZED" desc="Title of the menu item in the context menu for auto-hiding the launcher when the current window is not maximized">
         Autohide launcher
       </message>
+      <message name="IDS_AURA_LAUNCHER_CONTEXT_MENU_POSITION" desc="Title of the menu item in the context menu for aligning the launcher">
+        Launcher position
+      </message>
+      <message name="IDS_AURA_LAUNCHER_CONTEXT_MENU_ALIGN_BOTTOM" desc="Title of the menu item in the context menu for aligning the launcher to the bottom of the screen">
+        Bottom
+      </message>
+      <message name="IDS_AURA_LAUNCHER_CONTEXT_MENU_ALIGN_LEFT" desc="Title of the menu item in the context menu for aligning the launcher to the left of the screen">
+        Left
+      </message>
+      <message name="IDS_AURA_LAUNCHER_CONTEXT_MENU_ALIGN_RIGHT" desc="Title of the menu item in the context menu for aligning the launcher to the right of the screen">
+        Right
+      </message>
 
       <message name="IDS_AURA_SET_DESKTOP_WALLPAPER" desc="The label used for change wallpaper in context menu">
         Set wallpaper...

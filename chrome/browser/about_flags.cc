@@ -699,6 +699,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(ash::switches::kEnableAppListV2),
   },
+  {
+    "show-launcher-alignment-menu",
+    IDS_FLAGS_SHOW_LAUNCHER_ALIGNMENT_MENU_NAME,
+    IDS_FLAGS_SHOW_LAUNCHER_ALIGNMENT_MENU_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kShowLauncherAlignmentMenu)
+  },
 #endif
 };
 

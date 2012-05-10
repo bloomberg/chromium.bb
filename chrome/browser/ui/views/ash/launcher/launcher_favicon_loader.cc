@@ -20,7 +20,7 @@ const int kMaxBitmapSize = 256;
 
 ////////////////////////////////////////////////////////////////////////////////
 // FaviconBitmapHandler fetchs all bitmaps with the 'icon' (or 'shortcut icon')
-// link tag, storing the one that best matches ash::kLauncherPreferredHeight.
+// link tag, storing the one that best matches ash::kLauncherPreferredSize.
 // These icon bitmaps are not resized and are not cached beyond the lifetime
 // of the class. Bitmaps larger than kMaxBitmapSize are ignored.
 
@@ -135,7 +135,7 @@ void FaviconBitmapHandler::AddFavicon(const GURL& image_url,
   if (new_bitmap.height() > kMaxBitmapSize ||
       new_bitmap.width() > kMaxBitmapSize)
     return;
-  if (new_bitmap.height() < ash::kLauncherPreferredHeight)
+  if (new_bitmap.height() < ash::kLauncherPreferredSize)
     return;
   if (!bitmap_.isNull()) {
     // We want the smallest icon that is large enough.

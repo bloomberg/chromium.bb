@@ -137,9 +137,7 @@ WorkspaceManager::WindowState WorkspaceManager::GetWindowState() {
     return WINDOW_STATE_DEFAULT;
 
   // TODO: this code needs to be made multi-monitor aware.
-  gfx::Rect bounds(
-      gfx::Screen::GetMonitorNearestWindow(contents_view_).bounds());
-  bounds.set_height(bounds.height() - shelf_->shelf_height());
+  gfx::Rect shelf_bounds(shelf_->GetIdealBounds());
   const aura::Window::Windows& windows(contents_view_->children());
   bool window_overlaps_launcher = false;
   bool has_maximized_window = false;
@@ -155,7 +153,7 @@ WorkspaceManager::WindowState WorkspaceManager::GetWindowState() {
     } else if (wm::IsWindowFullscreen(*i)) {
       return WINDOW_STATE_FULL_SCREEN;
     }
-    if (!window_overlaps_launcher && (*i)->bounds().bottom() > bounds.bottom())
+    if (!window_overlaps_launcher && (*i)->bounds().Intersects(shelf_bounds))
       window_overlaps_launcher = true;
   }
   if (has_maximized_window)

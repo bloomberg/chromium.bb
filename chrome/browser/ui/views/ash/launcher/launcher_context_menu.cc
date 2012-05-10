@@ -6,8 +6,11 @@
 
 #include "ash/launcher/launcher_context_menu.h"
 #include "ash/shell.h"
+#include "base/command_line.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/common/chrome_switches.h"
+#include "grit/ash_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -57,6 +60,12 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
   }
   AddCheckItemWithStringId(
       MENU_AUTO_HIDE, ash::LauncherContextMenu::GetAutoHideResourceStringId());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kShowLauncherAlignmentMenu)) {
+    AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
+                           IDS_AURA_LAUNCHER_CONTEXT_MENU_POSITION,
+                           &alignment_menu_);
+  }
 }
 
 LauncherContextMenu::~LauncherContextMenu() {
@@ -130,6 +139,8 @@ void LauncherContextMenu::ExecuteCommand(int command_id) {
       break;
     case MENU_NEW_INCOGNITO_WINDOW:
       controller_->CreateNewIncognitoWindow();
+      break;
+    case MENU_ALIGNMENT_MENU:
       break;
   }
 }

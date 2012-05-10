@@ -38,9 +38,6 @@ class Launcher::DelegateView : public views::WidgetDelegate,
   explicit DelegateView(Launcher* launcher);
   virtual ~DelegateView();
 
-  void SetStatusWidth(int width);
-  int status_width() const { return status_width_; }
-
   void set_focus_cycler(internal::FocusCycler* focus_cycler) {
     focus_cycler_ = focus_cycler;
   }
@@ -67,10 +64,6 @@ class Launcher::DelegateView : public views::WidgetDelegate,
 
  private:
   Launcher* launcher_;
-
-  // Width of the status area.
-  int status_width_;
-
   internal::FocusCycler* focus_cycler_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegateView);
@@ -78,19 +71,10 @@ class Launcher::DelegateView : public views::WidgetDelegate,
 
 Launcher::DelegateView::DelegateView(Launcher* launcher)
     : launcher_(launcher),
-      status_width_(0),
       focus_cycler_(NULL) {
 }
 
 Launcher::DelegateView::~DelegateView() {
-}
-
-void Launcher::DelegateView::SetStatusWidth(int width) {
-  if (status_width_ == width)
-    return;
-
-  status_width_ = width;
-  Layout();
 }
 
 gfx::Size Launcher::DelegateView::GetPreferredSize() {
@@ -100,7 +84,13 @@ gfx::Size Launcher::DelegateView::GetPreferredSize() {
 void Launcher::DelegateView::Layout() {
   if (child_count() == 0)
     return;
-  child_at(0)->SetBounds(0, 0, std::max(0, width() - status_width_), height());
+  if (launcher_->alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+    int w = std::max(0, width() - launcher_->status_size_.width());
+    child_at(0)->SetBounds(0, 0, w, height());
+  } else {
+    int h = std::max(0, height() - launcher_->status_size_.height());
+    child_at(0)->SetBounds(0, 0, width(), h);
+  }
 }
 
 // Launcher --------------------------------------------------------------------
@@ -110,6 +100,7 @@ Launcher::Launcher(aura::Window* window_container)
       window_container_(window_container),
       delegate_view_(NULL),
       launcher_view_(NULL),
+      alignment_(SHELF_ALIGNMENT_BOTTOM),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           background_animator_(this, 0, kBackgroundAlpha)) {
   model_.reset(new LauncherModel);
@@ -136,7 +127,7 @@ Launcher::Launcher(aura::Window* window_container)
   widget_->GetNativeWindow()->SetName("LauncherWindow");
   gfx::Size pref =
       static_cast<views::View*>(launcher_view_)->GetPreferredSize();
-  widget_->SetBounds(gfx::Rect(0, 0, pref.width(), pref.height()));
+  widget_->SetBounds(gfx::Rect(pref));
   // The launcher should not take focus when it is initially shown.
   widget_->set_focus_on_creation(false);
   widget_->SetContentsView(delegate_view_);
@@ -156,18 +147,24 @@ internal::FocusCycler* Launcher::GetFocusCycler() {
   return delegate_view_->focus_cycler();
 }
 
+void Launcher::SetAlignment(ShelfAlignment alignment) {
+  alignment_ = alignment;
+  launcher_view_->SetAlignment(alignment);
+  // ShelfLayoutManager will resize the launcher.
+}
+
 void Launcher::SetPaintsBackground(
       bool value,
       internal::BackgroundAnimator::ChangeType change_type) {
   background_animator_.SetPaintsBackground(value, change_type);
 }
 
-void Launcher::SetStatusWidth(int width) {
-  delegate_view_->SetStatusWidth(width);
-}
+void Launcher::SetStatusSize(const gfx::Size& size) {
+  if (status_size_ == size)
+    return;
 
-int Launcher::GetStatusWidth() {
-  return delegate_view_->status_width();
+  status_size_ = size;
+  delegate_view_->Layout();
 }
 
 gfx::Rect Launcher::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {

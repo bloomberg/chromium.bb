@@ -252,6 +252,9 @@ class ASH_EXPORT Shell {
   void SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior);
   ShelfAutoHideBehavior GetShelfAutoHideBehavior() const;
 
+  void SetShelfAlignment(ShelfAlignment alignment);
+  ShelfAlignment GetShelfAlignment();
+
   // TODO(sky): don't expose this!
   internal::ShelfLayoutManager* shelf() const { return shelf_; }
 

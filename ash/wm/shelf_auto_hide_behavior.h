@@ -6,7 +6,15 @@
 #define ASH_WM_SHELF_AUTO_HIDE_BEHAVIOR_H_
 #pragma once
 
+// TODO(sky): rename this file to shelf_types.
+
 namespace ash {
+
+enum ShelfAlignment {
+  SHELF_ALIGNMENT_BOTTOM,
+  SHELF_ALIGNMENT_LEFT,
+  SHELF_ALIGNMENT_RIGHT,
+};
 
 enum ShelfAutoHideBehavior {
   // The default; maximized windows trigger an auto-hide.

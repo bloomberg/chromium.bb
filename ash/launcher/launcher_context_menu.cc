@@ -5,6 +5,7 @@
 #include "ash/launcher/launcher_context_menu.h"
 
 #include "ash/shell.h"
+#include "ash/wm/shelf_auto_hide_behavior.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -13,6 +14,9 @@ namespace ash {
 LauncherContextMenu::LauncherContextMenu() : ui::SimpleMenuModel(NULL) {
   set_delegate(this);
   AddCheckItemWithStringId(MENU_AUTO_HIDE, GetAutoHideResourceStringId());
+  AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
+                         IDS_AURA_LAUNCHER_CONTEXT_MENU_POSITION,
+                         &alignment_menu_);
 }
 
 LauncherContextMenu::~LauncherContextMenu() {
@@ -78,6 +82,8 @@ void LauncherContextMenu::ExecuteCommand(int command_id) {
     case MENU_AUTO_HIDE:
       ash::Shell::GetInstance()->SetShelfAutoHideBehavior(
           GetToggledAutoHideBehavior());
+      break;
+    case MENU_ALIGNMENT_MENU:
       break;
   }
 }

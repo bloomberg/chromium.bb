@@ -6,7 +6,7 @@
 
 namespace ash {
 
-const int kLauncherPreferredHeight = 48;
+const int kLauncherPreferredSize = 48;
 
 LauncherItem::LauncherItem()
     : type(TYPE_TABBED),

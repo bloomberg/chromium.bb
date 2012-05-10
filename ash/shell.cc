@@ -876,6 +876,14 @@ ShelfAutoHideBehavior Shell::GetShelfAutoHideBehavior() const {
   return shelf_->auto_hide_behavior();
 }
 
+void Shell::SetShelfAlignment(ShelfAlignment alignment) {
+  shelf_->SetAlignment(alignment);
+}
+
+ShelfAlignment Shell::GetShelfAlignment() {
+  return shelf_->alignment();
+}
+
 int Shell::GetGridSize() const {
   return workspace_controller_->workspace_manager()->grid_size();
 }

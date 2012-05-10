@@ -1121,6 +1121,9 @@ const char kShowComponentExtensionOptions[] =
 // See kHideIcons.
 const char kShowIcons[]                     = "show-icons";
 
+// If true the alignment of the launcher can be changed.
+const char kShowLauncherAlignmentMenu[]     = "show-launcher-alignment-menu";
+
 // Changes the DCHECKS to dump memory and continue instead of displaying error
 // dialog. This is valid only in Release mode when --enable-dcheck is
 // specified.
@@ -1313,7 +1316,7 @@ const char kGuestSession[]                  = "bwsi";
 
 // Enables overriding the path for the default echo component extension.
 // Useful for testing.
-const char kEchoExtensionPath[]           = "echo-ext-path";
+const char kEchoExtensionPath[]             = "echo-ext-path";
 
 // Show volume controls in status bar on ChromeOS.
 const char kShowVolumeStatus[]              = "show-volume-status";

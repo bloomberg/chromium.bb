@@ -166,8 +166,8 @@ IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, ManyLauncherIcons) {
   EXPECT_TRUE(WaitForFaviconDownlads(3));
   EXPECT_FALSE(favicon_loader->GetFavicon().empty());
   // When multiple favicons are present, the correctly sized icon should be
-  // chosen. The icons are sized assuming ash::kLauncherPreferredHeight < 128.
-  EXPECT_GT(128, ash::kLauncherPreferredHeight);
+  // chosen. The icons are sized assuming ash::kLauncherPreferredSize < 128.
+  EXPECT_GT(128, ash::kLauncherPreferredSize);
   EXPECT_EQ(48, favicon_loader->GetFavicon().height());
 }
 

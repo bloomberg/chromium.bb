@@ -19,15 +19,16 @@ using ash::internal::LauncherButton;
 
 namespace ash {
 
-// Makes sure invoking SetStatusWidth on the launcher changes the size of the
+// Makes sure invoking SetStatusSize on the launcher changes the size of the
 // LauncherView.
-TEST_F(LauncherTest, SetStatusWidth) {
+TEST_F(LauncherTest, SetStatusSize) {
   Launcher* launcher = Shell::GetInstance()->launcher();
   LauncherView* launcher_view = launcher->GetLauncherViewForTest();
 
-  int total_width = launcher->widget()->GetWindowScreenBounds().width();
+  gfx::Size launcher_size = launcher->widget()->GetWindowScreenBounds().size();
+  int total_width = launcher_size.width();
   ASSERT_GT(total_width, 0);
-  launcher->SetStatusWidth(total_width / 2);
+  launcher->SetStatusSize(gfx::Size(total_width / 2, launcher_size.height()));
   EXPECT_EQ(total_width - total_width / 2, launcher_view->width());
 }
 

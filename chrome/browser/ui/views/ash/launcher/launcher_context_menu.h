@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
 #pragma once
 
+#include "ash/launcher/launcher_alignment_menu.h"
 #include "ash/launcher/launcher_types.h"
 #include "base/basictypes.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -44,7 +45,8 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
     LAUNCH_TYPE_WINDOW,
     MENU_AUTO_HIDE,
     MENU_NEW_WINDOW,
-    MENU_NEW_INCOGNITO_WINDOW
+    MENU_NEW_INCOGNITO_WINDOW,
+    MENU_ALIGNMENT_MENU,
   };
 
   // Does |item_| represent a valid item? See description of constructor for
@@ -52,7 +54,10 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   bool is_valid_item() const { return item_.id != 0; }
 
   ChromeLauncherController* controller_;
+
   ash::LauncherItem item_;
+
+  ash::LauncherAlignmentMenu alignment_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenu);
 };

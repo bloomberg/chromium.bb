@@ -11,6 +11,7 @@
 
 #include "ash/launcher/launcher_button_host.h"
 #include "ash/launcher/launcher_model_observer.h"
+#include "ash/wm/shelf_auto_hide_behavior.h"
 #include "base/observer_list.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -51,6 +52,8 @@ class ASH_EXPORT LauncherView : public views::View,
 
   void Init();
 
+  void SetAlignment(ShelfAlignment alignment);
+
   // Returns the ideal bounds of the specified item, or an empty rect if id
   // isn't know.
   gfx::Rect GetIdealBoundsOfItemIcon(LauncherID id);
@@ -78,6 +81,15 @@ class ASH_EXPORT LauncherView : public views::View,
     gfx::Rect overflow_bounds;
   };
 
+  // Used in calculating ideal bounds.
+  int primary_axis_coordinate(int x, int y) const {
+    return is_horizontal_alignment() ? x : y;
+  }
+
+  bool is_horizontal_alignment() const {
+    return alignment_ == SHELF_ALIGNMENT_BOTTOM;
+  }
+
   // Sets the bounds of each view to its ideal bounds.
   void LayoutToIdealBounds();
 
@@ -85,9 +97,9 @@ class ASH_EXPORT LauncherView : public views::View,
   // item in the model is set in |view_model_|.
   void CalculateIdealBounds(IdealBounds* bounds);
 
-  // Returns the index of the last view whose max x-coordinate is less than
-  // |max_x|. Returns -1 if nothing fits, or there are no views.
-  int DetermineLastVisibleIndex(int max_x);
+  // Returns the index of the last view whose max primary axis coordinate is
+  // less than |max_value|. Returns -1 if nothing fits, or there are no views.
+  int DetermineLastVisibleIndex(int max_value);
 
   // Animates the bounds of each view to its ideal bounds.
   void AnimateToIdealBounds();
@@ -144,6 +156,7 @@ class ASH_EXPORT LauncherView : public views::View,
   virtual void MouseReleasedOnButton(views::View* view,
                                      bool canceled) OVERRIDE;
   virtual void MouseExitedButton(views::View* view) OVERRIDE;
+  virtual ShelfAlignment GetShelfAlignment() const OVERRIDE;
   virtual string16 GetAccessibleName(const views::View* view) OVERRIDE;
 
   // Overriden from views::ButtonListener:
@@ -198,6 +211,8 @@ class ASH_EXPORT LauncherView : public views::View,
 #endif
 
   ObserverList<LauncherIconObserver> observers_;
+
+  ShelfAlignment alignment_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };

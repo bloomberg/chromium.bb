@@ -64,8 +64,8 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
   // the invisible parts of the launcher.
   static const int kWorkspaceAreaBottomInset;
 
-  // Height of the shelf when auto-hidden.
-  static const int kAutoHideHeight;
+  // Size of the shelf when auto-hidden.
+  static const int kAutoHideSize;
 
   explicit ShelfLayoutManager(views::Widget* status);
   virtual ~ShelfLayoutManager();
@@ -75,6 +75,10 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
   ShelfAutoHideBehavior auto_hide_behavior() const {
     return auto_hide_behavior_;
   }
+
+  // Sets the alignment.
+  void SetAlignment(ShelfAlignment alignment);
+  ShelfAlignment alignment() const { return alignment_; }
 
   void set_workspace_manager(WorkspaceManager* manager) {
     workspace_manager_ = manager;
@@ -90,20 +94,20 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
 
   bool in_layout() const { return in_layout_; }
 
-  // See description above field.
-  int shelf_height() const { return shelf_height_; }
-
   // Returns whether the shelf and its contents (launcher, status) are visible
   // on the screen.
   bool IsVisible() const;
 
   // Returns the bounds the specified window should be when maximized.
-  gfx::Rect GetMaximizedWindowBounds(aura::Window* window) const;
-  gfx::Rect GetUnmaximizedWorkAreaBounds(aura::Window* window) const;
+  gfx::Rect GetMaximizedWindowBounds(aura::Window* window);
+  gfx::Rect GetUnmaximizedWorkAreaBounds(aura::Window* window);
 
   // The launcher is typically created after the layout manager.
   void SetLauncher(Launcher* launcher);
   Launcher* launcher() { return launcher_; }
+
+  // Returns the ideal bounds of the shelf assuming it is visible.
+  gfx::Rect GetIdealBounds();
 
   // Stops any animations and sets the bounds of the launcher and status
   // widgets.
@@ -176,9 +180,15 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
   // Stops any animations.
   void StopAnimating();
 
+  // Returns the width (if aligned to the side) or height (if aligned to the
+  // bottom).
+  void GetShelfSize(int* width, int* height);
+
+  // Insets |bounds| by |inset| on the edge the shelf is aligned to.
+  void AdjustBoundsBasedOnAlignment(int inset, gfx::Rect* bounds) const;
+
   // Calculates the target bounds assuming visibility of |visible|.
-  void CalculateTargetBounds(const State& state,
-                             TargetBounds* target_bounds) const;
+  void CalculateTargetBounds(const State& state, TargetBounds* target_bounds);
 
   // Updates the background of the shelf.
   void UpdateShelfBackground(BackgroundAnimator::ChangeType type);
@@ -199,6 +209,12 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
   // Returns true if |window| is a descendant of the shelf.
   bool IsShelfWindow(aura::Window* window);
 
+  int GetWorkAreaSize(const State& state, int size) const;
+
+  int axis_position(int x, int y) const{
+    return alignment_ == SHELF_ALIGNMENT_BOTTOM ? y : x;
+  }
+
   // The RootWindow is cached so that we don't invoke Shell::GetInstance() from
   // our destructor. We avoid that as at the time we're deleted Shell is being
   // deleted too.
@@ -211,11 +227,10 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
   // See description above setter.
   ShelfAutoHideBehavior auto_hide_behavior_;
 
+  ShelfAlignment alignment_;
+
   // Current state.
   State state_;
-
-  // Height of the shelf (max of launcher and status).
-  int shelf_height_;
 
   Launcher* launcher_;
   views::Widget* status_;

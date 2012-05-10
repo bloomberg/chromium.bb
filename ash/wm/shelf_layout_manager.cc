@@ -42,7 +42,7 @@ ui::Layer* GetLayer(views::Widget* widget) {
 const int ShelfLayoutManager::kWorkspaceAreaBottomInset = 2;
 
 // static
-const int ShelfLayoutManager::kAutoHideHeight = 2;
+const int ShelfLayoutManager::kAutoHideSize = 2;
 
 // Notifies ShelfLayoutManager any time the mouse moves.
 class ShelfLayoutManager::AutoHideEventFilter : public aura::EventFilter {
@@ -122,7 +122,7 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
     : root_window_(Shell::GetInstance()->GetRootWindow()),
       in_layout_(false),
       auto_hide_behavior_(SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT),
-      shelf_height_(status->GetWindowScreenBounds().height()),
+      alignment_(SHELF_ALIGNMENT_BOTTOM),
       launcher_(NULL),
       status_(status),
       workspace_manager_(NULL),
@@ -148,12 +148,12 @@ bool ShelfLayoutManager::IsVisible() const {
 }
 
 gfx::Rect ShelfLayoutManager::GetMaximizedWindowBounds(
-    aura::Window* window) const {
+    aura::Window* window) {
   // TODO: needs to be multi-mon aware.
   gfx::Rect bounds(gfx::Screen::GetMonitorNearestWindow(window).bounds());
   if (auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT ||
       auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS) {
-    bounds.set_height(bounds.height() - kAutoHideHeight);
+    AdjustBoundsBasedOnAlignment(kAutoHideSize, &bounds);
     return bounds;
   }
   // SHELF_AUTO_HIDE_BEHAVIOR_NEVER maximized windows don't get any taller.
@@ -161,13 +161,18 @@ gfx::Rect ShelfLayoutManager::GetMaximizedWindowBounds(
 }
 
 gfx::Rect ShelfLayoutManager::GetUnmaximizedWorkAreaBounds(
-    aura::Window* window) const {
+    aura::Window* window) {
   // TODO: needs to be multi-mon aware.
   gfx::Rect bounds(gfx::Screen::GetMonitorNearestWindow(window).bounds());
-  if (auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
-    bounds.set_height(bounds.height() - kAutoHideHeight);
-  else
-    bounds.set_height(bounds.height() - shelf_height_);
+  int size;
+  if (auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS) {
+    size = kAutoHideSize;
+  } else {
+    int width, height;
+    GetShelfSize(&width, &height);
+    size = std::max(width, height);
+  }
+  AdjustBoundsBasedOnAlignment(size, &bounds);
   return bounds;
 }
 
@@ -176,10 +181,38 @@ void ShelfLayoutManager::SetLauncher(Launcher* launcher) {
     return;
 
   launcher_ = launcher;
-  shelf_height_ =
-      std::max(status_->GetWindowScreenBounds().height(),
-               launcher_widget()->GetWindowScreenBounds().height());
   LayoutShelf();
+}
+
+void ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
+  if (alignment_ == alignment)
+    return;
+
+  alignment_ = alignment;
+  if (launcher_)
+    launcher_->SetAlignment(alignment);
+  LayoutShelf();
+}
+
+gfx::Rect ShelfLayoutManager::GetIdealBounds() {
+  // TODO: this is wrong. Figure out what monitor shelf is on and everything
+  // should be based on it.
+  gfx::Rect bounds(
+      gfx::Screen::GetMonitorNearestWindow(status_->GetNativeView()).bounds());
+  int width = 0, height = 0;
+  GetShelfSize(&width, &height);
+  switch (alignment_) {
+    case SHELF_ALIGNMENT_BOTTOM:
+      return gfx::Rect(bounds.x(), bounds.bottom() - height,
+                       bounds.width(), height);
+    case SHELF_ALIGNMENT_LEFT:
+      return gfx::Rect(bounds.x(), bounds.y(), width, bounds.height());
+    case SHELF_ALIGNMENT_RIGHT:
+      return gfx::Rect(bounds.right() - width, bounds.bottom() - height, width,
+                       height);
+  }
+  NOTREACHED();
+  return gfx::Rect();
 }
 
 void ShelfLayoutManager::LayoutShelf() {
@@ -191,8 +224,7 @@ void ShelfLayoutManager::LayoutShelf() {
     GetLayer(launcher_widget())->SetOpacity(target_bounds.opacity);
 
     launcher_widget()->SetBounds(target_bounds.launcher_bounds);
-    launcher_->SetStatusWidth(
-        target_bounds.status_bounds.width());
+    launcher_->SetStatusSize(target_bounds.status_bounds.size());
   }
   GetLayer(status_)->SetOpacity(target_bounds.opacity);
   status_->SetBounds(target_bounds.status_bounds);
@@ -352,47 +384,96 @@ void ShelfLayoutManager::StopAnimating() {
   GetLayer(status_)->GetAnimator()->StopAnimating();
 }
 
+void ShelfLayoutManager::GetShelfSize(int* width, int* height) {
+  *width = *height = 0;
+  gfx::Rect status_bounds(status_->GetWindowScreenBounds());
+  gfx::Size launcher_size = launcher_ ?
+      launcher_widget()->GetContentsView()->GetPreferredSize() : gfx::Size();
+  if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+    *height = std::max(launcher_size.height(), status_bounds.height());
+  } else {
+    // TODO: include status when supports alignment.
+    *width = launcher_size.width();
+  }
+}
+
+void ShelfLayoutManager::AdjustBoundsBasedOnAlignment(int inset,
+                                                      gfx::Rect* bounds) const {
+  switch (alignment_) {
+    case SHELF_ALIGNMENT_BOTTOM:
+      bounds->Inset(gfx::Insets(0, 0, inset, 0));
+      break;
+    case SHELF_ALIGNMENT_LEFT:
+      bounds->Inset(gfx::Insets(0, inset, 0, 0));
+      break;
+    case SHELF_ALIGNMENT_RIGHT:
+      bounds->Inset(gfx::Insets(0, 0, 0, inset));
+      break;
+  }
+}
+
 void ShelfLayoutManager::CalculateTargetBounds(
     const State& state,
-    TargetBounds* target_bounds) const {
+    TargetBounds* target_bounds) {
   const gfx::Rect& available_bounds(
       status_->GetNativeView()->GetRootWindow()->bounds());
-  int y = available_bounds.bottom();
-  int shelf_height = 0;
+  gfx::Rect status_bounds(status_->GetWindowScreenBounds());
+  gfx::Size launcher_size = launcher_ ?
+      launcher_widget()->GetContentsView()->GetPreferredSize() : gfx::Size();
+  int shelf_size = 0;
+  int shelf_width = 0, shelf_height = 0;
+  GetShelfSize(&shelf_width, &shelf_height);
   if (state.visibility_state == VISIBLE ||
       (state.visibility_state == AUTO_HIDE &&
-       state.auto_hide_state == AUTO_HIDE_SHOWN))
-    shelf_height = shelf_height_;
-  else if (state.visibility_state == AUTO_HIDE &&
-           state.auto_hide_state == AUTO_HIDE_HIDDEN)
-    shelf_height = kAutoHideHeight;
-  y -= shelf_height;
-  gfx::Rect status_bounds(status_->GetWindowScreenBounds());
-  // The status widget should extend to the bottom and right edges.
-  target_bounds->status_bounds = gfx::Rect(
-      base::i18n::IsRTL() ? available_bounds.x() :
-                            available_bounds.right() - status_bounds.width(),
-      y + shelf_height_ - status_bounds.height(),
-      status_bounds.width(), status_bounds.height());
-  if (launcher_widget()) {
-    gfx::Rect launcher_bounds(launcher_widget()->GetWindowScreenBounds());
-    target_bounds->launcher_bounds = gfx::Rect(
-        available_bounds.x(),
-        y + (shelf_height_ - launcher_bounds.height()) / 2,
-        available_bounds.width(),
-        launcher_bounds.height());
+       state.auto_hide_state == AUTO_HIDE_SHOWN)) {
+    shelf_size = std::max(shelf_width, shelf_height);
+  } else if (state.visibility_state == AUTO_HIDE &&
+             state.auto_hide_state == AUTO_HIDE_HIDDEN) {
+    shelf_size = kAutoHideSize;
   }
-
+  if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+    int y = available_bounds.bottom();
+    y -= shelf_size;
+    // The status widget should extend to the bottom and right edges.
+    target_bounds->status_bounds = gfx::Rect(
+        base::i18n::IsRTL() ? available_bounds.x() :
+        available_bounds.right() - status_bounds.width(),
+        y + shelf_height - status_bounds.height(),
+        status_bounds.width(), status_bounds.height());
+    if (launcher_widget()) {
+      target_bounds->launcher_bounds = gfx::Rect(
+          available_bounds.x(),
+          y + (shelf_height - launcher_size.height()) / 2,
+          available_bounds.width(),
+          launcher_size.height());
+    }
+    target_bounds->work_area_insets.Set(
+        0, 0, GetWorkAreaSize(state, shelf_height), 0);
+  } else {
+    int x = (alignment_ == SHELF_ALIGNMENT_LEFT) ?
+        available_bounds.x() + shelf_size - shelf_width :
+        available_bounds.right() - shelf_size;
+    target_bounds->status_bounds = gfx::Rect(
+        x, available_bounds.bottom() - status_bounds.height(),
+        shelf_width, status_bounds.height());
+    if (launcher_widget()) {
+      target_bounds->launcher_bounds = gfx::Rect(
+          x,
+          available_bounds.y(),
+          launcher_size.width(),
+          available_bounds.height());
+    }
+    if (alignment_ == SHELF_ALIGNMENT_LEFT) {
+      target_bounds->work_area_insets.Set(
+          0, GetWorkAreaSize(state, shelf_width), 0, 0);
+    } else {
+      target_bounds->work_area_insets.Set(
+          0, 0, 0, GetWorkAreaSize(state, shelf_width));
+    }
+  }
   target_bounds->opacity =
       (state.visibility_state == VISIBLE ||
        state.visibility_state == AUTO_HIDE) ? 1.0f : 0.0f;
-
-  int work_area_bottom = 0;
-  if (state.visibility_state == VISIBLE)
-    work_area_bottom = shelf_height_;
-  else if (state.visibility_state == AUTO_HIDE)
-    work_area_bottom = kAutoHideHeight;
-  target_bounds->work_area_insets.Set(0, 0, work_area_bottom, 0);
 }
 
 void ShelfLayoutManager::UpdateShelfBackground(
@@ -451,7 +532,17 @@ void ShelfLayoutManager::UpdateHitTestBounds() {
   if (state_.visibility_state == VISIBLE) {
     // Let clicks at the very top of the launcher through so windows can be
     // resized with the bottom-right corner and bottom edge.
-    insets.Set(kWorkspaceAreaBottomInset, 0, 0, 0);
+    switch (alignment_) {
+      case SHELF_ALIGNMENT_BOTTOM:
+        insets.Set(kWorkspaceAreaBottomInset, 0, 0, 0);
+        break;
+      case SHELF_ALIGNMENT_LEFT:
+        insets.Set(0, 0, 0, kWorkspaceAreaBottomInset);
+        break;
+      case SHELF_ALIGNMENT_RIGHT:
+        insets.Set(0, kWorkspaceAreaBottomInset, 0, 0);
+        break;
+    }
   }
   if (launcher_widget() && launcher_widget()->GetNativeWindow())
     launcher_widget()->GetNativeWindow()->set_hit_test_bounds_override_outer(
@@ -465,6 +556,14 @@ bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {
   return (launcher_widget() &&
           launcher_widget()->GetNativeWindow()->Contains(window)) ||
       (status_ && status_->GetNativeWindow()->Contains(window));
+}
+
+int ShelfLayoutManager::GetWorkAreaSize(const State& state, int size) const {
+  if (state.visibility_state == VISIBLE)
+    return size;
+  if (state.visibility_state == AUTO_HIDE)
+    return kAutoHideSize;
+  return 0;
 }
 
 }  // namespace internal

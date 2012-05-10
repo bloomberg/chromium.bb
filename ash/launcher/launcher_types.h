@@ -21,7 +21,7 @@ typedef int LauncherID;
 
 // Height of the Launcher. Hard coded to avoid resizing as items are
 // added/removed.
-ASH_EXPORT extern const int kLauncherPreferredHeight;
+ASH_EXPORT extern const int kLauncherPreferredSize;
 
 // Type the LauncherItem represents.
 enum ASH_EXPORT LauncherItemType {

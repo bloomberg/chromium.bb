@@ -54,6 +54,9 @@ class UI_EXPORT Monitor {
   const Size& size() const { return bounds_.size(); }
   const Size& work_area_size() const { return work_area_.size(); }
 
+  // Returns the work area insets.
+  Insets GetWorkAreaInsets() const;
+
   // Sets the device scale factor and monitor bounds in pixel. This
   // updates the work are using the same insets between old bounds and
   // work area.
