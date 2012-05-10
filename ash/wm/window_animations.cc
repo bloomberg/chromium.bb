@@ -32,6 +32,10 @@ DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowVisibilityAnimationTransition)
 using base::TimeDelta;
 
 namespace ash {
+namespace {
+const int kDefaultAnimationDurationForMenuMS = 150;
+}  // namespace
+
 namespace internal {
 DEFINE_WINDOW_PROPERTY_KEY(WindowVisibilityAnimationType,
                            kWindowVisibilityAnimationTypeKey,
@@ -63,6 +67,16 @@ void SetWindowVisibilityAnimationDuration(aura::Window* window,
                                           const TimeDelta& duration) {
   window->SetProperty(internal::kWindowVisibilityAnimationDurationKey,
                       static_cast<int>(duration.ToInternalValue()));
+}
+
+base::TimeDelta GetWindowVisibilityAnimationDuration(aura::Window* window) {
+  int duration =
+      window->GetProperty(internal::kWindowVisibilityAnimationDurationKey);
+  if (duration == 0 && window->type() == aura::client::WINDOW_TYPE_MENU) {
+    return base::TimeDelta::FromMilliseconds(
+        kDefaultAnimationDurationForMenuMS);
+  }
+  return TimeDelta::FromInternalValue(duration);
 }
 
 bool HasWindowVisibilityAnimationTransition(
@@ -201,10 +215,9 @@ void AnimateShowWindowCommon(aura::Window* window,
   {
     // Property sets within this scope will be implicitly animated.
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-    int duration =
-        window->GetProperty(internal::kWindowVisibilityAnimationDurationKey);
-    if (duration > 0)
-      settings.SetTransitionDuration(TimeDelta::FromInternalValue(duration));
+    base::TimeDelta duration = GetWindowVisibilityAnimationDuration(window);
+    if (duration.ToInternalValue() > 0)
+      settings.SetTransitionDuration(duration);
 
     window->layer()->SetTransform(end_transform);
     window->layer()->SetOpacity(kWindowAnimation_ShowOpacity);
@@ -221,10 +234,9 @@ void AnimateHideWindowCommon(aura::Window* window,
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
   settings.AddObserver(new HidingWindowAnimationObserver(window));
 
-  int duration =
-      window->GetProperty(internal::kWindowVisibilityAnimationDurationKey);
-  if (duration > 0)
-    settings.SetTransitionDuration(TimeDelta::FromInternalValue(duration));
+  base::TimeDelta duration = GetWindowVisibilityAnimationDuration(window);
+  if (duration.ToInternalValue() > 0)
+    settings.SetTransitionDuration(duration);
 
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
   window->layer()->SetTransform(end_transform);
