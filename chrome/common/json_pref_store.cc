@@ -264,7 +264,6 @@ void JsonPrefStore::OnFileRead(Value* value_owned,
                                PersistentPrefStore::PrefReadError error,
                                bool no_dir) {
   scoped_ptr<Value> value(value_owned);
-  initialized_ = true;
   read_error_ = error;
 
   if (no_dir) {
@@ -273,6 +272,8 @@ void JsonPrefStore::OnFileRead(Value* value_owned,
                       OnInitializationCompleted(false));
     return;
   }
+
+  initialized_ = true;
 
   switch (error) {
     case PREF_READ_ERROR_ACCESS_DENIED:
