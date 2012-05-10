@@ -6,7 +6,7 @@
 
 NAME=org.chromium.chromoting
 CONFIG_DIR=/Library/PrivilegedHelperTools
-HOST_EXE=$CONFIG_DIR/$NAME.me2me_host
+HOST_EXE=$CONFIG_DIR/$NAME.me2me_host.app/Contents/MacOS/remoting_me2me_host
 ENABLED_FILE=$CONFIG_DIR/$NAME.me2me_enabled
 CONFIG_FILE=$CONFIG_DIR/$NAME.json
 

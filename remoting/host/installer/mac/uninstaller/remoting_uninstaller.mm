@@ -148,7 +148,7 @@ NSString* const kKeystonePID = @"com.google.chrome_remote_desktop";
                      kLaunchAgentsDir, kServiceName];
   [self sudoDelete:[plist UTF8String] usingAuth:authRef];
 
-  NSString* host_binary = [NSString stringWithFormat:@"%@/%@.me2me_host",
+  NSString* host_binary = [NSString stringWithFormat:@"%@/%@.me2me_host.app",
                            kHelperToolsDir, kServiceName];
   [self sudoDelete:[host_binary UTF8String] usingAuth:authRef];
 

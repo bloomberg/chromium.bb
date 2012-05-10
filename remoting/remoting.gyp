@@ -320,12 +320,12 @@
               'zip_path': '<(PRODUCT_DIR)/remoting-me2me-host-<(OS).zip',
               'generated_files': [
                 '<(PRODUCT_DIR)/remoting_host_prefpane.prefPane',
-                '<(PRODUCT_DIR)/remoting_me2me_host',
+                '<(PRODUCT_DIR)/remoting_me2me_host.app',
                 '<(PRODUCT_DIR)/remoting_host_uninstaller.app',
               ],
               'generated_files_dst': [
                 'PreferencePanes/org.chromium.chromoting.prefPane',
-                'PrivilegedHelperTools/org.chromium.chromoting.me2me_host',
+                'PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app',
                 'Applications/<(host_uninstaller_name).app',
               ],
               'source_files': [
@@ -1348,9 +1348,7 @@
           ],
         }],
         ['OS=="mac"', {
-          'sources': [
-            'host/remoting_me2me_host-Info.plist',
-          ],
+          'mac_bundle': 1,
           'conditions': [
             ['branding == "Chrome"', {
               'variables': {
@@ -1363,29 +1361,15 @@
             }],
           ],
           'xcode_settings': {
-            'OTHER_LDFLAGS': [
-              '-Wl,-sectcreate,__TEXT,__info_plist,<(INTERMEDIATE_DIR)/remoting_me2me_host-Info.plist'
-            ],
+            'INFOPLIST_FILE': 'host/remoting_me2me_host-Info.plist',
+            'INFOPLIST_PREPROCESS': 'YES',
+            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)"',
           },
-          'rules': [
-            {
-              'rule_name': 'brand_mac',
-              'extension': 'plist',
-              'inputs': [ ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/remoting_me2me_host-Info.plist',
-              ],
-              'action': [
-                'python', '<(version_py_path)',
-                '-i', 'host/remoting_me2me_host-Info.plist',
-                '-o', '<(INTERMEDIATE_DIR)/remoting_me2me_host-Info.plist',
-                '-e', 'VERSION_FULL="<(version_full)"',
-                '-e', 'VERSION_SHORT="<(version_short)"',
-                '-e', 'BUNDLE_ID="<(host_bundle_id)"',
-              ],
-              'process_outputs_as_sources': 1,
-              'message': 'Branding and versioning remoting_me2me_host.',
-            },
+          'mac_bundle_resources': [
+            'host/remoting_me2me_host-Info.plist',
+          ],
+          'mac_bundle_resources!': [
+            'host/remoting_me2me_host-Info.plist',
           ],
         }],
         ['OS=="win"', {

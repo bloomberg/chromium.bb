@@ -305,7 +305,7 @@
 											<key>GID</key>
 											<integer>80</integer>
 											<key>Path</key>
-											<string>PrivilegedHelperTools/org.chromium.chromoting.me2me_host</string>
+											<string>PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app</string>
 											<key>Path Type</key>
 											<integer>2</integer>
 											<key>Privileges</key>

@@ -20,7 +20,7 @@ readonly ME
 declare -a g_cleanup_dirs
 
 # Binaries to sign.
-ME2ME_HOST='PrivilegedHelperTools/org.chromium.chromoting.me2me_host'
+ME2ME_HOST='PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app'
 UNINSTALLER='Applications/@@HOST_UNINSTALLER_NAME@@.app'
 
 # The Chromoting Host installer is a meta-package that consists of 3
