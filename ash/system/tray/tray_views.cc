@@ -231,7 +231,7 @@ TrayPopupTextButton::~TrayPopupTextButton() {}
 
 gfx::Size TrayPopupTextButton::GetPreferredSize() {
   gfx::Size size = views::TextButton::GetPreferredSize();
-  size.Enlarge(0, 16);
+  size.Enlarge(32, 16);
   return size;
 }
 
@@ -270,13 +270,13 @@ void TrayPopupTextButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
 // TrayPopupTextButtonContainer
 
 TrayPopupTextButtonContainer::TrayPopupTextButtonContainer() {
-  views::BoxLayout *layout = new
+  layout_ = new
     views::BoxLayout(views::BoxLayout::kHorizontal,
         kPaddingAroundButtons,
         kPaddingAroundButtons,
         -1);
-  layout->set_spread_blank_space(true);
-  SetLayoutManager(layout);
+  layout_->set_spread_blank_space(true);
+  SetLayoutManager(layout_);
 }
 
 TrayPopupTextButtonContainer::~TrayPopupTextButtonContainer() {

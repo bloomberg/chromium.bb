@@ -27,12 +27,11 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
-const int kUserInfoHorizontalPadding = 14;
 const int kUserInfoVerticalPadding = 10;
-const int kUserInfoPaddingBetweenItems = 3;
 
 const int kUserIconSize = 27;
 
@@ -43,148 +42,8 @@ namespace internal {
 
 namespace tray {
 
-class UserView : public views::View,
-                 public views::ButtonListener {
- public:
-  explicit UserView(ash::user::LoginStatus login)
-      : login_(login),
-        username_(NULL),
-        email_(NULL),
-        update_(NULL),
-        shutdown_(NULL),
-        signout_(NULL),
-        lock_(NULL) {
-    CHECK(login_ != ash::user::LOGGED_IN_NONE);
-    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-          0, 0, 0));
-    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
-
-    bool guest = login_ == ash::user::LOGGED_IN_GUEST;
-    bool kiosk = login_ == ash::user::LOGGED_IN_KIOSK;
-    bool locked = login_ == ash::user::LOGGED_IN_LOCKED;
-
-    if (!guest && !kiosk)
-      AddUserInfo();
-
-    // A user should not be able to modify logged in state when screen is
-    // locked.
-    if (!locked)
-      AddButtonContainer();
-  }
-
-  virtual ~UserView() {}
-
-  // Create container for buttons.
-  void AddButtonContainer() {
-    bool guest = login_ == ash::user::LOGGED_IN_GUEST;
-    bool kiosk = login_ == ash::user::LOGGED_IN_KIOSK;
-
-    TrayPopupTextButtonContainer* button_container =
-        new TrayPopupTextButtonContainer;
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-
-    if (!kiosk) {
-      shutdown_ = new TrayPopupTextButton(this, bundle.GetLocalizedString(
-            IDS_ASH_STATUS_TRAY_SHUT_DOWN));
-      button_container->AddTextButton(shutdown_);
-    } else {
-      views::Label* label = new views::Label;
-      label->SetText(
-          bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_KIOSK_LABEL));
-      label->set_border(views::Border::CreateEmptyBorder(
-            0, kTrayPopupPaddingHorizontal, 0, 1));
-      label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-      button_container->AddChildView(label);
-    }
-
-    signout_ = new TrayPopupTextButton(this, bundle.GetLocalizedString(
-        guest ? IDS_ASH_STATUS_TRAY_EXIT_GUEST :
-        kiosk ? IDS_ASH_STATUS_TRAY_EXIT_KIOSK :
-                IDS_ASH_STATUS_TRAY_SIGN_OUT));
-    signout_->set_border(views::Border::CreateSolidSidedBorder(
-          kiosk, 1, kiosk, kiosk || !guest, kButtonStrokeColor));
-    button_container->AddTextButton(signout_);
-
-    if (!guest && !kiosk) {
-      lock_ = new TrayPopupTextButton(this, bundle.GetLocalizedString(
-            IDS_ASH_STATUS_TRAY_LOCK));
-      button_container->AddTextButton(lock_);
-    }
-
-    AddChildView(button_container);
-  }
-
- private:
-  void AddUserInfo() {
-    user_info_ = new views::View;
-    user_info_->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, kUserInfoHorizontalPadding,
-        kUserInfoVerticalPadding, kUserInfoPaddingBetweenItems));
-
-    views::View* user = new views::View;
-    user->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kVertical, 0, 5, 0));
-    ash::SystemTrayDelegate* tray =
-        ash::Shell::GetInstance()->tray_delegate();
-    username_ = new views::Label(UTF8ToUTF16(tray->GetUserDisplayName()));
-    username_->SetFont(username_->font().DeriveFont(2));
-    username_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    // Username is not made visible yet, because chromeos does not have support
-    // for that yet. See http://crosbug/23624
-    username_->SetVisible(false);
-    AddChildView(username_);
-
-    email_ = new views::Label(UTF8ToUTF16(tray->GetUserEmail()));
-    email_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    email_->SetEnabled(false);
-    user->AddChildView(email_);
-
-    user_info_->AddChildView(user);
-    AddChildView(user_info_);
-  }
-
-  // Overridden from views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE {
-    ash::SystemTrayDelegate* tray = ash::Shell::GetInstance()->tray_delegate();
-    if (sender == shutdown_)
-      tray->ShutDown();
-    else if (sender == signout_)
-      tray->SignOut();
-    else if (sender == lock_)
-      tray->RequestLockScreen();
-  }
-
-  // Overridden from views::View.
-  virtual void Layout() OVERRIDE {
-    views::View::Layout();
-    if (!update_)
-      return;
-
-    // Position |update_| appropriately.
-    gfx::Rect bounds;
-    bounds.set_x(user_info_->width() - update_->width());
-    bounds.set_y(0);
-    bounds.set_size(update_->GetPreferredSize());
-    update_->SetBoundsRect(bounds);
-  }
-
-  user::LoginStatus login_;
-
-  views::View* user_info_;
-  views::Label* username_;
-  views::Label* email_;
-  views::View* update_;
-
-  TrayPopupTextButton* shutdown_;
-  TrayPopupTextButton* signout_;
-  TrayPopupTextButton* lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserView);
-};
-
 // A custom image view with rounded edges.
-class RoundedImageView : public TrayItemView {
+class RoundedImageView : public views::View {
  public:
   // Constructs a new rounded image view with rounded corners of radius
   // |corner_radius|.
@@ -209,20 +68,22 @@ class RoundedImageView : public TrayItemView {
     }
   }
 
-  // Overridden from TrayItemView.
-  virtual gfx::Size DesiredSize() OVERRIDE {
+  // Overridden from views::View.
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     return gfx::Size(image_size_.width() + GetInsets().width(),
                      image_size_.height() + GetInsets().height());
   }
 
-  virtual int GetAnimationDurationMS() OVERRIDE {
-    return 750;
+  virtual void VisibilityChanged(views::View* starting_from,
+                                 bool is_visible) OVERRIDE {
+    if (starting_from == this && GetWidget())
+      GetWidget()->SetSize(GetWidget()->GetContentsView()->GetPreferredSize());
   }
 
-  // Overridden from views::View.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     View::OnPaint(canvas);
-    gfx::Rect image_bounds(DesiredSize());
+    gfx::Rect image_bounds(GetPreferredSize());
+    image_bounds = gfx::Rect(size()).Center(image_bounds.size());
     image_bounds.Inset(GetInsets());
     const SkScalar kRadius = SkIntToScalar(corner_radius_);
     SkPath path;
@@ -250,6 +111,150 @@ class RoundedImageView : public TrayItemView {
   int corner_radius_;
 
   DISALLOW_COPY_AND_ASSIGN(RoundedImageView);
+};
+
+class UserView : public views::View,
+                 public views::ButtonListener {
+ public:
+  explicit UserView(ash::user::LoginStatus login)
+      : login_(login),
+        container_(NULL),
+        user_info_(NULL),
+        username_(NULL),
+        email_(NULL),
+        signout_(NULL) {
+    CHECK(login_ != ash::user::LOGGED_IN_NONE);
+    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
+
+    bool guest = login_ == ash::user::LOGGED_IN_GUEST;
+    bool kiosk = login_ == ash::user::LOGGED_IN_KIOSK;
+    bool locked = login_ == ash::user::LOGGED_IN_LOCKED;
+
+    container_ = new TrayPopupTextButtonContainer;
+    container_->layout()->set_spread_blank_space(false);
+    AddChildView(container_);
+
+    if (!guest && !kiosk)
+      AddUserInfo();
+
+    // A user should not be able to modify logged in state when screen is
+    // locked.
+    if (!locked)
+      AddButtonContainer();
+  }
+
+  virtual ~UserView() {}
+
+  // Create container for buttons.
+  void AddButtonContainer() {
+    bool guest = login_ == ash::user::LOGGED_IN_GUEST;
+    bool kiosk = login_ == ash::user::LOGGED_IN_KIOSK;
+
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+
+    if (kiosk) {
+      views::Label* label = new views::Label;
+      label->SetText(
+          bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_KIOSK_LABEL));
+      label->set_border(views::Border::CreateEmptyBorder(
+            0, kTrayPopupPaddingHorizontal, 0, 1));
+      label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      container_->AddChildView(label);
+    }
+
+    TrayPopupTextButton* button =
+        new TrayPopupTextButton(this, bundle.GetLocalizedString(
+          guest ? IDS_ASH_STATUS_TRAY_EXIT_GUEST :
+          kiosk ? IDS_ASH_STATUS_TRAY_EXIT_KIOSK :
+                  IDS_ASH_STATUS_TRAY_SIGN_OUT));
+    container_->AddTextButton(button);
+    signout_ = button;
+  }
+
+ private:
+  void AddUserInfo() {
+    user_info_ = new views::View;
+    user_info_->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kHorizontal, kTrayPopupPaddingHorizontal,
+        kUserInfoVerticalPadding, kTrayPopupPaddingBetweenItems));
+
+    RoundedImageView* image = new RoundedImageView(kTrayRoundedBorderRadius);
+    image->SetImage(ash::Shell::GetInstance()->tray_delegate()->GetUserImage(),
+        gfx::Size(kUserIconSize, kUserIconSize));
+    user_info_->AddChildView(image);
+
+    views::View* user = new views::View;
+    user->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kVertical, 0, 5, 0));
+    ash::SystemTrayDelegate* tray =
+        ash::Shell::GetInstance()->tray_delegate();
+    username_ = new views::Label(UTF8ToUTF16(tray->GetUserDisplayName()));
+    username_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    user->AddChildView(username_);
+
+    email_ = new views::Label(UTF8ToUTF16(tray->GetUserEmail()));
+    email_->SetFont(username_->font().DeriveFont(-1));
+    email_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    email_->SetEnabled(false);
+    user->AddChildView(email_);
+
+    user_info_->AddChildView(user);
+    container_->AddChildView(user_info_);
+  }
+
+  // Overridden from views::ButtonListener.
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE {
+    CHECK(sender == signout_);
+    ash::SystemTrayDelegate* tray = ash::Shell::GetInstance()->tray_delegate();
+    tray->SignOut();
+  }
+
+  // Overridden from views::View.
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    gfx::Size size;
+    if (user_info_)
+      size = user_info_->GetPreferredSize();
+    if (signout_) {
+      gfx::Size signout_size = signout_->GetPreferredSize();
+      size.set_height(std::max(size.height(), signout_size.height()));
+      size.set_width(size.width() + signout_size.width() +
+          kTrayPopupPaddingHorizontal * 2 + kTrayPopupPaddingBetweenItems);
+    }
+    return size;
+  }
+
+  virtual void Layout() OVERRIDE {
+    views::View::Layout();
+    if (bounds().IsEmpty())
+      return;
+
+    container_->SetBoundsRect(gfx::Rect(size()));
+    if (signout_) {
+      gfx::Rect signout_bounds(signout_->GetPreferredSize());
+      signout_bounds = bounds().Center(signout_bounds.size());
+      signout_bounds.set_x(width() - signout_bounds.width() -
+          kTrayPopupPaddingHorizontal);
+      signout_->SetBoundsRect(signout_bounds);
+
+      gfx::Rect usercard_bounds(user_info_->GetPreferredSize());
+      usercard_bounds.set_width(signout_bounds.x());
+      user_info_->SetBoundsRect(usercard_bounds);
+    } else {
+      user_info_->SetBoundsRect(gfx::Rect(size()));
+    }
+  }
+
+  user::LoginStatus login_;
+
+  TrayPopupTextButtonContainer* container_;
+  views::View* user_info_;
+  views::Label* username_;
+  views::Label* email_;
+
+  views::Button* signout_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserView);
 };
 
 }  // namespace tray

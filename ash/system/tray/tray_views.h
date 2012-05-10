@@ -21,6 +21,7 @@ typedef unsigned int SkColor;
 
 namespace views {
 class Label;
+class BoxLayout;
 }
 
 namespace ash {
@@ -177,7 +178,11 @@ class TrayPopupTextButtonContainer : public views::View {
 
   void AddTextButton(TrayPopupTextButton* button);
 
+  views::BoxLayout* layout() const { return layout_; }
+
  private:
+  views::BoxLayout* layout_;
+
   DISALLOW_COPY_AND_ASSIGN(TrayPopupTextButtonContainer);
 };
 
