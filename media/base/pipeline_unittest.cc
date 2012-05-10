@@ -45,7 +45,6 @@ ACTION_P(InitializeDemuxerWithError, error) {
 
 ACTION_P(SetDemuxerProperties, duration) {
   arg0->SetTotalBytes(kTotalBytes);
-  arg0->SetBufferedBytes(kBufferedBytes);
   arg0->SetDuration(duration);
 }
 
@@ -287,7 +286,7 @@ TEST_F(PipelineTest, NotStarted) {
   EXPECT_EQ(0.0f, pipeline_->GetVolume());
 
   EXPECT_TRUE(kZero == pipeline_->GetCurrentTime());
-  EXPECT_TRUE(kZero == pipeline_->GetBufferedTime());
+  EXPECT_EQ(0u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_TRUE(kZero == pipeline_->GetMediaDuration());
 
   EXPECT_EQ(0, pipeline_->GetBufferedBytes());
@@ -466,7 +465,40 @@ TEST_F(PipelineTest, Properties) {
   EXPECT_EQ(kDuration.ToInternalValue(),
             pipeline_->GetMediaDuration().ToInternalValue());
   EXPECT_EQ(kTotalBytes, pipeline_->GetTotalBytes());
-  EXPECT_EQ(kBufferedBytes, pipeline_->GetBufferedBytes());
+  EXPECT_EQ(0, pipeline_->GetBufferedBytes());
+}
+
+TEST_F(PipelineTest, GetBufferedTimeRanges) {
+  CreateVideoStream();
+  MockDemuxerStreamVector streams;
+  streams.push_back(video_stream());
+
+  const base::TimeDelta kDuration = base::TimeDelta::FromSeconds(100);
+  InitializeDemuxer(&streams, kDuration);
+  InitializeVideoDecoder(video_stream());
+  InitializeVideoRenderer();
+
+  InitializePipeline(PIPELINE_OK);
+  EXPECT_TRUE(pipeline_->IsInitialized());
+
+  EXPECT_EQ(0u, pipeline_->GetBufferedTimeRanges().size());
+
+  pipeline_->SetBufferedBytes(kTotalBytes / 8);
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(base::TimeDelta(), pipeline_->GetBufferedTimeRanges().start(0));
+  EXPECT_EQ(kDuration / 8, pipeline_->GetBufferedTimeRanges().end(0));
+
+  base::TimeDelta kSeekTime = kDuration / 2;
+  ExpectSeek(kSeekTime);
+  DoSeek(kSeekTime);
+
+  pipeline_->SetBufferedBytes(kTotalBytes / 2 + kTotalBytes / 8);
+  EXPECT_EQ(2u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(base::TimeDelta(), pipeline_->GetBufferedTimeRanges().start(0));
+  EXPECT_EQ(kDuration / 8, pipeline_->GetBufferedTimeRanges().end(0));
+  EXPECT_EQ(kDuration / 2, pipeline_->GetBufferedTimeRanges().start(1));
+  EXPECT_EQ(kDuration / 2 + kDuration / 8,
+            pipeline_->GetBufferedTimeRanges().end(1));
 }
 
 TEST_F(PipelineTest, DisableAudioRenderer) {

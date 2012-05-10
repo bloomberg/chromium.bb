@@ -200,40 +200,9 @@ base::TimeDelta Pipeline::GetCurrentTime_Locked() const {
   return clock_->Elapsed();
 }
 
-base::TimeDelta Pipeline::GetBufferedTime() {
+Ranges<base::TimeDelta> Pipeline::GetBufferedTimeRanges() {
   base::AutoLock auto_lock(lock_);
-
-  // If media is fully loaded, then return duration.
-  if (local_source_ || total_bytes_ == buffered_bytes_) {
-    max_buffered_time_ = clock_->Duration();
-    return max_buffered_time_;
-  }
-
-  base::TimeDelta current_time = GetCurrentTime_Locked();
-
-  if (total_bytes_ == 0)
-    return base::TimeDelta();
-
-  // If buffered time was not set, we use current time, current bytes, and
-  // buffered bytes to estimate the buffered time.
-  double estimated_rate =
-      clock_->Duration().InMillisecondsF() / total_bytes_;
-  double estimated_current_time = estimated_rate * current_bytes_;
-  DCHECK_GE(buffered_bytes_, current_bytes_);
-  base::TimeDelta buffered_time = base::TimeDelta::FromMilliseconds(
-      static_cast<int64>(estimated_rate * (buffered_bytes_ - current_bytes_) +
-                         estimated_current_time));
-
-  // Cap approximated buffered time at the length of the video.
-  buffered_time = std::min(buffered_time, clock_->Duration());
-
-  // Make sure buffered_time is at least the current time
-  buffered_time = std::max(buffered_time, current_time);
-
-  // Only print the max buffered time for smooth buffering.
-  max_buffered_time_ = std::max(buffered_time, max_buffered_time_);
-
-  return max_buffered_time_;
+  return buffered_time_ranges_;
 }
 
 base::TimeDelta Pipeline::GetMediaDuration() const {
@@ -300,6 +269,7 @@ void Pipeline::ResetState() {
   error_caused_teardown_ = false;
   playback_rate_change_pending_ = false;
   buffered_bytes_   = 0;
+  buffered_time_ranges_.clear();
   streaming_        = false;
   local_source_     = false;
   total_bytes_      = 0;
@@ -466,6 +436,7 @@ void Pipeline::SetDuration(base::TimeDelta duration) {
 
   base::AutoLock auto_lock(lock_);
   clock_->SetDuration(duration);
+  UpdateBufferedTimeRanges_Locked();
 }
 
 void Pipeline::SetTotalBytes(int64 total_bytes) {
@@ -492,6 +463,22 @@ void Pipeline::SetBufferedBytes(int64 buffered_bytes) {
     current_bytes_ = buffered_bytes;
   buffered_bytes_ = buffered_bytes;
   download_rate_monitor_.SetBufferedBytes(buffered_bytes, base::Time::Now());
+  UpdateBufferedTimeRanges_Locked();
+}
+
+void Pipeline::UpdateBufferedTimeRanges_Locked() {
+  lock_.AssertAcquired();
+  if (total_bytes_ == 0)
+    return;
+  base::TimeDelta buffered_time =
+      clock_->Duration() * buffered_bytes_ / total_bytes_;
+  // Cap approximated buffered time at the length of the video.
+  buffered_time = std::min(buffered_time, clock_->Duration());
+  // Make sure buffered_time is at least the current time and at least the
+  // current seek target.
+  buffered_time = std::max(buffered_time, GetCurrentTime_Locked());
+  buffered_time = std::max(buffered_time, seek_timestamp_);
+  buffered_time_ranges_.Add(seek_timestamp_, buffered_time);
 }
 
 void Pipeline::SetNaturalVideoSize(const gfx::Size& size) {
@@ -968,8 +955,7 @@ void Pipeline::FilterStateTransitionTask() {
   } else if (state_ == kStarted) {
     FinishInitialization();
 
-    // Finally, reset our seeking timestamp back to zero.
-    seek_timestamp_ = base::TimeDelta();
+    // Finally, complete the seek.
     seek_pending_ = false;
 
     // If a playback rate change was requested during a seek, do it now that

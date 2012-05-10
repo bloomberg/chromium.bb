@@ -452,15 +452,14 @@ WebMediaPlayer::ReadyState WebMediaPlayerImpl::readyState() const {
 
 const WebKit::WebTimeRanges& WebMediaPlayerImpl::buffered() {
   DCHECK_EQ(main_loop_, MessageLoop::current());
-
-  // Update buffered_ with the most recent buffered time.
-  if (buffered_.size() > 0) {
-    float buffered_time = static_cast<float>(
-        pipeline_->GetBufferedTime().InSecondsF());
-    if (buffered_time >= buffered_[0].start)
-      buffered_[0].end = buffered_time;
+  media::Ranges<base::TimeDelta> buffered_time_ranges =
+      pipeline_->GetBufferedTimeRanges();
+  WebKit::WebTimeRanges web_ranges(buffered_time_ranges.size());
+  for (size_t i = 0; i < buffered_time_ranges.size(); ++i) {
+    web_ranges[i].start = buffered_time_ranges.start(i).InSecondsF();
+    web_ranges[i].end = buffered_time_ranges.end(i).InSecondsF();
   }
-
+  buffered_.swap(web_ranges);
   return buffered_;
 }
 
@@ -861,13 +860,6 @@ void WebMediaPlayerImpl::OnPipelineInitialize(PipelineStatus status) {
     Repaint();
     return;
   }
-
-  // Only keep one time range starting from 0.
-  WebKit::WebTimeRanges new_buffered(static_cast<size_t>(1));
-  new_buffered[0].start = 0.0f;
-  new_buffered[0].end =
-      static_cast<float>(pipeline_->GetMediaDuration().InSecondsF());
-  buffered_.swap(new_buffered);
 
   if (!hasVideo())
     GetClient()->disableAcceleratedCompositing();
