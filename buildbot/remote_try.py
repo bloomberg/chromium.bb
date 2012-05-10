@@ -56,8 +56,8 @@ class RemoteTryJob(object):
     self.tryjob_repo = None
     self.local_patches = local_patches
     self.ssh_url = self.EXT_SSH_URL
-    if (repository.IsARepoRoot(constants.SOURCE_ROOT)
-        and repository.IsInternalRepoCheckout(constants.SOURCE_ROOT)):
+    if (repository.IsARepoRoot(options.sourceroot)
+        and repository.IsInternalRepoCheckout(options.sourceroot)):
       self.ssh_url = self.INT_SSH_URL
 
   @property
@@ -79,7 +79,7 @@ class RemoteTryJob(object):
       local_branch = os.path.basename(patch.ref)
       ref_final = os.path.join(ref_base, local_branch, sha1)
       patch.Upload(ref_final, dryrun=dryrun)
-      internal = cros_lib.IsProjectInternal(constants.SOURCE_ROOT,
+      internal = cros_lib.IsProjectInternal(self.options.sourceroot,
                                             patch.project)
 
       internal_external_tag = constants.EXTERNAL_PATCH_TAG

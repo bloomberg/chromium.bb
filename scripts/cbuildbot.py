@@ -137,6 +137,7 @@ def AcquirePoolFromOptions(options, target_manifest_branch):
 
   if options.local_patches:
     local_patches = cros_patch.PrepareLocalPatches(
+        options.sourceroot,
         options.local_patches,
         target_manifest_branch)
 
@@ -500,19 +501,19 @@ def _ConfirmRemoteBuildbotRun():
     sys.exit(0)
 
 
-def _DetermineDefaultBuildRoot(internal_build):
+def _DetermineDefaultBuildRoot(sourceroot, internal_build):
   """Default buildroot to be under the directory that contains current checkout.
 
   Arguments:
     internal_build: Whether the build is an internal build
+    sourceroot: Use specified sourceroot.
   """
-  repo_dir = cros_lib.FindRepoDir()
-  if not repo_dir:
-    cros_lib.Die('Could not find root of local checkout.  Please specify'
-                 'using --buildroot option.')
+  if not repository.IsARepoRoot(sourceroot):
+    cros_lib.Die('Could not find root of local checkout at %s.  Please specify '
+                 'using the --sourceroot option.' % sourceroot)
 
   # Place trybot buildroot under the directory containing current checkout.
-  top_level = os.path.dirname(os.path.realpath(os.path.dirname(repo_dir)))
+  top_level = os.path.dirname(os.path.realpath(sourceroot))
   if internal_build:
     buildroot = os.path.join(top_level, _DEFAULT_INT_BUILDROOT)
   else:
@@ -571,11 +572,14 @@ def _RunBuildStagesWrapper(options, build_config):
 
 
 # Parser related functions
-def _CheckLocalPatches(local_patches):
+def _CheckLocalPatches(sourceroot, local_patches):
   """Do an early quick check of the passed-in patches.
 
   If the branch of a project is not specified we append the current branch the
   project is on.
+
+  Args:
+    sourceroot: The checkout where patches are coming from.
   """
   verified_patches = []
   for patch in local_patches:
@@ -586,10 +590,10 @@ def _CheckLocalPatches(local_patches):
 
     # validate project
     project = components[0]
-    if not cros_lib.DoesProjectExist('.', project):
+    if not cros_lib.DoesProjectExist(sourceroot, project):
       raise optparse.OptionValueError('Project %s does not exist.' % project)
 
-    project_dir = cros_lib.GetProjectDir('.', project)
+    project_dir = cros_lib.GetProjectDir(sourceroot, project)
 
     # If no branch was specified, we use the project's current branch.
     if len(components) == 1:
@@ -610,20 +614,6 @@ def _CheckLocalPatches(local_patches):
   return verified_patches
 
 
-def _CheckBuildRootOption(_option, _opt_str, value, parser):
-  """Validate and convert buildroot to full-path form."""
-  value = value.strip()
-  if not value or value == '/':
-    raise optparse.OptionValueError('Invalid buildroot specified')
-
-  parser.values.buildroot = os.path.realpath(os.path.expanduser(value))
-
-
-def _CheckLogDirOption(_option, _opt_str, value, parser):
-  """Validate and convert buildroot to full-path form."""
-  parser.values.log_dir = os.path.abspath(os.path.expanduser(value))
-
-
 def _CheckChromeVersionOption(_option, _opt_str, value, parser):
   """Upgrade other options based on chrome_version being passed."""
   value = value.strip()
@@ -636,14 +626,10 @@ def _CheckChromeVersionOption(_option, _opt_str, value, parser):
 
 def _CheckChromeRootOption(_option, _opt_str, value, parser):
   """Validate and convert chrome_root to full-path form."""
-  value = value.strip()
-  if not value or value == '/':
-    raise optparse.OptionValueError('Invalid chrome_root specified')
-
   if parser.values.chrome_rev is None:
     parser.values.chrome_rev = constants.CHROME_REV_LOCAL
 
-  parser.values.chrome_root = os.path.realpath(os.path.expanduser(value))
+  parser.values.chrome_root = value
 
 
 def _CheckChromeRevOption(_option, _opt_str, value, parser):
@@ -655,42 +641,59 @@ def _CheckChromeRevOption(_option, _opt_str, value, parser):
   parser.values.chrome_rev = value
 
 
+class CustomParser(optparse.OptionParser):
+  def add_remote_option(self, *args, **kwargs):
+    """For arguments that are passed-through to remote trybot."""
+    return optparse.OptionParser.add_option(self, *args,
+                                            remote_pass_through=True,
+                                            **kwargs)
+
+
+class CustomGroup(optparse.OptionGroup):
+  def add_remote_option(self, *args, **kwargs):
+    """For arguments that are passed-through to remote trybot."""
+    return optparse.OptionGroup.add_option(self, *args,
+                                           remote_pass_through=True,
+                                           **kwargs)
+
+
+def check_path(option, opt, value):
+  """Expand paths and make them absolute."""
+  expanded = osutils.ExpandPath(value)
+  if expanded == '/':
+    raise optparse.OptionValueError('Invalid path %s specified for %s'
+                                    % (expanded, opt))
+
+  return expanded
+
+
+class CustomOption(optparse.Option):
+  """Subclass Option class to implement pass-through and path evaluation."""
+  TYPES = optparse.Option.TYPES + ('path',)
+  TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
+  TYPE_CHECKER['path'] = check_path
+
+  def __init__(self, *args, **kwargs):
+    # The remote_pass_through argument specifies whether we should directly
+    # pass the argument (with its value) onto the remote trybot.
+    self.pass_through = kwargs.pop('remote_pass_through', False)
+    optparse.Option.__init__(self, *args, **kwargs)
+
+  def take_action(self, action, dest, opt, value, values, parser):
+    optparse.Option.take_action(self, action, dest, opt, value, values,
+                                parser)
+    if self.pass_through:
+      parser.values.pass_through_args.append(opt)
+      if self.nargs and self.nargs > 1:
+        # value is a tuple if nargs > 1
+        string_list = [str(val) for val in list(value)]
+        parser.values.pass_through_args.extend(string_list)
+      elif value:
+        parser.values.pass_through_args.append(str(value))
+
+
 def _CreateParser():
   """Generate and return the parser with all the options."""
-  class CustomParser(optparse.OptionParser):
-    def add_remote_option(self, *args, **kwargs):
-      """For arguments that are passed-through to remote trybot."""
-      return optparse.OptionParser.add_option(self, *args,
-                                              remote_pass_through=True,
-                                              **kwargs)
-
-  class CustomGroup(optparse.OptionGroup):
-    def add_remote_option(self, *args, **kwargs):
-      """For arguments that are passed-through to remote trybot."""
-      return optparse.OptionGroup.add_option(self, *args,
-                                             remote_pass_through=True,
-                                             **kwargs)
-
-  class CustomOption(optparse.Option):
-    """Subclass Option class to implement pass-through."""
-    def __init__(self, *args, **kwargs):
-      # The remote_pass_through argument specifies whether we should directly
-      # pass the argument (with its value) onto the remote trybot.
-      self.pass_through = kwargs.pop('remote_pass_through', False)
-      optparse.Option.__init__(self, *args, **kwargs)
-
-    def take_action(self, action, dest, opt, value, values, parser):
-      optparse.Option.take_action(self, action, dest, opt, value, values,
-                                  parser)
-      if self.pass_through:
-        parser.values.pass_through_args.append(opt)
-        if self.nargs and self.nargs > 1:
-          # value is a tuple if nargs > 1
-          string_list = [str(val) for val in list(value)]
-          parser.values.pass_through_args.extend(string_list)
-        elif value:
-          parser.values.pass_through_args.append(str(value))
-
   # Parse options
   usage = "usage: %prog [options] buildbot_config"
   parser = CustomParser(usage=usage, option_class=CustomOption)
@@ -702,8 +705,7 @@ def _CreateParser():
                     default=False,
                     help=('List all of the buildbot configs available. Use '
                           'with the --list option'))
-  parser.add_option('-r', '--buildroot', action='callback', dest='buildroot',
-                    type='string', callback=_CheckBuildRootOption,
+  parser.add_option('-r', '--buildroot', dest='buildroot', type='path',
                     help='Root directory where source is checked out to, and '
                          'where the build occurs. For external build configs, '
                          "defaults to 'trybot' directory at top level of your "
@@ -747,10 +749,9 @@ def _CreateParser():
                           default=False, help='This is running on a buildbot')
   group.add_remote_option('--buildnumber', help='build number', type='int',
                           default=0)
-  group.add_option('--chrome_root', default=None, type='string',
-                   action='callback', dest='chrome_root',
-                   callback=_CheckChromeRootOption,
-                   help='Local checkout of Chrome to use.')
+  group.add_option('--chrome_root', default=None, type='path',
+                   action='callback', callback=_CheckChromeRootOption,
+                   dest='chrome_root', help='Local checkout of Chrome to use.')
   group.add_remote_option('--chrome_version', default=None, type='string',
                           action='callback', dest='chrome_version',
                           callback=_CheckChromeVersionOption,
@@ -763,8 +764,7 @@ def _CreateParser():
                           default=False,
                           help='Sync to last known good manifest blessed by '
                                'PFQ')
-  parser.add_option('--log_dir', action='callback', dest='log_dir',
-                    type='string', callback=_CheckLogDirOption,
+  parser.add_option('--log_dir', dest='log_dir', type='path',
                     help=('Directory where logs are stored.'))
   group.add_remote_option('--maxarchives', dest='max_archive_builds',
                           default=3, type='int',
@@ -815,6 +815,8 @@ def _CreateParser():
                                'can run for, at which point the build will be '
                                'aborted.  If set to zero, then there is no '
                                'timeout.')
+  group.add_option('--sourceroot', type='path', default=constants.SOURCE_ROOT,
+                   help=optparse.SUPPRESS_HELP)
   group.add_option('--test-tryjob', action='store_true',
                    default=False,
                    help='Submit a tryjob to the test repository.  Will not '
@@ -941,12 +943,17 @@ def _PostParseCheck(options, args):
   if options.resume:
     return
 
+  if options.local_patches and not repository.IsARepoRoot(options.sourceroot):
+    raise Exception('Could not find repo checkout at %s!'
+                    % options.sourceroot)
+
   options.gerrit_patches = _SplitAndFlatten(options.gerrit_patches)
   options.remote_patches = _SplitAndFlatten(options.remote_patches)
   try:
     # TODO(rcui): Split this into two stages, one that parses, another that
     # validates.  Parsing step will be called by _FinishParsing().
     options.local_patches = _CheckLocalPatches(
+        options.sourceroot,
         _SplitAndFlatten(options.local_patches))
   except optparse.OptionValueError as e:
     cros_lib.Die(str(e))
@@ -1033,11 +1040,11 @@ def main(argv):
   build_config = _GetConfig(bot_id)
 
   if options.reference_repo is None:
-    repo_path = os.path.join(constants.SOURCE_ROOT, '.repo')
+    repo_path = os.path.join(options.sourceroot, '.repo')
     # If we're being run from a repo checkout, reuse the repo's git pool to
     # cut down on sync time.
     if os.path.exists(repo_path):
-      options.reference_repo = constants.SOURCE_ROOT
+      options.reference_repo = options.sourceroot
   elif options.reference_repo:
     if not os.path.exists(options.reference_repo):
       parser.error('Reference path %s does not exist'
@@ -1083,7 +1090,8 @@ def main(argv):
     if options.buildbot:
       parser.error('Please specify a buildroot with the --buildroot option.')
 
-    options.buildroot = _DetermineDefaultBuildRoot(build_config['internal'])
+    options.buildroot = _DetermineDefaultBuildRoot(options.sourceroot,
+                                                   build_config['internal'])
     # We use a marker file in the buildroot to indicate the user has
     # consented to using this directory.
     if not os.path.exists(repository.GetTrybotMarkerPath(options.buildroot)):

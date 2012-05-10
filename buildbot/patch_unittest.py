@@ -309,12 +309,26 @@ class TestLocalPatchGit(TestGitRepoPatch):
   class patch_kls(_PatchSuppression, cros_patch.LocalPatch):
     pass
 
+  def setUp(self):
+    TestGitRepoPatch.setUp(self)
+    self.sourceroot = os.path.join(self.tempdir, 'sourceroot')
+
+
+  def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
+    return self.patch_kls(source, 'chromiumos/chromite', ref,
+                          'origin/master', sha1, self.sourceroot,
+                          **kwds)
+
   def testUpload(self):
+    def ProjectDirMock(sourceroot):
+      self.assertEqual(sourceroot, self.sourceroot)
+      return git1
+
     git1, git2, patch = self._CommonGitSetup()
 
     git2_sha1 = self._GetSha1(git2, 'HEAD')
 
-    patch.ProjectDir = lambda buildroot: git1
+    patch.ProjectDir = ProjectDirMock
     # First suppress carbon copy behaviour so we verify pushing
     # plain works.
     sha1 = patch.sha1
@@ -446,25 +460,29 @@ class TestGerritPatch(TestGitRepoPatch):
     return copy.deepcopy(FAKE_PATCH_JSON)
 
 
-class PrepareLocalPatchesTests(mox.MoxTestBase):
+class PrepareLocalPatchesTests(cros_test_lib.TempDirMixin, mox.MoxTestBase):
 
   def setUp(self):
+    cros_test_lib.TempDirMixin.setUp(self)
     mox.MoxTestBase.setUp(self)
 
+    self.sourceroot = self.tempdir
     self.patches = ['my/project:mybranch']
 
-    self.mox.StubOutWithMock(tempfile, 'mkdtemp')
-    self.mox.StubOutWithMock(os, 'listdir')
     self.mox.StubOutWithMock(cros_lib, 'GetProjectDir')
-    self.mox.StubOutWithMock(cros_lib, 'GetCurrentBranch')
     self.mox.StubOutWithMock(cros_patch, '_GetRemoteTrackingBranch')
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+
+  def tearDown(self):
+    cros_test_lib.TempDirMixin.tearDown(self)
+    mox.MoxTestBase.tearDown(self)
 
   def VerifyPatchInfo(self, patch_info, project, branch, tracking_branch):
     """Check the returned GitRepoPatchInfo against golden values."""
     self.assertEquals(patch_info.project, project)
     self.assertEquals(patch_info.ref, branch)
     self.assertEquals(patch_info.tracking_branch, tracking_branch)
+    self.assertEquals(patch_info.sourceroot, self.sourceroot)
 
   def testBranchSpecifiedSuccessRun(self):
     """Test success with branch specified by user."""
@@ -478,7 +496,8 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
                                  'mybranch').AndReturn('tracking_branch')
     self.mox.ReplayAll()
 
-    patch_info = cros_patch.PrepareLocalPatches(self.patches, 'master')
+    patch_info = cros_patch.PrepareLocalPatches(self.sourceroot,
+                                                self.patches, 'master')
     self.VerifyPatchInfo(patch_info[0], 'my/project', 'mybranch',
                          'tracking_branch')
     self.mox.VerifyAll()
@@ -496,6 +515,7 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
     self.assertRaises(
         cros_patch.PatchException,
         cros_patch.PrepareLocalPatches,
+        self.sourceroot,
         self.patches,
         'master')
     self.mox.VerifyAll()
@@ -514,7 +534,7 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
     self.mox.ReplayAll()
 
     self.assertRaises(cros_patch.PatchException, cros_patch.PrepareLocalPatches,
-                      self.patches, 'master')
+                      self.sourceroot, self.patches, 'master')
     self.mox.VerifyAll()
 
 

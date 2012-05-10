@@ -17,6 +17,11 @@ from chromite.lib import cros_build_lib
 _TEMPDIR_ENV_VARS = ('TMPDIR', 'TEMP', 'TMP')
 
 
+def ExpandPath(path):
+  """Returns path after passing through realpath and expanduser."""
+  return os.path.realpath(os.path.expanduser(path))
+
+
 def WriteFile(path, content, mode='w', atomic=False):
   """Write the given content to disk.
 

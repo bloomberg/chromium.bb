@@ -116,13 +116,13 @@ class GitRepoPatch(object):
     self._is_fetched = set()
     self._projectdir_cache = {}
 
-  def ProjectDir(self, buildroot):
+  def ProjectDir(self, checkout_root):
     """Returns the local directory where this patch will be applied."""
-    buildroot = os.path.normpath(buildroot)
-    val = self._projectdir_cache.get(buildroot)
+    checkout_root = os.path.normpath(checkout_root)
+    val = self._projectdir_cache.get(checkout_root)
     if val is None:
-      val = cros_lib.GetProjectDir(buildroot, self.project)
-      self._projectdir_cache[buildroot] = val
+      val = cros_lib.GetProjectDir(checkout_root, self.project)
+      self._projectdir_cache[checkout_root] = val
     return val
 
   def Fetch(self, target_repo):
@@ -429,9 +429,11 @@ class GitRepoPatch(object):
 class LocalPatch(GitRepoPatch):
   """Represents patch coming from an on-disk git repo."""
 
-  def __init__(self, project_url, project, ref, tracking_branch, sha1):
+  def __init__(self, project_url, project, ref, tracking_branch, sha1,
+               sourceroot):
     GitRepoPatch.__init__(self, project_url, project, ref, tracking_branch,
                           sha1=sha1)
+    self.sourceroot = sourceroot
 
   def Sha1Hash(self):
     """Get the Sha1 of the branch."""
@@ -448,7 +450,7 @@ class LocalPatch(GitRepoPatch):
     Returns:
       The sha1 of the new commit object.
     """
-    project_dir = self.ProjectDir(constants.SOURCE_ROOT)
+    project_dir = self.ProjectDir(self.sourceroot)
     hash_fields = [('tree_hash', '%T'), ('parent_hash', '%P')]
     transfer_fields = [('GIT_AUTHOR_NAME', '%an'),
                        ('GIT_AUTHOR_EMAIL', '%ae'),
@@ -505,7 +507,7 @@ class LocalPatch(GitRepoPatch):
     """
     if push_url is None:
       push_url = constants.GERRIT_SSH_URL
-      if cros_lib.IsProjectInternal(constants.SOURCE_ROOT, self.project):
+      if cros_lib.IsProjectInternal(self.sourceroot, self.project):
         push_url = constants.GERRIT_INT_SSH_URL
       push_url = os.path.join(push_url, self.project)
 
@@ -514,7 +516,7 @@ class LocalPatch(GitRepoPatch):
     if dryrun:
       cmd.append('--dry-run')
 
-    cros_lib.RunCommand(cmd, cwd=self.ProjectDir(constants.SOURCE_ROOT))
+    cros_lib.RunCommand(cmd, cwd=self.ProjectDir(self.sourceroot))
 
 
 class UploadedLocalPatch(GitRepoPatch):
@@ -647,10 +649,11 @@ def _GetRemoteTrackingBranch(project_dir, branch):
   return '%s/%s' % (remote, cros_lib.StripLeadingRefsHeads(ref))
 
 
-def PrepareLocalPatches(patches, manifest_branch):
+def PrepareLocalPatches(sourceroot, patches, manifest_branch):
   """Finish validation of parameters, and save patches to a temp folder.
 
   Args:
+    sourceroot: The repo where local patches come from.
     patches:  A list of user-specified patches, in project[:branch] form.
     manifest_branch: The manifest branch of the buildroot.
 
@@ -661,7 +664,7 @@ def PrepareLocalPatches(patches, manifest_branch):
   patch_info = []
   for patch in patches:
     project, branch = patch.split(':')
-    project_dir = cros_lib.GetProjectDir(constants.SOURCE_ROOT, project)
+    project_dir = cros_lib.GetProjectDir(sourceroot, project)
 
     cmd = ['git', 'rev-list', '-n1', '%s..%s'
            % ('m/' + manifest_branch, branch)]
@@ -680,7 +683,7 @@ def PrepareLocalPatches(patches, manifest_branch):
 
     patch_info.append(LocalPatch(os.path.join(project_dir, '.git'),
                                         project, branch, tracking_branch,
-                                        sha1))
+                                        sha1, sourceroot))
 
   return patch_info
 

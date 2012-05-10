@@ -210,7 +210,7 @@ class RepoRepository(object):
                                                self._referenced_repo)
 
     if post_sync:
-      chroot_path = os.path.join(constants.SOURCE_ROOT, '.repo', 'chroot',
+      chroot_path = os.path.join(self._referenced_repo, '.repo', 'chroot',
                                  'external')
       chroot_path = cros_lib.ReinterpretPathForChroot(chroot_path)
       rewrite_git_alternates.RebuildRepoCheckout(
