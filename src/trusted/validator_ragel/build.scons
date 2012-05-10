@@ -21,7 +21,7 @@ x86_64_validator_env = env.Clone();
 # TODO(khim): eliminate flag modification based on OS.
 # See http://code.google.com/p/nativeclient/issues/detail?id=2718 for details.
 if env.Bit('windows'):
-    env.FilterOut(CCFLAGS=['/O1'])
+  x86_64_validator_env.FilterOut(CCFLAGS=['/O1'])
 # XCode 4.2 takes too long to compile with -Os, LLVM for MacOS times out.
 if x86_64_validator_env.Bit('mac'):
   x86_64_validator_env.FilterOut(CCFLAGS=['-Os'])
