@@ -13,8 +13,6 @@ namespace ash {
 namespace internal {
 
 namespace tray {
-class DateView;
-class PowerPopupView;
 class PowerTrayView;
 }
 
@@ -37,8 +35,6 @@ class TrayPower : public SystemTrayItem,
   // Overridden from PowerStatusObserver.
   virtual void OnPowerStatusChanged(const PowerSupplyStatus& status) OVERRIDE;
 
-  tray::DateView* date_;
-  tray::PowerPopupView* power_;
   tray::PowerTrayView* power_tray_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayPower);

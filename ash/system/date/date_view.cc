@@ -107,6 +107,7 @@ DateView::DateView() : actionable_(false) {
       new views::BoxLayout(
           views::BoxLayout::kVertical, 0, 0, kTrayPopupTextSpacingVertical));
   date_label_ = CreateLabel();
+  date_label_->SetFont(date_label_->font().DeriveFont(0, gfx::Font::BOLD));
   day_of_week_label_ = CreateLabel();
   UpdateTextInternal(base::Time::Now());
   AddChildView(date_label_);

@@ -190,9 +190,7 @@ class PowerPopupView : public views::View {
 }  // namespace tray
 
 TrayPower::TrayPower()
-    : date_(NULL),
-      power_(NULL),
-      power_tray_(NULL) {
+    : power_tray_(NULL) {
 }
 
 TrayPower::~TrayPower() {
@@ -211,49 +209,7 @@ views::View* TrayPower::CreateTrayView(user::LoginStatus status) {
 }
 
 views::View* TrayPower::CreateDefaultView(user::LoginStatus status) {
-  CHECK(date_ == NULL);
-  date_ = new tray::DateView();
-
-  views::View* container = new views::View;
-  views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
-      0, 0, 0);
-
-  layout->set_spread_blank_space(true);
-  container->SetLayoutManager(layout);
-  container->set_background(views::Background::CreateSolidBackground(
-      kHeaderBackgroundColor));
-  HoverHighlightView* view = new HoverHighlightView(NULL);
-  view->SetLayoutManager(new views::FillLayout);
-  view->AddChildView(date_);
-  date_->set_border(views::Border::CreateEmptyBorder(kPaddingVertical,
-      kTrayPopupPaddingHorizontal,
-      kPaddingVertical,
-      kTrayPopupPaddingHorizontal));
-  container->AddChildView(view);
-  view->set_focusable(false);
-
-  if (status != user::LOGGED_IN_NONE && status != user::LOGGED_IN_LOCKED) {
-    date_->SetActionable(true);
-    view->set_highlight_color(kHeaderHoverBackgroundColor);
-  } else {
-    view->set_highlight_color(SkColorSetARGB(0, 0, 0, 0));
-  }
-
-  PowerSupplyStatus power_status =
-      ash::Shell::GetInstance()->tray_delegate()->GetPowerSupplyStatus();
-  if (power_status.battery_is_present) {
-    CHECK(power_ == NULL);
-    power_ = new tray::PowerPopupView();
-    power_->UpdatePowerStatus(power_status);
-    power_->set_border(views::Border::CreateSolidSidedBorder(
-        kPaddingVertical, kTrayPopupPaddingHorizontal,
-        kPaddingVertical, kTrayPopupPaddingHorizontal,
-        SkColorSetARGB(0, 0, 0, 0)));
-    container->AddChildView(power_);
-  }
-  ash::Shell::GetInstance()->tray_delegate()->RequestStatusUpdate();
-
-  return container;
+  return NULL;
 }
 
 views::View* TrayPower::CreateDetailedView(user::LoginStatus status) {
@@ -265,8 +221,6 @@ void TrayPower::DestroyTrayView() {
 }
 
 void TrayPower::DestroyDefaultView() {
-  date_ = NULL;
-  power_ = NULL;
 }
 
 void TrayPower::DestroyDetailedView() {
@@ -278,8 +232,6 @@ void TrayPower::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 void TrayPower::OnPowerStatusChanged(const PowerSupplyStatus& status) {
   if (power_tray_)
     power_tray_->UpdatePowerStatus(status);
-  if (power_)
-    power_->UpdatePowerStatus(status);
 }
 
 }  // namespace internal

@@ -26,11 +26,121 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "unicode/datefmt.h"
 #include "unicode/fieldpos.h"
 #include "unicode/fmtable.h"
+
+namespace {
+
+const int kPaddingVertical = 10;
+
+class DateDefaultView : public views::View,
+                        public views::ButtonListener {
+ public:
+  explicit DateDefaultView(ash::user::LoginStatus login)
+      : button_container_(NULL) {
+    SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kHorizontal, 0, 0, 0));
+    set_background(views::Background::CreateSolidBackground(
+        ash::kHeaderBackgroundColor));
+
+    ash::internal::tray::DateView* date_view =
+        new ash::internal::tray::DateView();
+    date_view->set_border(views::Border::CreateEmptyBorder(kPaddingVertical,
+        ash::kTrayPopupPaddingHorizontal,
+        kPaddingVertical,
+        ash::kTrayPopupPaddingHorizontal));
+    ash::internal::HoverHighlightView* view =
+        new ash::internal::HoverHighlightView(NULL);
+    view->SetLayoutManager(new views::FillLayout);
+    view->set_focusable(false);
+    view->set_highlight_color(SkColorSetARGB(0, 0, 0, 0));
+    view->AddChildView(date_view);
+    AddChildView(view);
+
+    if (login == ash::user::LOGGED_IN_LOCKED ||
+        login == ash::user::LOGGED_IN_NONE)
+      return;
+
+    date_view->SetActionable(true);
+    view->set_highlight_color(ash::kHeaderHoverBackgroundColor);
+    date_ = view;
+
+    button_container_ = new views::View;
+    button_container_->SetLayoutManager(new
+        views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+
+    help_ = new ash::internal::TrayPopupHeaderButton(this,
+        IDR_AURA_UBER_TRAY_HELP,
+        IDR_AURA_UBER_TRAY_HELP);
+    button_container_->AddChildView(help_);
+
+    shutdown_ = lock_ = NULL;
+
+    if (login != ash::user::LOGGED_IN_LOCKED &&
+        login != ash::user::LOGGED_IN_KIOSK) {
+      shutdown_ = new ash::internal::TrayPopupHeaderButton(this,
+          IDR_AURA_UBER_TRAY_SHUTDOWN,
+          IDR_AURA_UBER_TRAY_SHUTDOWN);
+      button_container_->AddChildView(shutdown_);
+
+      if (login != ash::user::LOGGED_IN_GUEST) {
+        lock_ = new ash::internal::TrayPopupHeaderButton(this,
+            IDR_AURA_UBER_TRAY_LOCKSCREEN,
+            IDR_AURA_UBER_TRAY_LOCKSCREEN);
+        button_container_->AddChildView(lock_);
+      }
+    }
+    AddChildView(button_container_);
+  }
+
+  virtual ~DateDefaultView() {}
+
+ private:
+  // Overridden from views::View.
+  virtual void Layout() OVERRIDE {
+    views::View::Layout();
+    if (!button_container_)
+      return;
+
+    gfx::Rect bounds(button_container_->GetPreferredSize());
+    bounds.set_height(height());
+    bounds = gfx::Rect(size()).Center(bounds.size());
+    bounds.set_x(width() - bounds.width());
+    button_container_->SetBoundsRect(bounds);
+
+    bounds = date_->bounds();
+    bounds.set_width(button_container_->x());
+    date_->SetBoundsRect(bounds);
+  }
+
+  // Overridden from views::ButtonListener.
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE {
+    ash::SystemTrayDelegate* tray = ash::Shell::GetInstance()->tray_delegate();
+    if (sender == help_)
+      tray->ShowHelp();
+    else if (sender == shutdown_)
+      tray->ShutDown();
+    else if (sender == lock_)
+      tray->RequestLockScreen();
+    else
+      NOTREACHED();
+  }
+
+  views::View* button_container_;
+  views::View* date_;
+  views::ToggleImageButton* help_;
+  views::ToggleImageButton* shutdown_;
+  views::ToggleImageButton* lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(DateDefaultView);
+};
+
+}  // namespace
 
 namespace ash {
 namespace internal {
@@ -58,7 +168,7 @@ views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
 }
 
 views::View* TrayDate::CreateDefaultView(user::LoginStatus status) {
-  return NULL;
+  return new DateDefaultView(status);
 }
 
 views::View* TrayDate::CreateDetailedView(user::LoginStatus status) {

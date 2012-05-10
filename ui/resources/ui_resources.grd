@@ -308,6 +308,9 @@
         <include name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED" file="aura/status_cellular_disabled.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED" file="aura/status_bluetooth_enabled.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED" file="aura/status_bluetooth_disabled.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_SHUTDOWN" file="aura/status_shutdown.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_LOCKSCREEN" file="aura/status_lockscreen.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_HELP" file="aura/status_help.png" type="BINDATA" />
 
         <include name="IDR_AURA_SWITCH_MONITOR" file="aura/switch_monitor.png" type="BINDATA" />
         <include name="IDR_OAK" file="oak.png" type="BINDATA"/>
