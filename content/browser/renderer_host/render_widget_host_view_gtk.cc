@@ -596,37 +596,35 @@ void RenderWidgetHostViewGtk::InitAsPopup(
   gtk_container_add(GTK_CONTAINER(window), view_.get());
   DoPopupOrFullscreenInit(window, pos);
 
-  // Grab all input for the app. If a click lands outside the bounds of the
-  // popup, WebKit will notice and destroy us. The underlying X window needs to
-  // be created and mapped by the above code before we can grab the input
-  // devices.
+  // The underlying X window needs to be created and mapped by the above code
+  // before we can grab the input devices.
   if (NeedsInputGrab()) {
-    // Install an application-level GTK grab to make sure that we receive all of
-    // the app's input.
+    // Grab all input for the app. If a click lands outside the bounds of the
+    // popup, WebKit will notice and destroy us. Before doing this we need
+    // to ensure that the the popup is added to the browser's window group,
+    // to allow for the grabs to work correctly.
+    gtk_window_group_add_window(gtk_window_get_group(
+        GTK_WINDOW(gtk_widget_get_toplevel(parent_))), window);
     gtk_grab_add(view_.get());
 
-    // We need to install an X grab as well. However if the app already has an X
-    // grab (as in the case of extension popup), an app grab will suffice.
+    // We need for the application to do an X grab as well. However if the app
+    // already has an X grab (as in the case of extension popup), an app grab
+    // will suffice.
     do_x_grab_ = !gdk_pointer_is_grabbed();
-    if (do_x_grab_) {
-      // Install the grab on behalf our parent window if it and all of its
-      // ancestors are mapped; otherwise, just use ourselves (maybe we're being
-      // shown on behalf of an inactive tab).
-      GdkWindow* grab_window = gtk_widget_get_window(parent_);
-      if (!grab_window || !gdk_window_is_viewable(grab_window))
-        grab_window = gtk_widget_get_window(view_.get());
 
+    // Now grab all of X's input.
+    if (do_x_grab_) {
       gdk_pointer_grab(
-          grab_window,
-          TRUE,  // Only events outside of the window are reported with
-                 // respect to |parent_->window|.
+          gtk_widget_get_window(parent_),
+          TRUE,  // Only events outside of the window are reported with respect
+                 // to |parent_->window|.
           static_cast<GdkEventMask>(GDK_BUTTON_PRESS_MASK |
               GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK),
           NULL,
           NULL,
           GDK_CURRENT_TIME);
       // We grab keyboard events too so things like alt+tab are eaten.
-      gdk_keyboard_grab(grab_window, TRUE, GDK_CURRENT_TIME);
+      gdk_keyboard_grab(gtk_widget_get_window(parent_), TRUE, GDK_CURRENT_TIME);
     }
   }
 }
