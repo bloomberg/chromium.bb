@@ -467,6 +467,7 @@ class SyncerTest(test_lib.MoxTestCase):
     ss_issue_val = 'Hyperlink%d' % issue_id
 
     # Replay script
+    mocked_scomm.ClearCellValue(row_ix, mocked_syncer.tracker_col_ix)
     mocked_tcomm.CreateTrackerIssue(issue).AndReturn(issue_id)
     mocked_syncer._GenSSLinkToIssue(issue_id).AndReturn(ss_issue_val)
     mocked_scomm.ReplaceCellValue(row_ix, mocked_syncer.tracker_col_ix,

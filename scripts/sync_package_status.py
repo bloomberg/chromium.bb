@@ -293,14 +293,35 @@ class Syncer(object):
     if not self.pretend:
       oper.Info('Creating Tracker issue for package %s with details:\n%s' %
                 (pkg, issue))
+
+      # Before actually creating the Tracker issue, confirm that writing
+      # to this spreadsheet row is going to work.
+      try:
+        self.scomm.ClearCellValue(rowIx, self.tracker_col_ix)
+      except gdata_lib.SpreadsheetError as ex:
+        oper.Error('Unable to write to row %d, package %r.  Aborting issue'
+                   ' creation.  Error was:\n%s' % (rowIx, pkg, ex))
+        raise SyncError
+
       issue_id = self.tcomm.CreateTrackerIssue(issue)
       oper.Info('Inserting new Tracker issue %d for package %s' %
                 (issue_id, pkg))
       ss_issue_val = self._GenSSLinkToIssue(issue_id)
-      self.scomm.ReplaceCellValue(rowIx, self.tracker_col_ix, ss_issue_val)
 
-      oper.Notice('Created Tracker issue %d for row %d, package %r' %
-                  (issue_id, rowIx, pkg))
+      # This really should not fail since write access was checked before.
+      try:
+        self.scomm.ReplaceCellValue(rowIx, self.tracker_col_ix, ss_issue_val)
+        oper.Notice('Created Tracker issue %d for row %d, package %r' %
+                    (issue_id, rowIx, pkg))
+      except gdata_lib.SpreadsheetError as ex:
+        oper.Error('Failed to write link to new issue %d into'
+                   ' row %d, package %r:\n%s' %
+                   (issue_id, rowIx, pkg, ex))
+        oper.Error('This means that the spreadsheet will have no record of'
+                   ' this Tracker Issue and will create one again next time'
+                   ' unless the spreadsheet is edited by hand!')
+        raise SyncError
+
     else:
       oper.Notice('Would create and insert issue for row %d, package %r' %
                   (rowIx, pkg))
@@ -315,8 +336,15 @@ class Syncer(object):
 
     pkg = row[COL_PACKAGE]
     if not self.pretend:
-      oper.Notice('Clearing Tracker issue for package %s' % pkg)
-      self.scomm.ClearCellValue(rowIx, self.tracker_col_ix)
+      try:
+        self.scomm.ClearCellValue(rowIx, self.tracker_col_ix)
+        oper.Notice('Cleared Tracker issue from row %d, package %r' %
+                    (rowIx, pkg))
+      except gdata_lib.SpreadsheetError as ex:
+        oper.Error('Error while clearing Tracker issue for'
+                   ' row %d, package %r:\n%s' % (rowIx, pkg, ex))
+        raise SyncError
+
     else:
       oper.Notice('Would clear Tracker issue from row %d, package %r' %
                   (rowIx, pkg))

@@ -16,6 +16,7 @@ import xml.dom.minidom
 
 # pylint: disable=W0404
 import gdata.projecthosting.client
+import gdata.service
 import gdata.spreadsheet.service
 
 from chromite.lib import operation
@@ -361,6 +362,20 @@ class SpreadsheetRow(dict):
     raise TypeError('deleting item in SpreadsheetRow not supported')
 
 
+class SpreadsheetError(RuntimeError):
+  """Base class for spreadsheet communication errors."""
+
+def ReadWriteDecorator(func):
+  """Raise SpreadsheetWriteError if appropriate."""
+  def f(self, *args, **kwargs):
+    try:
+      return func(self, *args, **kwargs)
+    except gdata.service.RequestError as ex:
+      raise SpreadsheetError(str(ex))
+
+  f.__name__ = func.__name__
+  return f
+
 class SpreadsheetComm(object):
   """Class to manage communication with one Google Spreadsheet worksheet."""
 
@@ -487,6 +502,7 @@ class SpreadsheetComm(object):
     oper.Die('Unable to find worksheet "%s" in spreadsheet "%s"' %
              (ws_name, ss_key))
 
+  @ReadWriteDecorator
   def GetColumns(self):
     """Return tuple of column names in worksheet.
 
@@ -494,6 +510,7 @@ class SpreadsheetComm(object):
     """
     return self.columns
 
+  @ReadWriteDecorator
   def GetColumnIndex(self, colName):
     """Get the column index (starting at 1) for column |colName|"""
     try:
@@ -502,10 +519,12 @@ class SpreadsheetComm(object):
     except ValueError:
       return None
 
+  @ReadWriteDecorator
   def GetRows(self):
     """Return tuple of SpreadsheetRow objects in order."""
     return self.rows
 
+  @ReadWriteDecorator
   def GetRowCacheByCol(self, column):
     """Return a dict for looking up rows by value in |column|.
 
@@ -530,11 +549,13 @@ class SpreadsheetComm(object):
 
     return row_cache
 
+  @ReadWriteDecorator
   def InsertRow(self, row):
     """Insert |row| at end of spreadsheet."""
     self.gd_client.InsertRow(row, self.ss_key, self.ws_key)
     self._ClearCache(keep_columns=True)
 
+  @ReadWriteDecorator
   def UpdateRowCellByCell(self, rowIx, row):
     """Replace cell values in row at |rowIx| with those in |row| dict."""
     for colName in row:
@@ -543,16 +564,19 @@ class SpreadsheetComm(object):
         self.ReplaceCellValue(rowIx, colIx, row[colName])
     self._ClearCache(keep_columns=True)
 
+  @ReadWriteDecorator
   def DeleteRow(self, ss_row):
     """Delete the given |ss_row| (must be original spreadsheet row object."""
     self.gd_client.DeleteRow(ss_row)
     self._ClearCache(keep_columns=True)
 
+  @ReadWriteDecorator
   def ReplaceCellValue(self, rowIx, colIx, val):
     """Replace cell value at |rowIx| and |colIx| with |val|"""
     self.gd_client.UpdateCell(rowIx, colIx, val, self.ss_key, self.ws_key)
     self._ClearCache(keep_columns=True)
 
+  @ReadWriteDecorator
   def ClearCellValue(self, rowIx, colIx):
     """Clear cell value at |rowIx| and |colIx|"""
     self.ReplaceCellValue(rowIx, colIx, None)
