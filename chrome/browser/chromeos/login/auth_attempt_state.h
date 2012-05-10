@@ -86,8 +86,6 @@ class AuthAttemptState {
   const bool unlock;  // True if authenticating to unlock the computer.
 
  protected:
-  bool try_again_;  // True if we're willing to retry the login attempt.
-
   // Status of our online login attempt.
   bool online_complete_;
   LoginFailure online_outcome_;
