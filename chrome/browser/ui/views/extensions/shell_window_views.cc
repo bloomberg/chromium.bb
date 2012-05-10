@@ -7,6 +7,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/scoped_sk_region.h"
@@ -17,8 +21,6 @@
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "ui/base/win/shell.h"
 #endif
 
@@ -96,9 +98,11 @@ void ShellWindowFrameView::GetWindowMask(const gfx::Size& size,
   // Don't touch it.
 }
 
-ShellWindowViews::ShellWindowViews(ExtensionHost* host)
-    : ShellWindow(host) {
-  host_->view()->SetContainer(this);
+ShellWindowViews::ShellWindowViews(Profile* profile,
+                                   const Extension* extension,
+                                   const GURL& url)
+    : ShellWindow(profile, extension, url),
+      initialized_(false) {
   window_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = this;
@@ -108,13 +112,12 @@ ShellWindowViews::ShellWindowViews(ExtensionHost* host)
   window_->Init(params);
 #if defined(OS_WIN) && !defined(USE_AURA)
   std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
-      host_->extension()->id());
+      extension->id());
   ui::win::SetAppIdForWindow(
       ShellIntegration::GetAppId(UTF8ToWide(app_name),
-      host_->profile()->GetPath()),
+      profile->GetPath()),
       GetWidget()->GetTopLevelWidget()->GetNativeWindow());
 #endif
-  AddChildView(host_->view());
   SetLayoutManager(new views::FillLayout);
   Layout();
 
@@ -122,6 +125,8 @@ ShellWindowViews::ShellWindowViews(ExtensionHost* host)
 }
 
 ShellWindowViews::~ShellWindowViews() {
+  if (initialized_)
+    NativeViewHost::Detach();
 }
 
 bool ShellWindowViews::IsActive() const {
@@ -234,7 +239,7 @@ views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView(
 }
 
 string16 ShellWindowViews::GetWindowTitle() const {
-  return UTF8ToUTF16(host_->extension()->name());
+  return UTF8ToUTF16(extension()->name());
 }
 
 views::Widget* ShellWindowViews::GetWidget() {
@@ -249,7 +254,7 @@ void ShellWindowViews::OnViewWasResized() {
   // TODO(jeremya): this doesn't seem like a terribly elegant way to keep the
   // window shape in sync.
 #if defined(OS_WIN) && !defined(USE_AURA)
-  gfx::Size sz = host_->view()->size();
+  gfx::Size sz = size();
   int height = sz.height(), width = sz.width();
   int radius = 1;
   gfx::Path path;
@@ -267,7 +272,7 @@ void ShellWindowViews::OnViewWasResized() {
     path.lineTo(0, height - radius - 1);
     path.close();
   }
-  SetWindowRgn(host_->view()->native_view(), path.CreateNativeRegion(), 1);
+  SetWindowRgn(native_view(), path.CreateNativeRegion(), 1);
 
   SkRegion* rgn = new SkRegion;
   if (caption_region_.Get())
@@ -278,11 +283,67 @@ void ShellWindowViews::OnViewWasResized() {
     rgn->op(width - kResizeBorderWidth, 0, width, height, SkRegion::kUnion_Op);
     rgn->op(0, height - kResizeBorderWidth, width, height, SkRegion::kUnion_Op);
   }
-  host_->render_view_host()->GetView()->SetClickthroughRegion(rgn);
+  web_contents()->GetRenderViewHost()->GetView()->SetClickthroughRegion(rgn);
 #endif
 }
 
+gfx::NativeCursor ShellWindowViews::GetCursor(const views::MouseEvent& event) {
+  return gfx::kNullCursor;
+}
+
+void ShellWindowViews::SetVisible(bool is_visible) {
+  if (is_visible != visible()) {
+    NativeViewHost::SetVisible(is_visible);
+
+    // Also tell RenderWidgetHostView the new visibility. Despite its name, it
+    // is not part of the View hierarchy and does not know about the change
+    // unless we tell it.
+    content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
+    if (rvh->GetView()) {
+      if (is_visible)
+        rvh->GetView()->Show();
+      else
+        rvh->GetView()->Hide();
+    }
+  }
+}
+
+void ShellWindowViews::ViewHierarchyChanged(bool is_add,
+                                            views::View *parent,
+                                            views::View *child) {
+  NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
+  if (is_add && GetWidget() && !initialized_) {
+    initialized_ = true;
+    NativeViewHost::Attach(web_contents()->GetView()->GetNativeView());
+  }
+}
+
+void ShellWindowViews::PreferredSizeChanged() {
+  View::PreferredSizeChanged();
+}
+
+bool ShellWindowViews::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
+  // Let the tab key event be processed by the renderer (instead of moving the
+  // focus to the next focusable view). Also handle Backspace, since otherwise
+  // (on Windows at least), pressing Backspace, when focus is on a text field
+  // within the ExtensionView, will navigate the page back instead of erasing a
+  // character.
+  return (e.key_code() == ui::VKEY_TAB || e.key_code() == ui::VKEY_BACK);
+}
+
+void ShellWindowViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // Propagate the new size to RenderWidgetHostView.
+  // We can't send size zero because RenderWidget DCHECKs that.
+  content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
+  if (rvh->GetView() && !bounds().IsEmpty()) {
+    rvh->GetView()->SetSize(size());
+    OnViewWasResized();
+  }
+}
+
 // static
-ShellWindow* ShellWindow::CreateShellWindow(ExtensionHost* host) {
-  return new ShellWindowViews(host);
+ShellWindow* ShellWindow::CreateImpl(Profile* profile,
+                                     const Extension* extension,
+                                     const GURL& url) {
+  return new ShellWindowViews(profile, extension, url);
 }

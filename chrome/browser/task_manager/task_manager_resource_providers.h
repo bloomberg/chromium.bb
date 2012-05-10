@@ -402,6 +402,7 @@ class TaskManagerExtensionProcessResourceProvider
  private:
   virtual ~TaskManagerExtensionProcessResourceProvider();
 
+  bool IsHandledByThisProvider(content::RenderViewHost* render_view_host);
   void AddToTaskManager(content::RenderViewHost* render_view_host);
   void RemoveFromTaskManager(content::RenderViewHost* render_view_host);
 

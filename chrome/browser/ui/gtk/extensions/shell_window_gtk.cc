@@ -4,24 +4,27 @@
 
 #include "chrome/browser/ui/gtk/extensions/shell_window_gtk.h"
 
-#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/base/x/active_window_watcher_x.h"
 #include "ui/gfx/rect.h"
 
-ShellWindowGtk::ShellWindowGtk(ExtensionHost* host)
-    : ShellWindow(host),
+ShellWindowGtk::ShellWindowGtk(Profile* profile,
+                               const Extension* extension,
+                               const GURL& url)
+    : ShellWindow(profile, extension, url),
       state_(GDK_WINDOW_STATE_WITHDRAWN),
       is_active_(!ui::ActiveWindowWatcherX::WMSupportsActivation()) {
-  host_->view()->SetContainer(this);
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 
-  gtk_container_add(GTK_CONTAINER(window_), host_->view()->native_view());
+  gfx::NativeView native_view =
+      web_contents()->GetView()->GetNativeView();
+  gtk_container_add(GTK_CONTAINER(window_), native_view);
 
   gtk_window_set_default_size(window_, kDefaultWidth, kDefaultHeight);
-
-  const Extension* extension = host_->extension();
 
   // TODO(mihaip): Mirror contents of <title> tag in window title
   gtk_window_set_title(window_, extension->name().c_str());
@@ -164,6 +167,8 @@ gboolean ShellWindowGtk::OnWindowState(GtkWidget* sender,
 }
 
 // static
-ShellWindow* ShellWindow::CreateShellWindow(ExtensionHost* host) {
-  return new ShellWindowGtk(host);
+ShellWindow* ShellWindow::CreateImpl(Profile* profile,
+                                     const Extension* extension,
+                                     const GURL& url) {
+  return new ShellWindowGtk(profile, extension, url);
 }

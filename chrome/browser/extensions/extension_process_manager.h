@@ -44,10 +44,6 @@ class ExtensionProcessManager : public content::NotificationObserver {
     return background_hosts_;
   }
 
-  const ExtensionHostSet& platform_app_hosts() const {
-    return platform_app_hosts_;
-  }
-
   typedef std::set<content::RenderViewHost*> ViewSet;
   const ViewSet GetAllViews() const;
 
@@ -71,7 +67,6 @@ class ExtensionProcessManager : public content::NotificationObserver {
                                    Browser* browser);
   ExtensionHost* CreateInfobarHost(const GURL& url,
                                    Browser* browser);
-  ExtensionHost* CreateShellHost(const Extension* extension, const GURL& url);
 
   // Open the extension's options page.
   void OpenOptionsPage(const Extension* extension, Browser* browser);
@@ -119,6 +114,9 @@ class ExtensionProcessManager : public content::NotificationObserver {
   int IncrementLazyKeepaliveCount(const Extension* extension);
   int DecrementLazyKeepaliveCount(const Extension* extension);
 
+  void IncrementLazyKeepaliveCountForView(
+      content::RenderViewHost* render_view_host);
+
   // Handles a response to the ShouldUnload message, used for lazy background
   // pages.
   void OnShouldUnloadAck(const std::string& extension_id, int sequence_id);
@@ -153,9 +151,6 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   // The set of ExtensionHosts running viewless background extensions.
   ExtensionHostSet background_hosts_;
-
-  // The set of ExtensionHosts running platform apps.
-  ExtensionHostSet platform_app_hosts_;
 
   // A SiteInstance related to the SiteInstance for all extensions in
   // this profile.  We create it in such a way that a new

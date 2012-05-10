@@ -92,9 +92,6 @@ class ExtensionHost : public content::WebContentsDelegate,
   // instantiate Browser objects.
   void CreateView(Browser* browser);
 
-  // Helper variant of the above for cases where no Browser is present.
-  void CreateViewWithoutBrowser();
-
   const Extension* extension() const { return extension_; }
   const std::string& extension_id() const { return extension_id_; }
   content::WebContents* host_contents() const { return host_contents_.get(); }
@@ -162,7 +159,6 @@ class ExtensionHost : public content::WebContentsDelegate,
                               const gfx::Rect& initial_pos,
                               bool user_gesture) OVERRIDE;
   virtual void CloseContents(content::WebContents* contents) OVERRIDE;
-  virtual bool ShouldSuppressDialogs() OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,

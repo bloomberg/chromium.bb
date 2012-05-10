@@ -1259,28 +1259,17 @@ void TaskManagerExtensionProcessResourceProvider::StartUpdating() {
         if (!rvh->IsRenderViewLive())
           continue;
 
-        // Don't add WebContents (those are handled by
-        // TaskManagerTabContentsResourceProvider) or background contents
-        // (handled by TaskManagerBackgroundResourceProvider).
-        // TODO(benwells): create specific chrome::VIEW_TYPE_TAB_CONTENTS for
-        // tab contents, as VIEW_TYPE_WEB_CONTENTS is the default.
-        content::ViewType view_type = rvh->GetDelegate()->GetRenderViewType();
-        if (view_type == content::VIEW_TYPE_WEB_CONTENTS ||
-            view_type == chrome::VIEW_TYPE_BACKGROUND_CONTENTS) {
-          continue;
-        }
-
         AddToTaskManager(rvh);
       }
     }
   }
 
   // Register for notifications about extension process changes.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_VIEW_REGISTERED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
@@ -1290,13 +1279,13 @@ void TaskManagerExtensionProcessResourceProvider::StopUpdating() {
 
   // Unregister for notifications about extension process changes.
   registrar_.Remove(
-      this, chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
+      this, chrome::NOTIFICATION_EXTENSION_VIEW_REGISTERED,
       content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Remove(
       this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
       content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Remove(
-      this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+      this, chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED,
       content::NotificationService::AllBrowserContextsAndSources());
 
   // Delete all the resources.
@@ -1311,14 +1300,17 @@ void TaskManagerExtensionProcessResourceProvider::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_HOST_CREATED:
+    case chrome::NOTIFICATION_EXTENSION_VIEW_REGISTERED:
       AddToTaskManager(
-          content::Details<ExtensionHost>(details).ptr()->render_view_host());
+          content::Details<content::RenderViewHost>(details).ptr());
       break;
     case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
-    case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED:
       RemoveFromTaskManager(
           content::Details<ExtensionHost>(details).ptr()->render_view_host());
+      break;
+    case chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED:
+      RemoveFromTaskManager(
+          content::Details<content::RenderViewHost>(details).ptr());
       break;
     default:
       NOTREACHED() << "Unexpected notification.";
@@ -1326,8 +1318,24 @@ void TaskManagerExtensionProcessResourceProvider::Observe(
   }
 }
 
+bool TaskManagerExtensionProcessResourceProvider::
+    IsHandledByThisProvider(content::RenderViewHost* render_view_host) {
+  // Don't add WebContents (those are handled by
+  // TaskManagerTabContentsResourceProvider) or background contents (handled
+  // by TaskManagerBackgroundResourceProvider).
+  // TODO(benwells): create specific chrome::VIEW_TYPE_TAB_CONTENTS for
+  // tab contents, as VIEW_TYPE_WEB_CONTENTS is the default.
+  content::ViewType view_type =
+      render_view_host->GetDelegate()->GetRenderViewType();
+  return (view_type != content::VIEW_TYPE_WEB_CONTENTS &&
+          view_type != chrome::VIEW_TYPE_BACKGROUND_CONTENTS);
+}
+
 void TaskManagerExtensionProcessResourceProvider::AddToTaskManager(
     content::RenderViewHost* render_view_host) {
+  if (!IsHandledByThisProvider(render_view_host))
+    return;
+
   TaskManagerExtensionProcessResource* resource =
       new TaskManagerExtensionProcessResource(render_view_host);
   DCHECK(resources_.find(render_view_host) == resources_.end());

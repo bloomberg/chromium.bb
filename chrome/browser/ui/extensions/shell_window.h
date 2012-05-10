@@ -7,14 +7,15 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/ui/base_window.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class Extension;
-class ExtensionHost;
 class ExtensionWindowController;
 class GURL;
 class Profile;
@@ -23,43 +24,74 @@ namespace content {
 class WebContents;
 }
 
+// ShellWindow is the type of window used by platform apps. Shell windows
+// have a WebContents but none of the chrome of normal browser windows.
 class ShellWindow : public content::NotificationObserver,
+                    public content::WebContentsDelegate,
+                    public content::WebContentsObserver,
+                    public ExtensionFunctionDispatcher::Delegate,
                     public BaseWindow {
  public:
-  // TODO(mihaip): Switch from hardcoded defaults to passing in the window
-  // creation parameters to ShellWindow::Create.
-  static const int kDefaultWidth = 512;
-  static const int kDefaultHeight = 384;
+  static ShellWindow* Create(Profile* profile,
+                             const Extension* extension,
+                             const GURL& url);
 
-  content::WebContents* web_contents() const { return host_->host_contents(); }
   const SessionID& session_id() const { return session_id_; }
   const ExtensionWindowController* extension_window_controller() const {
     return extension_window_controller_.get();
   }
 
-  static ShellWindow* Create(Profile* profile,
-                             const Extension* extension,
-                             const GURL& url);
+ protected:
+  // TODO(mihaip): Switch from hardcoded defaults to passing in the window
+  // creation parameters to ShellWindow::Create.
+  static const int kDefaultWidth = 512;
+  static const int kDefaultHeight = 384;
+
+  ShellWindow(Profile* profile,
+              const Extension* extension,
+              const GURL& url);
+  virtual ~ShellWindow();
+
+  const Extension* extension() const { return extension_; }
+  content::WebContents* web_contents() const { return web_contents_.get(); }
+
+ private:
+  // PlatformAppBrowserTest needs access to web_contents()
+  friend class PlatformAppBrowserTest;
+
+  // Instantiates a platform-specific ShellWindow subclass (one implementation
+  // per platform). Public users of ShellWindow should use ShellWindow::Create.
+  static ShellWindow* CreateImpl(Profile* profile,
+                                 const Extension* extension,
+                                 const GURL& url);
+
+  // content::WebContentsObserver
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  // content::WebContentsDelegate
+  virtual void CloseContents(content::WebContents* contents) OVERRIDE;
+  virtual bool ShouldSuppressDialogs() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
- protected:
-  explicit ShellWindow(ExtensionHost* host_);
-  virtual ~ShellWindow();
+  virtual ExtensionWindowController* GetExtensionWindowController() const
+      OVERRIDE;
 
-  // Instantiates a platform-specific ShellWindow subclass (one implementation
-  // per platform). Public users of ShellWindow should use ShellWindow::Create.
-  static ShellWindow* CreateShellWindow(ExtensionHost* host);
+  // Message handlers.
+  void OnRequest(const ExtensionHostMsg_Request_Params& params);
+
+  Profile* profile_;  // weak pointer - owned by ProfileManager.
+  const Extension* extension_;  // weak pointer - owned by ExtensionService.
 
   const SessionID session_id_;
-  scoped_ptr<ExtensionHost> host_;
+  scoped_ptr<content::WebContents> web_contents_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<ExtensionWindowController> extension_window_controller_;
+  ExtensionFunctionDispatcher extension_function_dispatcher_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(ShellWindow);
 };
 

@@ -8,15 +8,15 @@
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -57,7 +57,6 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
 
  protected:
   void LoadAndLaunchPlatformApp(const char* name) {
-    size_t platform_app_count = GetPlatformAppCount();
     ui_test_utils::WindowedNotificationObserver app_loaded_observer(
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
@@ -78,41 +77,19 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
         NEW_WINDOW);
 
     app_loaded_observer.Wait();
-
-    // Now we have a new platform app running.
-    EXPECT_EQ(platform_app_count + 1, GetPlatformAppCount());
   }
 
-  // Gets the number of platform apps extension hosts that are running.
-  size_t GetPlatformAppCount() {
-    int count = 0;
-    ExtensionProcessManager* process_manager =
-        browser()->profile()->GetExtensionProcessManager();
-    ExtensionProcessManager::const_iterator iter;
-    ExtensionProcessManager::ExtensionHostSet platform_app_hosts =
-        process_manager->platform_app_hosts();
-    for (iter = platform_app_hosts.begin(); iter != platform_app_hosts.end();
-         ++iter) {
-      if ((*iter)->extension())
-        count++;
-    }
-
-    return count;
-  }
-
-  // Gets the WebContents associated with the ExtensionHost of the first
-  // platform app shell window that is found (most tests only deal with one
-  // platform app window, so this is good enough).
-  WebContents* GetFirstPlatformAppShellWindowWebContents() {
-    ExtensionProcessManager* process_manager =
-        browser()->profile()->GetExtensionProcessManager();
-    ExtensionProcessManager::const_iterator iter;
-    ExtensionProcessManager::ExtensionHostSet platform_app_hosts =
-        process_manager->platform_app_hosts();
-    for (iter = platform_app_hosts.begin(); iter != platform_app_hosts.end();
-         ++iter) {
-      if ((*iter)->extension_host_type() == chrome::VIEW_TYPE_APP_SHELL)
-        return (*iter)->host_contents();
+  // Gets the WebContents associated with the first shell window that is found
+  // (most tests only deal with one platform app window, so this is good
+  // enough).
+  WebContents* GetFirstShellWindowWebContents() {
+    ShellWindowRegistry* app_registry =
+        ShellWindowRegistry::Get(browser()->profile());
+    ShellWindowRegistry::const_iterator iter;
+    ShellWindowRegistry::ShellWindowSet shell_windows =
+        app_registry->shell_windows();
+    for (iter = shell_windows.begin(); iter != shell_windows.end(); ++iter) {
+      return (*iter)->web_contents();
     }
 
     return NULL;
@@ -132,13 +109,15 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
 
   // The empty app doesn't add any context menu items, so its menu should
   // only include the developer tools.
-  WebContents* web_contents = GetFirstPlatformAppShellWindowWebContents();
+  WebContents* web_contents = GetFirstShellWindowWebContents();
   ASSERT_TRUE(web_contents);
   WebKit::WebContextMenuData data;
   content::ContextMenuParams params(data);
   PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
       params);
   menu->Init();
+  // TODO(benwells): Remove the constant below. Instead of checking the
+  // number of menu items check certain item's absense and presence.
   // 3 including separator
   ASSERT_EQ(3, menu->menu_model().GetItemCount());
 }
@@ -153,13 +132,15 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
 
   // The context_menu app has one context menu item. This, along with a
   // separator and the developer tools, is all that should be in the menu.
-  WebContents* web_contents = GetFirstPlatformAppShellWindowWebContents();
+  WebContents* web_contents = GetFirstShellWindowWebContents();
   ASSERT_TRUE(web_contents);
   WebKit::WebContextMenuData data;
   content::ContextMenuParams params(data);
   PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
       params);
   menu->Init();
+  // TODO(benwells): Remove the constant below. Instead of checking the
+  // number of menu items check certain item's absense and presence.
   ASSERT_EQ(4, menu->menu_model().GetItemCount());
 }
 

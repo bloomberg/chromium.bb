@@ -5,10 +5,12 @@
 #include "chrome/browser/ui/cocoa/extensions/shell_window_cocoa.h"
 
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 
 @implementation ShellWindowController
@@ -22,8 +24,10 @@
 
 @end
 
-ShellWindowCocoa::ShellWindowCocoa(ExtensionHost* host)
-    : ShellWindow(host),
+ShellWindowCocoa::ShellWindowCocoa(Profile* profile,
+                                   const Extension* extension,
+                                   const GURL& url)
+    : ShellWindow(profile, extension, url),
       attention_request_id_(0) {
   NSRect rect = NSMakeRect(0, 0, kDefaultWidth, kDefaultHeight);
   NSUInteger styleMask = NSTitledWindowMask | NSClosableWindowMask |
@@ -33,9 +37,9 @@ ShellWindowCocoa::ShellWindowCocoa(ExtensionHost* host)
                 styleMask:styleMask
                   backing:NSBackingStoreBuffered
                     defer:NO]);
-  [window setTitle:base::SysUTF8ToNSString(host->extension()->name())];
+  [window setTitle:base::SysUTF8ToNSString(extension->name())];
 
-  NSView* view = host->view()->native_view();
+  NSView* view = web_contents()->GetView()->GetNativeView();
   [view setFrame:rect];
   [view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
   [[window contentView] addSubview:view];
@@ -165,6 +169,8 @@ NSWindow* ShellWindowCocoa::window() const {
 }
 
 // static
-ShellWindow* ShellWindow::CreateShellWindow(ExtensionHost* host) {
-  return new ShellWindowCocoa(host);
+ShellWindow* ShellWindow::CreateImpl(Profile* profile,
+                                     const Extension* extension,
+                                     const GURL& url) {
+  return new ShellWindowCocoa(profile, extension, url);
 }

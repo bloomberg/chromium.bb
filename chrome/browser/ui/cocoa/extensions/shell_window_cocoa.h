@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "ui/gfx/rect.h"
 
-class ExtensionHost;
+class Profile;
 class ShellWindowCocoa;
 
 // A window controller for a minimal window to host a web app view. Passes
@@ -30,7 +30,9 @@ class ShellWindowCocoa;
 // Cocoa bridge to ShellWindow.
 class ShellWindowCocoa : public ShellWindow {
  public:
-  explicit ShellWindowCocoa(ExtensionHost* host);
+  ShellWindowCocoa(Profile* profile,
+                   const Extension* extension,
+                   const GURL& url);
 
   // BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;

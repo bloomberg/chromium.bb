@@ -170,22 +170,6 @@ ExtensionProcessManager::~ExtensionProcessManager() {
   DCHECK(background_hosts_.empty());
 }
 
-ExtensionHost* ExtensionProcessManager::CreateShellHost(
-    const Extension* extension,
-    const GURL& url) {
-  DCHECK(extension);
-  ExtensionHost* host = new ExtensionHost(extension,
-                                          GetSiteInstanceForURL(url),
-                                          url,
-                                          chrome::VIEW_TYPE_APP_SHELL);
-  host->CreateViewWithoutBrowser();
-  content::WebContents* host_contents = host->host_contents();
-  host_contents->GetMutableRendererPrefs()->browser_handles_all_requests = true;
-  host_contents->GetRenderViewHost()->SyncRendererPrefs();
-  OnExtensionHostCreated(host, false /* not a background host */);
-  return host;
-}
-
 void ExtensionProcessManager::EnsureBrowserWhenRequired(
     Browser* browser,
     content::ViewType view_type) {
@@ -361,6 +345,11 @@ void ExtensionProcessManager::UnregisterRenderViewHost(
   if (view == all_extension_views_.end())
     return;
 
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED,
+      content::Source<Profile>(GetProfile()),
+      content::Details<RenderViewHost>(render_view_host));
+
   content::ViewType view_type = view->second;
   all_extension_views_.erase(view);
 
@@ -381,18 +370,17 @@ void ExtensionProcessManager::UpdateRegisteredRenderView(
   if (view == all_extension_views_.end())
     return;
 
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_VIEW_REGISTERED,
+      content::Source<Profile>(GetProfile()),
+      content::Details<RenderViewHost>(render_view_host));
+
   view->second = render_view_host->GetDelegate()->GetRenderViewType();
 
   // Keep the lazy background page alive as long as any non-background-page
   // extension views are visible. Keepalive count balanced in
   // UnregisterRenderViewHost.
-  if (view->second != content::VIEW_TYPE_INVALID &&
-      view->second != chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-    const Extension* extension = GetExtensionForRenderViewHost(
-        render_view_host);
-    if (extension)
-      IncrementLazyKeepaliveCount(extension);
-  }
+  IncrementLazyKeepaliveCountForView(render_view_host);
 }
 
 SiteInstance* ExtensionProcessManager::GetSiteInstanceForURL(const GURL& url) {
@@ -441,6 +429,18 @@ int ExtensionProcessManager::DecrementLazyKeepaliveCount(
   }
 
   return count;
+}
+void ExtensionProcessManager::IncrementLazyKeepaliveCountForView(
+    RenderViewHost* render_view_host) {
+  content::ViewType view_type =
+      render_view_host->GetDelegate()->GetRenderViewType();
+  if (view_type != content::VIEW_TYPE_INVALID &&
+      view_type != chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+    const Extension* extension = GetExtensionForRenderViewHost(
+        render_view_host);
+    if (extension)
+      IncrementLazyKeepaliveCount(extension);
+  }
 }
 
 void ExtensionProcessManager::OnLazyBackgroundPageIdle(
@@ -552,7 +552,6 @@ void ExtensionProcessManager::Observe(
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       if (background_hosts_.erase(host))
         ClearBackgroundPageData(host->extension()->id());
-      platform_app_hosts_.erase(host);
       break;
     }
 
@@ -623,8 +622,6 @@ void ExtensionProcessManager::OnExtensionHostCreated(ExtensionHost* host,
   DCHECK_EQ(site_instance_->GetBrowserContext(), host->profile());
   if (is_background)
     background_hosts_.insert(host);
-  if (host->extension()->is_platform_app())
-    platform_app_hosts_.insert(host);
 }
 
 void ExtensionProcessManager::CloseBackgroundHost(ExtensionHost* host) {
@@ -653,7 +650,7 @@ void ExtensionProcessManager::ClearBackgroundPageData(
   for (ExtensionRenderViews::const_iterator it = all_extension_views_.begin();
        it != all_extension_views_.end(); ++it) {
     if (GetExtensionID(it->first) == extension_id)
-      UpdateRegisteredRenderView(it->first);
+      IncrementLazyKeepaliveCountForView(it->first);
   }
 }
 

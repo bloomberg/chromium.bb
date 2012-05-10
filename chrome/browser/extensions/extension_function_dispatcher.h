@@ -55,13 +55,13 @@ class ExtensionFunctionDispatcher
    public:
     // Returns the ExtensionWindowController associated with this delegate,
     // or NULL if no window is associated with the delegate.
-    virtual ExtensionWindowController* GetExtensionWindowController() const = 0;
+    virtual ExtensionWindowController* GetExtensionWindowController() const;
 
     // Asks the delegate for any relevant WebContents associated with this
     // context. For example, the WebbContents in which an infobar or
     // chrome-extension://<id> URL are being shown. Callers must check for a
     // NULL return value (as in the case of a background page).
-    virtual content::WebContents* GetAssociatedWebContents() const = 0;
+    virtual content::WebContents* GetAssociatedWebContents() const;
 
    protected:
     virtual ~Delegate() {}

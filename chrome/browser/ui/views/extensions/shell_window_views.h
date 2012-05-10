@@ -7,18 +7,20 @@
 #pragma once
 
 #include "chrome/browser/ui/extensions/shell_window.h"
-#include "chrome/browser/ui/views/extensions/extension_view.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/scoped_sk_region.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/widget/widget_delegate.h"
 
-class ExtensionHost;
+class Profile;
 
 class ShellWindowViews : public ShellWindow,
-                         public ExtensionView::Container,
-                         public views::WidgetDelegateView {
+                         public views::NativeViewHost,
+                         public views::WidgetDelegate {
  public:
-  explicit ShellWindowViews(ExtensionHost* host);
+  ShellWindowViews(Profile* profile,
+                   const Extension* extension,
+                   const GURL& url);
 
   // BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;
@@ -51,12 +53,24 @@ class ShellWindowViews : public ShellWindow,
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
 
-  // ExtensionView::Container implementation.
-  virtual void OnViewWasResized() OVERRIDE;
+  // Overridden from views::NativeViewHost:
+  virtual gfx::NativeCursor GetCursor(const views::MouseEvent& event) OVERRIDE;
+  virtual void SetVisible(bool is_visible) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      bool is_add, views::View *parent, views::View *child) OVERRIDE;
+
+ protected:
+  // Overridden from views::View.
+  virtual void PreferredSizeChanged() OVERRIDE;
+  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
  private:
   virtual ~ShellWindowViews();
 
+  void OnViewWasResized();
+
+  bool initialized_;
   views::Widget* window_;
 
   gfx::ScopedSkRegion caption_region_;

@@ -179,10 +179,6 @@ void ExtensionHost::CreateView(Browser* browser) {
 #endif
 }
 
-void ExtensionHost::CreateViewWithoutBrowser() {
-  CreateView(NULL);
-}
-
 WebContents* ExtensionHost::GetAssociatedWebContents() const {
   return associated_web_contents_;
 }
@@ -195,7 +191,6 @@ void ExtensionHost::SetAssociatedWebContents(
                    content::Source<WebContents>(associated_web_contents_));
   }
 }
-
 
 content::RenderProcessHost* ExtensionHost::render_process_host() const {
   return render_view_host()->GetProcess();
@@ -211,13 +206,10 @@ bool ExtensionHost::IsRenderViewLive() const {
 }
 
 void ExtensionHost::CreateRenderViewSoon() {
-  if ((render_process_host() && render_process_host()->HasConnection()) ||
-      extension_host_type_ == chrome::VIEW_TYPE_APP_SHELL) {
+  if ((render_process_host() && render_process_host()->HasConnection())) {
     // If the process is already started, go ahead and initialize the RenderView
     // synchronously. The process creation is the real meaty part that we want
     // to defer.
-    // We also skip the ratelimiting in the shell window case. This is a hack
-    // (see crbug.com/124350 for details).
     CreateRenderViewNow();
   } else {
     ProcessCreationQueue::GetInstance()->CreateSoon(this);
@@ -295,8 +287,8 @@ void ExtensionHost::Observe(int type,
 
 void ExtensionHost::ResizeDueToAutoResize(WebContents* source,
                                           const gfx::Size& new_size) {
-  if (view_.get())
-    view_->ResizeDueToAutoResize(new_size);
+  if (view())
+    view()->ResizeDueToAutoResize(new_size);
 }
 
 void ExtensionHost::RenderViewGone(base::TerminationStatus status) {
@@ -340,11 +332,10 @@ void ExtensionHost::DidStopLoading() {
   if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_POPUP ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_DIALOG ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_INFOBAR ||
-      extension_host_type_ == chrome::VIEW_TYPE_APP_SHELL ||
       extension_host_type_ == chrome::VIEW_TYPE_PANEL) {
 #if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
-    if (view_.get())
-      view_->DidStopLoading();
+    if (view())
+      view()->DidStopLoading();
 #endif
   }
   if (notify) {
@@ -360,8 +351,6 @@ void ExtensionHost::DidStopLoading() {
     } else if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_INFOBAR) {
       UMA_HISTOGRAM_TIMES("Extensions.InfobarLoadTime",
         since_created_.Elapsed());
-    } else if (extension_host_type_ == chrome::VIEW_TYPE_APP_SHELL) {
-      UMA_HISTOGRAM_TIMES("Extensions.ShellLoadTime", since_created_.Elapsed());
     } else if (extension_host_type_ == chrome::VIEW_TYPE_PANEL) {
       UMA_HISTOGRAM_TIMES("Extensions.PanelLoadTime", since_created_.Elapsed());
     }
@@ -401,14 +390,9 @@ void ExtensionHost::CloseContents(WebContents* contents) {
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_DIALOG ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_INFOBAR ||
-      extension_host_type_ == chrome::VIEW_TYPE_APP_SHELL ||
       extension_host_type_ == chrome::VIEW_TYPE_PANEL) {
     Close();
   }
-}
-
-bool ExtensionHost::ShouldSuppressDialogs() {
-  return extension_->is_platform_app();
 }
 
 void ExtensionHost::WillRunJavaScriptDialog() {
@@ -510,8 +494,8 @@ void ExtensionHost::OnDecrementLazyKeepaliveCount() {
 void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   render_view_host_ = render_view_host;
 
-  if (view_.get())
-    view_->RenderViewCreated();
+  if (view())
+    view()->RenderViewCreated();
 
   // If the host is bound to a window, then extract its id. Extensions hosted
   // in ExternalTabContainer objects may not have an associated window.

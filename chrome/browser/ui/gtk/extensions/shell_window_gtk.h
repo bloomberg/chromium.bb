@@ -14,13 +14,15 @@
 #include "ui/base/x/active_window_watcher_x_observer.h"
 #include "ui/gfx/rect.h"
 
-class ExtensionHost;
+class Profile;
 
 class ShellWindowGtk : public ShellWindow,
                        public ExtensionViewGtk::Container,
                        public ui::ActiveWindowWatcherXObserver {
  public:
-  explicit ShellWindowGtk(ExtensionHost* host);
+  ShellWindowGtk(Profile* profile,
+                 const Extension* extension,
+                 const GURL& url);
 
   // BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;

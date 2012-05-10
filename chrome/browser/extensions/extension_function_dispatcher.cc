@@ -94,6 +94,16 @@ base::LazyInstance<Static> g_global_io_data = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
+ExtensionWindowController*
+    ExtensionFunctionDispatcher::Delegate::GetExtensionWindowController()
+    const {
+  return NULL;
+}
+
+content::WebContents*
+    ExtensionFunctionDispatcher::Delegate::GetAssociatedWebContents() const {
+  return NULL;
+}
 
 void ExtensionFunctionDispatcher::GetAllFunctionNames(
     std::vector<std::string>* names) {
