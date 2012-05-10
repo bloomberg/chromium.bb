@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/api/socket/tcp_socket.h"
 #include "chrome/browser/extensions/api/socket/udp_socket.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/common/extensions/api/experimental.socket.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 
@@ -141,45 +140,43 @@ void SocketBindFunction::Work() {
   result_.reset(Value::CreateIntegerValue(result));
 }
 
+SocketReadFunction::SocketReadFunction()
+  : params_(NULL) {
+}
+
+SocketReadFunction::~SocketReadFunction() {}
+
 bool SocketReadFunction::Prepare() {
-  scoped_ptr<api::experimental_socket::Read::Params> params(
-      api::experimental_socket::Read::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-  socket_id_ = params->socket_id;
-  buffer_size_ = params->buffer_size.get() ? *params->buffer_size : 4096;
+  params_ = api::experimental_socket::Read::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
 
 void SocketReadFunction::AsyncWorkStart() {
-  Socket* socket = controller()->GetSocket(socket_id_);
-
+  Socket* socket = controller()->GetSocket(params_->socket_id);
   if (!socket) {
     error_ = kSocketNotFoundError;
     OnCompleted(-1, NULL);
     return;
   }
 
-  socket->Read(buffer_size_,
+  socket->Read(params_->buffer_size.get() ? *params_->buffer_size.get() : 4096,
       base::Bind(&SocketReadFunction::OnCompleted, this));
 }
 
 void SocketReadFunction::OnCompleted(int bytes_read,
                                      scoped_refptr<net::IOBuffer> io_buffer) {
-  // TODO(miket): the buffer-to-array functionality appears twice, once here
-  // and once in socket.cc. When serial etc. is converted over, it'll appear
-  // there, too. What's a good single place for it to live? Keep in mind that
-  // this is short-term code, to be replaced with ArrayBuffer code.
   DictionaryValue* result = new DictionaryValue();
-  ListValue* data_value = new ListValue();
-  if (bytes_read > 0) {
-    size_t bytes_size = static_cast<size_t>(bytes_read);
-    const char* io_buffer_start = io_buffer->data();
-    for (size_t i = 0; i < bytes_size; ++i) {
-      data_value->Set(i, Value::CreateIntegerValue(io_buffer_start[i]));
-    }
-  }
   result->SetInteger(kResultCodeKey, bytes_read);
-  result->Set(kDataKey, data_value);
+  if (bytes_read > 0) {
+    result->Set(kDataKey,
+        base::BinaryValue::CreateWithCopiedBuffer(io_buffer->data(),
+            bytes_read));
+  } else {
+    // BinaryValue does not support NULL buffer. Workaround it with new char[1].
+    // http://crbug.com/127630
+    result->Set(kDataKey, base::BinaryValue::Create(new char[1], 0));
+  }
   result_.reset(result);
 
   AsyncWorkCompleted();
@@ -187,30 +184,19 @@ void SocketReadFunction::OnCompleted(int bytes_read,
 
 SocketWriteFunction::SocketWriteFunction()
     : socket_id_(0),
-      io_buffer_(NULL) {
+      io_buffer_(NULL),
+      io_buffer_size_(0) {
 }
 
 SocketWriteFunction::~SocketWriteFunction() {}
 
 bool SocketWriteFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
-  base::ListValue* data_list_value = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetList(1, &data_list_value));
+  base::BinaryValue *data = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBinary(1, &data));
 
-  size_t size = data_list_value->GetSize();
-  if (size != 0) {
-    io_buffer_ = new net::IOBufferWithSize(size);
-    uint8* data_buffer =
-        reinterpret_cast<uint8*>(io_buffer_->data());
-    for (size_t i = 0; i < size; ++i) {
-      int int_value = -1;
-      data_list_value->GetInteger(i, &int_value);
-      DCHECK(int_value < 256);
-      DCHECK(int_value >= 0);
-      uint8 truncated_int = static_cast<uint8>(int_value);
-      *data_buffer++ = truncated_int;
-    }
-  }
+  io_buffer_size_ = data->GetSize();
+  io_buffer_ = new net::WrappedIOBuffer(data->GetBuffer());
   return true;
 }
 
@@ -223,7 +209,7 @@ void SocketWriteFunction::AsyncWorkStart() {
     return;
   }
 
-  socket->Write(io_buffer_, io_buffer_->size(),
+  socket->Write(io_buffer_, io_buffer_size_,
       base::Bind(&SocketWriteFunction::OnCompleted, this));
 }
 
@@ -235,28 +221,27 @@ void SocketWriteFunction::OnCompleted(int bytes_written) {
   AsyncWorkCompleted();
 }
 
+SocketRecvFromFunction::SocketRecvFromFunction()
+  : params_(NULL) {
+}
+
 SocketRecvFromFunction::~SocketRecvFromFunction() {}
 
 bool SocketRecvFromFunction::Prepare() {
-  scoped_ptr<api::experimental_socket::RecvFrom::Params> params(
-      api::experimental_socket::RecvFrom::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-  socket_id_ = params->socket_id;
-  buffer_size_ = params->buffer_size.get() ? *params->buffer_size : 4096;
+  params_ = api::experimental_socket::RecvFrom::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
 
 void SocketRecvFromFunction::AsyncWorkStart() {
-  Socket* socket = controller()->GetSocket(socket_id_);
-  // TODO(miket): this is an arbitrary number. Can we come up with one that
-  // makes sense?
+  Socket* socket = controller()->GetSocket(params_->socket_id);
   if (!socket) {
     error_ = kSocketNotFoundError;
     OnCompleted(-1, NULL, std::string(), 0);
     return;
   }
 
-  socket->RecvFrom(buffer_size_,
+  socket->RecvFrom(params_->buffer_size.get() ? *params_->buffer_size : 4096,
       base::Bind(&SocketRecvFromFunction::OnCompleted, this));
 }
 
@@ -264,22 +249,17 @@ void SocketRecvFromFunction::OnCompleted(int bytes_read,
                                          scoped_refptr<net::IOBuffer> io_buffer,
                                          const std::string& address,
                                          int port) {
-  // TODO(miket): the buffer-to-array functionality appears twice, once here
-  // and once in socket.cc. When serial etc. is converted over, it'll appear
-  // there, too. What's a good single place for it to live? Keep in mind that
-  // this is short-term code, to be replaced with ArrayBuffer code.
   DictionaryValue* result = new DictionaryValue();
-  ListValue* data_value = new ListValue();
-  if (bytes_read > 0) {
-    size_t bytes_size = static_cast<size_t>(bytes_read);
-    const char* io_buffer_start = io_buffer->data();
-    for (size_t i = 0; i < bytes_size; ++i) {
-      data_value->Set(i, Value::CreateIntegerValue(io_buffer_start[i]));
-    }
-  }
-
   result->SetInteger(kResultCodeKey, bytes_read);
-  result->Set(kDataKey, data_value);
+  if (bytes_read > 0) {
+    result->Set(kDataKey,
+        base::BinaryValue::CreateWithCopiedBuffer(io_buffer->data(),
+            bytes_read));
+  } else {
+    // BinaryValue does not support NULL buffer. Workaround it with new char[1].
+    // http://crbug.com/127630
+    result->Set(kDataKey, base::BinaryValue::Create(new char[1], 0));
+  }
   result->SetString(kAddressKey, address);
   result->SetInteger(kPortKey, port);
   result_.reset(result);
@@ -289,32 +269,21 @@ void SocketRecvFromFunction::OnCompleted(int bytes_read,
 
 SocketSendToFunction::SocketSendToFunction()
     : socket_id_(0),
-      io_buffer_(NULL) {
+      io_buffer_(NULL),
+      io_buffer_size_(0) {
 }
 
 SocketSendToFunction::~SocketSendToFunction() {}
 
 bool SocketSendToFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
-  base::ListValue *data_list_value;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetList(1, &data_list_value));
+  base::BinaryValue *data = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBinary(1, &data));
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &address_));
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(3, &port_));
 
-  size_t size = data_list_value->GetSize();
-  if (size != 0) {
-    io_buffer_ = new net::IOBufferWithSize(size);
-    uint8* data_buffer =
-        reinterpret_cast<uint8*>(io_buffer_->data());
-    for (size_t i = 0; i < size; ++i) {
-      int int_value = -1;
-      data_list_value->GetInteger(i, &int_value);
-      DCHECK(int_value < 256);
-      DCHECK(int_value >= 0);
-      uint8 truncated_int = static_cast<uint8>(int_value);
-      *data_buffer++ = truncated_int;
-    }
-  }
+  io_buffer_size_ = data->GetSize();
+  io_buffer_ = new net::WrappedIOBuffer(data->GetBuffer());
   return true;
 }
 
@@ -326,7 +295,7 @@ void SocketSendToFunction::AsyncWorkStart() {
     return;
   }
 
-  socket->SendTo(io_buffer_, io_buffer_->size(), address_, port_,
+  socket->SendTo(io_buffer_, io_buffer_size_, address_, port_,
       base::Bind(&SocketSendToFunction::OnCompleted, this));
 }
 

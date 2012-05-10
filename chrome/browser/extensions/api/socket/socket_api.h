@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
+#include "chrome/common/extensions/api/experimental.socket.h"
 #include "net/base/io_buffer.h"
 
 #include <string>
@@ -77,14 +78,13 @@ class SocketConnectFunction : public SocketExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.connect")
 
-  void OnCompleted(int result);
-
  protected:
   virtual ~SocketConnectFunction() {}
 
   // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
+  void OnCompleted(int result);
 
  private:
   int socket_id_;
@@ -124,18 +124,18 @@ class SocketReadFunction : public SocketExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.read")
 
-  void OnCompleted(int result, scoped_refptr<net::IOBuffer> io_buffer);
+  SocketReadFunction();
 
  protected:
-  virtual ~SocketReadFunction() {}
+  virtual ~SocketReadFunction();
 
   // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
+  void OnCompleted(int result, scoped_refptr<net::IOBuffer> io_buffer);
 
  private:
-  int socket_id_;
-  int buffer_size_;
+  scoped_ptr<api::experimental_socket::Read::Params> params_;
 };
 
 class SocketWriteFunction : public SocketExtensionFunction {
@@ -143,7 +143,6 @@ class SocketWriteFunction : public SocketExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.write")
 
   SocketWriteFunction();
-  void OnCompleted(int result);
 
  protected:
   virtual ~SocketWriteFunction();
@@ -151,20 +150,19 @@ class SocketWriteFunction : public SocketExtensionFunction {
   // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
+  void OnCompleted(int result);
 
  private:
   int socket_id_;
-  scoped_refptr<net::IOBufferWithSize> io_buffer_;
+  scoped_refptr<net::IOBuffer> io_buffer_;
+  size_t io_buffer_size_;
 };
 
 class SocketRecvFromFunction : public SocketExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.recvFrom")
 
-  void OnCompleted(int result,
-                   scoped_refptr<net::IOBuffer> io_buffer,
-                   const std::string& address,
-                   int port);
+  SocketRecvFromFunction();
 
  protected:
   virtual ~SocketRecvFromFunction();
@@ -172,10 +170,13 @@ class SocketRecvFromFunction : public SocketExtensionFunction {
   // AsyncAPIFunction
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
+  void OnCompleted(int result,
+                   scoped_refptr<net::IOBuffer> io_buffer,
+                   const std::string& address,
+                   int port);
 
  private:
-  int socket_id_;
-  int buffer_size_;
+  scoped_ptr<api::experimental_socket::RecvFrom::Params> params_;
 };
 
 class SocketSendToFunction : public SocketExtensionFunction {
@@ -186,15 +187,16 @@ class SocketSendToFunction : public SocketExtensionFunction {
 
  protected:
   virtual ~SocketSendToFunction();
-  void OnCompleted(int result);
 
   // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
+  void OnCompleted(int result);
 
  private:
   int socket_id_;
-  scoped_refptr<net::IOBufferWithSize> io_buffer_;
+  scoped_refptr<net::IOBuffer> io_buffer_;
+  size_t io_buffer_size_;
   std::string address_;
   int port_;
 };

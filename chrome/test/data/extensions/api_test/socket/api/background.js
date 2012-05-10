@@ -42,24 +42,6 @@ function arrayBuffer2String(buf, callback) {
   f.readAsText(bb.getBlob());
 }
 
-function arrayBufferToArrayOfLongs(arrayBuffer) {
-  var longs = [];
-  var arrayBufferView = new Uint8Array(arrayBuffer);
-  for (var i = 0; i < arrayBufferView.length; ++i) {
-    longs[i] = arrayBufferView[i];
-  }
-  return longs;
-}
-
-function arrayOfLongsToArrayBuffer(longs) {
-  var arrayBuffer = new ArrayBuffer(longs.length);
-  var arrayBufferView = new Uint8Array(arrayBuffer);
-  for (var i = 0; i < longs.length; ++i) {
-    arrayBufferView[i] = longs[i];
-  }
-  return arrayBuffer;
-}
-
 var testSocketCreation = function() {
   function onCreate(socketInfo) {
     chrome.test.assertTrue(socketInfo.socketId > 0);
@@ -76,18 +58,17 @@ var testSocketCreation = function() {
 };
 
 function onDataRead(readInfo) {
-  if (readInfo.resultCode > 0 || readInfo.data.length > 0) {
-    chrome.test.assertEq(readInfo.resultCode, readInfo.data.length);
+  if (readInfo.resultCode > 0 || readInfo.data.byteLength > 0) {
+    chrome.test.assertEq(readInfo.resultCode, readInfo.data.byteLength);
   }
 
-  // TODO(miket): this isn't correct for multiple calls of onDataRead.
-  arrayBuffer2String(arrayOfLongsToArrayBuffer(readInfo.data), function(s) {
+  arrayBuffer2String(readInfo.data, function(s) {
       dataAsString = s;  // save this for error reporting
       if (s.match(expectedResponsePattern)) {
         succeeded = true;
         chrome.test.succeed();
       }
-    });
+  });
 }
 
 function onWriteOrSendToComplete(writeInfo) {
@@ -103,11 +84,10 @@ function onWriteOrSendToComplete(writeInfo) {
 function onConnectOrBindComplete(connectResult) {
   if (connectResult == 0) {
     string2ArrayBuffer(request, function(arrayBuffer) {
-        var longs = arrayBufferToArrayOfLongs(arrayBuffer);
         if (protocol == "tcp")
-          socket.write(socketId, longs, onWriteOrSendToComplete);
+          socket.write(socketId, arrayBuffer, onWriteOrSendToComplete);
         else
-          socket.sendTo(socketId, longs, address, port,
+          socket.sendTo(socketId, arrayBuffer, address, port,
               onWriteOrSendToComplete);
       });
   }

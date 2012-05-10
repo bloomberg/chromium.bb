@@ -27,10 +27,7 @@
     // The resultCode returned from the underlying read() call.
     long resultCode;
 
-    // The data received. Warning: will probably become a blob or other
-    // appropriate binary-friendly type.
-    // TODO(miket): [instanceOf=ArrayBuffer]object data;
-    long[] data;
+    ArrayBuffer data;
   };
 
   callback ReadCallback = void (ReadInfo readInfo);
@@ -46,10 +43,7 @@
     // The resultCode returned from the underlying read() call.
     long resultCode;
 
-    // The data received. Warning: will probably become a blob or other
-    // appropriate binary-friendly type.
-    // TODO(miket): [instanceOf=ArrayBuffer]object data;
-    long[] data;
+    ArrayBuffer data;
     DOMString address;
     long port;
   };
@@ -116,9 +110,8 @@
     // write operation completes without blocking, the write operation blocked
     // before completion (in which case onEvent() will eventually be called with
     // a <code>writeComplete</code> event), or an error occurred.
-    // TODO(miket): [instanceOf=ArrayBuffer]object data;
     static void write(long socketId,
-                      long[] data,
+                      ArrayBuffer data,
                       WriteCallback callback);
 
     // Reads data from the given socket.
@@ -141,7 +134,7 @@
     // before completion (in which case onEvent() will eventually be called with
     // a <code>writeComplete</code> event), or an error occurred.
     static void sendTo(long socketId,
-                       long[] data,
+                       ArrayBuffer data,
                        DOMString address,
                        long port,
                        SendToCallback callback);
