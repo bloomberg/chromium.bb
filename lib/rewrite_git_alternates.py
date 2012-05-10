@@ -24,35 +24,10 @@ path = os.path.normpath(os.path.join(os.path.dirname(path), '..', '..'))
 sys.path.insert(0, path)
 
 from chromite.lib import cros_build_lib
+from chromite.lib import osutils
+
 
 _CACHE_NAME = '.cros_projects.list'
-
-# TODO(ferringb): either move _atomic_writefile, and
-# _safe_unlink into a library, or refactor it to use snakeoil; do this
-# once the question of whether or not to use snakeoil is answered.
-
-def _atomic_writefile(path, data):
-  """Write to a tmpfile, than use rename to ensure nothing see partial data"""
-
-  tmp = path + '.tmp'
-
-  with open(tmp, 'w') as f:
-    f.write(data)
-
-  try:
-    os.rename(tmp, path)
-  except EnvironmentError:
-    _safe_unlink(tmp, True)
-
-    raise
-
-
-def _safe_unlink(path, suppress=False):
-  try:
-    os.unlink(path)
-  except EnvironmentError, e:
-    if not suppress or e.errno != errno.ENOENT:
-      raise
 
 
 def _FilterNonExistentProjects(project_dir, projects):
@@ -92,9 +67,9 @@ def _UpdateAlternatesDir(alternates_root, reference_maps, projects):
       if os.path.exists(k):
         paths.append(os.path.join(v, '.repo', 'projects', project, 'objects'))
 
-    cros_build_lib.SafeMakedirs(os.path.dirname(alt_path))
+    osutils.SafeMakedirs(os.path.dirname(alt_path))
 
-    _atomic_writefile(alt_path, '%s\n' % ('\n'.join(paths),))
+    osutils.WriteFile(alt_path, '%s\n' % ('\n'.join(paths),), atomic=True)
 
 
 def _UpdateGitAlternates(proj_root, projects):
@@ -105,14 +80,14 @@ def _UpdateGitAlternates(proj_root, projects):
     tmp_path = '%s.tmp' % alt_path
 
     # Clean out any tmp files that may have existed prior.
-    _safe_unlink(tmp_path, True)
+    osutils.SafeUnlink(tmp_path)
 
     # The pathway is written relative to the alternates files absolute path;
     # literally, .repo/projects/chromite.git/objects/info/alternates.
     relpath = '../' * (project.count('/') + 4)
     relpath = os.path.join(relpath, 'alternates', project)
 
-    cros_build_lib.SafeMakedirs(os.path.dirname(tmp_path))
+    osutils.SafeMakedirs(os.path.dirname(tmp_path))
     os.symlink(relpath , tmp_path)
     os.rename(tmp_path, alt_path)
 
@@ -129,8 +104,7 @@ def _GetProjects(repo_root):
 
   try:
     if long(os.path.getmtime(cache_path)) == manifest_time:
-      with open(cache_path) as f:
-        return f.read().split()
+      return osutils.ReadFile(cache_path).split()
   except EnvironmentError, e:
     if e.errno != errno.ENOENT:
       raise
@@ -168,13 +142,7 @@ def _RebuildRepoCheckout(target_root, reference_map,
   projects = _FilterNonExistentProjects(proj_root, projects)
   projects = list(sorted(projects))
 
-  cros_build_lib.SafeMakedirs(alternates_dir)
-  try:
-    os.makedirs(alternates_dir, 0775)
-  except EnvironmentError, e:
-    if e.errno != errno.EEXIST:
-      raise
-
+  if not osutils.SafeMakedirs(alternates_dir, 0775):
     # We know the directory exists; thus cleanse out
     # dead alternates.
     _CleanAlternates(projects, alternates_dir)

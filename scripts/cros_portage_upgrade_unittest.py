@@ -22,6 +22,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import cros_test_lib as test_lib
+from chromite.lib import osutils
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import cros_portage_upgrade as cpu
 from chromite.scripts import parallel_emerge
@@ -555,9 +556,7 @@ class CopyUpstreamTest(CpuTestBase):
       for ebuild in ebuilds:
         ebuild_path = os.path.join(portdir, ebuild)
 
-        fd = open(ebuild_path, 'r')
-        text = fd.read()
-        fd.close()
+        text = osutils.ReadFile(ebuild_path)
 
         def repl(match):
           return match.group(1) + '\ninherit ' + eclass
@@ -3349,11 +3348,8 @@ class StabilizeEbuildTest(CpuTestBase):
     self._TestStabilizeEbuild(ebuild_path, arch)
 
     # Read content back after test.
-    content = None
-    with open(ebuild_path, 'r') as f:
-      content = f.read()
+    content_lines = osutils.ReadFile(ebuild_path).splitlines()
 
-    content_lines = content.split('\n')
     self._AssertEqualsExcludingComments(gold_content, content_lines)
 
   @test_lib.tempfile_decorator

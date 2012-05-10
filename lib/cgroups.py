@@ -11,6 +11,7 @@ import signal
 import time
 
 from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import osutils
 from chromite.lib import signals
 from chromite.lib import sudo
 
@@ -43,9 +44,8 @@ from chromite.lib import sudo
 
 def _FileContains(filename, strings):
   """Greps a group of expressions, returns whether all were found."""
-  with open(filename, 'r') as f:
-    contents = f.read()
-    return all(s in contents for s in strings)
+  contents = osutils.ReadFile(filename)
+  return all(s in contents for s in strings)
 
 
 def MemoizedSingleCall(functor):
@@ -134,13 +134,13 @@ class Cgroup(object):
 
     if not _FileContains('/proc/mounts', [cls.MOUNT_ROOT]):
       # Not all distros mount cgroup_root to sysfs.
-      cros_lib.SafeMakedirs(cls.MOUNT_ROOT, sudo=True)
+      osutils.SafeMakedirs(cls.MOUNT_ROOT, sudo=True)
       cros_lib.SudoRunCommand(['mount', '-t', 'tmpfs', 'cgroup_root',
                               cls.MOUNT_ROOT], print_cmd=False)
 
     # Mount the root hierarchy.
     if not _FileContains('/proc/mounts', [cls.CGROUP_ROOT]):
-      cros_lib.SafeMakedirs(cls.CGROUP_ROOT, sudo=True)
+      osutils.SafeMakedirs(cls.CGROUP_ROOT, sudo=True)
       opts = ','.join(cls.NEEDED_SUBSYSTEMS)
       # This hierarchy is exclusive to cros, so it probably doesn't exist.
       cros_lib.SudoRunCommand(['mount', '-t', 'cgroup', '-o', opts,
@@ -304,8 +304,7 @@ class Cgroup(object):
 
     If the file doesn't exist, return the given default."""
     try:
-      with open(os.path.join(self.path, key)) as f:
-        return f.read()
+      return osutils.ReadFile(os.path.join(self.path, key))
     except EnvironmentError, e:
       if e.errno != errno.ENOENT:
         raise
@@ -337,7 +336,7 @@ class Cgroup(object):
 
     if self.parent is not None:
       self.parent.Instantiate()
-    cros_lib.SafeMakedirs(self.path, sudo=True)
+    osutils.SafeMakedirs(self.path, sudo=True)
 
     force_inheritance = True
     if self.parent.GetValue('cgroup.clone_children', '').strip() == '1':
@@ -609,8 +608,7 @@ class Cgroup(object):
       # See the kernels Documentation/filesystems/proc.txt if you're unfamiliar
       # w/ procfs, and keep in mind that we have to work across multiple kernel
       # versions.
-      with open('/proc/%s/cpuset' % (pid,), 'r') as f:
-        cpuset = f.read().rstrip('\n')
+      cpuset = osutils.ReadFile('/proc/%s/cpuset' % (pid,)).rstrip('\n')
     except EnvironmentError, e:
       if e.errno != errno.ENOENT:
         raise

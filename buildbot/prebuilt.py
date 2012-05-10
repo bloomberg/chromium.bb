@@ -3,8 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""
-This script is used to upload host prebuilts as well as board BINHOSTS.
+"""This script is used to upload host prebuilts as well as board BINHOSTS.
 
 If the URL starts with 'gs://', we upload using gsutil to Google Storage.
 Otherwise, rsync is used.
@@ -39,6 +38,7 @@ if __name__ == '__main__':
   sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.lib import cros_build_lib
+from chromite.lib import osutils
 from chromite.lib.binpkg import (GrabLocalPackageIndex, GrabRemotePackageIndex)
 
 _RETRIES = 3
@@ -133,9 +133,7 @@ def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
 
   file_fh.close()
   # write out new file
-  new_file_fh = open(filename, 'w')
-  new_file_fh.write('\n'.join(file_lines) + '\n')
-  new_file_fh.close()
+  osutils.WriteFile(filename, '\n'.join(file_lines) + '\n')
 
 
 def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST', dryrun=False):
@@ -318,11 +316,8 @@ def UpdateBinhostConfFile(path, key, value):
   """
   cwd = os.path.dirname(os.path.abspath(path))
   filename = os.path.basename(path)
-  if not os.path.isdir(cwd):
-    os.makedirs(cwd)
-  if not os.path.isfile(path):
-    config_file = file(path, 'w')
-    config_file.close()
+  osutils.SafeMakedirs(cwd)
+  osutils.WriteFile(path, '')
   UpdateLocalFile(path, value, key)
   cros_build_lib.RunCommand(['git', 'add', filename], cwd=cwd)
   description = 'Update %s="%s" in %s' % (key, value, filename)

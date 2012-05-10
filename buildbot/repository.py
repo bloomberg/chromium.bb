@@ -16,6 +16,7 @@ import tempfile
 
 from chromite.buildbot import configure_repo
 from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import osutils
 from chromite.lib import rewrite_git_alternates
 
 # File that marks a buildroot as being used by a trybot
@@ -80,8 +81,7 @@ def CloneGitRepo(working_dir, repo_url, reference=None):
       from.  Note that the reference must exist as long as the newly created
       repo is to be usable.
   """
-  if not os.path.exists(working_dir):
-    os.makedirs(working_dir)
+  osutils.SafeMakedirs(working_dir)
   cmd = ['git', 'clone', repo_url, working_dir]
   if reference:
     cmd += ['--reference', reference]
@@ -95,7 +95,7 @@ def GetTrybotMarkerPath(buildroot):
 
 def CreateTrybotMarker(buildroot):
   """Create the file that identifies a buildroot as being used by a trybot."""
-  open(GetTrybotMarkerPath(buildroot), 'w').close()
+  osutils.WriteFile(GetTrybotMarkerPath(buildroot), '')
 
 
 def ClearBuildRoot(buildroot):

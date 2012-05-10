@@ -26,6 +26,7 @@ from chromite.buildbot import repository
 from chromite.buildbot import manifest_version_unittest
 from chromite.buildbot import patch
 from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import osutils
 
 
 # pylint: disable=W0212,R0904
@@ -82,7 +83,7 @@ class LKGMCandidateInfoTest(mox.MoxTestBase):
   @classmethod
   def CreateFakeVersionFile(cls, tmpdir):
     """Helper method to create a version file from FAKE_VERSION."""
-    if not os.path.exists(tmpdir): os.makedirs(tmpdir)
+    osutils.SafeMakedirs(tmpdir)
     (version_file_fh, version_file) = tempfile.mkstemp(dir=tmpdir)
     os.write(version_file_fh, FAKE_VERSION)
     os.close(version_file_fh)

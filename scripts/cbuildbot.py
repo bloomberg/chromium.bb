@@ -35,6 +35,7 @@ from chromite.buildbot import tee
 from chromite.lib import cgroups
 from chromite.lib import cleanup
 from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import osutils
 from chromite.lib import sudo
 
 
@@ -568,7 +569,7 @@ def _RunBuildStagesWrapper(options, build_config):
     dirname = options.log_dir or default_dir
     log_file = os.path.join(dirname, _BUILDBOT_LOG_FILE)
 
-    cros_lib.SafeMakedirs(dirname)
+    osutils.SafeMakedirs(dirname)
     _BackupPreviousLog(log_file)
 
   try:

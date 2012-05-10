@@ -21,6 +21,7 @@ import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import gerrit_helper
 
@@ -47,10 +48,6 @@ FAKE_PATCH_JSON = {
 GERRIT_OPEN_CHANGEID = '8366'
 GERRIT_MERGED_CHANGEID = '3'
 GERRIT_ABANDONED_CHANGEID = '1'
-
-def _writefile(path, content):
-  with open(path, 'w') as f:
-    f.write(content)
 
 
 class _PatchSuppression(object):
@@ -156,7 +153,7 @@ I am the first commit.
     return self._GetSha1(repo, 'HEAD')
 
   def CommitFile(self, repo, filename, content, commit=None, **kwds):
-    _writefile(os.path.join(repo, filename), content)
+    osutils.WriteFile(os.path.join(repo, filename), content)
     self._run(['git', 'add', filename], repo)
     sha1 = self._MakeCommit(repo, commit=commit)
     if not self.has_native_change_id:

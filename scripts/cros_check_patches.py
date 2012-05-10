@@ -14,6 +14,7 @@ import tempfile
 import functools
 
 from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import osutils
 
 
 class PatchReporter(object):
@@ -180,7 +181,7 @@ def main(argv):
   # DepGraphGenerator/emerge rather than us. Extract what we need
   # without disturbing the rest.
   config_path = argv.pop()
-  config = json.loads(file(config_path).read())
+  config = json.loads(osutils.ReadFile(config_path))
   overlay_dir = argv.pop()
   board = [x.split('=')[1] for x in argv if x.find('--board=') != -1]
   if board:

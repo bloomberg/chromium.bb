@@ -17,6 +17,7 @@ import shutil
 import tempfile
 
 from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import osutils
 from chromite.lib import operation
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import merge_package_status as mps
@@ -718,8 +719,7 @@ class Upgrader(object):
         self._RunGit(self._stable_repo, ['rm', '-rf'] + items,
                      redirect_stdout=True)
 
-    if not os.path.exists(pkgdir):
-      os.makedirs(pkgdir)
+    osutils.SafeMakedirs(pkgdir)
 
     # Grab all non-blacklisted, non-ebuilds from upstream plus the specific
     # ebuild requested.
@@ -756,9 +756,7 @@ class Upgrader(object):
                         re.MULTILINE | re.DOTALL)
 
     # Read in entire ebuild.
-    content = None
-    with open(ebuild_path, 'r') as f:
-      content = f.read()
+    content = osutils.ReadFile(ebuild_path)
 
     # Replace ~<arch> with <arch> in KEYWORDS.
     def repl(match):
@@ -842,8 +840,7 @@ class Upgrader(object):
         return False
       else:
         oper.Notice('Copying %s from upstream.' % eclass)
-        if not os.path.exists(os.path.dirname(local_path)):
-          os.makedirs(os.path.dirname(local_path))
+        osutils.SafeMakedirs(os.path.dirname(local_path))
         shutil.copy2(upstream_path, local_path)
         self._RunGit(self._stable_repo, ['add', eclass_subpath])
         return True

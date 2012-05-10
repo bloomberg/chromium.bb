@@ -9,6 +9,7 @@ import multiprocessing
 import tempfile
 import sys
 
+from chromite.lib import osutils
 
 def main(argv):
   """Build packages according to options specified on command-line."""
@@ -51,11 +52,10 @@ def _GetLatestPrebuiltPrefix(board):
   """
   # TODO(davidjames): Also append profile names here.
   prefix = "http://commondatastorage.googleapis.com/chromeos-prebuilt/board"
-  tmpfile = tempfile.NamedTemporaryFile()
-  _Run("curl '%s/%s-latest' -o %s" % (prefix, board, tmpfile.name), retries=3)
-  tmpfile.seek(0)
-  latest = tmpfile.read().strip()
-  tmpfile.close()
+  with tempfile.NamedTemporaryFile() as tmpfile:
+    _Run("curl '%s/%s-latest' -o %s" % (prefix, board, tmpfile.name), retries=3)
+    tmpfile.seek(0)
+    latest = tmpfile.read().strip()
   return "%s/%s" % (prefix, latest)
 
 
@@ -80,8 +80,7 @@ def _GetPrebuiltDownloadCommands(prefix):
       url = "%s/%s" % (prefix, path)
       dirname = "packages/%s" % pkgpath
       fullpath = "packages/%s" % path
-      if not os.path.exists(dirname):
-        os.makedirs(dirname)
+      osutils.SafeMakedirs(dirname)
       if not os.path.exists(fullpath):
         cmds.append("curl -s %s -o %s" % (url, fullpath))
   return cmds
@@ -259,5 +258,5 @@ class PackageBuilder(object):
     default_board_file = "%s/.default_board" % self.scripts_dir
     default_board = None
     if os.path.exists(default_board_file):
-      default_board = file(default_board_file).read().strip()
+      default_board = osutils.ReadFile(default_board_file).strip()
     return default_board

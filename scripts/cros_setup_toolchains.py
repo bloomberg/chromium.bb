@@ -14,6 +14,7 @@ import sys
 
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import osutils
 
 # Some sanity checks first.
 if not cros_build_lib.IsInsideChroot():
@@ -180,11 +181,9 @@ def GetAllTargets():
   for overlay in overlays:
     config = os.path.join(overlay, 'toolchain.conf')
     if os.path.exists(config):
-      with open(config) as config_file:
-        lines = config_file.read().splitlines()
-        for line in lines:
-          line = line.split('#', 1)[0]
-          targets.update(line.split())
+      for line in osutils.ReadFile(config).splitlines():
+        line = line.split('#', 1)[0]
+        targets.update(line.split())
 
   # Remove the host target as that is not a cross-target. Replace with 'host'.
   targets.discard(GetHostTuple())
@@ -327,11 +326,7 @@ def RemovePackageMask(target):
     target - the target for which to remove the file
   """
   maskfile = os.path.join('/etc/portage/package.mask', 'cross-' + target)
-  try:
-    os.unlink(maskfile)
-  except EnvironmentError as e:
-    if e.errno != errno.ENOENT:
-      raise
+  osutils.SafeUnlink(maskfile)
 
 
 def CreatePackageMask(target, masks):
@@ -344,7 +339,7 @@ def CreatePackageMask(target, masks):
   """
   maskfile = os.path.join('/etc/portage/package.mask', 'cross-' + target)
   assert not os.path.exists(maskfile)
-  cros_build_lib.SafeMakedirs(os.path.dirname(maskfile))
+  osutils.SafeMakedirs(os.path.dirname(maskfile))
 
   with open(maskfile, 'w') as f:
     for pkg, m in masks.items():
@@ -363,12 +358,9 @@ def CreatePackageKeywords(target):
     target - target for which to recreate package.keywords
   """
   maskfile = os.path.join('/etc/portage/package.keywords', 'cross-' + target)
-  try:
-    os.unlink(maskfile)
-  except EnvironmentError as e:
-    if e.errno != errno.ENOENT:
-      raise
-  cros_build_lib.SafeMakedirs(os.path.dirname(maskfile))
+  osutils.SafeUnlink(maskfile)
+
+  osutils.SafeMakedirs(os.path.dirname(maskfile))
 
   keyword = GetPortageKeyword(target)
 

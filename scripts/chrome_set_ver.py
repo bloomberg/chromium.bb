@@ -12,6 +12,7 @@ import re
 
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import osutils
 
 
 _CHROMIUM_ROOT = 'chromium'
@@ -271,9 +272,7 @@ def GetParsedDeps(deps_file):
     An (x,y) tuple.  x is a dictionary containing the contents of the DEPS file,
     and y is a dictionary containing the result of merging unix and common deps.
   """
-  with open(deps_file, 'rU') as f:
-    deps = _LoadDEPS(f.read())
-
+  deps = _LoadDEPS(osutils.ReadFile(deps_file, 'rU'))
   merged_deps = deps.get('deps', {})
   unix_deps = deps.get('deps_os', {}).get('unix', {})
   merged_deps = _MergeDeps(merged_deps, unix_deps)

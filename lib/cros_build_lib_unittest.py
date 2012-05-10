@@ -23,6 +23,7 @@ import __builtin__
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib import signals as cros_signals
 
 # pylint: disable=W0212,R0904
@@ -365,8 +366,7 @@ class TestRunCommandLogging(cros_test_lib.TempDirMixin, unittest.TestCase):
     log = os.path.join(self.tempdir, 'output')
     ret = cros_build_lib.RunCommand(
         ['python', '-c', 'print "monkeys"'], log_stdout_to_file=log)
-    with open(log) as f:
-      self.assertEqual(f.read(), 'monkeys\n')
+    self.assertEqual(osutils.ReadFile(log), 'monkeys\n')
     self.assertTrue(ret.output is None)
     self.assertTrue(ret.error is None)
 
@@ -375,8 +375,7 @@ class TestRunCommandLogging(cros_test_lib.TempDirMixin, unittest.TestCase):
         ['python', '-c', 'import sys;print "monkeys2"'],
         log_stdout_to_file=log, redirect_stdout=True)
     self.assertTrue(ret.output is None)
-    with open(log) as f:
-      self.assertEqual(f.read(), 'monkeys2\n')
+    self.assertEqual(osutils.ReadFile(log), 'monkeys2\n')
 
     os.unlink(log)
     ret = cros_build_lib.RunCommand(
@@ -394,8 +393,7 @@ class TestRunCommandLogging(cros_test_lib.TempDirMixin, unittest.TestCase):
     self.assertTrue(ret.output is None)
     self.assertTrue(ret.error is None)
 
-    with open(log) as f:
-      self.assertEqual(f.read(), 'monkeys4\nmonkeys5\n')
+    self.assertEqual(osutils.ReadFile(log), 'monkeys4\nmonkeys5\n')
 
 
 class TestRunCommandWithRetries(unittest.TestCase):

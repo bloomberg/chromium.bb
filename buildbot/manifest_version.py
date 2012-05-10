@@ -16,6 +16,7 @@ import time
 
 from chromite.buildbot import constants, repository
 from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import osutils
 
 
 PUSH_BRANCH = 'temp_auto_checkin_branch'
@@ -129,16 +130,16 @@ def CreateSymlink(src_file, dest_file, remove_file=None):
     remove_file: symlink that needs to be deleted for clearing the old state
   """
   dest_dir = os.path.dirname(dest_file)
-  if os.path.lexists(dest_file): os.unlink(dest_file)
-  if not os.path.exists(dest_dir): os.makedirs(dest_dir)
+  osutils.SafeUnlink(dest_file)
+  osutils.SafeMakedirs(dest_dir)
 
   rel_src_file = os.path.relpath(src_file, dest_dir)
   logging.debug('Linking %s to %s', rel_src_file, dest_file)
   os.symlink(rel_src_file, dest_file)
 
-  if remove_file and os.path.lexists(remove_file):
+  if remove_file:
     logging.debug('REMOVE: Removing  %s', remove_file)
-    os.unlink(remove_file)
+    osutils.SafeUnlink(remove_file)
 
 
 class VersionInfo(object):
@@ -483,8 +484,7 @@ class BuildSpecsManager(object):
 
     # Copy the manifest into the manifest repository.
     spec_file = '%s.xml' % os.path.join(self.all_specs_dir, version)
-    if not os.path.exists(os.path.dirname(spec_file)):
-      os.makedirs(os.path.dirname(spec_file))
+    osutils.SafeMakedirs(os.path.dirname(spec_file))
 
     shutil.copyfile(manifest, spec_file)
 

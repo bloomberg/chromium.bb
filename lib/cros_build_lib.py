@@ -1061,29 +1061,6 @@ def YesNoPrompt(default, prompt="Do you want to continue", warning="",
       return NO
 
 
-def SafeMakedirs(path, mode=0775, sudo=False):
-  """Make parent directories if needed.  Ignore if existing.
-
-  Arguments:
-    path: The path to create.  Intermediate directories will be created as
-          needed.
-    mode: The access permissions in the style of chmod
-    sudo: If True, create it via sudo, thus root owned.
-  Raises:
-    EnvironmentError: if the makedir failed and it was non sudo.
-    RunCommandError: If sudo mode, and the command failed for any reason.
-  """
-  if sudo:
-    SudoRunCommand(['mkdir', '-p', '--mode', oct(mode), path],
-                   print_cmd=False)
-    return
-  try:
-    os.makedirs(path, mode)
-  except EnvironmentError, e:
-    if e.errno != errno.EEXIST:
-      raise
-
-
 # Suppress whacked complaints about abstract class being unused.
 #pylint: disable=R0921
 class MasterPidContextManager(object):

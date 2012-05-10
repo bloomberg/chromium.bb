@@ -21,6 +21,7 @@ from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import osutils
 
 # pylint: disable=W0212,R0904
 FAKE_VERSION = """
@@ -40,11 +41,8 @@ GIT_TEST_PATH = 'chromite'
 
 def TouchFile(file_path):
   """Touches a file specified by file_path"""
-  if not os.path.exists(os.path.dirname(file_path)):
-    os.makedirs(os.path.dirname(file_path))
-
-  touch_file = open(file_path, 'w+')
-  touch_file.close()
+  osutils.SafeMakedirs(os.path.dirname(file_path))
+  osutils.WriteFile(file_path, 'w+')
 
 
 class HelperMethodsTest(unittest.TestCase):
