@@ -585,13 +585,7 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
         ['python', '-c', code % '_GetTestData()'],
         cwd=self.tempdir, print_cmd=False)
 
-    try:
-      self._CheckTestData(pickle.loads(ret.output))
-    except EOFError:
-      # TODO(ferringb): remove this after these tests land;
-      # this is needed purely for compatibility against ToT which
-      # currently lacks the necessary test methods
-      pass
+    self._CheckTestData(ret.output)
 
   @staticmethod
   def _GetTestData():
