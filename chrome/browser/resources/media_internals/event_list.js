@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,8 +49,8 @@ cr.define('media', function() {
       row.appendChild(media.makeElement('td', timeInMs.toFixed(1)));
       row.appendChild(media.makeElement('td', event.type));
       var params = [];
-      for (var i = 0; i < event.params.length; ++i) {
-        params.push(i + ': ' + event.params[i]);
+      for (var key in event.params) {
+        params.push(key + ': ' + event.params[key]);
       }
 
       row.appendChild(media.makeElement('td', params.join(', ')));
