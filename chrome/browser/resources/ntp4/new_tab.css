@@ -372,13 +372,13 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
   z-index: 5;
 }
 
-#chrome-web-store-href {
+#chrome-web-store-link {
   -webkit-padding-end: 12px;
   /* Match transition delay of recently closed button. */
   -webkit-transition-delay: 100ms;
   color: inherit;
   cursor: pointer;
-  display: none;
+  display: inline-block;
   margin: 0;
   text-decoration: none;
 }
@@ -391,7 +391,7 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
   line-height: 49px;
 }
 
-#chrome-web-store-href:hover {
+#chrome-web-store-link:hover {
   color: #666;
 }
 
@@ -399,28 +399,17 @@ html[dir='rtl'] #chrome-web-store-title {
   background-position-x: left;
 }
 
-/* Show the chrome web store footer link when the experiment is turned on. */
-.enable-cws-experiment #chrome-web-store-href {
-  display: inline-block;
-}
-
 #vertical-separator {
   background-color: rgb(178, 178, 178);
-  display: none;
+  display: inline-block;
   height: 20px;
   margin: 0;
   vertical-align: middle;
   width: 1px;
 }
 
-/* Show the separator only if one of the menus is visible. */
-.enable-cws-experiment
-    .footer-menu-button:not(.invisible) ~ #vertical-separator {
-  display: inline-block;
-}
-
 /* In trash mode, hide the menus and web store link. */
-#footer.showing-trash-mode #chrome-web-store-href,
+#footer.showing-trash-mode #chrome-web-store-link,
 #footer.showing-trash-mode .menu-container {
   -webkit-transition-delay: 0;
   opacity: 0;

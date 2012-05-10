@@ -180,7 +180,6 @@ extern const char kEnableTabGroupsContextMenu[];
 extern const char kEnableWatchdog[];
 extern const char kEnableWebsiteSettings[];
 extern const char kEnableWebSocketOverSpdy[];
-extern const char kEnableWebStoreLink[];
 extern const char kEventPageIdleTime[];
 extern const char kEventPageUnloadingTime[];
 extern const char kExperimentalSpellcheckerFeatures[];

@@ -632,9 +632,6 @@ const char kEnableWebsiteSettings[]         = "enable-website-settings";
 // Uses WebSocket over SPDY.
 const char kEnableWebSocketOverSpdy[]       = "enable-websocket-over-spdy";
 
-// Enables the web store link experiment.
-const char kEnableWebStoreLink[]            = "enable-webstore-link";
-
 // Enables experimental features for Spellchecker. Right now, the first
 // experimental feature is auto spell correct, which corrects words which are
 // misspelled by typing the word with two consecutive letters swapped. The
@@ -912,9 +909,6 @@ const char kNoStartupWindow[]               = "no-startup-window";
 // Shows a desktop notification that the cloud print token has expired and that
 // user needs to re-authenticate.
 const char kNotifyCloudPrintTokenExpired[]  = "notify-cp-token-expired";
-
-// Shows a [+] at the end of apps pages on the NTP.
-const char kNtpAppInstallHint[]             = "ntp-app-install-hint";
 
 // Specifies the maximum number of threads to use for running the Proxy
 // Autoconfig (PAC) script.

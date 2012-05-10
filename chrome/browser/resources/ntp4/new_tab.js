@@ -153,19 +153,10 @@ cr.define('ntp', function() {
     }
 
     var webStoreLink = loadTimeData.getString('webStoreLink');
-    if (loadTimeData.getBoolean('isWebStoreExperimentEnabled')) {
-      var url = appendParam(webStoreLink, 'utm_source', 'chrome-ntp-launcher');
-      $('chrome-web-store-href').href = url;
-      $('chrome-web-store-href').addEventListener('click',
-          onChromeWebStoreButtonClick);
-
-      $('footer-content').classList.add('enable-cws-experiment');
-    }
-
-    if (loadTimeData.getBoolean('appInstallHintEnabled')) {
-      var url = appendParam(webStoreLink, 'utm_source', 'chrome-ntp-plus-icon');
-      $('app-install-hint-template').href = url;
-    }
+    var url = appendParam(webStoreLink, 'utm_source', 'chrome-ntp-launcher');
+    $('chrome-web-store-link').href = url;
+    $('chrome-web-store-link').addEventListener('click',
+        onChromeWebStoreButtonClick);
 
     if (loadTimeData.getString('login_status_message')) {
       loginBubble = new cr.ui.Bubble;

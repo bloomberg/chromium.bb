@@ -78,7 +78,7 @@ body {
 
 .bare-minimum .footer-menu-button:hover,
 .bare-minimum .footer-menu-button[menu-shown],
-.bare-minimum #chrome-web-store-href:hover {
+.bare-minimum #chrome-web-store-link:hover {
   color: rgba($23, 0.85);  /* COLOR_NTP_TEXT */
 }
 
@@ -106,20 +106,4 @@ body {
 
 .filler .thumbnail {
   border-color: $2;  /* COLOR_NTP_BACKGROUND */
-}
-
-/* App install hint ***********************************************************/
-
-.app-install-hint:hover .app-install-hint-interior > .interior-background,
-.app-install-hint:active .app-install-hint-interior > .interior-background {
-  background-color: rgba($23, 0.2);  /* COLOR_NTP_SECTION_BORDER */
-}
-
-.app-install-hint-interior > .vertical-bar,
-.app-install-hint-interior > .horizontal-bar {
-  background-color: $21;  /* COLOR_NTP_TEXT_LIGHT */
-}
-
-.app-install-hint-interior {
-  border-color: $21;  /* COLOR_NTP_TEXT_LIGHT */
 }

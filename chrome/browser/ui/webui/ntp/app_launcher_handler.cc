@@ -837,16 +837,6 @@ void AppLauncherHandler::RecordAppLaunchType(
     extension_misc::AppLaunchBucket bucket) {
   UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram, bucket,
                             extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
-
-  static const bool webstore_link_experiment_exists =
-      base::FieldTrialList::TrialExists(kWebStoreLinkExperiment);
-  if (webstore_link_experiment_exists) {
-    UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName(extension_misc::kAppLaunchHistogram,
-                                   kWebStoreLinkExperiment),
-        bucket,
-        extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
-  }
 }
 
 // static

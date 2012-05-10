@@ -374,10 +374,6 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   load_time_data.SetString("webStoreLink",
       GetUrlWithLang(GURL(extension_urls::GetWebstoreLaunchURL())));
-  load_time_data.SetBoolean("isWebStoreExperimentEnabled",
-      NewTabUI::ShouldShowWebStoreFooterLink());
-  load_time_data.SetBoolean("appInstallHintEnabled",
-      NewTabUI::ShouldShowAppInstallHint());
   load_time_data.SetString("appInstallHintText",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_INSTALL_HINT_LABEL));
   load_time_data.SetBoolean("isSuggestionsPageEnabled",

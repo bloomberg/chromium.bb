@@ -27,8 +27,6 @@ cr.define('ntp', function() {
   };
   var DRAG_SOURCE_LIMIT = DRAG_SOURCE.OUTSIDE_NTP + 1;
 
-  /** @const */ var appInstallHintTileLimit = 10;
-
   /**
    * App context menu. The class is designed to be used as a singleton with
    * the app that is currently showing a context menu stored in this.app_.
@@ -648,16 +646,6 @@ cr.define('ntp', function() {
     initialize: function() {
       this.classList.add('apps-page');
 
-      if (loadTimeData.getBoolean('appInstallHintEnabled')) {
-        this.appInstallHint_ = $('app-install-hint-template').cloneNode(true);
-        this.appInstallHint_.addEventListener('click', function(e) {
-          chrome.send('recordAppLaunchByURL',
-              [encodeURIComponent(this.href),
-               APP_LAUNCH.NTP_WEBSTORE_PLUS_ICON]);
-        });
-        this.content_.appendChild(this.appInstallHint_);
-      }
-
       this.addEventListener('cardselected', this.onCardSelected_);
       // Add event listeners for two events, so we can temporarily suppress
       // the app notification bubbles when the app card slides in and out of
@@ -686,7 +674,6 @@ cr.define('ntp', function() {
       }
 
       this.appendTile(new App(appData), animate);
-      this.hintStateMayHaveChanged_();
     },
 
     /**
@@ -705,7 +692,6 @@ cr.define('ntp', function() {
       }
 
       this.addTileAt(new App(appData), index, false);
-      this.hintStateMayHaveChanged_();
     },
 
     /**
@@ -902,83 +888,6 @@ cr.define('ntp', function() {
         ntp.setCurrentDropEffect(dataTransfer, 'move');
       else
         ntp.setCurrentDropEffect(dataTransfer, 'copy');
-    },
-
-    /**
-     * Called when we may need to change app install hint visibility.
-     * @private
-     */
-    hintStateMayHaveChanged_: function() {
-      if (this.updateHintState_())
-        this.repositionTiles_();
-      else
-        this.repositionHint_();
-    },
-
-    /**
-     * Updates whether the app install hint is visible. Returns true if we need
-     * to reposition other tiles (because webstore app changed visibility).
-     * @private
-     */
-    updateHintState_: function() {
-      if (!this.appInstallHint_)
-        return;
-
-      var appsPages = document.querySelectorAll('.apps-page');
-      var numTiles = this.tileElements_.length;
-      var showHint =
-          numTiles < appInstallHintTileLimit && appsPages.length == 1;
-      this.appInstallHint_.hidden = !showHint;
-
-      var webstoreApp = this.querySelector('.webstore');
-      if (!webstoreApp)
-        return false;
-
-      var webstoreTile = findAncestorByClass(webstoreApp, 'tile');
-      if (showHint) {
-        if (!webstoreTile.classList.contains('real'))
-          return false;
-
-        webstoreTile.classList.remove('real');
-        return true;
-      }
-
-      if (webstoreTile.classList.contains('real'))
-        return false;
-
-      webstoreTile.classList.add('real');
-      return true;
-    },
-
-    /**
-     * Repositions the app tile hint (to be called when tiles move).
-     * @private
-     */
-    repositionHint_: function() {
-      if (!this.appInstallHint_ || this.appInstallHint_.hidden)
-        return;
-
-      var index = this.tileElements_.length;
-      var layout = this.layoutValues_;
-      var col = index % layout.numRowTiles;
-      var row = Math.floor(index / layout.numRowTiles);
-      var realX = this.tileGrid_.offsetLeft +
-          col * layout.colWidth + layout.leftMargin;
-
-      var realY =
-          this.topMarginPx_ + row * layout.rowHeight + this.contentPadding;
-
-      this.appInstallHint_.style.left = realX + 'px';
-      this.appInstallHint_.style.right = realX + 'px';
-      this.appInstallHint_.style.top = realY + 'px';
-      this.appInstallHint_.style.width = layout.tileWidth + 'px';
-      this.appInstallHint_.style.height = layout.tileWidth + 'px';
-    },
-
-    /** @inheritDoc */
-    repositionTiles_: function(ignoreNode) {
-      TilePage.prototype.repositionTiles_.call(this, ignoreNode);
-      this.repositionHint_();
     },
   };
 

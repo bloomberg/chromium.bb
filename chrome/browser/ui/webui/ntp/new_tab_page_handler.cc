@@ -57,15 +57,6 @@ void NewTabPageHandler::RegisterMessages() {
         shown_page_type, kHistogramEnumerationMax);
   }
 
-  static const bool webstore_link_experiment_exists =
-      base::FieldTrialList::TrialExists(kWebStoreLinkExperiment);
-  if (webstore_link_experiment_exists) {
-    UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName(kDefaultPageTypeHistogram,
-                                   kWebStoreLinkExperiment),
-        shown_page_type, kHistogramEnumerationMax);
-  }
-
   web_ui()->RegisterMessageCallback("closeNotificationPromo",
       base::Bind(&NewTabPageHandler::HandleCloseNotificationPromo,
                  base::Unretained(this)));
