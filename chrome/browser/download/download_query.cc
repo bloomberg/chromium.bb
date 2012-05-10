@@ -147,7 +147,7 @@ DownloadQuery::FilterCallback BuildRegexFilter(
   UParseError re_err;
   UErrorCode re_status = U_ZERO_ERROR;
   scoped_ptr<icu::RegexPattern> pattern(icu::RegexPattern::compile(
-      icu::UnicodeString::fromUTF8(regex_str), re_err, re_status));
+      icu::UnicodeString::fromUTF8(regex_str.c_str()), re_err, re_status));
   if (!U_SUCCESS(re_status)) return DownloadQuery::FilterCallback();
   return base::Bind(&FindRegex, base::Owned(pattern.release()),
                     base::Bind(accessor));
