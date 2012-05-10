@@ -76,8 +76,8 @@ class LocationBar {
   virtual void Revert() = 0;
 
   // Returns a pointer to the text entry view.
-  virtual const OmniboxView* location_entry() const = 0;
-  virtual OmniboxView* location_entry() = 0;
+  virtual const OmniboxView* GetLocationEntry() const = 0;
+  virtual OmniboxView* GetLocationEntry() = 0;
 
   // Returns a pointer to the testing interface.
   virtual LocationBarTesting* GetLocationBarForTesting() = 0;

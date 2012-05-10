@@ -27,7 +27,7 @@ void ClickHandler::OnMouseReleased(const views::MouseEvent& event) {
 
   // Do not show page info if the user has been editing the location
   // bar, or the location bar is at the NTP.
-  if (location_bar_->location_entry()->IsEditingOrEmpty())
+  if (location_bar_->GetLocationEntry()->IsEditingOrEmpty())
     return;
 
   WebContents* tab = location_bar_->GetTabContentsWrapper()->web_contents();

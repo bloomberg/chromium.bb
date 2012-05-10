@@ -134,8 +134,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual void InvalidatePageActions() OVERRIDE;
   virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE;
   virtual void Revert() OVERRIDE;
-  virtual const OmniboxView* location_entry() const OVERRIDE;
-  virtual OmniboxView* location_entry() OVERRIDE;
+  virtual const OmniboxView* GetLocationEntry() const OVERRIDE;
+  virtual OmniboxView* GetLocationEntry() OVERRIDE;
   virtual LocationBarTesting* GetLocationBarForTesting() OVERRIDE;
 
   // Implement the LocationBarTesting interface.

@@ -173,7 +173,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(window);
     LocationBar* loc_bar = window->GetLocationBar();
     ASSERT_TRUE(loc_bar);
-    *omnibox_view = loc_bar->location_entry();
+    *omnibox_view = loc_bar->GetLocationEntry();
     ASSERT_TRUE(*omnibox_view);
   }
 

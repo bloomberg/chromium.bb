@@ -493,7 +493,7 @@ void OmniboxViewViews::SetForcedQuery() {
     textfield_->SelectRange(ui::Range(current_text.size(), start + 1));
 }
 
-bool OmniboxViewViews::IsSelectAll() {
+bool OmniboxViewViews::IsSelectAll() const {
   // TODO(oshima): IME support.
   return textfield_->text() == textfield_->GetSelectedText();
 }

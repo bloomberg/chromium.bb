@@ -213,7 +213,7 @@ void OmniboxSearchHint::ShowInfoBar() {
 void OmniboxSearchHint::ShowEnteringQuery() {
   LocationBar* location_bar = BrowserList::GetLastActiveWithProfile(
       tab_->profile())->window()->GetLocationBar();
-  OmniboxView* omnibox_view = location_bar->location_entry();
+  OmniboxView* omnibox_view = location_bar->GetLocationEntry();
   location_bar->FocusLocation(true);
   omnibox_view->SetUserText(
       l10n_util::GetStringUTF16(IDS_OMNIBOX_SEARCH_HINT_OMNIBOX_TEXT));

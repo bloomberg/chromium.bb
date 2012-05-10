@@ -416,7 +416,7 @@ void LocationBarViewGtk::BuildSiteTypeArea() {
 }
 
 void LocationBarViewGtk::SetSiteTypeDragSource() {
-  bool enable = !location_entry()->IsEditingOrEmpty();
+  bool enable = !GetLocationEntry()->IsEditingOrEmpty();
   if (enable_location_drag_ == enable)
     return;
   enable_location_drag_ = enable;
@@ -747,11 +747,11 @@ void LocationBarViewGtk::Revert() {
   location_entry_->RevertAll();
 }
 
-const OmniboxView* LocationBarViewGtk::location_entry() const {
+const OmniboxView* LocationBarViewGtk::GetLocationEntry() const {
   return location_entry_.get();
 }
 
-OmniboxView* LocationBarViewGtk::location_entry() {
+OmniboxView* LocationBarViewGtk::GetLocationEntry() {
   return location_entry_.get();
 }
 
@@ -937,7 +937,7 @@ void LocationBarViewGtk::UpdateSiteTypeArea() {
     gtk_widget_hide(GTK_WIDGET(security_info_label_));
   }
 
-  if (location_entry()->IsEditingOrEmpty()) {
+  if (GetLocationEntry()->IsEditingOrEmpty()) {
     // Do not show the tooltip if the user has been editing the location
     // bar, or the location bar is at the NTP.
     gtk_widget_set_tooltip_text(location_icon_image_, "");
@@ -1075,7 +1075,7 @@ gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
   if (event->button == 1) {
     // Do not show page info if the user has been editing the location
     // bar, or the location bar is at the NTP.
-    if (location_entry()->IsEditingOrEmpty())
+    if (GetLocationEntry()->IsEditingOrEmpty())
       return FALSE;
 
     // (0,0) event coordinates indicates that the release came at the end of

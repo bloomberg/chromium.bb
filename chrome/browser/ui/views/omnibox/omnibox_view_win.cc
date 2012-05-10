@@ -714,7 +714,7 @@ void OmniboxViewWin::SetForcedQuery() {
     SetSelection(current_text.length(), start + 1);
 }
 
-bool OmniboxViewWin::IsSelectAll() {
+bool OmniboxViewWin::IsSelectAll() const {
   CHARRANGE selection;
   GetSel(selection);
   return IsSelectAllForRange(selection);

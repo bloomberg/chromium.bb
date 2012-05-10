@@ -38,7 +38,7 @@ class TestingOmniboxView : public OmniboxView {
                                         bool update_popup,
                                         bool notify_text_changed) OVERRIDE {}
   virtual void SetForcedQuery() OVERRIDE {}
-  virtual bool IsSelectAll() OVERRIDE { return false; }
+  virtual bool IsSelectAll() const OVERRIDE { return false; }
   virtual bool DeleteAtEndPressed() OVERRIDE { return false; }
   virtual void GetSelectionBounds(size_t* start, size_t* end) const OVERRIDE {}
   virtual void SelectAll(bool reversed) OVERRIDE {}

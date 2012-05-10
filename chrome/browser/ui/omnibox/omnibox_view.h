@@ -120,7 +120,7 @@ class OmniboxView {
   virtual void SetForcedQuery() = 0;
 
   // Returns true if all text is selected or there is no text at all.
-  virtual bool IsSelectAll() = 0;
+  virtual bool IsSelectAll() const = 0;
 
   // Returns true if the user deleted the suggested text.
   virtual bool DeleteAtEndPressed() = 0;

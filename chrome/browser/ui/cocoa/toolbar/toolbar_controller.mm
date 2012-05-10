@@ -761,8 +761,8 @@ class NotificationBridge : public content::NotificationObserver {
       base::SysNSStringToUTF8([urls objectAtIndex:0]), std::string()));
 
   if (url.SchemeIs(chrome::kJavaScriptScheme)) {
-    browser_->window()->GetLocationBar()->location_entry()->SetUserText(
-        OmniboxView::StripJavascriptSchemas(UTF8ToUTF16(url.spec())));
+    browser_->window()->GetLocationBar()->GetLocationEntry()->SetUserText(
+          OmniboxView::StripJavascriptSchemas(UTF8ToUTF16(url.spec())));
   }
   OpenURLParams params(
       url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);

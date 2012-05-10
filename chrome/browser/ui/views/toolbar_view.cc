@@ -682,7 +682,7 @@ int ToolbarView::OnDragUpdated(const views::DropTargetEvent& event) {
 }
 
 int ToolbarView::OnPerformDrop(const views::DropTargetEvent& event) {
-  return location_bar_->location_entry()->OnPerformDrop(event);
+  return location_bar_->GetLocationEntry()->OnPerformDrop(event);
 }
 
 void ToolbarView::OnThemeChanged() {

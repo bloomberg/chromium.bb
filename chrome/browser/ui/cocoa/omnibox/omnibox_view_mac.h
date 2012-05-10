@@ -57,7 +57,7 @@ class OmniboxViewMac : public OmniboxView,
                                         bool update_popup,
                                         bool notify_text_changed) OVERRIDE;
   virtual void SetForcedQuery() OVERRIDE;
-  virtual bool IsSelectAll() OVERRIDE;
+  virtual bool IsSelectAll() const OVERRIDE;
   virtual bool DeleteAtEndPressed() OVERRIDE;
   virtual void GetSelectionBounds(string16::size_type* start,
                                   string16::size_type* end) const OVERRIDE;

@@ -552,7 +552,7 @@ void OmniboxViewGtk::SetForcedQuery() {
   }
 }
 
-bool OmniboxViewGtk::IsSelectAll() {
+bool OmniboxViewGtk::IsSelectAll() const {
   GtkTextIter sel_start, sel_end;
   gtk_text_buffer_get_selection_bounds(text_buffer_, &sel_start, &sel_end);
 

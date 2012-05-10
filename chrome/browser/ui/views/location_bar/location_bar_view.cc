@@ -875,7 +875,7 @@ void LocationBarView::OnChanged() {
   location_icon_view_->SetImage(
       ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
           location_entry_->GetIcon()));
-  location_icon_view_->ShowTooltip(!location_entry()->IsEditingOrEmpty());
+  location_icon_view_->ShowTooltip(!GetLocationEntry()->IsEditingOrEmpty());
 
   Layout();
   SchedulePaint();
@@ -1111,7 +1111,7 @@ int LocationBarView::GetDragOperationsForView(views::View* sender,
   DCHECK((sender == location_icon_view_) || (sender == ev_bubble_view_));
   WebContents* web_contents = GetWebContentsFromDelegate(delegate_);
   return (web_contents && web_contents->GetURL().is_valid() &&
-          !location_entry()->IsEditingOrEmpty()) ?
+          !GetLocationEntry()->IsEditingOrEmpty()) ?
       (ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK) :
       ui::DragDropTypes::DRAG_NONE;
 }
@@ -1178,11 +1178,11 @@ void LocationBarView::Revert() {
   location_entry_->RevertAll();
 }
 
-const OmniboxView* LocationBarView::location_entry() const {
+const OmniboxView* LocationBarView::GetLocationEntry() const {
   return location_entry_.get();
 }
 
-OmniboxView* LocationBarView::location_entry() {
+OmniboxView* LocationBarView::GetLocationEntry() {
   return location_entry_.get();
 }
 

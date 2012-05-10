@@ -1587,7 +1587,7 @@ void BrowserView::OnWidgetMove() {
   // Close the omnibox popup, if any.
   LocationBarView* location_bar_view = GetLocationBarView();
   if (location_bar_view)
-    location_bar_view->location_entry()->ClosePopup();
+    location_bar_view->GetLocationEntry()->ClosePopup();
 }
 
 views::Widget* BrowserView::GetWidget() {
@@ -2058,7 +2058,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   LocationBarView* location_bar = GetLocationBarView();
 #if defined(OS_WIN) && !defined(USE_AURA)
   OmniboxViewWin* omnibox_view =
-      static_cast<OmniboxViewWin*>(location_bar->location_entry());
+      static_cast<OmniboxViewWin*>(location_bar->GetLocationEntry());
 #endif
   if (!fullscreen) {
     // Hide the fullscreen bubble as soon as possible, since the mode toggle can

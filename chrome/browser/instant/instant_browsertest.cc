@@ -116,7 +116,7 @@ class InstantTest : public InProcessBrowserTest {
   }
 
   OmniboxView* omnibox() const {
-    return browser()->window()->GetLocationBar()->location_entry();
+    return browser()->window()->GetLocationBar()->GetLocationEntry();
   }
 
   TabContentsWrapper* preview() const {

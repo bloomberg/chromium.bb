@@ -1209,7 +1209,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   browser()->FocusLocationBar();
 
   AutocompleteEditController* controller =
-      browser()->window()->GetLocationBar()->location_entry()->model()->
+      browser()->window()->GetLocationBar()->GetLocationEntry()->model()->
           controller();
 
   // Simulate an alt-enter.

@@ -52,7 +52,7 @@ class OmniboxApiTest : public ExtensionApiTest {
   }
 
   AutocompleteController* GetAutocompleteController(Browser* browser) const {
-    return GetLocationBar(browser)->location_entry()->model()->popup_model()->
+    return GetLocationBar(browser)->GetLocationEntry()->model()->popup_model()->
         autocomplete_controller();
   }
 
@@ -178,10 +178,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, FLAKY_Basic) {
 
   {
     ResultCatcher catcher;
-    location_bar->location_entry()->OnBeforePossibleChange();
-    location_bar->location_entry()->SetUserText(
-        ASCIIToUTF16("keyword command"));
-    location_bar->location_entry()->OnAfterPossibleChange();
+    OmniboxView* omnibox_view = location_bar->GetLocationEntry();
+    omnibox_view->OnBeforePossibleChange();
+    omnibox_view->SetUserText( ASCIIToUTF16("keyword command"));
+    omnibox_view->OnAfterPossibleChange();
     location_bar->AcceptInput();
     // This checks that the keyword provider (via javascript)
     // gets told to navigate to the string "command".
@@ -200,15 +200,15 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, FLAKY_PopupStaysClosed) {
   WaitForTemplateURLServiceToLoad();
 
   LocationBar* location_bar = GetLocationBar(browser());
+  OmniboxView* omnibox_view = location_bar->GetLocationEntry();
   AutocompleteController* autocomplete_controller =
       GetAutocompleteController(browser());
-  AutocompletePopupModel* popup_model =
-      GetLocationBar(browser())->location_entry()->model()->popup_model();
+  AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();
 
   // Input a keyword query and wait for suggestions from the extension.
-  location_bar->location_entry()->OnBeforePossibleChange();
-  location_bar->location_entry()->SetUserText(ASCIIToUTF16("keyword comman"));
-  location_bar->location_entry()->OnAfterPossibleChange();
+  omnibox_view->OnBeforePossibleChange();
+  omnibox_view->SetUserText(ASCIIToUTF16("keyword comman"));
+  omnibox_view->OnAfterPossibleChange();
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());
   EXPECT_TRUE(popup_model->IsOpen());

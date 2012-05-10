@@ -320,13 +320,13 @@ void LocationBarViewMac::Revert() {
   omnibox_view_->RevertAll();
 }
 
-const OmniboxView* LocationBarViewMac::location_entry() const {
-    return omnibox_view_.get();
-  }
+const OmniboxView* LocationBarViewMac::GetLocationEntry() const {
+  return omnibox_view_.get();
+}
 
-OmniboxView* LocationBarViewMac::location_entry() {
-    return omnibox_view_.get();
-  }
+OmniboxView* LocationBarViewMac::GetLocationEntry() {
+  return omnibox_view_.get();
+}
 
 LocationBarTesting* LocationBarViewMac::GetLocationBarForTesting() {
   return this;

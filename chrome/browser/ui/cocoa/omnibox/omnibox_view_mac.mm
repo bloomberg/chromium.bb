@@ -386,7 +386,7 @@ void OmniboxViewMac::SetForcedQuery() {
   }
 }
 
-bool OmniboxViewMac::IsSelectAll() {
+bool OmniboxViewMac::IsSelectAll() const {
   if (![field_ currentEditor])
     return true;
   const NSRange all_range = NSMakeRange(0, GetTextLength());
