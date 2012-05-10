@@ -306,8 +306,11 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       if (point.point_id() > old_point.point_id())
         point.set_point_id(point.point_id() - 1);
     }
-    old_point.Reset();
-    --point_count_;
+    if (old_point.in_use()) {
+      old_point.Reset();
+      --point_count_;
+      DCHECK_GE(point_count_, 0);
+    }
   }
 
   return gestures.release();
