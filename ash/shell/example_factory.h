@@ -7,7 +7,6 @@
 #pragma once
 
 namespace app_list {
-class AppListModel;
 class AppListViewDelegate;
 }
 
@@ -24,8 +23,6 @@ void CreateLockScreen();
 
 // Creates a window showing samples of commonly used widgets.
 void CreateWidgetsWindow();
-
-void BuildAppListModel(app_list::AppListModel* model);
 
 app_list::AppListViewDelegate* CreateAppListViewDelegate();
 
