@@ -66,14 +66,16 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
-#include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/autolaunch_prompt.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/default_browser_prompt.h"
+#include "chrome/browser/ui/startup/autolaunch_prompt.h"
+#include "chrome/browser/ui/startup/bad_flags_prompt.h"
+#include "chrome/browser/ui/startup/default_browser_prompt.h"
+#include "chrome/browser/ui/startup/obsolete_os_prompt.h"
+#include "chrome/browser/ui/startup/session_crashed_prompt.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_trial.h"
@@ -92,14 +94,14 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "grit/theme_resources.h"
-#include "grit/theme_resources_standard.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profile_startup.h"
+#endif
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -108,18 +110,6 @@
 
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/customization_document.h"
-#include "chrome/browser/chromeos/enterprise_extension_observer.h"
-#include "chrome/browser/chromeos/gview_request_interceptor.h"
-#include "chrome/browser/chromeos/network_message_observer.h"
-#include "chrome/browser/chromeos/power/low_battery_observer.h"
-#include "chrome/browser/chromeos/sms_observer.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
@@ -133,8 +123,6 @@
 
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
-using content::OpenURLParams;
-using content::Referrer;
 using content::WebContents;
 using protector::BaseSettingChange;
 using protector::ProtectedPrefsWatcher;
@@ -144,75 +132,6 @@ using protector::ProtectorServiceFactory;
 namespace {
 
 bool in_synchronous_profile_launch = false;
-
-// SessionCrashedInfoBarDelegate ----------------------------------------------
-
-// A delegate for the InfoBar shown when the previous session has crashed.
-class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
-  SessionCrashedInfoBarDelegate(Profile* profile,
-                                InfoBarTabHelper* infobar_helper);
-
- private:
-  virtual ~SessionCrashedInfoBarDelegate();
-
-  // ConfirmInfoBarDelegate:
-  virtual gfx::Image* GetIcon() const OVERRIDE;
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-
-  // The Profile that we restore sessions from.
-  Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(SessionCrashedInfoBarDelegate);
-};
-
-SessionCrashedInfoBarDelegate::SessionCrashedInfoBarDelegate(
-    Profile* profile,
-    InfoBarTabHelper* infobar_helper)
-    : ConfirmInfoBarDelegate(infobar_helper),
-      profile_(profile) {
-}
-
-SessionCrashedInfoBarDelegate::~SessionCrashedInfoBarDelegate() {
-}
-
-gfx::Image* SessionCrashedInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_RESTORE_SESSION);
-}
-
-string16 SessionCrashedInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_MESSAGE);
-}
-
-int SessionCrashedInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK;
-}
-
-string16 SessionCrashedInfoBarDelegate::GetButtonLabel(
-    InfoBarButton button) const {
-  DCHECK_EQ(BUTTON_OK, button);
-  return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON);
-}
-
-bool SessionCrashedInfoBarDelegate::Accept() {
-  uint32 behavior = 0;
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-  if (browser && browser->tab_count() == 1
-      && browser->GetWebContentsAt(0)->GetURL() ==
-      GURL(chrome::kChromeUINewTabURL)) {
-    // There is only one tab and its the new tab page, make session restore
-    // clobber it.
-    behavior = SessionRestore::CLOBBER_CURRENT_TAB;
-  }
-  SessionRestore::RestoreSession(
-      profile_, browser, behavior, std::vector<GURL>());
-  return true;
-}
-
 
 // Utility functions ----------------------------------------------------------
 
@@ -468,37 +387,7 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   profile_launch_observer.Get().AddLaunched(profile);
 
 #if defined(OS_CHROMEOS)
-  // Initialize Chrome OS preferences like touch pad sensitivity. For the
-  // preferences to work in the guest mode, the initialization has to be
-  // done after |profile| is switched to the incognito profile (which
-  // is actually GuestSessionProfile in the guest mode). See the
-  // GetOffTheRecordProfile() call above.
-  profile->InitChromeOSPreferences();
-
-  if (process_startup) {
-    // This observer is a singleton. It is never deleted but the pointer is kept
-    // in a static so that it isn't reported as a leak.
-    static chromeos::LowBatteryObserver* low_battery_observer =
-        new chromeos::LowBatteryObserver(profile);
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-        low_battery_observer);
-
-    static chromeos::NetworkMessageObserver* network_message_observer =
-        new chromeos::NetworkMessageObserver(profile);
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()
-        ->AddNetworkManagerObserver(network_message_observer);
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()
-        ->AddCellularDataPlanObserver(network_message_observer);
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()
-        ->AddUserActionObserver(network_message_observer);
-
-    static chromeos::SmsObserver* sms_observer =
-        new chromeos::SmsObserver(profile);
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()
-        ->AddNetworkManagerObserver(sms_observer);
-
-    profile->SetupChromeOSEnterpriseExtensionObserver();
-  }
+  chromeos::ProfileStartup(profile, process_startup);
 #endif
   return true;
 }
@@ -1045,136 +934,19 @@ void BrowserInit::LaunchWithProfile::AddInfoBarsIfNecessary(
   if (!browser || !profile_ || browser->tab_count() == 0)
     return;
 
-  TabContentsWrapper* tab_contents = browser->GetSelectedTabContentsWrapper();
-  AddCrashedInfoBarIfNecessary(browser, tab_contents);
+  if (HasPendingUncleanExit(browser->profile()))
+    browser::ShowSessionCrashedPrompt(browser);
 
   // The bad flags info bar and the obsolete system info bar are only added to
   // the first profile which is launched. Other profiles might be restoring the
   // browsing sessions asynchronously, so we cannot add the info bars to the
   // focused tabs here.
   if (is_process_startup == IS_PROCESS_STARTUP) {
-    AddBadFlagsInfoBarIfNecessary(tab_contents);
-    AddObsoleteSystemInfoBarIfNecessary(tab_contents);
+    browser::ShowBadFlagsPrompt(browser);
+    browser::ShowObsoleteOSPrompt(browser);
   }
 }
 
-void BrowserInit::LaunchWithProfile::AddCrashedInfoBarIfNecessary(
-    Browser* browser,
-    TabContentsWrapper* tab) {
-  // Assume that if the user is launching incognito they were previously
-  // running incognito so that we have nothing to restore from.
-  if (HasPendingUncleanExit(profile_) && !profile_->IsOffTheRecord()) {
-    // The last session didn't exit cleanly. Show an infobar to the user
-    // so that they can restore if they want. The delegate deletes itself when
-    // it is closed.
-    tab->infobar_tab_helper()->AddInfoBar(
-        new SessionCrashedInfoBarDelegate(profile_, tab->infobar_tab_helper()));
-  }
-}
-
-void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
-    TabContentsWrapper* tab) {
-  // Unsupported flags for which to display a warning that "stability and
-  // security will suffer".
-  static const char* kBadFlags[] = {
-    // These imply disabling the sandbox.
-    switches::kSingleProcess,
-    switches::kNoSandbox,
-    switches::kInProcessWebGL,
-    NULL
-  };
-
-  const char* bad_flag = NULL;
-  for (const char** flag = kBadFlags; *flag; ++flag) {
-    if (command_line_.HasSwitch(*flag)) {
-      bad_flag = *flag;
-      break;
-    }
-  }
-
-  if (bad_flag) {
-    tab->infobar_tab_helper()->AddInfoBar(
-        new SimpleAlertInfoBarDelegate(
-            tab->infobar_tab_helper(), NULL,
-            l10n_util::GetStringFUTF16(
-                IDS_BAD_FLAGS_WARNING_MESSAGE,
-                UTF8ToUTF16(std::string("--") + bad_flag)),
-            false));
-  }
-}
-
-class LearnMoreInfoBar : public LinkInfoBarDelegate {
- public:
-  LearnMoreInfoBar(InfoBarTabHelper* infobar_helper,
-                   const string16& message,
-                   const GURL& url);
-  virtual ~LearnMoreInfoBar();
-
-  virtual string16 GetMessageTextWithOffset(size_t* link_offset) const OVERRIDE;
-  virtual string16 GetLinkText() const OVERRIDE;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
-
- private:
-  string16 message_;
-  GURL learn_more_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(LearnMoreInfoBar);
-};
-
-LearnMoreInfoBar::LearnMoreInfoBar(InfoBarTabHelper* infobar_helper,
-                                   const string16& message,
-                                   const GURL& url)
-    : LinkInfoBarDelegate(infobar_helper),
-      message_(message),
-      learn_more_url_(url) {
-}
-
-LearnMoreInfoBar::~LearnMoreInfoBar() {
-}
-
-string16 LearnMoreInfoBar::GetMessageTextWithOffset(size_t* link_offset) const {
-  string16 text = message_;
-  text.push_back(' ');  // Add a space before the following link.
-  *link_offset = text.size();
-  return text;
-}
-
-string16 LearnMoreInfoBar::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-}
-
-bool LearnMoreInfoBar::LinkClicked(WindowOpenDisposition disposition) {
-  OpenURLParams params(
-      learn_more_url_, Referrer(), disposition, content::PAGE_TRANSITION_LINK,
-      false);
-  owner()->web_contents()->OpenURL(params);
-  return false;
-}
-
-void BrowserInit::LaunchWithProfile::AddObsoleteSystemInfoBarIfNecessary(
-    TabContentsWrapper* tab) {
-#if defined(TOOLKIT_GTK)
-  // We've deprecated support for Ubuntu Hardy.  Rather than attempting to
-  // determine whether you're using that, we instead key off the GTK version;
-  // this will also deprecate other distributions (including variants of Ubuntu)
-  // that are of a similar age.
-  // Version key:
-  //   Ubuntu Hardy: GTK 2.12
-  //   RHEL 6:       GTK 2.18
-  //   Ubuntu Lucid: GTK 2.20
-  if (gtk_check_version(2, 18, 0)) {
-    string16 message = l10n_util::GetStringUTF16(IDS_SYSTEM_OBSOLETE_MESSAGE);
-    // Link to an article in the help center on minimum system requirements.
-    const char* kLearnMoreURL =
-        "http://www.google.com/support/chrome/bin/answer.py?answer=95411";
-    InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
-    infobar_helper->AddInfoBar(
-        new LearnMoreInfoBar(infobar_helper,
-                             message,
-                             GURL(kLearnMoreURL)));
-  }
-#endif
-}
 
 void BrowserInit::LaunchWithProfile::AddStartupURLs(
     std::vector<GURL>* startup_urls) const {

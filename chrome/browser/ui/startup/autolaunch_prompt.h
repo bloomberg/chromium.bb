@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AUTOLAUNCH_PROMPT_H_
-#define CHROME_BROWSER_UI_AUTOLAUNCH_PROMPT_H_
+#ifndef CHROME_BROWSER_UI_STARTUP_AUTOLAUNCH_PROMPT_H_
+#define CHROME_BROWSER_UI_STARTUP_AUTOLAUNCH_PROMPT_H_
 #pragma once
 
 class PrefService;
@@ -21,4 +21,4 @@ void RegisterAutolaunchPrefs(PrefService* prefs);
 }  // namespace browser
 
 
-#endif  // CHROME_BROWSER_UI_AUTOLAUNCH_PROMPT_H_
+#endif  // CHROME_BROWSER_UI_STARTUP_AUTOLAUNCH_PROMPT_H_

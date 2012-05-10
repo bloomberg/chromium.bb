@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/default_browser_prompt.h"
+#include "chrome/browser/ui/startup/default_browser_prompt.h"
 
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"

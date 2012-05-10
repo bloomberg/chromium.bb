@@ -211,20 +211,6 @@ class BrowserInit {
     void AddInfoBarsIfNecessary(Browser* browser,
                                 IsProcessStartup is_process_startup);
 
-    // If the last session didn't exit cleanly and tab is a web contents tab,
-    // an infobar is added allowing the user to restore the last session.
-    void AddCrashedInfoBarIfNecessary(Browser* browser,
-                                      TabContentsWrapper* tab);
-
-    // If we have been started with unsupported flags like --single-process,
-    // politely nag the user about it.
-    void AddBadFlagsInfoBarIfNecessary(TabContentsWrapper* tab);
-
-    // If the user is using an operating system that we have deprecated
-    // support for and will no longer provide updates, warn the user
-    // about it.
-    void AddObsoleteSystemInfoBarIfNecessary(TabContentsWrapper* tab);
-
     // Adds additional startup URLs to the specified vector.
     void AddStartupURLs(std::vector<GURL>* startup_urls) const;
 
