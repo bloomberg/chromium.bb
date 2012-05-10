@@ -17,6 +17,12 @@
 
 var finger_view_controller;
 
+function update_range(event, ui) {
+  finger_view_controller.setRange(ui.values[0], ui.values[1]);
+  var end_event = finger_view_controller.getEvent(ui.values[1]);
+  $("#end_event").text(end_event);
+}
+
 function loadLogObj(obj) {
   finger_view_controller.setEntriesLog(obj);
   var MAX_SIZE = 10000;
@@ -28,14 +34,11 @@ function loadLogObj(obj) {
     max: max,
     values: [min, max],
     range: true,
-    slide: function(event, ui) {
-      finger_view_controller.setRange(ui.values[0], ui.values[1]);
-    },
-    change: function(event, ui) {
-      finger_view_controller.setRange(ui.values[0], ui.values[1]);
-    }
+    slide: update_range,
+    change: update_range
   });
   finger_view_controller.resetZooms();
+  update_range(null, { values: [min, max] });
 }
 
 function handleFileSelect(evt) {
@@ -195,6 +198,7 @@ $(document).ready(function() {
 <div id="sliderdiv"><div id="slider"></div></div>
 <button id="stepback">Step Back</button>
 <button id="stepforward">Step Forward</button>
+<div id="end_event"></div><br/>
 </div>
 <div id="textdiv">
 <textarea rows="24" cols="80" id="text_box">Drag and drop a touchpad log file here.</textarea></div>

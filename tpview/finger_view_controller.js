@@ -60,6 +60,11 @@ FingerViewController.prototype = {
     this.end = end;
     this.redraw();
   },
+  getEvent: function(index) {
+    if (index < 0 || index >= this.entries.length)
+      return "N/A";
+    return JSON.stringify(this.entries[index]);
+  },
   updateInput: function() {
     var lastPosDict = {};
     var segs = [];
