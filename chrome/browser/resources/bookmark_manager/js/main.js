@@ -18,12 +18,6 @@
 if (!chrome.bookmarks)
   console.error('Bookmarks extension API is not available');
 
-/**
- * The local strings object which is used to do the translation.
- * @type {!LocalStrings}
- */
-var localStrings = new LocalStrings;
-
 // Get the localized strings from the backend.
 chrome.experimental.bookmarkManager.getStrings(function(data) {
   // The strings may contain & which we need to strip.
@@ -31,11 +25,11 @@ chrome.experimental.bookmarkManager.getStrings(function(data) {
     data[key] = data[key].replace(/&/, '');
   }
 
-  localStrings.templateData = data;
-  i18nTemplate.process(document, data);
+  loadTimeData.data = data;
+  i18nTemplate.process(document, loadTimeData);
 
-  recentTreeItem.label = localStrings.getString('recent');
-  searchTreeItem.label = localStrings.getString('search');
+  recentTreeItem.label = loadTimeData.getString('recent');
+  searchTreeItem.label = loadTimeData.getString('search');
   if (!isRTL())
     searchTreeItem.icon = 'images/bookmark_manager_search.png'
   else
@@ -889,18 +883,18 @@ function updateOpenCommands(e, command) {
   var commandDisabled = false;
   switch (command.id) {
     case 'open-in-new-tab-command':
-      command.label = localStrings.getString(multiple ?
+      command.label = loadTimeData.getString(multiple ?
           'open_all' : 'open_in_new_tab');
       break;
 
     case 'open-in-new-window-command':
-      command.label = localStrings.getString(multiple ?
+      command.label = loadTimeData.getString(multiple ?
           'open_all_new_window' : 'open_in_new_window');
       // Disabled when incognito is forced.
       commandDisabled = incognitoModeAvailability == 'forced';
       break;
     case 'open-incognito-window-command':
-      command.label = localStrings.getString(multiple ?
+      command.label = loadTimeData.getString(multiple ?
           'open_all_incognito' : 'open_incognito');
       // Not available withn incognito is disabled.
       commandDisabled = incognitoModeAvailability == 'disabled';
@@ -1263,7 +1257,7 @@ var linkController;
  */
 function getLinkController() {
   return linkController ||
-      (linkController = new cr.LinkController(localStrings));
+      (linkController = new cr.LinkController(loadTimeData));
 }
 
 /**
@@ -1428,7 +1422,7 @@ function newFolder() {
   var parentId = list.parentId;
   var isTree = document.activeElement == tree;
   chrome.bookmarks.create({
-    title: localStrings.getString('new_folder_name'),
+    title: loadTimeData.getString('new_folder_name'),
     parentId: parentId
   }, function(newNode) {
     // This callback happens before the event that triggers the tree/list to

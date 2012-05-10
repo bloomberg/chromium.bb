@@ -469,7 +469,7 @@ cr.define('bmm', function() {
 
         labelInput = doc.createElement('input');
         labelInput.placeholder =
-            localStrings.getString('name_input_placeholder');
+            loadTimeData.getString('name_input_placeholder');
         replaceAllChildren(labelEl, labelInput);
         labelInput.value = title;
 
@@ -478,7 +478,7 @@ cr.define('bmm', function() {
           urlInput.type = 'url';
           urlInput.required = true;
           urlInput.placeholder =
-              localStrings.getString('url_input_placeholder');
+              loadTimeData.getString('url_input_placeholder');
 
           // We also need a name for the input for the CSS to work.
           urlInput.name = '-url-input-' + cr.createUid();
@@ -539,7 +539,7 @@ cr.define('bmm', function() {
                 var sm = this.parentNode.selectionModel;
                 sm.selectedIndex = sm.leadIndex = sm.anchorIndex = index;
 
-                alert(localStrings.getString('invalid_url'));
+                alert(loadTimeData.getString('invalid_url'));
               }
               urlInput.focus();
               urlInput.select();

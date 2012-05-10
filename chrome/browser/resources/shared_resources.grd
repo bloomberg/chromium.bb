@@ -6,7 +6,8 @@ without changes to the corresponding grd file. -->
     <output filename="grit/shared_resources.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
-    <output filename="grit/shared_resources_map.cc" type="resource_file_map_source" />
+    <output filename="grit/shared_resources_map.cc"
+            type="resource_file_map_source" />
     <output filename="grit/shared_resources_map.h" type="resource_map_header" />
     <output filename="shared_resources.pak" type="data_package" />
   </outputs>
@@ -23,7 +24,8 @@ without changes to the corresponding grd file. -->
       <include name="IDR_SHARED_CSS_MENU"
                file="shared/css/menu.css" type="BINDATA" flattenhtml="true" />
       <include name="IDR_SHARED_CSS_MENU_BUTTON"
-               file="shared/css/menu_button.css" type="BINDATA" flattenhtml="true" />
+               file="shared/css/menu_button.css" type="BINDATA"
+               flattenhtml="true" />
       <include name="IDR_SHARED_CSS_CHROME"
                file="shared/css/chrome_shared.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_CHROME2"
@@ -108,11 +110,13 @@ without changes to the corresponding grd file. -->
       <include name="IDR_SHARED_JS_CR_UI_LIST_ITEM"
                file="shared/js/cr/ui/list_item.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_LIST_SELECTION_CONTROLLER"
-               file="shared/js/cr/ui/list_selection_controller.js" type="BINDATA" />
+               file="shared/js/cr/ui/list_selection_controller.js"
+               type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_LIST_SELECTION_MODEL"
                file="shared/js/cr/ui/list_selection_model.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_LIST_SINGLE_SELECTION_MODEL"
-               file="shared/js/cr/ui/list_single_selection_model.js" type="BINDATA" />
+               file="shared/js/cr/ui/list_single_selection_model.js"
+               type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_MENU"
                file="shared/js/cr/ui/menu.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_MENU_BUTTON"
@@ -134,7 +138,8 @@ without changes to the corresponding grd file. -->
       <include name="IDR_SHARED_JS_CR_UI_TABLE_COLUMN"
                file="shared/js/cr/ui/table/table_column.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_TABLE_COLUMN_MODEL"
-               file="shared/js/cr/ui/table/table_column_model.js" type="BINDATA" />
+               file="shared/js/cr/ui/table/table_column_model.js"
+               type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_TABLE_HEADER"
                file="shared/js/cr/ui/table/table_header.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_TABLE_LIST"
@@ -153,11 +158,14 @@ without changes to the corresponding grd file. -->
                file="shared/js/i18n_process.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_I18N_TEMPLATE"
                file="shared/js/i18n_template.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_I18N_TEMPLATE_NO_PROCESS"
+               file="shared/js/i18n_template_no_process.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_I18N_TEMPLATE2"
-               file="shared/js/i18n_template2.js" type="BINDATA" />
+               file="shared/js/i18n_template2.js" type="BINDATA"
+               flattenhtml="true" />
       <include name="IDR_SHARED_JS_JSTEMPLATE_COMPILED"
-               file="shared/js/jstemplate_compiled.js" 
-               flattenhtml="true" type="BINDATA" />
+               file="shared/js/jstemplate_compiled.js" type="BINDATA"
+               flattenhtml="true" />
       <include name="IDR_SHARED_JS_LOAD_TIME_DATA"
                file="shared/js/load_time_data.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_LOCAL_STRINGS"
