@@ -23,20 +23,16 @@
   overflow-y: hidden;
 }
 
-#remove-all-cookies-search-column {
-  bottom: 10px;
-  position: absolute;
-  right: 0;
-}
-
-html[dir=rtl] #remove-all-cookies-search-column {
-  left: 0;
-  right: auto;
-}
-
 #cookies-column-headers {
+  -webkit-box-align: baseline;
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
   position: relative;
   width: 100%;
+}
+
+#cookies-column-headers > * {
+  display: block;
 }
 
 #cookies-column-headers h3 {
@@ -47,15 +43,17 @@ html[dir=rtl] #remove-all-cookies-search-column {
 
 /* Notice the width and padding for these columns match up with those below. */
 #cookies-site-column {
-  display: inline-block;
-  font-weight: bold;
+  -webkit-padding-start: 7px;
   width: 14em;
 }
 
 #cookies-data-column {
+  -webkit-box-flex: 1;
   -webkit-padding-start: 7px;
-  display: inline-block;
-  font-weight: bold;
+}
+
+#cookies-header-controls > * {
+  margin-bottom: 5px;
 }
 
 #cookies-list {
