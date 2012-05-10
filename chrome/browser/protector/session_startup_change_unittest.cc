@@ -104,7 +104,7 @@ TEST_F(SessionStartupChangeTest, ApplyButtonCaptions) {
 
   // Pinned tabs count as startup URLs as well.
   PinnedTabCodec::Tabs new_pinned_tabs;
-  StartupBrowserCreator::LaunchWithProfile::Tab pinned_tab;
+  BrowserInit::LaunchWithProfile::Tab pinned_tab;
   pinned_tab.url = GURL(kStartupUrl3);
   new_pinned_tabs.push_back(pinned_tab);
   change.reset(

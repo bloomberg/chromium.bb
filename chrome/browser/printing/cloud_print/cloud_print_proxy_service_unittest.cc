@@ -10,7 +10,7 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/service/service_process_control.h"
-#include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/browser_init.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_proxy_info.h"
 #include "chrome/common/pref_names.h"
@@ -188,10 +188,10 @@ class CloudPrintProxyPolicyTest : public ::testing::Test {
 
   bool LaunchBrowser(const CommandLine& command_line, Profile* profile) {
     int return_code = 0;
-    StartupBrowserCreator browser_creator;
-    return StartupBrowserCreator::ProcessCmdLineImpl(
-        command_line, FilePath(), false, profile,
-        StartupBrowserCreator::Profiles(), &return_code, &browser_creator);
+    BrowserInit browser_init;
+    return BrowserInit::ProcessCmdLineImpl(command_line, FilePath(), false,
+                                           profile, BrowserInit::Profiles(),
+                                           &return_code, &browser_init);
   }
 
  protected:
@@ -433,7 +433,7 @@ ProfileKeyedService* TestCloudPrintProxyServiceFactory(Profile* profile) {
   return service;
 }
 
-TEST_F(CloudPrintProxyPolicyTest, StartupBrowserCreatorWithCommandLine) {
+TEST_F(CloudPrintProxyPolicyTest, StartBrowserInitWithCommandLine) {
   TestingPrefService* prefs = profile_.GetTestingPrefService();
   prefs->SetUserPref(prefs::kCloudPrintEmail,
                      Value::CreateStringValue(std::string()));

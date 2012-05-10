@@ -130,8 +130,7 @@ class ProfileImpl : public Profile,
 
  private:
   friend class Profile;
-  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
-                           ProfilesLaunchedAfterCrash);
+  FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, ProfilesLaunchedAfterCrash);
   FRIEND_TEST_ALL_PREFIXES(ProfileBrowserTest, ProfileReadmeCreated);
   FRIEND_TEST_ALL_PREFIXES(ProfileBrowserTest,
                            ProfileDeletedBeforeReadmeCreated);

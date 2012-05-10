@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_H_
-#define CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_H_
+#ifndef CHROME_BROWSER_UI_BROWSER_INIT_H_
+#define CHROME_BROWSER_UI_BROWSER_INIT_H_
 #pragma once
 
 #include <string>
@@ -24,7 +24,7 @@ class TabContentsWrapper;
 
 // class containing helpers for BrowserMain to spin up a new instance and
 // initialize the profile.
-class StartupBrowserCreator {
+class BrowserInit {
  public:
   typedef std::vector<Profile*> Profiles;
 
@@ -37,8 +37,8 @@ class StartupBrowserCreator {
     IS_FIRST_RUN
   };
 
-  StartupBrowserCreator();
-  ~StartupBrowserCreator();
+  BrowserInit();
+  ~BrowserInit();
 
   // Adds a url to be opened during first run. This overrides the standard
   // tabs shown at first run.
@@ -117,7 +117,7 @@ class StartupBrowserCreator {
       std::string app_id;
     };
 
-    // There are two ctors. The first one implies a NULL browser_creator object
+    // There are two ctors. The first one implies a NULL browser_init object
     // and thus no access to distribution-specific first-run behaviors. The
     // second one is always called when the browser starts even if it is not
     // the first run.  |is_first_run| indicates that this is a new profile.
@@ -126,7 +126,7 @@ class StartupBrowserCreator {
                       IsFirstRun is_first_run);
     LaunchWithProfile(const FilePath& cur_dir,
                       const CommandLine& command_line,
-                      StartupBrowserCreator* browser_creator,
+                      BrowserInit* browser_init,
                       IsFirstRun is_first_run);
     ~LaunchWithProfile();
 
@@ -221,7 +221,7 @@ class StartupBrowserCreator {
     const FilePath cur_dir_;
     const CommandLine& command_line_;
     Profile* profile_;
-    StartupBrowserCreator* browser_creator_;
+    BrowserInit* browser_init_;
     bool is_first_run_;
     DISALLOW_COPY_AND_ASSIGN(LaunchWithProfile);
   };
@@ -229,11 +229,10 @@ class StartupBrowserCreator {
  private:
   friend class CloudPrintProxyPolicyTest;
   friend class CloudPrintProxyPolicyStartupTest;
-  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
+  FRIEND_TEST_ALL_PREFIXES(BrowserInitTest,
                            ReadingWasRestartedAfterNormalStart);
-  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
-                           ReadingWasRestartedAfterRestart);
-  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, UpdateWithTwoProfiles);
+  FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, ReadingWasRestartedAfterRestart);
+  FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, UpdateWithTwoProfiles);
 
   // Returns the list of URLs to open from the command line. The returned
   // vector is empty if the user didn't specify any URLs on the command line.
@@ -248,7 +247,7 @@ class StartupBrowserCreator {
                                  Profile* last_used_profile,
                                  const Profiles& last_opened_profiles,
                                  int* return_code,
-                                 StartupBrowserCreator* browser_creator);
+                                 BrowserInit* browser_init);
 
   // Callback after a profile has been created.
   static void ProcessCommandLineOnProfileCreated(
@@ -265,7 +264,7 @@ class StartupBrowserCreator {
   // of testing.)
   static bool was_restarted_read_;
 
-  DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreator);
+  DISALLOW_COPY_AND_ASSIGN(BrowserInit);
 };
 
-#endif  // CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_H_
+#endif  // CHROME_BROWSER_UI_BROWSER_INIT_H_

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/tabs/pinned_tab_test_utils.h"
 
-typedef StartupBrowserCreator::LaunchWithProfile::Tab Tab;
+typedef BrowserInit::LaunchWithProfile::Tab Tab;
 
 namespace {
 
@@ -17,7 +17,7 @@ std::string TabToString(const Tab& tab) {
 
 // static
 std::string PinnedTabTestUtils::TabsToString(
-    const std::vector<StartupBrowserCreator::LaunchWithProfile::Tab>& values) {
+    const std::vector<BrowserInit::LaunchWithProfile::Tab>& values) {
   std::string result;
   for (size_t i = 0; i < values.size(); ++i) {
     if (i != 0)

@@ -2364,11 +2364,11 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   // This really belongs in platform code, but there's no good place to
   // initialize it between the time when the AppController is created
   // (where there's no profile) and the time the controller gets another
-  // crack at the start of the main event loop. By that time,
-  // StartupBrowserCreator has already created the browser window, and it's too
-  // late: we need the pref to be already initialized. Doing it here also saves
-  // us from having to hard-code pref registration in the several unit tests
-  // that use this preference.
+  // crack at the start of the main event loop. By that time, BrowserInit
+  // has already created the browser window, and it's too late: we need the
+  // pref to be already initialized. Doing it here also saves us from having
+  // to hard-code pref registration in the several unit tests that use
+  // this preference.
   prefs->RegisterBooleanPref(prefs::kShowUpdatePromotionInfoBar,
                              true,
                              PrefService::UNSYNCABLE_PREF);

@@ -150,8 +150,8 @@ void OnOpenWindowForNewProfile(Profile* profile,
   if (status == Profile::CREATE_STATUS_INITIALIZED) {
     ProfileManager::FindOrCreateNewWindowForProfile(
         profile,
-        StartupBrowserCreator::IS_PROCESS_STARTUP,
-        StartupBrowserCreator::IS_FIRST_RUN,
+        BrowserInit::IS_PROCESS_STARTUP,
+        BrowserInit::IS_FIRST_RUN,
         false);
   }
 }
@@ -469,8 +469,8 @@ Profile* ProfileManager::GetProfileByPath(const FilePath& path) const {
 // static
 void ProfileManager::FindOrCreateNewWindowForProfile(
     Profile* profile,
-    StartupBrowserCreator::IsProcessStartup process_startup,
-    StartupBrowserCreator::IsFirstRun is_first_run,
+    BrowserInit::IsProcessStartup process_startup,
+    BrowserInit::IsFirstRun is_first_run,
     bool always_create) {
   DCHECK(profile);
 
@@ -485,9 +485,9 @@ void ProfileManager::FindOrCreateNewWindowForProfile(
   content::RecordAction(UserMetricsAction("NewWindow"));
   CommandLine command_line(CommandLine::NO_PROGRAM);
   int return_code;
-  StartupBrowserCreator browser_creator;
-  browser_creator.LaunchBrowser(command_line, profile, FilePath(),
-                                process_startup, is_first_run, &return_code);
+  BrowserInit browser_init;
+  browser_init.LaunchBrowser(command_line, profile, FilePath(),
+                             process_startup, is_first_run, &return_code);
 }
 
 void ProfileManager::Observe(

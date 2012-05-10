@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/browser_init.h"
 #include "googleurl/src/gurl.h"
 
 namespace base {
@@ -27,7 +27,7 @@ class Profile;
 // dictionary describing the entry.
 class PinnedTabCodec {
  public:
-  typedef std::vector<StartupBrowserCreator::LaunchWithProfile::Tab> Tabs;
+  typedef std::vector<BrowserInit::LaunchWithProfile::Tab> Tabs;
 
   // Registers the preference used by this class.
   static void RegisterUserPrefs(PrefService* prefs);

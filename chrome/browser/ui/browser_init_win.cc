@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/startup/startup_browser_creator_win.h"
+#include "chrome/browser/ui/browser_init_win.h"
 
 #include "base/logging.h"
 #include "base/win/metro.h"

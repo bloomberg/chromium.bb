@@ -37,9 +37,9 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/sync_ui_util_mac.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -996,11 +996,10 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   {
     AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
     int return_code;
-    StartupBrowserCreator browser_creator;
-    browser_creator.LaunchBrowser(
-        command_line, [self lastProfile], FilePath(),
-        StartupBrowserCreator::IS_NOT_PROCESS_STARTUP,
-        StartupBrowserCreator::IS_NOT_FIRST_RUN, &return_code);
+    BrowserInit browser_init;
+    browser_init.LaunchBrowser(command_line, [self lastProfile], FilePath(),
+                               BrowserInit::IS_NOT_PROCESS_STARTUP,
+                               BrowserInit::IS_NOT_FIRST_RUN, &return_code);
   }
 
   // We've handled the reopen event, so return NO to tell AppKit not

@@ -52,8 +52,7 @@ NetworkMessageObserver::NetworkMessageObserver(Profile* profile)
   NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
   OnNetworkManagerChanged(netlib);
   // Note that this gets added as a NetworkManagerObserver,
-  // CellularDataPlanObserver, and UserActionObserver in
-  // startup_browser_creator.cc
+  // CellularDataPlanObserver, and UserActionObserver in browser_init.cc
 }
 
 NetworkMessageObserver::~NetworkMessageObserver() {

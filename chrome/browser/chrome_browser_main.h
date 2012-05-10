@@ -15,10 +15,11 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/task_profiler/auto_tracking.h"
-#include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/browser_init.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_thread.h"
 
+class BrowserInit;
 class BrowserProcessImpl;
 class ChromeBrowserMainExtraParts;
 class FieldTrialSynchronizer;
@@ -26,7 +27,6 @@ class HistogramSynchronizer;
 class MetricsService;
 class PrefService;
 class Profile;
-class StartupBrowserCreator;
 class StartupTimeBomb;
 class ShutdownWatcherHelper;
 class TranslateManager;
@@ -185,7 +185,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Members initialized after / released before main_message_loop_ ------------
 
-  scoped_ptr<StartupBrowserCreator> browser_creator_;
+  scoped_ptr<BrowserInit> browser_init_;
   scoped_ptr<BrowserProcessImpl> browser_process_;
   scoped_refptr<HistogramSynchronizer> histogram_synchronizer_;
   scoped_refptr<chrome_browser_metrics::TrackingSynchronizer>
