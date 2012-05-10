@@ -266,7 +266,7 @@ void CloudPrintProxy::OnPrintSystemUnavailable() {
 
 void CloudPrintProxy::OnUnregisterPrinters(
     const std::string& auth_token,
-    const std::list<std::string> printer_ids) {
+    const std::list<std::string>& printer_ids) {
   ShutdownBackend();
   wipeout_.reset(new CloudPrintWipeout(this, cloud_print_server_url_));
   wipeout_->UnregisterPrinters(auth_token, printer_ids);

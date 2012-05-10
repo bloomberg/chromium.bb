@@ -43,7 +43,7 @@ class CloudPrintProxyFrontend {
   // Receive auth token and list of printers.
   virtual void OnUnregisterPrinters(
       const std::string& auth_token,
-      const std::list<std::string> printer_ids) = 0;
+      const std::list<std::string>& printer_ids) = 0;
 
  protected:
   // Don't delete through SyncFrontend interface.

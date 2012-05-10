@@ -112,7 +112,7 @@ class CloudPrintProxyBackend::Core
   void NotifyAuthenticationFailed();
   void NotifyPrintSystemUnavailable();
   void NotifyUnregisterPrinters(const std::string& auth_token,
-                                const std::list<std::string> printer_ids);
+                                const std::list<std::string>& printer_ids);
 
   // Init XMPP channel
   void InitNotifications(const std::string& robot_email,
@@ -498,7 +498,7 @@ void CloudPrintProxyBackend::Core::NotifyPrintSystemUnavailable() {
 
 void CloudPrintProxyBackend::Core::NotifyUnregisterPrinters(
     const std::string& auth_token,
-    const std::list<std::string> printer_ids) {
+    const std::list<std::string>& printer_ids) {
   DCHECK(MessageLoop::current() == backend_->frontend_loop_);
   backend_->frontend_->OnUnregisterPrinters(auth_token, printer_ids);
 }
