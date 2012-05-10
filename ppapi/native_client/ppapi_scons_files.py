@@ -14,12 +14,13 @@ trusted_scons_files = [
 ]
 
 
+# Untrusted libraries for use by user code.
 untrusted_scons_files = [
     'src/shared/ppapi/nacl.scons',
-    'src/shared/ppapi_proxy/nacl.scons',
 ]
 
 
+# Untrusted libraries for use by system code.
 untrusted_irt_scons_files = [
     'src/shared/ppapi_proxy/nacl.scons',
 ]
