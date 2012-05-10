@@ -8,6 +8,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/cocoa/window_restore_utils.h"
+#endif
+
 // Unit tests for SessionStartupPref.
 class SessionStartupPrefTest : public testing::Test {
  public:
@@ -15,6 +19,17 @@ class SessionStartupPrefTest : public testing::Test {
     pref_service_.reset(new TestingPrefService);
     SessionStartupPref::RegisterUserPrefs(pref_service_.get());
     pref_service_->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, true);
+  }
+
+  bool IsUseLastOpenDefault() {
+    // On ChromeOS and OS X 10.7+, the default SessionStartupPref is LAST.
+#if defined(OS_CHROMEOS)
+    return true;
+#elif defined(OS_MACOSX)
+    return restore_utils::IsWindowRestoreEnabled();
+#else
+    return false;
+#endif
   }
 
   scoped_ptr<TestingPrefService> pref_service_;
@@ -71,15 +86,14 @@ TEST_F(SessionStartupPrefTest, DefaultMigration) {
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(
       pref_service_.get());
 
-#if defined(OS_CHROMEOS)
-  // On ChromeOS, the default is LAST, so no migration should happen.
-  EXPECT_EQ(SessionStartupPref::LAST, pref.type);
-  EXPECT_EQ(0U, pref.urls.size());
-#else
-  EXPECT_EQ(SessionStartupPref::URLS, pref.type);
-  EXPECT_EQ(1U, pref.urls.size());
-  EXPECT_EQ(GURL("http://chromium.org/"), pref.urls[0]);
-#endif
+  if (IsUseLastOpenDefault()) {
+    EXPECT_EQ(SessionStartupPref::LAST, pref.type);
+    EXPECT_EQ(0U, pref.urls.size());
+  } else {
+    EXPECT_EQ(SessionStartupPref::URLS, pref.type);
+    EXPECT_EQ(1U, pref.urls.size());
+    EXPECT_EQ(GURL("http://chromium.org/"), pref.urls[0]);
+  }
 }
 
 // Checks to make sure that if the user had previously not selected anything
@@ -96,12 +110,10 @@ TEST_F(SessionStartupPrefTest, DefaultMigrationHomepageIsNTP) {
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(
       pref_service_.get());
 
-#if defined(OS_CHROMEOS)
-  // On ChromeOS, the default is LAST, so no migration should happen.
-  EXPECT_EQ(SessionStartupPref::LAST, pref.type);
-#else
-  EXPECT_EQ(SessionStartupPref::DEFAULT, pref.type);
-#endif
+  if (IsUseLastOpenDefault())
+    EXPECT_EQ(SessionStartupPref::LAST, pref.type);
+  else
+    EXPECT_EQ(SessionStartupPref::DEFAULT, pref.type);
 
   // The "URLs to restore on startup" shouldn't get migrated.
   EXPECT_EQ(0U, pref.urls.size());
