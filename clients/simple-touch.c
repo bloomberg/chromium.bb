@@ -205,8 +205,8 @@ input_device_handle_touch_down(void *data,
 			       wl_fixed_t y_w)
 {
 	struct touch *touch = data;
-	GLfloat x = wl_fixed_to_double(x_w);
-	GLfloat y = wl_fixed_to_double(y_w);
+	float x = wl_fixed_to_double(x_w);
+	float y = wl_fixed_to_double(y_w);
 
 	touch_paint(touch, x, y, id);
 }
@@ -227,8 +227,8 @@ input_device_handle_touch_motion(void *data,
 				 wl_fixed_t y_w)
 {
 	struct touch *touch = data;
-	GLfloat x = wl_fixed_to_double(x_w);
-	GLfloat y = wl_fixed_to_double(y_w);
+	float x = wl_fixed_to_double(x_w);
+	float y = wl_fixed_to_double(y_w);
 
 	touch_paint(touch, x, y, id);
 }

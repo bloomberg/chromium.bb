@@ -189,7 +189,7 @@ struct input {
 	int current_cursor;
 	uint32_t modifiers;
 	uint32_t pointer_enter_serial;
-	GLfloat sx, sy;
+	float sx, sy;
 	struct wl_list link;
 
 	struct widget *focus_widget;
@@ -1351,7 +1351,7 @@ window_show_frame_menu(struct window *window,
 
 static int
 frame_enter_handler(struct widget *widget,
-		    struct input *input, GLfloat x, GLfloat y, void *data)
+		    struct input *input, float x, float y, void *data)
 {
 	return frame_get_pointer_image_for_location(data, input);
 }
@@ -1359,7 +1359,7 @@ frame_enter_handler(struct widget *widget,
 static int
 frame_motion_handler(struct widget *widget,
 		     struct input *input, uint32_t time,
-		     GLfloat x, GLfloat y, void *data)
+		     float x, float y, void *data)
 {
 	return frame_get_pointer_image_for_location(data, input);
 }
@@ -1454,7 +1454,7 @@ frame_destroy(struct frame *frame)
 
 static void
 input_set_focus_widget(struct input *input, struct widget *focus,
-		       GLfloat x, GLfloat y)
+		       float x, float y)
 {
 	struct widget *old, *widget;
 	int pointer = POINTER_LEFT_PTR;
@@ -1494,8 +1494,8 @@ input_handle_motion(void *data, struct wl_input_device *input_device,
 	struct window *window = input->pointer_focus;
 	struct widget *widget;
 	int pointer = POINTER_LEFT_PTR;
-	GLfloat sx = wl_fixed_to_double(sx_w);
-	GLfloat sy = wl_fixed_to_double(sy_w);
+	float sx = wl_fixed_to_double(sx_w);
+	float sy = wl_fixed_to_double(sy_w);
 
 	input->sx = sx;
 	input->sy = sy;
@@ -1638,8 +1638,8 @@ input_handle_pointer_enter(void *data,
 	struct input *input = data;
 	struct window *window;
 	struct widget *widget;
-	GLfloat sx = wl_fixed_to_double(sx_w);
-	GLfloat sy = wl_fixed_to_double(sy_w);
+	float sx = wl_fixed_to_double(sx_w);
+	float sy = wl_fixed_to_double(sy_w);
 
 	input->display->serial = serial;
 	input->pointer_enter_serial = serial;
@@ -1868,8 +1868,8 @@ data_device_enter(void *data, struct wl_data_device *data_device,
 {
 	struct input *input = data;
 	struct window *window;
-	GLfloat x = wl_fixed_to_double(x_w);
-	GLfloat y = wl_fixed_to_double(y_w);
+	float x = wl_fixed_to_double(x_w);
+	float y = wl_fixed_to_double(y_w);
 	char **p;
 
 	input->pointer_enter_serial = serial;
@@ -1902,8 +1902,8 @@ data_device_motion(void *data, struct wl_data_device *data_device,
 {
 	struct input *input = data;
 	struct window *window = input->pointer_focus;
-	GLfloat x = wl_fixed_to_double(x_w);
-	GLfloat y = wl_fixed_to_double(y_w);
+	float x = wl_fixed_to_double(x_w);
+	float y = wl_fixed_to_double(y_w);
 
 	input->sx = x;
 	input->sy = y;
@@ -2491,7 +2491,7 @@ menu_set_item(struct menu *menu, int sy)
 static int
 menu_motion_handler(struct widget *widget,
 		    struct input *input, uint32_t time,
-		    GLfloat x, GLfloat y, void *data)
+		    float x, float y, void *data)
 {
 	struct menu *menu = data;
 
@@ -2503,7 +2503,7 @@ menu_motion_handler(struct widget *widget,
 
 static int
 menu_enter_handler(struct widget *widget,
-		   struct input *input, GLfloat x, GLfloat y, void *data)
+		   struct input *input, float x, float y, void *data)
 {
 	struct menu *menu = data;
 

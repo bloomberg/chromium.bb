@@ -2237,7 +2237,7 @@ button_handler(struct widget *widget,
 static int
 motion_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
-	       GLfloat x, GLfloat y, void *data)
+	       float x, float y, void *data)
 {
 	struct terminal *terminal = data;
 
