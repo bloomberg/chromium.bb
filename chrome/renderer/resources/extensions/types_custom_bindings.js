@@ -7,7 +7,7 @@
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
 
-chromeHidden.registerCustomType('ChromeSetting', function() {
+chromeHidden.registerCustomType('types.ChromeSetting', function() {
 
   function extendSchema(schema) {
     var extendedSchema = schema.slice();

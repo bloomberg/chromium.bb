@@ -5,8 +5,10 @@
 
 import json
 import os.path
-import sys
 import re
+import sys
+
+import schema_util
 
 # This file is a peer to json_schema.py. Each of these files understands a
 # certain format describing APIs (either JSON or IDL), reads files written
@@ -256,6 +258,7 @@ class IDLSchema(object):
           continue
       else:
         sys.exit("Did not process %s %s" % (node.cls, node))
+    schema_util.PrefixSchemasWithNamespace(namespaces)
     return namespaces
 
 def Load(filename):

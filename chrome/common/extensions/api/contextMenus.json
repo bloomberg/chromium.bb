@@ -109,7 +109,7 @@
                   },
                   {
                     "name": "tab",
-                    "$ref": "Tab",
+                    "$ref": "tabs.Tab",
                     "description": "The details of the tab where the click took place."
                   }
                 ]
