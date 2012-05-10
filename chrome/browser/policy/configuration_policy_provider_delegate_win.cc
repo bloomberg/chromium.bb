@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "base/basictypes.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
@@ -87,9 +88,25 @@ PolicyMap* ConfigurationPolicyProviderDelegateWin::Load() {
           value = Value::CreateIntegerValue(int_value);
         break;
       }
-      case Value::TYPE_DICTIONARY:
-        // TODO(joaodasilva): http://crbug.com/108994
+      case Value::TYPE_DICTIONARY: {
+        // Dictionaries are encoded as JSON strings on Windows.
+        //
+        // A dictionary could be stored as a subkey, with each of its entries
+        // within that subkey. However, it would be impossible to recover the
+        // type for some of those entries:
+        //  - Booleans are stored as DWORDS and are indistinguishable from
+        //    integers;
+        //  - Lists are stored as a subkey, with entries mapping 0 to N-1 to
+        //    their value. This is indistinguishable from a Dictionary with
+        //    integer keys.
+        //
+        // The GPO policy editor also has a limited data entry form that doesn't
+        // support dictionaries.
+        string16 string_value;
+        if (GetRegistryPolicyString(name, &string_value, &scope))
+          value = base::JSONReader::Read(UTF16ToUTF8(string_value));
         break;
+      }
       default:
         NOTREACHED();
     }

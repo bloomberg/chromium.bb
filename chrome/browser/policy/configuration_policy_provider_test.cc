@@ -139,8 +139,6 @@ TEST_P(ConfigurationPolicyProviderTest, StringListValue) {
                         &expected_value));
 }
 
-// TODO(joaodasilva): implement this for windows. http://crbug.com/108994
-#if defined(OS_POSIX)
 TEST_P(ConfigurationPolicyProviderTest, DictionaryValue) {
   base::DictionaryValue expected_value;
   expected_value.SetBoolean("bool", true);
@@ -173,7 +171,6 @@ TEST_P(ConfigurationPolicyProviderTest, DictionaryValue) {
                         test_policy_definitions::kKeyDictionary,
                         &expected_value));
 }
-#endif
 
 TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
   PolicyMap policy_map;

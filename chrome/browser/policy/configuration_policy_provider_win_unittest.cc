@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 #include <windows.h>
 
+#include "base/json/json_writer.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -189,7 +190,11 @@ void TestHarness::InstallStringListPolicy(const std::string& policy_name,
 void TestHarness::InstallDictionaryPolicy(
     const std::string& policy_name,
     const base::DictionaryValue* policy_value) {
-  // TODO(joaodasilva): implement this for windows. http://crbug.com/108994
+  std::string json;
+  base::JSONWriter::Write(policy_value, &json);
+  RegKey key(hive_, policy::kRegistryMandatorySubKey, KEY_ALL_ACCESS);
+  key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
+                 UTF8ToUTF16(json).c_str());
 }
 
 // static
