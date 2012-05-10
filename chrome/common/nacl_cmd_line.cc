@@ -27,6 +27,7 @@ void CopyNaClCommandLineArguments(CommandLine* cmd_line) {
     switches::kMemoryProfiling,
     switches::kEnableNaClDebug,
     switches::kNoErrorDialogs,
+    switches::kEnableNaClIPCProxy,
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));

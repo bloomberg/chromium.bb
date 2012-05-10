@@ -551,6 +551,9 @@ const char kEnableNaCl[]                    = "enable-nacl";
 // Enables debugging via RSP over a socket.
 const char kEnableNaClDebug[]               = "enable-nacl-debug";
 
+// Enables the Chrome IPC-based Proxy for NaCl.
+const char kEnableNaClIPCProxy[]            = "enable-nacl-ipc-proxy";
+
 // Enables hardware exception handling via debugger process.
 const char kEnableNaClExceptionHandling[]   = "enable-nacl-exception-handling";
 
