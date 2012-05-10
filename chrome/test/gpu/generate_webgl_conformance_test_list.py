@@ -87,7 +87,7 @@ def main(argv):
 
       # Queue all text files for parsing, because test list URLs are nested
       # through .txt files.
-      if re.match(".+00_test_list\.txt\s*$", url):
+      if re.match(".+\.txt\s*$", url):
         unparsed_files.append(url)
 
       # Convert the filename to a valid test name and output the gtest code.
