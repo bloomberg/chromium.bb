@@ -209,13 +209,13 @@ void LoginPerformer::OnOffTheRecordLoginSuccess() {
 }
 
 void LoginPerformer::OnPasswordChangeDetected() {
+  password_changed_ = true;
   if (delegate_) {
     delegate_->OnPasswordChangeDetected();
   } else {
     last_login_failure_ =
         LoginFailure::FromNetworkAuthFailure(GoogleServiceAuthError(
             GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-    password_changed_ = true;
     DVLOG(1) << "Password change detected - locking screen.";
     RequestScreenLock();
   }

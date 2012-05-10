@@ -113,6 +113,9 @@ class LoginPerformer : public LoginStatusConsumer,
     return last_login_failure_.reason() == LoginFailure::LOGIN_TIMED_OUT;
   }
 
+  // True if password change has been detected.
+  bool password_changed() { return password_changed_; }
+
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
   typedef enum AuthorizationMode {

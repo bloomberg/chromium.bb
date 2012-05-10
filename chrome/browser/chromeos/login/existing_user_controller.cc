@@ -141,6 +141,7 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
       is_owner_login_(false),
       offline_failed_(false),
       is_login_in_progress_(false),
+      password_changed_(false),
       do_auto_enrollment_(false) {
   DCHECK(current_controller_ == NULL);
   current_controller_ = this;
@@ -539,6 +540,10 @@ void ExistingUserController::OnLoginSuccess(
   bool has_cookies =
       login_performer_->auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION;
 
+  // Login performer will be gone so cache this value to use
+  // once profile is loaded.
+  password_changed_ = login_performer_->password_changed();
+
   // LoginPerformer instance will delete itself once online auth result is OK.
   // In case of failure it'll bring up ScreenLock and ask for
   // correct password/display error message.
@@ -558,7 +563,7 @@ void ExistingUserController::OnLoginSuccess(
 
   display_email_.clear();
 
-  // Notifiy LoginDisplay to allow it provide visual feedback to user.
+  // Notify LoginDisplay to allow it provide visual feedback to user.
   login_display_->OnLoginSuccess(username);
 }
 
@@ -778,7 +783,13 @@ void ExistingUserController::OptionallyShowReleaseNotes(
   PrefService* prefs = profile->GetPrefs();
   chrome::VersionInfo version_info;
   // New users would get this info with default getting started guide.
-  if (UserManager::Get()->IsCurrentUserNew()) {
+  // In password changed case 2 options are available:
+  // 1. Cryptohome removed, pref is gone, not yet synced, recreate
+  //    with latest version.
+  // 2. Cryptohome migrated, pref is available. To simplify implementation
+  //    update version here too. Unlikely that user signs in first time on
+  //    the machine after update with password changed.
+  if (UserManager::Get()->IsCurrentUserNew() || password_changed_) {
     prefs->SetString(prefs::kChromeOSReleaseNotesVersion,
                      version_info.Version());
     return;

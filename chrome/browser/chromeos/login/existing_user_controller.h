@@ -227,6 +227,10 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Whether online login attempt succeeded.
   std::string online_succeeded_for_;
 
+  // True if password has been changed for user who is completing sign in.
+  // Set in OnLoginSuccess. Before that use LoginPerformer::password_changed().
+  bool password_changed_;
+
   // True if auto-enrollment should be performed before starting the user's
   // session.
   bool do_auto_enrollment_;
