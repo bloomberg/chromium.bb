@@ -1209,6 +1209,7 @@ cr.define('ntp', function() {
      */
     doDrop: function(e) {
       e.stopPropagation();
+      e.preventDefault();
 
       var index = this.currentDropIndex_;
       // Only change data if this was not a 'null drag'.
