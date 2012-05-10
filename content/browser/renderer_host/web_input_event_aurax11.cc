@@ -363,7 +363,7 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
       gesture_event.type = WebKit::WebInputEvent::GestureFlingCancel;
       break;
     case ui::ET_GESTURE_LONG_PRESS:
-      gesture_event.type = WebKit::WebInputEvent::GestureLongPress;
+      // TODO(tdresser): Integrate long press with WebKit
       break;
     default:
       NOTREACHED() << "Unknown gesture type: " << event->type();
