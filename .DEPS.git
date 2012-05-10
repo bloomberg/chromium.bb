@@ -116,7 +116,7 @@ deps = {
     'src/third_party/undoview':
         Var('git_url') + '/chromium/deps/undoview.git@3ba503e248f3cdbd81b78325a24ece0984637559',
     'src/third_party/v8-i18n':
-        Var('git_url') + '/external/v8-i18n.git@a0921823bc9f41287d2e23487c65247b9e7d72ea',
+        Var('git_url') + '/external/v8-i18n.git@434af39161ea5248be0dbbbcd30dcc9a139cc34d',
     'src/third_party/webdriver/pylib':
         Var('git_url') + '/external/selenium/py.git@43dd2f3b684a129cdaf84e4e4e0656e2d7852a4c',
     'src/third_party/webgl_conformance':
