@@ -387,6 +387,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   set<short, kMaxGesturingFingers> prev_scroll_fingers_;
   ScrollEventBuffer scroll_buffer_;
 
+  // Set to true when a scroll is blocked b/c of high pressure change. Cleared
+  // when a normal scroll goes through.
+  bool prev_result_high_pressure_change_;
+
   // When guessing a pinch gesture. Do we guess pinch (true) or no-pinch?
   bool pinch_guess_;
   // Time when pinch guess was made. -1 if no guess has been made yet.
@@ -474,6 +478,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // A finger must change in pressure by less than this per second to trigger
   // motion.
   DoubleProperty max_pressure_change_;
+  // If a contact crosses max_pressure_change_, motion continues to be blocked
+  // until the pressure change per second goes below
+  // max_pressure_change_hysteresis_.
+  DoubleProperty max_pressure_change_hysteresis_;
   // During a scroll one finger determines scroll speed and direction.
   // Maximum distance [mm] the other finger can move in opposite direction
   DoubleProperty scroll_stationary_finger_max_distance_;
