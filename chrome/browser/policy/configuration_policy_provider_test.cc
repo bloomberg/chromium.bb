@@ -25,12 +25,14 @@ const char kKeyString[] = "StringPolicy";
 const char kKeyBoolean[] = "BooleanPolicy";
 const char kKeyInteger[] = "IntegerPolicy";
 const char kKeyStringList[] = "StringListPolicy";
+const char kKeyDictionary[] = "DictionaryPolicy";
 
 static const PolicyDefinitionList::Entry kEntries[] = {
   { kKeyString,     base::Value::TYPE_STRING },
   { kKeyBoolean,    base::Value::TYPE_BOOLEAN },
   { kKeyInteger,    base::Value::TYPE_INTEGER },
   { kKeyStringList, base::Value::TYPE_LIST },
+  { kKeyDictionary, base::Value::TYPE_DICTIONARY },
 };
 
 const PolicyDefinitionList kList = {
@@ -96,7 +98,7 @@ TEST_P(ConfigurationPolicyProviderTest, Empty) {
 
 TEST_P(ConfigurationPolicyProviderTest, StringValue) {
   const char kTestString[] = "string_value";
-  StringValue expected_value(kTestString);
+  base::StringValue expected_value(kTestString);
   CheckValue(test_policy_definitions::kKeyString,
              expected_value,
              base::Bind(&PolicyProviderTestHarness::InstallStringPolicy,
@@ -137,6 +139,42 @@ TEST_P(ConfigurationPolicyProviderTest, StringListValue) {
                         &expected_value));
 }
 
+// TODO(joaodasilva): implement this for windows. http://crbug.com/108994
+#if defined(OS_POSIX)
+TEST_P(ConfigurationPolicyProviderTest, DictionaryValue) {
+  base::DictionaryValue expected_value;
+  expected_value.SetBoolean("bool", true);
+  expected_value.SetInteger("int", 123);
+  expected_value.SetString("str", "omg");
+
+  base::ListValue* list = new base::ListValue();
+  list->Set(0U, base::Value::CreateStringValue("first"));
+  list->Set(1U, base::Value::CreateStringValue("second"));
+  expected_value.Set("list", list);
+
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetString("sub", "value");
+  list = new base::ListValue();
+  base::DictionaryValue* sub = new base::DictionaryValue();
+  sub->SetInteger("aaa", 111);
+  sub->SetInteger("bbb", 222);
+  list->Append(sub);
+  sub = new base::DictionaryValue();
+  sub->SetString("ccc", "333");
+  sub->SetString("ddd", "444");
+  list->Append(sub);
+  dict->Set("sublist", list);
+  expected_value.Set("dict", dict);
+
+  CheckValue(test_policy_definitions::kKeyDictionary,
+             expected_value,
+             base::Bind(&PolicyProviderTestHarness::InstallDictionaryPolicy,
+                        base::Unretained(test_harness_.get()),
+                        test_policy_definitions::kKeyDictionary,
+                        &expected_value));
+}
+#endif
+
 TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
   PolicyMap policy_map;
   EXPECT_TRUE(provider_->Provide(&policy_map));
@@ -172,25 +210,25 @@ TEST(ConfigurationPolicyProviderTest, FixDeprecatedPolicies) {
   policy_map.Set(key::kProxyServerMode,
                  POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
-                 Value::CreateIntegerValue(3));
+                 base::Value::CreateIntegerValue(3));
 
   // Both these policies should be ignored, since there's a higher priority
   // policy available.
   policy_map.Set(key::kProxyMode,
                  POLICY_LEVEL_RECOMMENDED,
                  POLICY_SCOPE_USER,
-                 Value::CreateStringValue("pac_script"));
+                 base::Value::CreateStringValue("pac_script"));
   policy_map.Set(key::kProxyPacUrl,
                  POLICY_LEVEL_RECOMMENDED,
                  POLICY_SCOPE_USER,
-                 Value::CreateStringValue("http://proxy.example.com/wpad.dat"));
+                 base::Value::CreateStringValue("http://example.com/wpad.dat"));
 
   ConfigurationPolicyProvider::FixDeprecatedPolicies(&policy_map);
-  DictionaryValue expected;
+  base::DictionaryValue expected;
   expected.SetInteger(key::kProxyServerMode, 3);
   EXPECT_EQ(1U, policy_map.size());
-  EXPECT_TRUE(Value::Equals(&expected,
-                            policy_map.GetValue(key::kProxySettings)));
+  EXPECT_TRUE(base::Value::Equals(&expected,
+                                  policy_map.GetValue(key::kProxySettings)));
 }
 
 }  // namespace policy

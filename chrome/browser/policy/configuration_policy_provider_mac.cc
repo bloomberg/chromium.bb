@@ -6,14 +6,19 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/path_service.h"
 #include "base/platform_file.h"
 #include "base/sys_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/preferences_mac.h"
 #include "chrome/common/chrome_paths.h"
 #include "policy/policy_constants.h"
+
+using base::mac::CFCast;
+using base::mac::ScopedCFTypeRef;
 
 namespace policy {
 
@@ -40,6 +45,32 @@ FilePath GetManagedPolicyPath() {
   return path.Append(base::SysCFStringRefToUTF8(bundle_id) + ".plist");
 }
 
+// Callback function for CFDictionaryApplyFunction. |key| and |value| are an
+// entry of the CFDictionary that should be converted into an equivalent entry
+// in the DictionaryValue in |context|.
+void DictionaryEntryToValue(const void* key, const void* value, void* context) {
+  if (CFStringRef cf_key = CFCast<CFStringRef>(key)) {
+    base::Value* converted =
+        MacPreferencesPolicyProviderDelegate::CreateValueFromProperty(
+            static_cast<CFPropertyListRef>(value));
+    if (converted) {
+      const std::string string = base::SysCFStringRefToUTF8(cf_key);
+      static_cast<base::DictionaryValue *>(context)->Set(string, converted);
+    }
+  }
+}
+
+// Callback function for CFArrayApplyFunction. |value| is an entry of the
+// CFArray that should be converted into an equivalent entry in the ListValue
+// in |context|.
+void ArrayEntryToValue(const void* value, void* context) {
+  base::Value* converted =
+      MacPreferencesPolicyProviderDelegate::CreateValueFromProperty(
+          static_cast<CFPropertyListRef>(value));
+  if (converted)
+    static_cast<base::ListValue *>(context)->Append(converted);
+}
+
 }  // namespace
 
 MacPreferencesPolicyProviderDelegate::MacPreferencesPolicyProviderDelegate(
@@ -55,7 +86,7 @@ MacPreferencesPolicyProviderDelegate::~MacPreferencesPolicyProviderDelegate() {}
 
 PolicyMap* MacPreferencesPolicyProviderDelegate::Load() {
   preferences_->AppSynchronize(kCFPreferencesCurrentApplication);
-  PolicyMap* policy = new PolicyMap;
+  PolicyMap* policies = new PolicyMap;
 
   const PolicyDefinitionList::Entry* current;
   for (current = policy_list_->begin; current != policy_list_->end; ++current) {
@@ -71,63 +102,15 @@ PolicyMap* MacPreferencesPolicyProviderDelegate::Load() {
                                  POLICY_LEVEL_RECOMMENDED;
     if (level != level_)
       continue;
-    Value* policy_value = NULL;
-    switch (current->value_type) {
-      case Value::TYPE_STRING:
-        if (CFGetTypeID(value) == CFStringGetTypeID()) {
-          policy_value = Value::CreateStringValue(
-              base::SysCFStringRefToUTF8((CFStringRef) value.get()));
-        }
-        break;
-      case Value::TYPE_BOOLEAN:
-        if (CFGetTypeID(value) == CFBooleanGetTypeID()) {
-          policy_value = Value::CreateBooleanValue(
-              CFBooleanGetValue((CFBooleanRef) value.get()));
-        }
-        break;
-      case Value::TYPE_INTEGER:
-        if (CFGetTypeID(value) == CFNumberGetTypeID()) {
-          int int_value;
-          bool cast = CFNumberGetValue((CFNumberRef) value.get(),
-                                       kCFNumberIntType,
-                                       &int_value);
-          if (cast)
-            policy_value = Value::CreateIntegerValue(int_value);
-        }
-        break;
-      case Value::TYPE_LIST:
-        if (CFGetTypeID(value) == CFArrayGetTypeID()) {
-          scoped_ptr<ListValue> list_value(new ListValue);
-          bool valid_array = true;
-          CFArrayRef array_value = (CFArrayRef)value.get();
-          for (CFIndex i = 0; i < CFArrayGetCount(array_value); ++i) {
-            // For now we assume that all values are strings.
-            CFStringRef array_string =
-                (CFStringRef)CFArrayGetValueAtIndex(array_value, i);
-            if (CFGetTypeID(array_string) == CFStringGetTypeID()) {
-              std::string array_string_value =
-                  base::SysCFStringRefToUTF8(array_string);
-              list_value->Append(Value::CreateStringValue(array_string_value));
-            } else {
-              valid_array = false;
-            }
-          }
-          if (valid_array)
-            policy_value = list_value.release();
-        }
-        break;
-      case Value::TYPE_DICTIONARY:
-        // TODO(joaodasilva): http://crbug.com/108995
-        break;
-      default:
-        NOTREACHED();
-    }
+
     // TODO(joaodasilva): figure the policy scope.
-    if (policy_value)
-      policy->Set(current->name, level_, POLICY_SCOPE_USER, policy_value);
+
+    base::Value* policy = CreateValueFromProperty(value);
+    if (policy)
+      policies->Set(current->name, level_, POLICY_SCOPE_USER, policy);
   }
 
-  return policy;
+  return policies;
 }
 
 base::Time MacPreferencesPolicyProviderDelegate::GetLastModification() {
@@ -138,6 +121,50 @@ base::Time MacPreferencesPolicyProviderDelegate::GetLastModification() {
   }
 
   return file_info.last_modified;
+}
+
+// static
+base::Value* MacPreferencesPolicyProviderDelegate::CreateValueFromProperty(
+    CFPropertyListRef property) {
+  if (CFCast<CFNullRef>(property))
+    return base::Value::CreateNullValue();
+
+  if (CFBooleanRef boolean = CFCast<CFBooleanRef>(property))
+    return base::Value::CreateBooleanValue(CFBooleanGetValue(boolean));
+
+  if (CFNumberRef number = CFCast<CFNumberRef>(property)) {
+    // CFNumberGetValue() converts values implicitly when the conversion is not
+    // lossy. Check the type before trying to convert.
+    if (CFNumberIsFloatType(number)) {
+      double double_value;
+      if (CFNumberGetValue(number, kCFNumberDoubleType, &double_value))
+        return base::Value::CreateDoubleValue(double_value);
+    } else {
+      int int_value;
+      if (CFNumberGetValue(number, kCFNumberIntType, &int_value))
+        return base::Value::CreateIntegerValue(int_value);
+    }
+  }
+
+  if (CFStringRef string = CFCast<CFStringRef>(property))
+    return base::Value::CreateStringValue(base::SysCFStringRefToUTF8(string));
+
+  if (CFDictionaryRef dict = CFCast<CFDictionaryRef>(property)) {
+    base::DictionaryValue* dict_value = new base::DictionaryValue();
+    CFDictionaryApplyFunction(dict, DictionaryEntryToValue, dict_value);
+    return dict_value;
+  }
+
+  if (CFArrayRef array = CFCast<CFArrayRef>(property)) {
+    base::ListValue* list_value = new base::ListValue();
+    CFArrayApplyFunction(array,
+                         CFRangeMake(0, CFArrayGetCount(array)),
+                         ArrayEntryToValue,
+                         list_value);
+    return list_value;
+  }
+
+  return NULL;
 }
 
 ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(

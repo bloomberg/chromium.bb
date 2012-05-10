@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,8 +72,12 @@ class TestHarness : public PolicyProviderTestHarness {
                                     int policy_value) OVERRIDE;
   virtual void InstallBooleanPolicy(const std::string& policy_name,
                                     bool policy_value) OVERRIDE;
-  virtual void InstallStringListPolicy(const std::string& policy_name,
-                                       const ListValue* policy_value) OVERRIDE;
+  virtual void InstallStringListPolicy(
+      const std::string& policy_name,
+      const base::ListValue* policy_value) OVERRIDE;
+  virtual void InstallDictionaryPolicy(
+      const std::string& policy_name,
+      const base::DictionaryValue* policy_value) OVERRIDE;
 
   // Creates a harness instance that will install policy in HKCU or HKLM,
   // respectively.
@@ -164,13 +168,13 @@ void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
 }
 
 void TestHarness::InstallStringListPolicy(const std::string& policy_name,
-                                          const ListValue* policy_value) {
+                                          const base::ListValue* policy_value) {
   RegKey key(hive_,
              (string16(policy::kRegistryMandatorySubKey) + ASCIIToUTF16("\\") +
               UTF8ToUTF16(policy_name)).c_str(),
              KEY_ALL_ACCESS);
   int index = 1;
-  for (ListValue::const_iterator element(policy_value->begin());
+  for (base::ListValue::const_iterator element(policy_value->begin());
        element != policy_value->end();
        ++element) {
     std::string element_value;
@@ -180,6 +184,12 @@ void TestHarness::InstallStringListPolicy(const std::string& policy_name,
     key.WriteValue(UTF8ToUTF16(name).c_str(),
                    UTF8ToUTF16(element_value).c_str());
   }
+}
+
+void TestHarness::InstallDictionaryPolicy(
+    const std::string& policy_name,
+    const base::DictionaryValue* policy_value) {
+  // TODO(joaodasilva): implement this for windows. http://crbug.com/108994
 }
 
 // static
@@ -230,8 +240,9 @@ TEST_F(ConfigurationPolicyProviderWinTest, HKLMOverHKCU) {
 
   PolicyMap policy_map;
   provider_.Provide(&policy_map);
-  const Value* value = policy_map.GetValue(test_policy_definitions::kKeyString);
-  EXPECT_TRUE(StringValue("hklm").Equals(value));
+  const base::Value* value =
+      policy_map.GetValue(test_policy_definitions::kKeyString);
+  EXPECT_TRUE(base::StringValue("hklm").Equals(value));
 }
 
 }  // namespace policy

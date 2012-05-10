@@ -268,7 +268,7 @@
       },
       'example_value': True,
       'id': 7,
-      'caption': '''Enable network prediction.''',
+      'caption': '''Enable network prediction''',
       'desc': '''Enables network prediction in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
@@ -1964,7 +1964,7 @@
       'features': {'dynamic_refresh': True},
       'example_value': True,
       'id': 84,
-      'caption': '''Allow invocation of file selection dialogs.''',
+      'caption': '''Allow invocation of file selection dialogs''',
       'desc': '''Allows access to local files on the machine by allowing <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to display file selection dialogs.
 
       If you enable this setting, users can open file selection dialogs as normal.

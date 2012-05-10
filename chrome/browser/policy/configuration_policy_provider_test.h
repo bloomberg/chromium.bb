@@ -17,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
+class DictionaryValue;
 class ListValue;
 class Value;
 }
@@ -35,6 +36,7 @@ extern const char kKeyString[];
 extern const char kKeyBoolean[];
 extern const char kKeyInteger[];
 extern const char kKeyStringList[];
+extern const char kKeyDictionary[];
 
 // Policy definition list that contains entries for the keys above.
 extern const PolicyDefinitionList kList;
@@ -66,6 +68,9 @@ class PolicyProviderTestHarness {
                                     bool policy_value) = 0;
   virtual void InstallStringListPolicy(const std::string& policy_name,
                                        const base::ListValue* policy_value) = 0;
+  virtual void InstallDictionaryPolicy(
+      const std::string& policy_name,
+      const base::DictionaryValue* policy_value) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PolicyProviderTestHarness);

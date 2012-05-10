@@ -33,8 +33,12 @@ class TestHarness : public PolicyProviderTestHarness {
                                     int policy_value) OVERRIDE;
   virtual void InstallBooleanPolicy(const std::string& policy_name,
                                     bool policy_value) OVERRIDE;
-  virtual void InstallStringListPolicy(const std::string& policy_name,
-                                       const ListValue* policy_value) OVERRIDE;
+  virtual void InstallStringListPolicy(
+      const std::string& policy_name,
+      const base::ListValue* policy_value) OVERRIDE;
+  virtual void InstallDictionaryPolicy(
+      const std::string& policy_name,
+      const base::DictionaryValue* policy_value) OVERRIDE;
 
   const FilePath& test_dir() { return test_dir_.path(); }
 
@@ -67,34 +71,42 @@ AsynchronousPolicyProvider* TestHarness::CreateProvider(
 }
 
 void TestHarness::InstallEmptyPolicy() {
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   WriteConfigFile(dict, "policy");
 }
 
 void TestHarness::InstallStringPolicy(const std::string& policy_name,
                                       const std::string& policy_value) {
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   dict.SetString(policy_name, policy_value);
   WriteConfigFile(dict, "policy");
 }
 
 void TestHarness::InstallIntegerPolicy(const std::string& policy_name,
                                        int policy_value) {
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   dict.SetInteger(policy_name, policy_value);
   WriteConfigFile(dict, "policy");
 }
 
 void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
                                        bool policy_value) {
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   dict.SetBoolean(policy_name, policy_value);
   WriteConfigFile(dict, "policy");
 }
 
 void TestHarness::InstallStringListPolicy(const std::string& policy_name,
-                                          const ListValue* policy_value) {
-  DictionaryValue dict;
+                                          const base::ListValue* policy_value) {
+  base::DictionaryValue dict;
+  dict.Set(policy_name, policy_value->DeepCopy());
+  WriteConfigFile(dict, "policy");
+}
+
+void TestHarness::InstallDictionaryPolicy(
+    const std::string& policy_name,
+    const base::DictionaryValue* policy_value) {
+  base::DictionaryValue dict;
   dict.Set(policy_name, policy_value->DeepCopy());
   WriteConfigFile(dict, "policy");
 }

@@ -6,11 +6,17 @@
 #define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_MAC_H_
 #pragma once
 
+#include <CoreFoundation/CoreFoundation.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/file_based_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 
 class MacPreferences;
+
+namespace base {
+class Value;
+}
 
 namespace policy {
 
@@ -28,6 +34,12 @@ class MacPreferencesPolicyProviderDelegate
   // FileBasedPolicyLoader::Delegate implementation.
   virtual PolicyMap* Load() OVERRIDE;
   virtual base::Time GetLastModification() OVERRIDE;
+
+  // Converts a CFPropertyListRef to the equivalent base::Value. CFDictionary
+  // entries whose key is not a CFStringRef are ignored.
+  // The returned value is owned by the caller.
+  // Returns NULL if an invalid CFType was found, such as CFDate or CFData.
+  static base::Value* CreateValueFromProperty(CFPropertyListRef property);
 
  private:
   // In order to access the application preferences API, the names and values of
