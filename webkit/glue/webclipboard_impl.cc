@@ -24,10 +24,6 @@
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 
-#if WEBKIT_USING_CG
-#include "skia/ext/skia_utils_mac.h"
-#endif
-
 using WebKit::WebClipboard;
 using WebKit::WebData;
 using WebKit::WebDragData;
@@ -214,11 +210,7 @@ void WebClipboardImpl::writeImage(
   ScopedClipboardWriterGlue scw(client_);
 
   if (!image.isNull()) {
-#if WEBKIT_USING_SKIA
     const SkBitmap& bitmap = image.getSkBitmap();
-#elif WEBKIT_USING_CG
-    const SkBitmap& bitmap = gfx::CGImageToSkBitmap(image.getCGImageRef());
-#endif
     SkAutoLockPixels locked(bitmap);
     scw.WriteBitmapFromPixels(bitmap.getPixels(), image.size());
   }

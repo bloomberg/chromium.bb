@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -17,12 +18,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webpreferences.h"
-
-#if WEBKIT_USING_CG
-#include <CoreGraphics/CGContext.h>
-#elif WEBKIT_USING_SKIA
-#include "skia/ext/platform_canvas.h"
-#endif
 
 using WebKit::WebCanvas;
 using WebKit::WebCursorInfo;
@@ -127,23 +122,13 @@ void WebViewPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
 
   paintRect.Offset(-rect_.x(), -rect_.y());
 
-#if WEBKIT_USING_CG
-  CGContextRef context = canvas;
-  CGContextTranslateCTM(context, rect_.x(), rect_.y());
-  CGContextSaveGState(context);
-#elif WEBKIT_USING_SKIA
   canvas->translate(SkIntToScalar(rect_.x()), SkIntToScalar(rect_.y()));
   canvas->save();
-#endif
 
   web_view_->layout();
   web_view_->paint(canvas, paintRect);
 
-#if WEBKIT_USING_SKIA
   canvas->restore();
-#elif WEBKIT_USING_CG
-  CGContextRestoreGState(context);
-#endif
 }
 
 // Coordinates are relative to the containing window.

@@ -165,8 +165,6 @@ void WebCursor::Copy(const WebCursor& other) {
   CopyPlatformData(other);
 }
 
-#if WEBKIT_USING_SKIA
-// The WEBKIT_USING_CG implementation is in webcursor_mac.mm.
 void WebCursor::SetCustomData(const WebImage& image) {
   if (image.isNull())
     return;
@@ -195,7 +193,6 @@ void WebCursor::ImageFromCustomData(WebImage* image) const {
 
   image->assign(bitmap);
 }
-#endif
 
 void WebCursor::ClampHotspot() {
   if (!IsCustom())

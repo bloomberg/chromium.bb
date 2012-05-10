@@ -1858,7 +1858,6 @@ PP_Bool PluginInstance::SetCursor(PP_Instance instance,
   custom_cursor->hotSpot.x = hot_spot->x;
   custom_cursor->hotSpot.y = hot_spot->y;
 
-#if WEBKIT_USING_SKIA
   const SkBitmap* bitmap = image_data->GetMappedBitmap();
   // Make a deep copy, so that the cursor remains valid even after the original
   // image data gets freed.
@@ -1866,11 +1865,6 @@ PP_Bool PluginInstance::SetCursor(PP_Instance instance,
                       bitmap->config())) {
     return PP_FALSE;
   }
-#elif WEBKIT_USING_CG
-  // TODO(yzshen): Implement it.
-  NOTIMPLEMENTED();
-  return false;
-#endif
 
   DoSetCursor(custom_cursor.release());
   return PP_TRUE;

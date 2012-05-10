@@ -703,7 +703,6 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
     return;
 
   // We're using the native OS APIs from here on out.
-#if WEBKIT_USING_SKIA
   if (!skia::SupportsPlatformPaint(canvas)) {
     // TODO(alokp): Implement this path.
     // This block will only get hit with --enable-accelerated-drawing flag.
@@ -716,9 +715,6 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
   skia::ScopedPlatformPaint scoped_platform_paint(canvas);
   gfx::NativeDrawingContext context =
       scoped_platform_paint.GetPlatformSurface();
-#elif WEBKIT_USING_CG
-  gfx::NativeDrawingContext context = canvas;
-#endif
 
   gfx::Rect offset_rect = rect;
   offset_rect.Offset(-plugin_rect_.x(), -plugin_rect_.y());

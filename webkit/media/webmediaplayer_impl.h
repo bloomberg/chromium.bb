@@ -310,10 +310,6 @@ class WebMediaPlayerImpl
 
   MediaStreamClient* media_stream_client_;
 
-#if WEBKIT_USING_CG
-  scoped_ptr<skia::PlatformCanvas> skia_canvas_;
-#endif
-
   scoped_refptr<media::MediaLog> media_log_;
 
   // Since accelerated compositing status is only known after the first layout,

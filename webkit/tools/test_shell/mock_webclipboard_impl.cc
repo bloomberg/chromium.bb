@@ -19,11 +19,6 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/support/webkit_support_gfx.h"
 
-#if WEBKIT_USING_CG
-#include <ApplicationServices/ApplicationServices.h>
-#include <CoreFoundation/CoreFoundation.h>
-#endif
-
 using WebKit::WebDragData;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -108,7 +103,6 @@ WebKit::WebData MockWebClipboardImpl::readImage(
   std::vector<unsigned char> encoded_image;
   // TODO(dcheng): Verify that we can assume the image is ARGB8888. Note that
   // for endianess reasons, it will be BGRA8888 on Windows.
-#if WEBKIT_USING_SKIA
   const SkBitmap& bitmap = m_image.getSkBitmap();
   SkAutoLockPixels lock(bitmap);
   webkit_support::EncodeBGRAPNG(static_cast<unsigned char*>(bitmap.getPixels()),
@@ -117,18 +111,6 @@ WebKit::WebData MockWebClipboardImpl::readImage(
                                 bitmap.rowBytes(),
                                 false,
                                 &encoded_image);
-#elif WEBKIT_USING_CG
-  CGImageRef image = m_image.getCGImageRef();
-  CFDataRef image_data_ref =
-      CGDataProviderCopyData(CGImageGetDataProvider(image));
-  webkit_support::EncodeBGRAPNG(CFDataGetBytePtr(image_data_ref),
-                                CGImageGetWidth(image),
-                                CGImageGetHeight(image),
-                                CGImageGetBytesPerRow(image),
-                                false,
-                                &encoded_image);
-  CFRelease(image_data_ref);
-#endif
   data.assign(reinterpret_cast<char*>(vector_as_array(&encoded_image)),
               encoded_image.size());
   return data;

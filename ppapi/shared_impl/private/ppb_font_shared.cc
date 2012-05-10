@@ -236,15 +236,7 @@ void FontImpl::DrawTextAt(const DrawTextParams& params) {
                        params.clip->size.width, params.clip->size.height);
   }
 
-#if WEBKIT_USING_SKIA
-  WebCanvas* canvas = params.destination;
-#elif WEBKIT_USING_CG
-  WebCanvas* canvas = skia::GetBitmapContext(skia::GetTopDevice(*destination));
-#else
-  NOTIMPLEMENTED();
-  return;
-#endif
-  font_->drawText(canvas, run, web_position, params.color, web_clip,
+  font_->drawText(params.destination, run, web_position, params.color, web_clip,
                   params.image_data_is_opaque == PP_TRUE);
 }
 

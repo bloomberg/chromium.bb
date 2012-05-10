@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,10 +12,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
-
-#if WEBKIT_USING_CG
-#include "skia/ext/skia_utils_mac.h"
-#endif
 
 WebViewColorOverlay::WebViewColorOverlay(content::RenderView* render_view,
                                          SkColor color)
@@ -31,20 +27,8 @@ WebViewColorOverlay::~WebViewColorOverlay() {
 
 void WebViewColorOverlay::paintPageOverlay(WebKit::WebCanvas* canvas) {
   SkRect rect = gfx::RectToSkRect(gfx::Rect(render_view_->GetSize()));
-
-#if WEBKIT_USING_SKIA
   SkPaint paint;
   paint.setColor(color_);
   paint.setStyle(SkPaint::kFill_Style);
   canvas->drawRect(rect, paint);
-#elif WEBKIT_USING_CG
-  CGContextSaveGState(canvas);
-  CGColorRef color = gfx::SkColorToCGColorRef(color_);
-  CGContextSetFillColorWithColor(canvas, color);
-  CGColorRelease(color);
-  CGContextFillRect(canvas, gfx::SkRectToCGRect(rect));
-  CGContextRestoreGState(canvas);
-#else
-  NOTIMPLEMENTED();
-#endif
 }

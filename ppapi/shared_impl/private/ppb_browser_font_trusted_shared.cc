@@ -309,15 +309,7 @@ void PPB_BrowserFont_Trusted_Shared::DrawTextToCanvas(
                        clip->size.width, clip->size.height);
   }
 
-#if WEBKIT_USING_SKIA
-  WebCanvas* canvas = destination;
-#elif WEBKIT_USING_CG
-  WebCanvas* canvas = skia::GetBitmapContext(skia::GetTopDevice(*destination));
-#else
-  NOTIMPLEMENTED();
-  return;
-#endif
-  font_->drawText(canvas, run, web_position, color, web_clip,
+  font_->drawText(destination, run, web_position, color, web_clip,
                   PP_ToBool(image_data_is_opaque));
 }
 
