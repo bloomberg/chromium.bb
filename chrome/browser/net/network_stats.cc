@@ -16,10 +16,12 @@
 #include "base/tuple.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
+#include "net/proxy/proxy_service.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/udp/udp_client_socket.h"
 #include "net/udp/udp_server_socket.h"
@@ -93,6 +95,7 @@ NetworkStats::NetworkStats()
     : load_size_(0),
       bytes_to_read_(0),
       bytes_to_send_(0),
+      has_proxy_server_(false),
       packets_to_send_(0),
       packets_sent_(0),
       base_packet_number_(0),
@@ -107,13 +110,19 @@ NetworkStats::~NetworkStats() {
 bool NetworkStats::Start(net::HostResolver* host_resolver,
                          const net::HostPortPair& server_host_port_pair,
                          HistogramPortSelector histogram_port,
+                         bool has_proxy_server,
                          uint32 bytes_to_send,
                          uint32 packets_to_send,
                          const net::CompletionCallback& finished_callback) {
+  DCHECK(host_resolver);
   DCHECK(bytes_to_send);   // We should have data to send.
   DCHECK_LE(packets_to_send, kMaximumPackets);
 
-  Initialize(bytes_to_send, histogram_port, packets_to_send, finished_callback);
+  Initialize(bytes_to_send,
+             histogram_port,
+             has_proxy_server,
+             packets_to_send,
+             finished_callback);
 
   net::HostResolver::RequestInfo request(server_host_port_pair);
   int rv = host_resolver->Resolve(
@@ -129,6 +138,7 @@ bool NetworkStats::Start(net::HostResolver* host_resolver,
 void NetworkStats::Initialize(
     uint32 bytes_to_send,
     HistogramPortSelector histogram_port,
+    bool has_proxy_server,
     uint32 packets_to_send,
     const net::CompletionCallback& finished_callback) {
   DCHECK(bytes_to_send);    // We should have data to send.
@@ -139,6 +149,7 @@ void NetworkStats::Initialize(
   packets_to_send_ = packets_to_send;
 
   histogram_port_ = histogram_port;
+  has_proxy_server_ = has_proxy_server;
   finished_callback_ = finished_callback;
 }
 
@@ -537,7 +548,7 @@ void NetworkStats::GetHistogramNames(const ProtocolValue& protocol,
 
   // Build "NetConnectivity.<protocol>.Status.<port>.<load_size>" histogram
   // name. Total number of histograms are 2*5*2.
-  *status_histogram_name =  base::StringPrintf(
+  *status_histogram_name = base::StringPrintf(
       "NetConnectivity.%s.Status.%d.%s",
       protocol_string,
       kPorts[port],
@@ -546,7 +557,7 @@ void NetworkStats::GetHistogramNames(const ProtocolValue& protocol,
   // Build "NetConnectivity.<protocol>.PacketLoss.<port>.<load_size>" histogram
   // name. Total number of histograms are 5 (because we do this test for UDP
   // only).
-  *packet_loss_histogram_name =  base::StringPrintf(
+  *packet_loss_histogram_name = base::StringPrintf(
       "NetConnectivity.%s.PacketLoss6.%d.%s",
       protocol_string,
       kPorts[port],
@@ -569,31 +580,40 @@ void NetworkStats::RecordHistograms(const ProtocolValue& protocol,
                     &status_histogram_name,
                     &packet_loss_histogram_name);
 
-  // For packet loss test, just record packet loss data.
-  if (packets_to_send_ > 1) {
-    base::Histogram* packet_loss_histogram = base::LinearHistogram::FactoryGet(
-        packet_loss_histogram_name,
-        1,
-        2 << kMaximumPackets,
-        (2 << kMaximumPackets) + 1,
-        base::Histogram::kUmaTargetedHistogramFlag);
-    packet_loss_histogram->Add(packets_received_mask_);
-    return;
-  }
+  // If we are running without a proxy, we'll generate 2 distinct histograms in
+  // each case, one will have the ".NoProxy" suffix.
+  size_t histogram_count = has_proxy_server_ ? 1 : 2;
+  for (size_t i = 0; i < histogram_count; i++) {
+    // For packet loss test, just record packet loss data.
+    if (packets_to_send_ > 1) {
+      base::Histogram* histogram = base::LinearHistogram::FactoryGet(
+          packet_loss_histogram_name,
+          1,
+          2 << kMaximumPackets,
+          (2 << kMaximumPackets) + 1,
+          base::Histogram::kUmaTargetedHistogramFlag);
+      histogram->Add(packets_received_mask_);
+      packet_loss_histogram_name.append(".NoProxy");
+      // Packet loss histograms don't measure times or status.
+      continue;
+    }
 
-  if (result == net::OK) {
-    base::Histogram* rtt_histogram = base::Histogram::FactoryTimeGet(
-        rtt_histogram_name,
-        base::TimeDelta::FromMilliseconds(10),
-        base::TimeDelta::FromSeconds(60), 50,
-        base::Histogram::kUmaTargetedHistogramFlag);
-    rtt_histogram->AddTime(duration);
-  }
+    if (result == net::OK) {
+      base::Histogram* rtt_histogram = base::Histogram::FactoryTimeGet(
+          rtt_histogram_name,
+          base::TimeDelta::FromMilliseconds(10),
+          base::TimeDelta::FromSeconds(60), 50,
+          base::Histogram::kUmaTargetedHistogramFlag);
+      rtt_histogram->AddTime(duration);
+      rtt_histogram_name.append(".NoProxy");
+    }
 
-  base::Histogram* status_histogram = base::LinearHistogram::FactoryGet(
-      status_histogram_name, 1, STATUS_MAX, STATUS_MAX+1,
-      base::Histogram::kUmaTargetedHistogramFlag);
-  status_histogram->Add(status);
+    base::Histogram* status_histogram = base::LinearHistogram::FactoryGet(
+        status_histogram_name, 1, STATUS_MAX, STATUS_MAX+1,
+        base::Histogram::kUmaTargetedHistogramFlag);
+    status_histogram->Add(status);
+    status_histogram_name.append(".NoProxy");
+  }
 }
 
 // UDPStatsClient methods and members.
@@ -714,6 +734,55 @@ void TCPStatsClient::Finish(Status status, int result) {
   delete this;
 }
 
+// ProxyDetector methods and members.
+ProxyDetector::ProxyDetector(net::ProxyService* proxy_service,
+                             const net::HostPortPair& server_address,
+                             OnResolvedCallback callback)
+    : proxy_service_(proxy_service),
+      server_address_(server_address),
+      callback_(callback),
+      has_pending_proxy_resolution_(false) {
+}
+
+ProxyDetector::~ProxyDetector() {
+  CHECK(!has_pending_proxy_resolution_);
+}
+
+void ProxyDetector::StartResolveProxy() {
+  std::string url =
+      base::StringPrintf("https://%s", server_address_.ToString().c_str());
+  GURL gurl(url);
+
+  has_pending_proxy_resolution_ = true;
+  DCHECK(proxy_service_);
+  int rv = proxy_service_->ResolveProxy(
+      gurl,
+      &proxy_info_,
+      base::Bind(&ProxyDetector::OnResolveProxyComplete,
+                 base::Unretained(this)),
+      NULL,
+      net::BoundNetLog());
+  if (rv != net::ERR_IO_PENDING)
+    OnResolveProxyComplete(rv);
+}
+
+void ProxyDetector::OnResolveProxyComplete(int result) {
+  has_pending_proxy_resolution_ = false;
+  bool has_proxy_server = (result == net::OK &&
+                           proxy_info_.proxy_server().is_valid() &&
+                           !proxy_info_.proxy_server().is_direct());
+
+  OnResolvedCallback callback = callback_;
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(callback, has_proxy_server));
+
+  // TODO(rtenneti): Will we leak if ProxyResolve is cancelled (or proxy
+  // resolution never completes).
+  delete this;
+}
+
 // static
 void CollectNetworkStats(const std::string& network_stats_server,
                          IOThread* io_thread) {
@@ -739,8 +808,6 @@ void CollectNetworkStats(const std::string& network_stats_server,
 
   CR_DEFINE_STATIC_LOCAL(scoped_refptr<base::FieldTrial>, trial, ());
   static bool collect_stats = false;
-
-  static uint32 port;
   static NetworkStats::HistogramPortSelector histogram_port;
 
   if (!trial.get()) {
@@ -779,7 +846,6 @@ void CollectNetworkStats(const std::string& network_stats_server,
           base::RandInt(NetworkStats::PORT_53, NetworkStats::PORT_8080));
       DCHECK_GE(histogram_port, NetworkStats::PORT_53);
       DCHECK_LE(histogram_port, NetworkStats::PORT_8080);
-      port = kPorts[histogram_port];
     }
   }
 
@@ -797,15 +863,34 @@ void CollectNetworkStats(const std::string& network_stats_server,
   net::HostResolver* host_resolver = io_thread->globals()->host_resolver.get();
   DCHECK(host_resolver);
 
-  net::HostPortPair server_address(network_stats_server, port);
+  net::HostPortPair server_address(network_stats_server,
+                                   kPorts[histogram_port]);
 
+  net::ProxyService* proxy_service =
+      io_thread->globals()->system_proxy_service.get();
+  DCHECK(proxy_service);
+
+  ProxyDetector::OnResolvedCallback callback =
+      base::Bind(&StartNetworkStatsTest,
+          host_resolver, server_address, histogram_port);
+
+  ProxyDetector* proxy_client = new ProxyDetector(
+      proxy_service, server_address, callback);
+  proxy_client->StartResolveProxy();
+}
+
+// static
+void StartNetworkStatsTest(net::HostResolver* host_resolver,
+                           const net::HostPortPair& server_address,
+                           NetworkStats::HistogramPortSelector histogram_port,
+                           bool has_proxy_server) {
   int experiment_to_run = base::RandInt(1, 5);
   switch (experiment_to_run) {
     case 1:
       {
         UDPStatsClient* small_udp_stats = new UDPStatsClient();
         small_udp_stats->Start(
-            host_resolver, server_address, histogram_port,
+            host_resolver, server_address, histogram_port, has_proxy_server,
             kSmallTestBytesToSend, 1, net::CompletionCallback());
       }
       break;
@@ -814,7 +899,7 @@ void CollectNetworkStats(const std::string& network_stats_server,
       {
         UDPStatsClient* large_udp_stats = new UDPStatsClient();
         large_udp_stats->Start(
-            host_resolver, server_address, histogram_port,
+            host_resolver, server_address, histogram_port, has_proxy_server,
             kLargeTestBytesToSend, 1, net::CompletionCallback());
       }
       break;
@@ -823,7 +908,7 @@ void CollectNetworkStats(const std::string& network_stats_server,
       {
         TCPStatsClient* small_tcp_client = new TCPStatsClient();
         small_tcp_client->Start(
-            host_resolver, server_address, histogram_port,
+            host_resolver, server_address, histogram_port, has_proxy_server,
             kSmallTestBytesToSend, 1, net::CompletionCallback());
       }
       break;
@@ -832,7 +917,7 @@ void CollectNetworkStats(const std::string& network_stats_server,
       {
         TCPStatsClient* large_tcp_client = new TCPStatsClient();
         large_tcp_client->Start(
-            host_resolver, server_address, histogram_port,
+            host_resolver, server_address, histogram_port, has_proxy_server,
             kLargeTestBytesToSend, 1, net::CompletionCallback());
       }
       break;
@@ -841,7 +926,7 @@ void CollectNetworkStats(const std::string& network_stats_server,
       {
         UDPStatsClient* packet_loss_udp_stats = new UDPStatsClient();
         packet_loss_udp_stats->Start(
-            host_resolver, server_address, histogram_port,
+            host_resolver, server_address, histogram_port, has_proxy_server,
             kLargeTestBytesToSend, kMaximumPackets, net::CompletionCallback());
       }
       break;
