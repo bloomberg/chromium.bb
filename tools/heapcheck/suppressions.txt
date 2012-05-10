@@ -1850,8 +1850,3 @@
    fun:base::Thread::ThreadMain
    fun:base::::ThreadFunc
 }
-{
-   bug_127364
-   Heapcheck:Leak
-   fun:base::::CreateScopedFoo
-}
