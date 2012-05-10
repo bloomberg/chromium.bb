@@ -20,15 +20,11 @@ set -u
 
 
 echo @@@BUILD_STEP clobber@@@
-rm -rf scons-out toolchain compiler hg ../xcodebuild ../sconsbuild ../out \
-    src/third_party/nacl_sdk/arm-newlib
+rm -rf scons-out ../xcodebuild ../sconsbuild ../out
 
 echo @@@BUILD_STEP cleanup_temp@@@
 ls -al /tmp/
 rm -rf /tmp/* /tmp/.[!.]* || true
-
-echo @@@BUILD_STEP gclient_runhooks@@@
-gclient runhooks --force
 
 echo @@@BUILD_STEP scons_compile@@@
 ./scons -j 8 -k --verbose --mode=coverage-linux,nacl \

@@ -15,7 +15,6 @@ call buildbot\msvs_env.bat %BITS%
 
 echo @@@BUILD_STEP clobber@@@
 rd /s /q scons-out ^
- & rd /s /q toolchain ^
  & rd /s /q build\Debug build\Release ^
  & rd /s /q build\Debug-Win32 build\Release-Win32 ^
  & rd /s /q build\Debug-x64 build\Release-x64
@@ -35,10 +34,6 @@ for /D %%I in ("%OLD_TEMP%\*") do rmdir /S /Q %%I
 :: Cleaning new temp directory so we don't overflow in the future.
 del /S /Q "%TEMP%\*"
 for /D %%I in ("%TEMP%\*") do rmdir /S /Q %%I
-
-echo @@@BUILD_STEP gclient_runhooks@@@
-cmd /c gclient runhooks
-if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
 echo on
 echo @@@BUILD_STEP scons_compile@@@

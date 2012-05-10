@@ -20,14 +20,11 @@ set -u
 
 
 echo @@@BUILD_STEP clobber@@@
-rm -rf scons-out toolchain compiler hg ../xcodebuild
+rm -rf scons-out ../xcodebuild
 
 echo @@@BUILD_STEP cleanup_temp@@@
 ls -al /tmp/
 rm -rf /tmp/* /tmp/.[!.]* || true
-
-echo @@@BUILD_STEP gclient_runhooks@@@
-gclient runhooks --force
 
 echo @@@BUILD_STEP scons_compile@@@
 ./scons -j 8 -k --verbose --mode=coverage-mac,nacl platform=x86-32
