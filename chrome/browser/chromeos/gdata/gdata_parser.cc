@@ -36,7 +36,93 @@ const char kPresentationTerm[] = "presentation";
 
 const char kSchemeLabels[] = "http://schemas.google.com/g/2005/labels";
 
+// Node names.
+const char kAuthorNode[] = "author";
+const char kCategoryNode[] = "category";
+const char kContentNode[] = "content";
+const char kEditedNode[] = "edited";
+const char kEmailNode[] = "email";
+const char kEntryNode[] = "entry";
+const char kFeedLinkNode[] = "feedLink";
+const char kFilenameNode[] = "filename";
+const char kIDNode[] = "id";
+const char kLastModifiedByNode[] = "lastModifiedBy";
+const char kLinkNode[] = "link";
+const char kMd5ChecksumNode[] = "md5Checksum";
+const char kModifiedByMeDateNode[] = "modifiedByMeDate";
+const char kNameNode[] = "name";
+const char kPublishedNode[] = "published";
+const char kQuotaBytesUsedNode[] = "quotaBytesUsed";
+const char kResourceIdNode[] = "resourceId";
+const char kSizeNode[] = "size";
+const char kSuggestedFilenameNode[] = "suggestedFilename";
+const char kTitleNode[] = "title";
+const char kUpdatedNode[] = "updated";
+const char kWritersCanInviteNode[] = "writersCanInvite";
+
+// Field names.
+const char kAuthorField[] = "author";
+const char kCategoryField[] = "category";
+const char kContentField[] = "content";
+const char kDeletedField[] = "gd$deleted";
+const char kETagField[] = "gd$etag";
+const char kEmailField[] = "email.$t";
+const char kEntryField[] = "entry";
 const char kFeedField[] = "feed";
+const char kFeedLinkField[] = "gd$feedLink";
+const char kFileNameField[] = "docs$filename.$t";
+const char kHrefField[] = "href";
+const char kIDField[] = "id.$t";
+const char kInstalledAppField[] = "docs$installedApp";
+const char kInstalledAppNameField[] = "docs$installedAppName";
+const char kInstalledAppObjectTypeField[] = "docs$installedAppObjectType";
+const char kInstalledAppPrimaryFileExtensionField[] =
+    "docs$installedAppPrimaryFileExtension";
+const char kInstalledAppPrimaryMimeTypeField[] =
+    "docs$installedAppPrimaryMimeType";
+const char kInstalledAppSecondaryFileExtensionField[] =
+    "docs$installedAppSecondaryFileExtension";
+const char kInstalledAppSecondaryMimeTypeField[] =
+    "docs$installedAppSecondaryMimeType";
+const char kInstalledAppSupportsCreateField[] =
+    "docs$installedAppSupportsCreate";
+const char kItemsPerPageField[] = "openSearch$itemsPerPage.$t";
+const char kLabelField[] = "label";
+const char kLargestChangestampField[] = "docs$largestChangestamp.value";
+const char kLinkField[] = "link";
+const char kMD5Field[] = "docs$md5Checksum.$t";
+const char kNameField[] = "name.$t";
+const char kPublishedField[] = "published.$t";
+const char kQuotaBytesTotalField[] = "gd$quotaBytesTotal.$t";
+const char kQuotaBytesUsedField[] = "gd$quotaBytesUsed.$t";
+const char kRelField[] = "rel";
+const char kRemovedField[] = "gd$removed";
+const char kResourceIdField[] = "gd$resourceId.$t";
+const char kSchemeField[] = "scheme";
+const char kSizeField[] = "docs$size.$t";
+const char kSrcField[] = "src";
+const char kStartIndexField[] = "openSearch$startIndex.$t";
+const char kSuggestedFileNameField[] = "docs$suggestedFilename.$t";
+const char kTField[] = "$t";
+const char kTermField[] = "term";
+const char kTitleField[] = "title";
+const char kTitleTField[] = "title.$t";
+const char kTypeField[] = "type";
+const char kUpdatedField[] = "updated.$t";
+
+// Attribute names.
+// Attributes are not namespace-blind as node names in XmlReader.
+const char kETagAttr[] = "gd:etag";
+const char kEmailAttr[] = "email";
+const char kHrefAttr[] = "href";
+const char kLabelAttr[] = "label";
+const char kNameAttr[] = "name";
+const char kRelAttr[] = "rel";
+const char kSchemeAttr[] = "scheme";
+const char kSrcAttr[] = "src";
+const char kTermAttr[] = "term";
+const char kTypeAttr[] = "type";
+const char kValueAttr[] = "value";
 
 struct EntryKindMap {
   DocumentEntry::EntryKind kind;
@@ -146,13 +232,6 @@ bool GetBoolFromString(const base::StringPiece& value, bool* result) {
 ////////////////////////////////////////////////////////////////////////////////
 // Author implementation
 
-const char Author::kNameField[] = "name.$t";
-const char Author::kEmailField[] = "email.$t";
-
-const char Author::kAuthorNode[] = "author";
-const char Author::kNameNode[] = "name";
-const char Author::kEmailNode[] = "email";
-
 Author::Author() {
 }
 
@@ -192,16 +271,6 @@ Author* Author::CreateFromXml(XmlReader* xml_reader) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Link implementation
-
-const char Link::kHrefField[] = "href";
-const char Link::kRelField[] = "rel";
-const char Link::kTitleField[] = "title";
-const char Link::kTypeField[] = "type";
-
-const char Link::kLinkNode[] = "link";
-const char Link::kHrefAttr[] = "href";
-const char Link::kRelAttr[] = "rel";
-const char Link::kTypeAttr[] = "type";
 
 Link::Link() : type_(Link::UNKNOWN) {
 }
@@ -252,13 +321,6 @@ Link* Link::CreateFromXml(XmlReader* xml_reader) {
 ////////////////////////////////////////////////////////////////////////////////
 // FeedLink implementation
 
-const char FeedLink::kHrefField[] = "href";
-const char FeedLink::kRelField[] = "rel";
-
-const char FeedLink::kFeedLinkNode[] = "feedLink";
-const char FeedLink::kHrefAttr[] = "href";
-const char FeedLink::kRelAttr[] = "rel";
-
 FeedLink::FeedLink() : type_(FeedLink::UNKNOWN) {
 }
 
@@ -303,15 +365,6 @@ FeedLink* FeedLink::CreateFromXml(XmlReader* xml_reader) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Category implementation
-
-const char Category::kLabelField[] = "label";
-const char Category::kSchemeField[] = "scheme";
-const char Category::kTermField[] = "term";
-
-const char Category::kCategoryNode[] = "category";
-const char Category::kLabelAttr[] = "label";
-const char Category::kSchemeAttr[] = "scheme";
-const char Category::kTermAttr[] = "term";
 
 Category::Category() : type_(UNKNOWN) {
 }
@@ -368,13 +421,6 @@ const Link* FeedEntry::GetLinkByType(Link::LinkType type) const {
 ////////////////////////////////////////////////////////////////////////////////
 // Content implementation
 
-const char Content::kSrcField[] = "src";
-const char Content::kTypeField[] = "type";
-
-const char Content::kContentNode[] = "content";
-const char Content::kSrcAttr[] = "src";
-const char Content::kTypeAttr[] = "type";
-
 Content::Content() {
 }
 
@@ -401,13 +447,6 @@ Content* Content::CreateFromXml(XmlReader* xml_reader) {
 ////////////////////////////////////////////////////////////////////////////////
 // FeedEntry implementation
 
-const char FeedEntry::kTimeParsingDelimiters[] = "-:.TZ";
-const char FeedEntry::kAuthorField[] = "author";
-const char FeedEntry::kLinkField[] = "link";
-const char FeedEntry::kCategoryField[] = "category";
-const char FeedEntry::kETagField[] = "gd$etag";
-const char FeedEntry::kUpdatedField[] = "updated.$t";
-
 FeedEntry::FeedEntry() {
 }
 
@@ -430,6 +469,7 @@ void FeedEntry::RegisterJSONConverter(
 // static
 bool FeedEntry::GetTimeFromString(const base::StringPiece& raw_value,
                                    base::Time* time) {
+  const char kTimeParsingDelimiters[] = "-:.TZ";
   std::vector<base::StringPiece> parts;
   if (Tokenize(raw_value, kTimeParsingDelimiters, &parts) != 7)
     return false;
@@ -456,51 +496,6 @@ bool FeedEntry::GetTimeFromString(const base::StringPiece& raw_value,
 ////////////////////////////////////////////////////////////////////////////////
 // DocumentEntry implementation
 
-const char DocumentEntry::kFeedLinkField[] = "gd$feedLink";
-const char DocumentEntry::kContentField[] = "content";
-const char DocumentEntry::kFileNameField[] = "docs$filename.$t";
-const char DocumentEntry::kMD5Field[] = "docs$md5Checksum.$t";
-const char DocumentEntry::kSizeField[] = "docs$size.$t";
-const char DocumentEntry::kSuggestedFileNameField[] =
-    "docs$suggestedFilename.$t";
-const char DocumentEntry::kResourceIdField[] = "gd$resourceId.$t";
-const char DocumentEntry::kIDField[] = "id.$t";
-const char DocumentEntry::kTitleField[] = "title.$t";
-const char DocumentEntry::kPublishedField[] = "published.$t";
-const char DocumentEntry::kDeletedField[] = "gd$deleted";
-const char DocumentEntry::kRemovedField[] = "gd$removed";
-
-const char DocumentEntry::kEntryNode[] = "entry";
-// Attributes are not namespace-blind as node names in XmlReader.
-const char DocumentEntry::kETagAttr[] = "gd:etag";
-const char DocumentEntry::kAuthorNode[] = "author";
-const char DocumentEntry::kNameAttr[] = "name";
-const char DocumentEntry::kEmailAttr[] = "email";
-const char DocumentEntry::kUpdatedNode[] = "updated";
-
-const char DocumentEntry::kIDNode[] = "id";
-const char DocumentEntry::kPublishedNode[] = "published";
-const char DocumentEntry::kEditedNode[] = "edited";
-
-const char DocumentEntry::kTitleNode[] = "title";
-
-const char DocumentEntry::kContentNode[] = "content";
-const char DocumentEntry::kSrcAttr[] = "src";
-const char DocumentEntry::kTypeAttr[] = "type";
-
-const char DocumentEntry::kResourceIdNode[] = "resourceId";
-const char DocumentEntry::kModifiedByMeDateNode[] = "modifiedByMeDate";
-const char DocumentEntry::kLastModifiedByNode[] = "lastModifiedBy";
-const char DocumentEntry::kQuotaBytesUsedNode[] = "quotaBytesUsed";
-
-const char DocumentEntry::kWritersCanInviteNode[] = "writersCanInvite";
-const char DocumentEntry::kValueAttr[] = "value";
-
-const char DocumentEntry::kMd5ChecksumNode[] = "md5Checksum";
-const char DocumentEntry::kFilenameNode[] = "filename";
-const char DocumentEntry::kSuggestedFilenameNode[] = "suggestedFilename";
-const char DocumentEntry::kSizeNode[] = "size";
-
 DocumentEntry::DocumentEntry()
     : kind_(DocumentEntry::UNKNOWN),
       file_size_(0),
@@ -526,7 +521,7 @@ void DocumentEntry::RegisterJSONConverter(
   converter->RegisterStringField(
       kResourceIdField, &DocumentEntry::resource_id_);
   converter->RegisterStringField(kIDField, &DocumentEntry::id_);
-  converter->RegisterStringField(kTitleField, &DocumentEntry::title_);
+  converter->RegisterStringField(kTitleTField, &DocumentEntry::title_);
   converter->RegisterCustomField<base::Time>(
       kPublishedField, &DocumentEntry::published_time_,
       &FeedEntry::GetTimeFromString);
@@ -634,25 +629,25 @@ DocumentEntry* DocumentEntry::CreateFromXml(XmlReader* xml_reader) {
     DVLOG(1) << "Parsing node " << xml_reader->NodeName();
     skip_read = false;
 
-    if (xml_reader->NodeName() == Author::kAuthorNode) {
+    if (xml_reader->NodeName() == kAuthorNode) {
       scoped_ptr<Author> author(Author::CreateFromXml(xml_reader));
       if (author.get())
         entry->authors_.push_back(author.release());
     }
 
-    if (xml_reader->NodeName() == Content::kContentNode) {
+    if (xml_reader->NodeName() == kContentNode) {
       scoped_ptr<Content> content(Content::CreateFromXml(xml_reader));
       if (content.get())
         entry->content_ = *content.get();
-    } else if (xml_reader->NodeName() == Link::kLinkNode) {
+    } else if (xml_reader->NodeName() == kLinkNode) {
       scoped_ptr<Link> link(Link::CreateFromXml(xml_reader));
       if (link.get())
         entry->links_.push_back(link.release());
-    } else if (xml_reader->NodeName() == FeedLink::kFeedLinkNode) {
+    } else if (xml_reader->NodeName() == kFeedLinkNode) {
       scoped_ptr<FeedLink> link(FeedLink::CreateFromXml(xml_reader));
       if (link.get())
         entry->feed_links_.push_back(link.release());
-    } else if (xml_reader->NodeName() == Category::kCategoryNode) {
+    } else if (xml_reader->NodeName() == kCategoryNode) {
       scoped_ptr<Category> category(Category::CreateFromXml(xml_reader));
       if (category.get())
         entry->categories_.push_back(category.release());
@@ -704,16 +699,13 @@ DocumentEntry* DocumentEntry::CreateFromXml(XmlReader* xml_reader) {
   return entry;
 }
 
+// static
+std::string DocumentEntry::GetEntryNodeName() {
+  return kEntryNode;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DocumentFeed implementation
-
-const char DocumentFeed::kStartIndexField[] = "openSearch$startIndex.$t";
-const char DocumentFeed::kItemsPerPageField[] =
-    "openSearch$itemsPerPage.$t";
-const char DocumentFeed::kLargestChangestamp[] =
-    "docs$largestChangestamp.value";
-const char DocumentFeed::kTitleField[] = "title.$t";
-const char DocumentFeed::kEntryField[] = "entry";
 
 DocumentFeed::DocumentFeed()
     : start_index_(0),
@@ -736,10 +728,10 @@ void DocumentFeed::RegisterJSONConverter(
       kStartIndexField, &DocumentFeed::start_index_, &base::StringToInt);
   converter->RegisterCustomField<int>(
       kItemsPerPageField, &DocumentFeed::items_per_page_, &base::StringToInt);
-  converter->RegisterStringField(kTitleField, &DocumentFeed::title_);
+  converter->RegisterStringField(kTitleTField, &DocumentFeed::title_);
   converter->RegisterRepeatedMessage(kEntryField, &DocumentFeed::entries_);
   converter->RegisterCustomField<int>(
-     kLargestChangestamp, &DocumentFeed::largest_changestamp_,
+     kLargestChangestampField, &DocumentFeed::largest_changestamp_,
      &base::StringToInt);
 }
 
@@ -796,23 +788,6 @@ bool DocumentFeed::GetNextFeedURL(GURL* url) {
 ////////////////////////////////////////////////////////////////////////////////
 // InstalledApp implementation
 
-const char InstalledApp::kInstalledAppNameField[] =
-    "docs$installedAppName";
-const char InstalledApp::kInstalledAppObjectType[] =
-    "docs$installedAppObjectType";
-const char InstalledApp::kInstalledAppSupportsCreate[] =
-    "docs$installedAppSupportsCreate";
-const char InstalledApp::kInstalledAppPrimaryMimeType[] =
-    "docs$installedAppPrimaryMimeType";
-const char InstalledApp::kInstalledAppPrimaryFileExtension[] =
-    "docs$installedAppPrimaryFileExtension";
-const char InstalledApp::kInstalledAppSecondaryMimeType[] =
-    "docs$installedAppSecondaryMimeType";
-const char InstalledApp::kInstalledAppSecondaryFileExtension[] =
-    "docs$installedAppSecondaryFileExtension";
-const char InstalledApp::kLinkField[] = "link";
-const char InstalledApp::kTField[] = "$t";
-
 InstalledApp::InstalledApp() : supports_create_(false) {
 }
 
@@ -847,38 +822,29 @@ void InstalledApp::RegisterJSONConverter(
     base::JSONValueConverter<InstalledApp>* converter) {
   converter->RegisterStringField(kInstalledAppNameField,
                                  &InstalledApp::app_name_);
-  converter->RegisterStringField(kInstalledAppObjectType,
+  converter->RegisterStringField(kInstalledAppObjectTypeField,
                                  &InstalledApp::object_type_);
-  converter->RegisterCustomField<bool>(kInstalledAppSupportsCreate,
+  converter->RegisterCustomField<bool>(kInstalledAppSupportsCreateField,
                                        &InstalledApp::supports_create_,
                                        &GetBoolFromString);
-  converter->RegisterRepeatedCustomValue(kInstalledAppPrimaryMimeType,
+  converter->RegisterRepeatedCustomValue(kInstalledAppPrimaryMimeTypeField,
                                          &InstalledApp::primary_mimetypes_,
                                          &GetValueString);
-  converter->RegisterRepeatedCustomValue(kInstalledAppSecondaryMimeType,
+  converter->RegisterRepeatedCustomValue(kInstalledAppSecondaryMimeTypeField,
                                          &InstalledApp::secondary_mimetypes_,
                                          &GetValueString);
-  converter->RegisterRepeatedCustomValue(kInstalledAppPrimaryFileExtension,
+  converter->RegisterRepeatedCustomValue(kInstalledAppPrimaryFileExtensionField,
                                          &InstalledApp::primary_extensions_,
                                          &GetValueString);
-  converter->RegisterRepeatedCustomValue(kInstalledAppSecondaryFileExtension,
-                                         &InstalledApp::secondary_extensions_,
-                                         &GetValueString);
+  converter->RegisterRepeatedCustomValue(
+      kInstalledAppSecondaryFileExtensionField,
+      &InstalledApp::secondary_extensions_,
+      &GetValueString);
   converter->RegisterRepeatedMessage(kLinkField, &InstalledApp::links_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // AccountMetadataFeed implementation
-
-const char AccountMetadataFeed::kQuotaBytesTotalField[] =
-    "entry.gd$quotaBytesTotal.$t";
-const char AccountMetadataFeed::kQuotaBytesUsedField[] =
-    "entry.gd$quotaBytesUsed.$t";
-const char AccountMetadataFeed::kLargestChangestampField[] =
-    "entry.docs$largestChangestamp.value";
-const char AccountMetadataFeed::kInstalledAppField[] =
-    "entry.docs$installedApp";
-
 
 AccountMetadataFeed::AccountMetadataFeed()
     : quota_bytes_total_(0),
@@ -912,7 +878,11 @@ void AccountMetadataFeed::RegisterJSONConverter(
 scoped_ptr<AccountMetadataFeed> AccountMetadataFeed::CreateFrom(
     const base::Value& value) {
   scoped_ptr<AccountMetadataFeed> feed(new AccountMetadataFeed());
-  if (!feed->Parse(value)) {
+  const base::DictionaryValue* dictionary = NULL;
+  base::Value* entry = NULL;
+  if (!value.GetAsDictionary(&dictionary) ||
+      !dictionary->Get(kEntryField, &entry) ||
+      !feed->Parse(*entry)) {
     LOG(ERROR) << "Unable to create: Invalid account metadata feed!";
     return scoped_ptr<AccountMetadataFeed>(NULL);
   }

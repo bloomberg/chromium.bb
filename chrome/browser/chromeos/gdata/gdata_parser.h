@@ -96,17 +96,6 @@ class Link {
   string16 title_;
   std::string mime_type_;
 
-  // TODO(zelidrag): We should move all static const char out of .h file.
-  static const char kHrefField[];
-  static const char kRelField[];
-  static const char kTitleField[];
-  static const char kTypeField[];
-
-  static const char kLinkNode[];
-  static const char kHrefAttr[];
-  static const char kRelAttr[];
-  static const char kTypeAttr[];
-
   DISALLOW_COPY_AND_ASSIGN(Link);
 };
 
@@ -145,13 +134,6 @@ class FeedLink {
   FeedLinkType type_;
   GURL href_;
 
-  static const char kHrefField[];
-  static const char kRelField[];
-
-  static const char kFeedLinkNode[];
-  static const char kHrefAttr[];
-  static const char kRelAttr[];
-
   DISALLOW_COPY_AND_ASSIGN(FeedLink);
 };
 
@@ -176,12 +158,6 @@ class Author {
 
   string16 name_;
   std::string email_;
-  static const char kNameField[];
-  static const char kEmailField[];
-
-  static const char kAuthorNode[];
-  static const char kNameNode[];
-  static const char kEmailNode[];
 
   DISALLOW_COPY_AND_ASSIGN(Author);
 };
@@ -226,14 +202,6 @@ class Category {
   string16 label_;
   CategoryType type_;
   std::string term_;
-  static const char kLabelField[];
-  static const char kSchemeField[];
-  static const char kTermField[];
-
-  static const char kCategoryNode[];
-  static const char kLabelAttr[];
-  static const char kSchemeAttr[];
-  static const char kTermAttr[];
 
   DISALLOW_COPY_AND_ASSIGN(Category);
 };
@@ -258,13 +226,6 @@ class Content {
 
   GURL url_;
   std::string mime_type_;
-
-  static const char kSrcField[];
-  static const char kTypeField[];
-
-  static const char kContentNode[];
-  static const char kSrcAttr[];
-  static const char kTypeAttr[];
 };
 
 // Base class for feed entries.
@@ -309,13 +270,6 @@ class FeedEntry {
   ScopedVector<Category> categories_;
   base::Time updated_time_;
 
-  static const char kTimeParsingDelimiters[];
-  static const char kAuthorField[];
-  static const char kLinkField[];
-  static const char kCategoryField[];
-  static const char kUpdatedField[];
-  static const char kETagField[];
-
   DISALLOW_COPY_AND_ASSIGN(FeedEntry);
 };
 
@@ -349,6 +303,9 @@ class DocumentEntry : public FeedEntry {
 
   // Creates document entry from parsed XML.
   static DocumentEntry* CreateFromXml(XmlReader* xml_reader);
+
+  // Returns name of entry node.
+  static std::string GetEntryNodeName();
 
   // Registers the mapping between JSON field names and the members in
   // this class.
@@ -454,43 +411,6 @@ class DocumentEntry : public FeedEntry {
   bool deleted_;
   bool removed_;
 
-  static const char kFeedLinkField[];
-  static const char kContentField[];
-  static const char kFileNameField[];
-  static const char kMD5Field[];
-  static const char kSizeField[];
-  static const char kSuggestedFileNameField[];
-  static const char kResourceIdField[];
-  static const char kIDField[];
-  static const char kTitleField[];
-  static const char kPublishedField[];
-  static const char kDeletedField[];
-  static const char kRemovedField[];
-
-  static const char kEntryNode[];
-  static const char kETagAttr[];
-  static const char kAuthorNode[];
-  static const char kNameAttr[];
-  static const char kEmailAttr[];
-  static const char kUpdatedNode[];
-  static const char kIDNode[];
-  static const char kPublishedNode[];
-  static const char kEditedNode[];
-  static const char kTitleNode[];
-  static const char kContentNode[];
-  static const char kSrcAttr[];
-  static const char kTypeAttr[];
-  static const char kResourceIdNode[];
-  static const char kModifiedByMeDateNode[];
-  static const char kLastModifiedByNode[];
-  static const char kQuotaBytesUsedNode[];
-  static const char kWritersCanInviteNode[];
-  static const char kValueAttr[];
-  static const char kMd5ChecksumNode[];
-  static const char kFilenameNode[];
-  static const char kSuggestedFilenameNode[];
-  static const char kSizeNode[];
-
   DISALLOW_COPY_AND_ASSIGN(DocumentEntry);
 };
 
@@ -556,12 +476,6 @@ class DocumentFeed : public FeedEntry {
   int items_per_page_;
   std::string title_;
   int largest_changestamp_;
-
-  static const char kStartIndexField[];
-  static const char kItemsPerPageField[];
-  static const char kTitleField[];
-  static const char kEntryField[];
-  static const char kLargestChangestamp[];
 
   DISALLOW_COPY_AND_ASSIGN(DocumentFeed);
 };
@@ -634,16 +548,6 @@ class InstalledApp {
   ScopedVector<std::string> primary_extensions_;
   ScopedVector<std::string> secondary_extensions_;
   ScopedVector<Link> links_;
-
-  static const char kInstalledAppNameField[];
-  static const char kInstalledAppObjectType[];
-  static const char kInstalledAppSupportsCreate[];
-  static const char kInstalledAppPrimaryMimeType[];
-  static const char kInstalledAppSecondaryMimeType[];
-  static const char kInstalledAppPrimaryFileExtension[];
-  static const char kInstalledAppSecondaryFileExtension[];
-  static const char kTField[];
-  static const char kLinkField[];
 };
 
 // Account metadata feed represents the metadata object attached to the user's
@@ -691,12 +595,6 @@ class AccountMetadataFeed {
   int64 quota_bytes_used_;
   int largest_changestamp_;
   ScopedVector<InstalledApp> installed_apps_;
-
-  static const char kQuotaBytesTotalField[];
-  static const char kQuotaBytesUsedField[];
-  static const char kLargestChangestampField[];
-  static const char kInstalledAppField[];
-  static const char kInstalledAppNameField[];
 
   DISALLOW_COPY_AND_ASSIGN(AccountMetadataFeed);
 };

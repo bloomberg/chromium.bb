@@ -970,7 +970,7 @@ bool ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
     XmlReader xml_reader;
     if (xml_reader.Load(response_content)) {
       while (xml_reader.Read()) {
-        if (xml_reader.NodeName() == DocumentEntry::kEntryNode) {
+        if (xml_reader.NodeName() == DocumentEntry::GetEntryNodeName()) {
           entry.reset(DocumentEntry::CreateFromXml(&xml_reader));
           break;
         }
