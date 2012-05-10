@@ -409,23 +409,6 @@ int GetEventFlagsForButton(int button) {
   }
 }
 
-void DetectAltClick(XIDeviceEvent* xievent) {
-  if ((xievent->evtype == XI_ButtonPress ||
-      xievent->evtype == XI_ButtonRelease) &&
-        (xievent->mods.effective & Mod1Mask) &&
-        xievent->detail == 1) {
-    xievent->mods.effective &= ~Mod1Mask;
-    xievent->detail = 3;
-    if (xievent->evtype == XI_ButtonRelease) {
-      // On the release clear the left button from the existing state and the
-      // mods, and set the right button.
-      XISetMask(xievent->buttons.mask, 3);
-      XIClearMask(xievent->buttons.mask, 1);
-      xievent->mods.effective &= ~Button1Mask;
-    }
-  }
-}
-
 int GetButtonMaskForX2Event(XIDeviceEvent* xievent) {
   int buttonflags = 0;
   for (int i = 0; i < 8 * xievent->buttons.mask_len; i++) {
@@ -616,9 +599,6 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
 
-      // Map Alt+Button1 to Button3
-      DetectAltClick(xievent);
-
       if (factory->IsTouchDevice(xievent->sourceid))
         return GetTouchEventType(native_event);
 
@@ -676,9 +656,6 @@ int EventFlagsFromNative(const base::NativeEvent& native_event) {
     case GenericEvent: {
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-
-      // Map Alt+Button1 to Button3.
-      DetectAltClick(xievent);
 
       const bool touch =
           TouchFactory::GetInstance()->IsTouchDevice(xievent->sourceid);
