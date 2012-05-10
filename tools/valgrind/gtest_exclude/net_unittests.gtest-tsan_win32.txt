@@ -8,18 +8,8 @@ X509CertificateTest.UnoSoftCertParsing
 URLRequestTest.DoNotSaveCookies
 URLRequestTest.QuitTest
 
-# See http://crbug.com/46647
-DiskCacheBackendTest.*
-
-# See http://crbug.com/53304
-URLRequestTest.*
-
 # See http://crbug.com/47836
 ClientSocketPoolBaseTest.CancelPendingSocketAtSocketLimit
-
-# See http://crbug.com/51145
-HttpNetworkTransactionTest.*
-HttpNetworkLayerTest.GET
 
 # Single-threaded and relatively slow - no reason to test
 # See http://crbug.com/59642
@@ -36,9 +26,6 @@ HostResolverImplTest.AbortOnlyExistingRequestsOnIPAddressChange
 
 # Fails, see http://crbug.com/118874
 DnsConfigServiceTest.*GetSystemConfig
-
-# See http://crbug.com/50346
-DiskCacheEntryTest.*
 
 # Times out occasionally, http://crbug.com/124452
 HostResolverImplTest.StartWithinCallback
