@@ -17,7 +17,7 @@
 
 class Extension;
 class Profile;
-class SpeechInputExtensionNotification;
+class SpeechRecognitionTrayIconController;
 
 namespace content {
 class NotificationRegistrar;
@@ -197,7 +197,7 @@ class SpeechInputExtensionManager
   // Used in the UI thread.
   scoped_ptr<content::NotificationRegistrar> registrar_;
   SpeechInputExtensionInterface* speech_interface_;
-  scoped_ptr<SpeechInputExtensionNotification> notification_;
+  scoped_refptr<SpeechRecognitionTrayIconController> notification_;
 
   // Used in the IO thread.
   scoped_refptr<content::SpeechRecognizer> recognizer_;

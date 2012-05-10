@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
-#include "chrome/browser/speech/speech_input_extension_notification.h"
+#include "chrome/browser/speech/speech_recognition_tray_icon_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
@@ -327,8 +327,8 @@ void SpeechInputExtensionManager::DidStartReceivingAudioOnUIThread() {
       prefs::kSpeechInputTrayNotificationShown);
 
   if (!notification_.get())
-    notification_.reset(new SpeechInputExtensionNotification(profile_));
-  notification_->Show(extension, show_notification);
+    notification_ = new SpeechRecognitionTrayIconController();
+  notification_->Show(UTF8ToUTF16(extension->name()), show_notification);
 
   if (show_notification) {
     profile_->GetPrefs()->SetBoolean(
