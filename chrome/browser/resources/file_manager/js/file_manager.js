@@ -4327,8 +4327,11 @@ FileManager.prototype = {
 
     var self = this;
 
+    var RESIZE_DELAY = 200; // Resize only after the animation is done.
+
     function showBanner(type, messageId) {
       self.dialogContainer_.setAttribute('gdrive-welcome', type);
+      self.requestResize_(RESIZE_DELAY);
 
       var container = self.dialogDom_.querySelector('.gdrive-welcome.' + type);
       if (container.firstElementChild)
@@ -4366,6 +4369,7 @@ FileManager.prototype = {
     function maybeShowBanner() {
       if (!self.isOnGData()) {
         self.dialogContainer_.removeAttribute('gdrive-welcome');
+        self.requestResize_(RESIZE_DELAY);
         previousDirWasOnGData = false;
         return;
       }
@@ -4396,6 +4400,8 @@ FileManager.prototype = {
           maybeShowBanner);
 
       self.dialogContainer_.removeAttribute('gdrive-welcome');
+      self.requestResize_(RESIZE_DELAY);
+
       // Stop showing the welcome banner.
       localStorage[WELCOME_HEADER_COUNTER_KEY] = WELCOME_HEADER_COUNTER_LIMIT;
     }
