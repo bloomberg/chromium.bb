@@ -1559,53 +1559,39 @@ weston_input_update_drag_surface(struct wl_input_device *input_device,
 				 int dx, int dy);
 
 static void
-clip_pointer_motion(struct weston_compositor *ec,
+clip_pointer_motion(struct weston_input_device *device,
 		    wl_fixed_t *fx, wl_fixed_t *fy)
 {
-	struct weston_output *output;
-	wl_fixed_t x, y;
-	int x_valid = 0, y_valid = 0;
-	int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
+	struct weston_compositor *ec = device->compositor;
+	struct weston_output *output, *prev = NULL;
+	int x, y, old_x, old_y, valid = 0;
 
-	x = *fx;
-	y = *fy;
+	x = wl_fixed_to_int(*fx);
+	y = wl_fixed_to_int(*fy);
+	old_x = wl_fixed_to_int(device->input_device.x);
+	old_y = wl_fixed_to_int(device->input_device.y);
 
 	wl_list_for_each(output, &ec->output_list, link) {
-		if (wl_fixed_from_int(output->x) <= x &&
-		    x < wl_fixed_from_int(output->x + output->current->width))
-			x_valid = 1;
-
-		if (wl_fixed_from_int(output->y) <= y &&
-		    y < wl_fixed_from_int(output->y + output->current->height))
-			y_valid = 1;
-
-		/* FIXME: calculate this only on output addition/deletion */
-		if (output->x < min_x)
-			min_x = output->x;
-		if (output->y < min_y)
-			min_y = output->y;
-
-		if (output->x + output->current->width > max_x)
-			max_x = output->x + output->current->width - 1;
-		if (output->y + output->current->height > max_y)
-			max_y = output->y + output->current->height - 1;
+		if (pixman_region32_contains_point(&output->region,
+						   x, y, NULL))
+			valid = 1;
+		if (pixman_region32_contains_point(&output->region,
+						   old_x, old_y, NULL))
+			prev = output;
 	}
 	
-	if (!x_valid) {
-		if (x < wl_fixed_from_int(min_x))
-			x = wl_fixed_from_int(min_x);
-		else if (x >= wl_fixed_from_int(max_x))
-			x = wl_fixed_from_int(max_x);
+	if (!valid) {
+		if (x < prev->x)
+			*fx = wl_fixed_from_int(prev->x);
+		else if (x >= prev->x + prev->current->width)
+			*fx = wl_fixed_from_int(prev->x +
+						prev->current->width - 1);
+		if (y < prev->y)
+			*fy = wl_fixed_from_int(prev->y);
+		else if (y >= prev->y + prev->current->height)
+			*fy = wl_fixed_from_int(prev->y +
+						prev->current->height - 1);
 	}
-	if (!y_valid) {
-		if (y < wl_fixed_from_int(min_y))
-			y = wl_fixed_from_int(min_y);
-		else  if (y >= max_y)
-			y = wl_fixed_from_int(max_y);
-	}
-
-	*fx = x;
-	*fy = y;
 }
 
 WL_EXPORT void
@@ -1620,7 +1606,7 @@ notify_motion(struct wl_input_device *device,
 
 	weston_compositor_activity(ec);
 
-	clip_pointer_motion(ec, &x, &y);
+	clip_pointer_motion(wd, &x, &y);
 
 	weston_input_update_drag_surface(device,
 					 x - device->x, y - device->y);
