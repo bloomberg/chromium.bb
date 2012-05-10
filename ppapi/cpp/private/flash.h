@@ -60,8 +60,7 @@ class Flash {
   static Var GetDeviceID(const InstanceHandle& instance);
   static int32_t GetSettingInt(const InstanceHandle& instance,
                                PP_FlashSetting setting);
-  static void SetAllowSuddenTermination(const InstanceHandle& instance,
-                                        bool allowed);
+
   // PPB_Flash_Print.
   static bool InvokePrinting(const InstanceHandle& instance);
 };

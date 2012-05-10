@@ -330,9 +330,6 @@ class PluginDelegate {
   // from this call.
   virtual void InstanceDeleted(PluginInstance* instance) = 0;
 
-  // Indicates if the plugin needs a live renderer at termination.
-  virtual void SetAllowSuddenTermination(bool allowed) = 0;
-
   // Returns a pointer (ownership not transferred) to the bitmap to paint the
   // sad plugin screen with. Returns NULL on failure.
   virtual SkBitmap* GetSadPluginBitmap() = 0;

@@ -1175,9 +1175,6 @@ IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBFlash_FlashGetScreenSize,
                            PP_Instance /* instance */,
                            PP_Bool /* result */,
                            PP_Size /* size */)
-IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBFlash_SetAllowSuddenTermination,
-                           PP_Instance /* instance */,
-                           PP_Bool /* allowed */)
 IPC_MESSAGE_ROUTED0(PpapiHostMsg_PPBFlash_UpdateActivity)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFlash_GetDeviceID,
                            PP_Instance /* instance */,

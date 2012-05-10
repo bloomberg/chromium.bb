@@ -247,11 +247,6 @@ int32_t PPB_Flash_Impl::GetSettingInt(PP_Instance instance,
   return -1;
 }
 
-void PPB_Flash_Impl::SetAllowSuddenTermination(PP_Instance instance,
-                                               PP_Bool allowed) {
-  instance_->delegate()->SetAllowSuddenTermination(PP_ToBool(allowed));
-}
-
 PP_Bool PPB_Flash_Impl::IsClipboardFormatAvailable(
     PP_Instance instance,
     PP_Flash_Clipboard_Type clipboard_type,

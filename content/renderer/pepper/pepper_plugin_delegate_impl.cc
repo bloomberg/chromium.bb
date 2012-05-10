@@ -545,10 +545,6 @@ void PepperPluginDelegateImpl::InstanceDeleted(
     PluginFocusChanged(instance, false);
 }
 
-void PepperPluginDelegateImpl::SetAllowSuddenTermination(bool allowed) {
-  RenderThreadImpl::current()->SetAllowSuddenTermination(allowed);
-}
-
 SkBitmap* PepperPluginDelegateImpl::GetSadPluginBitmap() {
   return GetContentClient()->renderer()->GetSadPluginBitmap();
 }
