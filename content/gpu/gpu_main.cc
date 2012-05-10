@@ -99,11 +99,11 @@ int GpuMain(const content::MainFunctionParams& parameters) {
     dead_on_arrival = true;
   }
 
-  // Warm up the random subsystem, which needs to done pre-sandbox on all
+  // Warm up the random subsystem, which needs to be done pre-sandbox on all
   // platforms.
   (void) base::RandUint64();
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   content::InitializeSandbox();
 #endif
 
