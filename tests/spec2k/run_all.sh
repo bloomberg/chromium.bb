@@ -676,8 +676,8 @@ TimeValidation() {
       ${benchname} ${SUFFIX}
     popd
   done
-  if [ setup_func ~= "arm" ]; then
-    TimedRunCmd llc.validation_time "${VALIDATOR}" "${LLC_NEXE}"
+  if [[ ${setup_func} =~ "Arm" ]]; then
+    TimedRunCmd llc.validation_time "${VALIDATOR}" "${ARM_LLC_NEXE}"
     "${PERF_LOGGER}" LogUserSysTime llc.validation_time "validationtime" \
       "llc" ${SUFFIX}
   fi

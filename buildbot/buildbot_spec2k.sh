@@ -30,6 +30,8 @@ readonly NAME_ARM_TRY_DOWNLOAD=$(${BUILDBOT_PNACL} NAME_ARM_TRY_DOWNLOAD)
 readonly NAME_ARM_UPLOAD=$(${BUILDBOT_PNACL} NAME_ARM_UPLOAD)
 readonly NAME_ARM_DOWNLOAD=$(${BUILDBOT_PNACL} NAME_ARM_DOWNLOAD)
 
+# If true, terminate script when first error is encountered.
+FAIL_FAST=${FAIL_FAST:-false}
 RETCODE=0
 
 # Print the number of tests being run for the buildbot status output
@@ -39,6 +41,16 @@ testcount() {
     echo "all"
   else
     echo ${tests} | wc -w
+  fi
+}
+
+# called when a commands invocation fails
+handle-error() {
+  RETCODE=1
+  echo "@@@STEP_FAILURE@@@"
+  if ${FAIL_FAST} ; then
+    echo "FAIL_FAST enabled"
+    exit 1
   fi
 }
 
@@ -77,7 +89,7 @@ build-tests() {
     MAKEOPTS=-j8 \
     SPEC_COMPILE_REPETITIONS=${compile_repetitions} \
       ./run_all.sh BuildBenchmarks ${timed} ${setup} train ${tests} || \
-      { RETCODE=$? && echo "@@@STEP_FAILURE@@@"; }
+        handle-error
   done
   popd
 }
@@ -95,10 +107,10 @@ run-tests() {
     if [ ${timed} == "1" ]; then
       SPEC_RUN_REPETITIONS=${run_repetitions} \
         ./run_all.sh RunTimedBenchmarks ${setup} train ${tests} || \
-        { RETCODE=$? && echo "@@@STEP_FAILURE@@@"; }
+          handle-error
     else
       ./run_all.sh RunBenchmarks ${setup} train ${tests} || \
-        { RETCODE=$? && echo "@@@STEP_FAILURE@@@"; }
+        handle-error
     fi
   done
   popd
@@ -162,8 +174,10 @@ pnacl-trybot-arm-hw() {
   download-test-binaries try
   build-tests SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" 0 1
   run-tests SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" 0 1
-  (cd ${SPEC_BASE}; \
-    ./run_all.sh TimeValidation SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}")
+  pushd ${SPEC_BASE};
+  ./run_all.sh TimeValidation SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" ||\
+    handle-error
+  popd
 }
 
 pnacl-trybot-x8632() {
