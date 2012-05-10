@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="Windows-1252"?>
-<VisualStudioToolFile Name="debug_stub_test" Version="8.00">
-  <Rules>
-    <CustomBuildRule AdditionalDependencies="..\..\..\..\native_client\tools\win_as.py;$(InputPath)" CommandLine="..\..\..\..\native_client\tools\win_py.cmd ..\..\..\..\native_client\tools\win_as.py -a $(PlatformName) -o $(IntDir)\$(InputName).obj -p ..\..\..\.. $(InputPath)" ExecutionDescription="Building assembly language file $(InputPath)" FileExtensions="S" Name="assembler (gnu-compatible)" Outputs="$(IntDir)\$(InputName).obj"/>
-  </Rules>
-</VisualStudioToolFile>
