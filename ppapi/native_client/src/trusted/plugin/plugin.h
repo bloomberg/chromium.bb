@@ -318,9 +318,6 @@ class Plugin : public pp::InstancePrivate {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Plugin);
-#ifndef HACK_FOR_MACOS_HANG_REMOVED
-  void XYZZY(const nacl::string& url, pp::VarPrivate js_callback);
-#endif  // HACK_FOR_MACOS_HANG_REMOVED
   // Prevent construction and destruction from outside the class:
   // must use factory New() method instead.
   explicit Plugin(PP_Instance instance);
