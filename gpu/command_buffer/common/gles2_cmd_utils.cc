@@ -646,7 +646,7 @@ std::string GLES2Util::GetStringError(uint32 value) {
 }
 
 std::string GLES2Util::GetStringBool(uint32 value) {
-  return value ? "true" : "false";
+  return value ? "GL_TRUE" : "GL_FALSE";
 }
 
 std::string GLES2Util::GetQualifiedEnumString(

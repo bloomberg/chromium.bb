@@ -1230,6 +1230,8 @@ def GenerateSource(file, functions, set_name, used_extension_functions):
     log_argument_names = re.sub(
         r'(?<!E)GLenum ([a-zA-Z0-9_]+)', r'GLenum_\1', log_argument_names)
     log_argument_names = re.sub(
+        r'(?<!E)GLboolean ([a-zA-Z0-9_]+)', r'GLboolean_\1', log_argument_names)
+    log_argument_names = re.sub(
         r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2',
         log_argument_names)
     log_argument_names = re.sub(
@@ -1242,6 +1244,9 @@ def GenerateSource(file, functions, set_name, used_extension_functions):
         r'CONSTCHAR_([a-zA-Z0-9_]+)', r'\1', log_argument_names);
     log_argument_names = re.sub(
         r'GLenum_([a-zA-Z0-9_]+)', r'GLES2Util::GetStringEnum(\1)',
+        log_argument_names)
+    log_argument_names = re.sub(
+        r'GLboolean_([a-zA-Z0-9_]+)', r'GLES2Util::GetStringBool(\1)',
         log_argument_names)
     log_argument_names = log_argument_names.replace(',', ' << ", " <<')
     if argument_names == 'void' or argument_names == '':
