@@ -41,7 +41,7 @@ const SkColor kLabelBackgroundColor = SK_ColorWHITE;
 const SkColor kTextfieldDefaultColor = SK_ColorBLACK;
 const SkColor kTextfieldDefaultBackground = SK_ColorWHITE;
 const SkColor kTextfieldSelectionBackgroundFocused =
-    SkColorSetARGB(0x54, 0x4D, 0x90, 0xFE);
+    SkColorSetARGB(0x54, 0x60, 0xA8, 0xEB);
 const SkColor kTextfieldSelectionBackgroundUnfocused = SK_ColorLTGRAY;
 const SkColor kTextfieldSelectionColor =
     color_utils::AlphaBlend(SK_ColorBLACK,
