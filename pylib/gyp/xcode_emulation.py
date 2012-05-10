@@ -536,6 +536,9 @@ class XcodeSettings(object):
     if install_name:
       ldflags.append('-install_name ' + install_name.replace(' ', r'\ '))
 
+    for rpath in self._Settings().get('LD_RUNPATH_SEARCH_PATHS', []):
+      ldflags.append('-Wl,-rpath,' + rpath)
+
     self.configname = None
     return ldflags
 
