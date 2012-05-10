@@ -20,6 +20,8 @@
 #define HAVE_INTTYPES_H 1
 
 /* Define to 1 if you have the <malloc.h> header file. */
+/* Manual edit: This is defined in AndroidConfig.h. */
+#undef HAVE_MALLOC_H
 #define HAVE_MALLOC_H 1
 
 /* Define to 1 if you have the `memalign' function. */
