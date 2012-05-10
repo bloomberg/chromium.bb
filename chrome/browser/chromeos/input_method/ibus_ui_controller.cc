@@ -336,11 +336,15 @@ class IBusUiControllerImpl : public IBusUiController {
   };
 
   // Returns a ui::InputMethodIBus object which is associated with the root
-  // window.
+  // window. Returns NULL if the Ash shell has already been destructed.
   static ui::InputMethodIBus* GetChromeInputMethod() {
-    return static_cast<ui::InputMethodIBus*>(
-        ash::Shell::GetRootWindow()->GetProperty(
-            aura::client::kRootWindowInputMethodKey));
+    if (!ash::Shell::HasInstance())
+      return NULL;
+    aura::Window* root_window = ash::Shell::GetRootWindow();
+    if (!root_window)
+      return NULL;
+    return static_cast<ui::InputMethodIBus*>(root_window->GetProperty(
+        aura::client::kRootWindowInputMethodKey));
   }
 
   // Functions that end with Thunk are used to deal with glib callbacks.
