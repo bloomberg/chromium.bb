@@ -14,7 +14,6 @@
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "content/common/pepper_file_messages.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
@@ -71,26 +70,6 @@ using WebKit::WebTouchEvent;
 using WebKit::WebVector;
 using WebKit::WebWidget;
 using content::RenderThread;
-
-namespace {
-
-bool CanSendMessageWhileClosing(const IPC::Message* msg) {
-  // We filter out most IPC messages when closing. However, some are
-  // important for allowing pepper plugins to update their unsaved state
-  // when the renderer removes them.
-  switch (msg->type()) {
-    case PepperFileMsg_OpenFile::ID:
-    case PepperFileMsg_RenameFile::ID:
-    case PepperFileMsg_DeleteFileOrDir::ID:
-    case PepperFileMsg_CreateDir::ID:
-      return true;
-    default:
-      break;
-  }
-  return false;
-}
-
-}  // namespace
 
 RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
                            const WebKit::WebScreenInfo& screen_info,
@@ -264,7 +243,7 @@ bool RenderWidget::Send(IPC::Message* message) {
   // most outgoing messages while swapped out.
   if ((is_swapped_out_ &&
        !content::SwappedOutMessages::CanSendWhileSwappedOut(message)) ||
-      (closing_ && !CanSendMessageWhileClosing(message))) {
+      closing_) {
     delete message;
     return false;
   }
