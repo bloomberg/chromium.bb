@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/network_profile_bubble_prefs.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -41,10 +42,40 @@ const int kAnchorVerticalInset = 5;
 const int kInset = 2;
 const int kNotificationBubbleWidth = 250;
 
+// Implementation of BrowserList::Observer used to wait for a browser window.
+class BrowserListObserver : public BrowserList::Observer {
+ private:
+  virtual ~BrowserListObserver();
+
+  // Overridden from BrowserList::Observer:
+  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
+  virtual void OnBrowserSetLastActive(const Browser* browser) OVERRIDE;
+};
+
+BrowserListObserver::~BrowserListObserver() {
+}
+
+void BrowserListObserver::OnBrowserAdded(const Browser* browser) {
+}
+
+void BrowserListObserver::OnBrowserRemoved(const Browser* browser) {
+}
+
+void BrowserListObserver::OnBrowserSetLastActive(const Browser* browser) {
+  NetworkProfileBubble::ShowNotification(browser);
+  // No need to observe anymore.
+  BrowserList::RemoveObserver(this);
+  delete this;
+}
+
 }  // namespace
 
 // static
 bool NetworkProfileBubble::notification_shown_ = false;
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkProfileBubble, public:
 
 // static
 void NetworkProfileBubble::CheckNetworkProfile(const FilePath& profile_path) {
@@ -123,6 +154,30 @@ bool NetworkProfileBubble::ShouldCheckNetworkProfile(PrefService* prefs) {
   }
   return false;
 }
+
+// static
+void NetworkProfileBubble::ShowNotification(const Browser* browser) {
+  views::View* anchor = NULL;
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  if (browser_view && browser_view->GetToolbarView())
+    anchor = browser_view->GetToolbarView()->app_menu();
+  NetworkProfileBubble* bubble = new NetworkProfileBubble(anchor);
+  views::BubbleDelegateView::CreateBubble(bubble);
+  bubble->Show();
+  notification_shown_ = true;
+
+  // Mark the time of the last bubble and reduce the number of warnings left
+  // before the next silence period starts.
+  PrefService* prefs = browser->profile()->GetPrefs();
+  prefs->SetInt64(prefs::kNetworkProfileLastWarningTime,
+                  base::Time::Now().ToTimeT());
+  int left_warnings = prefs->GetInteger(prefs::kNetworkProfileWarningsLeft);
+  if (left_warnings > 0)
+    prefs->SetInteger(prefs::kNetworkProfileWarningsLeft, --left_warnings);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkProfileBubble, private:
 
 NetworkProfileBubble::NetworkProfileBubble(views::View* anchor)
     : BubbleDelegateView(anchor, views::BubbleBorder::TOP_RIGHT) {
@@ -206,40 +261,10 @@ void NetworkProfileBubble::ButtonPressed(views::Button* sender,
   GetWidget()->Close();
 }
 
-void NetworkProfileBubble::BrowserListObserver::OnBrowserSetLastActive(
-    const Browser* browser) {
-  NetworkProfileBubble::ShowNotification(browser);
-  // No need to observe anymore.
-  BrowserList::RemoveObserver(this);
-  delete this;
-}
-
 // static
 void NetworkProfileBubble::NotifyNetworkProfileDetected() {
   if (BrowserList::GetLastActive() != NULL)
     ShowNotification(BrowserList::GetLastActive());
   else
-    BrowserList::AddObserver(new NetworkProfileBubble::BrowserListObserver());
-}
-
-// static
-void NetworkProfileBubble::ShowNotification(const Browser* browser) {
-  views::View* anchor = NULL;
-  BrowserView* browser_view =
-      BrowserView::GetBrowserViewForBrowser(browser);
-  if (browser_view && browser_view->GetToolbarView())
-    anchor = browser_view->GetToolbarView()->app_menu();
-  NetworkProfileBubble* bubble = new NetworkProfileBubble(anchor);
-  views::BubbleDelegateView::CreateBubble(bubble);
-  bubble->Show();
-  notification_shown_ = true;
-
-  // Mark the time of the last bubble and reduce the number of warnings left
-  // before the next silence period starts.
-  PrefService* prefs = browser->profile()->GetPrefs();
-  prefs->SetInt64(prefs::kNetworkProfileLastWarningTime,
-                  base::Time::Now().ToTimeT());
-  int left_warnings = prefs->GetInteger(prefs::kNetworkProfileWarningsLeft);
-  if (left_warnings > 0)
-    prefs->SetInteger(prefs::kNetworkProfileWarningsLeft, --left_warnings);
+    BrowserList::AddObserver(new BrowserListObserver());
 }

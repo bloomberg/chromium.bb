@@ -8,11 +8,12 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 
+class Browser;
+class FilePath;
 class PrefService;
 
 // This class will try to detect if the profile is on a network share and if
@@ -30,18 +31,10 @@ class NetworkProfileBubble : public views::BubbleDelegateView,
   // repeated after a period of silence that lasts |kSilenceDurationDays| days.
   static bool ShouldCheckNetworkProfile(PrefService* prefs);
 
- protected:
-  // Implementation of BrowserList::Observer used to wait for a browser window.
-  class BrowserListObserver : public BrowserList::Observer {
-   public:
-    virtual ~BrowserListObserver() {}
-   private:
-    // BrowserList::Observer overrides:
-    virtual void OnBrowserAdded(const Browser* browser) OVERRIDE { }
-    virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE { }
-    virtual void OnBrowserSetLastActive(const Browser* browser) OVERRIDE;
-  };
+  // Shows the notification bubble using the provided |browser|.
+  static void ShowNotification(const Browser* browser);
 
+ private:
   explicit NetworkProfileBubble(views::View* anchor);
   virtual ~NetworkProfileBubble();
 
@@ -59,9 +52,6 @@ class NetworkProfileBubble : public views::BubbleDelegateView,
   // This function creates the notification bubble, attaches it to the
   // |anchor| View and then shows it to the user.
   static void NotifyNetworkProfileDetected();
-
-  // Visualizes the notification bubble using the provided |browser|.
-  static void ShowNotification(const Browser* browser);
 
   // Set to true once the notification check has been performed to avoid showing
   // the notification more than once per browser run.
