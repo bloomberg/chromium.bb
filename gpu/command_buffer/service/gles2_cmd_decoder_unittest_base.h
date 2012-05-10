@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
+#include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/gl/gl_context_stub.h"
@@ -154,20 +155,8 @@ class GLES2DecoderTestBase : public testing::Test {
     return decoder_.get();
   }
 
-  struct AttribInfo {
-    const char* name;
-    GLint size;
-    GLenum type;
-    GLint location;
-  };
-
-  struct UniformInfo {
-    const char* name;
-    GLint size;
-    GLenum type;
-    GLint fake_location;
-    GLint real_location;
-  };
+  typedef TestHelper::AttribInfo AttribInfo;
+  typedef TestHelper::UniformInfo UniformInfo;
 
   void SetupShader(
       AttribInfo* attribs, size_t num_attribs,
@@ -177,7 +166,10 @@ class GLES2DecoderTestBase : public testing::Test {
       GLuint fragment_shader_client_id, GLuint fragment_shader_service_id);
 
   void SetupExpectationsForClearingUniforms(
-      UniformInfo* uniforms, size_t num_uniforms);
+      UniformInfo* uniforms, size_t num_uniforms) {
+    TestHelper::SetupExpectationsForClearingUniforms(
+        gl_.get(), uniforms, num_uniforms);
+  }
 
   // Setups up a shader for testing glUniform.
   void SetupShaderForUniform();

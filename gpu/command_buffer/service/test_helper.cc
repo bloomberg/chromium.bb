@@ -4,10 +4,12 @@
 
 #include "gpu/command_buffer/service/test_helper.h"
 
+#include "base/string_number_conversions.h"
 #include "base/string_tokenizer.h"
 #include "gpu/command_buffer/common/gl_mock.h"
 #include "gpu/command_buffer/common/types.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/program_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include <string.h>
@@ -222,6 +224,183 @@ void TestHelper::SetupFeatureInfoInitExpectations(
       .WillOnce(Return(reinterpret_cast<const uint8*>(extensions)))
       .RetiresOnSaturation();
 }
+
+void TestHelper::SetupExpectationsForClearingUniforms(
+    ::gfx::MockGLInterface* gl, UniformInfo* uniforms, size_t num_uniforms) {
+  for (size_t ii = 0; ii < num_uniforms; ++ii) {
+    const UniformInfo& info = uniforms[ii];
+    switch (info.type) {
+    case GL_FLOAT:
+      EXPECT_CALL(*gl, Uniform1fv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_FLOAT_VEC2:
+      EXPECT_CALL(*gl, Uniform2fv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_FLOAT_VEC3:
+      EXPECT_CALL(*gl, Uniform3fv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_FLOAT_VEC4:
+      EXPECT_CALL(*gl, Uniform4fv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_INT:
+    case GL_BOOL:
+    case GL_SAMPLER_2D:
+    case GL_SAMPLER_CUBE:
+    case GL_SAMPLER_EXTERNAL_OES:
+    case GL_SAMPLER_3D_OES:
+    case GL_SAMPLER_2D_RECT_ARB:
+      EXPECT_CALL(*gl, Uniform1iv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_INT_VEC2:
+    case GL_BOOL_VEC2:
+      EXPECT_CALL(*gl, Uniform2iv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_INT_VEC3:
+    case GL_BOOL_VEC3:
+      EXPECT_CALL(*gl, Uniform3iv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_INT_VEC4:
+    case GL_BOOL_VEC4:
+      EXPECT_CALL(*gl, Uniform4iv(info.real_location, info.size, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_FLOAT_MAT2:
+      EXPECT_CALL(*gl, UniformMatrix2fv(
+          info.real_location, info.size, false, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_FLOAT_MAT3:
+      EXPECT_CALL(*gl, UniformMatrix3fv(
+          info.real_location, info.size, false, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    case GL_FLOAT_MAT4:
+      EXPECT_CALL(*gl, UniformMatrix4fv(
+          info.real_location, info.size, false, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      break;
+    default:
+      NOTREACHED();
+      break;
+    }
+  }
+}
+
+void TestHelper::SetupShader(
+    ::gfx::MockGLInterface* gl,
+    AttribInfo* attribs, size_t num_attribs,
+    UniformInfo* uniforms, size_t num_uniforms,
+    GLuint service_id) {
+  InSequence s;
+
+  EXPECT_CALL(*gl,
+      LinkProgram(service_id))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl,
+      GetProgramiv(service_id, GL_LINK_STATUS, _))
+      .WillOnce(SetArgumentPointee<2>(1))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl,
+      GetProgramiv(service_id, GL_INFO_LOG_LENGTH, _))
+      .WillOnce(SetArgumentPointee<2>(0))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl,
+      GetProgramiv(service_id, GL_ACTIVE_ATTRIBUTES, _))
+      .WillOnce(SetArgumentPointee<2>(num_attribs))
+      .RetiresOnSaturation();
+  size_t max_attrib_len = 0;
+  for (size_t ii = 0; ii < num_attribs; ++ii) {
+    size_t len = strlen(attribs[ii].name) + 1;
+    max_attrib_len = std::max(max_attrib_len, len);
+  }
+  EXPECT_CALL(*gl,
+      GetProgramiv(service_id, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, _))
+      .WillOnce(SetArgumentPointee<2>(max_attrib_len))
+      .RetiresOnSaturation();
+  for (size_t ii = 0; ii < num_attribs; ++ii) {
+    const AttribInfo& info = attribs[ii];
+    EXPECT_CALL(*gl,
+        GetActiveAttrib(service_id, ii,
+                        max_attrib_len, _, _, _, _))
+        .WillOnce(DoAll(
+            SetArgumentPointee<3>(strlen(info.name)),
+            SetArgumentPointee<4>(info.size),
+            SetArgumentPointee<5>(info.type),
+            SetArrayArgument<6>(info.name,
+                                info.name + strlen(info.name) + 1)))
+        .RetiresOnSaturation();
+    if (!ProgramManager::IsInvalidPrefix(info.name, strlen(info.name))) {
+      EXPECT_CALL(*gl, GetAttribLocation(service_id, StrEq(info.name)))
+          .WillOnce(Return(info.location))
+          .RetiresOnSaturation();
+    }
+  }
+  EXPECT_CALL(*gl,
+      GetProgramiv(service_id, GL_ACTIVE_UNIFORMS, _))
+      .WillOnce(SetArgumentPointee<2>(num_uniforms))
+      .RetiresOnSaturation();
+  size_t max_uniform_len = 0;
+  for (size_t ii = 0; ii < num_uniforms; ++ii) {
+    size_t len = strlen(uniforms[ii].name) + 1;
+    max_uniform_len = std::max(max_uniform_len, len);
+  }
+  EXPECT_CALL(*gl,
+      GetProgramiv(service_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, _))
+      .WillOnce(SetArgumentPointee<2>(max_uniform_len))
+      .RetiresOnSaturation();
+  for (size_t ii = 0; ii < num_uniforms; ++ii) {
+    const UniformInfo& info = uniforms[ii];
+    EXPECT_CALL(*gl,
+        GetActiveUniform(service_id, ii,
+                         max_uniform_len, _, _, _, _))
+        .WillOnce(DoAll(
+            SetArgumentPointee<3>(strlen(info.name)),
+            SetArgumentPointee<4>(info.size),
+            SetArgumentPointee<5>(info.type),
+            SetArrayArgument<6>(info.name,
+                                info.name + strlen(info.name) + 1)))
+        .RetiresOnSaturation();
+    if (!ProgramManager::IsInvalidPrefix(info.name, strlen(info.name))) {
+      EXPECT_CALL(*gl, GetUniformLocation(service_id, StrEq(info.name)))
+          .WillOnce(Return(info.real_location))
+          .RetiresOnSaturation();
+      if (info.size > 1) {
+        std::string base_name = info.name;
+        size_t array_pos = base_name.rfind("[0]");
+        if (base_name.size() > 3 && array_pos == base_name.size() - 3) {
+          base_name = base_name.substr(0, base_name.size() - 3);
+        }
+        for (GLsizei jj = 1; jj < info.size; ++jj) {
+          std::string element_name(
+              std::string(base_name) + "[" + base::IntToString(jj) + "]");
+          EXPECT_CALL(*gl, GetUniformLocation(service_id, StrEq(element_name)))
+              .WillOnce(Return(info.real_location + jj * 2))
+              .RetiresOnSaturation();
+        }
+      }
+    }
+  }
+}
+
 
 }  // namespace gles2
 }  // namespace gpu
