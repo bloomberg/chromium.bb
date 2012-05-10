@@ -19,7 +19,7 @@ namespace {
 
 const char kSlash[] = "/";
 const char kEscapedSlash[] = "\xE2\x88\x95";
-const FilePath::CharType kGDataRootDirectory[] = FILE_PATH_LITERAL("gdata");
+const FilePath::CharType kGDataRootDirectory[] = FILE_PATH_LITERAL("drive");
 
 std::string CacheSubDirectoryTypeToString(
     GDataRootDirectory::CacheSubDirectoryType subdir) {
@@ -464,11 +464,11 @@ bool GDataRootDirectory::ModifyFindEntryParamsForSearchPath(
   DCHECK(current_dir);
   DCHECK(components);
   // |components| should contain at least 4 members.
-  // "gdata", ".search", query_name and query_result_name. Additionally,
+  // "drive", ".search", query_name and query_result_name. Additionally,
   // if query result is a directory, it may contain subdirectories and files,
   // in which case the number of components may be bigger than 4.
   DCHECK_GT(components->size(), 3u);
-  DCHECK(components->at(0) == "gdata" && components->at(1) == ".search");
+  DCHECK(components->at(0) == "drive" && components->at(1) == ".search");
 
   FilePath::StringType resource_id;
   FilePath::StringType file_name;
@@ -497,7 +497,7 @@ bool GDataRootDirectory::ModifyFindEntryParamsForSearchPath(
     *directory_path = FilePath();
   }
 
-  // Remove "gdata/.search" from path.
+  // Remove "drive/.search" from path.
   components->erase(components->begin(), components->begin() + 2);
   (*components)[0] = (*current_dir)->file_name();
   (*components)[1] = file_name;

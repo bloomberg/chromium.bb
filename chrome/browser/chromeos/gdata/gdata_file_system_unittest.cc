@@ -219,7 +219,7 @@ class GDataFileSystemTest : public testing::Test {
     chromeos::CrosLibrary::Shutdown();
   }
 
-  // Loads test json file as root ("/gdata") element.
+  // Loads test json file as root ("/drive") element.
   void LoadRootFeedDocument(const std::string& filename) {
     LoadChangeFeed(filename, 0);
   }
@@ -944,13 +944,13 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   // Loads serialized proto file from GCache, and makes sure the root
-  // filesystem has a root at 'gdata'
+  // filesystem has a root at 'drive'
   void TestLoadMetadataFromCache() {
     file_system_->LoadRootFeedFromCache(
         false,     // load_from_server
-        FilePath(FILE_PATH_LITERAL("gdata")),
+        FilePath(FILE_PATH_LITERAL("drive")),
         base::Bind(&GDataFileSystemTest::OnExpectToFindEntry,
-                   FilePath(FILE_PATH_LITERAL("gdata"))));
+                   FilePath(FILE_PATH_LITERAL("drive"))));
     BrowserThread::GetBlockingPool()->FlushForTesting();
     message_loop_.RunAllPending();
   }
@@ -990,18 +990,18 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   // Creates a proto file representing a filesystem with directories:
-  // gdata, gdata/Dir1, gdata/Dir1/SubDir2
+  // drive, drive/Dir1, drive/Dir1/SubDir2
   // and files
-  // gdata/File1, gdata/Dir1/File2, gdata/Dir1/SubDir2/File3
+  // drive/File1, drive/Dir1/File2, drive/Dir1/SubDir2/File3
   void SaveTestFileSystem() {
     GDataRootDirectoryProto root;
     GDataDirectoryProto* root_dir = root.mutable_gdata_directory();
     GDataEntryProto* file_base = root_dir->mutable_gdata_entry();
     PlatformFileInfoProto* platform_info = file_base->mutable_file_info();
-    file_base->set_title("gdata");
+    file_base->set_title("drive");
     platform_info->set_is_directory(true);
 
-    // gdata/File1
+    // drive/File1
     GDataFileProto* file = root_dir->add_child_files();
     file_base = file->mutable_gdata_entry();
     platform_info = file_base->mutable_file_info();
@@ -1009,14 +1009,14 @@ class GDataFileSystemTest : public testing::Test {
     platform_info->set_is_directory(false);
     platform_info->set_size(1048576);
 
-    // gdata/Dir1
+    // drive/Dir1
     GDataDirectoryProto* dir1 = root_dir->add_child_directories();
     file_base = dir1->mutable_gdata_entry();
     platform_info = file_base->mutable_file_info();
     file_base->set_title("Dir1");
     platform_info->set_is_directory(true);
 
-    // gdata/Dir1/File2
+    // drive/Dir1/File2
     file = dir1->add_child_files();
     file_base = file->mutable_gdata_entry();
     platform_info = file_base->mutable_file_info();
@@ -1024,14 +1024,14 @@ class GDataFileSystemTest : public testing::Test {
     platform_info->set_is_directory(false);
     platform_info->set_size(555);
 
-    // gdata/Dir1/SubDir2
+    // drive/Dir1/SubDir2
     GDataDirectoryProto* dir2 = dir1->add_child_directories();
     file_base = dir2->mutable_gdata_entry();
     platform_info = file_base->mutable_file_info();
     file_base->set_title("SubDir2");
     platform_info->set_is_directory(true);
 
-    // gdata/Dir1/SubDir2/File3
+    // drive/Dir1/SubDir2/File3
     file = dir2->add_child_files();
     file_base = file->mutable_gdata_entry();
     platform_info = file_base->mutable_file_info();
@@ -1192,16 +1192,16 @@ TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
       &AsyncInitializationCallback,
       &counter,
       2,
-      FilePath(FILE_PATH_LITERAL("gdata")),
+      FilePath(FILE_PATH_LITERAL("drive")),
       &message_loop_);
 
   EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, _, _)).Times(1);
 
   file_system_->ReadDirectoryByPathAsync(
-      FilePath(FILE_PATH_LITERAL("gdata")), callback);
+      FilePath(FILE_PATH_LITERAL("drive")), callback);
   file_system_->ReadDirectoryByPathAsync(
-      FilePath(FILE_PATH_LITERAL("gdata")), callback);
+      FilePath(FILE_PATH_LITERAL("drive")), callback);
   message_loop_.Run();  // Wait to get our result
   EXPECT_EQ(2, counter);
 }
@@ -1209,7 +1209,7 @@ TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
 TEST_F(GDataFileSystemTest, SearchRootDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
-  const FilePath kFilePath = FilePath(FILE_PATH_LITERAL("gdata"));
+  const FilePath kFilePath = FilePath(FILE_PATH_LITERAL("drive"));
   GDataEntry* entry = FindEntry(FilePath(FILE_PATH_LITERAL(kFilePath)));
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath, entry->GetFilePath());
@@ -1221,7 +1221,7 @@ TEST_F(GDataFileSystemTest, SearchExistingFile) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath = FilePath(
-      FILE_PATH_LITERAL("gdata/File 1.txt"));
+      FILE_PATH_LITERAL("drive/File 1.txt"));
   GDataEntry* entry = FindEntry(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath, entry->GetFilePath());
@@ -1233,7 +1233,7 @@ TEST_F(GDataFileSystemTest, SearchExistingDocument) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath = FilePath(
-      FILE_PATH_LITERAL("gdata/Document 1.gdoc"));
+      FILE_PATH_LITERAL("drive/Document 1.gdoc"));
   GDataEntry* entry = FindEntry(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath, entry->GetFilePath());
@@ -1245,7 +1245,7 @@ TEST_F(GDataFileSystemTest, SearchNonExistingFile) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath = FilePath(
-      FILE_PATH_LITERAL("gdata/nonexisting.file"));
+      FILE_PATH_LITERAL("drive/nonexisting.file"));
   GDataEntry* entry = FindEntry(kFilePath);
   ASSERT_FALSE(entry);
   EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath, entry));
@@ -1256,14 +1256,14 @@ TEST_F(GDataFileSystemTest, SearchEncodedFileNames) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath1 = FilePath(
-      FILE_PATH_LITERAL("gdata/Slash / in file 1.txt"));
+      FILE_PATH_LITERAL("drive/Slash / in file 1.txt"));
   GDataEntry* entry = FindEntry(kFilePath1);
   ASSERT_FALSE(entry);
   EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath1, NULL));
   EXPECT_TRUE(GetFileInfoAndCompare(kFilePath1, NULL));
 
   const FilePath kFilePath2 = FilePath::FromUTF8Unsafe(
-      "gdata/Slash \xE2\x88\x95 in file 1.txt");
+      "drive/Slash \xE2\x88\x95 in file 1.txt");
   entry = FindEntry(kFilePath2);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath2, entry->GetFilePath());
@@ -1271,7 +1271,7 @@ TEST_F(GDataFileSystemTest, SearchEncodedFileNames) {
   EXPECT_TRUE(GetFileInfoAndCompare(kFilePath2, entry->AsGDataFile()));
 
   const FilePath kFilePath3 = FilePath::FromUTF8Unsafe(
-      "gdata/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt");
+      "drive/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt");
   entry = FindEntry(kFilePath3);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath3, entry->GetFilePath());
@@ -1283,14 +1283,14 @@ TEST_F(GDataFileSystemTest, SearchEncodedFileNamesLoadingRoot) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath1 = FilePath(
-      FILE_PATH_LITERAL("gdata/Slash / in file 1.txt"));
+      FILE_PATH_LITERAL("drive/Slash / in file 1.txt"));
   GDataEntry* entry = FindEntry(kFilePath1);
   ASSERT_FALSE(entry);
   EXPECT_TRUE(GetEntryInfoAndCompare(kFilePath1, NULL));
   EXPECT_TRUE(GetFileInfoAndCompare(kFilePath1, NULL));
 
   const FilePath kFilePath2 = FilePath::FromUTF8Unsafe(
-      "gdata/Slash \xE2\x88\x95 in file 1.txt");
+      "drive/Slash \xE2\x88\x95 in file 1.txt");
   entry = FindEntry(kFilePath2);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath2, entry->GetFilePath());
@@ -1298,7 +1298,7 @@ TEST_F(GDataFileSystemTest, SearchEncodedFileNamesLoadingRoot) {
   EXPECT_TRUE(GetFileInfoAndCompare(kFilePath2, entry->AsGDataFile()));
 
   const FilePath kFilePath3 = FilePath::FromUTF8Unsafe(
-      "gdata/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt");
+      "drive/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt");
   entry = FindEntry(kFilePath3);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath3, entry->GetFilePath());
@@ -1310,7 +1310,7 @@ TEST_F(GDataFileSystemTest, SearchDuplicateNames) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath1 = FilePath(
-      FILE_PATH_LITERAL("gdata/Duplicate Name.txt"));
+      FILE_PATH_LITERAL("drive/Duplicate Name.txt"));
   GDataEntry* entry = FindEntry(kFilePath1);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath1, entry->GetFilePath());
@@ -1318,7 +1318,7 @@ TEST_F(GDataFileSystemTest, SearchDuplicateNames) {
   EXPECT_TRUE(GetFileInfoAndCompare(kFilePath1, entry->AsGDataFile()));
 
   const FilePath kFilePath2 = FilePath(
-      FILE_PATH_LITERAL("gdata/Duplicate Name (2).txt"));
+      FILE_PATH_LITERAL("drive/Duplicate Name (2).txt"));
   entry = FindEntry(kFilePath2);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath2, entry->GetFilePath());
@@ -1330,7 +1330,7 @@ TEST_F(GDataFileSystemTest, SearchExistingDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath = FilePath(
-      FILE_PATH_LITERAL("gdata/Directory 1"));
+      FILE_PATH_LITERAL("drive/Directory 1"));
   GDataEntry* entry = FindEntry(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath, entry->GetFilePath());
@@ -1342,7 +1342,7 @@ TEST_F(GDataFileSystemTest, SearchInSubdir) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath = FilePath(
-      FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt"));
+      FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
   GDataEntry* entry = FindEntry(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ(kFilePath, entry->GetFilePath());
@@ -1355,7 +1355,7 @@ TEST_F(GDataFileSystemTest, SearchInSubSubdir) {
   LoadRootFeedDocument("root_feed.json");
 
   const FilePath kFilePath = FilePath(
-      FILE_PATH_LITERAL("gdata/Directory 1/Sub Directory Folder/"
+      FILE_PATH_LITERAL("drive/Directory 1/Sub Directory Folder/"
                         "Sub Sub Directory Folder"));
   GDataEntry* entry = FindEntry(kFilePath);
   ASSERT_TRUE(entry);
@@ -1367,10 +1367,10 @@ TEST_F(GDataFileSystemTest, SearchInSubSubdir) {
 TEST_F(GDataFileSystemTest, FilePathTests) {
   LoadRootFeedDocument("root_feed.json");
 
-  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/File 1.txt")));
-  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Directory 1")));
+  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("drive/File 1.txt")));
+  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("drive/Directory 1")));
   FindAndTestFilePath(
-      FilePath(FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt")));
+      FilePath(FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt")));
 }
 
 TEST_F(GDataFileSystemTest, ChangeFeed_AddAndDeleteFileInRoot) {
@@ -1378,13 +1378,13 @@ TEST_F(GDataFileSystemTest, ChangeFeed_AddAndDeleteFileInRoot) {
   LoadRootFeedDocument("root_feed.json");
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(2);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(2);
 
   LoadChangeFeed("delta_file_added_in_root.json", ++latest_changelog);
-  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL("gdata/Added file.gdoc"))));
+  EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL("drive/Added file.gdoc"))));
 
   LoadChangeFeed("delta_file_deleted_in_root.json", ++latest_changelog);
-  EXPECT_FALSE(FindEntry(FilePath(FILE_PATH_LITERAL("gdata/Added file.gdoc"))));
+  EXPECT_FALSE(FindEntry(FilePath(FILE_PATH_LITERAL("drive/Added file.gdoc"))));
 }
 
 
@@ -1393,25 +1393,25 @@ TEST_F(GDataFileSystemTest, ChangeFeed_AddAndDeleteFileFromExistingDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   EXPECT_TRUE(FindEntry(FilePath(
-      FILE_PATH_LITERAL("gdata/Directory 1"))));
+      FILE_PATH_LITERAL("drive/Directory 1"))));
 
   // Add file to an existing directory.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
   LoadChangeFeed("delta_file_added_in_directory.json", ++latest_changelog);
   EXPECT_TRUE(FindEntry(FilePath(
-      FILE_PATH_LITERAL("gdata/Directory 1/Added file.gdoc"))));
+      FILE_PATH_LITERAL("drive/Directory 1/Added file.gdoc"))));
 
   // Remove that file from the directory.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
   LoadChangeFeed("delta_file_deleted_in_directory.json", ++latest_changelog);
   EXPECT_TRUE(FindEntry(FilePath(
-      FILE_PATH_LITERAL("gdata/Directory 1"))));
+      FILE_PATH_LITERAL("drive/Directory 1"))));
   EXPECT_FALSE(FindEntry(FilePath(
-      FILE_PATH_LITERAL("gdata/Directory 1/Added file.gdoc"))));
+      FILE_PATH_LITERAL("drive/Directory 1/Added file.gdoc"))));
 }
 
 TEST_F(GDataFileSystemTest, ChangeFeed_AddFileToNewDirectory) {
@@ -1419,16 +1419,16 @@ TEST_F(GDataFileSystemTest, ChangeFeed_AddFileToNewDirectory) {
   LoadRootFeedDocument("root_feed.json");
   // Add file to a new directory.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/New Directory"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/New Directory"))))).Times(1);
 
   LoadChangeFeed("delta_file_added_in_new_directory.json", ++latest_changelog);
 
   EXPECT_TRUE(FindEntry(FilePath(
-      FILE_PATH_LITERAL("gdata/New Directory"))));
+      FILE_PATH_LITERAL("drive/New Directory"))));
   EXPECT_TRUE(FindEntry(FilePath(
-      FILE_PATH_LITERAL("gdata/New Directory/File in new dir.gdoc"))));
+      FILE_PATH_LITERAL("drive/New Directory/File in new dir.gdoc"))));
 }
 
 TEST_F(GDataFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
@@ -1436,38 +1436,38 @@ TEST_F(GDataFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 2"))));
+      "drive/Directory 2"))));
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1"))));
+      "drive/Directory 1"))));
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1/SubDirectory File 1.txt"))));
+      "drive/Directory 1/SubDirectory File 1.txt"))));
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1/Sub Directory Folder"))));
+      "drive/Directory 1/Sub Directory Folder"))));
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
+      "drive/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 2"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 2"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 2/Directory 1")))))
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 2/Directory 1")))))
       .Times(1);
   LoadChangeFeed("delta_dir_moved_from_root_to_directory.json",
                  ++latest_changelog);
 
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 2"))));
+      "drive/Directory 2"))));
   EXPECT_FALSE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1"))));
+      "drive/Directory 1"))));
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 2/Directory 1"))));
+      "drive/Directory 2/Directory 1"))));
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 2/Directory 1/SubDirectory File 1.txt"))));
+      "drive/Directory 2/Directory 1/SubDirectory File 1.txt"))));
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 2/Directory 1/Sub Directory Folder"))));
+      "drive/Directory 2/Directory 1/Sub Directory Folder"))));
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 2/Directory 1/Sub Directory Folder/"
+      "drive/Directory 2/Directory 1/Sub Directory Folder/"
       "Sub Sub Directory Folder"))));
 }
 
@@ -1476,31 +1476,31 @@ TEST_F(GDataFileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
   LoadRootFeedDocument("root_feed.json");
 
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1"))));
+      "drive/Directory 1"))));
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1/Sub Directory Folder"))));
+      "drive/Directory 1/Sub Directory Folder"))));
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
+      "drive/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1/SubDirectory File 1.txt"))));
+      "drive/Directory 1/SubDirectory File 1.txt"))));
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
   LoadChangeFeed("delta_file_moved_from_directory_to_root.json",
                  ++latest_changelog);
 
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1"))));
+      "drive/Directory 1"))));
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1/Sub Directory Folder"))));
+      "drive/Directory 1/Sub Directory Folder"))));
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
+      "drive/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
   EXPECT_FALSE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1/SubDirectory File 1.txt"))));
+      "drive/Directory 1/SubDirectory File 1.txt"))));
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/SubDirectory File 1.txt"))));
+      "drive/SubDirectory File 1.txt"))));
 }
 
 TEST_F(GDataFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
@@ -1508,34 +1508,34 @@ TEST_F(GDataFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1"))));
+      "drive/Directory 1"))));
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1/SubDirectory File 1.txt"))));
+      "drive/Directory 1/SubDirectory File 1.txt"))));
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
   LoadChangeFeed("delta_file_renamed_in_directory.json",
                  ++latest_changelog);
 
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1"))));
+      "drive/Directory 1"))));
   EXPECT_FALSE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1/SubDirectory File 1.txt"))));
+      "drive/Directory 1/SubDirectory File 1.txt"))));
   EXPECT_TRUE(FindEntry(FilePath(FILE_PATH_LITERAL(
-      "gdata/Directory 1/New SubDirectory File 1.txt"))));
+      "drive/Directory 1/New SubDirectory File 1.txt"))));
 }
 
 TEST_F(GDataFileSystemTest, CachedFeedLoading) {
   SaveTestFileSystem();
   TestLoadMetadataFromCache();
 
-  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/File1")));
-  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Dir1")));
-  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Dir1/File2")));
-  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Dir1/SubDir2")));
-  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Dir1/SubDir2/File3")));
+  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("drive/File1")));
+  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("drive/Dir1")));
+  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("drive/Dir1/File2")));
+  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("drive/Dir1/SubDir2")));
+  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("drive/Dir1/SubDir2/File3")));
 }
 
 TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
@@ -1551,7 +1551,7 @@ TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath local_dest_file_path = temp_dir.path().Append("local_copy.txt");
 
-  FilePath remote_src_file_path(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  FilePath remote_src_file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
   GDataEntry* entry = FindEntry(remote_src_file_path);
   GDataFile* file = entry->AsGDataFile();
   FilePath cache_file = GetCachePathForFile(file);
@@ -1602,7 +1602,7 @@ TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath local_dest_file_path = temp_dir.path().Append("local_copy.txt");
-  FilePath remote_src_file_path(FILE_PATH_LITERAL("gdata/Document 1.gdoc"));
+  FilePath remote_src_file_path(FILE_PATH_LITERAL("drive/Document 1.gdoc"));
   file_system_->TransferFileFromRemoteToLocal(
       remote_src_file_path, local_dest_file_path, callback);
   RunAllPendingForIO();  // Try to get from the cache.
@@ -1615,8 +1615,8 @@ TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
 }
 
 TEST_F(GDataFileSystemTest, CopyNotExistingFile) {
-  FilePath src_file_path(FILE_PATH_LITERAL("gdata/Dummy file.txt"));
-  FilePath dest_file_path(FILE_PATH_LITERAL("gdata/Test.log"));
+  FilePath src_file_path(FILE_PATH_LITERAL("drive/Dummy file.txt"));
+  FilePath dest_file_path(FILE_PATH_LITERAL("drive/Test.log"));
 
   LoadRootFeedDocument("root_feed.json");
 
@@ -1636,9 +1636,9 @@ TEST_F(GDataFileSystemTest, CopyNotExistingFile) {
 }
 
 TEST_F(GDataFileSystemTest, CopyFileToNonExistingDirectory) {
-  FilePath src_file_path(FILE_PATH_LITERAL("gdata/File 1.txt"));
-  FilePath dest_parent_path(FILE_PATH_LITERAL("gdata/Dummy"));
-  FilePath dest_file_path(FILE_PATH_LITERAL("gdata/Dummy/Test.log"));
+  FilePath src_file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
+  FilePath dest_parent_path(FILE_PATH_LITERAL("drive/Dummy"));
+  FilePath dest_file_path(FILE_PATH_LITERAL("drive/Dummy/Test.log"));
 
   LoadRootFeedDocument("root_feed.json");
 
@@ -1669,10 +1669,10 @@ TEST_F(GDataFileSystemTest, CopyFileToNonExistingDirectory) {
 // Test the case where the parent of |dest_file_path| is a existing file,
 // not a directory.
 TEST_F(GDataFileSystemTest, CopyFileToInvalidPath) {
-  FilePath src_file_path(FILE_PATH_LITERAL("gdata/Document 1.gdoc"));
-  FilePath dest_parent_path(FILE_PATH_LITERAL("gdata/Duplicate Name.txt"));
+  FilePath src_file_path(FILE_PATH_LITERAL("drive/Document 1.gdoc"));
+  FilePath dest_parent_path(FILE_PATH_LITERAL("drive/Duplicate Name.txt"));
   FilePath dest_file_path(FILE_PATH_LITERAL(
-      "gdata/Duplicate Name.txt/Document 1.gdoc"));
+      "drive/Duplicate Name.txt/Document 1.gdoc"));
 
   LoadRootFeedDocument("root_feed.json");
 
@@ -1705,10 +1705,10 @@ TEST_F(GDataFileSystemTest, CopyFileToInvalidPath) {
 
 TEST_F(GDataFileSystemTest, RenameFile) {
   const FilePath src_file_path(
-      FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt"));
-  const FilePath src_parent_path(FILE_PATH_LITERAL("gdata/Directory 1"));
+      FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
+  const FilePath src_parent_path(FILE_PATH_LITERAL("drive/Directory 1"));
   const FilePath dest_file_path(
-      FILE_PATH_LITERAL("gdata/Directory 1/Test.log"));
+      FILE_PATH_LITERAL("drive/Directory 1/Test.log"));
 
   LoadRootFeedDocument("root_feed.json");
 
@@ -1727,7 +1727,7 @@ TEST_F(GDataFileSystemTest, RenameFile) {
                  callback_helper_.get());
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
 
   file_system_->Move(src_file_path, dest_file_path, callback);
   message_loop_.RunAllPending();
@@ -1742,9 +1742,9 @@ TEST_F(GDataFileSystemTest, RenameFile) {
 }
 
 TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
-  FilePath src_file_path(FILE_PATH_LITERAL("gdata/File 1.txt"));
-  FilePath dest_parent_path(FILE_PATH_LITERAL("gdata/Directory 1"));
-  FilePath dest_file_path(FILE_PATH_LITERAL("gdata/Directory 1/Test.log"));
+  FilePath src_file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
+  FilePath dest_parent_path(FILE_PATH_LITERAL("drive/Directory 1"));
+  FilePath dest_file_path(FILE_PATH_LITERAL("drive/Directory 1/Test.log"));
 
   LoadRootFeedDocument("root_feed.json");
 
@@ -1773,9 +1773,9 @@ TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
 
   // Expect notification for both source and destination directories.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
 
   file_system_->Move(src_file_path, dest_file_path, callback);
   message_loop_.RunAllPending();
@@ -1790,10 +1790,10 @@ TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
 }
 
 TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
-  FilePath src_parent_path(FILE_PATH_LITERAL("gdata/Directory 1"));
+  FilePath src_parent_path(FILE_PATH_LITERAL("drive/Directory 1"));
   FilePath src_file_path(
-      FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt"));
-  FilePath dest_file_path(FILE_PATH_LITERAL("gdata/Test.log"));
+      FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
+  FilePath dest_file_path(FILE_PATH_LITERAL("drive/Test.log"));
 
   LoadRootFeedDocument("root_feed.json");
 
@@ -1823,9 +1823,9 @@ TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
 
   // Expect notification for both source and destination directories.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
 
   file_system_->Move(src_file_path, dest_file_path, callback);
   message_loop_.RunAllPending();
@@ -1840,17 +1840,17 @@ TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
 }
 
 TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
-  FilePath src_parent_path(FILE_PATH_LITERAL("gdata/Directory 1"));
+  FilePath src_parent_path(FILE_PATH_LITERAL("drive/Directory 1"));
   FilePath src_file_path(
-      FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt"));
-  FilePath dest_parent_path(FILE_PATH_LITERAL("gdata/New Folder 1"));
-  FilePath dest_file_path(FILE_PATH_LITERAL("gdata/New Folder 1/Test.log"));
-  FilePath interim_file_path(FILE_PATH_LITERAL("gdata/Test.log"));
+      FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
+  FilePath dest_parent_path(FILE_PATH_LITERAL("drive/New Folder 1"));
+  FilePath dest_file_path(FILE_PATH_LITERAL("drive/New Folder 1/Test.log"));
+  FilePath interim_file_path(FILE_PATH_LITERAL("drive/Test.log"));
 
   LoadRootFeedDocument("root_feed.json");
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
   AddDirectoryFromFile(dest_parent_path, "directory_entry_atom.json");
 
@@ -1891,11 +1891,11 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
   // Expect notification for both source and destination directories plus
   // interim file path.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/New Folder 1"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/New Folder 1"))))).Times(1);
 
   file_system_->Move(src_file_path, dest_file_path, callback);
   message_loop_.RunAllPending();
@@ -1911,8 +1911,8 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
 }
 
 TEST_F(GDataFileSystemTest, MoveNotExistingFile) {
-  FilePath src_file_path(FILE_PATH_LITERAL("gdata/Dummy file.txt"));
-  FilePath dest_file_path(FILE_PATH_LITERAL("gdata/Test.log"));
+  FilePath src_file_path(FILE_PATH_LITERAL("drive/Dummy file.txt"));
+  FilePath dest_file_path(FILE_PATH_LITERAL("drive/Test.log"));
 
   LoadRootFeedDocument("root_feed.json");
 
@@ -1932,9 +1932,9 @@ TEST_F(GDataFileSystemTest, MoveNotExistingFile) {
 }
 
 TEST_F(GDataFileSystemTest, MoveFileToNonExistingDirectory) {
-  FilePath src_file_path(FILE_PATH_LITERAL("gdata/File 1.txt"));
-  FilePath dest_parent_path(FILE_PATH_LITERAL("gdata/Dummy"));
-  FilePath dest_file_path(FILE_PATH_LITERAL("gdata/Dummy/Test.log"));
+  FilePath src_file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
+  FilePath dest_parent_path(FILE_PATH_LITERAL("drive/Dummy"));
+  FilePath dest_file_path(FILE_PATH_LITERAL("drive/Dummy/Test.log"));
 
   LoadRootFeedDocument("root_feed.json");
 
@@ -1965,10 +1965,10 @@ TEST_F(GDataFileSystemTest, MoveFileToNonExistingDirectory) {
 // Test the case where the parent of |dest_file_path| is a existing file,
 // not a directory.
 TEST_F(GDataFileSystemTest, MoveFileToInvalidPath) {
-  FilePath src_file_path(FILE_PATH_LITERAL("gdata/File 1.txt"));
-  FilePath dest_parent_path(FILE_PATH_LITERAL("gdata/Duplicate Name.txt"));
+  FilePath src_file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
+  FilePath dest_parent_path(FILE_PATH_LITERAL("drive/Duplicate Name.txt"));
   FilePath dest_file_path(FILE_PATH_LITERAL(
-      "gdata/Duplicate Name.txt/Test.log"));
+      "drive/Duplicate Name.txt/Test.log"));
 
   LoadRootFeedDocument("root_feed.json");
 
@@ -2004,11 +2004,11 @@ TEST_F(GDataFileSystemTest, RemoveEntries) {
 
   LoadRootFeedDocument("root_feed.json");
 
-  FilePath nonexisting_file(FILE_PATH_LITERAL("gdata/Dummy file.txt"));
-  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
-  FilePath dir_in_root(FILE_PATH_LITERAL("gdata/Directory 1"));
+  FilePath nonexisting_file(FILE_PATH_LITERAL("drive/Dummy file.txt"));
+  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
+  FilePath dir_in_root(FILE_PATH_LITERAL("drive/Directory 1"));
   FilePath file_in_subdir(
-      FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt"));
+      FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
 
   GDataEntry* entry = NULL;
   EXPECT_TRUE((entry = FindEntry(file_in_root)) != NULL);
@@ -2025,7 +2025,7 @@ TEST_F(GDataFileSystemTest, RemoveEntries) {
 
   // Once for file in root and once for file...
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(2);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(2);
 
   // Remove first file in root.
   EXPECT_TRUE(RemoveEntry(file_in_root));
@@ -2050,7 +2050,7 @@ TEST_F(GDataFileSystemTest, RemoveEntries) {
   EXPECT_FALSE(RemoveEntry(nonexisting_file));
 
   // Try removing root file element.
-  EXPECT_FALSE(RemoveEntry(FilePath(FILE_PATH_LITERAL("gdata"))));
+  EXPECT_FALSE(RemoveEntry(FilePath(FILE_PATH_LITERAL("drive"))));
 
   // Need this to ensure OnDirectoryChanged() is run.
   RunAllPendingForIO();
@@ -2060,19 +2060,19 @@ TEST_F(GDataFileSystemTest, CreateDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
   // Create directory in root.
-  FilePath dir_path(FILE_PATH_LITERAL("gdata/New Folder 1"));
+  FilePath dir_path(FILE_PATH_LITERAL("drive/New Folder 1"));
   EXPECT_TRUE(FindEntry(dir_path) == NULL);
   AddDirectoryFromFile(dir_path, "directory_entry_atom.json");
   EXPECT_TRUE(FindEntry(dir_path) != NULL);
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/New Folder 1"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/New Folder 1"))))).Times(1);
 
   // Create directory in a sub dirrectory.
-  FilePath subdir_path(FILE_PATH_LITERAL("gdata/New Folder 1/New Folder 2"));
+  FilePath subdir_path(FILE_PATH_LITERAL("drive/New Folder 1/New Folder 2"));
   EXPECT_TRUE(FindEntry(subdir_path) == NULL);
   AddDirectoryFromFile(subdir_path, "directory_entry_atom.json");
   EXPECT_TRUE(FindEntry(subdir_path) != NULL);
@@ -2085,24 +2085,24 @@ TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
   FilePath first_missing_parent_path;
 
   // Create directory in root.
-  FilePath dir_path(FILE_PATH_LITERAL("gdata/New Folder 1"));
+  FilePath dir_path(FILE_PATH_LITERAL("drive/New Folder 1"));
   EXPECT_EQ(
       GDataFileSystem::FOUND_MISSING,
       file_system_->FindFirstMissingParentDirectory(dir_path,
           &last_dir_content_url,
           &first_missing_parent_path));
-  EXPECT_EQ(FilePath(FILE_PATH_LITERAL("gdata/New Folder 1")),
+  EXPECT_EQ(FilePath(FILE_PATH_LITERAL("drive/New Folder 1")),
             first_missing_parent_path);
   EXPECT_TRUE(last_dir_content_url.is_empty());    // root directory.
 
   // Missing folders in subdir of an existing folder.
-  FilePath dir_path2(FILE_PATH_LITERAL("gdata/Directory 1/New Folder 2"));
+  FilePath dir_path2(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2"));
   EXPECT_EQ(
       GDataFileSystem::FOUND_MISSING,
       file_system_->FindFirstMissingParentDirectory(dir_path2,
           &last_dir_content_url,
           &first_missing_parent_path));
-  EXPECT_EQ(FilePath(FILE_PATH_LITERAL("gdata/Directory 1/New Folder 2")),
+  EXPECT_EQ(FilePath(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2")),
             first_missing_parent_path);
   EXPECT_FALSE(last_dir_content_url.is_empty());    // non-root directory.
 
@@ -2113,7 +2113,7 @@ TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
       file_system_->FindFirstMissingParentDirectory(dir_path3,
           &last_dir_content_url,
           &first_missing_parent_path));
-  EXPECT_EQ(FilePath(FILE_PATH_LITERAL("gdata/Directory 1/New Folder 2")),
+  EXPECT_EQ(FilePath(FILE_PATH_LITERAL("drive/Directory 1/New Folder 2")),
             first_missing_parent_path);
   EXPECT_FALSE(last_dir_content_url.is_empty());    // non-root directory.
 
@@ -2121,7 +2121,7 @@ TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
   EXPECT_EQ(
       GDataFileSystem::FOUND_INVALID,
       file_system_->FindFirstMissingParentDirectory(
-          FilePath(FILE_PATH_LITERAL("gdata/File 1.txt/BadDir")),
+          FilePath(FILE_PATH_LITERAL("drive/File 1.txt/BadDir")),
           &last_dir_content_url,
           &first_missing_parent_path));
 
@@ -2129,7 +2129,7 @@ TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
   EXPECT_EQ(
       GDataFileSystem::DIRECTORY_ALREADY_PRESENT,
       file_system_->FindFirstMissingParentDirectory(
-          FilePath(FILE_PATH_LITERAL("gdata/Directory 1")),
+          FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
           &last_dir_content_url,
           &first_missing_parent_path));
 }
@@ -2787,7 +2787,7 @@ TEST_F(GDataFileSystemTest, GetCacheState) {
 
   {  // Test cache state of an existing normal file.
     // Retrieve resource id and md5 of a file from file system.
-    FilePath file_path(FILE_PATH_LITERAL("gdata/File 1.txt"));
+    FilePath file_path(FILE_PATH_LITERAL("drive/File 1.txt"));
     GDataEntry* entry = FindEntry(file_path);
     ASSERT_TRUE(entry != NULL);
     GDataFile* file = entry->AsGDataFile();
@@ -2810,7 +2810,7 @@ TEST_F(GDataFileSystemTest, GetCacheState) {
   {  // Test cache state of an existing pinned file.
     // Retrieve resource id and md5 of a file from file system.
     FilePath file_path(
-        FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt"));
+        FILE_PATH_LITERAL("drive/Directory 1/SubDirectory File 1.txt"));
     GDataEntry* entry = FindEntry(file_path);
     ASSERT_TRUE(entry != NULL);
     GDataFile* file = entry->AsGDataFile();
@@ -2858,14 +2858,14 @@ TEST_F(GDataFileSystemTest, GetGDataEntryByPath) {
   // Lock to call GetGDataEntryByPath.
   base::AutoLock lock(file_system_->lock_);
   GDataEntry* entry = file_system_->GetGDataEntryByPath(
-      FilePath(FILE_PATH_LITERAL("gdata/File 1.txt")));
+      FilePath(FILE_PATH_LITERAL("drive/File 1.txt")));
   ASSERT_TRUE(entry != NULL);
   EXPECT_EQ("https://file1_link_self/file:2_file_resource_id",
             entry->edit_url().spec());
   EXPECT_EQ("https://file_content_url/", entry->content_url().spec());
 
   GDataEntry* non_existent = file_system_->GetGDataEntryByPath(
-      FilePath(FILE_PATH_LITERAL("gdata/Nonexistent.txt")));
+      FilePath(FILE_PATH_LITERAL("drive/Nonexistent.txt")));
   ASSERT_TRUE(non_existent == NULL);
 }
 
@@ -2878,7 +2878,7 @@ TEST_F(GDataFileSystemTest, CreateDirectoryWithService) {
   // Set last error so it's not a valid error code.
   callback_helper_->last_error_ = static_cast<base::PlatformFileError>(1);
   file_system_->CreateDirectory(
-      FilePath(FILE_PATH_LITERAL("gdata/Sample Directory Title")),
+      FilePath(FILE_PATH_LITERAL("drive/Sample Directory Title")),
       false,  // is_exclusive
       true,  // is_recursive
       base::Bind(&CallbackHelper::FileOperationCallback,
@@ -2898,7 +2898,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
       base::Bind(&CallbackHelper::GetFileCallback,
                  callback_helper_.get());
 
-  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   GDataEntry* entry = FindEntry(file_in_root);
   GDataFile* file = entry->AsGDataFile();
   FilePath downloaded_file = GetCachePathForFile(file);
@@ -2937,7 +2937,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
       base::Bind(&CallbackHelper::GetFileCallback,
                  callback_helper_.get());
 
-  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   GDataEntry* entry = FindEntry(file_in_root);
   GDataFile* file = entry->AsGDataFile();
   FilePath downloaded_file = GetCachePathForFile(file);
@@ -2973,7 +2973,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
       base::Bind(&CallbackHelper::GetFileCallback,
                  callback_helper_.get());
 
-  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   GDataEntry* entry = FindEntry(file_in_root);
   GDataFile* file = entry->AsGDataFile();
   FilePath downloaded_file = GetCachePathForFile(file);
@@ -3032,7 +3032,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
       base::Bind(&CallbackHelper::GetFileCallback,
                  callback_helper_.get());
 
-  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   GDataEntry* entry = FindEntry(file_in_root);
   GDataFile* file = entry->AsGDataFile();
   FilePath downloaded_file = GetCachePathForFile(file);
@@ -3074,7 +3074,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
       base::Bind(&CallbackHelper::GetFileCallback,
                  callback_helper_.get());
 
-  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   GDataEntry* entry = FindEntry(file_in_root);
   GDataFile* file = entry->AsGDataFile();
   FilePath downloaded_file = GetCachePathForFile(file);
@@ -3113,7 +3113,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_HostedDocument) {
       base::Bind(&CallbackHelper::GetFileCallback,
                  callback_helper_.get());
 
-  FilePath file_in_root(FILE_PATH_LITERAL("gdata/Document 1.gdoc"));
+  FilePath file_in_root(FILE_PATH_LITERAL("drive/Document 1.gdoc"));
   GDataEntry* entry = NULL;
   EXPECT_TRUE((entry = FindEntry(file_in_root)) != NULL);
 
@@ -3139,7 +3139,7 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId) {
       base::Bind(&CallbackHelper::GetFileCallback,
                  callback_helper_.get());
 
-  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   GDataEntry* entry = FindEntry(file_in_root);
   GDataFile* file = entry->AsGDataFile();
   FilePath downloaded_file = GetCachePathForFile(file);
@@ -3173,7 +3173,7 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
       base::Bind(&CallbackHelper::GetFileCallback,
                  callback_helper_.get());
 
-  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   GDataEntry* entry = FindEntry(file_in_root);
   GDataFile* file = entry->AsGDataFile();
   FilePath downloaded_file = GetCachePathForFile(file);
@@ -3214,13 +3214,13 @@ TEST_F(GDataFileSystemTest, ContentSearch) {
   message_loop_.Run();  // Wait to get our result
 
   const SearchResultPair kSearchResultPairs[] = {
-    { "gdata/.search/foo/file:2_file_resouce_id.SubDirectory File 1.txt",
-      "gdata/Directory 1/SubDirectory File 1.txt" },
-    { "gdata/.search/foo/folder:1_folder_resource_id.Directory 1",
-      "gdata/Directory 1" },
-    { "gdata/.search/foo/folder:1_folder_resource_id.Directory 1/"
+    { "drive/.search/foo/file:2_file_resouce_id.SubDirectory File 1.txt",
+      "drive/Directory 1/SubDirectory File 1.txt" },
+    { "drive/.search/foo/folder:1_folder_resource_id.Directory 1",
+      "drive/Directory 1" },
+    { "drive/.search/foo/folder:1_folder_resource_id.Directory 1/"
       "SubDirectory File 1.txt",
-      "gdata/Directory 1/SubDirectory File 1.txt" }
+      "drive/Directory 1/SubDirectory File 1.txt" }
   };
 
   for (size_t i = 0; i < arraysize(kSearchResultPairs); ++i) {
@@ -3246,12 +3246,12 @@ TEST_F(GDataFileSystemTest, ContentSearch_Delete) {
 
   EXPECT_CALL(*mock_doc_service_, DeleteDocument(_, _)).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
 
   FilePath search_file_path(FILE_PATH_LITERAL(
-      "gdata/.search/foo/file:2_file_resouce_id.SubDirectory File 1.txt"));
+      "drive/.search/foo/file:2_file_resouce_id.SubDirectory File 1.txt"));
   FilePath real_file_path(FILE_PATH_LITERAL(
-      "gdata/Directory 1/SubDirectory File 1.txt"));
+      "drive/Directory 1/SubDirectory File 1.txt"));
 
   ASSERT_TRUE(FindEntry(real_file_path));
   ASSERT_TRUE(FindEntry(search_file_path));
@@ -3273,7 +3273,7 @@ TEST_F(GDataFileSystemTest, ContentSearch_RenameResult) {
   LoadRootFeedDocument("root_feed.json");
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
 
   EXPECT_CALL(*mock_doc_service_, RenameResource(
       Eq(GURL("https://dir1_file_link_self/file:2_file_resouce_id")),
@@ -3281,15 +3281,15 @@ TEST_F(GDataFileSystemTest, ContentSearch_RenameResult) {
       .Times(1);
 
   FilePath source_path_search(FILE_PATH_LITERAL(
-      "gdata/.search/foo/file:2_file_resouce_id.SubDirectory File 1.txt"));
+      "drive/.search/foo/file:2_file_resouce_id.SubDirectory File 1.txt"));
   FilePath source_path_real(FILE_PATH_LITERAL(
-      "gdata/Directory 1/SubDirectory File 1.txt"));
+      "drive/Directory 1/SubDirectory File 1.txt"));
 
   FilePath renamed_path_search(FILE_PATH_LITERAL(
-      "gdata/.search/foo/"
+      "drive/.search/foo/"
       "file:2_file_resouce_id.SubDirectory File 1.txt.renamed"));
   FilePath renamed_path_real(FILE_PATH_LITERAL(
-      "gdata/Directory 1/SubDirectory File 1.txt.renamed"));
+      "drive/Directory 1/SubDirectory File 1.txt.renamed"));
 
   FileOperationCallback callback =
       base::Bind(&CallbackHelper::FileOperationCallback,
@@ -3312,13 +3312,13 @@ TEST_F(GDataFileSystemTest, ContentSearch_Move) {
 
   // Setup directory observer mocks.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL(
-             "gdata/Directory 1/Sub Directory Folder")))))
+             "drive/Directory 1/Sub Directory Folder")))))
       .Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
   // Setup documents service mocks.
   EXPECT_CALL(*mock_doc_service_, RenameResource(
@@ -3337,16 +3337,16 @@ TEST_F(GDataFileSystemTest, ContentSearch_Move) {
 
   // Start the test.
   FilePath source_path_search(FILE_PATH_LITERAL(
-      "gdata/.search/foo/folder:1_folder_resource_id.Directory 1/"
+      "drive/.search/foo/folder:1_folder_resource_id.Directory 1/"
       "SubDirectory File 1.txt"));
   FilePath source_path_real(FILE_PATH_LITERAL(
-      "gdata/Directory 1/SubDirectory File 1.txt"));
+      "drive/Directory 1/SubDirectory File 1.txt"));
 
   FilePath destination_path_search(FILE_PATH_LITERAL(
-      "gdata/.search/foo/folder:1_folder_resource_id.Directory 1/"
+      "drive/.search/foo/folder:1_folder_resource_id.Directory 1/"
       "Sub Directory Folder/SubDirectory File 1.txt.dest"));
   FilePath destination_path_real(FILE_PATH_LITERAL(
-      "gdata/Directory 1/Sub Directory Folder/SubDirectory File 1.txt.dest"));
+      "drive/Directory 1/Sub Directory Folder/SubDirectory File 1.txt.dest"));
 
   ASSERT_TRUE(FindEntry(source_path_search));
   ASSERT_TRUE(FindEntry(source_path_real));
@@ -3373,13 +3373,13 @@ TEST_F(GDataFileSystemTest, ContentSearch_MoveToGData) {
 
   // Setup directory observer mocks.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL(
-                      "gdata/Directory 1/Sub Directory Folder")))))
+                      "drive/Directory 1/Sub Directory Folder")))))
       .Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
   // Setup documents service mocks.
   EXPECT_CALL(*mock_doc_service_, RenameResource(
@@ -3398,16 +3398,16 @@ TEST_F(GDataFileSystemTest, ContentSearch_MoveToGData) {
 
   // Statr the test.
   FilePath source_path_search(FILE_PATH_LITERAL(
-      "gdata/.search/foo/folder:1_folder_resource_id.Directory 1/"
+      "drive/.search/foo/folder:1_folder_resource_id.Directory 1/"
       "SubDirectory File 1.txt"));
   FilePath source_path_real(FILE_PATH_LITERAL(
-      "gdata/Directory 1/SubDirectory File 1.txt"));
+      "drive/Directory 1/SubDirectory File 1.txt"));
 
   FilePath destination_path_search(FILE_PATH_LITERAL(
-      "gdata/.search/foo/folder:1_folder_resource_id.Directory 1/"
+      "drive/.search/foo/folder:1_folder_resource_id.Directory 1/"
       "Sub Directory Folder/SubDirectory File 1.txt.dest"));
   FilePath destination_path_real(FILE_PATH_LITERAL(
-      "gdata/Directory 1/Sub Directory Folder/SubDirectory File 1.txt.dest"));
+      "drive/Directory 1/Sub Directory Folder/SubDirectory File 1.txt.dest"));
 
   ASSERT_TRUE(FindEntry(source_path_search));
   ASSERT_TRUE(FindEntry(source_path_real));
@@ -3433,13 +3433,13 @@ TEST_F(GDataFileSystemTest, ContentSearch_MoveToSearch) {
 
   // Setup directory observer mocks.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL(
-             "gdata/Directory 1/Sub Directory Folder")))))
+             "drive/Directory 1/Sub Directory Folder")))))
       .Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
   // Setup documents service mocks.
   EXPECT_CALL(*mock_doc_service_, RenameResource(
@@ -3458,16 +3458,16 @@ TEST_F(GDataFileSystemTest, ContentSearch_MoveToSearch) {
 
   // Statr the test.
   FilePath source_path_search(FILE_PATH_LITERAL(
-      "gdata/.search/foo/folder:1_folder_resource_id.Directory 1/"
+      "drive/.search/foo/folder:1_folder_resource_id.Directory 1/"
       "SubDirectory File 1.txt"));
   FilePath source_path_real(FILE_PATH_LITERAL(
-      "gdata/Directory 1/SubDirectory File 1.txt"));
+      "drive/Directory 1/SubDirectory File 1.txt"));
 
   FilePath destination_path_search(FILE_PATH_LITERAL(
-      "gdata/.search/foo/folder:1_folder_resource_id.Directory 1/"
+      "drive/.search/foo/folder:1_folder_resource_id.Directory 1/"
       "Sub Directory Folder/SubDirectory File 1.txt.dest"));
   FilePath destination_path_real(FILE_PATH_LITERAL(
-      "gdata/Directory 1/Sub Directory Folder/SubDirectory File 1.txt.dest"));
+      "drive/Directory 1/Sub Directory Folder/SubDirectory File 1.txt.dest"));
 
   ASSERT_TRUE(FindEntry(source_path_search));
   ASSERT_TRUE(FindEntry(source_path_real));
@@ -3492,9 +3492,9 @@ TEST_F(GDataFileSystemTest, ContentSearch_CopyToSearchDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   FilePath src_file_path(FILE_PATH_LITERAL(
-      "gdata/Directory 1/SubDirectory File 1.txt"));
+      "drive/Directory 1/SubDirectory File 1.txt"));
   FilePath dest_file_path(FILE_PATH_LITERAL(
-      "gdata/.search/Directory 1"));
+      "drive/.search/Directory 1"));
 
   FileOperationCallback callback =
       base::Bind(&CallbackHelper::FileOperationCallback,
@@ -3512,9 +3512,9 @@ TEST_F(GDataFileSystemTest, ContentSearch_CopyToSearchResultDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   FilePath src_file_path(FILE_PATH_LITERAL(
-      "gdata/Directory 1/SubDirectory File 1.txt"));
+      "drive/Directory 1/SubDirectory File 1.txt"));
   FilePath dest_file_path(FILE_PATH_LITERAL(
-      "gdata/.search/foo/Directory 1"));
+      "drive/.search/foo/Directory 1"));
 
   FileOperationCallback callback =
       base::Bind(&CallbackHelper::FileOperationCallback,
@@ -3533,7 +3533,7 @@ TEST_F(GDataFileSystemTest, ContentSearch_CreateDirInSearchResultDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   FilePath dest_file_path(FILE_PATH_LITERAL(
-      "gdata/.search/foo/New Folder"));
+      "drive/.search/foo/New Folder"));
 
   FileOperationCallback callback =
       base::Bind(&CallbackHelper::FileOperationCallback,
@@ -3550,7 +3550,7 @@ TEST_F(GDataFileSystemTest, ContentSearch_CreateDirInSearchDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   FilePath dest_file_path(FILE_PATH_LITERAL(
-      "gdata/.search/New Folder"));
+      "drive/.search/New Folder"));
 
   FileOperationCallback callback =
       base::Bind(&CallbackHelper::FileOperationCallback,
@@ -3567,14 +3567,14 @@ TEST_F(GDataFileSystemTest, ContentSearch_CreateDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+      Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
   EXPECT_CALL(*mock_doc_service_, CreateDirectory(
       Eq(GURL("https://1_folder_content_url/")), "FolderNew", _)).Times(1);
 
   FilePath search_dir_path(FILE_PATH_LITERAL(
-         "gdata/.search/foo/folder:1_folder_resource_id.Directory 1/"
+         "drive/.search/foo/folder:1_folder_resource_id.Directory 1/"
          "FolderNew"));
-  FilePath real_dir_path(FILE_PATH_LITERAL("gdata/Directory 1/FolderNew"));
+  FilePath real_dir_path(FILE_PATH_LITERAL("drive/Directory 1/FolderNew"));
 
   EXPECT_FALSE(FindEntry(search_dir_path));
   EXPECT_FALSE(FindEntry(real_dir_path));

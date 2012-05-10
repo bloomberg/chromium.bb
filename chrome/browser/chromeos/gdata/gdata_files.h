@@ -515,9 +515,9 @@ class GDataRootDirectory : public GDataDirectory {
   // the entry with resource id <resource_id>. This definition enables us to
   // test uniqueness of the proposed name when renaming gdata search result.
   //
-  // For example, if gdata/.search/foo/res_id.foo_name references
-  // gdata/result_parent/result, and the search path is
-  // gdata/.search/foo/res_ud.foo_name/foo_child, we'll set current dir to the
+  // For example, if drive/.search/foo/res_id.foo_name references
+  // drive/result_parent/result, and the search path is
+  // drive/.search/foo/res_ud.foo_name/foo_child, we'll set current dir to the
   // entry with path reulst_parent, and components to [result_parent, result,
   // foo_child].
   bool ModifyFindEntryParamsForSearchPath(

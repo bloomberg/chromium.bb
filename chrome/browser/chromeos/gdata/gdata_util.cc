@@ -41,14 +41,14 @@ namespace {
 
 const char kGDataSpecialRootPath[] = "/special";
 
-const char kGDataMountPointPath[] = "/special/gdata";
+const char kGDataMountPointPath[] = "/special/drive";
 
 const FilePath::CharType* kGDataMountPointPathComponents[] = {
-  "/", "special", "gdata"
+  "/", "special", "drive"
 };
 
 const FilePath::CharType* kGDataSearchPathComponents[] = {
-  "gdata", ".search"
+  "drive", ".search"
 };
 
 const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
@@ -233,7 +233,7 @@ FilePath ExtractGDataPath(const FilePath& path) {
   std::vector<FilePath::StringType> components;
   path.GetComponents(&components);
 
-  // -1 to include 'gdata'.
+  // -1 to include 'drive'.
   FilePath extracted;
   for (size_t i = arraysize(kGDataMountPointPathComponents) - 1;
        i < components.size(); ++i) {
@@ -261,7 +261,7 @@ void InsertGDataCachePathsPermissions(
   // We check permissions for raw cache file paths only for read-only
   // operations (when fileEntry.file() is called), so read only permissions
   // should be sufficient for all cache paths. For the rest of supported
-  // operations the file access check is done for gdata/ paths.
+  // operations the file access check is done for drive/ paths.
   cache_paths->push_back(std::make_pair(
       file_system->GetCacheFilePath(resource_id, file_md5,
           GDataRootDirectory::CACHE_TYPE_PERSISTENT,

@@ -51,7 +51,7 @@ struct UploadFileInfo {
   // multiple ResumeUpload requests.
   // Location URL where file is to be uploaded to, returned from InitiateUpload.
   GURL upload_location;
-  // Final path in gdata. Looks like /special/gdata/MyFolder/MyFile.
+  // Final path in gdata. Looks like /special/drive/MyFolder/MyFile.
   FilePath gdata_path;
 
   // TODO(achuith): Use generic stream object after FileStream is refactored to

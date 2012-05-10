@@ -17,16 +17,16 @@ TEST(GDataUtilTest, IsUnderGDataMountPoint) {
   EXPECT_FALSE(IsUnderGDataMountPoint(
       FilePath::FromUTF8Unsafe("/special/foo.txt")));
   EXPECT_FALSE(IsUnderGDataMountPoint(
-      FilePath::FromUTF8Unsafe("/special/gdatax/foo.txt")));
+      FilePath::FromUTF8Unsafe("/special/drivex/foo.txt")));
   EXPECT_FALSE(IsUnderGDataMountPoint(
-      FilePath::FromUTF8Unsafe("special/gdatax/foo.txt")));
+      FilePath::FromUTF8Unsafe("special/drivex/foo.txt")));
 
   EXPECT_TRUE(IsUnderGDataMountPoint(
-      FilePath::FromUTF8Unsafe("/special/gdata")));
+      FilePath::FromUTF8Unsafe("/special/drive")));
   EXPECT_TRUE(IsUnderGDataMountPoint(
-      FilePath::FromUTF8Unsafe("/special/gdata/foo.txt")));
+      FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
   EXPECT_TRUE(IsUnderGDataMountPoint(
-      FilePath::FromUTF8Unsafe("/special/gdata/subdir/foo.txt")));
+      FilePath::FromUTF8Unsafe("/special/drive/subdir/foo.txt")));
 }
 
 TEST(GDataUtilTest, ExtractGDataPath) {
@@ -40,15 +40,15 @@ TEST(GDataUtilTest, ExtractGDataPath) {
             ExtractGDataPath(
                 FilePath::FromUTF8Unsafe("/special/gdatax/foo.txt")));
 
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("gdata"),
+  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive"),
             ExtractGDataPath(
-                FilePath::FromUTF8Unsafe("/special/gdata")));
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("gdata/foo.txt"),
+                FilePath::FromUTF8Unsafe("/special/drive")));
+  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/foo.txt"),
             ExtractGDataPath(
-                FilePath::FromUTF8Unsafe("/special/gdata/foo.txt")));
-  EXPECT_EQ(FilePath::FromUTF8Unsafe("gdata/subdir/foo.txt"),
+                FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
+  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/subdir/foo.txt"),
             ExtractGDataPath(
-                FilePath::FromUTF8Unsafe("/special/gdata/subdir/foo.txt")));
+                FilePath::FromUTF8Unsafe("/special/drive/subdir/foo.txt")));
 }
 
 TEST(GDataUtilTest, EscapeUnescapeCacheFileName) {

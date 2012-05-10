@@ -90,7 +90,7 @@ DirectoryModel.DOWNLOADS_DIRECTORY = 'Downloads';
 /**
 * The name of the gdata provider directory.
 */
-DirectoryModel.GDATA_DIRECTORY = 'gdata';
+DirectoryModel.GDATA_DIRECTORY = 'drive';
 
 /**
  * DirectoryModel extends cr.EventTarget.

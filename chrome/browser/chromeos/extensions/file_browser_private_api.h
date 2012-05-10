@@ -463,7 +463,7 @@ class PinGDataFileFunction : public GetGDataFilePropertiesFunction {
 };
 
 // Get file locations for the given list of file URLs. Returns a list of
-// location idenfitiers, like ['gdata', 'local'], where 'gdata' means the
+// location idenfitiers, like ['drive', 'local'], where 'drive' means the
 // file is on gdata, and 'local' means the file is on the local drive.
 class GetFileLocationsFunction : public FileBrowserFunction {
  public:

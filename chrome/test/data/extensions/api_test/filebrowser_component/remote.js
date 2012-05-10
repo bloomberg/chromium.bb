@@ -11,11 +11,11 @@
 
 // These should match the counterparts in feeds used in
 // external_filesystem_apitest.cc.
-// The feeds are located in chrome/test/data/chromeos/gdata/.
-var kDirectoryPath = 'gdata/Folder';
+// The feeds are located in chrome/test/data/chromeos/drive/.
+var kDirectoryPath = 'drive/Folder';
 var kFileName = 'File.aBc';
 var kExpectedContents = 'hello, world\0';
-var kNewDirectoryPath = 'gdata/FolderNew';
+var kNewDirectoryPath = 'drive/FolderNew';
 
 // Gets local filesystem used in tests.
 TestRunner.prototype.init = function() {
@@ -34,33 +34,33 @@ TestRunner.prototype.onFileSystemFetched_ = function(fs) {
 
   this.fileSystem_ = fs;
   chrome.test.succeed();
-}
+};
 
 TestRunner.prototype.runGetDirTest = function(dirPath, doCreate) {
-  self=this;
+  self = this;
   chrome.test.assertTrue(!!this.fileSystem_);
   this.fileSystem_.root.getDirectory(dirPath, {create: doCreate},
-      function (entry) {
+      function(entry) {
         self.directoryEntry_ = entry;
         chrome.test.succeed();
       },
-      self.errorCallback_.bind(self, "Error creating directory: "));
+      self.errorCallback_.bind(self, 'Error creating directory: '));
 };
 
-TestRunner.prototype.runReadFileTest = function (fileName, expectedText) {
+TestRunner.prototype.runReadFileTest = function(fileName, expectedText) {
   var self = this;
   chrome.test.assertTrue(!!this.directoryEntry_);
   this.directoryEntry_.getFile(fileName, {},
-      function(entry){
+      function(entry) {
         self.fileEntry_ = entry;
         readFile(entry,
           function(text) {
             chrome.test.assertEq(expectedText, text);
             chrome.test.succeed();
           },
-          self.errorCallback_.bind(self, "Error reading file: "));
+          self.errorCallback_.bind(self, 'Error reading file: '));
       },
-      self.errorCallback_.bind(self, "Error opening file: "));
+      self.errorCallback_.bind(self, 'Error opening file: '));
 };
 
 TestRunner.prototype.runExecuteReadTask = function() {
@@ -77,7 +77,7 @@ TestRunner.prototype.runExecuteReadTask = function() {
     function(tasks) {
       if (!tasks || !tasks.length) {
         self.errorCallback_({message: 'No tasks registered'},
-                            "Error fetching tasks: ");
+                            'Error fetching tasks: ');
         return;
       }
 
@@ -85,7 +85,7 @@ TestRunner.prototype.runExecuteReadTask = function() {
       // file handler that will execute it.
       chrome.fileBrowserPrivate.executeTask(tasks[0].taskId, [fileURL]);
     });
-}
+};
 
 // Processes the response from file handler for which file task was executed.
 TestRunner.prototype.onHandlerRequest_ =
@@ -95,26 +95,26 @@ TestRunner.prototype.onHandlerRequest_ =
 
   this.verifyHandlerRequest(request,
       chrome.test.succeed,
-      this.errorCallback_.bind(this, ""));
-}
+      this.errorCallback_.bind(this, ''));
+};
 
 TestRunner.prototype.verifyHandlerRequest =
     function(request, successCallback, errorCallback) {
   if (!request) {
-    errorCallback({message: "Request from handler not defined."});
+    errorCallback({message: 'Request from handler not defined.'});
     return;
   }
 
   if (!request.fileContent) {
-    var error = request.error || {message: "Undefined error."};
+    var error = request.error || {message: 'Undefined error.'};
     errorCallback(error);
     return;
   }
 
   if (request.fileContent != kExpectedContents) {
     var error = {message: 'Received content does not match. ' +
-                          'Expected "' + originalText + '", ' +
-                          'Got "' + request.fileContent + '".'};
+                          'Expected ' + originalText + ', ' +
+                          'Got "' + request.fileContent + '.'};
     errorCallback(error);
     return;
   }
@@ -147,7 +147,7 @@ TestRunner.prototype.errorCallback_ = function(error, messagePrefix) {
       default:
         msg = 'Unknown Error';
         break;
-    };
+    }
   }
   chrome.test.fail(messagePrefix + msg);
 };
@@ -157,7 +157,7 @@ function TestRunner() {
   this.directoryEntry_ = undefined;
   this.fileEntry_ = undefined;
   this.listener_ = undefined;
-};
+}
 
 var testRunner = undefined;
 

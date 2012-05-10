@@ -553,7 +553,7 @@ GDataProvider.prototype = {
  * Pattern for urls supported by GDataProvider.
  */
 GDataProvider.URL_PATTERN =
-    new RegExp('^filesystem:[^/]*://[^/]*/[^/]*/gdata/(.*)');
+    new RegExp('^filesystem:[^/]*://[^/]*/[^/]*/drive/(.*)');
 
 /**
  * @param {string} url The url.

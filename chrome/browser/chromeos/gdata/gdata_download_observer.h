@@ -33,7 +33,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
                   content::DownloadManager* download_manager,
                   const FilePath& gdata_tmp_download_path);
 
-  // Sets gdata path, for example, '/special/gdata/MyFolder/MyFile',
+  // Sets gdata path, for example, '/special/drive/MyFolder/MyFile',
   // to external data in |download|.
   static void SetGDataPath(content::DownloadItem* download,
                            const FilePath& gdata_path);

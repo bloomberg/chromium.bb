@@ -28,7 +28,7 @@ using webkit_blob::ShareableFileReference;
 
 namespace {
 
-const char kGDataRootDirectory[] = "gdata";
+const char kGDataRootDirectory[] = "drive";
 const char kFeedField[] = "feed";
 
 // Helper function to run SnapshotFileCallback from

@@ -34,16 +34,16 @@ class GDataDBTest : public testing::Test {
   void TestGetFound(const GDataEntry& source);
 
   // Initialize the database with the following entries:
-  // gdata/dir1
-  // gdata/dir2
-  // gdata/dir1/dir3
-  // gdata/dir1/file4
-  // gdata/dir1/file5
-  // gdata/dir2/file6
-  // gdata/dir2/file7
-  // gdata/dir2/file8
-  // gdata/dir1/dir3/file9
-  // gdata/dir1/dir3/file10
+  // drive/dir1
+  // drive/dir2
+  // drive/dir1/dir3
+  // drive/dir1/file4
+  // drive/dir1/file5
+  // drive/dir2/file6
+  // drive/dir2/file7
+  // drive/dir2/file8
+  // drive/dir1/dir3/file9
+  // drive/dir1/dir3/file10
   void InitDB();
 
   // Helper functions to add a directory/file, incrementing index.
@@ -231,46 +231,46 @@ TEST_F(GDataDBTest, IterTest) {
   InitDB();
 
   const char* dir1_children[] = {
-    "gdata/dir1",
-    "gdata/dir1/dir3",
-    "gdata/dir1/dir3/file10",
-    "gdata/dir1/dir3/file9",
-    "gdata/dir1/file4",
-    "gdata/dir1/file5",
+    "drive/dir1",
+    "drive/dir1/dir3",
+    "drive/dir1/dir3/file10",
+    "drive/dir1/dir3/file9",
+    "drive/dir1/file4",
+    "drive/dir1/file5",
   };
-  TestIter("gdata/dir1", dir1_children, arraysize(dir1_children));
+  TestIter("drive/dir1", dir1_children, arraysize(dir1_children));
 
   const char* dir2_children[] = {
-    "gdata/dir2",
-    "gdata/dir2/file6",
-    "gdata/dir2/file7",
-    "gdata/dir2/file8",
+    "drive/dir2",
+    "drive/dir2/file6",
+    "drive/dir2/file7",
+    "drive/dir2/file8",
   };
-  TestIter("gdata/dir2", dir2_children, arraysize(dir2_children));
+  TestIter("drive/dir2", dir2_children, arraysize(dir2_children));
 
   const char* dir3_children[] = {
-    "gdata/dir1/dir3",
-    "gdata/dir1/dir3/file10",
-    "gdata/dir1/dir3/file9",
+    "drive/dir1/dir3",
+    "drive/dir1/dir3/file10",
+    "drive/dir1/dir3/file9",
   };
-  TestIter("gdata/dir1/dir3", dir3_children, arraysize(dir3_children));
+  TestIter("drive/dir1/dir3", dir3_children, arraysize(dir3_children));
 
   const char* file10[] = {
-    "gdata/dir1/dir3/file10",
+    "drive/dir1/dir3/file10",
   };
   TestIter(file10[0], file10, arraysize(file10));
 
   const char* all_entries[] = {
-    "gdata/dir1",
-    "gdata/dir1/dir3",
-    "gdata/dir1/dir3/file10",
-    "gdata/dir1/dir3/file9",
-    "gdata/dir1/file4",
-    "gdata/dir1/file5",
-    "gdata/dir2",
-    "gdata/dir2/file6",
-    "gdata/dir2/file7",
-    "gdata/dir2/file8",
+    "drive/dir1",
+    "drive/dir1/dir3",
+    "drive/dir1/dir3/file10",
+    "drive/dir1/dir3/file9",
+    "drive/dir1/file4",
+    "drive/dir1/file5",
+    "drive/dir2",
+    "drive/dir2/file6",
+    "drive/dir2/file7",
+    "drive/dir2/file8",
   };
   TestIter("", all_entries, arraysize(all_entries));
 

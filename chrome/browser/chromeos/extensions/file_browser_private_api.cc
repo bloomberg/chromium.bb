@@ -361,7 +361,7 @@ void RequestLocalFileSystemFunction::AddGDataMountPoint() {
   // We check permissions for raw cache file paths only for read-only
   // operations (when fileEntry.file() is called), so read only permissions
   // should be sufficient for all cache paths. For the rest of supported
-  // operations the file access check is done for gdata/ paths.
+  // operations the file access check is done for drive/ paths.
   GrantFilePermissionsToHost(render_view_host(),
                              gdata_file_system->GetCacheDirectoryPath(
                                  gdata::GDataRootDirectory::CACHE_TYPE_TMP),
@@ -1749,7 +1749,7 @@ void GetFileLocationsFunction::GetLocalPathsResponseOnUIThread(
   ListValue* locations = new ListValue;
   for (size_t i = 0; i < files.size(); ++i) {
     if (gdata::util::IsUnderGDataMountPoint(files[i].path)) {
-      locations->Append(Value::CreateStringValue("gdata"));
+      locations->Append(Value::CreateStringValue("drive"));
     } else {
       locations->Append(Value::CreateStringValue("local"));
     }

@@ -18,16 +18,16 @@ namespace gdata {
 namespace util {
 
 // Search path is a path used to display gdata content search results.
-// All results are displayed under virtual directory "gdata/.search", in which
+// All results are displayed under virtual directory "drive/.search", in which
 // each query is given its own directory for displaying results.
 enum GDataSearchPathType {
   // Not a search path.
   GDATA_SEARCH_PATH_INVALID,
-  // gdata/.search.
+  // drive/.search.
   GDATA_SEARCH_PATH_ROOT,
-  // Path that defines search query (gdata/.search/foo).
+  // Path that defines search query (drive/.search/foo).
   GDATA_SEARCH_PATH_QUERY,
-  // Path given to a search result (gdata/.search/foo/foo_found).
+  // Path given to a search result (drive/.search/foo/foo_found).
   // The file name will be formatted: "resource_id.file_name".
   GDATA_SEARCH_PATH_RESULT,
   // If search result is directory, it may contain some children.
@@ -44,7 +44,7 @@ const std::string& GetGDataMountPointPathAsString();
 const FilePath& GetSpecialRemoteRootPath();
 
 // Returns the gdata file resource url formatted as
-// chrome://gdata/<resource_id>/<file_name>.
+// chrome://drive/<resource_id>/<file_name>.
 GURL GetFileResourceUrl(const std::string& resource_id,
                         const std::string& file_name);
 
@@ -74,7 +74,7 @@ bool ParseSearchFileName(const std::string& search_file_name,
 
 // Extracts the GData path from the given path located under the GData mount
 // point. Returns an empty path if |path| is not under the GData mount point.
-// Examples: ExtractGDatPath("/special/gdata/foo.txt") => "gdata/foo.txt"
+// Examples: ExtractGDatPath("/special/drive/foo.txt") => "drive/foo.txt"
 FilePath ExtractGDataPath(const FilePath& path);
 
 // Returns vector of all possible cache paths for a given path on gdata mount
