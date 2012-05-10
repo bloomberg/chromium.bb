@@ -182,22 +182,30 @@ LIBS = -l:keep_alive.x \
        -L $(LIBPATH_BITCODE_SDK) \
        -l:libnacl.a
 
-hello1.pexe: hello1.bc $(INIT) $(FINI) \
+# NOTE: it is not clear why we have to specify ld-2.9.so here
+#       which should be the same as the loader.
+#       Without it ___tls_get_addr is not found
+DYNAMIC_FLAGS =  -nodefaultlibs -Wl,-l:libgcc.a  -Wl,-l:libcrt_platform.a
+DYNAMIC_FLAGS_X8632 = $(DYNAMIC_FLAGS)  -rpath-link=x8632 -arch x86-32 \
+                      $(LIBPATH_SHARED_X8632)/ld-2.9.so
+DYNAMIC_FLAGS_X8664 = $(DYNAMIC_FLAGS)  -rpath-link=x8664/ -arch x86-64 \
+                      --noirtshim \
+                      $(LIBPATH_SHARED_X8664)/ld-2.9.so
+
+hello1.pexe: hello1.bc $(INIT) $(FINI) hello1.c \
              libsimple.pso mylibc.pso mylibnosys.pso mylibpthread.pso ld.so.pso
 	$(PNACL_CC) $(COMMON_FLAGS) -nodefaultlibs -nostdlib \
         $(INIT) hello1.bc $(LIBS) $(FINI)  -o $@
 
-# NOTE: the translator seems to pull in additional shared libs, e.g.:
-# ld-nacl-x86-32.so.1, libgcc_s.so.1
 x8632/hello1.nexe: hello1.pexe \
     x8632/libsimple.so x8632/mylibc.so x8632/mylibnosys.so x8632/mylibpthread.so
-	$(PNACL_TRANS) $(COMMON_FLAGS) -rpath-link=x8632/ -arch x86-32  $^  -o $@
+	$(PNACL_TRANS) $(COMMON_FLAGS) $(DYNAMIC_FLAGS_X8632) $^  -o $@
 
 # there are some driver issue with the irt shim, so we disable it for now
+# (c.f. DYNAMIC_FLAGS_X8664)
 x8664/hello1.nexe: hello1.pexe \
     x8664/libsimple.so x8664/mylibc.so x8664/mylibnosys.so x8664/mylibpthread.so
-	$(PNACL_TRANS) $(COMMON_FLAGS) -rpath-link=x8664/ -arch x86-64  $^  -o $@ \
-              --noirtshim
+	$(PNACL_TRANS) $(COMMON_FLAGS) $(DYNAMIC_FLAGS_X8664)  $^  -o $@
 
 ######################################################################
 
