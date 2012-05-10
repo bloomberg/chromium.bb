@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "chrome/browser/usb/usb_device.h"
-#include "third_party/libusb/libusb/libusb.h"
+#include "third_party/libusb/libusb.h"
 
 UsbService::UsbService() : running_(true), thread_("UsbThread") {
   libusb_init(&context_);
@@ -75,7 +75,7 @@ void UsbService::PostHandleEventTask() {
 }
 
 void UsbService::HandleEvent() {
-  libusb_handle_events_completed(context_, NULL);
+  libusb_handle_events(context_);
   if (running_) {
     PostHandleEventTask();
   }

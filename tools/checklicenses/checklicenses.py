@@ -245,19 +245,19 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     ],
 
     # The following files lack license headers, but are trivial.
-    'third_party/libusb/libusb/os/poll_posix.h': [
+    'third_party/libusb/src/libusb/os/poll_posix.h': [
         'UNKNOWN',
     ],
-    'third_party/libusb/libusb/version.h': [
+    'third_party/libusb/src/libusb/version.h': [
         'UNKNOWN',
     ],
-    'third_party/libusb/autogen.sh': [
+    'third_party/libusb/src/autogen.sh': [
         'UNKNOWN',
     ],
-    'third_party/libusb/config.h': [
+    'third_party/libusb/src/config.h': [
         'UNKNOWN',
     ],
-    'third_party/libusb/msvc/config.h': [
+    'third_party/libusb/src/msvc/config.h': [
         'UNKNOWN',
     ],
 
