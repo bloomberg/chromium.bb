@@ -13,7 +13,8 @@
 
 namespace content {
 
-GamepadSharedMemoryReader::GamepadSharedMemoryReader() {
+GamepadSharedMemoryReader::GamepadSharedMemoryReader()
+    : gamepad_hardware_buffer_(NULL) {
   memset(ever_interacted_with_, 0, sizeof(ever_interacted_with_));
   CHECK(RenderThread::Get()->Send(new GamepadHostMsg_StartPolling(
       &renderer_shared_memory_handle_)));
