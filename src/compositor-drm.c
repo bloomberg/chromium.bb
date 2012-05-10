@@ -885,7 +885,7 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 			fprintf(stderr, "failed to set mode (%dx%d) %u Hz\n",
 				drm_mode->base.width,
 				drm_mode->base.height,
-				drm_mode->base.refresh);
+				drm_mode->base.refresh / 1000);
 			ret = -1;
 		} else {
 			output->base.current->flags = 0;
@@ -1090,6 +1090,7 @@ static int
 drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info)
 {
 	struct drm_mode *mode;
+	uint64_t refresh;
 
 	mode = malloc(sizeof *mode);
 	if (mode == NULL)
@@ -1098,7 +1099,19 @@ drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info)
 	mode->base.flags = 0;
 	mode->base.width = info->hdisplay;
 	mode->base.height = info->vdisplay;
-	mode->base.refresh = info->vrefresh;
+
+	/* Calculate higher precision (mHz) refresh rate */
+	refresh = (info->clock * 1000000LL / info->htotal +
+		   info->vtotal / 2) / info->vtotal;
+
+	if (info->flags & DRM_MODE_FLAG_INTERLACE)
+		refresh *= 2;
+	if (info->flags & DRM_MODE_FLAG_DBLSCAN)
+		refresh /= 2;
+	if (info->vscan > 1)
+	    refresh /= info->vscan;
+
+	mode->base.refresh = refresh;
 	mode->mode_info = *info;
 	wl_list_insert(output->base.mode_list.prev, &mode->base.link);
 

@@ -383,7 +383,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
 	output->mode.width = width;
 	output->mode.height = height;
-	output->mode.refresh = 60;
+	output->mode.refresh = 60000;
 	wl_list_init(&output->base.mode_list);
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
