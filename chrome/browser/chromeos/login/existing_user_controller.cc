@@ -64,31 +64,22 @@ namespace {
 // Url for setting up sync authentication.
 const char kSettingsSyncLoginURL[] = "chrome://settings/personal";
 
-#define NEW_GSG_URL
+// Major version where we still show GSG as "Release Notes" after the update.
+const long int kReleaseNotesTargetRelease = 19;
 
 // Getting started guide URL, will be opened as in app window for each new
 // user who logs on the device.
-// TODO(nkostylev): Remove this when new URL is live.
-#if defined(NEW_GSG_URL)
 const char kGetStartedURLPattern[] =
     "http://gweb-gettingstartedguide.appspot.com/";
-#else
-const char kGetStartedURLPattern[] =
-    "http://www.gstatic.com/chromebook/gettingstarted/index-%s.html";
-#endif
 
 // Parameter to be added to GetStarted URL that contains board.
 const char kGetStartedBoardParam[] = "board";
 
 // Parameter to be added to GetStarted URL
 // when first user signs in for the first time (OOBE case).
-#if defined(NEW_GSG_URL)
 const char kGetStartedOwnerParam[] = "owner";
 const char kGetStartedOwnerParamValue[] = "true";
 const char kGetStartedInitialLocaleParam[] = "initial_locale";
-#else
-const char kGetStartedOwnerParam[] = "#first";
-#endif
 
 // URL for account creation.
 const char kCreateAccountURL[] =
@@ -752,7 +743,6 @@ void ExistingUserController::InitializeStartUrls() const {
   }
 }
 
-#if defined(NEW_GSG_URL)
 std::string ExistingUserController::GetGettingStartedGuideURL() const {
   GURL guide_url(kGetStartedURLPattern);
   std::string board;
@@ -779,18 +769,6 @@ std::string ExistingUserController::GetGettingStartedGuideURL() const {
       WizardController::GetInitialLocale());
   return guide_url.spec();
 }
-#else
-std::string ExistingUserController::GetGettingStartedGuideURL() const {
-  const char* url = kGetStartedURLPattern;
-  PrefService* prefs = g_browser_process->local_state();
-  const std::string current_locale =
-      StringToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
-  std::string guide_url = base::StringPrintf(url, current_locale.c_str());
-  if (is_owner_login_)
-    guide_url.append(kGetStartedOwnerParam);
-  return guide_url;
-}
-#endif
 
 void ExistingUserController::OptionallyShowReleaseNotes(
     Profile* profile) const {
@@ -818,8 +796,11 @@ void ExistingUserController::OptionallyShowReleaseNotes(
     return;
   }
 
-  // TODO(nkostylev): Disable this prior to M19>M20 update.
-  // Trigger on major version change.
+  // No "Release Notes" content yet for upgrade from M19 to later release.
+  if (prev_version.components()[0] >= kReleaseNotesTargetRelease)
+    return;
+
+  // Otherwise, trigger on major version change.
   if (current_version.components()[0] > prev_version.components()[0]) {
     std::string release_notes_url = GetGettingStartedGuideURL();
     if (!release_notes_url.empty()) {
