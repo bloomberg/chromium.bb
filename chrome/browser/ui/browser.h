@@ -733,10 +733,6 @@ class Browser : public TabStripModelDelegate,
                               int active_match_ordinal,
                               bool final_update);
 
-  // Helper function to handle url update notifications.
-  static void UpdateTargetURLHelper(content::WebContents* tab, int32 page_id,
-                                    const GURL& url);
-
   // Calls ExecuteCommandWithDisposition with CURRENT_TAB disposition.
   void ExecuteCommand(int id);
 

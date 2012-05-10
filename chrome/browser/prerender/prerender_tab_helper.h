@@ -42,22 +42,12 @@ class PrerenderTabHelper : public content::WebContentsObserver {
   // Called when this prerendered TabContents has just been swapped in.
   void PrerenderSwappedIn();
 
-  void UpdateTargetURL(int32 page_id, const GURL& url);
-
  private:
-  // The data we store for a hover (time the hover occurred & URL).
-  class HoverData;
-
   // Retrieves the PrerenderManager, or NULL, if none was found.
   PrerenderManager* MaybeGetPrerenderManager() const;
 
   // Returns whether the WebContents being observed is currently prerendering.
   bool IsPrerendering();
-
-  // Records histogram information for the current hover, based on whether
-  // it was used or not.  Will not do anything if there is no current hover.
-  // Also resets the hover to no hover.
-  void MaybeLogCurrentHover(bool was_used);
 
   bool IsTopSite(const GURL& url);
 
@@ -72,13 +62,6 @@ class PrerenderTabHelper : public content::WebContentsObserver {
   // a applicable (in cases when a prerender that was still loading was
   // swapped in).
   base::TimeTicks actual_load_start_;
-
-  // Information about the last hover for each hover threshold.
-  scoped_array<HoverData> last_hovers_;
-
-  // Information about the current hover independent of thresholds.
-  GURL current_hover_url_;
-  base::TimeTicks current_hover_time_;
 
   // Current URL being loaded.
   GURL url_;

@@ -532,7 +532,6 @@ bool ExternalTabContainer::IsPopupOrPanel(const WebContents* source) const {
 void ExternalTabContainer::UpdateTargetURL(WebContents* source,
                                            int32 page_id,
                                            const GURL& url) {
-  Browser::UpdateTargetURLHelper(source, page_id, url);
   if (automation_) {
     string16 url_string = CA2W(url.spec().c_str());
     automation_->Send(

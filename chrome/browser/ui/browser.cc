@@ -2637,16 +2637,6 @@ void Browser::FindReplyHelper(WebContents* tab,
                                           final_update);
 }
 
-// static
-void Browser::UpdateTargetURLHelper(WebContents* tab, int32 page_id,
-                                    const GURL& url) {
-  TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
-      tab);
-  if (!tcw || !tcw->prerender_tab_helper())
-    return;
-  tcw->prerender_tab_helper()->UpdateTargetURL(page_id, url);
-}
-
 void Browser::ExecuteCommand(int id) {
   ExecuteCommandWithDisposition(id, CURRENT_TAB);
 }
@@ -3629,8 +3619,6 @@ bool Browser::CanReloadContents(WebContents* source) const {
 
 void Browser::UpdateTargetURL(WebContents* source, int32 page_id,
                               const GURL& url) {
-  Browser::UpdateTargetURLHelper(source, page_id, url);
-
   if (!GetStatusBubble())
     return;
 
