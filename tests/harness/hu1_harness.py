@@ -2298,4 +2298,73 @@ tests = [
         'txt':  u'zsoldosszokás', 
         'brl':  u'`oldos5ok"s', 
     },
+    #Testing a sentence with a phone number. Braille output should have numberSign after dashes.
+    {
+        'txt':  u'A telefonszámom: 06-1-256-256.', 
+        'brl':  u'$a telefon5"mom: #jf-#a-#bef-#bef.', 
+    },
+    #Testing a decimal number containing sentence. After the comma character not need have numbersign indicator.
+    {
+        'txt':  u'A földrengés 7,5 erősségű volt.', 
+        'brl':  u'$a fqldreng1s #g,e er7ss1g} volt.', 
+    }, {
+        'txt':  u'Tamás még nem tudta, hogy mi vár rá.', 
+        'brl':  u'$tam"s m1g nem tudta, ho4 mi v"r r".', 
+    },
+    #Testing a Quotation mark containing sentence. Two quotation mark characters need resulting different dot combinations.
+    #Left quotation mark dot combination is 236, right quotation mark dot combination is 356.
+    {
+        'txt':  u'"Tamás még nem tudta, hogy mi vár rá."', 
+        'brl':  u'($tam"s m1g nem tudta, ho4 mi v"r r".)', 
+    },
+    #Testing a sentance containing an apostrophe. The right dot combination is dots 6-3.
+    {
+        'txt':  u"I don't no why happened this problem.", 
+        'brl':  u"$i don'.t no why happened this problem.", 
+    },
+    #Testing a § (paragraph mark character) containing sentence. The paragraph mark character dot combination with hungarian language is 3456-1236.
+    {
+        'txt':  u'Az 1§ paragrafus alapján a kedvezmény igénybe vehető.', 
+        'brl':  u'$a2 #a#v paragrafus alapj"n a kedve2m16 ig16be vehet7.', 
+    },
+    #testing some sentences with containing – character from a book.
+    {
+        'txt':  u'– A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy Ford. De mi nem megyünk magával. – Elővette az irattárcáját, és átadott Naszifnak egy angol fontot. – Ha visszajön, keressen meg a vasútállomás mellett a Grand Hotelban.', 
+        'brl':  u'- $a sivatagi karav"n0ton, ne4ven va4 qtven m1rfqld6ire innen. $e4 $ford. $de mi nem me4{nk mag"val. - $el7vette a2 iratt"rc"j"t, 1s "tadott $na5ifnak e4 angol fontot. - $ha vi55ajqn, keressen meg a vas0t"llom"s mellett a $grand $hotelban.', 
+    },
+    #Testing euro dot combination. The € character right dot combination is 56-15.
+    {
+        'txt':  u'A vételár 1 €.', 
+        'brl':  u'$a v1tel"r #a <e.', 
+    },
+    #Testing left and right parentheses dot combinations. Left parenthese dot combination is 2346, right parenthese dot combination is 1356.
+    {
+        'txt':  u'De nekem nagyon nehezemre esik a levélírás (nézd el a helyesírási hibákat és a csúnya írásomat).', 
+        'brl':  u'$de nekem na4on nehe2emre esik a lev1l|r"s ~n12d el a hees|r"si hib"kat 1s a 306a |r"somatz.', 
+    },
+    #Testing capsign indicator. If a word entire containing uppercase letter, need marking this with two 46 dot combination before the word.
+    {
+        'txt':  u'A kiállítás megnyitóján jelen volt az MVGYOSZ elnöke.', 
+        'brl':  u'$a ki"ll|t"s meg6it9j"n jelen volt a2 $$mv4o5 elnqke.', 
+    },
+    #Testing time format. If a sentence containing 11:45 style text part, need replacing the colon 25 dot combination with dot3 combination, and not need marking numbersign indicator the next numbers.
+    {
+        'txt':  u'A pontos idő 11:45 perc.', 
+        'brl':  u'$a pontos id7 #aa.de perc.', 
+    },
+    #Testing bulleted list item, the right dot combination is 3-35.
+    {
+        'txt':  u'•A kiadás újdonságai.', 
+        'brl':  u"""'*$a kiad"s 0jdons"gai.""", 
+    },
+    #Testing underscore, the right dot combination is 6-36.
+    {
+        'txt':  u'A hu_list fájl nem létezik.', 
+        'brl':  u"""$a hu'-list f"jl nem l1te2ik.""", 
+    },
+    #Testing a sentance containing an e-mail address, the dot combination for at sign is dots 45
+    {
+        'txt':  u'Az e-mail címem: akarmi@akarmi.hu.', 
+        'brl':  u'$a2 e-mail c|mem: akarmi>akarmi.hu.', 
+    },
 ]
