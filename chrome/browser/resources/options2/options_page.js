@@ -677,14 +677,12 @@ cr.define('options', function() {
 
         var text = bannerDiv.querySelector('.managed-prefs-text');
         if (controlledByPolicy && !controlledByExtension) {
-          text.textContent =
-              loadTimeData.getString('policyManagedPrefsBannerText');
+          text.textContent = templateData.policyManagedPrefsBannerText;
         } else if (!controlledByPolicy && controlledByExtension) {
-          text.textContent =
-              loadTimeData.getString('extensionManagedPrefsBannerText');
+          text.textContent = templateData.extensionManagedPrefsBannerText;
         } else if (controlledByPolicy && controlledByExtension) {
-          text.textContent = loadTimeData.getString(
-              'policyAndExtensionManagedPrefsBannerText');
+          text.textContent =
+              templateData.policyAndExtensionManagedPrefsBannerText;
         }
       }
     },

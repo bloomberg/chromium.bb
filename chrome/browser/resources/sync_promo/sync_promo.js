@@ -16,8 +16,8 @@ cr.define('sync_promo', function() {
    */
   function SyncPromo() {
     options.SyncSetupOverlay.call(this, 'syncSetup',
-        loadTimeData.getString('syncSetupOverlayTabTitle'),
-        'sync-setup-overlay');
+                                  templateData.syncSetupOverlayTabTitle,
+                                  'sync-setup-overlay');
   }
 
   // Replicating enum from chrome/common/extensions/extension_constants.h.
@@ -56,6 +56,8 @@ cr.define('sync_promo', function() {
 
     // Initializes the page.
     initializePage: function() {
+      localStrings = new LocalStrings();
+
       options.SyncSetupOverlay.prototype.initializePage.call(this);
 
       // Hide parts of the login UI and show the promo UI.

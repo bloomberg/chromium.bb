@@ -18,7 +18,7 @@ cr.define('options', function() {
     OptionsPage.call(
         this,
         'setWallpaper',
-        loadTimeData.getString('setWallpaper'),
+        localStrings.getString('setWallpaper'),
         'set-wallpaper-page');
   }
 

@@ -10,7 +10,7 @@ cr.define('options', function() {
    */
   function KeyboardOverlay() {
     options.SettingsDialog.call(this, 'keyboard-overlay',
-        loadTimeData.getString('keyboardOverlayTitle'),
+        templateData.keyboardOverlayTitle,
         'keyboard-overlay',
         $('keyboard-confirm'), $('keyboard-cancel'));
   }

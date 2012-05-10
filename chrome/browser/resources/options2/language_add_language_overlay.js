@@ -14,7 +14,7 @@ cr.define('options', function() {
    */
   function AddLanguageOverlay() {
     OptionsPage.call(this, 'addLanguage',
-                     loadTimeData.getString('add_button'),
+                     localStrings.getString('add_button'),
                      'add-language-overlay-page');
   }
 
@@ -39,7 +39,7 @@ cr.define('options', function() {
 
       // Create the language list with which users can add a language.
       var addLanguageList = $('add-language-overlay-language-list');
-      var languageListData = loadTimeData.getValue('languageList');
+      var languageListData = templateData.languageList;
       for (var i = 0; i < languageListData.length; i++) {
         var language = languageListData[i];
         var displayText = language.displayName;

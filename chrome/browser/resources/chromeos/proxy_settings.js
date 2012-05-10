@@ -10,6 +10,8 @@ var DetailsInternetPage = options.internet.DetailsInternetPage;
  * DOMContentLoaded handler, sets up the page.
  */
 function load() {
+  localStrings = new LocalStrings();
+
   if (cr.isChromeOS)
     document.documentElement.setAttribute('os', 'chromeos');
 
@@ -38,3 +40,4 @@ function load() {
 }
 
 document.addEventListener('DOMContentLoaded', load);
+

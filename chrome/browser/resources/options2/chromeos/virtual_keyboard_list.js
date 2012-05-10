@@ -8,6 +8,8 @@ cr.define('options', function() {
   /** @const */ var ListItem = cr.ui.ListItem;
   /** @const */ var VirtualKeyboardOptions = options.VirtualKeyboardOptions;
 
+  /** @const */ var localStrings = new LocalStrings();
+
   /**
    * Creates a virtual keyboard list item.
    *
@@ -54,7 +56,7 @@ cr.define('options', function() {
       var defaultOptionElement = document.createElement('option');
       defaultOptionElement.selected = (data.preferredKeyboard == null);
       defaultOptionElement.textContent =
-          loadTimeData.getString('defaultVirtualKeyboard');
+          localStrings.getString('defaultVirtualKeyboard');
       defaultOptionElement.value = -1;
       selectElement.appendChild(defaultOptionElement);
 

@@ -119,7 +119,6 @@ SyncPromoUI::SyncPromoUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   html_source->set_json_path(kStringsJsFile);
   html_source->add_resource_path(kSyncPromoJsFile, IDR_SYNC_PROMO_JS);
   html_source->set_default_resource(IDR_SYNC_PROMO_HTML);
-  html_source->set_use_json_js_format_v2();
   ChromeURLDataManager::AddDataSource(profile, html_source);
 
   sync_promo_trial::RecordUserShownPromo(web_ui);

@@ -43,6 +43,8 @@ cr.define('options', function() {
                           ['expires', 'label_server_bound_cert_expires']],
   };
 
+  /** @const */ var localStrings = new LocalStrings();
+
   /**
    * Returns the item's height, like offsetHeight but such that it works better
    * when the page is zoomed. See the similar calculation in @{code cr.ui.List}.
@@ -129,7 +131,7 @@ cr.define('options', function() {
       this.infoChild.className = 'cookie-details';
       this.infoChild.hidden = true;
       var remove = this.ownerDocument.createElement('button');
-      remove.textContent = loadTimeData.getString('remove_cookie');
+      remove.textContent = localStrings.getString('remove_cookie');
       remove.onclick = this.removeCookie_.bind(this);
       this.infoChild.appendChild(remove);
       var content = this.contentElement;
@@ -235,19 +237,19 @@ cr.define('options', function() {
         this.origin.collectSummaryInfo(info);
       var list = [];
       if (info.cookies > 1)
-        list.push(loadTimeData.getStringF('cookie_plural', info.cookies));
+        list.push(localStrings.getStringF('cookie_plural', info.cookies));
       else if (info.cookies > 0)
-        list.push(loadTimeData.getString('cookie_singular'));
+        list.push(localStrings.getString('cookie_singular'));
       if (info.database || info.indexedDb)
-        list.push(loadTimeData.getString('cookie_database_storage'));
+        list.push(localStrings.getString('cookie_database_storage'));
       if (info.localStorage)
-        list.push(loadTimeData.getString('cookie_local_storage'));
+        list.push(localStrings.getString('cookie_local_storage'));
       if (info.appCache)
-        list.push(loadTimeData.getString('cookie_app_cache'));
+        list.push(localStrings.getString('cookie_app_cache'));
       if (info.fileSystem)
-        list.push(loadTimeData.getString('cookie_file_system'));
+        list.push(localStrings.getString('cookie_file_system'));
       if (info.serverBoundCerts)
-        list.push(loadTimeData.getString('cookie_server_bound_cert'));
+        list.push(localStrings.getString('cookie_server_bound_cert'));
       var text = '';
       for (var i = 0; i < list.length; ++i)
         if (text.length > 0)
@@ -476,19 +478,19 @@ cr.define('options', function() {
             text = this.data.name;
             break;
           case 'local_storage':
-            text = loadTimeData.getString('cookie_local_storage');
+            text = localStrings.getString('cookie_local_storage');
             break;
           case 'app_cache':
-            text = loadTimeData.getString('cookie_app_cache');
+            text = localStrings.getString('cookie_app_cache');
             break;
           case 'indexed_db':
-            text = loadTimeData.getString('cookie_indexed_db');
+            text = localStrings.getString('cookie_indexed_db');
             break;
           case 'file_system':
-            text = loadTimeData.getString('cookie_file_system');
+            text = localStrings.getString('cookie_file_system');
             break;
           case 'server_bound_cert':
-            text = loadTimeData.getString('cookie_server_bound_cert');
+            text = localStrings.getString('cookie_server_bound_cert');
             break;
         }
         if (!text)
@@ -647,7 +649,7 @@ cr.define('options', function() {
           var data = doc.createElement('td');
           var pair = cookieInfo[type][i];
           name.className = 'cookie-details-label';
-          name.textContent = loadTimeData.getString(pair[1]);
+          name.textContent = localStrings.getString(pair[1]);
           data.className = 'cookie-details-value';
           data.textContent = '';
           tr.appendChild(name);

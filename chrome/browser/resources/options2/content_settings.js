@@ -16,8 +16,7 @@ cr.define('options', function() {
     this.activeNavTab = null;
     this.sessionRestoreEnabled = false;
     this.sessionRestoreSelected = false;
-    OptionsPage.call(this, 'content',
-                     loadTimeData.getString('contentSettingsPageTabTitle'),
+    OptionsPage.call(this, 'content', templateData.contentSettingsPageTabTitle,
                      'content-settings-page');
 
     // Keep track of the real value of the "clear on exit" preference. (The UI
@@ -63,7 +62,7 @@ cr.define('options', function() {
                                       '/' + url);
           uber.invokeMethodOnParent('setPath', {path: url});
           uber.invokeMethodOnParent('setTitle',
-              {title: loadTimeData.getString(hash + 'TabTitle')});
+              {title: templateData[hash + 'TabTitle']});
         };
       }
 
@@ -86,10 +85,10 @@ cr.define('options', function() {
       // Remove from DOM instead of hiding so :last-of-type applies the style
       // correctly.
       var intentsSection = $('intents-section');
-      if (!loadTimeData.getBoolean('enable_web_intents') && intentsSection)
+      if (!templateData.enable_web_intents && intentsSection)
         intentsSection.parentNode.removeChild(intentsSection);
 
-      if (loadTimeData.getBoolean('enable_restore_session_state')) {
+      if (templateData.enable_restore_session_state) {
         this.sessionRestoreEnabled = true;
         this.updateSessionRestoreContentSettings();
       }

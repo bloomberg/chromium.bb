@@ -12,7 +12,7 @@ cr.define('options', function() {
   // Encapsulated handling of browser options page.
   //
   function BrowserOptions() {
-    OptionsPage.call(this, 'settings', loadTimeData.getString('settingsTitle'),
+    OptionsPage.call(this, 'settings', templateData.settingsTitle,
                      'settings');
   }
 
@@ -85,7 +85,7 @@ cr.define('options', function() {
         UIAccountTweaks.applyGuestModeVisibility(document);
 
       // Sync (Sign in) section.
-      this.updateSyncState_(loadTimeData.getValue('syncData'));
+      this.updateSyncState_(templateData.syncData);
 
       $('sync-action-link').onclick = function(event) {
         SyncSetupOverlay.showErrorUI();
@@ -118,9 +118,8 @@ cr.define('options', function() {
       // restore changes has stabilized. For now, only the startup option is
       // renamed to "continue where I left off", but the session related content
       // settings are not disabled or overridden (because
-      // 'enable_restore_session_state' is forced to false).
-      this.sessionRestoreEnabled_ =
-          loadTimeData.getBoolean('enable_restore_session_state');
+      // templateData.enable_restore_session_state is forced to false).
+      this.sessionRestoreEnabled_ = templateData.enable_restore_session_state;
       if (this.sessionRestoreEnabled_) {
         $('startup-restore-session').onclick = function(event) {
           if (!event.currentTarget.checked)
@@ -153,7 +152,7 @@ cr.define('options', function() {
       }
 
       $('themes-gallery').onclick = function(event) {
-        window.open(loadTimeData.getString('themesGalleryURL'));
+        window.open(localStrings.getString('themesGalleryURL'));
       };
       $('themes-reset').onclick = function(event) {
         chrome.send('themesReset');
@@ -209,14 +208,14 @@ cr.define('options', function() {
           });
 
       // Users section.
-      if (loadTimeData.valueExists('profilesInfo')) {
+      if (typeof templateData.profilesInfo != 'undefined') {
         $('profiles-section').hidden = false;
 
         var profilesList = $('profiles-list');
         options.browser_options.ProfileList.decorate(profilesList);
         profilesList.autoExpands = true;
 
-        this.setProfilesInfo_(loadTimeData.getValue('profilesInfo'));
+        this.setProfilesInfo_(templateData.profilesInfo);
 
         profilesList.addEventListener('change',
             this.setProfileViewButtonsStatus_);
@@ -244,7 +243,7 @@ cr.define('options', function() {
 
         // Username (canonical email) of the currently logged in user or
         // |kGuestUser| if a guest session is active.
-        this.username_ = loadTimeData.getString('username');
+        this.username_ = localStrings.getString('username');
 
         this.updateAccountPicture_();
 
@@ -371,10 +370,8 @@ cr.define('options', function() {
         $('manage-passwords').disabled = true;
       }
 
-      if (cr.isMac) {
-        $('mac-passwords-warning').hidden =
-            !loadTimeData.getBoolean('multiple_profiles');
-      }
+      if (cr.isMac)
+        $('mac-passwords-warning').hidden = !templateData.multiple_profiles;
 
       // Network section.
       if (!cr.isChromeOS) {
@@ -442,7 +439,7 @@ cr.define('options', function() {
           if ($('cloudPrintManageButton').style.display == 'none') {
             // Disable the button, set its text to the intermediate state.
             $('cloudPrintConnectorSetupButton').textContent =
-              loadTimeData.getString('cloudPrintConnectorEnablingButton');
+              localStrings.getString('cloudPrintConnectorEnablingButton');
             $('cloudPrintConnectorSetupButton').disabled = true;
             chrome.send('showCloudPrintSetupDialog');
           } else {
@@ -614,9 +611,9 @@ cr.define('options', function() {
     updateAdvancedSettingsExpander_: function() {
       var expander = $('advanced-settings-expander');
       if ($('advanced-settings').style.height == '')
-        expander.textContent = loadTimeData.getString('showAdvancedSettings');
+        expander.textContent = localStrings.getString('showAdvancedSettings');
       else
-        expander.textContent = loadTimeData.getString('hideAdvancedSettings');
+        expander.textContent = localStrings.getString('hideAdvancedSettings');
     },
 
     /**
@@ -642,10 +639,10 @@ cr.define('options', function() {
           syncData.setupCompleted && cr.isChromeOS;
       startStopButton.textContent =
           syncData.setupCompleted ?
-              loadTimeData.getString('syncButtonTextStop') :
+              localStrings.getString('syncButtonTextStop') :
           syncData.setupInProgress ?
-              loadTimeData.getString('syncButtonTextInProgress') :
-              loadTimeData.getString('syncButtonTextStart');
+              localStrings.getString('syncButtonTextInProgress') :
+              localStrings.getString('syncButtonTextStart');
 
 
       // TODO(estade): can this just be textContent?
@@ -969,8 +966,8 @@ cr.define('options', function() {
       $('profiles-single-message').hidden = !hasSingleProfile;
       $('profiles-manage').hidden = hasSingleProfile;
       $('profiles-delete').textContent = hasSingleProfile ?
-          loadTimeData.getString('profilesDeleteSingle') :
-          loadTimeData.getString('profilesDelete');
+          templateData.profilesDeleteSingle :
+          templateData.profilesDelete;
     },
 
     /**
@@ -1060,7 +1057,7 @@ cr.define('options', function() {
 
       // Add/Select Custom Option in the font size label list.
       if (!$('Custom')) {
-        var option = new Option(loadTimeData.getString('fontSizeLabelCustom'),
+        var option = new Option(localStrings.getString('fontSizeLabelCustom'),
                                 -1, false, true);
         option.setAttribute('id', 'Custom');
         selectCtl.add(option);
@@ -1160,11 +1157,11 @@ cr.define('options', function() {
         $('cloudPrintConnectorLabel').textContent = label;
         if (disabled || !allowed) {
           $('cloudPrintConnectorSetupButton').textContent =
-            loadTimeData.getString('cloudPrintConnectorDisabledButton');
+            localStrings.getString('cloudPrintConnectorDisabledButton');
           $('cloudPrintManageButton').style.display = 'none';
         } else {
           $('cloudPrintConnectorSetupButton').textContent =
-            loadTimeData.getString('cloudPrintConnectorEnabledButton');
+            localStrings.getString('cloudPrintConnectorEnabledButton');
           $('cloudPrintManageButton').style.display = 'inline';
         }
         $('cloudPrintConnectorSetupButton').disabled = !allowed;

@@ -13,7 +13,7 @@ cr.define('options', function() {
    */
   function HomePageOverlay() {
     SettingsDialog.call(this, 'homePageOverlay',
-                        loadTimeData.getString('homePageOverlayTabTitle'),
+                        templateData.homePageOverlayTabTitle,
                         'home-page-overlay',
                         $('home-page-confirm'), $('home-page-cancel'));
   }

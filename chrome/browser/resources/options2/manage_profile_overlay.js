@@ -6,6 +6,8 @@ cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
   var ArrayDataModel = cr.ui.ArrayDataModel;
 
+  /** @const */ var localStrings = new LocalStrings();
+
   /**
    * ManageProfileOverlay class
    * Encapsulated handling of the 'Manage profile...' overlay page.
@@ -13,8 +15,7 @@ cr.define('options', function() {
    * @class
    */
   function ManageProfileOverlay() {
-    OptionsPage.call(this, 'manageProfile',
-                     loadTimeData.getString('manageProfileTabTitle'),
+    OptionsPage.call(this, 'manageProfile', templateData.manageProfileTabTitle,
                      'manage-profile-overlay');
   };
 
@@ -146,7 +147,7 @@ cr.define('options', function() {
     showErrorBubble_: function(errorText) {
       var nameErrorEl = $('manage-profile-error-bubble');
       nameErrorEl.hidden = false;
-      nameErrorEl.textContent = loadTimeData.getString(errorText);
+      nameErrorEl.textContent = localStrings.getString(errorText);
 
       $('manage-profile-ok').disabled = true;
     },
@@ -229,7 +230,7 @@ cr.define('options', function() {
       $('manage-profile-overlay-manage').hidden = true;
       $('manage-profile-overlay-delete').hidden = false;
       $('delete-profile-message').textContent =
-          loadTimeData.getStringF('deleteProfileMessage', profileInfo.name);
+          localStrings.getStringF('deleteProfileMessage', profileInfo.name);
       $('delete-profile-message').style.backgroundImage = 'url("' +
           profileInfo.iconURL + '")';
 

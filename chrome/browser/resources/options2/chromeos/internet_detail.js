@@ -403,7 +403,7 @@ cr.define('options.internet', function() {
         bannerDiv.hidden = false;
         // controlledBy must match strings loaded in proxy_handler.cc and
         // set in proxy_cros_settings_provider.cc.
-        $('banner-text').textContent = loadTimeData.getString(controlledBy);
+        $('banner-text').textContent = localStrings.getString(controlledBy);
       }
     },
 
@@ -594,7 +594,7 @@ cr.define('options.internet', function() {
     var statusKey = data.connected ? 'networkConnected' :
                                      'networkNotConnected';
     $('network-details-subtitle-status').textContent =
-        loadTimeData.getString(statusKey);
+        localStrings.getString(statusKey);
     var typeKey = null;
     switch (data.type) {
     case Constants.TYPE_ETHERNET:
@@ -613,7 +613,7 @@ cr.define('options.internet', function() {
     var typeLabel = $('network-details-subtitle-type');
     var typeSeparator = $('network-details-subtitle-separator');
     if (typeKey) {
-      typeLabel.textContent = loadTimeData.getString(typeKey);
+      typeLabel.textContent = localStrings.getString(typeKey);
       typeLabel.hidden = false;
       typeSeparator.hidden = false;
     } else {
@@ -670,24 +670,24 @@ cr.define('options.internet', function() {
     ipConfigList.autoExpands = true;
     var model = new ArrayDataModel([]);
     model.push({
-      property: 'inetAddress',
-      name: loadTimeData.getString('inetAddress'),
-      value: inetAddress,
+      'property': 'inetAddress',
+      'name': localStrings.getString('inetAddress'),
+      'value': inetAddress,
     });
     model.push({
-      property: 'inetSubnetAddress',
-      name: loadTimeData.getString('inetSubnetAddress'),
-      value: inetSubnetAddress,
+      'property': 'inetSubnetAddress',
+      'name': localStrings.getString('inetSubnetAddress'),
+      'value': inetSubnetAddress,
     });
     model.push({
-      property: 'inetGateway',
-      name: loadTimeData.getString('inetGateway'),
-      value: inetGateway,
+      'property': 'inetGateway',
+      'name': localStrings.getString('inetGateway'),
+      'value': inetGateway,
     });
     model.push({
-      property: 'inetDns',
-      name: loadTimeData.getString('inetDns'),
-      value: inetDns,
+      'property': 'inetDns',
+      'name': localStrings.getString('inetDns'),
+      'value': inetDns,
     });
     ipConfigList.dataModel = model;
 
@@ -750,11 +750,11 @@ cr.define('options.internet', function() {
         $('wifi-security-entry').hidden = true;
       }
       // Frequency is in MHz.
-      var frequency = loadTimeData.getString('inetFrequencyFormat');
+      var frequency = localStrings.getString('inetFrequencyFormat');
       frequency = frequency.replace('$1', data.frequency);
       $('wifi-frequency').textContent = frequency;
       // Signal strength as percentage.
-      var signalStrength = loadTimeData.getString('inetSignalStrengthFormat');
+      var signalStrength = localStrings.getString('inetSignalStrengthFormat');
       signalStrength = signalStrength.replace('$1', data.strength);
       $('wifi-signal-strength').textContent = signalStrength;
       if (data.hardwareAddress) {

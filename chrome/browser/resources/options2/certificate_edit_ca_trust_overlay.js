@@ -123,7 +123,7 @@ cr.define('options', function() {
       self.finishEdit_();
     }
     $('certificateEditCaTrustDescription').textContent =
-        loadTimeData.getStringF('certificateEditCaTrustDescriptionFormat',
+        localStrings.getStringF('certificateEditCaTrustDescriptionFormat',
                                 certName);
     self.enableInputs_(false);
     OptionsPage.navigateToPage('certificateEditCaTrustOverlay');
@@ -147,7 +147,7 @@ cr.define('options', function() {
       self.finishImport_();
     }
     $('certificateEditCaTrustDescription').textContent =
-        loadTimeData.getStringF('certificateImportCaDescriptionFormat',
+        localStrings.getStringF('certificateImportCaDescriptionFormat',
                                 certName);
     CertificateEditCaTrustOverlay.populateTrust(false, false, false);
     OptionsPage.navigateToPage('certificateEditCaTrustOverlay');

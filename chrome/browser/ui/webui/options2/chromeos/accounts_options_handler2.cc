@@ -81,8 +81,9 @@ void AccountsOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("owner_only", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_OWNER_ONLY));
 
-  localized_strings->SetBoolean("whitelist_is_managed",
-      g_browser_process->browser_policy_connector()->IsEnterpriseManaged());
+  localized_strings->SetString("whitelist_is_managed",
+      g_browser_process->browser_policy_connector()->IsEnterpriseManaged() ?
+      ASCIIToUTF16("true") : ASCIIToUTF16("false"));
 
   AddAccountUITweaksLocalizedValues(localized_strings);
 }

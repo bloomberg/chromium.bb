@@ -68,7 +68,7 @@ cr.define('options', function() {
     // Build the language code to language info dictionary at first time.
     if (!this.languageCodeToLanguageInfo_) {
       this.languageCodeToLanguageInfo_ = {};
-      var languageList = loadTimeData.getValue('languageList');
+      var languageList = templateData.languageList;
       for (var i = 0; i < languageList.length; i++) {
         var languageInfo = languageList[i];
         this.languageCodeToLanguageInfo_[languageInfo.code] = languageInfo;

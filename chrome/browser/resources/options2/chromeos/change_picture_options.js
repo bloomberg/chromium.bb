@@ -29,7 +29,7 @@ cr.define('options', function() {
     OptionsPage.call(
         this,
         'changePicture',
-        loadTimeData.getString('changePicturePage'),
+        localStrings.getString('changePicturePage'),
         'change-picture-page');
   }
 
@@ -62,13 +62,13 @@ cr.define('options', function() {
       if (!this.userIsEphemeral_()) {
         // Add the "Choose file" button.
         imageGrid.addItem(ButtonImages.CHOOSE_FILE,
-                          loadTimeData.getString('chooseFile'),
+                          localStrings.getString('chooseFile'),
                           this.handleChooseFile_.bind(this));
 
         // Profile image data.
         this.profileImage_ = imageGrid.addItem(
             ButtonImages.PROFILE_PICTURE,
-            loadTimeData.getString('profilePhotoLoading'));
+            localStrings.getString('profilePhotoLoading'));
       }
 
       // Old user image data (if present).
@@ -203,7 +203,7 @@ cr.define('options', function() {
       if (showTakePhotoButton && !this.takePhotoButton_) {
         this.takePhotoButton_ = imageGrid.addItem(
             ButtonImages.TAKE_PHOTO,
-            loadTimeData.getString('takePhoto'),
+            localStrings.getString('takePhoto'),
             this.handleTakePhoto_.bind(this),
             1);
       } else if (!showTakePhotoButton && this.takePhotoButton_) {
@@ -239,7 +239,7 @@ cr.define('options', function() {
     setProfileImage_: function(imageUrl, select) {
       var imageGrid = $('images-grid');
       this.profileImage_ = imageGrid.updateItem(
-          this.profileImage_, imageUrl, loadTimeData.getString('profilePhoto'));
+          this.profileImage_, imageUrl, localStrings.getString('profilePhoto'));
       if (select)
         imageGrid.selectedItem = this.profileImage_;
     },
@@ -271,7 +271,7 @@ cr.define('options', function() {
      * @private
      */
     userIsEphemeral_: function() {
-      return loadTimeData.getBoolean('userIsEphemeral');
+      return localStrings.getString('userIsEphemeral') == 'true';
     },
   };
 

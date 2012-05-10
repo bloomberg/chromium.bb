@@ -15,7 +15,7 @@ cr.define('options', function() {
    */
   function StartupOverlay() {
     SettingsDialog.call(this, 'startup',
-                        loadTimeData.getString('startupPagesOverlayTabTitle'),
+                        templateData.startupPagesOverlayTabTitle,
                         'startup-overlay',
                         $('startup-overlay-confirm'),
                         $('startup-overlay-cancel'));

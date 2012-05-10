@@ -124,7 +124,7 @@ cr.define('options.search_engines', function() {
         var makeDefaultButtonEl = this.ownerDocument.createElement('button');
         makeDefaultButtonEl.className = 'custom-appearance list-inline-button';
         makeDefaultButtonEl.textContent =
-            loadTimeData.getString('makeDefaultSearchEngineButton');
+            templateData.makeDefaultSearchEngineButton;
         makeDefaultButtonEl.onclick = function(e) {
           chrome.send('managerSetDefaultSearchEngine', [engine['modelIndex']]);
         };
@@ -147,11 +147,11 @@ cr.define('options.search_engines', function() {
 
       if (this.isPlaceholder) {
         this.nameField_.placeholder =
-            loadTimeData.getString('searchEngineTableNamePlaceholder');
+            localStrings.getString('searchEngineTableNamePlaceholder');
         this.keywordField_.placeholder =
-            loadTimeData.getString('searchEngineTableKeywordPlaceholder');
+            localStrings.getString('searchEngineTableKeywordPlaceholder');
         this.urlField_.placeholder =
-            loadTimeData.getString('searchEngineTableURLPlaceholder');
+            localStrings.getString('searchEngineTableURLPlaceholder');
       }
 
       var fields = [this.nameField_, this.keywordField_, this.urlField_];
@@ -248,28 +248,29 @@ cr.define('options.search_engines', function() {
       this.waitingForValidation_ = false;
       // TODO(stuartmorgan): Implement the full validation UI with
       // checkmark/exclamation mark icons and tooltips showing the errors.
-      if (validity.name) {
+      if (validity['name']) {
         this.nameField_.setCustomValidity('');
       } else {
         this.nameField_.setCustomValidity(
-            loadTimeData.getString('editSearchEngineInvalidTitleToolTip'));
+            templateData.editSearchEngineInvalidTitleToolTip);
       }
 
-      if (validity.keyword) {
+      if (validity['keyword']) {
         this.keywordField_.setCustomValidity('');
       } else {
         this.keywordField_.setCustomValidity(
-            loadTimeData.getString('editSearchEngineInvalidKeywordToolTip'));
+            templateData.editSearchEngineInvalidKeywordToolTip);
       }
 
-      if (validity.url) {
+      if (validity['url']) {
         this.urlField_.setCustomValidity('');
       } else {
         this.urlField_.setCustomValidity(
-            loadTimeData.getString('editSearchEngineInvalidURLToolTip'));
+            templateData.editSearchEngineInvalidURLToolTip);
       }
 
-      this.currentlyValid_ = validity.name && validity.keyword && validity.url;
+      this.currentlyValid_ = validity['name'] && validity['keyword'] &&
+          validity['url'];
     },
   };
 

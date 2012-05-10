@@ -51,7 +51,7 @@ cr.define('options', function() {
     ul.innerHTML = '';
     for (var i = 0; i < certErrors.length; ++i) {
       li = document.createElement('li');
-      li.textContent = loadTimeData.getStringF('certificateImportErrorFormat',
+      li.textContent = localStrings.getStringF('certificateImportErrorFormat',
                                                certErrors[i].name,
                                                certErrors[i].error);
       ul.appendChild(li);

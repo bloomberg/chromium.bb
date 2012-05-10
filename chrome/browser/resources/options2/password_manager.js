@@ -17,7 +17,7 @@ cr.define('options', function() {
     this.activeNavTab = null;
     OptionsPage.call(this,
                      'passwords',
-                     loadTimeData.getString('passwordsPageTabTitle'),
+                     templateData.passwordsPageTabTitle,
                      'password-manager');
   }
 

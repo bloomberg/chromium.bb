@@ -69,7 +69,7 @@ cr.define('options.system.bluetooth', function() {
       // Update label for devices that are paired but not connected.
       if (this.paired) {
         content = content + ' (' +
-            loadTimeData.getString('bluetoothDeviceNotConnected') + ')';
+            templateData['bluetoothDeviceNotConnected'] + ')';
       }
       label.textContent = content;
       this.contentElement.appendChild(label);

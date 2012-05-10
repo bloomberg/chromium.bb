@@ -11,8 +11,7 @@ cr.define('options.autofillOptions', function() {
   function AutofillEditProfileButton(guid, edit) {
     var editButtonEl = document.createElement('button');
     editButtonEl.className = 'list-inline-button custom-appearance';
-    editButtonEl.textContent =
-        loadTimeData.getString('autofillEditProfileButton');
+    editButtonEl.textContent = templateData.autofillEditProfileButton;
     editButtonEl.onclick = function(e) { edit(guid); };
 
     // Don't select the row when clicking the button.
@@ -262,11 +261,11 @@ cr.define('options.autofillOptions', function() {
 
       if (this.isPlaceholder) {
         this.firstNameInput.placeholder =
-            loadTimeData.getString('autofillAddFirstNamePlaceholder');
+            templateData.autofillAddFirstNamePlaceholder;
         this.middleNameInput.placeholder =
-            loadTimeData.getString('autofillAddMiddleNamePlaceholder');
+            templateData.autofillAddMiddleNamePlaceholder;
         this.lastNameInput.placeholder =
-            loadTimeData.getString('autofillAddLastNamePlaceholder');
+            templateData.autofillAddLastNamePlaceholder;
         this.deletable = false;
       }
 

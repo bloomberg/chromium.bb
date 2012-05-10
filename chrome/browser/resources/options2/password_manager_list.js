@@ -71,7 +71,7 @@ cr.define('options.passwordManager', function() {
         var button = this.ownerDocument.createElement('button');
         button.hidden = true;
         button.className = 'list-inline-button custom-appearance';
-        button.textContent = loadTimeData.getString('passwordShowButton');
+        button.textContent = localStrings.getString('passwordShowButton');
         button.addEventListener('click', this.onClick_, true);
         passwordInputDiv.appendChild(button);
       }
@@ -108,10 +108,10 @@ cr.define('options.passwordManager', function() {
       var passwordInput = button.previousSibling;
       if (passwordInput.type == 'password') {
         passwordInput.type = 'text';
-        button.textContent = loadTimeData.getString('passwordHideButton');
+        button.textContent = localStrings.getString('passwordHideButton');
       } else {
         passwordInput.type = 'password';
-        button.textContent = loadTimeData.getString('passwordShowButton');
+        button.textContent = localStrings.getString('passwordShowButton');
       }
     },
 

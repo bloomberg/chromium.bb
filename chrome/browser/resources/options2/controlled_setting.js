@@ -78,9 +78,9 @@ cr.define('options', function() {
 
       // Work out the bubble text.
       defaultStrings = {
-        policy: loadTimeData.getString('controlledSettingPolicy'),
-        extension: loadTimeData.getString('controlledSettingExtension'),
-        recommended: loadTimeData.getString('controlledSettingRecommended'),
+        'policy' : localStrings.getString('controlledSettingPolicy'),
+        'extension' : localStrings.getString('controlledSettingExtension'),
+        'recommended' : localStrings.getString('controlledSettingRecommended'),
       };
 
       // No controller, no bubble.
@@ -105,7 +105,7 @@ cr.define('options', function() {
         action.classList.add('link-button');
         action.classList.add('controlled-setting-bubble-action');
         action.textContent =
-            loadTimeData.getString('controlledSettingApplyRecommendation');
+            localStrings.getString('controlledSettingApplyRecommendation');
         action.addEventListener(
             'click',
             function(e) {

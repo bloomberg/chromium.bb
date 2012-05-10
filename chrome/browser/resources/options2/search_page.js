@@ -102,9 +102,8 @@ cr.define('options', function() {
    * @constructor
    */
   function SearchPage() {
-    OptionsPage.call(this, 'search',
-                     loadTimeData.getString('searchPageTabTitle'),
-                     'searchPage');
+    OptionsPage.call(this, 'search', templateData.searchPageTabTitle,
+        'searchPage');
   }
 
   cr.addSingletonGetter(SearchPage);

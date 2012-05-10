@@ -7,6 +7,8 @@ cr.define('options.browser_options', function() {
   /** @const */ var DeletableItemList = options.DeletableItemList;
   /** @const */ var ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
+  var localStrings = new LocalStrings();
+
   /**
    * Creates a new profile list item.
    * @param {Object} profileInfo The profile this item respresents.
@@ -56,10 +58,10 @@ cr.define('options.browser_options', function() {
       this.contentElement.appendChild(nameEl);
 
       var displayName = profileInfo.name;
-      if (profileInfo.isCurrentProfile) {
-        displayName = loadTimeData.getStringF('profilesListItemCurrent',
-                                              profileInfo.name);
-      }
+      if (profileInfo.isCurrentProfile)
+        displayName = localStrings.getStringF(
+            'profilesListItemCurrent',
+            profileInfo.name);
       nameEl.textContent = displayName;
 
       // Ensure that the button cannot be tabbed to for accessibility reasons.

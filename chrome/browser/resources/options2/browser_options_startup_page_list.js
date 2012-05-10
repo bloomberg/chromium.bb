@@ -47,7 +47,7 @@ cr.define('options.browser_options', function() {
 
       if (pageInfo['modelIndex'] == '-1') {
         this.isPlaceholder = true;
-        pageInfo['title'] = loadTimeData.getString('startupAddLabel');
+        pageInfo['title'] = localStrings.getString('startupAddLabel');
         pageInfo['url'] = '';
       }
 
@@ -71,7 +71,7 @@ cr.define('options.browser_options', function() {
 
       var urlField = urlEl.querySelector('input');
       urlField.className = 'weakrtl';
-      urlField.placeholder = loadTimeData.getString('startupPagesPlaceholder');
+      urlField.placeholder = localStrings.getString('startupPagesPlaceholder');
       this.urlField_ = urlField;
 
       this.addEventListener('commitedit', this.onEditCommitted_);

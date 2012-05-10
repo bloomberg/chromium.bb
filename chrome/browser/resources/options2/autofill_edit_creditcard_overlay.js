@@ -15,7 +15,7 @@ cr.define('options', function() {
    */
   function AutofillEditCreditCardOverlay() {
     OptionsPage.call(this, 'autofillEditCreditCard',
-                     loadTimeData.getString('autofillEditCreditCardTitle'),
+                     templateData.autofillEditCreditCardTitle,
                      'autofill-edit-credit-card-overlay');
   }
 

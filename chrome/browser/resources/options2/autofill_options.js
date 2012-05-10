@@ -16,7 +16,7 @@ cr.define('options', function() {
   function AutofillOptions() {
     OptionsPage.call(this,
                      'autofill',
-                     loadTimeData.getString('autofillOptionsPageTabTitle'),
+                     templateData.autofillOptionsPageTabTitle,
                      'autofill-options');
   }
 
@@ -88,7 +88,7 @@ cr.define('options', function() {
      * @private
      */
     showAddAddressOverlay_: function() {
-      var title = loadTimeData.getString('addAddressTitle');
+      var title = localStrings.getString('addAddressTitle');
       AutofillEditAddressOverlay.setTitle(title);
       AutofillEditAddressOverlay.clearInputFields();
       OptionsPage.navigateToPage('autofillEditAddress');
@@ -101,7 +101,7 @@ cr.define('options', function() {
      * @private
      */
     showAddCreditCardOverlay_: function() {
-      var title = loadTimeData.getString('addCreditCardTitle');
+      var title = localStrings.getString('addCreditCardTitle');
       AutofillEditCreditCardOverlay.setTitle(title);
       AutofillEditCreditCardOverlay.clearInputFields();
       OptionsPage.navigateToPage('autofillEditCreditCard');
@@ -172,7 +172,7 @@ cr.define('options', function() {
      * @private
      */
     showEditAddressOverlay_: function(address) {
-      var title = loadTimeData.getString('editAddressTitle');
+      var title = localStrings.getString('editAddressTitle');
       AutofillEditAddressOverlay.setTitle(title);
       AutofillEditAddressOverlay.loadAddress(address);
       OptionsPage.navigateToPage('autofillEditAddress');
@@ -185,7 +185,7 @@ cr.define('options', function() {
      * @private
      */
     showEditCreditCardOverlay_: function(creditCard) {
-      var title = loadTimeData.getString('editCreditCardTitle');
+      var title = localStrings.getString('editCreditCardTitle');
       AutofillEditCreditCardOverlay.setTitle(title);
       AutofillEditCreditCardOverlay.loadCreditCard(creditCard);
       OptionsPage.navigateToPage('autofillEditCreditCard');
