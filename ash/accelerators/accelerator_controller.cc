@@ -320,10 +320,10 @@ bool AcceleratorController::AcceleratorPressed(
       return true;
     case SEARCH_KEY:
       ash::Shell::GetInstance()->delegate()->Search();
-      break;
+      return true;
     case TOGGLE_APP_LIST:
       ash::Shell::GetInstance()->ToggleAppList();
-      break;
+      return true;
     case TOGGLE_CAPS_LOCK:
       if (caps_lock_delegate_.get())
         return caps_lock_delegate_->HandleToggleCapsLock();
@@ -357,8 +357,11 @@ bool AcceleratorController::AcceleratorPressed(
         return shell->focus_cycler()->FocusWidget(shell->tray()->GetWidget());
       break;
     case SHOW_OAK:
-      if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshEnableOak))
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kAshEnableOak)) {
         oak::ShowOakWindow();
+        return true;
+      }
       break;
     case NEXT_IME:
       if (ime_control_delegate_.get())
@@ -374,31 +377,31 @@ bool AcceleratorController::AcceleratorPressed(
       break;
     case SELECT_WIN_0:
       SwitchToWindow(0);
-      break;
+      return true;
     case SELECT_WIN_1:
       SwitchToWindow(1);
-      break;
+      return true;
     case SELECT_WIN_2:
       SwitchToWindow(2);
-      break;
+      return true;
     case SELECT_WIN_3:
       SwitchToWindow(3);
-      break;
+      return true;
     case SELECT_WIN_4:
       SwitchToWindow(4);
-      break;
+      return true;
     case SELECT_WIN_5:
       SwitchToWindow(5);
-      break;
+      return true;
     case SELECT_WIN_6:
       SwitchToWindow(6);
-      break;
+      return true;
     case SELECT_WIN_7:
       SwitchToWindow(7);
-      break;
+      return true;
     case SELECT_LAST_WIN:
       SwitchToWindow(-1);
-      break;
+      return true;
     case WINDOW_SNAP_LEFT:
     case WINDOW_SNAP_RIGHT: {
       aura::Window* window = wm::GetActiveWindow();
@@ -410,12 +413,14 @@ bool AcceleratorController::AcceleratorPressed(
                                        internal::SnapSizer::RIGHT_EDGE,
           shell->GetGridSize());
       window->SetBounds(sizer.GetSnapBounds(window->bounds()));
-      break;
+      return true;
     }
     case WINDOW_MINIMIZE: {
       aura::Window* window = wm::GetActiveWindow();
-      if (window)
+      if (window) {
         wm::MinimizeWindow(window);
+        return true;
+      }
       break;
     }
     case WINDOW_MAXIMIZE_RESTORE: {
@@ -425,13 +430,16 @@ bool AcceleratorController::AcceleratorPressed(
           wm::RestoreWindow(window);
         else
           wm::MaximizeWindow(window);
+        return true;
       }
       break;
     }
     case WINDOW_POSITION_CENTER: {
       aura::Window* window = wm::GetActiveWindow();
-      if (window)
+      if (window) {
         wm::CenterWindow(window);
+        return true;
+      }
       break;
     }
     case ROTATE_WINDOWS:

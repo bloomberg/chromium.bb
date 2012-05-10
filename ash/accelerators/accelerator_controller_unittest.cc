@@ -446,10 +446,10 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // ToggleAppList
   {
     EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
-    EXPECT_FALSE(GetController()->Process(
+    EXPECT_TRUE(GetController()->Process(
         ui::Accelerator(ui::VKEY_LWIN, false, true, false)));
     EXPECT_TRUE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
-    EXPECT_FALSE(GetController()->Process(
+    EXPECT_TRUE(GetController()->Process(
         ui::Accelerator(ui::VKEY_LWIN, false, true, false)));
     EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
   }
