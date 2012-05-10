@@ -160,6 +160,22 @@ bool TouchTabStripLayout::IsStacked(int index) const {
   return ideal_x(index + 1) != ideal_x(index) + tab_offset();
 }
 
+#if !defined(NDEBUG)
+std::string TouchTabStripLayout::BoundsString() const {
+  std::string result;
+  for (int i = 0; i < view_model_->view_size(); ++i) {
+    if (!result.empty())
+      result += " ";
+    if (i == active_index())
+      result += "[";
+    result += base::IntToString(view_model_->ideal_bounds(i).x());
+    if (i == active_index())
+      result += "]";
+  }
+  return result;
+}
+#endif
+
 void TouchTabStripLayout::Reset(int x,
                                 int width,
                                 int mini_tab_count,
@@ -256,6 +272,9 @@ void TouchTabStripLayout::LayoutUsingCurrentAfter(int index) {
 void TouchTabStripLayout::LayoutUsingCurrentBefore(int index) {
   for (int i = index - 1; i >= mini_tab_count_; --i) {
     int max_x = x_ + width_for_count(i - mini_tab_count_);
+    if (i > mini_tab_count_)
+      max_x += padding_;
+    max_x = std::min(max_x, ideal_x(i + 1) - stacked_padding_);
     SetIdealBoundsAt(
         i, std::min(max_x,
                     std::max(ideal_x(i), ideal_x(i + 1) - tab_offset())));
@@ -385,19 +404,3 @@ int TouchTabStripLayout::GetMinXCompressed(int index) const {
           stacked_padding_for_count(index - active_index()));
 
 }
-
-#if !defined(NDEBUG)
-std::string TouchTabStripLayout::BoundsString() const {
-  std::string result;
-  for (int i = 0; i < view_model_->view_size(); ++i) {
-    if (!result.empty())
-      result += " ";
-    if (i == active_index())
-      result += "[";
-    result += base::IntToString(view_model_->ideal_bounds(i).x());
-    if (i == active_index())
-      result += "]";
-  }
-  return result;
-}
-#endif

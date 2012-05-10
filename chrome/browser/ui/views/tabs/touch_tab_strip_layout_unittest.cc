@@ -281,6 +281,9 @@ TEST_F(TouchTabStripLayoutTest, RemoveTab) {
     const int remove_index;
     const int x_after_remove;
   } test_data[] = {
+    { { 0, 882, 220, -29, 2, 0, 4, "0 23 214 405 596 602",
+        "0 191 382 573 662" }, 1, 0 },
+
     // Remove before active.
     { { 0, 200, 100, -10, 2, 0, 4, "0 2 4 6 8 10 80 98 100",
         "0 2 6 8 10 80 98 100" },
@@ -328,6 +331,9 @@ TEST_F(TouchTabStripLayoutTest, SetWidth) {
     CommonTestData common_data;
     int new_width;
   } test_data[] = {
+    { { 0, 500, 100, -10, 2, 0, 4, "0 90 180 270 360 400",
+                                   "0 90 180 196 198 200"}, 300 },
+
     // Verifies a bug in AdjustTrailingStackedTabs().
     { { 0, 103, 100, -10, 2, 0, 0, "", "0 2"}, 102 },
 

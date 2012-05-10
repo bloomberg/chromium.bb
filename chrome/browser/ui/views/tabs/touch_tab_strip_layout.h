@@ -82,6 +82,10 @@ class TouchTabStripLayout {
   // Returns true if the tab at index is stacked.
   bool IsStacked(int index) const;
 
+#if !defined(NDEBUG)
+  std::string BoundsString() const;
+#endif
+
  private:
   friend class TouchTabStripLayoutTest;
 
@@ -181,10 +185,6 @@ class TouchTabStripLayout {
 
   // Distance between one tab to the next.
   int tab_offset() const { return size_.width() + padding_; }
-
-#if !defined(NDEBUG)
-  std::string BoundsString() const;
-#endif
 
   // Size of tabs.
   const gfx::Size size_;
