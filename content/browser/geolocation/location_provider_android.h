@@ -26,7 +26,7 @@ class LocationProviderAndroid : public LocationProviderBase {
   virtual void StopProvider() OVERRIDE;
   virtual void GetPosition(content::Geoposition* position) OVERRIDE;
   virtual void UpdatePosition() OVERRIDE;
-  virtual void OnPermissionGranted(const GURL& requesting_frame) OVERRIDE;
+  virtual void OnPermissionGranted() OVERRIDE;
 
  private:
   content::Geoposition last_position_;

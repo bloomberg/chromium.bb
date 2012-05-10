@@ -38,8 +38,7 @@ void LocationProviderAndroid::UpdatePosition() {
   // Nothing to do here, android framework will call us back on new position.
 }
 
-void LocationProviderAndroid::OnPermissionGranted(
-  const GURL& requesting_frame) {
+void LocationProviderAndroid::OnPermissionGranted() {
   // Nothing to do here.
 }
 
