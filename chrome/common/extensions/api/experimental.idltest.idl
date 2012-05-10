@@ -7,13 +7,13 @@
 [nodoc] namespace experimental.idltest {
 
   callback LongArrayCallback = void(long[] array);
-  callback ArrayBufferCallback = void([instanceOf=ArrayBuffer] object buffer);
+  callback ArrayBufferCallback = void(ArrayBuffer buffer);
 
   interface Functions {
     // Functions for testing binary data request/response parameters. The first
     // two just return back the bytes they were passed in an array.
-    static void sendArrayBuffer([instanceOf=ArrayBuffer] object input,
-                                LongArrayCallback cb);
+    static void sendArrayBuffer(ArrayBuffer input, LongArrayCallback cb);
+
     // TODO(asargent) - we currently can't have [instanceOf=ArrayBufferView],
     // I think because ArrayBufferView isn't an instantiable type. The best
     // we might be able to do is have a 'choices' list including all the

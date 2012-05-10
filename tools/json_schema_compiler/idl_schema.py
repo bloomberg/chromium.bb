@@ -167,13 +167,15 @@ class Typeref(object):
       properties['type'] = 'integer'
     elif self.typeref == 'any':
       properties['type'] = 'any'
-    elif self.typeref == 'object':
+    elif self.typeref == 'ArrayBuffer' or self.typeref == 'object':
       properties['type'] = 'object'
       if 'additionalProperties' not in properties:
         properties['additionalProperties'] = {}
       properties['additionalProperties']['type'] = 'any'
       instance_of = self.parent.GetProperty('instanceOf')
-      if instance_of:
+      if self.typeref == 'ArrayBuffer':
+        properties['isInstanceOf'] = 'ArrayBuffer'
+      elif instance_of:
         properties['isInstanceOf'] = instance_of
     elif self.typeref is None:
       properties['type'] = 'function'
