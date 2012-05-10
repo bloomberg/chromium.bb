@@ -756,6 +756,8 @@ willPositionSheet:(NSWindow*)sheet
   fullscreenWindow_.reset();
   [self layoutSubviews];
 
+  [self windowDidExitFullScreen:nil];
+
   // Fade back in.
   if (didFadeOut) {
     CGDisplayFade(token, kFadeDurationSeconds / 2, kCGDisplayBlendSolidColor,
@@ -861,6 +863,7 @@ willPositionSheet:(NSWindow*)sheet
     [self deregisterForContentViewResizeNotifications];
   enteringFullscreen_ = NO;
   [self showFullscreenExitBubbleIfNecessary];
+  browser_->WindowFullscreenStateChanged();
 }
 
 - (void)windowWillExitFullScreen:(NSNotification*)notification {
@@ -871,7 +874,9 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)windowDidExitFullScreen:(NSNotification*)notification {
-  [self deregisterForContentViewResizeNotifications];
+  if (base::mac::IsOSLionOrLater())
+    [self deregisterForContentViewResizeNotifications];
+  browser_->WindowFullscreenStateChanged();
 }
 
 - (void)windowDidFailToEnterFullScreen:(NSWindow*)window {

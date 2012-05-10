@@ -2,19 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
+
 #include "base/mac/mac_util.h"
-#include "base/memory/scoped_nsobject.h"
+#import "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -637,12 +641,6 @@ class BrowserWindowFullScreenControllerTest : public CocoaProfileTest {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
-    // This test case crashes when run on Lion. Fail early.
-    if (base::mac::IsOSLionOrLater()) {
-      controller_ = nil;  // Need to make sure this isn't uninitialized memory.
-      FAIL() << "This test crashes on Lion; http://crbug.com/93925";
-    }
-
     controller_ =
         [[BrowserWindowControllerFakeFullscreen alloc] initWithBrowser:browser()
                                                          takeOwnership:NO];
@@ -669,13 +667,25 @@ static bool IsFrontWindow(NSWindow *window) {
          [[frontmostWindow parentWindow] isEqual:window];
 }
 
-TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreenNotLion) {
+void WaitForFullScreenTransition() {
+  ui_test_utils::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+      content::NotificationService::AllSources());
+  observer.Wait();
+}
+
+TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
   CreateBrowserWindow();
+  [controller_ showWindow:nil];
   EXPECT_FALSE([controller_ isFullscreen]);
+
   [controller_ enterFullscreenForURL:GURL()
                        bubbleType:FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION];
+  WaitForFullScreenTransition();
   EXPECT_TRUE([controller_ isFullscreen]);
+
   [controller_ exitFullscreen];
+  WaitForFullScreenTransition();
   EXPECT_FALSE([controller_ isFullscreen]);
 }
 
@@ -683,8 +693,10 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreenNotLion) {
 // problem (such as a modal dialog up).  This tests is a very useful canary, so
 // please do not mark it as flaky without first verifying that there are no bot
 // problems.
-TEST_F(BrowserWindowFullScreenControllerTest, TestActivateNotLion) {
+TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
   CreateBrowserWindow();
+  [controller_ showWindow:nil];
+
   EXPECT_FALSE([controller_ isFullscreen]);
 
   [controller_ activate];
@@ -692,11 +704,16 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestActivateNotLion) {
 
   [controller_ enterFullscreenForURL:GURL()
                        bubbleType:FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION];
+  WaitForFullScreenTransition();
   [controller_ activate];
-  EXPECT_TRUE(IsFrontWindow([controller_ createFullscreenWindow]));
+
+  // No fullscreen window on 10.7+.
+  if (base::mac::IsOSSnowLeopardOrEarlier())
+    EXPECT_TRUE(IsFrontWindow([controller_ createFullscreenWindow]));
 
   // We have to cleanup after ourselves by unfullscreening.
   [controller_ exitFullscreen];
+  WaitForFullScreenTransition();
 }
 
 @implementation BrowserWindowControllerFakeFullscreen

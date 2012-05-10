@@ -407,10 +407,4 @@ void FullscreenController::ToggleFullscreenModeInternal(bool for_tab) {
   // WindowFullscreenStateChanged(). We don't do this immediately as
   // BrowserWindow::EnterFullscreen() asks for bookmark_bar_state_, so we let
   // the BrowserWindow invoke WindowFullscreenStateChanged when appropriate.
-
-  // TODO: convert mac to invoke WindowFullscreenStateChanged once it updates
-  // the necessary state of the frame.
-#if defined(OS_MACOSX)
-  WindowFullscreenStateChanged();
-#endif
 }
