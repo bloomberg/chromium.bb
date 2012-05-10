@@ -190,8 +190,7 @@ AcceleratorController::~AcceleratorController() {
 
 void AcceleratorController::Init() {
   for (size_t i = 0; i < kActionsAllowedAtLoginScreenLength; ++i) {
-    CHECK(actions_allowed_at_login_screen_.insert(
-        kActionsAllowedAtLoginScreen[i]).second);
+    actions_allowed_at_login_screen_.insert(kActionsAllowedAtLoginScreen[i]);
   }
 
   for (size_t i = 0; i < kAcceleratorDataLength; ++i) {
@@ -202,8 +201,8 @@ void AcceleratorController::Init() {
     accelerator.set_type(kAcceleratorData[i].trigger_on_press ?
                          ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED);
     Register(accelerator, this);
-    CHECK(accelerators_.insert(
-        std::make_pair(accelerator, kAcceleratorData[i].action)).second);
+    accelerators_.insert(
+        std::make_pair(accelerator, kAcceleratorData[i].action));
   }
 }
 

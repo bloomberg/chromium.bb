@@ -41,4 +41,12 @@ TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
   }
 }
 
+TEST(AcceleratorTableTest, CheckDuplicatedActionsAllowedAtLoginScreen) {
+  std::set<AcceleratorAction> actions;
+  for (size_t i = 0; i < kActionsAllowedAtLoginScreenLength; ++i) {
+    EXPECT_TRUE(actions.insert(kActionsAllowedAtLoginScreen[i]).second)
+        << "Duplicated action: " << kActionsAllowedAtLoginScreen[i];
+  }
+}
+
 }  // namespace ash
