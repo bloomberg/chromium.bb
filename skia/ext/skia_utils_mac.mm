@@ -248,6 +248,20 @@ SkBitmap NSImageRepToSkBitmap(NSImageRep* image, NSSize size, bool is_opaque) {
   return NSImageOrNSImageRepToSkBitmap(nil, image, size, is_opaque);
 }
 
+NSBitmapImageRep* SkBitmapToNSBitmapImageRep(const SkBitmap& skiaBitmap) {
+  base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
+      CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
+
+  // First convert SkBitmap to CGImageRef.
+  base::mac::ScopedCFTypeRef<CGImageRef> cgimage(
+      SkCreateCGImageRefWithColorspace(skiaBitmap, color_space));
+
+  // Now convert to NSBitmapImageRep.
+  scoped_nsobject<NSBitmapImageRep> bitmap(
+      [[NSBitmapImageRep alloc] initWithCGImage:cgimage]);
+  return [bitmap.release() autorelease];
+}
+
 NSImage* SkBitmapToNSImageWithColorSpace(const SkBitmap& skiaBitmap,
                                          CGColorSpaceRef colorSpace) {
   if (skiaBitmap.isNull())
@@ -272,42 +286,10 @@ NSImage* SkBitmapToNSImage(const SkBitmap& skiaBitmap) {
   return SkBitmapToNSImageWithColorSpace(skiaBitmap, colorSpace.get());
 }
 
-NSImage* SkBitmapsToNSImage(const std::vector<const SkBitmap*>& bitmaps) {
-  if (bitmaps.empty())
-    return nil;
-
-  base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
-      CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
-  scoped_nsobject<NSImage> image([[NSImage alloc] init]);
-  NSSize min_size = NSZeroSize;
-
-  for (std::vector<const SkBitmap*>::const_iterator it = bitmaps.begin();
-       it != bitmaps.end(); ++it) {
-    const SkBitmap& skiaBitmap = **it;
-    // First convert SkBitmap to CGImageRef.
-    base::mac::ScopedCFTypeRef<CGImageRef> cgimage(
-        SkCreateCGImageRefWithColorspace(skiaBitmap, color_space));
-
-    // Now convert to NSImage.
-    scoped_nsobject<NSBitmapImageRep> bitmap(
-        [[NSBitmapImageRep alloc] initWithCGImage:cgimage]);
-    [image addRepresentation:bitmap];
-
-    if (min_size.width == 0 || min_size.width > skiaBitmap.width()) {
-      min_size.width = skiaBitmap.width();
-      min_size.height = skiaBitmap.height();
-    }
-  }
-
-  [image setSize:min_size];
-  return [image.release() autorelease];
-}
-
 SkBitmap AppplicationIconAtSize(int size) {
   NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
   return NSImageToSkBitmap(image, NSMakeSize(size, size), /* is_opaque=*/true);
 }
-
 
 SkiaBitLocker::SkiaBitLocker(SkCanvas* canvas)
     : canvas_(canvas),

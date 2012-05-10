@@ -8,139 +8,199 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "ui/gfx/size.h"
+#include "base/message_loop.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 
 namespace gfx {
 
-ImageSkia::ImageSkia(const SkBitmap* bitmap)
-    : size_(bitmap->width(), bitmap->height()),
-      mip_map_build_pending_(false) {
-  CHECK(bitmap);
-  // TODO(pkotwicz): Add a CHECK to ensure that !bitmap->isNull()
-  bitmaps_.push_back(bitmap);
+namespace internal {
+
+// A helper class such that ImageSkia can be cheaply copied. ImageSkia holds a
+// refptr instance of ImageSkiaStorage, which in turn holds all of ImageSkia's
+// information.
+class ImageSkiaStorage : public base::RefCounted<ImageSkiaStorage> {
+ public:
+  ImageSkiaStorage() {
+  }
+
+  void AddBitmap(const SkBitmap& bitmap) {
+    bitmaps_.push_back(bitmap);
+  }
+
+  const std::vector<SkBitmap>& bitmaps() const { return bitmaps_; }
+
+  void set_size(const gfx::Size& size) { size_ = size; }
+  const gfx::Size& size() const { return size_; }
+
+ private:
+  ~ImageSkiaStorage() {
+  }
+
+  // Bitmaps at different densities.
+  std::vector<SkBitmap> bitmaps_;
+
+  // Size of the image in DIP.
+  gfx::Size size_;
+
+  friend class base::RefCounted<ImageSkiaStorage>;
+};
+
+}  // internal
+
+ImageSkia::ImageSkia() : storage_(NULL) {
 }
 
-ImageSkia::ImageSkia(const std::vector<const SkBitmap*>& bitmaps)
-    : bitmaps_(bitmaps),
-      mip_map_build_pending_(false) {
-  CHECK(!bitmaps_.empty());
-  // TODO(pkotwicz): Add a CHECK to ensure that !bitmap->isNull() for each
-  // vector element.
-  // Assume that the smallest bitmap represents 1x scale factor.
-  for (size_t i = 0; i < bitmaps_.size(); ++i) {
-    gfx::Size bitmap_size(bitmaps_[i]->width(), bitmaps_[i]->height());
-    if (size_.IsEmpty() || bitmap_size.GetArea() < size_.GetArea())
-      size_ = bitmap_size;
+ImageSkia::ImageSkia(const SkBitmap& bitmap) {
+  Init(bitmap);
+}
+
+ImageSkia::ImageSkia(const SkBitmap& bitmap, float dip_scale_factor) {
+  Init(bitmap, dip_scale_factor);
+}
+
+ImageSkia::ImageSkia(const SkBitmap* bitmap) {
+  Init(*bitmap);
+
+  if (MessageLoop::current()) {
+    // Use DeleteSoon such that |bitmap| is still valid if caller uses |bitmap|
+    // immediately after having called constructor.
+    MessageLoop::current()->DeleteSoon(FROM_HERE, bitmap);
+  } else {
+    // Hit in unittests.
+    delete bitmap;
   }
+}
+
+ImageSkia::ImageSkia(const ImageSkia& other) : storage_(other.storage_) {
+}
+
+ImageSkia& ImageSkia::operator=(const ImageSkia& other) {
+  storage_ = other.storage_;
+  return *this;
+}
+
+ImageSkia& ImageSkia::operator=(const SkBitmap& other) {
+  Init(other);
+  return *this;
+}
+
+ImageSkia::operator SkBitmap&() const {
+  if (isNull()) {
+    // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
+    // done.
+    // Static null bitmap such that we are not returning a temporary.
+    static SkBitmap* null_bitmap = new SkBitmap();
+    return *null_bitmap;
+  }
+
+  return const_cast<SkBitmap&>(storage_->bitmaps()[0]);
 }
 
 ImageSkia::~ImageSkia() {
-  STLDeleteElements(&bitmaps_);
 }
 
-void ImageSkia::BuildMipMap() {
-  mip_map_build_pending_ = true;
-}
+void ImageSkia::AddBitmapForScale(const SkBitmap& bitmap,
+                                  float dip_scale_factor) {
+  DCHECK(!bitmap.isNull());
 
-void ImageSkia::DrawToCanvasInt(gfx::Canvas* canvas, int x, int y) {
-  SkPaint p;
-  DrawToCanvasInt(canvas, x, y, p);
-}
-
-void ImageSkia::DrawToCanvasInt(gfx::Canvas* canvas,
-                                int x, int y,
-                                const SkPaint& paint) {
-
-  if (IsZeroSized())
-    return;
-
-  SkMatrix m = canvas->sk_canvas()->getTotalMatrix();
-  float scale_x = std::abs(SkScalarToFloat(m.getScaleX()));
-  float scale_y = std::abs(SkScalarToFloat(m.getScaleY()));
-
-  const SkBitmap* bitmap = GetBitmapForScale(scale_x, scale_y);
-
-  if (mip_map_build_pending_) {
-    const_cast<SkBitmap*>(bitmap)->buildMipMap();
-    mip_map_build_pending_ = false;
+  if (isNull()) {
+    Init(bitmap, dip_scale_factor);
+  } else {
+    // We currently assume that the bitmap size = 1x size * |dip_scale_factor|.
+    // TODO(pkotwicz): Do something better because of rounding errors when
+    // |dip_scale_factor| is not an int.
+    // TODO(pkotwicz): Remove DCHECK for dip_scale_factor == 1.0f once
+    // image_loading_tracker correctly handles multiple sized images.
+    DCHECK(dip_scale_factor == 1.0f ||
+              static_cast<int>(width() * dip_scale_factor) == bitmap.width());
+    DCHECK(dip_scale_factor == 1.0f ||
+              static_cast<int>(height() * dip_scale_factor) == bitmap.height());
+    storage_->AddBitmap(bitmap);
   }
-
-  float bitmap_scale_x = static_cast<float>(bitmap->width()) / width();
-  float bitmap_scale_y = static_cast<float>(bitmap->height()) / height();
-
-  canvas->Save();
-  canvas->sk_canvas()->scale(1.0f / bitmap_scale_x,
-                             1.0f / bitmap_scale_y);
-  canvas->sk_canvas()->drawBitmap(*bitmap, SkFloatToScalar(x * bitmap_scale_x),
-                                  SkFloatToScalar(y * bitmap_scale_y));
-  canvas->Restore();
 }
 
-void ImageSkia::DrawToCanvasInt(gfx::Canvas* canvas,
-                                int src_x, int src_y, int src_w, int src_h,
-                                int dest_x, int dest_y, int dest_w, int dest_h,
-                                bool filter) {
-  SkPaint p;
-  DrawToCanvasInt(canvas, src_x, src_y, src_w, src_h, dest_x, dest_y,
-                  dest_w, dest_h, filter, p);
-}
+const SkBitmap& ImageSkia::GetBitmapForScale(float x_scale_factor,
+                                             float y_scale_factor,
+                                             float* bitmap_scale_factor) const {
 
-void ImageSkia::DrawToCanvasInt(gfx::Canvas* canvas,
-                                int src_x, int src_y, int src_w, int src_h,
-                                int dest_x, int dest_y, int dest_w, int dest_h,
-                                bool filter,
-                                const SkPaint& paint) {
-  if (IsZeroSized())
-    return;
+  // Static null bitmap such that we are not returning a temporary.
+  static SkBitmap* null_bitmap = new SkBitmap();
 
-  SkMatrix m = canvas->sk_canvas()->getTotalMatrix();
-  float scale_x = std::abs(SkScalarToFloat(m.getScaleX()));
-  float scale_y = std::abs(SkScalarToFloat(m.getScaleY()));
+  if (empty())
+    return *null_bitmap;
 
-  const SkBitmap* bitmap = GetBitmapForScale(scale_x, scale_y);
-
-  if (mip_map_build_pending_) {
-    const_cast<SkBitmap*>(bitmap)->buildMipMap();
-    mip_map_build_pending_ = false;
-  }
-
-  float bitmap_scale_x = static_cast<float>(bitmap->width()) / width();
-  float bitmap_scale_y = static_cast<float>(bitmap->height()) / height();
-
-  canvas->Save();
-  canvas->sk_canvas()->scale(1.0f / bitmap_scale_x,
-                             1.0f / bitmap_scale_y);
-  canvas->DrawBitmapFloat(*bitmap,
-                        src_x * bitmap_scale_x, src_y * bitmap_scale_x,
-                        src_w * bitmap_scale_x, src_h * bitmap_scale_y,
-                        dest_x * bitmap_scale_x, dest_y * bitmap_scale_y,
-                        dest_w * bitmap_scale_x, dest_h * bitmap_scale_y,
-                        filter, paint);
-
-  canvas->Restore();
-}
-
-const SkBitmap* ImageSkia::GetBitmapForScale(float x_scale_factor,
-                                             float y_scale_factor) const {
   // Get the desired bitmap width and height given |x_scale_factor|,
-  // |y_scale_factor| and |size_| at 1x density.
-  float desired_width = size_.width() * x_scale_factor;
-  float desired_height = size_.height() * y_scale_factor;
+  // |y_scale_factor| and size at 1x density.
+  float desired_width = width() * x_scale_factor;
+  float desired_height = height() * y_scale_factor;
 
+  const std::vector<SkBitmap>& bitmaps = storage_->bitmaps();
   size_t closest_index = 0;
   float smallest_diff = std::numeric_limits<float>::max();
-  for (size_t i = 0; i < bitmaps_.size(); ++i) {
-    if (bitmaps_[i]->isNull())
-      continue;
-
-    float diff = std::abs(bitmaps_[i]->width() - desired_width) +
-        std::abs(bitmaps_[i]->height() - desired_height);
+  for (size_t i = 0; i < bitmaps.size(); ++i) {
+    float diff = std::abs(bitmaps[i].width() - desired_width) +
+        std::abs(bitmaps[i].height() - desired_height);
     if (diff < smallest_diff) {
       closest_index = i;
       smallest_diff = diff;
     }
   }
-  return bitmaps_[closest_index];
+  if (smallest_diff < std::numeric_limits<float>::max()) {
+    *bitmap_scale_factor = bitmaps[closest_index].width() / width();
+    return bitmaps[closest_index];
+  }
+
+  return *null_bitmap;
+}
+
+bool ImageSkia::empty() const {
+  return isNull() || storage_->size().IsEmpty();
+}
+
+int ImageSkia::width() const {
+  return isNull() ? 0 : storage_->size().width();
+}
+
+int ImageSkia::height() const {
+  return isNull() ? 0 : storage_->size().height();
+}
+
+bool ImageSkia::extractSubset(ImageSkia* dst, SkIRect& subset) const {
+  if (isNull())
+    return false;
+  SkBitmap dst_bitmap;
+  bool return_value  = storage_->bitmaps()[0].extractSubset(&dst_bitmap,
+                                                            subset);
+  *dst = ImageSkia(dst_bitmap);
+  return return_value;
+}
+
+const std::vector<SkBitmap> ImageSkia::bitmaps() const {
+  return storage_->bitmaps();
+}
+
+const SkBitmap* ImageSkia::bitmap() const {
+  if (isNull())
+    return NULL;
+
+  return &storage_->bitmaps()[0];
+}
+
+void ImageSkia::Init(const SkBitmap& bitmap) {
+  Init(bitmap, 1.0f);
+}
+
+void ImageSkia::Init(const SkBitmap& bitmap, float scale_factor) {
+  DCHECK_GT(scale_factor, 0.0f);
+  if (bitmap.isNull()) {
+    storage_ = NULL;
+    return;
+  }
+  storage_ = new internal::ImageSkiaStorage();
+  storage_->set_size(gfx::Size(static_cast<int>(bitmap.width() / scale_factor),
+      static_cast<int>(bitmap.height() / scale_factor)));
+  storage_->AddBitmap(bitmap);
 }
 
 }  // namespace gfx

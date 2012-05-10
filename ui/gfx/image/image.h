@@ -62,6 +62,9 @@ class UI_EXPORT Image {
   // Creates an empty image with no representations.
   Image();
 
+  // Creates a new image with the default representation.
+  explicit Image(const ImageSkia& image);
+
   // Creates a new image with the default representation. The object will take
   // ownership of the image.
   explicit Image(const SkBitmap* bitmap);
@@ -69,10 +72,6 @@ class UI_EXPORT Image {
   // Creates a new image by copying the bitmap for use as the default
   // representation.
   explicit Image(const SkBitmap& bitmap);
-
-  // To create an Image that supports multiple resolutions pass a vector
-  // of bitmaps, one for each resolution.
-  explicit Image(const std::vector<const SkBitmap*>& bitmaps);
 
 #if defined(TOOLKIT_GTK)
   // Does not increase |pixbuf|'s reference count; expects to take ownership.
@@ -112,6 +111,7 @@ class UI_EXPORT Image {
   // backing pixels are shared amongst all copies (a fact of each of the
   // converted representations, rather than a limitation imposed by Image) and
   // so the result should be considered immutable.
+  ImageSkia* CopyImageSkia() const;
   SkBitmap* CopySkBitmap() const;
 #if defined(TOOLKIT_GTK)
   GdkPixbuf* CopyGdkPixbuf() const;
