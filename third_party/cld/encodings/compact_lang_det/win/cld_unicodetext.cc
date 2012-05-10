@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <vector>  // to compile bar/common/component.h
 
 #include "encodings/compact_lang_det/compact_lang_det.h"
+#include "encodings/compact_lang_det/string_byte_sink.h"
 #include "base/string_util.h"
 #include "unicode/normlzr.h"
 #include "unicode/unistr.h"
@@ -23,11 +24,13 @@ std::string NormalizeText(const UChar* text) {
     return std::string();
   normalized.toLower();
   std::string utf8;
-  // Internally, toUTF8String uses a 1kB stack buffer (which is not large enough
+  // Internally, toUTF8 uses a 1kB stack buffer (which is not large enough
   // for most web pages) and does pre-flighting followed by malloc for larger
   // strings. We have to switch to obtaining the buffer with the maximum size
   // (UTF-16 length * 3) without pre-flighting if necessary.
-  return normalized.toUTF8String(utf8);
+  StringByteSink sink(&utf8);
+  normalized.toUTF8(sink);
+  return utf8;
 }
 
 
