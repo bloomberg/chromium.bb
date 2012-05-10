@@ -472,7 +472,8 @@
 
         The framerate parameter is used only when the fullscreen_method is set
         to "driver", to indicate the preferred framerate. framerate=0 indicates
-        that the app does not care about framerate.
+        that the app does not care about framerate.  The framerate is
+        specified in mHz, that is framerate of 60000 is 60Hz.
 
         The compositor must reply to this request with a configure event with
         the dimensions for the output on which the surface will be made fullscreen.
