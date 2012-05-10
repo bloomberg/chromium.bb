@@ -82,15 +82,15 @@ bool SessionStorageDatabase::CommitAreaChanges(int64 namespace_id,
   if (!GetMapForArea(namespace_id, origin, &exists, &map_id))
     return false;
   if (exists) {
-    // We shouldn't write data into a shallow copy. If this is a shallow copy,
-    // it's a caller error (not an inconsistency in the database).
     int64 ref_count;
     if (!GetMapRefCount(map_id, &ref_count))
       return false;
-    if (!CallerErrorCheck(ref_count == 1))
-      return false;
-
-    if (clear_all_first) {
+    if (ref_count > 1) {
+      if (!DeepCopyArea(namespace_id, origin, !clear_all_first,
+                        &map_id, &batch))
+        return false;
+    }
+    else if (clear_all_first) {
       if (!ClearMap(map_id, &batch))
         return false;
     }
@@ -147,62 +147,6 @@ bool SessionStorageDatabase::CloneNamespace(int64 namespace_id,
       return false;
     AddAreaToNamespace(new_namespace_id, origin, map_id, &batch);
   }
-  leveldb::Status s = db_->Write(leveldb::WriteOptions(), &batch);
-  return DatabaseErrorCheck(s.ok());
-}
-
-bool SessionStorageDatabase::DeepCopyArea(int64 namespace_id,
-                                          const GURL& origin) {
-  // Example, data before deep copy:
-  // | namespace-1 (1 = namespace id) | dummy               |
-  // | namespace-1-origin1            | 1 (mapid)           |
-  // | namespace-2                    | dummy               |
-  // | namespace-2-origin1            | 1 (mapid) << references the same map
-  // | map-1                          | 2 (refcount)        |
-  // | map-1-a                        | b                   |
-
-  // Example, data after deep copy copy:
-  // | namespace-1 (1 = namespace id) | dummy               |
-  // | namespace-1-origin1            | 1 (mapid)           |
-  // | namespace-2                    | dummy               |
-  // | namespace-2-origin1            | 2 (mapid) << references the new map
-  // | map-1                          | 1 (dec. refcount)   |
-  // | map-1-a                        | b                   |
-  // | map-2                          | 1 (refcount)        |
-  // | map-2-a                        | b                   |
-
-  if (!LazyOpen(true))
-    return false;
-
-  std::string old_map_id;
-  bool exists;
-  if (!GetMapForArea(namespace_id, origin, &exists, &old_map_id))
-    return false;
-
-  // If the area doesn't exist, or if it's not a shallow copy, it's a caller
-  // error.
-  if (!CallerErrorCheck(exists))
-    return false;
-  int64 ref_count;
-  if (!GetMapRefCount(old_map_id, &ref_count))
-    return false;
-  if (!CallerErrorCheck(ref_count > 1))
-    return false;
-
-  leveldb::WriteBatch batch;
-  std::string new_map_id;
-  if (!CreateMapForArea(namespace_id, origin, &new_map_id, &batch))
-    return false;
-
-  // Copy the values in the map.
-  ValuesMap values;
-  if (!ReadMap(old_map_id, &values, false))
-    return false;
-  WriteValuesToMap(new_map_id, values, &batch);
-
-  if (!DecreaseMapRefCount(old_map_id, 1, &batch))
-    return false;
-
   leveldb::Status s = db_->Write(leveldb::WriteOptions(), &batch);
   return DatabaseErrorCheck(s.ok());
 }
@@ -600,6 +544,43 @@ bool SessionStorageDatabase::ClearMap(const std::string& map_id,
     return false;
   for (ValuesMap::const_iterator it = values.begin(); it != values.end(); ++it)
     batch->Delete(MapKey(map_id, UTF16ToUTF8(it->first)));
+  return true;
+}
+
+bool SessionStorageDatabase::DeepCopyArea(
+    int64 namespace_id, const GURL& origin, bool copy_data,
+    std::string* map_id, leveldb::WriteBatch* batch) {
+  // Example, data before deep copy:
+  // | namespace-1 (1 = namespace id) | dummy               |
+  // | namespace-1-origin1            | 1 (mapid)           |
+  // | namespace-2                    | dummy               |
+  // | namespace-2-origin1            | 1 (mapid) << references the same map
+  // | map-1                          | 2 (refcount)        |
+  // | map-1-a                        | b                   |
+
+  // Example, data after deep copy copy:
+  // | namespace-1 (1 = namespace id) | dummy               |
+  // | namespace-1-origin1            | 1 (mapid)           |
+  // | namespace-2                    | dummy               |
+  // | namespace-2-origin1            | 2 (mapid) << references the new map
+  // | map-1                          | 1 (dec. refcount)   |
+  // | map-1-a                        | b                   |
+  // | map-2                          | 1 (refcount)        |
+  // | map-2-a                        | b                   |
+
+  // Read the values from the old map here. If we don't need to copy the data,
+  // this can stay empty.
+  ValuesMap values;
+  if (copy_data && !ReadMap(*map_id, &values, false))
+    return false;
+  if (!DecreaseMapRefCount(*map_id, 1, batch))
+    return false;
+  // Create a new map (this will also break the association to the old map) and
+  // write the old data into it. This will write the id of the created map into
+  // |map_id|.
+  if (!CreateMapForArea(namespace_id, origin, map_id, batch))
+    return false;
+  WriteValuesToMap(*map_id, values, batch);
   return true;
 }
 

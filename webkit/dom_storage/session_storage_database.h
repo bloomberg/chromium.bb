@@ -44,7 +44,9 @@ class SessionStorageDatabase :
   // Updates the data for |namespace_id| and |origin|. Will remove all keys
   // before updating the database if |clear_all_first| is set. Then all entries
   // in |changes| will be examined - keys mapped to a null NullableString16 will
-  // be removed and all others will be inserted/updated as appropriate.
+  // be removed and all others will be inserted/updated as appropriate. It is
+  // allowed to write data into a shallow copy created by CloneNamespace, and in
+  // that case the copy will be made deep before writing the values.
   bool CommitAreaChanges(int64 namespace_id,
                          const GURL& origin,
                          bool clear_all_first,
@@ -53,9 +55,6 @@ class SessionStorageDatabase :
   // Creates shallow copies of the areas for |namespace_id| and associates them
   // with |new_namespace_id|.
   bool CloneNamespace(int64 namespace_id, int64 new_namespace_id);
-
-  // Creates a deep copy of the area for |namespace_id| and |origin|.
-  bool DeepCopyArea(int64 namespace_id, const GURL& origin);
 
   // Deletes the data for |namespace_id| and |origin|.
   bool DeleteArea(int64 namespace_id, const GURL& origin);
@@ -157,6 +156,15 @@ class SessionStorageDatabase :
 
   // Deletes all values in |map_id|.
   bool ClearMap(const std::string& map_id, leveldb::WriteBatch* batch);
+
+  // Breaks the association between (|namespace_id|, |origin|) and |map_id| and
+  // creates a new map for (|namespace_id|, |origin|). Copies the data from the
+  // old map if |copy_data| is true.
+  bool DeepCopyArea(int64 namespace_id,
+                    const GURL& origin,
+                    bool copy_data,
+                    std::string* map_id,
+                    leveldb::WriteBatch* batch);
 
   // Helper functions for creating the keys needed for the schema.
   static std::string NamespaceStartKey(const std::string& namespace_id_str);

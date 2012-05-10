@@ -479,17 +479,14 @@ TEST_F(SessionStorageDatabaseTest, ShallowCopy) {
   EXPECT_EQ(2, GetMapRefCount(GetMapForArea(1, kOrigin2)));
 }
 
-TEST_F(SessionStorageDatabaseTest, DeepCopy) {
+TEST_F(SessionStorageDatabaseTest, WriteIntoShallowCopy) {
   ValuesMap data1;
   data1[kKey1] = kValue1;
   data1[kKey2] = kValue2;
   ASSERT_TRUE(db_->CommitAreaChanges(1, kOrigin1, false, data1));
   EXPECT_TRUE(db_->CloneNamespace(1, 5));
 
-  // Make the shallow copy deep.
-  EXPECT_TRUE(db_->DeepCopyArea(5, kOrigin1));
-
-  // Write data into the deep copy.
+  // Write data into a shallow copy.
   ValuesMap changes;
   ValuesMap reference;
   changes[kKey1] = kValueNull;
@@ -501,7 +498,7 @@ TEST_F(SessionStorageDatabaseTest, DeepCopy) {
 
   // Values in the original namespace were not changed.
   CheckAreaData(1, kOrigin1, data1);
-  // But values in the deep copy were.
+  // But values in the copy were.
   CheckAreaData(5, kOrigin1, reference);
 
   // The namespaces no longer refer to the same map.
@@ -765,7 +762,7 @@ TEST_F(SessionStorageDatabaseTest, NamespaceOffsetCloneNamespace) {
   CheckAreaData(-22, kOrigin1, data1);
 }
 
-TEST_F(SessionStorageDatabaseTest, NamespaceOffsetDeepCopyArea) {
+TEST_F(SessionStorageDatabaseTest, NamespaceOffsetWriteIntoShallowCopy) {
   // Create a namespace with id 1.
   ValuesMap data1;
   data1[kKey1] = kValue1;
@@ -782,10 +779,8 @@ TEST_F(SessionStorageDatabaseTest, NamespaceOffsetDeepCopyArea) {
 
   // Make a shallow copy of the newly created namespace.
   EXPECT_TRUE(db_->CloneNamespace(1, 20));
-  // And make it deep.
-  EXPECT_TRUE(db_->DeepCopyArea(20, kOrigin1));
 
-  // Now the values can be altered in the deep copy.
+  // Now the values can be altered and a deep copy will be made.
   ValuesMap data3;
   data3[kKey1] = kValue2;
   EXPECT_TRUE(db_->CommitAreaChanges(20, kOrigin1, false, data3));
