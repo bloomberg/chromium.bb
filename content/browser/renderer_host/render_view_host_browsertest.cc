@@ -232,7 +232,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BaseURLParam) {
 
 // Test that a hung renderer is killed after navigating away during cross-site
 // navigation.
-IN_PROC_BROWSER_TEST_F(RenderViewHostTest, UnresponsiveCrossSiteNavigation) {
+// Disabling until actual process termination is enabled back. crbug.com/104346
+IN_PROC_BROWSER_TEST_F(RenderViewHostTest,
+                       DISABLED_UnresponsiveCrossSiteNavigation) {
   WebContents* web_contents = NULL;
   WebContents* web_contents_2 = NULL;
   content::RenderProcessHost* rph = NULL;
@@ -319,7 +321,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, UnresponsiveCrossSiteNavigation) {
 }
 
 // Test that a hung renderer is killed when we are closing the page.
-IN_PROC_BROWSER_TEST_F(RenderViewHostTest, UnresponsiveClosePage) {
+// Disabling until actual process termination is enabled back. crbug.com/104346
+IN_PROC_BROWSER_TEST_F(RenderViewHostTest, DISABLED_UnresponsiveClosePage) {
   WebContents* web_contents = NULL;
   FilePath doc_root;
 
