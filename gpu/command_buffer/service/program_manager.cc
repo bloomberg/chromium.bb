@@ -128,6 +128,8 @@ void ProgramManager::ProgramInfo::ClearUniforms(
     case GL_SAMPLER_2D:
     case GL_SAMPLER_CUBE:
     case GL_SAMPLER_EXTERNAL_OES:
+    case GL_SAMPLER_3D_OES:
+    case GL_SAMPLER_2D_RECT_ARB:
       glUniform1iv(location, size, reinterpret_cast<const GLint*>(zero));
       break;
     case GL_INT_VEC2:

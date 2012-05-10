@@ -1304,6 +1304,8 @@ void GLES2DecoderTestBase::SetupExpectationsForClearingUniforms(
     case GL_SAMPLER_2D:
     case GL_SAMPLER_CUBE:
     case GL_SAMPLER_EXTERNAL_OES:
+    case GL_SAMPLER_3D_OES:
+    case GL_SAMPLER_2D_RECT_ARB:
       EXPECT_CALL(*gl_, Uniform1iv(info.real_location, info.size, _))
           .Times(1)
           .RetiresOnSaturation();

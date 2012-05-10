@@ -343,6 +343,85 @@ class ProgramManagerWithShaderTest : public testing::Test {
                 kServiceProgramId);
   }
 
+  void SetupExpectationsForClearingUniforms(
+      UniformInfo* uniforms, size_t num_uniforms) {
+    for (size_t ii = 0; ii < num_uniforms; ++ii) {
+      const UniformInfo& info = uniforms[ii];
+      switch (info.type) {
+      case GL_FLOAT:
+        EXPECT_CALL(*gl_, Uniform1fv(info.real_location, info.size, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        break;
+      case GL_FLOAT_VEC2:
+        EXPECT_CALL(*gl_, Uniform2fv(info.real_location, info.size, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        break;
+      case GL_FLOAT_VEC3:
+        EXPECT_CALL(*gl_, Uniform3fv(info.real_location, info.size, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        break;
+      case GL_FLOAT_VEC4:
+        EXPECT_CALL(*gl_, Uniform4fv(info.real_location, info.size, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        break;
+      case GL_INT:
+      case GL_BOOL:
+      case GL_SAMPLER_2D:
+      case GL_SAMPLER_CUBE:
+      case GL_SAMPLER_EXTERNAL_OES:
+      case GL_SAMPLER_3D_OES:
+      case GL_SAMPLER_2D_RECT_ARB:
+        EXPECT_CALL(*gl_, Uniform1iv(info.real_location, info.size, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        break;
+      case GL_INT_VEC2:
+      case GL_BOOL_VEC2:
+        EXPECT_CALL(*gl_, Uniform2iv(info.real_location, info.size, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        break;
+      case GL_INT_VEC3:
+      case GL_BOOL_VEC3:
+        EXPECT_CALL(*gl_, Uniform3iv(info.real_location, info.size, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        break;
+      case GL_INT_VEC4:
+      case GL_BOOL_VEC4:
+        EXPECT_CALL(*gl_, Uniform4iv(info.real_location, info.size, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        break;
+      case GL_FLOAT_MAT2:
+        EXPECT_CALL(*gl_, UniformMatrix2fv(
+            info.real_location, info.size, false, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        break;
+      case GL_FLOAT_MAT3:
+        EXPECT_CALL(*gl_, UniformMatrix3fv(
+            info.real_location, info.size, false, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        break;
+      case GL_FLOAT_MAT4:
+        EXPECT_CALL(*gl_, UniformMatrix4fv(
+            info.real_location, info.size, false, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        break;
+      default:
+        NOTREACHED();
+        break;
+      }
+    }
+  }
+
   virtual void TearDown() {
     ::gfx::GLInterface::SetGLInterface(NULL);
   }
@@ -1026,6 +1105,74 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
   program_info->SetAttribLocationBinding(kAttrib2Name, 0);
   EXPECT_TRUE(program_info->DetectAttribLocationBindingConflicts());
   EXPECT_TRUE(LinkAsExpected(program_info, false));
+}
+
+TEST_F(ProgramManagerWithShaderTest, ClearWithSamplerTypes) {
+  const GLuint kVShaderClientId = 2001;
+  const GLuint kFShaderClientId = 2002;
+  const GLuint kVShaderServiceId = 3001;
+  const GLuint kFShaderServiceId = 3002;
+  ShaderManager::ShaderInfo* vshader = shader_manager_.CreateShaderInfo(
+      kVShaderClientId, kVShaderServiceId, GL_VERTEX_SHADER);
+  ASSERT_TRUE(vshader != NULL);
+  vshader->SetStatus(true, NULL, NULL);
+  ShaderManager::ShaderInfo* fshader = shader_manager_.CreateShaderInfo(
+      kFShaderClientId, kFShaderServiceId, GL_FRAGMENT_SHADER);
+  ASSERT_TRUE(fshader != NULL);
+  fshader->SetStatus(true, NULL, NULL);
+  static const GLuint kClientProgramId = 1234;
+  static const GLuint kServiceProgramId = 5679;
+  ProgramManager::ProgramInfo* program_info = manager_.CreateProgramInfo(
+      kClientProgramId, kServiceProgramId);
+  ASSERT_TRUE(program_info != NULL);
+  EXPECT_TRUE(program_info->AttachShader(&shader_manager_, vshader));
+  EXPECT_TRUE(program_info->AttachShader(&shader_manager_, fshader));
+
+  static const GLenum kSamplerTypes[] = {
+    GL_SAMPLER_2D,
+    GL_SAMPLER_CUBE,
+    GL_SAMPLER_EXTERNAL_OES,
+    GL_SAMPLER_3D_OES,
+    GL_SAMPLER_2D_RECT_ARB,
+  };
+  const size_t kNumSamplerTypes = arraysize(kSamplerTypes);
+  for (size_t ii = 0; ii < kNumSamplerTypes; ++ii) {
+    static ProgramManagerWithShaderTest::AttribInfo kAttribs[] = {
+      { kAttrib1Name, kAttrib1Size, kAttrib1Type, kAttrib1Location, },
+      { kAttrib2Name, kAttrib2Size, kAttrib2Type, kAttrib2Location, },
+      { kAttrib3Name, kAttrib3Size, kAttrib3Type, kAttrib3Location, },
+    };
+    ProgramManagerWithShaderTest::UniformInfo kUniforms[] = {
+      { kUniform1Name,
+        kUniform1Name,
+        kUniform1Size,
+        kUniform1Type,
+        kUniform1FakeLocation,
+        kUniform1RealLocation,
+      },
+      { kUniform2Name,
+        kUniform2Name,
+        kUniform2Size,
+        kSamplerTypes[ii],
+        kUniform2FakeLocation,
+        kUniform2RealLocation,
+      },
+      { kUniform3BadName,
+        kUniform3GoodName,
+        kUniform3Size,
+        kUniform3Type,
+        kUniform3FakeLocation,
+        kUniform3RealLocation,
+      },
+    };
+    const size_t kNumAttribs = arraysize(kAttribs);
+    const size_t kNumUniforms = arraysize(kUniforms);
+    SetupShader(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
+                kServiceProgramId);
+    program_info->Link();
+    SetupExpectationsForClearingUniforms(kUniforms, kNumUniforms);
+    manager_.ClearUniforms(program_info);
+  }
 }
 
 }  // namespace gles2
