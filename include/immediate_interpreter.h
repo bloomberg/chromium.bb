@@ -103,6 +103,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, ClickTest);
   FRIEND_TEST(ImmediateInterpreterTest, GetGesturingFingersTest);
   FRIEND_TEST(ImmediateInterpreterTest, PalmAtEdgeTest);
+  FRIEND_TEST(ImmediateInterpreterTest, PalmReevaluateTest);
   FRIEND_TEST(ImmediateInterpreterTest, PalmTest);
   FRIEND_TEST(ImmediateInterpreterTest, PinchTests);
   FRIEND_TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest);
@@ -428,6 +429,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty palm_edge_width_;
   // Palms in edge are allowed to point if they move fast enough
   DoubleProperty palm_edge_point_speed_;
+  // A finger can be added to the palm envelope (and thus not point) after
+  // it touches down and until palm_eval_timeout_ [s] time.
+  DoubleProperty palm_eval_timeout_;
   // A potential palm (ambiguous contact in the edge of the pad) will be marked
   // a palm if it travels less than palm_stationary_distance_ mm after it's
   // been on the pad for palm_stationary_time_ seconds.

@@ -273,6 +273,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       palm_edge_min_width_(prop_reg, "Tap Exclusion Border Width", 8.0),
       palm_edge_width_(prop_reg, "Palm Edge Zone Width", 14.0),
       palm_edge_point_speed_(prop_reg, "Palm Edge Zone Min Point Speed", 100.0),
+      palm_eval_timeout_(prop_reg, "Palm Eval Timeout", 0.1),
       palm_stationary_time_(prop_reg, "Palm Stationary Time", 2.0),
       palm_stationary_distance_(prop_reg, "Palm Stationary Distance", 4.0),
       change_move_distance_(prop_reg, "Change Min Move Distance", 3.0),
@@ -480,6 +481,14 @@ void ImmediateInterpreter::UpdatePalmState(const HardwareState& hwstate) {
     // Lock onto palm
     if (prev_palm)
       continue;
+    // If the finger is recently placed, remove it from pointing/fingers.
+    // If it's still looking like pointing, it'll get readded.
+    if (FingerAge(fs.tracking_id, hwstate.timestamp) <
+        palm_eval_timeout_.val_) {
+      pointing_.erase(fs.tracking_id);
+      fingers_.erase(fs.tracking_id);
+      prev_pointing = false;
+    }
     // If another finger is close by, let this be pointing
     if (!prev_pointing && (FingerNearOtherFinger(hwstate, i) ||
                            !FingerInPalmEnvelope(fs))) {

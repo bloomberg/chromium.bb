@@ -1479,6 +1479,95 @@ TEST(ImmediateInterpreterTest, AmbiguousPalmCoScrollTest) {
   }
 }
 
+struct PalmReevaluateTestInputs {
+  stime_t now_;
+  float x_, y_, pressure_;
+};
+
+// This tests that a palm that doesn't start out as a palm, but actually is,
+// and can be classified as one shortly after it starts, doesn't cause motion.
+TEST(ImmediateInterpreterTest, PalmReevaluateTest) {
+  ImmediateInterpreter ii(NULL);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    106.666672,  // right edge
+    68.000000,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    25.4,  // screen DPI x
+    25.4,  // screen DPI y
+    15,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    true  // is button pad
+  };
+
+  ii.SetHardwareProperties(hwprops);
+
+  PalmReevaluateTestInputs inputs[] = {
+    { 5.8174, 10.25, 46.10,  15.36 },
+    { 5.8277, 10.25, 46.10,  21.18 },
+    { 5.8377, 10.25, 46.10,  19.24 },
+    { 5.8479,  9.91, 45.90,  15.36 },
+    { 5.8578,  9.08, 44.90,  19.24 },
+    { 5.8677,  9.08, 44.90,  28.94 },
+    { 5.8777,  8.66, 44.70,  61.93 },
+    { 5.8879,  8.41, 44.60,  58.04 },
+    { 5.8973,  8.08, 44.20,  73.57 },
+    { 5.9073,  7.83, 44.20,  87.15 },
+    { 5.9171,  7.50, 44.40,  89.09 },
+    { 5.9271,  7.25, 44.20,  87.15 },
+    { 5.9369,  7.00, 44.40,  83.27 },
+    { 5.9466,  6.33, 44.60,  89.09 },
+    { 5.9568,  6.00, 44.70,  85.21 },
+    { 5.9666,  5.75, 44.70,  87.15 },
+    { 5.9763,  5.41, 44.79,  75.51 },
+    { 5.9862,  5.08, 45.20,  75.51 },
+    { 5.9962,  4.50, 45.50,  75.51 },
+    { 6.0062,  4.41, 45.79,  81.33 },
+    { 6.0160,  4.08, 46.40,  77.45 },
+    { 6.0263,  3.83, 46.90,  91.03 },
+    { 6.0363,  3.58, 47.50,  98.79 },
+    { 6.0459,  3.25, 47.90, 114.32 },
+    { 6.0560,  3.25, 47.90, 149.24 },
+    { 6.0663,  3.33, 48.10, 170.59 },
+    { 6.0765,  3.50, 48.29, 180.29 },
+    { 6.0866,  3.66, 48.40, 188.05 },
+    { 6.0967,  3.83, 48.50, 188.05 },
+    { 6.1067,  3.91, 48.79, 182.23 },
+    { 6.1168,  4.00, 48.79, 180.29 },
+    { 6.1269,  4.08, 48.79, 180.29 },
+    { 6.1370,  4.16, 48.90, 176.41 },
+    { 6.1473,  4.25, 49.20, 162.82 },
+    { 6.1572,  4.58, 51.00, 135.66 },
+    { 6.1669,  4.66, 51.00, 114.32 },
+    { 6.1767,  4.66, 51.40,  73.57 },
+    { 6.1868,  4.66, 52.00,  40.58 },
+    { 6.1970,  4.66, 52.40,  21.18 },
+    { 6.2068,  6.25, 51.90,  13.42 },
+  };
+  for (size_t i = 0; i < arraysize(inputs); i++) {
+    FingerState fs =
+        { 0, 0, 0, 0, inputs[i].pressure_, 0.0,
+          inputs[i].x_, inputs[i].y_, 1, 0 };
+    HardwareState hs = { inputs[i].now_, 0, 1, 1, &fs };
+
+    stime_t timeout = -1.0;
+    Gesture* gs = ii.SyncInterpret(&hs, &timeout);
+    // Allow movement at first:
+    stime_t age = inputs[i].now_ - inputs[0].now_;
+    if (age < ii.palm_eval_timeout_.val_)
+      continue;
+    if (gs) {
+      EXPECT_EQ(kGestureTypeMove, gs->type);
+      EXPECT_FLOAT_EQ(0.0, gs->details.move.dx);
+      EXPECT_FLOAT_EQ(0.0, gs->details.move.dy);
+    }
+  }
+}
+
 TEST(ImmediateInterpreterTest, PressureChangeMoveTest) {
   ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {
