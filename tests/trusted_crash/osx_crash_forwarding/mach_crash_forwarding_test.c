@@ -155,23 +155,12 @@ int main(int argc, char **argv) {
   NaClAllModulesInit();
 
   NaClFileNameForValgrind(argv[1]);
-  if (GioMemoryFileSnapshotCtor(&gio_file, argv[2]) == 0) {
-    NaClLog(LOG_FATAL, "GioMemoryFileSnapshotCtor() failed\n");
-  }
-  if (!NaClAppCtor(&app)) {
-    NaClLog(LOG_FATAL, "NaClAppCtor() failed\n");
-  }
+  CHECK(GioMemoryFileSnapshotCtor(&gio_file, argv[2]));
+  CHECK(NaClAppCtor(&app));
   app.enable_exception_handling = 1;
-  if (NaClAppLoadFile((struct Gio *) &gio_file, &app) != LOAD_OK) {
-    NaClLog(LOG_FATAL, "NaClAppLoadFile() failed\n");
-  }
-  if (NaClAppPrepareToLaunch(&app) != LOAD_OK) {
-    NaClLog(LOG_FATAL, "NaClAppPrepareToLaunch() failed\n");
-  }
-  if (!NaClCreateMainThread(&app, 0, NULL, NULL)) {
-    NaClLog(LOG_FATAL, "NaClCreateMainThread() failed\n");
-  }
-
+  CHECK(NaClAppLoadFile((struct Gio *) &gio_file, &app) == LOAD_OK);
+  CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
+  CHECK(NaClCreateMainThread(&app, 0, NULL, NULL));
   CHECK(NaClWaitForMainThreadToExit(&app) == 0);
 
   if (g_expect_crash) {

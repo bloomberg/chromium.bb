@@ -142,24 +142,14 @@ int main(int argc, char **argv) {
   NaClAllModulesInit();
 
   NaClFileNameForValgrind(argv[1]);
-  if (GioMemoryFileSnapshotCtor(&gio_file, argv[2]) == 0) {
-    NaClLog(LOG_FATAL, "GioMemoryFileSnapshotCtor() failed\n");
-  }
-  if (!NaClAppCtor(&app)) {
-    NaClLog(LOG_FATAL, "NaClAppCtor() failed\n");
-  }
-  if (NaClAppLoadFile((struct Gio *) &gio_file, &app) != LOAD_OK) {
-    NaClLog(LOG_FATAL, "NaClAppLoadFile() failed\n");
-  }
-  if (NaClAppPrepareToLaunch(&app) != LOAD_OK) {
-    NaClLog(LOG_FATAL, "NaClAppPrepareToLaunch() failed\n");
-  }
+  CHECK(GioMemoryFileSnapshotCtor(&gio_file, argv[2]));
+  CHECK(NaClAppCtor(&app));
+  CHECK(NaClAppLoadFile((struct Gio *) &gio_file, &app) == LOAD_OK);
+  CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
 
   RegisterExceptionHandler();
 
-  if (!NaClCreateMainThread(&app, 0, NULL, NULL)) {
-    NaClLog(LOG_FATAL, "NaClCreateMainThread() failed\n");
-  }
+  CHECK(NaClCreateMainThread(&app, 0, NULL, NULL));
   NaClWaitForMainThreadToExit(&app);
   NaClLog(LOG_FATAL, "Did not expect the guest code to exit\n");
   return 1;

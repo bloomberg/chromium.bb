@@ -207,30 +207,15 @@ int main(int argc, char **argv) {
   g_crash_type = argv[2];
 
   NaClFileNameForValgrind(argv[1]);
-  if (GioMemoryFileSnapshotCtor(&gio_file, argv[1]) == 0) {
-    NaClLog(LOG_FATAL, "GioMemoryFileSnapshotCtor() failed\n");
-  }
-
-  if (!NaClAppCtor(&app)) {
-    NaClLog(LOG_FATAL, "NaClAppCtor() failed\n");
-  }
-
-  if (NaClAppLoadFile((struct Gio *) &gio_file, &app) != LOAD_OK) {
-    NaClLog(LOG_FATAL, "NaClAppLoadFile() failed\n");
-  }
-
+  CHECK(GioMemoryFileSnapshotCtor(&gio_file, argv[1]));
+  CHECK(NaClAppCtor(&app));
+  CHECK(NaClAppLoadFile((struct Gio *) &gio_file, &app) == LOAD_OK);
   NaClAppInitialDescriptorHookup(&app);
-
-  if (NaClAppPrepareToLaunch(&app) != LOAD_OK) {
-    NaClLog(LOG_FATAL, "NaClAppPrepareToLaunch() failed\n");
-  }
+  CHECK(NaClAppPrepareToLaunch(&app) == LOAD_OK);
 
   SetUnhandledExceptionFilter(ExceptionHandler);
 
-  if (!NaClCreateMainThread(&app, argc - 1, argv + 1, NULL)) {
-    NaClLog(LOG_FATAL, "NaClCreateMainThread() failed\n");
-  }
-
+  CHECK(NaClCreateMainThread(&app, argc - 1, argv + 1, NULL));
   NaClWaitForMainThreadToExit(&app);
 
   NaClLog(LOG_ERROR, "We did not expect the test program to exit cleanly\n");

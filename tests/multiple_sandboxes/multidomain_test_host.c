@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -41,12 +41,10 @@ int main(int argc, char **argv) {
   NaClSignalHandlerInit();
 
   NaClFileNameForValgrind(argv[1]);
-  if (GioMemoryFileSnapshotCtor(&gio_file, argv[1]) == 0)
-    NaClLog(LOG_FATAL, "GioMemoryFileSnapshotCtor() failed\n");
+  CHECK(GioMemoryFileSnapshotCtor(&gio_file, argv[1]));
 
   for (i = 0; i < 2; i++) {
-    if (!NaClAppCtor(&app[i]))
-      NaClLog(LOG_FATAL, "NaClAppCtor() failed\n");
+    CHECK(NaClAppCtor(&app[i]));
 
     /* Use a smaller guest address space size, because 32-bit Windows
        does not let us allocate 2GB of address space.  We don't do this
@@ -56,27 +54,20 @@ int main(int argc, char **argv) {
     app[i].addr_bits = 29; /* 512MB per process */
 #endif
 
-    if (NaClAppLoadFile((struct Gio *) &gio_file, &app[i]) != LOAD_OK)
-      NaClLog(LOG_FATAL, "NaClAppLoadFile() failed\n");
-
+    CHECK(NaClAppLoadFile((struct Gio *) &gio_file, &app[i]) == LOAD_OK);
     NaClAppInitialDescriptorHookup(&app[i]);
-
-    if (NaClAppPrepareToLaunch(&app[i]) != LOAD_OK)
-      NaClLog(LOG_FATAL, "NaClAppPrepareToLaunch() failed\n");
+    CHECK(NaClAppPrepareToLaunch(&app[i]) == LOAD_OK);
   }
 
   /* Set up an IMC connection between the two guests.  This allows us
      to test communications between the two and also synchronise the
      output for the purpose of checking against the golden file. */
-  if (NaClSocketPair(handle_pair) != 0)
-    NaClLog(LOG_FATAL, "NaClSocketPair() failed\n");
+  CHECK(NaClSocketPair(handle_pair) == 0);
   NaClAddImcHandle(&app[0], handle_pair[0], SEND_DESC);
   NaClAddImcHandle(&app[1], handle_pair[1], RECEIVE_DESC);
 
-  if (!NaClCreateMainThread(&app[0], 2, domain1_args, NULL))
-    NaClLog(LOG_FATAL, "NaClCreateMainThread() failed\n");
-  if (!NaClCreateMainThread(&app[1], 2, domain2_args, NULL))
-    NaClLog(LOG_FATAL, "NaClCreateMainThread() failed\n");
+  CHECK(NaClCreateMainThread(&app[0], 2, domain1_args, NULL));
+  CHECK(NaClCreateMainThread(&app[1], 2, domain2_args, NULL));
 
   return_code = NaClWaitForMainThreadToExit(&app[0]);
   CHECK(return_code == 1001);
