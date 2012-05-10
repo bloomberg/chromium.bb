@@ -54,16 +54,8 @@ class MacTool(object):
       return self._CopyXIBFile(source, dest)
     elif extension == '.strings':
       self._CopyStringsFile(source, dest)
-    # TODO: Given that files with arbitrary extensions can be copied to the
-    # bundle, we will want to get rid of this whitelist eventually.
-    elif extension in [
-        '.icns', '.manifest', '.pak', '.pdf', '.png', '.sb', '.sh',
-        '.ttf', '.sdef']:
-      shutil.copyfile(source, dest)
     else:
-      raise NotImplementedError(
-          "Don't know how to copy bundle resources of type %s while copying "
-          "%s to %s)" % (extension, source, dest))
+      shutil.copyfile(source, dest)
 
   def _CopyXIBFile(self, source, dest):
     """Compiles a XIB file with ibtool into a binary plist in the bundle."""
