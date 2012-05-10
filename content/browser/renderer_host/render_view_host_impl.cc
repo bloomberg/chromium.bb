@@ -499,10 +499,7 @@ void RenderViewHostImpl::WasSwappedOut() {
       // beforeunload handler completes fine, but the unload handler hangs.
       // At this time, the complexity to solve this edge case is not worthwhile.
       if (SuddenTerminationAllowed()) {
-        // We should kill the process, but for now, just log the data so we can
-        // diagnose the kill rate and investigate if separate timer is needed.
-        // http://crbug.com/104346.
-
+        base::KillProcess(process_handle, content::RESULT_CODE_HUNG, false);
         // Log a histogram point to help us diagnose how many of those kills
         // we have performed. 1 is the enum value for RendererType Normal for
         // the histogram.
