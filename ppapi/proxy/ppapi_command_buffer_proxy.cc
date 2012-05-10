@@ -42,7 +42,6 @@ int PpapiCommandBufferProxy::GetRouteID() const {
 }
 
 bool PpapiCommandBufferProxy::Echo(const base::Closure& callback) {
-  NOTIMPLEMENTED();
   return false;
 }
 
