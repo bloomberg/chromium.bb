@@ -188,11 +188,11 @@ Browser* FindBrowserMatching(const T& begin,
 
 Browser* FindBrowserWithTabbedOrAnyType(Profile* profile,
                                         bool match_tabbed,
-                                        bool match_incognito) {
+                                        bool match_original_profiles) {
   uint32 match_types = kMatchAny;
   if (match_tabbed)
     match_types |= kMatchTabbed;
-  if (match_incognito)
+  if (match_original_profiles)
     match_types |= kMatchOriginalProfile;
   Browser* browser = FindBrowserMatching(
       BrowserList::begin_last_active(), BrowserList::end_last_active(),
@@ -700,13 +700,18 @@ Browser* BrowserList::GetLastActiveWithProfile(Profile* profile) {
 
 // static
 Browser* BrowserList::FindTabbedBrowser(Profile* profile,
-                                        bool match_incognito) {
-  return FindBrowserWithTabbedOrAnyType(profile, true, match_incognito);
+                                        bool match_original_profiles) {
+  return FindBrowserWithTabbedOrAnyType(profile,
+                                        true,
+                                        match_original_profiles);
 }
 
 // static
-Browser* BrowserList::FindAnyBrowser(Profile* profile, bool match_incognito) {
-  return FindBrowserWithTabbedOrAnyType(profile, false, match_incognito);
+Browser* BrowserList::FindAnyBrowser(Profile* profile,
+                                     bool match_original_profiles) {
+  return FindBrowserWithTabbedOrAnyType(profile,
+                                        false,
+                                        match_original_profiles);
 }
 
 // static

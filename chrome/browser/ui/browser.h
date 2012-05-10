@@ -693,7 +693,13 @@ class Browser : public TabStripModelDelegate,
       const content::NavigationController* controller, int* index);
 
   // Retrieve the last active tabbed browser with a profile matching |profile|.
-  static Browser* GetTabbedBrowser(Profile* profile, bool match_incognito);
+  // If |match_original_profiles| is true, matching is done based on the
+  // original profile, eg profile->GetOriginalProfile() ==
+  // browser->profile()->GetOriginalProfile(). This has the effect of matching
+  // against both non-incognito and incognito profiles. If
+  // |match_original_profiles| is false, only an exact match may be returned.
+  static Browser* GetTabbedBrowser(Profile* profile,
+                                   bool match_original_profiles);
 
   // Retrieve the last active tabbed browser with a profile matching |profile|.
   // Creates a new Browser if none are available.

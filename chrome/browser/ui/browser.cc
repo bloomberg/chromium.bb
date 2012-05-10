@@ -2523,8 +2523,9 @@ Browser* Browser::GetBrowserForController(
 }
 
 // static
-Browser* Browser::GetTabbedBrowser(Profile* profile, bool match_incognito) {
-  return BrowserList::FindTabbedBrowser(profile, match_incognito);
+Browser* Browser::GetTabbedBrowser(Profile* profile,
+                                   bool match_original_profiles) {
+  return BrowserList::FindTabbedBrowser(profile, match_original_profiles);
 }
 
 // static

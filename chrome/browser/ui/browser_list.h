@@ -67,16 +67,19 @@ class BrowserList {
   // WARNING: see warnings in GetLastActive().
   static Browser* GetLastActiveWithProfile(Profile* profile);
 
-  // Find an existing browser window with tabbed type. Searches in the
-  // order of last activation. Only browsers that have been active can be
-  // returned. If |match_incognito| is true, will match a browser with either
-  // a regular or incognito profile that matches the given one. Returns NULL if
-  // no such browser currently exists.
-  static Browser* FindTabbedBrowser(Profile* profile, bool match_incognito);
+  // Retrieve the last active tabbed browser with a profile matching |profile|.
+  // If |match_original_profiles| is true, matching is done based on the
+  // original profile, eg profile->GetOriginalProfile() ==
+  // browser->profile()->GetOriginalProfile(). This has the effect of matching
+  // against both non-incognito and incognito profiles. If
+  // |match_original_profiles| is false, only an exact match may be returned.
+  static Browser* FindTabbedBrowser(Profile* profile,
+                                    bool match_original_profiles);
 
   // Find an existing browser window with any type. See comment above for
   // additional information.
-  static Browser* FindAnyBrowser(Profile* profile, bool match_incognito);
+  static Browser* FindAnyBrowser(Profile* profile,
+                                 bool match_original_profiles);
 
   // Find an existing browser window that can provide the specified type (this
   // uses Browser::CanSupportsWindowFeature, not
