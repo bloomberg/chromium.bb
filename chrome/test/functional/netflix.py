@@ -25,7 +25,7 @@ class NetflixTestHelper():
   TITLE_HOMEPAGE = 'http://movies.netflix.com/WiHome'
   SIGNOUT_PAGE = 'https://account.netflix.com/Logout'
   # 30 Rock.
-  VIDEO_URL = 'http://movies.netflix.com/WiPlayer?' + \
+  VIDEO_URL = 'http://moviesbeta.netflix.com/WiPlayer?' + \
               'movieid=70136124&trkid=2361637&t=30+Rock'
   _pyauto = None
 
