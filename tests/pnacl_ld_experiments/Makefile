@@ -12,8 +12,9 @@
 
 ROOT=$(shell readlink -f ../../)
 TC_ROOT=$(ROOT)/toolchain/pnacl_linux_x86_64/glibc
-PNACL_CC=$(TC_ROOT)/bin/pnacl-clang
+PNACL_CC=$(TC_ROOT)/bin/pnacl-clang -Wall -Werror
 PNACL_LD=$(TC_ROOT)/bin/pnacl-nativeld
+PNACL_AR=$(TC_ROOT)/bin/pnacl-ar
 PNACL_TRANS=$(TC_ROOT)/bin/pnacl-translate
 
 BOOTER_X8632=$(ROOT)/scons-out/opt-linux-x86-32/staging/nacl_helper_bootstrap
@@ -111,7 +112,7 @@ x8664/libsimple.so: libsimple.pso
 	$(PNACL_TRANS) $(SHARED_FLAGS_X8664) -o $@ $^
 
 # build a shared version of libnosys from the bitcode archive
-mylibnosys.pso: $(S_INIT) $(S_FINI)
+mylibnosys.pso: $(S_INIT) $(S_FINI) $(LIBPATH_BITCODE_SDK)/libnosys.a
 	$(PNACL_CC) $(COMMON_FLAGS) -nostdlib -shared \
               $(S_INIT) \
               -Wl,--whole-archive \
@@ -127,7 +128,7 @@ x8664/mylibnosys.so: mylibnosys.pso
 	$(PNACL_TRANS) $(SHARED_FLAGS_X8664) -o $@ $^
 
 # build a shared version of libpthread from the bitcode archive
-mylibpthread.pso: $(S_INIT) $(S_FINI)
+mylibpthread.pso: $(S_INIT) $(S_FINI) $(LIBPATH_BITCODE_SDK)/libpthread.a
 	$(PNACL_CC) $(COMMON_FLAGS) -nostdlib -shared \
               $(S_INIT) \
               -Wl,--whole-archive \
@@ -145,7 +146,8 @@ x8664/mylibpthread.so: mylibpthread.pso
 # build a shared version of newlib from the bitcode archive
 # work around some hacks that introduced a common symbol in the
 # disabled malloc/free portions
-mylibc.pso: $(S_INIT)  $(S_FINI) mylibnosys.pso
+mylibc.pso: $(S_INIT)  $(S_FINI) mylibnosys.pso \
+            $(ROOT)/toolchain/pnacl_linux_x86_64/newlib/usr/lib/libc.a
 	$(PNACL_CC) $(COMMON_FLAGS) -nostdlib -shared \
               $(S_INIT) \
               -Wl,--whole-archive \
@@ -164,6 +166,15 @@ x8664/mylibc.so: mylibc.pso x8664/mylibnosys.so
 	$(PNACL_TRANS) $(SHARED_FLAGS_X8664) -o $@ mylibc.pso
 
 ######################################################################
+mylibnacl.a: $(LIBPATH_BITCODE_SDK)/libnacl.a
+	rm -f $@
+	rm -rf /tmp/libnacl
+	mkdir -p /tmp/libnacl
+	cd /tmp/libnacl; ar xv $^
+	rm /tmp/libnacl/pthread_initialize_minimal.bc
+	rm /tmp/libnacl/pthread_stubs.bc
+	$(PNACL_AR) cr $@ /tmp/libnacl/*
+######################################################################
 # bookends for dynamic images
 # NOTE: the duplication of crtbegin.bc.
 # The one here was build from $(PATH_CRT_SRC)/bitcode
@@ -179,8 +190,7 @@ LIBS = -l:keep_alive.x \
        -l:mylibc.pso \
        -l:mylibpthread.pso \
        -l:ld.so.pso \
-       -L $(LIBPATH_BITCODE_SDK) \
-       -l:libnacl.a
+       -l:mylibnacl.a
 
 # NOTE: it is not clear why we have to specify ld-2.9.so here
 #       which should be the same as the loader.
@@ -192,8 +202,8 @@ DYNAMIC_FLAGS_X8664 = $(DYNAMIC_FLAGS)  -rpath-link=x8664/ -arch x86-64 \
                       --noirtshim \
                       $(LIBPATH_SHARED_X8664)/ld-2.9.so
 
-hello1.pexe: hello1.bc $(INIT) $(FINI) hello1.c \
-             libsimple.pso mylibc.pso mylibnosys.pso mylibpthread.pso ld.so.pso
+hello1.pexe: hello1.bc $(INIT) $(FINI) hello1.c ld.so.pso libsimple.pso \
+             mylibc.pso mylibnosys.pso mylibpthread.pso mylibnacl.a
 	$(PNACL_CC) $(COMMON_FLAGS) -nodefaultlibs -nostdlib \
         $(INIT) hello1.bc $(LIBS) $(FINI)  -o $@
 
@@ -218,4 +228,4 @@ run1.x8664: x8664/hello1.nexe
 ######################################################################
 
 clean:
-	rm -f *.bc *.ll *.pso *.po *.pexe *.meta x8632/* x8664/*
+	rm -f *.bc *.ll *.pso *.po *.a *.pexe *.meta x8632/* x8664/*
