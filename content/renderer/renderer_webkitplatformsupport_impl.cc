@@ -22,6 +22,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_info.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/audio_device.h"
 #include "content/renderer/media/audio_hardware.h"
@@ -29,7 +30,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_clipboard_client.h"
-#include "content/renderer/renderer_webstoragenamespace_impl.h"
 #include "content/renderer/websharedworkerrepository_impl.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -310,7 +310,7 @@ void RendererWebKitPlatformSupportImpl::suddenTerminationChanged(bool enabled) {
 WebStorageNamespace*
 RendererWebKitPlatformSupportImpl::createLocalStorageNamespace(
     const WebString& path, unsigned quota) {
-  return new RendererWebStorageNamespaceImpl();
+  return new WebStorageNamespaceImpl();
 }
 
 

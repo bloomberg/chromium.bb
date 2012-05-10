@@ -30,7 +30,7 @@ class AudioMessageFilter;
 class CompositorThread;
 class DBMessageFilter;
 class DevToolsAgentFilter;
-struct DOMStorageMsg_Event_Params;
+class DomStorageDispatcher;
 class GpuChannelHost;
 class IndexedDBDispatcher;
 class RendererWebKitPlatformSupportImpl;
@@ -208,7 +208,6 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   void Init();
 
   void OnSetZoomLevelForCurrentURL(const std::string& host, double zoom_level);
-  void OnDOMStorageEvent(const DOMStorageMsg_Event_Params& params);
   void OnSetCSSColors(const std::vector<CSSColors::CSSColorMapping>& colors);
   void OnCreateNewView(const ViewMsg_New_Params& params);
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
@@ -221,6 +220,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
 
   // These objects live solely on the render thread.
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
+  scoped_ptr<DomStorageDispatcher> dom_storage_dispatcher_;
   scoped_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
   scoped_ptr<RendererWebKitPlatformSupportImpl> webkit_platform_support_;
 

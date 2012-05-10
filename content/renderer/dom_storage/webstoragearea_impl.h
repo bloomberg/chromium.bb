@@ -1,22 +1,23 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDERER_WEBSTORAGEAREA_IMPL_H_
-#define CONTENT_RENDERER_RENDERER_WEBSTORAGEAREA_IMPL_H_
+#ifndef CONTENT_RENDERER_DOM_STORAGE_WEBSTORAGEAREA_IMPL_H_
+#define CONTENT_RENDERER_DOM_STORAGE_WEBSTORAGEAREA_IMPL_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
-class RendererWebStorageAreaImpl : public WebKit::WebStorageArea {
- public:
-  static RendererWebStorageAreaImpl* FromConnectionId(int id);
+class GURL;
 
-  RendererWebStorageAreaImpl(int64 namespace_id,
-                             const WebKit::WebString& origin);
-  virtual ~RendererWebStorageAreaImpl();
+class WebStorageAreaImpl : public WebKit::WebStorageArea {
+ public:
+  static WebStorageAreaImpl* FromConnectionId(int id);
+
+  WebStorageAreaImpl(int64 namespace_id, const GURL& origin);
+  virtual ~WebStorageAreaImpl();
 
   // See WebStorageArea.h for documentation on these functions.
   virtual unsigned length();
@@ -35,4 +36,4 @@ class RendererWebStorageAreaImpl : public WebKit::WebStorageArea {
   int connection_id_;
 };
 
-#endif  // CONTENT_RENDERER_RENDERER_WEBSTORAGEAREA_IMPL_H_
+#endif  // CONTENT_RENDERER_DOM_STORAGE_WEBSTORAGEAREA_IMPL_H_

@@ -47,6 +47,9 @@
 #include "content/public/renderer/render_process_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/devtools_agent_filter.h"
+#include "content/renderer/dom_storage/dom_storage_dispatcher.h"
+#include "content/renderer/dom_storage/webstoragearea_impl.h"
+#include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gpu/compositor_thread.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
@@ -57,8 +60,6 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
-#include "content/renderer/renderer_webstoragearea_impl.h"
-#include "content/renderer/renderer_webstoragenamespace_impl.h"
 #include "grit/content_resources.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
@@ -76,7 +77,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptController.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/ui_base_switches.h"
@@ -105,7 +105,6 @@ using WebKit::WebRuntimeFeatures;
 using WebKit::WebScriptController;
 using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
-using WebKit::WebStorageEventDispatcher;
 using WebKit::WebView;
 using content::RenderProcessObserver;
 
@@ -210,6 +209,7 @@ void RenderThreadImpl::Init() {
   compositor_initialized_ = false;
 
   appcache_dispatcher_.reset(new AppCacheDispatcher(Get()));
+  dom_storage_dispatcher_.reset(new DomStorageDispatcher());
   main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
 
   media_stream_center_ = NULL;
@@ -810,44 +810,6 @@ void RenderThreadImpl::OnSetZoomLevelForCurrentURL(const std::string& host,
   content::RenderView::ForEach(&zoomer);
 }
 
-void RenderThreadImpl::OnDOMStorageEvent(
-    const DOMStorageMsg_Event_Params& params) {
-  EnsureWebKitInitialized();
-
-  bool originated_in_process = params.connection_id != 0;
-  RendererWebStorageAreaImpl* originating_area = NULL;
-  if (originated_in_process) {
-    originating_area = RendererWebStorageAreaImpl::FromConnectionId(
-        params.connection_id);
-  }
-
-  if (params.namespace_id == dom_storage::kLocalStorageNamespaceId) {
-    WebStorageEventDispatcher::dispatchLocalStorageEvent(
-        params.key,
-        params.old_value,
-        params.new_value,
-        params.origin,
-        params.page_url,
-        originating_area,
-        originated_in_process);
-  } else if (originated_in_process) {
-    // TODO(michaeln): For now, we only raise session storage events into the
-    // process which caused the event to occur. However there are cases where
-    // sessions can span process boundaries, so there are correctness issues.
-    RendererWebStorageNamespaceImpl
-        session_namespace_for_event_dispatch(params.namespace_id);
-    WebStorageEventDispatcher::dispatchSessionStorageEvent(
-        params.key,
-        params.old_value,
-        params.new_value,
-        params.origin,
-        params.page_url,
-        session_namespace_for_event_dispatch,
-        originating_area,
-        originated_in_process);
-  }
-}
-
 bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   ObserverListBase<RenderProcessObserver>::Iterator it(observers_);
   RenderProcessObserver* observer;
@@ -857,8 +819,10 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   }
 
   // Some messages are handled by delegates.
-  if (appcache_dispatcher_->OnMessageReceived(msg))
+  if (appcache_dispatcher_->OnMessageReceived(msg) ||
+      dom_storage_dispatcher_->OnMessageReceived(msg)) {
     return true;
+  }
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderThreadImpl, msg)
@@ -870,7 +834,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_New, OnCreateNewView)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache, OnPurgePluginListCache)
     IPC_MESSAGE_HANDLER(ViewMsg_NetworkStateChanged, OnNetworkStateChanged)
-    IPC_MESSAGE_HANDLER(DOMStorageMsg_Event, OnDOMStorageEvent)
     IPC_MESSAGE_HANDLER(ViewMsg_TempCrashWithData, OnTempCrashWithData)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

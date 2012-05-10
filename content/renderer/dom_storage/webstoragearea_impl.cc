@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/renderer_webstoragearea_impl.h"
+#include "content/renderer/dom_storage/webstoragearea_impl.h"
 
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
@@ -16,30 +16,28 @@
 using WebKit::WebString;
 using WebKit::WebURL;
 
-typedef IDMap<RendererWebStorageAreaImpl> AreaImplMap;
+typedef IDMap<WebStorageAreaImpl> AreaImplMap;
 
 static base::LazyInstance<AreaImplMap>::Leaky
     g_all_areas_map = LAZY_INSTANCE_INITIALIZER;
 
 // static
-RendererWebStorageAreaImpl* RendererWebStorageAreaImpl::FromConnectionId(
+WebStorageAreaImpl* WebStorageAreaImpl::FromConnectionId(
     int id) {
   return g_all_areas_map.Pointer()->Lookup(id);
 }
 
-RendererWebStorageAreaImpl::RendererWebStorageAreaImpl(
-    int64 namespace_id, const WebString& origin)
+WebStorageAreaImpl::WebStorageAreaImpl(
+    int64 namespace_id, const GURL& origin)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           connection_id_(g_all_areas_map.Pointer()->Add(this))) {
-  // TODO(michaeln): fix the webkit api to have the 'origin' input
-  // be a URL instead of a string.
   DCHECK(connection_id_);
   RenderThreadImpl::current()->Send(
       new DOMStorageHostMsg_OpenStorageArea(
-          connection_id_, namespace_id, GURL(origin)));
+          connection_id_, namespace_id, origin));
 }
 
-RendererWebStorageAreaImpl::~RendererWebStorageAreaImpl() {
+WebStorageAreaImpl::~WebStorageAreaImpl() {
   g_all_areas_map.Pointer()->Remove(connection_id_);
   RenderThreadImpl::current()->Send(
       new DOMStorageHostMsg_CloseStorageArea(connection_id_));
@@ -59,28 +57,28 @@ RendererWebStorageAreaImpl::~RendererWebStorageAreaImpl() {
 // key          .591     0.6     2.0     29.9
 // clear        1e-6     1.0     32.4    605.2
 
-unsigned RendererWebStorageAreaImpl::length() {
+unsigned WebStorageAreaImpl::length() {
   unsigned length;
   RenderThreadImpl::current()->Send(
       new DOMStorageHostMsg_Length(connection_id_, &length));
   return length;
 }
 
-WebString RendererWebStorageAreaImpl::key(unsigned index) {
+WebString WebStorageAreaImpl::key(unsigned index) {
   NullableString16 key;
   RenderThreadImpl::current()->Send(
       new DOMStorageHostMsg_Key(connection_id_, index, &key));
   return key;
 }
 
-WebString RendererWebStorageAreaImpl::getItem(const WebString& key) {
+WebString WebStorageAreaImpl::getItem(const WebString& key) {
   NullableString16 value;
   RenderThreadImpl::current()->Send(
       new DOMStorageHostMsg_GetItem(connection_id_, key, &value));
   return value;
 }
 
-void RendererWebStorageAreaImpl::setItem(
+void WebStorageAreaImpl::setItem(
     const WebString& key, const WebString& value, const WebURL& url,
     WebStorageArea::Result& result, WebString& old_value_webkit) {
   if (key.length() + value.length() > dom_storage::kPerAreaQuota) {
@@ -93,7 +91,7 @@ void RendererWebStorageAreaImpl::setItem(
   old_value_webkit = old_value;
 }
 
-void RendererWebStorageAreaImpl::removeItem(
+void WebStorageAreaImpl::removeItem(
     const WebString& key, const WebURL& url, WebString& old_value_webkit) {
   NullableString16 old_value;
   RenderThreadImpl::current()->Send(
@@ -101,7 +99,7 @@ void RendererWebStorageAreaImpl::removeItem(
   old_value_webkit = old_value;
 }
 
-void RendererWebStorageAreaImpl::clear(
+void WebStorageAreaImpl::clear(
     const WebURL& url, bool& cleared_something) {
   RenderThreadImpl::current()->Send(
       new DOMStorageHostMsg_Clear(connection_id_, url, &cleared_something));

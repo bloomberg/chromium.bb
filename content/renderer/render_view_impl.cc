@@ -57,6 +57,7 @@
 #include "content/renderer/device_orientation_dispatcher.h"
 #include "content/renderer/devtools_agent.h"
 #include "content/renderer/dom_automation_controller.h"
+#include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/compositor_thread.h"
@@ -84,7 +85,6 @@
 #include "content/renderer/renderer_accessibility.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webcolorchooser_impl.h"
-#include "content/renderer/renderer_webstoragenamespace_impl.h"
 #include "content/renderer/text_input_client_observer.h"
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/web_intents_host.h"
@@ -129,7 +129,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSettings.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -1599,7 +1598,7 @@ WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace(
     unsigned quota) {
   CHECK(session_storage_namespace_id_ !=
         dom_storage::kInvalidSessionStorageNamespaceId);
-  return new RendererWebStorageNamespaceImpl(session_storage_namespace_id_);
+  return new WebStorageNamespaceImpl(session_storage_namespace_id_);
 }
 
 WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(

@@ -1,36 +1,38 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/renderer_webstoragenamespace_impl.h"
+#include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 
 #include "base/logging.h"
-#include "content/renderer/renderer_webstoragearea_impl.h"
+#include "content/renderer/dom_storage/webstoragearea_impl.h"
+#include "googleurl/src/gurl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 
 using WebKit::WebStorageArea;
 using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 
-RendererWebStorageNamespaceImpl::RendererWebStorageNamespaceImpl()
+WebStorageNamespaceImpl::WebStorageNamespaceImpl()
     : namespace_id_(dom_storage::kLocalStorageNamespaceId) {
 }
 
-RendererWebStorageNamespaceImpl::RendererWebStorageNamespaceImpl(
+WebStorageNamespaceImpl::WebStorageNamespaceImpl(
     int64 namespace_id)
     : namespace_id_(namespace_id) {
   DCHECK_NE(dom_storage::kInvalidSessionStorageNamespaceId, namespace_id);
 }
 
-RendererWebStorageNamespaceImpl::~RendererWebStorageNamespaceImpl() {
+WebStorageNamespaceImpl::~WebStorageNamespaceImpl() {
 }
 
-WebStorageArea* RendererWebStorageNamespaceImpl::createStorageArea(
+WebStorageArea* WebStorageNamespaceImpl::createStorageArea(
     const WebString& origin) {
-  return new RendererWebStorageAreaImpl(namespace_id_, origin);
+  return new WebStorageAreaImpl(namespace_id_, GURL(origin));
 }
 
-WebStorageNamespace* RendererWebStorageNamespaceImpl::copy() {
+WebStorageNamespace* WebStorageNamespaceImpl::copy() {
   // By returning NULL, we're telling WebKit to lazily fetch it the next time
   // session storage is used.  In the WebViewClient::createView, we do the
   // book-keeping necessary to make it a true copy-on-write despite not doing
@@ -38,9 +40,9 @@ WebStorageNamespace* RendererWebStorageNamespaceImpl::copy() {
   return NULL;
 }
 
-bool RendererWebStorageNamespaceImpl::isSameNamespace(
+bool WebStorageNamespaceImpl::isSameNamespace(
     const WebStorageNamespace& other) const {
-  const RendererWebStorageNamespaceImpl* other_impl =
-      static_cast<const RendererWebStorageNamespaceImpl*>(&other);
+  const WebStorageNamespaceImpl* other_impl =
+      static_cast<const WebStorageNamespaceImpl*>(&other);
   return namespace_id_ == other_impl->namespace_id_;
 }
