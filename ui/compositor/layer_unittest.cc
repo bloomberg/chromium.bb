@@ -348,8 +348,8 @@ class TestCompositorObserver : public CompositorObserver {
 #define MAYBE_Opacity Opacity
 // Real bug, see http://crbug.com/127534.
 #define MAYBE_ScaleUpDown DISABLED_ScaleUpDown
-#define MAYBE_ScaleReparent ScaleReparent
-#define MAYBE_NoScaleCanvas NoScaleCanvas
+#define MAYBE_ScaleReparent DISABLED_ScaleReparent
+#define MAYBE_NoScaleCanvas DISABLED_NoScaleCanvas
 #endif
 
 TEST_F(LayerWithRealCompositorTest, MAYBE_Draw) {
