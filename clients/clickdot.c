@@ -1,6 +1,7 @@
 /*
  * Copyright © 2010 Intel Corporation
  * Copyright © 2012 Collabora, Ltd.
+ * Copyright © 2012 Jonas Ådahl
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -41,8 +42,94 @@ struct clickdot {
 	struct window *window;
 	struct widget *widget;
 
-	int32_t x, y;
+	cairo_surface_t *buffer;
+
+	struct {
+		int32_t x, y;
+	} dot;
+
+	struct {
+		int32_t x, y;
+		int32_t old_x, old_y;
+	} line;
+
+	int reset;
 };
+
+static void
+draw_line(struct clickdot *clickdot, cairo_t *cr,
+	  struct rectangle *allocation)
+{
+	cairo_t *bcr;
+	cairo_surface_t *tmp_buffer = NULL;
+
+	if (clickdot->reset) {
+		tmp_buffer = clickdot->buffer;
+		clickdot->buffer = NULL;
+		clickdot->line.x = -1;
+		clickdot->line.y = -1;
+		clickdot->line.old_x = -1;
+		clickdot->line.old_y = -1;
+		clickdot->reset = 0;
+	}
+
+	if (clickdot->buffer == NULL) {
+		clickdot->buffer =
+			cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+						   allocation->width,
+						   allocation->height);
+		bcr = cairo_create(clickdot->buffer);
+		cairo_set_source_rgba(bcr, 0, 0, 0, 0);
+		cairo_rectangle(bcr,
+				0, 0,
+				allocation->width, allocation->height);
+		cairo_fill(bcr);
+	}
+	else
+		bcr = cairo_create(clickdot->buffer);
+
+	if (tmp_buffer) {
+		cairo_set_source_surface(bcr, tmp_buffer, 0, 0);
+		cairo_rectangle(bcr, 0, 0,
+				allocation->width, allocation->height);
+		cairo_clip(bcr);
+		cairo_paint(bcr);
+
+		cairo_surface_destroy(tmp_buffer);
+	}
+
+	if (clickdot->line.x != -1 && clickdot->line.y != -1) {
+		if (clickdot->line.old_x != -1 &&
+		    clickdot->line.old_y != -1) {
+			cairo_set_line_width(bcr, 2.0);
+			cairo_set_source_rgb(bcr, 1, 1, 1);
+			cairo_translate(bcr,
+					-allocation->x, -allocation->y);
+
+			cairo_move_to(bcr,
+				      clickdot->line.old_x,
+				      clickdot->line.old_y);
+			cairo_line_to(bcr,
+				      clickdot->line.x,
+				      clickdot->line.y);
+
+			cairo_stroke(bcr);
+		}
+
+		clickdot->line.old_x = clickdot->line.x;
+		clickdot->line.old_y = clickdot->line.y;
+	}
+	cairo_destroy(bcr);
+
+	cairo_set_source_surface(cr, clickdot->buffer,
+				 allocation->x, allocation->y);
+	cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+	cairo_rectangle(cr,
+			allocation->x, allocation->y,
+			allocation->width, allocation->height);
+	cairo_clip(cr);
+	cairo_paint(cr);
+}
 
 static void
 redraw_handler(struct widget *widget, void *data)
@@ -67,7 +154,9 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.8);
 	cairo_fill(cr);
 
-	cairo_translate(cr, clickdot->x + 0.5, clickdot->y + 0.5);
+	draw_line(clickdot, cr, &allocation);
+
+	cairo_translate(cr, clickdot->dot.x + 0.5, clickdot->dot.y + 0.5);
 	cairo_set_line_width(cr, 1.0);
 	cairo_set_source_rgb(cr, 0.1, 0.9, 0.9);
 	cairo_move_to(cr, 0.0, -r);
@@ -115,9 +204,42 @@ button_handler(struct widget *widget,
 	struct clickdot *clickdot = data;
 
 	if (state && button == BTN_LEFT)
-		input_get_position(input, &clickdot->x, &clickdot->y);
+		input_get_position(input, &clickdot->dot.x, &clickdot->dot.y);
 
 	widget_schedule_redraw(widget);
+}
+
+static int
+motion_handler(struct widget *widget,
+	       struct input *input, uint32_t time,
+	       float x, float y, void *data)
+{
+	struct clickdot *clickdot = data;
+	clickdot->line.x = x;
+	clickdot->line.y = y;
+
+	window_schedule_redraw(clickdot->window);
+
+	return POINTER_LEFT_PTR;
+}
+
+static void
+resize_handler(struct widget *widget,
+	       int32_t width, int32_t height,
+	       void *data)
+{
+	struct clickdot *clickdot = data;
+
+	clickdot->reset = 1;
+}
+
+static void
+leave_handler(struct widget *widget,
+	      struct input *input, void *data)
+{
+	struct clickdot *clickdot = data;
+
+	clickdot->reset = 1;
 }
 
 static struct clickdot *
@@ -134,6 +256,7 @@ clickdot_create(struct display *display)
 	clickdot->widget = frame_create(clickdot->window, clickdot);
 	window_set_title(clickdot->window, "Wayland ClickDot");
 	clickdot->display = display;
+	clickdot->buffer = NULL;
 
 	window_set_key_handler(clickdot->window, key_handler);
 	window_set_user_data(clickdot->window, clickdot);
@@ -142,10 +265,18 @@ clickdot_create(struct display *display)
 
 	widget_set_redraw_handler(clickdot->widget, redraw_handler);
 	widget_set_button_handler(clickdot->widget, button_handler);
+	widget_set_motion_handler(clickdot->widget, motion_handler);
+	widget_set_resize_handler(clickdot->widget, resize_handler);
+	widget_set_leave_handler(clickdot->widget, leave_handler);
 
 	widget_schedule_resize(clickdot->widget, 500, 400);
-	clickdot->x = 250;
-	clickdot->y = 200;
+	clickdot->dot.x = 250;
+	clickdot->dot.y = 200;
+	clickdot->line.x = -1;
+	clickdot->line.y = -1;
+	clickdot->line.old_x = -1;
+	clickdot->line.old_y = -1;
+	clickdot->reset = 0;
 
 	return clickdot;
 }
@@ -153,6 +284,8 @@ clickdot_create(struct display *display)
 static void
 clickdot_destroy(struct clickdot *clickdot)
 {
+	if (clickdot->buffer)
+		cairo_surface_destroy(clickdot->buffer);
 	widget_destroy(clickdot->widget);
 	window_destroy(clickdot->window);
 	free(clickdot);
