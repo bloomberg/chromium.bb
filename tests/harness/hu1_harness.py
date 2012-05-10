@@ -23,6 +23,7 @@ tests = [
     }, {
         'txt':  u'Agyagosszergény', 
         'brl':  u'$a4agos5erg16', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'agyaggyűrűiken', 
         'brl':  u'a4ag4}r}iken', 
@@ -137,6 +138,7 @@ tests = [
     }, {
         'txt':  u'Békésszentandrás', 
         'brl':  u'$b1k1s5entandr"s', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'bélésszövet', 
         'brl':  u'b1l1s5qvet', 
@@ -407,6 +409,7 @@ tests = [
     }, {
         'txt':  u'Farkassziget,', 
         'brl':  u'$farkas5iget,', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'fásszárú', 
         'brl':  u'f"s5"r0', 
@@ -521,6 +524,7 @@ tests = [
     }, {
         'txt':  u'Gombosszeg', 
         'brl':  u'$gombos5eg', 
+'BRLCursorPos': 1,
     }, {
         'txt':  u'gondviselésszerű', 
         'brl':  u'gondvisel1s5er}', 
@@ -704,6 +708,7 @@ tests = [
     }, {
         'txt':  u'Hússziget', 
         'brl':  u'$h0s5iget', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'hússzínű', 
         'brl':  u'h0s5|n}', 
@@ -818,9 +823,11 @@ tests = [
     }, {
         'txt':  u'Kaposszekcső', 
         'brl':  u'$kapos5ek37', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'Kaposszerdahely', 
         'brl':  u'$kapos5erdahe', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'kapusszoba', 
         'brl':  u'kapus5oba', 
@@ -863,9 +870,11 @@ tests = [
     }, {
         'txt':  u'Kemenesszentmárton', 
         'brl':  u'$kemenes5entm"rton', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'Kemenesszentpéter', 
         'brl':  u'$kemenes5entp1ter', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'képmásszerű ', 
         'brl':  u'k1pm"s5er} ', 
@@ -911,12 +920,14 @@ tests = [
     }, {
         'txt':  u'Kisszállás', 
         'brl':  u'$kis5"ll"s', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'kisszámú', 
         'brl':  u'kis5"m0', 
     }, {
         'txt':  u'Kisszeben', 
         'brl':  u'$kis5eben', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'kisszék', 
         'brl':  u'kis51k', 
@@ -926,12 +937,14 @@ tests = [
     }, {
         'txt':  u'Kisszentmárton', 
         'brl':  u'$kis5entm"rton', 
+'BRLCursorPos': 1,
     }, {
         'txt':  u'kisszerű', 
         'brl':  u'kis5er}', 
     }, {
         'txt':  u'Kissziget', 
         'brl':  u'$kis5iget', 
+'BRLCursorPos': 1,
     }, {
         'txt':  u'kisszobában', 
         'brl':  u'kis5ob"ban', 
@@ -941,12 +954,14 @@ tests = [
     }, {
         'txt':  u'Kiszombor', 
         'brl':  u'$kis2ombor', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'kiszögellésszerűen', 
         'brl':  u'ki5qgell1s5er}en', 
     }, {
         'txt':  u'Kiszsidány', 
         'brl':  u'$kis`id"6', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'kitörésszerű', 
         'brl':  u'kitqr1s5er}', 
@@ -1022,6 +1037,7 @@ tests = [
     }, {
         'txt':  u'Köröszug', 
         'brl':  u'$kqrqs2ug', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'kötelességgyakorlás', 
         'brl':  u'kqteless1g4akorl"s', 
@@ -1208,15 +1224,19 @@ tests = [
     }, {
         'txt':  u'Marosszék', 
         'brl':  u'$maros51k', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'Marosszentgyörgy ', 
         'brl':  u'$maros5ent4qr4 ', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'Maroszug', 
         'brl':  u'$maros2ug', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'Martraversszal', 
         'brl':  u'$martraver55al', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'másszínű', 
         'brl':  u'm"s5|n}', 
@@ -1250,6 +1270,7 @@ tests = [
     }, {
         'txt':  u'Meggyesi', 
         'brl':  u'$me44esi', 
+       'BRLCursorPos': 1,
     }, {
         'txt':  u'meggyet', 
         'brl':  u'me44et', 
@@ -1322,6 +1343,7 @@ tests = [
     }, {
         'txt':  u'Mikosszéplak', 
         'brl':  u'$mikos51plak', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'mikrofonnyílás', 
         'brl':  u'mikrofon6|l"s', 
@@ -1379,9 +1401,11 @@ tests = [
     }, {
         'txt':  u'Nemesszalók', 
         'brl':  u'$nemes5al9k', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'Nemesszentandrás', 
         'brl':  u'$nemes5entandr"s', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'nemesszőrme', 
         'brl':  u'nemes57rme', 
@@ -1565,9 +1589,11 @@ tests = [
     }, {
         'txt':  u'Pilisszántó,', 
         'brl':  u'$pilis5"nt9,', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'Pilisszentkereszt', 
         'brl':  u'$pilis5entkere5t', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'pirítósszeleteken', 
         'brl':  u'pir|t9s5eleteken', 
@@ -1796,6 +1822,7 @@ tests = [
     }, {
         'txt':  u'Szamosszeg', 
         'brl':  u'$5amos5eg', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'szanitéccsoport', 
         'brl':  u'5anit1c3oport', 
@@ -1823,6 +1850,7 @@ tests = [
     }, {
         'txt':  u'Szepesszombat', 
         'brl':  u'$5epes5ombat', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'szerződésszegés', 
         'brl':  u'5er27d1s5eg1s', 
@@ -1838,6 +1866,7 @@ tests = [
     }, {
         'txt':  u'Szilvásszentmárton', 
         'brl':  u'$5ilv"s5entm"rton', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'szindikátusszerű ', 
         'brl':  u'5indik"tus5er} ', 
@@ -2099,6 +2128,7 @@ tests = [
     }, {
         'txt':  u'Vámosszabadi', 
         'brl':  u'$v"mos5abadi', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'városszépe', 
         'brl':  u'v"ros51pe', 
@@ -2129,9 +2159,11 @@ tests = [
     }, {
         'txt':  u'Vaszar', 
         'brl':  u'$va5ar', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'Vázsnok', 
         'brl':  u'$v"`nok', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'végiggyakorolni', 
         'brl':  u'v1gig4akorolni', 
@@ -2168,6 +2200,7 @@ tests = [
     }, {
         'txt':  u'Vértesszőlős', 
         'brl':  u'$v1rtes57l7s', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'vetésszalag', 
         'brl':  u'vet1s5alag', 
@@ -2302,14 +2335,17 @@ tests = [
     {
         'txt':  u'A telefonszámom: 06-1-256-256.', 
         'brl':  u'$a telefon5"mom: #jf-#a-#bef-#bef.', 
+        'BRLCursorPos': 1,
     },
     #Testing a decimal number containing sentence. After the comma character not need have numbersign indicator.
     {
         'txt':  u'A földrengés 7,5 erősségű volt.', 
         'brl':  u'$a fqldreng1s #g,e er7ss1g} volt.', 
+        'BRLCursorPos': 1,
     }, {
         'txt':  u'Tamás még nem tudta, hogy mi vár rá.', 
         'brl':  u'$tam"s m1g nem tudta, ho4 mi v"r r".', 
+        'BRLCursorPos': 1,
     },
     #Testing a Quotation mark containing sentence. Two quotation mark characters need resulting different dot combinations.
     #Left quotation mark dot combination is 236, right quotation mark dot combination is 356.
@@ -2321,11 +2357,13 @@ tests = [
     {
         'txt':  u"I don't no why happened this problem.", 
         'brl':  u"$i don'.t no why happened this problem.", 
+        'BRLCursorPos': 1,
     },
     #Testing a § (paragraph mark character) containing sentence. The paragraph mark character dot combination with hungarian language is 3456-1236.
     {
         'txt':  u'Az 1§ paragrafus alapján a kedvezmény igénybe vehető.', 
         'brl':  u'$a2 #a#v paragrafus alapj"n a kedve2m16 ig16be vehet7.', 
+        'BRLCursorPos': 1,
     },
     #testing some sentences with containing – character from a book.
     {
@@ -2336,21 +2374,25 @@ tests = [
     {
         'txt':  u'A vételár 1 €.', 
         'brl':  u'$a v1tel"r #a <e.', 
+        'BRLCursorPos': 1,
     },
     #Testing left and right parentheses dot combinations. Left parenthese dot combination is 2346, right parenthese dot combination is 1356.
     {
         'txt':  u'De nekem nagyon nehezemre esik a levélírás (nézd el a helyesírási hibákat és a csúnya írásomat).', 
         'brl':  u'$de nekem na4on nehe2emre esik a lev1l|r"s ~n12d el a hees|r"si hib"kat 1s a 306a |r"somatz.', 
+        'BRLCursorPos': 1,
     },
     #Testing capsign indicator. If a word entire containing uppercase letter, need marking this with two 46 dot combination before the word.
     {
         'txt':  u'A kiállítás megnyitóján jelen volt az MVGYOSZ elnöke.', 
         'brl':  u'$a ki"ll|t"s meg6it9j"n jelen volt a2 $$mv4o5 elnqke.', 
+        'BRLCursorPos': 1,
     },
     #Testing time format. If a sentence containing 11:45 style text part, need replacing the colon 25 dot combination with dot3 combination, and not need marking numbersign indicator the next numbers.
     {
         'txt':  u'A pontos idő 11:45 perc.', 
         'brl':  u'$a pontos id7 #aa.de perc.', 
+        'BRLCursorPos': 1,
     },
     #Testing bulleted list item, the right dot combination is 3-35.
     {
@@ -2361,10 +2403,12 @@ tests = [
     {
         'txt':  u'A hu_list fájl nem létezik.', 
         'brl':  u"""$a hu'-list f"jl nem l1te2ik.""", 
+        'BRLCursorPos': 1,
     },
     #Testing a sentance containing an e-mail address, the dot combination for at sign is dots 45
     {
         'txt':  u'Az e-mail címem: akarmi@akarmi.hu.', 
         'brl':  u'$a2 e-mail c|mem: akarmi>akarmi.hu.', 
+        'BRLCursorPos': 1,
     },
 ]
