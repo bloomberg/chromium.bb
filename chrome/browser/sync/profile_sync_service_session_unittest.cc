@@ -1129,4 +1129,44 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingLocalTabNode) {
   AddTab(browser(), GURL("http://baz2"));
 }
 
+TEST_F(ProfileSyncServiceSessionTest, Favicons) {
+    CreateRootHelper create_root(this);
+  ASSERT_TRUE(StartSyncService(create_root.callback(), false));
+  ASSERT_TRUE(create_root.success());
+
+  // Build a foreign session with one window and one tab.
+  std::string tag = "tag1";
+  sync_pb::SessionSpecifics meta;
+  BuildSessionSpecifics(tag, &meta);
+  std::vector<SessionID::id_type> tab_list;
+  tab_list.push_back(5);
+  AddWindowSpecifics(0, tab_list, &meta);
+  sync_pb::SessionSpecifics tab;
+  BuildTabSpecifics(tag, 0, tab_list[0], &tab);
+  std::string url = tab.tab().navigation(0).virtual_url();
+  std::string favicon;
+
+  // Update associator.
+  model_associator_->AssociateForeignSpecifics(meta, base::Time());
+  model_associator_->AssociateForeignSpecifics(tab, base::Time());
+  ASSERT_FALSE(model_associator_->GetSyncedFaviconForPageURL(url, &favicon));
+
+  // Now add a favicon.
+  tab.mutable_tab()->set_favicon_source("http://favicon_source.com/png.ico");
+  tab.mutable_tab()->set_favicon_type(sync_pb::SessionTab::TYPE_WEB_FAVICON);
+  tab.mutable_tab()->set_favicon("data");
+  model_associator_->AssociateForeignSpecifics(tab, base::Time());
+  ASSERT_TRUE(model_associator_->GetSyncedFaviconForPageURL(url, &favicon));
+  ASSERT_EQ("data", favicon);
+
+  // Simulate navigating away. The associator should delete the favicon.
+  tab.mutable_tab()->clear_navigation();
+  tab.mutable_tab()->add_navigation()->set_virtual_url("http://new_url.com");
+  tab.mutable_tab()->clear_favicon_source();
+  tab.mutable_tab()->clear_favicon_type();
+  tab.mutable_tab()->clear_favicon();
+  model_associator_->AssociateForeignSpecifics(tab, base::Time());
+  ASSERT_FALSE(model_associator_->GetSyncedFaviconForPageURL(url, &favicon));
+}
+
 }  // namespace browser_sync

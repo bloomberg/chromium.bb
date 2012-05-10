@@ -1009,6 +1009,11 @@ void SessionModelAssociator::AssociateForeignSpecifics(
                    static_cast<int>(tab->navigations.size() - 1)));
       if (tab->navigations[selected_index].virtual_url().is_valid())
         previous_url = tab->navigations[selected_index].virtual_url().spec();
+      if (synced_favicon_pages_.find(previous_url) ==
+          synced_favicon_pages_.end()) {
+        // The previous url didn't have a favicon. No need to decrement it.
+        previous_url.clear();
+      }
     }
 
     // Update SessionTab based on protobuf.
