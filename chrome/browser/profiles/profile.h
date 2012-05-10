@@ -13,7 +13,6 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
-#include "chrome/browser/net/preconnect.h" // TODO: remove this.
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
 #include "content/public/browser/browser_context.h"
@@ -124,32 +123,6 @@ class Profile : public content::BrowserContext {
                                   bool is_new_profile) = 0;
   };
 
-  // Whitelist access to deprecated API in order to prevent new regressions.
-  class Deprecated {
-   private:
-    friend bool IsGoogleGAIACookieInstalled();
-
-    friend class AutofillDownloadManager;
-    friend class BrowserListTabContentsProvider;
-    friend class MetricsService;
-    friend class SafeBrowsingServiceTestHelper;
-    friend class Toolbar5Importer;
-    friend class TranslateManager;
-    friend class android::TabContentsProvider;
-    friend class chromeos::LibCrosServiceLibraryImpl;
-    friend class chromeos::ResetDefaultProxyConfigServiceTask;
-
-    static net::URLRequestContextGetter* GetDefaultRequestContext() {
-      return Profile::GetDefaultRequestContext();
-    }
-  public:
-    // TODO(rlp): Please do not use this function. It is a temporary fix
-    // for stable. See crbug.com/125292.
-    static net::URLRequestContextGetter* GetDefaultRequestContextTemporary() {
-      return Profile::GetDefaultRequestContext();
-    }
-  };
-
   // Key used to bind profile to the widget with which it is associated.
   static const char* const kProfileKey;
 
@@ -171,6 +144,12 @@ class Profile : public content::BrowserContext {
 
   // Returns the profile corresponding to the given WebUI.
   static Profile* FromWebUI(content::WebUI* web_ui);
+
+  // TODO(rlp): Please do not use this function. It is a temporary fix
+  // for M19 stable. See crbug.com/125292.
+  static net::URLRequestContextGetter* GetDefaultRequestContextDeprecated() {
+    return Profile::GetDefaultRequestContext();
+  }
 
   // content::BrowserContext implementation ------------------------------------
 
@@ -406,13 +385,6 @@ class Profile : public content::BrowserContext {
   // Returns whether it is a guest session.
   static bool IsGuestSession();
 
-#ifdef UNIT_TEST
-  // Use with caution.  GetDefaultRequestContext may be called on any thread!
-  static void set_default_request_context(net::URLRequestContextGetter* c) {
-    default_request_context_ = c;
-  }
-#endif
-
   // Did the user restore the last session? This is set by SessionRestore.
   void set_restored_last_session(bool restored_last_session) {
     restored_last_session_ = restored_last_session;
@@ -429,7 +401,7 @@ class Profile : public content::BrowserContext {
   }
 
   void ResumeAccessibilityEvents() {
-    DCHECK(accessibility_pause_level_ > 0);
+    DCHECK_GT(accessibility_pause_level_, 0);
     accessibility_pause_level_--;
   }
 

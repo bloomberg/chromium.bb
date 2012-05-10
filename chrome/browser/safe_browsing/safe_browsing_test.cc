@@ -31,13 +31,13 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_browser_thread.h"
@@ -350,10 +350,11 @@ class SafeBrowsingServiceTestHelper
       public SafeBrowsingService::Client,
       public content::URLFetcherDelegate {
  public:
-  explicit SafeBrowsingServiceTestHelper(
-      SafeBrowsingServiceTest* safe_browsing_test)
+  SafeBrowsingServiceTestHelper(SafeBrowsingServiceTest* safe_browsing_test,
+                                net::URLRequestContextGetter* request_context)
       : safe_browsing_test_(safe_browsing_test),
-        response_status_(net::URLRequestStatus::FAILED) {
+        response_status_(net::URLRequestStatus::FAILED),
+        request_context_(request_context) {
   }
 
   // Callbacks for SafeBrowsingService::Client.
@@ -530,8 +531,7 @@ class SafeBrowsingServiceTestHelper
     url_fetcher_.reset(content::URLFetcher::Create(
         url, content::URLFetcher::GET, this));
     url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-    url_fetcher_->SetRequestContext(
-        Profile::Deprecated::GetDefaultRequestContext());
+    url_fetcher_->SetRequestContext(request_context_);
     url_fetcher_->Start();
     ui_test_utils::RunMessageLoop();
     return response_status_;
@@ -542,6 +542,7 @@ class SafeBrowsingServiceTestHelper
   scoped_ptr<content::URLFetcher> url_fetcher_;
   std::string response_data_;
   net::URLRequestStatus::Status response_status_;
+  net::URLRequestContextGetter* request_context_;
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceTestHelper);
 };
 
@@ -553,8 +554,10 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
   int server_port = SafeBrowsingTestServer::Port();
   ASSERT_TRUE(InitSafeBrowsingService());
 
+  net::URLRequestContextGetter* request_context =
+      GetBrowserContext()->GetRequestContext();
   scoped_refptr<SafeBrowsingServiceTestHelper> safe_browsing_helper(
-      new SafeBrowsingServiceTestHelper(this));
+      new SafeBrowsingServiceTestHelper(this, request_context));
   int last_step = 0;
   FilePath datafile_path = FilePath(kDataFile);
   SafeBrowsingTestServer test_server(datafile_path);
