@@ -59,6 +59,8 @@ remoting.init = function() {
   window.addEventListener('paste', pluginGotPaste_, false);
   window.addEventListener('copy', pluginGotCopy_, false);
 
+  remoting.initModalDialogs();
+
   if (isHostModeSupported_()) {
     var noShare = document.getElementById('chrome-os-no-share');
     noShare.parentNode.removeChild(noShare);
