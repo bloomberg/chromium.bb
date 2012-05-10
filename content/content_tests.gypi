@@ -514,21 +514,7 @@
           ],
         }
       ],
-    }],
-    ['chromeos == 1', {
-      'targets': [
-        {
-          'target_name': 'h264_parser_unittest',
-          'type': 'executable',
-          'dependencies': [
-            'content_common',
-            '../testing/gtest.gyp:gtest',
-          ],
-          'sources': [
-            'common/gpu/media/h264_parser_unittest.cc',
-          ],
-        }
-      ],
-    }],
+    },
+   ],
   ],
 }
