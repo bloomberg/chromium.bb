@@ -331,8 +331,10 @@ void WebIntentPickerController::OnSuggestionsLinkClicked() {
   // Navigate from source tab.
   Browser* browser =
       BrowserList::FindBrowserWithWebContents(wrapper_->web_contents());
-  browser::NavigateParams params(browser,
-                                 GURL(extension_urls::GetWebstoreLaunchURL()),
+  GURL query_url = extension_urls::GetWebstoreIntentQueryURL(
+      UTF16ToUTF8(picker_model_->action()),
+      UTF16ToUTF8(picker_model_->mimetype()));
+  browser::NavigateParams params(browser, query_url,
                                  content::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = NEW_FOREGROUND_TAB;
   browser::Navigate(&params);
