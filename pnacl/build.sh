@@ -250,14 +250,14 @@ if ${PNACL_IN_CROS_CHROOT}; then
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-67d1949cdcb1}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-e504e6e22487}
 
 readonly NEWLIB_REV=346ea38d142f
 readonly BINUTILS_REV=5ccab9d0bb73
 readonly GOLD_REV=2a4cafa72ca0
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
-readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-154816}
+readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-156513}
 readonly LLVM_MASTER_REV=${LLVM_PROJECT_REV}
 readonly CLANG_REV=${LLVM_PROJECT_REV}
 
@@ -1570,7 +1570,7 @@ install-unwind-header() {
   # across compilers or C libraries.
   INSTALL="/usr/bin/install -c -m 644"
   ${INSTALL} ${TC_SRC_GCC}/gcc/unwind-generic.h \
-             ${LLVM_INSTALL_DIR}/lib/clang/3.1/include/unwind.h
+             ${LLVM_INSTALL_DIR}/lib/clang/3.2/include/unwind.h
 }
 
 #########################################################################
