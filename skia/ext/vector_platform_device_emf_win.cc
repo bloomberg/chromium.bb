@@ -8,6 +8,7 @@
 
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/skia_utils_win.h"
+#include "third_party/skia/include/core/SkPathEffect.h"
 #include "third_party/skia/include/core/SkTemplates.h"
 #include "third_party/skia/include/core/SkUtils.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
