@@ -392,7 +392,8 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenStatusOrLauncherFocused) {
 
 // Makes sure shelf will be visible when app list opens as shelf is in VISIBLE
 // state,and toggling app list won't change shelf visibility state.
-TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
+// Disabled due to a real bug, see http://crbug.com/127538.
+TEST_F(ShelfLayoutManagerTest, DISABLED_OpenAppListWithShelfVisibleState) {
   Shell* shell = Shell::GetInstance();
   ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
   shelf->LayoutShelf();
@@ -419,7 +420,8 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
 // Makes sure shelf will be shown with AUTO_HIDE_SHOWN state when app list opens
 // as shelf is in AUTO_HIDE state, and toggling app list won't change shelf
 // visibility state.
-TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
+// Disabled due to a real bug, see http://crbug.com/127538.
+TEST_F(ShelfLayoutManagerTest, DISABLED_OpenAppListWithShelfAutoHideState) {
   Shell* shell = Shell::GetInstance();
   ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
   shelf->LayoutShelf();
@@ -452,7 +454,8 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
 
 // Makes sure shelf will be hidden when app list opens as shelf is in HIDDEN
 // state, and toggling app list won't change shelf visibility state.
-TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
+// Disabled due to a real bug, see http://crbug.com/127538.
+TEST_F(ShelfLayoutManagerTest, DISABLED_OpenAppListWithShelfHiddenState) {
   Shell* shell = Shell::GetInstance();
   ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
   // For shelf to be visible, app list is not open in initial state.

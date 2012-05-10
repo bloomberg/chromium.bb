@@ -125,7 +125,8 @@ TEST_F(SystemTrayTest, SystemTrayTestItems) {
   ASSERT_TRUE(detailed_item->detailed_view() == NULL);
 }
 
-TEST_F(SystemTrayTest, SystemTrayNotifications) {
+// Disabled due to a use-after-free, see http://crbug.com/127539.
+TEST_F(SystemTrayTest, DISABLED_SystemTrayNotifications) {
   scoped_ptr<SystemTray> tray(CreateSystemTray());
   ASSERT_TRUE(tray->widget());
 

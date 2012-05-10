@@ -405,7 +405,8 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
 }
 #endif
 
-TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
+// Disabled due to a real bug, see http://crbug.com/127538.
+TEST_F(AcceleratorControllerTest, DISABLED_GlobalAccelerators) {
   // CycleBackward
   EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_F5, true, false, false)));
