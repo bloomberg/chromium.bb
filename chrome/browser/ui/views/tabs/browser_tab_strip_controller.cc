@@ -329,9 +329,7 @@ void BrowserTabStripController::TabInsertedAt(TabContentsWrapper* contents,
                                               int model_index,
                                               bool is_active) {
   DCHECK(contents);
-  CHECK_GE(model_index, 0);
-  CHECK_LT(model_index, model_->count());
-  CHECK_EQ(model_->count(), tabstrip_->tab_count() + 1);
+  DCHECK(model_->ContainsIndex(model_index));
   AddTab(contents, model_index, is_active);
 }
 
