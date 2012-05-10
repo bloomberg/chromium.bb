@@ -83,6 +83,11 @@ IPC_MESSAGE_CONTROL4(MediaStreamHostMsg_GenerateStream,
                      media_stream::StreamOptions /* options */,
                      std::string /* security origin */)
 
+// Request to cancel the request for a new  media stream.
+IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_CancelGenerateStream,
+                     int /* render view id */,
+                     int /* request id */)
+
 // Request to stop streaming from the media stream.
 IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_StopGeneratedStream,
                      int /* render view id */,

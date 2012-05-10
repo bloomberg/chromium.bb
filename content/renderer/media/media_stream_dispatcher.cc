@@ -51,6 +51,22 @@ void MediaStreamDispatcher::GenerateStream(
                                              security_origin));
 }
 
+void MediaStreamDispatcher::CancelGenerateStream(int request_id) {
+  DVLOG(1) << "MediaStreamDispatcher::CancelGenerateStream"
+           << ", {request_id = " << request_id << "}";
+
+  RequestList::iterator it = requests_.begin();
+  for (; it != requests_.end(); ++it) {
+    Request& request = *it;
+    if (request.request_id == request_id) {
+      requests_.erase(it);
+      Send(new MediaStreamHostMsg_CancelGenerateStream(routing_id(),
+                                                       request_id));
+      break;
+    }
+  }
+}
+
 void MediaStreamDispatcher::StopStream(const std::string& label) {
   DVLOG(1) << "MediaStreamDispatcher::StopStream"
            << ", {label = " << label << "}";

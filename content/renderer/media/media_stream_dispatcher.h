@@ -38,6 +38,9 @@ class CONTENT_EXPORT MediaStreamDispatcher
       media_stream::StreamOptions components,
       const std::string& security_origin);
 
+  // Cancel the request for a new media stream to be created.
+  virtual void CancelGenerateStream(int request_id);
+
   // Stop a started stream. Label is the label provided in OnStreamGenerated.
   virtual void StopStream(const std::string& label);
 
@@ -71,6 +74,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, BasicStream);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, BasicVideoDevice);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, TestFailure);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, CancelGenerateStream);
 
   struct Request;
 

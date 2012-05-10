@@ -158,6 +158,8 @@ bool MediaStreamDispatcherHost::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(MediaStreamDispatcherHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_GenerateStream, OnGenerateStream)
+    IPC_MESSAGE_HANDLER(MediaStreamHostMsg_CancelGenerateStream,
+                        OnCancelGenerateStream)
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_StopGeneratedStream,
                         OnStopGeneratedStream)
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_EnumerateDevices,
@@ -204,6 +206,15 @@ void MediaStreamDispatcherHost::OnGenerateStream(
                             components, security_origin, &label);
   DCHECK(!label.empty());
   streams_[label] = StreamRequest(render_view_id, page_request_id);
+}
+
+void MediaStreamDispatcherHost::OnCancelGenerateStream(int render_view_id,
+                                                       int page_request_id) {
+  DVLOG(1) << "MediaStreamDispatcherHost::OnCancelGenerateStream("
+           << render_view_id << ", "
+           << page_request_id << ")";
+  // TODO(perkj): Implement
+  NOTIMPLEMENTED();
 }
 
 void MediaStreamDispatcherHost::OnStopGeneratedStream(

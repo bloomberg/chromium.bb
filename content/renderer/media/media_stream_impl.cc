@@ -282,8 +282,15 @@ void MediaStreamImpl::requestUserMedia(
 void MediaStreamImpl::cancelUserMediaRequest(
     const WebKit::WebUserMediaRequest& user_media_request) {
   DCHECK(CalledOnValidThread());
-  // TODO(grunell): Implement.
-  NOTIMPLEMENTED();
+  MediaRequestMap::iterator it = user_media_requests_.begin();
+  for (; it != user_media_requests_.end(); ++it) {
+    if (it->second.request_ == user_media_request)
+      break;
+  }
+  if (it != user_media_requests_.end()) {
+    media_stream_dispatcher_->CancelGenerateStream(it->first);
+    user_media_requests_.erase(it);
+  }
 }
 
 scoped_refptr<media::VideoDecoder> MediaStreamImpl::GetVideoDecoder(
