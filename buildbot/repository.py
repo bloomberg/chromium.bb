@@ -95,27 +95,14 @@ def GetTrybotMarkerPath(buildroot):
 
 def CreateTrybotMarker(buildroot):
   """Create the file that identifies a buildroot as being used by a trybot."""
-  with open(GetTrybotMarkerPath(buildroot), 'w') as f:
-    # Just touch the file.
-    pass
+  open(GetTrybotMarkerPath(buildroot), 'w').close()
 
-def ClearBuildRoot(buildroot, preserve_paths=()):
+
+def ClearBuildRoot(buildroot):
   """Remove and recreate the buildroot while preserving the trybot marker."""
   trybot_root = os.path.exists(GetTrybotMarkerPath(buildroot))
-  if os.path.exists(buildroot):
-    cmd = ['find', buildroot, '-mindepth', '1', '-maxdepth', '1']
-
-    ignores = []
-    for path in preserve_paths:
-      if ignores:
-        ignores.append('-a')
-      ignores += ['!', '-name', path]
-    cmd.extend(ignores)
-
-    cmd += ['-exec', 'rm', '-rf', '{}', '+']
-    cros_lib.SudoRunCommand(cmd)
-  else:
-    os.makedirs(buildroot)
+  cros_lib.SudoRunCommand(['rm', '-rf', buildroot], error_ok=True)
+  os.makedirs(buildroot)
   if trybot_root:
     CreateTrybotMarker(buildroot)
 

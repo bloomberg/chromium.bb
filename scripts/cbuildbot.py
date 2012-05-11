@@ -273,7 +273,7 @@ class Builder(object):
     # Re-write paths to use absolute paths.
     # Suppress any timeout options given from the commandline in the
     # invoked cbuildbot; our timeout will enforce it instead.
-    args_to_append = ['--resume', '--timeout', '0', '--notee', '--buildroot',
+    args_to_append = ['--resume', '--timeout', '0', '--buildroot',
                       os.path.abspath(self.options.buildroot)]
 
     if self.options.chrome_root:
@@ -575,7 +575,6 @@ def _RunBuildStagesWrapper(options, build_config):
     with cros_lib.AllowDisabling(options.tee, tee.Tee, log_file):
       cros_lib.Info("cbuildbot executed with args %s"
                     % ' '.join(map(repr, sys.argv)))
-      options.preserve_paths = set([_DEFAULT_LOG_DIR])
       if IsDistributedBuilder():
         buildbot = DistributedBuilder(options, build_config)
       else:
