@@ -299,7 +299,8 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
     return NULL;
   }
 
-  if (!extension->CheckPlatformAppFeatures(utf8_error))
+  if (!extension->CheckPlatformAppFeatures(utf8_error) ||
+      !extension->CheckConflictingFeatures(utf8_error))
     return NULL;
 
   return extension;
@@ -3513,6 +3514,16 @@ bool Extension::CheckPlatformAppFeatures(std::string* utf8_error) {
 
   if (!has_background_page()) {
     *utf8_error = errors::kBackgroundRequiredForPlatformApps;
+    return false;
+  }
+
+  return true;
+}
+
+bool Extension::CheckConflictingFeatures(std::string* utf8_error) {
+  if (has_lazy_background_page() &&
+      HasAPIPermission(ExtensionAPIPermission::kWebRequest)) {
+    *utf8_error = errors::kWebRequestConflictsWithLazyBackground;
     return false;
   }
 

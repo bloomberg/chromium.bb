@@ -4,8 +4,10 @@
 
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 
-#include "base/values.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/values.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -82,6 +84,28 @@ TEST_F(ExtensionManifestTest, BackgroundAllowNoJsAccess) {
   extension = LoadAndExpectSuccess("background_allow_no_js_access2.json");
   ASSERT_TRUE(extension);
   EXPECT_FALSE(extension->allow_background_js_access());
+}
+
+TEST_F(ExtensionManifestTest, BackgroundPageWebRequest) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  std::string error;
+  scoped_ptr<DictionaryValue> manifest(
+      LoadManifestFile("background_page.json", &error));
+  ASSERT_TRUE(manifest.get());
+  manifest->SetBoolean(keys::kBackgroundPersistent, false);
+  manifest->SetInteger(keys::kManifestVersion, 2);
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess(Manifest(manifest.get(), "")));
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(extension->has_lazy_background_page());
+
+  ListValue* permissions = new ListValue();
+  permissions->Append(Value::CreateStringValue("webRequest"));
+  manifest->Set(keys::kPermissions, permissions);
+  LoadAndExpectError(Manifest(manifest.get(), ""),
+                     errors::kWebRequestConflictsWithLazyBackground);
 }
 
 }  // namespace extensions

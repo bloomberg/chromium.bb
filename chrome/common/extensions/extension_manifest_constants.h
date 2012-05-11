@@ -312,7 +312,7 @@ namespace extension_manifest_errors {
   extern const char kPlatformAppNeedsManifestVersion2[];
   extern const char kOneUISurfaceOnly[];
   extern const char kReservedMessageFound[];
-  extern const char kWebContentMustBeEnabled[];
+  extern const char kWebRequestConflictsWithLazyBackground[];
 #if defined(OS_CHROMEOS)
   extern const char kIllegalPlugins[];
 #endif

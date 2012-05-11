@@ -471,6 +471,8 @@ const char kPlatformAppNeedsManifestVersion2[] =
     "Platform apps need manifest_version set to >= 2";
 const char kReservedMessageFound[] =
     "Reserved key * found in message catalog.";
+const char kWebRequestConflictsWithLazyBackground[] =
+    "The 'webRequest' API cannot be used with event pages.";
 #if defined(OS_CHROMEOS)
 const char kIllegalPlugins[] =
     "Extensions cannot install plugins on Chrome OS";

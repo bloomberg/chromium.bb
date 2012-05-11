@@ -845,6 +845,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Check that platform app features are valid. Called after InitFromValue.
   bool CheckPlatformAppFeatures(std::string* utf8_error);
 
+  // Check that features don't conflict. Called after InitFromValue.
+  bool CheckConflictingFeatures(std::string* utf8_error);
+
   // Cached images for this extension. This should only be touched on the UI
   // thread.
   mutable ImageCache image_cache_;
