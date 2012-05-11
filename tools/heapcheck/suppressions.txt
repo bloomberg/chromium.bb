@@ -1858,3 +1858,11 @@
    fun:BrowserThemePack::BuildFromExtension
    fun:BrowserThemePackTest_CanBuildAndReadPack_Test::TestBody
 }
+{
+   bug_127717
+   Heapcheck:Leak
+   ...
+   fun:SkBitmap::HeapAllocator::allocPixelRef
+   fun:SkBitmap::allocPixels
+   fun:SkBitmap::allocPixels
+}
