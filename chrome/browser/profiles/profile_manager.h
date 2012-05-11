@@ -21,7 +21,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/startup/startup_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -147,8 +147,8 @@ class ProfileManager : public base::NonThreadSafe,
   // creation of a window from the multi-profile dropdown menu.
   static void FindOrCreateNewWindowForProfile(
       Profile* profile,
-      StartupBrowserCreator::IsProcessStartup process_startup,
-      StartupBrowserCreator::IsFirstRun is_first_run,
+      browser::startup::IsProcessStartup process_startup,
+      browser::startup::IsFirstRun is_first_run,
       bool always_create);
 
   // Profile::Delegate implementation:

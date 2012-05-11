@@ -8,6 +8,7 @@
 
 #include <queue>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/protector/base_setting_change.h"
 

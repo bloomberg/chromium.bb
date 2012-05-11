@@ -29,6 +29,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -150,8 +151,8 @@ void OnOpenWindowForNewProfile(Profile* profile,
   if (status == Profile::CREATE_STATUS_INITIALIZED) {
     ProfileManager::FindOrCreateNewWindowForProfile(
         profile,
-        StartupBrowserCreator::IS_PROCESS_STARTUP,
-        StartupBrowserCreator::IS_FIRST_RUN,
+        browser::startup::IS_PROCESS_STARTUP,
+        browser::startup::IS_FIRST_RUN,
         false);
   }
 }
@@ -469,8 +470,8 @@ Profile* ProfileManager::GetProfileByPath(const FilePath& path) const {
 // static
 void ProfileManager::FindOrCreateNewWindowForProfile(
     Profile* profile,
-    StartupBrowserCreator::IsProcessStartup process_startup,
-    StartupBrowserCreator::IsFirstRun is_first_run,
+    browser::startup::IsProcessStartup process_startup,
+    browser::startup::IsFirstRun is_first_run,
     bool always_create) {
   DCHECK(profile);
 

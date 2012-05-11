@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -898,11 +899,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
 
-  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      StartupBrowserCreator::IS_FIRST_RUN :
-      StartupBrowserCreator::IS_NOT_FIRST_RUN;
-  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), command_line,
-                                                  first_run);
+  browser::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      browser::startup::IS_FIRST_RUN :
+      browser::startup::IS_NOT_FIRST_RUN;
+  StartupBrowserCreatorImpl launch(FilePath(), command_line, first_run);
   ASSERT_TRUE(launch.OpenApplicationWindow(browser()->profile()));
 
   // Check that the new browser has an app name.
@@ -1252,10 +1252,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
 
   // Simulate launching again.
   CommandLine dummy(CommandLine::NO_PROGRAM);
-  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      StartupBrowserCreator::IS_FIRST_RUN :
-      StartupBrowserCreator::IS_NOT_FIRST_RUN;
-  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), dummy, first_run);
+  browser::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      browser::startup::IS_FIRST_RUN : browser::startup::IS_NOT_FIRST_RUN;
+  StartupBrowserCreatorImpl launch(FilePath(), dummy, first_run);
   launch.profile_ = browser()->profile();
   launch.ProcessStartupURLs(std::vector<GURL>());
 

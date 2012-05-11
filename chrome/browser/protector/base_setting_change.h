@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "chrome/browser/tabs/pinned_tab_codec.h"
+#include "chrome/browser/ui/startup/startup_tab.h"
 #include "googleurl/src/gurl.h"
 
 class Browser;
@@ -144,9 +144,9 @@ BaseSettingChange* CreateDefaultSearchProviderChange(TemplateURL* actual,
 // startup setting, including the pinned tabs. Reports corresponding histograms.
 BaseSettingChange* CreateSessionStartupChange(
     const SessionStartupPref& actual_startup_pref,
-    const PinnedTabCodec::Tabs& actual_pinned_tabs,
+    const StartupTabs& actual_pinned_tabs,
     const SessionStartupPref& backup_startup_pref,
-    const PinnedTabCodec::Tabs& backup_pinned_tabs);
+    const StartupTabs& backup_pinned_tabs);
 
 BaseSettingChange* CreateHomepageChange(
     const std::string& actual_homepage,
