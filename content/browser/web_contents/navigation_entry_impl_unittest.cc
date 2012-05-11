@@ -179,6 +179,12 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_EQ(GURL(), entry2_.get()->GetOriginalRequestURL());
   entry2_.get()->SetOriginalRequestURL(GURL("original_url"));
   EXPECT_EQ(GURL("original_url"), entry2_.get()->GetOriginalRequestURL());
+
+  // User agent override
+  EXPECT_FALSE(entry1_.get()->GetIsOverridingUserAgent());
+  EXPECT_FALSE(entry2_.get()->GetIsOverridingUserAgent());
+  entry2_.get()->SetIsOverridingUserAgent(true);
+  EXPECT_TRUE(entry2_.get()->GetIsOverridingUserAgent());
 }
 
 }  // namespace content

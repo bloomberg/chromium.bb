@@ -68,7 +68,8 @@ const size_t TabRestoreService::kMaxEntries = 25;
 // . When the user closes a tab a command of type
 //   kCommandSelectedNavigationInTab is written identifying the tab and
 //   the selected index, then a kCommandPinnedState command if the tab was
-//   pinned and kCommandSetExtensionAppID if the tab has an app id. This is
+//   pinned and kCommandSetExtensionAppID if the tab has an app id and
+//   the user agent override if it was using one.  This is
 //   followed by any number of kCommandUpdateTabNavigation commands (1 per
 //   navigation entry).
 // . When the user closes a window a kCommandSelectedNavigationInTab command
@@ -83,6 +84,7 @@ static const SessionCommand::id_type kCommandSelectedNavigationInTab = 4;
 static const SessionCommand::id_type kCommandPinnedState = 5;
 static const SessionCommand::id_type kCommandSetExtensionAppID = 6;
 static const SessionCommand::id_type kCommandSetWindowAppName = 7;
+static const SessionCommand::id_type kCommandSetTabUserAgentOverride = 8;
 
 // Number of entries (not commands) before we clobber the file and write
 // everything.
@@ -686,6 +688,12 @@ void TabRestoreService::ScheduleCommandsForTab(const Tab& tab,
                                           tab.extension_app_id));
   }
 
+  if (!tab.user_agent_override.empty()) {
+    ScheduleCommand(
+        CreateSetTabUserAgentOverrideCommand(kCommandSetTabUserAgentOverride,
+                                             tab.id, tab.user_agent_override));
+  }
+
   // Then write the navigations.
   for (int i = first_index_to_persist, wrote_count = 0;
        i < max_index && wrote_count < 2 * max_persist_navigation_count; ++i) {
@@ -945,6 +953,21 @@ void TabRestoreService::CreateEntriesFromCommands(
           return;
         }
         current_tab->extension_app_id.swap(extension_app_id);
+        break;
+      }
+
+      case kCommandSetTabUserAgentOverride: {
+        if (!current_tab) {
+          // Should be in a tab when we get this.
+          return;
+        }
+        SessionID::id_type tab_id;
+        std::string user_agent_override;
+        if (!RestoreSetTabUserAgentOverrideCommand(command, &tab_id,
+                                                   &user_agent_override)) {
+          return;
+        }
+        current_tab->user_agent_override.swap(user_agent_override);
         break;
       }
 

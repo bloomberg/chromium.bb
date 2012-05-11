@@ -95,6 +95,12 @@ class TabNavigation {
     original_request_url_ = url;
   }
 
+  // Whether or not we're overriding the standard user agent.
+  bool is_overriding_user_agent() const { return is_overriding_user_agent_; }
+  void set_is_overriding_user_agent(bool state) {
+    is_overriding_user_agent_ = state;
+  }
+
   // Converts a set of TabNavigations into a set of NavigationEntrys. The
   // caller owns the NavigationEntrys.
   static void CreateNavigationEntriesFromTabNavigations(
@@ -115,6 +121,7 @@ class TabNavigation {
 
   int index_;
   GURL original_request_url_;
+  bool is_overriding_user_agent_;
 };
 
 // SessionTab ----------------------------------------------------------------
@@ -155,6 +162,10 @@ struct SessionTab {
 
   // If non-empty, this tab is an app tab and this is the id of the extension.
   std::string extension_app_id;
+
+  // If non-empty, this string is used as the user agent whenever the tab's
+  // NavigationEntries need it overridden.
+  std::string user_agent_override;
 
   // Timestamp for when this tab was last modified.
   base::Time timestamp;

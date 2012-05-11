@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,6 +39,10 @@ class SessionServiceTestHelper {
   void SetTabExtensionAppID(const SessionID& window_id,
                             const SessionID& tab_id,
                             const std::string& extension_app_id);
+
+  void SetTabUserAgentOverride(const SessionID& window_id,
+                               const SessionID& tab_id,
+                               const std::string& user_agent_override);
 
   // Reads the contents of the last session.
   void ReadWindows(std::vector<SessionWindow*>* windows);

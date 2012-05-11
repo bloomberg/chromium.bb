@@ -125,6 +125,13 @@ class BaseSessionService : public CancelableRequestProvider,
       SessionID::id_type tab_id,
       const std::string& extension_id);
 
+  // Creates a SessionCommand that containing user agent override used by a
+  // tab's navigations.
+  SessionCommand* CreateSetTabUserAgentOverrideCommand(
+      SessionID::id_type command_id,
+      SessionID::id_type tab_id,
+      const std::string& user_agent_override);
+
   // Creates a SessionCommand stores a browser window's app name.
   SessionCommand* CreateSetWindowAppNameCommand(
       SessionID::id_type command_id,
@@ -145,6 +152,13 @@ class BaseSessionService : public CancelableRequestProvider,
       const SessionCommand& command,
       SessionID::id_type* tab_id,
       std::string* extension_app_id);
+
+  // Extracts a SessionCommand as previously created by
+  // CreateSetTabUserAgentOverrideCommand into the tab id and user agent.
+  bool RestoreSetTabUserAgentOverrideCommand(
+      const SessionCommand& command,
+      SessionID::id_type* tab_id,
+      std::string* user_agent_override);
 
   // Extracts a SessionCommand as previously created by
   // CreateSetWindowAppNameCommand into the window id and application name.

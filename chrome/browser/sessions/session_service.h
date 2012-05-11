@@ -54,7 +54,7 @@ class NavigationEntry;
 class SessionService : public BaseSessionService,
                        public content::NotificationObserver {
   friend class SessionRestoreTest;
-  friend class SessionServiceTestHelper;  
+  friend class SessionServiceTestHelper;
  public:
   // Used to distinguish an application window from a normal one.
   enum AppType {
@@ -220,6 +220,11 @@ class SessionService : public BaseSessionService,
   void SetTabExtensionAppID(const SessionID& window_id,
                             const SessionID& tab_id,
                             const std::string& extension_app_id);
+
+  // Sets the user agent override of the specified tab.
+  void SetTabUserAgentOverride(const SessionID& window_id,
+                               const SessionID& tab_id,
+                               const std::string& user_agent_override);
 
   // Methods to create the various commands. It is up to the caller to delete
   // the returned the SessionCommand* object.

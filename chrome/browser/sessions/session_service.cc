@@ -71,6 +71,7 @@ static const SessionCommand::id_type kCommandSetWindowBounds3 = 14;
 static const SessionCommand::id_type kCommandSetWindowAppName = 15;
 static const SessionCommand::id_type kCommandTabClosed = 16;
 static const SessionCommand::id_type kCommandWindowClosed = 17;
+static const SessionCommand::id_type kCommandSetTabUserAgentOverride = 18;
 
 // Every kWritesPerReset commands triggers recreating the file.
 static const int kWritesPerReset = 250;
@@ -717,6 +718,19 @@ void SessionService::SetTabExtensionAppID(
                       extension_app_id));
 }
 
+void SessionService::SetTabUserAgentOverride(
+    const SessionID& window_id,
+    const SessionID& tab_id,
+    const std::string& user_agent_override) {
+  if (!ShouldTrackChangesToWindow(window_id))
+    return;
+
+  ScheduleCommand(CreateSetTabUserAgentOverrideCommand(
+                      kCommandSetTabUserAgentOverride,
+                      tab_id.id(),
+                      user_agent_override));
+}
+
 SessionCommand* SessionService::CreateSetSelectedTabInWindow(
     const SessionID& window_id,
     int index) {
@@ -1188,6 +1202,18 @@ bool SessionService::CreateTabsAndWindows(
         break;
       }
 
+      case kCommandSetTabUserAgentOverride: {
+        SessionID::id_type tab_id;
+        std::string user_agent_override;
+        if (!RestoreSetTabUserAgentOverrideCommand(
+                *command, &tab_id, &user_agent_override)) {
+          return true;
+        }
+
+        GetTab(tab_id, tabs)->user_agent_override.swap(user_agent_override);
+        break;
+      }
+
       default:
         return true;
     }
@@ -1205,6 +1231,7 @@ void SessionService::BuildCommandsForTab(
   DCHECK(tab && commands && window_id.id());
   const SessionID& session_id(tab->restore_tab_helper()->session_id());
   commands->push_back(CreateSetTabWindowCommand(window_id, session_id));
+
   const int current_index =
       tab->web_contents()->GetController().GetCurrentEntryIndex();
   const int min_index = std::max(0,
@@ -1218,9 +1245,11 @@ void SessionService::BuildCommandsForTab(
     (*tab_to_available_range)[session_id.id()] =
         std::pair<int, int>(min_index, max_index);
   }
+
   if (is_pinned) {
     commands->push_back(CreatePinnedStateCommand(session_id, true));
   }
+
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab->web_contents());
   if (wrapper->extension_tab_helper()->extension_app()) {
@@ -1229,6 +1258,14 @@ void SessionService::BuildCommandsForTab(
             kCommandSetExtensionAppID, session_id.id(),
             wrapper->extension_tab_helper()->extension_app()->id()));
   }
+
+  const std::string& ua_override = tab->web_contents()->GetUserAgentOverride();
+  if (!ua_override.empty()) {
+    commands->push_back(
+        CreateSetTabUserAgentOverrideCommand(
+            kCommandSetTabUserAgentOverride, session_id.id(), ua_override));
+  }
+
   for (int i = min_index; i < max_index; ++i) {
     const NavigationEntry* entry = (i == pending_index) ?
         tab->web_contents()->GetController().GetPendingEntry() :

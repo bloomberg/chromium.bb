@@ -153,6 +153,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual content::WebUI* CreateWebUI(const GURL& url) OVERRIDE;
   virtual content::WebUI* GetWebUI() const OVERRIDE;
   virtual content::WebUI* GetCommittedWebUI() const OVERRIDE;
+  virtual void SetUserAgentOverride(const std::string& override) OVERRIDE;
+  virtual const std::string& GetUserAgentOverride() const OVERRIDE;
   virtual const string16& GetTitle() const OVERRIDE;
   virtual int32 GetMaxPageID() OVERRIDE;
   virtual int32 GetMaxPageIDForSiteInstance(
@@ -577,6 +579,10 @@ class CONTENT_EXPORT WebContentsImpl
   // The tab that opened this tab, if any.  Will be set to null if the opener
   // is closed.
   WebContentsImpl* opener_;
+
+  // User agent to use if a NavigationEntry requires that the default user agent
+  // is overridden.
+  std::string user_agent_override_;
 
   // Helper classes ------------------------------------------------------------
 

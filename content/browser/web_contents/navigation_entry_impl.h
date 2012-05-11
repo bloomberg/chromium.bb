@@ -62,6 +62,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual SSLStatus& GetSSL() OVERRIDE;
   virtual void SetOriginalRequestURL(const GURL& original_url) OVERRIDE;
   virtual const GURL& GetOriginalRequestURL() const OVERRIDE;
+  virtual void SetIsOverridingUserAgent(bool override) OVERRIDE;
+  virtual bool GetIsOverridingUserAgent() const OVERRIDE;
 
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
@@ -180,6 +182,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   int64 post_id_;
   RestoreType restore_type_;
   GURL original_request_url_;
+  bool is_overriding_user_agent_;
 
   // This member is not persisted with sesssion restore.
   std::string extra_headers_;

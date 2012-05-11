@@ -104,6 +104,9 @@ class TabRestoreService : public BaseSessionService {
 
     // The associated session storage namespace (if any).
     scoped_refptr<content::SessionStorageNamespace> session_storage_namespace;
+
+    // The user agent override used for the tab's navigations (if applicable).
+    std::string user_agent_override;
   };
 
   // Represents a previously open window.

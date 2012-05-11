@@ -187,9 +187,11 @@ SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
           entry.GetReferrer().url.spec() : std::string());
   pickle.WriteInt(entry.GetReferrer().policy);
 
+  // Save info required to override the user agent.
   WriteStringToPickle(pickle, &bytes_written, max_state_size,
       entry.GetOriginalRequestURL().is_valid() ?
           entry.GetOriginalRequestURL().spec() : std::string());
+  pickle.WriteBool(entry.GetIsOverridingUserAgent());
 
   return new SessionCommand(command_id, pickle);
 }
@@ -209,6 +211,27 @@ SessionCommand* BaseSessionService::CreateSetTabExtensionAppIDCommand(
   int bytes_written = 0;
 
   WriteStringToPickle(pickle, &bytes_written, max_id_size, extension_id);
+
+  return new SessionCommand(command_id, pickle);
+}
+
+SessionCommand* BaseSessionService::CreateSetTabUserAgentOverrideCommand(
+    SessionID::id_type command_id,
+    SessionID::id_type tab_id,
+    const std::string& user_agent_override) {
+  // Use pickle to handle marshalling.
+  Pickle pickle;
+  pickle.WriteInt(tab_id);
+
+  // Enforce a max for the user agent length.  They should never be anywhere
+  // near this size.
+  static const SessionCommand::size_type max_user_agent_size =
+      std::numeric_limits<SessionCommand::size_type>::max() - 1024;
+
+  int bytes_written = 0;
+
+  WriteStringToPickle(pickle, &bytes_written, max_user_agent_size,
+      user_agent_override);
 
   return new SessionCommand(command_id, pickle);
 }
@@ -275,6 +298,12 @@ bool BaseSessionService::RestoreUpdateTabNavigationCommand(
     if (!pickle->ReadString(&iterator, &url_spec))
       url_spec = std::string();
     navigation->set_original_request_url(GURL(url_spec));
+
+    // Default to not overriding the user agent if we don't have info.
+    bool override_user_agent;
+    if (!pickle->ReadBool(&iterator, &override_user_agent))
+      override_user_agent = false;
+    navigation->set_is_overriding_user_agent(override_user_agent);
   }
 
   navigation->virtual_url_ = GURL(url_spec);
@@ -292,6 +321,19 @@ bool BaseSessionService::RestoreSetTabExtensionAppIDCommand(
   PickleIterator iterator(*pickle);
   return pickle->ReadInt(&iterator, tab_id) &&
       pickle->ReadString(&iterator, extension_app_id);
+}
+
+bool BaseSessionService::RestoreSetTabUserAgentOverrideCommand(
+    const SessionCommand& command,
+    SessionID::id_type* tab_id,
+    std::string* user_agent_override) {
+  scoped_ptr<Pickle> pickle(command.PayloadAsPickle());
+  if (!pickle.get())
+    return false;
+
+  PickleIterator iterator(*pickle);
+  return pickle->ReadInt(&iterator, tab_id) &&
+      pickle->ReadString(&iterator, user_agent_override);
 }
 
 bool BaseSessionService::RestoreSetWindowAppNameCommand(

@@ -18,7 +18,8 @@ TabNavigation::TabNavigation()
     : transition_(content::PAGE_TRANSITION_TYPED),
       type_mask_(0),
       post_id_(-1),
-      index_(-1) {
+      index_(-1),
+      is_overriding_user_agent_(false) {
 }
 
 TabNavigation::TabNavigation(int index,
@@ -34,7 +35,8 @@ TabNavigation::TabNavigation(int index,
       transition_(transition),
       type_mask_(0),
       post_id_(-1),
-      index_(index) {
+      index_(index),
+      is_overriding_user_agent_(false) {
 }
 
 TabNavigation::TabNavigation(const TabNavigation& tab)
@@ -46,7 +48,8 @@ TabNavigation::TabNavigation(const TabNavigation& tab)
       type_mask_(tab.type_mask_),
       post_id_(-1),
       index_(tab.index_),
-      original_request_url_(tab.original_request_url_) {
+      original_request_url_(tab.original_request_url_),
+      is_overriding_user_agent_(tab.is_overriding_user_agent_) {
 }
 
 TabNavigation::~TabNavigation() {
@@ -62,6 +65,7 @@ TabNavigation& TabNavigation::operator=(const TabNavigation& tab) {
   post_id_ = tab.post_id_;
   index_ = tab.index_;
   original_request_url_ = tab.original_request_url_;
+  is_overriding_user_agent_ = tab.is_overriding_user_agent_;
   return *this;
 }
 
@@ -85,6 +89,7 @@ NavigationEntry* TabNavigation::ToNavigationEntry(
   entry->SetHasPostData(type_mask_ & TabNavigation::HAS_POST_DATA);
   entry->SetPostID(post_id_);
   entry->SetOriginalRequestURL(original_request_url_);
+  entry->SetIsOverridingUserAgent(is_overriding_user_agent_);
 
   return entry;
 }
@@ -98,6 +103,7 @@ void TabNavigation::SetFromNavigationEntry(const NavigationEntry& entry) {
   type_mask_ = entry.GetHasPostData() ? TabNavigation::HAS_POST_DATA : 0;
   post_id_ = entry.GetPostID();
   original_request_url_ = entry.GetOriginalRequestURL();
+  is_overriding_user_agent_ = entry.GetIsOverridingUserAgent();
 }
 
 // static

@@ -707,6 +707,14 @@ content::WebUI* WebContentsImpl::GetCommittedWebUI() const {
   return render_manager_.web_ui();
 }
 
+void WebContentsImpl::SetUserAgentOverride(const std::string& override) {
+  user_agent_override_ = override;
+}
+
+const std::string& WebContentsImpl::GetUserAgentOverride() const {
+  return user_agent_override_;
+}
+
 const string16& WebContentsImpl::GetTitle() const {
   // Transient entries take precedence. They are used for interstitial pages
   // that are shown on top of existing pages.

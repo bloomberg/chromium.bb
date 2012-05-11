@@ -142,6 +142,10 @@ class NavigationEntry {
   // Store the URL that caused this NavigationEntry to be created.
   virtual void SetOriginalRequestURL(const GURL& original_url) = 0;
   virtual const GURL& GetOriginalRequestURL() const = 0;
+
+  // Store whether or not we're overriding the user agent.
+  virtual void SetIsOverridingUserAgent(bool override) = 0;
+  virtual bool GetIsOverridingUserAgent() const = 0;
 };
 
 }  // namespace content

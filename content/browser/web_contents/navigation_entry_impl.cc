@@ -45,6 +45,7 @@ NavigationEntryImpl::NavigationEntryImpl()
       has_post_data_(false),
       post_id_(-1),
       restore_type_(RESTORE_NONE),
+      is_overriding_user_agent_(false),
       is_renderer_initiated_(false),
       is_cross_site_reload_(false) {
 }
@@ -68,6 +69,7 @@ NavigationEntryImpl::NavigationEntryImpl(SiteInstanceImpl* instance,
       has_post_data_(false),
       post_id_(-1),
       restore_type_(RESTORE_NONE),
+      is_overriding_user_agent_(false),
       is_renderer_initiated_(is_renderer_initiated),
       is_cross_site_reload_(false) {
 }
@@ -224,6 +226,14 @@ void NavigationEntryImpl::SetOriginalRequestURL(const GURL& original_url) {
 
 const GURL& NavigationEntryImpl::GetOriginalRequestURL() const {
   return original_request_url_;
+}
+
+void NavigationEntryImpl::SetIsOverridingUserAgent(bool override) {
+  is_overriding_user_agent_ = override;
+}
+
+bool NavigationEntryImpl::GetIsOverridingUserAgent() const {
+  return is_overriding_user_agent_;
 }
 
 }  // namespace content

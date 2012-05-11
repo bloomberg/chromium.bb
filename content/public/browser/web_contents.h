@@ -120,6 +120,10 @@ class WebContents : public PageNavigator {
   virtual WebUI* GetWebUI() const = 0;
   virtual WebUI* GetCommittedWebUI() const = 0;
 
+  // Allows overriding the user agent used for NavigationEntries it owns.
+  virtual void SetUserAgentOverride(const std::string& override) = 0;
+  virtual const std::string& GetUserAgentOverride() const = 0;
+
   // Tab navigation state ------------------------------------------------------
 
   // Returns the current navigation properties, which if a navigation is

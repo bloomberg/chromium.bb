@@ -85,6 +85,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     entry->SetHasPostData(
         navigation.type_mask() & TabNavigation::HAS_POST_DATA);
     entry->SetOriginalRequestURL(navigation.original_request_url());
+    entry->SetIsOverridingUserAgent(navigation.is_overriding_user_agent());
     service()->UpdateTabNavigation(window_id, tab_id, index, *entry.get());
     if (select)
       service()->SetSelectedNavigationIndex(window_id, tab_id, index);
@@ -665,6 +666,11 @@ TEST_F(SessionServiceTest, PinnedFalseWhenSetToFalse) {
   EXPECT_FALSE(CreateAndWriteSessionWithOneTab(false, true));
 }
 
+// Explicitly set the pinned state to true and make sure we get back true.
+TEST_F(SessionServiceTest, PinnedTrue) {
+  EXPECT_TRUE(CreateAndWriteSessionWithOneTab(true, true));
+}
+
 // Make sure application extension ids are persisted.
 TEST_F(SessionServiceTest, PersistApplicationExtensionID) {
   SessionID tab_id;
@@ -686,9 +692,29 @@ TEST_F(SessionServiceTest, PersistApplicationExtensionID) {
   EXPECT_TRUE(app_id == windows[0]->tabs[0]->extension_app_id);
 }
 
-// Explicitly set the pinned state to true and make sure we get back true.
-TEST_F(SessionServiceTest, PinnedTrue) {
-  EXPECT_TRUE(CreateAndWriteSessionWithOneTab(true, true));
+// Check that user agent overrides are persisted.
+TEST_F(SessionServiceTest, PersistUserAgentOverrides) {
+  SessionID tab_id;
+  ASSERT_NE(window_id.id(), tab_id.id());
+  std::string user_agent_override("overridden user agent");
+
+  TabNavigation nav1(0, GURL("http://google.com"), content::Referrer(),
+                     ASCIIToUTF16("abc"), std::string(),
+                     content::PAGE_TRANSITION_QUALIFIER_MASK);
+  nav1.set_is_overriding_user_agent(true);
+
+  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
+  UpdateNavigation(window_id, tab_id, nav1, 0, true);
+  helper_.SetTabUserAgentOverride(window_id, tab_id, user_agent_override);
+
+  ScopedVector<SessionWindow> windows;
+  ReadWindows(&(windows.get()));
+  helper_.AssertSingleWindowWithSingleTab(windows.get(), 1);
+
+  SessionTab* tab = windows[0]->tabs[0];
+  helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
+  helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
+  EXPECT_TRUE(user_agent_override == tab->user_agent_override);
 }
 
 // Test that the notification for SESSION_SERVICE_SAVED is working properly.
