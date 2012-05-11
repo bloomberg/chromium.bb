@@ -178,13 +178,13 @@ using tcmalloc::StackTrace;
 using tcmalloc::Static;
 using tcmalloc::ThreadCache;
 
-// ---- Double free debug declarations
+// ---- Functions doing validation with an extra mark.
 static size_t ExcludeSpaceForMark(size_t size);
 static void AddRoomForMark(size_t* size);
 static void ExcludeMarkFromSize(size_t* new_size);
 static void MarkAllocatedRegion(void* ptr);
 static void ValidateAllocatedRegion(void* ptr, size_t cl);
-// ---- End Double free debug declarations
+// ---- End validation functions.
 
 DECLARE_int64(tcmalloc_sample_parameter);
 DECLARE_double(tcmalloc_release_rate);
@@ -1170,9 +1170,12 @@ inline void do_free_with_callback(void* ptr, void (*invalid_free_fn)(void*)) {
       Static::central_cache()[cl].InsertRange(ptr, ptr, 1);
     }
   } else {
+    // Make sure ptr is inside the first page of the span.
+    CHECK_CONDITION(span->start == p);
+    // Make sure we are not freeing interior pointers, even in release build.
+    CHECK_CONDITION(reinterpret_cast<uintptr_t>(ptr) % kPageSize == 0);
+
     SpinLockHolder h(Static::pageheap_lock());
-    ASSERT(reinterpret_cast<uintptr_t>(ptr) % kPageSize == 0);
-    ASSERT(span != NULL && span->start == p);
     if (span->sample) {
       StackTrace* st = reinterpret_cast<StackTrace*>(span->objects);
       tcmalloc::DLL_Remove(span);
@@ -1276,7 +1279,7 @@ inline void* do_realloc(void* old_ptr, size_t new_size) {
 void* do_memalign(size_t align, size_t size) {
   ASSERT((align & (align - 1)) == 0);
   ASSERT(align > 0);
-  // Marked in CheckMallocResult(), which is also inside SpanToMallocResult(). 
+  // Marked in CheckedMallocResult(), which is also inside SpanToMallocResult().
   AddRoomForMark(&size);
   if (size + align < size) return NULL;         // Overflow
 
@@ -1698,7 +1701,7 @@ extern "C" PERFTOOLS_DLL_DECL size_t tc_malloc_size(void* ptr) __THROW {
 
 #endif  // TCMALLOC_USING_DEBUGALLOCATION
 
-// ---Double free() debugging implementation -----------------------------------
+// --- Validation implementation with an extra mark ----------------------------
 // We will put a mark at the extreme end of each allocation block.  We make
 // sure that we always allocate enough "extra memory" that we can fit in the
 // mark, and still provide the requested usable region.  If ever that mark is
@@ -1746,13 +1749,6 @@ static void DieFromDoubleFree() {
   *p += 1;  // Segv.
 }
 
-static size_t DieFromBadFreePointer(const void* unused) {
-  char* p = NULL;
-  p += 2;
-  *p += 2;  // Segv.
-  return 0;
-}
-
 static void DieFromMemoryCorruption() {
   char* p = NULL;
   p += 3;
@@ -1793,7 +1789,7 @@ inline static size_t ExcludeSpaceForMark(size_t size) {
 }
 
 inline static MarkType* GetMarkLocation(void* ptr) {
-  size_t class_size = GetSizeWithCallback(ptr, DieFromBadFreePointer);
+  size_t class_size = GetSizeWithCallback(ptr, &InvalidGetAllocatedSize);
   ASSERT(class_size % sizeof(kAllocationMarkMask) == 0);
   size_t last_index = (class_size / sizeof(kAllocationMarkMask)) - 1;
   return static_cast<MarkType*>(ptr) + last_index;
