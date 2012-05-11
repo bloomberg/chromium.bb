@@ -1601,6 +1601,8 @@
         'browser/policy/file_based_policy_provider.h',
         'browser/policy/network_configuration_updater.cc',
         'browser/policy/network_configuration_updater.h',
+        'browser/policy/policy_bundle.cc',
+        'browser/policy/policy_bundle.h',
         'browser/policy/policy_error_map.cc',
         'browser/policy/policy_error_map.h',
         'browser/policy/policy_notifier.cc',

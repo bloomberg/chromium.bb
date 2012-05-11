@@ -18,10 +18,13 @@ namespace policy {
 // Policies are namespaced by a (PolicyDomain, ID) pair. The meaning of the ID
 // string depends on the domain; for example, if the PolicyDomain is
 // "extensions" then the ID identifies the extension that the policies control.
-// Currently CHROME is the only domain available, and its ID is always the empty
-// string.
 enum PolicyDomain {
+  // The component ID for chrome policies is always the empty string.
   POLICY_DOMAIN_CHROME,
+
+  // The extensions policy domain is a work in progress. Included here for
+  // tests.
+  POLICY_DOMAIN_EXTENSIONS,
 };
 
 // The PolicyService merges policies from all available sources, taking into

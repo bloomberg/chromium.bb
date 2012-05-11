@@ -1423,6 +1423,7 @@
         'browser/policy/mock_device_management_service.cc',
         'browser/policy/mock_device_management_service.h',
         'browser/policy/network_configuration_updater_unittest.cc',
+        'browser/policy/policy_bundle_unittest.cc',
         'browser/policy/policy_map_unittest.cc',
         'browser/policy/policy_path_parser_unittest.cc',
         'browser/policy/policy_service_unittest.cc',
