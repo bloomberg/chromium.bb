@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_logging.h"
+#include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 
 namespace IPC {
@@ -225,8 +226,9 @@ void ChannelProxy::Context::OnDispatchMessage(const Message& message) {
   TRACE_EVENT1("task", "ChannelProxy::Context::OnDispatchMessage",
                "name", name);
 #else
-  TRACE_EVENT1("task", "ChannelProxy::Context::OnDispatchMessage",
-               "type", message.type());
+  TRACE_EVENT2("task", "ChannelProxy::Context::OnDispatchMessage",
+               "class", IPC_MESSAGE_ID_CLASS(message.type()),
+               "line", IPC_MESSAGE_ID_LINE(message.type()));
 #endif
 
   if (!listener_)
