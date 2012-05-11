@@ -1411,12 +1411,7 @@ Ribbon.Item.prototype.setMetadata = function(metadata) {
     }
   }
 
-  var webkitTransform = transform ?
-      ('scaleX(' + transform.scaleX + ') ' +
-      'scaleY(' + transform.scaleY + ') ' +
-      'rotate(' + transform.rotate90 * 90 + 'deg)') :
-      '';
-  this.wrapper_.style.webkitTransform = webkitTransform;
+  util.applyTransform(this.wrapper_, transform);
 
   var img = this.img_;
 
@@ -1431,16 +1426,21 @@ Ribbon.Item.prototype.setMetadata = function(metadata) {
     // then adjust the size.
     img.style.maxWidth = '100%';
     img.style.maxHeight = '100%';
-
-    function onLoad(image) {
+    img.onload = function (e) {
+      var image = e.target;
       image.style.maxWidth = '';
       image.style.maxHeight = '';
       resizeToFill(image, image.width / image.height);
     }
-    img.onload = onLoad.bind(null, img);
   }
 
-  img.setAttribute('src', url);
+  img.onerror = function() {
+    // Use the default icon if we could not fetch the correct one.
+    util.applyTransform(this.wrapper_, null);
+    img.src = FileType.getPreviewArt(mediaType);
+  }.bind(this);
+
+  img.src = url;
 };
 
 function ShareMode(editor, container, toolbar, shareActions,

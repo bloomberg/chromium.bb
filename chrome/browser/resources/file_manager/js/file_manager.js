@@ -1657,15 +1657,6 @@ FileManager.prototype = {
     style.top = percent((1 - fractionY) / 2);
   };
 
-  FileManager.prototype.applyImageTransformation_ = function(box, transform) {
-    if (transform) {
-      box.style.webkitTransform =
-          'scaleX(' + transform.scaleX + ') ' +
-          'scaleY(' + transform.scaleY + ') ' +
-          'rotate(' + transform.rotate90 * 90 + 'deg)';
-    }
-  };
-
   /**
    * Create a box containing a centered thumbnail image.
    *
@@ -1695,8 +1686,14 @@ FileManager.prototype = {
           opt_imageLoadCallback(img, transform);
         box.appendChild(img);
       };
+      img.onerror = function() {
+        // Use the default icon if we could not fetch the correct one.
+        img.src = FileType.getPreviewArt(iconType);
+        transform = null;
+        util.applyTransform(box, transform);
+      };
       img.src = url;
-      self.applyImageTransformation_(box, transform);
+      util.applyTransform(box, transform);
     }
 
     // TODO(dgozman): move to new metadata cache.
@@ -2291,7 +2288,7 @@ FileManager.prototype = {
     style.top = (boxHeight - imageHeight) / 2 + 'px';
     style.position = 'relative';
 
-    this.applyImageTransformation_(largeImage, transform);
+    util.applyTransform(largeImage, transform);
 
     largeImageBox.appendChild(largeImage);
     largeImageBox.style.zIndex = 1000;

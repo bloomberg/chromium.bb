@@ -506,5 +506,19 @@ var util = {
            (event.altKey ? 'Alt-' : '') +
            (event.shiftKey ? 'Shift-' : '') +
            (event.metaKey ? 'Meta-' : '');
+  },
+
+  /**
+   * @param {HTMLElement} element Element to transform.
+   * @param {Object} transform Transform object,
+   *                           contains scaleX, scaleY and rotate90 properties.
+   */
+  applyTransform: function(element, transform) {
+    element.style.webkitTransform =
+      transform ?
+        'scaleX(' + transform.scaleX + ') ' +
+          'scaleY(' + transform.scaleY + ') ' +
+          'rotate(' + transform.rotate90 * 90 + 'deg)' :
+        '';
   }
 };
