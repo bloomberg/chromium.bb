@@ -5,6 +5,7 @@
 #include "remoting/host/plugin/daemon_controller.h"
 
 #include <launch.h>
+#include <stdio.h>
 #include <sys/types.h>
 
 #include "base/basictypes.h"
@@ -38,10 +39,8 @@ const int NSLibraryDirectory = 5;
 #define kServiceName "org.chromium.chromoting"
 #define kConfigDir "/Library/PrivilegedHelperTools/"
 
-// This helper script is executed as root.  It is passed a command-line option
-// (--enable or --disable), which causes it to create or remove a file that
-// informs the host's launch script of whether the host is enabled or disabled.
-const char kStartStopTool[] = kConfigDir kServiceName ".me2me.sh";
+// This helper script is used to get the installed host version.
+const char kHostHelperScript[] = kConfigDir kServiceName ".me2me.sh";
 
 // Use a single configuration file, instead of separate "auth" and "host" files.
 // This is because the SetConfigAndStart() API only provides a single
@@ -70,6 +69,7 @@ class DaemonControllerMac : public remoting::DaemonController {
 
  private:
   void DoGetConfig(const GetConfigCallback& callback);
+  void DoGetVersion(const GetVersionCallback& callback);
   void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
                            const CompletionCallback& done_callback);
   void DoUpdateConfig(scoped_ptr<base::DictionaryValue> config,
@@ -143,9 +143,11 @@ void DaemonControllerMac::SetWindow(void* window_handle) {
   // noop
 }
 
-void DaemonControllerMac::GetVersion(const GetVersionCallback& done_callback) {
-  NOTIMPLEMENTED();
-  done_callback.Run("");
+void DaemonControllerMac::GetVersion(const GetVersionCallback& callback) {
+  auth_thread_.message_loop_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&DaemonControllerMac::DoGetVersion, base::Unretained(this),
+                 callback));
 }
 
 void DaemonControllerMac::DoGetConfig(const GetConfigCallback& callback) {
@@ -163,6 +165,30 @@ void DaemonControllerMac::DoGetConfig(const GetConfigCallback& callback) {
   }
 
   callback.Run(config.Pass());
+}
+
+void DaemonControllerMac::DoGetVersion(const GetVersionCallback& callback) {
+  std::string version = "";
+  std::string command_line = kHostHelperScript;
+  command_line += " --host-version";
+  FILE* script_output = popen(command_line.c_str(), "r");
+  if (script_output) {
+    char buffer[100];
+    char* result = fgets(buffer, sizeof(buffer), script_output);
+    pclose(script_output);
+    if (result) {
+      // The string is guaranteed to be null-terminated, but probably contains
+      // a newline character, which we don't want.
+      for (int i = 0; result[i]; ++i) {
+        if (result[i] < ' ') {
+          result[i] = 0;
+          break;
+        }
+      }
+      version = result;
+    }
+  }
+  callback.Run(version);
 }
 
 void DaemonControllerMac::DoSetConfigAndStart(

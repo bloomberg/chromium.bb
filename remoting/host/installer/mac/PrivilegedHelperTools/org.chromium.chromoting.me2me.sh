@@ -7,6 +7,7 @@
 NAME=org.chromium.chromoting
 CONFIG_DIR=/Library/PrivilegedHelperTools
 HOST_EXE=$CONFIG_DIR/$NAME.me2me_host.app/Contents/MacOS/remoting_me2me_host
+PLIST_BASE=$CONFIG_DIR/$NAME.me2me_host.app/Contents/Info
 ENABLED_FILE=$CONFIG_DIR/$NAME.me2me_enabled
 CONFIG_FILE=$CONFIG_DIR/$NAME.json
 
@@ -82,6 +83,8 @@ elif [[ "$1" = "--enable" ]]; then
 elif [[ "$1" = "--save-config" ]]; then
   echo $$
   cat > "$CONFIG_FILE"
+elif [[ "$1" = "--host-version" ]]; then
+  defaults read "$PLIST_BASE" CFBundleVersion
 elif [[ "$1" = "--run-from-launchd" ]]; then
   run_host
 else
