@@ -12,7 +12,6 @@ class FakeCommandBufferStub : public GpuCommandBufferStubBase {
  public:
   SurfaceState surface_state_;
   GpuMemoryAllocation allocation_;
-  gfx::Size size_;
 
   FakeCommandBufferStub()
       : surface_state_(0, false, base::TimeTicks()) {
@@ -35,7 +34,7 @@ class FakeCommandBufferStub : public GpuCommandBufferStubBase {
   }
 
   virtual gfx::Size GetSurfaceSize() const {
-    return size_;
+    return gfx::Size();
   }
   virtual bool IsInSameContextShareGroup(
       const GpuCommandBufferStubBase& stub) const {
@@ -481,85 +480,54 @@ TEST_F(GpuMemoryManagerTest, TestManageChangingImportanceShareGroup) {
   EXPECT_TRUE(IsAllocationHibernatedForSurfaceNo(stub4.allocation_));
 }
 
-#if !defined(OS_ANDROID)
 // Test GpuMemoryAllocation memory allocation bonuses:
 // When the number of visible tabs is small, each tab should get a
 // gpu_resource_size_in_bytes allocation value that is greater than
 // kMinimumAllocationForTab, and when the number of tabs is large, each should
 // get exactly kMinimumAllocationForTab and not less.
 TEST_F(GpuMemoryManagerTest, TestForegroundStubsGetBonusAllocation) {
-  size_t max_stubs_before_no_bonus =
-      GpuMemoryManager::kMaximumAllocationForTabs /
-          (GpuMemoryManager::kMinimumAllocationForTab + 1);
-
-  std::vector<FakeCommandBufferStub> stubs;
-  for (size_t i = 0; i < max_stubs_before_no_bonus; ++i) {
-    stubs.push_back(
-        FakeCommandBufferStub(GenerateUniqueSurfaceId(), true, older_));
-  }
-  for (size_t i = 0; i < stubs.size(); ++i) {
-    client_.stubs_.push_back(&stubs[i]);
-  }
+  FakeCommandBufferStub stub1(GenerateUniqueSurfaceId(), true, older_),
+                        stub2(GenerateUniqueSurfaceId(), true, older_),
+                        stub3(GenerateUniqueSurfaceId(), true, older_);
+  client_.stubs_.push_back(&stub1);
+  client_.stubs_.push_back(&stub2);
+  client_.stubs_.push_back(&stub3);
 
   Manage();
-  for (size_t i = 0; i < stubs.size(); ++i) {
-    EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stubs[i].allocation_));
-    EXPECT_GT(stubs[i].allocation_.gpu_resource_size_in_bytes,
-              static_cast<size_t>(GpuMemoryManager::kMinimumAllocationForTab));
-  }
+  EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub1.allocation_));
+  EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub2.allocation_));
+  EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub3.allocation_));
+  EXPECT_GT(stub1.allocation_.gpu_resource_size_in_bytes,
+            static_cast<size_t>(GpuMemoryManager::kMinimumAllocationForTab));
+  EXPECT_GT(stub2.allocation_.gpu_resource_size_in_bytes,
+            static_cast<size_t>(GpuMemoryManager::kMinimumAllocationForTab));
+  EXPECT_GT(stub3.allocation_.gpu_resource_size_in_bytes,
+            static_cast<size_t>(GpuMemoryManager::kMinimumAllocationForTab));
 
-  FakeCommandBufferStub extra_stub(GenerateUniqueSurfaceId(), true, older_);
-  client_.stubs_.push_back(&extra_stub);
+  FakeCommandBufferStub stub4(GenerateUniqueSurfaceId(), true, older_),
+                        stub5(GenerateUniqueSurfaceId(), true, older_),
+                        stub6(GenerateUniqueSurfaceId(), true, older_),
+                        stub7(GenerateUniqueSurfaceId(), true, older_),
+                        stub8(GenerateUniqueSurfaceId(), true, older_),
+                        stub9(GenerateUniqueSurfaceId(), true, older_);
+  client_.stubs_.push_back(&stub4);
+  client_.stubs_.push_back(&stub5);
+  client_.stubs_.push_back(&stub6);
+  client_.stubs_.push_back(&stub7);
+  client_.stubs_.push_back(&stub8);
+  client_.stubs_.push_back(&stub9);
 
   Manage();
-  for (size_t i = 0; i < stubs.size(); ++i) {
-    EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stubs[i].allocation_));
-    EXPECT_EQ(stubs[i].allocation_.gpu_resource_size_in_bytes,
-              GpuMemoryManager::kMinimumAllocationForTab);
-  }
-}
-#else
-// Test GpuMemoryAllocation memory allocation bonuses:
-// When the size of tab contents is small, bonus allocation should be 0.
-// As the size of tab contents increases, bonus allocation should increase
-// until finally reaching the maximum allocation limit.
-TEST_F(GpuMemoryManagerTest, TestForegroundStubsGetBonusAllocationAndroid) {
-  FakeCommandBufferStub stub(GenerateUniqueSurfaceId(), true, older_);
-  client_.stubs_.push_back(&stub);
-
-  stub.size_ = gfx::Size(1,1);
-  Manage();
-  EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub.allocation_));
-  EXPECT_EQ(stub.allocation_.gpu_resource_size_in_bytes,
+  EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub1.allocation_));
+  EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub2.allocation_));
+  EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub3.allocation_));
+  EXPECT_EQ(stub1.allocation_.gpu_resource_size_in_bytes,
             GpuMemoryManager::kMinimumAllocationForTab);
-
-  // Keep increasing size, making sure allocation is always increasing
-  // Until it finally reaches the maximum.
-  while (stub.allocation_.gpu_resource_size_in_bytes <=
-      GpuMemoryManager::kMaximumAllocationForTabs) {
-    size_t previous_allocation = stub.allocation_.gpu_resource_size_in_bytes;
-
-    stub.size_ = stub.size_.Scale(1, 2);
-
-    Manage();
-    EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub.allocation_));
-    EXPECT_GE(stub.allocation_.gpu_resource_size_in_bytes,
-              GpuMemoryManager::kMinimumAllocationForTab);
-    EXPECT_LE(stub.allocation_.gpu_resource_size_in_bytes,
-              GpuMemoryManager::kMaximumAllocationForTabs);
-    EXPECT_GE(stub.allocation_.gpu_resource_size_in_bytes,
-              previous_allocation);
-  }
-
-  // One final size increase to confirm it stays capped at maximum.
-  stub.size_ = stub.size_.Scale(1, 2);
-
-  Manage();
-  EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub.allocation_));
-  EXPECT_EQ(stub.allocation_.gpu_resource_size_in_bytes,
-            GpuMemoryManager::kMaximumAllocationForTabs);
+  EXPECT_EQ(stub2.allocation_.gpu_resource_size_in_bytes,
+            GpuMemoryManager::kMinimumAllocationForTab);
+  EXPECT_EQ(stub3.allocation_.gpu_resource_size_in_bytes,
+            GpuMemoryManager::kMinimumAllocationForTab);
 }
-#endif
 
 // Test GpuMemoryAllocation comparison operators: Iterate over all possible
 // combinations of gpu_resource_size_in_bytes, suggest_have_backbuffer, and
