@@ -90,7 +90,8 @@ PepperMessageFilter::PepperMessageFilter(ProcessType type,
       process_id_(0),
       resource_context_(NULL),
       host_resolver_(host_resolver),
-      next_socket_id_(1) {
+      next_socket_id_(1),
+      incognito_(false) {
   DCHECK(type == PLUGIN);
   DCHECK(host_resolver);
 }
