@@ -9,7 +9,6 @@
 #include "chrome/browser/tabs/pinned_tab_test_utils.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/startup/startup_tab.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,7 +41,7 @@ TEST_F(PinnedTabCodecTest, PinnedAndNonPinned) {
 
   PinnedTabCodec::WritePinnedTabs(profile());
 
-  StartupTabs pinned_tabs = PinnedTabCodec::ReadPinnedTabs(profile());
+  PinnedTabCodec::Tabs pinned_tabs = PinnedTabCodec::ReadPinnedTabs(profile());
   std::string result = PinnedTabTestUtils::TabsToString(pinned_tabs);
   EXPECT_EQ("http://www.google.com/::pinned:", result);
 

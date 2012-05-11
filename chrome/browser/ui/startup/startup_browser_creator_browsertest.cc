@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
-#include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -110,8 +109,8 @@ class OpenURLsPopupObserver : public BrowserList::Observer {
 };
 
 // Test that when there is a popup as the active browser any requests to
-// StartupBrowserCreatorImpl::OpenURLsInBrowser don't crash because there's no
-// explicit profile given.
+// StartupBrowserCreator::LaunchWithProfile::OpenURLsInBrowser don't crash
+// because there's no explicit profile given.
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenURLsPopup) {
   std::vector<GURL> urls;
   urls.push_back(GURL("http://localhost"));
@@ -130,10 +129,10 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenURLsPopup) {
   ASSERT_EQ(popup, observer.added_browser_);
 
   CommandLine dummy(CommandLine::NO_PROGRAM);
-  browser::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      browser::startup::IS_FIRST_RUN :
-      browser::startup::IS_NOT_FIRST_RUN;
-  StartupBrowserCreatorImpl launch(FilePath(), dummy, first_run);
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
+  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), dummy, first_run);
   // This should create a new window, but re-use the profile from |popup|. If
   // it used a NULL or invalid profile, it would crash.
   launch.OpenURLsInBrowser(popup, false, urls);
@@ -166,10 +165,10 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   // Do a simple non-process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
-  browser::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      browser::startup::IS_FIRST_RUN :
-      browser::startup::IS_NOT_FIRST_RUN;
-  StartupBrowserCreatorImpl launch(FilePath(), dummy, first_run);
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
+  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), dummy, first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
   // This should have created a new browser window.  |browser()| is still
@@ -210,9 +209,10 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   // Do a simple non-process-startup browser launch.
   CommandLine dummy(CommandLine::NO_PROGRAM);
-  browser::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      browser::startup::IS_FIRST_RUN : browser::startup::IS_NOT_FIRST_RUN;
-  StartupBrowserCreatorImpl launch(FilePath(), dummy, first_run);
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
+  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), dummy, first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
   // This should have created a new browser window.
@@ -234,9 +234,11 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutNoPref) {
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
 
-  browser::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      browser::startup::IS_FIRST_RUN : browser::startup::IS_NOT_FIRST_RUN;
-  StartupBrowserCreatorImpl launch(FilePath(), command_line, first_run);
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
+  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), command_line,
+                                                  first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
   // No pref was set, so the app should have opened in a window.
@@ -262,9 +264,11 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutWindowPref) {
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
-  browser::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      browser::startup::IS_FIRST_RUN : browser::startup::IS_NOT_FIRST_RUN;
-  StartupBrowserCreatorImpl launch(FilePath(), command_line, first_run);
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
+  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), command_line,
+                                                  first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
   // Pref was set to open in a window, so the app should have opened in a
@@ -292,9 +296,11 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutTabPref) {
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
-  browser::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      browser::startup::IS_FIRST_RUN : browser::startup::IS_NOT_FIRST_RUN;
-  StartupBrowserCreatorImpl launch(FilePath(), command_line, first_run);
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
+  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), command_line,
+                                                  first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
   // When an app shortcut is open and the pref indicates a tab should
@@ -321,9 +327,11 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutPanel) {
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
-  browser::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      browser::startup::IS_FIRST_RUN : browser::startup::IS_NOT_FIRST_RUN;
-  StartupBrowserCreatorImpl launch(FilePath(), command_line, first_run);
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
+  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), command_line,
+                                                  first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
   // The launch should have created a new browser, with a panel type.

@@ -10,14 +10,15 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/browser/ui/startup/startup_tab.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 
 class PinnedTabTestUtils {
  public:
   // Converts a set of Tabs into a string. The format is a space separated list
   // of urls. If the tab is an app, ':app' is appended, and if the tab is
   // pinned, ':pinned' is appended.
-  static std::string TabsToString(const std::vector<StartupTab>& values);
+  static std::string TabsToString(
+      const std::vector<StartupBrowserCreator::LaunchWithProfile::Tab>& values);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PinnedTabTestUtils);

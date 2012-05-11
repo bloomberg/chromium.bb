@@ -20,6 +20,8 @@
 
 using content::NavigationEntry;
 
+typedef StartupBrowserCreator::LaunchWithProfile::Tab Tab;
+
 // Key used in dictionaries for the app id.
 static const char kAppID[] = "app_id";
 
@@ -37,7 +39,7 @@ static bool HasPinnedTabs(Browser* browser) {
 }
 
 // Adds a DictionaryValue to |values| representing |tab|.
-static void EncodeTab(const StartupTab& tab, ListValue* values) {
+static void EncodeTab(const Tab& tab, ListValue* values) {
   scoped_ptr<DictionaryValue> value(new DictionaryValue);
   value->SetString(kURL, tab.url.spec());
   if (tab.is_app)
@@ -84,7 +86,7 @@ static void EncodePinnedTabs(Browser* browser, ListValue* values) {
 
 // Decodes the previously written values in |value| to |tab|, returning true
 // on success.
-static bool DecodeTab(const DictionaryValue& value, StartupTab* tab) {
+static bool DecodeTab(const DictionaryValue& value, Tab* tab) {
   tab->is_app = false;
 
   std::string url_string;
@@ -122,8 +124,7 @@ void PinnedTabCodec::WritePinnedTabs(Profile* profile) {
 }
 
 // static
-void PinnedTabCodec::WritePinnedTabs(Profile* profile,
-                                     const StartupTabs& tabs) {
+void PinnedTabCodec::WritePinnedTabs(Profile* profile, const Tabs& tabs) {
   PrefService* prefs = profile->GetPrefs();
   if (!prefs)
     return;
@@ -131,21 +132,21 @@ void PinnedTabCodec::WritePinnedTabs(Profile* profile,
   ListPrefUpdate update(prefs, prefs::kPinnedTabs);
   ListValue* values = update.Get();
   values->Clear();
-  for (StartupTabs::const_iterator i = tabs.begin(); i != tabs.end(); ++i)
+  for (Tabs::const_iterator i = tabs.begin(); i != tabs.end(); ++i)
     EncodeTab(*i, values);
 }
 
 // static
-StartupTabs PinnedTabCodec::ReadPinnedTabs(Profile* profile) {
+PinnedTabCodec::Tabs PinnedTabCodec::ReadPinnedTabs(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
   if (!prefs)
-    return StartupTabs();
+    return Tabs();
   return ReadPinnedTabs(prefs->GetList(prefs::kPinnedTabs));
 }
 
 // static
-StartupTabs PinnedTabCodec::ReadPinnedTabs(const base::Value* value) {
-  StartupTabs results;
+PinnedTabCodec::Tabs PinnedTabCodec::ReadPinnedTabs(const base::Value* value) {
+  Tabs results;
 
   const base::ListValue* tabs_list = NULL;
   if (!value->GetAsList(&tabs_list))
@@ -154,7 +155,7 @@ StartupTabs PinnedTabCodec::ReadPinnedTabs(const base::Value* value) {
   for (size_t i = 0, max = tabs_list->GetSize(); i < max; ++i) {
     base::DictionaryValue* tab_values = NULL;
     if (tabs_list->GetDictionary(i, &tab_values)) {
-      StartupTab tab;
+      Tab tab;
       if (DecodeTab(*tab_values, &tab))
         results.push_back(tab);
     }

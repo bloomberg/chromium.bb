@@ -717,21 +717,22 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
   VLOG(1) << "Launching browser...";
   StartupBrowserCreator browser_creator;
   int return_code;
-  browser::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      browser::startup::IS_FIRST_RUN :
-      browser::startup::IS_NOT_FIRST_RUN;
+  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      StartupBrowserCreator::IS_FIRST_RUN :
+      StartupBrowserCreator::IS_NOT_FIRST_RUN;
   browser_creator.LaunchBrowser(*CommandLine::ForCurrentProcess(),
                                 profile,
                                 FilePath(),
-                                browser::startup::IS_PROCESS_STARTUP,
+                                StartupBrowserCreator::IS_PROCESS_STARTUP,
                                 first_run,
                                 &return_code);
 
   // Mark login host for deletion after browser starts.  This
   // guarantees that the message loop will be referenced by the
   // browser before it is dereferenced by the login host.
-  if (login_host)
+  if (login_host) {
     login_host->OnSessionStart();
+  }
   UserManager::Get()->SessionStarted();
 }
 

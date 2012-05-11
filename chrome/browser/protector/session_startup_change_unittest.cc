@@ -7,7 +7,6 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/protector/base_setting_change.h"
-#include "chrome/browser/ui/startup/startup_tab.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "grit/generated_resources.h"
@@ -43,7 +42,7 @@ class SessionStartupChangeTest : public testing::Test {
  protected:
   TestingProfile profile_;
   SessionStartupPref initial_startup_pref_;
-  StartupTabs empty_pinned_tabs_;
+  PinnedTabCodec::Tabs empty_pinned_tabs_;
 };
 
 TEST_F(SessionStartupChangeTest, InitAndApply) {
@@ -104,8 +103,8 @@ TEST_F(SessionStartupChangeTest, ApplyButtonCaptions) {
   EXPECT_EQ(kNoDisplayName, change->GetApplyDisplayName());
 
   // Pinned tabs count as startup URLs as well.
-  StartupTabs new_pinned_tabs;
-  StartupTab pinned_tab;
+  PinnedTabCodec::Tabs new_pinned_tabs;
+  StartupBrowserCreator::LaunchWithProfile::Tab pinned_tab;
   pinned_tab.url = GURL(kStartupUrl3);
   new_pinned_tabs.push_back(pinned_tab);
   change.reset(

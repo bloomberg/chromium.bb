@@ -4,9 +4,11 @@
 
 #include "chrome/browser/tabs/pinned_tab_test_utils.h"
 
+typedef StartupBrowserCreator::LaunchWithProfile::Tab Tab;
+
 namespace {
 
-std::string TabToString(const StartupTab& tab) {
+std::string TabToString(const Tab& tab) {
   return tab.url.spec() + ":" + (tab.is_app ? "app" : "") + ":" +
       (tab.is_pinned ? "pinned" : "") + ":" + tab.app_id;
 }
@@ -15,7 +17,7 @@ std::string TabToString(const StartupTab& tab) {
 
 // static
 std::string PinnedTabTestUtils::TabsToString(
-    const std::vector<StartupTab>& values) {
+    const std::vector<StartupBrowserCreator::LaunchWithProfile::Tab>& values) {
   std::string result;
   for (size_t i = 0; i < values.size(); ++i) {
     if (i != 0)
