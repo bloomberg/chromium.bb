@@ -35,52 +35,68 @@
 
 #include <X11/keysym.h>
 
+struct spring {
+	double current;
+	double target;
+	double previous;
+};
+
 struct resizor {
 	struct display *display;
 	struct window *window;
 	struct widget *widget;
 	struct window *menu;
-	int32_t width;
-
-	struct {
-		double current;
-		double target;
-		double previous;
-	} height;
+	struct spring width;
+	struct spring height;
 	struct wl_callback *frame_callback;
 };
+
+static void
+spring_update(struct spring *spring)
+{
+	double current, force;
+
+	current = spring->current;
+	force = (spring->target - current) / 20.0 +
+		(spring->previous - current);
+
+	spring->current = current + (current - spring->previous) + force;
+	spring->previous = current;
+}
+
+static int
+spring_done(struct spring *spring)
+{
+	return fabs(spring->previous - spring->target) < 0.1;
+}
+
+static const struct wl_callback_listener listener;
 
 static void
 frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 {
 	struct resizor *resizor = data;
-	double force, height;
 
 	assert(!callback || callback == resizor->frame_callback);
 
-	height = resizor->height.current;
-	force = (resizor->height.target - height) / 10.0 +
-		(resizor->height.previous - height);
+	spring_update(&resizor->width);
+	spring_update(&resizor->height);
 
-	resizor->height.current =
-		height + (height - resizor->height.previous) + force;
-	resizor->height.previous = height;
-
-	if (resizor->height.current >= 400) {
-		resizor->height.current = 400;
-		resizor->height.previous = 400;
-	}
-
-	if (resizor->height.current <= 200) {
-		resizor->height.current = 200;
-		resizor->height.previous = 200;
-	}
-
-	widget_schedule_resize(resizor->widget, resizor->width, height + 0.5);
+	widget_schedule_resize(resizor->widget,
+			       resizor->width.current + 0.5,
+			       resizor->height.current + 0.5);
 
 	if (resizor->frame_callback) {
 		wl_callback_destroy(resizor->frame_callback);
 		resizor->frame_callback = NULL;
+	}
+
+	if (!spring_done(&resizor->width) || !spring_done(&resizor->height)) {
+		resizor->frame_callback =
+			wl_surface_frame(
+				window_get_wl_surface(resizor->window));
+		wl_callback_add_listener(resizor->frame_callback, &listener,
+					 resizor);
 	}
 }
 
@@ -112,15 +128,6 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_destroy(cr);
 
 	cairo_surface_destroy(surface);
-
-	if (fabs(resizor->height.previous - resizor->height.target) > 0.1) {
-		resizor->frame_callback =
-			wl_surface_frame(
-				window_get_wl_surface(resizor->window));
-		wl_callback_add_listener(resizor->frame_callback, &listener,
-					 resizor);
-	}
-
 }
 
 static void
@@ -137,23 +144,55 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	    uint32_t key, uint32_t sym, uint32_t state, void *data)
 {
 	struct resizor *resizor = data;
+	struct rectangle allocation;
 
 	if (state == 0)
 		return;
 
+	window_get_allocation(resizor->window, &allocation);
+	resizor->width.current = allocation.width;
+	if (spring_done(&resizor->width))
+		resizor->width.target = allocation.width;
+	resizor->height.current = allocation.height;
+	if (spring_done(&resizor->height))
+		resizor->height.target = allocation.height;
+
 	switch (sym) {
-	case XK_Down:
-		resizor->height.target = 400;
-		frame_callback(resizor, NULL, 0);
-		break;
 	case XK_Up:
-		resizor->height.target = 200;
-		frame_callback(resizor, NULL, 0);
+		if (allocation.height < 400)
+			break;
+
+		resizor->height.target = allocation.height - 200;
 		break;
+
+	case XK_Down:
+		if (allocation.height > 1000)
+			break;
+
+		resizor->height.target = allocation.height + 200;
+		break;
+
+	case XK_Left:
+		if (allocation.width < 400)
+			break;
+
+		resizor->width.target = allocation.width - 200;
+		break;
+
+	case XK_Right:
+		if (allocation.width > 1000)
+			break;
+
+		resizor->width.target = allocation.width + 200;
+		break;
+
 	case XK_Escape:
 		display_exit(resizor->display);
 		break;
 	}
+
+	if (!resizor->frame_callback)
+		frame_callback(resizor, NULL, 0);
 }
 
 static void
@@ -194,7 +233,6 @@ static struct resizor *
 resizor_create(struct display *display)
 {
 	struct resizor *resizor;
-	int32_t height;
 
 	resizor = malloc(sizeof *resizor);
 	if (resizor == NULL)
@@ -212,15 +250,17 @@ resizor_create(struct display *display)
 	window_set_keyboard_focus_handler(resizor->window,
 					  keyboard_focus_handler);
 
-	resizor->width = 300;
-	resizor->height.current = 400;
-	resizor->height.previous = resizor->height.current;
-	resizor->height.target = resizor->height.current;
-	height = resizor->height.current + 0.5;
-
 	widget_set_button_handler(resizor->widget, button_handler);
 
-	widget_schedule_resize(resizor->widget, resizor->width, height);
+	resizor->height.previous = 400;
+	resizor->height.current = 400;
+	resizor->height.target = 400;
+
+	resizor->width.previous = 400;
+	resizor->width.current = 400;
+	resizor->width.target = 400;
+
+	widget_schedule_resize(resizor->widget, 400, 400);
 
 	return resizor;
 }
