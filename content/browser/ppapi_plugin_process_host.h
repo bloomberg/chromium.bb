@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,6 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
     //   IPC::ChannelHandle(),
     //   0
     virtual void OnPpapiChannelOpened(
-        base::ProcessHandle plugin_process_handle,
         const IPC::ChannelHandle& channel_handle,
         int plugin_child_id) = 0;
 

@@ -102,8 +102,7 @@ class HostDispatcherWrapper
   HostDispatcherWrapper() {}
   virtual ~HostDispatcherWrapper() {}
 
-  bool Init(base::ProcessHandle plugin_process_handle,
-            const IPC::ChannelHandle& channel_handle,
+  bool Init(const IPC::ChannelHandle& channel_handle,
             PP_Module pp_module,
             PP_GetInterface_Func local_get_interface,
             const ppapi::Preferences& preferences,
@@ -119,7 +118,7 @@ class HostDispatcherWrapper
 
     dispatcher_delegate_.reset(new PepperProxyChannelDelegateImpl);
     dispatcher_.reset(new ppapi::proxy::HostDispatcher(
-        plugin_process_handle, pp_module, local_get_interface, filter));
+        pp_module, local_get_interface, filter));
 
     if (!dispatcher_->InitHostWithChannel(dispatcher_delegate_.get(),
                                           channel_handle,
@@ -234,11 +233,10 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
   }
 
   // Out of process: have the browser start the plugin process for us.
-  base::ProcessHandle plugin_process_handle = base::kNullProcessHandle;
   IPC::ChannelHandle channel_handle;
   int plugin_child_id = 0;
   render_view_->Send(new ViewHostMsg_OpenChannelToPepperPlugin(
-      path, &plugin_process_handle, &channel_handle, &plugin_child_id));
+      path, &channel_handle, &plugin_child_id));
   if (channel_handle.name.empty()) {
     // Couldn't be initialized.
     return scoped_refptr<webkit::ppapi::PluginModule>();
@@ -256,7 +254,6 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
   PepperPluginRegistry::GetInstance()->AddLiveModule(path, module);
   scoped_ptr<HostDispatcherWrapper> dispatcher(new HostDispatcherWrapper);
   if (!dispatcher->Init(
-          plugin_process_handle,
           channel_handle,
           module->pp_module(),
           webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc(),
@@ -296,21 +293,20 @@ scoped_refptr<PepperBrokerImpl> PepperPluginDelegateImpl::CreateBroker(
 
 void PepperPluginDelegateImpl::OnPpapiBrokerChannelCreated(
     int request_id,
-    base::ProcessHandle broker_process_handle,
     const IPC::ChannelHandle& handle) {
   scoped_refptr<PepperBrokerImpl>* broker_ptr =
       pending_connect_broker_.Lookup(request_id);
   if (broker_ptr) {
     scoped_refptr<PepperBrokerImpl> broker = *broker_ptr;
     pending_connect_broker_.Remove(request_id);
-    broker->OnBrokerChannelConnected(broker_process_handle, handle);
+    broker->OnBrokerChannelConnected(handle);
   } else {
     // There is no broker waiting for this channel. Close it so the broker can
     // clean up and possibly exit.
     // The easiest way to clean it up is to just put it in an object
     // and then close them. This failure case is not performance critical.
     PepperBrokerDispatcherWrapper temp_dispatcher;
-    temp_dispatcher.Init(broker_process_handle, handle);
+    temp_dispatcher.Init(handle);
   }
 }
 
@@ -837,8 +833,7 @@ class AsyncOpenFileSystemURLCallbackTranslator
   }
 
   virtual void DidOpenFile(
-      base::PlatformFile file,
-      base::ProcessHandle unused) {
+      base::PlatformFile file) {
     callback_.Run(base::PLATFORM_FILE_OK, base::PassPlatformFile(&file));
     // Make sure we won't leak file handle if the requester has died.
     if (file != base::kInvalidPlatformFileValue) {

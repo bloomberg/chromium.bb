@@ -9,6 +9,7 @@
 #include "base/process.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "ipc/ipc_platform_file.h"
 
 #if defined(OS_WIN)
 namespace sandbox {
@@ -75,6 +76,15 @@ CONTENT_EXPORT bool InitializeSandbox(int sandbox_type,
 CONTENT_EXPORT void InitializeSandbox();
 
 #endif
+
+// Platform neutral wrapper for making an exact copy of a handle for use in
+// the target process. On Windows this wraps BrokerDuplicateHandle() with the
+// DUPLICATE_SAME_ACCESS flag. On posix it behaves essentially the same as
+// IPC::GetFileHandleForProcess()
+CONTENT_EXPORT IPC::PlatformFileForTransit BrokerGetFileHandleForProcess(
+    base::PlatformFile handle,
+    base::ProcessId target_process_id,
+    bool should_close_source);
 
 }  // namespace content
 

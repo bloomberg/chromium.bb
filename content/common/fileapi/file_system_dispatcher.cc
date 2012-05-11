@@ -308,7 +308,6 @@ void FileSystemDispatcher::OnDidOpenFile(
   fileapi::FileSystemCallbackDispatcher* dispatcher =
       dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);
-  dispatcher->DidOpenFile(IPC::PlatformFileForTransitToPlatformFile(file),
-      base::kNullProcessHandle);
+  dispatcher->DidOpenFile(IPC::PlatformFileForTransitToPlatformFile(file));
   dispatchers_.Remove(request_id);
 }

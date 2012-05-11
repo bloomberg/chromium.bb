@@ -25,21 +25,19 @@ class PepperBrokerImplTest : public ::testing::Test {
 // Initialization should fail.
 TEST_F(PepperBrokerImplTest, InitFailure) {
   PepperBrokerDispatcherWrapper dispatcher_wrapper;
-  base::ProcessHandle broker_process_handle = base::kNullProcessHandle;
   IPC::ChannelHandle invalid_channel;  // Invalid by default.
 
   // An invalid handle should result in a failure (false) without a LOG(FATAL),
   // such as the one in CreatePipe().  Call it twice because without the invalid
   // handle check, the posix code would hit a one-time path due to a static
   // variable and go through the LOG(FATAL) path.
-  EXPECT_FALSE(dispatcher_wrapper.Init(broker_process_handle, invalid_channel));
-  EXPECT_FALSE(dispatcher_wrapper.Init(broker_process_handle, invalid_channel));
+  EXPECT_FALSE(dispatcher_wrapper.Init(invalid_channel));
+  EXPECT_FALSE(dispatcher_wrapper.Init(invalid_channel));
 }
 
 // On valid ChannelHandle, initialization should succeed.
 TEST_F(PepperBrokerImplTest, InitSuccess) {
   PepperBrokerDispatcherWrapper dispatcher_wrapper;
-  base::ProcessHandle broker_process_handle = base::kNullProcessHandle;
   const char kChannelName[] = "PepperPluginDelegateImplTestChannelName";
 #if defined(OS_POSIX)
   int fds[2] = {-1, -1};
@@ -52,7 +50,7 @@ TEST_F(PepperBrokerImplTest, InitSuccess) {
   IPC::ChannelHandle valid_channel(kChannelName);
 #endif  // defined(OS_POSIX));
 
-  EXPECT_TRUE(dispatcher_wrapper.Init(broker_process_handle, valid_channel));
+  EXPECT_TRUE(dispatcher_wrapper.Init(valid_channel));
 
 #if defined(OS_POSIX)
   EXPECT_EQ(0, ::close(fds[0]));

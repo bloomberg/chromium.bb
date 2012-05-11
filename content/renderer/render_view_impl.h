@@ -809,7 +809,6 @@ class RenderViewImpl : public RenderWidget,
                          IPC::PlatformFileForTransit file_for_transit,
                          int message_id);
   void OnPpapiBrokerChannelCreated(int request_id,
-                                   base::ProcessHandle broker_process_handle,
                                    const IPC::ChannelHandle& handle);
   void OnCancelDownload(int32 download_id);
   void OnClearFocusedNode();

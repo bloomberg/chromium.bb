@@ -58,8 +58,7 @@ class FileSystemCallbackDispatcher {
   // for Pepper.
   // The method will be responsible for closing |file|.
   virtual void DidOpenFile(
-      base::PlatformFile file,
-      base::ProcessHandle peer_handle);
+      base::PlatformFile file);
 };
 
 }  // namespace fileapi

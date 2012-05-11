@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,16 @@ class PPAPI_PROXY_EXPORT ProxyChannel
     // Returns the event object that becomes signalled when the main thread's
     // message loop exits.
     virtual base::WaitableEvent* GetShutdownEvent() = 0;
+
+    // Duplicates a handle to the provided object, returning one that is valid
+    // on the other side of the channel. This is part of the delegate interface
+    // because both sides of the channel may not have sufficient permission to
+    // duplicate handles directly. The implementation must provide the same
+    // guarantees as ProxyChannel::ShareHandleWithRemote below.
+    virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
+        base::PlatformFile handle,
+        const IPC::SyncChannel& channel,
+        bool should_close_source) = 0;
   };
 
   virtual ~ProxyChannel();
@@ -73,7 +83,7 @@ class PPAPI_PROXY_EXPORT ProxyChannel
 #endif
 
  protected:
-  explicit ProxyChannel(base::ProcessHandle remote_process_handle);
+  explicit ProxyChannel();
 
   // You must call this function before anything else. Returns true on success.
   // The delegate pointer must outlive this class, ownership is not
@@ -89,8 +99,6 @@ class PPAPI_PROXY_EXPORT ProxyChannel
  private:
   // Non-owning pointer. Guaranteed non-NULL after init is called.
   ProxyChannel::Delegate* delegate_;
-
-  base::ProcessHandle remote_process_handle_;  // See getter above.
 
   // When we're unit testing, this will indicate the sink for the messages to
   // be deposited so they can be inspected by the test. When non-NULL, this

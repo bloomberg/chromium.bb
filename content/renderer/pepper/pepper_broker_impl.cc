@@ -55,7 +55,6 @@ PepperBrokerDispatcherWrapper::~PepperBrokerDispatcherWrapper() {
 }
 
 bool PepperBrokerDispatcherWrapper::Init(
-    base::ProcessHandle broker_process_handle,
     const IPC::ChannelHandle& channel_handle) {
   if (channel_handle.name.empty())
     return false;
@@ -68,7 +67,7 @@ bool PepperBrokerDispatcherWrapper::Init(
 
   dispatcher_delegate_.reset(new PepperProxyChannelDelegateImpl);
   dispatcher_.reset(
-      new ppapi::proxy::BrokerHostDispatcher(broker_process_handle));
+      new ppapi::proxy::BrokerHostDispatcher());
 
   if (!dispatcher_->InitBrokerWithChannel(dispatcher_delegate_.get(),
                                           channel_handle,
@@ -191,11 +190,10 @@ void PepperBrokerImpl::Disconnect(webkit::ppapi::PPB_Broker_Impl* client) {
 }
 
 void PepperBrokerImpl::OnBrokerChannelConnected(
-    base::ProcessHandle broker_process_handle,
     const IPC::ChannelHandle& channel_handle) {
   scoped_ptr<PepperBrokerDispatcherWrapper> dispatcher(
       new PepperBrokerDispatcherWrapper);
-  if (dispatcher->Init(broker_process_handle, channel_handle)) {
+  if (dispatcher->Init(channel_handle)) {
     dispatcher_.reset(dispatcher.release());
 
     // Process all pending channel requests from the plugins.

@@ -17,10 +17,8 @@
 namespace ppapi {
 namespace proxy {
 
-Dispatcher::Dispatcher(base::ProcessHandle remote_process_handle,
-                       PP_GetInterface_Func local_get_interface)
-    : ProxyChannel(remote_process_handle),
-      disallow_trusted_interfaces_(false),  // TODO(brettw) make this settable.
+Dispatcher::Dispatcher(PP_GetInterface_Func local_get_interface)
+    : disallow_trusted_interfaces_(false),  // TODO(brettw) make this settable.
       local_get_interface_(local_get_interface) {
 }
 

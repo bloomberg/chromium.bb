@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,7 @@
 // from the PPAPI proxy on the Chrome multiprocess infrastructure.
 class BrokerProcessDispatcher : public ppapi::proxy::BrokerSideDispatcher {
  public:
-  BrokerProcessDispatcher(base::ProcessHandle remote_process_handle,
-                          PP_GetInterface_Func get_plugin_interface,
+  BrokerProcessDispatcher(PP_GetInterface_Func get_plugin_interface,
                           PP_ConnectInstance_Func connect_instance);
   virtual ~BrokerProcessDispatcher();
 

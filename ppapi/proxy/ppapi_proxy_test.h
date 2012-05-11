@@ -114,6 +114,10 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
     // ProxyChannel::Delegate implementation.
     virtual base::MessageLoopProxy* GetIPCMessageLoop() OVERRIDE;
     virtual base::WaitableEvent* GetShutdownEvent() OVERRIDE;
+    virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
+        base::PlatformFile handle,
+        const IPC::SyncChannel& /* channel */,
+        bool should_close_source) OVERRIDE;
 
     // PluginDispatcher::PluginDelegate implementation.
     virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet() OVERRIDE;
@@ -189,6 +193,10 @@ class HostProxyTestHarness : public ProxyTestHarnessBase {
     // ProxyChannel::Delegate implementation.
     virtual base::MessageLoopProxy* GetIPCMessageLoop();
     virtual base::WaitableEvent* GetShutdownEvent();
+    virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
+        base::PlatformFile handle,
+        const IPC::SyncChannel& /* channel */,
+        bool should_close_source) OVERRIDE;
 
    private:
     base::MessageLoopProxy* ipc_message_loop_;  // Weak

@@ -61,11 +61,10 @@ class BoolRestorer {
 
 }  // namespace
 
-HostDispatcher::HostDispatcher(base::ProcessHandle remote_process_handle,
-                               PP_Module module,
+HostDispatcher::HostDispatcher(PP_Module module,
                                PP_GetInterface_Func local_get_interface,
                                SyncMessageStatusReceiver* sync_status)
-    : Dispatcher(remote_process_handle, local_get_interface),
+    : Dispatcher(local_get_interface),
       sync_status_(sync_status),
       pp_module_(module),
       ppb_proxy_(NULL),

@@ -58,10 +58,9 @@ InstanceData::~InstanceData() {
   }
 }
 
-PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
-                                   PP_GetInterface_Func get_interface,
+PluginDispatcher::PluginDispatcher(PP_GetInterface_Func get_interface,
                                    bool incognito)
-    : Dispatcher(remote_process_handle, get_interface),
+    : Dispatcher(get_interface),
       plugin_delegate_(NULL),
       received_preferences_(false),
       plugin_dispatcher_id_(0),

@@ -5,6 +5,7 @@
 #include "content/renderer/pepper/pepper_proxy_channel_delegate_impl.h"
 
 #include "content/common/child_process.h"
+#include "content/public/common/sandbox_init.h"
 
 namespace content {
 
@@ -20,6 +21,15 @@ base::MessageLoopProxy* PepperProxyChannelDelegateImpl::GetIPCMessageLoop() {
 base::WaitableEvent* PepperProxyChannelDelegateImpl::GetShutdownEvent() {
   DCHECK(ChildProcess::current()) << "Must be in the renderer.";
   return ChildProcess::current()->GetShutDownEvent();
+}
+
+IPC::PlatformFileForTransit
+PepperProxyChannelDelegateImpl::ShareHandleWithRemote(
+    base::PlatformFile handle,
+    const IPC::SyncChannel& channel,
+    bool should_close_source) {
+  return content::BrokerGetFileHandleForProcess(handle, channel.peer_pid(),
+                                                should_close_source);
 }
 
 }  // namespace content

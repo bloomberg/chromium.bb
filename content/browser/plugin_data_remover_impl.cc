@@ -163,7 +163,6 @@ class PluginDataRemoverImpl::Context
   }
 
   virtual void OnPpapiChannelOpened(
-      base::ProcessHandle /* plugin_process_handle */,
       const IPC::ChannelHandle& channel_handle,
       int /* child_id */) OVERRIDE {
     if (!channel_handle.name.empty())

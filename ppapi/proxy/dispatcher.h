@@ -81,8 +81,7 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   }
 
  protected:
-  Dispatcher(base::ProcessHandle remote_process_handle,
-             PP_GetInterface_Func local_get_interface);
+  explicit Dispatcher(PP_GetInterface_Func local_get_interface);
 
   // Setter for the derived classes to set the appropriate var serialization.
   // Takes one reference of the given pointer, which must be on the heap.

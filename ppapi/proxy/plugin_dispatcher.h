@@ -70,8 +70,7 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   // module ID will be set upon receipt of the InitializeModule message.
   //
   // You must call InitPluginWithChannel after the constructor.
-  PluginDispatcher(base::ProcessHandle remote_process_handle,
-                   PP_GetInterface_Func get_interface,
+  PluginDispatcher(PP_GetInterface_Func get_interface,
                    bool incognito);
   virtual ~PluginDispatcher();
 

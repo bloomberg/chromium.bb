@@ -19,11 +19,9 @@ const int kBrokerReleaseTimeSeconds = 30;
 }  // namespace
 
 BrokerProcessDispatcher::BrokerProcessDispatcher(
-    base::ProcessHandle remote_process_handle,
     PP_GetInterface_Func get_plugin_interface,
     PP_ConnectInstance_Func connect_instance)
-    : ppapi::proxy::BrokerSideDispatcher(remote_process_handle,
-                                         connect_instance),
+    : ppapi::proxy::BrokerSideDispatcher(connect_instance),
       get_plugin_interface_(get_plugin_interface) {
   ChildProcess::current()->AddRefProcess();
 }

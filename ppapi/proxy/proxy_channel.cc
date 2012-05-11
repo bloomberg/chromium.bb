@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,9 +10,8 @@
 namespace ppapi {
 namespace proxy {
 
-ProxyChannel::ProxyChannel(base::ProcessHandle remote_process_handle)
+ProxyChannel::ProxyChannel()
     : delegate_(NULL),
-      remote_process_handle_(remote_process_handle),
       test_sink_(NULL) {
 }
 
@@ -51,8 +50,8 @@ int ProxyChannel::TakeRendererFD() {
 IPC::PlatformFileForTransit ProxyChannel::ShareHandleWithRemote(
       base::PlatformFile handle,
       bool should_close_source) {
-  return IPC::GetFileHandleForProcess(handle, remote_process_handle_,
-                                      should_close_source);
+  return delegate_->ShareHandleWithRemote(handle, *channel_,
+                                          should_close_source);
 }
 
 bool ProxyChannel::Send(IPC::Message* msg) {

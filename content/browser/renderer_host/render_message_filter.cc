@@ -130,11 +130,10 @@ class OpenChannelToPpapiPluginCallback
     *renderer_id = filter()->render_process_id();
   }
 
-  virtual void OnPpapiChannelOpened(base::ProcessHandle plugin_process_handle,
-                                    const IPC::ChannelHandle& channel_handle,
+  virtual void OnPpapiChannelOpened(const IPC::ChannelHandle& channel_handle,
                                     int plugin_child_id) {
     ViewHostMsg_OpenChannelToPepperPlugin::WriteReplyParams(
-        reply_msg(), plugin_process_handle, channel_handle, plugin_child_id);
+        reply_msg(), channel_handle, plugin_child_id);
     SendReplyAndDeleteThis();
   }
 
@@ -169,12 +168,10 @@ class OpenChannelToPpapiBrokerCallback
     *renderer_id = filter_->render_process_id();
   }
 
-  virtual void OnPpapiChannelOpened(base::ProcessHandle broker_process_handle,
-                                    const IPC::ChannelHandle& channel_handle,
+  virtual void OnPpapiChannelOpened(const IPC::ChannelHandle& channel_handle,
                                     int /* plugin_child_id */) {
     filter_->Send(new ViewMsg_PpapiBrokerChannelCreated(routing_id_,
                                                         request_id_,
-                                                        broker_process_handle,
                                                         channel_handle));
     delete this;
   }

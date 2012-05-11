@@ -71,6 +71,7 @@
     'public/common/resource_dispatcher_delegate.h',
     'public/common/resource_response.h',
     'public/common/result_codes.h',
+    'public/common/sandbox_init.cc',
     'public/common/sandbox_init.h',
     'public/common/sandbox_linux.h',
     'public/common/sandbox_type_mac.h',

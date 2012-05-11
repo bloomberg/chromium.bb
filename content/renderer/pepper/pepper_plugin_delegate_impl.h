@@ -119,7 +119,6 @@ class PepperPluginDelegateImpl
 
   // Called by RenderView when ViewMsg_PpapiBrokerChannelCreated.
   void OnPpapiBrokerChannelCreated(int request_id,
-                                   base::ProcessHandle broker_process_handle,
                                    const IPC::ChannelHandle& handle);
 
   // Removes broker from pending_connect_broker_ if present. Returns true if so.

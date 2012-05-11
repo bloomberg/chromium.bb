@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,8 +29,7 @@ class PPAPI_PROXY_EXPORT BrokerDispatcher : public ProxyChannel {
 
  protected:
   // You must call InitBrokerWithChannel after the constructor.
-  BrokerDispatcher(base::ProcessHandle remote_process_handle,
-                   PP_ConnectInstance_Func connect_instance);
+  explicit BrokerDispatcher(PP_ConnectInstance_Func connect_instance);
 
   void OnMsgConnectToPlugin(PP_Instance instance,
                             IPC::PlatformFileForTransit handle,
@@ -45,7 +44,7 @@ class PPAPI_PROXY_EXPORT BrokerDispatcher : public ProxyChannel {
 // The dispatcher for the browser side of the broker channel.
 class PPAPI_PROXY_EXPORT BrokerHostDispatcher : public BrokerDispatcher {
  public:
-  BrokerHostDispatcher(base::ProcessHandle remote_process_handle);
+  BrokerHostDispatcher();
 
   // IPC::Channel::Listener implementation.
   virtual void OnChannelError() OVERRIDE;
@@ -54,8 +53,7 @@ class PPAPI_PROXY_EXPORT BrokerHostDispatcher : public BrokerDispatcher {
 // The dispatcher for the broker side of the broker channel.
 class PPAPI_PROXY_EXPORT BrokerSideDispatcher : public BrokerDispatcher {
  public:
-  BrokerSideDispatcher(base::ProcessHandle remote_process_handle,
-                       PP_ConnectInstance_Func connect_instance);
+  explicit BrokerSideDispatcher(PP_ConnectInstance_Func connect_instance);
 
   // IPC::Channel::Listener implementation.
   virtual void OnChannelError() OVERRIDE;

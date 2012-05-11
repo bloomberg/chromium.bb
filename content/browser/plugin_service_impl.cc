@@ -344,8 +344,7 @@ void PluginServiceImpl::OpenChannelToPpapiPlugin(
     plugin_host->OpenChannelToPlugin(client);
   } else {
     // Send error.
-    client->OnPpapiChannelOpened(base::kNullProcessHandle,
-                                 IPC::ChannelHandle(), 0);
+    client->OnPpapiChannelOpened(IPC::ChannelHandle(), 0);
   }
 }
 
@@ -357,8 +356,7 @@ void PluginServiceImpl::OpenChannelToPpapiBroker(
     plugin_host->OpenChannelToPlugin(client);
   } else {
     // Send error.
-    client->OnPpapiChannelOpened(base::kNullProcessHandle,
-                                 IPC::ChannelHandle(), 0);
+    client->OnPpapiChannelOpened(IPC::ChannelHandle(), 0);
   }
 }
 

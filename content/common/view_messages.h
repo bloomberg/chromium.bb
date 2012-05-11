@@ -1157,9 +1157,8 @@ IPC_MESSAGE_CONTROL1(ViewMsg_NetworkStateChanged,
 
 // Reply to ViewHostMsg_OpenChannelToPpapiBroker
 // Tells the renderer that the channel to the broker has been created.
-IPC_MESSAGE_ROUTED3(ViewMsg_PpapiBrokerChannelCreated,
+IPC_MESSAGE_ROUTED2(ViewMsg_PpapiBrokerChannelCreated,
                     int /* request_id */,
-                    base::ProcessHandle /* broker_process_handle */,
                     IPC::ChannelHandle /* handle */)
 
 // Tells the renderer to empty its plugin list cache, optional reloading
@@ -1670,9 +1669,8 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_WebUISend,
 // plugin is hung.
 //
 // On error an empty string and null handles are returned.
-IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_OpenChannelToPepperPlugin,
+IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_OpenChannelToPepperPlugin,
                             FilePath /* path */,
-                            base::ProcessHandle /* plugin_process_handle */,
                             IPC::ChannelHandle /* handle to channel */,
                             int /* plugin_child_id */)
 

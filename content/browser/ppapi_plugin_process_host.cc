@@ -207,13 +207,12 @@ void PpapiPluginProcessHost::RequestPluginChannel(Client* client) {
   // We can't send any sync messages from the browser because it might lead to
   // a hang. See the similar code in PluginProcessHost for more description.
   PpapiMsg_CreateChannel* msg = new PpapiMsg_CreateChannel(
-      process_handle, renderer_id, client->OffTheRecord());
+      renderer_id, client->OffTheRecord());
   msg->set_unblock(true);
   if (Send(msg)) {
     sent_requests_.push(client);
   } else {
-    client->OnPpapiChannelOpened(base::kNullProcessHandle,
-                                 IPC::ChannelHandle(), 0);
+    client->OnPpapiChannelOpened(IPC::ChannelHandle(), 0);
   }
 }
 
@@ -260,14 +259,12 @@ void PpapiPluginProcessHost::CancelRequests() {
   DVLOG(1) << "PpapiPluginProcessHost" << (is_broker_ ? "[broker]" : "")
            << "CancelRequests()";
   for (size_t i = 0; i < pending_requests_.size(); i++) {
-    pending_requests_[i]->OnPpapiChannelOpened(base::kNullProcessHandle,
-                                               IPC::ChannelHandle(), 0);
+    pending_requests_[i]->OnPpapiChannelOpened(IPC::ChannelHandle(), 0);
   }
   pending_requests_.clear();
 
   while (!sent_requests_.empty()) {
-    sent_requests_.front()->OnPpapiChannelOpened(base::kNullProcessHandle,
-                                                 IPC::ChannelHandle(), 0);
+    sent_requests_.front()->OnPpapiChannelOpened(IPC::ChannelHandle(), 0);
     sent_requests_.pop();
   }
 }
@@ -283,22 +280,5 @@ void PpapiPluginProcessHost::OnRendererPluginChannelCreated(
   Client* client = sent_requests_.front();
   sent_requests_.pop();
 
-  // Prepare the handle to send to the renderer.
-  base::ProcessHandle plugin_process = process_->GetHandle();
-#if defined(OS_WIN)
-  base::ProcessHandle renderer_process;
-  int renderer_id;
-  client->GetPpapiChannelInfo(&renderer_process, &renderer_id);
-
-  base::ProcessHandle renderers_plugin_handle = NULL;
-  ::DuplicateHandle(::GetCurrentProcess(), plugin_process,
-                    renderer_process, &renderers_plugin_handle,
-                    0, FALSE, DUPLICATE_SAME_ACCESS);
-#elif defined(OS_POSIX)
-  // Don't need to duplicate anything on POSIX since it's just a PID.
-  base::ProcessHandle renderers_plugin_handle = plugin_process;
-#endif
-
-  client->OnPpapiChannelOpened(renderers_plugin_handle, channel_handle,
-                               process_->GetData().id);
+  client->OnPpapiChannelOpened(channel_handle, process_->GetData().id);
 }
