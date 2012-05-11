@@ -43,7 +43,7 @@
             'name': '--name=hello_world',
             'path': '--path=<(PRODUCT_DIR)',
             'script': '<(DEPTH)/native_client/build/test_build.py',
-            'disable_glibc%': 1,
+            'disable_glibc%': 0,
           },
           'conditions': [
             ['OS=="win"', {

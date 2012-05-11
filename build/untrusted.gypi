@@ -45,7 +45,7 @@
           'nlib_target': '',
           'build_newlib': 0,
           'build_glibc': 0,
-          'disable_glibc%': 1,
+          'disable_glibc%': 0,
           'extra_args': [],
           'enable_x86_32': 1,
           'enable_x86_64': 1,
