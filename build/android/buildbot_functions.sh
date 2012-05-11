@@ -185,7 +185,9 @@ function bb_goma_make {
 
 # Compile step
 function bb_compile {
-  echo "@@@BUILD_STEP Compile@@@"
+  # This must be named 'compile', not 'Compile', for CQ interaction.
+  # Talk to maruel for details.
+  echo "@@@BUILD_STEP compile@@@"
   bb_goma_make
 }
 
