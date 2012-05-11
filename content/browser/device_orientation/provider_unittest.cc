@@ -68,7 +68,8 @@ class UpdateChecker : public Provider::Observer {
 // Class for injecting test orientation data into the Provider.
 class MockOrientationFactory : public base::RefCounted<MockOrientationFactory> {
  public:
-  MockOrientationFactory() {
+  MockOrientationFactory()
+      : is_failing_(false) {
     EXPECT_FALSE(instance_);
     instance_ = this;
   }
@@ -81,6 +82,11 @@ class MockOrientationFactory : public base::RefCounted<MockOrientationFactory> {
   void SetOrientation(const Orientation& orientation) {
     base::AutoLock auto_lock(lock_);
     orientation_ = orientation;
+  }
+
+  void SetFailing(bool is_failing) {
+    base::AutoLock auto_lock(lock_);
+    is_failing_ = is_failing;
   }
 
  private:
@@ -99,6 +105,8 @@ class MockOrientationFactory : public base::RefCounted<MockOrientationFactory> {
     // From DataFetcher. Called by the Provider.
     virtual bool GetOrientation(Orientation* orientation) {
       base::AutoLock auto_lock(orientation_factory_->lock_);
+      if (orientation_factory_->is_failing_)
+        return false;
       *orientation = orientation_factory_->orientation_;
       return true;
     }
@@ -109,6 +117,7 @@ class MockOrientationFactory : public base::RefCounted<MockOrientationFactory> {
 
   static MockOrientationFactory* instance_;
   Orientation orientation_;
+  bool is_failing_;
   base::Lock lock_;
 };
 
@@ -303,7 +312,7 @@ TEST_F(DeviceOrientationProviderTest, MAYBE_StartFailing) {
   MessageLoop::current()->Run();
 
   checker_a->AddExpectation(Orientation::Empty());
-  orientation_factory->SetOrientation(Orientation::Empty());
+  orientation_factory->SetFailing(true);
   MessageLoop::current()->Run();
 
   checker_b->AddExpectation(Orientation::Empty());

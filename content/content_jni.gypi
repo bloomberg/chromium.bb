@@ -10,6 +10,7 @@
   'variables': {
     'java_sources': [
       'public/android/java/org/chromium/content/browser/CommandLine.java',
+      'public/android/java/org/chromium/content/browser/DeviceOrientation.java',
       'public/android/java/org/chromium/content/browser/JNIHelper.java',
       'public/android/java/org/chromium/content/browser/LibraryLoader.java',
       'public/android/java/org/chromium/content/browser/LocationProvider.java',
@@ -17,6 +18,7 @@
     ],
     'jni_headers': [
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/command_line_jni.h',
+      '<(SHARED_INTERMEDIATE_DIR)/content/jni/device_orientation_jni.h',
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/jni_helper_jni.h',
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/library_loader_jni.h',
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/location_provider_jni.h',

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,8 @@
 
 #if defined(OS_MACOSX)
 #include "content/browser/device_orientation/accelerometer_mac.h"
+#elif defined(OS_ANDROID)
+#include "content/browser/device_orientation/data_fetcher_impl_android.h"
 #endif
 
 using content::BrowserThread;
@@ -23,6 +25,8 @@ Provider* Provider::GetInstance() {
     const ProviderImpl::DataFetcherFactory default_factories[] = {
 #if defined(OS_MACOSX)
       AccelerometerMac::Create,
+#elif defined(OS_ANDROID)
+      DataFetcherImplAndroid::Create,
 #endif
       NULL
     };

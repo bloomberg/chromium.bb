@@ -243,6 +243,8 @@
     'browser/device_orientation/accelerometer_mac.cc',
     'browser/device_orientation/accelerometer_mac.h',
     'browser/device_orientation/data_fetcher.h',
+    'browser/device_orientation/data_fetcher_impl_android.cc',
+    'browser/device_orientation/data_fetcher_impl_android.h',
     'browser/device_orientation/message_filter.cc',
     'browser/device_orientation/message_filter.h',
     'browser/device_orientation/orientation.h',

@@ -83,7 +83,8 @@ void ProviderImpl::DoInitializePollingThread(
       last_orientation_ = orientation;
 
       // Notify observers.
-      ScheduleDoNotify(orientation);
+      if (!orientation.IsEmpty())
+        ScheduleDoNotify(orientation);
 
       // Start polling.
       ScheduleDoPoll();
@@ -139,7 +140,8 @@ void ProviderImpl::DoPoll() {
     return;
   }
 
-  if (SignificantlyDifferent(orientation, last_orientation_)) {
+  if (!orientation.IsEmpty() &&
+      SignificantlyDifferent(orientation, last_orientation_)) {
     last_orientation_ = orientation;
     ScheduleDoNotify(orientation);
   }
