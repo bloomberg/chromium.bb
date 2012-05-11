@@ -311,6 +311,10 @@ section {
   border-top: 1px solid #EBEBEB;
 }
 
+.section-row button {
+  margin-__MSG_@@bidi_start_edge__: 20px;
+}
+
 .section-row:first-child,
 .section-row.no-non-local-hosts {
   border-top: none;
