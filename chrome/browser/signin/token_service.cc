@@ -271,7 +271,8 @@ void TokenService::OnIssueAuthTokenSuccess(const std::string& service,
 void TokenService::OnIssueAuthTokenFailure(const std::string& service,
     const GoogleServiceAuthError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LOG(WARNING) << "Auth token issuing failed for service:" << service;
+  LOG(WARNING) << "Auth token issuing failed for service:" << service
+               << ", error: " << error.ToString();
   FireTokenRequestFailedNotification(service, error);
 }
 
@@ -294,7 +295,7 @@ void TokenService::OnClientOAuthSuccess(const ClientOAuthResult& result) {
 void TokenService::OnClientOAuthFailure(
    const GoogleServiceAuthError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LOG(WARNING) << "OAuth2 login token pair fetch failed:";
+  LOG(WARNING) << "OAuth2 login token pair fetch failed: " << error.ToString();
   FireTokenRequestFailedNotification(
       GaiaConstants::kGaiaOAuth2LoginRefreshToken, error);
 }
