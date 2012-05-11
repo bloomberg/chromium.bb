@@ -1866,3 +1866,9 @@
    fun:SkBitmap::allocPixels
    fun:SkBitmap::allocPixels
 }
+{
+   bug_127718
+   Heapcheck:Leak
+   fun:gfx::JPEGCodec::Decode
+   fun:history::HistoryBackendTest_DeleteAll_Test::TestBody
+}

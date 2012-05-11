@@ -5782,6 +5782,13 @@
    fun:_ZN16BrowserThemePack18BuildFromExtensionEPK9Extension
    fun:_ZN45BrowserThemePackTest_CanBuildAndReadPack_Test8TestBodyEv
 }
+{
+   bug_127718:
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3gfx9JPEGCodec6DecodeEPKhm
+   fun:_ZN7history33HistoryBackendTest_DeleteAll_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
