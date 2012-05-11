@@ -45,7 +45,7 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
   """
 
   _DEFAULT_TEST_LENGTH_SEC = 60 * 60 * 6  # Tests run for 6 hours.
-  _GET_PERF_STATS_INTERVAL = 60 * 10  # Measure perf stats every 10 minutes.
+  _GET_PERF_STATS_INTERVAL = 60 * 5  # Measure perf stats every 5 minutes.
   _ERROR_COUNT_THRESHOLD = 300  # Number of ChromeDriver errors to tolerate.
   _DEEP_MEMORY_PROFILE = False
   _DEEP_MEMORY_PROFILE_INTERVAL = _GET_PERF_STATS_INTERVAL
