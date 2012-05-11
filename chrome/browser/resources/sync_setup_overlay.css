@@ -56,6 +56,14 @@
   margin: 10px 0;
 }
 
+#choose-data-types-body > .checkbox:first-child {
+  margin-top: 0;
+}
+
+#choose-data-types-body > .checkbox:last-child {
+  margin-bottom: 0;
+}
+
 #sync-setup-overlay {
   -webkit-user-select: none;
   background-color: white;
