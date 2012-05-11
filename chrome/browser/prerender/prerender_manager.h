@@ -8,6 +8,7 @@
 
 #include <list>
 #include <string>
+#include <utility>
 
 #include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
@@ -32,6 +33,10 @@ class DictionaryValue;
 
 namespace content {
 class WebContents;
+}
+
+namespace gfx {
+class Size;
 }
 
 #if defined(COMPILER_GCC)
@@ -96,14 +101,18 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Entry points for adding prerenders.
 
   // Adds a prerender for |url| if valid. |process_id| and |route_id| identify
-  // the RenderViewHost that the prerender request came from and are used to
-  // set the initial window size of the RenderViewHost used for prerendering.
+  // the RenderView that the prerender request came from.  The |size| may be
+  // empty, and the current tab size will be used if it is. If the current
+  // active tab size cannot be found, we use a default from PrerenderConfig.
   // Returns true if the URL was added, false if it was not.
-  // If the RenderViewHost source is itself prerendering, the prerender is added
+  // If the launching RenderView is itself prerendering, the prerender is added
   // as a pending prerender.
-  bool AddPrerenderFromLinkRelPrerender(int process_id, int route_id,
-                                        const GURL& url,
-                                        const content::Referrer& referrer);
+  bool AddPrerenderFromLinkRelPrerender(
+      int process_id,
+      int route_id,
+      const GURL& url,
+      const content::Referrer& referrer,
+      const gfx::Size& size);
 
   // Adds a prerender for |url| if valid. As the prerender request is coming
   // from a source without a RenderViewHost (i.e., the omnibox) we don't have a
@@ -114,9 +123,15 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       const GURL& url,
       content::SessionStorageNamespace* session_storage_namespace);
 
+  // Request cancelation of a previously added prerender. If the |active_count_|
+  // of the prerender is one, it will be canceled.  Otherwise, |active_count_|
+  // will be decremented by one.
+  void MaybeCancelPrerender(const GURL& url);
+
   // Destroy all prerenders for the given child route id pair and assign a final
   // status to them.
-  virtual void DestroyPrerenderForRenderView(int process_id, int view_id,
+  virtual void DestroyPrerenderForRenderView(int process_id,
+                                             int view_id,
                                              FinalStatus final_status);
 
   // Cancels all active prerenders.
@@ -247,31 +262,39 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void DoShutdown();
 
  private:
-  // Needs access to AddPrerender.
-  friend class PrerenderContents;
-
   // Test that needs needs access to internal functions.
   friend class PrerenderBrowserTest;
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, AliasURLTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, CancelAllTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, AliasURLTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, CancelAllTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest,
                            CancelOmniboxRemovesOmniboxTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest,
                            CancelOmniboxDoesNotRemoveLinkTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ClearTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ControlGroup);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, DropOldestRequestTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, DropSecondRequestTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ExpireTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, FoundTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, FragmentMatchesFragmentTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, FragmentMatchesPageTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, PageMatchesFragmentTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, PendingPrerenderTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, RateLimitInWindowTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, RateLimitOutsideWindowTest);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, SourceRenderViewClosed);
-  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, TwoElementPrerenderTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, ClearTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, ControlGroup);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, DropOldestRequestTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, DropSecondRequestTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, ExpireTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, FoundTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, FragmentMatchesFragmentTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, FragmentMatchesPageTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerAbandon);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerAddTwiceAbandonTwice);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerAddTwiceCancelTwice);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest,
+                           LinkManagerAddTwiceCancelTwiceThenAbandonTwice);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerCancel);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerCancelThenAbandon);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerCancelThenAddAgain);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerCancelTwice);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerExpireThenAddAgain);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerExpireThenCancel);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, PageMatchesFragmentTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, PendingPrerenderTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, RateLimitInWindowTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, RateLimitOutsideWindowTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, SourceRenderViewClosed);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, TwoElementPrerenderTest);
 
   struct PrerenderContentsData;
   struct NavigationRecord;
@@ -283,15 +306,17 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   typedef std::list<PrerenderContentsData> PrerenderContentsDataList;
 
   // Adds a prerender for |url| from referrer |referrer| initiated from the
-  // RenderViewHost specified by |child_route_id_pair|. The |origin| specifies
-  // how the prerender was added. If the |session_storage_namespace| is NULL,
-  // it is discovered using the RenderViewHost specified by
-  // |child_route_id_pair|.
+  // child process specified by |child_id|. The |origin| specifies how the
+  // prerender was added. If the |size| is empty, then
+  // PrerenderContents::StartPrerendering will instead use the size of the
+  // currently active tab. If the current active tab size cannot be found, it
+  // then uses a default from PrerenderConfig.
   bool AddPrerender(
       Origin origin,
-      const std::pair<int, int>& child_route_id_pair,
+      int child_id,
       const GURL& url,
       const content::Referrer& referrer,
+      const gfx::Size& size,
       content::SessionStorageNamespace* session_storage_namespace);
 
   // Retrieves the PrerenderContents object for the specified URL, if it
@@ -341,9 +366,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // list.
   void DeletePendingDeleteEntries();
 
-  // Finds the specified PrerenderContents and returns it, if it exists.
-  // Returns NULL otherwise.  Unlike GetEntry, the PrerenderManager maintains
-  // ownership of the PrerenderContents.
+  // Finds the specified PrerenderContentsData/PrerenderContents and returns it,
+  // if it exists. Returns NULL otherwise.  Unlike GetEntry, the
+  // PrerenderManager maintains ownership of the PrerenderContents.
+  PrerenderContentsData* FindEntryData(const GURL& url);
   PrerenderContents* FindEntry(const GURL& url) const;
 
   // Returns the iterator to the PrerenderContentsData entry that is being
@@ -351,6 +377,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   PrerenderContentsDataList::iterator
       FindPrerenderContentsForChildRouteIdPair(
           const std::pair<int, int>& child_route_id_pair);
+
+  PrerenderContentsDataList::iterator
+      FindPrerenderContentsForURL(const GURL& url);
 
   bool DoesRateLimitAllowPrerender() const;
 

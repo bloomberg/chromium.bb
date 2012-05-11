@@ -6,11 +6,14 @@
 
 #include "base/logging.h"
 #include "chrome/common/prerender_messages.h"
+#include "chrome/renderer/prerender/prerendering_support.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebPrerenderingSupport.h"
 
 namespace prerender {
 
 PrerenderDispatcher::PrerenderDispatcher() {
+  WebKit::WebPrerenderingSupport::initialize(new PrerenderingSupport());
 }
 
 PrerenderDispatcher::~PrerenderDispatcher() {

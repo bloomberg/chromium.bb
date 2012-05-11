@@ -37,12 +37,17 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_view_host_delegate.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "net/base/load_flags.h"
 #include "net/base/ssl_config_service.h"
 #include "net/url_request/url_request.h"
+#include "ui/gfx/size.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 // TODO(oshima): Enable this for other platforms.
@@ -57,6 +62,8 @@ using content::ResourceRequestInfo;
 
 namespace {
 
+// TODO(gavinp): Remove this after https://bugs.webkit.org/show_bug.cgi?id=85005
+// lands in WebKit.
 void AddPrerenderOnUI(
     int render_process_id, int render_view_id,
     const GURL& url, const content::Referrer& referrer) {
@@ -66,10 +73,19 @@ void AddPrerenderOnUI(
   if (!prerender_manager)
     return;
 
-  prerender_manager->AddPrerenderFromLinkRelPrerender(render_process_id,
-                                                      render_view_id,
-                                                      url,
-                                                      referrer);
+  RenderViewHost* render_view_host =
+      RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!render_view_host)
+    return;
+  gfx::Rect tab_bounds;
+  if (content::WebContents* source_wc =
+          render_view_host->GetDelegate()->GetAsWebContents())
+    source_wc->GetView()->GetContainerBounds(&tab_bounds);
+  gfx::Size view_size = tab_bounds.size();
+  if (view_size.IsEmpty())
+    view_size = prerender_manager->config().default_tab_bounds.size();
+  prerender_manager->AddPrerenderFromLinkRelPrerender(
+      render_process_id, render_view_id, url, referrer, view_size);
 }
 
 void NotifyDownloadInitiatedOnUI(int render_process_id, int render_view_id) {

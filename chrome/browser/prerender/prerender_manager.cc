@@ -4,7 +4,9 @@
 
 #include "chrome/browser/prerender/prerender_manager.h"
 
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -175,9 +177,11 @@ PrerenderManager::PrerenderManagerMode PrerenderManager::mode_ =
 struct PrerenderManager::PrerenderContentsData {
   PrerenderContents* contents_;
   base::Time start_time_;
+  int active_count_;
   PrerenderContentsData(PrerenderContents* contents, base::Time start_time)
       : contents_(contents),
-        start_time_(start_time) {
+        start_time_(start_time),
+        active_count_(1) {
     CHECK(contents);
   }
 };
@@ -273,17 +277,38 @@ bool PrerenderManager::AddPrerenderFromLinkRelPrerender(
     int process_id,
     int route_id,
     const GURL& url,
-    const content::Referrer& referrer) {
+    const content::Referrer& referrer,
+    const gfx::Size& size) {
 #if defined(OS_ANDROID)
   // TODO(jcivelli): http://crbug.com/113322 We should have an option to disable
   //                link-prerender and enable omnibox-prerender only.
   return false;
 #else
-  std::pair<int, int> child_route_id_pair = std::make_pair(process_id,
-                                                           route_id);
+  std::pair<int, int> child_route_id_pair(process_id, route_id);
+  PrerenderContentsDataList::iterator it =
+      FindPrerenderContentsForChildRouteIdPair(child_route_id_pair);
+  if (it != prerender_list_.end()) {
+    // Instead of prerendering from inside of a running prerender, we will defer
+    // this request until its launcher is made visible.
+    it->contents_->AddPendingPrerender(url, referrer, size);
+    return true;
+  }
 
-  return AddPrerender(ORIGIN_LINK_REL_PRERENDER, child_route_id_pair,
-                      url, referrer, NULL);
+  // Unit tests pass in a process_id == -1.
+  RenderViewHost* source_render_view_host = NULL;
+  SessionStorageNamespace* session_storage_namespace = NULL;
+  if (process_id != -1) {
+    source_render_view_host =
+        RenderViewHost::FromID(process_id, route_id);
+    if (!source_render_view_host || !source_render_view_host->GetView())
+      return false;
+    session_storage_namespace =
+        source_render_view_host->GetSessionStorageNamespace();
+  }
+
+  return AddPrerender(ORIGIN_LINK_REL_PRERENDER,
+                      process_id, url, referrer, size,
+                      session_storage_namespace);
 #endif
 }
 
@@ -292,8 +317,18 @@ bool PrerenderManager::AddPrerenderFromOmnibox(
     SessionStorageNamespace* session_storage_namespace) {
   if (!IsOmniboxEnabled(profile_))
     return false;
-  return AddPrerender(ORIGIN_OMNIBOX, std::make_pair(-1, -1), url,
-                      content::Referrer(), session_storage_namespace);
+  return AddPrerender(ORIGIN_OMNIBOX, -1, url,
+                      content::Referrer(), gfx::Size(),
+                      session_storage_namespace);
+}
+
+void PrerenderManager::MaybeCancelPrerender(const GURL& url) {
+  PrerenderContentsDataList::iterator it = FindPrerenderContentsForURL(url);
+  if (it == prerender_list_.end())
+    return;
+  PrerenderContentsData& prerender_contents_data = *it;
+  if (--prerender_contents_data.active_count_ == 0)
+    prerender_contents_data.contents_->Destroy(FINAL_STATUS_CANCELLED);
 }
 
 void PrerenderManager::DestroyPrerenderForRenderView(
@@ -822,9 +857,10 @@ void PrerenderManager::DoShutdown() {
 // private
 bool PrerenderManager::AddPrerender(
     Origin origin,
-    const std::pair<int, int>& child_route_id_pair,
+    int process_id,
     const GURL& url_arg,
     const content::Referrer& referrer,
+    const gfx::Size& size,
     SessionStorageNamespace* session_storage_namespace) {
   DCHECK(CalledOnValidThread());
 
@@ -834,15 +870,6 @@ bool PrerenderManager::AddPrerender(
   if (origin == ORIGIN_LINK_REL_PRERENDER &&
       IsGoogleSearchResultURL(referrer.url)) {
     origin = ORIGIN_GWS_PRERENDER;
-  }
-
-  // If the referring page is prerendering, defer the prerender.
-  PrerenderContentsDataList::iterator source_prerender =
-      FindPrerenderContentsForChildRouteIdPair(child_route_id_pair);
-  if (source_prerender != prerender_list_.end()) {
-    source_prerender->contents_->AddPendingPrerender(
-        origin, url_arg, referrer);
-    return true;
   }
 
   DeleteOldEntries();
@@ -859,9 +886,10 @@ bool PrerenderManager::AddPrerender(
 
   uint8 experiment = GetQueryStringBasedExperiment(url_arg);
 
-  if (FindEntry(url)) {
+  if (PrerenderContentsData* prerender_contents_data = FindEntryData(url)) {
+    ++prerender_contents_data->active_count_;
     RecordFinalStatus(origin, experiment, FINAL_STATUS_DUPLICATE);
-    return false;
+    return true;
   }
 
   // Do not prerender if there are too many render processes, and we would
@@ -892,25 +920,6 @@ bool PrerenderManager::AddPrerender(
     return false;
   }
 
-  RenderViewHost* source_render_view_host = NULL;
-  if (child_route_id_pair.first != -1) {
-    source_render_view_host =
-        RenderViewHost::FromID(child_route_id_pair.first,
-                               child_route_id_pair.second);
-    // Don't prerender page if parent RenderViewHost no longer exists, or it has
-    // no view.  The latter should only happen when the RenderView has closed.
-    if (!source_render_view_host || !source_render_view_host->GetView()) {
-      RecordFinalStatus(origin, experiment,
-                        FINAL_STATUS_SOURCE_RENDER_VIEW_CLOSED);
-      return false;
-    }
-  }
-
-  if (!session_storage_namespace && source_render_view_host) {
-    session_storage_namespace =
-        source_render_view_host->GetSessionStorageNamespace();
-  }
-
   PrerenderContents* prerender_contents = CreatePrerenderContents(
       url, referrer, origin, experiment);
   if (!prerender_contents || !prerender_contents->Init())
@@ -926,8 +935,8 @@ bool PrerenderManager::AddPrerender(
   last_prerender_start_time_ = GetCurrentTimeTicks();
 
   if (!IsControlGroup()) {
-    data.contents_->StartPrerendering(source_render_view_host,
-                                      session_storage_namespace);
+    data.contents_->StartPrerendering(process_id,
+                                      size, session_storage_namespace);
   }
   while (prerender_list_.size() > config_.max_elements) {
     data = prerender_list_.front();
@@ -1078,6 +1087,16 @@ void PrerenderManager::DeletePendingDeleteEntries() {
   }
 }
 
+PrerenderManager::PrerenderContentsData* PrerenderManager::FindEntryData(
+    const GURL& url) {
+  DCHECK(CalledOnValidThread());
+  PrerenderContentsDataList::iterator it = FindPrerenderContentsForURL(url);
+  if (it == prerender_list_.end())
+    return NULL;
+  PrerenderContentsData& prerender_contents_data = *it;
+  return &prerender_contents_data;
+}
+
 PrerenderContents* PrerenderManager::FindEntry(const GURL& url) const {
   DCHECK(CalledOnValidThread());
   for (PrerenderContentsDataList::const_iterator it = prerender_list_.begin();
@@ -1090,7 +1109,7 @@ PrerenderContents* PrerenderManager::FindEntry(const GURL& url) const {
   return NULL;
 }
 
-std::list<PrerenderManager::PrerenderContentsData>::iterator
+PrerenderManager::PrerenderContentsDataList::iterator
     PrerenderManager::FindPrerenderContentsForChildRouteIdPair(
         const std::pair<int, int>& child_route_id_pair) {
   PrerenderContentsDataList::iterator it = prerender_list_.begin();
@@ -1110,6 +1129,16 @@ std::list<PrerenderManager::PrerenderContentsData>::iterator
     }
   }
   return it;
+}
+
+PrerenderManager::PrerenderContentsDataList::iterator
+    PrerenderManager::FindPrerenderContentsForURL(const GURL& url) {
+  for (PrerenderContentsDataList::iterator it = prerender_list_.begin();
+       it != prerender_list_.end(); ++it) {
+    if (it->contents_->MatchesURL(url, NULL))
+      return it;
+  }
+  return prerender_list_.end();
 }
 
 bool PrerenderManager::DoesRateLimitAllowPrerender() const {

@@ -47,6 +47,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/prerender/prerender_message_filter.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/profile.h"
@@ -416,6 +417,8 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
 #endif
   host->GetChannel()->AddFilter(new ChromeBenchmarkingMessageFilter(
       id, profile, profile->GetRequestContextForRenderProcess(id)));
+  host->GetChannel()->AddFilter(
+      new prerender::PrerenderMessageFilter(id, profile));
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));

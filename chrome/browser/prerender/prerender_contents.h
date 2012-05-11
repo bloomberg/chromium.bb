@@ -8,6 +8,7 @@
 
 #include <list>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
+#include "ui/gfx/size.h"
 
 class Profile;
 class TabContentsWrapper;
@@ -66,16 +68,8 @@ class PrerenderContents : public content::NotificationObserver,
   };
 
   // Information on pages that the prerendered page has tried to prerender.
-  struct PendingPrerenderData {
-    PendingPrerenderData(Origin origin,
-                         const GURL& url,
-                         const content::Referrer& referrer);
-
-    Origin origin;
-    GURL url;
-    content::Referrer referrer;
-  };
-  typedef std::list<PendingPrerenderData> PendingPrerenderList;
+  struct PendingPrerenderInfo;
+  typedef std::list<PendingPrerenderInfo> PendingPrerenderList;
 
   // Indicates how this PrerenderContents relates to MatchComplete.
   // This is important to figure out in what histograms to record the
@@ -103,7 +97,8 @@ class PrerenderContents : public content::NotificationObserver,
   // |source_render_view_host| is the RenderViewHost that initiated
   // prerendering.
   virtual void StartPrerendering(
-      const content::RenderViewHost* source_render_view_host,
+      int creator_child_id,
+      const gfx::Size& size,
       content::SessionStorageNamespace* session_storage_namespace);
 
   // Verifies that the prerendering is not using too many resources, and kills
@@ -150,6 +145,8 @@ class PrerenderContents : public content::NotificationObserver,
   // Indicates whether this prerendered page can be used for the provided
   // URL, i.e. whether there is a match. |matching_url| is optional and will be
   // set to the URL that is found as a match if it is provided.
+  // TODO(gavinp,mmenke): Rework matching to be based on both the URL
+  // and the session WebStorage.
   bool MatchesURL(const GURL& url, GURL* matching_url) const;
 
   void OnJSOutOfMemory();
@@ -206,9 +203,9 @@ class PrerenderContents : public content::NotificationObserver,
   bool IsCrossSiteNavigationPending() const;
 
   // Adds a pending prerender to the list.
-  virtual void AddPendingPrerender(Origin origin,
-                                   const GURL& url,
-                                   const content::Referrer& referrer);
+  virtual void AddPendingPrerender(const GURL& url,
+                                   const content::Referrer& referrer,
+                                   const gfx::Size& size);
 
   // Returns true if |url| corresponds to a pending prerender.
   bool IsPendingEntry(const GURL& url) const;
@@ -237,6 +234,10 @@ class PrerenderContents : public content::NotificationObserver,
 
   const PendingPrerenderList* pending_prerender_list() const {
     return &pending_prerender_list_;
+  }
+
+  bool prerendering_has_been_cancelled() const {
+    return prerendering_has_been_cancelled_;
   }
 
   virtual content::WebContents* CreateWebContents(
@@ -341,6 +342,9 @@ class PrerenderContents : public content::NotificationObserver,
 
   // The process that created the child id.
   int creator_child_id_;
+
+  // The size of the WebView from the launching page.
+  gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };

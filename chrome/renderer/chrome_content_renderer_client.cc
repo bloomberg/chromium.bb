@@ -53,6 +53,7 @@
 #include "chrome/renderer/prerender/prerender_dispatcher.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/prerender/prerender_webmediaplayer.h"
+#include "chrome/renderer/prerender/prerenderer_client.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/safe_browsing/malware_dom_details.h"
@@ -240,6 +241,7 @@ void ChromeContentRendererClient::RenderViewCreated(
   new PrintWebViewHelper(render_view);
   new SearchBox(render_view);
   new SpellCheckProvider(render_view, this);
+  new prerender::PrerendererClient(render_view);
 #if defined(ENABLE_SAFE_BROWSING)
   safe_browsing::MalwareDOMDetails::Create(render_view);
 #endif
