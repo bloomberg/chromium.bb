@@ -94,7 +94,10 @@ getInput (void)
   fgets (inputBuffer, sizeof (inputBuffer), stdin);
   inputLength = strlen (inputBuffer) - 1;
   if (inputLength < 0)		/*EOF on script */
-    exit (0);
+    {
+      lou_free();
+      exit (EXIT_SUCCESS);
+    }
   inputBuffer[inputLength] = 0;
   return inputLength;
 }
@@ -223,7 +226,8 @@ getCommands (void)
 	  paramLetters ();
 	  break;
 	case 'q':
-	  exit (0);
+	  lou_free();
+	  exit (EXIT_SUCCESS);
 	case 'f':
 	  printf ("Do only forward translation");
 	  forwardOnly = getYN ();
@@ -460,5 +464,5 @@ main (int argc, char **argv)
 	  }
     }
   lou_free ();
-  return 0;
+  exit (EXIT_SUCCESS);
 }
