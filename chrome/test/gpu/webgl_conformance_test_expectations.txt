@@ -118,6 +118,23 @@ UNFILED MAC INTEL : conformance_glsl_variables_gl_pointcoord = FAIL
 UNFILED MAC INTEL : conformance_limits_gl_max_texture_dimensions = FAIL
 UNFILED MAC INTEL : conformance_rendering_line_loop_tri_fan = FAIL
 
+UNFILED MAC INTEL : conformance_ogles_GL_asin_asin_001_to_006 = FAIL
+UNFILED MAC INTEL : conformance_ogles_GL_dot_dot_001_to_006 = FAIL
+UNFILED MAC INTEL : conformance_ogles_GL_faceforward_faceforward_001_to_006 = FAIL
+UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_057_to_064 = FAIL
+UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_065_to_072 = FAIL
+UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_073_to_080 = FAIL
+UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_081_to_088 = FAIL
+UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_089_to_096 = FAIL
+UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_097_to_104 = FAIL
+UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_105_to_112 = FAIL
+UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_113_to_120 = FAIL
+UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_121_to_126 = FAIL
+UNFILED MAC INTEL : conformance_ogles_GL_length_length_001_to_006 = FAIL
+UNFILED MAC INTEL : conformance_ogles_GL_normalize_normalize_001_to_006 = FAIL
+UNFILED MAC INTEL : conformance_ogles_GL_reflect_reflect_001_to_006 = FAIL
+UNFILED MAC INTEL : conformance_ogles_GL_refract_refract_001_to_006 = FAIL
+
 UNFILED MAC AMD : conformance_attribs_gl_vertex_attrib = FAIL
 UNFILED MAC AMD : conformance_attribs_gl_vertexattribpointer_offsets = FAIL
 UNFILED MAC AMD : conformance_attribs_gl_vertexattribpointer = FAIL
@@ -137,6 +154,8 @@ WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_G_I = TIMEOUT
 
 UNFILED LINUX NVIDIA : conformance_uniforms_uniform_location = FAIL
 UNFILED LINUX NVIDIA : conformance_textures_texture_mips = FAIL
+
+UNFILED LINUX NVIDIA : conformance_ogles_GL_vec3_vec3_001_to_008 = FAIL
 
 UNFILED LINUX INTEL : conformance_renderbuffers_framebuffer_object_attachment = FAIL
 UNFILED LINUX INTEL : conformance_state_gl_object_get_calls = FAIL
