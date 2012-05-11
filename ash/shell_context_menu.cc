@@ -29,7 +29,7 @@ void ShellContextMenu::ShowMenu(views::Widget* widget,
   menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
   if (menu_runner_->RunMenuAt(
           widget, NULL, gfx::Rect(location, gfx::Size()),
-          views::MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
+          views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
       views::MenuRunner::MENU_DELETED)
     return;
 }
