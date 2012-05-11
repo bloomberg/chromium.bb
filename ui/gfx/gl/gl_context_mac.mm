@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_generic_obj.h"
@@ -14,6 +15,7 @@
 #include "ui/gfx/gl/gl_context_stub.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface.h"
+#include "ui/gfx/gl/gl_switches.h"
 
 #if defined(USE_AURA)
 #include "ui/gfx/gl/gl_context_nsview.h"
@@ -156,13 +158,21 @@ bool GLContext::SupportsDualGpus() {
                                          &model, &model_major, &model_minor)) {
       return false;
     }
-    if (model == "MacBookPro") {
-      const int kMacBookProFirstDualAMDIntelGPUModel = 8;
-      if (model_major < kMacBookProFirstDualAMDIntelGPUModel) {
-        // We're on an older MacBook Pro.
-        GLContextCGL::ForceUseOfDiscreteGPU();
-        return false;
-      }
+
+    const int kMacBookProFirstDualAMDIntelGPUModel = 8;
+
+    bool forcibly_disable =
+        ((model == "MacBookPro") &&
+         (model_major < kMacBookProFirstDualAMDIntelGPUModel)) ||
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableGpuSwitching) ||
+        // http://crbug.com/127713 : disable dynamic GPU switching on
+        // 10.8 until system stability issues are resolved by Apple.
+        base::mac::IsOSMountainLion();
+
+    if (forcibly_disable) {
+      GLContextCGL::ForceUseOfDiscreteGPU();
+      return false;
     }
 
     supports_dual_gpus = true;

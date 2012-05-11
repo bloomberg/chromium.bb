@@ -17,6 +17,11 @@ const char kGLImplementationMockName[]        = "mock";
 
 namespace switches {
 
+// Disable dynamic switching between integrated and discrete GPU on
+// systems that would otherwise support it (currently, only a limited
+// number of MacBook Pros).
+const char kDisableGpuSwitching[]           = "disable-gpu-switching";
+
 // Stop the GPU from synchronizing on the vsync before presenting.
 const char kDisableGpuVsync[]               = "disable-gpu-vsync";
 

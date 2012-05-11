@@ -24,6 +24,7 @@ extern const char kGLImplementationMockName[];
 
 namespace switches {
 
+GL_EXPORT extern const char kDisableGpuSwitching[];
 GL_EXPORT extern const char kDisableGpuVsync[];
 GL_EXPORT extern const char kEnableGPUServiceLogging[];
 GL_EXPORT extern const char kEnableGPUClientLogging[];
