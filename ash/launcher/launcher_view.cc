@@ -581,10 +581,17 @@ void LauncherView::ContinueDrag(const views::MouseEvent& event) {
   if (target_index == current_index)
     return;
 
-  // Change the model, the LauncherItemMoved() callback will handle the
-  // |view_model_| update.
+  // Remove the observer while we mutate the model so that we don't attempt to
+  // cancel the drag.
+  model_->RemoveObserver(this);
   model_->Move(current_index, target_index);
+  model_->AddObserver(this);
+  view_model_->Move(current_index, target_index);
+  AnimateToIdealBounds();
   bounds_animator_->StopAnimatingView(drag_view_);
+
+  FOR_EACH_OBSERVER(LauncherIconObserver, observers_,
+                    OnLauncherIconPositionsChanged());
 }
 
 bool LauncherView::SameDragType(LauncherItemType typea,
@@ -674,25 +681,22 @@ void LauncherView::ShowOverflowMenu() {
 #endif  // !defined(OS_MACOSX)
 }
 
-int LauncherView::CancelDrag(int modified_index) {
+void LauncherView::CancelDrag(views::View* deleted_view) {
   if (!drag_view_)
-    return modified_index;
+    return;
   bool was_dragging = dragging_;
-  int drag_view_index = view_model_->GetIndexOfView(drag_view_);
+  views::View* drag_view = drag_view_;
   dragging_ = false;
   drag_view_ = NULL;
-  if (drag_view_index == modified_index) {
-    // The view that was being dragged is being modified. Don't do anything.
-    return modified_index;
+  if (drag_view == deleted_view) {
+    // The view that was being dragged is being deleted. Don't do anything.
+    return;
   }
   if (!was_dragging)
-    return modified_index;
+    return;
 
-  // Restore previous position, tracking the position of the modified view.
-  views::View* removed_view =
-      (modified_index >= 0) ? view_model_->view_at(modified_index) : NULL;
-  model_->Move(drag_view_index, start_drag_index_);
-  return removed_view ? view_model_->GetIndexOfView(removed_view) : -1;
+  view_model_->Move(view_model_->GetIndexOfView(drag_view), start_drag_index_);
+  AnimateToIdealBounds();
 }
 
 gfx::Size LauncherView::GetPreferredSize() {
@@ -727,7 +731,8 @@ views::FocusTraversable* LauncherView::GetPaneFocusTraversable() {
 }
 
 void LauncherView::LauncherItemAdded(int model_index) {
-  model_index = CancelDrag(model_index);
+  CancelDrag(NULL);
+
   views::View* view = CreateViewForItem(model_->items()[model_index]);
   AddChildView(view);
   // Hide the view, it'll be made visible when the animation is done. Using
@@ -765,8 +770,8 @@ void LauncherView::LauncherItemRemoved(int model_index, LauncherID id) {
   if (id == context_menu_id_)
     launcher_menu_runner_.reset();
 #endif
-  model_index = CancelDrag(model_index);
   views::View* view = view_model_->view_at(model_index);
+  CancelDrag(view);
   view_model_->Remove(model_index);
   // The first animation fades out the view. When done we'll animate the rest of
   // the views to their target location.
@@ -788,9 +793,9 @@ void LauncherView::LauncherItemChanged(int model_index,
   const LauncherItem& item(model_->items()[model_index]);
   if (old_item.type != item.type) {
     // Type changed, swap the views.
-    model_index = CancelDrag(model_index);
     scoped_ptr<views::View> old_view(view_model_->view_at(model_index));
     bounds_animator_->StopAnimatingView(old_view.get());
+    CancelDrag(old_view.get());
     view_model_->Remove(model_index);
     views::View* new_view = CreateViewForItem(item);
     AddChildView(new_view);
@@ -861,7 +866,7 @@ void LauncherView::MouseDraggedOnButton(views::View* view,
 void LauncherView::MouseReleasedOnButton(views::View* view,
                                          bool canceled) {
   if (canceled) {
-    CancelDrag(-1);
+    CancelDrag(NULL);
   } else {
     dragging_ = false;
     drag_view_ = NULL;

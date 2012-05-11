@@ -124,9 +124,8 @@ class ASH_EXPORT LauncherView : public views::View,
   // dragged to.
   std::pair<int,int> GetDragRange(int index);
 
-  // If there is a drag operation in progress it's canceled. If |modified_index|
-  // is valid, the new position of the corresponding item is returned.
-  int CancelDrag(int modified_index);
+  // If there is a drag operation in progress it's canceled.
+  void CancelDrag(views::View* deleted_view);
 
   // Common setup done for all children.
   void ConfigureChildView(views::View* view);
