@@ -238,6 +238,30 @@ class SpecialPopupRow : public views::View {
   DISALLOW_COPY_AND_ASSIGN(SpecialPopupRow);
 };
 
+// A view for closable notification views, laid out like:
+// [      contents  (x) ]
+// The close button will call OnClose() when pressed.
+class TrayNotificationView : public views::View,
+                             public views::ButtonListener {
+ public:
+  TrayNotificationView();
+  virtual ~TrayNotificationView();
+
+  // InitView must be called once with the contents to be displayed.
+  void InitView(views::View* contents);
+
+  // Overridden from ButtonListener.
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
+
+ protected:
+  // Called when the closed button is pressed.
+  virtual void OnClose() = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TrayNotificationView);
+};
+
 // Sets up a Label properly for the tray (sets color, font etc.).
 void SetupLabelForTray(views::Label* label);
 

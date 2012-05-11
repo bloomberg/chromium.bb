@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/profile_startup.h"
 
+#include "ash/ash_switches.h"
+#include "base/command_line.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
@@ -29,12 +31,15 @@ void ProfileStartup(Profile* profile, bool process_startup) {
   profile->InitChromeOSPreferences();
 
   if (process_startup) {
-    // This observer is a singleton. It is never deleted but the pointer is kept
-    // in a static so that it isn't reported as a leak.
-    static chromeos::LowBatteryObserver* low_battery_observer =
-        new chromeos::LowBatteryObserver(profile);
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-        low_battery_observer);
+    // These observers are singletons. They are never deleted but the pointers
+    // are kept in a statics so that they are not reported as leaks.
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            ash::switches::kAuraNotify)) {
+      static chromeos::LowBatteryObserver* low_battery_observer =
+          new chromeos::LowBatteryObserver(profile);
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
+          low_battery_observer);
+    }
 
     static chromeos::NetworkMessageObserver* network_message_observer =
         new chromeos::NetworkMessageObserver(profile);

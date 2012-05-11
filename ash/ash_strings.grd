@@ -344,11 +344,8 @@ Press Search key to cancel.
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_EMPTY" desc="The label in the tray dialog to show a time estimate until the battery is empty.">
         <ph name="hour">$1<ex>2</ex></ph>h <ph name="minute">$2<ex>53</ex></ph>m remaining
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ON" desc="The label in the tray dialog indicating that the time to completely charge the battery is being calculated.">
-        Calculating time until full
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_OFF" desc="The label in the tray dialog indicating that the time to completely drain the battery is being calculated.">
-        Calculating remaining time
+      <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING" desc="The label in the tray dialog indicating that the time to charge or discharge the battery is being calculated.">
+        Calculating...
       </message>
       <message name="IDS_ASH_STATUS_TRAY_IP" desc="The label for the IP address of the network:">
         IP Address

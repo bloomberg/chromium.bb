@@ -8,14 +8,17 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
+#include "grit/ui_resources_standard.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/grid_layout.h"
 #include "ui/views/painter.h"
 
 namespace ash {
@@ -33,6 +36,7 @@ views::View* CreatePopupHeaderButtonsContainer() {
   return view;
 }
 
+const int kNotificationCloseButtonWidth = 60;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -446,6 +450,52 @@ void SetupLabelForTray(views::Label* label) {
   label->SetShadowColors(SkColorSetARGB(64, 0, 0, 0),
                          SkColorSetARGB(64, 0, 0, 0));
   label->SetShadowOffset(0, 1);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TrayNotificationView
+
+TrayNotificationView::TrayNotificationView() {
+}
+
+void TrayNotificationView::InitView(views::View* contents) {
+  set_background(views::Background::CreateSolidBackground(kBackgroundColor));
+
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
+
+  AddChildView(contents);
+
+  views::ImageButton* close_button = new views::ImageButton(this);
+  close_button->SetImage(views::CustomButton::BS_NORMAL,
+                         ResourceBundle::GetSharedInstance().GetBitmapNamed(
+                             IDR_AURA_WINDOW_CLOSE));
+  AddChildView(close_button);
+
+  int contents_width = kTrayPopupWidth - kNotificationCloseButtonWidth;
+  views::ColumnSet* columns = layout->AddColumnSet(0);
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
+                     0, /* resize percent */
+                     views::GridLayout::FIXED,
+                     contents_width,
+                     contents_width);
+  columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+                     0, /* resize percent */
+                     views::GridLayout::FIXED,
+                     kNotificationCloseButtonWidth,
+                     kNotificationCloseButtonWidth);
+
+  layout->StartRow(0, 0);
+  layout->AddView(contents);
+  layout->AddView(close_button);
+}
+
+TrayNotificationView::~TrayNotificationView() {
+}
+
+void TrayNotificationView::ButtonPressed(views::Button* sender,
+                                         const views::Event& event) {
+  OnClose();
 }
 
 }  // namespace internal

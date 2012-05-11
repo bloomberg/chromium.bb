@@ -513,8 +513,9 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
  public:
   PowerManagerClientStubImpl()
       : discharging_(true),
-        battery_percentage_(81),
-        pause_count_(0) {
+        battery_percentage_(40),
+        brightness_(50.0),
+        pause_count_(2) {
   }
 
   virtual ~PowerManagerClientStubImpl() {}
@@ -535,21 +536,24 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
 
   virtual void DecreaseScreenBrightness(bool allow_off) OVERRIDE {
     VLOG(1) << "Requested to descrease screen brightness";
+    SetBrightness(brightness_ - 5.0, true);
   }
 
   virtual void IncreaseScreenBrightness() OVERRIDE {
     VLOG(1) << "Requested to increase screen brightness";
+    SetBrightness(brightness_ + 5.0, true);
   }
 
   virtual void SetScreenBrightnessPercent(double percent,
                                           bool gradual) OVERRIDE {
     VLOG(1) << "Requested to set screen brightness to " << percent << "% "
             << (gradual ? "gradually" : "instantaneously");
+    SetBrightness(percent, false);
   }
 
   virtual void GetScreenBrightnessPercent(
       const GetScreenBrightnessPercentCallback& callback) OVERRIDE {
-    callback.Run(100.0);
+    callback.Run(brightness_);
   }
 
   virtual void RequestStatusUpdate(UpdateRequestType update_type) OVERRIDE {
@@ -596,46 +600,50 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
 
  private:
   void Update() {
-    // We pause at 0 and 100% so that it's easier to check those conditions.
-    if (pause_count_ > 1) {
+    if (pause_count_ > 0) {
       pause_count_--;
-      return;
-    }
-
-    if (battery_percentage_ == 0 || battery_percentage_ == 100) {
-      if (pause_count_) {
-        pause_count_ = 0;
+    } else {
+      int discharge_amt = battery_percentage_ <= 10 ? 1 : 10;
+      battery_percentage_ += (discharging_ ? -discharge_amt : discharge_amt);
+      battery_percentage_ = std::min(std::max(battery_percentage_, 0), 100);
+      // We pause at 0 and 100% so that it's easier to check those conditions.
+      if (battery_percentage_ == 0 || battery_percentage_ == 100) {
         discharging_ = !discharging_;
-      } else {
-        // Pause twice (i.e. skip updating the menu), including the current
-        // call to this function.
-        pause_count_ = 2;
-        return;
+        pause_count_ = 4;
       }
     }
-    battery_percentage_ += (discharging_ ? -5 : 5);
-    battery_percentage_ = std::min(std::max(battery_percentage_, 0), 100);
-
     const int kSecondsToEmptyFullBattery(3 * 60 * 60);  // 3 hours.
 
-    PowerSupplyStatus status;
-    status.line_power_on = !discharging_;
-    status.battery_is_present = true;
-    status.battery_percentage = battery_percentage_;
-    status.battery_seconds_to_empty =
+    status_.is_calculating_battery_time = (pause_count_ > 1);
+    status_.line_power_on = !discharging_;
+    status_.battery_is_present = true;
+    status_.battery_percentage = battery_percentage_;
+    status_.battery_seconds_to_empty =
         std::max(1, battery_percentage_ * kSecondsToEmptyFullBattery / 100);
-    status.battery_seconds_to_full =
+    status_.battery_seconds_to_full =
         std::max(static_cast<int64>(1),
-                 kSecondsToEmptyFullBattery - status.battery_seconds_to_empty);
+                 kSecondsToEmptyFullBattery - status_.battery_seconds_to_empty);
 
-    FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status));
+    status_.averaged_battery_time_to_empty = status_.battery_seconds_to_empty;
+    status_.averaged_battery_time_to_full = status_.battery_seconds_to_full;
+
+    FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status_));
+  }
+
+  void SetBrightness(double percent, bool user_initiated) {
+    brightness_ = std::min(std::max(0.0, percent), 100.0);
+    int brightness_level = static_cast<int>(brightness_);
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      BrightnessChanged(brightness_level, user_initiated));
   }
 
   bool discharging_;
   int battery_percentage_;
+  double brightness_;
   int pause_count_;
   ObserverList<Observer> observers_;
   base::RepeatingTimer<PowerManagerClientStubImpl> timer_;
+  PowerSupplyStatus status_;
 };
 
 PowerManagerClient::PowerManagerClient() {

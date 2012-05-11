@@ -13,6 +13,7 @@ namespace ash {
 namespace internal {
 
 namespace tray {
+class PowerNotificationView;
 class PowerTrayView;
 }
 
@@ -23,19 +24,31 @@ class TrayPower : public SystemTrayItem,
   virtual ~TrayPower();
 
  private:
+  enum NotificationState {
+    NOTIFICATION_NONE,
+    NOTIFICATION_LOW_POWER,
+    NOTIFICATION_CRITICAL
+  };
+
   // Overridden from SystemTrayItem.
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
-  virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
+  virtual views::View* CreateNotificationView(
+      user::LoginStatus status) OVERRIDE;
   virtual void DestroyTrayView() OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
-  virtual void DestroyDetailedView() OVERRIDE;
+  virtual void DestroyNotificationView() OVERRIDE;
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
 
   // Overridden from PowerStatusObserver.
   virtual void OnPowerStatusChanged(const PowerSupplyStatus& status) OVERRIDE;
 
+  // Sets |notification_state_|. Returns true if a notification should be shown.
+  bool UpdateNotificationState(const PowerSupplyStatus& status);
+
   tray::PowerTrayView* power_tray_;
+  tray::PowerNotificationView* notification_view_;
+  NotificationState notification_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayPower);
 };
