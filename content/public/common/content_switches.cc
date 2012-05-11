@@ -556,9 +556,6 @@ const char kTraceStartupFile[]              = "trace-startup-file";
 // --startup-trace-file=none was supplied.
 const char kTraceStartupDuration[]          = "trace-startup-duration";
 
-// Enables the use of the GPU process for UI. Only meaningful for Aura.
-const char kUIUseGPUProcess[]               = "ui-use-gpu-process";
-
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[]                     = "user-agent";
 

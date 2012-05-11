@@ -23,12 +23,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_setup.h"
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/gl/scoped_make_current.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
-#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
 using content::BrowserGpuChannelHostFactory;
 using content::GLHelper;
@@ -113,68 +110,6 @@ class TestTransportFactory : public DefaultTransportFactory {
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTransportFactory);
 };
-
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-class InProcessTransportFactory : public DefaultTransportFactory {
- public:
-  InProcessTransportFactory() {
-    // Creating 16x16 (instead of 1x1) to work around ARM Mali driver issue
-    // (see https://code.google.com/p/chrome-os-partner/issues/detail?id=9445)
-    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(
-        false, gfx::Size(16, 16));
-    CHECK(surface_.get()) << "Unable to create compositor GL surface.";
-
-    context_ = gfx::GLContext::CreateGLContext(
-        NULL, surface_.get(), gfx::PreferIntegratedGpu);
-    CHECK(context_.get()) <<"Unable to create compositor GL context.";
-
-    set_share_group(context_->share_group());
-  }
-
-  virtual ~InProcessTransportFactory() {}
-
-  virtual gfx::ScopedMakeCurrent* GetScopedMakeCurrent() OVERRIDE {
-    return new gfx::ScopedMakeCurrent(context_.get(), surface_.get());
-  }
-
-  virtual gfx::GLSurfaceHandle CreateSharedSurfaceHandle(
-      ui::Compositor* compositor) OVERRIDE {
-    return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, true);
-  }
-
-  virtual scoped_refptr<ImageTransportClient> CreateTransportClient(
-      const gfx::Size& size,
-      uint64* transport_handle) OVERRIDE {
-    scoped_refptr<ImageTransportClient> surface(
-        ImageTransportClient::Create(this, size));
-    if (!surface || !surface->Initialize(transport_handle)) {
-      LOG(ERROR) << "Failed to create ImageTransportClient";
-      return NULL;
-    }
-    return surface;
-  }
-
-  virtual GLHelper* GetGLHelper(ui::Compositor* compositor) OVERRIDE {
-    // TODO(mazda): Implement this (http://crbug.com/118546).
-    return NULL;
-  }
-
-  // We don't generate lost context events, so we don't need to keep track of
-  // observers
-  virtual void AddObserver(ImageTransportFactoryObserver* observer) OVERRIDE {
-  }
-
-  virtual void RemoveObserver(
-      ImageTransportFactoryObserver* observer) OVERRIDE {
-  }
-
- private:
-  scoped_refptr<gfx::GLContext> context_;
-  scoped_refptr<gfx::GLSurface> surface_;
-
-  DISALLOW_COPY_AND_ASSIGN(InProcessTransportFactory);
-};
-#endif
 
 class ImageTransportClientTexture : public ImageTransportClient {
  public:
@@ -465,14 +400,8 @@ void ImageTransportFactory::Initialize() {
   }
   if (ui::IsTestCompositorEnabled()) {
     g_factory = new TestTransportFactory();
-  } else if (command_line->HasSwitch(switches::kUIUseGPUProcess)) {
-    g_factory = new GpuProcessTransportFactory();
   } else {
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-    g_factory = new InProcessTransportFactory();
-#else
-    g_factory = new DefaultTransportFactory();
-#endif
+    g_factory = new GpuProcessTransportFactory();
   }
   ui::ContextFactory::SetInstance(g_factory->AsContextFactory());
 }

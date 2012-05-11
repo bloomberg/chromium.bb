@@ -1080,7 +1080,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ash::switches::kAuraPanelManager,
       ash::switches::kAuraWindowAnimationsDisabled,
       switches::kUIEnablePartialSwap,
-      switches::kUIUseGPUProcess,
       switches::kUseGL,
       switches::kUserDataDir,
 #if defined(USE_VIRTUAL_KEYBOARD)

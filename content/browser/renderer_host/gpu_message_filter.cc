@@ -9,7 +9,6 @@
 #include "content/browser/renderer_host/gpu_message_filter.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/process_util.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -42,12 +41,11 @@ GpuMessageFilter::GpuMessageFilter(int render_process_id,
       render_widget_helper_(render_widget_helper) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUIUseGPUProcess)) {
-    // When using the GPU process for UI, we need to share renderer GL contexts
-    // with the compositor context.
-    share_contexts_ = true;
-  }
+#if defined(USE_AURA)
+  // We use the GPU process for UI on Aura, and we need to share renderer GL
+  // contexts with the compositor context.
+  share_contexts_ = true;
+#endif
 }
 
 GpuMessageFilter::~GpuMessageFilter() {
@@ -187,4 +185,3 @@ void GpuMessageFilter::CreateCommandBufferCallback(
   GpuHostMsg_CreateViewCommandBuffer::WriteReplyParams(reply, route_id);
   Send(reply);
 }
-
