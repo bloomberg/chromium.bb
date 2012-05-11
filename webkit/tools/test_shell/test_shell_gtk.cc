@@ -569,6 +569,11 @@ string16 TestShellWebKitInit::GetLocalizedString(int message_id) {
 }
 
 base::StringPiece TestShellWebKitInit::GetDataResource(int resource_id) {
+  return TestShell::ResourceProvider(resource_id);
+}
+
+base::StringPiece TestShellWebKitInit::GetImageResource(int resource_id,
+                                                        float scale_factor) {
   switch (resource_id) {
     case IDR_BROKENIMAGE:
       resource_id = IDR_BROKENIMAGE_TESTSHELL;
@@ -577,5 +582,6 @@ base::StringPiece TestShellWebKitInit::GetDataResource(int resource_id) {
       resource_id = IDR_TEXTAREA_RESIZER_TESTSHELL;
       break;
   }
+  // TODO(flackr): Pass scale_factor.
   return TestShell::ResourceProvider(resource_id);
 }

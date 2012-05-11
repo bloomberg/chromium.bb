@@ -32,6 +32,8 @@ class ShellContentClient : public ContentClient {
   virtual std::string GetUserAgent() const OVERRIDE;
   virtual string16 GetLocalizedString(int message_id) const OVERRIDE;
   virtual base::StringPiece GetDataResource(int resource_id) const OVERRIDE;
+  virtual base::StringPiece GetImageResource(int resource_id,
+                                             float scale_factor) const OVERRIDE;
 
 #if defined(OS_WIN)
   virtual bool SandboxPlugin(CommandLine* command_line,

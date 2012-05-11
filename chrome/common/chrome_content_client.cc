@@ -419,6 +419,14 @@ base::StringPiece ChromeContentClient::GetDataResource(int resource_id) const {
   return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
 }
 
+base::StringPiece ChromeContentClient::GetImageResource(
+    int resource_id,
+    float scale_factor) const {
+  // TODO(flackr): Pass scale_factor to ResourceBundle to get best matching
+  // image resource for the given scale factor.
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+}
+
 #if defined(OS_WIN)
 bool ChromeContentClient::SandboxPlugin(CommandLine* command_line,
                                         sandbox::TargetPolicy* policy) {

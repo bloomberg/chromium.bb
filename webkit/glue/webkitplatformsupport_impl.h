@@ -121,6 +121,12 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   // specified as BINDATA in the relevant .rc file.
   virtual base::StringPiece GetDataResource(int resource_id) = 0;
 
+  // Returns the raw data for an image resource with a scale factor as close as
+  // is available to |scale_factor|.  This resource must have been specified as
+  // BINDATA in the relevant .rc file.
+  virtual base::StringPiece GetImageResource(int resource_id,
+                                             float scale_factor) = 0;
+
   // Returns the list of plugins.
   virtual void GetPlugins(bool refresh,
                           std::vector<webkit::WebPluginInfo>* plugins) = 0;

@@ -104,6 +104,11 @@ class TestWebKitPlatformSupport
     return base::StringPiece();
   }
 
+  virtual base::StringPiece GetImageResource(int resource_id,
+                                             float scale_factor) OVERRIDE {
+    return base::StringPiece();
+  }
+
   virtual void GetPlugins(bool,
                           std::vector<webkit::WebPluginInfo,
                           std::allocator<webkit::WebPluginInfo> >*) OVERRIDE {

@@ -21,6 +21,11 @@ class CompositorTestPlatformSupport:
     return base::StringPiece();
   }
 
+  virtual base::StringPiece GetImageResource(int resource_id,
+                                             float scale_factor) OVERRIDE {
+    return base::StringPiece();
+  }
+
   virtual void GetPlugins(
       bool refresh, std::vector<webkit::WebPluginInfo>* plugins) OVERRIDE {
   }

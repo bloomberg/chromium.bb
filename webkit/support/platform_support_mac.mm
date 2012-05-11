@@ -217,6 +217,15 @@ static FilePath GetResourcesFilePath() {
 }
 
 base::StringPiece TestWebKitPlatformSupport::GetDataResource(int resource_id) {
+  base::StringPiece res;
+  if (g_resource_data_pack)
+    g_resource_data_pack->GetStringPiece(resource_id, &res);
+  return res;
+}
+
+base::StringPiece TestWebKitPlatformSupport::GetImageResource(
+    int resource_id,
+    float scale_factor) {
   switch (resource_id) {
   case IDR_BROKENIMAGE: {
     // Use webkit's broken image icon (16x16)

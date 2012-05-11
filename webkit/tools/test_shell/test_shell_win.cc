@@ -669,8 +669,13 @@ string16 TestShellWebKitInit::GetLocalizedString(int message_id) {
   return string16(localized, length);
 }
 
-// TODO(tc): Convert this to using resources from test_shell.rc.
 base::StringPiece TestShellWebKitInit::GetDataResource(int resource_id) {
+  return base::StringPiece();
+}
+
+// TODO(tc): Convert this to using resources from test_shell.rc.
+base::StringPiece TestShellWebKitInit::GetImageResource(int resource_id,
+                                                        float scale_factor) {
   switch (resource_id) {
   case IDR_BROKENIMAGE: {
     // Use webkit's broken image icon (16x16)
@@ -714,6 +719,7 @@ base::StringPiece TestShellWebKitInit::GetDataResource(int resource_id) {
   case IDR_INPUT_SPEECH:
   case IDR_INPUT_SPEECH_RECORDING:
   case IDR_INPUT_SPEECH_WAITING:
+    //TODO(flackr): Pass scale_factor.
     return TestShell::ResourceProvider(resource_id);
 
   default:

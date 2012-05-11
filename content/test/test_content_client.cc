@@ -64,6 +64,14 @@ base::StringPiece TestContentClient::GetDataResource(int resource_id) const {
   return resource;
 }
 
+base::StringPiece TestContentClient::GetImageResource(
+    int resource_id,
+    float scale_factor) const {
+  base::StringPiece resource;
+  data_pack_.GetStringPiece(resource_id, &resource);
+  return resource;
+}
+
 #if defined(OS_WIN)
 bool TestContentClient::SandboxPlugin(CommandLine* command_line,
                                       sandbox::TargetPolicy* policy) {

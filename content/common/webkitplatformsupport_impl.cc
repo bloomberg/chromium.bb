@@ -28,6 +28,13 @@ base::StringPiece WebKitPlatformSupportImpl::GetDataResource(
   return content::GetContentClient()->GetDataResource(resource_id);
 }
 
+base::StringPiece WebKitPlatformSupportImpl::GetImageResource(
+    int resource_id,
+    float scale_factor) {
+  return content::GetContentClient()->GetImageResource(resource_id,
+                                                       scale_factor);
+}
+
 void WebKitPlatformSupportImpl::GetPlugins(
     bool refresh, std::vector<webkit::WebPluginInfo>* plugins) {
   // This should not be called except in the renderer.
