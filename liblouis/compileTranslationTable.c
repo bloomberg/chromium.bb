@@ -604,7 +604,7 @@ getALine (FileInfo * nested)
 {
 /*Read a line of widechar's from an input file */
   int ch;
-  int pch;
+  int pch = 0;
   nested->linelen = 0;
   while ((ch = getAChar (nested)) != EOF)
     {
@@ -4726,7 +4726,6 @@ doLang2table (const char *tableList)
     return NULL;
   while ((fgets (buffer, sizeof (buffer) - 2, l2t)))
     {
-      int bufLen = strlen (buffer);
       char *codeInFile;
       int codeInFileLen;
       char *tableInFile;

@@ -22,15 +22,17 @@ liblouis NEWS -- history of user-visible changes.
 ** Bug fixes
    - lou_allround and lou_translate now properly handle unicode
      characters
+   - Fix some issues reported by Valgrind
 
 ** Braille Table Improvements
    - Added:
      latinLetterDef6Dots.uti, latinLetterDef8Dots.uti,
-     loweredDigits6Dots.uti, loweredDigits8Dots.uti,
-     digits6Dots.uti, digits6DotsPlusDot6.uti, digits8Dots.uti
-     to better make use of table include infrastructure.
-     This removes duplication in tables, and should make it easier to define tables, since instead of defining individual 
-     characters, the table producer can simply include the right class of definitions.
+     loweredDigits6Dots.uti, loweredDigits8Dots.uti, digits6Dots.uti,
+     digits6DotsPlusDot6.uti, digits8Dots.uti to better make use of
+     table include infrastructure. This removes duplication in tables,
+     and should make it easier to define tables, since instead of
+     defining individual characters, the table producer can simply
+     include the right class of definitions.
    - Most tables were touched by the deduplication tables mensioned above.
    - hu1.ctb: improvements and extensive test harness Thanks to Hammer Attila
 

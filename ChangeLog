@@ -1,3 +1,10 @@
+2012-05-11  Christian Egli  <christian.egli@sbs.ch>
+
+	* liblouis/compileTranslationTable.c (doLang2table): Remove an
+	unused variable that was reported by -Wall
+	(getALine): Properly initialize a variable. This issue was
+	reported by Valgrind.
+
 2012-05-07  Christian Egli  <christian.egli@sbs.ch>
 
 	* tests/brl_checks.c (check_translation): Enhance to be able to
