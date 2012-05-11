@@ -100,7 +100,7 @@ class HostProcess
     network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
     config_updated_timer_.reset(new base::DelayTimer<HostProcess>(
         FROM_HERE, base::TimeDelta::FromSeconds(2), this,
-        &HostProcess::ConfigUpdated));
+        &HostProcess::ConfigUpdatedDelayed));
   }
 
   void InitWithCommandLine(const CommandLine* cmd_line) {
@@ -123,6 +123,18 @@ class HostProcess
   }
 
   void ConfigUpdated() {
+    // The timer should be set and cleaned up on the same thread.
+    DCHECK(message_loop_.message_loop_proxy()->BelongsToCurrentThread());
+
+    // Call ConfigUpdatedDelayed after a short delay, so that this object won't
+    // try to read the updated configuration file before it has been
+    // completely written.
+    // If the writer moves the new configuration file into place atomically,
+    // this delay may not be necessary.
+    config_updated_timer_->Reset();
+  }
+
+  void ConfigUpdatedDelayed() {
     if (LoadConfig()) {
       context_->network_message_loop()->PostTask(
           FROM_HERE,
@@ -136,21 +148,22 @@ class HostProcess
 #if defined(OS_WIN)
   class ConfigChangedDelegate : public base::files::FilePathWatcher::Delegate {
    public:
-    ConfigChangedDelegate(HostProcess* host_process) :
-      host_process_(host_process) {
+    ConfigChangedDelegate(base::MessageLoopProxy* message_loop,
+                          const base::Closure& callback)
+        : message_loop_(message_loop),
+          callback_(callback) {
     }
+
     void OnFilePathChanged(const FilePath& path) OVERRIDE {
-      // Call ConfigUpdated after a short delay, so that this object won't
-      // try to read the updated configuration file before it has been
-      // completely written.
-      // If the writer moves the new configuration file into place atomically,
-      // this delay may not be necessary.
-      host_process_->config_updated_timer_->Reset();
+      message_loop_->PostTask(FROM_HERE, callback_);
     }
+
     void OnFilePathError(const FilePath& path) OVERRIDE {
     }
+
    private:
-    HostProcess* host_process_;
+    scoped_refptr<base::MessageLoopProxy> message_loop_;
+    base::Closure callback_;
 
     DISALLOW_COPY_AND_ASSIGN(ConfigChangedDelegate);
   };
@@ -159,10 +172,12 @@ class HostProcess
   void ListenForConfigChanges() {
 #if defined(OS_MACOSX)
     remoting::RegisterHupSignalHandler(
-        base::Bind(&HostProcess::ConfigUpdated, base::Unretained(this)));
+        base::Bind(&HostProcess::ConfigUpdatedDelayed, base::Unretained(this)));
 #elif defined(OS_WIN)
     scoped_refptr<base::files::FilePathWatcher::Delegate> delegate(
-        new ConfigChangedDelegate(this));
+        new ConfigChangedDelegate(
+            message_loop_.message_loop_proxy(),
+            base::Bind(&HostProcess::ConfigUpdated, base::Unretained(this))));
     config_watcher_.reset(new base::files::FilePathWatcher());
     if (!config_watcher_->Watch(host_config_path_, delegate)) {
       LOG(ERROR) << "Couldn't watch file " << host_config_path_.value();
