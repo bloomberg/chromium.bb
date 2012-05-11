@@ -16,6 +16,7 @@
 	<key>ProgramArguments</key>
 	<array>
 		<string>/Library/PrivilegedHelperTools/org.chromium.chromoting.me2me.sh</string>
+		<string>--run-from-launchd</string>
 	</array>
 </dict>
 </plist>

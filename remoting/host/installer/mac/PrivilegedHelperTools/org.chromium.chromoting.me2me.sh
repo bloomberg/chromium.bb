@@ -82,6 +82,9 @@ elif [[ "$1" = "--enable" ]]; then
 elif [[ "$1" = "--save-config" ]]; then
   echo $$
   cat > "$CONFIG_FILE"
-else
+elif [[ "$1" = "--run-from-launchd" ]]; then
   run_host
+else
+  echo $$
+  exit 1
 fi
