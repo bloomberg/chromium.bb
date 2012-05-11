@@ -339,30 +339,27 @@ button.addEventListener("click", function() {
 <h2 id="host-page-communication">Communication with the embedding page</h2>
 
 <p>Although the execution environments of content scripts and the pages that host them are isolated from each other, they share access to the page's DOM. If the page wishes to communicate with the content script (or with the extension via the content script), it must do so through the shared DOM.</p>
-
-<p>An example can be accomplished using custom DOM events and storing data in a known location. Consider: </p>
-
-<pre>http://foo.com/example.html
-===========================
-var customEvent = document.createEvent('Event');
-customEvent.initEvent('myCustomEvent', true, true);
-
-function fireCustomEvent(data) {
-  hiddenDiv = document.getElementById('myCustomEventDiv');
-  hiddenDiv.innerText = data
-  hiddenDiv.dispatchEvent(customEvent);
-}</pre>
-
+<p>An example can be accomplished using window.postMessage (or window.webkitPostMessage for Transferable objects):</p>
 <pre>contentscript.js
 ================
 var port = chrome.extension.connect();
 
-document.getElementById('myCustomEventDiv').addEventListener('myCustomEvent', function() {
-  var eventData = document.getElementById('myCustomEventDiv').innerText;
-  port.postMessage({message: "myCustomEvent", values: eventData});
-});</pre>
+window.addEventListener("message", function(event) {
+    // We only accept messages from ourselves
+    if (event.source != window)
+      return;
 
-<p>In the above example, example.html (which is not a part of the extension) creates a custom event and then can decide to fire the event by setting the event data to a known location in the DOM and then dispatching the custom event. The content script listens for the name of the custom event on the known element and handles the event by inspecting the data of the element, and turning around to post the message to the extension process. In this way the page establishes a line of communication to the extension. The reverse is possible through similar means.</p>
+    if (event.data.type &amp;&amp; (event.data.type == "FROM_PAGE")) {
+      console.log("Content script received: " + event.data.text);
+      port.postMessage(event.data.text);
+    }
+}, false);</pre>
+<pre>http://foo.com/example.html
+===========================
+document.getElementById("theButton").addEventListener("click", function() {
+    window.postMessage({ type: "FROM_PAGE", text: "Hello from the webpage!" }, "*");
+}, false);</pre>
+<p>In the above example, example.html (which is not a part of the extension) posts messages to itself, which are intercepted and inspected by the content script, and then posted to the extension process. In this way, the page establishes a line of communication to the extension process. The reverse is possible through similar means.</p>
 
 <h2 id="security-considerations">Security considerations</h2>
 
