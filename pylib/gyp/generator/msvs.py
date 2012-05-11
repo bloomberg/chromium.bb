@@ -2646,6 +2646,10 @@ def _AddConditionalProperty(properties, condition, name, value):
   conditions.append(condition)
 
 
+# Regex for msvs variable references ( i.e. $(FOO) ).
+MSVS_VARIABLE_REFERENCE = re.compile('\$\(([a-zA-Z_][a-zA-Z0-9_]*)\)')
+
+
 def _GetMSBuildPropertyGroup(spec, label, properties):
   """Returns a PropertyGroup definition for the specified properties.
 
@@ -2660,7 +2664,31 @@ def _GetMSBuildPropertyGroup(spec, label, properties):
   if label:
     group.append({'Label': label})
   num_configurations = len(spec['configurations'])
-  for name, values in sorted(properties.iteritems()):
+  def GetEdges(node):
+    # Use a definition of edges such that user_of_variable -> used_varible.
+    # This happens to be easier in this case, since a variable's
+    # definition contains all variables it references in a single string.
+    edges = set()
+    for value in sorted(properties[node].keys()):
+      # Add to edges all $(...) references to variables.
+      #
+      # Variable references that refer to names not in properties are excluded
+      # These can exist for instance to refer built in definitions like
+      # $(SolutionDir).
+      #
+      # Self references are ignored. Self reference is used in a few places to
+      # append to the default value. I.e. PATH=$(PATH);other_path
+      edges.update(set([v for v in MSVS_VARIABLE_REFERENCE.findall(value)
+                        if v in properties and v != node]))
+    return edges
+  properties_ordered = gyp.common.TopologicallySorted(
+      properties.keys(), GetEdges)
+  # Walk properties in the reverse of a topological sort on
+  # user_of_variable -> used_variable as this ensures variables are
+  # defined before they are used.
+  # NOTE: reverse(topsort(DAG)) = topsort(reverse_edges(DAG))
+  for name in reversed(properties_ordered):
+    values = properties[name]
     for value, conditions in sorted(values.iteritems()):
       if len(conditions) == num_configurations:
         # If the value is the same all configurations,

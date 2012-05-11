@@ -982,60 +982,27 @@ def TopologicallySortedEnvVarKeys(env):
   # order is important. Below is the logic to compute the dependency graph
   # and sort it.
   regex = re.compile(r'\$\{([a-zA-Z0-9\-_]+)\}')
-
-  # First sort the list of keys.
-  key_list = sorted(env.keys())
-
-  # Phase 1: Create a set of edges of (DEPENDEE, DEPENDER) where in the graph,
-  # DEPENDEE -> DEPENDER. Also create sets of dependers and dependees.
-  edges = set()
-  dependees = set()
-  dependers = set()
-  for k in key_list:
-    matches = regex.findall(env[k])
-    if not len(matches):
-      continue
-
-    depends_on_other_var = False
+  def GetEdges(node):
+    # Use a definition of edges such that user_of_variable -> used_varible.
+    # This happens to be easier in this case, since a variable's
+    # definition contains all variables it references in a single string.
+    # We can then reverse the result of the topological sort at the end.
+    # Since: reverse(topsort(DAG)) = topsort(reverse_edges(DAG))
+    matches = set([v for v in regex.findall(env[node]) if v in env])
     for dependee in matches:
       assert '${' not in dependee, 'Nested variables not supported: ' + dependee
-      if dependee in env:
-        edges.add((dependee, k))
-        dependees.add(dependee)
-        depends_on_other_var = True
-    if depends_on_other_var:
-      dependers.add(k)
+    return matches
 
-  # Phase 2: Create a list of graph nodes with no incoming edges.
-  sorted_nodes = []
-  edgeless_nodes = dependees - dependers
-
-  # Phase 3: Perform Kahn topological sort.
-  while len(edgeless_nodes):
-    # Find a node with no incoming edges, add it to the sorted list, and
-    # remove it from the list of nodes that aren't part of the graph.
-    node = edgeless_nodes.pop()
-    sorted_nodes.append(node)
-    key_list.remove(node)
-
-    # Find all the edges between |node| and other nodes.
-    edges_to_node = [e for e in edges if e[0] == node]
-    for edge in edges_to_node:
-      edges.remove(edge)
-      # If the node connected to |node| by |edge| has no other incoming edges,
-      # add it to |edgeless_nodes|.
-      if not len([e for e in edges if e[1] == edge[1]]):
-        edgeless_nodes.add(edge[1])
-
-  # Any remaining edges indicate a cycle.
-  if len(edges):
-    raise Exception('Xcode environment variables are cyclically dependent: ' +
-        str(edges))
-
-  # Append the "nodes" not in the graph to those that were just sorted.
-  sorted_nodes.extend(key_list)
-
-  return sorted_nodes
+  try:
+    # Topologically sort, and then reverse, because we used an edge definition
+    # that's inverted from the expected result of this function (see comment
+    # above).
+    order = gyp.common.TopologicallySorted(env.keys(), GetEdges)
+    order.reverse()
+    return order
+  except CycleError, e:
+    raise Exception(
+        'Xcode environment variables are cyclically dependent: ' + str(e.nodes))
 
 
 def GetSpecPostbuildCommands(spec, quiet=False):
