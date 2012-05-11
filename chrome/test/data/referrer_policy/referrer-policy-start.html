@@ -1,17 +1,50 @@
 <html>
 <head>
 <script>
-function runTest() {
-    var matches = RegExp(/\?(.*)&port=(.*)/).exec(document.location.search);
-    var meta = document.createElement("meta");
-    meta.name = "referrer";
-    meta.content = matches[1];
-    document.head.appendChild(meta);
-    document.location =
-        "http://127.0.0.1:" + matches[2] + "/files/referrer-policy-log.html";
+function run() {
+  var kPolicy = 1;
+  var kPort = 2;
+  var kSslPort = 3;
+  var kRedirect = 4;
+  var kLink = 5;
+  var kTarget = 6;
+  var re = new RegExp(
+      /policy=(.*)&port=(.*)&ssl_port=(.*)&redirect=(.*)&link=(.*)&target=(.*)/);
+  var matches = re.exec(document.location.search);
+
+  if (matches == null) {
+    document.body.innerText = "Could not parse parameters!";
+    return;
+  }
+
+  var meta = document.createElement("meta");
+  meta.name = "referrer";
+  meta.content = matches[kPolicy];
+  document.head.appendChild(meta);
+
+  var destination;
+
+  if (matches[kRedirect] == "true") {
+    destination =
+        "https://127.0.0.1:" + matches[kSslPort] + "/server-redirect?" +
+        "http://127.0.0.1:" + matches[kPort] + "/files/referrer-policy-log.html";
+  } else {
+    destination =
+        "http://127.0.0.1:" + matches[kPort] + "/files/referrer-policy-log.html";
+  }
+
+  if (matches[kLink] == "true") {
+    var link = document.createElement("a");
+    link.innerText = "link";
+    link.target = matches[kTarget];
+    link.href = destination;
+    document.body.appendChild(link);
+  } else {
+    document.location = destination;
+  }
 }
 </script>
 </head>
-<body onload="runTest()">
+<body onload="run()">
 </body>
 </html>

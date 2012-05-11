@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
+#include "chrome/browser/tab_contents/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -43,77 +44,6 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   bool IsItemPresent(int command_id) {
     return menu_model_.GetIndexOfCommandId(command_id) != -1;
   }
-};
-
-// Wait for a context menu to be shown, and then execute a command with the
-// given command id in this menu, and close the menu again.
-class ContextMenuNotificationObserver : public content::NotificationObserver {
- public:
-  ContextMenuNotificationObserver(int command_to_execute,
-                                  int expected_notification)
-      : command_to_execute_(command_to_execute),
-        expected_notification_(expected_notification),
-        seen_expected_notification_(false) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN,
-                   content::NotificationService::AllSources());
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_CLOSED,
-                   content::NotificationService::AllSources());
-    registrar_.Add(this,
-                   expected_notification_,
-                   content::NotificationService::AllSources());
-  }
-
-  virtual ~ContextMenuNotificationObserver() {}
-
- private:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    if (type == expected_notification_) {
-      seen_expected_notification_ = true;
-      return;
-    }
-
-    switch (type) {
-      case chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN: {
-        RenderViewContextMenu* context_menu =
-            content::Source<RenderViewContextMenu>(source).ptr();
-        MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(&ContextMenuNotificationObserver::ExecuteCommand,
-                       base::Unretained(this), context_menu));
-        break;
-      }
-      case chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_CLOSED: {
-        // Aura is running a nested message loop for menus. That means that
-        // whatever the test running us is waiting for (e.g. a new tab to be
-        // added) happened while the menu message loop was running, so the
-        // message loop run by this test never quits.
-        if (seen_expected_notification_ &&
-            MessageLoop::current()->is_running()) {
-          MessageLoop::current()->QuitNow();
-        }
-        break;
-      }
-
-      default:
-        NOTREACHED();
-    }
-  }
-
-  void ExecuteCommand(RenderViewContextMenu* context_menu) {
-    context_menu->ExecuteCommand(command_to_execute_);
-    context_menu->Cancel();
-  }
-
-  content::NotificationRegistrar registrar_;
-  int command_to_execute_;
-  int expected_notification_;
-  bool seen_expected_notification_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContextMenuNotificationObserver);
 };
 
 class ContextMenuBrowserTest : public InProcessBrowserTest {
