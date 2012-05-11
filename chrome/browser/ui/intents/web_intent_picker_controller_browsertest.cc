@@ -517,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   EXPECT_FALSE(dispatcher2.replied_);
 
   // num_installed_services_ would be 2 if the intent wasn't explicit.
-  EXPECT_EQ(0, picker_.num_installed_services_);
+  EXPECT_EQ(1, picker_.num_installed_services_);
 }
 
 // Test that an explicit intent for non-installed extension won't

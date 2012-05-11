@@ -448,6 +448,24 @@ void WebIntentPickerController::WebIntentServicesForExplicitIntent(
     if (services[i].service_url != intents_dispatcher_->GetIntent().service)
       continue;
 
+    picker_model_->AddInstalledService(
+        services[i].title,
+        services[i].service_url,
+        ConvertDisposition(services[i].disposition));
+
+    pending_async_count_++;
+    FaviconService* favicon_service = GetFaviconService(wrapper_);
+    FaviconService::Handle handle = favicon_service->GetFaviconForURL(
+        services[i].service_url,
+        history::FAVICON,
+        &favicon_consumer_,
+        base::Bind(
+            &WebIntentPickerController::OnFaviconDataAvailable,
+            weak_ptr_factory_.GetWeakPtr()));
+    favicon_consumer_.SetClientData(
+        favicon_service, handle,
+        picker_model_->GetInstalledServiceCount() - 1);
+
     if (services[i].disposition ==
         webkit_glue::WebIntentServiceData::DISPOSITION_INLINE)
       CreatePicker();
