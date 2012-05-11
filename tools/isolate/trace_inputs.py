@@ -215,7 +215,7 @@ class Strace(object):
     '/var',
   )
 
-  class _Context(object):
+  class Context(object):
     """Processes a strace log line and keeps the list of existent and non
     existent files accessed.
 
@@ -290,12 +290,20 @@ class Strace(object):
         line = pending + m.group(3)
 
       m = self.RE_HEADER.match(line)
-      assert m, '%d: %s' % (self._line_number, line)
-      return getattr(self, 'handle_%s' % m.group(2))(
-          int(m.group(1)),
-          m.group(2),
-          m.group(3),
-          m.group(4))
+      assert m, (self._line_number, line)
+      if m.group(2) == '????':
+        return
+      handler = getattr(self, 'handle_%s' % m.group(2), None)
+      assert handler, (self._line_number, line)
+      try:
+        return handler(
+            int(m.group(1)),
+            m.group(2),
+            m.group(3),
+            m.group(4))
+      except Exception:
+        print >> sys.stderr, (self._line_number, line)
+        raise
 
     def handle_chdir(self, pid, _function, args, result):
       """Updates cwd."""
@@ -316,6 +324,9 @@ class Strace(object):
       if result == '? ERESTARTNOINTR (To be restarted)':
         return
       self._cwd[int(result)] = self._cwd[pid]
+
+    def handle_close(self, pid, _function, _args, _result):
+      pass
 
     def handle_execve(self, pid, _function, args, result):
       self._handle_file(pid, self.RE_EXECVE.match(args).group(1), result)
@@ -348,6 +359,7 @@ class Strace(object):
       assert False, (args, result)
 
     def _handle_file(self, pid, filepath, result):
+      assert pid in self._cwd
       if result.startswith('-1'):
         return
       old_filepath = filepath
@@ -374,7 +386,7 @@ class Strace(object):
     stdout = stderr = None
     if silent:
       stdout = stderr = subprocess.PIPE
-    traces = ','.join(cls._Context.traces())
+    traces = ','.join(cls.Context.traces())
     trace_cmd = ['strace', '-f', '-e', 'trace=%s' % traces, '-o', logname]
     child = subprocess.Popen(
         trace_cmd + cmd, cwd=cwd, stdout=stdout, stderr=stderr)
@@ -411,7 +423,7 @@ class Strace(object):
     should be put in /tmp instead. See http://crbug.com/116251
     """
     logging.info('parse_log(%s, %s)' % (filename, blacklist))
-    context = cls._Context(blacklist)
+    context = cls.Context(blacklist)
     for line in open(filename):
       context.on_line(line)
     # Resolve any symlink we hit.
@@ -570,7 +582,7 @@ class Dtrace(object):
         '  logindex++;\n'
         '}\n') + cls.D_CODE
 
-  class _Context(object):
+  class Context(object):
     """Processes a dtrace log line and keeps the list of existent and non
     existent files accessed.
 
@@ -771,7 +783,7 @@ class Dtrace(object):
     should be put in /tmp instead. See http://crbug.com/116251
     """
     logging.info('parse_log(%s, %s)' % (filename, blacklist))
-    context = cls._Context(blacklist)
+    context = cls.Context(blacklist)
     for line in open(filename, 'rb'):
       context.on_line(line)
     # Resolve any symlink we hit.
@@ -797,7 +809,7 @@ class LogmanTrace(object):
   """Uses the native Windows ETW based tracing functionality to trace a child
   process.
   """
-  class _Context(object):
+  class Context(object):
     """Processes a ETW log line and keeps the list of existent and non
     existent files accessed.
 
@@ -1102,7 +1114,7 @@ class LogmanTrace(object):
       else:
         logformat = 'csv'
 
-    context = cls._Context(blacklist)
+    context = cls.Context(blacklist)
 
     if logformat == 'csv_utf16':
       def utf_8_encoder(unicode_csv_data):
