@@ -48,7 +48,7 @@ using protocol::KeyEvent;
 SessionEventExecutorWin::SessionEventExecutorWin(
     MessageLoop* message_loop,
     base::MessageLoopProxy* io_message_loop,
-    scoped_ptr<protocol::HostEventStub> nested_executor)
+    scoped_ptr<EventExecutor> nested_executor)
     : nested_executor_(nested_executor.Pass()),
       message_loop_(message_loop) {
   std::string channel_name =
@@ -68,18 +68,17 @@ SessionEventExecutorWin::SessionEventExecutorWin(
 SessionEventExecutorWin::~SessionEventExecutorWin() {
 }
 
+void SessionEventExecutorWin::OnSessionStarted() {
+  // TODO(simonmorris): Delegate to the nested executor.
+}
+
+void SessionEventExecutorWin::OnSessionFinished() {
+  // TODO(simonmorris): Delegate to the nested executor.
+}
+
 void SessionEventExecutorWin::InjectClipboardEvent(
     const ClipboardEvent& event) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&SessionEventExecutorWin::InjectClipboardEvent,
-                   base::Unretained(this), event));
-    return;
-  }
-
-  SwitchToInputDesktop();
-  nested_executor_->InjectClipboardEvent(event);
+  // TODO(simonmorris): Delegate to the nested executor.
 }
 
 void SessionEventExecutorWin::InjectKeyEvent(const KeyEvent& event) {

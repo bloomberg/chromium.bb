@@ -17,8 +17,14 @@ class Capturer;
 class EventExecutor : public protocol::HostEventStub {
  public:
   // Creates default event executor for the current platform.
-  static scoped_ptr<protocol::HostEventStub> Create(MessageLoop* message_loop,
-                                                    Capturer* capturer);
+  static scoped_ptr<EventExecutor> Create(MessageLoop* message_loop,
+                                          Capturer* capturer);
+
+  // Initialises any objects needed to execute events.
+  virtual void OnSessionStarted() = 0;
+
+  // Destroys any objects constructed by Start().
+  virtual void OnSessionFinished() = 0;
 };
 
 }  // namespace remoting

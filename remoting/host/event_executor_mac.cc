@@ -41,6 +41,10 @@ class EventExecutorMac : public EventExecutor {
   virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
+  // EventExecutor interface.
+  virtual void OnSessionStarted() OVERRIDE;
+  virtual void OnSessionFinished() OVERRIDE;
+
  private:
   MessageLoop* message_loop_;
   SkIPoint mouse_pos_;
@@ -322,11 +326,19 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
   }
 }
 
+void EventExecutorMac::OnSessionStarted() {
+  return;
+}
+
+void EventExecutorMac::OnSessionFinished() {
+  return;
+}
+
 }  // namespace
 
-scoped_ptr<protocol::HostEventStub> EventExecutor::Create(
+scoped_ptr<EventExecutor> EventExecutor::Create(
     MessageLoop* message_loop, Capturer* capturer) {
-  return scoped_ptr<protocol::HostEventStub>(
+  return scoped_ptr<EventExecutor>(
       new EventExecutorMac(message_loop));
 }
 

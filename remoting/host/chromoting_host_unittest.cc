@@ -87,11 +87,11 @@ class ChromotingHostTest : public testing::Test {
         .Times(AnyNumber());
 
     scoped_ptr<Capturer> capturer(new CapturerFake());
-    event_executor_ = new MockEventExecutor();
+    scoped_ptr<EventExecutor> event_executor(new MockEventExecutor());
     desktop_environment_ = DesktopEnvironment::CreateFake(
         &context_,
         capturer.Pass(),
-        scoped_ptr<protocol::HostEventStub>(event_executor_));
+        event_executor.Pass());
 
     host_ = new ChromotingHost(
         &context_, &signal_strategy_, desktop_environment_.get(),
@@ -131,10 +131,10 @@ class ChromotingHostTest : public testing::Test {
         .Times(AnyNumber());
 
     owned_connection_.reset(new MockConnectionToClient(
-        session_, &host_stub_, event_executor_));
+        session_, &host_stub_, desktop_environment_->event_executor()));
     connection_ = owned_connection_.get();
     owned_connection2_.reset(new MockConnectionToClient(
-        session2_, &host_stub2_, &event_executor2_));
+        session2_, &host_stub2_, desktop_environment_->event_executor()));
     connection2_ = owned_connection2_.get();
 
     ON_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
@@ -183,7 +183,7 @@ class ChromotingHostTest : public testing::Test {
         PassAs<protocol::ConnectionToClient>();
     protocol::ConnectionToClient* connection_ptr = connection.get();
     ClientSession* client = new ClientSession(
-        host_.get(), connection.Pass(), event_executor_,
+        host_.get(), connection.Pass(), desktop_environment_->event_executor(),
         desktop_environment_->capturer());
     connection->set_host_stub(client);
 
@@ -250,10 +250,8 @@ class ChromotingHostTest : public testing::Test {
   MockVideoStub video_stub2_;
   MockClientStub client_stub2_;
   MockHostStub host_stub2_;
-  MockEventExecutor event_executor2_;
 
   // Owned by |host_|.
-  MockEventExecutor* event_executor_;
   MockDisconnectWindow* disconnect_window_;
   MockContinueWindow* continue_window_;
   MockLocalInputMonitor* local_input_monitor_;

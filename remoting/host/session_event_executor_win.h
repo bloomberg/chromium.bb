@@ -27,19 +27,21 @@ class ChannelProxy;
 
 namespace remoting {
 
-class SessionEventExecutorWin : public protocol::HostEventStub,
+class SessionEventExecutorWin : public EventExecutor,
                                 public IPC::Channel::Listener {
  public:
   SessionEventExecutorWin(MessageLoop* message_loop,
                           base::MessageLoopProxy* io_message_loop,
-                          scoped_ptr<protocol::HostEventStub> nested_executor);
+                          scoped_ptr<EventExecutor> nested_executor);
   ~SessionEventExecutorWin();
 
-  // ClipboardStub interface.
+  // EventExecutor implementation.
+  virtual void OnSessionStarted() OVERRIDE;
+  virtual void OnSessionFinished() OVERRIDE;
+
+  // protocol::HostStub implementation.
   virtual void InjectClipboardEvent(
       const protocol::ClipboardEvent& event) OVERRIDE;
-
-  // protocol::InputStub implementation.
   virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
 
@@ -52,7 +54,7 @@ class SessionEventExecutorWin : public protocol::HostEventStub,
   void SwitchToInputDesktop();
 
   // Pointer to the next event executor.
-  scoped_ptr<protocol::HostEventStub> nested_executor_;
+  scoped_ptr<EventExecutor> nested_executor_;
 
   MessageLoop* message_loop_;
 

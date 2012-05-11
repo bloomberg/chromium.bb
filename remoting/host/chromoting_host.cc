@@ -216,6 +216,7 @@ void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
   // Immediately add the connection and start the session.
   recorder_->AddConnection(client->connection());
   recorder_->Start();
+  desktop_environment_->OnSessionStarted();
 
   // Notify observers that there is at least one authenticated client.
   const std::string& jid = client->client_jid();
@@ -257,10 +258,11 @@ void ChromotingHost::OnSessionClosed(ClientSession* client) {
                     OnClientDisconnected(client->client_jid()));
 
   if (recorder_.get()) {
-    // Currently we don't allow more than one similtaneous connection,
+    // Currently we don't allow more than one simultaneous connection,
     // so we need to shutdown recorder when a client disconnects.
     StopScreenRecorder();
   }
+  desktop_environment_->OnSessionFinished();
 }
 
 void ChromotingHost::OnSessionSequenceNumber(ClientSession* session,

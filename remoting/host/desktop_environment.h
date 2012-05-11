@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "remoting/base/scoped_thread_proxy.h"
+#include "remoting/host/event_executor.h"
 
 namespace remoting {
 
@@ -36,21 +37,21 @@ class DesktopEnvironment {
   static scoped_ptr<DesktopEnvironment> CreateFake(
       ChromotingHostContext* context,
       scoped_ptr<Capturer> capturer,
-      scoped_ptr<protocol::HostEventStub> event_executor);
+      scoped_ptr<EventExecutor> event_executor);
 
   virtual ~DesktopEnvironment();
 
   void set_host(ChromotingHost* host) { host_ = host; }
 
   Capturer* capturer() const { return capturer_.get(); }
-  protocol::HostEventStub* event_executor() const {
-    return event_executor_.get();
-  }
+  EventExecutor* event_executor() const { return event_executor_.get(); }
+  void OnSessionStarted();
+  void OnSessionFinished();
 
  private:
   DesktopEnvironment(ChromotingHostContext* context,
                      scoped_ptr<Capturer> capturer,
-                     scoped_ptr<protocol::HostEventStub> event_executor);
+                     scoped_ptr<EventExecutor> event_executor);
 
   // The host that owns this DesktopEnvironment.
   ChromotingHost* host_;
@@ -63,7 +64,7 @@ class DesktopEnvironment {
   scoped_ptr<Capturer> capturer_;
 
   // Executes input and clipboard events received from the client.
-  scoped_ptr<protocol::HostEventStub> event_executor_;
+  scoped_ptr<EventExecutor> event_executor_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopEnvironment);
 };

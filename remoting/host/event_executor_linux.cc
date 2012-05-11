@@ -47,6 +47,10 @@ class EventExecutorLinux : public EventExecutor {
   virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
+  // EventExecutor interface.
+  virtual void OnSessionStarted() OVERRIDE;
+  virtual void OnSessionFinished() OVERRIDE;
+
  private:
   // |mode| is one of the AutoRepeatModeOn, AutoRepeatModeOff,
   // AutoRepeatModeDefault constants defined by the XChangeKeyboardControl()
@@ -415,15 +419,23 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
   XFlush(display_);
 }
 
+void EventExecutorLinux::OnSessionStarted() {
+  return;
+}
+
+void EventExecutorLinux::OnSessionFinished() {
+  return;
+}
+
 }  // namespace
 
-scoped_ptr<protocol::HostEventStub> EventExecutor::Create(
+scoped_ptr<EventExecutor> EventExecutor::Create(
     MessageLoop* message_loop, Capturer* capturer) {
   scoped_ptr<EventExecutorLinux> executor(
       new EventExecutorLinux(message_loop));
   if (!executor->Init())
-    return scoped_ptr<protocol::HostEventStub>(NULL);
-  return executor.PassAs<protocol::HostEventStub>();
+    return scoped_ptr<EventExecutor>(NULL);
+  return executor.PassAs<EventExecutor>();
 }
 
 }  // namespace remoting

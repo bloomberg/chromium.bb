@@ -21,9 +21,8 @@ namespace remoting {
 scoped_ptr<DesktopEnvironment> DesktopEnvironment::Create(
     ChromotingHostContext* context) {
   scoped_ptr<Capturer> capturer(Capturer::Create());
-  scoped_ptr<protocol::HostEventStub> event_executor =
-      EventExecutor::Create(context->desktop_message_loop(),
-                            capturer.get());
+  scoped_ptr<EventExecutor> event_executor =
+      EventExecutor::Create(context->desktop_message_loop(), capturer.get());
 
   if (capturer.get() == NULL || event_executor.get() == NULL) {
     LOG(ERROR) << "Unable to create DesktopEnvironment";
@@ -40,9 +39,8 @@ scoped_ptr<DesktopEnvironment> DesktopEnvironment::Create(
 scoped_ptr<DesktopEnvironment> DesktopEnvironment::CreateForService(
     ChromotingHostContext* context) {
   scoped_ptr<Capturer> capturer(Capturer::Create());
-  scoped_ptr<protocol::HostEventStub> event_executor =
-      EventExecutor::Create(context->desktop_message_loop(),
-                            capturer.get());
+  scoped_ptr<EventExecutor> event_executor =
+      EventExecutor::Create(context->desktop_message_loop(), capturer.get());
 
   if (capturer.get() == NULL || event_executor.get() == NULL) {
     LOG(ERROR) << "Unable to create DesktopEnvironment";
@@ -66,7 +64,7 @@ scoped_ptr<DesktopEnvironment> DesktopEnvironment::CreateForService(
 scoped_ptr<DesktopEnvironment> DesktopEnvironment::CreateFake(
     ChromotingHostContext* context,
     scoped_ptr<Capturer> capturer,
-    scoped_ptr<protocol::HostEventStub> event_executor) {
+    scoped_ptr<EventExecutor> event_executor) {
   return scoped_ptr<DesktopEnvironment>(
       new DesktopEnvironment(context,
                              capturer.Pass(),
@@ -76,7 +74,7 @@ scoped_ptr<DesktopEnvironment> DesktopEnvironment::CreateFake(
 DesktopEnvironment::DesktopEnvironment(
     ChromotingHostContext* context,
     scoped_ptr<Capturer> capturer,
-    scoped_ptr<protocol::HostEventStub> event_executor)
+    scoped_ptr<EventExecutor> event_executor)
     : host_(NULL),
       context_(context),
       capturer_(capturer.Pass()),
@@ -84,6 +82,14 @@ DesktopEnvironment::DesktopEnvironment(
 }
 
 DesktopEnvironment::~DesktopEnvironment() {
+}
+
+void DesktopEnvironment::OnSessionStarted() {
+  event_executor_->OnSessionStarted();
+}
+
+void DesktopEnvironment::OnSessionFinished() {
+  event_executor_->OnSessionFinished();
 }
 
 }  // namespace remoting
