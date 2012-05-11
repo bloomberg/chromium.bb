@@ -230,9 +230,16 @@ chrome.fileBrowserPrivate = {
     chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
       var path =
           (type == 'gdata') ?
-          '/gdata' :
+          '/drive' :
           ('/archive/archive' + (++chrome.fileBrowserPrivate.archiveCount_));
       callback(source);
+      var counter = 0;
+      var interval = setInterval(function() {
+        if (++counter == 10)
+          clearInterval(interval);
+        else
+          chrome.fileBrowserPrivate.onDocumentFeedFetched.notify(counter * 100);
+      }, 200);
       util.getOrCreateDirectory(filesystem.root, path, function() {
           chrome.fileBrowserPrivate.mountPoints_.push({
             mountPath: path,
@@ -247,7 +254,7 @@ chrome.fileBrowserPrivate = {
               mountPath: path,
               sourcePath: source
             });
-          }, 1000);
+          }, 2000);
           console.log('Created a mock mount at ' + path);
         },
         util.flog('Error creating a mock mount at ' + path));
@@ -267,7 +274,7 @@ chrome.fileBrowserPrivate = {
         eventType: 'unmount',
         status: status,
         mountPath: mountPath,
-        sourcePath: sourcePath
+        sourcePath: sourceUrl
       });
     }
 
@@ -301,6 +308,8 @@ chrome.fileBrowserPrivate = {
     }
     callback(metadata);
   },
+
+  onDocumentFeedFetched: new MockEventSource(),
 
   pinned_: {},
 
@@ -501,6 +510,7 @@ chrome.fileBrowserPrivate = {
           '<p><strong>Share, create and collaborate</strong> ' +
           'on files with others all in one place .</p>',
       GDATA_WELCOME_DISMISS: 'Dismiss',
+      GDATA_LOADING_PROGRESS: '$1 files fetched',
 
       OFFLINE_HEADER: 'You are offline',
       OFFLINE_MESSAGE: 'To save this file for offline use, get back online and<br>select the \'$1\' checkbox for this file.',

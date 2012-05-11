@@ -765,6 +765,15 @@ FileManager.prototype = {
     spinner.className = 'spinner';
     spinnerBox.appendChild(spinner);
 
+    var progress = this.document_.createElement('div');
+    progress.className = 'gdata progress';
+    this.unmountedPanel_.appendChild(progress);
+
+    chrome.fileBrowserPrivate.onDocumentFeedFetched.addListener(
+        function(fileCount) {
+          progress.textContent = strf('GDATA_LOADING_PROGRESS', fileCount);
+        });
+
     var error = this.document_.createElement('div');
     error.className = 'gdata error';
     error.textContent = strf('GDATA_CANNOT_REACH', str('GDATA_PRODUCT_NAME'));

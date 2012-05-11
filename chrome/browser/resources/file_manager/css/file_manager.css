@@ -1153,6 +1153,7 @@ div.unmounted-panel > div {
 }
 
 .unmounted-panel:not([loading]) > .gdata.loading,
+.unmounted-panel:not([loading]) > .gdata.progress,
 .unmounted-panel:not([error]) > .gdata.error,
 .unmounted-panel:not([retry]) > .gdata.retry,
 .unmounted-panel:not([retry]) > .gdata.learn-more {
