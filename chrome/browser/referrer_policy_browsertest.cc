@@ -29,8 +29,7 @@
 #define MAYBE_ContextMenuOrigin ContextMenuOrigin
 #define MAYBE_HttpsContextMenuOrigin HttpsContextMenuOrigin
 #define MAYBE_ContextMenuRedirect ContextMenuRedirect
-// http://crbug.com/124750
-#define MAYBE_HttpsContextMenuRedirect FAILS_HttpsContextMenuRedirect
+#define MAYBE_HttpsContextMenuRedirect HttpsContextMenuRedirect
 #endif
 
 namespace {
@@ -195,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MiddleClickOrigin) {
 }
 
 // User initiated navigation, middle click, from HTTPS to HTTP.
-IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, FAILS_HttpsMiddleClickOrigin) {
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsMiddleClickOrigin) {
   RunReferrerTest("origin", true, false, false, true,
                   WebKit::WebMouseEvent::ButtonMiddle,
                   EXPECT_ORIGIN_AS_REFERRER);
@@ -287,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MiddleClickRedirect) {
 
 // User initiated navigation, middle click, from HTTPS to HTTP via server
 // redirect.
-IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, FAILS_HttpsMiddleClickRedirect) {
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpsMiddleClickRedirect) {
   RunReferrerTest("origin", true, false, true, true,
                   WebKit::WebMouseEvent::ButtonMiddle,
                   EXPECT_ORIGIN_AS_REFERRER);

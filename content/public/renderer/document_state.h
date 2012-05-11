@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 
@@ -224,6 +225,22 @@ class DocumentState : public WebKit::WebDataSource::ExtraData {
     return cache_policy_override_set_;
   }
 
+  // Sets the referrer policy to use. This is only used for browser initiated
+  // navigations, otherwise, the referrer policy is defined by the frame's
+  // document.
+  WebKit::WebReferrerPolicy referrer_policy() const {
+    return referrer_policy_;
+  }
+  void set_referrer_policy(WebKit::WebReferrerPolicy referrer_policy) {
+    referrer_policy_ = referrer_policy;
+    referrer_policy_set_ = true;
+  }
+  void clear_referrer_policy() {
+    referrer_policy_ = WebKit::WebReferrerPolicyDefault;
+    referrer_policy_set_ = false;
+  }
+  bool is_referrer_policy_set() const { return referrer_policy_set_; }
+
   webkit_glue::AltErrorPageResourceFetcher* alt_error_page_fetcher() const {
     return alt_error_page_fetcher_.get();
   }
@@ -264,6 +281,9 @@ class DocumentState : public WebKit::WebDataSource::ExtraData {
 
   bool cache_policy_override_set_;
   WebKit::WebURLRequest::CachePolicy cache_policy_override_;
+
+  bool referrer_policy_set_;
+  WebKit::WebReferrerPolicy referrer_policy_;
 
   scoped_ptr<webkit_glue::AltErrorPageResourceFetcher> alt_error_page_fetcher_;
 

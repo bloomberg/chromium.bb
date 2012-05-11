@@ -339,10 +339,11 @@ static bool IsReload(const ViewMsg_Navigate_Params& params) {
 }
 
 static WebReferrerPolicy GetReferrerPolicyFromRequest(
+    WebFrame* frame,
     const WebURLRequest& request) {
   return request.extraData() ?
       static_cast<RequestExtraData*>(request.extraData())->referrer_policy() :
-      WebKit::WebReferrerPolicyDefault;
+      frame->document().referrerPolicy();
 }
 
 static WebURLResponseExtraDataImpl* GetExtraDataFromResponse(
@@ -1327,7 +1328,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
       // would be nice if we could get the real referrer from somewhere.
       params.referrer = Referrer(GURL(
           original_request.httpHeaderField(WebString::fromUTF8("Referer"))),
-          GetReferrerPolicyFromRequest(original_request));
+          GetReferrerPolicyFromRequest(frame, original_request));
     }
 
     string16 method = request.httpMethod();
@@ -2298,7 +2299,8 @@ void RenderViewImpl::loadURLExternally(
                                      suggested_name));
   } else {
     OpenURL(frame, request.url(),
-            Referrer(referrer, GetReferrerPolicyFromRequest(request)), policy);
+            Referrer(referrer, GetReferrerPolicyFromRequest(frame, request)),
+                     policy);
   }
 }
 
@@ -2307,7 +2309,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     const WebNode&, WebNavigationPolicy default_policy, bool is_redirect) {
   Referrer referrer(
       GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
-      GetReferrerPolicyFromRequest(request));
+      GetReferrerPolicyFromRequest(frame, request));
 
   if (is_swapped_out_) {
     if (request.url() != GURL(content::kSwappedOutURL)) {
@@ -2570,7 +2572,7 @@ void RenderViewImpl::didCompleteClientRedirect(
     // If there's no provisional data source, it's a reference fragment
     // navigation.
     completed_client_redirect_src_ = Referrer(
-        from, ds ? GetReferrerPolicyFromRequest(ds->request()) :
+        from, ds ? GetReferrerPolicyFromRequest(frame, ds->request()) :
         frame->document().referrerPolicy());
   }
   FOR_EACH_OBSERVER(
@@ -2669,6 +2671,8 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
     document_state->set_load_type(DocumentState::HISTORY_LOAD);
   else
     document_state->set_load_type(DocumentState::NORMAL_LOAD);
+
+  document_state->set_referrer_policy(params.referrer.policy);
 }
 
 NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
@@ -3110,8 +3114,16 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
     transition_type = navigation_state->transition_type();
   }
 
+  WebKit::WebReferrerPolicy referrer_policy;
+  if (document_state && document_state->is_referrer_policy_set()) {
+    referrer_policy = document_state->referrer_policy();
+    document_state->clear_referrer_policy();
+  } else {
+    referrer_policy = frame->document().referrerPolicy();
+  }
+
   request.setExtraData(
-      new RequestExtraData(frame->document().referrerPolicy(),
+      new RequestExtraData(referrer_policy,
                            (frame == top_frame),
                            frame->identifier(),
                            frame->parent() == top_frame,
