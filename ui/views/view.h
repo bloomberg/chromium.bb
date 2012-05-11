@@ -1314,7 +1314,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // WriteDragData to write the data and GetDragOperations to determine the
   // supported drag operations. When done, OnDragDone is invoked. |press_pt| is
   // in the view's coordinate system.
-  void DoDrag(const LocatedEvent& event, const gfx::Point& press_pt);
+  // Returns true if a drag was started.
+  bool DoDrag(const LocatedEvent& event, const gfx::Point& press_pt);
 
   //////////////////////////////////////////////////////////////////////////////
 

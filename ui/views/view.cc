@@ -817,8 +817,8 @@ ui::TouchStatus View::OnTouchEvent(const TouchEvent& event) {
 ui::GestureStatus View::OnGestureEvent(const GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_LONG_PRESS) {
     // TODO(XXX): Call CanStartDragForView first?
-    DoDrag(event, event.location());
-    return ui::GESTURE_STATUS_CONSUMED;
+    return DoDrag(event, event.location()) ?
+        ui::GESTURE_STATUS_CONSUMED : ui::GESTURE_STATUS_UNKNOWN;
   }
   return ui::GESTURE_STATUS_UNKNOWN;
 }
@@ -2052,11 +2052,11 @@ void View::UpdateTooltip() {
 
 // Drag and drop ---------------------------------------------------------------
 
-void View::DoDrag(const LocatedEvent& event, const gfx::Point& press_pt) {
+bool View::DoDrag(const LocatedEvent& event, const gfx::Point& press_pt) {
 #if !defined(OS_MACOSX)
   int drag_operations = GetDragOperations(press_pt);
   if (drag_operations == ui::DragDropTypes::DRAG_NONE)
-    return;
+    return false;
 
   OSExchangeData data;
   WriteDragData(press_pt, &data);
@@ -2066,6 +2066,9 @@ void View::DoDrag(const LocatedEvent& event, const gfx::Point& press_pt) {
   gfx::Point widget_location(event.location());
   ConvertPointToWidget(this, &widget_location);
   GetWidget()->RunShellDrag(this, data, widget_location, drag_operations);
+  return true;
+#else
+  return false;
 #endif  // !defined(OS_MACOSX)
 }
 
