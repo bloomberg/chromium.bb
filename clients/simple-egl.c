@@ -505,14 +505,20 @@ main(int argc, char **argv)
 	struct sigaction sigint;
 	struct display display = { 0 };
 	struct window  window  = { 0 };
+	int alpha_size, i;
 
 	window.display = &display;
 	display.window = &window;
 	window.geometry.width  = 250;
 	window.geometry.height = 250;
 
-	if (argc >= 2 && strcmp("-f", argv[0]))
-		window.fullscreen = 1;
+	alpha_size = 1;
+	for (i = 1; i < argc; i++) {
+		if (strcmp("-f", argv[i]) == 0)
+			window.fullscreen = 1;
+		if (strcmp("-o", argv[i]) == 0)
+			alpha_size = 0;
+	}
 
 	display.display = wl_display_connect(NULL);
 	assert(display.display);
@@ -523,7 +529,10 @@ main(int argc, char **argv)
 	wl_display_get_fd(display.display, event_mask_update, &display);
 	wl_display_iterate(display.display, WL_DISPLAY_READABLE);
 
-	init_egl(&display, window.fullscreen ? 0 : 1);
+	if (window.fullscreen)
+		alpha_size = 0;
+
+	init_egl(&display, alpha_size);
 	create_surface(&window);
 	init_gl(&window);
 
